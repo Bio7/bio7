@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+
+   
+   
+   
+    <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="com.eco.bio7.editors.BeanshellEditor"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            default="true"
+            extensions="bsh,groovy,js"
+            icon="icons/groovy.gif"
+            id="com.eco.bio7.editors.TemplateEditor"
+            name="Bio7 Editor">
+      </editor>
+   </extension>
+   <extension
+         id="ExampleJavaDocumentSetupParticipant"
+         name="%documentSetupParticipantName"
+         point="org.eclipse.core.filebuffers.documentSetup">
+      <participant
+            extensions="bsh,groovy,js"
+            class="com.eco.bio7.editors.ScriptDocumentSetupParticipant">
+      </participant>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="prefbeanshell"
+            class="com.eco.bio7.reditor.preferences.TemplatesPreferencePage"
+            id="org.eclipse.ui.examples.templateeditor.preferencepage"
+            name="%xml.editor.preferencePage.label">
+      </page>
+      <page
+            category="com.eco.bio7.preferences.Bio7PreferencePage"
+            class="com.eco.bio7.reditor.preferences.WorkbenchPreferencebsh"
+            id="prefbeanshell"
+            name="Preferences BeanShell/Groovy"/>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.editors.templates">
+      <contextType
+            name="%xml.contextType.name"
+            class="com.eco.bio7.reditor.preferences.template.BeanshellContextType"
+            id="bsh">
+      </contextType>
+     
+      <include
+      		file="templates/ant.xml"
+      		translations="$nl$/templates/ant.properties">
+      </include>
+   </extension>
+   
+
+</plugin>

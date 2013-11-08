@@ -1,0 +1,1 @@
+A folder for custom  scripts for the R-Shell view scripts menu!

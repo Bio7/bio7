@@ -1,0 +1,1 @@
+A folder for custom groovy scripts executed at startup e.g. to open perspectives and views at startup!

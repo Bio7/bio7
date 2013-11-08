@@ -1,0 +1,71 @@
+/*
+Gridfile importer script. Using the 'rgdal' package of R.
+Author: M. Austenfeld 
+Year:   2008
+
+ */
+import com.eco.bio7.worldwind.WorldWindOptionsView;
+if (RServe.isAliveDialog()) {
+     RConnection c=RServe.getConnection();
+	if (RServe.getConnection().eval("require(rgdal)").isTrue()[0]) {
+		String file = Bio7Dialog.openFile(new String[]{"*"});
+		if (file != null) {
+			
+			if (Bio7Dialog.getOS().equals("Windows")) {
+				file = file.replace("\\", "\\\\");
+			}
+
+			File f = new File(file);
+			
+			String name = null;
+			/*Extract the name of the file!*/
+			int occur=f.getName().lastIndexOf(".");
+			
+			if(occur!=-1){
+			name=f.getName().substring(0, f.getName().lastIndexOf("."));
+			}
+            else{
+            	name=f.getName();
+            }
+
+			/*Read the shape file with the filename as the layer!*/
+			c.eval("try(" + name + " <- readGDAL(\"" + file + "\"));");
+		    
+			System.out.println("Loaded Grid: " + name + "\n");
+			
+			RServe.print("summary(" + name + ")");
+			/*We need to access the cell size by means of the slots!*/
+			c.eval("try(a<-slot("+name+",\"grid\"))");
+			c.eval("try(dim<-slot(a,\"cells.dim\"))");
+			c.eval("imageSizeY<-dim[2]");
+			c.eval("imageSizeX<-dim[1]");
+		
+			/*Access bounding box for WorldWind!*/
+			c.eval("try(bbox<-slot("+name+",\"bbox\"))");
+			double minLat = (double) c.eval("bbox[2]").asDouble();
+			double maxLat = (double) c.eval("bbox[4]").asDouble();
+			double minLon = (double) c.eval("bbox[1]").asDouble();
+			double maxLon = (double) c.eval("bbox[3]").asDouble();
+			/*Transfer Lat Lon to WorldWind if active!*/
+			if(WorldWindOptionsView.getOptionsInstance()!=null){
+			WorldWindOptionsView.setMinLat(Double.toString(minLat));
+			WorldWindOptionsView.setMaxLat(Double.toString(maxLat));
+			WorldWindOptionsView.setMinLon(Double.toString(minLon));
+			WorldWindOptionsView.setMaxLon(Double.toString(maxLon));
+			 }
+			/*Create an image vector for the first band of the srtm-hgt file!*/
+            c.eval(""+name+"<-"+name+"$band1");
+			
+			/*Create an float image from the data transfered to ImageJ as integers!*/		
+			ImageMethods.imageFromR(2,name,0);
+			
+			/*Cleanup and remove variables!*/
+			c.eval("try(remove(a));");
+			c.eval("try(remove(dim));");
+			
+			
+		}
+	} else {
+		Bio7Dialog.message("Can't load 'rgdal' package!");
+	}
+}

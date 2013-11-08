@@ -1,0 +1,35 @@
+<!--
+/*******************************************************************************
+ * Copyright (c) 2004 Elias Volanakis.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Elias Volanakis - initial contents
+ *    IBM Corporation
+ *******************************************************************************/
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+</head>
+<body bgcolor="white">
+<p>
+Commands for modifying the model.
+</p>
+<p>The editor does not modify the model directly, but uses Command instances instead.
+Commands can be executed, redone and undone. The framework places the sequence
+of executed Commands on a CommandStack, which enables the undoing or redoing of
+command sequences.
+</p>
+<p>Side note: Be careful when creating new instances of model elements in the redo 
+or undo methods of a Command. Depending on how your commands are implemented, this can 
+cause trouble when redoing or undoing a sequence of multiple commands.
+<p>
+More background information on the Command Design Pattern can be 
+found in "Design Patterns", ISBN  0-201-63361-2.
+</p>
+</body>
+</html>

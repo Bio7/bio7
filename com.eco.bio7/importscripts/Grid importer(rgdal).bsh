@@ -1,0 +1,45 @@
+/*
+Gridfile importer script. Using the 'rgdal' package of R.
+Author: M. Austenfeld 
+Year:   2008
+
+ */
+
+if (RServe.isAliveDialog()) {
+
+	RConnection c=RServe.getConnection();
+	if (c.eval("require(rgdal)").isTrue()[0]&&c.eval("require(sp)").isTrue()[0]) {
+		String files = Bio7Dialog.openFile();
+		 
+		
+		if (files != null) {
+			if (Bio7Dialog.getOS().equals("Windows")) {
+				files = files.replace("\\", "\\\\");
+			}
+
+			File f = new File(files);
+			/*Extract the name of the file!*/
+			String name = null;
+			/*Extract the name of the file!*/
+			int occur=f.getName().lastIndexOf(".");
+			
+             if(occur!=-1){
+			name=f.getName().substring(0, f.getName().lastIndexOf("."));
+			}
+            else{
+            	name=f.getName();
+            }
+            
+            c.assign("file",f.toString());
+           
+            
+			/*Read the gridfile with the filename as the layer!*/
+			c.eval(
+				"try(" + name + " <- readGDAL(file));");
+			System.out.println("Loaded Grid: " + name + "\n");
+			RServe.print("try(summary(" + name + "))");
+		}
+	} else {
+		Bio7Dialog.message("Can't load 'rgdal' package!");
+	}
+}

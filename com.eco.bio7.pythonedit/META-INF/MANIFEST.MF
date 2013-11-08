@@ -1,0 +1,21 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Pythonedit
+Bundle-SymbolicName: com.eco.bio7.pythonedit; singleton:=true
+Bundle-Version: 1.7.0.qualifier
+Bundle-Activator: com.eco.bio7.pythonedit.PythonEditorPlugin
+Bundle-Vendor: ECO
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.jface.text,
+ org.eclipse.ui.editors,
+ org.eclipse.jdt.core;bundle-version="3.8.2",
+ org.eclipse.ui.workbench.texteditor;bundle-version="3.8.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-ActivationPolicy: lazy
+Export-Package: com.eco.bio7.editors.python,
+ com.eco.bio7.pythonedit,
+ com.eco.bio7.pythoneditor.actions,
+ com.eco.bio7.pythoneditors,
+ com.eco.bio7.reditor.preferences,
+ com.eco.bio7.reditor.preferences.template

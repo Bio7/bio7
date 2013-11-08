@@ -1,0 +1,19 @@
+if(Compiled.getModel()!=null){
+
+Class cla = Compiled.getModel().getClass();
+try {
+	if (cla.getMethod("setup", null) != null) {
+		Compiled.getModel().setup();
+	}
+
+} catch (SecurityException e) {
+	
+	
+} catch (NoSuchMethodException e) {
+	Bio7Dialog.message("No setup method available!");
+	}
+}
+else{
+
+     Bio7Dialog.message("No compiled method available !");
+}

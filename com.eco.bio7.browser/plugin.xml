@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            allowMultiple="true"
+            category="com.eco.bio7.web"
+            class="com.eco.bio7.browser.BrowserView"
+            icon="src/pics/logo.gif"
+            id="com.eco.bio7.browser.Browser"
+            name="Browser"
+            restorable="true">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="com.eco.bio7.browser.HtmlEditorPerspective"
+            icon="pics/logo.gif"
+            id="com.eco.bio7.browser.HtmlEditorPerspective"
+            name="Web">
+      </perspective>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="com.eco.bio7.browser.MultiPageEditor"
+            default="true"
+            extensions="html,Rhtml"
+            icon="icons/html.gif"
+            id="com.eco.bio7.browser.guieditor"
+            name="Html Gui Editor">
+      </editor>
+   </extension>
+
+</plugin>

@@ -1,0 +1,8 @@
+instructions.configure=\
+  addRepository(type:0,location:http${#58}//download.eclipse.org/releases/juno,name:The Eclipse Project Updates);\
+  addRepository(type:1,location:http${#58}//download.eclipse.org/releases/juno,name:The Eclipse Project Updates);\
+  addRepository(type:0,location:http${#58}//bio7.org/app/win64,name:The Bio7 Project Updates);\
+  addRepository(type:1,location:http${#58}//bio7.org/app/win64,name:The Bio7 Project Updates);\
+  addRepository(type:0,location:http${#58}//download.eclipse.org/egit/updates/,name:EGit);\
+  addRepository(type:1,location:http${#58}//download.eclipse.org/egit/updates/,name:EGit);\
+  

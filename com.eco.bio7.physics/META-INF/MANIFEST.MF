@@ -1,0 +1,36 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Physics Plug-in
+Bundle-SymbolicName: com.eco.bio7.physics; singleton:=true
+Bundle-Version: 1.7.0
+Bundle-Activator: com.eco.bio7.physics.Activator
+Bundle-Vendor: ECO
+Require-Bundle: org.eclipse.ui,org.eclipse.core.runtime
+Eclipse-LazyStart: true
+Bundle-ClassPath: libs/jbullet.jar,
+ libs/trove.jar,
+ libs/vecmath.jar,
+ .,
+ libs/jbullet-gimpact.jar,
+ libs/stack-alloc.jar
+Export-Package: com.bulletphysics,
+ com.bulletphysics.collision.broadphase,
+ com.bulletphysics.collision.dispatch,
+ com.bulletphysics.collision.narrowphase,
+ com.bulletphysics.collision.shapes,
+ com.bulletphysics.dynamics,
+ com.bulletphysics.dynamics.character,
+ com.bulletphysics.dynamics.constraintsolver,
+ com.bulletphysics.dynamics.vehicle,
+ com.bulletphysics.extras.gimpact,
+ com.bulletphysics.linearmath,
+ com.bulletphysics.linearmath.convexhull,
+ com.bulletphysics.util,
+ com.eco.bio7.physics,
+ cz.advel.stack,
+ cz.advel.stack.instrument,
+ gnu.trove,
+ gnu.trove.decorator,
+ javax,
+ javax.vecmath
+

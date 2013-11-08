@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin
+   id="com.eco.bio7.floweditor"
+   version="1.0"
+
+   class="com.eco.bio7.floweditor.shapes.ShapesPlugin">
+
+     <extension point="org.eclipse.ui.editors">
+      <editor name="Flow Editor"
+              extensions="ecoflow"
+              icon="icons/flowchart.gif"
+              default="true"
+              class="com.eco.bio7.floweditor.shapes.ShapesEditor"
+              contributorClass="com.eco.bio7.floweditor.shapes.FlowContributor"
+              id="com.eco.bio7.floweditor.ShapesEditor">
+      </editor>
+   </extension>
+   <extension point="org.eclipse.ui.newWizards">
+      <wizard
+            category="com.eco.bio7.bio7"
+            class="com.eco.bio7.floweditor.shapes.ShapesCreationWizard"
+            icon="icons/flowchart.gif"
+            id="com.eco.bio7.floweditor.ShapesCreationWizard"
+            name="Flow"
+            project="false">
+      </wizard>
+   </extension>
+</plugin>

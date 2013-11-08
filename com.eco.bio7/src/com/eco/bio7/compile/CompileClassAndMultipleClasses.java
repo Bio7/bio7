@@ -1,0 +1,251 @@
+/*******************************************************************************
+ * Copyright (c) 2007-2013 M. Austenfeld
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     M. Austenfeld
+ *******************************************************************************/
+package com.eco.bio7.compile;
+
+import ij.plugin.PlugIn;
+import ij.plugin.filter.PlugInFilter;
+import ij.plugin.filter.PlugInFilterRunner;
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import javax.swing.SwingUtilities;
+import org.codehaus.commons.compiler.jdk.JavaSourceClassLoader;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.PackageDeclaration;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
+import com.eco.bio7.Bio7Plugin;
+import com.eco.bio7.batch.BatchModel;
+import com.eco.bio7.javaeditors.JavaEditor;
+import com.eco.bio7.methods.Compiled;
+import com.eco.bio7.rcp.StartBio7Utils;
+import com.eco.bio7.worldwind.DynamicLayer;
+
+public class CompileClassAndMultipleClasses {
+	private File fi;
+	private String name;
+	private String dir;
+	private IResource resource;
+	private IWorkbenchPage pag;
+	private IFile ifile;
+	private IEditorPart editor;
+
+	public void compileClasses(IResource res, IFile ifil, IWorkbenchPage page) {
+		this.resource = res;
+		this.pag = page;
+		this.ifile = ifil;
+		IWorkbench aWorkbench = PlatformUI.getWorkbench();
+		IWorkbenchWindow win = aWorkbench.getActiveWorkbenchWindow();
+
+		IWorkbenchPage pages = null;
+		try {
+			pages = win.getActivePage();
+		} catch (Exception e1) {
+
+		}
+		if (pages != null) {
+			editor = (IEditorPart) pages.getActiveEditor();
+		}
+		JavaSourceClassLoader.resource = resource;
+		IProject proj = resource.getProject();
+
+		try {
+			proj.deleteMarkers(IMarker.PROBLEM, true, IProject.DEPTH_INFINITE);
+			proj.refreshLocal(IProject.DEPTH_INFINITE, null);
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+
+		IPath pa = proj.getLocation();
+
+		fi = pa.toFile();
+
+		/* Get the file location as String! */
+		String filLoc = ifile.getRawLocation().toString();
+
+		/* Get the filename without extension! */
+		name = ifile.getName().replaceFirst("[.][^.]+$", "");
+
+		/* Get the parent directory! */
+		dir = new File(filLoc).getParentFile().getPath().replace("\\", "/");
+
+		StartBio7Utils.getConsoleInstance().cons.clear();
+
+		Job job = new Job("Compile And Run") {
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				monitor.beginTask("Compile And Run...", IProgressMonitor.UNKNOWN);
+				// JavaSourceClassLoader.directCall = true;
+				compileAndLoad(fi, dir, name, pag);
+				// JavaSourceClassLoader.directCall = false;
+				monitor.done();
+				return Status.OK_STATUS;
+			}
+
+		};
+		job.addJobChangeListener(new JobChangeAdapter() {
+			public void done(IJobChangeEvent event) {
+				if (event.getResult().isOK()) {
+					BatchModel.resume();
+				} else {
+					// JavaSourceClassLoader.directCall = false;
+				}
+			}
+		});
+
+		job.schedule();
+	}
+
+	public void compileAndLoad(File path, String dir, String name, IWorkbenchPage pag) {
+
+		JavaSourceClassLoader cla = new JavaSourceClassLoader(Bio7Plugin.class.getClassLoader());
+		cla.pag = pag;
+
+		cla.setSourcePath(new File[] { path, new File(dir) });
+       
+		Object o = null;
+		Class<?> cl = null;
+		try {
+
+			// JavaEditor editor=JavaEditor.javaEditor;
+           /*If we have an opened Java Editor!*/
+			if (editor != null&&editor instanceof JavaEditor) {
+				JavaEditor jedit = (JavaEditor) editor;
+				
+				/*If the class is in a package we receive the package name from the AST!*/
+				org.eclipse.jdt.core.dom.CompilationUnit compUnit = jedit.getCompUnit();
+				PackageDeclaration pdecl = compUnit.getPackage();
+				if (pdecl != null) {
+					Name packName = pdecl.getName();
+
+					String pack = packName.toString();
+					cl = cla.findClass(pack + "." + name);
+
+				} else {
+					cl = cla.findClass(name);
+				}
+
+			} 
+			/*If we compile from the context menu (We can't get package name!)*/
+			else {
+				cl = cla.findClass(name);
+			}
+
+			// System.out.println(name);
+			o = cl.newInstance();
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+			System.out.println(e.getMessage());
+		}
+		if (o != null) {
+			if (o instanceof Model) {
+				Model model = (Model) o;
+				Compiled.setModel(model);
+				/* For Java WorldWind! */
+				DynamicLayer.setEcoclass(model);
+			}
+
+			else if (o instanceof PlugIn) {
+				callPlugin(cl);
+
+			} else if (o instanceof PlugInFilter) {
+				callPluginFilter(cl);
+
+			}
+
+			else {
+				Method method = null;
+				try {
+					method = cl.getMethod("main", String[].class);
+
+				} catch (NoSuchMethodException | SecurityException e) {
+					// TODO Auto-generated catch block
+					// e.printStackTrace();
+					System.out.println("No main method! Only class compiled and loaded!");
+				}
+
+				if (method != null) {
+
+					callMainMethod(method);
+
+				}
+			}
+		} else {
+			System.out.println("Object not created! Null reference!");
+		}
+		cla=null;
+		cl=null;
+		o=null;
+	}
+
+	private void callPlugin(final Class<?> cl) {
+		SwingUtilities.invokeLater(new Runnable() {
+			// !!
+			public void run() {
+				try {
+
+					((PlugIn) cl.newInstance()).run("");
+				} catch (InstantiationException | IllegalAccessException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		});
+
+	}
+
+	private void callPluginFilter(final Class<?> cl) {
+		SwingUtilities.invokeLater(new Runnable() {
+			// !!
+			public void run() {
+				// System.out.println("run plugin");
+				try {
+					new PlugInFilterRunner(cl.newInstance(), "plugin", "");
+				} catch (InstantiationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+			}
+		});
+	}
+
+	private void callMainMethod(Method method) {
+
+		Object retVal;
+
+		try {
+			String[] params = null;
+			method.invoke(null, (Object) params);
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+}

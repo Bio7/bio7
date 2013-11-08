@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            name="Python Editor"
+            extensions="py"
+            icon="icons/jython.gif"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            class="com.eco.bio7.editors.python.PythonEditor"
+            id="com.eco.bio7.pythoneditors.PythonEditor">
+      </editor>
+   </extension>
+   <extension
+         id="ExampleJavaDocumentSetupParticipant"
+         name="%documentSetupParticipantName"
+         point="org.eclipse.core.filebuffers.documentSetup">
+      <participant
+            extensions="py"
+            class="com.eco.bio7.pythoneditors.ScriptDocumentSetupParticipant">
+      </participant>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="prefpython"
+            class="com.eco.bio7.reditor.preferences.TemplatesPreferencePage"
+            id="org.eclipse.ui.examples.templateeditor.preferencepage"
+            name="Template Editor Jython">
+      </page>
+      <page
+            category="com.eco.bio7.preferences.Bio7PreferencePage"
+            class="com.eco.bio7.reditor.preferences.WorkbenchPreferencePython"
+            id="prefpython"
+            name="Preferences Jython"/>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.editors.templates">
+      <contextType
+            name="Jython Templates"
+            class="com.eco.bio7.reditor.preferences.template.PythonContextType"
+            id="py">
+      </contextType>
+     
+      <include
+      		file="templates/ant.xml"
+      		translations="$nl$/templates/ant.properties">
+      </include>
+   </extension>
+
+</plugin>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry exported="true" kind="lib" path="hardware/nrjavaserial-3.8.8.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/org.eclipse.swt.win32.win32.x86_64_3.8.1.v3836b.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jfxrt.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/gluegen-rt.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jogl-all.jar"/>
+	<classpathentry exported="true" kind="lib" path="math/commons-math3-3.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="R/RserveEngine.jar"/>
+	<classpathentry exported="true" kind="lib" path="OpenOffice/unoil.jar"/>
+	<classpathentry exported="true" kind="lib" path="OpenOffice/java_uno.jar"/>
+	<classpathentry exported="true" kind="lib" path="OpenOffice/unoloader.jar"/>
+	<classpathentry exported="true" kind="lib" path="hardware/serial.jar"/>
+	<classpathentry exported="true" kind="lib" path="math/parallelcolt-0.9.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="math/Jama-1.0.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="math/jts-1.13.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/xstream-1.4.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/poi-3.9-20121203.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/poi-ooxml-3.9-20121203.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/poi-ooxml-schemas-3.9-20121203.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jfxtras-labs-2.2-r5-20130203.103630-15.jar"/>
+	<classpathentry exported="true" kind="lib" path="processing/core.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/xmlpull-1.1.3.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/opencsv-2.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="math/jgrapht-jdk1.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="bin/"/>
+	<classpathentry exported="true" kind="lib" path="libs/vecmath-kh.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/dom4j-1.6.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/geronimo-stax-api_1.0_spec-1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/xmlbeans-2.3.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/MozillaGlue.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/MozillaInterfaces.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/commons-io-1.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jcollada-0-9-12.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/grid.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="math/joone-engine.jar" sourcepath="com.eco.bio7.libssrc.zip"/>
+	<classpathentry exported="true" kind="lib" path="math/jscience.jar" sourcepath="com.eco.bio7.libssrc.zip"/>
+	<classpathentry exported="true" kind="lib" path="OpenOffice/juh.jar" sourcepath="com.eco.bio7.libssrc.zip"/>
+	<classpathentry exported="true" kind="lib" path="OpenOffice/jurt.jar"/>
+	<classpathentry exported="true" kind="lib" path="OpenOffice/ridl.jar"/>
+	<classpathentry exported="true" kind="lib" path="R/REngine.jar" sourcepath="com.eco.bio7.libssrc.zip"/>
+	<classpathentry exported="true" kind="lib" path="libs/uk.co.mmscomputing.device.twain.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/uk.co.mmscomputing.device.sane.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

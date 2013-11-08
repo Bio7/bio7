@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+
+   
+   
+   
+    <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="com.eco.bio7.reditors.REditor"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            default="true"
+            extensions="R,r"
+            icon="icons/rkompilierung.gif"
+            id="com.eco.bio7.reditors.TemplateEditor"
+            name="Bio7 RScript-Editor">
+      </editor>
+   </extension>
+   <extension
+         id="ExampleJavaDocumentSetupParticipant"
+         name="%documentSetupParticipantName"
+         point="org.eclipse.core.filebuffers.documentSetup">
+      <participant
+            extensions="R,r"
+            class="com.eco.bio7.reditors.RDocumentSetupParticipant">
+      </participant>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="prefr"
+            class="com.eco.bio7.rpreferences.TemplatesPreferencePage"
+            id="rpreferencepage"
+            name="Template Editor R">
+      </page>
+      <page
+             category="com.eco.bio7.preferences.Bio7PreferencePage"
+            class="com.eco.bio7.rpreferences.WorkbenchPreferenceR"
+            id="prefr"
+            name="Preferences R">
+       </page>
+      
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.editors.templates">
+      <contextType
+            name="%xml.contextType.name"
+            class="com.eco.bio7.rpreferences.template.RContextType"
+            id="rscript">
+      </contextType>
+     
+      <include
+      		file="templates/ant.xml"
+      		translations="$nl$/templates/ant.properties">
+      </include>
+   </extension>
+   <extension
+        id="myProblem"
+        name="My Problem MarkerType"
+        point="org.eclipse.core.resources.markers">
+     <super type="org.eclipse.core.resources.problemmarker"/>
+     <super type="org.eclipse.core.resources.textmarker"/>
+     <persistent value="true"/>
+     <attribute name="selection"/>
+  </extension>
+   
+
+</plugin>

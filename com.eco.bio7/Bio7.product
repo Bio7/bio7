@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?pde version="3.5"?>
+
+<product name="Bio7" uid="1.7.0" id="com.eco.bio7.product" application="com.eco.bio7.application" version="1.7.0.qualifier" useFeatures="true" includeLaunchers="true">
+
+   <aboutInfo>
+      <image path="/com.eco.bio7/icons/bio7app/bio7_48.png"/>
+      <text>
+         Bio7 - An Integrated Development Environment for Ecological Modeling
+
+Developer: M. Austenfeld
+
+For more information about Bio7 visit the website:
+
+http://bio7.org
+
+-----------------------------------------------------------
+      </text>
+   </aboutInfo>
+
+   <configIni use="default">
+   </configIni>
+
+   <launcherArgs>
+      <programArgs>-clearPersistedState</programArgs>
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
+   </launcherArgs>
+
+   <windowImages i16="icons/bio7app/bio7_16.png" i32="icons/bio7app/bio7_32.png" i48="icons/bio7app/bio7_48.png" i64="icons/bio7app/bio7_64.png" i128="icons/bio7app/bio7_128.png"/>
+
+   <splash
+      location="com.eco.bio7"
+      startupProgressRect="95,50,285,30"
+      startupMessageRect="0,0,0,0"
+      startupForegroundColor="000000" />
+   <launcher name="Bio7">
+      <solaris/>
+      <win useIco="false">
+         <ico path="/com.eco.bio7/icons/bio7.ico"/>
+         <bmp
+            winSmallHigh="/com.eco.bio7/icons/bmp/bio7_16_32.bmp"
+            winSmallLow="/com.eco.bio7/icons/bmp/bio7_16_8.bmp"
+            winMediumHigh="/com.eco.bio7/icons/bmp/bio7_32_32.bmp"
+            winMediumLow="/com.eco.bio7/icons/bmp/bio7_32_8.bmp"
+            winLargeHigh="/com.eco.bio7/icons/bmp/bio7_48_32.bmp"
+            winLargeLow="/com.eco.bio7/icons/bmp/bio7_48_8.bmp"
+            winExtraLargeHigh="/com.eco.bio7/icons/bmp/bio7_256_32.bmp"/>
+      </win>
+   </launcher>
+
+   <intro introId="com.eco.bio7.intro"/>
+
+   <vm>
+      <windows include="true">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JRE-1.1</windows>
+   </vm>
+
+   <plugins>
+      <plugin id="Bundled_R"/>
+      <plugin id="com.eco.bio7"/>
+      <plugin id="com.eco.bio7.WorldWind"/>
+      <plugin id="com.eco.bio7.albireo"/>
+      <plugin id="com.eco.bio7.browser"/>
+      <plugin id="com.eco.bio7.compiled"/>
+      <plugin id="com.eco.bio7.edit"/>
+      <plugin id="com.eco.bio7.floweditor"/>
+      <plugin id="com.eco.bio7.image"/>
+      <plugin id="com.eco.bio7.javaedit"/>
+      <plugin id="com.eco.bio7.libs"/>
+      <plugin id="com.eco.bio7.physics"/>
+      <plugin id="com.eco.bio7.redit"/>
+      <plugin id="com.eco.bio7.util"/>
+      <plugin id="com.ibm.icu"/>
+      <plugin id="javax.el"/>
+      <plugin id="javax.servlet"/>
+      <plugin id="javax.servlet.jsp"/>
+      <plugin id="org.apache.ant"/>
+      <plugin id="org.apache.jasper.glassfish"/>
+      <plugin id="org.apache.lucene"/>
+      <plugin id="org.apache.lucene.analysis"/>
+      <plugin id="org.apache.lucene.core"/>
+      <plugin id="org.eclipse.compare"/>
+      <plugin id="org.eclipse.compare.core"/>
+      <plugin id="org.eclipse.core.commands"/>
+      <plugin id="org.eclipse.core.contenttype"/>
+      <plugin id="org.eclipse.core.databinding"/>
+      <plugin id="org.eclipse.core.databinding.observable"/>
+      <plugin id="org.eclipse.core.databinding.property"/>
+      <plugin id="org.eclipse.core.expressions"/>
+      <plugin id="org.eclipse.core.filebuffers"/>
+      <plugin id="org.eclipse.core.filesystem"/>
+      <plugin id="org.eclipse.core.filesystem.win32.x86" fragment="true"/>
+      <plugin id="org.eclipse.core.jobs"/>
+      <plugin id="org.eclipse.core.net"/>
+      <plugin id="org.eclipse.core.net.win32.x86" fragment="true"/>
+      <plugin id="org.eclipse.core.resources"/>
+      <plugin id="org.eclipse.core.resources.win32.x86" fragment="true"/>
+      <plugin id="org.eclipse.core.runtime"/>
+      <plugin id="org.eclipse.core.runtime.compatibility"/>
+      <plugin id="org.eclipse.core.runtime.compatibility.registry" fragment="true"/>
+      <plugin id="org.eclipse.core.variables"/>
+      <plugin id="org.eclipse.debug.core"/>
+      <plugin id="org.eclipse.draw2d"/>
+      <plugin id="org.eclipse.equinox.app"/>
+      <plugin id="org.eclipse.equinox.common"/>
+      <plugin id="org.eclipse.equinox.http.registry"/>
+      <plugin id="org.eclipse.equinox.jsp.jasper"/>
+      <plugin id="org.eclipse.equinox.jsp.jasper.registry"/>
+      <plugin id="org.eclipse.equinox.launcher"/>
+      <plugin id="org.eclipse.equinox.launcher.win32.win32.x86" fragment="true"/>
+      <plugin id="org.eclipse.equinox.p2.core"/>
+      <plugin id="org.eclipse.equinox.p2.engine"/>
+      <plugin id="org.eclipse.equinox.p2.metadata"/>
+      <plugin id="org.eclipse.equinox.p2.metadata.repository"/>
+      <plugin id="org.eclipse.equinox.p2.repository"/>
+      <plugin id="org.eclipse.equinox.preferences"/>
+      <plugin id="org.eclipse.equinox.registry"/>
+      <plugin id="org.eclipse.equinox.security"/>
+      <plugin id="org.eclipse.equinox.security.win32.x86" fragment="true"/>
+      <plugin id="org.eclipse.gef"/>
+      <plugin id="org.eclipse.help"/>
+      <plugin id="org.eclipse.help.appserver"/>
+      <plugin id="org.eclipse.help.base"/>
+      <plugin id="org.eclipse.help.ui"/>
+      <plugin id="org.eclipse.help.webapp"/>
+      <plugin id="org.eclipse.jdt.compiler.apt" fragment="true"/>
+      <plugin id="org.eclipse.jdt.compiler.tool" fragment="true"/>
+      <plugin id="org.eclipse.jdt.core"/>
+      <plugin id="org.eclipse.jface"/>
+      <plugin id="org.eclipse.jface.databinding"/>
+      <plugin id="org.eclipse.jface.text"/>
+      <plugin id="org.eclipse.ltk.core.refactoring"/>
+      <plugin id="org.eclipse.ltk.ui.refactoring"/>
+      <plugin id="org.eclipse.osgi"/>
+      <plugin id="org.eclipse.osgi.services"/>
+      <plugin id="org.eclipse.platform"/>
+      <plugin id="org.eclipse.swt"/>
+      <plugin id="org.eclipse.swt.win32.win32.x86" fragment="true"/>
+      <plugin id="org.eclipse.team.core"/>
+      <plugin id="org.eclipse.team.ui"/>
+      <plugin id="org.eclipse.text"/>
+      <plugin id="org.eclipse.ui"/>
+      <plugin id="org.eclipse.ui.console"/>
+      <plugin id="org.eclipse.ui.editors"/>
+      <plugin id="org.eclipse.ui.forms"/>
+      <plugin id="org.eclipse.ui.ide"/>
+      <plugin id="org.eclipse.ui.intro"/>
+      <plugin id="org.eclipse.ui.intro.universal"/>
+      <plugin id="org.eclipse.ui.navigator"/>
+      <plugin id="org.eclipse.ui.navigator.resources"/>
+      <plugin id="org.eclipse.ui.views"/>
+      <plugin id="org.eclipse.ui.views.properties.tabbed"/>
+      <plugin id="org.eclipse.ui.win32" fragment="true"/>
+      <plugin id="org.eclipse.ui.workbench"/>
+      <plugin id="org.eclipse.ui.workbench.texteditor"/>
+      <plugin id="org.eclipse.update.configurator"/>
+      <plugin id="org.eclipse.update.core"/>
+      <plugin id="org.eclipse.update.core.win32" fragment="true"/>
+      <plugin id="org.eclipse.update.ui"/>
+      <plugin id="org.eclipse.wst.common.snippets"/>
+   </plugins>
+
+   <features>
+      <feature id="com.eco.bio7.albireo.feature" version="1.7.0.qualifier"/>
+      <feature id="com.eco.bio7.browser.feature" version="1.7.0.qualifier"/>
+      <feature id="com.eco.bio7.core.feature" version="1.7.0.qualifier"/>
+      <feature id="com.eco.bio7.edit.feature" version="1.7.0.qualifier"/>
+      <feature id="com.eco.bio7.floweditor.feature" version="1.7.0.qualifier"/>
+      <feature id="com.eco.bio7.javaedit.feature" version="1.7.0.qualifier"/>
+      <feature id="com.eco.bio7.r.feature" version="3.0.1.qualifier"/>
+      <feature id="com.eco.bio7.libs.feature" version="1.7.0.qualifier"/>
+      <feature id="com.eco.bio7.physics.feature" version="1.7.0.qualifier"/>
+      <feature id="com.eco.bio7.redit.feature" version="1.7.0.qualifier"/>
+      <feature id="com.eco.bio7.util.feature" version="1.7.0.qualifier"/>
+      <feature id="com.eco.bio7.worldwind.feature" version="1.7.0.qualifier"/>
+      <feature id="com.eco.bio7.image.feature" version="1.48.01.qualifier"/>
+      <feature id="com.eco.bio7.pythonedit.feature" version="1.7.0.qualifier"/>
+      <feature id="org.eclipse.rcp" version="4.4.0.v20131030-2000"/>
+      <feature id="org.eclipse.equinox.p2.rcp.feature" version="1.2.0.v20131027-1505"/>
+      <feature id="org.eclipse.equinox.p2.core.feature" version="1.2.100.v20131027-1505"/>
+      <feature id="org.eclipse.emf.common" version="2.10.0.v20131028-0429"/>
+      <feature id="org.eclipse.emf.ecore" version="2.10.0.v20131028-0429"/>
+   </features>
+
+
+</product>

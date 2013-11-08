@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+
+   
+   
+   
+    <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="com.eco.bio7.javaeditors.JavaEditor"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            default="true"
+            extensions="java,jav"
+            icon="icons/javakompilierung.gif"
+            id="com.eco.bio7.javaeditors.TemplateEditor"
+            name="Bio7 Java-Editor">
+      </editor>
+   </extension>
+   <extension
+         id="ExampleJavaDocumentSetupParticipant"
+         name="%documentSetupParticipantName"
+         point="org.eclipse.core.filebuffers.documentSetup">
+      <participant
+            extensions="java"
+            class="com.eco.bio7.javaeditors.JavaDocumentSetupParticipant">
+      </participant>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="prefjava"
+            class="com.eco.bio7.javapreferences.TemplatesPreferencePage"
+            id="org.eclipse.ui.examples.templateeditor.preferencepage"
+            name="%xml.editor.preferencePage.label">
+      </page>
+      <page
+            category="com.eco.bio7.preferences.Bio7PreferencePage"
+            class="com.eco.bio7.javapreferences.WorkbenchPreferenceJava"
+            id="prefjava"
+            name="Preferences Java"/>
+      <page
+            category="prefjava"
+            class="com.eco.bio7.javapreferences.ErrorsPreferencePage"
+            id="com.eco.bio7.preferences_compiler"
+            name="Preferences Java Libraries">
+      </page>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.editors.templates">
+      <contextType
+            name="%xml.contextType.name"
+            class="com.eco.bio7.javapreferences.template.JavaContextType"
+            id="java">
+      </contextType>
+     
+      <include
+      		file="templates/ant.xml"
+      		translations="$nl$/templates/ant.properties">
+      </include>
+   </extension>
+   
+
+</plugin>

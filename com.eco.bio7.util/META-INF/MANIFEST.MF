@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Util
+Bundle-SymbolicName: com.eco.bio7.util
+Bundle-Version: 1.7.0.qualifier
+Bundle-Activator: com.eco.bio7.util.Activator
+Bundle-Vendor: ECO
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-ActivationPolicy: lazy
+Bundle-ClassPath: bin/,
+ .
+Export-Package: com.eco.bio7.util,
+ com.eco.bio7.zip.util
