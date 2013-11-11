@@ -9,7 +9,6 @@
  *     M. Austenfeld
  *******************************************************************************/
 
-
 package com.eco.bio7.image;
 
 import ij.IJ;
@@ -21,10 +20,15 @@ import ij.gui.ImageWindow;
 import ij.io.OpenDialog;
 import ij.io.Opener;
 import ij.plugin.DragAndDrop;
+
+import java.awt.event.MouseListener;
 import java.io.File;
+import java.util.Random;
 import java.util.Vector;
+
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+
 import org.eclipse.albireo.core.AwtEnvironment;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
@@ -51,6 +55,7 @@ import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
+
 import com.eco.bio7.ImageJPluginActions.ImageJAnalyzeAction;
 import com.eco.bio7.ImageJPluginActions.ImageJEditAction;
 import com.eco.bio7.ImageJPluginActions.ImageJFileAction;
@@ -83,6 +88,10 @@ public class CanvasView extends ViewPart {
 	private ImageJWindowAction imagej_window;
 
 	protected String[] fileList;
+
+	protected ImagePlus plu;
+
+	protected ImageWindow win;
 
 	private static CanvasView canvas_view;
 
@@ -118,8 +127,9 @@ public class CanvasView extends ViewPart {
 						Vector ve = (Vector) items[i].getData();
 						if (ve.size() > 0) {
 							final ImageWindow win = (ImageWindow) ve.get(1);
-                           /*Execute on the event dispatching thread! Important for WorldWind
-                            * which uses ImageJ! (else deadlock situation occurs!!!) */
+							/*
+							 * Execute on the event dispatching thread! Important for WorldWind which uses ImageJ! (else deadlock situation occurs!!!)
+							 */
 							SwingUtilities.invokeLater(new Runnable() {
 								public void run() {
 									win.bio7TabClose();
@@ -175,8 +185,7 @@ public class CanvasView extends ViewPart {
 							public void run() {
 
 								/*
-								 * Opener o = new Opener();
-								 * o.open(fileList[x].toString());
+								 * Opener o = new Opener(); o.open(fileList[x].toString());
 								 */
 								openFile(new File(fileList[x].toString()));
 							}
@@ -238,9 +247,9 @@ public class CanvasView extends ViewPart {
 
 			public void widgetSelected(SelectionEvent e) {
 				Vector ve = (Vector) e.item.getData();
-				ImagePlus plu = (ImagePlus) ve.get(0);
+				plu = (ImagePlus) ve.get(0);
 
-				ImageWindow win = (ImageWindow) ve.get(1);
+				win = (ImageWindow) ve.get(1);
 
 				WindowManager.setTempCurrentImage(plu);
 				WindowManager.setCurrentWindow(win);
@@ -258,8 +267,24 @@ public class CanvasView extends ViewPart {
 
 			{
 				if (mouseevent.count == 2) {
-					
+
 					IJ.getInstance().doCommand("Rename...");
+				}
+			}
+
+		});
+		tabFolder.addMouseListener(new MouseAdapter() {
+
+			public void mouseDown(MouseEvent mouseevent)
+
+			{
+				if (mouseevent.button == 3) {
+
+					CustomView custom = new CustomView();
+					custom.setPanel(current, "" + new Random().nextDouble());
+					custom.setData(plu, win);
+					IJTabs.hideTab();
+
 				}
 			}
 
@@ -311,8 +336,7 @@ public class CanvasView extends ViewPart {
 	}
 
 	/**
-	 * Open a file. If it's a directory, ask to open all images as a sequence in
-	 * a stack or individually.
+	 * Open a file. If it's a directory, ask to open all images as a sequence in a stack or individually.
 	 */
 	private void openFile(File f) {
 		try {

@@ -1,5 +1,5 @@
 #ImageJ 1.48c Preferences
-#Wed Nov 06 12:34:38 CET 2013
+#Mon Nov 11 17:42:47 CET 2013
 .threshold.loc=692,234
 .threshold.dark=false
 menu.size=14
@@ -14,7 +14,7 @@ raw.type=0
 ij.y=0
 roicolor=\#FFFF00
 ij.x=1091
-.manager.loc=2106,274
+.manager.loc=2186,235
 .threshold.mode=0
 noise.sd=25.0
 prefs.options=541085696
