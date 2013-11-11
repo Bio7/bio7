@@ -1,3 +1,9 @@
+/*
+ * Source from: http://www.eclipse.org/forums/index.php/t/64088/
+ * This solution was originally posted on the Eclipse forum.
+ * Author: venkataramanam
+ */
+
 package com.eco.bio7.floweditor.shapes;
 
 import org.eclipse.swt.SWT;
