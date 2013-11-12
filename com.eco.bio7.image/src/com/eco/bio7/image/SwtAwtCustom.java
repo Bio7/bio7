@@ -151,47 +151,6 @@ public class SwtAwtCustom {
 
 	}
 
-	/*public void addCanvasTab(final String title) {
-		Display dis = Custom3D.getParent2().getDisplay();
-		dis.syncExec(new Runnable() {
-			public void run() {
-
-				
-
-				top = new Composite(Custom3D.getTabFolder(), SWT.NO_BACKGROUND | SWT.EMBEDDED);
-				try {
-					System.setProperty("sun.awt.noerasebackground", "true");
-				} catch (NoSuchMethodError error) {
-				}
-				
-				view.getCustomViewParent().setData(ve);
-
-				frame = SWT_AWT.new_Frame(top);
-
-				 panel = new JApplet() {
-				      public void update(java.awt.Graphics g) {
-				         Do not erase the background 
-				        paint(g);
-				      }
-				    };
-
-				frame.add(panel);
-
-				JRootPane root = new JRootPane();
-				panel.add(root);
-				contentPane = root.getContentPane();
-				EventQueue.invokeLater(new Runnable() {
-					public void run() {
-						contentPane.add(canvas);
-					}
-				});
-
-				view.getCustomViewParent().layout();
-				
-
-			}
-		});
-	}*/
 
 	
 

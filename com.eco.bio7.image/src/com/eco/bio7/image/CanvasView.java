@@ -20,15 +20,10 @@ import ij.gui.ImageWindow;
 import ij.io.OpenDialog;
 import ij.io.Opener;
 import ij.plugin.DragAndDrop;
-
-import java.awt.event.MouseListener;
 import java.io.File;
-import java.util.Random;
 import java.util.Vector;
-
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-
 import org.eclipse.albireo.core.AwtEnvironment;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
@@ -55,7 +50,6 @@ import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-
 import com.eco.bio7.ImageJPluginActions.ImageJAnalyzeAction;
 import com.eco.bio7.ImageJPluginActions.ImageJEditAction;
 import com.eco.bio7.ImageJPluginActions.ImageJFileAction;
@@ -266,7 +260,21 @@ public class CanvasView extends ViewPart {
 			public void mouseDown(MouseEvent mouseevent)
 
 			{
-				if (mouseevent.count == 2) {
+
+				if (mouseevent.count == 1) {
+					/*CTabFolder ctab = (CTabFolder) mouseevent.widget;
+					Vector ve = (Vector) ctab.getSelection().getData();
+					plu = (ImagePlus) ve.get(0);
+
+					win = (ImageWindow) ve.get(1);
+					WindowManager.setTempCurrentImage(plu);
+					WindowManager.setCurrentWindow(win);
+
+					 import to set current Panel! 
+					current = (JPanel) ve.get(2);
+					// current.requestFocus();
+*/
+				} else if (mouseevent.count == 2) {
 
 					IJ.getInstance().doCommand("Rename...");
 				}
@@ -279,11 +287,20 @@ public class CanvasView extends ViewPart {
 
 			{
 				if (mouseevent.button == 3) {
+					CTabFolder ctab = (CTabFolder) mouseevent.widget;
+					if (ctab.getItemCount()>0){
+					Vector ve = (Vector) ctab.getSelection().getData();
+					ImagePlus plu = (ImagePlus) ve.get(0);
+
+					ImageWindow win = (ImageWindow) ve.get(1);
+					// JPanel current = (JPanel) ve.get(2);
 
 					CustomView custom = new CustomView();
-					custom.setPanel(current, "" + new Random().nextDouble());
+
+					custom.setPanel(current, Integer.toString(plu.getID()));
 					custom.setData(plu, win);
 					IJTabs.hideTab();
+					}
 
 				}
 			}

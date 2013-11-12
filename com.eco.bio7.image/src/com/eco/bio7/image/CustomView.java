@@ -3,14 +3,10 @@ package com.eco.bio7.image;
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.ImageWindow;
-
 import java.awt.Panel;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.Vector;
-
 import javax.swing.JPanel;
-
+import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -18,15 +14,12 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.ISaveablePart2;
 import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-
-import processing.core.PApplet;
-
-import com.jogamp.opengl.util.Animator;
 
 /**
  * This class provides some static methods for the creation of custom views inside the Bio7 application.
@@ -43,7 +36,6 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	private Composite customViewParent;
 
 	private Panel awtCurrent;
-	
 
 	private String secId;
 
@@ -54,8 +46,10 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	private ImagePlus plus;
 
 	private ImageWindow win;
-	
+
 	private JPanel viewPanel;
+
+	public IViewReference ref2;
 
 	public CustomView() {
 
@@ -64,6 +58,7 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	public void setData(ImagePlus plu, ImageWindow win) {
 		this.plus = plu;
 		this.win = win;
+
 	}
 
 	public void createPartControl(Composite parent) {
@@ -71,7 +66,9 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.imagej");
 
 		this.customViewParent = parent;
-		getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
+		// getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
+
+		// secondaryId = getViewSite().getSecondaryId();
 
 	}
 
@@ -79,62 +76,120 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 
 	}
 
-	private IPartListener2 partListener = new IPartListener2() {
+	class ImageJPartListener2 implements IPartListener2 {
+		public void partActivated(IWorkbenchPartReference ref) {
 
-		@Override
-		public void partActivated(IWorkbenchPartReference partRef) { //
-			
-			if(viewPanel!=null){
-			WindowManager.setTempCurrentImage(plus);
-			WindowManager.setCurrentWindow(win);
-			
-			CanvasView.setCurrent(viewPanel);
-			System.out.println(" view activated!");
+			IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+
+			if (page != null) {
+
+				ref2 = page.findViewReference("com.eco.bio7.image.detachedImage", secId);
+
+				if (ref.equals(ref2)) {
+
+					WindowManager.setTempCurrentImage(plus);
+					WindowManager.setCurrentWindow(win);
+
+					CanvasView.setCurrent(viewPanel);
+					System.out.println(" view activated!");
+				}
 			}
-			
 		}
 
-		public void partBroughtToTop(IWorkbenchPartReference partRef) { // TODO
-			// Auto-generated // method // stub
-
-		}
-
-		public void partClosed(IWorkbenchPartReference partRef) { // TODO
+		public void partBroughtToTop(IWorkbenchPartReference ref) {
 
 		}
 
-		public void partDeactivated(IWorkbenchPartReference partRef) { // TODO //
+		public void partClosed(IWorkbenchPartReference ref) {
+
+			IWorkbenchPage page = ref.getPage();
+			if (page != null) {
+				page.getActivePart();
+				System.out.println("page not null");
+
+				if (ref.equals(ref2)) {
+					SwingUtilities.invokeLater(new Runnable() {
+						// !!
+						public void run() {
+							win.bio7TabClose();
+						}
+					});
+
+					System.out.println("part closed!");
+
+				}
+			}
 
 		}
 
-		public void partOpened(IWorkbenchPartReference partRef) {
-			/*
-			 * if (partRef.getId().equals("com.eco.bio7.javaeditors.TemplateEditor")) {
-			 * 
-			 * }
-			 */
-
-			System.out.println("view opened!");
-			
+		public void partDeactivated(IWorkbenchPartReference ref) {
 
 		}
 
-		public void partHidden(IWorkbenchPartReference partRef) { // TODO
+		public void partOpened(IWorkbenchPartReference ref) {
 
 		}
 
-		public void partVisible(IWorkbenchPartReference partRef) { // TODO
+		public void partHidden(IWorkbenchPartReference ref) {
 
 		}
 
-		public void partInputChanged(IWorkbenchPartReference partRef) { // TODO
-			// Auto-generated // method // stub
+		public void partVisible(IWorkbenchPartReference ref) {
 
 		}
 
-	};
+		public void partInputChanged(IWorkbenchPartReference ref) {
 
-	
+		}
+	}
+
+	/*
+	 * private IPartListener2 partListener = new IPartListener2() {
+	 * 
+	 * @Override public void partActivated(IWorkbenchPartReference partRef) { //
+	 * 
+	 * 
+	 * 
+	 * }
+	 * 
+	 * public void partBroughtToTop(IWorkbenchPartReference partRef) { // TODO // Auto-generated // method // stub
+	 * 
+	 * }
+	 * 
+	 * public void partClosed(IWorkbenchPartReference partRef) { // TODO
+	 * 
+	 * }
+	 * 
+	 * public void partDeactivated(IWorkbenchPartReference partRef) { // TODO //
+	 * 
+	 * }
+	 * 
+	 * public void partOpened(IWorkbenchPartReference partRef) {
+	 * 
+	 * if (partRef.getId().equals("com.eco.bio7.javaeditors.TemplateEditor")) {
+	 * 
+	 * }
+	 * 
+	 * 
+	 * //System.out.println("view opened!");
+	 * 
+	 * 
+	 * }
+	 * 
+	 * public void partHidden(IWorkbenchPartReference partRef) { // TODO
+	 * 
+	 * }
+	 * 
+	 * public void partVisible(IWorkbenchPartReference partRef) { // TODO
+	 * 
+	 * }
+	 * 
+	 * public void partInputChanged(IWorkbenchPartReference partRef) { // TODO // Auto-generated // method // stub
+	 * 
+	 * }
+	 * 
+	 * };
+	 */
 
 	/**
 	 * Creates a given JPanel tab inside a custom view.
@@ -146,7 +201,7 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	 */
 	public void setPanel(final JPanel jpanel, final String id) {
 		secId = id;
-		viewPanel=jpanel;
+		viewPanel = jpanel;
 		Display display = PlatformUI.getWorkbench().getDisplay();
 		display.syncExec(new Runnable() {
 			public void run() {
@@ -158,6 +213,9 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 						IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 						page.showView("com.eco.bio7.image.detachedImage", secId, IWorkbenchPage.VIEW_CREATE);
 						activated = page.showView("com.eco.bio7.image.detachedImage", secId, IWorkbenchPage.VIEW_ACTIVATE);
+
+						ImageJPartListener2 palist = new ImageJPartListener2();
+						page.addPartListener(palist);
 					}
 
 				} catch (PartInitException e) {
@@ -169,9 +227,10 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 					/*
 					 * Control c[] = view.getCustomViewParent().getChildren(); for (int i = 0; i < c.length; i++) { c[i].dispose(); }
 					 */
-					SwtAwtCustom swt = new SwtAwtCustom(jpanel, view);
+
+					SwtAwtCustom swt = new SwtAwtCustom(viewPanel, view);
 					swt.addTab(id);
-					
+
 				}
 
 			}
@@ -188,7 +247,7 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	 *            the title of the tab.
 	 */
 	public void setPanel(final Panel panel, final String id) {
-		
+
 		secId = id;
 		Display display = PlatformUI.getWorkbench().getDisplay();
 		display.syncExec(new Runnable() {
@@ -305,26 +364,10 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	private void closeTabPanels(Vector ve) {
 		if (ve != null) {
 
-			if ((ve.get(0)) instanceof Animator) {
-				Animator anim = (Animator) ve.get(0);
-				anim.stop();
-			} else if ((ve.get(0)) instanceof javax.swing.JPanel) {
+			if ((ve.get(0)) instanceof javax.swing.JPanel) {
 				JPanel panel = (JPanel) ve.get(0);
 				panel = null;
-			} else if ((ve.get(0)) instanceof processing.core.PApplet) {
-				PApplet panel = (PApplet) ve.get(0);
-				try {
-					panel.stop();
-					panel.dispose();
-					panel = null;
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			} else if ((ve.get(0)) instanceof javafx.embed.swt.FXCanvas) {
-				javafx.embed.swt.FXCanvas canvas = (javafx.embed.swt.FXCanvas) ve.get(0);
-				canvas.dispose();
-				canvas = null;
+
 			}
 
 		}

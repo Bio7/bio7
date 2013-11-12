@@ -3,6 +3,7 @@ package ij.gui;
 import java.awt.*;
 import java.util.Properties;
 import java.awt.image.*;
+
 import ij.process.*;
 import ij.measure.*;
 import ij.plugin.WandToolOptions;
@@ -12,6 +13,7 @@ import ij.plugin.tool.PlugInTool;
 import ij.macro.*;
 import ij.*;
 import ij.util.*;
+
 import java.awt.event.*;
 import java.util.*;
 import java.awt.geom.*;
@@ -1593,6 +1595,12 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseMotionLis
 			this.requestFocus();
 
 		}
+		WindowManager.setTempCurrentImage(imp);
+		WindowManager.setCurrentWindow(imp.getWindow());
+
+		/* import to set current Panel! */
+		CanvasView.setCurrent((JPanel)this.getParent());
+		
 		PlugInTool tool = Toolbar.getPlugInTool();
 		if (tool != null)
 			tool.mouseClicked(imp, e);
