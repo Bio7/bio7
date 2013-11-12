@@ -66,9 +66,6 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.imagej");
 
 		this.customViewParent = parent;
-		// getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
-
-		// secondaryId = getViewSite().getSecondaryId();
 
 	}
 
@@ -91,7 +88,7 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 					WindowManager.setCurrentWindow(win);
 
 					CanvasView.setCurrent(viewPanel);
-					System.out.println(" view activated!");
+
 				}
 			}
 		}
@@ -105,7 +102,6 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 			IWorkbenchPage page = ref.getPage();
 			if (page != null) {
 				page.getActivePart();
-				System.out.println("page not null");
 
 				if (ref.equals(ref2)) {
 					SwingUtilities.invokeLater(new Runnable() {
@@ -114,8 +110,6 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 							win.bio7TabClose();
 						}
 					});
-
-					System.out.println("part closed!");
 
 				}
 			}
@@ -142,54 +136,6 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 
 		}
 	}
-
-	/*
-	 * private IPartListener2 partListener = new IPartListener2() {
-	 * 
-	 * @Override public void partActivated(IWorkbenchPartReference partRef) { //
-	 * 
-	 * 
-	 * 
-	 * }
-	 * 
-	 * public void partBroughtToTop(IWorkbenchPartReference partRef) { // TODO // Auto-generated // method // stub
-	 * 
-	 * }
-	 * 
-	 * public void partClosed(IWorkbenchPartReference partRef) { // TODO
-	 * 
-	 * }
-	 * 
-	 * public void partDeactivated(IWorkbenchPartReference partRef) { // TODO //
-	 * 
-	 * }
-	 * 
-	 * public void partOpened(IWorkbenchPartReference partRef) {
-	 * 
-	 * if (partRef.getId().equals("com.eco.bio7.javaeditors.TemplateEditor")) {
-	 * 
-	 * }
-	 * 
-	 * 
-	 * //System.out.println("view opened!");
-	 * 
-	 * 
-	 * }
-	 * 
-	 * public void partHidden(IWorkbenchPartReference partRef) { // TODO
-	 * 
-	 * }
-	 * 
-	 * public void partVisible(IWorkbenchPartReference partRef) { // TODO
-	 * 
-	 * }
-	 * 
-	 * public void partInputChanged(IWorkbenchPartReference partRef) { // TODO // Auto-generated // method // stub
-	 * 
-	 * }
-	 * 
-	 * };
-	 */
 
 	/**
 	 * Creates a given JPanel tab inside a custom view.
@@ -309,21 +255,8 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 		this.customViewParent = parent2;
 	}
 
-	/*
-	 * IPartListener is not working to detect the view close because the method "closedView" is called after the view has been closed! However we can use the editor ISaveablePart2 interface which mimics this behaviour for views. The views are marked like a non saved editor with a '*' char! In the
-	 * close event (do save) we clean up all data and close the tab items!
-	 */
 	public void doSave(IProgressMonitor monitor) {
 
-		/*
-		 * CTabItem[] items = tabFolder.getItems();
-		 * 
-		 * if (items.length > 0) { for (int i = 0; i < items.length; i++) { Vector ve = (Vector) items[i].getData();
-		 * 
-		 * closeTabPanels(ve); items[i].dispose(); }
-		 * 
-		 * }
-		 */
 		Vector<?> ve = (Vector<?>) customViewParent.getData();
 		closeTabPanels(ve);
 

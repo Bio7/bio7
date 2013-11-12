@@ -1,10 +1,11 @@
 #ImageJ 1.48c Preferences
-#Tue Nov 12 17:11:13 CET 2013
+#Tue Nov 12 17:22:53 CET 2013
 new.fill=0
 .log.height=250
 pp.options=1
 .log.loc=760,237
 bcolor=\#FFFFFF
+.results.height=250
 noise.sd=25.0
 raw.offset=0
 fcolor=\#000000
@@ -18,8 +19,10 @@ measurements=51
 showcolor=\#00FFFF
 fps=7.0
 raw.height=512
+.results.loc=760,237
 .cthresholder.dark=true
 jpeg=85
+.results.width=400
 .threshold.loc=692,234
 .toolbar.tool06=LUT Menu Tool
 .threshold.mode=0

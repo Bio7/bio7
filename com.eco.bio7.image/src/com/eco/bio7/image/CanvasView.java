@@ -262,18 +262,13 @@ public class CanvasView extends ViewPart {
 			{
 
 				if (mouseevent.count == 1) {
-					/*CTabFolder ctab = (CTabFolder) mouseevent.widget;
-					Vector ve = (Vector) ctab.getSelection().getData();
-					plu = (ImagePlus) ve.get(0);
-
-					win = (ImageWindow) ve.get(1);
-					WindowManager.setTempCurrentImage(plu);
-					WindowManager.setCurrentWindow(win);
-
-					 import to set current Panel! 
-					current = (JPanel) ve.get(2);
-					// current.requestFocus();
-*/
+					/*
+					 * CTabFolder ctab = (CTabFolder) mouseevent.widget; Vector ve = (Vector) ctab.getSelection().getData(); plu = (ImagePlus) ve.get(0);
+					 * 
+					 * win = (ImageWindow) ve.get(1); WindowManager.setTempCurrentImage(plu); WindowManager.setCurrentWindow(win);
+					 * 
+					 * import to set current Panel! current = (JPanel) ve.get(2); // current.requestFocus();
+					 */
 				} else if (mouseevent.count == 2) {
 
 					IJ.getInstance().doCommand("Rename...");
@@ -288,18 +283,18 @@ public class CanvasView extends ViewPart {
 			{
 				if (mouseevent.button == 3) {
 					CTabFolder ctab = (CTabFolder) mouseevent.widget;
-					if (ctab.getItemCount()>0){
-					Vector ve = (Vector) ctab.getSelection().getData();
-					ImagePlus plu = (ImagePlus) ve.get(0);
+					if (ctab.getItemCount() > 0) {
+						Vector ve = (Vector) ctab.getSelection().getData();
+						ImagePlus plu = (ImagePlus) ve.get(0);
 
-					ImageWindow win = (ImageWindow) ve.get(1);
-					// JPanel current = (JPanel) ve.get(2);
+						ImageWindow win = (ImageWindow) ve.get(1);
+						// JPanel current = (JPanel) ve.get(2);
 
-					CustomView custom = new CustomView();
+						CustomView custom = new CustomView();
 
-					custom.setPanel(current, Integer.toString(plu.getID()));
-					custom.setData(plu, win);
-					IJTabs.hideTab();
+						custom.setPanel(current, Integer.toString(plu.getID()));
+						custom.setData(plu, win);
+						IJTabs.hideTab();
 					}
 
 				}
