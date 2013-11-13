@@ -31,13 +31,14 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 
 	private Menu fMenu;
 	private ConsolePageParticipant participant;
-
+    public static ConsoleInterpreterAction instance;
 	public ConsoleInterpreterAction(ConsolePageParticipant participant) {
 		setId("Interpreter_Console");
 		setToolTipText("Interpreter and Shell");
 		setText("Console");
 		this.participant = participant;
 		setMenuCreator(this);
+		instance=this;
 	}
 
 	public Menu getMenu(Control parent) {
@@ -271,6 +272,26 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 		IOConsole ioConsole = participant.getIoc();
 		participant.interpreterSelection = "java";
 		ioConsole.clearConsole();
+		participant.ignore = true;
+		ioConsole.getInputStream().appendData(System.getProperty("line.separator"));
+
+		participant.styledText.setEditable(true);
+	}
+	public  void startRShell() {
+		StyledText styledText = (StyledText) participant.page.getControl();
+		Color colb = new Color (Display.getCurrent(), 0, 0, 0);
+		Color colf = new Color (Display.getCurrent(), 255, 255, 255);
+		IOConsole ioConsole = participant.getIoc();
+		styledText.setBackground(colb);
+		styledText.setForeground(colf);
+		
+		participant.interpreterSelection = "R";
+		ioConsole.clearConsole();
+		/*Exit an existing shell process!*/
+		//exitShellProcess();
+		/*Open a new shell process!*/
+		participant.processRCommand();
+		
 		participant.ignore = true;
 		ioConsole.getInputStream().appendData(System.getProperty("line.separator"));
 

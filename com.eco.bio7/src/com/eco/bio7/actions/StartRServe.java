@@ -12,9 +12,12 @@ import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RSession;
 import org.rosuda.REngine.Rserve.RserveException;
+
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RInterpreterJob;
+import com.eco.bio7.console.ConsoleInterpreterAction;
+import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RConnectionJob;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
@@ -32,11 +35,12 @@ public class StartRServe extends Action {
 
 	private boolean reserveDetach = false;
 
-	private RSession rSession=null;
+	private RSession rSession = null;
 
 	private static boolean fromDragDrop;
 
 	private static String[] fileList;
+
 
 	public StartRServe(String text, IWorkbenchWindow window) {
 		super(text);
@@ -54,83 +58,150 @@ public class StartRServe extends Action {
 		boolean remote = store.getBoolean("REMOTE");
 		if (remote == false) {
 
-			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
-				if (RConnectionJob.getProc() != null) {
-					RConnectionJob.getProc().destroy();
-					RServe.setConnection(null);
-					WorldWindView.setRConnection(null);
-				}
-				TerminateRserve.killProcessWindows();
+			if (store.getBoolean("RSERVE_NATIVE_START") == false) {
 
-			}
+				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+					if (RConnectionJob.getProc() != null) {
+						RConnectionJob.getProc().destroy();
+						RServe.setConnection(null);
+						WorldWindView.setRConnection(null);
+					}
+					TerminateRserve.killProcessWindows();
 
-			else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
-				if (RServe.getConnection() != null) {
-					RServe.getConnection().close();
-					RServe.setConnection(null);
-					WorldWindView.setRConnection(null);
 				}
 
-				TerminateRserve.killProcessLinux();
+				else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
+					if (RServe.getConnection() != null) {
+						RServe.getConnection().close();
+						RServe.setConnection(null);
+						WorldWindView.setRConnection(null);
+					}
 
-			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
-				if (RServe.getConnection() != null) {
-					RServe.getConnection().close();
-					RServe.setConnection(null);
-					WorldWindView.setRConnection(null);
+					TerminateRserve.killProcessLinux();
+
+				} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
+					if (RServe.getConnection() != null) {
+						RServe.getConnection().close();
+						RServe.setConnection(null);
+						WorldWindView.setRConnection(null);
+					}
+
+					TerminateRserve.killProcessMac();
+
 				}
 
-				TerminateRserve.killProcessMac();
+				if (RServe.isRrunning() == false) {
+					RConnectionJob.setStore(Bio7Plugin.getDefault().getPreferenceStore());
+					job = new RConnectionJob();
+					job.addJobChangeListener(new JobChangeAdapter() {
+						public void done(IJobChangeEvent event) {
+							if (event.getResult().isOK()) {
+								/* This will only be executed on a drag event! */
+								if (fromDragDrop) {
+									loadFile();
+									fromDragDrop = false;
 
-			}
-
-			if (RServe.isRrunning() == false) {
-				RConnectionJob.setStore(Bio7Plugin.getDefault().getPreferenceStore());
-				job = new RConnectionJob();
-				job.addJobChangeListener(new JobChangeAdapter() {
-					public void done(IJobChangeEvent event) {
-						if (event.getResult().isOK()) {
-							/* This will only be executed on a drag event! */
-							if (fromDragDrop) {
-								loadFile();
-								fromDragDrop = false;
+								}
 
 							}
-
 						}
-					}
-				});
+					});
 
-				job.setUser(true);
-				job.schedule();
+					job.setUser(true);
+					job.schedule();
 
-			}
+				}
 
+				else {
+
+					RConnectionJob.setCanceled(true);
+
+					RServe.setRrunning(false);
+
+					RConnectionJob.getProc().destroy();
+
+					RServe.setConnection(null);
+
+					WorldWindView.setRConnection(null);
+					/*
+					 * if (RCompletionShell.getShellInstance() != null) { RCompletionShell.getShellInstance().dispose(); }
+					 */
+
+					// the following wrapped for BeanShell !
+					Display display = PlatformUI.getWorkbench().getDisplay();
+					display.syncExec(new Runnable() {
+
+						public void run() {
+							MessageDialog.openInformation(new Shell(), "R", "R-Server shutdown!");
+						}
+					});
+
+				}
+			} 
+			
+			/* Native connection! */
 			else {
+				
+				ConsolePageParticipant participant= ConsolePageParticipant.getConsolePageParticipantInstance();
+				
+					Process p=participant.shellProcess;
+					if(p==null){
+						ConsoleInterpreterAction.instance.startRShell();	
+					}
+					
+				
+				
+			
+				
+				if (RServe.getConnection() != null) {
+					try {
+						RServe.getConnection().shutdown();
+					} catch (RserveException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					RConnectionJob.setCanceled(true);
+					RServe.getConnection().close();
+					RServe.setConnection(null);
 
-				RConnectionJob.setCanceled(true);
+					WorldWindView.setRConnection(null);
+				}
+				if (RServe.isRrunning() == false) {
+					RConnectionJob.setStore(Bio7Plugin.getDefault().getPreferenceStore());
+					job = new RConnectionJob();
+					job.addJobChangeListener(new JobChangeAdapter() {
+						public void done(IJobChangeEvent event) {
+							if (event.getResult().isOK()) {
+								/* This will only be executed on a drag event! */
+								if (fromDragDrop) {
+									loadFile();
+									fromDragDrop = false;
+
+								}
+
+							}
+						}
+					});
+
+					job.setUser(true);
+					job.schedule();
+
+				}
 
 				RServe.setRrunning(false);
+				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 
-				RConnectionJob.getProc().destroy();
-
-				RServe.setConnection(null);
-				
-				WorldWindView.setRConnection(null);
-				/*
-				 * if (RCompletionShell.getShellInstance() != null) {
-				 * RCompletionShell.getShellInstance().dispose(); }
-				 */
-
-				// the following wrapped for BeanShell !
-				Display display = PlatformUI.getWorkbench().getDisplay();
-				display.syncExec(new Runnable() {
-
-					public void run() {
-						MessageDialog.openInformation(new Shell(), "R", "R-Server shutdown!");
-					}
-				});
-
+					ConsolePageParticipant.pipeInputToConsole("options(device='windows')");
+					
+				} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
+					
+					ConsolePageParticipant.pipeInputToConsole("options(device='x11')");
+					
+				} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
+					
+					ConsolePageParticipant.pipeInputToConsole("options(device='cairo')");
+				}
+				// options(device='windows')
 			}
 		}
 
@@ -176,17 +247,17 @@ public class StartRServe extends Action {
 			else {
 
 				if (RServe.getConnection() != null) {
-					//If we want to resume a remote session!
+					// If we want to resume a remote session!
 					if (reserveDetach) {
 						try {
-							RSession rs=RServe.getConnection().detach();
+							RSession rs = RServe.getConnection().detach();
 							RState.setRSession(rs);
 						} catch (RserveException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					} else {
-						//If we want to close a remote session!
+						// If we want to close a remote session!
 						RServe.getConnection().close();
 					}
 				}
@@ -196,11 +267,10 @@ public class StartRServe extends Action {
 				RServe.setRrunning(false);
 
 				RServe.setConnection(null);
-				
+
 				WorldWindView.setRConnection(null);
 				/*
-				 * if (RCompletionShell.getShellInstance() != null) {
-				 * RCompletionShell.getShellInstance().dispose(); }
+				 * if (RCompletionShell.getShellInstance() != null) { RCompletionShell.getShellInstance().dispose(); }
 				 */
 
 				// the following wrapped for BeanShell !
@@ -258,7 +328,5 @@ public class StartRServe extends Action {
 	public static void setFromDragDrop(boolean fromDragDrop) {
 		StartRServe.fromDragDrop = fromDragDrop;
 	}
-
-	
 
 }

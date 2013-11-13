@@ -350,6 +350,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "Ä, ,ä,Ö,ö,Ü,ü,+,!,ü,§,$,%,&,/,(,),=,?,[,],°,^,;,:,>,<,|,*,µ,\\,”,@,\",“,”,´,`,~,#,},{,²,³,_,-");
 		}
 		
+		store.setDefault("RSERVE_NATIVE_START", false);
+		
 		store.setDefault("LINUX_SHELL", "GNOME");
 		store.setDefault("PDF_READER", "ACROBAT");
 

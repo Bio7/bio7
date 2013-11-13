@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2012 M. Austenfeld
+ * Copyright (c) 2007-2013 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,10 +20,14 @@ import ij.gui.ImageWindow;
 import ij.io.OpenDialog;
 import ij.io.Opener;
 import ij.plugin.DragAndDrop;
+
 import java.io.File;
+import java.util.UUID;
 import java.util.Vector;
+
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+
 import org.eclipse.albireo.core.AwtEnvironment;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
@@ -50,6 +54,7 @@ import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
+
 import com.eco.bio7.ImageJPluginActions.ImageJAnalyzeAction;
 import com.eco.bio7.ImageJPluginActions.ImageJEditAction;
 import com.eco.bio7.ImageJPluginActions.ImageJFileAction;
@@ -260,16 +265,25 @@ public class CanvasView extends ViewPart {
 			public void mouseDown(MouseEvent mouseevent)
 
 			{
-
+				/*Important to select the correct image and window when creating the new ImageJ view!
+				 *The listener for the right-click on the tabitem will care about that!*/
 				if (mouseevent.count == 1) {
-					/*
-					 * CTabFolder ctab = (CTabFolder) mouseevent.widget; Vector ve = (Vector) ctab.getSelection().getData(); plu = (ImagePlus) ve.get(0);
-					 * 
-					 * win = (ImageWindow) ve.get(1); WindowManager.setTempCurrentImage(plu); WindowManager.setCurrentWindow(win);
-					 * 
-					 * import to set current Panel! current = (JPanel) ve.get(2); // current.requestFocus();
-					 */
-				} else if (mouseevent.count == 2) {
+
+					CTabFolder ctab = (CTabFolder) mouseevent.widget;
+					
+					if(ctab.getItemCount()>0){
+					Vector ve = (Vector) ctab.getSelection().getData();
+					plu = (ImagePlus) ve.get(0);
+
+					win = (ImageWindow) ve.get(1);
+					WindowManager.setTempCurrentImage(plu);
+					WindowManager.setCurrentWindow(win);
+
+					// important to set current Panel!
+					current = (JPanel) ve.get(2); // current.requestFocus();
+					}
+
+				} else if (mouseevent.count == 2&&mouseevent.button==1) {
 
 					IJ.getInstance().doCommand("Rename...");
 				}
@@ -291,8 +305,8 @@ public class CanvasView extends ViewPart {
 						// JPanel current = (JPanel) ve.get(2);
 
 						CustomView custom = new CustomView();
-
-						custom.setPanel(current, Integer.toString(plu.getID()));
+                        /*Create ImageJ view with unique ID!*/
+						custom.setPanel(current, UUID.randomUUID().toString());
 						custom.setData(plu, win);
 						IJTabs.hideTab();
 					}

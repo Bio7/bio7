@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2012 M. Austenfeld
+ * Copyright (c) 2007-2013 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -29,7 +29,10 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
+
 import com.eco.bio7.Bio7Plugin;
+import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.worldwind.WorldWindView;
@@ -46,6 +49,7 @@ public class RConnectionJob extends WorkspaceJob {
 
 	private BufferedReader input;
 
+
 	public RConnectionJob() {
 		super("Connecting To RServer");
 
@@ -59,7 +63,24 @@ public class RConnectionJob extends WorkspaceJob {
 		boolean remote = store.getBoolean("REMOTE");
 		if (remote == false) {
 			/* Start up the process of R and Rserve! */
-			startExec();
+			
+			if(store.getBoolean("RSERVE_NATIVE_START")){
+				String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
+				if (selectionConsole.equals("R")) {
+					
+					ConsolePageParticipant.pipeInputToConsole("library(Rserve)");
+					ConsolePageParticipant.pipeInputToConsole("run.Rserve()");
+					
+				}
+				else{
+					Bio7Dialog.message("Please start the native R connection in the Bio7 Console!");
+				}
+				
+			}
+			else{
+				startExec();
+			}
+			
 
 		} // remote
 		for (int i = 0; i < 11; i++) {
