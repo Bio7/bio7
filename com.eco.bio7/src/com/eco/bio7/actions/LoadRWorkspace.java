@@ -37,8 +37,9 @@ public class LoadRWorkspace extends Action {
 
 	public void run() {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		boolean rPipe = store.getBoolean("r_pipe");
-		if (rPipe == true) {
+		//boolean rPipe = store.getBoolean("r_pipe");
+		RConnection con = RServe.getConnection();
+		if (con==null) {
 
 			String selected;
 			Shell s = new Shell();
@@ -79,11 +80,11 @@ public class LoadRWorkspace extends Action {
 			}
 
 		} else {
-			RConnection d = RServe.getConnection();
+			
 
-			if (d != null) {
+			if (con != null) {
 
-				load(d);
+				load(con);
 			} else {
 
 				MessageBox messageBox = new MessageBox(new Shell(),

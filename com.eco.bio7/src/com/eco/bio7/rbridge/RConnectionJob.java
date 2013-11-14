@@ -82,7 +82,7 @@ public class RConnectionJob extends WorkspaceJob {
 			}
 			
 
-		} // remote
+		} // Remote connection!
 		for (int i = 0; i < 11; i++) {
 			if (monitor.isCanceled())
 				try {
@@ -109,7 +109,7 @@ public class RConnectionJob extends WorkspaceJob {
 							+ " from 10");
 
 					try {
-						Thread.sleep(1000);
+						Thread.sleep(500);
 					} catch (InterruptedException e) {
 
 					}

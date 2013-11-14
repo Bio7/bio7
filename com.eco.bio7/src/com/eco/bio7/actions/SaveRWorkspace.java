@@ -35,12 +35,9 @@ public class SaveRWorkspace extends Action {
 	public void run() {
 
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		boolean rPipe = store.getBoolean("r_pipe");
-		if (rPipe == true) {
-			
-			
-			
-			
+		RConnection con = RServe.getConnection();
+		//boolean rPipe = store.getBoolean("r_pipe");
+		if (con==null) {
 			
 			String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 			if (selectionConsole.equals("R")) {
@@ -95,25 +92,25 @@ public class SaveRWorkspace extends Action {
 
 		} else {
 
-			RConnection d = RServe.getConnection();
+			
 
-			if (d != null) {
+			//if (d != null) {
 
-				saver(d);
+				saveRWorkspace();
 
-			} else {
+		//	} else {
 
-				MessageBox messageBox = new MessageBox(new Shell(),
+				/*MessageBox messageBox = new MessageBox(new Shell(),
 
 				SWT.ICON_WARNING);
 				messageBox.setMessage("RServer connection failed - Server is not running !");
 				messageBox.open();
 
-			}
+			}*/
 		}
 	}
 
-	public void saver(RConnection d) {
+	public void saveRWorkspace() {
 		String selected = null;
 
 		Shell s = new Shell();

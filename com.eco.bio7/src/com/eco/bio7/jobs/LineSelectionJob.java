@@ -62,8 +62,8 @@ public class LineSelectionJob extends WorkspaceJob {
 					cscript.eval("try(source(f, echo=T))");
 					cscript.eval("try(close(f))");
 					cscript.eval("try(rm(f))");
-					writeToConsole();
-					cscript.voidEval("try(readLines(con = stdin()))");
+					//writeToConsole();
+					//cscript.voidEval("try(readLines(con = stdin()))");
 					} catch (RserveException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

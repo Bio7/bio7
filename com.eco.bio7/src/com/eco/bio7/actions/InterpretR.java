@@ -70,12 +70,13 @@ public class InterpretR implements IEditorActionDelegate {
 
 		boolean remote = Bio7Plugin.getDefault().getPreferenceStore().getBoolean("REMOTE");
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		boolean rPipe = store.getBoolean("r_pipe");
+		//boolean rPipe = store.getBoolean("r_pipe");
 
-		if (rPipe == true) {
+		if (d == null) {
 			String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
+			
 			if (selectionConsole.equals("R")) {
-
+                
 				ConsolePageParticipant.pipeInputToConsole("source('" + loc + "')");
 				System.out.print("source('" + loc + "')");
 				System.out.println();
@@ -84,7 +85,7 @@ public class InterpretR implements IEditorActionDelegate {
 			}
 
 		} else {
-			if (d != null) {
+			
 				String a = doc.get();
 
 				if (RState.isBusy() == false) {
@@ -118,7 +119,7 @@ public class InterpretR implements IEditorActionDelegate {
 
 				}
 
-			} else {
+			 /*else {
 
 				MessageBox messageBox = new MessageBox(new Shell(),
 
@@ -126,7 +127,7 @@ public class InterpretR implements IEditorActionDelegate {
 				messageBox.setMessage("RServer connection failed - Server is not running!");
 				messageBox.open();
 
-			}
+			}*/
 		}
 
 	}

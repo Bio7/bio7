@@ -51,10 +51,10 @@ public class ExecuteRTextSelection extends Action {
 		if (canEvaluate) {
 
 			IEditorPart rEditor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-			boolean rPipe = store.getBoolean("r_pipe");
-
-			if (rPipe == true) {
+			//IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+			//boolean rPipe = store.getBoolean("r_pipe");
+			RConnection con = RServe.getConnection();
+			if (con==null) {
 				if (rEditor instanceof REditor) {
 					String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 					if (selectionConsole.equals("R")) {
@@ -71,10 +71,6 @@ public class ExecuteRTextSelection extends Action {
 			}
 
 			else {
-
-				RConnection d = RServe.getConnection();
-
-				if (d != null) {
 
 					if (rEditor instanceof REditor) {
 
@@ -124,14 +120,14 @@ public class ExecuteRTextSelection extends Action {
 
 					}
 
-				} else {
+				 /*else {
 					MessageBox messageBox = new MessageBox(new Shell(),
 
 					SWT.ICON_WARNING);
 					messageBox.setMessage("RServer connection failed - Server is not running !");
 					messageBox.open();
 
-				}
+				}*/
 			}
 		}
 	}

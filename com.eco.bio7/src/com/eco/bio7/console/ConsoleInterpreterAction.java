@@ -23,15 +23,25 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.console.IOConsole;
+import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.actions.InterpretPython;
 import com.eco.bio7.popup.actions.RunJavaClassFile;
+import com.eco.bio7.rbridge.RConnectionJob;
+import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.worldwind.WorldWindView;
 
 public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 
 	private Menu fMenu;
 	private ConsolePageParticipant participant;
-    public static ConsoleInterpreterAction instance;
+    private static ConsoleInterpreterAction instance;
+    
+    
+	public static ConsoleInterpreterAction getInstance() {
+		return instance;
+	}
+
 	public ConsoleInterpreterAction(ConsolePageParticipant participant) {
 		setId("Interpreter_Console");
 		setToolTipText("Interpreter and Shell");
@@ -195,6 +205,19 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 			    
 				participant.interpreterSelection = "R";
 				ioConsole.clearConsole();
+				if (RServe.getConnection() != null) {
+					try {
+						RServe.getConnection().shutdown();
+					} catch (RserveException en) {
+						// TODO Auto-generated catch block
+						en.printStackTrace();
+					}
+					RConnectionJob.setCanceled(true);
+					RServe.getConnection().close();
+					RServe.setConnection(null);
+
+					WorldWindView.setRConnection(null);
+				}
 				/*Exit an existing shell process!*/
 				exitShellProcess();
 				/*Open a new shell process!*/

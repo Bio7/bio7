@@ -14,6 +14,7 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RClipboardScriptJob;
 import com.eco.bio7.rbridge.RClipboardValuesJob;
+import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 
 public class ClipboardRValues extends Action {
@@ -28,10 +29,10 @@ public class ClipboardRValues extends Action {
 	public void run() {
 		/* Execute a script from the clipboard, if available! */
 		
-		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		boolean rPipe = store.getBoolean("r_pipe");
+		//IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		//boolean rPipe = store.getBoolean("r_pipe");
 
-		if (rPipe == true) {
+		if (RServe.getConnection()==null) {
 			String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 			if (selectionConsole.equals("R")) {
 

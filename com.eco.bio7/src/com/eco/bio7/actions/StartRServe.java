@@ -143,29 +143,29 @@ public class StartRServe extends Action {
 			else {
 				
 				ConsolePageParticipant participant= ConsolePageParticipant.getConsolePageParticipantInstance();
-				
+				   /*Start the native R process!*/
+				    RConnection con=RServe.getConnection();
 					Process p=participant.shellProcess;
 					if(p==null){
-						ConsoleInterpreterAction.instance.startRShell();	
+						ConsoleInterpreterAction inst=ConsoleInterpreterAction.getInstance();
+						inst.startRShell();	
 					}
-					
-				
-				
 			
-				
-				if (RServe.getConnection() != null) {
+				/*Close an existing Rserve connection!*/
+				if (con != null) {
 					try {
-						RServe.getConnection().shutdown();
+						con.shutdown();
 					} catch (RserveException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 					RConnectionJob.setCanceled(true);
-					RServe.getConnection().close();
+					con.close();
 					RServe.setConnection(null);
 
 					WorldWindView.setRConnection(null);
 				}
+				/*Start a new Rserve connection!*/
 				if (RServe.isRrunning() == false) {
 					RConnectionJob.setStore(Bio7Plugin.getDefault().getPreferenceStore());
 					job = new RConnectionJob();
@@ -186,6 +186,24 @@ public class StartRServe extends Action {
 					job.setUser(true);
 					job.schedule();
 
+				}
+				else{
+					RConnectionJob.setCanceled(true);
+
+					RServe.setRrunning(false);
+
+					//RConnectionJob.getProc().destroy();
+
+					RServe.setConnection(null);
+
+					WorldWindView.setRConnection(null);
+					/*
+					 * if (RCompletionShell.getShellInstance() != null) { RCompletionShell.getShellInstance().dispose(); }
+					 */
+
+					// the following wrapped for BeanShell !
+					
+					
 				}
 
 				RServe.setRrunning(false);
