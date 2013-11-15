@@ -66,6 +66,19 @@
      <persistent value="true"/>
      <attribute name="selection"/>
   </extension>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <viewerContribution
+            id="textEditor.rulerActions"
+            targetID="#TextRulerContext">
+         <action
+               class="com.eco.bio7.reditor.debugBreakpoint.RulerToggleBreakpointAction"
+               id="pda.editor.ruler.toggleBreakpointAction"
+               label="Toggle Breakpoint"
+               menubarPath="debug">
+         </action>
+      </viewerContribution>
+   </extension>
    
 
 </plugin>

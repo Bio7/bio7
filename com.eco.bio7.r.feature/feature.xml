@@ -23,6 +23,11 @@ and graphics.
       <discovery label="R" url="http://www.r-project.org/"/>
    </url>
 
+   <requires>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.core.runtime"/>
+   </requires>
+
    <plugin
          id="Bundled_R"
          download-size="0"

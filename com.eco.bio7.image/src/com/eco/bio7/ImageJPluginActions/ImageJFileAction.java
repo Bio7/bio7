@@ -14,10 +14,12 @@ package com.eco.bio7.ImageJPluginActions;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
+
 import java.awt.image.BufferedImage;
 import java.util.UUID;
 
 import javax.swing.SwingUtilities;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -39,12 +41,15 @@ import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+
 import uk.co.mmscomputing.device.scanner.Scanner;
 import uk.co.mmscomputing.device.scanner.ScannerDevice;
 import uk.co.mmscomputing.device.scanner.ScannerIOException;
 import uk.co.mmscomputing.device.scanner.ScannerIOMetadata;
 import uk.co.mmscomputing.device.scanner.ScannerListener;
+
 import com.eco.bio7.image.CanvasView;
+import com.eco.bio7.image.IJTabs;
 
 public class ImageJFileAction extends Action implements IMenuCreator, ScannerListener {
 
@@ -293,26 +298,7 @@ public class ImageJFileAction extends Action implements IMenuCreator, ScannerLis
 
 			public void widgetSelected(SelectionEvent e) {
 
-				final CTabItem[] items = CanvasView.getCanvas_view().tabFolder.getItems();
-
-				for (int i = 0; i < items.length; i++) {
-					final int tabcount = i;
-
-					Display dis = CanvasView.getParent2().getDisplay();
-					dis.syncExec(new Runnable() {
-
-						public void run() {
-
-							items[tabcount].dispose();
-						}
-					});
-
-				}
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						WindowManager.closeAllWindows();
-					}
-				});
+				IJTabs.deleteAllTabs();
 			}
 
 			public void widgetDefaultSelected(SelectionEvent e) {
