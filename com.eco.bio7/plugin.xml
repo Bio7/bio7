@@ -965,15 +965,15 @@
               toolbarPath="org.eclipse.ui.workbench.file/open.ext"
               tooltip="Interpret RScript"/>
         <action
-              class="com.eco.bio7.actions.PrintR"
-              icon="icons/calc.gif"
+              class="com.eco.bio7.actions.DebugRScript"
+              icon="icons/debug_exc.gif"
               id="com.eco.bio7.revaluate_action"
               
-              label="Print"
+              label="Debug R"
               state="false"
               style="push"
               toolbarPath="org.eclipse.ui.workbench.file/open.ext"
-              tooltip="Evaluate Expression"/>
+              tooltip="Debug R"/>
      </editorContribution>
      <editorContribution
            id="com.eco.bio7.editorContribution2"

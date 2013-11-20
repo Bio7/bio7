@@ -57,14 +57,38 @@
       		translations="$nl$/templates/ant.properties">
       </include>
    </extension>
-   <extension
-        id="myProblem"
-        name="My Problem MarkerType"
-        point="org.eclipse.core.resources.markers">
-     <super type="org.eclipse.core.resources.problemmarker"/>
-     <super type="org.eclipse.core.resources.textmarker"/>
+   
+    <extension point="org.eclipse.core.resources.markers"   
+        id="debugMarker">
+     <super type="org.eclipse.core.resources.textmarker"/>         
      <persistent value="true"/>
-     <attribute name="selection"/>
+  </extension>
+
+  <extension point="org.eclipse.ui.editors.annotationTypes">
+     <type
+        super="org.eclipse.ui.workbench.texteditor.warning"
+        markerType="com.eco.bio7.redit.debugMarker"
+        name="com.eco.bio7.redit.debugAnnotation"
+        markerSeverity="0"/>
+  </extension>
+
+  <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
+     <specification
+        annotationType="com.eco.bio7.redit.debugAnnotation"
+        icon="icons/brkp_obj.gif"
+        overviewRulerPreferenceValue="true"
+			highlightPreferenceKey="highlight.background"
+			highlightPreferenceValue="true"
+			colorPreferenceKey="clcolor"
+			colorPreferenceValue="0,255,0"
+			textPreferenceKey="cltext"
+			textPreferenceValue="true"
+			presentationLayer="0"
+			verticalRulerPreferenceKey="clvertical"
+			verticalRulerPreferenceValue="true"
+			textStylePreferenceKey="clstyle"
+			textStylePreferenceValue="BOX">
+        </specification> 
   </extension>
    <extension
          point="org.eclipse.ui.popupMenus">

@@ -86,11 +86,15 @@ public class RulerToggleBreakpointAction extends AbstractRulerActionDelegate imp
 						IMarker[] marker = new IMarker[(stopline - startline) + 1];
 
 						for (int i = 0; startline <= stopline; i++) {
-							marker[i] = resource.createMarker(IMarker.TASK);
+							marker[i] = resource.createMarker("com.eco.bio7.redit.debugMarker");
+							marker[i].setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
 							marker[i].setAttribute(IMarker.LINE_NUMBER,
 									new Integer(startline));
 							marker[i].setAttribute(IMarker.MESSAGE,
 									"Breakpoint R");
+							marker[i].setAttribute(IMarker.LOCATION, ""+startline);
+							
+							
 							startline++;
 
 						}
