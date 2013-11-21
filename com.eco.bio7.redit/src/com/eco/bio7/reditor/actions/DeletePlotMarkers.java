@@ -10,22 +10,18 @@ import org.eclipse.ui.PlatformUI;
 
 public class DeletePlotMarkers extends Action {
 
-	private final IWorkbenchWindow window;
-
 	int startline;
 
 	int stopline;
 
 	public DeletePlotMarkers(String text, IWorkbenchWindow window) {
 		super(text);
-		this.window = window;
 
 	}
 
 	public IMarker[] findMyMarkers(IResource target) {
-		String type = IMarker.TASK;
-		
-		
+		String type = "com.eco.bio7.redit.debugMarker";
+
 		IMarker[] markers = null;
 		try {
 			markers = target.findMarkers(type, true, IResource.DEPTH_INFINITE);
@@ -38,11 +34,9 @@ public class DeletePlotMarkers extends Action {
 
 	public void run() {
 
-		IEditorPart editore = (IEditorPart) PlatformUI.getWorkbench()
-				.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		IEditorPart editore = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 
-		IResource resource = (IResource) editore.getEditorInput().getAdapter(
-				IResource.class);
+		IResource resource = (IResource) editore.getEditorInput().getAdapter(IResource.class);
 
 		IMarker[] markersfind = findMyMarkers(resource);
 		for (int i = 0; i < markersfind.length; i++) {
@@ -54,9 +48,6 @@ public class DeletePlotMarkers extends Action {
 			}
 
 		}
-
-		int offset = 0;
-		;
 
 	}
 

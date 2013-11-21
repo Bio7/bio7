@@ -44,26 +44,22 @@ public class RulerToggleBreakpointAction extends AbstractRulerActionDelegate imp
 
 		@Override
 		public void run() {
-			
-			IEditorPart editore = (IEditorPart) PlatformUI.getWorkbench()
-					.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 
-			IResource resource = (IResource) editore.getEditorInput().getAdapter(
-					IResource.class);
+			IEditorPart editore = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+
+			IResource resource = (IResource) editore.getEditorInput().getAdapter(IResource.class);
 			if (resource != null) {
 				try {
 
 					ITextEditor editor = (ITextEditor) editore;
 					ISelectionProvider sp = editor.getSelectionProvider();
-					
-					
-					
+
 					IDocumentProvider provider = mEditor.getDocumentProvider();
 
 					ITextSelection selection = null;
 					try {
 						int line = mRulerInfo.getLineOfLastMouseButtonActivity();
-						
+
 						provider.connect(this);
 						IDocument document = provider.getDocument(mEditor.getEditorInput());
 						IRegion region = document.getLineInformation(line);
@@ -73,8 +69,6 @@ public class RulerToggleBreakpointAction extends AbstractRulerActionDelegate imp
 					} finally {
 						provider.disconnect(this);
 					}
-
-					
 
 					if (!selection.isEmpty()) {
 						int start = selection.getOffset();
@@ -88,20 +82,13 @@ public class RulerToggleBreakpointAction extends AbstractRulerActionDelegate imp
 						for (int i = 0; startline <= stopline; i++) {
 							marker[i] = resource.createMarker("com.eco.bio7.redit.debugMarker");
 							marker[i].setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
-							marker[i].setAttribute(IMarker.LINE_NUMBER,
-									new Integer(startline));
-							marker[i].setAttribute(IMarker.MESSAGE,
-									"Breakpoint R");
-							marker[i].setAttribute(IMarker.LOCATION, ""+startline);
-							
-							
+							marker[i].setAttribute(IMarker.LINE_NUMBER, new Integer(startline));
+							marker[i].setAttribute(IMarker.MESSAGE, "Breakpoint R");
+							marker[i].setAttribute(IMarker.LOCATION, "" + startline);
+
 							startline++;
 
 						}
-
-						
-
-						
 
 					}
 
@@ -109,9 +96,7 @@ public class RulerToggleBreakpointAction extends AbstractRulerActionDelegate imp
 
 				}
 			}
-			
 
-			
 		}
 	}
 

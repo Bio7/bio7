@@ -96,8 +96,14 @@
             id="textEditor.rulerActions"
             targetID="#TextRulerContext">
          <action
+               class="com.eco.bio7.reditor.debugBreakpoint.DeleteBreakpointAction"
+               id="DeleteBreakpointAction"
+               label="Delete Breakpoints"
+               menubarPath="debug">
+         </action>
+         <action
                class="com.eco.bio7.reditor.debugBreakpoint.RulerToggleBreakpointAction"
-               id="pda.editor.ruler.toggleBreakpointAction"
+               id="AddBreakpointAction"
                label="Toggle Breakpoint"
                menubarPath="debug">
          </action>

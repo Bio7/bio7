@@ -77,7 +77,7 @@ public class InterpretR implements IEditorActionDelegate {
 			
 			if (selectionConsole.equals("R")) {
                 
-				ConsolePageParticipant.pipeInputToConsole("source('" + loc + "')");
+				ConsolePageParticipant.pipeInputToConsole("source('" + loc + "')",true,true);
 				System.out.print("source('" + loc + "')");
 				System.out.println();
 			} else {

@@ -36,7 +36,7 @@ public class ClipboardRValues extends Action {
 			String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 			if (selectionConsole.equals("R")) {
 
-				ConsolePageParticipant.pipeInputToConsole("clipboardData<-read.delim(\"clipboard\");clipboardData");
+				ConsolePageParticipant.pipeInputToConsole("clipboardData<-read.delim(\"clipboard\");clipboardData",true,true);
 				System.out.println();
 			} else {
 				Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");

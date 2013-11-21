@@ -32,7 +32,7 @@ public class ClipboardRScipt extends Action {
 		if (RServe.getConnection()==null) {
 			String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 			if (selectionConsole.equals("R")) {
-				ConsolePageParticipant.pipeInputToConsole("fileClipboardTemp<-file(\"clipboard\", open=\"r\");source(fileClipboardTemp,echo=T);close(fileClipboardTemp);remove(fileClipboardTemp)");
+				ConsolePageParticipant.pipeInputToConsole("fileClipboardTemp<-file(\"clipboard\", open=\"r\");source(fileClipboardTemp,echo=T);close(fileClipboardTemp);remove(fileClipboardTemp)",true,true);
 				System.out.println();
 			} else {
 				Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");

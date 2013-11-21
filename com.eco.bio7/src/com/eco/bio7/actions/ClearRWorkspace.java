@@ -58,7 +58,7 @@ public class ClearRWorkspace extends Action {
 				int response = message.open();
 				if (response == SWT.YES) {
 					String clear = "rm(list=ls(all=TRUE))";
-					ConsolePageParticipant.pipeInputToConsole(clear);
+					ConsolePageParticipant.pipeInputToConsole(clear,true,true);
 				}
 
 			} else {

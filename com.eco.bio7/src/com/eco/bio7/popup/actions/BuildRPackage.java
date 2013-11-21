@@ -48,27 +48,27 @@ public class BuildRPackage implements IObjectActionDelegate {
 					String optionsBuild = store.getString("rcmdbuild");
 					if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 						String loc = selectedFolder.getLocation().toString().replace("/", "\\");
-						ConsolePageParticipant.pipeInputToConsole("cd " + "\"" + loc + "\"");
+						ConsolePageParticipant.pipeInputToConsole("cd " + "\"" + loc + "\"",true,false);
 						if (ApplicationWorkbenchWindowAdvisor.is64BitVM()) {
-							ConsolePageParticipant.pipeInputToConsole("\"" + pathR + "/bin/x64/R\"" + " CMD build " + optionsBuild + " " + "\"" + loc + "\"");
+							ConsolePageParticipant.pipeInputToConsole("\"" + pathR + "/bin/x64/R\"" + " CMD build " + optionsBuild + " " + "\"" + loc + "\"",true,false);
 						} else {
-							ConsolePageParticipant.pipeInputToConsole("\"" + pathR + "/bin/i386/R\"" + " CMD build " + optionsBuild + " " + "\"" + loc + "\"");
+							ConsolePageParticipant.pipeInputToConsole("\"" + pathR + "/bin/i386/R\"" + " CMD build " + optionsBuild + " " + "\"" + loc + "\"",true,false);
 						}
 						//ConsolePageParticipant.pipeInputToConsole("\"" + pathR + "/bin/R\"" + " CMD build " + optionsBuild + " " + "\"" + loc + "\"");
 
 					} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
 						String loc = selectedFolder.getLocation().toString();
-						ConsolePageParticipant.pipeInputToConsole("cd " + "\"" + loc + "\"");
+						ConsolePageParticipant.pipeInputToConsole("cd " + "\"" + loc + "\"",true,false);
 
-						ConsolePageParticipant.pipeInputToConsole(pathR + "/bin/R CMD build " + optionsBuild + " " + "\"" + loc + "\"");
+						ConsolePageParticipant.pipeInputToConsole(pathR + "/bin/R CMD build " + optionsBuild + " " + "\"" + loc + "\"",true,false);
 
 					}
 
 					else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 						String loc = selectedFolder.getLocation().toString();
-						ConsolePageParticipant.pipeInputToConsole("cd " + "\"" + loc + "\"");
+						ConsolePageParticipant.pipeInputToConsole("cd " + "\"" + loc + "\"",true,false);
 
-						ConsolePageParticipant.pipeInputToConsole(pathR + "/bin/R CMD build " + optionsBuild + " " + "\"" + loc + "\"");
+						ConsolePageParticipant.pipeInputToConsole(pathR + "/bin/R CMD build " + optionsBuild + " " + "\"" + loc + "\"",true,false);
 
 					}
 					IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();

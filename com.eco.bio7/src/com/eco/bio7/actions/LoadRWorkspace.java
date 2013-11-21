@@ -71,7 +71,7 @@ public class LoadRWorkspace extends Action {
 			String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 			if (selectionConsole.equals("R")) {
 
-				ConsolePageParticipant.pipeInputToConsole("load(file = \"" + selected + "\")");
+				ConsolePageParticipant.pipeInputToConsole("load(file = \"" + selected + "\")",true,true);
 				System.out.print("load(file = \"" + selected + "\")");
 				System.out.println();
 

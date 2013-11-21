@@ -19,7 +19,9 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
@@ -44,7 +46,8 @@ import com.eco.bio7.rcp.StartBio7Utils;
 public class DebugRScript implements IEditorActionDelegate {
 	private IEditorPart part;
 	private IMarker[] markers;
-    boolean untrace=false;
+	boolean untrace = false;
+
 	public void dispose() {
 
 	}
@@ -64,9 +67,9 @@ public class DebugRScript implements IEditorActionDelegate {
 		}
 
 		IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
-		
 
 		IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
+
 		RConnection d = RServe.getConnection();
 		IEditorInput editorInput = editor.getEditorInput();
 		IFile aFile = null;
@@ -84,15 +87,13 @@ public class DebugRScript implements IEditorActionDelegate {
 			String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 
 			if (selectionConsole.equals("R")) {
-
-				
-				
-				System.out.println();
+                 
+				/*Find the line numbers of the markers!*/
 				int b = 0;
 				if (resource != null) {
 					IMarker[] markersfind = findMyMarkers(resource);
 					for (int i = 0; i < markersfind.length; i++) {
-						System.out.println("find");
+						
 						Integer a = null;
 						try {
 							a = (Integer) markersfind[i].getAttribute(IMarker.LINE_NUMBER);
@@ -101,22 +102,40 @@ public class DebugRScript implements IEditorActionDelegate {
 							e.printStackTrace();
 						}
 						b = a.intValue();
-						System.out.println(b);
-						//ConsolePageParticipant.pipeInputToConsole("source('" + loc + "')");
+						
+						
 					}
 				}
-				if(b>0){
-				
-				
-				ConsolePageParticipant.pipeInputToConsole("setBreakpoint('" + loc +"#"+b+ "',clear=FALSE)");
-				ConsolePageParticipant.pipeInputToConsole("source('" + loc + "')");
-				System.out.print("setBreakpoint('" + loc +"#"+b+ "')");
-				
-				
+				if (b > 0) {
+					/*Insert the debug command at line start!*/
+					IRegion reg = null;
+					try {
+						reg = doc.getLineInformation(b);
+					} catch (BadLocationException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+
+					StringBuffer buf = new StringBuffer();
+					buf.append(doc.get());
+					buf.insert(reg.getOffset(), ";browser();");
+					/*
+					 * try { doc.replace(reg.getOffset(),0,replaceText); } catch (BadLocationException e1) { // TODO Auto-generated catch block e1.printStackTrace(); }
+					 */
+					String content = buf.toString();
+                    /*Here we write the commands to the console (no file!)*/
+					ConsolePageParticipant.pipeInputToConsole(content,true,false);
+					System.out.println(content);
+
+					// ConsolePageParticipant.pipeInputToConsole("findLineNum('" + loc +"#"+b+ "')");
+
+					// ConsolePageParticipant.pipeInputToConsole("setBreakpoint('" + loc +"#"+b+ "')");
+
+					// System.out.print("setBreakpoint('" + loc +"#"+b+ "')");
+
 				}
-				
-			}
-			else{
+
+			} else {
 				Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
 			}
 

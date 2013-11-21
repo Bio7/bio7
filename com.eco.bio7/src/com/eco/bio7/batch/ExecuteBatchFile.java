@@ -116,7 +116,7 @@ public class ExecuteBatchFile {
 				if (sel.equals("Python")) {
 
 					if (selectionConsole.equals("Python")) {
-						ConsolePageParticipant.pipeInputToConsole("execfile('" + fileproper + "')");
+						ConsolePageParticipant.pipeInputToConsole("execfile('" + fileproper + "')",true,true);
 					} else {
 						System.out.println("Please start the \"Native Python\" Shell in the Bio7 console!");
 					}
@@ -128,15 +128,15 @@ public class ExecuteBatchFile {
 						String blenderArgs = store.getString("blender_args");
 						if (blenderSel.equals("pscript")) {
 
-							ConsolePageParticipant.pipeInputToConsole("\"" + path + "/blender\"" + " " + blenderArgs + " -P " + fileproper);
+							ConsolePageParticipant.pipeInputToConsole("\"" + path + "/blender\"" + " " + blenderArgs + " -P " + fileproper,true,true);
 						} else if (blenderSel.equals("interactive")) {
 
-							ConsolePageParticipant.pipeInputToConsole("\"" + path + "/blender\"" + " " + blenderArgs + " --python-console");
-							ConsolePageParticipant.pipeInputToConsole(store.getString("before_script_blender"));
-							ConsolePageParticipant.pipeInputToConsole("exec(compile(open('" + fileproper + "').read(),'" + fileproper + "', 'exec'))");
-							ConsolePageParticipant.pipeInputToConsole(store.getString("after_script_blender"));
+							ConsolePageParticipant.pipeInputToConsole("\"" + path + "/blender\"" + " " + blenderArgs + " --python-console",true,true);
+							ConsolePageParticipant.pipeInputToConsole(store.getString("before_script_blender"),true,true);
+							ConsolePageParticipant.pipeInputToConsole("exec(compile(open('" + fileproper + "').read(),'" + fileproper + "', 'exec'))",true,true);
+							ConsolePageParticipant.pipeInputToConsole(store.getString("after_script_blender"),true,true);
 						} else {
-							ConsolePageParticipant.pipeInputToConsole("\"" + path + "/blender\"" + " " + blenderArgs);
+							ConsolePageParticipant.pipeInputToConsole("\"" + path + "/blender\"" + " " + blenderArgs,true,true);
 						}
 					} else {
 						System.out.println("Please start the Shell in the Bio7 Console\n" + "to interpret the Python script in Blender!");
@@ -159,7 +159,7 @@ public class ExecuteBatchFile {
 			boolean rPipe = store.getBoolean("r_pipe");
 
 			if (rPipe == true) {
-				ConsolePageParticipant.pipeInputToConsole("source('" + fileprop + "')");
+				ConsolePageParticipant.pipeInputToConsole("source('" + fileprop + "')",true,true);
 			} else {
 				/* If the OS is Linux! */
 				if (Bio7Dialog.getOS().equals("Linux")) {

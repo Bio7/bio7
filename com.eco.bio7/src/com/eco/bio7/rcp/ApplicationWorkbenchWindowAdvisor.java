@@ -911,7 +911,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 							String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 							if (selectionConsole.equals("R")) {
 
-								ConsolePageParticipant.pipeInputToConsole("load(file =\"" + fileR + "\")");
+								ConsolePageParticipant.pipeInputToConsole("load(file =\"" + fileR + "\")",true,true);
 							} else {
 								Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
 							}

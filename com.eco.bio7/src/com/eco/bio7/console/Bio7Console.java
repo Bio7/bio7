@@ -25,10 +25,14 @@ public class Bio7Console {
 	 * 
 	 * @param command
 	 *            a command for the console
+	 * @param lineSeperator
+	 *            a boolean if a line seperator should be written to the console.
+	 * @param addToHistory
+	 *            if the command should be added to the command history.
 	 */
-	public static void write(String command) {
+	public static void write(String command, boolean lineSeperator, boolean addToHistory) {
 
-		ConsolePageParticipant.pipeInputToConsole(command);
+		ConsolePageParticipant.pipeInputToConsole(command, lineSeperator, addToHistory);
 
 	}
 

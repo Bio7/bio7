@@ -61,7 +61,7 @@ public class ExecuteRTextSelection extends Action {
 
 						String inhalt = getTextAndForwardCursor(rEditor);
 
-						ConsolePageParticipant.pipeInputToConsole(inhalt);
+						ConsolePageParticipant.pipeInputToConsole(inhalt,true,true);
 						System.out.println(inhalt);
 					} else {
 						Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");

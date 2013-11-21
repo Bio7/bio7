@@ -62,7 +62,7 @@ public class SaveRWorkspace extends Action {
 						//selected = selected.replace("ü", "ue");
 						//selected = selected.replace("ö", "oe");
 
-						ConsolePageParticipant.pipeInputToConsole("save.image(file =\"" + selected + "\", version = NULL, ascii = FALSE)");
+						ConsolePageParticipant.pipeInputToConsole("save.image(file =\"" + selected + "\", version = NULL, ascii = FALSE)",true,true);
 						System.out.print("save.image(file =\"" + selected + "\", version = NULL, ascii = FALSE)");
 						System.out.println();
 					}
@@ -77,14 +77,14 @@ public class SaveRWorkspace extends Action {
 					prefs.put("R_FILE_DIR", fd.getFilterPath());
 
 					if (selected != null) {
-						ConsolePageParticipant.pipeInputToConsole("save.image(file =\"" + selected + "\", version = NULL, ascii = FALSE)");
+						ConsolePageParticipant.pipeInputToConsole("save.image(file =\"" + selected + "\", version = NULL, ascii = FALSE)",true,true);
 						System.out.print("save.image(file =\"" + selected + "\", version = NULL, ascii = FALSE)");
 						System.out.println();
 					}
 				}
 				
 
-				ConsolePageParticipant.pipeInputToConsole("load(file = \"" + selected + "\")");
+				ConsolePageParticipant.pipeInputToConsole("load(file = \"" + selected + "\")",true,true);
 
 			} else {
 				Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");

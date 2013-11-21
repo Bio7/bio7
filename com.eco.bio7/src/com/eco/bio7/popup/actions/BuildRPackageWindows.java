@@ -48,12 +48,12 @@ public class BuildRPackageWindows implements IObjectActionDelegate{
 					String optionsInstall = store.getString("rcmdinstall");
 					if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 						String loc = selectedFolder.getLocation().toString().replace("/", "\\");
-						ConsolePageParticipant.pipeInputToConsole("cd " + "\"" + loc + "\"");
+						ConsolePageParticipant.pipeInputToConsole("cd " + "\"" + loc + "\"",true,false);
 						
 						if (ApplicationWorkbenchWindowAdvisor.is64BitVM()) {
-							ConsolePageParticipant.pipeInputToConsole("\""+pathR + "/bin/x64/R\""+" CMD INSTALL "+optionsInstall+" " + "\"" + loc + "\"");
+							ConsolePageParticipant.pipeInputToConsole("\""+pathR + "/bin/x64/R\""+" CMD INSTALL "+optionsInstall+" " + "\"" + loc + "\"",true,false);
 						} else {
-							ConsolePageParticipant.pipeInputToConsole("\""+pathR + "/bin/i386/R\""+" CMD INSTALL "+optionsInstall+" " + "\"" + loc + "\"");
+							ConsolePageParticipant.pipeInputToConsole("\""+pathR + "/bin/i386/R\""+" CMD INSTALL "+optionsInstall+" " + "\"" + loc + "\"",true,false);
 						}
 						//ConsolePageParticipant.pipeInputToConsole("\""+pathR + "/bin/R\""+" CMD INSTALL "+optionsInstall+" " + "\"" + loc + "\"");
 						
@@ -61,17 +61,17 @@ public class BuildRPackageWindows implements IObjectActionDelegate{
 						
 					} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
 						String loc = selectedFolder.getLocation().toString();
-						ConsolePageParticipant.pipeInputToConsole("cd " + "\"" + loc + "\"");
+						ConsolePageParticipant.pipeInputToConsole("cd " + "\"" + loc + "\"",true,false);
 						
-						ConsolePageParticipant.pipeInputToConsole(pathR + "/bin/R CMD INSTALL "+optionsInstall+" "+ "\"" + loc + "\"");
+						ConsolePageParticipant.pipeInputToConsole(pathR + "/bin/R CMD INSTALL "+optionsInstall+" "+ "\"" + loc + "\"",true,false);
 
 					}
 
 					else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 						String loc = selectedFolder.getLocation().toString();
-						ConsolePageParticipant.pipeInputToConsole("cd " + "\"" + loc + "\"");
+						ConsolePageParticipant.pipeInputToConsole("cd " + "\"" + loc + "\"",true,false);
 						
-						ConsolePageParticipant.pipeInputToConsole(pathR + "/bin/R CMD INSTALL "+optionsInstall+" "+ "\"" + loc + "\"");
+						ConsolePageParticipant.pipeInputToConsole(pathR + "/bin/R CMD INSTALL "+optionsInstall+" "+ "\"" + loc + "\"",true,false);
 
 					}
 					IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();

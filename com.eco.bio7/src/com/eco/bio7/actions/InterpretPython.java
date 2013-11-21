@@ -71,7 +71,7 @@ public class InterpretPython implements IEditorActionDelegate {
 
 				if (sel.equals("Python")) {
 					if (selectionConsole.equals("Python")) {
-						ConsolePageParticipant.pipeInputToConsole("execfile('" + loc + "')");
+						ConsolePageParticipant.pipeInputToConsole("execfile('" + loc + "')",true,true);
 					} else {
 						Bio7Dialog.message("Please start the \"Native Python\" Shell in the Bio7 console!");
 					}
@@ -83,18 +83,18 @@ public class InterpretPython implements IEditorActionDelegate {
 						String blenderArgs = store.getString("blender_args");
 						if (blenderSel.equals("pscript")) {
 
-							ConsolePageParticipant.pipeInputToConsole("\"" + path + "/blender\"" + " " + blenderArgs + " -P " + loc);
+							ConsolePageParticipant.pipeInputToConsole("\"" + path + "/blender\"" + " " + blenderArgs + " -P " + loc,true,true);
 						} else if (blenderSel.equals("interactive")) {
 							if (isBlender == false) {
-								ConsolePageParticipant.pipeInputToConsole("\"" + path + "/blender\"" + " " + blenderArgs + " --python-console");
+								ConsolePageParticipant.pipeInputToConsole("\"" + path + "/blender\"" + " " + blenderArgs + " --python-console",true,true);
 								isBlender = true;
 							}
-							ConsolePageParticipant.pipeInputToConsole(store.getString("before_script_blender"));
-							ConsolePageParticipant.pipeInputToConsole("exec(compile(open('" + loc + "').read(),'" + loc + "', 'exec'))");
-							ConsolePageParticipant.pipeInputToConsole(store.getString("after_script_blender"));
+							ConsolePageParticipant.pipeInputToConsole(store.getString("before_script_blender"),true,true);
+							ConsolePageParticipant.pipeInputToConsole("exec(compile(open('" + loc + "').read(),'" + loc + "', 'exec'))",true,true);
+							ConsolePageParticipant.pipeInputToConsole(store.getString("after_script_blender"),true,true);
 							System.out.println("Please restart the Bio7 native console for a new interactive session if you have closed Blender!");
 						} else {
-							ConsolePageParticipant.pipeInputToConsole("\"" + path + "/blender\"" + " " + blenderArgs);
+							ConsolePageParticipant.pipeInputToConsole("\"" + path + "/blender\"" + " " + blenderArgs,true,true);
 						}
 					} else {
 						Bio7Dialog.message("Please start the Shell in the Bio7 Console\n" + "to interpret the Python script in Blender!");

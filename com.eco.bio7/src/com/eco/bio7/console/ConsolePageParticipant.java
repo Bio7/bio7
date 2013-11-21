@@ -108,19 +108,31 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	private boolean runThread;
 	public ConsoleInterpreterAction ia;
 	private static ConsolePageParticipant ConsolePageParticipantInstance;
-
+	static boolean lineSeperatorConsole=true;
+	static boolean addToHistoryConsole=true;
 	public static String finalOutput;
-    
-	public ConsolePageParticipant(){
-		ConsolePageParticipantInstance=this;
+
+	public ConsolePageParticipant() {
+		ConsolePageParticipantInstance = this;
 	}
+
 	@Override
 	public Object getAdapter(Class adapter) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	public static void pipeInputToConsole(String input, boolean lineSeperator, boolean addToHistory) {
+		lineSeperatorConsole = lineSeperator;
+		addToHistoryConsole = addToHistory;
+		ioc.getInputStream().appendData(input);
+		ioc.getInputStream().appendData(System.getProperty("line.separator"));
+
+	}
+
 	public static void pipeInputToConsole(String input) {
+		lineSeperatorConsole = true;
+		addToHistoryConsole = true;
 		ioc.getInputStream().appendData(input);
 		ioc.getInputStream().appendData(System.getProperty("line.separator"));
 
@@ -241,7 +253,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				}
 			}
 		});
-       
+
 		IPageSite pageSite = page.getSite();
 		IWorkbenchPage workbenchPage = pageSite.getPage();
 		IViewPart viewPart = workbenchPage.findView(IConsoleConstants.ID_CONSOLE_VIEW);
@@ -254,7 +266,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		// At startup only output console is activated!
 		styledText.setEditable(false);
 		toolBarManager.add(new ConsoleCustomActions(this));
-		ia=new ConsoleInterpreterAction(this);
+		ia = new ConsoleInterpreterAction(this);
 		toolBarManager.add(ia);
 
 		in = new BufferedReader(isr);
@@ -281,7 +293,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				processThread = new Thread(new ProcessGrabber());
 				processThread.start();
 				/* Start shell with arguments! */
-				ConsolePageParticipant.pipeInputToConsole(shellArgs);
+				ConsolePageParticipant.pipeInputToConsole(shellArgs, true, true);
 
 			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
 				// Some Useful commands: export TERM=xterm; top -b; ssh -tt
@@ -295,7 +307,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				processThread = new Thread(new ProcessGrabber());
 				processThread.start();
 				/* Start shell with arguments! */
-				ConsolePageParticipant.pipeInputToConsole(shellArgs);
+				ConsolePageParticipant.pipeInputToConsole(shellArgs, true, true);
 			}
 
 			else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
@@ -305,7 +317,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				processThread = new Thread(new ProcessGrabber());
 				processThread.start();
 				/* Start shell with arguments! */
-				ConsolePageParticipant.pipeInputToConsole(shellArgs);
+				ConsolePageParticipant.pipeInputToConsole(shellArgs, true, false);
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -441,7 +453,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				}
 				// consoleOutputChar.delete(0, consoleOutputChar.length()-1);
 			} catch (IOException e) {
-				//e.printStackTrace();
+				// e.printStackTrace();
 				System.out.println("Stream closed!");
 			} finally {
 				if (inp != null) {
@@ -461,7 +473,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	public void dispose() {
 		ioc.getInputStream().appendData(System.getProperty("line.separator"));
 		interpreterSelection = "-";
-        /*Use a thread to ensure that the other threads will be destroyed - maybee not necessary!*/
+		/* Use a thread to ensure that the other threads will be destroyed - maybee not necessary! */
 		new Thread() {
 			@Override
 			public void run() {
@@ -497,7 +509,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 		while (!Thread.interrupted() && runThread == true) {
 			try {
-				Thread.sleep(50);
+				Thread.sleep(10);
 			} catch (InterruptedException e1) {
 				runThread = false;
 
@@ -622,7 +634,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 						if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 							input = in.readLine();
 						} else {
-							//System.out.print("$ ");
+							// System.out.print("$ ");
 							input = in.readLine();
 						}
 					}
@@ -672,11 +684,11 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 				try {
 					if (in != null) {
-						
+
 						if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 							input = in.readLine();
 						} else {
-							//System.out.print("$ ");
+							// System.out.print("$ ");
 							input = in.readLine();
 						}
 					}
@@ -692,7 +704,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 							list.add(input);
 						}
 					}
-					Process jprocess=RunJavaClassFile.getJavaProcess();
+					Process jprocess = RunJavaClassFile.getJavaProcess();
 					if (jprocess != null) {
 						final OutputStream os = jprocess.getOutputStream();
 						final OutputStreamWriter osw = new OutputStreamWriter(os);
@@ -788,8 +800,9 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				else {
 					if (ignore == false) {
 						if (input != null && input.equals("") == false) {
-
-							list.add(input);
+							if (addToHistoryConsole) {
+								list.add(input);
+							}
 
 						}
 					}
@@ -800,8 +813,9 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 						try {
 							bw.write(input);
-
-							bw.newLine();
+							if (lineSeperatorConsole) {
+								bw.newLine();
+							}
 							// If necessary: bw.write("\r\n");
 							os.flush();
 							bw.flush();
@@ -929,7 +943,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 							String fileR = selected + ".RData";
 							if (interpreterSelection.equals("R")) {
 
-								ConsolePageParticipant.pipeInputToConsole("load(file =\"" + fileR + "\");");
+								ConsolePageParticipant.pipeInputToConsole("load(file =\"" + fileR + "\");", true, true);
 
 							} else {
 								Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
@@ -963,6 +977,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			Bio7Dialog.message("Directory is not writable!");
 		}
 	}
+
 	public static ConsolePageParticipant getConsolePageParticipantInstance() {
 		return ConsolePageParticipantInstance;
 	}

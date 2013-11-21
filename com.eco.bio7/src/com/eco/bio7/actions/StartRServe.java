@@ -209,15 +209,15 @@ public class StartRServe extends Action {
 				RServe.setRrunning(false);
 				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 
-					ConsolePageParticipant.pipeInputToConsole("options(device='windows')");
+					ConsolePageParticipant.pipeInputToConsole("options(device='windows')",true,true);
 					
 				} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
 					
-					ConsolePageParticipant.pipeInputToConsole("options(device='x11')");
+					ConsolePageParticipant.pipeInputToConsole("options(device='x11')",true,true);
 					
 				} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 					
-					ConsolePageParticipant.pipeInputToConsole("options(device='cairo')");
+					ConsolePageParticipant.pipeInputToConsole("options(device='cairo')",true,true);
 				}
 				// options(device='windows')
 			}
