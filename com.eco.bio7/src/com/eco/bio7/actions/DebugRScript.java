@@ -87,44 +87,60 @@ public class DebugRScript implements IEditorActionDelegate {
 			String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 
 			if (selectionConsole.equals("R")) {
-                 
-				/*Find the line numbers of the markers!*/
-				int b = 0;
+
+				/* Find the line numbers of the markers! */
+				int lineNum = 0;
+				String expression = null;
+				String content;
+				int correctInsert=0;
+				StringBuffer buf = new StringBuffer();
+				buf.append(doc.get());
+				
 				if (resource != null) {
 					IMarker[] markersfind = findMyMarkers(resource);
 					for (int i = 0; i < markersfind.length; i++) {
-						
-						Integer a = null;
+
+						Integer lineNumber = null;
 						try {
-							a = (Integer) markersfind[i].getAttribute(IMarker.LINE_NUMBER);
+							lineNumber = (Integer) markersfind[i].getAttribute(IMarker.LINE_NUMBER);
+							expression = (String) markersfind[i].getAttribute(IMarker.MESSAGE);
 						} catch (CoreException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-						b = a.intValue();
+						lineNum = lineNumber.intValue();
 						
-						
-					}
-				}
-				if (b > 0) {
-					/*Insert the debug command at line start!*/
-					IRegion reg = null;
-					try {
-						reg = doc.getLineInformation(b);
-					} catch (BadLocationException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
+						if (lineNum > 0) {
+							/* Insert the debug command at line start! */
+							IRegion reg = null;
+							try {
+								reg = doc.getLineInformation(lineNum);
+							} catch (BadLocationException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+							System.out.println(reg.getOffset());
+							//lineNum=lineNum-correctInsert;
+							if (expression == null) {
+								String command=";browser();";
+								int length=command.length();
+								buf.insert(reg.getOffset()-correctInsert,command);
+								correctInsert=correctInsert-length;
+							} else {
+								String command=";browser(expr=isTRUE(" + expression + "));";
+								int length=command.length();
+								
+								buf.insert(reg.getOffset()-correctInsert, command);
+								correctInsert=correctInsert-length;
+							}
+						}
 					}
 
-					StringBuffer buf = new StringBuffer();
-					buf.append(doc.get());
-					buf.insert(reg.getOffset(), ";browser();");
-					/*
-					 * try { doc.replace(reg.getOffset(),0,replaceText); } catch (BadLocationException e1) { // TODO Auto-generated catch block e1.printStackTrace(); }
-					 */
-					String content = buf.toString();
-                    /*Here we write the commands to the console (no file!)*/
-					ConsolePageParticipant.pipeInputToConsole(content,true,false);
+					// buf.insert(reg.getOffset(), ";browser(expr=isTRUE(x==9));");
+
+					content = buf.toString();
+					/* Here we write the commands to the console (no file!) */
+					ConsolePageParticipant.pipeInputToConsole(content, true, false);
 					System.out.println(content);
 
 					// ConsolePageParticipant.pipeInputToConsole("findLineNum('" + loc +"#"+b+ "')");

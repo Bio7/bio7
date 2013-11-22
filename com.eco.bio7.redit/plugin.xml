@@ -102,6 +102,12 @@
                menubarPath="debug">
          </action>
          <action
+               class="com.eco.bio7.reditor.debugBreakpoint.ConditionalToggleBreakpointAction"
+               id="AddConditionalBreakpointAction"
+               label="Toggle Conditional Breakpoint"
+               menubarPath="debug">
+         </action>
+         <action
                class="com.eco.bio7.reditor.debugBreakpoint.RulerToggleBreakpointAction"
                id="AddBreakpointAction"
                label="Toggle Breakpoint"
