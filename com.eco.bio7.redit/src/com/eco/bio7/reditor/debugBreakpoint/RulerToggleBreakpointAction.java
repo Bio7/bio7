@@ -63,6 +63,7 @@ public class RulerToggleBreakpointAction extends AbstractRulerActionDelegate imp
 						provider.connect(this);
 						IDocument document = provider.getDocument(mEditor.getEditorInput());
 						IRegion region = document.getLineInformation(line);
+						
 						selection = new TextSelection(document, region.getOffset(), region.getLength());
 					} catch (CoreException e1) {
 					} catch (BadLocationException e) {
@@ -70,25 +71,26 @@ public class RulerToggleBreakpointAction extends AbstractRulerActionDelegate imp
 						provider.disconnect(this);
 					}
 
-					if (!selection.isEmpty()) {
-						int start = selection.getOffset();
+					if (selection!=null&&!selection.isEmpty()) {
+						//int start = selection.getOffset();
 
-						int length = selection.getLength();
+						//int length = selection.getLength();
 						startline = selection.getStartLine() + 1;
 						stopline = selection.getEndLine() + 1;
 
-						IMarker[] marker = new IMarker[(stopline - startline) + 1];
+						IMarker marker;
 
-						for (int i = 0; startline <= stopline; i++) {
-							marker[i] = resource.createMarker("com.eco.bio7.redit.debugMarker");
-							marker[i].setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
-							marker[i].setAttribute(IMarker.LINE_NUMBER, new Integer(startline));
-							marker[i].setAttribute(IMarker.MESSAGE, null);
-							marker[i].setAttribute(IMarker.LOCATION, "" + startline);
+						
+							marker = resource.createMarker("com.eco.bio7.redit.debugMarker");
+							marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
+							marker.setAttribute(IMarker.LINE_NUMBER, new Integer(startline));
+							marker.setAttribute(IMarker.MESSAGE, null);
+							marker.setAttribute(IMarker.LOCATION, "" + startline);
+						
 
-							startline++;
+							
 
-						}
+						
 
 					}
 

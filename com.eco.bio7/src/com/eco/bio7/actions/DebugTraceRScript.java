@@ -47,7 +47,7 @@ import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.StartBio7Utils;
 
-public class DebugRScript implements IEditorActionDelegate {
+public class DebugTraceRScript implements IEditorActionDelegate {
 	private IEditorPart part;
 	private IMarker[] markers;
 	boolean untrace = false;
@@ -86,7 +86,7 @@ public class DebugRScript implements IEditorActionDelegate {
 		boolean remote = Bio7Plugin.getDefault().getPreferenceStore().getBoolean("REMOTE");
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		// boolean rPipe = store.getBoolean("r_pipe");
-
+		ConsolePageParticipant.pipeInputToConsole("source('"+loc+"')", true, true);
 		if (d == null) {
 			String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 
@@ -102,10 +102,13 @@ public class DebugRScript implements IEditorActionDelegate {
 
 				if (resource != null) {
 					Map<Integer, String> map1 = findMyMarkers(resource);
-					/*Sorting the Map with a Treemap!*/
 					Map<Integer, String> map = new TreeMap<Integer, String>(map1);
-					
+
+				       
 			        for(Map.Entry<Integer, String> entry : map.entrySet()) {
+			           
+			   
+
 						//Integer lineNumber = null;
 						
 			        	lineNum = entry.getKey();
@@ -113,8 +116,8 @@ public class DebugRScript implements IEditorActionDelegate {
 						
 						//lineNum = lineNumber.intValue();
 
-						if (lineNum > 0) {
-							/* Insert the debug command at line start! */
+						/*if (lineNum > 0) {
+							 Insert the debug command at line start! 
 							IRegion reg = null;
 							try {
 								reg = doc.getLineInformation(lineNum);
@@ -125,30 +128,32 @@ public class DebugRScript implements IEditorActionDelegate {
 							//System.out.println(reg.getOffset());
 							// lineNum=lineNum-correctInsert;
 							if (expression==null) {
-								String command = "browser();";
+								String command = " browser();";
 								int length = command.length();
 								buf.insert(reg.getOffset() - correctInsert, command);
 								correctInsert = correctInsert - length;
 							} else {
-								String command = "browser(expr=isTRUE(" + expression + "));";
+								String command = " browser(expr=isTRUE(" + expression + "));";
 								int length = command.length();
 
 								buf.insert(reg.getOffset() - correctInsert, command);
 								correctInsert = correctInsert - length;
 							}
-						}
+						}*/
+						System.out.println(lineNum);
+						ConsolePageParticipant.pipeInputToConsole("findLineNum('" + loc +"#"+lineNum+ "')");
+
+						ConsolePageParticipant.pipeInputToConsole("setBreakpoint('" + loc +"#"+lineNum+ "')");
 					}
 
 					// buf.insert(reg.getOffset(), ";browser(expr=isTRUE(x==9));");
 
-					content = buf.toString();
+					//content = buf.toString();
 					/* Here we write the commands to the console (no file!) */
-					ConsolePageParticipant.pipeInputToConsole(content, true, false);
-					System.out.println(content);
+					
+					
 
-					// ConsolePageParticipant.pipeInputToConsole("findLineNum('" + loc +"#"+b+ "')");
-
-					// ConsolePageParticipant.pipeInputToConsole("setBreakpoint('" + loc +"#"+b+ "')");
+					
 
 					// System.out.print("setBreakpoint('" + loc +"#"+b+ "')");
 

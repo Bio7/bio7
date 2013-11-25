@@ -46,7 +46,7 @@ public class ConditionalToggleBreakpointAction extends AbstractRulerActionDelega
 
 		@Override
 		public void run() {
-           String rDebugExpression = "";
+           String rDebugExpression = null;
 			IEditorPart editore = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 			
 			InputDialog dlg = new InputDialog(Display.getCurrent().getActiveShell(),
@@ -78,28 +78,31 @@ public class ConditionalToggleBreakpointAction extends AbstractRulerActionDelega
 					} finally {
 						provider.disconnect(this);
 					}
+					
+					if (selection!=null&&!selection.isEmpty()) {
+						//int start = selection.getOffset();
 
-					if (!selection.isEmpty()) {
-						int start = selection.getOffset();
-
-						int length = selection.getLength();
+						//int length = selection.getLength();
 						startline = selection.getStartLine() + 1;
 						stopline = selection.getEndLine() + 1;
 
-						IMarker[] marker = new IMarker[(stopline - startline) + 1];
+						IMarker marker;
 
-						for (int i = 0; startline <= stopline; i++) {
-							marker[i] = resource.createMarker("com.eco.bio7.redit.debugMarker");
-							marker[i].setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
-							marker[i].setAttribute(IMarker.LINE_NUMBER, new Integer(startline));
-							marker[i].setAttribute(IMarker.MESSAGE, rDebugExpression);
-							marker[i].setAttribute(IMarker.LOCATION, "" + startline);
+						
+							marker = resource.createMarker("com.eco.bio7.redit.debugMarker");
+							marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
+							marker.setAttribute(IMarker.LINE_NUMBER, new Integer(startline));
+							marker.setAttribute(IMarker.MESSAGE, rDebugExpression);
+							marker.setAttribute(IMarker.LOCATION, "" + startline);
+						
 
-							startline++;
+							
 
-						}
+						
 
 					}
+
+					
 
 				} catch (CoreException e) {
 
