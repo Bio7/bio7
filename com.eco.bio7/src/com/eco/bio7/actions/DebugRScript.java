@@ -20,6 +20,9 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -43,6 +46,9 @@ import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
+import com.eco.bio7.console.DebugContinueAction;
+import com.eco.bio7.console.DebugNextAction;
+import com.eco.bio7.console.DebugStopAction;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.StartBio7Utils;
@@ -62,6 +68,32 @@ public class DebugRScript implements IEditorActionDelegate {
 
 	public void run(IAction action) {
 		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
+		ConsolePageParticipant inst=ConsolePageParticipant.getConsolePageParticipantInstance();
+		/*Add the debug actions dynamically!*/
+		IToolBarManager tm=inst.toolBarManager;
+		
+		IContributionItem []its=inst.toolBarManager.getItems();
+		boolean exist=false;
+		for (int i = 0; i < its.length; i++) {
+			System.out.println(its[i].getId());
+			if(its[i].getId()!=null){
+				if(its[i].getId().equals("Stop")){
+				
+					exist=true;
+				}
+				
+			}
+			
+			
+		
+		}
+		if (exist==false){
+			tm.add(new DebugStopAction());
+			tm.add(new DebugNextAction());	
+			tm.add(new DebugContinueAction());	
+			inst.actionBars.updateActionBars();
+			}
+		
 		if (utils != null) {
 			utils.cons.clear();
 		}

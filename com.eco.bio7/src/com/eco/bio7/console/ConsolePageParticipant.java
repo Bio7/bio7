@@ -107,6 +107,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	private IOConsoleInputStream iocinput;
 	private boolean runThread;
 	public ConsoleInterpreterAction ia;
+	public IToolBarManager toolBarManager;
+	public IActionBars actionBars;
 	private static ConsolePageParticipant ConsolePageParticipantInstance;
 	static boolean lineSeperatorConsole=true;
 	static boolean addToHistoryConsole=true;
@@ -258,17 +260,20 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		IWorkbenchPage workbenchPage = pageSite.getPage();
 		IViewPart viewPart = workbenchPage.findView(IConsoleConstants.ID_CONSOLE_VIEW);
 		IViewSite viewSite = viewPart.getViewSite();
-		IActionBars actionBars = viewSite.getActionBars();
-		IToolBarManager toolBarManager = actionBars.getToolBarManager();
+		 actionBars = viewSite.getActionBars();
+		
+		 toolBarManager = actionBars.getToolBarManager();
 
 		// toolBarManager.removeAll();
 
 		// At startup only output console is activated!
 		styledText.setEditable(false);
+
 		toolBarManager.add(new ConsoleCustomActions(this));
 		ia = new ConsoleInterpreterAction(this);
 		toolBarManager.add(ia);
-
+		
+		
 		in = new BufferedReader(isr);
 
 		ioc.clearConsole();
