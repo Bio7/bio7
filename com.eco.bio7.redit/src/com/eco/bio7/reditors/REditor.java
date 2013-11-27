@@ -56,9 +56,9 @@ public class REditor extends TextEditor {
 
 	private IPartListener partListener;
 
-	public Action setplotmarkers;
+	/*public Action setplotmarkers;
 
-	public Action deleteplotmarkers;
+	public Action deleteplotmarkers;*/
 
 	public Action setcomment;
 
@@ -69,6 +69,7 @@ public class REditor extends TextEditor {
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.reditor");
+		
 	}
 
 	/**
@@ -76,6 +77,7 @@ public class REditor extends TextEditor {
 	 */
 	public REditor() {
 		super();
+		
 		colorManager = new RColorManager();
 		setSourceViewerConfiguration(new RConfiguration(colorManager));
 
@@ -83,6 +85,7 @@ public class REditor extends TextEditor {
 		if (editor != null) {
 
 			IEditorSite site = editor.getEditorSite();
+			
 			IWorkbenchPage page = site.getPage();
 
 			partListener = new IPartListener() {
@@ -169,8 +172,8 @@ public class REditor extends TextEditor {
 		super.editorContextMenuAboutToShow(menu);
 		addAction(menu, "ContentAssistProposal");
 		menu.add(new Separator());
-		addAction(menu, "Add Plotmarker");
-		addAction(menu, "Delete Plotmarker");
+		/*addAction(menu, "Add Plotmarker");
+		addAction(menu, "Delete Plotmarker");*/
 		menu.add(new Separator());
 		addAction(menu, "Add Comment");
 		addAction(menu, "Remove Comment");
@@ -196,11 +199,11 @@ public class REditor extends TextEditor {
 		a.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_CONTEXT_INFORMATION);
 		setAction("ContentAssistTip", a);
 
-		setplotmarkers = new com.eco.bio7.reditor.actions.SetMarkers("Set Plotmarker", PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+		/*setplotmarkers = new com.eco.bio7.reditor.actions.SetMarkers("Set Plotmarker", PlatformUI.getWorkbench().getActiveWorkbenchWindow());
 		setAction("Add Plotmarker", setplotmarkers);
 
 		deleteplotmarkers = new com.eco.bio7.reditor.actions.DeletePlotMarkers("Delete Plotmarker", PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-		setAction("Delete Plotmarker", deleteplotmarkers);
+		setAction("Delete Plotmarker", deleteplotmarkers);*/
 
 		setcomment = new com.eco.bio7.reditor.actions.SetComment("Add Comment", PlatformUI.getWorkbench().getActiveWorkbenchWindow());
 		setAction("Add Comment", setcomment);

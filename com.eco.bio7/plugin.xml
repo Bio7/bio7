@@ -949,6 +949,28 @@
              menubarPath="additions.path">
        </action>
     </objectContribution>
+    <viewerContribution
+          id="REditorDebug.rulerActions"
+          targetID="com.eco.bio7.reditors.TemplateEditor.RulerContext">
+       <action
+             class="com.eco.bio7.console.DeleteBreakpointAction"
+             id="DeleteBreakpointAction"
+             label="Delete Breakpoints"
+             menubarPath="debug">
+       </action>
+       <action
+             class="com.eco.bio7.console.ConditionalToggleBreakpointAction"
+             id="AddConditionalBreakpointAction"
+             label="Toggle Conditional Breakpoint"
+             menubarPath="debug">
+       </action>
+       <action
+             class="com.eco.bio7.console.RulerToggleBreakpointAction"
+             id="AddBreakpointAction"
+             label="Toggle Breakpoint"
+             menubarPath="debug">
+       </action>
+    </viewerContribution>
   </extension>
   <extension
         point="org.eclipse.ui.editorActions">

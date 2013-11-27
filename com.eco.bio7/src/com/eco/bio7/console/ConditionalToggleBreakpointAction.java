@@ -1,4 +1,4 @@
-package com.eco.bio7.reditor.debugBreakpoint;
+package com.eco.bio7.console;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -94,7 +94,7 @@ public class ConditionalToggleBreakpointAction extends AbstractRulerActionDelega
 							marker.setAttribute(IMarker.LINE_NUMBER, new Integer(startline));
 							marker.setAttribute(IMarker.MESSAGE, rDebugExpression);
 							marker.setAttribute(IMarker.LOCATION, "" + startline);
-						
+							marker.setAttribute(IMarker.TEXT,"");
 
 							
 

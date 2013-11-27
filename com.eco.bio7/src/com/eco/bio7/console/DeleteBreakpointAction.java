@@ -1,4 +1,4 @@
-package com.eco.bio7.reditor.debugBreakpoint;
+package com.eco.bio7.console;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -16,26 +16,14 @@ public class DeleteBreakpointAction extends AbstractRulerActionDelegate implemen
 
 	private class ToggleBreakpointAction extends Action {
 
-		private final IVerticalRulerInfo mRulerInfo;
-		private final ITextEditor mEditor;
-		int startline;
-
-		int stopline;
-
-		IMarker[] markers = null;
-
-		int marked[] = null;
-
 		public ToggleBreakpointAction(ITextEditor editor, IVerticalRulerInfo rulerInfo) {
 			super("Remove breakpoints");
-			mEditor = editor;
-			mRulerInfo = rulerInfo;
+
 		}
 
 		public IMarker[] findMyMarkers(IResource target) {
 			String type = "com.eco.bio7.redit.debugMarker";
-			
-			
+
 			IMarker[] markers = null;
 			try {
 				markers = target.findMarkers(type, true, IResource.DEPTH_INFINITE);
@@ -48,25 +36,23 @@ public class DeleteBreakpointAction extends AbstractRulerActionDelegate implemen
 
 		public void run() {
 
-			IEditorPart editore = (IEditorPart) PlatformUI.getWorkbench()
-					.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+			IEditorPart editore = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 
-			IResource resource = (IResource) editore.getEditorInput().getAdapter(
-					IResource.class);
+			IResource resource = (IResource) editore.getEditorInput().getAdapter(IResource.class);
 
 			IMarker[] markersfind = findMyMarkers(resource);
 			for (int i = 0; i < markersfind.length; i++) {
 				try {
+					String func = (String) markersfind[i].getAttribute(IMarker.TEXT);
+					ConsolePageParticipant.pipeInputToConsole("untrace(" + func + ")", true, false);
 					markersfind[i].delete();
+
 				} catch (CoreException e) {
 
 					e.printStackTrace();
 				}
 
 			}
-
-			int offset = 0;
-			;
 
 		}
 	}
@@ -76,5 +62,3 @@ public class DeleteBreakpointAction extends AbstractRulerActionDelegate implemen
 		return new ToggleBreakpointAction(editor, rulerInfo);
 	}
 }
-
-	
