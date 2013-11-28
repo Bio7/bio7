@@ -81,7 +81,7 @@ public class DebugRScript implements IEditorActionDelegate {
 		IContributionItem[] its = inst.toolBarManager.getItems();
 		boolean exist = false;
 		for (int i = 0; i < its.length; i++) {
-			System.out.println(its[i].getId());
+
 			if (its[i].getId() != null) {
 				if (its[i].getId().equals("Stop")) {
 
@@ -184,23 +184,32 @@ public class DebugRScript implements IEditorActionDelegate {
 							}
 							// Using trace instead of the browser call!
 							else {
+								if (expression == null) {
 
-								ConsolePageParticipant.pipeInputToConsole("source('" + loc + "')",true,false);
-								ConsolePageParticipant.pipeInputToConsole("XXX<-findLineNum('" + loc + "#" + lineNum + "')",true,false);
-								ConsolePageParticipant.pipeInputToConsole("setBreakpoint('" + loc + "#" + lineNum + "')",true,false);
-								ConsolePageParticipant.pipeInputToConsole("writeClipboard(XXX[[1]]$name, format = 1)",true,false);
-								
-								
-                                try {
+									ConsolePageParticipant.pipeInputToConsole("source('" + loc + "')", true, false);
+									ConsolePageParticipant.pipeInputToConsole("XXX<-findLineNum('" + loc + "#" + lineNum + "')", true, false);
+									ConsolePageParticipant.pipeInputToConsole("setBreakpoint('" + loc + "#" + lineNum + "')", true, false);
+									ConsolePageParticipant.pipeInputToConsole("writeClipboard(XXX[[1]]$name, format = 1)", true, false);
+								} else {
+									ConsolePageParticipant.pipeInputToConsole("source('" + loc + "')", true, false);
+									ConsolePageParticipant.pipeInputToConsole("XXX<-findLineNum('" + loc + "#" + lineNum + "')", true, false);
+									ConsolePageParticipant.pipeInputToConsole("setBreakpoint('" + loc + "#" + lineNum + "',quote("+expression+"))", true, false);
+									System.out.println("setBreakpoint('" + loc + "#" + lineNum + "',quote("+expression+"))");
+									ConsolePageParticipant.pipeInputToConsole("writeClipboard(XXX[[1]]$name, format = 1)", true, false);
+
+								}
+
+								try {
 									Thread.sleep(100);
 								} catch (InterruptedException e1) {
 									// TODO Auto-generated catch block
 									e1.printStackTrace();
 								}
+
+								System.out.println("asynchronus");
 								Clipboard clipboard = new Clipboard(Display.getCurrent());
 
 								String result = (String) clipboard.getContents(TextTransfer.getInstance());
-							
 
 								for (int i = 0; i < markers.length; i++) {
 									Integer line = null;
@@ -210,14 +219,12 @@ public class DebugRScript implements IEditorActionDelegate {
 										// TODO Auto-generated catch block
 										e.printStackTrace();
 									}
-									
-									if (line.intValue() == lineNum) {
 
-										
+									if (line.intValue() == lineNum) {
 
 										try {
 											markers[i].setAttribute(IMarker.TEXT, result);
-											//System.out.println("This is "+markers[i].getAttribute(IMarker.MESSAGE));
+											// System.out.println("This is "+markers[i].getAttribute(IMarker.MESSAGE));
 										} catch (CoreException e) {
 											// TODO Auto-generated catch block
 											e.printStackTrace();
@@ -225,7 +232,7 @@ public class DebugRScript implements IEditorActionDelegate {
 									}
 
 								}
-								
+
 							}
 						}
 					}
