@@ -45,7 +45,7 @@ public class DebugNextAction extends Action {
 		
 		ConsolePageParticipant.pipeInputToConsole("n", true, false);
 		System.out.println("n");
-          ConsolePageParticipant inst=ConsolePageParticipant.getConsolePageParticipantInstance();
+        ConsolePageParticipant inst=ConsolePageParticipant.getConsolePageParticipantInstance();
         
 		
 			

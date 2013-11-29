@@ -45,7 +45,7 @@ public class DebugContinueAction extends Action {
 		
 		ConsolePageParticipant.pipeInputToConsole("c", true, false);
 		System.out.println("c");
-          ConsolePageParticipant inst=ConsolePageParticipant.getConsolePageParticipantInstance();
+        ConsolePageParticipant inst=ConsolePageParticipant.getConsolePageParticipantInstance();
         
 		
 			

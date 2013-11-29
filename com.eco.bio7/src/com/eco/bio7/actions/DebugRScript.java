@@ -10,6 +10,11 @@
  *******************************************************************************/
 package com.eco.bio7.actions;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
@@ -63,6 +68,7 @@ public class DebugRScript implements IEditorActionDelegate {
 	private IMarker[] markers;
 	boolean untrace = false;
 	private boolean BROWSER = false;
+	private String tempFileName="";
 
 	public void dispose() {
 
@@ -184,54 +190,44 @@ public class DebugRScript implements IEditorActionDelegate {
 							}
 							// Using trace instead of the browser call!
 							else {
+								
+								
+								File fi = new File(tempFileName);
+								if(fi!=null&&fi.exists()){
+								fi.delete();
+								}
+								
+								UUID ui = UUID.randomUUID();
+								String fileUid=ui.toString();
+								String fileName=fileUid+".txt";
+								
 								if (expression == null) {
 
 									ConsolePageParticipant.pipeInputToConsole("source('" + loc + "')", true, false);
 									ConsolePageParticipant.pipeInputToConsole("XXX<-findLineNum('" + loc + "#" + lineNum + "')", true, false);
 									ConsolePageParticipant.pipeInputToConsole("setBreakpoint('" + loc + "#" + lineNum + "')", true, false);
 									ConsolePageParticipant.pipeInputToConsole("writeClipboard(XXX[[1]]$name, format = 1)", true, false);
+									writeTempRData("XXX[[1]]$name",fileName);
+
 								} else {
 									ConsolePageParticipant.pipeInputToConsole("source('" + loc + "')", true, false);
 									ConsolePageParticipant.pipeInputToConsole("XXX<-findLineNum('" + loc + "#" + lineNum + "')", true, false);
-									ConsolePageParticipant.pipeInputToConsole("setBreakpoint('" + loc + "#" + lineNum + "',quote("+expression+"))", true, false);
-									System.out.println("setBreakpoint('" + loc + "#" + lineNum + "',quote("+expression+"))");
+									ConsolePageParticipant.pipeInputToConsole("setBreakpoint('" + loc + "#" + lineNum + "',quote(" + expression + "))", true, false);
+									System.out.println("setBreakpoint('" + loc + "#" + lineNum + "',quote(" + expression + "))");
 									ConsolePageParticipant.pipeInputToConsole("writeClipboard(XXX[[1]]$name, format = 1)", true, false);
 
-								}
-
-								try {
-									Thread.sleep(100);
-								} catch (InterruptedException e1) {
-									// TODO Auto-generated catch block
-									e1.printStackTrace();
-								}
-
-								System.out.println("asynchronus");
-								Clipboard clipboard = new Clipboard(Display.getCurrent());
-
-								String result = (String) clipboard.getContents(TextTransfer.getInstance());
-
-								for (int i = 0; i < markers.length; i++) {
-									Integer line = null;
-									try {
-										line = (Integer) markers[i].getAttribute(IMarker.LINE_NUMBER);
-									} catch (CoreException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									}
-
-									if (line.intValue() == lineNum) {
-
-										try {
-											markers[i].setAttribute(IMarker.TEXT, result);
-											// System.out.println("This is "+markers[i].getAttribute(IMarker.MESSAGE));
-										} catch (CoreException e) {
-											// TODO Auto-generated catch block
-											e.printStackTrace();
-										}
-									}
+									writeTempRData("XXX[[1]]$name",fileName);
+									//System.out.println("writeClipboard(XXX[[1]]$name, format = 1)");
 
 								}
+
+								/*
+								 * try { Thread.sleep(100); } catch (InterruptedException e1) { // TODO Auto-generated catch block e1.printStackTrace(); }
+								 */
+
+								//readClipboardJava(lineNum);
+
+								readTempFileJava(lineNum,fileName);
 
 							}
 						}
@@ -245,6 +241,95 @@ public class DebugRScript implements IEditorActionDelegate {
 
 		}
 
+	}
+
+	private void readClipboardJava(int lineNum) {
+		Clipboard clipboard = new Clipboard(Display.getCurrent());
+
+		String result = (String) clipboard.getContents(TextTransfer.getInstance());
+
+		for (int i = 0; i < markers.length; i++) {
+			Integer line = null;
+			try {
+				line = (Integer) markers[i].getAttribute(IMarker.LINE_NUMBER);
+			} catch (CoreException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			if (line.intValue() == lineNum) {
+
+				try {
+					markers[i].setAttribute(IMarker.TEXT, result);
+					// System.out.println("This is "+markers[i].getAttribute(IMarker.MESSAGE));
+				} catch (CoreException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+
+		}
+	}
+
+	private void readTempFileJava(int lineNum,String fileName) {
+		tempFileName=fileName;
+		File fi=new File(fileName);
+		FileReader fr = null;
+		
+		while (fi.exists() == false) {
+
+		}
+		//System.out.println(fi.canRead());
+		if (fi.exists())
+			try {
+				fr = new FileReader(fileName);
+			} catch (FileNotFoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+		try (BufferedReader br = new BufferedReader(fr)) {
+
+			String result;
+
+			while ((result = br.readLine()) != null) {
+				System.out.println("Synchronus result: "+result);
+			}
+			
+			for (int i = 0; i < markers.length; i++) {
+				Integer line = null;
+				try {
+					line = (Integer) markers[i].getAttribute(IMarker.LINE_NUMBER);
+				} catch (CoreException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				if (line.intValue() == lineNum) {
+
+					try {
+						markers[i].setAttribute(IMarker.TEXT, result);
+						// System.out.println("This is "+markers[i].getAttribute(IMarker.MESSAGE));
+					} catch (CoreException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+
+			}
+
+			fr.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		
+	}
+
+	private void writeTempRData(String data,String fileName) {
+		ConsolePageParticipant.pipeInputToConsole("fileConn<-file(\""+fileName+"\")");
+		ConsolePageParticipant.pipeInputToConsole("writeLines(c(" + data + "), fileConn)");
+		ConsolePageParticipant.pipeInputToConsole("close(fileConn)");
 	}
 
 	public Map<Integer, String> findMyMarkers(IResource target) {
