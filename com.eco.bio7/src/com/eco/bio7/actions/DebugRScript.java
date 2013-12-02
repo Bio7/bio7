@@ -153,7 +153,7 @@ public class DebugRScript implements IEditorActionDelegate {
 
 						lineNum = entry.getKey();
 						expression = entry.getValue();
-
+                        System.out.println(expression);
 						// lineNum = lineNumber.intValue();
 
 						if (lineNum > 0) {
@@ -199,9 +199,9 @@ public class DebugRScript implements IEditorActionDelegate {
 								
 								UUID ui = UUID.randomUUID();
 								String fileUid=ui.toString();
-								String fileName=fileUid+".txt";
-								
-								if (expression == null) {
+								String fileName="tempRVariables.txt";
+								if(expression!=null){
+								if (expression.equals("-")) {
 
 									ConsolePageParticipant.pipeInputToConsole("source('" + loc + "')", true, false);
 									ConsolePageParticipant.pipeInputToConsole("XXX<-findLineNum('" + loc + "#" + lineNum + "')", true, false);
@@ -212,13 +212,14 @@ public class DebugRScript implements IEditorActionDelegate {
 								} else {
 									ConsolePageParticipant.pipeInputToConsole("source('" + loc + "')", true, false);
 									ConsolePageParticipant.pipeInputToConsole("XXX<-findLineNum('" + loc + "#" + lineNum + "')", true, false);
-									ConsolePageParticipant.pipeInputToConsole("setBreakpoint('" + loc + "#" + lineNum + "',quote(" + expression + "))", true, false);
+									ConsolePageParticipant.pipeInputToConsole("setBreakpoint('" + loc + "#" + lineNum + "',quote(" + "if(x==5) browser();" + "))", true, false);
 									System.out.println("setBreakpoint('" + loc + "#" + lineNum + "',quote(" + expression + "))");
 									ConsolePageParticipant.pipeInputToConsole("writeClipboard(XXX[[1]]$name, format = 1)", true, false);
 
 									writeTempRData("XXX[[1]]$name",fileName);
 									//System.out.println("writeClipboard(XXX[[1]]$name, format = 1)");
 
+								}
 								}
 
 								/*
@@ -292,10 +293,12 @@ public class DebugRScript implements IEditorActionDelegate {
 
 			String result;
 
-			while ((result = br.readLine()) != null) {
-				System.out.println("Synchronus result: "+result);
-			}
+			result = br.readLine();
+				//System.out.println("Synchronus result: "+result);
+				
 			
+			//result = br.readLine();
+			 System.out.println("And "+result);
 			for (int i = 0; i < markers.length; i++) {
 				Integer line = null;
 				try {
@@ -309,7 +312,7 @@ public class DebugRScript implements IEditorActionDelegate {
 
 					try {
 						markers[i].setAttribute(IMarker.TEXT, result);
-						// System.out.println("This is "+markers[i].getAttribute(IMarker.MESSAGE));
+					System.out.println("This is "+markers[i].getAttribute(IMarker.TEXT));
 					} catch (CoreException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -347,8 +350,8 @@ public class DebugRScript implements IEditorActionDelegate {
 
 		for (int i = 0; i < markers.length; ++i) {
 			try {
-				map1.put((Integer) markers[i].getAttribute(IMarker.LINE_NUMBER), (String) markers[i].getAttribute(IMarker.MESSAGE));
-
+				map1.put((Integer) markers[i].getAttribute(IMarker.LINE_NUMBER), (String) markers[i].getAttribute(IMarker.TEXT));
+                System.out.println( (String) markers[i].getAttribute(IMarker.TEXT));
 			} catch (CoreException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

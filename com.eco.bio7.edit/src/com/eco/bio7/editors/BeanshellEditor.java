@@ -17,7 +17,10 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
+import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.TextAttribute;
+import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
+import org.eclipse.jface.text.source.ICharacterPairMatcher;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.graphics.Font;
@@ -34,6 +37,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
+import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.texteditor.TextOperationAction;
 
 import com.eco.bio7.beanshelleditor.actions.OpenPreferences;
@@ -67,6 +71,10 @@ public class BeanshellEditor extends TextEditor {
 
 	private OpenPreferences preferences;
 
+	public final static String EDITOR_MATCHING_BRACKETS = "matchingBrackets";
+
+	public final static String EDITOR_MATCHING_BRACKETS_COLOR = "matchingBracketsColor";
+
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.beanshell");
@@ -84,7 +92,7 @@ public class BeanshellEditor extends TextEditor {
 		if (editor != null) {
 			IEditorSite site = editor.getEditorSite();
 			IWorkbenchPage page = site.getPage();
-			//setPreferenceStore(BeanshellEditorPlugin.getDefault().getPreferenceStore());
+			// setPreferenceStore(BeanshellEditorPlugin.getDefault().getPreferenceStore());
 
 			partListener = new IPartListener() {
 
@@ -128,28 +136,28 @@ public class BeanshellEditor extends TextEditor {
 				RGB rgbkey5 = PreferenceConverter.getColor(store, "colourkey5");
 				RGB rgbkey6 = PreferenceConverter.getColor(store, "colourkey6");
 				RGB rgbkey7 = PreferenceConverter.getColor(store, "colourkey7");
-				//RGB rgbkey8 = PreferenceConverter.getColor(store, "colourkey8");
-				
-				FontData f=PreferenceConverter.getFontData(store, "colourkeyfont");
-				FontData f1=PreferenceConverter.getFontData(store, "colourkeyfont1");
-				FontData f2=PreferenceConverter.getFontData(store, "colourkeyfont2");
-				FontData f3=PreferenceConverter.getFontData(store, "colourkeyfont3");
-				FontData f4=PreferenceConverter.getFontData(store, "colourkeyfont4");
-				FontData f5=PreferenceConverter.getFontData(store, "colourkeyfont5");
-				FontData f6=PreferenceConverter.getFontData(store, "colourkeyfont6");
-				FontData f7=PreferenceConverter.getFontData(store, "colourkeyfont7");
-				//FontData f8=PreferenceConverter.getFontData(store, "colourkeyfont8");
+				// RGB rgbkey8 = PreferenceConverter.getColor(store, "colourkey8");
 
-				scanner.keyword.setData(new TextAttribute(provider.getColor(rgbkey),null, 1,new Font(Display.getCurrent(),f)));
-				scanner.type.setData(new TextAttribute(provider.getColor(rgbkey1),null, 1,new Font(Display.getCurrent(),f1)));
-				scanner.string.setData(new TextAttribute(provider.getColor(rgbkey2),null, 1,new Font(Display.getCurrent(),f2)));
-				scanner.comment.setData(new TextAttribute(provider.getColor(rgbkey3),null, 1,new Font(Display.getCurrent(),f3)));
-				scanner.other.setData(new TextAttribute(provider.getColor(rgbkey4),null, 1,new Font(Display.getCurrent(),f4)));
-				scanner.operators.setData(new TextAttribute(provider.getColor(rgbkey5),null, 1,new Font(Display.getCurrent(),f5)));
-				scanner.braces.setData(new TextAttribute(provider.getColor(rgbkey6),null, 1,new Font(Display.getCurrent(),f6)));
-				scanner.numbers.setData(new TextAttribute(provider.getColor(rgbkey7),null, 1,new Font(Display.getCurrent(),f7)));
-				//scanner.multiLineComment.setData(new TextAttribute(provider.getColor(rgbkey8),null, 1,new Font(Display.getCurrent(),f8)));
-				
+				FontData f = PreferenceConverter.getFontData(store, "colourkeyfont");
+				FontData f1 = PreferenceConverter.getFontData(store, "colourkeyfont1");
+				FontData f2 = PreferenceConverter.getFontData(store, "colourkeyfont2");
+				FontData f3 = PreferenceConverter.getFontData(store, "colourkeyfont3");
+				FontData f4 = PreferenceConverter.getFontData(store, "colourkeyfont4");
+				FontData f5 = PreferenceConverter.getFontData(store, "colourkeyfont5");
+				FontData f6 = PreferenceConverter.getFontData(store, "colourkeyfont6");
+				FontData f7 = PreferenceConverter.getFontData(store, "colourkeyfont7");
+				// FontData f8=PreferenceConverter.getFontData(store, "colourkeyfont8");
+
+				scanner.keyword.setData(new TextAttribute(provider.getColor(rgbkey), null, 1, new Font(Display.getCurrent(), f)));
+				scanner.type.setData(new TextAttribute(provider.getColor(rgbkey1), null, 1, new Font(Display.getCurrent(), f1)));
+				scanner.string.setData(new TextAttribute(provider.getColor(rgbkey2), null, 1, new Font(Display.getCurrent(), f2)));
+				scanner.comment.setData(new TextAttribute(provider.getColor(rgbkey3), null, 1, new Font(Display.getCurrent(), f3)));
+				scanner.other.setData(new TextAttribute(provider.getColor(rgbkey4), null, 1, new Font(Display.getCurrent(), f4)));
+				scanner.operators.setData(new TextAttribute(provider.getColor(rgbkey5), null, 1, new Font(Display.getCurrent(), f5)));
+				scanner.braces.setData(new TextAttribute(provider.getColor(rgbkey6), null, 1, new Font(Display.getCurrent(), f6)));
+				scanner.numbers.setData(new TextAttribute(provider.getColor(rgbkey7), null, 1, new Font(Display.getCurrent(), f7)));
+				// scanner.multiLineComment.setData(new TextAttribute(provider.getColor(rgbkey8),null, 1,new Font(Display.getCurrent(),f8)));
+
 				if (BeanshellEditor.this != null) {
 					if (BeanshellEditor.this.getSourceViewer() != null) {
 						BeanshellEditor.this.getSourceViewer().invalidateTextPresentation();
@@ -208,10 +216,24 @@ public class BeanshellEditor extends TextEditor {
 
 		rsourceConverter = new com.eco.bio7.beanshelleditor.actions.RSourceConverter();
 		setAction("Convert R Code", rsourceConverter);
-		
+
 		preferences = new com.eco.bio7.beanshelleditor.actions.OpenPreferences();
 		setAction("Editor Preferences", preferences);
-		
+
+	}
+
+	protected void configureSourceViewerDecorationSupport(SourceViewerDecorationSupport support) {
+		super.configureSourceViewerDecorationSupport(support);
+
+		char[] matchChars = { '{', '}', '(', ')', '[', ']' }; // which brackets to match
+		ICharacterPairMatcher matcher = new DefaultCharacterPairMatcher(matchChars, IDocumentExtension3.DEFAULT_PARTITIONING);
+		support.setCharacterPairMatcher(matcher);
+		support.setMatchingCharacterPainterPreferenceKeys(EDITOR_MATCHING_BRACKETS, EDITOR_MATCHING_BRACKETS_COLOR);
+
+		// Enable bracket highlighting in the preference store
+		IPreferenceStore store = getPreferenceStore();
+		store.setDefault(EDITOR_MATCHING_BRACKETS, true);
+		store.setDefault(EDITOR_MATCHING_BRACKETS_COLOR, "128,128,128");
 	}
 
 }

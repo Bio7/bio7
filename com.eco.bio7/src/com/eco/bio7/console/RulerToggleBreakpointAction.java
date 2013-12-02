@@ -86,7 +86,7 @@ public class RulerToggleBreakpointAction extends AbstractRulerActionDelegate imp
 							marker.setAttribute(IMarker.LINE_NUMBER, new Integer(startline));
 							marker.setAttribute(IMarker.MESSAGE, null);
 							marker.setAttribute(IMarker.LOCATION, "" + startline);
-							marker.setAttribute(IMarker.TEXT,"");
+							marker.setAttribute(IMarker.TEXT,"-");
 						
 
 							

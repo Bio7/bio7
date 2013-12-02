@@ -94,7 +94,7 @@ public class ConditionalToggleBreakpointAction extends AbstractRulerActionDelega
 							marker.setAttribute(IMarker.LINE_NUMBER, new Integer(startline));
 							marker.setAttribute(IMarker.MESSAGE, rDebugExpression);
 							marker.setAttribute(IMarker.LOCATION, "" + startline);
-							marker.setAttribute(IMarker.TEXT,"");
+							marker.setAttribute(IMarker.TEXT,"EXPRESSION");
 
 							
 

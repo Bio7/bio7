@@ -16,13 +16,14 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
-
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
+import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.TextAttribute;
+import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
+import org.eclipse.jface.text.source.ICharacterPairMatcher;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
-
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
@@ -34,10 +35,10 @@ import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
-
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
+import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.texteditor.TextOperationAction;
 
 import com.eco.bio7.reditor.Bio7REditorPlugin;
@@ -65,6 +66,10 @@ public class REditor extends TextEditor {
 	private UnsetComment unsetcomment;
 
 	private OpenPreferences preferences;
+	
+	public final static String EDITOR_MATCHING_BRACKETS = "matchingBrackets";
+	
+	public final static String EDITOR_MATCHING_BRACKETS_COLOR= "matchingBracketsColor";
 
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
@@ -214,6 +219,21 @@ public class REditor extends TextEditor {
 		preferences = new com.eco.bio7.reditor.actions.OpenPreferences();
 		setAction("R Preferences", preferences);
 
+	}
+	
+	protected void configureSourceViewerDecorationSupport (SourceViewerDecorationSupport support) {
+		super.configureSourceViewerDecorationSupport(support);		
+	 
+		char[] matchChars = {'{','}','(', ')', '[', ']'}; //which brackets to match		
+		ICharacterPairMatcher matcher = new DefaultCharacterPairMatcher(matchChars ,
+				IDocumentExtension3.DEFAULT_PARTITIONING);
+		support.setCharacterPairMatcher(matcher);
+		support.setMatchingCharacterPainterPreferenceKeys(EDITOR_MATCHING_BRACKETS,EDITOR_MATCHING_BRACKETS_COLOR);
+	 
+		//Enable bracket highlighting in the preference store
+		IPreferenceStore store = getPreferenceStore();
+		store.setDefault(EDITOR_MATCHING_BRACKETS, true);
+		store.setDefault(EDITOR_MATCHING_BRACKETS_COLOR, "128,128,128");
 	}
 
 }
