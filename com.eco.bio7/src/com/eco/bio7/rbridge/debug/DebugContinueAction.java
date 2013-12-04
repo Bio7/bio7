@@ -9,7 +9,7 @@
  *     M. Austenfeld
  *******************************************************************************/
 
-package com.eco.bio7.console;
+package com.eco.bio7.rbridge.debug;
 
 import java.util.prefs.Preferences;
 
@@ -21,6 +21,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.console.ConsolePageParticipant;
 
 public class DebugContinueAction extends Action {
 

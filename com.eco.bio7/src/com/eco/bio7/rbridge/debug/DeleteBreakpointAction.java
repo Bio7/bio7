@@ -1,4 +1,4 @@
-package com.eco.bio7.console;
+package com.eco.bio7.rbridge.debug;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -11,6 +11,8 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractRulerActionDelegate;
 import org.eclipse.ui.texteditor.ITextEditor;
+
+import com.eco.bio7.console.ConsolePageParticipant;
 
 public class DeleteBreakpointAction extends AbstractRulerActionDelegate implements IEditorActionDelegate {
 

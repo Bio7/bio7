@@ -12,6 +12,9 @@
  *******************************************************************************/
 package com.eco.bio7.reditors;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
@@ -20,9 +23,15 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.TextAttribute;
+import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
 import org.eclipse.jface.text.source.ICharacterPairMatcher;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.text.source.IVerticalRuler;
+import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
+import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
+import org.eclipse.jface.text.source.projection.ProjectionSupport;
+import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
@@ -66,6 +75,10 @@ public class REditor extends TextEditor {
 	private UnsetComment unsetcomment;
 
 	private OpenPreferences preferences;
+
+	private ProjectionSupport projectionSupport;
+
+	private ProjectionAnnotationModel annotationModel;
 	
 	public final static String EDITOR_MATCHING_BRACKETS = "matchingBrackets";
 	
@@ -74,8 +87,54 @@ public class REditor extends TextEditor {
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.reditor");
+		ProjectionViewer viewer =(ProjectionViewer)getSourceViewer();
+
+	    projectionSupport = new ProjectionSupport(viewer,getAnnotationAccess(),getSharedColors());
+	    projectionSupport.install();
+
+	    //turn projection mode on
+	    viewer.doOperation(ProjectionViewer.TOGGLE);
+
+	    annotationModel = viewer.getProjectionAnnotationModel();
+	    
 		
 	}
+	
+	private Annotation[] oldAnnotations;
+	
+	
+	public void updateFoldingStructure(ArrayList positions)
+	{
+		Annotation[] annotations = new Annotation[positions.size()];
+		
+		//this will hold the new annotations along
+		//with their corresponding positions
+		HashMap newAnnotations = new HashMap();
+		
+		for(int i =0;i<positions.size();i++)
+		{
+			ProjectionAnnotation annotation = new ProjectionAnnotation();
+			
+			newAnnotations.put(annotation,positions.get(i));
+			
+			annotations[i]=annotation;
+		}
+		
+		annotationModel.modifyAnnotations(oldAnnotations,newAnnotations,null);
+		
+		oldAnnotations=annotations;
+	}
+	
+	protected ISourceViewer createSourceViewer(Composite parent,
+            IVerticalRuler ruler, int styles)
+    {
+        ISourceViewer viewer = new ProjectionViewer(parent, ruler, getOverviewRuler(), isOverviewRulerVisible(), styles);
+
+    	// ensure decoration support has been created and configured.
+    	getSourceViewerDecorationSupport(viewer);
+    	
+    	return viewer;
+    }
 
 	/**
 	 * Creates a new template editor.
@@ -84,8 +143,10 @@ public class REditor extends TextEditor {
 		super();
 		
 		colorManager = new RColorManager();
-		setSourceViewerConfiguration(new RConfiguration(colorManager));
-
+		setSourceViewerConfiguration(new RConfiguration(colorManager,this));
+		
+		
+		
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		if (editor != null) {
 

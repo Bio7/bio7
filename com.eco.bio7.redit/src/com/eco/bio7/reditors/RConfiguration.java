@@ -22,11 +22,14 @@ import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
+import org.eclipse.jface.text.reconciler.IReconciler;
+import org.eclipse.jface.text.reconciler.MonoReconciler;
 import org.eclipse.jface.text.rules.BufferedRuleBasedScanner;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
+
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.rpreferences.template.RCompletionProcessor;
 
@@ -38,9 +41,11 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 	RColorProvider provider;
 
-	public RConfiguration(RColorManager colorManager) {
-		this.colorManager = colorManager;
+	private REditor rEditor;
 
+	public RConfiguration(RColorManager colorManager, REditor rEditor) {
+		this.colorManager = colorManager;
+        this.rEditor=rEditor;
 	}
 
 	public static class SingleTokenScanner extends BufferedRuleBasedScanner {
@@ -114,5 +119,15 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 		return assistant;
 	}
+	
+	public IReconciler getReconciler(ISourceViewer sourceViewer)
+    {
+        RReconcilingStrategy strategy = new RReconcilingStrategy();
+        strategy.setEditor(rEditor);
+        
+        MonoReconciler reconciler = new MonoReconciler(strategy,false);
+        
+        return reconciler;
+    }
 
 }

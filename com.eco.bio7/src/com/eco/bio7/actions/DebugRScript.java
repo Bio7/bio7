@@ -56,11 +56,11 @@ import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
-import com.eco.bio7.console.DebugContinueAction;
-import com.eco.bio7.console.DebugNextAction;
-import com.eco.bio7.console.DebugStopAction;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.rbridge.debug.DebugContinueAction;
+import com.eco.bio7.rbridge.debug.DebugNextAction;
+import com.eco.bio7.rbridge.debug.DebugStopAction;
 import com.eco.bio7.rcp.StartBio7Utils;
 
 public class DebugRScript implements IEditorActionDelegate {

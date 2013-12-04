@@ -953,19 +953,19 @@
           id="REditorDebug.rulerActions"
           targetID="com.eco.bio7.reditors.TemplateEditor.RulerContext">
        <action
-             class="com.eco.bio7.console.DeleteBreakpointAction"
+             class="com.eco.bio7.rbridge.debug.DeleteBreakpointAction"
              id="DeleteBreakpointAction"
              label="Delete Breakpoints"
              menubarPath="debug">
        </action>
        <action
-             class="com.eco.bio7.console.ConditionalToggleBreakpointAction"
+             class="com.eco.bio7.rbridge.debug.ConditionalToggleBreakpointAction"
              id="AddConditionalBreakpointAction"
              label="Toggle Conditional Breakpoint"
              menubarPath="debug">
        </action>
        <action
-             class="com.eco.bio7.console.RulerToggleBreakpointAction"
+             class="com.eco.bio7.rbridge.debug.RulerToggleBreakpointAction"
              id="AddBreakpointAction"
              label="Toggle Breakpoint"
              menubarPath="debug">
