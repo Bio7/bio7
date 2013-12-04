@@ -959,13 +959,13 @@
              menubarPath="debug">
        </action>
        <action
-             class="com.eco.bio7.rbridge.debug.ConditionalToggleBreakpointAction"
+             class="com.eco.bio7.rbridge.debug.ToggleDebugConditionalBreakpointAction"
              id="AddConditionalBreakpointAction"
              label="Toggle Conditional Breakpoint"
              menubarPath="debug">
        </action>
        <action
-             class="com.eco.bio7.rbridge.debug.RulerToggleBreakpointAction"
+             class="com.eco.bio7.rbridge.debug.ToggleDebugBreakpointAction"
              id="AddBreakpointAction"
              label="Toggle Breakpoint"
              menubarPath="debug">
@@ -987,7 +987,7 @@
               toolbarPath="org.eclipse.ui.workbench.file/open.ext"
               tooltip="Interpret RScript"/>
         <action
-              class="com.eco.bio7.actions.DebugRScript"
+              class="com.eco.bio7.rbridge.debug.DebugRScript"
               icon="icons/debug_exc.gif"
               id="com.eco.bio7.revaluate_action"
               

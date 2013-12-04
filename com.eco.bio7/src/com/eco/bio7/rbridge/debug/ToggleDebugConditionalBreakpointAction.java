@@ -24,7 +24,7 @@ import org.eclipse.ui.texteditor.AbstractRulerActionDelegate;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-public class ConditionalToggleBreakpointAction extends AbstractRulerActionDelegate implements IEditorActionDelegate {
+public class ToggleDebugConditionalBreakpointAction extends AbstractRulerActionDelegate implements IEditorActionDelegate {
 
 	private class ToggleBreakpointAction extends Action {
 

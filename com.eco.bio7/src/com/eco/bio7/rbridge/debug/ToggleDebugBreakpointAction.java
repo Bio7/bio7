@@ -22,7 +22,7 @@ import org.eclipse.ui.texteditor.AbstractRulerActionDelegate;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-public class RulerToggleBreakpointAction extends AbstractRulerActionDelegate implements IEditorActionDelegate {
+public class ToggleDebugBreakpointAction extends AbstractRulerActionDelegate implements IEditorActionDelegate {
 
 	private class ToggleBreakpointAction extends Action {
 
