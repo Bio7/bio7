@@ -332,13 +332,13 @@ public class JavaEditor extends TextEditor {
 		setAction(TEMPLATE_PROPOSALS, action);
 		markAsStateDependentAction(TEMPLATE_PROPOSALS, true);
 
-		IAction a = new TextOperationAction(JavaEditorMessages.getResourceBundle(), "ContentAssistProposal.", this, ISourceViewer.CONTENTASSIST_PROPOSALS);
-		a.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
-		setAction("ContentAssistProposal", a);
+		IAction actionProp = new TextOperationAction(JavaEditorMessages.getResourceBundle(), "ContentAssistProposal.", this, ISourceViewer.CONTENTASSIST_PROPOSALS);
+		actionProp.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
+		setAction("ContentAssistProposal",actionProp);
 
-		a = new TextOperationAction(JavaEditorMessages.getResourceBundle(), "ContentAssistTip.", this, ISourceViewer.CONTENTASSIST_CONTEXT_INFORMATION);
-		a.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_CONTEXT_INFORMATION);
-		setAction("ContentAssistTip", a);
+		IAction  actionTip = new TextOperationAction(JavaEditorMessages.getResourceBundle(), "ContentAssistTip.", this, ISourceViewer.CONTENTASSIST_CONTEXT_INFORMATION);
+		actionTip.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_CONTEXT_INFORMATION);
+		setAction("ContentAssistTip", actionTip);
 
 		setcomment = new com.eco.bio7.javaeditor.actions.SetComment("Add Block Comment", PlatformUI.getWorkbench().getActiveWorkbenchWindow());
 		setAction("Add Block Comment", setcomment);

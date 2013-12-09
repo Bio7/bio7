@@ -1,5 +1,5 @@
 #ImageJ 1.48c Preferences
-#Thu Nov 21 16:03:36 CET 2013
+#Mon Dec 09 17:08:26 CET 2013
 new.fill=0
 .log.height=250
 pp.options=1
@@ -12,7 +12,7 @@ fcolor=\#000000
 raw.width=512
 .Control_Panel.@Main=894 204 132 384
 .log.width=400
-.manager.loc=852,221
+.manager.loc=1971,293
 prefs.options=541085696
 new.height=400
 measurements=51

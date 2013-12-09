@@ -111,6 +111,9 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 		IContentAssistProcessor processor = new RCompletionProcessor();
 		assistant.setContentAssistProcessor(processor, IDocument.DEFAULT_CONTENT_TYPE);
 		
+		
+		//assistant.setContentAssistProcessor(new JavaCompletionProcessor(), IDocument.DEFAULT_CATEGORY);
+		
 		assistant.enableAutoActivation(true);
 		assistant.setAutoActivationDelay(500);
 

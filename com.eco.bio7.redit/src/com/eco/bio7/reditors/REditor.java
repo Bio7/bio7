@@ -21,8 +21,11 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.TextAttribute;
+import org.eclipse.jface.text.contentassist.ContentAssistant;
+import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
 import org.eclipse.jface.text.source.ICharacterPairMatcher;
@@ -281,6 +284,8 @@ public class REditor extends TextEditor {
 		setAction("R Preferences", preferences);
 
 	}
+	
+	
 	
 	protected void configureSourceViewerDecorationSupport (SourceViewerDecorationSupport support) {
 		super.configureSourceViewerDecorationSupport(support);		

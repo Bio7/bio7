@@ -34,6 +34,7 @@ public class Bio7EditorPlugin extends AbstractUIPlugin {
 	 */
 	public Bio7EditorPlugin() {
 		fgInstance = this;
+		
 	}
 
 	/**
