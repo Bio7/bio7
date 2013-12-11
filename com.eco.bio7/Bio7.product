@@ -179,6 +179,7 @@ http://bio7.org
       <feature id="org.eclipse.equinox.p2.core.feature" version="1.2.100.v20131027-1505"/>
       <feature id="org.eclipse.emf.common" version="2.10.0.v20131028-0429"/>
       <feature id="org.eclipse.emf.ecore" version="2.10.0.v20131028-0429"/>
+      <feature id="com.eco.bio7.scenebuilder.feature" version="1.0.0.qualifier"/>
    </features>
 
 

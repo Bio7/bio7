@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry exported="true" kind="lib" path="hardware/nrjavaserial-3.8.8.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/org.eclipse.swt.win32.win32.x86_64_3.8.1.v3836b.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/jfxrt.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/gluegen-rt.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jogl-all.jar"/>
 	<classpathentry exported="true" kind="lib" path="math/commons-math3-3.2.jar"/>
