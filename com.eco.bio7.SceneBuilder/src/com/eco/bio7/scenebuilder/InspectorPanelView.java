@@ -6,11 +6,13 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
+
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PlatformUI;
@@ -97,7 +99,9 @@ public class InspectorPanelView extends ViewPart {
 
 	private void updateHierachyView(IWorkbenchPartReference partRef,final boolean closed) {
 		if (partRef.getId().equals("com.eco.bio7.browser.scenebuilder")) {
-			pag = (MultiPageEditor) partRef.getPage().getActiveEditor();
+			 IEditorPart editor=partRef.getPage().getActiveEditor();
+			 if(editor instanceof MultiPageEditor){
+			pag = (MultiPageEditor)editor;
 			if(closed==false){
 			Platform.runLater(new Runnable() {
 
@@ -137,6 +141,7 @@ public class InspectorPanelView extends ViewPart {
 					}
 				});
 			}
+		}
 		}
 	}
 	public void dispose() {

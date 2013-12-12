@@ -6,10 +6,12 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PlatformUI;
@@ -62,48 +64,51 @@ public class HierachyView extends ViewPart {
 
 		private void updateHierachyView(IWorkbenchPartReference partRef, final boolean closed) {
 			if (partRef.getId().equals("com.eco.bio7.browser.scenebuilder")) {
-				pag = (MultiPageEditor) partRef.getPage().getActiveEditor();
-				if (closed == false) {
-					Platform.runLater(new Runnable() {
+				IEditorPart editor = partRef.getPage().getActiveEditor();
+				if (editor instanceof MultiPageEditor) {
+					pag = (MultiPageEditor) editor;
 
-						@Override
-						public void run() {
+					if (closed == false) {
+						Platform.runLater(new Runnable() {
 
-							if (pag != null) {
-								HierarchyPanelController h = new HierarchyPanelController(pag.editorController);
-								final BorderPane pane = new BorderPane();
-								pane.setCenter(h.getPanelRoot());
-								scene = new Scene(pane);
+							@Override
+							public void run() {
 
-							}
+								if (pag != null) {
+									HierarchyPanelController h = new HierarchyPanelController(pag.editorController);
+									final BorderPane pane = new BorderPane();
+									pane.setCenter(h.getPanelRoot());
+									scene = new Scene(pane);
 
-						}
-					});
-					Display display = PlatformUI.getWorkbench().getDisplay();
-					display.asyncExec(new Runnable() {
-
-						public void run() {
-							if (composite.isDisposed() == false) {
-								canvas.setScene(scene);
+								}
 
 							}
-						}
-					});
-				} else {
+						});
+						Display display = PlatformUI.getWorkbench().getDisplay();
+						display.asyncExec(new Runnable() {
 
-					Platform.runLater(new Runnable() {
+							public void run() {
+								if (composite.isDisposed() == false) {
+									canvas.setScene(scene);
 
-						@Override
-						public void run() {
+								}
+							}
+						});
+					} else {
 
-							Group root = new Group();
-							Scene s = new Scene(root, 300, 300, Color.WHITE);
-							canvas.setScene(s);
-						}
-					});
+						Platform.runLater(new Runnable() {
 
+							@Override
+							public void run() {
+
+								Group root = new Group();
+								Scene s = new Scene(root, 300, 300, Color.WHITE);
+								canvas.setScene(s);
+							}
+						});
+
+					}
 				}
-
 			}
 		}
 
