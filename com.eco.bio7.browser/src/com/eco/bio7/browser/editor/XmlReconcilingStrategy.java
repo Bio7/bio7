@@ -14,8 +14,8 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.eco.bio7.browser.BrowserView;
-import com.eco.bio7.browser.MultiPageEditor;
 import com.eco.bio7.browser.editor.XMLEditor;
+import com.eco.bio7.scenebuilder.editor.MultiPageEditor;
 
 //import com.eco.bio7.browser.BrowserEditorNewView;
 

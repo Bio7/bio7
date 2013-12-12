@@ -4,6 +4,8 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
+import com.eco.bio7.browser.Activator;
+
 /**
  * The activator class controls the plug-in life cycle
  */

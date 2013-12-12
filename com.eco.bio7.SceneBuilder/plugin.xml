@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            category="com.eco.bio7.web"
+            class="com.eco.bio7.scenebuilder.editor.BrowserView"
+            icon="src/pics/logo.gif"
+            id="com.eco.bio7.browser.SceneBuilderCanvas"
+            name="Canvas"
+            restorable="true">
+      </view>
+      <view
+            class="com.eco.bio7.scenebuilder.HierachyView"
+            icon="pics/logo.gif"
+            id="com.eco.bio7.scenebuilder.hierachy"
+            name="Hierachy"
+            restorable="true">
+      </view>
+      <view
+            class="com.eco.bio7.scenebuilder.LibraryPanelView"
+            icon="pics/logo.gif"
+            id="com.eco.bio7.scenebuilder.library"
+            name="Library"
+            restorable="true">
+      </view>
+      <view
+            class="com.eco.bio7.scenebuilder.InspectorPanelView"
+            icon="pics/logo.gif"
+            id="com.eco.bio7.scenebuilder.inspector"
+            name="Inspector"
+            restorable="true">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="com.eco.bio7.scenebuilder.editor.SceneEditorPerspective"
+            icon="pics/logo.gif"
+            id="com.eco.bio7.browser.SceneBuilderPerspective"
+            name="SceneBuilder">
+      </perspective>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="com.eco.bio7.scenebuilder.editor.MultiPageEditor"
+            default="true"
+            extensions="fxml"
+            icon="icons/sample.gif"
+            id="com.eco.bio7.browser.scenebuilder"
+            name="SceneBuilder">
+      </editor>
+   </extension>
+
+</plugin>
