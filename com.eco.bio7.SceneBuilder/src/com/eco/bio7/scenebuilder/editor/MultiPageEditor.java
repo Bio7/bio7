@@ -85,8 +85,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	private Composite composite;
 	private FillLayout layout;
 	
-
-	public MultiPageEditor() {
+    public MultiPageEditor() {
 		super();
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
 		
