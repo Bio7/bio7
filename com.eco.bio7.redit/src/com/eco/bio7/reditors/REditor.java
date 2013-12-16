@@ -14,18 +14,14 @@ package com.eco.bio7.reditors;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.TextAttribute;
-import org.eclipse.jface.text.contentassist.ContentAssistant;
-import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
 import org.eclipse.jface.text.source.ICharacterPairMatcher;
@@ -43,19 +39,14 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextEditor;
-import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.texteditor.TextOperationAction;
-
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.actions.OpenPreferences;
-import com.eco.bio7.reditor.actions.SetComment;
 import com.eco.bio7.reditor.actions.UnsetComment;
 
 /**
@@ -67,7 +58,7 @@ public class REditor extends TextEditor {
 
 	private RColorManager colorManager;
 
-	private IPartListener partListener;
+	
 
 	/*public Action setplotmarkers;
 
@@ -99,9 +90,11 @@ public class REditor extends TextEditor {
 	    viewer.doOperation(ProjectionViewer.TOGGLE);
 
 	    annotationModel = viewer.getProjectionAnnotationModel();
-	    
+	   
 		
 	}
+	
+	
 	
 	private Annotation[] oldAnnotations;
 	
@@ -157,30 +150,11 @@ public class REditor extends TextEditor {
 			
 			IWorkbenchPage page = site.getPage();
 
-			partListener = new IPartListener() {
-
-				public void partActivated(IWorkbenchPart part) {
-
-				}
-
-				public void partBroughtToTop(IWorkbenchPart part) {
-
-				}
-
-				public void partClosed(IWorkbenchPart part) {
-
-				}
-
-				public void partDeactivated(IWorkbenchPart part) {
-
-				}
-
-				public void partOpened(IWorkbenchPart part) {
-
-				}
-
-			};
-			page.addPartListener(partListener);
+			
+			
+			
+			
+			
 		}
 		Bio7REditorPlugin.getDefault().getPreferenceStore().addPropertyChangeListener(new IPropertyChangeListener() {
 

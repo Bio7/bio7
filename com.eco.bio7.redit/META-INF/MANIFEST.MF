@@ -14,9 +14,13 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.editors,
  org.eclipse.ui.workbench.texteditor,
  org.eclipse.core.resources,
- org.eclipse.debug.core
+ org.eclipse.debug.core,
+ org.eclipse.ui.workbench,
+ org.eclipse.ui.ide;bundle-version="3.9.100"
 Eclipse-LazyStart: true
 Export-Package: com.eco.bio7.reditor,com.eco.bio7.reditor.actions,com.
  eco.bio7.reditors,com.eco.bio7.rpreferences,com.eco.bio7.rpreferences
  .template
+Bundle-ClassPath: .,
+ libs/antlr-runtime-4.1.jar
 
