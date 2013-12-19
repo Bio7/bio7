@@ -49,7 +49,6 @@ import com.eco.bio7.browser.editor.XMLEditor;
 import com.oracle.javafx.scenebuilder.kit.editor.EditorController;
 import com.oracle.javafx.scenebuilder.kit.editor.panel.content.ContentPanelController;
 
-
 /**
  * An example showing how to create a multi-page editor. This example has 3 pages:
  * <ul>
@@ -84,30 +83,19 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	protected BorderPane pane;
 	private Composite composite;
 	private FillLayout layout;
-	
-    public MultiPageEditor() {
+
+	public MultiPageEditor() {
 		super();
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
-		
+
 	}
 
 	
-
-	void createPage1() {
-		try {
-			editor = new XMLEditor();
-			int index = addPage(editor, getEditorInput());
-			setPageText(index, editor.getTitle());
-		} catch (PartInitException e) {
-			ErrorDialog.openError(getSite().getShell(), "Error creating nested text editor", null, e.getStatus());
-		}
-
-	}
 
 	public void createPage0() {
 
-		 composite = new Composite(getContainer(), SWT.NONE);
-		 layout = new FillLayout();
+		composite = new Composite(getContainer(), SWT.NONE);
+		layout = new FillLayout();
 		composite.setLayout(layout);
 
 		canvas = new FXCanvas(composite, SWT.NONE);
@@ -118,9 +106,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 		ifile = fileInputEditor.getFile();
 		IPath location = ifile.getLocation();
 
-		
 		fxmlText = fileToString(location.toOSString());
-		
 
 		try {
 			fxmlLocation = location.toFile().toURI().toURL();
@@ -128,10 +114,10 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		/* SWT Thread! */
+		/* Execute in JavaFX Thread! */
 		Platform.runLater(new Runnable() {
-			
-             public void run() {
+
+			public void run() {
 
 				editorController = new EditorController();
 
@@ -145,21 +131,31 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-
 				
+
 				canvas.setScene(scene);
 				
+
 			}
 		});
 		
 		
-		
-		//canvas.setScene(scene);
-		
-		
+
+		// canvas.setScene(scene);
 
 		int index = addPage(composite);
 		setPageText(index, "GUI Editor");
+
+	}
+	
+	void createPage1() {
+		try {
+			editor = new XMLEditor();
+			int index = addPage(editor, getEditorInput());
+			setPageText(index, editor.getTitle());
+		} catch (PartInitException e) {
+			ErrorDialog.openError(getSite().getShell(), "Error creating nested text editor", null, e.getStatus());
+		}
 
 	}
 
@@ -169,7 +165,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	 * @param path
 	 * @return
 	 */
-	public  String fileToString(String path) {// this function returns the
+	public String fileToString(String path) {// this function returns the
 		// File as a String
 		FileInputStream fileinput = null;
 		try {
@@ -210,7 +206,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	 */
 	public void dispose() {
 		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
-		
+
 		super.dispose();
 	}
 
@@ -254,9 +250,6 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	public boolean isSaveAsAllowed() {
 		return false;
 	}
-	
-	
-
 
 	/**
 	 * Calculates the contents of page 2 when the it is activated.
@@ -292,18 +285,16 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 			IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
 			if (editorController != null) {
-				
+
 				Source s = new Source(editorController.getFxmlText());
 				SourceFormatter sf = new SourceFormatter(s);
-				
+
 				doc.set(sf.toString());
 
 			}
 		}
 
 	}
-
-	
 
 	/**
 	 * Closes all project files on project close.

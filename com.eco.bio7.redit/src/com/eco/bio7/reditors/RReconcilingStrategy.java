@@ -156,17 +156,18 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 		// }
 		RParser parser = new RParser(tokens);
 		parser.setBuildParseTree(true);
-
+        //Token to= parser.match(0);
+        
 		//System.out.println("Errors: " + parser.getNumberOfSyntaxErrors());
 
 		RuleContext tree = parser.prog();
-
+       
 		Interval sourceInterval = tree.getSourceInterval();
-		Token firstToken = tokens.get(sourceInterval.a);
-		int line = firstToken.getLine();
+		
+		//int line = firstToken.getLine();
 		// tree.save(parser, "/tmp/R.ps"); // Generate postscript
 
-		// System.out.println(line);
+		//System.out.println(line);
 		
 		
 

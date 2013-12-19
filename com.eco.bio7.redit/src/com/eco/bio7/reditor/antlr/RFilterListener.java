@@ -1,5 +1,4 @@
 package com.eco.bio7.reditor.antlr;
-
 // Generated from RFilter.g4 by ANTLR 4.1
 import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTreeListener;

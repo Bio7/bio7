@@ -1,5 +1,4 @@
 package com.eco.bio7.reditor.antlr;
-
 // Generated from R.g4 by ANTLR 4.1
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;

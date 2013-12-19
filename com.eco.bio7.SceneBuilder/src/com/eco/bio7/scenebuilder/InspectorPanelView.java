@@ -59,17 +59,27 @@ public class InspectorPanelView extends ViewPart {
 		@Override
 		public void partActivated(IWorkbenchPartReference partRef) { //
 			// System.out.println(partRef.getId());
-			updateHierachyView(partRef,false);
+			updateHierachyView(partRef, false);
 
 		}
 
 		public void partBroughtToTop(IWorkbenchPartReference partRef) { // TODO
-			updateHierachyView(partRef,false);
+			updateHierachyView(partRef, false);
 
 		}
 
 		public void partClosed(IWorkbenchPartReference partRef) { // TODO
-			updateHierachyView(partRef,true);
+			Platform.runLater(new Runnable() {
+
+				@Override
+				public void run() {
+					Group root = new Group();
+					Scene s = new Scene(root, 300, 300, Color.WHITE);
+					if (composite.isDisposed() == false) {
+						canvas.setScene(s);
+					}
+				}
+			});
 		}
 
 		public void partDeactivated(IWorkbenchPartReference partRef) { // TODO //
@@ -78,7 +88,7 @@ public class InspectorPanelView extends ViewPart {
 
 		@Override
 		public void partOpened(IWorkbenchPartReference partRef) {
-			updateHierachyView(partRef,false);
+			updateHierachyView(partRef, false);
 		}
 
 		public void partHidden(IWorkbenchPartReference partRef) { // TODO
@@ -95,58 +105,47 @@ public class InspectorPanelView extends ViewPart {
 		}
 
 	};
-	
 
-	private void updateHierachyView(IWorkbenchPartReference partRef,final boolean closed) {
+	private void updateHierachyView(IWorkbenchPartReference partRef, final boolean closed) {
 		if (partRef.getId().equals("com.eco.bio7.browser.scenebuilder")) {
-			 IEditorPart editor=partRef.getPage().getActiveEditor();
-			 if(editor instanceof MultiPageEditor){
-			pag = (MultiPageEditor)editor;
-			if(closed==false){
-			Platform.runLater(new Runnable() {
+			IEditorPart editor = partRef.getPage().getActiveEditor();
+			if (editor instanceof MultiPageEditor) {
+				pag = (MultiPageEditor) editor;
 
-				@Override
-				public void run() {
-
-					if (pag != null) {
-						InspectorPanelController h = new InspectorPanelController(pag.editorController);
-						final BorderPane pane = new BorderPane();
-						pane.setCenter(h.getPanelRoot());
-						scene = new Scene(pane);
-
-					}
-					
-				}
-			});
-
-			Display display = PlatformUI.getWorkbench().getDisplay();
-			display.asyncExec(new Runnable() {
-
-				public void run() {
-					if (composite.isDisposed() == false) {
-						canvas.setScene(scene);
-						
-					}
-				}
-			});
-			}
-			else{
 				Platform.runLater(new Runnable() {
 
 					@Override
 					public void run() {
-				 Group root = new Group();
-					Scene s = new Scene(root, 300, 300, Color.WHITE);
-					canvas.setScene(s);
+
+						if (pag != null) {
+							InspectorPanelController h = new InspectorPanelController(pag.editorController);
+							final BorderPane pane = new BorderPane();
+							pane.setCenter(h.getPanelRoot());
+							scene = new Scene(pane);
+
+						}
+
 					}
 				});
+
+				Display display = PlatformUI.getWorkbench().getDisplay();
+				display.asyncExec(new Runnable() {
+
+					public void run() {
+						if (composite.isDisposed() == false) {
+							canvas.setScene(scene);
+
+						}
+					}
+				});
+
 			}
 		}
-		}
 	}
+
 	public void dispose() {
 		getSite().getWorkbenchWindow().getPartService().removePartListener(partListener);
-		
+
 		super.dispose();
 	}
 

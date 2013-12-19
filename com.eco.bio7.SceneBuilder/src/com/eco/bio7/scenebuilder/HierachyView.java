@@ -68,47 +68,33 @@ public class HierachyView extends ViewPart {
 				if (editor instanceof MultiPageEditor) {
 					pag = (MultiPageEditor) editor;
 
-					if (closed == false) {
-						Platform.runLater(new Runnable() {
+					Platform.runLater(new Runnable() {
 
-							@Override
-							public void run() {
+						@Override
+						public void run() {
 
-								if (pag != null) {
-									HierarchyPanelController h = new HierarchyPanelController(pag.editorController);
-									final BorderPane pane = new BorderPane();
-									pane.setCenter(h.getPanelRoot());
-									scene = new Scene(pane);
-
-								}
+							if (pag != null) {
+								HierarchyPanelController h = new HierarchyPanelController(pag.editorController);
+								final BorderPane pane = new BorderPane();
+								pane.setCenter(h.getPanelRoot());
+								scene = new Scene(pane);
 
 							}
-						});
-						Display display = PlatformUI.getWorkbench().getDisplay();
-						display.asyncExec(new Runnable() {
 
-							public void run() {
-								if (composite.isDisposed() == false) {
-									canvas.setScene(scene);
+						}
+					});
+					Display display = PlatformUI.getWorkbench().getDisplay();
+					display.asyncExec(new Runnable() {
 
-								}
+						public void run() {
+							if (composite.isDisposed() == false) {
+								canvas.setScene(scene);
+
 							}
-						});
-					} else {
-
-						Platform.runLater(new Runnable() {
-
-							@Override
-							public void run() {
-
-								Group root = new Group();
-								Scene s = new Scene(root, 300, 300, Color.WHITE);
-								canvas.setScene(s);
-							}
-						});
-
-					}
+						}
+					});
 				}
+
 			}
 		}
 
@@ -118,7 +104,18 @@ public class HierachyView extends ViewPart {
 		}
 
 		public void partClosed(IWorkbenchPartReference partRef) { // TODO
-			updateHierachyView(partRef, true);
+			Platform.runLater(new Runnable() {
+
+				@Override
+				public void run() {
+
+					Group root = new Group();
+					Scene s = new Scene(root, 300, 300, Color.WHITE);
+					if (composite.isDisposed() == false) {
+						canvas.setScene(s);
+					}
+				}
+			});
 		}
 
 		public void partDeactivated(IWorkbenchPartReference partRef) { // TODO //
