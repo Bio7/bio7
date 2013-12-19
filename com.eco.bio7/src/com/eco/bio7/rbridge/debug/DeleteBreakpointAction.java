@@ -46,6 +46,8 @@ public class DeleteBreakpointAction extends AbstractRulerActionDelegate implemen
 			for (int i = 0; i < markersfind.length; i++) {
 				try {
 					String func = (String) markersfind[i].getAttribute(IMarker.TEXT);
+					System.out.println(func);
+					System.out.println("untrace(" + func + ")");
 					ConsolePageParticipant.pipeInputToConsole("untrace(" + func + ")", true, false);
 					markersfind[i].delete();
 
@@ -55,6 +57,9 @@ public class DeleteBreakpointAction extends AbstractRulerActionDelegate implemen
 				}
 
 			}
+			
+			 ConsolePageParticipant inst = ConsolePageParticipant.getConsolePageParticipantInstance();
+			 inst.deleteDebugToolbarActions();
 
 		}
 	}

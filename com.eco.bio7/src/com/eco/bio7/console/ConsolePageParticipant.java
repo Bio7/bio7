@@ -40,14 +40,17 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
@@ -64,9 +67,11 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleConstants;
 import org.eclipse.ui.console.IConsolePageParticipant;
@@ -78,13 +83,19 @@ import org.eclipse.ui.part.IPageBookViewPage;
 import org.eclipse.ui.part.IPageSite;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
+
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.popup.actions.RunJavaClassFile;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.rbridge.debug.DebugContinueAction;
+import com.eco.bio7.rbridge.debug.DebugNextAction;
+import com.eco.bio7.rbridge.debug.DebugRScript;
+import com.eco.bio7.rbridge.debug.DebugStopAction;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
+import com.eco.bio7.rcp.StartBio7Utils;
 import com.eco.bio7.scriptengines.ScriptEngineConnection;
 
 public class ConsolePageParticipant implements IConsolePageParticipant {
@@ -147,7 +158,9 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 	@Override
 	public void init(IPageBookViewPage page, IConsole console) {
+		
 		this.page = page;
+
 		if (console instanceof IOConsole) {
 			ioc = (IOConsole) console;
 
@@ -277,6 +290,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		in = new BufferedReader(isr);
 
 		ioc.clearConsole();
+		
+		
 
 	}
 
@@ -986,5 +1001,49 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	public static ConsolePageParticipant getConsolePageParticipantInstance() {
 		return ConsolePageParticipantInstance;
 	}
+	
+	/*Add toolbar actions to the console view!*/
+	public  void setRDebugToolbarActions(){
+		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
+		
+		/* Add the debug actions dynamically! */
+		IToolBarManager tm = toolBarManager;
 
+		IContributionItem[] its = toolBarManager.getItems();
+		boolean exist = false;
+		for (int i = 0; i < its.length; i++) {
+
+			if (its[i].getId() != null) {
+				/*Control if the items exists already!*/
+				if (its[i].getId().equals("Stop")) {
+
+					exist = true;
+				}
+
+			}
+
+		}
+		if (exist == false) {
+			tm.add(new DebugRScript());
+			tm.add(new DebugStopAction());
+			tm.add(new DebugNextAction());
+			tm.add(new DebugContinueAction());
+			actionBars.updateActionBars();
+		}
+		/*Remove all toolbar actions from the console view!*/
+		if (utils != null) {
+			utils.cons.clear();
+		}
+	}
+	
+	public void deleteDebugToolbarActions(){
+		
+		toolBarManager.remove("Debug");		
+		toolBarManager.remove("Stop");
+		toolBarManager.remove("Next");
+		toolBarManager.remove("Continue");
+		actionBars.updateActionBars();
+					
+	}
+	
 }

@@ -4,7 +4,6 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.model.IBreakpoint;
-
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.BadLocationException;
@@ -21,6 +20,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractRulerActionDelegate;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
+
+import com.eco.bio7.console.ConsolePageParticipant;
 
 public class ToggleDebugBreakpointAction extends AbstractRulerActionDelegate implements IEditorActionDelegate {
 
@@ -48,6 +49,14 @@ public class ToggleDebugBreakpointAction extends AbstractRulerActionDelegate imp
 			IEditorPart editore = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 
 			IResource resource = (IResource) editore.getEditorInput().getAdapter(IResource.class);
+			
+			ConsolePageParticipant inst = ConsolePageParticipant.getConsolePageParticipantInstance();
+			inst.setRDebugToolbarActions();
+			
+			
+			
+			
+			
 			if (resource != null) {
 				try {
 

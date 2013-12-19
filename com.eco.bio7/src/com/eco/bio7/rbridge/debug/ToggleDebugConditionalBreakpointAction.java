@@ -24,6 +24,8 @@ import org.eclipse.ui.texteditor.AbstractRulerActionDelegate;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import com.eco.bio7.console.ConsolePageParticipant;
+
 public class ToggleDebugConditionalBreakpointAction extends AbstractRulerActionDelegate implements IEditorActionDelegate {
 
 	private class ToggleBreakpointAction extends Action {
@@ -46,6 +48,8 @@ public class ToggleDebugConditionalBreakpointAction extends AbstractRulerActionD
 
 		@Override
 		public void run() {
+		   ConsolePageParticipant inst = ConsolePageParticipant.getConsolePageParticipantInstance();
+			inst.setRDebugToolbarActions();
            String rDebugExpression = null;
 			IEditorPart editore = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 			

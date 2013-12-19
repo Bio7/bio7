@@ -24,21 +24,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorActionDelegate;
 import org.eclipse.ui.IEditorInput;
@@ -49,19 +53,31 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.rosuda.REngine.Rserve.RConnection;
+
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rcp.StartBio7Utils;
 
-public class DebugRScript implements IEditorActionDelegate {
+public class DebugRScript extends Action {
 	private IEditorPart part;
 	private IMarker[] markers;
 	boolean untrace = false;
 	private boolean BROWSER = false;
 	private String tempFileName = "";
 	private IEditorPart editor;
+
+	public DebugRScript() {
+		super("Debug");
+
+		setId("Debug");
+		setText("Debug Action");
+
+		ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/rundebug.gif")));
+
+		this.setImageDescriptor(desc);
+	}
 
 	public void dispose() {
 
@@ -71,36 +87,8 @@ public class DebugRScript implements IEditorActionDelegate {
 
 	}
 
-	public void run(IAction action) {
-		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
-		ConsolePageParticipant inst = ConsolePageParticipant.getConsolePageParticipantInstance();
-		/* Add the debug actions dynamically! */
-		IToolBarManager tm = inst.toolBarManager;
+	public void run() {
 
-		IContributionItem[] its = inst.toolBarManager.getItems();
-		boolean exist = false;
-		for (int i = 0; i < its.length; i++) {
-
-			if (its[i].getId() != null) {
-				/*Control if the items exists already!*/
-				if (its[i].getId().equals("Stop")) {
-
-					exist = true;
-				}
-
-			}
-
-		}
-		if (exist == false) {
-			tm.add(new DebugStopAction());
-			tm.add(new DebugNextAction());
-			tm.add(new DebugContinueAction());
-			inst.actionBars.updateActionBars();
-		}
-
-		if (utils != null) {
-			utils.cons.clear();
-		}
 		editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		if (editor.isDirty()) {
 			editor.doSave(new NullProgressMonitor());
@@ -143,12 +131,9 @@ public class DebugRScript implements IEditorActionDelegate {
 					Map<Integer, String> map = new TreeMap<Integer, String>(map1);
 
 					for (Map.Entry<Integer, String> entry : map.entrySet()) {
-						
 
 						lineNum = entry.getKey();
 						expression = entry.getValue();
-						
-						
 
 						if (lineNum > 0) {
 
@@ -158,10 +143,10 @@ public class DebugRScript implements IEditorActionDelegate {
 								try {
 									reg = doc.getLineInformation(lineNum);
 								} catch (BadLocationException e1) {
-									
+
 									e1.printStackTrace();
 								}
-								
+
 								if (expression == null) {
 									String command = ";browser();";
 									int length = command.length();
@@ -202,10 +187,7 @@ public class DebugRScript implements IEditorActionDelegate {
 									// ConsolePageParticipant.pipeInputToConsole("writeClipboard(XXX[[1]]$name, format = 1)", true, false);
 									writeTempRData("XXX[[1]]$name", "XXX[[1]]$line", fileName);
 
-									
 								}
-
-								
 
 								// readClipboardJava(lineNum);
 
@@ -238,15 +220,12 @@ public class DebugRScript implements IEditorActionDelegate {
 		String result;
 		String lineNumber = "0";
 		/* We need a synchronus write and read from the R process and Java. If R has finished the writing the file has been modified for Java! */
-		while (oldModified == fi.lastModified()) {
 
-			try {
-				Thread.sleep(50);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
+		try {
+			Thread.sleep(200);
+		} catch (InterruptedException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
 		}
 
 		try {
@@ -262,7 +241,6 @@ public class DebugRScript implements IEditorActionDelegate {
 
 			lineNumber = br.readLine();
 
-			
 			for (int i = 0; i < markers.length; i++) {
 				Integer line = null;
 				try {
@@ -276,7 +254,7 @@ public class DebugRScript implements IEditorActionDelegate {
 
 					try {
 						markers[i].setAttribute(IMarker.TEXT, result);
-						//System.out.println("This is " + markers[i].getAttribute(IMarker.TEXT));
+						// System.out.println("This is " + markers[i].getAttribute(IMarker.TEXT));
 					} catch (CoreException e) {// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
@@ -296,18 +274,18 @@ public class DebugRScript implements IEditorActionDelegate {
 		IRegion reg = null;
 		System.out.println(lineNumber);
 		try {
-			reg = doc.getLineInformation(Integer.parseInt(lineNumber)-1);
+			reg = doc.getLineInformation(Integer.parseInt(lineNumber) - 1);
 		} catch (BadLocationException e1) {
 
 			e1.printStackTrace();
 		}
 
-		edit.selectAndReveal(reg.getOffset() + reg.getLength() , 0);
+		edit.selectAndReveal(reg.getOffset() + reg.getLength(), 0);
 
 	}
 
 	private void readClipboardJava(int lineNum) {
-		
+
 		Clipboard clipboard = new Clipboard(Display.getCurrent());
 
 		String result = (String) clipboard.getContents(TextTransfer.getInstance());

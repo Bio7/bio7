@@ -31,45 +31,26 @@ public class DebugStopAction extends Action {
 		setId("Stop");
 		setText("Stop");
 
-		ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(
-				Display.getCurrent(), getClass().getResourceAsStream(
-						"/pics/terminatedlaunch_obj.gif")));
+		ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/terminatedlaunch_obj.gif")));
 
 		this.setImageDescriptor(desc);
 	}
 
 	public void run() {
-		
+
 		String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 
 		if (selectionConsole.equals("R")) {
-		
-		ConsolePageParticipant.pipeInputToConsole("Q", true, false);
-		System.out.println("Q");
-          ConsolePageParticipant inst=ConsolePageParticipant.getConsolePageParticipantInstance();
-        
-		//IContributionItem []its=inst.toolBarManager.getItems();
-		
-				
-					inst.toolBarManager.remove("Stop");
-					inst.toolBarManager.remove("Next");
-					inst.toolBarManager.remove("Continue");
-					inst.actionBars.updateActionBars();
-					
-		
-			
-			
-			
-		
-		
-		
-		//inst.toolBarManager.update(true);	
-		
-		}
-		else {
+
+			ConsolePageParticipant.pipeInputToConsole("Q", true, false);
+			System.out.println("Q");
+
+			// inst.toolBarManager.update(true);
+
+		} else {
 			Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
 		}
-		
+
 	}
 
 }

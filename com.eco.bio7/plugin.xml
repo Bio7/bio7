@@ -986,16 +986,6 @@
               style="push"
               toolbarPath="org.eclipse.ui.workbench.file/open.ext"
               tooltip="Interpret RScript"/>
-        <action
-              class="com.eco.bio7.rbridge.debug.DebugRScript"
-              icon="icons/debug_exc.gif"
-              id="com.eco.bio7.revaluate_action"
-              
-              label="Debug R"
-              state="false"
-              style="push"
-              toolbarPath="org.eclipse.ui.workbench.file/open.ext"
-              tooltip="Debug R"/>
      </editorContribution>
      <editorContribution
            id="com.eco.bio7.editorContribution2"

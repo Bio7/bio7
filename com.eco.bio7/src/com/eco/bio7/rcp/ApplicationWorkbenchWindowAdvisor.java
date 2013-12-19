@@ -17,15 +17,20 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
+
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.plaf.FontUIResource;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.MetalTheme;
+
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IExecutionListener;
 import org.eclipse.core.commands.NotHandledException;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
@@ -49,10 +54,12 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorRegistry;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PerspectiveAdapter;
 import org.eclipse.ui.PlatformUI;
@@ -75,6 +82,7 @@ import org.eclipse.ui.part.ResourceTransfer;
 import org.osgi.framework.Bundle;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
+
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.actions.Bio7Action;
 import com.eco.bio7.actions.StartRServe;
@@ -85,13 +93,17 @@ import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.discrete.Quad2d;
 import com.eco.bio7.editor.BeanshellEditorPlugin;
 import com.eco.bio7.javaeditor.Bio7EditorPlugin;
+import com.eco.bio7.javaeditors.JavaEditor;
 import com.eco.bio7.jobs.LoadData;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.preferences.Reg;
 import com.eco.bio7.pythonedit.PythonEditorPlugin;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.rbridge.debug.REditorListener;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
+import com.eco.bio7.reditors.REditor;
+import com.eco.bio7.scenebuilder.editor.MultiPageEditor;
 import com.eco.bio7.time.CalculationThread;
 import com.eco.bio7.preferences.RServePrefs;
 
@@ -127,7 +139,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		} else if (osname.startsWith("Mac")) {
 			OS = "Mac";
 		}
-		
 
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
 		// configurer.setSaveAndRestore( false );
@@ -150,9 +161,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		// Remove unused preference pages by ID:
 		/*
-		 * preferenceManager.remove("org.eclipse.help.ui.browsersPreferencePage")
-		 * ;preferenceManager.remove(
-		 * "org.eclipse.update.internal.ui.preferences.MainPreferencePage");
+		 * preferenceManager.remove("org.eclipse.help.ui.browsersPreferencePage") ;preferenceManager.remove( "org.eclipse.update.internal.ui.preferences.MainPreferencePage");
 		 */
 
 		// Listen to changed perspective !!!!
@@ -175,36 +184,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				}
 			}
 		});
-		/*
-		 * configurer.getWindow().getPartService().addPartListener(new
-		 * IPartListener() {
-		 * 
-		 * @Override public void partBroughtToTop(IWorkbenchPart part) { // TODO
-		 * Auto-generated method stub
-		 * 
-		 * }
-		 * 
-		 * @Override public void partClosed(IWorkbenchPart part) {
-		 * 
-		 * 
-		 * }
-		 * 
-		 * @Override public void partDeactivated(IWorkbenchPart part) { // TODO
-		 * Auto-generated method stub
-		 * 
-		 * }
-		 * 
-		 * @Override public void partOpened(IWorkbenchPart part) {
-		 * 
-		 * }
-		 * 
-		 * @Override public void partActivated(IWorkbenchPart part) {
-		 * 
-		 * 
-		 * }
-		 * 
-		 * });
-		 */
+
+		/* Listen to the R editor if debugging actions should be added to the console toolbar! */
+		
+		configurer.getWindow().getPartService().addPartListener(new REditorListener().listen());
+
 		PlatformUI.getPreferenceStore().setValue(IWorkbenchPreferenceConstants.SHOW_SYSTEM_JOBS, false);
 		PlatformUI.getPreferenceStore().setDefault(IWorkbenchPreferenceConstants.DOCK_PERSPECTIVE_BAR, IWorkbenchPreferenceConstants.TOP_LEFT);
 		PlatformUI.getPreferenceStore().setValue(IWorkbenchPreferenceConstants.SHOW_TRADITIONAL_STYLE_TABS, false);
@@ -276,8 +260,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, reg2);
 			} else {
 				/*
-				 * If the path cannot be found in the reg. it will be set to C:\
-				 * -> see com.eco.bio7.preferences.Reg.java!
+				 * If the path cannot be found in the reg. it will be set to C:\ -> see com.eco.bio7.preferences.Reg.java!
 				 */
 				store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, "C:\\");
 			}
@@ -349,9 +332,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		} else {
 			store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "Ä, ,ä,Ö,ö,Ü,ü,+,!,ü,§,$,%,&,/,(,),=,?,[,],°,^,;,:,>,<,|,*,µ,\\,”,@,\",“,”,´,`,~,#,},{,²,³,_,-");
 		}
-		
+
 		store.setDefault("RSERVE_NATIVE_START", false);
-		
+
 		store.setDefault("LINUX_SHELL", "GNOME");
 		store.setDefault("PDF_READER", "ACROBAT");
 
@@ -832,8 +815,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			StartBio7Utils.getConsoleInstance().startutils();
 			// *************************************************
 			/*
-			 * If Bio7 should be customized at startup the startup scripts have
-			 * to be enabled! The startup is faster without!
+			 * If Bio7 should be customized at startup the startup scripts have to be enabled! The startup is faster without!
 			 */
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 			if (store.getBoolean("STARTUP_SCRIPTS")) {
@@ -911,7 +893,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 							String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 							if (selectionConsole.equals("R")) {
 
-								ConsolePageParticipant.pipeInputToConsole("load(file =\"" + fileR + "\")",true,true);
+								ConsolePageParticipant.pipeInputToConsole("load(file =\"" + fileR + "\")", true, true);
 							} else {
 								Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
 							}
@@ -925,9 +907,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 								StartRServe.setFileList(fileListR);
 								StartRServe.setFromDragDrop(true);
 								/*
-								 * Now we can start the server. Variable
-								 * setFromDragDrop will be set to false in the
-								 * StartRserve class after job has finished!
+								 * Now we can start the server. Variable setFromDragDrop will be set to false in the StartRserve class after job has finished!
 								 */
 								Bio7Action.callRserve();
 
@@ -939,8 +919,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 						}
 					}
 					/*
-					 * Load an xml file for the discrete grid and quick
-					 * compilation!
+					 * Load an xml file for the discrete grid and quick compilation!
 					 */
 					else if (fileListR[0].endsWith("exml")) {
 						LoadData.load(fileListR[0].toString());

@@ -1,4 +1,4 @@
-package com.eco.bio7.console;
+/*package com.eco.bio7.console;
 
 import groovy.util.GroovyScriptEngine;
 import java.io.BufferedReader;
@@ -30,9 +30,9 @@ public class IoConsole extends IOConsole{
 	private IOConsoleOutputStream out;
 	private IoConsole iOConsoleInstance;
 
-	/**
+	*//**
 	 * Some useful colors.
-	 */
+	 *//*
 	private static final Color RED;
 	private static final Color BLUE;
 	static {
@@ -130,3 +130,4 @@ public class IoConsole extends IOConsole{
 	}
 }
 
+*/
