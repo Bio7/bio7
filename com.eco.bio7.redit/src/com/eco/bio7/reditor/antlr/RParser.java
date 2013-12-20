@@ -1,5 +1,5 @@
+// Generated from C:\Users\elk\git\bio7new\com.eco.bio7.redit\src\com\eco\bio7\reditor\antlr\R.g4 by ANTLR 4.1
 package com.eco.bio7.reditor.antlr;
-// Generated from R.g4 by ANTLR 4.1
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;
@@ -80,6 +80,11 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitProg(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitProg(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -197,6 +202,11 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitExpr(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitExpr(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -677,6 +687,11 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitExprlist(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitExprlist(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ExprlistContext exprlist() throws RecognitionException {
@@ -782,6 +797,11 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitFormlist(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitFormlist(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final FormlistContext formlist() throws RecognitionException {
@@ -835,6 +855,11 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitForm(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitForm(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -898,6 +923,11 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitSublist(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitSublist(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final SublistContext sublist() throws RecognitionException {
@@ -952,6 +982,11 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitSub(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitSub(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 

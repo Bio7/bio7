@@ -1,6 +1,5 @@
-
+// Generated from C:\Users\elk\git\bio7new\com.eco.bio7.redit\src\com\eco\bio7\reditor\antlr\RFilter.g4 by ANTLR 4.1
 package com.eco.bio7.reditor.antlr;
-// Generated from RFilter.g4 by ANTLR 4.1
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;
@@ -82,6 +81,11 @@ public class RFilter extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RFilterListener ) ((RFilterListener)listener).exitStream(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof RFilterVisitor ) return ((RFilterVisitor<? extends T>)visitor).visitStream(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -207,6 +211,11 @@ public class RFilter extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RFilterListener ) ((RFilterListener)listener).exitEat(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof RFilterVisitor ) return ((RFilterVisitor<? extends T>)visitor).visitEat(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final EatContext eat() throws RecognitionException {
@@ -283,6 +292,11 @@ public class RFilter extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RFilterListener ) ((RFilterListener)listener).exitElem(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof RFilterVisitor ) return ((RFilterVisitor<? extends T>)visitor).visitElem(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -1183,6 +1197,11 @@ public class RFilter extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RFilterListener ) ((RFilterListener)listener).exitAtom(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof RFilterVisitor ) return ((RFilterVisitor<? extends T>)visitor).visitAtom(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final AtomContext atom() throws RecognitionException {
@@ -1224,6 +1243,11 @@ public class RFilter extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RFilterListener ) ((RFilterListener)listener).exitOp(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof RFilterVisitor ) return ((RFilterVisitor<? extends T>)visitor).visitOp(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 

@@ -12,9 +12,14 @@ import java.util.ArrayList;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.misc.NotNull;
+import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -28,6 +33,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import com.eco.bio7.reditor.antlr.RBaseListener;
 import com.eco.bio7.reditor.antlr.RFilter;
 import com.eco.bio7.reditor.antlr.RLexer;
 import com.eco.bio7.reditor.antlr.RParser;
@@ -168,8 +174,13 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 		// tree.save(parser, "/tmp/R.ps"); // Generate postscript
 
 		//System.out.println(line);
-		
-		
+		RBaseListen list=new RBaseListen();
+		ParseTreeWalker walker = new ParseTreeWalker();
+		walker.walk(list, parser.expr(36));
+        
+        parser.addParseListener(list);
+       
+        parser.dumpDFA();
 
 		fPositions.clear();
 		cNextPos = fOffset;
@@ -189,6 +200,130 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 
 		});
 	}
+	
+	 private class RBaseListen extends RBaseListener {
+	      //  @Override
+	        /*public void enterR(RParser.RContext ctx) {
+	            super.enterR(ctx);    //To change body of overridden methods use File | Settings | File Templates.
+	            log("ENTER R: " + ctx.getText());
+	        }*/
+
+	        /**
+	    	 * {@inheritDoc}
+	    	 * <p/>
+	    	 * The default implementation does nothing.
+	    	 */
+	    	@Override public void enterSub(@NotNull RParser.SubContext ctx) { }
+	    	/**
+	    	 * {@inheritDoc}
+	    	 * <p/>
+	    	 * The default implementation does nothing.
+	    	 */
+	    	@Override public void exitSub(@NotNull RParser.SubContext ctx) { }
+
+	    	/**
+	    	 * {@inheritDoc}
+	    	 * <p/>
+	    	 * The default implementation does nothing.
+	    	 */
+	    	@Override public void enterProg(@NotNull RParser.ProgContext ctx) { }
+	    	/**
+	    	 * {@inheritDoc}
+	    	 * <p/>
+	    	 * The default implementation does nothing.
+	    	 */
+	    	@Override public void exitProg(@NotNull RParser.ProgContext ctx) { }
+
+	    	/**
+	    	 * {@inheritDoc}
+	    	 * <p/>
+	    	 * The default implementation does nothing.
+	    	 */
+	    	@Override public void enterForm(@NotNull RParser.FormContext ctx) { }
+	    	/**
+	    	 * {@inheritDoc}
+	    	 * <p/>
+	    	 * The default implementation does nothing.
+	    	 */
+	    	@Override public void exitForm(@NotNull RParser.FormContext ctx) { }
+
+	    	/**
+	    	 * {@inheritDoc}
+	    	 * <p/>
+	    	 * The default implementation does nothing.
+	    	 */
+	    	@Override public void enterExpr(@NotNull RParser.ExprContext ctx) { }
+	    	/**
+	    	 * {@inheritDoc}
+	    	 * <p/>
+	    	 * The default implementation does nothing.
+	    	 */
+	    	@Override public void exitExpr(@NotNull RParser.ExprContext ctx) {}
+
+	    	/**
+	    	 * {@inheritDoc}
+	    	 * <p/>
+	    	 * The default implementation does nothing.
+	    	 */
+	    	@Override public void enterSublist(@NotNull RParser.SublistContext ctx) { }
+	    	/**
+	    	 * {@inheritDoc}
+	    	 * <p/>
+	    	 * The default implementation does nothing.
+	    	 */
+	    	@Override public void exitSublist(@NotNull RParser.SublistContext ctx) { }
+
+	    	/**
+	    	 * {@inheritDoc}
+	    	 * <p/>
+	    	 * The default implementation does nothing.
+	    	 */
+	    	@Override public void enterFormlist(@NotNull RParser.FormlistContext ctx) { }
+	    	/**
+	    	 * {@inheritDoc}
+	    	 * <p/>
+	    	 * The default implementation does nothing.
+	    	 */
+	    	@Override public void exitFormlist(@NotNull RParser.FormlistContext ctx) { }
+
+	    	/**
+	    	 * {@inheritDoc}
+	    	 * <p/>
+	    	 * The default implementation does nothing.
+	    	 */
+	    	@Override public void enterExprlist(@NotNull RParser.ExprlistContext ctx) { }
+	    	/**
+	    	 * {@inheritDoc}
+	    	 * <p/>
+	    	 * The default implementation does nothing.
+	    	 */
+	    	@Override public void exitExprlist(@NotNull RParser.ExprlistContext ctx) { }
+
+	    	/**
+	    	 * {@inheritDoc}
+	    	 * <p/>
+	    	 * The default implementation does nothing.
+	    	 */
+	    	@Override public void enterEveryRule(@NotNull ParserRuleContext ctx) {  }
+	    	/**
+	    	 * {@inheritDoc}
+	    	 * <p/>
+	    	 * The default implementation does nothing.
+	    	 */
+	    	@Override public void exitEveryRule(@NotNull ParserRuleContext ctx) {System.out.println("more"+ctx.getStart().getLine()); }
+	    	/**
+	    	 * {@inheritDoc}
+	    	 * <p/>
+	    	 * The default implementation does nothing.
+	    	 */
+	    	@Override public void visitTerminal(@NotNull TerminalNode node) { }
+	    	/**
+	    	 * {@inheritDoc}
+	    	 * <p/>
+	    	 * The default implementation does nothing.
+	    	 */
+	    	@Override public void visitErrorNode(@NotNull ErrorNode node) { }
+	    }
 
 	/**
 	 * emits tokens to {@link #fPositions}.
