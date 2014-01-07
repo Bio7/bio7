@@ -33,6 +33,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import com.eco.bio7.reditor.antlr.RBaseListen;
 import com.eco.bio7.reditor.antlr.RBaseListener;
 import com.eco.bio7.reditor.antlr.RFilter;
 import com.eco.bio7.reditor.antlr.RLexer;
@@ -45,7 +46,7 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 	private IDocument fDocument;
 
 	/** holds the calculated positions */
-	protected final ArrayList fPositions = new ArrayList();
+	protected final ArrayList<Position> fPositions = new ArrayList<Position>();
 
 	/** The offset of the next character to be read */
 	protected int fOffset;
@@ -124,6 +125,8 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 
 	protected char cLastNLChar = ' ';
 
+	private CommonTokenStream tokens;
+
 	protected static final int START_TAG = 1;
 
 	protected static final int LEAF_TAG = 2;
@@ -140,58 +143,46 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 	 * uses {@link #fDocument}, {@link #fOffset} and {@link #fRangeEnd} to calculate {@link #fPositions}. About syntax errors: this method is not a validator, it is useful.
 	 */
 	protected void calculatePositions() {
-
+		
+		
 		IDocument doc = fDocument;
 		//System.out.println(doc.get());
 		ANTLRInputStream input = new ANTLRInputStream(doc.get());
 		RLexer lexer = new RLexer(input);
-		CommonTokenStream tokens = new CommonTokenStream(lexer);
-		
-		// Print tokens BEFORE filtering
-		// tokens.fill();
-		// for (Object tok : tokens.getTokens()) {
-		// System.out.println(tok);
-		// }
-
+		tokens = new CommonTokenStream(lexer);
 		RFilter filter = new RFilter(tokens);
 		filter.stream(); // call start rule: stream
 		tokens.reset();
-		// Print tokens AFTER filtering
-		// for (Object tok : tokens.getTokens()) {
-		// System.out.println(tok);
-		// }
+		
 		RParser parser = new RParser(tokens);
 		parser.setBuildParseTree(true);
         //Token to= parser.match(0);
         
 		//System.out.println("Errors: " + parser.getNumberOfSyntaxErrors());
+		
+		
+		ParseTreeWalker walker=new ParseTreeWalker();
 
 		RuleContext tree = parser.prog();
-       
-		Interval sourceInterval = tree.getSourceInterval();
+		RBaseListen list=new RBaseListen(tokens);
+	
+		list.startStop.clear();	
+		walker.walk(list,tree);
 		
-		//int line = firstToken.getLine();
-		// tree.save(parser, "/tmp/R.ps"); // Generate postscript
-
-		//System.out.println(line);
-		RBaseListen list=new RBaseListen();
-		ParseTreeWalker walker = new ParseTreeWalker();
-		walker.walk(list, parser.expr(36));
-        
-        parser.addParseListener(list);
-       
-        parser.dumpDFA();
-
 		fPositions.clear();
 		cNextPos = fOffset;
-
-		/*
-		 * try { recursiveTokens(0); } catch (BadLocationException e) { e.printStackTrace(); }
-		 */
-
-		// Collections.sort(fPositions, new RangeTokenComparator());
-		fPositions.add(new Position(15, 60));
-		fPositions.add(new Position(90, 200));
+		
+        for (int i = 0; i < list.startStop.size(); i++) {
+        	
+        	String pos=(String)list.startStop.get(i);
+        	String []val=pos.split(",");
+        	
+        	fPositions.add(new Position(Integer.parseInt(val[0]), Integer.parseInt(val[1])));
+    		
+			
+		}
+		
+		
 
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
@@ -201,129 +192,7 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 		});
 	}
 	
-	 private class RBaseListen extends RBaseListener {
-	      //  @Override
-	        /*public void enterR(RParser.RContext ctx) {
-	            super.enterR(ctx);    //To change body of overridden methods use File | Settings | File Templates.
-	            log("ENTER R: " + ctx.getText());
-	        }*/
-
-	        /**
-	    	 * {@inheritDoc}
-	    	 * <p/>
-	    	 * The default implementation does nothing.
-	    	 */
-	    	@Override public void enterSub(@NotNull RParser.SubContext ctx) { }
-	    	/**
-	    	 * {@inheritDoc}
-	    	 * <p/>
-	    	 * The default implementation does nothing.
-	    	 */
-	    	@Override public void exitSub(@NotNull RParser.SubContext ctx) { }
-
-	    	/**
-	    	 * {@inheritDoc}
-	    	 * <p/>
-	    	 * The default implementation does nothing.
-	    	 */
-	    	@Override public void enterProg(@NotNull RParser.ProgContext ctx) { }
-	    	/**
-	    	 * {@inheritDoc}
-	    	 * <p/>
-	    	 * The default implementation does nothing.
-	    	 */
-	    	@Override public void exitProg(@NotNull RParser.ProgContext ctx) { }
-
-	    	/**
-	    	 * {@inheritDoc}
-	    	 * <p/>
-	    	 * The default implementation does nothing.
-	    	 */
-	    	@Override public void enterForm(@NotNull RParser.FormContext ctx) { }
-	    	/**
-	    	 * {@inheritDoc}
-	    	 * <p/>
-	    	 * The default implementation does nothing.
-	    	 */
-	    	@Override public void exitForm(@NotNull RParser.FormContext ctx) { }
-
-	    	/**
-	    	 * {@inheritDoc}
-	    	 * <p/>
-	    	 * The default implementation does nothing.
-	    	 */
-	    	@Override public void enterExpr(@NotNull RParser.ExprContext ctx) { }
-	    	/**
-	    	 * {@inheritDoc}
-	    	 * <p/>
-	    	 * The default implementation does nothing.
-	    	 */
-	    	@Override public void exitExpr(@NotNull RParser.ExprContext ctx) {}
-
-	    	/**
-	    	 * {@inheritDoc}
-	    	 * <p/>
-	    	 * The default implementation does nothing.
-	    	 */
-	    	@Override public void enterSublist(@NotNull RParser.SublistContext ctx) { }
-	    	/**
-	    	 * {@inheritDoc}
-	    	 * <p/>
-	    	 * The default implementation does nothing.
-	    	 */
-	    	@Override public void exitSublist(@NotNull RParser.SublistContext ctx) { }
-
-	    	/**
-	    	 * {@inheritDoc}
-	    	 * <p/>
-	    	 * The default implementation does nothing.
-	    	 */
-	    	@Override public void enterFormlist(@NotNull RParser.FormlistContext ctx) { }
-	    	/**
-	    	 * {@inheritDoc}
-	    	 * <p/>
-	    	 * The default implementation does nothing.
-	    	 */
-	    	@Override public void exitFormlist(@NotNull RParser.FormlistContext ctx) { }
-
-	    	/**
-	    	 * {@inheritDoc}
-	    	 * <p/>
-	    	 * The default implementation does nothing.
-	    	 */
-	    	@Override public void enterExprlist(@NotNull RParser.ExprlistContext ctx) { }
-	    	/**
-	    	 * {@inheritDoc}
-	    	 * <p/>
-	    	 * The default implementation does nothing.
-	    	 */
-	    	@Override public void exitExprlist(@NotNull RParser.ExprlistContext ctx) { }
-
-	    	/**
-	    	 * {@inheritDoc}
-	    	 * <p/>
-	    	 * The default implementation does nothing.
-	    	 */
-	    	@Override public void enterEveryRule(@NotNull ParserRuleContext ctx) {  }
-	    	/**
-	    	 * {@inheritDoc}
-	    	 * <p/>
-	    	 * The default implementation does nothing.
-	    	 */
-	    	@Override public void exitEveryRule(@NotNull ParserRuleContext ctx) {System.out.println("more"+ctx.getStart().getLine()); }
-	    	/**
-	    	 * {@inheritDoc}
-	    	 * <p/>
-	    	 * The default implementation does nothing.
-	    	 */
-	    	@Override public void visitTerminal(@NotNull TerminalNode node) { }
-	    	/**
-	    	 * {@inheritDoc}
-	    	 * <p/>
-	    	 * The default implementation does nothing.
-	    	 */
-	    	@Override public void visitErrorNode(@NotNull ErrorNode node) { }
-	    }
+	 
 
 	/**
 	 * emits tokens to {@link #fPositions}.

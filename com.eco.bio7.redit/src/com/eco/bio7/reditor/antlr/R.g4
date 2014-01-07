@@ -57,47 +57,47 @@ expr_or_assign
     ;
 */
 
-expr:   expr '[[' sublist ']' ']'  // '[[' follows R's yacc grammar
-    |   expr '[' sublist ']'
-    |   expr ('::'|':::') expr
-    |   expr ('$'|'@') expr
-    |   expr '^'<assoc=right> expr
-    |   ('-'|'+') expr
-    |   expr ':' expr
-    |   expr USER_OP expr // anything wrappedin %: '%' .* '%'
-    |   expr ('*'|'/') expr
-    |   expr ('+'|'-') expr
-    |   expr ('>'|'>='|'<'|'<='|'=='|'!=') expr
-    |   '!' expr
-    |   expr ('&'|'&&') expr
-    |   expr ('|'|'||') expr
-    |   '~' expr
-    |   expr '~' expr
-    |   expr ('<-'|'<<-'|'='|'->'|'->>'|':=') expr
-    |   'function' '(' formlist? ')' expr // define function
-    |   expr '(' sublist ')'              // call function
-    |   '{' exprlist '}' // compound statement
-    |   'if' '(' expr ')' expr
-    |   'if' '(' expr ')' expr 'else' expr
-    |   'for' '(' ID 'in' expr ')' expr
-    |   'while' '(' expr ')' expr
-    |   'repeat' expr
-    |   '?' expr // get help on expr, usually string or ID
-    |   'next'
-    |   'break'
-    |   '(' expr ')'
-    |   ID
-    |   STRING
-    |   HEX
-    |   INT
-    |   FLOAT
-    |   COMPLEX
-    |   'NULL'
-    |   'NA'
-    |   'Inf'
-    |   'NaN'
-    |   'TRUE'
-    |   'FALSE'
+expr:   expr '[[' sublist ']' ']'  # Def1// '[[' follows R's yacc grammar
+    |   expr '[' sublist ']'	   # Def2
+    |   expr ('::'|':::') expr     # Def3
+    |   expr ('$'|'@') expr		 # Def4
+    |   expr '^'<assoc=right> expr  # Def5
+    |   ('-'|'+') expr				 # Def6
+    |   expr ':' expr # Def7
+    |   expr USER_OP expr # Def8// anything wrappedin %: '%' .* '%'  
+    |   expr ('*'|'/') expr # Def9
+    |   expr ('+'|'-') expr  # Def10
+    |   expr ('>'|'>='|'<'|'<='|'=='|'!=') expr  # Def11
+    |   '!' expr # Def12
+    |   expr ('&'|'&&') expr  # Def13
+    |   expr ('|'|'||') expr  # Def14
+    |   '~' expr  # Def15
+    |   expr '~' expr  # Def16
+    |   expr ('<-'|'<<-'|'='|'->'|'->>'|':=') expr  # Def17
+    |   'function' '(' formlist? ')' expr 								# DefFunction// define function
+    |   expr '(' sublist ')'       # CallFunction       // call function 				
+    |   '{' exprlist '}' # Def18// compound statement  
+    |   'if' '(' expr ')' expr  # Def19
+    |   'if' '(' expr ')' expr 'else' expr  # Def20
+    |   'for' '(' ID 'in' expr ')' expr  # Def21
+    |   'while' '(' expr ')' expr  # Def22
+    |   'repeat' expr # Def23
+    |   '?' expr # Def24// get help on expr, usually string or ID  
+    |   'next' # Def25
+    |   'break' # Def26
+    |   '(' expr ')' # Def27
+    |   ID # Def28
+    |   STRING # Def29
+    |   HEX # Def30
+    |   INT # Def31
+    |   FLOAT # Def32
+    |   COMPLEX # Def33
+    |   'NULL' # Def34
+    |   'NA' # Def35
+    |   'Inf' # Def36
+    |   'NaN' # Def37
+    |   'TRUE' # Def38
+    |   'FALSE' # Def39
     ;
 
 exprlist
