@@ -9,6 +9,28 @@ import org.antlr.v4.runtime.tree.ParseTreeListener;
  */
 public interface RListener extends ParseTreeListener {
 	/**
+	 * Enter a parse tree produced by {@link RParser#e30}.
+	 * @param ctx the parse tree
+	 */
+	void enterE30(@NotNull RParser.E30Context ctx);
+	/**
+	 * Exit a parse tree produced by {@link RParser#e30}.
+	 * @param ctx the parse tree
+	 */
+	void exitE30(@NotNull RParser.E30Context ctx);
+
+	/**
+	 * Enter a parse tree produced by {@link RParser#e31}.
+	 * @param ctx the parse tree
+	 */
+	void enterE31(@NotNull RParser.E31Context ctx);
+	/**
+	 * Exit a parse tree produced by {@link RParser#e31}.
+	 * @param ctx the parse tree
+	 */
+	void exitE31(@NotNull RParser.E31Context ctx);
+
+	/**
 	 * Enter a parse tree produced by {@link RParser#sub}.
 	 * @param ctx the parse tree
 	 */
@@ -20,125 +42,202 @@ public interface RListener extends ParseTreeListener {
 	void exitSub(@NotNull RParser.SubContext ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#Def20}.
+	 * Enter a parse tree produced by {@link RParser#e19}.
 	 * @param ctx the parse tree
 	 */
-	void enterDef20(@NotNull RParser.Def20Context ctx);
+	void enterE19(@NotNull RParser.E19Context ctx);
 	/**
-	 * Exit a parse tree produced by {@link RParser#Def20}.
+	 * Exit a parse tree produced by {@link RParser#e19}.
 	 * @param ctx the parse tree
 	 */
-	void exitDef20(@NotNull RParser.Def20Context ctx);
+	void exitE19(@NotNull RParser.E19Context ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#Def21}.
+	 * Enter a parse tree produced by {@link RParser#e18}.
 	 * @param ctx the parse tree
 	 */
-	void enterDef21(@NotNull RParser.Def21Context ctx);
+	void enterE18(@NotNull RParser.E18Context ctx);
 	/**
-	 * Exit a parse tree produced by {@link RParser#Def21}.
+	 * Exit a parse tree produced by {@link RParser#e18}.
 	 * @param ctx the parse tree
 	 */
-	void exitDef21(@NotNull RParser.Def21Context ctx);
+	void exitE18(@NotNull RParser.E18Context ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#Def22}.
+	 * Enter a parse tree produced by {@link RParser#e17}.
 	 * @param ctx the parse tree
 	 */
-	void enterDef22(@NotNull RParser.Def22Context ctx);
+	void enterE17(@NotNull RParser.E17Context ctx);
 	/**
-	 * Exit a parse tree produced by {@link RParser#Def22}.
+	 * Exit a parse tree produced by {@link RParser#e17}.
 	 * @param ctx the parse tree
 	 */
-	void exitDef22(@NotNull RParser.Def22Context ctx);
+	void exitE17(@NotNull RParser.E17Context ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#CallFunction}.
+	 * Enter a parse tree produced by {@link RParser#e34}.
 	 * @param ctx the parse tree
 	 */
-	void enterCallFunction(@NotNull RParser.CallFunctionContext ctx);
+	void enterE34(@NotNull RParser.E34Context ctx);
 	/**
-	 * Exit a parse tree produced by {@link RParser#CallFunction}.
+	 * Exit a parse tree produced by {@link RParser#e34}.
 	 * @param ctx the parse tree
 	 */
-	void exitCallFunction(@NotNull RParser.CallFunctionContext ctx);
+	void exitE34(@NotNull RParser.E34Context ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#Def23}.
+	 * Enter a parse tree produced by {@link RParser#e16}.
 	 * @param ctx the parse tree
 	 */
-	void enterDef23(@NotNull RParser.Def23Context ctx);
+	void enterE16(@NotNull RParser.E16Context ctx);
 	/**
-	 * Exit a parse tree produced by {@link RParser#Def23}.
+	 * Exit a parse tree produced by {@link RParser#e16}.
 	 * @param ctx the parse tree
 	 */
-	void exitDef23(@NotNull RParser.Def23Context ctx);
+	void exitE16(@NotNull RParser.E16Context ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#Def24}.
+	 * Enter a parse tree produced by {@link RParser#e35}.
 	 * @param ctx the parse tree
 	 */
-	void enterDef24(@NotNull RParser.Def24Context ctx);
+	void enterE35(@NotNull RParser.E35Context ctx);
 	/**
-	 * Exit a parse tree produced by {@link RParser#Def24}.
+	 * Exit a parse tree produced by {@link RParser#e35}.
 	 * @param ctx the parse tree
 	 */
-	void exitDef24(@NotNull RParser.Def24Context ctx);
+	void exitE35(@NotNull RParser.E35Context ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#Def25}.
+	 * Enter a parse tree produced by {@link RParser#e15}.
 	 * @param ctx the parse tree
 	 */
-	void enterDef25(@NotNull RParser.Def25Context ctx);
+	void enterE15(@NotNull RParser.E15Context ctx);
 	/**
-	 * Exit a parse tree produced by {@link RParser#Def25}.
+	 * Exit a parse tree produced by {@link RParser#e15}.
 	 * @param ctx the parse tree
 	 */
-	void exitDef25(@NotNull RParser.Def25Context ctx);
+	void exitE15(@NotNull RParser.E15Context ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#Def26}.
+	 * Enter a parse tree produced by {@link RParser#e32}.
 	 * @param ctx the parse tree
 	 */
-	void enterDef26(@NotNull RParser.Def26Context ctx);
+	void enterE32(@NotNull RParser.E32Context ctx);
 	/**
-	 * Exit a parse tree produced by {@link RParser#Def26}.
+	 * Exit a parse tree produced by {@link RParser#e32}.
 	 * @param ctx the parse tree
 	 */
-	void exitDef26(@NotNull RParser.Def26Context ctx);
+	void exitE32(@NotNull RParser.E32Context ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#Def27}.
+	 * Enter a parse tree produced by {@link RParser#e14}.
 	 * @param ctx the parse tree
 	 */
-	void enterDef27(@NotNull RParser.Def27Context ctx);
+	void enterE14(@NotNull RParser.E14Context ctx);
 	/**
-	 * Exit a parse tree produced by {@link RParser#Def27}.
+	 * Exit a parse tree produced by {@link RParser#e14}.
 	 * @param ctx the parse tree
 	 */
-	void exitDef27(@NotNull RParser.Def27Context ctx);
+	void exitE14(@NotNull RParser.E14Context ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#Def28}.
+	 * Enter a parse tree produced by {@link RParser#e33}.
 	 * @param ctx the parse tree
 	 */
-	void enterDef28(@NotNull RParser.Def28Context ctx);
+	void enterE33(@NotNull RParser.E33Context ctx);
 	/**
-	 * Exit a parse tree produced by {@link RParser#Def28}.
+	 * Exit a parse tree produced by {@link RParser#e33}.
 	 * @param ctx the parse tree
 	 */
-	void exitDef28(@NotNull RParser.Def28Context ctx);
+	void exitE33(@NotNull RParser.E33Context ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#Def29}.
+	 * Enter a parse tree produced by {@link RParser#e13}.
 	 * @param ctx the parse tree
 	 */
-	void enterDef29(@NotNull RParser.Def29Context ctx);
+	void enterE13(@NotNull RParser.E13Context ctx);
 	/**
-	 * Exit a parse tree produced by {@link RParser#Def29}.
+	 * Exit a parse tree produced by {@link RParser#e13}.
 	 * @param ctx the parse tree
 	 */
-	void exitDef29(@NotNull RParser.Def29Context ctx);
+	void exitE13(@NotNull RParser.E13Context ctx);
+
+	/**
+	 * Enter a parse tree produced by {@link RParser#e38}.
+	 * @param ctx the parse tree
+	 */
+	void enterE38(@NotNull RParser.E38Context ctx);
+	/**
+	 * Exit a parse tree produced by {@link RParser#e38}.
+	 * @param ctx the parse tree
+	 */
+	void exitE38(@NotNull RParser.E38Context ctx);
+
+	/**
+	 * Enter a parse tree produced by {@link RParser#e39}.
+	 * @param ctx the parse tree
+	 */
+	void enterE39(@NotNull RParser.E39Context ctx);
+	/**
+	 * Exit a parse tree produced by {@link RParser#e39}.
+	 * @param ctx the parse tree
+	 */
+	void exitE39(@NotNull RParser.E39Context ctx);
+
+	/**
+	 * Enter a parse tree produced by {@link RParser#e12}.
+	 * @param ctx the parse tree
+	 */
+	void enterE12(@NotNull RParser.E12Context ctx);
+	/**
+	 * Exit a parse tree produced by {@link RParser#e12}.
+	 * @param ctx the parse tree
+	 */
+	void exitE12(@NotNull RParser.E12Context ctx);
+
+	/**
+	 * Enter a parse tree produced by {@link RParser#e11}.
+	 * @param ctx the parse tree
+	 */
+	void enterE11(@NotNull RParser.E11Context ctx);
+	/**
+	 * Exit a parse tree produced by {@link RParser#e11}.
+	 * @param ctx the parse tree
+	 */
+	void exitE11(@NotNull RParser.E11Context ctx);
+
+	/**
+	 * Enter a parse tree produced by {@link RParser#e36}.
+	 * @param ctx the parse tree
+	 */
+	void enterE36(@NotNull RParser.E36Context ctx);
+	/**
+	 * Exit a parse tree produced by {@link RParser#e36}.
+	 * @param ctx the parse tree
+	 */
+	void exitE36(@NotNull RParser.E36Context ctx);
+
+	/**
+	 * Enter a parse tree produced by {@link RParser#e10}.
+	 * @param ctx the parse tree
+	 */
+	void enterE10(@NotNull RParser.E10Context ctx);
+	/**
+	 * Exit a parse tree produced by {@link RParser#e10}.
+	 * @param ctx the parse tree
+	 */
+	void exitE10(@NotNull RParser.E10Context ctx);
+
+	/**
+	 * Enter a parse tree produced by {@link RParser#e37}.
+	 * @param ctx the parse tree
+	 */
+	void enterE37(@NotNull RParser.E37Context ctx);
+	/**
+	 * Exit a parse tree produced by {@link RParser#e37}.
+	 * @param ctx the parse tree
+	 */
+	void exitE37(@NotNull RParser.E37Context ctx);
 
 	/**
 	 * Enter a parse tree produced by {@link RParser#prog}.
@@ -174,48 +273,37 @@ public interface RListener extends ParseTreeListener {
 	void exitExprlist(@NotNull RParser.ExprlistContext ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#Def3}.
+	 * Enter a parse tree produced by {@link RParser#e20expr}.
 	 * @param ctx the parse tree
 	 */
-	void enterDef3(@NotNull RParser.Def3Context ctx);
+	void enterE20expr(@NotNull RParser.E20exprContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link RParser#Def3}.
+	 * Exit a parse tree produced by {@link RParser#e20expr}.
 	 * @param ctx the parse tree
 	 */
-	void exitDef3(@NotNull RParser.Def3Context ctx);
+	void exitE20expr(@NotNull RParser.E20exprContext ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#Def4}.
+	 * Enter a parse tree produced by {@link RParser#e40}.
 	 * @param ctx the parse tree
 	 */
-	void enterDef4(@NotNull RParser.Def4Context ctx);
+	void enterE40(@NotNull RParser.E40Context ctx);
 	/**
-	 * Exit a parse tree produced by {@link RParser#Def4}.
+	 * Exit a parse tree produced by {@link RParser#e40}.
 	 * @param ctx the parse tree
 	 */
-	void exitDef4(@NotNull RParser.Def4Context ctx);
+	void exitE40(@NotNull RParser.E40Context ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#Def1}.
+	 * Enter a parse tree produced by {@link RParser#e29}.
 	 * @param ctx the parse tree
 	 */
-	void enterDef1(@NotNull RParser.Def1Context ctx);
+	void enterE29(@NotNull RParser.E29Context ctx);
 	/**
-	 * Exit a parse tree produced by {@link RParser#Def1}.
+	 * Exit a parse tree produced by {@link RParser#e29}.
 	 * @param ctx the parse tree
 	 */
-	void exitDef1(@NotNull RParser.Def1Context ctx);
-
-	/**
-	 * Enter a parse tree produced by {@link RParser#Def2}.
-	 * @param ctx the parse tree
-	 */
-	void enterDef2(@NotNull RParser.Def2Context ctx);
-	/**
-	 * Exit a parse tree produced by {@link RParser#Def2}.
-	 * @param ctx the parse tree
-	 */
-	void exitDef2(@NotNull RParser.Def2Context ctx);
+	void exitE29(@NotNull RParser.E29Context ctx);
 
 	/**
 	 * Enter a parse tree produced by {@link RParser#form}.
@@ -229,92 +317,103 @@ public interface RListener extends ParseTreeListener {
 	void exitForm(@NotNull RParser.FormContext ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#Def12}.
+	 * Enter a parse tree produced by {@link RParser#e26}.
 	 * @param ctx the parse tree
 	 */
-	void enterDef12(@NotNull RParser.Def12Context ctx);
+	void enterE26(@NotNull RParser.E26Context ctx);
 	/**
-	 * Exit a parse tree produced by {@link RParser#Def12}.
+	 * Exit a parse tree produced by {@link RParser#e26}.
 	 * @param ctx the parse tree
 	 */
-	void exitDef12(@NotNull RParser.Def12Context ctx);
+	void exitE26(@NotNull RParser.E26Context ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#Def13}.
+	 * Enter a parse tree produced by {@link RParser#e25}.
 	 * @param ctx the parse tree
 	 */
-	void enterDef13(@NotNull RParser.Def13Context ctx);
+	void enterE25(@NotNull RParser.E25Context ctx);
 	/**
-	 * Exit a parse tree produced by {@link RParser#Def13}.
+	 * Exit a parse tree produced by {@link RParser#e25}.
 	 * @param ctx the parse tree
 	 */
-	void exitDef13(@NotNull RParser.Def13Context ctx);
+	void exitE25(@NotNull RParser.E25Context ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#Def10}.
+	 * Enter a parse tree produced by {@link RParser#e28}.
 	 * @param ctx the parse tree
 	 */
-	void enterDef10(@NotNull RParser.Def10Context ctx);
+	void enterE28(@NotNull RParser.E28Context ctx);
 	/**
-	 * Exit a parse tree produced by {@link RParser#Def10}.
+	 * Exit a parse tree produced by {@link RParser#e28}.
 	 * @param ctx the parse tree
 	 */
-	void exitDef10(@NotNull RParser.Def10Context ctx);
+	void exitE28(@NotNull RParser.E28Context ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#Def11}.
+	 * Enter a parse tree produced by {@link RParser#e27}.
 	 * @param ctx the parse tree
 	 */
-	void enterDef11(@NotNull RParser.Def11Context ctx);
+	void enterE27(@NotNull RParser.E27Context ctx);
 	/**
-	 * Exit a parse tree produced by {@link RParser#Def11}.
+	 * Exit a parse tree produced by {@link RParser#e27}.
 	 * @param ctx the parse tree
 	 */
-	void exitDef11(@NotNull RParser.Def11Context ctx);
+	void exitE27(@NotNull RParser.E27Context ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#Def16}.
+	 * Enter a parse tree produced by {@link RParser#e22}.
 	 * @param ctx the parse tree
 	 */
-	void enterDef16(@NotNull RParser.Def16Context ctx);
+	void enterE22(@NotNull RParser.E22Context ctx);
 	/**
-	 * Exit a parse tree produced by {@link RParser#Def16}.
+	 * Exit a parse tree produced by {@link RParser#e22}.
 	 * @param ctx the parse tree
 	 */
-	void exitDef16(@NotNull RParser.Def16Context ctx);
+	void exitE22(@NotNull RParser.E22Context ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#Def17}.
+	 * Enter a parse tree produced by {@link RParser#e21}.
 	 * @param ctx the parse tree
 	 */
-	void enterDef17(@NotNull RParser.Def17Context ctx);
+	void enterE21(@NotNull RParser.E21Context ctx);
 	/**
-	 * Exit a parse tree produced by {@link RParser#Def17}.
+	 * Exit a parse tree produced by {@link RParser#e21}.
 	 * @param ctx the parse tree
 	 */
-	void exitDef17(@NotNull RParser.Def17Context ctx);
+	void exitE21(@NotNull RParser.E21Context ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#Def14}.
+	 * Enter a parse tree produced by {@link RParser#e24}.
 	 * @param ctx the parse tree
 	 */
-	void enterDef14(@NotNull RParser.Def14Context ctx);
+	void enterE24(@NotNull RParser.E24Context ctx);
 	/**
-	 * Exit a parse tree produced by {@link RParser#Def14}.
+	 * Exit a parse tree produced by {@link RParser#e24}.
 	 * @param ctx the parse tree
 	 */
-	void exitDef14(@NotNull RParser.Def14Context ctx);
+	void exitE24(@NotNull RParser.E24Context ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#Def15}.
+	 * Enter a parse tree produced by {@link RParser#e9}.
 	 * @param ctx the parse tree
 	 */
-	void enterDef15(@NotNull RParser.Def15Context ctx);
+	void enterE9(@NotNull RParser.E9Context ctx);
 	/**
-	 * Exit a parse tree produced by {@link RParser#Def15}.
+	 * Exit a parse tree produced by {@link RParser#e9}.
 	 * @param ctx the parse tree
 	 */
-	void exitDef15(@NotNull RParser.Def15Context ctx);
+	void exitE9(@NotNull RParser.E9Context ctx);
+
+	/**
+	 * Enter a parse tree produced by {@link RParser#e23}.
+	 * @param ctx the parse tree
+	 */
+	void enterE23(@NotNull RParser.E23Context ctx);
+	/**
+	 * Exit a parse tree produced by {@link RParser#e23}.
+	 * @param ctx the parse tree
+	 */
+	void exitE23(@NotNull RParser.E23Context ctx);
 
 	/**
 	 * Enter a parse tree produced by {@link RParser#sublist}.
@@ -328,26 +427,81 @@ public interface RListener extends ParseTreeListener {
 	void exitSublist(@NotNull RParser.SublistContext ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#Def18}.
+	 * Enter a parse tree produced by {@link RParser#e8}.
 	 * @param ctx the parse tree
 	 */
-	void enterDef18(@NotNull RParser.Def18Context ctx);
+	void enterE8(@NotNull RParser.E8Context ctx);
 	/**
-	 * Exit a parse tree produced by {@link RParser#Def18}.
+	 * Exit a parse tree produced by {@link RParser#e8}.
 	 * @param ctx the parse tree
 	 */
-	void exitDef18(@NotNull RParser.Def18Context ctx);
+	void exitE8(@NotNull RParser.E8Context ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#Def19}.
+	 * Enter a parse tree produced by {@link RParser#e7}.
 	 * @param ctx the parse tree
 	 */
-	void enterDef19(@NotNull RParser.Def19Context ctx);
+	void enterE7(@NotNull RParser.E7Context ctx);
 	/**
-	 * Exit a parse tree produced by {@link RParser#Def19}.
+	 * Exit a parse tree produced by {@link RParser#e7}.
 	 * @param ctx the parse tree
 	 */
-	void exitDef19(@NotNull RParser.Def19Context ctx);
+	void exitE7(@NotNull RParser.E7Context ctx);
+
+	/**
+	 * Enter a parse tree produced by {@link RParser#e6}.
+	 * @param ctx the parse tree
+	 */
+	void enterE6(@NotNull RParser.E6Context ctx);
+	/**
+	 * Exit a parse tree produced by {@link RParser#e6}.
+	 * @param ctx the parse tree
+	 */
+	void exitE6(@NotNull RParser.E6Context ctx);
+
+	/**
+	 * Enter a parse tree produced by {@link RParser#e5}.
+	 * @param ctx the parse tree
+	 */
+	void enterE5(@NotNull RParser.E5Context ctx);
+	/**
+	 * Exit a parse tree produced by {@link RParser#e5}.
+	 * @param ctx the parse tree
+	 */
+	void exitE5(@NotNull RParser.E5Context ctx);
+
+	/**
+	 * Enter a parse tree produced by {@link RParser#e3}.
+	 * @param ctx the parse tree
+	 */
+	void enterE3(@NotNull RParser.E3Context ctx);
+	/**
+	 * Exit a parse tree produced by {@link RParser#e3}.
+	 * @param ctx the parse tree
+	 */
+	void exitE3(@NotNull RParser.E3Context ctx);
+
+	/**
+	 * Enter a parse tree produced by {@link RParser#e4}.
+	 * @param ctx the parse tree
+	 */
+	void enterE4(@NotNull RParser.E4Context ctx);
+	/**
+	 * Exit a parse tree produced by {@link RParser#e4}.
+	 * @param ctx the parse tree
+	 */
+	void exitE4(@NotNull RParser.E4Context ctx);
+
+	/**
+	 * Enter a parse tree produced by {@link RParser#e1}.
+	 * @param ctx the parse tree
+	 */
+	void enterE1(@NotNull RParser.E1Context ctx);
+	/**
+	 * Exit a parse tree produced by {@link RParser#e1}.
+	 * @param ctx the parse tree
+	 */
+	void exitE1(@NotNull RParser.E1Context ctx);
 
 	/**
 	 * Enter a parse tree produced by {@link RParser#DefFunction}.
@@ -361,167 +515,13 @@ public interface RListener extends ParseTreeListener {
 	void exitDefFunction(@NotNull RParser.DefFunctionContext ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#Def37}.
+	 * Enter a parse tree produced by {@link RParser#e2}.
 	 * @param ctx the parse tree
 	 */
-	void enterDef37(@NotNull RParser.Def37Context ctx);
+	void enterE2(@NotNull RParser.E2Context ctx);
 	/**
-	 * Exit a parse tree produced by {@link RParser#Def37}.
+	 * Exit a parse tree produced by {@link RParser#e2}.
 	 * @param ctx the parse tree
 	 */
-	void exitDef37(@NotNull RParser.Def37Context ctx);
-
-	/**
-	 * Enter a parse tree produced by {@link RParser#Def36}.
-	 * @param ctx the parse tree
-	 */
-	void enterDef36(@NotNull RParser.Def36Context ctx);
-	/**
-	 * Exit a parse tree produced by {@link RParser#Def36}.
-	 * @param ctx the parse tree
-	 */
-	void exitDef36(@NotNull RParser.Def36Context ctx);
-
-	/**
-	 * Enter a parse tree produced by {@link RParser#Def39}.
-	 * @param ctx the parse tree
-	 */
-	void enterDef39(@NotNull RParser.Def39Context ctx);
-	/**
-	 * Exit a parse tree produced by {@link RParser#Def39}.
-	 * @param ctx the parse tree
-	 */
-	void exitDef39(@NotNull RParser.Def39Context ctx);
-
-	/**
-	 * Enter a parse tree produced by {@link RParser#Def38}.
-	 * @param ctx the parse tree
-	 */
-	void enterDef38(@NotNull RParser.Def38Context ctx);
-	/**
-	 * Exit a parse tree produced by {@link RParser#Def38}.
-	 * @param ctx the parse tree
-	 */
-	void exitDef38(@NotNull RParser.Def38Context ctx);
-
-	/**
-	 * Enter a parse tree produced by {@link RParser#Def33}.
-	 * @param ctx the parse tree
-	 */
-	void enterDef33(@NotNull RParser.Def33Context ctx);
-	/**
-	 * Exit a parse tree produced by {@link RParser#Def33}.
-	 * @param ctx the parse tree
-	 */
-	void exitDef33(@NotNull RParser.Def33Context ctx);
-
-	/**
-	 * Enter a parse tree produced by {@link RParser#Def32}.
-	 * @param ctx the parse tree
-	 */
-	void enterDef32(@NotNull RParser.Def32Context ctx);
-	/**
-	 * Exit a parse tree produced by {@link RParser#Def32}.
-	 * @param ctx the parse tree
-	 */
-	void exitDef32(@NotNull RParser.Def32Context ctx);
-
-	/**
-	 * Enter a parse tree produced by {@link RParser#Def35}.
-	 * @param ctx the parse tree
-	 */
-	void enterDef35(@NotNull RParser.Def35Context ctx);
-	/**
-	 * Exit a parse tree produced by {@link RParser#Def35}.
-	 * @param ctx the parse tree
-	 */
-	void exitDef35(@NotNull RParser.Def35Context ctx);
-
-	/**
-	 * Enter a parse tree produced by {@link RParser#Def9}.
-	 * @param ctx the parse tree
-	 */
-	void enterDef9(@NotNull RParser.Def9Context ctx);
-	/**
-	 * Exit a parse tree produced by {@link RParser#Def9}.
-	 * @param ctx the parse tree
-	 */
-	void exitDef9(@NotNull RParser.Def9Context ctx);
-
-	/**
-	 * Enter a parse tree produced by {@link RParser#Def34}.
-	 * @param ctx the parse tree
-	 */
-	void enterDef34(@NotNull RParser.Def34Context ctx);
-	/**
-	 * Exit a parse tree produced by {@link RParser#Def34}.
-	 * @param ctx the parse tree
-	 */
-	void exitDef34(@NotNull RParser.Def34Context ctx);
-
-	/**
-	 * Enter a parse tree produced by {@link RParser#Def8}.
-	 * @param ctx the parse tree
-	 */
-	void enterDef8(@NotNull RParser.Def8Context ctx);
-	/**
-	 * Exit a parse tree produced by {@link RParser#Def8}.
-	 * @param ctx the parse tree
-	 */
-	void exitDef8(@NotNull RParser.Def8Context ctx);
-
-	/**
-	 * Enter a parse tree produced by {@link RParser#Def7}.
-	 * @param ctx the parse tree
-	 */
-	void enterDef7(@NotNull RParser.Def7Context ctx);
-	/**
-	 * Exit a parse tree produced by {@link RParser#Def7}.
-	 * @param ctx the parse tree
-	 */
-	void exitDef7(@NotNull RParser.Def7Context ctx);
-
-	/**
-	 * Enter a parse tree produced by {@link RParser#Def6}.
-	 * @param ctx the parse tree
-	 */
-	void enterDef6(@NotNull RParser.Def6Context ctx);
-	/**
-	 * Exit a parse tree produced by {@link RParser#Def6}.
-	 * @param ctx the parse tree
-	 */
-	void exitDef6(@NotNull RParser.Def6Context ctx);
-
-	/**
-	 * Enter a parse tree produced by {@link RParser#Def31}.
-	 * @param ctx the parse tree
-	 */
-	void enterDef31(@NotNull RParser.Def31Context ctx);
-	/**
-	 * Exit a parse tree produced by {@link RParser#Def31}.
-	 * @param ctx the parse tree
-	 */
-	void exitDef31(@NotNull RParser.Def31Context ctx);
-
-	/**
-	 * Enter a parse tree produced by {@link RParser#Def5}.
-	 * @param ctx the parse tree
-	 */
-	void enterDef5(@NotNull RParser.Def5Context ctx);
-	/**
-	 * Exit a parse tree produced by {@link RParser#Def5}.
-	 * @param ctx the parse tree
-	 */
-	void exitDef5(@NotNull RParser.Def5Context ctx);
-
-	/**
-	 * Enter a parse tree produced by {@link RParser#Def30}.
-	 * @param ctx the parse tree
-	 */
-	void enterDef30(@NotNull RParser.Def30Context ctx);
-	/**
-	 * Exit a parse tree produced by {@link RParser#Def30}.
-	 * @param ctx the parse tree
-	 */
-	void exitDef30(@NotNull RParser.Def30Context ctx);
+	void exitE2(@NotNull RParser.E2Context ctx);
 }

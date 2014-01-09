@@ -146,7 +146,7 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 		
 		
 		IDocument doc = fDocument;
-		//System.out.println(doc.get());
+		
 		ANTLRInputStream input = new ANTLRInputStream(doc.get());
 		RLexer lexer = new RLexer(input);
 		tokens = new CommonTokenStream(lexer);
