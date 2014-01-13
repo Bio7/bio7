@@ -99,80 +99,27 @@ public class RFilter extends Parser {
 			setState(15);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << 1) | (1L << 2) | (1L << 3) | (1L << 4) | (1L << 5) | (1L << 6) | (1L << 8) | (1L << 9) | (1L << 11) | (1L << 12) | (1L << 15) | (1L << 16) | (1L << 17) | (1L << 18) | (1L << 19) | (1L << 20) | (1L << 21) | (1L << 22) | (1L << 24) | (1L << 25) | (1L << 26) | (1L << 27) | (1L << 28) | (1L << 29) | (1L << 30) | (1L << 31) | (1L << 32) | (1L << 33) | (1L << 34) | (1L << 35) | (1L << 36) | (1L << 37) | (1L << 38) | (1L << 39) | (1L << 40) | (1L << 41) | (1L << 42) | (1L << 43) | (1L << 44) | (1L << 45) | (1L << 46) | (1L << 47) | (1L << 48) | (1L << 50) | (1L << 51) | (1L << 52) | (1L << 53) | (1L << 54) | (1L << HEX) | (1L << INT) | (1L << FLOAT) | (1L << COMPLEX) | (1L << STRING) | (1L << ID) | (1L << USER_OP) | (1L << NL))) != 0)) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << 1) | (1L << 2) | (1L << 3) | (1L << 4) | (1L << 5) | (1L << 6) | (1L << 7) | (1L << 8) | (1L << 9) | (1L << 11) | (1L << 12) | (1L << 13) | (1L << 15) | (1L << 16) | (1L << 17) | (1L << 18) | (1L << 19) | (1L << 20) | (1L << 21) | (1L << 22) | (1L << 24) | (1L << 25) | (1L << 26) | (1L << 27) | (1L << 28) | (1L << 29) | (1L << 30) | (1L << 31) | (1L << 32) | (1L << 33) | (1L << 34) | (1L << 35) | (1L << 36) | (1L << 37) | (1L << 38) | (1L << 39) | (1L << 40) | (1L << 41) | (1L << 42) | (1L << 43) | (1L << 44) | (1L << 45) | (1L << 46) | (1L << 47) | (1L << 48) | (1L << 50) | (1L << 51) | (1L << 52) | (1L << 53) | (1L << 54) | (1L << HEX) | (1L << INT) | (1L << FLOAT) | (1L << COMPLEX) | (1L << STRING) | (1L << ID) | (1L << USER_OP) | (1L << NL))) != 0)) {
 				{
 				setState(13);
-				switch (_input.LA(1)) {
+				switch ( getInterpreter().adaptivePredict(_input,0,_ctx) ) {
 				case 1:
-				case 2:
-				case 3:
-				case 4:
-				case 5:
-				case 6:
-				case 8:
-				case 9:
-				case 11:
-				case 12:
-				case 15:
-				case 16:
-				case 17:
-				case 18:
-				case 19:
-				case 20:
-				case 21:
-				case 22:
-				case 24:
-				case 25:
-				case 26:
-				case 27:
-				case 28:
-				case 29:
-				case 30:
-				case 31:
-				case 32:
-				case 33:
-				case 34:
-				case 35:
-				case 36:
-				case 37:
-				case 38:
-				case 39:
-				case 40:
-				case 41:
-				case 42:
-				case 43:
-				case 44:
-				case 46:
-				case 47:
-				case 48:
-				case 50:
-				case 51:
-				case 52:
-				case 53:
-				case 54:
-				case HEX:
-				case INT:
-				case FLOAT:
-				case COMPLEX:
-				case STRING:
-				case ID:
-				case USER_OP:
 					{
 					setState(10); elem();
 					}
 					break;
-				case NL:
+
+				case 2:
 					{
 					setState(11); match(NL);
 					}
 					break;
-				case 45:
+
+				case 3:
 					{
 					setState(12); match(45);
 					}
 					break;
-				default:
-					throw new NoViableAltException(this);
 				}
 				}
 				setState(17);
@@ -305,14 +252,16 @@ public class RFilter extends Parser {
 		enterRule(_localctx, 4, RULE_elem);
 		int _la;
 		try {
-			setState(140);
+			setState(146);
 			switch (_input.LA(1)) {
 			case 1:
 			case 3:
 			case 4:
 			case 5:
 			case 6:
+			case 7:
 			case 12:
+			case 13:
 			case 16:
 			case 17:
 			case 18:
@@ -386,80 +335,27 @@ public class RFilter extends Parser {
 				setState(41);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << 1) | (1L << 2) | (1L << 3) | (1L << 4) | (1L << 5) | (1L << 6) | (1L << 8) | (1L << 9) | (1L << 11) | (1L << 12) | (1L << 15) | (1L << 16) | (1L << 17) | (1L << 18) | (1L << 19) | (1L << 20) | (1L << 21) | (1L << 22) | (1L << 24) | (1L << 25) | (1L << 26) | (1L << 27) | (1L << 28) | (1L << 29) | (1L << 30) | (1L << 31) | (1L << 32) | (1L << 33) | (1L << 34) | (1L << 35) | (1L << 36) | (1L << 37) | (1L << 38) | (1L << 39) | (1L << 40) | (1L << 41) | (1L << 42) | (1L << 43) | (1L << 44) | (1L << 45) | (1L << 46) | (1L << 47) | (1L << 48) | (1L << 50) | (1L << 51) | (1L << 52) | (1L << 53) | (1L << 54) | (1L << HEX) | (1L << INT) | (1L << FLOAT) | (1L << COMPLEX) | (1L << STRING) | (1L << ID) | (1L << USER_OP) | (1L << NL))) != 0)) {
+				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << 1) | (1L << 2) | (1L << 3) | (1L << 4) | (1L << 5) | (1L << 6) | (1L << 7) | (1L << 8) | (1L << 9) | (1L << 11) | (1L << 12) | (1L << 13) | (1L << 15) | (1L << 16) | (1L << 17) | (1L << 18) | (1L << 19) | (1L << 20) | (1L << 21) | (1L << 22) | (1L << 24) | (1L << 25) | (1L << 26) | (1L << 27) | (1L << 28) | (1L << 29) | (1L << 30) | (1L << 31) | (1L << 32) | (1L << 33) | (1L << 34) | (1L << 35) | (1L << 36) | (1L << 37) | (1L << 38) | (1L << 39) | (1L << 40) | (1L << 41) | (1L << 42) | (1L << 43) | (1L << 44) | (1L << 45) | (1L << 46) | (1L << 47) | (1L << 48) | (1L << 50) | (1L << 51) | (1L << 52) | (1L << 53) | (1L << 54) | (1L << HEX) | (1L << INT) | (1L << FLOAT) | (1L << COMPLEX) | (1L << STRING) | (1L << ID) | (1L << USER_OP) | (1L << NL))) != 0)) {
 					{
 					setState(39);
-					switch (_input.LA(1)) {
+					switch ( getInterpreter().adaptivePredict(_input,5,_ctx) ) {
 					case 1:
-					case 2:
-					case 3:
-					case 4:
-					case 5:
-					case 6:
-					case 8:
-					case 9:
-					case 11:
-					case 12:
-					case 15:
-					case 16:
-					case 17:
-					case 18:
-					case 19:
-					case 20:
-					case 21:
-					case 22:
-					case 24:
-					case 25:
-					case 26:
-					case 27:
-					case 28:
-					case 29:
-					case 30:
-					case 31:
-					case 32:
-					case 33:
-					case 34:
-					case 35:
-					case 36:
-					case 37:
-					case 38:
-					case 39:
-					case 40:
-					case 41:
-					case 42:
-					case 43:
-					case 44:
-					case 46:
-					case 47:
-					case 48:
-					case 50:
-					case 51:
-					case 52:
-					case 53:
-					case 54:
-					case HEX:
-					case INT:
-					case FLOAT:
-					case COMPLEX:
-					case STRING:
-					case ID:
-					case USER_OP:
 						{
 						setState(36); elem();
 						}
 						break;
-					case NL:
+
+					case 2:
 						{
 						setState(37); match(NL);
 						}
 						break;
-					case 45:
+
+					case 3:
 						{
 						setState(38); match(45);
 						}
 						break;
-					default:
-						throw new NoViableAltException(this);
 					}
 					}
 					setState(43);
@@ -477,75 +373,21 @@ public class RFilter extends Parser {
 				setState(51);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << 1) | (1L << 2) | (1L << 3) | (1L << 4) | (1L << 5) | (1L << 6) | (1L << 8) | (1L << 9) | (1L << 11) | (1L << 12) | (1L << 15) | (1L << 16) | (1L << 17) | (1L << 18) | (1L << 19) | (1L << 20) | (1L << 21) | (1L << 22) | (1L << 24) | (1L << 25) | (1L << 26) | (1L << 27) | (1L << 28) | (1L << 29) | (1L << 30) | (1L << 31) | (1L << 32) | (1L << 33) | (1L << 34) | (1L << 35) | (1L << 36) | (1L << 37) | (1L << 38) | (1L << 39) | (1L << 40) | (1L << 41) | (1L << 42) | (1L << 43) | (1L << 44) | (1L << 46) | (1L << 47) | (1L << 48) | (1L << 50) | (1L << 51) | (1L << 52) | (1L << 53) | (1L << 54) | (1L << HEX) | (1L << INT) | (1L << FLOAT) | (1L << COMPLEX) | (1L << STRING) | (1L << ID) | (1L << USER_OP) | (1L << NL))) != 0)) {
+				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << 1) | (1L << 2) | (1L << 3) | (1L << 4) | (1L << 5) | (1L << 6) | (1L << 7) | (1L << 8) | (1L << 9) | (1L << 11) | (1L << 12) | (1L << 13) | (1L << 15) | (1L << 16) | (1L << 17) | (1L << 18) | (1L << 19) | (1L << 20) | (1L << 21) | (1L << 22) | (1L << 24) | (1L << 25) | (1L << 26) | (1L << 27) | (1L << 28) | (1L << 29) | (1L << 30) | (1L << 31) | (1L << 32) | (1L << 33) | (1L << 34) | (1L << 35) | (1L << 36) | (1L << 37) | (1L << 38) | (1L << 39) | (1L << 40) | (1L << 41) | (1L << 42) | (1L << 43) | (1L << 44) | (1L << 46) | (1L << 47) | (1L << 48) | (1L << 50) | (1L << 51) | (1L << 52) | (1L << 53) | (1L << 54) | (1L << HEX) | (1L << INT) | (1L << FLOAT) | (1L << COMPLEX) | (1L << STRING) | (1L << ID) | (1L << USER_OP) | (1L << NL))) != 0)) {
 					{
 					setState(49);
-					switch (_input.LA(1)) {
+					switch ( getInterpreter().adaptivePredict(_input,7,_ctx) ) {
 					case 1:
-					case 2:
-					case 3:
-					case 4:
-					case 5:
-					case 6:
-					case 8:
-					case 9:
-					case 11:
-					case 12:
-					case 15:
-					case 16:
-					case 17:
-					case 18:
-					case 19:
-					case 20:
-					case 21:
-					case 22:
-					case 24:
-					case 25:
-					case 26:
-					case 27:
-					case 28:
-					case 29:
-					case 30:
-					case 31:
-					case 32:
-					case 33:
-					case 34:
-					case 35:
-					case 36:
-					case 37:
-					case 38:
-					case 39:
-					case 40:
-					case 41:
-					case 42:
-					case 43:
-					case 44:
-					case 46:
-					case 47:
-					case 48:
-					case 50:
-					case 51:
-					case 52:
-					case 53:
-					case 54:
-					case HEX:
-					case INT:
-					case FLOAT:
-					case COMPLEX:
-					case STRING:
-					case ID:
-					case USER_OP:
 						{
 						setState(47); elem();
 						}
 						break;
-					case NL:
+
+					case 2:
 						{
 						setState(48); eat();
 						}
 						break;
-					default:
-						throw new NoViableAltException(this);
 					}
 					}
 					setState(53);
@@ -562,75 +404,21 @@ public class RFilter extends Parser {
 				setState(60);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << 1) | (1L << 2) | (1L << 3) | (1L << 4) | (1L << 5) | (1L << 6) | (1L << 8) | (1L << 9) | (1L << 11) | (1L << 12) | (1L << 15) | (1L << 16) | (1L << 17) | (1L << 18) | (1L << 19) | (1L << 20) | (1L << 21) | (1L << 22) | (1L << 24) | (1L << 25) | (1L << 26) | (1L << 27) | (1L << 28) | (1L << 29) | (1L << 30) | (1L << 31) | (1L << 32) | (1L << 33) | (1L << 34) | (1L << 35) | (1L << 36) | (1L << 37) | (1L << 38) | (1L << 39) | (1L << 40) | (1L << 41) | (1L << 42) | (1L << 43) | (1L << 44) | (1L << 46) | (1L << 47) | (1L << 48) | (1L << 50) | (1L << 51) | (1L << 52) | (1L << 53) | (1L << 54) | (1L << HEX) | (1L << INT) | (1L << FLOAT) | (1L << COMPLEX) | (1L << STRING) | (1L << ID) | (1L << USER_OP) | (1L << NL))) != 0)) {
+				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << 1) | (1L << 2) | (1L << 3) | (1L << 4) | (1L << 5) | (1L << 6) | (1L << 7) | (1L << 8) | (1L << 9) | (1L << 11) | (1L << 12) | (1L << 13) | (1L << 15) | (1L << 16) | (1L << 17) | (1L << 18) | (1L << 19) | (1L << 20) | (1L << 21) | (1L << 22) | (1L << 24) | (1L << 25) | (1L << 26) | (1L << 27) | (1L << 28) | (1L << 29) | (1L << 30) | (1L << 31) | (1L << 32) | (1L << 33) | (1L << 34) | (1L << 35) | (1L << 36) | (1L << 37) | (1L << 38) | (1L << 39) | (1L << 40) | (1L << 41) | (1L << 42) | (1L << 43) | (1L << 44) | (1L << 46) | (1L << 47) | (1L << 48) | (1L << 50) | (1L << 51) | (1L << 52) | (1L << 53) | (1L << 54) | (1L << HEX) | (1L << INT) | (1L << FLOAT) | (1L << COMPLEX) | (1L << STRING) | (1L << ID) | (1L << USER_OP) | (1L << NL))) != 0)) {
 					{
 					setState(58);
-					switch (_input.LA(1)) {
+					switch ( getInterpreter().adaptivePredict(_input,9,_ctx) ) {
 					case 1:
-					case 2:
-					case 3:
-					case 4:
-					case 5:
-					case 6:
-					case 8:
-					case 9:
-					case 11:
-					case 12:
-					case 15:
-					case 16:
-					case 17:
-					case 18:
-					case 19:
-					case 20:
-					case 21:
-					case 22:
-					case 24:
-					case 25:
-					case 26:
-					case 27:
-					case 28:
-					case 29:
-					case 30:
-					case 31:
-					case 32:
-					case 33:
-					case 34:
-					case 35:
-					case 36:
-					case 37:
-					case 38:
-					case 39:
-					case 40:
-					case 41:
-					case 42:
-					case 43:
-					case 44:
-					case 46:
-					case 47:
-					case 48:
-					case 50:
-					case 51:
-					case 52:
-					case 53:
-					case 54:
-					case HEX:
-					case INT:
-					case FLOAT:
-					case COMPLEX:
-					case STRING:
-					case ID:
-					case USER_OP:
 						{
 						setState(56); elem();
 						}
 						break;
-					case NL:
+
+					case 2:
 						{
 						setState(57); eat();
 						}
 						break;
-					default:
-						throw new NoViableAltException(this);
 					}
 					}
 					setState(62);
@@ -647,75 +435,21 @@ public class RFilter extends Parser {
 				setState(69);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << 1) | (1L << 2) | (1L << 3) | (1L << 4) | (1L << 5) | (1L << 6) | (1L << 8) | (1L << 9) | (1L << 11) | (1L << 12) | (1L << 15) | (1L << 16) | (1L << 17) | (1L << 18) | (1L << 19) | (1L << 20) | (1L << 21) | (1L << 22) | (1L << 24) | (1L << 25) | (1L << 26) | (1L << 27) | (1L << 28) | (1L << 29) | (1L << 30) | (1L << 31) | (1L << 32) | (1L << 33) | (1L << 34) | (1L << 35) | (1L << 36) | (1L << 37) | (1L << 38) | (1L << 39) | (1L << 40) | (1L << 41) | (1L << 42) | (1L << 43) | (1L << 44) | (1L << 46) | (1L << 47) | (1L << 48) | (1L << 50) | (1L << 51) | (1L << 52) | (1L << 53) | (1L << 54) | (1L << HEX) | (1L << INT) | (1L << FLOAT) | (1L << COMPLEX) | (1L << STRING) | (1L << ID) | (1L << USER_OP) | (1L << NL))) != 0)) {
+				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << 1) | (1L << 2) | (1L << 3) | (1L << 4) | (1L << 5) | (1L << 6) | (1L << 7) | (1L << 8) | (1L << 9) | (1L << 11) | (1L << 12) | (1L << 13) | (1L << 15) | (1L << 16) | (1L << 17) | (1L << 18) | (1L << 19) | (1L << 20) | (1L << 21) | (1L << 22) | (1L << 24) | (1L << 25) | (1L << 26) | (1L << 27) | (1L << 28) | (1L << 29) | (1L << 30) | (1L << 31) | (1L << 32) | (1L << 33) | (1L << 34) | (1L << 35) | (1L << 36) | (1L << 37) | (1L << 38) | (1L << 39) | (1L << 40) | (1L << 41) | (1L << 42) | (1L << 43) | (1L << 44) | (1L << 46) | (1L << 47) | (1L << 48) | (1L << 50) | (1L << 51) | (1L << 52) | (1L << 53) | (1L << 54) | (1L << HEX) | (1L << INT) | (1L << FLOAT) | (1L << COMPLEX) | (1L << STRING) | (1L << ID) | (1L << USER_OP) | (1L << NL))) != 0)) {
 					{
 					setState(67);
-					switch (_input.LA(1)) {
+					switch ( getInterpreter().adaptivePredict(_input,11,_ctx) ) {
 					case 1:
-					case 2:
-					case 3:
-					case 4:
-					case 5:
-					case 6:
-					case 8:
-					case 9:
-					case 11:
-					case 12:
-					case 15:
-					case 16:
-					case 17:
-					case 18:
-					case 19:
-					case 20:
-					case 21:
-					case 22:
-					case 24:
-					case 25:
-					case 26:
-					case 27:
-					case 28:
-					case 29:
-					case 30:
-					case 31:
-					case 32:
-					case 33:
-					case 34:
-					case 35:
-					case 36:
-					case 37:
-					case 38:
-					case 39:
-					case 40:
-					case 41:
-					case 42:
-					case 43:
-					case 44:
-					case 46:
-					case 47:
-					case 48:
-					case 50:
-					case 51:
-					case 52:
-					case 53:
-					case 54:
-					case HEX:
-					case INT:
-					case FLOAT:
-					case COMPLEX:
-					case STRING:
-					case ID:
-					case USER_OP:
 						{
 						setState(65); elem();
 						}
 						break;
-					case NL:
+
+					case 2:
 						{
 						setState(66); eat();
 						}
 						break;
-					default:
-						throw new NoViableAltException(this);
 					}
 					}
 					setState(71);
@@ -742,75 +476,21 @@ public class RFilter extends Parser {
 				setState(83);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << 1) | (1L << 2) | (1L << 3) | (1L << 4) | (1L << 5) | (1L << 6) | (1L << 8) | (1L << 9) | (1L << 11) | (1L << 12) | (1L << 15) | (1L << 16) | (1L << 17) | (1L << 18) | (1L << 19) | (1L << 20) | (1L << 21) | (1L << 22) | (1L << 24) | (1L << 25) | (1L << 26) | (1L << 27) | (1L << 28) | (1L << 29) | (1L << 30) | (1L << 31) | (1L << 32) | (1L << 33) | (1L << 34) | (1L << 35) | (1L << 36) | (1L << 37) | (1L << 38) | (1L << 39) | (1L << 40) | (1L << 41) | (1L << 42) | (1L << 43) | (1L << 44) | (1L << 46) | (1L << 47) | (1L << 48) | (1L << 50) | (1L << 51) | (1L << 52) | (1L << 53) | (1L << 54) | (1L << HEX) | (1L << INT) | (1L << FLOAT) | (1L << COMPLEX) | (1L << STRING) | (1L << ID) | (1L << USER_OP) | (1L << NL))) != 0)) {
+				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << 1) | (1L << 2) | (1L << 3) | (1L << 4) | (1L << 5) | (1L << 6) | (1L << 7) | (1L << 8) | (1L << 9) | (1L << 11) | (1L << 12) | (1L << 13) | (1L << 15) | (1L << 16) | (1L << 17) | (1L << 18) | (1L << 19) | (1L << 20) | (1L << 21) | (1L << 22) | (1L << 24) | (1L << 25) | (1L << 26) | (1L << 27) | (1L << 28) | (1L << 29) | (1L << 30) | (1L << 31) | (1L << 32) | (1L << 33) | (1L << 34) | (1L << 35) | (1L << 36) | (1L << 37) | (1L << 38) | (1L << 39) | (1L << 40) | (1L << 41) | (1L << 42) | (1L << 43) | (1L << 44) | (1L << 46) | (1L << 47) | (1L << 48) | (1L << 50) | (1L << 51) | (1L << 52) | (1L << 53) | (1L << 54) | (1L << HEX) | (1L << INT) | (1L << FLOAT) | (1L << COMPLEX) | (1L << STRING) | (1L << ID) | (1L << USER_OP) | (1L << NL))) != 0)) {
 					{
 					setState(81);
-					switch (_input.LA(1)) {
+					switch ( getInterpreter().adaptivePredict(_input,14,_ctx) ) {
 					case 1:
-					case 2:
-					case 3:
-					case 4:
-					case 5:
-					case 6:
-					case 8:
-					case 9:
-					case 11:
-					case 12:
-					case 15:
-					case 16:
-					case 17:
-					case 18:
-					case 19:
-					case 20:
-					case 21:
-					case 22:
-					case 24:
-					case 25:
-					case 26:
-					case 27:
-					case 28:
-					case 29:
-					case 30:
-					case 31:
-					case 32:
-					case 33:
-					case 34:
-					case 35:
-					case 36:
-					case 37:
-					case 38:
-					case 39:
-					case 40:
-					case 41:
-					case 42:
-					case 43:
-					case 44:
-					case 46:
-					case 47:
-					case 48:
-					case 50:
-					case 51:
-					case 52:
-					case 53:
-					case 54:
-					case HEX:
-					case INT:
-					case FLOAT:
-					case COMPLEX:
-					case STRING:
-					case ID:
-					case USER_OP:
 						{
 						setState(79); elem();
 						}
 						break;
-					case NL:
+
+					case 2:
 						{
 						setState(80); eat();
 						}
 						break;
-					default:
-						throw new NoViableAltException(this);
 					}
 					}
 					setState(85);
@@ -844,75 +524,21 @@ public class RFilter extends Parser {
 				setState(99);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << 1) | (1L << 2) | (1L << 3) | (1L << 4) | (1L << 5) | (1L << 6) | (1L << 8) | (1L << 9) | (1L << 11) | (1L << 12) | (1L << 15) | (1L << 16) | (1L << 17) | (1L << 18) | (1L << 19) | (1L << 20) | (1L << 21) | (1L << 22) | (1L << 24) | (1L << 25) | (1L << 26) | (1L << 27) | (1L << 28) | (1L << 29) | (1L << 30) | (1L << 31) | (1L << 32) | (1L << 33) | (1L << 34) | (1L << 35) | (1L << 36) | (1L << 37) | (1L << 38) | (1L << 39) | (1L << 40) | (1L << 41) | (1L << 42) | (1L << 43) | (1L << 44) | (1L << 46) | (1L << 47) | (1L << 48) | (1L << 50) | (1L << 51) | (1L << 52) | (1L << 53) | (1L << 54) | (1L << HEX) | (1L << INT) | (1L << FLOAT) | (1L << COMPLEX) | (1L << STRING) | (1L << ID) | (1L << USER_OP) | (1L << NL))) != 0)) {
+				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << 1) | (1L << 2) | (1L << 3) | (1L << 4) | (1L << 5) | (1L << 6) | (1L << 7) | (1L << 8) | (1L << 9) | (1L << 11) | (1L << 12) | (1L << 13) | (1L << 15) | (1L << 16) | (1L << 17) | (1L << 18) | (1L << 19) | (1L << 20) | (1L << 21) | (1L << 22) | (1L << 24) | (1L << 25) | (1L << 26) | (1L << 27) | (1L << 28) | (1L << 29) | (1L << 30) | (1L << 31) | (1L << 32) | (1L << 33) | (1L << 34) | (1L << 35) | (1L << 36) | (1L << 37) | (1L << 38) | (1L << 39) | (1L << 40) | (1L << 41) | (1L << 42) | (1L << 43) | (1L << 44) | (1L << 46) | (1L << 47) | (1L << 48) | (1L << 50) | (1L << 51) | (1L << 52) | (1L << 53) | (1L << 54) | (1L << HEX) | (1L << INT) | (1L << FLOAT) | (1L << COMPLEX) | (1L << STRING) | (1L << ID) | (1L << USER_OP) | (1L << NL))) != 0)) {
 					{
 					setState(97);
-					switch (_input.LA(1)) {
+					switch ( getInterpreter().adaptivePredict(_input,18,_ctx) ) {
 					case 1:
-					case 2:
-					case 3:
-					case 4:
-					case 5:
-					case 6:
-					case 8:
-					case 9:
-					case 11:
-					case 12:
-					case 15:
-					case 16:
-					case 17:
-					case 18:
-					case 19:
-					case 20:
-					case 21:
-					case 22:
-					case 24:
-					case 25:
-					case 26:
-					case 27:
-					case 28:
-					case 29:
-					case 30:
-					case 31:
-					case 32:
-					case 33:
-					case 34:
-					case 35:
-					case 36:
-					case 37:
-					case 38:
-					case 39:
-					case 40:
-					case 41:
-					case 42:
-					case 43:
-					case 44:
-					case 46:
-					case 47:
-					case 48:
-					case 50:
-					case 51:
-					case 52:
-					case 53:
-					case 54:
-					case HEX:
-					case INT:
-					case FLOAT:
-					case COMPLEX:
-					case STRING:
-					case ID:
-					case USER_OP:
 						{
 						setState(95); elem();
 						}
 						break;
-					case NL:
+
+					case 2:
 						{
 						setState(96); eat();
 						}
 						break;
-					default:
-						throw new NoViableAltException(this);
 					}
 					}
 					setState(101);
@@ -946,75 +572,21 @@ public class RFilter extends Parser {
 				setState(115);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << 1) | (1L << 2) | (1L << 3) | (1L << 4) | (1L << 5) | (1L << 6) | (1L << 8) | (1L << 9) | (1L << 11) | (1L << 12) | (1L << 15) | (1L << 16) | (1L << 17) | (1L << 18) | (1L << 19) | (1L << 20) | (1L << 21) | (1L << 22) | (1L << 24) | (1L << 25) | (1L << 26) | (1L << 27) | (1L << 28) | (1L << 29) | (1L << 30) | (1L << 31) | (1L << 32) | (1L << 33) | (1L << 34) | (1L << 35) | (1L << 36) | (1L << 37) | (1L << 38) | (1L << 39) | (1L << 40) | (1L << 41) | (1L << 42) | (1L << 43) | (1L << 44) | (1L << 46) | (1L << 47) | (1L << 48) | (1L << 50) | (1L << 51) | (1L << 52) | (1L << 53) | (1L << 54) | (1L << HEX) | (1L << INT) | (1L << FLOAT) | (1L << COMPLEX) | (1L << STRING) | (1L << ID) | (1L << USER_OP) | (1L << NL))) != 0)) {
+				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << 1) | (1L << 2) | (1L << 3) | (1L << 4) | (1L << 5) | (1L << 6) | (1L << 7) | (1L << 8) | (1L << 9) | (1L << 11) | (1L << 12) | (1L << 13) | (1L << 15) | (1L << 16) | (1L << 17) | (1L << 18) | (1L << 19) | (1L << 20) | (1L << 21) | (1L << 22) | (1L << 24) | (1L << 25) | (1L << 26) | (1L << 27) | (1L << 28) | (1L << 29) | (1L << 30) | (1L << 31) | (1L << 32) | (1L << 33) | (1L << 34) | (1L << 35) | (1L << 36) | (1L << 37) | (1L << 38) | (1L << 39) | (1L << 40) | (1L << 41) | (1L << 42) | (1L << 43) | (1L << 44) | (1L << 46) | (1L << 47) | (1L << 48) | (1L << 50) | (1L << 51) | (1L << 52) | (1L << 53) | (1L << 54) | (1L << HEX) | (1L << INT) | (1L << FLOAT) | (1L << COMPLEX) | (1L << STRING) | (1L << ID) | (1L << USER_OP) | (1L << NL))) != 0)) {
 					{
 					setState(113);
-					switch (_input.LA(1)) {
+					switch ( getInterpreter().adaptivePredict(_input,22,_ctx) ) {
 					case 1:
-					case 2:
-					case 3:
-					case 4:
-					case 5:
-					case 6:
-					case 8:
-					case 9:
-					case 11:
-					case 12:
-					case 15:
-					case 16:
-					case 17:
-					case 18:
-					case 19:
-					case 20:
-					case 21:
-					case 22:
-					case 24:
-					case 25:
-					case 26:
-					case 27:
-					case 28:
-					case 29:
-					case 30:
-					case 31:
-					case 32:
-					case 33:
-					case 34:
-					case 35:
-					case 36:
-					case 37:
-					case 38:
-					case 39:
-					case 40:
-					case 41:
-					case 42:
-					case 43:
-					case 44:
-					case 46:
-					case 47:
-					case 48:
-					case 50:
-					case 51:
-					case 52:
-					case 53:
-					case 54:
-					case HEX:
-					case INT:
-					case FLOAT:
-					case COMPLEX:
-					case STRING:
-					case ID:
-					case USER_OP:
 						{
 						setState(111); elem();
 						}
 						break;
-					case NL:
+
+					case 2:
 						{
 						setState(112); eat();
 						}
 						break;
-					default:
-						throw new NoViableAltException(this);
 					}
 					}
 					setState(117);
@@ -1048,75 +620,21 @@ public class RFilter extends Parser {
 				setState(131);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << 1) | (1L << 2) | (1L << 3) | (1L << 4) | (1L << 5) | (1L << 6) | (1L << 8) | (1L << 9) | (1L << 11) | (1L << 12) | (1L << 15) | (1L << 16) | (1L << 17) | (1L << 18) | (1L << 19) | (1L << 20) | (1L << 21) | (1L << 22) | (1L << 24) | (1L << 25) | (1L << 26) | (1L << 27) | (1L << 28) | (1L << 29) | (1L << 30) | (1L << 31) | (1L << 32) | (1L << 33) | (1L << 34) | (1L << 35) | (1L << 36) | (1L << 37) | (1L << 38) | (1L << 39) | (1L << 40) | (1L << 41) | (1L << 42) | (1L << 43) | (1L << 44) | (1L << 46) | (1L << 47) | (1L << 48) | (1L << 50) | (1L << 51) | (1L << 52) | (1L << 53) | (1L << 54) | (1L << HEX) | (1L << INT) | (1L << FLOAT) | (1L << COMPLEX) | (1L << STRING) | (1L << ID) | (1L << USER_OP) | (1L << NL))) != 0)) {
+				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << 1) | (1L << 2) | (1L << 3) | (1L << 4) | (1L << 5) | (1L << 6) | (1L << 7) | (1L << 8) | (1L << 9) | (1L << 11) | (1L << 12) | (1L << 13) | (1L << 15) | (1L << 16) | (1L << 17) | (1L << 18) | (1L << 19) | (1L << 20) | (1L << 21) | (1L << 22) | (1L << 24) | (1L << 25) | (1L << 26) | (1L << 27) | (1L << 28) | (1L << 29) | (1L << 30) | (1L << 31) | (1L << 32) | (1L << 33) | (1L << 34) | (1L << 35) | (1L << 36) | (1L << 37) | (1L << 38) | (1L << 39) | (1L << 40) | (1L << 41) | (1L << 42) | (1L << 43) | (1L << 44) | (1L << 46) | (1L << 47) | (1L << 48) | (1L << 50) | (1L << 51) | (1L << 52) | (1L << 53) | (1L << 54) | (1L << HEX) | (1L << INT) | (1L << FLOAT) | (1L << COMPLEX) | (1L << STRING) | (1L << ID) | (1L << USER_OP) | (1L << NL))) != 0)) {
 					{
 					setState(129);
-					switch (_input.LA(1)) {
+					switch ( getInterpreter().adaptivePredict(_input,26,_ctx) ) {
 					case 1:
-					case 2:
-					case 3:
-					case 4:
-					case 5:
-					case 6:
-					case 8:
-					case 9:
-					case 11:
-					case 12:
-					case 15:
-					case 16:
-					case 17:
-					case 18:
-					case 19:
-					case 20:
-					case 21:
-					case 22:
-					case 24:
-					case 25:
-					case 26:
-					case 27:
-					case 28:
-					case 29:
-					case 30:
-					case 31:
-					case 32:
-					case 33:
-					case 34:
-					case 35:
-					case 36:
-					case 37:
-					case 38:
-					case 39:
-					case 40:
-					case 41:
-					case 42:
-					case 43:
-					case 44:
-					case 46:
-					case 47:
-					case 48:
-					case 50:
-					case 51:
-					case 52:
-					case 53:
-					case 54:
-					case HEX:
-					case INT:
-					case FLOAT:
-					case COMPLEX:
-					case STRING:
-					case ID:
-					case USER_OP:
 						{
 						setState(127); elem();
 						}
 						break;
-					case NL:
+
+					case 2:
 						{
 						setState(128); eat();
 						}
 						break;
-					default:
-						throw new NoViableAltException(this);
 					}
 					}
 					setState(133);
@@ -1135,9 +653,26 @@ public class RFilter extends Parser {
 				}
 				break;
 			case 35:
+			case NL:
 				enterOuterAlt(_localctx, 11);
 				{
-				setState(138); match(35);
+				setState(139);
+				_la = _input.LA(1);
+				if (_la==NL) {
+					{
+					setState(138); eat();
+					}
+				}
+
+				setState(141); match(35);
+				setState(143);
+				switch ( getInterpreter().adaptivePredict(_input,30,_ctx) ) {
+				case 1:
+					{
+					setState(142); eat();
+					}
+					break;
+				}
 
 				        // ``inside a compound expression, a newline before else is discarded,
 				        // whereas at the outermost level, the newline terminates the if
@@ -1211,7 +746,7 @@ public class RFilter extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(142);
+			setState(148);
 			_la = _input.LA(1);
 			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << 8) | (1L << 9) | (1L << 15) | (1L << 20) | (1L << 34) | (1L << 39) | (1L << 41) | (1L << 53) | (1L << HEX) | (1L << INT) | (1L << FLOAT) | (1L << COMPLEX) | (1L << STRING) | (1L << ID))) != 0)) ) {
 			_errHandler.recoverInline(this);
@@ -1258,9 +793,9 @@ public class RFilter extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(144);
+			setState(150);
 			_la = _input.LA(1);
-			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << 1) | (1L << 3) | (1L << 4) | (1L << 5) | (1L << 6) | (1L << 12) | (1L << 16) | (1L << 17) | (1L << 18) | (1L << 19) | (1L << 21) | (1L << 22) | (1L << 24) | (1L << 25) | (1L << 27) | (1L << 29) | (1L << 31) | (1L << 33) | (1L << 36) | (1L << 37) | (1L << 38) | (1L << 40) | (1L << 43) | (1L << 46) | (1L << 47) | (1L << 48) | (1L << 50) | (1L << 51) | (1L << 52) | (1L << 54) | (1L << USER_OP))) != 0)) ) {
+			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << 1) | (1L << 3) | (1L << 4) | (1L << 5) | (1L << 6) | (1L << 7) | (1L << 12) | (1L << 13) | (1L << 16) | (1L << 17) | (1L << 18) | (1L << 19) | (1L << 21) | (1L << 22) | (1L << 24) | (1L << 25) | (1L << 27) | (1L << 29) | (1L << 31) | (1L << 33) | (1L << 36) | (1L << 37) | (1L << 38) | (1L << 40) | (1L << 43) | (1L << 46) | (1L << 47) | (1L << 48) | (1L << 50) | (1L << 51) | (1L << 52) | (1L << 54) | (1L << USER_OP))) != 0)) ) {
 			_errHandler.recoverInline(this);
 			}
 			consume();
@@ -1278,7 +813,7 @@ public class RFilter extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\uacf5\uee8c\u4f5d\u8b0d\u4a45\u78bd\u1b2f\u3378\3A\u0095\4\2\t\2\4"+
+		"\3\uacf5\uee8c\u4f5d\u8b0d\u4a45\u78bd\u1b2f\u3378\3A\u009b\4\2\t\2\4"+
 		"\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\3\2\3\2\3\2\7\2\20\n\2\f\2\16\2\23\13\2"+
 		"\3\2\3\2\3\3\3\3\6\3\31\n\3\r\3\16\3\32\3\4\3\4\5\4\37\n\4\3\4\3\4\3\4"+
 		"\5\4$\n\4\3\4\3\4\3\4\3\4\7\4*\n\4\f\4\16\4-\13\4\3\4\3\4\3\4\3\4\3\4"+
@@ -1288,43 +823,46 @@ public class RFilter extends Parser {
 		"\4\3\4\7\4d\n\4\f\4\16\4g\13\4\3\4\3\4\5\4k\n\4\3\4\3\4\5\4o\n\4\3\4\3"+
 		"\4\3\4\7\4t\n\4\f\4\16\4w\13\4\3\4\3\4\5\4{\n\4\3\4\3\4\5\4\177\n\4\3"+
 		"\4\3\4\3\4\7\4\u0084\n\4\f\4\16\4\u0087\13\4\3\4\3\4\5\4\u008b\n\4\3\4"+
-		"\3\4\5\4\u008f\n\4\3\5\3\5\3\6\3\6\3\6\2\7\2\4\6\b\n\2\4\n\2\n\13\21\21"+
-		"\26\26$$))++\67\679>\23\2\3\3\5\b\16\16\22\25\27\30\32\33\35\35\37\37"+
-		"!!##&(**--\60\62\64\6688??\u00b8\2\21\3\2\2\2\4\30\3\2\2\2\6\u008e\3\2"+
-		"\2\2\b\u0090\3\2\2\2\n\u0092\3\2\2\2\f\20\5\6\4\2\r\20\7@\2\2\16\20\7"+
-		"/\2\2\17\f\3\2\2\2\17\r\3\2\2\2\17\16\3\2\2\2\20\23\3\2\2\2\21\17\3\2"+
-		"\2\2\21\22\3\2\2\2\22\24\3\2\2\2\23\21\3\2\2\2\24\25\7\2\2\3\25\3\3\2"+
-		"\2\2\26\27\7@\2\2\27\31\b\3\1\2\30\26\3\2\2\2\31\32\3\2\2\2\32\30\3\2"+
-		"\2\2\32\33\3\2\2\2\33\5\3\2\2\2\34\36\5\n\6\2\35\37\5\4\3\2\36\35\3\2"+
-		"\2\2\36\37\3\2\2\2\37\u008f\3\2\2\2 \u008f\5\b\5\2!#\7\"\2\2\"$\5\4\3"+
-		"\2#\"\3\2\2\2#$\3\2\2\2$%\3\2\2\2%+\b\4\1\2&*\5\6\4\2\'*\7@\2\2(*\7/\2"+
-		"\2)&\3\2\2\2)\'\3\2\2\2)(\3\2\2\2*-\3\2\2\2+)\3\2\2\2+,\3\2\2\2,.\3\2"+
-		"\2\2-+\3\2\2\2./\b\4\1\2/\u008f\7\f\2\2\60\65\7\36\2\2\61\64\5\6\4\2\62"+
-		"\64\5\4\3\2\63\61\3\2\2\2\63\62\3\2\2\2\64\67\3\2\2\2\65\63\3\2\2\2\65"+
-		"\66\3\2\2\2\668\3\2\2\2\67\65\3\2\2\28\u008f\7\20\2\29>\7\4\2\2:=\5\6"+
-		"\4\2;=\5\4\3\2<:\3\2\2\2<;\3\2\2\2=@\3\2\2\2><\3\2\2\2>?\3\2\2\2?A\3\2"+
-		"\2\2@>\3\2\2\2A\u008f\7\31\2\2BG\7\r\2\2CF\5\6\4\2DF\5\4\3\2EC\3\2\2\2"+
-		"ED\3\2\2\2FI\3\2\2\2GE\3\2\2\2GH\3\2\2\2HJ\3\2\2\2IG\3\2\2\2JK\7\31\2"+
-		"\2K\u008f\7\31\2\2LN\7,\2\2MO\5\4\3\2NM\3\2\2\2NO\3\2\2\2OP\3\2\2\2PU"+
-		"\7\36\2\2QT\5\6\4\2RT\5\4\3\2SQ\3\2\2\2SR\3\2\2\2TW\3\2\2\2US\3\2\2\2"+
-		"UV\3\2\2\2VX\3\2\2\2WU\3\2\2\2XZ\7\20\2\2Y[\5\4\3\2ZY\3\2\2\2Z[\3\2\2"+
-		"\2[\u008f\3\2\2\2\\^\7.\2\2]_\5\4\3\2^]\3\2\2\2^_\3\2\2\2_`\3\2\2\2`e"+
-		"\7\36\2\2ad\5\6\4\2bd\5\4\3\2ca\3\2\2\2cb\3\2\2\2dg\3\2\2\2ec\3\2\2\2"+
-		"ef\3\2\2\2fh\3\2\2\2ge\3\2\2\2hj\7\20\2\2ik\5\4\3\2ji\3\2\2\2jk\3\2\2"+
-		"\2k\u008f\3\2\2\2ln\7\34\2\2mo\5\4\3\2nm\3\2\2\2no\3\2\2\2op\3\2\2\2p"+
-		"u\7\36\2\2qt\5\6\4\2rt\5\4\3\2sq\3\2\2\2sr\3\2\2\2tw\3\2\2\2us\3\2\2\2"+
-		"uv\3\2\2\2vx\3\2\2\2wu\3\2\2\2xz\7\20\2\2y{\5\4\3\2zy\3\2\2\2z{\3\2\2"+
-		"\2{\u008f\3\2\2\2|~\7 \2\2}\177\5\4\3\2~}\3\2\2\2~\177\3\2\2\2\177\u0080"+
-		"\3\2\2\2\u0080\u0085\7\36\2\2\u0081\u0084\5\6\4\2\u0082\u0084\5\4\3\2"+
-		"\u0083\u0081\3\2\2\2\u0083\u0082\3\2\2\2\u0084\u0087\3\2\2\2\u0085\u0083"+
-		"\3\2\2\2\u0085\u0086\3\2\2\2\u0086\u0088\3\2\2\2\u0087\u0085\3\2\2\2\u0088"+
-		"\u008a\7\20\2\2\u0089\u008b\5\4\3\2\u008a\u0089\3\2\2\2\u008a\u008b\3"+
-		"\2\2\2\u008b\u008f\3\2\2\2\u008c\u008d\7%\2\2\u008d\u008f\b\4\1\2\u008e"+
-		"\34\3\2\2\2\u008e \3\2\2\2\u008e!\3\2\2\2\u008e\60\3\2\2\2\u008e9\3\2"+
-		"\2\2\u008eB\3\2\2\2\u008eL\3\2\2\2\u008e\\\3\2\2\2\u008el\3\2\2\2\u008e"+
-		"|\3\2\2\2\u008e\u008c\3\2\2\2\u008f\7\3\2\2\2\u0090\u0091\t\2\2\2\u0091"+
-		"\t\3\2\2\2\u0092\u0093\t\3\2\2\u0093\13\3\2\2\2 \17\21\32\36#)+\63\65"+
-		"<>EGNSUZ^cejnsuz~\u0083\u0085\u008a\u008e";
+		"\5\4\u008e\n\4\3\4\3\4\5\4\u0092\n\4\3\4\5\4\u0095\n\4\3\5\3\5\3\6\3\6"+
+		"\3\6\2\7\2\4\6\b\n\2\4\n\2\n\13\21\21\26\26$$))++\67\679>\23\2\3\3\5\t"+
+		"\16\17\22\25\27\30\32\33\35\35\37\37!!##&(**--\60\62\64\6688??\u00c0\2"+
+		"\21\3\2\2\2\4\30\3\2\2\2\6\u0094\3\2\2\2\b\u0096\3\2\2\2\n\u0098\3\2\2"+
+		"\2\f\20\5\6\4\2\r\20\7@\2\2\16\20\7/\2\2\17\f\3\2\2\2\17\r\3\2\2\2\17"+
+		"\16\3\2\2\2\20\23\3\2\2\2\21\17\3\2\2\2\21\22\3\2\2\2\22\24\3\2\2\2\23"+
+		"\21\3\2\2\2\24\25\7\2\2\3\25\3\3\2\2\2\26\27\7@\2\2\27\31\b\3\1\2\30\26"+
+		"\3\2\2\2\31\32\3\2\2\2\32\30\3\2\2\2\32\33\3\2\2\2\33\5\3\2\2\2\34\36"+
+		"\5\n\6\2\35\37\5\4\3\2\36\35\3\2\2\2\36\37\3\2\2\2\37\u0095\3\2\2\2 \u0095"+
+		"\5\b\5\2!#\7\"\2\2\"$\5\4\3\2#\"\3\2\2\2#$\3\2\2\2$%\3\2\2\2%+\b\4\1\2"+
+		"&*\5\6\4\2\'*\7@\2\2(*\7/\2\2)&\3\2\2\2)\'\3\2\2\2)(\3\2\2\2*-\3\2\2\2"+
+		"+)\3\2\2\2+,\3\2\2\2,.\3\2\2\2-+\3\2\2\2./\b\4\1\2/\u0095\7\f\2\2\60\65"+
+		"\7\36\2\2\61\64\5\6\4\2\62\64\5\4\3\2\63\61\3\2\2\2\63\62\3\2\2\2\64\67"+
+		"\3\2\2\2\65\63\3\2\2\2\65\66\3\2\2\2\668\3\2\2\2\67\65\3\2\2\28\u0095"+
+		"\7\20\2\29>\7\4\2\2:=\5\6\4\2;=\5\4\3\2<:\3\2\2\2<;\3\2\2\2=@\3\2\2\2"+
+		"><\3\2\2\2>?\3\2\2\2?A\3\2\2\2@>\3\2\2\2A\u0095\7\31\2\2BG\7\r\2\2CF\5"+
+		"\6\4\2DF\5\4\3\2EC\3\2\2\2ED\3\2\2\2FI\3\2\2\2GE\3\2\2\2GH\3\2\2\2HJ\3"+
+		"\2\2\2IG\3\2\2\2JK\7\31\2\2K\u0095\7\31\2\2LN\7,\2\2MO\5\4\3\2NM\3\2\2"+
+		"\2NO\3\2\2\2OP\3\2\2\2PU\7\36\2\2QT\5\6\4\2RT\5\4\3\2SQ\3\2\2\2SR\3\2"+
+		"\2\2TW\3\2\2\2US\3\2\2\2UV\3\2\2\2VX\3\2\2\2WU\3\2\2\2XZ\7\20\2\2Y[\5"+
+		"\4\3\2ZY\3\2\2\2Z[\3\2\2\2[\u0095\3\2\2\2\\^\7.\2\2]_\5\4\3\2^]\3\2\2"+
+		"\2^_\3\2\2\2_`\3\2\2\2`e\7\36\2\2ad\5\6\4\2bd\5\4\3\2ca\3\2\2\2cb\3\2"+
+		"\2\2dg\3\2\2\2ec\3\2\2\2ef\3\2\2\2fh\3\2\2\2ge\3\2\2\2hj\7\20\2\2ik\5"+
+		"\4\3\2ji\3\2\2\2jk\3\2\2\2k\u0095\3\2\2\2ln\7\34\2\2mo\5\4\3\2nm\3\2\2"+
+		"\2no\3\2\2\2op\3\2\2\2pu\7\36\2\2qt\5\6\4\2rt\5\4\3\2sq\3\2\2\2sr\3\2"+
+		"\2\2tw\3\2\2\2us\3\2\2\2uv\3\2\2\2vx\3\2\2\2wu\3\2\2\2xz\7\20\2\2y{\5"+
+		"\4\3\2zy\3\2\2\2z{\3\2\2\2{\u0095\3\2\2\2|~\7 \2\2}\177\5\4\3\2~}\3\2"+
+		"\2\2~\177\3\2\2\2\177\u0080\3\2\2\2\u0080\u0085\7\36\2\2\u0081\u0084\5"+
+		"\6\4\2\u0082\u0084\5\4\3\2\u0083\u0081\3\2\2\2\u0083\u0082\3\2\2\2\u0084"+
+		"\u0087\3\2\2\2\u0085\u0083\3\2\2\2\u0085\u0086\3\2\2\2\u0086\u0088\3\2"+
+		"\2\2\u0087\u0085\3\2\2\2\u0088\u008a\7\20\2\2\u0089\u008b\5\4\3\2\u008a"+
+		"\u0089\3\2\2\2\u008a\u008b\3\2\2\2\u008b\u0095\3\2\2\2\u008c\u008e\5\4"+
+		"\3\2\u008d\u008c\3\2\2\2\u008d\u008e\3\2\2\2\u008e\u008f\3\2\2\2\u008f"+
+		"\u0091\7%\2\2\u0090\u0092\5\4\3\2\u0091\u0090\3\2\2\2\u0091\u0092\3\2"+
+		"\2\2\u0092\u0093\3\2\2\2\u0093\u0095\b\4\1\2\u0094\34\3\2\2\2\u0094 \3"+
+		"\2\2\2\u0094!\3\2\2\2\u0094\60\3\2\2\2\u00949\3\2\2\2\u0094B\3\2\2\2\u0094"+
+		"L\3\2\2\2\u0094\\\3\2\2\2\u0094l\3\2\2\2\u0094|\3\2\2\2\u0094\u008d\3"+
+		"\2\2\2\u0095\7\3\2\2\2\u0096\u0097\t\2\2\2\u0097\t\3\2\2\2\u0098\u0099"+
+		"\t\3\2\2\u0099\13\3\2\2\2\"\17\21\32\36#)+\63\65<>EGNSUZ^cejnsuz~\u0083"+
+		"\u0085\u008a\u008d\u0091\u0094";
 	public static final ATN _ATN =
 		ATNSimulator.deserialize(_serializedATN.toCharArray());
 	static {

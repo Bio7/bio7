@@ -38,6 +38,7 @@ import com.eco.bio7.reditor.antlr.RBaseListener;
 import com.eco.bio7.reditor.antlr.RFilter;
 import com.eco.bio7.reditor.antlr.RLexer;
 import com.eco.bio7.reditor.antlr.RParser;
+import com.eco.bio7.reditor.antlr.UnderlineListener;
 
 public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingStrategyExtension {
 
@@ -155,7 +156,10 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 		tokens.reset();
 		
 		RParser parser = new RParser(tokens);
+		
 		parser.setBuildParseTree(true);
+		parser.removeErrorListeners();
+		parser.addErrorListener(new UnderlineListener());
         //Token to= parser.match(0);
         
 		//System.out.println("Errors: " + parser.getNumberOfSyntaxErrors());
@@ -165,9 +169,11 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 
 		RuleContext tree = parser.prog();
 		RBaseListen list=new RBaseListen(tokens);
+		
 	
 		list.startStop.clear();	
 		walker.walk(list,tree);
+		//System.out.println(tree.toStringTree(parser)); // print LISP-style tree
 		
 		fPositions.clear();
 		cNextPos = fOffset;

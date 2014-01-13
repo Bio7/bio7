@@ -342,19 +342,6 @@ public class RBaseListener implements RListener {
 	 * <p/>
 	 * The default implementation does nothing.
 	 */
-	@Override public void enterE40(@NotNull RParser.E40Context ctx) { }
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
-	@Override public void exitE40(@NotNull RParser.E40Context ctx) { }
-
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
 	@Override public void enterE29(@NotNull RParser.E29Context ctx) { }
 	/**
 	 * {@inheritDoc}

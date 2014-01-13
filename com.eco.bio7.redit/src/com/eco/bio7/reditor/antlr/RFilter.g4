@@ -32,7 +32,7 @@
 
 parser grammar RFilter;
 
-options { tokenVocab=R; }
+options { tokenVocab=R; } 
 
 @members {
 protected int curlies = 0;
@@ -53,7 +53,7 @@ elem:   op eat?
     |   'for' eat? '(' (elem|eat)* ')' eat?
     |   'while' eat? '(' (elem|eat)* ')' eat?
     |   'if' eat? '(' (elem|eat)* ')' eat?
-    |   'else'
+    |   eat? 'else' eat?
         {
         // ``inside a compound expression, a newline before else is discarded,
         // whereas at the outermost level, the newline terminates the if
@@ -84,6 +84,6 @@ atom:   'next' | 'break' | ID | STRING | HEX | INT | FLOAT | COMPLEX | 'NULL'
     ;
 
 op  :   '+'|'-'|'*'|'/'|'^'|'<'|'<='|'>='|'>'|'=='|'!='|'&'|'&&'|USER_OP|
-        'repeat'|'in'|'?'|'!'|'='|':'|'~'|'$'|'@'|'<-'|'->'|'='|'::'|':::'|
+        'repeat'|'in'|'?'|'!'|'='|':'|'~'|'$'|'@'|'<-'|'->'|'<<-'|'->>'|'='|'::'|':::'|
         ','|'...'|'||'| '|'
     ;

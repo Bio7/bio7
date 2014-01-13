@@ -187,13 +187,6 @@ public interface RVisitor<T> extends ParseTreeVisitor<T> {
 	T visitE20expr(@NotNull RParser.E20exprContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link RParser#e40}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE40(@NotNull RParser.E40Context ctx);
-
-	/**
 	 * Visit a parse tree produced by {@link RParser#e29}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

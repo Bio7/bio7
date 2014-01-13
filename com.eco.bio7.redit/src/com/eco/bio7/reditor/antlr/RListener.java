@@ -284,17 +284,6 @@ public interface RListener extends ParseTreeListener {
 	void exitE20expr(@NotNull RParser.E20exprContext ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#e40}.
-	 * @param ctx the parse tree
-	 */
-	void enterE40(@NotNull RParser.E40Context ctx);
-	/**
-	 * Exit a parse tree produced by {@link RParser#e40}.
-	 * @param ctx the parse tree
-	 */
-	void exitE40(@NotNull RParser.E40Context ctx);
-
-	/**
 	 * Enter a parse tree produced by {@link RParser#e29}.
 	 * @param ctx the parse tree
 	 */
