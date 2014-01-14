@@ -146,7 +146,7 @@ fragment LETTER  : [a-zA-Z] ;
 
 USER_OP :   '%' .*? '%' ;
 
-COMMENT :   '#' .*? '\r'? '\n' -> type(NL) ;
+COMMENT :      '#' ~[\r\n]*  -> type(NL);
 
 // Match both UNIX and Windows newlines
 NL      :   '\r'? '\n' ;
