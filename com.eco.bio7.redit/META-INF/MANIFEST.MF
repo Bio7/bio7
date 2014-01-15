@@ -32,4 +32,5 @@ Export-Package: com.eco.bio7.reditor,
  org.antlr.v4.runtime.tree.gui
 Bundle-ClassPath: .,
  libs/antlr-runtime-4.1.jar
+Import-Package: org.eclipse.ui.views.contentoutline
 

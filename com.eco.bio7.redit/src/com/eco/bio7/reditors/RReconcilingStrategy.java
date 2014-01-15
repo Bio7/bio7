@@ -12,14 +12,11 @@ import java.util.ArrayList;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
-import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.misc.Interval;
-import org.antlr.v4.runtime.misc.NotNull;
-import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.antlr.v4.runtime.tree.TerminalNode;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -29,16 +26,12 @@ import org.eclipse.jface.text.reconciler.DirtyRegion;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.texteditor.IDocumentProvider;
-import org.eclipse.ui.texteditor.ITextEditor;
-
 import com.eco.bio7.reditor.antlr.RBaseListen;
-import com.eco.bio7.reditor.antlr.RBaseListener;
 import com.eco.bio7.reditor.antlr.RFilter;
 import com.eco.bio7.reditor.antlr.RLexer;
 import com.eco.bio7.reditor.antlr.RParser;
 import com.eco.bio7.reditor.antlr.UnderlineListener;
+import com.eco.bio7.reditor.outline.ClassModel;
 
 public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingStrategyExtension {
 
@@ -128,6 +121,10 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 
 	private CommonTokenStream tokens;
 
+	private IResource resource;
+
+	private RBaseListen list;
+
 	protected static final int START_TAG = 1;
 
 	protected static final int LEAF_TAG = 2;
@@ -159,7 +156,25 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 		
 		parser.setBuildParseTree(true);
 		parser.removeErrorListeners();
-		parser.addErrorListener(new UnderlineListener());
+		
+		if (editor != null) {
+			
+			resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
+	        
+			
+	        
+	        
+	        if (resource != null) {
+				try {
+					resource.deleteMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
+				} catch (CoreException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		}
+		
+		parser.addErrorListener(new UnderlineListener(editor));
         //Token to= parser.match(0);
         
 		//System.out.println("Errors: " + parser.getNumberOfSyntaxErrors());
@@ -168,7 +183,7 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 		ParseTreeWalker walker=new ParseTreeWalker();
 
 		RuleContext tree = parser.prog();
-		RBaseListen list=new RBaseListen(tokens);
+		 list=new RBaseListen(tokens,editor);
 		
 	
 		list.startStop.clear();	
@@ -187,15 +202,23 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
     		
 			
 		}
+        /*Update the outline!*/
 		
 		
 
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
 				editor.updateFoldingStructure(fPositions);
+				
+				editor.outlineInputChanged(editor.currentClassModel, list.cm);
 			}
 
 		});
+		
+		
+		
+		
+		
 	}
 	
 	 

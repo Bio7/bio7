@@ -14,13 +14,17 @@ package com.eco.bio7.reditors;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension3;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
@@ -32,19 +36,36 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextEditor;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.texteditor.TextOperationAction;
+import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
+import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
+
+import com.eco.bio7.reditor.outline.ClassMembers;
+import com.eco.bio7.reditor.outline.ClassModel;
+import com.eco.bio7.reditor.outline.MainClass;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.actions.OpenPreferences;
 import com.eco.bio7.reditor.actions.UnsetComment;
@@ -57,8 +78,10 @@ public class REditor extends TextEditor {
 	private static final String TEMPLATE_PROPOSALS = "template_proposals_action";
 
 	private RColorManager colorManager;
-
-	
+	private Image classIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/class_obj.gif"));
+	private Image importIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/imp_obj.png"));
+	private Image publicFieldIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/field_public_obj.png"));
+	private Image publicMethodIcon= new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/methpub_obj.gif"));
 
 	/*public Action setplotmarkers;
 
@@ -77,10 +100,16 @@ public class REditor extends TextEditor {
 	public final static String EDITOR_MATCHING_BRACKETS = "matchingBrackets";
 	
 	public final static String EDITOR_MATCHING_BRACKETS_COLOR= "matchingBracketsColor";
+	
+	private IContentOutlinePage contentOutlinePage;
+	public ClassModel currentClassModel;
+	public TodoContentProvider tcp;
+	private TreeViewer contentOutlineViewer;
 
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.reditor");
+		getSite().getWorkbenchWindow().getSelectionService().addSelectionListener(listener);
 		ProjectionViewer viewer =(ProjectionViewer)getSourceViewer();
 
 	    projectionSupport = new ProjectionSupport(viewer,getAnnotationAccess(),getSharedColors());
@@ -207,6 +236,16 @@ public class REditor extends TextEditor {
 
 	public void dispose() {
 		colorManager.dispose();
+		classIcon.dispose();
+		importIcon.dispose();
+		publicFieldIcon.dispose();
+		publicMethodIcon.dispose();
+		
+		// important: Remove listener when the view is disposed!
+		getSite().getWorkbenchWindow().getSelectionService().removeSelectionListener(listener);
+		
+
+		colorManager.dispose();
 		super.dispose();
 
 	}
@@ -274,6 +313,223 @@ public class REditor extends TextEditor {
 		IPreferenceStore store = getPreferenceStore();
 		store.setDefault(EDITOR_MATCHING_BRACKETS, true);
 		store.setDefault(EDITOR_MATCHING_BRACKETS_COLOR, "128,128,128");
+	}
+	
+	public  IWorkbenchPage getPage(){
+		IWorkbenchPage page = getSite().getPage();
+		
+		return page;
+	}
+	
+	// the listener we register with the selection service
+		private ISelectionListener listener = new ISelectionListener() {
+			public void selectionChanged(IWorkbenchPart sourcepart, ISelection selection) {
+				// we ignore our own selections
+				if (sourcepart != REditor.this) {
+					// showSelection(sourcepart, selection);
+					
+					if (selection instanceof IStructuredSelection) {
+						IStructuredSelection strucSelection = (IStructuredSelection) selection;
+						Object selectedObj = strucSelection.getFirstElement();
+						if (selectedObj instanceof ClassMembers) {
+
+							ClassMembers cm = (ClassMembers) selectedObj;
+							if (cm != null) {
+
+								int lineNumber = cm.getLineNumber();
+								/*
+								 * If a line number exist - if a class member of
+								 * type is available!
+								 */
+								if (lineNumber > 0) {
+									goToLine(REditor.this, lineNumber);
+								}
+
+							}
+
+						}
+					}
+
+				}
+			}
+
+		};
+	private static void goToLine(IEditorPart editorPart, int toLine) {
+		if ((editorPart instanceof REditor) || toLine <= 0) {
+
+			ITextEditor editor = (ITextEditor) editorPart;
+			IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
+			if (document != null) {
+				IRegion region = null;
+
+				try {
+
+					region = document.getLineInformation(toLine - 1);
+				} catch (BadLocationException e) {
+
+				}
+				if (region != null) {
+					editor.selectAndReveal(region.getOffset(), region.getLength());
+				}
+			}
+		}
+	}
+	public Object getAdapter(Class key) {
+		if (key.equals(IContentOutlinePage.class)) {
+
+			return getContentOutlinePage();
+
+		} else {
+			return super.getAdapter(key);
+		}
+	}
+
+	public void outlineInputChanged(ClassModel classModelOld, ClassModel classModelNew) {
+
+		if (contentOutlineViewer != null) {
+			Object[] expanded = contentOutlineViewer.getExpandedElements();
+
+			// contentOutlineViewer.getTree();
+
+			TreeViewer viewer = contentOutlineViewer;
+			
+			
+		
+
+			if (viewer != null) {
+				
+				Control control = viewer.getControl();
+				if (control != null && !control.isDisposed()) {
+
+					control.setRedraw(false);
+
+					viewer.setInput(classModelNew);
+					viewer.expandAll();
+
+					control.setRedraw(true);
+				}
+			}
+		}
+
+	}
+
+	public IContentOutlinePage getContentOutlinePage() {
+		if (contentOutlinePage == null) {
+			// The content outline is just a tree.
+			//
+			class MyContentOutlinePage extends ContentOutlinePage {
+
+				public void createControl(Composite parent) {
+					super.createControl(parent);
+					contentOutlineViewer = getTreeViewer();
+
+					contentOutlineViewer.addSelectionChangedListener(this);
+
+					// Set up the tree viewer.
+
+					tcp = new TodoContentProvider();
+					contentOutlineViewer.setContentProvider(tcp);
+					contentOutlineViewer.setInput(currentClassModel);
+					contentOutlineViewer.setLabelProvider(new TodoLabelProvider());
+
+					// Provide the input to the ContentProvider
+
+					getSite().setSelectionProvider(contentOutlineViewer);
+
+				}
+			}
+
+			contentOutlinePage = new MyContentOutlinePage();
+
+		}
+
+		return contentOutlinePage;
+	}
+
+	class TodoLabelProvider extends LabelProvider {
+		@Override
+		public String getText(Object element) {
+			if (element instanceof MainClass) {
+				MainClass category = (MainClass) element;
+				return category.getName();
+			}
+			return ((ClassMembers) element).getSummary();
+		}
+
+		@Override
+		public Image getImage(Object element) {
+			Image im = null;
+			if (element instanceof MainClass) {
+               im=classIcon;
+				
+			} else if (element instanceof ClassMembers) {
+				ClassMembers cm = (ClassMembers) element;
+
+				switch (cm.getClasstype()) {
+				case "import":
+					im=importIcon;
+					
+					break;
+				case "field":
+					im=publicFieldIcon;
+					
+					break;
+
+				case "method":
+					im=publicMethodIcon;
+					
+					break;
+
+				default:
+					break;
+				}
+
+			}
+			return im;
+		}
+
+	}
+
+	class TodoContentProvider implements ITreeContentProvider {
+
+		private ClassModel model;
+
+		@Override
+		public void dispose() {
+		}
+
+		@Override
+		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+			this.model = (ClassModel) newInput;
+		}
+
+		@Override
+		public Object[] getElements(Object inputElement) {
+			return model.getCategories().toArray();
+		}
+
+		@Override
+		public Object[] getChildren(Object parentElement) {
+			if (parentElement instanceof MainClass) {
+				MainClass category = (MainClass) parentElement;
+				return category.getTodos().toArray();
+			}
+			return null;
+		}
+
+		@Override
+		public Object getParent(Object element) {
+			return null;
+		}
+
+		@Override
+		public boolean hasChildren(Object element) {
+			if (element instanceof MainClass) {
+				return true;
+			}
+			return false;
+		}
+
 	}
 
 }
