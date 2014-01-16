@@ -13,8 +13,8 @@ public class ClassModel {
 		List<MainClass> categories = new ArrayList<MainClass>();
 
 		MainClass category = new MainClass();
-		category.setName("Imports");
-		categories.add(category);
+		//category.setName("Imports");
+		//categories.add(category);
 		/*if (importNames.size() > 0) {
 			for (int i = 0; i < importNames.size(); i++) {
 
@@ -64,4 +64,5 @@ public class ClassModel {
 		return categories;
 	}
 
-}
+}     
+

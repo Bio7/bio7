@@ -19,15 +19,14 @@ public class RBaseListen extends RBaseListener {
 	public ArrayList<String> startStop = new ArrayList<String>();
 	public ClassModel cm = new ClassModel();
 	private REditor editor;
+
 	public RBaseListen(CommonTokenStream tokens, REditor editor) {
 		this.tokens = tokens;
-		this.editor=editor;
+		this.editor = editor;
 	}
 
 	@Override
 	public void enterDefFunction(@NotNull RParser.DefFunctionContext ctx) {
-
-		
 
 	}
 
@@ -39,34 +38,48 @@ public class RBaseListen extends RBaseListener {
 	@Override
 	public void exitDefFunction(@NotNull RParser.DefFunctionContext ctx) {
 		Interval sourceInterval = ctx.getSourceInterval();
-		
+
 		Token firstToken = tokens.get(sourceInterval.a);
-		//System.out.println(ctx.getParent().getChild(0).getText());
+		// System.out.println(ctx.getParent().getChild(0).getText());
 		int lineStart = firstToken.getStartIndex();
 		// String ct=ctx.getText();
-        
+
 		// System.out.println("function start at line:"+lineStart);
 		Token lastToken = tokens.get(sourceInterval.b);
-		int lineEnd = lastToken.getStopIndex()+1 - lineStart;
+		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 		// String ct2=ctx.getText();
 
-		
-		//Add to the editor folding action.
+		// Add to the editor folding action.
 		startStop.add(lineStart + "," + lineEnd);
-		//Add to the outline view.
+		// Add to the outline view.
 		IDocumentProvider provider = editor.getDocumentProvider();
 		IDocument document = provider.getDocument(editor.getEditorInput());
 		int lineMethod = 0;
 		try {
-			lineMethod=document.getLineOfOffset(lineStart)+1;
+			lineMethod = document.getLineOfOffset(lineStart) + 1;
 		} catch (BadLocationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		cm.methodNames.add(ctx.getParent().getChild(0).getText()+";"+lineMethod);
-		
-		
+		int childs = ctx.getParent().getChildCount();
+		int posTree = 0;
+		for (int i = 0; i < childs; i++) {
+			if (ctx.getText().equals(ctx.getParent().getChild(i).getText())) {
+				posTree = i;
+			}
+		}
+		if (ctx.getParent().getChild(posTree - 1) != null && ctx.getParent().getChild(posTree - 2) != null) {
+			String op = ctx.getParent().getChild(posTree - 1).getText();
+			String name = ctx.getParent().getChild(posTree - 2).getText();
+			// String operator=ctx.getParent().getChild(1).getText();
+			if (op.equals("<-")||op.equals("<<-")) {
+				cm.methodNames.add(name + ";" + lineMethod);
+			}
+		}
+		else if(posTree==0){
+			cm.methodNames.add(ctx.getText() + ";" + lineMethod);
+		}
+
 	}
-	
 
 }

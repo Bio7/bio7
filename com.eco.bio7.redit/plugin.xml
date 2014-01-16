@@ -90,6 +90,12 @@
 			textStylePreferenceValue="BOX">
         </specification> 
   </extension>
+  <extension
+        point="org.eclipse.core.runtime.preferences">
+     <initializer
+           class="com.eco.bio7.rpreferences.PreferenceInitializer">
+     </initializer>
+  </extension>
    
 
 </plugin>

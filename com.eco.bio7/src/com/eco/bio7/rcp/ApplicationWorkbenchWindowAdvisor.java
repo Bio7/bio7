@@ -389,7 +389,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		}
 
-		IPreferenceStore storeBsh = BeanshellEditorPlugin.getDefault().getPreferenceStore();
+		/*IPreferenceStore storeBsh = BeanshellEditorPlugin.getDefault().getPreferenceStore();
 		PreferenceConverter.setDefault(storeBsh, "colourkey", new RGB(127, 0, 85));
 		PreferenceConverter.setDefault(storeBsh, "colourkey1", new RGB(127, 0, 85));
 		PreferenceConverter.setDefault(storeBsh, "colourkey2", new RGB(42, 0, 255));
@@ -408,11 +408,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		PreferenceConverter.setDefault(storeBsh, "colourkeyfont4", new FontData(font, fsize, 0));
 		PreferenceConverter.setDefault(storeBsh, "colourkeyfont5", new FontData(font, fsize, 0));
 		PreferenceConverter.setDefault(storeBsh, "colourkeyfont6", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeBsh, "colourkeyfont7", new FontData(font, fsize, 0));
+		PreferenceConverter.setDefault(storeBsh, "colourkeyfont7", new FontData(font, fsize, 0));*/
 		// PreferenceConverter.setDefault(storeBsh, "colourkeyfont8", new
 		// FontData("Courier New", 10, 0));
 
-		IPreferenceStore storePython = PythonEditorPlugin.getDefault().getPreferenceStore();
+		/*IPreferenceStore storePython = PythonEditorPlugin.getDefault().getPreferenceStore();
 		PreferenceConverter.setDefault(storePython, "colourkey", new RGB(127, 0, 85));
 		PreferenceConverter.setDefault(storePython, "colourkey1", new RGB(127, 0, 85));
 		PreferenceConverter.setDefault(storePython, "colourkey2", new RGB(42, 0, 255));
@@ -443,9 +443,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		PreferenceConverter.setDefault(storePython, "colourkeyfont10", new FontData(font, fsize, 0));
 		// PreferenceConverter.setDefault(storePython, "colourkeyfon11", new
 		// FontData("Courier New", 10, 0));
-		PreferenceConverter.setDefault(storePython, "colourkeyfont12", new FontData(font, fsize, 0));
+		PreferenceConverter.setDefault(storePython, "colourkeyfont12", new FontData(font, fsize, 0));*/
 
-		IPreferenceStore storeR = Bio7REditorPlugin.getDefault().getPreferenceStore();
+		/*IPreferenceStore storeR = Bio7REditorPlugin.getDefault().getPreferenceStore();
 		PreferenceConverter.setDefault(storeR, "colourkey", new RGB(127, 0, 85));
 		PreferenceConverter.setDefault(storeR, "colourkey1", new RGB(127, 0, 85));
 		PreferenceConverter.setDefault(storeR, "colourkey2", new RGB(42, 0, 255));
@@ -464,7 +464,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		PreferenceConverter.setDefault(storeR, "colourkeyfont5", new FontData(font, fsize, 0));
 		PreferenceConverter.setDefault(storeR, "colourkeyfont6", new FontData(font, fsize, 0));
 		PreferenceConverter.setDefault(storeR, "colourkeyfont7", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeR, "colourkeyfont8", new FontData(font, fsize, 0));
+		PreferenceConverter.setDefault(storeR, "colourkeyfont8", new FontData(font, fsize, 0));*/
 
 		IPreferenceStore storeJava = Bio7EditorPlugin.getDefault().getPreferenceStore();
 
@@ -474,7 +474,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		storeJava.setDefault("compiler_verbose", false);
 		storeJava.setDefault("compiler_warnings", false);
 
-		PreferenceConverter.setDefault(storeJava, "colourkey", new RGB(127, 0, 85));
+		/*PreferenceConverter.setDefault(storeJava, "colourkey", new RGB(127, 0, 85));
 		PreferenceConverter.setDefault(storeJava, "colourkey1", new RGB(127, 0, 85));
 		PreferenceConverter.setDefault(storeJava, "colourkey2", new RGB(42, 0, 255));
 		PreferenceConverter.setDefault(storeJava, "colourkey3", new RGB(128, 128, 128));
@@ -492,7 +492,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		PreferenceConverter.setDefault(storeJava, "colourkeyfont4", new FontData(font, fsize, 0));
 		PreferenceConverter.setDefault(storeJava, "colourkeyfont5", new FontData(font, fsize, 0));
 		PreferenceConverter.setDefault(storeJava, "colourkeyfont6", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeJava, "colourkeyfont7", new FontData(font, fsize, 0));
+		PreferenceConverter.setDefault(storeJava, "colourkeyfont7", new FontData(font, fsize, 0));*/
 		// PreferenceConverter.setDefault(storeJava, "colourkeyfont8", new
 		// FontData("Courier New", 10, 0));
 

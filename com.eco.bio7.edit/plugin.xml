@@ -55,6 +55,12 @@
       		translations="$nl$/templates/ant.properties">
       </include>
    </extension>
+   <extension
+        point="org.eclipse.core.runtime.preferences">
+     <initializer
+           class="com.eco.bio7.reditor.preferences.PreferenceInitializer">
+     </initializer>
+  </extension>
    
 
 </plugin>

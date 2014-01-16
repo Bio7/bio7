@@ -12,10 +12,16 @@
  *******************************************************************************/
 package com.eco.bio7.reditors;
 
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DefaultIndentLineAutoEditStrategy;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
+import org.eclipse.jface.text.ITextHover;
+import org.eclipse.jface.text.ITextHoverExtension2;
+import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
@@ -28,6 +34,7 @@ import org.eclipse.jface.text.rules.BufferedRuleBasedScanner;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
 import com.eco.bio7.reditor.Bio7REditorPlugin;
@@ -132,5 +139,49 @@ public class RConfiguration extends TextSourceViewerConfiguration {
         
         return reconciler;
     }
+	
+	/*@Override
+	public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
+	        return new MarkdownTextHover();
+	}
+
+	*//**
+	 * Instance of this class provide text to be shown in the hover popup windows.
+	 *//*
+	public class MarkdownTextHover implements ITextHover, ITextHoverExtension2 {
+	        // return information to be shown when the cursor is on the given region
+	        @Override
+	        public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
+	                try {
+	                        return textViewer.getDocument().getPartition(hoverRegion.getOffset()).toString()+" "+textViewer.getDocument().getPartition(hoverRegion.getLength()).toString();
+	                } 
+	                catch (BadLocationException e) {
+	                        return "No info because of " + e.getMessage();                  
+	                }
+	        }
+
+	        // just an old version of the API method that returns only strings
+	        @Override
+	        public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {               
+	                return getHoverInfo2(textViewer, hoverRegion).toString();
+	        }
+
+	        // returns the region object for a given position in the text editor
+	        @Override
+	        public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
+	                Point selection = textViewer.getSelectedRange();
+	                if (selection.x <= offset && offset < selection.x + selection.y) {
+	                        return new Region(selection.x, selection.y);
+	                }
+	                // if no text is selected then we return a region of the size 0 (a single character)
+	                return new Region(offset, 0);
+	        }
+
+			
+
+			
+
+			
+	}*/
 
 }
