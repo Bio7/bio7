@@ -96,6 +96,10 @@
            class="com.eco.bio7.rpreferences.PreferenceInitializer">
      </initializer>
   </extension>
+  <extension point="org.eclipse.ui.elementFactories">
+<factory id="org.eclipse.ui.part.FileEditorInputFactory "
+class=" org.eclipse.ui.part.FileEditorInputFactory " />
+</extension>
    
 
 </plugin>

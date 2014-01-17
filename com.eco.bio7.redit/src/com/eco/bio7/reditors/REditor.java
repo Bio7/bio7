@@ -14,6 +14,8 @@ package com.eco.bio7.reditors;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -25,6 +27,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
@@ -56,6 +59,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextEditor;
+import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
@@ -120,16 +124,20 @@ public class REditor extends TextEditor {
 
 	    annotationModel = viewer.getProjectionAnnotationModel();
 	   
-		
+	    //updateFoldingStructure(new ArrayList());
 	}
 	
 	
 	
-	private Annotation[] oldAnnotations;
+	//private Annotation[] oldAnnotations;
+	
+	
 	
 	
 	public void updateFoldingStructure(ArrayList positions)
 	{
+		Annotation[] deletions=computeDifferences(annotationModel,positions);
+		
 		Annotation[] annotations = new Annotation[positions.size()];
 		
 		//this will hold the new annotations along
@@ -145,9 +153,28 @@ public class REditor extends TextEditor {
 			annotations[i]=annotation;
 		}
 		
-		annotationModel.modifyAnnotations(oldAnnotations,newAnnotations,null);
 		
-		oldAnnotations=annotations;
+		
+		
+		annotationModel.modifyAnnotations(deletions,newAnnotations,null);
+		
+		//oldAnnotations=annotations;
+	}
+	
+	private Annotation[] computeDifferences(ProjectionAnnotationModel model, ArrayList additions) {
+		List deletions = new ArrayList();
+		for (Iterator iter = model.getAnnotationIterator(); iter.hasNext();) {
+			Object annotation = iter.next();
+			if (annotation instanceof ProjectionAnnotation) {
+				Position position = model.getPosition((Annotation) annotation);
+				if (additions.contains(position)) {
+					additions.remove(position);
+				} else {
+					deletions.add(annotation);
+				}
+			}
+		}
+		return (Annotation[]) deletions.toArray(new Annotation[deletions.size()]);
 	}
 	
 	protected ISourceViewer createSourceViewer(Composite parent,
@@ -241,8 +268,7 @@ public class REditor extends TextEditor {
 		publicFieldIcon.dispose();
 		publicMethodIcon.dispose();
 		
-		// important: Remove listener when the view is disposed!
-		getSite().getWorkbenchWindow().getSelectionService().removeSelectionListener(listener);
+		
 		
 
 		colorManager.dispose();
