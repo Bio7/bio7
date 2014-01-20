@@ -100,6 +100,11 @@
 <factory id="org.eclipse.ui.part.FileEditorInputFactory "
 class=" org.eclipse.ui.part.FileEditorInputFactory " />
 </extension>
+<extension point="org.eclipse.ui.ide.markerResolution">
+      <markerResolutionGenerator
+         markerType="com.eco.bio7.redit.debugMarker"
+         class="com.eco.bio7.reditor.code.QuickFixer"/>
+   </extension>
    
 
 </plugin>
