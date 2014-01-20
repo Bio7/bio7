@@ -28,6 +28,8 @@ import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
+import org.eclipse.jface.text.quickassist.IQuickAssistAssistant;
+import org.eclipse.jface.text.quickassist.QuickAssistAssistant;
 import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.reconciler.MonoReconciler;
 import org.eclipse.jface.text.rules.BufferedRuleBasedScanner;
@@ -38,6 +40,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
 import com.eco.bio7.reditor.Bio7REditorPlugin;
+import com.eco.bio7.reditor.code.RAssistProcessor;
 import com.eco.bio7.rpreferences.template.RCompletionProcessor;
 
 public class RConfiguration extends TextSourceViewerConfiguration {
@@ -140,14 +143,19 @@ public class RConfiguration extends TextSourceViewerConfiguration {
         return reconciler;
     }
 	
-	/*@Override
+	public IQuickAssistAssistant getQuickAssistAssistant(ISourceViewer sourceViewer) {
+		  IQuickAssistAssistant quickAssist = new QuickAssistAssistant();
+		  quickAssist.setQuickAssistProcessor(new RAssistProcessor());
+		  quickAssist.setInformationControlCreator(getInformationControlCreator(sourceViewer));
+		  return quickAssist; 
+		}
+	
+	@Override
 	public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
 	        return new MarkdownTextHover();
 	}
 
-	*//**
-	 * Instance of this class provide text to be shown in the hover popup windows.
-	 *//*
+	
 	public class MarkdownTextHover implements ITextHover, ITextHoverExtension2 {
 	        // return information to be shown when the cursor is on the given region
 	        @Override
@@ -182,6 +190,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 			
 
 			
-	}*/
+	}
+	
 
 }

@@ -45,6 +45,8 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
@@ -123,6 +125,8 @@ public class REditor extends TextEditor {
 	    viewer.doOperation(ProjectionViewer.TOGGLE);
 
 	    annotationModel = viewer.getProjectionAnnotationModel();
+	    
+	    
 	   
 	    //updateFoldingStructure(new ArrayList());
 	}

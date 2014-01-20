@@ -7,6 +7,7 @@ import org.eclipse.ui.IMarkerResolutionGenerator;
 
 public class QuickFixer implements IMarkerResolutionGenerator {
       public IMarkerResolution[] getResolutions(IMarker mk) {
+    	 
          try {
             Object problem = mk.getAttribute("WhatsUp");
             return new IMarkerResolution[] {

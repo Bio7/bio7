@@ -102,9 +102,52 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
 </extension>
 <extension point="org.eclipse.ui.ide.markerResolution">
       <markerResolutionGenerator
-         markerType="com.eco.bio7.redit.debugMarker"
+         markerType="org.eclipse.core.resources.problemmarker"
          class="com.eco.bio7.reditor.code.QuickFixer"/>
    </extension>
+<extension
+      point="org.eclipse.ui.editors.annotationTypes">
+   <type
+         markerSeverity="0"
+         markerType="org.eclipse.core.resources.problemmarker"
+         name="com.eco.bio7.redit.error"
+         super="org.eclipse.ui.workbench.texteditor.error">
+   </type>
+</extension>
+<extension
+      point="org.eclipse.ui.editors.markerAnnotationSpecification">
+   <specification
+         annotationType="com.eco.bio7.redit.error"
+         colorPreferenceKey="clcolor"
+         colorPreferenceValue="0,255,0"
+         contributesToHeader="false"
+         highlightPreferenceKey="highlight.background"
+         highlightPreferenceValue="true"
+         icon="icons/error_obj.gif"
+         includeOnPreferencePage="true"
+         overviewRulerPreferenceValue="true"
+         presentationLayer="0"
+         quickFixIcon="icons/quickfix_error_obj.gif"
+         textPreferenceKey="cltext"
+         textPreferenceValue="true"
+         textStylePreferenceKey="clstyle"
+         textStylePreferenceValue="BOX"
+         verticalRulerPreferenceKey="clvertical"
+         verticalRulerPreferenceValue="true">
+   </specification>
+</extension>
+<extension point="org.eclipse.ui.editorActions">
+    <editorContribution
+          targetID="com.eco.bio7.reditors.TemplateEditor"
+          id="example.rulerActions">
+       <action
+             label="QuickFix"
+             class="com.eco.bio7.reditor.actions.JavaSelectRulerAction"
+             style="push"
+             actionID="RulerClick"
+             id="com.eco.bio7.reditor.rulerclick"/>
+    </editorContribution>
+ </extension>
    
 
 </plugin>

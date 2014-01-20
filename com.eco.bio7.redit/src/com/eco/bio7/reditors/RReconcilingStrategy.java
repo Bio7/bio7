@@ -146,6 +146,7 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 		parser.setBuildParseTree(true);
 		parser.removeErrorListeners();
 		
+		
 		if (editor != null) {
 			
 			resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
