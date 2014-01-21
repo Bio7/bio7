@@ -112,11 +112,21 @@ public class REditor extends TextEditor {
 	public TodoContentProvider tcp;
 	private TreeViewer contentOutlineViewer;
 
+	private RConfiguration rconf;
+
+	public ProjectionViewer viewer;
+
+	public RConfiguration getRconf() {
+		return rconf;
+	}
+
+
+
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.reditor");
 		getSite().getWorkbenchWindow().getSelectionService().addSelectionListener(listener);
-		ProjectionViewer viewer =(ProjectionViewer)getSourceViewer();
+		 viewer =(ProjectionViewer)getSourceViewer();
 
 	    projectionSupport = new ProjectionSupport(viewer,getAnnotationAccess(),getSharedColors());
 	    projectionSupport.install();
@@ -126,7 +136,7 @@ public class REditor extends TextEditor {
 
 	    annotationModel = viewer.getProjectionAnnotationModel();
 	    
-	    
+	   // ISourceViewer viewer = getSourceViewer(); 
 	   
 	    //updateFoldingStructure(new ArrayList());
 	}
@@ -199,7 +209,8 @@ public class REditor extends TextEditor {
 		super();
 		
 		colorManager = new RColorManager();
-		setSourceViewerConfiguration(new RConfiguration(colorManager,this));
+		 rconf=new RConfiguration(colorManager,this);
+		setSourceViewerConfiguration(rconf);
 		
 		
 		

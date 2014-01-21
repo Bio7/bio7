@@ -9,7 +9,7 @@ import org.eclipse.jface.text.source.ISourceViewer;
 
 public class RAssistProcessor implements IQuickAssistProcessor {
 
-	@Override
+//	@Override
 	public String getErrorMessage() {
 		// TODO Auto-generated method stub
 		return null;

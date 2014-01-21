@@ -218,6 +218,14 @@ public class RBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements RVis
 	 * The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
+	@Override public T visitExprError(@NotNull RParser.ExprErrorContext ctx) { return visitChildren(ctx); }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.
+	 */
 	@Override public T visitE29(@NotNull RParser.E29Context ctx) { return visitChildren(ctx); }
 
 	/**
@@ -275,6 +283,14 @@ public class RBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements RVis
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
 	@Override public T visitE21(@NotNull RParser.E21Context ctx) { return visitChildren(ctx); }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.
+	 */
+	@Override public T visitExprError2(@NotNull RParser.ExprError2Context ctx) { return visitChildren(ctx); }
 
 	/**
 	 * {@inheritDoc}

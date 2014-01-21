@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RuleContext;
+import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -26,6 +27,7 @@ import org.eclipse.jface.text.reconciler.DirtyRegion;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension;
 import org.eclipse.swt.widgets.Display;
+
 import com.eco.bio7.reditor.antlr.RBaseListen;
 import com.eco.bio7.reditor.antlr.RFilter;
 import com.eco.bio7.reditor.antlr.RLexer;
@@ -144,8 +146,8 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 		RParser parser = new RParser(tokens);
 		
 		parser.setBuildParseTree(true);
-		parser.removeErrorListeners();
-		
+		//parser.removeErrorListeners();
+		//parser.getInterpreter().setPredictionMode(PredictionMode.LL_EXACT_AMBIG_DETECTION);
 		
 		if (editor != null) {
 			
@@ -173,7 +175,7 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 		ParseTreeWalker walker=new ParseTreeWalker();
 
 		RuleContext tree = parser.prog();
-		 list=new RBaseListen(tokens,editor);
+		 list=new RBaseListen(tokens,editor,parser);
 		
 	
 		list.startStop.clear();	

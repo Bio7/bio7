@@ -187,6 +187,13 @@ public interface RVisitor<T> extends ParseTreeVisitor<T> {
 	T visitE20expr(@NotNull RParser.E20exprContext ctx);
 
 	/**
+	 * Visit a parse tree produced by {@link RParser#ExprError}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExprError(@NotNull RParser.ExprErrorContext ctx);
+
+	/**
 	 * Visit a parse tree produced by {@link RParser#e29}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -241,6 +248,13 @@ public interface RVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitE21(@NotNull RParser.E21Context ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link RParser#ExprError2}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExprError2(@NotNull RParser.ExprError2Context ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link RParser#e24}.

@@ -342,6 +342,19 @@ public class RBaseListener implements RListener {
 	 * <p/>
 	 * The default implementation does nothing.
 	 */
+	@Override public void enterExprError(@NotNull RParser.ExprErrorContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void exitExprError(@NotNull RParser.ExprErrorContext ctx) { }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
 	@Override public void enterE29(@NotNull RParser.E29Context ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -440,6 +453,19 @@ public class RBaseListener implements RListener {
 	 * The default implementation does nothing.
 	 */
 	@Override public void exitE21(@NotNull RParser.E21Context ctx) { }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void enterExprError2(@NotNull RParser.ExprError2Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void exitExprError2(@NotNull RParser.ExprError2Context ctx) { }
 
 	/**
 	 * {@inheritDoc}

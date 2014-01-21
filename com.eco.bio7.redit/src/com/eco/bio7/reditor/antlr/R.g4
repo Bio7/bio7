@@ -17,7 +17,9 @@ expr_or_assign
     ;
 */
 
-expr:   expr '[[' sublist ']' ']'  #e1// '[[' follows R's yacc grammar
+expr:   'if' '(' expr ')' ')' #ExprError
+    |   'if' '(' '(' expr ')' # ExprError2 
+    |   expr '[[' sublist ']' ']'  #e1// '[[' follows R's yacc grammar
     |   expr '[' sublist ']'	#e2
     |   expr ('::'|':::') expr	#e3
     |   expr ('$'|'@') expr	#e4

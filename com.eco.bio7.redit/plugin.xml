@@ -66,28 +66,29 @@
 
   <extension point="org.eclipse.ui.editors.annotationTypes">
      <type
-        super="org.eclipse.ui.workbench.texteditor.warning"
-        markerType="com.eco.bio7.redit.debugMarker"
-        name="com.eco.bio7.redit.debugAnnotation"
-        markerSeverity="0"/>
+           markerSeverity="0"
+           markerType="com.eco.bio7.redit.debugMarker"
+           name="com.eco.bio7.redit.debugAnnotation"
+           super="org.eclipse.ui.workbench.texteditor.warning"/>
   </extension>
 
   <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
      <specification
-        annotationType="com.eco.bio7.redit.debugAnnotation"
-        icon="icons/brkp_obj.gif"
-        overviewRulerPreferenceValue="true"
-			highlightPreferenceKey="highlight.background"
-			highlightPreferenceValue="true"
-			colorPreferenceKey="clcolor"
-			colorPreferenceValue="0,255,0"
-			textPreferenceKey="cltext"
-			textPreferenceValue="true"
-			presentationLayer="0"
-			verticalRulerPreferenceKey="clvertical"
-			verticalRulerPreferenceValue="true"
-			textStylePreferenceKey="clstyle"
-			textStylePreferenceValue="BOX">
+           annotationType="com.eco.bio7.redit.debugAnnotation"
+           colorPreferenceKey="clcolor"
+           colorPreferenceValue="0,255,0"
+           highlightPreferenceKey="highlight.background"
+           highlightPreferenceValue="true"
+           icon="icons/brkp_obj.gif"
+           overviewRulerPreferenceValue="true"
+           presentationLayer="0"
+           quickFixIcon="icons/brkp_obj.gif"
+           textPreferenceKey="cltext"
+           textPreferenceValue="true"
+           textStylePreferenceKey="clstyle"
+           textStylePreferenceValue="BOX"
+           verticalRulerPreferenceKey="clvertical"
+           verticalRulerPreferenceValue="true">
         </specification> 
   </extension>
   <extension
@@ -142,7 +143,7 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
           id="example.rulerActions">
        <action
              label="QuickFix"
-             class="com.eco.bio7.reditor.actions.JavaSelectRulerAction"
+             class="com.eco.bio7.reditor.actions.REditorRulerQuickFixAction"
              style="push"
              actionID="RulerClick"
              id="com.eco.bio7.reditor.rulerclick"/>

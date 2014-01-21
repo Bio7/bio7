@@ -3,6 +3,7 @@ package com.eco.bio7.reditor.antlr;
 import java.util.ArrayList;
 
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.misc.NotNull;
@@ -19,17 +20,59 @@ public class RBaseListen extends RBaseListener {
 	public ArrayList<String> startStop = new ArrayList<String>();
 	public ClassModel cm = new ClassModel();
 	private REditor editor;
+	private Parser parser;
 
-	public RBaseListen(CommonTokenStream tokens, REditor editor) {
+	public RBaseListen(CommonTokenStream tokens, REditor editor,Parser parser) {
 		this.tokens = tokens;
 		this.editor = editor;
+		this.parser=parser;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void enterExprError(@NotNull RParser.ExprErrorContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void exitExprError(@NotNull RParser.ExprErrorContext ctx) {
+		Interval sourceInterval = ctx.getSourceInterval();
+
+		Token firstToken = tokens.get(sourceInterval.a+6);
+		//Token token = tokens.get(tok);
+		parser.notifyErrorListeners(firstToken,"One Parentheses to much!",null);
+		
+		
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void enterExprError2(@NotNull RParser.ExprError2Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void exitExprError2(@NotNull RParser.ExprError2Context ctx) {
+		
+		Interval sourceInterval = ctx.getSourceInterval();
+
+		Token firstToken = tokens.get(sourceInterval.a+2);
+		//Token token = tokens.get(tok);
+		parser.notifyErrorListeners(firstToken,"Missing Assignment!",null);
+		
+		parser.notifyErrorListeners("Missing Assignment!");
 	}
 
-	@Override
-	public void enterDefFunction(@NotNull RParser.DefFunctionContext ctx) {
 
-	}
-
+	
 	/**
 	 * {@inheritDoc}
 	 * <p/>
@@ -37,6 +80,9 @@ public class RBaseListen extends RBaseListener {
 	 */
 	@Override
 	public void exitDefFunction(@NotNull RParser.DefFunctionContext ctx) {
+		
+		
+		
 		Interval sourceInterval = ctx.getSourceInterval();
 
 		Token firstToken = tokens.get(sourceInterval.a);

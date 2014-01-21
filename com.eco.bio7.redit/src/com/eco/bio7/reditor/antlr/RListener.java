@@ -284,6 +284,17 @@ public interface RListener extends ParseTreeListener {
 	void exitE20expr(@NotNull RParser.E20exprContext ctx);
 
 	/**
+	 * Enter a parse tree produced by {@link RParser#ExprError}.
+	 * @param ctx the parse tree
+	 */
+	void enterExprError(@NotNull RParser.ExprErrorContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link RParser#ExprError}.
+	 * @param ctx the parse tree
+	 */
+	void exitExprError(@NotNull RParser.ExprErrorContext ctx);
+
+	/**
 	 * Enter a parse tree produced by {@link RParser#e29}.
 	 * @param ctx the parse tree
 	 */
@@ -370,6 +381,17 @@ public interface RListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitE21(@NotNull RParser.E21Context ctx);
+
+	/**
+	 * Enter a parse tree produced by {@link RParser#ExprError2}.
+	 * @param ctx the parse tree
+	 */
+	void enterExprError2(@NotNull RParser.ExprError2Context ctx);
+	/**
+	 * Exit a parse tree produced by {@link RParser#ExprError2}.
+	 * @param ctx the parse tree
+	 */
+	void exitExprError2(@NotNull RParser.ExprError2Context ctx);
 
 	/**
 	 * Enter a parse tree produced by {@link RParser#e24}.
