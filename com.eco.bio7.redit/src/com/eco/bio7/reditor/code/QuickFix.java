@@ -12,7 +12,7 @@ public class QuickFix implements IMarkerResolution2 {
          this.label = label;
       }
       public String getLabel() {
-         return label;
+         return "Label";
       }
       public void run(IMarker marker) {
          MessageDialog.openInformation(null, "QuickFix Demo",

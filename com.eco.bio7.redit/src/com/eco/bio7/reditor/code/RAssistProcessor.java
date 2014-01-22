@@ -17,16 +17,24 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 
 	@Override
 	public boolean canFix(Annotation annotation) {
+		String text=annotation.getText();
 		
+		if(text.equals("One Parentheses to much!")){
+			return true;
+		}
+		else {
+			return false; 
+		}
 		//System.out.println(annotation.getText());
 		// TODO Auto-generated method stub
-		return true;
+		
 	}
 
 	@Override
 	public boolean canAssist(IQuickAssistInvocationContext invocationContext) {
+		
 		// TODO Auto-generated method stub
-		return true;
+		return false;
 	}
 
 	@Override
@@ -37,9 +45,9 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 
         return new ICompletionProposal[]{
 
-            new QuickFixCompletionProposal("This is the first proposal!",offset,text.length()),
+            new QuickFixCompletionProposal("Remove Parenthesis",offset,text.length(),""),
 
-            new QuickFixCompletionProposal("This is the second proposal!",offset,text.length())
+            new QuickFixCompletionProposal("This is the second proposal!",offset,text.length(),"")
 
         };
 	}

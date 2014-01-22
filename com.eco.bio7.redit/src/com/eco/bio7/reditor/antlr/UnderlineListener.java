@@ -57,8 +57,10 @@ public class UnderlineListener extends BaseErrorListener {
 			try {
 				marker = resource.createMarker(IMarker.PROBLEM);
 				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-				marker.setAttribute(IMarker.MESSAGE, "line " + line + ":" + charPositionInLine + " " + msg);
+				//marker.setAttribute(IMarker.MESSAGE, "line " + line + ":" + charPositionInLine + " " + msg);
+				marker.setAttribute(IMarker.MESSAGE, msg);
 				marker.setAttribute(IMarker.LINE_NUMBER, line);
+				marker.setAttribute(IMarker.LOCATION, lineOffsetStart + charPositionInLine);
 
 				marker.setAttribute(IMarker.CHAR_START, lineOffsetStart + charPositionInLine);
 				marker.setAttribute(IMarker.CHAR_END, (lineOffsetStart + charPositionInLine) + 1);
