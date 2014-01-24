@@ -19,7 +19,7 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 	public boolean canFix(Annotation annotation) {
 		String text=annotation.getText();
 		
-		if(text.equals("One Parentheses to much!")){
+		if(text!=null&&text.equals("One Parentheses to much!")){
 			return true;
 		}
 		else {

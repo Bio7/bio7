@@ -13,7 +13,7 @@ prog:   (   expr (';'|NL|EOF)// Added!
 /*
 expr_or_assign
     :   expr ('<-'|'='|'<<-') expr_or_assign
-    |   expr
+    |   expr 
     ;
 */
 
@@ -141,7 +141,7 @@ HEX_ESCAPE
 
 ID  :   '.' (LETTER|'_'|'.') (LETTER|DIGIT|'_'|'.')*
     |   LETTER (LETTER|DIGIT|'_'|'.')*
-    |   '.' // Added!
+    |   '.' // Added! 
     ;
     
 fragment LETTER  : [a-zA-Z] ;

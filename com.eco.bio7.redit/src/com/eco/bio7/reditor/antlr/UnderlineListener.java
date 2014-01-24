@@ -1,10 +1,11 @@
 package com.eco.bio7.reditor.antlr;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import org.antlr.v4.runtime.BaseErrorListener;
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
-import org.antlr.v4.runtime.Token;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -24,18 +25,8 @@ public class UnderlineListener extends BaseErrorListener {
 	}
 
 	public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
-		
-		 /*Token offendingToken=(Token)offendingSymbol;
-         CommonTokenStream tokens = (CommonTokenStream) recognizer.getInputStream();
-			String input = tokens.getTokenSource().getInputStream().toString();
-			String[] lines = input.split("\n");
-			String errorLine = lines[line - 1];
-			//System.err.println(errorLine);
-			
-			int start = offendingToken.getStartIndex();
-			int stop = offendingToken.getStopIndex();
-			
-			System.out.println(start+" "+stop);*/
+
+		// System.err.println(msg);
 
 		if (editor != null) {
 
@@ -43,7 +34,22 @@ public class UnderlineListener extends BaseErrorListener {
 			IDocumentProvider provider = editor.getDocumentProvider();
 			IDocument document = provider.getDocument(editor.getEditorInput());
 			int lineOffsetStart = 0;
-			
+
+			IMarker[] markers = findMyMarkers(resource);
+			int lineNumb = -1;
+			for (int i = 0; i < markers.length; i++) {
+
+				try {
+					lineNumb = (int) markers[i].getAttribute(IMarker.LINE_NUMBER);
+
+					if (lineNumb == line) {
+						markers[i].delete();
+					}
+				} catch (CoreException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
 
 			try {
 				lineOffsetStart = document.getLineOffset(line - 1);
@@ -57,7 +63,7 @@ public class UnderlineListener extends BaseErrorListener {
 			try {
 				marker = resource.createMarker(IMarker.PROBLEM);
 				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-				//marker.setAttribute(IMarker.MESSAGE, "line " + line + ":" + charPositionInLine + " " + msg);
+				// marker.setAttribute(IMarker.MESSAGE, "line " + line + ":" + charPositionInLine + " " + msg);
 				marker.setAttribute(IMarker.MESSAGE, msg);
 				marker.setAttribute(IMarker.LINE_NUMBER, line);
 				marker.setAttribute(IMarker.LOCATION, lineOffsetStart + charPositionInLine);
@@ -68,10 +74,22 @@ public class UnderlineListener extends BaseErrorListener {
 
 				ex.printStackTrace();
 			}
+
 		}
 
 	}
-	
 
-	
+	public IMarker[] findMyMarkers(IResource target) {
+		String type = "org.eclipse.core.resources.problemmarker";
+
+		IMarker[] markers = null;
+		try {
+			markers = target.findMarkers(type, true, IResource.DEPTH_INFINITE);
+		} catch (CoreException e) {
+
+			e.printStackTrace();
+		}
+		return markers;
+	}
+
 }

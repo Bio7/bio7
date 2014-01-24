@@ -125,7 +125,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 		//assistant.setContentAssistProcessor(new JavaCompletionProcessor(), IDocument.DEFAULT_CATEGORY);
 		
 		assistant.enableAutoActivation(true);
-		assistant.setAutoActivationDelay(500);
+		assistant.setAutoActivationDelay(200);
 
 		assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
 		assistant.setInformationControlCreator(getInformationControlCreator(sourceViewer));
@@ -139,7 +139,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
         strategy.setEditor(rEditor);
         
         MonoReconciler reconciler = new MonoReconciler(strategy,false);
-        
+        reconciler.setDelay(200);
         return reconciler;
     }
 	

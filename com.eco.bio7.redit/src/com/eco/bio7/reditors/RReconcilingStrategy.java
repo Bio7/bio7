@@ -127,36 +127,16 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 
 	private RBaseListen list;
 
-
 	/**
 	 * uses {@link #fDocument}, {@link #fOffset} and {@link #fRangeEnd} to calculate {@link #fPositions}. About syntax errors: this method is not a validator, it is useful.
 	 */
 	protected void calculatePositions() {
-		
-		
-		IDocument doc = fDocument;
-		
-		ANTLRInputStream input = new ANTLRInputStream(doc.get());
-		RLexer lexer = new RLexer(input);
-		tokens = new CommonTokenStream(lexer);
-		RFilter filter = new RFilter(tokens);
-		filter.stream(); // call start rule: stream
-		tokens.reset();
-		
-		RParser parser = new RParser(tokens);
-		
-		parser.setBuildParseTree(true);
-		//parser.removeErrorListeners();
-		//parser.getInterpreter().setPredictionMode(PredictionMode.LL_EXACT_AMBIG_DETECTION);
-		
+
 		if (editor != null) {
-			
+
 			resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
-	        
-			
-	        
-	        
-	        if (resource != null) {
+
+			if (resource != null) {
 				try {
 					resource.deleteMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
 				} catch (CoreException e1) {
@@ -165,52 +145,60 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 				}
 			}
 		}
-		
+
+		IDocument doc = fDocument;
+
+		ANTLRInputStream input = new ANTLRInputStream(doc.get());
+		RLexer lexer = new RLexer(input);
+		tokens = new CommonTokenStream(lexer);
+		RFilter filter = new RFilter(tokens);
+		filter.stream(); // call start rule: stream
+		tokens.reset();
+
+		RParser parser = new RParser(tokens);
+
+		parser.setBuildParseTree(true);
+		parser.removeErrorListeners();
+		// parser.getInterpreter().setPredictionMode(PredictionMode.LL_EXACT_AMBIG_DETECTION);
 		parser.addErrorListener(new UnderlineListener(editor));
-        //Token to= parser.match(0);
-        
-		//System.out.println("Errors: " + parser.getNumberOfSyntaxErrors());
-		
-		
-		ParseTreeWalker walker=new ParseTreeWalker();
+
+		// Token to= parser.match(0);
+
+		// System.out.println("Errors: " + parser.getNumberOfSyntaxErrors());
+
+		ParseTreeWalker walker = new ParseTreeWalker();
 
 		RuleContext tree = parser.prog();
-		 list=new RBaseListen(tokens,editor,parser);
-		
-	
-		list.startStop.clear();	
-		walker.walk(list,tree);
-		//System.out.println(tree.toStringTree(parser)); // print LISP-style tree
-		
+		list = new RBaseListen(tokens, editor, parser);
+
+		list.startStop.clear();
+		walker.walk(list, tree);
+		// System.out.println(tree.toStringTree(parser)); // print LISP-style tree
+
 		fPositions.clear();
 		cNextPos = fOffset;
-		
-        for (int i = 0; i < list.startStop.size(); i++) {
-        	
-        	String pos=(String)list.startStop.get(i);
-        	String []val=pos.split(",");
-        	
-        	fPositions.add(new Position(Integer.parseInt(val[0]), Integer.parseInt(val[1])));
-    		
-			
+
+		for (int i = 0; i < list.startStop.size(); i++) {
+
+			String pos = (String) list.startStop.get(i);
+			String[] val = pos.split(",");
+
+			fPositions.add(new Position(Integer.parseInt(val[0]), Integer.parseInt(val[1])));
+
 		}
-        /*Update the outline!*/
-		
-		
+		/* Update the outline! */
 
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
 				editor.updateFoldingStructure(fPositions);
-				
+
 				editor.outlineInputChanged(editor.currentClassModel, list.cm);
 			}
 
 		});
 		
 		
-		
-		
-		
+
 	}
-	
+
 }

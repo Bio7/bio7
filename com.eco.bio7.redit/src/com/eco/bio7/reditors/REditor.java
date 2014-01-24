@@ -54,6 +54,7 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.ISelectionListener;
@@ -87,11 +88,13 @@ public class REditor extends TextEditor {
 	private Image classIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/class_obj.gif"));
 	private Image importIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/imp_obj.png"));
 	private Image publicFieldIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/field_public_obj.png"));
-	private Image publicMethodIcon= new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/methpub_obj.gif"));
+	private Image publicMethodIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/methpub_obj.gif"));
 
-	/*public Action setplotmarkers;
-
-	public Action deleteplotmarkers;*/
+	/*
+	 * public Action setplotmarkers;
+	 * 
+	 * public Action deleteplotmarkers;
+	 */
 
 	public Action setcomment;
 
@@ -102,11 +105,11 @@ public class REditor extends TextEditor {
 	private ProjectionSupport projectionSupport;
 
 	private ProjectionAnnotationModel annotationModel;
-	
+
 	public final static String EDITOR_MATCHING_BRACKETS = "matchingBrackets";
-	
-	public final static String EDITOR_MATCHING_BRACKETS_COLOR= "matchingBracketsColor";
-	
+
+	public final static String EDITOR_MATCHING_BRACKETS_COLOR = "matchingBracketsColor";
+
 	private IContentOutlinePage contentOutlinePage;
 	public ClassModel currentClassModel;
 	public TodoContentProvider tcp;
@@ -120,61 +123,49 @@ public class REditor extends TextEditor {
 		return rconf;
 	}
 
-
-
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.reditor");
 		getSite().getWorkbenchWindow().getSelectionService().addSelectionListener(listener);
-		 viewer =(ProjectionViewer)getSourceViewer();
+		viewer = (ProjectionViewer) getSourceViewer();
 
-	    projectionSupport = new ProjectionSupport(viewer,getAnnotationAccess(),getSharedColors());
-	    projectionSupport.install();
+		projectionSupport = new ProjectionSupport(viewer, getAnnotationAccess(), getSharedColors());
+		projectionSupport.install();
 
-	    //turn projection mode on
-	    viewer.doOperation(ProjectionViewer.TOGGLE);
+		// turn projection mode on
+		viewer.doOperation(ProjectionViewer.TOGGLE);
 
-	    annotationModel = viewer.getProjectionAnnotationModel();
-	    
-	   // ISourceViewer viewer = getSourceViewer(); 
-	   
-	    //updateFoldingStructure(new ArrayList());
+		annotationModel = viewer.getProjectionAnnotationModel();
+
+		// ISourceViewer viewer = getSourceViewer();
+
+		// updateFoldingStructure(new ArrayList());
 	}
-	
-	
-	
-	//private Annotation[] oldAnnotations;
-	
-	
-	
-	
-	public void updateFoldingStructure(ArrayList positions)
-	{
-		Annotation[] deletions=computeDifferences(annotationModel,positions);
-		
+
+	// private Annotation[] oldAnnotations;
+
+	public void updateFoldingStructure(ArrayList positions) {
+		Annotation[] deletions = computeDifferences(annotationModel, positions);
+
 		Annotation[] annotations = new Annotation[positions.size()];
-		
-		//this will hold the new annotations along
-		//with their corresponding positions
+
+		// this will hold the new annotations along
+		// with their corresponding positions
 		HashMap newAnnotations = new HashMap();
-		
-		for(int i =0;i<positions.size();i++)
-		{
+
+		for (int i = 0; i < positions.size(); i++) {
 			ProjectionAnnotation annotation = new ProjectionAnnotation();
-			
-			newAnnotations.put(annotation,positions.get(i));
-			
-			annotations[i]=annotation;
+
+			newAnnotations.put(annotation, positions.get(i));
+
+			annotations[i] = annotation;
 		}
-		
-		
-		
-		
-		annotationModel.modifyAnnotations(deletions,newAnnotations,null);
-		
-		//oldAnnotations=annotations;
+
+		annotationModel.modifyAnnotations(deletions, newAnnotations, null);
+
+		// oldAnnotations=annotations;
 	}
-	
+
 	private Annotation[] computeDifferences(ProjectionAnnotationModel model, ArrayList additions) {
 		List deletions = new ArrayList();
 		for (Iterator iter = model.getAnnotationIterator(); iter.hasNext();) {
@@ -190,42 +181,33 @@ public class REditor extends TextEditor {
 		}
 		return (Annotation[]) deletions.toArray(new Annotation[deletions.size()]);
 	}
-	
-	protected ISourceViewer createSourceViewer(Composite parent,
-            IVerticalRuler ruler, int styles)
-    {
-        ISourceViewer viewer = new ProjectionViewer(parent, ruler, getOverviewRuler(), isOverviewRulerVisible(), styles);
 
-    	// ensure decoration support has been created and configured.
-    	getSourceViewerDecorationSupport(viewer);
-    	
-    	return viewer;
-    }
+	protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
+		ISourceViewer viewer = new ProjectionViewer(parent, ruler, getOverviewRuler(), isOverviewRulerVisible(), styles);
+
+		// ensure decoration support has been created and configured.
+		getSourceViewerDecorationSupport(viewer);
+
+		return viewer;
+	}
 
 	/**
 	 * Creates a new template editor.
 	 */
 	public REditor() {
 		super();
-		
+
 		colorManager = new RColorManager();
-		 rconf=new RConfiguration(colorManager,this);
+		rconf = new RConfiguration(colorManager, this);
 		setSourceViewerConfiguration(rconf);
-		
-		
-		
+
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		if (editor != null) {
 
 			IEditorSite site = editor.getEditorSite();
-			
+
 			IWorkbenchPage page = site.getPage();
 
-			
-			
-			
-			
-			
 		}
 		Bio7REditorPlugin.getDefault().getPreferenceStore().addPropertyChangeListener(new IPropertyChangeListener() {
 
@@ -245,28 +227,26 @@ public class REditor extends TextEditor {
 				RGB rgbkey6 = PreferenceConverter.getColor(store, "colourkey6");
 				RGB rgbkey7 = PreferenceConverter.getColor(store, "colourkey7");
 				RGB rgbkey8 = PreferenceConverter.getColor(store, "colourkey8");
-				
-				FontData f=PreferenceConverter.getFontData(store, "colourkeyfont");
-				FontData f1=PreferenceConverter.getFontData(store, "colourkeyfont1");
-				FontData f2=PreferenceConverter.getFontData(store, "colourkeyfont2");
-				FontData f3=PreferenceConverter.getFontData(store, "colourkeyfont3");
-				FontData f4=PreferenceConverter.getFontData(store, "colourkeyfont4");
-				FontData f5=PreferenceConverter.getFontData(store, "colourkeyfont5");
-				FontData f6=PreferenceConverter.getFontData(store, "colourkeyfont6");
-				FontData f7=PreferenceConverter.getFontData(store, "colourkeyfont7");
-				FontData f8=PreferenceConverter.getFontData(store, "colourkeyfont8");
-				
-				
 
-				scanner.keyword.setData(new TextAttribute(provider.getColor(rgbkey), null, 1,new Font(Display.getCurrent(),f)));
-				scanner.type.setData(new TextAttribute(provider.getColor(rgbkey1),null, 1,new Font(Display.getCurrent(),f1)));
-				scanner.string.setData(new TextAttribute(provider.getColor(rgbkey2),null, 1,new Font(Display.getCurrent(),f2)));
-				scanner.comment.setData(new TextAttribute(provider.getColor(rgbkey3),null, 1,new Font(Display.getCurrent(),f3)));
-				scanner.other.setData(new TextAttribute(provider.getColor(rgbkey4),null, 1,new Font(Display.getCurrent(),f4)));
-				scanner.operators.setData(new TextAttribute(provider.getColor(rgbkey5),null, 1,new Font(Display.getCurrent(),f5)));
-				scanner.braces.setData(new TextAttribute(provider.getColor(rgbkey6),null, 1,new Font(Display.getCurrent(),f6)));
-				scanner.numbers.setData(new TextAttribute(provider.getColor(rgbkey7),null, 1,new Font(Display.getCurrent(),f7)));
-				scanner.assignment.setData(new TextAttribute(provider.getColor(rgbkey8),null, 1,new Font(Display.getCurrent(),f8)));
+				FontData f = PreferenceConverter.getFontData(store, "colourkeyfont");
+				FontData f1 = PreferenceConverter.getFontData(store, "colourkeyfont1");
+				FontData f2 = PreferenceConverter.getFontData(store, "colourkeyfont2");
+				FontData f3 = PreferenceConverter.getFontData(store, "colourkeyfont3");
+				FontData f4 = PreferenceConverter.getFontData(store, "colourkeyfont4");
+				FontData f5 = PreferenceConverter.getFontData(store, "colourkeyfont5");
+				FontData f6 = PreferenceConverter.getFontData(store, "colourkeyfont6");
+				FontData f7 = PreferenceConverter.getFontData(store, "colourkeyfont7");
+				FontData f8 = PreferenceConverter.getFontData(store, "colourkeyfont8");
+
+				scanner.keyword.setData(new TextAttribute(provider.getColor(rgbkey), null, 1, new Font(Display.getCurrent(), f)));
+				scanner.type.setData(new TextAttribute(provider.getColor(rgbkey1), null, 1, new Font(Display.getCurrent(), f1)));
+				scanner.string.setData(new TextAttribute(provider.getColor(rgbkey2), null, 1, new Font(Display.getCurrent(), f2)));
+				scanner.comment.setData(new TextAttribute(provider.getColor(rgbkey3), null, 1, new Font(Display.getCurrent(), f3)));
+				scanner.other.setData(new TextAttribute(provider.getColor(rgbkey4), null, 1, new Font(Display.getCurrent(), f4)));
+				scanner.operators.setData(new TextAttribute(provider.getColor(rgbkey5), null, 1, new Font(Display.getCurrent(), f5)));
+				scanner.braces.setData(new TextAttribute(provider.getColor(rgbkey6), null, 1, new Font(Display.getCurrent(), f6)));
+				scanner.numbers.setData(new TextAttribute(provider.getColor(rgbkey7), null, 1, new Font(Display.getCurrent(), f7)));
+				scanner.assignment.setData(new TextAttribute(provider.getColor(rgbkey8), null, 1, new Font(Display.getCurrent(), f8)));
 				if (REditor.this != null) {
 					if (REditor.this.getSourceViewer() != null) {
 						REditor.this.getSourceViewer().invalidateTextPresentation();
@@ -282,9 +262,6 @@ public class REditor extends TextEditor {
 		importIcon.dispose();
 		publicFieldIcon.dispose();
 		publicMethodIcon.dispose();
-		
-		
-		
 
 		colorManager.dispose();
 		super.dispose();
@@ -295,8 +272,9 @@ public class REditor extends TextEditor {
 		super.editorContextMenuAboutToShow(menu);
 		addAction(menu, "ContentAssistProposal");
 		menu.add(new Separator());
-		/*addAction(menu, "Add Plotmarker");
-		addAction(menu, "Delete Plotmarker");*/
+		/*
+		 * addAction(menu, "Add Plotmarker"); addAction(menu, "Delete Plotmarker");
+		 */
 		menu.add(new Separator());
 		addAction(menu, "Add Comment");
 		addAction(menu, "Remove Comment");
@@ -322,99 +300,102 @@ public class REditor extends TextEditor {
 		a.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_CONTEXT_INFORMATION);
 		setAction("ContentAssistTip", a);
 
-		/*setplotmarkers = new com.eco.bio7.reditor.actions.SetMarkers("Set Plotmarker", PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-		setAction("Add Plotmarker", setplotmarkers);
-
-		deleteplotmarkers = new com.eco.bio7.reditor.actions.DeletePlotMarkers("Delete Plotmarker", PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-		setAction("Delete Plotmarker", deleteplotmarkers);*/
+		/*
+		 * setplotmarkers = new com.eco.bio7.reditor.actions.SetMarkers("Set Plotmarker", PlatformUI.getWorkbench().getActiveWorkbenchWindow()); setAction("Add Plotmarker", setplotmarkers);
+		 * 
+		 * deleteplotmarkers = new com.eco.bio7.reditor.actions.DeletePlotMarkers("Delete Plotmarker", PlatformUI.getWorkbench().getActiveWorkbenchWindow()); setAction("Delete Plotmarker", deleteplotmarkers);
+		 */
 
 		setcomment = new com.eco.bio7.reditor.actions.SetComment("Add Comment", PlatformUI.getWorkbench().getActiveWorkbenchWindow());
 		setAction("Add Comment", setcomment);
 
 		unsetcomment = new com.eco.bio7.reditor.actions.UnsetComment("Remove Comment", PlatformUI.getWorkbench().getActiveWorkbenchWindow());
 		setAction("Remove Comment", unsetcomment);
-		
+
 		preferences = new com.eco.bio7.reditor.actions.OpenPreferences();
 		setAction("R Preferences", preferences);
 
 	}
-	
-	
-	
-	protected void configureSourceViewerDecorationSupport (SourceViewerDecorationSupport support) {
-		super.configureSourceViewerDecorationSupport(support);		
-	 
-		char[] matchChars = {'{','}','(', ')', '[', ']'}; //which brackets to match		
-		ICharacterPairMatcher matcher = new DefaultCharacterPairMatcher(matchChars ,
-				IDocumentExtension3.DEFAULT_PARTITIONING);
+
+	protected void configureSourceViewerDecorationSupport(SourceViewerDecorationSupport support) {
+		super.configureSourceViewerDecorationSupport(support);
+
+		char[] matchChars = { '{', '}', '(', ')', '[', ']' }; // which brackets to match
+		ICharacterPairMatcher matcher = new DefaultCharacterPairMatcher(matchChars, IDocumentExtension3.DEFAULT_PARTITIONING);
 		support.setCharacterPairMatcher(matcher);
-		support.setMatchingCharacterPainterPreferenceKeys(EDITOR_MATCHING_BRACKETS,EDITOR_MATCHING_BRACKETS_COLOR);
-	 
-		//Enable bracket highlighting in the preference store
+		support.setMatchingCharacterPainterPreferenceKeys(EDITOR_MATCHING_BRACKETS, EDITOR_MATCHING_BRACKETS_COLOR);
+
+		// Enable bracket highlighting in the preference store
 		IPreferenceStore store = getPreferenceStore();
 		store.setDefault(EDITOR_MATCHING_BRACKETS, true);
 		store.setDefault(EDITOR_MATCHING_BRACKETS_COLOR, "128,128,128");
 	}
-	
-	public  IWorkbenchPage getPage(){
+
+	public IWorkbenchPage getPage() {
 		IWorkbenchPage page = getSite().getPage();
-		
+
 		return page;
 	}
-	
+
 	// the listener we register with the selection service
-		private ISelectionListener listener = new ISelectionListener() {
-			public void selectionChanged(IWorkbenchPart sourcepart, ISelection selection) {
-				// we ignore our own selections
-				if (sourcepart != REditor.this) {
-					// showSelection(sourcepart, selection);
-					
-					if (selection instanceof IStructuredSelection) {
-						IStructuredSelection strucSelection = (IStructuredSelection) selection;
-						Object selectedObj = strucSelection.getFirstElement();
-						if (selectedObj instanceof ClassMembers) {
+	private ISelectionListener listener = new ISelectionListener() {
+		public void selectionChanged(IWorkbenchPart sourcepart, ISelection selection) {
+			// we ignore our own selections
+			if (sourcepart != REditor.this) {
+				// showSelection(sourcepart, selection);
 
-							ClassMembers cm = (ClassMembers) selectedObj;
-							if (cm != null) {
+				if (selection instanceof IStructuredSelection) {
+					IStructuredSelection strucSelection = (IStructuredSelection) selection;
+					Object selectedObj = strucSelection.getFirstElement();
+					if (selectedObj instanceof ClassMembers) {
 
-								int lineNumber = cm.getLineNumber();
-								/*
-								 * If a line number exist - if a class member of
-								 * type is available!
-								 */
-								if (lineNumber > 0) {
-									goToLine(REditor.this, lineNumber);
-								}
+						ClassMembers cm = (ClassMembers) selectedObj;
+						if (cm != null) {
 
+							int lineNumber = cm.getLineNumber();
+							/*
+							 * If a line number exist - if a class member of type is available!
+							 */
+							if (lineNumber > 0) {
+								goToLine(REditor.this, lineNumber);
 							}
 
 						}
+
 					}
-
 				}
-			}
 
-		};
+			}
+		}
+
+	};
+
 	private static void goToLine(IEditorPart editorPart, int toLine) {
 		if ((editorPart instanceof REditor) || toLine <= 0) {
 
 			ITextEditor editor = (ITextEditor) editorPart;
-			IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
-			if (document != null) {
-				IRegion region = null;
 
-				try {
+			IDocumentProvider prov = editor.getDocumentProvider();
+			IEditorInput inp = editor.getEditorInput();
+			if (prov != null) {
+				IDocument document = prov.getDocument(inp);
+				if (document != null) {
+					IRegion region = null;
 
-					region = document.getLineInformation(toLine - 1);
-				} catch (BadLocationException e) {
+					try {
 
-				}
-				if (region != null) {
-					editor.selectAndReveal(region.getOffset(), region.getLength());
+						region = document.getLineInformation(toLine - 1);
+					} catch (BadLocationException e) {
+
+					}
+					if (region != null) {
+						editor.selectAndReveal(region.getOffset(), region.getLength());
+					}
 				}
 			}
 		}
 	}
+
 	public Object getAdapter(Class key) {
 		if (key.equals(IContentOutlinePage.class)) {
 
@@ -433,12 +414,9 @@ public class REditor extends TextEditor {
 			// contentOutlineViewer.getTree();
 
 			TreeViewer viewer = contentOutlineViewer;
-			
-			
-		
 
 			if (viewer != null) {
-				
+
 				Control control = viewer.getControl();
 				if (control != null && !control.isDisposed()) {
 
@@ -501,24 +479,24 @@ public class REditor extends TextEditor {
 		public Image getImage(Object element) {
 			Image im = null;
 			if (element instanceof MainClass) {
-               im=classIcon;
-				
+				im = classIcon;
+
 			} else if (element instanceof ClassMembers) {
 				ClassMembers cm = (ClassMembers) element;
 
 				switch (cm.getClasstype()) {
 				case "import":
-					im=importIcon;
-					
+					im = importIcon;
+
 					break;
 				case "field":
-					im=publicFieldIcon;
-					
+					im = publicFieldIcon;
+
 					break;
 
 				case "method":
-					im=publicMethodIcon;
-					
+					im = publicMethodIcon;
+
 					break;
 
 				default:

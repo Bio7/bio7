@@ -66,9 +66,9 @@ elem:   op eat?
 
             if (1==0) { print(1) }
             else { print(2) }
-
+ 
         this works too:
-
+ 
             if (1==0) {
               if (2==0) print(1)
               else print(2)

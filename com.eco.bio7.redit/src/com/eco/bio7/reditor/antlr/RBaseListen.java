@@ -1,6 +1,7 @@
 package com.eco.bio7.reditor.antlr;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Parser;
@@ -28,33 +29,30 @@ public class RBaseListen extends RBaseListener {
 		this.parser=parser;
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
-	@Override public void enterExprError(@NotNull RParser.ExprErrorContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
+	
 	@Override public void exitExprError(@NotNull RParser.ExprErrorContext ctx) {
 		Interval sourceInterval = ctx.getSourceInterval();
-
-		Token firstToken = tokens.get(sourceInterval.a+6);
-		//Token token = tokens.get(tok);
-		parser.notifyErrorListeners(firstToken,"One Parentheses to much!",null);
+		int count = -1;
+		int start=sourceInterval.a;
+         /*We calculate the token position from the expression!*/
+		List<Token> firstToken = tokens.get(sourceInterval.a,sourceInterval.b);
+		for (int i = 0; i < firstToken.size(); i++) {
+		System.out.println(firstToken.get(i).getText());
+			if(firstToken.get(i).getText().equals(")")){
+				count=i+1;
+				break;
+			}
+		}
+		//System.out.println(count);
+		
+		/*Notify the parser!*/
+		parser.notifyErrorListeners(tokens.get(start+count),"One Parentheses to much!",null);
+		
 		
 		
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
-	@Override public void enterExprError2(@NotNull RParser.ExprError2Context ctx) { }
+	
 	/**
 	 * {@inheritDoc}
 	 * <p/>
@@ -63,13 +61,24 @@ public class RBaseListen extends RBaseListener {
 	@Override public void exitExprError2(@NotNull RParser.ExprError2Context ctx) {
 		
 		Interval sourceInterval = ctx.getSourceInterval();
-
-		Token firstToken = tokens.get(sourceInterval.a+2);
-		//Token token = tokens.get(tok);
-		parser.notifyErrorListeners(firstToken,"Missing Assignment!",null);
+		int count = -1;
+		int start=sourceInterval.a;
+         /*We calculate the token position from the expression!*/
+		List<Token> firstToken = tokens.get(sourceInterval.a,sourceInterval.b);
+		for (int i = 0; i < firstToken.size(); i++) {
+		System.out.println(firstToken.get(i).getText());
+			if(firstToken.get(i).getText().equals("(")){
+				count=i;
+				break;
+			}
+		}
+		//System.out.println(count);
 		
-		parser.notifyErrorListeners("Missing Assignment!");
+		/*Notify the parser!*/
+		parser.notifyErrorListeners(tokens.get(start+count),"One Parentheses to much!",null);
 	}
+	
+	
 
 
 	
