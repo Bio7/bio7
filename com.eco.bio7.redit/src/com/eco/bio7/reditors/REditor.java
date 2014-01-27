@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Vector;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -45,6 +46,7 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Font;
@@ -54,6 +56,8 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
@@ -73,9 +77,11 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import com.eco.bio7.reditor.outline.ClassMembers;
 import com.eco.bio7.reditor.outline.ClassModel;
 import com.eco.bio7.reditor.outline.MainClass;
+import com.eco.bio7.reditor.outline.REditorOutlineNode;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.actions.OpenPreferences;
 import com.eco.bio7.reditor.actions.UnsetComment;
+import com.eco.bio7.reditor.outline.*;
 
 /**
  * 
@@ -111,10 +117,11 @@ public class REditor extends TextEditor {
 	public final static String EDITOR_MATCHING_BRACKETS_COLOR = "matchingBracketsColor";
 
 	private IContentOutlinePage contentOutlinePage;
-	public ClassModel currentClassModel;
-	public TodoContentProvider tcp;
+	//public ClassModel currentClassModel;
+	public REditorTreeContentProvider tcp;
 	private TreeViewer contentOutlineViewer;
-
+	public Vector<REditorOutlineNode> nodes = new Vector<REditorOutlineNode>();
+    public  REditorOutlineNode func;// Function category!
 	private RConfiguration rconf;
 
 	public ProjectionViewer viewer;
@@ -370,6 +377,8 @@ public class REditor extends TextEditor {
 
 	};
 
+	
+
 	private static void goToLine(IEditorPart editorPart, int toLine) {
 		if ((editorPart instanceof REditor) || toLine <= 0) {
 
@@ -406,7 +415,7 @@ public class REditor extends TextEditor {
 		}
 	}
 
-	public void outlineInputChanged(ClassModel classModelOld, ClassModel classModelNew) {
+	public void outlineInputChanged(Vector nodesALt, Vector nodesNew) {
 
 		if (contentOutlineViewer != null) {
 			Object[] expanded = contentOutlineViewer.getExpandedElements();
@@ -421,8 +430,11 @@ public class REditor extends TextEditor {
 				if (control != null && !control.isDisposed()) {
 
 					control.setRedraw(false);
-
-					viewer.setInput(classModelNew);
+					/*Create default categories!*/
+                   
+                    
+                    /*Set the new tree nodes!*/
+					viewer.setInput(nodesNew);
 					viewer.expandAll();
 
 					control.setRedraw(true);
@@ -436,27 +448,6 @@ public class REditor extends TextEditor {
 		if (contentOutlinePage == null) {
 			// The content outline is just a tree.
 			//
-			class MyContentOutlinePage extends ContentOutlinePage {
-
-				public void createControl(Composite parent) {
-					super.createControl(parent);
-					contentOutlineViewer = getTreeViewer();
-
-					contentOutlineViewer.addSelectionChangedListener(this);
-
-					// Set up the tree viewer.
-
-					tcp = new TodoContentProvider();
-					contentOutlineViewer.setContentProvider(tcp);
-					contentOutlineViewer.setInput(currentClassModel);
-					contentOutlineViewer.setLabelProvider(new TodoLabelProvider());
-
-					// Provide the input to the ContentProvider
-
-					getSite().setSelectionProvider(contentOutlineViewer);
-
-				}
-			}
 
 			contentOutlinePage = new MyContentOutlinePage();
 
@@ -464,8 +455,61 @@ public class REditor extends TextEditor {
 
 		return contentOutlinePage;
 	}
+	
+	
+	public void createNodes(){
+		nodes.clear();
+		func = new REditorOutlineNode("Functions", null);
+		nodes.add(func);
+		
+	}
 
-	class TodoLabelProvider extends LabelProvider {
+	class MyContentOutlinePage extends ContentOutlinePage {
+		
+
+		public void createControl(Composite parent) {
+			super.createControl(parent);
+			
+			contentOutlineViewer = getTreeViewer();
+
+			contentOutlineViewer.addSelectionChangedListener(this);
+
+			// Set up the tree viewer.
+
+			tcp = new REditorTreeContentProvider();
+			contentOutlineViewer.setContentProvider(new REditorTreeContentProvider());
+			contentOutlineViewer.setInput(nodes);
+			contentOutlineViewer.setLabelProvider(new REditorLabelProvider());
+
+			// Provide the input to the ContentProvider
+
+			getSite().setSelectionProvider(contentOutlineViewer);
+
+		}
+
+		public void traditional() {
+			for (int i = 0; nodes != null && i < nodes.size(); i++) {
+				REditorOutlineNode node = (REditorOutlineNode) nodes.elementAt(i);
+				addNode(null, node);
+			}
+		}
+
+		private void addNode(TreeItem parentItem, REditorOutlineNode node) {
+			TreeItem item = null;
+			if (parentItem == null)
+				item = new TreeItem(getTreeViewer().getTree(), SWT.NONE);
+			else
+				item = new TreeItem(parentItem, SWT.NONE);
+
+			item.setText(node.getName());
+
+			Vector subs = node.getSubCategories();
+			for (int i = 0; subs != null && i < subs.size(); i++)
+				addNode(item, (REditorOutlineNode) subs.elementAt(i));
+		}
+	}
+
+	/*class TodoLabelProvider extends LabelProvider {
 		@Override
 		public String getText(Object element) {
 			if (element instanceof MainClass) {
@@ -549,6 +593,6 @@ public class REditor extends TextEditor {
 			return false;
 		}
 
-	}
+	}*/
 
 }

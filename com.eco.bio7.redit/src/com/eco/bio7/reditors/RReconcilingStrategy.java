@@ -114,12 +114,8 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 	/**
 	 * next character position - used locally and only valid while {@link #calculatePositions()} is in progress.
 	 */
-	protected int cNextPos = 0;
+	//protected int cNextPos = 0;
 
-	/** number of newLines found by {@link #classifyTag()} */
-	protected int cNewLines = 0;
-
-	protected char cLastNLChar = ' ';
 
 	private CommonTokenStream tokens;
 
@@ -127,10 +123,10 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 
 	private RBaseListen list;
 
-	/**
-	 * uses {@link #fDocument}, {@link #fOffset} and {@link #fRangeEnd} to calculate {@link #fPositions}. About syntax errors: this method is not a validator, it is useful.
-	 */
+	
 	protected void calculatePositions() {
+		/*Create the category base node for the outline! */
+		editor.createNodes();
 
 		if (editor != null) {
 
@@ -176,7 +172,7 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 		// System.out.println(tree.toStringTree(parser)); // print LISP-style tree
 
 		fPositions.clear();
-		cNextPos = fOffset;
+		//cNextPos = fOffset;
 
 		for (int i = 0; i < list.startStop.size(); i++) {
 
@@ -192,7 +188,7 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 			public void run() {
 				editor.updateFoldingStructure(fPositions);
 
-				editor.outlineInputChanged(editor.currentClassModel, list.cm);
+				editor.outlineInputChanged(editor.nodes, editor.nodes);
 			}
 
 		});

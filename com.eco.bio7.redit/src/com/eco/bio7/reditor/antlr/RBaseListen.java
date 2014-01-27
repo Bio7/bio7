@@ -2,6 +2,7 @@ package com.eco.bio7.reditor.antlr;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Parser;
@@ -13,85 +14,88 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import com.eco.bio7.reditor.outline.ClassModel;
+import com.eco.bio7.reditor.outline.REditorOutlineNode;
 import com.eco.bio7.reditors.REditor;
 
 public class RBaseListen extends RBaseListener {
 
 	private CommonTokenStream tokens;
 	public ArrayList<String> startStop = new ArrayList<String>();
-	public ClassModel cm = new ClassModel();
+	// public ClassModel cm = new ClassModel();
 	private REditor editor;
 	private Parser parser;
+	Stack<REditorOutlineNode> methods;
 
-	public RBaseListen(CommonTokenStream tokens, REditor editor,Parser parser) {
+	public RBaseListen(CommonTokenStream tokens, REditor editor, Parser parser) {
 		this.tokens = tokens;
 		this.editor = editor;
-		this.parser=parser;
+		this.parser = parser;
+		methods = new Stack<REditorOutlineNode>();
+
 	}
-	
-	
-	@Override public void exitExprError(@NotNull RParser.ExprErrorContext ctx) {
+
+	@Override
+	public void exitExprError(@NotNull RParser.ExprErrorContext ctx) {
 		Interval sourceInterval = ctx.getSourceInterval();
 		int count = -1;
-		int start=sourceInterval.a;
-         /*We calculate the token position from the expression!*/
-		List<Token> firstToken = tokens.get(sourceInterval.a,sourceInterval.b);
+		int start = sourceInterval.a;
+		/* We calculate the token position from the expression! */
+		List<Token> firstToken = tokens.get(sourceInterval.a, sourceInterval.b);
 		for (int i = 0; i < firstToken.size(); i++) {
-		System.out.println(firstToken.get(i).getText());
-			if(firstToken.get(i).getText().equals(")")){
-				count=i+1;
+			System.out.println(firstToken.get(i).getText());
+			if (firstToken.get(i).getText().equals(")")) {
+				count = i + 1;
 				break;
 			}
 		}
-		//System.out.println(count);
-		
-		/*Notify the parser!*/
-		parser.notifyErrorListeners(tokens.get(start+count),"One Parentheses to much!",null);
-		
-		
-		
-	}
-	
-	
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
-	@Override public void exitExprError2(@NotNull RParser.ExprError2Context ctx) {
-		
-		Interval sourceInterval = ctx.getSourceInterval();
-		int count = -1;
-		int start=sourceInterval.a;
-         /*We calculate the token position from the expression!*/
-		List<Token> firstToken = tokens.get(sourceInterval.a,sourceInterval.b);
-		for (int i = 0; i < firstToken.size(); i++) {
-		System.out.println(firstToken.get(i).getText());
-			if(firstToken.get(i).getText().equals("(")){
-				count=i;
-				break;
-			}
-		}
-		//System.out.println(count);
-		
-		/*Notify the parser!*/
-		parser.notifyErrorListeners(tokens.get(start+count),"One Parentheses to much!",null);
-	}
-	
-	
+		// System.out.println(count);
 
+		/* Notify the parser! */
+		parser.notifyErrorListeners(tokens.get(start + count), "One Parentheses to much!", null);
 
-	
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * <p/>
 	 * The default implementation does nothing.
 	 */
 	@Override
+	public void exitExprError2(@NotNull RParser.ExprError2Context ctx) {
+
+		Interval sourceInterval = ctx.getSourceInterval();
+		int count = -1;
+		int start = sourceInterval.a;
+		/* We calculate the token position from the expression! */
+		List<Token> firstToken = tokens.get(sourceInterval.a, sourceInterval.b);
+		for (int i = 0; i < firstToken.size(); i++) {
+			System.out.println(firstToken.get(i).getText());
+			if (firstToken.get(i).getText().equals("(")) {
+				count = i;
+				break;
+			}
+		}
+		// System.out.println(count);
+
+		/* Notify the parser! */
+		parser.notifyErrorListeners(tokens.get(start + count), "One Parentheses to much!", null);
+	}
+
 	public void exitDefFunction(@NotNull RParser.DefFunctionContext ctx) {
-		
-		
-		
+		if (methods.empty() == false) {
+			methods.pop();
+		}
+
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override
+	public void enterDefFunction(@NotNull RParser.DefFunctionContext ctx) {
+
 		Interval sourceInterval = ctx.getSourceInterval();
 
 		Token firstToken = tokens.get(sourceInterval.a);
@@ -127,12 +131,30 @@ public class RBaseListen extends RBaseListener {
 			String op = ctx.getParent().getChild(posTree - 1).getText();
 			String name = ctx.getParent().getChild(posTree - 2).getText();
 			// String operator=ctx.getParent().getChild(1).getText();
-			if (op.equals("<-")||op.equals("<<-")) {
-				cm.methodNames.add(name + ";" + lineMethod);
+			if (op.equals("<-") || op.equals("<<-")) {
+				// cm.methodNames.add(name + ";" + lineMethod);
+				if (methods.size() == 0) {
+					// methods.push(editor.func);//Add base categories!
+					methods.push(new REditorOutlineNode(name, editor.func));
+					// REditorOutlineNode node=methods.peek();
+				} else {
+					methods.push(new REditorOutlineNode(name, methods.peek()));
+
+				}
+
+				
+
 			}
-		}
-		else if(posTree==0){
-			cm.methodNames.add(ctx.getText() + ";" + lineMethod);
+		} else if (posTree == 0) {
+			if (methods.size() == 0) {
+				// methods.push(editor.func);//Add base categories!
+				methods.push(new REditorOutlineNode(ctx.getText(), editor.func));
+				// REditorOutlineNode node=methods.peek();
+			} else {
+				methods.push(new REditorOutlineNode(ctx.getText(), methods.peek()));
+
+			}
+			// cm.methodNames.add(ctx.getText() + ";" + lineMethod);
 		}
 
 	}
