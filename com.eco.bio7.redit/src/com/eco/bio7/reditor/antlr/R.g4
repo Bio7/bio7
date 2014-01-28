@@ -35,9 +35,9 @@ expr:   'if' '(' expr ')' ')' #ExprError
     |   expr ('|'|'||') expr	#e14
     |   '~' expr	#e15
     |   expr '~' expr	#e16
-    |   expr ('<-'|'<<-'|'='|'->'|'->>'|':=') expr	#e17
+    |   expr ('<-'|'<<-'|'='|'->'|'->>'|':=') expr	#VariableDeclaration
     |   'function' '(' formlist? ')' expr #DefFunction// define function
-    |   expr '(' sublist ')'   	#e18           // call function
+    |   expr '(' sublist ')'   	#CallFunction           // call function
     |   '{' exprlist '}' 	#e19// compound statement
     |   'if' '(' expr ')' expr	#e20expr
     |   'if' '(' expr ')' expr 'else' expr	#e21

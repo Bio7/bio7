@@ -40,20 +40,6 @@ public interface RVisitor<T> extends ParseTreeVisitor<T> {
 	T visitE19(@NotNull RParser.E19Context ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link RParser#e18}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE18(@NotNull RParser.E18Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#e17}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE17(@NotNull RParser.E17Context ctx);
-
-	/**
 	 * Visit a parse tree produced by {@link RParser#e34}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -73,6 +59,13 @@ public interface RVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitE35(@NotNull RParser.E35Context ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link RParser#CallFunction}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCallFunction(@NotNull RParser.CallFunctionContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link RParser#e15}.
@@ -164,6 +157,13 @@ public interface RVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitProg(@NotNull RParser.ProgContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link RParser#VariableDeclaration}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitVariableDeclaration(@NotNull RParser.VariableDeclarationContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link RParser#formlist}.

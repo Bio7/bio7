@@ -53,28 +53,6 @@ public interface RListener extends ParseTreeListener {
 	void exitE19(@NotNull RParser.E19Context ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link RParser#e18}.
-	 * @param ctx the parse tree
-	 */
-	void enterE18(@NotNull RParser.E18Context ctx);
-	/**
-	 * Exit a parse tree produced by {@link RParser#e18}.
-	 * @param ctx the parse tree
-	 */
-	void exitE18(@NotNull RParser.E18Context ctx);
-
-	/**
-	 * Enter a parse tree produced by {@link RParser#e17}.
-	 * @param ctx the parse tree
-	 */
-	void enterE17(@NotNull RParser.E17Context ctx);
-	/**
-	 * Exit a parse tree produced by {@link RParser#e17}.
-	 * @param ctx the parse tree
-	 */
-	void exitE17(@NotNull RParser.E17Context ctx);
-
-	/**
 	 * Enter a parse tree produced by {@link RParser#e34}.
 	 * @param ctx the parse tree
 	 */
@@ -106,6 +84,17 @@ public interface RListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitE35(@NotNull RParser.E35Context ctx);
+
+	/**
+	 * Enter a parse tree produced by {@link RParser#CallFunction}.
+	 * @param ctx the parse tree
+	 */
+	void enterCallFunction(@NotNull RParser.CallFunctionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link RParser#CallFunction}.
+	 * @param ctx the parse tree
+	 */
+	void exitCallFunction(@NotNull RParser.CallFunctionContext ctx);
 
 	/**
 	 * Enter a parse tree produced by {@link RParser#e15}.
@@ -249,6 +238,17 @@ public interface RListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitProg(@NotNull RParser.ProgContext ctx);
+
+	/**
+	 * Enter a parse tree produced by {@link RParser#VariableDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void enterVariableDeclaration(@NotNull RParser.VariableDeclarationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link RParser#VariableDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void exitVariableDeclaration(@NotNull RParser.VariableDeclarationContext ctx);
 
 	/**
 	 * Enter a parse tree produced by {@link RParser#formlist}.

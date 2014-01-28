@@ -9,6 +9,7 @@ package com.eco.bio7.reditors;
  *******************************************************************************/
 
 import java.util.ArrayList;
+import java.util.Vector;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -33,7 +34,8 @@ import com.eco.bio7.reditor.antlr.RFilter;
 import com.eco.bio7.reditor.antlr.RLexer;
 import com.eco.bio7.reditor.antlr.RParser;
 import com.eco.bio7.reditor.antlr.UnderlineListener;
-import com.eco.bio7.reditor.outline.ClassModel;
+import com.eco.bio7.reditor.outline.REditorOutlineNode;
+
 
 public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingStrategyExtension {
 
@@ -123,8 +125,12 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 
 	private RBaseListen list;
 
+	private Vector<REditorOutlineNode> editorOldNodes;
+
 	
 	protected void calculatePositions() {
+		
+		editorOldNodes=editor.nodes;
 		/*Create the category base node for the outline! */
 		editor.createNodes();
 
@@ -186,9 +192,11 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
+				
+				
 				editor.updateFoldingStructure(fPositions);
 
-				editor.outlineInputChanged(editor.nodes, editor.nodes);
+				editor.outlineInputChanged(editorOldNodes, editor.nodes);
 			}
 
 		});

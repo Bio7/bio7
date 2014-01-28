@@ -69,32 +69,6 @@ public class RBaseListener implements RListener {
 	 * <p/>
 	 * The default implementation does nothing.
 	 */
-	@Override public void enterE18(@NotNull RParser.E18Context ctx) { }
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
-	@Override public void exitE18(@NotNull RParser.E18Context ctx) { }
-
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
-	@Override public void enterE17(@NotNull RParser.E17Context ctx) { }
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
-	@Override public void exitE17(@NotNull RParser.E17Context ctx) { }
-
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
 	@Override public void enterE34(@NotNull RParser.E34Context ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -128,6 +102,19 @@ public class RBaseListener implements RListener {
 	 * The default implementation does nothing.
 	 */
 	@Override public void exitE35(@NotNull RParser.E35Context ctx) { }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void enterCallFunction(@NotNull RParser.CallFunctionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void exitCallFunction(@NotNull RParser.CallFunctionContext ctx) { }
 
 	/**
 	 * {@inheritDoc}
@@ -297,6 +284,19 @@ public class RBaseListener implements RListener {
 	 * The default implementation does nothing.
 	 */
 	@Override public void exitProg(@NotNull RParser.ProgContext ctx) { }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void enterVariableDeclaration(@NotNull RParser.VariableDeclarationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void exitVariableDeclaration(@NotNull RParser.VariableDeclarationContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

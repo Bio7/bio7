@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
-
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
@@ -42,13 +41,8 @@ import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
@@ -56,7 +50,6 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -73,15 +66,12 @@ import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.texteditor.TextOperationAction;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
-
-import com.eco.bio7.reditor.outline.ClassMembers;
-import com.eco.bio7.reditor.outline.ClassModel;
-import com.eco.bio7.reditor.outline.MainClass;
-import com.eco.bio7.reditor.outline.REditorOutlineNode;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.actions.OpenPreferences;
 import com.eco.bio7.reditor.actions.UnsetComment;
-import com.eco.bio7.reditor.outline.*;
+import com.eco.bio7.reditor.outline.REditorLabelProvider;
+import com.eco.bio7.reditor.outline.REditorOutlineNode;
+import com.eco.bio7.reditor.outline.REditorTreeContentProvider;
 
 /**
  * 
@@ -91,16 +81,9 @@ public class REditor extends TextEditor {
 	private static final String TEMPLATE_PROPOSALS = "template_proposals_action";
 
 	private RColorManager colorManager;
-	private Image classIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/class_obj.gif"));
 	private Image importIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/imp_obj.png"));
 	private Image publicFieldIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/field_public_obj.png"));
 	private Image publicMethodIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/methpub_obj.gif"));
-
-	/*
-	 * public Action setplotmarkers;
-	 * 
-	 * public Action deleteplotmarkers;
-	 */
 
 	public Action setcomment;
 
@@ -117,11 +100,11 @@ public class REditor extends TextEditor {
 	public final static String EDITOR_MATCHING_BRACKETS_COLOR = "matchingBracketsColor";
 
 	private IContentOutlinePage contentOutlinePage;
-	//public ClassModel currentClassModel;
+	// public ClassModel currentClassModel;
 	public REditorTreeContentProvider tcp;
 	private TreeViewer contentOutlineViewer;
 	public Vector<REditorOutlineNode> nodes = new Vector<REditorOutlineNode>();
-    public  REditorOutlineNode func;// Function category!
+	public REditorOutlineNode baseNode;// Function category!
 	private RConfiguration rconf;
 
 	public ProjectionViewer viewer;
@@ -265,7 +248,6 @@ public class REditor extends TextEditor {
 
 	public void dispose() {
 		colorManager.dispose();
-		classIcon.dispose();
 		importIcon.dispose();
 		publicFieldIcon.dispose();
 		publicMethodIcon.dispose();
@@ -354,9 +336,9 @@ public class REditor extends TextEditor {
 				if (selection instanceof IStructuredSelection) {
 					IStructuredSelection strucSelection = (IStructuredSelection) selection;
 					Object selectedObj = strucSelection.getFirstElement();
-					if (selectedObj instanceof ClassMembers) {
+					if (selectedObj instanceof REditorOutlineNode) {
 
-						ClassMembers cm = (ClassMembers) selectedObj;
+						REditorOutlineNode cm = (REditorOutlineNode) selectedObj;
 						if (cm != null) {
 
 							int lineNumber = cm.getLineNumber();
@@ -376,8 +358,6 @@ public class REditor extends TextEditor {
 		}
 
 	};
-
-	
 
 	private static void goToLine(IEditorPart editorPart, int toLine) {
 		if ((editorPart instanceof REditor) || toLine <= 0) {
@@ -430,13 +410,38 @@ public class REditor extends TextEditor {
 				if (control != null && !control.isDisposed()) {
 
 					control.setRedraw(false);
-					/*Create default categories!*/
-                   
-                    
-                    /*Set the new tree nodes!*/
-					viewer.setInput(nodesNew);
-					viewer.expandAll();
+					/* Create default categories! */
 
+					/* Set the new tree nodes! */
+					viewer.setInput(nodesNew);
+					// viewer.expandAll();
+                    /*To do: walk the whole tree!!*/
+					for (int i = 0; i < expanded.length; i++) {
+						// for (TreeItem item : getTreeViewer().getTree().getItems()) {
+						TreeItem treeItems[] = contentOutlineViewer.getTree().getItems();
+						for (int j = 0; j < treeItems.length; j++) {
+							TreeItem item = treeItems[j];
+							if (expanded[i] instanceof REditorOutlineNode) {
+								if (((REditorOutlineNode) item.getData()).getName().equals(((REditorOutlineNode) expanded[i]).getName())) {
+									viewer.setExpandedState(item.getData(), true);
+									break;
+								}
+							}
+							for (int k = 0; k < item.getItemCount(); k++) {
+								TreeItem it=item.getItem(k);
+								
+								if (expanded[i] instanceof REditorOutlineNode) {
+									if (((REditorOutlineNode) it.getData()).getName().equals(((REditorOutlineNode) expanded[i]).getName())) {
+										viewer.setExpandedState(it.getData(), true);
+										break;
+									}
+								}
+							}
+							
+
+							
+						}
+					}
 					control.setRedraw(true);
 				}
 			}
@@ -455,21 +460,19 @@ public class REditor extends TextEditor {
 
 		return contentOutlinePage;
 	}
-	
-	
-	public void createNodes(){
+
+	public void createNodes() {
 		nodes.clear();
-		func = new REditorOutlineNode("Functions", null);
-		nodes.add(func);
-		
+		baseNode = new REditorOutlineNode("File", 0, "base", null);
+		nodes.add(baseNode);
+
 	}
 
 	class MyContentOutlinePage extends ContentOutlinePage {
-		
 
 		public void createControl(Composite parent) {
 			super.createControl(parent);
-			
+
 			contentOutlineViewer = getTreeViewer();
 
 			contentOutlineViewer.addSelectionChangedListener(this);
@@ -508,91 +511,5 @@ public class REditor extends TextEditor {
 				addNode(item, (REditorOutlineNode) subs.elementAt(i));
 		}
 	}
-
-	/*class TodoLabelProvider extends LabelProvider {
-		@Override
-		public String getText(Object element) {
-			if (element instanceof MainClass) {
-				MainClass category = (MainClass) element;
-				return category.getName();
-			}
-			return ((ClassMembers) element).getSummary();
-		}
-
-		@Override
-		public Image getImage(Object element) {
-			Image im = null;
-			if (element instanceof MainClass) {
-				im = classIcon;
-
-			} else if (element instanceof ClassMembers) {
-				ClassMembers cm = (ClassMembers) element;
-
-				switch (cm.getClasstype()) {
-				case "import":
-					im = importIcon;
-
-					break;
-				case "field":
-					im = publicFieldIcon;
-
-					break;
-
-				case "method":
-					im = publicMethodIcon;
-
-					break;
-
-				default:
-					break;
-				}
-
-			}
-			return im;
-		}
-
-	}
-
-	class TodoContentProvider implements ITreeContentProvider {
-
-		private ClassModel model;
-
-		@Override
-		public void dispose() {
-		}
-
-		@Override
-		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-			this.model = (ClassModel) newInput;
-		}
-
-		@Override
-		public Object[] getElements(Object inputElement) {
-			return model.getCategories().toArray();
-		}
-
-		@Override
-		public Object[] getChildren(Object parentElement) {
-			if (parentElement instanceof MainClass) {
-				MainClass category = (MainClass) parentElement;
-				return category.getTodos().toArray();
-			}
-			return null;
-		}
-
-		@Override
-		public Object getParent(Object element) {
-			return null;
-		}
-
-		@Override
-		public boolean hasChildren(Object element) {
-			if (element instanceof MainClass) {
-				return true;
-			}
-			return false;
-		}
-
-	}*/
 
 }
