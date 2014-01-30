@@ -17,6 +17,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
+
+import javafx.application.Platform;
+import javafx.scene.Group;
+import javafx.scene.Scene;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
+
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
@@ -27,6 +36,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.source.Annotation;
@@ -39,10 +49,16 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
@@ -54,9 +70,11 @@ import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
@@ -66,6 +84,7 @@ import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.texteditor.TextOperationAction;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
+
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.actions.OpenPreferences;
 import com.eco.bio7.reditor.actions.UnsetComment;
@@ -107,6 +126,8 @@ public class REditor extends TextEditor {
 	public REditorOutlineNode baseNode;// Function category!
 	private RConfiguration rconf;
 
+	private Object[] expanded;
+
 	public ProjectionViewer viewer;
 
 	public RConfiguration getRconf() {
@@ -127,10 +148,150 @@ public class REditor extends TextEditor {
 
 		annotationModel = viewer.getProjectionAnnotationModel();
 
+		getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
+
 		// ISourceViewer viewer = getSourceViewer();
 
 		// updateFoldingStructure(new ArrayList());
 	}
+
+	private IPartListener2 partListener = new IPartListener2() {
+
+		@Override
+		public void partActivated(IWorkbenchPartReference partRef) { //
+			if (partRef.getId().equals("com.eco.bio7.reditors.TemplateEditor")) {
+				final IEditorPart editor = partRef.getPage().getActiveEditor();
+				final ITextEditor textEditor = (ITextEditor) editor;
+				if (editor instanceof REditor) {
+
+					((StyledText) editor.getAdapter(Control.class)).addKeyListener(new KeyListener() {
+
+						@Override
+						public void keyReleased(KeyEvent e) {
+
+						}
+
+						@Override
+						public void keyPressed(KeyEvent event) {
+						//	if (event.stateMask == SWT.ALT && event.keyCode == 99) {    -> CTRL+C
+							switch (event.keyCode) {
+
+							case SWT.CR: {
+
+								IDocumentProvider prov = textEditor.getDocumentProvider();
+								IEditorInput inp = editor.getEditorInput();
+								if (prov != null) {
+									IDocument document = prov.getDocument(inp);
+									if (document != null) {
+
+										ITextSelection textSelection = (ITextSelection) editor.getSite().getSelectionProvider().getSelection();
+										int offset = textSelection.getOffset() - 4;
+										//System.out.println("offset "+offset);
+										
+										char c = '{';
+
+										try {
+											c = document.getChar(offset);
+										} catch (BadLocationException e1) {
+											// TODO Auto-generated catch block
+											e1.printStackTrace();
+										}
+										String comp=Character.toString(c);
+										//System.out.println(comp);
+										if(comp.equals("{"))
+
+										try {
+											document.replace(offset+4, 0, "}");
+										} catch (BadLocationException e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
+										}
+									}
+								}
+
+							}
+								break;
+							}
+						}
+					});
+
+					((StyledText) editor.getAdapter(Control.class)).addMouseListener(new MouseListener() {
+
+						@Override
+						public void mouseDoubleClick(MouseEvent e) {
+
+						}
+
+						@Override
+						public void mouseDown(MouseEvent e) {
+							IDocumentProvider prov = textEditor.getDocumentProvider();
+							IEditorInput inp = editor.getEditorInput();
+							if (prov != null) {
+								IDocument document = prov.getDocument(inp);
+								if (document != null) {
+
+									ITextSelection textSelection = (ITextSelection) editor.getSite().getSelectionProvider().getSelection();
+									int offset = textSelection.getOffset();
+
+									// try {
+									// int lineNumber = document.getLineOfOffset(offset);
+									// textEditor.selectAndReveal(offset,5);
+									// System.out.println(lineNumber);
+									/*
+									 * } catch (BadLocationException e1) { // TODO Auto-generated catch block e1.printStackTrace(); }
+									 */
+								}
+							}
+
+						}
+
+						@Override
+						public void mouseUp(MouseEvent e) {
+							// TODO Auto-generated method stub
+
+						}
+
+					});
+				}
+
+			}
+
+		}
+
+		private void updateHierachyView(IWorkbenchPartReference partRef, final boolean closed) {
+
+		}
+
+		public void partBroughtToTop(IWorkbenchPartReference partRef) { // TODO
+
+		}
+
+		public void partClosed(IWorkbenchPartReference partRef) { // TODO
+
+		}
+
+		public void partDeactivated(IWorkbenchPartReference partRef) { // TODO //
+
+		}
+
+		@Override
+		public void partOpened(IWorkbenchPartReference partRef) {
+
+		}
+
+		public void partHidden(IWorkbenchPartReference partRef) { // TODO
+
+		}
+
+		public void partVisible(IWorkbenchPartReference partRef) { // TODO
+
+		}
+
+		public void partInputChanged(IWorkbenchPartReference partRef) { // TODO
+
+		}
+
+	};
 
 	// private Annotation[] oldAnnotations;
 
@@ -191,14 +352,17 @@ public class REditor extends TextEditor {
 		rconf = new RConfiguration(colorManager, this);
 		setSourceViewerConfiguration(rconf);
 
-		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		if (editor != null) {
-
-			IEditorSite site = editor.getEditorSite();
-
-			IWorkbenchPage page = site.getPage();
-
-		}
+		// IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		/*
+		 * if (editor != null) {
+		 * 
+		 * IEditorSite site = editor.getEditorSite();
+		 * 
+		 * IWorkbenchPage page = site.getPage();
+		 * 
+		 * 
+		 * }
+		 */
 		Bio7REditorPlugin.getDefault().getPreferenceStore().addPropertyChangeListener(new IPropertyChangeListener() {
 
 			public void propertyChange(org.eclipse.jface.util.PropertyChangeEvent event) {
@@ -244,6 +408,7 @@ public class REditor extends TextEditor {
 				}
 			}
 		});
+
 	}
 
 	public void dispose() {
@@ -253,6 +418,7 @@ public class REditor extends TextEditor {
 		publicMethodIcon.dispose();
 
 		colorManager.dispose();
+		getSite().getWorkbenchWindow().getPartService().removePartListener(partListener);
 		super.dispose();
 
 	}
@@ -329,6 +495,7 @@ public class REditor extends TextEditor {
 	// the listener we register with the selection service
 	private ISelectionListener listener = new ISelectionListener() {
 		public void selectionChanged(IWorkbenchPart sourcepart, ISelection selection) {
+
 			// we ignore our own selections
 			if (sourcepart != REditor.this) {
 				// showSelection(sourcepart, selection);
@@ -398,9 +565,8 @@ public class REditor extends TextEditor {
 	public void outlineInputChanged(Vector nodesALt, Vector nodesNew) {
 
 		if (contentOutlineViewer != null) {
-			Object[] expanded = contentOutlineViewer.getExpandedElements();
-
-			// contentOutlineViewer.getTree();
+			/* Store temporary the old expanded elements! */
+			expanded = contentOutlineViewer.getExpandedElements();
 
 			TreeViewer viewer = contentOutlineViewer;
 
@@ -414,37 +580,39 @@ public class REditor extends TextEditor {
 
 					/* Set the new tree nodes! */
 					viewer.setInput(nodesNew);
-					// viewer.expandAll();
-                    /*To do: walk the whole tree!!*/
-					for (int i = 0; i < expanded.length; i++) {
-						// for (TreeItem item : getTreeViewer().getTree().getItems()) {
-						TreeItem treeItems[] = contentOutlineViewer.getTree().getItems();
-						for (int j = 0; j < treeItems.length; j++) {
-							TreeItem item = treeItems[j];
-							if (expanded[i] instanceof REditorOutlineNode) {
-								if (((REditorOutlineNode) item.getData()).getName().equals(((REditorOutlineNode) expanded[i]).getName())) {
-									viewer.setExpandedState(item.getData(), true);
-									break;
-								}
-							}
-							for (int k = 0; k < item.getItemCount(); k++) {
-								TreeItem it=item.getItem(k);
-								
-								if (expanded[i] instanceof REditorOutlineNode) {
-									if (((REditorOutlineNode) it.getData()).getName().equals(((REditorOutlineNode) expanded[i]).getName())) {
-										viewer.setExpandedState(it.getData(), true);
-										break;
-									}
-								}
-							}
-							
-
-							
-						}
-					}
+					/* First item is the file! */
+					TreeItem treeItem = contentOutlineViewer.getTree().getItem(0);
+					/* Expand to get access to the subnodes! */
+					contentOutlineViewer.setExpandedState(treeItem.getData(), true);
+					walkTree(treeItem);
+					/* The default expand level! */
+					contentOutlineViewer.expandToLevel(2);
 					control.setRedraw(true);
 				}
 			}
+		}
+
+	}
+
+	/* This method is recursively called to walk all subtrees and compare the names of the nodes with the old ones! */
+
+	public void walkTree(TreeItem item) {
+
+		for (int i = 0; i < expanded.length; i++) {
+
+			for (int j = 0; j < item.getItemCount(); j++) {
+
+				TreeItem it = item.getItem(j);
+
+				if (((REditorOutlineNode) it.getData()).getName().equals(((REditorOutlineNode) expanded[i]).getName())) {
+					contentOutlineViewer.setExpandedState(it.getData(), true);
+					/* Recursive call of the method for subnodes! */
+					walkTree(it);
+					break;
+				}
+
+			}
+
 		}
 
 	}

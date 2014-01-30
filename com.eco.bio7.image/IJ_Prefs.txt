@@ -1,5 +1,5 @@
 #ImageJ 1.48c Preferences
-#Tue Jan 28 17:24:23 CET 2014
+#Thu Jan 30 17:10:43 CET 2014
 new.fill=0
 .log.height=250
 pp.options=1
@@ -7,6 +7,8 @@ pp.options=1
 bcolor=\#FFFFFF
 .results.height=250
 noise.sd=25.0
+recent01=I\:\\ROIS\\blobs3.roi
+recent00=I\:\\ROIS\\tiffwithroi.tif
 raw.offset=0
 fcolor=\#000000
 raw.width=512
@@ -42,5 +44,6 @@ prefs.options2=2
 precision=3
 roicolor=\#FFFF00
 ap.options=2112
+dir.image=I\:\\ROIS\\
 .hyperstack.new=8-bit Color 400 300 3 4 5 1
 raw.type=0

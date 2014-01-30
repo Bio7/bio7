@@ -3,7 +3,6 @@ package com.eco.bio7.reditor.antlr;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
-
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.Token;
