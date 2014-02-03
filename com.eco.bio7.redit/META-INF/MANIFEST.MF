@@ -16,7 +16,11 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.resources,
  org.eclipse.debug.core,
  org.eclipse.ui.workbench,
- org.eclipse.ui.ide;bundle-version="3.9.100"
+ org.eclipse.ui.ide;bundle-version="3.9.100",
+ org.eclipse.compare;bundle-version="3.5.500",
+ org.eclipse.ltk.ui.refactoring;bundle-version="3.7.100",
+ org.eclipse.jdt.core;bundle-version="3.10.0",
+ org.eclipse.ltk.core.refactoring;bundle-version="3.6.100"
 Eclipse-LazyStart: true
 Export-Package: com.eco.bio7.reditor,
  com.eco.bio7.reditor.actions,

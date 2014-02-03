@@ -91,6 +91,7 @@ import com.eco.bio7.reditor.actions.UnsetComment;
 import com.eco.bio7.reditor.outline.REditorLabelProvider;
 import com.eco.bio7.reditor.outline.REditorOutlineNode;
 import com.eco.bio7.reditor.outline.REditorTreeContentProvider;
+import com.eco.bio7.reditor.refactor.CompareEditorAction;
 
 /**
  * 
@@ -107,6 +108,8 @@ public class REditor extends TextEditor {
 	public Action setcomment;
 
 	private UnsetComment unsetcomment;
+	
+	private Action refactor;
 
 	private OpenPreferences preferences;
 
@@ -293,6 +296,8 @@ public class REditor extends TextEditor {
 
 	};
 
+	
+
 	// private Annotation[] oldAnnotations;
 
 	public void updateFoldingStructure(ArrayList positions) {
@@ -434,6 +439,8 @@ public class REditor extends TextEditor {
 		addAction(menu, "Add Comment");
 		addAction(menu, "Remove Comment");
 		menu.add(new Separator());
+		addAction(menu,"Refactor");
+		menu.add(new Separator());
 		addAction(menu, "R Preferences");
 
 	}
@@ -466,6 +473,9 @@ public class REditor extends TextEditor {
 
 		unsetcomment = new com.eco.bio7.reditor.actions.UnsetComment("Remove Comment", PlatformUI.getWorkbench().getActiveWorkbenchWindow());
 		setAction("Remove Comment", unsetcomment);
+		
+		refactor = new com.eco.bio7.reditor.refactor.CompareEditorAction("Refactor",PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+		setAction("Refactor", refactor);
 
 		preferences = new com.eco.bio7.reditor.actions.OpenPreferences();
 		setAction("R Preferences", preferences);

@@ -149,6 +149,20 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
              id="com.eco.bio7.reditor.rulerclick"/>
     </editorContribution>
  </extension>
+ <extension point="org.eclipse.ui.popupMenus">
+    <!-- put a context menu item into the menu of standard text editors.
+         If the properties editor had an own context menu id, we could
+         target this more specifically. This way, we must have the
+         refactoring itself decide whether the operation can run.
+      -->
+    <viewerContribution targetID="#TextEditorContext" 
+                        id="com.eco.bio7.reditor,refactor.renameProperty">
+      <action label="Refactor"
+              class="com.eco.bio7.reditor.refactor.RenameProperty" 
+              menubarPath="additions"
+              id="com.eco.bio7.reditor.refactor.RenameProperty"/>
+    </viewerContribution>
+  </extension>
    
 
 </plugin>
