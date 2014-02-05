@@ -1294,7 +1294,10 @@ public class WorldWindOptionsView extends ViewPart {
 		final Button rubberBandButton = new Button(composite_6, SWT.CHECK);
 		rubberBandButton.setToolTipText("Enables or disables the \"Rubber band\" option!");
 		rubberBandButton.setSelection(true);
+		
+		if(measureTool!=null){
 		rubberBandButton.setSelection(measureTool.getController().isUseRubberBand());
+		}
 		rubberBandButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				measureTool.getController().setUseRubberBand(rubberBandButton.getSelection());
@@ -1309,7 +1312,9 @@ public class WorldWindOptionsView extends ViewPart {
 
 		freehandButton = new Button(composite_6, SWT.CHECK);
 		freehandButton.setToolTipText("Enables or disables freehand selections!");
+		if(measureTool!=null){
 		freehandButton.setSelection(measureTool.getController().isFreeHand());
+		}
 		freehandButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				measureTool.getController().setFreeHand(freehandButton.getSelection());

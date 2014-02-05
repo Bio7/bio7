@@ -12,6 +12,16 @@
  *******************************************************************************/
 package com.eco.bio7.javaeditors;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.jdt.core.CompletionProposal;
+import org.eclipse.jdt.core.CompletionRequestor;
+import org.eclipse.jdt.core.Flags;
+import org.eclipse.jdt.core.IAccessRule;
+import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
@@ -31,6 +41,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Font;
@@ -70,7 +81,7 @@ public class JavaEditor extends TextEditor {
 	Image classIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/class_obj.gif"));
 	private Image importIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/imp_obj.png"));
 	private Image publicFieldIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/field_public_obj.png"));
-	private Image publicMethodIcon= new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/methpub_obj.gif"));
+	private Image publicMethodIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/methpub_obj.gif"));
 	private SetComment setcomment;
 	private UnsetComment unsetcomment;
 	private JavaFormatterAction javaformat;
@@ -84,15 +95,12 @@ public class JavaEditor extends TextEditor {
 	private boolean start = true;
 	public CompilationUnit compUnit;
 	public final static String EDITOR_MATCHING_BRACKETS = "matchingBrackets";
-    public final static String EDITOR_MATCHING_BRACKETS_COLOR = "matchingBracketsColor";
-
-	
+	public final static String EDITOR_MATCHING_BRACKETS_COLOR = "matchingBracketsColor";
 
 	private TreeViewer contentOutlineViewer;
-	
 
 	public void createPartControl(Composite parent) {
-		
+
 		super.createPartControl(parent);
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.java");
 
@@ -103,35 +111,26 @@ public class JavaEditor extends TextEditor {
 	/*
 	 * private IPartListener2 partListener = new IPartListener2() {
 	 * 
-	 * @Override public void partActivated(IWorkbenchPartReference partRef) { //
-	 * TODO // Auto-generated // method // stub
+	 * @Override public void partActivated(IWorkbenchPartReference partRef) { // TODO // Auto-generated // method // stub
 	 * 
 	 * }
 	 * 
-	 * public void partBroughtToTop(IWorkbenchPartReference partRef) { // TODO
-	 * // Auto-generated // method // stub
+	 * public void partBroughtToTop(IWorkbenchPartReference partRef) { // TODO // Auto-generated // method // stub
 	 * 
 	 * }
 	 * 
-	 * public void partClosed(IWorkbenchPartReference partRef) { // TODO
-	 * Auto-generated method stub
+	 * public void partClosed(IWorkbenchPartReference partRef) { // TODO Auto-generated method stub
 	 * 
 	 * }
 	 * 
-	 * public void partDeactivated(IWorkbenchPartReference partRef) { // TODO //
-	 * Auto-generated // method // stub
+	 * public void partDeactivated(IWorkbenchPartReference partRef) { // TODO // Auto-generated // method // stub
 	 * 
 	 * }
 	 * 
-	 * @Override public void partOpened(IWorkbenchPartReference partRef) { if
-	 * (partRef.getId().equals("com.eco.bio7.javaeditors.TemplateEditor")) {
-	 * System
-	 * .out.println("opened"+" "+partRef.getId()+" "+partRef.getPartName());
-	 * IEditorPart javaEditor = (IEditorPart)
-	 * partRef.getPage().getActiveEditor(); if (javaEditor != null) {
+	 * @Override public void partOpened(IWorkbenchPartReference partRef) { if (partRef.getId().equals("com.eco.bio7.javaeditors.TemplateEditor")) { System .out.println("opened"+" "+partRef.getId()+" "+partRef.getPartName()); IEditorPart javaEditor = (IEditorPart) partRef.getPage().getActiveEditor();
+	 * if (javaEditor != null) {
 	 * 
-	 * if (javaEditor instanceof JavaEditor) { System.out.println("offen");
-	 * //new ModelClassAst().parseAST(javaEditor);
+	 * if (javaEditor instanceof JavaEditor) { System.out.println("offen"); //new ModelClassAst().parseAST(javaEditor);
 	 * 
 	 * }
 	 * 
@@ -141,18 +140,15 @@ public class JavaEditor extends TextEditor {
 	 * 
 	 * }
 	 * 
-	 * public void partHidden(IWorkbenchPartReference partRef) { // TODO
-	 * Auto-generated method stub
+	 * public void partHidden(IWorkbenchPartReference partRef) { // TODO Auto-generated method stub
 	 * 
 	 * }
 	 * 
-	 * public void partVisible(IWorkbenchPartReference partRef) { // TODO
-	 * Auto-generated method stub
+	 * public void partVisible(IWorkbenchPartReference partRef) { // TODO Auto-generated method stub
 	 * 
 	 * }
 	 * 
-	 * public void partInputChanged(IWorkbenchPartReference partRef) { // TODO
-	 * // Auto-generated // method // stub
+	 * public void partInputChanged(IWorkbenchPartReference partRef) { // TODO // Auto-generated // method // stub
 	 * 
 	 * }
 	 * 
@@ -165,7 +161,7 @@ public class JavaEditor extends TextEditor {
 			// we ignore our own selections
 			if (sourcepart != JavaEditor.this) {
 				// showSelection(sourcepart, selection);
-				
+
 				if (selection instanceof IStructuredSelection) {
 					IStructuredSelection strucSelection = (IStructuredSelection) selection;
 					Object selectedObj = strucSelection.getFirstElement();
@@ -176,8 +172,7 @@ public class JavaEditor extends TextEditor {
 
 							int lineNumber = cm.getLineNumber();
 							/*
-							 * If a line number exist - if a class member of
-							 * type is available!
+							 * If a line number exist - if a class member of type is available!
 							 */
 							if (lineNumber > 0) {
 								goToLine(JavaEditor.this, lineNumber);
@@ -192,9 +187,6 @@ public class JavaEditor extends TextEditor {
 		}
 
 	};
-	
-	
-	
 
 	private static void goToLine(IEditorPart editorPart, int toLine) {
 		if ((editorPart instanceof JavaEditor) || toLine <= 0) {
@@ -224,7 +216,7 @@ public class JavaEditor extends TextEditor {
 		super();
 
 		// JavaEditorInstance = this;
-	
+
 		colorManager = new ColorManager();
 		setSourceViewerConfiguration(new JavaConfiguration(colorManager, this));
 		currentClassModel = new ClassModel();
@@ -280,7 +272,10 @@ public class JavaEditor extends TextEditor {
 				}
 			}
 		});
+
 	}
+
+	
 
 	public void dispose() {
 		colorManager.dispose();
@@ -288,13 +283,13 @@ public class JavaEditor extends TextEditor {
 		importIcon.dispose();
 		publicFieldIcon.dispose();
 		publicMethodIcon.dispose();
-		
+
 		// important: Remove listener when the view is disposed!
 		getSite().getWorkbenchWindow().getSelectionService().removeSelectionListener(listener);
 		super.dispose();
 
 	}
-	
+
 	protected void configureSourceViewerDecorationSupport(SourceViewerDecorationSupport support) {
 		super.configureSourceViewerDecorationSupport(support);
 
@@ -334,9 +329,9 @@ public class JavaEditor extends TextEditor {
 
 		IAction actionProp = new TextOperationAction(JavaEditorMessages.getResourceBundle(), "ContentAssistProposal.", this, ISourceViewer.CONTENTASSIST_PROPOSALS);
 		actionProp.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
-		setAction("ContentAssistProposal",actionProp);
+		setAction("ContentAssistProposal", actionProp);
 
-		IAction  actionTip = new TextOperationAction(JavaEditorMessages.getResourceBundle(), "ContentAssistTip.", this, ISourceViewer.CONTENTASSIST_CONTEXT_INFORMATION);
+		IAction actionTip = new TextOperationAction(JavaEditorMessages.getResourceBundle(), "ContentAssistTip.", this, ISourceViewer.CONTENTASSIST_CONTEXT_INFORMATION);
 		actionTip.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_CONTEXT_INFORMATION);
 		setAction("ContentAssistTip", actionTip);
 
@@ -354,7 +349,7 @@ public class JavaEditor extends TextEditor {
 
 		rsourceconverter = new com.eco.bio7.javaeditor.actions.RSourceConverter();
 		setAction("Convert R Code", rsourceconverter);
-		
+
 		preferences = new com.eco.bio7.javaeditor.actions.OpenPreferences();
 		setAction("Preferences", preferences);
 
@@ -378,12 +373,9 @@ public class JavaEditor extends TextEditor {
 			// contentOutlineViewer.getTree();
 
 			TreeViewer viewer = contentOutlineViewer;
-			
-			
-		
 
 			if (viewer != null) {
-				
+
 				Control control = viewer.getControl();
 				if (control != null && !control.isDisposed()) {
 
@@ -446,24 +438,24 @@ public class JavaEditor extends TextEditor {
 		public Image getImage(Object element) {
 			Image im = null;
 			if (element instanceof MainClass) {
-               im=classIcon;
-				
+				im = classIcon;
+
 			} else if (element instanceof ClassMembers) {
 				ClassMembers cm = (ClassMembers) element;
 
 				switch (cm.getClasstype()) {
 				case "import":
-					im=importIcon;
-					
+					im = importIcon;
+
 					break;
 				case "field":
-					im=publicFieldIcon;
-					
+					im = publicFieldIcon;
+
 					break;
 
 				case "method":
-					im=publicMethodIcon;
-					
+					im = publicMethodIcon;
+
 					break;
 
 				default:

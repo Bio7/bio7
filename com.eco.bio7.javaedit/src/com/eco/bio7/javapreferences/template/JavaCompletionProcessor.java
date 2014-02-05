@@ -10,18 +10,19 @@
  *******************************************************************************/
 package com.eco.bio7.javapreferences.template;
 
-import org.eclipse.swt.graphics.Image;
-
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.text.templates.TemplateContextType;
 import org.eclipse.jface.text.templates.Template;
 import org.eclipse.jface.text.templates.TemplateCompletionProcessor;
+import org.eclipse.jface.text.templates.TemplateContextType;
+import org.eclipse.swt.graphics.Image;
+import com.eco.bio7.javaeditors.JavaEditor;
 import com.eco.bio7.javaeditors.TemplateEditorUI;
+
 
 
 /**
@@ -29,7 +30,12 @@ import com.eco.bio7.javaeditors.TemplateEditorUI;
  */
 public class JavaCompletionProcessor extends TemplateCompletionProcessor {
 	private static final String DEFAULT_IMAGE= "$nl$/icons/template.gif"; //$NON-NLS-1$
+	private JavaEditor editor;
 
+	public  JavaCompletionProcessor(JavaEditor editor){
+		this.editor=editor;
+	}
+	
 	/**
 	 * We watch for angular brackets since those are often part of XML
 	 * templates.
@@ -72,7 +78,7 @@ public class JavaCompletionProcessor extends TemplateCompletionProcessor {
 			return 90;
 		return 0;
 	}
-
+	
 	/**
 	 * Simply return all templates.
 	 * 

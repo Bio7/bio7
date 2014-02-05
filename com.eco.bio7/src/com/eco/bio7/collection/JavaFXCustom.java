@@ -13,6 +13,8 @@ package com.eco.bio7.collection;
 
 import java.io.IOException;
 import java.net.URL;
+
+import javafx.application.Platform;
 import javafx.embed.swt.FXCanvas;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
@@ -23,6 +25,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
@@ -112,32 +115,35 @@ public class JavaFXCustom {
 
 	}
 
-	public void loadFxml(String path, Object model) {
+	public void loadFxml(final String path, final Object model) {
 
-		try {
-			FXMLLoader fxmlLoader = new FXMLLoader(new URL("file:///" + path));
+		Platform.runLater(new Runnable() {
 
-			fxmlLoader.setController(model);
+			public void run() {
+				try {
+					FXMLLoader fxmlLoader = new FXMLLoader(new URL("file:///" + path));
 
-			root = (Parent) fxmlLoader.load();
+					fxmlLoader.setController(model);
 
-		} catch (IOException exception) {
+					root = (Parent) fxmlLoader.load();
+					scene = new Scene(root);
+					scene.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
 
-			throw new RuntimeException(exception);
-		}
+						public void handle(KeyEvent ke) {
 
-		scene = new Scene(root);
-		scene.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+							fullscreen(ke, scene);
 
-			public void handle(KeyEvent ke) {
+						}
+					});
 
-				fullscreen(ke, scene);
-
+					canvas.setScene(scene);
+					view.getCustomViewParent().layout();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		});
-
-		canvas.setScene(scene);
-		view.getCustomViewParent().layout();
 
 	}
 
@@ -241,8 +247,7 @@ public class JavaFXCustom {
 				primaryStage.setY(primaryScreen.getVisualBounds().getMinY());
 				primaryStage.setFullScreen(true);
 				primaryStage.show();
-			}
-			else{
+			} else {
 				System.out.println("True fullscreen for Linux disabled!");
 			}
 		} else if (ke.getCode() == KeyCode.ESCAPE) {

@@ -53,7 +53,7 @@
       <contextType
             name="%xml.contextType.name"
             class="com.eco.bio7.javapreferences.template.JavaContextType"
-            id="java">
+            id="com.eco.bio7.javaTemplates">
       </contextType>
      
       <include

@@ -14,6 +14,7 @@ package com.eco.bio7.rcp;
 import java.io.File;
 import java.io.FilenameFilter;
 
+import org.eclipse.core.runtime.IExtension;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IContributionItem;
@@ -36,6 +37,10 @@ import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import org.eclipse.ui.actions.ContributionItemFactory;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
+import org.eclipse.ui.internal.WorkbenchPlugin;
+import org.eclipse.ui.internal.registry.ActionSetRegistry;
+import org.eclipse.ui.internal.registry.IActionSetDescriptor;
+
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.actions.ActivateRPlots;
 import com.eco.bio7.actions.BeanShellClearAction;
@@ -150,7 +155,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 	private IWorkbenchWindow window2;
 
-	//private static NutrientAction nutrientaction;
+	// private static NutrientAction nutrientaction;
 
 	private IPreferenceStore store;
 
@@ -292,11 +297,11 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		libreofficeconnection = new LibreOfficeConnection("Open LibreOffice Connection", window);
 		register(libreofficeconnection);
 
-		/*bshclearaction = new BeanShellClearAction("Clear", window);
-		register(bshclearaction);
-
-		bshimportaction = new BeanShellImportAction("Import", window);
-		register(bshimportaction);*/
+		/*
+		 * bshclearaction = new BeanShellClearAction("Clear", window); register(bshclearaction);
+		 * 
+		 * bshimportaction = new BeanShellImportAction("Import", window); register(bshimportaction);
+		 */
 
 		start = new Start("Start", window);
 		register(start);
@@ -304,8 +309,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		start3d = new Start3d("Start/Stop Animation", window);
 		register(start3d);
 
-		//nutrientaction = new NutrientAction("nutrient_action", window);
-		//register(nutrientaction);
+		// nutrientaction = new NutrientAction("nutrient_action", window);
+		// register(nutrientaction);
 
 		resetfield = new ResetField("Reset Field", window);
 		register(resetfield);
@@ -328,11 +333,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		setup = new SetupDiscrete("Save Pattern", window);
 		register(setup);
 		/*
-		 * savepattern.setToolTipText("Save a pattern to a file" + '\n' +
-		 * "Bio7"); loadpattern = new LoadPattern("Load Pattern", window);
-		 * register(loadpattern);
-		 * loadpattern.setToolTipText("Load a pattern from a file" + '\n' +
-		 * "Bio7");
+		 * savepattern.setToolTipText("Save a pattern to a file" + '\n' + "Bio7"); loadpattern = new LoadPattern("Load Pattern", window); register(loadpattern); loadpattern.setToolTipText("Load a pattern from a file" + '\n' + "Bio7");
 		 */
 
 		re = ContributionItemFactory.VIEWS_SHORTLIST.create(window);
@@ -352,8 +353,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		clipboardRValues = new ClipboardRValues("Get Clipboard Data", window);
 		register(clipboardRValues);
-		
-		enableRPlots=new ActivateRPlots("Activate R Plots", window);
+
+		enableRPlots = new ActivateRPlots("Activate R Plots", window);
 		register(enableRPlots);
 
 		installRPackage = new InstallRPackage("Install package(s)", window);
@@ -376,6 +377,31 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	}
 
 	protected void fillMenuBar(IMenuManager menuBar) {
+      /*Remove actions tip from: http://random-eclipse-tips.blogspot.de/2009/02/eclipse-rcp-removing-unwanted_02.html*/
+		final ActionSetRegistry reg = WorkbenchPlugin.getDefault().getActionSetRegistry();
+		final IActionSetDescriptor[] actionSets = reg.getActionSets();
+		final String[] removeActionSets = new String[] { "org.eclipse.search.searchActionSet",
+				"org.eclipse.ui.cheatsheets.actionSet", "org.eclipse.ui.actionSet.keyBindings",
+				"org.eclipse.ui.edit.text.actionSet.navigation", "org.eclipse.ui.edit.text.actionSet.annotationNavigation",
+				"org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo", "org.eclipse.ui.edit.text.actionSet.openExternalFile",
+				"org.eclipse.ui.externaltools.ExternalToolsSet", "org.eclipse.ui.WorkingSetActionSet",
+				"org.eclipse.update.ui.softwareUpdates", "org.eclipse.ui.actionSet.openFiles",
+				"org.eclipse.mylyn.tasks.ui.navigation", };
+
+		for (int i = 0; i < actionSets.length; i++) {
+			boolean found = false;
+			for (int j = 0; j < removeActionSets.length; j++) {
+				if (removeActionSets[j].equals(actionSets[i].getId())) {
+					found = true;
+				}
+			}
+			if (!found) {
+				continue;
+			}
+			final IExtension ext = actionSets[i].getConfigurationElement().getDeclaringExtension();
+			reg.removeExtension(ext, new Object[] { actionSets[i] });
+		}
+
 		MenuManager fileMenu = new MenuManager("&File", IWorkbenchActionConstants.M_FILE);
 
 		MenuManager editMenu = new MenuManager("&Edit", IWorkbenchActionConstants.M_EDIT);
@@ -392,7 +418,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		MenuManager rMenu = new MenuManager("R");
 		MenuManager OpenOfficeMenu = new MenuManager("LibreOffice");
-		//MenuManager BeanShellMenu = new MenuManager("Bsh");
+		// MenuManager BeanShellMenu = new MenuManager("Bsh");
 
 		MenuManager WindowMenu = new MenuManager("&Window");
 		helpMenu = new MenuManager("&Help", IWorkbenchActionConstants.M_HELP);// p2
@@ -406,7 +432,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		IMenuListener listener = new IMenuListener() {
 			public void menuAboutToShow(IMenuManager m) {
 				File files = new File(store.getString(PreferenceConstants.D_SCRIPT_GENERAL));
-				File[] fil = ListFilesDirectory(files, new String[] { ".bsh", ".groovy",".py" });
+				File[] fil = ListFilesDirectory(files, new String[] { ".bsh", ".groovy", ".py" });
 
 				if (fil.length > 0) {
 					int a;
@@ -437,7 +463,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		IMenuListener listener4 = new IMenuListener() {
 			public void menuAboutToShow(IMenuManager m) {
 				File files = new File(store.getString(PreferenceConstants.D_SCRIPT_SPATIAL));
-				File[] fil = ListFilesDirectory(files, new String[] { ".bsh", ".groovy",".py" });
+				File[] fil = ListFilesDirectory(files, new String[] { ".bsh", ".groovy", ".py" });
 
 				if (fil.length > 0) {
 					int a;
@@ -532,7 +558,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		IMenuListener listener2 = new IMenuListener() {
 			public void menuAboutToShow(IMenuManager m) {
 				File files = new File(store.getString(PreferenceConstants.D_IMPORT));
-				File[] fil = ListFilesDirectory(files, new String[] { ".bsh", ".groovy",".py" });
+				File[] fil = ListFilesDirectory(files, new String[] { ".bsh", ".groovy", ".py" });
 
 				if (fil.length > 0) {
 					int a;
@@ -563,7 +589,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		IMenuListener listener3 = new IMenuListener() {
 			public void menuAboutToShow(IMenuManager m) {
 				File files = new File(store.getString(PreferenceConstants.D_EXPORT));
-				File[] fil = ListFilesDirectory(files, new String[] { ".bsh", ".groovy",".py" });
+				File[] fil = ListFilesDirectory(files, new String[] { ".bsh", ".groovy", ".py" });
 
 				if (fil.length > 0) {
 					int a;
@@ -599,7 +625,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		menuBar.add(scriptMenu);
 		menuBar.add(rMenu);
 		menuBar.add(OpenOfficeMenu);
-		//menuBar.add(BeanShellMenu);
+		// menuBar.add(BeanShellMenu);
 		menuBar.add(WindowMenu);
 		menuBar.add(helpMenu);
 
@@ -681,9 +707,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		OpenOfficeMenu.add(new Separator());
 		OpenOfficeMenu.add(officepopdata);
 
-		/*BeanShellMenu.add(bshclearaction);
-		BeanShellMenu.add(new Separator());
-		BeanShellMenu.add(bshimportaction);*/
+		/*
+		 * BeanShellMenu.add(bshclearaction); BeanShellMenu.add(new Separator()); BeanShellMenu.add(bshimportaction);
+		 */
 
 		WindowMenu.add(showViewMenu); // Displays the show menu.
 		WindowMenu.add(openPerspectiveMenu);
@@ -825,5 +851,4 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		return userItem;
 	}
 
-	
 }

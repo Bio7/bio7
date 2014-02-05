@@ -117,7 +117,7 @@ public class JavaConfiguration extends TextSourceViewerConfiguration {
 		ContentAssistant assistant = new ContentAssistant();
 		assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
 
-		IContentAssistProcessor processor = new JavaCompletionProcessor();
+		IContentAssistProcessor processor = new JavaCompletionProcessor(javaEditor);
 		assistant.setContentAssistProcessor(processor, IDocument.DEFAULT_CONTENT_TYPE);
 		assistant.enableAutoActivation(true);
 		assistant.setAutoActivationDelay(500);
