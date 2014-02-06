@@ -13,10 +13,13 @@ package com.eco.bio7.compile;
 import ij.plugin.PlugIn;
 import ij.plugin.filter.PlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
+
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
 import javax.swing.SwingUtilities;
+
 import org.codehaus.commons.compiler.jdk.JavaSourceClassLoader;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -32,11 +35,14 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.PackageDeclaration;
+import org.eclipse.jdt.internal.ui.javaeditor.ASTProvider;
+import org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.BatchModel;
 import com.eco.bio7.javaeditors.JavaEditor;
@@ -132,11 +138,28 @@ public class CompileClassAndMultipleClasses {
 
 			// JavaEditor editor=JavaEditor.javaEditor;
            /*If we have an opened Java Editor!*/
-			if (editor != null&&editor instanceof JavaEditor) {
+			if (editor != null&&(editor instanceof JavaEditor||editor instanceof CompilationUnitEditor )) {
+				/*If the class is in a package we receive the package name from the AST!*/
+				org.eclipse.jdt.core.dom.CompilationUnit compUnit = null;
+				if(editor instanceof JavaEditor){
 				JavaEditor jedit = (JavaEditor) editor;
+				/*If the class is in a package we receive the package name from the AST!*/
+				 compUnit = jedit.getCompUnit();
+				}
+				
+				else if(editor instanceof CompilationUnitEditor){
+					CompilationUnitEditor jedit = (CompilationUnitEditor) editor;
+					
+					/*If the class is in a package we receive the package name from the AST!*/
+					
+					//org.eclipse.jdt.internal.ui.javaeditor.ASTProvider.getASTProvider().getAST(input, null, null);
+					
+					
+					 compUnit = null;
+				}
 				
 				/*If the class is in a package we receive the package name from the AST!*/
-				org.eclipse.jdt.core.dom.CompilationUnit compUnit = jedit.getCompUnit();
+				//org.eclipse.jdt.core.dom.CompilationUnit compUnit = jedit.getCompUnit();
 				PackageDeclaration pdecl = compUnit.getPackage();
 				if (pdecl != null) {
 					Name packName = pdecl.getName();
