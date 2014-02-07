@@ -12,7 +12,7 @@ import com.eco.bio7.scenebuilder.editor.Activator;
 public class Activator extends AbstractUIPlugin {
 
 	// The plug-in ID
-	public static final String PLUGIN_ID = "com.eco.bio7.browser";
+	public static final String PLUGIN_ID = "com.eco.bio7.scenebuilder";
 
 	// The shared instance
 	private static Activator plugin;

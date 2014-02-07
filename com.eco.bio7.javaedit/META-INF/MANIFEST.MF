@@ -238,6 +238,7 @@ Export-Package: com.eco.bio7.compile,
 Bundle-ClassPath: libs/commons-compiler.jar,
  libs/tools.jar,
  bin/,
+ src/,
  .
 Import-Package: org.eclipse.core.filesystem,
  org.eclipse.ui,

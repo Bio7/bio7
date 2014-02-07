@@ -10,7 +10,6 @@ Eclipse-LazyStart: true
 Bundle-ClassPath: libs/jbullet.jar,
  libs/trove.jar,
  libs/vecmath.jar,
- .,
  libs/jbullet-gimpact.jar,
  libs/stack-alloc.jar
 Export-Package: com.bulletphysics,

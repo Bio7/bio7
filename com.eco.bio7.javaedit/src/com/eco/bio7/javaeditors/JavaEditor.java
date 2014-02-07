@@ -78,7 +78,7 @@ public class JavaEditor extends TextEditor {
 
 	private static final String TEMPLATE_PROPOSALS = "template_proposals_action"; //$NON-NLS-1$
 	private ColorManager colorManager;
-	Image classIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/class_obj.gif"));
+	private Image classIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/class_obj.gif"));
 	private Image importIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/imp_obj.png"));
 	private Image publicFieldIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/field_public_obj.png"));
 	private Image publicMethodIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/methpub_obj.gif"));

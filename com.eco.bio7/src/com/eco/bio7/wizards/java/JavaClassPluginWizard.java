@@ -80,21 +80,21 @@ public class JavaClassPluginWizard extends Wizard implements INewWizard {
 		
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 		IProject project = root.getProject(containerName);
-		project.create(null);
-		project.open(null);
+		project.create(monitor);
+		project.open(monitor);
 		
 		IProjectDescription description = project.getDescription();
 		description.setNatureIds(new String[] { JavaCore.NATURE_ID });
-		project.setDescription(description, null);
+		project.setDescription(description, monitor);
 		
 		IJavaProject javaProject = JavaCore.create(project); 
 		
 		IFolder binFolder = project.getFolder("bin");
-		binFolder.create(false, true, null);
-		javaProject.setOutputLocation(binFolder.getFullPath(), null);
+		binFolder.create(false, true, monitor);
+		javaProject.setOutputLocation(binFolder.getFullPath(), monitor);
 		
 		IFolder sourceFolder = project.getFolder("src");
-		sourceFolder.create(false, true, null);
+		sourceFolder.create(false, true, monitor);
 		
 		List<IClasspathEntry> entriesJre = new ArrayList<IClasspathEntry>();
 		
@@ -118,7 +118,7 @@ public class JavaClassPluginWizard extends Wizard implements INewWizard {
 		
 		IPackageFragmentRoot root11 = javaProject.getPackageFragmentRoot(sourceFolder);
 		IClasspathEntry[] oldEntries = entriesJre.toArray(new IClasspathEntry[entriesJre.size()]);
-		IClasspathEntry[] newEntries = new ScanClassPath().scan2();
+		IClasspathEntry[] newEntries = new ScanClassPath().scanForJDT();
 		System.arraycopy(oldEntries, 0, newEntries, 0, oldEntries.length);
 		newEntries[oldEntries.length] = JavaCore.newSourceEntry(root11.getPath());
 		javaProject.setRawClasspath(newEntries, null);

@@ -262,7 +262,10 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jdt.launching;bundle-version="3.7.100",
  org.eclipse.jdt.ui;bundle-version="3.9.100"
 Eclipse-LazyStart: true
-Bundle-ClassPath: libs/bsh-2.0b5.jar,
+Bundle-ClassPath: 
+ bin/,
+ src/,
+ libs/bsh-2.0b5.jar,
  libs/common.jar,
  libs/JavaStyle.jar,
  libs/jcommon-0.9.5.jar,
@@ -272,7 +275,6 @@ Bundle-ClassPath: libs/bsh-2.0b5.jar,
  libs/swing-layout-1.0.jar,
  libs/swingx.jar,
  baseline.jar,
- bin/,
  libs/swt-grouplayout.jar,
  libs/groovy-all-1.8.6.jar,
  libs/jython-standalone-2.5.3.jar

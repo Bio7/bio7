@@ -46,5 +46,6 @@ Export-Package: com.eco.bio7.worldwind,
  worldw
 Bundle-ClassPath: bin/,
  swt-grouplayout.jar,
- gdal.jar
+ gdal.jar,
+ src/
 

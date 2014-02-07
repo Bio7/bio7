@@ -1029,6 +1029,19 @@
               toolbarPath="org.eclipse.ui.workbench.file/open.ext"/>
      </editorContribution>
      <editorContribution
+           id="com.eco.bio7.editorContribution6"
+           targetID="org.eclipse.jdt.ui.CompilationUnitEditor">
+        <action
+              class="com.eco.bio7.actions.Compile"
+              icon="icons/javakompilieren_rahmen.gif"
+              id="com.eco.bio7.compile_action"
+              label="Compile Java"
+              style="push"
+              toolbarPath="org.eclipse.ui.edit.text.actionSet.presentation/Presentation"
+              tooltip="Compile Java Class">
+        </action>
+     </editorContribution>
+     <editorContribution
            id="com.eco.bio7.editorContribution4"
            targetID="com.eco.bio7.javaeditors.TemplateEditor">
         <action
@@ -1050,19 +1063,6 @@
               label="Interpret Python"
               style="push"
               toolbarPath="org.eclipse.ui.workbench.file/open.ext">
-        </action>
-     </editorContribution>
-     <editorContribution
-           id="com.eco.bio7.editorContribution6"
-           targetID="org.eclipse.jdt.ui.CompilationUnitEditor">
-        <action
-              class="com.eco.bio7.actions.Compile"
-              icon="icons/javakompilieren_rahmen.gif"
-              id="com.eco.bio7.compile_action"
-              label="Compile Java"
-              style="push"
-              toolbarPath="org.eclipse.ui.edit.text.actionSet.presentation/Presentation"
-              tooltip="Compile Java Class">
         </action>
      </editorContribution>
   </extension>

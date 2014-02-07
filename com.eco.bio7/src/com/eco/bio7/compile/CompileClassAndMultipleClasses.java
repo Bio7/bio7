@@ -33,10 +33,16 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.PackageDeclaration;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.internal.ui.javaeditor.ASTProvider;
 import org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor;
+import org.eclipse.jdt.ui.IWorkingCopyManager;
+import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
@@ -95,8 +101,17 @@ public class CompileClassAndMultipleClasses {
 		/* Get the filename without extension! */
 		name = ifile.getName().replaceFirst("[.][^.]+$", "");
 
+		pa.toFile().getPath().replace("\\", "/");
+
 		/* Get the parent directory! */
-		dir = new File(filLoc).getParentFile().getPath().replace("\\", "/");
+		// dir = new File(filLoc).getParentFile().getPath().replace("\\", "/");
+		if (editor instanceof CompilationUnitEditor) {
+			dir = pa.toFile().getPath().replace("\\", "/") + "/src";
+		} else {
+			dir = pa.toFile().getPath().replace("\\", "/");
+		}
+
+		System.out.println("dir: " + dir);
 
 		StartBio7Utils.getConsoleInstance().cons.clear();
 
@@ -131,35 +146,40 @@ public class CompileClassAndMultipleClasses {
 		cla.pag = pag;
 
 		cla.setSourcePath(new File[] { path, new File(dir) });
-       
+
 		Object o = null;
 		Class<?> cl = null;
 		try {
 
 			// JavaEditor editor=JavaEditor.javaEditor;
-           /*If we have an opened Java Editor!*/
-			if (editor != null&&(editor instanceof JavaEditor||editor instanceof CompilationUnitEditor )) {
-				/*If the class is in a package we receive the package name from the AST!*/
+			/* If we have an opened Java Editor! */
+			if (editor != null && (editor instanceof JavaEditor || editor instanceof CompilationUnitEditor)) {
+				/* If the class is in a package we receive the package name from the AST! */
 				org.eclipse.jdt.core.dom.CompilationUnit compUnit = null;
-				if(editor instanceof JavaEditor){
-				JavaEditor jedit = (JavaEditor) editor;
-				/*If the class is in a package we receive the package name from the AST!*/
-				 compUnit = jedit.getCompUnit();
+				if (editor instanceof JavaEditor) {
+					JavaEditor jedit = (JavaEditor) editor;
+					/* If the class is in a package we receive the package name from the AST! */
+					compUnit = jedit.getCompUnit();
 				}
-				
-				else if(editor instanceof CompilationUnitEditor){
+
+				else if (editor instanceof CompilationUnitEditor) {
 					CompilationUnitEditor jedit = (CompilationUnitEditor) editor;
-					
-					/*If the class is in a package we receive the package name from the AST!*/
-					
-					//org.eclipse.jdt.internal.ui.javaeditor.ASTProvider.getASTProvider().getAST(input, null, null);
-					
-					
-					 compUnit = null;
+
+					IWorkingCopyManager mgr = JavaUI.getWorkingCopyManager();
+					ICompilationUnit cu = mgr.getWorkingCopy(jedit.getEditorInput());
+					ASTParser parser = ASTParser.newParser(AST.JLS4);
+					parser.setSource(cu);
+					// CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+					compUnit = (CompilationUnit) parser.createAST(null);
+
+					/* If the class is in a package we receive the package name from the AST! */
+
+					// org.eclipse.jdt.internal.ui.javaeditor.ASTProvider.getASTProvider().getAST(input, null, null);
+
 				}
-				
-				/*If the class is in a package we receive the package name from the AST!*/
-				//org.eclipse.jdt.core.dom.CompilationUnit compUnit = jedit.getCompUnit();
+
+				/* If the class is in a package we receive the package name from the AST! */
+				// org.eclipse.jdt.core.dom.CompilationUnit compUnit = jedit.getCompUnit();
 				PackageDeclaration pdecl = compUnit.getPackage();
 				if (pdecl != null) {
 					Name packName = pdecl.getName();
@@ -171,8 +191,8 @@ public class CompileClassAndMultipleClasses {
 					cl = cla.findClass(name);
 				}
 
-			} 
-			/*If we compile from the context menu (We can't get package name!)*/
+			}
+			/* If we compile from the context menu (We can't get package name!) */
 			else {
 				cl = cla.findClass(name);
 			}
@@ -218,9 +238,9 @@ public class CompileClassAndMultipleClasses {
 		} else {
 			System.out.println("Object not created! Null reference!");
 		}
-		cla=null;
-		cl=null;
-		o=null;
+		cla = null;
+		cl = null;
+		o = null;
 	}
 
 	private void callPlugin(final Class<?> cl) {
