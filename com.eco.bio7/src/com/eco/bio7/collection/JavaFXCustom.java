@@ -64,6 +64,8 @@ public class JavaFXCustom {
 	}
 
 	public void addTab() {
+		
+		
 
 		// ve = new Vector();
 		canvas = new FXCanvas(view.getCustomViewParent(), SWT.NORMAL) {

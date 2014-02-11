@@ -1,15 +1,11 @@
 package com.eco.bio7.scenebuilder.editor;
 
-import java.io.DataInputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.Timer;
-
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.embed.swt.FXCanvas;
@@ -17,7 +13,6 @@ import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import net.htmlparser.jericho.Source;
 import net.htmlparser.jericho.SourceFormatter;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -38,13 +33,11 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
-
 import com.eco.bio7.browser.editor.XMLEditor;
 import com.oracle.javafx.scenebuilder.kit.editor.EditorController;
 import com.oracle.javafx.scenebuilder.kit.editor.panel.content.ContentPanelController;
@@ -87,7 +80,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	public MultiPageEditor() {
 		super();
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
-
+         
 	}
 
 	

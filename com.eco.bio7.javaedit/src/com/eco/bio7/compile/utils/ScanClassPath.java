@@ -101,6 +101,7 @@ public class ScanClassPath {
 		buf.append(File.pathSeparator + bundlePaths.get(2) + "/bin");
 		buf.append(File.pathSeparator + bundlePaths.get(3) + "/bin");
 		buf.append(File.pathSeparator + bundlePaths.get(4) + "/bin");
+		buf.append(File.pathSeparator + bundlePaths.get(11) );
 		// buf.append(File.pathSeparator+Platform.getInstallLocation().getURL().getPath()+"plugins/org.eclipse.ui.workbench_3.7.0.I20110519-0100.jar");
 		// buf.append(File.pathSeparator+Platform.getInstallLocation().getURL().getPath()+"/plugins/org.eclipse.core.commands_3.6.0.I20110111-0800.jar");
 		// System.out.println(buf.toString());

@@ -17,13 +17,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
-
-import javafx.application.Platform;
-import javafx.scene.Group;
-import javafx.scene.Scene;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.paint.Color;
-
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.action.Action;

@@ -741,6 +741,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		/* Start the calculation thread of the Bio7 application! */
 		CalculationThread m = new CalculationThread();
 		m.start();
+		/*Important to set, see: https://bugs.eclipse.org/bugs/show_bug.cgi?id=422258*/
+		javafx.application.Platform.setImplicitExit(false);
 
 	}
 
