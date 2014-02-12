@@ -716,6 +716,22 @@
             name="Bio7 Java Project (Class)"
             project="true">
       </wizard>
+      <wizard
+            category="org.eclipse.jdt.ui.java"
+            class="com.eco.bio7.wizards.java.JavaFXBio7ClassWizard"
+            icon="icons/javakompilierung.gif"
+            id="com.eco.bio7.javafxclassjdt"
+            name="Bio7 Java Project (Java FX Template)"
+            project="true">
+      </wizard>
+      <wizard
+            category="org.eclipse.jdt.ui.java"
+            class="com.eco.bio7.wizards.java.Bio7JDTProjectPluginWizard"
+            icon="icons/javakompilierung.gif"
+            id="com.eco.bio7.wizardJavaJdtEmtpy"
+            name="Bio7 Java Project"
+            project="true">
+      </wizard>
       
    </extension>
    <extension
