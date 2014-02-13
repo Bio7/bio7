@@ -710,18 +710,10 @@
       </wizard>
       <wizard
             category="org.eclipse.jdt.ui.java"
-            class="com.eco.bio7.wizards.java.JavaClassPluginWizard"
-            icon="icons/javakompilierung.gif"
-            id="com.eco.bio7.wizardJavaJdt"
-            name="Bio7 Java Project (Class)"
-            project="true">
-      </wizard>
-      <wizard
-            category="org.eclipse.jdt.ui.java"
             class="com.eco.bio7.wizards.java.JavaFXBio7ClassWizard"
             icon="icons/javakompilierung.gif"
             id="com.eco.bio7.javafxclassjdt"
-            name="Bio7 Java Project (Java FX Template)"
+            name="Bio7 Java Project (Java FX Model Template)"
             project="true">
       </wizard>
       <wizard
@@ -730,6 +722,22 @@
             icon="icons/javakompilierung.gif"
             id="com.eco.bio7.wizardJavaJdtEmtpy"
             name="Bio7 Java Project"
+            project="true">
+      </wizard>
+      <wizard
+            category="org.eclipse.jdt.ui.java"
+            class="com.eco.bio7.wizards.java.JavaBio7ClassPluginWizard"
+            icon="icons/javakompilierung.gif"
+            id="com.eco.bio7.wizardJavaJdtBio7Model"
+            name="Bio7 Java Model Project"
+            project="true">
+      </wizard>
+      <wizard
+            category="org.eclipse.jdt.ui.java"
+            class="com.eco.bio7.wizards.java.JavaClassJoglPluginWizard"
+            icon="icons/javakompilierung.gif"
+            id="com.eco.bio7.wizardJavaJdtBio7ModelJogl"
+            name="Bio7 Java Model JOGL Project"
             project="true">
       </wizard>
       

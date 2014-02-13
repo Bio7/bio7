@@ -63,6 +63,7 @@ public class JavaFXBio7ClassWizardPage extends WizardPage {
 				//handleBrowse();
 			}
 		});
+		button.setEnabled(false);
 		label = new Label(container, SWT.NULL);
 		label.setText("&File name:");
 

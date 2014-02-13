@@ -1,19 +1,27 @@
 package com.eco.bio7.wizards.java;
 
+
+
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.operation.*;
+
 import java.lang.reflect.InvocationTargetException;
+
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
+
 import java.io.*;
+
 import org.eclipse.ui.*;
 import org.eclipse.ui.ide.IDE;
+
+import com.eco.bio7.wizards.java.CreateBio7JdtProject;
 
 public class JavaBio7ClassPluginWizard extends Wizard implements INewWizard {
 	private JavaBio7ClassWizardPage page;
@@ -56,14 +64,12 @@ public class JavaBio7ClassPluginWizard extends Wizard implements INewWizard {
 	}
 
 	private void doFinish(String containerName, String fileName, IProgressMonitor monitor) throws CoreException {
-
-		monitor.beginTask("Creating " + fileName, 2);
-		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-		IResource resource = root.findMember(new Path(containerName));
-		if (!resource.exists() || !(resource instanceof IContainer)) {
-			throwCoreException("Container \"" + containerName + "\" does not exist.");
-		}
-		IContainer container = (IContainer) resource;
+		
+		monitor.beginTask("Creating and Configure Bio7 JDT Project", 3);
+		CreateBio7JdtProject jdt = new CreateBio7JdtProject(containerName, monitor);
+		monitor.worked(1);
+		IContainer container = jdt.getSourceFolder();
+		
 		final IFile file = container.getFile(new Path(fileName));
 		String an = "My_Model";
 		int index = file.getName().lastIndexOf('.');

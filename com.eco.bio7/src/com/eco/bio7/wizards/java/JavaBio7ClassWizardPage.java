@@ -33,7 +33,7 @@ public class JavaBio7ClassWizardPage extends WizardPage {
 	public JavaBio7ClassWizardPage(ISelection selection) {
 		super("wizardPage");
 		setTitle("Java Model Class File");
-		setDescription("This wizard creates a new file with *.java extension that can be opened by the Java-editor.");
+		setDescription("This wizard creates a Java Project and a new file with *.java extension that can be opened by the Java-editor.");
 		this.selection = selection;
 	}
 
@@ -52,7 +52,7 @@ public class JavaBio7ClassWizardPage extends WizardPage {
 		containerText.setLayoutData(gd);
 		containerText.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
-				dialogChanged();
+				//dialogChanged();
 			}
 		});
 
@@ -63,6 +63,7 @@ public class JavaBio7ClassWizardPage extends WizardPage {
 				handleBrowse();
 			}
 		});
+		button.setEnabled(false);
 		label = new Label(container, SWT.NULL);
 		label.setText("&File name:");
 
@@ -97,6 +98,7 @@ public class JavaBio7ClassWizardPage extends WizardPage {
 				containerText.setText(container.getFullPath().toString());
 			}
 		}
+		containerText.setText("My_Project");
 		fileText.setText("My_Model.java");
 	}
 

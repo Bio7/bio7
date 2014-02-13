@@ -97,6 +97,7 @@ public class JavaBio7ClassWizardPage extends WizardPage {
 				containerText.setText(container.getFullPath().toString());
 			}
 		}
+		
 		fileText.setText("My_Model.java");
 	}
 
@@ -117,6 +118,7 @@ public class JavaBio7ClassWizardPage extends WizardPage {
 	
 
 	private void dialogChanged() {
+		
 		IResource container = ResourcesPlugin.getWorkspace().getRoot()
 				.findMember(new Path(getContainerName()));
 		String fileName = getFileName();
@@ -134,6 +136,8 @@ public class JavaBio7ClassWizardPage extends WizardPage {
 			updateStatus("Project must be writable");
 			return;
 		}
+
+		
 		if (fileName.length() == 0) {
 			updateStatus("File name must be specified");
 			return;

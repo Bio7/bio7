@@ -22,7 +22,7 @@ import org.eclipse.ui.dialogs.ContainerSelectionDialog;
 
 
 
-public class JavaClassWizardPage extends WizardPage {
+public class JavaClassJoglWizardPage extends WizardPage {
 	private Text containerText;
 
 	private Text fileText;
@@ -30,10 +30,10 @@ public class JavaClassWizardPage extends WizardPage {
 	private ISelection selection;
 
 	
-	public JavaClassWizardPage(ISelection selection) {
+	public JavaClassJoglWizardPage(ISelection selection) {
 		super("wizardPage");
-		setTitle("Java Class File");
-		setDescription("This wizard creates a Java Project and a file with *.java extension that can be opened by the Java-editor.");
+		setTitle("Java JOGL Class File");
+		setDescription("This wizard creates a Java Project and a new file with *.java extension that can be opened by the Java-editor.");
 		this.selection = selection;
 	}
 
@@ -45,25 +45,25 @@ public class JavaClassWizardPage extends WizardPage {
 		layout.numColumns = 3;
 		layout.verticalSpacing = 9;
 		Label label = new Label(container, SWT.NULL);
-		label.setText("&Java Project Name:");
+		label.setText("&Container:");
 
 		containerText = new Text(container, SWT.BORDER | SWT.SINGLE);
 		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
 		containerText.setLayoutData(gd);
 		containerText.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
-				dialogChanged();
+				//dialogChanged();
 			}
 		});
 
 		Button button = new Button(container, SWT.PUSH);
 		button.setText("Browse...");
-		button.setEnabled(false);
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				//handleBrowse();
+				handleBrowse();
 			}
 		});
+		button.setEnabled(false);
 		label = new Label(container, SWT.NULL);
 		label.setText("&File name:");
 
@@ -100,6 +100,7 @@ public class JavaClassWizardPage extends WizardPage {
 		}
 		containerText.setText("My_Project");
 		fileText.setText("My_Class.java");
+		
 	}
 
 	
@@ -107,7 +108,7 @@ public class JavaClassWizardPage extends WizardPage {
 	private void handleBrowse() {
 		ContainerSelectionDialog dialog = new ContainerSelectionDialog(
 				getShell(), ResourcesPlugin.getWorkspace().getRoot(), false,
-				"Select or create new Java project");
+				"Select new file container");
 		if (dialog.open() == ContainerSelectionDialog.OK) {
 			Object[] result = dialog.getResult();
 			if (result.length == 1) {
@@ -119,28 +120,10 @@ public class JavaClassWizardPage extends WizardPage {
 	
 
 	private void dialogChanged() {
-		/*IResource container = ResourcesPlugin.getWorkspace().getRoot()
-				.findMember(new Path(getContainerName()));*/
+		IResource container = ResourcesPlugin.getWorkspace().getRoot()
+				.findMember(new Path(getContainerName()));
 		String fileName = getFileName();
-		
-		if (getContainerName().length() == 0) {
-			updateStatus("Java Project name must be specified");
-			return;
-		}
 
-		/*if (getContainerName().length() == 0) {
-			updateStatus("File container must be specified");
-			return;
-		}
-		if (container == null
-				|| (container.getType() & (IResource.PROJECT | IResource.FOLDER)) == 0) {
-			updateStatus("File container must exist");
-			return;
-		}
-		if (!container.isAccessible()) {
-			updateStatus("Project must be writable");
-			return;
-		}*/
 		
 		if (fileName.length() == 0) {
 			updateStatus("File name must be specified");
