@@ -36,13 +36,13 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.PackageDeclaration;
-import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.internal.ui.javaeditor.ASTProvider;
 import org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor;
 import org.eclipse.jdt.ui.IWorkingCopyManager;
 import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.jface.text.Document;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
@@ -90,7 +90,8 @@ public class CompileClassAndMultipleClasses {
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
-
+		//IFolder folder = proj.getFolder("src");
+		//IFolder folder = proj.getFolder("bin");
 		IPath pa = proj.getLocation();
 
 		fi = pa.toFile();
@@ -107,11 +108,13 @@ public class CompileClassAndMultipleClasses {
 		// dir = new File(filLoc).getParentFile().getPath().replace("\\", "/");
 		if (editor instanceof CompilationUnitEditor) {
 			dir = pa.toFile().getPath().replace("\\", "/") + "/src";
-		} else {
+		} else if (editor instanceof JavaEditor) {
 			dir = pa.toFile().getPath().replace("\\", "/");
+		} else {//Compilation triggered from the Flow or the popup menu with no active editor opened!
+			dir = pa.toFile().getPath().replace("\\", "/") + "/src";
 		}
 
-		System.out.println("dir: " + dir);
+		// System.out.println("dir: " + dir);
 
 		StartBio7Utils.getConsoleInstance().cons.clear();
 
@@ -192,9 +195,26 @@ public class CompileClassAndMultipleClasses {
 				}
 
 			}
-			/* If we compile from the context menu (We can't get package name!) */
+			/* If we compile from the context menu or the Flow editor we create the AST from the file! */
 			else {
-				cl = cla.findClass(name);
+				org.eclipse.jdt.core.dom.CompilationUnit compUnit=null;
+				Document doc = new Document(BatchModel.fileToString(ifile.getRawLocation().toString()));
+				
+				ASTParser parser = ASTParser.newParser(AST.JLS4);
+				parser.setSource(doc.get().toCharArray());
+				// CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+				compUnit = (CompilationUnit) parser.createAST(null);
+				PackageDeclaration pdecl = compUnit.getPackage();
+				if (pdecl != null) {
+					Name packName = pdecl.getName();
+
+					String pack = packName.toString();
+					cl = cla.findClass(pack + "." + name);
+
+				} else {
+					cl = cla.findClass(name);
+				}
+				
 			}
 
 			// System.out.println(name);

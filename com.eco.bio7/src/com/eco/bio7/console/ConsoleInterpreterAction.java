@@ -22,6 +22,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.IOConsole;
 import org.rosuda.REngine.Rserve.RserveException;
 
@@ -301,6 +302,10 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 		participant.styledText.setEditable(true);
 	}
 	public  void startRShell() {
+		Display display = PlatformUI.getWorkbench().getDisplay();
+		display.syncExec(new Runnable() {
+
+			public void run() {
 		StyledText styledText = (StyledText) participant.page.getControl();
 		Color colb = new Color (Display.getCurrent(), 0, 0, 0);
 		Color colf = new Color (Display.getCurrent(), 255, 255, 255);
@@ -319,6 +324,8 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 		ioConsole.getInputStream().appendData(System.getProperty("line.separator"));
 
 		participant.styledText.setEditable(true);
+			}
+		});
 	}
 
 }
