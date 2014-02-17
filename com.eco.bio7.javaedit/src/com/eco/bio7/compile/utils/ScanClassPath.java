@@ -182,7 +182,7 @@ public class ScanClassPath {
 
 						if (i == 0 && u > 1) {
 							buf.add(File.pathSeparator + bundlePaths.get(i) + elements[u].getValue());
-							System.out.println(File.pathSeparator + bundlePaths.get(i) + elements[u].getValue());
+							//System.out.println(File.pathSeparator + bundlePaths.get(i) + elements[u].getValue());
 						}
 
 						else {

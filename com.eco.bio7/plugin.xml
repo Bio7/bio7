@@ -711,33 +711,33 @@
       <wizard
             category="org.eclipse.jdt.ui.java"
             class="com.eco.bio7.wizards.java.JavaFXBio7ClassWizard"
-            icon="icons/javakompilierung.gif"
+            icon="icons/projects.gif"
             id="com.eco.bio7.javafxclassjdt"
-            name="Bio7 Java Project (Java FX Model Template)"
+            name="Bio7 Java Project (JavaFX Model Template)"
             project="true">
       </wizard>
       <wizard
             category="org.eclipse.jdt.ui.java"
             class="com.eco.bio7.wizards.java.Bio7JDTProjectPluginWizard"
-            icon="icons/javakompilierung.gif"
+            icon="icons/projects.gif"
             id="com.eco.bio7.wizardJavaJdtEmtpy"
-            name="Bio7 Java Project"
+            name="Bio7 Java Project (Empty)"
             project="true">
       </wizard>
       <wizard
             category="org.eclipse.jdt.ui.java"
             class="com.eco.bio7.wizards.java.JavaBio7ModelClassPluginWizard"
-            icon="icons/javakompilierung.gif"
+            icon="icons/projects.gif"
             id="com.eco.bio7.wizardJavaJdtBio7Model"
-            name="Bio7 Java Model Project"
+            name="Bio7 Java  Project (Model Template)"
             project="true">
       </wizard>
       <wizard
             category="org.eclipse.jdt.ui.java"
             class="com.eco.bio7.wizards.java.JavaClassJoglPluginWizard"
-            icon="icons/javakompilierung.gif"
+            icon="icons/projects.gif"
             id="com.eco.bio7.wizardJavaJdtBio7ModelJogl"
-            name="Bio7 Java Model JOGL Project"
+            name="Bio7 Java Project (OpenGL Model Template)"
             project="true">
       </wizard>
       
