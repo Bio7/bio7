@@ -23,17 +23,17 @@ import org.eclipse.ui.ide.IDE;
 
 import com.eco.bio7.wizards.java.CreateBio7JdtProject;
 
-public class JavaBio7ClassPluginWizard extends Wizard implements INewWizard {
-	private JavaBio7ClassWizardPage page;
+public class JavaBio7ModelClassPluginWizard extends Wizard implements INewWizard {
+	private JavaBio7ModelClassWizardPage page;
 	private ISelection selection;
 
-	public JavaBio7ClassPluginWizard() {
+	public JavaBio7ModelClassPluginWizard() {
 		super();
 		setNeedsProgressMonitor(true);
 	}
 
 	public void addPages() {
-		page = new JavaBio7ClassWizardPage(selection);
+		page = new JavaBio7ModelClassWizardPage(selection);
 		addPage(page);
 	}
 

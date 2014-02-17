@@ -105,9 +105,14 @@ public class Bio7JDTProjectWizardPage extends WizardPage {
 	
 
 	private void dialogChanged() {
-		
+		IResource container = ResourcesPlugin.getWorkspace().getRoot()
+				.findMember(new Path(getContainerName()));
 		if (getContainerName().length() == 0) {
-			updateStatus("Java Project name must be specified");
+			updateStatus("Project must be specified");
+			return;
+		}
+		if (container!=null&&container.exists()) {
+			updateStatus("Project with name already exists");
 			return;
 		}
 

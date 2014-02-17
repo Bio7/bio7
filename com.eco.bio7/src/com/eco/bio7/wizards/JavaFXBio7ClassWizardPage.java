@@ -125,6 +125,7 @@ public class JavaFXBio7ClassWizardPage extends WizardPage {
 			updateStatus("File container must be specified");
 			return;
 		}
+		
 		if (container == null
 				|| (container.getType() & (IResource.PROJECT | IResource.FOLDER)) == 0) {
 			updateStatus("File container must exist");

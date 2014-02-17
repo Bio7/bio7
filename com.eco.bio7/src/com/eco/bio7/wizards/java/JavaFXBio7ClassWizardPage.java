@@ -119,12 +119,18 @@ public class JavaFXBio7ClassWizardPage extends WizardPage {
 	
 
 	private void dialogChanged() {
-		/*IResource container = ResourcesPlugin.getWorkspace().getRoot()
-				.findMember(new Path(getContainerName()));*/
+		IResource container = ResourcesPlugin.getWorkspace().getRoot()
+				.findMember(new Path(getContainerName()));
 		String fileName = getFileName();
 		
 		if (getContainerName().length() == 0) {
-			updateStatus("Java Project name must be specified");
+			updateStatus("Project must be specified");
+			return;
+		}
+		
+		
+		if (container!=null&&container.exists()) {
+			updateStatus("Project with name already exists");
 			return;
 		}
 

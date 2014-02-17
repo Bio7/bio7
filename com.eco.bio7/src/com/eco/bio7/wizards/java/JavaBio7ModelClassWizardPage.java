@@ -22,7 +22,7 @@ import org.eclipse.ui.dialogs.ContainerSelectionDialog;
 
 
 
-public class JavaBio7ClassWizardPage extends WizardPage {
+public class JavaBio7ModelClassWizardPage extends WizardPage {
 	private Text containerText;
 
 	private Text fileText;
@@ -30,7 +30,7 @@ public class JavaBio7ClassWizardPage extends WizardPage {
 	private ISelection selection;
 
 	
-	public JavaBio7ClassWizardPage(ISelection selection) {
+	public JavaBio7ModelClassWizardPage(ISelection selection) {
 		super("wizardPage");
 		setTitle("Java Model Class File");
 		setDescription("This wizard creates a Java Project and a new file with *.java extension that can be opened by the Java-editor.");
@@ -122,11 +122,22 @@ public class JavaBio7ClassWizardPage extends WizardPage {
 		IResource container = ResourcesPlugin.getWorkspace().getRoot()
 				.findMember(new Path(getContainerName()));
 		String fileName = getFileName();
+		
+		if (getContainerName().length() == 0) {
+			updateStatus("Project must be specified");
+			return;
+		}
+		
+		if (container!=null&&container.exists()) {
+			updateStatus("Project with name already exists");
+			return;
+		}
 
-		/*if (getContainerName().length() == 0) {
+		if (getContainerName().length() == 0) {
 			updateStatus("File container must be specified");
 			return;
 		}
+		/*
 		if (container == null
 				|| (container.getType() & (IResource.PROJECT | IResource.FOLDER)) == 0) {
 			updateStatus("File container must exist");

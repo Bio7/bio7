@@ -726,7 +726,7 @@
       </wizard>
       <wizard
             category="org.eclipse.jdt.ui.java"
-            class="com.eco.bio7.wizards.java.JavaBio7ClassPluginWizard"
+            class="com.eco.bio7.wizards.java.JavaBio7ModelClassPluginWizard"
             icon="icons/javakompilierung.gif"
             id="com.eco.bio7.wizardJavaJdtBio7Model"
             name="Bio7 Java Model Project"

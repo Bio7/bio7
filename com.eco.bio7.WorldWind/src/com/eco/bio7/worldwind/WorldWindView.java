@@ -33,6 +33,7 @@ import gov.nasa.worldwind.util.StatusBar;
 import gov.nasa.worldwind.util.WWIO;
 import gov.nasa.worldwind.view.orbit.BasicOrbitView;
 import gov.nasa.worldwind.view.orbit.FlatOrbitView;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Frame;
@@ -46,6 +47,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
+
 import javax.imageio.ImageIO;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
@@ -64,6 +66,7 @@ import org.eclipse.swt.widgets.ToolTip;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartReference;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.rosuda.REngine.Rserve.RConnection;
@@ -142,15 +145,19 @@ public class WorldWindView extends ViewPart {
 	@Override
 	public void createPartControl(Composite parent) {
 		/* Create a WorldWind instance */
-
-		SwingUtilities.invokeLater(new Runnable() {
-			// !!
-			public void run() {
+		IWorkbenchPage page = PlatformUI.getWorkbench()
+				.getActiveWorkbenchWindow().getActivePage();
+		
 				worldCanvas = new WorldWindowGLCanvas();
 
 				initWorldWindLayerModel();
-			}
-		});
+				
+		try {
+			page.showView("com.eco.bio7.worldwind.WorldWindOptionsView");
+		} catch (PartInitException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		top = new Composite(parent, SWT.NO_BACKGROUND | SWT.EMBEDDED);
 		try {

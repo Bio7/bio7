@@ -123,6 +123,15 @@ public class JavaClassJoglWizardPage extends WizardPage {
 		IResource container = ResourcesPlugin.getWorkspace().getRoot()
 				.findMember(new Path(getContainerName()));
 		String fileName = getFileName();
+		
+		if (getContainerName().length() == 0) {
+			updateStatus("Project must be specified");
+			return;
+		}
+		if (container!=null&&container.exists()) {
+			updateStatus("Project with name already exists");
+			return;
+		}
 
 		
 		if (fileName.length() == 0) {

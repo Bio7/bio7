@@ -24,12 +24,13 @@ public class WorldWindPerspective implements IPerspectiveFactory {
 	public void createInitialLayout(IPageLayout layout) {
 
 		String editorArea = layout.getEditorArea();
-		layout.setEditorAreaVisible(false);
 		IFolderLayout Right = layout.createFolder("Right", IPageLayout.RIGHT, (float) 0.65, editorArea);//$NON-NLS-1$
 
 		Right.addView(WorldWindView.ID);
+		layout.setEditorAreaVisible(false);
 		
-		layout.addView(WorldWindOptionsView.ID, IPageLayout.LEFT, 0.35f, "Right");
+		
+		layout.addPlaceholder(WorldWindOptionsView.ID, IPageLayout.LEFT, 0.35f, "Right");
 
 	}
 
