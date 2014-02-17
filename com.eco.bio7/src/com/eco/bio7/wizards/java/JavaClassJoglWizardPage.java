@@ -52,7 +52,7 @@ public class JavaClassJoglWizardPage extends WizardPage {
 		containerText.setLayoutData(gd);
 		containerText.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
-				//dialogChanged();
+				dialogChanged();
 			}
 		});
 
