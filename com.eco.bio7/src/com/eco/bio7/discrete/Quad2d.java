@@ -373,7 +373,13 @@ public class Quad2d extends JPanel implements KeyListener, MouseListener, MouseM
 	public void fieldrenderer() {
 
 		if (offscreenimage == null) {
-			offscreenimage = jScrollPane.createImage(jScrollPane.getVisibleRect().width, jScrollPane.getVisibleRect().height);
+			int width = jScrollPane.getVisibleRect().width;
+			int height = jScrollPane.getVisibleRect().height;
+			if (width > 0 && height > 0) {
+				offscreenimage = jScrollPane.createImage(width, height);
+			} else {
+				offscreenimage = jScrollPane.createImage(1, 1);
+			}
 
 			gbuff = offscreenimage.getGraphics();
 

@@ -9,7 +9,6 @@
  *     M. Austenfeld
  *******************************************************************************/
 
-
 package com.eco.bio7.discrete;
 
 import java.awt.Color;
@@ -218,8 +217,7 @@ public class Hexagon extends JPanel implements KeyListener, MouseListener, Mouse
 
 			drawHex();
 			/*
-			 * Only calculate the scrollpane if the size of the field is x>0,y>0
-			 * !
+			 * Only calculate the scrollpane if the size of the field is x>0,y>0 !
 			 */
 			if (Field.getHeight() != 0 && Field.getWidth() != 0) {
 				Rectangle recty = poly[Field.getHeight() - 1][0].getBounds();
@@ -308,7 +306,13 @@ public class Hexagon extends JPanel implements KeyListener, MouseListener, Mouse
 
 	public void fieldrenderer() {
 		if (offscreenimage == null) {
-			offscreenimage = jScrollPanehex.createImage(jScrollPanehex.getVisibleRect().width, jScrollPanehex.getVisibleRect().height);
+			int width = jScrollPanehex.getVisibleRect().width;
+			int height = jScrollPanehex.getVisibleRect().height;
+			if (width > 0 && height > 0) {
+				offscreenimage = jScrollPanehex.createImage(width, height);
+			} else {
+				offscreenimage = jScrollPanehex.createImage(1, 1);
+			}
 
 			gbuff = offscreenimage.getGraphics();
 		}
@@ -441,8 +445,7 @@ public class Hexagon extends JPanel implements KeyListener, MouseListener, Mouse
 
 	public void resize_scrollpane_hex2d() {
 		/*
-		 * Only calculate the scrollpane if the size of the field is x>0,y>0. If
-		 * a discrete pattern is loaded the field is resized to 0,0 !
+		 * Only calculate the scrollpane if the size of the field is x>0,y>0. If a discrete pattern is loaded the field is resized to 0,0 !
 		 */
 		if (Field.getHeight() > 0 && Field.getWidth() > 0) {
 			Rectangle recty = poly[Field.getHeight() - 1][0].getBounds();
@@ -497,8 +500,7 @@ public class Hexagon extends JPanel implements KeyListener, MouseListener, Mouse
 
 	public void mouseEntered(MouseEvent arg0) {
 		/*
-		 * if (jScrollPanehex.isFocusOwner() == false) {
-		 * jScrollPanehex.requestFocus(); }
+		 * if (jScrollPanehex.isFocusOwner() == false) { jScrollPanehex.requestFocus(); }
 		 */
 
 	}
