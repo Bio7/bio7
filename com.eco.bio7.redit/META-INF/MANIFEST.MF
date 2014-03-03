@@ -28,14 +28,21 @@ Export-Package: com.eco.bio7.reditor,
  com.eco.bio7.reditors,
  com.eco.bio7.rpreferences,
  com.eco.bio7.rpreferences.template,
+ org.abego.treelayout,
+ org.abego.treelayout.internal.util,
+ org.abego.treelayout.internal.util.java.lang,
+ org.abego.treelayout.internal.util.java.lang.string,
+ org.abego.treelayout.internal.util.java.util,
+ org.abego.treelayout.util,
  org.antlr.v4.runtime,
  org.antlr.v4.runtime.atn,
  org.antlr.v4.runtime.dfa,
  org.antlr.v4.runtime.misc,
  org.antlr.v4.runtime.tree,
- org.antlr.v4.runtime.tree.gui
- 
+ org.antlr.v4.runtime.tree.gui,
+ org.antlr.v4.runtime.tree.pattern,
+ org.antlr.v4.runtime.tree.xpath
 Bundle-ClassPath: .,
- libs/antlr-runtime-4.1.jar
+ libs/antlr-runtime-4.2.jar
 Import-Package: org.eclipse.ui.views.contentoutline
 
