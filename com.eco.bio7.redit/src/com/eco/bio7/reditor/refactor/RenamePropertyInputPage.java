@@ -56,8 +56,8 @@ public class RenamePropertyInputPage extends UserInputWizardPage {
 
     createLblNewName( composite );
     createTxtNewName( composite );
-    createCbUpdateBundle( composite );
-    createCbAllProjects( composite );
+   // createCbUpdateBundle( composite );
+   // createCbAllProjects( composite );
     
     validate();
   }
@@ -95,7 +95,7 @@ public class RenamePropertyInputPage extends UserInputWizardPage {
     } );
   }
 
-  private void createCbUpdateBundle( final Composite composite ) {
+  /*private void createCbUpdateBundle( final Composite composite ) {
     String texts = UITexts.renamePropertyInputPage_cbUpdateBundle;
     cbUpdateBundle = createCheckbox( composite, texts );
     cbUpdateBundle.addSelectionListener( new SelectionAdapter() {
@@ -122,9 +122,9 @@ public class RenamePropertyInputPage extends UserInputWizardPage {
       }
     } );
     initAllProjectsOption();
-  }
+  }*/
 
-  private Button createCheckbox( final Composite composite, 
+  /*private Button createCheckbox( final Composite composite, 
                                  final String text ) {
     Button result = new Button( composite, SWT.CHECK );
     result.setText( text );
@@ -134,7 +134,7 @@ public class RenamePropertyInputPage extends UserInputWizardPage {
     result.setLayoutData( gridData );
     
     return result;
-  }
+  }*/
   
   
   // helping methods

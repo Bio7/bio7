@@ -3,6 +3,9 @@ package com.eco.bio7.reditor.refactor;
 // Copyright (c) 2005 by Leif Frenzel. All rights reserved.
 // See http://leiffrenzel.de
 
+import java.util.ArrayList;
+
+
 //Source from: http://www.eclipse.org/articles/Article-LTK/ltk.html
 import org.eclipse.core.resources.IFile;
 
@@ -15,7 +18,7 @@ import org.eclipse.core.resources.IFile;
 public class RenamePropertyInfo {
 
   // the offset of the property to be renamed in the file
-  private int offset;
+  public ArrayList<Integer>offset=new ArrayList<Integer>();
   // the new name for the property
   private String newName;
   // the old name of the property (as selected by the user)
@@ -34,12 +37,12 @@ public class RenamePropertyInfo {
   // interface methods of IRenamePropertyInfo
   ///////////////////////////////////////////
   
-  public int getOffset() {
-    return offset;
+  public int getOffset(int i) {
+    return  offset.get(i);
   }
   
-  public void setOffset( final int offset ) {
-    this.offset = offset;
+  public void addOffset( int offse ) {
+   offset.add(offse);
   }
 
   public String getNewName() {

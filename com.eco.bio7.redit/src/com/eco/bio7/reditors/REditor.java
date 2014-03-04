@@ -194,14 +194,14 @@ public class REditor extends TextEditor {
 										}
 										String comp=Character.toString(c);
 										//System.out.println(comp);
-										if(comp.equals("{"))
+									//	if(comp.equals("{"))
 
-										try {
+										/*try {
 											document.replace(offset+4, 0, "}");
 										} catch (BadLocationException e) {
 											// TODO Auto-generated catch block
 											e.printStackTrace();
-										}
+										}*/
 									}
 								}
 

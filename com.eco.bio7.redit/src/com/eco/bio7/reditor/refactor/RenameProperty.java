@@ -74,7 +74,15 @@ public class RenameProperty implements IEditorActionDelegate {
   private void applySelection( final ITextSelection textSelection ) {
     info.setOldName( textSelection.getText() );
     info.setNewName( textSelection.getText() );
-    info.setOffset( textSelection.getOffset() );
+    info.addOffset( textSelection.getOffset() );
+    
+    /*Add AST manipulation here!*/
+    info.addOffset( textSelection.getOffset()+150 );
+    info.addOffset( textSelection.getOffset()+250 );
+    
+    
+    
+    
     info.setSourceFile( getFile() );
   }
 

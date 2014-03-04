@@ -7,7 +7,6 @@ package com.eco.bio7.reditor.refactor;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.*;
-
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.ltk.core.refactoring.*;
@@ -86,9 +85,9 @@ class RenamePropertyDelegate {
       rootChange.add( createRenameChange() );
       pm.worked( 10 );
       // all files in the same bundle
-      if( info.isUpdateBundle() ) {
+     /* if( info.isUpdateBundle() ) {
         rootChange.addAll( createChangesForBundle() );
-      }
+      }*/
       pm.worked( 90 );
     } finally {
       pm.done();
@@ -109,14 +108,15 @@ class RenamePropertyDelegate {
     result.setEdit( fileChangeRootEdit );    
     
     // edit object for the text replacement in the file, this is the only child
-    ReplaceEdit edit = new ReplaceEdit( info.getOffset(), 
-                                        info.getOldName().length(), 
-                                        info.getNewName() );
-    fileChangeRootEdit.addChild( edit );
+    for (int i = 0; i < info.offset.size(); i++) {
+    	fileChangeRootEdit.addChild( new ReplaceEdit( info.getOffset(i), info.getOldName().length(), info.getNewName())); 
+	}
+    
+    
     return result;
   }
   
-  private Change[] createChangesForBundle() {
+  /*private Change[] createChangesForBundle() {
     List result = new ArrayList();
     Iterator it = propertiesFiles.keySet().iterator();
     while( it.hasNext() ) {
@@ -136,7 +136,7 @@ class RenamePropertyDelegate {
       result.add( tfc );
     }
     return ( Change[] )result.toArray( new Change[ result.size() ] );
-  }
+  }*/
 
   private boolean isEmpty( final String candidate ) {
     return candidate == null || candidate.trim().length() == 0;
@@ -155,7 +155,7 @@ class RenamePropertyDelegate {
     return true;
   }
   
-  // whether the file is a .properties file with the same base name as the 
+  // whether the file is a .R file with the same base name as the 
   // one we refactor and contains the key that interests us
   private boolean isToRefactor( final IFile file ) {
     return    EXT_PROPERTIES.equals( file.getFileExtension() ) 
