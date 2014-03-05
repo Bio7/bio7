@@ -40,7 +40,7 @@ public class RBaseListen extends RBaseListener {
 		/* We calculate the token position from the expression! */
 		List<Token> firstToken = tokens.get(sourceInterval.a, sourceInterval.b);
 		for (int i = 0; i < firstToken.size(); i++) {
-			System.out.println(firstToken.get(i).getText());
+			//System.out.println(firstToken.get(i).getText());
 			if (firstToken.get(i).getText().equals(")")) {
 				count = i + 1;
 				break;
@@ -67,7 +67,7 @@ public class RBaseListen extends RBaseListener {
 		/* We calculate the token position from the expression! */
 		List<Token> firstToken = tokens.get(sourceInterval.a, sourceInterval.b);
 		for (int i = 0; i < firstToken.size(); i++) {
-			System.out.println(firstToken.get(i).getText());
+			//System.out.println(firstToken.get(i).getText());
 			if (firstToken.get(i).getText().equals("(")) {
 				count = i;
 				break;

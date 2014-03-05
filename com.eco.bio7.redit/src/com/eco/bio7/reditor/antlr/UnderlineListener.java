@@ -50,14 +50,18 @@ public class UnderlineListener extends BaseErrorListener {
 					e1.printStackTrace();
 				}
 			}
+			System.out.println("Line Error is:" + line);
 
 			try {
+
 				lineOffsetStart = document.getLineOffset(line - 1);
 
 			} catch (BadLocationException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
+			// System.out.println("Lineoffset start is:"+lineOffsetStart);
+			// System.out.println("offset  is:"+(lineOffsetStart + charPositionInLine));
 
 			IMarker marker;
 			try {
@@ -67,9 +71,14 @@ public class UnderlineListener extends BaseErrorListener {
 				marker.setAttribute(IMarker.MESSAGE, msg);
 				marker.setAttribute(IMarker.LINE_NUMBER, line);
 				marker.setAttribute(IMarker.LOCATION, lineOffsetStart + charPositionInLine);
-
-				marker.setAttribute(IMarker.CHAR_START, lineOffsetStart + charPositionInLine);
-				marker.setAttribute(IMarker.CHAR_END, (lineOffsetStart + charPositionInLine) + 1);
+				/*Correct the underline error if it is*/
+				if ((lineOffsetStart + charPositionInLine) + 1 > document.getLength()) {
+					marker.setAttribute(IMarker.CHAR_START, (lineOffsetStart + charPositionInLine) - 1);
+					marker.setAttribute(IMarker.CHAR_END, (lineOffsetStart + charPositionInLine));
+				} else {
+					marker.setAttribute(IMarker.CHAR_START, (lineOffsetStart + charPositionInLine));
+					marker.setAttribute(IMarker.CHAR_END, (lineOffsetStart + charPositionInLine) + 1);
+				}
 			} catch (CoreException ex) {
 
 				ex.printStackTrace();

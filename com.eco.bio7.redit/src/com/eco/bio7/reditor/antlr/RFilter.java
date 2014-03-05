@@ -1,4 +1,4 @@
-// Generated from C:\Users\elk\git\bio7new\com.eco.bio7.redit\src\com\eco\bio7\reditor\antlr\RFilter.g4 by ANTLR 4.1
+// Generated from C:\Users\elk\git\bio7new\com.eco.bio7.redit\src\com\eco\bio7\reditor\antlr\RFilter.g4 by ANTLR 4.2-SNAPSHOT
 package com.eco.bio7.reditor.antlr;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
@@ -47,6 +47,9 @@ public class RFilter extends Parser {
 
 	@Override
 	public String[] getRuleNames() { return ruleNames; }
+
+	@Override
+	public String getSerializedATN() { return _serializedATN; }
 
 	@Override
 	public ATN getATN() { return _ATN; }
@@ -685,9 +688,9 @@ public class RFilter extends Parser {
 
 				            if (1==0) { print(1) }
 				            else { print(2) }
-
+				 
 				        this works too:
-
+				 
 				            if (1==0) {
 				              if (2==0) print(1)
 				              else print(2)
@@ -813,7 +816,7 @@ public class RFilter extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\uacf5\uee8c\u4f5d\u8b0d\u4a45\u78bd\u1b2f\u3378\3A\u009b\4\2\t\2\4"+
+		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3A\u009b\4\2\t\2\4"+
 		"\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\3\2\3\2\3\2\7\2\20\n\2\f\2\16\2\23\13\2"+
 		"\3\2\3\2\3\3\3\3\6\3\31\n\3\r\3\16\3\32\3\4\3\4\5\4\37\n\4\3\4\3\4\3\4"+
 		"\5\4$\n\4\3\4\3\4\3\4\3\4\7\4*\n\4\f\4\16\4-\13\4\3\4\3\4\3\4\3\4\3\4"+
@@ -824,10 +827,10 @@ public class RFilter extends Parser {
 		"\4\3\4\7\4t\n\4\f\4\16\4w\13\4\3\4\3\4\5\4{\n\4\3\4\3\4\5\4\177\n\4\3"+
 		"\4\3\4\3\4\7\4\u0084\n\4\f\4\16\4\u0087\13\4\3\4\3\4\5\4\u008b\n\4\3\4"+
 		"\5\4\u008e\n\4\3\4\3\4\5\4\u0092\n\4\3\4\5\4\u0095\n\4\3\5\3\5\3\6\3\6"+
-		"\3\6\2\7\2\4\6\b\n\2\4\n\2\n\13\21\21\26\26$$))++\67\679>\23\2\3\3\5\t"+
-		"\16\17\22\25\27\30\32\33\35\35\37\37!!##&(**--\60\62\64\6688??\u00c0\2"+
-		"\21\3\2\2\2\4\30\3\2\2\2\6\u0094\3\2\2\2\b\u0096\3\2\2\2\n\u0098\3\2\2"+
-		"\2\f\20\5\6\4\2\r\20\7@\2\2\16\20\7/\2\2\17\f\3\2\2\2\17\r\3\2\2\2\17"+
+		"\3\6\2\2\7\2\4\6\b\n\2\4\n\2\n\13\21\21\26\26$$))++\67\679>\23\2\3\3\5"+
+		"\t\16\17\22\25\27\30\32\33\35\35\37\37!!##&(**--\60\62\64\6688??\u00c0"+
+		"\2\21\3\2\2\2\4\30\3\2\2\2\6\u0094\3\2\2\2\b\u0096\3\2\2\2\n\u0098\3\2"+
+		"\2\2\f\20\5\6\4\2\r\20\7@\2\2\16\20\7/\2\2\17\f\3\2\2\2\17\r\3\2\2\2\17"+
 		"\16\3\2\2\2\20\23\3\2\2\2\21\17\3\2\2\2\21\22\3\2\2\2\22\24\3\2\2\2\23"+
 		"\21\3\2\2\2\24\25\7\2\2\3\25\3\3\2\2\2\26\27\7@\2\2\27\31\b\3\1\2\30\26"+
 		"\3\2\2\2\31\32\3\2\2\2\32\30\3\2\2\2\32\33\3\2\2\2\33\5\3\2\2\2\34\36"+
@@ -864,7 +867,7 @@ public class RFilter extends Parser {
 		"\t\3\2\2\u0099\13\3\2\2\2\"\17\21\32\36#)+\63\65<>EGNSUZ^cejnsuz~\u0083"+
 		"\u0085\u008a\u008d\u0091\u0094";
 	public static final ATN _ATN =
-		ATNSimulator.deserialize(_serializedATN.toCharArray());
+		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {
 		_decisionToDFA = new DFA[_ATN.getNumberOfDecisions()];
 		for (int i = 0; i < _ATN.getNumberOfDecisions(); i++) {

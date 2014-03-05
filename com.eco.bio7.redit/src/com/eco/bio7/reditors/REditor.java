@@ -174,7 +174,7 @@ public class REditor extends TextEditor {
 
 							case SWT.CR: {
 
-								IDocumentProvider prov = textEditor.getDocumentProvider();
+								/*IDocumentProvider prov = textEditor.getDocumentProvider();
 								IEditorInput inp = editor.getEditorInput();
 								if (prov != null) {
 									IDocument document = prov.getDocument(inp);
@@ -196,14 +196,14 @@ public class REditor extends TextEditor {
 										//System.out.println(comp);
 									//	if(comp.equals("{"))
 
-										/*try {
+										try {
 											document.replace(offset+4, 0, "}");
 										} catch (BadLocationException e) {
 											// TODO Auto-generated catch block
 											e.printStackTrace();
-										}*/
-									}
-								}
+										}
+									}*/
+							//	}
 
 							}
 								break;

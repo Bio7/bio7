@@ -4,9 +4,18 @@ package com.eco.bio7.reditor.refactor;
 // See http://leiffrenzel.de
 //Source from: http://www.eclipse.org/articles/Article-LTK/ltk.html
 
+import java.util.List;
+
+import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.RuleContext;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.pattern.ParseTreeMatch;
+import org.antlr.v4.runtime.tree.pattern.ParseTreePattern;
 import org.eclipse.core.resources.*;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ltk.core.refactoring.participants.RefactoringProcessor;
@@ -15,6 +24,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.ITextEditor;
+
+import com.eco.bio7.reditor.antlr.RFilter;
+import com.eco.bio7.reditor.antlr.RLexer;
+import com.eco.bio7.reditor.antlr.RParser;
+import com.eco.bio7.reditors.REditor;
 
 
 
@@ -77,13 +91,40 @@ public class RenameProperty implements IEditorActionDelegate {
     info.addOffset( textSelection.getOffset() );
     
     /*Add AST manipulation here!*/
-    info.addOffset( textSelection.getOffset()+150 );
-    info.addOffset( textSelection.getOffset()+250 );
+    IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+    if(editor instanceof REditor){
+    IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
+    ANTLRInputStream input = new ANTLRInputStream(doc.get());
+	RLexer lexer = new RLexer(input);
+	CommonTokenStream tokens = new CommonTokenStream(lexer);
+	RFilter filter = new RFilter(tokens);
+	filter.stream(); // call start rule: stream
+	tokens.reset();
+   
+	RParser parser = new RParser(tokens);
+	RuleContext tree = parser.prog();
+	
+
+
+
+    /*ParseTreePattern p = parser.compileParseTreePattern("ID", RParser.RULE_expr);
+    ParseTreeMatch m = p.match(tree);
+    if ( m.succeeded() ) {
+    	
+    	System.out.println("succeed!");
+    }*/
+    
+   
+    
+    
+    //info.addOffset( textSelection.getOffset()+150 );
+   // info.addOffset( textSelection.getOffset()+250 );
     
     
     
     
     info.setSourceFile( getFile() );
+    }
   }
 
   private void refuse() {
