@@ -50,7 +50,7 @@ public class UnderlineListener extends BaseErrorListener {
 					e1.printStackTrace();
 				}
 			}
-			System.out.println("Line Error is:" + line);
+			//System.out.println("Line Error is:" + line);
 
 			try {
 

@@ -174,14 +174,14 @@ http://bio7.org
       <feature id="com.eco.bio7.worldwind.feature" version="1.7.0.qualifier"/>
       <feature id="com.eco.bio7.image.feature" version="1.48.01.qualifier"/>
       <feature id="com.eco.bio7.pythonedit.feature" version="1.7.0.qualifier"/>
-      <feature id="org.eclipse.rcp" version="4.4.0.v20131030-2000"/>
-      <feature id="org.eclipse.equinox.p2.rcp.feature" version="1.2.0.v20131027-1505"/>
-      <feature id="org.eclipse.equinox.p2.core.feature" version="1.2.100.v20131027-1505"/>
       <feature id="com.eco.bio7.scenebuilder.feature" version="1.0.0.qualifier"/>
-      <feature id="org.eclipse.emf.common" version="2.10.0.v20131209-0519"/>
-      <feature id="org.eclipse.emf.ecore" version="2.10.0.v20131209-0519"/>
-      <feature id="org.eclipse.jdt" version="3.10.0.v20131030-2000"/>
       <feature id="org.eclipse.e4.rcp"/>
+      <feature id="org.eclipse.jdt" version="3.10.0.v20140123-1600"/>
+      <feature id="org.eclipse.emf.ecore" version="2.10.0.v20140117-0813"/>
+      <feature id="org.eclipse.emf.common" version="2.10.0.v20140117-0813"/>
+      <feature id="org.eclipse.equinox.p2.core.feature" version="1.2.100.v20140115-1430"/>
+      <feature id="org.eclipse.equinox.p2.rcp.feature" version="1.2.0.v20140122-1841"/>
+      <feature id="org.eclipse.rcp" version="4.4.0.v20140123-1925"/>
    </features>
 
 

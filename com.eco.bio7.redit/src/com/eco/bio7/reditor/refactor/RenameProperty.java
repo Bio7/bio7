@@ -104,7 +104,7 @@ public class RenameProperty implements IEditorActionDelegate {
 	RParser parser = new RParser(tokens);
 	RuleContext tree = parser.prog();
 	
-
+    
 
 
     /*ParseTreePattern p = parser.compileParseTreePattern("ID", RParser.RULE_expr);
@@ -117,8 +117,8 @@ public class RenameProperty implements IEditorActionDelegate {
    
     
     
-    //info.addOffset( textSelection.getOffset()+150 );
-   // info.addOffset( textSelection.getOffset()+250 );
+    info.addOffset( textSelection.getOffset()+150 );
+    info.addOffset( textSelection.getOffset()+250 );
     
     
     
