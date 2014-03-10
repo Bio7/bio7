@@ -86,6 +86,7 @@ import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.os.pid.Pid;
 import com.eco.bio7.popup.actions.RunJavaClassFile;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RServe;
@@ -419,6 +420,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				shellProcess = builder.start();
 				processThread = new Thread(new ProcessGrabber());
 				processThread.start();
+				Pid rPid=new Pid();
+				System.out.println("Process Id is: "+rPid.getPidWindows(shellProcess));
 
 			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
 
@@ -433,6 +436,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				shellProcess = builder.start();
 				processThread = new Thread(new ProcessGrabber());
 				processThread.start();
+				Pid rPid=new Pid();
+				System.out.println("Process Id is: "+rPid.getPidWindows(shellProcess));
 			}
 
 			else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
@@ -447,6 +452,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				shellProcess = builder.start();
 				processThread = new Thread(new ProcessGrabber());
 				processThread.start();
+				Pid rPid=new Pid();
+				System.out.println("Process Id is: "+rPid.getPidWindows(shellProcess));
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

@@ -182,6 +182,7 @@ http://bio7.org
       <feature id="org.eclipse.equinox.p2.core.feature" version="1.2.100.v20140115-1430"/>
       <feature id="org.eclipse.equinox.p2.rcp.feature" version="1.2.0.v20140122-1841"/>
       <feature id="org.eclipse.rcp" version="4.4.0.v20140123-1925"/>
+      <feature id="com.eco.bio7.os.feature" version="1.0.0.qualifier"/>
    </features>
 
 
