@@ -114,16 +114,22 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	protected int position = -1;
 	public boolean ignore = false;
 	public Process shellProcess;
+	public Process nativeShellProcess;
+	public Process RProcess;
+	public Process pythonProcess;
 	public String consoleEncoding = "UTF-8";
 	public Thread processThread;
+	public Thread RprocessThread;
+	public Thread nativeShellprocessThread;
+	public Thread pythonProcessThread;
 	private IOConsoleInputStream iocinput;
 	private boolean runThread;
 	public ConsoleInterpreterAction ia;
 	public IToolBarManager toolBarManager;
 	public IActionBars actionBars;
 	private static ConsolePageParticipant ConsolePageParticipantInstance;
-	static boolean lineSeperatorConsole=true;
-	static boolean addToHistoryConsole=true;
+	static boolean lineSeperatorConsole = true;
+	static boolean addToHistoryConsole = true;
 	public static String finalOutput;
 
 	public ConsolePageParticipant() {
@@ -159,7 +165,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 	@Override
 	public void init(IPageBookViewPage page, IConsole console) {
-		
+
 		this.page = page;
 
 		if (console instanceof IOConsole) {
@@ -274,9 +280,9 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		IWorkbenchPage workbenchPage = pageSite.getPage();
 		IViewPart viewPart = workbenchPage.findView(IConsoleConstants.ID_CONSOLE_VIEW);
 		IViewSite viewSite = viewPart.getViewSite();
-		 actionBars = viewSite.getActionBars();
-		
-		 toolBarManager = actionBars.getToolBarManager();
+		actionBars = viewSite.getActionBars();
+
+		toolBarManager = actionBars.getToolBarManager();
 
 		// toolBarManager.removeAll();
 
@@ -286,13 +292,10 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		toolBarManager.add(new ConsoleCustomActions(this));
 		ia = new ConsoleInterpreterAction(this);
 		toolBarManager.add(ia);
-		
-		
+
 		in = new BufferedReader(isr);
 
 		ioc.clearConsole();
-		
-		
 
 	}
 
@@ -310,9 +313,9 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				ProcessBuilder builder = new ProcessBuilder("cmd");
 				// System.out.println(builder.environment());
 				builder.redirectErrorStream(true);
-				shellProcess = builder.start();
-				processThread = new Thread(new ProcessGrabber());
-				processThread.start();
+				nativeShellProcess = builder.start();
+				nativeShellprocessThread = new Thread(new NativeProcessGrabber());
+				nativeShellprocessThread.start();
 				/* Start shell with arguments! */
 				ConsolePageParticipant.pipeInputToConsole(shellArgs, true, true);
 
@@ -324,9 +327,9 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				args.add("-i");
 				ProcessBuilder builder = new ProcessBuilder(args);
 				builder.redirectErrorStream(true);
-				shellProcess = builder.start();
-				processThread = new Thread(new ProcessGrabber());
-				processThread.start();
+				nativeShellProcess = builder.start();
+				nativeShellprocessThread = new Thread(new NativeProcessGrabber());
+				nativeShellprocessThread.start();
 				/* Start shell with arguments! */
 				ConsolePageParticipant.pipeInputToConsole(shellArgs, true, true);
 			}
@@ -334,9 +337,9 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 				ProcessBuilder builder = new ProcessBuilder("/bin/bash");
 				builder.redirectErrorStream(true);
-				shellProcess = builder.start();
-				processThread = new Thread(new ProcessGrabber());
-				processThread.start();
+				nativeShellProcess = builder.start();
+				nativeShellprocessThread = new Thread(new NativeProcessGrabber());
+				nativeShellprocessThread.start();
 				/* Start shell with arguments! */
 				ConsolePageParticipant.pipeInputToConsole(shellArgs, true, false);
 			}
@@ -364,9 +367,9 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				args.add("-i");
 				ProcessBuilder builder = new ProcessBuilder(args);
 				builder.redirectErrorStream(true);
-				shellProcess = builder.start();
-				processThread = new Thread(new ProcessGrabber());
-				processThread.start();
+				pythonProcess = builder.start();
+				pythonProcessThread = new Thread(new PythonProcessGrabber());
+				pythonProcessThread.start();
 
 			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
 
@@ -377,8 +380,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				ProcessBuilder builder = new ProcessBuilder(args);
 				builder.redirectErrorStream(true);
 				shellProcess = builder.start();
-				processThread = new Thread(new ProcessGrabber());
-				processThread.start();
+				pythonProcessThread = new Thread(new ProcessGrabber());
+				pythonProcessThread.start();
 			}
 
 			else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
@@ -389,8 +392,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				ProcessBuilder builder = new ProcessBuilder(args);
 				builder.redirectErrorStream(true);
 				shellProcess = builder.start();
-				processThread = new Thread(new ProcessGrabber());
-				processThread.start();
+				pythonProcessThread = new Thread(new ProcessGrabber());
+				pythonProcessThread.start();
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -417,11 +420,11 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				args.add("--ess");
 				ProcessBuilder builder = new ProcessBuilder(args);
 				builder.redirectErrorStream(true);
-				shellProcess = builder.start();
-				processThread = new Thread(new ProcessGrabber());
-				processThread.start();
-				Pid rPid=new Pid();
-				System.out.println("Process Id is: "+rPid.getPidWindows(shellProcess));
+				RProcess = builder.start();
+				RprocessThread = new Thread(new RProcessGrabber());
+				RprocessThread.start();
+				Pid rPid = new Pid();
+				System.out.println("Process Id is: " + rPid.getPidWindows(RProcess));
 
 			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
 
@@ -433,11 +436,11 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 				ProcessBuilder builder = new ProcessBuilder(args);
 				builder.redirectErrorStream(true);
-				shellProcess = builder.start();
-				processThread = new Thread(new ProcessGrabber());
-				processThread.start();
-				Pid rPid=new Pid();
-				System.out.println("Process Id is: "+rPid.getPidWindows(shellProcess));
+				RProcess = builder.start();
+				RprocessThread = new Thread(new RProcessGrabber());
+				RprocessThread.start();
+				Pid rPid = new Pid();
+				System.out.println("Process Id is: " + rPid.getPidWindows(RProcess));
 			}
 
 			else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
@@ -449,17 +452,119 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 				ProcessBuilder builder = new ProcessBuilder(args);
 				builder.redirectErrorStream(true);
-				shellProcess = builder.start();
-				processThread = new Thread(new ProcessGrabber());
-				processThread.start();
-				Pid rPid=new Pid();
-				System.out.println("Process Id is: "+rPid.getPidWindows(shellProcess));
+				RProcess = builder.start();
+				RprocessThread = new Thread(new RProcessGrabber());
+				RprocessThread.start();
+				Pid rPid = new Pid();
+				System.out.println("Process Id is: " + rPid.getPidWindows(RProcess));
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
+	}
+
+	class PythonProcessGrabber implements Runnable {
+		final InputStream inp = pythonProcess.getInputStream();
+
+		public void run() {
+			// setPriority(Thread.MAX_PRIORITY);
+			if (interpreterSelection.equals("Python")) {
+				try {
+
+					InputStreamReader inr = new InputStreamReader(inp, Charset.forName(consoleEncoding));
+
+					int ch;
+					while ((ch = inr.read()) != -1) {
+
+						System.out.print((char) ch);
+
+					}
+					// consoleOutputChar.delete(0, consoleOutputChar.length()-1);
+				} catch (IOException e) {
+					// e.printStackTrace();
+					System.out.println("Stream closed!");
+				} finally {
+					if (inp != null) {
+						try {
+							inp.close();
+
+						} catch (IOException e) {
+
+						}
+					}
+				}
+			}
+		}
+	}
+
+	class NativeProcessGrabber implements Runnable {
+		final InputStream inp = nativeShellProcess.getInputStream();
+
+		public void run() {
+			// setPriority(Thread.MAX_PRIORITY);
+			if (interpreterSelection.equals("shell")) {
+				try {
+
+					InputStreamReader inr = new InputStreamReader(inp, Charset.forName(consoleEncoding));
+
+					int ch;
+					while ((ch = inr.read()) != -1) {
+
+						System.out.print((char) ch);
+
+					}
+					// consoleOutputChar.delete(0, consoleOutputChar.length()-1);
+				} catch (IOException e) {
+					// e.printStackTrace();
+					System.out.println("Stream closed!");
+				} finally {
+					if (inp != null) {
+						try {
+							inp.close();
+
+						} catch (IOException e) {
+
+						}
+					}
+				}
+			}
+		}
+	}
+
+	class RProcessGrabber implements Runnable {
+		final InputStream inp = RProcess.getInputStream();
+
+		public void run() {
+			// setPriority(Thread.MAX_PRIORITY);
+			if (interpreterSelection.equals("R")) {
+				try {
+
+					InputStreamReader inr = new InputStreamReader(inp, Charset.forName(consoleEncoding));
+
+					int ch;
+					while ((ch = inr.read()) != -1) {
+
+						System.out.print((char) ch);
+
+					}
+					// consoleOutputChar.delete(0, consoleOutputChar.length()-1);
+				} catch (IOException e) {
+					// e.printStackTrace();
+					System.out.println("Stream closed!");
+				} finally {
+					if (inp != null) {
+						try {
+							inp.close();
+
+						} catch (IOException e) {
+
+						}
+					}
+				}
+			}
+		}
 	}
 
 	class ProcessGrabber implements Runnable {
@@ -508,13 +613,38 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					shellProcess.destroy();
 				}
 
+				if (RProcess != null) {
+					RProcess.destroy();
+				}
+
+				if (nativeShellProcess != null) {
+					nativeShellProcess.destroy();
+				}
+
+				if (pythonProcess != null) {
+					pythonProcess.destroy();
+				}
+
 				if (initializationThread != null) {
 					initializationThread.interrupt();
 				}
 				if (processThread != null) {
 					processThread.interrupt();
 				}
+
+				if (RprocessThread != null) {
+					RprocessThread.interrupt();
+				}
+
+				if (nativeShellprocessThread != null) {
+					nativeShellprocessThread.interrupt();
+				}
+
+				if (pythonProcessThread != null) {
+					pythonProcessThread.interrupt();
+				}
 				in = null;
+
 			}
 		}.start();
 
@@ -677,8 +807,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 							list.add(input);
 						}
 					}
-					if (shellProcess != null) {
-						final OutputStream os = shellProcess.getOutputStream();
+					if (nativeShellProcess != null) {
+						final OutputStream os = nativeShellProcess.getOutputStream();
 						final OutputStreamWriter osw = new OutputStreamWriter(os);
 						final BufferedWriter bw = new BufferedWriter(osw, 100);
 
@@ -781,8 +911,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 							list.add(input);
 						}
 					}
-					if (shellProcess != null) {
-						final OutputStream os = shellProcess.getOutputStream();
+					if (pythonProcess != null) {
+						final OutputStream os = pythonProcess.getOutputStream();
 						final OutputStreamWriter osw = new OutputStreamWriter(os);
 						final BufferedWriter bw = new BufferedWriter(osw, 100);
 
@@ -833,8 +963,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 						}
 					}
-					if (shellProcess != null) {
-						final OutputStream os = shellProcess.getOutputStream();
+					if (RProcess != null) {
+						final OutputStream os = RProcess.getOutputStream();
 						final OutputStreamWriter osw = new OutputStreamWriter(os);
 						final BufferedWriter bw = new BufferedWriter(osw, 100);
 
@@ -1008,11 +1138,11 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	public static ConsolePageParticipant getConsolePageParticipantInstance() {
 		return ConsolePageParticipantInstance;
 	}
-	
-	/*Add toolbar actions to the console view!*/
-	public  void setRDebugToolbarActions(){
+
+	/* Add toolbar actions to the console view! */
+	public void setRDebugToolbarActions() {
 		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
-		
+
 		/* Add the debug actions dynamically! */
 		IToolBarManager tm = toolBarManager;
 
@@ -1021,7 +1151,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		for (int i = 0; i < its.length; i++) {
 
 			if (its[i].getId() != null) {
-				/*Control if the items exists already!*/
+				/* Control if the items exists already! */
 				if (its[i].getId().equals("Stop")) {
 
 					exist = true;
@@ -1037,20 +1167,20 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			tm.add(new DebugContinueAction());
 			actionBars.updateActionBars();
 		}
-		/*Remove all toolbar actions from the console view!*/
+		/* Remove all toolbar actions from the console view! */
 		if (utils != null) {
 			utils.cons.clear();
 		}
 	}
-	
-	public void deleteDebugToolbarActions(){
-		
-		toolBarManager.remove("Debug");		
+
+	public void deleteDebugToolbarActions() {
+
+		toolBarManager.remove("Debug");
 		toolBarManager.remove("Stop");
 		toolBarManager.remove("Next");
 		toolBarManager.remove("Continue");
 		actionBars.updateActionBars();
-					
+
 	}
-	
+
 }
