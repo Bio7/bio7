@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,8 +45,11 @@ import java.util.List;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
@@ -81,6 +85,7 @@ import org.eclipse.ui.console.TextConsolePage;
 import org.eclipse.ui.console.TextConsoleViewer;
 import org.eclipse.ui.part.IPageBookViewPage;
 import org.eclipse.ui.part.IPageSite;
+import org.osgi.framework.Bundle;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
@@ -127,6 +132,9 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	public ConsoleInterpreterAction ia;
 	public IToolBarManager toolBarManager;
 	public IActionBars actionBars;
+	private Pid rPid;
+	private Pid shellPid;
+	private Pid pythonPid;
 	private static ConsolePageParticipant ConsolePageParticipantInstance;
 	static boolean lineSeperatorConsole = true;
 	static boolean addToHistoryConsole = true;
@@ -267,6 +275,82 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 						Bio7Dialog.message("Please start Rserve and the \"Native R\" shell in the Bio7 console!");
 					}
 
+				} 
+				/*CTRL+c key event!*/
+				else if (event.stateMask == SWT.CTRL && event.keyCode == 'c') {
+					// Send OS signal
+					if (Bio7Dialog.getOS().equals("Windows")) {
+						Bundle bundle = Platform.getBundle("com.eco.bio7.os");
+
+						URL locationUrl = FileLocator.find(bundle, new Path("/"), null);
+						URL fileUrl = null;
+						try {
+							fileUrl = FileLocator.toFileURL(locationUrl);
+						} catch (IOException e2) {
+
+							e2.printStackTrace();
+						}
+						File fi = new File(fileUrl.getPath());
+					String pathBundle = fi.toString()+"/win/64";
+                      if(interpreterSelection.equals("R")){
+						try {
+							Process p = Runtime.getRuntime().exec(pathBundle+"/SendSignalCtrlC.exe " + rPid.getPidWindows(RProcess));
+                            
+						} catch (IOException e) {
+							e.printStackTrace();
+						} 
+						System.out.println(pathBundle+"/SendSignalCtrlC.exe " + rPid.getPidWindows(RProcess));
+					}
+                      else if(interpreterSelection.equals("shell")){
+  						try {
+  							Process p = Runtime.getRuntime().exec(pathBundle+"/SendSignalCtrlC.exe " + shellPid.getPidWindows(nativeShellProcess));
+                              
+  						} catch (IOException e) {
+  							e.printStackTrace();
+  						} 
+  					}
+  					
+  					else if(interpreterSelection.equals("python")){
+  						try {
+  							Process p = Runtime.getRuntime().exec(pathBundle+"/SendSignalCtrlC.exe " + pythonPid.getPidWindows(pythonProcess));
+                              
+  						} catch (IOException e) {
+  							e.printStackTrace();
+  						} 
+  						
+  					}
+					}
+					else{
+						if(interpreterSelection.equals("R")){
+							try {
+								Process p = Runtime.getRuntime().exec("kill -INT "+rPid.getPidUnix(RProcess));
+	                            
+							} catch (IOException e) {
+								e.printStackTrace();
+							} 
+							System.out.println( rPid.getPidWindows(RProcess));
+						}
+	                      else if(interpreterSelection.equals("shell")){
+	  						try {
+	  							Process p = Runtime.getRuntime().exec("kill -INT "+shellPid.getPidUnix(nativeShellProcess));
+	                              
+	  						} catch (IOException e) {
+	  							e.printStackTrace();
+	  						} 
+	  					}
+	  					
+	  					else if(interpreterSelection.equals("python")){
+	  						try {
+	  							Process p = Runtime.getRuntime().exec("kill -INT "+ pythonPid.getPidUnix(pythonProcess));
+	                              
+	  						} catch (IOException e) {
+	  							e.printStackTrace();
+	  						} 
+	  						
+	  					}
+						
+					}
+					
 				}
 
 				else {
@@ -318,6 +402,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				nativeShellprocessThread.start();
 				/* Start shell with arguments! */
 				ConsolePageParticipant.pipeInputToConsole(shellArgs, true, true);
+				shellPid = new Pid();
+				System.out.println("Process Id is: " + shellPid.getPidWindows(nativeShellProcess));
 
 			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
 				// Some Useful commands: export TERM=xterm; top -b; ssh -tt
@@ -332,6 +418,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				nativeShellprocessThread.start();
 				/* Start shell with arguments! */
 				ConsolePageParticipant.pipeInputToConsole(shellArgs, true, true);
+				shellPid = new Pid();
+				System.out.println("Process Id is: " + shellPid.getPidUnix(nativeShellProcess));
 			}
 
 			else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
@@ -342,6 +430,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				nativeShellprocessThread.start();
 				/* Start shell with arguments! */
 				ConsolePageParticipant.pipeInputToConsole(shellArgs, true, false);
+				shellPid = new Pid();
+				System.out.println("Process Id is: " + shellPid.getPidUnix(nativeShellProcess));
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -370,6 +460,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				pythonProcess = builder.start();
 				pythonProcessThread = new Thread(new PythonProcessGrabber());
 				pythonProcessThread.start();
+				pythonPid = new Pid();
+				System.out.println("Process Id is: " + pythonPid.getPidWindows(pythonProcess));
 
 			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
 
@@ -379,9 +471,11 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				args.add("-i");
 				ProcessBuilder builder = new ProcessBuilder(args);
 				builder.redirectErrorStream(true);
-				shellProcess = builder.start();
-				pythonProcessThread = new Thread(new ProcessGrabber());
+				pythonProcess = builder.start();
+				pythonProcessThread = new Thread(new PythonProcessGrabber());
 				pythonProcessThread.start();
+				pythonPid = new Pid();
+				System.out.println("Process Id is: " + pythonPid.getPidUnix(pythonProcess));
 			}
 
 			else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
@@ -391,9 +485,11 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				args.add("-i");
 				ProcessBuilder builder = new ProcessBuilder(args);
 				builder.redirectErrorStream(true);
-				shellProcess = builder.start();
-				pythonProcessThread = new Thread(new ProcessGrabber());
+				pythonProcess = builder.start();
+				pythonProcessThread = new Thread(new PythonProcessGrabber());
 				pythonProcessThread.start();
+				pythonPid = new Pid();
+				System.out.println("Process Id is: " + pythonPid.getPidUnix(pythonProcess));
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -423,7 +519,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				RProcess = builder.start();
 				RprocessThread = new Thread(new RProcessGrabber());
 				RprocessThread.start();
-				Pid rPid = new Pid();
+				rPid = new Pid();
 				System.out.println("Process Id is: " + rPid.getPidWindows(RProcess));
 
 			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
@@ -439,8 +535,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				RProcess = builder.start();
 				RprocessThread = new Thread(new RProcessGrabber());
 				RprocessThread.start();
-				Pid rPid = new Pid();
-				System.out.println("Process Id is: " + rPid.getPidWindows(RProcess));
+				rPid = new Pid();
+				System.out.println("Process Id is: " + rPid.getPidUnix(RProcess));
 			}
 
 			else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
@@ -455,8 +551,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				RProcess = builder.start();
 				RprocessThread = new Thread(new RProcessGrabber());
 				RprocessThread.start();
-				Pid rPid = new Pid();
-				System.out.println("Process Id is: " + rPid.getPidWindows(RProcess));
+				rPid = new Pid();
+				System.out.println("Process Id is: " + rPid.getPidUnix(RProcess));
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
