@@ -22,8 +22,10 @@ http://bio7.org
    </configIni>
 
    <launcherArgs>
-      <programArgs>-clearPersistedState</programArgs>
-      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
+      <programArgs>-clearPersistedState
+      </programArgs>
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
+      </vmArgsMac>
    </launcherArgs>
 
    <windowImages i16="icons/bio7app/bio7_16.png" i32="icons/bio7app/bio7_32.png" i48="icons/bio7app/bio7_48.png" i64="icons/bio7app/bio7_64.png" i128="icons/bio7app/bio7_128.png"/>
@@ -176,13 +178,13 @@ http://bio7.org
       <feature id="com.eco.bio7.pythonedit.feature" version="1.7.0.qualifier"/>
       <feature id="com.eco.bio7.scenebuilder.feature" version="1.0.0.qualifier"/>
       <feature id="org.eclipse.e4.rcp"/>
-      <feature id="org.eclipse.jdt" version="3.10.0.v20140123-1600"/>
-      <feature id="org.eclipse.emf.ecore" version="2.10.0.v20140117-0813"/>
-      <feature id="org.eclipse.emf.common" version="2.10.0.v20140117-0813"/>
-      <feature id="org.eclipse.equinox.p2.core.feature" version="1.2.100.v20140115-1430"/>
-      <feature id="org.eclipse.equinox.p2.rcp.feature" version="1.2.0.v20140122-1841"/>
-      <feature id="org.eclipse.rcp" version="4.4.0.v20140123-1925"/>
       <feature id="com.eco.bio7.os.feature" version="1.0.0.qualifier"/>
+      <feature id="org.eclipse.jdt" version="3.10.0.v20140306-1200"/>
+      <feature id="org.eclipse.emf.ecore" version="2.10.0.v20140303-1023"/>
+      <feature id="org.eclipse.emf.common" version="2.10.0.v20140303-1023"/>
+      <feature id="org.eclipse.equinox.p2.core.feature" version="1.3.0.v20140226-0648"/>
+      <feature id="org.eclipse.equinox.p2.rcp.feature" version="1.2.0.v20140226-0648"/>
+      <feature id="org.eclipse.rcp" version="4.4.0.v20140306-1200"/>
    </features>
 
 
