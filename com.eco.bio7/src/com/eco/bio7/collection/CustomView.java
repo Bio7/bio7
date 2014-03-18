@@ -18,6 +18,7 @@ import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -75,7 +76,10 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.imagej");
 
-		this.customViewParent = parent;
+		/*Add a nested composite to use addData for a reference to the different panels. The parent composite seems to set addData
+		 *since Eclipse 4.4M6!*/
+		this.customViewParent    = new Composite(parent, SWT.NONE);
+		customViewParent.setLayout(new FillLayout());
 
 	}
 
@@ -250,7 +254,7 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 				if (activated instanceof CustomView) {
 					CustomView view = (CustomView) activated;
 					Control c[] = view.getCustomViewParent().getChildren();
-					Vector ve = (Vector) view.getCustomViewParent().getData();
+					Vector<?> ve = (Vector<?>) view.getCustomViewParent().getData();
 					if (ve != null && ve.size() > 0) {
 						closeTabPanels(ve);
 					}
