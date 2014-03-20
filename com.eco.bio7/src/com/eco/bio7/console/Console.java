@@ -1,50 +1,25 @@
 package com.eco.bio7.console;
 
-import groovy.util.GroovyScriptEngine;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptException;
-
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.DocumentEvent;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IDocumentListener;
-import org.eclipse.jface.text.IRegion;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.console.IOConsoleOutputStream;
-import org.eclipse.ui.console.MessageConsole;
-import org.eclipse.ui.console.MessageConsoleStream;
-import org.eclipse.ui.console.TextConsolePage;
-import org.eclipse.ui.console.TextConsoleViewer;
 
-import com.eco.bio7.scriptengines.ScriptEngineConnection;
-
-public class Console {
-	private IOConsole bio7Console;
-
+public class Console extends IOConsole{
+	
+	public final static String ID = "com.eco.bio7.IOConsole";
 	private IOConsoleOutputStream stream;
 
-	public Console() {
+	public Console(String title) {
+		super(title, null);
 
-		bio7Console = new IOConsole("Bio7 Console", null);
+		ConsolePlugin.getDefault().getConsoleManager().addConsoles(new IConsole[] { this });
+		ConsolePlugin.getDefault().getConsoleManager().showConsoleView(this);
 
-		ConsolePlugin.getDefault().getConsoleManager().addConsoles(new IConsole[] { bio7Console });
-		ConsolePlugin.getDefault().getConsoleManager().showConsoleView(bio7Console);
-
-		stream = bio7Console.newOutputStream();
+		stream = this.newOutputStream();
 
 
 	}
@@ -54,7 +29,7 @@ public class Console {
 	}
 
 	public IOConsole getConsole() {
-		return bio7Console;
+		return this;
 	}
 
 	public int hashCode() {
@@ -87,7 +62,7 @@ public class Console {
 	}
 
 	public void clear() {
-		bio7Console.clearConsole();
+		this.clearConsole();
 	}
 
 	public void println(String message) {

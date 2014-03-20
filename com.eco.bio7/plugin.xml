@@ -1245,7 +1245,7 @@
             class="com.eco.bio7.console.ConsolePageParticipant"
             id="com.eco.bio7.console.consolePageParticipant">
          <enablement>
-         <instanceof value="org.eclipse.ui.console.TextConsole" />
+         <instanceof value="com.eco.bio7.console.Console" />
          </enablement>
       </consolePageParticipant>
    </extension>

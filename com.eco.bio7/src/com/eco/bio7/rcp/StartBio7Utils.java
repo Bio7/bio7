@@ -5,7 +5,7 @@ import com.eco.bio7.console.Console;
 public class StartBio7Utils {
 
 	public Console cons;
-	public com.eco.bio7.collection.Console eco;// The stream for the console!!
+	public com.eco.bio7.console.ConsoleStreams eco;// The stream for the console!!
 	public static StartBio7Utils consoleInstance;
 
 	public StartBio7Utils() {
@@ -14,7 +14,7 @@ public class StartBio7Utils {
 
 	public void startutils() {
 		try {
-			cons = new Console();
+			cons = new Console("Bio7 Console");
 
 		} catch (RuntimeException e) {
 
@@ -22,7 +22,7 @@ public class StartBio7Utils {
 		}
 		try {
 			/*Start the streams for the console!*/
-			eco = new com.eco.bio7.collection.Console();
+			eco = new com.eco.bio7.console.ConsoleStreams();
 		} catch (RuntimeException e) {
 
 			e.printStackTrace();

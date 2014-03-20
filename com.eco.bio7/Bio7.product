@@ -24,6 +24,8 @@ http://bio7.org
    <launcherArgs>
       <programArgs>-clearPersistedState
       </programArgs>
+      <vmArgs>-Djavafx.embed.singleThread=true
+      </vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
       </vmArgsMac>
    </launcherArgs>
@@ -185,6 +187,12 @@ http://bio7.org
       <feature id="org.eclipse.equinox.p2.core.feature" version="1.3.0.v20140226-0648"/>
       <feature id="org.eclipse.equinox.p2.rcp.feature" version="1.2.0.v20140226-0648"/>
       <feature id="org.eclipse.rcp" version="4.4.0.v20140306-1200"/>
+      <feature id="org.eclipse.ecf.filetransfer.httpclient4.feature"/>
+      <feature id="org.eclipse.ecf.core.ssl.feature"/>
+      <feature id="org.eclipse.ecf.filetransfer.ssl.feature"/>
+      <feature id="org.eclipse.ecf.filetransfer.feature"/>
+      <feature id="org.eclipse.ecf.core.feature"/>
+      <feature id="org.eclipse.ecf.filetransfer.httpclient4.ssl.feature"/>
    </features>
 
 

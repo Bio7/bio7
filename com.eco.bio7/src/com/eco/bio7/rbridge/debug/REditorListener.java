@@ -46,7 +46,9 @@ public class REditorListener {
 					}
 
 				} else if (editor !=null) {
+					if(con!=null){
 					con.deleteDebugToolbarActions();
+					}
 
 				}
 			}

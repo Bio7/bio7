@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Timer;
+
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.embed.swt.FXCanvas;
@@ -13,6 +14,7 @@ import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import net.htmlparser.jericho.Source;
 import net.htmlparser.jericho.SourceFormatter;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -38,9 +40,13 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
+
 import com.eco.bio7.browser.editor.XMLEditor;
+import com.eco.bio7.scenebuilder.editor.SkeletonBuffer.FORMAT_TYPE;
+import com.eco.bio7.scenebuilder.editor.SkeletonBuffer.TEXT_TYPE;
 import com.oracle.javafx.scenebuilder.kit.editor.EditorController;
 import com.oracle.javafx.scenebuilder.kit.editor.panel.content.ContentPanelController;
+import com.oracle.javafx.scenebuilder.kit.fxom.FXOMDocument;
 
 /**
  * An example showing how to create a multi-page editor. This example has 3 pages:
@@ -128,7 +134,6 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 				canvas.setScene(scene);
 				
-
 			}
 		});
 		
@@ -207,6 +212,10 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	 * Saves the multi-page editor's document.
 	 */
 	public void doSave(IProgressMonitor monitor) {
+		SkeletonBuffer buf = new SkeletonBuffer(editorController.getFxomDocument());
+		buf.setFormat(FORMAT_TYPE.FULL);
+		 buf.setTextType(TEXT_TYPE.WITH_COMMENTS);
+        System.out.println(buf.toString());
 		getEditor(1).doSave(monitor);
 	}
 

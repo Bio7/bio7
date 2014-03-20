@@ -1,10 +1,10 @@
-package com.eco.bio7.collection;
+package com.eco.bio7.console;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import com.eco.bio7.rcp.StartBio7Utils;
 
-public class Console {
+public class ConsoleStreams {
 	
 	private static ObservedByteArrayOutputStream Bio7ErrorOutput;
 
@@ -37,7 +37,7 @@ public class Console {
 		}
 	}
 	
-	public Console(){
+	public ConsoleStreams(){
 		System.setErr(Bio7ErrorStream);
 	    System.setOut(Bio7OutputStream);
 		Bio7ErrorStream2 = System.err;

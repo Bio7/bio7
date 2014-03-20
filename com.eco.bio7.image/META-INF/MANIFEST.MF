@@ -8,6 +8,7 @@ Bundle-Version: 1.47.14
 Bundle-Activator: com.eco.bio7.image.Activator
 Bundle-Vendor: ECO
 Bundle-Localization: plugin
+Eclipse-BuddyPolicy: ext
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.core.resources,
@@ -42,5 +43,4 @@ Export-Package: .,
  ij.process,
  ij.text,
  ij.util
-Import-Package: javafx.embed.swt
 

@@ -5,6 +5,7 @@ Bundle-SymbolicName: com.eco.bio7.browser;singleton:=true
 Bundle-Version: 1.7.0
 Bundle-Activator: com.eco.bio7.browser.Activator
 Bundle-Vendor: ECO
+Eclipse-BuddyPolicy: ext
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  com.eco.bio7.edit;bundle-version="1.6.0",
