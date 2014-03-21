@@ -1108,41 +1108,6 @@
      </perspectiveExtension>
   </extension>
   <extension
-        id="bio7theme"
-        point="org.eclipse.ui.themes">
-     <colorDefinition
-            label="%Color.activeTabText"
-            categoryId="org.eclipse.ui.presentation.default"
-            value="255,255,255"
-            id="org.eclipse.ui.workbench.ACTIVE_TAB_TEXT_COLOR">
-         
-      </colorDefinition>
-       <colorDefinition
-            label="%Color.activeTabBGEnd"
-            categoryId="org.eclipse.ui.presentation.default"
-            id="org.eclipse.ui.workbench.ACTIVE_TAB_BG_END">
-         <colorFactory
-               plugin="org.eclipse.ui"
-               class="org.eclipse.ui.themes.RGBBlendColorFactory">
-            <parameter
-                  name="color1"
-                  value="0,128,0">
-            </parameter>
-            <parameter
-                  name="color2"
-                  value="COLOR_TITLE_BACKGROUND_GRADIENT">
-            </parameter>
-         </colorFactory>
-         
-         <colorValue
-               ws="motif"
-               value="0,0,0">
-         </colorValue>
-      </colorDefinition> 
-        
-        
-  </extension>
-  <extension
         point="org.eclipse.help.toc">
      <toc
            file="toc.xml"
