@@ -374,9 +374,12 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		styledText.setEditable(false);
 
 		toolBarManager.add(new ConsoleCustomActions(this));
+		
 		ia = new ConsoleInterpreterAction(this);
 		toolBarManager.add(ia);
-
+		toolBarManager.add(new ConsoleRShellAction());
+		toolBarManager.add(new ConsoleNativeShellAction());
+		toolBarManager.add(new ConsolePythonShellAction());
 		in = new BufferedReader(isr);
 
 		ioc.clearConsole();
@@ -1125,14 +1128,19 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					// move cursor to end of repl-prompt when necessary
 					if (textLen > 0 && viewer.getTextWidget().getCaretOffset() < doclen) {
 						IRegion reg = doc.getLineInformationOfOffset(doclen);
+						
+						
 						// use end offset excluding any eol characters
 						viewer.getTextWidget().setCaretOffset(reg.getOffset() + reg.getLength());
+						
+						
 					}
 					// System.out.println(textLen);
 
 				} catch (BadLocationException e) {
 				}
 			}
+			
 		}
 	};
 	private String selected;

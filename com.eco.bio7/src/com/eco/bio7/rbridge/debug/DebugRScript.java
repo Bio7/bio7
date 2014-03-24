@@ -186,7 +186,7 @@ public class DebugRScript extends Action {
 									ConsolePageParticipant.pipeInputToConsole("setBreakpoint('" + loc + "#" + lineNum + "')", true, false);
 									// ConsolePageParticipant.pipeInputToConsole("writeClipboard(XXX[[1]]$name, format = 1)", true, false);
 									writeTempRData("XXX[[1]]$name", "XXX[[1]]$line", fileName);
-
+									ConsolePageParticipant.pipeInputToConsole("print(\"Debug Info Set\")");
 								}
 
 								// readClipboardJava(lineNum);

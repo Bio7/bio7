@@ -12,8 +12,10 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.internal.dialogs.WorkbenchPreferenceDialog;
+
 import com.eco.bio7.preferences.PreferencePageShell;
 import com.eco.bio7.preferences.RPackagesPreferencePage;
+import com.eco.bio7.preferences.RServePlotPrefs;
 import com.eco.bio7.preferences.RServePrefs;
 import com.eco.bio7.rpreferences.TemplatesPreferencePage;
 import com.eco.bio7.rpreferences.WorkbenchPreferenceR;
@@ -61,11 +63,15 @@ public class OpenRservePreferencesAction extends Action implements ActionFactory
 		PreferencePageShell pref4 = new PreferencePageShell();
 		IPreferencePage page4 = pref4;
 		page4.setTitle("Preferences Native");
+		
+		RServePlotPrefs pref5 = new RServePlotPrefs();
+		IPreferencePage page5 = pref5;
+		page5.setTitle("Rserve Plot preferences");
 
-		showPreferencePage("com.eco.bio7.RServe", page,"com.eco.bio7.rpackages", page1, "com.eco.bio7.RServe.editor", page2, "com.eco.bio7.RServe.editor.templates", page3,"com.eco.bio7.native",page4);
+		showPreferencePage("com.eco.bio7.RServe", page,"com.eco.bio7.RServePlot",page5,"com.eco.bio7.rpackages", page1, "com.eco.bio7.RServe.editor", page2, "com.eco.bio7.RServe.editor.templates", page3,"com.eco.bio7.native",page4);
 	}
 
-	protected void showPreferencePage(String id, IPreferencePage page,String id1, IPreferencePage page1, String id2, IPreferencePage page2, String id3, IPreferencePage page3,String id4, IPreferencePage page4) {
+	protected void showPreferencePage(String id, IPreferencePage page,String id5, IPreferencePage page5,String id1, IPreferencePage page1, String id2, IPreferencePage page2, String id3, IPreferencePage page3,String id4, IPreferencePage page4) {
 		final IPreferenceNode targetNode = new PreferenceNode(id, page);
 		
 		final IPreferenceNode targetNode1 = new PreferenceNode(id1, page1);
@@ -75,9 +81,12 @@ public class OpenRservePreferencesAction extends Action implements ActionFactory
 		final IPreferenceNode targetNode3 = new PreferenceNode(id3, page3);
 		
 		final IPreferenceNode targetNode4 = new PreferenceNode(id4, page4);
+		
+		final IPreferenceNode targetNode5 = new PreferenceNode(id5, page5);
 
 		PreferenceManager manager = new PreferenceManager();
 		manager.addToRoot(targetNode);
+		manager.addToRoot(targetNode5);
 		manager.addToRoot(targetNode1);
 		manager.addToRoot(targetNode2);
 		manager.addToRoot(targetNode3);

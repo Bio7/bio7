@@ -51,7 +51,7 @@ public class RServePrefs extends FieldEditorPreferencePage implements IWorkbench
 	public StringFieldEditor deviceFilename;
 	public RadioGroupFieldEditor selectionDevice;
 	public RadioGroupFieldEditor selectLinuxShell;
-	private RadioGroupFieldEditor selectPDFReader;
+	//private RadioGroupFieldEditor selectPDFReader;
 	private static RServePrefs instance;
 
 	public static RServePrefs getInstance() {
@@ -87,7 +87,7 @@ public class RServePrefs extends FieldEditorPreferencePage implements IWorkbench
 		addField(new StringFieldEditor("RSERVE_ARGS", "Rserve startup arguments (Not for Shell)", getFieldEditorParent()));
 		addField(new StringFieldEditor("R_STARTUP_ARGS", "R startup arguments", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
-		addField(new LabelFieldEditor("Plot:", getFieldEditorParent()));
+		/*addField(new LabelFieldEditor("Plot:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("USE_CUSTOM_DEVICE", "Use Custom Device", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		selectionDevice=new RadioGroupFieldEditor("PLOT_DEVICE_SELECTION", "Select Device:\nPlease use action \"Apply \" to see changes and after using action \"Restore Defaults\".\nValues in the Device Definition can be changed and will be stored!", 3, new String[][] { { "Image Default", "PLOT_IMAGE" },{ "Image Cairo", "PLOT_CAIRO" },{ "Image Print", "PLOT_PRINT" }, { "PDF", "PLOT_PDF" },{ "SVG", "PLOT_SVG" },{ "PostScript", "PLOT_POSTSCRIPT" }   }, getFieldEditorParent(), false);
 		addField(selectionDevice);
@@ -101,7 +101,7 @@ public class RServePrefs extends FieldEditorPreferencePage implements IWorkbench
 		selectPDFReader=new RadioGroupFieldEditor("PDF_READER", "PDF Reader (Linux):", 4, new String[][] { { "Acrobat", "ACROBAT" },{ "Evince", "EVINCE" },{ "Kpdf", "KPDF" },{ "Xpdf", "XPDF" } }, getFieldEditorParent(), false);
 		addField(selectPDFReader);
 		
-		addField(new SpacerFieldEditor(getFieldEditorParent()));
+		addField(new SpacerFieldEditor(getFieldEditorParent()));*/
 		addField(new LabelFieldEditor("Packages:", getFieldEditorParent()));
 		PackageServer = new StringFieldEditor(PreferenceConstants.PACKAGE_R_SERVER, "Package Server", getFieldEditorParent());
 		PackageServer.setErrorMessage("Please enter a valid address!");
@@ -175,7 +175,7 @@ public class RServePrefs extends FieldEditorPreferencePage implements IWorkbench
 	@Override
 	public void propertyChange(PropertyChangeEvent event) {
 		String property = event.getPropertyName();
-		System.out.println(property);
+		
 
 	}
 

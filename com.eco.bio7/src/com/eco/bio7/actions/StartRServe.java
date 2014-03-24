@@ -41,7 +41,6 @@ public class StartRServe extends Action {
 
 	private static String[] fileList;
 
-
 	public StartRServe(String text, IWorkbenchWindow window) {
 		super(text);
 		this.window = window;
@@ -124,7 +123,8 @@ public class StartRServe extends Action {
 
 					WorldWindView.setRConnection(null);
 					/*
-					 * if (RCompletionShell.getShellInstance() != null) { RCompletionShell.getShellInstance().dispose(); }
+					 * if (RCompletionShell.getShellInstance() != null) {
+					 * RCompletionShell.getShellInstance().dispose(); }
 					 */
 
 					// the following wrapped for BeanShell !
@@ -137,21 +137,21 @@ public class StartRServe extends Action {
 					});
 
 				}
-			} 
-			
+			}
+
 			/* Native connection! */
 			else {
-				
-				ConsolePageParticipant participant= ConsolePageParticipant.getConsolePageParticipantInstance();
-				   /*Start the native R process!*/
-				    RConnection con=RServe.getConnection();
-					Process p=participant.RProcess;
-					if(p==null){
-						ConsoleInterpreterAction inst=ConsoleInterpreterAction.getInstance();
-						inst.startRShell();	
-					}
-			
-				/*Close an existing Rserve connection!*/
+
+				ConsolePageParticipant participant = ConsolePageParticipant.getConsolePageParticipantInstance();
+				/* Start the native R process! */
+				RConnection con = RServe.getConnection();
+				Process p = participant.RProcess;
+				if (p == null) {
+					ConsoleInterpreterAction inst = ConsoleInterpreterAction.getInstance();
+					inst.startR();
+				}
+
+				/* Close an existing Rserve connection! */
 				if (con != null) {
 					try {
 						con.shutdown();
@@ -165,7 +165,7 @@ public class StartRServe extends Action {
 
 					WorldWindView.setRConnection(null);
 				}
-				/*Start a new Rserve connection!*/
+				/* Start a new Rserve connection! */
 				if (RServe.isRrunning() == false) {
 					RConnectionJob.setStore(Bio7Plugin.getDefault().getPreferenceStore());
 					job = new RConnectionJob();
@@ -186,38 +186,37 @@ public class StartRServe extends Action {
 					job.setUser(true);
 					job.schedule();
 
-				}
-				else{
+				} else {
 					RConnectionJob.setCanceled(true);
 
 					RServe.setRrunning(false);
 
-					//RConnectionJob.getProc().destroy();
+					// RConnectionJob.getProc().destroy();
 
 					RServe.setConnection(null);
 
 					WorldWindView.setRConnection(null);
 					/*
-					 * if (RCompletionShell.getShellInstance() != null) { RCompletionShell.getShellInstance().dispose(); }
+					 * if (RCompletionShell.getShellInstance() != null) {
+					 * RCompletionShell.getShellInstance().dispose(); }
 					 */
 
 					// the following wrapped for BeanShell !
-					
-					
+
 				}
 
 				RServe.setRrunning(false);
 				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 
-					ConsolePageParticipant.pipeInputToConsole("options(device='windows')",true,true);
-					
+					ConsolePageParticipant.pipeInputToConsole("options(device='windows')", true, true);
+
 				} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
-					
-					ConsolePageParticipant.pipeInputToConsole("options(device='x11')",true,true);
-					
+
+					ConsolePageParticipant.pipeInputToConsole("options(device='x11')", true, true);
+
 				} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
-					
-					ConsolePageParticipant.pipeInputToConsole("options(device='cairo')",true,true);
+
+					ConsolePageParticipant.pipeInputToConsole("options(device='cairo')", true, true);
 				}
 				// options(device='windows')
 			}
@@ -254,7 +253,8 @@ public class StartRServe extends Action {
 					display.syncExec(new Runnable() {
 
 						public void run() {
-							MessageDialog.openInformation(new Shell(), "R", "This is a remote Rserve connection\n" + "Please wait until the job has finished!\nA long running connection operation\n" + "could be caused by an unavailable server!");
+							MessageDialog.openInformation(new Shell(), "R", "This is a remote Rserve connection\n" + "Please wait until the job has finished!\nA long running connection operation\n"
+									+ "could be caused by an unavailable server!");
 						}
 					});
 
@@ -288,7 +288,8 @@ public class StartRServe extends Action {
 
 				WorldWindView.setRConnection(null);
 				/*
-				 * if (RCompletionShell.getShellInstance() != null) { RCompletionShell.getShellInstance().dispose(); }
+				 * if (RCompletionShell.getShellInstance() != null) {
+				 * RCompletionShell.getShellInstance().dispose(); }
 				 */
 
 				// the following wrapped for BeanShell !

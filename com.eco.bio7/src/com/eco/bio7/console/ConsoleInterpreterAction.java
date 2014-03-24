@@ -127,31 +127,11 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 		menuItem4.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
-				StyledText styledText = (StyledText) participant.page.getControl();
-				Color colb = new Color(Display.getCurrent(), 0, 0, 0);
-				Color colf = new Color(Display.getCurrent(), 255, 255, 255);
-				IOConsole ioConsole = participant.getIoc();
-				styledText.setBackground(colb);
-				styledText.setForeground(colf);
-
-				participant.interpreterSelection = "shell";
-				ioConsole.clearConsole();
-				/* Exit an existing shell process! */
-				//exitShellProcess();
-				/* Open a new shell process if necessary! */
-				if (participant.nativeShellProcess == null) {
-				participant.processCommand();
-				}
-
-				participant.ignore = true;
-				/*
-				 * Not necessary because we send startup arguments!-> ioConsole.getInputStream().appendData(System.getProperty("line.separator"));
-				 */
-				participant.styledText.setEditable(true);
-				/* Reset variable to start Blender if needed in the shell! */
-				InterpretPython.setBlenderInteractive(false);
+				startShell();
 
 			}
+
+			
 
 			public void widgetDefaultSelected(SelectionEvent e) {
 
@@ -164,28 +144,10 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 		menuItem41.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
-				StyledText styledText = (StyledText) participant.page.getControl();
-				Color colb = new Color(Display.getCurrent(), 0, 0, 0);
-				Color colf = new Color(Display.getCurrent(), 255, 255, 255);
-				IOConsole ioConsole = participant.getIoc();
-				styledText.setBackground(colb);
-				styledText.setForeground(colf);
-
-				participant.interpreterSelection = "Python";
-				ioConsole.clearConsole();
-				/* Exit an existing shell process! */
-				//exitShellProcess();
-				/* Open a new shell process! */
-				if (participant.pythonProcess == null) {
-				participant.processPythonCommand();
-				}
-
-				participant.ignore = true;
-				ioConsole.getInputStream().appendData(System.getProperty("line.separator"));
-
-				participant.styledText.setEditable(true);
+				startPython();
 			}
 
+			
 			public void widgetDefaultSelected(SelectionEvent e) {
 
 			}
@@ -196,32 +158,10 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 		menuItem42.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
-				StyledText styledText = (StyledText) participant.page.getControl();
-				Color colb = new Color(Display.getCurrent(), 0, 0, 0);
-				Color colf = new Color(Display.getCurrent(), 255, 255, 255);
-				IOConsole ioConsole = participant.getIoc();
-				styledText.setBackground(colb);
-				styledText.setForeground(colf);
-
-				participant.interpreterSelection = "R";
-				ioConsole.clearConsole();
-				/*
-				 * if (RServe.getConnection() != null) { try { RServe.getConnection().shutdown(); } catch (RserveException en) { // TODO Auto-generated catch block en.printStackTrace(); } RConnectionJob.setCanceled(true); RServe.getConnection().close(); RServe.setConnection(null);
-				 * 
-				 * WorldWindView.setRConnection(null); }
-				 */
-				/* Exit an existing shell process! */
-				// exitShellProcess();
-				/* Open a new shell process! */
-				if (participant.RProcess == null) {
-					participant.processRCommand();
-				}
-
-				participant.ignore = true;
-				ioConsole.getInputStream().appendData(System.getProperty("line.separator"));
-
-				participant.styledText.setEditable(true);
+				startR();
 			}
+
+			
 
 			public void widgetDefaultSelected(SelectionEvent e) {
 
@@ -296,7 +236,7 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 		participant.styledText.setEditable(true);
 	}
 
-	public void startRShell() {
+	/*public void startRShell() {
 		Display display = PlatformUI.getWorkbench().getDisplay();
 		display.syncExec(new Runnable() {
 
@@ -310,9 +250,9 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 
 				participant.interpreterSelection = "R";
 				ioConsole.clearConsole();
-				/* Exit an existing shell process! */
+				 Exit an existing shell process! 
 				// exitShellProcess();
-				/* Open a new shell process! */
+				 Open a new shell process! 
 				if (participant.RProcess == null) {
 					participant.processRCommand();
 				}
@@ -323,6 +263,81 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 				participant.styledText.setEditable(true);
 			}
 		});
+	}*/
+	public void startR() {
+		StyledText styledText = (StyledText) participant.page.getControl();
+		Color colb = new Color(Display.getCurrent(), 0, 0, 0);
+		Color colf = new Color(Display.getCurrent(), 255, 255, 255);
+		IOConsole ioConsole = participant.getIoc();
+		styledText.setBackground(colb);
+		styledText.setForeground(colf);
+
+		participant.interpreterSelection = "R";
+		ioConsole.clearConsole();
+		/*
+		 * if (RServe.getConnection() != null) { try { RServe.getConnection().shutdown(); } catch (RserveException en) { // TODO Auto-generated catch block en.printStackTrace(); } RConnectionJob.setCanceled(true); RServe.getConnection().close(); RServe.setConnection(null);
+		 * 
+		 * WorldWindView.setRConnection(null); }
+		 */
+		/* Exit an existing shell process! */
+		// exitShellProcess();
+		/* Open a new shell process! */
+		if (participant.RProcess == null) {
+			participant.processRCommand();
+		}
+
+		participant.ignore = true;
+		ioConsole.getInputStream().appendData(System.getProperty("line.separator"));
+
+		participant.styledText.setEditable(true);
 	}
+	public void startPython() {
+		StyledText styledText = (StyledText) participant.page.getControl();
+		Color colb = new Color(Display.getCurrent(), 0, 0, 0);
+		Color colf = new Color(Display.getCurrent(), 255, 255, 255);
+		IOConsole ioConsole = participant.getIoc();
+		styledText.setBackground(colb);
+		styledText.setForeground(colf);
+
+		participant.interpreterSelection = "Python";
+		ioConsole.clearConsole();
+		/* Exit an existing shell process! */
+		//exitShellProcess();
+		/* Open a new shell process! */
+		if (participant.pythonProcess == null) {
+		participant.processPythonCommand();
+		}
+
+		participant.ignore = true;
+		ioConsole.getInputStream().appendData(System.getProperty("line.separator"));
+
+		participant.styledText.setEditable(true);
+	}
+	public void startShell() {
+		StyledText styledText = (StyledText) participant.page.getControl();
+		Color colb = new Color(Display.getCurrent(), 0, 0, 0);
+		Color colf = new Color(Display.getCurrent(), 255, 255, 255);
+		IOConsole ioConsole = participant.getIoc();
+		styledText.setBackground(colb);
+		styledText.setForeground(colf);
+
+		participant.interpreterSelection = "shell";
+		ioConsole.clearConsole();
+		/* Exit an existing shell process! */
+		//exitShellProcess();
+		/* Open a new shell process if necessary! */
+		if (participant.nativeShellProcess == null) {
+		participant.processCommand();
+		}
+
+		participant.ignore = true;
+		/*
+		 * Not necessary because we send startup arguments!-> ioConsole.getInputStream().appendData(System.getProperty("line.separator"));
+		 */
+		participant.styledText.setEditable(true);
+		/* Reset variable to start Blender if needed in the shell! */
+		InterpretPython.setBlenderInteractive(false);
+	}
+
 
 }

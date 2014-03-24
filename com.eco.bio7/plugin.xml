@@ -397,6 +397,12 @@
             id="com.eco.bio7.rpackages"
             name="Preferences R Build Tools">
       </page>
+      <page
+            category="com.eco.bio7.preferences.Bio7PreferencePage"
+            class="com.eco.bio7.preferences.RServePlotPrefs"
+            id="com.eco.bio7.RServePlot"
+            name="Preferences RServe Plots">
+      </page>
    </extension>
    <extension
          point="org.eclipse.ui.viewActions">

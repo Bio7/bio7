@@ -96,6 +96,7 @@ import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 import com.eco.bio7.javaeditors.JavaEditor;
 import com.eco.bio7.jobs.LoadData;
 import com.eco.bio7.preferences.PreferenceConstants;
+import com.eco.bio7.preferences.RServePlotPrefs;
 import com.eco.bio7.preferences.Reg;
 import com.eco.bio7.pythonedit.PythonEditorPlugin;
 import com.eco.bio7.rbridge.RServe;
@@ -333,7 +334,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "Ä, ,ä,Ö,ö,Ü,ü,+,!,ü,§,$,%,&,/,(,),=,?,[,],°,^,;,:,>,<,|,*,µ,\\,”,@,\",“,”,´,`,~,#,},{,²,³,_,-");
 		}
 
-		store.setDefault("RSERVE_NATIVE_START", false);
+		store.setDefault("RSERVE_NATIVE_START", true);
 
 		store.setDefault("LINUX_SHELL", "GNOME");
 		store.setDefault("PDF_READER", "ACROBAT");
@@ -468,7 +469,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		IPreferenceStore storeJava = Bio7EditorPlugin.getDefault().getPreferenceStore();
 
-		storeJava.setDefault("classbody", true);
+		storeJava.setDefault("classbody", false);
 		storeJava.setDefault("compiler_version", 1.7);
 		storeJava.setDefault("compiler_debug", false);
 		storeJava.setDefault("compiler_verbose", false);
@@ -557,43 +558,43 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 					String sel = store2.getString("PLOT_DEVICE_SELECTION");
 
-					RServePrefs prefsRserve = RServePrefs.getInstance();
+					RServePlotPrefs prefsPlotRserve = RServePlotPrefs.getInstance();
 
 					if (sel.equals("PLOT_IMAGE")) {
 
-						prefsRserve.mult.setStringValue("bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\"bio7Device\")");
-						prefsRserve.deviceFilename.setStringValue("");
-						prefsRserve.deviceFilename.setEnabled(false, prefsRserve.getFieldEditorParentControl());
+						prefsPlotRserve.mult.setStringValue("bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\"bio7Device\")");
+						prefsPlotRserve.deviceFilename.setStringValue("");
+						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 					} else if (sel.equals("PLOT_CAIRO")) {
 
-						prefsRserve.mult.setStringValue("bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 480, height = 480, type=\"cairo\")}; options(device=\"bio7Device\")");
-						prefsRserve.deviceFilename.setStringValue("");
-						prefsRserve.deviceFilename.setEnabled(false, prefsRserve.getFieldEditorParentControl());
+						prefsPlotRserve.mult.setStringValue("bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 480, height = 480, type=\"cairo\")}; options(device=\"bio7Device\")");
+						prefsPlotRserve.deviceFilename.setStringValue("");
+						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 					}
 
 					else if (sel.equals("PLOT_PRINT")) {
 
-						prefsRserve.mult.setStringValue("bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 6, height = 6, units=\"in\",res=600)}; options(device=\"bio7Device\")");
-						prefsRserve.deviceFilename.setStringValue("");
-						prefsRserve.deviceFilename.setEnabled(false, prefsRserve.getFieldEditorParentControl());
+						prefsPlotRserve.mult.setStringValue("bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 6, height = 6, units=\"in\",res=600)}; options(device=\"bio7Device\")");
+						prefsPlotRserve.deviceFilename.setStringValue("");
+						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 					} else if (sel.equals("PLOT_PDF")) {
 
-						prefsRserve.mult.setStringValue("bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot.pdf" + "\") { pdf(filename)}; options(device=\"bio7Device\")");
-						prefsRserve.deviceFilename.setStringValue("tempDevicePlot.pdf");
-						prefsRserve.deviceFilename.setEnabled(true, prefsRserve.getFieldEditorParentControl());
+						prefsPlotRserve.mult.setStringValue("bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot.pdf" + "\") { pdf(filename)}; options(device=\"bio7Device\")");
+						prefsPlotRserve.deviceFilename.setStringValue("tempDevicePlot.pdf");
+						prefsPlotRserve.deviceFilename.setEnabled(true, prefsPlotRserve.getFieldEditorParentControl());
 					}
 
 					else if (sel.equals("PLOT_SVG")) {
 
-						prefsRserve.mult.setStringValue("bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot.svg" + "\") { svg(filename)}; options(device=\"bio7Device\")");
-						prefsRserve.deviceFilename.setStringValue("tempDevicePlot.svg");
-						prefsRserve.deviceFilename.setEnabled(true, prefsRserve.getFieldEditorParentControl());
+						prefsPlotRserve.mult.setStringValue("bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot.svg" + "\") { svg(filename)}; options(device=\"bio7Device\")");
+						prefsPlotRserve.deviceFilename.setStringValue("tempDevicePlot.svg");
+						prefsPlotRserve.deviceFilename.setEnabled(true, prefsPlotRserve.getFieldEditorParentControl());
 
 					} else if (sel.equals("PLOT_POSTSCRIPT")) {
 
-						prefsRserve.mult.setStringValue("bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot.eps" + "\") { postscript(filename)}; options(device=\"bio7Device\")");
-						prefsRserve.deviceFilename.setStringValue("tempDevicePlot.eps");
-						prefsRserve.deviceFilename.setEnabled(true, prefsRserve.getFieldEditorParentControl());
+						prefsPlotRserve.mult.setStringValue("bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot.eps" + "\") { postscript(filename)}; options(device=\"bio7Device\")");
+						prefsPlotRserve.deviceFilename.setStringValue("tempDevicePlot.eps");
+						prefsPlotRserve.deviceFilename.setEnabled(true, prefsPlotRserve.getFieldEditorParentControl());
 					}
 
 				}
