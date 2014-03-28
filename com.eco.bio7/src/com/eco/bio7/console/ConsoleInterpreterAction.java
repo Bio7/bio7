@@ -211,8 +211,8 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 	}
 
 	private void exitShellProcess() {
-		if (participant.shellProcess != null) {
-			participant.shellProcess.destroy();
+		if (participant.getShellProcess() != null) {
+			participant.getShellProcess().destroy();
 			if (participant.processThread != null) {
 				participant.processThread.interrupt();
 			}
@@ -282,7 +282,7 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 		/* Exit an existing shell process! */
 		// exitShellProcess();
 		/* Open a new shell process! */
-		if (participant.RProcess == null) {
+		if (participant.getRProcess() == null) {
 			participant.processRCommand();
 		}
 
@@ -304,7 +304,7 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 		/* Exit an existing shell process! */
 		//exitShellProcess();
 		/* Open a new shell process! */
-		if (participant.pythonProcess == null) {
+		if (participant.getPythonProcess() == null) {
 		participant.processPythonCommand();
 		}
 

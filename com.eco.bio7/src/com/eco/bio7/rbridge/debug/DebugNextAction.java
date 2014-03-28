@@ -11,6 +11,9 @@
 
 package com.eco.bio7.rbridge.debug;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.prefs.Preferences;
 
 import org.eclipse.jface.action.Action;
@@ -46,11 +49,30 @@ public class DebugNextAction extends Action {
 		
 		ConsolePageParticipant.pipeInputToConsole("n", true, false);
 		System.out.println("n");
-        ConsolePageParticipant inst=ConsolePageParticipant.getConsolePageParticipantInstance();
+        final ConsolePageParticipant inst=ConsolePageParticipant.getConsolePageParticipantInstance();
         
-		
+        final StringBuilder sb = new StringBuilder();
+       
+        /*new Thread() {
+
+			public void run() {
+				 
+				setPriority(Thread.MAX_PRIORITY);
+				final InputStream inp = inst.RProcess.getInputStream();
+				InputStreamReader inr = new InputStreamReader(inp);
+				int ch;
+				try {
+					while ((ch = inr.read()) != -1) {
+						sb.append((char)ch);
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}.start();
 			
-			
+			System.out.println("Result is::: "+sb.toString());*/
 			
 		
 		

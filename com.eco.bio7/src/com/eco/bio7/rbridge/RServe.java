@@ -43,11 +43,13 @@ import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
+
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.batch.FileRoot;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.console.Console;
+import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rcp.ApplicationWorkbenchAdvisor;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
@@ -137,9 +139,18 @@ public class RServe {
 			// job.setSystem(true);
 			job.schedule();
 		} else {
+			Process p;
+			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+			if (store.getBoolean("RSERVE_NATIVE_START")) {
+				ConsolePageParticipant consol=ConsolePageParticipant.getConsolePageParticipantInstance();
+				p = consol.getRProcess();
+			} else {
+				
+				p = RConnectionJob.getProc();
+			}
 
-			Process p = RConnectionJob.getProc();
 			// Write to the output!
+			if(p!=null){
 			final OutputStream os = p.getOutputStream();
 			final OutputStreamWriter osw = new OutputStreamWriter(os);
 			final BufferedWriter bw = new BufferedWriter(osw, 100);
@@ -155,6 +166,7 @@ public class RServe {
 				System.out.flush();
 			} catch (IOException e) {
 				System.err.println("");
+			}
 			}
 
 			// Bio7Dialog.message("RServer is busy!");
@@ -514,26 +526,21 @@ public class RServe {
 
 			String plotPathR = store.getString(PreferenceConstants.P_TEMP_R);
 			String fileName = store.getString("DEVICE_FILENAME");
-			
-			
 
-			if (fileName.endsWith("pdf")  || fileName.endsWith("eps") || fileName.endsWith("xfig") || fileName.endsWith("bitmap") || fileName.endsWith("pictex")) {
-				if(ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")||ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")){
-				Program.launch(plotPathR + fileName);
-				}
-				else{
+			if (fileName.endsWith("pdf") || fileName.endsWith("eps") || fileName.endsWith("xfig") || fileName.endsWith("bitmap") || fileName.endsWith("pictex")) {
+				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows") || ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
+					Program.launch(plotPathR + fileName);
+				} else {
 					plotLinux(plotPathR + fileName);
 				}
 
-			}
-			else if(fileName.endsWith("svg")){
-				if(ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")||ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")){
+			} else if (fileName.endsWith("svg")) {
+				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows") || ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 					Program.launch(plotPathR + fileName);
-					}
-					else{
-						plotLinuxSVG(plotPathR + fileName);
-					}
-				
+				} else {
+					plotLinuxSVG(plotPathR + fileName);
+				}
+
 			}
 
 			else {
@@ -609,15 +616,17 @@ public class RServe {
 		// Filter the extension of the file.
 		FilenameFilter filter = new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2]) || name.endsWith(extensions[3]) || name.endsWith(extensions[4]) || name.endsWith(extensions[5]));
+				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2]) || name.endsWith(extensions[3]) || name.endsWith(extensions[4]) || name
+						.endsWith(extensions[5]));
 			}
 		};
-		
+
 		File[] files = dir.listFiles(filter);
-		/*Sort the filenames!*/
+		/* Sort the filenames! */
 		Arrays.sort(files, NameFileComparator.NAME_INSENSITIVE_COMPARATOR);
 		return files;
 	}
+
 	private static void plotLinuxSVG(String finalpath) {
 		try {
 
@@ -660,7 +669,7 @@ public class RServe {
 				Bio7Dialog.message("Can't starte Evince!");
 			}
 
-		} 
+		}
 	}
 
 }

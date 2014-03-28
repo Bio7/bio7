@@ -37,63 +37,53 @@ public class LoadRWorkspace extends Action {
 
 	public void run() {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		//boolean rPipe = store.getBoolean("r_pipe");
+		// boolean rPipe = store.getBoolean("r_pipe");
 		RConnection con = RServe.getConnection();
-		if (con==null) {
-
-			String selected;
-			Shell s = new Shell();
-			FileDialog fd = new FileDialog(s, SWT.OPEN);
-			fd.setText("Open");
-			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
-				prefs = Preferences.userNodeForPackage(this.getClass());
-				String lastOutputDir = prefs.get("R_FILE_DIR", "");
-				fd.setFilterPath(lastOutputDir);
-				String[] filterExt = { "*.RData", "*." };
-				fd.setFilterExtensions(filterExt);
-				selected = fd.open();
-				prefs.put("R_FILE_DIR", fd.getFilterPath());
-
-				if (selected != null) {
-					selected = selected.replace("\\", "\\\\");
-				}
-			} else {
-				prefs = Preferences.userNodeForPackage(this.getClass());
-				String lastOutputDir = prefs.get("R_FILE_DIR", "");
-				fd.setFilterPath(lastOutputDir);
-				String[] filterExt = { "*.RData", "*." };
-				fd.setFilterExtensions(filterExt);
-				selected = fd.open();
-				prefs.put("R_FILE_DIR", fd.getFilterPath());
-
-			}
+		if (con == null) {
 
 			String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 			if (selectionConsole.equals("R")) {
 
-				ConsolePageParticipant.pipeInputToConsole("load(file = \"" + selected + "\")",true,true);
+				String selected;
+				Shell s = new Shell();
+				FileDialog fd = new FileDialog(s, SWT.OPEN);
+				fd.setText("Open");
+				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+					prefs = Preferences.userNodeForPackage(this.getClass());
+					String lastOutputDir = prefs.get("R_FILE_DIR", "");
+					fd.setFilterPath(lastOutputDir);
+					String[] filterExt = { "*.RData", "*." };
+					fd.setFilterExtensions(filterExt);
+					selected = fd.open();
+					prefs.put("R_FILE_DIR", fd.getFilterPath());
+
+					if (selected != null) {
+						selected = selected.replace("\\", "\\\\");
+					}
+				} else {
+					prefs = Preferences.userNodeForPackage(this.getClass());
+					String lastOutputDir = prefs.get("R_FILE_DIR", "");
+					fd.setFilterPath(lastOutputDir);
+					String[] filterExt = { "*.RData", "*." };
+					fd.setFilterExtensions(filterExt);
+					selected = fd.open();
+					prefs.put("R_FILE_DIR", fd.getFilterPath());
+
+				}
+
+				ConsolePageParticipant.pipeInputToConsole("load(file = \"" + selected + "\")", true, true);
 				System.out.print("load(file = \"" + selected + "\")");
 				System.out.println();
 
 			} else {
-				Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
+				Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console or the Rserve connection!");
 			}
 
 		} else {
-			
-
-			if (con != null) {
 
 				load(con);
-			} else {
 
-				MessageBox messageBox = new MessageBox(new Shell(),
-
-				SWT.ICON_WARNING);
-				messageBox.setMessage("RServer connection failed - Server is not running !");
-				messageBox.open();
-
-			}
+			
 		}
 
 	}
@@ -116,7 +106,7 @@ public class LoadRWorkspace extends Action {
 			if (selected != null) {
 				selected = selected.replace("\\", "\\\\");
 			}
-			
+
 		} else {
 			prefs = Preferences.userNodeForPackage(this.getClass());
 			String lastOutputDir = prefs.get("R_FILE_DIR", "");
@@ -127,7 +117,7 @@ public class LoadRWorkspace extends Action {
 			prefs.put("R_FILE_DIR", fd.getFilterPath());
 
 		}
-		final String filePath=selected;
+		final String filePath = selected;
 		if (selected != null) {
 			final String load = "try(load(file = BIO7_TEMP))";
 			if (RState.isBusy() == false) {
@@ -144,7 +134,7 @@ public class LoadRWorkspace extends Action {
 					public void done(IJobChangeEvent event) {
 						if (event.getResult().isOK()) {
 							RState.setBusy(false);
-							System.out.print("try(load(file = "+filePath+"))");
+							System.out.print("try(load(file = " + filePath + "))");
 							System.out.println();
 						} else {
 							RState.setBusy(false);

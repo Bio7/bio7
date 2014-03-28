@@ -118,10 +118,10 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	public int commandBack = 0;
 	protected int position = -1;
 	public boolean ignore = false;
-	public Process shellProcess;
+	private Process shellProcess;
+	private Process pythonProcess;
+	private Process RProcess;
 	public Process nativeShellProcess;
-	public Process RProcess;
-	public Process pythonProcess;
 	public String consoleEncoding = "UTF-8";
 	public Thread processThread;
 	public Thread RprocessThread;
@@ -275,8 +275,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 						Bio7Dialog.message("Please start Rserve and the \"Native R\" shell in the Bio7 console!");
 					}
 
-				} 
-				/*CTRL+c key event!*/
+				}
+				/* CTRL+c key event! */
 				else if (event.stateMask == SWT.CTRL && event.keyCode == 'c') {
 					// Send OS signal
 					if (Bio7Dialog.getOS().equals("Windows")) {
@@ -291,66 +291,63 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 							e2.printStackTrace();
 						}
 						File fi = new File(fileUrl.getPath());
-					String pathBundle = fi.toString()+"/win/64";
-                      if(interpreterSelection.equals("R")){
-						try {
-							Process p = Runtime.getRuntime().exec(pathBundle+"/SendSignalCtrlC.exe " + rPid.getPidWindows(RProcess));
-                            
-						} catch (IOException e) {
-							e.printStackTrace();
-						} 
-						System.out.println(pathBundle+"/SendSignalCtrlC.exe " + rPid.getPidWindows(RProcess));
-					}
-                      else if(interpreterSelection.equals("shell")){
-  						try {
-  							Process p = Runtime.getRuntime().exec(pathBundle+"/SendSignalCtrlC.exe " + shellPid.getPidWindows(nativeShellProcess));
-                              
-  						} catch (IOException e) {
-  							e.printStackTrace();
-  						} 
-  					}
-  					
-  					else if(interpreterSelection.equals("python")){
-  						try {
-  							Process p = Runtime.getRuntime().exec(pathBundle+"/SendSignalCtrlC.exe " + pythonPid.getPidWindows(pythonProcess));
-                              
-  						} catch (IOException e) {
-  							e.printStackTrace();
-  						} 
-  						
-  					}
-					}
-					else{
-						if(interpreterSelection.equals("R")){
+						String pathBundle = fi.toString() + "/win/64";
+						if (interpreterSelection.equals("R")) {
 							try {
-								Process p = Runtime.getRuntime().exec("kill -INT "+rPid.getPidUnix(RProcess));
-	                            
+								Process p = Runtime.getRuntime().exec(pathBundle + "/SendSignalCtrlC.exe " + rPid.getPidWindows(RProcess));
+
 							} catch (IOException e) {
 								e.printStackTrace();
-							} 
-							System.out.println( rPid.getPidWindows(RProcess));
+							}
+							System.out.println(pathBundle + "/SendSignalCtrlC.exe " + rPid.getPidWindows(RProcess));
+						} else if (interpreterSelection.equals("shell")) {
+							try {
+								Process p = Runtime.getRuntime().exec(pathBundle + "/SendSignalCtrlC.exe " + shellPid.getPidWindows(nativeShellProcess));
+
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
 						}
-	                      else if(interpreterSelection.equals("shell")){
-	  						try {
-	  							Process p = Runtime.getRuntime().exec("kill -INT "+shellPid.getPidUnix(nativeShellProcess));
-	                              
-	  						} catch (IOException e) {
-	  							e.printStackTrace();
-	  						} 
-	  					}
-	  					
-	  					else if(interpreterSelection.equals("python")){
-	  						try {
-	  							Process p = Runtime.getRuntime().exec("kill -INT "+ pythonPid.getPidUnix(pythonProcess));
-	                              
-	  						} catch (IOException e) {
-	  							e.printStackTrace();
-	  						} 
-	  						
-	  					}
-						
+
+						else if (interpreterSelection.equals("python")) {
+							try {
+								Process p = Runtime.getRuntime().exec(pathBundle + "/SendSignalCtrlC.exe " + pythonPid.getPidWindows(pythonProcess));
+
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+
+						}
+					} else {
+						if (interpreterSelection.equals("R")) {
+							try {
+								Process p = Runtime.getRuntime().exec("kill -INT " + rPid.getPidUnix(RProcess));
+
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+							System.out.println(rPid.getPidWindows(RProcess));
+						} else if (interpreterSelection.equals("shell")) {
+							try {
+								Process p = Runtime.getRuntime().exec("kill -INT " + shellPid.getPidUnix(nativeShellProcess));
+
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
+
+						else if (interpreterSelection.equals("python")) {
+							try {
+								Process p = Runtime.getRuntime().exec("kill -INT " + pythonPid.getPidUnix(pythonProcess));
+
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+
+						}
+
 					}
-					
+
 				}
 
 				else {
@@ -374,7 +371,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		styledText.setEditable(false);
 
 		toolBarManager.add(new ConsoleCustomActions(this));
-		
+
 		ia = new ConsoleInterpreterAction(this);
 		toolBarManager.add(ia);
 		toolBarManager.add(new ConsoleRShellAction());
@@ -395,7 +392,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 				// process = Runtime.getRuntime().exec("cmd");
 				/*
-				 * ProcessBuilder can redirect the error stream! No second thread needed!
+				 * ProcessBuilder can redirect the error stream! No second
+				 * thread needed!
 				 */
 				ProcessBuilder builder = new ProcessBuilder("cmd");
 				// System.out.println(builder.environment());
@@ -451,7 +449,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 				// process = Runtime.getRuntime().exec("cmd");
 				/*
-				 * ProcessBuilder can redirect the error stream! No second thread needed!
+				 * ProcessBuilder can redirect the error stream! No second
+				 * thread needed!
 				 */
 
 				String cPython = store.getString("python_pipe_path");
@@ -501,6 +500,27 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 	}
 
+	/*
+	 * If R native is started first we have to make some default settings from
+	 * the preferences!
+	 */
+	public void rOptions() {
+		pipeInputToConsole("options(max.print=5000)");
+
+		/*
+		 * Set the default install location for the add on packages!
+		 */
+		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		String rPackages = store.getString("InstallLocation");
+
+		if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+
+			rPackages = rPackages.replace("\\", "/");
+
+		}
+		pipeInputToConsole(".libPaths(\"" + rPackages + "\")");
+	}
+
 	public void processRCommand() {
 
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
@@ -509,7 +529,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 				// process = Runtime.getRuntime().exec("cmd");
 				/*
-				 * ProcessBuilder can redirect the error stream! No second thread needed!
+				 * ProcessBuilder can redirect the error stream! No second
+				 * thread needed!
 				 */
 
 				String rPath = store.getString("r_pipe_path");
@@ -524,6 +545,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				RprocessThread.start();
 				rPid = new Pid();
 				System.out.println("Process Id is: " + rPid.getPidWindows(RProcess));
+				rOptions();
 
 			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
 
@@ -540,6 +562,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				RprocessThread.start();
 				rPid = new Pid();
 				System.out.println("Process Id is: " + rPid.getPidUnix(RProcess));
+				rOptions();
 			}
 
 			else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
@@ -556,6 +579,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				RprocessThread.start();
 				rPid = new Pid();
 				System.out.println("Process Id is: " + rPid.getPidUnix(RProcess));
+				rOptions();
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -580,7 +604,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 						System.out.print((char) ch);
 
 					}
-					// consoleOutputChar.delete(0, consoleOutputChar.length()-1);
+					// consoleOutputChar.delete(0,
+					// consoleOutputChar.length()-1);
 				} catch (IOException e) {
 					// e.printStackTrace();
 					System.out.println("Stream closed!");
@@ -614,7 +639,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 						System.out.print((char) ch);
 
 					}
-					// consoleOutputChar.delete(0, consoleOutputChar.length()-1);
+					// consoleOutputChar.delete(0,
+					// consoleOutputChar.length()-1);
 				} catch (IOException e) {
 					// e.printStackTrace();
 					System.out.println("Stream closed!");
@@ -648,7 +674,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 						System.out.print((char) ch);
 
 					}
-					// consoleOutputChar.delete(0, consoleOutputChar.length()-1);
+					// consoleOutputChar.delete(0,
+					// consoleOutputChar.length()-1);
 				} catch (IOException e) {
 					// e.printStackTrace();
 					System.out.println("Stream closed!");
@@ -704,7 +731,10 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	public void dispose() {
 		ioc.getInputStream().appendData(System.getProperty("line.separator"));
 		interpreterSelection = "-";
-		/* Use a thread to ensure that the other threads will be destroyed - maybee not necessary! */
+		/*
+		 * Use a thread to ensure that the other threads will be destroyed -
+		 * maybee not necessary!
+		 */
 		new Thread() {
 			@Override
 			public void run() {
@@ -874,7 +904,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			/*
 			 * case "r": System.out.print("System>");
 			 * 
-			 * input = in.readLine(); if (input == null||input.equals("")) break; else { if(RServe.isAliveDialog()){ RServe.printJob(input);
+			 * input = in.readLine(); if (input == null||input.equals(""))
+			 * break; else { if(RServe.isAliveDialog()){ RServe.printJob(input);
 			 * 
 			 * }
 			 * 
@@ -927,7 +958,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					}
 
 					/*
-					 * Process p = RConnectionJob.getProc(); // Write to the output!
+					 * Process p = RConnectionJob.getProc(); // Write to the
+					 * output!
 					 */
 
 					ignore = false;
@@ -982,7 +1014,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					}
 
 					/*
-					 * Process p = RConnectionJob.getProc(); // Write to the output!
+					 * Process p = RConnectionJob.getProc(); // Write to the
+					 * output!
 					 */
 
 					ignore = false;
@@ -1031,7 +1064,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					}
 
 					/*
-					 * Process p = RConnectionJob.getProc(); // Write to the output!
+					 * Process p = RConnectionJob.getProc(); // Write to the
+					 * output!
 					 */
 
 					ignore = false;
@@ -1084,7 +1118,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					}
 
 					/*
-					 * Process p = RConnectionJob.getProc(); // Write to the output!
+					 * Process p = RConnectionJob.getProc(); // Write to the
+					 * output!
 					 */
 
 					ignore = false;
@@ -1116,7 +1151,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		}
 
 		/**
-		 * Ensure that caret moves to End of Buffer when the REPL prints it prompt
+		 * Ensure that caret moves to End of Buffer when the REPL prints it
+		 * prompt
 		 */
 		public void documentChanged(DocumentEvent event) {
 			IDocument doc = event.getDocument();
@@ -1128,19 +1164,37 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					// move cursor to end of repl-prompt when necessary
 					if (textLen > 0 && viewer.getTextWidget().getCaretOffset() < doclen) {
 						IRegion reg = doc.getLineInformationOfOffset(doclen);
-						
-						
+
 						// use end offset excluding any eol characters
 						viewer.getTextWidget().setCaretOffset(reg.getOffset() + reg.getLength());
-						
-						
+
+						/*
+						 * IRegion reg = doc.getLineInformationOfOffset(doclen);
+						 * String selectionConsole =
+						 * ConsolePageParticipant.getInterpreterSelection();
+						 * 
+						 * if (selectionConsole.equals("R")) { String line =
+						 * doc.get(reg.getOffset(), reg.getLength());
+						 * 
+						 * if(line.contains("R#")){ int lineNumber
+						 * =line.indexOf("#");
+						 * 
+						 * int
+						 * number=Integer.parseInt(line.replaceAll("\\D+",""));
+						 * System.out.println("Line Number: "+number);
+						 * 
+						 * }
+						 * 
+						 * }
+						 */
+
 					}
 					// System.out.println(textLen);
 
 				} catch (BadLocationException e) {
 				}
 			}
-			
+
 		}
 	};
 	private String selected;
@@ -1285,6 +1339,18 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		toolBarManager.remove("Continue");
 		actionBars.updateActionBars();
 
+	}
+
+	public Process getShellProcess() {
+		return shellProcess;
+	}
+
+	public Process getRProcess() {
+		return RProcess;
+	}
+
+	public Process getPythonProcess() {
+		return pythonProcess;
 	}
 
 }
