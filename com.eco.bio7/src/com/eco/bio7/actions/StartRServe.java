@@ -88,7 +88,7 @@ public class StartRServe extends Action {
 					TerminateRserve.killProcessMac();
 
 				}
-
+                /*Establish a new Rserve connection!*/
 				if (RServe.isRrunning() == false) {
 					RConnectionJob.setStore(Bio7Plugin.getDefault().getPreferenceStore());
 					job = new RConnectionJob();
@@ -110,7 +110,7 @@ public class StartRServe extends Action {
 					job.schedule();
 
 				}
-
+                /*Shutdown Rserve!*/
 				else {
 
 					RConnectionJob.setCanceled(true);

@@ -42,6 +42,7 @@ import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.Rserve.RConnection;
+import org.rosuda.REngine.Rserve.RSession;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.Bio7Plugin;
@@ -73,6 +74,8 @@ public class RServe {
 	private static boolean isconnecting = false;
 
 	private static String[] selections = null;
+
+	private static RSession rSession;
 
 	/**
 	 * Evaluates an R expression without running in a job. This method can be
@@ -670,6 +673,23 @@ public class RServe {
 			}
 
 		}
+	}
+
+	/**
+	 * A method to store the current RSession.
+	 * @param rSess the RSession
+	 */
+	public static void setRsession(RSession rSess) {
+		rSession=rSess;
+		
+	}
+	/**
+	 * A method to get the current stored RSession.
+	 * @return the RSession
+	 */
+	public static RSession getRsession() {
+		
+		return rSession;
 	}
 
 }

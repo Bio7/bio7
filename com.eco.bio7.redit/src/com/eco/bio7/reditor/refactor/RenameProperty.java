@@ -57,7 +57,8 @@ public class RenameProperty implements IEditorActionDelegate {
     this.targetEditor = targetEditor;
     onPropertiesFile = false;
     IFile file = getFile();
-    if(    file != null 
+    /*Changed for Bio7 to avoid null exception if no file extension!*/
+    if(    file != null &&file.getFileExtension()!=null
         && file.getFileExtension().equals( EXT_PROPERTIES ) ) {
       onPropertiesFile = true;
     }                           

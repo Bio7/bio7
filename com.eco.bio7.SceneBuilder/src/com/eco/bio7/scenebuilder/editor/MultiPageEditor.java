@@ -8,9 +8,17 @@ import java.net.URL;
 import java.util.Timer;
 
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.embed.swing.JFXPanel;
 import javafx.embed.swt.FXCanvas;
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import net.htmlparser.jericho.Source;
 import net.htmlparser.jericho.SourceFormatter;
@@ -24,7 +32,9 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -49,7 +59,8 @@ import com.oracle.javafx.scenebuilder.kit.editor.panel.content.ContentPanelContr
 import com.oracle.javafx.scenebuilder.kit.fxom.FXOMDocument;
 
 /**
- * An example showing how to create a multi-page editor. This example has 3 pages:
+ * An example showing how to create a multi-page editor. This example has 3
+ * pages:
  * <ul>
  * <li>page 0 contains a nested text editor.
  * <li>page 1 allows you to change the font used in page 2
@@ -86,10 +97,8 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	public MultiPageEditor() {
 		super();
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
-         
-	}
 
-	
+	}
 
 	public void createPage0() {
 
@@ -119,25 +128,88 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 			public void run() {
 
 				editorController = new EditorController();
+				
+				editorController.fxomDocumentProperty().addListener(
+		                new ChangeListener<FXOMDocument>() {
+		                    @Override
+		                    public void changed(ObservableValue<? extends FXOMDocument> ov,
+		                            FXOMDocument od, FXOMDocument nd) {
+		                       
+		                       System.out.println("doc changed");
+		                    }
+		                });
+
+		       
 
 				contentPanelController = new ContentPanelController(editorController);
 				pane = new BorderPane();
 				pane.setCenter(contentPanelController.getPanelRoot());
 				scene = new Scene(pane);
+				scene.setOnKeyReleased(new EventHandler<KeyEvent>() {
+
+					@Override
+					public void handle(KeyEvent evt) {
+
+						final KeyCombination combo = new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN);
+						final KeyCombination combo2 = new KeyCodeCombination(KeyCode.Y, KeyCombination.CONTROL_DOWN);
+
+						if (combo.match(evt)) {
+
+							if (editorController.canUndo()) {
+								editorController.undo();
+
+								IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
+								if (editorController != null) {
+
+									doc.set(editorController.getFxmlText());
+
+								}
+							}
+
+						}
+
+						else if (combo2.match(evt)) {
+							if (editorController.canRedo()) {
+								editorController.redo();
+								IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
+								if (editorController != null) {
+
+									doc.set(editorController.getFxmlText());
+
+								}
+							}
+
+						}
+					}
+				});
+
 				try {
 					editorController.setFxmlTextAndLocation(fxmlText, fxmlLocation);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				
 
 				canvas.setScene(scene);
-				
+				/*
+				 * contentPanelController.getPanelRoot().addEventHandler(MouseEvent
+				 * .DRAG_DETECTED, new EventHandler<MouseEvent>() {
+				 * 
+				 * @Override public void handle(MouseEvent e) { IDocument doc =
+				 * ((ITextEditor)
+				 * editor).getDocumentProvider().getDocument(getEditor
+				 * (1).getEditorInput()); if (editorController != null) {
+				 * 
+				 * Source s = new Source(editorController.getFxmlText());
+				 * SourceFormatter sf = new SourceFormatter(s);
+				 * 
+				 * doc.set(sf.toString());
+				 * 
+				 * } System.out.println("Event"); } });
+				 */
+
 			}
 		});
-		
-		
 
 		// canvas.setScene(scene);
 
@@ -145,15 +217,50 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 		setPageText(index, "GUI Editor");
 
 	}
-	
+
 	void createPage1() {
 		try {
 			editor = new XMLEditor();
 			int index = addPage(editor, getEditorInput());
 			setPageText(index, editor.getTitle());
+
 		} catch (PartInitException e) {
 			ErrorDialog.openError(getSite().getShell(), "Error creating nested text editor", null, e.getStatus());
 		}
+		/*IDocumentProvider dp = editor.getDocumentProvider();
+		final IDocument doc = dp.getDocument(editor.getEditorInput());
+		doc.addDocumentListener(new IDocumentListener() {
+
+			@Override
+			public void documentChanged(DocumentEvent event) {
+				
+				if (editorController != null) {
+					Platform.runLater(new Runnable() {
+
+						@Override
+						public void run() {
+							try {
+								editorController.setFxmlText(doc.get());
+
+								canvas.redraw();
+
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+
+						}
+					});
+				}
+			}
+
+			@Override
+			public void documentAboutToBeChanged(DocumentEvent event) {
+				// TODO Auto-generated method stub
+
+			}
+
+		});*/
 
 	}
 
@@ -200,7 +307,9 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	}
 
 	/**
-	 * The <code>MultiPageEditorPart</code> implementation of this <code>IWorkbenchPart</code> method disposes all nested editors. Subclasses may extend.
+	 * The <code>MultiPageEditorPart</code> implementation of this
+	 * <code>IWorkbenchPart</code> method disposes all nested editors.
+	 * Subclasses may extend.
 	 */
 	public void dispose() {
 		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
@@ -214,13 +323,15 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	public void doSave(IProgressMonitor monitor) {
 		SkeletonBuffer buf = new SkeletonBuffer(editorController.getFxomDocument());
 		buf.setFormat(FORMAT_TYPE.FULL);
-		 buf.setTextType(TEXT_TYPE.WITH_COMMENTS);
-        System.out.println(buf.toString());
+		buf.setTextType(TEXT_TYPE.WITH_COMMENTS);
+		System.out.println(buf.toString());
 		getEditor(1).doSave(monitor);
 	}
 
 	/**
-	 * Saves the multi-page editor's document as another file. Also updates the text for page 0's tab, and updates this multi-page editor's input to correspond to the nested editor's.
+	 * Saves the multi-page editor's document as another file. Also updates the
+	 * text for page 0's tab, and updates this multi-page editor's input to
+	 * correspond to the nested editor's.
 	 */
 	public void doSaveAs() {
 		IEditorPart editor = getEditor(1);
@@ -238,7 +349,8 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	}
 
 	/**
-	 * The <code>MultiPageEditorExample</code> implementation of this method checks that the input is an instance of <code>IFileEditorInput</code>.
+	 * The <code>MultiPageEditorExample</code> implementation of this method
+	 * checks that the input is an instance of <code>IFileEditorInput</code>.
 	 */
 	public void init(IEditorSite site, IEditorInput editorInput) throws PartInitException {
 		if (!(editorInput instanceof IFileEditorInput))
@@ -261,7 +373,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 		if (newPageIndex == 0) {
 
-			final IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
+			/*final IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
 
 			if (editorController != null) {
 				Platform.runLater(new Runnable() {
@@ -280,7 +392,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 					}
 				});
-			}
+			}*/
 		}
 
 		else if (newPageIndex == 1) {
