@@ -100,7 +100,6 @@ Export-Package: com.eco.bio7.browser.editor,
  com.oracle.javafx.scenebuilder.kit.util.control.paintpicker.gradientpicker,
  com.oracle.javafx.scenebuilder.kit.util.control.paintpicker.rotator,
  com.oracle.javafx.scenebuilder.kit.util.control.paintpicker.slider,
- com.swtdesigner,
  javafx.embed.swt,
  net.htmlparser.jericho,
  net.htmlparser.jericho.nodoc

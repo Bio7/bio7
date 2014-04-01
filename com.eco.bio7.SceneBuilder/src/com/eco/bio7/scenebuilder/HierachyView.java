@@ -19,8 +19,9 @@ import org.eclipse.ui.part.ViewPart;
 
 import com.eco.bio7.scenebuilder.editor.MultiPageEditor;
 import com.oracle.javafx.scenebuilder.kit.editor.panel.hierarchy.HierarchyPanelController;
+import com.oracle.javafx.scenebuilder.kit.editor.panel.hierarchy.treeview.HierarchyTreeViewController;
 
-public class HierachyView extends ViewPart {
+public class HierachyView extends ViewPart  {
 
 	private FXCanvas canvas;
 	private MultiPageEditor pag;
@@ -74,7 +75,9 @@ public class HierachyView extends ViewPart {
 						public void run() {
 
 							if (pag != null) {
-								HierarchyPanelController h = new HierarchyPanelController(pag.editorController);
+								HierarchyTreeViewController h = new HierarchyTreeViewController(pag.editorController);
+								//HierarchyPanelController h = new HierarchyPanelController(pag.editorController);
+								//ContentPanelController h = new ContentPanelController(pag.editorController);
 								final BorderPane pane = new BorderPane();
 								pane.setCenter(h.getPanelRoot());
 								scene = new Scene(pane);

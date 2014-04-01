@@ -93,6 +93,8 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	protected BorderPane pane;
 	private Composite composite;
 	private FillLayout layout;
+	private ChangeListener<Number> jobListener;
+	private ChangeListener<Number> selectionListener;
 
 	public MultiPageEditor() {
 		super();
@@ -128,18 +130,41 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 			public void run() {
 
 				editorController = new EditorController();
-				
-				editorController.fxomDocumentProperty().addListener(
-		                new ChangeListener<FXOMDocument>() {
-		                    @Override
-		                    public void changed(ObservableValue<? extends FXOMDocument> ov,
-		                            FXOMDocument od, FXOMDocument nd) {
-		                       
-		                       System.out.println("doc changed");
-		                    }
-		                });
 
-		       
+				/*
+				 * editorController.fxomDocumentProperty().addListener( new
+				 * ChangeListener<FXOMDocument>() {
+				 * 
+				 * @Override public void changed(ObservableValue<? extends
+				 * FXOMDocument> ov, FXOMDocument od, FXOMDocument nd) {
+				 * 
+				 * System.out.println("doc changed"); } });
+				 */
+
+				jobListener = new ChangeListener<Number>() {
+					@Override
+					public void changed(ObservableValue<? extends Number> observable, Number oldNum, Number newNum) {
+						System.out.println("fx changed");
+						IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
+						if (editorController != null) {
+
+							Source s = new Source(editorController.getFxmlText());
+							SourceFormatter sf = new SourceFormatter(s);
+
+							doc.set(sf.toString());
+
+						}
+					}
+				};
+				selectionListener = new ChangeListener<Number>() {
+					@Override
+					public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+						// System.out.println("doc changed");
+					}
+				};
+
+				editorController.getJobManager().revisionProperty().addListener(jobListener);
+				editorController.getSelection().revisionProperty().addListener(selectionListener);
 
 				contentPanelController = new ContentPanelController(editorController);
 				pane = new BorderPane();
@@ -227,13 +252,14 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 		} catch (PartInitException e) {
 			ErrorDialog.openError(getSite().getShell(), "Error creating nested text editor", null, e.getStatus());
 		}
-		/*IDocumentProvider dp = editor.getDocumentProvider();
+       /*To do: this function must be implemented in the editor reconciler*/
+		IDocumentProvider dp = editor.getDocumentProvider();
 		final IDocument doc = dp.getDocument(editor.getEditorInput());
 		doc.addDocumentListener(new IDocumentListener() {
 
 			@Override
 			public void documentChanged(DocumentEvent event) {
-				
+
 				if (editorController != null) {
 					Platform.runLater(new Runnable() {
 
@@ -244,8 +270,8 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 								canvas.redraw();
 
-							} catch (IOException e) {
-								// TODO Auto-generated catch block
+							} catch (IOException e) { // TODO Auto-generated
+														// catch block
 								e.printStackTrace();
 							}
 
@@ -260,7 +286,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 			}
 
-		});*/
+		});
 
 	}
 
@@ -313,6 +339,10 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	 */
 	public void dispose() {
 		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+		if (editorController != null) {
+			editorController.getSelection().revisionProperty().removeListener(selectionListener);
+			editorController.getJobManager().revisionProperty().removeListener(jobListener);
+		}
 
 		super.dispose();
 	}
@@ -373,39 +403,40 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 		if (newPageIndex == 0) {
 
-			/*final IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
-
-			if (editorController != null) {
-				Platform.runLater(new Runnable() {
-
-					@Override
-					public void run() {
-						try {
-							editorController.setFxmlText(doc.get());
-
-							canvas.redraw();
-
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-
-					}
-				});
-			}*/
+			/*
+			 * final IDocument doc = ((ITextEditor)
+			 * editor).getDocumentProvider()
+			 * .getDocument(getEditor(1).getEditorInput());
+			 * 
+			 * if (editorController != null) { Platform.runLater(new Runnable()
+			 * {
+			 * 
+			 * @Override public void run() { try {
+			 * editorController.setFxmlText(doc.get());
+			 * 
+			 * canvas.redraw();
+			 * 
+			 * } catch (IOException e) { // TODO Auto-generated catch block
+			 * e.printStackTrace(); }
+			 * 
+			 * } }); }
+			 */
 		}
 
 		else if (newPageIndex == 1) {
 
-			IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
-			if (editorController != null) {
-
-				Source s = new Source(editorController.getFxmlText());
-				SourceFormatter sf = new SourceFormatter(s);
-
-				doc.set(sf.toString());
-
-			}
+			/*
+			 * IDocument doc = ((ITextEditor)
+			 * editor).getDocumentProvider().getDocument
+			 * (getEditor(1).getEditorInput()); if (editorController != null) {
+			 * 
+			 * Source s = new Source(editorController.getFxmlText());
+			 * SourceFormatter sf = new SourceFormatter(s);
+			 * 
+			 * doc.set(sf.toString());
+			 * 
+			 * }
+			 */
 		}
 
 	}
