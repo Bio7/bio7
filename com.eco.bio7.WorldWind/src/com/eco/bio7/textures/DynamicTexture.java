@@ -48,29 +48,11 @@ public class DynamicTexture {
 			if (WindowManager.getImageCount() > 0) {
 
 				imp = WindowManager.getCurrentWindow().getImagePlus();
-				ImageProcessor pr=imp.getProcessor();
-				if(pr instanceof ColorProcessor){
-					ColorProcessor cp=(ColorProcessor)pr;
-					w = pr.getWidth();
-					h = pr.getHeight();
-
-					/* get the alpha channel and punch a hole into it */
-					/*bpAlpha = cp.getChannel(4, null);
-					r = Math.min(w, h)/4;
-					roi = new OvalRoi(w/2-r, h/2-r, 2*r, 2*r);
-					bpAlpha.setValue(0);
-					bpAlpha.fill(roi);*/
-					ByteProcessor bpAlpha = cp.getChannel(4, null);
-					cp.setChannel(4, bpAlpha);
-					buff = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-					raster = buff.getRaster();
-					raster.setDataElements(0, 0, w, h, cp.getPixels());
-					
-				}
-				/*if (imp != null) {
+				
+				if (imp != null) {
 					Image img = imp.getImage();
 					g2.drawImage(img, 0, 0, imp.getWidth(), imp.getHeight(), null);
-				}*/
+				}
 				
 				if(buff!=null){
 					g2.drawImage(buff, 0, 0, imp.getWidth(), imp.getHeight(), null);
