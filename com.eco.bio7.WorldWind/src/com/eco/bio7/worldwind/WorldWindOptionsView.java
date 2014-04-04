@@ -53,6 +53,11 @@ import gov.nasa.worldwindx.examples.util.ExampleUtil;
 import gov.nasa.worldwindx.examples.util.FileStoreDataSet;
 import ij.ImagePlus;
 import ij.WindowManager;
+import ij.gui.OvalRoi;
+import ij.process.ByteProcessor;
+import ij.process.ColorProcessor;
+import ij.process.ImageProcessor;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -63,6 +68,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
@@ -75,7 +81,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import javax.swing.SwingUtilities;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -129,9 +137,12 @@ import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
+
 import worldw.Activator;
+
 import com.eco.bio7.image.CanvasView;
 import com.swtdesigner.SWTResourceManager;
+
 import org.eclipse.swt.widgets.Spinner;
 
 public class WorldWindOptionsView extends ViewPart {
@@ -248,7 +259,8 @@ public class WorldWindOptionsView extends ViewPart {
 						if (curPos == null)
 							return;
 						/*
-						 * Counts the amounts of clicks to set the data in the min max textfields!
+						 * Counts the amounts of clicks to set the data in the
+						 * min max textfields!
 						 */
 						if (mouseCount == 1) {
 
@@ -319,9 +331,15 @@ public class WorldWindOptionsView extends ViewPart {
 		setButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				/*
-				 * LatLon latLon = computeLatLonFromString(text.getText(), WorldWindView.getWwd().getModel().getGlobe()); updateResult(latLon); if (latLon != null) { OrbitView view = (OrbitView) WorldWindView.getWwd().getView(); Globe globe = WorldWindView.getWwd().getModel().getGlobe();
+				 * LatLon latLon = computeLatLonFromString(text.getText(),
+				 * WorldWindView.getWwd().getModel().getGlobe());
+				 * updateResult(latLon); if (latLon != null) { OrbitView view =
+				 * (OrbitView) WorldWindView.getWwd().getView(); Globe globe =
+				 * WorldWindView.getWwd().getModel().getGlobe();
 				 * 
-				 * ((BasicOrbitView) view).addPanToAnimator(new Position(latLon, 0), view.getHeading(), view.getPitch(), view.getZoom(), true); }
+				 * ((BasicOrbitView) view).addPanToAnimator(new Position(latLon,
+				 * 0), view.getHeading(), view.getPitch(), view.getZoom(),
+				 * true); }
 				 */
 				flyToCoords();
 
@@ -609,7 +627,9 @@ public class WorldWindOptionsView extends ViewPart {
 				final String f = openFile(new String[] { "*.tif", "*" });
 
 				if (f != null) {
-					// addImages(f, new Double(minLat.getText()), new Double(maxLat.getText()), new Double(minLon.getText()), new Double(maxLon.getText()));
+					// addImages(f, new Double(minLat.getText()), new
+					// Double(maxLat.getText()), new Double(minLon.getText()),
+					// new Double(maxLon.getText()));
 					Job job = new Job("Open Tiff") {
 						@Override
 						protected IStatus run(IProgressMonitor monitor) {
@@ -901,7 +921,8 @@ public class WorldWindOptionsView extends ViewPart {
 
 					computeButton.setText("Compute");
 					/* SWT Text Color Buttons on Windows not working! */
-					// computeButton.setForeground(new org.eclipse.swt.graphics.Color(Display.getCurrent(),255,255,255));
+					// computeButton.setForeground(new
+					// org.eclipse.swt.graphics.Color(Display.getCurrent(),255,255,255));
 				} else if (selectionButtonEnabled == false) {
 					if (wC != null) {
 						((Component) wC).setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
@@ -909,7 +930,8 @@ public class WorldWindOptionsView extends ViewPart {
 
 					computeButton.setText("Armed");
 					/* SWT Text Color Buttons on Windows not working! */
-					// computeButton.setForeground(new org.eclipse.swt.graphics.Color(Display.getCurrent(),155,155,155));
+					// computeButton.setForeground(new
+					// org.eclipse.swt.graphics.Color(Display.getCurrent(),155,155,155));
 					layers = WorldWindView.getWwd().getModel().getLayers();
 					for (int j = 0; j < layers.size(); j++) {
 						// System.out.println(j+": "+layers.get(j).getName());
@@ -921,17 +943,25 @@ public class WorldWindOptionsView extends ViewPart {
 					selectionButtonEnabled = true;
 				}
 				/*
-				 * Rectangle r=WorldWindView.getWwd().getBounds(); View view = WorldWindView.getWwd().getView();
+				 * Rectangle r=WorldWindView.getWwd().getBounds(); View view =
+				 * WorldWindView.getWwd().getView();
 				 * 
-				 * Position upperLeft; Position lowerLeft; if(view!=null){ upperLeft = view.computePositionFromScreenPoint(0, 0); lowerLeft = view.computePositionFromScreenPoint(r.width, r.height);
+				 * Position upperLeft; Position lowerLeft; if(view!=null){
+				 * upperLeft = view.computePositionFromScreenPoint(0, 0);
+				 * lowerLeft = view.computePositionFromScreenPoint(r.width,
+				 * r.height);
 				 * 
 				 * 
 				 * 
 				 * 
 				 * 
 				 * 
-				 * minLat.setText(String.valueOf(upperLeft.latitude.degrees)) ; minLon.setText(String.valueOf(upperLeft.longitude.degrees )); maxLat.setText(String.valueOf(lowerLeft.latitude.degrees )); maxLon.setText(String.valueOf(lowerLeft.longitude.degrees ));
-				 * //System.out.println(r.x+" "+r.y+" "+r.width+" "+ r.height); System.out.println(upperLeft.latitude);
+				 * minLat.setText(String.valueOf(upperLeft.latitude.degrees)) ;
+				 * minLon.setText(String.valueOf(upperLeft.longitude.degrees ));
+				 * maxLat.setText(String.valueOf(lowerLeft.latitude.degrees ));
+				 * maxLon.setText(String.valueOf(lowerLeft.longitude.degrees ));
+				 * //System.out.println(r.x+" "+r.y+" "+r.width+" "+ r.height);
+				 * System.out.println(upperLeft.latitude);
 				 */
 
 			}
@@ -943,7 +973,7 @@ public class WorldWindOptionsView extends ViewPart {
 		fd_computeButton.top = new FormAttachment(removeAllButton, 0, SWT.TOP);
 		computeButton.setLayoutData(fd_computeButton);
 		computeButton.setText("Compute");
-		
+
 		Button btnNewButton = new Button(composite_1, SWT.NONE);
 		fd_scrolledComposite.top = new FormAttachment(btnNewButton, 6);
 		btnNewButton.addSelectionListener(new SelectionAdapter() {
@@ -952,11 +982,10 @@ public class WorldWindOptionsView extends ViewPart {
 				final String f = openFile(new String[] { "*.shp", "*" });
 
 				if (f != null) {
-					LoadShapefileJob shapeFileJob=new LoadShapefileJob(f, composite_4);
+					LoadShapefileJob shapeFileJob = new LoadShapefileJob(f, composite_4);
 					shapeFileJob.schedule();
 				}
-				
-				
+
 			}
 		});
 		FormData fd_btnNewButton = new FormData();
@@ -1294,9 +1323,9 @@ public class WorldWindOptionsView extends ViewPart {
 		final Button rubberBandButton = new Button(composite_6, SWT.CHECK);
 		rubberBandButton.setToolTipText("Enables or disables the \"Rubber band\" option!");
 		rubberBandButton.setSelection(true);
-		
-		if(measureTool!=null){
-		rubberBandButton.setSelection(measureTool.getController().isUseRubberBand());
+
+		if (measureTool != null) {
+			rubberBandButton.setSelection(measureTool.getController().isUseRubberBand());
 		}
 		rubberBandButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -1312,8 +1341,8 @@ public class WorldWindOptionsView extends ViewPart {
 
 		freehandButton = new Button(composite_6, SWT.CHECK);
 		freehandButton.setToolTipText("Enables or disables freehand selections!");
-		if(measureTool!=null){
-		freehandButton.setSelection(measureTool.getController().isFreeHand());
+		if (measureTool != null) {
+			freehandButton.setSelection(measureTool.getController().isFreeHand());
 		}
 		freehandButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -1565,7 +1594,8 @@ public class WorldWindOptionsView extends ViewPart {
 
 					// Metric changed - sent after each render frame
 					/*
-					 * With syncExec error occurred after perspective switch!!!!!
+					 * With syncExec error occurred after perspective
+					 * switch!!!!!
 					 */
 					else if (event.getPropertyName().equals(MeasureTool.EVENT_METRIC_CHANGED)) {
 						Display display = PlatformUI.getWorkbench().getDisplay();
@@ -1935,7 +1965,7 @@ public class WorldWindOptionsView extends ViewPart {
 			layerImages.setName(new File(path).getName());
 			layerImages.setPickEnabled(false);
 			layerImages.addRenderable(si1);
-			LayerComposite lc = new LayerComposite(composite_4, SWT.NONE, si1, layerImages,null);
+			LayerComposite lc = new LayerComposite(composite_4, SWT.NONE, si1, layerImages, null);
 			lc.setBounds(10, 10, 300, 60);
 			computeScrolledSize();
 			if (wC != null) {
@@ -1953,12 +1983,13 @@ public class WorldWindOptionsView extends ViewPart {
 	protected void importImagery(String IMAGE_PATH) {
 		try {
 
-			
 			// Read the data and save it in a temp file.
 			File sourceFile = ExampleUtil.saveResourceToTempFile(IMAGE_PATH, ".tif");
 
-			// Create a raster reader to read this type of file. The reader is created from the currently
-			// configured factory. The factory class is specified in the Configuration, and a different one can be
+			// Create a raster reader to read this type of file. The reader is
+			// created from the currently
+			// configured factory. The factory class is specified in the
+			// Configuration, and a different one can be
 			// specified there.
 			DataRasterReaderFactory readerFactory = (DataRasterReaderFactory) WorldWind.createConfigurationComponent(AVKey.DATA_RASTER_READER_FACTORY_CLASS_NAME);
 			DataRasterReader reader = readerFactory.findReaderFor(sourceFile, null);
@@ -1968,15 +1999,18 @@ public class WorldWindOptionsView extends ViewPart {
 			if (metadata == null || !AVKey.IMAGE.equals(metadata.getStringValue(AVKey.PIXEL_FORMAT)))
 				throw new Exception("Not an image file.");
 
-			// Read the file into the raster. read() returns potentially several rasters if there are multiple
-			// files, but in this case there is only one so just use the first element of the returned array.
+			// Read the file into the raster. read() returns potentially several
+			// rasters if there are multiple
+			// files, but in this case there is only one so just use the first
+			// element of the returned array.
 			DataRaster[] rasters = reader.read(sourceFile, null);
 			if (rasters == null || rasters.length == 0)
 				throw new Exception("Can't read the image file.");
 
 			DataRaster raster = rasters[0];
 
-			// Determine the sector covered by the image. This information is in the GeoTIFF file or auxiliary
+			// Determine the sector covered by the image. This information is in
+			// the GeoTIFF file or auxiliary
 			// files associated with the image file.
 			final Sector sector = (Sector) raster.getValue(AVKey.SECTOR);
 			if (sector == null) {
@@ -1995,34 +2029,44 @@ public class WorldWindOptionsView extends ViewPart {
 
 			}
 
-			// Request a sub-raster that contains the whole image. This step is necessary because only sub-rasters
+			// Request a sub-raster that contains the whole image. This step is
+			// necessary because only sub-rasters
 			// are reprojected (if necessary); primary rasters are not.
 			int width = raster.getWidth();
 			int height = raster.getHeight();
 
-			// getSubRaster() returns a sub-raster of the size specified by width and height for the area indicated
-			// by a sector. The width, height and sector need not be the full width, height and sector of the data,
-			// but we use the full values of those here because we know the full size isn't huge. If it were huge
-			// it would be best to get only sub-regions as needed or install it as a tiled image layer rather than
+			// getSubRaster() returns a sub-raster of the size specified by
+			// width and height for the area indicated
+			// by a sector. The width, height and sector need not be the full
+			// width, height and sector of the data,
+			// but we use the full values of those here because we know the full
+			// size isn't huge. If it were huge
+			// it would be best to get only sub-regions as needed or install it
+			// as a tiled image layer rather than
 			// merely import it.
 			DataRaster subRaster = raster.getSubRaster(width, height, sector, null);
 
-			// Tne primary raster can be disposed now that we have a sub-raster. Disposal won't affect the
+			// Tne primary raster can be disposed now that we have a sub-raster.
+			// Disposal won't affect the
 			// sub-raster.
 			raster.dispose();
 
-			// Verify that the sub-raster can create a BufferedImage, then create one.
+			// Verify that the sub-raster can create a BufferedImage, then
+			// create one.
 			if (!(subRaster instanceof BufferedImageRaster))
 				throw new Exception("Cannot get BufferedImage.");
 			BufferedImage image = ((BufferedImageRaster) subRaster).getBufferedImage();
 
-			// The sub-raster can now be disposed. Disposal won't affect the BufferedImage.
+			// The sub-raster can now be disposed. Disposal won't affect the
+			// BufferedImage.
 			subRaster.dispose();
 
-			// Create a SurfaceImage to display the image over the specified sector.
+			// Create a SurfaceImage to display the image over the specified
+			// sector.
 			final SurfaceImage si1 = new SurfaceImage(image, sector);
 
-			// On the event-dispatch thread, add the imported data as an SurfaceImageLayer.
+			// On the event-dispatch thread, add the imported data as an
+			// SurfaceImageLayer.
 
 			// Add the SurfaceImage to a layer.
 			final RenderableLayer layerImages = new RenderableLayer();
@@ -2033,7 +2077,7 @@ public class WorldWindOptionsView extends ViewPart {
 			display.syncExec(new Runnable() {
 
 				public void run() {
-					LayerComposite lc = new LayerComposite(composite_4, SWT.NONE, si1, layerImages,sector);
+					LayerComposite lc = new LayerComposite(composite_4, SWT.NONE, si1, layerImages, sector);
 					lc.setBounds(10, 10, 300, 60);
 					computeScrolledSize();
 				}
@@ -2042,7 +2086,7 @@ public class WorldWindOptionsView extends ViewPart {
 
 				insertBeforePlacenames(wC, layerImages);
 			}
-			//ExampleUtil.goTo(WorldWindView.getWwd(), sector);
+			// ExampleUtil.goTo(WorldWindView.getWwd(), sector);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -2098,8 +2142,40 @@ public class WorldWindOptionsView extends ViewPart {
 		if (WindowManager.getImageCount() > 0) {
 			ImagePlus imp = WindowManager.getCurrentWindow().getImagePlus();
 			if (imp != null) {
+				ImageProcessor pr = imp.getProcessor();
 
-				image = imp.getBufferedImage();
+				if (pr instanceof ColorProcessor) {
+					ColorProcessor cp = (ColorProcessor) pr;
+					int w = pr.getWidth();
+					int h = pr.getHeight();
+
+					
+					
+					  ByteProcessor alpha = cp.getChannel(4, null);
+					 for(int i=0;i<w;i++){
+						 
+						 for(int u=0;u<h;u++){
+							 int [] rgb=cp.getPixel(i, u, null);
+							 if(rgb[0]==0&&rgb[1]==0&&rgb[2]==0){
+								 
+								 alpha.set(i, u, 0);
+								 
+							 }
+							 
+						 }
+					 }
+					 
+					 
+					
+					
+					cp.setChannel(4, alpha);
+					image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+					WritableRaster raster = image.getRaster();
+					raster.setDataElements(0, 0, w, h, cp.getPixels());
+				} else {
+
+					image = imp.getBufferedImage();
+				}
 			}
 		}
 		return image;
@@ -2115,7 +2191,7 @@ public class WorldWindOptionsView extends ViewPart {
 			layerImages.setName(name);
 			layerImages.setPickEnabled(false);
 			layerImages.addRenderable(si1);
-			LayerComposite lc = new LayerComposite(composite_4, SWT.NONE, si1, layerImages,null);
+			LayerComposite lc = new LayerComposite(composite_4, SWT.NONE, si1, layerImages, null);
 			lc.setBounds(10, 10, 300, 60);
 			computeScrolledSize();
 			if (wC != null) {
@@ -2209,7 +2285,8 @@ public class WorldWindOptionsView extends ViewPart {
 	}
 
 	/**
-	 * Opens a file-open dialog which displays the file with the given extensions.
+	 * Opens a file-open dialog which displays the file with the given
+	 * extensions.
 	 * 
 	 * @param extension
 	 *            the extensions as a String array which should be displayed.
@@ -2325,7 +2402,8 @@ public class WorldWindOptionsView extends ViewPart {
 			}
 
 			/*
-			 * else { resultsBox.removeAllItems(); for ( PointOfInterest p:poi) { resultsBox.addItem(p); } resultsPanel.setVisible(true); }
+			 * else { resultsBox.removeAllItems(); for ( PointOfInterest p:poi)
+			 * { resultsBox.addItem(p); } resultsPanel.setVisible(true); }
 			 */
 		}
 	}
@@ -2339,7 +2417,8 @@ public class WorldWindOptionsView extends ViewPart {
 	}
 
 	/*
-	 * Sample inputs Coordinate formats: 39.53, -119.816 (Reno, NV) 21 10 14 N, 86 51 0 W (Cancun)
+	 * Sample inputs Coordinate formats: 39.53, -119.816 (Reno, NV) 21 10 14 N,
+	 * 86 51 0 W (Cancun)
 	 */
 	public java.util.List<PointOfInterest> parseSearchValues(String searchStr) {
 		String sepRegex = "[,]"; // other separators??
@@ -2352,7 +2431,12 @@ public class WorldWindOptionsView extends ViewPart {
 			// any numbers at all?
 			String regex = "[0-9]";
 			Pattern pattern = Pattern.compile(regex);
-			Matcher matcher = pattern.matcher(searchValues[1]); // Street Address may have numbers in first field so use 2nd
+			Matcher matcher = pattern.matcher(searchValues[1]); // Street
+																// Address may
+																// have numbers
+																// in first
+																// field so use
+																// 2nd
 			if (matcher.find()) {
 				java.util.List<PointOfInterest> list = new ArrayList<PointOfInterest>();
 				list.add(parseCoordinates(searchValues));
