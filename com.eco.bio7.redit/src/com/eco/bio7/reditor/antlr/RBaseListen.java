@@ -225,7 +225,7 @@ public class RBaseListen extends RBaseListener {
 
 		String subExpr = assign.getText();
 		/* Detect libraries and add them to the outline! */
-		if (subExpr.equals("library")) {
+		if (subExpr.equals("library")||subExpr.equals("require")) {
 			Token firstToken = tokens.get(start);
 
 			int lineStart = firstToken.getStartIndex();

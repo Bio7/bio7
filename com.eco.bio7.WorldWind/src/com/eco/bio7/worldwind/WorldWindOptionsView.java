@@ -144,6 +144,8 @@ import com.eco.bio7.image.CanvasView;
 import com.swtdesigner.SWTResourceManager;
 
 import org.eclipse.swt.widgets.Spinner;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.ModifyEvent;
 
 public class WorldWindOptionsView extends ViewPart {
 
@@ -211,10 +213,13 @@ public class WorldWindOptionsView extends ViewPart {
 	private Label errorLabel;
 	protected ToolTip captureTip;
 	private Spinner spinner;
+	private static int takeImagefromIJ=0;
 
 	// These corners do not form a Sector, so SurfaceImage must generate a
 	// texture rather than simply using the source
 	// image.
+
+	
 
 	static {
 		LINE.add(Position.fromDegrees(44, 7, 0));
@@ -821,6 +826,7 @@ public class WorldWindOptionsView extends ViewPart {
 
 		Button dynamicButton;
 		dynamicButton = new Button(composite_1, SWT.NONE);
+		fd_removeAllButton.left = new FormAttachment(dynamicButton, 2);
 		fd_removeAllButton.bottom = new FormAttachment(dynamicButton, 30, SWT.TOP);
 		fd_removeAllButton.top = new FormAttachment(dynamicButton, 0, SWT.TOP);
 		final FormData fd_dynamicButton = new FormData();
@@ -841,8 +847,8 @@ public class WorldWindOptionsView extends ViewPart {
 
 		scrolledComposite = new ScrolledComposite(composite_1, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
 		final FormData fd_scrolledComposite = new FormData();
+		fd_scrolledComposite.bottom = new FormAttachment(100, -10);
 		fd_scrolledComposite.right = new FormAttachment(100, -5);
-		fd_scrolledComposite.bottom = new FormAttachment(0, 489);
 		fd_scrolledComposite.left = new FormAttachment(0, 0);
 		scrolledComposite.setLayoutData(fd_scrolledComposite);
 		scrolledComposite.getVerticalBar().setMinimum(100);
@@ -898,8 +904,7 @@ public class WorldWindOptionsView extends ViewPart {
 		videoButton.setText("IJ Dynamic");
 
 		computeButton = new Button(composite_1, SWT.NONE);
-		fd_removeAllButton.left = new FormAttachment(computeButton, -82, SWT.LEFT);
-		fd_removeAllButton.right = new FormAttachment(computeButton, 0, SWT.LEFT);
+		fd_removeAllButton.right = new FormAttachment(computeButton);
 		computeButton.setToolTipText("Computes coordinates for the Lat, Lon \ntextfields alternately (min, max!)");
 		computeButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -995,6 +1000,20 @@ public class WorldWindOptionsView extends ViewPart {
 		fd_btnNewButton.left = new FormAttachment(0, 7);
 		btnNewButton.setLayoutData(fd_btnNewButton);
 		btnNewButton.setText("Add Shapefile");
+		
+		final Spinner spinner_1 = new Spinner(composite_1, SWT.BORDER);
+		spinner_1.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				
+				takeImagefromIJ=spinner_1.getSelection();
+			}
+		});
+		FormData fd_spinner_1 = new FormData();
+		fd_spinner_1.bottom = new FormAttachment(btnNewButton, 30);
+		fd_spinner_1.right = new FormAttachment(maxLon, 80);
+		fd_spinner_1.left = new FormAttachment(computeButton, 0, SWT.LEFT);
+		fd_spinner_1.top = new FormAttachment(btnNewButton, 0, SWT.TOP);
+		spinner_1.setLayoutData(fd_spinner_1);
 
 		final ExpandItem newItemExpandItem_2 = new ExpandItem(expandBar, SWT.NONE);
 		newItemExpandItem_2.setHeight(140);
@@ -2140,7 +2159,16 @@ public class WorldWindOptionsView extends ViewPart {
 		BufferedImage image = null;
 		// Graphics2D g = image.createGraphics();
 		if (WindowManager.getImageCount() > 0) {
-			ImagePlus imp = WindowManager.getCurrentWindow().getImagePlus();
+			int selImage=WorldWindOptionsView.getTakeImagefromIJ();
+			ImagePlus imp;
+			if(selImage>0){
+				imp = WindowManager.getImage(selImage);
+			}
+			
+			else{
+				imp = WindowManager.getCurrentWindow().getImagePlus();
+			}
+			
 			if (imp != null) {
 				ImageProcessor pr = imp.getProcessor();
 
@@ -2149,25 +2177,20 @@ public class WorldWindOptionsView extends ViewPart {
 					int w = pr.getWidth();
 					int h = pr.getHeight();
 
-					
-					
-					  ByteProcessor alpha = cp.getChannel(4, null);
-					 for(int i=0;i<w;i++){
-						 
-						 for(int u=0;u<h;u++){
-							 int [] rgb=cp.getPixel(i, u, null);
-							 if(rgb[0]==0&&rgb[1]==0&&rgb[2]==0){
-								 
-								 alpha.set(i, u, 0);
-								 
-							 }
-							 
-						 }
-					 }
-					 
-					 
-					
-					
+					ByteProcessor alpha = cp.getChannel(4, null);
+					for (int i = 0; i < w; i++) {
+
+						for (int u = 0; u < h; u++) {
+							int[] rgb = cp.getPixel(i, u, null);
+							if (rgb[0] == 0 && rgb[1] == 0 && rgb[2] == 0) {
+
+								alpha.set(i, u, 0);
+
+							}
+
+						}
+					}
+
 					cp.setChannel(4, alpha);
 					image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
 					WritableRaster raster = image.getRaster();
@@ -2516,5 +2539,8 @@ public class WorldWindOptionsView extends ViewPart {
 				wC.getView().goTo(new Position(sector.getCentroid(), 0), altitude);
 			}
 		}
+	}
+	public static int getTakeImagefromIJ() {
+		return takeImagefromIJ;
 	}
 }
