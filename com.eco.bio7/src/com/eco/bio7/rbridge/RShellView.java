@@ -18,8 +18,13 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.net.URL;
+
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
@@ -101,11 +106,13 @@ import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.wb.swt.layout.grouplayout.GroupLayout;
+import org.osgi.framework.Bundle;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
+
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.browser.BrowserView;
@@ -115,10 +122,13 @@ import com.eco.bio7.compile.GroovyInterpreter;
 import com.eco.bio7.compile.PythonInterpreter;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.compile.RScript;
+import com.eco.bio7.console.ConsolePageParticipant;
+import com.eco.bio7.os.pid.Pid;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.reditors.REditor;
 import com.swtdesigner.ResourceManager;
+
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.GridData;
 
@@ -2991,6 +3001,63 @@ public class RShellView extends ViewPart {
 		formDataButtonPackRefresh.top = new FormAttachment(button, 0, SWT.TOP);
 		helpButton.setLayoutData(formDataButtonPackRefresh);
 		helpButton.setText("?");
+		
+		Button btnNewButton = new Button(parent, SWT.NONE);
+		btnNewButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				String interpreterSelection=ConsolePageParticipant.getInterpreterSelection();
+				Process RProcess=ConsolePageParticipant.getConsolePageParticipantInstance().getRProcess();
+				Pid rPid=ConsolePageParticipant.getConsolePageParticipantInstance().getrPid();
+				if (Bio7Dialog.getOS().equals("Windows")) {
+					Bundle bundle = Platform.getBundle("com.eco.bio7.os");
+
+					URL locationUrl = FileLocator.find(bundle, new Path("/"), null);
+					URL fileUrl = null;
+					try {
+						fileUrl = FileLocator.toFileURL(locationUrl);
+					} catch (IOException e2) {
+
+						e2.printStackTrace();
+					}
+					File fi = new File(fileUrl.getPath());
+					String pathBundle = fi.toString() + "/win/64";
+					
+					if (interpreterSelection.equals("R")) {
+						try {
+							Process p = Runtime.getRuntime().exec(pathBundle + "/SendSignalCtrlC.exe " + rPid.getPidWindows(RProcess));
+
+						} catch (IOException ex) {
+							ex.printStackTrace();
+						}
+						
+					} 
+				} else {
+					if (interpreterSelection.equals("R")) {
+						try {
+							Process p = Runtime.getRuntime().exec("kill -INT " + rPid.getPidUnix(RProcess));
+
+						} catch (IOException ex) {
+							ex.printStackTrace();
+						}
+						System.out.println(rPid.getPidWindows(RProcess));
+					}
+
+					
+
+				}
+
+				
+			}
+		});
+		btnNewButton.setToolTipText("Interrupt R execution");
+		btnNewButton.setImage(org.eclipse.wb.swt.ResourceManager.getPluginImage("com.eco.bio7", "icons/delete.gif"));
+		FormData fd_btnNewButton = new FormData();
+		fd_btnNewButton.bottom = new FormAttachment(button, 0, SWT.BOTTOM);
+		fd_btnNewButton.top = new FormAttachment(button, 0, SWT.TOP);
+		fd_btnNewButton.right = new FormAttachment(helpButton, 47, SWT.RIGHT);
+		fd_btnNewButton.left = new FormAttachment(helpButton, 1);
+		btnNewButton.setLayoutData(fd_btnNewButton);
 		sashForm.setWeights(new int[] { 233, 319 });
 		GroupLayout gl_composite = new GroupLayout(composite);
 		gl_composite.setHorizontalGroup(gl_composite.createParallelGroup(GroupLayout.LEADING).add(

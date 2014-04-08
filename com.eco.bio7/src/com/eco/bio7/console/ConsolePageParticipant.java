@@ -133,6 +133,9 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	public IToolBarManager toolBarManager;
 	public IActionBars actionBars;
 	private Pid rPid;
+	
+	
+
 	private Pid shellPid;
 	private Pid pythonPid;
 	private static ConsolePageParticipant ConsolePageParticipantInstance;
@@ -1351,6 +1354,10 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 	public Process getPythonProcess() {
 		return pythonProcess;
+	}
+	
+	public Pid getrPid() {
+		return rPid;
 	}
 
 }
