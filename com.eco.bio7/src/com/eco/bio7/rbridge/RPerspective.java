@@ -29,7 +29,7 @@ public class RPerspective implements IPerspectiveFactory {
 		String editorArea = layout.getEditorArea();
 		layout.setEditorAreaVisible(true);
 
-		IFolderLayout topLeft = layout.createFolder("topLeft", IPageLayout.LEFT, (float) 0.41, editorArea);
+		IFolderLayout topLeft = layout.createFolder("topLeft", IPageLayout.LEFT, (float) 0.42, editorArea);
 		
 		
 		IFolderLayout bottomLeft = layout.createFolder("viewRight", IPageLayout.BOTTOM, (float) 0.55,"topLeft");

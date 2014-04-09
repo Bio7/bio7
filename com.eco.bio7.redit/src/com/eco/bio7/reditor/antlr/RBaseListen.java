@@ -22,13 +22,16 @@ public class RBaseListen extends RBaseListener {
 	// public ClassModel cm = new ClassModel();
 	private REditor editor;
 	private Parser parser;
-	Stack<REditorOutlineNode> methods;// A stack for nested nodes!
+	private Stack<REditorOutlineNode> methods;// A stack for nested nodes!
+	private Stack<RScope> scopes;
 
 	public RBaseListen(CommonTokenStream tokens, REditor editor, Parser parser) {
 		this.tokens = tokens;
 		this.editor = editor;
 		this.parser = parser;
 		methods = new Stack<REditorOutlineNode>();
+		scopes = new Stack<RScope>();
+		scopes.push(new RScope(null));
 
 	}
 
@@ -40,7 +43,7 @@ public class RBaseListen extends RBaseListener {
 		/* We calculate the token position from the expression! */
 		List<Token> firstToken = tokens.get(sourceInterval.a, sourceInterval.b);
 		for (int i = 0; i < firstToken.size(); i++) {
-			//System.out.println(firstToken.get(i).getText());
+			// System.out.println(firstToken.get(i).getText());
 			if (firstToken.get(i).getText().equals(")")) {
 				count = i + 1;
 				break;
@@ -67,7 +70,7 @@ public class RBaseListen extends RBaseListener {
 		/* We calculate the token position from the expression! */
 		List<Token> firstToken = tokens.get(sourceInterval.a, sourceInterval.b);
 		for (int i = 0; i < firstToken.size(); i++) {
-			//System.out.println(firstToken.get(i).getText());
+			// System.out.println(firstToken.get(i).getText());
 			if (firstToken.get(i).getText().equals("(")) {
 				count = i;
 				break;
@@ -80,6 +83,8 @@ public class RBaseListen extends RBaseListener {
 	}
 
 	public void exitDefFunction(@NotNull RParser.DefFunctionContext ctx) {
+		/* Exit scope! */
+		scopes.pop();
 		if (methods.empty() == false) {
 			methods.pop();
 		}
@@ -93,6 +98,11 @@ public class RBaseListen extends RBaseListener {
 	 */
 	@Override
 	public void enterDefFunction(@NotNull RParser.DefFunctionContext ctx) {
+		/*
+		 * Insert function as current scope with a parent current scope
+		 * (scope.peek)!
+		 */
+		scopes.push(new RScope(scopes.peek()));
 
 		Interval sourceInterval = ctx.getSourceInterval();
 
@@ -169,12 +179,20 @@ public class RBaseListen extends RBaseListener {
 				if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
 					String name = tokens.get(start).getText();
 					if (methods.size() == 0) {
+						if (checkVarName(name)) {
+							RScope scope = scopes.peek();
+							scope.add(name);
 
-						new REditorOutlineNode(name, line, "variable", editor.baseNode);
+							new REditorOutlineNode(name, line, "variable", editor.baseNode);
+						}
 
 					} else {
+						if (checkVarName(name)) {
+							RScope scope = scopes.peek();
+							scope.add(name);
 
-						new REditorOutlineNode(name, line, "variable", methods.peek());
+							new REditorOutlineNode(name, line, "variable", methods.peek());
+						}
 
 					}
 
@@ -183,13 +201,20 @@ public class RBaseListen extends RBaseListener {
 				else if (op.equals("->") || op.equals("->>")) {
 					String name = tokens.get(start + 2).getText();
 					if (methods.size() == 0) {
+						if (checkVarName(name)) {
+							RScope scope = scopes.peek();
+							scope.add(name);
 
-						new REditorOutlineNode(name, line, "variable", editor.baseNode);
+							new REditorOutlineNode(name, line, "variable", editor.baseNode);
+						}
 
 					} else {
+						if (checkVarName(name)) {
+							RScope scope = scopes.peek();
+							scope.add(name);
 
-						new REditorOutlineNode(name, line, "variable", methods.peek());
-
+							new REditorOutlineNode(name, line, "variable", methods.peek());
+						}
 					}
 
 				}
@@ -225,7 +250,7 @@ public class RBaseListen extends RBaseListener {
 
 		String subExpr = assign.getText();
 		/* Detect libraries and add them to the outline! */
-		if (subExpr.equals("library")||subExpr.equals("require")) {
+		if (subExpr.equals("library") || subExpr.equals("require")) {
 			Token firstToken = tokens.get(start);
 
 			int lineStart = firstToken.getStartIndex();
@@ -234,7 +259,8 @@ public class RBaseListen extends RBaseListener {
 
 			if (ctx.getParent().getChild(1) != null) {
 				String name = ctx.getChild(2).getText();
-				String parenthesis = tokens.get(start + 3).getText();//The third token should be a parenthesis!
+				// The third token should be a parenthesis!
+				String parenthesis = tokens.get(start + 3).getText();
 				if (parenthesis.equals(")")) {
 					if (methods.size() == 0) {
 
@@ -254,6 +280,18 @@ public class RBaseListen extends RBaseListener {
 	@Override
 	public void exitCallFunction(@NotNull RParser.CallFunctionContext ctx) {
 
+	}
+	/*Adapted method source from: http://stackoverflow.com/questions/15050137/once-grammar-is-complete-whats-the-best-way-to-walk-an-antlr-v4-tree*/
+	private boolean checkVarName(String varName) {
+		boolean check;
+		RScope scope = scopes.peek();
+		if (scope.inScope(varName)) {
+			
+			check = false;
+		} else {
+			check = true;
+		}
+		return check;
 	}
 
 }
