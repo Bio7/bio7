@@ -46,9 +46,11 @@ public class DebugNextAction extends Action {
 		String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 
 		if (selectionConsole.equals("R")) {
-		
+		ConsolePageParticipant.pipeInputToConsole("sink(file=\"clipboard\")", false, false);
 		ConsolePageParticipant.pipeInputToConsole("n", true, false);
 		System.out.println("n");
+		
+		ConsolePageParticipant.pipeInputToConsole("sink()", true, false);
         final ConsolePageParticipant inst=ConsolePageParticipant.getConsolePageParticipantInstance();
         
         final StringBuilder sb = new StringBuilder();
