@@ -12,15 +12,6 @@ import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 
-import com.eco.bio7.browser.editor.ColorManager;
-import com.eco.bio7.browser.editor.IXMLColorConstants;
-import com.eco.bio7.browser.editor.NonRuleBasedDamagerRepairer;
-import com.eco.bio7.browser.editor.XMLDoubleClickStrategy;
-import com.eco.bio7.browser.editor.XMLEditor;
-import com.eco.bio7.browser.editor.XMLPartitionScanner;
-import com.eco.bio7.browser.editor.XMLScanner;
-import com.eco.bio7.browser.editor.XMLTagScanner;
-import com.eco.bio7.browser.editor.XmlReconcilingStrategy;
 
 
 

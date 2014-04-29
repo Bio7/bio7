@@ -1,4 +1,4 @@
-package com.eco.bio7.browser.editor;
+package com.eco.bio7.scenebuilder.xmleditor;
 
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
@@ -12,15 +12,15 @@ import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 
-import com.eco.bio7.browser.editor.ColorManager;
-import com.eco.bio7.browser.editor.IXMLColorConstants;
-import com.eco.bio7.browser.editor.NonRuleBasedDamagerRepairer;
-import com.eco.bio7.browser.editor.XMLDoubleClickStrategy;
-import com.eco.bio7.browser.editor.XMLEditor;
-import com.eco.bio7.browser.editor.XMLPartitionScanner;
-import com.eco.bio7.browser.editor.XMLScanner;
-import com.eco.bio7.browser.editor.XMLTagScanner;
-import com.eco.bio7.browser.editor.XmlReconcilingStrategy;
+import com.eco.bio7.scenebuilder.xmleditor.ColorManager;
+import com.eco.bio7.scenebuilder.xmleditor.IXMLColorConstants;
+import com.eco.bio7.scenebuilder.xmleditor.NonRuleBasedDamagerRepairer;
+import com.eco.bio7.scenebuilder.xmleditor.XMLDoubleClickStrategy;
+import com.eco.bio7.scenebuilder.xmleditor.XMLEditor;
+import com.eco.bio7.scenebuilder.xmleditor.XMLPartitionScanner;
+import com.eco.bio7.scenebuilder.xmleditor.XMLScanner;
+import com.eco.bio7.scenebuilder.xmleditor.XMLTagScanner;
+import com.eco.bio7.scenebuilder.xmleditor.XmlReconcilingStrategy;
 
 
 
@@ -95,7 +95,7 @@ public class XMLConfiguration extends SourceViewerConfiguration {
 	@Override
 	public IReconciler getReconciler(ISourceViewer sourceViewer) {
 		
-		MonoReconciler reconciler= new MonoReconciler(new XmlReconcilingStrategy(xmlEditor), false);
+		MonoReconciler reconciler= new MonoReconciler(new XmlReconcilingStrategy(xmlEditor), true);
 		
 	     reconciler.setDelay(XmlReconcilingStrategy.DELAY);
 	     //reconciler.addReconcilingParticipant(sourceViewer);

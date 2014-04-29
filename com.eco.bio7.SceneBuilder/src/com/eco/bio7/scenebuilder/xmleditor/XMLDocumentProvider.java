@@ -1,4 +1,4 @@
-package com.eco.bio7.browser.editor;
+package com.eco.bio7.scenebuilder.xmleditor;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
@@ -6,7 +6,7 @@ import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 
-import com.eco.bio7.browser.editor.XMLPartitionScanner;
+import com.eco.bio7.scenebuilder.xmleditor.XMLPartitionScanner;
 
 public class XMLDocumentProvider extends FileDocumentProvider {
 

@@ -1,11 +1,11 @@
-package com.eco.bio7.browser.editor;
+package com.eco.bio7.scenebuilder.xmleditor;
 
 import org.eclipse.jface.text.rules.*;
 import org.eclipse.jface.text.*;
 
-import com.eco.bio7.browser.editor.ColorManager;
-import com.eco.bio7.browser.editor.IXMLColorConstants;
-import com.eco.bio7.browser.editor.XMLWhitespaceDetector;
+import com.eco.bio7.scenebuilder.xmleditor.ColorManager;
+import com.eco.bio7.scenebuilder.xmleditor.IXMLColorConstants;
+import com.eco.bio7.scenebuilder.xmleditor.XMLWhitespaceDetector;
 
 public class XMLScanner extends RuleBasedScanner {
 

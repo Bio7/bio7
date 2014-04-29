@@ -51,9 +51,9 @@ import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import com.eco.bio7.browser.editor.XMLEditor;
 import com.eco.bio7.scenebuilder.editor.SkeletonBuffer.FORMAT_TYPE;
 import com.eco.bio7.scenebuilder.editor.SkeletonBuffer.TEXT_TYPE;
+import com.eco.bio7.scenebuilder.xmleditor.XMLEditor;
 import com.oracle.javafx.scenebuilder.kit.editor.EditorController;
 import com.oracle.javafx.scenebuilder.kit.editor.panel.content.ContentPanelController;
 import com.oracle.javafx.scenebuilder.kit.fxom.FXOMDocument;
@@ -124,12 +124,13 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		editorController = new EditorController();
 		/* Execute in JavaFX Thread! */
 		Platform.runLater(new Runnable() {
 
 			public void run() {
 
-				editorController = new EditorController();
+				
 
 				/*
 				 * editorController.fxomDocumentProperty().addListener( new
@@ -144,7 +145,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 				jobListener = new ChangeListener<Number>() {
 					@Override
 					public void changed(ObservableValue<? extends Number> observable, Number oldNum, Number newNum) {
-						System.out.println("fx changed");
+						//System.out.println("fx changed");
 						IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
 						if (editorController != null) {
 
@@ -245,7 +246,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 	void createPage1() {
 		try {
-			editor = new XMLEditor();
+			editor = new XMLEditor(editorController,canvas);
 			int index = addPage(editor, getEditorInput());
 			setPageText(index, editor.getTitle());
 
@@ -253,31 +254,14 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 			ErrorDialog.openError(getSite().getShell(), "Error creating nested text editor", null, e.getStatus());
 		}
        /*To do: this function must be implemented in the editor reconciler*/
-		IDocumentProvider dp = editor.getDocumentProvider();
+		/*IDocumentProvider dp = editor.getDocumentProvider();
 		final IDocument doc = dp.getDocument(editor.getEditorInput());
 		doc.addDocumentListener(new IDocumentListener() {
 
 			@Override
 			public void documentChanged(DocumentEvent event) {
 
-				if (editorController != null) {
-					Platform.runLater(new Runnable() {
-
-						@Override
-						public void run() {
-							try {
-								editorController.setFxmlText(doc.get());
-
-								canvas.redraw();
-
-							} catch (IOException e) { // TODO Auto-generated
-														// catch block
-								e.printStackTrace();
-							}
-
-						}
-					});
-				}
+				
 			}
 
 			@Override
@@ -286,7 +270,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 			}
 
-		});
+		});*/
 
 	}
 

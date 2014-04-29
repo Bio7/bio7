@@ -133,8 +133,6 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	public IToolBarManager toolBarManager;
 	public IActionBars actionBars;
 	private Pid rPid;
-	
-	
 
 	private Pid shellPid;
 	private Pid pythonPid;
@@ -1355,9 +1353,36 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	public Process getPythonProcess() {
 		return pythonProcess;
 	}
-	
+
 	public Pid getrPid() {
 		return rPid;
 	}
 
+	public void pipeToRConsole(String command) {
+		String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
+
+		if (selectionConsole.equals("R")) {
+			ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
+			Process rProcess = con.getRProcess();
+			if (rProcess != null) {
+				final OutputStream os = rProcess.getOutputStream();
+				final OutputStreamWriter osw = new OutputStreamWriter(os);
+				final BufferedWriter bw = new BufferedWriter(osw, 100);
+
+				try {
+					bw.write(command);
+					bw.newLine();
+
+					// If necessary: bw.write("\r\n");
+					os.flush();
+					bw.flush();
+					// bw.close();
+					System.out.flush();
+				} catch (IOException e) {
+					System.err.println("");
+				}
+			}
+
+		}
+	}
 }

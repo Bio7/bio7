@@ -10,6 +10,8 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.eco.bio7.browser.editor.XMLEditor;
 
+
+
 /**
  * Manages the installation/deinstallation of global actions for multi-page editors.
  * Responsible for the redirection of global actions to the active editor.

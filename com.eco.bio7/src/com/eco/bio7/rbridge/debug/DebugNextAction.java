@@ -11,8 +11,13 @@
 
 package com.eco.bio7.rbridge.debug;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.BadLocationException;
@@ -51,38 +56,39 @@ public class DebugNextAction extends Action {
 		String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 
 		if (selectionConsole.equals("R")) {
-			ConsolePageParticipant.pipeInputToConsole("sink(file=\"clipboard\")", true, false);
-			ConsolePageParticipant.pipeInputToConsole("n", true, false);
-			System.out.println("n");
+			ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
 
-			ConsolePageParticipant.pipeInputToConsole("sink()", true, false);
+			con.pipeToRConsole("sink(file=\"clipboard\")");
+			con.pipeToRConsole("n");
+			con.pipeToRConsole("sink()");
+			// If necessary: bw.write("\r\n");
+
+			// ConsolePageParticipant.pipeInputToConsole("sink(file=\"clipboard\")",
+			// true, false);
+			// ConsolePageParticipant.pipeInputToConsole("n", true, false);
+			// System.out.println("n");
+
+			// ConsolePageParticipant.pipeInputToConsole("sink()", true, false);
 			final ConsolePageParticipant inst = ConsolePageParticipant.getConsolePageParticipantInstance();
-			try {
-				Thread.sleep(50);
-			} catch (InterruptedException e2) {
-				// TODO Auto-generated catch block
-				e2.printStackTrace();
-			}
-			
+
 			clipboard = new Clipboard(Display.getCurrent());
 			String data = (String) clipboard.getContents(TextTransfer.getInstance());
 			System.out.println(data);
 
 			IEditorPart edit = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-			
 
 			ITextEditor editor = (ITextEditor) edit;
 			IDocumentProvider dp = editor.getDocumentProvider();
 			IDocument doc = dp.getDocument(editor.getEditorInput());
 
 			if (data != null && data.length() > 0) {
-				/*Extract the number between .R# and : */
+				/* Extract the number between .R# and : */
 				Pattern p = Pattern.compile(".R#(.*?):");
 				Matcher m = p.matcher(data);
 				if (m.find()) {
 					int temp = Integer.parseInt(m.group(1));
-					int lines=doc.getNumberOfLines();
-					if (temp > 0&&temp<=lines) {
+					int lines = doc.getNumberOfLines();
+					if (temp > 0 && temp <= lines) {
 						line = temp;
 						IRegion reg = null;
 						try {
@@ -91,9 +97,9 @@ public class DebugNextAction extends Action {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-		               System.out.println("Line is: "+line);
+						System.out.println("Line is: " + line);
 						editor.selectAndReveal(reg.getOffset() + reg.getLength(), 0);
-		               
+
 					}
 
 				}
@@ -102,15 +108,11 @@ public class DebugNextAction extends Action {
 					// System.out.println("nothing to paste");
 				}
 
-				
-
 			}
-			
 
 		} else {
 			Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
 		}
 
 	}
-
 }

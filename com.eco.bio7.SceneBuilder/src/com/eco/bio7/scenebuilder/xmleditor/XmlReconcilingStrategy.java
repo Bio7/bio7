@@ -1,7 +1,8 @@
-package com.eco.bio7.browser.editor;
+package com.eco.bio7.scenebuilder.xmleditor;
 
-import java.net.MalformedURLException;
-
+import java.io.IOException;
+import javafx.application.Platform;
+import javafx.embed.swt.FXCanvas;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -11,21 +12,22 @@ import org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
-import org.eclipse.ui.texteditor.ITextEditor;
 
-import com.eco.bio7.browser.editor.XMLEditor;
-import com.eco.bio7.scenebuilder.editor.MultiPageEditor;
+import com.oracle.javafx.scenebuilder.kit.editor.EditorController;
 
 //import com.eco.bio7.browser.BrowserEditorNewView;
 
 public class XmlReconcilingStrategy implements IReconcilingStrategy, IReconcilingStrategyExtension {
 
 	private XMLEditor xmlEditor;
+	// private IDocument doc;
+	private EditorController editorController;
+	private FXCanvas guiCanvas;
 	/**
 	 * How long the reconciler will wait for further text changes before
 	 * reconciling
 	 */
-	public static final int DELAY = 500;
+	public static final int DELAY = 1000;
 
 	public XmlReconcilingStrategy(XMLEditor editor) {
 		xmlEditor = editor;
@@ -33,44 +35,39 @@ public class XmlReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
 	/* Update the editor view! */
 	private void doReconcile() {
-		/*final BrowserView bv = BrowserView.getBrowserInstance();
+        if(xmlEditor!=null){
+		editorController = xmlEditor.getController();
+		guiCanvas = xmlEditor.getGuiCanvas();
+		// doc = xmlEditor.getDoc();
+		if (editorController != null) {
+			Platform.runLater(new Runnable() {
 
-		Display display = PlatformUI.getWorkbench().getDisplay();
-		display.syncExec(new Runnable() {
-			public void run() {
-				if (MultiPageEditor.multiEditor!= null && bv != null) {
-					MultiPageEditor.multiEditor.doSave(null);
-				}
-				try {
-					if (MultiPageEditor.multiEditor.ifile != null && bv != null) {
-						
-					}
-				} catch (MalformedURLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		});*/
+				@Override
+				public void run() {
 
-		/*
-		 * if (xmlEditor != null) {
-		 * 
-		 * if (xmlEditor instanceof XMLEditor) { Display display =
-		 * PlatformUI.getWorkbench().getDisplay(); display.asyncExec(new
-		 * Runnable() {
-		 * 
-		 * public void run() { ITextEditor editor2 = (ITextEditor) xmlEditor;
-		 * 
-		 * IDocumentProvider dp = editor2.getDocumentProvider(); IDocument doc =
-		 * dp.getDocument(xmlEditor.getEditorInput());
-		 * if(BrowserEditorNewView.htmlEditor!=null){
-		 * BrowserEditorNewView.htmlEditor.setHtmlText(doc.get()); } } });
-		 * 
-		 * 
-		 * }
-		 * 
-		 * }
-		 */
+					Display display = PlatformUI.getWorkbench().getDisplay();
+					display.syncExec(new Runnable() {
+						public void run() {
+
+							IDocumentProvider dp = xmlEditor.getDocumentProvider();
+							final IDocument doc = dp.getDocument(xmlEditor.getEditorInput());
+
+							try {
+								editorController.setFxmlText(doc.get());
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+
+							guiCanvas.redraw();
+							//System.out.println("changed!");
+						}
+					});
+
+				}
+			});
+		}
+        }
 
 	}
 
@@ -82,7 +79,7 @@ public class XmlReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 	 * eclipse.jface.text.IRegion)
 	 */
 	public void reconcile(IRegion partition) {
-		doReconcile();
+		// doReconcile();
 
 	}
 

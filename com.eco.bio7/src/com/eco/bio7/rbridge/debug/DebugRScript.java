@@ -180,18 +180,27 @@ public class DebugRScript extends Action {
 
 								String fileName = "tempRVariables.txt";
 								if (expression != null) {
+									ConsolePageParticipant con=ConsolePageParticipant.getConsolePageParticipantInstance();
+									
+									con.pipeToRConsole("source('" + loc + "')");
+									con.pipeToRConsole("XXX<-findLineNum('" + loc + "#" + lineNum + "')");
+									con.pipeToRConsole("setBreakpoint('" + loc + "#" + lineNum + "')");
+									// ConsolePageParticipant.pipeInputToConsole("writeClipboard(XXX[[1]]$name, format = 1)", true, false);
+									writeTempRData(con,"XXX[[1]]$name", "XXX[[1]]$line", fileName);
+									con.pipeToRConsole("print(\"Debug Info Set\")");
 
-									ConsolePageParticipant.pipeInputToConsole("source('" + loc + "')", true, false);
+									/*ConsolePageParticipant.pipeInputToConsole("source('" + loc + "')", true, false);
 									ConsolePageParticipant.pipeInputToConsole("XXX<-findLineNum('" + loc + "#" + lineNum + "')", true, false);
 									ConsolePageParticipant.pipeInputToConsole("setBreakpoint('" + loc + "#" + lineNum + "')", true, false);
 									// ConsolePageParticipant.pipeInputToConsole("writeClipboard(XXX[[1]]$name, format = 1)", true, false);
 									writeTempRData("XXX[[1]]$name", "XXX[[1]]$line", fileName);
-									ConsolePageParticipant.pipeInputToConsole("print(\"Debug Info Set\")");
+									ConsolePageParticipant.pipeInputToConsole("print(\"Debug Info Set\")");*/
 								}
 
 								// readClipboardJava(lineNum);
-
+								System.out.println("Finished Writing!");
 								readTempFileJava(lineNum, fileName, last);
+								System.out.println("Finished Reading!");
 
 							}
 						}
@@ -207,10 +216,11 @@ public class DebugRScript extends Action {
 
 	}
 
-	private void writeTempRData(String name, String line, String fileName) {
-		ConsolePageParticipant.pipeInputToConsole("fileConn<-file(\"" + fileName + "\")");
-		ConsolePageParticipant.pipeInputToConsole("writeLines(c(" + name + "," + line + "), fileConn)");
-		ConsolePageParticipant.pipeInputToConsole("close(fileConn)");
+	private void writeTempRData(ConsolePageParticipant con,String name, String line, String fileName) {
+		con.pipeToRConsole("fileConn<-file(\"" + fileName + "\")");
+		con.pipeToRConsole("writeLines(c(" + name + "," + line + "), fileConn)");
+		con.pipeToRConsole("close(fileConn)");
+		
 	}
 
 	private void readTempFileJava(int lineNum, String fileName, long oldModified) {

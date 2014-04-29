@@ -2,7 +2,7 @@ package com.eco.bio7.browser.editor;
 
 import org.eclipse.jface.text.rules.*;
 
-import com.eco.bio7.browser.editor.TagRule;
+import com.eco.bio7.scenebuilder.xmleditor.TagRule;
 
 public class XMLPartitionScanner extends RuleBasedPartitionScanner {
 	public final static String XML_COMMENT = "__xml_comment";

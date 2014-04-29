@@ -17,9 +17,9 @@ Require-Bundle: org.eclipse.ui,
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Eclipse-BuddyPolicy: ext
-Export-Package: com.eco.bio7.browser.editor,
- com.eco.bio7.scenebuilder,
+Export-Package: com.eco.bio7.scenebuilder,
  com.eco.bio7.scenebuilder.editor,
+ com.eco.bio7.scenebuilder.xmleditor,
  com.oracle.javafx.scenebuilder.app,
  com.oracle.javafx.scenebuilder.app.about,
  com.oracle.javafx.scenebuilder.app.i18n,

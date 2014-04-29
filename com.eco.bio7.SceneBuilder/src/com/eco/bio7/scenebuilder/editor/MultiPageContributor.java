@@ -8,7 +8,7 @@ import org.eclipse.ui.ide.IDEActionFactory;
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import com.eco.bio7.browser.editor.XMLEditor;
+import com.eco.bio7.scenebuilder.xmleditor.XMLEditor;
 
 /**
  * Manages the installation/deinstallation of global actions for multi-page editors.

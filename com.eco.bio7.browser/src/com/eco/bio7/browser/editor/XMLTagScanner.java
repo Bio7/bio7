@@ -3,9 +3,7 @@ package com.eco.bio7.browser.editor;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.rules.*;
 
-import com.eco.bio7.browser.editor.ColorManager;
-import com.eco.bio7.browser.editor.IXMLColorConstants;
-import com.eco.bio7.browser.editor.XMLWhitespaceDetector;
+
 
 public class XMLTagScanner extends RuleBasedScanner {
 

@@ -1,4 +1,4 @@
-package com.eco.bio7.browser.editor;
+package com.eco.bio7.scenebuilder.xmleditor;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;

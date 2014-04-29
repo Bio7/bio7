@@ -1,21 +1,12 @@
 package com.eco.bio7.browser.editor;
 
-import java.net.MalformedURLException;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.reconciler.DirtyRegion;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.texteditor.IDocumentProvider;
-import org.eclipse.ui.texteditor.ITextEditor;
 
-import com.eco.bio7.browser.BrowserView;
-import com.eco.bio7.browser.editor.XMLEditor;
-import com.eco.bio7.scenebuilder.editor.MultiPageEditor;
 
 //import com.eco.bio7.browser.BrowserEditorNewView;
 
