@@ -1,17 +1,9 @@
 package com.eco.bio7.scenebuilder.xmleditor;
 
 import javafx.embed.swt.FXCanvas;
-
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextEditor;
-import org.eclipse.ui.texteditor.IDocumentProvider;
-import org.eclipse.ui.texteditor.ITextEditor;
 
-import com.eco.bio7.scenebuilder.xmleditor.ColorManager;
-import com.eco.bio7.scenebuilder.xmleditor.XMLConfiguration;
-import com.eco.bio7.scenebuilder.xmleditor.XMLDocumentProvider;
 import com.oracle.javafx.scenebuilder.kit.editor.EditorController;
 
 public class XMLEditor extends TextEditor {

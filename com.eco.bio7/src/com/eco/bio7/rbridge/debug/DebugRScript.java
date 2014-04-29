@@ -187,7 +187,7 @@ public class DebugRScript extends Action {
 									con.pipeToRConsole("setBreakpoint('" + loc + "#" + lineNum + "')");
 									// ConsolePageParticipant.pipeInputToConsole("writeClipboard(XXX[[1]]$name, format = 1)", true, false);
 									writeTempRData(con,"XXX[[1]]$name", "XXX[[1]]$line", fileName);
-									con.pipeToRConsole("print(\"Debug Info Set\")");
+									//con.pipeToRConsole("print(\"Debug Info Set\")");
 
 									/*ConsolePageParticipant.pipeInputToConsole("source('" + loc + "')", true, false);
 									ConsolePageParticipant.pipeInputToConsole("XXX<-findLineNum('" + loc + "#" + lineNum + "')", true, false);
@@ -199,6 +199,7 @@ public class DebugRScript extends Action {
 
 								// readClipboardJava(lineNum);
 								System.out.println("Finished Writing!");
+								
 								readTempFileJava(lineNum, fileName, last);
 								System.out.println("Finished Reading!");
 
@@ -231,12 +232,15 @@ public class DebugRScript extends Action {
 		String lineNumber = "0";
 		/* We need a synchronus write and read from the R process and Java. If R has finished the writing the file has been modified for Java! */
 
-		try {
+		System.out.println(fi.canWrite()); // -> true
+		
+		
+		/*try {
 			Thread.sleep(200);
 		} catch (InterruptedException e2) {
 			// TODO Auto-generated catch block
 			e2.printStackTrace();
-		}
+		}*/
 
 		try {
 			fr = new FileReader(fileName);

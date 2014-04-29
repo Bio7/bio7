@@ -2,7 +2,6 @@ package com.eco.bio7.scenebuilder.xmleditor;
 
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.rules.*;
-
 import com.eco.bio7.scenebuilder.xmleditor.ColorManager;
 import com.eco.bio7.scenebuilder.xmleditor.IXMLColorConstants;
 import com.eco.bio7.scenebuilder.xmleditor.XMLWhitespaceDetector;

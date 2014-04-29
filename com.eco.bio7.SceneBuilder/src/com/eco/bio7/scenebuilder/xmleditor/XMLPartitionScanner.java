@@ -1,7 +1,6 @@
 package com.eco.bio7.scenebuilder.xmleditor;
 
 import org.eclipse.jface.text.rules.*;
-
 import com.eco.bio7.scenebuilder.xmleditor.TagRule;
 
 public class XMLPartitionScanner extends RuleBasedPartitionScanner {

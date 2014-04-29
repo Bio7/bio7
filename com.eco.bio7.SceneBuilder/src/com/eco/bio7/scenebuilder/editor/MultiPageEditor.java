@@ -1,8 +1,10 @@
 package com.eco.bio7.scenebuilder.editor;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Timer;
@@ -18,7 +20,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import net.htmlparser.jericho.Source;
 import net.htmlparser.jericho.SourceFormatter;
@@ -27,14 +28,15 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.ErrorDialog;
-import org.eclipse.jface.text.DocumentEvent;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -43,8 +45,12 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IPersistableElement;
+import org.eclipse.ui.IStorageEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
@@ -56,7 +62,6 @@ import com.eco.bio7.scenebuilder.editor.SkeletonBuffer.TEXT_TYPE;
 import com.eco.bio7.scenebuilder.xmleditor.XMLEditor;
 import com.oracle.javafx.scenebuilder.kit.editor.EditorController;
 import com.oracle.javafx.scenebuilder.kit.editor.panel.content.ContentPanelController;
-import com.oracle.javafx.scenebuilder.kit.fxom.FXOMDocument;
 
 /**
  * An example showing how to create a multi-page editor. This example has 3
@@ -124,13 +129,13 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		editorController = new EditorController();
+
 		/* Execute in JavaFX Thread! */
 		Platform.runLater(new Runnable() {
 
 			public void run() {
 
-				
+				editorController = new EditorController();
 
 				/*
 				 * editorController.fxomDocumentProperty().addListener( new
@@ -145,7 +150,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 				jobListener = new ChangeListener<Number>() {
 					@Override
 					public void changed(ObservableValue<? extends Number> observable, Number oldNum, Number newNum) {
-						//System.out.println("fx changed");
+						// System.out.println("fx changed");
 						IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
 						if (editorController != null) {
 
@@ -178,6 +183,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 						final KeyCombination combo = new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN);
 						final KeyCombination combo2 = new KeyCodeCombination(KeyCode.Y, KeyCombination.CONTROL_DOWN);
+						final KeyCombination combo3 = new KeyCodeCombination(KeyCode.G, KeyCombination.ALT_DOWN);
 
 						if (combo.match(evt)) {
 
@@ -205,6 +211,24 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 								}
 							}
 
+						} else if (combo3.match(evt)) {
+							SkeletonBuffer buf = new SkeletonBuffer(editorController.getFxomDocument());
+							buf.setFormat(FORMAT_TYPE.FULL);
+							buf.setTextType(TEXT_TYPE.WITH_COMMENTS);
+							// System.out.println(buf.toString());
+
+							IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+
+							IStorage storage = new StringStorage(buf.toString());
+							IStorageEditorInput input = new StringInput(storage);
+							IWorkbenchPage page = window.getActivePage();
+							if (page != null)
+								try {
+									page.openEditor(input, "org.eclipse.ui.DefaultTextEditor");
+								} catch (PartInitException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
 						}
 					}
 				});
@@ -246,31 +270,31 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 	void createPage1() {
 		try {
-			editor = new XMLEditor(editorController,canvas);
+			editor = new XMLEditor(editorController, canvas);
 			int index = addPage(editor, getEditorInput());
 			setPageText(index, editor.getTitle());
 
 		} catch (PartInitException e) {
 			ErrorDialog.openError(getSite().getShell(), "Error creating nested text editor", null, e.getStatus());
 		}
-       /*To do: this function must be implemented in the editor reconciler*/
-		/*IDocumentProvider dp = editor.getDocumentProvider();
-		final IDocument doc = dp.getDocument(editor.getEditorInput());
-		doc.addDocumentListener(new IDocumentListener() {
-
-			@Override
-			public void documentChanged(DocumentEvent event) {
-
-				
-			}
-
-			@Override
-			public void documentAboutToBeChanged(DocumentEvent event) {
-				// TODO Auto-generated method stub
-
-			}
-
-		});*/
+		/* To do: this function must be implemented in the editor reconciler */
+		/*
+		 * IDocumentProvider dp = editor.getDocumentProvider(); final IDocument
+		 * doc = dp.getDocument(editor.getEditorInput());
+		 * doc.addDocumentListener(new IDocumentListener() {
+		 * 
+		 * @Override public void documentChanged(DocumentEvent event) {
+		 * 
+		 * 
+		 * }
+		 * 
+		 * @Override public void documentAboutToBeChanged(DocumentEvent event) {
+		 * // TODO Auto-generated method stub
+		 * 
+		 * }
+		 * 
+		 * });
+		 */
 
 	}
 
@@ -312,7 +336,13 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	 */
 	protected void createPages() {
 		createPage0();
-		createPage1();
+		/* Execute in JavaFX Thread to wait for the editor controller! */
+		Platform.runLater(new Runnable() {
+
+			public void run() {
+				createPage1();
+			}
+		});
 
 	}
 
@@ -335,10 +365,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	 * Saves the multi-page editor's document.
 	 */
 	public void doSave(IProgressMonitor monitor) {
-		SkeletonBuffer buf = new SkeletonBuffer(editorController.getFxomDocument());
-		buf.setFormat(FORMAT_TYPE.FULL);
-		buf.setTextType(TEXT_TYPE.WITH_COMMENTS);
-		System.out.println(buf.toString());
+
 		getEditor(1).doSave(monitor);
 	}
 
@@ -441,6 +468,71 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 					}
 				}
 			});
+		}
+	}
+   /*From: https://wiki.eclipse.org/FAQ_How_do_I_open_an_editor_on_something_that_is_not_a_file%3F*/
+	class StringStorage implements IStorage {
+		private String string;
+
+		StringStorage(String input) {
+			this.string = input;
+		}
+
+		public InputStream getContents() throws CoreException {
+			return new ByteArrayInputStream(string.getBytes());
+		}
+
+		public IPath getFullPath() {
+			return null;
+		}
+
+		public Object getAdapter(Class adapter) {
+			return null;
+		}
+
+		public String getName() {
+			int len = Math.min(5, string.length());
+			return "Generated_Controller_Class";//string.substring(0, len).concat("..."); //$NON-NLS-1$
+		}
+
+		public boolean isReadOnly() {
+			return true;
+		}
+	}
+
+	class StringInput implements IStorageEditorInput {
+		private IStorage storage;
+
+		StringInput(IStorage storage) {
+			this.storage = storage;
+		}
+
+		public boolean exists() {
+			return true;
+		}
+
+		public ImageDescriptor getImageDescriptor() {
+			return null;
+		}
+
+		public String getName() {
+			return storage.getName();
+		}
+
+		public IPersistableElement getPersistable() {
+			return null;
+		}
+
+		public IStorage getStorage() {
+			return storage;
+		}
+
+		public String getToolTipText() {
+			return "String-based file: " + storage.getName();
+		}
+
+		public Object getAdapter(Class adapter) {
+			return null;
 		}
 	}
 

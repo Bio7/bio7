@@ -12,10 +12,8 @@ import org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
-
 import com.oracle.javafx.scenebuilder.kit.editor.EditorController;
 
-//import com.eco.bio7.browser.BrowserEditorNewView;
 
 public class XmlReconcilingStrategy implements IReconcilingStrategy, IReconcilingStrategyExtension {
 
@@ -79,7 +77,7 @@ public class XmlReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 	 * eclipse.jface.text.IRegion)
 	 */
 	public void reconcile(IRegion partition) {
-		// doReconcile();
+		 doReconcile();
 
 	}
 
