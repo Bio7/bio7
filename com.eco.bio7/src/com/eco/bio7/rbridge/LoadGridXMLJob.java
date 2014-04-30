@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2012 M. Austenfeld
+ * Copyright (c) 2007-2014 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -53,7 +53,7 @@ public class LoadGridXMLJob extends WorkspaceJob {
 		super("Load Bio7 Jar");
 		this.file = files;
 		try {
-			names=new ZipUtil().processFile(file);
+			names = new ZipUtil().processFile(file);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -139,15 +139,15 @@ public class LoadGridXMLJob extends WorkspaceJob {
 								GridItem item = grid.getItem(items);
 								item.setText(columns, values[columns][items]);
 								gxml = fonts[columns][items];
+								if (gxml != null) {
+									fontData.setHeight(gxml.getHeight());
+									fontData.setLocale(gxml.getLocale());
+									fontData.setName(gxml.getName());
+									fontData.setStyle(gxml.getStyle());
+									fontRegistry.put("c", new FontData[] { new FontData(gxml.getName(), gxml.getHeight(), gxml.getStyle()) });
 
-								fontData.setHeight(gxml.getHeight());
-								fontData.setLocale(gxml.getLocale());
-								fontData.setName(gxml.getName());
-								fontData.setStyle(gxml.getStyle());
-								fontRegistry.put("c", new FontData[] { new FontData(gxml.getName(), gxml.getHeight(), gxml.getStyle()) });
-
-								item.setFont(columns, fontRegistry.get("c"));
-
+									item.setFont(columns, fontRegistry.get("c"));
+								}
 								item.setBackground(columns,
 										new org.eclipse.swt.graphics.Color(display, colors[columns][items].getRed(), colors[columns][items].getGreen(), colors[columns][items].getBlue()));
 								item.setHeight(cellHeights[columns][items]);

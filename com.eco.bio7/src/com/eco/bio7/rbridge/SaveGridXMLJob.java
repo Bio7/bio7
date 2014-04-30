@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2012 M. Austenfeld
+ * Copyright (c) 2007-2014 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,6 +16,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
+
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -23,12 +24,14 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.nebula.widgets.grid.Grid;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
+
 import com.eco.bio7.zip.util.*;
 import com.thoughtworks.xstream.XStream;
 
@@ -94,15 +97,18 @@ public class SaveGridXMLJob extends WorkspaceJob {
 
 							String s = grid.getItem(items).getText(columns);
 							values[columns][items] = s;
+							Font f = grid.getItem(items).getFont(columns);
+							GridXMLFontObject fo = null;
+							if (f != null) {
+								FontData[] fontData = f.getFontData();
 
-							FontData[] fontData = grid.getItem(items).getFont(columns).getFontData();
+								fo = new GridXMLFontObject();
 
-							GridXMLFontObject fo = new GridXMLFontObject();
-
-							fo.setHeight(fontData[0].getHeight());
-							fo.setStyle(fontData[0].getStyle());
-							fo.setLocale(fontData[0].getLocale());
-							fo.setName(fontData[0].getName());
+								fo.setHeight(fontData[0].getHeight());
+								fo.setStyle(fontData[0].getStyle());
+								fo.setLocale(fontData[0].getLocale());
+								fo.setName(fontData[0].getName());
+							}
 							fontObject[columns][items] = fo;
 
 							cellHeight[columns][items] = grid.getItem(items).getHeight();

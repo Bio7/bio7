@@ -153,8 +153,11 @@ public class CutCopyPaste {
 				for (int j = 0; st2.hasMoreTokens(); j++) {
 					value = (String) st2.nextToken();
 					// System.out.println("y:"+i+" x:"+j+" value:"+value);
-
-					grid.getItem(i + plusR).setText(j + plusC, value);
+					int row = i + plusR;
+					int column = j + plusC;
+					if (row < grid.getItemCount() && column < grid.getColumnCount()) {
+						grid.getItem(row).setText(column, value);
+					}
 
 					/*
 					 * if(CopyImagesGrid.getImageList().size()>0){ Image

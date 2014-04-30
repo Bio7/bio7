@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Text;
 
 class Spread {
@@ -104,7 +105,6 @@ class Spread {
 			String selectedItem = "";
 
 			public void keyPressed(KeyEvent e) {
-				System.out.println(e.keyCode);
 
 				if ((e.keyCode == 'c') && (e.stateMask == SWT.CTRL)) {
 					ccp.copy();
@@ -158,7 +158,7 @@ class Spread {
 			}
 
 		});
-		
+
 		final MenuItem newItemMenuItem_3 = new MenuItem(menu, SWT.NONE);
 		newItemMenuItem_3.setText("Copy Image To Clipboard");
 		newItemMenuItem_3.addSelectionListener(new SelectionAdapter() {
@@ -212,32 +212,8 @@ class Spread {
 							Rectangle rect = item.getBounds(i);
 							if (rect.contains(pt)) {
 								column = i;
-								final Text text = new Text(grid, SWT.NONE);
-								Listener textListener = new Listener() {
-									public void handleEvent(final Event e) {
-										switch (e.type) {
-										case SWT.FocusOut:
-											item.setText(column, text.getText());
-											text.dispose();
-											break;
-										case SWT.Traverse:
-											switch (e.detail) {
-											case SWT.TRAVERSE_RETURN:
-												item.setText(column, text.getText());
-											case SWT.TRAVERSE_ESCAPE:
-												text.dispose();
-												e.doit = false;
-											}
-											break;
-										}
-									}
-								};
-								text.addListener(SWT.FocusOut, textListener);
-								text.addListener(SWT.Traverse, textListener);
-								editor.setEditor(text, item, i);
-								text.setText(item.getText(i));
-								text.selectAll();
-								text.setFocus();
+								/* Recursive call! */
+								recursiveEdit(editor, item);
 								return;
 							}
 							if (!visible && rect.intersects(clientArea)) {
@@ -249,6 +225,65 @@ class Spread {
 						index++;
 					}
 				}
+			}
+
+			/*
+			 * A recursive method to move to the next row to e.g. ease the input
+			 * of numbers!
+			 */
+			private void recursiveEdit(final GridEditor editor, final GridItem item) {
+				
+				final Text text = new Text(grid, SWT.NONE);
+				Listener textListener = new Listener() {
+					public void handleEvent(final Event e) {
+						switch (e.type) {
+						case SWT.FocusOut:
+							if(item.isDisposed()==false){
+							item.setText(column, text.getText());
+							text.dispose();
+							}
+							break;
+						case SWT.Traverse:
+							switch (e.detail) {
+							case SWT.TRAVERSE_RETURN:
+								item.setText(column, text.getText());
+								index++;
+								if (index < grid.getItemCount()) {
+									GridItem gi = grid.getItem(index);
+									grid.showItem(gi);
+									recursiveEdit(editor, gi);
+								} else {
+									text.dispose();
+									e.doit = false;
+								}
+								break;
+							case SWT.TRAVERSE_ARROW_NEXT:
+								item.setText(column, text.getText());
+								column++;									
+								if (column < grid.getColumnCount()) {
+									GridItem gi = grid.getItem(index);
+									GridColumn col=grid.getColumn(column);
+									grid.showColumn(col);
+									recursiveEdit(editor, gi);
+								} else {
+									text.dispose();
+									e.doit = false;
+								}
+								break;
+							case SWT.TRAVERSE_ESCAPE:
+								text.dispose();
+								e.doit = false;
+							}
+							break;
+						}
+					}
+				};
+				text.addListener(SWT.FocusOut, textListener);
+				text.addListener(SWT.Traverse, textListener);
+				editor.setEditor(text, item, column);
+				text.setText(item.getText(column));
+				text.selectAll();
+				text.setFocus();
 			}
 
 		});
