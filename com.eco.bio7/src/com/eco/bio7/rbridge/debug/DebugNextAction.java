@@ -11,13 +11,15 @@
 
 package com.eco.bio7.rbridge.debug;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.Socket;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.BadLocationException;
@@ -39,6 +41,7 @@ public class DebugNextAction extends Action {
 
 	private Clipboard clipboard;
 	private int line = 1;
+	private Socket debugSocket;
 
 	public DebugNextAction() {
 		super("Next");
@@ -58,9 +61,17 @@ public class DebugNextAction extends Action {
 		if (selectionConsole.equals("R")) {
 			ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
 
-			con.pipeToRConsole("sink(file=\"clipboard\")");
+			/*
+			 * con.pipeToRConsole("sink(file=\"clipboard\")");
+			 * con.pipeToRConsole("n"); con.pipeToRConsole("sink()");
+			 */
+
+			con.pipeToRConsole("con1 <- socketConnection(port = 21555, server = TRUE)");
+			con.pipeToRConsole("sink(con1)");
 			con.pipeToRConsole("n");
 			con.pipeToRConsole("sink()");
+			con.pipeToRConsole("close(con1)");
+
 			// If necessary: bw.write("\r\n");
 
 			// ConsolePageParticipant.pipeInputToConsole("sink(file=\"clipboard\")",
@@ -71,8 +82,31 @@ public class DebugNextAction extends Action {
 			// ConsolePageParticipant.pipeInputToConsole("sink()", true, false);
 			final ConsolePageParticipant inst = ConsolePageParticipant.getConsolePageParticipantInstance();
 
-			clipboard = new Clipboard(Display.getCurrent());
-			String data = (String) clipboard.getContents(TextTransfer.getInstance());
+			// clipboard = new Clipboard(Display.getCurrent());
+			// String data = (String)
+			// clipboard.getContents(TextTransfer.getInstance());
+			String data = null;
+			try {
+
+				debugSocket = new Socket("127.0.0.1", 21555);
+
+				BufferedReader input = null;
+				try {
+					input = new BufferedReader(new InputStreamReader(debugSocket.getInputStream()));
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
+				data = input.readLine();
+                input.close();
+				debugSocket.close();
+
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
 			System.out.println(data);
 
 			IEditorPart edit = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();

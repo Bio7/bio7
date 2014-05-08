@@ -15,6 +15,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.Socket;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -67,6 +69,7 @@ public class DebugRScript extends Action {
 	private boolean BROWSER = false;
 	private String tempFileName = "";
 	private IEditorPart editor;
+	private Socket debugSocket;
 
 	public DebugRScript() {
 		super("Debug");
@@ -161,7 +164,10 @@ public class DebugRScript extends Action {
 								}
 
 								content = buf.toString();
-								/* Here we write the commands to the console (no file!) */
+								/*
+								 * Here we write the commands to the console (no
+								 * file!)
+								 */
 								ConsolePageParticipant.pipeInputToConsole(content, true, false);
 								// System.out.println(content);
 								// System.out.println(loc);
@@ -173,35 +179,59 @@ public class DebugRScript extends Action {
 								/*
 								 * if(fi!=null&&fi.exists()){ fi.delete(); }
 								 */
-								/* We store the timestamp which we need for a synchronized read of the stored variables in the temp file! */
+								/*
+								 * We store the timestamp which we need for a
+								 * synchronized read of the stored variables in
+								 * the temp file!
+								 */
 								long last = fi.lastModified();
 								UUID ui = UUID.randomUUID();
 								String fileUid = ui.toString();
 
 								String fileName = "tempRVariables.txt";
-								if (expression != null) {
-									ConsolePageParticipant con=ConsolePageParticipant.getConsolePageParticipantInstance();
-									
+								//if (expression != null) {
+									ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
+
 									con.pipeToRConsole("source('" + loc + "')");
 									con.pipeToRConsole("XXX<-findLineNum('" + loc + "#" + lineNum + "')");
 									con.pipeToRConsole("setBreakpoint('" + loc + "#" + lineNum + "')");
-									// ConsolePageParticipant.pipeInputToConsole("writeClipboard(XXX[[1]]$name, format = 1)", true, false);
-									writeTempRData(con,"XXX[[1]]$name", "XXX[[1]]$line", fileName);
-									//con.pipeToRConsole("print(\"Debug Info Set\")");
+									// ConsolePageParticipant.pipeInputToConsole("writeClipboard(XXX[[1]]$name, format = 1)",
+									// true, false);
+									//writeTempRData(con, "XXX[[1]]$name", "XXX[[1]]$line", fileName);
+									// con.pipeToRConsole("print(\"Debug Info Set\")");
+									con.pipeToRConsole("con1 <- socketConnection(port = 21555, server = TRUE)");
+									con.pipeToRConsole("writeLines(XXX[[1]]$name, con1)");
+									con.pipeToRConsole("writeLines(as.character(XXX[[1]]$line), con1)");
+									con.pipeToRConsole("close(con1)");
 
-									/*ConsolePageParticipant.pipeInputToConsole("source('" + loc + "')", true, false);
-									ConsolePageParticipant.pipeInputToConsole("XXX<-findLineNum('" + loc + "#" + lineNum + "')", true, false);
-									ConsolePageParticipant.pipeInputToConsole("setBreakpoint('" + loc + "#" + lineNum + "')", true, false);
-									// ConsolePageParticipant.pipeInputToConsole("writeClipboard(XXX[[1]]$name, format = 1)", true, false);
-									writeTempRData("XXX[[1]]$name", "XXX[[1]]$line", fileName);
-									ConsolePageParticipant.pipeInputToConsole("print(\"Debug Info Set\")");*/
-								}
+									/*
+									 * ConsolePageParticipant.pipeInputToConsole(
+									 * "source('" + loc + "')", true, false);
+									 * ConsolePageParticipant
+									 * .pipeInputToConsole("XXX<-findLineNum('"
+									 * + loc + "#" + lineNum + "')", true,
+									 * false);
+									 * ConsolePageParticipant.pipeInputToConsole
+									 * ("setBreakpoint('" + loc + "#" + lineNum
+									 * + "')", true, false); //
+									 * ConsolePageParticipant
+									 * .pipeInputToConsole(
+									 * "writeClipboard(XXX[[1]]$name, format = 1)"
+									 * , true, false);
+									 * writeTempRData("XXX[[1]]$name",
+									 * "XXX[[1]]$line", fileName);
+									 * ConsolePageParticipant
+									 * .pipeInputToConsole(
+									 * "print(\"Debug Info Set\")");
+									 */
+								//}
 
 								// readClipboardJava(lineNum);
-								System.out.println("Finished Writing!");
 								
-								readTempFileJava(lineNum, fileName, last);
-								System.out.println("Finished Reading!");
+
+								//readTempFileJava(lineNum, fileName, last);
+								
+								 readSocket( lineNum);
 
 							}
 						}
@@ -217,30 +247,95 @@ public class DebugRScript extends Action {
 
 	}
 
-	private void writeTempRData(ConsolePageParticipant con,String name, String line, String fileName) {
+	/*private void writeTempRData(ConsolePageParticipant con, String name, String line, String fileName) {
 		con.pipeToRConsole("fileConn<-file(\"" + fileName + "\")");
 		con.pipeToRConsole("writeLines(c(" + name + "," + line + "), fileConn)");
 		con.pipeToRConsole("close(fileConn)");
+
+	}
+*/
+	private void readSocket(int lineNum) {
 		
+		String lineNumber = "0";
+		String result = null;
+		try {
+			debugSocket = new Socket("127.0.0.1", 21555);
+			
+
+			BufferedReader input = null;
+			try {
+				input = new BufferedReader(new InputStreamReader(debugSocket.getInputStream()));
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+			result = input.readLine();
+
+			lineNumber = input.readLine();
+			System.out.println("socket:"+result);
+			System.out.println("socket:"+lineNumber);
+			debugSocket.close();
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		for (int i = 0; i < markers.length; i++) {
+			Integer line = null;
+			try {
+				line = (Integer) markers[i].getAttribute(IMarker.LINE_NUMBER);
+			} catch (CoreException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			if (line.intValue() == lineNum) {
+
+				try {
+					markers[i].setAttribute(IMarker.TEXT, result);
+					// System.out.println("This is " +
+					// markers[i].getAttribute(IMarker.TEXT));
+				} catch (CoreException e) {// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+
+		}
+		ITextEditor edit = (ITextEditor) editor;
+		IDocumentProvider dp = edit.getDocumentProvider();
+		IDocument doc = dp.getDocument(editor.getEditorInput());
+
+		IRegion reg = null;
+		System.out.println(lineNumber);
+		try {
+			reg = doc.getLineInformation(Integer.parseInt(lineNumber) - 1);
+		} catch (BadLocationException e1) {
+
+			e1.printStackTrace();
+		}
+
+		edit.selectAndReveal(reg.getOffset() + reg.getLength(), 0);
 	}
 
-	private void readTempFileJava(int lineNum, String fileName, long oldModified) {
+	/*private void readTempFileJava(int lineNum, String fileName, long oldModified) {
 		tempFileName = fileName;
 		File fi = new File(fileName);
 		FileReader fr = null;
 		String result;
 		String lineNumber = "0";
-		/* We need a synchronus write and read from the R process and Java. If R has finished the writing the file has been modified for Java! */
+		
+		 * We need a synchronus write and read from the R process and Java. If R
+		 * has finished the writing the file has been modified for Java!
+		 
 
 		System.out.println(fi.canWrite()); // -> true
+
 		
-		
-		/*try {
-			Thread.sleep(200);
-		} catch (InterruptedException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		}*/
+		 * try { Thread.sleep(200); } catch (InterruptedException e2) { // TODO
+		 * Auto-generated catch block e2.printStackTrace(); }
+		 
 
 		try {
 			fr = new FileReader(fileName);
@@ -268,8 +363,10 @@ public class DebugRScript extends Action {
 
 					try {
 						markers[i].setAttribute(IMarker.TEXT, result);
-						// System.out.println("This is " + markers[i].getAttribute(IMarker.TEXT));
-					} catch (CoreException e) {// TODO Auto-generated catch block
+						// System.out.println("This is " +
+						// markers[i].getAttribute(IMarker.TEXT));
+					} catch (CoreException e) {// TODO Auto-generated catch
+												// block
 						e.printStackTrace();
 					}
 				}
@@ -281,24 +378,11 @@ public class DebugRScript extends Action {
 			e.printStackTrace();
 		}
 
-		ITextEditor edit = (ITextEditor) editor;
-		IDocumentProvider dp = edit.getDocumentProvider();
-		IDocument doc = dp.getDocument(editor.getEditorInput());
+		
 
-		IRegion reg = null;
-		System.out.println(lineNumber);
-		try {
-			reg = doc.getLineInformation(Integer.parseInt(lineNumber) - 1);
-		} catch (BadLocationException e1) {
+	}*/
 
-			e1.printStackTrace();
-		}
-
-		edit.selectAndReveal(reg.getOffset() + reg.getLength(), 0);
-
-	}
-
-	private void readClipboardJava(int lineNum) {
+	/*private void readClipboardJava(int lineNum) {
 
 		Clipboard clipboard = new Clipboard(Display.getCurrent());
 
@@ -325,7 +409,7 @@ public class DebugRScript extends Action {
 			}
 
 		}
-	}
+	}*/
 
 	public Map<Integer, String> findMyMarkers(IResource target) {
 		String type = "com.eco.bio7.redit.debugMarker";
@@ -343,7 +427,8 @@ public class DebugRScript extends Action {
 		for (int i = 0; i < markers.length; ++i) {
 			try {
 				map1.put((Integer) markers[i].getAttribute(IMarker.LINE_NUMBER), (String) markers[i].getAttribute(IMarker.TEXT));
-				// System.out.println( (String) markers[i].getAttribute(IMarker.TEXT));
+				// System.out.println( (String)
+				// markers[i].getAttribute(IMarker.TEXT));
 			} catch (CoreException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
