@@ -181,18 +181,18 @@ http://bio7.org
       <feature id="com.eco.bio7.scenebuilder.feature" version="1.0.0.qualifier"/>
       <feature id="org.eclipse.e4.rcp"/>
       <feature id="com.eco.bio7.os.feature" version="1.0.0.qualifier"/>
-      <feature id="org.eclipse.jdt" version="3.10.0.v20140306-1200"/>
-      <feature id="org.eclipse.emf.ecore" version="2.10.0.v20140303-1023"/>
-      <feature id="org.eclipse.emf.common" version="2.10.0.v20140303-1023"/>
-      <feature id="org.eclipse.equinox.p2.core.feature" version="1.3.0.v20140226-0648"/>
-      <feature id="org.eclipse.equinox.p2.rcp.feature" version="1.2.0.v20140226-0648"/>
-      <feature id="org.eclipse.rcp" version="4.4.0.v20140306-1200"/>
       <feature id="org.eclipse.ecf.filetransfer.httpclient4.feature"/>
       <feature id="org.eclipse.ecf.core.ssl.feature"/>
       <feature id="org.eclipse.ecf.filetransfer.ssl.feature"/>
       <feature id="org.eclipse.ecf.filetransfer.feature"/>
       <feature id="org.eclipse.ecf.core.feature"/>
       <feature id="org.eclipse.ecf.filetransfer.httpclient4.ssl.feature"/>
+      <feature id="org.eclipse.jdt" version="3.10.0.v20140501-0200"/>
+      <feature id="org.eclipse.emf.common" version="2.10.0.v20140428-0336"/>
+      <feature id="org.eclipse.emf.ecore" version="2.10.0.v20140428-0336"/>
+      <feature id="org.eclipse.equinox.p2.core.feature" version="1.3.0.v20140416-1649"/>
+      <feature id="org.eclipse.equinox.p2.rcp.feature" version="1.2.0.v20140416-1649"/>
+      <feature id="org.eclipse.rcp" version="4.4.0.v20140501-0200"/>
    </features>
 
 
