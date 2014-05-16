@@ -175,7 +175,7 @@ public class DebugRScript extends Action {
 							// Using trace instead of the browser call!
 							else {
 
-								File fi = new File(tempFileName);
+								//File fi = new File(tempFileName);
 								/*
 								 * if(fi!=null&&fi.exists()){ fi.delete(); }
 								 */
@@ -184,11 +184,11 @@ public class DebugRScript extends Action {
 								 * synchronized read of the stored variables in
 								 * the temp file!
 								 */
-								long last = fi.lastModified();
-								UUID ui = UUID.randomUUID();
-								String fileUid = ui.toString();
+								//long last = fi.lastModified();
+								//UUID ui = UUID.randomUUID();
+								//String fileUid = ui.toString();
 
-								String fileName = "tempRVariables.txt";
+								//String fileName = "tempRVariables.txt";
 								//if (expression != null) {
 									ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
 

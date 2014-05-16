@@ -132,7 +132,7 @@ public class ScanClassPath {
 		 */
 		IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
 		String[] bundles = new String[] { "com.eco.bio7", "com.eco.bio7.libs", "com.eco.bio7.javaedit", "com.eco.bio7.image", "com.eco.bio7.WorldWind", "com.eco.bio7.physics", "org.eclipse.ui.workbench", "com.eco.bio7.scenebuilder","org.eclipse.core.commands", "com.eco.bio7.browser", "org.eclipse.swt",
-				"org.eclipse.swt.win32.win32.x86_64","org.eclipse.ui.workbench","org.eclipse.draw2d" };// "org.eclipse.ui.workbench","org.eclipse.core.commands"
+				"org.eclipse.swt.win32.win32.x86_64","org.eclipse.ui.workbench","org.eclipse.draw2d","org.eclipse.ui" };// "org.eclipse.ui.workbench","org.eclipse.core.commands"
 		ArrayList<String> bundlePaths = new ArrayList<String>();
 		ArrayList<String> buf = new ArrayList<String>();
 		ArrayList<IClasspathEntry> classPathEntry = new ArrayList<IClasspathEntry>();
@@ -203,6 +203,7 @@ public class ScanClassPath {
 		buf.add(File.pathSeparator + bundlePaths.get(3) + "/bin");
 		buf.add(File.pathSeparator + bundlePaths.get(4) + "/bin");
 		buf.add(File.pathSeparator + bundlePaths.get(11) );
+		buf.add(File.pathSeparator + bundlePaths.get(12) );
 		buf.add(File.pathSeparator + bundlePaths.get(13) );
 
 		/* Here we add the results to the classpath. Src entries are created, too for necessary plugins! */
