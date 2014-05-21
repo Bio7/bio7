@@ -21,6 +21,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.web.HTMLEditor;
 import net.htmlparser.jericho.Source;
 import net.htmlparser.jericho.SourceFormatter;
@@ -56,9 +57,8 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
+
 import com.eco.bio7.browser.editor.XMLEditor;
-
-
 
 /**
  * An example showing how to create a multi-page editor. This example has 3
@@ -69,7 +69,8 @@ import com.eco.bio7.browser.editor.XMLEditor;
  * <li>page 2 shows the words in page 0 in sorted order
  * </ul>
  */
-public class MultiPageEditor extends MultiPageEditorPart implements IResourceChangeListener {
+public class MultiPageEditor extends MultiPageEditorPart implements
+		IResourceChangeListener {
 
 	/** The text editor used in page 0. */
 	private XMLEditor editor;
@@ -111,7 +112,8 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 			int index = addPage(editor, getEditorInput());
 			setPageText(index, editor.getTitle());
 		} catch (PartInitException e) {
-			ErrorDialog.openError(getSite().getShell(), "Error creating nested text editor", null, e.getStatus());
+			ErrorDialog.openError(getSite().getShell(),
+					"Error creating nested text editor", null, e.getStatus());
 		}
 
 	}
@@ -136,32 +138,52 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 		setCustomActions(htmlEditor);
 
+		EventHandler<MouseEvent> onMouseExitedHandler = new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent event) {
+				//System.out.println("changed toolbar");
+			}
+		};
+
+		for (Node node : htmlEditor.lookupAll("ToolBar")) {
+			node.setOnMouseExited(onMouseExitedHandler);
+		}
+
 		htmlEditor.setOnKeyReleased(new EventHandler<KeyEvent>() {
 
 			@Override
 			public void handle(KeyEvent evt) {
 
-				final KeyCombination combo = new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN);
-				final KeyCombination combo2 = new KeyCodeCombination(KeyCode.Y, KeyCombination.CONTROL_DOWN);
+				final KeyCombination combo = new KeyCodeCombination(KeyCode.Z,
+						KeyCombination.CONTROL_DOWN);
+				final KeyCombination combo2 = new KeyCodeCombination(KeyCode.Y,
+						KeyCombination.CONTROL_DOWN);
 
 				if (combo.match(evt)) {
 
-					IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
+					IDocument doc = ((ITextEditor) editor)
+							.getDocumentProvider().getDocument(
+									getEditor(1).getEditorInput());
 
 					htmlEditor.setHtmlText(doc.get());
 				}
 
 				else if (combo2.match(evt)) {
-					IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
+					IDocument doc = ((ITextEditor) editor)
+							.getDocumentProvider().getDocument(
+									getEditor(1).getEditorInput());
 
 					htmlEditor.setHtmlText(doc.get());
 				}
+				/* Select All! */
+				else if (evt.isShortcutDown() && evt.getCode() == KeyCode.A) {
 
-				/*
-				 * else if (evt.isControlDown()){
-				 * 
-				 * }
-				 */
+				}
+				/* Paste Event! */
+				else if (evt.isShortcutDown() && evt.getCode() == KeyCode.V) {
+
+				}
+
 				else {
 					/*
 					 * A transfer to the source editor is triggered after the
@@ -175,9 +197,11 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 					job = new Job("Update Text") {
 						@Override
 						protected IStatus run(IProgressMonitor monitor) {
-							monitor.beginTask("Update Text...", IProgressMonitor.UNKNOWN);
+							monitor.beginTask("Update Text...",
+									IProgressMonitor.UNKNOWN);
 
-							Display display = PlatformUI.getWorkbench().getDisplay();
+							Display display = PlatformUI.getWorkbench()
+									.getDisplay();
 							display.syncExec(new Runnable() {
 
 								public void run() {
@@ -185,9 +209,12 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 									SourceFormatter sf = formatHtml();
 
 									try {
-										IEditorInput ed = getEditor(1).getEditorInput();
+										IEditorInput ed = getEditor(1)
+												.getEditorInput();
 
-										IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(ed);
+										IDocument doc = ((ITextEditor) editor)
+												.getDocumentProvider()
+												.getDocument(ed);
 
 										doc.set(sf.toString());
 									} catch (Exception e) {
@@ -219,7 +246,8 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 		htmlEditor.focusedProperty().addListener(new ChangeListener<Boolean>() {
 
 			@Override
-			public void changed(ObservableValue<? extends Boolean> arg0, Boolean arg1, Boolean arg2) {
+			public void changed(ObservableValue<? extends Boolean> arg0,
+					Boolean arg1, Boolean arg2) {
 
 			}
 
@@ -232,20 +260,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 				canvas.setScene(scene);
 			}
 		});
-		/* SWT Thread! */
-		/*
-		 * Display display = PlatformUI.getWorkbench().getDisplay();
-		 * display.syncExec(new Runnable() {
-		 * 
-		 * public void run() {
-		 * 
-		 * 
-		 * htmlEditor.setStyle("-fx-background-color: #333333;" +
-		 * "-fx-border-color: brown; " + "-fx-border-style: dotted;" +
-		 * "-fx-border-width: 2;");
-		 * 
-		 * } });
-		 */
+
 		fileInputEditor = (FileEditorInput) this.getEditorInput();
 
 		ifile = fileInputEditor.getFile();
@@ -253,7 +268,8 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 		BufferedReader reader = null;
 
 		try {
-			reader = new BufferedReader(new InputStreamReader(ifile.getContents(), Charset.defaultCharset()));
+			reader = new BufferedReader(new InputStreamReader(
+					ifile.getContents(), Charset.defaultCharset()));
 		} catch (CoreException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -289,16 +305,12 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 		Node node = htmlEditor.lookup(".top-toolbar");
 		if (node instanceof ToolBar) {
 			ToolBar bar = (ToolBar) node;
-			// ImageView graphic = new ImageView(new
-			// Image("http://bluebuddies.com/gallery/title/jpg/Smurf_Fun_100x100.jpg",
-			// 32, 32, true, true));
-			// graphic.setEffect(new DropShadow());
 
-			Button smurfButton = new Button("Open In Browser");
+			Button browserButton = new Button("Open In Browser");
 
-			bar.getItems().add(smurfButton);
+			bar.getItems().add(browserButton);
 
-			smurfButton.setOnAction(new EventHandler<ActionEvent>() {
+			browserButton.setOnAction(new EventHandler<ActionEvent>() {
 
 				@Override
 				public void handle(ActionEvent arg0) {
@@ -307,7 +319,9 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 					display.syncExec(new Runnable() {
 						public void run() {
 							try {
-								IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+								IWorkbenchPage page = PlatformUI.getWorkbench()
+										.getActiveWorkbenchWindow()
+										.getActivePage();
 								page.showView("com.eco.bio7.browser.Browser");
 							} catch (PartInitException e) {
 								// TODO Auto-generated catch block
@@ -320,8 +334,10 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 					BrowserView bv = BrowserView.getBrowserInstance();
 
 					try {
-						bv.browser.setUrl(ifile.getLocationURI().toURL().toString());
-						bv.txt.setText(ifile.getLocationURI().toURL().toString());
+						bv.browser.setUrl(ifile.getLocationURI().toURL()
+								.toString());
+						bv.txt.setText(ifile.getLocationURI().toURL()
+								.toString());
 					} catch (MalformedURLException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -400,9 +416,11 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	 * The <code>MultiPageEditorExample</code> implementation of this method
 	 * checks that the input is an instance of <code>IFileEditorInput</code>.
 	 */
-	public void init(IEditorSite site, IEditorInput editorInput) throws PartInitException {
+	public void init(IEditorSite site, IEditorInput editorInput)
+			throws PartInitException {
 		if (!(editorInput instanceof IFileEditorInput))
-			throw new PartInitException("Invalid Input: Must be IFileEditorInput");
+			throw new PartInitException(
+					"Invalid Input: Must be IFileEditorInput");
 		super.init(site, editorInput);
 	}
 
@@ -419,14 +437,16 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	protected void pageChange(int newPageIndex) {
 		super.pageChange(newPageIndex);
 		if (newPageIndex == 0) {
-			IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
+			IDocument doc = ((ITextEditor) editor).getDocumentProvider()
+					.getDocument(getEditor(1).getEditorInput());
 
 			htmlEditor.setHtmlText(doc.get());
 		} else if (newPageIndex == 1) {
 
 			SourceFormatter sf = formatHtml();
 
-			IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
+			IDocument doc = ((ITextEditor) editor).getDocumentProvider()
+					.getDocument(getEditor(1).getEditorInput());
 
 			doc.set(sf.toString());
 		}
@@ -447,10 +467,14 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 		if (event.getType() == IResourceChangeEvent.PRE_CLOSE) {
 			Display.getDefault().asyncExec(new Runnable() {
 				public void run() {
-					IWorkbenchPage[] pages = getSite().getWorkbenchWindow().getPages();
+					IWorkbenchPage[] pages = getSite().getWorkbenchWindow()
+							.getPages();
 					for (int i = 0; i < pages.length; i++) {
-						if (((FileEditorInput) editor.getEditorInput()).getFile().getProject().equals(event.getResource())) {
-							IEditorPart editorPart = pages[i].findEditor(editor.getEditorInput());
+						if (((FileEditorInput) editor.getEditorInput())
+								.getFile().getProject()
+								.equals(event.getResource())) {
+							IEditorPart editorPart = pages[i].findEditor(editor
+									.getEditorInput());
 							pages[i].closeEditor(editorPart, true);
 						}
 					}
