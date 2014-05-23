@@ -1,10 +1,15 @@
 package com.eco.bio7.discrete;
 
+import java.awt.Frame;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Stack;
 
 import javax.swing.JApplet;
 import javax.swing.JRootPane;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.dnd.DND;
@@ -15,6 +20,7 @@ import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
@@ -23,7 +29,9 @@ import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
+
 import com.eco.bio7.jobs.LoadWorkspaceJob;
+import com.eco.bio7.swt.SwtAwt;
 
 public class Hexview extends ViewPart {
 
@@ -106,6 +114,7 @@ public class Hexview extends ViewPart {
 			}
 		});
 		java.awt.Frame frame = SWT_AWT.new_Frame(top);
+		SwtAwt.setSwtAwtFocus(frame, top);
 		JApplet panel = new JApplet() {
 		      public void update(java.awt.Graphics g) {
 		        /* Do not erase the background */
@@ -121,6 +130,7 @@ public class Hexview extends ViewPart {
 		contentPane.add(Hexagon.getHexagonInstance().jScrollPanehex);
 
 	}
+	
 
 	public void setContentDescription() {
 

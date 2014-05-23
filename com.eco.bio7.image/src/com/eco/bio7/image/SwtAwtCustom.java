@@ -42,6 +42,8 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 
+import com.eco.bio7.swt.SwtAwt;
+
 public class SwtAwtCustom {
 
 	private JApplet panel;
@@ -96,7 +98,7 @@ public class SwtAwtCustom {
 	public void addTab(final String title) {
 		
 		//top = new Composite(view.getCustomViewParent(), SWT.NO_BACKGROUND | SWT.EMBEDDED);
-		final FXCanvas canvas = new FXCanvas(view.getCustomViewParent(), SWT.NONE);
+		/*final FXCanvas canvas = new FXCanvas(view.getCustomViewParent(), SWT.NONE);
 		
 		view.getCustomViewParent().setData(ve);
 	
@@ -134,11 +136,11 @@ public class SwtAwtCustom {
 	    canvas.setScene(scene);	
 		canvas.layout();
 		//contentPane.add(jpanel);
-		view.getCustomViewParent().layout();
+		view.getCustomViewParent().layout();*/
 		
 		
 		
-		/*Display dis = view.getCustomViewParent().getDisplay();
+		Display dis = view.getCustomViewParent().getDisplay();
 		dis.syncExec(new Runnable() {
 			public void run() {
 
@@ -152,10 +154,12 @@ public class SwtAwtCustom {
 				view.getCustomViewParent().setData(ve);
 
 				frame = SWT_AWT.new_Frame(top);
+				
+				SwtAwt.setSwtAwtFocus(frame, top);
 
 				 panel = new JApplet() {
 				      public void update(java.awt.Graphics g) {
-				         Do not erase the background 
+				         //Do not erase the background 
 				        paint(g);
 				      }
 				    };
@@ -173,7 +177,7 @@ public class SwtAwtCustom {
 
 			}
 		});
-*/
+
 	}
 	
 	

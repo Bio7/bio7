@@ -69,8 +69,7 @@ import com.eco.bio7.browser.editor.XMLEditor;
  * <li>page 2 shows the words in page 0 in sorted order
  * </ul>
  */
-public class MultiPageEditor extends MultiPageEditorPart implements
-		IResourceChangeListener {
+public class MultiPageEditor extends MultiPageEditorPart implements IResourceChangeListener {
 
 	/** The text editor used in page 0. */
 	private XMLEditor editor;
@@ -112,8 +111,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 			int index = addPage(editor, getEditorInput());
 			setPageText(index, editor.getTitle());
 		} catch (PartInitException e) {
-			ErrorDialog.openError(getSite().getShell(),
-					"Error creating nested text editor", null, e.getStatus());
+			ErrorDialog.openError(getSite().getShell(), "Error creating nested text editor", null, e.getStatus());
 		}
 
 	}
@@ -141,7 +139,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 		EventHandler<MouseEvent> onMouseExitedHandler = new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
-				//System.out.println("changed toolbar");
+				// System.out.println("changed toolbar");
 			}
 		};
 
@@ -154,24 +152,18 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 			@Override
 			public void handle(KeyEvent evt) {
 
-				final KeyCombination combo = new KeyCodeCombination(KeyCode.Z,
-						KeyCombination.CONTROL_DOWN);
-				final KeyCombination combo2 = new KeyCodeCombination(KeyCode.Y,
-						KeyCombination.CONTROL_DOWN);
+				final KeyCombination combo = new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN);
+				final KeyCombination combo2 = new KeyCodeCombination(KeyCode.Y, KeyCombination.CONTROL_DOWN);
 
 				if (combo.match(evt)) {
 
-					IDocument doc = ((ITextEditor) editor)
-							.getDocumentProvider().getDocument(
-									getEditor(1).getEditorInput());
+					IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
 
 					htmlEditor.setHtmlText(doc.get());
 				}
 
 				else if (combo2.match(evt)) {
-					IDocument doc = ((ITextEditor) editor)
-							.getDocumentProvider().getDocument(
-									getEditor(1).getEditorInput());
+					IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
 
 					htmlEditor.setHtmlText(doc.get());
 				}
@@ -197,11 +189,9 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 					job = new Job("Update Text") {
 						@Override
 						protected IStatus run(IProgressMonitor monitor) {
-							monitor.beginTask("Update Text...",
-									IProgressMonitor.UNKNOWN);
+							monitor.beginTask("Update Text...", IProgressMonitor.UNKNOWN);
 
-							Display display = PlatformUI.getWorkbench()
-									.getDisplay();
+							Display display = PlatformUI.getWorkbench().getDisplay();
 							display.syncExec(new Runnable() {
 
 								public void run() {
@@ -209,12 +199,9 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 									SourceFormatter sf = formatHtml();
 
 									try {
-										IEditorInput ed = getEditor(1)
-												.getEditorInput();
+										IEditorInput ed = getEditor(1).getEditorInput();
 
-										IDocument doc = ((ITextEditor) editor)
-												.getDocumentProvider()
-												.getDocument(ed);
+										IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(ed);
 
 										doc.set(sf.toString());
 									} catch (Exception e) {
@@ -246,8 +233,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 		htmlEditor.focusedProperty().addListener(new ChangeListener<Boolean>() {
 
 			@Override
-			public void changed(ObservableValue<? extends Boolean> arg0,
-					Boolean arg1, Boolean arg2) {
+			public void changed(ObservableValue<? extends Boolean> arg0, Boolean arg1, Boolean arg2) {
 
 			}
 
@@ -268,8 +254,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 		BufferedReader reader = null;
 
 		try {
-			reader = new BufferedReader(new InputStreamReader(
-					ifile.getContents(), Charset.defaultCharset()));
+			reader = new BufferedReader(new InputStreamReader(ifile.getContents(), Charset.defaultCharset()));
 		} catch (CoreException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -319,9 +304,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 					display.syncExec(new Runnable() {
 						public void run() {
 							try {
-								IWorkbenchPage page = PlatformUI.getWorkbench()
-										.getActiveWorkbenchWindow()
-										.getActivePage();
+								IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 								page.showView("com.eco.bio7.browser.Browser");
 							} catch (PartInitException e) {
 								// TODO Auto-generated catch block
@@ -334,10 +317,8 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 					BrowserView bv = BrowserView.getBrowserInstance();
 
 					try {
-						bv.browser.setUrl(ifile.getLocationURI().toURL()
-								.toString());
-						bv.txt.setText(ifile.getLocationURI().toURL()
-								.toString());
+						bv.browser.setUrl(ifile.getLocationURI().toURL().toString());
+						bv.txt.setText(ifile.getLocationURI().toURL().toString());
 					} catch (MalformedURLException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -416,11 +397,9 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 	 * The <code>MultiPageEditorExample</code> implementation of this method
 	 * checks that the input is an instance of <code>IFileEditorInput</code>.
 	 */
-	public void init(IEditorSite site, IEditorInput editorInput)
-			throws PartInitException {
+	public void init(IEditorSite site, IEditorInput editorInput) throws PartInitException {
 		if (!(editorInput instanceof IFileEditorInput))
-			throw new PartInitException(
-					"Invalid Input: Must be IFileEditorInput");
+			throw new PartInitException("Invalid Input: Must be IFileEditorInput");
 		super.init(site, editorInput);
 	}
 
@@ -437,16 +416,14 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 	protected void pageChange(int newPageIndex) {
 		super.pageChange(newPageIndex);
 		if (newPageIndex == 0) {
-			IDocument doc = ((ITextEditor) editor).getDocumentProvider()
-					.getDocument(getEditor(1).getEditorInput());
+			IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
 
 			htmlEditor.setHtmlText(doc.get());
 		} else if (newPageIndex == 1) {
 
 			SourceFormatter sf = formatHtml();
 
-			IDocument doc = ((ITextEditor) editor).getDocumentProvider()
-					.getDocument(getEditor(1).getEditorInput());
+			IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
 
 			doc.set(sf.toString());
 		}
@@ -467,14 +444,10 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 		if (event.getType() == IResourceChangeEvent.PRE_CLOSE) {
 			Display.getDefault().asyncExec(new Runnable() {
 				public void run() {
-					IWorkbenchPage[] pages = getSite().getWorkbenchWindow()
-							.getPages();
+					IWorkbenchPage[] pages = getSite().getWorkbenchWindow().getPages();
 					for (int i = 0; i < pages.length; i++) {
-						if (((FileEditorInput) editor.getEditorInput())
-								.getFile().getProject()
-								.equals(event.getResource())) {
-							IEditorPart editorPart = pages[i].findEditor(editor
-									.getEditorInput());
+						if (((FileEditorInput) editor.getEditorInput()).getFile().getProject().equals(event.getResource())) {
+							IEditorPart editorPart = pages[i].findEditor(editor.getEditorInput());
 							pages[i].closeEditor(editorPart, true);
 						}
 					}

@@ -10,12 +10,14 @@ import ij.text.*;
 import ij.macro.Interpreter;
 import ij.io.Opener;
 import ij.util.*;
+
 import java.awt.*;
 import java.util.*;
 import java.awt.event.*;
 import java.io.*;
 import java.net.*;
 import java.awt.image.*;
+
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -25,6 +27,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 
 import com.eco.bio7.image.CanvasView;
+import com.eco.bio7.image.CustomView;
 import com.eco.bio7.image.Fullscreen;
 import com.eco.bio7.image.IJTabs;
 
@@ -128,6 +131,7 @@ public class ImageJ extends JFrame implements ActionListener, MouseListener, Key
 	private static String commandName;
 	/* Changed for Bio7! -> Bio7 variables! */
 	public static Fullscreen full;
+	public static CustomView customImageJView;
 	private JPanel currentPanel;
 	private JPanel root;
 	private int index;
@@ -335,6 +339,10 @@ public class ImageJ extends JFrame implements ActionListener, MouseListener, Key
 			public void run() {
 				if (CanvasView.getCanvas_view() != null) {
 					CanvasView.getCanvas_view().setstatusline(s);
+				}
+
+				if (customImageJView != null) {
+					customImageJView.setstatusline(s);
 				}
 			}
 		});
@@ -998,6 +1006,11 @@ public class ImageJ extends JFrame implements ActionListener, MouseListener, Key
 
 	public static void setCommandName(String name) {
 		commandName = name;
+	}
+
+	public static void setCustomView(CustomView customView) {
+		customImageJView=customView;
+		
 	}
 
 }

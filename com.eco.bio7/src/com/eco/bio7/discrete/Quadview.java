@@ -1,5 +1,10 @@
 package com.eco.bio7.discrete;
 
+import java.awt.Frame;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Stack;
+
 import javax.swing.JApplet;
 import javax.swing.JRootPane;
 
@@ -21,6 +26,7 @@ import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
@@ -33,6 +39,7 @@ import org.eclipse.ui.part.ViewPart;
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
+
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.jobs.LoadData;
 import com.eco.bio7.jobs.LoadWorkspaceJob;
@@ -40,6 +47,7 @@ import com.eco.bio7.methods.Compiled;
 import com.eco.bio7.methods.CurrentStates;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.swt.SwtAwt;
 import com.eco.bio7.time.Time;
 
 public class Quadview extends ViewPart {
@@ -138,6 +146,7 @@ public class Quadview extends ViewPart {
 		}
 
 		frame = SWT_AWT.new_Frame(top);
+		SwtAwt.setSwtAwtFocus(frame, top);
 		
 		 panel = new JApplet();
 
@@ -151,6 +160,7 @@ public class Quadview extends ViewPart {
 		contentPane.add(Quad2d.getQuad2dInstance().jScrollPane);
 
 	}
+	
 
 	public void setFocus() {
 

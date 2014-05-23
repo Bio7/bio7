@@ -7,6 +7,8 @@ Bundle-Vendor: ECO
 Bundle-ClassPath: lib/jna-4.1.0.jar,
  .
 Export-Package: com.eco.bio7.os.pid,
+ com.eco.bio7.swt,
  com.sun.jna,
  com.sun.jna.ptr,
  com.sun.jna.win32
+Import-Package: org.eclipse.swt.widgets

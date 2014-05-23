@@ -10,17 +10,22 @@
  *******************************************************************************/
 package com.eco.bio7.image;
 
+import ij.ImageJ;
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.ImageWindow;
+
 import java.awt.Panel;
 import java.util.Vector;
+
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.ISaveablePart2;
 import org.eclipse.ui.IViewPart;
@@ -61,8 +66,16 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 
 	public IViewReference ref2;
 
-	public CustomView() {
+	
 
+	private  CustomView customView;
+
+	public   CustomView getCustomView() {
+		return customView;
+	}
+
+	public CustomView() {
+       //customView=this;
 	}
 
 	public void setData(ImagePlus plu, ImageWindow win) {
@@ -98,7 +111,7 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 					WindowManager.setCurrentWindow(win);
 
 					CanvasView.setCurrent(viewPanel);
-
+                     ImageJ.setCustomView(customView);
 				}
 			}
 		}
@@ -179,13 +192,14 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 					e.printStackTrace();
 				}
 				if (activated instanceof CustomView) {
-					CustomView view = (CustomView) activated;
+					 customView = (CustomView) activated;
 					/*
 					 * Control c[] = view.getCustomViewParent().getChildren(); for (int i = 0; i < c.length; i++) { c[i].dispose(); }
 					 */
 
-					SwtAwtCustom swt = new SwtAwtCustom(viewPanel, view);
+					SwtAwtCustom swt = new SwtAwtCustom(viewPanel, customView);
 					swt.addTab(id);
+					ImageJ.setCustomView(customView);
 
 				}
 
@@ -201,7 +215,7 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	 *            a Panel
 	 * @param title
 	 *            the title of the tab.
-	 */
+	 *//*
 	public void setPanel(final Panel panel, final String id) {
 
 		secId = id;
@@ -238,9 +252,9 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 				}
 
 			}
-		});
+		});*/
 
-	}
+	//}
 
 	/**
 	 * Returns the display of the view.
@@ -318,6 +332,11 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 
 	public void setSingleView(boolean singleView) {
 		this.singleView = singleView;
+	}
+	public void setstatusline(String message) {
+		IActionBars bars = getViewSite().getActionBars();
+		bars.getStatusLineManager().setMessage(message);
+
 	}
 
 }

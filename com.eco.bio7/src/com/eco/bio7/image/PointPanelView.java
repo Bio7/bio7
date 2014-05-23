@@ -2,16 +2,22 @@ package com.eco.bio7.image;
 
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Stack;
+
 import javax.imageio.ImageIO;
 import javax.swing.JApplet;
 import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
+
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
@@ -22,10 +28,15 @@ import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
+
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.swt.SwtAwt;
 
 public class PointPanelView extends ViewPart {
 	private static PointPanel jp;
@@ -73,6 +84,7 @@ public class PointPanelView extends ViewPart {
 		}
 
 		java.awt.Frame frame = SWT_AWT.new_Frame(top);
+		SwtAwt.setSwtAwtFocus(frame, top);
 		final sun.awt.EmbeddedFrame ef = (sun.awt.EmbeddedFrame) frame;
 
 		ef.addWindowListener(new WindowAdapter() {
@@ -109,6 +121,7 @@ public class PointPanelView extends ViewPart {
 		initializeToolBar();
 
 	}
+	
 
 	public void setFocus() {
 		// panel.requestFocus();
