@@ -956,7 +956,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 				notify();
 			}
 		}
-
+  /*Changed for Bio7!*/
 		public void run() {
 			while (!isInterrupted()) {
 				try {
