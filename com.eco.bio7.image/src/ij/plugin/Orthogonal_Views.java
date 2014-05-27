@@ -3,6 +3,7 @@ import ij.*;
 import ij.gui.*;
 import ij.measure.*;
 import ij.process.*;
+
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
@@ -958,6 +959,12 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 
 		public void run() {
 			while (!isInterrupted()) {
+				try {
+					Thread.sleep(20);
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				try {
 					final long r;
 					synchronized (this) {

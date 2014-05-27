@@ -1,0 +1,33 @@
+/*******************************************************************************
+ * Copyright (c) 2010, 2014 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     IBM Corporation - initial API and implementation
+ *     Lars Vogel <Lars.Vogel@gmail.com> - Bug 420836
+ *******************************************************************************/
+
+@import url("platform:/plugin/com.eco.bio7.themes/css/e4_basestyle.css");
+
+Shell {
+  background-color: #eeeeee #eeeeee #eeeeee #eeeeee #eeeeee 100% 100% 100% 100%
+}
+
+.MPartStack {
+  font-size: 8px;
+  color: black;
+  
+  
+}  
+
+.MPart:selected {
+   visible:gone;
+   background-color:#eeeeee;
+}
+
+.MPartStack {
+border-visible:false;
+} 

@@ -25,10 +25,11 @@
             name="ImageJ-Toolbar"/>
       <view
             allowMultiple="true"
+            category="com.eco.bio7.image"
             class="com.eco.bio7.image.CustomView"
             icon="bin/images/toij.gif"
             id="com.eco.bio7.image.detachedImage"
-            name="Detached ImageWindow"
+            name="Image"
             restorable="true">
       </view>
    </extension>
