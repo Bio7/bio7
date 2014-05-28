@@ -374,24 +374,40 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		openBrowser = new OpenBio7BrowserAction("Bio7 Internet", window);
 		register(openBrowser);
-	}
+	} 
 
 	protected void fillMenuBar(IMenuManager menuBar) {
       /*Remove actions tip from: http://random-eclipse-tips.blogspot.de/2009/02/eclipse-rcp-removing-unwanted_02.html*/
 		final ActionSetRegistry reg = WorkbenchPlugin.getDefault().getActionSetRegistry();
 		final IActionSetDescriptor[] actionSets = reg.getActionSets();
-		final String[] removeActionSets = new String[] { "org.eclipse.search.searchActionSet",
-				"org.eclipse.ui.cheatsheets.actionSet", "org.eclipse.ui.actionSet.keyBindings",
-				"org.eclipse.ui.edit.text.actionSet.navigation", "org.eclipse.ui.edit.text.actionSet.annotationNavigation",
-				"org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo", "org.eclipse.ui.edit.text.actionSet.openExternalFile",
-				"org.eclipse.ui.externaltools.ExternalToolsSet", "org.eclipse.ui.WorkingSetActionSet",
-				"org.eclipse.update.ui.softwareUpdates", "org.eclipse.ui.actionSet.openFiles",
-				"org.eclipse.mylyn.tasks.ui.navigation", };
+		final String[] removeActionSets = new String[] { 
+				"org.eclipse.search.searchActionSet",
+				"org.eclipse.ui.cheatsheets.actionSet",
+				"org.eclipse.ui.actionSet.keyBindings",
+				"org.eclipse.ui.edit.text.actionSet.navigation",
+				"org.eclipse.ui.edit.text.actionSet.annotationNavigation",	
+				"org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo",
+				"org.eclipse.ui.edit.text.actionSet.openExternalFile",
+				"org.eclipse.ui.externaltools.ExternalToolsSet",
+				"org.eclipse.ui.externaltools.ExternalToolsSet",
+				"org.eclipse.ui.WorkingSetActionSet",
+				"org.eclipse.update.ui.softwareUpdates",
+				"org.eclipse.ui.actionSet.openFiles",
+				"org.eclipse.mylyn.tasks.ui.navigation",
+				"org.eclipse.debug.ui.launchActionSet",
+				"org.eclipse.jdt.ui.JavaElementCreationActionSet",
+				"org.eclipse.jdt.ui.JavaActionSet",
+				"org.eclipse.ui.edit.text.actionSet.presentation",
+				"org.eclipse.ui.cheatsheets.actionSet",
+				"org.eclipse.ui.externaltools.ExternalToolsSet",
+				"org.eclipse.jdt.ui.text.java.actionSet.presentation",
+				"org.eclipse.debug.ui.breakpointActionSet"};
 
 		for (int i = 0; i < actionSets.length; i++) {
 			boolean found = false;
 			for (int j = 0; j < removeActionSets.length; j++) {
 				if (removeActionSets[j].equals(actionSets[i].getId())) {
+					
 					found = true;
 				}
 			}
