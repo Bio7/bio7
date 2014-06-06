@@ -24,7 +24,7 @@ public class ConsolePythonShellAction extends Action {
 		setId("Python");
 		setText("Python");
 
-		ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/Konsole.gif")));
+		ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/python_16x16.png")));
 
 		this.setImageDescriptor(desc);
 	}

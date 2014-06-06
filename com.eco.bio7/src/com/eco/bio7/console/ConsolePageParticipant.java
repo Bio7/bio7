@@ -370,14 +370,14 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 		// At startup only output console is activated!
 		styledText.setEditable(false);
-
+		toolBarManager.add(new ConsoleRShellAction());
+		toolBarManager.add(new ConsoleNativeShellAction());
+		toolBarManager.add(new ConsolePythonShellAction());
 		toolBarManager.add(new ConsoleCustomActions(this));
 
 		ia = new ConsoleInterpreterAction(this);
 		toolBarManager.add(ia);
-		toolBarManager.add(new ConsoleRShellAction());
-		toolBarManager.add(new ConsoleNativeShellAction());
-		toolBarManager.add(new ConsolePythonShellAction());
+		
 		in = new BufferedReader(isr);
 
 		ioc.clearConsole();

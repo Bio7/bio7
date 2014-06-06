@@ -9,25 +9,46 @@
  *     IBM Corporation - initial API and implementation
  *     Lars Vogel <Lars.Vogel@gmail.com> - Bug 420836
  *******************************************************************************/
-
+ 
+ 
 @import url("platform:/plugin/com.eco.bio7.themes/css/e4_basestyle.css");
 
+.MTrimBar {
+background-color: white #dddddd #eeeeee 35% 25% 25%;
+color: red;
+
+}
+
+Label {
+
+color: black;
+}
+Composite Label {
+color: black;
+}
+
+
+ETabFolder {
+simple: true;
+
+}
+
+CTabItem:selected {
+background-color: #cccccc #e8e8e8 60%;
+font-weight: normal;
+
+}
+
 Shell {
-  background-color: #eeeeee #eeeeee #eeeeee #eeeeee #eeeeee 100% 100% 100% 100%
+background-color: #e8e8e8 #cccccc 60%;
+}
+MenuItem {
+background-color: #dddddd;
+}
+Shell {
+background-color: #dddddd;
+}
+Menu {
+background-color: #ffffff;
 }
 
-.MPartStack {
-  font-size: 8px;
-  color: black;
-  
-  
-}  
-
-.MPart:selected {
-   visible:gone;
-   background-color:#eeeeee;
-}
-
-.MPartStack {
-border-visible:false;
-} 

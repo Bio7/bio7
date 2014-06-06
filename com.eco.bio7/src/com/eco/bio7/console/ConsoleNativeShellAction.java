@@ -24,7 +24,7 @@ public class ConsoleNativeShellAction extends Action {
 		setId("Shell");
 		setText("Shell");
 
-		ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/konsole.gif")));
+		ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/fugue/application-terminal.png")));
 
 		this.setImageDescriptor(desc);
 	}

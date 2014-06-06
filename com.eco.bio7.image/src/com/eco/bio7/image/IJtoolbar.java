@@ -12,6 +12,7 @@
 package com.eco.bio7.image;
 
 import ij.IJ;
+
 import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.awt.GridLayout;
@@ -29,6 +30,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.part.ViewPart;
+
+import com.eco.bio7.swt.SwtAwt;
 
 public class IJtoolbar extends ViewPart {
 
@@ -100,7 +103,7 @@ public class IJtoolbar extends ViewPart {
 				ef.synthesizeWindowActivation(true);
 			}
 		});
-*/
+*/      SwtAwt.setSwtAwtFocus(frame, top);
 		panel = new Panel(new BorderLayout()) {
 			public void update(java.awt.Graphics g) {
 

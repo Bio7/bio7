@@ -23,7 +23,7 @@ public class ConsoleRShellAction extends Action {
 		setId("RConsole");
 		setText("R Shell");
 
-		ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/R.gif")));
+		ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/r/Rlogo.png")));
 
 		this.setImageDescriptor(desc);
 	}
