@@ -765,10 +765,11 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 	protected void fillCoolBar(ICoolBarManager coolBar) {
 		IToolBarManager toolbar = new ToolBarManager(SWT.FLAT | SWT.LEFT);
-		IToolBarManager imagebar = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
+		//IToolBarManager imagebar = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
+		
 
-		coolBar.add(new ToolBarContributionItem(toolbar, "main"));
-		coolBar.add(new ToolBarContributionItem(imagebar, "image"));
+		coolBar.add(new ToolBarContributionItem(toolbar, "mainbio7"));
+		//coolBar.add(new ToolBarContributionItem(imagebar, "image"));
 
 		toolbar.add(start);
 		toolbar.add(setup);

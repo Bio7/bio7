@@ -13,10 +13,39 @@
  
 @import url("platform:/plugin/com.eco.bio7.themes/css/e4_basestyle.css");
 
+.MToolBar.Draggable {
+	 handle-image: url("platform:/plugin/com.eco.bio7.themes/images/dragHandle.png");
+}
+
+.MToolControl.Draggable {
+	 handle-image: url("platform:/plugin/com.eco.bio7.themes/images/dragHandle.png");
+}
+
 .MTrimBar {
 background-color: white #dddddd #eeeeee 35% 25% 25%;
-color: red;
 
+
+}
+.View {
+background-color: #eeeeee;
+}
+.MPlaceholder {
+background-color: #eeeeee;
+
+}
+.MPart{
+
+background-color: #eeeeee;
+}
+
+.MToolBar {
+
+background-color: white #dddddd #eeeeee 35% 25% 25%;
+
+}
+
+.MPartStack{
+background-color: #eeeeee;
 }
 
 Label {
@@ -51,4 +80,7 @@ background-color: #dddddd;
 Menu {
 background-color: #ffffff;
 }
+
+
+
 
