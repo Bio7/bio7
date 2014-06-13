@@ -20,7 +20,7 @@ public class ExecuteRScriptAction extends Action {
 	private final IWorkbenchWindow window;
 	private File file;
 	private String text;
-
+     /*This is an extra action to execute r scripts in the R scripts menu!*/
 	public ExecuteRScriptAction(String text, IWorkbenchWindow window, File file) {
 		super(text);
 		this.window = window;

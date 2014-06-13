@@ -14,14 +14,9 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorActionDelegate;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
@@ -37,28 +32,30 @@ import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.StartBio7Utils;
 
-public class InterpretR implements IEditorActionDelegate {
-	private IEditorPart part;
+public class InterpretR extends Action {
 
-	public void dispose() {
+	/* The toolbar action to intepret the current R script! */
+
+	public InterpretR(String text, IWorkbenchWindow window) {
+		super(text);
+
+		setId("com.eco.bio7.execute_r_script2");
 
 	}
 
-	public void init(IWorkbenchWindow window) {
-
-	}
-
-	public void run(IAction action) {
+	public void run() {
 		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
 		if (utils != null) {
 			utils.cons.clear();
 		}
-		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench()
+				.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		if (editor.isDirty()) {
 			editor.doSave(new NullProgressMonitor());
 		}
 
-		IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
+		IDocument doc = ((ITextEditor) editor).getDocumentProvider()
+				.getDocument(editor.getEditorInput());
 		RConnection d = RServe.getConnection();
 		IEditorInput editorInput = editor.getEditorInput();
 		IFile aFile = null;
@@ -68,76 +65,74 @@ public class InterpretR implements IEditorActionDelegate {
 		}
 		String loc = aFile.getLocation().toString();
 
-		boolean remote = Bio7Plugin.getDefault().getPreferenceStore().getBoolean("REMOTE");
+		boolean remote = Bio7Plugin.getDefault().getPreferenceStore()
+				.getBoolean("REMOTE");
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		//boolean rPipe = store.getBoolean("r_pipe");
+		// boolean rPipe = store.getBoolean("r_pipe");
 
 		if (d == null) {
-			String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
-			
+			String selectionConsole = ConsolePageParticipant
+					.getInterpreterSelection();
+
 			if (selectionConsole.equals("R")) {
-                
-				ConsolePageParticipant.pipeInputToConsole("source('" + loc + "')",true,true);
+
+				ConsolePageParticipant.pipeInputToConsole("source('" + loc
+						+ "')", true, true);
 				System.out.print("source('" + loc + "')");
 				System.out.println();
 			} else {
-				Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
+				Bio7Dialog
+						.message("Please start the \"Native R\" shell in the Bio7 console!");
 			}
 
 		} else {
-			
-				String a = doc.get();
 
-				if (RState.isBusy() == false) {
-					RState.setBusy(true);
-					final RInterpreterJob Do;
-					if (remote == false) {
-						Do = new RInterpreterJob(a, true, loc);
+			String a = doc.get();
 
-					} else {
-						Do = new RInterpreterJob(a, true, null);
-					}
-					Do.addJobChangeListener(new JobChangeAdapter() {
-						public void done(IJobChangeEvent event) {
-							if (event.getResult().isOK()) {
+			if (RState.isBusy() == false) {
+				RState.setBusy(true);
+				final RInterpreterJob Do;
+				if (remote == false) {
+					Do = new RInterpreterJob(a, true, loc);
 
-								int countDev = RServe.getDisplayNumber();
-								RState.setBusy(false);
-								if (countDev > 0) {
-									RServe.closeAndDisplay();
-								}
-							} else {
-								RState.setBusy(false);
-							}
-						}
-					});
-					Do.setUser(true);
-					Do.schedule();
 				} else {
-
-					Bio7Dialog.message("RServer is busy!");
-
+					Do = new RInterpreterJob(a, true, null);
 				}
+				Do.addJobChangeListener(new JobChangeAdapter() {
+					public void done(IJobChangeEvent event) {
+						if (event.getResult().isOK()) {
 
-			 /*else {
+							int countDev = RServe.getDisplayNumber();
+							RState.setBusy(false);
+							if (countDev > 0) {
+								RServe.closeAndDisplay();
+							}
+						} else {
+							RState.setBusy(false);
+						}
+					}
+				});
+				Do.setUser(true);
+				Do.schedule();
+			} else {
 
-				MessageBox messageBox = new MessageBox(new Shell(),
+				Bio7Dialog.message("RServer is busy!");
 
-				SWT.ICON_WARNING);
-				messageBox.setMessage("RServer connection failed - Server is not running!");
-				messageBox.open();
+			}
 
-			}*/
+			/*
+			 * else {
+			 * 
+			 * MessageBox messageBox = new MessageBox(new Shell(),
+			 * 
+			 * SWT.ICON_WARNING); messageBox.setMessage(
+			 * "RServer connection failed - Server is not running!");
+			 * messageBox.open();
+			 * 
+			 * }
+			 */
 		}
 
-	}
-
-	public void selectionChanged(IAction action, ISelection selection) {
-
-	}
-
-	public void setActiveEditor(IAction action, IEditorPart targetEditor) {
-		part = targetEditor;
 	}
 
 }

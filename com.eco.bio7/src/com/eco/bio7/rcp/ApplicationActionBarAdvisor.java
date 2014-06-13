@@ -57,6 +57,7 @@ import com.eco.bio7.actions.ExecuteScriptAction;
 import com.eco.bio7.actions.FlowExternalStartAction;
 import com.eco.bio7.actions.FlowStopAction;
 import com.eco.bio7.actions.InstallRPackage;
+import com.eco.bio7.actions.InterpretR;
 import com.eco.bio7.actions.LoadRLibrary;
 import com.eco.bio7.actions.LoadRWorkspace;
 import com.eco.bio7.actions.OfficeOpenAction;
@@ -200,6 +201,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	private MenuManager helpMenu;
 
 	private ActivateRPlots enableRPlots;
+
+	private InterpretR interpretR;
 
 	public ApplicationActionBarAdvisor(IActionBarConfigurer configurer) {
 		super(configurer);
@@ -374,6 +377,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		openBrowser = new OpenBio7BrowserAction("Bio7 Internet", window);
 		register(openBrowser);
+		
+		interpretR = new InterpretR("Interpret R", window);
+		register(interpretR);
+		
 	} 
 
 	protected void fillMenuBar(IMenuManager menuBar) {
@@ -766,7 +773,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	protected void fillCoolBar(ICoolBarManager coolBar) {
 		IToolBarManager toolbar = new ToolBarManager(SWT.FLAT | SWT.LEFT);
 		//IToolBarManager imagebar = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
-		
+		//coolBar.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 
 		coolBar.add(new ToolBarContributionItem(toolbar, "mainbio7"));
 		//coolBar.add(new ToolBarContributionItem(imagebar, "image"));
@@ -779,7 +786,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		toolbar.add(libreofficeconnection);
 		toolbar.add(startrserve);
 		toolbar.add(print);
-
+		
 	}
 
 	public static File[] ListFileDirectory(File filedirectory, final String extension) {

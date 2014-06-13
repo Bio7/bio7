@@ -287,10 +287,10 @@
             
             <command
             description="Executes a R script"
-            id="com.eco.bio7.execute_r_scriptaction"
+            id="com.eco.bio7.execute_r_script"
             name="R_Execute"/>
       <keyBinding
-            commandId="com.eco.bio7.execute_r_scriptaction"
+            commandId="com.eco.bio7.execute_r_script"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
             keySequence="F6"/>
             
@@ -323,6 +323,16 @@
             id="com.eco.bio7.activatRPlot"
             name="Activate R Plots">
       </command>
+      <command
+            description="Executes a R script from toolbar"
+            id="com.eco.bio7.execute_r_script2"
+            name="Interpret R Action">
+      </command>
+      <keyBinding
+            commandId="com.eco.bio7.execute_r_script2"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="ALT+Y">
+      </keyBinding>
    </extension>
    <extension
          id="product"
@@ -1013,19 +1023,6 @@
   <extension
         point="org.eclipse.ui.editorActions">
      <editorContribution
-           id="com.eco.bio7.editorContribution1"
-           targetID="com.eco.bio7.reditors.TemplateEditor">
-        <action
-              class="com.eco.bio7.actions.InterpretR"
-              icon="icons/rkompilieren_rahmen.gif"
-              id="com.eco.bio7.RScriptAction"
-              label="Interpret RScript"
-              state="true"
-              style="push"
-              toolbarPath="mainbio7"
-              tooltip="Interpret RScript"/>
-     </editorContribution>
-     <editorContribution
            id="com.eco.bio7.editorContribution2"
            targetID="com.eco.bio7.editors.TemplateEditor">
         <action
@@ -1140,6 +1137,32 @@
          </enablement>
       </consolePageParticipant>
    </extension>
+   <extension
+     point="org.eclipse.ui.menus">
+  <menuContribution
+        locationURI="toolbar:org.eclipse.ui.main.toolbar?after=mainbio7">
+     <toolbar
+           id="com.eco.bio7.reditor.rexecuteraction"
+           label="R">
+        <command
+              commandId="com.eco.bio7.execute_r_script2"
+              disabledIcon="icons/rkompilieren_rahmen.gif"
+              icon="icons/rkompilieren_rahmen.gif"
+              id="bio7toolbar.executer"
+              label="R"
+              style="push">
+           <visibleWhen>
+                     <with
+                         variable="activePartId">
+                          <equals
+                             value="com.eco.bio7.reditors.TemplateEditor">
+                          </equals>
+                     </with>
+          </visibleWhen>
+        </command>
+     </toolbar>
+  </menuContribution>
+</extension>
    
   
 </plugin>
