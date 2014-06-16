@@ -13,6 +13,27 @@
  
 @import url("platform:/plugin/com.eco.bio7.themes/css/e4_basestyle.css");
 
+.MPartStack {
+	swt-tab-renderer: url('bundleclass://org.eclipse.e4.ui.workbench.renderers.swt/org.eclipse.e4.ui.workbench.renderers.swt.CTabRendering');
+	swt-selected-tab-fill: #eeeeee;
+	swt-unselected-tabs-color: #eeeeee ;
+	
+	swt-tab-outline:   #eeeeee ;
+	padding: 1px 5px 5px;
+	swt-shadow-visible: false;
+	swt-mru-visible: false;
+	
+}
+
+.MPartStack.active {
+	swt-selected-tab-fill:  #eeeeee ;
+	swt-unselected-tabs-color:  #eeeeee;
+	
+	
+	
+}
+
+
 .MToolBar.Draggable {
 	 handle-image: url("platform:/plugin/com.eco.bio7.themes/images/dragHandle.png");
 }
@@ -22,7 +43,7 @@
 }
 
 .MTrimBar {
-background-color: white #dddddd #eeeeee 35% 25% 25%;
+background-color: #eeeeee;
 
 
 }
@@ -35,13 +56,17 @@ background-color: #eeeeee;
 }
 .MPart{
 
-background-color: #eeeeee;
+
 }
 
+/*The colour for the toolbar of the views*/
 .MToolBar {
 
-background-color: white #dddddd #eeeeee 35% 25% 25%;
+background-color: #eeeeee;
 
+}
+.MTrimBar#org-eclipse-ui-main-toolbar {
+    white #dddddd #eeeeee 35% 25% 25%;
 }
 
 .MPartStack{
@@ -69,17 +94,66 @@ font-weight: normal;
 }
 
 Shell {
-background-color: #e8e8e8 #cccccc 60%;
+background-color: #eeeeee;
 }
 MenuItem {
 background-color: #dddddd;
 }
+/**/
 Shell {
-background-color: #dddddd;
+background-color: #ffffff;
 }
 Menu {
 background-color: #ffffff;
 }
+/*The window to view edge distances!*/
+.MTrimmedWindow.topLevel {
+	margin-top: 3px;
+	margin-bottom: 3px;
+	margin-left: 3px;
+	margin-right: 3px;
+}
+
+.MTrimmedWindow {
+    background-color: #dddddd;
+    /*  */
+}
+
+.MPart.busy {
+	font-style: italic;
+}
+
+.MPart.highlighted {
+	font-weight: bold;
+}
+
+.MPartStack, .MPart {
+	font-family: '#org-eclipse-ui-workbench-TAB_TEXT_FONT';
+}
+
+
+
+
+/*The colour of the Tab font!*/
+CTabItem:selected {
+	color: '#org-eclipse-ui-workbench-ACTIVE_TAB_TEXT_COLOR';
+}
+
+/*Perspective Switch!*/
+#org-eclipse-ui-main-toolbar #PerspectiveSwitcher {
+	eclipse-perspective-keyline-color: #eeeeee;
+	background-color: white #dddddd #eeeeee 52% 52% 100%;
+	handle-image: none;
+	chrome-show-perspective-name: false;
+}
+.MPartSashContainer {
+ background-color: #dddddd;
+}
+
+
+
+
+
 
 
 

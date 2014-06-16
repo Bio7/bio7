@@ -11,6 +11,7 @@
 package com.eco.bio7.actions;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.ISelection;
@@ -20,22 +21,23 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
+
 import com.eco.bio7.discrete.Quad2d;
 import com.eco.bio7.rcp.StartBio7Utils;
 
-public class Interpret implements IEditorActionDelegate {
+public class Interpret extends Action {
 
 	private IFile file;
-
-	public void dispose() {
-
+	
+	public  Interpret(String text){
+		super(text);
+		setId("com.eco.bio7.interpretgroovybeanshell");
+		setActionDefinitionId("com.eco.bio7.interpretgroovybeanshellaction");
+		
 	}
 
-	public void init(IWorkbenchWindow window) {
-
-	}
-
-	public void run(IAction action) {
+	
+	public void run() {
 		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
 		if (utils != null) {
 			utils.cons.clear();

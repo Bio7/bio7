@@ -333,6 +333,31 @@
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
             keySequence="ALT+Y">
       </keyBinding>
+      <command
+            description="Compile Java Dynamically"
+            id="com.eco.bio7.compilejavaaction"
+            name="Compile Java">
+      </command>
+      <command
+            description="Execute a Bio7 Flow"
+            id="com.eco.bio7.executeflowaction"
+            name="Flow Action">
+      </command>
+      <command
+            description="Debug a Bio7 Flow"
+            id="com.eco.bio7.debugflowaction"
+            name="Debug Flow Action">
+      </command>
+      <command
+            description="Interpret Groovy/BeanShell"
+            id="com.eco.bio7.interpretgroovybeanshellaction"
+            name="Interpret Groovy/BeanShell Action">
+      </command>
+      <command
+            description="Interpret Python"
+            id="com.eco.bio7.interpretpythonaction"
+            name="Interpret Python Action">
+      </command>
    </extension>
    <extension
          id="product"
@@ -1021,79 +1046,6 @@
     </viewerContribution>
   </extension>
   <extension
-        point="org.eclipse.ui.editorActions">
-     <editorContribution
-           id="com.eco.bio7.editorContribution2"
-           targetID="com.eco.bio7.editors.TemplateEditor">
-        <action
-              class="com.eco.bio7.actions.Interpret"
-              icon="icons/groovy_compile.gif"
-              id="com.eco.bio7.beanshell_action"
-              label="Interpret Groovy,Bsh Script"
-              style="push"
-              toolbarPath="Normal/additions"/>
-     </editorContribution>
-     <editorContribution
-           id="com.eco.bio7.editorContribution3"
-           targetID="com.eco.bio7.floweditor.ShapesEditor">
-        <action
-              class="com.eco.bio7.actions.FlowEditorAction"
-              icon="icons/flowchart_ausfuehren.gif"
-              id="com.eco.bio7.flow_action"
-              label="FlowAction"
-              style="push"
-              toolbarPath="Normal/additions"/>
-     </editorContribution>
-     <editorContribution
-           id="com.eco.bio7.editorContributionFlow"
-           targetID="com.eco.bio7.floweditor.ShapesEditor">
-        <action
-              class="com.eco.bio7.actions.FlowEditorTestAction"
-              icon="icons/flowchart_debug.gif"
-              id="com.eco.bio7.flow_action_test"
-              label="FlowTest"
-              style="push"
-              toolbarPath="Normal/additions"/>
-     </editorContribution>
-     <editorContribution
-           id="com.eco.bio7.editorContribution6"
-           targetID="org.eclipse.jdt.ui.CompilationUnitEditor">
-        <action
-              class="com.eco.bio7.actions.Compile"
-              icon="icons/javakompilieren_rahmen.gif"
-              id="com.eco.bio7.compile_action"
-              label="Compile Java"
-              style="push"
-              toolbarPath="Normal/additions"
-              tooltip="Compile Java Class">
-        </action>
-     </editorContribution>
-     <editorContribution
-           id="com.eco.bio7.editorContribution4"
-           targetID="com.eco.bio7.javaeditors.TemplateEditor">
-        <action
-              class="com.eco.bio7.actions.Compile"
-              icon="icons/javakompilieren_rahmen.gif"
-              id="com.eco.bio7.compile_action"
-              label="Compile Java"
-              style="push"
-              toolbarPath="Normal/additions"
-              tooltip="Compile source to method"/>
-     </editorContribution>
-     <editorContribution
-           id="com.eco.bio7.editorContribution5"
-           targetID="com.eco.bio7.pythoneditors.PythonEditor">
-        <action
-              class="com.eco.bio7.actions.InterpretPython"
-              icon="icons/jython_interpret.gif"
-              id="com.eco.bio7.python_action"
-              label="Interpret Python"
-              style="push"
-              toolbarPath="Normal/additions">
-        </action>
-     </editorContribution>
-  </extension>
-  <extension
         id="bshextension"
         name="bsh"
         point="org.eclipse.ui.perspectiveExtensions">
@@ -1143,7 +1095,7 @@
         locationURI="toolbar:org.eclipse.ui.main.toolbar?after=mainbio7">
      <toolbar
            id="com.eco.bio7.reditor.rexecuteraction"
-           label="R">
+           label="Editor Actions">
         <command
               commandId="com.eco.bio7.execute_r_script2"
               disabledIcon="icons/rkompilieren_rahmen.gif"
@@ -1159,6 +1111,86 @@
                           </equals>
                      </with>
           </visibleWhen>
+        </command>
+        <command
+              commandId="com.eco.bio7.compilejavaaction"
+              disabledIcon="icons/javakompilieren_rahmen.gif"
+              icon="icons/javakompilieren_rahmen.gif"
+              id="bio7toolbar.compilejava"
+              label="Compile Java"
+              style="push">
+           <visibleWhen>
+              <with
+                    variable="activePartId">
+                 <equals
+                       value="org.eclipse.jdt.ui.CompilationUnitEditor">
+                 </equals>
+              </with>
+           </visibleWhen>
+        </command>
+        <command
+              commandId="com.eco.bio7.executeflowaction"
+              disabledIcon="icons/flow_execute.png"
+              icon="icons/flow_execute.png"
+              id="bio7toolbar.executeflow"
+              label="Flow Action"
+              style="push">
+           <visibleWhen>
+              <with
+                    variable="activePartId">
+                 <equals
+                       value="com.eco.bio7.floweditor.ShapesEditor">
+                 </equals>
+              </with>
+           </visibleWhen>
+        </command>
+        <command
+              commandId="com.eco.bio7.debugflowaction"
+              disabledIcon="icons/flow_debug.png"
+              icon="icons/flow_debug.png"
+              id="bio7toolbar.debugflow"
+              label="Debug Flow Action"
+              style="push">
+           <visibleWhen>
+              <with
+                    variable="activePartId">
+                 <equals
+                       value="com.eco.bio7.floweditor.ShapesEditor">
+                 </equals>
+              </with>
+           </visibleWhen>
+        </command>
+        <command
+              commandId="com.eco.bio7.interpretgroovybeanshellaction"
+              disabledIcon="icons/groovy_compile.gif"
+              icon="icons/groovy_compile.gif"
+              id="bio7toolbar.interpretgroovybeanshell"
+              label="Interpret Groovy/BeanShell"
+              style="push">
+           <visibleWhen>
+              <with
+                    variable="activePartId">
+                 <equals
+                       value="com.eco.bio7.editors.TemplateEditor">
+                 </equals>
+              </with>
+           </visibleWhen>
+        </command>
+        <command
+              commandId="com.eco.bio7.interpretpythonaction"
+              disabledIcon="icons/jython_interpret.gif"
+              icon="icons/jython_interpret.gif"
+              id="bio7toolbar.interpretpython"
+              label="Interpret Python"
+              style="push">
+           <visibleWhen>
+              <with
+                    variable="activePartId">
+                 <equals
+                       value="com.eco.bio7.pythoneditors.PythonEditor">
+                 </equals>
+              </with>
+           </visibleWhen>
         </command>
      </toolbar>
   </menuContribution>

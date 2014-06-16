@@ -16,16 +16,13 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.ui.IEditorActionDelegate;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
@@ -34,22 +31,21 @@ import com.eco.bio7.compile.JavaCompileWorkspaceJob;
 import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 import com.eco.bio7.rcp.StartBio7Utils;
 
-public class Compile implements IEditorActionDelegate {
+public class Compile extends Action {
 	public static String COMPILE_IMPORTS = CompilerMessages.getString("Import.bio7");
 	private boolean classbody = true;
 	public static IResource resource;
 	public IWorkbenchPage pag;
 	protected IFile ifile;
 
-	public void dispose() {
-
+	public  Compile(String text){
+		super(text);
+		setId("com.eco.bio7.compilejava");
+		setActionDefinitionId("com.eco.bio7.compilejavaaction");
+		
 	}
 
-	public void init(IWorkbenchWindow window) {
-
-	}
-
-	public void run(IAction action) {
+	public void run() {
 		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
 		if (utils != null) {
 			utils.cons.clear();
@@ -104,12 +100,6 @@ public class Compile implements IEditorActionDelegate {
 		// Quad2d.getQuad2dInstance().repaint();
 	}
 
-	public void selectionChanged(IAction action, ISelection selection) {
-
-	}
-
-	public void setActiveEditor(IAction action, IEditorPart targetEditor) {
-
-	}
+	
 
 }

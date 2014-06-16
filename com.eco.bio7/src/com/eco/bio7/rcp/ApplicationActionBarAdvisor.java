@@ -48,15 +48,20 @@ import com.eco.bio7.actions.BeanShellImportAction;
 import com.eco.bio7.actions.ClearRWorkspace;
 import com.eco.bio7.actions.ClipboardRScipt;
 import com.eco.bio7.actions.ClipboardRValues;
+import com.eco.bio7.actions.Compile;
 import com.eco.bio7.actions.CounterReset;
 import com.eco.bio7.actions.EnableSelection;
 import com.eco.bio7.actions.ExecuteImageMacroAction;
 import com.eco.bio7.actions.ExecuteRScriptAction;
 import com.eco.bio7.actions.ExecuteRTextSelection;
 import com.eco.bio7.actions.ExecuteScriptAction;
+import com.eco.bio7.actions.FlowEditorAction;
+import com.eco.bio7.actions.FlowEditorTestAction;
 import com.eco.bio7.actions.FlowExternalStartAction;
 import com.eco.bio7.actions.FlowStopAction;
 import com.eco.bio7.actions.InstallRPackage;
+import com.eco.bio7.actions.Interpret;
+import com.eco.bio7.actions.InterpretPython;
 import com.eco.bio7.actions.InterpretR;
 import com.eco.bio7.actions.LoadRLibrary;
 import com.eco.bio7.actions.LoadRWorkspace;
@@ -203,6 +208,16 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	private ActivateRPlots enableRPlots;
 
 	private InterpretR interpretR;
+
+	private Compile compileJava;
+
+	private FlowEditorAction flowAction;
+
+	private FlowEditorTestAction debugFlowAction;
+
+	private Interpret interpretGrovvyBeanShell;
+
+	private InterpretPython interpretPython;
 
 	public ApplicationActionBarAdvisor(IActionBarConfigurer configurer) {
 		super(configurer);
@@ -380,6 +395,21 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		
 		interpretR = new InterpretR("Interpret R", window);
 		register(interpretR);
+		
+		compileJava = new Compile("Compile Java");
+		register(compileJava);
+		
+		flowAction = new FlowEditorAction("Execute Flow");
+		register(flowAction);
+		
+		debugFlowAction = new FlowEditorTestAction("Debug Flow");
+		register(debugFlowAction);
+		
+		interpretGrovvyBeanShell=new Interpret("Interpret Groovy/BeanShell");
+		register(interpretGrovvyBeanShell);
+		
+		interpretPython=new InterpretPython("Interpret Python");
+		register(interpretPython);
 		
 	} 
 

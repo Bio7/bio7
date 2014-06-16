@@ -40,7 +40,7 @@ public class InterpretR extends Action {
 		super(text);
 
 		setId("com.eco.bio7.execute_r_script2");
-
+		setActionDefinitionId("com.eco.bio7.execute_r_script2");
 	}
 
 	public void run() {
