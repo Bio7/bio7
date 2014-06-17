@@ -807,7 +807,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		coolBar.add(new ToolBarContributionItem(toolbar, "mainbio7"));
 		//coolBar.add(new ToolBarContributionItem(imagebar, "image"));
-
 		toolbar.add(start);
 		toolbar.add(setup);
 		toolbar.add(resetfield);
@@ -816,7 +815,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		toolbar.add(libreofficeconnection);
 		toolbar.add(startrserve);
 		toolbar.add(print);
-		
+		IToolBarManager toolBarEditor = new ToolBarManager(SWT.FLAT);
+        coolBar.add(new ToolBarContributionItem(toolBarEditor, IWorkbenchActionConstants.GROUP_EDITOR));
 	}
 
 	public static File[] ListFileDirectory(File filedirectory, final String extension) {
