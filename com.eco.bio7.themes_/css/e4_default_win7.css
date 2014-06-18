@@ -136,7 +136,7 @@ CTabItem:selected {
 .MPartStack {
 	swt-tab-renderer: url('bundleclass://org.eclipse.e4.ui.workbench.renderers.swt/org.eclipse.e4.ui.workbench.renderers.swt.CTabRendering');
 	swt-selected-tab-fill: '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_END' 100% 100%;
-	swt-unselected-tabs-color: '#org-eclipse-ui-workbench-INACTIVE_UNSELECTED_TABS_COLOR_START' '#org-eclipse-ui-workbench-INACTIVE_UNSELECTED_TABS_COLOR_END' 100% 100%;
+	swt-unselected-tabs-color:  white #eeeeee #dddddd 25% 25% 50%;
 	swt-outer-keyline-color: '#org-eclipse-ui-workbench-INACTIVE_TAB_OUTER_KEYLINE_COLOR';
 	swt-inner-keyline-color: '#org-eclipse-ui-workbench-INACTIVE_TAB_INNER_KEYLINE_COLOR';
 	swt-tab-outline: '#org-eclipse-ui-workbench-INACTIVE_TAB_OUTLINE_COLOR';
@@ -144,15 +144,17 @@ CTabItem:selected {
 	swt-shadow-visible: false;
 	swt-mru-visible: false;
 	color: '#org-eclipse-ui-workbench-INACTIVE_TAB_TEXT_COLOR';
+	swt-tab-height: 31px; 
 }
 
 .MPartStack.active {
 	swt-selected-tab-fill: '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_END' 100% 100%;
-	swt-unselected-tabs-color: '#org-eclipse-ui-workbench-ACTIVE_UNSELECTED_TABS_COLOR_START' '#org-eclipse-ui-workbench-ACTIVE_UNSELECTED_TABS_COLOR_END' 100% 100%;
+	swt-unselected-tabs-color: background-color: white #eeeeee #dddddd 25% 25% 50%;
 	swt-outer-keyline-color: '#org-eclipse-ui-workbench-ACTIVE_TAB_OUTER_KEYLINE_COLOR';
 	swt-inner-keyline-color: '#org-eclipse-ui-workbench-ACTIVE_TAB_INNER_KEYLINE_COLOR';
 	swt-tab-outline: '#org-eclipse-ui-workbench-ACTIVE_TAB_OUTLINE_COLOR';
 	swt-shadow-visible: false;
+	swt-tab-height: 31px; 
 }
 
 .MPartStack.active.noFocus {
@@ -168,8 +170,8 @@ CTabItem:selected {
 }
 
 .MToolControl.TrimStack {
-	frame-image:  url("platform:/plugin/com.eco.bio7.themes/images/winXPTSFrame.png");
-	handle-image:  url("platform:/plugin/com.eco.bio7.themes/images/winXPTSFrame.png");
+	frame-image:  url('./winXPTSFrame.png');
+	handle-image:  url('./winXPTSFrame.png');
 	frame-cuts: 5px 1px 5px 16px;
 }
 
@@ -194,13 +196,13 @@ CTabItem:selected {
 
 
 
-.MToolBar.Draggable {
-	 handle-image: url("platform:/plugin/com.eco.bio7.themes/images/dragHandle.png");
+/*.MToolBar.Draggable {
+	 handle-image: url("./dragHandle.png");
 }
 
 .MToolControl.Draggable {
-	 handle-image: url("platform:/plugin/com.eco.bio7.themes/images/dragHandle.png");
-}
+	 handle-image: url("./dragHandle.png");
+}*/
 
 
 
@@ -214,7 +216,7 @@ background-color: #eeeeee;
 background-color: #eeeeee;
 }
 .MPlaceholder {
-background-color: #eeeeee;
+background-color: #ffffff;
 
 }
 .MPart{
@@ -225,18 +227,15 @@ background-color: #eeeeee;
 /*The colour for the toolbar of the views*/
 .MToolBar {
 
-background-color: #eeeeee;
+
 
 }
 #org-eclipse-ui-main-toolbar {
     eclipse-perspective-keyline-color: #585858;
     background-color: #eeeeee;
-    handle-image: none;
+   background-image: url('./win7_old.png');
     color: #EBE8E4;
 }
-
-
-
 
 
 Label {
@@ -300,12 +299,14 @@ CTabItem:selected {
 /*Perspective Switch!*/
 #org-eclipse-ui-main-toolbar #PerspectiveSwitcher {
 	eclipse-perspective-keyline-color: #eeeeee;
-	background-color: white #dddddd #eeeeee 52% 52% 100%;
+	/* background-image: url('./win7_old.png');*/
+	background-color: #ffffff;
 	handle-image: none;
-	chrome-show-perspective-name: false;
+		
 }
-/*Colour around views!*/
+/*Colour around views (evtl shadows?!*/
 .MPartSashContainer {
+
  background-color: 	#ffffff;
  
  
@@ -324,7 +325,7 @@ CTabItem:selected {
 
 /*Important to set height for the view menus!*/
 CTabFolder { 
-swt-tab-height: 31px; 
+
  swt-corner-radius: 15;
   
 }
@@ -332,8 +333,6 @@ swt-tab-height: 31px;
 /*#com-eco-bio7-imagej.MToolBar {
     background-color:  #eeeeee;
 }*/
-
-
 
 
 

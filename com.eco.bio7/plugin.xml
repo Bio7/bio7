@@ -395,6 +395,11 @@
                name="windowImages"
                value="icons/bio7app/bio7_16.png,icons/bio7app/bio7_32.png,icons/bio7app/bio7_48.png,icons/bio7app/bio7_64.png,icons/bio7app/bio7_128.png">
          </property>
+         
+         <property
+	name="applicationCSSResources"
+	value="platform:/plugin/com.eco.bio7.themes/images/">
+</property>
       </product>
    </extension>
    <extension
