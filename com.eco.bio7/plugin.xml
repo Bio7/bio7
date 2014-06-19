@@ -218,12 +218,6 @@
             id="com.eco.bio7.rbridge.RTable"
             name="Table">
       </view>
-      <e4view
-            class="com.eco.bio7.rcp.E4view1"
-            id="com.eco.bio7.e4view1"
-            name="name"
-            restorable="true">
-      </e4view>
    </extension>
    <extension
          point="org.eclipse.ui.commands">

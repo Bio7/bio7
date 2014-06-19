@@ -1,12 +1,12 @@
 #ImageJ 1.48c Preferences
-#Wed Jun 18 16:10:41 CEST 2014
+#Thu Jun 19 17:46:58 CEST 2014
 new.fill=0
 .log.height=250
 pp.options=1
 .log.loc=760,237
 .brush.width=19
 bcolor=\#5D9EFF
-.results.height=250
+.results.height=545
 recent03=I\:\\ROIS\\blobs3.roi
 recent02=I\:\\ROIS\\tiffwithroi.tif
 noise.sd=25.0
@@ -18,14 +18,14 @@ raw.width=512
 .Control_Panel.@Main=894 204 132 384
 .log.width=400
 .recorder.mode=Macro
-.manager.loc=1512,300
+.manager.loc=1337,217
 prefs.options=541085696
 new.height=400
 measurements=51
 showcolor=\#00FFFF
 fps=7.0
 raw.height=512
-.results.loc=760,237
+.results.loc=1020,191
 .cthresholder.dark=true
 .fonts.loc=713,281
 jpeg=85

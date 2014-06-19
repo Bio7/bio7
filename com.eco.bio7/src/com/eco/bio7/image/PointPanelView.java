@@ -2,15 +2,11 @@ package com.eco.bio7.image;
 
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Stack;
 
 import javax.imageio.ImageIO;
 import javax.swing.JApplet;
@@ -28,13 +24,11 @@ import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
+import com.eco.bio7.actions.PlaceholderAction;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.swt.SwtAwt;
 
@@ -131,6 +125,7 @@ public class PointPanelView extends ViewPart {
 	public void setstatusline(String message) {
 		IActionBars bars = getViewSite().getActionBars();
 		bars.getStatusLineManager().setMessage(message);
+		
 
 	}
 
@@ -148,6 +143,9 @@ public class PointPanelView extends ViewPart {
 
 	private void initializeToolBar() {
 		IToolBarManager toolBarManager = getViewSite().getActionBars().getToolBarManager();
+		PlaceholderAction placeholder=new PlaceholderAction();
+		placeholder.setEnabled(false);
+		toolBarManager.add(new PlaceholderAction());
 	}
 
 	public void loadImage(String path) {

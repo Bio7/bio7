@@ -145,11 +145,12 @@ CTabItem:selected {
 	swt-mru-visible: false;
 	color: '#org-eclipse-ui-workbench-INACTIVE_TAB_TEXT_COLOR';
 	swt-tab-height: 31px; 
+	
 }
 
 .MPartStack.active {
 	swt-selected-tab-fill: '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_END' 100% 100%;
-	swt-unselected-tabs-color: background-color: white #eeeeee #dddddd 25% 25% 50%;
+	swt-unselected-tabs-color: white #eeeeee #dddddd 25% 25% 50%;
 	swt-outer-keyline-color: '#org-eclipse-ui-workbench-ACTIVE_TAB_OUTER_KEYLINE_COLOR';
 	swt-inner-keyline-color: '#org-eclipse-ui-workbench-ACTIVE_TAB_INNER_KEYLINE_COLOR';
 	swt-tab-outline: '#org-eclipse-ui-workbench-ACTIVE_TAB_OUTLINE_COLOR';
@@ -174,7 +175,6 @@ CTabItem:selected {
 	handle-image:  url('./winXPTSFrame.png');
 	frame-cuts: 5px 1px 5px 16px;
 }
-
 
 
 
@@ -264,7 +264,7 @@ background-color: #dddddd;
 }
 /**/
 Shell {
-background-color: #ffffff;
+background-color: #eeeeee;
 }
 Menu {
 background-color: #ffffff;
@@ -334,6 +334,15 @@ CTabFolder {
     background-color:  #eeeeee;
 }*/
 
+.ToolItemElement{
+    image: url('./win7.png');
+    background-color: white #eeeeee #dddddd 25% 25% 50%;
+    #Bounds: x=1082 y=186 h=31 w=31;
+}
+
+.CompositeElement{
+Bounds: x=1082 y=186 h=31 w=31;
+}
 
 
 
