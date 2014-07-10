@@ -1193,7 +1193,62 @@
         </command>
      </toolbar>
   </menuContribution>
+  <menuContribution locationURI="menu:org.eclipse.ui.main.menu?after=edit">
+        <menu label="Search"
+              mnemonic="%searchMenu.mnemonic"
+              id="org.eclipse.search.menu">
+           <separator name="internalDialogGroup" visible="false" />
+           <separator name="dialogGroup" visible="false" />
+           <separator name="fileSearchContextMenuActionsGroup"
+                      visible="true" />
+           <separator name="contextMenuActionsGroup" visible="true" />
+           <separator name="occurencesActionsGroup" visible="true" />
+           <separator name="extraSearchGroup" visible="true" />
+        </menu>
+     </menuContribution>
+  <menuContribution
+        locationURI="menu:org.eclipse.ui.main.menu?after=edit">
+     <menu
+           id="org.eclipse.ui.run"
+           label="Run"
+           mnemonic="%searchMenu.mnemonic">
+        <separator
+              name="internalDialogGroup"
+              visible="false">
+        </separator>
+        <separator
+              name="dialogGroup"
+              visible="false">
+        </separator>
+        <separator
+              name="fileSearchContextMenuActionsGroup"
+              visible="true">
+        </separator>
+        <separator
+              name="contextMenuActionsGroup"
+              visible="true">
+        </separator>
+        <separator
+              name="occurencesActionsGroup"
+              visible="true">
+        </separator>
+        <separator
+              name="extraSearchGroup"
+              visible="true">
+        </separator>
+     </menu>
+  </menuContribution>
 </extension>
+<extension
+ point="org.eclipse.ui.perspectiveExtensions">
+    <perspectiveExtension
+     targetID="com.eco.bio7.bio7resource">
+         <hiddenMenuItem id="org.eclipse.ui.run"></hiddenMenuItem>
+         <hiddenMenuItem id="navigate"></hiddenMenuItem>
+     </perspectiveExtension>
+ 
+</extension>
+
    
   
 </plugin>
