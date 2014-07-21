@@ -23,6 +23,7 @@ public class SceneEditorPerspective implements IPerspectiveFactory {
 
 		
 		topLeft.addView("com.eco.bio7.scenebuilder.library");
+		topLeft.addView("com.eco.bio7.scenebuilder.css");
 		topLeft.addView("org.eclipse.ui.views.ResourceNavigator");	
 		viewRight.addView("com.eco.bio7.scenebuilder.hierachy");		
 		viewRight.addView("org.eclipse.ui.views.ContentOutline");		
@@ -30,6 +31,7 @@ public class SceneEditorPerspective implements IPerspectiveFactory {
 		topRigtht.addView("org.eclipse.ui.views.PropertySheet");
 		topRigtht.addView("org.eclipse.wst.common.snippets.internal.ui.SnippetsView");	
 		layout.addView("com.eco.bio7.scenebuilder.inspector", IPageLayout.RIGHT, 0.66f, editorArea);
+		
 
 		
 

@@ -36,6 +36,14 @@
             name="Inspector"
             restorable="true">
       </view>
+      <view
+            allowMultiple="true"
+            class="com.eco.bio7.scenebuilder.CssView"
+            icon="pics/logo.gif"
+            id="com.eco.bio7.scenebuilder.css"
+            name="Css"
+            restorable="true">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.perspectives">
