@@ -84,6 +84,7 @@ import com.eco.bio7.actions.Start;
 import com.eco.bio7.actions.Start3d;
 import com.eco.bio7.actions.StartRServe;
 import com.eco.bio7.preferences.PreferenceConstants;
+import com.eco.bio7.scenebuilder.GenerateControllerAction;
 import com.eco.bio7.time.Time;
 
 public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
@@ -218,6 +219,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	private Interpret interpretGrovvyBeanShell;
 
 	private InterpretPython interpretPython;
+
+	private GenerateControllerAction generateControllerAction;
 
 	public ApplicationActionBarAdvisor(IActionBarConfigurer configurer) {
 		super(configurer);
@@ -410,6 +413,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		
 		interpretPython=new InterpretPython("Interpret Python");
 		register(interpretPython);
+		
+		generateControllerAction= new GenerateControllerAction("Generate Controller Class");
+		register(generateControllerAction);
 		
 	} 
 

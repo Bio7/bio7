@@ -65,5 +65,39 @@
             name="SceneBuilder">
       </editor>
    </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+         <menuContribution
+        locationURI="toolbar:org.eclipse.ui.main.toolbar?after=mainbio7">
+     <toolbar
+           id="com.eco.bio7.reditor.rexecuteraction"
+           label="Editor Actions">
+        <command
+              commandId="com.eco.bio7.SceneBuilder.ControllerSkeletonAction"
+              icon="pics/script.gif"
+              id="bio7toolbar.ControllerAction"
+              label="Controller"
+              style="push">
+           <visibleWhen>
+                     <with
+                         variable="activePartId">
+                          <equals
+                             value="com.eco.bio7.browser.scenebuilder">
+                          </equals>
+                     </with>
+          </visibleWhen>
+        </command>
+        
+     </toolbar>
+  </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+         <command
+            description="Generate FXML Controller Class"
+            id="com.eco.bio7.SceneBuilder.ControllerSkeletonAction"
+            name="Generate Controller Action">
+      </command>
+   </extension>
 
 </plugin>

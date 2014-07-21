@@ -47,7 +47,7 @@ import javafx.fxml.FXML;
 /**
  *
  */
-class SkeletonBuffer {
+public class SkeletonBuffer {
 
     private final FXOMDocument document;
     private final String INDENT = "    "; //NOI18N
@@ -62,17 +62,17 @@ class SkeletonBuffer {
     private final StringBuilder initialize = new StringBuilder();
     private final StringBuilder handlers = new StringBuilder();
 
-    enum TEXT_TYPE {
+    public enum TEXT_TYPE {
 
         WITH_COMMENTS, WITHOUT_COMMENTS
     };
 
-    enum FORMAT_TYPE {
+    public enum FORMAT_TYPE {
 
         COMPACT, FULL
     }
 
-    SkeletonBuffer(FXOMDocument document) {
+    public SkeletonBuffer(FXOMDocument document) {
         assert document != null;
         this.document = document;
     }
