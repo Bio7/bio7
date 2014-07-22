@@ -3,7 +3,6 @@ package com.eco.bio7.rbridge.debug;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.BadLocationException;
@@ -12,7 +11,6 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.text.source.IVerticalRulerInfo;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.ui.IEditorActionDelegate;
 import org.eclipse.ui.IEditorPart;
@@ -97,7 +95,6 @@ public class ToggleDebugBreakpointAction extends AbstractRulerActionDelegate imp
 							marker.setAttribute(IMarker.LOCATION, "" + startline);
 							marker.setAttribute(IMarker.TEXT,"-");
 						
-
 							
 
 						

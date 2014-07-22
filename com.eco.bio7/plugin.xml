@@ -1031,6 +1031,12 @@
              menubarPath="debug">
        </action>
        <action
+             class="com.eco.bio7.rbridge.debug.DeleteSelBreakpointAction"
+             id="DeleteSelectedBreakpointAction"
+             label="Delete Selected Breakpoint"
+             menubarPath="debug">
+       </action>
+       <action
              class="com.eco.bio7.rbridge.debug.ToggleDebugConditionalBreakpointAction"
              id="AddConditionalBreakpointAction"
              label="Toggle Conditional Breakpoint"

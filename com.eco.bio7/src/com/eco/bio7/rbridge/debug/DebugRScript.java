@@ -137,6 +137,7 @@ public class DebugRScript extends Action {
 
 						lineNum = entry.getKey();
 						expression = entry.getValue();
+						System.out.println(expression);
 
 						if (lineNum > 0) {
 
@@ -190,6 +191,7 @@ public class DebugRScript extends Action {
 
 								//String fileName = "tempRVariables.txt";
 								//if (expression != null) {
+								if (expression == null) {
 									ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
 
 									con.pipeToRConsole("source('" + loc + "')");
@@ -203,7 +205,7 @@ public class DebugRScript extends Action {
 									con.pipeToRConsole("writeLines(XXX[[1]]$name, con1)");
 									con.pipeToRConsole("writeLines(as.character(XXX[[1]]$line), con1)");
 									con.pipeToRConsole("close(con1)");
-
+									readSocket( lineNum);
 									/*
 									 * ConsolePageParticipant.pipeInputToConsole(
 									 * "source('" + loc + "')", true, false);
@@ -231,8 +233,57 @@ public class DebugRScript extends Action {
 
 								//readTempFileJava(lineNum, fileName, last);
 								
-								 readSocket( lineNum);
+								
+								}
+								/*If an expression is available!*/
+								else {
+									/*ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
 
+									con.pipeToRConsole("source('" + loc + "')");
+									con.pipeToRConsole("XXX<-findLineNum('" + loc + "#" + lineNum + "')");
+									con.pipeToRConsole("setBreakpoint('" + loc + "#" + lineNum + "',"+expression+")");
+									System.out.println("setBreakpoint('" + loc + "#" + lineNum + "',"+expression+")");
+									// ConsolePageParticipant.pipeInputToConsole("writeClipboard(XXX[[1]]$name, format = 1)",
+									// true, false);
+									//writeTempRData(con, "XXX[[1]]$name", "XXX[[1]]$line", fileName);
+									// con.pipeToRConsole("print(\"Debug Info Set\")");
+									con.pipeToRConsole("con1 <- socketConnection(port = 21555, server = TRUE)");
+									con.pipeToRConsole("writeLines(XXX[[1]]$name, con1)");
+									con.pipeToRConsole("writeLines(as.character(XXX[[1]]$line), con1)");
+									con.pipeToRConsole("close(con1)");
+									readSocket( lineNum);*/
+									
+									/* Insert the debug command at line start! */
+									IRegion reg = null;
+									try {
+										reg = doc.getLineInformation(lineNum);
+									} catch (BadLocationException e1) {
+
+										e1.printStackTrace();
+									}
+
+									if (expression == null) {
+										String command = ";browser();";
+										int length = command.length();
+										buf.insert(reg.getOffset() - correctInsert, command);
+										correctInsert = correctInsert - length;
+									} else {
+										String command = ";browser();";
+										int length = command.length();
+
+										buf.insert(reg.getOffset() - correctInsert, command);
+										correctInsert = correctInsert - length;
+									}
+
+									content = buf.toString();
+									System.out.println(content);
+									/*
+									 * Here we write the commands to the console (no
+									 * file!)
+									 */
+									ConsolePageParticipant.pipeInputToConsole(content, true, false);
+									
+								}
 							}
 						}
 					}
@@ -408,7 +459,7 @@ public class DebugRScript extends Action {
 				}
 			}
 
-		}
+		}IMarker.MESSAGE
 	}*/
 
 	public Map<Integer, String> findMyMarkers(IResource target) {
@@ -426,7 +477,7 @@ public class DebugRScript extends Action {
 
 		for (int i = 0; i < markers.length; ++i) {
 			try {
-				map1.put((Integer) markers[i].getAttribute(IMarker.LINE_NUMBER), (String) markers[i].getAttribute(IMarker.TEXT));
+				map1.put((Integer) markers[i].getAttribute(IMarker.LINE_NUMBER), (String) markers[i].getAttribute(IMarker.MESSAGE));
 				// System.out.println( (String)
 				// markers[i].getAttribute(IMarker.TEXT));
 			} catch (CoreException e) {

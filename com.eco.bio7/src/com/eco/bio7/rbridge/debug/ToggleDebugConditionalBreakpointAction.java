@@ -96,6 +96,7 @@ public class ToggleDebugConditionalBreakpointAction extends AbstractRulerActionD
 							marker.setAttribute(IMarker.LINE_NUMBER, new Integer(startline));
 							marker.setAttribute(IMarker.MESSAGE, rDebugExpression);
 							marker.setAttribute(IMarker.LOCATION, "" + startline);
+							/*Mark it as a breakpoint with expression!*/
 							marker.setAttribute(IMarker.TEXT,"EXPRESSION");
 
 							
