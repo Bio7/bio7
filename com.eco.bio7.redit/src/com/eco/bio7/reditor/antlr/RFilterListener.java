@@ -1,4 +1,4 @@
-// Generated from C:\Users\elk\git\bio7new\com.eco.bio7.redit\src\com\eco\bio7\reditor\antlr\RFilter.g4 by ANTLR 4.2-SNAPSHOT
+// Generated from RFilter.g4 by ANTLR 4.4
 package com.eco.bio7.reditor.antlr;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
@@ -18,29 +18,6 @@ public interface RFilterListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitElem(@NotNull RFilter.ElemContext ctx);
-
-	/**
-	 * Enter a parse tree produced by {@link RFilter#atom}.
-	 * @param ctx the parse tree
-	 */
-	void enterAtom(@NotNull RFilter.AtomContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link RFilter#atom}.
-	 * @param ctx the parse tree
-	 */
-	void exitAtom(@NotNull RFilter.AtomContext ctx);
-
-	/**
-	 * Enter a parse tree produced by {@link RFilter#stream}.
-	 * @param ctx the parse tree
-	 */
-	void enterStream(@NotNull RFilter.StreamContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link RFilter#stream}.
-	 * @param ctx the parse tree
-	 */
-	void exitStream(@NotNull RFilter.StreamContext ctx);
-
 	/**
 	 * Enter a parse tree produced by {@link RFilter#op}.
 	 * @param ctx the parse tree
@@ -51,7 +28,16 @@ public interface RFilterListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitOp(@NotNull RFilter.OpContext ctx);
-
+	/**
+	 * Enter a parse tree produced by {@link RFilter#stream}.
+	 * @param ctx the parse tree
+	 */
+	void enterStream(@NotNull RFilter.StreamContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link RFilter#stream}.
+	 * @param ctx the parse tree
+	 */
+	void exitStream(@NotNull RFilter.StreamContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link RFilter#eat}.
 	 * @param ctx the parse tree
@@ -62,4 +48,14 @@ public interface RFilterListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitEat(@NotNull RFilter.EatContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link RFilter#atom}.
+	 * @param ctx the parse tree
+	 */
+	void enterAtom(@NotNull RFilter.AtomContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link RFilter#atom}.
+	 * @param ctx the parse tree
+	 */
+	void exitAtom(@NotNull RFilter.AtomContext ctx);
 }

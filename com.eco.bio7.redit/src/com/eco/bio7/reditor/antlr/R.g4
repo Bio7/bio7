@@ -17,8 +17,8 @@ expr_or_assign
     ;
 */
 
-expr:   'if' '(' expr ')' ')' #ExprError
-    |   'if' '(' '(' expr ')' # ExprError2 
+expr:   '(' expr ')' ')' #ExprError
+    |   '(' '(' expr ')' # ExprError2 
     |   expr '[[' sublist ']' ']'  #e1// '[[' follows R's yacc grammar
     |   expr '[' sublist ']'	#e2
     |   expr ('::'|':::') expr	#e3
@@ -32,9 +32,9 @@ expr:   'if' '(' expr ')' ')' #ExprError
     |   expr ('>'|'>='|'<'|'<='|'=='|'!=') expr	#e11
     |   '!' expr	#e12
     |   expr ('&'|'&&') expr	#e13
-    |   expr ('|'|'||') expr	#e14
-    |   '~' expr	#e15
-    |   expr '~' expr	#e16
+    |   expr ('|'|'||') expr	#e14   
+    |   '~' expr	#e15  
+    |   expr '~' expr	#e16 
     |   expr ('<-'|'<<-'|'='|'->'|'->>'|':=') expr	#VariableDeclaration
     |   'function' '(' formlist? ')' expr #DefFunction// define function
     |   expr '(' sublist ')'   	#CallFunction           // call function

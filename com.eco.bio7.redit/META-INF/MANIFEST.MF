@@ -43,6 +43,6 @@ Export-Package: com.eco.bio7.reditor,
  org.antlr.v4.runtime.tree.pattern,
  org.antlr.v4.runtime.tree.xpath
 Bundle-ClassPath: .,
- libs/antlr-runtime-4.2.jar
+ libs/antlr-runtime-4.4.jar
 Import-Package: org.eclipse.ui.views.contentoutline
 

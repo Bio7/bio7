@@ -1,4 +1,4 @@
-// Generated from C:\Users\elk\git\bio7new\com.eco.bio7.redit\src\com\eco\bio7\reditor\antlr\R.g4 by ANTLR 4.2-SNAPSHOT
+// Generated from R.g4 by ANTLR 4.4
 package com.eco.bio7.reditor.antlr;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
@@ -12,338 +12,333 @@ import org.antlr.v4.runtime.tree.ParseTreeVisitor;
  */
 public interface RVisitor<T> extends ParseTreeVisitor<T> {
 	/**
-	 * Visit a parse tree produced by {@link RParser#e30}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE30(@NotNull RParser.E30Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#e31}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE31(@NotNull RParser.E31Context ctx);
-
-	/**
 	 * Visit a parse tree produced by {@link RParser#sub}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitSub(@NotNull RParser.SubContext ctx);
-
 	/**
-	 * Visit a parse tree produced by {@link RParser#e19}.
+	 * Visit a parse tree produced by the {@code e31}
+	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitE19(@NotNull RParser.E19Context ctx);
-
+	T visitE31(@NotNull RParser.E31Context ctx);
 	/**
-	 * Visit a parse tree produced by {@link RParser#e34}.
+	 * Visit a parse tree produced by the {@code e30}
+	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitE34(@NotNull RParser.E34Context ctx);
-
+	T visitE30(@NotNull RParser.E30Context ctx);
 	/**
-	 * Visit a parse tree produced by {@link RParser#e16}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE16(@NotNull RParser.E16Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#e35}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE35(@NotNull RParser.E35Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#CallFunction}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitCallFunction(@NotNull RParser.CallFunctionContext ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#e15}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE15(@NotNull RParser.E15Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#e32}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE32(@NotNull RParser.E32Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#e14}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE14(@NotNull RParser.E14Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#e33}.
+	 * Visit a parse tree produced by the {@code e33}
+	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitE33(@NotNull RParser.E33Context ctx);
-
 	/**
-	 * Visit a parse tree produced by {@link RParser#e13}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE13(@NotNull RParser.E13Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#e38}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE38(@NotNull RParser.E38Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#e39}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE39(@NotNull RParser.E39Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#e12}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE12(@NotNull RParser.E12Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#e11}.
+	 * Visit a parse tree produced by the {@code e11}
+	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitE11(@NotNull RParser.E11Context ctx);
-
 	/**
-	 * Visit a parse tree produced by {@link RParser#e36}.
+	 * Visit a parse tree produced by the {@code e32}
+	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitE36(@NotNull RParser.E36Context ctx);
-
+	T visitE32(@NotNull RParser.E32Context ctx);
 	/**
-	 * Visit a parse tree produced by {@link RParser#e10}.
+	 * Visit a parse tree produced by the {@code e10}
+	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitE10(@NotNull RParser.E10Context ctx);
-
 	/**
-	 * Visit a parse tree produced by {@link RParser#e37}.
+	 * Visit a parse tree produced by the {@code e35}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE35(@NotNull RParser.E35Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e13}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE13(@NotNull RParser.E13Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e12}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE12(@NotNull RParser.E12Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e34}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE34(@NotNull RParser.E34Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e15}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE15(@NotNull RParser.E15Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e37}
+	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitE37(@NotNull RParser.E37Context ctx);
-
 	/**
-	 * Visit a parse tree produced by {@link RParser#prog}.
+	 * Visit a parse tree produced by the {@code e36}
+	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitProg(@NotNull RParser.ProgContext ctx);
-
+	T visitE36(@NotNull RParser.E36Context ctx);
 	/**
-	 * Visit a parse tree produced by {@link RParser#VariableDeclaration}.
+	 * Visit a parse tree produced by the {@code e14}
+	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitVariableDeclaration(@NotNull RParser.VariableDeclarationContext ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#formlist}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitFormlist(@NotNull RParser.FormlistContext ctx);
-
+	T visitE14(@NotNull RParser.E14Context ctx);
 	/**
 	 * Visit a parse tree produced by {@link RParser#exprlist}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitExprlist(@NotNull RParser.ExprlistContext ctx);
-
 	/**
-	 * Visit a parse tree produced by {@link RParser#e20expr}.
+	 * Visit a parse tree produced by the {@code e39}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE39(@NotNull RParser.E39Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e38}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE38(@NotNull RParser.E38Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e16}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE16(@NotNull RParser.E16Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e19}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE19(@NotNull RParser.E19Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code VariableDeclaration}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitVariableDeclaration(@NotNull RParser.VariableDeclarationContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code CallFunction}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCallFunction(@NotNull RParser.CallFunctionContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e20expr}
+	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitE20expr(@NotNull RParser.E20exprContext ctx);
-
 	/**
-	 * Visit a parse tree produced by {@link RParser#ExprError}.
+	 * Visit a parse tree produced by the {@code e22}
+	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExprError(@NotNull RParser.ExprErrorContext ctx);
-
+	T visitE22(@NotNull RParser.E22Context ctx);
 	/**
-	 * Visit a parse tree produced by {@link RParser#e29}.
+	 * Visit a parse tree produced by {@link RParser#formlist}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFormlist(@NotNull RParser.FormlistContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e21}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE21(@NotNull RParser.E21Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e24}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE24(@NotNull RParser.E24Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e23}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE23(@NotNull RParser.E23Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e26}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE26(@NotNull RParser.E26Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e25}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE25(@NotNull RParser.E25Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e28}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE28(@NotNull RParser.E28Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e27}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE27(@NotNull RParser.E27Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e1}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE1(@NotNull RParser.E1Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e29}
+	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitE29(@NotNull RParser.E29Context ctx);
-
+	/**
+	 * Visit a parse tree produced by the {@code e2}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE2(@NotNull RParser.E2Context ctx);
+	/**
+	 * Visit a parse tree produced by {@link RParser#prog}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitProg(@NotNull RParser.ProgContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e3}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE3(@NotNull RParser.E3Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e4}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE4(@NotNull RParser.E4Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code ExprError}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExprError(@NotNull RParser.ExprErrorContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e5}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE5(@NotNull RParser.E5Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e6}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE6(@NotNull RParser.E6Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e7}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE7(@NotNull RParser.E7Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e8}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE8(@NotNull RParser.E8Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e9}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE9(@NotNull RParser.E9Context ctx);
 	/**
 	 * Visit a parse tree produced by {@link RParser#form}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitForm(@NotNull RParser.FormContext ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#e26}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE26(@NotNull RParser.E26Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#e25}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE25(@NotNull RParser.E25Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#e28}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE28(@NotNull RParser.E28Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#e27}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE27(@NotNull RParser.E27Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#e22}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE22(@NotNull RParser.E22Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#e21}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE21(@NotNull RParser.E21Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#ExprError2}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitExprError2(@NotNull RParser.ExprError2Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#e24}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE24(@NotNull RParser.E24Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#e9}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE9(@NotNull RParser.E9Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#e23}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE23(@NotNull RParser.E23Context ctx);
-
 	/**
 	 * Visit a parse tree produced by {@link RParser#sublist}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitSublist(@NotNull RParser.SublistContext ctx);
-
 	/**
-	 * Visit a parse tree produced by {@link RParser#e8}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE8(@NotNull RParser.E8Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#e7}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE7(@NotNull RParser.E7Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#e6}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE6(@NotNull RParser.E6Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#e5}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE5(@NotNull RParser.E5Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#e3}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE3(@NotNull RParser.E3Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#e4}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE4(@NotNull RParser.E4Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#e1}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitE1(@NotNull RParser.E1Context ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link RParser#DefFunction}.
+	 * Visit a parse tree produced by the {@code DefFunction}
+	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitDefFunction(@NotNull RParser.DefFunctionContext ctx);
-
 	/**
-	 * Visit a parse tree produced by {@link RParser#e2}.
+	 * Visit a parse tree produced by the {@code ExprError2}
+	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitE2(@NotNull RParser.E2Context ctx);
+	T visitExprError2(@NotNull RParser.ExprError2Context ctx);
 }
