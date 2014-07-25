@@ -108,7 +108,7 @@ Bundle-ClassPath: bin/,
  src/,
  libs/jericho-html-3.2.jar,
  libs/SceneBuilderApp.jar,
- libs/jfxswt.jar,
- libs/SceneBuilderKit.jar
+ libs/SceneBuilderKit.jar,
+ libs/jfxswt.jar
 Import-Package: org.eclipse.compare
 

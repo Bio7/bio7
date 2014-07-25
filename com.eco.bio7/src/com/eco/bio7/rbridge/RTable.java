@@ -246,7 +246,7 @@ public class RTable extends ViewPart {
 						column.setWidth(50);
 
 					} else {
-						column = new GridColumn(grid, SWT.NONE, sel[0].x);
+						column = new GridColumn(RTable.getGrid(), SWT.NONE, sel[0].x);
 
 						column.setWidth(50);
 

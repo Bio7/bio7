@@ -5,7 +5,8 @@ Bundle-SymbolicName: com.eco.bio7.libs; singleton:=true
 Bundle-Version: 1.7.0
 Bundle-Activator: com.eco.bio7.libs.Activator
 Bundle-Vendor: ECO
-Require-Bundle: org.eclipse.ui,org.eclipse.core.runtime
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Eclipse-BuddyPolicy: ext
