@@ -30,13 +30,8 @@ public class ToggleDebugConditionalBreakpointAction extends AbstractRulerActionD
 
 		private final IVerticalRulerInfo mRulerInfo;
 		private final ITextEditor mEditor;
-		int startline;
-
-		int stopline;
-
-		IMarker[] markers = null;
-
-		int marked[] = null;
+		private int startline;
+		private int stopline;
 
 		public ToggleBreakpointAction(ITextEditor editor, IVerticalRulerInfo rulerInfo) {
 			super("Toggle conditional line breakpoint");
@@ -46,17 +41,16 @@ public class ToggleDebugConditionalBreakpointAction extends AbstractRulerActionD
 
 		@Override
 		public void run() {
-		   ConsolePageParticipant inst = ConsolePageParticipant.getConsolePageParticipantInstance();
+			ConsolePageParticipant inst = ConsolePageParticipant.getConsolePageParticipantInstance();
 			inst.setRDebugToolbarActions();
-           String rDebugExpression = null;
+			String rDebugExpression = null;
 			IEditorPart editore = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-			
-			InputDialog dlg = new InputDialog(Display.getCurrent().getActiveShell(),
-		            "", "Enter Expressions", "", null);
-		        if (dlg.open() == Window.OK) {
-		          // User clicked OK; update the label with the input
-		        	rDebugExpression= dlg.getValue();
-		        }
+
+			InputDialog dlg = new InputDialog(Display.getCurrent().getActiveShell(), "", "Enter Expressions", "", null);
+			if (dlg.open() == Window.OK) {
+				// User clicked OK; update the label with the input
+				rDebugExpression = dlg.getValue();
+			}
 
 			IResource resource = (IResource) editore.getEditorInput().getAdapter(IResource.class);
 			if (resource != null) {
@@ -80,32 +74,23 @@ public class ToggleDebugConditionalBreakpointAction extends AbstractRulerActionD
 					} finally {
 						provider.disconnect(this);
 					}
-					
-					if (selection!=null&&!selection.isEmpty()) {
-						//int start = selection.getOffset();
 
-						//int length = selection.getLength();
+					if (selection != null && !selection.isEmpty()) {
+
 						startline = selection.getStartLine() + 1;
 						stopline = selection.getEndLine() + 1;
 
 						IMarker marker;
 
-						
-							marker = resource.createMarker("com.eco.bio7.redit.debugMarker");
-							marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
-							marker.setAttribute(IMarker.LINE_NUMBER, new Integer(startline));
-							marker.setAttribute(IMarker.MESSAGE, rDebugExpression);
-							marker.setAttribute(IMarker.LOCATION, "" + startline);
-							/*Mark it as a breakpoint with expression!*/
-							marker.setAttribute(IMarker.TEXT,"EXPRESSION");
-
-							
-
-						
+						marker = resource.createMarker("com.eco.bio7.redit.debugMarker");
+						marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
+						marker.setAttribute(IMarker.LINE_NUMBER, new Integer(startline));
+						marker.setAttribute(IMarker.MESSAGE, rDebugExpression);
+						marker.setAttribute(IMarker.LOCATION, "" + startline);
+						/* Mark it as a breakpoint with expression! */
+						marker.setAttribute(IMarker.TEXT, "EXPRESSION");
 
 					}
-
-					
 
 				} catch (CoreException e) {
 

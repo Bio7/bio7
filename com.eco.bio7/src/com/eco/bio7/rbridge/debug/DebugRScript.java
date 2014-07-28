@@ -91,6 +91,8 @@ public class DebugRScript extends Action {
 	}
 
 	public void run() {
+		
+		IPreferenceStore store=Bio7Plugin.getDefault().getPreferenceStore();
 
 		editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		if (editor.isDirty()) {
@@ -110,8 +112,8 @@ public class DebugRScript extends Action {
 		}
 		String loc = aFile.getLocation().toString();
 
-		boolean remote = Bio7Plugin.getDefault().getPreferenceStore().getBoolean("REMOTE");
-		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		//boolean remote = store.getBoolean("REMOTE");
+		//IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		// boolean rPipe = store.getBoolean("r_pipe");
 
 		if (d == null) {
@@ -140,14 +142,14 @@ public class DebugRScript extends Action {
 								/*UUID ui = UUID.randomUUID();
 								String fileUid = ui.toString();
                                 System.out.println(fileUid);*/
-								
+							int port=store.getInt("R_DEBUG_PORT");
 								if (expression == null) {
 									ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
-
+                                    
 									con.pipeToRConsole("source('" + loc + "')");
 									con.pipeToRConsole("XXX<-findLineNum('" + loc + "#" + lineNum + "')");
 									con.pipeToRConsole("setBreakpoint('" + loc + "#" + lineNum + "')");
-									con.pipeToRConsole("con1 <- socketConnection(port = 21555, server = TRUE)");
+									con.pipeToRConsole("con1 <- socketConnection(port = "+port+", server = TRUE)");
 									con.pipeToRConsole("writeLines(XXX[[1]]$name, con1)");
 									con.pipeToRConsole("writeLines(as.character(XXX[[1]]$line), con1)");
 									con.pipeToRConsole("close(con1)");
@@ -162,7 +164,7 @@ public class DebugRScript extends Action {
 									con.pipeToRConsole("source('" + loc + "')");
 									con.pipeToRConsole("XXX<-findLineNum('" + loc + "#" + lineNum + "')");
 									con.pipeToRConsole("setBreakpoint('" + loc + "#" + lineNum + "',tracer=quote("+expression+"))");
-									con.pipeToRConsole("con1 <- socketConnection(port = 21555, server = TRUE)");
+									con.pipeToRConsole("con1 <- socketConnection(port = "+port+", server = TRUE)");
 									con.pipeToRConsole("writeLines(XXX[[1]]$name, con1)");
 									con.pipeToRConsole("writeLines(as.character(XXX[[1]]$line), con1)");
 									con.pipeToRConsole("close(con1)");
@@ -188,8 +190,10 @@ public class DebugRScript extends Action {
 		
 		String lineNumber = "0";
 		String result = null;
+		IPreferenceStore store=Bio7Plugin.getDefault().getPreferenceStore();
+		int port=store.getInt("R_DEBUG_PORT");
 		try {
-			debugSocket = new Socket("127.0.0.1", 21555);
+			debugSocket = new Socket("127.0.0.1", port);
 			
 
 			BufferedReader input = null;

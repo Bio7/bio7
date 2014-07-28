@@ -11,15 +11,12 @@
 
 package com.eco.bio7.rbridge.debug;
 
-import java.util.prefs.Preferences;
-
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IContributionItem;
-import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
-
+import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
 
@@ -47,14 +44,11 @@ public class DebugContinueAction extends Action {
 		ConsolePageParticipant.pipeInputToConsole("c", true, false);
 		System.out.println("c");
         ConsolePageParticipant inst=ConsolePageParticipant.getConsolePageParticipantInstance();
-        
+        IPreferenceStore store=Bio7Plugin.getDefault().getPreferenceStore();
+		int port=store.getInt("R_DEBUG_PORT");
 		
 			
 			
-		
-		
-		
-		//inst.toolBarManager.update(true);	
 		
 		}
 		else {

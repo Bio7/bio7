@@ -335,6 +335,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		}
 
 		store.setDefault("RSERVE_NATIVE_START", true);
+		store.setDefault("R_DEBUG_PORT",21555);
 
 		store.setDefault("LINUX_SHELL", "GNOME");
 		store.setDefault("PDF_READER", "ACROBAT");

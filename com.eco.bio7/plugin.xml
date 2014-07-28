@@ -437,6 +437,12 @@
             id="com.eco.bio7.RServePlot"
             name="Preferences RServe Plots">
       </page>
+      <page
+            category="com.eco.bio7.preferences.Bio7PreferencePage"
+            class="com.eco.bio7.preferences.RPrefDebug"
+            id="com.eco.bio7.debug"
+            name="Preferences R Debug">
+      </page>
    </extension>
    <extension
          point="org.eclipse.ui.viewActions">
@@ -1027,7 +1033,7 @@
        <action
              class="com.eco.bio7.rbridge.debug.DeleteBreakpointAction"
              id="DeleteBreakpointAction"
-             label="Delete Breakpoints"
+             label="Delete All Breakpoints"
              menubarPath="debug">
        </action>
        <action
@@ -1037,15 +1043,21 @@
              menubarPath="debug">
        </action>
        <action
+             class="com.eco.bio7.rbridge.debug.EditSelBreakpointAction"
+             id="EditConditionalBreakpointAction"
+             label="Edit Conditional Breakpoint"
+             menubarPath="debug">
+       </action>
+       <action
              class="com.eco.bio7.rbridge.debug.ToggleDebugConditionalBreakpointAction"
              id="AddConditionalBreakpointAction"
-             label="Toggle Conditional Breakpoint"
+             label="Add Conditional Breakpoint"
              menubarPath="debug">
        </action>
        <action
              class="com.eco.bio7.rbridge.debug.ToggleDebugBreakpointAction"
              id="AddBreakpointAction"
-             label="Toggle Breakpoint"
+             label="Add Breakpoint"
              menubarPath="debug">
        </action>
     </viewerContribution>

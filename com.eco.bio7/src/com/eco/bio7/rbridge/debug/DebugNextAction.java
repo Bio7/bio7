@@ -17,7 +17,9 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -29,12 +31,14 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
+
+import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
 
 public class DebugNextAction extends Action {
 
-	private Clipboard clipboard;
+	
 	private int line = 1;
 	private Socket debugSocket;
 
@@ -52,38 +56,26 @@ public class DebugNextAction extends Action {
 	public void run() {
 
 		String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
-
+		IPreferenceStore store=Bio7Plugin.getDefault().getPreferenceStore();
+		int port=store.getInt("R_DEBUG_PORT");
 		if (selectionConsole.equals("R")) {
 			ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
 
-			/*
-			 * con.pipeToRConsole("sink(file=\"clipboard\")");
-			 * con.pipeToRConsole("n"); con.pipeToRConsole("sink()");
-			 */
 
-			con.pipeToRConsole("con1 <- socketConnection(port = 21555, server = TRUE)");
+			con.pipeToRConsole("con1 <- socketConnection(port = "+port+", server = TRUE)");
 			con.pipeToRConsole("sink(con1)");
 			con.pipeToRConsole("n");
 			con.pipeToRConsole("sink()");
 			con.pipeToRConsole("close(con1)");
 
-			// If necessary: bw.write("\r\n");
-
-			// ConsolePageParticipant.pipeInputToConsole("sink(file=\"clipboard\")",
-			// true, false);
-			// ConsolePageParticipant.pipeInputToConsole("n", true, false);
-			// System.out.println("n");
-
-			// ConsolePageParticipant.pipeInputToConsole("sink()", true, false);
+			
 			final ConsolePageParticipant inst = ConsolePageParticipant.getConsolePageParticipantInstance();
 
-			// clipboard = new Clipboard(Display.getCurrent());
-			// String data = (String)
-			// clipboard.getContents(TextTransfer.getInstance());
 			String data = null;
+			
 			try {
 
-				debugSocket = new Socket("127.0.0.1", 21555);
+				debugSocket = new Socket("127.0.0.1", port);
 
 				BufferedReader input = null;
 				try {

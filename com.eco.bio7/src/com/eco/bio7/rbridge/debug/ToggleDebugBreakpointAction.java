@@ -27,13 +27,10 @@ public class ToggleDebugBreakpointAction extends AbstractRulerActionDelegate imp
 
 		private final IVerticalRulerInfo mRulerInfo;
 		private final ITextEditor mEditor;
-		int startline;
+		private int startline;
+		private int stopline;
 
-		int stopline;
-
-		IMarker[] markers = null;
-
-		int marked[] = null;
+		
 
 		public ToggleBreakpointAction(ITextEditor editor, IVerticalRulerInfo rulerInfo) {
 			super("Toggle line breakpoint");
@@ -47,14 +44,10 @@ public class ToggleDebugBreakpointAction extends AbstractRulerActionDelegate imp
 			IEditorPart editore = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 
 			IResource resource = (IResource) editore.getEditorInput().getAdapter(IResource.class);
-			
+
 			ConsolePageParticipant inst = ConsolePageParticipant.getConsolePageParticipantInstance();
 			inst.setRDebugToolbarActions();
-			
-			
-			
-			
-			
+
 			if (resource != null) {
 				try {
 
@@ -70,7 +63,7 @@ public class ToggleDebugBreakpointAction extends AbstractRulerActionDelegate imp
 						provider.connect(this);
 						IDocument document = provider.getDocument(mEditor.getEditorInput());
 						IRegion region = document.getLineInformation(line);
-						
+
 						selection = new TextSelection(document, region.getOffset(), region.getLength());
 					} catch (CoreException e1) {
 					} catch (BadLocationException e) {
@@ -78,26 +71,21 @@ public class ToggleDebugBreakpointAction extends AbstractRulerActionDelegate imp
 						provider.disconnect(this);
 					}
 
-					if (selection!=null&&!selection.isEmpty()) {
-						//int start = selection.getOffset();
+					if (selection != null && !selection.isEmpty()) {
+						// int start = selection.getOffset();
 
-						//int length = selection.getLength();
+						// int length = selection.getLength();
 						startline = selection.getStartLine() + 1;
 						stopline = selection.getEndLine() + 1;
 
 						IMarker marker;
 
-						
-							marker = resource.createMarker("com.eco.bio7.redit.debugMarker");
-							marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
-							marker.setAttribute(IMarker.LINE_NUMBER, new Integer(startline));
-							marker.setAttribute(IMarker.MESSAGE, null);
-							marker.setAttribute(IMarker.LOCATION, "" + startline);
-							marker.setAttribute(IMarker.TEXT,"-");
-						
-							
-
-						
+						marker = resource.createMarker("com.eco.bio7.redit.debugMarker");
+						marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
+						marker.setAttribute(IMarker.LINE_NUMBER, new Integer(startline));
+						marker.setAttribute(IMarker.MESSAGE, null);
+						marker.setAttribute(IMarker.LOCATION, "" + startline);
+						marker.setAttribute(IMarker.TEXT, "-");
 
 					}
 

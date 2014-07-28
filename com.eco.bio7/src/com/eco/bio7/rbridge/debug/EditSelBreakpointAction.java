@@ -3,24 +3,30 @@ package com.eco.bio7.rbridge.debug;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.text.source.IVerticalRulerInfo;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.window.Window;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorActionDelegate;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractRulerActionDelegate;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
+
 import com.eco.bio7.console.ConsolePageParticipant;
 
-public class DeleteSelBreakpointAction extends AbstractRulerActionDelegate implements IEditorActionDelegate {
+public class EditSelBreakpointAction extends AbstractRulerActionDelegate implements IEditorActionDelegate {
 
 	public int line;
 
@@ -72,20 +78,30 @@ public class DeleteSelBreakpointAction extends AbstractRulerActionDelegate imple
 					startline = selection.getStartLine() + 1;
 					stopline = selection.getEndLine() + 1;
 
+					String expression = null;
 					IMarker[] markersfind = findMyMarkers(resource);
 					for (int i = 0; i < markersfind.length; i++) {
 
 						if (line + 1 == markersfind[i].getAttribute(IMarker.LINE_NUMBER, -1)) {
 							try {
-								String func = (String) markersfind[i].getAttribute(IMarker.TEXT);
-								System.out.println(func);
-								System.out.println("untrace(" + func + ")");
-								ConsolePageParticipant.pipeInputToConsole("untrace(" + func + ")", true, false);
-								markersfind[i].delete();
+								expression = (String) markersfind[i].getAttribute(IMarker.MESSAGE);
 
 							} catch (CoreException e) {
 
 								e.printStackTrace();
+							}
+
+							InputDialog dlg = new InputDialog(Display.getCurrent().getActiveShell(), "Expression", "Enter Expressions", expression, null);
+
+							if (dlg.open() == Window.OK) {
+								// User clicked OK; update the label with the
+								// input
+								try {
+									markersfind[i].setAttribute(IMarker.MESSAGE, dlg.getValue());
+								} catch (CoreException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
 							}
 						}
 					}

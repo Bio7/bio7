@@ -15,6 +15,7 @@ import org.eclipse.ui.internal.dialogs.WorkbenchPreferenceDialog;
 
 import com.eco.bio7.preferences.PreferencePageShell;
 import com.eco.bio7.preferences.RPackagesPreferencePage;
+import com.eco.bio7.preferences.RPrefDebug;
 import com.eco.bio7.preferences.RServePlotPrefs;
 import com.eco.bio7.preferences.RServePrefs;
 import com.eco.bio7.rpreferences.TemplatesPreferencePage;
@@ -67,11 +68,15 @@ public class OpenRservePreferencesAction extends Action implements ActionFactory
 		RServePlotPrefs pref5 = new RServePlotPrefs();
 		IPreferencePage page5 = pref5;
 		page5.setTitle("Rserve Plot preferences");
+		
+		RPrefDebug pref6 = new RPrefDebug();
+		IPreferencePage page6 = pref6;
+		page6.setTitle("R Debug preferences");
 
-		showPreferencePage("com.eco.bio7.RServe", page,"com.eco.bio7.RServePlot",page5,"com.eco.bio7.rpackages", page1, "com.eco.bio7.RServe.editor", page2, "com.eco.bio7.RServe.editor.templates", page3,"com.eco.bio7.native",page4);
+		showPreferencePage("com.eco.bio7.RServe", page,"com.eco.bio7.RServePlot",page5,"com.eco.bio7.rpackages", page1, "com.eco.bio7.RServe.editor", page2, "com.eco.bio7.RServe.editor.templates", page3,"com.eco.bio7.native",page4,"com.eco.bio7.debug",page6);
 	}
 
-	protected void showPreferencePage(String id, IPreferencePage page,String id5, IPreferencePage page5,String id1, IPreferencePage page1, String id2, IPreferencePage page2, String id3, IPreferencePage page3,String id4, IPreferencePage page4) {
+	protected void showPreferencePage(String id, IPreferencePage page,String id5, IPreferencePage page5,String id1, IPreferencePage page1, String id2, IPreferencePage page2, String id3, IPreferencePage page3,String id4, IPreferencePage page4,String id6,IPreferencePage page6) {
 		final IPreferenceNode targetNode = new PreferenceNode(id, page);
 		
 		final IPreferenceNode targetNode1 = new PreferenceNode(id1, page1);
@@ -83,6 +88,8 @@ public class OpenRservePreferencesAction extends Action implements ActionFactory
 		final IPreferenceNode targetNode4 = new PreferenceNode(id4, page4);
 		
 		final IPreferenceNode targetNode5 = new PreferenceNode(id5, page5);
+		
+		final IPreferenceNode targetNode6 = new PreferenceNode(id6, page6);
 
 		PreferenceManager manager = new PreferenceManager();
 		manager.addToRoot(targetNode);
@@ -91,6 +98,7 @@ public class OpenRservePreferencesAction extends Action implements ActionFactory
 		manager.addToRoot(targetNode2);
 		manager.addToRoot(targetNode3);
 		manager.addToRoot(targetNode4);
+		manager.addToRoot(targetNode6);
 		final PreferenceDialog dialog = new WorkbenchPreferenceDialog(new Shell(), manager);
 		BusyIndicator.showWhile(Display.getCurrent(), new Runnable() {
 			public void run() {
