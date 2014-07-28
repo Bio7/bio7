@@ -42,9 +42,11 @@ import java.util.Vector;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.DiagnosticListener;
+import javax.tools.JavaCompiler;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
+import javax.tools.ToolProvider;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Cookable;
 import org.codehaus.commons.compiler.ISimpleCompiler;
@@ -53,15 +55,10 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.texteditor.ITextEditor;
-
 import com.eco.bio7.compile.CompilerMessages;
 import com.eco.bio7.compile.utils.ScanClassPath;
 import com.eco.bio7.javaeditor.Bio7EditorPlugin;
-import com.sun.tools.javac.api.JavacTool;
+//import com.sun.tools.javac.api.JavacTool;
 
 public class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
@@ -107,7 +104,8 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
 		assertNotCooked();
 
 		// JavaCompiler compiler = new EclipseCompiler();
-		JavacTool compiler = com.sun.tools.javac.api.JavacTool.create();
+		//JavacTool compiler = com.sun.tools.javac.api.JavacTool.create();
+		 JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
 		if (compiler == null) {
 			throw new CompileException("JDK Java compiler not available - probably you're running a JRE, not a JDK", null);
@@ -244,7 +242,8 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
 		// Find the JDK Java compiler.
 		// JavaCompiler compiler = new EclipseCompiler();
-		JavacTool compiler = com.sun.tools.javac.api.JavacTool.create();
+		//JavacTool compiler = com.sun.tools.javac.api.JavacTool.create();
+		JavaCompiler compiler  = ToolProvider.getSystemJavaCompiler();
 
 		if (compiler == null) {
 			throw new CompileException("JDK Java compiler not available - probably you're running a JRE, not a JDK", null);

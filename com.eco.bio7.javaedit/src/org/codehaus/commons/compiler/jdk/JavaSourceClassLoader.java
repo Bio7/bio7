@@ -25,42 +25,43 @@
 
 package org.codehaus.commons.compiler.jdk;
 
-import java.io.*;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.*;
-
-import javax.tools.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Vector;
+import javax.tools.Diagnostic;
+import javax.tools.DiagnosticCollector;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileManager;
+import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
-
-import org.codehaus.commons.compiler.*;
+import javax.tools.StandardLocation;
+import javax.tools.ToolProvider;
+import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
+import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.jdk.ByteArrayJavaFileManager.ByteArrayJavaFileObject;
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.Path;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorRegistry;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.jdt.core.IOpenable;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.ui.ide.IDE;
-
-import com.eco.bio7.compile.CompilerMessages;
 import com.eco.bio7.compile.utils.ScanClassPath;
 import com.eco.bio7.javaeditor.Bio7EditorPlugin;
-import com.sun.tools.javac.api.JavacTool;
+//import com.sun.tools.javac.api.JavacTool;
 
 public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
@@ -96,9 +97,9 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 	}
 
 	private void init() {
-		// this.compiler = ToolProvider.getSystemJavaCompiler();
+		 this.compiler = ToolProvider.getSystemJavaCompiler();
 		// JavaCompiler compiler = new EclipseCompiler();
-		this.compiler = com.sun.tools.javac.api.JavacTool.create();
+		//this.compiler = com.sun.tools.javac.api.JavacTool.create();
 		if (this.compiler == null) {
 			throw new UnsupportedOperationException("JDK Java compiler not available - probably you're running a JRE, not a JDK");
 		}
