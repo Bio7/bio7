@@ -171,8 +171,8 @@ CTabItem:selected {
 }
 
 .MToolControl.TrimStack {
-	frame-image:  url('./winXPTSFrame.png');
-	handle-image:  url('./winXPTSFrame.png');
+	frame-image:  url('./win7TSFrame.png');
+	handle-image:  url('./win7TSFrame.png');
 	frame-cuts: 5px 1px 5px 16px;
 }
 
@@ -287,6 +287,13 @@ background-color: #ffffff;
 	
 	
 }
+.DragFeedback {
+	background-color: COLOR-WIDGET-NORMAL-SHADOW;
+}
+
+.ModifiedDragFeedback {
+	background-color: #A0A000;
+}
 
 
 
@@ -299,8 +306,8 @@ CTabItem:selected {
 /*Perspective Switch!*/
 #org-eclipse-ui-main-toolbar #PerspectiveSwitcher {
 	eclipse-perspective-keyline-color: #eeeeee;
-	/* background-image: url('./win7_old.png');*/
-	background-color: #ffffff;
+	 background-image: url('./win7_old.png');
+	/*background-color: #ffffff;*/
 	handle-image: none;
 		
 }

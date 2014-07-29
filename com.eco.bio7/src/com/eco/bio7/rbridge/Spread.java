@@ -214,6 +214,7 @@ class Spread {
 								column = i;
 								/* Recursive call! */
 								recursiveEdit(editor, item);
+
 								return;
 							}
 							if (!visible && rect.intersects(clientArea)) {
@@ -232,15 +233,16 @@ class Spread {
 			 * of numbers!
 			 */
 			private void recursiveEdit(final GridEditor editor, final GridItem item) {
-				
+
 				final Text text = new Text(grid, SWT.NONE);
 				Listener textListener = new Listener() {
 					public void handleEvent(final Event e) {
 						switch (e.type) {
 						case SWT.FocusOut:
-							if(item.isDisposed()==false){
-							item.setText(column, text.getText());
-							text.dispose();
+							if (item.isDisposed() == false) {
+								item.setText(column, text.getText());
+								text.dispose();
+
 							}
 							break;
 						case SWT.Traverse:
@@ -251,6 +253,27 @@ class Spread {
 								if (index < grid.getItemCount()) {
 									GridItem gi = grid.getItem(index);
 									grid.showItem(gi);
+									/*
+									 * This snippet can be used to deselect the
+									 * previous cell and select the next cell!
+									 * Point pt = new Point(column, index);
+									 * grid.selectCell(pt);Point pt2 = new
+									 * Point(column, index-1);
+									 * grid.deselectCell(pt2);
+									 */
+									recursiveEdit(editor, gi);
+								} else {
+									text.dispose();
+									e.doit = false;
+								}
+								break;
+							/* Other keys don't work here! */
+							case SWT.TRAVERSE_TAB_NEXT:
+								item.setText(column, text.getText());
+								index--;
+								if (index >= 0) {
+									GridItem gi = grid.getItem(index);
+									grid.showItem(gi);
 									recursiveEdit(editor, gi);
 								} else {
 									text.dispose();
@@ -259,10 +282,23 @@ class Spread {
 								break;
 							case SWT.TRAVERSE_ARROW_NEXT:
 								item.setText(column, text.getText());
-								column++;									
+								column++;
 								if (column < grid.getColumnCount()) {
 									GridItem gi = grid.getItem(index);
-									GridColumn col=grid.getColumn(column);
+									GridColumn col = grid.getColumn(column);
+									grid.showColumn(col);
+									recursiveEdit(editor, gi);
+								} else {
+									text.dispose();
+									e.doit = false;
+								}
+								break;
+							case SWT.TRAVERSE_ARROW_PREVIOUS:
+								item.setText(column, text.getText());
+								column--;
+								if (column >= 0) {
+									GridItem gi = grid.getItem(index);
+									GridColumn col = grid.getColumn(column);
 									grid.showColumn(col);
 									recursiveEdit(editor, gi);
 								} else {
@@ -275,6 +311,7 @@ class Spread {
 								e.doit = false;
 							}
 							break;
+
 						}
 					}
 				};
