@@ -107,7 +107,14 @@ public class DebugNextAction extends Action {
 				Pattern p = Pattern.compile(".R#(.*?):");
 				Matcher m = p.matcher(data);
 				if (m.find()) {
-					int temp = Integer.parseInt(m.group(1));
+					int temp=0;
+					try {
+						temp = Integer.parseInt(m.group(1));
+					} catch (NumberFormatException e1) {
+						// TODO Auto-generated catch block
+						//e1.printStackTrace();
+						System.out.println("Could not parse line number!");
+					}
 					int lines = doc.getNumberOfLines();
 					if (temp > 0 && temp <= lines) {
 						line = temp;

@@ -1,8 +1,6 @@
 package com.eco.bio7.rbridge;
 
-import java.util.ArrayList;
 import java.util.StringTokenizer;
-
 import org.eclipse.nebula.widgets.grid.Grid;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.ImageTransfer;
