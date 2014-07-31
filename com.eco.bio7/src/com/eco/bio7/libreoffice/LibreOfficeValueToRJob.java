@@ -12,6 +12,8 @@
 
 package com.eco.bio7.libreoffice;
 
+import java.util.Random;
+
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -24,6 +26,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.Rserve.RConnection;
+
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.rbridge.RServe;
@@ -136,13 +139,15 @@ public class LibreOfficeValueToRJob extends WorkspaceJob {
 
 					if (RServe.isRrunning()) {
 						RConnection connection = RServe.getConnection();
+						String stringBuild = "."+generateRandomString();
+						String stringRowNames = "."+generateRandomString();
 						connection.eval("try(LibreOffice<-data.frame(1:" + sheetdata[0].length + "))");
 
 						StringBuffer str = new StringBuffer();
 						for (int i = 0; i < sheetdata.length; i++) {
 							str.append("X" + (i + 1) + ",");
 							// name = "X" + (i+1);
-							String name = "xxxxxxxxxxxxxxxx" + (i + 1);
+							String name = stringBuild + (i + 1);
 							connection.assign(name, sheetdata[i]);
 
 							/*
@@ -159,7 +164,7 @@ public class LibreOfficeValueToRJob extends WorkspaceJob {
 						String s = str.toString();
 
 						try {
-							connection.assign("xxxxtempcolnamesxxxx", s.split(","));
+							connection.assign(stringRowNames, s.split(","));
 						} catch (REngineException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -170,9 +175,9 @@ public class LibreOfficeValueToRJob extends WorkspaceJob {
 						 */
 						connection.eval("try(LibreOffice[1]<-NULL)");
 						/* We rename the cols here! */
-						connection.eval("colnames(LibreOffice) <-xxxxtempcolnamesxxxx");
+						connection.eval("colnames(LibreOffice) <-"+stringRowNames+"");
 						/* Remove the vector with the colnames! */
-						connection.eval("remove(xxxxtempcolnamesxxxx)");
+						connection.eval("remove("+stringRowNames+")");
 
 						str = null;
 
@@ -185,6 +190,17 @@ public class LibreOfficeValueToRJob extends WorkspaceJob {
 				}
 			}
 		}
+	}
+	private String generateRandomString() {
+		String choose = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		Random rnd = new Random();
+
+		StringBuilder stringBuild = new StringBuilder(30);
+		for (int i = 0; i < 30; i++){
+			stringBuild.append(choose.charAt(rnd.nextInt(choose.length())));
+		}
+		
+		return stringBuild.toString();
 	}
 
 	private class ExampleRangeListener implements com.sun.star.sheet.XRangeSelectionListener {

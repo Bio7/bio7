@@ -98,9 +98,6 @@ public class DebugRScript extends Action {
 		}
 		String loc = aFile.getLocation().toString();
 
-		//boolean remote = store.getBoolean("REMOTE");
-		//IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		// boolean rPipe = store.getBoolean("r_pipe");
 
 		if (d == null) {
 
@@ -125,19 +122,18 @@ public class DebugRScript extends Action {
 
 						if (lineNum > 0) {
 							
-								/*UUID ui = UUID.randomUUID();
-								String fileUid = ui.toString();
-                                System.out.println(fileUid);*/
 							int port=store.getInt("R_DEBUG_PORT");
 								if (expression == null) {
 									ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
                                     
 									con.pipeToRConsole("source('" + loc + "')");
-									con.pipeToRConsole("XXX<-findLineNum('" + loc + "#" + lineNum + "')");
+									/*Create a hidden environment for the temporary variable!*/
+									con.pipeToRConsole(".bio7tempenv<- new.env()");
+									con.pipeToRConsole("assign(\"bio7tempVar\", findLineNum('" + loc + "#" + lineNum + "'), env=.bio7tempenv)");
 									con.pipeToRConsole("setBreakpoint('" + loc + "#" + lineNum + "')");
 									con.pipeToRConsole("con1 <- socketConnection(port = "+port+", server = TRUE)");
-									con.pipeToRConsole("writeLines(XXX[[1]]$name, con1)");
-									con.pipeToRConsole("writeLines(as.character(XXX[[1]]$line), con1)");
+									con.pipeToRConsole("writeLines(.bio7tempenv$bio7tempVar[[1]]$name, con1)");
+									con.pipeToRConsole("writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), con1)");
 									con.pipeToRConsole("close(con1)");
 									readSocket(lineNum);
 									
@@ -148,11 +144,13 @@ public class DebugRScript extends Action {
 									ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
 
 									con.pipeToRConsole("source('" + loc + "')");
-									con.pipeToRConsole("XXX<-findLineNum('" + loc + "#" + lineNum + "')");
+									/*Create a hidden environment for the temporary variable!*/
+									con.pipeToRConsole(".bio7tempenv<- new.env()");
+									con.pipeToRConsole("assign(\"bio7tempVar\", findLineNum('" + loc + "#" + lineNum + "'), env=.bio7tempenv)");
 									con.pipeToRConsole("setBreakpoint('" + loc + "#" + lineNum + "',tracer=quote("+expression+"))");
 									con.pipeToRConsole("con1 <- socketConnection(port = "+port+", server = TRUE)");
-									con.pipeToRConsole("writeLines(XXX[[1]]$name, con1)");
-									con.pipeToRConsole("writeLines(as.character(XXX[[1]]$line), con1)");
+									con.pipeToRConsole("writeLines(.bio7tempenv$bio7tempVar[[1]]$name, con1)");
+									con.pipeToRConsole("writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), con1)");
 									con.pipeToRConsole("close(con1)");
 									readSocket(lineNum);
 									

@@ -11,6 +11,8 @@
 
 package com.eco.bio7.rbridge;
 
+import java.util.Random;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -38,6 +40,7 @@ import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
+
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.preferences.PreferenceConstants;
@@ -84,7 +87,7 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 		MenuItem menuItem = new MenuItem(fMenu, SWT.PUSH);
 
 		menuItem.setText("R<- Table+head");
-		
+
 		new MenuItem(fMenu, SWT.SEPARATOR);
 		//
 		MenuItem menuItem1 = new MenuItem(fMenu, SWT.PUSH);
@@ -459,6 +462,10 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 					// first
 					// col.
 
+					String stringBuild = "."+generateRandomString();
+					String stringRowNames = "."+generateRandomString();
+					//System.out.println(stringBuild);
+
 					for (int i = 0; i < sheetdata.length; i++) {
 						/*
 						 * We do not use a matrix in this case because Strings
@@ -469,10 +476,11 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 						 * then add different cols (numeric or character) to the
 						 * dataframe.
 						 * 
-						 * Unusal temporary col name will be used to avoid a
+						 * Random temporary col name will be used to avoid a
 						 * deletion of existing variables!!
 						 */
-						String num = "xxxxxxxxxxxxxxxx" + (i + 1);
+						String num = stringBuild + (i + 1);
+						//System.out.println(num);
 
 						try {
 							connection.assign(num, sheetdata[i]);
@@ -484,9 +492,11 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 						connection.eval("try(" + text + "<-data.frame(" + text + "," + num + "))");
 						connection.eval("try(remove(" + num + "))");
 					}
+					
 					try {
 						/* Transfer the edited col names! */
-						connection.assign("xxxxtempcolnamesxxxx", colnames);
+						
+						connection.assign(stringRowNames, colnames);
 					} catch (REngineException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -497,9 +507,9 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 					 */
 					connection.eval("try(" + text + "[1]<-NULL)");
 					/* We rename the cols here! */
-					connection.eval("try(colnames(" + text + ") <-xxxxtempcolnamesxxxx)");
+					connection.eval("try(colnames(" + text + ") <-"+stringRowNames+")");
 					/* Remove the vector with the colnames! */
-					connection.eval("try(remove(xxxxtempcolnamesxxxx))");
+					connection.eval("try(remove("+stringRowNames+"))");
 				} catch (RserveException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -511,6 +521,18 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 		sheetdata = null;
 		data = null;
 		colnames = null;
+	}
+
+	private String generateRandomString() {
+		String choose = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		Random rnd = new Random();
+
+		StringBuilder stringBuild = new StringBuilder(30);
+		for (int i = 0; i < 30; i++){
+			stringBuild.append(choose.charAt(rnd.nextInt(choose.length())));
+		}
+		
+		return stringBuild.toString();
 	}
 
 	private void transferDataframe() {
@@ -554,6 +576,9 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 			});
 
 			if (RServe.isAliveDialog()) {
+				
+				String stringBuild = "."+generateRandomString();
+				String stringRowNames = "."+generateRandomString();
 
 				RConnection connection = RServe.getConnection();
 				try {
@@ -565,7 +590,7 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 					StringBuffer str = new StringBuffer();
 					for (int i = 0; i < sheetdata.length; i++) {
 
-						name = "xxxxxxxxxxxxxxxx" + (i + 1);
+						name = stringBuild + (i + 1);
 						str.append("X" + (i + 1) + ",");
 						try {
 							connection.assign(name, sheetdata[i]);
@@ -590,7 +615,7 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 					String s = str.toString();
 
 					try {
-						connection.assign("xxxxtempcolnamesxxxx", s.split(","));
+						connection.assign(stringRowNames, s.split(","));
 					} catch (REngineException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -601,9 +626,9 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 					 */
 					connection.eval("try(" + text + "[1]<-NULL)");
 					/* We rename the cols here! */
-					connection.eval("colnames(" + text + ") <-xxxxtempcolnamesxxxx");
+					connection.eval("colnames(" + text + ") <-"+stringRowNames+"");
 					/* Remove the vector with the colnames! */
-					connection.eval("remove(xxxxtempcolnamesxxxx)");
+					connection.eval("remove("+stringRowNames+")");
 
 					str = null;
 
