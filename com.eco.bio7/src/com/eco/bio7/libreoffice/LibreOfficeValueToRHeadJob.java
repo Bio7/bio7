@@ -101,7 +101,7 @@ public class LibreOfficeValueToRHeadJob extends WorkspaceJob {
 				com.sun.star.beans.PropertyValue[] aArguments = new com.sun.star.beans.PropertyValue[2];
 				aArguments[0] = new com.sun.star.beans.PropertyValue();
 				aArguments[0].Name = "Title";
-				aArguments[0].Value = "Please select a cell range (e.g. C4:E6)with Title";
+				aArguments[0].Value = "Please select a cell range (e.g. C4:E6) with Title";
 				aArguments[1] = new com.sun.star.beans.PropertyValue();
 
 				aArguments[1].Value = new Boolean(true);

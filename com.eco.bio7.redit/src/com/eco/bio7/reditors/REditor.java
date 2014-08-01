@@ -16,7 +16,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Stack;
 import java.util.Vector;
+
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.action.Action;
@@ -101,7 +103,7 @@ public class REditor extends TextEditor {
 	public Action setcomment;
 
 	private UnsetComment unsetcomment;
-	
+
 	private Action refactor;
 
 	private OpenPreferences preferences;
@@ -125,6 +127,10 @@ public class REditor extends TextEditor {
 	private Object[] expanded;
 
 	public ProjectionViewer viewer;
+
+	Stack<Boolean> treeItemLine = new Stack<Boolean>();
+
+	protected boolean found;
 
 	public RConfiguration getRconf() {
 		return rconf;
@@ -169,41 +175,43 @@ public class REditor extends TextEditor {
 
 						@Override
 						public void keyPressed(KeyEvent event) {
-						//	if (event.stateMask == SWT.ALT && event.keyCode == 99) {    -> CTRL+C
+							// if (event.stateMask == SWT.ALT && event.keyCode
+							// == 99) { -> CTRL+C
 							switch (event.keyCode) {
 
 							case SWT.CR: {
 
-								/*IDocumentProvider prov = textEditor.getDocumentProvider();
-								IEditorInput inp = editor.getEditorInput();
-								if (prov != null) {
-									IDocument document = prov.getDocument(inp);
-									if (document != null) {
-
-										ITextSelection textSelection = (ITextSelection) editor.getSite().getSelectionProvider().getSelection();
-										int offset = textSelection.getOffset() - 4;
-										//System.out.println("offset "+offset);
-										
-										char c = '{';
-
-										try {
-											c = document.getChar(offset);
-										} catch (BadLocationException e1) {
-											// TODO Auto-generated catch block
-											e1.printStackTrace();
-										}
-										String comp=Character.toString(c);
-										//System.out.println(comp);
-									//	if(comp.equals("{"))
-
-										try {
-											document.replace(offset+4, 0, "}");
-										} catch (BadLocationException e) {
-											// TODO Auto-generated catch block
-											e.printStackTrace();
-										}
-									}*/
-							//	}
+								/*
+								 * IDocumentProvider prov =
+								 * textEditor.getDocumentProvider();
+								 * IEditorInput inp = editor.getEditorInput();
+								 * if (prov != null) { IDocument document =
+								 * prov.getDocument(inp); if (document != null)
+								 * {
+								 * 
+								 * ITextSelection textSelection =
+								 * (ITextSelection)
+								 * editor.getSite().getSelectionProvider
+								 * ().getSelection(); int offset =
+								 * textSelection.getOffset() - 4;
+								 * //System.out.println("offset "+offset);
+								 * 
+								 * char c = '{';
+								 * 
+								 * try { c = document.getChar(offset); } catch
+								 * (BadLocationException e1) { // TODO
+								 * Auto-generated catch block
+								 * e1.printStackTrace(); } String
+								 * comp=Character.toString(c);
+								 * //System.out.println(comp); //
+								 * if(comp.equals("{"))
+								 * 
+								 * try { document.replace(offset+4, 0, "}"); }
+								 * catch (BadLocationException e) { // TODO
+								 * Auto-generated catch block
+								 * e.printStackTrace(); } }
+								 */
+								// }
 
 							}
 								break;
@@ -229,12 +237,25 @@ public class REditor extends TextEditor {
 									ITextSelection textSelection = (ITextSelection) editor.getSite().getSelectionProvider().getSelection();
 									int offset = textSelection.getOffset();
 
+									int lineNumber = 0;
 									// try {
-									// int lineNumber = document.getLineOfOffset(offset);
+									try {
+										lineNumber = document.getLineOfOffset(offset);
+									} catch (BadLocationException e1) {
+										// TODO Auto-generated catch block
+										e1.printStackTrace();
+									}
+									// contentOutlineViewer.expandAll();
+									// System.out.println(lineNumber+1);
+									TreeItem treeItem = contentOutlineViewer.getTree().getItem(0);
+
+									walkTreeLineNumber(treeItem, lineNumber + 1);
 									// textEditor.selectAndReveal(offset,5);
 									// System.out.println(lineNumber);
 									/*
-									 * } catch (BadLocationException e1) { // TODO Auto-generated catch block e1.printStackTrace(); }
+									 * } catch (BadLocationException e1) { //
+									 * TODO Auto-generated catch block
+									 * e1.printStackTrace(); }
 									 */
 								}
 							}
@@ -254,6 +275,59 @@ public class REditor extends TextEditor {
 
 		}
 
+		/*
+		 * This method is recursively called to walk all subtrees and compare
+		 * the line numbers of selected tree items with the selected line number
+		 * in the editor!
+		 */
+
+		public void walkTreeLineNumber(TreeItem item, int lineNumber) {
+			found = false;
+			boolean isExpanded = item.getExpanded();
+			/*Push the temp info on the stack!*/
+			treeItemLine.push(isExpanded);
+			if (item.getItemCount() > 0) {
+				item.setExpanded(true);
+				// update the viewer
+				contentOutlineViewer.refresh();
+			}
+
+			for (int j = 0; j < item.getItemCount(); j++) {
+				
+				TreeItem it = item.getItem(j);
+
+				if (((REditorOutlineNode) it.getData()).getLineNumber() == lineNumber) {
+					contentOutlineViewer.getTree().setSelection(it);
+					item.setExpanded(true);
+					// update the viewer
+					contentOutlineViewer.refresh();
+					found = true;
+					if (treeItemLine.isEmpty() == false) {
+						treeItemLine.clear();
+					}
+					break;
+				} else {
+
+					/* Recursive call of the method for subnodes! */
+					walkTreeLineNumber(it, lineNumber);
+				}
+
+			}
+			if (found == false) {
+				if (treeItemLine.isEmpty() == false) {
+					if (treeItemLine.peek() == false) {
+
+						item.setExpanded(false);
+						// update the viewer
+						contentOutlineViewer.refresh();
+
+					}
+					treeItemLine.pop();
+				}
+			}
+
+		}
+
 		private void updateHierachyView(IWorkbenchPartReference partRef, final boolean closed) {
 
 		}
@@ -266,7 +340,8 @@ public class REditor extends TextEditor {
 
 		}
 
-		public void partDeactivated(IWorkbenchPartReference partRef) { // TODO //
+		public void partDeactivated(IWorkbenchPartReference partRef) { // TODO
+																		// //
 
 		}
 
@@ -288,8 +363,6 @@ public class REditor extends TextEditor {
 		}
 
 	};
-
-	
 
 	// private Annotation[] oldAnnotations;
 
@@ -350,7 +423,8 @@ public class REditor extends TextEditor {
 		rconf = new RConfiguration(colorManager, this);
 		setSourceViewerConfiguration(rconf);
 
-		// IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		// IEditorPart editor = (IEditorPart)
+		// PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		/*
 		 * if (editor != null) {
 		 * 
@@ -426,13 +500,14 @@ public class REditor extends TextEditor {
 		addAction(menu, "ContentAssistProposal");
 		menu.add(new Separator());
 		/*
-		 * addAction(menu, "Add Plotmarker"); addAction(menu, "Delete Plotmarker");
+		 * addAction(menu, "Add Plotmarker"); addAction(menu,
+		 * "Delete Plotmarker");
 		 */
 		menu.add(new Separator());
 		addAction(menu, "Add Comment");
 		addAction(menu, "Remove Comment");
 		menu.add(new Separator());
-		addAction(menu,"Refactor");
+		addAction(menu, "Refactor");
 		menu.add(new Separator());
 		addAction(menu, "R Preferences");
 
@@ -456,9 +531,15 @@ public class REditor extends TextEditor {
 		setAction("ContentAssistTip", a);
 
 		/*
-		 * setplotmarkers = new com.eco.bio7.reditor.actions.SetMarkers("Set Plotmarker", PlatformUI.getWorkbench().getActiveWorkbenchWindow()); setAction("Add Plotmarker", setplotmarkers);
+		 * setplotmarkers = new
+		 * com.eco.bio7.reditor.actions.SetMarkers("Set Plotmarker",
+		 * PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+		 * setAction("Add Plotmarker", setplotmarkers);
 		 * 
-		 * deleteplotmarkers = new com.eco.bio7.reditor.actions.DeletePlotMarkers("Delete Plotmarker", PlatformUI.getWorkbench().getActiveWorkbenchWindow()); setAction("Delete Plotmarker", deleteplotmarkers);
+		 * deleteplotmarkers = new
+		 * com.eco.bio7.reditor.actions.DeletePlotMarkers("Delete Plotmarker",
+		 * PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+		 * setAction("Delete Plotmarker", deleteplotmarkers);
 		 */
 
 		setcomment = new com.eco.bio7.reditor.actions.SetComment("Add Comment", PlatformUI.getWorkbench().getActiveWorkbenchWindow());
@@ -466,9 +547,13 @@ public class REditor extends TextEditor {
 
 		unsetcomment = new com.eco.bio7.reditor.actions.UnsetComment("Remove Comment", PlatformUI.getWorkbench().getActiveWorkbenchWindow());
 		setAction("Remove Comment", unsetcomment);
-		
-		/*refactor = new com.eco.bio7.reditor.refactor.CompareEditorAction("Refactor",PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-		setAction("Refactor", refactor);*/
+
+		/*
+		 * refactor = new
+		 * com.eco.bio7.reditor.refactor.CompareEditorAction("Refactor"
+		 * ,PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+		 * setAction("Refactor", refactor);
+		 */
 
 		preferences = new com.eco.bio7.reditor.actions.OpenPreferences();
 		setAction("R Preferences", preferences);
@@ -478,7 +563,8 @@ public class REditor extends TextEditor {
 	protected void configureSourceViewerDecorationSupport(SourceViewerDecorationSupport support) {
 		super.configureSourceViewerDecorationSupport(support);
 
-		char[] matchChars = { '{', '}', '(', ')', '[', ']' }; // which brackets to match
+		char[] matchChars = { '{', '}', '(', ')', '[', ']' }; // which brackets
+																// to match
 		ICharacterPairMatcher matcher = new DefaultCharacterPairMatcher(matchChars, IDocumentExtension3.DEFAULT_PARTITIONING);
 		support.setCharacterPairMatcher(matcher);
 		support.setMatchingCharacterPainterPreferenceKeys(EDITOR_MATCHING_BRACKETS, EDITOR_MATCHING_BRACKETS_COLOR);
@@ -513,7 +599,8 @@ public class REditor extends TextEditor {
 
 							int lineNumber = cm.getLineNumber();
 							/*
-							 * If a line number exist - if a class member of type is available!
+							 * If a line number exist - if a class member of
+							 * type is available!
 							 */
 							if (lineNumber > 0) {
 								goToLine(REditor.this, lineNumber);
@@ -597,7 +684,10 @@ public class REditor extends TextEditor {
 
 	}
 
-	/* This method is recursively called to walk all subtrees and compare the names of the nodes with the old ones! */
+	/*
+	 * This method is recursively called to walk all subtrees and compare the
+	 * names of the nodes with the old ones!
+	 */
 
 	public void walkTree(TreeItem item) {
 

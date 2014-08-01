@@ -24,8 +24,6 @@ http://bio7.org
    <launcherArgs>
       <programArgs>-clearPersistedState
       </programArgs>
-      <vmArgs>-Djavafx.embed.singleThread=true
-      </vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
       </vmArgsMac>
    </launcherArgs>
@@ -57,6 +55,7 @@ http://bio7.org
    <vm>
       <windows include="true">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JRE-1.1</windows>
    </vm>
+
 
    <plugins>
       <plugin id="Bundled_R"/>
