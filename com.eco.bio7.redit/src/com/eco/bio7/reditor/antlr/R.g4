@@ -17,8 +17,12 @@ expr_or_assign
     ;
 */
 
-expr:   '(' expr ')' ')' #ExprError
-    |   '(' '(' expr ')' # ExprError2 
+expr:  '(' expr ')' ')' #ExprError
+    |  '(' '(' expr ')' # ExprError2 
+    |  '{' exprlist '}' '}'	#AmountRightBraceError
+    |  '{' '{' exprlist '}'  	#AmountLeftBraceError2
+    |  '{' exprlist 	#ClosingRightBraceError
+    /*    exprlist '}' 	#ClosingLeftBraceError*/
     |   expr '[[' sublist ']' ']'  #e1// '[[' follows R's yacc grammar
     |   expr '[' sublist ']'	#e2
     |   expr ('::'|':::') expr	#e3

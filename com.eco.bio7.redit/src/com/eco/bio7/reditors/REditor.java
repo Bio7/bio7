@@ -247,9 +247,13 @@ public class REditor extends TextEditor {
 									}
 									// contentOutlineViewer.expandAll();
 									// System.out.println(lineNumber+1);
-									TreeItem treeItem = contentOutlineViewer.getTree().getItem(0);
+									TreeItem treeItem = null;
+									if(contentOutlineViewer.getTree().getItem(0).isDisposed()==false){
+									 treeItem = contentOutlineViewer.getTree().getItem(0);
+									 walkTreeLineNumber(treeItem, lineNumber + 1);
+									}
 
-									walkTreeLineNumber(treeItem, lineNumber + 1);
+									
 									// textEditor.selectAndReveal(offset,5);
 									// System.out.println(lineNumber);
 									/*
@@ -296,7 +300,7 @@ public class REditor extends TextEditor {
 				
 				TreeItem it = item.getItem(j);
 
-				if (((REditorOutlineNode) it.getData()).getLineNumber() == lineNumber) {
+				if (lineNumber==((REditorOutlineNode) it.getData()).getLineNumber()) {
 					contentOutlineViewer.getTree().setSelection(it);
 					item.setExpanded(true);
 					// update the viewer

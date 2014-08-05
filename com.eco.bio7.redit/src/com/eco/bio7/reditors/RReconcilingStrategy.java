@@ -30,6 +30,7 @@ import org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension;
 import org.eclipse.swt.widgets.Display;
 
 import com.eco.bio7.reditor.antlr.RBaseListen;
+import com.eco.bio7.reditor.antlr.RErrorStrategy;
 import com.eco.bio7.reditor.antlr.RFilter;
 import com.eco.bio7.reditor.antlr.RLexer;
 import com.eco.bio7.reditor.antlr.RParser;
@@ -116,27 +117,19 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 	/**
 	 * next character position - used locally and only valid while {@link #calculatePositions()} is in progress.
 	 */
-	//protected int cNextPos = 0;
+	
 
-
-	private CommonTokenStream tokens;
-
-	private IResource resource;
-
-	private RBaseListen list;
-
-	private Vector<REditorOutlineNode> editorOldNodes;
 
 	
 	protected void calculatePositions() {
 		
-		editorOldNodes=editor.nodes;
+		Vector<REditorOutlineNode>  editorOldNodes=editor.nodes;
 		/*Create the category base node for the outline! */
 		editor.createNodes();
 
 		if (editor != null) {
 
-			resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
+			IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
 
 			if (resource != null) {
 				try {
@@ -152,18 +145,21 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 
 		ANTLRInputStream input = new ANTLRInputStream(doc.get());
 		RLexer lexer = new RLexer(input);
-		tokens = new CommonTokenStream(lexer);
+		CommonTokenStream tokens = new CommonTokenStream(lexer);
 		RFilter filter = new RFilter(tokens);
 		filter.stream(); // call start rule: stream
 		tokens.reset();
 
 		RParser parser = new RParser(tokens);
-
+        //parser.setErrorHandler(new RErrorStrategy());
 		parser.setBuildParseTree(true);
+		UnderlineListener li=new UnderlineListener(editor);
+		lexer.removeErrorListeners();
+		lexer.addErrorListener(li);
 		parser.removeErrorListeners();
 		// parser.getInterpreter().setPredictionMode(PredictionMode.LL_EXACT_AMBIG_DETECTION);
-		parser.addErrorListener(new UnderlineListener(editor));
-
+		parser.addErrorListener(li);
+       
 		// Token to= parser.match(0);
 
 		// System.out.println("Errors: " + parser.getNumberOfSyntaxErrors());
@@ -171,7 +167,7 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 		ParseTreeWalker walker = new ParseTreeWalker();
 
 		RuleContext tree = parser.prog();
-		list = new RBaseListen(tokens, editor, parser);
+		RBaseListen list = new RBaseListen(tokens, editor, parser);
 
 		list.startStop.clear();
 		walker.walk(list, tree);

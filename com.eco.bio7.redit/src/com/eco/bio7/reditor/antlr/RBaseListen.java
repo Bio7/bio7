@@ -3,6 +3,7 @@ package com.eco.bio7.reditor.antlr;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.Token;
@@ -81,6 +82,86 @@ public class RBaseListen extends RBaseListener {
 		/* Notify the parser! */
 		parser.notifyErrorListeners(tokens.get(start + count), "One Parentheses to much!", null);
 	}
+	public void enterAmountRightBraceError(@NotNull RParser.AmountRightBraceErrorContext ctx) { }
+	
+	public void exitAmountRightBraceError(@NotNull RParser.AmountRightBraceErrorContext ctx) {
+		
+		Interval sourceInterval = ctx.getSourceInterval();
+		int count = -1;
+		int start = sourceInterval.a;
+		/* We calculate the token position from the expression! */
+		List<Token> firstToken = tokens.get(sourceInterval.a, sourceInterval.b);
+		for (int i = 0; i < firstToken.size(); i++) {
+			// System.out.println(firstToken.get(i).getText());
+			if (firstToken.get(i).getText().equals("(")) {
+				count = i;
+				break;
+			}
+		}
+		// System.out.println(count);
+
+		/* Notify the parser! */
+		parser.notifyErrorListeners(tokens.get(start + count), "One Opening Brace to much!", null);
+	}
+	
+	
+	
+	public void enterAmountLeftBraceError2(@NotNull RParser.AmountLeftBraceError2Context ctx) { 
+		
+		
+	}
+	
+	public void exitAmountLeftBraceError2(@NotNull RParser.AmountLeftBraceError2Context ctx) { 
+		Interval sourceInterval = ctx.getSourceInterval();
+		int count = -1;
+		int start = sourceInterval.a;
+		/* We calculate the token position from the expression! */
+		List<Token> firstToken = tokens.get(sourceInterval.a, sourceInterval.b);
+		for (int i = 0; i < firstToken.size(); i++) {
+			// System.out.println(firstToken.get(i).getText());
+			if (firstToken.get(i).getText().equals("(")) {
+				count = i;
+				break;
+			}
+		}
+		// System.out.println(count);
+
+		/* Notify the parser! */
+		parser.notifyErrorListeners(tokens.get(start + count), "One Closing Brace to much!", null);
+		
+	}
+	
+	
+	
+	public void enterClosingRightBraceError(@NotNull RParser.ClosingRightBraceErrorContext ctx) {
+		
+		
+	}
+	
+	public void exitClosingRightBraceError(@NotNull RParser.ClosingRightBraceErrorContext ctx) {
+		Interval sourceInterval = ctx.getSourceInterval();
+		
+		
+		int count = -1;
+		int start = sourceInterval.a;
+		/* We calculate the token position from the expression! */
+		List<Token> firstToken = tokens.get(sourceInterval.a, sourceInterval.b);
+		for (int i = 0; i < firstToken.size(); i++) {
+			// System.out.println(firstToken.get(i).getText());
+			if (firstToken.get(i).getText().equals("(")) {
+				count = i;
+				break;
+			}
+		}
+		// System.out.println(count);
+
+		/* Notify the parser! */
+		parser.notifyErrorListeners(tokens.get(start + count), "Closing Brace Missing!", null);
+		
+	}
+	
+	
+	
 
 	public void exitDefFunction(@NotNull RParser.DefFunctionContext ctx) {
 		/* Exit scope! */

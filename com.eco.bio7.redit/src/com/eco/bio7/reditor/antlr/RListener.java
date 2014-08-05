@@ -9,16 +9,6 @@ import org.antlr.v4.runtime.tree.ParseTreeListener;
  */
 public interface RListener extends ParseTreeListener {
 	/**
-	 * Enter a parse tree produced by {@link RParser#sub}.
-	 * @param ctx the parse tree
-	 */
-	void enterSub(@NotNull RParser.SubContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link RParser#sub}.
-	 * @param ctx the parse tree
-	 */
-	void exitSub(@NotNull RParser.SubContext ctx);
-	/**
 	 * Enter a parse tree produced by the {@code e31}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
@@ -55,18 +45,6 @@ public interface RListener extends ParseTreeListener {
 	 */
 	void exitE33(@NotNull RParser.E33Context ctx);
 	/**
-	 * Enter a parse tree produced by the {@code e11}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterE11(@NotNull RParser.E11Context ctx);
-	/**
-	 * Exit a parse tree produced by the {@code e11}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitE11(@NotNull RParser.E11Context ctx);
-	/**
 	 * Enter a parse tree produced by the {@code e32}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
@@ -78,18 +56,6 @@ public interface RListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitE32(@NotNull RParser.E32Context ctx);
-	/**
-	 * Enter a parse tree produced by the {@code e10}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterE10(@NotNull RParser.E10Context ctx);
-	/**
-	 * Exit a parse tree produced by the {@code e10}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitE10(@NotNull RParser.E10Context ctx);
 	/**
 	 * Enter a parse tree produced by the {@code e35}
 	 * labeled alternative in {@link RParser#expr}.
@@ -103,30 +69,6 @@ public interface RListener extends ParseTreeListener {
 	 */
 	void exitE35(@NotNull RParser.E35Context ctx);
 	/**
-	 * Enter a parse tree produced by the {@code e13}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterE13(@NotNull RParser.E13Context ctx);
-	/**
-	 * Exit a parse tree produced by the {@code e13}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitE13(@NotNull RParser.E13Context ctx);
-	/**
-	 * Enter a parse tree produced by the {@code e12}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterE12(@NotNull RParser.E12Context ctx);
-	/**
-	 * Exit a parse tree produced by the {@code e12}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitE12(@NotNull RParser.E12Context ctx);
-	/**
 	 * Enter a parse tree produced by the {@code e34}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
@@ -138,18 +80,6 @@ public interface RListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitE34(@NotNull RParser.E34Context ctx);
-	/**
-	 * Enter a parse tree produced by the {@code e15}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterE15(@NotNull RParser.E15Context ctx);
-	/**
-	 * Exit a parse tree produced by the {@code e15}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitE15(@NotNull RParser.E15Context ctx);
 	/**
 	 * Enter a parse tree produced by the {@code e37}
 	 * labeled alternative in {@link RParser#expr}.
@@ -175,28 +105,6 @@ public interface RListener extends ParseTreeListener {
 	 */
 	void exitE36(@NotNull RParser.E36Context ctx);
 	/**
-	 * Enter a parse tree produced by the {@code e14}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterE14(@NotNull RParser.E14Context ctx);
-	/**
-	 * Exit a parse tree produced by the {@code e14}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitE14(@NotNull RParser.E14Context ctx);
-	/**
-	 * Enter a parse tree produced by {@link RParser#exprlist}.
-	 * @param ctx the parse tree
-	 */
-	void enterExprlist(@NotNull RParser.ExprlistContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link RParser#exprlist}.
-	 * @param ctx the parse tree
-	 */
-	void exitExprlist(@NotNull RParser.ExprlistContext ctx);
-	/**
 	 * Enter a parse tree produced by the {@code e39}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
@@ -220,6 +128,144 @@ public interface RListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitE38(@NotNull RParser.E38Context ctx);
+	/**
+	 * Enter a parse tree produced by the {@code e20expr}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterE20expr(@NotNull RParser.E20exprContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code e20expr}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitE20expr(@NotNull RParser.E20exprContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link RParser#formlist}.
+	 * @param ctx the parse tree
+	 */
+	void enterFormlist(@NotNull RParser.FormlistContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link RParser#formlist}.
+	 * @param ctx the parse tree
+	 */
+	void exitFormlist(@NotNull RParser.FormlistContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code ExprError}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterExprError(@NotNull RParser.ExprErrorContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code ExprError}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitExprError(@NotNull RParser.ExprErrorContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code ExprError2}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterExprError2(@NotNull RParser.ExprError2Context ctx);
+	/**
+	 * Exit a parse tree produced by the {@code ExprError2}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitExprError2(@NotNull RParser.ExprError2Context ctx);
+	/**
+	 * Enter a parse tree produced by {@link RParser#sub}.
+	 * @param ctx the parse tree
+	 */
+	void enterSub(@NotNull RParser.SubContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link RParser#sub}.
+	 * @param ctx the parse tree
+	 */
+	void exitSub(@NotNull RParser.SubContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code e11}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterE11(@NotNull RParser.E11Context ctx);
+	/**
+	 * Exit a parse tree produced by the {@code e11}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitE11(@NotNull RParser.E11Context ctx);
+	/**
+	 * Enter a parse tree produced by the {@code e10}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterE10(@NotNull RParser.E10Context ctx);
+	/**
+	 * Exit a parse tree produced by the {@code e10}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitE10(@NotNull RParser.E10Context ctx);
+	/**
+	 * Enter a parse tree produced by the {@code e13}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterE13(@NotNull RParser.E13Context ctx);
+	/**
+	 * Exit a parse tree produced by the {@code e13}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitE13(@NotNull RParser.E13Context ctx);
+	/**
+	 * Enter a parse tree produced by the {@code e12}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterE12(@NotNull RParser.E12Context ctx);
+	/**
+	 * Exit a parse tree produced by the {@code e12}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitE12(@NotNull RParser.E12Context ctx);
+	/**
+	 * Enter a parse tree produced by the {@code e15}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterE15(@NotNull RParser.E15Context ctx);
+	/**
+	 * Exit a parse tree produced by the {@code e15}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitE15(@NotNull RParser.E15Context ctx);
+	/**
+	 * Enter a parse tree produced by the {@code e14}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterE14(@NotNull RParser.E14Context ctx);
+	/**
+	 * Exit a parse tree produced by the {@code e14}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitE14(@NotNull RParser.E14Context ctx);
+	/**
+	 * Enter a parse tree produced by {@link RParser#exprlist}.
+	 * @param ctx the parse tree
+	 */
+	void enterExprlist(@NotNull RParser.ExprlistContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link RParser#exprlist}.
+	 * @param ctx the parse tree
+	 */
+	void exitExprlist(@NotNull RParser.ExprlistContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code e16}
 	 * labeled alternative in {@link RParser#expr}.
@@ -269,17 +315,17 @@ public interface RListener extends ParseTreeListener {
 	 */
 	void exitCallFunction(@NotNull RParser.CallFunctionContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code e20expr}
+	 * Enter a parse tree produced by the {@code ClosingRightBraceError}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
 	 */
-	void enterE20expr(@NotNull RParser.E20exprContext ctx);
+	void enterClosingRightBraceError(@NotNull RParser.ClosingRightBraceErrorContext ctx);
 	/**
-	 * Exit a parse tree produced by the {@code e20expr}
+	 * Exit a parse tree produced by the {@code ClosingRightBraceError}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
 	 */
-	void exitE20expr(@NotNull RParser.E20exprContext ctx);
+	void exitClosingRightBraceError(@NotNull RParser.ClosingRightBraceErrorContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code e22}
 	 * labeled alternative in {@link RParser#expr}.
@@ -292,16 +338,6 @@ public interface RListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitE22(@NotNull RParser.E22Context ctx);
-	/**
-	 * Enter a parse tree produced by {@link RParser#formlist}.
-	 * @param ctx the parse tree
-	 */
-	void enterFormlist(@NotNull RParser.FormlistContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link RParser#formlist}.
-	 * @param ctx the parse tree
-	 */
-	void exitFormlist(@NotNull RParser.FormlistContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code e21}
 	 * labeled alternative in {@link RParser#expr}.
@@ -374,6 +410,18 @@ public interface RListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitE28(@NotNull RParser.E28Context ctx);
+	/**
+	 * Enter a parse tree produced by the {@code AmountLeftBraceError2}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterAmountLeftBraceError2(@NotNull RParser.AmountLeftBraceError2Context ctx);
+	/**
+	 * Exit a parse tree produced by the {@code AmountLeftBraceError2}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitAmountLeftBraceError2(@NotNull RParser.AmountLeftBraceError2Context ctx);
 	/**
 	 * Enter a parse tree produced by the {@code e27}
 	 * labeled alternative in {@link RParser#expr}.
@@ -456,18 +504,6 @@ public interface RListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitE4(@NotNull RParser.E4Context ctx);
-	/**
-	 * Enter a parse tree produced by the {@code ExprError}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterExprError(@NotNull RParser.ExprErrorContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code ExprError}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitExprError(@NotNull RParser.ExprErrorContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code e5}
 	 * labeled alternative in {@link RParser#expr}.
@@ -561,15 +597,15 @@ public interface RListener extends ParseTreeListener {
 	 */
 	void exitDefFunction(@NotNull RParser.DefFunctionContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code ExprError2}
+	 * Enter a parse tree produced by the {@code AmountRightBraceError}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
 	 */
-	void enterExprError2(@NotNull RParser.ExprError2Context ctx);
+	void enterAmountRightBraceError(@NotNull RParser.AmountRightBraceErrorContext ctx);
 	/**
-	 * Exit a parse tree produced by the {@code ExprError2}
+	 * Exit a parse tree produced by the {@code AmountRightBraceError}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
 	 */
-	void exitExprError2(@NotNull RParser.ExprError2Context ctx);
+	void exitAmountRightBraceError(@NotNull RParser.AmountRightBraceErrorContext ctx);
 }
