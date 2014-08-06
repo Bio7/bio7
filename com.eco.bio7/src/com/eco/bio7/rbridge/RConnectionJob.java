@@ -35,6 +35,7 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
+import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.worldwind.WorldWindView;
 
 public class RConnectionJob extends WorkspaceJob {
@@ -480,6 +481,7 @@ public class RConnectionJob extends WorkspaceJob {
 
 			RServe.setConnection(c);
 			WorldWindView.setRConnection(c);
+			REditor.setConnection(c);
 
 		} catch (RserveException e1) {
 

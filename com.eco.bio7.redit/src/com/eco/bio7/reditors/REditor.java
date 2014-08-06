@@ -79,9 +79,11 @@ import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.texteditor.TextOperationAction;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
+import org.rosuda.REngine.Rserve.RConnection;
 
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.actions.OpenPreferences;
+import com.eco.bio7.reditor.actions.RFormatAction;
 import com.eco.bio7.reditor.actions.UnsetComment;
 import com.eco.bio7.reditor.outline.REditorLabelProvider;
 import com.eco.bio7.reditor.outline.REditorOutlineNode;
@@ -94,6 +96,10 @@ import com.eco.bio7.reditor.refactor.CompareEditorAction;
 public class REditor extends TextEditor {
 
 	private static final String TEMPLATE_PROPOSALS = "template_proposals_action";
+
+	private static RConnection rserveConnection;
+
+	
 
 	private RColorManager colorManager;
 	private Image importIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/imp_obj.png"));
@@ -131,6 +137,8 @@ public class REditor extends TextEditor {
 	Stack<Boolean> treeItemLine = new Stack<Boolean>();
 
 	protected boolean found;
+	
+	private RFormatAction rFormat;
 
 	public RConfiguration getRconf() {
 		return rconf;
@@ -368,6 +376,8 @@ public class REditor extends TextEditor {
 
 	};
 
+	
+
 	// private Annotation[] oldAnnotations;
 
 	public void updateFoldingStructure(ArrayList positions) {
@@ -513,6 +523,8 @@ public class REditor extends TextEditor {
 		menu.add(new Separator());
 		addAction(menu, "Refactor");
 		menu.add(new Separator());
+		addAction(menu, "Format");
+		menu.add(new Separator());
 		addAction(menu, "R Preferences");
 
 	}
@@ -558,7 +570,9 @@ public class REditor extends TextEditor {
 		 * ,PlatformUI.getWorkbench().getActiveWorkbenchWindow());
 		 * setAction("Refactor", refactor);
 		 */
-
+		rFormat = new com.eco.bio7.reditor.actions.RFormatAction();
+		setAction("Format", rFormat);
+		
 		preferences = new com.eco.bio7.reditor.actions.OpenPreferences();
 		setAction("R Preferences", preferences);
 
@@ -775,6 +789,14 @@ public class REditor extends TextEditor {
 			for (int i = 0; subs != null && i < subs.size(); i++)
 				addNode(item, (REditorOutlineNode) subs.elementAt(i));
 		}
+	}
+
+	public static void setConnection(RConnection c) {
+		
+		rserveConnection=c;
+	}
+	public static RConnection getRserveConnection() {
+		return rserveConnection;
 	}
 
 }
