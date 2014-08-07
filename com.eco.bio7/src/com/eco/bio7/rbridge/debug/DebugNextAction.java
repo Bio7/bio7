@@ -61,13 +61,13 @@ public class DebugNextAction extends Action {
 		if (selectionConsole.equals("R")) {
 			ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
 
-
+			
 			con.pipeToRConsole("con1 <- socketConnection(port = "+port+", server = TRUE)");
 			con.pipeToRConsole("sink(con1)");
 			con.pipeToRConsole("n");
 			con.pipeToRConsole("sink()");
 			con.pipeToRConsole("close(con1)");
-
+			con.pipeToRConsole("writeLines(\"\")");
 			
 			final ConsolePageParticipant inst = ConsolePageParticipant.getConsolePageParticipantInstance();
 

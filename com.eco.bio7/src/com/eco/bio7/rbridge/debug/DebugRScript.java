@@ -125,16 +125,19 @@ public class DebugRScript extends Action {
 							int port=store.getInt("R_DEBUG_PORT");
 								if (expression == null) {
 									ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
-                                    
+									con.pipeToRConsole("options(prompt=\" \")");
 									con.pipeToRConsole("source('" + loc + "')");
 									/*Create a hidden environment for the temporary variable!*/
 									con.pipeToRConsole(".bio7tempenv<- new.env()");
 									con.pipeToRConsole("assign(\"bio7tempVar\", findLineNum('" + loc + "#" + lineNum + "'), env=.bio7tempenv)");
 									con.pipeToRConsole("setBreakpoint('" + loc + "#" + lineNum + "')");
 									con.pipeToRConsole("con1 <- socketConnection(port = "+port+", server = TRUE)");
-									con.pipeToRConsole("writeLines(.bio7tempenv$bio7tempVar[[1]]$name, con1)");
-									con.pipeToRConsole("writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), con1)");
+									//con.pipeToRConsole("writeLines(.bio7tempenv$bio7tempVar[[1]]$name, con1)");
+									//con.pipeToRConsole("writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), con1)");
 									con.pipeToRConsole("close(con1)");
+									con.pipeToRConsole("options(prompt=\"> \")");
+									con.pipeToRConsole("writeLines(\"\")");
+									
 									readSocket(lineNum);
 									
 								
@@ -142,16 +145,19 @@ public class DebugRScript extends Action {
 								/*If an expression is available!*/
 								else {
 									ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
-
+									con.pipeToRConsole("options(prompt=\" \")");
 									con.pipeToRConsole("source('" + loc + "')");
 									/*Create a hidden environment for the temporary variable!*/
 									con.pipeToRConsole(".bio7tempenv<- new.env()");
 									con.pipeToRConsole("assign(\"bio7tempVar\", findLineNum('" + loc + "#" + lineNum + "'), env=.bio7tempenv)");
 									con.pipeToRConsole("setBreakpoint('" + loc + "#" + lineNum + "',tracer=quote("+expression+"))");
 									con.pipeToRConsole("con1 <- socketConnection(port = "+port+", server = TRUE)");
-									con.pipeToRConsole("writeLines(.bio7tempenv$bio7tempVar[[1]]$name, con1)");
-									con.pipeToRConsole("writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), con1)");
+									//con.pipeToRConsole("writeLines(.bio7tempenv$bio7tempVar[[1]]$name, con1)");
+									//con.pipeToRConsole("writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), con1)");
 									con.pipeToRConsole("close(con1)");
+									con.pipeToRConsole("options(prompt=\"> \")");
+									con.pipeToRConsole("writeLines(\"\")");
+									
 									readSocket(lineNum);
 									
 								}

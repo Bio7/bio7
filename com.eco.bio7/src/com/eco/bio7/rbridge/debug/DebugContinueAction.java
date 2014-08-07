@@ -56,7 +56,7 @@ public class DebugContinueAction extends Action {
 
 		if (selectionConsole.equals("R")) {
 
-			System.out.println("c");
+			//System.out.println("c");
 
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 			int port = store.getInt("R_DEBUG_PORT");
@@ -69,7 +69,8 @@ public class DebugContinueAction extends Action {
 			con.pipeToRConsole("c");
 			con.pipeToRConsole("sink()");
 			con.pipeToRConsole("close(con1)");
-			System.out.println("c");
+			con.pipeToRConsole("writeLines(\"\")");
+			//System.out.println("c");
 
 			String data = null;
 

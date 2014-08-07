@@ -1027,6 +1027,26 @@
              menubarPath="additions.path">
        </action>
     </objectContribution>
+    <objectContribution
+            objectClass="org.eclipse.ui.IEditorInput"
+            nameFilter="*.R*"
+            id="RContextMenu.contribution">
+         <menu
+               label="Format Source (formatR)"
+               path="additions"
+               id="REditorMenu.menu">
+            <separator
+                  name="group1">
+            </separator>
+         </menu>
+         <action
+               label="Format Source (formatR)"
+               class="com.eco.bio7.rbridge.reditor.RFormatAction"
+               menubarPath="REditorMenu.menu"
+               enablesFor="1"
+               id="RPopupMenu.newAction">
+         </action>
+      </objectContribution>
     <viewerContribution
           id="REditorDebug.rulerActions"
           targetID="com.eco.bio7.reditors.TemplateEditor.RulerContext">

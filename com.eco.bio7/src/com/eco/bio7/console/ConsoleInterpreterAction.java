@@ -287,9 +287,18 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 		}
 
 		participant.ignore = true;
-		ioConsole.getInputStream().appendData(System.getProperty("line.separator"));
+		//ioConsole.getInputStream().appendData(System.getProperty("line.separator"));
 
 		participant.styledText.setEditable(true);
+		/*Add a short break for the linebreak of the prompt*/
+		try {
+			Thread.sleep(100);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		/*Add a linebreak in R*/
+		participant.pipeToRConsole("cat(\"\r\")");
 	}
 	public void startPython() {
 		StyledText styledText = (StyledText) participant.page.getControl();

@@ -8,13 +8,12 @@
  * Contributors:
  *     M. Austenfeld
  *     
- * The EPL-Code for the caret corrections and some other inspirations came from the ConsolePageParticipant class
+ * The EPL-Code for the caret corrections came from the ConsolePageParticipant class
  * of the Counterclockwise plugin:
  * http://code.google.com/p/counterclockwise/
  * (see information below)
- */
-
-/*******************************************************************************
+ * 
+ ********************************************************************************
  * Copyright (c) 2009 Laurent PETIT.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
