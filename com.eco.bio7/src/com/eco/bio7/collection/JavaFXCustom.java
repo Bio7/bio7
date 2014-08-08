@@ -13,7 +13,6 @@ package com.eco.bio7.collection;
 
 import java.io.IOException;
 import java.net.URL;
-
 import javafx.application.Platform;
 import javafx.embed.swt.FXCanvas;
 import javafx.event.EventHandler;
@@ -25,7 +24,6 @@ import javafx.scene.input.KeyEvent;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;

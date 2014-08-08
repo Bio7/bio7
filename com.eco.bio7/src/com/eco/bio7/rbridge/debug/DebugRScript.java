@@ -132,8 +132,8 @@ public class DebugRScript extends Action {
 									con.pipeToRConsole("assign(\"bio7tempVar\", findLineNum('" + loc + "#" + lineNum + "'), env=.bio7tempenv)");
 									con.pipeToRConsole("setBreakpoint('" + loc + "#" + lineNum + "')");
 									con.pipeToRConsole("con1 <- socketConnection(port = "+port+", server = TRUE)");
-									//con.pipeToRConsole("writeLines(.bio7tempenv$bio7tempVar[[1]]$name, con1)");
-									//con.pipeToRConsole("writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), con1)");
+									con.pipeToRConsole("writeLines(.bio7tempenv$bio7tempVar[[1]]$name, con1)");
+									con.pipeToRConsole("writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), con1)");
 									con.pipeToRConsole("close(con1)");
 									con.pipeToRConsole("options(prompt=\"> \")");
 									con.pipeToRConsole("writeLines(\"\")");
@@ -152,8 +152,8 @@ public class DebugRScript extends Action {
 									con.pipeToRConsole("assign(\"bio7tempVar\", findLineNum('" + loc + "#" + lineNum + "'), env=.bio7tempenv)");
 									con.pipeToRConsole("setBreakpoint('" + loc + "#" + lineNum + "',tracer=quote("+expression+"))");
 									con.pipeToRConsole("con1 <- socketConnection(port = "+port+", server = TRUE)");
-									//con.pipeToRConsole("writeLines(.bio7tempenv$bio7tempVar[[1]]$name, con1)");
-									//con.pipeToRConsole("writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), con1)");
+									con.pipeToRConsole("writeLines(.bio7tempenv$bio7tempVar[[1]]$name, con1)");
+									con.pipeToRConsole("writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), con1)");
 									con.pipeToRConsole("close(con1)");
 									con.pipeToRConsole("options(prompt=\"> \")");
 									con.pipeToRConsole("writeLines(\"\")");

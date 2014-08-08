@@ -1,8 +1,10 @@
 package com.eco.bio7.scenebuilder.xmleditor;
 
 import java.io.IOException;
+
 import javafx.application.Platform;
 import javafx.embed.swt.FXCanvas;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;

@@ -110,5 +110,4 @@ Bundle-ClassPath: bin/,
  libs/SceneBuilderApp.jar,
  libs/SceneBuilderKit.jar,
  libs/jfxswt.jar
-Import-Package: org.eclipse.compare
 

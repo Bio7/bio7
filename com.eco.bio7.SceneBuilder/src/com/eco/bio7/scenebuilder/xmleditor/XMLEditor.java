@@ -1,6 +1,7 @@
 package com.eco.bio7.scenebuilder.xmleditor;
 
 import javafx.embed.swt.FXCanvas;
+
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.editors.text.TextEditor;
 

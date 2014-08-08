@@ -170,7 +170,7 @@ public class CompileClassAndMultipleClasses {
 
 					IWorkingCopyManager mgr = JavaUI.getWorkingCopyManager();
 					ICompilationUnit cu = mgr.getWorkingCopy(jedit.getEditorInput());
-					ASTParser parser = ASTParser.newParser(AST.JLS4);
+					ASTParser parser = ASTParser.newParser(AST.JLS8);
 					parser.setSource(cu);
 					// CompilationUnit cu = (CompilationUnit) parser.createAST(null);
 					compUnit = (CompilationUnit) parser.createAST(null);
@@ -200,7 +200,7 @@ public class CompileClassAndMultipleClasses {
 				org.eclipse.jdt.core.dom.CompilationUnit compUnit=null;
 				Document doc = new Document(BatchModel.fileToString(ifile.getRawLocation().toString()));
 				
-				ASTParser parser = ASTParser.newParser(AST.JLS4);
+				ASTParser parser = ASTParser.newParser(AST.JLS8);
 				parser.setSource(doc.get().toCharArray());
 				// CompilationUnit cu = (CompilationUnit) parser.createAST(null);
 				compUnit = (CompilationUnit) parser.createAST(null);

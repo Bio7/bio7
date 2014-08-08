@@ -1,45 +1,25 @@
 package com.eco.bio7.collection;
 
 import java.awt.Panel;
-import java.util.UUID;
 import java.util.Vector;
-
+import javafx.embed.swt.FXCanvas;
 import javafx.scene.Scene;
-
 import javax.swing.JPanel;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.draw2d.LightweightSystem;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabFolderAdapter;
-import org.eclipse.swt.custom.CTabFolderEvent;
-import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IPartListener;
-import org.eclipse.ui.IPartListener2;
-import org.eclipse.ui.IPartService;
 import org.eclipse.ui.ISaveablePart2;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.jfree.chart.ChartPanel;
-
 import processing.core.PApplet;
-
-import com.eco.bio7.compile.Model;
-import com.eco.bio7.image.CanvasView;
 import com.jogamp.opengl.util.Animator;
 
 /**
@@ -468,8 +448,8 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-			} else if ((ve.get(0)) instanceof javafx.embed.swt.FXCanvas) {
-				javafx.embed.swt.FXCanvas canvas = (javafx.embed.swt.FXCanvas) ve.get(0);
+			} else if ((ve.get(0)) instanceof FXCanvas) {
+				FXCanvas canvas = (FXCanvas) ve.get(0);
 				canvas.dispose();
 				canvas = null;
 			}
