@@ -42,6 +42,7 @@ import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.code.RAssistProcessor;
 import com.eco.bio7.rpreferences.template.RCompletionProcessor;
+import com.eco.bio7.rpreferences.template.CompletionProcessor;
 
 public class RConfiguration extends TextSourceViewerConfiguration {
 
@@ -121,6 +122,8 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 		IContentAssistProcessor processor = new RCompletionProcessor();
 		assistant.setContentAssistProcessor(processor, IDocument.DEFAULT_CONTENT_TYPE);
 		
+		/*IContentAssistProcessor cap =new CompletionProcessor();
+		assistant.setContentAssistProcessor(cap,IDocument.DEFAULT_CATEGORY);*/
 		
 		//assistant.setContentAssistProcessor(new JavaCompletionProcessor(), IDocument.DEFAULT_CATEGORY);
 		
