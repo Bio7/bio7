@@ -13,8 +13,9 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.resources;bundle-version="3.8.1",
  org.eclipse.ui.ide;bundle-version="3.8.1",
  com.eco.bio7.libs;bundle-version="1.6.0",
- org.eclipse.ui.views
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+ org.eclipse.ui.views,
+ com.eco.bio7.testfx;bundle-version="1.0.0";resolution:=optional
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Eclipse-BuddyPolicy: ext
 Export-Package: com.eco.bio7.scenebuilder,
@@ -101,7 +102,6 @@ Export-Package: com.eco.bio7.scenebuilder,
  com.oracle.javafx.scenebuilder.kit.util.control.paintpicker.gradientpicker,
  com.oracle.javafx.scenebuilder.kit.util.control.paintpicker.rotator,
  com.oracle.javafx.scenebuilder.kit.util.control.paintpicker.slider,
- javafx.embed.swt,
  net.htmlparser.jericho,
  net.htmlparser.jericho.nodoc
 Bundle-ClassPath: bin/,
@@ -109,5 +109,5 @@ Bundle-ClassPath: bin/,
  libs/jericho-html-3.2.jar,
  libs/SceneBuilderApp.jar,
  libs/SceneBuilderKit.jar,
- libs/jfxswt.jar
+ external:$java.home$/lib/jfxswt.jar
 

@@ -14,7 +14,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.resources;bundle-version="3.8.1",
  org.eclipse.ui.ide;bundle-version="3.8.1",
  com.eco.bio7.libs;bundle-version="1.6.0",
- com.eco.bio7.scenebuilder;bundle-version="1.7.0"
+ com.eco.bio7.scenebuilder;bundle-version="1.7.0",
+ com.eco.bio7.jfxswt;bundle-version="1.0.0";resolution:=optional
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Export-Package: com.eco.bio7.browser,
@@ -22,5 +23,6 @@ Export-Package: com.eco.bio7.browser,
  com.swtdesigner,
  org.eclipse.swt.widgets.baseline
 Bundle-ClassPath: bin/,
- jericho-html-3.2.jar
+ jericho-html-3.2.jar,
+ external:$java.home$/lib/jfxswt.jar
 
