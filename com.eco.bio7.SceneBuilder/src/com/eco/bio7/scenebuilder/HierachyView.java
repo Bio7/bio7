@@ -6,6 +6,9 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
+
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -16,15 +19,20 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
+import com.eco.bio7.scenebuilder.editor.ILinkedWithEditorView;
+import com.eco.bio7.scenebuilder.editor.LinkWithEditorPartListener;
 import com.eco.bio7.scenebuilder.editor.MultiPageEditor;
 import com.oracle.javafx.scenebuilder.kit.editor.panel.hierarchy.treeview.HierarchyTreeViewController;
 
-public class HierachyView extends ViewPart  {
+public class HierachyView extends ViewPart implements ILinkedWithEditorView {
 
 	private FXCanvas canvas;
 	private MultiPageEditor pag;
 	private Composite composite;
 	private Scene scene;
+	private IPartListener2 linkWithEditorPartListener = new LinkWithEditorPartListener(this);
+	private Action linkWithEditorAction;
+	private boolean linkingActive = true;
 
 	public HierachyView() {
 		// TODO Auto-generated constructor stub
@@ -48,7 +56,71 @@ public class HierachyView extends ViewPart  {
 			}
 		});
 
+		linkWithEditorAction = new Action("Link with Editor", IAction.AS_CHECK_BOX) {
+			@Override
+			public void run() {
+				toggleLinking(isChecked());
+			}
+		};
+		// linkWithEditorAction.setImageDescriptor(getImageDescriptor());
+		getViewSite().getActionBars().getToolBarManager().add(linkWithEditorAction);
+		getSite().getPage().addPartListener(linkWithEditorPartListener);
 		getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
+	}
+
+	@Override
+	public void editorActivated(IEditorPart activeEditor) {
+		if (!linkingActive || !getViewSite().getPage().isPartVisible(this)) {
+			return;
+		}
+
+		updateHierachyView(activeEditor);
+		// do something with content of the editor
+	}
+
+	protected void toggleLinking(boolean checked) {
+		this.linkingActive = checked;
+		if (checked) {
+			editorActivated(getSite().getPage().getActiveEditor());
+		}
+		
+	}
+
+	private void updateHierachyView(IEditorPart editor) {
+
+		if (editor instanceof MultiPageEditor) {
+			pag = (MultiPageEditor) editor;
+
+			Platform.runLater(new Runnable() {
+
+				@Override
+				public void run() {
+
+					if (pag != null) {
+						HierarchyTreeViewController h = new HierarchyTreeViewController(pag.editorController);
+						// HierarchyPanelController h = new
+						// HierarchyPanelController(pag.editorController);
+						// ContentPanelController h = new
+						// ContentPanelController(pag.editorController);
+						final BorderPane pane = new BorderPane();
+						pane.setCenter(h.getPanelRoot());
+						scene = new Scene(pane);
+
+					}
+
+				}
+			});
+			Display display = PlatformUI.getWorkbench().getDisplay();
+			display.asyncExec(new Runnable() {
+
+				public void run() {
+					if (composite.isDisposed() == false) {
+						canvas.setScene(scene);
+
+					}
+				}
+			});
+		}
 
 	}
 
@@ -57,50 +129,12 @@ public class HierachyView extends ViewPart  {
 		@Override
 		public void partActivated(IWorkbenchPartReference partRef) { //
 			// System.out.println(partRef.getId());
-			updateHierachyView(partRef, false);
+			// updateHierachyView(partRef, false);
 
-		}
-
-		private void updateHierachyView(IWorkbenchPartReference partRef, final boolean closed) {
-			if (partRef.getId().equals("com.eco.bio7.browser.scenebuilder")) {
-				IEditorPart editor = partRef.getPage().getActiveEditor();
-				if (editor instanceof MultiPageEditor) {
-					pag = (MultiPageEditor) editor;
-
-					Platform.runLater(new Runnable() {
-
-						@Override
-						public void run() {
-
-							if (pag != null) {
-								HierarchyTreeViewController h = new HierarchyTreeViewController(pag.editorController);
-								//HierarchyPanelController h = new HierarchyPanelController(pag.editorController);
-								//ContentPanelController h = new ContentPanelController(pag.editorController);
-								final BorderPane pane = new BorderPane();
-								pane.setCenter(h.getPanelRoot());
-								scene = new Scene(pane);
-
-							}
-
-						}
-					});
-					Display display = PlatformUI.getWorkbench().getDisplay();
-					display.asyncExec(new Runnable() {
-
-						public void run() {
-							if (composite.isDisposed() == false) {
-								canvas.setScene(scene);
-
-							}
-						}
-					});
-				}
-
-			}
 		}
 
 		public void partBroughtToTop(IWorkbenchPartReference partRef) { // TODO
-			updateHierachyView(partRef, false);
+			// updateHierachyView(partRef, false);
 
 		}
 
@@ -119,13 +153,14 @@ public class HierachyView extends ViewPart  {
 			});
 		}
 
-		public void partDeactivated(IWorkbenchPartReference partRef) { // TODO //
+		public void partDeactivated(IWorkbenchPartReference partRef) { // TODO
+																		// //
 
 		}
 
 		@Override
 		public void partOpened(IWorkbenchPartReference partRef) {
-			updateHierachyView(partRef, false);
+			// updateHierachyView(partRef, false);
 		}
 
 		public void partHidden(IWorkbenchPartReference partRef) { // TODO

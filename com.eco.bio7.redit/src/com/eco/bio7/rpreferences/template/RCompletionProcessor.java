@@ -180,6 +180,8 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 			"Creates a 1000*1000 matrix filled with the specified number!",
 			"Creates a 1000*1000 matrix filled with NaN values!"};
 
+	private boolean triggerNext;
+
 	/**
 	 * We watch for angular brackets since those are often part of XML
 	 * templates.
@@ -229,6 +231,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 	}
 	
 	 public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
+		 
 		  
 		  ITextSelection selection= (ITextSelection) viewer.getSelectionProvider().getSelection();
 
@@ -245,15 +248,6 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 			context.setVariable("selection", selection.getText()); // name of the selection variables {line, word}_selection //$NON-NLS-1$
 
 			Template[] templates= getTemplates(context.getContextType().getId());
-			
-			/*Proposals from List!*/
-			Template[] temp=new Template[statistics.length];
-			for (int i = 0; i < temp.length; i++) {
-				temp[i]=new Template(statistics[i],statisticsContext[i],context.getContextType().getId(),statistics[i],true);
-				
-				
-			}
-
 			List matches= new ArrayList();
 			for (int i= 0; i < templates.length; i++) {
 				Template template= templates[i];
@@ -267,6 +261,15 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 				
 			}
 			
+			/*Proposals from List!*/
+			if(triggerNext){
+			Template[] temp=new Template[statistics.length];
+			
+			for (int i = 0; i < temp.length; i++) {
+				temp[i]=new Template(statistics[i],statisticsContext[i],context.getContextType().getId(),statistics[i],true);
+				
+				
+			}
 			for (int i= 0; i < temp.length; i++) {
 				Template template= temp[i];
 				try {
@@ -278,12 +281,20 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 					matches.add(createProposal(template, context, (IRegion) region, getRelevance(template, prefix)));
 				
 			}
+			
+			 triggerNext=false;
+			}
+
+			
+			
+			
 
 			Collections.sort(matches, fgProposalComparator);
 			
 			
 			ICompletionProposal[] pro=(ICompletionProposal[])matches.toArray(new ICompletionProposal[matches.size()]);
 		    
+			 triggerNext=true;
 		   
 			return pro;
 		  

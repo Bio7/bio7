@@ -104,13 +104,13 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 		reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
 		reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
 
-		dr = new DefaultDamagerRepairer(Bio7REditorPlugin.getDefault().getRPartitionScanner());
+		/*dr = new DefaultDamagerRepairer(Bio7REditorPlugin.getDefault().getRPartitionScanner());
 		reconciler.setDamager(dr, RPartitionScanner.R_MULTILINE_COMMENT);
 		reconciler.setRepairer(dr, RPartitionScanner.R_MULTILINE_COMMENT);
 
 		dr = new DefaultDamagerRepairer(new SingleTokenScanner(new TextAttribute(provider.getColor(RColorProvider.MULTI_LINE_COMMENT))));
 		reconciler.setDamager(dr, RPartitionScanner.R_MULTILINE_COMMENT);
-		reconciler.setRepairer(dr, RPartitionScanner.R_MULTILINE_COMMENT);
+		reconciler.setRepairer(dr, RPartitionScanner.R_MULTILINE_COMMENT);*/
 
 		return reconciler;
 	}

@@ -17,12 +17,14 @@ import javafx.beans.value.ObservableValue;
 import javafx.embed.swing.JFXPanel;
 import javafx.embed.swt.FXCanvas;
 import javafx.event.EventHandler;
+import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
 import net.htmlparser.jericho.Source;
 import net.htmlparser.jericho.SourceFormatter;
 
@@ -47,9 +49,11 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.IStorageEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -58,11 +62,13 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
+
 import com.eco.bio7.scenebuilder.editor.SkeletonBuffer.FORMAT_TYPE;
 import com.eco.bio7.scenebuilder.editor.SkeletonBuffer.TEXT_TYPE;
 import com.eco.bio7.scenebuilder.xmleditor.XMLEditor;
 import com.oracle.javafx.scenebuilder.kit.editor.EditorController;
 import com.oracle.javafx.scenebuilder.kit.editor.panel.content.ContentPanelController;
+import com.oracle.javafx.scenebuilder.kit.editor.panel.css.CssPanelController;
 
 /**
  * An example showing how to create a multi-page editor. This example has 3
@@ -400,6 +406,47 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 		if (!(editorInput instanceof IFileEditorInput))
 			throw new PartInitException("Invalid Input: Must be IFileEditorInput");
 		super.init(site, editorInput);
+		
+		
+		site.getWorkbenchWindow().getPartService().addPartListener(new IPartListener2() {
+
+			@Override
+			public void partActivated(IWorkbenchPartReference partRef) { //
+				
+               System.out.println("activated");
+			}
+			
+
+			public void partBroughtToTop(IWorkbenchPartReference partRef) { // TODO
+				
+			}
+
+			public void partClosed(IWorkbenchPartReference partRef) { // TODO
+				
+			}
+
+			public void partDeactivated(IWorkbenchPartReference partRef) { // TODO //
+
+			}
+
+			@Override
+			public void partOpened(IWorkbenchPartReference partRef) {
+				;
+			}
+
+			public void partHidden(IWorkbenchPartReference partRef) { // TODO
+
+			}
+
+			public void partVisible(IWorkbenchPartReference partRef) { // TODO
+
+			}
+
+			public void partInputChanged(IWorkbenchPartReference partRef) { // TODO
+
+			}
+
+		});
 	}
 
 	/*
