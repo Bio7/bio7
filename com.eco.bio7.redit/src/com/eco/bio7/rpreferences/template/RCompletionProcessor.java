@@ -262,7 +262,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 			}
 			
 			/*Proposals from List!*/
-			if(triggerNext){
+			//if(triggerNext){
 			Template[] temp=new Template[statistics.length];
 			
 			for (int i = 0; i < temp.length; i++) {
@@ -280,9 +280,9 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 				if (template.matches(prefix, context.getContextType().getId()))
 					matches.add(createProposal(template, context, (IRegion) region, getRelevance(template, prefix)));
 				
-			}
+			//}
 			
-			 triggerNext=false;
+			// triggerNext=false;
 			}
 
 			

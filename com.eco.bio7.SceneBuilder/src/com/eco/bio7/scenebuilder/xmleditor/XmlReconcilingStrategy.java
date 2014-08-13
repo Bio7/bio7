@@ -14,8 +14,9 @@ import org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
-import com.oracle.javafx.scenebuilder.kit.editor.EditorController;
 
+import com.eco.bio7.scenebuilder.editor.MultiPageEditor;
+import com.oracle.javafx.scenebuilder.kit.editor.EditorController;
 
 public class XmlReconcilingStrategy implements IReconcilingStrategy, IReconcilingStrategyExtension {
 
@@ -23,6 +24,7 @@ public class XmlReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 	// private IDocument doc;
 	private EditorController editorController;
 	private FXCanvas guiCanvas;
+
 	/**
 	 * How long the reconciler will wait for further text changes before
 	 * reconciling
@@ -35,40 +37,47 @@ public class XmlReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
 	/* Update the editor view! */
 	private void doReconcile() {
-        if(xmlEditor!=null){
-		editorController = xmlEditor.getController();
-		guiCanvas = xmlEditor.getGuiCanvas();
-		// doc = xmlEditor.getDoc();
-		if (editorController != null) {
-			Platform.runLater(new Runnable() {
+		if (xmlEditor != null) {
+           /*Only reconcile if the input comes from the XML editor!*/
+			if (xmlEditor.doReconcile) {
+				xmlEditor.doReconcile=true;
+				System.out.println("reconcile!!!");
+				editorController = xmlEditor.getController();
+				guiCanvas = xmlEditor.getGuiCanvas();
+				// doc = xmlEditor.getDoc();
+				if (editorController != null) {
+					Platform.runLater(new Runnable() {
 
-				@Override
-				public void run() {
-
-					Display display = PlatformUI.getWorkbench().getDisplay();
-					display.syncExec(new Runnable() {
+						@Override
 						public void run() {
 
-							IDocumentProvider dp = xmlEditor.getDocumentProvider();
-							final IDocument doc = dp.getDocument(xmlEditor.getEditorInput());
+							Display display = PlatformUI.getWorkbench().getDisplay();
+							display.syncExec(new Runnable() {
+								public void run() {
 
-							try {
-								editorController.setFxmlText(doc.get());
-							} catch (IOException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
+									IDocumentProvider dp = xmlEditor.getDocumentProvider();
+									final IDocument doc = dp.getDocument(xmlEditor.getEditorInput());
 
-							guiCanvas.redraw();
-							//System.out.println("changed!");
+									try {
+
+										editorController.setFxmlText(doc.get());
+									} catch (IOException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+
+									guiCanvas.redraw();
+									// System.out.println("changed!");
+								}
+							});
+
 						}
 					});
-
 				}
-			});
+			}
+			
 		}
-        }
-
+		
 	}
 
 	/*
@@ -79,7 +88,7 @@ public class XmlReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 	 * eclipse.jface.text.IRegion)
 	 */
 	public void reconcile(IRegion partition) {
-		 doReconcile();
+		doReconcile();
 
 	}
 

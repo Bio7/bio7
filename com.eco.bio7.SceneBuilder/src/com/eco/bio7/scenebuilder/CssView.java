@@ -57,15 +57,15 @@ public class CssView extends ViewPart implements ILinkedWithEditorView {
 		});
 
 		// getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
-		linkWithEditorAction = new Action("Link with Editor", IAction.AS_CHECK_BOX) {
+		/*linkWithEditorAction = new Action("Link with Editor", IAction.AS_CHECK_BOX) {
 			@Override
 			public void run() {
 				toggleLinking(isChecked());
 			}
-		};
+		};*/
 
 		getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
-		getViewSite().getActionBars().getToolBarManager().add(linkWithEditorAction);
+		//getViewSite().getActionBars().getToolBarManager().add(linkWithEditorAction);
 		getSite().getPage().addPartListener(linkWithEditorPartListener);
 		getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
 

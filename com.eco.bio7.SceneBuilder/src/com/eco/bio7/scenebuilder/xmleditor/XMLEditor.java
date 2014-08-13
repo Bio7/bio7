@@ -13,6 +13,7 @@ public class XMLEditor extends TextEditor {
 	private EditorController controller;
 	private FXCanvas guiCanvas;
 	protected IDocument doc;
+	public boolean doReconcile=true;
 
 	public XMLEditor(EditorController editorController, FXCanvas canvas) {
 		super();

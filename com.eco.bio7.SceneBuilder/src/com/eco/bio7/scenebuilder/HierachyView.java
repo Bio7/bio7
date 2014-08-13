@@ -56,14 +56,14 @@ public class HierachyView extends ViewPart implements ILinkedWithEditorView {
 			}
 		});
 
-		linkWithEditorAction = new Action("Link with Editor", IAction.AS_CHECK_BOX) {
+		/*linkWithEditorAction = new Action("Link with Editor", IAction.AS_CHECK_BOX) {
 			@Override
 			public void run() {
 				toggleLinking(isChecked());
 			}
-		};
+		};*/
 		// linkWithEditorAction.setImageDescriptor(getImageDescriptor());
-		getViewSite().getActionBars().getToolBarManager().add(linkWithEditorAction);
+		//getViewSite().getActionBars().getToolBarManager().add(linkWithEditorAction);
 		getSite().getPage().addPartListener(linkWithEditorPartListener);
 		getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
 	}
