@@ -37,11 +37,12 @@ public class XmlReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
 	/* Update the editor view! */
 	private void doReconcile() {
+		System.out.println("changed! from reconcile");
 		if (xmlEditor != null) {
            /*Only reconcile if the input comes from the XML editor!*/
-			if (xmlEditor.doReconcile) {
-				xmlEditor.doReconcile=true;
-				System.out.println("reconcile!!!");
+			if (xmlEditor.doReconcile==true) {
+				
+				
 				editorController = xmlEditor.getController();
 				guiCanvas = xmlEditor.getGuiCanvas();
 				// doc = xmlEditor.getDoc();
@@ -65,9 +66,9 @@ public class XmlReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 										// TODO Auto-generated catch block
 										e.printStackTrace();
 									}
-
+									
 									guiCanvas.redraw();
-									// System.out.println("changed!");
+									
 								}
 							});
 
@@ -75,6 +76,7 @@ public class XmlReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 					});
 				}
 			}
+			xmlEditor.doReconcile=true;
 			
 		}
 		

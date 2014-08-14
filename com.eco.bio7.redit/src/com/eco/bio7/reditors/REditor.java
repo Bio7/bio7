@@ -254,9 +254,11 @@ public class REditor extends TextEditor {
 									// contentOutlineViewer.expandAll();
 									// System.out.println(lineNumber+1);
 									TreeItem treeItem = null;
+									if(contentOutlineViewer.getTree()!=null){
 									if(contentOutlineViewer.getTree().getItem(0).isDisposed()==false){
 									 treeItem = contentOutlineViewer.getTree().getItem(0);
 									 walkTreeLineNumber(treeItem, lineNumber + 1);
+									}
 									}
 
 									
