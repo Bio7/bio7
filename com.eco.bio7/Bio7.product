@@ -198,4 +198,9 @@ http://bio7.org
    </features>
 
 
+   <repositories>
+      <repository location="http://download.eclipse.org/eclipse/updates/4.4" enabled="true" />
+      <repository location="http://download.eclipse.org/releases/luna" enabled="true" />
+   </repositories>
+
 </product>

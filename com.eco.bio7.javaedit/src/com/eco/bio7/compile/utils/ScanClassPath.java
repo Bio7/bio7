@@ -14,6 +14,7 @@ package com.eco.bio7.compile.utils;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
@@ -41,10 +42,14 @@ public class ScanClassPath {
 		 */
 		IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
 		String[] bundles = new String[] { "com.eco.bio7", "com.eco.bio7.libs", "com.eco.bio7.javaedit", "com.eco.bio7.image", "com.eco.bio7.WorldWind", "com.eco.bio7.physics",
-				"org.eclipse.ui.workbench", "org.eclipse.core.commands", "com.eco.bio7.scenebuilder", "com.eco.bio7.browser", "org.eclipse.swt", "org.eclipse.swt.win32.win32.x86_64",
-				"org.eclipse.draw2d" };// "org.eclipse.ui.workbench","org.eclipse.core.commands"
+				"org.eclipse.ui.workbench", "org.eclipse.core.commands", "com.eco.bio7.scenebuilder", "com.eco.bio7.browser" };// "org.eclipse.ui.workbench","org.eclipse.core.commands"
+
+		String[] bundlesEclipse = new String[] { "org.eclipse.swt", "org.eclipse.swt.win32.win32.x86_64", "org.eclipse.draw2d", "org.eclipse.equinox.registry", "org.eclipse.equinox.common" };
 		ArrayList<String> bundlePaths = new ArrayList<String>();
 		StringBuffer buf = new StringBuffer();
+
+		
+
 		for (int i = 0; i < bundles.length; i++) {
 			Bundle bundle = Platform.getBundle(bundles[i]);
 
@@ -106,6 +111,26 @@ public class ScanClassPath {
 			 */
 
 		}
+		
+		/* Here we add the required Eclipse *.jars! */
+		for (int i = 0; i < bundlesEclipse.length; i++) {
+			Bundle bundle = Platform.getBundle(bundlesEclipse[i]);
+			String loc = bundle.getLocation().substring(15);
+			//System.out.println("loc: " + loc);
+			/*Eclipse PDE and exported RCP paths are different (absolute vs. relative)!*/
+			if (loc.startsWith("/")) {
+				loc = loc.substring(1);
+			}
+			java.nio.file.Path path;
+            /*Calculate an absolute path to the resource. Exported RCP has a relative path!*/
+			path = Paths.get(loc);
+
+			//System.out.println("path:" + File.pathSeparator + path.toAbsolutePath().toString());
+			buf.append(File.pathSeparator + path.toAbsolutePath().toString());
+
+			// System.out.println(File.pathSeparator +loc);
+
+		}
 
 		// System.out.println(Platform.getInstanceLocation().getURL().getPath());
 		// System.out.println(Platform.getInstallLocation().getURL().getPath());
@@ -113,9 +138,15 @@ public class ScanClassPath {
 		buf.append(File.pathSeparator + bundlePaths.get(2) + "/bin");
 		buf.append(File.pathSeparator + bundlePaths.get(3) + "/bin");
 		buf.append(File.pathSeparator + bundlePaths.get(4) + "/bin");
-		buf.append(File.pathSeparator + bundlePaths.get(10));
-		buf.append(File.pathSeparator + bundlePaths.get(11));
-		buf.append(File.pathSeparator + bundlePaths.get(12));
+		/*
+		 * buf.append(File.pathSeparator + bundlePaths.get(10));
+		 * buf.append(File.pathSeparator + bundlePaths.get(11));
+		 * buf.append(File.pathSeparator + bundlePaths.get(12));
+		 * buf.append(File.pathSeparator + bundlePaths.get(13));
+		 * System.out.println(File.pathSeparator + bundlePaths.get(13));
+		 * buf.append(File.pathSeparator + bundlePaths.get(14));
+		 * System.out.println(File.pathSeparator + bundlePaths.get(14));
+		 */
 		// buf.append(File.pathSeparator+Platform.getInstallLocation().getURL().getPath()+"plugins/org.eclipse.ui.workbench_3.7.0.I20110519-0100.jar");
 		// buf.append(File.pathSeparator+Platform.getInstallLocation().getURL().getPath()+"/plugins/org.eclipse.core.commands_3.6.0.I20110111-0800.jar");
 		// System.out.println(buf.toString());
@@ -145,11 +176,15 @@ public class ScanClassPath {
 		 */
 		IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
 		String[] bundles = new String[] { "com.eco.bio7", "com.eco.bio7.libs", "com.eco.bio7.javaedit", "com.eco.bio7.image", "com.eco.bio7.WorldWind", "com.eco.bio7.physics",
-				"org.eclipse.ui.workbench", "com.eco.bio7.scenebuilder", "org.eclipse.core.commands", "com.eco.bio7.browser", "org.eclipse.swt", "org.eclipse.swt.win32.win32.x86_64",
-				"org.eclipse.ui.workbench", "org.eclipse.draw2d", "org.eclipse.ui" };// "org.eclipse.ui.workbench","org.eclipse.core.commands"
+				"com.eco.bio7.scenebuilder", "com.eco.bio7.browser" };// "org.eclipse.ui.workbench","org.eclipse.core.commands"
+
+		String[] bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui", "org.eclipse.swt", "org.eclipse.swt.win32.win32.x86_64",
+				"org.eclipse.draw2d", "org.eclipse.equinox.registry", "org.eclipse.equinox.common" };
+
 		ArrayList<String> bundlePaths = new ArrayList<String>();
 		ArrayList<String> buf = new ArrayList<String>();
 		ArrayList<IClasspathEntry> classPathEntry = new ArrayList<IClasspathEntry>();
+
 		for (int i = 0; i < bundles.length; i++) {
 			Bundle bundle = Platform.getBundle(bundles[i]);
 
@@ -163,7 +198,7 @@ public class ScanClassPath {
 			}
 			pathBundle = fileUrl.getFile();
 			bundlePaths.add(File.pathSeparator + pathBundle);
-
+			System.out.println("2:" + File.pathSeparator + pathBundle);
 			ManifestElement[] elements = null;
 			String requires = (String) bundle.getHeaders().get(Constants.BUNDLE_CLASSPATH);
 			// String
@@ -196,7 +231,7 @@ public class ScanClassPath {
 			}
 			if (elements != null) {
 				/* We only parse the *. jar libs! */
-				if (i == 0 | i == 1 || i == 5 || i == 7) {
+				if (i == 0 | i == 1 || i == 5 || i == 6) {
 					for (int u = 0; u < elements.length; u++) {
 
 						if (i == 0 && u > 1) {
@@ -204,10 +239,11 @@ public class ScanClassPath {
 							// System.out.println(File.pathSeparator +
 							// bundlePaths.get(i) + elements[u].getValue());
 						}
-
-						else if (i == 7) {
+						/* We do not need the external jfxswt.jar listed here! */
+						else if (i == 6) {
 
 							String lib = File.pathSeparator + bundlePaths.get(i) + elements[u].getValue();
+							System.out.println(lib);
 							String external = "external";
 							if (lib.toLowerCase().contains(external.toLowerCase()) == false) {
 								// System.out.println(lib);
@@ -225,15 +261,32 @@ public class ScanClassPath {
 			}
 
 		}
+
+		/* Here we add the required Eclipse *.jars! */
+		for (int i = 0; i < bundlesEclipse.length; i++) {
+			Bundle bundle = Platform.getBundle(bundlesEclipse[i]);
+			String loc = bundle.getLocation().substring(15);
+			//System.out.println("loc: " + loc);
+			/*Eclipse PDE and exported RCP paths are different (absolute vs. relative)!*/
+			if (loc.startsWith("/")) {
+				loc = loc.substring(1);
+			}
+			java.nio.file.Path path;
+            /*Calculate an absolute path to the resource. Exported RCP has a relative path!*/
+			path = Paths.get(loc);
+
+			//System.out.println("path:" + File.pathSeparator + path.toAbsolutePath().toString());
+			buf.add(File.pathSeparator + path.toAbsolutePath().toString());
+
+			// System.out.println(File.pathSeparator +loc);
+
+		}
 		/* We don't need the *.jar libs for this plugins! */
 		buf.add(File.pathSeparator + bundlePaths.get(0) + "/bin");
 		int temp = buf.size() - 1;// We need to store the location in the list!
 		buf.add(File.pathSeparator + bundlePaths.get(2) + "/bin");
 		buf.add(File.pathSeparator + bundlePaths.get(3) + "/bin");
 		buf.add(File.pathSeparator + bundlePaths.get(4) + "/bin");
-		buf.add(File.pathSeparator + bundlePaths.get(11));
-		buf.add(File.pathSeparator + bundlePaths.get(12));
-		buf.add(File.pathSeparator + bundlePaths.get(13));
 
 		/*
 		 * Here we add the results to the classpath. Src entries are created,

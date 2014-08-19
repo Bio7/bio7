@@ -471,7 +471,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		IPreferenceStore storeJava = Bio7EditorPlugin.getDefault().getPreferenceStore();
 
 		storeJava.setDefault("classbody", false);
-		storeJava.setDefault("compiler_version", 1.7);
+		storeJava.setDefault("compiler_version", 1.8);
 		storeJava.setDefault("compiler_debug", false);
 		storeJava.setDefault("compiler_verbose", false);
 		storeJava.setDefault("compiler_warnings", false);
