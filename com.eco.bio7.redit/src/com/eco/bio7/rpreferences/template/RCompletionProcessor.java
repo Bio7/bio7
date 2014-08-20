@@ -33,152 +33,200 @@ import org.eclipse.swt.graphics.Image;
 
 import com.eco.bio7.reditors.TemplateEditorUI;
 
-
 /**
  * A completion processor for XML templates.
  */
 public class RCompletionProcessor extends TemplateCompletionProcessor {
+
+	private static final Comparator fgProposalComparator = new ProposalComparator();
+
+	private static final String DEFAULT_IMAGE = "$nl$/icons/template.gif"; //$NON-NLS-1$
+
 	
-	private static final Comparator fgProposalComparator= new ProposalComparator();
+
+	public String[] statistics = { 
+			"abbreviate", "abs", "acos","acosh", "addNA", "addTaskCallback", "agrep", "agrepl", "alist", "all", "all.equal", "all.equal.character", "all.equal.default", "all.equal.factor", "all.equal.formula",
+			"all.equal.language", "all.equal.list", "all.equal.numeric", "all.equal.POSIXt", "all.equal.raw", "all.names", "all.vars", "any", "anyDuplicated", "anyDuplicated.array",
+			"anyDuplicated.data.frame", "anyDuplicated.default", "anyDuplicated.matrix", "anyNA", "anyNA.numeric_version", "anyNA.POSIXlt", "aperm", "aperm.default", "aperm.table", "append", "apply",
+			"Arg", "args", "array", "arrayInd", "as.array", "as.array.default", "as.call", "as.character", "as.character.condition", "as.character.Date", "as.character.default", "as.character.error",
+			"as.character.factor", "as.character.hexmode", "as.character.numeric_version", "as.character.octmode", "as.character.POSIXt", "as.character.srcref", "as.complex", "as.data.frame",
+			"as.data.frame.array", "as.data.frame.AsIs", "as.data.frame.character", "as.data.frame.complex", "as.data.frame.data.frame", "as.data.frame.Date", "as.data.frame.default",
+			"as.data.frame.difftime", "as.data.frame.factor", "as.data.frame.integer", "as.data.frame.list", "as.data.frame.logical", "as.data.frame.matrix", "as.data.frame.model.matrix",
+			"as.data.frame.numeric", "as.data.frame.numeric_version", "as.data.frame.ordered", "as.data.frame.POSIXct", "as.data.frame.POSIXlt", "as.data.frame.raw", "as.data.frame.table",
+			"as.data.frame.ts", "as.data.frame.vector", "as.Date", "as.Date.character", "as.Date.date", "as.Date.dates", "as.Date.default", "as.Date.factor", "as.Date.numeric", "as.Date.POSIXct",
+			"as.Date.POSIXlt", "as.difftime", "as.double", "as.double.difftime", "as.double.POSIXlt", "as.environment", "as.expression", "as.expression.default", "as.factor", "as.function",
+			"as.function.default", "as.hexmode", "as.integer", "as.list", "as.list.data.frame", "as.list.Date", "as.list.default", "as.list.environment", "as.list.factor", "as.list.function",
+			"as.list.numeric_version", "as.list.POSIXct", "as.logical", "as.logical.factor", "as.matrix", "as.matrix.data.frame", "as.matrix.default", "as.matrix.noquote", "as.matrix.POSIXlt",
+			"as.name", "as.null", "as.null.default", "as.numeric", "as.numeric_version", "as.octmode", "as.ordered", "as.package_version", "as.pairlist", "as.POSIXct", "as.POSIXct.date",
+			"as.POSIXct.Date", "as.POSIXct.dates", "as.POSIXct.default", "as.POSIXct.numeric", "as.POSIXct.POSIXlt", "as.POSIXlt", "as.POSIXlt.character", "as.POSIXlt.date", "as.POSIXlt.Date",
+			"as.POSIXlt.dates", "as.POSIXlt.default", "as.POSIXlt.factor", "as.POSIXlt.numeric", "as.POSIXlt.POSIXct", "as.qr", "as.raw", "as.single", "as.single.default", "as.symbol", "as.table",
+			"as.table.default", "as.vector", "as.vector.factor", "asin", "asinh", "asNamespace", "asS3", "asS4", "assign", "atan", "atan2", "atanh", "attach", "attachNamespace", "attr",
+			"attr.all.equal", "attr<-", "attributes", "attributes<-", "autoload", "autoloader", "backsolve", "baseenv", "basename", "besselI", "besselJ", "besselK", "besselY", "beta",
+			"bindingIsActive", "bindingIsLocked", "bindtextdomain", "bitwAnd", "bitwNot", "bitwOr", "bitwShiftL", "bitwShiftR", "bitwXor", "body", "body<-", "bquote", "break", "browser",
+			"browserCondition", "browserSetDebug", "browserText", "builtins", "by", "by.data.frame", "by.default", "bzfile", "c", "c.Date", "c.noquote", "c.numeric_version", "c.POSIXct", "c.POSIXlt",
+			"call", "callCC", "capabilities", "casefold", "cat", "cbind", "cbind.data.frame", "ceiling", "char.expand", "character", "charmatch", "charToRaw", "chartr", "check_tzones", "chol",
+			"chol.default", "chol2inv", "choose", "class", "class<-", "clearPushBack", "close", "close.connection", "close.srcfile", "close.srcfilealias", "closeAllConnections", "col", "colMeans",
+			"colnames", "colnames<-", "colSums", "commandArgs", "comment", "comment<-", "complex", "computeRestarts", "conditionCall", "conditionCall.condition", "conditionMessage",
+			"conditionMessage.condition", "conflicts", "Conj", "contributors", "cos", "cosh", "cospi", "crossprod", "Cstack_info", "cummax", "cummin", "cumprod", "cumsum", "cut", "cut.Date",
+			"cut.default", "cut.POSIXt", "data.class", "data.frame", "data.matrix", "date", "debug", "debugonce", "default.stringsAsFactors", "delayedAssign", "deparse", "det", "detach",
+			"determinant", "determinant.matrix", "dget", "diag", "diag<-", "diff", "diff.Date", "diff.default", "diff.POSIXt", "difftime", "digamma", "dim", "dim.data.frame", "dim<-", "dimnames",
+			"dimnames.data.frame", "dimnames<-", "dimnames<-.data.frame", "dir", "dir.create", "dirname", "do.call", "dontCheck", "double", "dput", "dQuote", "drop", "droplevels",
+			"droplevels.data.frame", "droplevels.factor", "dump", "duplicated", "duplicated.array", "duplicated.data.frame", "duplicated.default", "duplicated.matrix", "duplicated.numeric_version",
+			"duplicated.POSIXlt", "dyn.load", "dyn.unload", "eapply", "eigen", "emptyenv", "enc2native", "enc2utf8", "encodeString", "Encoding", "Encoding<-", "enquote", "env.profile", "environment",
+			"environment<-", "environmentIsLocked", "environmentName", "eval", "eval.parent", "evalq", "exists", "exp", "expand.grid", "expm1", "expression", "F", "factor", "factorial", "fifo",
+			"file", "file.access", "file.append", "file.choose", "file.copy", "file.create", "file.exists", "file.info", "file.link", "file.path", "file.remove", "file.rename", "file.show",
+			"file.symlink", "Filter", "Find", "find.package", "findInterval", "findPackageEnv", "findRestart", "floor", "flush", "flush.connection", "for", "force", "formals", "formals<-", "format",
+			"format.AsIs", "format.data.frame", "format.Date", "format.default", "format.difftime", "format.factor", "format.hexmode", "format.info", "format.libraryIQR", "format.numeric_version",
+			"format.octmode", "format.packageInfo", "format.POSIXct", "format.POSIXlt", "format.pval", "format.summaryDefault", "formatC", "formatDL", "forwardsolve", "function", "gamma", "gc",
+			"gc.time", "gcinfo", "gctorture", "gctorture2", "get", "getAllConnections", "getCallingDLL", "getCallingDLLe", "getConnection", "getDLLRegisteredRoutines",
+			"getDLLRegisteredRoutines.character", "getDLLRegisteredRoutines.DLLInfo", "getElement", "geterrmessage", "getExportedValue", "getHook", "getLoadedDLLs", "getNamespace",
+			"getNamespaceExports", "getNamespaceImports", "getNamespaceInfo", "getNamespaceName", "getNamespaceUsers", "getNamespaceVersion", "getNativeSymbolInfo", "getOption", "getRversion",
+			"getSrcLines", "getTaskCallbackNames", "gettext", "gettextf", "getwd", "gl", "globalenv", "gregexpr", "grep", "grepl", "grepRaw", "gsub", "gzcon", "gzfile", "I", "iconv", "iconvlist",
+			"icuSetCollate", "identical", "identity", "if", "ifelse", "Im", "importIntoEnv", "inherits", "integer", "interaction", "interactive", "intersect", "intToBits", "intToUtf8", "inverse.rle",
+			"invisible", "invokeRestart", "invokeRestartInteractively", "is.array", "is.atomic", "is.call", "is.character", "is.complex", "is.data.frame", "is.double", "is.element", "is.environment",
+			"is.expression", "is.factor", "is.finite", "is.function", "is.infinite", "is.integer", "is.language", "is.list", "is.loaded", "is.logical", "is.matrix", "is.na", "is.na.data.frame",
+			"is.na.numeric_version", "is.na.POSIXlt", "is.na<-", "is.na<-.default", "is.na<-.factor", "is.name", "is.nan", "is.null", "is.numeric", "is.numeric.Date", "is.numeric.difftime",
+			"is.numeric.POSIXt", "is.numeric_version", "is.object", "is.ordered", "is.package_version", "is.pairlist", "is.primitive", "is.qr", "is.R", "is.raw", "is.recursive", "is.single",
+			"is.symbol", "is.table", "is.unsorted", "is.vector", "isatty", "isBaseNamespace", "isdebugged", "isIncomplete", "isNamespace", "ISOdate", "ISOdatetime", "isOpen", "isRestart", "isS4",
+			"isSeekable", "isSymmetric", "isSymmetric.matrix", "isTRUE", "jitter", "julian", "julian.Date", "julian.POSIXt", "kappa", "kappa.default", "kappa.lm", "kappa.qr", "kronecker",
+			"l10n_info", "La.svd", "La_version", "labels", "labels.default", "lapply", "lazyLoad", "lazyLoadDBexec", "lazyLoadDBfetch", "lbeta", "lchoose", "length", "length.POSIXlt", "length<-",
+			"length<-.factor", "letters", "LETTERS", "levels", "levels.default", "levels<-", "levels<-.factor", "lfactorial", "lgamma", "library", "library.dynam", "library.dynam.unload", "licence",
+			"license", "list", "list.dirs", "list.files", "list2env", "load", "loadedNamespaces", "loadingNamespaceInfo", "loadNamespace", "local", "lockBinding", "lockEnvironment", "log", "log10",
+			"log1p", "log2", "logb", "logical", "lower.tri", "ls", "make.names", "make.unique", "makeActiveBinding", "Map", "mapply", "margin.table", "mat.or.vec", "match", "match.arg", "match.call",
+			"match.fun", "Math.data.frame", "Math.Date", "Math.difftime", "Math.factor", "Math.POSIXt", "matrix", "max", "max.col", "mean", "mean.Date", "mean.default", "mean.difftime",
+			"mean.POSIXct", "mean.POSIXlt", "mem.limits", "memCompress", "memDecompress", "memory.profile", "merge", "merge.data.frame", "merge.default", "message", "mget", "min", "missing", "Mod",
+			"mode", "mode<-", "month.abb", "month.name", "months", "months.Date", "months.POSIXt", "mostattributes<-", "names", "names.POSIXlt", "names<-", "names<-.POSIXlt", "namespaceExport",
+			"namespaceImport", "namespaceImportClasses", "namespaceImportFrom", "namespaceImportMethods", "nargs", "nchar", "ncol", "NCOL", "Negate", "new.env", "next", "NextMethod", "ngettext",
+			"nlevels", "noquote", "norm", "normalizePath", "nrow", "NROW", "numeric", "numeric_version", "nzchar", "objects", "oldClass", "oldClass<-", "OlsonNames", "on.exit", "open",
+			"open.connection", "open.srcfile", "open.srcfilealias", "open.srcfilecopy", "Ops.data.frame", "Ops.Date", "Ops.difftime", "Ops.factor", "Ops.numeric_version", "Ops.ordered", "Ops.POSIXt",
+			"options", "order", "ordered", "outer", "package_version", "packageEvent", "packageHasNamespace", "packageStartupMessage", "packBits", "pairlist", "parent.env", "parent.env<-",
+			"parent.frame", "parse", "parseNamespaceFile", "paste", "paste0", "path.expand", "path.package", "pi", "pipe", "pmatch", "pmax", "pmax.int", "pmin", "pmin.int", "polyroot", "pos.to.env",
+			"Position", "pretty", "pretty.default", "prettyNum", "print", "print.AsIs", "print.by", "print.condition", "print.connection", "print.data.frame", "print.Date", "print.default",
+			"print.difftime", "print.DLLInfo", "print.DLLInfoList", "print.DLLRegisteredRoutines", "print.factor", "print.function", "print.hexmode", "print.libraryIQR", "print.listof",
+			"print.NativeRoutineList", "print.noquote", "print.numeric_version", "print.octmode", "print.packageInfo", "print.POSIXct", "print.POSIXlt", "print.proc_time", "print.restart",
+			"print.rle", "print.simple.list", "print.srcfile", "print.srcref", "print.summary.table", "print.summaryDefault", "print.table", "print.warnings", "prmatrix", "proc.time", "prod",
+			"prop.table", "provideDimnames", "psigamma", "pushBack", "pushBackLength", "q", "qr", "qr.coef", "qr.default", "qr.fitted", "qr.Q", "qr.qty", "qr.qy", "qr.R", "qr.resid", "qr.solve",
+			"qr.X", "quarters", "quarters.Date", "quarters.POSIXt", "quit", "quote", "R.home", "R.version", "R.Version", "R.version.string", "R_system_version", "range", "range.default", "rank",
+			"rapply", "raw", "rawConnection", "rawConnectionValue", "rawShift", "rawToBits", "rawToChar", "rbind", "rbind.data.frame", "rcond", "Re", "read.dcf", "readBin", "readChar", "readline",
+			"readLines", "readRDS", "readRenviron", "Recall", "Reduce", "reg.finalizer", "regexec", "regexpr", "registerS3method", "registerS3methods", "regmatches", "regmatches<-", "remove",
+			"removeTaskCallback", "rep", "rep.Date", "rep.factor", "rep.int", "rep.numeric_version", "rep.POSIXct", "rep.POSIXlt", "rep_len", "repeat", "replace", "replicate", "require",
+			"requireNamespace", "restartDescription", "restartFormals", "retracemem", "return", "rev", "rev.default", "rle", "rm", "RNGkind", "RNGversion", "round", "round.Date", "round.POSIXt",
+			"row", "row.names", "row.names.data.frame", "row.names.default", "row.names<-", "row.names<-.data.frame", "row.names<-.default", "rowMeans", "rownames", "rownames<-", "rowsum",
+			"rowsum.data.frame", "rowsum.default", "rowSums", "sample", "sample.int", "sapply", "save", "save.image", "saveRDS", "scale", "scale.default", "scan", "search", "searchpaths", "seek",
+			"seek.connection", "seq", "seq.Date", "seq.default", "seq.int", "seq.POSIXt", "seq_along", "seq_len", "sequence", "serialize", "set.seed", "setdiff", "setequal", "setHook",
+			"setNamespaceInfo", "setSessionTimeLimit", "setTimeLimit", "setwd", "shell", "shell.exec", "showConnections", "shQuote", "sign", "signalCondition", "signif", "simpleCondition",
+			"simpleError", "simpleMessage", "simpleWarning", "simplify2array", "sin", "single", "sinh", "sink", "sink.number", "sinpi", "slice.index", "socketConnection", "socketSelect", "solve",
+			"solve.default", "solve.qr", "sort", "sort.default", "sort.int", "sort.list", "sort.POSIXlt", "source", "split", "split.data.frame", "split.Date", "split.default", "split.POSIXct",
+			"split<-", "split<-.data.frame", "split<-.default", "sprintf", "sqrt", "sQuote", "srcfile", "srcfilealias", "srcfilecopy", "srcref", "standardGeneric", "stderr", "stdin", "stdout",
+			"stop", "stopifnot", "storage.mode", "storage.mode<-", "strftime", "strptime", "strsplit", "strtoi", "strtrim", "structure", "strwrap", "sub", "subset", "subset.data.frame",
+			"subset.default", "subset.matrix", "substitute", "substr", "substr<-", "substring", "substring<-", "sum", "summary", "summary.connection", "summary.data.frame", "Summary.data.frame",
+			"summary.Date", "Summary.Date", "summary.default", "Summary.difftime", "summary.factor", "Summary.factor", "summary.matrix", "Summary.numeric_version", "Summary.ordered",
+			"summary.POSIXct", "Summary.POSIXct", "summary.POSIXlt", "Summary.POSIXlt", "summary.proc_time", "summary.srcfile", "summary.srcref", "summary.table", "suppressMessages",
+			"suppressPackageStartupMessages", "suppressWarnings", "svd", "sweep", "switch", "sys.call", "sys.calls", "Sys.chmod", "Sys.Date", "sys.frame", "sys.frames", "sys.function", "Sys.getenv",
+			"Sys.getlocale", "Sys.getpid", "Sys.glob", "Sys.info", "Sys.junction", "sys.load.image", "Sys.localeconv", "sys.nframe", "sys.on.exit", "sys.parent", "sys.parents", "Sys.readlink",
+			"sys.save.image", "Sys.setenv", "Sys.setFileTime", "Sys.setlocale", "Sys.sleep", "sys.source", "sys.status", "Sys.time", "Sys.timezone", "Sys.umask", "Sys.unsetenv", "Sys.which",
+			"system", "system.file", "system.time", "system2", "t", "T", "t.data.frame", "t.default", "table", "tabulate", "tan", "tanh", "tanpi", "tapply", "taskCallbackManager", "tcrossprod",
+			"tempdir", "tempfile", "testPlatformEquivalence", "textConnection", "textConnectionValue", "tolower", "topenv", "toString", "toString.default", "toupper", "trace", "traceback",
+			"tracemem", "tracingState", "transform", "transform.data.frame", "transform.default", "trigamma", "trunc", "trunc.Date", "trunc.POSIXt", "truncate", "truncate.connection", "try",
+			"tryCatch", "typeof", "unclass", "undebug", "union", "unique", "unique.array", "unique.data.frame", "unique.default", "unique.matrix", "unique.numeric_version", "unique.POSIXlt", "units",
+			"units.difftime", "units<-", "units<-.difftime", "unix.time", "unlink", "unlist", "unloadNamespace", "unlockBinding", "unname", "unserialize", "unsplit", "untrace", "untracemem", "unz",
+			"upper.tri", "url", "UseMethod", "utf8ToInt", "vapply", "vector", "Vectorize", "version", "warning", "warnings", "weekdays", "weekdays.Date", "weekdays.POSIXt", "which", "which.max",
+			"which.min", "while", "with", "with.default", "withCallingHandlers", "within", "within.data.frame", "within.list", "withRestarts", "withVisible", "write", "write.dcf", "writeBin",
+			"writeChar", "writeLines", "xor", "xor.hexmode", "xor.octmode", "xpdrows.data.frame", "xtfrm", "xtfrm.AsIs", "xtfrm.Date", "xtfrm.default", "xtfrm.difftime", "xtfrm.factor",
+			"xtfrm.numeric_version", "xtfrm.POSIXct", "xtfrm.POSIXlt", "xtfrm.Surv", "xzfile", "zapsmall" };
+
+	public String[] statisticsContext = {
+			"abbreviate", "abs", "acos", "acosh", "addNA", "addTaskCallback", "agrep", "agrepl", "alist", "all", "all.equal", "all.equal.character", "all.equal.default", "all.equal.factor",
+			"all.equal.formula", "all.equal.language", "all.equal.list", "all.equal.numeric", "all.equal.POSIXt", "all.equal.raw", "all.names", "all.vars", "any", "anyDuplicated",
+			"anyDuplicated.array", "anyDuplicated.data.frame", "anyDuplicated.default", "anyDuplicated.matrix", "anyNA", "anyNA.numeric_version", "anyNA.POSIXlt", "aperm", "aperm.default",
+			"aperm.table", "append", "apply", "Arg", "args", "array", "arrayInd", "as.array", "as.array.default", "as.call", "as.character", "as.character.condition", "as.character.Date",
+			"as.character.default", "as.character.error", "as.character.factor", "as.character.hexmode", "as.character.numeric_version", "as.character.octmode", "as.character.POSIXt",
+			"as.character.srcref", "as.complex", "as.data.frame", "as.data.frame.array", "as.data.frame.AsIs", "as.data.frame.character", "as.data.frame.complex", "as.data.frame.data.frame",
+			"as.data.frame.Date", "as.data.frame.default", "as.data.frame.difftime", "as.data.frame.factor", "as.data.frame.integer", "as.data.frame.list", "as.data.frame.logical",
+			"as.data.frame.matrix", "as.data.frame.model.matrix", "as.data.frame.numeric", "as.data.frame.numeric_version", "as.data.frame.ordered", "as.data.frame.POSIXct", "as.data.frame.POSIXlt",
+			"as.data.frame.raw", "as.data.frame.table", "as.data.frame.ts", "as.data.frame.vector", "as.Date", "as.Date.character", "as.Date.date", "as.Date.dates", "as.Date.default",
+			"as.Date.factor", "as.Date.numeric", "as.Date.POSIXct", "as.Date.POSIXlt", "as.difftime", "as.double", "as.double.difftime", "as.double.POSIXlt", "as.environment", "as.expression",
+			"as.expression.default", "as.factor", "as.function", "as.function.default", "as.hexmode", "as.integer", "as.list", "as.list.data.frame", "as.list.Date", "as.list.default",
+			"as.list.environment", "as.list.factor", "as.list.function", "as.list.numeric_version", "as.list.POSIXct", "as.logical", "as.logical.factor", "as.matrix", "as.matrix.data.frame",
+			"as.matrix.default", "as.matrix.noquote", "as.matrix.POSIXlt", "as.name", "as.null", "as.null.default", "as.numeric", "as.numeric_version", "as.octmode", "as.ordered",
+			"as.package_version", "as.pairlist", "as.POSIXct", "as.POSIXct.date", "as.POSIXct.Date", "as.POSIXct.dates", "as.POSIXct.default", "as.POSIXct.numeric", "as.POSIXct.POSIXlt",
+			"as.POSIXlt", "as.POSIXlt.character", "as.POSIXlt.date", "as.POSIXlt.Date", "as.POSIXlt.dates", "as.POSIXlt.default", "as.POSIXlt.factor", "as.POSIXlt.numeric", "as.POSIXlt.POSIXct",
+			"as.qr", "as.raw", "as.single", "as.single.default", "as.symbol", "as.table", "as.table.default", "as.vector", "as.vector.factor", "asin", "asinh", "asNamespace", "asS3", "asS4",
+			"assign", "atan", "atan2", "atanh", "attach", "attachNamespace", "attr", "attr.all.equal", "attr<-", "attributes", "attributes<-", "autoload", "autoloader", "backsolve", "baseenv",
+			"basename", "besselI", "besselJ", "besselK", "besselY", "beta", "bindingIsActive", "bindingIsLocked", "bindtextdomain", "bitwAnd", "bitwNot", "bitwOr", "bitwShiftL", "bitwShiftR",
+			"bitwXor", "body", "body<-", "bquote", "break", "browser", "browserCondition", "browserSetDebug", "browserText", "builtins", "by", "by.data.frame", "by.default", "bzfile", "c", "c.Date",
+			"c.noquote", "c.numeric_version", "c.POSIXct", "c.POSIXlt", "call", "callCC", "capabilities", "casefold", "cat", "cbind", "cbind.data.frame", "ceiling", "char.expand", "character",
+			"charmatch", "charToRaw", "chartr", "check_tzones", "chol", "chol.default", "chol2inv", "choose", "class", "class<-", "clearPushBack", "close", "close.connection", "close.srcfile",
+			"close.srcfilealias", "closeAllConnections", "col", "colMeans", "colnames", "colnames<-", "colSums", "commandArgs", "comment", "comment<-", "complex", "computeRestarts", "conditionCall",
+			"conditionCall.condition", "conditionMessage", "conditionMessage.condition", "conflicts", "Conj", "contributors", "cos", "cosh", "cospi", "crossprod", "Cstack_info", "cummax", "cummin",
+			"cumprod", "cumsum", "cut", "cut.Date", "cut.default", "cut.POSIXt", "data.class", "data.frame", "data.matrix", "date", "debug", "debugonce", "default.stringsAsFactors", "delayedAssign",
+			"deparse", "det", "detach", "determinant", "determinant.matrix", "dget", "diag", "diag<-", "diff", "diff.Date", "diff.default", "diff.POSIXt", "difftime", "digamma", "dim",
+			"dim.data.frame", "dim<-", "dimnames", "dimnames.data.frame", "dimnames<-", "dimnames<-.data.frame", "dir", "dir.create", "dirname", "do.call", "dontCheck", "double", "dput", "dQuote",
+			"drop", "droplevels", "droplevels.data.frame", "droplevels.factor", "dump", "duplicated", "duplicated.array", "duplicated.data.frame", "duplicated.default", "duplicated.matrix",
+			"duplicated.numeric_version", "duplicated.POSIXlt", "dyn.load", "dyn.unload", "eapply", "eigen", "emptyenv", "enc2native", "enc2utf8", "encodeString", "Encoding", "Encoding<-", "enquote",
+			"env.profile", "environment", "environment<-", "environmentIsLocked", "environmentName", "eval", "eval.parent", "evalq", "exists", "exp", "expand.grid", "expm1", "expression", "F",
+			"factor", "factorial", "fifo", "file", "file.access", "file.append", "file.choose", "file.copy", "file.create", "file.exists", "file.info", "file.link", "file.path", "file.remove",
+			"file.rename", "file.show", "file.symlink", "Filter", "Find", "find.package", "findInterval", "findPackageEnv", "findRestart", "floor", "flush", "flush.connection", "for", "force",
+			"formals", "formals<-", "format", "format.AsIs", "format.data.frame", "format.Date", "format.default", "format.difftime", "format.factor", "format.hexmode", "format.info",
+			"format.libraryIQR", "format.numeric_version", "format.octmode", "format.packageInfo", "format.POSIXct", "format.POSIXlt", "format.pval", "format.summaryDefault", "formatC", "formatDL",
+			"forwardsolve", "function", "gamma", "gc", "gc.time", "gcinfo", "gctorture", "gctorture2", "get", "getAllConnections", "getCallingDLL", "getCallingDLLe", "getConnection",
+			"getDLLRegisteredRoutines", "getDLLRegisteredRoutines.character", "getDLLRegisteredRoutines.DLLInfo", "getElement", "geterrmessage", "getExportedValue", "getHook", "getLoadedDLLs",
+			"getNamespace", "getNamespaceExports", "getNamespaceImports", "getNamespaceInfo", "getNamespaceName", "getNamespaceUsers", "getNamespaceVersion", "getNativeSymbolInfo", "getOption",
+			"getRversion", "getSrcLines", "getTaskCallbackNames", "gettext", "gettextf", "getwd", "gl", "globalenv", "gregexpr", "grep", "grepl", "grepRaw", "gsub", "gzcon", "gzfile", "I", "iconv",
+			"iconvlist", "icuSetCollate", "identical", "identity", "if", "ifelse", "Im", "importIntoEnv", "inherits", "integer", "interaction", "interactive", "intersect", "intToBits", "intToUtf8",
+			"inverse.rle", "invisible", "invokeRestart", "invokeRestartInteractively", "is.array", "is.atomic", "is.call", "is.character", "is.complex", "is.data.frame", "is.double", "is.element",
+			"is.environment", "is.expression", "is.factor", "is.finite", "is.function", "is.infinite", "is.integer", "is.language", "is.list", "is.loaded", "is.logical", "is.matrix", "is.na",
+			"is.na.data.frame", "is.na.numeric_version", "is.na.POSIXlt", "is.na<-", "is.na<-.default", "is.na<-.factor", "is.name", "is.nan", "is.null", "is.numeric", "is.numeric.Date",
+			"is.numeric.difftime", "is.numeric.POSIXt", "is.numeric_version", "is.object", "is.ordered", "is.package_version", "is.pairlist", "is.primitive", "is.qr", "is.R", "is.raw",
+			"is.recursive", "is.single", "is.symbol", "is.table", "is.unsorted", "is.vector", "isatty", "isBaseNamespace", "isdebugged", "isIncomplete", "isNamespace", "ISOdate", "ISOdatetime",
+			"isOpen", "isRestart", "isS4", "isSeekable", "isSymmetric", "isSymmetric.matrix", "isTRUE", "jitter", "julian", "julian.Date", "julian.POSIXt", "kappa", "kappa.default", "kappa.lm",
+			"kappa.qr", "kronecker", "l10n_info", "La.svd", "La_version", "labels", "labels.default", "lapply", "lazyLoad", "lazyLoadDBexec", "lazyLoadDBfetch", "lbeta", "lchoose", "length",
+			"length.POSIXlt", "length<-", "length<-.factor", "letters", "LETTERS", "levels", "levels.default", "levels<-", "levels<-.factor", "lfactorial", "lgamma", "library", "library.dynam",
+			"library.dynam.unload", "licence", "license", "list", "list.dirs", "list.files", "list2env", "load", "loadedNamespaces", "loadingNamespaceInfo", "loadNamespace", "local", "lockBinding",
+			"lockEnvironment", "log", "log10", "log1p", "log2", "logb", "logical", "lower.tri", "ls", "make.names", "make.unique", "makeActiveBinding", "Map", "mapply", "margin.table", "mat.or.vec",
+			"match", "match.arg", "match.call", "match.fun", "Math.data.frame", "Math.Date", "Math.difftime", "Math.factor", "Math.POSIXt", "matrix", "max", "max.col", "mean", "mean.Date",
+			"mean.default", "mean.difftime", "mean.POSIXct", "mean.POSIXlt", "mem.limits", "memCompress", "memDecompress", "memory.profile", "merge", "merge.data.frame", "merge.default", "message",
+			"mget", "min", "missing", "Mod", "mode", "mode<-", "month.abb", "month.name", "months", "months.Date", "months.POSIXt", "mostattributes<-", "names", "names.POSIXlt", "names<-",
+			"names<-.POSIXlt", "namespaceExport", "namespaceImport", "namespaceImportClasses", "namespaceImportFrom", "namespaceImportMethods", "nargs", "nchar", "ncol", "NCOL", "Negate", "new.env",
+			"next", "NextMethod", "ngettext", "nlevels", "noquote", "norm", "normalizePath", "nrow", "NROW", "numeric", "numeric_version", "nzchar", "objects", "oldClass", "oldClass<-", "OlsonNames",
+			"on.exit", "open", "open.connection", "open.srcfile", "open.srcfilealias", "open.srcfilecopy", "Ops.data.frame", "Ops.Date", "Ops.difftime", "Ops.factor", "Ops.numeric_version",
+			"Ops.ordered", "Ops.POSIXt", "options", "order", "ordered", "outer", "package_version", "packageEvent", "packageHasNamespace", "packageStartupMessage", "packBits", "pairlist",
+			"parent.env", "parent.env<-", "parent.frame", "parse", "parseNamespaceFile", "paste", "paste0", "path.expand", "path.package", "pi", "pipe", "pmatch", "pmax", "pmax.int", "pmin",
+			"pmin.int", "polyroot", "pos.to.env", "Position", "pretty", "pretty.default", "prettyNum", "print", "print.AsIs", "print.by", "print.condition", "print.connection", "print.data.frame",
+			"print.Date", "print.default", "print.difftime", "print.DLLInfo", "print.DLLInfoList", "print.DLLRegisteredRoutines", "print.factor", "print.function", "print.hexmode",
+			"print.libraryIQR", "print.listof", "print.NativeRoutineList", "print.noquote", "print.numeric_version", "print.octmode", "print.packageInfo", "print.POSIXct", "print.POSIXlt",
+			"print.proc_time", "print.restart", "print.rle", "print.simple.list", "print.srcfile", "print.srcref", "print.summary.table", "print.summaryDefault", "print.table", "print.warnings",
+			"prmatrix", "proc.time", "prod", "prop.table", "provideDimnames", "psigamma", "pushBack", "pushBackLength", "q", "qr", "qr.coef", "qr.default", "qr.fitted", "qr.Q", "qr.qty", "qr.qy",
+			"qr.R", "qr.resid", "qr.solve", "qr.X", "quarters", "quarters.Date", "quarters.POSIXt", "quit", "quote", "R.home", "R.version", "R.Version", "R.version.string", "R_system_version",
+			"range", "range.default", "rank", "rapply", "raw", "rawConnection", "rawConnectionValue", "rawShift", "rawToBits", "rawToChar", "rbind", "rbind.data.frame", "rcond", "Re", "read.dcf",
+			"readBin", "readChar", "readline", "readLines", "readRDS", "readRenviron", "Recall", "Reduce", "reg.finalizer", "regexec", "regexpr", "registerS3method", "registerS3methods",
+			"regmatches", "regmatches<-", "remove", "removeTaskCallback", "rep", "rep.Date", "rep.factor", "rep.int", "rep.numeric_version", "rep.POSIXct", "rep.POSIXlt", "rep_len", "repeat",
+			"replace", "replicate", "require", "requireNamespace", "restartDescription", "restartFormals", "retracemem", "return", "rev", "rev.default", "rle", "rm", "RNGkind", "RNGversion", "round",
+			"round.Date", "round.POSIXt", "row", "row.names", "row.names.data.frame", "row.names.default", "row.names<-", "row.names<-.data.frame", "row.names<-.default", "rowMeans", "rownames",
+			"rownames<-", "rowsum", "rowsum.data.frame", "rowsum.default", "rowSums", "sample", "sample.int", "sapply", "save", "save.image", "saveRDS", "scale", "scale.default", "scan", "search",
+			"searchpaths", "seek", "seek.connection", "seq", "seq.Date", "seq.default", "seq.int", "seq.POSIXt", "seq_along", "seq_len", "sequence", "serialize", "set.seed", "setdiff", "setequal",
+			"setHook", "setNamespaceInfo", "setSessionTimeLimit", "setTimeLimit", "setwd", "shell", "shell.exec", "showConnections", "shQuote", "sign", "signalCondition", "signif", "simpleCondition",
+			"simpleError", "simpleMessage", "simpleWarning", "simplify2array", "sin", "single", "sinh", "sink", "sink.number", "sinpi", "slice.index", "socketConnection", "socketSelect", "solve",
+			"solve.default", "solve.qr", "sort", "sort.default", "sort.int", "sort.list", "sort.POSIXlt", "source", "split", "split.data.frame", "split.Date", "split.default", "split.POSIXct",
+			"split<-", "split<-.data.frame", "split<-.default", "sprintf", "sqrt", "sQuote", "srcfile", "srcfilealias", "srcfilecopy", "srcref", "standardGeneric", "stderr", "stdin", "stdout",
+			"stop", "stopifnot", "storage.mode", "storage.mode<-", "strftime", "strptime", "strsplit", "strtoi", "strtrim", "structure", "strwrap", "sub", "subset", "subset.data.frame",
+			"subset.default", "subset.matrix", "substitute", "substr", "substr<-", "substring", "substring<-", "sum", "summary", "summary.connection", "summary.data.frame", "Summary.data.frame",
+			"summary.Date", "Summary.Date", "summary.default", "Summary.difftime", "summary.factor", "Summary.factor", "summary.matrix", "Summary.numeric_version", "Summary.ordered",
+			"summary.POSIXct", "Summary.POSIXct", "summary.POSIXlt", "Summary.POSIXlt", "summary.proc_time", "summary.srcfile", "summary.srcref", "summary.table", "suppressMessages",
+			"suppressPackageStartupMessages", "suppressWarnings", "svd", "sweep", "switch", "sys.call", "sys.calls", "Sys.chmod", "Sys.Date", "sys.frame", "sys.frames", "sys.function", "Sys.getenv",
+			"Sys.getlocale", "Sys.getpid", "Sys.glob", "Sys.info", "Sys.junction", "sys.load.image", "Sys.localeconv", "sys.nframe", "sys.on.exit", "sys.parent", "sys.parents", "Sys.readlink",
+			"sys.save.image", "Sys.setenv", "Sys.setFileTime", "Sys.setlocale", "Sys.sleep", "sys.source", "sys.status", "Sys.time", "Sys.timezone", "Sys.umask", "Sys.unsetenv", "Sys.which",
+			"system", "system.file", "system.time", "system2", "t", "T", "t.data.frame", "t.default", "table", "tabulate", "tan", "tanh", "tanpi", "tapply", "taskCallbackManager", "tcrossprod",
+			"tempdir", "tempfile", "testPlatformEquivalence", "textConnection", "textConnectionValue", "tolower", "topenv", "toString", "toString.default", "toupper", "trace", "traceback",
+			"tracemem", "tracingState", "transform", "transform.data.frame", "transform.default", "trigamma", "trunc", "trunc.Date", "trunc.POSIXt", "truncate", "truncate.connection", "try",
+			"tryCatch", "typeof", "unclass", "undebug", "union", "unique", "unique.array", "unique.data.frame", "unique.default", "unique.matrix", "unique.numeric_version", "unique.POSIXlt", "units",
+			"units.difftime", "units<-", "units<-.difftime", "unix.time", "unlink", "unlist", "unloadNamespace", "unlockBinding", "unname", "unserialize", "unsplit", "untrace", "untracemem", "unz",
+			"upper.tri", "url", "UseMethod", "utf8ToInt", "vapply", "vector", "Vectorize", "version", "warning", "warnings", "weekdays", "weekdays.Date", "weekdays.POSIXt", "which", "which.max",
+			"which.min", "while", "with", "with.default", "withCallingHandlers", "within", "within.data.frame", "within.list", "withRestarts", "withVisible", "write", "write.dcf", "writeBin",
+			"writeChar", "writeLines", "xor", "xor.hexmode", "xor.octmode", "xpdrows.data.frame", "xtfrm", "xtfrm.AsIs", "xtfrm.Date", "xtfrm.default", "xtfrm.difftime", "xtfrm.factor",
+			"xtfrm.numeric_version", "xtfrm.POSIXct", "xtfrm.POSIXlt", "xtfrm.Surv", "xzfile", "zapsmall" };
+
 	
-	private static final String DEFAULT_IMAGE= "$nl$/icons/template.gif"; //$NON-NLS-1$
-	
-	public String[] variables={"ls()","objects()","help.start()","?aov","dir()","memory.size()","memory.limit()","memory.profile()","gc()"};
-	public String[] variablesContext={"Returns the list of all\navailable variables(objects) in the current workspace!",
-			"Returns the list of all\navailable objects in the current workspace!","Starts the html help in a browser!",
-			"Opens the html help for the specified method!","List the files in the current directory!",
-			"Reports the current or maximum memory allocation \nof the malloc function used in this version of R!",
-			"Reports or increases the limit\nin force on the total allocation!",
-			"Lists the usage of the cons cells by SEXPREC type!","A call of gc causes the garbage collection to take place!"};
-	
-	public String[] data={"x<-c(32.82,8.76,12.03,18.43,38.61,27.48)",
-			"y<-c(84.35,87.56,12.34,11.41 ,12.68,26.52)",
-			"z<-c(67.71,56.51,58.23,32.32,98.19,65.05)",
-			"x[4]","x[1:4]","x[-(1:4)]","x[c(1,2,6)]","x[x >= 4]","x[x>2&x<8]",
-			"rep(c(2,3,4),2)","seq(1,10,2)","a1<-array(1:16, c(2,8))","a2<-array(1:16, c(2,4,2))",
-			"m<-matrix(c(29,26,58,53,61,54),2,3)",
-			"df<-data.frame(x,y)","population<-data.frame(species=c(\"a\",\"b\",\"c\"),age=c(2,3,5))",
-			"df[1,]","df[,1]","df[[1,1]]","sum(df[1,])","df[x>mean(x)&y<30,]",
-			"df<-cbind(df,x,y,z)","df<-rbind(df,c(2,2),c(3,3))",
-			"apply(df,MARGIN=c(1,2),sqrt)","apply(df,MARGIN=c(1,2),function(x){x^2})",			
-			"sapply(list(x,y,z),mean)","lapply(x,function(x){x^2/5})",
-			"length(x)",		
-			"func<-function(x){x^2}","apply(df,MARGIN=c(1,2),func)",			
-			"attach(df)","table(x)","tapply(x,MARGIN=c(1,2),mean)",	
-			"random<-100*(runif(100))",
-			"spl<-sample(1:10,4)","spl<-sample(1:10,4,replace=TRUE)","rep(2,100)",
-			"unique(x)","na.omit(x)","which(x<32)","which(matrix==8,arr.ind=TRUE)"};
-	public String[] dataContext={"Concatenates given values to a vector","Concatenates given values to a vector","Concatenates given values to a vector",
-			"Returns the i-th value of a vector","Returns the 1-4 values of the vector","Returns the values of the vector without the 1-4 values","Returns the values of a vector which index is given as a vector","Returns the values of the vector which matches the condition","Returns the values of the vector which matches the condition",
-			"The function rep replicates the given argument(x) n-times","seq generates regular sequences","Creates a 2D array from the specified arguments","Creates a 3D array from the specified arguments",
-			"Creates a matrix of size n*m from the given values",
-			"Creates a dataframe from the n-given vectors","Creates a dataframe from the n-given vectors (with column names)",
-			"Returns the i-th row as a vector","Returns the i-th column as a vector","Returns the i-th value of the dataframe","Calculates the sum of the i-th row","Returns the values which match the given conditions",
-			"Adds the specified vectors as columns to the given dataframe","Adds the specified vectors as rows to the given dataframe",
-			"Applys a function to each value of the given datframe","Applys a custom function to each value of the given dataframe",
-			"apply applys a function over a List or a Vector.\nsapply is a user-friendly version of lapply by default returning a vector or matrix if appropriate",
-			"lapply returns a list of the same length as X, each\nelement of which is the result of applying FUN to the corresponding element of X","Returns the length of the given vector"
-			,"Defines a function","apply applys a function over a List or a Vector","Attaches a set of R Objects to the search path. This means that the database \n(data.frame,list,R,NULL,environment) is searched by R \nwhen evaluating a variable, so objects in the database (in this example the columns) can \nbe accessed by simply giving their names",
-			"table uses the cross-classifying factors to \nbuild a contingency table of the counts at\n each combination of factor levels","Applys a function to each cell of a ragged array, \nthat is to each (non-empty) group of values given \nby a unique combination of the levels of certain factors",
-			"Creates a vector with random uniform distributed numbers (multiplied with 100)","sample takes a sample of the specified size \nfrom the elements of x using either with or without replacement","sample takes a sample of the specified size \nfrom the elements of x using either with or without replacement","rep replicates the values in x",
-			"unique returns a vector, data frame or array like x \nbut with duplicate elements/rows removed","na.omit returns the object (e.g vector,dataframe) \nwith incomplete cases removed",
-			"Gives the TRUE indices of a logical object, \nallowing for array indices","Gives the TRUE indices of a logical object. If arr.ind == TRUE and x is an array (has a dim attribute), \nthe result is a matrix whose rows each are the indices of one element of x"};
-	
-	public String[] dataConversion={"mode(x)","as.double(x)","as.integer(x)","as.real(x)","as.array(x)","as.vector(x)",
-			"as.data.frame(x)","as.numeric(x)","as.logical(x)","as.factor(x)","as.character(x)","as.table(x)","as.list(x)","as.raw(x)",
-			"as.complex(x)","as.matrix(x)","is.double(x)","is.integer(x)","is.real(x)",
-			"is.factor(x)","is.matrix(x)","is.na(x)","is.vector(x)","is.table(x)","is.list(x)",
-			"is.numeric(x)","is.character(x)","is.null(x)","is.array(x)",
-			"is.complex(x)","is.data.frame(x)","is.na(x)","is.raw(x)"};
-	public String[] dataConversionContext={"Returns the mode of the data"};
-	
-	public String[] math={"x+x","x-x","x*x","x/x","x^x","x%%x",
-			"sqrt(x)","sqrt(x,3)", "exp(x)", "sin(x)", "cos(x)",
-			"tan(x)", "asin(x)","acos(x)", "atan(x)", "atan2(x)","log(x)",
-			"log2(x)", "log10(x)","log(x,base)","round(x)","round(x, digits = 2)",
-			"signif(x, digits=2)","trunc(x)","abs(x)",
-			"ceiling(x)", "floor(x)", "pi","cumsum(x)","cumprod(x)","cummax(x)","cummin(x)",
-			"max(x)", "min(x)", "range(x)", "sum(x)","diff(x)","prod(x)",
-			"derivative<-D(expression(x^2+5*x),\"x\")","integrate(function(x){x^2}, -1.96, 1.96)",
-			"integrate(dnorm, -1.96, 1.96)","sum<-sum(x[i],i=1,5)",
-			"fft(x)","fft(x,inverse=TRUE)","mvfft(x)"};
-	public String[] mathContext={"+","-","Product","Division","Exponent x","Modulo",
-			"The square root of the argument","The 3-root of the argument","Computes the exponential function","Computes the sine of the given argument","Computes the cosine of the given argument",
-			"Computes the tangent of the given argument","Computes the arc-sine of the given argument","Computes the arc-cosine of the given argument","Computes the arc-tangent of the given argument","Computes the the two-argument arc-tangent of the given argument","Computes the natural logarithm of the given argument",
-			"Computes the binary logarithm of the given argument","Computes the base 10 logarithm of the given argument","Computes the based (x) logarithm of the given argument","Rounds the values in its first argument to the default (0) number of decimal places","Rounds the values in its first argument\n to the specified number of decimal places",
-			"Rounds the values in its first argument \nto the specified number of significant digits","Takes a single numeric argument x and returns a \nnumeric vector containing the integers \nformed by truncating the values in x toward 0","abs(x) returns an integer vector when x is integer or logical",
-			"ceiling takes a single numeric argument x and \nreturns a numeric vector containing the smallest\n integers not less than the corresponding elements of x","floor takes a single numeric argument x and \nreturns a numeric vector containing the largest integers \nnot greater than the corresponding elements of x","The ratio of the circumference of a circle to its diameter","Returns a vector whose elements are the cumulative sums of the elements of the argument","Returns a vector whose elements are the cumulative products of the elements of the argument","Returns a vector whose elements are the cumulative maxima of the elements of the argument","Returns a vector whose elements are the cumulative minima of the elements of the argument",
-			"max returns the maximum of all the values present in their arguments","min returns the minimum of all the values present in their arguments","range returns a vector containing the minimum and maximum of all the given arguments","sum returns the sum of all the values present in its arguments","Returns suitably lagged and iterated differences","prod returns the product of all the values present in its arguments",
-			"D computes derivatives of simple expressions, symbolically","Adaptive quadrature of functions of one variable over a finite or infinite interval",
-			"Adaptive quadrature of functions of one variable over a finite or infinite interval","sum returns the sum of all the values present in its arguments","Performs the Fast Fourier Transform of an array","Performs the inverse Fast Fourier Transform of an array","mvfft takes a real or complex matrix as argument, \nand returns a similar shaped matrix, but with each \ncolumn replaced by its discrete Fourier transform"};
-	
-	public String[] statistics={"mean(x)", "median(x)","range(x)","scale(x,center=TRUE)",
-			"var(x)","cov(x)","cor(x,y)","sd(x)","summary(x)", "quantile(x)","rm(x)",
-			"t.test(x)","t.test(x,y)","t.test(x,y,paired=TRUE)",
-			"fisher.test(x)","chisq.test(x)","chisq.test(x,y)","shapiro.test(x)","bartlett.test(y~x)",
-			"wilcox.test(x, y, alternative = \"g\")","kruskal.test(list(x, y, z))",
-			"ks.test(x)",
-			"fx<-as.factor(x)",
-			"aov(y~x)","summary(aov(y~x))","pairwise.t.test(y,x,p.adj = \"none\")",
-			"pairwise.t.test(y,x,p.adj = \"bonf\")","TukeyHSD(aov(y~x))",
-			"cor.test (x,y,method=\"s\")","cor.test (x,y,method=\"p\")","lm(y~x)","summary(lm(y~x))",
-			"-----Multivariate------","hca <- hclust(dist(USArrests))","cl <- kmeans(iris[,1:4], 3)",
-			"princomp(USArrests, cor = TRUE)",
-			"loc <- cmdscale(eurodist)",
-			"fit <- rpart(Kyphosis ~ Age + Number + Start, data=kyphosis)"};
-	
-	public String[] statisticsContext={"Computes the mean value of the given argument","Compute the sample median","range returns a vector containing the minimum and maximum of all the given arguments","scale is generic function whose default method \ncenters and/or scales the columns of a numeric matrix",
-			"Computes the variance of x","Computes the covariance of x","Computes the correlation of x and y","This function computes the standard deviation of the values in x","This function computes summary statistics of the given argument","The generic function quantile produces sample \nquantiles corresponding to the given probabilities","remove and rm can be used to remove objects",
-			"Performs a one sample t-test on vectors of data","Performs a two sample t-test on vectors of data","Performs a paired two sample t-test on vectors of data",
-			"Performs Fisher's exact test for \ntesting the null of independence of rows and columns \nin a contingency table with fixed marginals","chisq.test performs chi-squared contingency table tests and goodness-of-fit tests","chisq.test performs chi-squared contingency table tests and goodness-of-fit tests","Performs the Shapiro-Wilk test of normality","Performs Bartlett's test (homogeneity of variances) \nof the null that the variances in each of the groups (samples) are the same",
-			"Performs one and two sample Wilcoxon tests on vectors of data; \nthe latter is also known as ‘Mann-Whitney’ test","Performs a Kruskal-Wallis rank sum test",
-			"Performs one or two sample Kolmogorov-Smirnov tests","Converts the given argument to a factor","Performs an Analysis of Variance","Performs an Analysis of Variance\nand returns a summary","Calculate pairwise comparisons between group levels with corrections for multiple testing","Calculate pairwise comparisons between group levels with corrections for multiple testing","Create a set of confidence intervals on the \ndifferences between the means of the levels of a factor with \nthe specified family-wise probability of coverage",
-			"Test for association between paired samples, \nusing one of Pearson's product moment correlation coefficient, \nKendall's tau or Spearman's rho","Test for association between paired samples, \nusing one of Pearson's product moment correlation coefficient, \nKendall's tau or Spearman's rho","lm is used to fit linear models. \nIt can be used to carry out regression, \nsingle stratum analysis of variance and \nanalysis of covariance","lm is used to fit linear models. \nIt can be used to carry out regression, \nsingle stratum analysis of variance and \nanalysis of covariance.\nWith the function summary a summary is displayed",
-			"-----Multivariate------","Performs a Cluster Analysis \nwith the calculated distances of\n the available specified dataset","Clusters the given data \nwith the kmeans algorithm",
-			"princomp performs a principal components analysis \non the given numeric data matrix and returns \nthe results as an object of class princomp",
-			"Classical multidimensional scaling of a data matrix. \nAlso known as principal coordinates analysis",
-			"Constructs a classification tree. \nThe library rpart has to be loaded first!"};
-	
-	public String[] spatialStats={"library(spatstat)", "library(spatial)","nndist(x,y)",
-			"pairdist(x,y)","exactdt(x,y)","rpoint(100)",
-			"X<- ppp(x, y, c(0,100), c(0,100))","X<- ppp(rpoint(100)*100, rpoint(100)*100, c(0,100), c(0,100))","summary(X)","pp <- runifpoint(50)","K <- Kest(pp)","nearest.raster.point(0.5,0.3,owin(c(0,1),c(0,1),mask=matrix(TRUE, 100,100)))","p$x","p$y","readOGR(name)",
-			"readGDAL(name)","name$band1","writeOGR(obj)"};
-	
-	public String[] spatialStatsContext={"Loads the spatstat library!", "Loads the spatial library!","Returns the nearest neighbour distances!\n(required: loaded spatstat library)!",
-			"Returns the pair distances!","exactdt(x,y)\n(Required: loaded spatstat library)!","Generates random points\n(required: loaded spatstat library and argument has to be of \nspatstat class ppp (ppp(x, y, c(0,100), c(0,100))))!",
-			"Creates an spatstat object in the specified window!","Creates an random spatstat object in the specified window!","Prints useful summary of point pattern X","Creates random points","Calculates Ripley's K.\nThe library spatstat is required!","Maps continuous coordinates to raster locations","Returns the x-coordinates!","Returns the y-coordinates!","Read a vector file!\n(Required: loaded rgdal library)!",
-			"Read a vector file!\n(requires: loaded rgdal library)!","Returns the first band (channel) of the specified data!","Writes vector data to a file!\n(Required: loaded rgdal library)!"};
-	
-	public String[] matrix={"m1<-matrix(c(29,26,58,53,61,54,33,21,46),3,3)","m2<-matrix(c(26,56,58,83,13,54,23,29,16),3,3)",
-			"m1*m2","m1%*%m2","m1 %o% m2","diag(m1)","svd(m1)","eigen(m1)","chol(m1)","qr(m1)",
-			"t(m1)","crossprod(m1,m2)","crossprod(m1)",
-			"known<-matrix(c(10,6,4),nrow=3)","solve(m1,known)",
-			"rowSums(m1)","colSums(m1)","rowMeans(m1)","colMeans(m1)",
-			"cbind(m1,m2)","rbind(m1,m2)"};
-	
-	public String[] matrixContext={"Creates a matrix of size 3*3","Creates a matrix of size 3*3",
-			"Matrix multiplication(Element-wise)","Matrix multiplication","Calculates the outer product","Extract or replace the diagonal of a matrix, \nor construct a diagonal matrix","Compute the singular-value decomposition \nof a rectangular matrix","Computes eigenvalues and eigenvectors of \nreal or complex matrices","Computes the Choleski factorization of a real \nsymmetric positive-definite square matrices","qr computes the QR decomposition of a matrix",
-			"Given a matrix or data.frame x, t \nreturns the transpose of x","Given matrices x and y as arguments, \nreturns a matrix cross-product","Given matrices x and y as arguments, \nreturns a matrix cross-product\n(matrices: y = NULL is taken to be the same matrix as x)",	
-			"Creates a matrix with 3 rows","This generic function solves the equation a %*% x = b for x, \nwhere b can be either a vector or a matrix",
-			"Calculates the row sums and returns a vector","Calculates the column sums and returns a vector","Calculates the row means and returns a vector","Calculates the column means and returns a vector",
-			"Combines two matrices column-wise","Combines two matrices row-wise"};
-	
-	public String[] imageAnalysis={"which(imageMatrix==5,arr.ind=TRUE) ",
-			"imageMatrix<-replace(imageMatrix,which(imageMatrix==2, arr.ind=TRUE),0)",
-			"imageMatrix<-matrix(c(1:1000000)*1,1000,1000)","imageMatrix<-matrix(runif(1000000)*2500,1000,1000)",
-			"imageSizeX<-1000","imageSizeY<-1000","imageMatrix<-runif(1000000)*2500",
-			"ifelse(imageMatrix<100,imageMatrix,NA)","imageMatrix<-as.integer(imageMatrix)",
-			"imageMatrix<-matrix(imageMatrix,imageSizeX,imageSizeY)","imageMatrix<-matrix(rep(1,1000000),1000,1000)",
-			"imageMatrix<-matrix(rep(NaN,1000000),1000,1000)"
-			};
-	public String[] imageAnalysisContext={"Returns the coordinates from\nthe data with value 5! ",
-			"Replaces specified values in a matrix with the specified number!",
-			"Creates a 1000*1000 matrix with\nvalues from 1 to 1000000 !","Creates a matrix with 1000000\nuniform distributed random numbers\nscaled with a factor (2500) of size 1000*1000 !",
-			"Defines the image x-size for the image vector data","Defines the image y-size for the image vector data","Creates a vector with 1000000\nuniform distributed random numbers\nscaled with a factor (2500) of size 1000000 !",
-			"Replaces the matched values\nwith the specified second argument, \nelse with the third argument!",
-			"Converts specified data (e.g. raw) to integer data!","Converts image vector data to a matrix\nwith the available width and height arguments!",
-			"Creates a 1000*1000 matrix filled with the specified number!",
-			"Creates a 1000*1000 matrix filled with NaN values!"};
 
 	private boolean triggerNext;
 
@@ -186,26 +234,28 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 	 * We watch for angular brackets since those are often part of XML
 	 * templates.
 	 * 
-	 * @param viewer the viewer
-	 * @param offset the offset left of which the prefix is detected
+	 * @param viewer
+	 *            the viewer
+	 * @param offset
+	 *            the offset left of which the prefix is detected
 	 * @return the detected prefix
 	 */
 	protected String extractPrefix(ITextViewer viewer, int offset) {
-		IDocument document= viewer.getDocument();
-		int i= offset;
+		IDocument document = viewer.getDocument();
+		int i = offset;
 		if (i > document.getLength())
-			return ""; 
-		
+			return "";
+
 		try {
 			while (i > 0) {
-				char ch= document.getChar(i - 1);
+				char ch = document.getChar(i - 1);
 				if (ch != '<' && !Character.isJavaIdentifierPart(ch))
 					break;
 				i--;
 			}
 			return document.get(i, offset - i);
 		} catch (BadLocationException e) {
-			return ""; 
+			return "";
 		}
 	}
 
@@ -213,131 +263,126 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 	 * Cut out angular brackets for relevance sorting, since the template name
 	 * does not contain the brackets.
 	 * 
-	 * @param template the template
-	 * @param prefix the prefix
-	 * @return the relevance of the <code>template</code> for the given <code>prefix</code>
+	 * @param template
+	 *            the template
+	 * @param prefix
+	 *            the prefix
+	 * @return the relevance of the <code>template</code> for the given
+	 *         <code>prefix</code>
 	 */
 	protected int getRelevance(Template template, String prefix) {
-		if (prefix.startsWith("<")) 
-			prefix= prefix.substring(1);
+		if (prefix.startsWith("<"))
+			prefix = prefix.substring(1);
 		if (template.getName().startsWith(prefix))
 			return 90;
 		return 0;
 	}
+
 	private static final class ProposalComparator implements Comparator {
 		public int compare(Object o1, Object o2) {
 			return ((TemplateProposal) o2).getRelevance() - ((TemplateProposal) o1).getRelevance();
 		}
 	}
-	
-	 public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
-		 
-		  
-		  ITextSelection selection= (ITextSelection) viewer.getSelectionProvider().getSelection();
 
-			// adjust offset to end of normalized selection
-			if (selection.getOffset() == offset)
-				offset= selection.getOffset() + selection.getLength();
+	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
 
-			String prefix= extractPrefix(viewer, offset);
-			Region region= new Region(offset - prefix.length(), prefix.length());
-			TemplateContext context= createContext(viewer, region);
-			if (context == null)
-				return new ICompletionProposal[0];
+		ITextSelection selection = (ITextSelection) viewer.getSelectionProvider().getSelection();
 
-			context.setVariable("selection", selection.getText()); // name of the selection variables {line, word}_selection //$NON-NLS-1$
+		// adjust offset to end of normalized selection
+		if (selection.getOffset() == offset)
+			offset = selection.getOffset() + selection.getLength();
 
-			Template[] templates= getTemplates(context.getContextType().getId());
-			List matches= new ArrayList();
-			for (int i= 0; i < templates.length; i++) {
-				Template template= templates[i];
-				try {
-					context.getContextType().validate(template.getPattern());
-				} catch (TemplateException e) {
-					continue;
-				}
-				if (template.matches(prefix, context.getContextType().getId()))
-					matches.add(createProposal(template, context, (IRegion) region, getRelevance(template, prefix)));
-				
+		String prefix = extractPrefix(viewer, offset);
+		Region region = new Region(offset - prefix.length(), prefix.length());
+		TemplateContext context = createContext(viewer, region);
+		if (context == null)
+			return new ICompletionProposal[0];
+
+		context.setVariable("selection", selection.getText()); // name of the selection variables {line, word}_selection //$NON-NLS-1$
+
+		Template[] templates = getTemplates(context.getContextType().getId());
+		List matches = new ArrayList();
+		for (int i = 0; i < templates.length; i++) {
+			Template template = templates[i];
+			try {
+				context.getContextType().validate(template.getPattern());
+			} catch (TemplateException e) {
+				continue;
 			}
-			
-			/*Proposals from List!*/
-			//if(triggerNext){
-			Template[] temp=new Template[statistics.length];
-			
-			for (int i = 0; i < temp.length; i++) {
-				temp[i]=new Template(statistics[i],statisticsContext[i],context.getContextType().getId(),statistics[i],true);
-				
-				
+			if (template.matches(prefix, context.getContextType().getId())){
+				matches.add(createProposal(template, context, (IRegion) region, getRelevance(template, prefix)));
 			}
-			for (int i= 0; i < temp.length; i++) {
-				Template template= temp[i];
-				try {
-					context.getContextType().validate(template.getPattern());
-				} catch (TemplateException e) {
-					continue;
-				}
-				if (template.matches(prefix, context.getContextType().getId()))
-					matches.add(createProposal(template, context, (IRegion) region, getRelevance(template, prefix)));
-				
-			//}
-			
+
+		}
+
+		/* Proposals from List! */
+		// if(triggerNext){
+		Template[] temp = new Template[statistics.length];
+
+		for (int i = 0; i < temp.length; i++) {
+			temp[i] = new Template(statistics[i], statisticsContext[i], context.getContextType().getId(), statistics[i], true);
+
+		}
+		for (int i = 0; i < temp.length; i++) {
+			Template template = temp[i];
+			try {
+				context.getContextType().validate(template.getPattern());
+			} catch (TemplateException e) {
+				continue;
+			}
+			if (template.matches(prefix, context.getContextType().getId()))
+				matches.add(createProposal(template, context, (IRegion) region, getRelevance(template, prefix)));
+
+			// }
+
 			// triggerNext=false;
-			}
+		}
 
-			
-			
-			
+		Collections.sort(matches, fgProposalComparator);
 
-			Collections.sort(matches, fgProposalComparator);
-			
-			
-			ICompletionProposal[] pro=(ICompletionProposal[])matches.toArray(new ICompletionProposal[matches.size()]);
-		    
-			 triggerNext=true;
-		   
-			return pro;
-		  
-	  }
-	 
-	 /*public static ICompletionProposal[] join(ICompletionProposal [] ... parms) {
-		    // calculate size of target array
-		    int size = 0;
-		    for (ICompletionProposal[] array : parms) {
-		      size += array.length;
-		    }
+		ICompletionProposal[] pro = (ICompletionProposal[]) matches.toArray(new ICompletionProposal[matches.size()]);
 
-		    ICompletionProposal[] result = new ICompletionProposal[size];
-		    
-		    int j = 0;
-		    for (ICompletionProposal[] array : parms) {
-		      for (ICompletionProposal s : array) {
-		        result[j++] = s;
-		      }
-		    }
-		    return result;
-		  }*/
-	
+		triggerNext = true;
+
+		return pro;
+
+	}
+
+	/*
+	 * public static ICompletionProposal[] join(ICompletionProposal [] ...
+	 * parms) { // calculate size of target array int size = 0; for
+	 * (ICompletionProposal[] array : parms) { size += array.length; }
+	 * 
+	 * ICompletionProposal[] result = new ICompletionProposal[size];
+	 * 
+	 * int j = 0; for (ICompletionProposal[] array : parms) { for
+	 * (ICompletionProposal s : array) { result[j++] = s; } } return result; }
+	 */
 
 	/**
 	 * Simply return all templates.
 	 * 
-	 * @param contextTypeId the context type, ignored in this implementation
+	 * @param contextTypeId
+	 *            the context type, ignored in this implementation
 	 * @return all templates
 	 */
 	protected Template[] getTemplates(String contextTypeId) {
 		return TemplateEditorUI.getDefault().getTemplateStore().getTemplates();
 	}
+
 	// add the chars for Completion here !!!
-	/*public char[] getCompletionProposalAutoActivationCharacters() {
-		return new char[] { 'a','b','c','d','e','f' };
-	}*/
+	/*
+	 * public char[] getCompletionProposalAutoActivationCharacters() { return
+	 * new char[] { 'a','b','c','d','e','f' }; }
+	 */
 
 	/**
 	 * Return the XML context type that is supported by this plug-in.
 	 * 
-	 * @param viewer the viewer, ignored in this implementation
-	 * @param region the region, ignored in this implementation
+	 * @param viewer
+	 *            the viewer, ignored in this implementation
+	 * @param region
+	 *            the region, ignored in this implementation
 	 * @return the supported XML context type
 	 */
 	protected TemplateContextType getContextType(ITextViewer viewer, IRegion region) {
@@ -347,16 +392,17 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 	/**
 	 * Always return the default image.
 	 * 
-	 * @param template the template, ignored in this implementation
+	 * @param template
+	 *            the template, ignored in this implementation
 	 * @return the default template image
 	 */
 	protected Image getImage(Template template) {
-		ImageRegistry registry= TemplateEditorUI.getDefault().getImageRegistry();
-		Image image= registry.get(DEFAULT_IMAGE);
+		ImageRegistry registry = TemplateEditorUI.getDefault().getImageRegistry();
+		Image image = registry.get(DEFAULT_IMAGE);
 		if (image == null) {
-			ImageDescriptor desc= TemplateEditorUI.imageDescriptorFromPlugin("com.eco.bio7.redit", DEFAULT_IMAGE); //$NON-NLS-1$
+			ImageDescriptor desc = TemplateEditorUI.imageDescriptorFromPlugin("com.eco.bio7.redit", DEFAULT_IMAGE); //$NON-NLS-1$
 			registry.put(DEFAULT_IMAGE, desc);
-			image= registry.get(DEFAULT_IMAGE);
+			image = registry.get(DEFAULT_IMAGE);
 		}
 		return image;
 	}

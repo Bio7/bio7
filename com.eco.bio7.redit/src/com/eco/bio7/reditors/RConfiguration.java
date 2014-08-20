@@ -163,12 +163,10 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 	        // return information to be shown when the cursor is on the given region
 	        @Override
 	        public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
-	                try {
-	                        return textViewer.getDocument().getPartition(hoverRegion.getOffset()).toString()+" "+textViewer.getDocument().getPartition(hoverRegion.getLength()).toString();
-	                } 
-	                catch (BadLocationException e) {
-	                        return "No info because of " + e.getMessage();                  
-	                }
+	               
+	                        return   "R Message ";//textViewer.getDocument().getPartition(hoverRegion.getOffset()).toString()+" "+textViewer.getDocument().getPartition(hoverRegion.getLength()).toString();
+	               
+	                
 	        }
 
 	        // just an old version of the API method that returns only strings

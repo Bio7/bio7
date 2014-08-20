@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.Action;
@@ -28,6 +29,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
+
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
@@ -118,6 +120,7 @@ public class RFormatAction extends Action implements IObjectActionDelegate {
 		}
 
 		else {
+			BufferedReader input = null;
 			/* try with the console! */
 			String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
@@ -125,9 +128,10 @@ public class RFormatAction extends Action implements IObjectActionDelegate {
 			if (selectionConsole.equals("R")) {
 				ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
 				con.pipeToRConsole("options(prompt=\" \")");
-				con.pipeToRConsole("library(formatR);tidy.source(source = \"" + loc + "\",file = \"clipboard\")");
-				/*We use sockets here to wait for the clipboard data to be present (avoid parallel execution of R and Java commands caused by the threaded shell!)*/
 				con.pipeToRConsole("con1 <- socketConnection(port = " + port + ", server = TRUE)");
+				con.pipeToRConsole("library(formatR);tidy.source(source = \"" + loc + "\",file = con1)");
+				/*We use sockets here to wait for the clipboard data to be present (avoid parallel execution of R and Java commands caused by the threaded shell!)*/
+				//con.pipeToRConsole("con1 <- socketConnection(port = " + port + ", server = TRUE)");
 				// con.pipeToRConsole("writeLines(.bio7tempenv$bio7tempVar[[1]]$name, con1)");
 				// con.pipeToRConsole("writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), con1)");
 
@@ -138,22 +142,45 @@ public class RFormatAction extends Action implements IObjectActionDelegate {
 				try {
 					debugSocket = new Socket("127.0.0.1", port);
 
-					BufferedReader input = null;
+					
 					try {
 						input = new BufferedReader(new InputStreamReader(debugSocket.getInputStream()));
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
-
+					String strLine;
+					StringBuffer str=new StringBuffer();
+					try {
+						while((strLine = input.readLine())!= null)
+						  {
+						   str.append(strLine+System.getProperty("line.separator"));
+						  }
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					try {
+						if(str.length()>0){
+						doc.replace(0, doc.getLength(), str.toString());
+						}
+						else{
+							Bio7Dialog.message("Library 'formatR' required!\nPlease install the 'formatR' package!");
+						}
+					} catch (BadLocationException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					debugSocket.close();
 
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				
+				
                  /*Clipboard data should be available!*/
-				setClipboardData(doc);
+				//setClipboardData(doc);
 			}
 
 			else {

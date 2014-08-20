@@ -96,19 +96,7 @@ public class ScanClassPath {
 
 				}
 			}
-			/*
-			 * try { elements =
-			 * ManifestElement.parseHeader(Constants.REQUIRE_BUNDLE,
-			 * requireBundles); } catch (BundleException e) { // TODO
-			 * Auto-generated catch block e.printStackTrace(); }
-			 * if(elements!=null){ for (int u = 0; u < elements.length; u++) {
-			 * //System.out.println( File.pathSeparator
-			 * +bundlePaths.get(i)+elements[u].getValue());
-			 * buf.append(File.pathSeparator
-			 * +bundlePaths.get(i)+elements[u].getValue());
-			 * 
-			 * } }
-			 */
+			
 
 		}
 		
@@ -132,21 +120,12 @@ public class ScanClassPath {
 
 		}
 
-		// System.out.println(Platform.getInstanceLocation().getURL().getPath());
-		// System.out.println(Platform.getInstallLocation().getURL().getPath());
+		
 		buf.append(File.pathSeparator + bundlePaths.get(0) + "/bin");
 		buf.append(File.pathSeparator + bundlePaths.get(2) + "/bin");
 		buf.append(File.pathSeparator + bundlePaths.get(3) + "/bin");
 		buf.append(File.pathSeparator + bundlePaths.get(4) + "/bin");
-		/*
-		 * buf.append(File.pathSeparator + bundlePaths.get(10));
-		 * buf.append(File.pathSeparator + bundlePaths.get(11));
-		 * buf.append(File.pathSeparator + bundlePaths.get(12));
-		 * buf.append(File.pathSeparator + bundlePaths.get(13));
-		 * System.out.println(File.pathSeparator + bundlePaths.get(13));
-		 * buf.append(File.pathSeparator + bundlePaths.get(14));
-		 * System.out.println(File.pathSeparator + bundlePaths.get(14));
-		 */
+		
 		// buf.append(File.pathSeparator+Platform.getInstallLocation().getURL().getPath()+"plugins/org.eclipse.ui.workbench_3.7.0.I20110519-0100.jar");
 		// buf.append(File.pathSeparator+Platform.getInstallLocation().getURL().getPath()+"/plugins/org.eclipse.core.commands_3.6.0.I20110111-0800.jar");
 		// System.out.println(buf.toString());
@@ -198,7 +177,7 @@ public class ScanClassPath {
 			}
 			pathBundle = fileUrl.getFile();
 			bundlePaths.add(File.pathSeparator + pathBundle);
-			System.out.println("2:" + File.pathSeparator + pathBundle);
+			//System.out.println("2:" + File.pathSeparator + pathBundle);
 			ManifestElement[] elements = null;
 			String requires = (String) bundle.getHeaders().get(Constants.BUNDLE_CLASSPATH);
 			// String
@@ -243,7 +222,7 @@ public class ScanClassPath {
 						else if (i == 6) {
 
 							String lib = File.pathSeparator + bundlePaths.get(i) + elements[u].getValue();
-							System.out.println(lib);
+							//System.out.println(lib);
 							String external = "external";
 							if (lib.toLowerCase().contains(external.toLowerCase()) == false) {
 								// System.out.println(lib);
@@ -267,6 +246,7 @@ public class ScanClassPath {
 			Bundle bundle = Platform.getBundle(bundlesEclipse[i]);
 			String loc = bundle.getLocation().substring(15);
 			//System.out.println("loc: " + loc);
+			
 			/*Eclipse PDE and exported RCP paths are different (absolute vs. relative)!*/
 			if (loc.startsWith("/")) {
 				loc = loc.substring(1);
