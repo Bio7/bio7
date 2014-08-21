@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.Action;
@@ -29,7 +28,6 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
-
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
@@ -102,12 +100,13 @@ public class RFormatAction extends Action implements IObjectActionDelegate {
 						try {
 							c.eval("library(formatR);try(tidy.source(source = \"" + loc + "\",file = \"clipboard\"))");
 							// rcon.eval("tidy.source(source = \""+loc+"\",file = \"clipboard\")");
+							setClipboardData(doc);
 						} catch (RserveException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 
-						setClipboardData(doc);
+						
 					} else {
 						Bio7Dialog.message("Library 'formatR' required!\nPlease install the 'formatR' package!");
 					}
@@ -138,45 +137,7 @@ public class RFormatAction extends Action implements IObjectActionDelegate {
 				con.pipeToRConsole("close(con1)");
 				con.pipeToRConsole("writeLines(\"\")");
 				con.pipeToRConsole("options(prompt=\"> \")");
-               /*The following code just waits for the handshake (executed R shell code)!*/
-				try {
-					debugSocket = new Socket("127.0.0.1", port);
-
-					
-					try {
-						input = new BufferedReader(new InputStreamReader(debugSocket.getInputStream()));
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-					String strLine;
-					StringBuffer str=new StringBuffer();
-					try {
-						while((strLine = input.readLine())!= null)
-						  {
-						   str.append(strLine+System.getProperty("line.separator"));
-						  }
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					try {
-						if(str.length()>0){
-						doc.replace(0, doc.getLength(), str.toString());
-						}
-						else{
-							Bio7Dialog.message("Library 'formatR' required!\nPlease install the 'formatR' package!");
-						}
-					} catch (BadLocationException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					debugSocket.close();
-
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+               getTextSocket(doc, input, port);
 				
 				
                  /*Clipboard data should be available!*/
@@ -188,6 +149,48 @@ public class RFormatAction extends Action implements IObjectActionDelegate {
 			}
 		}
 
+	}
+
+	private void getTextSocket(IDocument doc, BufferedReader input, int port) {
+		/*The following code just waits for the handshake (executed R shell code)!*/
+		try {
+			debugSocket = new Socket("127.0.0.1", port);
+
+			
+			try {
+				input = new BufferedReader(new InputStreamReader(debugSocket.getInputStream()));
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			String strLine;
+			StringBuffer str=new StringBuffer();
+			try {
+				while((strLine = input.readLine())!= null)
+				  {
+				   str.append(strLine+System.getProperty("line.separator"));
+				  }
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				if(str.length()>0){
+				doc.replace(0, doc.getLength(), str.toString());
+				}
+				else{
+					Bio7Dialog.message("Library 'formatR' required!\nPlease install the 'formatR' package!");
+				}
+			} catch (BadLocationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			debugSocket.close();
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private void setClipboardData(IDocument doc) {
