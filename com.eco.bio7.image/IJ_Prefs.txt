@@ -1,5 +1,5 @@
 #ImageJ 1.48c Preferences
-#Tue Aug 19 17:22:30 CEST 2014
+#Fri Aug 22 15:42:10 CEST 2014
 new.fill=0
 .log.height=250
 pp.options=1
@@ -34,7 +34,7 @@ jpeg=85
 .threshold.loc=692,234
 .toolbar.tool06=LUT Menu Tool
 .threshold.mode=0
-ij.y=0
+ij.y=150
 ij.x=1091
 new.slices=1
 menu.size=14

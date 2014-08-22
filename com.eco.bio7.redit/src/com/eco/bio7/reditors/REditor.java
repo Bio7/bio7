@@ -31,7 +31,9 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.source.Annotation;
@@ -98,8 +100,6 @@ public class REditor extends TextEditor {
 
 	private static RConnection rserveConnection;
 
-	
-
 	private RColorManager colorManager;
 	private Image importIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/imp_obj.png"));
 	private Image publicFieldIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/field_public_obj.png"));
@@ -136,7 +136,6 @@ public class REditor extends TextEditor {
 	Stack<Boolean> treeItemLine = new Stack<Boolean>();
 
 	protected boolean found;
-	
 
 	public RConfiguration getRconf() {
 		return rconf;
@@ -168,7 +167,12 @@ public class REditor extends TextEditor {
 		@Override
 		public void partActivated(IWorkbenchPartReference partRef) { //
 			if (partRef.getId().equals("com.eco.bio7.reditors.TemplateEditor")) {
-				final IEditorPart editor = partRef.getPage().getActiveEditor();
+				// IEditorPart editorPart =
+				// getSite().getPage().getActiveEditor();
+
+				IEditorPart editor = partRef.getPage().getActiveEditor();
+				ITextOperationTarget target = (ITextOperationTarget) editor.getAdapter(ITextOperationTarget.class);
+
 				final ITextEditor textEditor = (ITextEditor) editor;
 				if (editor instanceof REditor) {
 
@@ -254,14 +258,13 @@ public class REditor extends TextEditor {
 									// contentOutlineViewer.expandAll();
 									// System.out.println(lineNumber+1);
 									TreeItem treeItem = null;
-									if(contentOutlineViewer.getTree()!=null){
-									if(contentOutlineViewer.getTree().getItem(0).isDisposed()==false){
-									 treeItem = contentOutlineViewer.getTree().getItem(0);
-									 walkTreeLineNumber(treeItem, lineNumber + 1);
-									}
+									if (contentOutlineViewer.getTree() != null) {
+										if (contentOutlineViewer.getTree().getItem(0).isDisposed() == false) {
+											treeItem = contentOutlineViewer.getTree().getItem(0);
+											walkTreeLineNumber(treeItem, lineNumber + 1);
+										}
 									}
 
-									
 									// textEditor.selectAndReveal(offset,5);
 									// System.out.println(lineNumber);
 									/*
@@ -270,6 +273,28 @@ public class REditor extends TextEditor {
 									 * e1.printStackTrace(); }
 									 */
 								}
+								/*if (target instanceof ITextViewer) {
+									ITextViewer textViewer = (ITextViewer) target;
+
+									int offset = textViewer.getSelectedRange().x;
+									int length = 0;
+									IDocument doc = textViewer.getDocument();
+									char c = 0;
+									while (true) {
+
+										try {
+											c = doc.getChar(offset + length);
+										} catch (BadLocationException e1) {
+											// TODO Auto-generated catch block
+											e1.printStackTrace();
+										}
+										if (c == ' ')
+											break;
+										if (offset + ++length >= doc.getLength())
+											return;
+									}
+									textViewer.setSelectedRange(offset, length);
+								}*/
 							}
 
 						}
@@ -296,7 +321,7 @@ public class REditor extends TextEditor {
 		public void walkTreeLineNumber(TreeItem item, int lineNumber) {
 			found = false;
 			boolean isExpanded = item.getExpanded();
-			/*Push the temp info on the stack!*/
+			/* Push the temp info on the stack! */
 			treeItemLine.push(isExpanded);
 			if (item.getItemCount() > 0) {
 				item.setExpanded(true);
@@ -305,10 +330,10 @@ public class REditor extends TextEditor {
 			}
 
 			for (int j = 0; j < item.getItemCount(); j++) {
-				
+
 				TreeItem it = item.getItem(j);
 
-				if (lineNumber==((REditorOutlineNode) it.getData()).getLineNumber()) {
+				if (lineNumber == ((REditorOutlineNode) it.getData()).getLineNumber()) {
 					contentOutlineViewer.getTree().setSelection(it);
 					item.setExpanded(true);
 					// update the viewer
@@ -375,8 +400,6 @@ public class REditor extends TextEditor {
 		}
 
 	};
-
-	
 
 	// private Annotation[] oldAnnotations;
 
@@ -539,7 +562,7 @@ public class REditor extends TextEditor {
 		IAction a = new TextOperationAction(REditorMessages.getResourceBundle(), "ContentAssistProposal.", this, ISourceViewer.CONTENTASSIST_PROPOSALS); //$NON-NLS-1$
 		a.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
 		setAction("ContentAssistProposal", a);
-		//setActionActivationCode("ContentAssistProposal",' ', -1, SWT.CTRL);
+		// setActionActivationCode("ContentAssistProposal",' ', -1, SWT.CTRL);
 
 		a = new TextOperationAction(REditorMessages.getResourceBundle(), "ContentAssistTip.", this, ISourceViewer.CONTENTASSIST_CONTEXT_INFORMATION);
 		a.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_CONTEXT_INFORMATION);
@@ -569,7 +592,7 @@ public class REditor extends TextEditor {
 		 * ,PlatformUI.getWorkbench().getActiveWorkbenchWindow());
 		 * setAction("Refactor", refactor);
 		 */
-		
+
 		preferences = new com.eco.bio7.reditor.actions.OpenPreferences();
 		setAction("R Preferences", preferences);
 
@@ -789,9 +812,10 @@ public class REditor extends TextEditor {
 	}
 
 	public static void setConnection(RConnection c) {
-		
-		rserveConnection=c;
+
+		rserveConnection = c;
 	}
+
 	public static RConnection getRserveConnection() {
 		return rserveConnection;
 	}

@@ -12,10 +12,17 @@
  *******************************************************************************/
 package com.eco.bio7.reditors;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.internal.text.html.HTMLTextPresenter;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DefaultIndentLineAutoEditStrategy;
+import org.eclipse.jface.text.DefaultInformationControl;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IInformationControl;
+import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.ITextHover;
@@ -36,7 +43,11 @@ import org.eclipse.jface.text.rules.BufferedRuleBasedScanner;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
 import com.eco.bio7.reditor.Bio7REditorPlugin;
@@ -163,8 +174,10 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 	        // return information to be shown when the cursor is on the given region
 	        @Override
 	        public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
+	        	
+	        	
 	               
-	                        return   "R Message ";//textViewer.getDocument().getPartition(hoverRegion.getOffset()).toString()+" "+textViewer.getDocument().getPartition(hoverRegion.getLength()).toString();
+	                        return   "R Code!:"+hoverRegion.getOffset()+" length:"+hoverRegion.getLength();//textViewer.getDocument().getPartition(hoverRegion.getOffset()).toString()+" "+textViewer.getDocument().getPartition(hoverRegion.getLength()).toString();
 	               
 	                
 	        }
@@ -192,6 +205,16 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 			
 	}
+	@Override
+    public IInformationControlCreator getInformationControlCreator(ISourceViewer sourceViewer) {
+        return new IInformationControlCreator() {
+            public IInformationControl createInformationControl(Shell parent) {
+            	
+            	
+                return new DefaultInformationControl(parent,true);
+            }
+        };
+    }
 	
 
 }
