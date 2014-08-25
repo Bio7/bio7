@@ -1081,6 +1081,18 @@
              menubarPath="debug">
        </action>
     </viewerContribution>
+    <objectContribution
+          adaptable="false"
+          id="RecalculateClasspath"
+          objectClass="org.eclipse.core.resources.IResource">
+       <action
+             class="com.eco.bio7.popup.actions.RecalculateClasspath"
+             icon="icons/javakompilierung.gif"
+             id="com.eco.bio7.recalculateClasspath"
+             label="Set Local Bio7 Java Classpath"
+             menubarPath="additions.path">
+       </action>
+    </objectContribution>
   </extension>
   <extension
         id="bshextension"

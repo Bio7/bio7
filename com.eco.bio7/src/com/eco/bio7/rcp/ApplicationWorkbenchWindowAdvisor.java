@@ -29,13 +29,22 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IExecutionListener;
 import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.IResourceDeltaVisitor;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -128,6 +137,51 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	}
 
 	public void preWindowOpen() {
+		IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		IResourceChangeListener listener = new IResourceChangeListener() {
+			public void resourceChanged(IResourceChangeEvent event) {
+			
+				if (event == null || event.getDelta() == null) {
+					
+					return;
+				}
+
+				else {
+					try {
+						event.getDelta().accept(new IResourceDeltaVisitor() {
+							public boolean visit(IResourceDelta delta) throws CoreException {
+								if (delta.getKind() == IResourceDelta.ADDED) {
+									
+									final IResource resource = delta.getResource();
+									if (resource.getType() ==4) {
+										
+										IProject proj=resource.getProject();
+										/*if(proj.hasNature(JavaCore.NATURE_ID)){
+											System.out.println("Java Project Created!");
+										}
+										
+										System.out.println("Project Created!");*/
+									}
+									// do your stuff and check the project is
+									// opened or closed
+								}
+								return true;
+							}
+						});
+					} catch (CoreException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+				}
+			}
+
+		};
+
+		workspace.addResourceChangeListener(listener);
+
+		// ... some time later one ...
+		// workspace.removeResourceChangeListener(listener);
 
 		IWorkbenchActivitySupport workbenchActivitySupport = PlatformUI.getWorkbench().getActivitySupport();
 		IActivityManager activityManager = workbenchActivitySupport.getActivityManager();
@@ -162,7 +216,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		// Remove unused preference pages by ID:
 		/*
-		 * preferenceManager.remove("org.eclipse.help.ui.browsersPreferencePage") ;preferenceManager.remove( "org.eclipse.update.internal.ui.preferences.MainPreferencePage");
+		 * preferenceManager.remove("org.eclipse.help.ui.browsersPreferencePage")
+		 * ;preferenceManager.remove(
+		 * "org.eclipse.update.internal.ui.preferences.MainPreferencePage");
 		 */
 
 		// Listen to changed perspective !!!!
@@ -186,8 +242,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			}
 		});
 
-		/* Listen to the R editor if debugging actions should be added to the console toolbar! */
-		
+		/*
+		 * Listen to the R editor if debugging actions should be added to the
+		 * console toolbar!
+		 */
+
 		configurer.getWindow().getPartService().addPartListener(new REditorListener().listen());
 
 		PlatformUI.getPreferenceStore().setValue(IWorkbenchPreferenceConstants.SHOW_SYSTEM_JOBS, false);
@@ -261,7 +320,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, reg2);
 			} else {
 				/*
-				 * If the path cannot be found in the reg. it will be set to C:\ -> see com.eco.bio7.preferences.Reg.java!
+				 * If the path cannot be found in the reg. it will be set to C:\
+				 * -> see com.eco.bio7.preferences.Reg.java!
 				 */
 				store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, "C:\\");
 			}
@@ -304,7 +364,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			// String pathTempR3 = pathTempR2.replace("\\", "\\\\");
 			store.setDefault(PreferenceConstants.P_TEMP_R, pathTempR2);
 			store.setDefault("Console_Encoding", "CP850");
-			store.setDefault("DEVICE_DEFINITION", "bio7Device <- function(filename = \"" + pathTempR2 + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\"bio7Device\")");
+			store.setDefault("DEVICE_DEFINITION", "bio7Device <- function(filename = \"" + pathTempR2 + "tempDevicePlot%05d.tiff"
+					+ "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\"bio7Device\")");
 			store.setDefault("DEVICE_FILENAME", "");
 			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
 		} else if (getOS().equals("Linux")) {
@@ -312,7 +373,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault(PreferenceConstants.P_TEMP_R, pathTempR);
 			store.setDefault("Console_Encoding", "UTF-8");
 			store.setDefault("shell_arguments", "");
-			store.setDefault("DEVICE_DEFINITION", "bio7Device <- function(filename = \"" + pathTempR + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\"bio7Device\")");
+			store.setDefault("DEVICE_DEFINITION", "bio7Device <- function(filename = \"" + pathTempR + "tempDevicePlot%05d.tiff"
+					+ "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\"bio7Device\")");
 			store.setDefault("DEVICE_FILENAME", "");
 			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
 		} else if (getOS().equals("Mac")) {
@@ -320,7 +382,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault(PreferenceConstants.P_TEMP_R, pathTempR);
 			store.setDefault("Console_Encoding", "UTF-8");
 			store.setDefault("shell_arguments", "export TERM=xterm");
-			store.setDefault("DEVICE_DEFINITION", "bio7Device <- function(filename = \"" + pathTempR + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 480, height = 480, type=\"cairo\")}; options(device=\"bio7Device\")");
+			store.setDefault("DEVICE_DEFINITION", "bio7Device <- function(filename = \"" + pathTempR + "tempDevicePlot%05d.tiff"
+					+ "\") { tiff(filename,width = 480, height = 480, type=\"cairo\")}; options(device=\"bio7Device\")");
 			store.setDefault("DEVICE_FILENAME", "");
 			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
 		}
@@ -335,7 +398,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		}
 
 		store.setDefault("RSERVE_NATIVE_START", true);
-		store.setDefault("R_DEBUG_PORT",21555);
+		store.setDefault("R_DEBUG_PORT", 21555);
 
 		store.setDefault("LINUX_SHELL", "GNOME");
 		store.setDefault("PDF_READER", "ACROBAT");
@@ -391,82 +454,119 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		}
 
-		/*IPreferenceStore storeBsh = BeanshellEditorPlugin.getDefault().getPreferenceStore();
-		PreferenceConverter.setDefault(storeBsh, "colourkey", new RGB(127, 0, 85));
-		PreferenceConverter.setDefault(storeBsh, "colourkey1", new RGB(127, 0, 85));
-		PreferenceConverter.setDefault(storeBsh, "colourkey2", new RGB(42, 0, 255));
-		PreferenceConverter.setDefault(storeBsh, "colourkey3", new RGB(128, 128, 128));
-		PreferenceConverter.setDefault(storeBsh, "colourkey4", new RGB(0, 0, 0));
-		PreferenceConverter.setDefault(storeBsh, "colourkey5", new RGB(0, 0, 0));
-		PreferenceConverter.setDefault(storeBsh, "colourkey6", new RGB(0, 0, 0));
-		PreferenceConverter.setDefault(storeBsh, "colourkey7", new RGB(0, 0, 0));
-		// PreferenceConverter.setDefault(storeBsh, "colourkey8", new RGB(50,
-		// 150, 150));
-
-		PreferenceConverter.setDefault(storeBsh, "colourkeyfont", new FontData(font, fsize, 1));
-		PreferenceConverter.setDefault(storeBsh, "colourkeyfont1", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeBsh, "colourkeyfont2", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeBsh, "colourkeyfont3", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeBsh, "colourkeyfont4", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeBsh, "colourkeyfont5", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeBsh, "colourkeyfont6", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeBsh, "colourkeyfont7", new FontData(font, fsize, 0));*/
+		/*
+		 * IPreferenceStore storeBsh =
+		 * BeanshellEditorPlugin.getDefault().getPreferenceStore();
+		 * PreferenceConverter.setDefault(storeBsh, "colourkey", new RGB(127, 0,
+		 * 85)); PreferenceConverter.setDefault(storeBsh, "colourkey1", new
+		 * RGB(127, 0, 85)); PreferenceConverter.setDefault(storeBsh,
+		 * "colourkey2", new RGB(42, 0, 255));
+		 * PreferenceConverter.setDefault(storeBsh, "colourkey3", new RGB(128,
+		 * 128, 128)); PreferenceConverter.setDefault(storeBsh, "colourkey4",
+		 * new RGB(0, 0, 0)); PreferenceConverter.setDefault(storeBsh,
+		 * "colourkey5", new RGB(0, 0, 0));
+		 * PreferenceConverter.setDefault(storeBsh, "colourkey6", new RGB(0, 0,
+		 * 0)); PreferenceConverter.setDefault(storeBsh, "colourkey7", new
+		 * RGB(0, 0, 0)); // PreferenceConverter.setDefault(storeBsh,
+		 * "colourkey8", new RGB(50, // 150, 150));
+		 * 
+		 * PreferenceConverter.setDefault(storeBsh, "colourkeyfont", new
+		 * FontData(font, fsize, 1)); PreferenceConverter.setDefault(storeBsh,
+		 * "colourkeyfont1", new FontData(font, fsize, 0));
+		 * PreferenceConverter.setDefault(storeBsh, "colourkeyfont2", new
+		 * FontData(font, fsize, 0)); PreferenceConverter.setDefault(storeBsh,
+		 * "colourkeyfont3", new FontData(font, fsize, 0));
+		 * PreferenceConverter.setDefault(storeBsh, "colourkeyfont4", new
+		 * FontData(font, fsize, 0)); PreferenceConverter.setDefault(storeBsh,
+		 * "colourkeyfont5", new FontData(font, fsize, 0));
+		 * PreferenceConverter.setDefault(storeBsh, "colourkeyfont6", new
+		 * FontData(font, fsize, 0)); PreferenceConverter.setDefault(storeBsh,
+		 * "colourkeyfont7", new FontData(font, fsize, 0));
+		 */
 		// PreferenceConverter.setDefault(storeBsh, "colourkeyfont8", new
 		// FontData("Courier New", 10, 0));
 
-		/*IPreferenceStore storePython = PythonEditorPlugin.getDefault().getPreferenceStore();
-		PreferenceConverter.setDefault(storePython, "colourkey", new RGB(127, 0, 85));
-		PreferenceConverter.setDefault(storePython, "colourkey1", new RGB(127, 0, 85));
-		PreferenceConverter.setDefault(storePython, "colourkey2", new RGB(42, 0, 255));
-		PreferenceConverter.setDefault(storePython, "colourkey3", new RGB(128, 128, 128));
-		PreferenceConverter.setDefault(storePython, "colourkey4", new RGB(0, 0, 0));
-		PreferenceConverter.setDefault(storePython, "colourkey5", new RGB(0, 0, 0));
-		// PreferenceConverter.setDefault(storePython, "colourkey6", new RGB(0,
-		// 0, 0));
-		PreferenceConverter.setDefault(storePython, "colourkey7", new RGB(0, 0, 0));
-		PreferenceConverter.setDefault(storePython, "colourkey8", new RGB(0, 0, 0));
-		PreferenceConverter.setDefault(storePython, "colourkey9", new RGB(0, 0, 0));
-		PreferenceConverter.setDefault(storePython, "colourkey10", new RGB(0, 0, 0));
-		// PreferenceConverter.setDefault(storePython, "colourkey11", new RGB(0,
-		// 0, 0));
-		PreferenceConverter.setDefault(storePython, "colourkey12", new RGB(0, 0, 0));
+		/*
+		 * IPreferenceStore storePython =
+		 * PythonEditorPlugin.getDefault().getPreferenceStore();
+		 * PreferenceConverter.setDefault(storePython, "colourkey", new RGB(127,
+		 * 0, 85)); PreferenceConverter.setDefault(storePython, "colourkey1",
+		 * new RGB(127, 0, 85)); PreferenceConverter.setDefault(storePython,
+		 * "colourkey2", new RGB(42, 0, 255));
+		 * PreferenceConverter.setDefault(storePython, "colourkey3", new
+		 * RGB(128, 128, 128)); PreferenceConverter.setDefault(storePython,
+		 * "colourkey4", new RGB(0, 0, 0));
+		 * PreferenceConverter.setDefault(storePython, "colourkey5", new RGB(0,
+		 * 0, 0)); // PreferenceConverter.setDefault(storePython, "colourkey6",
+		 * new RGB(0, // 0, 0)); PreferenceConverter.setDefault(storePython,
+		 * "colourkey7", new RGB(0, 0, 0));
+		 * PreferenceConverter.setDefault(storePython, "colourkey8", new RGB(0,
+		 * 0, 0)); PreferenceConverter.setDefault(storePython, "colourkey9", new
+		 * RGB(0, 0, 0)); PreferenceConverter.setDefault(storePython,
+		 * "colourkey10", new RGB(0, 0, 0)); //
+		 * PreferenceConverter.setDefault(storePython, "colourkey11", new RGB(0,
+		 * // 0, 0)); PreferenceConverter.setDefault(storePython, "colourkey12",
+		 * new RGB(0, 0, 0));
+		 * 
+		 * PreferenceConverter.setDefault(storePython, "colourkeyfont", new
+		 * FontData(font, fsize, 1));
+		 * PreferenceConverter.setDefault(storePython, "colourkeyfont1", new
+		 * FontData(font, fsize, 0));
+		 * PreferenceConverter.setDefault(storePython, "colourkeyfont2", new
+		 * FontData(font, fsize, 0));
+		 * PreferenceConverter.setDefault(storePython, "colourkeyfont3", new
+		 * FontData(font, fsize, 0));
+		 * PreferenceConverter.setDefault(storePython, "colourkeyfont4", new
+		 * FontData(font, fsize, 0));
+		 * PreferenceConverter.setDefault(storePython, "colourkeyfont5", new
+		 * FontData(font, fsize, 0)); //
+		 * PreferenceConverter.setDefault(storePython, "colourkeyfont6", new //
+		 * FontData("Courier New", 10, 0));
+		 * PreferenceConverter.setDefault(storePython, "colourkeyfont7", new
+		 * FontData(font, fsize, 0));
+		 * PreferenceConverter.setDefault(storePython, "colourkeyfont8", new
+		 * FontData(font, fsize, 0));
+		 * PreferenceConverter.setDefault(storePython, "colourkeyfont9", new
+		 * FontData(font, fsize, 0));
+		 * PreferenceConverter.setDefault(storePython, "colourkeyfont10", new
+		 * FontData(font, fsize, 0)); //
+		 * PreferenceConverter.setDefault(storePython, "colourkeyfon11", new //
+		 * FontData("Courier New", 10, 0));
+		 * PreferenceConverter.setDefault(storePython, "colourkeyfont12", new
+		 * FontData(font, fsize, 0));
+		 */
 
-		PreferenceConverter.setDefault(storePython, "colourkeyfont", new FontData(font, fsize, 1));
-		PreferenceConverter.setDefault(storePython, "colourkeyfont1", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storePython, "colourkeyfont2", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storePython, "colourkeyfont3", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storePython, "colourkeyfont4", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storePython, "colourkeyfont5", new FontData(font, fsize, 0));
-		// PreferenceConverter.setDefault(storePython, "colourkeyfont6", new
-		// FontData("Courier New", 10, 0));
-		PreferenceConverter.setDefault(storePython, "colourkeyfont7", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storePython, "colourkeyfont8", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storePython, "colourkeyfont9", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storePython, "colourkeyfont10", new FontData(font, fsize, 0));
-		// PreferenceConverter.setDefault(storePython, "colourkeyfon11", new
-		// FontData("Courier New", 10, 0));
-		PreferenceConverter.setDefault(storePython, "colourkeyfont12", new FontData(font, fsize, 0));*/
-
-		/*IPreferenceStore storeR = Bio7REditorPlugin.getDefault().getPreferenceStore();
-		PreferenceConverter.setDefault(storeR, "colourkey", new RGB(127, 0, 85));
-		PreferenceConverter.setDefault(storeR, "colourkey1", new RGB(127, 0, 85));
-		PreferenceConverter.setDefault(storeR, "colourkey2", new RGB(42, 0, 255));
-		PreferenceConverter.setDefault(storeR, "colourkey3", new RGB(128, 128, 128));
-		PreferenceConverter.setDefault(storeR, "colourkey4", new RGB(0, 0, 0));
-		PreferenceConverter.setDefault(storeR, "colourkey5", new RGB(0, 0, 0));
-		PreferenceConverter.setDefault(storeR, "colourkey6", new RGB(0, 0, 0));
-		PreferenceConverter.setDefault(storeR, "colourkey7", new RGB(0, 0, 0));
-		PreferenceConverter.setDefault(storeR, "colourkey8", new RGB(0, 0, 0));
-
-		PreferenceConverter.setDefault(storeR, "colourkeyfont", new FontData(font, fsize, 1));
-		PreferenceConverter.setDefault(storeR, "colourkeyfont1", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeR, "colourkeyfont2", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeR, "colourkeyfont3", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeR, "colourkeyfont4", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeR, "colourkeyfont5", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeR, "colourkeyfont6", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeR, "colourkeyfont7", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeR, "colourkeyfont8", new FontData(font, fsize, 0));*/
+		/*
+		 * IPreferenceStore storeR =
+		 * Bio7REditorPlugin.getDefault().getPreferenceStore();
+		 * PreferenceConverter.setDefault(storeR, "colourkey", new RGB(127, 0,
+		 * 85)); PreferenceConverter.setDefault(storeR, "colourkey1", new
+		 * RGB(127, 0, 85)); PreferenceConverter.setDefault(storeR,
+		 * "colourkey2", new RGB(42, 0, 255));
+		 * PreferenceConverter.setDefault(storeR, "colourkey3", new RGB(128,
+		 * 128, 128)); PreferenceConverter.setDefault(storeR, "colourkey4", new
+		 * RGB(0, 0, 0)); PreferenceConverter.setDefault(storeR, "colourkey5",
+		 * new RGB(0, 0, 0)); PreferenceConverter.setDefault(storeR,
+		 * "colourkey6", new RGB(0, 0, 0));
+		 * PreferenceConverter.setDefault(storeR, "colourkey7", new RGB(0, 0,
+		 * 0)); PreferenceConverter.setDefault(storeR, "colourkey8", new RGB(0,
+		 * 0, 0));
+		 * 
+		 * PreferenceConverter.setDefault(storeR, "colourkeyfont", new
+		 * FontData(font, fsize, 1)); PreferenceConverter.setDefault(storeR,
+		 * "colourkeyfont1", new FontData(font, fsize, 0));
+		 * PreferenceConverter.setDefault(storeR, "colourkeyfont2", new
+		 * FontData(font, fsize, 0)); PreferenceConverter.setDefault(storeR,
+		 * "colourkeyfont3", new FontData(font, fsize, 0));
+		 * PreferenceConverter.setDefault(storeR, "colourkeyfont4", new
+		 * FontData(font, fsize, 0)); PreferenceConverter.setDefault(storeR,
+		 * "colourkeyfont5", new FontData(font, fsize, 0));
+		 * PreferenceConverter.setDefault(storeR, "colourkeyfont6", new
+		 * FontData(font, fsize, 0)); PreferenceConverter.setDefault(storeR,
+		 * "colourkeyfont7", new FontData(font, fsize, 0));
+		 * PreferenceConverter.setDefault(storeR, "colourkeyfont8", new
+		 * FontData(font, fsize, 0));
+		 */
 
 		IPreferenceStore storeJava = Bio7EditorPlugin.getDefault().getPreferenceStore();
 
@@ -476,25 +576,33 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		storeJava.setDefault("compiler_verbose", false);
 		storeJava.setDefault("compiler_warnings", false);
 
-		/*PreferenceConverter.setDefault(storeJava, "colourkey", new RGB(127, 0, 85));
-		PreferenceConverter.setDefault(storeJava, "colourkey1", new RGB(127, 0, 85));
-		PreferenceConverter.setDefault(storeJava, "colourkey2", new RGB(42, 0, 255));
-		PreferenceConverter.setDefault(storeJava, "colourkey3", new RGB(128, 128, 128));
-		PreferenceConverter.setDefault(storeJava, "colourkey4", new RGB(0, 0, 0));
-		PreferenceConverter.setDefault(storeJava, "colourkey5", new RGB(0, 0, 0));
-		PreferenceConverter.setDefault(storeJava, "colourkey6", new RGB(0, 0, 0));
-		PreferenceConverter.setDefault(storeJava, "colourkey7", new RGB(0, 0, 0));
-		// PreferenceConverter.setDefault(storeJava, "colourkey8", new RGB(0,
-		// 150, 150));
-
-		PreferenceConverter.setDefault(storeJava, "colourkeyfont", new FontData(font, fsize, 1));
-		PreferenceConverter.setDefault(storeJava, "colourkeyfont1", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeJava, "colourkeyfont2", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeJava, "colourkeyfont3", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeJava, "colourkeyfont4", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeJava, "colourkeyfont5", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeJava, "colourkeyfont6", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeJava, "colourkeyfont7", new FontData(font, fsize, 0));*/
+		/*
+		 * PreferenceConverter.setDefault(storeJava, "colourkey", new RGB(127,
+		 * 0, 85)); PreferenceConverter.setDefault(storeJava, "colourkey1", new
+		 * RGB(127, 0, 85)); PreferenceConverter.setDefault(storeJava,
+		 * "colourkey2", new RGB(42, 0, 255));
+		 * PreferenceConverter.setDefault(storeJava, "colourkey3", new RGB(128,
+		 * 128, 128)); PreferenceConverter.setDefault(storeJava, "colourkey4",
+		 * new RGB(0, 0, 0)); PreferenceConverter.setDefault(storeJava,
+		 * "colourkey5", new RGB(0, 0, 0));
+		 * PreferenceConverter.setDefault(storeJava, "colourkey6", new RGB(0, 0,
+		 * 0)); PreferenceConverter.setDefault(storeJava, "colourkey7", new
+		 * RGB(0, 0, 0)); // PreferenceConverter.setDefault(storeJava,
+		 * "colourkey8", new RGB(0, // 150, 150));
+		 * 
+		 * PreferenceConverter.setDefault(storeJava, "colourkeyfont", new
+		 * FontData(font, fsize, 1)); PreferenceConverter.setDefault(storeJava,
+		 * "colourkeyfont1", new FontData(font, fsize, 0));
+		 * PreferenceConverter.setDefault(storeJava, "colourkeyfont2", new
+		 * FontData(font, fsize, 0)); PreferenceConverter.setDefault(storeJava,
+		 * "colourkeyfont3", new FontData(font, fsize, 0));
+		 * PreferenceConverter.setDefault(storeJava, "colourkeyfont4", new
+		 * FontData(font, fsize, 0)); PreferenceConverter.setDefault(storeJava,
+		 * "colourkeyfont5", new FontData(font, fsize, 0));
+		 * PreferenceConverter.setDefault(storeJava, "colourkeyfont6", new
+		 * FontData(font, fsize, 0)); PreferenceConverter.setDefault(storeJava,
+		 * "colourkeyfont7", new FontData(font, fsize, 0));
+		 */
 		// PreferenceConverter.setDefault(storeJava, "colourkeyfont8", new
 		// FontData("Courier New", 10, 0));
 
@@ -563,19 +671,22 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 					if (sel.equals("PLOT_IMAGE")) {
 
-						prefsPlotRserve.mult.setStringValue("bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\"bio7Device\")");
+						prefsPlotRserve.mult.setStringValue("bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff"
+								+ "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\"bio7Device\")");
 						prefsPlotRserve.deviceFilename.setStringValue("");
 						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 					} else if (sel.equals("PLOT_CAIRO")) {
 
-						prefsPlotRserve.mult.setStringValue("bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 480, height = 480, type=\"cairo\")}; options(device=\"bio7Device\")");
+						prefsPlotRserve.mult.setStringValue("bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff"
+								+ "\") { tiff(filename,width = 480, height = 480, type=\"cairo\")}; options(device=\"bio7Device\")");
 						prefsPlotRserve.deviceFilename.setStringValue("");
 						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 					}
 
 					else if (sel.equals("PLOT_PRINT")) {
 
-						prefsPlotRserve.mult.setStringValue("bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 6, height = 6, units=\"in\",res=600)}; options(device=\"bio7Device\")");
+						prefsPlotRserve.mult.setStringValue("bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff"
+								+ "\") { tiff(filename,width = 6, height = 6, units=\"in\",res=600)}; options(device=\"bio7Device\")");
 						prefsPlotRserve.deviceFilename.setStringValue("");
 						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 					} else if (sel.equals("PLOT_PDF")) {
@@ -743,7 +854,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		/* Start the calculation thread of the Bio7 application! */
 		CalculationThread m = new CalculationThread();
 		m.start();
-		/*Important to set, see: https://bugs.eclipse.org/bugs/show_bug.cgi?id=422258*/
+		/*
+		 * Important to set, see:
+		 * https://bugs.eclipse.org/bugs/show_bug.cgi?id=422258
+		 */
 		javafx.application.Platform.setImplicitExit(false);
 
 	}
@@ -819,7 +933,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			StartBio7Utils.getConsoleInstance().startutils();
 			// *************************************************
 			/*
-			 * If Bio7 should be customized at startup the startup scripts have to be enabled! The startup is faster without!
+			 * If Bio7 should be customized at startup the startup scripts have
+			 * to be enabled! The startup is faster without!
 			 */
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 			if (store.getBoolean("STARTUP_SCRIPTS")) {
@@ -911,7 +1026,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 								StartRServe.setFileList(fileListR);
 								StartRServe.setFromDragDrop(true);
 								/*
-								 * Now we can start the server. Variable setFromDragDrop will be set to false in the StartRserve class after job has finished!
+								 * Now we can start the server. Variable
+								 * setFromDragDrop will be set to false in the
+								 * StartRserve class after job has finished!
 								 */
 								Bio7Action.callRserve();
 
@@ -923,7 +1040,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 						}
 					}
 					/*
-					 * Load an xml file for the discrete grid and quick compilation!
+					 * Load an xml file for the discrete grid and quick
+					 * compilation!
 					 */
 					else if (fileListR[0].endsWith("exml")) {
 						LoadData.load(fileListR[0].toString());

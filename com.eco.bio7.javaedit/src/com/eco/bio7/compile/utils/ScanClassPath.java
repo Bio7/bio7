@@ -38,7 +38,7 @@ public class ScanClassPath {
 	public String scan() {
 		/*
 		 * Scan all necessary plugins for libs and calculate the paths to the
-		 * libs!
+		 * libs decoupled from JDT because we still need this for the custom Java compiler!
 		 */
 		IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
 		String[] bundles = new String[] { "com.eco.bio7", "com.eco.bio7.libs", "com.eco.bio7.javaedit", "com.eco.bio7.image", "com.eco.bio7.WorldWind", "com.eco.bio7.physics",
@@ -213,13 +213,9 @@ public class ScanClassPath {
 				if (i == 0 | i == 1 || i == 5 || i == 6) {
 					for (int u = 0; u < elements.length; u++) {
 
-						if (i == 0 && u > 1) {
-							buf.add(File.pathSeparator + bundlePaths.get(i) + elements[u].getValue());
-							// System.out.println(File.pathSeparator +
-							// bundlePaths.get(i) + elements[u].getValue());
-						}
-						/* We do not need the external jfxswt.jar listed here! */
-						else if (i == 6) {
+						
+						/* We do not need the external referenced jfxswt.jar listed here (browser plugin with external reference is not listed!)! */
+						 if (i == 0 ||i == 6) {
 
 							String lib = File.pathSeparator + bundlePaths.get(i) + elements[u].getValue();
 							//System.out.println(lib);
