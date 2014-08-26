@@ -14,7 +14,13 @@ package com.eco.bio7.rbridge;
 import java.io.File;
 import java.io.FilenameFilter;
 
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuCreator;
@@ -27,13 +33,16 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
+
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.compile.CompileClassAndMultipleClasses;
 import com.eco.bio7.compile.GroovyInterpreter;
 import com.eco.bio7.compile.BeanShellInterpreter;
 import com.eco.bio7.compile.PythonInterpreter;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.preferences.PreferenceConstants;
+import com.eco.bio7.util.Util;
 
 public class ScriptAction extends Action implements IMenuCreator {
 
@@ -78,7 +87,7 @@ public class ScriptAction extends Action implements IMenuCreator {
 					}
 				}
 				File files = new File(store.getString(PreferenceConstants.D_GRID_SCRIPTS));
-				fil = ListFilesDirectory(files, new String[] { ".r",".R",".bsh", ".groovy",".py" });
+				fil = new Util().ListFilesDirectory(files, new String[] { ".java",".r",".R",".bsh", ".groovy",".py" });
 				MenuItem[] it=new MenuItem[fil.length];
 				if (fil.length > 0) {
                   
@@ -131,6 +140,50 @@ public class ScriptAction extends Action implements IMenuCreator {
 									PythonInterpreter.interpretJob(null, fil[count].toString());
 
 								}
+								else if (fil[count].getName().endsWith(".java")) {
+									
+									
+									
+									Job job = new Job("Compile Java") {
+										@Override
+										protected IStatus run(IProgressMonitor monitor) {
+											monitor.beginTask("Compile Java...", IProgressMonitor.UNKNOWN);
+											String name = fil[count].getName().replaceFirst("[.][^.]+$", "");
+											//IWorkspace workspace = ResourcesPlugin.getWorkspace();
+											IPath location = Path.fromOSString(fil[count].getAbsolutePath());
+											
+											//IFile ifile = workspace.getRoot().getFileForLocation(location);
+											CompileClassAndMultipleClasses cp = new CompileClassAndMultipleClasses();
+											try {
+												cp.compileAndLoad(new File(location.toOSString()),new File(location.toOSString()).getParent(),name ,null,true);
+											} catch (Exception e) {
+												// TODO Auto-generated catch block
+												//Bio7Dialog.message(e.getMessage());
+											}
+											
+
+											monitor.done();
+											return Status.OK_STATUS;
+										}
+
+									};
+									job.addJobChangeListener(new JobChangeAdapter() {
+										public void done(IJobChangeEvent event) {
+											if (event.getResult().isOK()) {
+
+												
+											} else {
+
+												
+											}
+										}
+									});
+									// job.setSystem(true);
+									job.schedule();
+									
+									
+
+								}
 
 							}
 
@@ -163,29 +216,6 @@ public class ScriptAction extends Action implements IMenuCreator {
 		return null;
 	}
 
-	public static File[] ListFilesDirectory(File filedirectory, final String[] extensions) {
-		File dir = filedirectory;
-
-		String[] children = dir.list();
-		if (children == null) {
-
-		} else {
-			for (int i = 0; i < children.length; i++) {
-				// Get filename of the file or directory inside Bio7.
-				String filename = children[i];
-			}
-		}
-
-		// Filter the extension of the file.
-		FilenameFilter filter = new FilenameFilter() {
-			public boolean accept(File dir, String name) {
-				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1])|| name.endsWith(extensions[2])|| name.endsWith(extensions[3])|| name.endsWith(extensions[4]));
-			}
-		};
-
-		File[] files = dir.listFiles(filter);
-
-		return files;
-	}
+	
 
 }

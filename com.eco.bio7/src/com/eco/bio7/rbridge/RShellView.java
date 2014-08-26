@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.URL;
 
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
@@ -118,6 +119,7 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.browser.BrowserView;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.compile.BeanShellInterpreter;
+import com.eco.bio7.compile.CompileClassAndMultipleClasses;
 import com.eco.bio7.compile.GroovyInterpreter;
 import com.eco.bio7.compile.PythonInterpreter;
 import com.eco.bio7.compile.RInterpreterJob;
@@ -128,6 +130,7 @@ import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.plot.RPlot;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.reditors.REditor;
+import com.eco.bio7.util.Util;
 import com.swtdesigner.ResourceManager;
 
 import org.eclipse.swt.layout.GridLayout;
@@ -177,7 +180,7 @@ public class RShellView extends ViewPart {
 	private Composite composite;
 	private Tree tree;
 	private IPreferenceStore store;
-	
+
 	private CTabFolder tab;
 	private CTabItem plotTabItem;
 	private static RShellView instance;
@@ -380,7 +383,7 @@ public class RShellView extends ViewPart {
 		newItemExpandItem_8.setText("Objects");
 
 		newItemExpandItem_8.setExpanded(true);
-		 tab = new CTabFolder(expandBar, SWT.NONE);
+		tab = new CTabFolder(expandBar, SWT.NONE);
 		tab.setRegion(null);
 		tab.setTabHeight(20);
 		tab.addSelectionListener(new SelectionListener() {
@@ -429,7 +432,9 @@ public class RShellView extends ViewPart {
 				ToolTip infoTip = new ToolTip(new Shell(), SWT.BALLOON | SWT.ICON_INFORMATION);
 				infoTip.setText("Info!");
 
-				infoTip.setMessage("Click = Object properties\n" + "Right-Click = Menu\n" + "Select variable(s) = To show, summarize, plot, transfer and convert data!\n" + "\nPress the \"UP ARROW\" key to get the History in the expression textfield!\n" + "\nIf you plot a PDF please close the Window of an opened reader (old plot)\nto get the new plot!\n"
+				infoTip.setMessage("Click = Object properties\n" + "Right-Click = Menu\n" + "Select variable(s) = To show, summarize, plot, transfer and convert data!\n"
+						+ "\nPress the \"UP ARROW\" key to get the History in the expression textfield!\n"
+						+ "\nIf you plot a PDF please close the Window of an opened reader (old plot)\nto get the new plot!\n"
 						+ "\nRight-Click on \"Plot Data\" textfield detour = Menu to inject text commands (a help to customize plots!)");
 				infoTip.setVisible(true);
 
@@ -471,12 +476,12 @@ public class RShellView extends ViewPart {
 			}
 		});
 		gcButton.setText("Gc");
-		
-        /*Create the plot tab!*/
+
+		/* Create the plot tab! */
 		plotTabItem = new CTabItem(tab, SWT.NONE);
 		plotTabItem.setText("Plot Data");
-		new RPlot(tab, SWT.NONE,plotTabItem );
-		
+		new RPlot(tab, SWT.NONE, plotTabItem);
+
 		CTabItem packagesTabItem = new CTabItem(tab, SWT.NONE);
 		packagesTabItem.setText("Packages");
 
@@ -982,7 +987,7 @@ public class RShellView extends ViewPart {
 
 			public void widgetSelected(final SelectionEvent e) {
 				if (RState.isBusy() == false) {
-					/*This avoids a deadlock under MacOSX!*/
+					/* This avoids a deadlock under MacOSX! */
 					int in = listShell.getSelectionIndex();
 					if (in >= 0) {
 						String selected = listShell.getItem(listShell.getSelectionIndex());
@@ -1048,10 +1053,10 @@ public class RShellView extends ViewPart {
 						}
 					}
 				}
-						
-					 else {
-						Bio7Dialog.message("RServer is busy!");
-					
+
+				else {
+					Bio7Dialog.message("RServer is busy!");
+
 				}
 			}
 		});
@@ -2035,7 +2040,7 @@ public class RShellView extends ViewPart {
 				store = Bio7Plugin.getDefault().getPreferenceStore();
 
 				File files = new File(store.getString(PreferenceConstants.D_RSHELL_SCRIPTS));
-				final File[] fil = ListFilesDirectory(files, new String[] { ".r", ".R", ".bsh", ".groovy", ".py" });
+				final File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".r", ".R", ".bsh", ".groovy", ".py" });
 
 				for (int i = 0; i < fil.length; i++) {
 
@@ -2090,6 +2095,44 @@ public class RShellView extends ViewPart {
 							} else if (fil[scriptCount].getName().endsWith(".py")) {
 
 								PythonInterpreter.interpretJob(null, fil[scriptCount].toString());
+
+							} else if (fil[scriptCount].getName().endsWith(".java")) {
+
+								Job job = new Job("Compile Java") {
+									@Override
+									protected IStatus run(IProgressMonitor monitor) {
+										monitor.beginTask("Compile Java...", IProgressMonitor.UNKNOWN);
+										String name = fil[scriptCount].getName().replaceFirst("[.][^.]+$", "");
+										// IWorkspace workspace =
+										// ResourcesPlugin.getWorkspace();
+										IPath location = Path.fromOSString(fil[scriptCount].getAbsolutePath());
+
+										// IFile ifile =
+										// workspace.getRoot().getFileForLocation(location);
+										CompileClassAndMultipleClasses cp = new CompileClassAndMultipleClasses();
+										try {
+											cp.compileAndLoad(new File(location.toOSString()), new File(location.toOSString()).getParent(), name, null, true);
+										} catch (Exception e) {
+											// TODO Auto-generated catch block
+											// Bio7Dialog.message(e.getMessage());
+										}
+
+										monitor.done();
+										return Status.OK_STATUS;
+									}
+
+								};
+								job.addJobChangeListener(new JobChangeAdapter() {
+									public void done(IJobChangeEvent event) {
+										if (event.getResult().isOK()) {
+
+										} else {
+
+										}
+									}
+								});
+								// job.setSystem(true);
+								job.schedule();
 
 							}
 
@@ -2292,14 +2335,14 @@ public class RShellView extends ViewPart {
 		formDataButtonPackRefresh.top = new FormAttachment(button, 0, SWT.TOP);
 		helpButton.setLayoutData(formDataButtonPackRefresh);
 		helpButton.setText("?");
-		
+
 		Button btnNewButton = new Button(parent, SWT.NONE);
 		btnNewButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				String interpreterSelection=ConsolePageParticipant.getInterpreterSelection();
-				Process RProcess=ConsolePageParticipant.getConsolePageParticipantInstance().getRProcess();
-				Pid rPid=ConsolePageParticipant.getConsolePageParticipantInstance().getrPid();
+				String interpreterSelection = ConsolePageParticipant.getInterpreterSelection();
+				Process RProcess = ConsolePageParticipant.getConsolePageParticipantInstance().getRProcess();
+				Pid rPid = ConsolePageParticipant.getConsolePageParticipantInstance().getrPid();
 				if (Bio7Dialog.getOS().equals("Windows")) {
 					Bundle bundle = Platform.getBundle("com.eco.bio7.os");
 
@@ -2313,7 +2356,7 @@ public class RShellView extends ViewPart {
 					}
 					File fi = new File(fileUrl.getPath());
 					String pathBundle = fi.toString() + "/win/64";
-					
+
 					if (interpreterSelection.equals("R")) {
 						try {
 							Process p = Runtime.getRuntime().exec(pathBundle + "/SendSignalCtrlC.exe " + rPid.getPidWindows(RProcess));
@@ -2321,8 +2364,8 @@ public class RShellView extends ViewPart {
 						} catch (IOException ex) {
 							ex.printStackTrace();
 						}
-						
-					} 
+
+					}
 				} else {
 					if (interpreterSelection.equals("R")) {
 						try {
@@ -2334,11 +2377,8 @@ public class RShellView extends ViewPart {
 						System.out.println(rPid.getPidWindows(RProcess));
 					}
 
-					
-
 				}
 
-				
 			}
 		});
 		btnNewButton.setToolTipText("Interrupt R execution");
@@ -2356,13 +2396,19 @@ public class RShellView extends ViewPart {
 						.createSequentialGroup()
 						.add(gl_composite
 								.createParallelGroup(GroupLayout.LEADING)
-								.add(gl_composite.createSequentialGroup().add(objectsButton, GroupLayout.PREFERRED_SIZE, 70, GroupLayout.PREFERRED_SIZE).add(removeButton, GroupLayout.PREFERRED_SIZE, 70, GroupLayout.PREFERRED_SIZE).add(loadButton_1, GroupLayout.PREFERRED_SIZE, 45, GroupLayout.PREFERRED_SIZE).add(gcButton, GroupLayout.PREFERRED_SIZE, 45, GroupLayout.PREFERRED_SIZE)
-										.add(xButton, GroupLayout.PREFERRED_SIZE, 45, GroupLayout.PREFERRED_SIZE).add(fontButton, GroupLayout.PREFERRED_SIZE, 45, GroupLayout.PREFERRED_SIZE).add(iButton, GroupLayout.PREFERRED_SIZE, 45, GroupLayout.PREFERRED_SIZE)).add(sashForm, GroupLayout.DEFAULT_SIZE, 570, Short.MAX_VALUE)).addContainerGap()));
+								.add(gl_composite.createSequentialGroup().add(objectsButton, GroupLayout.PREFERRED_SIZE, 70, GroupLayout.PREFERRED_SIZE)
+										.add(removeButton, GroupLayout.PREFERRED_SIZE, 70, GroupLayout.PREFERRED_SIZE).add(loadButton_1, GroupLayout.PREFERRED_SIZE, 45, GroupLayout.PREFERRED_SIZE)
+										.add(gcButton, GroupLayout.PREFERRED_SIZE, 45, GroupLayout.PREFERRED_SIZE).add(xButton, GroupLayout.PREFERRED_SIZE, 45, GroupLayout.PREFERRED_SIZE)
+										.add(fontButton, GroupLayout.PREFERRED_SIZE, 45, GroupLayout.PREFERRED_SIZE).add(iButton, GroupLayout.PREFERRED_SIZE, 45, GroupLayout.PREFERRED_SIZE))
+								.add(sashForm, GroupLayout.DEFAULT_SIZE, 570, Short.MAX_VALUE)).addContainerGap()));
 		gl_composite.setVerticalGroup(gl_composite.createParallelGroup(GroupLayout.LEADING).add(
 				gl_composite
 						.createSequentialGroup()
-						.add(gl_composite.createParallelGroup(GroupLayout.LEADING).add(objectsButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE).add(removeButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE).add(loadButton_1, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE).add(gcButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE)
-								.add(xButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE).add(fontButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE).add(iButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE)).add(5).add(sashForm, GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)));
+						.add(gl_composite.createParallelGroup(GroupLayout.LEADING).add(objectsButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE)
+								.add(removeButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE).add(loadButton_1, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE)
+								.add(gcButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE).add(xButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE)
+								.add(fontButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE).add(iButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE)).add(5)
+						.add(sashForm, GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)));
 		composite.setLayout(gl_composite);
 	}
 
@@ -2803,31 +2849,6 @@ public class RShellView extends ViewPart {
 
 	public static RShellView getInstance() {
 		return instance;
-	}
-
-	public static File[] ListFilesDirectory(File filedirectory, final String[] extensions) {
-		File dir = filedirectory;
-
-		String[] children = dir.list();
-		if (children == null) {
-
-		} else {
-			for (int i = 0; i < children.length; i++) {
-				// Get filename of the file or directory inside Bio7.
-				String filename = children[i];
-			}
-		}
-
-		// Filter the extension of the file.
-		FilenameFilter filter = new FilenameFilter() {
-			public boolean accept(File dir, String name) {
-				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2]) || name.endsWith(extensions[3]) || name.endsWith(extensions[4]));
-			}
-		};
-
-		File[] files = dir.listFiles(filter);
-
-		return files;
 	}
 
 	public static List getListShell() {

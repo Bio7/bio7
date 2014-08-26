@@ -86,6 +86,7 @@ import com.eco.bio7.rbridge.actions.SaveRWorkspaceand_Start;
 import com.eco.bio7.rbridge.actions.StartRServe;
 import com.eco.bio7.scenebuilder.GenerateControllerAction;
 import com.eco.bio7.time.Time;
+import com.eco.bio7.util.Util;
 
 public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	private static StatusLineContributionItem userItem = null;
@@ -491,7 +492,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		IMenuListener listener = new IMenuListener() {
 			public void menuAboutToShow(IMenuManager m) {
 				File files = new File(store.getString(PreferenceConstants.D_SCRIPT_GENERAL));
-				File[] fil = ListFilesDirectory(files, new String[] { ".bsh", ".groovy", ".py" });
+				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java",".bsh", ".groovy", ".py" });
 
 				if (fil.length > 0) {
 					int a;
@@ -522,7 +523,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		IMenuListener listener4 = new IMenuListener() {
 			public void menuAboutToShow(IMenuManager m) {
 				File files = new File(store.getString(PreferenceConstants.D_SCRIPT_SPATIAL));
-				File[] fil = ListFilesDirectory(files, new String[] { ".bsh", ".groovy", ".py" });
+				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java",".bsh", ".groovy", ".py" });
 
 				if (fil.length > 0) {
 					int a;
@@ -554,7 +555,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		IMenuListener listener5 = new IMenuListener() {
 			public void menuAboutToShow(IMenuManager m) {
 				File files = new File(store.getString(PreferenceConstants.D_SCRIPT_IMAGE));
-				File[] fil = ListFileDirectory(files, ".txt");
+				File[] fil = new Util().ListFileDirectory(files, ".txt");
 
 				if (fil.length > 0) {
 					int a;
@@ -585,7 +586,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		IMenuListener listener6 = new IMenuListener() {
 			public void menuAboutToShow(IMenuManager m) {
 				File files = new File(store.getString(PreferenceConstants.D_SCRIPT_R));
-				File[] fil = ListFileDirectory(files, ".R");
+				File[] fil = new Util().ListFileDirectory(files, ".R");
 
 				if (fil.length > 0) {
 					int a;
@@ -617,7 +618,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		IMenuListener listener2 = new IMenuListener() {
 			public void menuAboutToShow(IMenuManager m) {
 				File files = new File(store.getString(PreferenceConstants.D_IMPORT));
-				File[] fil = ListFilesDirectory(files, new String[] { ".bsh", ".groovy", ".py" });
+				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java",".bsh", ".groovy", ".py" });
 
 				if (fil.length > 0) {
 					int a;
@@ -648,7 +649,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		IMenuListener listener3 = new IMenuListener() {
 			public void menuAboutToShow(IMenuManager m) {
 				File files = new File(store.getString(PreferenceConstants.D_EXPORT));
-				File[] fil = ListFilesDirectory(files, new String[] { ".bsh", ".groovy", ".py" });
+				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java",".bsh", ".groovy", ".py" });
 
 				if (fil.length > 0) {
 					int a;
@@ -825,55 +826,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
         coolBar.add(new ToolBarContributionItem(toolBarEditor, IWorkbenchActionConstants.GROUP_EDITOR));
 	}
 
-	public static File[] ListFileDirectory(File filedirectory, final String extension) {
-		File dir = filedirectory;
+	
 
-		String[] children = dir.list();
-		if (children == null) {
-
-		} else {
-			for (int i = 0; i < children.length; i++) {
-				// Get filename of the file or directory inside Bio7.
-				String filename = children[i];
-			}
-		}
-
-		// Filter the extension of the file.
-		FilenameFilter filter = new FilenameFilter() {
-			public boolean accept(File dir, String name) {
-				return (name.endsWith(extension));
-			}
-		};
-
-		File[] files = dir.listFiles(filter);
-
-		return files;
-	}
-
-	public static File[] ListFilesDirectory(File filedirectory, final String[] extensions) {
-		File dir = filedirectory;
-
-		String[] children = dir.list();
-		if (children == null) {
-
-		} else {
-			for (int i = 0; i < children.length; i++) {
-				// Get filename of the file or directory inside Bio7.
-				String filename = children[i];
-			}
-		}
-
-		// Filter the extension of the file.
-		FilenameFilter filter = new FilenameFilter() {
-			public boolean accept(File dir, String name) {
-				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]));
-			}
-		};
-
-		File[] files = dir.listFiles(filter);
-
-		return files;
-	}
+	
 
 	public static Action getStart() {
 		return start;

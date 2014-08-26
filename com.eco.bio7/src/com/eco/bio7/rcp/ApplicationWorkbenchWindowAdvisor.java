@@ -28,7 +28,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IExecutionListener;
 import org.eclipse.core.commands.NotHandledException;
-import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -39,12 +39,15 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -59,16 +62,13 @@ import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorRegistry;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PerspectiveAdapter;
 import org.eclipse.ui.PlatformUI;
@@ -95,27 +95,24 @@ import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.actions.Bio7Action;
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.compile.BeanShellInterpreter;
+import com.eco.bio7.compile.CompileClassAndMultipleClasses;
 import com.eco.bio7.compile.GroovyInterpreter;
+import com.eco.bio7.compile.PythonInterpreter;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.discrete.Quad2d;
-import com.eco.bio7.editor.BeanshellEditorPlugin;
 import com.eco.bio7.javaeditor.Bio7EditorPlugin;
-import com.eco.bio7.javaeditors.JavaEditor;
 import com.eco.bio7.jobs.LoadData;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.preferences.RServePlotPrefs;
 import com.eco.bio7.preferences.Reg;
-import com.eco.bio7.pythonedit.PythonEditorPlugin;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.actions.StartRServe;
 import com.eco.bio7.rbridge.debug.REditorListener;
-import com.eco.bio7.reditor.Bio7REditorPlugin;
-import com.eco.bio7.reditors.REditor;
-import com.eco.bio7.scenebuilder.editor.MultiPageEditor;
 import com.eco.bio7.time.CalculationThread;
-import com.eco.bio7.preferences.RServePrefs;
+import com.eco.bio7.util.Util;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
@@ -140,9 +137,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		IResourceChangeListener listener = new IResourceChangeListener() {
 			public void resourceChanged(IResourceChangeEvent event) {
-			
+
 				if (event == null || event.getDelta() == null) {
-					
+
 					return;
 				}
 
@@ -151,16 +148,19 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 						event.getDelta().accept(new IResourceDeltaVisitor() {
 							public boolean visit(IResourceDelta delta) throws CoreException {
 								if (delta.getKind() == IResourceDelta.ADDED) {
-									
+
 									final IResource resource = delta.getResource();
-									if (resource.getType() ==4) {
-										
-										IProject proj=resource.getProject();
-										/*if(proj.hasNature(JavaCore.NATURE_ID)){
-											System.out.println("Java Project Created!");
-										}
-										
-										System.out.println("Project Created!");*/
+									if (resource.getType() == 4) {
+
+										IProject proj = resource.getProject();
+										/*
+										 * if(proj.hasNature(JavaCore.NATURE_ID))
+										 * { System.out.println(
+										 * "Java Project Created!"); }
+										 * 
+										 * System.out.println("Project Created!")
+										 * ;
+										 */
 									}
 									// do your stuff and check the project is
 									// opened or closed
@@ -877,11 +877,96 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		}
 
 		if (startupDirectory != null && startupDirectory != "") {
-			File[] files = ListFileDirectory(new File(startupDirectory));
+
+			File[] files = new Util().ListFilesDirectory(new File(startupDirectory), new String[] { ".java", ".r", ".R", ".bsh", ".groovy", ".py" });
+			 System.out.println(files.length);
 			if (files.length > 0) {
 				for (int i = 0; i < files.length; i++) {
+                    System.out.println(files[i].getName());
+					if (files[i].getName().endsWith(".R") || files[i].getName().endsWith(".r")) {
+						if (RServe.isAliveDialog()) {
+							if (RState.isBusy() == false) {
+								RState.setBusy(true);
+								final RInterpreterJob Do = new RInterpreterJob(null, true, files[i].toString());
+								Do.addJobChangeListener(new JobChangeAdapter() {
+									public void done(IJobChangeEvent event) {
+										if (event.getResult().isOK()) {
+											int countDev = RServe.getDisplayNumber();
+											RState.setBusy(false);
+											if (countDev > 0) {
+												RServe.closeAndDisplay();
+											}
+										}
+									}
+								});
+								Do.setUser(true);
+								Do.schedule();
+							} else {
 
-					GroovyInterpreter.interpretJob(null, files[i].getAbsolutePath());
+								Bio7Dialog.message("RServer is busy!");
+							}
+
+						}
+					}
+
+					else if (files[i].getName().endsWith(".bsh")) {
+
+						BeanShellInterpreter.interpretJob(null, files[i].toString());
+
+					} else if (files[i].getName().endsWith(".groovy")) {
+
+						GroovyInterpreter.interpretJob(null, files[i].toString());
+
+					} else if (files[i].getName().endsWith(".py")) {
+
+						PythonInterpreter.interpretJob(null, files[i].toString());
+
+					}
+
+					else if (files[i].getName().endsWith(".java")) {
+						
+						final int count=i;
+						
+						Job job = new Job("Compile Java") {
+							@Override
+							protected IStatus run(IProgressMonitor monitor) {
+								monitor.beginTask("Compile Java...", IProgressMonitor.UNKNOWN);
+								String name = files[count].getName().replaceFirst("[.][^.]+$", "");
+								//IWorkspace workspace = ResourcesPlugin.getWorkspace();
+								IPath location = Path.fromOSString(files[count].getAbsolutePath());
+								
+								//IFile ifile = workspace.getRoot().getFileForLocation(location);
+								CompileClassAndMultipleClasses cp = new CompileClassAndMultipleClasses();
+								try {
+									cp.compileAndLoad(new File(location.toOSString()),new File(location.toOSString()).getParent(),name ,null,true);
+								} catch (Exception e) {
+									// TODO Auto-generated catch block
+									//Bio7Dialog.message(e.getMessage());
+								}
+								
+
+								monitor.done();
+								return Status.OK_STATUS;
+							}
+
+						};
+						job.addJobChangeListener(new JobChangeAdapter() {
+							public void done(IJobChangeEvent event) {
+								if (event.getResult().isOK()) {
+
+									
+								} else {
+
+									
+								}
+							}
+						});
+						// job.setSystem(true);
+						job.schedule();
+						
+						
+
+					}
 
 				}
 

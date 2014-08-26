@@ -38,7 +38,7 @@ public class ScanClassPath {
 	public String scan() {
 		/*
 		 * Scan all necessary plugins for libs and calculate the paths to the
-		 * libs decoupled from JDT because we still need this for the custom Java compiler!
+		 * libs decoupled from JDT because we still need this for the custom Java compiler, Flow editor and Bio7 model import!
 		 */
 		IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
 		String[] bundles = new String[] { "com.eco.bio7", "com.eco.bio7.libs", "com.eco.bio7.javaedit", "com.eco.bio7.image", "com.eco.bio7.WorldWind", "com.eco.bio7.physics",

@@ -51,6 +51,7 @@ import org.eclipse.ui.PlatformUI;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.BatchModel;
+import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.javaeditors.JavaEditor;
 import com.eco.bio7.methods.Compiled;
 import com.eco.bio7.rcp.StartBio7Utils;
@@ -123,7 +124,7 @@ public class CompileClassAndMultipleClasses {
 			protected IStatus run(IProgressMonitor monitor) {
 				monitor.beginTask("Compile And Run...", IProgressMonitor.UNKNOWN);
 				// JavaSourceClassLoader.directCall = true;
-				compileAndLoad(fi, dir, name, pag);
+				compileAndLoad(fi, dir, name, pag,false);
 				// JavaSourceClassLoader.directCall = false;
 				monitor.done();
 				return Status.OK_STATUS;
@@ -143,7 +144,7 @@ public class CompileClassAndMultipleClasses {
 		job.schedule();
 	}
 
-	public void compileAndLoad(File path, String dir, String name, IWorkbenchPage pag) {
+	public void compileAndLoad(File path, String dir, String name, IWorkbenchPage pag,boolean startupScript) {
 
 		JavaSourceClassLoader cla = new JavaSourceClassLoader(Bio7Plugin.class.getClassLoader());
 		cla.pag = pag;
@@ -194,6 +195,27 @@ public class CompileClassAndMultipleClasses {
 					cl = cla.findClass(name);
 				}
 
+			}
+			/*Compile startup scripts!*/
+			else if(startupScript){
+				org.eclipse.jdt.core.dom.CompilationUnit compUnit=null;
+				Document doc = new Document(BatchModel.fileToString(path.getAbsolutePath()));
+				
+				ASTParser parser = ASTParser.newParser(AST.JLS8);
+				parser.setSource(doc.get().toCharArray());
+				// CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+				compUnit = (CompilationUnit) parser.createAST(null);
+				PackageDeclaration pdecl = compUnit.getPackage();
+				if (pdecl != null) {
+					Name packName = pdecl.getName();
+
+					String pack = packName.toString();
+					cl = cla.findClass(pack + "." + name);
+
+				} else {
+					cl = cla.findClass(name);
+				}
+				
 			}
 			/* If we compile from the context menu or the Flow editor we create the AST from the file! */
 			else {

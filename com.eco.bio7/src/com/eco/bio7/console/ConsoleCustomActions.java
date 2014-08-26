@@ -12,10 +12,8 @@
 package com.eco.bio7.console;
 
 import java.nio.charset.Charset;
-
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
-
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.dialogs.InputDialog;
@@ -27,23 +25,17 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MenuListener;
-import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FontDialog;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
-
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
@@ -214,40 +206,44 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 			public void widgetSelected(SelectionEvent e) {
 
 				ConsolePageParticipant cpp = ConsolePageParticipant.getConsolePageParticipantInstance();
-
+				String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 				new Thread() {
 					@Override
 					public void run() {
-						if (cpp.getNativeShellProcess() != null) {
-							try {
-								cpp.getNativeShellProcess().destroy();
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-							cpp.setNativeShellProcess(null);
-						}
 
-						if (cpp.getRProcess() != null) {
-							try {
-								cpp.getRProcess().destroy();
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
+						if (selectionConsole.equals("shell")) {
+							if (cpp.getNativeShellProcess() != null) {
+								try {
+									cpp.getNativeShellProcess().destroy();
+								} catch (Exception e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+								cpp.setNativeShellProcess(null);
 							}
-							cpp.setRProcess(null);
-						}
+						} else if (selectionConsole.equals("R")) {
 
-						if (cpp.getPythonProcess() != null) {
-							try {
-								cpp.getPythonProcess().destroy();
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
+							if (cpp.getRProcess() != null) {
+								try {
+									cpp.getRProcess().destroy();
+								} catch (Exception e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+								cpp.setRProcess(null);
 							}
-							cpp.setPythonProcess(null);
-						}
+						} else if (selectionConsole.equals("Python")) {
+							if (cpp.getPythonProcess() != null) {
+								try {
+									cpp.getPythonProcess().destroy();
+								} catch (Exception e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+								cpp.setPythonProcess(null);
+							}
 
+						}
 					}
 				}.start();
 
