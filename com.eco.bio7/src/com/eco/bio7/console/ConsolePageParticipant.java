@@ -1344,9 +1344,22 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	public Process getShellProcess() {
 		return shellProcess;
 	}
+	public Process getNativeShellProcess() {
+		return nativeShellProcess;
+	}
+
+	public void setNativeShellProcess(Process nativeShellProcess) {
+		this.nativeShellProcess = nativeShellProcess;
+	}
 
 	public Process getRProcess() {
 		return RProcess;
+	}
+	public void setRProcess(Process rProcess) {
+		RProcess = rProcess;
+	}
+	public void setPythonProcess(Process pythonProcess) {
+		this.pythonProcess = pythonProcess;
 	}
 
 	public Process getPythonProcess() {

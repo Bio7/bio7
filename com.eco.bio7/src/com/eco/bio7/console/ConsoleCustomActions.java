@@ -12,8 +12,10 @@
 package com.eco.bio7.console;
 
 import java.nio.charset.Charset;
+
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
+
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.dialogs.InputDialog;
@@ -51,7 +53,8 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 	private Menu fMenu;
 	private ConsolePageParticipant participant;
-	private String[] encoding = { "UTF-8", "UTF-16", "CP850","Big5","Windows-1252","Windows-1250","Windows-1251","Windows-1252","Windows-1253","Windows-1254","Windows-1255","Windows-1256","Windows-1257","Windows-1258" };
+	private String[] encoding = { "UTF-8", "UTF-16", "CP850", "Big5", "Windows-1252", "Windows-1250", "Windows-1251", "Windows-1252", "Windows-1253", "Windows-1254", "Windows-1255", "Windows-1256",
+			"Windows-1257", "Windows-1258" };
 
 	public ConsoleCustomActions(ConsolePageParticipant participant) {
 		setId("Interpreter_Console_Custom_Actions");
@@ -199,6 +202,62 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 		});
 		new MenuItem(fMenu, SWT.SEPARATOR);
 
+		MenuItem menuItem4 = new MenuItem(fMenu, SWT.PUSH);
+		menuItem4.setText("Stop Native Process (R, Python, Shell)");
+
+		menuItem4.addSelectionListener(new SelectionListener() {
+
+			public void selectionChanged(SelectionChangedEvent event) {
+
+			}
+
+			public void widgetSelected(SelectionEvent e) {
+
+				ConsolePageParticipant cpp = ConsolePageParticipant.getConsolePageParticipantInstance();
+
+				new Thread() {
+					@Override
+					public void run() {
+						if (cpp.getNativeShellProcess() != null) {
+							try {
+								cpp.getNativeShellProcess().destroy();
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							cpp.setNativeShellProcess(null);
+						}
+
+						if (cpp.getRProcess() != null) {
+							try {
+								cpp.getRProcess().destroy();
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							cpp.setRProcess(null);
+						}
+
+						if (cpp.getPythonProcess() != null) {
+							try {
+								cpp.getPythonProcess().destroy();
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							cpp.setPythonProcess(null);
+						}
+
+					}
+				}.start();
+
+			}
+
+			public void widgetDefaultSelected(SelectionEvent e) {
+
+			}
+		});
+		new MenuItem(fMenu, SWT.SEPARATOR);
 		MenuItem menuEncoding = new MenuItem(fMenu, SWT.CASCADE);
 		menuEncoding.setText("Change Text Encoding");
 		final Menu menuScripts = new Menu(menuEncoding);
@@ -222,7 +281,6 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 					}
 				}
 
-				
 				MenuItem item1 = new MenuItem(menuScripts, SWT.NONE);
 				final Charset cs = Charset.defaultCharset();
 				item1.setText("System Encoding");
@@ -233,7 +291,7 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 						IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 						store.setValue("Console_Encoding", cs.displayName());
-						Bio7Dialog.message("Encoding set to "+ Charset.defaultCharset());
+						Bio7Dialog.message("Encoding set to " + Charset.defaultCharset());
 					}
 
 					public void widgetDefaultSelected(SelectionEvent e) {
@@ -273,18 +331,16 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 				item3.addSelectionListener(new SelectionListener() {
 
 					public void widgetSelected(SelectionEvent e) {
-						
+
 						IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-						
+
 						InputDialog dlg = new InputDialog(Display.getCurrent().getActiveShell(), "", "Enter Encoding", store.getString("Console_Encoding"), null);
 						if (dlg.open() == Window.OK) {
 							// User clicked OK; update the label with the input
 
-							
-
 							store.setValue("Console_Encoding", dlg.getValue());
-							Bio7Dialog.message("Encoding set to "+dlg.getValue());
-							
+							Bio7Dialog.message("Encoding set to " + dlg.getValue());
+
 						}
 					}
 
@@ -307,7 +363,7 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 							IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 							store.setValue("Console_Encoding", encoding[count]);
-							Bio7Dialog.message("Encoding set to "+encoding[count]);
+							Bio7Dialog.message("Encoding set to " + encoding[count]);
 						}
 
 						public void widgetDefaultSelected(SelectionEvent e) {
@@ -324,25 +380,23 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 		itemSetFont.addSelectionListener(new SelectionListener() {
 
-			
-
 			public void widgetSelected(SelectionEvent e) {
-				
+
 				IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 				FontData defaultFont = PreferenceConverter.getDefaultFontData(store, "Bio7ShellFonts");
-				StyledText styledText = (StyledText) participant.page.getControl();			
+				StyledText styledText = (StyledText) participant.page.getControl();
 				FontDialog fd = new FontDialog(new Shell(), SWT.NONE);
 				fd.setText("Select Font");
 				fd.setRGB(new RGB(0, 0, 0));
-                if(defaultFont!=null){
-				fd.setFontData(defaultFont);
-                }
+				if (defaultFont != null) {
+					fd.setFontData(defaultFont);
+				}
 				FontData newFont = fd.open();
 				if (newFont == null)
 					return;
 				styledText.setFont(new Font(Display.getDefault(), newFont));
 				PreferenceConverter.setValue(store, "Bio7ShellFonts", newFont);
-				
+
 			}
 
 			public void widgetDefaultSelected(SelectionEvent e) {
