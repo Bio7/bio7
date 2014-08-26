@@ -1,4 +1,4 @@
-package com.eco.bio7.actions;
+package com.eco.bio7.rbridge.actions;
 
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -10,19 +10,18 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.rosuda.REngine.Rserve.RConnection;
 
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.libreoffice.LibreOfficeValueToRHeadJob;
+import com.eco.bio7.libreoffice.LibreOfficeValueToRJob;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 
-public class OfficeValueToRHeadAction extends Action {
+public class OfficeValueToRAction extends Action {
 
 	private final IWorkbenchWindow window;
 
-	public OfficeValueToRHeadAction(String text, IWorkbenchWindow window) {
-
+	public OfficeValueToRAction(String text, IWorkbenchWindow window) {
 		super(text);
 		this.window = window;
-		setId("com.eco.bio7.office_value_to_R_Head");
+		setId("com.eco.bio7.office_value_to_R");
 
 	}
 
@@ -32,7 +31,7 @@ public class OfficeValueToRHeadAction extends Action {
 		if (d != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
-				LibreOfficeValueToRHeadJob job = new LibreOfficeValueToRHeadJob();
+				LibreOfficeValueToRJob job = new LibreOfficeValueToRJob();
 				job.addJobChangeListener(new JobChangeAdapter() {
 					public void done(IJobChangeEvent event) {
 						if (event.getResult().isOK()) {
@@ -45,11 +44,12 @@ public class OfficeValueToRHeadAction extends Action {
 				});
 				job.setUser(true);
 				job.schedule();
-
 			} else {
 
 				Bio7Dialog.message("RServer is busy!");
+
 			}
+
 		} else {
 
 			MessageBox messageBox = new MessageBox(new Shell(),

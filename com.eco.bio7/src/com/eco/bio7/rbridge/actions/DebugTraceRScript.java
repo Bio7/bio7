@@ -8,7 +8,7 @@
  * Contributors:
  *     M. Austenfeld
  *******************************************************************************/
-package com.eco.bio7.actions;
+package com.eco.bio7.rbridge.actions;
 
 import java.util.Map;
 

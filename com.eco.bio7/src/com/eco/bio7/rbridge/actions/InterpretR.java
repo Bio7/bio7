@@ -8,7 +8,7 @@
  * Contributors:
  *     M. Austenfeld
  *******************************************************************************/
-package com.eco.bio7.actions;
+package com.eco.bio7.rbridge.actions;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.NullProgressMonitor;

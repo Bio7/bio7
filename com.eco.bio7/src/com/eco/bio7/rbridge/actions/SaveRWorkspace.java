@@ -1,4 +1,4 @@
-package com.eco.bio7.actions;
+package com.eco.bio7.rbridge.actions;
 
 import java.util.prefs.Preferences;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;

@@ -1,4 +1,4 @@
-package com.eco.bio7.actions;
+package com.eco.bio7.rbridge.actions;
 
 import java.io.IOException;
 import java.net.URL;

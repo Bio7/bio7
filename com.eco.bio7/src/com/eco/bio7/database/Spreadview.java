@@ -9,6 +9,7 @@ import javax.swing.JScrollPane;
 
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ControlContribution;
 import org.eclipse.jface.action.IToolBarManager;
@@ -308,7 +309,7 @@ public class Spreadview extends ViewPart {
 				fileName = name.replaceFirst("[.][^.]+$", "");
 
 			}
-			if (currentEditor instanceof JavaEditor) {
+			if (currentEditor instanceof JavaEditor||currentEditor instanceof CompilationUnitEditor) {
 
 				ITextEditor editor = (ITextEditor) currentEditor;
 				

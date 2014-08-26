@@ -94,7 +94,6 @@ import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.actions.Bio7Action;
-import com.eco.bio7.actions.StartRServe;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.GroovyInterpreter;
 import com.eco.bio7.compile.RInterpreterJob;
@@ -110,6 +109,7 @@ import com.eco.bio7.preferences.Reg;
 import com.eco.bio7.pythonedit.PythonEditorPlugin;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.rbridge.actions.StartRServe;
 import com.eco.bio7.rbridge.debug.REditorListener;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditors.REditor;

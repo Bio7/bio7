@@ -229,7 +229,7 @@ class Spread {
 
 			/*
 			 * A recursive method to move to the next row to e.g. ease the input
-			 * of numbers!
+			 * of data!
 			 */
 			private void recursiveEdit(final GridEditor editor, final GridItem item) {
 
@@ -250,8 +250,10 @@ class Spread {
 								item.setText(column, text.getText());
 								index++;
 								if (index < grid.getItemCount()) {
+
 									GridItem gi = grid.getItem(index);
 									grid.showItem(gi);
+
 									/*
 									 * This snippet can be used to deselect the
 									 * previous cell and select the next cell!
@@ -261,7 +263,16 @@ class Spread {
 									 * grid.deselectCell(pt2);
 									 */
 									recursiveEdit(editor, gi);
-								} else {
+									 /*Dynamically resize row amount!*/
+								} else if (index == grid.getItemCount()) {
+									Bio7Grid.createRow(index, item.getHeight());
+
+									GridItem gi = grid.getItem(index);
+									grid.showItem(gi);
+									recursiveEdit(editor, gi);
+								}
+
+								else {
 									text.dispose();
 									e.doit = false;
 								}
@@ -287,7 +298,18 @@ class Spread {
 									GridColumn col = grid.getColumn(column);
 									grid.showColumn(col);
 									recursiveEdit(editor, gi);
-								} else {
+								}
+                                /*Dynamically resize column amount!*/
+								else if (column == grid.getColumnCount()) {
+									Bio7Grid.createColumn(cols, grid.getColumn(column - 1).getWidth(), "C " + (grid.getColumnCount() + 1));
+
+									GridItem gi = grid.getItem(index);
+									GridColumn col = grid.getColumn(column);
+									grid.showColumn(col);
+									recursiveEdit(editor, gi);
+								}
+
+								else {
 									text.dispose();
 									e.doit = false;
 								}
