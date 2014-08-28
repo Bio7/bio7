@@ -786,6 +786,14 @@
             name="Bio7 Java Project (OpenGL Model Template)"
             project="true">
       </wizard>
+      <wizard
+            category="org.eclipse.jdt.ui.java"
+            class="com.eco.bio7.wizards.java.JavaWindowBuilderBio7ClassWizard"
+            icon="icons/projects.gif"
+            id="com.eco.bio7.javafxclassjdtwindowbuilder"
+            name="Bio7 Java Project (WindowBuilder Template)"
+            project="true">
+      </wizard>
       
    </extension>
    <extension
