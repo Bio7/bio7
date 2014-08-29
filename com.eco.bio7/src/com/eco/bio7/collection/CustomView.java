@@ -23,7 +23,8 @@ import processing.core.PApplet;
 import com.jogamp.opengl.util.Animator;
 
 /**
- * This class provides some static methods for the creation of custom views inside the Bio7 application.
+ * This class provides some static methods for the creation of custom views
+ * inside the Bio7 application.
  * 
  * @author Bio7
  * 
@@ -56,9 +57,12 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.imagej");
 
-		/*Add a nested composite to use addData for a reference to the different panels. The parent composite seems to set addData
-		 *since Eclipse 4.4M6!*/
-		this.customViewParent    = new Composite(parent, SWT.NONE);
+		/*
+		 * Add a nested composite to use addData for a reference to the
+		 * different panels. The parent composite seems to set addDatasince
+		 * Eclipse 4.4M6!
+		 */
+		this.customViewParent = new Composite(parent, SWT.NONE);
 		customViewParent.setLayout(new FillLayout());
 
 	}
@@ -118,7 +122,8 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	 * @param path
 	 *            the path to the *.fxml file.
 	 * @param model
-	 *            the reference to the instance of the compiled class as controller.
+	 *            the reference to the instance of the compiled class as
+	 *            controller.
 	 */
 	public void setFxmlCanvas(String id, final String path, final Object model) {
 
@@ -158,7 +163,8 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	}
 
 	/**
-	 * Creates a JavaFX Scene tab inside a custom view from a given JavaFX scene.
+	 * Creates a JavaFX Scene tab inside a custom view from a given JavaFX
+	 * scene.
 	 * 
 	 * @param title
 	 *            the title of the tab.
@@ -252,7 +258,7 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	}
 
 	/**
-	 * Returns a swt composite and creates a custom view with a tab.
+	 * Returns a SWT composite and creates a custom view with a tab.
 	 * 
 	 * @param title
 	 *            the title of the tab.
@@ -280,23 +286,23 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 
 			}
 		});
-		Composite co = null;
+		
+		CustomView viewReturn = null;
 		if (activated instanceof CustomView) {
 			final CustomView view = (CustomView) activated;
 			display = PlatformUI.getWorkbench().getDisplay();
 			display.syncExec(new Runnable() {
 				public void run() {
-			Control c[] = view.getCustomViewParent().getChildren();
-			for (int i = 0; i < c.length; i++) {
-				c[i].dispose();
-			}
+					Control c[] = view.getCustomViewParent().getChildren();
+					for (int i = 0; i < c.length; i++) {
+						c[i].dispose();
+					}
 				}
 			});
-			SwtCustom Swt = new SwtCustom(view);
-			co = Swt.addTab(id);
-
+			
+			viewReturn = view;
 		}
-		return co;
+		return viewReturn.getCustomViewParent();
 	}
 
 	/**
@@ -378,15 +384,19 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	}
 
 	/*
-	 * IPartListener is not working to detect the view close because the method "closedView" is called after the view has been closed! However we can use the editor ISaveablePart2 interface which mimics this behaviour for views. The views are marked like a non saved editor with a '*' char! In the
-	 * close event (do save) we clean up all data and close the tab items!
+	 * IPartListener is not working to detect the view close because the method
+	 * "closedView" is called after the view has been closed! However we can use
+	 * the editor ISaveablePart2 interface which mimics this behaviour for
+	 * views. The views are marked like a non saved editor with a '*' char! In
+	 * the close event (do save) we clean up all data and close the tab items!
 	 */
 	public void doSave(IProgressMonitor monitor) {
 
 		/*
 		 * CTabItem[] items = tabFolder.getItems();
 		 * 
-		 * if (items.length > 0) { for (int i = 0; i < items.length; i++) { Vector ve = (Vector) items[i].getData();
+		 * if (items.length > 0) { for (int i = 0; i < items.length; i++) {
+		 * Vector ve = (Vector) items[i].getData();
 		 * 
 		 * closeTabPanels(ve); items[i].dispose(); }
 		 * 
@@ -427,7 +437,8 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	}
 
 	/*
-	 * Close tab items and dispose different GUI references. Called if the view or a tab item is closed!
+	 * Close tab items and dispose different GUI references. Called if the view
+	 * or a tab item is closed!
 	 */
 	private void closeTabPanels(Vector ve) {
 		if (ve != null) {
