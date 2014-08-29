@@ -34,6 +34,13 @@ import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 public class ScanClassPath {
 
 	private String pathBundle;
+	String[] bundles = new String[] { "com.eco.bio7", "com.eco.bio7.libs", "com.eco.bio7.javaedit", "com.eco.bio7.image", "com.eco.bio7.WorldWind", "com.eco.bio7.physics",
+			"com.eco.bio7.scenebuilder", "com.eco.bio7.browser" };// "org.eclipse.ui.workbench","org.eclipse.core.commands"
+
+	String[] bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui", "org.eclipse.swt", "org.eclipse.swt.win32.win32.x86_64",
+			"org.eclipse.draw2d", "org.eclipse.equinox.registry", "org.eclipse.equinox.common" };
+	
+	
 
 	public String scan() {
 		/*
@@ -41,10 +48,7 @@ public class ScanClassPath {
 		 * libs decoupled from JDT because we still need this for the custom Java compiler, Flow editor and Bio7 model import!
 		 */
 		IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
-		String[] bundles = new String[] { "com.eco.bio7", "com.eco.bio7.libs", "com.eco.bio7.javaedit", "com.eco.bio7.image", "com.eco.bio7.WorldWind", "com.eco.bio7.physics",
-				"org.eclipse.ui.workbench", "org.eclipse.core.commands", "com.eco.bio7.scenebuilder", "com.eco.bio7.browser" };// "org.eclipse.ui.workbench","org.eclipse.core.commands"
-
-		String[] bundlesEclipse = new String[] { "org.eclipse.swt", "org.eclipse.swt.win32.win32.x86_64", "org.eclipse.draw2d", "org.eclipse.equinox.registry", "org.eclipse.equinox.common" };
+		
 		ArrayList<String> bundlePaths = new ArrayList<String>();
 		StringBuffer buf = new StringBuffer();
 
@@ -154,11 +158,7 @@ public class ScanClassPath {
 		 * libs!
 		 */
 		IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
-		String[] bundles = new String[] { "com.eco.bio7", "com.eco.bio7.libs", "com.eco.bio7.javaedit", "com.eco.bio7.image", "com.eco.bio7.WorldWind", "com.eco.bio7.physics",
-				"com.eco.bio7.scenebuilder", "com.eco.bio7.browser" };// "org.eclipse.ui.workbench","org.eclipse.core.commands"
-
-		String[] bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui", "org.eclipse.swt", "org.eclipse.swt.win32.win32.x86_64",
-				"org.eclipse.draw2d", "org.eclipse.equinox.registry", "org.eclipse.equinox.common" };
+		
 
 		ArrayList<String> bundlePaths = new ArrayList<String>();
 		ArrayList<String> buf = new ArrayList<String>();
