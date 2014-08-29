@@ -35,9 +35,9 @@ public class REditorRulerQuickFixAction extends AbstractRulerActionDelegate {
 				try {
 
 				
-
+                   /*QuickFix produced in RAssistProcessor!*/
 				
-					if (markersfind[i].getAttribute(IMarker.MESSAGE).equals("One Parentheses to much!")&&line==(int)markersfind[i].getAttribute(IMarker.LINE_NUMBER)) {
+					if (markersfind[i].getAttribute(IMarker.MESSAGE).equals("One Opening Parentheses to much!")&&line==(int)markersfind[i].getAttribute(IMarker.LINE_NUMBER)) {
 						selectedMarker = markersfind[i];
 						//System.out.println(i+" "+markersfind[i].getAttribute(IMarker.MESSAGE));
 						//System.out.println("Message: " + selectedMarker.getAttribute(IMarker.MESSAGE));

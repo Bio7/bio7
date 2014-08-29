@@ -1,11 +1,14 @@
 package com.eco.bio7.reditor.code;
 
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.quickassist.IQuickAssistInvocationContext;
 import org.eclipse.jface.text.quickassist.IQuickAssistProcessor;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 public class RAssistProcessor implements IQuickAssistProcessor {
 
@@ -17,9 +20,22 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 
 	@Override
 	public boolean canFix(Annotation annotation) {
-		String text=annotation.getText();
+		String text = "";
+		if (annotation instanceof MarkerAnnotation) {
+			IMarker marker = ((MarkerAnnotation) annotation).getMarker();
+			try {
+				  text=(String) marker.getAttribute(IMarker.MESSAGE);
+				System.out.println( marker.getAttribute(IMarker.MESSAGE));
+			} catch (CoreException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			}
 		
-		if(text!=null&&text.equals("One Parentheses to much!")){
+		
+		//String text=annotation.getText();
+		
+		if(text!=null&&text.equals("One Opening Parentheses to much!")){
 			return true;
 		}
 		else {
@@ -47,7 +63,7 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 
             new QuickFixCompletionProposal("Remove Parenthesis",offset,text.length(),""),
 
-            new QuickFixCompletionProposal("This is the second proposal!",offset,text.length(),"")
+           // new QuickFixCompletionProposal("This is the second proposal!",offset,text.length(),"")
 
         };
 	}

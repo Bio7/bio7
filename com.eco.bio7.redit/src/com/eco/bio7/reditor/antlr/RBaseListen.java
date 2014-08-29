@@ -53,7 +53,7 @@ public class RBaseListen extends RBaseListener {
 		// System.out.println(count);
 
 		/* Notify the parser! */
-		parser.notifyErrorListeners(tokens.get(start + count), "One Parentheses to much!", null);
+		parser.notifyErrorListeners(tokens.get(start + count), "One Opening Parentheses to much!", null);
 
 	}
 
@@ -80,7 +80,7 @@ public class RBaseListen extends RBaseListener {
 		// System.out.println(count);
 
 		/* Notify the parser! */
-		parser.notifyErrorListeners(tokens.get(start + count), "One Parentheses to much!", null);
+		parser.notifyErrorListeners(tokens.get(start + count), "One Closing Parentheses to much!", null);
 	}
 	public void enterAmountRightBraceError(@NotNull RParser.AmountRightBraceErrorContext ctx) { }
 	
@@ -101,7 +101,7 @@ public class RBaseListen extends RBaseListener {
 		// System.out.println(count);
 
 		/* Notify the parser! */
-		parser.notifyErrorListeners(tokens.get(start + count), "One Opening Brace to much!", null);
+		parser.notifyErrorListeners(tokens.get(start + count), "One Closing Brace to much!", null);
 	}
 	
 	
@@ -127,7 +127,7 @@ public class RBaseListen extends RBaseListener {
 		// System.out.println(count);
 
 		/* Notify the parser! */
-		parser.notifyErrorListeners(tokens.get(start + count), "One Closing Brace to much!", null);
+		parser.notifyErrorListeners(tokens.get(start + count), "One Opening Brace to much!", null);
 		
 	}
 	
