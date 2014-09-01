@@ -11,6 +11,9 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractRulerActionDelegate;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.rosuda.REngine.Rserve.RConnection;
+
+import com.eco.bio7.reditors.REditor;
 
 public class REditorRulerQuickFixAction extends AbstractRulerActionDelegate {
 
@@ -49,7 +52,10 @@ public class REditorRulerQuickFixAction extends AbstractRulerActionDelegate {
 
 						if (operation != null && operation.canDoOperation(opCode)) {
 
-							// selectedMarker.
+							RConnection con=REditor.getRserveConnection();
+							if(con!=null){
+								
+							}
 
 							try {
 								editor.selectAndReveal((int) selectedMarker.getAttribute(IMarker.LOCATION) , 1);

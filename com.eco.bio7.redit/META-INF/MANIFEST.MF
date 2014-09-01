@@ -8,6 +8,7 @@ Bundle-Version: 1.7.0
 Bundle-Activator: com.eco.bio7.reditor.Bio7REditorPlugin
 Bundle-Vendor: ECO
 Bundle-Localization: plugin
+Eclipse-BuddyPolicy: registered
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.jface.text,

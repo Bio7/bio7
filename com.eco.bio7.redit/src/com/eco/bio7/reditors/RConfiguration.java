@@ -46,6 +46,7 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
@@ -67,7 +68,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 	public RConfiguration(RColorManager colorManager, REditor rEditor) {
 		this.colorManager = colorManager;
-        this.rEditor=rEditor;
+		this.rEditor = rEditor;
 	}
 
 	public static class SingleTokenScanner extends BufferedRuleBasedScanner {
@@ -78,7 +79,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 	public ITextDoubleClickStrategy getDoubleClickStrategy(ISourceViewer sourceViewer, String contentType) {
 		return new RDoubleClickSelector();
-		
+
 	}
 
 	public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {
@@ -91,7 +92,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 	}
 
 	public String[] getIndentPrefixes(ISourceViewer sourceViewer, String contentType) {
-		return new String[] { "\t", "    " }; 
+		return new String[] { "\t", "    " };
 	}
 
 	public int getTabWidth(ISourceViewer sourceViewer) {
@@ -99,7 +100,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 	}
 
 	public String getDefaultPrefix(ISourceViewer sourceViewer, String contentType) {
-		return (IDocument.DEFAULT_CONTENT_TYPE.equals(contentType) ? "//" : null); 
+		return (IDocument.DEFAULT_CONTENT_TYPE.equals(contentType) ? "//" : null);
 	}
 
 	public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
@@ -115,13 +116,18 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 		reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
 		reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
 
-		/*dr = new DefaultDamagerRepairer(Bio7REditorPlugin.getDefault().getRPartitionScanner());
-		reconciler.setDamager(dr, RPartitionScanner.R_MULTILINE_COMMENT);
-		reconciler.setRepairer(dr, RPartitionScanner.R_MULTILINE_COMMENT);
-
-		dr = new DefaultDamagerRepairer(new SingleTokenScanner(new TextAttribute(provider.getColor(RColorProvider.MULTI_LINE_COMMENT))));
-		reconciler.setDamager(dr, RPartitionScanner.R_MULTILINE_COMMENT);
-		reconciler.setRepairer(dr, RPartitionScanner.R_MULTILINE_COMMENT);*/
+		/*
+		 * dr = new DefaultDamagerRepairer(Bio7REditorPlugin.getDefault().
+		 * getRPartitionScanner()); reconciler.setDamager(dr,
+		 * RPartitionScanner.R_MULTILINE_COMMENT); reconciler.setRepairer(dr,
+		 * RPartitionScanner.R_MULTILINE_COMMENT);
+		 * 
+		 * dr = new DefaultDamagerRepairer(new SingleTokenScanner(new
+		 * TextAttribute
+		 * (provider.getColor(RColorProvider.MULTI_LINE_COMMENT))));
+		 * reconciler.setDamager(dr, RPartitionScanner.R_MULTILINE_COMMENT);
+		 * reconciler.setRepairer(dr, RPartitionScanner.R_MULTILINE_COMMENT);
+		 */
 
 		return reconciler;
 	}
@@ -132,12 +138,15 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 		IContentAssistProcessor processor = new RCompletionProcessor();
 		assistant.setContentAssistProcessor(processor, IDocument.DEFAULT_CONTENT_TYPE);
-		
-		/*IContentAssistProcessor cap =new CompletionProcessor();
-		assistant.setContentAssistProcessor(cap,IDocument.DEFAULT_CATEGORY);*/
-		
-		//assistant.setContentAssistProcessor(new JavaCompletionProcessor(), IDocument.DEFAULT_CATEGORY);
-		
+
+		/*
+		 * IContentAssistProcessor cap =new CompletionProcessor();
+		 * assistant.setContentAssistProcessor(cap,IDocument.DEFAULT_CATEGORY);
+		 */
+
+		// assistant.setContentAssistProcessor(new JavaCompletionProcessor(),
+		// IDocument.DEFAULT_CATEGORY);
+
 		assistant.enableAutoActivation(true);
 		assistant.setAutoActivationDelay(200);
 
@@ -146,75 +155,107 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 		return assistant;
 	}
-	
-	public IReconciler getReconciler(ISourceViewer sourceViewer)
-    {
-        RReconcilingStrategy strategy = new RReconcilingStrategy();
-        strategy.setEditor(rEditor);
-        
-        MonoReconciler reconciler = new MonoReconciler(strategy,false);
-        reconciler.setDelay(200);
-        return reconciler;
-    }
-	
+
+	public IReconciler getReconciler(ISourceViewer sourceViewer) {
+		RReconcilingStrategy strategy = new RReconcilingStrategy();
+		strategy.setEditor(rEditor);
+
+		MonoReconciler reconciler = new MonoReconciler(strategy, false);
+		reconciler.setDelay(200);
+		return reconciler;
+	}
+
 	public IQuickAssistAssistant getQuickAssistAssistant(ISourceViewer sourceViewer) {
-		  IQuickAssistAssistant quickAssist = new QuickAssistAssistant();
-		  quickAssist.setQuickAssistProcessor(new RAssistProcessor());
-		  quickAssist.setInformationControlCreator(getInformationControlCreator(sourceViewer));
-		  return quickAssist; 
-		}
-	
+		IQuickAssistAssistant quickAssist = new QuickAssistAssistant();
+		quickAssist.setQuickAssistProcessor(new RAssistProcessor());
+		quickAssist.setInformationControlCreator(getInformationControlCreator(sourceViewer));
+		return quickAssist;
+	}
+
 	@Override
 	public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
-	        return new MarkdownTextHover();
+		return new MarkdownTextHover();
 	}
 
-	
 	public class MarkdownTextHover implements ITextHover, ITextHoverExtension2 {
-	        // return information to be shown when the cursor is on the given region
-	        @Override
-	        public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
-	        	
-	        	
-	               
-	                        return   "R Code!:"+hoverRegion.getOffset()+" length:"+hoverRegion.getLength();//textViewer.getDocument().getPartition(hoverRegion.getOffset()).toString()+" "+textViewer.getDocument().getPartition(hoverRegion.getLength()).toString();
-	               
-	                
-	        }
+		private String apiText="Select valid command for documentation!";
 
-	        // just an old version of the API method that returns only strings
-	        @Override
-	        public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {               
-	                return getHoverInfo2(textViewer, hoverRegion).toString();
-	        }
+		// return information to be shown when the cursor is on the given region
+		@Override
+		public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
 
-	        // returns the region object for a given position in the text editor
-	        @Override
-	        public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
-	                Point selection = textViewer.getSelectedRange();
-	                if (selection.x <= offset && offset < selection.x + selection.y) {
-	                        return new Region(selection.x, selection.y);
-	                }
-	                // if no text is selected then we return a region of the size 0 (a single character)
-	                return new Region(offset, 0);
-	        }
+			if (hoverRegion.getLength() > 0) {
+				
+				
+				 /*int offset = hoverRegion.getOffset();
+			      int length = 0;
+			      IDocument doc = textViewer.getDocument();
+			          
+			      
+			      while (true) {
+			         char c = 0;
+			        
+					try {
+						c = doc.getChar(offset + length);
+					} catch (BadLocationException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+			         if (c==' ')
+			            break;
+			         if (offset + ++length >= doc.getLength()){
+			            return c;
+			         }
+			      }
+			      textViewer.setSelectedRange(offset, length);*/
+				
+				
+				try {
+					apiText=textViewer.getDocument().get(hoverRegion.getOffset(), hoverRegion.getLength());
+				} catch (BadLocationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				
+				
+				
+				//apiText = "R Code!:" + hoverRegion.getOffset() + " length:" + hoverRegion.getLength();// textViewer.getDocument().getPartition(hoverRegion.getOffset()).toString()+" "+textViewer.getDocument().getPartition(hoverRegion.getLength()).toString();;
+			}
 
-			
+			return apiText;
 
-			
+		}
 
-			
+		// just an old version of the API method that returns only strings
+		@Override
+		public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
+			return getHoverInfo2(textViewer, hoverRegion).toString();
+		}
+
+		// returns the region object for a given position in the text editor
+		@Override
+		public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
+			Point selection = textViewer.getSelectedRange();
+			if (selection.x <= offset && offset < selection.x + selection.y) {
+				return new Region(selection.x, selection.y);
+			}
+			// if no text is selected then we return a region of the size 0 (a
+			// single character)
+			return new Region(offset, 0);
+		}
+
 	}
+
 	@Override
-    public IInformationControlCreator getInformationControlCreator(ISourceViewer sourceViewer) {
-        return new IInformationControlCreator() {
-            public IInformationControl createInformationControl(Shell parent) {
-            	
-            	
-                return new DefaultInformationControl(parent,true);
-            }
-        };
-    }
-	
+	public IInformationControlCreator getInformationControlCreator(ISourceViewer sourceViewer) {
+		return new IInformationControlCreator() {
+			public IInformationControl createInformationControl(Shell parent) {
+
+				/* SeeRHoverInfomrationControll for HTML implementation! */
+				return new DefaultInformationControl(parent, "Press 'Ctrl+Space' to show Template Proposals");
+			}
+		};
+	}
 
 }

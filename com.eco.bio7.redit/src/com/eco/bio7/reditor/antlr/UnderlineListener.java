@@ -44,6 +44,7 @@ public class UnderlineListener extends BaseErrorListener {
 
 					if (lineNumb == line) {
 						markers[i].delete();
+						System.out.println(recognizer.getRuleNames()[i]);
 					}
 				} catch (CoreException e1) {
 					// TODO Auto-generated catch block
@@ -60,9 +61,7 @@ public class UnderlineListener extends BaseErrorListener {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-			// System.out.println("Lineoffset start is:"+lineOffsetStart);
-			// System.out.println("offset  is:"+(lineOffsetStart + charPositionInLine));
-
+			
 			IMarker marker;
 			try {
 				marker = resource.createMarker(IMarker.PROBLEM);

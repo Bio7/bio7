@@ -9,6 +9,7 @@ Bundle-Activator: com.eco.bio7.Bio7Plugin
 Bundle-Vendor: ECO
 Bundle-Localization: plugin
 Eclipse-BuddyPolicy: ext
+Eclipse-RegisterBuddy: com.eco.bio7.redit
 Export-Package: bsh,
  bsh.classpath,
  bsh.collection,
