@@ -1,7 +1,10 @@
 package com.eco.bio7.util;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
+import java.io.IOException;
 
 public class Util {
 	
@@ -66,6 +69,39 @@ public class Util {
 		File[] files = dir.listFiles(filter);
 
 		return files;
+	}
+	
+	/**
+	 * Returns a string representation of the file.
+	 * 
+	 * @param path
+	 * @return
+	 */
+	public  String fileToString(String path) {// this function returns the
+		// File as a String
+		FileInputStream fileinput = null;
+		try {
+			fileinput = new FileInputStream(path);
+		} catch (FileNotFoundException e) {
+
+			e.printStackTrace();
+		}
+		int filetmp = 0;
+		try {
+			filetmp = fileinput.available();
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
+		byte bitstream[] = new byte[filetmp];
+		try {
+			fileinput.read(bitstream);
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
+		String content = new String(bitstream);
+		return content;
 	}
 
 }
