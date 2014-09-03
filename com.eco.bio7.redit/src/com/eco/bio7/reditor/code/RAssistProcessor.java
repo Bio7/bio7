@@ -24,8 +24,10 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 		if (annotation instanceof MarkerAnnotation) {
 			IMarker marker = ((MarkerAnnotation) annotation).getMarker();
 			try {
+				if( marker.getAttribute(IMarker.MESSAGE)!=null){
 				  text=(String) marker.getAttribute(IMarker.MESSAGE);
 				System.out.println( marker.getAttribute(IMarker.MESSAGE));
+				}
 			} catch (CoreException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

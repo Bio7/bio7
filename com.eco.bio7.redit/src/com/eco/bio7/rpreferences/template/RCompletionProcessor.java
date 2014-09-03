@@ -523,10 +523,13 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 	}
 
 	// add the chars for Completion here !!!
-	/*
-	 * public char[] getCompletionProposalAutoActivationCharacters() { return
-	 * new char[] { 'a','b','c','d','e','f' }; }
-	 */
+	
+	 public char[] getCompletionProposalAutoActivationCharacters() { 
+		 
+		 return  "abcdefghijklmnopqrstuvwxyz".toCharArray();
+	 
+	 }
+	 
 
 	/**
 	 * Return the R context type that is supported by this plug-in.

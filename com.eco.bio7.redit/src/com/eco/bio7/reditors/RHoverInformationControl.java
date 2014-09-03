@@ -5,7 +5,10 @@
 package com.eco.bio7.reditors;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
@@ -24,8 +27,7 @@ import org.eclipse.swt.browser.*;
  * <p>
  * Displays HTML in a {@link org.eclipse.swt.browser.Browser} widget.
  */
-public class RHoverInformationControl extends AbstractInformationControl 
-    implements IInformationControlExtension2    {
+public class RHoverInformationControl extends AbstractInformationControl implements DisposeListener, IInformationControlExtension2    {
     
     /**
      * A wrapper used to deliver content to the hover control, either 
@@ -66,11 +68,10 @@ public class RHoverInformationControl extends AbstractInformationControl
     protected void createContent(Composite parent) {
 
         try {
-            fBrowser = new Browser(getShell(), SWT.NONE);
-            GridData layoutData = new GridData(GridData.FILL_BOTH);
-            layoutData.horizontalSpan = 2;
-            layoutData.verticalSpan = 2;
-            fBrowser.setLayoutData(layoutData);
+            fBrowser = new Browser(parent, SWT.NONE);
+            fBrowser.setSize(400, 200);
+            fBrowser.setLayout(new FillLayout());
+            
         } 
         catch (SWTError e) {
             MessageBox messageBox = new MessageBox(getShell(), SWT.ICON_ERROR | SWT.OK);
@@ -103,9 +104,9 @@ public class RHoverInformationControl extends AbstractInformationControl
         // Note: I set the widthHint to 350 in order to get
         // better screen shots. SWT.DEFAULT works too, but
         // produces a wider hover. -- Dan Breslau
-        final int widthHint= 350;
         
-        return getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
+        
+        return getShell().computeSize(400, 200, true);
     }
     
 
@@ -141,6 +142,11 @@ public class RHoverInformationControl extends AbstractInformationControl
      * @since 3.4
      */    
     public void setInput(Object input) {
+    	
+    	/*
+		 *  b.setLocation(url);
+		 * 
+		 */
         // Assume that the input is marked-up text, not a URL
         fIsURL = false;
         final String inputString;
@@ -162,5 +168,12 @@ public class RHoverInformationControl extends AbstractInformationControl
         }
         setInformation(inputString);
     }
+
+
+	@Override
+	public void widgetDisposed(DisposeEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

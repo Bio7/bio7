@@ -13,10 +13,12 @@
 package com.eco.bio7.reditors;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
-
-import net.htmlparser.jericho.Element;
-import net.htmlparser.jericho.Source;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -66,6 +68,11 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
@@ -195,7 +202,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 	@Override
 	public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
-		
+
 		return new MarkdownTextHover();
 	}
 
@@ -207,99 +214,185 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 		@Override
 		public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
 
-			if (hoverRegion.getLength() > 0) {
+			int offset = hoverRegion.getOffset();
+			int length = 0;
+			int minusLength = 0;
+
+			IDocument doc = textViewer.getDocument();
+
+			while (true) {
+				char c = 0;
+
+				try {
+					c = doc.getChar(offset + length);
+				} catch (BadLocationException e) {
+
+					e.printStackTrace();
+				}
+
+				if (Character.isLetter(c) == false)
+					break;
+
+				length++;
+				if (offset + length >= doc.getLength()) {
+					break;
+				}
+			}
+			while (true) {
+				char c = 0;
+
+				try {
+					c = doc.getChar(offset + minusLength);
+				} catch (BadLocationException e) {
+
+					e.printStackTrace();
+				}
+
+				if (Character.isLetter(c) == false)
+					break;
+
+				minusLength--;
+				if (offset + minusLength <= 0) {
+					break;
+				}
+			}
+			final int wordOffset = offset + minusLength + 1;
+			final int resultedLength = length - minusLength - 1;
+
+			if (resultedLength > 0) {
 
 				/*
-				 * int offset = hoverRegion.getOffset(); int length = 0;
-				 * IDocument doc = textViewer.getDocument();
+				 * Display display = PlatformUI.getWorkbench().getDisplay();
+				 * display.syncExec(new Runnable() {
 				 * 
-				 * 
-				 * while (true) { char c = 0;
-				 * 
-				 * try { c = doc.getChar(offset + length); } catch
-				 * (BadLocationException e) { // TODO Auto-generated catch block
-				 * e.printStackTrace(); } if (c==' ') break; if (offset +
-				 * ++length >= doc.getLength()){ return c; } }
-				 * textViewer.setSelectedRange(offset, length);
+				 * public void run() { textViewer.setSelectedRange(wordOffset,
+				 * resultedLength); } });
 				 */
 
 				try {
-					htmlHelpText = textViewer.getDocument().get(hoverRegion.getOffset(), hoverRegion.getLength());
+					htmlHelpText = textViewer.getDocument().get(wordOffset, resultedLength);
 				} catch (BadLocationException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-
-				/*
-				 * Display display = PlatformUI.getWorkbench().getDisplay();
-				 * display.syncExec(new Runnable() { public void run() { try {
-				 * IWorkbenchPage page = PlatformUI.getWorkbench()
-				 * .getActiveWorkbenchWindow().getActivePage();
-				 * page.showView("com.eco.bio7.browser.Browser"); } catch
-				 * (PartInitException e) { // TODO Auto-generated catch block
-				 * e.printStackTrace(); }
-				 * 
-				 * } });
-				 */
-
-				RConnection c = REditor.getRserveConnection();
-				if (c != null) {
-
-					try {
-
-						c.eval("try(outfile <- paste(tempfile(), \".html\", sep=\"\"))").toString();
-						c.eval("try(tools::Rd2HTML(utils:::.getHelpFile(?" + htmlHelpText + "),outfile,package=\"tools\", stages=c(\"install\", \"render\")))");
-						String out = null;
-						try {
-							out = (String) c.eval("try(outfile)").asString();
-						} catch (REXPMismatchException e) {
-
-							e.printStackTrace();
-						}
-
-						// String pattern = "file:///" + out;
-						String url = out.replace("\\", "/");
-
-						/*
-						 * Display display =
-						 * PlatformUI.getWorkbench().getDisplay();
-						 * 
-						 * display.syncExec(new Runnable() {
-						 * 
-						 * public void run() { BrowserView b =
-						 * BrowserView.getBrowserInstance(); b.setLocation(url);
-						 * 
-						 * } });
-						 */
-
-						help = new Util().fileToString(url);
-						/*Source source = new Source(help);
-						help = source.getTextExtractor().setConvertNonBreakingSpaces(true).toString();*/
-					} catch (RserveException e1) {
-
-						e1.printStackTrace();
-					}
-
-				}
-
-				// apiText = "R Code!:" + hoverRegion.getOffset() + " length:" +
-				// hoverRegion.getLength();//
-				// textViewer.getDocument().getPartition(hoverRegion.getOffset()).toString()+" "+textViewer.getDocument().getPartition(hoverRegion.getLength()).toString();;
 			}
+
+			/*
+			 * Display display = PlatformUI.getWorkbench().getDisplay();
+			 * display.syncExec(new Runnable() { public void run() { try {
+			 * IWorkbenchPage page = PlatformUI.getWorkbench()
+			 * .getActiveWorkbenchWindow().getActivePage();
+			 * page.showView("com.eco.bio7.browser.Browser"); } catch
+			 * (PartInitException e) { // TODO Auto-generated catch block
+			 * e.printStackTrace(); }
+			 * 
+			 * } });
+			 */
+
+			RConnection c = REditor.getRserveConnection();
+			if (c != null) {
+				Display display = PlatformUI.getWorkbench().getDisplay();
+				display.syncExec(new Runnable() {
+					public void run() {
+
+						try {
+
+							c.eval("try(outfile <- paste(tempfile(), \".txt\", sep=\"\"),silent = T)").toString();
+							c.eval("try(tools::Rd2txt(utils:::.getHelpFile(?" + htmlHelpText + "),outfile,package=\"tools\", stages=c(\"install\", \"render\"),outputEncoding = \"\"),silent = T)");
+							String out = null;
+							try {
+								out = (String) c.eval("try(outfile)").asString();
+							} catch (REXPMismatchException e) {
+
+								e.printStackTrace();
+							}
+
+							// String pattern = "file:///" + out;
+							String url = out.replace("\\", "/");
+
+							// StandardCharsets.UTF_8
+							/*
+							 * try { List<String> lines =
+							 * Files.readAllLines(Paths.get(url),
+							 * Charset.defaultCharset()); } catch (IOException
+							 * e) { // TODO Auto-generated catch block
+							 * e.printStackTrace(); }
+							 */
+
+							byte[] encoded = null;
+							try {
+								encoded = Files.readAllBytes(Paths.get(url));
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							help = new String(encoded, Charset.defaultCharset());
+							// help = new Util().fileToString(url);
+
+						} catch (RserveException e1) {
+
+							// e1.printStackTrace();
+						}
+					}
+				});
+
+			}
+
+			/*
+			 * Document document = Jsoup.parse(help, ""); Element body =
+			 * document.body();
+			 * 
+			 * help=buildStringFromNode(body).toString();
+			 */
+
+			// apiText = "R Code!:" + hoverRegion.getOffset() + " length:" +
+			// hoverRegion.getLength();//
+			// textViewer.getDocument().getPartition(hoverRegion.getOffset()).toString()+" "+textViewer.getDocument().getPartition(hoverRegion.getLength()).toString();;
 
 			return help;
 
 		}
-		
-		private String getTextContent(Element elem) {
-		    String text = elem.getContent().toString();
 
-		    final List<Element> children = elem.getChildElements();
-		    for (Element child : children) {
-		        text = text.replace(child.toString(), "");
-		    }
-		    return text;
+		String readFile(String path, Charset encoding) throws IOException {
+			byte[] encoded = Files.readAllBytes(Paths.get(path));
+			return new String(encoded, encoding);
 		}
+
+		private StringBuffer buildStringFromNode(Node node) {
+			StringBuffer buffer = new StringBuffer();
+
+			if (node instanceof TextNode) {
+				TextNode textNode = (TextNode) node;
+				buffer.append(textNode.text().trim());
+			}
+
+			for (Node childNode : node.childNodes()) {
+				buffer.append(buildStringFromNode(childNode));
+			}
+
+			if (node instanceof Element) {
+				Element element = (Element) node;
+				String tagName = element.tagName();
+				if ("p".equals(tagName) || "br".equals(tagName)) {
+					buffer.append("\n\r");
+				} else if ("h2".equals(tagName) || "h3".equals(tagName)) {
+					buffer.append("\n\r");
+				} else if ("td".equals(tagName)) {
+					buffer.append("\n\r");
+				}
+			}
+
+			return buffer;
+		}
+
+		/*
+		 * private String getTextContent(Element elem) { String text =
+		 * elem.getContent().toString();
+		 * 
+		 * final List<Element> children = elem.getChildElements(); for (Element
+		 * child : children) { text = text.replace(child.toString(), ""); }
+		 * return text; }
+		 */
 
 		// just an old version of the API method that returns only strings
 		@Override
@@ -327,7 +420,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 			public IInformationControl createInformationControl(Shell parent) {
 
 				/* SeeRHoverInfomrationControll for HTML implementation! */
-				return new RHoverInformationControl(parent);
+				return new com.eco.bio7.reditors.DefaultInformationControl(parent);
 			}
 		};
 	}
