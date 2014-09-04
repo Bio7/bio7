@@ -93,6 +93,8 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 	RColorProvider provider;
 
 	private REditor rEditor;
+	
+	public static String htmlHelpText = "";
 
 	public RConfiguration(RColorManager colorManager, REditor rEditor) {
 		this.colorManager = colorManager;
@@ -132,7 +134,8 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 	}
 
 	public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
-		return new String[] { IDocument.DEFAULT_CONTENT_TYPE, RPartitionScanner.R_DOC, RPartitionScanner.R_MULTILINE_COMMENT };
+		//return new String[] { IDocument.DEFAULT_CONTENT_TYPE, RPartitionScanner.R_DOC, RPartitionScanner.R_MULTILINE_COMMENT };
+		return new String[] { IDocument.DEFAULT_CONTENT_TYPE };
 	}
 
 	public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
@@ -207,7 +210,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 	}
 
 	public class MarkdownTextHover implements ITextHover, ITextHoverExtension2 {
-		private String htmlHelpText = "";
+		
 		protected String help = "";
 
 		// return information to be shown when the cursor is on the given region
@@ -230,7 +233,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 					e.printStackTrace();
 				}
 
-				if (Character.isLetter(c) == false)
+				if (Character.isLetter(c)==false&&(c=='.')==false&&Character.isDigit(c)==false)
 					break;
 
 				length++;
@@ -248,7 +251,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 					e.printStackTrace();
 				}
 
-				if (Character.isLetter(c) == false)
+				if (Character.isLetter(c) == false&&(c=='.')==false&&Character.isDigit(c)==false)
 					break;
 
 				minusLength--;
@@ -261,13 +264,13 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 			if (resultedLength > 0) {
 
-				/*
-				 * Display display = PlatformUI.getWorkbench().getDisplay();
-				 * display.syncExec(new Runnable() {
-				 * 
-				 * public void run() { textViewer.setSelectedRange(wordOffset,
-				 * resultedLength); } });
-				 */
+				
+				  /*Display display = PlatformUI.getWorkbench().getDisplay();
+				  display.syncExec(new Runnable() {
+				  
+				  public void run() { textViewer.setSelectedRange(wordOffset,
+				  resultedLength); } });*/
+				 
 
 				try {
 					htmlHelpText = textViewer.getDocument().get(wordOffset, resultedLength);
@@ -328,7 +331,9 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 							}
 							help = new String(encoded, Charset.defaultCharset());
 							// help = new Util().fileToString(url);
-
+                           help=help.replace("_\b", "");
+                          
+                           
 						} catch (RserveException e1) {
 
 							// e1.printStackTrace();
@@ -420,7 +425,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 			public IInformationControl createInformationControl(Shell parent) {
 
 				/* SeeRHoverInfomrationControll for HTML implementation! */
-				return new com.eco.bio7.reditors.DefaultInformationControl(parent);
+				return new RDefaultInformationControl(parent,"Mouse Right-Click To Open Help Browser",null);
 			}
 		};
 	}
