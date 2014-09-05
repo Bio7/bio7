@@ -9,12 +9,14 @@
  *     M. Austenfeld
  *******************************************************************************/
 
-package com.eco.bio7.rbridge;
+package com.eco.bio7.r;
 
-import org.eclipse.swt.graphics.Color;
+/*import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.PlatformUI;*/
 import org.rosuda.REngine.Rserve.RSession;
+
+//import com.eco.bio7.rbridge.RShellView;
 
 /**
  * A class to detect the R interpreter state (if a R job is running).
@@ -45,9 +47,9 @@ public class RState {
 	 */
 	public static void setBusy(boolean b) {
 		busy = b;
-		Display display = PlatformUI.getWorkbench().getDisplay();
+		/*Display display = PlatformUI.getWorkbench().getDisplay();
 		if (b) {
-           /*Mark the textfield of the R console!*/
+           Mark the textfield of the R console!
 			display.syncExec(new Runnable() {
 
 				public void run() {
@@ -59,7 +61,7 @@ public class RState {
 			});
 
 		} else {
-			 /*Mark the textfield of the R console!*/
+			 Mark the textfield of the R console!
 			display.syncExec(new Runnable() {
 
 				public void run() {
@@ -71,7 +73,7 @@ public class RState {
 			});
 
 		}
-
+*/
 	}
 
 	/**

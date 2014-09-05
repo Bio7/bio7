@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.Action;
@@ -28,11 +29,12 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
+
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
+import com.eco.bio7.r.RState;
 import com.eco.bio7.rbridge.RServe;
-import com.eco.bio7.rbridge.RState;
 
 public class RFormatAction extends Action implements IObjectActionDelegate {
 
@@ -127,7 +129,7 @@ public class RFormatAction extends Action implements IObjectActionDelegate {
 			if (selectionConsole.equals("R")) {
 				ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
 				con.pipeToRConsole("options(prompt=\" \")");
-				con.pipeToRConsole("con1 <- socketConnection(port = " + port + ", server = TRUE)");
+				con.pipeToRConsole("con1 <- socketConnection(port = " + port + ", server = TRUE,timeout=10)");
 				con.pipeToRConsole("library(formatR);tidy.source(source = \"" + loc + "\",file = con1)");
 				/*We use sockets here to wait for the clipboard data to be present (avoid parallel execution of R and Java commands caused by the threaded shell!)*/
 				//con.pipeToRConsole("con1 <- socketConnection(port = " + port + ", server = TRUE)");
@@ -155,7 +157,7 @@ public class RFormatAction extends Action implements IObjectActionDelegate {
 		/*The following code just waits for the handshake (executed R shell code)!*/
 		try {
 			debugSocket = new Socket("127.0.0.1", port);
-
+			debugSocket.setSoTimeout(10000);
 			
 			try {
 				input = new BufferedReader(new InputStreamReader(debugSocket.getInputStream()));

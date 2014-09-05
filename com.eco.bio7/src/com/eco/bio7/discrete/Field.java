@@ -14,18 +14,21 @@ package com.eco.bio7.discrete;
 
 import java.awt.Polygon;
 import java.awt.Rectangle;
+
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
+
 import cern.jet.random.tfloat.FloatUniform;
 import cern.jet.random.tfloat.engine.FloatMersenneTwister;
+
 import com.eco.bio7.collection.ResizeArray;
 import com.eco.bio7.info.InfoView;
 import com.eco.bio7.methods.CurrentStates;
+import com.eco.bio7.r.RState;
 import com.eco.bio7.rbridge.RServe;
-import com.eco.bio7.rbridge.RState;
 
 /**
  * This class provides some static methods for the creation and variation of

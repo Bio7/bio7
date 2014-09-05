@@ -32,7 +32,7 @@ public class RDocumentSetupParticipant implements IDocumentSetupParticipant {
 	public void setup(IDocument document) {
 		if (document instanceof IDocumentExtension3) {
 			IDocumentExtension3 extension3 = (IDocumentExtension3) document;
-			IDocumentPartitioner partitioner = new FastPartitioner(Bio7REditorPlugin.getDefault().getRPartitionScanner(),null);
+			IDocumentPartitioner partitioner = new FastPartitioner(Bio7REditorPlugin.getDefault().getRPartitionScanner(),RPartitionScanner.R_PARTITION_TYPES);
 			extension3.setDocumentPartitioner(Bio7REditorPlugin.R_PARTITIONING, partitioner);
 			partitioner.connect(document);
 		}

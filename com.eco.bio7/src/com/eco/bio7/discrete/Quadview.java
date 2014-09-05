@@ -45,8 +45,8 @@ import com.eco.bio7.jobs.LoadData;
 import com.eco.bio7.jobs.LoadWorkspaceJob;
 import com.eco.bio7.methods.Compiled;
 import com.eco.bio7.methods.CurrentStates;
+import com.eco.bio7.r.RState;
 import com.eco.bio7.rbridge.RServe;
-import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.swt.SwtAwt;
 import com.eco.bio7.time.Time;
 

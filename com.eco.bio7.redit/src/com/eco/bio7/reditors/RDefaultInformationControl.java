@@ -36,7 +36,7 @@ import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.browser.BrowserView;
-
+import com.eco.bio7.r.RState;
 
 /**
  * Default implementation of {@link org.eclipse.jface.text.IInformationControl}.
@@ -144,6 +144,8 @@ public class RDefaultInformationControl extends AbstractInformationControl imple
 	private final int fAdditionalTextStyles;
 
 	private String htmlHelpText;
+
+	protected boolean canBrowse = true;
 
 	/**
 	 * Creates a default information control with the given shell as parent. An
@@ -353,52 +355,42 @@ public class RDefaultInformationControl extends AbstractInformationControl imple
 							try {
 								RConnection c = REditor.getRserveConnection();
 								if (c != null) {
+									if (RState.isBusy() == false) {
+										RState.setBusy(true);
+										Display display = openBrowser();
 
-									Display display = PlatformUI.getWorkbench().getDisplay();
-									display.syncExec(new Runnable() {
-										public void run() {
-											try {
-												IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-												page.showView("com.eco.bio7.browser.Browser");
-											} catch (PartInitException e) {
-												// TODO Auto-generated catch
-												// block
-												e.printStackTrace();
-											}
+										htmlHelpText = RConfiguration.htmlHelpText;
 
+										c.eval("try(outfile <- paste(tempfile(), \".html\", sep=\"\"))").toString();
+										c.eval("try(tools::Rd2HTML(utils:::.getHelpFile(?" + htmlHelpText + "),outfile,package=\"tools\", stages=c(\"install\", \"render\")))");
+										String out = null;
+										try {
+											out = (String) c.eval("try(outfile)").asString();
+										} catch (REXPMismatchException e) {
+
+											e.printStackTrace();
 										}
-									});
 
-									
+										String pattern = "file:///" + out;
+										url = pattern.replace("\\", "/");
 
-										
-								htmlHelpText = RConfiguration.htmlHelpText;
-										
-									c.eval("try(outfile <- paste(tempfile(), \".html\", sep=\"\"))").toString();
-									c.eval("try(tools::Rd2HTML(utils:::.getHelpFile(?" + htmlHelpText + "),outfile,package=\"tools\", stages=c(\"install\", \"render\")))");
-									String out = null;
-									try {
-										out = (String) c.eval("try(outfile)").asString();
-									} catch (REXPMismatchException e) {
+										display.asyncExec(new Runnable() {
 
-										e.printStackTrace();
+											public void run() {
+												BrowserView b = BrowserView.getBrowserInstance();
+												try {
+													b.setLocation(url);
+												} catch (Exception e) {
+													// TODO Auto-generated catch
+													// block
+													e.printStackTrace();
+												}
+											}
+										});
 									}
-
-									String pattern = "file:///" + out;
-									url = pattern.replace("\\", "/");
-
-									display.syncExec(new Runnable() {
-
-										public void run() {
-											BrowserView b = BrowserView.getBrowserInstance();
-											try {
-												b.setLocation(url);
-											} catch (Exception e) {
-												// TODO Auto-generated catch block
-												e.printStackTrace();
-											}
-										}
-									});
+									else{
+										System.out.println("Rserve is busy!");
+									}
 								}
 
 							} catch (RserveException e1) {
@@ -415,6 +407,7 @@ public class RDefaultInformationControl extends AbstractInformationControl imple
 						public void done(IJobChangeEvent event) {
 							if (event.getResult().isOK()) {
 
+								RState.setBusy(false);
 							} else {
 
 							}
@@ -422,8 +415,52 @@ public class RDefaultInformationControl extends AbstractInformationControl imple
 					});
 					// job.setSystem(true);
 					job.schedule();
-				}
+				} else if (event.button == 2) {
 
+					if (canBrowse) {
+
+						Job job = new Job("Html help") {
+							private String url;
+
+							@Override
+							protected IStatus run(IProgressMonitor monitor) {
+								monitor.beginTask("Help ...", IProgressMonitor.UNKNOWN);
+								canBrowse = false;
+								Display display = openBrowser();
+
+								htmlHelpText = RConfiguration.htmlHelpText;
+
+								display.asyncExec(new Runnable() {
+
+									public void run() {
+										BrowserView b = BrowserView.getBrowserInstance();
+										try {
+											b.setLocation("http://www.rdocumentation.org" + "#" + htmlHelpText);
+										} catch (Exception e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
+										}
+									}
+								});
+
+								monitor.done();
+								return Status.OK_STATUS;
+							}
+
+						};
+						job.addJobChangeListener(new JobChangeAdapter() {
+							public void done(IJobChangeEvent event) {
+								if (event.getResult().isOK()) {
+									canBrowse = true;
+								} else {
+
+								}
+							}
+						});
+						// job.setSystem(true);
+						job.schedule();
+					}
+				}
 			}
 
 		});
@@ -440,6 +477,24 @@ public class RDefaultInformationControl extends AbstractInformationControl imple
 		} else {
 			fText.setIndent(INNER_BORDER);
 		}
+	}
+
+	private Display openBrowser() {
+		Display display = PlatformUI.getWorkbench().getDisplay();
+		display.syncExec(new Runnable() {
+			public void run() {
+				try {
+					IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+					page.showView("com.eco.bio7.browser.Browser");
+				} catch (PartInitException e) {
+					// TODO Auto-generated catch
+					// block
+					e.printStackTrace();
+				}
+
+			}
+		});
+		return display;
 	}
 
 	/*

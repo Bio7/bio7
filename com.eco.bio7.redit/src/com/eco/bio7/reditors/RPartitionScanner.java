@@ -20,11 +20,11 @@ import org.eclipse.jface.text.rules.*;
 /*Leave this class for maybe later use!*/
 public class RPartitionScanner extends RuleBasedPartitionScanner {
 
-	//public final static String R_MULTILINE_COMMENT = "__java_multiline_comment"; //$NON-NLS-1$
+	public final static String R_DEFAULT = "RDefault"; //$NON-NLS-1$
 
 	//public final static String R_DOC = "__java_javadoc"; //$NON-NLS-1$
 
-	//public final static String[] R_PARTITION_TYPES = new String[] { R_MULTILINE_COMMENT, R_DOC };
+	public final static String[] R_PARTITION_TYPES = new String[] { R_DEFAULT };
 
 	/**
 	 * Detector for empty comments.
@@ -32,14 +32,14 @@ public class RPartitionScanner extends RuleBasedPartitionScanner {
 	/*static class EmptyCommentDetector implements IWordDetector {
 
 		
-		 * (non-Javadoc) Method declared on IWordDetector
+		
 		 
 		public boolean isWordStart(char c) {
 			return (c == '/');
 		}
 
 		
-		 * (non-Javadoc) Method declared on IWordDetector
+	
 		 
 		public boolean isWordPart(char c) {
 			return (c == '*' || c == '/');
@@ -59,29 +59,26 @@ public class RPartitionScanner extends RuleBasedPartitionScanner {
 			//addWord("/**/", fSuccessToken);
 		//}
 
-		/*
-		 * @see org.eclipse.jface.text.rules.IPredicateRule#evaluate(ICharacterScanner,
-		 *      boolean)
-		 */
+		
 		/*public IToken evaluate(ICharacterScanner scanner, boolean resume) {
 			return super.evaluate(scanner);
 		}
 
 		
-		 * @see org.eclipse.jface.text.rules.IPredicateRule#getSuccessToken()
+		
 		 
 		public IToken getSuccessToken() {
 			return fSuccessToken;
 		}
-	}
-*/
+	}*/
+
 	/**
 	 * Creates the partitioner and sets up the appropriate rules.
 	 */
 	public RPartitionScanner() {
 		super();
 
-		/*IToken comment = new Token(R_MULTILINE_COMMENT);
+		//IToken comment = new Token(R_MULTILINE_COMMENT);
 
 		List rules = new ArrayList();
 
@@ -89,14 +86,14 @@ public class RPartitionScanner extends RuleBasedPartitionScanner {
 		rules.add(new EndOfLineRule("#", Token.UNDEFINED)); //$NON-NLS-1$
 
 		// Add rule for strings and character constants.
-		rules.add(new SingleLineRule("\"", "\"", Token.UNDEFINED, '\\')); 
-		rules.add(new SingleLineRule("'", "'", Token.UNDEFINED, '\\')); 
+		//rules.add(new SingleLineRule("\"", "\"", Token.UNDEFINED, '\\')); 
+		//rules.add(new SingleLineRule("'", "'", Token.UNDEFINED, '\\')); 
 
 		// Add special case word rule.
-		rules.add(new WordPredicateRule(comment));
+		//rules.add(new WordPredicateRule(comment));
 
 		IPredicateRule[] result = new IPredicateRule[rules.size()];
 		rules.toArray(result);
-		setPredicateRules(result);*/
+		setPredicateRules(result);
 	}
 }

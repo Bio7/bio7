@@ -29,7 +29,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
+
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.r.RState;
 import com.swtdesigner.SWTResourceManager;
 
 public class RLibraryList extends Shell {

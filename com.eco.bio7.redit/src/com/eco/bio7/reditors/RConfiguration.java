@@ -78,6 +78,7 @@ import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.browser.BrowserView;
+import com.eco.bio7.r.RState;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.code.RAssistProcessor;
 import com.eco.bio7.rpreferences.template.RCompletionProcessor;
@@ -294,6 +295,8 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 			RConnection c = REditor.getRserveConnection();
 			if (c != null) {
+				if (RState.isBusy() == false) {
+					RState.setBusy(true);
 				Display display = PlatformUI.getWorkbench().getDisplay();
 				display.syncExec(new Runnable() {
 					public void run() {
@@ -334,6 +337,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
                            help=help.replace("_\b", "");
                           
                            
+                           
 						} catch (RserveException e1) {
 
 							// e1.printStackTrace();
@@ -342,7 +346,81 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 				});
 
 			}
+			}
+			RState.setBusy(false);
+			
+				/*Job job = new Job("Html help") {
+				
 
+				@Override
+				protected IStatus run(IProgressMonitor monitor) {
+					monitor.beginTask("Help ...", IProgressMonitor.UNKNOWN);
+
+					RConnection c = REditor.getRserveConnection();
+					if (c != null) {
+						if (RState.isBusy() == false) {
+							RState.setBusy(true);
+
+							try {
+
+								c.eval("try(outfile <- paste(tempfile(), \".txt\", sep=\"\"),silent = T)").toString();
+								c.eval("try(tools::Rd2txt(utils:::.getHelpFile(?" + htmlHelpText + "),outfile,package=\"tools\", stages=c(\"install\", \"render\"),outputEncoding = \"\"),silent = T)");
+								String out = null;
+								try {
+									out = (String) c.eval("try(outfile)").asString();
+								} catch (REXPMismatchException e) {
+
+									e.printStackTrace();
+								}
+
+								// String pattern = "file:///" + out;
+								String url = out.replace("\\", "/");
+
+								// StandardCharsets.UTF_8
+								
+								 * try { List<String> lines =
+								 * Files.readAllLines(Paths.get(url),
+								 * Charset.defaultCharset()); } catch
+								 * (IOException e) { // TODO Auto-generated
+								 * catch block e.printStackTrace(); }
+								 
+
+								byte[] encoded = null;
+								try {
+									encoded = Files.readAllBytes(Paths.get(url));
+								} catch (IOException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+								help = new String(encoded, Charset.defaultCharset());
+								// help = new Util().fileToString(url);
+								help = help.replace("_\b", "");
+
+							} catch (RserveException e1) {
+
+								// e1.printStackTrace();
+							}
+
+						}
+					}
+
+					monitor.done();
+					return Status.OK_STATUS;
+				}
+
+			};
+			job.addJobChangeListener(new JobChangeAdapter() {
+				public void done(IJobChangeEvent event) {
+					if (event.getResult().isOK()) {
+
+						RState.setBusy(false);
+					} else {
+
+					}
+				}
+			});
+			// job.setSystem(true);
+			job.schedule();*/
 			/*
 			 * Document document = Jsoup.parse(help, ""); Element body =
 			 * document.body();
@@ -355,7 +433,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 			// textViewer.getDocument().getPartition(hoverRegion.getOffset()).toString()+" "+textViewer.getDocument().getPartition(hoverRegion.getLength()).toString();;
 
 			return help;
-
+			
 		}
 
 		String readFile(String path, Charset encoding) throws IOException {
@@ -363,33 +441,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 			return new String(encoded, encoding);
 		}
 
-		private StringBuffer buildStringFromNode(Node node) {
-			StringBuffer buffer = new StringBuffer();
-
-			if (node instanceof TextNode) {
-				TextNode textNode = (TextNode) node;
-				buffer.append(textNode.text().trim());
-			}
-
-			for (Node childNode : node.childNodes()) {
-				buffer.append(buildStringFromNode(childNode));
-			}
-
-			if (node instanceof Element) {
-				Element element = (Element) node;
-				String tagName = element.tagName();
-				if ("p".equals(tagName) || "br".equals(tagName)) {
-					buffer.append("\n\r");
-				} else if ("h2".equals(tagName) || "h3".equals(tagName)) {
-					buffer.append("\n\r");
-				} else if ("td".equals(tagName)) {
-					buffer.append("\n\r");
-				}
-			}
-
-			return buffer;
-		}
-
+		
 		/*
 		 * private String getTextContent(Element elem) { String text =
 		 * elem.getContent().toString();

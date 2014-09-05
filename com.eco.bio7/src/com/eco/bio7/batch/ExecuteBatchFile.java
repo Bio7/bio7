@@ -19,6 +19,7 @@ import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -42,6 +43,7 @@ import org.eclipse.ui.progress.IProgressService;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
+
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.browser.BrowserView;
 import com.eco.bio7.collection.Work;
@@ -56,8 +58,8 @@ import com.eco.bio7.floweditor.shapes.ShapesPlugin;
 import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 import com.eco.bio7.jobs.ImageFlowMacroWorkspaceJob;
 import com.eco.bio7.preferences.PreferenceConstants;
+import com.eco.bio7.r.RState;
 import com.eco.bio7.rbridge.RServe;
-import com.eco.bio7.rbridge.RState;
 
 public class ExecuteBatchFile {
 

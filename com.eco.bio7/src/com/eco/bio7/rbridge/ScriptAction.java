@@ -42,6 +42,7 @@ import com.eco.bio7.compile.BeanShellInterpreter;
 import com.eco.bio7.compile.PythonInterpreter;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.preferences.PreferenceConstants;
+import com.eco.bio7.r.RState;
 import com.eco.bio7.util.Util;
 
 public class ScriptAction extends Action implements IMenuCreator {

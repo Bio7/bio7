@@ -62,7 +62,7 @@ public class DebugNextAction extends Action {
 			ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
 
 			
-			con.pipeToRConsole("con1 <- socketConnection(port = "+port+", server = TRUE)");
+			con.pipeToRConsole("con1 <- socketConnection(port = "+port+", server = TRUE,timeout=10)");
 			con.pipeToRConsole("sink(con1)");
 			con.pipeToRConsole("n");
 			con.pipeToRConsole("sink()");
@@ -76,7 +76,7 @@ public class DebugNextAction extends Action {
 			try {
 
 				debugSocket = new Socket("127.0.0.1", port);
-
+				debugSocket.setSoTimeout(10000);
 				BufferedReader input = null;
 				try {
 					input = new BufferedReader(new InputStreamReader(debugSocket.getInputStream()));

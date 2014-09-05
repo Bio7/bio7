@@ -24,12 +24,13 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.rosuda.REngine.Rserve.RConnection;
+
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
+import com.eco.bio7.r.RState;
 import com.eco.bio7.rbridge.RServe;
-import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.StartBio7Utils;
 
 public class InterpretR extends Action {

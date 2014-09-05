@@ -15,6 +15,7 @@ package com.eco.bio7.rbridge;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
+
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.SWT;
@@ -37,7 +38,9 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.wb.swt.layout.grouplayout.GroupLayout;
 import org.eclipse.wb.swt.layout.grouplayout.LayoutStyle;
+
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.r.RState;
 import com.swtdesigner.SWTResourceManager;
 
 

@@ -13,6 +13,7 @@ package com.eco.bio7.compile;
 
 import java.util.ArrayList;
 import java.util.Collections;
+
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -33,9 +34,9 @@ import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.BatchModel;
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.r.RState;
 import com.eco.bio7.rbridge.PlotJob;
 import com.eco.bio7.rbridge.RServe;
-import com.eco.bio7.rbridge.RState;
 
 public class RScript {
 

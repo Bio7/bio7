@@ -12,8 +12,10 @@
 package com.eco.bio7.console;
 
 import java.nio.charset.Charset;
+
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
+
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.dialogs.InputDialog;
@@ -36,10 +38,15 @@ import org.eclipse.swt.widgets.FontDialog;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
+import org.rosuda.REngine.Rserve.RConnection;
+
 import com.eco.bio7.Bio7Plugin;
+import com.eco.bio7.actions.Bio7Action;
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.scriptengines.ScriptEngineConnection;
+import com.eco.bio7.worldwind.WorldWindView;
 
 public class ConsoleCustomActions extends Action implements IMenuCreator {
 
@@ -226,6 +233,13 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 							if (cpp.getRProcess() != null) {
 								try {
 									cpp.getRProcess().destroy();
+									RConnection con = RServe.getConnection();
+									if (con != null) {
+										con.close();
+										RServe.setConnection(null);
+										WorldWindView.setRConnection(null);
+										RServe.setRrunning(false);
+									}
 								} catch (Exception e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
