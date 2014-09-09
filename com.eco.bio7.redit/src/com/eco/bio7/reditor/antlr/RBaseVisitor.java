@@ -256,13 +256,6 @@ public class RBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements RVis
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitAmountLeftBraceError2(@NotNull RParser.AmountLeftBraceError2Context ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
 	@Override public T visitE27(@NotNull RParser.E27Context ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
@@ -362,11 +355,4 @@ public class RBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements RVis
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitDefFunction(@NotNull RParser.DefFunctionContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitAmountRightBraceError(@NotNull RParser.AmountRightBraceErrorContext ctx) { return visitChildren(ctx); }
 }

@@ -1,5 +1,5 @@
 #ImageJ 1.48c Preferences
-#Mon Sep 01 16:03:23 CEST 2014
+#Tue Sep 09 16:40:51 CEST 2014
 new.fill=0
 .log.height=250
 pp.options=1
@@ -13,7 +13,7 @@ noise.sd=25.0
 recent01=C\:\\Users\\elk\\git\\bio7m6\\com.eco.bio7.WorldWind\\src\\gov\\nasa\\worldwindx\\examples\\images\\MountStHelens.jpg
 recent00=C\:\\Users\\elk\\git\\bio7m6\\com.eco.bio7.WorldWind\\src\\images\\BMNG_world.topo.bathy.200405.3.2048x1024.jpg
 raw.offset=0
-fcolor=\#FEFEFE
+fcolor=\#070707
 raw.width=512
 .Control_Panel.@Main=894 204 132 384
 .log.width=400

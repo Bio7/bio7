@@ -411,18 +411,6 @@ public interface RListener extends ParseTreeListener {
 	 */
 	void exitE28(@NotNull RParser.E28Context ctx);
 	/**
-	 * Enter a parse tree produced by the {@code AmountLeftBraceError2}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterAmountLeftBraceError2(@NotNull RParser.AmountLeftBraceError2Context ctx);
-	/**
-	 * Exit a parse tree produced by the {@code AmountLeftBraceError2}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitAmountLeftBraceError2(@NotNull RParser.AmountLeftBraceError2Context ctx);
-	/**
 	 * Enter a parse tree produced by the {@code e27}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
@@ -596,16 +584,4 @@ public interface RListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitDefFunction(@NotNull RParser.DefFunctionContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code AmountRightBraceError}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterAmountRightBraceError(@NotNull RParser.AmountRightBraceErrorContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code AmountRightBraceError}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitAmountRightBraceError(@NotNull RParser.AmountRightBraceErrorContext ctx);
 }

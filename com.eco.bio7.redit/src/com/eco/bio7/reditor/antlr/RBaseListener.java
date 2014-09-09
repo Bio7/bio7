@@ -425,18 +425,6 @@ public class RBaseListener implements RListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterAmountLeftBraceError2(@NotNull RParser.AmountLeftBraceError2Context ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitAmountLeftBraceError2(@NotNull RParser.AmountLeftBraceError2Context ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterE27(@NotNull RParser.E27Context ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -612,18 +600,6 @@ public class RBaseListener implements RListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitDefFunction(@NotNull RParser.DefFunctionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterAmountRightBraceError(@NotNull RParser.AmountRightBraceErrorContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitAmountRightBraceError(@NotNull RParser.AmountRightBraceErrorContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

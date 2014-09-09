@@ -247,13 +247,6 @@ public interface RVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitE28(@NotNull RParser.E28Context ctx);
 	/**
-	 * Visit a parse tree produced by the {@code AmountLeftBraceError2}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitAmountLeftBraceError2(@NotNull RParser.AmountLeftBraceError2Context ctx);
-	/**
 	 * Visit a parse tree produced by the {@code e27}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
@@ -355,11 +348,4 @@ public interface RVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitDefFunction(@NotNull RParser.DefFunctionContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code AmountRightBraceError}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitAmountRightBraceError(@NotNull RParser.AmountRightBraceErrorContext ctx);
 }

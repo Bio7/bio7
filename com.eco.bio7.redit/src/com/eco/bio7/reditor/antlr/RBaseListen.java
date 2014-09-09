@@ -38,22 +38,8 @@ public class RBaseListen extends RBaseListener {
 
 	@Override
 	public void exitExprError(@NotNull RParser.ExprErrorContext ctx) {
-		Interval sourceInterval = ctx.getSourceInterval();
-		int count = -1;
-		int start = sourceInterval.a;
-		/* We calculate the token position from the expression! */
-		List<Token> firstToken = tokens.get(sourceInterval.a, sourceInterval.b);
-		for (int i = 0; i < firstToken.size(); i++) {
-			// System.out.println(firstToken.get(i).getText());
-			if (firstToken.get(i).getText().equals(")")) {
-				count = i + 1;
-				break;
-			}
-		}
-		// System.out.println(count);
-
-		/* Notify the parser! */
-		parser.notifyErrorListeners(tokens.get(start + count), "One Opening Parentheses to much!", null);
+		
+		parser.notifyErrorListeners(ctx.start, "One Opening Parentheses to much!", null);
 
 	}
 
@@ -65,31 +51,19 @@ public class RBaseListen extends RBaseListener {
 	@Override
 	public void exitExprError2(@NotNull RParser.ExprError2Context ctx) {
 
-		Interval sourceInterval = ctx.getSourceInterval();
-		int count = -1;
-		int start = sourceInterval.a;
-		/* We calculate the token position from the expression! */
-		List<Token> firstToken = tokens.get(sourceInterval.a, sourceInterval.b);
-		for (int i = 0; i < firstToken.size(); i++) {
-			// System.out.println(firstToken.get(i).getText());
-			if (firstToken.get(i).getText().equals("(")) {
-				count = i;
-				break;
-			}
-		}
-		// System.out.println(count);
+		
 
 		/* Notify the parser! */
-		parser.notifyErrorListeners(tokens.get(start + count), "One Closing Parentheses to much!", null);
+		parser.notifyErrorListeners(ctx.stop, "One Closing Parentheses to much!", null);
 	}
-	public void enterAmountRightBraceError(@NotNull RParser.AmountRightBraceErrorContext ctx) { }
+	/*public void enterAmountRightBraceError(@NotNull RParser.AmountRightBraceErrorContext ctx) { }
 	
 	public void exitAmountRightBraceError(@NotNull RParser.AmountRightBraceErrorContext ctx) {
 		
 		Interval sourceInterval = ctx.getSourceInterval();
 		int count = -1;
 		int start = sourceInterval.a;
-		/* We calculate the token position from the expression! */
+		 We calculate the token position from the expression! 
 		List<Token> firstToken = tokens.get(sourceInterval.a, sourceInterval.b);
 		for (int i = 0; i < firstToken.size(); i++) {
 			// System.out.println(firstToken.get(i).getText());
@@ -100,22 +74,23 @@ public class RBaseListen extends RBaseListener {
 		}
 		// System.out.println(count);
 
-		/* Notify the parser! */
-		parser.notifyErrorListeners(tokens.get(start + count), "One Closing Brace to much!", null);
-	}
+		 Notify the parser! 
+		parser.notifyErrorListeners(ctx.stop, "One Closing Brace to much!", null);
+	}*/
 	
 	
 	
-	public void enterAmountLeftBraceError2(@NotNull RParser.AmountLeftBraceError2Context ctx) { 
+	/*public void enterAmountLeftBraceError2(@NotNull RParser.AmountLeftBraceError2Context ctx) { 
 		
 		
 	}
 	
 	public void exitAmountLeftBraceError2(@NotNull RParser.AmountLeftBraceError2Context ctx) { 
 		Interval sourceInterval = ctx.getSourceInterval();
+		
 		int count = -1;
 		int start = sourceInterval.a;
-		/* We calculate the token position from the expression! */
+		 We calculate the token position from the expression! 
 		List<Token> firstToken = tokens.get(sourceInterval.a, sourceInterval.b);
 		for (int i = 0; i < firstToken.size(); i++) {
 			// System.out.println(firstToken.get(i).getText());
@@ -124,12 +99,14 @@ public class RBaseListen extends RBaseListener {
 				break;
 			}
 		}
-		// System.out.println(count);
-
-		/* Notify the parser! */
-		parser.notifyErrorListeners(tokens.get(start + count), "One Opening Brace to much!", null);
 		
-	}
+		ctx.getChild(2).getSourceInterval();
+		System.out.println("This brace is at:"+ctx.start.getCharPositionInLine());
+
+		 Notify the parser! 
+		parser.notifyErrorListeners(ctx.start, "One Opening Brace to much!", null);
+		
+	}*/
 	
 	
 	
@@ -139,24 +116,9 @@ public class RBaseListen extends RBaseListener {
 	}
 	
 	public void exitClosingRightBraceError(@NotNull RParser.ClosingRightBraceErrorContext ctx) {
-		Interval sourceInterval = ctx.getSourceInterval();
 		
-		
-		int count = -1;
-		int start = sourceInterval.a;
-		/* We calculate the token position from the expression! */
-		List<Token> firstToken = tokens.get(sourceInterval.a, sourceInterval.b);
-		for (int i = 0; i < firstToken.size(); i++) {
-			// System.out.println(firstToken.get(i).getText());
-			if (firstToken.get(i).getText().equals("(")) {
-				count = i;
-				break;
-			}
-		}
-		// System.out.println(count);
-
 		/* Notify the parser! */
-		parser.notifyErrorListeners(tokens.get(start + count), "Closing Brace Missing!", null);
+		parser.notifyErrorListeners(ctx.stop, "Closing Brace Missing!", null);
 		
 	}
 	
@@ -185,15 +147,15 @@ public class RBaseListen extends RBaseListener {
 		 */
 		scopes.push(new RScope(scopes.peek()));
 
-		Interval sourceInterval = ctx.getSourceInterval();
+		//Interval sourceInterval = ctx.getSourceInterval();
 
-		Token firstToken = tokens.get(sourceInterval.a);
+		Token firstToken =  ctx.start;
 		// System.out.println(ctx.getParent().getChild(0).getText());
 		int lineStart = firstToken.getStartIndex();
 		// String ct=ctx.getText();
 
 		// System.out.println("function start at line:"+lineStart);
-		Token lastToken = tokens.get(sourceInterval.b);
+		Token lastToken = ctx.stop;
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 		// String ct2=ctx.getText();
 
@@ -240,14 +202,14 @@ public class RBaseListen extends RBaseListener {
 	@Override
 	public void enterVariableDeclaration(@NotNull RParser.VariableDeclarationContext ctx) {
 
-		Interval sourceInterval = ctx.getSourceInterval();
-		int start = sourceInterval.a;
-		Token assign = tokens.get(start + 2);
+		//Interval sourceInterval = ctx.getSourceInterval();
+		//int start = sourceInterval.a;
+		
 
-		String subExpr = assign.getText();
+		String subExpr = ctx.getChild(2).getText();
 
 		if (subExpr.equals("function") == false) {
-			Token firstToken = tokens.get(start);
+			Token firstToken =ctx.start;
 
 			int lineStart = firstToken.getStartIndex();
 
@@ -255,10 +217,10 @@ public class RBaseListen extends RBaseListener {
 
 			if (ctx.getParent().getChild(1) != null) {
 
-				String op = tokens.get(start + 1).getText();
+				String op = ctx.getChild(1).getText();
 
 				if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
-					String name = tokens.get(start).getText();
+					String name = ctx.getChild(0).getText();
 					if (methods.size() == 0) {
 						if (checkVarName(name)) {
 							RScope scope = scopes.peek();
@@ -280,7 +242,7 @@ public class RBaseListen extends RBaseListener {
 				}
 
 				else if (op.equals("->") || op.equals("->>")) {
-					String name = tokens.get(start + 2).getText();
+					String name = ctx.getChild(2).getText();
 					if (methods.size() == 0) {
 						if (checkVarName(name)) {
 							RScope scope = scopes.peek();
@@ -325,14 +287,14 @@ public class RBaseListen extends RBaseListener {
 
 	@Override
 	public void enterCallFunction(@NotNull RParser.CallFunctionContext ctx) {
-		Interval sourceInterval = ctx.getSourceInterval();
+		/*Interval sourceInterval = ctx.getSourceInterval();
 		int start = sourceInterval.a;
-		Token assign = tokens.get(start);
-
-		String subExpr = assign.getText();
+		Token assign = tokens.get(start);*/
+        Token start=ctx.start;
+		String subExpr = start.getText();
 		/* Detect libraries and add them to the outline! */
 		if (subExpr.equals("library") || subExpr.equals("require")) {
-			Token firstToken = tokens.get(start);
+			Token firstToken = start;
 
 			int lineStart = firstToken.getStartIndex();
 
@@ -341,7 +303,8 @@ public class RBaseListen extends RBaseListener {
 			if (ctx.getParent().getChild(1) != null) {
 				String name = ctx.getChild(2).getText();
 				// The third token should be a parenthesis!
-				String parenthesis = tokens.get(start + 3).getText();
+				
+				String parenthesis = ctx.getChild(3).getText();
 				if (parenthesis.equals(")")) {
 					if (methods.size() == 0) {
 
