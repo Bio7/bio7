@@ -137,6 +137,18 @@ public class RBaseListener implements RListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterClosingLeftBraceError(@NotNull RParser.ClosingLeftBraceErrorContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitClosingLeftBraceError(@NotNull RParser.ClosingLeftBraceErrorContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterE20expr(@NotNull RParser.E20exprContext ctx) { }
 	/**
 	 * {@inheritDoc}

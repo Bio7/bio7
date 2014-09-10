@@ -129,6 +129,18 @@ public interface RListener extends ParseTreeListener {
 	 */
 	void exitE38(@NotNull RParser.E38Context ctx);
 	/**
+	 * Enter a parse tree produced by the {@code ClosingLeftBraceError}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterClosingLeftBraceError(@NotNull RParser.ClosingLeftBraceErrorContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code ClosingLeftBraceError}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitClosingLeftBraceError(@NotNull RParser.ClosingLeftBraceErrorContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code e20expr}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree

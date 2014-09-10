@@ -44,7 +44,7 @@ public class UnderlineListener extends BaseErrorListener {
 
 					if (lineNumb == line) {
 						markers[i].delete();
-						System.out.println(recognizer.getRuleNames()[i]);
+						//System.out.println(recognizer.getRuleNames()[i]);
 					}
 				} catch (CoreException e1) {
 					// TODO Auto-generated catch block
@@ -61,6 +61,8 @@ public class UnderlineListener extends BaseErrorListener {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
+			
+			
 			
 			IMarker marker;
 			try {

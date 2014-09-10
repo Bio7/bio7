@@ -88,6 +88,13 @@ public class RBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements RVis
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitClosingLeftBraceError(@NotNull RParser.ClosingLeftBraceErrorContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitE20expr(@NotNull RParser.E20exprContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}

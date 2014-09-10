@@ -122,6 +122,20 @@ public class RBaseListen extends RBaseListener {
 		
 	}
 	
+public void exitClosingLeftBraceError(@NotNull RParser.ClosingLeftBraceErrorContext ctx) {
+		
+		/* Notify the parser! */
+		parser.notifyErrorListeners(ctx.start, "Opening Brace Missing!", null);
+		
+	}
+
+/*public void exitClosingLeftEmptyBraceError(@NotNull RParser.ClosingLeftEmptyBraceErrorContext ctx) {
+	
+	 Notify the parser! 
+	parser.notifyErrorListeners(ctx.start, "Right Brace Missing!", null);
+	
+}*/
+	
 	
 	
 

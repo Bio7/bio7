@@ -82,6 +82,13 @@ public interface RVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitE38(@NotNull RParser.E38Context ctx);
 	/**
+	 * Visit a parse tree produced by the {@code ClosingLeftBraceError}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitClosingLeftBraceError(@NotNull RParser.ClosingLeftBraceErrorContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code e20expr}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree

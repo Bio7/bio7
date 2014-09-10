@@ -17,13 +17,10 @@ expr_or_assign
     ;
 */
 
-expr:  '{' exprlist 	#ClosingRightBraceError
-	|	'(''(' expr ')' #ExprError
-    | 	'(' expr ')'')' # ExprError2 
+expr:  
     //|  '{' exprlist '}' '}'	#AmountRightBraceError
     //|  '{' '{' exprlist '}'  	#AmountLeftBraceError2
-	//    |exprlist '}' 	#ClosingLeftBraceError
-    |   expr '[[' sublist ']' ']'  #e1// '[[' follows R's yacc grammar
+       expr '[[' sublist ']' ']'  #e1// '[[' follows R's yacc grammar
     |   expr '[' sublist ']'	#e2
     |   expr ('::'|':::') expr	#e3
     |   expr ('$'|'@') expr	#e4
@@ -40,9 +37,13 @@ expr:  '{' exprlist 	#ClosingRightBraceError
     |   '~' expr	#e15  
     |   expr '~' expr	#e16 
     |   expr ('<-'|'<<-'|'='|'->'|'->>'|':=') expr	#VariableDeclaration
+    |   '{' exprlist '}' 	#e19// compound statement
+    //| 	 exprlist '}' 	#ClosingRightEmptyBraceError
+    | 	'{' '{' exprlist '}' 	#ClosingRightBraceError
+    |	'{' exprlist  '}' '}'	#ClosingLeftBraceError
+   // |	'{' exprlist  			#ClosingLeftEmptyBraceError
     |   'function' '(' formlist? ')' expr #DefFunction// define function
     |   expr '(' sublist ')'   	#CallFunction           // call function
-    |   '{' exprlist '}' 	#e19// compound statement
     |   'if' '(' expr ')' expr	#e20expr
     |   'if' '(' expr ')' expr 'else' expr	#e21
     |   'for' '(' ID 'in' expr ')' expr	#e22
@@ -52,6 +53,8 @@ expr:  '{' exprlist 	#ClosingRightBraceError
     |   'next'	#e26
     |   'break'	#e27
     |   '(' expr ')'	#e28
+    |	'(' '(' expr ')' #ExprError
+    | 	'(' expr ')' ')' # ExprError2 
     |   ID	#e29
     |   STRING	#e30
     |   HEX	#e31
