@@ -37,25 +37,25 @@ public class RBaseListen extends RBaseListener {
 	}
 
 	@Override
-	public void exitExprError(@NotNull RParser.ExprErrorContext ctx) {
+	/*public void exitExprError(@NotNull RParser.ExprErrorContext ctx) {
 		
 		parser.notifyErrorListeners(ctx.start, "One Opening Parentheses to much!", null);
 
 	}
 
-	/**
+	*//**
 	 * {@inheritDoc}
 	 * <p/>
 	 * The default implementation does nothing.
-	 */
+	 *//*
 	@Override
 	public void exitExprError2(@NotNull RParser.ExprError2Context ctx) {
 
 		
 
-		/* Notify the parser! */
+		 Notify the parser! 
 		parser.notifyErrorListeners(ctx.stop, "One Closing Parentheses to much!", null);
-	}
+	}*/
 	/*public void enterAmountRightBraceError(@NotNull RParser.AmountRightBraceErrorContext ctx) { }
 	
 	public void exitAmountRightBraceError(@NotNull RParser.AmountRightBraceErrorContext ctx) {
@@ -110,24 +110,24 @@ public class RBaseListen extends RBaseListener {
 	
 	
 	
-	public void enterClosingRightBraceError(@NotNull RParser.ClosingRightBraceErrorContext ctx) {
+	/*public void enterClosingRightBraceError(@NotNull RParser.ClosingRightBraceErrorContext ctx) {
 		
 		
 	}
 	
 	public void exitClosingRightBraceError(@NotNull RParser.ClosingRightBraceErrorContext ctx) {
 		
-		/* Notify the parser! */
+		 Notify the parser! 
 		parser.notifyErrorListeners(ctx.stop, "Closing Brace Missing!", null);
 		
 	}
 	
 public void exitClosingLeftBraceError(@NotNull RParser.ClosingLeftBraceErrorContext ctx) {
 		
-		/* Notify the parser! */
+		 Notify the parser! 
 		parser.notifyErrorListeners(ctx.start, "Opening Brace Missing!", null);
 		
-	}
+	}*/
 
 /*public void exitClosingLeftEmptyBraceError(@NotNull RParser.ClosingLeftEmptyBraceErrorContext ctx) {
 	

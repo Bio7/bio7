@@ -340,12 +340,9 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	protected void createPages() {
 		createPage0();
 		/* Execute in JavaFX Thread to wait for the editor controller! */
-		Platform.runLater(new Runnable() {
-
-			public void run() {
+		
 				createPage1();
-			}
-		});
+			
 
 	}
 
@@ -455,7 +452,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 		super.pageChange(newPageIndex);
 
 		if (newPageIndex == 0) {
-          /*if(getEditor(1)!=null){
+         
 			final IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
 
 			if (editorController != null) {
@@ -467,6 +464,8 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 							editorController.setFxmlText(doc.get());
 
 							canvas.redraw();
+							
+							
 
 						} catch (IOException e) { // TODO Auto-generated catch
 													// // block
@@ -476,7 +475,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 					}
 				});
 			}
-          }*/
+          
 
 		}
 

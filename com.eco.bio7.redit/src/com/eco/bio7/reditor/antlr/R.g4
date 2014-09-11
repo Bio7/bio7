@@ -39,8 +39,6 @@ expr:
     |   expr ('<-'|'<<-'|'='|'->'|'->>'|':=') expr	#VariableDeclaration
     |   '{' exprlist '}' 	#e19// compound statement
     //| 	 exprlist '}' 	#ClosingRightEmptyBraceError
-    | 	'{' '{' exprlist '}' 	#ClosingRightBraceError
-    |	'{' exprlist  '}' '}'	#ClosingLeftBraceError
    // |	'{' exprlist  			#ClosingLeftEmptyBraceError
     |   'function' '(' formlist? ')' expr #DefFunction// define function
     |   expr '(' sublist ')'   	#CallFunction           // call function
@@ -53,8 +51,6 @@ expr:
     |   'next'	#e26
     |   'break'	#e27
     |   '(' expr ')'	#e28
-    |	'(' '(' expr ')' #ExprError
-    | 	'(' expr ')' ')' # ExprError2 
     |   ID	#e29
     |   STRING	#e30
     |   HEX	#e31
@@ -67,6 +63,18 @@ expr:
     |   'NaN'	#e37
     |   'TRUE'	#e38
     |   'FALSE'	#e39
+    |   expr '(' sublist    						{notifyErrorListeners("Missing closing parentheses in function call!");}#CallFunctionError1
+    |   expr '(' sublist ')' ')'   					{notifyErrorListeners("Too many parentheses in function call!");}#CallFunctionError2
+    |   'function' '(' formlist?  expr 				{notifyErrorListeners("Missing closing parentheses in function definition!");}#DefFunctionError1// define function
+    |   'function' '(' formlist? ')' ')' expr 		{notifyErrorListeners("Too many parentheses in function definition!");}#DefFunctionError2// define function
+    |   'if' '(' expr  expr							{notifyErrorListeners("Missing closing parentheses in if condition!!");}#e20Error1
+    |   'if' '(' expr ')' ')'  expr					{notifyErrorListeners("Too many parentheses in if condition!");}#e20Error1
+    |   expr '[' sublist 	    					{notifyErrorListeners("Missing closing brackets!");}#e28Error1
+    |   expr '[' sublist ']' ']'					{notifyErrorListeners("Too many brackets!");}#e28Error1
+    | 	'(' expr ')' ')' 							{notifyErrorListeners("Too many parentheses!");}# e28Error1
+   // |	'(' expr         							{notifyErrorListeners("Missing closing parentheses!");}#e28Error2
+    | 	'{'  exprlist  	 							{notifyErrorListeners("Missing closing braces!");} #e19Error1
+    |	'{' exprlist  '}' '}'						{notifyErrorListeners("Too many braces!");} #e19Error2
     ;
 
 exprlist

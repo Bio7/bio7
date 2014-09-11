@@ -39,7 +39,7 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 		
 		//String text=annotation.getText();
 		
-		if(text!=null&&text.equals("One Opening Parentheses to much!")){
+		if(text!=null&&text.equals("Too many parentheses in if condition!")){
 			return true;
 		}
 		else {

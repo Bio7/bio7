@@ -33,6 +33,7 @@ public class CssView extends ViewPart implements ILinkedWithEditorView {
 	private IPartListener2 linkWithEditorPartListener = new LinkWithEditorPartListener(this);
 	private Action linkWithEditorAction;
 	private boolean linkingActive = true;
+	private IEditorPart currentEditor;
 
 	public CssView() {
 		// TODO Auto-generated constructor stub
@@ -111,7 +112,10 @@ public class CssView extends ViewPart implements ILinkedWithEditorView {
 			return;
 		}
 
-		updateHierachyView(activeEditor);
+		if (currentEditor != activeEditor || currentEditor == null) {
+			updateHierachyView(activeEditor);
+			currentEditor = activeEditor;
+		}
 		// do something with content of the editor
 	}
 

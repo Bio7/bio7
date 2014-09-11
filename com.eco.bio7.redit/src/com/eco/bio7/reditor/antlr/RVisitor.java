@@ -82,12 +82,12 @@ public interface RVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitE38(@NotNull RParser.E38Context ctx);
 	/**
-	 * Visit a parse tree produced by the {@code ClosingLeftBraceError}
+	 * Visit a parse tree produced by the {@code e20Error1}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitClosingLeftBraceError(@NotNull RParser.ClosingLeftBraceErrorContext ctx);
+	T visitE20Error1(@NotNull RParser.E20Error1Context ctx);
 	/**
 	 * Visit a parse tree produced by the {@code e20expr}
 	 * labeled alternative in {@link RParser#expr}.
@@ -102,19 +102,26 @@ public interface RVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitFormlist(@NotNull RParser.FormlistContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code ExprError}
+	 * Visit a parse tree produced by the {@code CallFunctionError1}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExprError(@NotNull RParser.ExprErrorContext ctx);
+	T visitCallFunctionError1(@NotNull RParser.CallFunctionError1Context ctx);
 	/**
-	 * Visit a parse tree produced by the {@code ExprError2}
+	 * Visit a parse tree produced by the {@code e19Error1}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExprError2(@NotNull RParser.ExprError2Context ctx);
+	T visitE19Error1(@NotNull RParser.E19Error1Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e19Error2}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE19Error2(@NotNull RParser.E19Error2Context ctx);
 	/**
 	 * Visit a parse tree produced by {@link RParser#sub}.
 	 * @param ctx the parse tree
@@ -184,6 +191,13 @@ public interface RVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitE19(@NotNull RParser.E19Context ctx);
 	/**
+	 * Visit a parse tree produced by the {@code CallFunctionError2}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCallFunctionError2(@NotNull RParser.CallFunctionError2Context ctx);
+	/**
 	 * Visit a parse tree produced by the {@code VariableDeclaration}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
@@ -198,13 +212,6 @@ public interface RVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitCallFunction(@NotNull RParser.CallFunctionContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code ClosingRightBraceError}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitClosingRightBraceError(@NotNull RParser.ClosingRightBraceErrorContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code e22}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
@@ -218,6 +225,13 @@ public interface RVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitE21(@NotNull RParser.E21Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e28Error1}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE28Error1(@NotNull RParser.E28Error1Context ctx);
 	/**
 	 * Visit a parse tree produced by the {@code e24}
 	 * labeled alternative in {@link RParser#expr}.
@@ -288,12 +302,26 @@ public interface RVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitProg(@NotNull RParser.ProgContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code DefFunctionError1}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDefFunctionError1(@NotNull RParser.DefFunctionError1Context ctx);
+	/**
 	 * Visit a parse tree produced by the {@code e3}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitE3(@NotNull RParser.E3Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code DefFunctionError2}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDefFunctionError2(@NotNull RParser.DefFunctionError2Context ctx);
 	/**
 	 * Visit a parse tree produced by the {@code e4}
 	 * labeled alternative in {@link RParser#expr}.

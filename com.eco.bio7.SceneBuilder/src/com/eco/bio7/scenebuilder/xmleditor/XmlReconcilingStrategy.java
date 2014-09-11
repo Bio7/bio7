@@ -56,7 +56,7 @@ public class XmlReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 							display.syncExec(new Runnable() {
 								public void run() {
 
-									IDocumentProvider dp = xmlEditor.getDocumentProvider();
+									/*IDocumentProvider dp = xmlEditor.getDocumentProvider();
 									final IDocument doc = dp.getDocument(xmlEditor.getEditorInput());
 
 									try {
@@ -67,7 +67,7 @@ public class XmlReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 										e.printStackTrace();
 									}
 									
-									guiCanvas.redraw();
+									guiCanvas.redraw();*/
 									
 								}
 							});

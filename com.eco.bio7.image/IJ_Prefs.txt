@@ -1,5 +1,5 @@
 #ImageJ 1.48c Preferences
-#Tue Sep 09 16:40:51 CEST 2014
+#Thu Sep 11 17:10:30 CEST 2014
 new.fill=0
 .log.height=250
 pp.options=1
