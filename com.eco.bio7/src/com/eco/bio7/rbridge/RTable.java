@@ -13,6 +13,7 @@ package com.eco.bio7.rbridge;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ControlContribution;
+import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.dialogs.IInputValidator;
@@ -36,15 +37,19 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
+
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.util.PlaceholderLabel;
 
 public class RTable extends ViewPart {
 
@@ -93,7 +98,7 @@ public class RTable extends ViewPart {
 		instance = this;
 		Composite container = new Composite(parent, SWT.NONE);
 		container.setLayout(new FillLayout());
-		tabFolder = new CTabFolder(container, SWT.NONE);
+		tabFolder = new CTabFolder(container, SWT.BOTTOM);
 
 		grid = new Spread().spread(tabFolder, 30, 30, "Sheet 1");
 		tabFolder.addCTabFolder2Listener(new CTabFolder2Listener() {
@@ -295,7 +300,8 @@ public class RTable extends ViewPart {
 		toolbarManager.add(fromSpread);
 		toolbarManager.add(add);
 		toolbarManager.add(edit);
-		toolbarManager.add(fi);
+		toolbarManager.add(fi);		
+		toolbarManager.add(new PlaceholderLabel().getPlaceholderLabel());
 
 	}
 

@@ -2,6 +2,7 @@ package com.eco.bio7.browser;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ControlContribution;
+import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
@@ -22,6 +23,8 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
 
+import com.eco.bio7.util.PlaceholderLabel;
+
 
 
 public class BrowserView extends ViewPart {
@@ -39,6 +42,7 @@ public class BrowserView extends ViewPart {
 	
 
 	private Object realUrl;
+	private IContributionItem placeholderlabel;
 	private static BrowserView browserInstance;
 	public static final String ID = "com.eco.bio7.browser.BrowserView"; //$NON-NLS-1$
 
@@ -106,6 +110,7 @@ public class BrowserView extends ViewPart {
 
 	class RLinksCombo extends ControlContribution {
 		private Combo combo;
+		private IContributionItem placeholderlabel;
 
 		RLinksCombo() {
 			super("RLinkCombo");
@@ -368,7 +373,8 @@ public class BrowserView extends ViewPart {
 		toolbarManager.add(refreshAction);
 
 		toolbarManager.add(scriptAction);
-		
+		placeholderlabel = new PlaceholderLabel().getPlaceholderLabel();
+		toolbarManager.add(placeholderlabel);
 		
 
 	}

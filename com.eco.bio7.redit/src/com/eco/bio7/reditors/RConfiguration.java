@@ -78,7 +78,7 @@ import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.browser.BrowserView;
-import com.eco.bio7.r.RState;
+import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.code.RAssistProcessor;
 import com.eco.bio7.rpreferences.template.RCompletionProcessor;
@@ -94,7 +94,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 	RColorProvider provider;
 
 	private REditor rEditor;
-	
+
 	public static String htmlHelpText = "";
 
 	public RConfiguration(RColorManager colorManager, REditor rEditor) {
@@ -135,7 +135,8 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 	}
 
 	public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
-		//return new String[] { IDocument.DEFAULT_CONTENT_TYPE, RPartitionScanner.R_DOC, RPartitionScanner.R_MULTILINE_COMMENT };
+		// return new String[] { IDocument.DEFAULT_CONTENT_TYPE,
+		// RPartitionScanner.R_DOC, RPartitionScanner.R_MULTILINE_COMMENT };
 		return new String[] { IDocument.DEFAULT_CONTENT_TYPE };
 	}
 
@@ -211,7 +212,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 	}
 
 	public class MarkdownTextHover implements ITextHover, ITextHoverExtension2 {
-		
+
 		protected String help = "";
 
 		// return information to be shown when the cursor is on the given region
@@ -234,7 +235,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 					e.printStackTrace();
 				}
 
-				if (Character.isLetter(c)==false&&(c=='.')==false&&Character.isDigit(c)==false)
+				if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false)
 					break;
 
 				length++;
@@ -252,7 +253,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 					e.printStackTrace();
 				}
 
-				if (Character.isLetter(c) == false&&(c=='.')==false&&Character.isDigit(c)==false)
+				if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false)
 					break;
 
 				minusLength--;
@@ -265,13 +266,13 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 			if (resultedLength > 0) {
 
-				
-				  /*Display display = PlatformUI.getWorkbench().getDisplay();
-				  display.syncExec(new Runnable() {
-				  
-				  public void run() { textViewer.setSelectedRange(wordOffset,
-				  resultedLength); } });*/
-				 
+				/*
+				 * Display display = PlatformUI.getWorkbench().getDisplay();
+				 * display.syncExec(new Runnable() {
+				 * 
+				 * public void run() { textViewer.setSelectedRange(wordOffset,
+				 * resultedLength); } });
+				 */
 
 				try {
 					htmlHelpText = textViewer.getDocument().get(wordOffset, resultedLength);
@@ -297,69 +298,9 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 			if (c != null) {
 				if (RState.isBusy() == false) {
 					RState.setBusy(true);
-				Display display = PlatformUI.getWorkbench().getDisplay();
-				display.syncExec(new Runnable() {
-					public void run() {
-
-						try {
-
-							c.eval("try(outfile <- paste(tempfile(), \".txt\", sep=\"\"),silent = T)").toString();
-							c.eval("try(tools::Rd2txt(utils:::.getHelpFile(?" + htmlHelpText + "),outfile,package=\"tools\", stages=c(\"install\", \"render\"),outputEncoding = \"\"),silent = T)");
-							String out = null;
-							try {
-								out = (String) c.eval("try(outfile)").asString();
-							} catch (REXPMismatchException e) {
-
-								e.printStackTrace();
-							}
-
-							// String pattern = "file:///" + out;
-							String url = out.replace("\\", "/");
-
-							// StandardCharsets.UTF_8
-							/*
-							 * try { List<String> lines =
-							 * Files.readAllLines(Paths.get(url),
-							 * Charset.defaultCharset()); } catch (IOException
-							 * e) { // TODO Auto-generated catch block
-							 * e.printStackTrace(); }
-							 */
-
-							byte[] encoded = null;
-							try {
-								encoded = Files.readAllBytes(Paths.get(url));
-							} catch (IOException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-							help = new String(encoded, Charset.defaultCharset());
-							// help = new Util().fileToString(url);
-                           help=help.replace("_\b", "");
-                          
-                           
-                           
-						} catch (RserveException e1) {
-
-							// e1.printStackTrace();
-						}
-					}
-				});
-
-			}
-			}
-			RState.setBusy(false);
-			
-				/*Job job = new Job("Html help") {
-				
-
-				@Override
-				protected IStatus run(IProgressMonitor monitor) {
-					monitor.beginTask("Help ...", IProgressMonitor.UNKNOWN);
-
-					RConnection c = REditor.getRserveConnection();
-					if (c != null) {
-						if (RState.isBusy() == false) {
-							RState.setBusy(true);
+					Display display = PlatformUI.getWorkbench().getDisplay();
+					display.syncExec(new Runnable() {
+						public void run() {
 
 							try {
 
@@ -373,17 +314,16 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 									e.printStackTrace();
 								}
 
-								// String pattern = "file:///" + out;
 								String url = out.replace("\\", "/");
 
 								// StandardCharsets.UTF_8
-								
+								/*
 								 * try { List<String> lines =
 								 * Files.readAllLines(Paths.get(url),
 								 * Charset.defaultCharset()); } catch
 								 * (IOException e) { // TODO Auto-generated
 								 * catch block e.printStackTrace(); }
-								 
+								 */
 
 								byte[] encoded = null;
 								try {
@@ -400,27 +340,66 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 								// e1.printStackTrace();
 							}
-
 						}
-					}
-
-					monitor.done();
-					return Status.OK_STATUS;
+					});
+					RState.setBusy(false);
 				}
+			}
 
-			};
-			job.addJobChangeListener(new JobChangeAdapter() {
-				public void done(IJobChangeEvent event) {
-					if (event.getResult().isOK()) {
-
-						RState.setBusy(false);
-					} else {
-
-					}
-				}
-			});
-			// job.setSystem(true);
-			job.schedule();*/
+			/*
+			 * Job job = new Job("Html help") {
+			 * 
+			 * 
+			 * @Override protected IStatus run(IProgressMonitor monitor) {
+			 * monitor.beginTask("Help ...", IProgressMonitor.UNKNOWN);
+			 * 
+			 * RConnection c = REditor.getRserveConnection(); if (c != null) {
+			 * if (RState.isBusy() == false) { RState.setBusy(true);
+			 * 
+			 * try {
+			 * 
+			 * c.eval(
+			 * "try(outfile <- paste(tempfile(), \".txt\", sep=\"\"),silent = T)"
+			 * ).toString(); c.eval("try(tools::Rd2txt(utils:::.getHelpFile(?" +
+			 * htmlHelpText +
+			 * "),outfile,package=\"tools\", stages=c(\"install\", \"render\"),outputEncoding = \"\"),silent = T)"
+			 * ); String out = null; try { out = (String)
+			 * c.eval("try(outfile)").asString(); } catch (REXPMismatchException
+			 * e) {
+			 * 
+			 * e.printStackTrace(); }
+			 * 
+			 * // String pattern = "file:///" + out; String url =
+			 * out.replace("\\", "/");
+			 * 
+			 * // StandardCharsets.UTF_8
+			 * 
+			 * try { List<String> lines = Files.readAllLines(Paths.get(url),
+			 * Charset.defaultCharset()); } catch (IOException e) { // TODO
+			 * Auto-generated catch block e.printStackTrace(); }
+			 * 
+			 * 
+			 * byte[] encoded = null; try { encoded =
+			 * Files.readAllBytes(Paths.get(url)); } catch (IOException e) { //
+			 * TODO Auto-generated catch block e.printStackTrace(); } help = new
+			 * String(encoded, Charset.defaultCharset()); // help = new
+			 * Util().fileToString(url); help = help.replace("_\b", "");
+			 * 
+			 * } catch (RserveException e1) {
+			 * 
+			 * // e1.printStackTrace(); }
+			 * 
+			 * } }
+			 * 
+			 * monitor.done(); return Status.OK_STATUS; }
+			 * 
+			 * }; job.addJobChangeListener(new JobChangeAdapter() { public void
+			 * done(IJobChangeEvent event) { if (event.getResult().isOK()) {
+			 * 
+			 * RState.setBusy(false); } else {
+			 * 
+			 * } } }); // job.setSystem(true); job.schedule();
+			 */
 			/*
 			 * Document document = Jsoup.parse(help, ""); Element body =
 			 * document.body();
@@ -433,7 +412,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 			// textViewer.getDocument().getPartition(hoverRegion.getOffset()).toString()+" "+textViewer.getDocument().getPartition(hoverRegion.getLength()).toString();;
 
 			return help;
-			
+
 		}
 
 		String readFile(String path, Charset encoding) throws IOException {
@@ -441,7 +420,6 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 			return new String(encoded, encoding);
 		}
 
-		
 		/*
 		 * private String getTextContent(Element elem) { String text =
 		 * elem.getContent().toString();
@@ -477,7 +455,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 			public IInformationControl createInformationControl(Shell parent) {
 
 				/* SeeRHoverInfomrationControll for HTML implementation! */
-				return new RDefaultInformationControl(parent,"Mouse Right-Click To Open Help Browser",null);
+				return new RDefaultInformationControl(parent, "Mouse Right-Click To Open Help Browser", null);
 			}
 		};
 	}

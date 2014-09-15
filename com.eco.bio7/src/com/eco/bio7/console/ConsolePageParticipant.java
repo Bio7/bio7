@@ -53,6 +53,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.action.ControlContribution;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -68,7 +69,10 @@ import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IViewPart;
@@ -93,8 +97,8 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.os.pid.Pid;
 import com.eco.bio7.popup.actions.RunJavaClassFile;
 import com.eco.bio7.preferences.PreferenceConstants;
-import com.eco.bio7.r.RState;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.debug.DebugContinueAction;
 import com.eco.bio7.rbridge.debug.DebugNextAction;
 import com.eco.bio7.rbridge.debug.DebugRScript;
@@ -102,6 +106,7 @@ import com.eco.bio7.rbridge.debug.DebugStopAction;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
 import com.eco.bio7.scriptengines.ScriptEngineConnection;
+import com.eco.bio7.util.PlaceholderLabel;
 
 public class ConsolePageParticipant implements IConsolePageParticipant {
 
@@ -135,6 +140,9 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 	private Pid shellPid;
 	private Pid pythonPid;
+	private IContributionItem item;
+	
+	
 	private static ConsolePageParticipant ConsolePageParticipantInstance;
 	static boolean lineSeperatorConsole = true;
 	static boolean addToHistoryConsole = true;
@@ -373,6 +381,10 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		toolBarManager.add(new ConsoleNativeShellAction());
 		toolBarManager.add(new ConsolePythonShellAction());
 		toolBarManager.add(new ConsoleCustomActions(this));
+		item = new PlaceholderLabel().getPlaceholderLabel();
+		 toolBarManager.add(item);
+		
+		 
 
 		ia = new ConsoleInterpreterAction(this);
 		toolBarManager.add(ia);
@@ -1303,7 +1315,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 		/* Add the debug actions dynamically! */
 		IToolBarManager tm = toolBarManager;
-
+		/*Remove the distance label!*/
+		tm.remove("PlaceholderLabel");
 		IContributionItem[] its = toolBarManager.getItems();
 		boolean exist = false;
 		for (int i = 0; i < its.length; i++) {
@@ -1311,7 +1324,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			if (its[i].getId() != null) {
 				/* Control if the items exists already! */
 				if (its[i].getId().equals("Stop")) {
-
+					tm.add(item);
 					exist = true;
 				}
 
@@ -1323,6 +1336,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			tm.add(new DebugStopAction());
 			tm.add(new DebugNextAction());
 			tm.add(new DebugContinueAction());
+			/*Add the distance label again!*/
+			tm.add(item);
 			actionBars.updateActionBars();
 		}
 		/* Remove all toolbar actions from the console view! */
@@ -1337,6 +1352,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		toolBarManager.remove("Stop");
 		toolBarManager.remove("Next");
 		toolBarManager.remove("Continue");
+		
 		actionBars.updateActionBars();
 
 	}

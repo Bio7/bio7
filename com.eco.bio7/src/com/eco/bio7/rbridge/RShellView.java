@@ -127,7 +127,7 @@ import com.eco.bio7.compile.RScript;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.os.pid.Pid;
 import com.eco.bio7.preferences.PreferenceConstants;
-import com.eco.bio7.r.RState;
+import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.plot.RPlot;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.reditors.REditor;

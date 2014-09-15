@@ -97,7 +97,7 @@ public class XMLConfiguration extends SourceViewerConfiguration {
 		MonoReconciler reconciler= new MonoReconciler(new XmlReconcilingStrategy(xmlEditor), true);
 		
 	     reconciler.setDelay(XmlReconcilingStrategy.DELAY);
-	     reconciler.setIsAllowedToModifyDocument(false);
+	     reconciler.setIsAllowedToModifyDocument(true);
 	     //reconciler.addReconcilingParticipant(sourceViewer);
 		return reconciler;
 	}

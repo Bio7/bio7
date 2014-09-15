@@ -33,8 +33,8 @@ import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
-import com.eco.bio7.r.RState;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RState;
 
 public class RFormatAction extends Action implements IObjectActionDelegate {
 

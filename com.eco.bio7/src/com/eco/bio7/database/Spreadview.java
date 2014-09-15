@@ -56,7 +56,7 @@ import com.eco.bio7.jobs.LoadData;
 import com.eco.bio7.jobs.LoadWorkspaceJob;
 import com.eco.bio7.jobs.SaveWorkspaceJob;
 import com.eco.bio7.methods.Compiled;
-import com.eco.bio7.r.RState;
+import com.eco.bio7.rbridge.RState;
 import com.swtdesigner.ResourceManager;
 
 public class Spreadview extends ViewPart {

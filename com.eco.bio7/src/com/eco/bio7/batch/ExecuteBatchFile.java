@@ -58,8 +58,8 @@ import com.eco.bio7.floweditor.shapes.ShapesPlugin;
 import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 import com.eco.bio7.jobs.ImageFlowMacroWorkspaceJob;
 import com.eco.bio7.preferences.PreferenceConstants;
-import com.eco.bio7.r.RState;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RState;
 
 public class ExecuteBatchFile {
 

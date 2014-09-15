@@ -113,7 +113,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 		canvas = new FXCanvas(composite, SWT.NONE);
 		canvas.setLayout(new FillLayout());
-
+       
 		fileInputEditor = (FileEditorInput) this.getEditorInput();
 
 		ifile = fileInputEditor.getFile();
@@ -148,16 +148,16 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 				jobListener = new ChangeListener<Number>() {
 					@Override
 					public void changed(ObservableValue<? extends Number> observable, Number oldNum, Number newNum) {
-						editor.doReconcile=false;
+						
 						
 						IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
 						if (editorController != null) {
-
-							Source s = new Source(editorController.getFxmlText());
-							SourceFormatter sf = new SourceFormatter(s);
 							
-
-							doc.set(sf.toString());
+							Source s = new Source(editorController.getFxmlText());
+							//SourceFormatter sf = new SourceFormatter(s);
+							
+							
+							doc.set(editorController.getFxmlText());
 							
               
 						}
@@ -339,9 +339,14 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	 */
 	protected void createPages() {
 		createPage0();
-		/* Execute in JavaFX Thread to wait for the editor controller! */
-		
+		/* Execute in JavaFX Thread to wait for the editor controller (must be deleted for page change°!! */
+		Platform.runLater(new Runnable() {
+
+			@Override
+			public void run() {
 				createPage1();
+			}
+		});
 			
 
 	}
@@ -453,7 +458,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 		if (newPageIndex == 0) {
          
-			final IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
+			/*final IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
 
 			if (editorController != null) {
 				Platform.runLater(new Runnable() {
@@ -475,7 +480,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 					}
 				});
 			}
-          
+          */
 
 		}
 

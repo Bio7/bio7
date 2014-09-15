@@ -29,6 +29,8 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import org.eclipse.albireo.core.AwtEnvironment;
+import org.eclipse.jface.action.ControlContribution;
+import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
@@ -47,8 +49,11 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.IWorkbenchPart;
@@ -62,6 +67,7 @@ import com.eco.bio7.ImageJPluginActions.ImageJImageAction;
 import com.eco.bio7.ImageJPluginActions.ImageJPluginsAction;
 import com.eco.bio7.ImageJPluginActions.ImageJProcessAction;
 import com.eco.bio7.ImageJPluginActions.ImageJWindowAction;
+import com.eco.bio7.util.PlaceholderLabel;
 
 public class CanvasView extends ViewPart {
 	public static int insertMark = -1;
@@ -127,7 +133,9 @@ public class CanvasView extends ViewPart {
 						if (ve.size() > 0) {
 							final ImageWindow win = (ImageWindow) ve.get(1);
 							/*
-							 * Execute on the event dispatching thread! Important for WorldWind which uses ImageJ! (else deadlock situation occurs!!!)
+							 * Execute on the event dispatching thread!
+							 * Important for WorldWind which uses ImageJ! (else
+							 * deadlock situation occurs!!!)
 							 */
 							SwingUtilities.invokeLater(new Runnable() {
 								public void run() {
@@ -184,7 +192,8 @@ public class CanvasView extends ViewPart {
 							public void run() {
 
 								/*
-								 * Opener o = new Opener(); o.open(fileList[x].toString());
+								 * Opener o = new Opener();
+								 * o.open(fileList[x].toString());
 								 */
 								openFile(new File(fileList[x].toString()));
 							}
@@ -265,25 +274,28 @@ public class CanvasView extends ViewPart {
 			public void mouseDown(MouseEvent mouseevent)
 
 			{
-				/*Important to select the correct image and window when creating the new ImageJ view!
-				 *The listener for the right-click on the tabitem will care about that!*/
+				/*
+				 * Important to select the correct image and window when
+				 * creating the new ImageJ view!The listener for the right-click
+				 * on the tabitem will care about that!
+				 */
 				if (mouseevent.count == 1) {
 
 					CTabFolder ctab = (CTabFolder) mouseevent.widget;
-					
-					if(ctab.getItemCount()>0){
-					Vector ve = (Vector) ctab.getSelection().getData();
-					plu = (ImagePlus) ve.get(0);
 
-					win = (ImageWindow) ve.get(1);
-					WindowManager.setTempCurrentImage(plu);
-					WindowManager.setCurrentWindow(win);
+					if (ctab.getItemCount() > 0) {
+						Vector ve = (Vector) ctab.getSelection().getData();
+						plu = (ImagePlus) ve.get(0);
 
-					// important to set current Panel!
-					current = (JPanel) ve.get(2); // current.requestFocus();
+						win = (ImageWindow) ve.get(1);
+						WindowManager.setTempCurrentImage(plu);
+						WindowManager.setCurrentWindow(win);
+
+						// important to set current Panel!
+						current = (JPanel) ve.get(2); // current.requestFocus();
 					}
 
-				} else if (mouseevent.count == 2&&mouseevent.button==1) {
+				} else if (mouseevent.count == 2 && mouseevent.button == 1) {
 
 					IJ.getInstance().doCommand("Rename...");
 				}
@@ -305,7 +317,7 @@ public class CanvasView extends ViewPart {
 						// JPanel current = (JPanel) ve.get(2);
 
 						CustomView custom = new CustomView();
-                        /*Create ImageJ view with unique ID!*/
+						/* Create ImageJ view with unique ID! */
 						custom.setPanel(current, UUID.randomUUID().toString());
 						custom.setData(plu, win);
 						IJTabs.hideTab();
@@ -333,7 +345,8 @@ public class CanvasView extends ViewPart {
 		tbm.add(process);
 		tbm.add(analyze);
 		tbm.add(plugins);
-		tbm.add(imagej_window);
+		tbm.add(imagej_window);	
+		tbm.add(new PlaceholderLabel().getPlaceholderLabel());
 
 	}
 
@@ -362,7 +375,8 @@ public class CanvasView extends ViewPart {
 	}
 
 	/**
-	 * Open a file. If it's a directory, ask to open all images as a sequence in a stack or individually.
+	 * Open a file. If it's a directory, ask to open all images as a sequence in
+	 * a stack or individually.
 	 */
 	private void openFile(File f) {
 		try {

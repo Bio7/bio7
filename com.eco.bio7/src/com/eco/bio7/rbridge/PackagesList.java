@@ -40,7 +40,7 @@ import org.eclipse.wb.swt.layout.grouplayout.GroupLayout;
 import org.eclipse.wb.swt.layout.grouplayout.LayoutStyle;
 
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.r.RState;
+import com.eco.bio7.rbridge.RState;
 import com.swtdesigner.SWTResourceManager;
 
 

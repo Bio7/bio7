@@ -143,9 +143,9 @@ public class PointPanelView extends ViewPart {
 
 	private void initializeToolBar() {
 		IToolBarManager toolBarManager = getViewSite().getActionBars().getToolBarManager();
-		PlaceholderAction placeholder=new PlaceholderAction();
+		/*PlaceholderAction placeholder=new PlaceholderAction();
 		placeholder.setEnabled(false);
-		toolBarManager.add(new PlaceholderAction());
+		toolBarManager.add(new PlaceholderAction());*/
 	}
 
 	public void loadImage(String path) {

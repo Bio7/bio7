@@ -44,7 +44,7 @@ import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.preferences.PreferenceConstants;
-import com.eco.bio7.r.RState;
+import com.eco.bio7.rbridge.RState;
 
 
 public class FromSpreadAction extends Action implements IMenuCreator {

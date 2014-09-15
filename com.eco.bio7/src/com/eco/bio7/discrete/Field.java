@@ -27,8 +27,8 @@ import cern.jet.random.tfloat.engine.FloatMersenneTwister;
 import com.eco.bio7.collection.ResizeArray;
 import com.eco.bio7.info.InfoView;
 import com.eco.bio7.methods.CurrentStates;
-import com.eco.bio7.r.RState;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RState;
 
 /**
  * This class provides some static methods for the creation and variation of

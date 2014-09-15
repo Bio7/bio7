@@ -9,7 +9,7 @@
  *     M. Austenfeld
  *******************************************************************************/
 
-package com.eco.bio7.r;
+package com.eco.bio7.rbridge;
 
 /*import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;

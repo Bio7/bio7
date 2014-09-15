@@ -36,7 +36,7 @@ import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.browser.BrowserView;
-import com.eco.bio7.r.RState;
+import com.eco.bio7.rbridge.RState;
 
 /**
  * Default implementation of {@link org.eclipse.jface.text.IInformationControl}.

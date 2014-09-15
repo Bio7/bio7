@@ -1,21 +1,16 @@
 package com.eco.bio7.scenebuilder.xmleditor;
 
 import java.io.IOException;
-
 import javafx.application.Platform;
 import javafx.embed.swt.FXCanvas;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.reconciler.DirtyRegion;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
-import com.eco.bio7.scenebuilder.editor.MultiPageEditor;
 import com.oracle.javafx.scenebuilder.kit.editor.EditorController;
 
 public class XmlReconcilingStrategy implements IReconcilingStrategy, IReconcilingStrategyExtension {
@@ -29,7 +24,7 @@ public class XmlReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 	 * How long the reconciler will wait for further text changes before
 	 * reconciling
 	 */
-	public static final int DELAY = 1000;
+	public static final int DELAY = 500;
 
 	public XmlReconcilingStrategy(XMLEditor editor) {
 		xmlEditor = editor;
@@ -37,49 +32,45 @@ public class XmlReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
 	/* Update the editor view! */
 	private void doReconcile() {
-		System.out.println("changed! from reconcile");
+
 		if (xmlEditor != null) {
-           /*Only reconcile if the input comes from the XML editor!*/
-			if (xmlEditor.doReconcile==true) {
-				
-				
-				editorController = xmlEditor.getController();
-				guiCanvas = xmlEditor.getGuiCanvas();
-				// doc = xmlEditor.getDoc();
-				if (editorController != null) {
-					Platform.runLater(new Runnable() {
+			/* Only reconcile if the input comes from the XML editor! */
 
-						@Override
-						public void run() {
+			guiCanvas = xmlEditor.getGuiCanvas();
+			// doc = xmlEditor.getDoc();
 
-							Display display = PlatformUI.getWorkbench().getDisplay();
-							display.syncExec(new Runnable() {
-								public void run() {
+			Platform.runLater(new Runnable() {
 
-									/*IDocumentProvider dp = xmlEditor.getDocumentProvider();
-									final IDocument doc = dp.getDocument(xmlEditor.getEditorInput());
+				@Override
+				public void run() {
 
-									try {
+					// System.out.println("changed! from reconcile");
+					IDocumentProvider dp = xmlEditor.getDocumentProvider();
 
-										editorController.setFxmlText(doc.get());
-									} catch (IOException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									}
-									
-									guiCanvas.redraw();*/
-									
-								}
-							});
+					try {
+						editorController = xmlEditor.getController();
 
-						}
-					});
+						IDocument doc = dp.getDocument(xmlEditor.getEditorInput());
+						String content = doc.get();
+						guiCanvas.redraw();
+						/*	If content comes from the ScenBuilder GUI the content has already been set!
+						 * 	Only change if we change the source directly!*/
+						if (editorController.getFxmlText().equals(content) == false) {
+							editorController.setFxmlText(content);
+						} 
+
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					// 
+
 				}
-			}
-			xmlEditor.doReconcile=true;
-			
+			});
+
 		}
-		
+
 	}
 
 	/*

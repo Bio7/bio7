@@ -44,7 +44,7 @@ public class DebugStopAction extends Action {
 
 			ConsolePageParticipant.pipeInputToConsole("Q", true, false);
 			System.out.println("Q");
-
+             
 			// inst.toolBarManager.update(true);
 
 		} else {

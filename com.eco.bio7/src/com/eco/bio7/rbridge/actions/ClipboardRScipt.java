@@ -12,9 +12,9 @@ import org.eclipse.ui.IWorkbenchWindow;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
-import com.eco.bio7.r.RState;
 import com.eco.bio7.rbridge.RClipboardScriptJob;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RState;
 
 public class ClipboardRScipt extends Action {
 

@@ -52,7 +52,7 @@ import com.eco.bio7.collection.Work;
 import com.eco.bio7.console.Console;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.preferences.PreferenceConstants;
-import com.eco.bio7.r.RState;
+import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.ApplicationWorkbenchAdvisor;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;

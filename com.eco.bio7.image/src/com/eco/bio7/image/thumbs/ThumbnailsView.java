@@ -17,6 +17,7 @@ import ij.ImageStack;
 import ij.io.Opener;
 import ij.plugin.AVI_Reader;
 import ij.process.ImageConverter;
+
 import java.awt.image.BufferedImage;
 import java.awt.image.DirectColorModel;
 import java.awt.image.IndexColorModel;
@@ -26,6 +27,7 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.prefs.Preferences;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -44,6 +46,7 @@ import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw2d.parts.ScrollableThumbnail;
 import org.eclipse.jface.action.ControlContribution;
+import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
@@ -67,6 +70,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
+
+import com.eco.bio7.util.PlaceholderLabel;
 
 public class ThumbnailsView extends ViewPart {
 
@@ -158,6 +163,8 @@ public class ThumbnailsView extends ViewPart {
 	public SashForm sashForm;
 	
 	ArrayList listImages=new ArrayList();
+
+	private IContributionItem placeholderlabel;
 
 	public static boolean isThumbSizeSelectable() {
 		return thumbSizeSelectable;
@@ -615,6 +622,8 @@ public class ThumbnailsView extends ViewPart {
 		tbm.add(recursiveAction);
 		tbm.add(preview);
 		tbm.add(zo);
+		placeholderlabel = new PlaceholderLabel().getPlaceholderLabel();
+		tbm.add(placeholderlabel);
 
 	}
 
