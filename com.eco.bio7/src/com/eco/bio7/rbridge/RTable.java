@@ -293,14 +293,15 @@ public class RTable extends ViewPart {
 	 */
 	private void initializeToolBar() {
 		IToolBarManager toolbarManager = getViewSite().getActionBars().getToolBarManager();
-		toolbarManager.add(addRow);
-		toolbarManager.add(addColumn);
-		toolbarManager.add(addSpread);
-		toolbarManager.add(scriptAction);
-		toolbarManager.add(fromSpread);
-		toolbarManager.add(add);
+		toolbarManager.add(fi);	
 		toolbarManager.add(edit);
-		toolbarManager.add(fi);		
+		toolbarManager.add(add);
+		toolbarManager.add(fromSpread);
+		toolbarManager.add(scriptAction);
+		toolbarManager.add(addSpread);
+		toolbarManager.add(addColumn);
+		toolbarManager.add(addRow);
+			
 		toolbarManager.add(new PlaceholderLabel().getPlaceholderLabel());
 
 	}

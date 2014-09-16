@@ -305,9 +305,9 @@ CTabItem:selected {
 
 /*Perspective Switch!*/
 #org-eclipse-ui-main-toolbar #PerspectiveSwitcher {
-	eclipse-perspective-keyline-color: #eeeeee;
-	 background-image: url('./win7_old.png');
-	/*background-color: #ffffff;*/
+	eclipse-perspective-keyline-color: #dddddd;
+	/* background-image: url('./win7_old.png');*/
+	background-color: #ffffff;
 	handle-image: none;
 		
 }
@@ -315,17 +315,20 @@ CTabItem:selected {
 .MPartSashContainer {
 
  background-color: 	#ffffff;
- 
+ margin-top: 4px;
+	margin-bottom: 4px;
+	margin-left: 4px;
+	margin-right: 4px;
  
 }
 
 /*Colour around views!*/
 .MTrimmedWindow {
     background-color: #ffffff;
-    margin-top: 2px;
-	margin-bottom: 2px;
-	margin-left: 2px;
-	margin-right: 2px;
+    margin-top: 4px;
+	margin-bottom: 4px;
+	margin-left: 4px;
+	margin-right: 4px;
 	
     /*  */
 }

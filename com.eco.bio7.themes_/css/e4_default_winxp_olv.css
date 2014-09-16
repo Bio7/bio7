@@ -9,7 +9,7 @@
  *     IBM Corporation - initial API and implementation
  *     Lars Vogel <Lars.Vogel@gmail.com> - Bug 420836
  *******************************************************************************/
-@import url("platform:/plugin/org.eclipse.ui.themes/css/e4_basestyle.css");
+@import url("platform:/plugin/com.eco.bio7.themes/css/e4_basestyle.css");
 
 ColorDefinition#org-eclipse-ui-workbench-ACTIVE_UNSELECTED_TABS_COLOR_START {
 	color: #E6E3C3;
