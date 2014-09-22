@@ -108,18 +108,21 @@ public class LibraryPanelView extends ViewPart implements ILinkedWithEditorView 
 
 		public void partClosed(IWorkbenchPartReference partRef) { // TODO
 			// updateHierachyView(partRef, true);
-			Platform.runLater(new Runnable() {
+			if (partRef.getId().equals("com.eco.bio7.browser.scenebuilder")) {
+				
+				Platform.runLater(new Runnable() {
 
-				@Override
-				public void run() {
+					@Override
+					public void run() {
 
-					Group root = new Group();
-					Scene s = new Scene(root, 300, 300, Color.WHITE);
-					if (composite.isDisposed() == false) {
-						canvas.setScene(s);
+						Group root = new Group();
+						Scene s = new Scene(root, 300, 300, Color.WHITE);
+						if (composite.isDisposed() == false) {
+							canvas.setScene(s);
+						}
 					}
-				}
-			});
+				});
+			}
 		}
 
 		public void partDeactivated(IWorkbenchPartReference partRef) { // TODO

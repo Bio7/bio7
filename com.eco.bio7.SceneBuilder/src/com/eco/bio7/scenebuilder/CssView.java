@@ -58,15 +58,15 @@ public class CssView extends ViewPart implements ILinkedWithEditorView {
 		});
 
 		// getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
-		/*linkWithEditorAction = new Action("Link with Editor", IAction.AS_CHECK_BOX) {
-			@Override
-			public void run() {
-				toggleLinking(isChecked());
-			}
-		};*/
+		/*
+		 * linkWithEditorAction = new Action("Link with Editor",
+		 * IAction.AS_CHECK_BOX) {
+		 * 
+		 * @Override public void run() { toggleLinking(isChecked()); } };
+		 */
 
 		getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
-		//getViewSite().getActionBars().getToolBarManager().add(linkWithEditorAction);
+		// getViewSite().getActionBars().getToolBarManager().add(linkWithEditorAction);
 		getSite().getPage().addPartListener(linkWithEditorPartListener);
 		getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
 
@@ -140,18 +140,20 @@ public class CssView extends ViewPart implements ILinkedWithEditorView {
 		}
 
 		public void partClosed(IWorkbenchPartReference partRef) { // TODO
-			Platform.runLater(new Runnable() {
+			if (partRef.getId().equals("com.eco.bio7.browser.scenebuilder")) {
+				Platform.runLater(new Runnable() {
 
-				@Override
-				public void run() {
+					@Override
+					public void run() {
 
-					Group root = new Group();
-					Scene s = new Scene(root, 300, 300, Color.WHITE);
-					if (composite.isDisposed() == false) {
-						canvas.setScene(s);
+						Group root = new Group();
+						Scene s = new Scene(root, 300, 300, Color.WHITE);
+						if (composite.isDisposed() == false) {
+							canvas.setScene(s);
+						}
 					}
-				}
-			});
+				});
+			}
 		}
 
 		public void partDeactivated(IWorkbenchPartReference partRef) { // TODO

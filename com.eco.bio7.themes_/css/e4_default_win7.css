@@ -344,6 +344,10 @@ CTabFolder {
     background-color:  #eeeeee;
 }*/
 
+#org-eclipse-ui-console-ConsoleView.MToolBar {
+    background-color:  #eeeeee;
+}
+
 .ToolItemElement{
     image: url('./win7.png');
     background-color: white #eeeeee #dddddd 25% 25% 50%;

@@ -30,9 +30,9 @@ public class InspectorPanelView extends ViewPart implements ILinkedWithEditorVie
 	private MultiPageEditor pag;
 	private Composite composite;
 	private Scene scene;
-	 private IPartListener2 linkWithEditorPartListener  = new LinkWithEditorPartListener(this);
-	 private Action linkWithEditorAction;
-	 private boolean linkingActive = true;
+	private IPartListener2 linkWithEditorPartListener = new LinkWithEditorPartListener(this);
+	private Action linkWithEditorAction;
+	private boolean linkingActive = true;
 	private IEditorPart currentEditor;
 
 	public InspectorPanelView() {
@@ -56,76 +56,79 @@ public class InspectorPanelView extends ViewPart implements ILinkedWithEditorVie
 				canvas.setScene(s);
 			}
 		});
-		//getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
-				/*linkWithEditorAction = new Action("Link with Editor", IAction.AS_CHECK_BOX){
-			      @Override
-			      public void run() {
-			        toggleLinking(isChecked());
-			      }
-			    };*/
+		// getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
+		/*
+		 * linkWithEditorAction = new Action("Link with Editor",
+		 * IAction.AS_CHECK_BOX){
+		 * 
+		 * @Override public void run() { toggleLinking(isChecked()); } };
+		 */
 
 		getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
-		//getViewSite().getActionBars().getToolBarManager().add(linkWithEditorAction);
-	    getSite().getPage().addPartListener(linkWithEditorPartListener);
-	    getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
+		// getViewSite().getActionBars().getToolBarManager().add(linkWithEditorAction);
+		getSite().getPage().addPartListener(linkWithEditorPartListener);
+		getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
 
 	}
-	
+
 	@Override
-	  public void editorActivated(IEditorPart activeEditor) {
-	      if (!linkingActive || !getViewSite().getPage().isPartVisible(this)) {
-	        return;
-	      }
-	      
-	      if (currentEditor != activeEditor || currentEditor == null) {
-				updateHierachyView(activeEditor);
-				currentEditor = activeEditor;
-			}
-	      // do something with content of the editor
-	  }
-	 
-	  protected void toggleLinking(boolean checked) {
-	    this.linkingActive = checked;
-	    if (checked) {
-	      editorActivated(getSite().getPage().getActiveEditor());
-	    }
-	  }
+	public void editorActivated(IEditorPart activeEditor) {
+		if (!linkingActive || !getViewSite().getPage().isPartVisible(this)) {
+			return;
+		}
+
+		if (currentEditor != activeEditor || currentEditor == null) {
+			updateHierachyView(activeEditor);
+			currentEditor = activeEditor;
+		}
+		// do something with content of the editor
+	}
+
+	protected void toggleLinking(boolean checked) {
+		this.linkingActive = checked;
+		if (checked) {
+			editorActivated(getSite().getPage().getActiveEditor());
+		}
+	}
 
 	private IPartListener2 partListener = new IPartListener2() {
 
 		@Override
 		public void partActivated(IWorkbenchPartReference partRef) { //
 			// System.out.println(partRef.getId());
-			//updateHierachyView(partRef, false);
+			// updateHierachyView(partRef, false);
 
 		}
 
 		public void partBroughtToTop(IWorkbenchPartReference partRef) { // TODO
-			//updateHierachyView(partRef, false);
+			// updateHierachyView(partRef, false);
 
 		}
 
 		public void partClosed(IWorkbenchPartReference partRef) { // TODO
-			Platform.runLater(new Runnable() {
+			if (partRef.getId().equals("com.eco.bio7.browser.scenebuilder")) {
+				Platform.runLater(new Runnable() {
 
-				@Override
-				public void run() {
-					Group root = new Group();
-					Scene s = new Scene(root, 300, 300, Color.WHITE);
-					if (composite.isDisposed() == false) {
-						canvas.setScene(s);
+					@Override
+					public void run() {
+						Group root = new Group();
+						Scene s = new Scene(root, 300, 300, Color.WHITE);
+						if (composite.isDisposed() == false) {
+							canvas.setScene(s);
+						}
 					}
-				}
-			});
+				});
+			}
 		}
 
-		public void partDeactivated(IWorkbenchPartReference partRef) { // TODO //
+		public void partDeactivated(IWorkbenchPartReference partRef) { // TODO
+																		// //
 
 		}
 
 		@Override
 		public void partOpened(IWorkbenchPartReference partRef) {
-			//updateHierachyView(partRef, false);
+			// updateHierachyView(partRef, false);
 		}
 
 		public void partHidden(IWorkbenchPartReference partRef) { // TODO
@@ -144,40 +147,39 @@ public class InspectorPanelView extends ViewPart implements ILinkedWithEditorVie
 	};
 
 	private void updateHierachyView(IEditorPart editor) {
-		
-			
-			if (editor instanceof MultiPageEditor) {
-				pag = (MultiPageEditor) editor;
 
-				Platform.runLater(new Runnable() {
+		if (editor instanceof MultiPageEditor) {
+			pag = (MultiPageEditor) editor;
 
-					@Override
-					public void run() {
+			Platform.runLater(new Runnable() {
 
-						if (pag != null) {
-							InspectorPanelController h = new InspectorPanelController(pag.editorController);
-							final BorderPane pane = new BorderPane();
-							pane.setCenter(h.getPanelRoot());
-							scene = new Scene(pane);
+				@Override
+				public void run() {
 
-						}
+					if (pag != null) {
+						InspectorPanelController h = new InspectorPanelController(pag.editorController);
+						final BorderPane pane = new BorderPane();
+						pane.setCenter(h.getPanelRoot());
+						scene = new Scene(pane);
 
 					}
-				});
 
-				Display display = PlatformUI.getWorkbench().getDisplay();
-				display.asyncExec(new Runnable() {
+				}
+			});
 
-					public void run() {
-						if (composite.isDisposed() == false) {
-							canvas.setScene(scene);
+			Display display = PlatformUI.getWorkbench().getDisplay();
+			display.asyncExec(new Runnable() {
 
-						}
+				public void run() {
+					if (composite.isDisposed() == false) {
+						canvas.setScene(scene);
+
 					}
-				});
+				}
+			});
 
-			}
-		
+		}
+
 	}
 
 	public void dispose() {

@@ -35,6 +35,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.draw2d.ActionEvent;
 import org.eclipse.draw2d.ActionListener;
 import org.eclipse.draw2d.Button;
+import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.FigureCanvas;
 import org.eclipse.draw2d.LayeredPane;
 import org.eclipse.draw2d.LightweightSystem;
@@ -239,10 +240,13 @@ public class ThumbnailsView extends ViewPart {
 		composite.setLayout(new FillLayout());
 
 		sashForm = new SashForm(composite, SWT.HORIZONTAL);
+		
+		sashForm.setBackground(composite.getBackground());
 
 		FigureCanvas canvas = new FigureCanvas(sashForm);
 
 		scalableLayer = new ScalableLayeredPane();
+		scalableLayer.setBackgroundColor( ColorConstants.white );
 
 		layeredpane = new LayeredPane();
 
@@ -253,6 +257,8 @@ public class ThumbnailsView extends ViewPart {
 		canvas.setContents(scalableLayer);
 
 		Canvas thumbCanvas = new Canvas(sashForm, SWT.BORDER);
+		
+		thumbCanvas.setBackground( ColorConstants.white );
 
 		lws = new LightweightSystem(thumbCanvas);
 
