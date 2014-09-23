@@ -109,7 +109,7 @@ public class JavaNewWizard extends Wizard implements INewWizard {
 		String setup="public void setup(){" +linefeed+
 		"// Please enter your setup code here!"+linefeed+
 				"}"+linefeed;
-		String head="public void ecomain(){";
+		String head="public void run(){";
 		String comment="// Please enter your main code here!";
 		String close="}";
 		String contents =setup+head+linefeed+comment+linefeed+close;

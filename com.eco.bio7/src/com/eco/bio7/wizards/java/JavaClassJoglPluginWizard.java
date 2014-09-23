@@ -102,7 +102,7 @@ public class JavaClassJoglPluginWizard extends Wizard implements INewWizard {
 	private InputStream openContentStream(String filename) {
 		String linefeed = "\r\n";
 		String imports = "import javax.media.opengl.GL2;" + linefeed + "import javax.media.opengl.glu.GLU;" + linefeed + "import com.jogamp.opengl.util.gl2.GLUT;" + linefeed + linefeed;
-		String setup = "\tpublic void setup(GL2 gl,GLU glu,GLUT glut){\r\n" + linefeed + "\t// Please enter your setup code here!" + linefeed + "\t}" + linefeed + "\tpublic void ecomain(GL2 gl,GLU glu,GLUT glut){" + linefeed + "\t// Please enter your main code here!" + linefeed + "\t}";
+		String setup = "\tpublic void setup(GL2 gl,GLU glu,GLUT glut){\r\n" + linefeed + "\t// Please enter your setup code here!" + linefeed + "\t}" + linefeed + "\tpublic void run(GL2 gl,GLU glu,GLUT glut){" + linefeed + "\t// Please enter your main code here!" + linefeed + "\t}";
 
 		String contents = imports + "public class " + filename + " extends com.eco.bio7.compile.Model {" + linefeed + linefeed + setup + linefeed + "}";
 

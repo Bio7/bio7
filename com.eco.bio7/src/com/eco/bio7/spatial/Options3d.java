@@ -578,7 +578,7 @@ public class Options3d extends ViewPart {
 		setupButton.setBounds(88, 10, 68, 32);
 
 		playPauseButton = new Button(composite_2, SWT.TOGGLE);
-		playPauseButton.setToolTipText("Enables the triggering of the ecomain method with the default Jogl timer.\n The timer fps determines the speed of triggering");
+		playPauseButton.setToolTipText("Enables the triggering of the run method with the default Jogl timer.\n The timer fps determines the speed of triggering");
 		playPauseButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 

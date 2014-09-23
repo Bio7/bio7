@@ -112,7 +112,7 @@ public class DynamicLayer implements Renderable {
 
 		if (eco != null) {
 			try {
-				eco.ecomain(gl, glu, glut);
+				eco.run(gl, glu, glut);
 			} catch (RuntimeException e) {
 				eco = null;
 				e.printStackTrace();

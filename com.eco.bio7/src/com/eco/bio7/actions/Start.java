@@ -37,7 +37,7 @@ public class Start extends Action {
 		this.window = window;
 
 		setId("com.eco.bio7.start");
-		this.setToolTipText("Start/Stop the repeated time based invocation\n of the Java ecomain method if available!");
+		this.setToolTipText("Start/Stop the repeated time based invocation\n of the Java run method if available!");
 		setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/playneu.gif"));
 		this.quad2d = Quad2d.getQuad2dInstance();
 		this.hex = Hexagon.getHexagonInstance();

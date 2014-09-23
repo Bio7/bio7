@@ -107,7 +107,7 @@ public class JavaJoglNewWizard extends Wizard implements INewWizard {
 	private InputStream openContentStream() {
 		String imports="";
 		String setup="public void setup(GL2 gl,GLU glu,GLUT glut){\r\n";
-		String head="public void ecomain(GL2 gl,GLU glu,GLUT glut){";
+		String head="public void run(GL2 gl,GLU glu,GLUT glut){";
 		String linefeed="\r\n";
 		String comment="// Please enter your Java OpenGL code here";
 		String commentSetup="// Please enter your Java OpenGL setup code here\r\n}\r\n";

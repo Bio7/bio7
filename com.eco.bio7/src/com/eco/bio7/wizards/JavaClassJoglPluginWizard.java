@@ -109,7 +109,7 @@ public class JavaClassJoglPluginWizard extends Wizard implements INewWizard {
 		String setup = "\tpublic void setup(GL2 gl,GLU glu,GLUT glut){\r\n" 
 		+ linefeed + "\t// Please enter your setup code here!" 
 				+ linefeed + "\t}" + linefeed 
-		+ "\tpublic void ecomain(GL2 gl,GLU glu,GLUT glut){" + linefeed
+		+ "\tpublic void run(GL2 gl,GLU glu,GLUT glut){" + linefeed
 				+ "\t// Please enter your main code here!" + linefeed 
 		+ "\t}";
 

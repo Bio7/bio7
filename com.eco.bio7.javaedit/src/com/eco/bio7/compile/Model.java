@@ -37,7 +37,7 @@ public abstract class Model {
 	/**
 	 * The main method which is called from the calculation thread!
 	 */
-	public void ecomain() {
+	public void run() {
 
 	}
 
@@ -47,7 +47,7 @@ public abstract class Model {
 	 * @param glu
 	 * @param glut
 	 */
-	public void ecomain(GL2 gl, GLU glu, GLUT glut) {
+	public void run(GL2 gl, GLU glu, GLUT glut) {
 
 	}
 	

@@ -148,7 +148,7 @@ public class JavaFXBio7ClassWizard extends Wizard implements INewWizard {
 				"\tview.setFxmlCanvas(\"id\",FileRoot.getFileRoot()+\""+resource.getFullPath()+"/"+filename+".fxml\",new PleaseProvideControllerClassName());" +linefeed+linefeed+
 				"\t}"
 				+linefeed+linefeed+
-				"\tpublic void ecomain(){" +linefeed+
+				"\tpublic void run(){" +linefeed+
 				linefeed+linefeed+
 				"\t}"+linefeed+"}";
 	

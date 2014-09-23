@@ -20,6 +20,7 @@ import java.awt.Panel;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
+import javax.swing.JApplet;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
@@ -104,7 +105,7 @@ public class IJtoolbar extends ViewPart {
 			}
 		});
 */      SwtAwt.setSwtAwtFocus(frame, top);
-		panel = new Panel(new BorderLayout()) {
+		panel = new JApplet() {
 			public void update(java.awt.Graphics g) {
 
 				paint(g);

@@ -157,7 +157,7 @@ public class JavaWindowBuilderBio7ClassWizard extends Wizard implements INewWiza
 		"\t\tnew ModelGui(parent,this,SWT.NONE);"+ linefeed + linefeed +
 		"\t\tparent.layout(true);"+ linefeed + linefeed +
 		 "\t}"+linefeed+linefeed+
-		"\tpublic void ecomain(){" + linefeed + linefeed + linefeed + "\t}" + linefeed + "}";
+		"\tpublic void run(){" + linefeed + linefeed + linefeed + "\t}" + linefeed + "}";
 
 		// view.setSingleView(true);
 

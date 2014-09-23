@@ -25,8 +25,14 @@ public class UnderlineListener extends BaseErrorListener {
 	}
 
 	public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
-
+		String quickFix = null;
 		// System.err.println(msg);
+		if (msg.startsWith("Err")) {
+			String[] split = msg.split(":");
+			System.out.println(split[0]);
+			quickFix = split[0];
+			msg=split[1];
+		}
 
 		if (editor != null) {
 
@@ -44,14 +50,14 @@ public class UnderlineListener extends BaseErrorListener {
 
 					if (lineNumb == line) {
 						markers[i].delete();
-						//System.out.println(recognizer.getRuleNames()[i]);
+						// System.out.println(recognizer.getRuleNames()[i]);
 					}
 				} catch (CoreException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 			}
-			System.out.println("Char  is at:" + charPositionInLine);
+			// System.out.println("Char  is at:" + charPositionInLine);
 
 			try {
 
@@ -61,18 +67,24 @@ public class UnderlineListener extends BaseErrorListener {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-			
-			
-			
+
 			IMarker marker;
 			try {
 				marker = resource.createMarker(IMarker.PROBLEM);
 				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-				// marker.setAttribute(IMarker.MESSAGE, "line " + line + ":" + charPositionInLine + " " + msg);
+				// marker.setAttribute(IMarker.MESSAGE, "line " + line + ":" +
+				// charPositionInLine + " " + msg);
 				marker.setAttribute(IMarker.MESSAGE, msg);
 				marker.setAttribute(IMarker.LINE_NUMBER, line);
 				marker.setAttribute(IMarker.LOCATION, lineOffsetStart + charPositionInLine);
-				/*Correct the underline error if it is*/
+				if (quickFix != null) {
+					marker.setAttribute(IMarker.TEXT, quickFix);
+				}
+				
+				else{
+					marker.setAttribute(IMarker.TEXT, "NA");
+				}
+				/* Correct the underline error if it is */
 				if ((lineOffsetStart + charPositionInLine) + 1 > document.getLength()) {
 					marker.setAttribute(IMarker.CHAR_START, (lineOffsetStart + charPositionInLine) - 1);
 					marker.setAttribute(IMarker.CHAR_END, (lineOffsetStart + charPositionInLine));

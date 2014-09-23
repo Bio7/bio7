@@ -306,7 +306,7 @@ CTabItem:selected {
 /*Perspective Switch!*/
 #org-eclipse-ui-main-toolbar #PerspectiveSwitcher {
 	eclipse-perspective-keyline-color: #dddddd;
-	/* background-image: url('./win7_old.png');*/
+	background-image: url('./win7_old.png');
 	background-color: #ffffff;
 	handle-image: none;
 		

@@ -106,7 +106,7 @@ public class JavaBio7ModelClassPluginWizard extends Wizard implements INewWizard
 		String setup = "\tpublic void setup(){" 
 		+ linefeed + "\t// Please enter your setup code here!" 
 				+ linefeed + "\t}" + linefeed 
-		+ "\tpublic void ecomain(){" + linefeed
+		+ "\tpublic void run(){" + linefeed
 				+ "\t// Please enter your main code here!" + linefeed 
 		+ "\t}";
 

@@ -12,14 +12,14 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractRulerActionDelegate;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-
 public class REditorRulerQuickFixAction extends AbstractRulerActionDelegate {
 
 	/*
-	 * @see AbstractRulerActionDelegate#createAction(ITextEditor, IVerticalRulerInfo)
+	 * @see AbstractRulerActionDelegate#createAction(ITextEditor,
+	 * IVerticalRulerInfo)
 	 */
 	protected IAction createAction(ITextEditor editor, IVerticalRulerInfo rulerInfo) {
-		int line = rulerInfo.getLineOfLastMouseButtonActivity()+1;
+		int line = rulerInfo.getLineOfLastMouseButtonActivity() + 1;
 
 		// System.out.println(line);
 		if (line > 0) {
@@ -35,32 +35,32 @@ public class REditorRulerQuickFixAction extends AbstractRulerActionDelegate {
 			for (int i = 0; i < markersfind.length; i++) {
 				try {
 
-				
-                   /*QuickFix produced in RAssistProcessor!*/
-				
-					if (markersfind[i].getAttribute(IMarker.MESSAGE).equals("Too many parentheses in if condition!")&&line==(int)markersfind[i].getAttribute(IMarker.LINE_NUMBER)) {
-						selectedMarker = markersfind[i];
-						//System.out.println(i+" "+markersfind[i].getAttribute(IMarker.MESSAGE));
-						//System.out.println("Message: " + selectedMarker.getAttribute(IMarker.MESSAGE));
-						//System.out.println("Message: " + selectedMarker.getAttribute(IMarker.LOCATION));
+					/* QuickFix produced in RAssistProcessor! */
+					if (markersfind!=null&&markersfind.length > 0) {
+						if (markersfind[i].getAttribute(IMarker.TEXT).equals("Err20") && line == (int) markersfind[i].getAttribute(IMarker.LINE_NUMBER)) {
+							selectedMarker = markersfind[i];
+							// System.out.println(i+" "+markersfind[i].getAttribute(IMarker.MESSAGE));
+							// System.out.println("Message: " +
+							// selectedMarker.getAttribute(IMarker.MESSAGE));
+							// System.out.println("Message: " +
+							// selectedMarker.getAttribute(IMarker.LOCATION));
 
-						ITextOperationTarget operation = (ITextOperationTarget) editor.getAdapter(ITextOperationTarget.class);
+							ITextOperationTarget operation = (ITextOperationTarget) editor.getAdapter(ITextOperationTarget.class);
 
-						final int opCode = ISourceViewer.QUICK_ASSIST;
+							final int opCode = ISourceViewer.QUICK_ASSIST;
 
-						if (operation != null && operation.canDoOperation(opCode)) {
+							if (operation != null && operation.canDoOperation(opCode)) {
 
-							
+								try {
+									editor.selectAndReveal((int) selectedMarker.getAttribute(IMarker.LOCATION), 1);
+								} catch (CoreException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
 
-							try {
-								editor.selectAndReveal((int) selectedMarker.getAttribute(IMarker.LOCATION) , 1);
-							} catch (CoreException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
+								operation.doOperation(opCode);
+
 							}
-
-							operation.doOperation(opCode);
-
 						}
 					}
 				} catch (CoreException e) {

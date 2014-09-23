@@ -644,4 +644,28 @@ public interface RListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitDefFunction(@NotNull RParser.DefFunctionContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code e2Error1}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterE2Error1(@NotNull RParser.E2Error1Context ctx);
+	/**
+	 * Exit a parse tree produced by the {@code e2Error1}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitE2Error1(@NotNull RParser.E2Error1Context ctx);
+	/**
+	 * Enter a parse tree produced by the {@code e2Error2}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterE2Error2(@NotNull RParser.E2Error2Context ctx);
+	/**
+	 * Exit a parse tree produced by the {@code e2Error2}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitE2Error2(@NotNull RParser.E2Error2Context ctx);
 }

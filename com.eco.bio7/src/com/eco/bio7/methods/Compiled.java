@@ -29,7 +29,7 @@ public class Compiled {
 
 	/**
 	 * Returns a reference to the main compiled class of Bio7 which provides the
-	 * ecomain method.
+	 * run method.
 	 * 
 	 * @return a reference to the compiled class.
 	 */

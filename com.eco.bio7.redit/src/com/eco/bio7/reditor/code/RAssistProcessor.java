@@ -20,14 +20,14 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 
 	@Override
 	public boolean canFix(Annotation annotation) {
-		String text = "";
+		String text = null;
 		if (annotation instanceof MarkerAnnotation) {
 			IMarker marker = ((MarkerAnnotation) annotation).getMarker();
 			try {
 				if(marker.exists()){
-				if( marker.getAttribute(IMarker.MESSAGE)!=null){
-				  text=(String) marker.getAttribute(IMarker.MESSAGE);
-				System.out.println( marker.getAttribute(IMarker.MESSAGE));
+				if( marker.getAttribute(IMarker.TEXT)!=null){
+				  text=(String) marker.getAttribute(IMarker.TEXT);
+				System.out.println( marker.getAttribute(IMarker.TEXT));
 				}
 				}
 			} catch (CoreException e) {
@@ -39,7 +39,7 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 		
 		//String text=annotation.getText();
 		
-		if(text!=null&&text.equals("Too many parentheses in if condition!")){
+		if(text!=null&&text.equals("Err20")){
 			return true;
 		}
 		else {
@@ -65,7 +65,7 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 
         return new ICompletionProposal[]{
 
-            new QuickFixCompletionProposal("Remove Parenthesis",offset,text.length(),""),
+            new QuickFixCompletionProposal("Remove",offset,text.length(),""),
 
            // new QuickFixCompletionProposal("This is the second proposal!",offset,text.length(),"")
 

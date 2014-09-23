@@ -601,7 +601,7 @@ public class SpatialUtil {
 	}
 
 	/**
-	 * This method invokes the "ecomain" method triggered by the timer.
+	 * This method invokes the "run" method triggered by the timer.
 	 */
 	public static void startStop() {
 		SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
@@ -631,7 +631,7 @@ public class SpatialUtil {
 	}
 
 	/**
-	 * This method returns the boolean value "true" if the OpenGL ecomain method
+	 * This method returns the boolean value "true" if the OpenGL run method
 	 * is triggered!.
 	 * 
 	 * @return a boolean value.

@@ -133,7 +133,7 @@ public class CompileGroovyAction implements IObjectActionDelegate {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} 
-					  go.invokeMethod("ecomain", null);  
+					  go.invokeMethod("run", null);  
 
 				}
 			}

@@ -383,4 +383,18 @@ public interface RVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitDefFunction(@NotNull RParser.DefFunctionContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e2Error1}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE2Error1(@NotNull RParser.E2Error1Context ctx);
+	/**
+	 * Visit a parse tree produced by the {@code e2Error2}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE2Error2(@NotNull RParser.E2Error2Context ctx);
 }

@@ -52,7 +52,7 @@ public class CalculationThread extends Thread {
 
 					if (Compiled.getModel() != null) {
 						try {
-							Compiled.getModel().ecomain();
+							Compiled.getModel().run();
 						} catch (RuntimeException e) {
 
 							e.printStackTrace();

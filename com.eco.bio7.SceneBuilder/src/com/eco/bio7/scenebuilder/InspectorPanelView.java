@@ -179,6 +179,18 @@ public class InspectorPanelView extends ViewPart implements ILinkedWithEditorVie
 			});
 
 		}
+		
+		else {
+			Platform.runLater(new Runnable() {
+
+				@Override
+				public void run() {
+					Group root = new Group();
+					Scene s = new Scene(root, 300, 300, Color.WHITE);
+					canvas.setScene(s);
+				}
+			});
+		}
 
 	}
 

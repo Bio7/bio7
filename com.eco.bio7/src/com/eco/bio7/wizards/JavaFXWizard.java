@@ -134,7 +134,7 @@ public class JavaFXWizard extends Wizard implements INewWizard {
 				"view.setFxmlCanvas(\"id\",FileRoot.getFileRoot()+\""+resource.getFullPath()+"/"+filename+".fxml\",this);" +linefeed+linefeed+
 				"}"
 				+linefeed+linefeed+
-				"public void ecomain(){" +linefeed+
+				"public void run(){" +linefeed+
 				linefeed+linefeed+
 				"}";
 	

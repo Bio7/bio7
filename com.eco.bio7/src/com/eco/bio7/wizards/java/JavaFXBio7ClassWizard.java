@@ -147,7 +147,7 @@ public class JavaFXBio7ClassWizard extends Wizard implements INewWizard {
 		String head = "import javafx.fxml.FXML;" + linefeed + "import com.eco.bio7.collection.*;" + linefeed + "import com.eco.bio7.batch.*;" + linefeed + linefeed + "public class " + filename + " extends com.eco.bio7.compile.Model {" + linefeed + linefeed +
 
 		"\tpublic void setup(){" + linefeed + linefeed + "\tCustomView view=new CustomView();" + linefeed + linefeed + "\tview.setFxmlCanvas(\"id\",FileRoot.getFileRoot()+\"" + resource.getFullPath() + "/" + filename + ".fxml\",new PleaseProvideControllerClassName());" + linefeed + linefeed + "\t}"
-				+ linefeed + linefeed + "\tpublic void ecomain(){" + linefeed + linefeed + linefeed + "\t}" + linefeed + "}";
+				+ linefeed + linefeed + "\tpublic void run(){" + linefeed + linefeed + linefeed + "\t}" + linefeed + "}";
 
 		// view.setSingleView(true);
 

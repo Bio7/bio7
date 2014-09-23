@@ -52,7 +52,7 @@ public class CompileAndRunAction implements IObjectActionDelegate {
 						String tointerpret = "Model " + nameofiofile
 								+ "=Compiled.getEcoclass();";
 						BeanShellInterpreter.interpret(tointerpret, null);
-						BeanShellInterpreter.interpretJob(nameofiofile + ".ecomain();",
+						BeanShellInterpreter.interpretJob(nameofiofile + ".run();",
 								null);
 					}
 
