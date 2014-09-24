@@ -17,6 +17,30 @@ public class RBaseListener implements RListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterErr10(@NotNull RParser.Err10Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitErr10(@NotNull RParser.Err10Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterErr11(@NotNull RParser.Err11Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitErr11(@NotNull RParser.Err11Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterE31(@NotNull RParser.E31Context ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -24,6 +48,18 @@ public class RBaseListener implements RListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitE31(@NotNull RParser.E31Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterErr12(@NotNull RParser.Err12Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitErr12(@NotNull RParser.Err12Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -41,13 +77,13 @@ public class RBaseListener implements RListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterE33(@NotNull RParser.E33Context ctx) { }
+	@Override public void enterErr13(@NotNull RParser.Err13Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitE33(@NotNull RParser.E33Context ctx) { }
+	@Override public void exitErr13(@NotNull RParser.Err13Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -101,6 +137,18 @@ public class RBaseListener implements RListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterErr18(@NotNull RParser.Err18Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitErr18(@NotNull RParser.Err18Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterE36(@NotNull RParser.E36Context ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -108,6 +156,18 @@ public class RBaseListener implements RListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitE36(@NotNull RParser.E36Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterErr19(@NotNull RParser.Err19Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitErr19(@NotNull RParser.Err19Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -137,25 +197,85 @@ public class RBaseListener implements RListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterE20Error1(@NotNull RParser.E20Error1Context ctx) { }
+	@Override public void enterErr14(@NotNull RParser.Err14Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitE20Error1(@NotNull RParser.E20Error1Context ctx) { }
+	@Override public void exitErr14(@NotNull RParser.Err14Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterE20expr(@NotNull RParser.E20exprContext ctx) { }
+	@Override public void enterErr15(@NotNull RParser.Err15Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitE20expr(@NotNull RParser.E20exprContext ctx) { }
+	@Override public void exitErr15(@NotNull RParser.Err15Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterErr16(@NotNull RParser.Err16Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitErr16(@NotNull RParser.Err16Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterErr17(@NotNull RParser.Err17Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitErr17(@NotNull RParser.Err17Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterE40(@NotNull RParser.E40Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitE40(@NotNull RParser.E40Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterE17VariableDeclaration(@NotNull RParser.E17VariableDeclarationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitE17VariableDeclaration(@NotNull RParser.E17VariableDeclarationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterE41(@NotNull RParser.E41Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitE41(@NotNull RParser.E41Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -173,37 +293,37 @@ public class RBaseListener implements RListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterCallFunctionError1(@NotNull RParser.CallFunctionError1Context ctx) { }
+	@Override public void enterE19DefFunction(@NotNull RParser.E19DefFunctionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitCallFunctionError1(@NotNull RParser.CallFunctionError1Context ctx) { }
+	@Override public void exitE19DefFunction(@NotNull RParser.E19DefFunctionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterE19Error1(@NotNull RParser.E19Error1Context ctx) { }
+	@Override public void enterErr4(@NotNull RParser.Err4Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitE19Error1(@NotNull RParser.E19Error1Context ctx) { }
+	@Override public void exitErr4(@NotNull RParser.Err4Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterE19Error2(@NotNull RParser.E19Error2Context ctx) { }
+	@Override public void enterErr3(@NotNull RParser.Err3Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitE19Error2(@NotNull RParser.E19Error2Context ctx) { }
+	@Override public void exitErr3(@NotNull RParser.Err3Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -221,6 +341,30 @@ public class RBaseListener implements RListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterErr2(@NotNull RParser.Err2Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitErr2(@NotNull RParser.Err2Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterErr1(@NotNull RParser.Err1Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitErr1(@NotNull RParser.Err1Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterE11(@NotNull RParser.E11Context ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -228,6 +372,18 @@ public class RBaseListener implements RListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitE11(@NotNull RParser.E11Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterE20CallFunction(@NotNull RParser.E20CallFunctionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitE20CallFunction(@NotNull RParser.E20CallFunctionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -317,49 +473,73 @@ public class RBaseListener implements RListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterE19(@NotNull RParser.E19Context ctx) { }
+	@Override public void enterE18(@NotNull RParser.E18Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitE19(@NotNull RParser.E19Context ctx) { }
+	@Override public void exitE18(@NotNull RParser.E18Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterCallFunctionError2(@NotNull RParser.CallFunctionError2Context ctx) { }
+	@Override public void enterErr9(@NotNull RParser.Err9Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitCallFunctionError2(@NotNull RParser.CallFunctionError2Context ctx) { }
+	@Override public void exitErr9(@NotNull RParser.Err9Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterVariableDeclaration(@NotNull RParser.VariableDeclarationContext ctx) { }
+	@Override public void enterErr8(@NotNull RParser.Err8Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitVariableDeclaration(@NotNull RParser.VariableDeclarationContext ctx) { }
+	@Override public void exitErr8(@NotNull RParser.Err8Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterCallFunction(@NotNull RParser.CallFunctionContext ctx) { }
+	@Override public void enterErr7(@NotNull RParser.Err7Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitCallFunction(@NotNull RParser.CallFunctionContext ctx) { }
+	@Override public void exitErr7(@NotNull RParser.Err7Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterErr6(@NotNull RParser.Err6Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitErr6(@NotNull RParser.Err6Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterErr5(@NotNull RParser.Err5Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitErr5(@NotNull RParser.Err5Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -384,18 +564,6 @@ public class RBaseListener implements RListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitE21(@NotNull RParser.E21Context ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterE28Error1(@NotNull RParser.E28Error1Context ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitE28Error1(@NotNull RParser.E28Error1Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -521,18 +689,6 @@ public class RBaseListener implements RListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterDefFunctionError1(@NotNull RParser.DefFunctionError1Context ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitDefFunctionError1(@NotNull RParser.DefFunctionError1Context ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterE3(@NotNull RParser.E3Context ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -540,18 +696,6 @@ public class RBaseListener implements RListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitE3(@NotNull RParser.E3Context ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterDefFunctionError2(@NotNull RParser.DefFunctionError2Context ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitDefFunctionError2(@NotNull RParser.DefFunctionError2Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -648,42 +792,6 @@ public class RBaseListener implements RListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitSublist(@NotNull RParser.SublistContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterDefFunction(@NotNull RParser.DefFunctionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitDefFunction(@NotNull RParser.DefFunctionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterE2Error1(@NotNull RParser.E2Error1Context ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitE2Error1(@NotNull RParser.E2Error1Context ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterE2Error2(@NotNull RParser.E2Error2Context ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitE2Error2(@NotNull RParser.E2Error2Context ctx) { }
 
 	/**
 	 * {@inheritDoc}

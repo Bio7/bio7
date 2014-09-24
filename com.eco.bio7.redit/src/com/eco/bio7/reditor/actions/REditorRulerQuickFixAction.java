@@ -37,7 +37,7 @@ public class REditorRulerQuickFixAction extends AbstractRulerActionDelegate {
 
 					/* QuickFix produced in RAssistProcessor! */
 					if (markersfind!=null&&markersfind.length > 0) {
-						if (markersfind[i].getAttribute(IMarker.TEXT).equals("Err20") && line == (int) markersfind[i].getAttribute(IMarker.LINE_NUMBER)) {
+						if (((String) markersfind[i].getAttribute(IMarker.TEXT)).startsWith("Err") && line == (int) markersfind[i].getAttribute(IMarker.LINE_NUMBER)) {
 							selectedMarker = markersfind[i];
 							// System.out.println(i+" "+markersfind[i].getAttribute(IMarker.MESSAGE));
 							// System.out.println("Message: " +

@@ -86,8 +86,9 @@ public class UnderlineListener extends BaseErrorListener {
 				}
 				/* Correct the underline error if it is */
 				if ((lineOffsetStart + charPositionInLine) + 1 > document.getLength()) {
-					marker.setAttribute(IMarker.CHAR_START, (lineOffsetStart + charPositionInLine) - 1);
-					marker.setAttribute(IMarker.CHAR_END, (lineOffsetStart + charPositionInLine));
+					//marker.setAttribute(IMarker.CHAR_START, (lineOffsetStart + charPositionInLine) - 1);
+					//marker.setAttribute(IMarker.CHAR_END, (lineOffsetStart + charPositionInLine));
+					
 				} else {
 					marker.setAttribute(IMarker.CHAR_START, (lineOffsetStart + charPositionInLine));
 					marker.setAttribute(IMarker.CHAR_END, (lineOffsetStart + charPositionInLine) + 1);

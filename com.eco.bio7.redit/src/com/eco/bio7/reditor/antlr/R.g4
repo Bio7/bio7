@@ -34,43 +34,51 @@ expr:
     |   expr ('|'|'||') expr	#e14   
     |   '~' expr	#e15  
     |   expr '~' expr	#e16 
-    |   expr ('<-'|'<<-'|'='|'->'|'->>'|':=') expr	#VariableDeclaration
-    |   '{' exprlist '}' 	#e19// compound statement
-    |   'function' '(' formlist? ')' expr #DefFunction// define function
-    |   expr '(' sublist ')'   	#CallFunction           // call function
-    |   'if' '(' expr ')' expr	#e20expr
-    |   'if' '(' expr ')' expr 'else' expr	#e21
-    |   'for' '(' ID 'in' expr ')' expr	#e22
-    |   'while' '(' expr ')' expr	#e23
-    |   'repeat' expr	#e24
-    |   '?' expr 	#e25// get help on expr, usually string or ID
-    |   'next'	#e26
-    |   'break'	#e27
-    |   '(' expr ')'	#e28
-    |   ID	#e29
-    |   STRING	#e30
-    |   HEX	#e31
-    |   INT	#e2
-    |   FLOAT	#e32
-    |   COMPLEX	#e33
-    |   'NULL'	#e34
-    |   'NA'	#e35
-    |   'Inf'	#e36
-    |   'NaN'	#e37
-    |   'TRUE'	#e38
-    |   'FALSE'	#e39
-    |   expr '(' sublist    						{notifyErrorListeners("Missing closing parentheses in function call!");}#CallFunctionError1
-    |   expr '(' sublist ')' ')'   					{notifyErrorListeners("Too many parentheses in function call!");}#CallFunctionError2
-    |   'function' '(' formlist?  expr 				{notifyErrorListeners("Missing closing parentheses in function definition!");}#DefFunctionError1// define function
-    |   'function' '(' formlist? ')' ')' expr 		{notifyErrorListeners("Too many parentheses in function definition!");}#DefFunctionError2// define function
-    |   'if' '(' expr  expr							{notifyErrorListeners("Missing closing parentheses in if condition!!");}#e20Error1
-    |   'if' '(' expr ')' ')'  expr					{notifyErrorListeners("Err20:Too many parentheses in if condition!");}#e20Error1
-    |   expr '[' sublist 	    					{notifyErrorListeners("Missing closing brackets!");}#e2Error1
-    |   expr '[' sublist ']' ']'					{notifyErrorListeners("Too many brackets!");}#e2Error2
-    | 	'(' expr ')' ')' 							{notifyErrorListeners("Too many parentheses!");}# e28Error1
-   // |	'(' expr         							{notifyErrorListeners("Missing closing parentheses!");}#e28Error2
-    | 	'{'  exprlist  	 							{notifyErrorListeners("Missing closing braces!");} #e19Error1
-    |	'{' exprlist  '}' '}'						{notifyErrorListeners("Too many braces!");} #e19Error2
+    |   expr ('<-'|'<<-'|'='|'->'|'->>'|':=') expr	#e17VariableDeclaration
+    |   '{' exprlist '}' 	#e18// compound statement
+    |   'function' '(' formlist? ')' expr #e19DefFunction// define function
+    |   expr '(' sublist ')'   	#e20CallFunction           // call function
+    |   'if' '(' expr ')' expr	#e21
+    |   'if' '(' expr ')' expr 'else' expr	#e22
+    |   'for' '(' ID 'in' expr ')' expr	#e23
+    |   'while' '(' expr ')' expr	#e24
+    |   'repeat' expr	#e25
+    |   '?' expr 	#e26// get help on expr, usually string or ID
+    |   'next'	#e27
+    |   'break'	#e28
+    |   '(' expr ')'	#e29
+    |   ID	#e30
+    |   STRING	#e31
+    |   HEX	#e32
+    |   INT	#e32
+    |   FLOAT	#e34
+    |   COMPLEX	#e35
+    |   'NULL'	#e36
+    |   'NA'	#e37
+    |   'Inf'	#e38
+    |   'NaN'	#e39
+    |   'TRUE'	#e40
+    |   'FALSE'	#e41
+    | 	'(' expr ')' extra=')' 							#err1
+    |   expr '(' sublist    							#err2
+    |   expr '(' sublist ')' extra=')'   				#err3
+    |   'function' '(' formlist?  expr 					#err4
+    |   'function' '(' formlist? ')' extra=')' expr 	#err5
+    |   'if' '(' expr  expr								#err6
+    |   'if' '(' expr ')' extra=')'  expr				#err7
+    |   expr '[' sublist 	    						#err8
+    |   expr '[' sublist ']' extra=']'					#err9
+   // |	'(' expr         							    #e28Error2
+    | 	'{'  exprlist  	 								#err10
+    |	'{' exprlist  '}' extra='}'						#err11
+    |	extra='true'									#err12
+    |	extra='false'									#err13
+    |	extra='null'									#err14
+    |	extra='na'										#err15
+    |   'while' '(' expr ')' extra=')' expr				#err16
+    |   'while' '(' expr  expr							#err17
+    |   'for' '(' ID 'in' expr ')' extra=')' expr		#err18
+    |   'for' '(' ID 'in' expr expr						#err19
     ;
 
 exprlist
