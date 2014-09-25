@@ -60,25 +60,27 @@ expr:
     |   'TRUE'	#e40
     |   'FALSE'	#e41
     | 	'(' expr ')' extra=')' 							#err1
-    |   expr '(' sublist    							#err2
+    //|   expr '(' sublist    							#err2
     |   expr '(' sublist ')' extra=')'   				#err3
-    |   'function' '(' formlist?  expr 					#err4
+    //|   'function' '(' formlist?  expr 					#err4
     |   'function' '(' formlist? ')' extra=')' expr 	#err5
-    |   'if' '(' expr  expr								#err6
+   // |   'if' '(' expr  expr								#err6
     |   'if' '(' expr ')' extra=')'  expr				#err7
-    |   expr '[' sublist 	    						#err8
+   // |   expr '[' sublist 	    						#err8
     |   expr '[' sublist ']' extra=']'					#err9
    // |	'(' expr         							    #e28Error2
-    | 	'{'  exprlist  	 								#err10
+   // | 	'{'  exprlist  	 								#err10
     |	'{' exprlist  '}' extra='}'						#err11
     |	extra='true'									#err12
     |	extra='false'									#err13
     |	extra='null'									#err14
     |	extra='na'										#err15
     |   'while' '(' expr ')' extra=')' expr				#err16
-    |   'while' '(' expr  expr							#err17
+    //|   'while' '(' expr  expr							#err17
     |   'for' '(' ID 'in' expr ')' extra=')' expr		#err18
-    |   'for' '(' ID 'in' expr expr						#err19
+    //|   'for' '(' ID 'in' expr expr						#err19
+    |	expr '=>' expr										#err20
+    |	expr '=<' expr										#err21
     ;
 
 exprlist

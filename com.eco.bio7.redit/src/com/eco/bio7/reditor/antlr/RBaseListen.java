@@ -6,6 +6,7 @@ import java.util.Stack;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.eclipse.jface.text.BadLocationException;
@@ -155,15 +156,15 @@ public class RBaseListen extends RBaseListener {
 		 */
 		scopes.push(new RScope(scopes.peek()));
 
-		// Interval sourceInterval = ctx.getSourceInterval();
+		Interval sourceInterval = ctx.getSourceInterval();
 
-		Token firstToken = ctx.start;
+		Token firstToken = tokens.get(sourceInterval.a);
 		// System.out.println(ctx.getParent().getChild(0).getText());
 		int lineStart = firstToken.getStartIndex();
 		// String ct=ctx.getText();
 
 		// System.out.println("function start at line:"+lineStart);
-		Token lastToken = ctx.stop;
+		Token lastToken = tokens.get(sourceInterval.b);
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 		// String ct2=ctx.getText();
 
@@ -210,13 +211,14 @@ public class RBaseListen extends RBaseListener {
 	@Override
 	public void enterE17VariableDeclaration(@NotNull RParser.E17VariableDeclarationContext ctx) {
 
-		// Interval sourceInterval = ctx.getSourceInterval();
-		// int start = sourceInterval.a;
+		Interval sourceInterval = ctx.getSourceInterval();
+		int start = sourceInterval.a;
+		Token assign = tokens.get(start + 2);
 
-		String subExpr = ctx.getChild(2).getText();
+		String subExpr = assign.getText();
 
 		if (subExpr.equals("function") == false) {
-			Token firstToken = ctx.start;
+			Token firstToken = tokens.get(start);
 
 			int lineStart = firstToken.getStartIndex();
 
@@ -224,10 +226,10 @@ public class RBaseListen extends RBaseListener {
 
 			if (ctx.getParent().getChild(1) != null) {
 
-				String op = ctx.getChild(1).getText();
+				String op = tokens.get(start + 1).getText();
 
 				if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
-					String name = ctx.getChild(0).getText();
+					String name = tokens.get(start).getText();
 					if (methods.size() == 0) {
 						if (checkVarName(name)) {
 							RScope scope = scopes.peek();
@@ -249,7 +251,7 @@ public class RBaseListen extends RBaseListener {
 				}
 
 				else if (op.equals("->") || op.equals("->>")) {
-					String name = ctx.getChild(2).getText();
+					String name = tokens.get(start + 2).getText();
 					if (methods.size() == 0) {
 						if (checkVarName(name)) {
 							RScope scope = scopes.peek();
@@ -356,12 +358,10 @@ public class RBaseListen extends RBaseListener {
 		parser.notifyErrorListeners(ctx.extra, "Err1:Too many parentheses!", null);
 
 	}
+	
+	
 
-	public void exitErr2(@NotNull RParser.Err2Context ctx) {
-
-		parser.notifyErrorListeners(ctx.start, "Err2:Missing closing parentheses in function call!", null);
-
-	}
+	
 
 	public void exitErr3(@NotNull RParser.Err3Context ctx) {
 
@@ -369,23 +369,22 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	public void exitErr4(@NotNull RParser.Err4Context ctx) {
-
-		parser.notifyErrorListeners(ctx.start, "Err4:Missing closing parentheses in function definition!", null);
-
-	}
+	
 
 	public void exitErr5(@NotNull RParser.Err5Context ctx) {
 
 		parser.notifyErrorListeners(ctx.extra, "Err5:Too many parentheses in function definition!", null);
 
 	}
+	
+	/*public void exitErr6(@NotNull RParser.Err6Context ctx) {
+		Token lastToken = tokens.get(ctx.getChild(2).getSourceInterval().b);
+		parser.notifyErrorListeners(lastToken, "Err6:Closing if brace missing!", null);
+		
 
-	public void exitErr6(@NotNull RParser.Err6Context ctx) {
+	}*/
 
-		parser.notifyErrorListeners(ctx.start, "Err6:Missing closing parentheses in if condition!", null);
-
-	}
+	
 
 	public void exitErr7(@NotNull RParser.Err7Context ctx) {
 		
@@ -395,11 +394,7 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	public void exitErr8(@NotNull RParser.Err8Context ctx) {
-
-		parser.notifyErrorListeners(ctx.start, "Err8:Missing closing brackets!", null);
-
-	}
+	
 
 	public void exitErr9(@NotNull RParser.Err9Context ctx) {
 
@@ -407,11 +402,7 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	public void exitErr10(@NotNull RParser.Err10Context ctx) {
-
-		parser.notifyErrorListeners(ctx.start, "Err10:Missing closing braces!", null);
-
-	}
+	
 
 	public void exitErr11(@NotNull RParser.Err11Context ctx) {
 
@@ -445,21 +436,25 @@ public class RBaseListen extends RBaseListener {
 		parser.notifyErrorListeners(ctx.extra, "Err16:Too many braces in while statement!", null);
 
 	}
-	public void exitErr17(@NotNull RParser.Err17Context ctx) {
-
-		parser.notifyErrorListeners(ctx.start, "Err17:Missing closing braces in while statement!", null);
-
-	}
+	
 	public void exitErr18(@NotNull RParser.Err18Context ctx) {
 
-		parser.notifyErrorListeners(ctx.extra, "Err16:Too many braces in for statement!", null);
+		parser.notifyErrorListeners(ctx.extra, "Err18:Too many braces in for statement!", null);
 
 	}
-	public void exitErr19(@NotNull RParser.Err19Context ctx) {
+	
+	public void exitErr20(@NotNull RParser.Err20Context ctx) {
 
-		parser.notifyErrorListeners(ctx.start, "Err17:Missing closing braces in for statement!", null);
+		parser.notifyErrorListeners(ctx.start, "Err20:Wrong comparison!", null);
 
 	}
+	public void exitErr21(@NotNull RParser.Err21Context ctx) {
+		
+		Token firstToken = tokens.get(ctx.getChild(1).getSourceInterval().a);
+		parser.notifyErrorListeners(firstToken, "Err21:Wrong comparison!", null);
+
+	}
+	
 	
 
 }

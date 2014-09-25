@@ -258,7 +258,7 @@ public class REditor extends TextEditor {
 									// contentOutlineViewer.expandAll();
 									// System.out.println(lineNumber+1);
 									TreeItem treeItem = null;
-									if (contentOutlineViewer.getTree().isDisposed()==false) {
+									if (contentOutlineViewer.getTree().isDisposed() == false) {
 										if (contentOutlineViewer.getTree().getItem(0).isDisposed() == false) {
 											treeItem = contentOutlineViewer.getTree().getItem(0);
 											walkTreeLineNumber(treeItem, lineNumber + 1);
@@ -273,28 +273,24 @@ public class REditor extends TextEditor {
 									 * e1.printStackTrace(); }
 									 */
 								}
-								/*if (target instanceof ITextViewer) {
-									ITextViewer textViewer = (ITextViewer) target;
-
-									int offset = textViewer.getSelectedRange().x;
-									int length = 0;
-									IDocument doc = textViewer.getDocument();
-									char c = 0;
-									while (true) {
-
-										try {
-											c = doc.getChar(offset + length);
-										} catch (BadLocationException e1) {
-											// TODO Auto-generated catch block
-											e1.printStackTrace();
-										}
-										if (c == ' ')
-											break;
-										if (offset + ++length >= doc.getLength())
-											return;
-									}
-									textViewer.setSelectedRange(offset, length);
-								}*/
+								/*
+								 * if (target instanceof ITextViewer) {
+								 * ITextViewer textViewer = (ITextViewer)
+								 * target;
+								 * 
+								 * int offset = textViewer.getSelectedRange().x;
+								 * int length = 0; IDocument doc =
+								 * textViewer.getDocument(); char c = 0; while
+								 * (true) {
+								 * 
+								 * try { c = doc.getChar(offset + length); }
+								 * catch (BadLocationException e1) { // TODO
+								 * Auto-generated catch block
+								 * e1.printStackTrace(); } if (c == ' ') break;
+								 * if (offset + ++length >= doc.getLength())
+								 * return; } textViewer.setSelectedRange(offset,
+								 * length); }
+								 */
 							}
 
 						}
@@ -319,50 +315,52 @@ public class REditor extends TextEditor {
 		 */
 
 		public void walkTreeLineNumber(TreeItem item, int lineNumber) {
-			if(item.isDisposed()==false){
-			found = false;
-			boolean isExpanded = item.getExpanded();
-			/* Push the temp info on the stack! */
-			treeItemLine.push(isExpanded);
-			if (item.getItemCount() > 0) {
-				item.setExpanded(true);
-				// update the viewer
-				contentOutlineViewer.refresh();
-			}
-
-			for (int j = 0; j < item.getItemCount(); j++) {
-
-				TreeItem it = item.getItem(j);
-
-				if (lineNumber == ((REditorOutlineNode) it.getData()).getLineNumber()) {
-					contentOutlineViewer.getTree().setSelection(it);
+			if (item.isDisposed() == false) {
+				found = false;
+				boolean isExpanded = item.getExpanded();
+				/* Push the temp info on the stack! */
+				treeItemLine.push(isExpanded);
+				if (item.getItemCount() > 0) {
 					item.setExpanded(true);
 					// update the viewer
 					contentOutlineViewer.refresh();
-					found = true;
-					if (treeItemLine.isEmpty() == false) {
-						treeItemLine.clear();
-					}
-					break;
-				} else {
-
-					/* Recursive call of the method for subnodes! */
-					walkTreeLineNumber(it, lineNumber);
 				}
+				if (item.isDisposed() == false) {
+					for (int j = 0; j < item.getItemCount(); j++) {
 
-			}
-			if (found == false) {
-				if (treeItemLine.isEmpty() == false) {
-					if (treeItemLine.peek() == false) {
+						TreeItem it = item.getItem(j);
+						if (it.isDisposed() == false) {
+							if (lineNumber == ((REditorOutlineNode) it.getData()).getLineNumber()) {
+								contentOutlineViewer.getTree().setSelection(it);
+								item.setExpanded(true);
+								// update the viewer
+								contentOutlineViewer.refresh();
+								found = true;
+								if (treeItemLine.isEmpty() == false) {
+									treeItemLine.clear();
+								}
+								break;
+							} else {
 
-						item.setExpanded(false);
-						// update the viewer
-						contentOutlineViewer.refresh();
+								/* Recursive call of the method for subnodes! */
+								walkTreeLineNumber(it, lineNumber);
+							}
+						}
 
 					}
-					treeItemLine.pop();
+					if (found == false) {
+						if (treeItemLine.isEmpty() == false) {
+							if (treeItemLine.peek() == false) {
+
+								item.setExpanded(false);
+								// update the viewer
+								contentOutlineViewer.refresh();
+
+							}
+							treeItemLine.pop();
+						}
+					}
 				}
-			}
 			}
 
 		}

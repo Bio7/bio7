@@ -12,13 +12,6 @@ import org.antlr.v4.runtime.tree.ParseTreeVisitor;
  */
 public interface RVisitor<T> extends ParseTreeVisitor<T> {
 	/**
-	 * Visit a parse tree produced by the {@code err10}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitErr10(@NotNull RParser.Err10Context ctx);
-	/**
 	 * Visit a parse tree produced by the {@code err11}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
@@ -96,13 +89,6 @@ public interface RVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitE36(@NotNull RParser.E36Context ctx);
 	/**
-	 * Visit a parse tree produced by the {@code err19}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitErr19(@NotNull RParser.Err19Context ctx);
-	/**
 	 * Visit a parse tree produced by the {@code e39}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
@@ -138,13 +124,6 @@ public interface RVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitErr16(@NotNull RParser.Err16Context ctx);
 	/**
-	 * Visit a parse tree produced by the {@code err17}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitErr17(@NotNull RParser.Err17Context ctx);
-	/**
 	 * Visit a parse tree produced by the {@code e40}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
@@ -159,6 +138,13 @@ public interface RVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitE17VariableDeclaration(@NotNull RParser.E17VariableDeclarationContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code err21}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitErr21(@NotNull RParser.Err21Context ctx);
+	/**
 	 * Visit a parse tree produced by the {@code e41}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
@@ -172,19 +158,19 @@ public interface RVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitFormlist(@NotNull RParser.FormlistContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code err20}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitErr20(@NotNull RParser.Err20Context ctx);
+	/**
 	 * Visit a parse tree produced by the {@code e19DefFunction}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitE19DefFunction(@NotNull RParser.E19DefFunctionContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code err4}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitErr4(@NotNull RParser.Err4Context ctx);
 	/**
 	 * Visit a parse tree produced by the {@code err3}
 	 * labeled alternative in {@link RParser#expr}.
@@ -198,13 +184,6 @@ public interface RVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitSub(@NotNull RParser.SubContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code err2}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitErr2(@NotNull RParser.Err2Context ctx);
 	/**
 	 * Visit a parse tree produced by the {@code err1}
 	 * labeled alternative in {@link RParser#expr}.
@@ -289,26 +268,12 @@ public interface RVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitErr9(@NotNull RParser.Err9Context ctx);
 	/**
-	 * Visit a parse tree produced by the {@code err8}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitErr8(@NotNull RParser.Err8Context ctx);
-	/**
 	 * Visit a parse tree produced by the {@code err7}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitErr7(@NotNull RParser.Err7Context ctx);
-	/**
-	 * Visit a parse tree produced by the {@code err6}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitErr6(@NotNull RParser.Err6Context ctx);
 	/**
 	 * Visit a parse tree produced by the {@code err5}
 	 * labeled alternative in {@link RParser#expr}.

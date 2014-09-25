@@ -64,6 +64,7 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 		int offset = invocationContext.getOffset();
 		String text = getCompleteText(viewer.getDocument(), offset);
 		ICompletionProposal[] prop = null;
+		if(errorCode!=null){
 		if (errorCode.equals("Err7")) {
 			prop = new ICompletionProposal[] {
 
@@ -74,7 +75,9 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 
 			};
 		}
+		}
 		return prop;
+		
 	}
 
 	private String getCompleteText(IDocument document, int currentOffset) {

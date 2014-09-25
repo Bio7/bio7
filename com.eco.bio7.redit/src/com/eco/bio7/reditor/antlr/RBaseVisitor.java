@@ -18,13 +18,6 @@ public class RBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements RVis
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitErr10(@NotNull RParser.Err10Context ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
 	@Override public T visitErr11(@NotNull RParser.Err11Context ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
@@ -102,13 +95,6 @@ public class RBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements RVis
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitErr19(@NotNull RParser.Err19Context ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
 	@Override public T visitE39(@NotNull RParser.E39Context ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
@@ -144,13 +130,6 @@ public class RBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements RVis
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitErr17(@NotNull RParser.Err17Context ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
 	@Override public T visitE40(@NotNull RParser.E40Context ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
@@ -159,6 +138,13 @@ public class RBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements RVis
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitE17VariableDeclaration(@NotNull RParser.E17VariableDeclarationContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitErr21(@NotNull RParser.Err21Context ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -179,14 +165,14 @@ public class RBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements RVis
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitE19DefFunction(@NotNull RParser.E19DefFunctionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitErr20(@NotNull RParser.Err20Context ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitErr4(@NotNull RParser.Err4Context ctx) { return visitChildren(ctx); }
+	@Override public T visitE19DefFunction(@NotNull RParser.E19DefFunctionContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -201,13 +187,6 @@ public class RBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements RVis
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitSub(@NotNull RParser.SubContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitErr2(@NotNull RParser.Err2Context ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -298,21 +277,7 @@ public class RBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements RVis
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitErr8(@NotNull RParser.Err8Context ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
 	@Override public T visitErr7(@NotNull RParser.Err7Context ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitErr6(@NotNull RParser.Err6Context ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
