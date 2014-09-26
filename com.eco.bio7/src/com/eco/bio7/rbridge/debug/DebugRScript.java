@@ -22,6 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -45,7 +46,9 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.rosuda.REngine.Rserve.RConnection;
+
 import com.eco.bio7.Bio7Plugin;
+import com.eco.bio7.actions.Bio7Action;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RServe;
@@ -77,8 +80,8 @@ public class DebugRScript extends Action {
 	}
 
 	public void run() {
-		
-		IPreferenceStore store=Bio7Plugin.getDefault().getPreferenceStore();
+
+		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 
 		editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		if (editor.isDirty()) {
@@ -98,7 +101,6 @@ public class DebugRScript extends Action {
 		}
 		String loc = aFile.getLocation().toString();
 
-
 		if (d == null) {
 
 			String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
@@ -107,8 +109,7 @@ public class DebugRScript extends Action {
 
 				/* Find the line numbers of the markers! */
 				int lineNum = 0;
-				String expression = null;			
-				
+				String expression = null;
 
 				if (resource != null) {
 					Map<Integer, String> map1 = findMyMarkers(resource);
@@ -121,49 +122,53 @@ public class DebugRScript extends Action {
 						expression = entry.getValue();
 
 						if (lineNum > 0) {
-							
-							int port=store.getInt("R_DEBUG_PORT");
-								if (expression == null) {
-									ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
-									con.pipeToRConsole("options(prompt=\" \")");
-									con.pipeToRConsole("source('" + loc + "')");
-									/*Create a hidden environment for the temporary variable!*/
-									con.pipeToRConsole(".bio7tempenv<- new.env()");
-									con.pipeToRConsole("assign(\"bio7tempVar\", findLineNum('" + loc + "#" + lineNum + "'), env=.bio7tempenv)");
-									con.pipeToRConsole("setBreakpoint('" + loc + "#" + lineNum + "')");
-									con.pipeToRConsole("con1 <- socketConnection(port = "+port+", server = TRUE)");
-									con.pipeToRConsole("writeLines(.bio7tempenv$bio7tempVar[[1]]$name, con1)");
-									con.pipeToRConsole("writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), con1)");
-									con.pipeToRConsole("close(con1)");
-									con.pipeToRConsole("options(prompt=\"> \")");
-									con.pipeToRConsole("writeLines(\"\")");
-									
-									readSocket(lineNum);
-									
-								
-								}
-								/*If an expression is available!*/
-								else {
-									ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
-									con.pipeToRConsole("options(prompt=\" \")");
-									con.pipeToRConsole("source('" + loc + "')");
-									/*Create a hidden environment for the temporary variable!*/
-									con.pipeToRConsole(".bio7tempenv<- new.env()");
-									con.pipeToRConsole("assign(\"bio7tempVar\", findLineNum('" + loc + "#" + lineNum + "'), env=.bio7tempenv)");
-									con.pipeToRConsole("setBreakpoint('" + loc + "#" + lineNum + "',tracer=quote("+expression+"))");
-									con.pipeToRConsole("con1 <- socketConnection(port = "+port+", server = TRUE,timeout=10)");
-									con.pipeToRConsole("writeLines(.bio7tempenv$bio7tempVar[[1]]$name, con1)");
-									con.pipeToRConsole("writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), con1)");
-									con.pipeToRConsole("close(con1)");
-									con.pipeToRConsole("options(prompt=\"> \")");
-									con.pipeToRConsole("writeLines(\"\")");
-									
-									readSocket(lineNum);
-									
-								}
+
+							int port = store.getInt("R_DEBUG_PORT");
+							if (expression == null) {
+								ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
+								con.pipeToRConsole("options(prompt=\" \")");
+								con.pipeToRConsole("source('" + loc + "')");
+								/*
+								 * Create a hidden environment for the temporary
+								 * variable!
+								 */
+								con.pipeToRConsole(".bio7tempenv<- new.env()");
+								con.pipeToRConsole("assign(\"bio7tempVar\", findLineNum('" + loc + "#" + lineNum + "'), env=.bio7tempenv)");
+								con.pipeToRConsole("setBreakpoint('" + loc + "#" + lineNum + "')");
+								con.pipeToRConsole("con1 <- socketConnection(port = " + port + ", server = TRUE)");
+								con.pipeToRConsole("writeLines(.bio7tempenv$bio7tempVar[[1]]$name, con1)");
+								con.pipeToRConsole("writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), con1)");
+								con.pipeToRConsole("close(con1)");
+								con.pipeToRConsole("options(prompt=\"> \")");
+								con.pipeToRConsole("writeLines(\"\")");
+
+								readSocket(lineNum);
+
+							}
+							/* If an expression is available! */
+							else {
+								ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
+								con.pipeToRConsole("options(prompt=\" \")");
+								con.pipeToRConsole("source('" + loc + "')");
+								/*
+								 * Create a hidden environment for the temporary
+								 * variable!
+								 */
+								con.pipeToRConsole(".bio7tempenv<- new.env()");
+								con.pipeToRConsole("assign(\"bio7tempVar\", findLineNum('" + loc + "#" + lineNum + "'), env=.bio7tempenv)");
+								con.pipeToRConsole("setBreakpoint('" + loc + "#" + lineNum + "',tracer=quote(" + expression + "))");
+								con.pipeToRConsole("con1 <- socketConnection(port = " + port + ", server = TRUE,timeout=10)");
+								con.pipeToRConsole("writeLines(.bio7tempenv$bio7tempVar[[1]]$name, con1)");
+								con.pipeToRConsole("writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), con1)");
+								con.pipeToRConsole("close(con1)");
+								con.pipeToRConsole("options(prompt=\"> \")");
+								con.pipeToRConsole("writeLines(\"\")");
+
+								readSocket(lineNum);
+
 							}
 						}
-					
+					}
 
 				}
 
@@ -175,13 +180,12 @@ public class DebugRScript extends Action {
 
 	}
 
-	
 	private void readSocket(int lineNum) {
-		
+
 		String lineNumber = "0";
 		String result = null;
-		IPreferenceStore store=Bio7Plugin.getDefault().getPreferenceStore();
-		int port=store.getInt("R_DEBUG_PORT");
+		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		int port = store.getInt("R_DEBUG_PORT");
 		try {
 			debugSocket = new Socket("127.0.0.1", port);
 			debugSocket.setSoTimeout(10000);
@@ -197,7 +201,7 @@ public class DebugRScript extends Action {
 			result = input.readLine();
 
 			lineNumber = input.readLine();
-			
+
 			debugSocket.close();
 
 		} catch (IOException e) {
@@ -231,18 +235,27 @@ public class DebugRScript extends Action {
 		IDocument doc = dp.getDocument(editor.getEditorInput());
 
 		IRegion reg = null;
-		
+
+		int lineNumBreakpoint = -1;
 		try {
-			reg = doc.getLineInformation(Integer.parseInt(lineNumber) - 1);
-		} catch (BadLocationException e1) {
+			lineNumBreakpoint = Integer.parseInt(lineNumber);
+		} catch (NumberFormatException e) {
+			// TODO Auto-generated catch block
 
-			e1.printStackTrace();
+			Bio7Dialog.message("The breakpoint seems to be outside a function\ndefinition and cannot be traced!\n\nA breakpoint has to be set inside a function!");
+
 		}
+		if (lineNumBreakpoint > -1) {
+			try {
+				reg = doc.getLineInformation(lineNumBreakpoint - 1);
+			} catch (BadLocationException e1) {
 
-		edit.selectAndReveal(reg.getOffset() + reg.getLength(), 0);
+				e1.printStackTrace();
+			}
+
+			edit.selectAndReveal(reg.getOffset() + reg.getLength(), 0);
+		}
 	}
-
-	
 
 	public Map<Integer, String> findMyMarkers(IResource target) {
 		String type = "com.eco.bio7.redit.debugMarker";

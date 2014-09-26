@@ -227,38 +227,42 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 			while (true) {
 				char c = 0;
+				if (offset + length >= 0 && offset + length <= doc.getLength()) {
 
-				try {
-					c = doc.getChar(offset + length);
-				} catch (BadLocationException e) {
+					try {
+						c = doc.getChar(offset + length);
+					} catch (BadLocationException e) {
 
-					e.printStackTrace();
-				}
+						e.printStackTrace();
+					}
 
-				if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false)
-					break;
+					if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false)
+						break;
 
-				length++;
-				if (offset + length >= doc.getLength()) {
-					break;
+					length++;
+					if (offset + length >= doc.getLength()) {
+						break;
+					}
 				}
 			}
 			while (true) {
 				char c = 0;
+				if (offset + length >= 0 && offset + length <= doc.getLength()) {
 
-				try {
-					c = doc.getChar(offset + minusLength);
-				} catch (BadLocationException e) {
+					try {
+						c = doc.getChar(offset + minusLength);
+					} catch (BadLocationException e) {
 
-					e.printStackTrace();
-				}
+						e.printStackTrace();
+					}
 
-				if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false)
-					break;
+					if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false)
+						break;
 
-				minusLength--;
-				if (offset + minusLength <= 0) {
-					break;
+					minusLength--;
+					if (offset + minusLength <= 0) {
+						break;
+					}
 				}
 			}
 			final int wordOffset = offset + minusLength + 1;

@@ -445,7 +445,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 				"org.eclipse.ui.cheatsheets.actionSet",
 				"org.eclipse.ui.externaltools.ExternalToolsSet",
 				"org.eclipse.jdt.ui.text.java.actionSet.presentation",
-				"org.eclipse.debug.ui.breakpointActionSet"};
+				"org.eclipse.debug.ui.breakpointActionSet",
+				"org.eclipse.wb.core.ui.actionset"};
 
 		for (int i = 0; i < actionSets.length; i++) {
 			boolean found = false;
@@ -811,7 +812,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		IToolBarManager toolbar = new ToolBarManager(SWT.FLAT | SWT.LEFT);
 		//IToolBarManager imagebar = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
 		//coolBar.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-
+		
 		coolBar.add(new ToolBarContributionItem(toolbar, "mainbio7"));
 		//coolBar.add(new ToolBarContributionItem(imagebar, "image"));
 		toolbar.add(start);
@@ -822,8 +823,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		toolbar.add(libreofficeconnection);
 		toolbar.add(startrserve);
 		toolbar.add(print);
-		IToolBarManager toolBarEditor = new ToolBarManager(SWT.FLAT);
-        coolBar.add(new ToolBarContributionItem(toolBarEditor, IWorkbenchActionConstants.GROUP_EDITOR));
+		
 	}
 
 	
