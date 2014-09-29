@@ -188,6 +188,7 @@ public class DebugRScript extends Action {
 		int port = store.getInt("R_DEBUG_PORT");
 		try {
 			debugSocket = new Socket("127.0.0.1", port);
+			debugSocket.setTcpNoDelay(true);
 			debugSocket.setSoTimeout(10000);
 
 			BufferedReader input = null;

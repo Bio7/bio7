@@ -77,6 +77,7 @@ public class DebugContinueAction extends Action {
 			try {
 
 				debugSocket = new Socket("127.0.0.1", port);
+				debugSocket.setTcpNoDelay(true);
 				debugSocket.setSoTimeout(10000);
 				BufferedReader input = null;
 				try {

@@ -382,12 +382,14 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		toolBarManager.add(new ConsolePythonShellAction());
 		toolBarManager.add(new ConsoleCustomActions(this));
 		item = new PlaceholderLabel().getPlaceholderLabel();
-		 toolBarManager.add(item);
+		ia = new ConsoleInterpreterAction(this);
+		toolBarManager.add(ia);
+		toolBarManager.add(item);
 		
 		 
 
-		ia = new ConsoleInterpreterAction(this);
-		toolBarManager.add(ia);
+		
+		
 		
 		in = new BufferedReader(isr);
 

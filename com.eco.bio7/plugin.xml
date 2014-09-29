@@ -534,7 +534,7 @@
          point="org.eclipse.ui.newWizards">
       <wizard
       
-            category="com.eco.bio7.scripts"
+            category="com.eco.bio7.bio7beanshell"
             class="com.eco.bio7.wizards.BeanShellNewWizard"
             icon="icons/bsh_kompilieren.gif"
             id="com.eco.bio7.wizards.SampleNewWizard"
@@ -547,10 +547,6 @@
             id="com.eco.bio7.wizard1"
             name="R Script"
             project="false"/>
-      <category
-            id="com.eco.bio7.Java"
-            name="Java General">
-      </category>
       <category
             id="com.eco.bio7.bio7"
             name="Flow"/>
@@ -587,7 +583,7 @@
             project="false">
       </wizard>
       <wizard
-            category="com.eco.bio7.scripts"
+            category="com.eco.bio7.bio7groovy"
             class="com.eco.bio7.wizards.GroovyNewWizard"
             icon="icons/groovy.gif"
             id="com.eco.bio7.groovyScript"
@@ -607,7 +603,7 @@
             name="ImageJ">
       </category>
       <wizard
-            category="com.eco.bio7.Java"
+            category="com.eco.bio7.bio7java"
             class="com.eco.bio7.wizards.JavaClassPluginWizard"
             icon="icons/javakompilierung.gif"
             id="com.eco.bio7.wizardJavaclass"
@@ -643,27 +639,19 @@
             project="false">
       </wizard>
       <category
-            id="com.eco.bio7.scripts"
-            name="Scripts">
-      </category>
-      <category
             id="com.eco.bio7.web"
             name="Web">
       </category>
       <wizard
-            category="com.eco.bio7.Java"
+            category="com.eco.bio7.bio7java"
             class="com.eco.bio7.wizards.JavaBio7ClassPluginWizard"
             icon="icons/javakompilierung.gif"
             id="com.eco.bio7.wizardJavaManifest"
             name="Java Manifest File"
             project="false">
       </wizard>
-      <category
-            id="com.eco.bio7.javafx"
-            name="Java FX Bio7 Model">
-      </category>
       <wizard
-            category="com.eco.bio7.javafx"
+            category="com.eco.bio7.bio7java"
             class="com.eco.bio7.wizards.JavaFXWizard"
             icon="icons/javakompilierung.gif"
             id="com.eco.bio7.javafx"
@@ -671,7 +659,7 @@
             project="false">
       </wizard>
       <wizard
-            category="com.eco.bio7.javafx"
+            category="com.eco.bio7.bio7groovy"
             class="com.eco.bio7.wizards.GroovyFXWizard"
             icon="icons/groovy.gif"
             id="com.eco.bio7.groovyfx"
@@ -679,7 +667,7 @@
             project="false">
       </wizard>
       <wizard
-            category="com.eco.bio7.javafx"
+            category="com.eco.bio7.bio7java"
             class="com.eco.bio7.wizards.JavaFXBio7ClassWizard"
             icon="icons/javakompilierung.gif"
             id="com.eco.bio7.javafxclass"
@@ -728,10 +716,10 @@
       </wizard>
       <category
             id="com.eco.bio7.bio7java"
-            name="Java Bio7 Model">
+            name="Java Bio7 Files">
       </category>
       <wizard
-            category="com.eco.bio7.scripts"
+            category="com.eco.bio7.bio7jython"
             class="com.eco.bio7.wizards.JythonNewWizard"
             icon="icons/jython.gif"
             id="com.eco.bio7.jythonScript"
@@ -755,45 +743,61 @@
             project="false">
       </wizard>
       <wizard
-            category="org.eclipse.jdt.ui.java"
+            category="com.eco.bio7.bio7javaproject"
             class="com.eco.bio7.wizards.java.JavaFXBio7ClassWizard"
-            icon="icons/projects.gif"
+            icon="icons/newjprj_wiz.gif"
             id="com.eco.bio7.javafxclassjdt"
             name="Bio7 Java Project (JavaFX Model Template)"
             project="true">
       </wizard>
       <wizard
-            category="org.eclipse.jdt.ui.java"
+            category="com.eco.bio7.bio7javaproject"
             class="com.eco.bio7.wizards.java.Bio7JDTProjectPluginWizard"
-            icon="icons/projects.gif"
+            icon="icons/newjprj_wiz.gif"
             id="com.eco.bio7.wizardJavaJdtEmtpy"
             name="Bio7 Java Project (Empty)"
             project="true">
       </wizard>
       <wizard
-            category="org.eclipse.jdt.ui.java"
+            category="com.eco.bio7.bio7javaproject"
             class="com.eco.bio7.wizards.java.JavaBio7ModelClassPluginWizard"
-            icon="icons/projects.gif"
+            icon="icons/newjprj_wiz.gif"
             id="com.eco.bio7.wizardJavaJdtBio7Model"
             name="Bio7 Java  Project (Model Template)"
             project="true">
       </wizard>
       <wizard
-            category="org.eclipse.jdt.ui.java"
+            category="com.eco.bio7.bio7javaproject"
             class="com.eco.bio7.wizards.java.JavaClassJoglPluginWizard"
-            icon="icons/projects.gif"
+            icon="icons/newjprj_wiz.gif"
             id="com.eco.bio7.wizardJavaJdtBio7ModelJogl"
             name="Bio7 Java Project (OpenGL Model Template)"
             project="true">
       </wizard>
       <wizard
-            category="org.eclipse.jdt.ui.java"
+            category="com.eco.bio7.bio7javaproject"
             class="com.eco.bio7.wizards.java.JavaWindowBuilderBio7ClassWizard"
-            icon="icons/projects.gif"
+            icon="icons/newjprj_wiz.gif"
             id="com.eco.bio7.javafxclassjdtwindowbuilder"
             name="Bio7 Java Project (WindowBuilder Template)"
             project="true">
       </wizard>
+      <category
+            id="com.eco.bio7.bio7javaproject"
+            name="Java Bio7 Projects">
+      </category>
+      <category
+            id="com.eco.bio7.bio7groovy"
+            name="Groovy">
+      </category>
+      <category
+            id="com.eco.bio7.bio7beanshell"
+            name="BeanShell">
+      </category>
+      <category
+            id="com.eco.bio7.bio7jython"
+            name="Jython/Python">
+      </category>
       
    </extension>
    <extension

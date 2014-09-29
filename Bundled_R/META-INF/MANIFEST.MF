@@ -7,9 +7,11 @@ Bundle-SymbolicName: Bundled_R; singleton:=true
 Bundle-Version: 3.0.1
 Bundle-Activator: bundled_r.Activator
 Bundle-Localization: plugin
-Require-Bundle: org.eclipse.ui,org.eclipse.core.runtime
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ com.eco.bio7.libs;bundle-version="1.7.0"
 Eclipse-LazyStart: true
 Export-Package: bundled_r,
  com.eco.bio7.rbridge
-Import-Package: org.rosuda.REngine.Rserve
+Bundle-ClassPath: bin/
 

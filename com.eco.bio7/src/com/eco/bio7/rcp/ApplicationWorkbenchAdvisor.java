@@ -22,4 +22,9 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 		return PERSPECTIVE_ID;
 	} 
 	
+	public String getMainPreferencePageId(){
+		
+		return "com.eco.bio7.preferences.Bio7PreferencePage";
+	}
+	
 }
