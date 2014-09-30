@@ -39,7 +39,7 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 		}
 
 		// String text=annotation.getText();
-
+		/* Text is not NA! */
 		if (text != null && text.startsWith("Err")) {
 			errorCode = text;
 			return true;
@@ -64,20 +64,121 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 		int offset = invocationContext.getOffset();
 		String text = getCompleteText(viewer.getDocument(), offset);
 		ICompletionProposal[] prop = null;
-		if(errorCode!=null){
-		if (errorCode.equals("Err7")) {
-			prop = new ICompletionProposal[] {
+		if (errorCode != null) {
+			switch (errorCode) {
+			case "Err1":
+				prop = new ICompletionProposal[] {
 
-			new QuickFixCompletionProposal("Remove", offset, text.length(), ""),
+						new QuickFixCompletionProposal("Remove ')'", offset, text.length(), "",1)};
+				break;
+			case "Err2":
 
-			// new
-			// QuickFixCompletionProposal("This is the second proposal!",offset,text.length(),"")
+				break;
+			case "Err3":
+				prop = new ICompletionProposal[] {
 
-			};
-		}
+						new QuickFixCompletionProposal("Remove ')'", offset, text.length(), "",1)};
+				break;
+			case "Err4":
+
+				break;
+			case "Err5":
+				prop = new ICompletionProposal[] {
+
+						new QuickFixCompletionProposal("Remove ')'", offset, text.length(), "",1)};
+				break;
+			case "Err6":
+
+				break;
+			case "Err7":
+				prop = new ICompletionProposal[] {
+
+				new QuickFixCompletionProposal("Remove ')'", offset, text.length(), "",1)};
+				break;
+			case "Err8":
+
+				break;
+			case "Err9":
+				prop = new ICompletionProposal[] {
+
+						new QuickFixCompletionProposal("Remove ']'", offset, text.length(), "",1)};
+				break;
+			case "Err10":
+
+				break;
+			case "Err11":
+				prop = new ICompletionProposal[] {
+
+						new QuickFixCompletionProposal("Remove '}'", offset, text.length(), "",1)};
+				break;
+			case "Err12":
+				prop = new ICompletionProposal[] {
+
+						new QuickFixCompletionProposal("Replace 'true' with 'TRUE'", offset, text.length(), "TRUE",4)};
+
+				break;
+			case "Err13":
+				prop = new ICompletionProposal[] {
+
+						new QuickFixCompletionProposal("Replace 'false' with 'FALSE'", offset, text.length(), "FALSE",5)};
+
+				break;
+			case "Err14":
+				prop = new ICompletionProposal[] {
+
+						new QuickFixCompletionProposal("Replace 'null' with 'NULL'", offset, text.length(), "NULL",4)};
+
+				break;
+			case "Err15":
+				prop = new ICompletionProposal[] {
+
+						new QuickFixCompletionProposal("Replace 'na' with 'NA'", offset, text.length(), "NA",2)};
+
+				break;
+			case "Err16":
+				prop = new ICompletionProposal[] {
+
+						new QuickFixCompletionProposal("Remove ')'", offset, text.length(), "",1)};
+
+				break;
+			case "Err17":
+
+				break;
+			case "Err18":
+				prop = new ICompletionProposal[] {
+
+						new QuickFixCompletionProposal("Remove ')'", offset, text.length(), "",1)};
+				break;
+			case "Err19":
+
+				break;
+			case "Err20":
+				prop = new ICompletionProposal[] {
+
+						new QuickFixCompletionProposal("Replace '=>' with '>='", offset, text.length(), ">=",2)};
+				break;
+			case "Err21":
+				prop = new ICompletionProposal[] {
+
+						new QuickFixCompletionProposal("Replace '=<' with '<='", offset, text.length(), "<=",2)};
+				break;
+
+			default:
+				break;
+			}
+			/*if (errorCode.equals("Err7")) {
+				prop = new ICompletionProposal[] {
+
+				new QuickFixCompletionProposal("Remove", offset, text.length(), ""),
+
+				// new
+				// QuickFixCompletionProposal("This is the second proposal!",offset,text.length(),"")
+
+				};
+			}*/
 		}
 		return prop;
-		
+
 	}
 
 	private String getCompleteText(IDocument document, int currentOffset) {

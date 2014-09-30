@@ -358,10 +358,6 @@ public class RBaseListen extends RBaseListener {
 		parser.notifyErrorListeners(ctx.extra, "Err1:Too many parentheses!", null);
 
 	}
-	
-	
-
-	
 
 	public void exitErr3(@NotNull RParser.Err3Context ctx) {
 
@@ -369,32 +365,29 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	
-
 	public void exitErr5(@NotNull RParser.Err5Context ctx) {
 
 		parser.notifyErrorListeners(ctx.extra, "Err5:Too many parentheses in function definition!", null);
 
 	}
-	
-	/*public void exitErr6(@NotNull RParser.Err6Context ctx) {
-		Token lastToken = tokens.get(ctx.getChild(2).getSourceInterval().b);
-		parser.notifyErrorListeners(lastToken, "Err6:Closing if brace missing!", null);
-		
 
-	}*/
-
-	
+	/*
+	 * public void exitErr6(@NotNull RParser.Err6Context ctx) { Token lastToken
+	 * = tokens.get(ctx.getChild(2).getSourceInterval().b);
+	 * parser.notifyErrorListeners(lastToken, "Err6:Closing if brace missing!",
+	 * null);
+	 * 
+	 * 
+	 * }
+	 */
 
 	public void exitErr7(@NotNull RParser.Err7Context ctx) {
-		
-		//int index = ctx.extra.getStartIndex();
+
+		// int index = ctx.extra.getStartIndex();
 
 		parser.notifyErrorListeners(ctx.extra, "Err7:Too many parentheses in if condition!", null);
 
 	}
-
-	
 
 	public void exitErr9(@NotNull RParser.Err9Context ctx) {
 
@@ -402,59 +395,60 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	
-
 	public void exitErr11(@NotNull RParser.Err11Context ctx) {
 
 		parser.notifyErrorListeners(ctx.extra, "Err11:Too many braces!", null);
 
 	}
+
 	public void exitErr12(@NotNull RParser.Err12Context ctx) {
 
 		parser.notifyErrorListeners(ctx.extra, "Err12:Wrong constant: 'TRUE' required!", null);
 
 	}
-	
+
 	public void exitErr13(@NotNull RParser.Err13Context ctx) {
 
 		parser.notifyErrorListeners(ctx.extra, "Err13:Wrong constant: 'FALSE' required!", null);
 
 	}
-	
+
 	public void exitErr14(@NotNull RParser.Err14Context ctx) {
 
 		parser.notifyErrorListeners(ctx.extra, "Err14:Wrong constant: 'NULL' required!", null);
 
 	}
+
 	public void exitErr15(@NotNull RParser.Err15Context ctx) {
 
 		parser.notifyErrorListeners(ctx.extra, "Err15:Wrong constant: 'NA' required!", null);
 
 	}
+
 	public void exitErr16(@NotNull RParser.Err16Context ctx) {
 
 		parser.notifyErrorListeners(ctx.extra, "Err16:Too many braces in while statement!", null);
 
 	}
-	
+
 	public void exitErr18(@NotNull RParser.Err18Context ctx) {
 
 		parser.notifyErrorListeners(ctx.extra, "Err18:Too many braces in for statement!", null);
 
 	}
-	
+
 	public void exitErr20(@NotNull RParser.Err20Context ctx) {
 
-		parser.notifyErrorListeners(ctx.start, "Err20:Wrong comparison!", null);
+		Token firstToken = tokens.get(ctx.getChild(1).getSourceInterval().a);
+		parser.notifyErrorListeners(firstToken, "Err20:Wrong comparison!", null);
 
 	}
+
 	public void exitErr21(@NotNull RParser.Err21Context ctx) {
-		
+
 		Token firstToken = tokens.get(ctx.getChild(1).getSourceInterval().a);
 		parser.notifyErrorListeners(firstToken, "Err21:Wrong comparison!", null);
 
 	}
-	
-	
 
 }

@@ -13,14 +13,16 @@ public class QuickFixCompletionProposal implements ICompletionProposal {
 
     String text;
 
-    int offset,contextTextLength;
+    private int offset,contextTextLength;
 
 	private String replace;
 
-    QuickFixCompletionProposal(String text,int offset,int contextTextLength,String replace){
+	private int lengthToReplace=1;
+
+    QuickFixCompletionProposal(String text,int offset,int contextTextLength,String replace, int lengthToReplace){
 
         this.text = text;
-
+        this.lengthToReplace=lengthToReplace;
         this.offset = offset;
 
         this.contextTextLength = contextTextLength;
@@ -34,7 +36,7 @@ public class QuickFixCompletionProposal implements ICompletionProposal {
 
         try {
 
-            document.replace(offset, 1, replace);
+            document.replace(offset, lengthToReplace, replace);
 
             
 

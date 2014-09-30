@@ -524,11 +524,11 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 	// add the chars for Completion here !!!
 	
-	 public char[] getCompletionProposalAutoActivationCharacters() { 
+	 /*public char[] getCompletionProposalAutoActivationCharacters() { 
 		 
 		 return  "abcdefghijklmnopqrstuvwxyz".toCharArray();
 	 
-	 }
+	 }*/
 	 
 
 	/**
