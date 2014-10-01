@@ -71,6 +71,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.rosuda.REngine.Rserve.RConnection;
 
+import com.eco.bio7.swt.SwtAwt;
+
 public class WorldWindView extends ViewPart {
 
 	private static WorldWindView viewInstance;
@@ -168,6 +170,7 @@ public class WorldWindView extends ViewPart {
 
 		// Swing Frame and Panel
 		worldFrame = SWT_AWT.new_Frame(top);
+		SwtAwt.setSwtAwtFocus(worldFrame, top);
 		panel = new java.awt.Panel(new java.awt.BorderLayout());
 
 		worldFrame.add(panel);

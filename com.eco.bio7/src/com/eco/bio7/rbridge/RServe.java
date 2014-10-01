@@ -80,7 +80,7 @@ public class RServe {
 
 	/**
 	 * Evaluates an R expression without running in a job. This method can be
-	 * used to evaluate R scripts from e.g. Java. R plots a possible, too.
+	 * used to evaluate R scripts from e.g. Groovy (running already in a job). R plots a possible, too.
 	 * 
 	 * @param expression
 	 *            a R expression.

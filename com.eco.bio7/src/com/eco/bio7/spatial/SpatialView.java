@@ -12,6 +12,7 @@
 package com.eco.bio7.spatial;
 
 import java.awt.Frame;
+
 import javax.media.opengl.awt.GLCanvas;
 import javax.swing.SwingUtilities;
 
@@ -22,6 +23,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
+
+import com.eco.bio7.swt.SwtAwt;
 
 public class SpatialView extends ViewPart {
 	public static final String ID = "com.eco.bio7.spatial";
@@ -68,6 +71,7 @@ public class SpatialView extends ViewPart {
 			public void run() {
 
 				frame = SWT_AWT.new_Frame(top);
+				SwtAwt.setSwtAwtFocus(frame, top);
 				canvas = spat.getCanvas();
 				top.setLayout(new RowLayout());
 				frame.add(canvas);

@@ -17,7 +17,11 @@ import java.util.Collections;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
@@ -28,6 +32,8 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.rosuda.REngine.REXP;
+import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
@@ -42,6 +48,7 @@ public class RScript {
 
 	private static ArrayList marked = new ArrayList();
 	private static String script;
+	protected static REXP rexp;
 
 	public static IMarker[] findMyMarkers(IResource target) {
 		String type = IMarker.TASK;
@@ -80,7 +87,8 @@ public class RScript {
 			}
 
 			Collections.sort(marked);
-			int temp = -1000000;// An arbitrary value to remove double entries in
+			int temp = -1000000;// An arbitrary value to remove double entries
+								// in
 								// the
 			// list for plotting !
 			for (int i = 0; i < marked.size(); i++) {
@@ -118,14 +126,11 @@ public class RScript {
 			if (b != -1) {
 				IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 				boolean customDevice = store.getBoolean("USE_CUSTOM_DEVICE");
-				if(customDevice==false){
+				if (customDevice == false) {
 					startPlotJob(inhalt, b);
-				}
-				else {
+				} else {
 					Bio7Dialog.message("Can't plot marked commands if custom device is used!\nPlease deselect the \"Use Custom Device\" preferences in the Rserve preferences!");
 				}
-
-				
 
 			}
 		}
@@ -219,5 +224,92 @@ public class RScript {
 			System.out.println("RServer is busy. Can't execute the R script!");
 		}
 
+	}
+
+	/**
+	 * A method to get all current workspace variables name.
+	 * 
+	 * @return the r workspace object names as a String array.
+	 */
+	public static String[] getRObjects() {
+		REXP x = null;
+		String[] v = null;
+
+		if (RServe.isAliveDialog()) {
+			if (RState.isBusy() == false) {
+
+				// List all variables in the R workspace!
+
+				try {
+					RServe.getConnection().eval("try(var<-ls())");
+					x = RServe.getConnection().eval("try(var)");
+					try {
+						v = x.asStrings();
+					} catch (REXPMismatchException e1) {
+
+						e1.printStackTrace();
+					}
+					RServe.getConnection().eval("try(remove(var))");
+				} catch (RserveException e1) {
+
+					e1.printStackTrace();
+				}
+
+			} else {
+				System.out.println("RServer is busy. Can't execute the R script!");
+
+			}
+
+		}
+		return v;
+	}
+
+	
+
+	/**
+	 * A method to return REXP objects of Rserve running in a job. This method also checks if a R job is already running.
+	 * @param eval a R command.
+	 * @return a REXP object.
+	 */
+	public static REXP valueFromRJob(String eval) {
+		
+		if (RServe.isAliveDialog()) {
+			if (RState.isBusy() == false) {
+				RState.setBusy(true);
+				Job job = new Job("Transfer from R") {
+					
+
+					@Override
+					protected IStatus run(IProgressMonitor monitor) {
+						monitor.beginTask("Transfer Data ...", IProgressMonitor.UNKNOWN);
+						try {
+							rexp=RServe.getConnection().eval( eval);
+						} catch (RserveException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						monitor.done();
+						return Status.OK_STATUS;
+					}
+
+				};
+				job.addJobChangeListener(new JobChangeAdapter() {
+					public void done(IJobChangeEvent event) {
+						if (event.getResult().isOK()) {
+
+							RState.setBusy(false);
+						} else {
+
+							RState.setBusy(false);
+						}
+					}
+				});
+				// job.setSystem(true);
+				job.schedule();
+			} else {
+				System.out.println("RServer is busy. Can't execute the R script!");
+			}
+		}
+		return rexp;
 	}
 }
