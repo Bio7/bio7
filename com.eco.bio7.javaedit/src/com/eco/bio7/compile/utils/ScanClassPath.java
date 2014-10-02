@@ -34,11 +34,11 @@ import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 public class ScanClassPath {
 
 	private String pathBundle;
-	String[] bundles = new String[] { "com.eco.bio7", "com.eco.bio7.libs", "com.eco.bio7.javaedit", "com.eco.bio7.image", "com.eco.bio7.WorldWind", "com.eco.bio7.physics",
-			"com.eco.bio7.scenebuilder", "com.eco.bio7.browser" };// "org.eclipse.ui.workbench","org.eclipse.core.commands"
+	String[] bundles = new String[] { "com.eco.bio7", "com.eco.bio7.libs", "com.eco.bio7.javaedit", "com.eco.bio7.image", "com.eco.bio7.WorldWind","com.eco.bio7.physics",
+			"com.eco.bio7.scenebuilder", "com.eco.bio7.browser","Bundled_R",  };// "org.eclipse.ui.workbench","org.eclipse.core.commands"
 
 	String[] bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui", "org.eclipse.swt", "org.eclipse.swt.win32.win32.x86_64",
-			"org.eclipse.draw2d", "org.eclipse.equinox.registry", "org.eclipse.equinox.common" };
+			"org.eclipse.draw2d", "org.eclipse.equinox.registry", "org.eclipse.equinox.common","org.eclipse.core.runtime","org.eclipse.core.jobs" };
 	
 	
 
@@ -129,6 +129,7 @@ public class ScanClassPath {
 		buf.append(File.pathSeparator + bundlePaths.get(2) + "/bin");
 		buf.append(File.pathSeparator + bundlePaths.get(3) + "/bin");
 		buf.append(File.pathSeparator + bundlePaths.get(4) + "/bin");
+		buf.append(File.pathSeparator + bundlePaths.get(8) + "/bin");
 		
 		// buf.append(File.pathSeparator+Platform.getInstallLocation().getURL().getPath()+"plugins/org.eclipse.ui.workbench_3.7.0.I20110519-0100.jar");
 		// buf.append(File.pathSeparator+Platform.getInstallLocation().getURL().getPath()+"/plugins/org.eclipse.core.commands_3.6.0.I20110111-0800.jar");
@@ -263,6 +264,7 @@ public class ScanClassPath {
 		buf.add(File.pathSeparator + bundlePaths.get(2) + "/bin");
 		buf.add(File.pathSeparator + bundlePaths.get(3) + "/bin");
 		buf.add(File.pathSeparator + bundlePaths.get(4) + "/bin");
+		buf.add(File.pathSeparator + bundlePaths.get(8) + "/bin");
 
 		/*
 		 * Here we add the results to the classpath. Src entries are created,

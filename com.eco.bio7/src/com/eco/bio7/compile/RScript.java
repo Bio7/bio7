@@ -34,6 +34,7 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
+import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
@@ -49,6 +50,7 @@ public class RScript {
 	private static ArrayList marked = new ArrayList();
 	private static String script;
 	protected static REXP rexp;
+	protected static boolean attachFinished;
 
 	public static IMarker[] findMyMarkers(IResource target) {
 		String type = IMarker.TASK;
@@ -264,26 +266,26 @@ public class RScript {
 		return v;
 	}
 
-	
-
 	/**
-	 * A method to return REXP objects of Rserve running in a job. This method also checks if a R job is already running.
-	 * @param eval a R command.
+	 * A method to return REXP objects of Rserve running in a job. This method
+	 * also checks if a R job is already running.
+	 * 
+	 * @param eval
+	 *            a R command.
 	 * @return a REXP object.
 	 */
 	public static REXP valueFromRJob(String eval) {
-		
+
 		if (RServe.isAliveDialog()) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
 				Job job = new Job("Transfer from R") {
-					
 
 					@Override
 					protected IStatus run(IProgressMonitor monitor) {
 						monitor.beginTask("Transfer Data ...", IProgressMonitor.UNKNOWN);
 						try {
-							rexp=RServe.getConnection().eval( eval);
+							rexp = RServe.getConnection().eval(eval);
 						} catch (RserveException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -311,5 +313,78 @@ public class RScript {
 			}
 		}
 		return rexp;
+	}
+
+	/**
+	 * A method to assign values from Java to R.
+	 * @param name
+	 *            the object name in R.
+	 * @param attach
+	 */
+	public static void attachToR(String name, Object... assign) {
+
+		if (RServe.isAlive()) {
+			if (RState.isBusy() == false) {
+				RState.setBusy(true);
+
+				try {
+					if (assign[0] instanceof String) {
+						RServe.getConnection().assign(name, (String) assign[0]);
+					} else if (assign[0] instanceof String[]) {
+						try {
+							RServe.getConnection().assign(name, (String[]) assign[0]);
+						} catch (REngineException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					} else if (assign[0] instanceof REXP) {
+						RServe.getConnection().assign(name, (REXP) assign[0]);
+					} else if (assign[0] instanceof double[]) {
+						try {
+							RServe.getConnection().assign(name, (double[]) assign[0]);
+						} catch (REngineException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					} else if (assign[0] instanceof int[]) {
+						try {
+							RServe.getConnection().assign(name, (int[]) assign[0]);
+						} catch (REngineException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					} else if (assign[0] instanceof byte[]) {
+						try {
+							RServe.getConnection().assign(name, (byte[]) assign[0]);
+						} catch (REngineException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+
+					else if (assign[0] instanceof REXP && assign[1] instanceof REXP) {
+						try {
+							RServe.getConnection().assign(name, (REXP) assign[0], (REXP) assign[1]);
+						} catch (REngineException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				} catch (RserveException e) {
+					// TODO Auto-generated catch block
+					RState.setBusy(false);
+					e.printStackTrace();
+				}
+
+				RState.setBusy(false);
+			}
+			else {
+				System.out.println("RServer is busy. Can't execute the R script!");
+			}
+
+
+		}
+
+		
 	}
 }
