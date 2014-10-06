@@ -14,6 +14,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PlatformUI;
@@ -124,8 +125,7 @@ public class HierachyView extends ViewPart implements ILinkedWithEditorView {
 					}
 				}
 			});
-		}
-		else {
+		} else {
 			Platform.runLater(new Runnable() {
 
 				@Override
@@ -155,18 +155,27 @@ public class HierachyView extends ViewPart implements ILinkedWithEditorView {
 
 		public void partClosed(IWorkbenchPartReference partRef) { // TODO
 			if (partRef.getId().equals("com.eco.bio7.browser.scenebuilder")) {
-				Platform.runLater(new Runnable() {
-
-					@Override
-					public void run() {
-
-						Group root = new Group();
-						Scene s = new Scene(root, 300, 300, Color.WHITE);
-						if (composite.isDisposed() == false) {
-							canvas.setScene(s);
-						}
+				IEditorReference ref[] = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
+				int count = 0;
+				for (int i = 0; i < ref.length; i++) {
+					if (ref[i].getId().equals("com.eco.bio7.browser.scenebuilder")) {
+						count++;
 					}
-				});
+				}
+				if (count == 0) {
+					Platform.runLater(new Runnable() {
+
+						@Override
+						public void run() {
+
+							Group root = new Group();
+							Scene s = new Scene(root, 300, 300, Color.WHITE);
+							if (composite.isDisposed() == false) {
+								canvas.setScene(s);
+							}
+						}
+					});
+				}
 			}
 		}
 

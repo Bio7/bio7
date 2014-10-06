@@ -5,7 +5,7 @@ Bundle-Name: TeXlipse
 Bundle-SymbolicName: net.sourceforge.texlipse;singleton:=true
 Bundle-Version: 1.5.0
 Bundle-Activator: net.sourceforge.texlipse.TexlipsePlugin
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: texlipse.jar,jazzy-core.jar
 Eclipse-LazyStart: true
 Require-Bundle: org.eclipse.core.runtime,org.eclipse.ui,org.eclipse.jf
