@@ -1,5 +1,5 @@
 #ImageJ 1.48c Preferences
-#Mon Sep 15 16:47:32 CEST 2014
+#Thu Oct 02 16:23:11 CEST 2014
 new.fill=0
 .log.height=250
 pp.options=1
@@ -12,8 +12,9 @@ recent02=I\:\\ROIS\\tiffwithroi.tif
 noise.sd=25.0
 recent01=C\:\\Users\\elk\\git\\bio7m6\\com.eco.bio7.WorldWind\\src\\gov\\nasa\\worldwindx\\examples\\images\\MountStHelens.jpg
 recent00=C\:\\Users\\elk\\git\\bio7m6\\com.eco.bio7.WorldWind\\src\\images\\BMNG_world.topo.bathy.200405.3.2048x1024.jpg
+.toolbar.brush.size=15
 raw.offset=0
-fcolor=\#070707
+fcolor=\#8F002B
 raw.width=512
 .Control_Panel.@Main=894 204 132 384
 .log.width=400
@@ -34,13 +35,14 @@ jpeg=85
 .threshold.loc=692,234
 .toolbar.tool06=
 .threshold.mode=0
+.line.loc=796,284
 ij.y=150
 ij.x=1091
 new.slices=1
 menu.size=14
 raw.n=1
 .cp.loc=894,210
-new.type=0
+new.type=3
 div-by-zero=Infinity
 raw.options=0
 new.width=400
