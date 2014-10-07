@@ -8,7 +8,7 @@
 	autoinsert="false" 
 	>for (${x} in ${vector}) {&#13;
 	${line_selection}&#13;
-}&#13;${cursor}</template>
+}${cursor}</template>
 
 <template id="rscript.else" 
 	context="rscript" 
@@ -17,7 +17,7 @@
 	autoinsert="false" 
 	>else {&#13;
 	${line_selection}&#13;
-}&#13;${cursor}</template>
+${cursor}</template>
 
 <template id="rscript.elseif"
 	context="rscript" 
@@ -26,7 +26,7 @@
 	autoinsert="false" 
 	>else if (${condition}) {&#13;
 	${line_selection}&#13;
-}&#13;${cursor}</template>
+}${cursor}</template>
 
 <template id="rscript.for.index"
 	context="rscript" 
@@ -35,7 +35,7 @@
 	autoinsert="false" 
 	>for (${i} in 1:length(${vector})) {&#13;
 	${line_selection}&#13;
-}&#13;${cursor}</template>
+}${cursor}</template>
 
 <template id="rscript.function"
 	context="rscript" 
@@ -44,7 +44,7 @@
 	autoinsert="false" 
 	>${newName}&lt;-function(${parameter}) {&#13;
 	${line_selection}&#13;
-}&#13;${cursor}</template>
+}${cursor}</template>
 
 <template id="rscript.if"
 	context="rscript" 
@@ -53,7 +53,7 @@
 	autoinsert="false" 
 	>if (${condition}) {&#13;
 	${line_selection}&#13;
-}&#13;${cursor}</template>
+}${cursor}</template>
 
 <template id="rscript.ifelse"
 	context="rscript" 
@@ -64,7 +64,7 @@
 	${line_selection}&#13;
 	} else {&#13;
 	&#13;
-}&#13;${cursor}</template>
+}${cursor}</template>
 
 <template id="rscript.repeat"
 	context="rscript" 
@@ -73,7 +73,7 @@
 	autoinsert="false" 
 	>repeat {&#13;
 	${line_selection}&#13;
-}&#13;${cursor}</template>
+}${cursor}</template>
 
 <template id="rscript.while"
 	context="rscript" 
@@ -82,10 +82,16 @@
 	autoinsert="false" 
 	>while (${condition}) {&#13;
 	${line_selection}&#13;
-}&#13;${cursor}</template>
+}${cursor}</template>
 
-
-
+<template id="rscript.wrapfunction"
+	context="rscript" 
+	name="Surround with function"
+	description="Wraps selected code in a function" 
+	autoinsert="false" 
+	>${newName}&lt;-function(${parameter}) {&#13;
+	${line_selection}&#13;
+}${cursor}</template>
 
 </templates>
 
