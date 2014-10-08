@@ -30,7 +30,7 @@ public class PreferenceConstants {
 	
 	public static final String D_SCRIPT_R = "r_scripts";
 
-	public static final String P_TEMP_R = "C:";
+	public static final String P_TEMP_R = "pathTempR";
 
 	public static final String PACKAGE_R_SERVER = "http://cran.r-project.org";
 

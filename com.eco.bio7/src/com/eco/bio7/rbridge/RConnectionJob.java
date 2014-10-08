@@ -183,14 +183,21 @@ public class RConnectionJob extends WorkspaceJob {
 		 * situations!
 		 */
 		try {
-
+			IPreferenceStore store = Bio7Plugin.getDefault()
+					.getPreferenceStore();
+			String tempPath = store.getString(PreferenceConstants.P_TEMP_R);
+			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+				
+				tempPath = tempPath.replace("\\", "/");
+			}
+			System.out.println(tempPath);
 			con.eval("try(options(max.print=5000))");
-
+            con.eval("try(.bio7tempenvpath<- new.env())");
+            con.eval("try(assign(\"pathTemp\", \""+tempPath+"\", env=.bio7tempenvpath))");
 			/*
 			 * Set the default install location for the add on packages!
 			 */
-			IPreferenceStore store = Bio7Plugin.getDefault()
-					.getPreferenceStore();
+			
 			String rPackages = store.getString("InstallLocation");
 			String dev = store.getString("DEVICE_DEFINITION");
 			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
