@@ -21,7 +21,7 @@ public class REditorRulerQuickFixAction extends AbstractRulerActionDelegate {
 	protected IAction createAction(ITextEditor editor, IVerticalRulerInfo rulerInfo) {
 		int line = rulerInfo.getLineOfLastMouseButtonActivity() + 1;
 
-		// System.out.println(line);
+		
 		if (line > 0) {
 
 			IEditorPart editore = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();

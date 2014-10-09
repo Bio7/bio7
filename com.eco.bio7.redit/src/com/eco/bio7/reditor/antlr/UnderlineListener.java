@@ -29,7 +29,6 @@ public class UnderlineListener extends BaseErrorListener {
 		// System.err.println(msg);
 		if (msg.startsWith("Err")) {
 			String[] split = msg.split(":");
-			System.out.println(split[0]);
 			quickFix = split[0];
 			msg=split[1];
 		}

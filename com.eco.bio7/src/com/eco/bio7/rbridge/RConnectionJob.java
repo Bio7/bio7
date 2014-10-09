@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2013 M. Austenfeld
+ * Copyright (c) 2007-2014 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -194,7 +194,9 @@ public class RConnectionJob extends WorkspaceJob {
 			con.eval("try(options(max.print=5000))");
             con.eval("try(.bio7tempenvpath<- new.env())");
             con.eval("try(assign(\"pathTemp\", \""+tempPath+"\", env=.bio7tempenvpath))");
-			/*
+            con.eval("try(source(paste(.bio7tempenvpath$pathTemp,'calculateRCompletion.R',sep='')))");
+			//con.eval("try(setHook(packageEvent(\"spatstat\",\"onLoad\"),\"writeFunctionDef\"))");
+            /*
 			 * Set the default install location for the add on packages!
 			 */
 			

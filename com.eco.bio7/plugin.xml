@@ -1247,9 +1247,14 @@
            <visibleWhen>
               <with
                     variable="activePartId">
-                 <equals
-                       value="com.eco.bio7.pythoneditors.PythonEditor">
-                 </equals>
+                 <or>
+                    <equals
+                          value="com.eco.bio7.pythoneditors.PythonEditor">
+                    </equals>
+                    <equals
+                          value="org.python.pydev.editor.PythonEditor">
+                    </equals>
+                 </or>
               </with>
            </visibleWhen>
         </command>

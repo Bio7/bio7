@@ -8,7 +8,17 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *     
- *     M.Austenfeld - Minor changes for the Bio7 application.
+ *******************************************************************************/
+
+/*******************************************************************************
+ * Copyright (c) 2007-2014 M. Austenfeld
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     M. Austenfeld
  *******************************************************************************/
 package com.eco.bio7.reditors;
 
@@ -261,7 +271,9 @@ public class REditor extends TextEditor {
 									if (contentOutlineViewer.getTree().isDisposed() == false) {
 										if (contentOutlineViewer.getTree().getItem(0).isDisposed() == false) {
 											treeItem = contentOutlineViewer.getTree().getItem(0);
+											contentOutlineViewer.getTree().setRedraw(false);
 											walkTreeLineNumber(treeItem, lineNumber + 1);
+											contentOutlineViewer.getTree().setRedraw(true);
 										}
 									}
 
@@ -315,6 +327,7 @@ public class REditor extends TextEditor {
 		 */
 
 		public void walkTreeLineNumber(TreeItem item, int lineNumber) {
+
 			if (item.isDisposed() == false) {
 				found = false;
 				boolean isExpanded = item.getExpanded();
@@ -339,6 +352,7 @@ public class REditor extends TextEditor {
 								if (treeItemLine.isEmpty() == false) {
 									treeItemLine.clear();
 								}
+
 								break;
 							} else {
 

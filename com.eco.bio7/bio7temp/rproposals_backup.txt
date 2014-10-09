@@ -1,2 +1,0 @@
-package:Rserve---Rserve---(debug=FALSE,port,args=NULL,quote=(length(args)>1),wait,...)
-package:Rserve---run.Rserve---(...,config.file="/etc/Rserve.conf")

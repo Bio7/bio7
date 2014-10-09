@@ -28,8 +28,9 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 			try {
 				if (marker.exists()) {
 					if (marker.getAttribute(IMarker.TEXT) != null) {
+						/*Get String error code or text is 'NA'!*/
 						text = (String) marker.getAttribute(IMarker.TEXT);
-						System.out.println(marker.getAttribute(IMarker.TEXT));
+						
 					}
 				}
 			} catch (CoreException e) {

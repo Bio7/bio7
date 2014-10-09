@@ -53,28 +53,39 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 	private static final String DEFAULT_IMAGE = "$nl$/icons/template.gif"; //$NON-NLS-1$
 
-	public String[] statistics;// = { "abbreviate", "abs" };
+	public static String[] statistics;
 
-	public String[] statisticsContext;// = { "RBase package", "abs" };
+	public static String[] statisticsContext;
 
-	public String[] statisticsSet;// = { "abbreviate(${names_arg}, minlength = 4, use.classes = TRUE,dot = FALSE, strict = FALSE, method = c(\"left.kept\",\"both.sides\"))", "abs" };
+	public static String[] statisticsSet;
 
 	private boolean triggerNext;
 
-	public RCompletionProcessor() {
+	public RCompletionProcessor(boolean startupTemplates) {
 
+		loadRCodePackageTemplates(startupTemplates);
+
+	}
+
+	public static void loadRCodePackageTemplates(boolean startupTempl) {
 		IPreferenceStore s = new ScopedPreferenceStore(InstanceScope.INSTANCE, "com.eco.bio7");
 
-		ArrayList <String>data0 = new ArrayList<String>();
-		ArrayList <String>data1 = new ArrayList<String>();
-		ArrayList <String>data2 = new ArrayList<String>();
-		String tempPath = s.getString("pathTempR") + " rproposals.txt";
+		ArrayList<String> data0 = new ArrayList<String>();
+		ArrayList<String> data1 = new ArrayList<String>();
+		ArrayList<String> data2 = new ArrayList<String>();
+		String tempPath;
+		if (startupTempl == false) {
+			tempPath = s.getString("pathTempR") + "rproposals.txt";
+		} else {
+			tempPath = s.getString("pathTempR") + "rproposalsDefault.txt";
+		}
 		tempPath = tempPath.replace("\\", "/");
-		System.out.println(tempPath);
+		// System.out.println(tempPath);
 		BufferedReader br = null;
 		try {
 			File rPropFile = new File(tempPath);
 			if (rPropFile.exists()) {
+
 				br = new BufferedReader(new FileReader(rPropFile));
 			}
 		} catch (FileNotFoundException e) {
@@ -84,36 +95,35 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		String line;
 		try {
 			while ((line = br.readLine()) != null) {
-				String[] theline = line.split(":::bio7:::");
-				System.out.println(theline.length);
-				
-				
+				/* Split the string to get the seperated values! */
+				String[] theline = line.split("####");
+				// System.out.println(theline.length);
+
 				try {
-					data0.add(theline[1]);
-					data1.add(theline[0]);
-					data2.add(theline[1]);
+					data0.add(theline[0]);
+					data1.add(theline[1]);
+					data2.add(theline[2]);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-					data0.add(theline[0]);
-					data1.add(theline[0]);
-					data2.add(theline[0]);
+
 				}
-				
-				
+
 			}
 			br.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println(data0.size());
-		System.out.println(data1.size());
-		System.out.println(data2.size());
-		statistics=data0.toArray(new String[data0.size()]);
-		statisticsContext=data1.toArray(new String[data1.size()]);
-		statisticsSet=data2.toArray(new String[data2.size()]);
-
+		if (data0.size() == data1.size() && data0.size() == data2.size()) {
+			statistics = data0.toArray(new String[data0.size()]);
+			statisticsContext = data1.toArray(new String[data1.size()]);
+			statisticsSet = data2.toArray(new String[data2.size()]);
+		} else {
+			statistics = new String[] { "Error in Template file!" };
+			statisticsContext = new String[] { "Error in Template file!" };
+			statisticsSet = new String[] { "Error in Template file!" };
+		}
 	}
 
 	/**
@@ -164,12 +174,13 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		return 0;
 	}
 
-	private static final class ProposalComparator implements Comparator {
+	private static final class ProposalComparator implements Comparator<Object> {
 		public int compare(Object o1, Object o2) {
 			return ((TemplateProposal) o2).getRelevance() - ((TemplateProposal) o1).getRelevance();
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
 
 		ITextSelection selection = (ITextSelection) viewer.getSelectionProvider().getSelection();
@@ -187,7 +198,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		context.setVariable("selection", selection.getText()); // name of the selection variables {line, word}_selection //$NON-NLS-1$
 
 		Template[] templates = getTemplates(context.getContextType().getId());
-		List matches = new ArrayList();
+		List<ICompletionProposal> matches = new ArrayList<ICompletionProposal>();
 		for (int i = 0; i < templates.length; i++) {
 			Template template = templates[i];
 			try {

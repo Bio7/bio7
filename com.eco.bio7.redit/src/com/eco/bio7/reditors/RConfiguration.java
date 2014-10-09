@@ -8,7 +8,16 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *     
- *     M.Austenfeld - Minor changes for the Bio7 application.
+ *******************************************************************************/
+/*******************************************************************************
+ * Copyright (c) 2007-2014 M. Austenfeld
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     M. Austenfeld
  *******************************************************************************/
 package com.eco.bio7.reditors;
 
@@ -169,7 +178,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 		ContentAssistant assistant = new ContentAssistant();
 		assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
 
-		IContentAssistProcessor processor = new RCompletionProcessor();
+		IContentAssistProcessor processor = new RCompletionProcessor(true);
 		assistant.setContentAssistProcessor(processor, IDocument.DEFAULT_CONTENT_TYPE);
 
 		/*
