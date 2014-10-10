@@ -4,9 +4,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
-
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -29,12 +34,12 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
-
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.reditors.REditor;
 
 public class RFormatAction extends Action implements IObjectActionDelegate {
 
@@ -67,13 +72,11 @@ public class RFormatAction extends Action implements IObjectActionDelegate {
 		startOffset = selection.getOffset();
 		selLength = selection.getLength();
 
-		/*String selText = null;
-		try {
-			selText = doc.get(startOffset, selLength);
-		} catch (BadLocationException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}*/
+		/*
+		 * String selText = null; try { selText = doc.get(startOffset,
+		 * selLength); } catch (BadLocationException e1) { // TODO
+		 * Auto-generated catch block e1.printStackTrace(); }
+		 */
 		IEditorInput editorInput = editor.getEditorInput();
 		IFile aFile = null;
 
@@ -82,42 +85,71 @@ public class RFormatAction extends Action implements IObjectActionDelegate {
 		}
 		String loc = aFile.getLocation().toString();
 
-		// System.out.println(loc);
-		// String pathR = text + "/bin/x64/r";
+		
 
 		if (RServe.getConnection() != null) {
-			if (RState.isBusy() == false) {
-				RConnection c = RServe.getConnection();
+			Job job = new Job("formatR") {
+				private String url;
 				REXPLogical bol = null;
-				if (c != null) {
 
-					try {
-						bol = (REXPLogical) c.eval("require(formatR)");
-					} catch (RserveException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-					if (bol.isTRUE()[0]) {
+				@Override
+				protected IStatus run(IProgressMonitor monitor) {
+					monitor.beginTask("Format R source ...", IProgressMonitor.UNKNOWN);
 
-						try {
-							c.eval("library(formatR);try(tidy.source(source = \"" + loc + "\",file = \"clipboard\"))");
-							// rcon.eval("tidy.source(source = \""+loc+"\",file = \"clipboard\")");
-							setClipboardData(doc);
-						} catch (RserveException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+					RConnection c = REditor.getRserveConnection();
+					if (c != null) {
+						if (RState.isBusy() == false) {
+							RState.setBusy(true);
+							try {
+								bol = (REXPLogical) c.eval("require(formatR)");
+							} catch (RserveException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+							if (bol.isTRUE()[0]) {
+
+								try {
+									c.eval("library(formatR);try(tidy.source(source = \"" + loc + "\",file = \"clipboard\"))");
+									// rcon.eval("tidy.source(source = \""+loc+"\",file = \"clipboard\")");
+
+									Display display = Display.getDefault();
+									display.asyncExec(new Runnable() {
+
+										public void run() {
+											setClipboardData(doc);
+										}
+									});
+								} catch (RserveException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+
+							} else {
+								Bio7Dialog.message("Library 'formatR' required!\nPlease install the 'formatR' package!");
+							}
+
+						} else {
+							System.out.println("Rserve is busy!");
 						}
-
-						
-					} else {
-						Bio7Dialog.message("Library 'formatR' required!\nPlease install the 'formatR' package!");
 					}
+
+					monitor.done();
+					return Status.OK_STATUS;
 				}
 
-			} else {
-				Bio7Dialog.message("RServer is busy!");
-			}
+			};
+			job.addJobChangeListener(new JobChangeAdapter() {
+				public void done(IJobChangeEvent event) {
+					if (event.getResult().isOK()) {
 
+						RState.setBusy(false);
+					} else {
+
+					}
+				}
+			});
+			// job.setSystem(true);
+			job.schedule();
 		}
 
 		else {
@@ -131,19 +163,19 @@ public class RFormatAction extends Action implements IObjectActionDelegate {
 				con.pipeToRConsole("options(prompt=\" \")");
 				con.pipeToRConsole("con1 <- socketConnection(port = " + port + ", server = TRUE,timeout=10)");
 				con.pipeToRConsole("library(formatR);tidy.source(source = \"" + loc + "\",file = con1)");
-				/*We use sockets here to wait for the clipboard data to be present (avoid parallel execution of R and Java commands caused by the threaded shell!)*/
-				//con.pipeToRConsole("con1 <- socketConnection(port = " + port + ", server = TRUE)");
-				// con.pipeToRConsole("writeLines(.bio7tempenv$bio7tempVar[[1]]$name, con1)");
-				// con.pipeToRConsole("writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), con1)");
+				/*
+				 * We use sockets here to wait for the clipboard data to be
+				 * present (avoid parallel execution of R and Java commands
+				 * caused by the threaded shell!)
+				 */
 
 				con.pipeToRConsole("close(con1)");
 				con.pipeToRConsole("writeLines(\"\")");
 				con.pipeToRConsole("options(prompt=\"> \")");
-               getTextSocket(doc, input, port);
-				
-				
-                 /*Clipboard data should be available!*/
-				//setClipboardData(doc);
+				getTextSocket(doc, input, port);
+
+				/* Clipboard data should be available! */
+				// setClipboardData(doc);
 			}
 
 			else {
@@ -154,11 +186,14 @@ public class RFormatAction extends Action implements IObjectActionDelegate {
 	}
 
 	private void getTextSocket(IDocument doc, BufferedReader input, int port) {
-		/*The following code just waits for the handshake (executed R shell code)!*/
+		/*
+		 * The following code just waits for the handshake (executed R shell
+		 * code)!
+		 */
 		try {
 			debugSocket = new Socket("127.0.0.1", port);
 			debugSocket.setSoTimeout(10000);
-			
+
 			try {
 				input = new BufferedReader(new InputStreamReader(debugSocket.getInputStream()));
 			} catch (IOException e1) {
@@ -166,21 +201,19 @@ public class RFormatAction extends Action implements IObjectActionDelegate {
 				e1.printStackTrace();
 			}
 			String strLine;
-			StringBuffer str=new StringBuffer();
+			StringBuffer str = new StringBuffer();
 			try {
-				while((strLine = input.readLine())!= null)
-				  {
-				   str.append(strLine+System.getProperty("line.separator"));
-				  }
+				while ((strLine = input.readLine()) != null) {
+					str.append(strLine + System.getProperty("line.separator"));
+				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			try {
-				if(str.length()>0){
-				doc.replace(0, doc.getLength(), str.toString());
-				}
-				else{
+				if (str.length() > 0) {
+					doc.replace(0, doc.getLength(), str.toString());
+				} else {
 					Bio7Dialog.message("Library 'formatR' required!\nPlease install the 'formatR' package!");
 				}
 			} catch (BadLocationException e) {

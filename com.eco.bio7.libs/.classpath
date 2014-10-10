@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="hardware/Arduino.jar"/>
+	<classpathentry exported="true" kind="lib" path="hardware/ch.ntb.usb-0.5.9.jar"/>
+	<classpathentry exported="true" kind="lib" path="hardware/ardulink.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/org.eclipse.nebula.visualization.widgets_1.0.0.201410030023.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/org.eclipse.nebula.visualization.xygraph_1.0.0.201410030023.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/opal-1.0.1.jar"/>

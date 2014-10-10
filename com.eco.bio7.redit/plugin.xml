@@ -119,24 +119,64 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
       point="org.eclipse.ui.editors.markerAnnotationSpecification">
    <specification
          annotationType="com.eco.bio7.redit.error"
-         colorPreferenceKey="clcolor"
+         colorPreferenceKey="com.eco.bio7.reditor.clcolor"
          colorPreferenceValue="0,255,0"
          contributesToHeader="false"
-         highlightPreferenceKey="highlight.background"
+         highlightPreferenceKey="com.eco.bio7.reditor.highlight.background"
          highlightPreferenceValue="true"
          icon="icons/error_obj.gif"
          includeOnPreferencePage="true"
+         label="R Editor Marker"
+         overviewRulerPreferenceKey="com.eco.bio7.reditor.overview"
          overviewRulerPreferenceValue="true"
          presentationLayer="0"
          quickFixIcon="icons/quickfix_error_obj.gif"
-         textPreferenceKey="cltext"
+         textPreferenceKey="com.eco.bio7.reditor.cltext"
          textPreferenceValue="true"
          textStylePreferenceKey="clstyle"
          textStylePreferenceValue="BOX"
-         verticalRulerPreferenceKey="clvertical"
+         verticalRulerPreferenceKey="com.eco.bio7.reditor.clvertical"
          verticalRulerPreferenceValue="true">
    </specification>
 </extension>
+<extension
+    id="com.eco.bio7.reditor.wordmarker"
+    name="R Editor Word"
+    point="org.eclipse.core.resources.markers">
+  <super
+    type="org.eclipse.core.resources.textmarker">
+  </super>
+</extension>
+<extension
+         point="org.eclipse.ui.editors.annotationTypes">
+      <type
+            markerType="com.eco.bio7.reditor.wordmarker"
+            name="com.eco.bio7.reditor.wordmarker">
+      </type>
+   </extension>
+
+ <extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="com.eco.bio7.reditor.wordmarker"
+            colorPreferenceKey="com.eco.bio7.reditor.wordmarker.color"
+            colorPreferenceValue="212,212,212"
+            contributesToHeader="false"
+            highlightPreferenceKey="com.eco.bio7.reditor.wordmarker.highlight"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="true"
+            label="R Editor Word Marker"
+            overviewRulerPreferenceKey="com.eco.bio7.reditor.wordmarker.overview"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="0"
+            textPreferenceKey="com.eco.bio7.reditor.wordmarker.text"
+            textPreferenceValue="true"
+            textStylePreferenceValue="BOX"
+            verticalRulerPreferenceKey="com.eco.bio7.reditor.wordmarker.ruler"
+            verticalRulerPreferenceValue="true">
+      </specification>
+   </extension>
+
 <extension point="org.eclipse.ui.editorActions">
     <editorContribution
           targetID="com.eco.bio7.reditors.TemplateEditor"

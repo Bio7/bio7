@@ -31,7 +31,7 @@ public class CompletionProcessor implements
                      EscriptModel.getModel(document, null);
          model.getContentProposals(prefix, indent,
                                           offset, result);*/
-         System.out.println("prposallllll");
+         
          
          
 

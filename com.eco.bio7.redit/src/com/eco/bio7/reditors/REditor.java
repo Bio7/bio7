@@ -28,9 +28,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
@@ -284,6 +288,7 @@ public class REditor extends TextEditor {
 									 * TODO Auto-generated catch block
 									 * e1.printStackTrace(); }
 									 */
+									markWords(offset, document, editor);
 								}
 								/*
 								 * if (target instanceof ITextViewer) {
@@ -318,6 +323,119 @@ public class REditor extends TextEditor {
 
 			}
 
+		}
+
+		public void markWords(int offset, IDocument doc, IEditorPart editor) {
+
+			int length = 0;
+			int minusLength = 0;
+
+			while (true) {
+				char c = 0;
+				if (offset + length >= 0 && offset + length <= doc.getLength()) {
+
+					try {
+						c = doc.getChar(offset + length);
+					} catch (BadLocationException e) {
+
+						e.printStackTrace();
+					}
+
+					if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false)
+						break;
+
+					length++;
+					if (offset + length >= doc.getLength()) {
+						break;
+					}
+				}
+			}
+			while (true) {
+				char c = 0;
+				if (offset + length >= 0 && offset + length <= doc.getLength()) {
+
+					try {
+						c = doc.getChar(offset + minusLength);
+					} catch (BadLocationException e) {
+
+						e.printStackTrace();
+					}
+
+					if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false)
+						break;
+
+					minusLength--;
+					if (offset + minusLength <= 0) {
+						break;
+					}
+				}
+			}
+			final int wordOffset = offset + minusLength + 1;
+			final int resultedLength = length - minusLength - 1;
+
+			if (resultedLength > 0) {
+				String searchForWord = null;
+				ITextOperationTarget target = (ITextOperationTarget) editor.getAdapter(ITextOperationTarget.class);
+				if (target instanceof ITextViewer) {
+					ITextViewer textViewer = (ITextViewer) target;
+					try {
+						searchForWord = textViewer.getDocument().get(wordOffset, resultedLength);
+					} catch (BadLocationException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				/*
+				 * Display display = PlatformUI.getWorkbench().getDisplay();
+				 * display.syncExec(new Runnable() {
+				 * 
+				 * public void run() { textViewer.setSelectedRange(wordOffset,
+				 * resultedLength); } });
+				 */
+				System.out.println(searchForWord);
+				if (searchForWord != null) {
+					IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
+					try {
+						resource.deleteMarkers("com.eco.bio7.reditor.wordmarker", false, IResource.DEPTH_ZERO);
+					} catch (CoreException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					Pattern findWordPattern = Pattern.compile(searchForWord);
+					Matcher matcher = findWordPattern.matcher(doc.get());
+					while (matcher.find()) {
+						int offsetStart = matcher.start();
+						int offsetEnd = matcher.end();
+						// do something with offsetStart and offsetEnd
+						IMarker marker;
+
+						try {
+
+							marker = resource.createMarker("com.eco.bio7.reditor.wordmarker");
+							marker.setAttribute(IMarker.CHAR_START, offsetStart);
+							marker.setAttribute(IMarker.CHAR_END, offsetEnd);
+						} catch (CoreException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+
+				}
+
+				/*
+				 * try { htmlHelpText = textViewer.getDocument().get(wordOffset,
+				 * resultedLength); } catch (BadLocationException e) { // TODO
+				 * Auto-generated catch block e.printStackTrace(); }
+				 */
+			} else {
+				IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
+				try {
+					resource.deleteMarkers("com.eco.bio7.reditor.wordmarker", false, IResource.DEPTH_ZERO);
+				} catch (CoreException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
 
 		/*
