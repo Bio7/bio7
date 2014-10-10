@@ -392,7 +392,7 @@ public class REditor extends TextEditor {
 				 * public void run() { textViewer.setSelectedRange(wordOffset,
 				 * resultedLength); } });
 				 */
-				System.out.println(searchForWord);
+				
 				if (searchForWord != null) {
 					IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
 					try {
