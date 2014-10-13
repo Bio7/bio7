@@ -34,6 +34,7 @@ public abstract class Model {
 		});
 	}
 
+
 	/**
 	 * The main method which is called from the calculation thread!
 	 */

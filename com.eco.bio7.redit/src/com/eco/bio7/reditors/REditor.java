@@ -332,7 +332,7 @@ public class REditor extends TextEditor {
 
 			while (true) {
 				char c = 0;
-				if (offset + length >= 0 && offset + length <= doc.getLength()) {
+				if (offset + length >= 0 && offset + length < doc.getLength()) {
 
 					try {
 						c = doc.getChar(offset + length);
@@ -349,10 +349,13 @@ public class REditor extends TextEditor {
 						break;
 					}
 				}
+				else{
+					break;
+				}
 			}
 			while (true) {
 				char c = 0;
-				if (offset + length >= 0 && offset + length <= doc.getLength()) {
+				if (offset + length >= 0 && offset + length < doc.getLength()) {
 
 					try {
 						c = doc.getChar(offset + minusLength);
@@ -368,6 +371,9 @@ public class REditor extends TextEditor {
 					if (offset + minusLength <= 0) {
 						break;
 					}
+				}
+				else{
+					break;
 				}
 			}
 			final int wordOffset = offset + minusLength + 1;
@@ -401,7 +407,7 @@ public class REditor extends TextEditor {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
-					Pattern findWordPattern = Pattern.compile(searchForWord);
+					Pattern findWordPattern = Pattern.compile("\\b"+searchForWord+"\\b");
 					Matcher matcher = findWordPattern.matcher(doc.get());
 					while (matcher.find()) {
 						int offsetStart = matcher.start();

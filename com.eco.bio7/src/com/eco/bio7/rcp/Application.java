@@ -97,6 +97,7 @@ public class Application implements IApplication {
 					workbench.close();
 			}
 		});
+		
 	}
 
 	public void saveWorkspace() {

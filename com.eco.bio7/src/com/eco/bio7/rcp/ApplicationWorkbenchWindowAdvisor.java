@@ -17,6 +17,8 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -28,6 +30,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IExecutionListener;
 import org.eclipse.core.commands.NotHandledException;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -38,6 +41,7 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -47,6 +51,14 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.launching.IVMInstall;
+import org.eclipse.jdt.launching.JavaRuntime;
+import org.eclipse.jdt.launching.LibraryLocation;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -95,16 +107,19 @@ import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.actions.Bio7Action;
+import com.eco.bio7.batch.BatchModel;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.BeanShellInterpreter;
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
 import com.eco.bio7.compile.GroovyInterpreter;
 import com.eco.bio7.compile.PythonInterpreter;
 import com.eco.bio7.compile.RInterpreterJob;
+import com.eco.bio7.compile.utils.ScanClassPath;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.discrete.Quad2d;
 import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 import com.eco.bio7.jobs.LoadData;
+import com.eco.bio7.popup.actions.RecalculateClasspath;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.preferences.RServePlotPrefs;
 import com.eco.bio7.preferences.Reg;
@@ -148,22 +163,70 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				else {
 					try {
 						event.getDelta().accept(new IResourceDeltaVisitor() {
+							boolean decision = false;
+
 							public boolean visit(IResourceDelta delta) throws CoreException {
 								if (delta.getKind() == IResourceDelta.ADDED) {
 
 									final IResource resource = delta.getResource();
 									if (resource.getType() == 4) {
 
-										IProject proj = resource.getProject();
-										/*
-										 * if(proj.hasNature(JavaCore.NATURE_ID))
-										 * { System.out.println(
-										 * "Java Project Created!"); }
-										 * 
-										 * System.out.println("Project Created!")
-										 * ;
-										 */
+										IProject project = resource.getProject();
+										if (project.hasNature(JavaCore.NATURE_ID)) {
+											Display display = PlatformUI.getWorkbench().getDisplay();
+											display.syncExec(new Runnable() {
+												public void run() {
+
+													MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+													message.setMessage("Recalculate the classpath?\n\n"
+															+ "Info: This will set the imported Bio7 Java project classpath\n"
+															+ "to your local installation.");
+													message.setText("Bio7");
+													int response = message.open();
+													if (response == SWT.YES) {
+
+														IJavaProject javaProject = JavaCore.create(project);
+
+														IFolder sourceFolder = project.getFolder("src");
+														IPackageFragmentRoot fragRoot = javaProject.getPackageFragmentRoot(sourceFolder);
+
+														List<IClasspathEntry> entriesJre = new ArrayList<IClasspathEntry>();
+
+														IVMInstall vmInstall = JavaRuntime.getDefaultVMInstall();
+
+														LibraryLocation[] locations = JavaRuntime.getLibraryLocations(vmInstall);
+														for (LibraryLocation element : locations) {
+															// System.out.println("location: "+locations);
+															entriesJre.add(JavaCore.newLibraryEntry(element.getSystemLibraryPath(), null, null));
+														}
+														IClasspathEntry[] newEntries = new ScanClassPath().scanForJDT();
+
+														IClasspathEntry[] oldEntries = entriesJre.toArray(new IClasspathEntry[entriesJre.size()]);
+
+														System.arraycopy(oldEntries, 0, newEntries, 0, oldEntries.length);
+														newEntries[oldEntries.length] = JavaCore.newSourceEntry(fragRoot.getPath());
+
+														try {
+															javaProject.setRawClasspath(newEntries, null);
+														} catch (JavaModelException e) {
+															// TODO
+															// Auto-generated
+															// catch block
+															// e.printStackTrace();
+															System.out.println("Minor error! Please check the classpath of the project and if necessary calculate again!");
+														}
+														
+
+													} else {
+
+													}
+													Bio7Dialog.message("Java Bio7 Project Libraries Recalculated!");
+												}
+											});
+
+										}
 									}
+
 									// do your stuff and check the project is
 									// opened or closed
 								}
@@ -1249,7 +1312,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_PREVIOUS_NAV, PATH_ETOOL + "prev_nav.png", false);
 
 		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_WIZBAN_NEWPRJ_WIZ, PATH_WIZBAN + "newprj_wiz.png", false);
-		
+
 		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_WIZBAN_NEWFILE_WIZ, PATH_WIZBAN + "newfile_wiz.png", false);
 
 		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_WIZBAN_IMPORTDIR_WIZ, PATH_WIZBAN + "importdir_wiz.png", false);
@@ -1284,18 +1347,17 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_PROBLEMS_VIEW, PATH_EVIEW + "problems_view.png", true);
 		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_PROBLEMS_VIEW_ERROR, PATH_EVIEW + "problems_view_error.png", true);
 		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_PROBLEMS_VIEW_WARNING, PATH_EVIEW + "problems_view_warning.png", true);
-       
+
 		// declareWorkbenchImage(ideBundle,
-				// IDEInternalWorkbenchImages.IMG_WIZBAN_NEWFOLDER_WIZ, PATH_WIZBAN +
-				// "newfolder_wiz.png", false); 
-		
+		// IDEInternalWorkbenchImages.IMG_WIZBAN_NEWFOLDER_WIZ, PATH_WIZBAN +
+		// "newfolder_wiz.png", false);
 
 		// declareWorkbenchImage(ideBundle, IDE.SharedImages.IMG_OBJ_PROJECT,
 		// PATH_OBJECT + "prj_obj.gif", true);
 		// declareWorkbenchImage(ideBundle,
 		// IDE.SharedImages.IMG_OBJ_PROJECT_CLOSED, PATH_OBJECT +
 		// "cprj_obj.gif", true);
-		
+
 		// QuickFix images
 
 		// declareWorkbenchImage(ideBundle,
@@ -1320,7 +1382,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		// PATH_OBJECT+"mprio_tsk.gif");
 		// declareRegistryImage(IDEInternalWorkbenchImages.IMG_OBJS_LPRIO_TSK,
 		// PATH_OBJECT+"lprio_tsk.gif");
-		
+
 		/*
 		 * declareWorkbenchImage(ideBundle,
 		 * IDEInternalWorkbenchImages.IMG_WIZBAN_NEWPRJ_WIZ, PATH_WIZBAN +

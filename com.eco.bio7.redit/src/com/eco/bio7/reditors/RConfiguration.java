@@ -236,7 +236,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 			while (true) {
 				char c = 0;
-				if (offset + length >= 0 && offset + length <= doc.getLength()) {
+				if (offset + length >= 0 && offset + length < doc.getLength()) {
 
 					try {
 						c = doc.getChar(offset + length);
@@ -253,10 +253,13 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 						break;
 					}
 				}
+				else{
+					break;
+				}
 			}
 			while (true) {
 				char c = 0;
-				if (offset + length >= 0 && offset + length <= doc.getLength()) {
+				if (offset + length >= 0 && offset + length < doc.getLength()) {
 
 					try {
 						c = doc.getChar(offset + minusLength);
@@ -272,6 +275,9 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 					if (offset + minusLength <= 0) {
 						break;
 					}
+				}
+				else{
+					break;
 				}
 			}
 			final int wordOffset = offset + minusLength + 1;

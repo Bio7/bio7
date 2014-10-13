@@ -15,6 +15,8 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.Roi;
+import ij.measure.ResultsTable;
+import ij.plugin.filter.Analyzer;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
 import ij.process.FloatProcessor;
@@ -247,13 +249,13 @@ public class ImageMethods extends ViewPart {
 		GridData gd_scale1 = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
 		gd_scale1.widthHint = 78;
 		scale1.setLayoutData(gd_scale1);
-		
-				scale1.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
-					public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
-						alphaQuadgrid();
-					}
-		
-				});
+
+		scale1.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
+			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
+				alphaQuadgrid();
+			}
+
+		});
 		button = new Button(top, SWT.NONE);
 		bildGif = new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/bild.gif"));
 		button.setImage(bildGif);
@@ -264,73 +266,73 @@ public class ImageMethods extends ViewPart {
 		button5.setImage(deletePicGif);
 		button5.setLayoutData(gridData3);
 		button5.setToolTipText("Remove the current image of the Points panel");
-				GridData gridData1 = new GridData(SWT.FILL, SWT.FILL, true, false);
-				gridData1.horizontalIndent = 0;
-				button1 = new Button(top, SWT.NONE);
-				regelmaessigGif = new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/regelmaessig.gif"));
-				button1.setImage(regelmaessigGif);
-				button1.setToolTipText("Set or unset the Quadgrid as a layer in the Points panel");
-				button1.setLayoutData(gridData1);
-				button1.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
-					public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
-						loadField();
-						// widgetSelected()
-					}
+		GridData gridData1 = new GridData(SWT.FILL, SWT.FILL, true, false);
+		gridData1.horizontalIndent = 0;
+		button1 = new Button(top, SWT.NONE);
+		regelmaessigGif = new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/regelmaessig.gif"));
+		button1.setImage(regelmaessigGif);
+		button1.setToolTipText("Set or unset the Quadgrid as a layer in the Points panel");
+		button1.setLayoutData(gridData1);
+		button1.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
+			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
+				loadField();
+				// widgetSelected()
+			}
 
-				});
-				GridData gridData20 = new GridData();
-				gridData20.horizontalAlignment = GridData.FILL;
-				gridData20.grabExcessHorizontalSpace = true;
-				gridData20.verticalAlignment = SWT.FILL;
-				button3 = new Button(top, SWT.NONE);
-				deletePoints = new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/deletepoints.gif"));
-				button3.setImage(deletePoints);
-				button3.setLayoutData(gridData20);
-				button3.setToolTipText("Delete points in the Points panel");
-				button3.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
-					public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
-						deletePoints();
-						if (PointPanel.showVoronoi == true) {
-							PointPanel.cleanVoronoi();
+		});
+		GridData gridData20 = new GridData();
+		gridData20.horizontalAlignment = GridData.FILL;
+		gridData20.grabExcessHorizontalSpace = true;
+		gridData20.verticalAlignment = SWT.FILL;
+		button3 = new Button(top, SWT.NONE);
+		deletePoints = new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/deletepoints.gif"));
+		button3.setImage(deletePoints);
+		button3.setLayoutData(gridData20);
+		button3.setToolTipText("Delete points in the Points panel");
+		button3.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
+			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
+				deletePoints();
+				if (PointPanel.showVoronoi == true) {
+					PointPanel.cleanVoronoi();
 
-						}
-						if (PointPanel.showDelauney == true) {
-							PointPanel.cleanDelauney();
+				}
+				if (PointPanel.showDelauney == true) {
+					PointPanel.cleanDelauney();
 
-						}
+				}
 
-					}
+			}
 
-				});
-		
-				final Label resizeQuadsLabel = new Label(top, SWT.NONE);
-				resizeQuadsLabel.setLayoutData(new GridData(SWT.CENTER, SWT.FILL, true, false, 1, 1));
-				resizeQuadsLabel.setText("Resize Quads");
+		});
+
+		final Label resizeQuadsLabel = new Label(top, SWT.NONE);
+		resizeQuadsLabel.setLayoutData(new GridData(SWT.CENTER, SWT.FILL, true, false, 1, 1));
+		resizeQuadsLabel.setText("Resize Quads");
 		label2 = new Label(top, SWT.NONE);
 		label2.setText("Resize Points Panel");
 		label2.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
-		
-				final Scale scale_1 = new Scale(top, SWT.NONE);
-				scale_1.setToolTipText("If Quads are enabled this slider resizes the quads from the Quads view");
-				scale_1.setMinimum(1);
-				scale_1.setSelection(100);
+
+		final Scale scale_1 = new Scale(top, SWT.NONE);
+		scale_1.setToolTipText("If Quads are enabled this slider resizes the quads from the Quads view");
+		scale_1.setMinimum(1);
+		scale_1.setSelection(100);
+		scale_1.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
 				scale_1.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(final SelectionEvent e) {
-						scale_1.addSelectionListener(new SelectionAdapter() {
-							public void widgetSelected(final SelectionEvent e) {
-								if (Quad2d.getQuad2dInstance() != null) {
-									if (PointPanel.isQuad2d_visible()) {
-										Quad2d.getQuad2dInstance().quadResize(scale_1.getSelection());
-										PointPanel.doPaint();
-									}
-								}
+						if (Quad2d.getQuad2dInstance() != null) {
+							if (PointPanel.isQuad2d_visible()) {
+								Quad2d.getQuad2dInstance().quadResize(scale_1.getSelection());
+								PointPanel.doPaint();
 							}
-						});
+						}
 					}
 				});
-				GridData gd_scale_1 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-				gd_scale_1.widthHint = 84;
-				scale_1.setLayoutData(gd_scale_1);
+			}
+		});
+		GridData gd_scale_1 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_scale_1.widthHint = 84;
+		scale_1.setLayoutData(gd_scale_1);
 		scale2 = new Scale(top, SWT.NONE);
 		scale2.setMinimum(1);
 		scale2.setToolTipText("Scale down the Points panel");
@@ -384,43 +386,43 @@ public class ImageMethods extends ViewPart {
 		spinner1.setToolTipText("Select the field size in y direction");
 		spinner1.setSelection(fieldy);
 		spinner1.setMinimum(1);
-		
-				spinner1.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
-		
-					public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
-						resizePointpanel();
-					}
-		
-				});
+
+		spinner1.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
+
+			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
+				resizePointpanel();
+			}
+
+		});
 		GridData gridData121 = new GridData();
 		gridData121.horizontalAlignment = GridData.CENTER;
 		gridData121.verticalAlignment = GridData.CENTER;
 		label53 = new Label(top, SWT.NONE);
 		label53.setText("Point Size");
 		label53.setLayoutData(gridData121);
-		
-				GridData gridData23 = new GridData();
-				gridData23.horizontalAlignment = GridData.CENTER;
-				gridData23.verticalAlignment = GridData.CENTER;
-				label55 = new Label(top, SWT.NONE);
-				label55.setText("Alpha");
-				label55.setLayoutData(gridData23);
+
+		GridData gridData23 = new GridData();
+		gridData23.horizontalAlignment = GridData.CENTER;
+		gridData23.verticalAlignment = GridData.CENTER;
+		label55 = new Label(top, SWT.NONE);
+		label55.setText("Alpha");
+		label55.setLayoutData(gridData23);
 		GridData gridData111 = new GridData();
 		gridData111.horizontalAlignment = GridData.FILL;
 		gridData111.verticalAlignment = GridData.CENTER;
 		spinner2 = new Spinner(top, SWT.NONE);
 		spinner2.setToolTipText("Adjust the point size in the Points panel");
-		
-				spinner2.setMinimum(1);
-				spinner2.setLayoutData(gridData111);
-				spinner2.setSelection(5);
-				spinner2.setMaximum(100000);
-				spinner2.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
-					public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
-						adjustDiamterPoints();
-					}
 
-				});
+		spinner2.setMinimum(1);
+		spinner2.setLayoutData(gridData111);
+		spinner2.setSelection(5);
+		spinner2.setMaximum(100000);
+		spinner2.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
+			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
+				adjustDiamterPoints();
+			}
+
+		});
 		GridData gridData11 = new GridData();
 		gridData11.horizontalAlignment = GridData.FILL;
 		gridData11.verticalAlignment = GridData.CENTER;
@@ -436,7 +438,7 @@ public class ImageMethods extends ViewPart {
 			}
 
 		});
-		
+
 		CLabel lblNewLabel_3 = new CLabel(top, SWT.NONE);
 		lblNewLabel_3.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 2, 1));
 		lblNewLabel_3.setText("Voronoi / Delauney");
@@ -544,29 +546,29 @@ public class ImageMethods extends ViewPart {
 			}
 		});
 		btnAreas.setText("Draw Areas");
-		
-				Label lblAreas = new Label(top, SWT.NONE);
-				lblAreas.setAlignment(SWT.CENTER);
-				lblAreas.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
-				lblAreas.setText("Draw Area Size");
-		
-				scale_2 = new Scale(top, SWT.NONE);
-				scale_2.setPageIncrement(1);
-				scale_2.addSelectionListener(new SelectionAdapter() {
 
-					public void widgetSelected(SelectionEvent e) {
+		Label lblAreas = new Label(top, SWT.NONE);
+		lblAreas.setAlignment(SWT.CENTER);
+		lblAreas.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
+		lblAreas.setText("Draw Area Size");
 
-						PointPanel.setDrawAreaScaled((1.0 - ((10.0 - (double) scale_2.getSelection())) / 10));
-						PointPanel.doPaint();
-					}
-				});
-				scale_2.setMaximum(10);
-				scale_2.setMinimum(1);
-				scale_2.setSelection(10);
-				GridData gd_scale_2 = new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1);
-				gd_scale_2.widthHint = 71;
-				scale_2.setLayoutData(gd_scale_2);
-		
+		scale_2 = new Scale(top, SWT.NONE);
+		scale_2.setPageIncrement(1);
+		scale_2.addSelectionListener(new SelectionAdapter() {
+
+			public void widgetSelected(SelectionEvent e) {
+
+				PointPanel.setDrawAreaScaled((1.0 - ((10.0 - (double) scale_2.getSelection())) / 10));
+				PointPanel.doPaint();
+			}
+		});
+		scale_2.setMaximum(10);
+		scale_2.setMinimum(1);
+		scale_2.setSelection(10);
+		GridData gd_scale_2 = new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1);
+		gd_scale_2.widthHint = 71;
+		scale_2.setLayoutData(gd_scale_2);
+
 		CLabel lblNewLabel_4 = new CLabel(top, SWT.NONE);
 		lblNewLabel_4.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 2, 1));
 		lblNewLabel_4.setText("ImageJ And Points Panel");
@@ -656,7 +658,7 @@ public class ImageMethods extends ViewPart {
 				setAllPixels();
 			}
 		});
-		
+
 		CLabel lblNewLabel = new CLabel(top, SWT.NONE);
 		lblNewLabel.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 2, 1));
 		lblNewLabel.setText("Transfer Selected Data To R");
@@ -669,19 +671,19 @@ public class ImageMethods extends ViewPart {
 		rGif = org.eclipse.wb.swt.ResourceManager.getPluginImage("com.eco.bio7", "bin/pics/r.gif");
 		button2.setImage(rGif);
 		button2.setToolTipText("Transfer data from the Points panel \nto R and (or) the selection coordinates\nto R ");
-		
-				// button2.setFont(new Font(Display.getDefault(), "Tahoma", 8,
-				// SWT.BOLD));
-				button2.setLayoutData(gridData);
-				button2.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
-					public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
-						if (RState.isBusy() == false) {
-							pointsToR();
-						} else {
-							Bio7Dialog.message("RServer is busy!");
-						}
-					}
-				});
+
+		// button2.setFont(new Font(Display.getDefault(), "Tahoma", 8,
+		// SWT.BOLD));
+		button2.setLayoutData(gridData);
+		button2.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
+			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
+				if (RState.isBusy() == false) {
+					pointsToR();
+				} else {
+					Bio7Dialog.message("RServer is busy!");
+				}
+			}
+		});
 		GridData gridData131 = new GridData(SWT.FILL, SWT.FILL, true, false);
 		gridData131.heightHint = 30;
 		button4 = new Button(top, SWT.NONE);
@@ -696,7 +698,12 @@ public class ImageMethods extends ViewPart {
 		button4.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
 			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
 				if (RState.isBusy() == false) {
-					particledescriptors();
+					SwingUtilities.invokeLater(new Runnable() {
+						// !!
+						public void run() {
+							particledescriptors();
+						}
+					});
 				} else {
 					Bio7Dialog.message("RServer is busy!");
 				}
@@ -705,10 +712,8 @@ public class ImageMethods extends ViewPart {
 		});
 
 		final Button selectedPixelsButton = new Button(top, SWT.NONE);
-		selectedPixelsButton.setToolTipText("" +
-				"Transfers the selected pixels (Freehand, Rectangular etc.)\n" +
-				"with or without a signature as a matrix to R.\n" +
-				"The transfer type can be selected, too!");
+		selectedPixelsButton.setToolTipText("" + "Transfers the selected pixels (Freehand, Rectangular etc.)\n" + "with or without a signature as a matrix to R.\n"
+				+ "The transfer type can be selected, too!");
 		selectedPixelsButton.setImage(ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "bin/pics/r.gif"));
 		// selectedPixelsButton.setFont(SWTResourceManager.getFont("Courier New",
 		// 9, SWT.BOLD));
@@ -758,25 +763,19 @@ public class ImageMethods extends ViewPart {
 		gd_matchingButton.heightHint = 30;
 		matchingButton.setLayoutData(gd_matchingButton);
 		matchingButton.setText("Selection       ");
-		
+
 		selectedRoiPixelButton = new Button(top, SWT.NONE);
 		selectedRoiPixelButton.setImage(rGif);
 		selectedPixelsButton.setImage(rGif);
-		selectedRoiPixelButton.setToolTipText("" +
-				"Transfers the selected pixels (Freehand, Rectangular etc.)\n" +
-				"with or without a signature as a matrix to R.\n" +
-				"The transfer type can be selected, too!\n" +
-				"The ROI Manager with ROI selections has to be active.\n" +
-				"All selections for all layers (opened tabs in the ImageJ view)\n" +
-				"are transferred automatically with an incremental signature!\n" +
-				"If a stack is among the opened images only the first slice (layer)\n" +
-				"will be transferred!");
+		selectedRoiPixelButton.setToolTipText("" + "Transfers the selected pixels (Freehand, Rectangular etc.)\n" + "with or without a signature as a matrix to R.\n"
+				+ "The transfer type can be selected, too!\n" + "The ROI Manager with ROI selections has to be active.\n" + "All selections for all layers (opened tabs in the ImageJ view)\n"
+				+ "are transferred automatically with an incremental signature!\n" + "If a stack is among the opened images only the first slice (layer)\n" + "will be transferred!");
 		selectedRoiPixelButton.setText("Pixel RM");
-		
+
 		selectedRoiPixelButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				
+
 				if (RServe.isAlive()) {
 					ImagePlus imp = WindowManager.getCurrentImage();
 					if (imp != null) {
@@ -792,26 +791,18 @@ public class ImageMethods extends ViewPart {
 				} else {
 					Bio7Dialog.message("No Rserve connection available!");
 				}
-				
-				
+
 			}
 		});
 		GridData gd_selectedRoiPixelButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
 		gd_selectedRoiPixelButton.heightHint = 30;
 		selectedRoiPixelButton.setLayoutData(gd_selectedRoiPixelButton);
-		
-		
+
 		btnPixelRoiStack = new Button(top, SWT.NONE);
 		btnPixelRoiStack.setImage(rGif);
-		btnPixelRoiStack.setToolTipText("" +
-				"Transfers the selected pixels of the selected ImageJ\n" +
-				"selections (Freehand, Rectangular etc.)in a stack \n" +
-				"with or without a signature as a matrix to R.\n" +
-				"The transfer type can be selected, too!\n" +
-				"The ROI Manager with selections has to be active\n" +
-				"and the selected image must be a stack!\n" +
-				"All selections for all slices are transferred\n" +
-				"automatically with an selected or incremental signature!");
+		btnPixelRoiStack.setToolTipText("" + "Transfers the selected pixels of the selected ImageJ\n" + "selections (Freehand, Rectangular etc.)in a stack \n"
+				+ "with or without a signature as a matrix to R.\n" + "The transfer type can be selected, too!\n" + "The ROI Manager with selections has to be active\n"
+				+ "and the selected image must be a stack!\n" + "All selections for all slices are transferred\n" + "automatically with an selected or incremental signature!");
 		btnPixelRoiStack.setText("Pixel RM Stack");
 		selectedPixelsButton.setImage(rGif);
 		btnPixelRoiStack.addSelectionListener(new SelectionAdapter() {
@@ -831,17 +822,14 @@ public class ImageMethods extends ViewPart {
 					}
 				} else {
 					Bio7Dialog.message("No Rserve connection available!");
-				}	
-				
-				
-				
+				}
+
 			}
 		});
 		GridData gd_btnPixelRoiStack = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
 		gd_btnPixelRoiStack.heightHint = 30;
 		btnPixelRoiStack.setLayoutData(gd_btnPixelRoiStack);
-		
-		
+
 		CLabel lblNewLabel_1 = new CLabel(top, SWT.NONE);
 		lblNewLabel_1.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 2, 1));
 		lblNewLabel_1.setText("Transfer Image Data From and To R");
@@ -895,9 +883,9 @@ public class ImageMethods extends ViewPart {
 		picButton.setImage(rGif);
 		picButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				if(transferTypeCombo.getSelectionIndex()==3){
+				if (transferTypeCombo.getSelectionIndex() == 3) {
 					Bio7Dialog.message("RGB transfer to ImageJ is not supported!\n Please use e.g. byte transfer for the R ,G ,B components\n which can be merged with ImageJ!");
-				    return;
+					return;
 				}
 				if (RState.isBusy() == false) {
 					RState.setBusy(true);
@@ -985,7 +973,7 @@ public class ImageMethods extends ViewPart {
 		imageMatrixNameFromR.setToolTipText("The name of the data which will be used to create the image in ImageJ");
 		imageMatrixNameFromR.setText("imageMatrix");
 		imageMatrixNameFromR.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		
+
 		CLabel lblNewLabel_2 = new CLabel(top, SWT.NONE);
 		lblNewLabel_2.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 2, 1));
 		lblNewLabel_2.setText("Multivariate Image Analysis");
@@ -1247,23 +1235,22 @@ public class ImageMethods extends ViewPart {
 
 	private void plusToBuffered() {
 
-		//ImagePlus imp = WindowManager.getCurrentWindow().getImagePlus();
+		// ImagePlus imp = WindowManager.getCurrentWindow().getImagePlus();
 		ImagePlus imp = WindowManager.getCurrentImage();
-		if(imp!=null){
-		java.awt.Image imageawt = imp.getImage();
-		BufferedImage bufferdimage = createBufferedImage(imageawt);
-		image = bufferdimage;
-		PointPanel Jp = PointPanelView.getJp();
+		if (imp != null) {
+			java.awt.Image imageawt = imp.getImage();
+			BufferedImage bufferdimage = createBufferedImage(imageawt);
+			image = bufferdimage;
+			PointPanel Jp = PointPanelView.getJp();
 
-		Jp.setPreferredSize(new Dimension((int) (bufferdimage.getWidth() * Jp.getTransformx()), (int) (bufferdimage.getHeight() * Jp.getTransformy())));
-		PointPanelView.getScroll().setViewportView(Jp);
-		Jp.setBuff(bufferdimage);
-		fieldx = bufferdimage.getWidth();
-		fieldy = bufferdimage.getHeight();
-		spinner.setSelection(bufferdimage.getWidth());
-		spinner1.setSelection(bufferdimage.getHeight());
-		}
-		else{
+			Jp.setPreferredSize(new Dimension((int) (bufferdimage.getWidth() * Jp.getTransformx()), (int) (bufferdimage.getHeight() * Jp.getTransformy())));
+			PointPanelView.getScroll().setViewportView(Jp);
+			Jp.setBuff(bufferdimage);
+			fieldx = bufferdimage.getWidth();
+			fieldy = bufferdimage.getHeight();
+			spinner.setSelection(bufferdimage.getWidth());
+			spinner1.setSelection(bufferdimage.getHeight());
+		} else {
 			Bio7Dialog.message("No image availabe in the ImageJ-Canvas view!");
 		}
 	}
@@ -1346,9 +1333,15 @@ public class ImageMethods extends ViewPart {
 			//
 		}
 
-		setParticles(jp);
+		SwingUtilities.invokeLater(new Runnable() {
+			// !!
+			public void run() {
+
+				setParticles(jp);
+			}
+		});
 		jp.repaint();
-		//Bio7ImageJAnalyse.clearList(); Options in class Analyzer regarded!
+		// Bio7ImageJAnalyse.clearList(); Options in class Analyzer regarded!
 	}
 
 	private static void setParticles(PointPanel jp) {
@@ -1357,39 +1350,65 @@ public class ImageMethods extends ViewPart {
 
 		Double cmy = 0.0;
 
-		if (Bio7ImageJAnalyse.measurement.size() > 0) {
-			for (int i = 0; i < Bio7ImageJAnalyse.measurement.size(); i++) {
-				Measure m = (Measure) Bio7ImageJAnalyse.measurement.get(i);
-				if (Centroid == true) {
-					cmx = m.getCENTROIDX() * pointScale;
-					/* Values with scale for precision ! */
-					cmy = m.getCENTROIDY() * pointScale;
-				} else {
-					cmx = m.getCENTER_OF_MASSX() * pointScale;
+		IJ.runMacro("run(\"Analyze Particles...\")");
 
-					cmy = m.getCENTER_OF_MASSY() * pointScale;
+		// IJ.runMacro("run(\"Analyze Particles...\", \"size=0-Infinity circularity=0.00-1.00 show=Nothing display clear stack\")");
+		// System.out.println(rt.getColumnHeadings());
+		ResultsTable rt = Analyzer.getResultsTable();
+		if (rt == null) {
+			Bio7Dialog.message("No ImageJ Results Table");
+		} else {
 
-				}
+			if (rt.getColumn(0) != null) {
 
-				jp.getVe().add(new Ellipse2D.Double(cmx - (int) (jp.get_Diameter() / 2), cmy - (int) (jp.get_Diameter() / 2), jp.get_Diameter(), jp.get_Diameter()));
-				jp.get_Points().add(new Point2D.Double(cmx, cmy));
+				// System.out.println(rt.getColumnHeading(i) +
+				// "::::::::");
+				int x = rt.getColumnIndex("X");
+				int y = rt.getColumnIndex("Y");
 
-				jp.get_Species().add(PointPanel.getPlantIndexPanel());
+				double[] xcol = rt.getColumnAsDoubles(x);
+				double[] ycol = rt.getColumnAsDoubles(y);
+				if (xcol != null && ycol != null) {
+					System.out.println("xxxxxx   " + x);
 
-				jp.get_Alpha().add(PointPanel.getCompos3());
-				jp.setCount(jp.getCount() + 1);
-				if (PointPanel.isQuad2d_visible()) {
-					if (cmx < (Field.getWidth() * Field.getQuadSize()) && cmy < (Field.getHeight() * Field.getQuadSize())) {
-						try {
-							Quad2d.getQuad2dInstance().setquads(cmx, cmy);
-						} catch (RuntimeException e) {
+					for (int j = 0; j < xcol.length; j++) {
+						System.out.println(xcol[j]);
+						cmx = xcol[j] * pointScale;
+						/* Values with scale for precision ! */
+						cmy = ycol[j] * pointScale;
 
-							e.printStackTrace();
+						jp.getVe().add(new Ellipse2D.Double(cmx - (int) (jp.get_Diameter() / 2), cmy - (int) (jp.get_Diameter() / 2), jp.get_Diameter(), jp.get_Diameter()));
+						jp.get_Points().add(new Point2D.Double(cmx, cmy));
+
+						jp.get_Species().add(PointPanel.getPlantIndexPanel());
+
+						jp.get_Alpha().add(PointPanel.getCompos3());
+						jp.setCount(jp.getCount() + 1);
+						if (PointPanel.isQuad2d_visible()) {
+							if (cmx < (Field.getWidth() * Field.getQuadSize()) && cmy < (Field.getHeight() * Field.getQuadSize())) {
+								try {
+									Quad2d.getQuad2dInstance().setquads(cmx, cmy);
+								} catch (RuntimeException e) {
+
+									e.printStackTrace();
+								}
+							}
 						}
+
 					}
+					if (ResultsTable.getResultsWindow() != null) {
+						ResultsTable.getResultsWindow().close(false);
+					}
+
+				} else {
+					if (ResultsTable.getResultsWindow() != null) {
+						ResultsTable.getResultsWindow().close(false);
+					}
+					Bio7Dialog.message("Please select 'Centroid' in the 'Set Measurements' dialog");
 				}
 			}
 		}
+		PointPanel.doPaint();
 	}
 
 	private static void setAllPixels() {
@@ -1429,7 +1448,7 @@ public class ImageMethods extends ViewPart {
 			Bio7Dialog.message("No image opened !");
 
 		}
-       PointPanel.doPaint();
+		PointPanel.doPaint();
 	}
 
 	private static void pixelToQuad(double cmx, double cmy) {
@@ -1526,9 +1545,9 @@ public class ImageMethods extends ViewPart {
 	private void particledescriptors() {
 		Roi roi = null;
 		RConnection d = RServe.getConnection();
+		if (WindowManager.getCurrentImage() != null) {
+			if (d != null) {
 
-		if (d != null) {
-			if (WindowManager.getCurrentImage() != null) {
 				try {
 					d.voidEval("ImageHeight<-" + WindowManager.getCurrentImage().getHeight() + "");
 					d.voidEval("ImageWidth<-" + WindowManager.getCurrentImage().getWidth() + "");
@@ -1553,113 +1572,82 @@ public class ImageMethods extends ViewPart {
 					}
 
 				}
+				runParticleAnalysis(d,null);
+			} else {
+
+				Bio7Dialog.message("Rserve is not alive!");
 			}
+		} else {
+			Bio7Dialog.message("No image opened!");
+		}
 
-			if (Bio7ImageJAnalyse.measurement.size() > 0) {
+	}
 
-				Bio7ImageJAnalyse.fillArrays();
+	public static void runParticleAnalysis(RConnection con,String macro) {
+		if(macro==null){
+			IJ.runMacro("run(\"Analyze Particles...\")");
+		}
+		else{
+			
+			IJ.runMacro(macro);
+		}
+		// IJ.runMacro("run(\"Analyze Particles...\", \"size=0-Infinity circularity=0.00-1.00 show=Nothing display clear stack\")");
+		// System.out.println(rt.getColumnHeadings());
+		ResultsTable rt = Analyzer.getResultsTable();
+		if (rt == null) {
+			System.out.println("No ImageJ Results Table");
+		} else {
+
+			if (rt.getColumn(0) != null) {
 				try {
-					d.assign("area", Bio7ImageJAnalyse.getAREA());
-
-					d.assign("mean", Bio7ImageJAnalyse.getMEAN());
-					d.assign("std_dev", Bio7ImageJAnalyse.getSTD_DEV());
-					d.assign("mode", Bio7ImageJAnalyse.getMODE());
-					d.assign("min", Bio7ImageJAnalyse.getMIN());
-					d.assign("max", Bio7ImageJAnalyse.getMAX());
-					d.assign("centroidx", Bio7ImageJAnalyse.getCENTROIDX());
-					d.assign("centroidy", Bio7ImageJAnalyse.getCENTROIDY());
-					d.assign("centerofmassx", Bio7ImageJAnalyse.getCENTER_OF_MASSX());
-					d.assign("centerofmassy", Bio7ImageJAnalyse.getCENTER_OF_MASSY());
-					d.assign("perimeter", Bio7ImageJAnalyse.getPERIMETER());
-					d.assign("roix", Bio7ImageJAnalyse.getROIX());
-					d.assign("roiy", Bio7ImageJAnalyse.getROIY());
-					d.assign("roi_width", Bio7ImageJAnalyse.getROI_WIDTH());
-					d.assign("roi_height", Bio7ImageJAnalyse.getROI_HEIGHT());
-					d.assign("ellipse_major", Bio7ImageJAnalyse.getELLIPSE_MAJOR());
-					d.assign("ellipse_minor", Bio7ImageJAnalyse.getELLIPSE_MINOR());
-					d.assign("ellipse_angle", Bio7ImageJAnalyse.getELLIPSE_ANGLE());
-					d.assign("circularity", Bio7ImageJAnalyse.getCIRCULARITY());
-					d.assign("ferrets_diameter", Bio7ImageJAnalyse.getFERET());
-					d.assign("integrated_density", Bio7ImageJAnalyse.getINTEGRATED_DENSITY());
-					d.assign("raw_integrated_density", Bio7ImageJAnalyse.getRAW_INTEGRATED_DENSITY());
-					d.assign("median", Bio7ImageJAnalyse.getMEDIAN());
-					d.assign("skewness", Bio7ImageJAnalyse.getSKEWNESS());
-					d.assign("kurtosis", Bio7ImageJAnalyse.getKURTOSIS());
-					d.assign("area_fraction", Bio7ImageJAnalyse.getAREA_FRACTION());
-					d.assign("slice", Bio7ImageJAnalyse.getSLICE());
-					d.assign("limit", Bio7ImageJAnalyse.getLIMIT());
-					d.assign("labels", Bio7ImageJAnalyse.getLABELS());
-					d.assign("invert_y", Bio7ImageJAnalyse.getINVERT_Y());
-
-					d.assign("aspect_ratio", Bio7ImageJAnalyse.getASPECT_RATIO());
-					d.assign("roundness", Bio7ImageJAnalyse.getROUNDNESS());
-					d.assign("soilidity", Bio7ImageJAnalyse.getSOLIDITY());
-					d.assign("ferretx", Bio7ImageJAnalyse.getFERETX());
-					d.assign("ferrety", Bio7ImageJAnalyse.getFERETY());
-					d.assign("ferret_angle", Bio7ImageJAnalyse.getFERET_ANGLE());
-					d.assign("min_ferret", Bio7ImageJAnalyse.getMIN_FERET());
-					d.assign("channel", Bio7ImageJAnalyse.getCHANNEL());
-					d.assign("frame", Bio7ImageJAnalyse.getFRAME());
-					d.assign("length", Bio7ImageJAnalyse.getLENGTH());
-					d.assign("angle", Bio7ImageJAnalyse.getANGLE());
-					d.assign("label", Bio7ImageJAnalyse.getLABEL());
-
-				} catch (REngineException e) {
+					con.eval("try(Particles<-data.frame(1:" + rt.getColumn(0).length + "))");
+				} catch (RserveException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				int size = rt.getLastColumn();
+				for (int i = 0; i <= size; i++) {
+					if (rt.getColumn(i) != null) {
+						// System.out.println(rt.getColumnHeading(i) +
+						// "::::::::");
+						double[] col = rt.getColumnAsDoubles(i);
+						String columnName = rt.getColumnHeading(i);
+						if (columnName.equals("%Area")) {
+							columnName = columnName.replace("%Area", "Area_Prozent");
+						}
+						try {
+							con.assign(columnName, col);
+						} catch (REngineException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						try {
+							con.eval("try(Particles<-data.frame(Particles," + columnName + "))");
+							con.eval("remove(" + columnName + ")");
+						} catch (RserveException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 
-				MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
-				message.setMessage("Do you want to convert the values to a matrix?\n\nPlease note that the label list (character) will\nbe omitted in the numeric R matrix!\n\nImportant Info!\n\nPlease don't select Stack positions in\n\nAnalyze->Set measurements...\n\nThis option is not supported for R!");
-				message.setText("Convert");
-				int response = message.open();
-				if (response == SWT.YES) {
-					try {
-						d.eval("try(Particles<-data.frame(area,mean,mode,min,max,centroidx,centroidy,centerofmassx,centerofmassy,std_dev,perimeter,roix,roiy,roi_width,roi_height,ellipse_major,"
-								+ "ellipse_minor,ellipse_angle,circularity,ferrets_diameter,integrated_density,raw_integrated_density,median,skewness,kurtosis,area_fraction,slice,limit,labels,"
-								+ "invert_y,aspect_ratio,roundness,soilidity,ferretx,ferrety,ferret_angle,min_ferret,channel,frame,length,angle,label))");
-						/*
-						 * Dataframe prints not very well and causes problems so
-						 * we simply convert results to a matrix!
-						 */
-						d.eval("Particles<-as.matrix(Particles[1:length(Particles)-1])");
-						d.eval("try(remove(area,mean,mode,min,max,centroidx,centroidy,centerofmassx,centerofmassy,std_dev,perimeter,roix,roiy,roi_width,roi_height,ellipse_major,ellipse_minor,ellipse_angle,circularity,ferrets_diameter,integrated_density,raw_integrated_density,median,skewness,kurtosis,area_fraction,slice,limit,labels,invert_y,aspect_ratio,roundness,soilidity,ferretx,ferrety,ferret_angle,min_ferret,channel,frame,length,angle,label))");
-
-					} catch (RserveException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						for (int j = 0; j < col.length; j++) {
+							// System.out.println("column Nr: "+i+":"+col[j]+": ");
+						}
 					}
 				}
-
-				Display display = PlatformUI.getWorkbench().getDisplay();
-				display.syncExec(new Runnable() {
-
-					public void run() {
-						MessageBox messageBox = new MessageBox(new Shell(),
-
-						SWT.ICON_INFORMATION);
-						messageBox.setMessage("Transferred values to R");
-						messageBox.open();
-					}
-				});
-
+				if (ResultsTable.getResultsWindow() != null) {
+					ResultsTable.getResultsWindow().close(false);
+				}
+				try {
+					con.eval("try(Particles[1]<-NULL)");
+				} catch (RserveException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			} else {
-				MessageBox messageBox = new MessageBox(new Shell(),
-
-				SWT.ICON_WARNING);
-				messageBox.setMessage("No measurements available!");
-				messageBox.open();
-
+				// Bio7Dialog.message("No Results! Image Thresholded");
 			}
-			//Bio7ImageJAnalyse.clearList(); Now in class Analyzer respecting the option "Clear"!
-		} else {
-			MessageBox messageBox = new MessageBox(new Shell(),
 
-			SWT.ICON_WARNING);
-			messageBox.setMessage("RServer connection failed - Server is not running !");
-			messageBox.open();
 		}
-
 	}
 
 	private static ImageMethods getImageMethods() {
@@ -1985,7 +1973,7 @@ public class ImageMethods extends ViewPart {
 				/* R,G,B Byte transfer type! */
 				else if (transferDataType == 3) {
 					// pByte = (byte[])ip.getPixels();
-                    
+
 					/*
 					 * The above method does not work and causes an error when a
 					 * float image is transfered! This does not happen if every
@@ -2681,7 +2669,8 @@ public class ImageMethods extends ViewPart {
 	 * 
 	 * @param dataName
 	 *            the name of the R vector.
-	 * @param type the type of the image (1 = byte, 2 = float).
+	 * @param type
+	 *            the type of the image (1 = byte, 2 = float).
 	 */
 	public static void transferImageInPlace(String dataName, int type) {
 
@@ -2777,7 +2766,7 @@ public class ImageMethods extends ViewPart {
 
 				try {
 
-					 imageDataFloat = RServe.getConnection().eval("try(" + dataName + ")").asDoubles();
+					imageDataFloat = RServe.getConnection().eval("try(" + dataName + ")").asDoubles();
 
 				} catch (REXPMismatchException e) {
 					// TODO Auto-generated catch block
@@ -2852,23 +2841,21 @@ public class ImageMethods extends ViewPart {
 		}
 		return values;
 	}
-	
-	public void dispose(){
-		
-		
 
-		 bildGif.dispose();
+	public void dispose() {
 
-		 deletePicGif.dispose();
+		bildGif.dispose();
 
-		 regelmaessigGif.dispose();
+		deletePicGif.dispose();
 
-		 deletePoints.dispose();
+		regelmaessigGif.dispose();
+
+		deletePoints.dispose();
 
 		// toIJGif.dispose();
 
 		// rGif.dispose();
-		
+
 		super.dispose();
 	}
 }

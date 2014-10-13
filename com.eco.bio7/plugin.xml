@@ -55,7 +55,8 @@
             class="com.eco.bio7.discrete3d.Quad3dview"
             icon="icons/3d.gif"
             id="com.eco.bio7.3d"
-            name="3Dgrid">
+            name="3Dgrid"
+            restorable="true">
       </view>
       <view
             allowMultiple="true"
@@ -63,7 +64,8 @@
             class="com.eco.bio7.plot.PieChartView"
             icon="icons/piechart.gif"
             id="com.eco.bio7.piechart"
-            name="Piechart">
+            name="Piechart"
+            restorable="true">
       </view>
       <view
             allowMultiple="true"
@@ -71,21 +73,24 @@
             class="com.eco.bio7.plot.LineChartView"
             icon="icons/diagramm.gif"
             id="com.eco.bio7.linechart"
-            name="Linechart"/>
+            name="Linechart"
+            restorable="true"/>
       <view
             allowMultiple="true"
             category="com.eco.bio7.discrete"
             class="com.eco.bio7.discrete.Quadview"
             icon="icons/regelmaessig.gif"
             id="com.eco.bio7.quadgrid"
-            name="Quadgrid"/>
+            name="Quadgrid"
+            restorable="true"/>
       <view
             allowMultiple="true"
             category="com.eco.bio7.database"
             class="com.eco.bio7.database.Spreadview"
             icon="icons/database.gif"
             id="com.eco.bio7.spreadsheet"
-            name="Spreadsheet"/>
+            name="Spreadsheet"
+            restorable="true"/>
       
       <view
             allowMultiple="true"
@@ -93,27 +98,32 @@
             class="com.eco.bio7.discrete.StateButtonView"
             icon="icons/regelmaessig.gif"
             id="com.eco.bio7.states"
-            name="State"/>
+            name="State"
+            restorable="true"/>
       <view
             allowMultiple="true"
             category="com.eco.bio7.discrete"
             class="com.eco.bio7.discrete.Hexview"
             icon="icons/regelmaessig.gif"
             id="com.eco.bio7.hexgrid"
-            name="Hexgrid"/>
+            name="Hexgrid"
+            restorable="true"/>
       <view
             allowMultiple="true"
             category="com.eco.bio7.custom"
             class="com.eco.bio7.plot.ChartView"
             icon="icons/diagramm.gif"
             id="com.eco.bio7.custom_chart"
-            name="Custom Chart"/>
+            name="Custom Chart"
+            restorable="true"/>
       <view
+            allowMultiple="true"
             category="com.eco.bio7.image"
             class="com.eco.bio7.image.PointPanelView"
             icon="icons/unregelmaessig.gif"
             id="com.eco.bio7.points"
-            name="Points"/>
+            name="Points"
+            restorable="true"/>
       <view
             allowMultiple="true"
             category="com.eco.bio7.image"
@@ -123,17 +133,21 @@
             name="Image-Methods"
             restorable="true"/>
       <view
+            allowMultiple="true"
             category="com.eco.bio7.console"
             class="com.eco.bio7.scriptengines.BshView"
             icon="icons/konsole.gif"
             id="com.eco.bio7.bsh"
-            name="Bsh-Console"/>
+            name="Bsh-Console"
+            restorable="true"/>
       <view
+            allowMultiple="true"
             category="com.eco.bio7.control"
             class="com.eco.bio7.info.InfoView"
             icon="icons/zufallsalter.gif"
             id="com.eco.bio7.control"
-            name="Control"/>
+            name="Control"
+            restorable="true"/>
       <category
             id="com.eco.bio7.ecolab"
             name="Bio7-3D"/>
@@ -178,29 +192,36 @@
             class="com.eco.bio7.collection.CustomView"
             icon="icons/konsole.gif"
             id="com.eco.bio7.custom_controls"
-            name="Custom Controls"/>
+            name="Custom Controls"
+            restorable="true"/>
       <view
+            allowMultiple="true"
             category="com.eco.bio7.custom"
             class="com.eco.bio7.collection.Custom3D"
             icon="icons/konsole.gif"
             id="com.eco.bio7.custom_3d"
-            name="Custom 3D"/>
+            name="Custom 3D"
+            restorable="true"/>
       <category
             id="com.eco.bio7.custom"
             name="Bio7-Custom"/>
       <view
+            allowMultiple="true"
             category="com.eco.bio7.ecolab"
             class="com.eco.bio7.spatial.SpatialView"
             icon="icons/3d.gif"
             id="com.eco.bio7.spatial"
-            name="Space">
+            name="Space"
+            restorable="true">
       </view>
       <view
+            allowMultiple="true"
             category="com.eco.bio7.ecolab"
             class="com.eco.bio7.spatial.Options3d"
             icon="icons/3d.gif"
             id="com.eco.bio7.discrete3d.Options3d"
-            name="Options Space">
+            name="Options Space"
+            restorable="true">
       </view>
       <view
             allowMultiple="true"
@@ -212,11 +233,13 @@
             restorable="true">
       </view>
       <view
+            allowMultiple="true"
             category="com.eco.bio7.rapplication"
             class="com.eco.bio7.rbridge.RTable"
             icon="icons/logo.gif"
             id="com.eco.bio7.rbridge.RTable"
-            name="Table">
+            name="Table"
+            restorable="true">
       </view>
    </extension>
    <extension
@@ -1101,7 +1124,7 @@
              class="com.eco.bio7.popup.actions.RecalculateClasspath"
              icon="icons/javakompilierung.gif"
              id="com.eco.bio7.recalculateClasspath"
-             label="Set Local Bio7 Java Classpath"
+             label="Fix Project Classpath"
              menubarPath="additions.path">
        </action>
     </objectContribution>
