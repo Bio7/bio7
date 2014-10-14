@@ -18,6 +18,9 @@ import java.net.Socket;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -56,7 +59,7 @@ public class DebugContinueAction extends Action {
 
 		if (selectionConsole.equals("R")) {
 
-			//System.out.println("c");
+			// System.out.println("c");
 
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 			int port = store.getInt("R_DEBUG_PORT");
@@ -70,7 +73,7 @@ public class DebugContinueAction extends Action {
 			con.pipeToRConsole("sink()");
 			con.pipeToRConsole("close(con1)");
 			con.pipeToRConsole("writeLines(\"\")");
-			//System.out.println("c");
+			// System.out.println("c");
 
 			String data = null;
 
@@ -134,7 +137,25 @@ public class DebugContinueAction extends Action {
 						}
 						// System.out.println("Line is: " + line);
 						editor.selectAndReveal(reg.getOffset() + reg.getLength(), 0);
+						IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
+						try {
+							resource.deleteMarkers("com.eco.bio7.reditor.debugrulermark", false, IResource.DEPTH_ZERO);
+						} catch (CoreException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 
+						IMarker marker;
+
+						try {
+
+							marker = resource.createMarker("com.eco.bio7.reditor.debugrulermark");
+							marker.setAttribute(IMarker.CHAR_START, reg.getOffset());
+							marker.setAttribute(IMarker.CHAR_END, reg.getOffset() + reg.getLength());
+						} catch (CoreException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}
 
 				}

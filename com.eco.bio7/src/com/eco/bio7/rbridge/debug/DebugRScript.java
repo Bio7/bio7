@@ -255,6 +255,25 @@ public class DebugRScript extends Action {
 			}
 
 			edit.selectAndReveal(reg.getOffset() + reg.getLength(), 0);
+			IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
+			try {
+				resource.deleteMarkers("com.eco.bio7.reditor.debugrulermark", false, IResource.DEPTH_ZERO);
+			} catch (CoreException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+			IMarker marker;
+
+			try {
+
+				marker = resource.createMarker("com.eco.bio7.reditor.debugrulermark");
+				marker.setAttribute(IMarker.CHAR_START, reg.getOffset());
+				marker.setAttribute(IMarker.CHAR_END, reg.getOffset() + reg.getLength());
+			} catch (CoreException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 

@@ -13,12 +13,17 @@ package com.eco.bio7.rbridge.debug;
 
 import java.util.prefs.Preferences;
 
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
@@ -44,7 +49,17 @@ public class DebugStopAction extends Action {
 
 			ConsolePageParticipant.pipeInputToConsole("Q", true, false);
 			System.out.println("Q");
-             
+			IEditorPart edit = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+
+			ITextEditor editor = (ITextEditor) edit;
+			IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
+			try {
+				resource.deleteMarkers("com.eco.bio7.reditor.debugrulermark", false, IResource.DEPTH_ZERO);
+			} catch (CoreException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
 			// inst.toolBarManager.update(true);
 
 		} else {

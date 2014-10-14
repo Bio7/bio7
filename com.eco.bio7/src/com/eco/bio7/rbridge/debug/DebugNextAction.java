@@ -18,6 +18,9 @@ import java.net.Socket;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -38,7 +41,6 @@ import com.eco.bio7.console.ConsolePageParticipant;
 
 public class DebugNextAction extends Action {
 
-	
 	private int line = 1;
 	private Socket debugSocket;
 
@@ -56,23 +58,22 @@ public class DebugNextAction extends Action {
 	public void run() {
 
 		String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
-		IPreferenceStore store=Bio7Plugin.getDefault().getPreferenceStore();
-		int port=store.getInt("R_DEBUG_PORT");
+		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		int port = store.getInt("R_DEBUG_PORT");
 		if (selectionConsole.equals("R")) {
 			ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
 
-			
-			con.pipeToRConsole("con1 <- socketConnection(port = "+port+", server = TRUE,timeout=10)");
+			con.pipeToRConsole("con1 <- socketConnection(port = " + port + ", server = TRUE,timeout=10)");
 			con.pipeToRConsole("sink(con1)");
 			con.pipeToRConsole("n");
 			con.pipeToRConsole("sink()");
 			con.pipeToRConsole("close(con1)");
 			con.pipeToRConsole("writeLines(\"\")");
-			
+
 			final ConsolePageParticipant inst = ConsolePageParticipant.getConsolePageParticipantInstance();
 
 			String data = null;
-			
+
 			try {
 
 				debugSocket = new Socket("127.0.0.1", port);
@@ -87,7 +88,7 @@ public class DebugNextAction extends Action {
 				}
 
 				data = input.readLine();
-                input.close();
+				input.close();
 				debugSocket.close();
 
 			} catch (IOException e) {
@@ -108,12 +109,12 @@ public class DebugNextAction extends Action {
 				Pattern p = Pattern.compile(".R#(.*?):");
 				Matcher m = p.matcher(data);
 				if (m.find()) {
-					int temp=0;
+					int temp = 0;
 					try {
 						temp = Integer.parseInt(m.group(1));
 					} catch (NumberFormatException e1) {
 						// TODO Auto-generated catch block
-						//e1.printStackTrace();
+						// e1.printStackTrace();
 						System.out.println("Could not parse line number!");
 					}
 					int lines = doc.getNumberOfLines();
@@ -126,8 +127,28 @@ public class DebugNextAction extends Action {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-						System.out.println("Line is: " + line);
+						// System.out.println("Line is: " + line);
 						editor.selectAndReveal(reg.getOffset() + reg.getLength(), 0);
+
+						IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
+						try {
+							resource.deleteMarkers("com.eco.bio7.reditor.debugrulermark", false, IResource.DEPTH_ZERO);
+						} catch (CoreException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+
+						IMarker marker;
+
+						try {
+
+							marker = resource.createMarker("com.eco.bio7.reditor.debugrulermark");
+							marker.setAttribute(IMarker.CHAR_START, reg.getOffset());
+							marker.setAttribute(IMarker.CHAR_END, reg.getOffset() + reg.getLength());
+						} catch (CoreException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 
 					}
 

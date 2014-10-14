@@ -176,6 +176,45 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
             verticalRulerPreferenceValue="true">
       </specification>
    </extension>
+   
+   <extension
+    id="com.eco.bio7.reditor.debugrulermark"
+    name="R Editor Word"
+    point="org.eclipse.core.resources.markers">
+  <super
+    type="org.eclipse.core.resources.textmarker">
+  </super>
+</extension>
+<extension
+         point="org.eclipse.ui.editors.annotationTypes">
+      <type
+            markerType="com.eco.bio7.reditor.debugrulermark"
+            name="com.eco.bio7.reditor.debugrulermark">
+      </type>
+   </extension>
+
+ <extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="com.eco.bio7.reditor.debugrulermark"
+            colorPreferenceKey="com.eco.bio7.reditor.debugrulermark.color"
+            colorPreferenceValue="180,230,180"
+            contributesToHeader="false"
+            highlightPreferenceKey="com.eco.bio7.reditor.debugrulermark.highlight"
+            highlightPreferenceValue="true"
+            icon="/icons/occ_match.gif"
+            includeOnPreferencePage="true"
+            label="R Editor Debug Ruler Marker"
+            overviewRulerPreferenceKey="com.eco.bio7.reditor.debugrulermark.overview"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="0"
+            textPreferenceKey="com.eco.bio7.reditor.debugrulermark.text"
+            textPreferenceValue="true"
+            textStylePreferenceValue="BOX"
+            verticalRulerPreferenceKey="com.eco.bio7.reditor.debugrulermark.ruler"
+            verticalRulerPreferenceValue="true">
+      </specification>
+   </extension>
 
 <extension point="org.eclipse.ui.editorActions">
     <editorContribution

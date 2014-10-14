@@ -41,6 +41,7 @@ public class RecalculateClasspath implements IObjectActionDelegate {
 			Object selectedObj = strucSelection.getFirstElement();
 			if (selectedObj instanceof IAdaptable) {
 				IProject project = (IProject) ((IAdaptable) selectedObj).getAdapter(IProject.class);
+				if(project!=null){
 				try {
 					if (project.hasNature(JavaCore.NATURE_ID)) {
 
@@ -81,6 +82,10 @@ public class RecalculateClasspath implements IObjectActionDelegate {
 				} catch (CoreException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
+				}
+			}
+				else{
+					Bio7Dialog.message("Please select a Java Project!");
 				}
 			}
 		}

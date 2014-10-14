@@ -37,6 +37,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -64,6 +65,7 @@ import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
@@ -151,6 +153,8 @@ public class REditor extends TextEditor {
 
 	protected boolean found;
 
+	protected ArrayList<TreeItem> selectedItems;
+
 	public RConfiguration getRconf() {
 		return rconf;
 	}
@@ -170,7 +174,7 @@ public class REditor extends TextEditor {
 		annotationModel = viewer.getProjectionAnnotationModel();
 
 		getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
-
+		selectedItems = new ArrayList<TreeItem>();
 		// ISourceViewer viewer = getSourceViewer();
 
 		// updateFoldingStructure(new ArrayList());
@@ -260,61 +264,64 @@ public class REditor extends TextEditor {
 
 									ITextSelection textSelection = (ITextSelection) editor.getSite().getSelectionProvider().getSelection();
 									int offset = textSelection.getOffset();
+									markWords(offset, document, editor);
 
 									int lineNumber = 0;
-									// try {
+
 									try {
 										lineNumber = document.getLineOfOffset(offset);
 									} catch (BadLocationException e1) {
-										// TODO Auto-generated catch block
+
 										e1.printStackTrace();
 									}
-									// contentOutlineViewer.expandAll();
-									// System.out.println(lineNumber+1);
+
 									TreeItem treeItem = null;
 									if (contentOutlineViewer.getTree().isDisposed() == false) {
 										if (contentOutlineViewer.getTree().getItem(0).isDisposed() == false) {
 											treeItem = contentOutlineViewer.getTree().getItem(0);
 											contentOutlineViewer.getTree().setRedraw(false);
+
+											// Object[] exp =
+											// contentOutlineViewer.getExpandedElements();
+
+											TreePath[] treePaths = contentOutlineViewer.getExpandedTreePaths();
+											contentOutlineViewer.expandAll();
+											contentOutlineViewer.refresh();
 											walkTreeLineNumber(treeItem, lineNumber + 1);
+
+											// contentOutlineViewer.setExpandedElements(expanded);
+
+											contentOutlineViewer.setExpandedTreePaths(treePaths);
+											for (int i = 0; i < selectedItems.size(); i++) {
+												TreeItem it = (TreeItem) selectedItems.get(i);
+												it.setExpanded(true);
+												TreeItem parent = it;
+												while (parent != null) {
+													if (parent.getParentItem() != null) {
+														parent = parent.getParentItem();
+														parent.setExpanded(true);
+													} else {
+														break;
+													}
+
+												}
+												contentOutlineViewer.refresh(it);
+											}
+
 											contentOutlineViewer.getTree().setRedraw(true);
+
 										}
 									}
 
-									// textEditor.selectAndReveal(offset,5);
-									// System.out.println(lineNumber);
-									/*
-									 * } catch (BadLocationException e1) { //
-									 * TODO Auto-generated catch block
-									 * e1.printStackTrace(); }
-									 */
-									markWords(offset, document, editor);
 								}
-								/*
-								 * if (target instanceof ITextViewer) {
-								 * ITextViewer textViewer = (ITextViewer)
-								 * target;
-								 * 
-								 * int offset = textViewer.getSelectedRange().x;
-								 * int length = 0; IDocument doc =
-								 * textViewer.getDocument(); char c = 0; while
-								 * (true) {
-								 * 
-								 * try { c = doc.getChar(offset + length); }
-								 * catch (BadLocationException e1) { // TODO
-								 * Auto-generated catch block
-								 * e1.printStackTrace(); } if (c == ' ') break;
-								 * if (offset + ++length >= doc.getLength())
-								 * return; } textViewer.setSelectedRange(offset,
-								 * length); }
-								 */
+
 							}
+							selectedItems.clear();
 
 						}
 
 						@Override
 						public void mouseUp(MouseEvent e) {
-							// TODO Auto-generated method stub
 
 						}
 
@@ -341,15 +348,14 @@ public class REditor extends TextEditor {
 						e.printStackTrace();
 					}
 
-					if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false)
+					if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false && (c == '_') == false)
 						break;
 
 					length++;
 					if (offset + length >= doc.getLength()) {
 						break;
 					}
-				}
-				else{
+				} else {
 					break;
 				}
 			}
@@ -364,15 +370,14 @@ public class REditor extends TextEditor {
 						e.printStackTrace();
 					}
 
-					if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false)
+					if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false && (c == '_') == false)
 						break;
 
 					minusLength--;
 					if (offset + minusLength <= 0) {
 						break;
 					}
-				}
-				else{
+				} else {
 					break;
 				}
 			}
@@ -398,7 +403,7 @@ public class REditor extends TextEditor {
 				 * public void run() { textViewer.setSelectedRange(wordOffset,
 				 * resultedLength); } });
 				 */
-				
+
 				if (searchForWord != null) {
 					IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
 					try {
@@ -407,7 +412,7 @@ public class REditor extends TextEditor {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
-					Pattern findWordPattern = Pattern.compile("\\b"+searchForWord+"\\b");
+					Pattern findWordPattern = Pattern.compile("\\b" + searchForWord + "\\b");
 					Matcher matcher = findWordPattern.matcher(doc.get());
 					while (matcher.find()) {
 						int offsetStart = matcher.start();
@@ -455,13 +460,14 @@ public class REditor extends TextEditor {
 			if (item.isDisposed() == false) {
 				found = false;
 				boolean isExpanded = item.getExpanded();
+
 				/* Push the temp info on the stack! */
 				treeItemLine.push(isExpanded);
-				if (item.getItemCount() > 0) {
-					item.setExpanded(true);
-					// update the viewer
-					contentOutlineViewer.refresh();
-				}
+				// if (item.getItemCount() > 0) {
+				// item.setExpanded(true);
+				// update the viewer
+				// contentOutlineViewer.refresh();
+				// }
 				if (item.isDisposed() == false) {
 					for (int j = 0; j < item.getItemCount(); j++) {
 
@@ -469,9 +475,11 @@ public class REditor extends TextEditor {
 						if (it.isDisposed() == false) {
 							if (lineNumber == ((REditorOutlineNode) it.getData()).getLineNumber()) {
 								contentOutlineViewer.getTree().setSelection(it);
-								item.setExpanded(true);
+								// item.setExpanded(true);
 								// update the viewer
-								contentOutlineViewer.refresh();
+								// contentOutlineViewer.refresh();
+
+								selectedItems.add(it);
 								found = true;
 								if (treeItemLine.isEmpty() == false) {
 									treeItemLine.clear();
@@ -481,6 +489,10 @@ public class REditor extends TextEditor {
 							} else {
 
 								/* Recursive call of the method for subnodes! */
+								// if(treeItemLine.size()>2){
+								/* Set recursion depth! */
+								// break;
+								// }
 								walkTreeLineNumber(it, lineNumber);
 							}
 						}
@@ -490,9 +502,9 @@ public class REditor extends TextEditor {
 						if (treeItemLine.isEmpty() == false) {
 							if (treeItemLine.peek() == false) {
 
-								item.setExpanded(false);
+								// item.setExpanded(false);
 								// update the viewer
-								contentOutlineViewer.refresh();
+								// contentOutlineViewer.refresh();
 
 							}
 							treeItemLine.pop();
