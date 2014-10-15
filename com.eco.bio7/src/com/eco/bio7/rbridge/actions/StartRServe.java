@@ -141,15 +141,18 @@ public class StartRServe extends Action {
 
 			/* Native connection! */
 			else {
+				
+				ConsoleInterpreterAction inst = ConsoleInterpreterAction.getInstance();
+				inst.startR();
 
 				ConsolePageParticipant participant = ConsolePageParticipant.getConsolePageParticipantInstance();
 				/* Start the native R process! */
 				RConnection con = RServe.getConnection();
-				Process p = participant.getRProcess();
-				if (p == null) {
-					ConsoleInterpreterAction inst = ConsoleInterpreterAction.getInstance();
+				//Process p = participant.getRProcess();
+				/*if (p == null) {
+					
 					inst.startR();
-				}
+				}*/
 
 				/* Close an existing Rserve connection! */
 				if (con != null) {

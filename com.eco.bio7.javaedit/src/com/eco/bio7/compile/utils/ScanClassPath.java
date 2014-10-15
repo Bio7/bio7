@@ -38,7 +38,7 @@ public class ScanClassPath {
 			"com.eco.bio7.scenebuilder", "com.eco.bio7.browser","Bundled_R",  };// "org.eclipse.ui.workbench","org.eclipse.core.commands"
 
 	String[] bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui", "org.eclipse.swt", "org.eclipse.swt.win32.win32.x86_64",
-			"org.eclipse.draw2d", "org.eclipse.equinox.registry", "org.eclipse.equinox.common","org.eclipse.core.runtime","org.eclipse.core.jobs" };
+			"org.eclipse.draw2d", "org.eclipse.equinox.registry", "org.eclipse.equinox.common","org.eclipse.core.runtime","org.eclipse.core.jobs","org.eclipse.jface" };
 	
 	
 

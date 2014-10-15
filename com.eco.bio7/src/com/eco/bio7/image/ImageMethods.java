@@ -15,31 +15,23 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.Roi;
-import ij.measure.ResultsTable;
-import ij.plugin.filter.Analyzer;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
-
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-
 import javax.imageio.ImageIO;
 import javax.swing.SwingUtilities;
-
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.IToolBarManager;
@@ -57,7 +49,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Scale;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
@@ -69,13 +60,11 @@ import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
-
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.discrete.Field;
 import com.eco.bio7.discrete.Quad2d;
-import com.eco.bio7.image.measure.Bio7ImageJAnalyse;
-import com.eco.bio7.image.measure.Measure;
+import com.eco.bio7.image.r.IJTranserResultsTable;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.swtdesigner.ResourceManager;
@@ -612,7 +601,7 @@ public class ImageMethods extends ViewPart {
 		button9.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
 			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
 
-				addParticleValues();
+				IJTranserResultsTable.addParticleValues();
 				if (PointPanel.showVoronoi == true) {
 					PointPanel.createVoronoi();
 				}
@@ -662,6 +651,35 @@ public class ImageMethods extends ViewPart {
 		CLabel lblNewLabel = new CLabel(top, SWT.NONE);
 		lblNewLabel.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 2, 1));
 		lblNewLabel.setText("Transfer Selected Data To R");
+		
+				Button btnNewButton = new Button(top, SWT.NONE);
+				rGif = org.eclipse.wb.swt.ResourceManager.getPluginImage("com.eco.bio7", "bin/pics/r.gif");
+				btnNewButton.setImage(rGif);
+				btnNewButton.addSelectionListener(new SelectionAdapter() {
+					@Override
+					public void widgetSelected(SelectionEvent e) {
+						RConnection con = RServe.getConnection();
+
+						if (RServe.isAliveDialog()) {
+							if (RState.isBusy() == false) {
+								new IJTranserResultsTable().transferResultsTable(con, true);
+							} else {
+								Bio7Dialog.message("RServer is busy!");
+							}
+
+						}
+					}
+				});
+				GridData gd_btnNewButton = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+				gd_btnNewButton.heightHint = 30;
+				btnNewButton.setLayoutData(gd_btnNewButton);
+				btnNewButton.setText("IJ RT       ");
+		
+				Button btnNewButton_1 = new Button(top, SWT.NONE);
+				GridData gd_btnNewButton_1 = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+				gd_btnNewButton_1.heightHint = 30;
+				btnNewButton_1.setLayoutData(gd_btnNewButton_1);
+				btnNewButton_1.setText("IJ R RasterStack");
 		GridData gridData = new org.eclipse.swt.layout.GridData(SWT.FILL, SWT.FILL, false, false);
 		gridData.heightHint = 30;
 		button2 = new Button(top, SWT.NONE);
@@ -677,10 +695,15 @@ public class ImageMethods extends ViewPart {
 		button2.setLayoutData(gridData);
 		button2.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
 			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
-				if (RState.isBusy() == false) {
-					pointsToR();
-				} else {
-					Bio7Dialog.message("RServer is busy!");
+				RConnection con = RServe.getConnection();
+
+				if (con != null) {
+					if (RState.isBusy() == false) {
+						new IJTranserResultsTable().pointsToR(con);
+					} else {
+						Bio7Dialog.message("RServer is busy!");
+					}
+
 				}
 			}
 		});
@@ -701,7 +724,7 @@ public class ImageMethods extends ViewPart {
 					SwingUtilities.invokeLater(new Runnable() {
 						// !!
 						public void run() {
-							particledescriptors();
+							new IJTranserResultsTable().particledescriptors();
 						}
 					});
 				} else {
@@ -1317,100 +1340,6 @@ public class ImageMethods extends ViewPart {
 
 	}
 
-	private static void addParticleValues() {
-		PointPanel jp = PointPanelView.getJp();
-		MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
-		message.setMessage("Do you want to delete plants in the Points panel?");
-		message.setText("Delete Plants");
-		int response = message.open();
-		if (response == SWT.YES) {
-
-			jp.getVe().clear();
-			jp.get_Points().clear();
-			jp.get_Species().clear();
-			jp.get_Alpha().clear();
-
-			//
-		}
-
-		SwingUtilities.invokeLater(new Runnable() {
-			// !!
-			public void run() {
-
-				setParticles(jp);
-			}
-		});
-		jp.repaint();
-		// Bio7ImageJAnalyse.clearList(); Options in class Analyzer regarded!
-	}
-
-	private static void setParticles(PointPanel jp) {
-
-		Double cmx = 0.0;
-
-		Double cmy = 0.0;
-
-		IJ.runMacro("run(\"Analyze Particles...\")");
-
-		// IJ.runMacro("run(\"Analyze Particles...\", \"size=0-Infinity circularity=0.00-1.00 show=Nothing display clear stack\")");
-		// System.out.println(rt.getColumnHeadings());
-		ResultsTable rt = Analyzer.getResultsTable();
-		if (rt == null) {
-			Bio7Dialog.message("No ImageJ Results Table");
-		} else {
-
-			if (rt.getColumn(0) != null) {
-
-				// System.out.println(rt.getColumnHeading(i) +
-				// "::::::::");
-				int x = rt.getColumnIndex("X");
-				int y = rt.getColumnIndex("Y");
-
-				double[] xcol = rt.getColumnAsDoubles(x);
-				double[] ycol = rt.getColumnAsDoubles(y);
-				if (xcol != null && ycol != null) {
-					System.out.println("xxxxxx   " + x);
-
-					for (int j = 0; j < xcol.length; j++) {
-						System.out.println(xcol[j]);
-						cmx = xcol[j] * pointScale;
-						/* Values with scale for precision ! */
-						cmy = ycol[j] * pointScale;
-
-						jp.getVe().add(new Ellipse2D.Double(cmx - (int) (jp.get_Diameter() / 2), cmy - (int) (jp.get_Diameter() / 2), jp.get_Diameter(), jp.get_Diameter()));
-						jp.get_Points().add(new Point2D.Double(cmx, cmy));
-
-						jp.get_Species().add(PointPanel.getPlantIndexPanel());
-
-						jp.get_Alpha().add(PointPanel.getCompos3());
-						jp.setCount(jp.getCount() + 1);
-						if (PointPanel.isQuad2d_visible()) {
-							if (cmx < (Field.getWidth() * Field.getQuadSize()) && cmy < (Field.getHeight() * Field.getQuadSize())) {
-								try {
-									Quad2d.getQuad2dInstance().setquads(cmx, cmy);
-								} catch (RuntimeException e) {
-
-									e.printStackTrace();
-								}
-							}
-						}
-
-					}
-					if (ResultsTable.getResultsWindow() != null) {
-						ResultsTable.getResultsWindow().close(false);
-					}
-
-				} else {
-					if (ResultsTable.getResultsWindow() != null) {
-						ResultsTable.getResultsWindow().close(false);
-					}
-					Bio7Dialog.message("Please select 'Centroid' in the 'Set Measurements' dialog");
-				}
-			}
-		}
-		PointPanel.doPaint();
-	}
-
 	private static void setAllPixels() {
 
 		ImagePlus imp = WindowManager.getCurrentImage();
@@ -1466,189 +1395,9 @@ public class ImageMethods extends ViewPart {
 
 	}
 
-	private void pointsToR() {
-		Roi roi = null;
+	
 
-		RConnection d = RServe.getConnection();
-
-		if (d != null) {
-
-			double xydia[][] = PointPanel.pointToArray();
-			if (WindowManager.getCurrentImage() != null) {
-				roi = WindowManager.getCurrentImage().getRoi();
-				int[] roix = null;
-				int[] roiy = null;
-				if (roi != null) {
-					Polygon po = roi.getPolygon();
-					roix = po.xpoints;
-					roiy = po.ypoints;
-
-					try {
-						d.assign("selectionx", roix);
-
-						d.assign("selectiony", roiy);
-					} catch (REngineException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-
-				}
-			}
-
-			try {
-				d.assign("x", xydia[0]);
-
-				d.assign("y", xydia[1]);
-				d.assign("diameter_panel", xydia[2]);
-				d.assign("species", xydia[3]);
-				d.assign("alpha", xydia[4]);
-			} catch (REngineException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			try {
-				d.voidEval("fieldx<-" + fieldx + "");
-
-				d.voidEval("fieldy<-" + fieldy + "");
-			} catch (RserveException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			// }
-
-			Display display = PlatformUI.getWorkbench().getDisplay();
-			display.syncExec(new Runnable() {
-
-				public void run() {
-					MessageBox messageBox = new MessageBox(new Shell(),
-
-					SWT.ICON_INFORMATION);
-					messageBox.setMessage("Transferred values to R");
-					messageBox.open();
-				}
-			});
-			xydia = null;
-
-		} else {
-
-			MessageBox messageBox = new MessageBox(new Shell(),
-
-			SWT.ICON_INFORMATION);
-			messageBox.setMessage("RServer connection failed - Server is not running !");
-			messageBox.open();
-
-		}
-
-	}
-
-	private void particledescriptors() {
-		Roi roi = null;
-		RConnection d = RServe.getConnection();
-		if (WindowManager.getCurrentImage() != null) {
-			if (d != null) {
-
-				try {
-					d.voidEval("ImageHeight<-" + WindowManager.getCurrentImage().getHeight() + "");
-					d.voidEval("ImageWidth<-" + WindowManager.getCurrentImage().getWidth() + "");
-				} catch (RserveException e1) {
-
-				}
-				roi = WindowManager.getCurrentImage().getRoi();
-				int[] roix = null;
-				int[] roiy = null;
-				if (roi != null) {
-					Polygon po = roi.getPolygon();
-					roix = po.xpoints;
-					roiy = po.ypoints;
-
-					try {
-						d.assign("selectionx", roix);
-
-						d.assign("selectiony", roiy);
-					} catch (REngineException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-
-				}
-				runParticleAnalysis(d,null);
-			} else {
-
-				Bio7Dialog.message("Rserve is not alive!");
-			}
-		} else {
-			Bio7Dialog.message("No image opened!");
-		}
-
-	}
-
-	public static void runParticleAnalysis(RConnection con,String macro) {
-		if(macro==null){
-			IJ.runMacro("run(\"Analyze Particles...\")");
-		}
-		else{
-			
-			IJ.runMacro(macro);
-		}
-		// IJ.runMacro("run(\"Analyze Particles...\", \"size=0-Infinity circularity=0.00-1.00 show=Nothing display clear stack\")");
-		// System.out.println(rt.getColumnHeadings());
-		ResultsTable rt = Analyzer.getResultsTable();
-		if (rt == null) {
-			System.out.println("No ImageJ Results Table");
-		} else {
-
-			if (rt.getColumn(0) != null) {
-				try {
-					con.eval("try(Particles<-data.frame(1:" + rt.getColumn(0).length + "))");
-				} catch (RserveException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				int size = rt.getLastColumn();
-				for (int i = 0; i <= size; i++) {
-					if (rt.getColumn(i) != null) {
-						// System.out.println(rt.getColumnHeading(i) +
-						// "::::::::");
-						double[] col = rt.getColumnAsDoubles(i);
-						String columnName = rt.getColumnHeading(i);
-						if (columnName.equals("%Area")) {
-							columnName = columnName.replace("%Area", "Area_Prozent");
-						}
-						try {
-							con.assign(columnName, col);
-						} catch (REngineException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-						try {
-							con.eval("try(Particles<-data.frame(Particles," + columnName + "))");
-							con.eval("remove(" + columnName + ")");
-						} catch (RserveException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-
-						for (int j = 0; j < col.length; j++) {
-							// System.out.println("column Nr: "+i+":"+col[j]+": ");
-						}
-					}
-				}
-				if (ResultsTable.getResultsWindow() != null) {
-					ResultsTable.getResultsWindow().close(false);
-				}
-				try {
-					con.eval("try(Particles[1]<-NULL)");
-				} catch (RserveException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			} else {
-				// Bio7Dialog.message("No Results! Image Thresholded");
-			}
-
-		}
-	}
+	
 
 	private static ImageMethods getImageMethods() {
 		return im;

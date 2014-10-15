@@ -159,6 +159,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 					return;
 				}
+				if (event.getType() != IResourceChangeEvent.POST_CHANGE)
+					return;
 
 				else {
 					try {
@@ -172,58 +174,59 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 									if (resource.getType() == 4) {
 
 										IProject project = resource.getProject();
-										if (project.hasNature(JavaCore.NATURE_ID)) {
-											Display display = PlatformUI.getWorkbench().getDisplay();
-											display.syncExec(new Runnable() {
-												public void run() {
+										if (project.isOpen()) {
 
-													MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
-													message.setMessage("Recalculate the classpath?\n\n"
-															+ "Info: This will set the imported Bio7 Java project classpath\n"
-															+ "to your local installation.");
-													message.setText("Bio7");
-													int response = message.open();
-													if (response == SWT.YES) {
+											if (project.hasNature(JavaCore.NATURE_ID)) {
+												Display display = PlatformUI.getWorkbench().getDisplay();
+												display.asyncExec(new Runnable() {
+													public void run() {
 
-														IJavaProject javaProject = JavaCore.create(project);
+														MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+														message.setMessage("Recalculate the classpath?\n\n" + "Info: This will set the imported Bio7 Java project classpath\n"
+																+ "to your local installation.");
+														message.setText("Bio7");
+														int response = message.open();
+														if (response == SWT.YES) {
 
-														IFolder sourceFolder = project.getFolder("src");
-														IPackageFragmentRoot fragRoot = javaProject.getPackageFragmentRoot(sourceFolder);
+															IJavaProject javaProject = JavaCore.create(project);
 
-														List<IClasspathEntry> entriesJre = new ArrayList<IClasspathEntry>();
+															IFolder sourceFolder = project.getFolder("src");
+															IPackageFragmentRoot fragRoot = javaProject.getPackageFragmentRoot(sourceFolder);
 
-														IVMInstall vmInstall = JavaRuntime.getDefaultVMInstall();
+															List<IClasspathEntry> entriesJre = new ArrayList<IClasspathEntry>();
 
-														LibraryLocation[] locations = JavaRuntime.getLibraryLocations(vmInstall);
-														for (LibraryLocation element : locations) {
-															// System.out.println("location: "+locations);
-															entriesJre.add(JavaCore.newLibraryEntry(element.getSystemLibraryPath(), null, null));
+															IVMInstall vmInstall = JavaRuntime.getDefaultVMInstall();
+
+															LibraryLocation[] locations = JavaRuntime.getLibraryLocations(vmInstall);
+															for (LibraryLocation element : locations) {
+																// System.out.println("location: "+locations);
+																entriesJre.add(JavaCore.newLibraryEntry(element.getSystemLibraryPath(), null, null));
+															}
+															IClasspathEntry[] newEntries = new ScanClassPath().scanForJDT();
+
+															IClasspathEntry[] oldEntries = entriesJre.toArray(new IClasspathEntry[entriesJre.size()]);
+
+															System.arraycopy(oldEntries, 0, newEntries, 0, oldEntries.length);
+															newEntries[oldEntries.length] = JavaCore.newSourceEntry(fragRoot.getPath());
+
+															try {
+																javaProject.setRawClasspath(newEntries, null);
+															} catch (JavaModelException e) {
+																// TODO
+																// Auto-generated
+																// catch block
+																// e.printStackTrace();
+																System.out.println("Minor error! Please check the classpath of the project and if necessary calculate again!");
+															}
+
+														} else {
+
 														}
-														IClasspathEntry[] newEntries = new ScanClassPath().scanForJDT();
-
-														IClasspathEntry[] oldEntries = entriesJre.toArray(new IClasspathEntry[entriesJre.size()]);
-
-														System.arraycopy(oldEntries, 0, newEntries, 0, oldEntries.length);
-														newEntries[oldEntries.length] = JavaCore.newSourceEntry(fragRoot.getPath());
-
-														try {
-															javaProject.setRawClasspath(newEntries, null);
-														} catch (JavaModelException e) {
-															// TODO
-															// Auto-generated
-															// catch block
-															// e.printStackTrace();
-															System.out.println("Minor error! Please check the classpath of the project and if necessary calculate again!");
-														}
-														
-
-													} else {
-
+														Bio7Dialog.message("Java Bio7 Project Libraries Recalculated!");
 													}
-													Bio7Dialog.message("Java Bio7 Project Libraries Recalculated!");
-												}
-											});
+												});
 
+											}
 										}
 									}
 

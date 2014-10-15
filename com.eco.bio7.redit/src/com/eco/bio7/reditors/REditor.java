@@ -277,38 +277,41 @@ public class REditor extends TextEditor {
 
 									TreeItem treeItem = null;
 									if (contentOutlineViewer.getTree().isDisposed() == false) {
-										if (contentOutlineViewer.getTree().getItem(0).isDisposed() == false) {
-											treeItem = contentOutlineViewer.getTree().getItem(0);
-											contentOutlineViewer.getTree().setRedraw(false);
+										if (contentOutlineViewer.getTree().getItemCount() > 0) {
+											if (contentOutlineViewer.getTree().getItem(0).isDisposed() == false) {
+												treeItem = contentOutlineViewer.getTree().getItem(0);
+												contentOutlineViewer.getTree().setRedraw(false);
 
-											// Object[] exp =
-											// contentOutlineViewer.getExpandedElements();
+												// Object[] exp =
+												// contentOutlineViewer.getExpandedElements();
 
-											TreePath[] treePaths = contentOutlineViewer.getExpandedTreePaths();
-											contentOutlineViewer.expandAll();
-											contentOutlineViewer.refresh();
-											walkTreeLineNumber(treeItem, lineNumber + 1);
+												TreePath[] treePaths = contentOutlineViewer.getExpandedTreePaths();
+												contentOutlineViewer.expandAll();
+												contentOutlineViewer.refresh();
+												walkTreeLineNumber(treeItem, lineNumber + 1);
 
-											// contentOutlineViewer.setExpandedElements(expanded);
+												// contentOutlineViewer.setExpandedElements(expanded);
 
-											contentOutlineViewer.setExpandedTreePaths(treePaths);
-											for (int i = 0; i < selectedItems.size(); i++) {
-												TreeItem it = (TreeItem) selectedItems.get(i);
-												it.setExpanded(true);
-												TreeItem parent = it;
-												while (parent != null) {
-													if (parent.getParentItem() != null) {
-														parent = parent.getParentItem();
-														parent.setExpanded(true);
-													} else {
-														break;
+												contentOutlineViewer.setExpandedTreePaths(treePaths);
+												for (int i = 0; i < selectedItems.size(); i++) {
+													TreeItem it = (TreeItem) selectedItems.get(i);
+													it.setExpanded(true);
+													TreeItem parent = it;
+													while (parent != null) {
+														if (parent.getParentItem() != null) {
+															parent = parent.getParentItem();
+															parent.setExpanded(true);
+														} else {
+															break;
+														}
+
 													}
-
+													contentOutlineViewer.refresh(it);
 												}
-												contentOutlineViewer.refresh(it);
-											}
 
-											contentOutlineViewer.getTree().setRedraw(true);
+												contentOutlineViewer.getTree().setRedraw(true);
+
+											}
 
 										}
 									}

@@ -927,7 +927,7 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 		}
 	}
 
-	protected static int get_Diameter() {
+	public static int get_Diameter() {
 		return diameter;
 	}
 
@@ -935,19 +935,19 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 		PointPanel.diameter = diameter;
 	}
 
-	protected static Vector<Float> get_Alpha() {
+	public static Vector<Float> get_Alpha() {
 		return alpha;
 	}
 
-	protected static Vector<Point2D.Double> get_Points() {
+	public static Vector<Point2D.Double> get_Points() {
 		return Points;
 	}
 
-	protected static Vector<Integer> get_Species() {
+	public static Vector<Integer> get_Species() {
 		return species;
 	}
 
-	protected static Vector<Double> getVe() {
+	public static Vector<Double> getVe() {
 		return ve;
 	}
 
@@ -967,7 +967,7 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 		PointPanel.compos2 = compos2;
 	}
 
-	protected static float getCompos3() {
+	public static float getCompos3() {
 		return compos3;
 	}
 
@@ -975,7 +975,7 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 		PointPanel.compos3 = compos3;
 	}
 
-	protected static boolean isQuad2d_visible() {
+	public static boolean isQuad2d_visible() {
 		return quad2dVisible;
 	}
 
@@ -983,11 +983,11 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 		PointPanel.quad2dVisible = quad2d_visible;
 	}
 
-	protected int getCount() {
+	public int getCount() {
 		return count;
 	}
 
-	protected void setCount(int count) {
+	public void setCount(int count) {
 		this.count = count;
 	}
 
@@ -1007,7 +1007,7 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 		this.transformy = transformy;
 	}
 
-	protected static int getPlantIndexPanel() {
+	public static int getPlantIndexPanel() {
 		return stateIndexJp;
 	}
 

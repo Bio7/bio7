@@ -68,6 +68,7 @@ public class RConnectionJob extends WorkspaceJob {
 			
 			if(store.getBoolean("RSERVE_NATIVE_START")){
 				String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
+				
 				if (selectionConsole.equals("R")) {
 					
 					ConsolePageParticipant.pipeInputToConsole("library(Rserve)",true,false);
