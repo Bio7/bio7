@@ -20,6 +20,7 @@ import ij.process.ColorProcessor;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
+
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -30,8 +31,10 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+
 import javax.imageio.ImageIO;
 import javax.swing.SwingUtilities;
+
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.IToolBarManager;
@@ -49,6 +52,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Scale;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
@@ -60,11 +64,13 @@ import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
+
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.discrete.Field;
 import com.eco.bio7.discrete.Quad2d;
 import com.eco.bio7.image.r.IJTranserResultsTable;
+import com.eco.bio7.image.r.TransferImageStack;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.swtdesigner.ResourceManager;
@@ -190,6 +196,8 @@ public class ImageMethods extends ViewPart {
 	private Image toIJGif;
 
 	private Image rGif;
+
+	private Button btnNewButton_1;
 
 	protected static boolean createMatrix;
 
@@ -651,35 +659,86 @@ public class ImageMethods extends ViewPart {
 		CLabel lblNewLabel = new CLabel(top, SWT.NONE);
 		lblNewLabel.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 2, 1));
 		lblNewLabel.setText("Transfer Selected Data To R");
-		
-				Button btnNewButton = new Button(top, SWT.NONE);
-				rGif = org.eclipse.wb.swt.ResourceManager.getPluginImage("com.eco.bio7", "bin/pics/r.gif");
-				btnNewButton.setImage(rGif);
-				btnNewButton.addSelectionListener(new SelectionAdapter() {
-					@Override
-					public void widgetSelected(SelectionEvent e) {
-						RConnection con = RServe.getConnection();
 
-						if (RServe.isAliveDialog()) {
-							if (RState.isBusy() == false) {
-								new IJTranserResultsTable().transferResultsTable(con, true);
-							} else {
-								Bio7Dialog.message("RServer is busy!");
-							}
+		Button btnNewButton = new Button(top, SWT.NONE);
+		rGif = org.eclipse.wb.swt.ResourceManager.getPluginImage("com.eco.bio7", "bin/pics/r.gif");
+		btnNewButton.setImage(rGif);
+		btnNewButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				RConnection con = RServe.getConnection();
 
-						}
+				if (RServe.isAliveDialog()) {
+					if (RState.isBusy() == false) {
+						new IJTranserResultsTable().transferResultsTable(con, true);
+					} else {
+						Bio7Dialog.message("RServer is busy!");
 					}
-				});
-				GridData gd_btnNewButton = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
-				gd_btnNewButton.heightHint = 30;
-				btnNewButton.setLayoutData(gd_btnNewButton);
-				btnNewButton.setText("IJ RT       ");
-		
-				Button btnNewButton_1 = new Button(top, SWT.NONE);
-				GridData gd_btnNewButton_1 = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
-				gd_btnNewButton_1.heightHint = 30;
-				btnNewButton_1.setLayoutData(gd_btnNewButton_1);
-				btnNewButton_1.setText("IJ R RasterStack");
+
+				}
+			}
+		});
+		GridData gd_btnNewButton = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		gd_btnNewButton.heightHint = 30;
+		btnNewButton.setLayoutData(gd_btnNewButton);
+		btnNewButton.setText("IJ RT       ");
+
+		btnNewButton_1 = new Button(top, SWT.NONE);
+		btnNewButton_1.addSelectionListener(new SelectionAdapter() {
+			boolean convertToRaster;
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				RConnection con = RServe.getConnection();
+
+				if (con != null) {
+					if (RState.isBusy() == false) {
+						RState.setBusy(true);
+						
+								MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+								message.setMessage("Should a Raster Stack be created?");
+								message.setText("Raster?");
+								int response = message.open();
+								if (response == SWT.YES) {
+
+									convertToRaster=true;
+								}
+								
+								else{
+									convertToRaster=false;
+								}
+								TransferImageStack job=	new TransferImageStack("Transfer ImageJ Stack",con,convertToRaster);
+								job.addJobChangeListener(new JobChangeAdapter() {
+									public void done(IJobChangeEvent event) {
+										if (event.getResult().isOK()) {
+											
+											RState.setBusy(false);
+										} else {
+											
+											RState.setBusy(false);
+										}
+									}
+								});
+								// picjob.setSystem(true);
+								job.schedule();
+
+						
+						
+
+
+					} else {
+						Bio7Dialog.message("RServer is busy!");
+					}
+
+				} else {
+					Bio7Dialog.message("No Rserve connection available!");
+				}
+
+			}
+		});
+		GridData gd_btnNewButton_1 = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		gd_btnNewButton_1.heightHint = 30;
+		btnNewButton_1.setLayoutData(gd_btnNewButton_1);
+		btnNewButton_1.setText("IJ R RasterStack");
 		GridData gridData = new org.eclipse.swt.layout.GridData(SWT.FILL, SWT.FILL, false, false);
 		gridData.heightHint = 30;
 		button2 = new Button(top, SWT.NONE);
@@ -1395,10 +1454,6 @@ public class ImageMethods extends ViewPart {
 
 	}
 
-	
-
-	
-
 	private static ImageMethods getImageMethods() {
 		return im;
 	}
@@ -1589,11 +1644,11 @@ public class ImageMethods extends ViewPart {
 			}
 			if (imp != null) {
 
-				if (transferDataType == 0 || transferDataType == 3) {
+				//if (transferDataType == 0 || transferDataType == 3) {
 					createMatrix = matrix;
-				} else {
-					createMatrix = false;
-				}
+				//} else {
+					//createMatrix = false;
+				//}
 
 				/* Get the image processor of the image ! */
 				ImageProcessor ip = imp.getProcessor();
@@ -2402,7 +2457,7 @@ public class ImageMethods extends ViewPart {
 	}
 
 	/* Used in Cluster and Pca job */
-	protected static Combo getTransferTypeCombo() {
+	public static Combo getTransferTypeCombo() {
 		return transferTypeCombo;
 	}
 

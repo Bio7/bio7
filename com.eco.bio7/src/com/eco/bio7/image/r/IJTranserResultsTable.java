@@ -85,7 +85,7 @@ public class IJTranserResultsTable {
 				}
 				
 				try {
-					con.eval("try(Particles[1]<-NULL)");
+					con.eval("try(IJResultsTable[1]<-NULL)");
 				} catch (RserveException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
