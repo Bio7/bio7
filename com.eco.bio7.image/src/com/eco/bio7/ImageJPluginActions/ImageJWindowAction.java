@@ -111,21 +111,21 @@ public class ImageJWindowAction extends Action implements IMenuCreator {
 						if (p.getCurSharedRef() != null) {
 							p = p.getCurSharedRef();
 
-							s.detach(p, (pt.x + pSize.x) - 290, pt.y + 30, 260, 760);
+							s.detach(p, (pt.x + pSize.x) - 290, pt.y + 30, 260, 790);
 						}
 
 					} else if (os.equals("Windows")) {
 						if (p.getCurSharedRef() != null) {
 							p = p.getCurSharedRef();
 
-							s.detach(p, (pt.x + pSize.x) - 290, pt.y + 30, 270, 810);
+							s.detach(p, (pt.x + pSize.x) - 290, pt.y + 30, 270, 840);
 						}
 
 					} else if (os.equals("Mac")) {
 						if (p.getCurSharedRef() != null) {
 							p = p.getCurSharedRef();
 
-							s.detach(p, (pt.x + pSize.x) - 290, pt.y + 30, 260, 760);
+							s.detach(p, (pt.x + pSize.x) - 290, pt.y + 30, 260, 790);
 						}
 
 					}
@@ -134,7 +134,7 @@ public class ImageJWindowAction extends Action implements IMenuCreator {
 					if (p.getCurSharedRef() != null) {
 						p = p.getCurSharedRef();
 
-						s.detach(p, 100, 100, 260, 760);
+						s.detach(p, 100, 100, 260, 790);
 					}
 
 				}

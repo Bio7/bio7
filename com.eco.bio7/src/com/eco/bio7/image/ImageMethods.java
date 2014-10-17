@@ -684,6 +684,8 @@ public class ImageMethods extends ViewPart {
 		btnNewButton.setText("IJ RT       ");
 
 		btnNewButton_1 = new Button(top, SWT.NONE);
+		rGif = org.eclipse.wb.swt.ResourceManager.getPluginImage("com.eco.bio7", "bin/pics/r.gif");
+		btnNewButton_1.setImage(rGif);
 		btnNewButton_1.addSelectionListener(new SelectionAdapter() {
 			boolean convertToRaster;
 			@Override
@@ -738,7 +740,7 @@ public class ImageMethods extends ViewPart {
 		GridData gd_btnNewButton_1 = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
 		gd_btnNewButton_1.heightHint = 30;
 		btnNewButton_1.setLayoutData(gd_btnNewButton_1);
-		btnNewButton_1.setText("IJ R RasterStack");
+		btnNewButton_1.setText("IJ RasterStack");
 		GridData gridData = new org.eclipse.swt.layout.GridData(SWT.FILL, SWT.FILL, false, false);
 		gridData.heightHint = 30;
 		button2 = new Button(top, SWT.NONE);
