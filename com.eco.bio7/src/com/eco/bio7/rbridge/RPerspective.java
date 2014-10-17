@@ -32,14 +32,16 @@ public class RPerspective implements IPerspectiveFactory {
 		IFolderLayout topLeft = layout.createFolder("topLeft", IPageLayout.LEFT, (float) 0.42, editorArea);
 		
 		
-		IFolderLayout bottomLeft = layout.createFolder("viewRight", IPageLayout.BOTTOM, (float) 0.55,"topLeft");
+		IFolderLayout bottomLeft = layout.createFolder("viewBottomLeft", IPageLayout.BOTTOM, (float) 0.55,"topLeft");
 		
 
-		IFolderLayout viewRight = layout.createFolder("viewRight", IPageLayout.BOTTOM, (float) 0.55, editorArea);
+		IFolderLayout viewRight = layout.createFolder("viewBottomRight", IPageLayout.BOTTOM, (float) 0.55, editorArea);
 		
 		topLeft.addView("com.eco.bio7.RShell");
 		topLeft.addView("org.eclipse.ui.views.ResourceNavigator");
+		
 		bottomLeft.addView("org.eclipse.ui.views.ContentOutline");
+		
 		viewRight.addView(RTable.ID);
 		viewRight.addView("org.eclipse.ui.console.ConsoleView");
 		viewRight.addView("org.eclipse.wst.common.snippets.internal.ui.SnippetsView");

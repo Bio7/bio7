@@ -10,17 +10,19 @@ package com.eco.bio7.editors;
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *     
- *      M.Austenfeld - Minor changes for the Bio7 application
+ *      M.Austenfeld -  Changes for the Bio7 application
  *******************************************************************************/
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.EndOfLineRule;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
+import org.eclipse.jface.text.rules.IWordDetector;
 import org.eclipse.jface.text.rules.MultiLineRule;
 import org.eclipse.jface.text.rules.NumberRule;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
@@ -32,8 +34,8 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
-
 import com.eco.bio7.editor.BeanshellEditorPlugin;
+
 
 /**
  * A Java code scanner.
@@ -112,8 +114,8 @@ public class ScriptCodeScanner extends RuleBasedScanner {
 		rules.add(new WhitespaceRule(new ScriptWhitespaceDetector()));
 		rules.add(new COperatorRule(operators));
 		rules.add(new ScriptEditorBraceRule(braces));
-		rules.add(new NumberRule(numbers));
-
+		//rules.add(new NumberRule(numbers));
+		rules.add(new WordRule(new NumberDetector(), numbers));
 		// Add word rule for keywords, types, and constants.
 		WordRule wordRule = new WordRule(new ScriptWordDetector(), other);
 		for (int i = 0; i < fgKeywords.length; i++)
@@ -147,6 +149,52 @@ public class ScriptCodeScanner extends RuleBasedScanner {
 
 	public IToken getType() {
 		return type;
+	}
+	static public class NumberDetector implements IWordDetector {
+
+		/**
+		 * Used to keep the state of the token
+		 */
+		private FastStringBuffer buffer = new FastStringBuffer();
+
+		/**
+		 * Defines if we are at an hexa number
+		 */
+		private boolean isInHexa;
+
+		/**
+		 * @see org.eclipse.jface.text.rules.IWordDetector#isWordStart(char)
+		 */
+		public boolean isWordStart(char c) {
+			isInHexa = false;
+			buffer.clear();
+			buffer.append(c);
+			return Character.isDigit(c);
+		}
+
+		/**
+		 * Check if we are still in the number
+		 */
+		public boolean isWordPart(char c) {
+			// ok, we have to test for scientific notation e.g.: 10.9e10
+
+			if ((c == 'x' || c == 'X') && buffer.length() == 1 && buffer.charAt(0) == '0') {
+				// it is an hexadecimal
+				buffer.append(c);
+				isInHexa = true;
+				return true;
+			} else {
+				buffer.append(c);
+			}
+
+			if (isInHexa) {
+				return Character.isDigit(c) || c == 'a' || c == 'A' || c == 'b' || c == 'B' || c == 'c' || c == 'C' || c == 'd' || c == 'D' || c == 'e' || c == 'E' || c == 'f' || c == 'F';
+
+			} else {
+				return Character.isDigit(c) || c == 'e' || c == '.';
+			}
+		}
+
 	}
 
 	/**

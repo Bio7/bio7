@@ -58,20 +58,17 @@ public class LoadRLibrarysJob extends WorkspaceJob {
 					try {
 						c.eval("try(library(" + items[i] + "))");
 						
-						/*Function loaded at Rserve startup!*/
-						c.eval("writeFunctionDef();");
+						/*Function loaded at Rserve startup. Writes the available functions to a file!*/
+						c.eval(".bio7WriteFunctionDef();");
 					} catch (RserveException e) {
 						
 						e.printStackTrace();
 					}
 					System.out.println("Loaded library "+items[i]);
 				
-			}		
-			/*Rewrite the code templates for the R editor!*/
+			}
 			
-			
-			
-			
+			/*Reload the code templates for the R editor!*/
 			RCompletionProcessor.loadRCodePackageTemplates(false);
 		}
 

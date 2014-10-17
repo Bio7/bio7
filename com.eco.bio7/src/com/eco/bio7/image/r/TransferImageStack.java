@@ -42,12 +42,12 @@ public class TransferImageStack extends WorkspaceJob {
 		}
 		if (size > 1) {
 			monitor.beginTask("Transfer Image Stack.....", size);
-			transferStack(monitor);
+			transferStack(monitor,imp);
 		}
 		return Status.OK_STATUS;
 	}
 
-	public void transferStack(IProgressMonitor monitor) {
+	public void transferStack(IProgressMonitor monitor,ImagePlus imp) {
 		Display display = PlatformUI.getWorkbench().getDisplay();
 		display.syncExec(new Runnable() {
 			public void run() {
@@ -55,110 +55,129 @@ public class TransferImageStack extends WorkspaceJob {
 			}
 		});
 
-		if (convert) {
-			if (type == 2) {
-
-				Bio7Dialog.message("Raw type not supported in raster!");
-				return;
-			}
-
-			try {
-				bolExists = (REXPLogical) c.eval("try(require(raster))");
-				bolE = bolExists.isTRUE();
-
-				c.eval("rasterStackFromIJ<-stack()");
-
-			} catch (RserveException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			if (bolE[0] == false) {
-				return;
-			}
-
-		}
-
-		else {
-			try {
-				c.eval("rasterStackFromIJ<-stack()");
-				c.eval("matrixList <- list()");
-
-			} catch (RserveException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-		}
-
 		int slice = 1;
 
 		// Calculate the stack size!
-		ImagePlus imp = WindowManager.getCurrentImage();
+		
 		if (imp != null) {
 			int size = imp.getStackSize();
 			int width = imp.getWidth();
 			int height = imp.getHeight();
 
-			while (slice <= size) {
-				monitor.setTaskName("Transfer image number: " + slice);
-				IJ.run("Set Slice...", "slice=" + slice);
-				/*
-				 * Transfer as integer! ->0=double, 1=integer, 2=byte, 3=RGB
-				 * byte
-				 */
+			if (convert == true) {
+				if (type == 2) {
 
-				ImageMethods.imageToR("imageMatrix", true, type, null);
-				if (convert == false) {
-					try {
-						// RServe.print("typeof(matrix)");
-						c.eval("try(matrixList[[" + (slice) + "]]<-imageMatrix)");
-						// lapply(matrixList,image) //plot the list of matrices
+					Bio7Dialog.message("Raw type not supported in raster!");
 
-						
-
-						
-					} catch (RserveException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
 				} else {
-
 					try {
+						bolExists = (REXPLogical) c.eval("try(require(raster))");
+						bolE = bolExists.isTRUE();
 
-						if (type == 3) {
-							// If a RGB transfer!
-							c.eval("try(themat1<-matrix(imageMatrix[,1],nrow=" + width + ", ncol=" + height + "))");
-							c.eval("try(rasterStackFromIJ <- stack(rasterStackFromIJ,raster(themat1)))");
-
-							c.eval("try(themat2<-matrix(imageMatrix[,2],nrow=" + width + ", ncol=" + height + "))");
-							c.eval("try(rasterStackFromIJ <- stack(rasterStackFromIJ,raster(themat2)))");
-
-							c.eval("try(themat3<-matrix(imageMatrix[,3],nrow=" + width + ", ncol=" + height + "))");
-							c.eval("try(rasterStackFromIJ <- stack(rasterStackFromIJ,raster(themat3)))");
-
-							//c.eval("try(rasterStackFromIJ <- stack(rasterStackFromIJ,raster(themat1),raster(themat2),raster(themat3)))");
-							
-							
-
-						} else {
-
-							c.eval("try(rasterStackFromIJ <- addLayer( rasterStackFromIJ , raster(imageMatrix)))");
-						}
-						// converts the matrix list to a raster list and
-						// then
-						// the list to a raster stack!
-						// c.eval("rasterStackFromIJ <- do.call(stack,lapply(matrixList,raster))");
-					} catch (RserveException e) {
+					} catch (RserveException e1) {
 						// TODO Auto-generated catch block
-						e.printStackTrace();
+						e1.printStackTrace();
+					}
+					if (bolE[0] == true) {
+
+						try {
+							
+							c.eval("rasterStackFromIJ<-stack()");
+						} catch (RserveException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+
+						while (slice <= size) {
+							
+							monitor.setTaskName("Transfer image number: " + slice);
+							IJ.run("Set Slice...", "slice=" + slice);
+							/*
+							 * Transfer as integer! ->0=double, 1=integer,
+							 * 2=byte, 3=RGB byte
+							 */
+
+							ImageMethods.imageToR("imageMatrix", true, type, null);
+							try {
+
+								if (type == 3) {
+									// If a RGB transfer!
+									c.eval("try(themat1<-matrix(imageMatrix[,1],nrow=" + width + ", ncol=" + height + "))");
+									c.eval("try(rasterStackFromIJ <- stack(rasterStackFromIJ,raster(themat1)))");
+
+									c.eval("try(themat2<-matrix(imageMatrix[,2],nrow=" + width + ", ncol=" + height + "))");
+									c.eval("try(rasterStackFromIJ <- stack(rasterStackFromIJ,raster(themat2)))");
+
+									c.eval("try(themat3<-matrix(imageMatrix[,3],nrow=" + width + ", ncol=" + height + "))");
+									c.eval("try(rasterStackFromIJ <- stack(rasterStackFromIJ,raster(themat3)))");
+
+									// c.eval("try(rasterStackFromIJ <- stack(rasterStackFromIJ,raster(themat1),raster(themat2),raster(themat3)))");
+
+								} else {
+
+									c.eval("try(rasterStackFromIJ <- stack( rasterStackFromIJ , raster(imageMatrix)))");
+								}
+								// converts the matrix list to a raster list and
+								// then
+								// the list to a raster stack!
+								// c.eval("rasterStackFromIJ <- do.call(stack,lapply(matrixList,raster))");
+							} catch (RserveException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							slice++;
+							monitor.worked(1);
+						}
+
+					} else {
+
+						Bio7Dialog.message("Raster package not loaded!");
+						return;
 					}
 
 				}
-
-				slice++;
-				monitor.worked(1);
 			}
 
+			else {
+
+				try {
+
+					c.eval("matrixList <- list()");
+
+				} catch (RserveException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				// Calculate the stack size!
+
+				while (slice <= size) {
+					monitor.setTaskName("Transfer image number: " + slice);
+					IJ.run("Set Slice...", "slice=" + slice);
+					/*
+					 * Transfer as integer! ->0=double, 1=integer, 2=byte, 3=RGB
+					 * byte
+					 */
+
+					ImageMethods.imageToR("imageMatrix", true, type, null);
+					
+						try {
+							// RServe.print("typeof(matrix)");
+							c.eval("try(matrixList[[" + (slice) + "]]<-imageMatrix)");
+							// lapply(matrixList,image) //plot the list of
+							// matrices
+
+						} catch (RserveException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					
+
+					slice++;
+					monitor.worked(1);
+				}
+
+			}
 		} else {
 			Bio7Dialog.message("No image opened in ImageJ!");
 		}

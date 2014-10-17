@@ -476,30 +476,34 @@ public class REditor extends TextEditor {
 
 						TreeItem it = item.getItem(j);
 						if (it.isDisposed() == false) {
-							if (lineNumber == ((REditorOutlineNode) it.getData()).getLineNumber()) {
-								contentOutlineViewer.getTree().setSelection(it);
-								// item.setExpanded(true);
-								// update the viewer
-								// contentOutlineViewer.refresh();
+							if (((REditorOutlineNode) it.getData() != null)) {
+								if (lineNumber == ((REditorOutlineNode) it.getData()).getLineNumber()) {
+									contentOutlineViewer.getTree().setSelection(it);
+									// item.setExpanded(true);
+									// update the viewer
+									// contentOutlineViewer.refresh();
 
-								selectedItems.add(it);
-								found = true;
-								if (treeItemLine.isEmpty() == false) {
-									treeItemLine.clear();
+									selectedItems.add(it);
+									found = true;
+									if (treeItemLine.isEmpty() == false) {
+										treeItemLine.clear();
+									}
+
+									break;
+								} else {
+
+									/*
+									 * Recursive call of the method for
+									 * subnodes!
+									 */
+									// if(treeItemLine.size()>2){
+									/* Set recursion depth! */
+									// break;
+									// }
+									walkTreeLineNumber(it, lineNumber);
 								}
-
-								break;
-							} else {
-
-								/* Recursive call of the method for subnodes! */
-								// if(treeItemLine.size()>2){
-								/* Set recursion depth! */
-								// break;
-								// }
-								walkTreeLineNumber(it, lineNumber);
 							}
 						}
-
 					}
 					if (found == false) {
 						if (treeItemLine.isEmpty() == false) {

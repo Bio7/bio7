@@ -19,25 +19,41 @@ public class Perspective implements IPerspectiveFactory {
 
 		String editorArea = layout.getEditorArea();
 		layout.setEditorAreaVisible(false);
-		IFolderLayout topLeft = layout.createFolder(
-				"topLeft", IPageLayout.LEFT, (float) 0.24, editorArea);//$NON-NLS-1$
-		topLeft.addView(StateButtonView.ID);
-		topLeft.addPlaceholder(IPageLayout.ID_BOOKMARKS);
-
-		IFolderLayout bottomLeft = layout.createFolder("bottomLeft",
-				IPageLayout.BOTTOM, (float) 0.30, "topLeft");
-		bottomLeft.addView(InfoView.ID);
+		IFolderLayout left = layout.createFolder("MainLeft", IPageLayout.LEFT, (float) 0.25, editorArea);//$NON-NLS-1$
+		IFolderLayout Right = layout.createFolder("MainRight", IPageLayout.RIGHT, (float) 0.75, editorArea);
 		
+		IFolderLayout subLeftTop = layout.createFolder("SubLeftTop", IPageLayout.TOP, (float) 0.3, "MainLeft");//$NON-NLS-1$
+		IFolderLayout subLeftBottom = layout.createFolder("SubLeftBottom", IPageLayout.BOTTOM, (float) 0.75, "MainLeft");//$NON-NLS-1$
+		
+		
+		IFolderLayout subRightTop = layout.createFolder("SubRightTop", IPageLayout.TOP, (float) 0.3, "MainRight");//$NON-NLS-1$
+		
+		IFolderLayout subRightBottom = layout.createFolder("SubRightBottom", IPageLayout.BOTTOM, (float) 0.75, "MainRight");
+		
+		IFolderLayout subRightBottomLeft = layout.createFolder("SubRightBottomLeft", IPageLayout.LEFT, (float) 0.4, "SubRightBottom");
+		
+		IFolderLayout subRightBottomRight = layout.createFolder("SubRightBottomRight", IPageLayout.RIGHT, (float) 0.6, "SubRightBottom");
+		
+		IFolderLayout subRightBottomLeftTop = layout.createFolder("subRightBottomLeftTop", IPageLayout.TOP, (float) 0.5, "SubRightBottomLeft");
+		
+		IFolderLayout subRightBottomLeftBottom = layout.createFolder("subRightBottomLeftTop", IPageLayout.BOTTOM, (float) 0.5, "SubRightBottomLeft");
+		
+		
+		
+		
+		subLeftTop.addView(StateButtonView.ID);
+		//topLeft.addPlaceholder(IPageLayout.ID_BOOKMARKS);
+		subLeftBottom.addView(InfoView.ID);
+		
+		subRightTop.addView(Spreadview.ID);
+		
+		subRightBottomRight.addView(Quadview.ID);
 
-		layout.addStandaloneView(Spreadview.ID, true, IPageLayout.TOP, 0.3f,
-				editorArea);
-
-		layout.addStandaloneView(Quadview.ID, true, IPageLayout.RIGHT, 0.4f,
-				editorArea);
-		layout.addStandaloneView(LineChartView.ID, true, IPageLayout.BOTTOM,
-				0.5f, editorArea);
-		layout.addStandaloneView(PieChartView.ID, true, IPageLayout.TOP, 0.5f,
-				editorArea);
+		subRightBottomLeftTop.addView(LineChartView.ID);
+		
+		subRightBottomLeftBottom.addView(PieChartView.ID);
+		
+		
 
 	}
 

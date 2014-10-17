@@ -30,16 +30,16 @@
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
-            category="prefr"
+            category="com.eco.bio7.R"
             class="com.eco.bio7.rpreferences.TemplatesPreferencePage"
             id="rpreferencepage"
-            name="Template Editor R">
+            name="Preferences Editor Templates">
       </page>
       <page
-             category="com.eco.bio7.preferences.Bio7PreferencePage"
+             category="com.eco.bio7.R"
             class="com.eco.bio7.rpreferences.WorkbenchPreferenceR"
             id="prefr"
-            name="Preferences R">
+            name="Preferences Editor">
        </page>
       
    </extension>

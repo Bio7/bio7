@@ -85,7 +85,7 @@ public class RServePrefs extends FieldEditorPreferencePage implements IWorkbench
 		addField(selectLinuxShell);
 		//addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new StringFieldEditor("RSERVE_ARGS", "Rserve startup arguments (Not for Shell)", getFieldEditorParent()));
-		addField(new StringFieldEditor("R_STARTUP_ARGS", "R startup arguments", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
+		addField(new MultiLineTextFieldEditor("R_STARTUP_ARGS", "R startup commands", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		/*addField(new LabelFieldEditor("Plot:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("USE_CUSTOM_DEVICE", "Use Custom Device", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));

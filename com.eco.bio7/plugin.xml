@@ -428,8 +428,8 @@
       <page
             category="com.eco.bio7.preferences.Bio7PreferencePage"
             class="com.eco.bio7.preferences.RServePrefs"
-            id="com.eco.bio7.RServe"
-            name="Preferences RServe"/>
+            id="com.eco.bio7.R"
+            name="Preferences R"/>
       <page
             category="com.eco.bio7.preferences.Bio7PreferencePage"
             class="com.eco.bio7.preferences.OpenOfficePreferencePage"
@@ -449,19 +449,19 @@
             name="Preferences Native">
       </page>
       <page
-            category="com.eco.bio7.preferences.Bio7PreferencePage"
+            category="com.eco.bio7.R"
             class="com.eco.bio7.preferences.RPackagesPreferencePage"
             id="com.eco.bio7.rpackages"
             name="Preferences R Build Tools">
       </page>
       <page
-            category="com.eco.bio7.preferences.Bio7PreferencePage"
+            category="com.eco.bio7.R"
             class="com.eco.bio7.preferences.RServePlotPrefs"
             id="com.eco.bio7.RServePlot"
             name="Preferences RServe Plots">
       </page>
       <page
-            category="com.eco.bio7.preferences.Bio7PreferencePage"
+            category="com.eco.bio7.R"
             class="com.eco.bio7.preferences.RPrefDebug"
             id="com.eco.bio7.debug"
             name="Preferences R Debug">

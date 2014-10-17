@@ -415,6 +415,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, reg2);
 
 		}
+		
+		//store.setDefault("R_STARTUP_ARGS","try(options(max.print=5000)\n)");
 
 		store.setDefault("datatablesize", 100);
 		store.setDefault(PreferenceConstants.D_STRING, fileStartupScripts.getAbsolutePath());

@@ -52,6 +52,8 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 	private static final Comparator fgProposalComparator = new ProposalComparator();
 
 	private static final String DEFAULT_IMAGE = "$nl$/icons/template.gif"; //$NON-NLS-1$
+	
+	private static final String CALCULATED_TEMPLATE_IMAGE = "$nl$/icons/methpub_obj.gif"; //$NON-NLS-1$
 
 	public static String[] statistics;
 
@@ -60,6 +62,12 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 	public static String[] statisticsSet;
 
 	private boolean triggerNext;
+	
+	private int count = 0;//Variable to count the listed template.
+	
+	private int defaultTemplatesLength;//Global variable to get the current template amount.
+
+
 
 	public RCompletionProcessor(boolean startupTemplates) {
 
@@ -182,6 +190,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 	@SuppressWarnings("unchecked")
 	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
+		count=0;
 
 		ITextSelection selection = (ITextSelection) viewer.getSelectionProvider().getSelection();
 
@@ -198,6 +207,8 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		context.setVariable("selection", selection.getText()); // name of the selection variables {line, word}_selection //$NON-NLS-1$
 
 		Template[] templates = getTemplates(context.getContextType().getId());
+		defaultTemplatesLength = templates.length;
+
 		List<ICompletionProposal> matches = new ArrayList<ICompletionProposal>();
 		for (int i = 0; i < templates.length; i++) {
 			Template template = templates[i];
@@ -300,14 +311,35 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 	 * @return the default template image
 	 */
 	protected Image getImage(Template template) {
-		ImageRegistry registry = TemplateEditorUI.getDefault().getImageRegistry();
-		Image image = registry.get(DEFAULT_IMAGE);
-		if (image == null) {
-			ImageDescriptor desc = TemplateEditorUI.imageDescriptorFromPlugin("com.eco.bio7.redit", DEFAULT_IMAGE); //$NON-NLS-1$
-			registry.put(DEFAULT_IMAGE, desc);
-			image = registry.get(DEFAULT_IMAGE);
+
+		if (count < defaultTemplatesLength) {
+			count++;
+			ImageRegistry registry = TemplateEditorUI.getDefault()
+					.getImageRegistry();
+			Image image = registry.get(DEFAULT_IMAGE);
+			if (image == null) {
+				ImageDescriptor desc = TemplateEditorUI
+						.imageDescriptorFromPlugin(
+								"com.eco.bio7.redit", DEFAULT_IMAGE); //$NON-NLS-1$
+				registry.put(DEFAULT_IMAGE, desc);
+				image = registry.get(DEFAULT_IMAGE);
+			}
+			return image;
+		} else {
+
+			ImageRegistry registry = TemplateEditorUI.getDefault()
+					.getImageRegistry();
+			Image image = registry.get(CALCULATED_TEMPLATE_IMAGE);
+			if (image == null) {
+				ImageDescriptor desc = TemplateEditorUI
+						.imageDescriptorFromPlugin(
+								"com.eco.bio7.redit", CALCULATED_TEMPLATE_IMAGE); //$NON-NLS-1$
+				registry.put(CALCULATED_TEMPLATE_IMAGE, desc);
+				image = registry.get(CALCULATED_TEMPLATE_IMAGE);
+			}
+			return image;
 		}
-		return image;
+
 	}
 
 }

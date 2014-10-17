@@ -191,7 +191,7 @@ public class RConnectionJob extends WorkspaceJob {
 				
 				tempPath = tempPath.replace("\\", "/");
 			}
-			System.out.println(tempPath);
+			//System.out.println(tempPath);
 			con.eval("try(options(max.print=5000))");
             con.eval("try(.bio7tempenvpath<- new.env())");
             con.eval("try(assign(\"pathTemp\", \""+tempPath+"\", env=.bio7tempenvpath))");
@@ -214,6 +214,10 @@ public class RConnectionJob extends WorkspaceJob {
 			if (customDevice) {
 				con.eval(dev);
 			}
+			/*Set the custom startup preferences options!*/
+			String rStartupArgs=store.getString("R_STARTUP_ARGS");
+			rStartupArgs = rStartupArgs.replace('\r', ' ');// Replace
+			con.eval(""+rStartupArgs+"");
 			/*
 			 * If Rserve is unavailable reset the variable which indicates if
 			 * Rserve is busy!
