@@ -1,6 +1,7 @@
 package com.eco.bio7.rbridge;
 
 import java.util.StringTokenizer;
+
 import org.eclipse.nebula.widgets.grid.Grid;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.ImageTransfer;
@@ -156,33 +157,27 @@ public class CutCopyPaste {
 					if (row < grid.getItemCount() && column < grid.getColumnCount()) {
 						grid.getItem(row).setText(column, value);
 					}
+					/*Create row or columns if grid is to small!*/
+					else{
+					    
+					    if(row >= grid.getItemCount()){
+					    	Bio7Grid.createRow(row, grid.getItemHeight());
+					    
+					    }
+					    
+					    else if(column>=grid.getColumnCount()){
+					    	Bio7Grid.createColumn(column, 50, "C" + (column + 1));
+					    }
+					    grid.getItem(row).setText(column, value);
+					}
 
-					/*
-					 * if(CopyImagesGrid.getImageList().size()>0){ Image
-					 * imFromList=CopyImagesGrid.getImageList().get(i);
-					 * grid.getItem(i + plusR).setImage(j + plusC, imFromList);
-					 * grid.getItem(i +
-					 * plusR).setHeight(imFromList.getImageData().height);
-					 * grid.getColumn(j +
-					 * plusC).setWidth(imFromList.getImageData().width); }
-					 */
+					
 				}
 			}
-			// System.out.println(CopyImagesGrid.getImageList().size());
-
-			/*
-			 * ArrayList<ClipboardImageObject> arl=
-			 * CopyImagesGrid.getImageList(); ClipboardImageObject
-			 * co=arl.get(0); int x1=co.x; int y1=co.y; for (int i = 0; i <
-			 * CopyImagesGrid.getImageList().size(); i++) {
-			 * 
-			 * 
-			 * ClipboardImageObject co2=arl.get(i);
-			 * grid.getItem(co2.y-y1+plusR).setImage(co2.x-x1+plusC,co2.im); }
-			 */
+			
 
 		}
-		// CopyImagesGrid.getImageList().clear();
+		
 	}
 
 	public void delete() {

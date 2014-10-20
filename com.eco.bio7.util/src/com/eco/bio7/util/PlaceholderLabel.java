@@ -15,9 +15,9 @@ public class PlaceholderLabel {
 				Composite com = new Composite(parent, SWT.NONE);
 				
 				//com.setLayout(layout);
-				com.setSize(2000, 64);
+				com.setSize(4000, 64);
 				Label label = new Label(com, SWT.NONE);
-				label.setSize(2000, 64);
+				label.setSize(4000, 64);
 
 				return com;
 			}

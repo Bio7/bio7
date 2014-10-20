@@ -15,6 +15,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,6 +30,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
@@ -38,40 +41,56 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
+import com.eco.bio7.rbridge.Bio7Grid;
 
 public class DebugNextAction extends Action {
 
 	private int line = 1;
 	private Socket debugSocket;
+	private String variable;
 
 	public DebugNextAction() {
 		super("Next");
 
 		setId("Next");
-		setText("Next (n) - Execute the next statement in the function.");
+		setText("Next");
 
-		ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/stepreturn_co.gif")));
+		ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/stepover_co.gif")));
 
 		this.setImageDescriptor(desc);
 	}
 
 	public void run() {
-
+		ArrayList<String> buf = new ArrayList<String>();
 		String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		int port = store.getInt("R_DEBUG_PORT");
 		if (selectionConsole.equals("R")) {
 			ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
 
-			con.pipeToRConsole("con1 <- socketConnection(port = " + port + ", server = TRUE,timeout=10)");
-			con.pipeToRConsole("sink(con1)");
+			con.pipeToRConsole(".socketCon1 <- socketConnection(port = " + port + ", server = TRUE,timeout=10);"
+					+ "sink(.socketCon1)");
+
+			//con.pipeToRConsole("sink(.socketCon1)");
 			con.pipeToRConsole("n");
+
+			// con.pipeToRConsole("");
+
+			con.pipeToRConsole("sink();"
+					+ "sink(file='clipboard');"
+					+ "ls.str();"
+					+ "sink();"
+					+ "close(.socketCon1);"
+					+ "writeLines(\"\")");
+			/*con.pipeToRConsole("sink(file='clipboard')");
+			con.pipeToRConsole("ls.str()");
+			// con.pipeToRConsole("where");
 			con.pipeToRConsole("sink()");
-			con.pipeToRConsole("close(con1)");
-			con.pipeToRConsole("writeLines(\"\")");
+			con.pipeToRConsole("close(.socketCon1)");
+			con.pipeToRConsole("writeLines(\"\")");*/
 
 			final ConsolePageParticipant inst = ConsolePageParticipant.getConsolePageParticipantInstance();
-
+			// inst.getIoc().clearConsole();
 			String data = null;
 
 			try {
@@ -88,6 +107,14 @@ public class DebugNextAction extends Action {
 				}
 
 				data = input.readLine();
+				// variable=input.readLine();
+				String vv;
+
+				while ((vv = input.readLine()) != null) {
+					System.out.println(vv);
+					// buf.add(vv);
+
+				}
 				input.close();
 				debugSocket.close();
 
@@ -96,8 +123,8 @@ public class DebugNextAction extends Action {
 				e.printStackTrace();
 			}
 
-			System.out.println(data);
-
+			// System.out.println(data);
+			// System.out.println(variable);
 			IEditorPart edit = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 
 			ITextEditor editor = (ITextEditor) edit;
@@ -157,6 +184,22 @@ public class DebugNextAction extends Action {
 				else {
 					// System.out.println("nothing to paste");
 				}
+				Clipboard clipboard = new Clipboard(Display.getDefault());
+				String dataClip = (String) clipboard.getContents(TextTransfer.getInstance());
+				if (dataClip != null && dataClip.length() > 0) {
+					String cl = dataClip.toString();
+					String[] res = cl.split("\\r?\\n");
+					for (int i = 0; i < res.length; i++) {
+						String sp[] = res[i].split(":", 2);
+						Bio7Grid.setValue(i, 0, sp[0]);
+						Bio7Grid.setValue(i, 1, sp[1]);
+					}
+
+				}
+				/*
+				 * for (int i = 0; i < buf.size(); i++) { Bio7Grid.setValue(i,
+				 * 0, buf.get(i)); } buf.clear();
+				 */
 
 			}
 
