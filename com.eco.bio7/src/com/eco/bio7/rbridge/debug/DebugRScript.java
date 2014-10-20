@@ -64,7 +64,7 @@ public class DebugRScript extends Action {
 		super("Debug");
 
 		setId("Debug");
-		setText("Debug Action");
+		setText("Debug Trace Action - Insert debugging code at chosen places in any function.");
 
 		ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/rundebug.gif")));
 
@@ -80,8 +80,18 @@ public class DebugRScript extends Action {
 	}
 
 	public void run() {
+       
 
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		
+		 /*Automatically disconnect from Rserve for debugging!*/
+		if (RServe.isAlive()) {
+			Bio7Action.callRserve();
+			store.setValue("RSERVE_ALIVE_DEBUG", true);//store the state to resume Rserve after debugging stop!
+		}
+		else{
+			store.setValue("RSERVE_ALIVE_DEBUG", false);
+		}
 
 		editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		if (editor.isDirty()) {
@@ -275,6 +285,7 @@ public class DebugRScript extends Action {
 				e.printStackTrace();
 			}
 		}
+		Bio7Dialog.message("To start the debugging process call\n" + " the function from within the console!");
 	}
 
 	public Map<Integer, String> findMyMarkers(IResource target) {

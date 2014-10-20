@@ -48,9 +48,9 @@ public class DebugNextAction extends Action {
 		super("Next");
 
 		setId("Next");
-		setText("Next");
+		setText("Next (n) - Execute the next statement in the function.");
 
-		ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/stepover_co.gif")));
+		ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/stepreturn_co.gif")));
 
 		this.setImageDescriptor(desc);
 	}

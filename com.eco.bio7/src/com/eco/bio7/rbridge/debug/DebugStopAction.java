@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
@@ -25,6 +26,8 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import com.eco.bio7.Bio7Plugin;
+import com.eco.bio7.actions.Bio7Action;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
 
@@ -34,7 +37,7 @@ public class DebugStopAction extends Action {
 		super("Stop");
 
 		setId("Stop");
-		setText("Stop");
+		setText("Stop (Q) - Halt execution and jump to the top-level immediately.");
 
 		ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/terminatedlaunch_obj.gif")));
 
@@ -42,6 +45,12 @@ public class DebugStopAction extends Action {
 	}
 
 	public void run() {
+		/*Restore a Rserve connection if it was alive before debugging start!*/
+		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		boolean wasRserveAlive=store.getBoolean("RSERVE_ALIVE_DEBUG");
+		if(wasRserveAlive){
+			Bio7Action.callRserve();
+		}
 
 		String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 

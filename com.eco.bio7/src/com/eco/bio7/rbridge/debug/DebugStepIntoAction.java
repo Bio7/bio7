@@ -38,17 +38,17 @@ import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
 
-public class DebugContinueAction extends Action {
+public class DebugStepIntoAction extends Action {
 	private int line = 1;
 	private Socket debugSocket;
 
-	public DebugContinueAction() {
-		super("Continue");
+	public DebugStepIntoAction() {
+		super("Step Into");
 
-		setId("Continue");
-		setText("Continue (c) - Continue execution without single stepping.");
+		setId("StepInto");
+		setText("Step Into - Step into function calls");
 
-		ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/stepover_co.gif")));
+		ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/stepinto_co.gif")));
 
 		this.setImageDescriptor(desc);
 	}
@@ -69,7 +69,7 @@ public class DebugContinueAction extends Action {
 			// con.pipeToRConsole("con1 <- socketConnection(port = "+port+", server = TRUE);sink(con1);c;sink();close(con1)");
 			con.pipeToRConsole("con1 <- socketConnection(port = " + port + ", server = TRUE,timeout=10)");
 			con.pipeToRConsole("sink(con1)");
-			con.pipeToRConsole("c");
+			con.pipeToRConsole("s");
 			con.pipeToRConsole("sink()");
 			con.pipeToRConsole("close(con1)");
 			con.pipeToRConsole("writeLines(\"\")");

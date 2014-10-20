@@ -100,8 +100,11 @@ import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.debug.DebugContinueAction;
+import com.eco.bio7.rbridge.debug.DebugInfoAction;
 import com.eco.bio7.rbridge.debug.DebugNextAction;
 import com.eco.bio7.rbridge.debug.DebugRScript;
+import com.eco.bio7.rbridge.debug.DebugStepFinishAction;
+import com.eco.bio7.rbridge.debug.DebugStepIntoAction;
 import com.eco.bio7.rbridge.debug.DebugStopAction;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
@@ -1338,14 +1341,17 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			tm.add(new DebugStopAction());
 			tm.add(new DebugNextAction());
 			tm.add(new DebugContinueAction());
+			tm.add(new DebugStepIntoAction());
+			tm.add(new DebugStepFinishAction());
+			tm.add(new DebugInfoAction());
 			/*Add the distance label again!*/
 			tm.add(item);
 			actionBars.updateActionBars();
 		}
 		/* Remove all toolbar actions from the console view! */
-		if (utils != null) {
+		/*if (utils != null) {
 			utils.cons.clear();
-		}
+		}*/
 	}
 
 	public void deleteDebugToolbarActions() {
@@ -1354,6 +1360,9 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		toolBarManager.remove("Stop");
 		toolBarManager.remove("Next");
 		toolBarManager.remove("Continue");
+		toolBarManager.remove("StepInto");
+		toolBarManager.remove("Finish");
+		toolBarManager.remove("DebugInfo");
 		
 		actionBars.updateActionBars();
 
