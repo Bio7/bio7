@@ -1,0 +1,9 @@
+ccc :  num 8
+ddf :  num 8
+fff :  num 9
+mat :  num [1:10, 1:10] 1752 1829 1984 879 470 ...
+sa :  num 7
+x :  int 2
+xcc :  num 8
+yc :  num 7
+yds :  num 2

@@ -241,6 +241,12 @@
             name="Table"
             restorable="true">
       </view>
+      <view
+            class="com.eco.bio7.rbridge.debug.DebugVariablesView"
+            icon="icons/R.gif"
+            id="com.eco.bio7.rbridge.debug.DebugVariablesView"
+            name="Variables (x)">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
