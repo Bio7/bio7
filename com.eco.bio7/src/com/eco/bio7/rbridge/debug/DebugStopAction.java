@@ -20,6 +20,7 @@ import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.nebula.widgets.grid.Grid;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
@@ -68,6 +69,23 @@ public class DebugStopAction extends Action {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
+			Display display = PlatformUI.getWorkbench().getDisplay();
+			display.syncExec(new Runnable() {
+				public void run() {
+					Grid debugGrid = DebugVariablesView.getDebugVariablesGrid();
+
+					if (debugGrid.isDisposed()==false) {
+						int itemCount = debugGrid.getItemCount();
+						if (itemCount > 0) {
+
+							debugGrid.remove(0, itemCount - 1);
+
+						}
+					}
+
+				}
+
+			});
 
 			// inst.toolBarManager.update(true);
 

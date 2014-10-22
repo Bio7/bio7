@@ -243,9 +243,9 @@
       </view>
       <view
             class="com.eco.bio7.rbridge.debug.DebugVariablesView"
-            icon="icons/R.gif"
+            icon="icons/rkompilierung.gif"
             id="com.eco.bio7.rbridge.debug.DebugVariablesView"
-            name="Variables (x)">
+            name="Debug (x)">
       </view>
    </extension>
    <extension

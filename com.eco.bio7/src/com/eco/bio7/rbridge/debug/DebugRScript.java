@@ -50,6 +50,7 @@ import org.rosuda.REngine.Rserve.RConnection;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.actions.Bio7Action;
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.collection.Work;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RServe;
 
@@ -81,7 +82,9 @@ public class DebugRScript extends Action {
 
 	public void run() {
        
-
+	
+		
+        
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		
 		 /*Automatically disconnect from Rserve for debugging!*/
@@ -116,7 +119,7 @@ public class DebugRScript extends Action {
 			String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 
 			if (selectionConsole.equals("R")) {
-
+				Work.openView("com.eco.bio7.rbridge.debug.DebugVariablesView");
 				/* Find the line numbers of the markers! */
 				int lineNum = 0;
 				String expression = null;
