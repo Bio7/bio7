@@ -23,14 +23,12 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.collection.Work;
 import com.eco.bio7.console.ConsolePageParticipant;
 
 public class DebugProgress {
 
 	private int line = 1;
 	private Socket debugSocket;
-	private String variable;
 	protected Grid debugGrid;
 
 	public void progress(String command) {
@@ -40,25 +38,24 @@ public class DebugProgress {
 		int port = store.getInt("R_DEBUG_PORT");
 		if (selectionConsole.equals("R")) {
 			ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
-
+            /*Create socket connection in global environment!*/
 			con.pipeToRConsole(".GlobalEnv$.socketCon1 <- socketConnection(port = " + port + ", server = TRUE,timeout=10);" + "sink(.GlobalEnv$.socketCon1)");
 			/* Pipe the debug command ('n','s','f','c') to R */
 			con.pipeToRConsole(command);
-			/* Pipe several commands and capture the output! */
-			/*
-			 * Write a line in the console to seperate any output from the
-			 * captured variables.
+			/* Pipe several commands and capture the output! 
+			 * 1. Write a line in the console to seperate any output from the
+			 * 	  captured variables.
+			 * 2. Close the capturing.
+			 * 3. Close the socket connection.
+			 * 4. Write a line!
 			 */
-			con.pipeToRConsole("" + "writeLines(\"\");" + "print(ls.str(), max.level = 0);" // The
-																		// object
-																		// of
-																		// the
-																		// current
-																		// environment.
+			con.pipeToRConsole("" 
+					+ "writeLines(\"\");" 
+					+ "print(ls.str(), max.level = 0);" 
 					+ "sink();" // Close capturing output.
 					+ "close(.GlobalEnv$.socketCon1);" + "writeLines(\"\")");
 
-			// Clear the debug spreadsheet!
+			/*Clear the debug spreadsheet!*/
 			deleteSpreadSheet();
 
 			/* Read the R socket data with Java! */
@@ -71,15 +68,17 @@ public class DebugProgress {
 			IDocument doc = dp.getDocument(editor.getEditorInput());
 
 			if (data != null && data.length() > 0) {
-				/* Extract the number between .R# and : */
+				
+				/* Extract the line number between .R# and : */
 				Pattern p = Pattern.compile(".R#(.*?):");
+				
 				Matcher m = p.matcher(data);
 				if (m.find()) {
 					int temp = 0;
 					try {
 						temp = Integer.parseInt(m.group(1));
 					} catch (NumberFormatException e1) {
-						// TODO Auto-generated catch block
+						
 						// e1.printStackTrace();
 						System.out.println("Could not parse line number!");
 					}
@@ -90,17 +89,17 @@ public class DebugProgress {
 						try {
 							reg = doc.getLineInformation(line - 1);
 						} catch (BadLocationException e) {
-							// TODO Auto-generated catch block
+							
 							e.printStackTrace();
 						}
-						// System.out.println("Line is: " + line);
+						
 						editor.selectAndReveal(reg.getOffset() + reg.getLength(), 0);
 
 						IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
 						try {
 							resource.deleteMarkers("com.eco.bio7.reditor.debugrulermark", false, IResource.DEPTH_ZERO);
 						} catch (CoreException e1) {
-							// TODO Auto-generated catch block
+							
 							e1.printStackTrace();
 						}
 
@@ -112,7 +111,7 @@ public class DebugProgress {
 							marker.setAttribute(IMarker.CHAR_START, reg.getOffset());
 							marker.setAttribute(IMarker.CHAR_END, reg.getOffset() + reg.getLength());
 						} catch (CoreException e) {
-							// TODO Auto-generated catch block
+							
 							e.printStackTrace();
 						}
 
@@ -121,7 +120,7 @@ public class DebugProgress {
 				}
 
 				else {
-					// System.out.println("nothing to paste");
+					
 				}
 
 			}
@@ -159,19 +158,13 @@ public class DebugProgress {
 
 					if (line.startsWith("debug") == false && line.startsWith("Called") == false) {
 
-						/* Split the string to get the seperated values! */
-
-						// String[] res = line.split("\\r?\\n");// find
-						// linebreaks!.
-						// for (int i = 0; i < res.length; i++) {
-
-						String sp[] = line.split(":", 2);// find ':' at
-															// first
-															// occurence!
+						/*find ':' at first occurence!*/
+						String sp[] = line.split(":", 2);
 
 						// occurence.
 						if (sp.length == 2) {
-							String sp2[] = sp[1].split("\\s", 4);// find Whitespace at 4th position!
+							/*Find whitespace at 4th position!*/
+							String sp2[] = sp[1].split("\\s", 4);
 							if (debugGrid != null) {
 								GridItem it = new GridItem(debugGrid, SWT.NONE, count);
 
@@ -184,10 +177,6 @@ public class DebugProgress {
 
 						}
 
-						// new GridItem(debugGrid, SWT.NONE, i).setText(1,
-						// sp[1]);
-
-						// }
 					}
 
 					count++;
@@ -201,7 +190,7 @@ public class DebugProgress {
 			debugSocket.close();
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		}
 		return data;
@@ -214,7 +203,7 @@ public class DebugProgress {
 			public void run() {
 				debugGrid = DebugVariablesView.getDebugVariablesGrid();
 
-				if (debugGrid.isDisposed()==false) {
+				if (debugGrid.isDisposed() == false) {
 					int itemCount = debugGrid.getItemCount();
 					if (itemCount > 0) {
 
