@@ -50,7 +50,7 @@ public class DebugProgress {
 			 * 4. Write a line!
 			 */
 			con.pipeToRConsole("" 
-					+ "writeLines(\"\");" 
+					+ "writeLines(\"Bio7...Debug...Start...\");" 
 					+ "print(ls.str(), max.level = 0);" 
 					+ "sink();" // Close capturing output.
 					+ "close(.GlobalEnv$.socketCon1);" + "writeLines(\"\")");
@@ -149,16 +149,21 @@ public class DebugProgress {
 			// variable=input.readLine();
 			String line;
 			int count = 0;
-
+            boolean capture=false;
 			try {
 				while ((line = input.readLine()) != null) {
 
 					// Omit the first line if a debug message!
 					System.out.println(line);
 
-					if (line.startsWith("debug") == false && line.startsWith("Called") == false) {
-
-						/*find ':' at first occurence!*/
+					if (line.startsWith("Bio7...Debug...Start...")) {
+						capture=true;
+						
+					}
+					
+					
+                    if(capture){
+						/*find ':' at first occurrence!*/
 						String sp[] = line.split(":", 2);
 
 						// occurence.
@@ -176,9 +181,8 @@ public class DebugProgress {
 							}
 
 						}
-
-					}
-
+                    }
+				
 					count++;
 
 				}
