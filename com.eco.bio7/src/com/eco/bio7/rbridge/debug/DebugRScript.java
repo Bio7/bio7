@@ -60,6 +60,7 @@ public class DebugRScript extends Action {
 	boolean untrace = false;
 	private IEditorPart editor;
 	private Socket debugSocket;
+	private boolean errorFunction = false;
 
 	public DebugRScript() {
 		super("Debug");
@@ -81,18 +82,16 @@ public class DebugRScript extends Action {
 	}
 
 	public void run() {
-       
-	
-		
-        
+		errorFunction = false;
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		
-		 /*Automatically disconnect from Rserve for debugging!*/
+
+		/* Automatically disconnect from Rserve for debugging! */
 		if (RServe.isAlive()) {
 			Bio7Action.callRserve();
-			store.setValue("RSERVE_ALIVE_DEBUG", true);//store the state to resume Rserve after debugging stop!
-		}
-		else{
+			store.setValue("RSERVE_ALIVE_DEBUG", true);// store the state to
+														// resume Rserve after
+														// debugging stop!
+		} else {
 			store.setValue("RSERVE_ALIVE_DEBUG", false);
 		}
 
@@ -149,8 +148,8 @@ public class DebugRScript extends Action {
 								con.pipeToRConsole("assign(\"bio7tempVar\", findLineNum('" + loc + "#" + lineNum + "'), env=.bio7tempenv)");
 								con.pipeToRConsole("setBreakpoint('" + loc + "#" + lineNum + "')");
 								con.pipeToRConsole("con1 <- socketConnection(port = " + port + ", server = TRUE)");
-								con.pipeToRConsole("writeLines(.bio7tempenv$bio7tempVar[[1]]$name, con1)");
-								con.pipeToRConsole("writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), con1)");
+								con.pipeToRConsole("tryCatch(writeLines(.bio7tempenv$bio7tempVar[[1]]$name, con1),error = function(e) writeLines('ERROR', con1))");
+								con.pipeToRConsole("tryCatch(writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), con1),error = function(e) writeLines('ERROR', con1))");
 								con.pipeToRConsole("close(con1)");
 								con.pipeToRConsole("options(prompt=\"> \")");
 								con.pipeToRConsole("writeLines(\"\")");
@@ -171,8 +170,8 @@ public class DebugRScript extends Action {
 								con.pipeToRConsole("assign(\"bio7tempVar\", findLineNum('" + loc + "#" + lineNum + "'), env=.bio7tempenv)");
 								con.pipeToRConsole("setBreakpoint('" + loc + "#" + lineNum + "',tracer=quote(" + expression + "))");
 								con.pipeToRConsole("con1 <- socketConnection(port = " + port + ", server = TRUE,timeout=10)");
-								con.pipeToRConsole("writeLines(.bio7tempenv$bio7tempVar[[1]]$name, con1)");
-								con.pipeToRConsole("writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), con1)");
+								con.pipeToRConsole("tryCatch(writeLines(.bio7tempenv$bio7tempVar[[1]]$name, con1),error = function(e) writeLines('ERROR', con1))");
+								con.pipeToRConsole("tryCatch(writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), con1),error = function(e) writeLines('ERROR', con1))");
 								con.pipeToRConsole("close(con1)");
 								con.pipeToRConsole("options(prompt=\"> \")");
 								con.pipeToRConsole("writeLines(\"\")");
@@ -213,8 +212,16 @@ public class DebugRScript extends Action {
 			}
 
 			result = input.readLine();
+			
+			if (result.equals("ERROR")) {
+				
+				errorFunction = true;
+				Bio7Dialog.message("The breakpoint seems to be outside a function\ndefinition and cannot be traced!\n\nA breakpoint has to be set inside a function!");
+			}
 
-			lineNumber = input.readLine();
+			else {
+				lineNumber = input.readLine();
+			}
 
 			debugSocket.close();
 
@@ -222,73 +229,80 @@ public class DebugRScript extends Action {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		if (errorFunction == false) {
+			for (int i = 0; i < markers.length; i++) {
+				Integer line = null;
+				try {
+					line = (Integer) markers[i].getAttribute(IMarker.LINE_NUMBER);
+				} catch (CoreException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 
-		for (int i = 0; i < markers.length; i++) {
-			Integer line = null;
-			try {
-				line = (Integer) markers[i].getAttribute(IMarker.LINE_NUMBER);
-			} catch (CoreException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				if (line.intValue() == lineNum) {
+
+					try {
+						markers[i].setAttribute(IMarker.TEXT, result);
+						// System.out.println("This is " +
+						// markers[i].getAttribute(IMarker.TEXT));
+					} catch (CoreException e) {// TODO Auto-generated catch
+												// block
+						e.printStackTrace();
+					}
+				}
+
 			}
+			ITextEditor edit = (ITextEditor) editor;
+			IDocumentProvider dp = edit.getDocumentProvider();
+			IDocument doc = dp.getDocument(editor.getEditorInput());
 
-			if (line.intValue() == lineNum) {
+			IRegion reg = null;
+
+			int lineNumBreakpoint = -1;
+			try {
+				lineNumBreakpoint = Integer.parseInt(lineNumber);
+			} catch (NumberFormatException e) {
+				// TODO Auto-generated catch block
+				lineNumBreakpoint=1;
+				errorFunction = true;
+				System.out.println("Can't parse a line number! Generate default=1!");
+				//Bio7Dialog.message("The breakpoint seems to be outside a function\ndefinition and cannot be traced!\n\nA breakpoint has to be set inside a function!");
+
+
+			}
+			if (lineNumBreakpoint > -1) {
+				try {
+					reg = doc.getLineInformation(lineNumBreakpoint - 1);
+				} catch (BadLocationException e1) {
+
+					e1.printStackTrace();
+				}
+
+				edit.selectAndReveal(reg.getOffset() + reg.getLength(), 0);
+				IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
+				try {
+					resource.deleteMarkers("com.eco.bio7.reditor.debugrulermark", false, IResource.DEPTH_ZERO);
+				} catch (CoreException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
+				IMarker marker;
 
 				try {
-					markers[i].setAttribute(IMarker.TEXT, result);
-					// System.out.println("This is " +
-					// markers[i].getAttribute(IMarker.TEXT));
-				} catch (CoreException e) {// TODO Auto-generated catch block
+
+					marker = resource.createMarker("com.eco.bio7.reditor.debugrulermark");
+					marker.setAttribute(IMarker.CHAR_START, reg.getOffset());
+					marker.setAttribute(IMarker.CHAR_END, reg.getOffset() + reg.getLength());
+				} catch (CoreException e) {
+					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
-
-		}
-		ITextEditor edit = (ITextEditor) editor;
-		IDocumentProvider dp = edit.getDocumentProvider();
-		IDocument doc = dp.getDocument(editor.getEditorInput());
-
-		IRegion reg = null;
-
-		int lineNumBreakpoint = -1;
-		try {
-			lineNumBreakpoint = Integer.parseInt(lineNumber);
-		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
-
-			Bio7Dialog.message("The breakpoint seems to be outside a function\ndefinition and cannot be traced!\n\nA breakpoint has to be set inside a function!");
-
-		}
-		if (lineNumBreakpoint > -1) {
-			try {
-				reg = doc.getLineInformation(lineNumBreakpoint - 1);
-			} catch (BadLocationException e1) {
-
-				e1.printStackTrace();
-			}
-
-			edit.selectAndReveal(reg.getOffset() + reg.getLength(), 0);
-			IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
-			try {
-				resource.deleteMarkers("com.eco.bio7.reditor.debugrulermark", false, IResource.DEPTH_ZERO);
-			} catch (CoreException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-
-			IMarker marker;
-
-			try {
-
-				marker = resource.createMarker("com.eco.bio7.reditor.debugrulermark");
-				marker.setAttribute(IMarker.CHAR_START, reg.getOffset());
-				marker.setAttribute(IMarker.CHAR_END, reg.getOffset() + reg.getLength());
-			} catch (CoreException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			if(errorFunction ==false){
+			Bio7Dialog.message("To start the debugging process call\n" + " the function from within the console!");
 			}
 		}
-		Bio7Dialog.message("To start the debugging process call\n" + " the function from within the console!");
 	}
 
 	public Map<Integer, String> findMyMarkers(IResource target) {

@@ -242,10 +242,20 @@
             restorable="true">
       </view>
       <view
+            allowMultiple="true"
+            category="Bio7-R"
             class="com.eco.bio7.rbridge.debug.DebugVariablesView"
             icon="icons/rkompilierung.gif"
             id="com.eco.bio7.rbridge.debug.DebugVariablesView"
             name="Debug (x)">
+      </view>
+      <view
+            allowMultiple="true"
+            category="Bio7-R"
+            class="com.eco.bio7.rbridge.debug.DebugTextView"
+            icon="icons/rkompilierung.gif"
+            id="com.eco.bio7.rbridge.debug.DebugTextView"
+            name="Debug Text">
       </view>
    </extension>
    <extension
