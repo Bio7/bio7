@@ -21,7 +21,7 @@ import gov.nasa.worldwind.view.orbit.*;
  * View controller to animate a {@link OrbitView} to look at a KML feature.
  *
  * @author pabercrombie
- * @version $Id: KMLOrbitViewController.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: KMLOrbitViewController.java 1838 2014-02-05 20:48:12Z dcollins $
  */
 public class KMLOrbitViewController extends KMLViewController
 {
@@ -67,7 +67,7 @@ public class KMLOrbitViewController extends KMLViewController
         FlyToOrbitViewAnimator animator = FlyToOrbitViewAnimator.createFlyToOrbitViewAnimator(this.orbitView,
             this.orbitView.getCenterPosition(), lookAtPosition, this.orbitView.getHeading(),
             Angle.fromDegrees(heading), this.orbitView.getPitch(), Angle.fromDegrees(tilt),
-            this.orbitView.getZoom(), range, timeToMove, KMLUtil.convertAltitudeMode(altitudeMode));
+            this.orbitView.getZoom(), range, timeToMove, KMLUtil.convertAltitudeMode(altitudeMode, WorldWind.CLAMP_TO_GROUND)); // KML default
 
         OrbitViewInputHandler inputHandler = (OrbitViewInputHandler) this.orbitView.getViewInputHandler();
         inputHandler.stopAnimators();
@@ -98,7 +98,7 @@ public class KMLOrbitViewController extends KMLViewController
 
         FlyToOrbitViewAnimator panAnimator = createFlyToOrbitViewAnimator(this.orbitView, cameraPosition,
             Angle.fromDegrees(heading), Angle.fromDegrees(tilt), Angle.fromDegrees(roll), timeToMove,
-            KMLUtil.convertAltitudeMode(altitudeMode));
+            KMLUtil.convertAltitudeMode(altitudeMode, WorldWind.RELATIVE_TO_GROUND)); // Camera default, differs from KML default
 
         OrbitViewInputHandler inputHandler = (OrbitViewInputHandler) this.orbitView.getViewInputHandler();
         inputHandler.stopAnimators();

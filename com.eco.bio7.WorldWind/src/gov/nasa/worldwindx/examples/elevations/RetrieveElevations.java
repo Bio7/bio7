@@ -8,12 +8,11 @@ package gov.nasa.worldwindx.examples.elevations;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.ElevationModel;
-import gov.nasa.worldwind.terrain.*;
 import gov.nasa.worldwind.util.Logging;
 import gov.nasa.worldwindx.examples.*;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
+import javax.swing.border.*;
 import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -24,14 +23,13 @@ import java.util.*;
  * server.
  *
  * @author garakl
- * @version $Id: RetrieveElevations.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: RetrieveElevations.java 1960 2014-04-24 20:10:24Z tgaskins $
  */
 public class RetrieveElevations extends ApplicationTemplate
 {
     public static final String ACTION_COMMAND_BUTTON1 = "ActionCommand_Button1";
     public static final String ACTION_COMMAND_BUTTON2 = "ActionCommand_Button2";
     public static final String ACTION_COMMAND_BUTTON3 = "ActionCommand_Button3";
-    public static final String ACTION_COMMAND_BUTTON4 = "ActionCommand_Button4";
     public static final String ACTION_COMMAND_VERTICAL_EXAGGERATION = "ActionCommandVerticalExaggeration";
 
     public static class AppFrame extends ApplicationTemplate.AppFrame
@@ -82,11 +80,6 @@ public class RetrieveElevations extends ApplicationTemplate
 
                     btn = new JButton("DEMO getElevation()");
                     btn.setActionCommand(ACTION_COMMAND_BUTTON3);
-                    btn.addActionListener(this.controller);
-                    btnPanel.add(btn);
-
-                    btn = new JButton("DEMO new getElevations");
-                    btn.setActionCommand(ACTION_COMMAND_BUTTON4);
                     btn.addActionListener(this.controller);
                     btnPanel.add(btn);
                 }
@@ -158,10 +151,6 @@ public class RetrieveElevations extends ApplicationTemplate
             else if (ACTION_COMMAND_BUTTON3.equalsIgnoreCase(e.getActionCommand()))
             {
                 this.doActionOnButton3();
-            }
-            else if (ACTION_COMMAND_BUTTON4.equalsIgnoreCase(e.getActionCommand()))
-            {
-                this.doActionOnButton4();
             }
             else if (ACTION_COMMAND_VERTICAL_EXAGGERATION.equalsIgnoreCase(e.getActionCommand()))
             {
@@ -237,78 +226,6 @@ public class RetrieveElevations extends ApplicationTemplate
             Logging.logger().info(sb.toString());
         }
 
-        public void doActionOnButton4()
-        {
-            ArrayList<LatLon> locations = new ArrayList<LatLon>();
-
-            locations.add(LatLon.fromDegrees(45.50d, -123.3d));
-            locations.add(LatLon.fromDegrees(45.52d, -123.3d));
-            locations.add(LatLon.fromDegrees(45.54d, -123.3d));
-            locations.add(LatLon.fromDegrees(45.56d, -123.3d));
-            locations.add(LatLon.fromDegrees(45.58d, -123.3d));
-            locations.add(LatLon.fromDegrees(45.60d, -123.3d));
-
-            locations.add(LatLon.fromDegrees(40.50d, -120.1d));
-            locations.add(LatLon.fromDegrees(40.52d, -120.2d));
-            locations.add(LatLon.fromDegrees(40.54d, -120.3d));
-            locations.add(LatLon.fromDegrees(40.56d, -120.4d));
-            locations.add(LatLon.fromDegrees(40.58d, -120.5d));
-            locations.add(LatLon.fromDegrees(40.60d, -120.6d));
-
-            // Now, let's find WMSBasicElevationModel
-            WMSBasicElevationModel wmsbem = null;
-
-            ElevationModel model = this.wwd.getModel().getGlobe().getElevationModel();
-            if (model instanceof CompoundElevationModel)
-            {
-                CompoundElevationModel cbem = (CompoundElevationModel) model;
-                for (ElevationModel em : cbem.getElevationModels())
-                {
-                    // you can have additional checks if you know specific model name, etc.
-                    if (em instanceof WMSBasicElevationModel)
-                    {
-                        wmsbem = (WMSBasicElevationModel) em;
-                        break;
-                    }
-                }
-            }
-            else if (model instanceof WMSBasicElevationModel)
-            {
-                wmsbem = (WMSBasicElevationModel) model;
-            }
-
-            if (null != wmsbem)
-            {
-                ElevationsRetriever retriever = new ElevationsRetriever(wmsbem, locations, 10000, 30000,
-                    new NotifyWhenReady());
-                retriever.start();
-            }
-            else
-            {
-                String message = Logging.getMessage("ElevationModel.ExceptionRequestingElevations",
-                    "No instance of WMSBasicElevationModel was found");
-                Logging.logger().severe(message);
-            }
-        }
-
-        protected class NotifyWhenReady implements GetElevationsPostProcessor
-        {
-            public void onSuccess(Position[] positions)
-            {
-                for (Position p : positions)
-                {
-                    Logging.logger().info(p.getLatitude().degrees
-                        + "," + p.getLongitude().degrees + " --> " + p.getElevation());
-                }
-            }
-
-            public void onError(String error)
-            {
-                String message = Logging.getMessage("ElevationModel.ExceptionRequestingElevations", error);
-                Logging.logger().severe(message);
-            }
-        }
-
         public void doSetVerticalExaggeration(double ve)
         {
             this.wwd.getSceneController().setVerticalExaggeration(ve);
@@ -317,6 +234,6 @@ public class RetrieveElevations extends ApplicationTemplate
 
     public static void main(String[] args)
     {
-        start("World Wind Elevations Demo", AppFrame.class);
+        start("World Wind Get Elevations Demo", AppFrame.class);
     }
 }

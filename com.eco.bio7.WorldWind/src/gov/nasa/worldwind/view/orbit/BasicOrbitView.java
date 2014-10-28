@@ -17,7 +17,7 @@ import javax.media.opengl.GL;
 
 /**
  * @author dcollins
- * @version $Id: BasicOrbitView.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: BasicOrbitView.java 1933 2014-04-14 22:54:19Z dcollins $
  */
 public class BasicOrbitView extends BasicView implements OrbitView
 {
@@ -646,9 +646,10 @@ public class BasicOrbitView extends BasicView implements OrbitView
         int[] viewportArray = new int[4];
         this.dc.getGL().glGetIntegerv(GL.GL_VIEWPORT, viewportArray, 0);
         this.viewport = new java.awt.Rectangle(viewportArray[0], viewportArray[1], viewportArray[2], viewportArray[3]);
-        // Compute the current clip plane distances.
-        this.nearClipDistance = computeNearClipDistance();
+        // Compute the current clip plane distances. The near distance depends on the far distance, so we must compute
+        // the far distance first.
         this.farClipDistance = computeFarClipDistance();
+        this.nearClipDistance = computeNearClipDistance();
         // Compute the current viewport dimensions.
         double viewportWidth = this.viewport.getWidth() <= 0.0 ? 1.0 : this.viewport.getWidth();
         double viewportHeight = this.viewport.getHeight() <= 0.0 ? 1.0 : this.viewport.getHeight();

@@ -18,7 +18,7 @@ import java.nio.channels.FileChannel;
 
 /**
  * @author Lado Garakanidze
- * @version $Id: DTED.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: DTED.java 1516 2013-07-23 23:21:32Z dcollins $
  */
 
 public class DTED
@@ -36,6 +36,8 @@ public class DTED
     protected static final long DTED_DATA_OFFSET = DTED_ACC_OFFSET + (long) DTED_ACC_SIZE;
 
     protected static final int DTED_NODATA_VALUE = -32767;
+    protected static final int DTED_MIN_VALUE = -12000;
+    protected static final int DTED_MAX_VALUE = 9000;
 
     protected DTED()
     {
@@ -148,8 +150,8 @@ public class DTED
 
         int recordSize = REC_HEADER_SIZE + height * Short.SIZE / Byte.SIZE + REC_CHKSUM_SIZE;
 
-        double min = Double.MAX_VALUE, max = Double.MIN_VALUE;
-        double nodata = (double) DTED_NODATA_VALUE;
+        double min = +Double.MAX_VALUE;
+        double max = -Double.MAX_VALUE;
 
         ByteBuffer bb = ByteBuffer.allocate(recordSize).order(ByteOrder.BIG_ENDIAN);
         for (int x = 0; x < width; x++)
@@ -168,13 +170,20 @@ public class DTED
             for (int i = 0; i < height; i++)
             {
                 double elev = (double) data.get(i + 4); // skip 4 shorts of header
-                if (elev != nodata)
+                int y = height - i - 1;
+
+                if (elev != DTED_NODATA_VALUE && elev >= DTED_MIN_VALUE && elev <= DTED_MAX_VALUE)
                 {
+                    raster.setDoubleAtPosition(y, x, elev);
                     min = (elev < min) ? elev : min;
                     max = (elev > max) ? elev : max;
                 }
-                int y = height - i - 1;
-                raster.setDoubleAtPosition(y, x, elev);
+                else
+                {
+                    // Interpret null DTED values and values outside the practical range of [-12000,+9000] as missing
+                    // data. See MIL-PRF-89020B sections 3.11.2 and 3.11.3.
+                    raster.setDoubleAtPosition(y, x, DTED_NODATA_VALUE);
+                }
             }
 
             short hi = data.get(height + REC_CHKSUM_SIZE);
@@ -349,8 +358,7 @@ public class DTED
         // and each file always contains 1" x 1" degrees tile
         // also, we should account 1 pixel overlap and half pixel shift
 
-        Sector sector = Sector.fromDegrees(lat.degrees - pixelHeight / 2d, lat.degrees + 1d + pixelHeight / 2d,
-            lon.degrees - pixelWidth / 2d, lon.degrees + 1d + pixelWidth / 2d);
+        Sector sector = Sector.fromDegrees(lat.degrees, lat.degrees + 1d, lon.degrees, lon.degrees + 1d);
         metadata.setValue(AVKey.SECTOR, sector);
 
         // WW uses Upper Left corner as an Origin, let's calculate a new origin

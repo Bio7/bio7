@@ -7,6 +7,7 @@ package gov.nasa.worldwind.view;
 
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.animation.Animator;
+import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.awt.ViewInputHandler;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.Globe;
@@ -25,7 +26,7 @@ import javax.media.opengl.GL2;
  * The view model is based on
  *
  * @author jym
- * @version $Id: BasicView.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: BasicView.java 1933 2014-04-14 22:54:19Z dcollins $
  */
 public class BasicView extends WWObjectImpl implements View
 {
@@ -69,8 +70,14 @@ public class BasicView extends WWObjectImpl implements View
     protected long viewStateID;
 
     // TODO: make configurable
-    protected static final double MINIMUM_NEAR_DISTANCE = 2;
-    protected static final double MINIMUM_FAR_DISTANCE = 100;
+    protected static final double MINIMUM_NEAR_DISTANCE = 1;
+    protected static final double MINIMUM_FAR_DISTANCE = 1000;
+    /**
+     * The views's default worst-case depth resolution, in meters. May be specified in the World Wind configuration file
+     * as the <code>gov.nasa.worldwind.avkey.DepthResolution</code> property. The default if not specified in the
+     * configuration is 3.0 meters.
+     */
+    protected static final double DEFAULT_DEPTH_RESOLUTION = Configuration.getDoubleValue(AVKey.DEPTH_RESOLUTION, 3.0);
     protected static final double COLLISION_THRESHOLD = 10;
     protected static final int COLLISION_NUM_ITERATIONS = 4;
 
@@ -632,14 +639,32 @@ public class BasicView extends WWObjectImpl implements View
 
     protected double computeNearDistance(Position eyePosition)
     {
-        double near = 0;
+        // Compute the near clip distance in order to achieve a desired depth resolution at the far clip distance. This
+        // computed distance is limited such that it does not intersect the terrain when possible and is never less than
+        // a predetermined minimum (usually one). The computed near distance automatically scales with the resolution of
+        // the OpenGL depth buffer.
+        int depthBits = this.dc.getGLRuntimeCapabilities().getDepthBits();
+        double nearDistance = ViewUtil.computePerspectiveNearDistance(this.farClipDistance, DEFAULT_DEPTH_RESOLUTION,
+            depthBits);
+
+        // Prevent the near clip plane from intersecting the terrain.
         if (eyePosition != null && this.dc != null)
         {
-            double elevation = ViewUtil.computeElevationAboveSurface(this.dc, eyePosition);
-            double tanHalfFov = this.fieldOfView.tanHalfAngle();
-            near = elevation / (2 * Math.sqrt(2 * tanHalfFov * tanHalfFov + 1));
+            double distanceToSurface = ViewUtil.computeElevationAboveSurface(this.dc, eyePosition);
+            if (distanceToSurface > 0)
+            {
+                double maxNearDistance = ViewUtil.computePerspectiveNearDistance(this.fieldOfView, distanceToSurface);
+                if (nearDistance > maxNearDistance)
+                    nearDistance = maxNearDistance;
+            }
         }
-        return near < MINIMUM_NEAR_DISTANCE ? MINIMUM_NEAR_DISTANCE : near;
+
+        // Prevent the near clip plane from becoming unnecessarily small. A very small clip plane is not useful for
+        // rendering the World Wind scene, and significantly reduces the depth precision in the majority of the scene.
+        if (nearDistance < MINIMUM_NEAR_DISTANCE)
+            nearDistance = MINIMUM_NEAR_DISTANCE;
+
+        return nearDistance;
     }
 
     protected double computeFarDistance(Position eyePosition)

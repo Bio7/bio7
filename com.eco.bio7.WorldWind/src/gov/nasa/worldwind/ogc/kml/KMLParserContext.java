@@ -19,7 +19,7 @@ import java.util.Map;
  * The parser context for KML and KMZ docuements. Specifies the classes used to parse each type of KML element.
  *
  * @author tag
- * @version $Id: KMLParserContext.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: KMLParserContext.java 1528 2013-07-31 01:00:32Z pabercrombie $
  */
 public class KMLParserContext extends BasicXMLEventParserContext
 {
@@ -48,6 +48,7 @@ public class KMLParserContext extends BasicXMLEventParserContext
             "href",
             "httpQuery",
             "key",
+            "labelColor",
             "linkDescription",
             "linkName",
             "listItemType",

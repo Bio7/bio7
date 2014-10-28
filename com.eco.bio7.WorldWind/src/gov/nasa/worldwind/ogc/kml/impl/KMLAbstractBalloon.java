@@ -19,6 +19,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.regex.*;
 
 /**
  * An implementation of {@link Balloon} that applies a {@link KMLBalloonStyle} to the balloon. Rather than fully
@@ -42,7 +43,7 @@ import java.util.logging.Level;
  * </code>
  *
  * @author pabercrombie
- * @version $Id: KMLAbstractBalloon.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: KMLAbstractBalloon.java 1555 2013-08-20 13:33:12Z pabercrombie $
  */
 public abstract class KMLAbstractBalloon implements Balloon, WebResourceResolver, PropertyChangeListener
 {
@@ -185,12 +186,18 @@ public abstract class KMLAbstractBalloon implements Balloon, WebResourceResolver
             String text = balloonStyle.getText();
             if (text != null)
             {
+                if (this.mustAddHyperlinks(text))
+                    text = this.addHyperlinks(text);
+
                 this.getBalloon().setText(text);
                 this.normalText = text;
             }
             else if (!this.usingDefaultText)
             {
                 text = this.createDefaultBalloonText();
+                if (this.mustAddHyperlinks(text))
+                    text = this.addHyperlinks(text);
+
                 this.getBalloon().setText(text);
                 this.usingDefaultText = true;
                 this.normalText = text;
@@ -203,7 +210,11 @@ public abstract class KMLAbstractBalloon implements Balloon, WebResourceResolver
         {
             this.getBalloon().setHighlightAttributes(attrs);
 
-            this.highlightText = balloonStyle.getText();
+            String text = balloonStyle.getText();
+            if (this.mustAddHyperlinks(text))
+                text = this.addHyperlinks(text);
+
+            this.highlightText = text;
 
             if (!attrs.isUnresolved() || !balloonStyle.hasFields())
                 this.highlightAttributesResolved = true;
@@ -263,7 +274,8 @@ public abstract class KMLAbstractBalloon implements Balloon, WebResourceResolver
             if (!WWUtil.isEmpty(value))
             {
                 String name = item.getName() != null ? item.getName() : "";
-                sb.append("<tr><td>$[").append(name).append("/displayName]</td><td>").append(value).append("</td></tr>");
+                sb.append("<tr><td>$[").append(name).append("/displayName]</td><td>").append(value).append(
+                    "</td></tr>");
             }
         }
         sb.append("</table>");
@@ -306,6 +318,69 @@ public abstract class KMLAbstractBalloon implements Balloon, WebResourceResolver
             }
         }
         sb.append("</table>");
+    }
+
+    /**
+     * Determines if URLs in the balloon text should be converted to hyperlinks. The Google KML specification states the
+     * GE will add hyperlinks to balloon text that does not contain HTML formatting. This method searches for a
+     * &lt;html&gt; tag in the content to determine if the content is HTML or plain text.
+     *
+     * @param text Balloon text to process.
+     *
+     * @return True if URLs should be converted links. Returns true if a &lt;html&gt; tag is found in the text.
+     */
+    protected boolean mustAddHyperlinks(String text)
+    {
+        return text != null
+            && !text.contains("<html")
+            && !text.contains("<HTML");
+    }
+
+    /**
+     * Add hyperlink tags to URLs in the balloon text. The text may include some simple HTML markup. This method
+     * attempts to identify URLs in the text while not altering URLs that are already linked.
+     * <p/>
+     * This method is conservative about what is identified as a URL, in order to avoid adding links to text that the
+     * user did not intend to be linked. Only HTTP and HTTPS URLs are recognised, as well as text that begins with www.
+     * (in which case a http:// prefix will be prepended). Some punctuation characters that are valid URL characters
+     * (such as parentheses) are not treated as URL characters here because users may expect the punctuation to separate
+     * the URL from text.
+     *
+     * @param text Text to process. Each URL in the text will be replaced with &lt;a href="url" target="_blank"&gt; url
+     *             &lt;/a&gt;
+     *
+     * @return Text with hyperlinks added.
+     */
+    protected String addHyperlinks(String text)
+    {
+        // Regular expression to match a http(s) URL, or an entire anchor tag. Note that this does not match all valid
+        // URLs. It is designed to match obvious URLs that occur in KML balloons, with minimal chance of matching text
+        // the user did not intend to be a link.
+        String regex =
+            "<a\\s.*?</a>"               // Match all text between anchor tags
+                + "|"                    // or
+                + "[^'\"]"               // Non-quote (avoids matching quoted urls in code)
+                + "("                    // Capture group 1
+                + "(?:https?://|www\\.)" // HTTP(S) protocol or www. (non-capturing group)
+                + "[a-z0-9.$%&#+/_-]+"   // Match until a non-URL character
+                + ")";
+
+        StringBuffer sb = new StringBuffer();
+        Matcher matcher = Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL).matcher(text);
+        while (matcher.find())
+        {
+            // If the match is a URL then group 1 holds the matched URL. If group 1 is null then the match is an anchor
+            // tag, in which case we just skip it to avoid adding links to text that is already part of a link.
+            String url = matcher.group(1);
+            if (url != null)
+            {
+                String prefix = url.toLowerCase().startsWith("www") ? "http://" : "";
+                matcher.appendReplacement(sb, "<a href=\"" + prefix + "$1\" target=\"_blank\">$1</a>");
+            }
+        }
+        matcher.appendTail(sb);
+
+        return sb.toString();
     }
 
     /**

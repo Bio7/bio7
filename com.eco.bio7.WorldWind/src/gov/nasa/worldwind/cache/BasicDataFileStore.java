@@ -20,7 +20,7 @@ import java.util.*;
  * Basic implementation of {@link FileStore}.
  *
  * @author Tom Gaskins
- * @version $Id: BasicDataFileStore.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: BasicDataFileStore.java 1950 2014-04-20 18:52:47Z tgaskins $
  */
 public class BasicDataFileStore extends AbstractFileStore
 {
@@ -346,19 +346,30 @@ public class BasicDataFileStore extends AbstractFileStore
             }
         }
 
-        if (cacheFileUrl == null)
+        String addressProtocol = retrievalUrl != null ? retrievalUrl.getProtocol() : null;
+        if (cacheFileUrl == null && (addressProtocol == null || addressProtocol.equals("file")))
         {
             File f = new File(address);
             if (f.exists())
-                cacheFileUrl = WWIO.makeURL(address, "file"); // makes a file URL if the address is not yet a URL
+                try
+                {
+                    cacheFileUrl = f.toURI().toURL();  // makes a file URL
+                }
+                catch (MalformedURLException e)
+                {
+                    // The toURL call shouldn't fail, but continue on if it does.
+                }
         }
 
-        // Look for the file in the World Wind cache using its address as the cache key. We perform this step regardless
-        // of the searchLocalCache parameter, because this looks for the file in the classpath.
-        if (cacheFileUrl == null)
+        // If the address is a file, look for the file in the classpath and World Wind disk cache. We perform this step
+        // regardless of the searchLocalCache parameter, because this looks for the file in the classpath.
+        // We need to ensure that the address is not a network address (HTTP, etc.) because the getResource call in
+        // findFile will attempt to retrieve from that URL on the thread that called this method, which might be the EDT
+        // (See WWJ-434).
+        if (cacheFileUrl == null && (addressProtocol == null || addressProtocol.equals("file")))
             cacheFileUrl = WorldWind.getDataFileStore().findFile(address, true);
 
-        // Look for the file in the World Wind cache by creating a cache path from the file's address. We ignore this
+        // Look for the file in the World Wind disk cache by creating a cache path from the file's address. We ignore this
         // step if searchLocalCache is false.
         if (cacheFileUrl == null && retrievalUrl != null && searchLocalCache)
         {

@@ -47,7 +47,7 @@ import java.util.*;
  * Edited shapes are Restorable and may be saved to or loaded from a file using options in the File menu.
  *
  * @author ccrick
- * @version $Id: RigidShapeBuilder.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: RigidShapeBuilder.java 1674 2013-10-17 19:22:22Z dcollins $
  */
 public class RigidShapeBuilder extends ApplicationTemplate
 {
@@ -976,7 +976,6 @@ public class RigidShapeBuilder extends ApplicationTemplate
                 openFileButton.setAlignmentX(JComponent.LEFT_ALIGNMENT);
                 openFileButton.addActionListener(controller);
 
-                JLabel spacingLabel = new JLabel(" ");
                 JLabel textureLabel = new JLabel("Shape texture:");
                 this.textureBox = new JTextField(18);
                 this.textureBox.setActionCommand(EDIT_TEXTURE);
@@ -1561,18 +1560,6 @@ public class RigidShapeBuilder extends ApplicationTemplate
             final File dir = this.fileChooser.getSelectedFile();
             if (dir == null)
                 return;
-
-            if (dir.exists())
-            {
-                try
-                {
-                    WWIO.deleteDirectory(dir);
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
-            }
 
             if (!dir.exists())
             {

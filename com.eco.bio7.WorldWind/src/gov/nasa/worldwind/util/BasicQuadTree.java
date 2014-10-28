@@ -21,7 +21,7 @@ import java.util.*;
  * Items can be added with an associated name, and can be retrieved and removed by name.
  *
  * @author tag
- * @version $Id: BasicQuadTree.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: BasicQuadTree.java 1938 2014-04-15 22:34:52Z tgaskins $
  */
 public class BasicQuadTree<T> extends BitSetQuadTreeFilter implements Iterable<T>
 {
@@ -30,6 +30,7 @@ public class BasicQuadTree<T> extends BitSetQuadTreeFilter implements Iterable<T
     protected T currentItem; // used during add() to pass the added item to doOperation().
     protected String currentName; // used during add() to pass the optional name of the added item to doOperation().
     protected HashMap<String, T> nameMap = new HashMap<String, T>(); // maps names to items
+    protected boolean allowDuplicates = true;
 
     /**
      * Constructs a quadtree of a specified level and spanning a specified region.
@@ -58,6 +59,45 @@ public class BasicQuadTree<T> extends BitSetQuadTreeFilter implements Iterable<T
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
         }
+
+        this.makeLevelZeroCells(sector);
+        this.items = itemMap != null ? itemMap : new HashMap<String, List<T>>();
+    }
+
+    /**
+     * Constructs a quadtree of a specified level and spanning a specified region.
+     * <p/>
+     * The number of levels in the quadtree must be specified to the constructor. The more levels there are the more
+     * discriminating searches will be, but at the cost of some performance because more cells are searched. For the
+     * Earth, a level count of 8 provides leaf cells about 75 km along their meridian edges (edges of constant Earth, a
+     * level count of 8 provides leaf cells about 75 km along their meridian edges (edges of constant longitude).
+     * Additional levels successfully halve the distance, fewer levels double that distance.
+     *
+     * @param numLevels       the number of levels in the quadtree. The more levels there are the more discriminating
+     *                        searches will be, but at the cost of some performance.
+     * @param sector          the region the tree spans.
+     * @param itemMap         a {@link Map} to hold the items added to the quadtree. May be null, in which case a new
+     *                        map is created.
+     * @param allowDuplicates Indicates whether the collection held by this quadtree may contain duplicate entries.
+     *                        Specifying <code>true</code>, which is the default, may cause an individual item to be
+     *                        associated with multiple quadtree regions if the item's coordinates fall on a region
+     *                        boundary. In this case that item will be returned multiple times from an iterator created
+     *                        by this class. Specifying <code>false</code> prevents this.
+     *
+     * @throws IllegalArgumentException if <code>numLevels</code> is less than 1.
+     */
+    public BasicQuadTree(int numLevels, Sector sector, Map<String, List<T>> itemMap, boolean allowDuplicates)
+    {
+        this(numLevels, sector, itemMap);
+
+        if (sector == null)
+        {
+            String message = Logging.getMessage("nullValue.SectorIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        this.allowDuplicates = allowDuplicates;
 
         this.makeLevelZeroCells(sector);
         this.items = itemMap != null ? itemMap : new HashMap<String, List<T>>();
@@ -166,6 +206,8 @@ public class BasicQuadTree<T> extends BitSetQuadTreeFilter implements Iterable<T
         this.currentItem = item;
         this.currentName = name;
 
+        this.start();
+
         for (int i = 0; i < levelZeroCells.size(); i++)
         {
             this.testAndDo(0, i, levelZeroCells.get(i), itemCoords);
@@ -252,8 +294,8 @@ public class BasicQuadTree<T> extends BitSetQuadTreeFilter implements Iterable<T
     }
 
     /**
-     * Returns an iterator over the items in the tree. There is no specific iteration order and the iterator may
-     * return duplicate entries.
+     * Returns an iterator over the items in the tree. There is no specific iteration order and the iterator may return
+     * duplicate entries.
      * <p/>
      * <em>Note</em> The {@link java.util.Iterator#remove()} operation is not supported.
      *
@@ -552,6 +594,9 @@ public class BasicQuadTree<T> extends BitSetQuadTreeFilter implements Iterable<T
 
         if (this.currentName != null)
             this.nameMap.put(this.currentName, this.currentItem);
+
+        if (!this.allowDuplicates)
+            this.stop();
 
         return false;
     }

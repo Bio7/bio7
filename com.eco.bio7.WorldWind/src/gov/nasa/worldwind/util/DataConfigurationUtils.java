@@ -38,7 +38,7 @@ import java.util.concurrent.ThreadFactory;
  * documents.
  *
  * @author dcollins
- * @version $Id: DataConfigurationUtils.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: DataConfigurationUtils.java 1931 2014-04-14 21:31:43Z tgaskins $
  */
 public class DataConfigurationUtils
 {
@@ -52,7 +52,9 @@ public class DataConfigurationUtils
      * Documents</li> </ul>
      *
      * @param domElement the document in question.
+     *
      * @return true if the document is a data configuration document; false otherwise.
+     *
      * @throws IllegalArgumentException if the document is null.
      */
     public static boolean isDataConfig(Element domElement)
@@ -97,8 +99,10 @@ public class DataConfigurationUtils
      * null.
      *
      * @param doc the document to transform.
+     *
      * @return the specified document transformed to a standard data configuration document, the original document if
      *         it's already in a standard form or is unrecognized, or null if the document's root element is null.
+     *
      * @throws IllegalArgumentException if the document is null.
      */
     public static Document convertToStandardDataConfigDocument(Document doc)
@@ -139,8 +143,10 @@ public class DataConfigurationUtils
      * </table>
      *
      * @param domElement the data configuration document who's display name is returned.
-     * @return a String representing the data configuration document's display name, or null if the document is
-     *         not recognized.
+     *
+     * @return a String representing the data configuration document's display name, or null if the document is not
+     *         recognized.
+     *
      * @throws IllegalArgumentException if the document is null.
      */
     public static String getDataConfigDisplayName(Element domElement)
@@ -153,7 +159,7 @@ public class DataConfigurationUtils
         }
 
         if (AbstractLayer.isLayerConfigDocument(domElement) || AbstractElevationModel.isElevationModelConfigDocument(
-                domElement))
+            domElement))
         {
             return WWXML.getText(domElement, "DisplayName");
         }
@@ -161,7 +167,7 @@ public class DataConfigurationUtils
         if (isInstalledDataDescriptorConfigDocument(domElement))
         {
             return WWXML.getText(domElement,
-                    "property[@name=\"dataSet\"]/property[@name=\"gov.nasa.worldwind.avkey.DatasetNameKey\"]");
+                "property[@name=\"dataSet\"]/property[@name=\"gov.nasa.worldwind.avkey.DatasetNameKey\"]");
         }
 
         if (isWWDotNetLayerSetConfigDocument(domElement))
@@ -181,7 +187,9 @@ public class DataConfigurationUtils
      * <tr><td>Other</td><td>null</td></tr> </table>
      *
      * @param domElement the data configuration document to determine a type for.
+     *
      * @return a String representing the data configuration document's type, or null if the document is not recognized.
+     *
      * @throws IllegalArgumentException if the document is null.
      */
     public static String getDataConfigType(Element domElement)
@@ -206,8 +214,8 @@ public class DataConfigurationUtils
         if (isInstalledDataDescriptorConfigDocument(domElement))
         {
             String s = WWXML.getText(domElement,
-                    "property[@name=\"dataSet\"]/property[@name=\"gov.nasa.worldwind.avkey.DataType\"]",
-                    null);
+                "property[@name=\"dataSet\"]/property[@name=\"gov.nasa.worldwind.avkey.DataType\"]",
+                null);
             if (s != null && s.equals("gov.nasa.worldwind.avkey.TiledElevations"))
             {
                 return "ElevationModel";
@@ -232,7 +240,9 @@ public class DataConfigurationUtils
      *
      * @param params the parameter list to extract a configuration filename from.
      * @param suffix the file suffix to append on the path name, or null to append no suffix.
+     *
      * @return a file store path name with the specified suffix, or null if a path name cannot be constructed.
+     *
      * @throws IllegalArgumentException if the parameter list is null.
      */
     public static String getDataConfigFilename(AVList params, String suffix)
@@ -280,7 +290,9 @@ public class DataConfigurationUtils
      * @param dataConfigCachePath the data configuration file's cache path.
      * @param params              the output key-value pairs which receive the DATA_CACHE_NAME parameter. A null
      *                            reference is permitted.
+     *
      * @return a reference to params, or a new AVList if params is null.
+     *
      * @throws IllegalArgumentException if the data config file's cache path is null or has length zero.
      */
     public static AVList getDataConfigCacheName(String dataConfigCachePath, AVList params)
@@ -325,11 +337,13 @@ public class DataConfigurationUtils
      *                        looks at the file's siblings for a match.
      * @param removeIfExpired true to remove the existing file, if it exists and is expired; false otherwise.
      * @param expiryTime      the time in milliseconds, before which a file is considered to be expired.
+     *
      * @return whether a configuration file already exists which has not expired.
+     *
      * @throws IllegalArgumentException if either the file store or file name are null.
      */
     public static boolean hasDataConfigFile(FileStore fileStore, String fileName, boolean removeIfExpired,
-                                            long expiryTime)
+        long expiryTime)
     {
         if (fileStore == null)
         {
@@ -374,7 +388,9 @@ public class DataConfigurationUtils
      * @param fileStore the file store in which to look.
      * @param fileName  the file name to look for. If a file with this name does not exist in the store, this looks at
      *                  the file's siblings for a match.
+     *
      * @return the URL of an existing configuration file in the store, or null if none exists.
+     *
      * @throws IllegalArgumentException if either the file store or file name are null.
      */
     public static java.net.URL findExistingDataConfigFile(FileStore fileStore, String fileName)
@@ -424,6 +440,7 @@ public class DataConfigurationUtils
      * thread with minimum priority.
      *
      * @param threadName the String name for the ExecutorService's thread, may be <code>null</code>.
+     *
      * @return a new ScheduledExecutorService appropriate for scheduling periodic resource checks.
      */
     public static ScheduledExecutorService createResourceRetrievalService(final String threadName)
@@ -465,7 +482,9 @@ public class DataConfigurationUtils
      *
      * @param params  the key-value pairs which define the WMS layer configuration parameters.
      * @param context the XML document root on which to append WMS layer configuration elements.
+     *
      * @return a reference to context.
+     *
      * @throws IllegalArgumentException if either the parameters or the context are null.
      */
     public static Element createWMSLayerConfigElements(AVList params, Element context)
@@ -542,7 +561,9 @@ public class DataConfigurationUtils
      * @param domElement the XML document root to parse for WMS layer parameters.
      * @param params     the output key-value pairs which receive the WMS layer parameters. A null reference is
      *                   permitted.
+     *
      * @return a reference to params, or a new AVList if params is null.
+     *
      * @throws IllegalArgumentException if the document is null.
      */
     public static AVList getWMSLayerConfigParams(Element domElement, AVList params)
@@ -567,7 +588,7 @@ public class DataConfigurationUtils
         WWXML.checkAndSetStringParam(domElement, params, AVKey.STYLE_NAMES, "Service/StyleNames", xpath);
         WWXML.checkAndSetStringParam(domElement, params, AVKey.GET_MAP_URL, "Service/GetMapURL", xpath);
         WWXML.checkAndSetStringParam(domElement, params, AVKey.GET_CAPABILITIES_URL, "Service/GetCapabilitiesURL",
-                xpath);
+            xpath);
 
         params.setValue(AVKey.SERVICE, params.getValue(AVKey.GET_MAP_URL));
         String serviceURL = params.getStringValue(AVKey.SERVICE);
@@ -619,14 +640,32 @@ public class DataConfigurationUtils
             throw new IllegalArgumentException(message);
         }
 
-        for (String name : names)
+        String coordinateSystem = params.getStringValue(AVKey.COORDINATE_SYSTEM);
+        if (WWUtil.isEmpty(coordinateSystem))
         {
-            if (caps.getLayerByName(name) == null)
+            for (String name : names)
             {
-                String message = Logging.getMessage("WMS.LayerNameMissing", name);
-                Logging.logger().severe(message);
-                throw new IllegalArgumentException(message);
+                WMSLayerCapabilities layerCaps = caps.getLayerByName(name);
+                if (layerCaps == null)
+                {
+                    Logging.logger().warning(Logging.getMessage("WMS.LayerNameMissing", name));
+                    continue;
+                }
+
+                if (layerCaps.hasCoordinateSystem("EPSG:4326"))
+                {
+                    coordinateSystem = "EPSG:4326";
+                    break; // this assumes that the CS is available for all the layers in layerNames
+                }
+                else if (layerCaps.hasCoordinateSystem("CRS:84"))
+                {
+                    coordinateSystem = "CRS:84";
+                    break; // this assumes that the CS is available for all the layers in layerNames
+                }
             }
+
+            if (!WWUtil.isEmpty(coordinateSystem))
+                params.setValue(AVKey.COORDINATE_SYSTEM, coordinateSystem);
         }
 
         // Define the DISPLAY_NAME and DATASET_NAME from the WMS layer names and styles.
@@ -634,7 +673,7 @@ public class DataConfigurationUtils
         params.setValue(AVKey.DATASET_NAME, layerNames);
 
         // Get the EXPIRY_TIME from the WMS layer last update time.
-        Long lastUpdate = caps.getLayerLatestLastUpdateTime(caps, names);
+        Long lastUpdate = caps.getLayerLatestLastUpdateTime(names);
         if (lastUpdate != null)
         {
             params.setValue(AVKey.EXPIRY_TIME, lastUpdate);
@@ -689,7 +728,7 @@ public class DataConfigurationUtils
             {
                 URI mapRequestURI = new URI(mapRequestURIString);
                 String cacheName = WWIO.formPath(mapRequestURI.getAuthority(), mapRequestURI.getPath(), layerNames,
-                        styleNames);
+                    styleNames);
                 params.setValue(AVKey.DATA_CACHE_NAME, cacheName);
             }
             catch (URISyntaxException e)
@@ -748,7 +787,9 @@ public class DataConfigurationUtils
      * parameters are available, this returns the GetCapabilities URL. Otherwise this returns null.
      *
      * @param params parameter list to get the GetCapabilities parameters from.
+     *
      * @return a OGC GetCapabilities URL, or null if the necessary parameters are not available.
+     *
      * @throws IllegalArgumentException if the parameter list is null.
      */
     public static URL getOGCGetCapabilitiesURL(AVList params)
@@ -802,7 +843,9 @@ public class DataConfigurationUtils
      * returns null.
      *
      * @param params parameter list to get the layer names from.
+     *
      * @return an array of layer names, or null if none exist.
+     *
      * @throws IllegalArgumentException if the parameter list is null.
      */
     public static String[] getOGCLayerNames(AVList params)
@@ -970,7 +1013,9 @@ public class DataConfigurationUtils
      *
      * @param params  the key-value pairs which define the LevelSet configuration parameters.
      * @param context the XML document root on which to append LevelSet configuration elements.
+     *
      * @return a reference to context.
+     *
      * @throws IllegalArgumentException if either the parameters or the context are null.
      */
     public static Element createLevelSetConfigElements(AVList params, Element context)
@@ -1032,7 +1077,7 @@ public class DataConfigurationUtils
 
         WWXML.checkAndAppendSectorElement(params, AVKey.SECTOR, context, "Sector");
         WWXML.checkAndAppendSectorResolutionElement(params, AVKey.SECTOR_RESOLUTION_LIMITS, context,
-                "SectorResolutionLimit");
+            "SectorResolutionLimit");
         WWXML.checkAndAppendLatLonElement(params, AVKey.TILE_ORIGIN, context, "TileOrigin/LatLon");
 
         Integer tileWidth = AVListImpl.getIntegerValue(params, AVKey.TILE_WIDTH);
@@ -1089,7 +1134,9 @@ public class DataConfigurationUtils
      * @param domElement the XML document root to parse for LevelSet configuration parameters.
      * @param params     the output key-value pairs which receive the LevelSet configuration parameters. A null
      *                   reference is permitted.
+     *
      * @return a reference to params, or a new AVList if params is null.
+     *
      * @throws IllegalArgumentException if the document is null.
      */
     public static AVList getLevelSetConfigParams(Element domElement, AVList params)
@@ -1128,18 +1175,18 @@ public class DataConfigurationUtils
         WWXML.checkAndSetStringParam(domElement, params, AVKey.INACTIVE_LEVELS, "NumLevels/@inactive", xpath);
         WWXML.checkAndSetSectorParam(domElement, params, AVKey.SECTOR, "Sector", xpath);
         WWXML.checkAndSetSectorResolutionParam(domElement, params, AVKey.SECTOR_RESOLUTION_LIMITS,
-                "SectorResolutionLimit", xpath);
+            "SectorResolutionLimit", xpath);
         WWXML.checkAndSetLatLonParam(domElement, params, AVKey.TILE_ORIGIN, "TileOrigin/LatLon", xpath);
         WWXML.checkAndSetIntegerParam(domElement, params, AVKey.TILE_WIDTH, "TileSize/Dimension/@width", xpath);
         WWXML.checkAndSetIntegerParam(domElement, params, AVKey.TILE_HEIGHT, "TileSize/Dimension/@height", xpath);
         WWXML.checkAndSetLatLonParam(domElement, params, AVKey.LEVEL_ZERO_TILE_DELTA, "LevelZeroTileDelta/LatLon",
-                xpath);
+            xpath);
 
         // Retrieval properties.
         WWXML.checkAndSetIntegerParam(domElement, params, AVKey.MAX_ABSENT_TILE_ATTEMPTS,
-                "AbsentTiles/MaxAttempts", xpath);
+            "AbsentTiles/MaxAttempts", xpath);
         WWXML.checkAndSetTimeParamAsInteger(domElement, params, AVKey.MIN_ABSENT_TILE_CHECK_INTERVAL,
-                "AbsentTiles/MinCheckInterval/Time", xpath);
+            "AbsentTiles/MinCheckInterval/Time", xpath);
 
         return params;
     }
@@ -1167,7 +1214,9 @@ public class DataConfigurationUtils
      * @param levelSet the LevelSet reference to gather configuration parameters from.
      * @param params   the output key-value pairs which receive the LevelSet configuration parameters. A null reference
      *                 is permitted.
+     *
      * @return a reference to params, or a new AVList if params is null.
+     *
      * @throws IllegalArgumentException if the document is null.
      */
     public static AVList getLevelSetConfigParams(LevelSet levelSet, AVList params)
@@ -1362,7 +1411,9 @@ public class DataConfigurationUtils
      * Returns true if a specified DOM document is a DataDescriptor configuration document, and false otherwise.
      *
      * @param domElement the DOM document in question.
+     *
      * @return true if the document is a DataDescriptor configuration document; false otherwise.
+     *
      * @throws IllegalArgumentException if document is null.
      */
     public static boolean isInstalledDataDescriptorConfigDocument(Element domElement)
@@ -1384,8 +1435,10 @@ public class DataConfigurationUtils
      * depending on the contents of the {@link org.w3c.dom.Element}.
      *
      * @param domElement DataDescriptor document to transform.
+     *
      * @return standard Layer or ElevationModel document, or null if the DataDescriptor cannot be transformed to a
      *         standard document.
+     *
      * @throws IllegalArgumentException if the document is null.
      */
     public static Document transformInstalledDataDescriptorConfigDocument(Element domElement)
@@ -1471,7 +1524,7 @@ public class DataConfigurationUtils
         // Tile structure properties.
         Integer numLevels = WWXML.getInteger(context, "property[@name=\"gov.nasa.worldwind.avkey.NumLevels\"]", xpath);
         Integer numEmptyLevels = WWXML.getInteger(context,
-                "property[@name=\"gov.nasa.worldwind.avkey.NumEmptyLevels\"]", xpath);
+            "property[@name=\"gov.nasa.worldwind.avkey.NumEmptyLevels\"]", xpath);
         if (numLevels != null)
         {
             el = WWXML.appendElementPath(outElem, "NumLevels");
@@ -1499,9 +1552,9 @@ public class DataConfigurationUtils
         }
 
         Integer tileWidth = WWXML.getInteger(context, "property[@name=\"gov.nasa.worldwind.avkey.TileWidthKey\"]",
-                xpath);
+            xpath);
         Integer tileHeight = WWXML.getInteger(context, "property[@name=\"gov.nasa.worldwind.avkey.TileHeightKey\"]",
-                xpath);
+            xpath);
         if (tileWidth != null && tileHeight != null)
         {
             el = WWXML.appendElementPath(outElem, "TileSize/Dimension");
@@ -1511,7 +1564,7 @@ public class DataConfigurationUtils
     }
 
     protected static void transformDataDescriptorElevationModelElements(Element context, Element outElem,
-                                                                        XPath xpath)
+        XPath xpath)
     {
         // Image format properties.
         Element el = WWXML.appendElementPath(outElem, "DataType");
@@ -1607,7 +1660,9 @@ public class DataConfigurationUtils
      * Returns true if a specified document is a World Wind .NET LayerSet configuration document, and false otherwise.
      *
      * @param domElement the document in question.
+     *
      * @return true if the document is a LayerSet configuration document; false otherwise.
+     *
      * @throws IllegalArgumentException if document is null.
      */
     public static boolean isWWDotNetLayerSetConfigDocument(Element domElement)
@@ -1630,7 +1685,9 @@ public class DataConfigurationUtils
      * otherwise.
      *
      * @param event the XML event in question.
+     *
      * @return true if the event is a LayerSet configuration document element; false otherwise.
+     *
      * @throws IllegalArgumentException if the event is null.
      */
     public static boolean isWWDotNetLayerSetConfigEvent(XMLEvent event)
@@ -1678,7 +1735,9 @@ public class DataConfigurationUtils
      * @param domElement the XML document root to parse for LayerSet configuration parameters.
      * @param params     the output key-value pairs which receive the LayerSet configuration parameters. A null
      *                   reference is permitted.
+     *
      * @return a reference to params, or a new AVList if params is null.
+     *
      * @throws IllegalArgumentException if the document is null.
      */
     public static AVList getWWDotNetLayerSetConfigParams(Element domElement, AVList params)
@@ -1753,7 +1812,7 @@ public class DataConfigurationUtils
                 }
                 if (params.getValue(AVKey.AVAILABLE_IMAGE_FORMATS) == null)
                 {
-                    params.setValue(AVKey.AVAILABLE_IMAGE_FORMATS, new String[]{s});
+                    params.setValue(AVKey.AVAILABLE_IMAGE_FORMATS, new String[] {s});
                 }
             }
         }
@@ -1831,7 +1890,9 @@ public class DataConfigurationUtils
      * Transforms a World Wind .NET LayerSet configuration document to a standard layer configuration document.
      *
      * @param domElement LayerSet document to transform.
+     *
      * @return standard Layer document, or null if the LayerSet document cannot be transformed to a standard document.
+     *
      * @throws IllegalArgumentException if the document is null.
      */
     public static Document transformWWDotNetLayerSetConfigDocument(Element domElement)

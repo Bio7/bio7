@@ -6,7 +6,6 @@
 package gov.nasa.worldwind.ogc.kml.impl;
 
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.ogc.kml.*;
 import gov.nasa.worldwind.ogc.kml.gx.GXLatLongQuad;
 import gov.nasa.worldwind.render.*;
@@ -14,12 +13,11 @@ import gov.nasa.worldwind.util.*;
 
 import java.awt.*;
 import java.io.IOException;
-import java.util.*;
 import java.util.List;
 
 /**
  * @author pabercrombie
- * @version $Id: KMLSurfaceImageImpl.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: KMLSurfaceImageImpl.java 1551 2013-08-17 18:00:09Z pabercrombie $
  */
 public class KMLSurfaceImageImpl extends SurfaceImage implements KMLRenderable
 {
@@ -203,46 +201,10 @@ public class KMLSurfaceImageImpl extends SurfaceImage implements KMLRenderable
             Double rotation = box.getRotation();
             if (rotation != null)
             {
-                List<LatLon> corners = this.computeRotatedCorners(dc, this.getSector(), Angle.fromDegrees(rotation));
+                List<LatLon> corners = KMLUtil.rotateSector(dc.getGlobe(), this.getSector(),
+                    Angle.fromDegrees(rotation));
                 this.setCorners(corners);
             }
         }
-    }
-
-    /**
-     * Rotate the corners of the overlay region. Rotation is performed around a surface normal through the center of the
-     * overlay sector.
-     *
-     * @param dc       Current draw context.
-     * @param sector   Sector that defines the overlay region.
-     * @param rotation Rotation angle. Positive angles produce counterclockwise rotation.
-     *
-     * @return Rotated corners.
-     */
-    protected java.util.List<LatLon> computeRotatedCorners(DrawContext dc, Sector sector, Angle rotation)
-    {
-        LatLon[] corners = sector.getCorners();
-        List<LatLon> transformedCorners = new ArrayList<LatLon>(corners.length);
-
-        Globe globe = dc.getGlobe();
-
-        // Using the four corners of the sector to compute the rotation axis avoids any problems with dateline
-        // spanning polygons.
-        Vec4[] verts = sector.computeCornerPoints(globe, 1);
-        Vec4 normalVec = verts[2].subtract3(verts[0]).cross3(verts[3].subtract3(verts[1])).normalize3();
-        Matrix rotationMatrix = Matrix.fromAxisAngle(rotation, normalVec);
-
-        Vec4 centerPoint = sector.computeCenterPoint(globe, 1);
-
-        // Rotate each point around the surface normal, and convert back to geographic
-        for (Vec4 point : verts)
-        {
-            point = point.subtract3(centerPoint).transformBy3(rotationMatrix).add3(centerPoint);
-            LatLon ll = globe.computePositionFromPoint(point);
-
-            transformedCorners.add(ll);
-        }
-
-        return transformedCorners;
     }
 }

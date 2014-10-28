@@ -28,7 +28,7 @@ import java.awt.event.*;
  * conditions are true, or if the event is {@code null}.</li> </ul>
  *
  * @author pabercrombie
- * @version $Id: HotSpotController.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: HotSpotController.java 1534 2013-08-07 04:32:22Z pabercrombie $
  */
 public class HotSpotController implements SelectListener, MouseMotionListener
 {
@@ -111,11 +111,13 @@ public class HotSpotController implements SelectListener, MouseMotionListener
 
             this.updateActiveHotSpot(po);
         }
-        else if (!this.isDragging() && event.isRollover())
+        else if (!this.isDragging() && (event.isRollover() || event.isLeftPress()))
         {
-            // Update the active HotSpot and the currently displayed cursor on drag end events and and on rollover
-            // events when we're not dragging. This ensures that the active HotSpot remains active while it's being
-            // dragged, regardless of what's under the cursor.
+            // Update the active HotSpot and the currently displayed cursor on drag end events, and on rollover and left
+            // press events when we're not dragging. This ensures that the active HotSpot remains active while it's
+            // being dragged, regardless of what's under the cursor. It's necessary to do this on left press to handle
+            // cases in which the mouse starts dragging without a hover event, which can happen if the user starts
+            // dragging while the World Wind window is in the background.
             PickedObject po = event.getTopPickedObject();
             this.updateActiveHotSpot(po);
         }
@@ -130,6 +132,7 @@ public class HotSpotController implements SelectListener, MouseMotionListener
                 // Forward the drag event to the active HotSpot. If the HotSpot consumes the event, track that the
                 // HotSpot is dragging so that we can continue to deliver events to the HotSpot for the duration of the drag.
                 activeHotSpot.selected(event);
+                //noinspection ConstantConditions
                 this.setDragging(event.isConsumed() && !wasConsumed);
             }
             else if (!event.isDragEnd())

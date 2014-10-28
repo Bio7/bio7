@@ -16,7 +16,7 @@ import java.util.regex.*;
  * Text decoder that performs entity substitution for KML description balloons. This class is thread safe.
  *
  * @author pabercrombie
- * @version $Id: KMLBalloonTextDecoder.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: KMLBalloonTextDecoder.java 1944 2014-04-18 16:50:49Z tgaskins $
  */
 public class KMLBalloonTextDecoder extends BasicTextDecoder
 {
@@ -107,8 +107,7 @@ public class KMLBalloonTextDecoder extends BasicTextDecoder
                 }
             }
 
-            if (r != null)
-                m.appendReplacement(sb, Matcher.quoteReplacement(r));
+            m.appendReplacement(sb, Matcher.quoteReplacement(r != null ? r : ""));
         }
         m.appendTail(sb);
         return sb.toString();

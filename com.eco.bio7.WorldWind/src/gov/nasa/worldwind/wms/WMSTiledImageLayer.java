@@ -20,7 +20,7 @@ import java.net.*;
 
 /**
  * @author tag
- * @version $Id: WMSTiledImageLayer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: WMSTiledImageLayer.java 1957 2014-04-23 23:32:39Z tgaskins $
  */
 public class WMSTiledImageLayer extends BasicTiledImageLayer
 {
@@ -156,7 +156,7 @@ public class WMSTiledImageLayer extends BasicTiledImageLayer
     // TODO: consolidate common code in WMSTiledImageLayer.URLBuilder and WMSBasicElevationModel.URLBuilder
     public static class URLBuilder implements TileUrlBuilder
     {
-        private static final String MAX_VERSION = "1.3";
+        private static final String MAX_VERSION = "1.3.0";
 
         private final String layerNames;
         private final String styleNames;
@@ -174,16 +174,23 @@ public class WMSTiledImageLayer extends BasicTiledImageLayer
             this.backgroundColor = params.getStringValue(AVKey.WMS_BACKGROUND_COLOR);
             String version = params.getStringValue(AVKey.WMS_VERSION);
 
-            if (version == null || version.compareTo(MAX_VERSION) >= 0)
+            String coordSystemKey;
+            String defaultCS;
+            if (version == null || WWUtil.compareVersion(version, "1.3.0") >= 0)
             {
                 this.wmsVersion = MAX_VERSION;
-                this.crs = "&crs=CRS:84";
+                coordSystemKey = "&crs=";
+                defaultCS = "CRS:84"; // would like to do EPSG:4326 but that's incompatible with our old WMS server, see WWJ-474
             }
             else
             {
                 this.wmsVersion = version;
-                this.crs = "&srs=EPSG:4326";
+                coordSystemKey = "&srs=";
+                defaultCS = "EPSG:4326";
             }
+
+            String coordinateSystem = params.getStringValue(AVKey.COORDINATE_SYSTEM);
+            this.crs = coordSystemKey + (coordinateSystem != null ? coordinateSystem : defaultCS);
         }
 
         public URL getURL(Tile tile, String altImageFormat) throws MalformedURLException
@@ -220,14 +227,29 @@ public class WMSTiledImageLayer extends BasicTiledImageLayer
 
             Sector s = tile.getSector();
             sb.append("&bbox=");
-            sb.append(s.getMinLongitude().getDegrees());
-            sb.append(",");
-            sb.append(s.getMinLatitude().getDegrees());
-            sb.append(",");
-            sb.append(s.getMaxLongitude().getDegrees());
-            sb.append(",");
-            sb.append(s.getMaxLatitude().getDegrees());
-//            sb.append("&"); // terminate the query string
+            // The order of the coordinate specification matters, and it changed with WMS 1.3.0.
+            if (WWUtil.compareVersion(this.wmsVersion, "1.1.1") <= 0 || this.crs.contains("CRS:84"))
+            {
+                // 1.1.1 and earlier and CRS:84 use lon/lat order
+                sb.append(s.getMinLongitude().getDegrees());
+                sb.append(",");
+                sb.append(s.getMinLatitude().getDegrees());
+                sb.append(",");
+                sb.append(s.getMaxLongitude().getDegrees());
+                sb.append(",");
+                sb.append(s.getMaxLatitude().getDegrees());
+            }
+            else
+            {
+                // 1.3.0 uses lat/lon ordering
+                sb.append(s.getMinLatitude().getDegrees());
+                sb.append(",");
+                sb.append(s.getMinLongitude().getDegrees());
+                sb.append(",");
+                sb.append(s.getMaxLatitude().getDegrees());
+                sb.append(",");
+                sb.append(s.getMaxLongitude().getDegrees());
+            }
 
             return new java.net.URL(sb.toString().replace(" ", "%20"));
         }

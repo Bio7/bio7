@@ -14,7 +14,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @author tag
- * @version $Id: CompoundElevationModel.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: CompoundElevationModel.java 1978 2014-04-30 17:37:11Z tgaskins $
  */
 public class CompoundElevationModel extends AbstractElevationModel
 {

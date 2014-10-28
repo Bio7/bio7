@@ -31,7 +31,7 @@ import java.awt.*;
  * WorldWindow, it is not sharable. Refer to the World Wind Overview page for a list of layers that cannot be shared.
  * // TODO: include the reference to overview.html.
  *
- * @version $Id: TabbedPaneUsage.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: TabbedPaneUsage.java 1853 2014-02-28 19:28:23Z tgaskins $
  */
 public class TabbedPaneUsage extends JFrame
 {
@@ -64,12 +64,9 @@ public class TabbedPaneUsage extends JFrame
             JTabbedPane tabbedPanel = new JTabbedPane();
             this.add(tabbedPanel, BorderLayout.CENTER);
 
-            // Create two World Windows that share resources.
+            // Create the first World Window and add it to the tabbed panel.
             WWPanel wwpA = new WWPanel(null, 600, 600);
-            WWPanel wwpB = new WWPanel(wwpA.wwd, wwpA.getWidth(), wwpA.getHeight());
-
             tabbedPanel.add(wwpA, "World Window A");
-            tabbedPanel.add(wwpB, "World Window B");
 
             // Create the Model, starting with the Globe.
             Globe earth = new Earth();
@@ -90,29 +87,34 @@ public class TabbedPaneUsage extends JFrame
             wwpA.wwd.setModel(modelForWindowA);
 
             Model modelForWindowB = new BasicModel();
-            modelForWindowB.setGlobe(earth);
+            modelForWindowB.setGlobe(new Earth());
             modelForWindowB.setLayers(new LayerList(layers));
-            wwpB.wwd.setModel(modelForWindowB);
 
-            // Add view control layers, which the World Windows cannnot share.
+            // Add view control layers, which the World Windows cannot share.
             ViewControlsLayer viewControlsA = new ViewControlsLayer();
             wwpA.wwd.getModel().getLayers().add(viewControlsA);
             wwpA.wwd.addSelectListener(new ViewControlsSelectListener(wwpA.wwd, viewControlsA));
 
             ViewControlsLayer viewControlsB = new ViewControlsLayer();
-            wwpB.wwd.getModel().getLayers().add(viewControlsB);
-            wwpB.wwd.addSelectListener(new ViewControlsSelectListener(wwpB.wwd, viewControlsB));
 
-            // Add the card panel to the frame.
+            // Add the tabbed panel to the frame.
             this.add(tabbedPanel, BorderLayout.CENTER);
 
-            // Position and display the frame.
+            // Position and display the frame. It's essential to do this before creating the second World Window. This
+            // first one must be visible in order for the second one to share its OpenGL resources.
             this.setTitle("World Wind Multi-Window Tabbed Pane");
             this.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
             this.pack();
             WWUtil.alignComponent(null, this, AVKey.CENTER); // Center the application on the screen.
             this.setResizable(true);
             this.setVisible(true);
+
+            // Now that the first World Window is visible, create the second one.
+            WWPanel wwpB = new WWPanel(wwpA.wwd, wwpA.getWidth(), wwpA.getHeight());
+            tabbedPanel.add(wwpB, "World Window B");
+            wwpB.wwd.setModel(modelForWindowB);
+            wwpB.wwd.getModel().getLayers().add(viewControlsB);
+            wwpB.wwd.addSelectListener(new ViewControlsSelectListener(wwpB.wwd, viewControlsB));
         }
         catch (Exception e)
         {

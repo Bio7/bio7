@@ -27,7 +27,7 @@ import java.nio.*;
  * counterclockwise from the horizon.
  *
  * @author tag
- * @version $Id: AntennaAxes.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: AntennaAxes.java 1676 2013-10-21 18:32:30Z dcollins $
  */
 public class AntennaAxes extends AbstractShape
 {
@@ -396,16 +396,19 @@ public class AntennaAxes extends AbstractShape
 
     protected void drawCylinder(DrawContext dc, ShapeData shapeData)
     {
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+
         for (IntBuffer iBuffer : shapeData.indices)
         {
-            dc.getGL().glDrawElements(GL.GL_TRIANGLE_STRIP, iBuffer.limit(), GL.GL_UNSIGNED_INT, iBuffer.rewind());
+            gl.glDrawElements(GL.GL_TRIANGLE_STRIP, iBuffer.limit(), GL.GL_UNSIGNED_INT, iBuffer.rewind());
         }
     }
 
     protected void drawCone(DrawContext dc, ShapeData shapeData)
     {
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         IntBuffer iBuffer = shapeData.coneIndices;
-        dc.getGL().glDrawElements(GL.GL_TRIANGLE_FAN, iBuffer.limit(), GL.GL_UNSIGNED_INT, iBuffer.rewind());
+        gl.glDrawElements(GL.GL_TRIANGLE_FAN, iBuffer.limit(), GL.GL_UNSIGNED_INT, iBuffer.rewind());
     }
 
     protected void drawLabels(DrawContext dc)

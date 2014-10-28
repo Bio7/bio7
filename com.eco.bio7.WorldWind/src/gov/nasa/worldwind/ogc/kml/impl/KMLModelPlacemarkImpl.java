@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.*;
  * Class to load and render a COLLADA model as the geometry of a KML Placemark.
  *
  * @author pabercrombie
- * @version $Id: KMLModelPlacemarkImpl.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: KMLModelPlacemarkImpl.java 1838 2014-02-05 20:48:12Z dcollins $
  */
 public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable, ColladaResourceResolver
 {
@@ -152,7 +152,7 @@ public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
 
         Position refPosition = this.model.getLocation().getPosition();
         root.setPosition(refPosition);
-        root.setAltitudeMode(KMLUtil.convertAltitudeMode(this.model.getAltitudeMode()));
+        root.setAltitudeMode(KMLUtil.convertAltitudeMode(this.model.getAltitudeMode(), WorldWind.CLAMP_TO_GROUND)); // KML default
 
         KMLOrientation orientation = this.model.getOrientation();
         if (orientation != null)

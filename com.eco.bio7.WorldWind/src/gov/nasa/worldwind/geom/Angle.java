@@ -15,12 +15,13 @@ import java.util.regex.Pattern;
  * factory methods {@link #fromDegrees} and {@link #fromRadians}.
  *
  * @author Tom Gaskins
- * @version $Id: Angle.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: Angle.java 1690 2013-10-24 19:42:53Z tgaskins $
  */
 public class Angle implements Comparable<Angle>
 {
     // Angle format
     public final static String ANGLE_FORMAT_DD = "gov.nasa.worldwind.Geom.AngleDD";
+    public final static String ANGLE_FORMAT_DM = "gov.nasa.worldwind.Geom.AngleDM";
     public final static String ANGLE_FORMAT_DMS = "gov.nasa.worldwind.Geom.AngleDMS";
 
     /** Represents an angle of zero degrees */
@@ -747,6 +748,38 @@ public class Angle implements Comparable<Angle>
         }
 
         return (sign == -1 ? "-" : "") + d + '\u00B0' + ' ' + m + '\u2019' + ' ' + s + '\u201d';
+    }
+
+    /**
+     * Obtains a {@link String} representation of this {@link Angle} formatted as degrees and decimal minutes.
+     *
+     * @return the value of this angle in degrees and decimal minutes as a string.
+     */
+    public final String toDMString()
+    {
+        double temp = this.degrees;
+        int sign = (int) Math.signum(temp);
+        temp *= sign;
+        int d = (int) Math.floor(temp);
+        temp = (temp - d) * 60d;
+        int m = (int) Math.floor(temp);
+        temp = (temp - m) * 60d;
+        int s = (int) Math.round(temp);
+
+        if (s == 60)
+        {
+            m++;
+            s = 0;
+        } // Fix rounding errors
+        if (m == 60)
+        {
+            d++;
+            m = 0;
+        }
+
+        double mf = s == 0 ? m : m + s / 60.0;
+
+        return (sign == -1 ? "-" : "") + d + '\u00B0' + ' ' + String.format("%5.2f", mf) + '\u2019';
     }
 
     public final String toFormattedDMSString()

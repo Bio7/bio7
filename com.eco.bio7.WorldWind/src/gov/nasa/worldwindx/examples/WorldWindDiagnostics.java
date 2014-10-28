@@ -16,7 +16,7 @@ import java.util.Map;
 
 /**
  * @author tag
- * @version $Id: WorldWindDiagnostics.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: WorldWindDiagnostics.java 1535 2013-08-07 18:11:17Z dcollins $
  */
 public class WorldWindDiagnostics
 {
@@ -83,8 +83,15 @@ public class WorldWindDiagnostics
             GL gl = glAutoDrawable.getGL();
 
             sb.append("\nOpenGL Values\n");
+
             String oglVersion = gl.glGetString(GL.GL_VERSION);
             sb.append("OpenGL version: " + oglVersion + "\n");
+
+            String oglVendor = gl.glGetString(GL.GL_VENDOR);
+            sb.append("OpenGL vendor: " + oglVendor + "\n");
+
+            String oglRenderer = gl.glGetString(GL.GL_RENDERER);
+            sb.append("OpenGL renderer: " + oglRenderer + "\n");
 
             String value = "";
             int[] intVals = new int[1];
@@ -146,10 +153,6 @@ public class WorldWindDiagnostics
         }
 
         public void reshape(GLAutoDrawable glAutoDrawable, int x, int y, int width, int height)
-        {
-        }
-
-        public void displayChanged(GLAutoDrawable glAutoDrawable, boolean b, boolean b1)
         {
         }
     }
@@ -266,7 +269,7 @@ public class WorldWindDiagnostics
     public static void main(String[] arg)
     {
         final MainFrame frame = new MainFrame();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setVisible(true);
     }
 }

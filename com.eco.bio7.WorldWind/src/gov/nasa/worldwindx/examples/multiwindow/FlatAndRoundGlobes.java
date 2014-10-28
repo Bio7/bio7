@@ -38,7 +38,7 @@ import java.util.ArrayList;
  * WorldWindow, it is not sharable. Refer to the World Wind Overview page for a list of layers that cannot be shared.
  *
  * @author tag
- * @version $Id: FlatAndRoundGlobes.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: FlatAndRoundGlobes.java 1958 2014-04-24 19:25:37Z tgaskins $
  */
 public class FlatAndRoundGlobes
 {
@@ -73,7 +73,7 @@ public class FlatAndRoundGlobes
         layerList.add(new BMNGOneImage());
 
         Factory factory = (Factory) WorldWind.createConfigurationComponent(AVKey.LAYER_FACTORY);
-        Layer layer = (Layer) factory.createFromConfigSource("config/Earth/BMNGWMSLayer.xml", null);
+        Layer layer = (Layer) factory.createFromConfigSource("config/Earth/BMNGWMSLayer2.xml", null);
         layer.setEnabled(true);
         layerList.add(layer);
 

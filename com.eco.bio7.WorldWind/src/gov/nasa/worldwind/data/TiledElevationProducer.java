@@ -16,7 +16,7 @@ import java.io.IOException;
 
 /**
  * @author dcollins
- * @version $Id: TiledElevationProducer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: TiledElevationProducer.java 1511 2013-07-17 17:34:00Z dcollins $
  */
 public class TiledElevationProducer extends TiledRasterProducer
 {
@@ -30,9 +30,9 @@ public class TiledElevationProducer extends TiledRasterProducer
     // safely re-used.
     protected static DataRasterReader[] readers = new DataRasterReader[]
         {
+            new DTEDRasterReader(),
             new GDALDataRasterReader(),
             new BILRasterReader(),
-            new DTEDRasterReader(),
             new GeotiffRasterReader()
         };
 
@@ -279,6 +279,15 @@ public class TiledElevationProducer extends TiledRasterProducer
         double latDelta = (tileHeight - 1) * pixelSize.getLatitude().degrees;
         double lonDelta = (tileWidth - 1) * pixelSize.getLongitude().degrees;
         return LatLon.fromDegrees(latDelta, lonDelta);
+    }
+
+    protected LatLon computeRasterPixelSize(DataRaster raster)
+    {
+        // Compute the raster's pixel dimension in latitude and longitude. In this computation a pixel is assumed to
+        // have no dimension. We measure the distance between pixels rather than some pixel dimension.
+        return LatLon.fromDegrees(
+            raster.getSector().getDeltaLatDegrees() / (raster.getHeight() - 1),
+            raster.getSector().getDeltaLonDegrees() / (raster.getWidth() - 1));
     }
 
     /**

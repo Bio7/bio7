@@ -11,7 +11,7 @@ import gov.nasa.worldwind.render.DrawContext;
 
 /**
  * @author Tom Gaskins
- * @version $Id: Layer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: Layer.java 1824 2014-01-22 22:41:10Z dcollins $
  */
 public interface Layer extends WWObject, Disposable, Restorable
 {
@@ -224,6 +224,10 @@ public interface Layer extends WWObject, Disposable, Restorable
     /**
      * Indicates the altitude above which this layer likely has low value or is not expected to be active. This value is
      * independent of the maximum active altitude, {@link #setMaxActiveAltitude(double)} and does not reflect it.
+     * <p/>
+     * The returned altitude is valid when the field of view indicated by {@link gov.nasa.worldwind.View#getFieldOfView()}
+     * is set to its default value. Changing the field of view to any value other than the default may change this
+     * layer's maximum effective altitude, but the returned altitude will not reflect that change.
      *
      * @param radius the radius of the {@link gov.nasa.worldwind.globes.Globe} the layer is associated with. May be
      *               null, in which case the Earth's equatorial radius is used, {@link gov.nasa.worldwind.globes.Earth#WGS84_EQUATORIAL_RADIUS}.
@@ -235,6 +239,10 @@ public interface Layer extends WWObject, Disposable, Restorable
     /**
      * Indicates the altitude below which this layer likely has low value or is not expected to be active. This value is
      * independent of the minimum active altitude, {@link #setMinActiveAltitude(double)} and does not reflect it.
+     * <p/>
+     * The returned altitude is valid when the field of view indicated by {@link gov.nasa.worldwind.View#getFieldOfView()}
+     * is set to its default value. Changing the field of view to any value other than the default may change this
+     * layer's minimum effective altitude, but the returned altitude will not reflect that change.
      *
      * @param radius the radius of the {@link gov.nasa.worldwind.globes.Globe} the layer is associated with. May be
      *               null, in which case the Earth's equatorial radius is used, {@link gov.nasa.worldwind.globes.Earth#WGS84_EQUATORIAL_RADIUS}.

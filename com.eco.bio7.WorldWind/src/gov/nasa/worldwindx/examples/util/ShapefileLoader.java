@@ -5,6 +5,7 @@
  */
 package gov.nasa.worldwindx.examples.util;
 
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.formats.shapefile.*;
 import gov.nasa.worldwind.geom.*;
@@ -25,12 +26,12 @@ import java.util.*;
  * color information in each record's key-value attributes, ShapefileLoader does not attempt to interpret that
  * information. Instead, the World Wind renderable objects created by ShapefileLoader are assigned a random color.
  * Callers can replace or extend this behavior by defining a subclass of ShapefileLoader and overriding the following
- * methods: <ul> <li>{@link #createPointIconSource(gov.nasa.worldwind.formats.shapefile.ShapefileRecord)}</li>
+ * methods: <ul> <li>{@link #createPointAttributes(gov.nasa.worldwind.formats.shapefile.ShapefileRecord)}</li>
  * <li>{@link #createPolylineAttributes(gov.nasa.worldwind.formats.shapefile.ShapefileRecord)}</li> <li>{@link
  * #createPolygonAttributes(gov.nasa.worldwind.formats.shapefile.ShapefileRecord)}</li></ul>.
  *
  * @author dcollins
- * @version $Id: ShapefileLoader.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ShapefileLoader.java 1532 2013-08-06 23:54:50Z dcollins $
  */
 public class ShapefileLoader
 {
@@ -144,13 +145,13 @@ public class ShapefileLoader
 
         if (Shapefile.isPointType(shp.getShapeType()))
         {
-            layer = new IconLayer();
-            this.addIconsForPoints(shp, (IconLayer) layer);
+            layer = new RenderableLayer();
+            this.addRenderablesForPoints(shp, (RenderableLayer) layer);
         }
         else if (Shapefile.isMultiPointType(shp.getShapeType()))
         {
-            layer = new IconLayer();
-            this.addIconsForMultiPoints(shp, (IconLayer) layer);
+            layer = new RenderableLayer();
+            this.addRenderablesForMultiPoints(shp, (RenderableLayer) layer);
         }
         else if (Shapefile.isPolylineType(shp.getShapeType()))
         {
@@ -200,14 +201,14 @@ public class ShapefileLoader
 
         if (Shapefile.isPointType(shp.getShapeType()))
         {
-            Layer layer = new IconLayer();
-            this.addIconsForPoints(shp, (IconLayer) layer);
+            Layer layer = new RenderableLayer();
+            this.addRenderablesForPoints(shp, (RenderableLayer) layer);
             layers.add(layer);
         }
         else if (Shapefile.isMultiPointType(shp.getShapeType()))
         {
-            Layer layer = new IconLayer();
-            this.addIconsForMultiPoints(shp, (IconLayer) layer);
+            Layer layer = new RenderableLayer();
+            this.addRenderablesForMultiPoints(shp, (RenderableLayer) layer);
             layers.add(layer);
         }
         else if (Shapefile.isPolylineType(shp.getShapeType()))
@@ -262,8 +263,10 @@ public class ShapefileLoader
     //********************  Geometry Conversion  *******************//
     //**************************************************************//
 
-    protected void addIconsForPoints(Shapefile shp, IconLayer layer)
+    protected void addRenderablesForPoints(Shapefile shp, RenderableLayer layer)
     {
+        PointPlacemarkAttributes attrs = this.createPointAttributes(null);
+
         while (shp.hasNext())
         {
             ShapefileRecord record = shp.nextRecord();
@@ -272,13 +275,14 @@ public class ShapefileLoader
                 continue;
 
             double[] point = ((ShapefileRecordPoint) record).getPoint();
-            String iconSource = this.createPointIconSource(record);
-            layer.addIcon(this.createPoint(record, Position.fromDegrees(point[1], point[0], 0), iconSource));
+            layer.addRenderable(this.createPoint(record, point[1], point[0], attrs));
         }
     }
 
-    protected void addIconsForMultiPoints(Shapefile shp, IconLayer layer)
+    protected void addRenderablesForMultiPoints(Shapefile shp, RenderableLayer layer)
     {
+        PointPlacemarkAttributes attrs = this.createPointAttributes(null);
+
         while (shp.hasNext())
         {
             ShapefileRecord record = shp.nextRecord();
@@ -287,11 +291,10 @@ public class ShapefileLoader
                 continue;
 
             Iterable<double[]> iterable = ((ShapefileRecordMultiPoint) record).getPoints(0);
-            String iconSource = this.createPointIconSource(record);
 
             for (double[] point : iterable)
             {
-                layer.addIcon(this.createPoint(record, Position.fromDegrees(point[1], point[0], 0), iconSource));
+                layer.addRenderable(this.createPoint(record, point[1], point[0], attrs));
             }
         }
     }
@@ -369,10 +372,15 @@ public class ShapefileLoader
     //********************  Primitive Geometry Construction  *******//
     //**************************************************************//
 
-    @SuppressWarnings( {"UnusedDeclaration"})
-    protected WWIcon createPoint(ShapefileRecord record, Position pos, String iconSource)
+    @SuppressWarnings({"UnusedDeclaration"})
+    protected Renderable createPoint(ShapefileRecord record, double latDegrees, double lonDegrees,
+        PointPlacemarkAttributes attrs)
     {
-        return new UserFacingIcon(iconSource, pos);
+        PointPlacemark placemark = new PointPlacemark(Position.fromDegrees(latDegrees, lonDegrees, 0));
+        placemark.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
+        placemark.setAttributes(attrs);
+
+        return placemark;
     }
 
     protected Renderable createPolyline(ShapefileRecord record, ShapeAttributes attrs)
@@ -480,19 +488,19 @@ public class ShapefileLoader
     //********************  Attribute Construction  ****************//
     //**************************************************************//
 
-    @SuppressWarnings( {"UnusedDeclaration"})
-    protected String createPointIconSource(ShapefileRecord record)
+    @SuppressWarnings({"UnusedDeclaration"})
+    protected PointPlacemarkAttributes createPointAttributes(ShapefileRecord record)
     {
-        return "images/load-dot.png";
+        return randomAttrs.nextPointAttributes();
     }
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected ShapeAttributes createPolylineAttributes(ShapefileRecord record)
     {
         return randomAttrs.nextPolylineAttributes();
     }
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected ShapeAttributes createPolygonAttributes(ShapefileRecord record)
     {
         return randomAttrs.nextPolygonAttributes();

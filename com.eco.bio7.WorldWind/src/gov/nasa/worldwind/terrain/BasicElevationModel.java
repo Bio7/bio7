@@ -47,7 +47,7 @@ import java.util.*;
 
 /**
  * @author Tom Gaskins
- * @version $Id: BasicElevationModel.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: BasicElevationModel.java 1968 2014-04-28 18:08:35Z tgaskins $
  */
 public class BasicElevationModel extends AbstractElevationModel implements BulkRetrievable
 {
@@ -216,7 +216,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         }
         else
         {
-            long size = Configuration.getLongValue(AVKey.ELEVATION_TILE_CACHE_SIZE, 5000000L);
+            long size = Configuration.getLongValue(AVKey.ELEVATION_TILE_CACHE_SIZE, 20000000L);
             MemoryCache mc = new BasicMemoryCache((long) (0.85 * size), size);
             mc.setName("Elevation Tiles");
             WorldWind.getMemoryCacheSet().addCache(cacheName, mc);
@@ -487,7 +487,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         if (elevations == null || elevations.length() == 0)
             return false;
 
-        tile.setElevations(elevations);
+        tile.setElevations(elevations, this);
         this.addTileToCache(tile, elevations);
 
         return true;
@@ -847,6 +847,46 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
 
             return super.handleTextContent();
         }
+//
+//        @Override
+//        protected ByteBuffer handleImageContent() throws IOException
+//        {
+//            if (!this.getRetriever().getContentType().contains("tiff"))
+//                return super.handleImageContent();
+//
+//            File tmpFile = WWIO.saveBufferToTempFile(this.getRetriever().getBuffer(), ".tif");
+//
+//            DataRasterReaderFactory readerFactory = (DataRasterReaderFactory) WorldWind.createConfigurationComponent(
+//                AVKey.DATA_RASTER_READER_FACTORY_CLASS_NAME);
+//            DataRasterReader reader = readerFactory.findReaderFor(tmpFile, null);
+//
+//            // Before reading the raster, verify that the file contains elevations.
+//            AVList metadata = reader.readMetadata(tmpFile, null);
+//            if (metadata == null || !AVKey.ELEVATION.equals(metadata.getStringValue(AVKey.PIXEL_FORMAT)))
+//            {
+//                String msg = Logging.getMessage("ElevationModel.SourceNotElevations", tmpFile.getAbsolutePath());
+//                Logging.logger().severe(msg);
+//                throw new IllegalArgumentException(msg);
+//            }
+//
+//            // Read the file into the raster.
+//            DataRaster[] rasters = reader.read(tmpFile, null);
+//            if (rasters == null || rasters.length == 0)
+//            {
+//                String msg = Logging.getMessage("ElevationModel.CannotReadElevations", tmpFile.getAbsolutePath());
+//                Logging.logger().severe(msg);
+//                throw new WWRuntimeException(msg);
+//            }
+//
+//            DataRaster raster = rasters[0];
+//
+//            ByteBuffer byteBuffer =
+//                ((BufferWrapper.ByteBufferWrapper)((BufferWrapperRaster) raster).getBuffer()).getBackingByteBuffer();
+//
+//            WWIO.saveBuffer(byteBuffer, this.getOutputFile());
+//
+//            return byteBuffer;
+//        }
     }
 
     /** Internal class to hold collections of elevation tiles that provide elevations for a specific sector. */
@@ -963,6 +1003,36 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
             for (ElevationTile tile : this.tiles)
             {
                 tile.getExtremes(sector, this.elevationModel, this.extremes);
+            }
+
+            return this.extremes;
+        }
+
+        /**
+         * Returns the extreme values among all the tiles in this object.
+         *
+         * @return the extreme values.
+         */
+        protected double[] getTileExtremes()
+        {
+            if (this.extremes != null)
+                return this.extremes;
+
+            Iterator<ElevationTile> iter = this.tiles.iterator();
+            if (!iter.hasNext())
+                return this.extremes = new double[] {this.elevationModel.getMinElevation(),
+                    this.elevationModel.getMaxElevation()};
+
+            this.extremes = WWUtil.defaultMinMix();
+
+            for (ElevationTile tile : this.tiles)
+            {
+                // This computes the extremes on a tile granularity rather than an elevation-value cell granularity.
+                // The latter is very expensive.
+                if (tile.extremes[0] < this.extremes[0])
+                    this.extremes[0] = tile.extremes[0];
+                if (tile.extremes[1] > this.extremes[1])
+                    this.extremes[1] = tile.extremes[1];
             }
 
             return this.extremes;
@@ -1255,9 +1325,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
             if (this.extremesLevel < 0 || this.extremes == null)
                 return new double[] {this.getMinElevation(), this.getMaxElevation()};
 
-            // Compute the extremes from the extreme-elevations file, but don't cache them. Only extremes computed from
-            // fully resolved elevation tiles are cached. This ensures that the extreme values accurately reflect the
-            // extremes of the sector, which is critical for bounding volume creation and thereby performance.
+            // Compute the extremes from the extreme-elevations file.
             extremes = this.computeExtremeElevations(sector);
             if (extremes != null)
                 this.getExtremesLookupCache().add(sector, extremes, 16);
@@ -1411,9 +1479,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
 
         if (this.extremesLookupCache == null)
         {
-            // Default cache size holds 1250 min/max pairs. This size was experimentally determined to hold enough
-            // value lookups to prevent cache thrashing.
-            long size = Configuration.getLongValue(AVKey.ELEVATION_EXTREMES_LOOKUP_CACHE_SIZE, 20000L);
+            long size = Configuration.getLongValue(AVKey.ELEVATION_EXTREMES_LOOKUP_CACHE_SIZE, 2000000L);
             this.extremesLookupCache = new BasicMemoryCache((long) (0.85 * size), size);
         }
 
@@ -1424,6 +1490,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
     {
         protected BufferWrapper elevations; // the elevations themselves
         protected long updateTime = 0;
+        protected double[] extremes = new double[2];
 
         protected ElevationTile(Sector sector, Level level, int row, int col)
         {
@@ -1435,10 +1502,15 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
             return this.elevations;
         }
 
-        public void setElevations(BufferWrapper elevations)
+        public void setElevations(BufferWrapper elevations, BasicElevationModel em)
         {
             this.elevations = elevations;
             this.updateTime = System.currentTimeMillis();
+
+            for (int i = 0; i < this.elevations.length(); i++)
+            {
+                em.determineExtremes(this.elevations.getDouble(i), extremes);
+            }
         }
 
         public boolean isElevationsExpired()
@@ -1618,12 +1690,18 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
             elevations = new Elevations(this, tiles.last().getLevel().getTexelSize());
 
             // Compute the elevation extremes now that the sector is fully resolved
-            if (tiles != null && tiles.size() > 0)
+            if (tiles.size() > 0)
             {
                 elevations.tiles = tiles;
-                double[] extremes = elevations.getExtremes(requestedSector);
+                double[] extremes = elevations.getTileExtremes();
                 if (extremes != null)
-                    this.getExtremesLookupCache().add(requestedSector, extremes, 16);
+                {
+                    // Cache the newly computed extremes if they're different from the currently cached ones.
+                    double[] currentExtremes = (double[]) this.getExtremesLookupCache().getObject(requestedSector);
+                    if (currentExtremes == null || currentExtremes[0] != extremes[0]
+                        || currentExtremes[1] != extremes[1])
+                        this.getExtremesLookupCache().add(requestedSector, extremes, 16);
+                }
             }
         }
 
@@ -1838,7 +1916,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         if (names == null || names.length == 0)
             return;
 
-        final Long expiryTime = caps.getLayerLatestLastUpdateTime(caps, names);
+        final Long expiryTime = caps.getLayerLatestLastUpdateTime(names);
         if (expiryTime == null)
             return;
 

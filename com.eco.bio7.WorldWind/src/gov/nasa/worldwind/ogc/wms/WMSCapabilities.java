@@ -20,7 +20,7 @@ import java.util.*;
 
 /**
  * @author tag
- * @version $Id: WMSCapabilities.java 1359 2013-05-23 18:04:41Z tgaskins $
+ * @version $Id: WMSCapabilities.java 1931 2014-04-14 21:31:43Z tgaskins $
  */
 public class WMSCapabilities extends OGCCapabilities
 {
@@ -155,15 +155,8 @@ public class WMSCapabilities extends OGCCapabilities
         return null;
     }
 
-    public Long getLayerLatestLastUpdateTime(WMSCapabilities caps, String[] layerNames)
+    public Long getLayerLatestLastUpdateTime(String[] layerNames)
     {
-        if (caps == null)
-        {
-            String message = Logging.getMessage("nullValue.WMSCapabilities");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
         if (layerNames == null)
         {
             String message = Logging.getMessage("nullValue.WMSLayerNames");
@@ -221,7 +214,7 @@ public class WMSCapabilities extends OGCCapabilities
         {
             if (keyword.startsWith("LastUpdate="))
             {
-                return this.parseLastUpdate(keyword);
+                return parseLastUpdate(keyword);
             }
         }
 
@@ -260,15 +253,8 @@ public class WMSCapabilities extends OGCCapabilities
         }
     }
 
-    public Double[] getLayerExtremeElevations(WMSCapabilities caps, String[] layerNames)
+    public Double[] getLayerExtremeElevations(String[] layerNames)
     {
-        if (caps == null)
-        {
-            String message = Logging.getMessage("nullValue.WMSCapabilities");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
         if (layerNames == null)
         {
             String message = Logging.getMessage("nullValue.WMSLayerNames");
@@ -281,7 +267,7 @@ public class WMSCapabilities extends OGCCapabilities
 
         for (String name : layerNames)
         {
-            WMSLayerCapabilities layer = caps.getLayerByName(name);
+            WMSLayerCapabilities layer = this.getLayerByName(name);
             if (layer == null)
                 continue;
 
@@ -330,6 +316,44 @@ public class WMSCapabilities extends OGCCapabilities
         }
 
         return null;
+    }
+
+    /**
+     * Indicates whether the layers corresponding to a specified list of layer names support a specified coordinate
+     * system. If any of the named layers are not in this capabilities document, false is returned.
+     *
+     * @param layerNames The names of the layers to check.
+     * @param coordSys   The coordinate system to search for, e.g., "EPSG:4326".
+     *
+     * @return true if all the layers support the specified coordinate system, otherwise false.
+     *
+     * @throws IllegalArgumentException if the layer names array is null or empty or the specified coordinate system is
+     *                                  null or the empty string.
+     */
+    public boolean layerHasCoordinateSystem(String[] layerNames, String coordSys)
+    {
+        if (layerNames == null || layerNames.length == 0)
+        {
+            String message = Logging.getMessage("nullValue.WMSLayerNames");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (WWUtil.isEmpty(coordSys))
+        {
+            String message = Logging.getMessage("nullValue.WMSCoordSys");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        for (String name : layerNames)
+        {
+            WMSLayerCapabilities layerCaps = this.getLayerByName(name);
+            if (layerCaps == null || !layerCaps.hasCoordinateSystem(coordSys))
+                return false;
+        }
+
+        return true;
     }
 
     @Override

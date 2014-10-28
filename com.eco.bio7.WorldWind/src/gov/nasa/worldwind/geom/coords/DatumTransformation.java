@@ -15,7 +15,7 @@ import gov.nasa.worldwind.util.Logging;
  * added as needed.
  *
  * @author jparsons
- * @version $Id: DatumTransformation.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: DatumTransformation.java 1958 2014-04-24 19:25:37Z tgaskins $
  */
 public class DatumTransformation
 {
@@ -26,7 +26,7 @@ public class DatumTransformation
     public static Globe CLARKE1866_GLOBE = new EllipsoidalGlobe(Clarke1866_EQUATORIAL_RADIUS, Clarke1866_POLAR_RADIUS,
         Clarke1866_ES,
         EllipsoidalGlobe.makeElevationModel(AVKey.EARTH_ELEVATION_MODEL_CONFIG_FILE,
-            "config/Earth/EarthMergedElevationModel.xml"));
+            "config/Earth/EarthElevations2.xml"));
 
     /**
      * Shift datum from NAD27 to WGS84

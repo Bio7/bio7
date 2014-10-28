@@ -69,7 +69,7 @@ import java.util.Timer;
  * possible actions are AVKey.RESIZE, AVKey.BACK, AVKey.FORWARD, and AVKey.CLOSE.
  *
  * @author pabercrombie
- * @version $Id: BalloonController.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: BalloonController.java 1531 2013-08-04 16:19:13Z pabercrombie $
  */
 public class BalloonController extends MouseAdapter implements SelectListener
 {
@@ -672,38 +672,35 @@ public class BalloonController extends MouseAdapter implements SelectListener
         if (balloon == null && this.canShowBalloon(feature))
             balloon = this.createBalloon(feature);
 
-        if (balloon != null)
+        // Don't change balloons that are already visible
+        if (balloon != null && !balloon.isVisible())
         {
-            // Don't change balloons that are already visible
-            if (!balloon.isVisible())
-            {
-                this.lastSelectedObject = feature;
+            this.lastSelectedObject = feature;
 
-                Position pos = this.getBalloonPosition(feature);
-                if (pos != null)
+            Position pos = this.getBalloonPosition(feature);
+            if (pos != null)
+            {
+                this.hideBalloon(); // Hide previously displayed balloon, if any
+                this.showBalloon(balloon, pos);
+            }
+            else
+            {
+                // The feature may be attached to the screen, not the globe
+                Point point = this.getBalloonPoint(feature);
+                if (point != null)
                 {
                     this.hideBalloon(); // Hide previously displayed balloon, if any
-                    this.showBalloon(balloon, pos);
+                    this.showBalloon(balloon, null, point);
                 }
+                // If the feature is not attached to a particular point, just put it in the middle of the viewport
                 else
                 {
-                    // The feature may be attached to the screen, not the globe
-                    Point point = this.getBalloonPoint(feature);
-                    if (point != null)
-                    {
-                        this.hideBalloon(); // Hide previously displayed balloon, if any
-                        this.showBalloon(balloon, null, point);
-                    }
-                    // If the feature is not attached to a particular point, just put it in the middle of the viewport
-                    else
-                    {
-                        Rectangle viewport = this.wwd.getView().getViewport();
+                    Rectangle viewport = this.wwd.getView().getViewport();
 
-                        Point center = new Point((int) viewport.getCenterX(), (int) viewport.getCenterY());
+                    Point center = new Point((int) viewport.getCenterX(), (int) viewport.getCenterY());
 
-                        this.hideBalloon();
-                        this.showBalloon(balloon, null, center);
-                    }
+                    this.hideBalloon();
+                    this.showBalloon(balloon, null, center);
                 }
             }
         }
@@ -859,7 +856,7 @@ public class BalloonController extends MouseAdapter implements SelectListener
     {
         // Configure the balloon for a container to not have a leader. These balloons will display in the middle of the
         // viewport.
-        if (feature instanceof KMLAbstractContainer || feature instanceof KMLNetworkLink)
+        if (feature instanceof KMLAbstractContainer)
         {
             BalloonAttributes attrs = new BasicBalloonAttributes();
 

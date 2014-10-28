@@ -11,7 +11,7 @@ import org.w3c.dom.Document;
 
 /**
  * @author tag
- * @version $Id: BMNGWMSLayer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: BMNGWMSLayer.java 1958 2014-04-24 19:25:37Z tgaskins $
  */
 public class BMNGWMSLayer extends WMSTiledImageLayer
 {
@@ -22,6 +22,6 @@ public class BMNGWMSLayer extends WMSTiledImageLayer
 
     protected static Document getConfigurationDocument()
     {
-        return WWXML.openDocumentFile("config/Earth/BMNGWMSLayer.xml", null);
+        return WWXML.openDocumentFile("config/Earth/BMNGWMSLayer2.xml", null);
     }
 }

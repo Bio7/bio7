@@ -50,7 +50,7 @@ import java.util.List;
  * GridPointAttributes are used.
  *
  * @author dcollins
- * @version $Id: AnalyticSurface.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: AnalyticSurface.java 1847 2014-02-18 00:32:16Z dcollins $
  */
 public class AnalyticSurface implements Renderable, PreRenderable
 {
@@ -867,9 +867,18 @@ public class AnalyticSurface implements Renderable, PreRenderable
     protected void bind(DrawContext dc)
     {
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+
+        gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
         gl.glVertexPointer(3, GL.GL_FLOAT, 0, this.surfaceRenderInfo.cartesianVertexBuffer);
-        gl.glNormalPointer(GL.GL_FLOAT, 0, this.surfaceRenderInfo.cartesianNormalBuffer);
-        gl.glColorPointer(4, GL.GL_UNSIGNED_BYTE, 0, this.surfaceRenderInfo.colorBuffer);
+
+        if (!dc.isPickingMode())
+        {
+            gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
+            gl.glNormalPointer(GL.GL_FLOAT, 0, this.surfaceRenderInfo.cartesianNormalBuffer);
+
+            gl.glEnableClientState(GL2.GL_COLOR_ARRAY);
+            gl.glColorPointer(4, GL.GL_UNSIGNED_BYTE, 0, this.surfaceRenderInfo.colorBuffer);
+        }
     }
 
     protected void drawInterior(DrawContext dc)
@@ -881,7 +890,6 @@ public class AnalyticSurface implements Renderable, PreRenderable
             // Bind the shapes vertex colors as the diffuse material parameter.
             gl.glEnable(GL2.GL_COLOR_MATERIAL);
             gl.glColorMaterial(GL2.GL_FRONT_AND_BACK, GL2.GL_DIFFUSE);
-            gl.glEnableClientState(GL2.GL_COLOR_ARRAY);
             this.surfaceAttributes.getInteriorMaterial().apply(gl, GL2.GL_FRONT_AND_BACK,
                 (float) this.surfaceAttributes.getInteriorOpacity());
         }
@@ -908,9 +916,9 @@ public class AnalyticSurface implements Renderable, PreRenderable
             // Convert the floating point opacity from the range [0, 1] to the unsigned byte range [0, 255].
             int alpha = (int) (255 * this.surfaceAttributes.getOutlineOpacity() + 0.5);
             gl.glColor4ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue(), (byte) alpha);
+            gl.glDisableClientState(GL2.GL_COLOR_ARRAY);
         }
 
-        gl.glDisableClientState(GL2.GL_COLOR_ARRAY);
         gl.glLineWidth((float) this.surfaceAttributes.getOutlineWidth());
         this.surfaceRenderInfo.drawOutline(dc);
 
@@ -919,6 +927,7 @@ public class AnalyticSurface implements Renderable, PreRenderable
             gl.glEnable(GL2.GL_LIGHTING);
             gl.glDisable(GL.GL_LINE_SMOOTH);
             gl.glDisable(GL2.GL_LINE_STIPPLE);
+            gl.glEnableClientState(GL2.GL_COLOR_ARRAY);
         }
     }
 
@@ -934,15 +943,12 @@ public class AnalyticSurface implements Renderable, PreRenderable
                 | GL2.GL_POLYGON_BIT // for cull face
                 | (!dc.isPickingMode() ? GL2.GL_LIGHTING_BIT : 0) // for lighting.
                 | (!dc.isPickingMode() ? GL2.GL_TRANSFORM_BIT : 0)); // for normalize state.
-        gl.glPushClientAttrib(GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
 
         // Enable the alpha test.
         gl.glEnable(GL2.GL_ALPHA_TEST);
         gl.glAlphaFunc(GL2.GL_GREATER, 0.0f);
 
         gl.glEnable(GL.GL_CULL_FACE);
-        gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
-        gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
 
         if (dc.isPickingMode())
         {
@@ -984,7 +990,11 @@ public class AnalyticSurface implements Renderable, PreRenderable
 
         dc.getView().popReferenceCenter(dc);
         gl.glPopAttrib();
-        gl.glPopClientAttrib();
+
+        // Restore default GL client vertex array state.
+        gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
+        gl.glDisableClientState(GL2.GL_COLOR_ARRAY);
+        gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
     }
 
     //**************************************************************//
@@ -1233,13 +1243,15 @@ public class AnalyticSurface implements Renderable, PreRenderable
 
         public void drawInterior(DrawContext dc)
         {
-            dc.getGL().glDrawElements(GL.GL_TRIANGLE_STRIP, this.interiorIndexBuffer.remaining(), GL.GL_UNSIGNED_INT,
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+            gl.glDrawElements(GL.GL_TRIANGLE_STRIP, this.interiorIndexBuffer.remaining(), GL.GL_UNSIGNED_INT,
                 this.interiorIndexBuffer);
         }
 
         public void drawOutline(DrawContext dc)
         {
-            dc.getGL().glDrawElements(GL.GL_LINE_LOOP, this.outlineIndexBuffer.remaining(), GL.GL_UNSIGNED_INT,
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+            gl.glDrawElements(GL.GL_LINE_LOOP, this.outlineIndexBuffer.remaining(), GL.GL_UNSIGNED_INT,
                 this.outlineIndexBuffer);
         }
     }
@@ -1337,8 +1349,7 @@ public class AnalyticSurface implements Renderable, PreRenderable
                 GL2.GL_COLOR_BUFFER_BIT       // for alpha func and ref, blend func
                     | GL2.GL_CURRENT_BIT      // for current RGBA color
                     | GL2.GL_DEPTH_BUFFER_BIT // for depth test disable
-                    | GL2.GL_LINE_BIT);       // for line width);
-            gl.glPushClientAttrib(GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
+                    | GL2.GL_LINE_BIT);       // for line width, line smooth
 
             gl.glMatrixMode(GL2.GL_MODELVIEW);
             gl.glPushMatrix();
@@ -1346,15 +1357,23 @@ public class AnalyticSurface implements Renderable, PreRenderable
             gl.glEnable(GL.GL_BLEND);
             OGLUtil.applyBlending(gl, false);
             gl.glDisable(GL.GL_DEPTH_TEST);
-            gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
+
+            if (!dc.isPickingMode())
+            {
+                gl.glEnable(GL.GL_LINE_SMOOTH);
+            }
         }
 
         protected void endDrawing(DrawContext dc)
         {
             GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+
             gl.glPopMatrix();
-            gl.glPopClientAttrib();
             gl.glPopAttrib();
+
+            // Restore default GL client vertex array state.
+            gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
+            gl.glDisableClientState(GL2.GL_COLOR_ARRAY);
         }
 
         protected void doDrawGeographic(DrawContext dc, SurfaceTileDrawContext sdc)
@@ -1379,25 +1398,12 @@ public class AnalyticSurface implements Renderable, PreRenderable
 
         protected void drawInterior(DrawContext dc)
         {
-            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
-
-            if (!dc.isPickingMode())
-            {
-                gl.glEnableClientState(GL2.GL_COLOR_ARRAY);
-            }
-
             this.analyticSurface.surfaceRenderInfo.drawInterior(dc);
         }
 
         protected void drawOutline(DrawContext dc)
         {
             GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
-
-            if (!dc.isPickingMode())
-            {
-                gl.glEnable(GL.GL_LINE_SMOOTH);
-                gl.glDisableClientState(GL2.GL_COLOR_ARRAY);
-            }
 
             gl.glLineWidth((float) this.analyticSurface.surfaceAttributes.getOutlineWidth());
             this.analyticSurface.surfaceRenderInfo.drawOutline(dc);
@@ -1415,23 +1421,37 @@ public class AnalyticSurface implements Renderable, PreRenderable
         protected void bind(DrawContext dc)
         {
             GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+
+            gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
             gl.glVertexPointer(3, GL.GL_FLOAT, 0, this.analyticSurface.surfaceRenderInfo.geographicVertexBuffer);
-            gl.glColorPointer(4, GL.GL_UNSIGNED_BYTE, 0, this.analyticSurface.surfaceRenderInfo.colorBuffer);
+
+            if (!dc.isPickingMode())
+            {
+                gl.glEnableClientState(GL2.GL_COLOR_ARRAY);
+                gl.glColorPointer(4, GL.GL_UNSIGNED_BYTE, 0, this.analyticSurface.surfaceRenderInfo.colorBuffer);
+            }
         }
 
         protected void drawOutline(DrawContext dc)
         {
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+
             if (!dc.isPickingMode())
             {
                 // Set the outline color.
                 Color color = this.analyticSurface.surfaceAttributes.getOutlineMaterial().getDiffuse();
                 // Convert the floating point opacity from the range [0, 1] to the unsigned byte range [0, 255].
                 int alpha = (int) (255 * this.analyticSurface.surfaceAttributes.getOutlineOpacity() + 0.5);
-                GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
                 gl.glColor4ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue(), (byte) alpha);
+                gl.glDisableClientState(GL2.GL_COLOR_ARRAY);
             }
 
             super.drawOutline(dc);
+
+            if (!dc.isPickingMode())
+            {
+                gl.glEnableClientState(GL2.GL_COLOR_ARRAY);
+            }
         }
     }
 
@@ -1453,22 +1473,36 @@ public class AnalyticSurface implements Renderable, PreRenderable
         protected void bind(DrawContext dc)
         {
             GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+
+            gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
             gl.glVertexPointer(3, GL.GL_FLOAT, 0, this.analyticSurface.surfaceRenderInfo.geographicVertexBuffer);
-            gl.glColorPointer(4, GL.GL_UNSIGNED_BYTE, 0, this.analyticSurface.surfaceRenderInfo.shadowColorBuffer);
+
+            if (!dc.isPickingMode())
+            {
+                gl.glEnableClientState(GL2.GL_COLOR_ARRAY);
+                gl.glColorPointer(4, GL.GL_UNSIGNED_BYTE, 0, this.analyticSurface.surfaceRenderInfo.shadowColorBuffer);
+            }
         }
 
         protected void drawOutline(DrawContext dc)
         {
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+
             if (!dc.isPickingMode())
             {
                 // Convert the floating point opacity from the range [0, 1] to the unsigned byte range [0, 255].
                 int alpha = (int) (255 * this.analyticSurface.surfaceAttributes.getOutlineOpacity()
                     * this.analyticSurface.surfaceAttributes.getShadowOpacity() + 0.5);
-                GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
                 gl.glColor4ub((byte) 0, (byte) 0, (byte) 0, (byte) alpha);
+                gl.glDisableClientState(GL2.GL_COLOR_ARRAY);
             }
 
             super.drawOutline(dc);
+
+            if (!dc.isPickingMode())
+            {
+                gl.glEnableClientState(GL2.GL_COLOR_ARRAY);
+            }
         }
     }
 }

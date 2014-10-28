@@ -6,7 +6,6 @@
 package gov.nasa.worldwind.layers;
 
 import gov.nasa.worldwind.View;
-import gov.nasa.worldwind.cache.GpuResourceCache;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.*;
@@ -20,7 +19,7 @@ import java.awt.*;
  * Note : based on a spherical globe.<br /> Issue : Ellipsoidal globe doesnt match the spherical atmosphere everywhere.
  *
  * @author Patrick Murris
- * @version $Id: SkyGradientLayer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: SkyGradientLayer.java 1892 2014-04-04 01:14:40Z tgaskins $
  */
 public class SkyGradientLayer extends AbstractLayer
 {
@@ -32,8 +31,6 @@ public class SkyGradientLayer extends AbstractLayer
     //protected float[] horizonColor = new float[] { 0.66f, 0.70f, 0.81f, 1.0f }; // horizon color (same as fog)
     protected float[] horizonColor = new float[] {0.76f, 0.76f, 0.80f, 1.0f}; // horizon color
     protected float[] zenithColor = new float[] {0.26f, 0.47f, 0.83f, 1.0f}; // zenith color
-    protected double lastRebuildHorizon = 0;
-    protected Object displayListCacheKey = new Object();
 
     /** Renders an atmosphere around the globe */
     public SkyGradientLayer()
@@ -65,7 +62,6 @@ public class SkyGradientLayer extends AbstractLayer
             throw new IllegalArgumentException(msg);
         }
         this.thickness = thickness;
-        this.lastRebuildHorizon = 0;
     }
 
     /**
@@ -92,7 +88,6 @@ public class SkyGradientLayer extends AbstractLayer
             throw new IllegalArgumentException(msg);
         }
         color.getColorComponents(this.horizonColor);
-        this.lastRebuildHorizon = 0;
     }
 
     /**
@@ -119,15 +114,6 @@ public class SkyGradientLayer extends AbstractLayer
             throw new IllegalArgumentException(msg);
         }
         color.getColorComponents(this.zenithColor);
-        this.lastRebuildHorizon = 0;
-    }
-
-    protected boolean isValid(DrawContext dc)
-    {
-        // Build or rebuild sky dome if horizon distance changed more then 100m
-        // Note: increasing this threshold may produce artifacts like far clipping at very low altitude
-        int[] dlResource = (int[]) dc.getGpuResourceCache().get(this.displayListCacheKey);
-        return dlResource != null && Math.abs(this.lastRebuildHorizon - dc.getView().getHorizonDistance()) <= 100;
     }
 
     @Override
@@ -140,10 +126,6 @@ public class SkyGradientLayer extends AbstractLayer
         {
             ogsh.pushAttrib(gl, GL2.GL_TRANSFORM_BIT);
 
-            int[] dlId = (int[]) dc.getGpuResourceCache().get(this.displayListCacheKey);
-            if (!this.isValid(dc))
-                dlId = this.updateSkyDome(dc);
-
             gl.glDisable(GL.GL_DEPTH_TEST);
             gl.glDepthMask(false);
             gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
@@ -153,8 +135,7 @@ public class SkyGradientLayer extends AbstractLayer
             this.applyDrawTransform(dc, ogsh);
 
             // Draw sky
-            if (dlId != null)
-                gl.glCallList(dlId[0]);
+            this.updateSkyDome(dc);
         }
         finally
         {
@@ -200,7 +181,7 @@ public class SkyGradientLayer extends AbstractLayer
         gl.glLoadMatrixd(matrixArray, 0);
     }
 
-    protected int[] updateSkyDome(DrawContext dc)
+    protected void updateSkyDome(DrawContext dc)
     {
         View view = dc.getView();
 
@@ -235,56 +216,7 @@ public class SkyGradientLayer extends AbstractLayer
             gradientBias = 1f + (float) factor;
         }
 
-        int[] dlId = this.makeSkyDome(dc, (float) (tangentialDistance), horizonLat, zenithLat, SLICES, STACKS,
-            zenithOpacity, gradientBias);
-        this.lastRebuildHorizon = tangentialDistance;
-
-        return dlId;
-    }
-
-    /**
-     * Build sky dome and draw into the glList
-     *
-     * @param dc            the current DrawContext
-     * @param radius        the sky dome radius in meters.
-     * @param startLat      the horizon latitude in decimal degrees.
-     * @param endLat        the zenith latitude in decimal degrees.
-     * @param slices        the number of longitude divisions used for the dome geometry.
-     * @param stacks        the number of latitude divisions used for the dome geometry.
-     * @param zenithOpacity the sky opacity at zenith
-     * @param gradientBias  determines how fast the sky goes from the horizon color to the zenith color. A value of
-     *                      <code>1</code> with produce a balanced gradient, a value greater then <code>1</code> will
-     *                      have the zenith color dominate and a value less then <code>1</code> will have the opposite
-     *                      effect.
-     *
-     * @return the display list ID.
-     */
-    protected int[] makeSkyDome(DrawContext dc, float radius, double startLat, double endLat,
-        int slices, int stacks, float zenithOpacity, float gradientBias)
-    {
-        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
-
-        int[] dlResource = (int[]) dc.getGpuResourceCache().get(this.displayListCacheKey);
-        if (dlResource != null)
-            gl.glDeleteLists(dlResource[0], dlResource[1]); // delete the old list
-
-        dlResource = new int[] {gl.glGenLists(1), 1}; // the resource id and the number of ids in the group
-        int size = (8 * 4 + 6 * 8) * (slices + stacks + 1);
-        dc.getGpuResourceCache().put(this.displayListCacheKey, dlResource, GpuResourceCache.DISPLAY_LISTS, size);
-
-        try
-        {
-            gl.glNewList(dlResource[0], GL2.GL_COMPILE);
-            this.drawSkyDome(dc, radius, startLat, endLat, slices, stacks, zenithOpacity, gradientBias);
-            gl.glEndList();
-        }
-        catch (Exception e)
-        {
-            gl.glDeleteLists(dlResource[0], dlResource[1]); // delete the old list
-            dc.getGpuResourceCache().remove(this.displayListCacheKey);
-        }
-
-        return dlResource;
+        this.drawSkyDome(dc, (float)tangentialDistance, horizonLat, zenithLat, SLICES, STACKS, zenithOpacity, gradientBias);
     }
 
     /**

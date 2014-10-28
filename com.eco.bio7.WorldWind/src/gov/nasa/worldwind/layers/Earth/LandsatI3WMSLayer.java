@@ -12,7 +12,7 @@ import org.w3c.dom.Document;
 
 /**
  * @author tag
- * @version $Id: LandsatI3WMSLayer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: LandsatI3WMSLayer.java 1958 2014-04-24 19:25:37Z tgaskins $
  */
 public class LandsatI3WMSLayer extends WMSTiledImageLayer
 {
@@ -23,6 +23,6 @@ public class LandsatI3WMSLayer extends WMSTiledImageLayer
 
     protected static Document getConfigurationDocument()
     {
-        return WWXML.openDocumentFile("config/Earth/LandsatI3WMSLayer.xml", null);
+        return WWXML.openDocumentFile("config/Earth/LandsatI3WMSLayer2.xml", null);
     }
 }

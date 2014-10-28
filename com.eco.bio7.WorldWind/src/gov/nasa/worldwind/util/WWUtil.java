@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 
 /**
  * @author tag
- * @version $Id: WWUtil.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: WWUtil.java 1927 2014-04-11 20:01:26Z tgaskins $
  */
 public class WWUtil
 {
@@ -1142,5 +1142,44 @@ public class WWUtil
         }
 
         return null;
+    }
+
+    /**
+     * Compares two version strings, e.g., 1.3.0, and returns 0 if they match, -1 if the first string is less than the
+     * second, and 1 if the first string is greater than the second. The strings can be arbitrary length but the
+     * components must be separated by ".". A missing component maps to 0, e.g. 1.3 will match 1.3.0.
+     *
+     * @param va the first version string
+     * @param vb the second version string
+     *
+     * @return -1 if the first string is less than the second, 0 if the strings match, 1 if the first string is greater
+     *         than the second string.
+     */
+    public static int compareVersion(String va, String vb)
+    {
+        if (va == null || vb == null)
+        {
+            throw new IllegalArgumentException(Logging.getMessage("nullValue.StringIsNull"));
+        }
+
+        if (va.equals(vb))
+            return 0;
+
+        String[] vas = va.split("\\.");
+        String[] vbs = vb.split("\\.");
+
+        for (int i = 0; i < Math.max(vas.length, vbs.length); i++)
+        {
+            String sa = vas.length > i ? vas[i] : "0";
+            String sb = vbs.length > i ? vbs[i] : "0";
+
+            if (sa.compareTo(sb) < 0)
+                return -1;
+
+            if (sa.compareTo(sb) > 0)
+                return 1;
+        }
+
+        return 0; // the versions match
     }
 }

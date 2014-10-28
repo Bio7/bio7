@@ -9,7 +9,7 @@ package gov.nasa.worldwind.ogc.collada;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.ogc.collada.impl.*;
 import gov.nasa.worldwind.render.DrawContext;
-import gov.nasa.worldwind.util.WWUtil;
+import gov.nasa.worldwind.util.*;
 
 import java.util.*;
 
@@ -17,7 +17,7 @@ import java.util.*;
  * Represents the COLLADA <i>node</i> element and provides access to its contents.
  *
  * @author pabercrombie
- * @version $Id: ColladaNode.java 664 2012-06-26 20:36:50Z pabercrombie $
+ * @version $Id: ColladaNode.java 1696 2013-10-31 18:46:55Z tgaskins $
  */
 public class ColladaNode extends ColladaAbstractObject implements ColladaRenderable
 {
@@ -43,6 +43,53 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
     public ColladaNode(String ns)
     {
         super(ns);
+    }
+
+    public Box getLocalExtent(ColladaTraversalContext tc)
+    {
+        if (tc == null)
+        {
+            String msg = Logging.getMessage("nullValue.TraversalContextIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        // Create shapes for this node, if necessary
+        if (this.shapes == null)
+            this.shapes = this.createShapes();
+
+        if (this.getMatrix() != null)
+        {
+            tc.pushMatrix();
+            tc.multiplyMatrix(this.getMatrix());
+        }
+
+        ArrayList<Box> extents = new ArrayList<Box>();
+
+        for (ColladaMeshShape shape : this.shapes)
+        {
+            Box extent = shape.getLocalExtent(tc);
+            if (extent != null)
+                extents.add(extent);
+        }
+
+        if (this.children != null)
+        {
+            for (ColladaRenderable node : children)
+            {
+                Box extent = node.getLocalExtent(tc);
+                if (extent != null)
+                    extents.add(extent);
+            }
+        }
+
+        if (this.getMatrix() != null)
+            tc.popMatrix();
+
+        if (extents.isEmpty())
+            return null;
+
+        return Box.union(extents);
     }
 
     /** {@inheritDoc} */

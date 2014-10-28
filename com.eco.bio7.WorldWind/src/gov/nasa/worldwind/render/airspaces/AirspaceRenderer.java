@@ -18,7 +18,7 @@ import java.util.Iterator;
 
 /**
  * @author dcollins
- * @version $Id: AirspaceRenderer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: AirspaceRenderer.java 1847 2014-02-18 00:32:16Z dcollins $
  */
 public class AirspaceRenderer
 {
@@ -662,7 +662,6 @@ public class AirspaceRenderer
     {
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-        gl.glPushClientAttrib(GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
         gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
 
         if (!dc.isPickingMode())
@@ -705,9 +704,15 @@ public class AirspaceRenderer
     {
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-        dc.endStandardLighting();
+        gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
+
+        if (!dc.isPickingMode() && this.isEnableLighting())
+        {
+            gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
+            dc.endStandardLighting();
+        }
+
         gl.glPopAttrib();
-        gl.glPopClientAttrib();
     }
 
     protected void bindPickableObject(DrawContext dc, Object pickedObject, PickSupport pickSupport)

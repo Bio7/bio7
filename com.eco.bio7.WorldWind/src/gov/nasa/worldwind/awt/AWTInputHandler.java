@@ -19,7 +19,7 @@ import java.beans.PropertyChangeEvent;
 
 /**
  * @author tag
- * @version $Id: AWTInputHandler.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: AWTInputHandler.java 1533 2013-08-07 04:24:48Z pabercrombie $
  */
 public class AWTInputHandler extends WWObjectImpl
     implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, FocusListener, InputHandler,
@@ -371,11 +371,20 @@ public class AWTInputHandler extends WWObjectImpl
             return;
         }
 
+        // Determine if the mouse point has changed since the last mouse move event. This can happen if user switches to
+        // another window, moves the mouse, and then switches back to the World Wind window.
+        boolean mousePointChanged = !mouseEvent.getPoint().equals(this.mousePoint);
+
         this.mousePoint = mouseEvent.getPoint();
         this.cancelHover();
         this.cancelDrag();
 
-        if (this.isForceRedrawOnMousePressed())
+        // If the mouse point has changed then we need to set a new pick point, and redraw the scene because the current
+        // picked object list may not reflect the current mouse position.
+        if (mousePointChanged && this.wwd.getSceneController() != null)
+            this.wwd.getSceneController().setPickPoint(this.mousePoint);
+
+        if (this.isForceRedrawOnMousePressed() || mousePointChanged)
             this.wwd.redrawNow();
 
         this.objectsAtButtonPress = this.wwd.getObjectsAtCurrentPosition();

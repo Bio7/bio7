@@ -6,7 +6,7 @@
 package gov.nasa.worldwind.layers;
 
 import com.jogamp.opengl.util.awt.TextRenderer;
-import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.geom.Box;
@@ -27,7 +27,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 
 /**
  * @author tag
- * @version $Id: TiledImageLayer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: TiledImageLayer.java 1824 2014-01-22 22:41:10Z dcollins $
  */
 public abstract class TiledImageLayer extends AbstractLayer
 {
@@ -487,50 +487,34 @@ public abstract class TiledImageLayer extends AbstractLayer
 
     protected boolean needToSplit(DrawContext dc, Sector sector, Level level)
     {
-        Vec4[] corners = sector.computeCornerPoints(dc.getGlobe(), dc.getVerticalExaggeration());
-        Vec4 centerPoint = sector.computeCenterPoint(dc.getGlobe(), dc.getVerticalExaggeration());
+        // Compute the height in meters of a texel from the specified level. Take care to convert from the radians to
+        // meters by multiplying by the globe's radius, not the length of a Cartesian point. Using the length of a
+        // Cartesian point is incorrect when the globe is flat.
+        double texelSizeRadians = level.getTexelSize();
+        double texelSizeMeters = dc.getGlobe().getRadius() * texelSizeRadians;
 
-        // Get the eye distance for each of the sector's corners and its center.
-        View view = dc.getView();
-        double d1 = view.getEyePoint().distanceTo3(corners[0]);
-        double d2 = view.getEyePoint().distanceTo3(corners[1]);
-        double d3 = view.getEyePoint().distanceTo3(corners[2]);
-        double d4 = view.getEyePoint().distanceTo3(corners[3]);
-        double d5 = view.getEyePoint().distanceTo3(centerPoint);
+        // Compute the level of detail scale and the field of view scale. These scales are multiplied by the eye
+        // distance to derive a scaled distance that is then compared to the texel size. The level of detail scale is
+        // specified as a power of 10. For example, a detail factor of 3 means split when the cell size becomes more
+        // than one thousandth of the eye distance. The field of view scale is specified as a ratio between the current
+        // field of view and a the default field of view. In a perspective projection, decreasing the field of view by
+        // 50% has the same effect on object size as decreasing the distance between the eye and the object by 50%.
+        double detailScale = Math.pow(10, -this.getDetailFactor());
+        double fieldOfViewScale = dc.getView().getFieldOfView().tanHalfAngle() / Angle.fromDegrees(45).tanHalfAngle();
+        fieldOfViewScale = WWMath.clamp(fieldOfViewScale, 0, 1);
 
-        // Find the minimum eye distance. Compute cell height at the corresponding point.
-        double minDistance = d1;
-        double cellHeight = corners[0].getLength3() * level.getTexelSize(); // globe radius x radian texel size
-        double texelSize = level.getTexelSize();
-        if (d2 < minDistance)
-        {
-            minDistance = d2;
-            cellHeight = corners[1].getLength3() * texelSize;
-        }
-        if (d3 < minDistance)
-        {
-            minDistance = d3;
-            cellHeight = corners[2].getLength3() * texelSize;
-        }
-        if (d4 < minDistance)
-        {
-            minDistance = d4;
-            cellHeight = corners[3].getLength3() * texelSize;
-        }
-        if (d5 < minDistance)
-        {
-            minDistance = d5;
-            cellHeight = centerPoint.getLength3() * texelSize;
-        }
+        // Compute the distance between the eye point and the sector in meters, and compute a fraction of that distance
+        // by multiplying the actual distance by the level of detail scale and the field of view scale.
+        double eyeDistanceMeters = sector.distanceTo(dc, dc.getView().getEyePoint());
+        double scaledEyeDistanceMeters = eyeDistanceMeters * detailScale * fieldOfViewScale;
 
-        // Split when the cell height (length of a texel) becomes greater than the specified fraction of the eye
-        // distance. The fraction is specified as a power of 10. For example, a detail factor of 3 means split when the
-        // cell height becomes more than one thousandth of the eye distance. Another way to say it is, use the current
-        // tile if its cell height is less than the specified fraction of the eye distance.
+        // Split when the texel size in meters becomes greater than the specified fraction of the eye distance, also in
+        // meters. Another way to say it is, use the current tile if its texel size is less than the specified fraction
+        // of the eye distance.
         //
         // NOTE: It's tempting to instead compare a screen pixel size to the texel size, but that calculation is
         // window-size dependent and results in selecting an excessive number of tiles when the window is large.
-        return cellHeight > minDistance * Math.pow(10, -this.getDetailFactor());
+        return texelSizeMeters > scaledEyeDistanceMeters;
     }
 
     public Double getMinEffectiveAltitude(Double radius)
@@ -538,12 +522,12 @@ public abstract class TiledImageLayer extends AbstractLayer
         if (radius == null)
             radius = Earth.WGS84_EQUATORIAL_RADIUS;
 
-        // Get the cell size for the highest-resolution level.
-        double texelSize = this.getLevels().getLastLevel().getTexelSize();
-        double cellHeight = radius * texelSize;
+        // Get the texel size in meters for the highest-resolution level.
+        double texelSizeRadians = this.getLevels().getLastLevel().getTexelSize();
+        double texelSizeMeters = radius * texelSizeRadians;
 
-        // Compute altitude associated with the cell height at which it would switch if it had higher-res levels.
-        return cellHeight * Math.pow(10, this.getDetailFactor());
+        // Compute altitude associated with the texel size at which it would switch if it had higher-res levels.
+        return texelSizeMeters * Math.pow(10, this.getDetailFactor());
     }
 
     public Double getMaxEffectiveAltitude(Double radius)
@@ -557,12 +541,12 @@ public abstract class TiledImageLayer extends AbstractLayer
             if (this.levels.isLevelEmpty(i))
                 continue;
 
-            // Compute altitude associated with the cell height at which it would switch if it had a lower-res level.
-            // That cell height is twice that of the current lowest-res level.
-            double texelSize = this.levels.getLevel(i).getTexelSize();
-            double cellHeight = 2 * radius * texelSize;
+            // Compute altitude associated with the texel size at which it would switch if it had a lower-res level.
+            // That texel size is twice that of the current lowest-res level.
+            double texelSizeRadians = this.levels.getLevel(i).getTexelSize();
+            double texelSizeMeters = 2 * radius * texelSizeRadians;
 
-            return cellHeight * Math.pow(10, this.getDetailFactor());
+            return texelSizeMeters * Math.pow(10, this.getDetailFactor());
         }
 
         return null;

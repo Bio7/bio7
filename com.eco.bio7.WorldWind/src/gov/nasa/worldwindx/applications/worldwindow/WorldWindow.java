@@ -15,7 +15,7 @@ import java.util.logging.Level;
 
 /**
  * @author tag
- * @version $Id: WorldWindow.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: WorldWindow.java 1923 2014-04-10 23:35:03Z tgaskins $
  */
 public class WorldWindow
 {
@@ -28,8 +28,9 @@ public class WorldWindow
             System.setProperty("apple.laf.useScreenMenuBar", "true");
             System.setProperty("com.apple.mrj.application.growbox.intrudes", "false");
             String s = Configuration.getStringValue(Constants.APPLICATION_DISPLAY_NAME);
-            System.setProperty("com.apple.mrj.application.apple.menu.about.name",
-                Configuration.getStringValue(Constants.APPLICATION_DISPLAY_NAME));//"World Window");
+            if (s == null)
+                s = "World Window";
+            System.setProperty("com.apple.mrj.application.apple.menu.about.name", s);
         }
         else if (Configuration.isWindowsOS())
         {

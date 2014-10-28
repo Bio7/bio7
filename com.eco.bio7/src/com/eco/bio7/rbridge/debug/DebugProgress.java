@@ -63,7 +63,8 @@ public class DebugProgress {
 					+ "close(.GlobalEnv$.socketCon1);" 
 					+ "writeLines(\"\")");
 
-			
+			/* Clear the debug spreadsheet! */
+			deleteSpreadSheet();
 
 			/* Read the R socket data with Java! */
 			String data = javaReadFromRSocket(port, command);
@@ -165,6 +166,8 @@ public class DebugProgress {
 
 					// Omit the first line if a debug message!
 					// System.out.println(line);
+					
+					System.out.println("debug line: "+line);
 
 					if (line.startsWith("Bio7...Debug...Start...")) {
 						capture = true;

@@ -32,7 +32,7 @@ import java.util.List;
  * This shape supports only COLLADA line and triangle geometries.
  *
  * @author pabercrombie
- * @version $Id: ColladaMeshShape.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ColladaMeshShape.java 1696 2013-10-31 18:46:55Z tgaskins $
  */
 public class ColladaMeshShape extends AbstractGeneralShape
 {
@@ -309,16 +309,13 @@ public class ColladaMeshShape extends AbstractGeneralShape
         // may be drawn multiple times during a single frame with different transforms. Attempt to calculate the extent
         // if not available in the cache. It may not be possible to calculate the extent if the shape geometry has not
         // been built, in which case the extent will be computed by createMinimalGeometry.
-        if (this.extentCache.size() > 1)
+        Extent extent = this.extentCache.get(matrix);
+        if (extent == null)
         {
-            Extent extent = this.extentCache.get(matrix);
-            if (extent == null)
-            {
-                extent = this.computeExtent(dc);
-                this.extentCache.put(matrix, extent);
-            }
-            current.setExtent(extent);
+            extent = this.computeExtent(dc);
+            this.extentCache.put(matrix, extent);
         }
+        current.setExtent(extent);
 
         this.render(dc);
     }
@@ -751,6 +748,43 @@ public class ColladaMeshShape extends AbstractGeneralShape
         for (Vec4 corner : corners)
         {
             extrema.add(corner.transformBy4(matrix));
+        }
+
+        if (extrema.isEmpty())
+            return null;
+
+        // Compute the bounding box around the transformed corners.
+        return Box.computeBoundingBox(extrema);
+    }
+
+    public Box getLocalExtent(ColladaTraversalContext tc)
+    {
+        if (tc == null)
+        {
+            String message = Logging.getMessage("nullValue.TraversalContextIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        int size = this.shapeCount * this.vertsPerShape * ColladaAbstractGeometry.COORDS_PER_VERTEX;
+        FloatBuffer vertexBuffer = WWBufferUtil.newFloatBuffer(size, true);
+
+        for (Geometry geometry : this.geometries)
+        {
+            geometry.colladaGeometry.getVertices(vertexBuffer);
+        }
+
+        // Compute a bounding box around the vertices in this shape.
+        vertexBuffer.rewind();
+        Box box = Box.computeBoundingBox(new BufferWrapper.FloatBufferWrapper(vertexBuffer),
+            ColladaAbstractGeometry.COORDS_PER_VERTEX);
+
+        // Compute the corners of the bounding box and transform with the active transform matrix.
+        List<Vec4> extrema = new ArrayList<Vec4>();
+        Vec4[] corners = box.getCorners();
+        for (Vec4 corner : corners)
+        {
+            extrema.add(corner.transformBy4(tc.peekMatrix()));
         }
 
         if (extrema.isEmpty())

@@ -28,7 +28,7 @@ import java.util.Map;
 
 /**
  * @author tag
- * @version $Id: BasicTiledImageLayer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: BasicTiledImageLayer.java 1931 2014-04-14 21:31:43Z tgaskins $
  */
 public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetrievable
 {
@@ -765,7 +765,7 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
         if (names == null || names.length == 0)
             return;
 
-        final Long expiryTime = caps.getLayerLatestLastUpdateTime(caps, names);
+        final Long expiryTime = caps.getLayerLatestLastUpdateTime(names);
         if (expiryTime == null)
             return;
 

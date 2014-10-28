@@ -32,7 +32,7 @@ import java.io.*;
  * draw context, is made current. Subsequently called methods rely on the existence of this current data cache entry.
  *
  * @author tag
- * @version $Id: AbstractShape.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: AbstractShape.java 1847 2014-02-18 00:32:16Z dcollins $
  */
 public abstract class AbstractShape extends WWObjectImpl
     implements Highlightable, OrderedRenderable, Movable, ExtentHolder, GeographicExtent, Exportable, Restorable
@@ -1191,7 +1191,7 @@ public abstract class AbstractShape extends WWObjectImpl
             gl.glDisable(GL.GL_BLEND);
         }
 
-        dc.getGL().glDisable(GL.GL_CULL_FACE);
+        gl.glDisable(GL.GL_CULL_FACE);
 
         this.BEogsh.pushClientAttrib(gl, GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
         gl.glEnableClientState(GL2.GL_VERTEX_ARRAY); // all drawing uses vertex arrays
@@ -1213,6 +1213,8 @@ public abstract class AbstractShape extends WWObjectImpl
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         dc.getView().popReferenceCenter(dc);
+
+        gl.glDisableClientState(GL2.GL_NORMAL_ARRAY); // explicitly disable normal array client state; fixes WWJ-450
 
         if (!dc.isPickingMode())
         {

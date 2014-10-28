@@ -26,7 +26,7 @@ import java.util.List;
 
 /**
  * @author dcollins
- * @version $Id: AbstractTacticalSymbol.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: AbstractTacticalSymbol.java 1946 2014-04-18 18:44:59Z dcollins $
  */
 public abstract class AbstractTacticalSymbol extends WWObjectImpl implements TacticalSymbol, OrderedRenderable, Movable
 {
@@ -278,20 +278,13 @@ public abstract class AbstractTacticalSymbol extends WWObjectImpl implements Tac
 
     protected static class Label
     {
-        protected TextRenderer renderer;
         protected String text;
         protected Point point;
+        protected Font font;
         protected Color color;
 
-        public Label(TextRenderer renderer, String text, Point point, Color color)
+        public Label(String text, Point point, Font font, Color color)
         {
-            if (renderer == null)
-            {
-                String msg = Logging.getMessage("nullValue.RendererIsNull");
-                Logging.logger().severe(msg);
-                throw new IllegalArgumentException(msg);
-            }
-
             if (text == null)
             {
                 String msg = Logging.getMessage("nullValue.StringIsNull");
@@ -306,6 +299,13 @@ public abstract class AbstractTacticalSymbol extends WWObjectImpl implements Tac
                 throw new IllegalArgumentException(msg);
             }
 
+            if (font == null)
+            {
+                String msg = Logging.getMessage("nullValue.FontIsNull");
+                Logging.logger().severe(msg);
+                throw new IllegalArgumentException(msg);
+            }
+
             if (color == null)
             {
                 String msg = Logging.getMessage("nullValue.ColorIsNull");
@@ -313,15 +313,10 @@ public abstract class AbstractTacticalSymbol extends WWObjectImpl implements Tac
                 throw new IllegalArgumentException(msg);
             }
 
-            this.renderer = renderer;
             this.text = text;
             this.point = point;
+            this.font = font;
             this.color = color;
-        }
-
-        public TextRenderer getTextRenderer()
-        {
-            return this.renderer;
         }
 
         public String getText()
@@ -332,6 +327,11 @@ public abstract class AbstractTacticalSymbol extends WWObjectImpl implements Tac
         public Point getPoint()
         {
             return this.point;
+        }
+
+        public Font getFont()
+        {
+            return this.font;
         }
 
         public Color getColor()
@@ -1630,12 +1630,15 @@ public abstract class AbstractTacticalSymbol extends WWObjectImpl implements Tac
             color = new Color(diffuse.getRed(), diffuse.getGreen(), diffuse.getBlue(), alpha);
         }
 
+        // Compute the label's location using the TextRenderer that we expect to use when drawing the label. Don't
+        // keep a reference to the TextRenderer, since it's a property of the draw context and may be disposed when the
+        // GL context changes. See WWJ-426.
         TextRenderer tr = OGLTextRenderer.getOrCreateTextRenderer(dc.getTextRendererCache(), font);
         Rectangle bounds = tr.getBounds(modifierText).getBounds();
         Rectangle rect = this.layoutLabelRect(offset, hotspot, bounds.getSize(), layoutMode);
         Point point = new Point(rect.getLocation().x, rect.getLocation().y + bounds.y + bounds.height);
 
-        this.currentLabels.add(new Label(tr, modifierText, point, color));
+        this.currentLabels.add(new Label(modifierText, point, font, color));
     }
 
     protected void addLine(DrawContext dc, Offset offset, List<? extends Point2D> points)
@@ -2187,6 +2190,7 @@ public abstract class AbstractTacticalSymbol extends WWObjectImpl implements Tac
 
         GL gl = dc.getGL();
         TextRenderer tr = null;
+        TextRendererCache trCache = dc.getTextRendererCache();
         try
         {
             // Don't depth buffer labels. Depth buffering would cause the labels to intersect terrain, which is
@@ -2195,11 +2199,12 @@ public abstract class AbstractTacticalSymbol extends WWObjectImpl implements Tac
 
             for (Label modifier : this.currentLabels)
             {
-                if (tr == null || tr != modifier.getTextRenderer())
+                TextRenderer modifierRenderer = OGLTextRenderer.getOrCreateTextRenderer(trCache, modifier.getFont());
+                if (tr == null || tr != modifierRenderer)
                 {
                     if (tr != null)
                         tr.end3DRendering();
-                    tr = modifier.getTextRenderer();
+                    tr = modifierRenderer;
                     tr.begin3DRendering();
                 }
 

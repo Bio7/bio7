@@ -13,7 +13,7 @@ import java.util.logging.Level;
 
 /**
  * @author tag
- * @version $Id: AbstractFileStore.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: AbstractFileStore.java 1951 2014-04-20 18:57:50Z tgaskins $
  */
 public abstract class AbstractFileStore extends WWObjectImpl implements FileStore
 {
@@ -602,7 +602,8 @@ public abstract class AbstractFileStore extends WWObjectImpl implements FileStor
     }
 
     /**
-     * @param url the "file:" URL of the file to remove from the file store
+     * @param url the "file:" URL of the file to remove from the file store. Only files in the writable World Wind
+     *            disk cache or temp file directory are removed by this method.
      *
      * @throws IllegalArgumentException if <code>url</code> is null
      */
@@ -626,7 +627,15 @@ public abstract class AbstractFileStore extends WWObjectImpl implements FileStor
             synchronized (this.fileLock)
             {
                 if (file.exists())
+                {
+                    // Don't remove files outside the cache or temp directory.
+                    String parent = file.getParent();
+                    if (!(parent.startsWith(this.getWriteLocation().getPath())
+                        || parent.startsWith(Configuration.getSystemTempDirectory())))
+                        return;
+
                     file.delete();
+                }
             }
         }
         catch (java.net.URISyntaxException e)

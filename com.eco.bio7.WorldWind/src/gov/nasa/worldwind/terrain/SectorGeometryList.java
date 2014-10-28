@@ -19,7 +19,7 @@ import java.util.List;
  * This class is a container for terrain geometry.
  *
  * @author tag
- * @version $Id: SectorGeometryList.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: SectorGeometryList.java 1537 2013-08-07 19:58:01Z dcollins $
  */
 public class SectorGeometryList extends ArrayList<SectorGeometry>
 {
@@ -145,15 +145,15 @@ public class SectorGeometryList extends ArrayList<SectorGeometry>
             if (pickedSector == null || pickedSector.getObject() == null)
                 return; // no sector picked
 
+            this.beginSectorGeometryPicking(dc);
             SectorGeometry sector = (SectorGeometry) pickedSector.getObject();
-            gl.glDepthFunc(GL.GL_LEQUAL);
             sector.pick(dc, pickPoint);
         }
         finally
         {
+            this.endSectorGeometryPicking(dc);
             this.endRendering(dc);
             gl.glShadeModel(GL2.GL_SMOOTH); // restore to default explicitly to avoid more expensive pushAttrib
-            gl.glDepthFunc(GL.GL_LESS); // restore to default explicitly to avoid more expensive pushAttrib
 
             this.pickSupport.endPicking(dc);
             this.pickSupport.clearPickList();
@@ -230,7 +230,7 @@ public class SectorGeometryList extends ArrayList<SectorGeometry>
                 return null;
 
             // Now have each sector determine the pick position for each intersecting pick point.
-            gl.glDepthFunc(GL.GL_LEQUAL);
+            this.beginSectorGeometryPicking(dc);
             ArrayList<PickedObject> pickedObjects = new ArrayList<PickedObject>();
             for (Map.Entry<SectorGeometry, ArrayList<Point>> sector : this.pickSectors.entrySet())
             {
@@ -250,12 +250,56 @@ public class SectorGeometryList extends ArrayList<SectorGeometry>
         }
         finally
         {
+            this.endSectorGeometryPicking(dc);
             this.endRendering(dc);
             gl.glShadeModel(GL2.GL_SMOOTH); // restore to default explicitly to avoid more expensive pushAttrib
-            gl.glDepthFunc(GL.GL_LESS); // restore to default explicitly to avoid more expensive pushAttrib
 
             this.pickSupport.endPicking(dc);
             this.pickSupport.clearPickList();
+        }
+    }
+
+    /**
+     * Indicates that sector geometry picking is about to be performed. Configures the state necessary to correctly draw
+     * sector geometry in a second pass using unique per-triangle colors. When picking is complete, {@link
+     * #endSectorGeometryPicking(gov.nasa.worldwind.render.DrawContext)} must be called.
+     *
+     * @param dc the current draw context.
+     */
+    protected void beginSectorGeometryPicking(DrawContext dc)
+    {
+        GL gl = dc.getGL();
+
+        gl.glDepthFunc(GL.GL_LEQUAL);
+
+        // When the OpenGL implementation is provided by the VMware SVGA 3D graphics driver, move the per-triangle
+        // color geometry's depth values toward the eye and disable depth buffer writes. This works around an issue
+        // where the VMware driver breaks OpenGL's invariance requirement when per-vertex colors are enabled.
+        // See WWJ-425.
+        if (dc.getGLRuntimeCapabilities().isVMwareSVGA3D())
+        {
+            gl.glDepthMask(false);
+            gl.glEnable(GL.GL_POLYGON_OFFSET_FILL);
+            gl.glPolygonOffset(-1f, -1f);
+        }
+    }
+
+    /**
+     * Restores state established by {@link #beginSectorGeometryPicking(gov.nasa.worldwind.render.DrawContext)}.
+     *
+     * @param dc the current draw context.
+     */
+    protected void endSectorGeometryPicking(DrawContext dc)
+    {
+        GL gl = dc.getGL();
+
+        gl.glDepthFunc(GL.GL_LESS); // restore to default explicitly to avoid more expensive pushAttrib
+
+        if (dc.getGLRuntimeCapabilities().isVMwareSVGA3D())
+        {
+            gl.glDepthMask(true);
+            gl.glDisable(GL.GL_POLYGON_OFFSET_FILL);
+            gl.glPolygonOffset(0f, 0f);
         }
     }
 

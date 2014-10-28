@@ -6,25 +6,26 @@
 
 package gov.nasa.worldwindx.examples;
 
+import gov.nasa.worldwind.Model;
 import gov.nasa.worldwind.globes.Earth;
 
 import java.io.IOException;
 
 /**
- * Illustrates how to apply EGM96 geoid offsets to the World Wind globe.
- *
+ * Shows how to apply EGM96 offsets to the Earth.
  * @author tag
- * @version $Id: EGM96.java 1173 2013-02-12 19:43:23Z tgaskins $
+ * @version $Id: EGM96Offsets.java 1501 2013-07-11 15:59:11Z tgaskins $
  */
-public class EGM96 extends ApplicationTemplate
+public class EGM96Offsets extends ApplicationTemplate
 {
     public static class AppFrame extends ApplicationTemplate.AppFrame
     {
         public AppFrame()
         {
+            Model m = this.wwjPanel.getWwd().getModel();
             try
             {
-                ((Earth) getWwd().getModel().getGlobe()).applyEGMA96Offsets("config/EGM96.dat");
+                ((Earth) m.getGlobe()).applyEGMA96Offsets("config/EGM96.dat");
             }
             catch (IOException e)
             {
@@ -35,6 +36,6 @@ public class EGM96 extends ApplicationTemplate
 
     public static void main(String[] args)
     {
-        ApplicationTemplate.start("World Wind EGM96", AppFrame.class);
+        ApplicationTemplate.start("World Wind EGM96 Offsets", AppFrame.class);
     }
 }

@@ -15,7 +15,7 @@ import java.util.Map;
  * Represents the KML <i>Style</i> element and provides access to its contents.
  *
  * @author tag
- * @version $Id: KMLStyle.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: KMLStyle.java 1528 2013-07-31 01:00:32Z pabercrombie $
  */
 public class KMLStyle extends KMLAbstractStyleSelector
 {
@@ -57,6 +57,30 @@ public class KMLStyle extends KMLAbstractStyleSelector
     public KMLListStyle getListStyle()
     {
         return (KMLListStyle) this.getField(KMLConstants.LIST_STYLE_FIELD);
+    }
+
+    /**
+     * {@inheritDoc} Overridden to handle deprecated {@code labelColor} field. The {@code labelColor} field is
+     * deprecated, and has been replaced by {@code LabelStyle}. If {@code labelColor} is set this method will apply the
+     * color to the {@code LabelStyle}, creating a new {@code LabelStyle} if necessary.
+     */
+    @Override
+    public void setField(String keyName, Object value)
+    {
+        if ("labelColor".equals(keyName))
+        {
+            KMLLabelStyle labelStyle = this.getLabelStyle();
+            if (labelStyle == null)
+            {
+                labelStyle = new KMLLabelStyle(this.getNamespaceURI());
+                this.setField(KMLConstants.LABEL_STYLE_FIELD, labelStyle);
+            }
+            labelStyle.setField("color", value);
+        }
+        else
+        {
+            super.setField(keyName, value);
+        }
     }
 
     /**

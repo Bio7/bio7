@@ -6,19 +6,22 @@
 
 package gov.nasa.worldwindx.examples.util;
 
-import com.jogamp.opengl.util.awt.Screenshot;
+import com.jogamp.opengl.util.awt.*;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.event.*;
+import gov.nasa.worldwind.util.WWIO;
 
+import javax.imageio.ImageIO;
 import javax.media.opengl.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.*;
 import java.io.*;
 
 /**
  * @author tag
- * @version $Id: ScreenShotAction.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ScreenShotAction.java 1689 2013-10-23 18:18:11Z dcollins $
  */
 public class ScreenShotAction extends AbstractAction implements RenderingListener
 {
@@ -97,10 +100,10 @@ public class ScreenShotAction extends AbstractAction implements RenderingListene
             try
             {
                 GLAutoDrawable glad = (GLAutoDrawable) event.getSource();
-                int[] viewport = new int[4];
-                glad.getGL().glGetIntegerv(GL.GL_VIEWPORT, viewport, 0);
-                Screenshot.writeToFile(this.snapFile, viewport[2] + 10, viewport[3], false);
-                glad.getGL().glViewport(0, 0, glad.getWidth(), glad.getHeight());
+                AWTGLReadBufferUtil glReadBufferUtil = new AWTGLReadBufferUtil(glad.getGLProfile(), false);
+                BufferedImage image = glReadBufferUtil.readPixelsToBufferedImage(glad.getGL(), true);
+                String suffix = WWIO.getSuffix(this.snapFile.getPath());
+                ImageIO.write(image, suffix, this.snapFile);
                 System.out.printf("Image saved to file %s\n", this.snapFile.getPath());
             }
             catch (IOException e)

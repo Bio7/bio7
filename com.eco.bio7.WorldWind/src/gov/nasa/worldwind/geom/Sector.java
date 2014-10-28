@@ -9,6 +9,7 @@ import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.cache.Cacheable;
 import gov.nasa.worldwind.geom.coords.UTMCoord;
 import gov.nasa.worldwind.globes.Globe;
+import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.tracks.TrackPoint;
 import gov.nasa.worldwind.util.Logging;
 
@@ -24,7 +25,7 @@ import java.util.*;
  * specifying angles. <p/> <code>Sector</code> instances are immutable. </p>
  *
  * @author Tom Gaskins
- * @version $Id: Sector.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: Sector.java 1920 2014-04-10 17:40:56Z tgaskins $
  * @see Angle
  */
 public class Sector implements Cacheable, Comparable<Sector>, Iterable<LatLon>
@@ -54,6 +55,33 @@ public class Sector implements Cacheable, Comparable<Sector>, Iterable<LatLon>
     public static Sector fromDegrees(double minLatitude, double maxLatitude, double minLongitude,
         double maxLongitude)
     {
+        return new Sector(Angle.fromDegrees(minLatitude), Angle.fromDegrees(maxLatitude), Angle.fromDegrees(
+            minLongitude), Angle.fromDegrees(maxLongitude));
+    }
+
+    /**
+     * Creates a new <code>Sector</code> and initializes it to the specified angles. The angles are assumed to be
+     * normalized to +/- 90 degrees latitude and +/- 180 degrees longitude, but this method does not verify that.
+     *
+     * @param minLatitude  the sector's minimum latitude in degrees.
+     * @param maxLatitude  the sector's maximum latitude in degrees.
+     * @param minLongitude the sector's minimum longitude in degrees.
+     * @param maxLongitude the sector's maximum longitude in degrees.
+     *
+     * @return the new <code>Sector</code>
+     */
+    public static Sector fromDegreesAndClamp(double minLatitude, double maxLatitude, double minLongitude,
+        double maxLongitude)
+    {
+        if (minLatitude < -90)
+            minLatitude = -90;
+        if (maxLatitude > 90)
+            maxLatitude = 90;
+        if (minLongitude < -180)
+            minLongitude = -180;
+        if (maxLongitude > 180)
+            maxLongitude = 180;
+
         return new Sector(Angle.fromDegrees(minLatitude), Angle.fromDegrees(maxLatitude), Angle.fromDegrees(
             minLongitude), Angle.fromDegrees(maxLongitude));
     }
@@ -1439,6 +1467,59 @@ public class Sector implements Cacheable, Comparable<Sector>, Iterable<LatLon>
         }
 
         return sectors;
+    }
+
+    /**
+     * Returns an approximation of the distance in model coordinates between the surface geometry defined by this sector
+     * and the specified model coordinate point. The returned value represents the shortest distance between the
+     * specified point and this sector's corner points or its center point. The draw context defines the globe and the
+     * elevations that are used to compute the corner points and the center point.
+     *
+     * @param dc    The draw context defining the surface geometry.
+     * @param point The model coordinate point to compute a distance to.
+     *
+     * @return The distance between this sector's surface geometry and the specified point, in model coordinates.
+     *
+     * @throws IllegalArgumentException if any argument is null.
+     */
+    public double distanceTo(DrawContext dc, Vec4 point)
+    {
+        if (dc == null)
+        {
+            String message = Logging.getMessage("nullValue.DrawContextIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (point == null)
+        {
+            String message = Logging.getMessage("nullValue.PointIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        Vec4[] corners = this.computeCornerPoints(dc.getGlobe(), dc.getVerticalExaggeration());
+        Vec4 centerPoint = this.computeCenterPoint(dc.getGlobe(), dc.getVerticalExaggeration());
+
+        // Get the distance for each of the sector's corners and its center.
+        double d1 = point.distanceTo3(corners[0]);
+        double d2 = point.distanceTo3(corners[1]);
+        double d3 = point.distanceTo3(corners[2]);
+        double d4 = point.distanceTo3(corners[3]);
+        double d5 = point.distanceTo3(centerPoint);
+
+        // Find the minimum distance.
+        double minDistance = d1;
+        if (minDistance > d2)
+            minDistance = d2;
+        if (minDistance > d3)
+            minDistance = d3;
+        if (minDistance > d4)
+            minDistance = d4;
+        if (minDistance > d5)
+            minDistance = d5;
+
+        return minDistance;
     }
 
     /**

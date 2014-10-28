@@ -20,7 +20,7 @@ import java.io.*;
  * Renders a crosshair icon in the viewport center or at a specified location.
  *
  * @author Patrick Murris
- * @version $Id: CrosshairLayer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: CrosshairLayer.java 1953 2014-04-21 15:43:35Z tgaskins $
  */
 public class CrosshairLayer extends AbstractLayer
 {
@@ -220,10 +220,16 @@ public class CrosshairLayer extends AbstractLayer
                 iconTexture = dc.getTextureCache().getTexture(this.getIconFilePath());
                 if (iconTexture == null)
                 {
-                    // TODO: log warning
+                    String msg = Logging.getMessage("generic.ImageReadFailed");
+                    Logging.logger().finer(msg);
                     return;
                 }
             }
+
+            // Need to assign the width and height here to address the case in which the texture was already
+            // loaded into the cache by another layer or a previous instance of this one.
+            this.iconWidth = iconTexture.getWidth();
+            this.iconHeight = iconTexture.getHeight();
 
             gl.glEnable(GL.GL_TEXTURE_2D);
             iconTexture.bind(gl);

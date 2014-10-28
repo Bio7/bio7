@@ -22,7 +22,7 @@ import java.util.List;
  * A collection of useful math methods, all static.
  *
  * @author tag
- * @version $Id: WWMath.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: WWMath.java 1677 2013-10-21 18:57:51Z dcollins $
  */
 public class WWMath
 {
@@ -1180,7 +1180,7 @@ public class WWMath
     /**
      * Computes an index buffer in the system native byte order that tessellates the interior of a vertex grid as a
      * triangle strip. The returned buffer may be used as the source <code>buffer</code> in a call to {@link
-     * javax.media.opengl.GL#glDrawElements(int, int, int, java.nio.Buffer)}, where <code>mode</code> is {@link
+     * javax.media.opengl.GL2#glDrawElements(int, int, int, java.nio.Buffer)}, where <code>mode</code> is {@link
      * javax.media.opengl.GL#GL_TRIANGLE_STRIP}, <code>count</code> is the number of elements remaining in the buffer,
      * and <code>type</code> is {@link javax.media.opengl.GL#GL_UNSIGNED_INT}.
      * <p/>
@@ -1236,7 +1236,7 @@ public class WWMath
     /**
      * Computes an index buffer in the system native byte order that tessellates the outline of a vertex grid as a line
      * strip. The returned buffer may be used as the source <code>buffer</code> in a call to {@link
-     * javax.media.opengl.GL#glDrawElements(int, int, int, java.nio.Buffer)}, where <code>mode</code> is {@link
+     * javax.media.opengl.GL2#glDrawElements(int, int, int, java.nio.Buffer)}, where <code>mode</code> is {@link
      * javax.media.opengl.GL#GL_LINE_STRIP}, <code>count</code> is the number of elements remaining in the buffer, and
      * <code>type</code> is {@link javax.media.opengl.GL#GL_UNSIGNED_INT}.
      * <p/>

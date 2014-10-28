@@ -18,13 +18,13 @@ import java.util.*;
  * for rendering and picking operations.
  *
  * @author tag
- * @version $Id: IconLayer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: IconLayer.java 1935 2014-04-15 19:25:18Z tgaskins $
  * @see gov.nasa.worldwind.render.WWIcon
  * @see gov.nasa.worldwind.render.IconRenderer
  */
 public class IconLayer extends AbstractLayer
 {
-    protected final BasicQuadTree<WWIcon> icons = new BasicQuadTree<WWIcon>(8, Sector.FULL_SPHERE, null);
+    protected final BasicQuadTree<WWIcon> icons = new BasicQuadTree<WWIcon>(8, Sector.FULL_SPHERE, null, false);
     protected Iterable<WWIcon> iconsOverride;
     protected IconRenderer iconRenderer = new IconRenderer();
     private Pedestal pedestal;

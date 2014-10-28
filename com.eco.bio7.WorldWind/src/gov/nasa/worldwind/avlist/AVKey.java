@@ -7,7 +7,7 @@ package gov.nasa.worldwind.avlist;
 
 /**
  * @author Tom Gaskins
- * @version $Id: AVKey.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: AVKey.java 1933 2014-04-14 22:54:19Z dcollins $
  */
 public interface AVKey // TODO: Eliminate unused constants, if any
 {
@@ -83,6 +83,14 @@ public interface AVKey // TODO: Eliminate unused constants, if any
      */
     final String DATA_TYPE = "gov.nasa.worldwind.avkey.DataType";
     final String DELETE_CACHE_ON_EXIT = "gov.nasa.worldwind.avkey.DeleteCacheOnExit";
+    /**
+     * Indicates the World Wind scene's worst-case depth resolution, in meters. This is typically interpreted by the
+     * View as the desired resolution at the scene's maximum drawing distance. In this case, the resolution closer to
+     * the viewer's eye point is significantly better then the worst-case resolution. Decreasing this value enables the
+     * viewer to get closer to 3D shapes positioned above the terrain at the coast of potential rendering artifacts
+     * between shapes that are places closely together or close to the terrain.
+     */
+    final String DEPTH_RESOLUTION = "gov.nasa.worldwind.avkey.DepthResolution";
     final String DESCRIPTION = "gov.nasa.worldwind.avkey.Description";
     final String DETAIL_HINT = "gov.nasa.worldwind.avkey.DetailHint";
     final String DISPLAY_ICON = "gov.nasa.worldwind.avkey.DisplayIcon";

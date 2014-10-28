@@ -45,7 +45,7 @@ import java.util.Arrays;
  * layers that cannot be shared.
  *
  * @author dcollins
- * @version $Id: SharedShapes.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: SharedShapes.java 1853 2014-02-28 19:28:23Z tgaskins $
  */
 public class SharedShapes
 {
@@ -240,15 +240,12 @@ public class SharedShapes
         System.arraycopy(basicLayers, 0, layers, 0, basicLayers.length);
         System.arraycopy(shapeLayers, 0, layers, basicLayers.length, shapeLayers.length);
 
-        // Create a model for each World Window instance.
+        // Create separate models for each World Window.
         Model modelForWindowA = new BasicModel(new Earth(), new LayerList(layers));
         Model modelForWindowB = new BasicModel(new EarthFlat(), new LayerList(layers));
 
-        // Create the World Wind windows that display each model. When creating the second panel, specify resource
-        // sharing with the first.
+        // Create the first World Window.
         WWPanel panelA = new WWPanel(null, modelForWindowA, new Dimension(900, 900));
-        WWPanel panelB = new WWPanel(panelA.getWwd(), modelForWindowB, new Dimension(900, 900));
-        panelB.getWwd().setView(new FlatOrbitView());
 
         // Create a layer panel that displays the layer list shared by both WorldWindows.
         SharedLayerPanel layerPanel = new SharedLayerPanel("Shared Shapes", new Dimension(200, 0),
@@ -260,17 +257,24 @@ public class SharedShapes
         box.add(layerPanel);
         box.add(javax.swing.Box.createHorizontalStrut(5));
         box.add(panelA);
-        box.add(javax.swing.Box.createHorizontalStrut(5));
-        box.add(panelB);
 
         // Create an application frame to display the two World Wind windows and the shared layer panel.
         JFrame appFrame = new JFrame("World Wind Shared Shapes");
         appFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         appFrame.getContentPane().add(box, BorderLayout.CENTER);
+
+        // Make the first World Window visible. This is essential in order to share OpenGL resources with the second
+        // World Window created below.
+        appFrame.setVisible(true);
+
+        // Make the second World Window and tell it to share OpenGL resources with the first World Window.
+        WWPanel panelB = new WWPanel(panelA.getWwd(), modelForWindowB, new Dimension(900, 900));
+        panelB.getWwd().setView(new FlatOrbitView());
+        box.add(javax.swing.Box.createHorizontalStrut(5));
+        box.add(panelB);
         appFrame.pack();
 
         // Center the application frame on the screen and make it visible.
         WWUtil.alignComponent(null, appFrame, AVKey.CENTER);
-        appFrame.setVisible(true);
     }
 }

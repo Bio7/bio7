@@ -71,7 +71,7 @@ import java.util.*;
  * 180 degrees longitude. Regions that span the date line are currently not supported.
  *
  * @author tag
- * @version $Id: KMLRegion.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: KMLRegion.java 1838 2014-02-05 20:48:12Z dcollins $
  */
 public class KMLRegion extends KMLAbstractObject
 {
@@ -514,8 +514,7 @@ public class KMLRegion extends KMLAbstractObject
         if (box == null)
             return;
 
-        int altitudeMode = !WWUtil.isEmpty(box.getAltitudeMode()) ? KMLUtil.convertAltitudeMode(box.getAltitudeMode())
-            : WorldWind.CLAMP_TO_GROUND;
+        int altitudeMode = KMLUtil.convertAltitudeMode(box.getAltitudeMode(), WorldWind.CLAMP_TO_GROUND); // KML default
         this.getCurrentData().setAltitudeMode(altitudeMode);
 
         if (altitudeMode == WorldWind.CLAMP_TO_GROUND)

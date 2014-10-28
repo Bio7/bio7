@@ -12,15 +12,13 @@ import javax.media.opengl.GLAutoDrawable;
 
 /**
  * @author tag
- * @version $Id: WorldWindowGLDrawable.java 1399 2013-06-03 23:26:22Z tgaskins $
+ * @version $Id: WorldWindowGLDrawable.java 1855 2014-02-28 23:01:02Z tgaskins $
  */
 public interface WorldWindowGLDrawable extends WorldWindow
 {
     void initDrawable(GLAutoDrawable glAutoDrawable);
 
     void initGpuResourceCache(GpuResourceCache cache);
-
-    void initGpuResourceCache(GpuResourceCache cache, boolean shared);
 
     void endInitialization();
 }

@@ -17,13 +17,19 @@ import java.awt.*;
 
 /**
  * @author dcollins
- * @version $Id: KMLSurfacePolygonImpl.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: KMLSurfacePolygonImpl.java 1551 2013-08-17 18:00:09Z pabercrombie $
  */
 public class KMLSurfacePolygonImpl extends SurfacePolygon implements KMLRenderable
 {
     protected final KMLAbstractFeature parent;
     protected boolean highlightAttributesResolved = false;
     protected boolean normalAttributesResolved = false;
+
+    /**
+     * Flag to indicate the rotation must be applied to the SurfaceImage. Rotation is applied the first time that the
+     * image is rendered.
+     */
+    protected boolean mustApplyRotation = false;
 
     /**
      * Create an instance.
@@ -124,6 +130,14 @@ public class KMLSurfacePolygonImpl extends SurfacePolygon implements KMLRenderab
         Position.PositionList corners = overlay.getPositions();
         this.setOuterBoundary(corners.list);
 
+        // Check to see if a rotation is provided. The rotation will be applied when the image is rendered, because
+        // how the rotation is performed depends on the globe.
+        KMLLatLonBox box = overlay.getLatLonBox();
+        if (box != null && box.getRotation() != null)
+        {
+            this.mustApplyRotation = true;
+        }
+
         if (overlay.getName() != null)
             this.setValue(AVKey.DISPLAY_NAME, overlay.getName());
 
@@ -144,7 +158,6 @@ public class KMLSurfacePolygonImpl extends SurfacePolygon implements KMLRenderab
             this.setAttributes(attributes);
         }
     }
-
 
     public void preRender(KMLTraversalContext tc, DrawContext dc)
     {
@@ -186,6 +199,14 @@ public class KMLSurfacePolygonImpl extends SurfacePolygon implements KMLRenderab
             }
         }
 
+        // Apply rotation the first time the polygon is rendered. This feature only applies to ground overlays with
+        // position specified using a rotated LatLon box.
+        if (this.mustApplyRotation)
+        {
+            this.applyRotation(dc);
+            this.mustApplyRotation = false;
+        }
+
         this.preRender(dc);
     }
 
@@ -206,7 +227,7 @@ public class KMLSurfacePolygonImpl extends SurfacePolygon implements KMLRenderab
         po.setValue(AVKey.CONTEXT, this.parent);
         return po;
     }
-    
+
     /**
      * Determine and set the {@link Path} highlight attributes from the KML <i>Feature</i> fields.
      *
@@ -277,6 +298,32 @@ public class KMLSurfacePolygonImpl extends SurfacePolygon implements KMLRenderab
                 this.getAttributes().setUnresolved(true);
             if (this.getHighlightAttributes() != null)
                 this.getHighlightAttributes().setUnresolved(true);
+        }
+    }
+
+    /**
+     * Apply a rotation to the corner points of the overlay. This method is called the first time the polygon is
+     * rendered, if the position is specified using a rotated LatLon box.
+     *
+     * @param dc Current draw context.
+     */
+    protected void applyRotation(DrawContext dc)
+    {
+        // Rotation applies only to ground overlay position with a LatLon box.
+        if (!(this.parent instanceof KMLGroundOverlay))
+            return;
+
+        KMLLatLonBox box = ((KMLGroundOverlay) this.parent).getLatLonBox();
+        if (box != null)
+        {
+            Double rotation = box.getRotation();
+            if (rotation != null)
+            {
+                Sector sector = KMLUtil.createSectorFromLatLonBox(box);
+                java.util.List<LatLon> corners = KMLUtil.rotateSector(dc.getGlobe(), sector,
+                    Angle.fromDegrees(rotation));
+                this.setOuterBoundary(corners);
+            }
         }
     }
 }

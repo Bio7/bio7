@@ -22,7 +22,7 @@ import java.awt.event.*;
  * Controller for onscreen view controls displayed by {@link ViewControlsLayer}.
  *
  * @author Patrick Murris
- * @version $Id: ViewControlsSelectListener.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ViewControlsSelectListener.java 1876 2014-03-19 17:13:30Z tgaskins $
  * @see ViewControlsLayer
  */
 public class ViewControlsSelectListener implements SelectListener
@@ -326,6 +326,10 @@ public class ViewControlsSelectListener implements SelectListener
             || event.getEventAction().equals(SelectEvent.DRAG_END))
         {
             // Release pressed control
+
+            if (pressedControl != null)
+                event.consume();
+
             this.pressedControl = null;
             resetOrbitView(view);
             view.firePropertyChange(AVKey.VIEW, null, view);

@@ -14,7 +14,7 @@ import java.util.*;
 
 /**
  * @author tag
- * @version $Id: LevelSet.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: LevelSet.java 1862 2014-03-12 15:40:18Z tgaskins $
  */
 public class LevelSet extends WWObjectImpl
 {
@@ -359,13 +359,13 @@ public class LevelSet extends WWObjectImpl
 
     private long getTileNumber(Tile tile)
     {
-        return tile.getRow() < 0 ? -1 : tile.getRow() * this.numColumnsInLevel(tile.getLevel()) + tile.getColumn();
+        return tile.getRow() < 0 ? -1 : (long) tile.getRow() * this.numColumnsInLevel(tile.getLevel()) + tile.getColumn();
     }
 
     private long getTileNumber(TileKey tileKey)
     {
         return tileKey.getRow() < 0 ? -1 :
-            tileKey.getRow() * this.numColumnsInLevel(this.getLevel(tileKey.getLevelNumber())) + tileKey.getColumn();
+            (long) tileKey.getRow() * this.numColumnsInLevel(this.getLevel(tileKey.getLevelNumber())) + tileKey.getColumn();
     }
 
     /**

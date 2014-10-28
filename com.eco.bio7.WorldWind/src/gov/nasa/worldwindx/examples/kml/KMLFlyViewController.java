@@ -19,7 +19,7 @@ import gov.nasa.worldwind.view.orbit.*;
  * A view controller to animate a {@link BasicFlyView} to look at a KML feature.
  *
  * @author pabercrombie
- * @version $Id: KMLFlyViewController.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: KMLFlyViewController.java 1838 2014-02-05 20:48:12Z dcollins $
  * @see BasicFlyView
  */
 public class KMLFlyViewController extends KMLViewController
@@ -74,7 +74,7 @@ public class KMLFlyViewController extends KMLViewController
 
         Animator animator = createFlyToLookAtAnimator(this.flyView, lookAtPosition,
             Angle.fromDegrees(heading), Angle.fromDegrees(tilt), range,
-            timeToMove, KMLUtil.convertAltitudeMode(altitudeMode));
+            timeToMove, KMLUtil.convertAltitudeMode(altitudeMode, WorldWind.CLAMP_TO_GROUND)); // KML default
 
         FlyViewInputHandler inputHandler = (FlyViewInputHandler) this.flyView.getViewInputHandler();
         inputHandler.stopAnimators();
@@ -109,7 +109,7 @@ public class KMLFlyViewController extends KMLViewController
             this.flyView.getPitch(), Angle.fromDegrees(tilt),
             this.flyView.getRoll(), Angle.fromDegrees(roll),
             this.flyView.getEyePosition().getElevation(), cameraPosition.getElevation(),
-            timeToMove, KMLUtil.convertAltitudeMode(altitudeMode));
+            timeToMove, KMLUtil.convertAltitudeMode(altitudeMode, WorldWind.RELATIVE_TO_GROUND)); // Camera default, differs from KML default
 
         FlyViewInputHandler inputHandler = (FlyViewInputHandler) this.flyView.getViewInputHandler();
         inputHandler.stopAnimators();

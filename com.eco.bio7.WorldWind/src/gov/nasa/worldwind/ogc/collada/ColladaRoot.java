@@ -9,6 +9,7 @@ package gov.nasa.worldwind.ogc.collada;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.exception.WWRuntimeException;
 import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Box;
 import gov.nasa.worldwind.ogc.collada.impl.*;
 import gov.nasa.worldwind.ogc.collada.io.*;
 import gov.nasa.worldwind.render.*;
@@ -25,7 +26,7 @@ import java.net.*;
  * given in the Description section of {@link gov.nasa.worldwind.ogc.collada}.
  *
  * @author pabercrombie
- * @version $Id: ColladaRoot.java 769 2012-09-12 18:18:30Z pabercrombie $
+ * @version $Id: ColladaRoot.java 1696 2013-10-31 18:46:55Z tgaskins $
  */
 public class ColladaRoot extends ColladaAbstractObject implements ColladaRenderable, Highlightable
 {
@@ -820,6 +821,20 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
     public ColladaAsset getAsset()
     {
         return (ColladaAsset) this.getField("asset");
+    }
+
+    public Box getLocalExtent(ColladaTraversalContext tc)
+    {
+        if (tc == null)
+        {
+            String message = Logging.getMessage("nullValue.TraversalContextIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        ColladaScene scene = this.getScene();
+
+        return scene != null ? scene.getLocalExtent(tc) : null;
     }
 
     /** {@inheritDoc} Renders the scene contained in this document. */

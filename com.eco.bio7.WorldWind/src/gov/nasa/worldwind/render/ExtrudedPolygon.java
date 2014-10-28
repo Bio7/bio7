@@ -65,7 +65,7 @@ import java.util.*;
  * draw context, is made current. Subsequently called methods rely on the existence of this current data cache entry.
  *
  * @author tag
- * @version $Id: ExtrudedPolygon.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ExtrudedPolygon.java 1857 2014-03-06 00:22:52Z tgaskins $
  */
 public class ExtrudedPolygon extends AbstractShape
 {
@@ -76,6 +76,8 @@ public class ExtrudedPolygon extends AbstractShape
 
     /** The attributes used if attributes are not specified. */
     protected static final ShapeAttributes defaultSideAttributes;
+
+    protected double baseDepth;
 
     static
     {
@@ -1035,6 +1037,33 @@ public class ExtrudedPolygon extends AbstractShape
     }
 
     /**
+     * Returns this object's base depth.
+     *
+     * @return This object's base depth, in meters.
+     *
+     * @see #setBaseDepth(double)
+     */
+    public double getBaseDepth()
+    {
+        return baseDepth;
+    }
+
+    /**
+     * Specifies a depth below the terrain at which to place this extruded polygon's base vertices. This value does not
+     * affect the height of the extruded polygon nor the position of its cap. It positions the base vertices such that
+     * they are the specified distance below the terrain. The default value is zero, therefore the base vertices are
+     * position on the terrain.
+     *
+     * @param baseDepth the depth in meters to position the base vertices below the terrain. Specify positive values to
+     *                  position the base vertices below the terrain. (Negative values position the base vertices above
+     *                  the terrain.)
+     */
+    public void setBaseDepth(double baseDepth)
+    {
+        this.baseDepth = baseDepth;
+    }
+
+    /**
      * Returns this extruded polygon's side images.
      *
      * @return a collection of lists each identifying the image sources for the associated outer or inner polygon
@@ -1620,7 +1649,17 @@ public class ExtrudedPolygon extends AbstractShape
             // Compute the bottom point, which is on the terrain.
             Vec4 vert = terrain.getSurfacePoint(location.getLatitude(), location.getLongitude(), 0);
 
-            bottomVertices[i] = vert.subtract3(refPoint);
+            if (this.getBaseDepth() == 0)
+            {
+                // Place the base vertex on the terrain.
+                bottomVertices[i] = vert.subtract3(refPoint);
+            }
+            else
+            {
+                // Place the base vertex below the terrain (if base depth is positive).
+                double length = vert.getLength3();
+                bottomVertices[i] = vert.multiply3((length - this.getBaseDepth()) / length).subtract3(refPoint);
+            }
 
             // Compute the top/cap point.
             if (this.getAltitudeMode() == WorldWind.CONSTANT || !(location instanceof Position))

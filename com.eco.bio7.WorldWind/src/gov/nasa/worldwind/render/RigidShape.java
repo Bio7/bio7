@@ -28,7 +28,7 @@ import java.util.*;
  * B < C defines a vertically stretched shape.
  *
  * @author ccrick
- * @version $Id: RigidShape.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: RigidShape.java 1969 2014-04-29 00:29:30Z tgaskins $
  */
 public abstract class RigidShape extends AbstractShape
 {
@@ -320,7 +320,7 @@ public abstract class RigidShape extends AbstractShape
         this.faceCount = faces;
     }
 
-    abstract int getSubdivisions();
+    public abstract int getSubdivisions();
 
     /**
      * Returns the pair of texture coordinate offsets corresponding to the shape face and texture coordinate specified
@@ -774,14 +774,18 @@ public abstract class RigidShape extends AbstractShape
         shapeData.setGlobeStateKey(dc.getGlobe().getGlobeStateKey(dc));
         shapeData.setVerticalExaggeration(dc.getVerticalExaggeration());
 
+        // The extent must be computed before the computeSubdivisions method is called (below) because that
+        // calculation depends on the extent. Normally we couldn't compute the extent before generating the
+        // geometry, but rigid shapes use the shape's fields rather than the computed geometry to compute their
+        // extent. See WWJ-482 for a description of the situation that caused the extent calculation to be moved
+        // to here.
+        shapeData.setExtent(this.computeExtent(dc));
+
         // determine with how many subdivisions the geometry should be tessellated
         computeSubdivisions(dc, shapeData);
 
         // Recompute tessellated positions because the geometry or view may have changed.
         this.makeGeometry(shapeData);
-
-        if (shapeData.getMesh(0).getBuffer(Geometry.VERTEX) != null)
-            shapeData.setExtent(this.computeExtent(dc));
 
         // If the shape is less that a pixel in size, don't render it.
         if (shapeData.getExtent() == null || dc.isSmall(shapeData.getExtent(), 1))
@@ -916,6 +920,11 @@ public abstract class RigidShape extends AbstractShape
 
     /**
      * Computes the shape's extent using a bounding box.
+     *
+     * Code within this class assumes that this shape's extent is computed from the shape's fields rather than its
+     * computed geometry. If you override this method, be sure that this lack of dependency on computed geometry is
+     * adhered to by the overriding method. See doMakeOrderedRenderable above for a description of why this assumption
+     * is made. Also see WWJ-482.
      *
      * @param dc the current drawContext
      *

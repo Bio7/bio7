@@ -15,7 +15,7 @@ import gov.nasa.worldwind.util.*;
 
 /**
  * @author tag
- * @version $Id: KMLLineStringPlacemarkImpl.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: KMLLineStringPlacemarkImpl.java 1770 2013-12-18 02:31:10Z tgaskins $
  */
 public class KMLLineStringPlacemarkImpl extends Path implements KMLRenderable
 {
@@ -182,7 +182,8 @@ public class KMLLineStringPlacemarkImpl extends Path implements KMLRenderable
                 attrs.setUnresolved(true);
 
             attrs.setDrawInterior(((KMLPolyStyle) fillSubStyle).isFill());
-            attrs.setDrawOutline(((KMLPolyStyle) fillSubStyle).isOutline());
+            if (this.isExtrude())
+                attrs.setDrawOutline(((KMLPolyStyle) fillSubStyle).isOutline());
         }
 
         return attrs;

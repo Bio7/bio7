@@ -11,7 +11,7 @@ import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.util.*;
 import org.w3c.dom.*;
 
-import javax.media.opengl.GLProfile;
+import javax.media.opengl.*;
 import javax.xml.xpath.*;
 import java.io.*;
 import java.util.*;
@@ -58,8 +58,8 @@ import java.util.logging.Level;
  * replacement as specified through the Java property exists at run-time and can be found via the classpath,
  * configuration values specified by that mechanism are given precedence over values specified by the new mechanism.
  *
- * @version $Id: Configuration.java 1171 2013-02-11 21:45:02Z dcollins $
  * @author Tom Gaskins
+ * @version $Id: Configuration.java 1739 2013-12-04 03:38:19Z dcollins $
  */
 public class Configuration // Singleton
 {
@@ -645,8 +645,8 @@ public class Configuration // Singleton
 
     /**
      * Returns the highest OpenGL profile available on the current graphics device that is compatible with World Wind.
-     * The returned profile favors hardware acceleration over software acceleration. With JOGL version 2.0-rc11, this
-     * returns the highest available profile from the following list:
+     * The returned profile favors hardware acceleration over software acceleration. With JOGL version 2.0, this returns
+     * the highest available profile from the following list:
      * <p/>
      * <ul> <li>OpenGL compatibility profile 4.x</li> <li>OpenGL compatibility profile 3.x</li> <li>OpenGL profile 1.x
      * up to 3.0</li> </ul>
@@ -656,6 +656,33 @@ public class Configuration // Singleton
     public static GLProfile getMaxCompatibleGLProfile()
     {
         return GLProfile.getMaxFixedFunc(true); // Favor a hardware rasterizer.
+    }
+
+    /**
+     * Returns a {@link javax.media.opengl.GLCapabilities} identifying graphics features required by World Wind. The
+     * capabilities instance returned requests the maximum OpenGL profile supporting GL fixed function operations, a
+     * frame buffer with 8 bits each of red, green, blue and alpha, a 24-bit depth buffer, double buffering, and if the
+     * Java property "gov.nasa.worldwind.stereo.mode" is set to "device", device supported stereo.
+     *
+     * @return a new capabilities instance identifying required graphics features.
+     */
+    public static GLCapabilities getRequiredGLCapabilities()
+    {
+        GLCapabilities caps = new GLCapabilities(getMaxCompatibleGLProfile());
+
+        caps.setAlphaBits(8);
+        caps.setRedBits(8);
+        caps.setGreenBits(8);
+        caps.setBlueBits(8);
+        caps.setDepthBits(24);
+        caps.setDoubleBuffered(true);
+
+        // Determine whether we should request a stereo canvas
+        String stereo = System.getProperty(AVKey.STEREO_MODE);
+        if ("device".equals(stereo))
+            caps.setStereo(true);
+
+        return caps;
     }
 
     /**

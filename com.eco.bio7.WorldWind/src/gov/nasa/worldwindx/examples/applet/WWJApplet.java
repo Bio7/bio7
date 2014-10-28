@@ -3,7 +3,7 @@
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
-package gov.nasa.worldwindx.examples.applet;
+/*package gov.nasa.worldwindx.examples.applet;
 
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
@@ -14,22 +14,22 @@ import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.render.GlobeAnnotation;
 import gov.nasa.worldwind.util.StatusBar;
 import gov.nasa.worldwind.view.orbit.*;
-//import netscape.javascript.JSObject;
+import netscape.javascript.JSObject;
 
 import javax.swing.*;
 import java.awt.*;
 
-/**
+*//**
  * Illustrates the how to display a World Wind <code>{@link WorldWindow}</code> in a Java Applet and interact with the
  * WorldWindow through JavaScript code running in the browser. This class extends <code>{@link JApplet}</code> and
  * embeds a WorldWindowGLCanvas and a StatusBar in the Applet's content pane.
  *
  * @author Patrick Murris
  * @version $Id: WWJApplet.java 1171 2013-02-11 21:45:02Z dcollins $
- */
+ *//*
 public class WWJApplet extends JApplet
 {
-   /* protected WorldWindowGLCanvas wwd;
+    protected WorldWindowGLCanvas wwd;
     protected RenderableLayer labelsLayer;
 
     public WWJApplet()
@@ -276,5 +276,6 @@ public class WWJApplet extends JApplet
         ga.getAttributes().setEffect(AVKey.TEXT_EFFECT_OUTLINE);
         ga.getAttributes().setTextAlign(AVKey.CENTER);
         this.labelsLayer.addRenderable(ga);
-    }*/
+    }
 }
+*/

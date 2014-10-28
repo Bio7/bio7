@@ -61,7 +61,7 @@ import java.util.zip.*;
  * data for these shapes is located in the World Wind project under src/gov/nasa/worldwindx/examples/data/AirspaceBuilder-DemoShapes.zip.
  *
  * @author dcollins
- * @version $Id: AirspaceBuilder.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: AirspaceBuilder.java 1674 2013-10-17 19:22:22Z dcollins $
  */
 public class AirspaceBuilder extends ApplicationTemplate
 {
@@ -1387,18 +1387,6 @@ public class AirspaceBuilder extends ApplicationTemplate
             final File dir = this.fileChooser.getSelectedFile();
             if (dir == null)
                 return;
-
-            if (dir.exists())
-            {
-                try
-                {
-                    WWIO.deleteDirectory(dir);
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
-            }
 
             if (!dir.exists())
             {

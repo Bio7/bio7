@@ -37,7 +37,7 @@ import java.util.List;
  * AbstractSurfaceObject's batch rendering capabilities.
  *
  * @author dcollins
- * @version $Id: AbstractSurfaceShape.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: AbstractSurfaceShape.java 1869 2014-03-14 23:03:14Z dcollins $
  */
 public abstract class AbstractSurfaceShape extends AbstractSurfaceObject implements SurfaceShape, Movable
 {
@@ -76,7 +76,8 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
     protected int maxEdgeIntervals = DEFAULT_MAX_EDGE_INTERVALS;
     // Rendering properties.
     protected List<List<LatLon>> activeGeometry = new ArrayList<List<LatLon>>(); // re-determined each frame
-    protected WWTexture texture; // An optional texture.    
+    protected List<List<LatLon>> activeOutlineGeometry = new ArrayList<List<LatLon>>(); // re-determined each frame
+    protected WWTexture texture; // An optional texture.
     protected Map<Object, CacheEntry> sectorCache = new HashMap<Object, CacheEntry>();
     protected Map<Object, CacheEntry> geometryCache = new HashMap<Object, CacheEntry>();
     protected OGLStackHandler stackHandler = new OGLStackHandler();
@@ -708,6 +709,7 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
     protected void determineActiveGeometry(DrawContext dc, SurfaceTileDrawContext sdc)
     {
         this.activeGeometry.clear();
+        this.activeOutlineGeometry.clear();
 
         List<List<LatLon>> geom = this.getCachedGeometry(dc, sdc);
         if (geom == null)
@@ -720,33 +722,24 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
             String pole = this.containsPole(drawLocations);
             if (pole != null)
             {
-                drawLocations = this.cutAlongDateLine(drawLocations, pole, dc.getGlobe());
+                // Wrap the shape interior around the pole and along the anti-meridian. See WWJ-284.
+                List<LatLon> poleLocations = this.cutAlongDateLine(drawLocations, pole, dc.getGlobe());
+                this.activeGeometry.add(poleLocations);
+                // The outline need only compensate for dateline crossing. See WWJ-452.
+                List<List<LatLon>> datelineLocations = this.repeatAroundDateline(drawLocations);
+                this.activeOutlineGeometry.addAll(datelineLocations);
             }
             else if (LatLon.locationsCrossDateLine(drawLocations))
             {
-                // If the locations cross the international dateline, then reflect the locations on the side opposite
-                // the SurfaceTileDrawContext's sector. This causes all locations to be positive or negative, and render
-                // correctly into a single non dateline-spanning geographic viewport.
-                boolean inWesternHemisphere = sdc.getSector().getMaxLongitude().degrees < 0;
-
-                for (int i = 0; i < drawLocations.size(); i++)
-                {
-                    LatLon ll = drawLocations.get(i);
-
-                    if (inWesternHemisphere && ll.getLongitude().degrees > 0)
-                    {
-                        drawLocations.set(i,
-                            LatLon.fromDegrees(ll.getLatitude().degrees, ll.getLongitude().degrees - 360));
-                    }
-                    else if (!inWesternHemisphere && ll.getLongitude().degrees < 0)
-                    {
-                        drawLocations.set(i,
-                            LatLon.fromDegrees(ll.getLatitude().degrees, ll.getLongitude().degrees + 360));
-                    }
-                }
+                List<List<LatLon>> datelineLocations = this.repeatAroundDateline(drawLocations);
+                this.activeGeometry.addAll(datelineLocations);
+                this.activeOutlineGeometry.addAll(datelineLocations);
             }
-
-            this.activeGeometry.add(drawLocations);
+            else
+            {
+                this.activeGeometry.add(drawLocations);
+                this.activeOutlineGeometry.add(drawLocations);
+            }
         }
     }
 
@@ -885,6 +878,62 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
     }
 
     /**
+     * Returns a list containing two copies of the specified list of locations crossing the dateline: one that extends
+     * across the -180 longitude  boundary and one that extends across the +180 longitude boundary. If the list of
+     * locations does not cross the dateline this returns a list containing a copy of the original list.
+     *
+     * @param locations Locations to repeat. This is list not modified.
+     *
+     * @return A list containing two new location lists, one copy for either side of the date line.
+     */
+    protected List<List<LatLon>> repeatAroundDateline(List<LatLon> locations)
+    {
+        List<List<LatLon>> list = new ArrayList<List<LatLon>>();
+
+        LatLon prev = null;
+        double lonOffset = 0;
+        boolean applyLonOffset = false;
+
+        List<LatLon> locationsA = new ArrayList<LatLon>(locations.size());
+        list.add(locationsA);
+
+        for (LatLon cur : locations)
+        {
+            if (prev != null && LatLon.locationsCrossDateline(prev, cur))
+            {
+                if (lonOffset == 0)
+                    lonOffset = (prev.longitude.degrees < 0 ? -360 : 360);
+
+                applyLonOffset = !applyLonOffset;
+            }
+
+            if (applyLonOffset)
+            {
+                locationsA.add(LatLon.fromDegrees(cur.latitude.degrees, cur.longitude.degrees + lonOffset));
+            }
+            else
+            {
+                locationsA.add(cur);
+            }
+
+            prev = cur;
+        }
+
+        if (lonOffset != 0) // longitude offset is non-zero when the locations cross the dateline
+        {
+            List<LatLon> locationsB = new ArrayList<LatLon>(locations.size());
+            list.add(locationsB);
+
+            for (LatLon cur : locationsA)
+            {
+                locationsB.add(LatLon.fromDegrees(cur.latitude.degrees, cur.longitude.degrees - lonOffset));
+            }
+        }
+
+        return list;
+    }
+
+    /**
      * Determine where a line between two positions crosses a given meridian. The intersection test is performed by
      * intersecting a line in Cartesian space between the two positions with a plane through the meridian. Thus, it is
      * most suitable for working with positions that are fairly close together as the calculation does not take into
@@ -941,7 +990,7 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
     {
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-        if (this.getActiveGeometry().isEmpty())
+        if (this.activeOutlineGeometry.isEmpty())
             return;
 
         Position refPos = this.getReferencePosition();
@@ -950,7 +999,7 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
 
         this.applyOutlineState(dc, this.getActiveAttributes());
 
-        for (List<LatLon> drawLocations : this.getActiveGeometry())
+        for (List<LatLon> drawLocations : this.activeOutlineGeometry)
         {
             if (vertexBuffer == null || vertexBuffer.capacity() < 2 * drawLocations.size())
                 vertexBuffer = Buffers.newDirectFloatBuffer(2 * drawLocations.size());

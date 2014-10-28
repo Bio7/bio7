@@ -5,17 +5,8 @@
  */
 package gov.nasa.worldwind.awt;
 
-import gov.nasa.worldwind.poi.PointOfInterest;
-
 import java.awt.event.*;
 import java.util.*;
-
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.List;
-import org.eclipse.ui.PlatformUI;
-
-import com.eco.bio7.worldwind.WorldWindOptionsView;
-import com.eco.bio7.worldwind.WorldWindView;
 
 /**
  * @author dcollins
@@ -58,7 +49,6 @@ public class KeyEventState implements KeyListener, MouseListener
     protected int modifiersEx;
     protected int mouseModifiers;
     protected int mouseModifiersEx;
-    protected String lookupString;
 
     public KeyEventState()
     {
@@ -145,59 +135,7 @@ public class KeyEventState implements KeyListener, MouseListener
 
     public void keyPressed(KeyEvent e)
     {
-    	
-    	
-    	/* Changed for Bio7! */
-		 this.onKeyEvent(e, KeyEvent.KEY_PRESSED);
-		int keyCode = e.getKeyCode();
-		if (keyCode == KeyEvent.VK_F2) {
-			if (WorldWindView.getInstance().getFull() == null) {
-				WorldWindView.getInstance().createFullscreen();
-			}
-		} else if (keyCode == KeyEvent.VK_ESCAPE) {
-			WorldWindView.getInstance().recreateGLCanvas();
-			if (WorldWindView.getInstance().getFull() != null) {
-				WorldWindView.getInstance().getFull().exit();
-			}
-			WorldWindView.getInstance().setFull(null);
-		}
-
-		else if (keyCode == KeyEvent.VK_F3) {
-
-			Display display = PlatformUI.getWorkbench().getDisplay();
-			display.asyncExec(new Runnable() {
-
-				public void run() {
-					List sc = WorldWindOptionsView.getScrolLList();
-					if (sc.getSelectionIndices().length == 0) {
-						sc.setSelection(0);
-					}
-					String pos = sc.getItem(sc.getSelectionIndex());
-
-					/* Left out the name! */
-					String[] p = pos.split(",");
-					lookupString = (p[1] + "," + p[2]);
-
-					if (lookupString == null || lookupString.length() < 1)
-						return;
-					WorldWindOptionsView inst = WorldWindOptionsView.optionsInstance;
-					java.util.List<PointOfInterest> poi = inst.parseSearchValues(lookupString);
-
-					if (poi != null) {
-						if (poi.size() == 1) {
-							inst.moveToLocation(poi.get(0));
-
-						}
-
-					}
-					sc.setSelection((sc.getSelectionIndex() + 1) % sc.getItemCount());
-				}
-
-			});
-
-		} else if (keyCode == KeyEvent.VK_LEFT) {
-
-		}
+        this.onKeyEvent(e, KeyEvent.KEY_PRESSED);
     }
 
     public void keyReleased(KeyEvent e)

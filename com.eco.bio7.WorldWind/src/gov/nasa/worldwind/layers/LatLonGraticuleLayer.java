@@ -19,7 +19,7 @@ import java.util.ArrayList;
  * Displays the geographic latitude/longitude graticule.
  *
  * @author Patrick Murris
- * @version $Id: LatLonGraticuleLayer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: LatLonGraticuleLayer.java 1690 2013-10-24 19:42:53Z tgaskins $
  */
 public class LatLonGraticuleLayer extends AbstractGraticuleLayer
 {
@@ -56,8 +56,8 @@ public class LatLonGraticuleLayer extends AbstractGraticuleLayer
     }
 
     /**
-     * Sets the graticule division and angular display format. Can be one of {@link Angle#ANGLE_FORMAT_DD} or
-     * {@link Angle#ANGLE_FORMAT_DMS}.
+     * Sets the graticule division and angular display format. Can be one of {@link Angle#ANGLE_FORMAT_DD},
+     * {@link Angle#ANGLE_FORMAT_DMS} of {@link Angle#ANGLE_FORMAT_DM}.
      *
      * @param format the graticule division and angular display format.
      *
@@ -277,6 +277,21 @@ public class LatLonGraticuleLayer extends AbstractGraticuleLayer
                     label = angle.toDMSString();
             }
         }
+        else if (this.getAngleFormat().equals(Angle.ANGLE_FORMAT_DM))
+        {
+            if (resolution >= 1)
+                label = angle.toDecimalDegreesString(0);
+            else
+            {
+                double[] dms = angle.toDMS();
+                if (dms[1] < epsilon && dms[2] < epsilon)
+                    label = String.format("%4d\u00B0", (int) dms[0]);
+                else if (dms[2] < epsilon)
+                    label = String.format("%4d\u00B0 %2d\u2019", (int) dms[0], (int) dms[1]);
+                else
+                    label = angle.toDMString();
+            }
+        }
         else // default to decimal degrees
         {
             if (resolution >= 1)
@@ -452,7 +467,8 @@ public class LatLonGraticuleLayer extends AbstractGraticuleLayer
             this.subTiles = new ArrayList<GraticuleTile>();
             Sector[] sectors = this.sector.subdivide(this.divisions);
             int subDivisions = 10;
-            if (getAngleFormat().equals(Angle.ANGLE_FORMAT_DMS) && (this.level == 0 || this.level == 2))
+            if ((getAngleFormat().equals(Angle.ANGLE_FORMAT_DMS) || getAngleFormat().equals(Angle.ANGLE_FORMAT_DM))
+                && (this.level == 0 || this.level == 2))
                 subDivisions = 6;
             for (Sector s : sectors)
             {

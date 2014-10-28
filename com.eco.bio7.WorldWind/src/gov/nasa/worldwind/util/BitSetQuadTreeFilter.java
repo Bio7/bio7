@@ -21,7 +21,7 @@ import java.util.*;
  * provide the means to retain item information associated with intersecting cells.
  *
  * @author tag
- * @version $Id: BitSetQuadTreeFilter.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: BitSetQuadTreeFilter.java 1939 2014-04-15 22:50:19Z tgaskins $
  */
 public abstract class BitSetQuadTreeFilter
 {
@@ -31,6 +31,7 @@ public abstract class BitSetQuadTreeFilter
     protected int[] powersOf4;
     protected int[] levelSizes; // Cumulative bits at start of each level. Used for position calculations.
     protected int[] path; // valid only during traversal. Maintains the path to a cell from level 0.
+    protected boolean stopped;
 
     /**
      * A method implemented by subclasses and called during tree traversal to perform an operation on an intersecting
@@ -93,6 +94,34 @@ public abstract class BitSetQuadTreeFilter
     }
 
     /**
+     * Stop the current traversal of the quadtree. {@link #start()} must be called before attempting a subsequent
+     * traversal.
+     */
+    public void stop()
+    {
+        this.stopped = true;
+    }
+
+    /**
+     * Indicates whether traversal has been stopped.
+     *
+     * @return <code>true</code> if traversal has been stopped, otherwise false.
+     */
+    public boolean isStopped()
+    {
+        return stopped;
+    }
+
+    /**
+     * Re-initialize for traversal. Must be called to perform subsequent traversals after having called {@link
+     * #stop()}.
+     */
+    public void start()
+    {
+        this.stopped = false;
+    }
+
+    /**
      * An internal method that computes the number of ancestor cells at each level. Level 0 has 0 ancestor cells, level
      * 1 has 4, level 2 has 20 (16 + 4), etc.
      *
@@ -135,12 +164,15 @@ public abstract class BitSetQuadTreeFilter
      */
     protected void testAndDo(int level, int position, double[] cellRegion, double[] itemCoords)
     {
+        if (this.stopped)
+            return;
+
         if (this.intersects(cellRegion, itemCoords) == 0)
             return;
 
         this.path[level] = position;
 
-        if (!this.doOperation(level, position, cellRegion, itemCoords))
+        if (!this.doOperation(level, position, cellRegion, itemCoords) || this.stopped)
             return;
 
         if (level == this.maxLevel)
@@ -156,14 +188,20 @@ public abstract class BitSetQuadTreeFilter
         subRegion[2] = cellRegion[2];
         subRegion[3] = lonMid;
         this.testAndDo(level + 1, 0, subRegion, itemCoords);
+        if (this.stopped)
+            return;
 
         subRegion[2] = lonMid;
         subRegion[3] = cellRegion[3];
         this.testAndDo(level + 1, 1, subRegion, itemCoords);
+        if (this.stopped)
+            return;
 
         subRegion[0] = latMid;
         subRegion[1] = cellRegion[1];
         this.testAndDo(level + 1, 2, subRegion, itemCoords);
+        if (this.stopped)
+            return;
 
         subRegion[2] = cellRegion[2];
         subRegion[3] = lonMid;

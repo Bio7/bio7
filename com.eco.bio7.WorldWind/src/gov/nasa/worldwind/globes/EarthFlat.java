@@ -12,7 +12,7 @@ import gov.nasa.worldwind.avlist.AVKey;
  * href="http://en.wikipedia.org/wiki/World_Geodetic_System" target="_blank">World Geodetic System</a> (WGS84).
  *
  * @author Tom Gaskins
- * @version $Id: EarthFlat.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: EarthFlat.java 1958 2014-04-24 19:25:37Z tgaskins $
  */
 
 public class EarthFlat extends FlatGlobe
@@ -25,7 +25,7 @@ public class EarthFlat extends FlatGlobe
     {
         super(WGS84_EQUATORIAL_RADIUS, WGS84_POLAR_RADIUS, WGS84_ES,
             EllipsoidalGlobe.makeElevationModel(AVKey.EARTH_ELEVATION_MODEL_CONFIG_FILE,
-                "config/Earth/EarthMergedElevationModel.xml"));
+                "config/Earth/EarthElevations2.xml"));
     }
 
     public String toString()

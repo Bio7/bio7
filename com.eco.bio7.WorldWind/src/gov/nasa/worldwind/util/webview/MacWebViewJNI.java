@@ -6,21 +6,31 @@
 package gov.nasa.worldwind.util.webview;
 
 import gov.nasa.worldwind.avlist.AVList;
+import gov.nasa.worldwind.util.Logging;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
+import java.util.logging.Level;
 
 /**
  * @author dcollins
- * @version $Id: MacWebViewJNI.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: MacWebViewJNI.java 1948 2014-04-19 20:02:38Z dcollins $
  */
 public class MacWebViewJNI
 {
     static
     {
-        System.loadLibrary("webview");
+        try
+        {
+            System.loadLibrary("webview");
+        }
+        catch (Throwable t)
+        {
+            String message = Logging.getMessage("WebView.ExceptionCreatingWebView", t);
+            Logging.logger().log(Level.SEVERE, message, t);
+        }
     }
 
     public static native long allocWebViewWindow(Dimension frameSize);

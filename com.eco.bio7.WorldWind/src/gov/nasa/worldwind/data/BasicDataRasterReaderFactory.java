@@ -13,12 +13,13 @@ import gov.nasa.worldwind.util.Logging;
  * Implements a {@link gov.nasa.worldwind.data.DataRasterReaderFactory} with a default list of readers. The list
  * includes the following readers:
  * <pre>
- *  {@link gov.nasa.worldwind.data.GDALDataRasterReader}
- *  {@link gov.nasa.worldwind.data.ImageIORasterReader}
- *  {@link gov.nasa.worldwind.data.GeotiffRasterReader}
  *  {@link gov.nasa.worldwind.data.RPFRasterReader}
- *  {@link gov.nasa.worldwind.data.BILRasterReader}
  *  {@link gov.nasa.worldwind.data.DTEDRasterReader}
+ *  {@link gov.nasa.worldwind.data.GDALDataRasterReader}
+ *  {@link gov.nasa.worldwind.data.GeotiffRasterReader}
+ *  {@link gov.nasa.worldwind.data.BILRasterReader}
+ *  {@link gov.nasa.worldwind.data.ImageIORasterReader}
+
  * </pre>
  * <p/>
  * To specify a different factory, set the {@link gov.nasa.worldwind.avlist.AVKey#DATA_RASTER_READER_FACTORY_CLASS_NAME}
@@ -27,7 +28,7 @@ import gov.nasa.worldwind.util.Logging;
  * gov.nasa.worldwind.avlist.AVList)}, and specify the new class to the configuration.
  *
  * @author tag
- * @version $Id: BasicDataRasterReaderFactory.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: BasicDataRasterReaderFactory.java 1511 2013-07-17 17:34:00Z dcollins $
  */
 public class BasicDataRasterReaderFactory implements DataRasterReaderFactory
 {
@@ -36,10 +37,10 @@ public class BasicDataRasterReaderFactory implements DataRasterReaderFactory
         {
             // NOTE: Update the javadoc above if this list changes.
             new RPFRasterReader(),
+            new DTEDRasterReader(),
             new GDALDataRasterReader(),
             new GeotiffRasterReader(),
             new BILRasterReader(),
-            new DTEDRasterReader(),
             new ImageIORasterReader(),
         };
 

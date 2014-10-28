@@ -65,7 +65,7 @@ import java.util.List;
  * </code>
  *
  * @author dcollins
- * @version $Id: SurfaceObjectTileBuilder.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: SurfaceObjectTileBuilder.java 1824 2014-01-22 22:41:10Z dcollins $
  */
 public class SurfaceObjectTileBuilder
 {
@@ -1047,32 +1047,34 @@ public class SurfaceObjectTileBuilder
      */
     protected boolean needToSplit(DrawContext dc, Tile tile)
     {
-        Vec4[] corners = tile.getSector().computeCornerPoints(dc.getGlobe(), dc.getVerticalExaggeration());
-        Vec4 centerPoint = tile.getSector().computeCenterPoint(dc.getGlobe(), dc.getVerticalExaggeration());
+        // Compute the height in meters of a texel from the specified tile. Take care to convert from the radians to
+        // meters by multiplying by the globe's radius, not the length of a Cartesian point. Using the length of a
+        // Cartesian point is incorrect when the globe is flat.
+        double texelSizeRadians = tile.getLevel().getTexelSize();
+        double texelSizeMeters = dc.getGlobe().getRadius() * texelSizeRadians;
 
-        Vec4 eyePoint = dc.getView().getEyePoint();
-        double d1 = eyePoint.distanceTo3(corners[0]);
-        double d2 = eyePoint.distanceTo3(corners[1]);
-        double d3 = eyePoint.distanceTo3(corners[2]);
-        double d4 = eyePoint.distanceTo3(corners[3]);
-        double d5 = eyePoint.distanceTo3(centerPoint);
+        // Compute the level of detail scale and the field of view scale. These scales are multiplied by the eye
+        // distance to derive a scaled distance that is then compared to the texel size. The level of detail scale is
+        // specified as a power of 10. For example, a detail factor of 3 means split when the cell size becomes more
+        // than one thousandth of the eye distance. The field of view scale is specified as a ratio between the current
+        // field of view and a the default field of view. In a perspective projection, decreasing the field of view by
+        // 50% has the same effect on object size as decreasing the distance between the eye and the object by 50%.
+        double detailScale = Math.pow(10, -this.getSplitScale());
+        double fieldOfViewScale = dc.getView().getFieldOfView().tanHalfAngle() / Angle.fromDegrees(45).tanHalfAngle();
+        fieldOfViewScale = WWMath.clamp(fieldOfViewScale, 0, 1);
 
-        double minDistance = d1;
-        if (d2 < minDistance)
-            minDistance = d2;
-        if (d3 < minDistance)
-            minDistance = d3;
-        if (d4 < minDistance)
-            minDistance = d4;
-        if (d5 < minDistance)
-            minDistance = d5;
+        // Compute the distance between the eye point and the sector in meters, and compute a fraction of that distance
+        // by multiplying the actual distance by the level of detail scale and the field of view scale.
+        double eyeDistanceMeters = tile.getSector().distanceTo(dc, dc.getView().getEyePoint());
+        double scaledEyeDistanceMeters = eyeDistanceMeters * detailScale * fieldOfViewScale;
 
-        // Compute the cell size as a function of the tile's latitude delta in meters and the tile builder's target tile
-        // density in texels.
-        double cellSize = tile.getSector().getDeltaLatRadians() * dc.getGlobe().getRadius()
-            / (double) this.currentTileDimension.height;
-
-        return Math.log10(minDistance) < (this.getSplitScale() + Math.log10(cellSize));
+        // Split when the texel size in meters becomes greater than the specified fraction of the eye distance, also in
+        // meters. Another way to say it is, use the current tile if its texel size is less than the specified fraction
+        // of the eye distance.
+        //
+        // NOTE: It's tempting to instead compare a screen pixel size to the texel size, but that calculation is
+        // window-size dependent and results in selecting an excessive number of tiles when the window is large.
+        return texelSizeMeters > scaledEyeDistanceMeters;
     }
 
     //**************************************************************//

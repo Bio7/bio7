@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author tag
- * @version $Id: StatusBar.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: StatusBar.java 1945 2014-04-18 17:08:43Z tgaskins $
  */
 public class StatusBar extends JPanel implements PositionListener, RenderingListener
 {
@@ -236,9 +236,17 @@ public class StatusBar extends JPanel implements PositionListener, RenderingList
         String s;
         String altitude = Logging.getMessage("term.Altitude");
         if (UNIT_IMPERIAL.equals(elevationUnit))
-            s = String.format(altitude + " %,7d mi", (int) Math.round(WWMath.convertMetersToMiles(metersAltitude)));
-        else // Default to metric units.
+        {
+            double miles = WWMath.convertMetersToMiles(metersAltitude);
+            if (Math.abs(miles) >= 1)
+                s = String.format(altitude + " %,7d mi", (int) Math.round(miles));
+            else
+                s = String.format(altitude + " %,7d ft", (int) Math.round(WWMath.convertMetersToFeet(metersAltitude)));
+        }
+        else if (Math.abs(metersAltitude) >= 1000) // Default to metric units.
             s = String.format(altitude + " %,7d km", (int) Math.round(metersAltitude / 1e3));
+        else
+            s = String.format(altitude + " %,7d m", (int) Math.round(metersAltitude));
         return s;
     }
 

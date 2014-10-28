@@ -12,7 +12,7 @@ import java.nio.*;
 
 /**
  * @author Patrick Murris
- * @version $Id: DBaseField.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: DBaseField.java 1867 2014-03-14 18:52:11Z dcollins $
  */
 public class DBaseField
 {
@@ -24,6 +24,7 @@ public class DBaseField
 
     private String name;
     private String type;
+    private char typeCode;
     private int length;
     private int decimals;
 
@@ -76,11 +77,11 @@ public class DBaseField
         int numRead = dbaseFile.readZeroTerminatedString(buffer, bytes, FIELD_NAME_LENGTH);
         this.name = dbaseFile.decodeString(bytes, numRead);
 
-        char type = (char) buffer.get();
-        this.type = getFieldType(type);
+        this.typeCode = (char) buffer.get();
+        this.type = getFieldType(this.typeCode);
         if (this.type == null)
         {
-            String message = Logging.getMessage("SHP.UnsupportedDBaseFieldType", type);
+            String message = Logging.getMessage("SHP.UnsupportedDBaseFieldType", this.typeCode);
             Logging.logger().log(java.util.logging.Level.SEVERE, message);
             throw new WWRuntimeException(message);
         }
@@ -111,5 +112,15 @@ public class DBaseField
             default:
                 return null;
         }
+    }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(this.name);
+        sb.append("(").append(this.typeCode).append(")");
+
+        return sb.toString();
     }
 }

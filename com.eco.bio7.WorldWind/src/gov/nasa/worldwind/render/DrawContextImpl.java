@@ -27,7 +27,7 @@ import java.util.Queue;
 
 /**
  * @author Tom Gaskins
- * @version $Id: DrawContextImpl.java 1400 2013-06-03 23:55:11Z tgaskins $
+ * @version $Id: DrawContextImpl.java 1774 2013-12-18 21:43:11Z tgaskins $
  */
 public class DrawContextImpl extends WWObjectImpl implements DrawContext
 {
@@ -1274,6 +1274,13 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
             if (renderer.isDrawOutline(this, shape)) // the line might extend outside the interior's projection
                 renderer.drawOutline(this, shape);
 
+            return;
+        }
+
+        // Optimize the outline-only case.
+        if (renderer.isDrawOutline(this, shape) && !renderer.isDrawInterior(this, shape))
+        {
+            renderer.drawOutline(this, shape);
             return;
         }
 

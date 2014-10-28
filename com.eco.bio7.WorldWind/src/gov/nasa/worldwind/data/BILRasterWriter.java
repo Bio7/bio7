@@ -14,7 +14,7 @@ import java.io.*;
 
 /**
  * @author dcollins
- * @version $Id: BILRasterWriter.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: BILRasterWriter.java 1514 2013-07-22 23:17:23Z dcollins $
  */
 public class BILRasterWriter extends AbstractDataRasterWriter
 {
@@ -89,8 +89,8 @@ public class BILRasterWriter extends AbstractDataRasterWriter
         Sector sector = (Sector) values.getValue(AVKey.SECTOR);
         int[] size = (int[]) values.getValue(WorldFile.WORLD_FILE_IMAGE_SIZE);
 
-        double xPixelSize = sector.getDeltaLonDegrees() / size[0];
-        double yPixelSize = -sector.getDeltaLatDegrees() / size[1];
+        double xPixelSize = sector.getDeltaLonDegrees() / (size[0] - 1);
+        double yPixelSize = -sector.getDeltaLatDegrees() / (size[1] - 1);
         double xCoeff = 0.0;
         double yCoeff = 0.0;
         double xLocation = sector.getMinLongitude().degrees;

@@ -31,7 +31,7 @@ import java.util.logging.Level;
 
 /**
  * @author Lado Garakanidze
- * @version $Id: GDALUtils.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: GDALUtils.java 1837 2014-02-05 18:25:20Z tgaskins $
  */
 public class GDALUtils
 {
@@ -56,7 +56,9 @@ public class GDALUtils
 
     static
     {
-        replaceLibraryLoader(); // This must be the first line of initialization
+        // Allow the app or user to prevent library loader replacement.
+        if (System.getProperty("gov.nasa.worldwind.prevent.gdal.loader.replacement") == null)
+            replaceLibraryLoader(); // This must be the first line of initialization
         initialize();
     }
 

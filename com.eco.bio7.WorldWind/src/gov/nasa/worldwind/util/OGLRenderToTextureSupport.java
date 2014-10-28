@@ -37,7 +37,7 @@ import javax.media.opengl.*;
  * rendering commands.<br/> }<br/> finally<br/> {<br/> rttSupport.endRendering(dc);<br/> }<br/> </code>
  *
  * @author dcollins
- * @version $Id: OGLRenderToTextureSupport.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: OGLRenderToTextureSupport.java 1676 2013-10-21 18:32:30Z dcollins $
  */
 public class OGLRenderToTextureSupport
 {
@@ -456,7 +456,7 @@ public class OGLRenderToTextureSupport
 
     protected static String getFramebufferStatusString(int status)
     {
-    	switch (status)
+        switch (status)
         {
             case GL.GL_FRAMEBUFFER_COMPLETE:
                 return Logging.getMessage("OGL.FramebufferComplete");
@@ -468,10 +468,6 @@ public class OGLRenderToTextureSupport
                 return Logging.getMessage("OGL.FramebufferIncompleteDrawBuffer");
             case GL.GL_FRAMEBUFFER_INCOMPLETE_FORMATS:
                 return Logging.getMessage("OGL.FramebufferIncompleteFormats");
-            /*case GL2.GL_FRAMEBUFFER_INCOMPLETE_LAYER_COUNT_EXT:
-                return Logging.getMessage("OGL.FramebufferIncompleteLayerCount");
-            case GL2.GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS_EXT:
-                return Logging.getMessage("OGL.FramebufferIncompleteLayerTargets");*/
             case GL.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
                 return Logging.getMessage("OGL.FramebufferIncompleteMissingAttachment");
             case GL2.GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:

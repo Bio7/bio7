@@ -20,7 +20,7 @@ import java.util.List;
 
 /**
  * @author tag
- * @version $Id: WMSBasicElevationModel.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: WMSBasicElevationModel.java 1957 2014-04-23 23:32:39Z tgaskins $
  */
 public class WMSBasicElevationModel extends BasicElevationModel
 {
@@ -157,7 +157,7 @@ public class WMSBasicElevationModel extends BasicElevationModel
     // TODO: consolidate common code in WMSTiledImageLayer.URLBuilder and WMSBasicElevationModel.URLBuilder
     protected static class URLBuilder implements TileUrlBuilder
     {
-        protected static final String MAX_VERSION = "1.3";
+        protected static final String MAX_VERSION = "1.3.0";
 
         private final String layerNames;
         private final String styleNames;
@@ -174,16 +174,23 @@ public class WMSBasicElevationModel extends BasicElevationModel
             this.styleNames = params.getStringValue(AVKey.STYLE_NAMES);
             this.imageFormat = params.getStringValue(AVKey.IMAGE_FORMAT);
 
-            if (version == null || version.compareTo(MAX_VERSION) >= 0)
+            String coordSystemKey;
+            String defaultCS;
+            if (version == null || WWUtil.compareVersion(version, "1.3.0") >= 0) // version 1.3.0 or greater
             {
                 this.wmsVersion = MAX_VERSION;
-                this.crs = "&crs=CRS:84";
+                coordSystemKey = "&crs=";
+                defaultCS = "CRS:84"; // would like to do EPSG:4326 but that's incompatible with our old WMS server, see WWJ-474
             }
             else
             {
                 this.wmsVersion = version;
-                this.crs = "&srs=EPSG:4326";
+                coordSystemKey = "&srs=";
+                defaultCS = "EPSG:4326";
             }
+
+            String coordinateSystem = params.getStringValue(AVKey.COORDINATE_SYSTEM);
+            this.crs = coordSystemKey + (coordinateSystem != null ? coordinateSystem : defaultCS);
         }
 
         public URL getURL(gov.nasa.worldwind.util.Tile tile, String altImageFormat) throws MalformedURLException
@@ -223,13 +230,30 @@ public class WMSBasicElevationModel extends BasicElevationModel
 
             Sector s = tile.getSector();
             sb.append("&bbox=");
-            sb.append(s.getMinLongitude().getDegrees());
-            sb.append(",");
-            sb.append(s.getMinLatitude().getDegrees());
-            sb.append(",");
-            sb.append(s.getMaxLongitude().getDegrees());
-            sb.append(",");
-            sb.append(s.getMaxLatitude().getDegrees());
+            // The order of the coordinate specification matters, and it changed with WMS 1.3.0.
+            if (WWUtil.compareVersion(this.wmsVersion, "1.1.1") <= 0 || this.crs.contains("CRS:84"))
+            {
+                // 1.1.1 and earlier and CRS:84 use lon/lat order
+                sb.append(s.getMinLongitude().getDegrees());
+                sb.append(",");
+                sb.append(s.getMinLatitude().getDegrees());
+                sb.append(",");
+                sb.append(s.getMaxLongitude().getDegrees());
+                sb.append(",");
+                sb.append(s.getMaxLatitude().getDegrees());
+            }
+            else
+            {
+                // 1.3.0 uses lat/lon ordering
+                sb.append(s.getMinLatitude().getDegrees());
+                sb.append(",");
+                sb.append(s.getMinLongitude().getDegrees());
+                sb.append(",");
+                sb.append(s.getMaxLatitude().getDegrees());
+                sb.append(",");
+                sb.append(s.getMaxLongitude().getDegrees());
+            }
+
             sb.append("&"); // terminate the query string
 
             return new java.net.URL(sb.toString().replace(" ", "%20"));
@@ -301,7 +325,7 @@ public class WMSBasicElevationModel extends BasicElevationModel
         }
 
         // Get the layer's extreme elevations.
-        Double[] extremes = caps.getLayerExtremeElevations(caps, names);
+        Double[] extremes = caps.getLayerExtremeElevations(names);
 
         Double d = (Double) params.getValue(AVKey.ELEVATION_MIN);
         if (d == null && extremes != null && extremes[0] != null)
@@ -428,7 +452,7 @@ public class WMSBasicElevationModel extends BasicElevationModel
             tileWidth, latlons.size() / tileWidth);
 
         this.downloadElevations(tile);
-        tile.setElevations(this.readElevations(tile.getFile().toURI().toURL()));
+        tile.setElevations(this.readElevations(tile.getFile().toURI().toURL()), this);
 
         for (int i = 0; i < latlons.size(); i++)
         {

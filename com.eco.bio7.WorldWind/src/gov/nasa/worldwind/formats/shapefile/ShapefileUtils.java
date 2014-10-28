@@ -17,7 +17,7 @@ import java.util.zip.*;
  * Utilities for working with shapefiles.
  *
  * @author Patrick Murris
- * @version $Id: ShapefileUtils.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ShapefileUtils.java 1740 2013-12-06 21:08:20Z tgaskins $
  */
 public class ShapefileUtils
 {
@@ -148,7 +148,8 @@ public class ShapefileUtils
 
         for (Map.Entry<String, Object> attr : record.getAttributes().getEntries())
         {
-            if (!attr.getKey().trim().toLowerCase().equals("height"))
+            String hKey = attr.getKey().trim().toLowerCase();
+            if (!(hKey.equals("height") || hKey.equals("hgt")))
                 continue;
 
             Object o = attr.getValue();

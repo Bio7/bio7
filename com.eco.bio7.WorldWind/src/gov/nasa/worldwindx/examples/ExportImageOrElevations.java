@@ -31,7 +31,7 @@ import java.util.*;
  * data for the selected region to a GeoTIFF, or "Save image..." to export imagery.
  *
  * @author Lado Garakanidze
- * @version $Id: ExportImageOrElevations.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ExportImageOrElevations.java 1973 2014-04-30 02:02:31Z tgaskins $
  */
 public class ExportImageOrElevations extends ApplicationTemplate
 {
@@ -503,7 +503,7 @@ public class ExportImageOrElevations extends ApplicationTemplate
             ByteBufferRaster raster = (ByteBufferRaster) ByteBufferRaster.createGeoreferencedRaster(elev32);
             // copy elevation values to the elevation raster
             int i = 0;
-            for (int y = 0; y < height; y++)
+            for (int y = height - 1; y >= 0; y--)
             {
                 for (int x = 0; x < width; x++)
                 {

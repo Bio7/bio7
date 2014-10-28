@@ -29,7 +29,7 @@ import java.util.ArrayList;
  * Note: This layer may not be shared among multiple {@link WorldWindow}s.
  *
  * @author Patrick Murris
- * @version $Id: WorldMapLayer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: WorldMapLayer.java 1953 2014-04-21 15:43:35Z tgaskins $
  */
 public class WorldMapLayer extends AbstractLayer
 {
@@ -360,6 +360,11 @@ public class WorldMapLayer extends AbstractLayer
                 }
             }
             gl.glDisable(GL.GL_DEPTH_TEST);
+
+            // Need to assign the width and height here to address the case in which the texture was already
+            // loaded into the cache by another layer or a previous instance of this one.
+            this.iconWidth = iconTexture.getWidth();
+            this.iconHeight = iconTexture.getHeight();
 
             double width = this.getScaledIconWidth();
             double height = this.getScaledIconHeight();

@@ -13,6 +13,7 @@ import gov.nasa.worldwind.util.Logging;
 
 import javax.media.opengl.*;
 import javax.xml.stream.*;
+import java.awt.image.*;
 import java.io.*;
 import java.net.URL;
 import java.util.*;
@@ -24,7 +25,7 @@ import java.util.*;
  * gov.nasa.worldwind.event.SelectEvent}s and will not respond to the user's attempts at navigation when the cursor is
  * over the image. If this is not the desired behavior, disable picking for the layer containing the surface image.
  *
- * @version $Id: SurfaceImage.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: SurfaceImage.java 1518 2013-07-24 20:05:23Z tgaskins $
  */
 public class SurfaceImage extends WWObjectImpl
     implements SurfaceTile, Renderable, PreRenderable, Movable, Disposable, Exportable
@@ -42,6 +43,7 @@ public class SurfaceImage extends WWObjectImpl
     protected List<LatLon> corners;
     protected WWTexture previousSourceTexture;
     protected WWTexture previousGeneratedTexture;
+    protected boolean generatedTextureExpired;
 
     /**
      * A list that contains only a reference to this instance. Used as an argument to the surface tile renderer to
@@ -114,8 +116,10 @@ public class SurfaceImage extends WWObjectImpl
         // from the GPU resource cache on the next frame. This prevents SurfaceImage from leaking memory when the caller
         // continuously specifies the image source to display an animation. We ignore null textures to avoid clearing
         // previous a texture that we're already tracking. If the caller specifies a new image source more than once per
-        // frame, this still keeps track of the previous texture.
-        if (this.sourceTexture != null)
+        // frame, this still keeps track of the previous texture. Clearing of the source texture is necessary only for
+        // BufferedImage sources. Other types will clear automatically through the GPU resource cache. Clearing of the
+        // generated texture is necessary because those are FBO textures and therefore require significant memory.
+        if (this.sourceTexture != null && imageSource instanceof BufferedImage)
             this.previousSourceTexture = this.sourceTexture;
         if (this.generatedTexture != null)
             this.previousGeneratedTexture = this.generatedTexture;
@@ -149,7 +153,7 @@ public class SurfaceImage extends WWObjectImpl
 
         this.sector = Sector.boundingSector(this.corners);
         this.referencePosition = new Position(sector.getCentroid(), 0);
-        this.generatedTexture = null;
+        this.generatedTextureExpired = true;
     }
 
     public Object getImageSource()
@@ -218,12 +222,6 @@ public class SurfaceImage extends WWObjectImpl
 
     public void preRender(DrawContext dc)
     {
-        if (this.previousGeneratedTexture != null)
-        {
-            dc.getTextureCache().remove(this.previousGeneratedTexture);
-            this.previousGeneratedTexture = null;
-        }
-
         if (this.previousSourceTexture != null)
         {
             dc.getTextureCache().remove(this.previousSourceTexture.getImageSource());
@@ -238,8 +236,20 @@ public class SurfaceImage extends WWObjectImpl
         if (this.sourceTexture == null)
             return;
 
-        if (this.generatedTexture == null)
-            this.generatedTexture = this.initializeGeneratedTexture(dc);
+        if (this.generatedTexture == null || this.generatedTextureExpired)
+        {
+            WWTexture gt = this.initializeGeneratedTexture(dc);
+            if (gt != null)
+            {
+                this.generatedTexture = gt;
+                this.generatedTextureExpired = false;
+                if (this.previousGeneratedTexture != null)
+                {
+                    dc.getTextureCache().remove(this.previousGeneratedTexture);
+                    this.previousGeneratedTexture = null;
+                }
+            }
+        }
     }
 
     public void render(DrawContext dc)
@@ -257,7 +267,7 @@ public class SurfaceImage extends WWObjectImpl
         if (this.getSector() == null || !this.getSector().intersects(dc.getVisibleSector()))
             return;
 
-        if (this.sourceTexture == null)
+        if (this.sourceTexture == null && this.generatedTexture == null)
             return;
 
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
@@ -303,22 +313,35 @@ public class SurfaceImage extends WWObjectImpl
     {
         this.sourceTexture = new LazilyLoadedTexture(this.getImageSource(), true);
 
-        // If this SurfaceImage's is configured with a sector there's no need to generate a texture; we can
-        // use the source texture to render the SurfaceImage.
-        if (Sector.isSector(this.corners) && this.sector.isSameSector(this.corners))
-            this.generatedTexture = this.sourceTexture;
     }
 
     protected WWTexture initializeGeneratedTexture(DrawContext dc)
     {
-        FramebufferTexture t = dc.getGLRuntimeCapabilities().isUseFramebufferObject() ?
-            new FBOTexture(this.sourceTexture, this.sector, this.corners)
-            : new FramebufferTexture(this.sourceTexture, this.sector, this.corners);
+        // If this SurfaceImage's is configured with a sector there's no need to generate a texture; we can
+        // use the source texture to render the SurfaceImage.
+        if (Sector.isSector(this.corners) && this.sector.isSameSector(this.corners))
+        {
+            if (this.sourceTexture.bind(dc))
+            {
+                this.generatedTexture = this.sourceTexture;
+                return this.generatedTexture;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        else
+        {
+            FramebufferTexture t = dc.getGLRuntimeCapabilities().isUseFramebufferObject() ?
+                new FBOTexture(this.sourceTexture, this.sector, this.corners)
+                : new FramebufferTexture(this.sourceTexture, this.sector, this.corners);
 
-        // Bind the texture to cause it to generate its internal texture.
-        t.bind(dc);
+            // Bind the texture to cause it to generate its internal texture.
+            t.bind(dc);
 
-        return t;
+            return t;
+        }
     }
 
     // --- Movable interface ---

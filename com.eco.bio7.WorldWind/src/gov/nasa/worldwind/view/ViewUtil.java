@@ -18,7 +18,7 @@ import java.awt.*;
 
 /**
  * @author jym
- * @version $Id: ViewUtil.java 1181 2013-02-15 22:27:10Z dcollins $
+ * @version $Id: ViewUtil.java 1933 2014-04-14 22:54:19Z dcollins $
  */
 public class ViewUtil
 {
@@ -661,6 +661,85 @@ public class ViewUtil
                 globe.getElevation(position.getLatitude(), position.getLongitude()) * dc.getVerticalExaggeration());
 
         return position.getElevation() - surfacePosition.getElevation();
+    }
+
+    /**
+     * Computes the maximum near clip distance for a perspective projection that avoids clipping an object at a given
+     * distance from the eye point. The given distance should specify the smallest distance between the eye and the
+     * object being viewed, but may be an approximation if an exact clip distance is not required.
+     *
+     * @param fieldOfView      The viewport rectangle, in OpenGL screen coordinates.
+     * @param distanceToObject The distance from the perspective eye point to the nearest object, in model coordinates.
+     *
+     * @return The maximum near clip distance, in model coordinates.
+     *
+     * @throws IllegalArgumentException if the field of view is null, or if the distance is negative.
+     */
+    public static double computePerspectiveNearDistance(Angle fieldOfView, double distanceToObject)
+    {
+        if (fieldOfView == null)
+        {
+            String msg = Logging.getMessage("nullValue.FOVIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (distanceToObject < 0)
+        {
+            String msg = Logging.getMessage("generic.DistanceLessThanZero");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        double tanHalfFov = fieldOfView.tanHalfAngle();
+        return distanceToObject / (2 * Math.sqrt(2 * tanHalfFov * tanHalfFov + 1));
+    }
+
+    /**
+     * Computes the near clip distance that corresponds to a specified far clip distance and a resolution at the far
+     * clip distance. This returns zero if either the distance or the resolution are zero.
+     *
+     * @param farDistance   The far clip distance, in model coordinates.
+     * @param farResolution The depth resolution at the far clip plane, in model coordinates.
+     * @param depthBits     The number of bitplanes in the depth buffer. This is typically 16, 24, or 32 for OpenGL
+     *                      depth buffers.
+     *
+     * @return The near clip distance, in model coordinates.
+     *
+     * @throws IllegalArgumentException if either the distance or the resolution are negative, or if the depthBits is
+     *                                  less than one.
+     */
+    public static double computePerspectiveNearDistance(double farDistance, double farResolution, int depthBits)
+    {
+        if (farDistance < 0)
+        {
+            String msg = Logging.getMessage("generic.DistanceLessThanZero");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (farResolution < 0)
+        {
+            String msg = Logging.getMessage("generic.ResolutionLessThanZero");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (depthBits < 1)
+        {
+            String msg = Logging.getMessage("generic.DepthBitsLessThanOne");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (farDistance == 0 || farResolution == 0)
+        {
+            return 0;
+        }
+
+        double maxDepthValue = (1L << depthBits) - 1L;
+
+        return farDistance / (maxDepthValue / (1 - farResolution / farDistance) - maxDepthValue + 1);
     }
 
     /**

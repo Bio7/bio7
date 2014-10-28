@@ -20,7 +20,7 @@ import java.util.*;
  * Parses a WMS Layer element.
  *
  * @author tag
- * @version $Id: WMSLayerCapabilities.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: WMSLayerCapabilities.java 1931 2014-04-14 21:31:43Z tgaskins $
  */
 public class WMSLayerCapabilities extends AbstractXMLEventParser
 {
@@ -425,7 +425,7 @@ public class WMSLayerCapabilities extends AbstractXMLEventParser
         }
     }
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected void doParseEventAttributes(XMLEventParserContext ctx, XMLEvent layerEvent, Object... args)
     {
         Iterator iter = layerEvent.asStartElement().getAttributes();
@@ -488,7 +488,7 @@ public class WMSLayerCapabilities extends AbstractXMLEventParser
         return (d != null && d);
     }
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected void parseExtremeElevations(XMLEventParserContext ctx, XMLEvent layerEvent)
     {
         Iterator iter = layerEvent.asStartElement().getAttributes();
@@ -525,7 +525,7 @@ public class WMSLayerCapabilities extends AbstractXMLEventParser
             if (ctx.isEndElement(event, bboxEvent))
             {
                 if (minLat != null && minLon != null && maxLat != null && maxLon != null)
-                    this.setGeographicBoundingBox(Sector.fromDegrees(minLat, maxLat, minLon, maxLon));
+                    this.setGeographicBoundingBox(Sector.fromDegreesAndClamp(minLat, maxLat, minLon, maxLon));
                 return;
             }
             else if (event.isStartElement())
@@ -558,7 +558,7 @@ public class WMSLayerCapabilities extends AbstractXMLEventParser
         }
     }
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected void parseGeographicBoundingBoxV111(XMLEventParserContext ctx, XMLEvent bboxEvent)
         throws XMLStreamException
     {
@@ -604,7 +604,7 @@ public class WMSLayerCapabilities extends AbstractXMLEventParser
             this.setGeographicBoundingBox(Sector.fromDegrees(minLat, maxLat, minLon, maxLon));
     }
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected void parseScaleHint(XMLEventParserContext ctx, XMLEvent bboxEvent) throws XMLStreamException
     {
         Iterator iter = bboxEvent.asStartElement().getAttributes();
@@ -1209,6 +1209,24 @@ public class WMSLayerCapabilities extends AbstractXMLEventParser
         {
             this.addCRS(c);
         }
+    }
+
+    public boolean hasCoordinateSystem(String coordSys)
+    {
+        if (coordSys == null)
+            return false;
+
+        Collection<String> coordSystems = this.crs != null ? this.crs : this.srs;
+        if (coordSystems == null)
+            return false;
+
+        for (String s : coordSystems)
+        {
+            if (coordSys.equals(s))
+                return true;
+        }
+
+        return false;
     }
 
     @Override

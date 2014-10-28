@@ -5,42 +5,47 @@
  */
 package gov.nasa.worldwindx.examples;
 
-import gov.nasa.worldwind.Configuration;
-import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.event.*;
-import gov.nasa.worldwind.exception.WWRuntimeException;
+import gov.nasa.worldwind.formats.geojson.GeoJSONPoint;
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.globes.*;
+import gov.nasa.worldwind.globes.EarthFlat;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 import gov.nasa.worldwind.view.orbit.*;
-import org.w3c.dom.*;
-import org.xml.sax.SAXException;
 
 import javax.media.opengl.*;
 import javax.swing.*;
-import javax.swing.Timer;
 import javax.swing.border.*;
-import javax.xml.parsers.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.*;
-import java.io.*;
-import java.net.*;
-import java.nio.*;
-import java.text.*;
-import java.util.*;
+import java.nio.DoubleBuffer;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.logging.Level;
 
 /**
  * Using the EarthFlat and FlatOrbitView to display USGS latest earthquakes rss feed.
  *
  * @author Patrick Murris
- * @version $Id: FlatWorldEarthquakes.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: FlatWorldEarthquakes.java 1624 2013-09-19 21:12:00Z dcollins $
  */
 public class FlatWorldEarthquakes extends ApplicationTemplate
 {
+    // See the USGS GeoJSON feed documentation for information on this earthquake data feed:
+    // http://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php
+    protected static final String USGS_EARTHQUAKE_FEED_URL
+        = "http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson";
+    protected static final String USGS_EARTHQUAKE_MAGNITUDE = "mag";
+    protected static final String USGS_EARTHQUAKE_PLACE = "place";
+    protected static final String USGS_EARTHQUAKE_TIME = "time";
+    protected static final long UPDATE_INTERVAL = 300000; // 5 minutes
+    protected static final long MILLISECONDS_PER_MINUTE = 60000;
+    protected static final long MILLISECONDS_PER_HOUR = 60 * MILLISECONDS_PER_MINUTE;
+    protected static final long MILLISECONDS_PER_DAY = 24 * MILLISECONDS_PER_HOUR;
+
     @SuppressWarnings("unchecked")
     public static class AppFrame extends ApplicationTemplate.AppFrame
     {
@@ -49,10 +54,9 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
         private GlobeAnnotation tooltipAnnotation;
         private JButton downloadButton;
         private JLabel statusLabel, latestLabel;
-        private Date lastUpdate;
         private Blinker blinker;
         private Timer updater;
-        private Date lastUpdaterEvent;
+        private long updateTime;
         private JComboBox magnitudeCombo;
 
         public AppFrame()
@@ -62,13 +66,13 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
             // Change atmosphere SkyGradientLayer for SkyColorLayer
             // and set worldmap and compass max active altitude
             LayerList layers = this.getWwd().getModel().getLayers();
-            for(int i = 0; i < layers.size(); i++)
+            for (int i = 0; i < layers.size(); i++)
             {
-                if(layers.get(i) instanceof SkyGradientLayer)
+                if (layers.get(i) instanceof SkyGradientLayer)
                     layers.set(i, new SkyColorLayer());
-                else if(layers.get(i) instanceof WorldMapLayer)
+                else if (layers.get(i) instanceof WorldMapLayer)
                     (layers.get(i)).setMaxActiveAltitude(20e6);
-                else if(layers.get(i) instanceof CompassLayer)
+                else if (layers.get(i) instanceof CompassLayer)
                     (layers.get(i)).setMaxActiveAltitude(20e6);
             }
 
@@ -76,10 +80,11 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
             this.tooltipAnnotation = new GlobeAnnotation("", Position.fromDegrees(0, 0, 0));
             Font font = Font.decode("Arial-Plain-16");
             this.tooltipAnnotation.getAttributes().setFont(font);
-            this.tooltipAnnotation.getAttributes().setSize(new Dimension(270, 0));
+            this.tooltipAnnotation.getAttributes().setSize(new Dimension(400, 0));
             this.tooltipAnnotation.getAttributes().setDistanceMinScale(1);
             this.tooltipAnnotation.getAttributes().setDistanceMaxScale(1);
             this.tooltipAnnotation.getAttributes().setVisible(false);
+            this.tooltipAnnotation.setPickEnabled(false);
             this.tooltipAnnotation.setAlwaysOnTop(true);
 
             // Add control panels
@@ -89,49 +94,46 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
             controls.add(makeEarthquakesPanel());
             // Add flat world projection control panel
             controls.add(new FlatWorldPanel(this.getWwd()));
-            this.getLayerPanel().add(controls,  BorderLayout.SOUTH);
+            this.getLayerPanel().add(controls, BorderLayout.SOUTH);
 
             // Add select listener for earthquake picking
-            this.getWwd().addSelectListener(new SelectListener(){
-                public void selected(SelectEvent event){
+            this.getWwd().addSelectListener(new SelectListener()
+            {
+                public void selected(SelectEvent event)
+                {
                     if (event.getEventAction().equals(SelectEvent.ROLLOVER))
                         highlight(event.getTopObject());
-                }});
+                }
+            });
 
             // Add click-and-go select listener for earthquakes
             this.getWwd().addSelectListener(new ClickAndGoSelectListener(
-                    this.getWwd(), EqAnnotation.class, 1000e3));
+                this.getWwd(), EqAnnotation.class, 1000e3));
 
             // Add updater timer
-            this.updater = new Timer(1000, new ActionListener() {
+            this.updater = new Timer(1000, new ActionListener()
+            {
                 public void actionPerformed(ActionEvent event)
                 {
-                    if (lastUpdaterEvent == null)
-                        lastUpdaterEvent = new Date();
-                    Date now = new Date();
-                    long delay = javax.management.timer.Timer.ONE_MINUTE * 5;
-                    long elapsed = now.getTime() - lastUpdaterEvent.getTime();
-                    if (elapsed >= delay)
+                    long now = System.currentTimeMillis();
+                    long elapsed = now - updateTime;
+                    if (elapsed >= UPDATE_INTERVAL)
                     {
-                        // Auto download every 5 minutes
-                        lastUpdaterEvent = new Date();
+                        updateTime = now;
                         downloadButton.setText("Update");
                         startEarthquakeDownload();
                     }
                     else
                     {
                         // Display remaining time in button text
-                        long remain = delay - elapsed;
-                        int min = (int)Math.floor((double)remain / javax.management.timer.Timer.ONE_MINUTE);
-                        int sec = (int)((remain - min * javax.management.timer.Timer.ONE_MINUTE) / javax.management.timer.Timer.ONE_SECOND);
+                        long remaining = UPDATE_INTERVAL - elapsed;
+                        int min = (int) Math.floor((double) remaining / MILLISECONDS_PER_MINUTE);
+                        int sec = (int) ((remaining - min * MILLISECONDS_PER_MINUTE) / 1000);
                         downloadButton.setText(String.format("Update (in %1$02d:%2$02d)", min, sec));
                     }
                 }
             });
             this.updater.start();
-
-            // Download earthquakes
-            startEarthquakeDownload();
         }
 
         private void highlight(Object o)
@@ -150,8 +152,8 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
             {
                 this.mouseEq = (EqAnnotation) o;
                 this.mouseEq.getAttributes().setHighlighted(true);
-                this.tooltipAnnotation.setText("<p><b>" + this.mouseEq.earthquake.title + "</b></p>" + composeElapsedString(this.mouseEq) + "<br />" + this.mouseEq.earthquake.summary);
-                this.tooltipAnnotation.setPosition(this.mouseEq.earthquake.position);
+                this.tooltipAnnotation.setText(this.composeEarthquakeText(this.mouseEq));
+                this.tooltipAnnotation.setPosition(this.mouseEq.getPosition());
                 this.tooltipAnnotation.getAttributes().setVisible(true);
                 this.getWwd().redraw();
             }
@@ -173,41 +175,73 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
 
         private void setLatestLabel(EqAnnotation ea)
         {
-            this.latestLabel.setText("");
             if (ea != null)
             {
-                String htmlText = "<html>" + composeElapsedString(ea) + "<p><b>" + ea.earthquake.title + "</b></p>" + ea.earthquake.summary + "</html>";
-                htmlText = htmlText.replaceAll("(?i)<img\\s?.*?>", "\n");  // Remove <img> tags
-                this.latestLabel.setText(htmlText);
+                this.latestLabel.setText(this.composeEarthquakeText(ea));
+            }
+            else
+            {
+                this.latestLabel.setText("");
             }
         }
 
-        private String composeElapsedString(EqAnnotation ea)
+        private String composeEarthquakeText(EqAnnotation eqAnnotation)
         {
-            String s = "";
-            if (ea.earthquake.date != null)
+            StringBuilder sb = new StringBuilder();
+            sb.append("<html>");
+
+            Number magnitude = (Number) eqAnnotation.getValue(USGS_EARTHQUAKE_MAGNITUDE);
+            String place = (String) eqAnnotation.getValue(USGS_EARTHQUAKE_PLACE);
+            if (magnitude != null || !WWUtil.isEmpty(place))
             {
-                Date now = new Date();
-                long elapsed = now.getTime() - ea.earthquake.date.getTime();
-                long days = elapsed / javax.management.timer.Timer.ONE_DAY;
-                elapsed -= days * javax.management.timer.Timer.ONE_DAY;
-                long hours = elapsed / javax.management.timer.Timer.ONE_HOUR;
-                elapsed -= hours * javax.management.timer.Timer.ONE_HOUR;
-                long minutes = elapsed / javax.management.timer.Timer.ONE_MINUTE;
-                if(days > 0)
-                {
-                    s = days + (days > 1 ? " days" : " day") + (hours > 0 ? " and " + hours + (hours > 1 ? " hours" : " hour") : "");
-                }
-                else
-                {
-                    if (hours > 0)
-                        s = hours + (hours > 1 ? " hours" : " hour") + (hours < 12 ? " and " + minutes + (minutes > 1 ? " minutes" : " minute") : "");
-                    else
-                        s = minutes + (minutes > 1 ? " minutes" : " minute");
-                }
-                s += " ago";
+                sb.append("<b>");
+
+                if (magnitude != null)
+                    sb.append("M ").append(magnitude).append(" - ");
+
+                if (place != null)
+                    sb.append(place);
+
+                sb.append("</b>");
+                sb.append("<br/>");
             }
-            return s;
+
+            Number time = (Number) eqAnnotation.getValue(USGS_EARTHQUAKE_TIME);
+            if (time != null)
+            {
+                long elapsed = this.updateTime - time.longValue();
+                sb.append(this.timePassedToString(elapsed));
+                sb.append("<br/>");
+            }
+
+            sb.append(String.format("%.2f", eqAnnotation.getPosition().elevation)).append(" km deep");
+
+            sb.append("</html>");
+
+            return sb.toString();
+        }
+
+        protected String timePassedToString(long duration)
+        {
+            if (duration > MILLISECONDS_PER_DAY)
+            {
+                long days = duration / MILLISECONDS_PER_DAY;
+                return days + (days > 1 ? " days ago" : " day ago");
+            }
+            else if (duration > MILLISECONDS_PER_HOUR)
+            {
+                long hours = duration / MILLISECONDS_PER_HOUR;
+                return hours + (hours > 1 ? " hours ago" : " hour ago");
+            }
+            else if (duration > MILLISECONDS_PER_MINUTE)
+            {
+                long minutes = duration / MILLISECONDS_PER_MINUTE;
+                return minutes + (minutes > 1 ? " minutes ago" : " minute ago");
+            }
+            else
+            {
+                return "moments ago";
+            }
         }
 
         private JPanel makeEarthquakesPanel()
@@ -225,15 +259,14 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
                 {
                     if (latestEq != null)
                     {
-                        Position targetPos = latestEq.earthquake.position;
+                        Position targetPos = latestEq.getPosition();
                         BasicOrbitView view = (BasicOrbitView) getWwd().getView();
                         view.addPanToAnimator(
-                                // The elevation component of 'targetPos' here is not the surface elevation,
-                                // so we ignore it when specifying the view center position.
-                                new Position(targetPos, 0),
-                                Angle.ZERO, Angle.ZERO, 1000e3);
+                            // The elevation component of 'targetPos' here is not the surface elevation,
+                            // so we ignore it when specifying the view center position.
+                            new Position(targetPos, 0),
+                            Angle.ZERO, Angle.ZERO, 1000e3);
                     }
-
                 }
             });
             zoomPanel.add(btZoom);
@@ -257,7 +290,6 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
                         // so we ignore it when specifying the view center position.
                         new Position(targetPos, 0),
                         Angle.ZERO, Angle.ZERO, elevation);
-
                 }
             });
             viewPanel.add(btReset);
@@ -291,12 +323,12 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
             JPanel magnitudePanel = new JPanel(new GridLayout(0, 2, 0, 0));
             magnitudePanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
             magnitudePanel.add(new JLabel("Min Magnitude:"));
-            magnitudeCombo = new JComboBox(new String[] {"2.5", "3", "4", "5", "6", "7" });
+            magnitudeCombo = new JComboBox(new String[] {"2.5", "3", "4", "5", "6", "7"});
             magnitudeCombo.addActionListener(new ActionListener()
             {
                 public void actionPerformed(ActionEvent event)
                 {
-                    applyFilter(Double.parseDouble((String) magnitudeCombo.getSelectedItem()));
+                    applyMagnitudeFilter(Double.parseDouble((String) magnitudeCombo.getSelectedItem()));
                 }
             });
             magnitudePanel.add(magnitudeCombo);
@@ -329,7 +361,7 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
             JPanel latestPanel = new JPanel(new GridLayout(0, 1, 0, 0));
             latestPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
             this.latestLabel = new JLabel();
-            this.latestLabel.setPreferredSize(new Dimension(200, 140));
+            this.latestLabel.setPreferredSize(new Dimension(200, 60));
             this.latestLabel.setVerticalAlignment(SwingConstants.TOP);
             latestPanel.add(this.latestLabel);
             controlPanel.add(latestPanel);
@@ -344,27 +376,25 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
 
         private void startEarthquakeDownload()
         {
-            new Thread(new Runnable() {
+            WorldWind.getScheduledTaskService().addTask(new Runnable()
+            {
                 public void run()
                 {
-                    downloadEarthquakes();
+                    downloadEarthquakes(USGS_EARTHQUAKE_FEED_URL);
                 }
-            }, "Earthquakes download").start();
+            });
         }
 
-        private void downloadEarthquakes()
+        private void downloadEarthquakes(String earthquakeFeedUrl)
         {
             // Disable download button and update status label
             if (this.downloadButton != null)
                 this.downloadButton.setEnabled(false);
             if (this.statusLabel != null)
-                this.statusLabel.setText("Downloading earthquakes...");
-            // Reset updater last event date
-            lastUpdaterEvent = new Date();
-            // Download and parse
-            RenderableLayer newLayer = (RenderableLayer)buildEarthquakeLayer();
-            // Update layer list and status
-            if (newLayer.getRenderables().iterator().hasNext())
+                this.statusLabel.setText("Updating earthquakes...");
+
+            RenderableLayer newLayer = (RenderableLayer) buildEarthquakeLayer(earthquakeFeedUrl);
+            if (newLayer.getNumRenderables() > 0)
             {
                 LayerList layers = this.getWwd().getModel().getLayers();
                 if (this.eqLayer != null)
@@ -373,117 +403,49 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
                 this.eqLayer.addRenderable(this.tooltipAnnotation);
                 insertBeforePlacenames(this.getWwd(), this.eqLayer);
                 this.getLayerPanel().update(this.getWwd());
-                this.lastUpdate = new Date();
+                this.applyMagnitudeFilter(Double.parseDouble((String) magnitudeCombo.getSelectedItem()));
+
                 if (this.statusLabel != null)
-                    this.statusLabel.setText(this.lastUpdate.toString());
-                applyFilter(Double.parseDouble((String) magnitudeCombo.getSelectedItem()));
+                    this.statusLabel.setText("Updated " + new SimpleDateFormat("EEE h:mm aa").format(new Date())); // now
             }
             else
             {
                 if (this.statusLabel != null)
-                    this.statusLabel.setText("Download failed!");
+                    this.statusLabel.setText("No earthquakes");
             }
+
             if (this.downloadButton != null)
                 this.downloadButton.setEnabled(true);
         }
 
-        private Layer buildEarthquakeLayer()
+        private Layer buildEarthquakeLayer(String earthquakeFeedUrl)
         {
-            final String USGS_EARTHQUAKES_M25_7DAYS = "http://earthquake.usgs.gov/eqcenter/catalogs/7day-M2.5.xml";
+            GeoJSONLoader loader = new GeoJSONLoader()
+            {
+                @Override
+                protected void addRenderableForPoint(GeoJSONPoint geom, RenderableLayer layer, AVList properties)
+                {
+                    try
+                    {
+                        addEarthquake(geom, layer, properties);
+                    }
+                    catch (Exception e)
+                    {
+                        Logging.logger().log(Level.WARNING, "Exception adding earthquake", e);
+                    }
+                }
+            };
+
             RenderableLayer layer = new RenderableLayer();
             layer.setName("Earthquakes");
-            try
-            {
-                // Get rss feed
-                URL url = new URL(USGS_EARTHQUAKES_M25_7DAYS);
-                ByteBuffer bb = WWIO.readURLContentToBuffer(url);
-                // Parse feed and add renderables to layer
-                parseFile(layer, WWIO.saveBufferToTempFile(bb, ".xml"));
-            }
-            catch (Exception e)
-            {
-                String message = Logging.getMessage("generic.ExceptionWhileReading", e);
-                Logging.logger().severe(message);
-            }
+            loader.addSourceGeometryToLayer(earthquakeFeedUrl, layer);
 
             return layer;
         }
 
-        private void parseFile(RenderableLayer layer, File file)
-        {
-            if (file == null)
-            {
-                String message = Logging.getMessage("nullValue.FileIsNull");
-                Logging.logger().severe(message);
-                throw new IllegalArgumentException(message);
-            }
-
-            try
-            {
-                DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
-                docBuilderFactory.setNamespaceAware(false);
-                DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-                Document doc = docBuilder.parse(file);
-
-                parseDoc(layer, doc);
-
-            }
-            catch (ParserConfigurationException e)
-            {
-                String message = Logging.getMessage("GeoRSS.ParserConfigurationException");
-                Logging.logger().log(Level.SEVERE, message, e);
-                throw new WWRuntimeException(message, e);
-            }
-            catch (IOException e)
-            {
-                String message = Logging.getMessage("GeoRSS.IOExceptionParsing", file.getPath());
-                Logging.logger().log(Level.SEVERE, message, e);
-                throw new WWRuntimeException(message, e);
-            }
-            catch (SAXException e)
-            {
-                String message = Logging.getMessage("GeoRSS.IOExceptionParsing", file.getPath());
-                Logging.logger().log(Level.SEVERE, message, e);
-                throw new WWRuntimeException(message, e);
-            }
-        }
-
-        private void parseDoc(RenderableLayer layer, Document xmlDoc)
-        {
-            if (xmlDoc == null)
-            {
-                String message = Logging.getMessage("nullValue.DocumentIsNull");
-                Logging.logger().severe(message);
-                throw new IllegalArgumentException(message);
-            }
-
-            // Entries
-            NodeList nodes = xmlDoc.getElementsByTagName("entry");
-            if (nodes != null && nodes.getLength() > 0)
-            {
-                this.latestEq = null;
-                for (int i = 0; i < nodes.getLength(); i++)
-                {
-                    Node entry = nodes.item(i);
-                    Earthquake eq = new Earthquake(entry);
-                    addEarthquake(layer, eq);
-                }
-            }
-        }
-
         private AnnotationAttributes eqAttributes;
-        private BufferedImage eqIcons[] =
-        {
-                PatternFactory.createPattern(PatternFactory.PATTERN_CIRCLE, .8f, Color.RED),
-                PatternFactory.createPattern(PatternFactory.PATTERN_CIRCLE, .8f, Color.ORANGE),
-                PatternFactory.createPattern(PatternFactory.PATTERN_CIRCLE, .8f, Color.YELLOW),
-                PatternFactory.createPattern(PatternFactory.PATTERN_CIRCLE, .8f, Color.GREEN),
-                PatternFactory.createPattern(PatternFactory.PATTERN_CIRCLE, .8f, Color.BLUE),
-                PatternFactory.createPattern(PatternFactory.PATTERN_CIRCLE, .8f, Color.GRAY),
-                PatternFactory.createPattern(PatternFactory.PATTERN_CIRCLE, .8f, Color.BLACK),
-        };
         private Color eqColors[] =
-        {
+            {
                 Color.RED,
                 Color.ORANGE,
                 Color.YELLOW,
@@ -491,9 +453,9 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
                 Color.BLUE,
                 Color.GRAY,
                 Color.BLACK,
-        };
+            };
 
-        private void addEarthquake(RenderableLayer layer, Earthquake earthquake)
+        private void addEarthquake(GeoJSONPoint geom, RenderableLayer layer, AVList properties)
         {
             if (eqAttributes == null)
             {
@@ -506,64 +468,67 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
                 eqAttributes.setCornerRadius(0);
                 eqAttributes.setBackgroundColor(new Color(0, 0, 0, 0));
             }
-            EqAnnotation ea = new EqAnnotation(earthquake, eqAttributes);
-            int days = 6;
-            if (earthquake.date != null) {
-                // Compute days since
-                Date now = new Date();
-                days = (int) ((now.getTime() - earthquake.date.getTime()) / javax.management.timer.Timer.ONE_DAY);
-                // Update latestEq
+
+            EqAnnotation eq = new EqAnnotation(geom.getPosition(), eqAttributes);
+            eq.setAltitudeMode(WorldWind.CLAMP_TO_GROUND); // GeoJON point's 3rd coordinate indicates depth
+            eq.setValues(properties);
+
+            Number eqMagnitude = (Number) eq.getValue(USGS_EARTHQUAKE_MAGNITUDE);
+            Number eqTime = (Number) eq.getValue(USGS_EARTHQUAKE_TIME);
+
+            int elapsedDays = 6;
+            if (eqTime != null)
+            {
+                // Compute days elapsed since earthquake event
+                elapsedDays = (int) ((this.updateTime - eqTime.longValue()) / MILLISECONDS_PER_DAY);
+
+                // Update latest earthquake event
                 if (this.latestEq != null)
                 {
-                    if (this.latestEq.earthquake.date.getTime() < earthquake.date.getTime())
-                        this.latestEq = ea;
+                    Number latestEqTime = (Number) this.latestEq.getValue(USGS_EARTHQUAKE_TIME);
+                    if (latestEqTime.longValue() < eqTime.longValue())
+                        this.latestEq = eq;
                 }
                 else
-                    this.latestEq = ea;
-            }
-            ea.getAttributes().setImageSource(eqIcons[Math.min(days, eqIcons.length - 1)]);
-            ea.getAttributes().setTextColor(eqColors[Math.min(days, eqColors.length - 1)]);
-            ea.getAttributes().setScale(earthquake.magnitude / 10);
-            layer.addRenderable(ea);
-        }
-
-        private static Node findChildByName(Node parent, String localName)
-        {
-            NodeList children = parent.getChildNodes();
-            if (children == null || children.getLength() < 1)
-                return null;
-            for (int i = 0; i < children.getLength(); i++)
-            {
-                String ln = children.item(i).getNodeName();
-                if (ln != null && ln.equals(localName))
-                    return children.item(i);
+                {
+                    this.latestEq = eq;
+                }
             }
 
-            return null;
+            eq.getAttributes().setTextColor(eqColors[Math.min(elapsedDays, eqColors.length - 1)]);
+            eq.getAttributes().setScale(eqMagnitude.doubleValue() / 10);
+            layer.addRenderable(eq);
         }
 
-        private void applyFilter(double minMagnitude)
+        private void applyMagnitudeFilter(double minMagnitude)
         {
             this.latestEq = null;
             setBlinker(null);
             setLatestLabel(null);
+
             Iterable<Renderable> renderables = eqLayer.getRenderables();
             for (Renderable r : renderables)
             {
                 if (r instanceof EqAnnotation)
                 {
-                    EqAnnotation ea = (EqAnnotation)r;
-                    ea.getAttributes().setVisible(ea.earthquake.magnitude >= minMagnitude);
-                    if (ea.getAttributes().isVisible())
+                    EqAnnotation eq = (EqAnnotation) r;
+                    Number eqMagnitude = (Number) eq.getValue(USGS_EARTHQUAKE_MAGNITUDE);
+                    Number eqTime = (Number) eq.getValue(USGS_EARTHQUAKE_TIME);
+
+                    boolean meetsMagnitudeCriteria = eqMagnitude.doubleValue() >= minMagnitude;
+                    eq.getAttributes().setVisible(meetsMagnitudeCriteria);
+                    if (meetsMagnitudeCriteria)
                     {
                         if (this.latestEq != null)
                         {
-                            if (this.latestEq.earthquake.date != null && ea.earthquake.date != null)
-                                if (this.latestEq.earthquake.date.getTime() < ea.earthquake.date.getTime())
-                                    this.latestEq = ea;
+                            Number latestEqTime = (Number) this.latestEq.getValue(USGS_EARTHQUAKE_TIME);
+                            if (latestEqTime != null && eqTime != null && latestEqTime.longValue() < eqTime.longValue())
+                                this.latestEq = eq;
                         }
                         else
-                            this.latestEq = ea;
+                        {
+                            this.latestEq = eq;
+                        }
                     }
                 }
             }
@@ -572,65 +537,11 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
             this.getWwd().redraw();
         }
 
-        private class Earthquake
-        {
-            public String title;
-            public String summary;
-            public Position position;
-            public double elevation;
-            public Date date;
-            public double magnitude;
-            public String link;
-
-            public Earthquake(Node entry)
-            {
-                Node node =  findChildByName(entry, "title");
-                if(node != null)
-                {
-                    this.title = node.getTextContent();
-                    this.magnitude = Double.parseDouble(title.split(",")[0].substring(2));
-                }
-                node = findChildByName(entry, "georss:point");
-                if (node != null)
-                {
-                    String pointString = node.getTextContent();
-                    String[] coord = pointString.split(" ");
-                    this.position = Position.fromDegrees(Double.parseDouble(coord[0]), Double.parseDouble(coord[1]), 0);
-                }
-                node = findChildByName(entry, "georss:elev");
-                if (node != null)
-                    this.elevation = Double.parseDouble(node.getTextContent());
-                node = findChildByName(entry, "summary");
-                if (node != null)
-                    this.summary = node.getTextContent();
-                node = findChildByName(entry, "link");
-                if (node != null)
-                    this.link = node.getAttributes().getNamedItem("href").getTextContent();
-                node = findChildByName(entry, "updated");
-                if (node != null)
-                {
-                    DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    df.setCalendar(Calendar.getInstance(TimeZone.getTimeZone("UTC")));
-                    try
-                    {
-                        this.date = df.parse(node.getTextContent().replaceAll("[TZ]", " ").trim());
-                    }
-                    catch (Exception e)
-                    {
-                        String message = Logging.getMessage("generic.CannotParse", e);
-                        Logging.logger().severe(message);
-                    }
-                }
-            }
-        }
-
         private class EqAnnotation extends GlobeAnnotation
         {
-            public Earthquake earthquake;
-            public EqAnnotation(Earthquake earthquake, AnnotationAttributes defaults)
+            public EqAnnotation(Position position, AnnotationAttributes defaults)
             {
-                super ("", earthquake.position, defaults);
-                this.earthquake = earthquake;
+                super("", position, defaults);
             }
 
             protected void applyScreenTransform(DrawContext dc, int x, int y, int width, int height, double scale)
@@ -644,6 +555,7 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
 
             // Override annotation drawing for a simple circle
             private DoubleBuffer shapeBuffer;
+
             protected void doDraw(DrawContext dc, int width, int height, double opacity, Position pickPosition)
             {
                 // Draw colored circle around screen point - use annotation's text color
@@ -659,7 +571,7 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
                 if (this.shapeBuffer == null)
                     this.shapeBuffer = FrameFactory.createShapeBuffer(AVKey.SHAPE_ELLIPSE, size, size, 0, null);
                 GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
-                gl.glTranslated(-size/2, -size/2, 0);
+                gl.glTranslated(-size / 2, -size / 2, 0);
                 FrameFactory.drawBuffer(dc, GL.GL_TRIANGLE_FAN, this.shapeBuffer);
             }
         }
@@ -678,11 +590,12 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
                 this.annotation = ea;
                 this.initialScale = this.annotation.getAttributes().getScale();
                 this.initialOpacity = this.annotation.getAttributes().getOpacity();
-                this.timer = new Timer(delay, new ActionListener() {
+                this.timer = new Timer(delay, new ActionListener()
+                {
                     public void actionPerformed(ActionEvent event)
                     {
-                        annotation.getAttributes().setScale(initialScale * (1f + 7f * ((float)step / (float)steps)));
-                        annotation.getAttributes().setOpacity(initialOpacity * (1f - ((float)step / (float)steps)));
+                        annotation.getAttributes().setScale(initialScale * (1f + 7f * ((float) step / (float) steps)));
+                        annotation.getAttributes().setOpacity(initialOpacity * (1f - ((float) step / (float) steps)));
                         step = step == steps ? 0 : step + 1;
                         getWwd().redraw();
                     }
@@ -703,8 +616,6 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
                 timer.start();
             }
         }
-
-
     } // End AppFrame
 
     // --- Main -------------------------------------------------------------------------
