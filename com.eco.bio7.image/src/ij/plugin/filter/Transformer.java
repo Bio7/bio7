@@ -6,8 +6,6 @@ import ij.measure.Calibration;
 import java.awt.*;
 import java.awt.image.*;
 
-import com.eco.bio7.image.CanvasView;
-
 /** Implements the Flip and Rotate commands in the Image/Transform submenu. */
 public class Transformer implements PlugInFilter {
 	
@@ -64,12 +62,11 @@ public class Transformer implements PlugInFilter {
 	    	double pixelWidth = cal.pixelWidth;
 	    	cal.pixelWidth = cal.pixelHeight;
 	    	cal.pixelHeight = pixelWidth;
-	    	
-	    	/*Changed for Bio7!*/
-	    	CanvasView.getCurrent().invalidate();
-			CanvasView.getCurrent().validate();
-
-			
+			if (!cal.getXUnit().equals(cal.getYUnit())) {
+				String xUnit = cal.getXUnit();
+				cal.setXUnit(cal.getYUnit());
+				cal.setYUnit(xUnit);
+			}
 			return;
 		}
 	}

@@ -852,6 +852,10 @@ public class ShortProcessor extends ImageProcessor {
 
 	/** Creates a new ShortProcessor containing a scaled copy of this image or selection. */
 	public ImageProcessor resize(int dstWidth, int dstHeight) {
+		if (roiWidth==dstWidth && roiHeight==dstHeight)
+			return crop();
+		if ((width==1||height==1) && interpolationMethod!=NONE)
+			return resizeLinearly(dstWidth, dstHeight);
 		double srcCenterX = roiX + roiWidth/2.0;
 		double srcCenterY = roiY + roiHeight/2.0;
 		double dstCenterX = dstWidth/2.0;
@@ -915,7 +919,7 @@ public class ShortProcessor extends ImageProcessor {
 	}
 	
 	/** Returns a duplicate of this image. */ 
-	public synchronized ImageProcessor duplicate() { 
+	public ImageProcessor duplicate() { 
 		ImageProcessor ip2 = createProcessor(width, height); 
 		short[] pixels2 = (short[])ip2.getPixels(); 
 		System.arraycopy(pixels, 0, pixels2, 0, width*height); 
@@ -1020,7 +1024,9 @@ public class ShortProcessor extends ImageProcessor {
 		System.arraycopy(pixels2, 0, pixels, 0, pixels.length);
 	}
 
-    public void noise(double range) {
+    /** Adds pseudorandom, Gaussian ("normally") distributed values, with
+    	mean 0.0 and the specified standard deviation, to this image or ROI. */
+    public void noise(double standardDeviation) {
 		Random rnd=new Random();
 		int v, ran;
 		boolean inRange;
@@ -1029,7 +1035,7 @@ public class ShortProcessor extends ImageProcessor {
 			for (int x=roiX; x<(roiX+roiWidth); x++) {
 				inRange = false;
 				do {
-					ran = (int)Math.round(rnd.nextGaussian()*range);
+					ran = (int)Math.round(rnd.nextGaussian()*standardDeviation);
 					v = (pixels[i] & 0xffff) + ran;
 					inRange = v>=0 && v<=65535;
 					if (inRange) pixels[i] = (short)v;

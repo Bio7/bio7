@@ -66,12 +66,12 @@ public class HyperStackConverter implements PlugIn {
 			throw new IllegalArgumentException("Virtual stacks must by in XYCZT order");
 		(new HyperStackConverter()).shuffle(imp, intOrder);
 		ImagePlus imp2 = imp;
-		int intMode = CompositeImage.COMPOSITE;
+		int intMode = IJ.COMPOSITE;
 		if (mode!=null) {
 			if (mode.equalsIgnoreCase("color"))
-				intMode = CompositeImage.COLOR;
+				intMode = IJ.COLOR;
 			else if (mode.equalsIgnoreCase("grayscale"))
-				intMode = CompositeImage.GRAYSCALE;
+				intMode = IJ.GRAYSCALE;
 		}
 		if (c>1) {
 			LUT[] luts = imp.getLuts();
@@ -149,11 +149,8 @@ public class HyperStackConverter implements PlugIn {
 				imp2.getProcessor().resetMinAndMax();
 			}
 			imp2.setOpenAsHyperStack(true);
-			/* Changed for Bio7! */
-			/*if (imp.getWindow()!=null || imp!=imp2)
-				new StackWindow(imp2);*/
-			imp.hide();
-			new StackWindow(imp2);
+			if (imp.getWindow()!=null || imp!=imp2)
+				new StackWindow(imp2);
 			if (imp!=imp2) {
 				imp2.setOverlay(imp.getOverlay());
 				imp.hide();
@@ -235,8 +232,7 @@ public class HyperStackConverter implements PlugIn {
 			new StackWindow(imp2);
 		if (imp!=imp2) {
 			imp2.setOverlay(imp.getOverlay());
-			/*Changed for Bio7!*/
-			//imp.hide();
+			imp.hide();
 		}
 	}
 	

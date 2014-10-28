@@ -3,14 +3,10 @@ import ij.IJ;
 import java.awt.*;
 import java.awt.event.*;
 
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-
 /** A modal dialog box that displays information. Based on the
 	InfoDialogclass from "Java in a Nutshell" by David Flanagan. */
-public class MessageDialog extends JDialog implements ActionListener, KeyListener, WindowListener {
-	protected JButton button;
+public class MessageDialog extends Dialog implements ActionListener, KeyListener, WindowListener {
+	protected Button button;
 	protected MultiLineLabel label;
 	private boolean escapePressed;
 	
@@ -20,14 +16,14 @@ public class MessageDialog extends JDialog implements ActionListener, KeyListene
 		if (message==null) message = "";
 		label = new MultiLineLabel(message);
 		if (!IJ.isLinux()) label.setFont(new Font("SansSerif", Font.PLAIN, 14));
-		JPanel panel = new JPanel();
+		Panel panel = new Panel();
 		panel.setLayout(new FlowLayout(FlowLayout.CENTER, 15, 15));
 		panel.add(label);
 		add("Center", panel);
-		button = new JButton("  OK  ");
+		button = new Button("  OK  ");
 		button.addActionListener(this);
 		button.addKeyListener(this);
-		panel = new JPanel();
+		panel = new Panel();
 		panel.setLayout(new FlowLayout());
 		panel.add(button);
 		add("South", panel);

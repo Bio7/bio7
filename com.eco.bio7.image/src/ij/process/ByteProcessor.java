@@ -166,7 +166,7 @@ public class ByteProcessor extends ImageProcessor {
 	}
 	
 	/** Returns a duplicate of this image. */ 
-	public synchronized ImageProcessor duplicate() { 
+	public ImageProcessor duplicate() { 
 		ImageProcessor ip2 = createProcessor(width, height); 
 		byte[] pixels2 = (byte[])ip2.getPixels(); 
 		System.arraycopy(pixels, 0, pixels2, 0, width*height); 
@@ -228,8 +228,8 @@ public class ByteProcessor extends ImageProcessor {
 		return snapshotPixels;
 	}
 
-	/** Fills pixels that are within roi and part of the mask.
-		Does nothing if the mask is not the same size as the ROI. */
+	/** Sets pixels that are within roi and part of the mask to the foreground
+		color. Does nothing if the mask is not the same size as the ROI. */
 	public void fill(ImageProcessor mask) {
 		if (mask==null)
 			{fill(); return;}
@@ -398,20 +398,6 @@ public class ByteProcessor extends ImageProcessor {
 		raster = null;
 		image = null;
 	}
-
-	/*
-	public void getRow(int x, int y, int[] data, int length) {
-		int j = y*width+x;
-		for (int i=0; i<length; i++)
-			data[i] = pixels[j++];
-	}
-
-	public void putRow(int x, int y, int[] data, int length) {
-		int j = y*width+x;
-		for (int i=0; i<length; i++)
-			pixels[j++] = (byte)data[i];
-	}
-	*/
 	
 	/** Returns the smallest displayed pixel value. */
 	public double getMin() {
@@ -847,7 +833,9 @@ public class ByteProcessor extends ImageProcessor {
 		filter(MEDIAN_FILTER);
 	}
 
-    public void noise(double range) {
+    /** Adds pseudorandom, Gaussian ("normally") distributed values, with
+    	mean 0.0 and the specified standard deviation, to this image or ROI. */
+    public void noise(double standardDeviation) {
 		Random rnd=new Random();
 		int v, ran;
 		boolean inRange;
@@ -856,17 +844,14 @@ public class ByteProcessor extends ImageProcessor {
 			for (int x=roiX; x<(roiX+roiWidth); x++) {
 				inRange = false;
 				do {
-					ran = (int)Math.round(rnd.nextGaussian()*range);
+					ran = (int)Math.round(rnd.nextGaussian()*standardDeviation);
 					v = (pixels[i] & 0xff) + ran;
 					inRange = v>=0 && v<=255;
 					if (inRange) pixels[i] = (byte)v;
 				} while (!inRange);
 				i++;
 			}
-			if (y%20==0)
-				showProgress((double)(y-roiY)/roiHeight);
 		}
-		showProgress(1.0);
     }
 
 	/** Scales the image or selection using the specified scale factors.
@@ -968,6 +953,8 @@ public class ByteProcessor extends ImageProcessor {
 	public ImageProcessor resize(int dstWidth, int dstHeight) {
 		if (roiWidth==dstWidth && roiHeight==dstHeight)
 			return crop();
+		if ((width==1||height==1) && interpolationMethod!=NONE)
+			return resizeLinearly(dstWidth, dstHeight);
 		double srcCenterX = roiX + roiWidth/2.0;
 		double srcCenterY = roiY + roiHeight/2.0;
 		double dstCenterX = dstWidth/2.0;

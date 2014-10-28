@@ -87,6 +87,8 @@ import java.util.Comparator;
 	
 	/** Converts carriage returns to line feeds. */
 	public static String fixNewLines(String s) {
+		if (s==null)
+			return null;
 		char[] chars = s.toCharArray();
 		for (int i=0; i<chars.length; i++)
 			{if (chars[i]=='\r') chars[i] = '\n';}
@@ -123,24 +125,39 @@ import java.util.Comparator;
 		return parseDouble(s, Double.NaN);
 	}
 	
-	/** Returns the number of decimal places need to display two numbers. */
-	public static int getDecimalPlaces(double n1, double n2) {
-		if (Math.round(n1)==n1 && Math.round(n2)==n2)
+	/** Returns the number of decimal places needed to display a 
+		number, or -2 if exponential notation should be used. */
+	public static int getDecimalPlaces(double n) {
+		if ((int)n==n || Double.isNaN(n))
 			return 0;
-		else {
-			n1 = Math.abs(n1);
-			n2 = Math.abs(n2);
-		    double n = n1<n2&&n1>0.0?n1:n2;
-		    double diff = Math.abs(n2-n1);
-		    if (diff>0.0 && diff<n) n = diff;		    
-			int digits = 2;
-			if (n<100.0) digits = 3;
-			if (n<0.1) digits = 4;
-			if (n<0.01) digits = 5;
-			if (n<0.001) digits = 6;
-			if (n<0.0001) digits = 7;
+		String s = ""+n;
+		if (s.contains("E"))
+			return -2;
+		while (s.endsWith("0"))
+			s = s.substring(0,s.length()-1);
+		int index = s.indexOf(".");
+		if (index==-1) return 0;
+		int digits = s.length() - index - 1;
+		if (digits>4) digits=4;
+		return digits;
+	}
+	
+	/** Returns the number of decimal places needed to display two numbers,
+		or -2 if exponential notation should be used. */
+	public static int getDecimalPlaces(double n1, double n2) {
+		if ((int)n1==n1 && (int)n2==n2)
+			return 0;
+		int digits = getDecimalPlaces(n1);
+		int digits2 = getDecimalPlaces(n2);
+		if (digits==0)
+			return digits2;
+		if (digits2==0)
 			return digits;
-		}
+		if (digits<0 || digits2<0)
+			return digits;
+		if (digits2>digits)
+			digits = digits2;
+		return digits;
 	}
 	
 	/** Splits a string into substrings using the default delimiter set, 

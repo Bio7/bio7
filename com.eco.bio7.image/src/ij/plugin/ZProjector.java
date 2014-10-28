@@ -1,6 +1,6 @@
 package ij.plugin; 
 import ij.*; 
-import ij.gui.GenericDialog; 
+import ij.gui.*; 
 import ij.process.*;
 import ij.plugin.filter.*; 
 import ij.measure.Measurements;
@@ -70,13 +70,13 @@ public class ZProjector implements PlugIn {
     }
 
     public void setStartSlice(int slice) {
-		if(imp==null || slice < 1 || slice > imp.getStackSize())
+		if (imp==null || slice < 1 || slice > imp.getStackSize())
 	    	return; 
 		startSlice = slice; 
     }
 
     public void setStopSlice(int slice) {
-		if(imp==null || slice < 1 || slice > imp.getStackSize())
+		if (imp==null || slice < 1 || slice > imp.getStackSize())
 	    	return; 
 		stopSlice = slice; 
     }
@@ -129,23 +129,25 @@ public class ZProjector implements PlugIn {
 			stopSlice  = stackSize;
 			
 		// Build control dialog
-		GenericDialog gd = buildControlDialog(startSlice,stopSlice); 
+		GenericDialog gd = buildControlDialog(startSlice,stopSlice);
 		gd.showDialog(); 
-		if(gd.wasCanceled()) return; 
+		if (gd.wasCanceled()) return; 
 
 		if (!imp.lock()) return;   // exit if in use
 		long tstart = System.currentTimeMillis();
-		setStartSlice((int)gd.getNextNumber()); 
+		gd.setSmartRecording(true);
+		setStartSlice((int)gd.getNextNumber());
 		setStopSlice((int)gd.getNextNumber()); 
+		gd.setSmartRecording(false);
 		method = gd.getNextChoiceIndex();
 		Prefs.set(METHOD_KEY, method);
 		if (isHyperstack) {
 			allTimeFrames = imp.getNFrames()>1&&imp.getNSlices()>1?gd.getNextBoolean():false;
 			doHyperStackProjection(allTimeFrames);
 		} else if (imp.getType()==ImagePlus.COLOR_RGB)
-			doRGBProjection();
+			doRGBProjection(true);
 		else 
-			doProjection(); 
+			doProjection(true); 
 
 		if (arg.equals("") && projImage!=null) {
 			long tstop = System.currentTimeMillis();
@@ -162,6 +164,14 @@ public class ZProjector implements PlugIn {
     public void doRGBProjection() {
 		doRGBProjection(imp.getStack());
     }
+
+	//Added by Marcel Boeglin 2013.09.23
+	public void doRGBProjection(boolean handleOverlay) {
+		doRGBProjection(imp.getStack());
+		Overlay overlay = imp.getOverlay();
+		if (handleOverlay && overlay!=null)
+			projImage.setOverlay(projectRGBHyperStackRois(overlay));
+	}
 
     private void doRGBProjection(ImageStack stack) {
         ImageStack[] channels = ChannelSplitter.splitRGB(stack, true);
@@ -242,25 +252,31 @@ public class ZProjector implements PlugIn {
 		// more general use of ImageProcessor's getPixelValue and
 		// putPixel methods.
 		int ptype; 
-		if(stack.getProcessor(1) instanceof ByteProcessor) ptype = BYTE_TYPE; 
-		else if(stack.getProcessor(1) instanceof ShortProcessor) ptype = SHORT_TYPE; 
-		else if(stack.getProcessor(1) instanceof FloatProcessor) ptype = FLOAT_TYPE; 
+		if (stack.getProcessor(1) instanceof ByteProcessor) ptype = BYTE_TYPE; 
+		else if (stack.getProcessor(1) instanceof ShortProcessor) ptype = SHORT_TYPE; 
+		else if (stack.getProcessor(1) instanceof FloatProcessor) ptype = FLOAT_TYPE; 
 		else {
 	    	IJ.error("Z Project", "Non-RGB stack required"); 
 	    	return; 
 		}
 
-		// Do the projection.
-		for(int n=startSlice; n<=stopSlice; n+=increment) {
-	    	IJ.showStatus("ZProjection " + color +": " + n + "/" + stopSlice);
-	    	IJ.showProgress(n-startSlice, stopSlice-startSlice);
+		// Do the projection
+		int sliceCount = 0;
+		for (int n=startSlice; n<=stopSlice; n+=increment) {
+			if (!isHyperstack) {
+	    		IJ.showStatus("ZProjection " + color +": " + n + "/" + stopSlice);
+	    		IJ.showProgress(n-startSlice, stopSlice-startSlice);
+	    	}
 	    	projectSlice(stack.getPixels(n), rayFunc, ptype);
+	    	sliceCount++;
 		}
 
 		// Finish up projection.
 		if (method==SUM_METHOD) {
+			if (imp.getCalibration().isSigned16Bit())
+				fp.subtract(sliceCount*32768.0);
 			fp.resetMinAndMax();
-			projImage = new ImagePlus(makeTitle(),fp); 
+			projImage = new ImagePlus(makeTitle(), fp);
 		} else if (method==SD_METHOD) {
 			rayFunc.postProcess();
 			fp.resetMinAndMax();
@@ -273,6 +289,33 @@ public class ZProjector implements PlugIn {
 		if(projImage==null)
 	    	IJ.error("Z Project", "Error computing projection.");
     }
+
+	//Added by Marcel Boeglin 2013.09.23
+	/** Performs actual projection using specified method. If handleOverlay,
+	adds stack overlay elements from startSlice to stopSlice to projection*/
+	public void doProjection(boolean handleOverlay) {
+		doProjection();
+		Overlay overlay = imp.getOverlay();
+		if (handleOverlay && overlay!=null)
+			projImage.setOverlay(projectStackRois(overlay));
+	}
+	
+	//Added by Marcel Boeglin 2013.09.23
+	private Overlay projectStackRois(Overlay overlay) {
+		if (overlay==null) return null;
+		Overlay overlay2 = overlay.create();
+		Roi roi;
+		int s;
+		for (Roi r : overlay.toArray()) {
+			s = r.getPosition();
+			roi = (Roi)r.clone();
+			if (s>=startSlice && s<=stopSlice || s==0) {
+				roi.setPosition(s);
+				overlay2.add(roi);
+			}
+		}
+		return overlay2;
+	}
 
 	public void doHyperStackProjection(boolean allTimeFrames) {
 		int start = startSlice;
@@ -292,6 +335,8 @@ public class ZProjector implements PlugIn {
 		increment = channels;
 		boolean rgb = imp.getBitDepth()==24;
 		for (int frame=firstFrame; frame<=lastFrame; frame++) {
+			IJ.showStatus(""+ (frame-firstFrame) + "/" + (lastFrame-firstFrame));
+			IJ.showProgress(frame-firstFrame, lastFrame-firstFrame);
 			for (int channel=1; channel<=channels; channel++) {
 				startSlice = (frame-1)*channels*slices + (start-1)*channels + channel;
 				stopSlice = (frame-1)*channels*slices + (stop-1)*channels + channel;
@@ -312,9 +357,75 @@ public class ZProjector implements PlugIn {
         }
         if (frames>1)
         	projImage.setOpenAsHyperStack(true);
+		Overlay overlay = imp.getOverlay();
+		if (overlay!=null) {
+			startSlice = start;
+			stopSlice = stop;
+			if (imp.getType()==ImagePlus.COLOR_RGB)
+				projImage.setOverlay(projectRGBHyperStackRois(overlay));
+			else
+				projImage.setOverlay(projectHyperStackRois(overlay));
+		}
         IJ.showProgress(1, 1);
 	}
 	
+	//Added by Marcel Boeglin 2013.09.22
+    private Overlay projectRGBHyperStackRois(Overlay overlay) {
+        if (overlay==null) return null;
+		int frames = projImage.getNFrames();
+		int t1 = imp.getFrame();
+        Overlay overlay2 = overlay.create();
+        Roi roi;
+        int c, z, t;
+		for (Roi r : overlay.toArray()) {
+			c = r.getCPosition();
+			z = r.getZPosition();
+			t = r.getTPosition();
+			roi = (Roi)r.clone();
+			if (z>=startSlice && z<=stopSlice || z==0 || c==0 || t==0) {
+				if (frames==1 && t!=t1 && t!=0)//current time frame
+					continue;
+				roi.setPosition(t);
+				overlay2.add(roi);
+			}
+		}
+		return overlay2;
+    }
+    
+	//Added by Marcel Boeglin 2013.09.22
+	private Overlay projectHyperStackRois(Overlay overlay) {
+		if (overlay==null) return null;
+		int t1 = imp.getFrame();
+		int channels = projImage.getNChannels();
+		int slices = 1;
+		int frames = projImage.getNFrames();
+		Overlay overlay2 = overlay.create();
+		Roi roi;
+		int c, z, t;
+		int size = channels * slices * frames;
+		for (Roi r : overlay.toArray()) {
+			c = r.getCPosition();
+			z = r.getZPosition();
+			t = r.getTPosition();
+			roi = (Roi)r.clone();
+			if (size==channels) {//current time frame
+				if (z>=startSlice && z<=stopSlice && t==t1 || c==0) {
+					roi.setPosition(c);
+					overlay2.add(roi);
+				}
+			}
+			else if (size==frames*channels) {//all time frames
+				if (z>=startSlice && z<=stopSlice)
+					roi.setPosition(c, 1, t);
+				else if (z==0)
+					roi.setPosition(c, 0, t);
+				else continue;
+				overlay2.add(roi);
+			}
+		}
+		return overlay2;
+	}
+
 	private void doHSRGBProjection(ImagePlus rgbImp) {
 		ImageStack stack = rgbImp.getStack();
 		ImageStack stack2 = new ImageStack(stack.getWidth(), stack.getHeight());

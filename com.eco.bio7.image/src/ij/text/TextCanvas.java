@@ -3,9 +3,7 @@ import ij.util.Java2;
 import java.awt.*;
 import java.awt.event.*;
 
-import javax.swing.JPanel;
-
-class TextCanvas extends JPanel {
+class TextCanvas extends Canvas {
 
 	TextPanel tp;
 	Font fFont;
@@ -28,13 +26,12 @@ class TextCanvas extends JPanel {
 		tp.adjustHScroll();
     	iImage = null;
     }
-    /*Changed for Bio7!*/
-	/*public void update(Graphics g) {
+
+	public void update(Graphics g) {
 		paint(g);
-	}*/
+	}
   
-	public void paintComponent(Graphics g) {
-		super.paintComponent(g);
+	public void paint(Graphics g) {
 		if(tp==null || g==null) return;
 		Dimension d = getSize();
 		int iWidth = d.width;

@@ -7,7 +7,7 @@ import java.util.*;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
-import ij.util.StringSorter;
+import ij.util.*;
 import ij.plugin.frame.Recorder;
 import ij.plugin.FolderOpener;
 import ij.plugin.FileInfoVirtualStack;
@@ -49,7 +49,6 @@ public class ImportDialog {
     	options = Prefs.getInt(OPTIONS,0);
     	whiteIsZero = (options&WHITE_IS_ZERO)!=0;
     	intelByteOrder = (options&INTEL_BYTE_ORDER)!=0;
-    	//openAll = (options&OPEN_ALL)!=0;
     }
 	
     public ImportDialog(String fileName, String directory) {
@@ -64,6 +63,7 @@ public class ImportDialog {
 	boolean showDialog() {
 		if (choiceSelection>=types.length)
 			choiceSelection = 0;
+		getDimensionsFromName(fileName);
 		GenericDialog gd = new GenericDialog("Import>Raw...", IJ.getInstance());
 		gd.addChoice("Image type:", types, types[choiceSelection]);
 		gd.addNumericField("Width:", width, 0, 6, "pixels");
@@ -95,7 +95,6 @@ public class ImportDialog {
 	
 	/** Opens all the images in the directory. */
 	void openAll(String[] list, FileInfo fi) {
-		//StringSorter.sort(list);
 		FolderOpener fo = new FolderOpener();
 		list = fo.trimFileList(list);
 		list = fo.sortFileList(list);
@@ -104,6 +103,7 @@ public class ImportDialog {
 		ImagePlus imp=null;
 		double min = Double.MAX_VALUE;
 		double max = -Double.MAX_VALUE;
+		int digits = 0;
 		for (int i=0; i<list.length; i++) {
 			if (list[i].startsWith("."))
 				continue;
@@ -113,14 +113,25 @@ public class ImportDialog {
 				IJ.log(list[i] + ": unable to open");
 			else {
 				if (stack==null)
-					stack = imp.createEmptyStack();	
+					stack = imp.createEmptyStack();
 				try {
-					ImageProcessor ip = imp.getProcessor();
-					if (ip.getMin()<min) min = ip.getMin();
-					if (ip.getMax()>max) max = ip.getMax();
-					stack.addSlice(list[i], ip);
-				}
-				catch(OutOfMemoryError e) {
+					ImageStack stack2 = imp.getStack();
+					int slices = stack2.getSize();
+					if (digits==0) {
+						digits = 2;
+						if (slices>99) digits=3;
+						if (slices>999) digits=4;
+						if (slices>9999) digits=5;
+					}
+					for (int n=1; n<=slices; n++) {
+						ImageProcessor ip = stack2.getProcessor(n);
+						if (ip.getMin()<min) min = ip.getMin();
+						if (ip.getMax()>max) max = ip.getMax();
+						String label = list[i];
+						if (slices>1) label += "-" + IJ.pad(n,digits);
+						stack.addSlice(label, ip);
+					}
+				} catch(OutOfMemoryError e) {
 					IJ.outOfMemory("OpenAll");
 					stack.trim();
 					break;
@@ -240,8 +251,6 @@ public class ImportDialog {
 			options |= WHITE_IS_ZERO;
 		if (intelByteOrder)
 			options |= INTEL_BYTE_ORDER;
-		//if (openAll)
-		//	options |= OPEN_ALL;
 		prefs.put(OPTIONS, Integer.toString(options));
 	}
 	
@@ -250,5 +259,52 @@ public class ImportDialog {
 	public static FileInfo getLastFileInfo() {
 		return lastFileInfo;
 	}
+	
+	private void getDimensionsFromName(String name) {
+		if (name==null) return;
+		int lastUnderscore = name.lastIndexOf("_");
+		String name2 = name;
+		if (lastUnderscore>=0)
+			name2 = name.substring(lastUnderscore);
+		char[] chars = new char[name2.length()];
+		for (int i=0; i<name2.length(); i++)  // change non-digits to spaces
+			chars[i] = Character.isDigit(name2.charAt(i))?name2.charAt(i):' ';
+		name2 = new String(chars);
+		String[] numbers = Tools.split(name2);
+		int n = numbers.length;
+		if (n<2 || n>3) return;
+		int w = (int)Tools.parseDouble(numbers[0],0);
+		if (w<10) return;
+		int h = (int)Tools.parseDouble(numbers[1],0);
+		if (h<10) return;
+		width = w;
+		height = h;
+		nImages = 1;
+		if (n==3) {
+			int d = (int)Tools.parseDouble(numbers[2],0);
+			if (d>0)
+				nImages = d;
+		}
+		guessFormat(directory, name);
+	}
 
+	private void guessFormat(String dir, String name) {
+		if (dir==null) return;
+		File file = new File(dir+name);
+		long imageSize = (long)width*height*nImages;
+		long fileSize = file.length();
+		if (fileSize==4*imageSize) {
+			choiceSelection = 5; // 32-bit real
+			intelByteOrder = true;
+		} else if (fileSize==2*imageSize) {
+			choiceSelection = 2;	// 16-bit unsigned
+			intelByteOrder = true;
+		} else if (fileSize==3*imageSize) {
+			choiceSelection = 7;	// 24-bit RGB
+		} else if (fileSize==imageSize)
+			choiceSelection = 0;	// 8-bit
+		if (name.endsWith("be.raw"))
+			intelByteOrder = false;
+	}
+	
 }

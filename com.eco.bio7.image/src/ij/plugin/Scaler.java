@@ -44,7 +44,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			newWindow = true;
 			processStack = true;
 		}
-		if (ip.getWidth()>1 && ip.getHeight()>1)
+		if ((ip.getWidth()>1 && ip.getHeight()>1) || newWindow)
 			ip.setInterpolationMethod(interpolationMethod);
 		else
 			ip.setInterpolationMethod(ImageProcessor.NONE);
@@ -103,8 +103,11 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		}
 		if (imp.isHyperStack())
 			imp2.setOpenAsHyperStack(true);
-		if (newDepth>0 && newDepth!=oldDepth)
-			imp2 = (new Resizer()).zScale(imp2, newDepth, interpolationMethod);
+		if (newDepth>0 && newDepth!=oldDepth) {
+			Resizer resizer = new Resizer();
+			resizer.setAverageWhenDownsizing(averageWhenDownsizing);
+			imp2 = resizer.zScale(imp2, newDepth, interpolationMethod);
+		}
 		if (imp2!=null) {
 			imp2.show();
 			imp2.changes = true;

@@ -96,11 +96,11 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 					imp2.setOpenAsHyperStack(true);
 			}
 			if (channels>1 && fi.description!=null) {
-				int mode = CompositeImage.COMPOSITE;
+				int mode = IJ.COMPOSITE;
 				if (fi.description.indexOf("mode=color")!=-1)
-					mode = CompositeImage.COLOR;
+					mode = IJ.COLOR;
 				else if (fi.description.indexOf("mode=gray")!=-1)
-					mode = CompositeImage.GRAYSCALE;
+					mode = IJ.GRAYSCALE;
 				imp2 = new CompositeImage(imp2, mode);
 			}
 		}
@@ -144,11 +144,18 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 	public ImageProcessor getProcessor(int n) {
 		if (n<1 || n>nImages)
 			throw new IllegalArgumentException("Argument out of range: "+n);
-		if (IJ.debugMode) IJ.log("FileInfoVirtualStack: "+n+", "+info[n-1].getOffset());
 		//if (n>1) IJ.log("  "+(info[n-1].getOffset()-info[n-2].getOffset()));
 		info[n-1].nImages = 1; // why is this needed?
-		FileOpener fo = new FileOpener(info[n-1]);
-		ImagePlus imp = fo.open(false);
+		ImagePlus imp = null;
+		if (IJ.debugMode) {
+			long t0 = System.currentTimeMillis();
+			FileOpener fo = new FileOpener(info[n-1]);
+			imp = fo.open(false);
+			IJ.log("FileInfoVirtualStack: "+n+", offset="+info[n-1].getOffset()+", "+(System.currentTimeMillis()-t0)+"ms");
+		} else {
+			FileOpener fo = new FileOpener(info[n-1]);
+			imp = fo.open(false);
+		}
 		if (imp!=null)
 			return imp.getProcessor();
 		else {

@@ -5,11 +5,6 @@ import ij.gui.*;
 import java.awt.*;
 import java.awt.event.*;
 
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-
 /** Displays the ImageJ Channels window. */
 public class Channels extends PlugInDialog implements PlugIn, ItemListener, ActionListener {
 
@@ -20,12 +15,12 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 	private static String moreLabel = "More "+'\u00bb';
 	//private String[] title = {"Red", "Green", "Blue"};
 	private Choice choice;
-	private JCheckBox[] checkbox;
-	private JButton moreButton;
+	private Checkbox[] checkbox;
+	private Button moreButton;
 	private static Channels instance;
 	private int id;
 	private static Point location;
-	private JPopupMenu pm;
+	private PopupMenu pm;
 
 	public Channels() {
 		super("Channels");
@@ -59,9 +54,9 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 		int nCheckBoxes = ci!=null?ci.getNChannels():3;
 		if (nCheckBoxes>CompositeImage.MAX_CHANNELS)
 			nCheckBoxes = CompositeImage.MAX_CHANNELS;
-		checkbox = new JCheckBox[nCheckBoxes];
+		checkbox = new Checkbox[nCheckBoxes];
 		for (int i=0; i<nCheckBoxes; i++) {
-			checkbox[i] = new JCheckBox("Channel "+(i+1), true);
+			checkbox[i] = new Checkbox("Channel "+(i+1), true);
 			c.insets = new Insets(0, 25, i<nCheckBoxes-1?0:10, 5);
 			c.gridy = y++;
 			add(checkbox[i], c);
@@ -71,12 +66,12 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 		c.insets = new Insets(0, 15, 10, 15);
 		c.fill = GridBagConstraints.NONE;
 		c.gridy = y++;
-		moreButton = new JButton(moreLabel);
+		moreButton = new Button(moreLabel);
 		moreButton.addActionListener(this);
 		add(moreButton, c);
 		update();
 
-		pm=new JPopupMenu();
+		pm=new PopupMenu();
 		for (int i=0; i<menuItems.length; i++)
 			addPopupItem(menuItems[i]);
 		add(pm);
@@ -107,12 +102,12 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 		}
 		boolean[] active = ci.getActiveChannels();
 		for (int i=0; i<checkbox.length; i++)
-			checkbox[i].setSelected(active[i]);
+			checkbox[i].setState(active[i]);
 		int index = 0;
 		switch (ci.getMode()) {
-			case CompositeImage.COMPOSITE: index=0; break;
-			case CompositeImage.COLOR: index=1; break;
-			case CompositeImage.GRAYSCALE: index=2; break;
+			case IJ.COMPOSITE: index=0; break;
+			case IJ.COLOR: index=1; break;
+			case IJ.GRAYSCALE: index=2; break;
 		}
 		choice.select(index);
 	}
@@ -123,7 +118,7 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 	}
 	
 	void addPopupItem(String s) {
-		JMenuItem mi=new JMenuItem(s);
+		MenuItem mi=new MenuItem(s);
 		mi.addActionListener(this);
 		pm.add(mi);
 	}
@@ -162,9 +157,9 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 		if (source==choice) {
 			int index = ((Choice)source).getSelectedIndex();
 			switch (index) {
-				case 0: ci.setMode(CompositeImage.COMPOSITE); break;
-				case 1: ci.setMode(CompositeImage.COLOR); break;
-				case 2: ci.setMode(CompositeImage.GRAYSCALE); break;
+				case 0: ci.setMode(IJ.COMPOSITE); break;
+				case 1: ci.setMode(IJ.COLOR); break;
+				case 2: ci.setMode(IJ.GRAYSCALE); break;
 			}
 			ci.updateAndDraw();
 			if (Recorder.record) {
@@ -176,18 +171,19 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 				}
 				Recorder.record("Stack.setDisplayMode", mode);
 			}
-		} else if (source instanceof JCheckBox) {
+		} else if (source instanceof Checkbox) {
 			for (int i=0; i<checkbox.length; i++) {
-				JCheckBox cb = (JCheckBox)source;
+				Checkbox cb = (Checkbox)source;
 				if (cb==checkbox[i]) {
-					if (ci.getMode()==CompositeImage.COMPOSITE) {
+					if (ci.getMode()==IJ.COMPOSITE) {
 						boolean[] active = ci.getActiveChannels();
-						active[i] = cb.isSelected();
+						active[i] = cb.getState();
 						if (Recorder.record) {
 							String str = "";
 							for (int c=0; c<ci.getNChannels(); c++)
 								str += active[c]?"1":"0";
 							Recorder.record("Stack.setActiveChannels", str);
+							Recorder.record("//Stack.toggleChannel", imp.getChannel());
 						}
 					} else {
 						imp.setPosition(i+1, imp.getSlice(), imp.getFrame());

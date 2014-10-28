@@ -10,8 +10,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.Vector;
 
-import javax.swing.JCheckBox;
-
 /**
 This plugin implements the Analyze/Distribution command.
 It reads the data from the ResultsTable and plots a frequency histogram.
@@ -22,13 +20,13 @@ public class Distribution implements PlugIn, TextListener {
 	static boolean autoBinning = true;
 	static int nBins = 10;
 	static String range = "0-0";
-	JCheckBox checkbox;
+	Checkbox checkbox;
 	TextField nBinsField, rangeField;
 	String defaultNBins, defaultRange;
 
 	public void run(String arg) {
 		ResultsTable rt=ResultsTable.getResultsTable();
-		int count = rt.getCounter();
+		int count = rt.size();
 		if (count==0) {
 			IJ.error("Distribution", "The \"Results\" table is empty");
 			return;
@@ -54,12 +52,16 @@ public class Distribution implements PlugIn, TextListener {
 		gd.addStringField ("and range:", range);
 
 		Vector v = gd.getNumericFields();
-		nBinsField = (TextField)v.elementAt(0);
-		nBinsField.addTextListener(this);
+		if (v!=null) {
+			nBinsField = (TextField)v.elementAt(0);
+			nBinsField.addTextListener(this);
+		}
 		v = gd.getStringFields();
-		rangeField = (TextField)v.elementAt(0);
-		rangeField.addTextListener(this);
-		checkbox = (JCheckBox)(gd.getCheckboxes().elementAt(0));
+		if (v!=null) {
+			rangeField = (TextField)v.elementAt(0);
+			rangeField.addTextListener(this);
+		}
+		checkbox = (Checkbox)(gd.getCheckboxes().elementAt(0));
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -119,9 +121,9 @@ public class Distribution implements PlugIn, TextListener {
 
 	public void textValueChanged(TextEvent e) {
 		if (!defaultNBins.equals(nBinsField.getText()))
-			checkbox.setSelected(false);
+			checkbox.setState(false);
 		if (!defaultRange.equals(rangeField.getText()))
-			checkbox.setSelected(false);
+			checkbox.setState(false);
 	}
 
 	void stats(int nc, float[] data, float[] pars){

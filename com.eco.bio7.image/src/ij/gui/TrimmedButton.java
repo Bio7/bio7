@@ -1,6 +1,5 @@
 package ij.gui;
 import java.awt.*;
-
 import javax.swing.JButton;
 
 /** This is an extended Button class used to reduce the width of the HUGE buttons on Mac OS X. */

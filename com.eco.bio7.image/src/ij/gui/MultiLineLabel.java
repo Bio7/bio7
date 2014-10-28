@@ -2,11 +2,9 @@ package ij.gui;
 import java.awt.*;
 import java.util.*;
 
-import javax.swing.JPanel;
-
 /**Custom component for displaying multiple lines. Based on 
    MultiLineLabel class from "Java in a Nutshell" by David Flanagan.*/
-public class MultiLineLabel extends JPanel {
+public class MultiLineLabel extends Canvas {
 	String[] lines;
 	int num_lines;
 	int margin_width = 6;
@@ -18,17 +16,22 @@ public class MultiLineLabel extends JPanel {
     
     // Breaks the specified label up into an array of lines.
     public MultiLineLabel(String label) {
-    	this(label, 0);
+        init(label);
     }
     
 
     public MultiLineLabel(String label, int minimumWidth) {
-        StringTokenizer t = new StringTokenizer(label, "\n");
+        init(label);
+        min_width = minimumWidth;
+    }
+
+    private void init(String text) {
+        StringTokenizer t = new StringTokenizer(text, "\n");
         num_lines = t.countTokens();
         lines = new String[num_lines];
         line_widths = new int[num_lines];
-        for(int i = 0; i < num_lines; i++) lines[i] = t.nextToken();
-        min_width = minimumWidth;
+        for (int i=0; i<num_lines; i++)
+        	lines[i] = t.nextToken();
     }
 
     // Figures out how wide each line of the label
@@ -37,7 +40,6 @@ public class MultiLineLabel extends JPanel {
         FontMetrics fm = this.getFontMetrics(this.getFont());
         // If we don't have font metrics yet, just return.
         if (fm == null) return;
-        
         line_height = fm.getHeight();
         line_ascent = fm.getAscent();
         max_width = 0;
@@ -47,6 +49,12 @@ public class MultiLineLabel extends JPanel {
         }
     }
     
+
+    public void setText(String text) {
+        init(text);
+        measure();
+        repaint();
+    }
 
     public void setFont(Font f) {
         super.setFont(f);
@@ -81,8 +89,7 @@ public class MultiLineLabel extends JPanel {
     }
     
     // Draws the label
-    public void paintComponent(Graphics g) {
-    	super.paintComponent(g);
+    public void paint(Graphics g) {
         int x, y;
         Dimension d = this.getSize();
 		if (!ij.IJ.isLinux()) setAntialiasedText(g);

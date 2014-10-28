@@ -6,6 +6,7 @@ import java.io.*;
 import java.util.*;
 import java.net.*;
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 
 /*	ImageJ/NIH Image 64 byte ROI outline header
 	2 byte numbers are big-endian signed shorts
@@ -59,6 +60,7 @@ public class RoiDecoder {
 	public static final int OPTIONS = 50;
 	public static final int ARROW_STYLE = 52;
 	public static final int ELLIPSE_ASPECT_RATIO = 52;
+	public static final int POINT_TYPE= 52;
 	public static final int ARROW_HEAD_SIZE = 53;
 	public static final int ROUNDED_RECT_ARC_SIZE = 54;
 	public static final int POSITION = 56;
@@ -76,7 +78,9 @@ public class RoiDecoder {
 	public static final int IMAGE_OPACITY = 31;  //byte
 	public static final int IMAGE_SIZE = 32;  //int
 	public static final int FLOAT_STROKE_WIDTH = 36;  //float
-		
+	public static final int ROI_PROPS_OFFSET = 40;
+	public static final int ROI_PROPS_LENGTH = 44;
+
 	// subtypes
 	public static final int TEXT = 1;
 	public static final int ARROW = 2;
@@ -93,6 +97,7 @@ public class RoiDecoder {
 	public static final int OVERLAY_BOLD = 64;
 	public static final int SUB_PIXEL_RESOLUTION = 128;
 	public static final int DRAW_OFFSET = 256;
+	public static final int ZERO_TRANSPARENT = 512;
 	
 	// types
 	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6,
@@ -114,6 +119,16 @@ public class RoiDecoder {
 		is = new ByteArrayInputStream(bytes);	
 		this.name = name;
 		this.size = bytes.length;
+	}
+
+	/** Opens the Roi at the specified path. Returns null if there is an error. */
+	public static Roi open(String path) {
+		Roi roi = null;
+		RoiDecoder rd = new RoiDecoder(path);
+		try {
+			roi = rd.getRoi();
+		} catch (IOException e) { }
+		return roi;
 	}
 
 	/** Returns the ROI. */
@@ -263,6 +278,10 @@ public class RoiDecoder {
 							roi = new PointRoi(xf, yf, n);
 						else
 							roi = new PointRoi(x, y, n);
+						if (version>=226) {
+							((PointRoi)roi).setPointType(getByte(POINT_TYPE));
+							((PointRoi)roi).setSize(getShort(STROKE_WIDTH));
+						}
 						break;
 					}
 					int roiType;
@@ -309,10 +328,16 @@ public class RoiDecoder {
 		}
 		
 		if (version>=218 && subtype==TEXT)
-			roi = getTextRoi(roi);
+			roi = getTextRoi(roi, version);
 
 		if (version>=221 && subtype==IMAGE)
-			roi = getImageRoi(roi, imageOpacity, imageSize);
+			roi = getImageRoi(roi, imageOpacity, imageSize, options);
+
+		if (version>=224) {
+			String props = getRoiProps();
+			if (props!=null)
+				roi.setProperties(props);
+		}
 
 		roi.setPosition(position);
 		if (channel>0 || slice>0 || frame>0)
@@ -380,11 +405,14 @@ public class RoiDecoder {
 		return roi;
 	}
 	
-	Roi getTextRoi(Roi roi) {
+	Roi getTextRoi(Roi roi, int version) {
 		Rectangle r = roi.getBounds();
 		int hdrSize = RoiEncoder.HEADER_SIZE;
 		int size = getInt(hdrSize);
-		int style = getInt(hdrSize+4);
+		int styleAndJustification = getInt(hdrSize+4);
+		int style = styleAndJustification&255;
+		int justification = (styleAndJustification>>8) & 3;
+		boolean drawStringMode = (styleAndJustification&1024)!=0;
 		int nameLength = getInt(hdrSize+8);
 		int textLength = getInt(hdrSize+12);
 		char[] name = new char[nameLength];
@@ -393,20 +421,24 @@ public class RoiDecoder {
 			name[i] = (char)getShort(hdrSize+16+i*2);
 		for (int i=0; i<textLength; i++)
 			text[i] = (char)getShort(hdrSize+16+nameLength*2+i*2);
+		double angle = version>=225?getFloat(hdrSize+16+nameLength*2+textLength*2):0f;
 		Font font = new Font(new String(name), style, size);
-		Roi roi2 = null;
+		TextRoi roi2 = null;
 		if (roi.subPixelResolution()) {
-			FloatPolygon fp = roi.getFloatPolygon();
-			roi2 = new TextRoi(fp.xpoints[0], fp.ypoints[0], new String(text), font);
+			Rectangle2D fb = roi.getFloatBounds();
+			roi2 = new TextRoi(fb.getX(), fb.getY(), fb.getWidth(), fb.getHeight(), new String(text), font);
 		} else
-			roi2 = new TextRoi(r.x, r.y, new String(text), font);
+			roi2 = new TextRoi(r.x, r.y, r.width, r.height, new String(text), font);
 		roi2.setStrokeColor(roi.getStrokeColor());
 		roi2.setFillColor(roi.getFillColor());
 		roi2.setName(getRoiName());
+		roi2.setJustification(justification);
+		roi2.setDrawStringMode(drawStringMode);
+		roi2.setAngle(angle);
 		return roi2;
 	}
 	
-	Roi getImageRoi(Roi roi, int opacity, int size) {
+	Roi getImageRoi(Roi roi, int opacity, int size, int options) {
 		if (size<=0)
 			return roi;
 		Rectangle r = roi.getBounds();
@@ -416,6 +448,8 @@ public class RoiDecoder {
 		ImagePlus imp = new Opener().deserialize(bytes);
 		ImageRoi roi2 = new ImageRoi(r.x, r.y, imp.getProcessor());
 		roi2.setOpacity(opacity/255.0);
+		if ((options&ZERO_TRANSPARENT)!=0)
+			roi2.setZeroTransparent(true);
 		return roi2;
 	}
 
@@ -434,6 +468,22 @@ public class RoiDecoder {
 		for (int i=0; i<length; i++)
 			name[i] = (char)getShort(offset+i*2);
 		return new String(name);
+	}
+	
+	String getRoiProps() {
+		int hdr2Offset = getInt(HEADER2_OFFSET);
+		if (hdr2Offset==0)
+			return null;
+		int offset = getInt(hdr2Offset+ROI_PROPS_OFFSET);
+		int length = getInt(hdr2Offset+ROI_PROPS_LENGTH);
+		if (offset==0 || length==0)
+			return null;
+		if (offset+length*2>size)
+			return null;
+		char[] props = new char[length];
+		for (int i=0; i<length; i++)
+			props[i] = (char)getShort(offset+i*2);
+		return new String(props);
 	}
 
 	int getByte(int base) {

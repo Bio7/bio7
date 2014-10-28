@@ -11,8 +11,6 @@ import java.util.*;
 import java.awt.event.*;
 import java.io.*;
 
-import javax.swing.JButton;
-
 /** This plugin convolves images using user user defined kernels. */
 public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionListener {
 
@@ -21,7 +19,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 	private boolean canceled;
 	private float[] kernel;
 	private boolean isLineRoi;
-	private JButton open, save;
+	private Button open, save;
 	private GenericDialog gd;
 	private boolean normalize = true;
 	private int nSlices;
@@ -70,11 +68,11 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		gd.addTextAreas(kernelText, null, 10, 30);
 		gd.addPanel(makeButtonPanel(gd));
 		gd.addCheckbox("Normalize Kernel", normalizeFlag);
-        gd.addPreviewCheckbox(pfr);
-        gd.addDialogListener(this);
+		gd.addPreviewCheckbox(pfr);
+		gd.addDialogListener(this);
 		gd.showDialog();
 		if (gd.wasCanceled()) return DONE;
-        this.pfr = pfr;
+		this.pfr = pfr;
 		return IJ.setupDialog(imp, flags);
 	}
 
@@ -87,7 +85,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 			IJ.showStatus("Convolve: "+kw+"x"+kh+" kernel");
 			return true;
 		} else
-			return !gd.getPreviewCheckbox().isSelected();
+			return !gd.isPreviewActive();
     }
     
     boolean decodeKernel(String text) {
@@ -164,10 +162,10 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 	Panel makeButtonPanel(GenericDialog gd) {
 		Panel buttons = new Panel();
     	buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
-		open = new JButton("Open...");
+		open = new Button("Open...");
 		open.addActionListener(this);
 		buttons.add(open);
-		save = new JButton("Save...");
+		save = new Button("Save...");
 		save.addActionListener(this);
 		buttons.add(save);
 		return buttons;
@@ -237,7 +235,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		int xedge = width-uc;
 		int yedge = height-vc;
 		long lastTime = System.currentTimeMillis();
-		for(int y=y1; y<y2; y++) {
+		for (int y=y1; y<y2; y++) {
 			long time = System.currentTimeMillis();
 			if (time-lastTime>100) {
 				lastTime = time;
@@ -254,12 +252,12 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 					showProgress((y-y1)/(double)(y2-y1));
 				}
 			}
-			for(int x=x1; x<x2; x++) {
+			for (int x=x1; x<x2; x++) {
 				if (canceled) return false;
 				sum = 0.0;
 				i = 0;
 				edgePixel = y<vc || y>=yedge || x<uc || x>=xedge;
-				for(int v=-vc; v <= vc; v++) {
+				for (int v=-vc; v <= vc; v++) {
 					offset = x+(y+v)*width;
 					for(int u = -uc; u <= uc; u++) {
 						if (edgePixel) {

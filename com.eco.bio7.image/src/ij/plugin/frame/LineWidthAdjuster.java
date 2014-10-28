@@ -2,11 +2,6 @@ package ij.plugin.frame;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
-
-import javax.swing.JCheckBox;
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-
 import ij.*;
 import ij.plugin.*;
 import ij.process.*;
@@ -21,14 +16,14 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 
 	public static final String LOC_KEY = "line.loc";
 	int sliderRange = 300;
-	JScrollBar slider;
+	Scrollbar slider;
 	int value;
 	boolean setText;
 	static LineWidthAdjuster instance; 
 	Thread thread;
 	boolean done;
 	TextField tf;
-	JCheckBox checkbox;
+	Checkbox checkbox;
 
 	public LineWidthAdjuster() {
 		super("Line Width");
@@ -38,10 +33,10 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 		}		
 		WindowManager.addWindow(this);
 		instance = this;
-		slider = new JScrollBar(JScrollBar.HORIZONTAL, Line.getWidth(), 1, 1, sliderRange+1);
+		slider = new Scrollbar(Scrollbar.HORIZONTAL, Line.getWidth(), 1, 1, sliderRange+1);
 		slider.setFocusable(false); // prevents blinking on Windows
 				
-		JPanel panel = new JPanel();
+		Panel panel = new Panel();
 		int margin = IJ.isMacOSX()?5:0;
 		GridBagLayout grid = new GridBagLayout();
 		GridBagConstraints c  = new GridBagConstraints();
@@ -63,7 +58,7 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 		
 		c.gridx = 2;
 		c.insets = new Insets(margin, 25, margin, 5);
-		checkbox = new JCheckBox("Spline Fit", isSplineFit());
+		checkbox = new Checkbox("Spline Fit", isSplineFit());
 		checkbox.addItemListener(this);
 		panel.add(checkbox);
 		
@@ -124,8 +119,6 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
 			Roi roi = imp.getRoi();
-			if (roi!=null && roi.isLine())
-				{roi.updateWideLine(Line.getWidth()); imp.draw(); return;}
 			if (roi!=null && roi.isLine()) {
 				roi.updateWideLine(Line.getWidth());
 				imp.draw();
@@ -164,20 +157,20 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 
     public void windowActivated(WindowEvent e) {
     	super.windowActivated(e);
-    	checkbox.setSelected(isSplineFit());
+    	checkbox.setState(isSplineFit());
 	}
 
 	public void itemStateChanged(ItemEvent e) {
 		boolean selected = e.getStateChange()==ItemEvent.SELECTED;
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null)
-			{checkbox.setSelected(false); return;};
+			{checkbox.setState(false); return;};
 		Roi roi = imp.getRoi();
 		if (roi==null || !(roi instanceof PolygonRoi))
-			{checkbox.setSelected(false); return;};
+			{checkbox.setState(false); return;};
 		int type = roi.getType();
 		if (type==Roi.FREEROI || type==Roi.FREELINE)
-			{checkbox.setSelected(false); return;};;
+			{checkbox.setState(false); return;};;
 		PolygonRoi poly = (PolygonRoi)roi;
 		boolean splineFit = poly.isSplineFit();
 		if (selected && !splineFit)
@@ -188,7 +181,7 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 	
 	public static void update() {
 		if (instance==null) return;
-		instance.checkbox.setSelected(instance.isSplineFit());
+		instance.checkbox.setState(instance.isSplineFit());
 		int sliderWidth = instance.slider.getValue();
 		int lineWidth = Line.getWidth();
 		if (lineWidth!=sliderWidth && lineWidth<=200) {

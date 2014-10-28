@@ -3,14 +3,12 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.util.Tools;
-import ij.io.OpenDialog;
+import ij.io.*;
 import ij.macro.Interpreter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.Vector;
-
-import javax.swing.JButton;
 
 /** This plugin implements the File/Batch/Macro and File/Batch/Virtual Stack commands. */
 	public class BatchProcessor implements PlugIn, ActionListener, ItemListener, Runnable {
@@ -36,13 +34,14 @@ import javax.swing.JButton;
 		};
 		private String macro = "";
 		private int testImage;
-		private JButton input, output, open, save, test;
+		private Button input, output, open, save, test;
 		private TextField inputDir, outputDir;
 		private GenericDialog gd;
 		private Thread thread;
 		private ImagePlus virtualStack;
 		private ImagePlus outputImage;
 		private boolean errorDisplayed;
+		private String filter;
 
 	public void run(String arg) {
 		if (arg.equals("stack")) {
@@ -109,6 +108,8 @@ import javax.swing.JButton;
 		gd.addChoice("Output Format:", formats, format);
 		gd.setInsets(0, 0, 5);
 		gd.addChoice("Add Macro Code:", code, code[0]);
+		if (virtualStack==null)
+			gd.addStringField("File name contains:", "", 10);
 		gd.setInsets(15, 10, 0);
 		Dimension screen = IJ.getScreenSize();
 		gd.addTextAreas(macro, null, screen.width<=600?10:15, 60);
@@ -119,6 +120,8 @@ import javax.swing.JButton;
 		choice.addItemListener(this);
 		gd.showDialog();
 		format = gd.getNextChoice();
+		if (virtualStack==null)
+			filter = gd.getNextString();
 		macro = gd.getNextText();
 		return !gd.wasCanceled();
 	}
@@ -162,21 +165,29 @@ import javax.swing.JButton;
 	
 	void processFolder(String inputPath, String outputPath) {
 		String[] list = (new File(inputPath)).list();
+		list = FolderOpener.getFilteredList(list, filter, "Batch Processor");
+		if (list==null)
+			return;
 		int index = 0;
+		int startingCount = WindowManager.getImageCount();
 		for (int i=0; i<list.length; i++) {
 			if (IJ.escapePressed()) break;
 			String path = inputPath + list[i];
 			if (IJ.debugMode) IJ.log(i+": "+path);
 			if ((new File(path)).isDirectory())
 				continue;
-			if (list[i].startsWith(".")||list[i].endsWith(".avi")||list[i].endsWith(".AVI"))
+			if (list[i].startsWith(".")||list[i].endsWith(".avi")||list[i].endsWith(".AVI") || list[i].equals("Thumbs.db"))
 				continue;
 			IJ.showProgress(i+1, list.length);
 			IJ.redirectErrorMessages(true);
 			ImagePlus imp = IJ.openImage(path);
 			IJ.redirectErrorMessages(false);
+			if (imp==null && WindowManager.getImageCount()>startingCount)
+				imp = WindowManager.getCurrentImage();
+			if (imp==null)
+				imp = Opener.openUsingBioFormats(path);
 			if (imp==null) {
-				IJ.log("IJ.openImage() returned null: "+path);
+				IJ.log("openImage() and openUsingBioFormats() returned null: "+path);
 				continue;
 			}
 			if (!macro.equals("")) {
@@ -212,7 +223,7 @@ import javax.swing.JButton;
 				IJ.handleException(e);
 			return false;
 		} finally {
-			  WindowManager.setTempCurrentImage(null);
+			WindowManager.setTempCurrentImage(null);
 		}
 		return true;
 	}
@@ -239,7 +250,7 @@ import javax.swing.JButton;
 		Panel p = new Panel();
     	p.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
 		if (virtualStack==null) {
-			input = new JButton("Input...");
+			input = new Button("Input...");
 			input.addActionListener(this);
 			p.add(input);
 			inputDir = new TextField(Prefs.get("batch.input", ""), 45);
@@ -248,7 +259,7 @@ import javax.swing.JButton;
 		}
 		p = new Panel();
     	p.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
-		output = new JButton("Output...");
+		output = new Button("Output...");
 		output.addActionListener(this);
 		p.add(output);
 		outputDir = new TextField(Prefs.get("batch.output", ""), 45);
@@ -259,13 +270,13 @@ import javax.swing.JButton;
 	void addButtons(GenericDialog gd) {
 		Panel p = new Panel();
     	p.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
-		test = new JButton("Test");
+		test = new Button("Test");
 		test.addActionListener(this);
 		p.add(test);
-		open = new JButton("Open...");
+		open = new Button("Open...");
 		open.addActionListener(this);
 		p.add(open);
-		save = new JButton("Save...");
+		save = new Button("Save...");
 		save.addActionListener(this);
 		p.add(save);
 		gd.addPanel(p);

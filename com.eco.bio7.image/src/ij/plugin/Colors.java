@@ -6,19 +6,17 @@ import ij.io.*;
 import ij.plugin.filter.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Vector;
+import java.util.*;
 
 /** This plugin implements most of the Edit/Options/Colors command. */
 public class Colors implements PlugIn, ItemListener {
 	public static final String[] colors = {"red","green","blue","magenta","cyan","yellow","orange","black","white"};
+	private static final String[] colors2 = {"Red","Green","Blue","Magenta","Cyan","Yellow","Orange","Black","White"};
 	private Choice fchoice, bchoice, schoice;
 	private Color fc2, bc2, sc2;
 
  	public void run(String arg) {
- 		if (arg.equals("point"))
- 			pointToolOptions();
- 		else
-			showDialog();
+		showDialog();
 	}
 
 	void showDialog() {
@@ -33,12 +31,14 @@ public class Colors implements PlugIn, ItemListener {
 		gd.addChoice("Background:", colors, bname);
 		gd.addChoice("Selection:", colors, sname);
 		Vector choices = gd.getChoices();
-		fchoice = (Choice)choices.elementAt(0);
-		bchoice = (Choice)choices.elementAt(1);
-		schoice = (Choice)choices.elementAt(2);
-		fchoice.addItemListener(this);
-		bchoice.addItemListener(this);
-		schoice.addItemListener(this);
+		if (choices!=null) {
+			fchoice = (Choice)choices.elementAt(0);
+			bchoice = (Choice)choices.elementAt(1);
+			schoice = (Choice)choices.elementAt(2);
+			fchoice.addItemListener(this);
+			bchoice.addItemListener(this);
+			schoice.addItemListener(this);
+		}
 		
 		gd.showDialog();
 		if (gd.wasCanceled()) {
@@ -70,20 +70,33 @@ public class Colors implements PlugIn, ItemListener {
 	public static String getColorName(Color c, String defaultName) {
 		if (c==null) return defaultName;
 		String name = defaultName;
-		if (c.equals(Color.red)) name = colors[0];
-		else if (c.equals(Color.green)) name = colors[1];
-		else if (c.equals(Color.blue)) name = colors[2];
-		else if (c.equals(Color.magenta)) name = colors[3];
-		else if (c.equals(Color.cyan)) name = colors[4];
-		else if (c.equals(Color.yellow)) name = colors[5];
-		else if (c.equals(Color.orange)) name = colors[6];
-		else if (c.equals(Color.black)) name = colors[7];
-		else if (c.equals(Color.white)) name = colors[8];
+		if (name!=null && name.length()>0 && Character.isUpperCase(name.charAt(0))) {
+			if (c.equals(Color.red)) name = colors2[0];
+			else if (c.equals(Color.green)) name = colors2[1];
+			else if (c.equals(Color.blue)) name = colors2[2];
+			else if (c.equals(Color.magenta)) name = colors2[3];
+			else if (c.equals(Color.cyan)) name = colors2[4];
+			else if (c.equals(Color.yellow)) name = colors2[5];
+			else if (c.equals(Color.orange)) name = colors2[6];
+			else if (c.equals(Color.black)) name = colors2[7];
+			else if (c.equals(Color.white)) name = colors2[8];
+		} else {
+			if (c.equals(Color.red)) name = colors[0];
+			else if (c.equals(Color.green)) name = colors[1];
+			else if (c.equals(Color.blue)) name = colors[2];
+			else if (c.equals(Color.magenta)) name = colors[3];
+			else if (c.equals(Color.cyan)) name = colors[4];
+			else if (c.equals(Color.yellow)) name = colors[5];
+			else if (c.equals(Color.orange)) name = colors[6];
+			else if (c.equals(Color.black)) name = colors[7];
+			else if (c.equals(Color.white)) name = colors[8];
+		}
 		return name;
 	}
 	
 	public static Color getColor(String name, Color defaultColor) {
 		if (name==null) return defaultColor;
+		name = name.toLowerCase(Locale.US);
 		Color c = defaultColor;
 		if (name.equals(colors[0])) c = Color.red;
 		else if (name.equals(colors[1])) c = Color.green;
@@ -116,6 +129,18 @@ public class Colors implements PlugIn, ItemListener {
 		return color;
 	}
 
+	public static int getRed(String hexColor) {
+		return decode(hexColor, Color.black).getRed();
+	}
+
+	public static int getGreen(String hexColor) {
+		return decode(hexColor, Color.black).getGreen();
+	}
+
+	public static int getBlue(String hexColor) {
+		return decode(hexColor, Color.black).getBlue();
+	}
+
 	/** Converts a hex color (e.g., "ffff00") into "red", "green", "yellow", etc.
 		Returns null if the color is not one of the eight primary colors. */
 	public static String hexToColor(String hex) {
@@ -134,12 +159,40 @@ public class Colors implements PlugIn, ItemListener {
 		return color;
 	}
 	
+	/** Converts a hex color (e.g., "ffff00") into "Red", "Green", "Yellow", etc.
+		Returns null if the color is not one of the eight primary colors. */
+	public static String hexToColor2(String hex) {
+		if (hex==null) return null;
+		if (hex.startsWith("#"))
+			hex = hex.substring(1);
+		String color = null;
+		if (hex.equals("ff0000")) color = "Red";
+		else if (hex.equals("00ff00")) color = "Green";
+		else if (hex.equals("0000ff")) color = "Blue";
+		else if (hex.equals("000000")) color = "Black";
+		else if (hex.equals("ffffff")) color = "White";
+		else if (hex.equals("ffff00")) color = "Yellow";
+		else if (hex.equals("00ffff")) color = "Cyan";
+		else if (hex.equals("ff00ff")) color = "Magenta";
+		else if (hex.equals("ffc800")) color = "Orange";
+		return color;
+	}
+
 	/** Converts a Color into a string ("red", "green", #aa55ff, etc.). */
 	public static String colorToString(Color color) {
 		String str = color!=null?"#"+Integer.toHexString(color.getRGB()):"none";
 		if (str.length()==9 && str.startsWith("#ff"))
 			str = "#"+str.substring(3);
 		String str2 = hexToColor(str);
+		return str2!=null?str2:str;
+	}
+
+	/** Converts a Color into a string ("Red", "Green", #aa55ff, etc.). */
+	public static String colorToString2(Color color) {
+		String str = color!=null?"#"+Integer.toHexString(color.getRGB()):"None";
+		if (str.length()==9 && str.startsWith("#ff"))
+			str = "#"+str.substring(3);
+		String str2 = hexToColor2(str);
 		return str2!=null?str2:str;
 	}
 
@@ -166,52 +219,15 @@ public class Colors implements PlugIn, ItemListener {
 		}
 	}
 	
-	// Point tool options
-	void pointToolOptions() {
-		boolean saveNoPointLabels = Prefs.noPointLabels;
-		Color sc =Roi.getColor();
-		String sname = getColorName(sc, "yellow");
-		GenericDialog gd = new GenericDialog("Point Tool");
-		gd.addNumericField("Mark Width:", Analyzer.markWidth, 0, 2, "pixels");
-		gd.addCheckbox("Auto-Measure", Prefs.pointAutoMeasure);
-		gd.addCheckbox("Auto-Next Slice", Prefs.pointAutoNextSlice);
-		gd.addCheckbox("Add to ROI Manager", Prefs.pointAddToManager);
-		gd.addCheckbox("Label Points", !Prefs.noPointLabels);
-		gd.addChoice("Selection Color:", colors, sname);
-		Vector choices = gd.getChoices();
-		schoice = (Choice)choices.elementAt(0);
-		schoice.addItemListener(this);
-		gd.showDialog();
-		if (gd.wasCanceled()) {
-			if (sc2!=sc) {
-				Roi.setColor(sc);
-				ImagePlus imp = WindowManager.getCurrentImage();
-				if (imp!=null && imp.getRoi()!=null) imp.draw();
-				Toolbar.getInstance().repaint();
-			}
-			return;
+	public static String[] getColors(String... moreColors) {
+		ArrayList names = new ArrayList();
+		for (String arg: moreColors) {
+			if (arg!=null && arg.length()>0 && (!Character.isLetter(arg.charAt(0))||arg.equals("None")))
+				names.add(arg);
 		}
-		int width = (int)gd.getNextNumber();
-		if (width<0) width = 0;
-		Analyzer.markWidth = width;
-		Prefs.pointAutoMeasure = gd.getNextBoolean();
-		Prefs.pointAutoNextSlice = gd.getNextBoolean();
-		Prefs.pointAddToManager = gd.getNextBoolean();
-		Prefs.noPointLabels = !gd.getNextBoolean();
-		sname = gd.getNextChoice();
-		sc2 = getColor(sname, Color.yellow);
-		if (Prefs.pointAutoNextSlice&&!Prefs.pointAddToManager)
-			Prefs.pointAutoMeasure = true;
-		if (Prefs.noPointLabels!=saveNoPointLabels) {
-			ImagePlus imp = WindowManager.getCurrentImage();
-			if (imp!=null) imp.draw();
-		}
-		if (sc2!=sc) {
-			Roi.setColor(sc2);
-			ImagePlus imp = WindowManager.getCurrentImage();
-			if (imp!=null) imp.draw();
-			Toolbar.getInstance().repaint();
-		}
+		for (String arg: colors2)
+			names.add(arg);
+		return (String[])names.toArray(new String[names.size()]);
 	}
 
 }

@@ -6,8 +6,6 @@ import ij.measure.Calibration;
 import java.awt.*;
 import java.util.Vector;
 
-import javax.swing.JLabel;
-
 /** Implements the Image/HyperStacks/Reduce Dimensionality command. */
 public class HyperStackReducer implements PlugIn, DialogListener {
 	ImagePlus imp;
@@ -38,6 +36,8 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 		channels1 = channels2 = imp.getNChannels();
 		slices1 = slices2 = imp.getNSlices();
 		frames1 = frames2 = imp.getNFrames();
+		int z0 = imp.getSlice();
+		int t0 = imp.getFrame();
 		if (!showDialog())
 			return;
 		//IJ.log("HyperStackReducer-2: "+keep+" "+channels2+" "+slices2+" "+frames2);
@@ -58,7 +58,7 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 			((CompositeImage)imp2).copyLuts(imp);
 		} else {
 			imp2.setDisplayRange(imp.getDisplayRangeMin(), imp.getDisplayRangeMax());
-			if (imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.GRAYSCALE)
+			if (imp.isComposite() && ((CompositeImage)imp).getMode()==IJ.GRAYSCALE)
 				IJ.run(imp2, "Grays", "");
 		}
 		if (imp.getWindow()==null && !keep) {
@@ -66,6 +66,8 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 			return;
 		}
 		imp2.show();
+		if (z0>1 || t0>1)
+			imp2.setPosition(1, z0, t0);
 		//IJ.log("HyperStackReducer-4");
 		if (!keep) {
 			imp.changes = false;
@@ -86,7 +88,7 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 		ImageStack stack2 = imp2.getStack();
 		for (int c=1; c<=channels; c++) {
 			if (channels==1) c = c1;
-			LUT lut = imp.isComposite()?((CompositeImage)imp).getChannelLut():null;
+			LUT lut = imp.isComposite()?((CompositeImage)imp).getChannelLut():imp.getProcessor().getLut();
 			imp.setPositionWithoutUpdate(c, 1, 1);
 			ImageProcessor ip = imp.getProcessor();
 			double min = ip.getMin();
@@ -94,12 +96,9 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 			for (int z=1; z<=slices; z++) {
 				if (slices==1) z = z1;
 				for (int t=1; t<=frames; t++) {
-					//IJ.showProgress(i++, n);
 					if (frames==1) t = t1;
-					//ip = stack.getProcessor(n1);
-					imp.setPositionWithoutUpdate(c, z, t);
-					ip = imp.getProcessor();
 					int n1 = imp.getStackIndex(c, z, t);
+					ip = stack.getProcessor(n1);
 					String label = stack.getSliceLabel(n1);
 					int n2 = imp2.getStackIndex(c, z, t);
 					if (stack2.getPixels(n2)!=null)
@@ -120,9 +119,36 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 		imp.setPosition(c1, z1, t1);
 		imp2.resetStack();
 		imp2.setPosition(1, 1, 1);
+		Overlay overlay = imp.getOverlay();
+		if (overlay!=null && !imp.getHideOverlay())
+			imp2.setOverlay(reduce(overlay));
 	}
 
-	boolean showDialog() {
+	//Added by Marcel Boeglin 2013.11.29
+	/** Returns a copy of 'overlay', limited to the dimensions of the reduced image. */
+	private Overlay reduce(Overlay overlay) {
+		int c1 = imp.getChannel();
+		int z1 = imp.getSlice();
+		int t1 = imp.getFrame();
+		Overlay overlay2 = overlay.duplicate();
+		if (channels2==1 && slices2==slices1 && frames2==frames1)
+			overlay2.crop(c1, c1, 1, slices1, 1, frames1);
+		else if (channels2==channels1 && slices2==1 && frames2==frames1)
+			overlay2.crop(1, channels1, z1, z1, 1, frames1);
+		else if (channels2==channels1 && slices2==slices1 && frames2==1)
+			overlay2.crop(1, channels1, 1, slices1, t1, t1);
+		else if (channels2==channels1 && slices2==1 && frames2==1)
+			overlay2.crop(1, channels1, z1, z1, t1, t1);
+		else if (channels2==1 && slices2==slices1 && frames2==1)
+			overlay2.crop(c1, c1, 1, slices1, t1, t1);
+		else if (channels2==1 && slices2==1 && frames2==frames1)
+			overlay2.crop(c1, c1, z1, z1, 1, frames1);
+		else if (channels2==1 && slices2==1 && frames2==1)
+			overlay2.crop(c1, c1, z1, z1, t1, t1);
+		return overlay2;
+	}
+    
+    boolean showDialog() {
 		GenericDialog gd = new GenericDialog("Reduce");
 		gd.setInsets(10, 20, 5);
 		gd.addMessage("Create image with:");
@@ -150,7 +176,7 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 		if (slices1!=1) slices2 = gd.getNextBoolean()?slices1:1;
 		if (frames1!=1) frames2 = gd.getNextBoolean()?frames1:1;
 		keep = gd.getNextBoolean();
-		((JLabel)gd.getMessage()).setText(getNewDimensions());
+		((Label)gd.getMessage()).setText(getNewDimensions());
 		return true;
 	}
 

@@ -3,7 +3,6 @@ import ij.*;
 import ij.gui.*;
 import ij.measure.*;
 import ij.process.*;
-
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
@@ -11,38 +10,16 @@ import java.awt.geom.*;
 import java.util.*;
  
 /**
+ * This plugin projects dynamically orthogonal XZ and YZ views of a stack. 
+ * The output images are calibrated, which allows measurements to be performed more easily. 
  * 
-* @author Dimiter Prodanov
-* 		  IMEC
-* 
-* @acknowledgments Many thanks to Jerome Mutterer for the code contributions and testing.
-* 				   Thanks to Wayne Rasband for the code that properly handles the image magnification.
-* 		
-* @version 		1.2 28 April 2009
-* 					- added support for arrow keys
-* 					- fixed a bug in the cross position calculation
-* 					- added FocusListener behavior
-* 					- added support for magnification factors
-* 				1.1.6 31 March 2009
-* 					- added AdjustmentListener behavior thanks to Jerome Mutterer
-* 					- improved pane visualization
-* 					- added window rearrangement behavior. Initial code suggested by Jerome Mutterer
-* 					- bug fixes by Wayne Raspband
-* 				1.1 24 March 2009
-* 					- improved projection image resizing
-* 					- added ImageListener behaviors
-* 					- added check-ups
-* 					- improved pane updating
-* 				1.0.5 23 March 2009
-* 					- fixed pane updating issue
-* 				1.0 21 March 2009
-* 
-* @contents This plugin projects dynamically orthogonal XZ and YZ views of a stack. 
-* The output images are calibrated, which allows measurements to be performed more easily. 
-*/
-
+ * Many thanks to Jerome Mutterer for the code contributions and testing.
+ * Thanks to Wayne Rasband for the code that properly handles the image magnification.
+ * 		
+ * @author Dimiter Prodanov
+ */
 public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListener, KeyListener, ActionListener, 
-	ImageListener, WindowListener, AdjustmentListener, MouseWheelListener, FocusListener, CommandListener {
+	ImageListener, WindowListener, AdjustmentListener, MouseWheelListener, FocusListener, CommandListener, Runnable {
 
 	private ImageWindow win;
 	private ImagePlus imp;
@@ -66,7 +43,6 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	private Calibration cal=null, cal_xz=new Calibration(), cal_yz=new Calibration();
 	private double magnification=1.0;
 	private Color color = Roi.getColor();
-	private Updater updater = new Updater();
 	private double min, max;
 	private Dimension screen = IJ.getScreenSize();
 	private boolean syncZoom = true;
@@ -74,6 +50,9 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	private boolean firstTime = true;
 	private static int previousID, previousX, previousY;
 	private Rectangle startingSrcRect;
+	private boolean done;
+	private Thread thread;
+
 	 
 	public void run(String arg) {
 		imp = IJ.getImage();
@@ -128,6 +107,9 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 				fp1.setColorModel(cm);
 				fp2.setColorModel(cm);				
 			}
+			thread = new Thread(this, "Orthogonal Views");
+			thread.start();
+			IJ.wait(100);
 			update();
 		} else
 			dispose();
@@ -152,17 +134,13 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			return imp.getStack();
 	}
  
-	private void addListeners(ImageCanvas canvass) {
+	private void addListeners(ImageCanvas canvas) {
 		canvas.addMouseListener(this);
 		canvas.addMouseMotionListener(this);
 		canvas.addKeyListener(this);
 		win.addWindowListener (this);  
 		win.addMouseWheelListener(this);
 		win.addFocusListener(this);
-		Component[] c = win.getComponents();
-		//IJ.log(c[1].toString());
-		/*Changed for Bio7!*/
-		//((ScrollbarWithLabel) c[1]).addAdjustmentListener (this);
 		ImagePlus.addImageListener(this);
 		Executer.addCommandListener(this);
 	}
@@ -267,30 +245,30 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			yz_image.show();
 			ImageCanvas ic = yz_image.getCanvas();
 			ic.addKeyListener(this);
-			ic.addMouseListener(this);
-			ic.addMouseMotionListener(this);
+			//ic.addMouseListener(this);
+			//ic.addMouseMotionListener(this);
 			ic.setCustomRoi(true);
-			yz_image.getWindow().addMouseWheelListener(this);
+			//yz_image.getWindow().addMouseWheelListener(this);
 			yzID = yz_image.getID();
 		} else {
 			ImageCanvas ic = yz_image.getWindow().getCanvas();
-			ic.addMouseListener(this);
-			ic.addMouseMotionListener(this);
+			//ic.addMouseListener(this);
+			//ic.addMouseMotionListener(this);
 			ic.setCustomRoi(true);
 		}
 		if (xz_image.getWindow()==null) {
 			xz_image.show();
 			ImageCanvas ic = xz_image.getCanvas();
 			ic.addKeyListener(this);
-			ic.addMouseListener(this);
-			ic.addMouseMotionListener(this);
+			//ic.addMouseListener(this);
+			//ic.addMouseMotionListener(this);
 			ic.setCustomRoi(true);
-			xz_image.getWindow().addMouseWheelListener(this);
+			//xz_image.getWindow().addMouseWheelListener(this);
 			xzID = xz_image.getID();
 		} else {
 			ImageCanvas ic = xz_image.getWindow().getCanvas();
-			ic.addMouseListener(this);
-			ic.addMouseMotionListener(this);
+			//ic.addMouseListener(this);
+			//ic.addMouseMotionListener(this);
 			ic.setCustomRoi(true);
 		}
 		 
@@ -558,8 +536,10 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	}
 	      
 	void dispose() {
-		updater.quit();
-		updater = null;
+		synchronized(this) {
+			done = true;
+			notify();
+		}
 		imp.setOverlay(null);
 		canvas.removeMouseListener(this);
 		canvas.removeMouseMotionListener(this);
@@ -592,6 +572,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		ImagePlus.removeImageListener(this);
 		Executer.removeCommandListener(this);
 		win.removeWindowListener(this);
+		win.removeMouseWheelListener(this);
 		win.removeFocusListener(this);
 		win.setResizable(true);
 		instance = null;
@@ -682,13 +663,9 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		}
 	}
 	
-	/**
-	 * Refresh the output windows. This is done by sending a signal 
-	 * to the Updater() thread. 
-	 */
-	void update() {
-		if (updater!=null)
-			updater.doUpdate();
+	/** Refresh the output windows. */
+	synchronized void update() {
+		notify();
 	}
 	
 	private void exec() {
@@ -924,66 +901,16 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	public ImagePlus getYZImage(){
 		return yz_image;
 	}
-
-	/**
-	 * This is a helper class for Othogonal_Views that delegates the
-	 * repainting of the destination windows to another thread.
-	 * 
-	 * @author Albert Cardona
-	 */
-	private class Updater extends Thread {
-		long request = 0;
-
-		// Constructor autostarts thread
-		Updater() {
-			super("Othogonal Views Updater");
-			setPriority(Thread.NORM_PRIORITY);
-			start();
-		}
-
-		void doUpdate() {
-			if (isInterrupted()) return;
-			synchronized (this) {
-				request++;
-				notify();
+	
+	public void run() {
+		while (!done) {
+			synchronized(this) {
+				try {wait();}
+				catch(InterruptedException e) {}
 			}
+			if (!done)
+				exec();
 		}
-
-		void quit() {
-			IJ.wait(10);
-			interrupt();
-			synchronized (this) {
-				notify();
-			}
-		}
-  /*Changed for Bio7!*/
-		public void run() {
-			while (!isInterrupted()) {
-				try {
-					Thread.sleep(20);
-				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-				try {
-					final long r;
-					synchronized (this) {
-						r = request;
-					}
-					// Call update from this thread
-					if (r>0)
-						exec();
-					synchronized (this) {
-						if (r==request) {
-							request = 0; // reset
-							wait();
-						}
-						// else loop through to update again
-					}
-				} catch (Exception e) { }
-			}
-		}
-		
-	}  // Updater class
+	}
 
 }

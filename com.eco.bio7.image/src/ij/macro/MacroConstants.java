@@ -5,7 +5,7 @@ public interface MacroConstants {
 	// In the tokenized macro, the token and optional symbol table address 
 	// are packed into a single 32-bit int. The token is stored in the right-most 
 	// 12 bits and the address in the remaining 24 bits. 
-	static final int TOK_SHIFT=12, TOK_MASK=0xfff;
+	public static final int TOK_SHIFT=12, TOK_MASK=0xfff;
 
 	static final int PLUS_PLUS=1, MINUS_MINUS=2, EQ=3, NEQ=4, GT=5, GTE=6, LT=7, LTE=8,
 		PLUS_EQUAL=9, MINUS_EQUAL=10, MUL_EQUAL=11, DIV_EQUAL=12, LOGICAL_AND=13, LOGICAL_OR=14,
@@ -18,11 +18,11 @@ public interface MacroConstants {
 
 	// Keywords
 	static final String[] keywords = {"macro", "var", "if", "else", "while", "do", "for", "function",
-		"return", "true", "false", "PI", "NaN"};
+		"return", "true", "false", "PI", "NaN", "break", "continue"};
 	public static final int MACRO=200, VAR=201, IF=202, ELSE=203, WHILE=204, DO=205, FOR=206, FUNCTION=207,
-		RETURN=208, TRUE=209, FALSE=210, PI=211, NaN=212;;
+		RETURN=208, TRUE=209, FALSE=210, PI=211, NaN=212, BREAK=213, CONTINUE=214;
 	static final int[] keywordIDs = {MACRO, VAR, IF, ELSE, WHILE, DO, FOR, FUNCTION,
-		RETURN, TRUE, FALSE, PI, NaN};
+		RETURN, TRUE, FALSE, PI, NaN, BREAK, CONTINUE};
 
 	// Functions that don't return a value
 	static final int RUN=300, INVERT=301, SELECT=302, WAIT=303, BEEP=304, RESET_MIN_MAX=305, RESET_THRESHOLD=306,
@@ -41,7 +41,7 @@ public interface MacroConstants {
 		GET_DATE_AND_TIME=382, SET_METADATA=383, CALCULATOR=384, SET_RGB_WEIGHTS=385, MAKE_POLYGON=386, SET_SELECTION_NAME=387,
 		DRAW_RECT=388, DRAW_OVAL=389, FILL_OVAL=390, SET_OPTION=391, SHOW_TEXT=392, SET_SELECTION_LOC=393, GET_DIMENSIONS=394,
 		WAIT_FOR_USER=395, MAKE_POINT=396, MAKE_TEXT=397, MAKE_ELLIPSE=398, GET_DISPLAYED_AREA=399,
-		TO_SCALED=400, TO_UNSCALED=401;
+		TO_SCALED=400, TO_UNSCALED=401, MAKE_ARROW=402;
 	static final String[] functions = {"run","invert","selectWindow","wait", "beep", "resetMinAndMax", "resetThreshold",
 		"print", "write", "doWand", "setMinAndMax", "setThreshold", "setTool",
 		"setForegroundColor", "setBackgroundColor", "makeLine", "makeOval", "makeRectangle",
@@ -58,7 +58,7 @@ public interface MacroConstants {
 		"getDateAndTime", "setMetadata", "imageCalculator", "setRGBWeights", "makePolygon", "setSelectionName",
 		"drawRect", "drawOval", "fillOval", "setOption", "showText", "setSelectionLocation", "getDimensions",
 		"waitForUser", "makePoint", "makeText", "makeEllipse", "getDisplayedArea",
-		"toScaled", "toUnscaled"};
+		"toScaled", "toUnscaled", "makeArrow"};
 	static final int[] functionIDs = {RUN, INVERT, SELECT, WAIT, BEEP, RESET_MIN_MAX, RESET_THRESHOLD,
 		PRINT, WRITE,	 DO_WAND, SET_MIN_MAX, SET_THRESHOLD, SET_TOOL,
 		SET_FOREGROUND, SET_BACKGROUND, MAKE_LINE, MAKE_OVAL, MAKE_RECTANGLE,
@@ -75,7 +75,7 @@ public interface MacroConstants {
 		GET_DATE_AND_TIME, SET_METADATA, CALCULATOR, SET_RGB_WEIGHTS, MAKE_POLYGON, SET_SELECTION_NAME,
 		DRAW_RECT, DRAW_OVAL, FILL_OVAL, SET_OPTION, SHOW_TEXT, SET_SELECTION_LOC, GET_DIMENSIONS,
 		WAIT_FOR_USER, MAKE_POINT, MAKE_TEXT, MAKE_ELLIPSE, GET_DISPLAYED_AREA,
-		TO_SCALED, TO_UNSCALED};
+		TO_SCALED, TO_UNSCALED, MAKE_ARROW};
 
 	// Numeric functions
 	static final int GET_PIXEL=1000, ABS=1001, COS=1002, EXP=1003, FLOOR=1004, LOG=1005, MAX_OF=1006, MIN_OF=1007, POW=1008,
@@ -111,17 +111,20 @@ public interface MacroConstants {
 		FROM_CHAR_CODE=2006, GET_INFO=2007, GET_DIRECTORY=2008, GET_ARGUMENT=2009, GET_IMAGE_INFO=2010,
 		TO_LOWER_CASE=2011, TO_UPPER_CASE=2012, RUN_MACRO=2013, EVAL=2014, TO_STRING=2015, REPLACE=2016,
 		DIALOG=2017, GET_METADATA=2018, FILE=2019, SELECTION_NAME=2020, GET_VERSION=2021, GET_RESULT_LABEL=2022,
-		CALL=2023, STRING=2024, EXT=2025, EXEC=2026, LIST=2027, DEBUG=2028, IJ_CALL=2029, GET_RESULT_STRING=2030;
+		CALL=2023, STRING=2024, EXT=2025, EXEC=2026, LIST=2027, DEBUG=2028, IJ_CALL=2029, GET_RESULT_STRING=2030,
+		ROI=2031;
 	static final String[] stringFunctions = {"d2s", "toHex", "toBinary", "getTitle", "getString", "substring",
 		"fromCharCode", "getInfo", "getDirectory", "getArgument", "getImageInfo", 
 		"toLowerCase", "toUpperCase", "runMacro", "eval", "toString", "replace",
 		"Dialog", "getMetadata", "File", "selectionName", "getVersion", "getResultLabel",
-		"call", "String", "Ext", "exec", "List", "debug", "IJ", "getResultString"};
+		"call", "String", "Ext", "exec", "List", "debug", "IJ", "getResultString",
+		"Roi"};
 	static final int[] stringFunctionIDs = {D2S, TO_HEX, TO_BINARY, GET_TITLE, GET_STRING, SUBSTRING,
 		FROM_CHAR_CODE, GET_INFO, GET_DIRECTORY, GET_ARGUMENT, GET_IMAGE_INFO,
 		TO_LOWER_CASE, TO_UPPER_CASE, RUN_MACRO, EVAL, TO_STRING, REPLACE,
 		DIALOG, GET_METADATA, FILE, SELECTION_NAME, GET_VERSION, GET_RESULT_LABEL,
-		CALL, STRING, EXT, EXEC, LIST, DEBUG, IJ_CALL, GET_RESULT_STRING};
+		CALL, STRING, EXT, EXEC, LIST, DEBUG, IJ_CALL, GET_RESULT_STRING,
+		ROI};
 
 	// Array functions
 	static final int GET_PROFILE=3000, NEW_ARRAY=3001, SPLIT=3002, GET_FILE_LIST=3003,

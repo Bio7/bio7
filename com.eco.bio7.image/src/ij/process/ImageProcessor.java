@@ -57,7 +57,7 @@ public abstract class ImageProcessor implements Cloneable {
 	int fgColor = 0;
 	protected int lineWidth = 1;
 	protected int cx, cy; //current drawing coordinates
-	protected Font font;
+	protected Font font = ij.ImageJ.SansSerif12;
 	protected FontMetrics fontMetrics;
 	protected boolean antialiasedText;
 	protected boolean boldFont;
@@ -182,7 +182,7 @@ public abstract class ImageProcessor implements Cloneable {
 	
 	public void setLut(LUT lut) {
 		setColorModel(lut);
-		if (lut.min!=0.0||lut.max!=0.0)
+		if (lut!=null && (lut.min!=0.0||lut.max!=0.0))
 			setMinAndMax(lut.min, lut.max);
 	}
 
@@ -194,9 +194,7 @@ public abstract class ImageProcessor implements Cloneable {
 	/** Inverts the values in this image's LUT (indexed color model).
 		Does nothing if this is a ColorProcessor. */
 	public void invertLut() {
-		if (cm==null)
-			makeDefaultColorModel();
-    	IndexColorModel icm = (IndexColorModel)cm;
+		IndexColorModel icm = (IndexColorModel)getColorModel();
 		int mapSize = icm.getMapSize();
 		byte[] reds = new byte[mapSize];
 		byte[] greens = new byte[mapSize];
@@ -212,8 +210,10 @@ public abstract class ImageProcessor implements Cloneable {
 			greens2[i] = (byte)(greens[mapSize-i-1]&255);
 			blues2[i] = (byte)(blues[mapSize-i-1]&255);
 		}
-		ColorModel cm = new IndexColorModel(8, mapSize, reds2, greens2, blues2); 
+		ColorModel cm = new IndexColorModel(8, mapSize, reds2, greens2, blues2);
+		double min=getMin(), max=getMax();
 		setColorModel(cm);
+		setMinAndMax(min, max);
 	}
 
 	/** Returns the LUT index that's the best match for this color. */
@@ -384,8 +384,13 @@ public abstract class ImageProcessor implements Cloneable {
 		value closest to the specified color. */
 	public abstract void setColor(Color color);
 
-	/** Sets the default fill/draw value. Use setValue() with float images. */
+	/** Sets the default fill/draw value. */
 	public void setColor(int value) {
+		setValue(value);
+	}
+
+	/** Sets the default fill/draw value. */
+	public void setColor(double value) {
 		setValue(value);
 	}
 
@@ -426,12 +431,10 @@ public abstract class ImageProcessor implements Cloneable {
 		this.minThreshold = minThreshold;
 		this.maxThreshold = maxThreshold;
 		lutUpdateMode = lutUpdate;
-
 		if (minThreshold==NO_THRESHOLD) {
 			resetThreshold();
 			return;
 		}
-
 		if (lutUpdate==NO_LUT_UPDATE)
 			return;
 		if (rLUT1==null) {
@@ -458,34 +461,20 @@ public abstract class ImageProcessor implements Cloneable {
 					bLUT2[i] = bLUT1[i];
 				}
 			}
-
 		else if (lutUpdate==BLACK_AND_WHITE_LUT) {
 			// updated in v1.43i by Gabriel Lindini to use blackBackground setting
-
 			byte  foreground = Prefs.blackBackground?(byte)255:(byte)0;
-
 			byte background = (byte)(255 - foreground);
-
 			for (int i=0; i<256; i++) {
-
 				if (i>=t1 && i<=t2) {
-
 					rLUT2[i] = foreground;
-
 					gLUT2[i] = foreground;
-
 					bLUT2[i] = foreground;
-
 				} else {
-
 					rLUT2[i] = background;
-
 					gLUT2[i] =background;
-
 					bLUT2[i] =background;
-
 				}
-
 			}
 		} else {
 			for (int i=0; i<256; i++) {
@@ -493,7 +482,6 @@ public abstract class ImageProcessor implements Cloneable {
 					rLUT2[i] = rLUT1[i];
 					gLUT2[i] = gLUT1[i];
 					bLUT2[i] = bLUT1[i];
-
 				} else if (i>t2) {
 					rLUT2[i] = (byte)overRed;
 					gLUT2[i] = (byte)overGreen;
@@ -505,7 +493,6 @@ public abstract class ImageProcessor implements Cloneable {
 				}
 			}
 		}
-
 		cm = new IndexColorModel(8, 256, rLUT2, gLUT2, bLUT2);
 		newPixels = true;
 		source = null;
@@ -776,8 +763,14 @@ public abstract class ImageProcessor implements Cloneable {
 		if (roi==null)
 			resetRoi();
 		else {
-			setMask(roi.getMask());
-			setRoi(roi.getBounds());
+			if (roi instanceof PointRoi && ((PointRoi)roi).getNCoordinates()==1) {
+				setMask(null);
+				FloatPolygon p = roi.getFloatPolygon();
+				setRoi((int)p.xpoints[0], (int)p.ypoints[0], 1, 1);
+			} else {
+				setMask(roi.getMask());
+				setRoi(roi.getBounds());
+			}
 		}
 	}
 
@@ -1007,6 +1000,15 @@ public abstract class ImageProcessor implements Cloneable {
 			data[i] = getPixel(x++, y);
 	}
 
+	/** Returns the pixel values along the horizontal line starting at (x,y). */
+	public float[] getRow(int x, int y, float[] data, int length) {
+		if (data==null)
+			data = new float[length];
+		for (int i=0; i<length; i++)
+			data[i] = getf(x++, y);
+		return data;
+	}
+
 	/** Returns the pixel values down the column starting at (x,y). */
 	public void getColumn(int x, int y, int[] data, int length) {
 		for (int i=0; i<length; i++)
@@ -1020,6 +1022,13 @@ public abstract class ImageProcessor implements Cloneable {
 			putPixel(x++, y, data[i]);
 	}
 	
+	/** Inserts the pixels contained in 'data' into a 
+		horizontal line starting at (x,y). */
+	public void putRow(int x, int y, float[] data, int length) {
+		for (int i=0; i<length; i++)
+			setf(x++, y, data[i]);
+	}
+
 	/** Inserts the pixels contained in 'data' into a 
 		column starting at (x,y). */
 	public void putColumn(int x, int y, int[] data, int length) {
@@ -1173,8 +1182,6 @@ public abstract class ImageProcessor implements Cloneable {
 	private void setupFontMetrics() {
 		if (fmImage==null)
 			fmImage=new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
-		if (font==null)
-			font = new Font("SansSerif", Font.PLAIN, 12);
 		if (fontMetrics==null) {
 			Graphics g = fmImage.getGraphics();
 			fontMetrics = g.getFontMetrics(font);
@@ -1877,8 +1884,11 @@ public abstract class ImageProcessor implements Cloneable {
 	/** Performs gamma correction of the image or ROI. */
 	public void gamma(double value) {process(GAMMA, value);}
 	
-	/** Performs a log transform on the image or ROI. */
+	/** Does a natural logarithmic (base e) transform of the image or ROI. */
 	public void log() {process(LOG, 0.0);}
+
+	/** Does a natural logarithmic (base e) transform of the image or ROI. */
+	public void ln() {log();}
 
 	/** Performs a exponential transform on the image or ROI. */
 	public void exp() {process(EXP, 0.0);}
@@ -1947,10 +1957,9 @@ public abstract class ImageProcessor implements Cloneable {
 	/** A 3x3 median filter. Requires 8-bit or RGB image. */
 	public abstract void medianFilter();
 	
-    /** Adds random noise to the image or ROI.
-    	@param range	the range of random numbers
-    */
-    public abstract void noise(double range);
+    /** Adds pseudorandom, Gaussian ("normally") distributed values, with
+    	mean 0.0 and the specified standard deviation, to this image or ROI. */
+    public abstract void noise(double standardDeviation);
     
 	/** Creates a new processor containing an image
 		that corresponds to the current ROI. */
@@ -1988,7 +1997,7 @@ public abstract class ImageProcessor implements Cloneable {
 			aliasing artifacts; the kernel shape for averaging is determined by 
 			the interpolationMethod. False if subsampling without any averaging  
 			should be used on downsizing.  Has no effect on upsizing.
-		@ImageProcessor#setInterpolationMethod for setting the interpolation method
+		@see ImageProcessor#setInterpolationMethod
 		Author: Michael Schmid
 	*/
 	public ImageProcessor resize(int dstWidth, int dstHeight, boolean useAverging) {
@@ -2011,6 +2020,45 @@ public abstract class ImageProcessor implements Cloneable {
 		}
 	}
 	
+	/** Use linear interpolation to resize images that have a width or height of one. */
+	protected ImageProcessor resizeLinearly(int width2, int height2) {
+		int bitDepth = getBitDepth();
+		ImageProcessor ip1 = this;
+		boolean rotate = width==1;
+		if (rotate) {
+			ip1=ip1.rotateLeft();
+			int w2 = width2;
+			width2 = height2;
+			height2 = w2;
+		}
+		ip1 = ip1.convertToFloat();
+		int width1 = ip1.getWidth();
+		int height1 = ip1.getHeight();
+		ImageProcessor ip2 = ip1.createProcessor(width2, height2);
+        double scale = (double)(width1-1)/(width2-1);
+		float[] data1 = new float[width1];
+		float[] data2 = new float[width2];
+        ip1.getRow(0, 0, data1, width1);
+		double fraction;
+		for (int x=0; x<width2; x++) {
+			int x1 = (int)(x*scale);
+			int x2 = x1+1;
+			if (x2==width1) x2=width1-1;
+			fraction = x*scale - x1;
+			//ij.IJ.log(x+" "+x1+" "+x2+" "+fraction+" "+width1+" "+width2);
+			data2[x] = (float)((1.0-fraction)*data1[x1] + fraction*data1[x2]);
+		}
+		for (int y=0; y<height2; y++)
+        	ip2.putRow(0, y, data2, width2);
+        if (bitDepth==8)
+			ip2 = ip2.convertToByte(false);
+		else if (bitDepth==16)
+			ip2 = ip2.convertToShort(false);
+		if (rotate)
+			ip2=ip2.rotateRight();
+        return ip2;
+	}
+
 	/** Returns a copy of this image that has been reduced in size using binning. */
 	public ImageProcessor bin(int shrinkFactor) {
 		return new Binner().shrink(this, shrinkFactor, shrinkFactor, 0);
@@ -2472,8 +2520,12 @@ public abstract class ImageProcessor implements Cloneable {
 		sliceNumber = slice;
 	}
 	
-	/** Returns a shallow copy of this ImageProcessor. */
-	public synchronized Object clone() {
+	/** Returns a shallow copy of this ImageProcessor, where this 
+	* image and the copy share pixel data. Use the duplicate() method 
+	* to create a copy that does not share the pixel data.
+	* @see ImageProcessor#duplicate	
+	*/
+	public Object clone() {
 		try {
 			return super.clone();
 		} catch (CloneNotSupportedException e) {

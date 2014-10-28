@@ -7,7 +7,7 @@ import ij.plugin.frame.Recorder;
 import ij.plugin.filter.PlugInFilter;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Vector;
+import java.util.*;
 
 /** This plugin implements the Process/Binary/Make Binary 
 	and Convert to Mask commands. */
@@ -23,10 +23,12 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 	static boolean fill2 = true;
 	static boolean useBW = true;
 	private boolean useLocal = true;
+	private boolean listThresholds;
 	boolean convertToMask;
 	private String method = methods[0];
 	private String background = backgrounds[0];
 	private static boolean staticUseLocal = true;
+	private static boolean staticListThresholds;
 	private static String staticMethod = methods[0];
 	private static String staticBackground = backgrounds[0];
 	private ImagePlus imp;
@@ -57,19 +59,23 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 			method = staticMethod;
 			background = staticBackground;
 			useLocal = staticUseLocal;
+			listThresholds = staticListThresholds;
 			if (!thresholdSet)
 				updateThreshold(imp);
 		}
 		if (thresholdSet)
-			useLocal = false;
+			useLocal = listThresholds = false;
 		GenericDialog gd = new GenericDialog("Convert Stack to Binary");
 		gd.addChoice("Method:", methods, method);
 		gd.addChoice("Background:", backgrounds, background);
 		gd.addCheckbox("Calculate threshold for each image", useLocal);
-		gd.addCheckbox("Black background (mask)", Prefs.blackBackground);
+		gd.addCheckbox("Black background (of binary masks)", Prefs.blackBackground);
+		gd.addCheckbox("List thresholds", listThresholds);
 		choices = gd.getChoices();
-		((Choice)choices.elementAt(0)).addItemListener(this);
-		((Choice)choices.elementAt(1)).addItemListener(this);
+		if (choices!=null) {
+			((Choice)choices.elementAt(0)).addItemListener(this);
+			((Choice)choices.elementAt(1)).addItemListener(this);
+		}
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -79,10 +85,12 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 		useLocal = gd.getNextBoolean();
 		boolean saveBlackBackground = Prefs.blackBackground;
 		Prefs.blackBackground = gd.getNextBoolean();
+		listThresholds = gd.getNextBoolean();
 		if (!IJ.isMacro()) {
 			staticMethod = method;
 			staticBackground = background;
 			staticUseLocal = useLocal;
+			staticListThresholds = listThresholds;
 		}
 		Undo.reset();
 		if (useLocal)
@@ -95,7 +103,7 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 	void applyThreshold(ImagePlus imp) {
 		imp.deleteRoi();
 		ImageProcessor ip = imp.getProcessor();
-		ip.resetBinaryThreshold();
+		ip.resetBinaryThreshold();  // remove any invisible threshold set by Make Binary or Convert to Mask
 		int type = imp.getType();
 		if (type==ImagePlus.GRAY16 || type==ImagePlus.GRAY32) {
 			applyShortOrFloatThreshold(imp);
@@ -135,7 +143,7 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 			autoThreshold(ip);
 		else {
 			if (Recorder.record && !Recorder.scriptMode() && (!IJ.isMacro()||Recorder.recordInMacros))
-				Recorder.record("setThreshold", (int)saveMinThreshold, (int)saveMaxThreshold);
+				Recorder.record("//setThreshold", (int)saveMinThreshold, (int)saveMaxThreshold);
  			minThreshold = saveMinThreshold;
  			maxThreshold = saveMaxThreshold;
 		}
@@ -231,7 +239,7 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 		imp.setStack(null, stack);
 		if (imp.isComposite()) {
 			CompositeImage ci = (CompositeImage)imp;
-			ci.setMode(CompositeImage.GRAYSCALE);
+			ci.setMode(IJ.GRAYSCALE);
 			ci.resetDisplayRanges();
 			ci.updateAndDraw();
 		}
@@ -242,7 +250,10 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 
 	void convertStackToBinary(ImagePlus imp) {
 		int nSlices = imp.getStackSize();
-		if ((imp.getBitDepth()!=8)) {
+		double[] minValues = listThresholds?new double[nSlices]:null;
+		double[] maxValues = listThresholds?new double[nSlices]:null;
+		int bitDepth = imp.getBitDepth();
+		if (bitDepth!=8) {
 			IJ.showStatus("Converting to byte");
 			ImageStack stack1 = imp.getStack();
 			ImageStack stack2 = new ImageStack(imp.getWidth(), imp.getHeight());
@@ -251,12 +262,18 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 				String label = stack1.getSliceLabel(i);
 				ImageProcessor ip = stack1.getProcessor(i);
 				ip.resetMinAndMax();
+				if (listThresholds) {
+					minValues[i-1] = ip.getMin();
+					maxValues[i-1] = ip.getMax();
+				}
 				stack2.addSlice(label, ip.convertToByte(true));
 			}
 			imp.setStack(null, stack2);
 		}
 		ImageStack stack = imp.getStack();
 		IJ.showStatus("Auto-thresholding");
+		if (listThresholds)
+			IJ.log("Thresholding method: "+method);
 		for (int i=1; i<=nSlices; i++) {
 			IJ.showProgress(i, nSlices);
 			ImageProcessor ip = stack.getProcessor(i);
@@ -266,6 +283,16 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 				ip.setAutoThreshold(method, !background.equals("Light"), ImageProcessor.NO_LUT_UPDATE);
 			minThreshold = ip.getMinThreshold();
 			maxThreshold = ip.getMaxThreshold();
+			if (listThresholds) {
+				double t1 = minThreshold;
+				double t2 = maxThreshold;
+				if (bitDepth!=8) {
+					t1 = minValues[i-1] + (t1/255.0)*(maxValues[i-1]-minValues[i-1]);
+					t2 = minValues[i-1] + (t2/255.0)*(maxValues[i-1]-minValues[i-1]);
+				}
+				int digits = bitDepth==32?2:0;
+				IJ.log("  "+i+": "+IJ.d2s(t1,digits)+"-"+IJ.d2s(t2,digits));
+			}
 			int[] lut = new int[256];
 			for (int j=0; j<256; j++) {
 				if (j>=minThreshold && j<=maxThreshold)
@@ -280,7 +307,7 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 		imp.getProcessor().setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
 		if (imp.isComposite()) {
 			CompositeImage ci = (CompositeImage)imp;
-			ci.setMode(CompositeImage.GRAYSCALE);
+			ci.setMode(IJ.GRAYSCALE);
 			ci.resetDisplayRanges();
 			ci.updateAndDraw();
 		}

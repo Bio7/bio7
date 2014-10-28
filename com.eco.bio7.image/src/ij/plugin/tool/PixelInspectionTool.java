@@ -1,6 +1,5 @@
 package ij.plugin.tool;
 import ij.*;
-import ij.plugin.frame.PlugInAwtFrame;
 import ij.plugin.frame.PlugInFrame;
 import ij.process.*;
 import ij.measure.*;
@@ -107,8 +106,8 @@ public class  PixelInspectionTool extends PlugInTool {
 
 }
 
-/*Changed for Bio7 - uses extra class PlugInAwtFrame instead of PlugInFrame!*/
-class PixelInspector extends PlugInAwtFrame
+
+class PixelInspector extends PlugInFrame
 		implements ImageListener, KeyListener, MouseListener, Runnable {
 	//ImageListener: listens to changes of image data
 	//KeyListener: for fix/unfix key
@@ -315,8 +314,9 @@ class PixelInspector extends PlugInAwtFrame
 	}
 
 	synchronized void update(int whichUpdate) {
-		if (nextUpdate < whichUpdate) nextUpdate = whichUpdate;
-		notify();								//wake up the background thread
+		if (nextUpdate < whichUpdate)
+			nextUpdate = whichUpdate;
+		notify();		//wake up the background thread
 	}
 
 	// the background thread for updating the table

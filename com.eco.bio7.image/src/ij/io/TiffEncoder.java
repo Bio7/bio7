@@ -112,8 +112,9 @@ public class TiffEncoder {
 		long nextIFD = 0L;
 		if (fi.nImages>1)
 			nextIFD = imageOffset+stackSize;
-        if (nextIFD+fi.nImages*ifdSize>=0xffffffffL)
-            nextIFD = 0L;
+		boolean bigTiff = nextIFD+fi.nImages*ifdSize>=0xffffffffL;
+		if (bigTiff)
+			nextIFD = 0L;
 		writeIFD(out, (int)imageOffset, (int)nextIFD);
 		if (fi.fileType==FileInfo.RGB||fi.fileType==FileInfo.RGB48)
 			writeBitsPerPixel(out);
@@ -141,7 +142,8 @@ public class TiffEncoder {
 				imageOffset += imageSize;
 				writeIFD(out, (int)imageOffset, (int)nextIFD);
 			}
-		}
+		} else if (bigTiff)
+				ij.IJ.log("Stack is larger than 4GB. Most TIFF readers will only open the first image. Use this information to open as raw:\n"+fi);
 	}
 	
 	public void write(DataOutputStream out) throws IOException {
@@ -324,7 +326,8 @@ public class TiffEncoder {
 		double xscale = 1.0/fi.pixelWidth;
 		double yscale = 1.0/fi.pixelHeight;
 		double scale = 1000000.0;
-		if (xscale>1000.0) scale = 1000.0;
+		if (xscale*scale>Integer.MAX_VALUE||yscale*scale>Integer.MAX_VALUE)
+			scale = (int)(Integer.MAX_VALUE/Math.max(xscale,yscale));
 		writeInt(out, (int)(xscale*scale));
 		writeInt(out, (int)scale);
 		writeInt(out, (int)(yscale*scale));

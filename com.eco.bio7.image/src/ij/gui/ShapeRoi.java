@@ -594,8 +594,10 @@ public class ShapeRoi extends Roi {
 	/** Caculates "Feret" (maximum caliper width) and "MinFeret" (minimum caliper width). */	
 	public double[] getFeretValues() {
 		Roi[] rois = getRois();
-		if (rois!=null && rois.length==1)
+		if (rois!=null && rois.length==1) {
+			rois[0].setImage(imp);
 			return rois[0].getFeretValues();
+		}
 		double min=Double.MAX_VALUE, diameter=0.0, angle=0.0;
 		int p1=0, p2=0;
 		double pw=1.0, ph=1.0;
@@ -997,6 +999,7 @@ public class ShapeRoi extends Roi {
 	public void draw(Graphics g) {
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		boolean isActiveOverlayRoi = !overlay && isActiveOverlayRoi();
+		//IJ.log("draw: "+overlay+"  "+isActiveOverlayRoi);
 		if (isActiveOverlayRoi)
 			color = Color.cyan;
 		if (fillColor!=null) color = fillColor;
@@ -1033,7 +1036,8 @@ public class ShapeRoi extends Roi {
 	public void drawRoiBrush(Graphics g) {
 		g.setColor(ROIColor);
 		int size = Toolbar.getBrushSize();
-		if (size==0) return;
+		if (size==0 || ic==null)
+			return;
 		int flags = ic.getModifiers();
 		if ((flags&16)==0) return; // exit if mouse button up
 		size = (int)(size*mag);
@@ -1078,13 +1082,6 @@ public class ShapeRoi extends Roi {
 			return null;
 		if (cachedMask!=null && cachedMask.getPixels()!=null)
 			return cachedMask;
-		//Rectangle r = getBounds();
-		//if (r.x<0 || r.y<0) {
-		//	if (r.x<0) r.x = 0;
-		//	if (r.y<0) r.y = 0;
-		//	ShapeRoi clipRect = new ShapeRoi(new Roi(r.x,r.y,r.width,r.height));
-		//	setShape(getShape(this.or(clipRect)));
-		//}
 		BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
 		Graphics2D g2d = bi.createGraphics();
 		g2d.setColor(Color.white);

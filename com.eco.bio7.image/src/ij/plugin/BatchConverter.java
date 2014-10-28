@@ -8,10 +8,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-
 /** This plugin implements the File/Batch/Convert command, 
 	which converts the images in a folder to a specified format. */
 	public class BatchConverter implements PlugIn, ActionListener {
@@ -22,8 +18,8 @@ import javax.swing.JTextField;
 		private static boolean useBioFormats;
 		private static int interpolationMethod = ImageProcessor.BILINEAR;
 		private String[] methods = ImageProcessor.getInterpolationMethods();
-		private JButton input, output;
-		private JTextField inputDir, outputDir;
+		private Button input, output;
+		private TextField inputDir, outputDir;
 		private GenericDialog gd;
 
 	public void run(String arg) {
@@ -118,20 +114,20 @@ import javax.swing.JTextField;
 	}
 
 	void addPanels(GenericDialog gd) {
-		JPanel p = new JPanel();
+		Panel p = new Panel();
     	p.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
-		input = new JButton("Input...");
+		input = new Button("Input...");
 		input.addActionListener(this);
 		p.add(input);
-		inputDir = new JTextField(Prefs.get("batch.input", ""), 45);
+		inputDir = new TextField(Prefs.get("batch.input", ""), 45);
 		p.add(inputDir);
 		gd.addPanel(p);
-		p = new JPanel();
+		p = new Panel();
     	p.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
-		output = new JButton("Output...");
+		output = new Button("Output...");
 		output.addActionListener(this);
 		p.add(output);
-		outputDir = new JTextField(Prefs.get("batch.output", ""), 45);
+		outputDir = new TextField(Prefs.get("batch.output", ""), 45);
 		p.add(outputDir);
 		gd.addPanel(p);
 	}

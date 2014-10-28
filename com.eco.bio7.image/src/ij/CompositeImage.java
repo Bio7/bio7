@@ -9,7 +9,7 @@ import java.awt.image.*;
 
 public class CompositeImage extends ImagePlus {
 
-	// Note: TRANSPARENT mode has not yet been implemented
+	/** Display modes (note: TRANSPARENT mode has not yet been implemented) */
 	public static final int COMPOSITE=1, COLOR=2, GRAYSCALE=3, TRANSPARENT=4;
 	public static final int MAX_CHANNELS = 7;
 	int[] rgbPixels;
@@ -56,8 +56,10 @@ public class CompositeImage extends ImagePlus {
 		} else
 			stack2 = imp.getImageStack();
 		int stackSize = stack2.getSize();
-		if (channels==1 && isRGB) channels = 3;
-		if (channels==1 && stackSize<=MAX_CHANNELS) channels = stackSize;
+		if (channels==1 && isRGB)
+			channels = 3;
+		if (channels==1 && stackSize<=MAX_CHANNELS && !imp.dimensionsSet)
+			channels = stackSize;
 		if (channels<1 || (stackSize%channels)!=0)
 			throw new IllegalArgumentException("stacksize not multiple of channels");
 		if (mode==COMPOSITE && channels>MAX_CHANNELS)
@@ -121,6 +123,11 @@ public class CompositeImage extends ImagePlus {
 	}
 
 	void setup(int channels, ImageStack stack2) {
+		if (stack2!=null && stack2.getSize()>0 && (stack2.getProcessor(1) instanceof ColorProcessor)) { // RGB?
+			cip = null;
+			lut = null;
+			return;
+		}
 		setupLuts(channels);
 		if (mode==COMPOSITE) {
 			cip = new ImageProcessor[channels];
@@ -186,7 +193,7 @@ public class CompositeImage extends ImagePlus {
 		int redValue, greenValue, blueValue;
 		int ch = getChannel();
 		
-		//IJ.log("CompositeImage.updateImage: "+ch+"/"+nChannels+" "+currentSlice+" "+currentFrame);
+		//IJ.log("updateImage: "+ch+"/"+nChannels+" "+currentSlice+" "+currentFrame);
 		if (ch>nChannels) ch = nChannels;
 		boolean newChannel = false;
 		if (ch-1!=currentChannel) {

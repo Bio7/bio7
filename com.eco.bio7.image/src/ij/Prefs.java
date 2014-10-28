@@ -1,6 +1,6 @@
 package ij;
-
 import ij.util.Java2;
+
 import java.io.*;
 import java.util.*;
 import java.applet.*;
@@ -25,10 +25,10 @@ import ij.process.ColorProcessor;
 import ij.text.TextWindow;
 
 /**
- * This class contains the ImageJ preferences, which are loaded from the "IJ_Props.txt" and "IJ_Prefs.txt" files.
- * 
- * @see ij.ImageJ
- */
+This class contains the ImageJ preferences, which are 
+loaded from the "IJ_Props.txt" and "IJ_Prefs.txt" files.
+@see ij.ImageJ
+*/
 public class Prefs {
 
 	public static final String PROPS_NAME = "IJ_Props.txt";
@@ -40,24 +40,30 @@ public class Prefs {
 	public static final String SHOW_ALL_COLOR = "showcolor";
 	public static final String JPEG = "jpeg";
 	public static final String FPS = "fps";
-	public static final String DIV_BY_ZERO_VALUE = "div-by-zero";
-	public static final String NOISE_SD = "noise.sd";
-	public static final String MENU_SIZE = "menu.size";
-	public static final String THREADS = "threads";
+    public static final String DIV_BY_ZERO_VALUE = "div-by-zero";
+    public static final String NOISE_SD = "noise.sd";
+    public static final String MENU_SIZE = "menu.size";
+    public static final String THREADS = "threads";
 	public static final String KEY_PREFIX = ".";
+ 
+	private static final int USE_POINTER=1<<0, ANTIALIASING=1<<1, INTERPOLATE=1<<2, ONE_HUNDRED_PERCENT=1<<3,
+		BLACK_BACKGROUND=1<<4, JFILE_CHOOSER=1<<5, UNUSED=1<<6, BLACK_CANVAS=1<<7, WEIGHTED=1<<8, 
+		AUTO_MEASURE=1<<9, REQUIRE_CONTROL=1<<10, USE_INVERTING_LUT=1<<11, ANTIALIASED_TOOLS=1<<12,
+		INTEL_BYTE_ORDER=1<<13, DOUBLE_BUFFER=1<<14, NO_POINT_LABELS=1<<15, NO_BORDER=1<<16,
+		SHOW_ALL_SLICE_ONLY=1<<17, COPY_HEADERS=1<<18, NO_ROW_NUMBERS=1<<19,
+		MOVE_TO_MISC=1<<20, ADD_TO_MANAGER=1<<21, RUN_SOCKET_LISTENER=1<<22,
+		MULTI_POINT_MODE=1<<23, ROTATE_YZ=1<<24, FLIP_XZ=1<<25,
+		DONT_SAVE_HEADERS=1<<26, DONT_SAVE_ROW_NUMBERS=1<<27, NO_CLICK_TO_GC=1<<28,
+		AVOID_RESLICE_INTERPOLATION=1<<29, KEEP_UNDO_BUFFERS=1<<30; 
+    public static final String OPTIONS = "prefs.options";
+    
+	public static final String vistaHint = "";  // no longer used
 
-	private static final int USE_POINTER = 1 << 0, ANTIALIASING = 1 << 1, INTERPOLATE = 1 << 2, ONE_HUNDRED_PERCENT = 1 << 3, BLACK_BACKGROUND = 1 << 4, JFILE_CHOOSER = 1 << 5, UNUSED = 1 << 6,
-			BLACK_CANVAS = 1 << 7, WEIGHTED = 1 << 8, AUTO_MEASURE = 1 << 9, REQUIRE_CONTROL = 1 << 10, USE_INVERTING_LUT = 1 << 11, ANTIALIASED_TOOLS = 1 << 12, INTEL_BYTE_ORDER = 1 << 13,
-			DOUBLE_BUFFER = 1 << 14, NO_POINT_LABELS = 1 << 15, NO_BORDER = 1 << 16, SHOW_ALL_SLICE_ONLY = 1 << 17, COPY_HEADERS = 1 << 18, NO_ROW_NUMBERS = 1 << 19, MOVE_TO_MISC = 1 << 20,
-			ADD_TO_MANAGER = 1 << 21, RUN_SOCKET_LISTENER = 1 << 22, MULTI_POINT_MODE = 1 << 23, ROTATE_YZ = 1 << 24, FLIP_XZ = 1 << 25, DONT_SAVE_HEADERS = 1 << 26, DONT_SAVE_ROW_NUMBERS = 1 << 27,
-			NO_CLICK_TO_GC = 1 << 28, AVOID_RESLICE_INTERPOLATION = 1 << 29, KEEP_UNDO_BUFFERS = 1 << 30;
-	public static final String OPTIONS = "prefs.options";
-
-	public static final String vistaHint = ""; // no longer used
-
-	private static final int USE_SYSTEM_PROXIES = 1 << 0, USE_FILE_CHOOSER = 1 << 1, SUBPIXEL_RESOLUTION = 1 << 2, ENHANCED_LINE_TOOL = 1 << 3;
+	private static final int USE_SYSTEM_PROXIES=1<<0, USE_FILE_CHOOSER=1<<1,
+		SUBPIXEL_RESOLUTION=1<<2, ENHANCED_LINE_TOOL=1<<3, SKIP_RAW_DIALOG=1<<4,
+		REVERSE_NEXT_PREVIOUS_ORDER=1<<5;
 	public static final String OPTIONS2 = "prefs.options2";
-
+    
 	/** file.separator system property */
 	public static String separator = System.getProperty("file.separator");
 	/** Use pointer cursor instead of cross */
@@ -66,15 +72,13 @@ public class Prefs {
 	public static boolean antialiasedText;
 	/** Display images scaled <100% using bilinear interpolation */
 	public static boolean interpolateScaledImages;
-	/** Open images at 100% magnification */
+	/** Open images at 100% magnification*/
 	public static boolean open100Percent;
-	/** Backgound is black in binary images */
+	/** Backgound is black in binary images*/
 	public static boolean blackBackground;
 	/** Use JFileChooser instead of FileDialog to open and save files. */
 	public static boolean useJFileChooser;
-	/**
-	 * Color to grayscale conversion is weighted (0.299, 0.587, 0.114) if the variable is true.
-	 */
+	/** Color to grayscale conversion is weighted (0.299, 0.587, 0.114) if the variable is true. */
 	public static boolean weightedColor;
 	/** Use black image border. */
 	public static boolean blackCanvas;
@@ -98,9 +102,7 @@ public class Prefs {
 	public static boolean disableUndo;
 	/** Do not draw black border around image. */
 	public static boolean noBorder;
-	/**
-	 * Only show ROIs associated with current slice in Roi Manager "Show All" mode.
-	 */
+	/** Only show ROIs associated with current slice in Roi Manager "Show All" mode. */
 	public static boolean showAllSliceOnly;
 	/** Include column headers when copying tables to clipboard. */
 	public static boolean copyColumnHeaders;
@@ -110,6 +112,8 @@ public class Prefs {
 	public static boolean moveToMisc;
 	/** Add points to ROI Manager. */
 	public static boolean pointAddToManager;
+	/** Add points to overlay. */
+	public static boolean pointAddToOverlay;
 	/** Extend the borders to foreground for binary erosions and closings. */
 	public static boolean padEdges;
 	/** Run the SocketListener. */
@@ -140,13 +144,10 @@ public class Prefs {
 	public static boolean useNamesAsLabels;
 	/** Set the "java.net.useSystemProxies" property */
 	public static boolean useSystemProxies;
-	/**
-	 * Use the file chooser to import and export image sequences on Windows and Linux
-	 */
+	/** Use the file chooser to import and export image sequences on Windows and Linux*/
 	public static boolean useFileChooser;
 	/** Use sub-pixel resolution with line selections */
 	public static boolean subPixelResolution;
-
 	/** Adjust contrast when scrolling stacks (or hold shift key down) */
 	public static boolean autoContrast;
 	/** Allow lines to be created with one click at start and another at the end */
@@ -155,6 +156,10 @@ public class Prefs {
 	public static boolean keepArrowSelections;
 	/** Aways paint using double buffering, except on OS X */
 	public static boolean paintDoubleBuffered;
+	/** Do not display dialog when opening .raw files */
+	public static boolean skipRawDialog;
+	/** Reverse channel-slice-frame priority used by Next Slice and Previous Slice commands. */
+	public static boolean reverseNextPreviousOrder;
 
 	static Properties ijPrefs = new Properties();
 	static Properties props = new Properties(ijPrefs);
@@ -166,19 +171,10 @@ public class Prefs {
 	static boolean commandLineMacro;
 	private static boolean resetPreferences;
 
-	/**
-	 * Finds and loads the ImageJ configuration file, "IJ_Props.txt".
-	 * 
-	 * @return an error message if "IJ_Props.txt" not found.
-	 */
+	/** Finds and loads the ImageJ configuration file, "IJ_Props.txt".
+		@return	an error message if "IJ_Props.txt" not found.
+	*/
 	public static String load(Object ij, Applet applet) {
-		/*
-		 * InputStream f = ij.getClass().getResourceAsStream("/"+PROPS_NAME); if (applet!=null) return loadAppletProps(f, applet); if (homeDir==null) homeDir = System.getProperty("user.dir"); String userHome = System.getProperty("user.home"); if (IJ.isWindows()) { prefsDir = homeDir; //ImageJ folder
-		 * on Windows if (prefsDir.endsWith("Desktop")) prefsDir = userHome; } else { prefsDir = userHome; // Mac Preferences folder or Unix home dir if (IJ.isMacOSX()) prefsDir += "/Library/Preferences"; else prefsDir += "/.imagej"; } if (f==null) { try {f = new
-		 * FileInputStream(homeDir+"/"+PROPS_NAME);} catch (FileNotFoundException e) {f=null;} } if (f==null) return PROPS_NAME+" not found in ij.jar or in "+homeDir; f = new BufferedInputStream(f); try {props.load(f); f.close();} catch (IOException e) {return("Error loading "+PROPS_NAME);}
-		 * imagesURL = props.getProperty("images.location"); loadPreferences(); loadOptions(); return null;
-		 */
-
 		/* Changed for Bio7! */
 		Bundle bundle = Platform.getBundle("com.eco.bio7.image");
 		URL locationUrl = FileLocator.find(bundle, new Path("/"), null);
@@ -234,23 +230,30 @@ public class Prefs {
 	}
 
 	/*
-	 * static void dumpPrefs(String title) { IJ.log(""); IJ.log(title); Enumeration e = ijPrefs.keys(); while (e.hasMoreElements()) { String key = (String) e.nextElement(); IJ.log(key+": "+ijPrefs.getProperty(key)); } }
-	 */
+	static void dumpPrefs(String title) {
+		IJ.log("");
+		IJ.log(title);
+		Enumeration e = ijPrefs.keys();
+		while (e.hasMoreElements()) {
+			String key = (String) e.nextElement();
+			IJ.log(key+": "+ijPrefs.getProperty(key));
+		}
+	}
+	*/
 
 	static String loadAppletProps(InputStream f, Applet applet) {
-		if (f == null)
-			return PROPS_NAME + " not found in ij.jar";
+		if (f==null)
+			return PROPS_NAME+" not found in ij.jar";
 		try {
 			props.load(f);
 			f.close();
-		} catch (IOException e) {
-			return ("Error loading " + PROPS_NAME);
 		}
+		catch (IOException e) {return("Error loading "+PROPS_NAME);}
 		try {
 			URL url = new URL(applet.getDocumentBase(), "images/");
 			imagesURL = url.toString();
-		} catch (Exception e) {
 		}
+		catch (Exception e) {}
 		return null;
 	}
 
@@ -264,9 +267,8 @@ public class Prefs {
 		imagesURL = url;
 	}
 
-	/**
-	 * Obsolete, replaced by getImageJDir(), which, unlike this method, returns a path that ends with File.separator.
-	 */
+	/** Obsolete, replaced by getImageJDir(), which, unlike this method, 
+		returns a path that ends with File.separator. */
 	public static String getHomeDir() {
 		return homeDir;
 	}
@@ -274,15 +276,14 @@ public class Prefs {
 	/** Returns the path, ending in File.separator, to the ImageJ directory. */
 	public static String getImageJDir() {
 		String path = Menus.getImageJPath();
-		if (path == null)
+		if (path==null)
 			return homeDir + File.separator;
 		else
 			return path;
 	}
 
-	/**
-	 * Gets the path to the directory where the preferences file (IJPrefs.txt) is saved.
-	 */
+	/** Gets the path to the directory where the 
+		preferences file (IJPrefs.txt) is saved. */
 	public static String getPrefsDir() {
 		return prefsDir;
 	}
@@ -290,9 +291,8 @@ public class Prefs {
 	/** Sets the path to the ImageJ directory. */
 	static void setHomeDir(String path) {
 		if (path.endsWith(File.separator))
-			path = path.substring(0, path.length() - 1);
+			path = path.substring(0, path.length()-1);
 		homeDir = path;
-
 	}
 
 	/** Returns the default directory, if any, or null. */
@@ -310,10 +310,10 @@ public class Prefs {
 
 	/** Finds an string in IJ_Props or IJ_Prefs.txt. */
 	public static String getString(String key, String defaultString) {
-		if (props == null)
+		if (props==null)
 			return defaultString;
 		String s = props.getProperty(key);
-		if (s == null)
+		if (s==null)
 			return defaultString;
 		else
 			return s;
@@ -321,10 +321,9 @@ public class Prefs {
 
 	/** Finds a boolean in IJ_Props or IJ_Prefs.txt. */
 	public static boolean getBoolean(String key, boolean defaultValue) {
-		if (props == null)
-			return defaultValue;
+		if (props==null) return defaultValue;
 		String s = props.getProperty(key);
-		if (s == null)
+		if (s==null)
 			return defaultValue;
 		else
 			return s.equals("true");
@@ -332,33 +331,28 @@ public class Prefs {
 
 	/** Finds an int in IJ_Props or IJ_Prefs.txt. */
 	public static int getInt(String key, int defaultValue) {
-		if (props == null) // workaround for Netscape JIT bug
+		if (props==null) //workaround for Netscape JIT bug
 			return defaultValue;
 		String s = props.getProperty(key);
-		if (s != null) {
+		if (s!=null) {
 			try {
 				return Integer.decode(s).intValue();
-			} catch (NumberFormatException e) {
-				IJ.write("" + e);
-			}
+			} catch (NumberFormatException e) {IJ.write(""+e);}
 		}
 		return defaultValue;
 	}
 
 	/** Looks up a real number in IJ_Props or IJ_Prefs.txt. */
 	public static double getDouble(String key, double defaultValue) {
-		if (props == null)
+		if (props==null)
 			return defaultValue;
 		String s = props.getProperty(key);
 		Double d = null;
-		if (s != null) {
-			try {
-				d = new Double(s);
-			} catch (NumberFormatException e) {
-				d = null;
-			}
-			if (d != null)
-				return (d.doubleValue());
+		if (s!=null) {
+			try {d = new Double(s);}
+			catch (NumberFormatException e){d = null;}
+			if (d!=null)
+				return(d.doubleValue());
 		}
 		return defaultValue;
 	}
@@ -378,15 +372,13 @@ public class Prefs {
 
 	/** Opens the IJ_Prefs.txt file. */
 	static void loadPreferences() {
-		String path = prefsDir + separator + PREFS_NAME;
-		boolean ok = loadPrefs(path);
+		String path = prefsDir+separator+PREFS_NAME;
+		boolean ok =  loadPrefs(path);
 		if (!ok) { // not found
 			if (IJ.isWindows())
-				path = homeDir + separator + PREFS_NAME; // ImageJ folder
+				path = homeDir +separator+PREFS_NAME; // ImageJ folder
 			else
-				path = System.getProperty("user.home") + separator + PREFS_NAME; // User's
-																					// home
-																					// dir
+				path = System.getProperty("user.home")+separator+PREFS_NAME; //User's home dir
 			ok = loadPrefs(path);
 			if (ok)
 				new File(path).delete();
@@ -411,7 +403,7 @@ public class Prefs {
 		try {
 			Properties prefs = new Properties();
 			String dir = OpenDialog.getDefaultDirectory();
-			if (dir != null)
+			if (dir!=null)
 				prefs.put(DIR_IMAGE, dir);
 			prefs.put(ROICOLOR, Tools.c2hex(Roi.getColor()));
 			prefs.put(SHOW_ALL_COLOR, Tools.c2hex(ImageCanvas.getShowAllColor()));
@@ -421,10 +413,8 @@ public class Prefs {
 			prefs.put(FPS, Double.toString(Animator.getFrameRate()));
 			prefs.put(DIV_BY_ZERO_VALUE, Double.toString(FloatBlitter.divideByZeroValue));
 			prefs.put(NOISE_SD, Double.toString(Filters.getSD()));
-			if (threads > 1)
-				prefs.put(THREADS, Integer.toString(threads));
-			if (IJ.isMacOSX())
-				useJFileChooser = false;
+			if (threads>1) prefs.put(THREADS, Integer.toString(threads));
+			if (IJ.isMacOSX()) useJFileChooser = false;
 			saveOptions(prefs);
 			savePluginPrefs(prefs);
 			IJ.getInstance().savePreferences(prefs);
@@ -434,11 +424,10 @@ public class Prefs {
 			ImportDialog.savePreferences(prefs);
 			PlotWindow.savePreferences(prefs);
 			NewImage.savePreferences(prefs);
-			path = prefsDir + separator + PREFS_NAME;
+			path = prefsDir+separator+PREFS_NAME;
 			if (prefsDir.endsWith(".imagej")) {
 				File f = new File(prefsDir);
-				if (!f.exists())
-					f.mkdir(); // create .imagej directory
+				if (!f.exists()) f.mkdir(); // create .imagej directory
 			}
 			if (resetPreferences) {
 				new File(path).delete();
@@ -447,15 +436,12 @@ public class Prefs {
 				savePrefs(prefs, path);
 		} catch (Throwable t) {
 			String msg = t.getMessage();
-			if (msg == null)
-				msg = "" + t;
+			if (msg==null) msg = ""+t;
 			int delay = 4000;
-
 			try {
-				new TextWindow("Error Saving Preferences:\n" + path, msg, 500, 200);
+				new TextWindow("Error Saving Preferences:\n"+path, msg, 500, 200);
 				IJ.wait(delay);
-			} catch (Throwable t2) {
-			}
+			} catch (Throwable t2) {}
 		}
 	}
 
@@ -465,162 +451,170 @@ public class Prefs {
 	}
 
 	static void loadOptions() {
-		int defaultOptions = ANTIALIASING + AVOID_RESLICE_INTERPOLATION + ANTIALIASED_TOOLS + (!IJ.isMacOSX() ? RUN_SOCKET_LISTENER : 0);
+		int defaultOptions = ANTIALIASING+AVOID_RESLICE_INTERPOLATION+ANTIALIASED_TOOLS
+			+(!IJ.isMacOSX()?RUN_SOCKET_LISTENER:0);
 		int options = getInt(OPTIONS, defaultOptions);
-		usePointerCursor = (options & USE_POINTER) != 0;
-		// antialiasedText = (options&ANTIALIASING)!=0;
+		usePointerCursor = (options&USE_POINTER)!=0;
+		//antialiasedText = (options&ANTIALIASING)!=0;
 		antialiasedText = false;
-		interpolateScaledImages = (options & INTERPOLATE) != 0;
-		open100Percent = (options & ONE_HUNDRED_PERCENT) != 0;
-		blackBackground = (options & BLACK_BACKGROUND) != 0;
-		useJFileChooser = (options & JFILE_CHOOSER) != 0;
-		weightedColor = (options & WEIGHTED) != 0;
+		interpolateScaledImages = (options&INTERPOLATE)!=0;
+		open100Percent = (options&ONE_HUNDRED_PERCENT)!=0;
+		blackBackground = (options&BLACK_BACKGROUND)!=0;
+		useJFileChooser = (options&JFILE_CHOOSER)!=0;
+		weightedColor = (options&WEIGHTED)!=0;
 		if (weightedColor)
 			ColorProcessor.setWeightingFactors(0.299, 0.587, 0.114);
-		blackCanvas = (options & BLACK_CANVAS) != 0;
-		pointAutoMeasure = (options & AUTO_MEASURE) != 0;
-		requireControlKey = (options & REQUIRE_CONTROL) != 0;
-		useInvertingLut = (options & USE_INVERTING_LUT) != 0;
-		antialiasedTools = (options & ANTIALIASED_TOOLS) != 0;
-		intelByteOrder = (options & INTEL_BYTE_ORDER) != 0;
-		// doubleBuffer = (options&DOUBLE_BUFFER)!=0; // always double buffer
-		// noPointLabels = (options&NO_POINT_LABELS)!=0;
-		noBorder = (options & NO_BORDER) != 0;
-		showAllSliceOnly = (options & SHOW_ALL_SLICE_ONLY) != 0;
-		copyColumnHeaders = (options & COPY_HEADERS) != 0;
-		noRowNumbers = (options & NO_ROW_NUMBERS) != 0;
-		moveToMisc = (options & MOVE_TO_MISC) != 0;
-		pointAddToManager = (options & ADD_TO_MANAGER) != 0;
-		runSocketListener = (options & RUN_SOCKET_LISTENER) != 0;
-		multiPointMode = (options & MULTI_POINT_MODE) != 0;
-		rotateYZ = (options & ROTATE_YZ) != 0;
-		flipXZ = (options & FLIP_XZ) != 0;
-		dontSaveHeaders = (options & DONT_SAVE_HEADERS) != 0;
-		dontSaveRowNumbers = (options & DONT_SAVE_ROW_NUMBERS) != 0;
-		noClickToGC = (options & NO_CLICK_TO_GC) != 0;
-		avoidResliceInterpolation = (options & AVOID_RESLICE_INTERPOLATION) != 0;
-		keepUndoBuffers = (options & KEEP_UNDO_BUFFERS) != 0;
-
-		defaultOptions = (!IJ.isMacOSX() ? USE_FILE_CHOOSER : 0);
+		blackCanvas = (options&BLACK_CANVAS)!=0;
+		requireControlKey = (options&REQUIRE_CONTROL)!=0;
+		useInvertingLut = (options&USE_INVERTING_LUT)!=0;
+		antialiasedTools = (options&ANTIALIASED_TOOLS)!=0;
+		intelByteOrder = (options&INTEL_BYTE_ORDER)!=0;
+		noBorder = (options&NO_BORDER)!=0;
+		showAllSliceOnly = (options&SHOW_ALL_SLICE_ONLY)!=0;
+		copyColumnHeaders = (options&COPY_HEADERS)!=0;
+		noRowNumbers = (options&NO_ROW_NUMBERS)!=0;
+		moveToMisc = (options&MOVE_TO_MISC)!=0;
+		runSocketListener = (options&RUN_SOCKET_LISTENER)!=0;
+		multiPointMode = (options&MULTI_POINT_MODE)!=0;
+		rotateYZ = (options&ROTATE_YZ)!=0;
+		flipXZ = (options&FLIP_XZ)!=0;
+		dontSaveHeaders = (options&DONT_SAVE_HEADERS)!=0;
+		dontSaveRowNumbers = (options&DONT_SAVE_ROW_NUMBERS)!=0;
+		noClickToGC = (options&NO_CLICK_TO_GC)!=0;
+		avoidResliceInterpolation = (options&AVOID_RESLICE_INTERPOLATION)!=0;
+		keepUndoBuffers = (options&KEEP_UNDO_BUFFERS)!=0;
+		
+		defaultOptions = (!IJ.isMacOSX()?USE_FILE_CHOOSER:0);
 		int options2 = getInt(OPTIONS2, defaultOptions);
-		useSystemProxies = (options2 & USE_SYSTEM_PROXIES) != 0;
-		useFileChooser = (options2 & USE_FILE_CHOOSER) != 0;
-		subPixelResolution = (options2 & SUBPIXEL_RESOLUTION) != 0;
-		enhancedLineTool = (options2 & ENHANCED_LINE_TOOL) != 0;
+		useSystemProxies = (options2&USE_SYSTEM_PROXIES)!=0;
+		useFileChooser = (options2&USE_FILE_CHOOSER)!=0;
+		subPixelResolution = (options2&SUBPIXEL_RESOLUTION)!=0;
+		enhancedLineTool = (options2&ENHANCED_LINE_TOOL)!=0;
+		skipRawDialog = (options2&SKIP_RAW_DIALOG)!=0;
+		reverseNextPreviousOrder = (options2&REVERSE_NEXT_PREVIOUS_ORDER)!=0;
 	}
 
 	static void saveOptions(Properties prefs) {
-		int options = (usePointerCursor ? USE_POINTER : 0) + (antialiasedText ? ANTIALIASING : 0) + (interpolateScaledImages ? INTERPOLATE : 0) + (open100Percent ? ONE_HUNDRED_PERCENT : 0)
-				+ (blackBackground ? BLACK_BACKGROUND : 0) + (useJFileChooser ? JFILE_CHOOSER : 0) + (blackCanvas ? BLACK_CANVAS : 0) + (weightedColor ? WEIGHTED : 0)
-				+ (pointAutoMeasure ? AUTO_MEASURE : 0) + (requireControlKey ? REQUIRE_CONTROL : 0) + (useInvertingLut ? USE_INVERTING_LUT : 0) + (antialiasedTools ? ANTIALIASED_TOOLS : 0)
-				+ (intelByteOrder ? INTEL_BYTE_ORDER : 0) + (doubleBuffer ? DOUBLE_BUFFER : 0) + (noPointLabels ? NO_POINT_LABELS : 0) + (noBorder ? NO_BORDER : 0)
-				+ (showAllSliceOnly ? SHOW_ALL_SLICE_ONLY : 0) + (copyColumnHeaders ? COPY_HEADERS : 0) + (noRowNumbers ? NO_ROW_NUMBERS : 0) + (moveToMisc ? MOVE_TO_MISC : 0)
-				+ (pointAddToManager ? ADD_TO_MANAGER : 0) + (runSocketListener ? RUN_SOCKET_LISTENER : 0) + (multiPointMode ? MULTI_POINT_MODE : 0) + (rotateYZ ? ROTATE_YZ : 0)
-				+ (flipXZ ? FLIP_XZ : 0) + (dontSaveHeaders ? DONT_SAVE_HEADERS : 0) + (dontSaveRowNumbers ? DONT_SAVE_ROW_NUMBERS : 0) + (noClickToGC ? NO_CLICK_TO_GC : 0)
-				+ (avoidResliceInterpolation ? AVOID_RESLICE_INTERPOLATION : 0) + (keepUndoBuffers ? KEEP_UNDO_BUFFERS : 0);
+		int options = (usePointerCursor?USE_POINTER:0) + (antialiasedText?ANTIALIASING:0)
+			+ (interpolateScaledImages?INTERPOLATE:0) + (open100Percent?ONE_HUNDRED_PERCENT:0)
+			+ (blackBackground?BLACK_BACKGROUND:0) + (useJFileChooser?JFILE_CHOOSER:0)
+			+ (blackCanvas?BLACK_CANVAS:0) + (weightedColor?WEIGHTED:0) 
+			+ (requireControlKey?REQUIRE_CONTROL:0)
+			+ (useInvertingLut?USE_INVERTING_LUT:0) + (antialiasedTools?ANTIALIASED_TOOLS:0)
+			+ (intelByteOrder?INTEL_BYTE_ORDER:0) + (doubleBuffer?DOUBLE_BUFFER:0)
+			+ (noPointLabels?NO_POINT_LABELS:0) + (noBorder?NO_BORDER:0)
+			+ (showAllSliceOnly?SHOW_ALL_SLICE_ONLY:0) + (copyColumnHeaders?COPY_HEADERS:0)
+			+ (noRowNumbers?NO_ROW_NUMBERS:0) + (moveToMisc?MOVE_TO_MISC:0)
+			+ (runSocketListener?RUN_SOCKET_LISTENER:0)
+			+ (multiPointMode?MULTI_POINT_MODE:0) + (rotateYZ?ROTATE_YZ:0)
+			+ (flipXZ?FLIP_XZ:0) + (dontSaveHeaders?DONT_SAVE_HEADERS:0)
+			+ (dontSaveRowNumbers?DONT_SAVE_ROW_NUMBERS:0) + (noClickToGC?NO_CLICK_TO_GC:0)
+			+ (avoidResliceInterpolation?AVOID_RESLICE_INTERPOLATION:0)
+			+ (keepUndoBuffers?KEEP_UNDO_BUFFERS:0);
 		prefs.put(OPTIONS, Integer.toString(options));
 
-		int options2 = (useSystemProxies ? USE_SYSTEM_PROXIES : 0) + (useFileChooser ? USE_FILE_CHOOSER : 0) + (subPixelResolution ? SUBPIXEL_RESOLUTION : 0)
-				+ (enhancedLineTool ? ENHANCED_LINE_TOOL : 0);
+		int options2 = (useSystemProxies?USE_SYSTEM_PROXIES:0)
+			+ (useFileChooser?USE_FILE_CHOOSER:0) + (subPixelResolution?SUBPIXEL_RESOLUTION:0)
+			+ (enhancedLineTool?ENHANCED_LINE_TOOL:0) + (skipRawDialog?SKIP_RAW_DIALOG:0)
+			+ (reverseNextPreviousOrder?REVERSE_NEXT_PREVIOUS_ORDER:0);
 		prefs.put(OPTIONS2, Integer.toString(options2));
 	}
 
-	/**
-	 * Saves the value of the string <code>text</code> in the preferences file using the keyword <code>key</code>. This string can be retrieved using the appropriate <code>get()</code> method.
-	 */
+	/** Saves the value of the string <code>text</code> in the preferences
+		file using the keyword <code>key</code>. This string can be 
+		retrieved using the appropriate <code>get()</code> method. */
 	public static void set(String key, String text) {
-		if (key.indexOf('.') < 1)
+		if (key.indexOf('.')<1)
 			throw new IllegalArgumentException("Key must have a prefix");
-		ijPrefs.put(KEY_PREFIX + key, text);
+		if (text==null)
+			ijPrefs.remove(KEY_PREFIX+key);
+		else
+			ijPrefs.put(KEY_PREFIX+key, text);
 	}
 
-	/**
-	 * Saves <code>value</code> in the preferences file using the keyword <code>key</code>. This value can be retrieved using the appropriate <code>getPref()</code> method.
-	 */
+	/** Saves <code>value</code> in the preferences file using 
+		the keyword <code>key</code>. This value can be retrieved 
+		using the appropriate <code>getPref()</code> method. */
 	public static void set(String key, int value) {
 		set(key, Integer.toString(value));
 	}
 
-	/**
-	 * Saves <code>value</code> in the preferences file using the keyword <code>key</code>. This value can be retrieved using the appropriate <code>getPref()</code> method.
-	 */
+	/** Saves <code>value</code> in the preferences file using 
+		the keyword <code>key</code>. This value can be retrieved 
+		using the appropriate <code>getPref()</code> method. */
 	public static void set(String key, double value) {
-		set(key, "" + value);
+		set(key, ""+value);
 	}
 
-	/**
-	 * Saves the boolean variable <code>value</code> in the preferences file using the keyword <code>key</code>. This value can be retrieved using the appropriate <code>getPref()</code> method.
-	 */
+	/** Saves the boolean variable <code>value</code> in the preferences
+		 file using the keyword <code>key</code>. This value can be retrieved 
+		using the appropriate <code>getPref()</code> method. */
 	public static void set(String key, boolean value) {
-		set(key, "" + value);
+		set(key, ""+value);
 	}
 
-	/**
-	 * Uses the keyword <code>key</code> to retrieve a string from the preferences file. Returns <code>defaultValue</code> if the key is not found.
-	 */
+	/** Uses the keyword <code>key</code> to retrieve a string from the
+		preferences file. Returns <code>defaultValue</code> if the key
+		is not found. */
 	public static String get(String key, String defaultValue) {
-		String value = ijPrefs.getProperty(KEY_PREFIX + key);
+		String value = ijPrefs.getProperty(KEY_PREFIX+key);
 		if (value == null)
 			return defaultValue;
 		else
 			return value;
 	}
 
-	/**
-	 * Uses the keyword <code>key</code> to retrieve a number from the preferences file. Returns <code>defaultValue</code> if the key is not found.
-	 */
+	/** Uses the keyword <code>key</code> to retrieve a number from the
+		preferences file. Returns <code>defaultValue</code> if the key
+		is not found. */
 	public static double get(String key, double defaultValue) {
-		String s = ijPrefs.getProperty(KEY_PREFIX + key);
+		String s = ijPrefs.getProperty(KEY_PREFIX+key);
 		Double d = null;
-		if (s != null) {
-			try {
-				d = new Double(s);
-			} catch (NumberFormatException e) {
-				d = null;
-			}
-			if (d != null)
-				return (d.doubleValue());
+		if (s!=null) {
+			try {d = new Double(s);}
+			catch (NumberFormatException e) {d = null;}
+			if (d!=null)
+				return(d.doubleValue());
 		}
 		return defaultValue;
 	}
 
-	/**
-	 * Uses the keyword <code>key</code> to retrieve a boolean from the preferences file. Returns <code>defaultValue</code> if the key is not found.
-	 */
+	/** Uses the keyword <code>key</code> to retrieve a boolean from
+		the preferences file. Returns <code>defaultValue</code> if
+		the key is not found. */
 	public static boolean get(String key, boolean defaultValue) {
-		String value = ijPrefs.getProperty(KEY_PREFIX + key);
-		if (value == null)
+		String value = ijPrefs.getProperty(KEY_PREFIX+key);
+		if (value==null)
 			return defaultValue;
 		else
 			return value.equals("true");
 	}
 
-	/**
-	 * Saves the Point <code>loc</code> in the preferences file as a string using the keyword <code>key</code>.
-	 */
+	/** Saves the Point <code>loc</code> in the preferences
+		 file as a string using the keyword <code>key</code>. */
 	public static void saveLocation(String key, Point loc) {
-		set(key, loc.x + "," + loc.y);
+		set(key, loc.x+","+loc.y);
 	}
 
-	/**
-	 * Uses the keyword <code>key</code> to retrieve a location from the preferences file. Returns null if the key is not found or the location is not valid (e.g., offscreen).
-	 */
+	/** Uses the keyword <code>key</code> to retrieve a location
+		from the preferences file. Returns null if the
+		key is not found or the location is not valid (e.g., offscreen). */
 	public static Point getLocation(String key) {
-		String value = ijPrefs.getProperty(KEY_PREFIX + key);
-		if (value == null)
-			return null;
+		String value = ijPrefs.getProperty(KEY_PREFIX+key);
+		if (value==null) return null;
 		int index = value.indexOf(",");
-		if (index == -1)
-			return null;
+		if (index==-1) return null;
 		double xloc = Tools.parseDouble(value.substring(0, index));
-		if (Double.isNaN(xloc) || index == value.length() - 1)
-			return null;
-		double yloc = Tools.parseDouble(value.substring(index + 1));
-		if (Double.isNaN(yloc))
-			return null;
-		Point p = new Point((int) xloc, (int) yloc);
-		Dimension screen = IJ.getScreenSize();
-		if (p.x > screen.width - 100 || p.y > screen.height - 40)
+		if (Double.isNaN(xloc) || index==value.length()-1) return null;
+		double yloc = Tools.parseDouble(value.substring(index+1));
+		if (Double.isNaN(yloc)) return null;
+		Point p = new Point((int)xloc, (int)yloc);
+		Dimension screen = null;
+		if (IJ.debugMode)
+			screen = Toolkit.getDefaultToolkit().getScreenSize();
+		else
+			screen = IJ.getScreenSize();
+		if (p.x>screen.width-100 || p.y>screen.height-40)
 			return null;
 		else
 			return p;
@@ -636,53 +630,44 @@ public class Prefs {
 		}
 	}
 
-	public static void savePrefs(Properties prefs, String path) throws IOException {
+	public static void savePrefs(Properties prefs, String path) throws IOException{
 		FileOutputStream fos = new FileOutputStream(path);
 		BufferedOutputStream bos = new BufferedOutputStream(fos);
-		prefs.store(bos, "ImageJ " + ImageJ.VERSION + " Preferences");
+		prefs.store(bos, "ImageJ "+ImageJ.VERSION+" Preferences");
 		bos.close();
 	}
-
-	/** Returns the number of threads used by PlugInFilters to process stacks. */
+	
+	/** Returns the number of threads used by PlugInFilters to process images and stacks. */
 	public static int getThreads() {
-		if (threads == 0) {
+		if (threads==0) {
 			threads = getInt(THREADS, 0);
 			int processors = Runtime.getRuntime().availableProcessors();
-			if (threads < 1 || threads > processors)
+			if (threads<1 || threads>processors)
 				threads = processors;
 		}
 		return threads;
 	}
-
-	/**
-	 * Sets the number of threads (1-32) used by PlugInFilters to process stacks.
-	 */
+	
+	/** Sets the number of threads (1-32) used by PlugInFilters to process stacks. */
 	public static void setThreads(int n) {
-		if (n < 1)
-			n = 1;
-		if (n > 32)
-			n = 32;
+		if (n<1) n = 1;
 		threads = n;
 	}
-
-	/**
-	 * Sets the transparent index (0-255), or set to -1 to disable transparency.
-	 */
+	
+	/** Sets the transparent index (0-255), or set to -1 to disable transparency. */
 	public static void setTransparentIndex(int index) {
-		if (index < -1 || index > 255)
-			index = -1;
+		if (index<-1 || index>255) index = -1;
 		transparentIndex = index;
 	}
 
-	/**
-	 * Returns the transparent index (0-255), or -1 if transparency is disabled.
-	 */
+	/** Returns the transparent index (0-255), or -1 if transparency is disabled. */
 	public static int getTransparentIndex() {
 		return transparentIndex;
 	}
-
+	
 	public static Properties getControlPanelProperties() {
 		return ijPrefs;
 	}
-
+	
 }
+

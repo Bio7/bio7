@@ -4,7 +4,6 @@ import java.awt.event.*;
 import java.awt.image.*;
 
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
@@ -50,7 +49,8 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 	double defaultMin, defaultMax;
 	int contrast, brightness;
 	boolean RGBImage;
-	JScrollBar minSlider, maxSlider, contrastSlider, brightnessSlider;
+	JScrollBar minSlider;
+	JScrollBar maxSlider, contrastSlider, brightnessSlider;
 	JLabel minLabel, maxLabel, windowLabel, levelLabel;
 	boolean done;
 	int autoThreshold;
@@ -79,7 +79,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 
 		if (instance!=null) {
 			if (!instance.getTitle().equals(getTitle())) {
-				 ContrastAdjuster ca = instance;
+				ContrastAdjuster ca = instance;
 				Prefs.saveLocation(LOC_KEY, ca.getLocation());
 				ca.close();
 			} else {
@@ -126,7 +126,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		// min slider
 		if (!windowLevel) {
 			minSlider = new JScrollBar(JScrollBar.HORIZONTAL, sliderRange/2, 1, 0, sliderRange);
-			 GUI.fix(minSlider);
+			GUI.fix(minSlider);
 			c.gridy = y++;
 			c.insets = new Insets(2, 10, 0, 10);
 			gridbag.setConstraints(minSlider, c);
@@ -172,7 +172,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		// contrast slider
 		if (!balance) {
 			contrastSlider = new JScrollBar(JScrollBar.HORIZONTAL, sliderRange/2, 1, 0, sliderRange);
-			 GUI.fix(contrastSlider);
+			GUI.fix(contrastSlider);
 			c.gridy = y++;
 			c.insets = new Insets(2, 10, 0, 10);
 			gridbag.setConstraints(contrastSlider, c);
@@ -259,7 +259,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		c.insets = new Insets(0, 10, bottomInset, 0);
 		gridbag.setConstraints(panel, c);
         panel.setLayout(new FlowLayout(label2==null?FlowLayout.CENTER:FlowLayout.LEFT, 0, 0));
-		TrimmedLabel label= new TrimmedLabel(text);
+		JLabel label= new TrimmedLabel(text);
 		label.setFont(sanFont);
 		panel.add(label);
 		if (label2!=null) {
@@ -337,8 +337,8 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		double max2 = imp.getDisplayRangeMax();
 		if (imp.getType()==ImagePlus.COLOR_RGB)
 			{min2=0.0; max2=255.0;}
-		 int bitDepth = imp.getBitDepth();
-		 if (bitDepth==16 || bitDepth==32) {
+		int bitDepth = imp.getBitDepth();
+		if (bitDepth==16 || bitDepth==32) {
 			imp.resetDisplayRange();
 			defaultMin = imp.getDisplayRangeMin();
 			defaultMax = imp.getDisplayRangeMax();
@@ -408,7 +408,6 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			imp.setDisplayRange(min, max);
 		if (!rgb)
 			imp.getProcessor().setSnapshotPixels(null); // disable undo
-
 	}
 
 	void updatePlot() {
@@ -552,8 +551,8 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 	void reset(ImagePlus imp, ImageProcessor ip) {
  		if (RGBImage)
 			ip.reset();
- 		int bitDepth = imp.getBitDepth();
- 		if (bitDepth==16 || bitDepth==32) {
+		int bitDepth = imp.getBitDepth();
+		if (bitDepth==16 || bitDepth==32) {
 			imp.resetDisplayRange();
 			defaultMin = imp.getDisplayRangeMin();
 			defaultMax = imp.getDisplayRangeMax();
@@ -625,11 +624,6 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			imp.unlock();
 			return;
 		}
-		if (imp.isComposite()) {
-			imp.unlock();
-			((CompositeImage)imp).updateAllChannelsAndDraw();
-			return;
-		}
 		if (imp.getType()!=ImagePlus.GRAY8) {
 			IJ.beep();
 			IJ.showStatus("Apply requires an 8-bit grayscale image or an RGB stack");
@@ -648,9 +642,9 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 				table[i] = (int)(((double)(i-min)/(max-min))*255);
 		}
 		ip.setRoi(imp.getRoi());
-		if (imp.getStackSize()>1) {
+		if (imp.getStackSize()>1 && !imp.isComposite()) {
 			ImageStack stack = imp.getStack();
-			YesNoCancelDialog d = new YesNoCancelDialog(new JFrame(),
+			YesNoCancelDialog d = new YesNoCancelDialog(new Frame(),
 				"Entire Stack?", "Apply LUT to all "+stack.getSize()+" slices in the stack?");
 			if (d.cancelPressed())
 				{imp.unlock(); return;}
@@ -729,6 +723,8 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		imp.setStack(null, stack);
 		imp.setSlice(current);
 		imp.changes = true;
+		previousImageID = 0;
+		setup();
 		if (Recorder.record) {
 			if (Recorder.scriptMode())
 				Recorder.recordCall("IJ.run(imp, \"Apply LUT\", \"stack\");");
@@ -1049,6 +1045,10 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			IJ.beep();
 			IJ.showStatus("No image");
 			return;
+		} else if (imp.getOverlay()!=null && imp.getOverlay().isCalibrationBar()) {
+			IJ.beep();
+			IJ.showStatus("Has calibration bar");
+			return;
 		}
 		ip = imp.getProcessor();
 		if (RGBImage && !imp.lock())
@@ -1082,7 +1082,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			imp.unlock();
 	}
 
-	/** Overrides close() in PlugInDialog. */
+    /** Overrides close() in PlugInDialog. */
     public void close() {
     	super.close();
 		instance = null;
@@ -1169,11 +1169,11 @@ class ContrastPlot extends Canvas implements MouseListener {
 		histogram = stats.histogram;
 		if (histogram.length!=256)
 			{histogram=null; return;}
-		 double scale =WIDTH/256.0;
-		                for (int i=0; i<WIDTH; i++) {
-		                        int index = (int)(i/scale);
-		                        histogram[i] = (histogram[index]+histogram[index+1])/2;
-		                }
+		double scale =WIDTH/256.0;
+		for (int i=0; i<WIDTH; i++) {
+			int index = (int)(i/scale);
+			histogram[i] = (histogram[index]+histogram[index+1])/2;
+		}
 		int maxCount = 0;
 		int mode = 0;
 		for (int i=0; i<WIDTH; i++) {
@@ -1254,7 +1254,6 @@ class ContrastPlot extends Canvas implements MouseListener {
 	public void mouseEntered(MouseEvent e) {}
 
 } // ContrastPlot class
-
 
 class TrimmedLabel extends JLabel {
 	int trim = IJ.isMacOSX()?0:6;

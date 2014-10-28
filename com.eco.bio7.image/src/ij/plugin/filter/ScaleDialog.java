@@ -8,10 +8,6 @@ import ij.io.FileOpener;
 import java.awt.*;
 import java.awt.event.*;
 
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
 /** Implements the Analyze/Set Scale command. */
 public class ScaleDialog implements PlugInFilter {
 
@@ -51,13 +47,13 @@ public class ScaleDialog implements PlugInFilter {
 				known = 1.0;
 			}
 			double dscale = measured/known;
-			digits = Tools.getDecimalPlaces(dscale, dscale);
+			digits = Tools.getDecimalPlaces(dscale);
 			unit = cal.getUnit();
 			scale = IJ.d2s(dscale, digits)+" pixels/"+unit;
 			aspectRatio = cal.pixelHeight/cal.pixelWidth;
 		}
 		
-		digits = Tools.getDecimalPlaces(measured, measured);
+		digits = Tools.getDecimalPlaces(measured);
 		int asDigits = aspectRatio==1.0?1:3;
 		SetScaleDialog gd = new SetScaleDialog("Set Scale", scale, length);
 		gd.addNumericField("Distance in pixels:", measured, digits, 8, null);
@@ -70,6 +66,8 @@ public class ScaleDialog implements PlugInFilter {
 		gd.setInsets(10, 0, 0);
 		gd.addMessage("Scale: "+"12345.789 pixels per centimeter");
 		gd.addHelp(IJ.URL+"/docs/menus/analyze.html#scale");
+		if (aspectRatio==1.0 && "pixel".equals(unit))
+			gd.setSmartRecording(true);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -94,7 +92,8 @@ public class ScaleDialog implements PlugInFilter {
 		} else {
 			if (gd.scaleChanged || IJ.macroRunning()) {
 				cal.pixelWidth = known/measured;
-				cal.pixelDepth = cal.pixelWidth;
+				if (cal.pixelDepth==1.0)
+					cal.pixelDepth = cal.pixelWidth;
 			}
 			if (aspectRatio!=0.0)
 				cal.pixelHeight = cal.pixelWidth*aspectRatio;
@@ -114,10 +113,10 @@ public class ScaleDialog implements PlugInFilter {
 	}
 	
 	/** Creates a panel containing an "Unscale" button. */
-	JPanel makeButtonPanel(SetScaleDialog gd) {
-		JPanel panel = new JPanel();
+	Panel makeButtonPanel(SetScaleDialog gd) {
+		Panel panel = new Panel();
     	panel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
-		gd.unscaleButton = new JButton("Click to Remove Scale");
+		gd.unscaleButton = new Button("Click to Remove Scale");
 		gd.unscaleButton.addActionListener(gd);
 		panel.add(gd.unscaleButton);
 		return panel;
@@ -128,7 +127,7 @@ public class ScaleDialog implements PlugInFilter {
 class SetScaleDialog extends GenericDialog {
 	static final String NO_SCALE = "<no scale>";
 	String initialScale;
-	JButton unscaleButton;
+	Button unscaleButton;
 	String length;
 	boolean scaleChanged;
 
@@ -167,7 +166,7 @@ class SetScaleDialog extends GenericDialog {
  			theScale = NO_SCALE;
  		else {
  			double scale = measured/known;
-			int digits = Tools.getDecimalPlaces(scale, scale);
+			int digits = Tools.getDecimalPlaces(scale);
  			theScale = IJ.d2s(scale,digits)+(scale==1.0?" pixel/":" pixels/")+unit;
  		}
  		setScale(theScale);
@@ -188,7 +187,7 @@ class SetScaleDialog extends GenericDialog {
 	}
 
 	void setScale(String theScale) {
- 		((JLabel)theLabel).setText("Scale: "+theScale);
+ 		((Label)theLabel).setText("Scale: "+theScale);
 	}
 
 }

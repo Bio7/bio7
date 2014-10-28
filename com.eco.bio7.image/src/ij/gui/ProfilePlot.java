@@ -15,8 +15,8 @@ public class ProfilePlot {
 	static final double ASPECT_RATIO = 0.5;
 	private double min, max;
 	private boolean minAndMaxCalculated;
-    private static double fixedMin = Prefs.getDouble("pp.min",0.0);
-    private static double fixedMax = Prefs.getDouble("pp.max",0.0);
+    private static double fixedMin;
+    private static double fixedMax;
     
 	protected ImagePlus imp;
 	protected double[] profile;
@@ -71,14 +71,6 @@ public class ProfilePlot {
 		else
 			magnification = 1.0;
 	}
-
-	//void calibrate(Calibration cal) {
-	//	float[] cTable = cal.getCTable();
-	//	if (cTable!=null)
-	//		for ()
-	//			profile[i] = profile[i];
-	//	
-	//}
 	
 	/** Returns the size of the plot that createWindow() creates. */
 	public Dimension getPlotSize() {
@@ -101,15 +93,13 @@ public class ProfilePlot {
 	/** Displays this profile plot in a window. */
 	public void createWindow() {
 		Plot plot = getPlot();
-		if (plot==null) return;
-		plot.setSourceImageID(imp.getID());
-		plot.show();
+		if (plot!=null)
+			plot.show();
 	}
 	
-	Plot getPlot() {
+	public Plot getPlot() {
 		if (profile==null)
 			return null;
-		Dimension d = getPlotSize();
 		String xLabel = "Distance ("+units+")";
   		int n = profile.length;
   		if (xValues==null) {

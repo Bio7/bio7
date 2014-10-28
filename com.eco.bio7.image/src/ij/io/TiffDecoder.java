@@ -95,6 +95,10 @@ public class TiffDecoder {
 		else
 			return ((b1 << 24) + (b2 << 16) + (b3 << 8) + b4);
 	}
+	
+	final long getUnsignedInt() throws IOException {
+		return (long)getInt()&0xffffffffL;
+	}
 
 	final int getShort() throws IOException {
 		int b1 = in.read();
@@ -341,13 +345,11 @@ public class TiffDecoder {
 	double getRational(long loc) throws IOException {
 		long saveLoc = in.getLongFilePointer();
 		in.seek(loc);
-		int numerator = getInt();
-		int denominator = getInt();
+		double numerator = getUnsignedInt();
+		double denominator = getUnsignedInt();
 		in.seek(saveLoc);
-		//System.out.println("numerator: "+numerator);
-		//System.out.println("denominator: "+denominator);
-		if (denominator!=0)
-			return (double)numerator/denominator;
+		if (denominator!=0.0)
+			return numerator/denominator;
 		else
 			return 0.0;
 	}
@@ -362,6 +364,7 @@ public class TiffDecoder {
 		if ((ifdCount%50)==0 && ifdCount>0)
 			ij.IJ.showStatus("Opening IFDs: "+ifdCount);
 		FileInfo fi = new FileInfo();
+		fi.fileType = FileInfo.BITMAP;  //BitsPerSample defaults to 1
 		for (int i=0; i<nEntries; i++) {
 			tag = getShort();
 			fieldType = getShort();
@@ -744,11 +747,9 @@ public class TiffDecoder {
 		
 	public FileInfo[] getTiffInfo() throws IOException {
 		long ifdOffset;
-		Vector info;
-				
+		ArrayList list = new ArrayList();
 		if (in==null)
 			in = new RandomAccessStream(new RandomAccessFile(new File(directory, name), "r"));
-		info = new Vector();
 		ifdOffset = OpenImageFileHeader();
 		if (ifdOffset<0L) {
 			in.close();
@@ -759,7 +760,7 @@ public class TiffDecoder {
 			in.seek(ifdOffset);
 			FileInfo fi = OpenIFD();
 			if (fi!=null) {
-				info.addElement(fi);
+				list.add(fi);
 				ifdOffset = ((long)getInt())&0xffffffffL;
 			} else
 				ifdOffset = 0L;
@@ -769,28 +770,27 @@ public class TiffDecoder {
 					ifdOffset = 0L;
 			}
 		}
-		if (info.size()==0) {
+		if (list.size()==0) {
 			in.close();
 			return null;
 		} else {
-			FileInfo[] fi = new FileInfo[info.size()];
-			info.copyInto((Object[])fi);
-			if (debugMode) fi[0].debugInfo = dInfo;
+			FileInfo[] info = (FileInfo[])list.toArray(new FileInfo[list.size()]);
+			if (debugMode) info[0].debugInfo = dInfo;
 			if (url!=null) {
 				in.seek(0);
-				fi[0].inputStream = in;
+				info[0].inputStream = in;
 			} else
 				in.close();
-			if (fi[0].info==null)
-				fi[0].info = tiffMetadata;
+			if (info[0].info==null)
+				info[0].info = tiffMetadata;
 			if (debugMode) {
-				int n = fi.length;
-				fi[0].debugInfo += "number of images: "+ n + "\n";
-				fi[0].debugInfo += "offset to first image: "+fi[0].getOffset()+ "\n";
-				fi[0].debugInfo += "gap between images: "+getGapInfo(fi) + "\n";
-				fi[0].debugInfo += "little-endian byte order: "+fi[0].intelByteOrder + "\n";
+				int n = info.length;
+				info[0].debugInfo += "number of IFDs: "+ n + "\n";
+				info[0].debugInfo += "offset to first image: "+info[0].getOffset()+ "\n";
+				info[0].debugInfo += "gap between images: "+getGapInfo(info) + "\n";
+				info[0].debugInfo += "little-endian byte order: "+info[0].intelByteOrder + "\n";
 			}
-			return fi;
+			return info;
 		}
 	}
 	

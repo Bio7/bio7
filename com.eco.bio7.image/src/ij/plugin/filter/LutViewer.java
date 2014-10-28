@@ -6,9 +6,7 @@ import ij.text.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
-
-import javax.swing.JButton;
-import javax.swing.JPanel;
+import java.util.ArrayList;
 
 /** Displays the active image's look-up table. */
 public class LutViewer implements PlugInFilter {
@@ -110,7 +108,7 @@ public class LutViewer implements PlugInFilter {
 
 class LutWindow extends ImageWindow implements ActionListener {
 
-	private JButton button;
+	private Button button;
 	private ImageProcessor ip;
 
 	LutWindow(ImagePlus imp, ImageCanvas ic, ImageProcessor ip) {
@@ -120,9 +118,9 @@ class LutWindow extends ImageWindow implements ActionListener {
 	}
 
 	void addPanel() {
-		JPanel panel = new JPanel();
+		Panel panel = new Panel();
 		panel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-		button = new JButton(" List... ");
+		button = new Button(" List... ");
 		button.addActionListener(this);
 		panel.add(button);
 		add(panel);
@@ -144,11 +142,11 @@ class LutWindow extends ImageWindow implements ActionListener {
 		icm.getReds(r); 
 		icm.getGreens(g); 
 		icm.getBlues(b);
-		StringBuffer sb = new StringBuffer();
+		ArrayList list = new ArrayList();
 		String headings = "Index\tRed\tGreen\tBlue";
 		for (int i=0; i<size; i++)
-			sb.append(i+"\t"+(r[i]&255)+"\t"+(g[i]&255)+"\t"+(b[i]&255)+"\n");
-		TextWindow tw = new TextWindow("LUT", headings, sb.toString(), 250, 400);
+			list.add(i+"\t"+(r[i]&255)+"\t"+(g[i]&255)+"\t"+(b[i]&255));
+		TextWindow tw = new TextWindow("LUT", headings, list, 250, 400);
 	}
 
 } // LutWindow class

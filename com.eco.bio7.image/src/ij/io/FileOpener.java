@@ -118,12 +118,12 @@ public class FileOpener {
         		if (planar)
         			imp.getProcessor().resetMinAndMax();
 				imp.setFileInfo(fi);
-				int mode = CompositeImage.COMPOSITE;
+				int mode = IJ.COMPOSITE;
 				if (fi.description!=null) {
 					if (fi.description.indexOf("mode=color")!=-1)
-					mode = CompositeImage.COLOR;
+					mode = IJ.COLOR;
 					else if (fi.description.indexOf("mode=gray")!=-1)
-					mode = CompositeImage.GRAYSCALE;
+					mode = IJ.GRAYSCALE;
 				}
         		imp = new CompositeImage(imp, mode);
         		if (!planar && fi.displayRanges==null) {
@@ -245,113 +245,58 @@ public class FileOpener {
 		imp.updateAndDraw();
 	}
 	
-	/** Restores original disk or network version of image. */
+	/** Restores the original version of the specified image. */
 	public void revertToSaved(ImagePlus imp) {
-		Image img;
-		ImageProcessor ip;
+		if (fi==null)
+			return;
 		String path = fi.directory + fi.fileName;
-		
-		if (fi.fileFormat==fi.GIF_OR_JPG) {
-			// restore gif or jpg
-			img = Toolkit.getDefaultToolkit().createImage(path);
-			imp.setImage(img);
-			if (imp.getType()==ImagePlus.COLOR_RGB)
-				Opener.convertGrayJpegTo8Bits(imp);
-	    	return;
-		}
-		
-				
-		if (fi.fileFormat==fi.DICOM) {
-			// restore DICOM
-			ImagePlus imp2 = (ImagePlus)IJ.runPlugIn("ij.plugin.DICOM", path);
-			if (imp2!=null)
-				imp.setProcessor(null, imp2.getProcessor());
-			if (fi.fileType==FileInfo.GRAY16_UNSIGNED || fi.fileType==FileInfo.GRAY32_FLOAT)
-				ThresholdAdjuster.update();
-	    	return;
-		}
-
-		if (fi.fileFormat==fi.BMP) {
-			// restore BMP
-			ImagePlus imp2 = (ImagePlus)IJ.runPlugIn("ij.plugin.BMP_Reader", path);
-			if (imp2!=null)
-				imp.setProcessor(null, imp2.getProcessor());
-	    	return;
-		}
-
-		if (fi.fileFormat==fi.PGM) {
-			// restore PGM
-			ImagePlus imp2 = (ImagePlus)IJ.runPlugIn("ij.plugin.PGM_Reader", path);
-			if (imp2!=null)
-				imp.setProcessor(null, imp2.getProcessor());
-	    	return;
-		}
-
-		if (fi.fileFormat==fi.FITS) {
-			// restore FITS
-			ImagePlus imp2 = (ImagePlus)IJ.runPlugIn("ij.plugin.FITS_Reader", path);
-			if (imp2!=null)
-				imp.setProcessor(null, imp2.getProcessor());
-			return;
-		}
-
-		if (fi.fileFormat==fi.ZIP_ARCHIVE) {
-			// restore ".zip" file
-			ImagePlus imp2 = (new Opener()).openZip(path);
-			if (imp2!=null)
-				imp.setProcessor(null, imp2.getProcessor());
-	    	return;
-		}
-
-		// restore PNG or another image opened using ImageIO
-		if (fi.fileFormat==fi.IMAGEIO) {
-			ImagePlus imp2 = (new Opener()).openUsingImageIO(path);
-			if (imp2!=null) imp.setProcessor(null, imp2.getProcessor());
-	    	return;
-		}
-
-		if (fi.nImages>1)
-			return;
-		
-		ColorModel cm;
-		if (fi.url==null || fi.url.equals(""))
-			IJ.showStatus("Loading: " + path);
-		else
-			IJ.showStatus("Loading: " + fi.url + fi.fileName);
-		Object pixels = readPixels(fi);
-		if (pixels==null) return;
-		cm = createColorModel(fi);
-		switch (fi.fileType) {
-			case FileInfo.GRAY8:
-			case FileInfo.COLOR8:
-			case FileInfo.BITMAP:
-				ip = new ByteProcessor(width, height, (byte[])pixels, cm);
-		        imp.setProcessor(null, ip);
-				break;
-			case FileInfo.GRAY16_SIGNED:
-			case FileInfo.GRAY16_UNSIGNED:
-			case FileInfo.GRAY12_UNSIGNED:
-	    		ip = new ShortProcessor(width, height, (short[])pixels, cm);
-        		imp.setProcessor(null, ip);
-				break;
-			case FileInfo.GRAY32_INT:
-			case FileInfo.GRAY32_FLOAT:
-	    		ip = new FloatProcessor(width, height, (float[])pixels, cm);
-        		imp.setProcessor(null, ip);
-				break;
-			case FileInfo.RGB:
-			case FileInfo.BGR:
-			case FileInfo.ARGB:
-			case FileInfo.ABGR:
-			case FileInfo.RGB_PLANAR:
-	    		img = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(width, height, (int[])pixels, 0, width));
-		        imp.setImage(img);
-				break;
-			case FileInfo.CMYK:
-				ip = new ColorProcessor(width, height, (int[])pixels);
-				ip.invert();
-				imp.setProcessor(null, ip);
-				break;
+		if (fi.url!=null && !fi.url.equals("") && (fi.directory==null||fi.directory.equals("")))
+			path = fi.url;
+		IJ.showStatus("Loading: " + path);
+		ImagePlus imp2 = null;
+		if (!path.endsWith(".raw"))
+			imp2 = IJ.openImage(path);
+		if (imp2!=null)
+			imp.setImage(imp2);
+		else {
+			if (fi.nImages>1)
+				return;
+			Object pixels = readPixels(fi);
+			if (pixels==null) return;
+			ColorModel cm = createColorModel(fi);
+			ImageProcessor ip = null;
+			switch (fi.fileType) {
+				case FileInfo.GRAY8:
+				case FileInfo.COLOR8:
+				case FileInfo.BITMAP:
+					ip = new ByteProcessor(width, height, (byte[])pixels, cm);
+					imp.setProcessor(null, ip);
+					break;
+				case FileInfo.GRAY16_SIGNED:
+				case FileInfo.GRAY16_UNSIGNED:
+				case FileInfo.GRAY12_UNSIGNED:
+					ip = new ShortProcessor(width, height, (short[])pixels, cm);
+					imp.setProcessor(null, ip);
+					break;
+				case FileInfo.GRAY32_INT:
+				case FileInfo.GRAY32_FLOAT:
+					ip = new FloatProcessor(width, height, (float[])pixels, cm);
+					imp.setProcessor(null, ip);
+					break;
+				case FileInfo.RGB:
+				case FileInfo.BGR:
+				case FileInfo.ARGB:
+				case FileInfo.ABGR:
+				case FileInfo.RGB_PLANAR:
+					Image img = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(width, height, (int[])pixels, 0, width));
+					imp.setImage(img);
+					break;
+				case FileInfo.CMYK:
+					ip = new ColorProcessor(width, height, (int[])pixels);
+					ip.invert();
+					imp.setProcessor(null, ip);
+					break;
+			}
 		}
 	}
 	
@@ -372,12 +317,16 @@ public class FileOpener {
 		}
 		
 		if (fi.valueUnit!=null) {
-			int f = fi.calibrationFunction;
-			if ((f>=Calibration.STRAIGHT_LINE && f<=Calibration.EXP_RECOVERY && fi.coefficients!=null)
-			|| f==Calibration.UNCALIBRATED_OD) {
-				boolean zeroClip = props!=null && props.getProperty("zeroclip", "false").equals("true");	
-				cal.setFunction(f, fi.coefficients, fi.valueUnit, zeroClip);
-				calibrated = true;
+			if (imp.getBitDepth()==32)
+				cal.setValueUnit(fi.valueUnit);
+			else {
+				int f = fi.calibrationFunction;
+				if ((f>=Calibration.STRAIGHT_LINE && f<=Calibration.EXP_RECOVERY && fi.coefficients!=null)
+				|| f==Calibration.UNCALIBRATED_OD) {
+					boolean zeroClip = props!=null && props.getProperty("zeroclip", "false").equals("true");	
+					cal.setFunction(f, fi.coefficients, fi.valueUnit, zeroClip);
+					calibrated = true;
+				}
 			}
 		}
 		
@@ -455,7 +404,7 @@ public class FileOpener {
 
 	/** Returns an IndexColorModel for the image specified by this FileInfo. */
 	public ColorModel createColorModel(FileInfo fi) {
-		 if (fi.lutSize>0)
+		if (fi.lutSize>0)
 			return new IndexColorModel(8, fi.lutSize, fi.reds, fi.greens, fi.blues);
 		else
 			return LookUpTable.createGrayscaleColorModel(fi.whiteIsZero);
@@ -586,8 +535,9 @@ public class FileOpener {
 		n = getNumber(props,"images");
 		if (n!=null && n.doubleValue()>1.0)
 		fi.nImages = (int)n.doubleValue();
-		double spacing = getDouble(props,"spacing");
-		if (spacing!=0.0) {
+		n = getNumber(props, "spacing");
+		if (n!=null) {
+			double spacing = n.doubleValue();
 			if (spacing<0) spacing = -spacing;
 			fi.pixelDepth = spacing;
 		}

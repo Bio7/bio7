@@ -450,10 +450,7 @@ public class FloatProcessor extends ImageProcessor {
 							v2 = (float)Math.exp(c*Math.log(v1));
 						break;
 					case LOG:
-						if (v1<=0f)
-							v2 = 0f;
-						else
-							v2 = (float)Math.log(v1);
+						v2 = (float)Math.log(v1);
 						break;
 					case EXP:
 						v2 = (float)Math.exp(v1);
@@ -685,7 +682,6 @@ public class FloatProcessor extends ImageProcessor {
 					} else
 						pixels[index++] = 0;
 				}
-				showProgress((double)(y-roiY)/roiHeight);
 			}
 		}
 	}
@@ -704,12 +700,12 @@ public class FloatProcessor extends ImageProcessor {
 		}
 	}
 	
-	public void noise(double range) {
+	public void noise(double standardDeviation) {
 		Random rnd=new Random();
 		for (int y=roiY; y<(roiY+roiHeight); y++) {
 			int i = y * width + roiX;
 			for (int x=roiX; x<(roiX+roiWidth); x++) {
-				float RandomBrightness = (float)(rnd.nextGaussian()*range);
+				float RandomBrightness = (float)(rnd.nextGaussian()*standardDeviation);
 				pixels[i] = pixels[i] + RandomBrightness;
 				i++;
 			}
@@ -730,7 +726,7 @@ public class FloatProcessor extends ImageProcessor {
 	}
 	
 	/** Returns a duplicate of this image. */ 
-	public synchronized ImageProcessor duplicate() { 
+	public ImageProcessor duplicate() { 
 		ImageProcessor ip2 = createProcessor(width, height); 
 		float[] pixels2 = (float[])ip2.getPixels(); 
 		System.arraycopy(pixels, 0, pixels2, 0, width*height); 
@@ -857,6 +853,10 @@ public class FloatProcessor extends ImageProcessor {
 
 	/** Creates a new FloatProcessor containing a scaled copy of this image or selection. */
 	public ImageProcessor resize(int dstWidth, int dstHeight) {
+		if (roiWidth==dstWidth && roiHeight==dstHeight)
+			return crop();
+		if ((width==1||height==1) && interpolationMethod!=NONE)
+			return resizeLinearly(dstWidth, dstHeight);
 		double srcCenterX = roiX + roiWidth/2.0;
 		double srcCenterY = roiY + roiHeight/2.0;
 		double dstCenterX = dstWidth/2.0;

@@ -14,7 +14,6 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	private ImagePlus imp;
 	private boolean canceled;	
 	private double lower=-1.0, upper=-1.0;
-	
 	private static double addValue = 25;
 	private static double mulValue = 1.25;
 	private static double minValue = 0;
@@ -38,7 +37,6 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	public void run(ImageProcessor ip) {
 	 	if (canceled)
 	 		return;
-	 	
 	 	if (arg.equals("add")) {
 			ip.add(addValue);
 		} else if (arg.equals("sub")) {
@@ -80,12 +78,15 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 			if (!(ip instanceof ByteProcessor))
 				ip.resetMinAndMax();
 		} else if (arg.equals("gamma")) {
-	 		if ((gammaValue<0.1 || gammaValue>5.0) && !previewing()) {
-	 			IJ.error("Gamma must be between 0.1 and 5.0");
+	 		if (gammaValue<0.05 || gammaValue>5.0) {
+		 		if (!previewing() && !canceled) {
+	 				canceled = true;
+	 				IJ.error("Gamma must be between 0.05 and 5.0");
+	 			}
 	 			gammaValue = defaultGammaValue;
-	 		}
-			ip.gamma(gammaValue);
-		} else if (arg.equals("set")) {
+	 		} else
+				ip.gamma(gammaValue);
+ 		} else if (arg.equals("set")) {
 			ip.set(addValue);
 		} else if (arg.equals("log")) {
 			ip.log();
@@ -119,13 +120,11 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 		} else if (arg.equals("macro")) {
 			applyMacro(ip);
 		}
-		//if (imp.getBitDepth()==32 && imp.getRoi()==null && imp.getStackSize()==1)
-		//	imp.resetDisplayRange();
 
 	}
 	
 	boolean previewing() {
-		return gd!=null && gd.getPreviewCheckbox().isSelected();
+		return gd!=null && gd.isPreviewActive();
 	}
  
  	boolean isFloat(ImageProcessor ip) {
@@ -350,6 +349,9 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	}
 
 	void getMacro(String macro) {
+		String options = Macro.getOptions();
+		if (options!=null && options.startsWith("v="))
+			Macro.setOptions("code="+options);
 		gd = new GenericDialog("Expression Evaluator");
 		gd.addStringField("Code:", macro, 42);
 		gd.setInsets(0,40,0);
@@ -400,7 +402,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	 	if (arg.equals("macro")) {
 	 		String str = gd.getNextString();
 			if (previewing() && macro2!=null && !str.equals(macro2))
-				gd.getPreviewCheckbox().setSelected(false);
+				gd.getPreviewCheckbox().setState(false);
 			macro2 = str;
     	} else if (arg.equals("add")||arg.equals("sub")||arg.equals("set"))
 			addValue = gd.getNextNumber();
@@ -412,8 +414,16 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	 		minValue = gd.getNextNumber();
 	 	else if (arg.equals("max"))
 	 		maxValue = gd.getNextNumber();
-	 	else if (arg.equals("gamma"))
+	 	else if (arg.equals("gamma")) {
 	 		gammaValue = gd.getNextNumber();
+	 		if (gammaValue<0.05 || gammaValue>5.0) {
+	 			if (previewing()) {
+	 				IJ.showStatus("Gamma must be between 0.05 and 5.0");
+	 				gammaValue = defaultGammaValue;
+	 				return false;
+	 			}
+	 		}
+	 	}
 		canceled = gd.invalidNumber();
 		if (gd.wasOKed() && canceled) {
 			IJ.error("Value is invalid.");

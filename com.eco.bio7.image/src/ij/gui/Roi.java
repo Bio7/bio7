@@ -1,9 +1,4 @@
 package ij.gui;
-
-import java.awt.*;
-import java.awt.image.*;
-import java.awt.event.*;
-import java.awt.geom.*;
 import ij.*;
 import ij.process.*;
 import ij.measure.*;
@@ -13,6 +8,12 @@ import ij.plugin.filter.ThresholdToSelection;
 import ij.plugin.RectToolOptions;
 import ij.macro.Interpreter;
 import ij.io.RoiDecoder;
+import java.awt.*;
+import java.util.*;
+import java.io.*;
+import java.awt.image.*;
+import java.awt.event.*;
+import java.awt.geom.*;
 
 /** A rectangular region of interest and superclass for the other ROI classes. */
 public class Roi extends Object implements Cloneable, java.io.Serializable {
@@ -26,8 +27,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	static final int NO_MODS=0, ADD_TO_ROI=1, SUBTRACT_FROM_ROI=2; // modification states
 		
 	int startX, startY, x, y, width, height;
+	double startXD, startYD;
 	Rectangle2D.Double bounds;
-	double xd, yd, widthd, heightd;
 	int activeHandle;
 	int state;
 	int modState = NO_MODS;
@@ -56,8 +57,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected double asp_bk; //saves aspect ratio if resizing takes roi very small
 	protected ImageProcessor cachedMask;
 	protected Color handleColor = Color.white;
-	protected Color  strokeColor;
-	protected Color instanceColor; //obsolete; replaced by  strokeColor
+	protected Color	 strokeColor;
+	protected Color instanceColor; //obsolete; replaced by	strokeColor
 	protected Color fillColor;
 	protected BasicStroke stroke;
 	protected boolean nonScalable;
@@ -70,6 +71,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	private Overlay prototypeOverlay;
 	private boolean subPixel;
 	private boolean activeOverlayRoi;
+	private Properties props;
+
 
 	/** Creates a rectangular ROI. */
 	public Roi(int x, int y, int width, int height) {
@@ -89,7 +92,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		if (width>xMax) width = xMax;
 		if (height>yMax) height = yMax;
 		this.cornerDiameter = cornerDiameter;
-		//setLocation(x, y);
 		this.x = x;
 		this.y = y;
 		startX = x; startY = y;
@@ -110,13 +112,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			g.dispose();
 		}
 		fillColor = defaultFillColor;
-		xd=x; yd=y; widthd=width; heightd=height;
 	}
 	
 	/** Creates a rounded rectangular ROI using double arguments. */
 	public Roi(double x, double y, double width, double height, int cornerDiameter) {
 		this((int)x, (int)y, (int)Math.ceil(width), (int)Math.ceil(height), cornerDiameter);
-		xd=x; yd=y; widthd=width; heightd=height;
+		bounds = new Rectangle2D.Double(x, y, width, height);
 		subPixel = true;
 	}
 
@@ -169,7 +170,23 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		this.y = y;
 		startX = x; startY = y;
 		oldX = x; oldY = y; oldWidth=0; oldHeight=0;
-		xd=x; yd=y;
+		if (bounds!=null) {
+			bounds.x = x;
+			bounds.y = y;
+		}
+	}
+	
+	/** Set the location of the ROI in image coordinates. */
+	public void setLocation(double x, double y) {
+		setLocation((int)x, (int)y);
+		if ((int)x==x && (int)y==y)
+			return;
+		if (bounds!=null) {
+			bounds.x = x;
+			bounds.y = y;
+		} else
+			bounds = new Rectangle2D.Double(x, y, width, height);
+		subPixel = true;
 	}
 	
 	public void setImage(ImagePlus imp) {
@@ -287,7 +304,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		feretY = y1*ph;
 		dx=x2-x1; dy=y1-y2;
 		angle = (180.0/Math.PI)*Math.atan2(dy*ph, dx*pw);
-		if (angle<0) angle = 180.0 + angle;
+		if (angle<0.0)
+			angle += 180.0;
 		//breadth = getFeretBreadth(poly, angle, x1, y1, x2, y2);
 		double[] a = new double[5];
 		a[0] = diameter;
@@ -371,17 +389,17 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			roi2.setLocation(x, y);
 			return roi2.getFloatPolygon();
 		}
-		if (subPixelResolution()) {
+		if (subPixelResolution() && bounds!=null) {
 			float[] xpoints = new float[4];
 			float[] ypoints = new float[4];
-			xpoints[0] = (float)xd;
-			ypoints[0] = (float)yd;
-			xpoints[1] = (float)(xd+widthd);
-			ypoints[1] = (float)yd;
-			xpoints[2] = (float)(xd+widthd);
-			ypoints[2] = (float)(yd+heightd);
-			xpoints[3] = (float)xd;
-			ypoints[3] = (float)(yd+heightd);
+			xpoints[0] = (float)bounds.x;
+			ypoints[0] = (float)bounds.y;
+			xpoints[1] = (float)(bounds.x+bounds.width);
+			ypoints[1] = (float)bounds.y;
+			xpoints[2] = (float)(bounds.x+bounds.width);
+			ypoints[2] = (float)(bounds.y+bounds.height);
+			xpoints[3] = (float)bounds.x;
+			ypoints[3] = (float)(bounds.y+bounds.height);
 			return new FloatPolygon(xpoints, ypoints);
 		} else {
 			Polygon p = getPolygon();
@@ -406,59 +424,160 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return getInterpolatedPolygon(p, interval, smooth);
 	}
 
+	 /**
+	 * Returns, as a FloatPolygon, an interpolated version of this selection
+	 * with points spaced abs('interval') pixels apart. If 'smooth' is true, traced
+	 * and freehand selections are first smoothed using a 3 point running
+	 * average. 
+	 * If 'interval' is negative, the program is allowed to decrease abs('interval') 
+	 * so that the last segment will hit the end point
+	 */
 	protected FloatPolygon getInterpolatedPolygon(FloatPolygon p, double interval, boolean smooth) {
+		boolean allowToAdjust = interval < 0;
+		interval = Math.abs(interval);
 		boolean isLine = this.isLine();
 		double length = p.getLength(isLine);
-		int npoints2 = (int)((length*1.5)/interval);
-		float[] xpoints2 = new float[npoints2];
-		float[] ypoints2 = new float[npoints2];
-		xpoints2[0] = p.xpoints[0];
-		ypoints2[0] = p.ypoints[0];
-		int n=1, n2;
-		double inc = 0.01;
-		double distance=0.0, distance2=0.0, dx=0.0, dy=0.0, xinc, yinc;
-		double x, y, lastx, lasty, x1, y1, x2=p.xpoints[0], y2=p.ypoints[0];
+ 
 		int npoints = p.npoints;
-		if (!isLine) npoints++;
-		for (int i=1; i<npoints; i++) {
-			x1=x2; y1=y2;
-			x=x1; y=y1;
-			if (i<p.npoints) {
-				x2=p.xpoints[i];
-				y2=p.ypoints[i];
-			} else {
-				x2=p.xpoints[0];
-				y2=p.ypoints[0];
-			}
-			dx = x2-x1;
-			dy = y2-y1;
-			distance = Math.sqrt(dx*dx+dy*dy);
-			xinc = dx*inc/distance;
-			yinc = dy*inc/distance;
-			lastx=xpoints2[n-1]; lasty=ypoints2[n-1];
-			n2 = (int)(distance/inc);
-			int max = xpoints2.length-1;
-			if (npoints==2) {
-				n2 += 0.5/inc;
-				max++;
-			}
-			do {
-				dx = x-lastx;
-				dy = y-lasty;
-				distance2 = Math.sqrt(dx*dx+dy*dy);
-				//IJ.log(i+"   "+IJ.d2s(xinc,5)+"   "+IJ.d2s(yinc,5)+"   "+IJ.d2s(distance,2)+"   "+IJ.d2s(distance2,2)+"   "+IJ.d2s(x,2)+"   "+IJ.d2s(y,2)+"   "+IJ.d2s(lastx,2)+"   "+IJ.d2s(lasty,2)+"   "+n+"   "+n2);
-				if (distance2>=interval-inc/2.0 && n<max) {
-					xpoints2[n] = (float)x;
-					ypoints2[n] = (float)y;
-					//IJ.log("--- "+IJ.d2s(x,2)+"   "+IJ.d2s(y,2)+"  "+n);
-					n++;
-					lastx=x; lasty=y;
-				}
-				x += xinc;
-				y += yinc;
-			} while (--n2>0);
+		if (!isLine) {//**append (and later remove) closing point to end of array
+			npoints++;
+			p.xpoints = java.util.Arrays.copyOf(p.xpoints, npoints);
+			p.xpoints[npoints - 1] = p.xpoints[0];
+			p.ypoints = java.util.Arrays.copyOf(p.ypoints, npoints);
+			p.ypoints[npoints - 1] = p.ypoints[0];
 		}
-		return new FloatPolygon(xpoints2, ypoints2, n);
+		int npoints2 = (int) (10 + (length * 1.5) / interval);//allow some headroom
+
+		double tryInterval = interval;
+		double minDiff = 1e9;
+		double bestInterval = 0;
+		int srcPtr = 0;//index of source polygon
+		int destPtr = 0;//index of destination polygon
+		double[] destXArr = new double[npoints2];
+		double[] destYArr = new double[npoints2];
+		int nTrials = 50;
+		int trial = 0;
+		while (trial <= nTrials) {
+			destXArr[0] = p.xpoints[0];
+			destYArr[0] = p.ypoints[0];
+			srcPtr = 0;
+			destPtr = 0;
+			double xA = p.xpoints[0];//start of current segment
+			double yA = p.ypoints[0];
+
+			while (srcPtr < npoints - 1) {//collect vertices
+				double xC = destXArr[destPtr];//center circle
+				double yC = destYArr[destPtr];
+				double xB = p.xpoints[srcPtr + 1];//end of current segment
+				double yB = p.ypoints[srcPtr + 1];
+				double[] intersections = lineCircleIntersection(xA, yA, xB, yB, xC, yC, tryInterval, true);
+				if (intersections.length >= 2) {
+					xA = intersections[0];//only use first of two intersections
+					yA = intersections[1];
+					destPtr++;
+					destXArr[destPtr] = xA;
+					destYArr[destPtr] = yA;
+				} else {
+					srcPtr++;//no intersection found, pick next segment
+					xA = p.xpoints[srcPtr];
+					yA = p.ypoints[srcPtr];
+				}
+			}
+			destPtr++;
+			destXArr[destPtr] = p.xpoints[npoints - 1];
+			destYArr[destPtr] = p.ypoints[npoints - 1];
+			destPtr++;
+			if (!allowToAdjust) {
+				if (isLine)
+					destPtr--;
+				break;
+			}
+
+			int nSegments = destPtr - 1;
+			double dx = destXArr[destPtr - 2] - destXArr[destPtr - 1];
+			double dy = destYArr[destPtr - 2] - destYArr[destPtr - 1];
+			double lastSeg = Math.sqrt(dx * dx + dy * dy);
+
+			double diff = lastSeg - tryInterval;//always <= 0
+			if (Math.abs(diff) < minDiff) {
+				minDiff = Math.abs(diff);
+				bestInterval = tryInterval;
+			}
+			double feedBackFactor = 0.66;//factor <1: applying soft successive approximation
+			tryInterval = tryInterval + feedBackFactor * diff / nSegments;
+			//stop if tryInterval < 80% of interval, OR if last segment differs < 0.05 pixels
+			if ((tryInterval < 0.8 * interval || Math.abs(diff) < 0.05 || trial == nTrials - 1) && trial < nTrials) {
+				trial = nTrials;//run one more loop with bestInterval to get best polygon
+				tryInterval = bestInterval;
+			} else
+				trial++;
+		}
+		if (!isLine) //**remove closing point from end of array
+			destPtr--;
+		float[] xPoints = new float[destPtr];
+		float[] yPoints = new float[destPtr];
+		for (int jj = 0; jj < destPtr; jj++) {
+			xPoints[jj] = (float) destXArr[jj];
+			yPoints[jj] = (float) destYArr[jj];
+		}
+		FloatPolygon fPoly = new FloatPolygon(xPoints, yPoints);
+		return fPoly;
+	}
+	
+	/**
+	 * <pre>
+	 * Calculates intersections of a line segment with a circle
+	 * Author N.Vischer
+	 * ax, ay, bx, by: points A and B of line segment
+	 * cx, cy, rad: Circle center and radius.
+	 * ignoreOutside: if true, ignores intersections outside the line segment A-B
+	 * @Returns an array of 0, 2 or 4 coordinates (for 0, 1, or 2 intersection
+	 * points). If two intersection points are returned, they are listed in travel
+	 * direction A->B
+	 * </pre>
+	 */
+	public static double[] lineCircleIntersection(double ax, double ay, double bx, double by, double cx, double cy, double rad, boolean ignoreOutside) {
+		//rotates & translates points A, B and C, creating new points A2, B2 and C2.
+		//A2 is then on origin, and B2 is on positive x-axis 
+		
+		double dxAC = cx - ax;
+		double dyAC = cy - ay;
+		double lenAC = Math.sqrt(dxAC * dxAC + dyAC * dyAC);
+
+		double dxAB = bx - ax;
+		double dyAB = by - ay;
+
+		//calculate B2 and C2:
+		double xB2 = Math.sqrt(dxAB * dxAB + dyAB * dyAB);
+
+		double phi1 = Math.atan2(dyAB, dxAB);//amount of rotation
+		double phi2 = Math.atan2(dyAC, dxAC);
+		double phi3 = phi1 - phi2;
+		double xC2 = lenAC * Math.cos(phi3);
+		double yC2 = lenAC * Math.sin(phi3);//rotation & translation is done
+		if (Math.abs(yC2) > rad)
+			return new double[0];//no intersection found
+		double halfChord = Math.sqrt(rad * rad - yC2 * yC2);
+		double sectOne = xC2 - halfChord;//first intersection point, still on x axis
+		double sectTwo = xC2 + halfChord;//second intersection point, still on x axis
+		double[] xyCoords = new double[4];
+		int ptr = 0;
+		if ((sectOne >= 0 && sectOne <= xB2) || !ignoreOutside) {
+			double sectOneX = Math.cos(phi1) * sectOne + ax;//undo rotation and translation
+			double sectOneY = Math.sin(phi1) * sectOne + ay;
+			xyCoords[ptr++] = sectOneX;
+			xyCoords[ptr++] = sectOneY;
+		}
+		if ((sectTwo >= 0 && sectTwo <= xB2) || !ignoreOutside) {
+			double sectTwoX = Math.cos(phi1) * sectTwo + ax;//undo rotation and translation
+			double sectTwoY = Math.sin(phi1) * sectTwo + ay;
+			xyCoords[ptr++] = sectTwoX;
+			xyCoords[ptr++] = sectTwoY;
+		}
+		if (halfChord == 0 && ptr > 2) //tangent line returns only one intersection
+			ptr = 2;
+		xyCoords = java.util.Arrays.copyOf(xyCoords,ptr);
+		return xyCoords;
 	}
 
 	/** Returns a copy of this roi. See Thinking is Java by Bruce Eckel
@@ -470,6 +589,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			r.setStroke(getStroke());
 			r.setFillColor(getFillColor());
 			r.imageID = getImageID();
+			if (bounds!=null)
+				r.bounds = (Rectangle2D.Double)bounds.clone();
 			return r;
 		}
 		catch (CloneNotSupportedException e) {return null;}
@@ -518,7 +639,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		oldY = y;
 		oldWidth = width;
 		oldHeight = height;
-		xd=x; yd=y; widthd=width; heightd=height;
+		bounds = null;
 	}
 
 	private void growConstrained(int xNew, int yNew) {
@@ -640,8 +761,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 				height=1;
 				y=y2=yc;
 			}
-			xd=x; yd=y;
-
+			bounds = null;
 		}
 		
 		if (constrain) {
@@ -734,20 +854,29 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 				if(height<1) height =1;
 				width=(int)Math.rint((double)height*asp_bk);
 			}
-			
 		}
 		
 		updateClipRect();
 		imp.draw(clipX, clipY, clipWidth, clipHeight);
 		oldX=x; oldY=y;
 		oldWidth=width; oldHeight=height;
+		bounds = null;
+		subPixel = false;
 	}
 
 	void move(int sx, int sy) {
 		int xNew = ic.offScreenX(sx);
 		int yNew = ic.offScreenY(sy);
-		x += xNew - startX;
-		y += yNew - startY;
+		int dx = xNew - startX;
+		int dy = yNew - startY;
+		if (dx==0 && dy==0)
+			return;
+		x += dx;
+		y += dy;
+		if (bounds!=null) {
+			bounds.x += dx;
+			bounds.y += dy;
+		}
 		boolean isImageRoi = this instanceof ImageRoi;
 		if (clipboard==null && type==RECTANGLE && !isImageRoi) {
 			if (x<0) x=0; if (y<0) y=0;
@@ -756,8 +885,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		}
 		startX = xNew;
 		startY = yNew;
+		if (type==POINT || ((this instanceof TextRoi) && ((TextRoi)this).getAngle()!=0.0))
+			ignoreClipRect = true;
 		updateClipRect();
-		if ((lineWidth>1 && isLine()) || ignoreClipRect)
+		if ((lineWidth>1 && isLine()) || ignoreClipRect || ((this instanceof PolygonRoi)&&((PolygonRoi)this).isSplineFit()))
 			imp.draw();
 		else
 			imp.draw(clipX, clipY, clipWidth, clipHeight);
@@ -766,12 +897,16 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		oldWidth = width;
 		oldHeight=height;
 		if (isImageRoi) showStatus();
-		xd=x; yd=y;
-		bounds = null;
+		if (bounds!=null) {
+			bounds.x = x;
+			bounds.y = y;
+		}
 	}
 
 	/** Nudge ROI one pixel on arrow key press. */
 	public void nudge(int key) {
+		if (WindowManager.getActiveWindow() instanceof ij.plugin.frame.RoiManager)
+			return;
 		switch(key) {
 			case KeyEvent.VK_UP:
 				y--;
@@ -795,9 +930,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 				break;
 		}
 		updateClipRect();
-		imp.draw(clipX, clipY, clipWidth, clipHeight);
+		if (type==POINT)
+			imp.draw();
+		else
+			imp.draw(clipX, clipY, clipWidth, clipHeight);
 		oldX = x; oldY = y;
-		xd=x; yd=y;
 		bounds = null;
 		showStatus();
 	}
@@ -884,7 +1021,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	public void draw(Graphics g) {
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		if (fillColor!=null) color = fillColor;
-		if (Interpreter.isBatchMode() && ic!=null && ic.getDisplayList()!=null && strokeColor==null && fillColor==null)
+		if (Interpreter.isBatchMode() && imp!=null && imp.getOverlay()!=null && strokeColor==null && fillColor==null)
 			return;
 		g.setColor(color);
 		mag = getMagnification();
@@ -892,11 +1029,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		int sh = (int)(height*mag);
 		int sx1 = screenX(x);
 		int sy1 = screenY(y);
-		if (subPixelResolution()) {
-			sw = (int)(widthd*mag);
-			sh = (int)(heightd*mag);
-			sx1 = screenXD(xd);
-			sy1 = screenYD(yd);
+		if (subPixelResolution() && bounds!=null) {
+			sw = (int)(bounds.width*mag);
+			sh = (int)(bounds.height*mag);
+			sx1 = screenXD(bounds.x);
+			sy1 = screenYD(bounds.y);
 		}
 		int sx2 = sx1+sw/2;
 		int sy2 = sy1+sh/2;
@@ -917,8 +1054,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 				if (!overlay && isActiveOverlayRoi()) {
 					g.setColor(Color.cyan);
 					g.drawRect(sx1, sy1, sw, sh);
-				} else
-					g.fillRect(sx1, sy1, sw, sh);
+				} else {
+					if (!(this instanceof TextRoi))
+						g.fillRect(sx1, sy1, sw, sh);
+					else
+						g.drawRect(sx1, sy1, sw, sh);
+				}
 			} else
 				g.drawRect(sx1, sy1, sw, sh);
 		}
@@ -985,7 +1126,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	*/
 	public void drawPixels() {
 		if (imp!=null)
-			drawPixels(imp.getProcessor());	
+			drawPixels(imp.getProcessor()); 
 	}
 
 	/** Draws the selection outline on the specified ImageProcessor.
@@ -998,7 +1139,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		if (getStrokeWidth()>1f)
 			ip.setLineWidth((int)Math.round(getStrokeWidth()));
 		if (cornerDiameter>0)
-			(new ShapeRoi(new RoundRectangle2D.Float(x, y, width, height, cornerDiameter, cornerDiameter))).drawPixels(ip);
+			drawRoundedRect(ip);
 		else {
 			if (ip.getLineWidth()==1)
 				ip.drawRect(x, y, width+1, height+1);
@@ -1010,6 +1151,18 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			updateFullWindow = true;
 	}
 	
+	private void drawRoundedRect(ImageProcessor ip) {
+		int margin = (int)getStrokeWidth()/2;
+		BufferedImage bi = new BufferedImage(width+margin*2+1, height+margin*2+1, BufferedImage.TYPE_BYTE_GRAY);
+		Graphics2D g = bi.createGraphics();
+		if (stroke!=null)
+			g.setStroke(stroke);
+		g.drawRoundRect(margin, margin, width, height, cornerDiameter, cornerDiameter);
+		ByteProcessor mask = new ByteProcessor(bi);
+		ip.setRoi(x-margin, y-margin, width+margin*2+1, height+margin*2+1);
+		ip.fill(mask);
+	}
+	
 	public boolean contains(int x, int y) {
 		Rectangle r = new Rectangle(this.x, this.y, width, height);
 		boolean contains = r.contains(x, y);
@@ -1019,17 +1172,21 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return rr.contains(x, y);
 	}
 		
-	/** Returns a handle number if the specified screen coordinates are  
+	/** Returns a handle number if the specified screen coordinates are	 
 		inside or near a handle, otherwise returns -1. */
 	public int isHandle(int sx, int sy) {
 		if (clipboard!=null || ic==null) return -1;
 		double mag = ic.getMagnification();
 		int size = HANDLE_SIZE+3;
 		int halfSize = size/2;
-		int sx1 = ic.screenX(x) - halfSize;
-		int sy1 = ic.screenY(y) - halfSize;
-		int sx3 = ic.screenX(x+width) - halfSize;
-		int sy3 = ic.screenY(y+height) - halfSize;
+		double x = getXBase();
+		double y = getYBase();
+		double width = getFloatWidth();
+		double height = getFloatHeight();
+		int sx1 = ic.screenXD(x) - halfSize;
+		int sy1 = ic.screenYD(y) - halfSize;
+		int sx3 = ic.screenXD(x+width) - halfSize;
+		int sy3 = ic.screenYD(y+height) - halfSize;
 		int sx2 = sx1 + (sx3 - sx1)/2;
 		int sy2 = sy1 + (sy3 - sy1)/2;
 		if (sx>=sx1&&sx<=sx1+size&&sy>=sy1&&sy<=sy1+size) return 0;
@@ -1053,6 +1210,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			state = MOVING;
 			startX = ic.offScreenX(sx);
 			startY = ic.offScreenY(sy);
+			startXD = ic.offScreenXD(sx);
+			startYD = ic.offScreenYD(sy);
 			//showStatus();
 		}
 	}
@@ -1084,38 +1243,36 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		modifyRoi();
 	}
 
-    void modifyRoi() {
-    	if (previousRoi==null || previousRoi.modState==NO_MODS || imp==null)
-    		return;
-		//IJ.log("modifyRoi: "+ type+"  "+modState+" "+previousRoi.type+"  "+previousRoi.modState);
-    	if (type==POINT || previousRoi.getType()==POINT) {
-    		if (type==POINT && previousRoi.getType()==POINT)
-    			addPoint();
-    		else if (isArea() && previousRoi.getType()==POINT && previousRoi.modState==SUBTRACT_FROM_ROI)
-    			subtractPoints();
-    		return;
-    	}
+	void modifyRoi() {
+		if (previousRoi==null || previousRoi.modState==NO_MODS || imp==null)
+			return;
+		if (type==POINT || previousRoi.getType()==POINT) {
+			if (type==POINT && previousRoi.getType()==POINT) {
+				addPoint();
+			} else if (isArea() && previousRoi.getType()==POINT && previousRoi.modState==SUBTRACT_FROM_ROI)
+				subtractPoints();
+			return;
+		}
 		Roi previous = (Roi)previousRoi.clone();
 		previous.modState = NO_MODS;
-        ShapeRoi s1  = null;
-        ShapeRoi s2 = null;
-        if (previousRoi instanceof ShapeRoi)
-            s1 = (ShapeRoi)previousRoi;
-        else
-            s1 = new ShapeRoi(previousRoi);
-        if (this instanceof ShapeRoi)
-            s2 = (ShapeRoi)this;
-        else
-            s2 = new ShapeRoi(this);
-        if (previousRoi.modState==ADD_TO_ROI)
-        	s1.or(s2);
-        else
-        	s1.not(s2);
+		ShapeRoi s1	 = null;
+		ShapeRoi s2 = null;
+		if (previousRoi instanceof ShapeRoi)
+			s1 = (ShapeRoi)previousRoi;
+		else
+			s1 = new ShapeRoi(previousRoi);
+		if (this instanceof ShapeRoi)
+			s2 = (ShapeRoi)this;
+		else
+			s2 = new ShapeRoi(this);
+		if (previousRoi.modState==ADD_TO_ROI)
+			s1.or(s2);
+		else
+			s1.not(s2);
 		previousRoi.modState = NO_MODS;
 		Roi[] rois = s1.getRois();
 		if (rois.length==0) return;
 		int type2 = rois[0].getType();
-		//IJ.log(rois.length+" "+type2);
 		Roi roi2 = null;
 		if (rois.length==1 && (type2==POLYGON||type2==FREEROI))
 			roi2 = rois[0];
@@ -1125,9 +1282,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			roi2.copyAttributes(previousRoi);
 		imp.setRoi(roi2);
 		previousRoi = previous;
-    }
-    
-    void addPoint() {
+	}
+	
+	void addPoint() {
 		if (!(type==POINT && previousRoi.getType()==POINT)) {
 			modState = NO_MODS;
 			imp.draw();
@@ -1138,9 +1295,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		Rectangle r = getBounds();
 		FloatPolygon poly = getFloatPolygon();
 		imp.setRoi(p1.addPoint(poly.xpoints[0], poly.ypoints[0]));
-    }
-    
-    void subtractPoints() {
+	}
+	
+	void subtractPoints() {
 		previousRoi.modState = NO_MODS;
 		PointRoi p1 = (PointRoi)previousRoi;
 		PointRoi p2 = p1.subtractPoints(this);
@@ -1148,22 +1305,22 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			imp.setRoi(p1.subtractPoints(this));
 		else
 			imp.deleteRoi();
-    }
+	}
 
-    /** If 'add' is true, adds this selection to the previous one. If 'subtract' is true, subtracts 
-    	it from the previous selection. Called by the IJ.doWand() method, and the makeRectangle(), 
-    	makeOval(), makePolygon() and makeSelection() macro functions. */
-    public void update(boolean add, boolean subtract) {
-     	if (previousRoi==null) return;
-    	if (add) {
+	/** If 'add' is true, adds this selection to the previous one. If 'subtract' is true, subtracts 
+		it from the previous selection. Called by the IJ.doWand() method, and the makeRectangle(), 
+		makeOval(), makePolygon() and makeSelection() macro functions. */
+	public void update(boolean add, boolean subtract) {
+		if (previousRoi==null) return;
+		if (add) {
 			previousRoi.modState = ADD_TO_ROI;
-   			modifyRoi();
+			modifyRoi();
 		} else if (subtract) {
 			previousRoi.modState = SUBTRACT_FROM_ROI;
-   			modifyRoi();
+			modifyRoi();
 		} else
 			previousRoi.modState = NO_MODS;
-     }
+	 }
 
 	protected void showStatus() {
 		if (imp==null) return;
@@ -1181,8 +1338,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			size = ", w="+IJ.d2s(width*cal.pixelWidth)+", h="+IJ.d2s(height*cal.pixelHeight);
 		else
 			size = ", w="+width+", h="+height;
-		//size += ", ar="+IJ.d2s((double)width/height,2);
-		//IJ.log("showStatus: "+state+" "+type);
 		IJ.showStatus(imp.getLocationAsString(x,y)+size+value);
 	}
 		
@@ -1284,18 +1439,20 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	 * @see #setStrokeColor(Color)
 	 */
 	public Color getStrokeColor() {
-		return  strokeColor;
+		return	strokeColor;
 	}
 
-	/** Sets the color used to fill ROIs.
-	 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
+	/** Sets the fill color used to display this ROI, or set to null to display it transparently.
+	 * @see #getFillColor
+	 * @see #setStrokeColor
 	 */
 	public void setFillColor(Color color) {
 		fillColor = color;
 	}
 
-	/** Returns the color used to fill this ROI, or null if it is not filled.
-	 * @see #getStrokeColor()
+	/** Returns the fill color used to display this ROI, or null if it is displayed transparently.
+	 * @see #setFillColor
+	 * @see #getStrokeColor
 	 */
 	public Color getFillColor() {
 		return fillColor;
@@ -1310,7 +1467,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 	
 	/** Copy the attributes (outline color, fill color, outline width) 
-		of  'roi2' to the this selection. */
+		of	'roi2' to the this selection. */
 	public void copyAttributes(Roi roi2) {
 		this. strokeColor = roi2. strokeColor;
 		this.fillColor = roi2.fillColor;
@@ -1332,9 +1489,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	public void setLineWidth(int width) {
 		setStrokeWidth(width) ;
 	}
-        
+		
 	public void updateWideLine(float width) {
-		//IJ.log("updateWideLine "+isLine()+"  "+isDrawingTool()+"  "+getType());
+		//IJ.log("updateWideLine "+isLine()+"  "+isDrawingTool()+"	"+getType());
 		if (isLine()) {
 			wideLine = true;
 			setStrokeWidth(width);
@@ -1345,7 +1502,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		}
 	}
 
-    /** Set 'nonScalable' true to have TextRois in a display 
+	/** Set 'nonScalable' true to have TextRois in a display 
 		list drawn at a fixed location and size. */
 	public void setNonScalable(boolean nonScalable) {
 		this.nonScalable = nonScalable;
@@ -1540,21 +1697,21 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 
 	/** Returns 'true' if this is a line selection. */
-    public boolean isLine() {
-        return type>=LINE && type<=FREELINE;
-    }
-    
+	public boolean isLine() {
+		return type>=LINE && type<=FREELINE;
+	}
+	
 	/** Returns 'true' if this is an ROI primarily used from drawing
 		(e.g., TextRoi or Arrow). */
-    public boolean isDrawingTool() {
-        //return cornerDiameter>0;
-        return false;
-    }
-    
-    protected double getMagnification() {
-    	return ic!=null?ic.getMagnification():1.0;
-    }
-    
+	public boolean isDrawingTool() {
+		//return cornerDiameter>0;
+		return false;
+	}
+	
+	protected double getMagnification() {
+		return ic!=null?ic.getMagnification():1.0;
+	}
+	
 	/** Convenience method that converts Roi type to a human-readable form. */
 	public String getTypeAsString() {
 		String s="";
@@ -1568,8 +1725,15 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			case LINE: s="Straight Line"; break;
 			case OVAL: s="Oval"; break;
 			case COMPOSITE: s = "Composite"; break;
-			case POINT: s = "Point"; break;
-			default: s="Rectangle"; break;
+			case POINT: s="Point"; break;
+			default:
+				if (this instanceof TextRoi)
+					s = "Text";
+				else if (this instanceof ImageRoi)
+					s = "Image";
+				else
+					s = "Rectangle";
+				break;
 		}
 		return s;
 	}
@@ -1579,7 +1743,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return ic!=null;
 	}
 
-	/** Returns true if this is a PolygonRoi that supports sub-pixel resolution. */
+	/** Returns true if this is a slection that supports sub-pixel resolution. */
 	public boolean subPixelResolution() {
 		return subPixel;
 	}
@@ -1598,8 +1762,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		this.ignoreClipRect = ignoreClipRect;
 	}
 
+	/** Returns 'true' if this ROI is displayed and is also in an overlay. */
 	public final boolean isActiveOverlayRoi() {
-		if (imp==null)
+		if (imp==null || this!=imp.getRoi())
 			return false;
 		Overlay overlay = imp.getOverlay();
 		if (overlay!=null && overlay.contains(this))
@@ -1609,8 +1774,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return overlay!=null && overlay.contains(this);
 	}
 
-    /** Checks whether two rectangles are equal. */
-    public boolean equals(Object obj) {
+	/** Checks whether two rectangles are equal. */
+	public boolean equals(Object obj) {
 		if (obj instanceof Roi) {
 			Roi roi2 = (Roi)obj;
 			if (type!=roi2.getType()) return false;
@@ -1619,7 +1784,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			return true;
 		} else
 			return false;
-    }
+	}
 
 	protected int screenX(int ox) {return ic!=null?ic.screenX(ox):ox;}
 	protected int screenY(int oy) {return ic!=null?ic.screenY(oy):oy;}
@@ -1661,6 +1826,63 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return temp;
 	}
 
+	public void setProperty(String key, String value) {
+		if (key==null) return;
+		if (props==null)
+			props = new Properties();
+		if (value==null || value.length()==0)
+			props.remove(key);
+		else
+			props.setProperty(key, value);
+	}
+	
+	public String getProperty(String property) {
+		if (props==null)
+			return null;
+		else
+			return props.getProperty(property);
+	}
+	
+	public void setProperties(String properties) {
+		if (props==null)
+			props = new Properties();
+		else
+			props.clear();
+		try {
+			InputStream is = new ByteArrayInputStream(properties.getBytes("utf-8"));
+			props.load(is);
+		} catch(Exception e) {
+			IJ.error(""+e);
+		}
+	}
+
+	public String getProperties() {
+		if (props==null)
+			return null;
+		Vector v = new Vector();
+		for (Enumeration en=props.keys(); en.hasMoreElements();)
+			v.addElement(en.nextElement());
+		String[] keys = new String[v.size()];
+		for (int i=0; i<keys.length; i++)
+			keys[i] = (String)v.elementAt(i);
+		Arrays.sort(keys);
+		StringBuffer sb = new StringBuffer();
+		for (int i=0; i<keys.length; i++) {
+			sb.append(keys[i]);
+			sb.append(": ");
+			sb.append(props.get(keys[i]));
+			sb.append("\n");
+		}
+		return sb.toString();
+	}
+	
+	public int getPropertyCount() {
+		if (props==null)
+			return 0;
+		else
+			return props.size();
+	}
+		
 	public String toString() {
 		return ("Roi["+getTypeAsString()+", x="+x+", y="+y+", width="+width+", height="+height+"]");
 	}
@@ -1678,6 +1900,55 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 
 	public void mouseReleased(MouseEvent e) {
 		handleMouseUp(e.getX(), e.getY());
+	}
+
+	public double getXBase() {
+		if (bounds!=null)
+			return bounds.x;
+		else
+			return x;
+	}
+
+	public double getYBase() {
+		if (bounds!=null)
+			return bounds.y;
+		else
+			return y;
+	}
+	
+	public double getFloatWidth() {
+		if (bounds!=null)
+			return bounds.width;
+		else
+			return width;
+	}
+
+	public double getFloatHeight() {
+		if (bounds!=null)
+			return bounds.height;
+		else
+			return height;
+	}
+	
+	/** Overridden by PolygonRoi (angle between first two points), TextRoi (text angle) and Line (line angle). */
+	public double getAngle() {
+		return 0.0;
+	}
+	
+	public void enableSubPixelResolution() {
+		bounds = new Rectangle2D.Double(getXBase(), getYBase(), getFloatWidth(), getFloatHeight());
+		subPixel = true;
+	}
+
+	public String getDebugInfo() {
+		return "";
+	}
+
+	/** Returns a hashcode for this Roi that typically changes 
+		if it is moved,	 even though it is still the same object. */
+	public int getHashCode() {
+		return hashCode() ^ (new Double(getXBase()).hashCode()) ^
+			Integer.rotateRight(new Double(getYBase()).hashCode(),16);
 	}
 
 }

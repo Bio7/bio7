@@ -59,8 +59,7 @@ public class Line extends Roi {
 		type = LINE;
 		if (!(this instanceof Arrow) && lineWidth>1)
 			updateWideLine(lineWidth);
-		if (Prefs.subPixelResolution)
-			drawOffset = true;
+		drawOffset = Prefs.subPixelResolution;
 	}
 
 	/**
@@ -88,8 +87,10 @@ public class Line extends Roi {
 		state = NORMAL;
 		if (imp==null) return;
 		imp.draw(clipX-5, clipY-5, clipWidth+10, clipHeight+10);
-		if (Recorder.record)
-			Recorder.record("makeLine", x1, y1, x2, y2);
+		if (Recorder.record) {
+			String method = (this instanceof Arrow)?"makeArrow":"makeLine";
+			Recorder.record(method, x1, y1, x2, y2);
+		}
 		if (getLength()==0.0)
 			imp.deleteRoi();
 	}
@@ -340,6 +341,15 @@ public class Line extends Roi {
 	/** Draws this line on the image. */
 	public void draw(Graphics g) {
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
+		boolean isActiveOverlayRoi = !overlay && isActiveOverlayRoi();
+		if (isActiveOverlayRoi) {
+			if (color==Color.cyan)
+				color = Color.magenta;
+			else
+				color = Color.cyan;
+		}
+		double x = getXBase();
+		double y = getYBase();
 		g.setColor(color);
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		x1=(int)x1d; y1=(int)y1d; x2=(int)x2d; y2=(int)y2d;
@@ -351,7 +361,7 @@ public class Line extends Roi {
 		int sx3 = sx1 + (sx2-sx1)/2;
 		int sy3 = sy1 + (sy2-sy1)/2;
 		Graphics2D g2d = (Graphics2D)g;
-		if (stroke!=null)
+		if (stroke!=null && !isActiveOverlayRoi) 
 			g2d.setStroke(getScaledStroke());
 		g.drawLine(sx1, sy1, sx2, sy2);
 		if (wideLine && !overlay) {
@@ -369,9 +379,13 @@ public class Line extends Roi {
 			drawHandle(g, sx3-size2, sy3-size2);
 		}
 		if (state!=NORMAL)
-			IJ.showStatus(imp.getLocationAsString(x2,y2)+", angle=" + IJ.d2s(getAngle(x1,y1,x2,y2)) + ", length=" + IJ.d2s(getLength()));
+			IJ.showStatus(imp.getLocationAsString(x2,y2)+", angle=" + IJ.d2s(getAngle()) + ", length=" + IJ.d2s(getLength()));
 		if (updateFullWindow)
 			{updateFullWindow = false; imp.draw();}
+	}
+	
+	public double getAngle() {
+		return getFloatAngle(x1d, y1d, x2d, y2d);
 	}
 
 	/** Returns the length of this line. */
@@ -450,6 +464,8 @@ public class Line extends Roi {
 	 * @see #getFloatPoints
 	 */
 	public FloatPolygon getFloatPolygon() {
+		double x = getXBase();
+		double y = getYBase();
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		FloatPolygon p = new FloatPolygon();
 		if (getStrokeWidth()<=1) {
@@ -476,6 +492,8 @@ public class Line extends Roi {
 
 	public void drawPixels(ImageProcessor ip) {
 		ip.setLineWidth(1);
+		double x = getXBase();
+		double y = getYBase();
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		double offset = getOffset(0.5);
 		if (getStrokeWidth()<=1) {
@@ -593,6 +611,11 @@ public class Line extends Roi {
 	
 	public void setDrawOffset(boolean drawOffset) {
 		this.drawOffset = drawOffset;
+	}
+
+	/** Always returns true. */
+	public boolean subPixelResolution() {
+		return true;
 	}
 
 }

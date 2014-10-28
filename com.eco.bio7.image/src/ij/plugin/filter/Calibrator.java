@@ -12,9 +12,6 @@ import java.util.*;
 import java.awt.event.*;
 import java.io.*;
 
-import javax.swing.JButton;
-import javax.swing.JPanel;
-
 
 /** Implements the Analyze/Calibrate command. */
 public class Calibrator implements PlugInFilter, Measurements, ActionListener {
@@ -41,7 +38,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 	private double lx=0.02, ly=0.1;
 	private int oldFunction;
 	private String sumResiduals, fitGoodness;
-	private JButton open, save;
+	private Button open, save;
 	private GenericDialog gd;
 	private boolean showPlotFlag = true;
 	private CurveFitter curveFitter;
@@ -118,13 +115,13 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 	}
 
 	/** Creates a panel containing "Open..." and "Save..." buttons. */
-	JPanel makeButtonPanel(GenericDialog gd) {
-		JPanel buttons = new JPanel();
+	Panel makeButtonPanel(GenericDialog gd) {
+		Panel buttons = new Panel();
     	buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
-		open = new JButton("Open...");
+		open = new Button("Open...");
 		open.addActionListener(this);
 		buttons.add(open);
-		save = new JButton("Save...");
+		save = new Button("Save...");
 		save.addActionListener(this);
 		buttons.add(save);
 		return buttons;
@@ -193,7 +190,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 			FileOpener.setShowConflictMessage(true);
 		if (function!=Calibration.NONE && showPlotFlag) {
 			if (curveFitter!=null)
-				Fitter.plot(curveFitter);
+				Fitter.plot(curveFitter, imp.getBitDepth()==8);
 			else
 				showPlot(x, y, cal, fitGoodness);
 		}

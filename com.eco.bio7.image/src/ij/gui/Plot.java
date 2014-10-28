@@ -10,9 +10,9 @@ import ij.plugin.filter.Analyzer;
 import ij.macro.Interpreter;
 import ij.measure.Calibration;
 
-/*	    Plots are now accepting ArrayList input and allowing to display arrow
- *      plots, logarithmic (log in x and/or y) plots, minor ticks (decimal and
- *      logarithmic),(Philippe CARL, CNRS, philippe.carl (AT) unistra.fr)
+/*		Plots are now accepting ArrayList input and allowing to display arrow
+ *		plots, logarithmic (log in x and/or y) plots, minor ticks (decimal and
+ *		logarithmic),(Philippe CARL, CNRS, philippe.carl (AT) unistra.fr)
  *
  */
 
@@ -75,18 +75,19 @@ public class Plot {
 	/** the margin width below the plot frame */
 	public static final int BOTTOM_MARGIN = 40;
 
-	private static       int MAX_INTERVALS = 12;			//maximum number of intervals between ticks or grid lines
-	private static final int MIN_X_GRIDWIDTH = 60;			//minimum distance between grid lines or ticks along x
+	private static		 int MAX_INTERVALS = 12;				//maximum number of intervals between ticks or grid lines
+	private static final int MIN_X_GRIDWIDTH = 60;		//minimum distance between grid lines or ticks along x
 	private static final int MIN_Y_GRIDWIDTH = 40;			//minimum distance between grid lines or ticks along y
-	private static       int TICK_LENGTH = 6;			//length of ticks
-	private static       int MINOR_TICK_LENGTH = 4;			//length of minor ticks
+	private static		 int TICK_LENGTH = 6;			//length of ticks
+	private static		 int MINOR_TICK_LENGTH = 4;			//length of minor ticks
 	private final Color gridColor = new Color(0xc0c0c0);		//light gray
 	private int frameWidth;
 	private int frameHeight;
 	
 	Rectangle frame = null;
 	float[] xValues, yValues;
-	float[] errorBars;
+	float[] errorBars;  // vertical error bars
+	float[] xErrorBars;  // horizonal error bars
 	int nPoints;
 	double xMin, xMax, yMin, yMax;
 	
@@ -95,8 +96,9 @@ public class Plot {
 	private String xLabel;
 	private String yLabel;
 	private int flags;
-	private Font font       = new Font("Helvetica", Font.PLAIN, 12);
-	private Font fontSmall  = new Font("Helvetica", Font.PLAIN, 9 );
+	private Font font		= new Font("Helvetica", Font.PLAIN, 12);
+	private Font fontMedium = new Font("Helvetica", Font.PLAIN, 10);
+	private Font fontSmall	= new Font("Helvetica", Font.PLAIN, 9 );
 	private Font xLabelFont = font;
 	private Font yLabelFont = font;
 	private boolean fixedYScale;
@@ -111,9 +113,10 @@ public class Plot {
 	private int plotHeight = PlotWindow.plotHeight;
 	private boolean multiplePlots;
 	private boolean drawPending;
-	private int sourceImageID;
+	private PlotMaker plotMaker;
+	private float[] previousYValues;
 	
-	/** keeps a reference to all of the  that is going to be plotted. */
+	/** keeps a reference to all of the	 that is going to be plotted. */
 	ArrayList storedData;
 	
 	/** Construct a new PlotWindow.
@@ -193,10 +196,18 @@ public class Plot {
 
 	/** Sets the x-axis and y-axis range. */
 	public void setLimits(double xMin, double xMax, double yMin, double yMax) {
-		this.xMin = ((flags&X_LOG_NUMBERS)!=0) ? Math.log10(xMin) : xMin;
-		this.xMax = ((flags&X_LOG_NUMBERS)!=0) ? Math.log10(xMax) : xMax;
-		this.yMin = ((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(yMin) : yMin;
-		this.yMax = ((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(yMax) : yMax;
+		if ((flags&X_LOG_NUMBERS)!=0) {
+			xMin = Math.log10(xMin);
+			xMax = Math.log10(xMax);
+		}
+		if ((flags&Y_LOG_NUMBERS)!=0) {
+			yMin = Math.log10(yMin);
+			yMax = Math.log10(yMax);
+		}
+		if (!Double.isNaN(xMin)) this.xMin = xMin;	//ignore invalid ranges, esp in log scale
+		if (!Double.isNaN(xMax)) this.xMax = xMax;
+		if (!Double.isNaN(yMin)) this.yMin = yMin;
+		if (!Double.isNaN(yMax)) this.yMax = yMax;
 		fixedYScale = true;
 		if (initialized) {
 			ip.setColor(Color.white);
@@ -306,13 +317,13 @@ public class Plot {
 
 	/** Sets the properties of the axes. */
 	public void setAxes(boolean xLog, boolean yLog, boolean xTicks, boolean yTicks, boolean xMinorTicks, boolean yMinorTicks, int tickLenght, int minorTickLenght) {
-		setAxisXLog       (xLog);
-		setAxisYLog       (yLog);
-		setXMinorTicks    (xMinorTicks);
-		setYMinorTicks    (yMinorTicks);
-		setXTicks         (xTicks);
-		setYTicks         (yTicks);
-		setTickLength     (tickLenght);
+		setAxisXLog		  (xLog);
+		setAxisYLog		  (yLog);
+		setXMinorTicks	  (xMinorTicks);
+		setYMinorTicks	  (yMinorTicks);
+		setXTicks		  (xTicks);
+		setYTicks		  (yTicks);
+		setTickLength	  (tickLenght);
 		setMinorTickLength(minorTickLenght);
 	}
 	
@@ -340,11 +351,8 @@ public class Plot {
 		switch(shape) {
 			case CIRCLE: case X:  case BOX: case TRIANGLE: case CROSS: case DOT:
 				ip.setClipRect(frame);
-				for (int i=0; i<x.length; i++) {
-					int xt = ((flags&X_LOG_NUMBERS)!=0) ? LEFT_MARGIN + (int)((Math.log10(x[i])-xMin)*xScale)              : LEFT_MARGIN + (int)((x[i]-xMin)*xScale);
-					int yt = ((flags&Y_LOG_NUMBERS)!=0) ? TOP_MARGIN + frameHeight - (int)((Math.log10(y[i])-yMin)*yScale) : TOP_MARGIN + frameHeight - (int)((y[i]-yMin)*yScale);
-					drawShape(shape, xt, yt, markSize);
-				}
+				for (int i=0; i<x.length; i++)
+					drawShape(shape, scaleX(x[i]), scaleY(y[i]), markSize);
 				ip.setClipRect(null);
 				break;
 			case LINE:
@@ -358,7 +366,19 @@ public class Plot {
 			nPoints = x.length;
 			drawPending = false;
 		}
-		store(x, y);
+		if (shape==DOT || shape==LINE || !duplicate(y,previousYValues))
+			store(x, y);
+		previousYValues = y;
+	}
+	
+	private boolean duplicate(float[] current, float[] previous) {
+		if (current==null || previous==null || current.length!=previous.length)
+			return false;
+		for (int i=0; i<current.length; i++) {
+			if (current[i]!=previous[i])
+				return false;
+		}
+		return true;
 	}
 
 	/** Adds a set of points to the plot using double arrays.
@@ -381,12 +401,12 @@ public class Plot {
 	/** Adds a set of points to the plot or adds a curve if shape is set to LINE.
 	 * @param x			the x-coodinates
 	 * @param y			the y-coodinates
-	 * @param z			the errorBars
+	 * @param errorBars			the vertical error bars
 	 * @param shape		CIRCLE, X, BOX, TRIANGLE, CROSS, DOT or LINE
 	 */
 	public void addPoints(double[] x, double[] y, double[] errorBars, int shape) {
 		addPoints(Tools.toFloat(x), Tools.toFloat(y), shape);
-		drawErrorBars(Tools.toFloat(x), Tools.toFloat(y), Tools.toFloat(errorBars));
+		drawVerticalErrorBars(Tools.toFloat(x), Tools.toFloat(y), Tools.toFloat(errorBars));
 	}
 
 	/** Adds a set of points to the plot using double ArrayLists.
@@ -440,8 +460,8 @@ public class Plot {
 	/** Adds a set of points that will be drawn as ARROWs.
 	 * @param x1		the x-coodinates of the beginning of the arrow
 	 * @param y1		the y-coodinates of the beginning of the arrow
-	 * @param x2		the x-coodinates of the end       of the arrow
-	 * @param y2		the y-coodinates of the end       of the arrow
+	 * @param x2		the x-coodinates of the end		  of the arrow
+	 * @param y2		the y-coodinates of the end		  of the arrow
 	 */
 	public void drawVectors(double[] x1, double[] y1, double[] x2, double[] y2) {
 		setup();
@@ -501,12 +521,15 @@ public class Plot {
 		drawVectors(getDoubleFromArrayList(x1), getDoubleFromArrayList(y1), getDoubleFromArrayList(x2), getDoubleFromArrayList(y2));
 	}	
 
-	/** Adds error bars to the plot. */
+	/** Adds vertical error bars to the plot. */
 	public void addErrorBars(float[] errorBars) {
-		this.errorBars = errorBars	;
+		if (!drawPending && xValues!=null && yValues!=null)
+			drawVerticalErrorBars(xValues, yValues, errorBars);
+		else
+			this.errorBars = errorBars;
 	}
 	
-	/** Adds error bars to the plot. */
+	/** Adds vertical error bars to the plot. */
 	public void addErrorBars(double[] errorBars) {
 		addErrorBars(Tools.toFloat(errorBars));
 	}
@@ -514,6 +537,14 @@ public class Plot {
 	/** This is a version of addErrorBars that works with JavaScript. */
 	public void addErrorBars(String dummy, float[] errorBars) {
 		addErrorBars(errorBars);
+	}
+
+	/** Adds  horizontal error bars to the plot. */
+	public void addHorizontalErrorBars(double[] errorBars) {
+		if (!drawPending && xValues!=null && yValues!=null)
+			drawHorizontalErrorBars(xValues, yValues, Tools.toFloat(errorBars));
+		else
+			xErrorBars = Tools.toFloat(errorBars);
 	}
 
 	/** Draws text at the specified location, where (0,0)
@@ -572,33 +603,46 @@ public class Plot {
 	/* Draws a line using the coordinate system defined by setLimits(). */
 	public void drawLine(double x1, double y1, double x2, double y2) {
 		setup();
-		int ix1 = LEFT_MARGIN + (int)Math.round((x1-xMin)*xScale);
-		int iy1 = TOP_MARGIN + frameHeight - (int)Math.round((y1-yMin)*yScale);
-		int ix2 = LEFT_MARGIN + (int)Math.round((x2-xMin)*xScale);
-		int iy2 = TOP_MARGIN + frameHeight - (int)Math.round((y2-yMin)*yScale);
-		ip.drawLine(ix1, iy1, ix2, iy2);
+		ip.drawLine(scaleX(x1), scaleY(y1), scaleX(x2), scaleY(y2));
 	}
-
-	/* Draws a line using a normalized 0-1, 0-1 coordinate system. */
+	
+	/** Draws a line using a normalized 0-1, 0-1 coordinate system,
+	 * with (0,0) at the top left and (1,1) at the lower right corner.
+	 * This is the same coordinate system used by addLabel(x,y,label).
+	 */
 	public void drawNormalizedLine(double x1, double y1, double x2, double y2) {
 		setup();
 		int ix1 = LEFT_MARGIN + (int)(x1*frameWidth);
-		int iy1 = TOP_MARGIN + (int)(y1*frameHeight);
+		int iy1 = TOP_MARGIN  + (int)(y1*frameHeight);
 		int ix2 = LEFT_MARGIN + (int)(x2*frameWidth);
-		int iy2 = TOP_MARGIN + (int)(y2*frameHeight);
+		int iy2 = TOP_MARGIN  + (int)(y2*frameHeight);
 		ip.drawLine(ix1, iy1, ix2, iy2);
 	}
 
 	/* Draws a line using the coordinate system defined by setLimits(). */
 	public void drawDottedLine(double x1, double y1, double x2, double y2, int step) {
 		setup();
-		int ix1 = LEFT_MARGIN + (int)Math.round((x1-xMin)*xScale);
-		int iy1 = TOP_MARGIN + frameHeight - (int)Math.round((y1-yMin)*yScale);
-		int ix2 = LEFT_MARGIN + (int)Math.round((x2-xMin)*xScale);
-		int iy2 = TOP_MARGIN + frameHeight - (int)Math.round((y2-yMin)*yScale);
+		int ix1 = scaleX(x1);
+		int iy1 = scaleY(y1);
+		int ix2 = scaleX(x2);
+		int iy2 = scaleY(y2);
 		for(int i = ix1; i <= ix2; i = i + step)
 			for(int j = iy1; j <= iy2; j = j + step)
 				ip.drawDot(i, j);
+	}
+
+	private int  scaleX(double x) {
+		if ((flags&X_LOG_NUMBERS)!=0)
+			return LEFT_MARGIN+(int)Math.round((Math.log10(x)-xMin)*xScale);
+		else
+			return LEFT_MARGIN+(int)Math.round((x-xMin)*xScale);
+	}
+
+	private int  scaleY(double y) {
+		if ((flags&Y_LOG_NUMBERS)!=0)
+			return TOP_MARGIN +frameHeight-(int)Math.round((Math.log10(y)-yMin)*yScale);
+		else
+			return TOP_MARGIN+frameHeight-(int)Math.round((y-yMin)*yScale)	;
 	}
 
 	/** Sets the font. */
@@ -656,9 +700,10 @@ public class Plot {
 		else
 			drawTicksEtc();
 	}
-	
+
+	// draw simple axis labels with min&max value only
 	void drawAxisLabels() {
-		int digits = getDigits(yMin, yMax);
+		int digits = getDigits(yMin, xMax, 0.001*(yMax-yMin), 8);
 		String s = IJ.d2s(yMax, digits);
 		int sw = ip.getStringWidth(s);
 		if ((flags&Y_LOG_NUMBERS)!=0) {
@@ -706,7 +751,7 @@ public class Plot {
 		FontMetrics fm = ip.getFontMetrics();
 		int x = LEFT_MARGIN;
 		int y = TOP_MARGIN + frame.height + fm.getAscent() + 6;
-		digits = getDigits(xMin, xMax);
+		digits = getDigits(xMin, xMax, 0.001*(xMax-xMin), 8);
 		if ((flags&X_LOG_NUMBERS)!=0) {
 			ip.setFont(fontSmall);
 			ip.drawString(IJ.d2s(xMin,digits), x-ip.getStringWidth(s)/2+6, y-7);
@@ -719,24 +764,21 @@ public class Plot {
 			ip.drawString(IJ.d2s(xMin,digits), x, y);
 			ip.drawString(IJ.d2s(xMax,digits), x+frame.width-ip.getStringWidth(s)+6, y);
 		}
-		if(xLabelFont != font)
-		{
+		if (xLabelFont != font) {
 			ip.setFont(xLabelFont);
 			ip.drawString(xLabel, LEFT_MARGIN+(frame.width-ip.getStringWidth(xLabel))/2, y+3);
 			ip.setFont(font);
-		}
-		else 
+		} else 
 			ip.drawString(xLabel, LEFT_MARGIN+(frame.width-ip.getStringWidth(xLabel))/2, y+3);
-		if(yLabelFont != font)
-		{
+		if (yLabelFont != font) {
 			ip.setFont(yLabelFont);
 			drawYLabel(yLabel,LEFT_MARGIN-4,TOP_MARGIN,frame.height, fm);
 			ip.setFont(font);
-		}
-		else 
+		} else 
 			drawYLabel(yLabel,LEFT_MARGIN-4,TOP_MARGIN,frame.height, fm);
 	}
 
+	//draw ticks, grid and axis label for each tick/grid line
 	void drawTicksEtc() {
 		int fontAscent = ip.getFontMetrics().getAscent();
 		int fontMaxAscent = ip.getFontMetrics().getMaxAscent();
@@ -754,9 +796,7 @@ public class Plot {
 				i1 = (int)Math.ceil (Math.min(xMin,xMax)/step-1.e-10);
 				i2 = (int)Math.floor(Math.max(xMin,xMax)/step+1.e-10);
 			}
-			int digits = -(int)Math.floor(Math.log10(step)+1e-6);
-			if (digits < 0) digits = 0;
-			if (digits > 5) digits = -3; // use scientific notation
+			int digits = getDigits(xMin, xMax, step, 7);
 			int y1 = TOP_MARGIN;
 			int y2 = TOP_MARGIN+frame.height;
 			int yNumbers = y2 + fontAscent + 7;
@@ -803,11 +843,10 @@ public class Plot {
 				i2 = (int)Math.floor(Math.max(xMin,xMax)/step+1.e-10);
 				for (int i=0; i<=(i2-i1); i++) {
 					int diff = i1+(1-i10)*10;
-					if((i+diff)%10>1)
-					{
+					if ((i+diff)%10>1) {
 						double v = (i-(i+diff)%10+10*Math.log10((i+diff)%10)+i1)*step;
 						int x = (int)Math.round((v - xMin)*xScale) + LEFT_MARGIN;
-						if(x < frame.width + LEFT_MARGIN) {
+						if (x < frame.width + LEFT_MARGIN) {
 							ip.drawLine(x, y1, x, y1+MINOR_TICK_LENGTH);
 							ip.drawLine(x, y2, x, y2-MINOR_TICK_LENGTH);
 						}
@@ -820,7 +859,7 @@ public class Plot {
 			double step = Math.abs(Math.max(frame.height/MAX_INTERVALS, MIN_Y_GRIDWIDTH)/yScale); //the smallest allowable increment
 			step = niceNumber(step);
 			int i1, i2;
-			if ((flags&X_FORCE2GRID)!=0) {
+			if ((flags&Y_FORCE2GRID)!=0) {
 				i1 = (int)Math.floor(Math.min(yMin,yMax)/step+1.e-10);	//this also allows for inverted xMin, xMax
 				i2 = (int)Math.ceil (Math.max(yMin,yMax)/step-1.e-10);
 				yMin = i1*step;
@@ -830,42 +869,59 @@ public class Plot {
 				i1 = (int)Math.ceil (Math.min(yMin,yMax)/step-1.e-10);
 				i2 = (int)Math.floor(Math.max(yMin,yMax)/step+1.e-10);
 			}
-			int digits = -(int)Math.floor(Math.log10(step)+1e-6);
-			if (digits < 0) digits = 0;
-			if (digits > 5) digits = -3; // use scientific notation
+			int digits = getDigits(yMin, yMax, step, 5);
 			int x1 = LEFT_MARGIN;
 			int x2 = LEFT_MARGIN+frame.width;
-			for (int i=0; i<=(i2-i1); i++) {
-				double v = (i+i1)*step;
-				int y = TOP_MARGIN + frame.height - (int)Math.round((v - yMin)*yScale);
-				if ((flags&Y_GRID)!=0) {
-					ip.setColor(gridColor);
-					ip.drawLine(x1, y, x2, y);
-					ip.setColor(Color.black);
-				}
-				if ((flags&Y_TICKS)!=0) {
-					ip.drawLine(x1, y, x1+TICK_LENGTH, y);
-					ip.drawLine(x2, y, x2-TICK_LENGTH, y);
-				}
-				if ((flags&Y_NUMBERS)!=0) {
-					String s = IJ.d2s(v,digits);
-					int w = ip.getStringWidth(s);
-					if (w>maxNumWidth) maxNumWidth = w;
-					ip.drawString(s, LEFT_MARGIN-w-4, y+fontMaxAscent/2+1);
-				}
-				if ((flags&Y_LOG_NUMBERS)!=0) {
-					ip.setFont(fontSmall);
-					String s = IJ.d2s(v,digits);
-					int ws = ip.getStringWidth(s);
-					if (ws>maxNumWidth) maxNumWidth = ws;
-					ip.drawString(s, LEFT_MARGIN-ws-1, y+fontMaxAscent/2-8);
-					ip.setFont(font);
-					String t = "10";
-					int w = ip.getStringWidth(t);
-					if (w>maxNumWidth) maxNumWidth = w;
-					ip.drawString(t, LEFT_MARGIN-w-11, y+fontMaxAscent/2+2);
-				}				
+			if (yMin==yMax && (flags&Y_NUMBERS)!=0) {
+				String s = IJ.d2s(yMin,getDigits(yMin, 0.001*yMin, 5));
+				int w = ip.getStringWidth(s);
+				if (w>maxNumWidth) maxNumWidth = w;
+				int y = TOP_MARGIN + frame.height;
+				ip.drawString(s, LEFT_MARGIN-w-4, y+fontMaxAscent/2+1);
+				drawYLabel(yLabel,LEFT_MARGIN-maxNumWidth-4,TOP_MARGIN,frame.height, ip.getFontMetrics());
 			}
+			else {
+				ip.setFont(font);
+				int w1 = ip.getStringWidth(IJ.d2s(yMin,digits));
+				int w2 = ip.getStringWidth(IJ.d2s(yMax,digits));
+				int wMax = Math.max(w1,w2);
+				//IJ.log(IJ.d2s(yMin,digits)+"w="+w1+","+IJ.d2s(yMax,digits)+"w="+w2+((wMax > LEFT_MARGIN-4)?"med":"norm"));
+				if ((flags&Y_NUMBERS)!=0 && (flags&Y_LOG_NUMBERS)==0)
+					if (wMax > LEFT_MARGIN-4)
+						ip.setFont(fontMedium);	 //small font if there is not enough space for the numbers
+				for (int i=0; i<=(i2-i1); i++) {
+					double v = step==0 ? yMin : (i+i1)*step;
+					int y = TOP_MARGIN + frame.height - (int)Math.round((v - yMin)*yScale);
+					if ((flags&Y_GRID)!=0) {
+						ip.setColor(gridColor);
+						ip.drawLine(x1, y, x2, y);
+						ip.setColor(Color.black);
+					}
+					if ((flags&Y_TICKS)!=0) {
+						ip.drawLine(x1, y, x1+TICK_LENGTH, y);
+						ip.drawLine(x2, y, x2-TICK_LENGTH, y);
+					}
+					if ((flags&Y_NUMBERS)!=0) {
+						String s = IJ.d2s(v,digits);
+						int w = ip.getStringWidth(s);
+						if (w>maxNumWidth) maxNumWidth = w;
+						ip.drawString(s, LEFT_MARGIN-w-4, y+fontMaxAscent/2+1);
+					}
+					if ((flags&Y_LOG_NUMBERS)!=0) {
+						ip.setFont(fontSmall);
+						String s = IJ.d2s(v,digits);
+						int ws = ip.getStringWidth(s);
+						if (ws>maxNumWidth) maxNumWidth = ws;
+						ip.drawString(s, LEFT_MARGIN-ws-1, y+fontMaxAscent/2-8);
+						ip.setFont(font);
+						String t = "10";
+						int w = ip.getStringWidth(t);
+						if (w>maxNumWidth) maxNumWidth = w;
+						ip.drawString(t, LEFT_MARGIN-w-11, y+fontMaxAscent/2+2);
+					}				
+				}
+			}
+			ip.setFont(font);
 			if ((flags&Y_MINOR_TICKS)!=0  && (flags&Y_LOG_NUMBERS)==0) {
 				step /= 10;
 				i1 = (int)Math.ceil (Math.min(yMin,yMax)/step-1.e-10);
@@ -884,8 +940,7 @@ public class Plot {
 				i2 = (int)Math.floor(Math.max(yMin,yMax)/step+1.e-10);
 				for (int i=0; i<=(i2-i1); i++) {
 					int diff = i1+(1-i10)*10;
-					if(i%10>1)
-					{
+					if(i%10>1) {
 						double v = (i-(i+diff)%10+10*Math.log10((i+diff)%10)+i1)*step;
 						int y = TOP_MARGIN + frame.height - (int)Math.round((v - yMin)*yScale);
 						if(y > TOP_MARGIN) {
@@ -897,7 +952,7 @@ public class Plot {
 			}
 		}
 		if ((flags&(Y_NUMBERS+Y_LOG_NUMBERS))==0) {					//simply note y-axis min&max
-			int digits = getDigits(yMin, yMax);
+			int digits = getDigits(yMin, yMax, 0.001*(yMax-yMin), 6);
 			String s = IJ.d2s(yMax, digits);
 			int sw = ip.getStringWidth(s);
 			if ((sw+4)>LEFT_MARGIN)
@@ -914,32 +969,27 @@ public class Plot {
 		FontMetrics fm = ip.getFontMetrics();
 		int x = LEFT_MARGIN;
 		int y = TOP_MARGIN + frame.height + fm.getAscent() + 6;
-		if ((flags&X_NUMBERS)==0 && (flags&X_LOG_NUMBERS)==0) {				//simply note x-axis min&max
-			int digits = getDigits(xMin, xMax);
+		if ((flags&(X_NUMBERS+X_LOG_NUMBERS))==0) {				//simply note x-axis min&max
+			int digits = getDigits(xMin, xMax, 0.001*(xMax-xMin), 7);
 			ip.drawString(IJ.d2s(xMin,digits), x, y);
 			String s = IJ.d2s(xMax,digits);
 			ip.drawString(s, x + frame.width-ip.getStringWidth(s)+6, y);
 		} else
 			y += fm.getAscent();							//space needed for x numbers
-		if(xLabelFont != font)
-		{
+		if (xLabelFont != font) {
 			ip.setFont(xLabelFont);
 			ip.drawString(xLabel, LEFT_MARGIN+(frame.width-ip.getStringWidth(xLabel))/2, y+6);
 			ip.setFont(font);
-		}
-		else 
+		} else 
 			ip.drawString(xLabel, LEFT_MARGIN+(frame.width-ip.getStringWidth(xLabel))/2, y+6);
-		if(xLabelFont != font)
-		{
+		if (xLabelFont != font) {
 			ip.setFont(xLabelFont);
 			if ((flags&Y_LOG_NUMBERS)!=0)
 				drawYLabel(yLabel,LEFT_MARGIN-maxNumWidth-20,TOP_MARGIN,frame.height, fm);
 			else
 				drawYLabel(yLabel,LEFT_MARGIN-maxNumWidth-4,TOP_MARGIN,frame.height, fm);
 			ip.setFont(font);
-		}
-		else
-		{
+		} else {
 			if ((flags&Y_LOG_NUMBERS)!=0)
 				drawYLabel(yLabel,LEFT_MARGIN-maxNumWidth-20,TOP_MARGIN,frame.height, fm);
 			else
@@ -963,29 +1013,47 @@ public class Plot {
 			pixels[i] = (byte)255;
 		ip = new ByteProcessor(width, height, pixels, null);
 	}
-	
-	int getDigits(double n1, double n2) {
-		if (Math.round(n1)==n1 && Math.round(n2)==n2)
-			if(n1>10000)
-				return -3;
-			else
-				return 0;
-		else {
-			n1 = Math.abs(n1);
-			n2 = Math.abs(n2);
-			double n = n1<n2&&n1>0.0?n1:n2;
-			double diff = Math.abs(n2-n1);
-			if (diff>0.0 && diff<n) n = diff;
-			int digits = 1;
-			if (n<10.0) digits = 2;
-			if (n<0.01) digits = 3;
-			if (n<0.001) digits = 4;
-			if (n<0.0001) digits = -3; // use scientific notation
-			if (n>10000) digits = -3; // use scientific notation
-			return digits;
-		}
+
+	// Number of digits to display the number n with resolution 'resolution';
+	// (if n is integer and small enough to display without scientific notation,
+	// no decimals are needed, irrespective of 'resolution')
+	// Scientific notation is used for more than 'maxDigits' (must be >=3), and indicated
+	// by a negative return value
+	int getDigits(double n, double resolution, int maxDigits) {
+		if (isInteger(n) && Math.abs(n) < Math.pow(10,maxDigits-1)-1)
+			return 0;
+		else
+			return getDigits2(n, resolution, maxDigits);
 	}
-	
+
+	// Number of digits to display the range between n1 and n2 with resolution 'resolution';
+	// Scientific notation is used for more than 'maxDigits' (must be >=3), and indicated
+	// by a negative return value
+	int getDigits(double n1, double n2, double resolution, int maxDigits) {
+		if (n1==0 && n2==0) return 0;
+		return getDigits2(Math.max(Math.abs(n1),Math.abs(n2)), resolution, maxDigits);
+	}
+
+	int getDigits2(double n, double resolution, int maxDigits) {
+		int log10ofN = (int)Math.floor(Math.log10(Math.abs(n))+1e-7);
+		int digits = resolution != 0 ?
+				-(int)Math.floor(Math.log10(Math.abs(resolution))+1e-7) : 
+				Math.max(0, -log10ofN+maxDigits-2);
+		int sciDigits = -Math.max((log10ofN+digits),1);
+		//IJ.log("n="+(float)n+"digitsRaw="+digits+" log10ofN="+log10ofN+" sciDigits="+sciDigits);
+		if (digits < -2 && log10ofN >= maxDigits)
+			digits = sciDigits; //scientific notation for large numbers
+		else if (digits < 0)
+			digits = 0;
+		else if (digits > maxDigits-1 && log10ofN < -2)
+			digits = sciDigits; // scientific notation for small numbers
+		return digits;
+	}
+
+	boolean isInteger(double n) {
+		return n==Math.round(n);
+	}
+
 	/** Draws the plot specified in the constructor. */
 	public void draw() {
 		int x, y;
@@ -999,8 +1067,14 @@ public class Plot {
 		
 		if (drawPending) {
 			drawFloatPolyline(ip, ((flags&X_LOG_NUMBERS)!=0) ? arrayToLog(xValues) : xValues, ((flags&Y_LOG_NUMBERS)!=0) ? arrayToLog(yValues) : yValues, nPoints);
-			if (this.errorBars != null)
-				drawErrorBars(xValues, yValues, errorBars);
+			if (yMin==yMax) {
+				int yy = frame.y + frame.height-1;
+				ip.drawLine(frame.x, yy, frame.x+frame.width, yy);
+			}
+			if (this.errorBars!=null)
+				drawVerticalErrorBars(xValues, yValues, errorBars);
+			if (this.xErrorBars!=null)
+				drawHorizontalErrorBars(xValues, yValues, xErrorBars);
 		}
 		
 		if (ip instanceof ColorProcessor)
@@ -1011,20 +1085,36 @@ public class Plot {
 		ip.setLineWidth(lineWidth);
 	}
 
-	private void drawErrorBars(float[] x, float[] y, float[] e) {
+	private void drawVerticalErrorBars(float[] x, float[] y, float[] e) {
 		int nPoints2 = nPoints;
 		if (e.length<nPoints)
 			nPoints2 = e.length;
 		int[] xpoints = new int[2];
 		int[] ypoints = new int[2];
 		for (int i=0; i<nPoints2; i++) {
-			xpoints[0] = xpoints[1] = LEFT_MARGIN  + (int)(((((flags&X_LOG_NUMBERS)!=0) ? Math.log10(x[i]) : x[i])-xMin)*xScale);
-			ypoints[0] = TOP_MARGIN + frame.height - (int)(((((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(y[i]) : y[i])-yMin-(((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(e[i]) : e[i]))*yScale);
-			ypoints[1] = TOP_MARGIN + frame.height - (int)(((((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(y[i]) : y[i])-yMin+(((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(e[i]) : e[i]))*yScale);
+			xpoints[0] = xpoints[1] = LEFT_MARGIN  + (int)(((((flags&X_LOG_NUMBERS)!=0) ? Math.log10(x[i]) : x[i])-xMin)*xScale+0.5);
+			ypoints[0] = TOP_MARGIN + frame.height - (int)(((((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(y[i]) : y[i])-yMin-(((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(e[i]) : e[i]))*yScale+0.5);
+			ypoints[1] = TOP_MARGIN + frame.height - (int)(((((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(y[i]) : y[i])-yMin+(((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(e[i]) : e[i]))*yScale+0.5);
 			ypoints[0] = (ypoints[0]>TOP_MARGIN + frame.height) ? TOP_MARGIN + frame.height : ypoints[0];
-			ypoints[1] = (ypoints[1]<TOP_MARGIN               ) ? TOP_MARGIN                : ypoints[1];
+			ypoints[1] = (ypoints[1]<TOP_MARGIN) ? TOP_MARGIN : ypoints[1];
 			drawPolyline(ip, xpoints,ypoints, 2, false);
 		}
+	}
+
+	private void drawHorizontalErrorBars(float[] x, float[] y, float[] e) {
+		int nPoints2 = nPoints;
+		if (e.length<nPoints)
+			nPoints2 = e.length;
+		int[] xpoints = new int[2];
+		int[] ypoints = new int[2];
+		for (int i=0; i<nPoints2; i++) {
+			xpoints[0] = LEFT_MARGIN  + (int)(((((flags&X_LOG_NUMBERS)!=0) ? Math.log10(x[i]) : x[i])-xMin-(((flags&X_LOG_NUMBERS)!=0) ? Math.log10(e[i]) : e[i]))*xScale+0.5);
+			xpoints[1] = LEFT_MARGIN  + (int)(((((flags&X_LOG_NUMBERS)!=0) ? Math.log10(x[i]) : x[i])-xMin+(((flags&X_LOG_NUMBERS)!=0) ? Math.log10(e[i]) : e[i]))*xScale+0.5);
+			ypoints[0] = ypoints[1] = TOP_MARGIN + frame.height - (int)(((((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(y[i]) : y[i])-yMin)*yScale+0.5);
+			xpoints[0] = (xpoints[0]<LEFT_MARGIN) ? LEFT_MARGIN : xpoints[0];
+			xpoints[1] = (xpoints[1]>LEFT_MARGIN+frame.width) ? LEFT_MARGIN+frame.width : xpoints[1];
+			drawPolyline(ip, xpoints, ypoints, 2, false);
+		}		
 	}
 
 	void drawPolyline(ImageProcessor ip, int[] x, int[] y, int n, boolean clip) {
@@ -1086,21 +1176,22 @@ public class Plot {
 		String text = "";
 		if (!frame.contains(x, y))
 			return text;
-		if (fixedYScale || multiplePlots) { // display cursor location
-			double xv = (x-LEFT_MARGIN)/xScale + xMin;
-			double yv = (TOP_MARGIN+frameHeight-y)/yScale +yMin;
-			xv = ((flags&X_LOG_NUMBERS)!=0) ? Math.pow(10.0,xv) : xv;
-			yv = ((flags&Y_LOG_NUMBERS)!=0) ? Math.pow(10.0,yv) : yv;
-			text =	"X=" + IJ.d2s(xv,getDigits(xv,xv))+", Y=" + IJ.d2s(yv,getDigits(yv,yv));
+		double xv = Double.NaN, yv = Double.NaN;
+		if (multiplePlots) { // display cursor location
+			xv = (x-LEFT_MARGIN)/xScale + xMin;
+			yv = (TOP_MARGIN+frameHeight-y)/yScale +yMin;
 		} else { // display x and f(x)
 			int index = (int)((x-frame.x)/((double)frame.width/nPoints));
-			if (index>0 && index<nPoints) {
-				double xv = xValues[index];
-				double yv = yValues[index];
-				xv = ((flags&X_LOG_NUMBERS)!=0) ? Math.pow(10.0,xv) : xv;
-				yv = ((flags&Y_LOG_NUMBERS)!=0) ? Math.pow(10.0,yv) : yv;
-				text = "X=" + IJ.d2s(xv,getDigits(xv,xv))+", Y=" + IJ.d2s(yv,getDigits(yv,yv));
+			if (index>=0 && index<nPoints) {
+				xv = xValues[index];
+				yv = yValues[index];
 			}
+		}
+		if (!Double.isNaN(xv)) {
+			xv = ((flags&X_LOG_NUMBERS)!=0) ? Math.pow(10.0,xv) : xv;
+			yv = ((flags&Y_LOG_NUMBERS)!=0) ? Math.pow(10.0,yv) : yv;
+			text =	"X=" + IJ.d2s(xv, getDigits(xv, 0.001*(xMax-xMin), 6))
+					+", Y=" + IJ.d2s(yv, getDigits(yv, 0.001*(yMax-yMin), 6));
 		}
 		return text;
 	}
@@ -1139,7 +1230,6 @@ public class Plot {
 			Interpreter.addBatchModeImage(imp);
 			return null;
 		}
-		ImageWindow.centerNextImage();
 		PlotWindow pw = new PlotWindow(this);
 		ImagePlus imp = pw.getImagePlus();
 		if (IJ.isMacro() && imp!=null) // wait for plot to be displayed
@@ -1147,19 +1237,19 @@ public class Plot {
 		return pw;
 	}
 		
-	/** Stores plot  into an ArrayList  to be used 
-	     when a plot window  wants to 'createlist'. */
-	private void store(float[] xvalues, float[] yvalues){
+	/** Stores plot	 into an ArrayList	to be used 
+		 when a plot window	 wants to 'createlist'. */
+	private void store(float[] xvalues, float[] yvalues) {
 		storedData.add(xvalues);
 		storedData.add(yvalues);
 	}
 	
-	void setSourceImageID(int id) {
-		sourceImageID = id;
+	public void setPlotMaker(PlotMaker plotMaker) {
+		this.plotMaker = plotMaker;
 	}
 	
-	int getSourceImageID() {
-		return sourceImageID;
+	PlotMaker getPlotMaker() {
+		return plotMaker;
 	}
-	
+
 }

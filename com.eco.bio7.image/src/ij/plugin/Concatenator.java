@@ -8,9 +8,6 @@ import ij.measure.*;
 import java.awt.event.*;
 import java.util.*;
 import java.lang.*;
-
-import javax.swing.JCheckBox;
-
 import ij.plugin.filter.*;
 
 /** This plugin, which concatenates two or more images or stacks,
@@ -32,7 +29,7 @@ public class Concatenator implements PlugIn, ItemListener{
     String[] imageTitles;
     ImagePlus[] images;
     Vector choices;
-    JCheckBox allWindows;
+    Checkbox allWindows;
     final String none = "-- None --";
     String newtitle = "Concatenated Stacks";
     ImagePlus newImp;
@@ -207,7 +204,7 @@ public class Concatenator implements PlugIn, ItemListener{
             for (int f=1; f<=frames; f++) {
                 for (int s=1; s<=slices; s++) {
                     for (int c=1; c<=channels; c++) {
-                        int index = (f-1)*channels*s + (s-1)*channels + c;
+                        int index = (f-1)*channels*slices + (s-1)*channels + c;
                         ImageProcessor ip = stack.getProcessor(index);
                         if (keep)
                             ip = ip.duplicate();
@@ -296,7 +293,7 @@ public class Concatenator implements PlugIn, ItemListener{
             for (Enumeration e = choices.elements() ; e.hasMoreElements() ;)
                 ((Choice)e.nextElement()).addItemListener(this);
             Vector v = gd.getCheckboxes();
-            allWindows = (JCheckBox)v.firstElement();
+            allWindows = (Checkbox)v.firstElement();
             allWindows.addItemListener(this);
             if (all_option) itemStateChanged(new ItemEvent(allWindows, ItemEvent.ITEM_STATE_CHANGED, null, ItemEvent.SELECTED));
         }
@@ -354,7 +351,7 @@ public class Concatenator implements PlugIn, ItemListener{
         Choice c;
         if (ie.getSource() == allWindows) { // User selected / unselected 'all windows' button
             int count = 0;
-            if (allWindows.isSelected()) {
+            if (allWindows.getState()) {
                 for (Enumeration e = choices.elements() ; e.hasMoreElements() ;) {
                     c = (Choice)e.nextElement();
                     c.select(count++);

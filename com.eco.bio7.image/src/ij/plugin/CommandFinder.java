@@ -437,7 +437,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 
 		contentPane.add(southPanel, BorderLayout.SOUTH);
 
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		Dimension screenSize = IJ.getScreenSize();
 
 		frame.pack();
 
@@ -480,7 +480,13 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		frame.dispose();
 	}
 
-	public void windowActivated(WindowEvent e) { }
+	public void windowActivated(WindowEvent e) {
+		if (IJ.isMacintosh() && frame!=null) {
+			IJ.wait(10);
+			frame.setMenuBar(Menus.getMenuBar());
+		}
+	}
+	
 	public void windowDeactivated(WindowEvent e) { }
 	public void windowClosed(WindowEvent e) { }
 	public void windowOpened(WindowEvent e) { }

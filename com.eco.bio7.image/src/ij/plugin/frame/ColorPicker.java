@@ -4,22 +4,18 @@ import ij.plugin.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Vector;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-
 import ij.process.*;
 import ij.gui.*;
 
 /** Implements the Image/Color/Color Picker command. */
-public class ColorPicker extends PlugInDialog { 
+public class ColorPicker extends PlugInDialog {
 	static final String LOC_KEY = "cp.loc";
 	static ColorPicker instance;
 
     public ColorPicker() {
 		super("CP");
 		if (instance!=null) {
-			 instance.toFront();
+			instance.toFront();
 			return;
 		}
 		instance = this;
@@ -34,8 +30,8 @@ public class ColorPicker extends PlugInDialog {
 		setLayout(new BorderLayout());
         ColorGenerator cg = new ColorGenerator(width, height, new int[width*height]);
         cg.drawColors(colorWidth, colorHeight, columns, rows);
-        JPanel colorCanvas = new ColorCanvas(width, height, null, cg);
-        JPanel panel = new JPanel();
+        Canvas colorCanvas = new ColorCanvas(width, height, null, cg);
+        Panel panel = new Panel();
         panel.add(colorCanvas);
         add(panel);
 		setResizable(false);
@@ -58,12 +54,14 @@ public class ColorPicker extends PlugInDialog {
 }
 
 class ColorGenerator extends ColorProcessor {
-    int w, h;
-    int[] colors = {0xff0000, 0x00ff00, 0x0000ff, 0xffffff, 0x00ffff, 0xff00ff, 0xffff00, 0x000000};
+    private int w, h;
+    private int[] colors = {0xff0000, 0x00ff00, 0x0000ff, 0xffffff, 0x00ffff, 0xff00ff, 0xffff00, 0x000000};
 
     public ColorGenerator(int width, int height, int[] pixels) {
         super(width, height, pixels);
+        setAntialiasedText(true);
     }
+    
     void drawColors(int colorWidth, int colorHeight, int columns, int rows) {
         w = colorWidth;
         h = colorHeight;
@@ -77,8 +75,8 @@ class ColorGenerator extends ColorProcessor {
         
         int x = 1;
         int y = 0;
-        refreshBackground();
-        refreshForeground();
+        refreshBackground(false);
+        refreshForeground(false);
 
         Color c;
         float hue, saturation=1f, brightness=1f;
@@ -109,27 +107,40 @@ class ColorGenerator extends ColorProcessor {
         fill();
     }
 
-    public void refreshBackground() {
+    public void refreshBackground(boolean backgroundInFront) {
         //Boundary for Background Selection
         setColor(0x444444);
         drawRect((w*2)-12, 276, (w*2)+4, (h*2)+4);
         setColor(0x999999);
         drawRect((w*2)-11, 277, (w*2)+2, (h*2)+2);
         setRoi((w*2)-10, 278, w*2, h*2);//Paints the Background Color
-        setColor(Toolbar.getBackgroundColor());
+        Color bg = Toolbar.getBackgroundColor();
+        setColor(bg);
         fill();
+        if (backgroundInFront)
+        	drawLabel("B", bg, w*4-18, 278+h*2);
     }
 
-    public void refreshForeground() {
+    public void refreshForeground(boolean backgroundInFront) {
         //Boundary for Foreground Selection
         setColor(0x444444);
         drawRect(8, 266, (w*2)+4, (h*2)+4);
         setColor(0x999999);
         drawRect(9, 267, (w*2)+2, (h*2)+2);
         setRoi(10, 268, w*2, h*2); //Paints the Foreground Color
-        setColor(Toolbar.getForegroundColor());
+        Color fg = Toolbar.getForegroundColor();
+        setColor(fg);
         fill();
+        if (backgroundInFront)
+        	drawLabel("F", fg, 12, 268+14);
     }
+    
+    private void drawLabel(String label, Color c, int x, int y) {
+		int intensity = (c.getRed()+c.getGreen()+c.getBlue())/3;
+		c = intensity<128?Color.white:Color.black;
+		setColor(c);
+		drawString(label, x, y);
+	}
 
 	void drawSpectrum(double h) {
 		Color c;
@@ -199,15 +210,15 @@ class ColorGenerator extends ColorProcessor {
     
 } 
 
-class ColorCanvas extends JPanel implements MouseListener, MouseMotionListener{
+class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener{
 	int width, height;
 	Vector colors;
 	boolean background;
 	long mouseDownTime;
 	ColorGenerator ip;
-	JFrame frame;
+	Frame frame;
 			
-	public ColorCanvas(int width, int height, JFrame frame, ColorGenerator ip) {
+	public ColorCanvas(int width, int height, Frame frame, ColorGenerator ip) {
 		this.width=width; this.height=height;
 		this.ip = ip;
 		addMouseListener(this);
@@ -219,13 +230,12 @@ class ColorCanvas extends JPanel implements MouseListener, MouseMotionListener{
 	public Dimension getPreferredSize() {
 		return new Dimension(width, height);
 	}
-	/*Changed for Bio7!*/
-	/*public void update(Graphics g) {
-		paint(g);
-	}*/
 	
-	public void paintComponent(Graphics g) {
-		super.paintComponent(g);
+	public void update(Graphics g) {
+		paint(g);
+	}
+	
+	public void paint(Graphics g) {
 		g.drawImage(ip.createImage(), 0, 0, null);
 	}
 
@@ -255,13 +265,13 @@ class ColorCanvas extends JPanel implements MouseListener, MouseMotionListener{
 		} else if ((background1Rect.contains(x,y)) || (background2Rect.contains(x,y))) {
 			background = true;
 			if (doubleClick) editColor();
-			ip.refreshForeground();
-			ip.refreshBackground();
+			ip.refreshForeground(background);
+			ip.refreshBackground(background);
 		} else if ((foreground1Rect.contains(x,y)) || (foreground2Rect.contains(x,y))) {
 			background = false;
 			if (doubleClick) editColor();
-			ip.refreshBackground();
-			ip.refreshForeground();
+			ip.refreshBackground(background);
+			ip.refreshForeground(background);
 		} else {
 			//IJ.log(" " + difference + " " + doubleClick);
 			if (doubleClick)
@@ -270,11 +280,11 @@ class ColorCanvas extends JPanel implements MouseListener, MouseMotionListener{
 				setDrawingColor(x, y, background); 
 		}
 		if (background) {
-			ip.refreshForeground();
-			ip.refreshBackground();
+			ip.refreshForeground(background);
+			ip.refreshBackground(background);
 		} else {
-			ip.refreshBackground();
-			ip.refreshForeground();
+			ip.refreshBackground(background);
+			ip.refreshForeground(background);
 		}
 		repaint();
 	}
@@ -286,7 +296,8 @@ class ColorCanvas extends JPanel implements MouseListener, MouseMotionListener{
 		int r = (p&0xff0000)>>16;
 		int g = (p&0xff00)>>8;
 		int b = p&0xff;
-		IJ.showStatus("red="+pad(r)+", green="+pad(g)+", blue="+pad(b));
+		String hex = Colors.colorToString(new Color(r,g,b));
+		IJ.showStatus("red="+pad(r)+", green="+pad(g)+", blue="+pad(b)+" ("+hex+")");
 
 	}
 
@@ -310,7 +321,7 @@ class ColorCanvas extends JPanel implements MouseListener, MouseMotionListener{
 		} else {
 			Toolbar.setForegroundColor(c);
 			if (Recorder.record)
-				Recorder.setBackgroundColor(c);
+				Recorder.setForegroundColor(c);
 		}
 	}
 
@@ -325,8 +336,8 @@ class ColorCanvas extends JPanel implements MouseListener, MouseMotionListener{
 	}
 	
 	public void refreshColors() {
-		ip.refreshBackground();
-		ip.refreshForeground();
+		ip.refreshBackground(false);
+		ip.refreshForeground(false);
 		repaint();
 	}
 
@@ -335,7 +346,6 @@ class ColorCanvas extends JPanel implements MouseListener, MouseMotionListener{
 	public void mouseClicked(MouseEvent e) {}
 	public void mouseEntered(MouseEvent e) {}
 	public void mouseDragged(MouseEvent e) {}
-
 
 }
 

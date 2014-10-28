@@ -149,6 +149,8 @@ public class Arrow extends Line {
 		if (style==NOTCHED) length*=0.74;
 		if (style==OPEN) length*=1.32;
 		if (length<0.0 || style==HEADLESS) length=0.0;
+		double x = getXBase();
+		double y = getYBase();
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		x1=(int)x1d; y1=(int)y1d; x2=(int)x2d; y2=(int)y2d;
 		double dx=x2d-x1d, dy=y2d-y1d;
@@ -305,6 +307,28 @@ public class Arrow extends Line {
 
 	public void setStyle(int style) {
 		this.style = style;
+	}
+	
+	/* Set the style, where 'style' is "filled", "notched", "open", "headless" or "bar",
+		plus optionial modifiers of "outline", "double", "small", "medium" and "large". */
+	public void setStyle(String style) {
+		style = style.toLowerCase();
+		int newStyle = Arrow.FILLED;
+		if (style.contains("notched"))
+			newStyle = Arrow.NOTCHED;
+		else if (style.contains("open"))
+			newStyle = Arrow.OPEN;
+		else if (style.contains("headless"))
+			newStyle = Arrow.HEADLESS;
+		else if (style.contains("bar"))
+			newStyle = Arrow.BAR;
+		setStyle(newStyle);
+		setOutline(style.contains("outline"));
+		setDoubleHeaded(style.contains("double"));
+		if (style.contains("small"))
+			setHeadSize(5);
+		else if (style.contains("large"))
+			setHeadSize(15);
 	}
 
 	public int getStyle() {

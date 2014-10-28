@@ -2,6 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.gui.*;
 import ij.io.*;
+import ij.macro.*;
 import java.io.*;
 import java.net.URL;
 import java.net.*;
@@ -10,7 +11,7 @@ import java.util.*;
 /** Installs plugins dragged and dropped on the "ImageJ" window, or plugins,
 	macros or scripts opened using the Plugins/Install command. */
 public class PluginInstaller implements PlugIn {
-	public static final String[] validExtensions = {".txt",".ijm",".js",".bsh",".class",".jar",".java",".py"};
+	public static final String[] validExtensions = {".txt",".ijm",".js",".bsh",".class",".jar",".zip",".java",".py"};
 
 	public void run(String arg) {
 		OpenDialog od = new OpenDialog("Install Plugin, Macro or Script...", arg);
@@ -28,20 +29,17 @@ public class PluginInstaller implements PlugIn {
 	
 	public boolean install(String path) {
 		boolean isURL = path.startsWith("http://");
+		String lcPath = path.toLowerCase();
+		boolean isTool = lcPath.endsWith("tool.ijm") || lcPath.endsWith("tool.txt")
+			|| lcPath.endsWith("tool.class") || lcPath.endsWith("tool.jar");
+		boolean isMacro = lcPath.endsWith(".txt") || lcPath.endsWith(".ijm");
 		byte[] data = null;
 		String name = path;
 		if (isURL) {
-			URL url = null;
-			try {
-				url = new URL(path);
-			} catch (Exception e) {
-				IJ.error(""+e);
-				return false;
-			}
 			int index = path.lastIndexOf("/");
 			if (index!=-1 && index<=path.length()-1)
-					name = path.substring(index+1);
-			data = download(url, name);
+				name = path.substring(index+1);
+			data = download(path, name);
 		} else {
 			File f = new File(path);
 			name = f.getName();
@@ -51,6 +49,13 @@ public class PluginInstaller implements PlugIn {
 			return false;
 		if (name.endsWith(".txt") && !name.contains("_"))
 			name = name.substring(0,name.length()-4) + ".ijm";
+		if (name.endsWith(".zip")) {
+			if (!name.contains("_")) {
+				IJ.error("Plugin Installer", "No underscore in file name:\n \n  "+name);
+				return false;
+			}
+			name = name.substring(0,name.length()-4) + ".jar";
+		}
 		String dir = null;
 		boolean isLibrary = name.endsWith(".jar") && !name.contains("_");
 		if (isLibrary) {
@@ -60,6 +65,19 @@ public class PluginInstaller implements PlugIn {
 				boolean ok = f.mkdir();
 				if (!ok)
 					dir = Menus.getPlugInsPath();
+			}
+		}
+		if (isTool) {
+			dir = Menus.getPlugInsPath()+"Tools" + File.separator;
+			File f = new File(dir);
+			if (!f.exists()) {
+				boolean ok = f.mkdir();
+				if (!ok) dir=null;
+			}
+			if (dir!=null && isMacro) {
+				String name2 = getToolName(data);
+				if (name2!=null)
+					name = name2;
 			}
 		}
 		if (dir==null) {
@@ -75,7 +93,46 @@ public class PluginInstaller implements PlugIn {
 		if (name.endsWith(".java"))
 			IJ.runPlugIn("ij.plugin.Compiler", dir+name);
 		Menus.updateImageJMenus();
+		if (isTool) {
+			if (isMacro)
+				IJ.runPlugIn("ij.plugin.Macro_Runner", "Tools/"+name);
+			else if (name.endsWith(".class")) {
+				name = name.replaceAll("_"," ");
+				name = name.substring(0,name.length()-6);
+				IJ.run(name);
+			}
+		}
 		return true;
+	}
+	
+	private String getToolName(byte[] data) {
+		String text = new String(data);
+		String name = null;
+		Tokenizer tok = new Tokenizer();
+		Program pgm = tok.tokenize(text);
+		int[] code = pgm.getCode();
+		Symbol[] symbolTable = pgm.getSymbolTable();
+		for (int i=0; i<code.length; i++) {
+			int token = code[i]&MacroConstants.TOK_MASK;
+			if (token==MacroConstants.MACRO) {
+				int nextToken = code[i+1]&MacroConstants.TOK_MASK;
+				if (nextToken==MacroConstants.STRING_CONSTANT) {
+					int address = code[i+1]>>MacroConstants.TOK_SHIFT;
+					Symbol symbol = symbolTable[address];
+					name = symbol.str;
+					break;
+				}
+			}
+		}
+		if (name==null)
+			return null;
+		int index = name.indexOf("Tool");
+		if (index==-1)
+			return null;
+		name = name.substring(0, index+4);
+		name = name.replaceAll(" ","_");
+		name = name + ".ijm";
+		return name;
 	}
 	
 	boolean savePlugin(File f, byte[] data) {
@@ -90,29 +147,52 @@ public class PluginInstaller implements PlugIn {
 		return true;
 	}
 
-	byte[] download(URL url, String name) {
+	public static byte[] download(String urlString, String name) {
+		int maxLength = 52428800; //50MB
+		URL url = null;
+		try {
+			url = new URL(urlString);
+		} catch (Exception e) {
+			IJ.log(""+e);
+		}
+		if (IJ.debugMode) IJ.log("Downloading: "+urlString+"  " +url);
+		if (url==null) return null;
 		byte[] data;
+		int n = 0;
+		boolean unknownLength = false;
 		try {
 			URLConnection uc = url.openConnection();
 			int len = uc.getContentLength();
-			IJ.showStatus("Downloading "+url.getFile());
+			unknownLength = len<0;
+			if (unknownLength) len = maxLength;
+			if (name!=null)
+				IJ.showStatus("Downloading "+url.getFile());
 			InputStream in = uc.getInputStream();
 			data = new byte[len];
-			int n = 0;
 			int lenk = len/1024;
-			while (n < len) {
-				int count = in.read(data, n, len - n);
+			while (n<len) {
+				int count = in.read(data, n, len-n);
 				if (count<0)
-					throw new EOFException();
+					break;
 				n += count;
-				IJ.showStatus("Downloading "+name+" ("+(n/1024)+"/"+lenk+"k)");
+				if (name!=null)
+					IJ.showStatus("Downloading "+name+" ("+(n/1024)+"/"+lenk+"k)");
 				IJ.showProgress(n, len);
 			}
 			in.close();
-		} catch (IOException e) {
+		} catch (Exception e) {
+			IJ.log(e+" "+urlString);
 			return null;
+		} finally {
+			IJ.showProgress(1.0);
 		}
-		IJ.showStatus("");
+		if (name!=null) IJ.showStatus("");
+		if (unknownLength) {
+			byte[] data2 = data;
+			data = new byte[n];
+			for (int i=0; i<n; i++)
+				data[i] = data2[i];
+		}
 		return data;
 	}
 	

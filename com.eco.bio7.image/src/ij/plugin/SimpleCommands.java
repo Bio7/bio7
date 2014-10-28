@@ -7,11 +7,6 @@ import ij.text.TextWindow;
 import ij.measure.ResultsTable;
 import java.awt.Frame;
 
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
-
-import com.eco.bio7.image.CanvasView;
-
 /** This plugin implements the Plugins/Utilities/Unlock, Image/Rename
 	and Plugins/Utilities/Search commands. */
 public class SimpleCommands implements PlugIn {
@@ -44,6 +39,15 @@ public class SimpleCommands implements PlugIn {
 			resultsToImage();
 		else if (arg.equals("display"))
 			IJ.runMacroFile("ij.jar:ShowAllLuts", null);
+		else if (arg.equals("fonts"))
+			showFonts();
+	}
+	
+	private synchronized void showFonts() {
+		Thread t = new Thread(new Runnable() {
+			public void run() {IJ.runPlugIn("ij.plugin.Text", "");}
+		});
+		t.start();
 	}
 
 	private void reset() {
@@ -88,23 +92,8 @@ public class SimpleCommands implements PlugIn {
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
-		/* Changed for Bio7! */
-		else {
-			final String title = gd.getNextString();
-			imp.setTitle(title);
-			Display display = PlatformUI.getWorkbench().getDisplay();
-			display.syncExec(new Runnable() {
-
-				public void run() {
-					if (CanvasView.tabFolder.getItemCount() > 0) {
-
-						CanvasView.tabFolder.getSelection().setText(title);
-
-					}
-				}
-			});
-			//imp.setTitle(gd.getNextString());
-		}
+		else
+			imp.setTitle(gd.getNextString());
 	}
 		
 	private void search() {

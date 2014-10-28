@@ -3,36 +3,33 @@ import ij.IJ;
 import java.awt.*;
 import java.awt.event.*;
 
-import javax.swing.JButton;
-import javax.swing.JPanel;
-
 /** A modal dialog box with a one line message and
 	"Yes", "No" and "Cancel" buttons. */
 public class YesNoCancelDialog extends Dialog implements ActionListener, KeyListener, WindowListener {
-    private JButton yesB, noB, cancelB;
+    private Button yesB, noB, cancelB;
     private boolean cancelPressed, yesPressed;
 	private boolean firstPaint = true;
 
 	public YesNoCancelDialog(Frame parent, String title, String msg) {
 		super(parent, title, true);
 		setLayout(new BorderLayout());
-		JPanel panel = new JPanel();
+		Panel panel = new Panel();
 		panel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
 		MultiLineLabel message = new MultiLineLabel(msg);
 		message.setFont(new Font("Dialog", Font.PLAIN, 12));
 		panel.add(message);
 		add("North", panel);
 		
-		panel = new JPanel();
+		panel = new Panel();
 		panel.setLayout(new FlowLayout(FlowLayout.RIGHT, 15, 8));
 		if (IJ.isMacintosh() && msg.startsWith("Save")) {
-			yesB = new JButton("  Save  ");
-			noB = new JButton("Don't Save");
-			cancelB = new JButton("  Cancel  ");
+			yesB = new Button("  Save  ");
+			noB = new Button("Don't Save");
+			cancelB = new Button("  Cancel  ");
 		} else {
-			yesB = new JButton("  Yes  ");
-			noB = new JButton("  No  ");
-			cancelB = new JButton(" Cancel ");
+			yesB = new Button("  Yes  ");
+			noB = new Button("  No  ");
+			cancelB = new Button(" Cancel ");
 		}
 		yesB.addActionListener(this);
 		noB.addActionListener(this);
@@ -111,8 +108,8 @@ public class YesNoCancelDialog extends Dialog implements ActionListener, KeyList
 	
 	public void keyTyped(KeyEvent e) {}
 
-    public void paintComponents(Graphics g) {
-    	super.paintComponents(g);
+    public void paint(Graphics g) {
+    	super.paint(g);
       	if (firstPaint) {
     		yesB.requestFocus();
     		firstPaint = false;

@@ -38,6 +38,7 @@ public class Options implements PlugIn {
 		if (!IJ.isMacOSX())
 			gd.addCheckbox("Run single instance listener", Prefs.runSocketListener);
 		gd.addCheckbox("Enhanced line tool", Prefs.enhancedLineTool);
+		gd.addCheckbox("Reverse CZT order of \">\" and \"<\"", Prefs.reverseNextPreviousOrder);
 		gd.addCheckbox("Debug mode", IJ.debugMode);
 		gd.addHelp(IJ.URL+"/docs/menus/edit.html#misc");
 		gd.showDialog();
@@ -67,6 +68,7 @@ public class Options implements PlugIn {
 		if (!IJ.isMacOSX())
 			Prefs.runSocketListener = gd.getNextBoolean();
 		Prefs.enhancedLineTool = gd.getNextBoolean();
+		Prefs.reverseNextPreviousOrder = gd.getNextBoolean();
 		IJ.setDebugMode(gd.getNextBoolean());
 	}
 
@@ -89,11 +91,12 @@ public class Options implements PlugIn {
 		GenericDialog gd = new GenericDialog("I/O Options");
 		gd.addNumericField("JPEG quality (0-100):", FileSaver.getJpegQuality(), 0, 3, "");
 		gd.addNumericField("GIF and PNG transparent index:", Prefs.getTransparentIndex(), 0, 3, "");
-		gd.addStringField("File extension for tables (.txt, .xls or .csv):", Prefs.get("options.ext", ".txt"), 4);
+		gd.addStringField("File extension for tables (.txt, .xls or .csv):", Prefs.get("options.ext", ".csv"), 4);
 		gd.addCheckbox("Use JFileChooser to open/save", Prefs.useJFileChooser);
 		if (!IJ.isMacOSX())
 			gd.addCheckbox("Use_file chooser to import sequences", Prefs.useFileChooser);
 		gd.addCheckbox("Save TIFF and raw in Intel byte order", Prefs.intelByteOrder);
+		gd.addCheckbox("Skip dialog when opening .raw files", Prefs.skipRawDialog);
 		
 		gd.setInsets(15, 20, 0);
 		gd.addMessage("Results Table Options");
@@ -123,6 +126,7 @@ public class Options implements PlugIn {
 		if (!IJ.isMacOSX())
 			Prefs.useFileChooser = gd.getNextBoolean();
 		Prefs.intelByteOrder = gd.getNextBoolean();
+		Prefs.skipRawDialog = gd.getNextBoolean();
 		Prefs.copyColumnHeaders = gd.getNextBoolean();
 		Prefs.noRowNumbers = !gd.getNextBoolean();
 		Prefs.dontSaveHeaders = !gd.getNextBoolean();
@@ -136,8 +140,8 @@ public class Options implements PlugIn {
 		boolean weighted = !(weights[0]==1d/3d && weights[1]==1d/3d && weights[2]==1d/3d);
 		//boolean weighted = !(Math.abs(weights[0]-1d/3d)<0.0001 && Math.abs(weights[1]-1d/3d)<0.0001 && Math.abs(weights[2]-1d/3d)<0.0001);
 		GenericDialog gd = new GenericDialog("Conversion Options");
-		gd.addCheckbox("Scale When Converting", ImageConverter.getDoScaling());
-		String prompt = "Weighted RGB Conversions";
+		gd.addCheckbox("Scale when converting", ImageConverter.getDoScaling());
+		String prompt = "Weighted RGB conversions";
 		if (weighted)
 			prompt += " (" + IJ.d2s(weights[0]) + "," + IJ.d2s(weights[1]) + ","+ IJ.d2s(weights[2]) + ")";
 		gd.addCheckbox(prompt, weighted);

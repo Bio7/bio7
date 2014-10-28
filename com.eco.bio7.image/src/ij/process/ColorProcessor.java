@@ -505,7 +505,7 @@ public class ColorProcessor extends ImageProcessor {
 	}
 	
 	/** Sets the pixels of one color channel from a ByteProcessor.
-	*  @param channelNumber  Determines the color channel, 1=red, 2=green, 3=blue, 4=alpha
+	*  @param channel  Determines the color channel, 1=red, 2=green, 3=blue, 4=alpha
 	*  @param bp  The ByteProcessor where the image data are read from.
 	*/
 	public void setChannel(int channel, ByteProcessor bp) {
@@ -840,7 +840,7 @@ public class ColorProcessor extends ImageProcessor {
 	}
 	
 	/** Returns a duplicate of this image. */ 
-	public synchronized ImageProcessor duplicate() { 
+	public ImageProcessor duplicate() { 
 		int[] pixels2 = new int[width*height]; 
 		System.arraycopy(pixels, 0, pixels2, 0, width*height); 
 		return new ColorProcessor(width, height, pixels2); 
@@ -905,6 +905,16 @@ public class ColorProcessor extends ImageProcessor {
 		@see ImageProcessor#setInterpolate
 	*/
 	public ImageProcessor resize(int dstWidth, int dstHeight) {
+		if (roiWidth==dstWidth && roiHeight==dstHeight)
+			return crop();
+		if (interpolationMethod!=NONE && (width==1||height==1)) {
+				ByteProcessor r2 = (ByteProcessor)getChannel(1,null).resizeLinearly(dstWidth, dstHeight);
+				ByteProcessor g2 = (ByteProcessor)getChannel(2,null).resizeLinearly(dstWidth, dstHeight);
+				ByteProcessor b2 = (ByteProcessor)getChannel(3,null).resizeLinearly(dstWidth, dstHeight);
+				ColorProcessor ip2 = new ColorProcessor(dstWidth, dstHeight);
+				ip2.setChannel(1, r2); ip2.setChannel(2, g2); ip2.setChannel(3, b2);
+				return ip2;
+		}
         if (interpolationMethod==BICUBIC)
         	return filterRGB(RGB_RESIZE, dstWidth, dstHeight);
 		double srcCenterX = roiX + roiWidth/2.0;
@@ -916,8 +926,6 @@ public class ColorProcessor extends ImageProcessor {
 		double xlimit = width-1.0, xlimit2 = width-1.001;
 		double ylimit = height-1.0, ylimit2 = height-1.001;
 		if (interpolationMethod==BILINEAR) {
-			//if (xScale<=0.25 && yScale<=0.25)
-			//	return makeThumbnail(dstWidth, dstHeight, 0.6);
 			dstCenterX += xScale/2.0;
 			dstCenterY += yScale/2.0;
 		}

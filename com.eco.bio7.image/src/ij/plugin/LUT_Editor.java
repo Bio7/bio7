@@ -10,12 +10,9 @@ import ij.measure.*;
 import java.util.Vector;
 import java.awt.event.*;
 
-import javax.swing.JButton;
-import javax.swing.JPanel;
-
 public class LUT_Editor implements PlugIn, ActionListener{
     private ImagePlus imp;
-    JButton openButton, saveButton, resizeButton, invertButton;
+    Button openButton, saveButton, resizeButton, invertButton;
     ColorPanel colorPanel;
     int bitDepth;
 
@@ -44,20 +41,20 @@ public class LUT_Editor implements PlugIn, ActionListener{
 		Recorder.record = false;
         int red=0, green=0, blue=0;
         GenericDialog gd = new GenericDialog("LUT Editor");
-        JPanel buttonPanel = new JPanel(new GridLayout(4, 1, 0, 5));
-        openButton = new JButton("Open...");
+        Panel buttonPanel = new Panel(new GridLayout(4, 1, 0, 5));
+        openButton = new Button("Open...");
         openButton.addActionListener(this);
         buttonPanel.add(openButton);
-        saveButton = new JButton("Save...");
+        saveButton = new Button("Save...");
         saveButton.addActionListener(this);
         buttonPanel.add(saveButton);
-        resizeButton = new JButton("Set...");
+        resizeButton = new Button("Set...");
         resizeButton.addActionListener(this);
         buttonPanel.add(resizeButton);
-        invertButton = new JButton("Invert...");
+        invertButton = new Button("Invert...");
         invertButton.addActionListener(this);
         buttonPanel.add(invertButton);
-        JPanel panel = new JPanel();
+        Panel panel = new Panel();
         panel.add(colorPanel);
         panel.add(buttonPanel);
         gd.addPanel(panel, GridBagConstraints.CENTER, new Insets(10, 0, 0, 0));
@@ -89,7 +86,7 @@ public class LUT_Editor implements PlugIn, ActionListener{
 }
 
 
-class ColorPanel extends JPanel implements MouseListener, MouseMotionListener{
+class ColorPanel extends Panel implements MouseListener, MouseMotionListener{
      static final int entryWidth=12, entryHeight=12;
      int rows = 16;
      int columns = 16; 
@@ -434,13 +431,12 @@ class ColorPanel extends JPanel implements MouseListener, MouseMotionListener{
             imp.getStack().setColorModel(cm);
         imp.updateAndDraw();
     }
-     /*Changed for Bio7!*/
-    /*public void update(Graphics g) {
-        paint(g);
-    }*/
 
-    public void paintComponent(Graphics g) {
-    	super.paintComponent(g);
+    public void update(Graphics g) {
+        paint(g);
+    }
+
+    public void paint(Graphics g) {
         if (updateLut) {
             updateLut();
             updateLut = false;

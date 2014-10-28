@@ -5,17 +5,14 @@ import java.awt.*;
 import java.awt.event.*;
 import java.lang.reflect.*;
 
-import javax.swing.JButton;
-import javax.swing.JDialog;
-
 
 /**
 * This is a non-modal dialog box used to ask the user to perform some task
 * while a macro or plugin is running. It implements the waitForUser() macro
 * function. It is based on Michael Schmid's Wait_For_User plugin.
 */
-public class WaitForUserDialog extends JDialog implements ActionListener, KeyListener {
-	protected JButton button;
+public class WaitForUserDialog extends Dialog implements ActionListener, KeyListener {
+	protected Button button;
 	protected MultiLineLabel label;
 	static protected int xloc=-1, yloc=-1;
 	private boolean escPressed;
@@ -34,7 +31,7 @@ public class WaitForUserDialog extends JDialog implements ActionListener, KeyLis
         c.insets = new Insets(6, 6, 0, 6); 
         c.gridx = 0; c.gridy = 0; c.anchor = GridBagConstraints.WEST;
         add(label,c); 
-		button = new JButton("  OK  ");
+		button = new Button("  OK  ");
 		button.addActionListener(this);
 		button.addKeyListener(this);
         c.insets = new Insets(2, 6, 6, 6); 
@@ -106,9 +103,10 @@ public class WaitForUserDialog extends JDialog implements ActionListener, KeyLis
 	}
 	
 	public void keyTyped(KeyEvent e) {}
+	
 	/** Returns a reference to the 'OK' button */
-	       public JButton getButton() {
-	               return button;
-	       }
+	public Button getButton() {
+		return button;
+	}
 
 }

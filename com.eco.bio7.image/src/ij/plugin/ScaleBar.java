@@ -6,8 +6,6 @@ import java.awt.*;
 import ij.measure.*;
 import java.awt.event.*;
 
-import javax.swing.JCheckBox;
-
 /** This plugin implements the Analyze/Tools/Draw Scale Bar command.
 	Divakar Ramachandran added options to draw a background 
 	and use a serif font on 23 April 2006.
@@ -373,10 +371,10 @@ public class ScaleBar implements PlugIn {
 			bcolor = bcol.getSelectedItem();
 			Choice loc = (Choice)(choice.elementAt(2));
 			location = loc.getSelectedItem();
-			boldText = ((JCheckBox)(checkbox.elementAt(0))).isSelected();
-			hideText = ((JCheckBox)(checkbox.elementAt(1))).isSelected();
-			serifFont = ((JCheckBox)(checkbox.elementAt(2))).isSelected();
-			createOverlay = ((JCheckBox)(checkbox.elementAt(3))).isSelected();
+			boldText = ((Checkbox)(checkbox.elementAt(0))).getState();
+			hideText = ((Checkbox)(checkbox.elementAt(1))).getState();
+			serifFont = ((Checkbox)(checkbox.elementAt(2))).getState();
+			createOverlay = ((Checkbox)(checkbox.elementAt(3))).getState();
 			updateScalebar();
 		}
 

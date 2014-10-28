@@ -1,11 +1,6 @@
 package ij.plugin.frame;
 import java.awt.*;
 import java.awt.event.*;
-
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
 import ij.*;
 import ij.plugin.*;
 import ij.gui.*;
@@ -14,7 +9,7 @@ import ij.process.*;
 /** Implements ImageJ's Paste Control window. */
 public class PasteController extends PlugInFrame implements PlugIn, ItemListener {
 
-	private JPanel panel;
+	private Panel panel;
 	private Choice pasteMode;
 	private static Frame instance;
 	
@@ -29,7 +24,7 @@ public class PasteController extends PlugInFrame implements PlugIn, ItemListener
 		IJ.register(PasteController.class);
 		setLayout(new FlowLayout(FlowLayout.CENTER, 2, 5));
 		
-		add(new JLabel(" Transfer Mode:"));
+		add(new Label(" Transfer Mode:"));
 		pasteMode = new Choice();
 		pasteMode.addItem("Copy");
 		pasteMode.addItem("Blend");

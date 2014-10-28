@@ -22,6 +22,8 @@ public class Selection implements PlugIn, Measurements {
 	private static Color linec, fillc;
 	private static int lineWidth = 1;
 	private static boolean smooth;
+	private static boolean adjust;
+
 	
 
 	public void run(String arg) {
@@ -256,13 +258,16 @@ public class Selection implements PlugIn, Measurements {
 		GenericDialog gd = new GenericDialog("Interpolate");
 		gd.addNumericField("Interval:", 1.0, 1, 4, "pixel");
 		gd.addCheckbox("Smooth", IJ.isMacro()?false:smooth);
+		gd.addCheckbox("Adjust interval to match", IJ.isMacro()?false:adjust);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
 		double interval = gd.getNextNumber();
 		smooth = gd.getNextBoolean();
 		Undo.setup(Undo.ROI, imp);
-		FloatPolygon poly = roi.getInterpolatedPolygon(interval, smooth);
+		adjust = gd.getNextBoolean();
+		int sign = adjust ? -1 : 1;
+		FloatPolygon poly = roi.getInterpolatedPolygon(sign*interval, smooth);
 		int t = roi.getType();
 		int type = roi.isLine()?Roi.FREELINE:Roi.FREEROI;
 		if (t==Roi.POLYGON && interval>1.0)
@@ -291,6 +296,7 @@ public class Selection implements PlugIn, Measurements {
 		roi2.setStrokeColor(roi1.getStrokeColor());
 		if (roi1.getStroke()!=null)
 			roi2.setStroke(roi1.getStroke());
+		roi2.setDrawOffset(roi1.getDrawOffset());
 	}
 	
 	PolygonRoi trimPolygon(PolygonRoi roi, double length) {
@@ -411,6 +417,7 @@ public class Selection implements PlugIn, Measurements {
 		if (roi.getStroke()!=null)
 			p.setStrokeWidth(roi.getStrokeWidth());
 		p.setStrokeColor(roi.getStrokeColor());
+		p.setDrawOffset(roi.getDrawOffset());
 		p.setName(roi.getName());
 		imp.setRoi(p);
 		return p;
@@ -519,7 +526,9 @@ public class Selection implements PlugIn, Measurements {
 		Roi roi = imp.getRoi();
 		boolean useInvertingLut = Prefs.useInvertingLut;
 		Prefs.useInvertingLut = false;
-		if (roi==null || !(roi.isArea()||roi.getType()==Roi.POINT)) {
+		boolean selectAll = roi!=null && roi.getType()==Roi.RECTANGLE && roi.getBounds().width==imp.getWidth()
+			&& roi.getBounds().height==imp.getHeight() && imp.getProcessor().getMinThreshold()!=ImageProcessor.NO_THRESHOLD;
+		if (roi==null || !(roi.isArea()||roi.getType()==Roi.POINT) || selectAll) {
 			createMaskFromThreshold(imp);
 			Prefs.useInvertingLut = useInvertingLut;
 			return;
@@ -552,7 +561,7 @@ public class Selection implements PlugIn, Measurements {
 		IJ.run("Duplicate...", "title=mask");
 		ImagePlus imp2 = WindowManager.getCurrentImage();
 		ImageProcessor ip2 = imp2.getProcessor();
-		ip2.setThreshold(t1, t2, ImageProcessor.NO_LUT_UPDATE);
+		ip2.setThreshold(t1, t2, ip2.getLutUpdateMode());
 		IJ.run("Convert to Mask");
 	}
 
@@ -597,8 +606,13 @@ public class Selection implements PlugIn, Measurements {
 		Undo.setup(Undo.ROI, imp);
 		Roi roi2 = null;
 		if (roi.getType()==Roi.LINE) {
+			double width = roi.getStrokeWidth();
+			if (width<=1.0)
+				roi.setStrokeWidth(1.0000001);
 			FloatPolygon p = roi.getFloatPolygon();
+			roi.setStrokeWidth(width);
 			roi2 = new PolygonRoi(p, Roi.POLYGON);
+			roi2.setDrawOffset(roi.getDrawOffset());
 		} else {
 			ImageProcessor ip2 = new ByteProcessor(imp.getWidth(), imp.getHeight());
 			ip2.setColor(255);
@@ -684,7 +698,9 @@ public class Selection implements PlugIn, Measurements {
 				}
 			}
 		}
+		rm.allowRecording(true);
 		rm.runCommand("add");
+		rm.allowRecording(false);
 		IJ.setKeyUp(IJ.ALL_KEYS);
 	}
 	
@@ -697,7 +713,10 @@ public class Selection implements PlugIn, Measurements {
 			return false;
 		}
 		RoiProperties rp = new RoiProperties(title, roi);
-		return rp.showDialog();
+		boolean ok = rp.showDialog();
+		if (IJ.debugMode)
+			IJ.log(roi.getDebugInfo());
+		return ok;
 	}
 	
 	private void makeBand(ImagePlus imp) {
@@ -745,7 +764,10 @@ public class Selection implements PlugIn, Measurements {
 		ImagePlus edm = new ImagePlus("mask", mask);
 		boolean saveBlackBackground = Prefs.blackBackground;
 		Prefs.blackBackground = false;
+		int saveType = EDM.getOutputType();
+		EDM.setOutputType(EDM.BYTE_OVERWRITE);
 		IJ.run(edm, "Distance Map", "");
+		EDM.setOutputType(saveType);
 		Prefs.blackBackground = saveBlackBackground;
 		ip = edm.getProcessor();
 		ip.setThreshold(0, n, ImageProcessor.NO_LUT_UPDATE);

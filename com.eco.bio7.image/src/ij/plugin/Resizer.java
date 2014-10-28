@@ -7,9 +7,6 @@ import ij.util.Tools;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
-import javax.swing.JCheckBox;
-
-import com.eco.bio7.image.CanvasView;
 
 /** This plugin implements the Edit/Crop and Image/Adjust/Size commands. */
 public class Resizer implements PlugIn, TextListener, ItemListener  {
@@ -29,12 +26,8 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 		ImagePlus imp = IJ.getImage();
 		ImageProcessor ip = imp.getProcessor();
 		Roi roi = imp.getRoi();
-		if (roi==null && crop) {
-			IJ.error("Crop", "Area selection required");
-			return;
-		}
-		if (roi!=null && roi.isLine()) {
-			IJ.error("The Crop and Adjust>Size commands\ndo not work with line selections.");
+		if ((roi==null||!roi.isArea()) && crop) {
+			IJ.error(crop?"Crop":"Resize", "Area selection required");
 			return;
 		}
 		if (!imp.lock())
@@ -52,6 +45,8 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 				ShapeRoi shape1 = new ShapeRoi(roi);
 				ShapeRoi shape2 = new ShapeRoi(new Roi(0, 0, w, h));
 				roi = shape2.and(shape1);
+				if (roi.getBounds().width==0 || roi.getBounds().height==0)
+					throw new IllegalArgumentException("Selection is outside the image");
 				if (restoreRoi) imp.setRoi(roi);
 			}
 		}
@@ -98,7 +93,7 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			}
 			checkboxes = gd.getCheckboxes();
 			if (!IJ.macroRunning())
-				((JCheckBox)checkboxes.elementAt(0)).addItemListener(this);
+				((Checkbox)checkboxes.elementAt(0)).addItemListener(this);
 			gd.showDialog();
 			if (gd.wasCanceled()) {
 				imp.unlock();
@@ -122,6 +117,7 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 				sizeToHeight = true;
 			if (newWidth<=0.0 && !constrain)  newWidth = 50;
 			if (newHeight<=0.0) newHeight = 50;
+			imp.setOverlay(null);
 		}
 		
 		if (!crop && constrain) {
@@ -130,12 +126,9 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			else
 				newHeight = (int)Math.round(newWidth*(origHeight/origWidth));
 		}
-		if (ip.getWidth()==1 || ip.getHeight()==1)
-			ip.setInterpolationMethod(ImageProcessor.NONE);
-		else
-			ip.setInterpolationMethod(interpolationMethod);
-		if (!crop && stackSize==1)
-			Undo.setup(Undo.TYPE_CONVERSION, imp);
+		ip.setInterpolationMethod(interpolationMethod);
+		if (stackSize==1)
+			Undo.setup(crop?Undo.TRANSFORM:Undo.TYPE_CONVERSION, imp);
 			    	
 		if (roi!=null || newWidth!=origWidth || newHeight!=origHeight) {
 			try {
@@ -155,17 +148,17 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 						cal.yOrigin -= roi.getBounds().y;
 					}
 					imp.setStack(null, s2);
+					if (crop && roi!=null) {
+						Overlay overlay = imp.getOverlay();
+						if (overlay!=null && !imp.getHideOverlay()) {
+							Overlay overlay2 = overlay.crop(roi.getBounds());
+							imp.setOverlay(overlay2);
+						}
+					}
 					if (restoreRoi && roi!=null) {
 						roi.setLocation(0, 0);
 						imp.setRoi(roi);
 						imp.draw();
-					}
-					if (crop && roi!=null) {
-						Overlay overlay = imp.getOverlay();
-						if (overlay!=null && !imp.getHideOverlay()) {
-							Overlay overlay2 = Duplicator.cropOverlay(overlay, roi.getBounds());
-							imp.setOverlay(overlay2);
-						}
 					}
 				}
 				if (stackSize>1 && newSize<stackSize)
@@ -189,9 +182,6 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			imp.close();
 			imp2.show();
 		}
-		/*Changed for Bio7!*/
-    	CanvasView.getCurrent().invalidate();
-		CanvasView.getCurrent().validate();
 	}
 
 	public ImagePlus zScale(ImagePlus imp, int newDepth, int interpolationMethod) {
@@ -380,13 +370,13 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 		ImageProcessor xzPlane1 = ip.createProcessor(width, depth);
 		xzPlane1.setInterpolationMethod(interpolationMethod);
 		ImageProcessor xzPlane2;		
-		Object xypixels1 = xzPlane1.getPixels();
+		Object xzpixels1 = xzPlane1.getPixels();
 		IJ.showStatus("Z Scaling...");
 		for (int y=0; y<height; y++) {
 			IJ.showProgress(y, height-1);
-			for (int z=0; z<depth; z++) {
+			for (int z=0; z<depth; z++) { // get xz plane at y
 				Object pixels1 = stack1.getPixels(z+1);
-				System.arraycopy(pixels1, y*width, xypixels1, z*width, width);
+				System.arraycopy(pixels1, y*width, xzpixels1, z*width, width);
 			}
 			xzPlane2 = xzPlane1.resize(width, newDepth, averageWhenDownsizing);
 			Object xypixels2 = xzPlane2.getPixels();
@@ -431,11 +421,15 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
    }
 
 	public void itemStateChanged(ItemEvent e) {
-		JCheckBox cb = (JCheckBox)checkboxes.elementAt(0);
-        boolean newConstrain = cb.isSelected();
+		Checkbox cb = (Checkbox)checkboxes.elementAt(0);
+        boolean newConstrain = cb.getState();
         if (newConstrain && newConstrain!=constrain)
         	updateFields();
         constrain = newConstrain;
+	}
+	
+	public void setAverageWhenDownsizing(boolean averageWhenDownsizing) {
+		this. averageWhenDownsizing = averageWhenDownsizing;
 	}
 
 }

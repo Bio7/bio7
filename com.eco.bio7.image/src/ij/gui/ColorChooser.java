@@ -7,10 +7,6 @@ import java.awt.*;
 import java.util.Vector;
 import java.awt.event.*;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-
 
  /** Displays a dialog that allows the user to select a color using three sliders. */
 public class ColorChooser implements TextListener, AdjustmentListener {
@@ -20,14 +16,14 @@ public class ColorChooser implements TextListener, AdjustmentListener {
 	int red, green, blue;
 	boolean useHSB;
 	String title;
-	JFrame frame;
+	Frame frame;
 
 	/** Constructs a ColorChooser using the specified title and initial color. */
 	public ColorChooser(String title, Color initialColor, boolean useHSB) {
 		this(title, initialColor, useHSB, null);
 	}
 	
-	public ColorChooser(String title, Color initialColor, boolean useHSB, JFrame frame) {
+	public ColorChooser(String title, Color initialColor, boolean useHSB, Frame frame) {
 		this.title = title;
 		if (initialColor==null) initialColor = Color.black;
 		this.initialColor = initialColor;
@@ -51,7 +47,7 @@ public class ColorChooser implements TextListener, AdjustmentListener {
 			((TextField)colors.elementAt(i)).addTextListener(this);
 		sliders = gd.getSliders();
 		for (int i=0; i<sliders.size(); i++)
-			((JScrollBar)sliders.elementAt(i)).addAdjustmentListener(this);
+			((Scrollbar)sliders.elementAt(i)).addAdjustmentListener(this);
 		gd.showDialog();
 		if (gd.wasCanceled()) return null;
 		int red = (int)gd.getNextNumber();
@@ -75,7 +71,7 @@ public class ColorChooser implements TextListener, AdjustmentListener {
 		Object source = e.getSource();
 		for (int i=0; i<sliders.size(); i++) {
 			if (source==sliders.elementAt(i)) {
-				JScrollBar sb = (JScrollBar)source;
+				Scrollbar sb = (Scrollbar)source;
 				TextField tf = (TextField)colors.elementAt(i);
 			}
 		}
@@ -83,7 +79,7 @@ public class ColorChooser implements TextListener, AdjustmentListener {
 
 }
 
-class ColorPanel extends JPanel {
+class ColorPanel extends Panel {
 	static final int WIDTH=150, HEIGHT=50;
 	static Font font = new Font("Monospaced", Font.PLAIN, 18);
 	Color c;
@@ -104,8 +100,7 @@ class ColorPanel extends JPanel {
 		return new Dimension(WIDTH, HEIGHT);
 	}
 
-	public void paintComponent(Graphics g) {
-		super.paintComponent(g);
+	public void paint(Graphics g) {
 		g.setColor(c);
 		g.fillRect(0, 0, WIDTH, HEIGHT);
 		int intensity = (c.getRed()+c.getGreen()+c.getBlue())/3;

@@ -5,7 +5,7 @@
 
 # Note that commands must be unique.
 
-# Version 1.47
+# Version 1.49
 
 # Commands installed in the right-click popup menu
 # Overridden in StartupMacros
@@ -96,11 +96,11 @@ selection24="Add to Manager[t]",ij.plugin.Selection("add")
 # Plugins installed in the Edit/Options submenu
 options01="Line Width...",ij.plugin.Options("line")
 options02="Input/Output...",ij.plugin.Options("io")
-options03="Fonts...",ij.plugin.frame.Fonts
-options04="Profile Plot Options...",ij.plugin.filter.Profiler("set")
+options03="Fonts...",ij.plugin.SimpleCommands("fonts")
+options04="Profile Plot Options...",ij.plugin.Profiler("set")
 options05="Rounded Rect Tool...",ij.plugin.RectToolOptions
 options06="Arrow Tool...",ij.plugin.ArrowToolOptions
-options07="Point Tool...",ij.plugin.Colors("point")
+options07="Point Tool...",ij.plugin.PointToolOptions
 options08="Wand Tool...",ij.plugin.WandToolOptions
 options09="Colors...",ij.plugin.Colors
 options10="Appearance...",ij.plugin.AppearanceOptions
@@ -109,9 +109,10 @@ options12="Memory & Threads...",ij.plugin.Memory
 options13="Proxy Settings...",ij.plugin.ProxySettings
 options14="Compiler...",ij.plugin.Compiler("options")
 options15="DICOM...",ij.plugin.Options("dicom")
-options16="Misc...",ij.plugin.Options("misc")
-options17=-
-options18="Reset... ",ij.plugin.Options("reset")
+options16="Startup...",ij.plugin.Startup
+options17="Misc...",ij.plugin.Options("misc")
+options18=-
+options19="Reset... ",ij.plugin.Options("reset")
 
 # Plugins installed in the Image/Adjust submenu
 adjust01="Brightness/Contrast...[C]",ij.plugin.frame.ContrastAdjuster
@@ -150,7 +151,7 @@ stacks10="Reslice [/]...",ij.plugin.Slicer
 stacks11="Orthogonal Views[H]",ij.plugin.Orthogonal_Views
 stacks12="Z Project...",ij.plugin.ZProjector
 stacks13="3D Project...",ij.plugin.Projector
-stacks14="Plot Z-axis Profile",ij.plugin.filter.ZAxisProfiler
+stacks14="Plot Z-axis Profile",ij.plugin.ZAxisProfiler
 stacks15="Label...",ij.plugin.filter.StackLabeler
 stacks16="Statistics",ij.plugin.Stack_Statistics
 
@@ -195,7 +196,8 @@ zoom02="Out [-]",ij.plugin.Zoom("out")
 zoom03="Original Scale[4]",ij.plugin.Zoom("orig")
 zoom04="View 100%[5]",ij.plugin.Zoom("100%")
 zoom05="To Selection",ij.plugin.Zoom("to")
-zoom06="Set... ",ij.plugin.Zoom("set")
+zoom06="Scale to Fit",ij.plugin.Zoom("scale")
+zoom07="Set... ",ij.plugin.Zoom("set")
 #zoom07="Maximize",ij.plugin.Zoom("max")
 
 # Plugins installed in the Image/Overlay submenu
@@ -344,7 +346,7 @@ tools03="Analyze Line Graph",ij.plugin.filter.LineGraphAnalyzer
 tools04="Curve Fitting...",ij.plugin.frame.Fitter
 tools05="ROI Manager...",ij.plugin.frame.RoiManager
 tools06="Scale Bar...",ij.plugin.ScaleBar
-tools07="Calibration Bar...",ij.plugin.filter.CalibrationBar
+tools07="Calibration Bar...",ij.plugin.CalibrationBar
 tools08="Synchronize Windows",ij.plugin.frame.SyncWindows
 
 # Plugins installed in the Plugins menu

@@ -147,6 +147,7 @@ public class GelAnalyzer implements PlugIn {
 		gd.addCheckbox("Uncalibrated OD", uncalibratedOD);
 		gd.addCheckbox("Label with percentages", labelWithPercentages);
 		gd.addCheckbox("Invert peaks", invertPeaks);
+		gd.addHelp(IJ.URL+"/docs/menus/analyze.html#gels");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -246,6 +247,8 @@ public class GelAnalyzer implements PlugIn {
 			if (overlay==null) {
 				overlay = new Overlay();
 				overlay.drawLabels(true);
+				overlay.setLabelColor(Color.white);
+				overlay.drawBackgrounds(true);
 			}
 			overlay.add(new Roi(rect.x, rect.y, rect.width, rect.height, null));
 			gel.setOverlay(overlay);
