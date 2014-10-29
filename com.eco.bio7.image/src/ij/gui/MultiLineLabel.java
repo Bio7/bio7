@@ -2,9 +2,11 @@ package ij.gui;
 import java.awt.*;
 import java.util.*;
 
+import javax.swing.JPanel;
+
 /**Custom component for displaying multiple lines. Based on 
    MultiLineLabel class from "Java in a Nutshell" by David Flanagan.*/
-public class MultiLineLabel extends Canvas {
+public class MultiLineLabel extends JPanel {
 	String[] lines;
 	int num_lines;
 	int margin_width = 6;
@@ -89,7 +91,8 @@ public class MultiLineLabel extends Canvas {
     }
     
     // Draws the label
-    public void paint(Graphics g) {
+    public void paintComponent(Graphics g) {
+    	super.paintComponent(g);
         int x, y;
         Dimension d = this.getSize();
 		if (!ij.IJ.isLinux()) setAntialiasedText(g);

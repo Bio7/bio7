@@ -1,11 +1,14 @@
 package ij.gui;
 import ij.IJ;
+
 import java.awt.*;
 import java.awt.event.*;
 
+import javax.swing.JDialog;
+
 /** A modal dialog box that displays information. Based on the
 	InfoDialogclass from "Java in a Nutshell" by David Flanagan. */
-public class MessageDialog extends Dialog implements ActionListener, KeyListener, WindowListener {
+public class MessageDialog extends JDialog implements ActionListener, KeyListener, WindowListener {
 	protected Button button;
 	protected MultiLineLabel label;
 	private boolean escapePressed;

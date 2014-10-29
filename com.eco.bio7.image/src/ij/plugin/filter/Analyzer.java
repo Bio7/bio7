@@ -33,7 +33,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 	//private static int counter;
 	private static boolean unsavedMeasurements;
 	public static Color darkBlue = new Color(0,0,160);
-	private static int systemMeasurements = Prefs.getInt(MEASUREMENTS,AREA+MEAN+MIN_MAX);
+	private static int systemMeasurements = 51;// Changed for Bio7!
+	//private static int systemMeasurements = Prefs.getInt(MEASUREMENTS,AREA+MEAN+MIN_MAX);
 	public static int markWidth;
 	public static int precision = Prefs.getInt(PRECISION,3);
 	private static float[] umeans = new float[MAX_STANDARDS];

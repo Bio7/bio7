@@ -6,6 +6,7 @@ import ij.measure.Calibration;
 import ij.macro.Interpreter;
 import ij.io.FileInfo;
 import ij.plugin.frame.Recorder;
+
 import java.awt.image.ColorModel;
 
 
@@ -149,8 +150,13 @@ public class HyperStackConverter implements PlugIn {
 				imp2.getProcessor().resetMinAndMax();
 			}
 			imp2.setOpenAsHyperStack(true);
-			if (imp.getWindow()!=null || imp!=imp2)
-				new StackWindow(imp2);
+			
+			/* Changed for Bio7! */
+			/*if (imp.getWindow()!=null || imp!=imp2)
+				new StackWindow(imp2);*/
+			imp.hide();
+			new StackWindow(imp2);
+			
 			if (imp!=imp2) {
 				imp2.setOverlay(imp.getOverlay());
 				imp.hide();
@@ -232,7 +238,8 @@ public class HyperStackConverter implements PlugIn {
 			new StackWindow(imp2);
 		if (imp!=imp2) {
 			imp2.setOverlay(imp.getOverlay());
-			imp.hide();
+			/*Changed for Bio7!*/
+			//imp.hide();
 		}
 	}
 	

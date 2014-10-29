@@ -1,0 +1,35 @@
+// "StartupMacros"
+
+ 	macro "Developer Menu Built-in Tool" {}
+  macro "Stacks Menu Built-in Tool" {}
+  macro "Brush Built-in Tool" {}
+  macro "Flood Filler Built-in Tool" {}
+  macro "Arrow Built-in Tool" {}
+  
+  macro "Scale Scanner Tool (set the scale for a scanned image) - C000D04D05D06D07D08D09D0aD14D15D16D17D18D19D1aD24D2aD34D3aD44D45D49D4aD55D56D57D58D59D66D67D68D86D87D88D89D8aD8bD8cD96D97D98D99D9aD9bD9cDa6DaaDb6Db7Db8Db9DbaDc7Dc8Dc9De4De6De7De8De9DeaDf4Df6Df7Df8Df9DfaC000C111C222C333C444C555C666C777C888C999CaaaCbbbCcccCdddCeeeCfff" {
+        requires("1.34j");
+        setupUndo();
+        getCursorLoc(x, y, z, flags);
+        if (flags&alt!=0) setColorToBackgound();
+        floodFill(x, y, floodType);
+     }
+
+
+macro 'Scale Scanner Tool (set the scale for a scanned image) Options...' {
+      var dpi=100;
+      var unit="cm";
+      var dist=0;
+      Dialog.create("Scanner dpi");
+      Dialog.addChoice("Dpi:", newArray("50", "75","100","150","200","300","600","800","1200","2400"),"150");
+      Dialog.addChoice("Unit:", newArray("mm", "cm"),unit);
+      Dialog.show();
+      dpi =parseInt(Dialog.getChoice());
+      unit=Dialog.getChoice();
+     if(unit=="cm"){
+     dist=dpi/2.54;
+     run("Set Scale...", "distance="+dist+" known=1.0 pixel=1 unit=cm");
+     }
+    else{
+     dist=dpi/25.4;
+     run("Set Scale...", "distance="+dist+" known=1.0 pixel=1 unit=mm");
+     }

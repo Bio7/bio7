@@ -113,8 +113,8 @@ public class ImageJ extends Frame implements ActionListener,
 	private static int port = DEFAULT_PORT;
 	private static String[] arguments;
 	
-	public Toolbar toolbar;
-	public JPanel statusBar;
+	public Toolbar toolbar;// Changed for Bio7 to public!
+	public JPanel statusBar;// Changed for Bio7 to public!
 	private ProgressBar progressBar;
 	private JLabel statusLine;
 	private boolean firstTime = true;

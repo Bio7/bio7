@@ -5,8 +5,14 @@ import ij.process.*;
 import ij.measure.Calibration;
 import ij.macro.Interpreter;
 import ij.io.FileInfo;
+
 import java.awt.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+
+import javax.swing.SwingUtilities;
+
+import com.eco.bio7.image.IJTabs;
 
 /** Implements the AddSlice, DeleteSlice and "Stack to Images" commands. */
 public class StackEditor implements PlugIn {
@@ -43,6 +49,8 @@ public class StackEditor implements PlugIn {
 			if (obj!=null && (obj instanceof String))
 				stack.setSliceLabel((String)obj, 1);
 			id = imp.getID();
+			/* Changed for Bio7! */
+			IJTabs.deleteActiveTab();
 		}
 		ImageProcessor ip = imp.getProcessor();
 		int n = imp.getCurrentSlice();
@@ -249,7 +257,10 @@ public class StackEditor implements PlugIn {
 			{IJ.error("\"Convert Stack to Images\" requires a stack"); return;}
 		if (!imp.lock())
 			return;
+		
 		ImageStack stack = imp.getStack();
+		/* Changed for Bio7! */
+		IJTabs.deleteActiveTab();
 		int size = stack.getSize();
 		if (size>30 && !IJ.isMacro()) {
 			boolean ok = IJ.showMessageWithCancel("Convert to Images?",
@@ -277,7 +288,22 @@ public class StackEditor implements PlugIn {
 			String info = stack.getSliceLabel(i);
 			if (info!=null && !info.equals(label))
 				imp2.setProperty("Info", info);
-			imp2.show();
+			
+			/*Changed for Bio7!*/
+			try {
+				SwingUtilities.invokeAndWait(new Runnable() {
+
+					public void run() {
+						imp2.show();
+					}
+				});
+			} catch (InvocationTargetException e) {
+
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+
+				e.printStackTrace();
+			}
 		}
 		imp.changes = false;
 		ImageWindow win = imp.getWindow();

@@ -6,8 +6,10 @@ import ij.macro.Interpreter;
 import ij.text.TextWindow;
 import ij.plugin.frame.PlugInFrame;
 import ij.util.Tools;
+
 import java.awt.*;
 import java.util.*;
+
 import ij.gui.*;
 
 /** This class consists of static methods used to manage ImageJ's windows. */
@@ -244,7 +246,8 @@ public class WindowManager {
 		else if (win instanceof ImageWindow)
 			addImageWindow((ImageWindow)win);
 		else {
-			Menus.insertWindowMenuItem(win);
+			/* Changed for Bio7! */
+			// Menus.insertWindowMenuItem(win);
 			nonImageList.addElement(win);
  		}
     }
@@ -356,22 +359,25 @@ public class WindowManager {
 
 	/** The specified Window becomes the front window. */
 	public static void setWindow(Window win) {
-		frontWindow = win;
+		/* Changed for Bio7! */
+		/*frontWindow = win;
 		if (win instanceof Frame)
-			frontFrame = (Frame)win;
+			frontFrame = (Frame)win;*/
     }
 
 	/** The specified frame becomes the front window, the one returnd by getFrontWindow(). */
 	public static void setWindow(Frame win) {
-		frontWindow = win;
-		frontFrame = win;
+		/* Changed for Bio7! */
+		/*frontWindow = win;
+		frontFrame = win;*/
 		//IJ.log("Set window: "+(win!=null?win.getTitle():"null"));
     }
 
 	/** Closes all windows. Stops and returns false if an image or Editor "save changes" dialog is canceled. */
 	public synchronized static boolean closeAllWindows() {
 		while (imageList.size()>0) {
-			if (!((ImageWindow)imageList.elementAt(0)).close())
+			/* Changed for Bio7! */
+			if (!((ImageWindow) imageList.elementAt(0)).bio7TabClose())
 				return false;
 			IJ.wait(100);
 		}

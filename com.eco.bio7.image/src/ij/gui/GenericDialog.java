@@ -3,6 +3,11 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 
 import ij.*;
@@ -40,7 +45,7 @@ import ij.macro.*;
 * to spaces when the dialog is displayed. For example, change the checkbox labels
 * "Show Quality" and "Show Residue" to "Show_Quality" and "Show_Residue".
 */
-public class GenericDialog extends Dialog implements ActionListener, TextListener, 
+public class GenericDialog extends JDialog implements ActionListener, TextListener, 
 FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
 	public static final int MAX_SLIDERS = 25;
@@ -48,7 +53,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	protected TextArea textArea1, textArea2;
 	protected Vector defaultValues,defaultText,defaultStrings,defaultChoiceIndexes;
 	protected Component theLabel;
-	private Button cancel, okay, no, help;
+	private JButton cancel, okay, no, help;
 	private String okLabel = "  OK  ";
 	private String cancelLabel = "Cancel";
 	private String helpLabel = "Help";
@@ -69,7 +74,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     private boolean customInsets;
     private int[] sliderIndexes;
     private double[] sliderScales;
-    private Checkbox previewCheckbox;    // the "Preview" Checkbox, if any
+    private JCheckBox previewCheckbox;    // the "Preview" Checkbox, if any
     private Vector dialogListeners;             // the Objects to notify on user input
     private PlugInFilterRunner pfr;      // the PlugInFilterRunner for automatic preview
     private String previewLabel = " Preview";
@@ -140,7 +145,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
    		String label2 = label;
    		if (label2.indexOf('_')!=-1)
    			label2 = label2.replace('_', ' ');
-		Label theLabel = makeLabel(label2);
+		JLabel theLabel = makeLabel(label2);
 		c.gridx = 0; c.gridy = y;
 		c.anchor = GridBagConstraints.EAST;
 		c.gridwidth = 1;
@@ -175,10 +180,10 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			grid.setConstraints(tf, c);
 			add(tf);
 		} else {
-    		Panel panel = new Panel();
+    		JPanel panel = new JPanel();
 			panel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
     		panel.add(tf);
-			panel.add(new Label(" "+units));
+			panel.add(new JLabel(" "+units));
 			grid.setConstraints(panel, c);
 			add(panel);    		
 		}
@@ -187,10 +192,10 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		y++;
     }
     
-    private Label makeLabel(String label) {
+    private JLabel makeLabel(String label) {
     	if (IJ.isMacintosh())
     		label += " ";
-		return new Label(label);
+		return new JLabel(label);
     }
     
     private void saveLabel(Object component, String label) {
@@ -220,7 +225,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
    		String label2 = label;
    		if (label2.indexOf('_')!=-1)
    			label2 = label2.replace('_', ' ');
-		Label theLabel = makeLabel(label2);
+		JLabel theLabel = makeLabel(label2);
 		c.gridx = 0; c.gridy = y;
 		c.anchor = GridBagConstraints.EAST;
 		c.gridwidth = 1;
@@ -288,9 +293,9 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		c.gridx = 0; c.gridy = y;
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.WEST;
-		Checkbox cb = new Checkbox(label2);
+		JCheckBox cb = new JCheckBox(label2);
 		grid.setConstraints(cb, c);
-		cb.setState(defaultValue);
+		cb.setSelected(defaultValue);
 		cb.addItemListener(this);
 		cb.addKeyListener(this);
 		add(cb);
@@ -365,7 +370,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	* Example: http://imagej.nih.gov/ij/plugins/multi-column-dialog/index.html
 	*/
     public void addCheckboxGroup(int rows, int columns, String[] labels, boolean[] defaultValues, String[] headings) {
-    	Panel panel = new Panel();
+    	JPanel panel = new JPanel();
     	int nRows = headings!=null?rows+1:rows;
     	panel.setLayout(new GridLayout(nRows, columns, 6, 0));
     	int startCBIndex = cbIndex;
@@ -377,7 +382,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				if (i>headings.length-1 || headings[i]==null)
 					panel.add(new Label(""));
 				else {
-					Label label = new Label(headings[i]);
+					JLabel label = new JLabel(headings[i]);
 					label.setFont(font);
 					panel.add(label);
 				}
@@ -399,14 +404,14 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				}
 				if (label.indexOf('_')!=-1)
    					label = label.replace('_', ' ');
-				Checkbox cb = new Checkbox(label);
+				JCheckBox cb = new JCheckBox(label);
 				checkbox.addElement(cb);
-				cb.setState(defaultValues[i1]);
+				cb.setSelected(defaultValues[i1]);
 				cb.addItemListener(this);
 				if (Recorder.record || macro)
 					saveLabel(cb, labels[i1]);
 				if (IJ.isLinux()) {
-					Panel panel2 = new Panel();
+					JPanel panel2 = new JPanel();
 					panel2.setLayout(new BorderLayout());
 					panel2.add("West", cb);
 					panel.add(panel2);
@@ -432,7 +437,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	* @param defaultItem		button initially selected
 	*/
     public void addRadioButtonGroup(String label, String[] items, int rows, int columns, String defaultItem) {
-    	Panel panel = new Panel();
+    	JPanel panel = new JPanel();
     	int n = items.length;
      	panel.setLayout(new GridLayout(rows, columns, 0, 0));
 		CheckboxGroup cg = new CheckboxGroup();
@@ -474,7 +479,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
    		String label2 = label;
    		if (label2.indexOf('_')!=-1)
    			label2 = label2.replace('_', ' ');
-		Label theLabel = makeLabel(label2);
+		JLabel theLabel = makeLabel(label2);
 		c.gridx = 0; c.gridy = y;
 		c.anchor = GridBagConstraints.EAST;
 		c.gridwidth = 1;
@@ -550,7 +555,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	*/
     public void addTextAreas(String text1, String text2, int rows, int columns) {
     	if (textArea1!=null) return;
-    	Panel panel = new Panel();
+    	JPanel panel = new JPanel();
 		textArea1 = new TextArea(text1,rows,columns,TextArea.SCROLLBARS_NONE);
 		if (IJ.isLinux()) textArea1.setBackground(Color.white);
 		textArea1.addTextListener(this);
@@ -594,7 +599,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
    		String label2 = label;
    		if (label2.indexOf('_')!=-1)
    			label2 = label2.replace('_', ' ');
-		Label theLabel = makeLabel(label2);
+		JLabel theLabel = makeLabel(label2);
 		c.gridx = 0; c.gridy = y;
 		c.anchor = GridBagConstraints.EAST;
 		c.gridwidth = 1;
@@ -635,7 +640,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		tf.setEditable(true);
 		firstSlider = false;
 		
-    	Panel panel = new Panel();
+    	JPanel panel = new JPanel();
 		GridBagLayout pgrid = new GridBagLayout();
 		GridBagConstraints pc  = new GridBagConstraints();
 		panel.setLayout(pgrid);
@@ -664,16 +669,48 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		if (Recorder.record || macro)
 			saveLabel(tf, label);
     }
+	
+	
 
-    /** Adds a Panel to the dialog. */
-    public void addPanel(Panel panel) {
-    	addPanel(panel , GridBagConstraints.WEST, new Insets(5, 0, 0, 0));
-    }
+  
+    
+    /* Changed for Bio7! -> Added JPanel method! */
+	public void addPanel(JPanel panel) {
+		addPanel(panel, GridBagConstraints.WEST, new Insets(5, 0, 0, 0));
+	}
+
+	/** Adds a Panel to the dialog. */
+	/*
+	 * public void addPanel(Panel panel) { addPanel(panel ,
+	 * GridBagConstraints.WEST, new Insets(5, 0, 0, 0)); }
+	 */
+	// extra method to avoid plugin mistake
+	public void addPanel(Panel panel) {
+		JPanel panel2 = new JPanel();
+		Component[] comp = panel.getComponents();
+		for (int i = 0; i < comp.length; i++) {
+			panel2.add(comp[i]);
+		}
+
+		addPanel(panel2, GridBagConstraints.WEST, new Insets(5, 0, 0, 0));
+	}
+
+	/* Changed for Bio7! -> Extra method for plugins! */
+	public void addPanel(Panel panel, int constraints, Insets insets) {
+		c.gridx = 0;
+		c.gridy = y;
+		c.gridwidth = 2;
+		c.anchor = constraints;
+		c.insets = insets;
+		grid.setConstraints(panel, c);
+		add(panel);
+		y++;
+	}
 
     /** Adds a Panel to the dialog with custom contraint and insets. The
     	defaults are GridBagConstraints.WEST (left justified) and 
     	"new Insets(5, 0, 0, 0)" (5 pixels of padding at the top). */
-    public void addPanel(Panel panel, int constraints, Insets insets) {
+    public void addPanel(JPanel panel, int constraints, Insets insets) {
 		c.gridx = 0; c.gridy = y;
 		c.gridwidth = 2;
 		c.anchor = constraints;
@@ -852,10 +889,10 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		Recorder.recordOption(label, value);
 	}
 
-	private void recordCheckboxOption(Checkbox cb) {
+	private void recordCheckboxOption(JCheckBox cb) {
 		String label = (String)labels.get((Object)cb);
 		if (label!=null) {
-			if (cb.getState()) // checked
+			if (cb.isSelected()) // checked
 				Recorder.recordOption(label);
 			else if (Recorder.getCommandOptions()==null)
 				Recorder.recordOption(" ");
@@ -931,10 +968,10 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     public boolean getNextBoolean() {
 		if (checkbox==null)
 			return false;
-		Checkbox cb = (Checkbox)(checkbox.elementAt(cbIndex));
+		JCheckBox cb = (JCheckBox)(checkbox.elementAt(cbIndex));
 		if (recorderOn)
 			recordCheckboxOption(cb);
-		boolean state = cb.getState();
+		boolean state = cb.isSelected();
 		if (macro) {
 			String label = (String)labels.get((Object)cb);
 			String key = Macro.trimKey(label);
@@ -1103,23 +1140,23 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		} else {
 			if (pfr!=null) // prepare preview (not in macro mode): tell the PlugInFilterRunner to listen
 			pfr.setDialog(this);
-			Panel buttons = new Panel();
+			JPanel buttons = new JPanel();
 			buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
-			cancel = new Button(cancelLabel);
+			cancel = new JButton(cancelLabel);
 			cancel.addActionListener(this);
 			cancel.addKeyListener(this);
 			if (yesNoCancel) {
 				okLabel = yesLabel;
-				no = new Button(noLabel);
+				no = new JButton(noLabel);
 				no.addActionListener(this);
 				no.addKeyListener(this);
 			}
-			okay = new Button(okLabel);
+			okay = new JButton(okLabel);
 			okay.addActionListener(this);
 			okay.addKeyListener(this);
 			boolean addHelp = helpURL!=null;
 			if (addHelp) {
-				help = new Button(helpLabel);
+				help = new JButton(helpLabel);
 				help.addActionListener(this);
 				help.addKeyListener(this);
 			}
@@ -1160,7 +1197,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	}
 	
     /** Reset the counters before reading the dialog parameters */
-	private void resetCounters() {
+	/* Changed for Bio7 to public! */
+	public void resetCounters() {
 		nfIndex = 0;        // prepare for readout
 		sfIndex = 0;
 		cbIndex = 0;
@@ -1217,19 +1255,19 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
   	}
 
     /** Returns a reference to the Preview checkbox. */
-    public Checkbox getPreviewCheckbox() {
+    public JCheckBox getPreviewCheckbox() {
         return previewCheckbox;
     }
     
     /** Returns 'true' if this dialog has a "Preview" checkbox and it is enabled. */
     public boolean isPreviewActive() {
-        return previewCheckbox!=null && previewCheckbox.getState();
+        return previewCheckbox!=null && previewCheckbox.isSelected();
     }
 
 	/** Returns references to the "OK" ("Yes"), "Cancel", 
 		and if present, "No" buttons as an array. */
-	public Button[] getButtons() {
-  		Button[] buttons = new Button[3];
+	public JButton[] getButtons() {
+  		JButton[] buttons = new JButton[3];
   		buttons[0] = okay;
   		buttons[1] = cancel;
   		buttons[2] = no;
@@ -1291,7 +1329,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				TextField tf = (TextField)numberField.elementAt(index);
 				double value = Tools.parseDouble(tf.getText());
 				if (!Double.isNaN(value)) {
-					Scrollbar sb = (Scrollbar)slider.elementAt(i);
+					JScrollBar sb = (JScrollBar)slider.elementAt(i);
 					sb.setValue((int)(value*sliderScales[i]));
 				}	
 				//IJ.log(i+" "+tf.getText());
@@ -1359,15 +1397,16 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	public void keyTyped(KeyEvent e) {}
 
 	public Insets getInsets() {
+		/* Changed for Bio7! */
     	Insets i= super.getInsets();
-    	return new Insets(i.top+10, i.left+10, i.bottom+10, i.right+10);
+    	return i;//new Insets(i.top+10, i.left+10, i.bottom+10, i.right+10);
 	}
 
 	public synchronized void adjustmentValueChanged(AdjustmentEvent e) {
 		Object source = e.getSource();
 		for (int i=0; i<slider.size(); i++) {
 			if (source==slider.elementAt(i)) {
-				Scrollbar sb = (Scrollbar)source;
+				JScrollBar sb = (JScrollBar)source;
 				TextField tf = (TextField)numberField.elementAt(sliderIndexes[i]);
 				int digits = sliderScales[i]==1.0?0:2;
 				tf.setText(""+IJ.d2s(sb.getValue()/sliderScales[i],digits));

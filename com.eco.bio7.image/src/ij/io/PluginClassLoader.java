@@ -4,7 +4,7 @@ import ij.IJ;
 import java.io.*;
 import java.net.*;
 
-import com.eco.bio7.image.Activator;
+import com.eco.bio7.image.Activator;//Changed for Bio7!
 
 /** ImageJ uses this class loader to load plugins and resources from the
  * plugins directory and immediate subdirectories. This class loader will

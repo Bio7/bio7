@@ -26,6 +26,11 @@ import javax.swing.JPanel;
 
 
 
+
+
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
+
 import com.eco.bio7.image.CanvasView;
 
 
@@ -768,6 +773,8 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 		(srcRect) smaller and center it at (sx,sy). Note that
 		sx and sy are screen coordinates. */
 	public void zoomIn(int sx, int sy) {
+		
+			
 		if (magnification>=32) return;
 		double newMag = getHigherZoomLevel(magnification);
 		int newWidth = (int)(imageWidth*newMag);
@@ -789,9 +796,12 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 		 */
 
 		// canvasview.getCurrent().validate();
-		CanvasView.getCurrent().invalidate();
+		//CanvasView.getCurrent().invalidate();
 		CanvasView.getCurrent().validate();
 		adjustSourceRect(newMag, sx, sy);
+		
+		
+		
 	}
 	
 	void adjustSourceRect(double newMag, int x, int y) {
@@ -847,6 +857,7 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 		larger and centering it on (x,y). If we can't make it larger,  
 		then make the window smaller.*/
 	public void zoomOut(int x, int y) {
+		
 		if (magnification<=0.03125)
 			return;
 		double oldMag = magnification;
@@ -877,7 +888,7 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 			} else
 				repaint();
 			/* Changes for Bio7! */
-			CanvasView.getCurrent().invalidate();
+			//CanvasView.getCurrent().invalidate();
 			CanvasView.getCurrent().validate();
 			adjustSourceRect(newMag, x, y);
 			
@@ -911,6 +922,8 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 		/* Changes for Bio7! */
 		CanvasView.getCurrent().validate();
 		adjustSourceRect(newMag, x, y);
+	
+		
 	}
 
 	/** Implements the Image/Zoom/Original Scale command. */
@@ -956,6 +969,8 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 		int sy = screenY(y);
 		adjustSourceRect(1.0, sx, sy);
 		repaint();
+		/* Changed for Bio7! */
+		CanvasView.getCurrent().validate();
 	}
 	
 	protected void scroll(int sx, int sy) {

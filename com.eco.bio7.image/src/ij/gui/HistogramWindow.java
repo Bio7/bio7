@@ -171,7 +171,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			buttons.add(rgb);
 		}
 		if (!(IJ.isMacOSX()&&isRGB)) {
-			Panel valueAndCount = new Panel();
+			JPanel valueAndCount = new JPanel();
 			valueAndCount.setLayout(new GridLayout(2,1,0,0));
 			blankLabel = IJ.isMacOSX()?"           ":"                ";
 			value = new JLabel(blankLabel);
