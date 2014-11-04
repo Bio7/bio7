@@ -75,8 +75,9 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 	private ImageJ ij;
 	private int minHue = 0, minSat = 0, minBri = 0;
 	private int maxHue = 255, maxSat = 255, maxBri = 255;
-	private JScrollBar minSlider, maxSlider, minSlider2, maxSlider2, minSlider3, maxSlider3;
-	private JLabel label1, label2, label3, label4, label5, label6, labelh, labels, labelb, labelf;
+	private Scrollbar minSlider, maxSlider, minSlider2, maxSlider2, minSlider3, maxSlider3;
+	private Label label1, label2, label3, label4, label5, label6, labelh, labelb, labelf;
+	Label labels;
 	private boolean done;
 	private byte[] hSource, sSource, bSource;
 	private boolean applyingStack;
@@ -115,7 +116,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridwidth = 1;
 		c.weightx = 0;
 		c.insets = new Insets(5, 0, 0, 0);
-		labelh = new JLabel("Hue", JLabel.CENTER);
+		labelh = new Label("Hue", Label.CENTER);
 		add(labelh, c);
 
 		c.gridx = 1;
@@ -123,7 +124,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridwidth = 1;
 		c.weightx = 0;
 		c.insets = new Insets(7, 0, 0, 0);
-		labelf = new JLabel("", JLabel.RIGHT);
+		labelf = new Label("", Label.RIGHT);
 		add(labelf, c);
 
 		// plot
@@ -146,7 +147,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		add(bandPassH, c);
 
 		// minHue slider
-		minSlider = new JScrollBar(JScrollBar.HORIZONTAL, 0, 1, 0, sliderRange);
+		minSlider = new Scrollbar(Scrollbar.HORIZONTAL, 0, 1, 0, sliderRange);
 		c.gridx = 0;
 		c.gridy = y++;
 		c.gridwidth = 1;
@@ -163,12 +164,12 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridwidth = 1;
 		c.weightx = IJ.isMacintosh()?10:0;
 		c.insets = new Insets(5, 0, 0, 0);
-		label1 = new JLabel("       ", Label.LEFT);
+		label1 = new Label("       ", Label.LEFT);
 		label1.setFont(font);
 		add(label1, c);
 
 		// maxHue sliderHue
-		maxSlider = new JScrollBar(JScrollBar.HORIZONTAL, 0, 1, 0, sliderRange);
+		maxSlider = new Scrollbar(Scrollbar.HORIZONTAL, 0, 1, 0, sliderRange);
 		c.gridx = 0;
 		c.gridy = y;
 		c.gridwidth = 1;
@@ -184,7 +185,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridy = y++;
 		c.weightx = 0;
 		c.insets = new Insets(5, 0, 0, 0);
-		label2 = new JLabel("       ", Label.LEFT);
+		label2 = new Label("       ", Label.LEFT);
 		label2.setFont(font);
 		add(label2, c);
 
@@ -194,7 +195,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridwidth = 1;
 		c.weightx = 0;
 		c.insets = new Insets(10, 0, 0, 0);
-		labels = new JLabel("Saturation", Label.CENTER);
+		labels = new Label("Saturation", Label.CENTER);
 		add(labels, c);
 
 		// plot
@@ -217,7 +218,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		add(bandPassS, c);
 
 		// minSat slider
-		minSlider2 = new JScrollBar(JScrollBar.HORIZONTAL, 0, 1, 0, sliderRange);
+		minSlider2 = new Scrollbar(Scrollbar.HORIZONTAL, 0, 1, 0, sliderRange);
 		c.gridx = 0;
 		c.gridy = y++;
 		c.gridwidth = 1;
@@ -233,12 +234,12 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridwidth = 1;
 		c.weightx = IJ.isMacintosh()?10:0;
 		c.insets = new Insets(5, 0, 0, 0);
-		label3 = new JLabel("       ", Label.LEFT);
+		label3 = new Label("       ", Label.LEFT);
 		label3.setFont(font);
 		add(label3, c);
 
 		// maxSat slider
-		maxSlider2 = new JScrollBar(JScrollBar.HORIZONTAL, 0, 1, 0, sliderRange);
+		maxSlider2 = new Scrollbar(Scrollbar.HORIZONTAL, 0, 1, 0, sliderRange);
 		c.gridx = 0;
 		c.gridy = y++;
 		c.gridwidth = 1;
@@ -253,7 +254,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridwidth = 1;
 		c.weightx = 0;
 		c.insets = new Insets(5, 0, 0, 0);
-		label4 = new JLabel("       ", Label.LEFT);
+		label4 = new Label("       ", Label.LEFT);
 		label4.setFont(font);
 		add(label4, c);
 
@@ -263,7 +264,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridy = y++;
 		c.weightx = 0;
 		c.insets = new Insets(10, 0, 0, 0);
-		labelb = new JLabel("Brightness", Label.CENTER);
+		labelb = new Label("Brightness", Label.CENTER);
 		add(labelb, c);
 
 		c.gridx = 0;
@@ -285,7 +286,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		add(bandPassB, c);
 
 		// minBri slider
-		minSlider3 = new JScrollBar(JScrollBar.HORIZONTAL, 0, 1, 0, sliderRange);
+		minSlider3 = new Scrollbar(Scrollbar.HORIZONTAL, 0, 1, 0, sliderRange);
 		c.gridx = 0;
 		c.gridy = y++;
 		c.gridwidth = 1;
@@ -301,12 +302,12 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridwidth = 1;
 		c.weightx = IJ.isMacintosh()?10:0;
 		c.insets = new Insets(5, 0, 0, 0);
-		label5 = new JLabel("       ", Label.LEFT);
+		label5 = new Label("       ", Label.LEFT);
 		label5.setFont(font);
 		add(label5, c);
 
 		// maxBri slider
-		maxSlider3 = new JScrollBar(JScrollBar.HORIZONTAL, 0, 1, 0, sliderRange);
+		maxSlider3 = new Scrollbar(Scrollbar.HORIZONTAL, 0, 1, 0, sliderRange);
 		c.gridx = 0;
 		c.gridy = y++;
 		c.gridwidth = 1;
@@ -321,7 +322,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridwidth = 1;
 		c.weightx = 0;
 		c.insets = new Insets(5, 0, 0, 0);
-		label6 = new JLabel("       ", Label.LEFT);
+		label6 = new Label("       ", Label.LEFT);
 		label6.setFont(font);
 		add(label6, c);
 

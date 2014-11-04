@@ -1,11 +1,14 @@
 package ij.plugin.frame;
 import java.awt.*;
 import java.awt.event.*;
+
+import javax.swing.JFrame;
+
 import ij.*;
 import ij.plugin.*;
 
 /**  This is a closeable window that plugins can extend. */
-public class PlugInFrame extends Frame implements PlugIn, WindowListener, FocusListener {
+public class PlugInFrame extends JFrame implements PlugIn, WindowListener, FocusListener {
 
 	String title;
 	

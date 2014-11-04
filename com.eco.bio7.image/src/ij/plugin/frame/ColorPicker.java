@@ -1,9 +1,14 @@
 package ij.plugin.frame;
 import ij.*;
 import ij.plugin.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Vector;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+
 import ij.process.*;
 import ij.gui.*;
 
@@ -30,8 +35,8 @@ public class ColorPicker extends PlugInDialog {
 		setLayout(new BorderLayout());
         ColorGenerator cg = new ColorGenerator(width, height, new int[width*height]);
         cg.drawColors(colorWidth, colorHeight, columns, rows);
-        Canvas colorCanvas = new ColorCanvas(width, height, null, cg);
-        Panel panel = new Panel();
+        JPanel colorCanvas = new ColorCanvas(width, height, null, cg);
+        JPanel panel = new JPanel();
         panel.add(colorCanvas);
         add(panel);
 		setResizable(false);
@@ -210,13 +215,13 @@ class ColorGenerator extends ColorProcessor {
     
 } 
 
-class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener{
+class ColorCanvas extends JPanel implements MouseListener, MouseMotionListener{
 	int width, height;
 	Vector colors;
 	boolean background;
 	long mouseDownTime;
 	ColorGenerator ip;
-	Frame frame;
+	JFrame frame;
 			
 	public ColorCanvas(int width, int height, Frame frame, ColorGenerator ip) {
 		this.width=width; this.height=height;
@@ -231,11 +236,14 @@ class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener{
 		return new Dimension(width, height);
 	}
 	
-	public void update(Graphics g) {
-		paint(g);
-	}
+	/*Changed for Bio7!*/
 	
-	public void paint(Graphics g) {
+	/*public void update(Graphics g) {
+		paint(g);
+	}*/
+	
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
 		g.drawImage(ip.createImage(), 0, 0, null);
 	}
 
