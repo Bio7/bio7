@@ -16,10 +16,12 @@ import ij.ImagePlus;
 import ij.WindowManager;
 
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.UUID;
 
 import javax.swing.SwingUtilities;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -41,6 +43,8 @@ import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.views.IViewDescriptor;
+import org.eclipse.ui.views.IViewRegistry;
 
 import uk.co.mmscomputing.device.scanner.Scanner;
 import uk.co.mmscomputing.device.scanner.ScannerDevice;
@@ -81,8 +85,8 @@ public class ImageJFileAction extends Action implements IMenuCreator, ScannerLis
 		setMenuCreator(this);
 		// uk.co.mmscomputing.util.JarLib.load(jtwain.class,"D:/eclipse-3.41/com.eco.bio7.libs/libs//uk/co/mmscomputing/device/twain/win32/jtwain");
 		try {
-			//scanner = Scanner.getDevice();
-			//scanner.addListener(this);
+			// scanner = Scanner.getDevice();
+			// scanner.addListener(this);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -240,7 +244,7 @@ public class ImageJFileAction extends Action implements IMenuCreator, ScannerLis
 		MenuItem menuItem14 = new MenuItem(fMenu, SWT.PUSH);
 		menuItem14.setText("Aquire");
 		MenuItem menuItem6 = new MenuItem(fMenu, SWT.PUSH);
-		menuItem6.setText("Close All Tabs");
+		menuItem6.setText("Close All Tabs And Views");
 
 		menuItem2.addSelectionListener(new SelectionListener() {
 
@@ -297,7 +301,17 @@ public class ImageJFileAction extends Action implements IMenuCreator, ScannerLis
 			}
 
 			public void widgetSelected(SelectionEvent e) {
+                /*Close detached views! Not reliable for many perspectives!*/
+				/*IWorkbenchPage wbp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+				CanvasView canv = CanvasView.getCanvas_view();
+				ArrayList<String> detArr = canv.getDetachedSecViewIDs();
 
+				for (int i = 0; i < detArr.size(); i++) {
+					wbp.hideView(wbp.findViewReference("com.eco.bio7.image.detachedImage", detArr.get(i)));
+				}
+
+				detArr.clear();*/
+                /*Close the tabs!*/
 				IJTabs.deleteAllTabs();
 			}
 

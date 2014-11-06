@@ -22,6 +22,7 @@ import ij.io.Opener;
 import ij.plugin.DragAndDrop;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.UUID;
 import java.util.Vector;
 
@@ -101,6 +102,8 @@ public class CanvasView extends ViewPart {
 	private static CanvasView canvas_view;
 
 	public static CTabFolder tabFolder;
+
+	//private ArrayList<String> detachedSecViewIDs = new ArrayList<String>();
 
 	public CanvasView() {
 		super();
@@ -318,7 +321,9 @@ public class CanvasView extends ViewPart {
 
 						CustomView custom = new CustomView();
 						/* Create ImageJ view with unique ID! */
-						custom.setPanel(current, UUID.randomUUID().toString());
+						String id = UUID.randomUUID().toString();
+						//detachedSecViewIDs.add(id);
+						custom.setPanel(current, id);
 						custom.setData(plu, win);
 						IJTabs.hideTab();
 					}
@@ -345,7 +350,7 @@ public class CanvasView extends ViewPart {
 		tbm.add(process);
 		tbm.add(analyze);
 		tbm.add(plugins);
-		tbm.add(imagej_window);	
+		tbm.add(imagej_window);
 		tbm.add(new PlaceholderLabel().getPlaceholderLabel());
 
 	}
@@ -431,5 +436,9 @@ public class CanvasView extends ViewPart {
 		}
 		IJ.register(DragAndDrop.class);
 	}
+
+	/*public ArrayList<String> getDetachedSecViewIDs() {
+		return detachedSecViewIDs;
+	}*/
 
 }

@@ -16,6 +16,7 @@ import ij.WindowManager;
 import ij.gui.ImageWindow;
 
 import java.awt.Panel;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import javax.swing.JPanel;
@@ -37,7 +38,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 /**
- * This class provides some static methods for the creation of custom views inside the Bio7 application.
+ * This class provides some static methods for the creation of custom views
+ * inside the Bio7 application.
  * 
  * @author Bio7
  * 
@@ -66,16 +68,16 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 
 	public IViewReference ref2;
 
-	
+	private CustomView customView;
 
-	private  CustomView customView;
+	protected ImageJPartListener2 palist;
 
-	public   CustomView getCustomView() {
+	public CustomView getCustomView() {
 		return customView;
 	}
 
 	public CustomView() {
-       //customView=this;
+		// customView=this;
 	}
 
 	public void setData(ImagePlus plu, ImageWindow win) {
@@ -111,7 +113,7 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 					WindowManager.setCurrentWindow(win);
 
 					CanvasView.setCurrent(viewPanel);
-                     ImageJ.setCustomView(customView);
+					ImageJ.setCustomView(customView);
 				}
 			}
 		}
@@ -121,7 +123,7 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 		}
 
 		public void partClosed(IWorkbenchPartReference ref) {
-
+			/* Important to control the references! */
 			IWorkbenchPage page = ref.getPage();
 			if (page != null) {
 				page.getActivePart();
@@ -130,9 +132,20 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 					SwingUtilities.invokeLater(new Runnable() {
 						// !!
 						public void run() {
-							win.bio7TabClose();
+							if (WindowManager.getImageCount() > 0) {
+								win.bio7TabClose();
+							}
 						}
 					});
+
+					/*
+					 * ArrayList arrL =
+					 * CanvasView.getCanvas_view().getDetachedSecViewIDs();
+					 * System.out.println("prim: " + secId); for (int i = 0; i <
+					 * arrL.size(); i++) { if (arrL.get(i).equals(secId)) {
+					 * System.out.println("removed: " + arrL.get(i));
+					 * arrL.remove(i); } }
+					 */
 
 				}
 			}
@@ -183,7 +196,7 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 						page.showView("com.eco.bio7.image.detachedImage", secId, IWorkbenchPage.VIEW_CREATE);
 						activated = page.showView("com.eco.bio7.image.detachedImage", secId, IWorkbenchPage.VIEW_ACTIVATE);
 
-						ImageJPartListener2 palist = new ImageJPartListener2();
+						palist = new ImageJPartListener2();
 						page.addPartListener(palist);
 					}
 
@@ -192,9 +205,10 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 					e.printStackTrace();
 				}
 				if (activated instanceof CustomView) {
-					 customView = (CustomView) activated;
+					customView = (CustomView) activated;
 					/*
-					 * Control c[] = view.getCustomViewParent().getChildren(); for (int i = 0; i < c.length; i++) { c[i].dispose(); }
+					 * Control c[] = view.getCustomViewParent().getChildren();
+					 * for (int i = 0; i < c.length; i++) { c[i].dispose(); }
 					 */
 
 					SwtAwtCustom swt = new SwtAwtCustom(viewPanel, customView);
@@ -215,46 +229,35 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	 *            a Panel
 	 * @param title
 	 *            the title of the tab.
-	 *//*
-	public void setPanel(final Panel panel, final String id) {
+	 */
+	/*
+	 * public void setPanel(final Panel panel, final String id) {
+	 * 
+	 * secId = id; Display display = PlatformUI.getWorkbench().getDisplay();
+	 * display.syncExec(new Runnable() { public void run() { try { if
+	 * (singleView) { IWorkbenchPage page =
+	 * PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+	 * activated = page.showView("com.eco.bio7.image.detachedImage"); } else {
+	 * IWorkbenchPage page =
+	 * PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+	 * page.showView("com.eco.bio7.image.detachedImage", secId,
+	 * IWorkbenchPage.VIEW_CREATE); activated =
+	 * page.showView("com.eco.bio7.image.detachedImage", secId,
+	 * IWorkbenchPage.VIEW_ACTIVATE); }
+	 * 
+	 * } catch (PartInitException e) { // TODO Auto-generated catch block
+	 * e.printStackTrace(); } if (activated instanceof CustomView) { CustomView
+	 * view = (CustomView) activated; Control c[] =
+	 * view.getCustomViewParent().getChildren(); Vector ve = (Vector)
+	 * view.getCustomViewParent().getData(); if (ve != null && ve.size() > 0) {
+	 * closeTabPanels(ve); } for (int i = 0; i < c.length; i++) { //
+	 * System.out.println(c[i]); c[i].dispose(); } SwtAwtCustom swt = new
+	 * SwtAwtCustom(panel, view); swt.addAWTTab(id); }
+	 * 
+	 * } });
+	 */
 
-		secId = id;
-		Display display = PlatformUI.getWorkbench().getDisplay();
-		display.syncExec(new Runnable() {
-			public void run() {
-				try {
-					if (singleView) {
-						IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-						activated = page.showView("com.eco.bio7.image.detachedImage");
-					} else {
-						IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-						page.showView("com.eco.bio7.image.detachedImage", secId, IWorkbenchPage.VIEW_CREATE);
-						activated = page.showView("com.eco.bio7.image.detachedImage", secId, IWorkbenchPage.VIEW_ACTIVATE);
-					}
-
-				} catch (PartInitException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				if (activated instanceof CustomView) {
-					CustomView view = (CustomView) activated;
-					Control c[] = view.getCustomViewParent().getChildren();
-					Vector ve = (Vector) view.getCustomViewParent().getData();
-					if (ve != null && ve.size() > 0) {
-						closeTabPanels(ve);
-					}
-					for (int i = 0; i < c.length; i++) {
-						// System.out.println(c[i]);
-						c[i].dispose();
-					}
-					SwtAwtCustom swt = new SwtAwtCustom(panel, view);
-					swt.addAWTTab(id);
-				}
-
-			}
-		});*/
-
-	//}
+	// }
 
 	/**
 	 * Returns the display of the view.
@@ -316,7 +319,8 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	}
 
 	/*
-	 * Close tab items and dispose different GUI references. Called if the view or a tab item is closed!
+	 * Close tab items and dispose different GUI references. Called if the view
+	 * or a tab item is closed!
 	 */
 	private void closeTabPanels(Vector ve) {
 		if (ve != null) {
@@ -333,6 +337,7 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	public void setSingleView(boolean singleView) {
 		this.singleView = singleView;
 	}
+
 	public void setstatusline(String message) {
 		IActionBars bars = getViewSite().getActionBars();
 		bars.getStatusLineManager().setMessage(message);
