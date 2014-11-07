@@ -271,6 +271,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
         if (tool>=CUSTOM1)
         	x -= SIZE-GAP_SIZE;
         if (tool!=UNUSED)
+        	
         	fill3DRect(g, x, 1, SIZE, SIZE-1, !down[tool]);
         g.setColor(toolColor);
         x = index*SIZE + OFFSET;

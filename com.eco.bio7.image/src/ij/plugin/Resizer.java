@@ -4,9 +4,12 @@ import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.util.Tools;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+
+import com.eco.bio7.image.CanvasView;
 
 /** This plugin implements the Edit/Crop and Image/Adjust/Size commands. */
 public class Resizer implements PlugIn, TextListener, ItemListener  {
@@ -182,6 +185,8 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			imp.close();
 			imp2.show();
 		}
+		/*Changed for Bio7!*/
+		CanvasView.getCurrent().validate();
 	}
 
 	public ImagePlus zScale(ImagePlus imp, int newDepth, int interpolationMethod) {

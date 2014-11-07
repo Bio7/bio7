@@ -2,9 +2,12 @@ package ij.plugin.frame;
 import ij.*;
 import ij.gui.*;
 import ij.measure.Calibration;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+
+import javax.swing.JPanel;
 
 
 /** This class "synchronizes" mouse input in multiple windows. Once
@@ -1012,7 +1015,8 @@ public class SyncWindows extends PlugInFrame implements
 	// --------------------------------------------------
 	/** Makes a new mouse event from MouseEvent e with the Canvas c
 	 *	as source and the coordinates of Point p as X and Y.*/
-	private MouseEvent adaptEvent(MouseEvent e, Component c, Point p) {
+	/*Changed for Bio7!*/
+	private MouseEvent adaptEvent(MouseEvent e, JPanel c, Point p) {
 		return new MouseEvent(c, e.getID(), e.getWhen(), e.getModifiers(),
 		   p.x, p.y, e.getClickCount(), e.isPopupTrigger());
 

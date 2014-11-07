@@ -8,11 +8,13 @@ import ij.*;
 import ij.plugin.*;
 
 /**  This is a closeable window that plugins can extend. */
-public class PlugInFrame extends Frame implements PlugIn, WindowListener, FocusListener {
+/*Changed for Bio7!
+ * Added Awt Frame for Pixel Inspector!*/
+public class PlugInAwtFrame extends Frame implements PlugIn, WindowListener, FocusListener {
 
 	String title;
 	
-	public PlugInFrame(String title) {
+	public PlugInAwtFrame(String title) {
 		super(title);
 		enableEvents(AWTEvent.WINDOW_EVENT_MASK);
 		this.title = title;
@@ -20,7 +22,7 @@ public class PlugInFrame extends Frame implements PlugIn, WindowListener, FocusL
 		addWindowListener(this);
  		addFocusListener(this);
 		if (IJ.isLinux()) setBackground(ImageJ.backgroundColor);
-		if (ij!=null && !IJ.isMacOSX()) {
+		if (ij!=null) {
 			Image img = ij.getIconImage();
 			if (img!=null)
 				try {setIconImage(img);} catch (Exception e) {}

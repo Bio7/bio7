@@ -3,6 +3,9 @@ import java.awt.*;
 import java.io.*;
 import java.awt.event.*;
 import java.awt.image.ColorModel;
+
+import javax.swing.JCheckBox;
+
 import ij.*;
 import ij.io.*;
 import ij.gui.*;
@@ -495,8 +498,8 @@ public class FolderOpener implements PlugIn {
 		}
 	
 		protected void setup() {
-			eightBits = ((Checkbox)checkbox.elementAt(0)).getState();
-			rgb = ((Checkbox)checkbox.elementAt(1)).getState();
+			eightBits = ((JCheckBox)checkbox.elementAt(0)).isSelected();
+			rgb = ((JCheckBox)checkbox.elementAt(1)).isSelected();
 			setStackInfo();
 		}
 		

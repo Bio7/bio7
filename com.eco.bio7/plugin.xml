@@ -1270,9 +1270,14 @@
            <visibleWhen>
               <with
                     variable="activePartId">
-                 <equals
-                       value="com.eco.bio7.editors.TemplateEditor">
-                 </equals>
+                 <or>
+                    <equals
+                          value="com.eco.bio7.editors.TemplateEditor">
+                    </equals>
+                    <equals
+                          value="org.codehaus.groovy.eclipse.editor.GroovyEditor">
+                    </equals>
+                 </or>
               </with>
            </visibleWhen>
         </command>

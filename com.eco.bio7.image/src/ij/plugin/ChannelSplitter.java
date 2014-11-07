@@ -31,7 +31,9 @@ public class ChannelSplitter implements PlugIn {
 	}
 	
 	private void splitRGB(ImagePlus imp) {
-		boolean keepSource = IJ.altKeyDown();
+		/*Changed for Bio7!*/
+		boolean keepSource = false;
+		//boolean keepSource = IJ.altKeyDown();
 		String title = imp.getTitle();
 		Calibration cal = imp.getCalibration();
 		int pos = imp.getCurrentSlice();

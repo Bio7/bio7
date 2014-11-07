@@ -81,8 +81,8 @@ public class ImageJFileAction extends Action implements IMenuCreator, ScannerLis
 		setMenuCreator(this);
 		// uk.co.mmscomputing.util.JarLib.load(jtwain.class,"D:/eclipse-3.41/com.eco.bio7.libs/libs//uk/co/mmscomputing/device/twain/win32/jtwain");
 		try {
-			//scanner = Scanner.getDevice();
-			//scanner.addListener(this);
+			scanner = Scanner.getDevice();
+			scanner.addListener(this);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

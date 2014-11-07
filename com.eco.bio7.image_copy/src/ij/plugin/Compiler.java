@@ -37,7 +37,7 @@ import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 public class Compiler implements PlugIn, FilenameFilter {
 
 	private static final int TARGET14=0, TARGET15=1, TARGET16=2,  TARGET17=3;
-	private static final String[] targets = {"1.4", "1.5", "1.6", "1.7"};
+	private static final String[] targets = {"1.4", "1.5", "1.6", "1.7","1.8"};
 	private static final String TARGET_KEY = "javac.target";
 	//private static com.sun.tools.javac.Main javac;
 	private static ByteArrayOutputStream output;

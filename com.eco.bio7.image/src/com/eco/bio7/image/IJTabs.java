@@ -14,9 +14,12 @@ package com.eco.bio7.image;
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.ImageWindow;
+
 import java.util.Vector;
+
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.widgets.Display;
 
@@ -47,11 +50,16 @@ public class IJTabs {
 					CanvasView.tabFolder.showItem(items[number]);
 					CanvasView.tabFolder.setSelection(items[number]);
 					Vector ve = (Vector) items[number].getData();
-					ImagePlus plu = (ImagePlus) ve.get(0);
-					ImageWindow win = (ImageWindow) ve.get(1);
-					WindowManager.setTempCurrentImage(plu);
-					WindowManager.setCurrentWindow(win);
-					CanvasView.setCurrent((JPanel) ve.get(2));
+					SwingUtilities.invokeLater(new Runnable() {
+						// !!
+						public void run() {
+							ImagePlus plu = (ImagePlus) ve.get(0);
+							ImageWindow win = (ImageWindow) ve.get(1);
+							WindowManager.setTempCurrentImage(plu);
+							WindowManager.setCurrentWindow(win);
+							CanvasView.setCurrent((JPanel) ve.get(2));
+						}
+					});
 
 				}
 			});
@@ -112,11 +120,16 @@ public class IJTabs {
 
 			public void run() {
 				Vector ve = (Vector) items[nrdel].getData();
-				ImagePlus plu = (ImagePlus) ve.get(0);
+				SwingUtilities.invokeLater(new Runnable() {
+					// !!
+					public void run() {
+						ImagePlus plu = (ImagePlus) ve.get(0);
 
-				final ImageWindow win = (ImageWindow) ve.get(1);
-              
-				win.bio7TabClose();
+						final ImageWindow win = (ImageWindow) ve.get(1);
+
+						win.bio7TabClose();
+					}
+				});
 				items[nrdel].dispose();
 			}
 		});
@@ -139,6 +152,7 @@ public class IJTabs {
 		});
 
 	}
+
 	/**
 	 * Hides the tab with the specified number in the ImageJ view.
 	 */
@@ -169,9 +183,15 @@ public class IJTabs {
 			public void run() {
 				Vector ve = (Vector) item.getData();
 
-				final ImageWindow win = (ImageWindow) ve.get(1);
+				SwingUtilities.invokeLater(new Runnable() {
+					// !!
+					public void run() {
 
-				win.bio7TabClose();
+						final ImageWindow win = (ImageWindow) ve.get(1);
+
+						win.bio7TabClose();
+					}
+				});
 				item.dispose();
 			}
 		});

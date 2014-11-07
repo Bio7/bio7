@@ -2,8 +2,10 @@ package ij.plugin;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
+
 import java.awt.*;
 import java.awt.image.*;
+
 import ij.plugin.frame.ContrastAdjuster;
 import ij.macro.Interpreter;
 
@@ -38,7 +40,9 @@ public class CompositeConverter implements PlugIn {
 			imp2.show();
 			imp.changes = false;
 			if (z==1) {
-				imp.hide();
+				/*Changed for Bio7!*/
+				//imp.hide();
+				
 				WindowManager.setCurrentWindow(imp2.getWindow());
 			} else {
 				if (arg!=null && arg.equals("color"))

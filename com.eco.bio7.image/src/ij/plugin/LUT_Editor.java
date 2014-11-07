@@ -3,16 +3,22 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.plugin.frame.Recorder;
+
 import java.awt.*;
 import java.awt.image.*;
+
 import ij.util.*;
 import ij.measure.*;
+
 import java.util.Vector;
 import java.awt.event.*;
 
+import javax.swing.JButton;
+import javax.swing.JPanel;
+
 public class LUT_Editor implements PlugIn, ActionListener{
     private ImagePlus imp;
-    Button openButton, saveButton, resizeButton, invertButton;
+    JButton openButton, saveButton, resizeButton, invertButton;
     ColorPanel colorPanel;
     int bitDepth;
 
@@ -42,19 +48,19 @@ public class LUT_Editor implements PlugIn, ActionListener{
         int red=0, green=0, blue=0;
         GenericDialog gd = new GenericDialog("LUT Editor");
         Panel buttonPanel = new Panel(new GridLayout(4, 1, 0, 5));
-        openButton = new Button("Open...");
+        openButton = new JButton("Open...");
         openButton.addActionListener(this);
         buttonPanel.add(openButton);
-        saveButton = new Button("Save...");
+        saveButton = new JButton("Save...");
         saveButton.addActionListener(this);
         buttonPanel.add(saveButton);
-        resizeButton = new Button("Set...");
+        resizeButton = new JButton("Set...");
         resizeButton.addActionListener(this);
         buttonPanel.add(resizeButton);
-        invertButton = new Button("Invert...");
+        invertButton = new JButton("Invert...");
         invertButton.addActionListener(this);
         buttonPanel.add(invertButton);
-        Panel panel = new Panel();
+        JPanel panel = new JPanel();
         panel.add(colorPanel);
         panel.add(buttonPanel);
         gd.addPanel(panel, GridBagConstraints.CENTER, new Insets(10, 0, 0, 0));
@@ -86,7 +92,7 @@ public class LUT_Editor implements PlugIn, ActionListener{
 }
 
 
-class ColorPanel extends Panel implements MouseListener, MouseMotionListener{
+class ColorPanel extends JPanel implements MouseListener, MouseMotionListener{
      static final int entryWidth=12, entryHeight=12;
      int rows = 16;
      int columns = 16; 
@@ -431,12 +437,13 @@ class ColorPanel extends Panel implements MouseListener, MouseMotionListener{
             imp.getStack().setColorModel(cm);
         imp.updateAndDraw();
     }
-
-    public void update(Graphics g) {
+     /*Changed for Bio7!*/
+   /* public void update(Graphics g) {
         paint(g);
-    }
+    }*/
 
-    public void paint(Graphics g) {
+    public void paintComponent(Graphics g) {
+    	super.paintComponents(g);
         if (updateLut) {
             updateLut();
             updateLut = false;

@@ -199,7 +199,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 															LibraryLocation[] locations = JavaRuntime.getLibraryLocations(vmInstall);
 															for (LibraryLocation element : locations) {
-																// System.out.println("location: "+locations);
+																
 																entriesJre.add(JavaCore.newLibraryEntry(element.getSystemLibraryPath(), null, null));
 															}
 															IClasspathEntry[] newEntries = new ScanClassPath().scanForJDT();
@@ -212,17 +212,17 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 															try {
 																javaProject.setRawClasspath(newEntries, null);
 															} catch (JavaModelException e) {
-																// TODO
 																// Auto-generated
 																// catch block
 																// e.printStackTrace();
 																System.out.println("Minor error! Please check the classpath of the project and if necessary calculate again!");
 															}
-
+															System.out.println("Java Bio7 Project Libraries Recalculated!");
+															//Bio7Dialog.message("Java Bio7 Project Libraries Recalculated!");
 														} else {
 
 														}
-														Bio7Dialog.message("Java Bio7 Project Libraries Recalculated!");
+														
 													}
 												});
 
@@ -230,8 +230,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 										}
 									}
 
-									// do your stuff and check the project is
-									// opened or closed
+									
 								}
 								return true;
 							}

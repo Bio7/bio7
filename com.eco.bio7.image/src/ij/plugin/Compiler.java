@@ -1,13 +1,28 @@
 package ij.plugin;
 import java.awt.*;
 import java.io.*;
+import java.net.URL;
 import java.util.*;
+
 import ij.*;
 import ij.gui.*;
 import ij.io.*;
+import ij.util.*;
 import ij.plugin.frame.Editor;
-import ij.plugin.Macro_Runner;
 import ij.plugin.filter.*;
+import ij.text.TextWindow;
+import java.awt.event.KeyEvent;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.jdt.internal.compiler.batch.Main;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
+import org.osgi.framework.Bundle;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -15,30 +30,37 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Locale;
 
+import com.eco.bio7.image.ScanClassPath;
+import com.eco.bio7.javaeditor.Bio7EditorPlugin;
+
 /** Compiles and runs plugins using the javac compiler. */
 public class Compiler implements PlugIn, FilenameFilter {
 
-	private static final int TARGET14=0, TARGET15=1, TARGET16=2,  TARGET17=3,  TARGET18=4;
-	private static final String[] targets = {"1.4", "1.5", "1.6", "1.7", "1.8"};
+	private static final int TARGET14=0, TARGET15=1, TARGET16=2,  TARGET17=3;
+	private static final String[] targets = {"1.4", "1.5", "1.6", "1.7","1.8"};
 	private static final String TARGET_KEY = "javac.target";
-	private static CompilerTool compilerTool;
+	//private static com.sun.tools.javac.Main javac;
+	private static ByteArrayOutputStream output;
 	private static String dir, name;
 	private static Editor errors;
 	private static boolean generateDebuggingInfo;
-	private static int target = (int)Prefs.get(TARGET_KEY, TARGET16);	
+	private static int target = (int)Prefs.get(TARGET_KEY, TARGET15); 
 	private static boolean checkForUpdateDone;
+	private static Main comp;
+	private static String bundle;
+	private static String pathBundle;
+	private String pathBundle2;
+	private String pathBundle3;
+	private static boolean warningInfo = false;
+	
 
 	public void run(String arg) {
 		if (arg.equals("edit"))
 			edit();
 		else if (arg.equals("options"))
 			showDialog();
-		else {
-			if (arg!=null && arg.length()>0 && !arg.endsWith(".java"))
-				IJ.error("Compiler", "File name must end with \".java\"");
-			else
-				compileAndRun(arg);
-		}
+		else
+			compileAndRun(arg);
 	 }
 	 
 	void edit() {
@@ -55,113 +77,150 @@ public class Compiler implements PlugIn, FilenameFilter {
 			runPlugin(name.substring(0, name.length()-1));
 			return;
 		}
-		if (!isJavac()) {
-			//boolean pluginClassLoader = this.getClass().getClassLoader()==IJ.getClassLoader();
-			//boolean contextClassLoader = Thread.currentThread().getContextClassLoader()==IJ.getClassLoader();
-			if (IJ.debugMode) IJ.log("javac not found: ");
-			if (!checkForUpdateDone) {
-				checkForUpdate("/plugins/compiler/Compiler.jar", "1.48c");
-				checkForUpdateDone = true;
-			}
-			Object compiler = IJ.runPlugIn("Compiler", dir+name);
-			if (IJ.debugMode) IJ.log("plugin compiler: "+compiler);
-			if (compiler==null) {
-				boolean ok = Macro_Runner.downloadJar("/plugins/compiler/Compiler.jar");
-				if (ok)
-					IJ.runPlugIn("Compiler", dir+name);
-			}
+		if (!isJavac()){
 			return;
 		}
-		if (compile(dir+name))
-			runPlugin(name);
+		if (compile(dir+name)){}
+		/*IJ.showMessage("Compilation", "Compilation successfull!\nPlease refresh the file folder\n(context menu of the Navigator view)\n" +
+				"to access the file!");*/
+			//runPlugin(name);
+		Display display = PlatformUI.getWorkbench().getDisplay();
+		display.syncExec(new Runnable() {
+			public void run() {
+				MessageBox messageBox = new MessageBox(new Shell(),
+
+				SWT.ICON_WARNING);
+				messageBox.setText("Info!");
+				messageBox.setMessage("Compilation done!\n\nPlease consult the console output for errors!\n\nIf not compiled with the ImageJ-Canvas menu actions:\n\nPlease refresh the file folder\n(context menu of the Navigator view)\n" +
+						"to access the file(s)!");
+				messageBox.open();
+			}
+		});
 	}
 	
-	private void checkForUpdate(String plugin, String currentVersion) {
-		int slashIndex = plugin.lastIndexOf("/");
-		if (slashIndex==-1 || !plugin.endsWith(".jar"))
-			return;
-		String className = plugin.substring(slashIndex+1, plugin.length()-4);
-		File f = new File(Prefs.getImageJDir()+"plugins"+File.separator+"jars"+File.separator+className+".jar");
-		if (!f.exists() || !f.canWrite()) {
-			if (IJ.debugMode) IJ.log("checkForUpdate: jar not found ("+plugin+")");
-			return;
-		}
-		String version = null;
-		try {
-			Class c = IJ.getClassLoader().loadClass("Compiler");
-			version = "0.00a";
-			Method m = c.getDeclaredMethod("getVersion", new Class[0]);
-			version = (String)m.invoke(null, new Object[0]);
-		}
-		catch (Exception e) {}
-		if (version==null) {
-			if (IJ.debugMode) IJ.log("checkForUpdate: class not found ("+className+")");
-			return;
-		}
-		if (version.compareTo(currentVersion)>=0) {
-			if (IJ.debugMode) IJ.log("checkForUpdate: up to date ("+className+"  "+version+")");
-			return;
-		}
-		boolean ok = Macro_Runner.downloadJar(plugin);
-		if (IJ.debugMode) IJ.log("checkForUpdate: "+className+" "+version+" "+ok);
-	}
+	 /*Changed for Bio7!
+	  * 
+	  * private void checkForUpdate(String plugin, String currentVersion) {
+		                int slashIndex = plugin.lastIndexOf("/");
+		                if (slashIndex==-1 || !plugin.endsWith(".jar"))
+		                        return;
+		                String className = plugin.substring(slashIndex+1, plugin.length()-4);
+		                File f = new File(Prefs.getImageJDir()+"plugins"+File.separator+"jars"+File.separator+className+".jar");
+		                if (!f.exists() || !f.canWrite()) {
+		                        if (IJ.debugMode) IJ.log("checkForUpdate: jar not found ("+plugin+")");
+		                        return;
+		                }
+		                String version = null;
+		                try {
+		                        Class c = IJ.getClassLoader().loadClass("Compiler");
+		                        version = "0.00a";
+		                        Method m = c.getDeclaredMethod("getVersion", new Class[0]);
+		                        version = (String)m.invoke(null, new Object[0]);
+		                }
+		                catch (Exception e) {}
+		                if (version==null) {
+		                        if (IJ.debugMode) IJ.log("checkForUpdate: class not found ("+className+")");
+		                        return;
+		                }
+		                if (version.compareTo(currentVersion)>=0) {
+		                        if (IJ.debugMode) IJ.log("checkForUpdate: up to date ("+className+"  "+version+")");
+		                        return;
+		                }
+		                boolean ok = Macro_Runner.downloadJar(plugin);
+		                if (IJ.debugMode) IJ.log("checkForUpdate: "+className+" "+version+" "+ok);
+		       }*/
 	 
 	boolean isJavac() {
-		if (compilerTool==null)
-			compilerTool=CompilerTool.getDefault();
-		return compilerTool!=null;
+		/* Changed for Bio7! */
+		try {
+			// if (javac==null) {
+			
+			
+
+
+			output = new ByteArrayOutputStream(4096);
+			// javac = new sun.tools.javac.Main(output, "javac");
+			// bundle =
+			// com.eco.bio7.image.Activator.getDefault().getBundle().getHeaders().get("Bundle-ClassPath").toString();
+			comp = new Main(new PrintWriter(output), new PrintWriter(output), false);
+			// }
+		} catch (NoClassDefFoundError e) {
+			IJ.error("This JVM does not include the javac compiler.\n" + "Javac is included with the Windows and Linux\n" + "versions of ImageJ that are bundled with Java.");
+			return false;
+		}
+		return true;
+
 	}
 
 	boolean compile(String path) {
-		IJ.showStatus("compiling "+path);
-		String classpath = getClassPath(path);
-		Vector options = new Vector();
-		if (generateDebuggingInfo)
-			options.addElement("-g");
-		if (IJ.isJava15()) {
-			validateTarget();
-			options.addElement("-source");
-			options.addElement(targets[target]);
-			options.addElement("-target");
-			options.addElement(targets[target]);
-			options.addElement("-Xlint:unchecked");
-		}
+		IJ.showStatus("compiling: " + path);
+		// System.getProperty("java.class.path");
+		/* Add the classpath ! */
+		//String classpath = File.pathSeparator +pathBundle3 + "/R/RserveEngine.jar"+File.pathSeparator +pathBundle3 + "/R/REngine.jar"+File.pathSeparator +pathBundle2 + "/bin" + File.pathSeparator + pathBundle + "/bin" + File.pathSeparator + getClassPath(path);
+		File f = new File(path);
+		String fileDirectory = File.pathSeparator + f.getParent();
+		if (f != null) // add directory containing file to classpath
+	      
+
+		// IJ.log("classpath: " + classpath);
+		output.reset();
+		Vector<String> options = new Vector<String>();
+		IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
+		String version = store.getString("compiler_version");
+		boolean debug = store.getBoolean("compiler_debug");
+		boolean verbose = store.getBoolean("compiler_verbose");
+		boolean warnings = store.getBoolean("compiler_warnings");
+		options.addElement("-source");
+		options.addElement(version);
+		options.addElement("-target");
+		options.addElement(version);
 		options.addElement("-deprecation");
-		options.addElement("-classpath");
-		options.addElement(classpath);
-		
-		Vector sources = new Vector();
-		sources.add(path);
-		
-		if (IJ.debugMode){
-			StringBuilder builder = new StringBuilder();
-			builder.append("javac");
-			for (int i=0; i< options.size(); i++){
-				builder.append(" ");
-				builder.append(options.get(i));
-			}
-			for (int i=0; i< sources.size(); i++){
-				builder.append(" ");
-				builder.append(sources.get(i));
-			}
-			IJ.log(builder.toString());
-		}
-		
-		boolean errors = true;
-		String s = "not compiled";
-		if (compilerTool != null) {
-			final StringWriter outputWriter = new StringWriter();
-			errors = !compilerTool.compile(sources, options, outputWriter);
-			s = outputWriter.toString();
+		if (debug) {
+			options.addElement("-g");
 		} else {
-			errors = true;
+			options.addElement("-g:none");
 		}
-		
+		if (verbose) {
+			options.addElement("-verbose");
+		}
+
+		if (warnings == false) {
+			options.addElement("-nowarn");
+		}
+		options.addElement("-classpath");
+		/*Add the Bio7 classpath and the path to the file (to compile the dependencies, too)!*/
+		options.addElement(new ScanClassPath().scan()+fileDirectory);
+		options.addElement(path);
+		String[] arguments = new String[options.size()];
+		options.copyInto((String[]) arguments);
+		// String[] arguments;
+		/*
+		 * if (generateDebuggingInfo) arguments = new String[] { "-g",
+		 * "-deprecation","-1.5", "-classpath", classpath, path }; arguments =
+		 * new String[] { "-g", "-deprecation","-1.5", "-classpath", classpath,
+		 * path }; else arguments = new String[] { "-deprecation",
+		 * "-nowarn","-1.5", "-classpath", classpath, path };
+		 */
+		/*
+		 * arguments = new String[] { "-deprecation", "-nowarn","-1.5",
+		 * "-classpath", classpath, path };
+		 */
+		/* Changed for Bio7! */
+		/*
+		 * if (IJ.debugMode) { String str = "javac"; for (int i=0;
+		 * i<arguments.length; i++) str += " "+arguments[i]; IJ.log(str); }
+		 */
+
+		boolean compiled = comp.compile(arguments);
+		// boolean compiled = false;//javac.compile(arguments);
+		String s = output.toString();
+		boolean errors = (!compiled || areErrors(s));
 		if (errors)
-			showErrors(s);
+			//showErrors(s);
+		System.out.println(s);
 		else
 			IJ.showStatus("done");
-		return !errors;
+		return compiled;
 	 }
 	 
 	 // Returns a string containing the Java classpath, 
@@ -169,7 +228,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 	 // and paths to any .jar files in the plugins folder.
 	 String getClassPath(String path) {
 		long start = System.currentTimeMillis();
-		StringBuffer sb = new StringBuffer();
+	 	StringBuffer sb = new StringBuffer();
 		sb.append(System.getProperty("java.class.path"));
 		File f = new File(path);
 		if (f!=null)  // add directory containing file to classpath
@@ -193,12 +252,21 @@ public class Compiler implements PlugIn, FilenameFilter {
 			File f2 = new File(path+list[i]);
 			if (f2.isDirectory())
 				addJars(path+list[i], sb);
-			else if (list[i].endsWith(".jar")&&(list[i].indexOf("_")==-1||list[i].equals("loci_tools.jar")||list[i].contains("3D_Viewer"))) {
+			else if (list[i].endsWith(".jar")&&(list[i].indexOf("_")==-1||list[i].equals("loci_tools.jar"))) {
 				sb.append(File.pathSeparator+path+list[i]);
-				if (IJ.debugMode) IJ.log("javac classpath: "+path+list[i]);
+				if (IJ.debugMode) IJ.log("javac: "+path+list[i]);
 			}
 		}
 	}
+	 boolean areErrors(String s) {
+		                boolean errors = s!=null && s.length()>0;
+		                if(errors && s.indexOf("1 warning")>0 && s.indexOf("[deprecation] show()")>0)
+		                        errors = false;
+		                //if(errors&&s.startsWith("Note:com.sun.tools.javac")&&s.indexOf("error")==-1)
+		                //      errors = false;
+		                return errors;
+		        }
+	
 	
 	void showErrors(String s) {
 		if (errors==null || !errors.isVisible()) {
@@ -212,9 +280,9 @@ public class Compiler implements PlugIn, FilenameFilter {
 
 	 // open the .java source file
 	 boolean open(String path, String msg) {
-		boolean okay;
+	 	boolean okay;
 		String fileName, directory;
-		if (path.equals("")) {
+	 	if (path.equals("")) {
 			if (dir==null) dir = IJ.getDirectory("plugins");
 			OpenDialog od = new OpenDialog(msg, dir, name);
 			directory = od.getDirectory();
@@ -271,7 +339,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 		gd.addChoice("Target: ", targets, targets[target]);
 		gd.setInsets(15,5,0);
 		gd.addCheckbox("Generate debugging info (javac -g)", generateDebuggingInfo);
-		gd.addHelp(IJ.URL+"/docs/menus/edit.html#compiler");
+        gd.addHelp(IJ.URL+"/docs/menus/edit.html#compiler");
 		gd.showDialog();
 		if (gd.wasCanceled()) return;
 		target = gd.getNextChoiceIndex();		
@@ -280,14 +348,12 @@ public class Compiler implements PlugIn, FilenameFilter {
 	}
 	
 	void validateTarget() {
-		if (target<0 || target>TARGET18)
-			target = TARGET16;
-		if (target>TARGET15 && !(IJ.isJava16()||IJ.isJava17()||IJ.isJava18()))
+		if (target<0 || target>TARGET17)
 			target = TARGET15;
-		if (target>TARGET16 && !(IJ.isJava17()||IJ.isJava18()))
-			target = TARGET16;
-		if (target>TARGET17 && !IJ.isJava18())
-			target = TARGET17;
+		if ((target>TARGET16&&!IJ.isJava17()) || (target>TARGET15&&!IJ.isJava16()))
+			target = TARGET15;
+		if (!IJ.isJava15())
+			target = TARGET14;
 		Prefs.set(TARGET_KEY, target);
 	}
 	
@@ -386,14 +452,19 @@ abstract class CompilerTool {
 		}
 
 		protected Object getJavac() throws Exception {
-			if (charsetC==null)
+			if (charsetC == null) {
 				charsetC = Class.forName("java.nio.charset.Charset");
-			if (diagnosticListenerC==null)
+			}
+			if (diagnosticListenerC == null) {
 				diagnosticListenerC = Class.forName("javax.tools.DiagnosticListener");
-			if (javaFileManagerC==null)
+			}
+			if (javaFileManagerC == null) {
 				javaFileManagerC = Class.forName("javax.tools.JavaFileManager");
-			if (toolProviderC==null)
+			}
+			if (toolProviderC == null) {
 				toolProviderC = Class.forName("javax.tools.ToolProvider");
+			}
+
 			Method get = toolProviderC.getMethod("getSystemJavaCompiler", new Class[0]);
 			return get.invoke(null, new Object[0]);
 		}
@@ -415,16 +486,22 @@ abstract class CompilerTool {
 			try {
 				final String[] args = new String[sources.size() + options.size()];
 				int argsIndex = 0;
-				for (int optionsIndex = 0; optionsIndex < options.size(); optionsIndex++)
+				for (int optionsIndex = 0; optionsIndex < options.size(); optionsIndex++) {
 					args[argsIndex++] = (String) options.get(optionsIndex);
-				for (int sourcesIndex = 0; sourcesIndex < sources.size(); sourcesIndex++)
+				}
+
+				for (int sourcesIndex = 0; sourcesIndex < sources.size(); sourcesIndex++) {
 					args[argsIndex++] = (String) sources.get(sourcesIndex);
+				}
+
 				Object javac = getJavac();
 				Class[] compileTypes = new Class[] { String[].class, PrintWriter.class };
 				Method compile = javacC.getMethod("compile", compileTypes);
+
 				PrintWriter printer = new PrintWriter(log);
 				Object result = compile.invoke(javac, new Object[] { args, printer });
 				printer.flush();
+
 				return Integer.valueOf(0).equals(result) | areErrors(log.toString());
 			} catch (Exception e) {
 				e.printStackTrace(new PrintWriter(log));
@@ -433,23 +510,22 @@ abstract class CompilerTool {
 		}
 
 		protected Object getJavac() throws Exception {
-			if (javacC==null)
+			if(javacC == null){
 				javacC = Class.forName("com.sun.tools.javac.Main");
+			}
 			return javacC.newInstance();
 		}
 	}
 
 	public static CompilerTool getDefault() {
 		CompilerTool javax = new JavaxCompilerTool();
-		if (javax.isSupported()) {
-			if (IJ.debugMode) IJ.log("javac: using javax.tool.JavaCompiler");
+		if (javax.isSupported())
 			return javax;
-		}
+		
 		CompilerTool legacy = new LegacyCompilerTool();
-		if (legacy.isSupported()) {
-			if (IJ.debugMode) IJ.log("javac: using com.sun.tools.javac");
+		if (legacy.isSupported())
 			return legacy;
-		}
+
 		return null;
 	}
 
@@ -465,4 +541,3 @@ abstract class CompilerTool {
 		}
 	}
 }
-
