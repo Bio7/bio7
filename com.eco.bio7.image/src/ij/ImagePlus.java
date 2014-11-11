@@ -3,6 +3,9 @@ import java.awt.*;
 import java.awt.image.*;
 import java.net.URL;
 import java.util.*;
+
+import com.eco.bio7.image.IJTabs;
+
 import ij.process.*;
 import ij.io.*;
 import ij.gui.*;
@@ -333,6 +336,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
 	/** Closes the window, if any, that is displaying this image. */
 	public void hide() {
+		
 		if (win==null) {
 			Interpreter.removeBatchModeImage(this);
 			return;
@@ -344,6 +348,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		win = null;
 		setOverlay(overlay2);
 		if (unlocked) unlock();
+		
+		
 	}
 
 	/** Closes this image and sets the ImageProcessor to null. To avoid the
@@ -608,6 +614,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Replaces the image with the specified stack and updates 
 		the display. Set 'title' to null to leave the title unchanged. */
     public void setStack(String title, ImageStack newStack) {
+    	
 		int newStackSize = newStack.getSize();
 		//IJ.log("setStack: "+newStackSize+" "+this);
 		if (newStackSize==0)

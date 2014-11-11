@@ -1591,15 +1591,15 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseMotionLis
 
 	public void mouseClicked(MouseEvent e) {
 		/* Changed for Bio7! */
-		if (this.isFocusOwner() == false) {
+		/*if (this.isFocusOwner() == false) {
 			this.requestFocus();
 
 		}
 		WindowManager.setTempCurrentImage(imp);
 		WindowManager.setCurrentWindow(imp.getWindow());
 
-		/* import to set current Panel! */
-		CanvasView.setCurrent((JPanel)this.getParent());
+		 import to set current Panel! 
+		CanvasView.setCurrent((JPanel)this.getParent());*/
 		
 		PlugInTool tool = Toolbar.getPlugInTool();
 		if (tool != null)

@@ -9,6 +9,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 
+import javax.swing.JCheckBox;
+
 import com.eco.bio7.image.CanvasView;
 
 /** This plugin implements the Edit/Crop and Image/Adjust/Size commands. */
@@ -96,7 +98,7 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			}
 			checkboxes = gd.getCheckboxes();
 			if (!IJ.macroRunning())
-				((Checkbox)checkboxes.elementAt(0)).addItemListener(this);
+				((JCheckBox)checkboxes.elementAt(0)).addItemListener(this);
 			gd.showDialog();
 			if (gd.wasCanceled()) {
 				imp.unlock();

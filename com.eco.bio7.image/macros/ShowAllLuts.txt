@@ -30,8 +30,7 @@ for (i=0; i<list.length; i++) {
 rows = floor(count/4);
 if (rows<count/4) rows++;
 run("Canvas Size...", "width=258 height=50 position=Center");
-run("Make Montage...", "columns=4 rows="+rows
-+" scale=1 first=1 last="+count+" increment=1 border=0 use");
+run("Make Montage...", "columns=4 rows="+rows+" scale=1 first=1 last="+count+" increment=1 border=0 use");
 rename("Lookup Tables");
 setBatchMode(false);
 restoreSettings();

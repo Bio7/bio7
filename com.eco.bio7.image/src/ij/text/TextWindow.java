@@ -4,15 +4,18 @@ import ij.io.*;
 import ij.gui.*;
 import ij.plugin.filter.Analyzer;
 import ij.macro.Interpreter;
+
 import java.awt.*;
 import java.io.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 
+import javax.swing.JFrame;
+
 /** Uses a TextPanel to displays text in a window.
 	@see TextPanel
 */
-public class TextWindow extends Frame implements ActionListener, FocusListener, ItemListener {
+public class TextWindow extends JFrame implements ActionListener, FocusListener, ItemListener {
 
 	public static final String LOC_KEY = "results.loc";
 	public static final String WIDTH_KEY = "results.width";

@@ -154,6 +154,7 @@ public class HyperStackConverter implements PlugIn {
 				new StackWindow(imp2);*/
 			imp.hide();
 			new StackWindow(imp2);
+			
 			if (imp!=imp2) {
 				imp2.setOverlay(imp.getOverlay());
 				imp.hide();

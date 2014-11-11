@@ -674,6 +674,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
 	/** This method should only be called from an ImageWindow. */
 	public void setWindow(ImageWindow win) {
+		
 		this.win = win;
 		if (roi!=null)
 			roi.setImage(this);  // update roi's 'ic' field

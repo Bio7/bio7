@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Display;
  */
 public class IJTabs {
 
+	private static int id;
 	/**
 	 * Activates the tab with the specified number.
 	 * 
@@ -146,8 +147,9 @@ public class IJTabs {
 		dis.syncExec(new Runnable() {
 
 			public void run() {
-
+              if(item!=null){
 				item.dispose();
+              }
 			}
 		});
 
@@ -196,6 +198,114 @@ public class IJTabs {
 			}
 		});
 
+	}
+
+	public static void setActiveTab(String title) {
+
+		/* Changed for Bio7! */
+		final CTabItem[] items = CanvasView.getCanvas_view().tabFolder.getItems();
+		Display dis = CanvasView.getParent2().getDisplay();
+		dis.syncExec(new Runnable() {
+
+			private int count;
+
+			public void run() {
+				for (int i = 0; i < items.length; i++) {
+					count = i;
+					Vector ve = (Vector) items[i].getData();
+					SwingUtilities.invokeLater(new Runnable() {
+						// !!
+						public void run() {
+
+							final ImageWindow win2 = (ImageWindow) ve.get(1);
+
+							/* Search for the tab which embeds this instance! */
+							if (win2.getTitle().equals(title)) {
+								// calls bio7Tabclose!
+								CanvasView.getCanvas_view().tabFolder.setSelection(items[count]);
+								// System.out.println("closed");
+								return;
+
+							}
+						}
+					});
+
+				}
+
+			}
+		});
+	}
+	public static void setActiveTabID(int theId) {
+		
+		if (id>0){
+			id = WindowManager.getNthImageID(id);
+		}
+		/* Changed for Bio7! */
+		final CTabItem[] items = CanvasView.getCanvas_view().tabFolder.getItems();
+		Display dis = CanvasView.getParent2().getDisplay();
+		dis.syncExec(new Runnable() {
+
+			private int count;
+
+			public void run() {
+				for (int i = 0; i < items.length; i++) {
+					count = i;
+					Vector ve = (Vector) items[i].getData();
+					SwingUtilities.invokeLater(new Runnable() {
+						// !!
+						public void run() {
+
+							final ImageWindow win2 = (ImageWindow) ve.get(1);
+							
+							ImagePlus plus=WindowManager.getImage(id);
+							/* Search for the tab which embeds this instance! */
+							if (win2.getImagePlus()==plus) {
+								// calls the selection!
+								CanvasView.getCanvas_view().tabFolder.setSelection(items[count]);
+								// System.out.println("closed");
+								return;
+
+							}
+						}
+					});
+
+				}
+
+			}
+		});
+	}
+
+	public static void hideTab(ImagePlus imagePlus) {
+		final CTabItem[] items = CanvasView.getCanvas_view().tabFolder.getItems();
+		Display dis = CanvasView.getParent2().getDisplay();
+		dis.syncExec(new Runnable() {
+
+			private int count;
+
+			public void run() {
+				for (int i = 0; i < items.length; i++) {
+					count = i;
+					Vector ve = (Vector) items[i].getData();
+					SwingUtilities.invokeLater(new Runnable() {
+						// !!
+						public void run() {
+
+							final ImagePlus plus = (ImagePlus) ve.get(0);
+
+							/* Search for the tab which embeds this ImagePlus instance! */
+							if (plus==imagePlus) {
+								// calls bio7Tabclose!
+								items[count].dispose();
+
+							}
+						}
+					});
+
+				}
+
+			}
+		});
+		
 	}
 
 }

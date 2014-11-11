@@ -9,6 +9,8 @@ import ij.plugin.frame.Recorder;
 
 import java.awt.image.ColorModel;
 
+import com.eco.bio7.image.IJTabs;
+
 
 /** Implements the "Stack to HyperStack", "RGB to HyperStack" 
 	and "HyperStack to Stack" commands. */
@@ -151,11 +153,12 @@ public class HyperStackConverter implements PlugIn {
 			}
 			imp2.setOpenAsHyperStack(true);
 			
-			/* Changed for Bio7! */
-			/*if (imp.getWindow()!=null || imp!=imp2)
-				new StackWindow(imp2);*/
-			imp.hide();
+			/*Changed for Bio7!*/
+			//if (imp.getWindow()!=null || imp!=imp2)
+			imp2=imp.duplicate();
 			new StackWindow(imp2);
+			
+			    
 			
 			if (imp!=imp2) {
 				imp2.setOverlay(imp.getOverlay());
@@ -235,11 +238,14 @@ public class HyperStackConverter implements PlugIn {
 		}
 		imp2.setOpenAsHyperStack(false);
 		if (imp.getWindow()!=null || imp!=imp2)
-			new StackWindow(imp2);
-		if (imp!=imp2) {
-			imp2.setOverlay(imp.getOverlay());
 			/*Changed for Bio7!*/
-			//imp.hide();
+			imp2=imp.duplicate();
+			imp2.setOpenAsHyperStack(false);
+			new StackWindow(imp2);
+		
+		if (imp!=imp2) {
+			imp2.setOverlay(imp.getOverlay());		
+			imp.hide();
 		}
 	}
 	

@@ -1140,7 +1140,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 } // ContrastAdjuster class
 
 
-class ContrastPlot extends Canvas implements MouseListener {
+class ContrastPlot extends JPanel implements MouseListener {
 	
 	static final int WIDTH=128, HEIGHT=64;
 	double defaultMin = 0;
@@ -1195,11 +1195,12 @@ class ContrastPlot extends Canvas implements MouseListener {
 		os = null;
 	}
 
-	public void update(Graphics g) {
+	/*public void update(Graphics g) {
 		paint(g);
-	}
+	}*/
 
-	public void paint(Graphics g) {
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
 		int x1, y1, x2, y2;
 		double scale = (double)WIDTH/(defaultMax-defaultMin);
 		double slope = 0.0;

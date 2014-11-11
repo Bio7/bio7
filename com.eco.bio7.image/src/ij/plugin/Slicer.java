@@ -4,9 +4,12 @@ import ij.process.*;
 import ij.gui.*;
 import ij.measure.*;
 import ij.util.Tools;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+
+import javax.swing.JCheckBox;
 
 /** Implements the Image/Stacks/Reslice command. Known shortcomings: 
 	for FREELINE or POLYLINE ROI, spatial calibration is ignored: 
@@ -296,7 +299,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		}
 		checkboxes = gd.getCheckboxes();
 		if (!IJ.macroRunning())
-			((Checkbox)checkboxes.elementAt(2)).addItemListener(this);
+			((JCheckBox)checkboxes.elementAt(2)).addItemListener(this);
 		message = (Label)gd.getMessage();
         gd.addHelp(IJ.URL+"/docs/menus/image.html#reslice");
 		gd.showDialog();

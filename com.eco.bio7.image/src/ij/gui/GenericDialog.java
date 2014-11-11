@@ -613,7 +613,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			sliderScales = new double[MAX_SLIDERS];
 		}
 		/*Changed for Bio7!*/
-		JScrollBar s = new JScrollBar(Scrollbar.HORIZONTAL, (int)defaultValue, 1, (int)minValue, (int)maxValue+1);
+		JScrollBar s = new JScrollBar(JScrollBar.HORIZONTAL, (int)defaultValue, 1, (int)minValue, (int)maxValue+1);
 		GUI.fix(s);
 		slider.addElement(s);
 		s.addAdjustmentListener(this);
@@ -1442,7 +1442,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
         if (workaroundOSXbug) repaint(); // OSX 10.4 bug delays update of enabled until the next input
     }
 
-	public void paint(Graphics g) {
+	public void paintComponent(Graphics g) {
 		super.paint(g);
 		if (firstPaint) {
 			if (numberField!=null && IJ.isMacOSX()) {

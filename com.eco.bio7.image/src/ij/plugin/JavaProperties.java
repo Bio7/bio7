@@ -3,6 +3,7 @@ import ij.*;
 import ij.text.*;
 import ij.io.OpenDialog;
 import ij.gui.GUI;
+
 import java.awt.*;
 import java.util.*;
 import java.applet.Applet;
@@ -171,14 +172,19 @@ public class JavaProperties implements PlugIn {
 		if (p!=null)
 			list.add("  " + property + ": " + p);
 	}
-	
+	/*Changed for Bio7!*/
 	void doFullDump() {
 		list.add("");
 		list.add("All Java Properties");
 		Properties props = System.getProperties();
 		for (Enumeration en=props.keys(); en.hasMoreElements();) {
 			String key = (String)en.nextElement();
-			list.add("  "+key+": "+(String)props.get(key));
+			try {
+				list.add("  "+key+": "+(String)props.get(key));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				//e.printStackTrace();
+			}
 		}
 	}
 
