@@ -5,10 +5,13 @@ import ij.process.*;
 import ij.plugin.PlugIn;
 import ij.measure.*;
 import ij.util.Tools;
+
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Vector;
+
+import javax.swing.JCheckBox;
 
 /**
 This plugin implements the Analyze/Distribution command.
@@ -20,7 +23,7 @@ public class Distribution implements PlugIn, TextListener {
 	static boolean autoBinning = true;
 	static int nBins = 10;
 	static String range = "0-0";
-	Checkbox checkbox;
+	JCheckBox checkbox;
 	TextField nBinsField, rangeField;
 	String defaultNBins, defaultRange;
 
@@ -61,7 +64,8 @@ public class Distribution implements PlugIn, TextListener {
 			rangeField = (TextField)v.elementAt(0);
 			rangeField.addTextListener(this);
 		}
-		checkbox = (Checkbox)(gd.getCheckboxes().elementAt(0));
+		
+		checkbox = (JCheckBox)(gd.getCheckboxes().elementAt(0));
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -121,9 +125,9 @@ public class Distribution implements PlugIn, TextListener {
 
 	public void textValueChanged(TextEvent e) {
 		if (!defaultNBins.equals(nBinsField.getText()))
-			checkbox.setState(false);
+			checkbox.setSelected(false);
 		if (!defaultRange.equals(rangeField.getText()))
-			checkbox.setState(false);
+			checkbox.setSelected(false);
 	}
 
 	void stats(int nc, float[] data, float[] pars){

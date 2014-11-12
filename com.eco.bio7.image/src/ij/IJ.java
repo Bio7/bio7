@@ -12,6 +12,7 @@ import ij.macro.Interpreter;
 import ij.measure.Calibration;
 import ij.measure.ResultsTable;
 import ij.measure.Measurements;
+
 import java.awt.event.*;
 import java.text.*;
 import java.util.*;	
@@ -20,6 +21,11 @@ import java.applet.Applet;
 import java.io.*;
 import java.lang.reflect.*;
 import java.net.*;
+
+import javax.swing.SwingUtilities;
+
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 
 
 /** This class consists of static utility methods. */
@@ -578,6 +584,10 @@ public class IJ {
 		"http://imagej.nih.gov/ij/macros/HtmlDialogDemo.txt".
 		Writes to the Java console if ImageJ is not present. */
 	public static void showMessage(String title, String msg) {
+		
+		SwingUtilities.invokeLater(new Runnable() {
+			// !!
+			public void run() {
 		if (ij!=null) {
 			if (msg!=null && msg.startsWith("<html>")) {
 				HTMLDialog hd = new HTMLDialog(title, msg);
@@ -590,6 +600,8 @@ public class IJ {
 			}
 		} else
 			System.out.println(msg);
+			}
+		});
 	}
 
 	/** Displays a message in a dialog box titled "ImageJ". If a 

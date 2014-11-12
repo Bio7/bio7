@@ -5,10 +5,15 @@ import ij.gui.*;
 import ij.util.Tools;
 import ij.io.*;
 import ij.macro.Interpreter;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.Vector;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 /** This plugin implements the File/Batch/Macro and File/Batch/Virtual Stack commands. */
 	public class BatchProcessor implements PlugIn, ActionListener, ItemListener, Runnable {
@@ -34,8 +39,8 @@ import java.util.Vector;
 		};
 		private String macro = "";
 		private int testImage;
-		private Button input, output, open, save, test;
-		private TextField inputDir, outputDir;
+		private JButton input, output, open, save, test;
+		private JTextField inputDir, outputDir;
 		private GenericDialog gd;
 		private Thread thread;
 		private ImagePlus virtualStack;
@@ -250,33 +255,33 @@ import java.util.Vector;
 		Panel p = new Panel();
     	p.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
 		if (virtualStack==null) {
-			input = new Button("Input...");
+			input = new JButton("Input...");
 			input.addActionListener(this);
 			p.add(input);
-			inputDir = new TextField(Prefs.get("batch.input", ""), 45);
+			inputDir = new JTextField(Prefs.get("batch.input", ""), 45);
 			p.add(inputDir);
 			gd.addPanel(p);
 		}
 		p = new Panel();
     	p.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
-		output = new Button("Output...");
+		output = new JButton("Output...");
 		output.addActionListener(this);
 		p.add(output);
-		outputDir = new TextField(Prefs.get("batch.output", ""), 45);
+		outputDir = new JTextField(Prefs.get("batch.output", ""), 45);
 		p.add(outputDir);
 		gd.addPanel(p);
 	}
 	
 	void addButtons(GenericDialog gd) {
-		Panel p = new Panel();
+		JPanel p = new JPanel();
     	p.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
-		test = new Button("Test");
+		test = new JButton("Test");
 		test.addActionListener(this);
 		p.add(test);
-		open = new Button("Open...");
+		open = new JButton("Open...");
 		open.addActionListener(this);
 		p.add(open);
-		save = new Button("Save...");
+		save = new JButton("Save...");
 		save.addActionListener(this);
 		p.add(save);
 		gd.addPanel(p);

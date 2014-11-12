@@ -3,6 +3,14 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.io.*;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+
 import ij.*;
 import ij.plugin.*;
 import ij.plugin.frame.*; 
@@ -25,10 +33,10 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	private final static int MACRO=0, JAVASCRIPT=1, BEANSHELL=2, JAVA=3;
 	private final static String[] modes = {"Macro", "JavaScript", "BeanShell", "Java"};
 	private Choice mode;
-	private Button makeMacro, help;
-	private TextField fileName;
+	private JButton makeMacro, help;
+	private JTextField fileName;
 	private String fitTypeStr = CurveFitter.fitList[0];
-	private static TextArea textArea;
+	private static JTextArea textArea;
 	private static Recorder instance;
 	private static String commandName;
 	private static String commandOptions;
@@ -55,8 +63,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		record = true;
 		scriptMode = false;
 		recordInMacros = false;
-		Panel panel = new Panel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-		panel.add(new Label("  Record:"));
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		panel.add(new JLabel("  Record:"));
 		mode = new Choice();
 		for (int i=0; i<modes.length; i++)
 			mode.addItem(modes[i]);
@@ -65,23 +73,25 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		if (m.equals("Plugin")) m=modes[JAVA];
 		mode.select(m);
 		panel.add(mode);
-		panel.add(new Label("    Name:"));
-		fileName = new TextField(defaultName, 15);
+		panel.add(new JLabel("    Name:"));
+		fileName = new JTextField(defaultName, 15);
 		setFileName();
 		panel.add(fileName);
 		panel.add(new Label("   "));
-		makeMacro = new Button("Create");
+		makeMacro = new JButton("Create");
 		makeMacro.addActionListener(this);
 		panel.add(makeMacro);
 		panel.add(new Label("   "));
-		help = new Button("?");
+		help = new JButton("?");
 		help.addActionListener(this);
 		panel.add(help);
 		add("North", panel);
-		textArea = new TextArea("", 15, 80, TextArea.SCROLLBARS_VERTICAL_ONLY);
+		textArea = new JTextArea("", 15, 80);
 		textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+		/*Changed for Bio7!*/
+		JScrollPane scrollPane = new JScrollPane(textArea);
 		if (IJ.isLinux()) textArea.setBackground(Color.white);
-		add("Center", textArea);
+		add("Center", scrollPane);
 		pack();
 		GUI.center(this);
 		if (showFrame)

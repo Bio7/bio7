@@ -45,7 +45,7 @@ import ij.macro.*;
 * to spaces when the dialog is displayed. For example, change the checkbox labels
 * "Show Quality" and "Show Residue" to "Show_Quality" and "Show_Residue".
 */
-public class GenericDialog extends JDialog implements ActionListener, TextListener, 
+public class GenericDialog extends Dialog implements ActionListener, TextListener, 
 FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
 	public static final int MAX_SLIDERS = 25;

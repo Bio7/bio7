@@ -7,10 +7,14 @@ import ij.util.*;
 import ij.io.*;
 import ij.plugin.TextReader;
 import ij.plugin.frame.Fitter;
+
 import java.awt.*;
 import java.util.*;
 import java.awt.event.*;
 import java.io.*;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
 
 
 /** Implements the Analyze/Calibrate command. */
@@ -38,7 +42,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 	private double lx=0.02, ly=0.1;
 	private int oldFunction;
 	private String sumResiduals, fitGoodness;
-	private Button open, save;
+	private JButton open, save;
 	private GenericDialog gd;
 	private boolean showPlotFlag = true;
 	private CurveFitter curveFitter;
@@ -115,13 +119,13 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 	}
 
 	/** Creates a panel containing "Open..." and "Save..." buttons. */
-	Panel makeButtonPanel(GenericDialog gd) {
-		Panel buttons = new Panel();
+	JPanel makeButtonPanel(GenericDialog gd) {
+		JPanel buttons = new JPanel();
     	buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
-		open = new Button("Open...");
+		open = new JButton("Open...");
 		open.addActionListener(this);
 		buttons.add(open);
-		save = new Button("Save...");
+		save = new JButton("Save...");
 		save.addActionListener(this);
 		buttons.add(save);
 		return buttons;

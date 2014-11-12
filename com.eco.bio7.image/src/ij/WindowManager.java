@@ -10,6 +10,8 @@ import ij.util.Tools;
 import java.awt.*;
 import java.util.*;
 
+import javax.swing.JFrame;
+
 import ij.gui.*;
 
 /** This class consists of static methods used to manage ImageJ's windows. */
@@ -152,14 +154,14 @@ public class WindowManager {
 	}
 
 	/** Returns an array containing a list of the non-image Frames. */
-	public synchronized static Frame[] getNonImageWindows() {
+	public synchronized static JFrame[] getNonImageWindows() {
 		ArrayList list = new ArrayList();
 		for (int i=0; i<nonImageList.size(); i++) {
 			Object win = nonImageList.elementAt(i);
-			if (win instanceof Frame)
+			if (win instanceof JFrame)
 				list.add(win);
 		}
-		Frame[] frames = new Frame[list.size()];
+		JFrame[] frames = new JFrame[list.size()];
 		list.toArray(frames);
 		return frames;
 	}
@@ -381,7 +383,7 @@ public class WindowManager {
 				return false;
 			IJ.wait(100);
 		}
-		Frame[] nonImages = getNonImageWindows();
+		JFrame[] nonImages = getNonImageWindows();
 		for (int i=0; i<nonImages.length; i++) {
 			Frame frame = nonImages[i];
 			if (frame!=null && (frame instanceof Editor)) {

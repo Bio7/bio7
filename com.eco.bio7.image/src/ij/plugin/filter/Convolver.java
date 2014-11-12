@@ -6,10 +6,14 @@ import ij.io.*;
 import ij.plugin.TextReader;
 import ij.plugin.frame.Recorder;
 import ij.util.Tools;
+
 import java.awt.*;
 import java.util.*;
 import java.awt.event.*;
 import java.io.*;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
 
 /** This plugin convolves images using user user defined kernels. */
 public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionListener {
@@ -19,7 +23,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 	private boolean canceled;
 	private float[] kernel;
 	private boolean isLineRoi;
-	private Button open, save;
+	private JButton open, save;
 	private GenericDialog gd;
 	private boolean normalize = true;
 	private int nSlices;
@@ -159,13 +163,13 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 	}
 	
 	/** Creates a panel containing "Save...", "Save..." and "Preview" buttons. */
-	Panel makeButtonPanel(GenericDialog gd) {
-		Panel buttons = new Panel();
+	JPanel makeButtonPanel(GenericDialog gd) {
+		JPanel buttons = new JPanel();
     	buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
-		open = new Button("Open...");
+		open = new JButton("Open...");
 		open.addActionListener(this);
 		buttons.add(open);
-		save = new Button("Save...");
+		save = new JButton("Save...");
 		save.addActionListener(this);
 		buttons.add(save);
 		return buttons;

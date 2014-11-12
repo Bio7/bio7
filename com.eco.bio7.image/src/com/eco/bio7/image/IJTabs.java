@@ -179,6 +179,7 @@ public class IJTabs {
 	public static void deleteActiveTab() {
 
 		final CTabItem item = CanvasView.tabFolder.getSelection();
+		if(item!=null){
 		Display dis = CanvasView.getParent2().getDisplay();
 		dis.syncExec(new Runnable() {
 
@@ -197,6 +198,7 @@ public class IJTabs {
 				item.dispose();
 			}
 		});
+		}
 
 	}
 

@@ -1,10 +1,16 @@
 package ij.plugin;
 import ij.*;
+
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
 import java.io.*;
 import java.awt.datatransfer.*;
+
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+
 import ij.gui.*;
 import ij.process.*;
 import ij.measure.Measurements;
@@ -45,10 +51,10 @@ public class CalibrationBar implements PlugIn {
 	Calibration cal;
 	int[] histogram;
 	Image img;
-	Button setup, redraw, insert, unInsert;
+	JButton setup, redraw, insert, unInsert;
 	Checkbox ne,nw,se,sw;
 	CheckboxGroup locGroup;
-	Label value, note;
+	JLabel value, note;
 	int newMaxCount;
 	boolean logScale;
 	int win_width;
@@ -424,8 +430,8 @@ public class CalibrationBar implements PlugIn {
 			location = ( (Choice)(choice.elementAt(0)) ).getSelectedItem();
 			fillColor = ( (Choice)(choice.elementAt(1)) ).getSelectedItem();
 			textColor = ( (Choice)(choice.elementAt(2)) ).getSelectedItem();
-			boldText = ( (Checkbox)(checkbox.elementAt(0)) ).getState();
-			flatten = !( (Checkbox)(checkbox.elementAt(1)) ).getState();
+			boldText = ( (JCheckBox)(checkbox.elementAt(0)) ).isSelected();
+			flatten = !( (JCheckBox)(checkbox.elementAt(1)) ).isSelected();
 			updateColorBar();
 		}
 
