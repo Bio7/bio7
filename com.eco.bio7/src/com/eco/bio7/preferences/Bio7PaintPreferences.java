@@ -12,6 +12,7 @@ import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.IntegerFieldEditor;
+import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.osgi.framework.Bundle;
@@ -35,7 +36,15 @@ public class Bio7PaintPreferences extends FieldEditorPreferencePage
 		addField(new BooleanFieldEditor("RECORD_VALUES", "Record at each iteration step the amount of states (Quadgrid, Hexgrid)", getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new BooleanFieldEditor("STARTUP_SCRIPTS", "Enable startup scripts", getFieldEditorParent()));
-		
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
+		addField(new LabelFieldEditor("JDT:", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("SHOW_JDT_GUI", "Enable JDT Gui elements", getFieldEditorParent()));
+		//addField(new SpacerFieldEditor(getFieldEditorParent()));
+		/*addField(new LabelFieldEditor("Additional Default Perspectives:", getFieldEditorParent()));
+		addField(new StringFieldEditor("DEFAULT_CUSTOM_PERSPECTIVE1", "Additional perspective at startup (ID)", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
+		addField(new StringFieldEditor("DEFAULT_CUSTOM_PERSPECTIVE2", "Additional perspective at startup (ID)", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
+		addField(new StringFieldEditor("DEFAULT_CUSTOM_PERSPECTIVE3", "Additional perspective at startup (ID)", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
+		*/
 		
 	}
 

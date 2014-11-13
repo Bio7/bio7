@@ -584,7 +584,7 @@ public class IJ {
 		"http://imagej.nih.gov/ij/macros/HtmlDialogDemo.txt".
 		Writes to the Java console if ImageJ is not present. */
 	public static void showMessage(String title, String msg) {
-		
+		/*Changed for Bio7!*/
 		SwingUtilities.invokeLater(new Runnable() {
 			// !!
 			public void run() {

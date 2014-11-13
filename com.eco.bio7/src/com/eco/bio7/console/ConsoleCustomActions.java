@@ -44,6 +44,7 @@ import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.actions.Bio7Action;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.TerminateRserve;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.scriptengines.ScriptEngineConnection;
 import com.eco.bio7.worldwind.WorldWindView;
@@ -267,6 +268,69 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 			}
 		});
+
+		MenuItem menuItem5 = new MenuItem(fMenu, SWT.PUSH);
+		menuItem5.setText("Stop Native Rterm (R) Process");
+
+		menuItem5.addSelectionListener(new SelectionListener() {
+
+			public void selectionChanged(SelectionChangedEvent event) {
+
+			}
+
+			public void widgetSelected(SelectionEvent e) {
+
+				boolean destroy = Bio7Dialog.decision("Should the Rterm (R) process be destroyed?\n" 
+				+ "If you you confirm all Rterm processes on the OS will be terminated!\n"
+				+ "Use only if no other Rterm instances are running!");
+
+				if (destroy) {
+
+					if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+
+						TerminateRserve.killProcessRtermWindows();
+					}
+
+					else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
+						TerminateRserve.killProcessRtermLinux();
+					}
+
+					else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
+						TerminateRserve.killProcessRtermMac();
+					}
+					
+					ConsolePageParticipant cpp = ConsolePageParticipant.getConsolePageParticipantInstance();
+					String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
+					
+					if (selectionConsole.equals("R")) {
+
+						if (cpp.getRProcess() != null) {
+							try {
+								cpp.getRProcess().destroy();
+								RConnection con = RServe.getConnection();
+								if (con != null) {
+									con.close();
+									RServe.setConnection(null);
+									WorldWindView.setRConnection(null);
+									RServe.setRrunning(false);
+								}
+							} catch (Exception e2) {
+								// TODO Auto-generated catch block
+								e2.printStackTrace();
+							}
+							cpp.setRProcess(null);
+						}
+					}
+
+				}
+
+			}
+
+			public void widgetDefaultSelected(SelectionEvent e) {
+
+			}
+		});
+
 		new MenuItem(fMenu, SWT.SEPARATOR);
 		MenuItem menuEncoding = new MenuItem(fMenu, SWT.CASCADE);
 		menuEncoding.setText("Change Text Encoding");

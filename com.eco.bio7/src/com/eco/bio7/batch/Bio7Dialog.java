@@ -175,12 +175,13 @@ public class Bio7Dialog {
 	/**
 	 * Opens a decision Dialog with the given text. The decision dialog will set
 	 * the variable in the Flow editor of the bio7 application to true or false
-	 * depending on the decision.
+	 * depending on the decision. In addition the selected boolean will be returned.
 	 * 
 	 * @param text
 	 *            the text for the dialog.
+	 * @return a boolean value.
 	 */
-	public static void decision(final String text) {
+	public static boolean decision(final String text) {
 
 		Display display = PlatformUI.getWorkbench().getDisplay();
 		display.syncExec(new Runnable() {
@@ -203,9 +204,12 @@ public class Bio7Dialog {
 
 		if (decision) {
 			BatchModel.setDecision("true");
+			return true;
 		} else {
 			BatchModel.setDecision("false");
+			return false;
 		}
+		
 	}
 
 	/**

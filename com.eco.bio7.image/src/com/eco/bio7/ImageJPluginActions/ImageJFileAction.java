@@ -67,8 +67,8 @@ public class ImageJFileAction extends Action implements IMenuCreator, ScannerLis
 	String[] saveas = { "Tiff...", "Gif...", "Jpeg...", "BMP...", "PNG...", "PGM...", "Text Image...", "ZIP...", "Raw Data...", "Image Sequence... ", "AVI... ", "FITS...", "LUT...", "Selection...",
 			"XY Coordinates...", "Results...", "Text..." };
 
-	String[] url = { "particles.gif", "blobs.gif", "mri-stack.zip", "leaf.jpg", "Tree_Rings.jpg", "Cell_Colony.jpg", "FluorescentCells.jpg", "baboon.jpg", "bat-cochlea-volume.zip", "embryos.jpg",
-			"flybrain.zip", "Rat_Hippocampal_Neuron.zip", "Spindly-GFP.zip", "organ-of-corti.zip", "confocal-series.zip" };
+	String[] url = { "NileBend.jpg","sea-grass.jpg","particles.gif", "blobs.gif","embryos.jpg","Cell_Colony.jpg", "mri-stack.zip", "leaf.jpg", "Tree_Rings.jpg", "FluorescentCells.jpg","Diatoms.jpg" ,"baboon.jpg", "bat-cochlea-volume.zip",
+			"flybrain.zip", "Rat_Hippocampal_Neuron.zip", "Spindly-GFP.zip","hela-cells.zip","3D_Chromosome.zip", "organ-of-corti.zip", "confocal-series.zip","egg.jpg","microm.jpg","fluoview-multi.tif","mri.gif","snowflake.gif" };
 
 	MenuItem[] save_as = new MenuItem[saveas.length];
 
@@ -244,7 +244,7 @@ public class ImageJFileAction extends Action implements IMenuCreator, ScannerLis
 		MenuItem menuItem14 = new MenuItem(fMenu, SWT.PUSH);
 		menuItem14.setText("Aquire");
 		MenuItem menuItem6 = new MenuItem(fMenu, SWT.PUSH);
-		menuItem6.setText("Close All Tabs And Views");
+		menuItem6.setText("Close All Tabs");
 
 		menuItem2.addSelectionListener(new SelectionListener() {
 

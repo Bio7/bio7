@@ -416,7 +416,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		}
 		
 		//store.setDefault("R_STARTUP_ARGS","try(options(max.print=5000)\n)");
-
+		store.setDefault("SHOW_JDT_GUI",false);
 		store.setDefault("datatablesize", 100);
 		store.setDefault(PreferenceConstants.D_STRING, fileStartupScripts.getAbsolutePath());
 		store.setDefault(PreferenceConstants.D_IMPORT, fileImportScripts.getAbsolutePath());
@@ -1069,6 +1069,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	public void postWindowOpen() {
 
 		super.postWindowOpen();
+		
+		
 
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
 		try {

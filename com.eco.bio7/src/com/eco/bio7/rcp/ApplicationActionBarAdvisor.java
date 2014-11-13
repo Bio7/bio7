@@ -320,9 +320,11 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		register(libreofficeconnection);
 
 		/*
-		 * bshclearaction = new BeanShellClearAction("Clear", window); register(bshclearaction);
+		 * bshclearaction = new BeanShellClearAction("Clear", window);
+		 * register(bshclearaction);
 		 * 
-		 * bshimportaction = new BeanShellImportAction("Import", window); register(bshimportaction);
+		 * bshimportaction = new BeanShellImportAction("Import", window);
+		 * register(bshimportaction);
 		 */
 
 		start = new Start("Start", window);
@@ -355,7 +357,11 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		setup = new SetupDiscrete("Save Pattern", window);
 		register(setup);
 		/*
-		 * savepattern.setToolTipText("Save a pattern to a file" + '\n' + "Bio7"); loadpattern = new LoadPattern("Load Pattern", window); register(loadpattern); loadpattern.setToolTipText("Load a pattern from a file" + '\n' + "Bio7");
+		 * savepattern.setToolTipText("Save a pattern to a file" + '\n' +
+		 * "Bio7"); loadpattern = new LoadPattern("Load Pattern", window);
+		 * register(loadpattern);
+		 * loadpattern.setToolTipText("Load a pattern from a file" + '\n' +
+		 * "Bio7");
 		 */
 
 		re = ContributionItemFactory.VIEWS_SHORTLIST.create(window);
@@ -396,71 +402,65 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		openBrowser = new OpenBio7BrowserAction("Bio7 Internet", window);
 		register(openBrowser);
-		
+
 		interpretR = new InterpretR("Interpret R", window);
 		register(interpretR);
-		
+
 		compileJava = new Compile("Compile Java");
 		register(compileJava);
-		
+
 		flowAction = new FlowEditorAction("Execute Flow");
 		register(flowAction);
-		
+
 		debugFlowAction = new FlowEditorTestAction("Debug Flow");
 		register(debugFlowAction);
-		
-		interpretGrovvyBeanShell=new Interpret("Interpret Groovy/BeanShell");
+
+		interpretGrovvyBeanShell = new Interpret("Interpret Groovy/BeanShell");
 		register(interpretGrovvyBeanShell);
-		
-		interpretPython=new InterpretPython("Interpret Python");
+
+		interpretPython = new InterpretPython("Interpret Python");
 		register(interpretPython);
-		
-		generateControllerAction= new GenerateControllerAction("Generate Controller Class");
+
+		generateControllerAction = new GenerateControllerAction("Generate Controller Class");
 		register(generateControllerAction);
-		
-	} 
+
+	}
 
 	protected void fillMenuBar(IMenuManager menuBar) {
-      /*Remove actions tip from: http://random-eclipse-tips.blogspot.de/2009/02/eclipse-rcp-removing-unwanted_02.html*/
-		final ActionSetRegistry reg = WorkbenchPlugin.getDefault().getActionSetRegistry();
-		final IActionSetDescriptor[] actionSets = reg.getActionSets();
-		final String[] removeActionSets = new String[] { 
-				"org.eclipse.search.searchActionSet",
-				"org.eclipse.ui.cheatsheets.actionSet",
-				"org.eclipse.ui.actionSet.keyBindings",
-				"org.eclipse.ui.edit.text.actionSet.navigation",
-				"org.eclipse.ui.edit.text.actionSet.annotationNavigation",	
-				"org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo",
-				"org.eclipse.ui.edit.text.actionSet.openExternalFile",
-				"org.eclipse.ui.externaltools.ExternalToolsSet",
-				"org.eclipse.ui.externaltools.ExternalToolsSet",
-				"org.eclipse.ui.WorkingSetActionSet",
-				"org.eclipse.update.ui.softwareUpdates",
-				"org.eclipse.ui.actionSet.openFiles",
-				"org.eclipse.mylyn.tasks.ui.navigation",
-				"org.eclipse.debug.ui.launchActionSet",
-				"org.eclipse.jdt.ui.JavaElementCreationActionSet",
-				"org.eclipse.jdt.ui.JavaActionSet",
-				"org.eclipse.ui.edit.text.actionSet.presentation",
-				"org.eclipse.ui.cheatsheets.actionSet",
-				"org.eclipse.ui.externaltools.ExternalToolsSet",
-				"org.eclipse.jdt.ui.text.java.actionSet.presentation",
-				"org.eclipse.debug.ui.breakpointActionSet",
-				"org.eclipse.wb.core.ui.actionset"};
+		/*
+		 * Remove actions tip from:
+		 * http://random-eclipse-tips.blogspot.de/2009/02
+		 * /eclipse-rcp-removing-unwanted_02.html
+		 */
+		// SHOW_JDT_GUI
+		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		boolean showJDTGui = store.getBoolean("SHOW_JDT_GUI");
+		if (showJDTGui==false) {
+			final ActionSetRegistry reg = WorkbenchPlugin.getDefault().getActionSetRegistry();
+			final IActionSetDescriptor[] actionSets = reg.getActionSets();
+			final String[] removeActionSets = new String[] { "org.eclipse.search.searchActionSet", "org.eclipse.ui.cheatsheets.actionSet", "org.eclipse.ui.actionSet.keyBindings",
+					"org.eclipse.ui.edit.text.actionSet.navigation", "org.eclipse.ui.edit.text.actionSet.annotationNavigation", "org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo",
+					"org.eclipse.ui.edit.text.actionSet.openExternalFile", "org.eclipse.ui.externaltools.ExternalToolsSet", "org.eclipse.ui.externaltools.ExternalToolsSet",
+					"org.eclipse.ui.WorkingSetActionSet", "org.eclipse.update.ui.softwareUpdates", "org.eclipse.ui.actionSet.openFiles", "org.eclipse.mylyn.tasks.ui.navigation",
+					"org.eclipse.debug.ui.launchActionSet", "org.eclipse.jdt.ui.JavaElementCreationActionSet", "org.eclipse.jdt.ui.JavaActionSet", "org.eclipse.ui.edit.text.actionSet.presentation",
+					"org.eclipse.ui.cheatsheets.actionSet", "org.eclipse.ui.externaltools.ExternalToolsSet", "org.eclipse.jdt.ui.text.java.actionSet.presentation",
+					"org.eclipse.debug.ui.breakpointActionSet", "org.eclipse.wb.core.ui.actionset" };
 
-		for (int i = 0; i < actionSets.length; i++) {
-			boolean found = false;
-			for (int j = 0; j < removeActionSets.length; j++) {
-				if (removeActionSets[j].equals(actionSets[i].getId())) {
-					
-					found = true;
+			for (int i = 0; i < actionSets.length; i++) {
+				boolean found = false;
+				for (int j = 0; j < removeActionSets.length; j++) {
+					if (removeActionSets[j].equals(actionSets[i].getId())) {
+
+						found = true;
+					}
 				}
+				if (!found) {
+					continue;
+				}
+				final IExtension ext = actionSets[i].getConfigurationElement().getDeclaringExtension();
+
+				reg.removeExtension(ext, new Object[] { actionSets[i] });
 			}
-			if (!found) {
-				continue;
-			}
-			final IExtension ext = actionSets[i].getConfigurationElement().getDeclaringExtension();
-			reg.removeExtension(ext, new Object[] { actionSets[i] });
 		}
 
 		MenuManager fileMenu = new MenuManager("&File", IWorkbenchActionConstants.M_FILE);
@@ -493,7 +493,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		IMenuListener listener = new IMenuListener() {
 			public void menuAboutToShow(IMenuManager m) {
 				File files = new File(store.getString(PreferenceConstants.D_SCRIPT_GENERAL));
-				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java",".bsh", ".groovy", ".py" });
+				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".bsh", ".groovy", ".py" });
 
 				if (fil.length > 0) {
 					int a;
@@ -524,7 +524,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		IMenuListener listener4 = new IMenuListener() {
 			public void menuAboutToShow(IMenuManager m) {
 				File files = new File(store.getString(PreferenceConstants.D_SCRIPT_SPATIAL));
-				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java",".bsh", ".groovy", ".py" });
+				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".bsh", ".groovy", ".py" });
 
 				if (fil.length > 0) {
 					int a;
@@ -619,7 +619,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		IMenuListener listener2 = new IMenuListener() {
 			public void menuAboutToShow(IMenuManager m) {
 				File files = new File(store.getString(PreferenceConstants.D_IMPORT));
-				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java",".bsh", ".groovy", ".py" });
+				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".bsh", ".groovy", ".py" });
 
 				if (fil.length > 0) {
 					int a;
@@ -650,7 +650,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		IMenuListener listener3 = new IMenuListener() {
 			public void menuAboutToShow(IMenuManager m) {
 				File files = new File(store.getString(PreferenceConstants.D_EXPORT));
-				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java",".bsh", ".groovy", ".py" });
+				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".bsh", ".groovy", ".py" });
 
 				if (fil.length > 0) {
 					int a;
@@ -769,7 +769,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		OpenOfficeMenu.add(officepopdata);
 
 		/*
-		 * BeanShellMenu.add(bshclearaction); BeanShellMenu.add(new Separator()); BeanShellMenu.add(bshimportaction);
+		 * BeanShellMenu.add(bshclearaction); BeanShellMenu.add(new
+		 * Separator()); BeanShellMenu.add(bshimportaction);
 		 */
 
 		WindowMenu.add(showViewMenu); // Displays the show menu.
@@ -810,11 +811,11 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 	protected void fillCoolBar(ICoolBarManager coolBar) {
 		IToolBarManager toolbar = new ToolBarManager(SWT.FLAT | SWT.LEFT);
-		//IToolBarManager imagebar = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
-		//coolBar.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-		
+		// IToolBarManager imagebar = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
+		// coolBar.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+
 		coolBar.add(new ToolBarContributionItem(toolbar, "mainbio7"));
-		//coolBar.add(new ToolBarContributionItem(imagebar, "image"));
+		// coolBar.add(new ToolBarContributionItem(imagebar, "image"));
 		toolbar.add(start);
 		toolbar.add(setup);
 		toolbar.add(resetfield);
@@ -823,12 +824,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		toolbar.add(libreofficeconnection);
 		toolbar.add(startrserve);
 		toolbar.add(print);
-		
+
 	}
-
-	
-
-	
 
 	public static Action getStart() {
 		return start;

@@ -1,1 +1,1 @@
-This folder is used for temporary R files and plots!
+This folder is used for R scripts, temporary R files and plots!
