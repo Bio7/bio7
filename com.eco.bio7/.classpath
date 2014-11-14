@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="libs/groovy-all-2.3.7.jar"/>
 	<classpathentry exported="true" kind="lib" path="bin/"/>
 	<classpathentry exported="true" kind="lib" path="libs/jython-standalone-2.5.3.jar"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
@@ -13,7 +14,6 @@
 	<classpathentry exported="true" kind="lib" path="libs/swing-layout-1.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="baseline.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/swt-grouplayout.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/groovy-all-1.8.6.jar"/>
 	<classpathentry kind="lib" path="/com.eco.bio7.libs/libs/jogl-all.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre8"/>
 	<classpathentry kind="output" path="bin"/>

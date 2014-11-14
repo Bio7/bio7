@@ -2,6 +2,7 @@ package com.eco.bio7.actions;
 
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
+
 import com.eco.bio7.rcp.ApplicationActionBarAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
 
@@ -41,7 +42,13 @@ public class Bio7Action {
 	 * Starts or stops the Rserve application.
 	 */
 	public static void callRserve() {
-		ApplicationActionBarAdvisor.getStartrserve().run();
+		Display display = PlatformUI.getWorkbench().getDisplay();
+		display.syncExec(new Runnable() {
+
+			public void run() {
+				ApplicationActionBarAdvisor.getStartrserve().run();
+			}
+		});
 
 	}
 

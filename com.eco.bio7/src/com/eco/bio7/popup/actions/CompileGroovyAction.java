@@ -3,15 +3,11 @@ package com.eco.bio7.popup.actions;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import ij.Menus;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-
-import org.apache.tools.ant.Project;
-import org.codehaus.groovy.ant.Groovyc;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
@@ -26,11 +22,6 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.osgi.framework.Bundle;
-
-import com.eco.bio7.batch.BatchModel;
-import com.eco.bio7.compile.Compile;
-import com.eco.bio7.compile.BeanShellInterpreter;
-import com.eco.bio7.methods.Compiled;
 
 public class CompileGroovyAction implements IObjectActionDelegate {
 
