@@ -58,7 +58,6 @@ http://bio7.org
       <windows include="true">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JRE-1.1</windows>
    </vm>
 
-
    <plugins>
       <plugin id="Bundled_R"/>
       <plugin id="com.eco.bio7"/>
@@ -173,7 +172,6 @@ http://bio7.org
       <feature id="com.eco.bio7.javaedit.feature" version="1.7.0.qualifier"/>
       <feature id="com.eco.bio7.r.feature" version="3.0.1.qualifier"/>
       <feature id="com.eco.bio7.libs.feature" version="1.7.0.qualifier"/>
-      <feature id="com.eco.bio7.physics.feature" version="1.7.0.qualifier"/>
       <feature id="com.eco.bio7.redit.feature" version="1.7.0.qualifier"/>
       <feature id="com.eco.bio7.util.feature" version="1.7.0.qualifier"/>
       <feature id="com.eco.bio7.worldwind.feature" version="1.7.0.qualifier"/>

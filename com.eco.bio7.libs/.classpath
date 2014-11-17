@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="math/gdal.jar"/>
+	<classpathentry exported="true" kind="lib" path="physics/jbullet-gimpact.jar"/>
+	<classpathentry exported="true" kind="lib" path="physics/jbullet.jar"/>
+	<classpathentry exported="true" kind="lib" path="physics/stack-alloc.jar"/>
+	<classpathentry exported="true" kind="lib" path="physics/trove.jar"/>
+	<classpathentry exported="true" kind="lib" path="physics/vecmath.jar"/>
 	<classpathentry exported="true" kind="lib" path="math/jgrapht-ext-0.9.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="math/jgraphx-2.0.0.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="math/jgraph-5.13.0.0.jar"/>

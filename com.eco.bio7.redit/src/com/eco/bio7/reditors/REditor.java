@@ -209,38 +209,6 @@ public class REditor extends TextEditor {
 
 							case SWT.CR: {
 
-								/*
-								 * IDocumentProvider prov =
-								 * textEditor.getDocumentProvider();
-								 * IEditorInput inp = editor.getEditorInput();
-								 * if (prov != null) { IDocument document =
-								 * prov.getDocument(inp); if (document != null)
-								 * {
-								 * 
-								 * ITextSelection textSelection =
-								 * (ITextSelection)
-								 * editor.getSite().getSelectionProvider
-								 * ().getSelection(); int offset =
-								 * textSelection.getOffset() - 4;
-								 * //System.out.println("offset "+offset);
-								 * 
-								 * char c = '{';
-								 * 
-								 * try { c = document.getChar(offset); } catch
-								 * (BadLocationException e1) { // TODO
-								 * Auto-generated catch block
-								 * e1.printStackTrace(); } String
-								 * comp=Character.toString(c);
-								 * //System.out.println(comp); //
-								 * if(comp.equals("{"))
-								 * 
-								 * try { document.replace(offset+4, 0, "}"); }
-								 * catch (BadLocationException e) { // TODO
-								 * Auto-generated catch block
-								 * e.printStackTrace(); } }
-								 */
-								// }
-
 							}
 								break;
 							}

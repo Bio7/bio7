@@ -90,11 +90,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitProg(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitProg(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 
 	public final ProgContext prog() throws RecognitionException {
@@ -203,11 +198,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitErr11(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitErr11(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class E31Context extends ExprContext {
 		public TerminalNode STRING() { return getToken(RParser.STRING, 0); }
@@ -219,11 +209,6 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE31(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE31(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 	public static class Err12Context extends ExprContext {
@@ -237,11 +222,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitErr12(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitErr12(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class E30Context extends ExprContext {
 		public TerminalNode ID() { return getToken(RParser.ID, 0); }
@@ -254,11 +234,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE30(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE30(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class Err13Context extends ExprContext {
 		public Token extra;
@@ -270,11 +245,6 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitErr13(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitErr13(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 	public static class E32Context extends ExprContext {
@@ -289,11 +259,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE32(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE32(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class E35Context extends ExprContext {
 		public TerminalNode COMPLEX() { return getToken(RParser.COMPLEX, 0); }
@@ -305,11 +270,6 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE35(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE35(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 	public static class E34Context extends ExprContext {
@@ -323,11 +283,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE34(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE34(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class E37Context extends ExprContext {
 		public E37Context(ExprContext ctx) { copyFrom(ctx); }
@@ -338,11 +293,6 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE37(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE37(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 	public static class Err18Context extends ExprContext {
@@ -363,11 +313,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitErr18(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitErr18(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class E36Context extends ExprContext {
 		public E36Context(ExprContext ctx) { copyFrom(ctx); }
@@ -378,11 +323,6 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE36(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE36(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 	public static class E39Context extends ExprContext {
@@ -395,11 +335,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE39(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE39(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class E38Context extends ExprContext {
 		public E38Context(ExprContext ctx) { copyFrom(ctx); }
@@ -410,11 +345,6 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE38(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE38(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 	public static class Err14Context extends ExprContext {
@@ -428,11 +358,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitErr14(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitErr14(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class Err15Context extends ExprContext {
 		public Token extra;
@@ -444,11 +369,6 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitErr15(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitErr15(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 	public static class Err16Context extends ExprContext {
@@ -468,11 +388,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitErr16(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitErr16(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class E40Context extends ExprContext {
 		public E40Context(ExprContext ctx) { copyFrom(ctx); }
@@ -483,11 +398,6 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE40(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE40(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 	public static class E17VariableDeclarationContext extends ExprContext {
@@ -506,11 +416,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE17VariableDeclaration(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE17VariableDeclaration(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class Err21Context extends ExprContext {
 		public List<ExprContext> expr() {
@@ -528,11 +433,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitErr21(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitErr21(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class E41Context extends ExprContext {
 		public E41Context(ExprContext ctx) { copyFrom(ctx); }
@@ -543,11 +443,6 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE41(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE41(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 	public static class Err20Context extends ExprContext {
@@ -566,11 +461,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitErr20(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitErr20(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class E19DefFunctionContext extends ExprContext {
 		public ExprContext expr() {
@@ -587,11 +477,6 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE19DefFunction(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE19DefFunction(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 	public static class Err3Context extends ExprContext {
@@ -611,11 +496,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitErr3(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitErr3(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class Err1Context extends ExprContext {
 		public Token extra;
@@ -630,11 +510,6 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitErr1(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitErr1(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 	public static class E11Context extends ExprContext {
@@ -653,11 +528,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE11(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE11(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class E20CallFunctionContext extends ExprContext {
 		public ExprContext expr() {
@@ -674,11 +544,6 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE20CallFunction(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE20CallFunction(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 	public static class E10Context extends ExprContext {
@@ -697,11 +562,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE10(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE10(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class E13Context extends ExprContext {
 		public List<ExprContext> expr() {
@@ -719,11 +579,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE13(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE13(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class E12Context extends ExprContext {
 		public ExprContext expr() {
@@ -738,11 +593,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE12(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE12(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class E15Context extends ExprContext {
 		public ExprContext expr() {
@@ -756,11 +606,6 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE15(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE15(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 	public static class E14Context extends ExprContext {
@@ -779,11 +624,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE14(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE14(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class E16Context extends ExprContext {
 		public List<ExprContext> expr() {
@@ -801,11 +641,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE16(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE16(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class E18Context extends ExprContext {
 		public ExprlistContext exprlist() {
@@ -819,11 +654,6 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE18(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE18(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 	public static class Err9Context extends ExprContext {
@@ -843,11 +673,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitErr9(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitErr9(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class Err7Context extends ExprContext {
 		public Token extra;
@@ -865,11 +690,6 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitErr7(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitErr7(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 	public static class Err5Context extends ExprContext {
@@ -889,11 +709,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitErr5(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitErr5(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class E22Context extends ExprContext {
 		public List<ExprContext> expr() {
@@ -910,11 +725,6 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE22(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE22(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 	public static class E21Context extends ExprContext {
@@ -933,11 +743,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE21(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE21(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class E24Context extends ExprContext {
 		public List<ExprContext> expr() {
@@ -954,11 +759,6 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE24(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE24(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 	public static class E23Context extends ExprContext {
@@ -978,11 +778,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE23(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE23(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class E26Context extends ExprContext {
 		public ExprContext expr() {
@@ -996,11 +791,6 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE26(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE26(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 	public static class E25Context extends ExprContext {
@@ -1016,11 +806,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE25(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE25(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class E28Context extends ExprContext {
 		public E28Context(ExprContext ctx) { copyFrom(ctx); }
@@ -1032,11 +817,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE28(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE28(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class E27Context extends ExprContext {
 		public E27Context(ExprContext ctx) { copyFrom(ctx); }
@@ -1047,11 +827,6 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE27(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE27(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 	public static class E1Context extends ExprContext {
@@ -1070,11 +845,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE1(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE1(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class E29Context extends ExprContext {
 		public ExprContext expr() {
@@ -1088,11 +858,6 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE29(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE29(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 	public static class E2Context extends ExprContext {
@@ -1111,11 +876,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE2(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE2(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class E3Context extends ExprContext {
 		public List<ExprContext> expr() {
@@ -1132,11 +892,6 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE3(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE3(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 	public static class E4Context extends ExprContext {
@@ -1155,11 +910,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE4(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE4(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class E5Context extends ExprContext {
 		public List<ExprContext> expr() {
@@ -1177,11 +927,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE5(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE5(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class E6Context extends ExprContext {
 		public ExprContext expr() {
@@ -1195,11 +940,6 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE6(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE6(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 	public static class E7Context extends ExprContext {
@@ -1217,11 +957,6 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE7(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE7(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 	public static class E8Context extends ExprContext {
@@ -1241,11 +976,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE8(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE8(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 	public static class E9Context extends ExprContext {
 		public List<ExprContext> expr() {
@@ -1262,11 +992,6 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitE9(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitE9(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -1950,11 +1675,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitExprlist(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitExprlist(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 
 	public final ExprlistContext exprlist() throws RecognitionException {
@@ -2064,11 +1784,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitFormlist(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitFormlist(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 
 	public final FormlistContext formlist() throws RecognitionException {
@@ -2122,11 +1837,6 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitForm(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitForm(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -2188,11 +1898,6 @@ public class RParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitSublist(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitSublist(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 
 	public final SublistContext sublist() throws RecognitionException {
@@ -2247,11 +1952,6 @@ public class RParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof RListener ) ((RListener)listener).exitSub(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof RVisitor ) return ((RVisitor<? extends T>)visitor).visitSub(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 
