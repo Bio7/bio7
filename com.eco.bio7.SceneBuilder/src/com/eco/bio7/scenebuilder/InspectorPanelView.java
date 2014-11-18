@@ -6,9 +6,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
-
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -19,7 +17,6 @@ import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-
 import com.eco.bio7.scenebuilder.editor.ILinkedWithEditorView;
 import com.eco.bio7.scenebuilder.editor.LinkWithEditorPartListener;
 import com.eco.bio7.scenebuilder.editor.MultiPageEditor;
@@ -37,7 +34,7 @@ public class InspectorPanelView extends ViewPart implements ILinkedWithEditorVie
 	private IEditorPart currentEditor;
 
 	public InspectorPanelView() {
-		// TODO Auto-generated constructor stub
+		
 	}
 
 	@Override
@@ -57,16 +54,9 @@ public class InspectorPanelView extends ViewPart implements ILinkedWithEditorVie
 				canvas.setScene(s);
 			}
 		});
-		// getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
-		/*
-		 * linkWithEditorAction = new Action("Link with Editor",
-		 * IAction.AS_CHECK_BOX){
-		 * 
-		 * @Override public void run() { toggleLinking(isChecked()); } };
-		 */
+		
 
 		getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
-		// getViewSite().getActionBars().getToolBarManager().add(linkWithEditorAction);
 		getSite().getPage().addPartListener(linkWithEditorPartListener);
 		getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
 
@@ -82,7 +72,7 @@ public class InspectorPanelView extends ViewPart implements ILinkedWithEditorVie
 			updateHierachyView(activeEditor);
 			currentEditor = activeEditor;
 		}
-		// do something with content of the editor
+		
 	}
 
 	protected void toggleLinking(boolean checked) {
@@ -95,18 +85,15 @@ public class InspectorPanelView extends ViewPart implements ILinkedWithEditorVie
 	private IPartListener2 partListener = new IPartListener2() {
 
 		@Override
-		public void partActivated(IWorkbenchPartReference partRef) { //
-			// System.out.println(partRef.getId());
-			// updateHierachyView(partRef, false);
+		public void partActivated(IWorkbenchPartReference partRef) { 
 
 		}
 
-		public void partBroughtToTop(IWorkbenchPartReference partRef) { // TODO
-			// updateHierachyView(partRef, false);
+		public void partBroughtToTop(IWorkbenchPartReference partRef) {
 
 		}
 
-		public void partClosed(IWorkbenchPartReference partRef) { // TODO
+		public void partClosed(IWorkbenchPartReference partRef) { 
 			if (partRef.getId().equals("com.eco.bio7.browser.scenebuilder")) {
 
 				IEditorReference ref[] = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
@@ -132,26 +119,24 @@ public class InspectorPanelView extends ViewPart implements ILinkedWithEditorVie
 			}
 		}
 
-		public void partDeactivated(IWorkbenchPartReference partRef) { // TODO
-																		// //
+		public void partDeactivated(IWorkbenchPartReference partRef) { 																
 
 		}
 
 		@Override
 		public void partOpened(IWorkbenchPartReference partRef) {
-			// updateHierachyView(partRef, false);
+			
 		}
 
-		public void partHidden(IWorkbenchPartReference partRef) { // TODO
-
-		}
-
-		public void partVisible(IWorkbenchPartReference partRef) { // TODO
-			// updateHierachyView(partRef);
+		public void partHidden(IWorkbenchPartReference partRef) { 
 
 		}
 
-		public void partInputChanged(IWorkbenchPartReference partRef) { // TODO
+		public void partVisible(IWorkbenchPartReference partRef) { 
+
+		}
+
+		public void partInputChanged(IWorkbenchPartReference partRef) { 
 
 		}
 
@@ -213,7 +198,6 @@ public class InspectorPanelView extends ViewPart implements ILinkedWithEditorVie
 
 	@Override
 	public void setFocus() {
-		// TODO Auto-generated method stub
 
 	}
 

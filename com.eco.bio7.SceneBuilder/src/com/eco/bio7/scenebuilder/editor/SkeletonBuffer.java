@@ -44,9 +44,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import javafx.fxml.FXML;
 
-/**
- *
- */
+
 public class SkeletonBuffer {
 
     private final FXOMDocument document;

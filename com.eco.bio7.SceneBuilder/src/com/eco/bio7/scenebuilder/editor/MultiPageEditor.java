@@ -1,33 +1,36 @@
+/*******************************************************************************
+ * Copyright (c) 2007-2014 M. Austenfeld
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     M. Austenfeld
+ *******************************************************************************/
 package com.eco.bio7.scenebuilder.editor;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Paths;
 import java.util.Timer;
-
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.embed.swing.JFXPanel;
 import javafx.embed.swt.FXCanvas;
 import javafx.event.EventHandler;
-import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.paint.Color;
 import net.htmlparser.jericho.Source;
-import net.htmlparser.jericho.SourceFormatter;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -62,13 +65,11 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
-
 import com.eco.bio7.scenebuilder.editor.SkeletonBuffer.FORMAT_TYPE;
 import com.eco.bio7.scenebuilder.editor.SkeletonBuffer.TEXT_TYPE;
 import com.eco.bio7.scenebuilder.xmleditor.XMLEditor;
 import com.oracle.javafx.scenebuilder.kit.editor.EditorController;
 import com.oracle.javafx.scenebuilder.kit.editor.panel.content.ContentPanelController;
-import com.oracle.javafx.scenebuilder.kit.editor.panel.css.CssPanelController;
 
 public class MultiPageEditor extends MultiPageEditorPart implements IResourceChangeListener {
 
@@ -76,7 +77,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	public XMLEditor editor;
 	protected String content;
 	protected String path;
-	public static final String ID = "com.eco.bio7.browser.SceneBuilderView"; //$NON-NLS-1$
+	public static final String ID = "com.eco.bio7.browser.SceneBuilderView";
 	public String basePath = ".";
 	protected String loadContent;
 	protected boolean hasToComplete;
@@ -113,7 +114,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 		canvas = new FXCanvas(composite, SWT.NONE);
 		canvas.setLayout(new FillLayout());
-       
+
 		fileInputEditor = (FileEditorInput) this.getEditorInput();
 
 		ifile = fileInputEditor.getFile();
@@ -124,7 +125,6 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 		try {
 			fxmlLocation = location.toFile().toURI().toURL();
 		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -135,38 +135,24 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 				editorController = new EditorController();
 
-				/*
-				 * editorController.fxomDocumentProperty().addListener( new
-				 * ChangeListener<FXOMDocument>() {
-				 * 
-				 * @Override public void changed(ObservableValue<? extends
-				 * FXOMDocument> ov, FXOMDocument od, FXOMDocument nd) {
-				 * 
-				 * System.out.println("doc changed"); } });
-				 */
-
 				jobListener = new ChangeListener<Number>() {
 					@Override
 					public void changed(ObservableValue<? extends Number> observable, Number oldNum, Number newNum) {
-						
-						
+
 						IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
 						if (editorController != null) {
-							
+
 							Source s = new Source(editorController.getFxmlText());
-							//SourceFormatter sf = new SourceFormatter(s);
-							
-							
+
 							doc.set(editorController.getFxmlText());
-							
-              
+
 						}
 					}
 				};
 				selectionListener = new ChangeListener<Number>() {
 					@Override
 					public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-						// System.out.println("doc changed");
+
 					}
 				};
 
@@ -216,7 +202,6 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 							SkeletonBuffer buf = new SkeletonBuffer(editorController.getFxomDocument());
 							buf.setFormat(FORMAT_TYPE.FULL);
 							buf.setTextType(TEXT_TYPE.WITH_COMMENTS);
-							// System.out.println(buf.toString());
 
 							IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 
@@ -227,7 +212,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 								try {
 									page.openEditor(input, "org.eclipse.ui.DefaultTextEditor");
 								} catch (PartInitException e) {
-									// TODO Auto-generated catch block
+
 									e.printStackTrace();
 								}
 						}
@@ -237,7 +222,6 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 				try {
 					editorController.setFxmlTextAndLocation(fxmlText, fxmlLocation);
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 
@@ -262,7 +246,6 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 			}
 		});
 
-		// canvas.setScene(scene);
 
 		int index = addPage(composite);
 		setPageText(index, "GUI Editor");
@@ -271,33 +254,15 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 	void createPage1() {
 		try {
-			
+
 			editor = new XMLEditor(editorController, canvas);
-			editor.doReconcile=false;
+			editor.doReconcile = false;
 			int index = addPage(editor, getEditorInput());
 			setPageText(index, editor.getTitle());
 
 		} catch (PartInitException e) {
 			ErrorDialog.openError(getSite().getShell(), "Error creating nested text editor", null, e.getStatus());
 		}
-		/* To do: this function must be implemented in the editor reconciler */
-		/*
-		 * IDocumentProvider dp = editor.getDocumentProvider(); final IDocument
-		 * doc = dp.getDocument(editor.getEditorInput());
-		 * doc.addDocumentListener(new IDocumentListener() {
-		 * 
-		 * @Override public void documentChanged(DocumentEvent event) {
-		 * 
-		 * 
-		 * }
-		 * 
-		 * @Override public void documentAboutToBeChanged(DocumentEvent event) {
-		 * // TODO Auto-generated method stub
-		 * 
-		 * }
-		 * 
-		 * });
-		 */
 
 	}
 
@@ -307,8 +272,8 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	 * @param path
 	 * @return
 	 */
-	public String fileToString(String path) {// this function returns the
-		// File as a String
+	public String fileToString(String path) {
+
 		FileInputStream fileinput = null;
 		try {
 			fileinput = new FileInputStream(path);
@@ -339,7 +304,10 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	 */
 	protected void createPages() {
 		createPage0();
-		/* Execute in JavaFX Thread to wait for the editor controller (must be deleted for page change°!! */
+		/*
+		 * Execute in JavaFX Thread to wait for the editor controller (must be
+		 * deleted for page change°!!
+		 */
 		Platform.runLater(new Runnable() {
 
 			@Override
@@ -347,7 +315,6 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 				createPage1();
 			}
 		});
-			
 
 	}
 
@@ -457,47 +424,11 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 		super.pageChange(newPageIndex);
 
 		if (newPageIndex == 0) {
-         
-			/*final IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
-
-			if (editorController != null) {
-				Platform.runLater(new Runnable() {
-
-					@Override
-					public void run() {
-						try {
-							editorController.setFxmlText(doc.get());
-
-							canvas.redraw();
-							
-							
-
-						} catch (IOException e) { // TODO Auto-generated catch
-													// // block
-							e.printStackTrace();
-						}
-
-					}
-				});
-			}
-          */
 
 		}
 
 		else if (newPageIndex == 1) {
 
-			/*
-			 * IDocument doc = ((ITextEditor)
-			 * editor).getDocumentProvider().getDocument
-			 * (getEditor(1).getEditorInput()); if (editorController != null) {
-			 * 
-			 * Source s = new Source(editorController.getFxmlText());
-			 * SourceFormatter sf = new SourceFormatter(s);
-			 * 
-			 * doc.set(sf.toString());
-			 * 
-			 * }
-			 */
 		}
 
 	}
@@ -545,8 +476,8 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 		}
 
 		public String getName() {
-			//int len = Math.min(5, string.length());
-			return "Generated_Controller_Class";//string.substring(0, len).concat("..."); //$NON-NLS-1$
+
+			return "Generated_Controller_Class";
 		}
 
 		public boolean isReadOnly() {

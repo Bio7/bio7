@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2007-2014 M. Austenfeld
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     M. Austenfeld
+ *******************************************************************************/
 package com.eco.bio7.rbridge.debug;
 
 import org.eclipse.core.resources.IMarker;
@@ -48,7 +58,7 @@ public class ToggleDebugConditionalBreakpointAction extends AbstractRulerActionD
 
 			InputDialog dlg = new InputDialog(Display.getCurrent().getActiveShell(), "", "Enter Expressions", "", null);
 			if (dlg.open() == Window.OK) {
-				// User clicked OK; update the label with the input
+				
 				rDebugExpression = dlg.getValue();
 			}
 

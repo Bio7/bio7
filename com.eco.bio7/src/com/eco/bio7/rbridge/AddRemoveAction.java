@@ -95,7 +95,7 @@ public class AddRemoveAction extends Action implements IMenuCreator {
 			public void widgetSelected(SelectionEvent e) {
 				Grid grid = RTable.getGrid();
 				if (grid != null) {
-					grid = new Spread().spread(RTable.getTabFolder(), 50, 20, "Sheet " + (RTable.getTabFolder().getItemCount() + 1));
+					grid = new Spread().spread(RTable.getTabFolder(), 1, 1, "Sheet " + (RTable.getTabFolder().getItemCount() + 1));
 					RTable.setGrid(grid);
 				}
 			}

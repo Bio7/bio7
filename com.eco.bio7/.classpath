@@ -15,6 +15,6 @@
 	<classpathentry exported="true" kind="lib" path="baseline.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/swt-grouplayout.jar"/>
 	<classpathentry kind="lib" path="/com.eco.bio7.libs/libs/jogl-all.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre8"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

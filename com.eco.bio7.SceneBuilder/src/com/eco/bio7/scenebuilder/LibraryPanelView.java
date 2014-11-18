@@ -38,7 +38,7 @@ public class LibraryPanelView extends ViewPart implements ILinkedWithEditorView 
 	private IEditorPart currentEditor;
 
 	public LibraryPanelView() {
-		// TODO Auto-generated constructor stub
+		
 	}
 
 	@Override
@@ -59,15 +59,7 @@ public class LibraryPanelView extends ViewPart implements ILinkedWithEditorView 
 			}
 		});
 
-		// getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
-		/*
-		 * linkWithEditorAction = new Action("Link with Editor",
-		 * IAction.AS_CHECK_BOX){
-		 * 
-		 * @Override public void run() { toggleLinking(isChecked()); } };
-		 */
-		// linkWithEditorAction.setImageDescriptor(getImageDescriptor());
-		// getViewSite().getActionBars().getToolBarManager().add(linkWithEditorAction);
+		
 		getSite().getPage().addPartListener(linkWithEditorPartListener);
 		getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
 
@@ -83,7 +75,7 @@ public class LibraryPanelView extends ViewPart implements ILinkedWithEditorView 
 			updateHierachyView(activeEditor);
 			currentEditor = activeEditor;
 		}
-		// do something with content of the editor
+		
 	}
 
 	protected void toggleLinking(boolean checked) {
@@ -97,18 +89,17 @@ public class LibraryPanelView extends ViewPart implements ILinkedWithEditorView 
 
 		@Override
 		public void partActivated(IWorkbenchPartReference partRef) { //
-			// System.out.println(partRef.getId());
-			// updateHierachyView(partRef, false);
+			
 
 		}
 
 		public void partBroughtToTop(IWorkbenchPartReference partRef) { // TODO
-			// updateHierachyView(partRef, false);
+			
 
 		}
 
 		public void partClosed(IWorkbenchPartReference partRef) { // TODO
-			// updateHierachyView(partRef, true);
+			
 			if (partRef.getId().equals("com.eco.bio7.browser.scenebuilder")) {
 				IEditorReference ref[] = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
 				int count = 0;
@@ -141,7 +132,7 @@ public class LibraryPanelView extends ViewPart implements ILinkedWithEditorView 
 
 		@Override
 		public void partOpened(IWorkbenchPartReference partRef) {
-			// updateHierachyView(partRef, false);
+			
 		}
 
 		public void partHidden(IWorkbenchPartReference partRef) { // TODO
@@ -149,7 +140,7 @@ public class LibraryPanelView extends ViewPart implements ILinkedWithEditorView 
 		}
 
 		public void partVisible(IWorkbenchPartReference partRef) { // TODO
-			// updateHierachyView(partRef);
+			
 
 		}
 
@@ -160,8 +151,7 @@ public class LibraryPanelView extends ViewPart implements ILinkedWithEditorView 
 	};
 
 	private void updateHierachyView(IEditorPart editor) {
-		// if (partRef.getId().equals("com.eco.bio7.browser.scenebuilder")) {
-		// IEditorPart editor=partRef.getPage().getActiveEditor();
+		
 		if (editor instanceof MultiPageEditor) {
 			pag = (MultiPageEditor) editor;
 
@@ -208,14 +198,14 @@ public class LibraryPanelView extends ViewPart implements ILinkedWithEditorView 
 	}
 
 	public void dispose() {
-		// getSite().getWorkbenchWindow().getPartService().removePartListener(partListener);
+		
 
 		super.dispose();
 	}
 
 	@Override
 	public void setFocus() {
-		// TODO Auto-generated method stub
+		
 
 	}
 

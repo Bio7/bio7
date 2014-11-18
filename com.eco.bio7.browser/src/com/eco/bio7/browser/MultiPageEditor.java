@@ -22,7 +22,10 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.web.HTMLEditor;
+import javafx.scene.web.WebView;
 import net.htmlparser.jericho.Source;
 import net.htmlparser.jericho.SourceFormatter;
 
@@ -36,7 +39,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
@@ -44,6 +49,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -131,8 +137,10 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 				htmlEditor = new HTMLEditor();
 			}
 		});
-		htmlEditor.setMaxHeight(2000);
-
+		WebView webview = (WebView) htmlEditor.lookup("WebView");
+		GridPane.setHgrow(webview, Priority.ALWAYS);
+		GridPane.setVgrow(webview, Priority.ALWAYS);
+		// htmlEditor.setMaxHeight(2000);
 		setCustomActions(htmlEditor);
 
 		EventHandler<MouseEvent> onMouseExitedHandler = new EventHandler<MouseEvent>() {
@@ -173,7 +181,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 				/* Paste Event! */
 				else if (evt.isShortcutDown() && evt.getCode() == KeyCode.V) {
 
-				}
+				} 
 
 				else {
 					/*
@@ -292,7 +300,16 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 			Button browserButton = new Button("Open In Browser");
 
+			Button linkButton = new Button("Link");
+			
+			Button imageButton = new Button("Image");
+			
+			Button knitrButton = new Button("Knitr");
+
 			bar.getItems().add(browserButton);
+			bar.getItems().add(linkButton);
+			bar.getItems().add(imageButton);
+			bar.getItems().add(knitrButton);
 
 			browserButton.setOnAction(new EventHandler<ActionEvent>() {
 
@@ -325,25 +342,113 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 				}
 			});
-			/*
-			 * Button setButton = new Button("Display In Editor");
-			 * 
-			 * bar.getItems().add(setButton); setButton.setOnAction(new
-			 * EventHandler<ActionEvent>() {
-			 * 
-			 * @Override public void handle(ActionEvent arg0) { //
-			 * htmlEditor.setHtmlText(getDocument());
-			 * 
-			 * } }); Button knitrButton = new Button("Display in Browser");
-			 * 
-			 * bar.getItems().add(knitrButton); knitrButton.setOnAction(new
-			 * EventHandler<ActionEvent>() {
-			 * 
-			 * @Override public void handle(ActionEvent arg0) {
-			 * 
-			 * } });
-			 */
+
+			linkButton.setOnAction(new EventHandler<ActionEvent>() {
+
+				@Override
+				public void handle(ActionEvent arg0) {
+
+					Display display = PlatformUI.getWorkbench().getDisplay();
+					display.syncExec(new Runnable() {
+						public void run() {
+							String url = "";
+							InputDialog inp = new InputDialog(new Shell(), "Link", "Select", "Link", null);
+
+							if (inp.open() == Dialog.OK) {
+
+								url = inp.getValue();
+
+							}
+
+							WebView webView = (WebView) htmlEditor.lookup("WebView");
+							String selected = (String) webView.getEngine().executeScript("window.getSelection().toString();");
+							String hyperlinkHtml = "<a href=\"" + url.trim() + "\" title=\"" + selected + "\" target=\"_blank\">" + selected + "</a>";
+							try {
+								webView.getEngine().executeScript(getInsertHtmlAtCurstorJS(hyperlinkHtml));
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								//e.printStackTrace();
+							}
+						}
+					});
+
+				}
+			});
+			imageButton.setOnAction(new EventHandler<ActionEvent>() {
+
+				@Override
+				public void handle(ActionEvent arg0) {
+
+					Display display = PlatformUI.getWorkbench().getDisplay();
+					display.syncExec(new Runnable() {
+						public void run() {
+							String imageLocation = "";
+							InputDialog inp = new InputDialog(new Shell(), "Image", "Select", "Image", null);
+
+							if (inp.open() == Dialog.OK) {
+
+								imageLocation = inp.getValue();
+
+							}
+							WebView webView = (WebView) htmlEditor.lookup("WebView");
+							
+							try {
+								webView.getEngine().executeScript(getInsertHtmlAtCurstorJS("<img alt=\"Image\" src=\""+imageLocation+"\"/>"));
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							
+							
+						}
+					});
+
+				}
+			});
+			
+			knitrButton.setOnAction(new EventHandler<ActionEvent>() {
+
+				@Override
+				public void handle(ActionEvent arg0) {
+
+					Display display = PlatformUI.getWorkbench().getDisplay();
+					display.syncExec(new Runnable() {
+						public void run() {
+							String knitrCode = "";
+							InputDialog inp = new InputDialog(new Shell(), "Image", "Select", "Image", null);
+
+							if (inp.open() == Dialog.OK) {
+
+								knitrCode = inp.getValue();
+
+							}
+							WebView webView = (WebView) htmlEditor.lookup("WebView");
+							try {
+								webView.getEngine().executeScript(getInsertHtmlAtCurstorJS("<!--begin.rcode "+knitrCode+" end.rcode-->"));
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								//e.printStackTrace();
+							}
+							
+							
+						}
+					});
+
+				}
+			});
+			
 		}
+	}
+
+	/*
+	 * Source from:
+	 * http://rajeshkumarsahanee.wordpress.com/author/rajeshsahanee/
+	 */
+	private String getInsertHtmlAtCurstorJS(String html) {
+		return "insertHtmlAtCursor('" + html + "');" + "function insertHtmlAtCursor(html) {\n" + " var range, node;\n" + " if (window.getSelection && window.getSelection().getRangeAt) {\n"
+				+ " window.getSelection().deleteFromDocument();\n" + " range = window.getSelection().getRangeAt(0);\n" + " node = range.createContextualFragment(html);\n"
+				+ " range.insertNode(node);\n" + " } else if (document.selection && document.selection.createRange) {\n" + " document.selection.createRange().pasteHTML(html);\n"
+				+ " document.selection.clear();" + " }\n" + "}";
 	}
 
 	/**

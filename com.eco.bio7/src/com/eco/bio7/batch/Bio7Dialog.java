@@ -9,11 +9,12 @@
  *     M. Austenfeld
  *******************************************************************************/
 
-
 package com.eco.bio7.batch;
 
 import java.io.File;
 
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
@@ -175,7 +176,8 @@ public class Bio7Dialog {
 	/**
 	 * Opens a decision Dialog with the given text. The decision dialog will set
 	 * the variable in the Flow editor of the bio7 application to true or false
-	 * depending on the decision. In addition the selected boolean will be returned.
+	 * depending on the decision. In addition the selected boolean will be
+	 * returned.
 	 * 
 	 * @param text
 	 *            the text for the dialog.
@@ -209,7 +211,7 @@ public class Bio7Dialog {
 			BatchModel.setDecision("false");
 			return false;
 		}
-		
+
 	}
 
 	/**
@@ -424,6 +426,28 @@ public class Bio7Dialog {
 
 		return ApplicationWorkbenchWindowAdvisor.getOS();
 
+	}
+
+	/**
+	 * A method to open a text input dialog.
+	 * 
+	 * @param text
+	 *            the title
+	 * @param text1
+	 *            a text
+	 * @param text2
+	 *            another text
+	 * @return a String value
+	 */
+	public String inputDialog(String text, String text1, String text2) {
+		InputDialog inp = new InputDialog(new Shell(), text, text1, text2, null);
+		String theInput = "";
+		if (inp.open() == Dialog.OK) {
+
+			theInput = inp.getValue();
+
+		}
+		return theInput;
 	}
 
 }

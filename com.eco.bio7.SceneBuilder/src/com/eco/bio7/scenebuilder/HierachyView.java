@@ -6,9 +6,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
-
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -19,7 +17,6 @@ import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-
 import com.eco.bio7.scenebuilder.editor.ILinkedWithEditorView;
 import com.eco.bio7.scenebuilder.editor.LinkWithEditorPartListener;
 import com.eco.bio7.scenebuilder.editor.MultiPageEditor;
@@ -58,14 +55,6 @@ public class HierachyView extends ViewPart implements ILinkedWithEditorView {
 			}
 		});
 
-		/*
-		 * linkWithEditorAction = new Action("Link with Editor",
-		 * IAction.AS_CHECK_BOX) {
-		 * 
-		 * @Override public void run() { toggleLinking(isChecked()); } };
-		 */
-		// linkWithEditorAction.setImageDescriptor(getImageDescriptor());
-		// getViewSite().getActionBars().getToolBarManager().add(linkWithEditorAction);
 		getSite().getPage().addPartListener(linkWithEditorPartListener);
 		getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
 	}
@@ -80,7 +69,7 @@ public class HierachyView extends ViewPart implements ILinkedWithEditorView {
 			updateHierachyView(activeEditor);
 			currentEditor = activeEditor;
 		}
-		// do something with content of the editor
+
 	}
 
 	protected void toggleLinking(boolean checked) {
@@ -103,10 +92,6 @@ public class HierachyView extends ViewPart implements ILinkedWithEditorView {
 
 					if (pag != null) {
 						HierarchyTreeViewController h = new HierarchyTreeViewController(pag.editorController);
-						// HierarchyPanelController h = new
-						// HierarchyPanelController(pag.editorController);
-						// ContentPanelController h = new
-						// ContentPanelController(pag.editorController);
 						final BorderPane pane = new BorderPane();
 						pane.setCenter(h.getPanelRoot());
 						scene = new Scene(pane);
@@ -143,13 +128,10 @@ public class HierachyView extends ViewPart implements ILinkedWithEditorView {
 
 		@Override
 		public void partActivated(IWorkbenchPartReference partRef) { //
-			// System.out.println(partRef.getId());
-			// updateHierachyView(partRef, false);
 
 		}
 
 		public void partBroughtToTop(IWorkbenchPartReference partRef) { // TODO
-			// updateHierachyView(partRef, false);
 
 		}
 
@@ -179,25 +161,24 @@ public class HierachyView extends ViewPart implements ILinkedWithEditorView {
 			}
 		}
 
-		public void partDeactivated(IWorkbenchPartReference partRef) { // TODO
-																		// //
+		public void partDeactivated(IWorkbenchPartReference partRef) {
 
 		}
 
 		@Override
 		public void partOpened(IWorkbenchPartReference partRef) {
-			// updateHierachyView(partRef, false);
-		}
-
-		public void partHidden(IWorkbenchPartReference partRef) { // TODO
 
 		}
 
-		public void partVisible(IWorkbenchPartReference partRef) { // TODO
+		public void partHidden(IWorkbenchPartReference partRef) {
 
 		}
 
-		public void partInputChanged(IWorkbenchPartReference partRef) { // TODO
+		public void partVisible(IWorkbenchPartReference partRef) {
+
+		}
+
+		public void partInputChanged(IWorkbenchPartReference partRef) {
 
 		}
 
@@ -211,7 +192,6 @@ public class HierachyView extends ViewPart implements ILinkedWithEditorView {
 
 	@Override
 	public void setFocus() {
-		// TODO Auto-generated method stub
 
 	}
 

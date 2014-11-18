@@ -243,10 +243,9 @@ public class DebugRScript extends Action {
 
 					try {
 						markers[i].setAttribute(IMarker.TEXT, result);
-						// System.out.println("This is " +
-						// markers[i].getAttribute(IMarker.TEXT));
-					} catch (CoreException e) {// TODO Auto-generated catch
-												// block
+						
+					} catch (CoreException e) {
+												
 						e.printStackTrace();
 					}
 				}
@@ -283,7 +282,7 @@ public class DebugRScript extends Action {
 				try {
 					resource.deleteMarkers("com.eco.bio7.reditor.debugrulermark", false, IResource.DEPTH_ZERO);
 				} catch (CoreException e1) {
-					// TODO Auto-generated catch block
+					
 					e1.printStackTrace();
 				}
 
@@ -295,7 +294,7 @@ public class DebugRScript extends Action {
 					marker.setAttribute(IMarker.CHAR_START, reg.getOffset());
 					marker.setAttribute(IMarker.CHAR_END, reg.getOffset() + reg.getLength());
 				} catch (CoreException e) {
-					// TODO Auto-generated catch block
+					
 					e.printStackTrace();
 				}
 			}
@@ -321,10 +320,9 @@ public class DebugRScript extends Action {
 		for (int i = 0; i < markers.length; ++i) {
 			try {
 				map1.put((Integer) markers[i].getAttribute(IMarker.LINE_NUMBER), (String) markers[i].getAttribute(IMarker.MESSAGE));
-				// System.out.println( (String)
-				// markers[i].getAttribute(IMarker.TEXT));
+				
 			} catch (CoreException e) {
-				// TODO Auto-generated catch block
+				
 				e.printStackTrace();
 			}
 		}

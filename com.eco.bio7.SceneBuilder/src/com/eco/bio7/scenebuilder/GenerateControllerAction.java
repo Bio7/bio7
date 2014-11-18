@@ -49,7 +49,6 @@ public class GenerateControllerAction extends Action {
 					editor.editorController.getFxomDocument());
 			buf.setFormat(FORMAT_TYPE.FULL);
 			buf.setTextType(TEXT_TYPE.WITH_COMMENTS);
-			// System.out.println(buf.toString());
 
 			IWorkbenchWindow window = PlatformUI.getWorkbench()
 					.getActiveWorkbenchWindow();
@@ -61,7 +60,7 @@ public class GenerateControllerAction extends Action {
 				try {
 					page.openEditor(input, "org.eclipse.ui.DefaultTextEditor");
 				} catch (PartInitException e) {
-					// TODO Auto-generated catch block
+					
 					e.printStackTrace();
 				}
 		}
@@ -92,7 +91,7 @@ public class GenerateControllerAction extends Action {
 
 		public String getName() {
 			int len = Math.min(5, string.length());
-			return "Generated_Controller_Class";//string.substring(0, len).concat("..."); //$NON-NLS-1$
+			return "Generated_Controller_Class";
 		}
 
 		public boolean isReadOnly() {

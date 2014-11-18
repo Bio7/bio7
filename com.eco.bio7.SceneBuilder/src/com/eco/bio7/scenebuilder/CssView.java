@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2007-2014 M. Austenfeld
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     M. Austenfeld
+ *******************************************************************************/
 package com.eco.bio7.scenebuilder;
 
 import javafx.application.Platform;
@@ -6,9 +16,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
-
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -19,7 +27,6 @@ import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-
 import com.eco.bio7.scenebuilder.editor.ILinkedWithEditorView;
 import com.eco.bio7.scenebuilder.editor.LinkWithEditorPartListener;
 import com.eco.bio7.scenebuilder.editor.MultiPageEditor;
@@ -37,7 +44,7 @@ public class CssView extends ViewPart implements ILinkedWithEditorView {
 	private IEditorPart currentEditor;
 
 	public CssView() {
-		// TODO Auto-generated constructor stub
+		
 	}
 
 	@Override
@@ -58,16 +65,9 @@ public class CssView extends ViewPart implements ILinkedWithEditorView {
 			}
 		});
 
-		// getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
-		/*
-		 * linkWithEditorAction = new Action("Link with Editor",
-		 * IAction.AS_CHECK_BOX) {
-		 * 
-		 * @Override public void run() { toggleLinking(isChecked()); } };
-		 */
+		
 
 		getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
-		// getViewSite().getActionBars().getToolBarManager().add(linkWithEditorAction);
 		getSite().getPage().addPartListener(linkWithEditorPartListener);
 		getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
 
@@ -141,12 +141,12 @@ public class CssView extends ViewPart implements ILinkedWithEditorView {
 
 		@Override
 		public void partActivated(IWorkbenchPartReference partRef) { //
-			// updateHierachyView(partRef, false);
+			
 
 		}
 
 		public void partBroughtToTop(IWorkbenchPartReference partRef) { // TODO
-			// updateHierachyView(partRef, false);
+			
 
 		}
 
@@ -183,7 +183,7 @@ public class CssView extends ViewPart implements ILinkedWithEditorView {
 
 		@Override
 		public void partOpened(IWorkbenchPartReference partRef) {
-			// updateHierachyView(partRef, false);
+			
 		}
 
 		public void partHidden(IWorkbenchPartReference partRef) { // TODO
