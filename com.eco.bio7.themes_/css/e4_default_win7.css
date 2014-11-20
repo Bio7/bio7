@@ -135,31 +135,31 @@ CTabItem:selected {
 
 .MPartStack {
 	swt-tab-renderer: url('bundleclass://org.eclipse.e4.ui.workbench.renderers.swt/org.eclipse.e4.ui.workbench.renderers.swt.CTabRendering');
-	swt-selected-tab-fill: '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_END' 100% 100%;
-	swt-unselected-tabs-color:  white #eeeeee #dddddd 25% 25% 50%;
+	swt-selected-tab-fill: '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_END' 100.0% 100.0%;
+	swt-unselected-tabs-color:  white #eeeeee #dddddd 25.0% 25.0% 50.0%;
 	swt-outer-keyline-color: '#org-eclipse-ui-workbench-INACTIVE_TAB_OUTER_KEYLINE_COLOR';
 	swt-inner-keyline-color: '#org-eclipse-ui-workbench-INACTIVE_TAB_INNER_KEYLINE_COLOR';
 	swt-tab-outline: '#org-eclipse-ui-workbench-INACTIVE_TAB_OUTLINE_COLOR';
-	padding: 1px 2px 2px;
+	padding: 1.0px 2.0px 2.0px;
 	swt-shadow-visible: false;
 	swt-mru-visible: false;
 	color: '#org-eclipse-ui-workbench-INACTIVE_TAB_TEXT_COLOR';
-	swt-tab-height: 22px; 
+	swt-tab-height: 22.0px; 
 	
 }
 
 .MPartStack.active {
-	swt-selected-tab-fill: '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_END' 100% 100%;
-	swt-unselected-tabs-color: white #eeeeee #dddddd 25% 25% 50%;
+	swt-selected-tab-fill: '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_END' 100.0% 100.0%;
+	swt-unselected-tabs-color: white #eeeeee #dddddd 25.0% 25.0% 50.0%;
 	swt-outer-keyline-color: '#org-eclipse-ui-workbench-ACTIVE_TAB_OUTER_KEYLINE_COLOR';
 	swt-inner-keyline-color: '#org-eclipse-ui-workbench-ACTIVE_TAB_INNER_KEYLINE_COLOR';
 	swt-tab-outline: '#org-eclipse-ui-workbench-ACTIVE_TAB_OUTLINE_COLOR';
 	swt-shadow-visible: false;
-	swt-tab-height: 22px; 
+	swt-tab-height: 22.0px; 
 }
 
 .MPartStack.active.noFocus {
-	swt-selected-tab-fill: '#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_BG_START' '#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_BG_END' 100% 100%;
+	swt-selected-tab-fill: '#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_BG_START' '#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_BG_END' 100.0% 100.0%;
 }
 
 .MPartStack.active.noFocus > CTabItem:selected {
@@ -172,15 +172,19 @@ CTabItem:selected {
 
 .MToolControl.TrimStack {
 	frame-image:  url('./win7TSFrame.png');
-	handle-image:  url('./win7TSFrame.png');
-	frame-cuts: 5px 1px 5px 16px;
+	handle-image:  url('./win7Handle.png');
+	/*frame-cuts: 5px 1px 5px 16px;*/
 }
 
-
+.DragFeedback {
+	background-color: COLOR-WIDGET-NORMAL-SHADOW;
+}
 
 .ModifiedDragFeedback {
 	background-color: #A0A000;
 }
+
+
 
 .MPartStack#left Composite, .MPartStack#right Composite, .MPartStack#bottom Composite {
 	background-color: '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_END';
@@ -194,14 +198,12 @@ CTabItem:selected {
 	background-color: '#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_BG_END';
 }
 
-
-
 /*.MToolBar.Draggable {
-	 handle-image: url("./dragHandle.png");
+  handle-image:  url(./dragHandle.png);
 }
-
+ 
 .MToolControl.Draggable {
-	 handle-image: url("./dragHandle.png");
+  handle-image:  url(./dragHandle.png);
 }*/
 
 
@@ -222,6 +224,11 @@ background-color: #ffffff;
 .MPart{
 
 
+}
+
+#org-eclipse-ui-editorss {
+	swt-tab-height: 8.0px;
+	padding: 0.0px 5.0px 7.0px;
 }
 
 /*The colour for the toolbar of the views*/
@@ -253,7 +260,7 @@ simple: true;
 }
 
 CTabItem:selected {
-background-color: #cccccc #e8e8e8 60%;
+background-color: #cccccc #e8e8e8 60.0%;
 font-weight: normal;
 
 }
@@ -271,9 +278,6 @@ background-color: #ffffff;
 }
 
 
-
-
-
 .MPart.busy {
 	font-style: italic;
 }
@@ -287,15 +291,6 @@ background-color: #ffffff;
 	
 	
 }
-.DragFeedback {
-	background-color: COLOR-WIDGET-NORMAL-SHADOW;
-}
-
-.ModifiedDragFeedback {
-	background-color: #A0A000;
-}
-
-
 
 
 /*The colour of the Tab font!*/
@@ -315,20 +310,20 @@ CTabItem:selected {
 .MPartSashContainer {
 
  background-color: 	#ffffff;
- margin-top: 4px;
-	margin-bottom: 4px;
-	margin-left: 4px;
-	margin-right: 4px;
+ margin-top: 4.0px;
+	margin-bottom: 4.0px;
+	margin-left: 4.0px;
+	margin-right: 4.0px;
  
 }
 
 /*Colour around views!*/
 .MTrimmedWindow {
     background-color: #ffffff;
-    margin-top: 4px;
-	margin-bottom: 4px;
-	margin-left: 4px;
-	margin-right: 4px;
+    margin-top: 4.0px;
+	margin-bottom: 4.0px;
+	margin-left: 4.0px;
+	margin-right: 4.0px;
 	
     /*  */
 }
@@ -336,7 +331,7 @@ CTabItem:selected {
 /*Important to set height for the view menus!*/
 CTabFolder { 
 
- swt-corner-radius: 15;
+ swt-corner-radius: 15.0;
   
 }
 
@@ -348,15 +343,15 @@ CTabFolder {
     background-color:  #eeeeee;
 }
 
-.ToolItemElement{
+/*.ToolItemElement{
     image: url('./win7.png');
     background-color: white #eeeeee #dddddd 25% 25% 50%;
     #Bounds: x=1082 y=186 h=31 w=31;
-}
+}*/
 
-.CompositeElement{
+/*.CompositeElement{
 Bounds: x=1082 y=186 h=31 w=31;
-}
+}*/
 
 
 

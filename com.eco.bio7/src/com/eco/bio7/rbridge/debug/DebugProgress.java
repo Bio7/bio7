@@ -159,12 +159,12 @@ public class DebugProgress {
 			try {
 				input = new BufferedReader(new InputStreamReader(debugSocket.getInputStream()));
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
+				
 				e1.printStackTrace();
 			}
             /*Read the first line!*/
 			data = input.readLine();
-			// variable=input.readLine();
+			
 			String line;
 			int count = 0;
 			boolean capture = false;
@@ -177,7 +177,7 @@ public class DebugProgress {
 					// Omit the first line if a debug message!
 					// System.out.println(line);
 					
-					System.out.println("debug line: "+line);
+					//System.out.println("debug line: "+line);
 
 					if (line.startsWith("Bio7...Debug...Start...")) {
 						capture = true;
@@ -187,7 +187,7 @@ public class DebugProgress {
 					}
 
 					if (line.startsWith("debug:")) {
-						//System.out.println();
+						
 						printConsole = true;
 						
 

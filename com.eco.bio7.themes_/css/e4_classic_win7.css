@@ -82,3 +82,16 @@ CTabItem:selected {
 #org-eclipse-ui-editorss {
 	swt-tab-height: 8px;
 }
+.MTrimBar {
+	background-color: #F0ECE0;
+}
+
+
+.MTrimBar#org-eclipse-ui-main-toolbar  {
+	background-image:  url(./winXPBlue.png);
+}
+
+.MToolControl.TrimStack {
+	frame-image:  url(./winXPBluTSFrame.png);
+	handle-image:  url(./winXPBluHandle.png);
+}

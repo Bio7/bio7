@@ -49,7 +49,6 @@
       <import plugin="org.eclipse.gef"/>
       <import plugin="org.eclipse.core.filesystem" version="1.3.200" match="greaterOrEqual"/>
       <import plugin="com.eco.bio7.pythonedit" version="1.0.0" match="greaterOrEqual"/>
-      <import plugin="com.eco.bio7.physics" version="1.7.0" match="greaterOrEqual"/>
       <import plugin="Bundled_R" version="3.0.0" match="greaterOrEqual"/>
       <import plugin="com.eco.bio7.WorldWind" version="1.7.0" match="greaterOrEqual"/>
       <import plugin="com.eco.bio7.albireo" version="1.7.0" match="greaterOrEqual"/>
@@ -68,9 +67,10 @@
       <import plugin="org.eclipse.jdt.ui" version="3.9.100" match="greaterOrEqual"/>
       <import plugin="org.eclipse.e4.ui.model.workbench" version="1.1.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.e4.ui.workbench" version="1.1.0" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.ui.themes" version="1.0.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.draw2d"/>
       <import plugin="org.eclipse.swt"/>
+      <import plugin="com.eco.bio7.themes" version="1.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.e4.tools.css.spy" version="0.12.0" match="greaterOrEqual"/>
    </requires>
 
    <plugin
