@@ -13,6 +13,7 @@ package com.eco.bio7.jobs;
 
 import java.io.FileReader;
 import java.util.ArrayList;
+
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -21,6 +22,7 @@ import org.eclipse.nebula.widgets.grid.Grid;
 import org.eclipse.nebula.widgets.grid.GridItem;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
+
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.collection.ResizeArray;
 import com.eco.bio7.compile.Compile;
@@ -115,7 +117,7 @@ public class LoadWorkspaceJob extends WorkspaceJob {
 		 */
 		if (grid.getSource() != null) {
 
-			if (grid.isClassBody()==false) {
+			if (grid.isClassBody() == false) {
 				Compile.compileClassWithoutJob(grid.getSource(), grid.getFileName());
 				callSetup();
 			} else {
@@ -212,7 +214,15 @@ public class LoadWorkspaceJob extends WorkspaceJob {
 			Class cla = Compiled.getModel().getClass();
 			try {
 				if (cla.getMethod("setup", null) != null) {
-					Compiled.getModel().setup();
+
+					Display display = PlatformUI.getWorkbench().getDisplay();
+					display.syncExec(new Runnable() {
+
+						public void run() {
+
+							Compiled.getModel().setup();
+						}
+					});
 				}
 
 			} catch (SecurityException e) {

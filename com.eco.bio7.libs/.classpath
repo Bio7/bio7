@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="hardware/jssc.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/poi-3.10.1-20140818.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/poi-ooxml-3.10.1-20140818.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/poi-ooxml-schemas-3.10.1-20140818.jar"/>

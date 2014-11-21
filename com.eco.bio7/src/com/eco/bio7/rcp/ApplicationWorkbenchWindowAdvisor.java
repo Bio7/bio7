@@ -928,6 +928,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		 * https://bugs.eclipse.org/bugs/show_bug.cgi?id=422258
 		 */
 		javafx.application.Platform.setImplicitExit(false);
+		
+		dragDropR();
 
 	}
 
@@ -1104,7 +1106,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			e.printStackTrace();
 		}
 
-		dragDropR();
+		
 
 		addExecutionListener();
 
@@ -1142,7 +1144,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 	private void dragDropR() {
 		Shell sh = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-		DropTarget dt = new DropTarget(sh.getShell(), DND.DROP_DEFAULT | DND.DROP_MOVE);
+		
+		DropTarget dt = new DropTarget(sh, DND.DROP_DEFAULT | DND.DROP_MOVE);
 		dt.setTransfer(new Transfer[] { FileTransfer.getInstance() });
 		dt.addDropListener(new DropTargetAdapter() {
 

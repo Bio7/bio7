@@ -84,14 +84,6 @@ ${cursor}</template>
 	${line_selection}&#13;
 }${cursor}</template>
 
-<template id="rscript.wrapfunction"
-	context="rscript" 
-	name="Surround with function"
-	description="Wraps selected code in a function" 
-	autoinsert="false" 
-	>${newName}&lt;-function(${parameter}) {&#13;
-	${line_selection}&#13;
-}${cursor}</template>
 
 </templates>
 
