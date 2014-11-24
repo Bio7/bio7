@@ -88,7 +88,7 @@ public class StartRServe extends Action {
 					TerminateRserve.killProcessMac();
 
 				}
-                /*Establish a new Rserve connection!*/
+				/* Establish a new Rserve connection! */
 				if (RServe.isRrunning() == false) {
 					RConnectionJob.setStore(Bio7Plugin.getDefault().getPreferenceStore());
 					job = new RConnectionJob();
@@ -110,7 +110,7 @@ public class StartRServe extends Action {
 					job.schedule();
 
 				}
-                /*Shutdown Rserve!*/
+				/* Shutdown Rserve! */
 				else {
 
 					RConnectionJob.setCanceled(true);
@@ -139,20 +139,14 @@ public class StartRServe extends Action {
 				}
 			}
 
-			/* Native connection! */
+			/* This actions starts Rserve by default in the native shell! */
 			else {
-				
+
 				ConsoleInterpreterAction inst = ConsoleInterpreterAction.getInstance();
+				/* Start the native R process! */
 				inst.startR();
 
-				ConsolePageParticipant participant = ConsolePageParticipant.getConsolePageParticipantInstance();
-				/* Start the native R process! */
 				RConnection con = RServe.getConnection();
-				//Process p = participant.getRProcess();
-				/*if (p == null) {
-					
-					inst.startR();
-				}*/
 
 				/* Close an existing Rserve connection! */
 				if (con != null) {
@@ -194,17 +188,9 @@ public class StartRServe extends Action {
 
 					RServe.setRrunning(false);
 
-					// RConnectionJob.getProc().destroy();
-
 					RServe.setConnection(null);
 
 					WorldWindView.setRConnection(null);
-					/*
-					 * if (RCompletionShell.getShellInstance() != null) {
-					 * RCompletionShell.getShellInstance().dispose(); }
-					 */
-
-					// the following wrapped for BeanShell !
 
 				}
 

@@ -140,7 +140,6 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	public IToolBarManager toolBarManager;
 	public IActionBars actionBars;
 	private Pid rPid;
-
 	private Pid shellPid;
 	private Pid pythonPid;
 	private IContributionItem item;
@@ -310,7 +309,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 							} catch (IOException e) {
 								e.printStackTrace();
 							}
-							System.out.println(pathBundle + "/SendSignalCtrlC.exe " + rPid.getPidWindows(RProcess));
+							//System.out.println(pathBundle + "/SendSignalCtrlC.exe " + rPid.getPidWindows(RProcess));
 						} else if (interpreterSelection.equals("shell")) {
 							try {
 								Process p = Runtime.getRuntime().exec(pathBundle + "/SendSignalCtrlC.exe " + shellPid.getPidWindows(nativeShellProcess));
@@ -337,7 +336,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 							} catch (IOException e) {
 								e.printStackTrace();
 							}
-							System.out.println(rPid.getPidWindows(RProcess));
+							//System.out.println(rPid.getPidWindows(RProcess));
 						} else if (interpreterSelection.equals("shell")) {
 							try {
 								Process p = Runtime.getRuntime().exec("kill -INT " + shellPid.getPidUnix(nativeShellProcess));
@@ -561,7 +560,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				RprocessThread = new Thread(new RProcessGrabber());
 				RprocessThread.start();
 				rPid = new Pid();
-				System.out.println("Process Id is: " + rPid.getPidWindows(RProcess));
+				//System.out.println("Process Id is: " + rPid.getPidWindows(RProcess));
 				rOptions();
 
 			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
@@ -578,7 +577,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				RprocessThread = new Thread(new RProcessGrabber());
 				RprocessThread.start();
 				rPid = new Pid();
-				System.out.println("Process Id is: " + rPid.getPidUnix(RProcess));
+				//System.out.println("Process Id is: " + rPid.getPidUnix(RProcess));
 				rOptions();
 			}
 
@@ -595,7 +594,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				RprocessThread = new Thread(new RProcessGrabber());
 				RprocessThread.start();
 				rPid = new Pid();
-				System.out.println("Process Id is: " + rPid.getPidUnix(RProcess));
+				//System.out.println("Process Id is: " + rPid.getPidUnix(RProcess));
 				rOptions();
 			}
 		} catch (IOException e) {
