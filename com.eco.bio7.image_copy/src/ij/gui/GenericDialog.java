@@ -159,6 +159,7 @@ public class GenericDialog extends JDialog implements ActionListener, TextListen
 	 */
 	public void addNumericField(String label, double defaultValue, int digits) {
 		addNumericField(label, defaultValue, digits, 6, null);
+		
 	}
 
 	/**

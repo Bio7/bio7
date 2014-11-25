@@ -308,6 +308,11 @@ public class IJTranserResultsTable {
 
 	}
 	
+	/** 
+	 * A method to transfer results from a particle analysis in ImageJ.
+	 * @param con a Rserve connection
+	 * @param macro an optional macro
+	 */
 	public static void runParticleAnalysis(RConnection con, String macro) {
 		if (macro == null) {
 			IJ.runMacro("run(\"Analyze Particles...\")");

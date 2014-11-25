@@ -8,10 +8,10 @@ html {
 
 	
 body {	
-	margin-left:14px;
+	margin-left:12px;
 	margin-top:10px;
 	font-family:Tahoma;
-	font-size: 12px;
+	font-size: 14px;
 	color:#000000;
 	background-image:url("./titlebanner.gif");
 	background-repeat: repeat-x;
@@ -21,17 +21,20 @@ h1 {
 	text-align:left;
 	font-size: 16pt;
 	font-weight:normal;
-	color:#E5E5E5;
+	color:#000000;
 	} 
 
 h4 {
-	color:#787878;
+	text-align:left;
+	font-size: 10pt;
+	font-weight:normal;
+	color:#000000;
 	}	
 	
 a {
 	display:block;
 	font-family:Tahoma;
-	font-size: 12px;
+	font-size: 14px;
 	color:#000000;
 	font-weight:normal;
 	text-decoration:none;
@@ -39,7 +42,7 @@ a {
 	}
 	
 p {
-	padding-left:14px;
+	padding-left:10px;
 	}
 	
 
