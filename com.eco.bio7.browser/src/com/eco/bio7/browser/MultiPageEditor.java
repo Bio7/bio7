@@ -95,13 +95,9 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	protected IDocumentProvider documentProvider;
 	protected boolean dirty = false;
 	private IFile ifile;
-
 	private boolean isDirty;
-
 	private FileEditorInput fileInputEditor;
-
 	protected Timer timer;
-
 	protected Job job;
 
 	public MultiPageEditor() {
@@ -471,9 +467,15 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	}
 
 	/**
-	 * Saves the multi-page editor's document.
+	 * Saves the multi-page editor's document. Also changes the default HTML code (removes contenteditable arg!).
 	 */
 	public void doSave(IProgressMonitor monitor) {
+		IEditorInput ed = getEditor(1).getEditorInput();
+
+		IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(ed);
+		SourceFormatter sf = formatHtml();
+        String docc=sf.toString().replace("<body contenteditable=\"true\">","<body>");
+		doc.set(docc);
 		getEditor(1).doSave(monitor);
 	}
 

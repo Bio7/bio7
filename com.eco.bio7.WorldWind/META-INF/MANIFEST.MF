@@ -2,13 +2,13 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: WorldW Plug-in
 Bundle-SymbolicName: com.eco.bio7.WorldWind;singleton:=true
-Bundle-Version: 1.7.0
+Bundle-Version: 2.0.0
 Bundle-Activator: worldw.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- com.eco.bio7.image;bundle-version="1.47.1",
- com.eco.bio7.javaedit;bundle-version="1.6.0",
- com.eco.bio7.libs;bundle-version="1.7.0",
+ com.eco.bio7.image;bundle-version="1.49.13",
+ com.eco.bio7.javaedit;bundle-version="2.0.0",
+ com.eco.bio7.libs;bundle-version="2.0.0",
  com.eco.bio7.os
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

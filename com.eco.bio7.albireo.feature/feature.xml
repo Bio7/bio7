@@ -2,7 +2,7 @@
 <feature
       id="com.eco.bio7.albireo.feature"
       label="Bio7 Albireo Plugin"
-      version="1.7.0.qualifier"
+      version="2.0.0.qualifier"
       provider-name="Bio7">
 
    <description url="http://www.example.com/description">

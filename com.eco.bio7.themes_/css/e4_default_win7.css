@@ -173,7 +173,7 @@ CTabItem:selected {
 .MToolControl.TrimStack {
 	frame-image:  url('./win7TSFrame.png');
 	handle-image:  url('./win7Handle.png');
-	/*frame-cuts: 5px 1px 5px 16px;*/
+	frame-cuts: 5px 1px 5px 16px;
 }
 
 .DragFeedback {
@@ -198,13 +198,13 @@ CTabItem:selected {
 	background-color: '#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_BG_END';
 }
 
-/*.MToolBar.Draggable {
-  handle-image:  url(./dragHandle.png);
-}
- 
-.MToolControl.Draggable {
-  handle-image:  url(./dragHandle.png);
+ /* .MToolBar.Draggable {
+	handle-image:  url(./win7Handle.png);
 }*/
+
+.MToolControl.Draggable {
+	handle-image:  url(./win7Handle.png);
+}
 
 
 
@@ -240,7 +240,7 @@ background-color: #ffffff;
 #org-eclipse-ui-main-toolbar {
     eclipse-perspective-keyline-color: #585858;
     background-color: #eeeeee;
-   background-image: url('./win7_old.png');
+   background-image: url('./bio7.png');
     color: #EBE8E4;
 }
 
@@ -301,7 +301,7 @@ CTabItem:selected {
 /*Perspective Switch!*/
 #org-eclipse-ui-main-toolbar #PerspectiveSwitcher {
 	eclipse-perspective-keyline-color: #dddddd;
-	background-image: url('./win7_old.png');
+	background-image: url('./bio7.png');
 	background-color: #ffffff;
 	handle-image: none;
 		

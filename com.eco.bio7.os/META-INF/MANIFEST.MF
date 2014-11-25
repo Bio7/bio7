@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Os
 Bundle-SymbolicName: com.eco.bio7.os
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 2.0.0.qualifier
 Bundle-Vendor: ECO
 Bundle-ClassPath: lib/jna-4.1.0.jar,
  .

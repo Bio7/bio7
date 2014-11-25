@@ -4,7 +4,7 @@ Created-By: 1.6.0_02-b05 (Sun Microsystems Inc.)
 Bundle-ManifestVersion: 2
 Bundle-Name: ImageJ Plug-in
 Bundle-SymbolicName: com.eco.bio7.image;singleton:=true
-Bundle-Version: 1.47.14
+Bundle-Version: 1.49.13
 Bundle-Activator: com.eco.bio7.image.Activator
 Bundle-Vendor: ECO
 Bundle-Localization: plugin
@@ -14,13 +14,13 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.resources,
  org.eclipse.jdt.core,
  org.eclipse.draw2d,
- com.eco.bio7.albireo,
- com.eco.bio7.libs;bundle-version="1.7.0",
- com.eco.bio7.javaedit;bundle-version="1.7.0",
- com.eco.bio7.util;bundle-version="1.7.0",
- org.eclipse.e4.ui.model.workbench;bundle-version="1.1.0",
- org.eclipse.e4.ui.workbench;bundle-version="1.1.0",
- com.eco.bio7.scenebuilder;bundle-version="1.7.0"
+ com.eco.bio7.albireo;bundle-version="2.0.0",
+ com.eco.bio7.libs;bundle-version="2.0.0",
+ com.eco.bio7.javaedit;bundle-version="2.0.0",
+ com.eco.bio7.util;bundle-version="2.0.0",
+ org.eclipse.e4.ui.model.workbench,
+ org.eclipse.e4.ui.workbench,
+ com.eco.bio7.scenebuilder;bundle-version="2.0.0"
 Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy

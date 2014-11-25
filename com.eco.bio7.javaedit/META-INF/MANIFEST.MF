@@ -4,7 +4,7 @@ Created-By: 1.6.0_02-b05 (Sun Microsystems Inc.)
 Bundle-ManifestVersion: 2
 Bundle-Name: Java Plug-in
 Bundle-SymbolicName: com.eco.bio7.javaedit;singleton:=true
-Bundle-Version: 1.7.0
+Bundle-Version: 2.0.0
 Bundle-Activator: com.eco.bio7.javaeditor.Bio7EditorPlugin
 Bundle-Vendor: ECO
 Bundle-Localization: plugin
@@ -14,11 +14,11 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.editors,
  org.eclipse.ui.workbench.texteditor,
  org.eclipse.jdt.core,
- org.eclipse.ui.views;bundle-version="3.6.100",
- org.eclipse.core.resources;bundle-version="3.8.0",
- com.eco.bio7.libs;bundle-version="1.6.0",
+ org.eclipse.ui.views,
+ org.eclipse.core.resources,
+ com.eco.bio7.libs;bundle-version="2.0.0",
  org.eclipse.ui.workbench,
- com.eco.bio7.jfxswt;bundle-version="1.0.0";resolution:=optional
+ com.eco.bio7.jfxswt;bundle-version="2.0.0";resolution:=optional
 Eclipse-LazyStart: true
 Export-Package: com.eco.bio7.compile,
  com.eco.bio7.compile.utils,

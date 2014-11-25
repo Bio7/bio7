@@ -2,19 +2,19 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: SceneBuilder Plug-in
 Bundle-SymbolicName: com.eco.bio7.scenebuilder;singleton:=true
-Bundle-Version: 1.7.0
+Bundle-Version: 2.0.0
 Bundle-Activator: com.eco.bio7.scenebuilder.editor.Activator
 Bundle-Vendor: ECO
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- com.eco.bio7.edit;bundle-version="1.6.0",
- org.eclipse.ui.editors;bundle-version="3.8.0",
- org.eclipse.jface.text;bundle-version="3.8.0",
- org.eclipse.core.resources;bundle-version="3.8.1",
- org.eclipse.ui.ide;bundle-version="3.8.1",
- com.eco.bio7.libs;bundle-version="1.6.0",
+ com.eco.bio7.edit;bundle-version="2.0.0",
+ org.eclipse.ui.editors,
+ org.eclipse.jface.text,
+ org.eclipse.core.resources,
+ org.eclipse.ui.ide,
+ com.eco.bio7.libs;bundle-version="2.0.0",
  org.eclipse.ui.views,
- com.eco.bio7.jfxswt;bundle-version="1.0.0";resolution:=optional
+ com.eco.bio7.jfxswt;bundle-version="2.0.0";resolution:=optional
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Eclipse-BuddyPolicy: ext
