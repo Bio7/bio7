@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2012 M. Austenfeld
+ * Copyright (c) 2007-2014 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,15 +13,7 @@ package com.eco.bio7.ImageJPluginActions;
 
 import ij.IJ;
 import ij.ImagePlus;
-import ij.WindowManager;
-
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.UUID;
-
 import javax.swing.SwingUtilities;
-
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -30,32 +22,15 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.views.IViewDescriptor;
-import org.eclipse.ui.views.IViewRegistry;
 
-import uk.co.mmscomputing.device.scanner.Scanner;
-import uk.co.mmscomputing.device.scanner.ScannerDevice;
-import uk.co.mmscomputing.device.scanner.ScannerIOException;
-import uk.co.mmscomputing.device.scanner.ScannerIOMetadata;
-import uk.co.mmscomputing.device.scanner.ScannerListener;
-
-import com.eco.bio7.image.CanvasView;
 import com.eco.bio7.image.IJTabs;
 
-public class ImageJFileAction extends Action implements IMenuCreator, ScannerListener {
+public class ImageJFileAction extends Action implements IMenuCreator {
 
 	private Menu fMenu;
 
@@ -76,22 +51,12 @@ public class ImageJFileAction extends Action implements IMenuCreator, ScannerLis
 
 	MenuItem[] samples = new MenuItem[url.length];
 
-	Scanner scanner;
 
 	public ImageJFileAction() {
 		setId("File");
 		setToolTipText("ImageJ");
 		setText("File");
 		setMenuCreator(this);
-		// uk.co.mmscomputing.util.JarLib.load(jtwain.class,"D:/eclipse-3.41/com.eco.bio7.libs/libs//uk/co/mmscomputing/device/twain/win32/jtwain");
-		try {
-			 scanner = Scanner.getDevice();
-			 scanner.addListener(this);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
 	}
 
 	public Menu getMenu(Control parent) {
@@ -239,10 +204,10 @@ public class ImageJFileAction extends Action implements IMenuCreator, ScannerLis
 		menuItem10.setText("Page Setup");
 		MenuItem menuItem11 = new MenuItem(fMenu, SWT.PUSH);
 		menuItem11.setText("Print");
-		MenuItem menuItem13 = new MenuItem(fMenu, SWT.PUSH);
+		/*MenuItem menuItem13 = new MenuItem(fMenu, SWT.PUSH);
 		menuItem13.setText("Select Device");
 		MenuItem menuItem14 = new MenuItem(fMenu, SWT.PUSH);
-		menuItem14.setText("Aquire");
+		menuItem14.setText("Aquire");*/
 		MenuItem menuItem6 = new MenuItem(fMenu, SWT.PUSH);
 		menuItem6.setText("Close All Tabs");
 
@@ -384,87 +349,7 @@ public class ImageJFileAction extends Action implements IMenuCreator, ScannerLis
 			}
 		});
 
-		menuItem13.addSelectionListener(new SelectionListener() {
-
-			public void selectionChanged(SelectionChangedEvent event) {
-
-			}
-
-			public void widgetSelected(SelectionEvent e) {
-
-				if (scanner.isBusy() == false) {
-					try {
-
-						scanner.select();
-
-					} catch (ScannerIOException e1) {
-						// TODO Auto-generated catch block
-						Display display = PlatformUI.getWorkbench().getDisplay();
-						display.asyncExec(new Runnable() {
-							public void run() {
-								MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES);
-								message.setMessage("Access denied! Close all Twain dialogs!");
-								message.setText("Bio7");
-								int response = message.open();
-								if (response == SWT.YES) {
-								}
-							}
-						});
-						// e1.printStackTrace();
-					}
-				}
-
-			}
-
-			public void widgetDefaultSelected(SelectionEvent e) {
-
-			}
-		});
-
-		menuItem14.addSelectionListener(new SelectionListener() {
-
-			public void selectionChanged(SelectionChangedEvent event) {
-
-			}
-
-			public void widgetSelected(SelectionEvent e) {
-
-				try {
-					scanner.acquire();
-				} catch (ScannerIOException e1) {
-					// TODO Auto-generated catch block
-					// e1.printStackTrace();
-					Display display = PlatformUI.getWorkbench().getDisplay();
-					display.asyncExec(new Runnable() {
-						public void run() {
-							MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES);
-							message.setMessage("Access denied! \nTwain dialog maybe already opened!");
-							message.setText("Bio7");
-							int response = message.open();
-							if (response == SWT.YES) {
-							}
-						}
-					});
-				}
-
-			}
-
-			public void widgetDefaultSelected(SelectionEvent e) {
-
-			}
-		});
-
-		/*
-		 * menuItem.addSelectionListener(new SelectionListener() {
-		 * 
-		 * public void selectionChanged(SelectionChangedEvent event) { }
-		 * 
-		 * public void widgetSelected(SelectionEvent e) {
-		 * 
-		 * IJ.getInstance().doCommand("Image..."); }
-		 * 
-		 * public void widgetDefaultSelected(SelectionEvent e) { } });
-		 */
+		
 		return fMenu;
 	}
 
@@ -475,47 +360,6 @@ public class ImageJFileAction extends Action implements IMenuCreator, ScannerLis
 	public Menu getMenu(Menu parent) {
 
 		return null;
-	}
-
-	@Override
-	public void update(ScannerIOMetadata.Type type, ScannerIOMetadata metadata) {
-
-		if (type.equals(ScannerIOMetadata.ACQUIRED)) {
-			BufferedImage image = metadata.getImage();
-			ImagePlus imp = new ImagePlus("Scan", image);
-			imp.show();
-			image = null;
-			metadata.setImage(null);
-			try {
-				new uk.co.mmscomputing.concurrent.Semaphore(0, true).tryAcquire(2000, null);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				// e.printStackTrace();
-			}
-
-		} else if (type.equals(ScannerIOMetadata.NEGOTIATE)) {
-			ScannerDevice device = metadata.getDevice();
-			try {
-				device.setResolution(100);
-			} catch (ScannerIOException e) {
-
-				// TODO Auto-generated catch block
-				// e.printStackTrace();
-			}
-			/*
-			 * try{ device.setShowUserInterface(true);
-			 * device.setShowProgressBar(true);
-			 * device.setRegionOfInterest(0,0,210.0,300.0);
-			 * device.setResolution(100); }catch(Exception e){
-			 * e.printStackTrace(); }
-			 */
-		} else if (type.equals(ScannerIOMetadata.STATECHANGE)) {
-
-			// System.err.println(metadata.getStateStr());
-		} else if (type.equals(ScannerIOMetadata.EXCEPTION)) {
-			// metadata.getException().printStackTrace();
-
-		}
 	}
 
 }

@@ -275,7 +275,7 @@ public class Quadview extends ViewPart {
 						job.schedule();
 						Bio7Dialog.message("Transferred data to R!");
 					} else {
-						Bio7Dialog.message("RServer is busy!");
+						Bio7Dialog.message("Rserve is busy!");
 					}
 				}
 				
@@ -330,7 +330,7 @@ public class Quadview extends ViewPart {
 						job.schedule();
 						Bio7Dialog.message("Transferred data to R!");
 					} else {
-						Bio7Dialog.message("RServer is busy!");
+						Bio7Dialog.message("Rserve is busy!");
 					}
 				}
 				

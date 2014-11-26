@@ -254,7 +254,7 @@ public class PackagesList extends Shell {
 
 				} else {
 
-					Bio7Dialog.message("RServer is busy!");
+					Bio7Dialog.message("Rserve is busy!");
 
 				}
 
@@ -283,7 +283,7 @@ public class PackagesList extends Shell {
 
 				} else {
 
-					Bio7Dialog.message("RServer is busy!");
+					Bio7Dialog.message("Rserve is busy!");
 
 				}
 			}

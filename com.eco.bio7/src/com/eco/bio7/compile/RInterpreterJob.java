@@ -42,7 +42,7 @@ public class RInterpreterJob extends WorkspaceJob {
 
 	private static boolean plot = true;
 	
-	private static String rCommand = "" + "try(paste(capture.output(source(BIO7_TEMP,echo=T)),collapse=\"\\n\"))";
+	private static String rCommand = "" + "try(paste(capture.output(source(.bio7TempRScriptFile,echo=T)),collapse=\"\\n\"))";
 
 	public RInterpreterJob(String tointerpret, boolean doPlot, String loc) {
 		super("Interpret RScript");
@@ -85,9 +85,9 @@ public class RInterpreterJob extends WorkspaceJob {
 						if (loc != null) {
 							loc = loc.replace("/", "\\");
 
-							cscript.assign("BIO7_TEMP", loc);
+							cscript.assign(".bio7TempRScriptFile", loc);
 							if (startShell) {
-								cscript.voidEval("try(source(BIO7_TEMP,echo=T))");
+								cscript.voidEval("try(source(.bio7TempRScriptFile,echo=T))");
 
 							} else {
 
@@ -129,9 +129,9 @@ public class RInterpreterJob extends WorkspaceJob {
 					else {
 
 						if (loc != null) {
-							cscript.assign("BIO7_TEMP", loc);
+							cscript.assign(".bio7TempRScriptFile", loc);
 							if (startShell) {
-								cscript.voidEval("try(source(BIO7_TEMP))");
+								cscript.voidEval("try(source(.bio7TempRScriptFile))");
 
 							} else {
 								String rout = null;

@@ -361,11 +361,11 @@ public class RDefaultInformationControl extends AbstractInformationControl imple
 
 										htmlHelpText = RConfiguration.htmlHelpText;
 
-										c.eval("try(outfile <- paste(tempfile(), \".html\", sep=\"\"))").toString();
-										c.eval("try(tools::Rd2HTML(utils:::.getHelpFile(?" + htmlHelpText + "),outfile,package=\"tools\", stages=c(\"install\", \"render\")))");
+										c.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".html\", sep=\"\"))").toString();
+										c.eval("try(tools::Rd2HTML(utils:::.getHelpFile(?" + htmlHelpText + "),.bio7TempHtmlHelpFile,package=\"tools\", stages=c(\"install\", \"render\")))");
 										String out = null;
 										try {
-											out = (String) c.eval("try(outfile)").asString();
+											out = (String) c.eval("try(.bio7TempHtmlHelpFile)").asString();
 										} catch (REXPMismatchException e) {
 
 											e.printStackTrace();

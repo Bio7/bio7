@@ -173,7 +173,7 @@ public class RServe {
 			}
 			}
 
-			// Bio7Dialog.message("RServer is busy!");
+			// Bio7Dialog.message("Rserve is busy!");
 
 		}
 
@@ -210,7 +210,7 @@ public class RServe {
 			job.schedule();
 		} else {
 
-			Bio7Dialog.message("RServer is busy!");
+			Bio7Dialog.message("Rserve is busy!");
 
 		}
 
@@ -266,7 +266,7 @@ public class RServe {
 					MessageBox messageBox = new MessageBox(new Shell(),
 
 					SWT.ICON_WARNING);
-					messageBox.setMessage("RServer connection failed - Server is not running !");
+					messageBox.setMessage("Rserve connection failed\nServer is not running!");
 					messageBox.open();
 				}
 			});

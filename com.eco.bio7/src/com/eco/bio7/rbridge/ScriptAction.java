@@ -121,7 +121,7 @@ public class ScriptAction extends Action implements IMenuCreator {
 											Do.schedule();
 										} else {
 
-											Bio7Dialog.message("RServer is busy!");
+											Bio7Dialog.message("Rserve is busy!");
 										}
 
 									}

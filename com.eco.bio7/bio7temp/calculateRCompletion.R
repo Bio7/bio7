@@ -31,6 +31,6 @@
     all <- gsub(" ", "", all)  #replace whitespace at beginning
     all <- sort(all)
     
-    write(all, file = paste(.bio7tempenvpath$pathTemp, "rproposals.txt", sep = ""))
+    write(all, file = paste(.bio7TempEnvPath$pathTemp, "rproposals.txt", sep = ""))
     
 } 

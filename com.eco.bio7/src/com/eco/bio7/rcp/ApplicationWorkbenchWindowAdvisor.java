@@ -433,8 +433,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			// String pathTempR3 = pathTempR2.replace("\\", "\\\\");
 			store.setDefault(PreferenceConstants.P_TEMP_R, pathTempR2);
 			store.setDefault("Console_Encoding", "CP850");
-			store.setDefault("DEVICE_DEFINITION", "bio7Device <- function(filename = \"" + pathTempR2 + "tempDevicePlot%05d.tiff"
-					+ "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\"bio7Device\")");
+			store.setDefault("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTempR2 + "tempDevicePlot%05d.tiff"
+					+ "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")");
 			store.setDefault("DEVICE_FILENAME", "");
 			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
 		} else if (getOS().equals("Linux")) {
@@ -442,8 +442,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault(PreferenceConstants.P_TEMP_R, pathTempR);
 			store.setDefault("Console_Encoding", "UTF-8");
 			store.setDefault("shell_arguments", "");
-			store.setDefault("DEVICE_DEFINITION", "bio7Device <- function(filename = \"" + pathTempR + "tempDevicePlot%05d.tiff"
-					+ "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\"bio7Device\")");
+			store.setDefault("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTempR + "tempDevicePlot%05d.tiff"
+					+ "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")");
 			store.setDefault("DEVICE_FILENAME", "");
 			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
 		} else if (getOS().equals("Mac")) {
@@ -451,8 +451,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault(PreferenceConstants.P_TEMP_R, pathTempR);
 			store.setDefault("Console_Encoding", "UTF-8");
 			store.setDefault("shell_arguments", "export TERM=xterm");
-			store.setDefault("DEVICE_DEFINITION", "bio7Device <- function(filename = \"" + pathTempR + "tempDevicePlot%05d.tiff"
-					+ "\") { tiff(filename,width = 480, height = 480, type=\"cairo\")}; options(device=\"bio7Device\")");
+			store.setDefault("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTempR + "tempDevicePlot%05d.tiff"
+					+ "\") { tiff(filename,width = 480, height = 480, type=\"cairo\")}; options(device=\".bio7Device\")");
 			store.setDefault("DEVICE_FILENAME", "");
 			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
 		}
@@ -716,7 +716,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 										con.eval("options(device=\"quartz\")");
 									}
 								} else {
-									con.eval("options(device=\"bio7Device\")");
+									con.eval("options(device=\".bio7Device\")");
 								}
 
 							} catch (RserveException e) {
@@ -740,40 +740,40 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 					if (sel.equals("PLOT_IMAGE")) {
 
-						prefsPlotRserve.mult.setStringValue("bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff"
-								+ "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\"bio7Device\")");
+						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff"
+								+ "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")");
 						prefsPlotRserve.deviceFilename.setStringValue("");
 						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 					} else if (sel.equals("PLOT_CAIRO")) {
 
-						prefsPlotRserve.mult.setStringValue("bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff"
-								+ "\") { tiff(filename,width = 480, height = 480, type=\"cairo\")}; options(device=\"bio7Device\")");
+						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff"
+								+ "\") { tiff(filename,width = 480, height = 480, type=\"cairo\")}; options(device=\".bio7Device\")");
 						prefsPlotRserve.deviceFilename.setStringValue("");
 						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 					}
 
 					else if (sel.equals("PLOT_PRINT")) {
 
-						prefsPlotRserve.mult.setStringValue("bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff"
-								+ "\") { tiff(filename,width = 6, height = 6, units=\"in\",res=600)}; options(device=\"bio7Device\")");
+						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff"
+								+ "\") { tiff(filename,width = 6, height = 6, units=\"in\",res=600)}; options(device=\".bio7Device\")");
 						prefsPlotRserve.deviceFilename.setStringValue("");
 						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 					} else if (sel.equals("PLOT_PDF")) {
 
-						prefsPlotRserve.mult.setStringValue("bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot.pdf" + "\") { pdf(filename)}; options(device=\"bio7Device\")");
+						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot.pdf" + "\") { pdf(filename)}; options(device=\".bio7Device\")");
 						prefsPlotRserve.deviceFilename.setStringValue("tempDevicePlot.pdf");
 						prefsPlotRserve.deviceFilename.setEnabled(true, prefsPlotRserve.getFieldEditorParentControl());
 					}
 
 					else if (sel.equals("PLOT_SVG")) {
 
-						prefsPlotRserve.mult.setStringValue("bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot.svg" + "\") { svg(filename)}; options(device=\"bio7Device\")");
+						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot.svg" + "\") { svg(filename)}; options(device=\".bio7Device\")");
 						prefsPlotRserve.deviceFilename.setStringValue("tempDevicePlot.svg");
 						prefsPlotRserve.deviceFilename.setEnabled(true, prefsPlotRserve.getFieldEditorParentControl());
 
 					} else if (sel.equals("PLOT_POSTSCRIPT")) {
 
-						prefsPlotRserve.mult.setStringValue("bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot.eps" + "\") { postscript(filename)}; options(device=\"bio7Device\")");
+						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot.eps" + "\") { postscript(filename)}; options(device=\".bio7Device\")");
 						prefsPlotRserve.deviceFilename.setStringValue("tempDevicePlot.eps");
 						prefsPlotRserve.deviceFilename.setEnabled(true, prefsPlotRserve.getFieldEditorParentControl());
 					}
@@ -974,7 +974,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 								Do.schedule();
 							} else {
 
-								Bio7Dialog.message("RServer is busy!");
+								Bio7Dialog.message("Rserve is busy!");
 							}
 
 						}
@@ -1229,11 +1229,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			file = fileList[0];
 		}
 
-		String load = "try(load(file =BIO7_TEMP))";
+		String load = "try(load(file =.bio7TempRScriptFile))";
 		if (RState.isBusy() == false) {
 			RState.setBusy(true);
 			try {
-				RServe.getConnection().assign("BIO7_TEMP", file);
+				RServe.getConnection().assign(".bio7TempRScriptFile", file);
 			} catch (RserveException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -1252,7 +1252,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			Do.schedule();
 		} else {
 
-			Bio7Dialog.message("RServer is busy!");
+			Bio7Dialog.message("Rserve is busy!");
 
 		}
 

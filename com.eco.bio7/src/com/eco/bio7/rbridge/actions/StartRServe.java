@@ -307,14 +307,14 @@ public class StartRServe extends Action {
 		if (con != null) {
 
 			try {
-				con.assign("BIO7_TEMP", file);
+				con.assign(".bio7TempRScriptFile", file);
 			} catch (RserveException e) {
 
 				e.printStackTrace();
 			}
 
 		}
-		String load = "try(load(file=BIO7_TEMP))";
+		String load = "try(load(file=.bio7TempRScriptFile))";
 		RInterpreterJob Do = new RInterpreterJob(load, false, null);
 		Do.setUser(true);
 		Do.schedule();

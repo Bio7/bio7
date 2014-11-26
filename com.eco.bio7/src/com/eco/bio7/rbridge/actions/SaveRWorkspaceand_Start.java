@@ -44,7 +44,7 @@ public class SaveRWorkspaceand_Start extends Action {
 
 				saver(d);
 			} else {
-				Bio7Dialog.message("RServer is busy!");
+				Bio7Dialog.message("Rserve is busy!");
 			}
 
 		} else {

@@ -161,15 +161,15 @@ public class RFormatAction extends Action implements IObjectActionDelegate {
 			if (selectionConsole.equals("R")) {
 				ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
 				con.pipeToRConsole("options(prompt=\" \")");
-				con.pipeToRConsole("con1 <- socketConnection(port = " + port + ", server = TRUE,timeout=10)");
-				con.pipeToRConsole("library(formatR);tidy.source(source = \"" + loc + "\",file = con1)");
+				con.pipeToRConsole(".bio7FormatSocket <- socketConnection(port = " + port + ", server = TRUE,timeout=10)");
+				con.pipeToRConsole("library(formatR);tidy.source(source = \"" + loc + "\",file = .bio7FormatSocket)");
 				/*
 				 * We use sockets here to wait for the clipboard data to be
 				 * present (avoid parallel execution of R and Java commands
 				 * caused by the threaded shell!)
 				 */
 
-				con.pipeToRConsole("close(con1)");
+				con.pipeToRConsole("close(.bio7FormatSocket)");
 				con.pipeToRConsole("writeLines(\"\")");
 				con.pipeToRConsole("options(prompt=\"> \")");
 				getTextSocket(doc, input, port);

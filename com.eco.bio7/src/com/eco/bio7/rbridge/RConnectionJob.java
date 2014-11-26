@@ -194,11 +194,11 @@ public class RConnectionJob extends WorkspaceJob {
 			//System.out.println(tempPath);
 			con.eval("try(options(max.print=5000))");
 			/*Define a new R environment!*/
-            con.eval("try(.bio7tempenvpath<- new.env())");
+            con.eval("try(.bio7TempEnvPath<- new.env())");
             /*Set Bio7 temp path in R!*/
-            con.eval("try(assign(\"pathTemp\", \""+tempPath+"\", env=.bio7tempenvpath))");
+            con.eval("try(assign(\"pathTemp\", \""+tempPath+"\", env=.bio7TempEnvPath))");
             /*Make the default completion function in R available!*/
-            con.eval("try(source(paste(.bio7tempenvpath$pathTemp,'calculateRCompletion.R',sep='')))");
+            con.eval("try(source(paste(.bio7TempEnvPath$pathTemp,'calculateRCompletion.R',sep='')))");
 			//con.eval("try(setHook(packageEvent(\"spatstat\",\"onLoad\"),\"writeFunctionDef\"))");
             /*
 			 * Set the default install location for the add on packages!

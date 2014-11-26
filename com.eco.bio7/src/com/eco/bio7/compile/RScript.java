@@ -223,7 +223,7 @@ public class RScript {
 
 			Do.schedule();
 		} else {
-			System.out.println("RServer is busy. Can't execute the R script!");
+			System.out.println("Rserve is busy. Can't execute the R script!");
 		}
 
 	}
@@ -258,7 +258,7 @@ public class RScript {
 				}
 
 			} else {
-				System.out.println("RServer is busy. Can't execute the R script!");
+				System.out.println("Rserve is busy. Can't execute the R script!");
 
 			}
 
@@ -309,7 +309,7 @@ public class RScript {
 				// job.setSystem(true);
 				job.schedule();
 			} else {
-				System.out.println("RServer is busy. Can't execute the R script!");
+				System.out.println("Rserve is busy. Can't execute the R script!");
 			}
 		}
 		return rexp;
@@ -379,7 +379,7 @@ public class RScript {
 				RState.setBusy(false);
 			}
 			else {
-				System.out.println("RServer is busy. Can't execute the R script!");
+				System.out.println("Rserve is busy. Can't execute the R script!");
 			}
 
 

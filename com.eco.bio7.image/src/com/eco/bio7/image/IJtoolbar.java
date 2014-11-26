@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2012 M. Austenfeld
+ * Copyright (c) 2007-2014 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,25 +13,19 @@ package com.eco.bio7.image;
 
 import ij.IJ;
 
-import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.Panel;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-
 import javax.swing.JApplet;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.part.ViewPart;
-
 import com.eco.bio7.swt.SwtAwt;
 
 public class IJtoolbar extends ViewPart {
@@ -119,7 +113,6 @@ public class IJtoolbar extends ViewPart {
 		jpp = new JPanel();
 		jpp.setLayout(new GridLayout(2, 1));
 		jpp.add(IJ.getInstance().toolbar);
-
 		jpp.add(IJ.getInstance().statusBar);
 
 		contentPane.add(jpp);

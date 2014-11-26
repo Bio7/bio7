@@ -65,11 +65,11 @@ public class RLibraryList extends Shell {
 		if (c != null) {
 
 			try {
-				c.eval("try(pkg <- list(sort(.packages(all.available = TRUE))))");
+				c.eval("try(.bio7ListOfWebPackages <- list(sort(.packages(all.available = TRUE))))");
 
-				c.eval("names<-pkg[[1]]");
+				c.eval(".bio7ListOfWebPackagesNames<-.bio7ListOfWebPackages[[1]]");
 				try {
-					b = (int) c.eval("length(names)").asInteger();
+					b = (int) c.eval("length(.bio7ListOfWebPackagesNames)").asInteger();
 				} catch (REXPMismatchException e1) {
 
 					e1.printStackTrace();
@@ -84,7 +84,7 @@ public class RLibraryList extends Shell {
 				String st = null;
 
 				try {
-					st = (String) c.eval("names[" + i + "]").asString();
+					st = (String) c.eval(".bio7ListOfWebPackagesNames[" + i + "]").asString();
 				} catch (REXPMismatchException e1) {
 
 					e1.printStackTrace();
@@ -120,7 +120,7 @@ public class RLibraryList extends Shell {
 						Do.schedule();
 					} else {
 
-						Bio7Dialog.message("RServer is busy!");
+						Bio7Dialog.message("Rserve is busy!");
 
 					}
 				} else {
@@ -155,7 +155,7 @@ public class RLibraryList extends Shell {
 						Do.schedule();
 					} else {
 
-						Bio7Dialog.message("RServer is busy!");
+						Bio7Dialog.message("Rserve is busy!");
 
 					}
 				} else {

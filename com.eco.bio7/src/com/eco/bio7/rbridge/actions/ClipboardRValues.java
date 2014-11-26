@@ -63,7 +63,7 @@ public class ClipboardRValues extends Action {
 				MessageBox messageBox = new MessageBox(new Shell(),
 
 				SWT.ICON_WARNING);
-				messageBox.setMessage("RServer is busy!");
+				messageBox.setMessage("Rserve is busy!");
 				messageBox.open();
 
 			}

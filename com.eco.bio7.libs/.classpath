@@ -30,8 +30,6 @@
 	<classpathentry exported="true" kind="lib" path="OpenOffice/juh.jar" sourcepath="com.eco.bio7.libssrc.zip"/>
 	<classpathentry exported="true" kind="lib" path="OpenOffice/jurt.jar"/>
 	<classpathentry exported="true" kind="lib" path="OpenOffice/ridl.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/uk.co.mmscomputing.device.twain.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/uk.co.mmscomputing.device.sane.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/grid.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jcollada-0-9-12.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/commons-io-1.4.jar"/>

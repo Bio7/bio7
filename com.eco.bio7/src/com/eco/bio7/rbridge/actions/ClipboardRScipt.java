@@ -66,7 +66,7 @@ public class ClipboardRScipt extends Action {
 
 			else {
 
-				Bio7Dialog.message("RServer is busy!");
+				Bio7Dialog.message("Rserve is busy!");
 
 			}
 		}

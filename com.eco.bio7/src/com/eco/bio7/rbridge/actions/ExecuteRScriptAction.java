@@ -54,7 +54,7 @@ public class ExecuteRScriptAction extends Action {
 					Do.schedule();
 				} else {
 					
-					Bio7Dialog.message("RServer is busy!");
+					Bio7Dialog.message("Rserve is busy!");
 				}
 
 			}

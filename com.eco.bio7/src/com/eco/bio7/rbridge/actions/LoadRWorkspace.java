@@ -119,12 +119,12 @@ public class LoadRWorkspace extends Action {
 		}
 		final String filePath = selected;
 		if (selected != null) {
-			final String load = "try(load(file = BIO7_TEMP))";
+			final String load = "try(load(file = .bio7TempRScriptFile))";
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
 
 				try {
-					d.assign("BIO7_TEMP", selected);
+					d.assign(".bio7TempRScriptFile", selected);
 				} catch (RserveException e) {
 
 					e.printStackTrace();
@@ -145,7 +145,7 @@ public class LoadRWorkspace extends Action {
 				Do.schedule();
 
 			} else {
-				Bio7Dialog.message("RServer is busy!");
+				Bio7Dialog.message("Rserve is busy!");
 			}
 		}
 	}

@@ -53,7 +53,7 @@ public class ClearRWorkspace extends Action {
 			if (selectionConsole.equals("R")) {
 				MessageBox message = new MessageBox(new Shell(),
 						SWT.ICON_QUESTION | SWT.YES | SWT.NO);
-				message.setMessage("Do you really want to remove all objects?");
+				message.setMessage("Do you really want to remove all visible objects?");
 				message.setText("Remove objects");
 				int response = message.open();
 				if (response == SWT.YES) {
@@ -74,21 +74,22 @@ public class ClearRWorkspace extends Action {
 				if (RState.isBusy() == false) {
 					MessageBox message = new MessageBox(new Shell(),
 							SWT.ICON_QUESTION | SWT.YES | SWT.NO);
-					message.setMessage("Do you really want to remove all objects?");
+					message.setMessage("Do you really want to remove all visible objects?");
 					message.setText("Remove objects");
 					int response = message.open();
 					if (response == SWT.YES) {
-						String clear = "rm(list=ls(all=TRUE))";
+						String clear = "rm(list=ls())";
+						//String clear = "rm(list=ls(all=TRUE))";
 
 						try {
 							RConnection con = RServe.getConnection();
 							con.eval(clear);
 							/* Reestablish default device! */
-							boolean customDevice = store
+							/*boolean customDevice = store
 									.getBoolean("USE_CUSTOM_DEVICE");
 							if (customDevice) {
 								con.eval(dev);
-							}
+							}*/
 
 						} catch (RserveException e) {
 							// TODO Auto-generated catch block
@@ -96,7 +97,7 @@ public class ClearRWorkspace extends Action {
 						}
 					}
 				} else {
-					Bio7Dialog.message("RServer is busy!");
+					Bio7Dialog.message("Rserve is busy!");
 				}
 
 			} else {

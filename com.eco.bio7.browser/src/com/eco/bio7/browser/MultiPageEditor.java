@@ -472,10 +472,10 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	public void doSave(IProgressMonitor monitor) {
 		IEditorInput ed = getEditor(1).getEditorInput();
 
-		IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(ed);
+		/*IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(ed);
 		SourceFormatter sf = formatHtml();
         String docc=sf.toString().replace("<body contenteditable=\"true\">","<body>");
-		doc.set(docc);
+		doc.set(docc);*/
 		getEditor(1).doSave(monitor);
 	}
 

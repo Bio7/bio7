@@ -672,7 +672,7 @@ public class ImageMethods extends ViewPart {
 					if (RState.isBusy() == false) {
 						new IJTranserResultsTable().transferResultsTable(con, true);
 					} else {
-						Bio7Dialog.message("RServer is busy!");
+						Bio7Dialog.message("Rserve is busy!");
 					}
 
 				}
@@ -728,7 +728,7 @@ public class ImageMethods extends ViewPart {
 
 
 					} else {
-						Bio7Dialog.message("RServer is busy!");
+						Bio7Dialog.message("Rserve is busy!");
 					}
 
 				} else {
@@ -762,7 +762,7 @@ public class ImageMethods extends ViewPart {
 					if (RState.isBusy() == false) {
 						new IJTranserResultsTable().pointsToR(con);
 					} else {
-						Bio7Dialog.message("RServer is busy!");
+						Bio7Dialog.message("Rserve is busy!");
 					}
 
 				}
@@ -789,7 +789,7 @@ public class ImageMethods extends ViewPart {
 						}
 					});
 				} else {
-					Bio7Dialog.message("RServer is busy!");
+					Bio7Dialog.message("Rserve is busy!");
 				}
 			}
 
@@ -948,7 +948,7 @@ public class ImageMethods extends ViewPart {
 
 					}
 				} else {
-					Bio7Dialog.message("RServer is busy!");
+					Bio7Dialog.message("Rserve is busy!");
 
 				}
 			}
@@ -1002,7 +1002,7 @@ public class ImageMethods extends ViewPart {
 
 					}
 				} else {
-					Bio7Dialog.message("RServer is busy!");
+					Bio7Dialog.message("Rserve is busy!");
 
 				}
 			}
@@ -1099,7 +1099,7 @@ public class ImageMethods extends ViewPart {
 							// clusterjob.setSystem(true);
 							clusterjob.schedule();
 						} else {
-							Bio7Dialog.message("RServer is busy!");
+							Bio7Dialog.message("Rserve is busy!");
 						}
 					} else {
 						Bio7Dialog.message("No image available!");
@@ -1147,7 +1147,7 @@ public class ImageMethods extends ViewPart {
 							// pcaJob.setSystem(true);
 							pcaJob.schedule();
 						} else {
-							Bio7Dialog.message("RServer is busy!");
+							Bio7Dialog.message("Rserve is busy!");
 						}
 					} else {
 						Bio7Dialog.message("No image available!");

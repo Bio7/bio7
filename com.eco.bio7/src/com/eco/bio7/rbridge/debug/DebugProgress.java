@@ -55,7 +55,7 @@ public class DebugProgress {
 		if (selectionConsole.equals("R")) {
 			ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
 			/* Create socket connection in global environment! */
-			con.pipeToRConsole(".GlobalEnv$.socketCon1 <- socketConnection(port = " + port + ", server = TRUE,timeout=10);" + "sink(.GlobalEnv$.socketCon1)");
+			con.pipeToRConsole(".GlobalEnv$.bio7DebugSocketConnectionProgress <- socketConnection(port = " + port + ", server = TRUE,timeout=10);" + "sink(.GlobalEnv$.bio7DebugSocketConnectionProgress)");
 			/* Pipe the debug command ('n','s','f','c') to R */
 			con.pipeToRConsole(command);
 			/*
@@ -70,7 +70,7 @@ public class DebugProgress {
 					+ "print(ls.str(), max.level = 0);" 
 					+ "sink();" // Close
 					/*capturing output.*/
-					+ "close(.GlobalEnv$.socketCon1);" 
+					+ "close(.GlobalEnv$.bio7DebugSocketConnectionProgress);" 
 					+ "writeLines(\"\")");
 
 			/* Clear the debug spreadsheet! */

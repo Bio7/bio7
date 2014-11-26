@@ -420,7 +420,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				/* Start shell with arguments! */
 				ConsolePageParticipant.pipeInputToConsole(shellArgs, true, true);
 				shellPid = new Pid();
-				System.out.println("Process Id is: " + shellPid.getPidWindows(nativeShellProcess));
+				//System.out.println("Process Id is: " + shellPid.getPidWindows(nativeShellProcess));
 
 			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
 				// Some Useful commands: export TERM=xterm; top -b; ssh -tt
@@ -436,7 +436,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				/* Start shell with arguments! */
 				ConsolePageParticipant.pipeInputToConsole(shellArgs, true, true);
 				shellPid = new Pid();
-				System.out.println("Process Id is: " + shellPid.getPidUnix(nativeShellProcess));
+				//System.out.println("Process Id is: " + shellPid.getPidUnix(nativeShellProcess));
 			}
 
 			else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
@@ -448,7 +448,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				/* Start shell with arguments! */
 				ConsolePageParticipant.pipeInputToConsole(shellArgs, true, false);
 				shellPid = new Pid();
-				System.out.println("Process Id is: " + shellPid.getPidUnix(nativeShellProcess));
+				//System.out.println("Process Id is: " + shellPid.getPidUnix(nativeShellProcess));
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -479,7 +479,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				pythonProcessThread = new Thread(new PythonProcessGrabber());
 				pythonProcessThread.start();
 				pythonPid = new Pid();
-				System.out.println("Process Id is: " + pythonPid.getPidWindows(pythonProcess));
+				//System.out.println("Process Id is: " + pythonPid.getPidWindows(pythonProcess));
 
 			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
 
@@ -493,7 +493,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				pythonProcessThread = new Thread(new PythonProcessGrabber());
 				pythonProcessThread.start();
 				pythonPid = new Pid();
-				System.out.println("Process Id is: " + pythonPid.getPidUnix(pythonProcess));
+				//System.out.println("Process Id is: " + pythonPid.getPidUnix(pythonProcess));
 			}
 
 			else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
@@ -507,7 +507,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				pythonProcessThread = new Thread(new PythonProcessGrabber());
 				pythonProcessThread.start();
 				pythonPid = new Pid();
-				System.out.println("Process Id is: " + pythonPid.getPidUnix(pythonProcess));
+				//System.out.println("Process Id is: " + pythonPid.getPidUnix(pythonProcess));
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -1301,7 +1301,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					// LineFeed.
 
 				} else {
-					Bio7Dialog.message("RServer is busy!");
+					Bio7Dialog.message("Rserve is busy!");
 				}
 			}
 		} else {

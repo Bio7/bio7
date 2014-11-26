@@ -147,10 +147,10 @@ public class DebugRScript extends Action {
 								con.pipeToRConsole(".bio7tempenv<- new.env()");
 								con.pipeToRConsole("assign(\"bio7tempVar\", findLineNum('" + loc + "#" + lineNum + "'), env=.bio7tempenv)");
 								con.pipeToRConsole("setBreakpoint('" + loc + "#" + lineNum + "')");
-								con.pipeToRConsole("con1 <- socketConnection(port = " + port + ", server = TRUE)");
-								con.pipeToRConsole("tryCatch(writeLines(.bio7tempenv$bio7tempVar[[1]]$name, con1),error = function(e) writeLines('ERROR', con1))");
-								con.pipeToRConsole("tryCatch(writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), con1),error = function(e) writeLines('ERROR', con1))");
-								con.pipeToRConsole("close(con1)");
+								con.pipeToRConsole(".bio7DebugScriptSocketConnection <- socketConnection(port = " + port + ", server = TRUE)");
+								con.pipeToRConsole("tryCatch(writeLines(.bio7tempenv$bio7tempVar[[1]]$name, .bio7DebugScriptSocketConnection),error = function(e) writeLines('ERROR', .bio7DebugScriptSocketConnection))");
+								con.pipeToRConsole("tryCatch(writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), .bio7DebugScriptSocketConnection),error = function(e) writeLines('ERROR', .bio7DebugScriptSocketConnection))");
+								con.pipeToRConsole("close(.bio7DebugScriptSocketConnection)");
 								con.pipeToRConsole("options(prompt=\"> \")");
 								con.pipeToRConsole("writeLines(\"\")");
 
@@ -169,10 +169,10 @@ public class DebugRScript extends Action {
 								con.pipeToRConsole(".bio7tempenv<- new.env()");
 								con.pipeToRConsole("assign(\"bio7tempVar\", findLineNum('" + loc + "#" + lineNum + "'), env=.bio7tempenv)");
 								con.pipeToRConsole("setBreakpoint('" + loc + "#" + lineNum + "',tracer=quote(" + expression + "))");
-								con.pipeToRConsole("con1 <- socketConnection(port = " + port + ", server = TRUE,timeout=10)");
-								con.pipeToRConsole("tryCatch(writeLines(.bio7tempenv$bio7tempVar[[1]]$name, con1),error = function(e) writeLines('ERROR', con1))");
-								con.pipeToRConsole("tryCatch(writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), con1),error = function(e) writeLines('ERROR', con1))");
-								con.pipeToRConsole("close(con1)");
+								con.pipeToRConsole(".bio7DebugScriptSocketConnection <- socketConnection(port = " + port + ", server = TRUE,timeout=10)");
+								con.pipeToRConsole("tryCatch(writeLines(.bio7tempenv$bio7tempVar[[1]]$name, .bio7DebugScriptSocketConnection),error = function(e) writeLines('ERROR', .bio7DebugScriptSocketConnection))");
+								con.pipeToRConsole("tryCatch(writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), .bio7DebugScriptSocketConnection),error = function(e) writeLines('ERROR', .bio7DebugScriptSocketConnection))");
+								con.pipeToRConsole("close(.bio7DebugScriptSocketConnection)");
 								con.pipeToRConsole("options(prompt=\"> \")");
 								con.pipeToRConsole("writeLines(\"\")");
 

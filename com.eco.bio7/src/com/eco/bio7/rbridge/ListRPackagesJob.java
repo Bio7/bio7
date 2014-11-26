@@ -48,12 +48,12 @@ public class ListRPackagesJob extends WorkspaceJob {
 			RConnection c = RServe.getConnection();
 
 			try {
-				c.eval("pkg<-available.packages(contriburl=contrib.url(\"" + server + "\"))");
+				c.eval(".bio7ListOfWebPackages<-available.packages(contriburl=contrib.url(\"" + server + "\"))");
 
-				c.eval("names<-pkg[,1]");
+				c.eval(".bio7ListOfWebPackagesNames<-.bio7ListOfWebPackages[,1]");
 				int b = 0;
 				try {
-					b = (int) c.eval("length(names)").asInteger();
+					b = (int) c.eval("length(.bio7ListOfWebPackagesNames)").asInteger();
 				} catch (REXPMismatchException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -63,7 +63,7 @@ public class ListRPackagesJob extends WorkspaceJob {
 
 					st = null;
 					try {
-						st = (String) c.eval("names[" + i + "]").asString();
+						st = (String) c.eval(".bio7ListOfWebPackagesNames[" + i + "]").asString();
 					} catch (REXPMismatchException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

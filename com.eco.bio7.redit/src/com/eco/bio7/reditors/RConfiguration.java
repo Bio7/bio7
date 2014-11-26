@@ -281,11 +281,11 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 							try {
 
-								c.eval("try(outfile <- paste(tempfile(), \".txt\", sep=\"\"),silent = T)").toString();
-								c.eval("try(tools::Rd2txt(utils:::.getHelpFile(?" + htmlHelpText + "),outfile,package=\"tools\", stages=c(\"install\", \"render\"),outputEncoding = \"\"),silent = T)");
+								c.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".txt\", sep=\"\"),silent = T)").toString();
+								c.eval("try(tools::Rd2txt(utils:::.getHelpFile(?" + htmlHelpText + "),.bio7TempHtmlHelpFile,package=\"tools\", stages=c(\"install\", \"render\"),outputEncoding = \"\"),silent = T)");
 								String out = null;
 								try {
-									out = (String) c.eval("try(outfile)").asString();
+									out = (String) c.eval("try(.bio7TempHtmlHelpFile)").asString();
 								} catch (REXPMismatchException e) {
 
 									e.printStackTrace();
