@@ -78,13 +78,13 @@ public class RServePrefs extends FieldEditorPreferencePage implements IWorkbench
 		addField(new LabelFieldEditor("General:", getFieldEditorParent()));
 		addField(new DirectoryFieldEditor(PreferenceConstants.P_TEMP_R, "Path to temporary R Folder", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("RSERVE_NATIVE_START", "Start Rserve in native R", getFieldEditorParent()));
-		addField(new BooleanFieldEditor("RSERVE_AUTOSTART", "Start Rserve automatically after Bio7 start", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("RSERVE_AUTOSTART", "Start Rserve automatically after Bio7 start (Not available in native mode connection!)", getFieldEditorParent()));
 		addField(new BooleanFieldEditor(PreferenceConstants.P_BOOLEAN, "Install path at startup", getFieldEditorParent()));
 		addField(new BooleanFieldEditor(PreferenceConstants.R_START_SHELL, "Start with shell", getFieldEditorParent()));
 		selectLinuxShell=new RadioGroupFieldEditor("LINUX_SHELL", "Select Shell (Linux, Mac):", 2, new String[][] { { "xterm (Linux, Mac)", "XTERM" },{ "Gnome (Linux)", "GNOME" } }, getFieldEditorParent(), false);
 		addField(selectLinuxShell);
 		//addField(new SpacerFieldEditor(getFieldEditorParent()));
-		addField(new StringFieldEditor("RSERVE_ARGS", "Rserve startup arguments (Not for Shell)", getFieldEditorParent()));
+		addField(new StringFieldEditor("RSERVE_ARGS", "Rserve startup arguments", getFieldEditorParent()));
 		addField(new MultiLineTextFieldEditor("R_STARTUP_ARGS", "R startup commands", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		/*addField(new LabelFieldEditor("Plot:", getFieldEditorParent()));

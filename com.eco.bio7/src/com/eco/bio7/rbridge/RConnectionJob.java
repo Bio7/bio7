@@ -63,6 +63,8 @@ public class RConnectionJob extends WorkspaceJob {
 		RServe.setRrunning(true);
 		// If remote!
 		boolean remote = store.getBoolean("REMOTE");
+		String rserveArgs = store.getString("RSERVE_ARGS");
+		
 		if (remote == false) {
 			/* Start up the process of R and Rserve! */
 			
@@ -72,7 +74,7 @@ public class RConnectionJob extends WorkspaceJob {
 				if (selectionConsole.equals("R")) {
 					
 					ConsolePageParticipant.pipeInputToConsole("library(Rserve)",true,false);
-					ConsolePageParticipant.pipeInputToConsole("run.Rserve()",true,false);
+					ConsolePageParticipant.pipeInputToConsole("run.Rserve(" + rserveArgs + ")",true,false);
 					
 				}
 				else{
@@ -81,6 +83,7 @@ public class RConnectionJob extends WorkspaceJob {
 				
 			}
 			else{
+				/*Start Rserve without shell (deprecated)!*/
 				startExec();
 			}
 			

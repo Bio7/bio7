@@ -66,7 +66,7 @@ public class WorkbenchPreferenceJava extends FieldEditorPreferencePage implement
 	public void init(IWorkbench workbench) {
 
 		IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
-		store.setDefault("classbody",true);
+		store.setDefault("classbody",false);
 		PreferenceConverter.setDefault(store, "colourkey", new RGB(127, 0, 85));
 		PreferenceConverter.setDefault(store, "colourkey1", new RGB(127, 0, 85));
 		PreferenceConverter.setDefault(store, "colourkey2", new RGB(42, 0, 255));

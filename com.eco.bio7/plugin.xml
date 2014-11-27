@@ -243,7 +243,7 @@
       </view>
       <view
             allowMultiple="true"
-            category="Bio7-R"
+            category="com.eco.bio7.rapplication"
             class="com.eco.bio7.rbridge.debug.DebugVariablesView"
             icon="icons/rkompilierung.gif"
             id="com.eco.bio7.rbridge.debug.DebugVariablesView"
@@ -251,12 +251,16 @@
       </view>
       <view
             allowMultiple="true"
-            category="Bio7-R"
+            category="com.eco.bio7.rapplication"
             class="com.eco.bio7.rbridge.debug.DebugTextView"
             icon="icons/rkompilierung.gif"
             id="com.eco.bio7.rbridge.debug.DebugTextView"
             name="Debug Text">
       </view>
+      <category
+            id="com.eco.bio7.scenebuilder"
+            name="SceneBuilder">
+      </category>
    </extension>
    <extension
          point="org.eclipse.ui.commands">

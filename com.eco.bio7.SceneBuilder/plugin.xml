@@ -5,7 +5,7 @@
          point="org.eclipse.ui.views">
       <view
             allowMultiple="true"
-            category="com.eco.bio7.web"
+            category="com.eco.bio7.scenebuilder"
             class="com.eco.bio7.scenebuilder.editor.BrowserView"
             icon="src/pics/logo.gif"
             id="com.eco.bio7.browser.SceneBuilderCanvas"
@@ -14,6 +14,7 @@
       </view>
       <view
             allowMultiple="true"
+            category="com.eco.bio7.scenebuilder"
             class="com.eco.bio7.scenebuilder.HierachyView"
             icon="pics/logo.gif"
             id="com.eco.bio7.scenebuilder.hierachy"
@@ -22,6 +23,7 @@
       </view>
       <view
             allowMultiple="true"
+            category="com.eco.bio7.scenebuilder"
             class="com.eco.bio7.scenebuilder.LibraryPanelView"
             icon="pics/logo.gif"
             id="com.eco.bio7.scenebuilder.library"
@@ -30,6 +32,7 @@
       </view>
       <view
             allowMultiple="true"
+            category="com.eco.bio7.scenebuilder"
             class="com.eco.bio7.scenebuilder.InspectorPanelView"
             icon="pics/logo.gif"
             id="com.eco.bio7.scenebuilder.inspector"
@@ -38,6 +41,7 @@
       </view>
       <view
             allowMultiple="true"
+            category="com.eco.bio7.scenebuilder"
             class="com.eco.bio7.scenebuilder.CssView"
             icon="pics/logo.gif"
             id="com.eco.bio7.scenebuilder.css"

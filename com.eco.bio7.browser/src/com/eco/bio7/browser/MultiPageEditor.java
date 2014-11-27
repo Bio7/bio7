@@ -411,11 +411,22 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 					display.syncExec(new Runnable() {
 						public void run() {
 							String knitrCode = "";
-							InputDialog inp = new InputDialog(new Shell(), "Image", "Select", "Image", null);
+							TextDialog inp = new TextDialog(new Shell(), "Image");
+							
 
 							if (inp.open() == Dialog.OK) {
 
-								knitrCode = inp.getValue();
+								knitrCode = inp.getText();
+								knitrCode=knitrCode.replace("\r\n", "\\n");
+								knitrCode=knitrCode.replace("\t", "\\t");
+								knitrCode=knitrCode.replace("\f", "\\f");
+								knitrCode=knitrCode.replace("\b", "\\b");
+								knitrCode=knitrCode.replace("\r", "\\r");
+								knitrCode=knitrCode.replace("\"", "\\\"");
+								knitrCode=knitrCode.replace("\'", "\\\'");
+								knitrCode="\\n"+knitrCode+"\\n";
+								
+								
 
 							}
 							WebView webView = (WebView) htmlEditor.lookup("WebView");
