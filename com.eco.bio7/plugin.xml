@@ -561,7 +561,7 @@
      <activityPatternBinding
                activityId="activity.eclipseUpdateManager"
                pattern="org\.eclipse\.ui\.ide/selectWorkingSets"/>
-      <!-- for RCP 3.3-->
+      <!-- for RCP 3.3
       
          <activityPatternBinding
                activityId="activity.eclipseUpdateManager"
@@ -569,7 +569,7 @@
          
          <activityPatternBinding
                activityId="activity.eclipseUpdateManager"
-               pattern="org\.eclipse\.ui\.ide/addToWorkingSet"/>     
+               pattern="org\.eclipse\.ui\.ide/addToWorkingSet"/> -->    
          
            
    </extension>

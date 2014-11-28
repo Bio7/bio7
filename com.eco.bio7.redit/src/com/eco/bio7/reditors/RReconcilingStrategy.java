@@ -171,7 +171,7 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 
 		list.startStop.clear();
 		walker.walk(list, tree);
-		// System.out.println(tree.toStringTree(parser)); // print LISP-style tree
+		
 		/*long startTime = System.currentTimeMillis();
 		
 		long stopTime = System.currentTimeMillis();
@@ -179,7 +179,6 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 	      System.out.println(elapsedTime);*/
 
 		fPositions.clear();
-		//cNextPos = fOffset;
 
 		for (int i = 0; i < list.startStop.size(); i++) {
 

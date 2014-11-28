@@ -59,7 +59,7 @@
       <theme
             basestylesheeturi="css/e4_default_win7.css"
             id="org.eclipse.e4.ui.css.theme.e4_default"
-            label="%theme.win7"
+            label="Windows 7"
             os="win32"
             os_version="6.1">
       </theme>
@@ -97,6 +97,13 @@
       <themeid
             refid="org.eclipse.e4.ui.css.theme.e4_dark"></themeid>
    </stylesheet>
+   <theme
+         basestylesheeturi="css/e4_default_win8.css"
+         id="org.eclipse.e4.ui.css.theme.e4_default"
+         label="Windows  8"
+         os="win32"
+         os_version="6.2">
+   </theme>
 
    </extension>
 
