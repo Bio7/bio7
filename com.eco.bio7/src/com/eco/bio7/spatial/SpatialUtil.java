@@ -388,7 +388,6 @@ public class SpatialUtil {
 	/**
 	 * Triggers the fullscreen mode in the 3D view.
 	 * 
-	 * @return an Overlay instance.
 	 */
 	public static void setFullscreen() {
 

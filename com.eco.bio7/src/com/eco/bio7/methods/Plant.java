@@ -95,11 +95,6 @@ public class Plant {
 	 the database !!*/
 	 
 
-	/**
-	 * @param x the x-coordinate.
-	 * @param y the y-coordinate.
-	 * @param p the plant template.
-	 */
 	public Plant() {// This class copies the
 		// Objects
 		// from the database !

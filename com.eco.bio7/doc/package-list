@@ -1,12 +1,13 @@
 com.eco.bio7.actions
 com.eco.bio7.batch
 com.eco.bio7.collection
+com.eco.bio7.compile
 com.eco.bio7.console
 com.eco.bio7.database
 com.eco.bio7.discrete
 com.eco.bio7.environment
 com.eco.bio7.image
-com.eco.bio7.image.measure
+com.eco.bio7.image.r
 com.eco.bio7.libreoffice
 com.eco.bio7.methods
 com.eco.bio7.plot

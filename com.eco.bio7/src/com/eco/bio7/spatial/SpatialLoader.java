@@ -152,8 +152,9 @@ public class SpatialLoader {
 	 * 
 	 * @param path
 	 *            the path to the texture.
+	 * @param gl an OpenGL context. 
 	 * 
-	 * @return a Texture instance.
+	 * @return t a Texture object.
 	 */
 	public static Texture createTexture(String path, GL2 gl) {
 		Texture t = null;

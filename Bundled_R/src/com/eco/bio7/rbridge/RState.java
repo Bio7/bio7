@@ -88,8 +88,7 @@ public class RState {
 	/**
 	 * Sets an RSession object.
 	 * 
-	 * @param b
-	 *            an RSession
+	 * @param rsession an RSession.
 	 */
 	public static void setRSession(RSession rsession) {
 		rSession = rsession;

@@ -29,7 +29,7 @@ public class ActivateRPlots extends Action {
 
 			String result = BatchModel.fileToString(filep);
 
-			RScript.rscriptjob(result, null);
+			RScript.rScriptJob(result, null);
 
 		}
 

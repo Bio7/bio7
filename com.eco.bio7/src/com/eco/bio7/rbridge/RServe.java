@@ -183,7 +183,7 @@ public class RServe {
 	 * Evaluates and prints an array of expressions to the Bio7 console executed
 	 * in a job.
 	 * 
-	 * @param expression
+	 * @param expressions
 	 *            a R expression as a string.
 	 */
 	public static void printJobs(String[] expressions) {// helper class to print
@@ -448,8 +448,6 @@ public class RServe {
 	 * @param path
 	 *            the relative path from the Bio7 Workspace to the script.
 	 * 
-	 * @param silent
-	 *            a boolean value.
 	 */
 	public static void callRScriptSilent(String path) {
 		/* Get the path and convert it for R (Windows) */

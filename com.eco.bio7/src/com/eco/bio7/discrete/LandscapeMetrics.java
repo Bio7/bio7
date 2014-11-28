@@ -231,7 +231,7 @@ public class LandscapeMetrics {
 	/**
 	 * 
 	 * Returns the distances to the nearest neighbour of each patch. It uses a
-	 * very slow algorithm and shouldn't be used in a random field >300*300 !
+	 * very slow algorithm and shouldn't be used in a random field greater 300*300 !
 	 * The function will return an array of size 1 with value 0 if the field
 	 * consists only of one patch of the given type.
 	 * 

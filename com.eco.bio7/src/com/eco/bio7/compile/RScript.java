@@ -160,6 +160,7 @@ public class RScript {
 
 	/**
 	 * Evaluates a script for R without running in a job.
+	 * @param a script.
 	 */
 	public static void script(String a) {
 
@@ -197,13 +198,13 @@ public class RScript {
 	/**
 	 * Evaluates a script in R running in a job.
 	 * 
-	 * @param result
-	 * @param s
+	 * @param script a script.
+	 * @param loc the script location.
 	 */
-	public static void rscriptjob(String result, String loc) {
+	public static void rScriptJob(String script, String loc) {
 		if (RState.isBusy() == false) {
 			RState.setBusy(true);
-			RInterpreterJob Do = new RInterpreterJob(result, false, loc);
+			RInterpreterJob Do = new RInterpreterJob(script, false, loc);
 			Do.setUser(true);
 			Do.addJobChangeListener(new JobChangeAdapter() {
 				public void done(IJobChangeEvent event) {
@@ -319,7 +320,7 @@ public class RScript {
 	 * A method to assign values from Java to R.
 	 * @param name
 	 *            the object name in R.
-	 * @param attach
+	 * @param assign the object to assign.
 	 */
 	public static void attachToR(String name, Object... assign) {
 

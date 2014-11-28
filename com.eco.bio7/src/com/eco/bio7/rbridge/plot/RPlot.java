@@ -466,7 +466,7 @@ public class RPlot extends Composite {
 						 * PlotJob.setPlotPixel(spinnerX.getSelection(),
 						 * spinnerY.getSelection()); }
 						 */
-						RScript.rscriptjob(text_1.getText(), null);
+						RScript.rScriptJob(text_1.getText(), null);
 
 					}
 				} else {

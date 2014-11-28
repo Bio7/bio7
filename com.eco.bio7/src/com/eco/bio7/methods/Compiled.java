@@ -39,7 +39,7 @@ public class Compiled {
 
 	/**
 	 * Set the main class.
-	 * 
+	 * @param ecoclass the Model object.
 	 * 
 	 */
 	public static void setModel(Model ecoclass) {

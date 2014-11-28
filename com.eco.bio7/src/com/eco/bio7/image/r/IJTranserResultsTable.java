@@ -29,22 +29,24 @@ import com.eco.bio7.image.PointPanel;
 import com.eco.bio7.image.PointPanelView;
 import com.eco.bio7.rbridge.RServe;
 
+/**
+ * @author M. Austenfeld A class to transfer the results of an ImageJ Particle
+ *         analysis.
+ */
 public class IJTranserResultsTable {
-	
-	
-	public void transferResultsTable(RConnection con,boolean dialog){
+
+	public void transferResultsTable(RConnection con, boolean dialog) {
 		ResultsTable rt = Analyzer.getResultsTable();
-		if (rt== null||ResultsTable.getResultsWindow()==null) {
+		if (rt == null || ResultsTable.getResultsWindow() == null) {
 			String mess = "No ImageJ Results Table";
-			if(dialog){
-				
+			if (dialog) {
+
 				Bio7Dialog.message(mess);
-			}
-			else{
+			} else {
 				System.out.println(mess);
-			
+
 			}
-			
+
 		} else {
 
 			if (rt.getColumn(0) != null) {
@@ -83,7 +85,7 @@ public class IJTranserResultsTable {
 						}
 					}
 				}
-				
+
 				try {
 					con.eval("try(IJResultsTable[1]<-NULL)");
 				} catch (RserveException e) {
@@ -96,11 +98,9 @@ public class IJTranserResultsTable {
 
 		}
 	}
-	
+
 	public void pointsToR(RConnection d) {
 		Roi roi = null;
-
-		
 
 		if (d != null) {
 
@@ -172,7 +172,7 @@ public class IJTranserResultsTable {
 		}
 
 	}
-	
+
 	public static void addParticleValues() {
 		PointPanel jp = PointPanelView.getJp();
 		MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
@@ -266,7 +266,7 @@ public class IJTranserResultsTable {
 		}
 		PointPanel.doPaint();
 	}
-	
+
 	public void particledescriptors() {
 		Roi roi = null;
 		RConnection d = RServe.getConnection();
@@ -307,11 +307,14 @@ public class IJTranserResultsTable {
 		}
 
 	}
-	
-	/** 
+
+	/**
 	 * A method to transfer results from a particle analysis in ImageJ.
-	 * @param con a Rserve connection
-	 * @param macro an optional macro
+	 * 
+	 * @param con
+	 *            a Rserve connection.
+	 * @param macro
+	 *            an optional macro.
 	 */
 	public static void runParticleAnalysis(RConnection con, String macro) {
 		if (macro == null) {
@@ -323,7 +326,7 @@ public class IJTranserResultsTable {
 		// IJ.runMacro("run(\"Analyze Particles...\", \"size=0-Infinity circularity=0.00-1.00 show=Nothing display clear stack\")");
 		// System.out.println(rt.getColumnHeadings());
 		ResultsTable rt = Analyzer.getResultsTable();
-		if (rt == null||ResultsTable.getResultsWindow()==null) {
+		if (rt == null || ResultsTable.getResultsWindow() == null) {
 			System.out.println("No ImageJ Results Table");
 		} else {
 
@@ -378,7 +381,5 @@ public class IJTranserResultsTable {
 
 		}
 	}
-	
-	
 
 }

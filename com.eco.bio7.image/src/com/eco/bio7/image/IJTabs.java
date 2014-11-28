@@ -157,6 +157,7 @@ public class IJTabs {
 
 	/**
 	 * Hides the tab with the specified number in the ImageJ view.
+	 * @param number the tab number.
 	 */
 	public static void hideTabNumber(int number) {
 

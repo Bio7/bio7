@@ -120,7 +120,7 @@ public class Bio7Flow {
 	 * Opens the specified folder in the Bio7 flow if set to true. If this value
 	 * is set to false no external application will be executed!
 	 * 
-	 * @param value
+	 * @param value a value.
 	 */
 	public static void openFolder(boolean value) {
 
@@ -142,7 +142,7 @@ public class Bio7Flow {
 	 * Sets the macro function to open the specified directory instead of the
 	 * internal ImageJ macro method "getDirectory()".
 	 * 
-	 * @param directory
+	 * @param directory a String value.
 	 */
 	public static void setImageJDirectory(String directory) {
 		//ij.macro.Functions.setFileListBio7(directory);

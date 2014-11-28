@@ -434,10 +434,10 @@ public class Bio7Dialog {
 	 * @param text
 	 *            the title
 	 * @param text1
-	 *            a text
+	 *            a String.
 	 * @param text2
-	 *            another text
-	 * @return a String value
+	 *            a String.
+	 * @return a String value.
 	 */
 	public String inputDialog(String text, String text1, String text2) {
 		InputDialog inp = new InputDialog(new Shell(), text, text1, text2, null);

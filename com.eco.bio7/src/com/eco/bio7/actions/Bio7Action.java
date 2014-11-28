@@ -96,8 +96,7 @@ public class Bio7Action {
 
 	/**
 	 * Returns the platform display of the Bio7 application.
-	 * 
-	 * 
+	 * @return the default Display.
 	 */
 	public static Display getBio7Display() {
 		return PlatformUI.getWorkbench().getDisplay();

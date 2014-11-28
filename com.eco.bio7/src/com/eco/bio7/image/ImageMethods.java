@@ -1621,6 +1621,7 @@ public class ImageMethods extends ViewPart {
 	 *            an integer value for the data type which will be transfered.
 	 *            (0=double, 1=integer, 2=byte, 3=RGB as single byte vectors or
 	 *            integer matrix)
+	 * @param impPlus an optional ImagePlus object as the default image source.
 	 * 
 	 */
 

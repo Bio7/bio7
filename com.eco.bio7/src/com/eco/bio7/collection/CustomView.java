@@ -76,8 +76,8 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	 * 
 	 * @param jpanel
 	 *            a JPanel
-	 * @param title
-	 *            the title of the tab.
+	 * @param id
+	 *            the id of the tab.
 	 */
 	public void setPanel(final JPanel jpanel, final String id) {
 		secId = id;
@@ -166,8 +166,8 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	 * Creates a JavaFX Scene tab inside a custom view from a given JavaFX
 	 * scene.
 	 * 
-	 * @param title
-	 *            the title of the tab.
+	 * @param id
+	 *            the id of the tab.
 	 */
 	public void setSceneCanvas(String id) {
 		secId = id;
@@ -215,8 +215,8 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	 * 
 	 * @param panel
 	 *            a Panel
-	 * @param title
-	 *            the title of the tab.
+	 * @param id
+	 *            the id of the tab.
 	 */
 	public void setPanel(final Panel panel, final String id) {
 		secId = id;
@@ -260,8 +260,8 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	/**
 	 * Returns a SWT composite and creates a custom view with a tab.
 	 * 
-	 * @param title
-	 *            the title of the tab.
+	 * @param id
+	 *            the id of the tab.
 	 * @return a swt composite.
 	 */
 	public Composite getComposite(String id) {
@@ -308,8 +308,8 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	/**
 	 * Returns a Draw2d LightweightSystem and creates a custom view with a tab.
 	 * 
-	 * @param title
-	 *            the title of the tab.
+	 * @param id
+	 *            the id of the tab.
 	 * @return a LightweightSystem component.
 	 */
 	public LightweightSystem getDraw2d(String id) {

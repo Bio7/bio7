@@ -167,20 +167,20 @@ public class ExecuteBatchFile {
 				if (Bio7Dialog.getOS().equals("Linux")) {
 					String result = BatchModel.fileToString(fileproper);
 
-					RScript.rscriptjob(result, null);
+					RScript.rScriptJob(result, null);
 
 				}
 				/* If the OS is MacOSX! */
 				else if (Bio7Dialog.getOS().equals("Mac")) {
 					String result = BatchModel.fileToString(fileproper);
 
-					RScript.rscriptjob(result, null);
+					RScript.rScriptJob(result, null);
 
 				}
 				/* If the OS is Windows! */
 				else {
 
-					RScript.rscriptjob(null, fileprop);
+					RScript.rScriptJob(null, fileprop);
 
 				}
 			}

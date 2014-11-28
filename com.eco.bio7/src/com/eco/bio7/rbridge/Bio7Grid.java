@@ -227,11 +227,11 @@ public class Bio7Grid {
 	 *            the row
 	 * @param column
 	 *            the column
-	 * @param color
+	 * @param r
 	 *            r the red component.
-	 * @param color
+	 * @param g
 	 *            g the green component.
-	 * @param color
+	 * @param b
 	 *            b the blue component.
 	 * 
 	 */
@@ -398,7 +398,7 @@ public class Bio7Grid {
 	/**
 	 * Creates a SWT image from a Java BufferedImage.
 	 * 
-	 * @param BufferedImage
+	 * @param bufferedImage
 	 *            the image.
 	 * @return returns a SWT image.
 	 */
