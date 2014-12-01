@@ -56,55 +56,60 @@ public class ToggleDebugConditionalBreakpointAction extends AbstractRulerActionD
 			String rDebugExpression = null;
 			IEditorPart editore = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 
-			InputDialog dlg = new InputDialog(Display.getCurrent().getActiveShell(), "", "Enter Expressions", "", null);
+			InputDialog dlg = new InputDialog(Display.getCurrent().getActiveShell(), "", "Enter Expressions:  e.g. 'if(x==5) browser()'", "", null);
 			if (dlg.open() == Window.OK) {
 				
 				rDebugExpression = dlg.getValue();
-			}
-
-			IResource resource = (IResource) editore.getEditorInput().getAdapter(IResource.class);
-			if (resource != null) {
-				try {
-
-					ITextEditor editor = (ITextEditor) editore;
-					ISelectionProvider sp = editor.getSelectionProvider();
-
-					IDocumentProvider provider = mEditor.getDocumentProvider();
-
-					ITextSelection selection = null;
+				IResource resource = (IResource) editore.getEditorInput().getAdapter(IResource.class);
+				if (resource != null) {
 					try {
-						int line = mRulerInfo.getLineOfLastMouseButtonActivity();
 
-						provider.connect(this);
-						IDocument document = provider.getDocument(mEditor.getEditorInput());
-						IRegion region = document.getLineInformation(line);
-						selection = new TextSelection(document, region.getOffset(), region.getLength());
-					} catch (CoreException e1) {
-					} catch (BadLocationException e) {
-					} finally {
-						provider.disconnect(this);
+						ITextEditor editor = (ITextEditor) editore;
+						ISelectionProvider sp = editor.getSelectionProvider();
+
+						IDocumentProvider provider = mEditor.getDocumentProvider();
+
+						ITextSelection selection = null;
+						try {
+							int line = mRulerInfo.getLineOfLastMouseButtonActivity();
+
+							provider.connect(this);
+							IDocument document = provider.getDocument(mEditor.getEditorInput());
+							IRegion region = document.getLineInformation(line);
+							selection = new TextSelection(document, region.getOffset(), region.getLength());
+						} catch (CoreException e1) {
+						} catch (BadLocationException e) {
+						} finally {
+							provider.disconnect(this);
+						}
+
+						if (selection != null && !selection.isEmpty()) {
+
+							startline = selection.getStartLine() + 1;
+							stopline = selection.getEndLine() + 1;
+
+							IMarker marker;
+
+							marker = resource.createMarker("com.eco.bio7.redit.debugMarker");
+							marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
+							marker.setAttribute(IMarker.LINE_NUMBER, new Integer(startline));
+							marker.setAttribute(IMarker.MESSAGE, rDebugExpression);
+							marker.setAttribute(IMarker.LOCATION, "" + startline);
+							/* Mark it as a breakpoint with expression! */
+							marker.setAttribute(IMarker.TEXT, "EXPRESSION");
+
+						}
+
+					} catch (CoreException e) {
+
 					}
-
-					if (selection != null && !selection.isEmpty()) {
-
-						startline = selection.getStartLine() + 1;
-						stopline = selection.getEndLine() + 1;
-
-						IMarker marker;
-
-						marker = resource.createMarker("com.eco.bio7.redit.debugMarker");
-						marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
-						marker.setAttribute(IMarker.LINE_NUMBER, new Integer(startline));
-						marker.setAttribute(IMarker.MESSAGE, rDebugExpression);
-						marker.setAttribute(IMarker.LOCATION, "" + startline);
-						/* Mark it as a breakpoint with expression! */
-						marker.setAttribute(IMarker.TEXT, "EXPRESSION");
-
-					}
-
-				} catch (CoreException e) {
-
 				}
+
+			}
+			
+			
+			else {
+				return;
 			}
 
 		}

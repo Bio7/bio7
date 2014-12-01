@@ -444,7 +444,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 					"org.eclipse.ui.WorkingSetActionSet", "org.eclipse.update.ui.softwareUpdates", "org.eclipse.ui.actionSet.openFiles", "org.eclipse.mylyn.tasks.ui.navigation",
 					"org.eclipse.debug.ui.launchActionSet", "org.eclipse.jdt.ui.JavaElementCreationActionSet", "org.eclipse.jdt.ui.JavaActionSet", "org.eclipse.ui.edit.text.actionSet.presentation",
 					"org.eclipse.ui.cheatsheets.actionSet", "org.eclipse.ui.externaltools.ExternalToolsSet", "org.eclipse.jdt.ui.text.java.actionSet.presentation",
-					"org.eclipse.debug.ui.breakpointActionSet", "org.eclipse.wb.core.ui.actionset" };
+					"org.eclipse.debug.ui.breakpointActionSet", "org.eclipse.wb.core.ui.actionset"};
 
 			for (int i = 0; i < actionSets.length; i++) {
 				boolean found = false;

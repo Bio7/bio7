@@ -69,7 +69,7 @@ public class DebugStopAction extends Action {
 				public void run() {
 					Grid debugGrid = DebugVariablesView.getDebugVariablesGrid();
 
-					if (debugGrid.isDisposed()==false) {
+					if (debugGrid!=null&&debugGrid.isDisposed()==false) {
 						int itemCount = debugGrid.getItemCount();
 						if (itemCount > 0) {
 

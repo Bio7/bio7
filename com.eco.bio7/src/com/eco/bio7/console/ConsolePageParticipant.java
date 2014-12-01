@@ -511,7 +511,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//e.printStackTrace();
+			Bio7Dialog.message("Interpreter not available!\n\nPlease adjust the path to the interpreter in the Bio7 preferences!");
 		}
 
 	}
@@ -549,10 +550,10 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				 * thread needed!
 				 */
 
-				String rPath = store.getString("r_pipe_path");
+				String rPath = store.getString(PreferenceConstants.PATH_R);
 
 				List<String> args = new ArrayList<String>();
-				args.add(rPath + "/rterm");
+				args.add(rPath + "/bin/x64/rterm");
 				args.add("--ess");
 				ProcessBuilder builder = new ProcessBuilder(args);
 				builder.redirectErrorStream(true);
@@ -565,10 +566,10 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
 
-				String rPath = store.getString("r_pipe_path");
+				String rPath = store.getString(PreferenceConstants.PATH_R);
 
 				List<String> args = new ArrayList<String>();
-				args.add(rPath + "/R");
+				args.add(rPath + "/bin/R");
 				args.add("--interactive");
 
 				ProcessBuilder builder = new ProcessBuilder(args);
@@ -582,10 +583,10 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			}
 
 			else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
-				String rPath = store.getString("r_pipe_path");
+				String rPath = store.getString(PreferenceConstants.PATH_R);
 
 				List<String> args = new ArrayList<String>();
-				args.add(rPath + "/R");
+				args.add(rPath + "/bin/R");
 				args.add("--interactive");
 
 				ProcessBuilder builder = new ProcessBuilder(args);

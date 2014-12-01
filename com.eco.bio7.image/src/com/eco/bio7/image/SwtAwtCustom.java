@@ -12,33 +12,16 @@
 
 package com.eco.bio7.image;
 
-import java.awt.EventQueue;
 import java.awt.Panel;
 import java.util.Vector;
-
-import javafx.application.Platform;
-import javafx.embed.swing.SwingNode;
-import javafx.embed.swt.FXCanvas;
-import javafx.event.EventHandler;
-import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.StackPane;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-
 import javax.media.opengl.awt.GLCanvas;
 import javax.swing.JApplet;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
-import javax.swing.SwingUtilities;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
-import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 

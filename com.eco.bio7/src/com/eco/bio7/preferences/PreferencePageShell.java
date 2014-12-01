@@ -40,7 +40,7 @@ public class PreferencePageShell extends FieldEditorPreferencePage implements IW
 		
 		addField(new LabelFieldEditor("R:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("r_pipe", "Execute Editor Source in R", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
-		addField(new DirectoryFieldEditor("r_pipe_path", "Path R		", getFieldEditorParent()));
+		//addField(new DirectoryFieldEditor("r_pipe_path", "Path R		", getFieldEditorParent()));
 		SpacerFieldEditor spacer1 = new SpacerFieldEditor(getFieldEditorParent());
 		addField(spacer1);
 		

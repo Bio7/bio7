@@ -60,6 +60,7 @@ import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.launching.LibraryLocation;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
@@ -123,6 +124,7 @@ import com.eco.bio7.popup.actions.RecalculateClasspath;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.preferences.RServePlotPrefs;
 import com.eco.bio7.preferences.Reg;
+import com.eco.bio7.preferences.SpacerFieldEditor;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.actions.StartRServe;
@@ -376,11 +378,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				store.setDefault("pdfLatex", "C:/");
 				store.setDefault("RSERVE_ARGS", "");
 
-				if (is64BitVM()) {
+				/*if (is64BitVM()) {
 					store.setDefault("r_pipe_path", reg1 + "\\bin\\x64");
 				} else {
 					store.setDefault("r_pipe_path", reg1 + "\\bin\\i386");
-				}
+				}*/
 
 			}
 			if (reg2 != null) {
@@ -403,11 +405,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault("pdfLatex", "/usr/bin");
 			store.setDefault("RSERVE_ARGS", "");
 
-			if (is64BitVM()) {
+			/*if (is64BitVM()) {
 				store.setDefault("r_pipe_path", reg1 + "/bin");
 			} else {
 				store.setDefault("r_pipe_path", reg1 + "/bin");
-			}
+			}*/
 
 		} else if (getOS().equals("Mac")) {
 			reg2 = "/usr/lib/openoffice/program";
@@ -522,6 +524,14 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			fsize = 11;
 
 		}
+		
+		
+		/*Dialog Sizes for ImageJ dialogs!*/
+		store.setDefault("IMAGE_METHODS_SIZE_X", 280);//260
+		store.setDefault("IMAGE_METHODS_SIZE_Y", 840);//790
+		store.setDefault("IMAGEJ_TOOLBAR_SIZE_X", 600);//580
+		store.setDefault("IMAGEJ_TOOLBAR_SIZE_Y", 135);//130
+		
 
 		/*
 		 * IPreferenceStore storeBsh =

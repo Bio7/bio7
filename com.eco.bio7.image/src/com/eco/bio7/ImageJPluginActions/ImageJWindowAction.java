@@ -11,6 +11,8 @@
 
 package com.eco.bio7.ImageJPluginActions;
 
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.preferences.IPreferencesService;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.model.application.ui.basic.MPartSashContainerElement;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
@@ -30,6 +32,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+
 import com.eco.bio7.image.CanvasView;
 import com.eco.bio7.util.Util;
 
@@ -91,6 +94,13 @@ public class ImageJWindowAction extends Action implements IMenuCreator {
 
 				IViewReference ref = null;
 				IWorkbenchPartSite part = null;
+				
+				/*Preferences form the Bio7Plugin!*/
+				IPreferencesService service = Platform.getPreferencesService();
+				int xSize = service.getInt("com.eco.bio7", "IMAGE_METHODS_SIZE_X", 260, null);
+				int ySize = service.getInt("com.eco.bio7", "IMAGE_METHODS_SIZE_Y", 790, null);
+				
+				
 				try {
 					part = page.showView("com.eco.bio7.image_methods").getSite();
 					ref = part.getPage().findViewReference("com.eco.bio7.image_methods");
@@ -111,21 +121,21 @@ public class ImageJWindowAction extends Action implements IMenuCreator {
 						if (p.getCurSharedRef() != null) {
 							p = p.getCurSharedRef();
 
-							s.detach(p, (pt.x + pSize.x) - 290, pt.y + 30, 260, 790);
+							s.detach(p, (pt.x + pSize.x) - 290, pt.y + 30, xSize, ySize);
 						}
 
 					} else if (os.equals("Windows")) {
 						if (p.getCurSharedRef() != null) {
 							p = p.getCurSharedRef();
 
-							s.detach(p, (pt.x + pSize.x) - 290, pt.y + 30, 270, 840);
+							s.detach(p, (pt.x + pSize.x) - 290, pt.y + 30, xSize, ySize);
 						}
 
 					} else if (os.equals("Mac")) {
 						if (p.getCurSharedRef() != null) {
 							p = p.getCurSharedRef();
 
-							s.detach(p, (pt.x + pSize.x) - 290, pt.y + 30, 260, 790);
+							s.detach(p, (pt.x + pSize.x) - 290, pt.y + 30, xSize, ySize);
 						}
 
 					}
@@ -134,7 +144,7 @@ public class ImageJWindowAction extends Action implements IMenuCreator {
 					if (p.getCurSharedRef() != null) {
 						p = p.getCurSharedRef();
 
-						s.detach(p, 100, 100, 260, 790);
+						s.detach(p, 100, 100, xSize, ySize);
 					}
 
 				}
@@ -165,6 +175,11 @@ public class ImageJWindowAction extends Action implements IMenuCreator {
 
 		IViewReference ref = null;
 		IWorkbenchPartSite part = null;
+		
+		/*Preferences form the Bio7Plugin!*/
+		IPreferencesService service = Platform.getPreferencesService();
+		int xSize = service.getInt("com.eco.bio7", "IMAGEJ_TOOLBAR_SIZE_X", 600, null);
+		int ySize = service.getInt("com.eco.bio7", "IMAGEJ_TOOLBAR_SIZE_Y", 135, null);
 		try {
 			part = page.showView("com.eco.bio7.ijtoolbar").getSite();
 			ref = part.getPage().findViewReference("com.eco.bio7.ijtoolbar");
@@ -186,28 +201,28 @@ public class ImageJWindowAction extends Action implements IMenuCreator {
 				if (p.getCurSharedRef() != null) {
 					p = p.getCurSharedRef();
 
-					s.detach(p, pt.x + 20, pt.y + 100, 580, 130);
+					s.detach(p, pt.x + 20, pt.y + 100, xSize, ySize);
 				}
 
 			} else if (os.equals("Windows")) {
 				if (p.getCurSharedRef() != null) {
 					p = p.getCurSharedRef();
 
-					s.detach(p, pt.x + 20, pt.y + 100, 600, 135);
+					s.detach(p, pt.x + 20, pt.y + 100, xSize, ySize);
 				}
 
 			} else if (os.equals("Mac")) {
 				if (p.getCurSharedRef() != null) {
 					p = p.getCurSharedRef();
 
-					s.detach(p, pt.x + 20, pt.y + 100, 580, 120);
+					s.detach(p, pt.x + 20, pt.y + 100, xSize, ySize);
 				}
 
 			}
 
 		} else {
 
-			ref.getView(false).getViewSite().getShell().setSize(570, 120);
+			ref.getView(false).getViewSite().getShell().setSize(xSize, ySize);
 		}
 		
 

@@ -386,7 +386,7 @@ public class RShellView extends ViewPart {
 		newItemExpandItem_8.setExpanded(true);
 		tab = new CTabFolder(expandBar, SWT.NONE);
 		tab.setRegion(null);
-		tab.setTabHeight(20);
+		tab.setTabHeight(22);
 		tab.addSelectionListener(new SelectionListener() {
 			public void itemClosed(CTabFolderEvent event) {
 

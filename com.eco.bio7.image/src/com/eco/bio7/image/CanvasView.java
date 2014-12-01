@@ -310,7 +310,7 @@ public class CanvasView extends ViewPart {
 			public void mouseDown(MouseEvent mouseevent)
 
 			{
-				if (mouseevent.button == 3) {
+				if (mouseevent.button == 3&&mouseevent.count>1) {
 					CTabFolder ctab = (CTabFolder) mouseevent.widget;
 					if (ctab.getItemCount() > 0) {
 						Vector ve = (Vector) ctab.getSelection().getData();

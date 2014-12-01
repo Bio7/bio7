@@ -98,7 +98,7 @@ public class EditSelBreakpointAction extends AbstractRulerActionDelegate impleme
 								e.printStackTrace();
 							}
 
-							InputDialog dlg = new InputDialog(Display.getCurrent().getActiveShell(), "Expression", "Enter Expressions", expression, null);
+							InputDialog dlg = new InputDialog(Display.getCurrent().getActiveShell(), "Expression", "Enter Expressions:  e.g. 'if(x==5) browser()'", expression, null);
 
 							if (dlg.open() == Window.OK) {
 								

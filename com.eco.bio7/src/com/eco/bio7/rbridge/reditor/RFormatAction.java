@@ -4,7 +4,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -34,6 +40,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
+
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
@@ -46,6 +53,7 @@ public class RFormatAction extends Action implements IObjectActionDelegate {
 	private int startOffset;
 	private int selLength;
 	private Socket debugSocket;
+	private IProject iproj;
 
 	public RFormatAction() {
 		super("Format");
@@ -62,6 +70,7 @@ public class RFormatAction extends Action implements IObjectActionDelegate {
 		}
 
 		ITextEditor editor = (ITextEditor) editore;
+		
 		IDocumentProvider dp = editor.getDocumentProvider();
 		IDocument doc = dp.getDocument(editor.getEditorInput());
 
@@ -82,6 +91,7 @@ public class RFormatAction extends Action implements IObjectActionDelegate {
 
 		if (editorInput instanceof IFileEditorInput) {
 			aFile = ((IFileEditorInput) editorInput).getFile();
+			 iproj=aFile.getProject();
 		}
 		String loc = aFile.getLocation().toString();
 
@@ -109,16 +119,10 @@ public class RFormatAction extends Action implements IObjectActionDelegate {
 							if (bol.isTRUE()[0]) {
 
 								try {
-									c.eval("library(formatR);try(tidy.source(source = \"" + loc + "\",file = \"clipboard\"))");
+									c.eval("library(formatR);try(tidy.source(source = \"" + loc + "\",file = \"" + loc + "\"))");
 									// rcon.eval("tidy.source(source = \""+loc+"\",file = \"clipboard\")");
 
-									Display display = Display.getDefault();
-									display.asyncExec(new Runnable() {
-
-										public void run() {
-											setClipboardData(doc);
-										}
-									});
+									
 								} catch (RserveException e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
@@ -131,6 +135,15 @@ public class RFormatAction extends Action implements IObjectActionDelegate {
 						} else {
 							System.out.println("Rserve is busy!");
 						}
+					}
+					/*Refresh the project!*/
+					IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+					IProject proj = root.getProject(iproj.getName());
+					try {
+						proj.refreshLocal(IResource.DEPTH_INFINITE, null);
+					} catch (CoreException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
 
 					monitor.done();
@@ -172,6 +185,15 @@ public class RFormatAction extends Action implements IObjectActionDelegate {
 				con.pipeToRConsole("close(.bio7FormatSocket)");
 				con.pipeToRConsole("writeLines(\"\")");
 				con.pipeToRConsole("options(prompt=\"> \")");
+				
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				/*Add a linebreak in R*/
+				con.pipeToRConsole("cat(\"\r\")");
 				getTextSocket(doc, input, port);
 
 				/* Clipboard data should be available! */

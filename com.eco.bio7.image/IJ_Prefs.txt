@@ -1,5 +1,5 @@
 #ImageJ 1.49m Preferences
-#Fri Nov 28 15:46:05 CET 2014
+#Mon Dec 01 16:15:30 CET 2014
 .VolumeViewer.renderMode=4
 .VolumeViewer.backgroundColor=-16763803
 .batch.output=C\:\\Users\\Public\\Pictures\\Sample Pictures\\rr\\

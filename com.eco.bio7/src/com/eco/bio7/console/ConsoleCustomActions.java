@@ -261,6 +261,8 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 						}
 					}
 				}.start();
+				
+				Bio7Dialog.message("Process terminated!");
 
 			}
 
