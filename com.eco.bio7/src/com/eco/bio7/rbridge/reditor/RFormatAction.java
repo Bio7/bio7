@@ -119,7 +119,7 @@ public class RFormatAction extends Action implements IObjectActionDelegate {
 							if (bol.isTRUE()[0]) {
 
 								try {
-									c.eval("library(formatR);try(tidy.source(source = \"" + loc + "\",file = \"" + loc + "\"))");
+									c.eval("library(formatR);try(tidy_source(source = \"" + loc + "\",file = \"" + loc + "\"))");
 									// rcon.eval("tidy.source(source = \""+loc+"\",file = \"clipboard\")");
 
 									
@@ -175,7 +175,7 @@ public class RFormatAction extends Action implements IObjectActionDelegate {
 				ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
 				con.pipeToRConsole("options(prompt=\" \")");
 				con.pipeToRConsole(".bio7FormatSocket <- socketConnection(port = " + port + ", server = TRUE,timeout=10)");
-				con.pipeToRConsole("library(formatR);tidy.source(source = \"" + loc + "\",file = .bio7FormatSocket)");
+				con.pipeToRConsole("library(formatR);tidy_source(source = \"" + loc + "\",file = .bio7FormatSocket)");
 				/*
 				 * We use sockets here to wait for the clipboard data to be
 				 * present (avoid parallel execution of R and Java commands
