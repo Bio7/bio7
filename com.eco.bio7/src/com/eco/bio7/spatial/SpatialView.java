@@ -16,6 +16,7 @@ import java.awt.Frame;
 import javax.media.opengl.awt.GLCanvas;
 import javax.swing.SwingUtilities;
 
+import org.eclipse.albireo.internal.Platform;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.layout.RowLayout;
@@ -25,6 +26,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 import com.eco.bio7.swt.SwtAwt;
+import com.eco.bio7.util.Util;
 
 public class SpatialView extends ViewPart {
 	public static final String ID = "com.eco.bio7.spatial";
@@ -44,14 +46,21 @@ public class SpatialView extends ViewPart {
 	public SpatialView() {
 
 		instance = this;
-
+       if(new Util().getOS().equals("Windows")){
 		SwingUtilities.invokeLater(new Runnable() {
 			// !!
 			public void run() {
 
 				spat = new SpatialStructure(instance);
+				
 			}
 		});
+       }
+       else{
+    	   /*For Linux!*/
+    	   spat = new SpatialStructure(instance);
+    	  
+       }
 
 	}
 
