@@ -11,10 +11,6 @@
 
 package com.eco.bio7.discrete;
 
-import java.lang.reflect.InvocationTargetException;
-
-import javax.swing.SwingUtilities;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -29,12 +25,10 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.database.Bio7State;
 import com.eco.bio7.discrete3d.Quad3dview;
 import com.eco.bio7.methods.CurrentStates;
-import com.jogamp.opengl.util.Animator;
+import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.jogamp.opengl.util.FPSAnimator;
-
 
 public class MidpointGui extends Shell {
 
@@ -49,7 +43,12 @@ public class MidpointGui extends Shell {
 	public MidpointGui() {
 		try {
 			Display display = Display.getDefault();
-			shell = new MidpointGui(display, SWT.SHELL_TRIM | SWT.TOOL | SWT.ON_TOP);
+			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+				shell = new MidpointGui(display, SWT.SHELL_TRIM | SWT.TOOL | SWT.ON_TOP);
+			} else {
+				shell = new MidpointGui(display, SWT.SHELL_TRIM);
+
+			}
 			shell.open();
 			shell.layout();
 

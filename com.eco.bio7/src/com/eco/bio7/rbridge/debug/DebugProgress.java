@@ -16,7 +16,6 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -33,7 +32,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
-
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
@@ -72,6 +70,14 @@ public class DebugProgress {
 					/*capturing output.*/
 					+ "close(.GlobalEnv$.bio7DebugSocketConnectionProgress);" 
 					+ "writeLines(\"\")");
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			/*Add a linebreak in R*/
+			con.pipeToRConsole("cat(\"\r\")");
 
 			/* Clear the debug spreadsheet! */
 			deleteSpreadSheet();

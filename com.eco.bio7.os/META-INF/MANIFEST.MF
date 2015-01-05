@@ -5,6 +5,7 @@ Bundle-SymbolicName: com.eco.bio7.os
 Bundle-Version: 2.0.0.qualifier
 Bundle-Vendor: ECO
 Bundle-ClassPath: lib/jna-4.1.0.jar,
+ lib/jna-platform-4.1.0.jar,
  .
 Export-Package: com.eco.bio7.os.pid,
  com.eco.bio7.swt,
@@ -12,3 +13,4 @@ Export-Package: com.eco.bio7.os.pid,
  com.sun.jna.ptr,
  com.sun.jna.win32
 Import-Package: org.eclipse.swt.widgets
+Require-Bundle: com.eco.bio7.libs;bundle-version="2.0.0"

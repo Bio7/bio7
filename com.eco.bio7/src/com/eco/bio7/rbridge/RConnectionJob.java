@@ -115,7 +115,7 @@ public class RConnectionJob extends WorkspaceJob {
 							+ " from 10");
 
 					try {
-						Thread.sleep(100);
+						Thread.sleep(500);
 					} catch (InterruptedException e) {
 
 					}

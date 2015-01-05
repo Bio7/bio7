@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2012 M. Austenfeld
+ * Copyright (c) 2007-2014 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -130,7 +130,7 @@ public class TerminateRserve {
 		// rt.exec("killall Rserve-bin.so");
 		List<String> args = new ArrayList<String>();
 		args.add("killall");
-		args.add("Rterm");
+		args.add("R");
 		ProcessBuilder pb = new ProcessBuilder(args);
 		pb.redirectErrorStream();
 		try {
@@ -149,7 +149,7 @@ public class TerminateRserve {
 		List<String> args = new ArrayList<String>();
 		args.add("killall");
 		// args.add ("Rserve-bin.so");
-		args.add("Rterm");
+		args.add("R");
 		ProcessBuilder pb = new ProcessBuilder(args);
 		pb.redirectErrorStream();
 		try {

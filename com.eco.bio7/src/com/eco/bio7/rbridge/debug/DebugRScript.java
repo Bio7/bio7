@@ -69,7 +69,9 @@ public class DebugRScript extends Action {
 		setId("Debug");
 		setText("Debug Trace Action - Insert debugging code at chosen places in any function.");
 
-		ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/rundebug.gif")));
+		ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(
+				Display.getCurrent(), getClass().getResourceAsStream(
+						"/pics/rundebug.gif")));
 
 		this.setImageDescriptor(desc);
 	}
@@ -96,14 +98,17 @@ public class DebugRScript extends Action {
 			store.setValue("RSERVE_ALIVE_DEBUG", false);
 		}
 
-		editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		editor = (IEditorPart) PlatformUI.getWorkbench()
+				.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		if (editor.isDirty()) {
 			editor.doSave(new NullProgressMonitor());
 		}
 
-		IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
+		IResource resource = (IResource) editor.getEditorInput().getAdapter(
+				IResource.class);
 
-		IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
+		IDocument doc = ((ITextEditor) editor).getDocumentProvider()
+				.getDocument(editor.getEditorInput());
 
 		RConnection d = RServe.getConnection();
 		IEditorInput editorInput = editor.getEditorInput();
@@ -116,7 +121,8 @@ public class DebugRScript extends Action {
 
 		if (d == null) {
 
-			String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
+			String selectionConsole = ConsolePageParticipant
+					.getInterpreterSelection();
 
 			if (selectionConsole.equals("R")) {
 				Work.openView("com.eco.bio7.rbridge.debug.DebugVariablesView");
@@ -127,7 +133,8 @@ public class DebugRScript extends Action {
 				if (resource != null) {
 					Map<Integer, String> map1 = findMyMarkers(resource);
 					/* Sorting the Map with a Treemap! */
-					Map<Integer, String> map = new TreeMap<Integer, String>(map1);
+					Map<Integer, String> map = new TreeMap<Integer, String>(
+							map1);
 
 					for (Map.Entry<Integer, String> entry : map.entrySet()) {
 
@@ -138,7 +145,8 @@ public class DebugRScript extends Action {
 
 							int port = store.getInt("R_DEBUG_PORT");
 							if (expression == null) {
-								ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
+								ConsolePageParticipant con = ConsolePageParticipant
+										.getConsolePageParticipantInstance();
 								con.pipeToRConsole("options(prompt=\" \")");
 								con.pipeToRConsole("source('" + loc + "')");
 								/*
@@ -146,9 +154,15 @@ public class DebugRScript extends Action {
 								 * variable!
 								 */
 								con.pipeToRConsole(".bio7tempenv<- new.env()");
-								con.pipeToRConsole("try(assign(\"bio7tempVar\", findLineNum('" + loc + "#" + lineNum + "'), env=.bio7tempenv))");
-								con.pipeToRConsole("setBreakpoint('" + loc + "#" + lineNum + "')");
-								con.pipeToRConsole(".bio7DebugScriptSocketConnection <- socketConnection(port = " + port + ", server = TRUE)");
+								con.pipeToRConsole("try(assign(\"bio7tempVar\", findLineNum('"
+										+ loc
+										+ "#"
+										+ lineNum
+										+ "'), env=.bio7tempenv))");
+								con.pipeToRConsole("setBreakpoint('" + loc
+										+ "#" + lineNum + "')");
+								con.pipeToRConsole(".bio7DebugScriptSocketConnection <- socketConnection(port = "
+										+ port + ", server = TRUE)");
 								con.pipeToRConsole("tryCatch(writeLines(.bio7tempenv$bio7tempVar[[1]]$name, .bio7DebugScriptSocketConnection),error = function(e) writeLines('ERROR', .bio7DebugScriptSocketConnection))");
 								con.pipeToRConsole("tryCatch(writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), .bio7DebugScriptSocketConnection),error = function(e) writeLines('ERROR', .bio7DebugScriptSocketConnection))");
 								con.pipeToRConsole("close(.bio7DebugScriptSocketConnection)");
@@ -160,7 +174,8 @@ public class DebugRScript extends Action {
 							}
 							/* If an expression is available! */
 							else {
-								ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
+								ConsolePageParticipant con = ConsolePageParticipant
+										.getConsolePageParticipantInstance();
 								con.pipeToRConsole("options(prompt=\" \")");
 								con.pipeToRConsole("source('" + loc + "')");
 								/*
@@ -168,9 +183,16 @@ public class DebugRScript extends Action {
 								 * variable!
 								 */
 								con.pipeToRConsole(".bio7tempenv<- new.env()");
-								con.pipeToRConsole("try(assign(\"bio7tempVar\", findLineNum('" + loc + "#" + lineNum + "'), env=.bio7tempenv))");
-								con.pipeToRConsole("setBreakpoint('" + loc + "#" + lineNum + "',tracer=quote(" + expression + "))");
-								con.pipeToRConsole(".bio7DebugScriptSocketConnection <- socketConnection(port = " + port + ", server = TRUE,timeout=10)");
+								con.pipeToRConsole("try(assign(\"bio7tempVar\", findLineNum('"
+										+ loc
+										+ "#"
+										+ lineNum
+										+ "'), env=.bio7tempenv))");
+								con.pipeToRConsole("setBreakpoint('" + loc
+										+ "#" + lineNum + "',tracer=quote("
+										+ expression + "))");
+								con.pipeToRConsole(".bio7DebugScriptSocketConnection <- socketConnection(port = "
+										+ port + ", server = TRUE,timeout=10)");
 								con.pipeToRConsole("tryCatch(writeLines(.bio7tempenv$bio7tempVar[[1]]$name, .bio7DebugScriptSocketConnection),error = function(e) writeLines('ERROR', .bio7DebugScriptSocketConnection))");
 								con.pipeToRConsole("tryCatch(writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), .bio7DebugScriptSocketConnection),error = function(e) writeLines('ERROR', .bio7DebugScriptSocketConnection))");
 								con.pipeToRConsole("close(.bio7DebugScriptSocketConnection)");
@@ -186,7 +208,8 @@ public class DebugRScript extends Action {
 				}
 
 			} else {
-				Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
+				Bio7Dialog
+						.message("Please start the \"Native R\" shell in the Bio7 console!");
 			}
 
 		}
@@ -236,7 +259,7 @@ public class DebugRScript extends Action {
 				debugSocket.close();
 
 		} catch (IOException e) {
-			
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		if (errorFunction == false) {
@@ -246,7 +269,7 @@ public class DebugRScript extends Action {
 					line = (Integer) markers[i]
 							.getAttribute(IMarker.LINE_NUMBER);
 				} catch (CoreException e) {
-					
+					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 
@@ -336,10 +359,12 @@ public class DebugRScript extends Action {
 
 		for (int i = 0; i < markers.length; ++i) {
 			try {
-				map1.put((Integer) markers[i].getAttribute(IMarker.LINE_NUMBER), (String) markers[i].getAttribute(IMarker.MESSAGE));
-				
+				map1.put(
+						(Integer) markers[i].getAttribute(IMarker.LINE_NUMBER),
+						(String) markers[i].getAttribute(IMarker.MESSAGE));
+
 			} catch (CoreException e) {
-				
+
 				e.printStackTrace();
 			}
 		}
@@ -347,8 +372,10 @@ public class DebugRScript extends Action {
 		return map1;
 	}
 
-	public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
-		List<Map.Entry<K, V>> list = new LinkedList<Map.Entry<K, V>>(map.entrySet());
+	public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(
+			Map<K, V> map) {
+		List<Map.Entry<K, V>> list = new LinkedList<Map.Entry<K, V>>(
+				map.entrySet());
 		Collections.sort(list, new Comparator<Map.Entry<K, V>>() {
 			public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2) {
 				return (o1.getValue()).compareTo(o2.getValue());

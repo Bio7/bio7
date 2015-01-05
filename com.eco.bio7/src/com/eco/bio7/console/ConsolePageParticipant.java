@@ -36,6 +36,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -53,7 +55,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.action.ControlContribution;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -69,16 +70,11 @@ import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleConstants;
 import org.eclipse.ui.console.IConsolePageParticipant;
@@ -95,6 +91,7 @@ import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.os.pid.Pid;
+import com.eco.bio7.os.pid.UnixProcessManager;
 import com.eco.bio7.popup.actions.RunJavaClassFile;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RServe;
@@ -143,8 +140,9 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	private Pid shellPid;
 	private Pid pythonPid;
 	private IContributionItem item;
-	
-	
+	private static final char IAC = (char) 5;
+	private static final char BRK = (char) 3;
+
 	private static ConsolePageParticipant ConsolePageParticipantInstance;
 	static boolean lineSeperatorConsole = true;
 	static boolean addToHistoryConsole = true;
@@ -288,6 +286,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				}
 				/* CTRL+c key event! */
 				else if (event.stateMask == SWT.CTRL && event.keyCode == 'c') {
+
 					// Send OS signal
 					if (Bio7Dialog.getOS().equals("Windows")) {
 						Bundle bundle = Platform.getBundle("com.eco.bio7.os");
@@ -309,7 +308,9 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 							} catch (IOException e) {
 								e.printStackTrace();
 							}
-							//System.out.println(pathBundle + "/SendSignalCtrlC.exe " + rPid.getPidWindows(RProcess));
+							// System.out.println(pathBundle +
+							// "/SendSignalCtrlC.exe " +
+							// rPid.getPidWindows(RProcess));
 						} else if (interpreterSelection.equals("shell")) {
 							try {
 								Process p = Runtime.getRuntime().exec(pathBundle + "/SendSignalCtrlC.exe " + shellPid.getPidWindows(nativeShellProcess));
@@ -329,35 +330,60 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 						}
 					} else {
+
 						if (interpreterSelection.equals("R")) {
-							try {
-								Process p = Runtime.getRuntime().exec("kill -INT " + rPid.getPidUnix(RProcess));
 
-							} catch (IOException e) {
-								e.printStackTrace();
+							// Process p =
+							// Runtime.getRuntime().exec("kill -INT " +
+							// rPid.getPidUnix(RProcess));
+							if (RServe.getConnection() == null) {
+								UnixProcessManager.sendSigIntToProcessTree(RProcess);
+							} else {
+								System.out.print("Please change to the native connection to interrupt a running R script!");
 							}
-							//System.out.println(rPid.getPidWindows(RProcess));
+
+							// System.out.println(rPid.getPidWindows(RProcess));
 						} else if (interpreterSelection.equals("shell")) {
-							try {
-								Process p = Runtime.getRuntime().exec("kill -INT " + shellPid.getPidUnix(nativeShellProcess));
 
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
+							// Process p =
+							// Runtime.getRuntime().exec("kill -INT " +
+							// shellPid.getPidUnix(nativeShellProcess));
+
+							UnixProcessManager.sendSigIntToProcessTree(nativeShellProcess);
+
 						}
 
 						else if (interpreterSelection.equals("python")) {
-							try {
-								Process p = Runtime.getRuntime().exec("kill -INT " + pythonPid.getPidUnix(pythonProcess));
 
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
+							// Process p =
+							// Runtime.getRuntime().exec("kill -INT " +
+							// pythonPid.getPidUnix(pythonProcess));
+							UnixProcessManager.sendSigIntToProcessTree(pythonProcess);
 
 						}
 
 					}
 
+				}
+				/* CTRL+x key event! */
+				else if (event.stateMask == SWT.CTRL && event.keyCode == 'x') {
+					if (interpreterSelection.equals("shell")) {
+
+						// Process p =
+						// Runtime.getRuntime().exec("kill -2 -$PGID " +
+						// shellPid.getPidUnix(nativeShellProcess));
+						UnixProcessManager.sendSigKillToProcessTree(nativeShellProcess);
+						setNativeShellProcess(null);
+					}
+
+					else if (interpreterSelection.equals("python")) {
+
+						// Process p = Runtime.getRuntime().exec("kill -TERM " +
+						// pythonPid.getPidUnix(pythonProcess));
+						UnixProcessManager.sendSigKillToProcessTree(pythonProcess);
+						setPythonProcess(null);
+
+					}
 				}
 
 				else {
@@ -387,12 +413,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		ia = new ConsoleInterpreterAction(this);
 		toolBarManager.add(ia);
 		toolBarManager.add(item);
-		
-		 
 
-		
-		
-		
 		in = new BufferedReader(isr);
 
 		ioc.clearConsole();
@@ -420,7 +441,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				/* Start shell with arguments! */
 				ConsolePageParticipant.pipeInputToConsole(shellArgs, true, true);
 				shellPid = new Pid();
-				//System.out.println("Process Id is: " + shellPid.getPidWindows(nativeShellProcess));
+				// System.out.println("Process Id is: " +
+				// shellPid.getPidWindows(nativeShellProcess));
 
 			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
 				// Some Useful commands: export TERM=xterm; top -b; ssh -tt
@@ -436,7 +458,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				/* Start shell with arguments! */
 				ConsolePageParticipant.pipeInputToConsole(shellArgs, true, true);
 				shellPid = new Pid();
-				//System.out.println("Process Id is: " + shellPid.getPidUnix(nativeShellProcess));
+				// System.out.println("Process Id is: " +
+				// shellPid.getPidUnix(nativeShellProcess));
 			}
 
 			else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
@@ -448,7 +471,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				/* Start shell with arguments! */
 				ConsolePageParticipant.pipeInputToConsole(shellArgs, true, false);
 				shellPid = new Pid();
-				//System.out.println("Process Id is: " + shellPid.getPidUnix(nativeShellProcess));
+				// System.out.println("Process Id is: " +
+				// shellPid.getPidUnix(nativeShellProcess));
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -479,7 +503,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				pythonProcessThread = new Thread(new PythonProcessGrabber());
 				pythonProcessThread.start();
 				pythonPid = new Pid();
-				//System.out.println("Process Id is: " + pythonPid.getPidWindows(pythonProcess));
+				// System.out.println("Process Id is: " +
+				// pythonPid.getPidWindows(pythonProcess));
 
 			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
 
@@ -493,7 +518,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				pythonProcessThread = new Thread(new PythonProcessGrabber());
 				pythonProcessThread.start();
 				pythonPid = new Pid();
-				//System.out.println("Process Id is: " + pythonPid.getPidUnix(pythonProcess));
+				// System.out.println("Process Id is: " +
+				// pythonPid.getPidUnix(pythonProcess));
 			}
 
 			else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
@@ -507,11 +533,12 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				pythonProcessThread = new Thread(new PythonProcessGrabber());
 				pythonProcessThread.start();
 				pythonPid = new Pid();
-				//System.out.println("Process Id is: " + pythonPid.getPidUnix(pythonProcess));
+				// System.out.println("Process Id is: " +
+				// pythonPid.getPidUnix(pythonProcess));
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			//e.printStackTrace();
+			// e.printStackTrace();
 			Bio7Dialog.message("Interpreter not available!\n\nPlease adjust the path to the interpreter in the Bio7 preferences!");
 		}
 
@@ -561,7 +588,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				RprocessThread = new Thread(new RProcessGrabber());
 				RprocessThread.start();
 				rPid = new Pid();
-				//System.out.println("Process Id is: " + rPid.getPidWindows(RProcess));
+				// System.out.println("Process Id is: " +
+				// rPid.getPidWindows(RProcess));
 				rOptions();
 
 			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
@@ -578,7 +606,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				RprocessThread = new Thread(new RProcessGrabber());
 				RprocessThread.start();
 				rPid = new Pid();
-				//System.out.println("Process Id is: " + rPid.getPidUnix(RProcess));
+				// System.out.println("Process Id is: " +
+				// rPid.getPidUnix(RProcess));
 				rOptions();
 			}
 
@@ -595,7 +624,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				RprocessThread = new Thread(new RProcessGrabber());
 				RprocessThread.start();
 				rPid = new Pid();
-				//System.out.println("Process Id is: " + rPid.getPidUnix(RProcess));
+				// System.out.println("Process Id is: " +
+				// rPid.getPidUnix(RProcess));
 				rOptions();
 			}
 		} catch (IOException e) {
@@ -683,12 +713,32 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			if (interpreterSelection.equals("R")) {
 				try {
 
+					/*
+					 * InputStreamReader inr = new
+					 * InputStreamReader(inp,Charset.forName(consoleEncoding));
+					 * BufferedReader reader = new BufferedReader(inr);
+					 * 
+					 * String line; while ((line = reader.readLine()) != null) {
+					 * 
+					 * line=line.toString();
+					 * 
+					 * //line=line.toString().replaceAll("[4m", "");
+					 * System.out.println(line.toString());
+					 * //line=line.toString().replaceAll("[4m, "");
+					 */
+
+					// System.out.println("Hello \u001b[1;31mred\u001b[0m world!");
+					// }
+
 					InputStreamReader inr = new InputStreamReader(inp, Charset.forName(consoleEncoding));
 
 					int ch;
 					while ((ch = inr.read()) != -1) {
 
 						System.out.print((char) ch);
+
+						// System.out.print("nnn"+Character.getNumericValue(ch)+"nnn");
+						// System.out.println("Hello \u001b[1;31mred\u001b[0m world!");
 
 					}
 					// consoleOutputChar.delete(0,
@@ -1119,7 +1169,9 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 						final BufferedWriter bw = new BufferedWriter(osw, 100);
 
 						try {
+							// ConsolePageParticipant.getConsolePageParticipantInstance().ioc.get
 							bw.write(input);
+
 							if (lineSeperatorConsole) {
 								bw.newLine();
 							}
@@ -1320,7 +1372,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 		/* Add the debug actions dynamically! */
 		IToolBarManager tm = toolBarManager;
-		/*Remove the distance label!*/
+		/* Remove the distance label! */
 		tm.remove("PlaceholderLabel");
 		IContributionItem[] its = toolBarManager.getItems();
 		boolean exist = false;
@@ -1344,14 +1396,14 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			tm.add(new DebugStepIntoAction());
 			tm.add(new DebugStepFinishAction());
 			tm.add(new DebugInfoAction());
-			/*Add the distance label again!*/
+			/* Add the distance label again! */
 			tm.add(item);
 			actionBars.updateActionBars();
 		}
 		/* Remove all toolbar actions from the console view! */
-		/*if (utils != null) {
-			utils.cons.clear();
-		}*/
+		/*
+		 * if (utils != null) { utils.cons.clear(); }
+		 */
 	}
 
 	public void deleteDebugToolbarActions() {
@@ -1363,7 +1415,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		toolBarManager.remove("StepInto");
 		toolBarManager.remove("Finish");
 		toolBarManager.remove("DebugInfo");
-		
+
 		actionBars.updateActionBars();
 
 	}
@@ -1371,6 +1423,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	public Process getShellProcess() {
 		return shellProcess;
 	}
+
 	public Process getNativeShellProcess() {
 		return nativeShellProcess;
 	}
@@ -1382,9 +1435,11 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	public Process getRProcess() {
 		return RProcess;
 	}
+
 	public void setRProcess(Process rProcess) {
 		RProcess = rProcess;
 	}
+
 	public void setPythonProcess(Process pythonProcess) {
 		this.pythonProcess = pythonProcess;
 	}
@@ -1422,6 +1477,39 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				}
 			}
 
+		}
+	}
+
+	/**
+	 * Sends sequence of two chars(codes 5 and 3) to a process output stream
+	 * Source from:
+	 * https://github.com/joewalnes/idea-community/blob/master/platform
+	 * /platform-impl/src/com/intellij/execution/process/RunnerMediator.java
+	 * 
+	 * Copyright 2000-2010 JetBrains s.r.o.
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License"); you may
+	 * not use this file except in compliance with the License. You may obtain a
+	 * copy of the License at
+	 *
+	 * http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+	 * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+	 * License for the specific language governing permissions and limitations
+	 * under the License.
+	 */
+
+	private static void sendCtrlBreakThroughStream(Process process) {
+		OutputStream os = process.getOutputStream();
+		PrintWriter pw = new PrintWriter(os);
+		try {
+			pw.print(IAC);
+			pw.print(BRK);
+			pw.flush();
+		} finally {
+			pw.close();
 		}
 	}
 }

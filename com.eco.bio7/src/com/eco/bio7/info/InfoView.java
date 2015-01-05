@@ -103,6 +103,7 @@ public class InfoView extends ViewPart {
 	}
 
 	public void createPartControl(Composite parent) {
+		parent.setBackgroundMode(SWT.INHERIT_FORCE);
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.controll");
 		bar = new ExpandBar(parent, SWT.V_SCROLL);
 		bar.setForeground(org.eclipse.wb.swt.SWTResourceManager.getColor(SWT.COLOR_BLACK));
