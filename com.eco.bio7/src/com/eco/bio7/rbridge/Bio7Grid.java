@@ -16,6 +16,8 @@ import java.awt.image.DirectColorModel;
 import java.awt.image.IndexColorModel;
 import java.awt.image.WritableRaster;
 
+import org.eclipse.jface.resource.ColorRegistry;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.nebula.widgets.grid.Grid;
 import org.eclipse.nebula.widgets.grid.GridColumn;
 import org.eclipse.nebula.widgets.grid.GridItem;
@@ -241,8 +243,13 @@ public class Bio7Grid {
 			Display display = PlatformUI.getWorkbench().getDisplay();
 			display.syncExec(new Runnable() {
 				public void run() {
-
-					grid.getItem(row).setBackground(column, new Color(Display.getCurrent(), new RGB(r, g, b)));
+					ColorRegistry colorRegistry = JFaceResources.getColorRegistry();
+					String colorAsString="RGB {"+r+", "+g+", "+b+"}";
+					Color col=colorRegistry.get(colorAsString);
+					if(col==null){
+						colorRegistry.put(colorAsString, new RGB(r,g,b));
+					}
+					grid.getItem(row).setBackground(column, col);
 
 				}
 			});

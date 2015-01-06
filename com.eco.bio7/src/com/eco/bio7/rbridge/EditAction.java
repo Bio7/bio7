@@ -14,7 +14,9 @@ package com.eco.bio7.rbridge;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuCreator;
+import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.FontRegistry;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.nebula.widgets.grid.Grid;
 import org.eclipse.swt.SWT;
@@ -254,6 +256,13 @@ public class EditAction extends Action implements IMenuCreator {
 				 * cf.getTriplet();
 				 * System.out.println(" "+s[0]+" "+s[1]+" "+s[2]);
 				 */
+				
+				ColorRegistry colorRegistry = JFaceResources.getColorRegistry();
+				String colorAsString=color.toString();
+				Color col=colorRegistry.get(colorAsString);
+				if(col==null){
+					colorRegistry.put(colorAsString, color);
+				}
 
 				Grid grid = RTable.getGrid();
 
@@ -265,8 +274,8 @@ public class EditAction extends Action implements IMenuCreator {
 					for (Point selection : sel) {
 
 						if (color != null) {
-
-							grid.getItem(selection.y).setBackground(selection.x, new Color(Display.getCurrent(), color));
+                            
+							grid.getItem(selection.y).setBackground(selection.x, colorRegistry.get(colorAsString));
 
 						}
 					}
@@ -287,6 +296,12 @@ public class EditAction extends Action implements IMenuCreator {
 				ColorDialog dialog = new ColorDialog(new Shell(), SWT.APPLICATION_MODAL);
 
 				RGB color = dialog.open();
+				ColorRegistry colorRegistry = JFaceResources.getColorRegistry();
+				String colorAsString=color.toString();
+				Color col=colorRegistry.get(colorAsString);
+				if(col==null){
+					colorRegistry.put(colorAsString, color);
+				}
 
 				Grid grid = RTable.getGrid();
 
@@ -297,7 +312,7 @@ public class EditAction extends Action implements IMenuCreator {
 					for (Point selection : sel) {
 
 						if (color != null) {
-							grid.setLineColor(new Color(Display.getCurrent(), color));
+							grid.setLineColor(colorRegistry.get(colorAsString));
 
 						}
 					}

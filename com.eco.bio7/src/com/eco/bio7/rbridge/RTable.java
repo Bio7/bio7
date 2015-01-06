@@ -46,6 +46,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 import com.eco.bio7.batch.Bio7Dialog;
@@ -69,6 +70,7 @@ public class RTable extends ViewPart {
 	private Action addColumn;
 	private Action addRow;
 	private static RTable instance;
+	private CTabItem item;
 
 	public static Grid getGrid() {
 		return grid;
@@ -104,30 +106,35 @@ public class RTable extends ViewPart {
 		tabFolder.addCTabFolder2Listener(new CTabFolder2Listener() {
 
 			public void close(final CTabFolderEvent event) {
-				final CTabItem item = (CTabItem) event.item;// tabFolder.getSelection();
+				
+				 item = (CTabItem) event.item;// tabFolder.getSelection();
 				/* Garbage collector can work!!!! */
 				grid = (Grid) event.item.getData();
 				
 				/*Dispose swt colors and images explicitly! */
 				for (int i = 0; i < grid.getItemCount(); i++) {
 					for (int j = 0; j < grid.getColumnCount(); j++) {
-						Color foreg = grid.getItem(i).getForeground(j);
-						Color backg = grid.getItem(i).getBackground(j);
+						//Color foreg = grid.getItem(i).getForeground(j);
+						//Color backg = grid.getItem(i).getBackground(j);
 						Image im = grid.getItem(i).getImage(j);
-						if (foreg != null) {
+						/*if (foreg != null) {
 							foreg.dispose();
-						}
-						if (backg != null) {
+						}*/
+						/*if (backg != null) {
 							backg.dispose();
-						}
+						}*/
 						if (im != null) {
 							im.dispose();
 						}
 
 					}
 				}
+					
+				
 				grid.removeAll();
+				
 				item.dispose();
+				
 				
 				/* Necessary to set the grid from the now active item! */
 				if (tabFolder.getSelection() != null) {

@@ -15,18 +15,23 @@ import java.awt.Color;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.FontRegistry;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.nebula.widgets.grid.Grid;
 import org.eclipse.nebula.widgets.grid.GridItem;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
+
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.zip.util.ZipUtil;
 import com.thoughtworks.xstream.XStream;
@@ -129,7 +134,13 @@ public class LoadGridXMLJob extends WorkspaceJob {
 					fontRegistry = new FontRegistry(display);
 					grid = new Spread().spread(RTable.getTabFolder(), values.length, values[0].length, new File(file).getName());
 					Color co = gridXml.getGridLineColor();
-					grid.setLineColor(new org.eclipse.swt.graphics.Color(display, co.getRed(), co.getGreen(), co.getBlue()));
+					ColorRegistry colorRegistry = JFaceResources.getColorRegistry();
+					String colorAsString="RGB {"+co.getRed()+", "+co.getGreen()+", "+co.getBlue()+"}";
+					org.eclipse.swt.graphics.Color col=colorRegistry.get(colorAsString);
+					if(col==null){
+						colorRegistry.put(colorAsString, new org.eclipse.swt.graphics.RGB(co.getRed(),co.getGreen(),co.getBlue()));
+					}
+					grid.setLineColor(colorRegistry.get(colorAsString));
 					if (grid != null) {
 						RTable.setGrid(grid);
 						for (int items = 0; items < grid.getItemCount(); items++) {
@@ -148,8 +159,16 @@ public class LoadGridXMLJob extends WorkspaceJob {
 
 									item.setFont(columns, fontRegistry.get("c"));
 								}
-								item.setBackground(columns,
-										new org.eclipse.swt.graphics.Color(display, colors[columns][items].getRed(), colors[columns][items].getGreen(), colors[columns][items].getBlue()));
+								Color cob=colors[columns][items];
+								int r=cob.getRed();
+								int g=cob.getGreen();
+								int b=cob.getBlue();
+								String colBackgrString="RGB {"+r+", "+g+", "+b+"}";
+								org.eclipse.swt.graphics.Color colBack=colorRegistry.get(colBackgrString);
+								if(colBack==null){
+									colorRegistry.put(colBackgrString, new RGB(r, g, b));
+								}
+								item.setBackground(columns,colorRegistry.get(colBackgrString));
 								item.setHeight(cellHeights[columns][items]);
 
 								grid.getColumn(columns).setWidth(cellWidths[columns][items]);
