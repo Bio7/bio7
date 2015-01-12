@@ -312,12 +312,14 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 							// "/SendSignalCtrlC.exe " +
 							// rPid.getPidWindows(RProcess));
 						} else if (interpreterSelection.equals("shell")) {
+							//sendCtrlBreakThroughStream(nativeShellProcess);
 							try {
 								Process p = Runtime.getRuntime().exec(pathBundle + "/SendSignalCtrlC.exe " + shellPid.getPidWindows(nativeShellProcess));
 
 							} catch (IOException e) {
 								e.printStackTrace();
 							}
+							
 						}
 
 						else if (interpreterSelection.equals("python")) {
@@ -1502,6 +1504,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	 */
 
 	private static void sendCtrlBreakThroughStream(Process process) {
+		if(process!=null){
 		OutputStream os = process.getOutputStream();
 		PrintWriter pw = new PrintWriter(os);
 		try {
@@ -1510,6 +1513,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			pw.flush();
 		} finally {
 			pw.close();
+		}
 		}
 	}
 }
