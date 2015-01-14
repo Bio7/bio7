@@ -493,6 +493,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("REPAINT_HEX", true);
 		store.setDefault("RECORD_VALUES", true);
 		store.setDefault("STARTUP_SCRIPTS", false);
+		store.setDefault("python_3x",false);
 		store.setDefault("blender_options", "interactive");
 		store.setDefault("before_script_blender", "import bpy;bpy.ops.object.select_all(action='SELECT');bpy.ops.object.delete()");
 		store.setDefault("after_script_blender", "bpy.ops.render.render();bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)");

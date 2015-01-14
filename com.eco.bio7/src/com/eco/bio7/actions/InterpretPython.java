@@ -81,9 +81,18 @@ public class InterpretPython extends Action {
 
 				if (sel.equals("Python")) {
 					if (selectionConsole.equals("Python")) {
+						boolean python3x = store.getBoolean("python_3x");
+						if(python3x==false){
+						ConsolePageParticipant.pipeInputToConsole("execfile('"
+								+ loc + "')", true, true);
+						ConsolePageParticipant.pipeInputToConsole("", true, true);
+						}
+						else{
+						
 						ConsolePageParticipant.pipeInputToConsole(
-								"exec(compile(open('" + loc + "').read(),'"
-										+ loc + "', 'exec'))", false, true);
+
+								"exec(compile(open('" + loc + "').read(),'"+ loc + "', 'exec'))", true, true);
+						}
 					} else {
 						Bio7Dialog
 								.message("Please start the \"Native Python\" Shell in the Bio7 console!");

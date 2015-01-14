@@ -40,7 +40,7 @@ public class PreferencePageShell extends FieldEditorPreferencePage implements IW
 		
 		addField(new LabelFieldEditor("R:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("r_pipe", "Execute Editor Source in R", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
-		//addField(new DirectoryFieldEditor("r_pipe_path", "Path R		", getFieldEditorParent()));
+		addField(new DirectoryFieldEditor("r_pipe_path", "Path R		", getFieldEditorParent()));
 		SpacerFieldEditor spacer1 = new SpacerFieldEditor(getFieldEditorParent());
 		addField(spacer1);
 		
@@ -49,7 +49,9 @@ public class PreferencePageShell extends FieldEditorPreferencePage implements IW
 			labelFieldEditor.setLabelText("Python/Blender:");
 			addField(labelFieldEditor);
 		}
+		
 		addField(new BooleanFieldEditor("python_pipe", "Execute Editor (Floweditor) Source in Python/Blender", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addField(new BooleanFieldEditor("python_3x", "Python 3 is used to evaluate scripts", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		addField(new RadioGroupFieldEditor("python_select", "Select Interpreter", 1, new String[][] { { "Python", "Python" }, { "Blender", "Blender" } }, getFieldEditorParent(), false));
 		addField(new DirectoryFieldEditor("python_pipe_path", "Path Python", getFieldEditorParent()));
 		addField(new LabelFieldEditor("Blender:", getFieldEditorParent()));
