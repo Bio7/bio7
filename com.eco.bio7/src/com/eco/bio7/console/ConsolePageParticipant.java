@@ -500,6 +500,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				args.add(cPython + "/python");
 				args.add("-i");
 				ProcessBuilder builder = new ProcessBuilder(args);
+				builder.environment().put("Path", builder.environment().get("Path") +cPython);
 				builder.redirectErrorStream(true);
 				pythonProcess = builder.start();
 				pythonProcessThread = new Thread(new PythonProcessGrabber());

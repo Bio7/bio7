@@ -60,7 +60,7 @@ public class LoadWorkspaceJob extends WorkspaceJob {
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
 
 		monitor.beginTask("Load Pattern...", IProgressMonitor.UNKNOWN);
-		unsetAllPlants();
+		unsetAllStates();
 
 		// We have to stop the 3d animator for the process of loading!
 		FPSAnimator anim = Quad3dview.getAnimator();
@@ -99,7 +99,7 @@ public class LoadWorkspaceJob extends WorkspaceJob {
 		ResizeArray.update(grid.getFieldSizeY(), grid.getFieldSizeX());
 
 		// We adjust the slider value!
-		update_slider(grid);
+		updateSlider(grid);
 		int[][] stat = grid.getStates();
 
 		for (int y = 0; y < stat.length; y++) {
@@ -109,7 +109,7 @@ public class LoadWorkspaceJob extends WorkspaceJob {
 			}
 		}
 
-		repaint_fields();
+		repaintFields();
 		grid.setStates(null);
 		/*
 		 * Load and compile a class or classbody dependent on the stored boolean
@@ -144,7 +144,7 @@ public class LoadWorkspaceJob extends WorkspaceJob {
 	}
 
 	// We adjust the slider value!
-	private void update_slider(final DataDescriptorGrids grid) {
+	private void updateSlider(final DataDescriptorGrids grid) {
 
 		Display display = PlatformUI.getWorkbench().getDisplay();
 		display.syncExec(new Runnable() {
@@ -160,7 +160,7 @@ public class LoadWorkspaceJob extends WorkspaceJob {
 
 	}
 
-	private void repaint_fields() {
+	private void repaintFields() {
 		Quad2d.getQuad2dInstance().repaint();
 		Hexagon hex = Hexagon.getHexagonInstance();
 		if (hex != null) {
@@ -178,7 +178,7 @@ public class LoadWorkspaceJob extends WorkspaceJob {
 
 	}
 
-	private void unsetAllPlants() {
+	private void unsetAllStates() {
 
 		li = CurrentStates.getStateList();
 
