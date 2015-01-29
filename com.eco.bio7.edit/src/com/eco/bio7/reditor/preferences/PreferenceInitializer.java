@@ -45,8 +45,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 
 		} else if (OS.equals("Mac")) {
 
-			font = "Monaco";
-			fsize = 11;
+			font = "Helvetica Neue";
+			fsize = 14;
 
 		}
 

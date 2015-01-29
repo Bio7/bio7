@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import org.eclipse.albireo.internal.AwtDialogListener;
@@ -156,9 +157,9 @@ public final class AwtEnvironment {
 		 */
 		// TODO: this is effective only on Windows.
 		// M. Austenfeld: On Linux a deadlock occurs (Ubuntu 14.04)!
-		if (Platform.isWin32()) {
+		/*if (Platform.isWin32()) {
 			System.setProperty("sun.awt.noerasebackground", "true"); //$NON-NLS-1$//$NON-NLS-2$
-		}
+		}*/
 
 		/*
 		 * It's important to wait for the L&F to be set so that any subsequent
@@ -175,20 +176,14 @@ public final class AwtEnvironment {
 				initialFont[0] = display.getSystemFont();
 			}
 		});
-		try {
-			EventQueue.invokeAndWait(new Runnable() {
-				public void run() {
-					setLookAndFeel();
-					LookAndFeelHandler.getInstance().propagateSwtFont(initialFont[0]);
-					if (FocusHandler.verboseKFHEvents)
-						FocusDebugging.enableKeyboardFocusManagerLogging();
-				}
-			});
-		} catch (InterruptedException e) {
-			SWT.error(SWT.ERROR_FAILED_EXEC, e);
-		} catch (InvocationTargetException e) {
-			SWT.error(SWT.ERROR_FAILED_EXEC, e.getTargetException());
-		}
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				setLookAndFeel();
+				LookAndFeelHandler.getInstance().propagateSwtFont(initialFont[0]);
+				if (FocusHandler.verboseKFHEvents)
+					FocusDebugging.enableKeyboardFocusManagerLogging();
+			}
+		});
 
 		// Listen for AWT modal dialogs to make them modal application-wide
 		dialogListener = new AwtDialogListener(display);
@@ -531,7 +526,7 @@ public final class AwtEnvironment {
 	 * @return
 	 */
 	public Shell getSwtPopupParent(SwingControl control) {
-		if (Platform.isGtk()) {
+		if (!Platform.isWin32()) {
 			if (true && (popupParent == null)) {
 				// System.err.println("*** Creating separate popup parent shell");
 				popupParent = new Shell(display, SWT.NO_TRIM | SWT.NO_FOCUS | SWT.ON_TOP);

@@ -450,7 +450,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				// Some Useful commands: export TERM=xterm; top -b; ssh -tt
 				// gksudo 'apt-get --yes install abiword'
 				List<String> args = new ArrayList<String>();
-				args.add("/bin/bash");
+				args.add("/bin/sh");
 				args.add("-i");
 				ProcessBuilder builder = new ProcessBuilder(args);
 				builder.redirectErrorStream(true);
@@ -465,7 +465,10 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			}
 
 			else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
-				ProcessBuilder builder = new ProcessBuilder("/bin/bash");
+				List<String> args = new ArrayList<String>();
+				args.add("/bin/sh");
+				args.add("-i");
+				ProcessBuilder builder = new ProcessBuilder(args);
 				builder.redirectErrorStream(true);
 				nativeShellProcess = builder.start();
 				nativeShellprocessThread = new Thread(new NativeProcessGrabber());
