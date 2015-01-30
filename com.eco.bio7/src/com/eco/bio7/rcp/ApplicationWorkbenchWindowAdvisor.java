@@ -412,6 +412,29 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			}*/
 
 		} else if (getOS().equals("Mac")) {
+			Bundle bundlenew = Platform.getBundle("Bundled_R");
+
+			URL locationUrlMac = FileLocator.find(bundlenew, new Path("/R"), null);
+			URL fileUrlMac = null;
+			try {
+				fileUrlMac = FileLocator.toFileURL(locationUrlMac);
+			} catch (IOException e2) {
+
+				e2.printStackTrace();
+			}
+
+			File file = new File(fileUrlMac.getFile());
+			path = file.getAbsolutePath();
+			
+			store.setDefault(PreferenceConstants.PATH_R, path);
+			store.setDefault("InstallLocation", "/usr/lib/R/site-library");
+			store.setDefault("SweaveScriptLocation", "/usr/share/R/share/texmf/tex/latex");
+			store.setDefault("pdfLatex", "/usr/bin");
+			store.setDefault("RSERVE_ARGS", "");
+			
+			
+			
+			
 			reg2 = "/usr/lib/openoffice/program";
 			store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, reg2);
 

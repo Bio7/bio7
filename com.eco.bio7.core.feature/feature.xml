@@ -70,7 +70,6 @@
       <import plugin="org.eclipse.draw2d"/>
       <import plugin="org.eclipse.swt"/>
       <import plugin="com.eco.bio7.themes" version="1.0.0" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.e4.tools.css.spy" version="0.12.0" match="greaterOrEqual"/>
    </requires>
 
    <plugin
