@@ -30,7 +30,7 @@ http://bio7.org
       </vmArgsMac>
    </launcherArgs>
 
-   <windowImages i16="icons/bio7app/bio7_16.png" i32="icons/bio7app/bio7_32.png" i48="icons/bio7app/bio7_48.png" i64="icons/bio7app/bio7_64.png" i128="icons/bio7app/bio7_128.png"/>
+   <windowImages i16="icons/bio7app/bio7_16.png" i32="icons/bio7app/bio7_32.png" i48="icons/bio7app/bio7_48.png" i64="icons/bio7app/bio7_64.png" i128="icons/bio7app/bio7_128.png" i256="icons/bio7app/bio7_256.png"/>
 
    <splash
       location="com.eco.bio7"

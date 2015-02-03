@@ -333,7 +333,7 @@ CTabItem:selected {
 CTabFolder { 
 
  swt-corner-radius: 15.0;
-  
+ swt-tab-height: 22.0px; 
 }
 
 /*#com-eco-bio7-imagej.MToolBar {

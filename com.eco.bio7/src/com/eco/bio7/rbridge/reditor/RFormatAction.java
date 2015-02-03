@@ -66,7 +66,14 @@ public class RFormatAction extends Action implements IObjectActionDelegate {
 		NullProgressMonitor monitor = new NullProgressMonitor();
 		IEditorPart[] dirtyEditors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getDirtyEditors();
 		for (IEditorPart iEditorPart : dirtyEditors) {
-			iEditorPart.doSave(monitor);
+			iEditorPart.doSave(null);
+		}
+		/*Give editor time to save (since it is a non blocking operation!)*/
+		try {
+			Thread.sleep(100);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 		ITextEditor editor = (ITextEditor) editore;
@@ -119,16 +126,16 @@ public class RFormatAction extends Action implements IObjectActionDelegate {
 							if (bol.isTRUE()[0]) {
 
 								try {
-									c.eval("library(formatR);try(tidy_source(source = \"" + loc + "\",file = \"" + loc + "\"))");
+									c.eval("library(formatR);try(tidy.source(source = \"" + loc + "\",file = \"" + loc + "\"))");
 									// rcon.eval("tidy.source(source = \""+loc+"\",file = \"clipboard\")");
 
-									Display display = Display.getDefault();
+									/*Display display = Display.getDefault();
 									display.asyncExec(new Runnable() {
 
 										public void run() {
 											//setClipboardData(doc);
 										}
-									});
+									});*/
 								} catch (RserveException e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
@@ -181,7 +188,7 @@ public class RFormatAction extends Action implements IObjectActionDelegate {
 				ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
 				con.pipeToRConsole("options(prompt=\" \")");
 				con.pipeToRConsole(".bio7FormatSocket <- socketConnection(port = " + port + ", server = TRUE,timeout=10)");
-				con.pipeToRConsole("library(formatR);tidy_source(source = \"" + loc + "\",file = .bio7FormatSocket)");
+				con.pipeToRConsole("library(formatR);tidy.source(source = \"" + loc + "\",file = .bio7FormatSocket)");
 				/*
 				 * We use sockets here to wait for the clipboard data to be
 				 * present (avoid parallel execution of R and Java commands

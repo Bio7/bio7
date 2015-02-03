@@ -25,24 +25,22 @@ import org.eclipse.ui.part.ViewPart;
 
 import com.eco.bio7.util.PlaceholderLabel;
 
-
-
 public class BrowserView extends ViewPart {
 
-	
 	private Action scriptAction;
 	private Action refreshAction;
 	private Action stopAction;
 	private Action forwardAction;
 	private Action backAction;
 	private Action goAction;
+	private Action manualAction;
 	private Action openstreetmapAction;
 	public Browser browser;
 	public Text txt;
-	
 
 	private Object realUrl;
 	private IContributionItem placeholderlabel;
+	
 	private static BrowserView browserInstance;
 	public static final String ID = "com.eco.bio7.browser.BrowserView"; //$NON-NLS-1$
 
@@ -53,16 +51,16 @@ public class BrowserView extends ViewPart {
 	 */
 	@Override
 	public void createPartControl(Composite parent) {
-		browserInstance=this;
+		browserInstance = this;
 		Composite container = new Composite(parent, SWT.NONE);
 		container.setLayout(new FillLayout());
 
 		browser = new Browser(container, SWT.NONE);
-		browser.setUrl("http://bio7.org");
+		browser.setUrl("http://bio7.org/manual/Main.html");
 
 		createActions();
 		initializeToolBar();
-		
+
 	}
 
 	class ZoomCombo extends ControlContribution {
@@ -119,8 +117,7 @@ public class BrowserView extends ViewPart {
 		protected Control createControl(Composite parent) {
 
 			combo = new Combo(parent, SWT.READ_ONLY);
-			
-			combo.add("R Wiki");
+			combo.add("R CRAN Task Views");
 			combo.add("Quick R");
 			combo.add("Reference Card");
 			combo.add("R Snippets");
@@ -128,8 +125,7 @@ public class BrowserView extends ViewPart {
 			combo.add("R-bloggers");
 			combo.add("R documentation");
 			combo.add("R Wiki Book");
-			
-			
+			combo.add("R Stack Overflow");
 
 			combo.select(0);
 
@@ -144,14 +140,15 @@ public class BrowserView extends ViewPart {
 					switch (index) {
 
 					case 0:
-						browser.setUrl("http://rwiki.sciviews.org/doku.php");
-						txt.setText("http://rwiki.sciviews.org/doku.php");
+
+						browser.setUrl("http://cran.r-project.org/web/views/");
+						txt.setText("http://cran.r-project.org/web/views/");
 
 						break;
 					case 1:
 						browser.setUrl("http://www.statmethods.net/");
 						txt.setText("http://www.statmethods.net/");
-						
+
 						break;
 					case 2:
 						browser.setUrl("http://cran.r-project.org/doc/contrib/Short-refcard.pdf");
@@ -177,7 +174,10 @@ public class BrowserView extends ViewPart {
 						browser.setUrl("http://en.wikibooks.org/wiki/R_Programming");
 						txt.setText("http://en.wikibooks.org/wiki/R_Programming");
 						break;
-						
+					case 8:
+						browser.setUrl("http://stackoverflow.com/questions/tagged/r");
+						txt.setText("http://stackoverflow.com/questions/tagged/r");
+						break;
 
 					default:
 						break;
@@ -204,7 +204,7 @@ public class BrowserView extends ViewPart {
 
 			combo = new Combo(parent, SWT.READ_ONLY);
 			combo.add("ImageJ Wiki");
-			
+
 			combo.add("ImageJ Plugins");
 			combo.add("ImageJ Documentation");
 			combo.add("ImageJ Manual");
@@ -230,7 +230,7 @@ public class BrowserView extends ViewPart {
 						txt.setText("http://rsb.info.nih.gov/ij/plugins/index.html");
 
 						break;
-						
+
 					case 2:
 						browser.setUrl("http://rsb.info.nih.gov/ij/docs/index.html");
 						txt.setText("http://rsb.info.nih.gov/ij/docs/index.html");
@@ -292,8 +292,7 @@ public class BrowserView extends ViewPart {
 			return txt;
 		}
 	}
-	
-    
+
 	/**
 	 * Create the actions
 	 */
@@ -344,10 +343,18 @@ public class BrowserView extends ViewPart {
 
 			}
 		};
-		
-		
+		manualAction = new Action("Bio7 Manual") {
+			public void run() {
+
+				browser.setUrl("http://bio7.org/manual/Main.html");
+				txt.setText("http://bio7.org/manual/Main.html");
+
+			}
+		};
+
 	}
-	public  void setLocation(String loc){
+
+	public void setLocation(String loc) {
 		browser.setUrl(loc);
 		txt.setText(loc);
 	}
@@ -361,6 +368,8 @@ public class BrowserView extends ViewPart {
 		toolbarManager.add(new RLinksCombo());
 		toolbarManager.add(new ZoomCombo());
 		toolbarManager.add(new TextItem());
+		
+		
 
 		toolbarManager.add(goAction);
 
@@ -373,9 +382,11 @@ public class BrowserView extends ViewPart {
 		toolbarManager.add(refreshAction);
 
 		toolbarManager.add(scriptAction);
+		
+		toolbarManager.add(manualAction);
+		
 		placeholderlabel = new PlaceholderLabel().getPlaceholderLabel();
 		toolbarManager.add(placeholderlabel);
-		
 
 	}
 
@@ -395,6 +406,7 @@ public class BrowserView extends ViewPart {
 	public Browser getBrowser() {
 		return browser;
 	}
+
 	public Text getUrlTxt() {
 		return txt;
 	}
