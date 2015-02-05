@@ -312,14 +312,14 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 							// "/SendSignalCtrlC.exe " +
 							// rPid.getPidWindows(RProcess));
 						} else if (interpreterSelection.equals("shell")) {
-							//sendCtrlBreakThroughStream(nativeShellProcess);
+							// sendCtrlBreakThroughStream(nativeShellProcess);
 							try {
 								Process p = Runtime.getRuntime().exec(pathBundle + "/SendSignalCtrlC.exe " + shellPid.getPidWindows(nativeShellProcess));
 
 							} catch (IOException e) {
 								e.printStackTrace();
 							}
-							
+
 						}
 
 						else if (interpreterSelection.equals("python")) {
@@ -503,7 +503,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				args.add(cPython + "/python");
 				args.add("-i");
 				ProcessBuilder builder = new ProcessBuilder(args);
-				builder.environment().put("Path", builder.environment().get("Path") +cPython);
+				builder.environment().put("Path", builder.environment().get("Path") + cPython);
 				builder.redirectErrorStream(true);
 				pythonProcess = builder.start();
 				pythonProcessThread = new Thread(new PythonProcessGrabber());
@@ -719,36 +719,29 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			if (interpreterSelection.equals("R")) {
 				try {
 
-					/*
-					 * InputStreamReader inr = new
-					 * InputStreamReader(inp,Charset.forName(consoleEncoding));
-					 * BufferedReader reader = new BufferedReader(inr);
-					 * 
-					 * String line; while ((line = reader.readLine()) != null) {
-					 * 
-					 * line=line.toString();
-					 * 
-					 * //line=line.toString().replaceAll("[4m", "");
-					 * System.out.println(line.toString());
-					 * //line=line.toString().replaceAll("[4m, "");
-					 */
-
-					// System.out.println("Hello \u001b[1;31mred\u001b[0m world!");
-					// }
-
 					InputStreamReader inr = new InputStreamReader(inp, Charset.forName(consoleEncoding));
 
 					int ch;
 					while ((ch = inr.read()) != -1) {
 
-						System.out.print((char) ch);
+						if (Bio7Dialog.getOS().equals("Windows")) {
 
-						// System.out.print("nnn"+Character.getNumericValue(ch)+"nnn");
-						// System.out.println("Hello \u001b[1;31mred\u001b[0m world!");
+							System.out.print((char) ch);
+						}
+						/*
+						 * Under Linux and MacOSX commands are echoed in ASCII
+						 * and evtl. ANSI control characters.We cannot avoid the
+						 * echo but can delete some ASCII characters for a
+						 * better output!
+						 */
+						else {
+							if (ch != 8 && ch != 12 && ch != 13) {
+								System.out.print((char) ch);
+							}
+						}
 
 					}
-					// consoleOutputChar.delete(0,
-					// consoleOutputChar.length()-1);
+
 				} catch (IOException e) {
 					// e.printStackTrace();
 					System.out.println("Stream closed!");
@@ -1508,16 +1501,16 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	 */
 
 	private static void sendCtrlBreakThroughStream(Process process) {
-		if(process!=null){
-		OutputStream os = process.getOutputStream();
-		PrintWriter pw = new PrintWriter(os);
-		try {
-			pw.print(IAC);
-			pw.print(BRK);
-			pw.flush();
-		} finally {
-			pw.close();
-		}
+		if (process != null) {
+			OutputStream os = process.getOutputStream();
+			PrintWriter pw = new PrintWriter(os);
+			try {
+				pw.print(IAC);
+				pw.print(BRK);
+				pw.flush();
+			} finally {
+				pw.close();
+			}
 		}
 	}
 }

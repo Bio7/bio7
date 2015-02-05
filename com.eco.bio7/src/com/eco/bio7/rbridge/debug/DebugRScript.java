@@ -237,7 +237,7 @@ public class DebugRScript extends Action {
 				result = "SOCKET_CON_ERROR";
 			}
 
-			if (result.equals("ERROR") || result.equals("SOCKET_CON_ERROR")) {
+			if (result==null||result.equals("ERROR") || result.equals("SOCKET_CON_ERROR")) {
 
 				errorFunction = true;
 				Bio7Dialog.message("The breakpoint seems to be outside a function\ndefinition and cannot be traced!\n\n"
