@@ -57,8 +57,10 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.launching.IVMInstall;
+import org.eclipse.jdt.launching.IVMInstallType;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.launching.LibraryLocation;
+import org.eclipse.jdt.launching.VMStandin;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.preference.PreferenceConverter;
@@ -196,8 +198,20 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 															IPackageFragmentRoot fragRoot = javaProject.getPackageFragmentRoot(sourceFolder);
 
 															List<IClasspathEntry> entriesJre = new ArrayList<IClasspathEntry>();
+															
+															IVMInstallType installType = JavaRuntime
+																	.getVMInstallType("org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType");
 
-															IVMInstall vmInstall = JavaRuntime.getDefaultVMInstall();
+															VMStandin vmStandin = new VMStandin(installType, "Bio7 Bundled JRE");
+															vmStandin.setName("Bio7 Bundled JRE");
+
+															String path = Platform.getInstallLocation().getURL().getPath();
+															vmStandin.setInstallLocation(new File(path + "/jre"));
+															
+
+															IVMInstall vmInstall = vmStandin.convertToRealVM();
+
+															//â€šIVMInstall vmInstall = JavaRuntime.getDefaultVMInstall();
 
 															LibraryLocation[] locations = JavaRuntime.getLibraryLocations(vmInstall);
 															for (LibraryLocation element : locations) {
@@ -425,16 +439,14 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 			File file = new File(fileUrlMac.getFile());
 			path = file.getAbsolutePath();
-			
 			store.setDefault(PreferenceConstants.PATH_R, path);
-			store.setDefault("InstallLocation", "/usr/lib/R/site-library");
-			store.setDefault("SweaveScriptLocation", "/usr/share/R/share/texmf/tex/latex");
+			store.setDefault(PreferenceConstants.PATH_LIBREOFFICE," /Users");
+			/* Default install location for the packages! */
+			store.setDefault("InstallLocation", path + "/site-library");
+			store.setDefault("SweaveScriptLocation", path + "/usr/share/R/share/texmf/tex/latex");
 			store.setDefault("pdfLatex", "/usr/bin");
 			store.setDefault("RSERVE_ARGS", "");
-			
-			
-			
-			
+
 			reg2 = "/usr/lib/openoffice/program";
 			store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, reg2);
 
@@ -488,7 +500,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		} else if (getOS().equals("Mac")) {
 			store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "Ã„, ,Ã¤,Ã–,Ã¶,Ãœ,Ã¼,+,!,Â§,$,%,&,/,(,),=,?,[,],Â°,^,;,:,>,<,|,*,Âµ,\\,@,\",â€œ,Â¸,`,~,#,},{,Â¹,Â²,Â³,_,-");
 		} else {
-			store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "Ä, ,ä,Ö,ö,Ü,ü,+,!,ü,§,$,%,&,/,(,),=,?,[,],°,^,;,:,>,<,|,*,µ,\\,”,@,\",“,”,´,`,~,#,},{,²,³,_,-");
+			store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "ï¿½, ,ï¿½,ï¿½,ï¿½,ï¿½,ï¿½,+,!,ï¿½,ï¿½,$,%,&,/,(,),=,?,[,],ï¿½,^,;,:,>,<,|,*,ï¿½,\\,ï¿½,@,\",ï¿½,ï¿½,ï¿½,`,~,#,},{,ï¿½,ï¿½,_,-");
 		}
 
 		store.setDefault("RSERVE_NATIVE_START", true);
@@ -545,7 +557,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			PreferenceConverter.setDefault(store, "RShellFonts", new FontData("Monaco", 11, SWT.NONE));
 			PreferenceConverter.setDefault(store, "Bio7ShellFonts", new FontData("Monaco", 11, SWT.NONE));
 			font = "Monaco";
-			fsize = 11;
+			fsize = 14;
 
 		}
 		
@@ -1110,14 +1122,15 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
 		try {
+			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.bio7resource", configurer.getWindow());
 
 			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.perspective_image", configurer.getWindow());
 
 			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.rbridge.RPerspective", configurer.getWindow());
 
-			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.browser.SceneBuilderPerspective", configurer.getWindow());
+			//configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.browser.SceneBuilderPerspective", configurer.getWindow());
 
-			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.bio7resource", configurer.getWindow());
+			
 			// *************************************
 			new StartBio7Utils();
 			// Start console and output!!
