@@ -17,6 +17,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import com.eco.bio7.reditors.RCodeScanner;
 import com.eco.bio7.reditors.RColorProvider;
+import com.eco.bio7.reditors.RPartitionStringCodeScanner;
 
 import com.eco.bio7.reditors.RPartitionScanner;
 
@@ -31,6 +32,8 @@ public class Bio7REditorPlugin extends AbstractUIPlugin {
 	private RCodeScanner fCodeScanner;
 
 	private RPartitionScanner fPartitionScanner;
+	
+	private RPartitionStringCodeScanner rPartitionStringCodeScanner;
 
 	public Bio7REditorPlugin() {
 		fgInstance = this;
@@ -45,6 +48,12 @@ public class Bio7REditorPlugin extends AbstractUIPlugin {
 			fPartitionScanner = new RPartitionScanner();
 		return fPartitionScanner;
 	}
+	
+	/*public RPartitionStringCodeScanner getStringPartitionStringCodeScanner() {
+		if (rPartitionStringCodeScanner == null)
+			rPartitionStringCodeScanner = new RPartitionStringCodeScanner(getRColorProvider());
+		return rPartitionStringCodeScanner;
+	}*/
 
 	public RuleBasedScanner getRCodeScanner() {
 		if (fCodeScanner == null)

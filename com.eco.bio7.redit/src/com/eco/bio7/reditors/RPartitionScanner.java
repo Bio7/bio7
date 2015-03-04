@@ -80,7 +80,7 @@ public class RPartitionScanner extends RuleBasedPartitionScanner {
 
 		//IToken comment = new Token(R_MULTILINE_COMMENT);
 
-		List rules = new ArrayList();
+		List<EndOfLineRule> rules = new ArrayList<EndOfLineRule>();
 
 		// Add rule for single line comments.
 		rules.add(new EndOfLineRule("#", Token.UNDEFINED)); //$NON-NLS-1$
