@@ -410,7 +410,7 @@
                value="icons/logo.gif"/>
          <property
                name="startupProgressRect"
-               value="95,50,285,30"/>
+               value="95,50,510,30"/>
          <property
                name="aboutImage"
                value="icons/bio7app/bio7_48.png"/>
@@ -430,7 +430,7 @@
          </property>
          <property
                name="windowImages"
-               value="icons/bio7app/bio7_16.png,icons/bio7app/bio7_32.png,icons/bio7app/bio7_48.png,icons/bio7app/bio7_64.png,icons/bio7app/bio7_128.png">
+               value="icons/bio7app/bio7_16.png,icons/bio7app/bio7_32.png,icons/bio7app/bio7_48.png,icons/bio7app/bio7_64.png,icons/bio7app/bio7_128.png,icons/bio7app/bio7_256.png">
          </property>
          
          <property

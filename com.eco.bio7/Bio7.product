@@ -34,7 +34,7 @@ http://bio7.org
 
    <splash
       location="com.eco.bio7"
-      startupProgressRect="95,50,285,30"
+      startupProgressRect="95,50,510,30"
       startupMessageRect="0,0,0,0"
       startupForegroundColor="000000" />
    <launcher name="Bio7">

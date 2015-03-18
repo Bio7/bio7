@@ -1,23 +1,24 @@
 #ImageJ 1.49m Preferences
-#Mon Mar 16 10:20:43 CET 2015
+#Wed Mar 18 15:29:28 CET 2015
 new.fill=1
 .arrows.loc=846,219
 pp.options=1
 bcolor=\#000000
-.results.height=250
+.results.height=1066
 noise.sd=25.0
 raw.offset=0
 fcolor=\#080808
 raw.width=512
+.manager.loc=851,211
 prefs.options=541085696
 new.height=400
 measurements=51
 showcolor=\#00FFFF
 fps=7.0
 raw.height=512
-.results.loc=760,227
+.results.loc=1912,-8
 jpeg=85
-.results.width=400
+.results.width=1696
 .threshold.loc=813,217
 .threshold.mode=0
 ij.y=0

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2012 M. Austenfeld
+ * Copyright (c) 2007-2015 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -77,8 +77,10 @@ import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorRegistry;
 import org.eclipse.ui.IPartListener2;
@@ -141,6 +143,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	private boolean x11ErrorHandlerFixInstalled = false;
 	private IExecutionListener executionListener;
 	private IPartListener2 partListener;
+	private static final Point DEFAULT_SIZE = new Point(1024, 768);
 
 	public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
 		super(configurer);
@@ -152,6 +155,17 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 	public ActionBarAdvisor createActionBarAdvisor(IActionBarConfigurer configurer) {
 		return new ApplicationActionBarAdvisor(configurer);
+	}
+
+	private Point getDisplaySize() {
+		try {
+			Display display = Display.getCurrent();
+			Monitor monitor = display.getPrimaryMonitor();
+			Rectangle rect = monitor.getBounds();
+			return new Point(rect.width - 200, rect.height-100);
+		} catch (Throwable ignore) {
+			return DEFAULT_SIZE;
+		}
 	}
 
 	public void preWindowOpen() {
@@ -198,24 +212,24 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 															IPackageFragmentRoot fragRoot = javaProject.getPackageFragmentRoot(sourceFolder);
 
 															List<IClasspathEntry> entriesJre = new ArrayList<IClasspathEntry>();
-															
-															IVMInstallType installType = JavaRuntime
-																	.getVMInstallType("org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType");
+
+															IVMInstallType installType = JavaRuntime.getVMInstallType("org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType");
 
 															VMStandin vmStandin = new VMStandin(installType, "Bio7 Bundled JRE");
 															vmStandin.setName("Bio7 Bundled JRE");
 
 															String path = Platform.getInstallLocation().getURL().getPath();
 															vmStandin.setInstallLocation(new File(path + "/jre"));
-															
 
 															IVMInstall vmInstall = vmStandin.convertToRealVM();
 
-															//‚IVMInstall vmInstall = JavaRuntime.getDefaultVMInstall();
+															// ‚IVMInstall
+															// vmInstall =
+															// JavaRuntime.getDefaultVMInstall();
 
 															LibraryLocation[] locations = JavaRuntime.getLibraryLocations(vmInstall);
 															for (LibraryLocation element : locations) {
-																
+
 																entriesJre.add(JavaCore.newLibraryEntry(element.getSystemLibraryPath(), null, null));
 															}
 															IClasspathEntry[] newEntries = new ScanClassPath().scanForJDT();
@@ -234,11 +248,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 																System.out.println("Minor error! Please check the classpath of the project and if necessary calculate again!");
 															}
 															System.out.println("Java Bio7 Project Libraries Recalculated!");
-															//Bio7Dialog.message("Java Bio7 Project Libraries Recalculated!");
+															// Bio7Dialog.message("Java Bio7 Project Libraries Recalculated!");
 														} else {
 
 														}
-														
+
 													}
 												});
 
@@ -246,7 +260,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 										}
 									}
 
-									
 								}
 								return true;
 							}
@@ -280,7 +293,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
 		// configurer.setSaveAndRestore( false );
-		configurer.setInitialSize(new Point(1024, 768));
+		configurer.setInitialSize(getDisplaySize());
 		configurer.setShowCoolBar(true);
 		configurer.setShowStatusLine(true);
 		configurer.setShowFastViewBars(true);
@@ -392,11 +405,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				store.setDefault("pdfLatex", "C:/");
 				store.setDefault("RSERVE_ARGS", "");
 
-				/*if (is64BitVM()) {
-					store.setDefault("r_pipe_path", reg1 + "\\bin\\x64");
-				} else {
-					store.setDefault("r_pipe_path", reg1 + "\\bin\\i386");
-				}*/
+				/*
+				 * if (is64BitVM()) { store.setDefault("r_pipe_path", reg1 +
+				 * "\\bin\\x64"); } else { store.setDefault("r_pipe_path", reg1
+				 * + "\\bin\\i386"); }
+				 */
 
 			}
 			if (reg2 != null) {
@@ -419,11 +432,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault("pdfLatex", "/usr/bin");
 			store.setDefault("RSERVE_ARGS", "");
 
-			/*if (is64BitVM()) {
-				store.setDefault("r_pipe_path", reg1 + "/bin");
-			} else {
-				store.setDefault("r_pipe_path", reg1 + "/bin");
-			}*/
+			/*
+			 * if (is64BitVM()) { store.setDefault("r_pipe_path", reg1 +
+			 * "/bin"); } else { store.setDefault("r_pipe_path", reg1 + "/bin");
+			 * }
+			 */
 
 		} else if (getOS().equals("Mac")) {
 			Bundle bundlenew = Platform.getBundle("Bundled_R");
@@ -440,7 +453,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			File file = new File(fileUrlMac.getFile());
 			path = file.getAbsolutePath();
 			store.setDefault(PreferenceConstants.PATH_R, path);
-			store.setDefault(PreferenceConstants.PATH_LIBREOFFICE," /Users");
+			store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, " /Users");
 			/* Default install location for the packages! */
 			store.setDefault("InstallLocation", path + "/site-library");
 			store.setDefault("SweaveScriptLocation", path + "/usr/share/R/share/texmf/tex/latex");
@@ -451,9 +464,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, reg2);
 
 		}
-		
-		//store.setDefault("R_STARTUP_ARGS","try(options(max.print=5000)\n)");
-		store.setDefault("SHOW_JDT_GUI",false);
+
+		// store.setDefault("R_STARTUP_ARGS","try(options(max.print=5000)\n)");
+		store.setDefault("SHOW_JDT_GUI", false);
 		store.setDefault("datatablesize", 100);
 		store.setDefault(PreferenceConstants.D_STRING, fileStartupScripts.getAbsolutePath());
 		store.setDefault(PreferenceConstants.D_IMPORT, fileImportScripts.getAbsolutePath());
@@ -528,7 +541,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("REPAINT_HEX", true);
 		store.setDefault("RECORD_VALUES", true);
 		store.setDefault("STARTUP_SCRIPTS", false);
-		store.setDefault("python_3x",false);
+		store.setDefault("python_3x", false);
 		store.setDefault("blender_options", "interactive");
 		store.setDefault("before_script_blender", "import bpy;bpy.ops.object.select_all(action='SELECT');bpy.ops.object.delete()");
 		store.setDefault("after_script_blender", "bpy.ops.render.render();bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)");
@@ -560,14 +573,12 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			fsize = 14;
 
 		}
-		
-		
-		/*Dialog Sizes for ImageJ dialogs!*/
-		store.setDefault("IMAGE_METHODS_SIZE_X", 280);//260
-		store.setDefault("IMAGE_METHODS_SIZE_Y", 840);//790
-		store.setDefault("IMAGEJ_TOOLBAR_SIZE_X", 600);//580
-		store.setDefault("IMAGEJ_TOOLBAR_SIZE_Y", 135);//130
-		
+
+		/* Dialog Sizes for ImageJ dialogs! */
+		store.setDefault("IMAGE_METHODS_SIZE_X", 280);// 260
+		store.setDefault("IMAGE_METHODS_SIZE_Y", 840);// 790
+		store.setDefault("IMAGEJ_TOOLBAR_SIZE_X", 600);// 580
+		store.setDefault("IMAGEJ_TOOLBAR_SIZE_Y", 135);// 130
 
 		/*
 		 * IPreferenceStore storeBsh =
@@ -974,7 +985,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		 * https://bugs.eclipse.org/bugs/show_bug.cgi?id=422258
 		 */
 		javafx.application.Platform.setImplicitExit(false);
-		
+
 		dragDropR();
 
 	}
@@ -1117,20 +1128,18 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	public void postWindowOpen() {
 
 		super.postWindowOpen();
-		
-		
 
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
 		try {
-			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.bio7resource", configurer.getWindow());
 
 			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.perspective_image", configurer.getWindow());
 
 			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.rbridge.RPerspective", configurer.getWindow());
 
 			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.browser.SceneBuilderPerspective", configurer.getWindow());
-
 			
+			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.bio7resource", configurer.getWindow());
+
 			// *************************************
 			new StartBio7Utils();
 			// Start console and output!!
@@ -1152,8 +1161,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		} catch (WorkbenchException e) {
 			e.printStackTrace();
 		}
-
-		
 
 		addExecutionListener();
 
@@ -1191,7 +1198,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 	private void dragDropR() {
 		Shell sh = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-		
+
 		DropTarget dt = new DropTarget(sh, DND.DROP_DEFAULT | DND.DROP_MOVE);
 		dt.setTransfer(new Transfer[] { FileTransfer.getInstance() });
 		dt.addDropListener(new DropTargetAdapter() {

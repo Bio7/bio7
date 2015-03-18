@@ -671,6 +671,7 @@ public class ImageMethods extends ViewPart {
 				if (RServe.isAliveDialog()) {
 					if (RState.isBusy() == false) {
 						new IJTranserResultsTable().transferResultsTable(con, true);
+						Bio7Dialog.message("Results table transferred!");
 					} else {
 						Bio7Dialog.message("Rserve is busy!");
 					}
