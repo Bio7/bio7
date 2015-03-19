@@ -162,7 +162,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			Display display = Display.getCurrent();
 			Monitor monitor = display.getPrimaryMonitor();
 			Rectangle rect = monitor.getBounds();
-			return new Point(rect.width - 200, rect.height-100);
+			return new Point(rect.width, rect.height);
 		} catch (Throwable ignore) {
 			return DEFAULT_SIZE;
 		}
@@ -292,8 +292,15 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		}
 
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
+
+		//Display display = configurer.getWindow().getWorkbench().getDisplay();
+
+		Shell shell = configurer.getWindow().getShell();
+
 		// configurer.setSaveAndRestore( false );
 		configurer.setInitialSize(getDisplaySize());
+		shell.setLocation(0, 0);
+
 		configurer.setShowCoolBar(true);
 		configurer.setShowStatusLine(true);
 		configurer.setShowFastViewBars(true);
@@ -1137,7 +1144,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.rbridge.RPerspective", configurer.getWindow());
 
 			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.browser.SceneBuilderPerspective", configurer.getWindow());
-			
+
 			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.bio7resource", configurer.getWindow());
 
 			// *************************************
