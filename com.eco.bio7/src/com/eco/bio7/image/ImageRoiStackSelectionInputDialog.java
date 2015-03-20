@@ -50,16 +50,16 @@ public class ImageRoiStackSelectionInputDialog extends Dialog {
 		container.setLayout(null);
 		{
 			spinner = new Spinner(container, SWT.BORDER);
-			spinner.setBounds(10, 143, 88, 21);
+			spinner.setBounds(10, 150, 88, 31);
 		}
 		{
 			lblSignature = new Label(container, SWT.NONE);
-			lblSignature.setBounds(111, 146, 152, 18);
+			lblSignature.setBounds(121, 153, 310, 28);
 			lblSignature.setText("Custom Class Signature");
 		}
 		{
 			btnCreateSignature = new Button(container, SWT.CHECK);
-			btnCreateSignature.setBounds(10, 121, 350, 21);
+			btnCreateSignature.setBounds(10, 120, 421, 27);
 			btnCreateSignature.addSelectionListener(new SelectionAdapter() {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
@@ -71,12 +71,12 @@ public class ImageRoiStackSelectionInputDialog extends Dialog {
 		}
 		
 		spinner_1 = new Spinner(container, SWT.BORDER);
-		spinner_1.setBounds(10, 48, 88, 21);
+		spinner_1.setBounds(10, 80, 88, 27);
 		spinner_1.setMinimum(1);
 		spinner_1.setSelection(1);
 		
 		spinner_2 = new Spinner(container, SWT.BORDER);
-		spinner_2.setBounds(111, 48, 88, 21);
+		spinner_2.setBounds(111, 80, 88, 27);
 		ImagePlus impd = WindowManager.getCurrentImage();
 		int stackSize=impd.getStackSize();
 		spinner_2.setMinimum(1);
@@ -84,19 +84,19 @@ public class ImageRoiStackSelectionInputDialog extends Dialog {
 		spinner_2.setMaximum(stackSize);
 		
 		Label lblTransferStackIntervall = new Label(container, SWT.NONE);
-		lblTransferStackIntervall.setBounds(10, 10, 250, 21);
+		lblTransferStackIntervall.setBounds(10, 10, 421, 37);
 		lblTransferStackIntervall.setText("Transfer Selected Stack Slice Selections");
 		
 		Label lblFrom = new Label(container, SWT.NONE);
-		lblFrom.setBounds(10, 29, 48, 21);
+		lblFrom.setBounds(10, 53, 95, 21);
 		lblFrom.setText("From");
 		
 		Label lblTo = new Label(container, SWT.NONE);
-		lblTo.setBounds(112, 29, 224, 21);
+		lblTo.setBounds(112, 53, 224, 21);
 		lblTo.setText("To");
 		
 		Label label = new Label(container, SWT.SEPARATOR | SWT.HORIZONTAL);
-		label.setBounds(10, 88, 189, 27);
+		label.setBounds(10, 108, 189, 18);
 
 		return container;
 	}

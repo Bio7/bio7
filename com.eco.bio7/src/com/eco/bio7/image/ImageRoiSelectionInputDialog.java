@@ -37,41 +37,25 @@ public class ImageRoiSelectionInputDialog extends Dialog {
 	@Override
 	protected Control createDialogArea(Composite parent) {
 		Composite container = (Composite) super.createDialogArea(parent);
-		container.setLayout(new FormLayout());
+		container.setLayout(null);
 		{
 			spinner = new Spinner(container, SWT.BORDER);
-			{
-				FormData formData = new FormData();
-				formData.width = 59;
-				formData.left = new FormAttachment(0, 10);
-				formData.bottom = new FormAttachment(100, -10);
-				spinner.setLayoutData(formData);
-			}
+			spinner.setBounds(10, 122, 88, 32);
 		}
 		{
 			lblSignature = new Label(container, SWT.NONE);
-			{
-				FormData fd_lblSignature = new FormData();
-				fd_lblSignature.left = new FormAttachment(0, 10);
-				fd_lblSignature.bottom = new FormAttachment(spinner, -6);
-				lblSignature.setLayoutData(fd_lblSignature);
-			}
+			lblSignature.setBounds(10, 76, 375, 40);
 			lblSignature.setText("Custom Class Signature");
 		}
 		{
 			btnCreateSignature = new Button(container, SWT.CHECK);
+			btnCreateSignature.setBounds(10, 10, 375, 60);
 			btnCreateSignature.addSelectionListener(new SelectionAdapter() {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
 					sel=!sel;
 				}
 			});
-			{
-				FormData formData = new FormData();
-				formData.bottom = new FormAttachment(lblSignature, -18);
-				formData.left = new FormAttachment(0, 10);
-				btnCreateSignature.setLayoutData(formData);
-			}
 			btnCreateSignature.setSelection(true);
 			btnCreateSignature.setText("Create Custom Class Signature (if desel. increasing sign. is created!)");
 		}
@@ -94,7 +78,7 @@ public class ImageRoiSelectionInputDialog extends Dialog {
 	 */
 	@Override
 	protected Point getInitialSize() {
-		return new Point(418, 184);
+		return new Point(418, 233);
 	}
 	protected void buttonPressed(int buttonId) {
 		if (buttonId == IDialogConstants.CANCEL_ID) {
