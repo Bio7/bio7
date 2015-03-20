@@ -12,6 +12,10 @@ import java.util.ArrayList;
 
 import javax.swing.JFrame;
 
+import org.eclipse.jface.preference.IPreferenceStore;
+
+import com.eco.bio7.image.Activator;
+
 /** Uses a TextPanel to displays text in a window.
 	@see TextPanel
 */
@@ -117,6 +121,11 @@ public class TextWindow extends JFrame implements ActionListener, FocusListener,
 			setSize(width, height);
 			if (!IJ.debugMode) GUI.center(this);
 		}
+		/*Changed for Bio7!*/
+		IPreferenceStore store=Activator.getDefault().getPreferenceStore();
+		boolean onTop=store.getBoolean("RESULTS_TABLE");
+		this.setAlwaysOnTop(onTop);
+		
 		show();
 	}
 
@@ -135,6 +144,12 @@ public class TextWindow extends JFrame implements ActionListener, FocusListener,
 		if (openFile(path)) {
 			WindowManager.addWindow(this);
 			setSize(width, height);
+			
+			/*Changed for Bio7!*/
+			IPreferenceStore store=Activator.getDefault().getPreferenceStore();
+			boolean onTop=store.getBoolean("RESULTS_TABLE");
+			this.setAlwaysOnTop(onTop);
+			
 			show();
 		} else
 			dispose();

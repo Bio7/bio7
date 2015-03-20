@@ -33,5 +33,20 @@
             restorable="true">
       </view>
    </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="com.eco.bio7.preferences.Bio7PreferencePage"
+            class="com.eco.bio7.image.preferences.Bio7ImageJPreferences"
+            id="com.eco.bio7.image.preferences.Bio7ImageJPreferences"
+            name="Preferences ImageJ">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="com.eco.bio7.image.preferences.PreferenceInitializer">
+      </initializer>
+   </extension>
 
 </plugin>

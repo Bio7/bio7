@@ -8,6 +8,7 @@ import java.awt.datatransfer.*;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import ij.*;
@@ -17,8 +18,8 @@ import ij.plugin.filter.Analyzer;
 import ij.text.TextWindow;
 
 /** This class is an extended ImageWindow that displays histograms. */
-public class HistogramWindow extends ImageWindow implements Measurements, ActionListener, ClipboardOwner,
-	MouseListener, MouseMotionListener, ImageListener, KeyListener, Runnable {
+public class HistogramWindow extends ImageWindow implements Measurements, ActionListener, 
+	ClipboardOwner, ImageListener, RoiListener, Runnable {
 	
 	static final int WIN_WIDTH = 300;
 	static final int WIN_HEIGHT = 240;
@@ -34,7 +35,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	protected LookUpTable lut;
 	protected Rectangle frame = null;
 	protected JButton list, save, copy, log, live, rgb;
-	protected Label value, count;
+	protected JLabel value, count;
 	protected static String defaultDirectory = null;
 	protected int decimalPlaces;
 	protected int digits;
@@ -170,14 +171,14 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			buttons.add(rgb);
 		}
 		if (!(IJ.isMacOSX()&&isRGB)) {
-			Panel valueAndCount = new Panel();
+			JPanel valueAndCount = new JPanel();
 			valueAndCount.setLayout(new GridLayout(2,1,0,0));
 			blankLabel = IJ.isMacOSX()?"           ":"                ";
-			value = new Label(blankLabel);
+			value = new JLabel(blankLabel);
 			Font font = new Font("Monospaced", Font.PLAIN, 12);
 			value.setFont(font);
 			valueAndCount.add(value);
-			count = new Label(blankLabel);
+			count = new JLabel(blankLabel);
 			count.setFont(font);
 			valueAndCount.add(count);
 			buttons.add(valueAndCount);
@@ -582,29 +583,11 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		if (srcImp!=null)
 			imageUpdated(srcImp);
 	}
-
-	// these listeners are activated if they are in the source ImagePlus
-	public synchronized void mousePressed(MouseEvent e) { doUpdate=true; notify(); }   
-	public synchronized void mouseDragged(MouseEvent e) { doUpdate=true; notify(); }
-	public synchronized void mouseClicked(MouseEvent e) { doUpdate=true; notify(); }
 	
-	public synchronized void keyPressed(KeyEvent e) {
-		ImagePlus imp = WindowManager.getImage(srcImageID);
-		if (imp==null || imp.getRoi()!=null) {
-			doUpdate = true;
-			notify();
-		}
+	// Unused
+	public void imageOpened(ImagePlus imp) {
 	}
-	
-	// unused listeners
-	public void mouseReleased(MouseEvent e) {}
-	public void mouseExited(MouseEvent e) {}
-	public void mouseEntered(MouseEvent e) {}
-	public void mouseMoved(MouseEvent e) {}
-	public void imageOpened(ImagePlus imp) {}
-	public void keyTyped(KeyEvent e) {}
-	public void keyReleased(KeyEvent e) {}
-	
+
 	// This listener is called if the source image content is changed
 	public synchronized void imageUpdated(ImagePlus imp) {
 		if (imp==srcImp) { 
@@ -613,6 +596,13 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		}
 	}
 	
+	public synchronized void roiModified(ImagePlus img, int id) {
+		if (img==srcImp) {
+			doUpdate=true;
+			notify();
+		}
+	}
+
 	// If either the source image or this image are closed, exit
 	public void imageClosed(ImagePlus imp) {
 		if (imp==srcImp || imp==this.imp) {
@@ -651,14 +641,10 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	}
 	
 	private void createListeners() {
-		//IJ.log("createListeners");
-		if (srcImp==null) return;
-		ImageCanvas ic = srcImp.getCanvas();
-		if (ic==null) return;
-		ic.addMouseListener(this);
-		ic.addMouseMotionListener(this);
-		ic.addKeyListener(this);
-		srcImp.addImageListener(this);
+		if (srcImp==null)
+			return;
+		ImagePlus.addImageListener(this);
+		Roi.addRoiListener(this);
 		if (live!=null) {
 			Font font = live.getFont();
 			live.setFont(new Font(font.getName(), Font.BOLD, font.getSize()));
@@ -667,15 +653,10 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	}
 	
 	private void removeListeners() {
-		//IJ.log("removeListeners");
-		if (srcImp==null) return;
-		ImageCanvas ic = srcImp.getCanvas();
-		if (ic!=null) {
-			ic.removeMouseListener(this);
-			ic.removeMouseMotionListener(this);
-			ic.removeKeyListener(this);
-		}
-		srcImp.removeImageListener(this);
+		if (srcImp==null)
+			return;
+		ImagePlus.removeImageListener(this);
+		Roi.removeRoiListener(this);
 		if (live!=null) {
 			Font font = live.getFont();
 			live.setFont(new Font(font.getName(), Font.PLAIN, font.getSize()));

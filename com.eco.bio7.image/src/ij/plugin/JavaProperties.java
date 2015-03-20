@@ -3,7 +3,6 @@ import ij.*;
 import ij.text.*;
 import ij.io.OpenDialog;
 import ij.gui.GUI;
-
 import java.awt.*;
 import java.util.*;
 import java.applet.Applet;
@@ -67,9 +66,8 @@ public class JavaProperties implements PlugIn {
 		String osName = System.getProperty("os.name");
 		list.add("  IJ.getVersion: "+IJ.getVersion());
 		list.add("  IJ.getFullVersion: "+IJ.getFullVersion());
-		list.add("  IJ.isJava2: "+IJ.isJava2());
-		list.add("  IJ.isJava15: "+IJ.isJava15());
-		list.add("  IJ.isJava16: "+IJ.isJava16());
+		list.add("  IJ.isJava17: "+IJ.isJava17());
+		list.add("  IJ.isJava18: "+IJ.isJava18());
 		list.add("  IJ.isLinux: "+IJ.isLinux());
 		list.add("  IJ.isMacintosh: "+IJ.isMacintosh());
 		list.add("  IJ.isMacOSX: "+IJ.isMacOSX());
@@ -172,19 +170,14 @@ public class JavaProperties implements PlugIn {
 		if (p!=null)
 			list.add("  " + property + ": " + p);
 	}
-	/*Changed for Bio7!*/
+	
 	void doFullDump() {
 		list.add("");
 		list.add("All Java Properties");
 		Properties props = System.getProperties();
 		for (Enumeration en=props.keys(); en.hasMoreElements();) {
 			String key = (String)en.nextElement();
-			try {
-				list.add("  "+key+": "+(String)props.get(key));
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				//e.printStackTrace();
-			}
+			list.add("  "+key+": "+(String)props.get(key));
 		}
 	}
 

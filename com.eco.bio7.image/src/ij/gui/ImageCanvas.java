@@ -209,7 +209,7 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 
     public void paintComponent(Graphics g) {
     	super.paintComponent(g);
-		if (IJ.debugMode) IJ.log("paint: "+imp.getImage());
+    	if (IJ.debugMode) IJ.log("ImageCanvas.paint: "+imp);
 		painted = true;
 		Roi roi = imp.getRoi();
 		if (roi!=null || overlay!=null || showAllOverlay!=null || Prefs.paintDoubleBuffered) {

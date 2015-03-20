@@ -3,12 +3,7 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.plugin.frame.*;
-import ij.plugin.DICOM;
-import ij.plugin.AVI_Reader;
-import ij.plugin.GIF_Reader;
-import ij.plugin.SimpleCommands;
-import ij.plugin.HyperStackConverter;
-import ij.plugin.PluginInstaller;
+import ij.plugin.*;
 import ij.text.TextWindow;
 import ij.util.Java2;
 import ij.measure.ResultsTable;
@@ -53,7 +48,6 @@ public class Opener {
 	private static boolean bioformats;
 	private String url;
 	private static boolean errorMessage;// Changed for Bio7!
-
 	static {
 		Hashtable commands = Menus.getCommands();
 		bioformats = commands!=null && commands.get("Bio-Formats Importer")!=null;
@@ -66,7 +60,7 @@ public class Opener {
 	 * Displays a file open dialog box and then opens the tiff, dicom, 
 	 * fits, pgm, jpeg, bmp, gif, lut, roi, or text file selected by 
 	 * the user. Displays an error message if the selected file is not
-	 * in one of the supported formats. This is the method that
+	 * in a supported format. This is the method that
 	 * ImageJ's File/Open command uses to open files.
 	 * @see ij.IJ#open()
 	 * @see ij.IJ#open(String)
@@ -85,54 +79,10 @@ public class Opener {
 		}
 	}
 
-	/** Displays a JFileChooser and then opens the tiff, dicom, 
-		fits, pgm, jpeg, bmp, gif, lut, roi, or text files selected by 
-		the user. Displays error messages if one or more of the selected 
-		files is not in one of the supported formats. This is the method
-		that ImageJ's File/Open command uses to open files if
-		"Open/Save Using JFileChooser" is checked in EditOptions/Misc. */
-	public void openMultiple() {
-		Java2.setSystemLookAndFeel();
-		// run JFileChooser in a separate thread to avoid possible thread deadlocks
-		try {
-			EventQueue.invokeAndWait(new Runnable() {
-				public void run() {
-					JFileChooser fc = new JFileChooser();
-					fc.setMultiSelectionEnabled(true);
-					File dir = null;
-					String sdir = OpenDialog.getDefaultDirectory();
-					if (sdir!=null)
-						dir = new File(sdir);
-					if (dir!=null)
-						fc.setCurrentDirectory(dir);
-					int returnVal = fc.showOpenDialog(IJ.getInstance());
-					if (returnVal!=JFileChooser.APPROVE_OPTION)
-						return;
-					omFiles = fc.getSelectedFiles();
-					if (omFiles.length==0) { // getSelectedFiles does not work on some JVMs
-						omFiles = new File[1];
-						omFiles[0] = fc.getSelectedFile();
-					}
-					omDirectory = fc.getCurrentDirectory().getPath()+File.separator;
-				}
-			});
-		} catch (Exception e) {}
-		if (omDirectory==null) return;
-		OpenDialog.setDefaultDirectory(omDirectory);
-		for (int i=0; i<omFiles.length; i++) {
-			String path = omDirectory + omFiles[i].getName();
-			open(path);
-			if (i==0 && Recorder.record)
-				Recorder.recordPath("open", path);
-			if (i==0 && !error)
-				Menus.addOpenRecentItem(path);
-		}
-	}
-
 	/**
-	 * Opens and displays a tiff, dicom, fits, pgm, jpeg, bmp, gif, lut, 
-	 * roi, or text file. Displays an error message if the specified file
-	 * is not in one of the supported formats.
+	 * Opens and displays the specified tiff, dicom, fits, pgm, jpeg, 
+	 * bmp, gif, lut, roi, or text file. Displays an error message if 
+	 * the file is not in a supported format.
 	 * @see ij.IJ#open(String)
 	 * @see ij.IJ#openImage(String)
 	*/
@@ -229,10 +179,56 @@ public class Opener {
 		}
 	}
 	
+	/** Displays a JFileChooser and then opens the tiff, dicom, 
+		fits, pgm, jpeg, bmp, gif, lut, roi, or text files selected by 
+		the user. Displays error messages if one or more of the selected 
+		files is not in one of the supported formats. This is the method
+		that ImageJ's File/Open command uses to open files if
+		"Open/Save Using JFileChooser" is checked in EditOptions/Misc. */
+	public void openMultiple() {
+		Java2.setSystemLookAndFeel();
+		// run JFileChooser in a separate thread to avoid possible thread deadlocks
+		try {
+			EventQueue.invokeAndWait(new Runnable() {
+				public void run() {
+					JFileChooser fc = new JFileChooser();
+					fc.setMultiSelectionEnabled(true);
+					File dir = null;
+					String sdir = OpenDialog.getDefaultDirectory();
+					if (sdir!=null)
+						dir = new File(sdir);
+					if (dir!=null)
+						fc.setCurrentDirectory(dir);
+					int returnVal = fc.showOpenDialog(IJ.getInstance());
+					if (returnVal!=JFileChooser.APPROVE_OPTION)
+						return;
+					omFiles = fc.getSelectedFiles();
+					if (omFiles.length==0) { // getSelectedFiles does not work on some JVMs
+						omFiles = new File[1];
+						omFiles[0] = fc.getSelectedFile();
+					}
+					omDirectory = fc.getCurrentDirectory().getPath()+File.separator;
+				}
+			});
+		} catch (Exception e) {}
+		if (omDirectory==null) return;
+		OpenDialog.setDefaultDirectory(omDirectory);
+		for (int i=0; i<omFiles.length; i++) {
+			String path = omDirectory + omFiles[i].getName();
+			open(path);
+			if (i==0 && Recorder.record)
+				Recorder.recordPath("open", path);
+			if (i==0 && !error)
+				Menus.addOpenRecentItem(path);
+		}
+	}
+	
 	/**
-	 * Attempts to open the specified file as a tiff, bmp, dicom, fits,
-	 * pgm, gif or jpeg. Displays a file open dialog if 'path' is null or
-	 * an empty string. Returns an ImagePlus object if successful.
+	 * Opens, but does not display, the specified image file
+	 * and returns an ImagePlus object object if successful,
+	 * or returns null if the file is not in a supported format
+	 * or is not found. Displays a file open dialog if 'path'
+	 * is null or an empty string.
 	 * @see ij.IJ#openImage(String)
 	 * @see ij.IJ#openImage()
 	*/
@@ -358,7 +354,9 @@ public class Opener {
 			case ZIP:
 				return openZip(path);
 			case AVI:
-				AVI_Reader reader = (AVI_Reader)IJ.runPlugIn("ij.plugin.AVI_Reader", path);
+				AVI_Reader reader = new AVI_Reader();
+				reader.displayDialog(!IJ.macroRunning());
+				reader.run(path);
 				return reader.getImagePlus();
 			case UNKNOWN: case TEXT:
 				// Call HandleExtraFileTypes plugin to see if it can handle unknown format
@@ -463,6 +461,10 @@ public class Opener {
 		if (url.endsWith(".pdf")||url.endsWith(".zip"))
 			return;
 		String text = IJ.openUrlAsString(url);
+		if (text!=null && text.startsWith("<Error: ")) {
+			IJ.error("Open Text URL", text);
+			return;
+		}
 		String name = url.substring(7);
 		int index = name.lastIndexOf("/");
 		int len = name.length();
@@ -518,6 +520,7 @@ public class Opener {
 		}
 		String name = entry.getName();
 		if (!(name.endsWith(".tif")||name.endsWith(".dcm")))
+			
 			/* Changed for Bio7! */
 			if (errorMessage) {
 				throw new IOException("This ZIP archive does not appear to contain a .tif or .dcm file");
@@ -653,10 +656,10 @@ public class Opener {
 		return imp;
 	}
 
-	/** If the specified image is grayscale, convert it to 8-bits. */
+	/** Converts the specified RGB image to 8-bits if the 3 channels are identical. */
 	public static void convertGrayJpegTo8Bits(ImagePlus imp) {
 		ImageProcessor ip = imp.getProcessor();
-		if (ip.isGrayscale()) {
+		if (ip.getBitDepth()==24 && ip.isGrayscale()) {
 			IJ.showStatus("Converting to 8-bit grayscale");
 			new ImageConverter(imp).convertToGray8();
 		}
@@ -1063,6 +1066,13 @@ public class Opener {
 		return null;
 	}
 
+	/** Opens a lookup table (LUT) and returns it as a LUT object, or returns null if there is an error.
+	 * @see ij.ImagePlus#setLut
+	*/
+	public static LUT openLut(String path) {
+		return LutLoader.openLut(path);
+	}
+
 	/** Opens a tab or comma delimited text file in the Results window. */
 	public static void openResultsTable(String path) {
 		try {
@@ -1273,7 +1283,6 @@ public class Opener {
 	public static boolean getOpenUsingPlugins() {
 		return openUsingPlugins;
 	}
-	
 	/*
 	 * Changed for Bio7!Added for Bio7 Thumbnails browser
 	 */
