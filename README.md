@@ -3,7 +3,8 @@ The application Bio7 is an integrated development environment for ecological mod
 Features:
 
 *     Creation and analysis of simulation models.
-*     Statistical analysis (R).
+*     Statistical analysis.
+*     Advanced R Graphical User Interface with editor, spreadsheet, ImageJ plot device and debugging interface.
 *     Spatial statistics (possibility to send values from a specialized panel to R).
 *     Image Analysis (embedded ImageJ).
 *     Fast transfer of image data from ImageJ to R and vice versa.
@@ -15,4 +16,3 @@ Features:
 *     Creation of 3d OpenGL (Jogl) models.
 *     Visualizations and simulations on an embedded 3d globe (World Wind Java SDK).
 *     Creation of Graphical User Interfaces with the embedded JavaFX SceneBuilder.
-
