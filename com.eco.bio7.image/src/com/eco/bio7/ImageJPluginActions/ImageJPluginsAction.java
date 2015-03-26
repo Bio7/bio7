@@ -297,7 +297,7 @@ public class ImageJPluginsAction extends Action implements IMenuCreator {
 		for (int j = 0; j < Menus.bio7JarAllCommand.size(); j++) {
 			final int count = j;
 			s = Menus.bio7JarAllCommand.get(j);
-           System.out.println(s);
+           //System.out.println(s);
 			currentMenu = null;
 			if (s.startsWith("Plugins>")) {
 				int firstComma = s.indexOf(',');

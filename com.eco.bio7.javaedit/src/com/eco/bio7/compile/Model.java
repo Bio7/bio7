@@ -1,7 +1,5 @@
 package com.eco.bio7.compile;
 
-
-
 import java.awt.Graphics2D;
 import javax.media.opengl.GL2;
 import javax.media.opengl.glu.GLU;
@@ -12,9 +10,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import com.jogamp.opengl.util.gl2.GLUT;
 
-
-/**This is the superclass for the dynamic compiled Java class! If the methods (below) are not implemented in the subclass (Model) the methods of
- * this class are executed!*/
+/**
+ * This is the superclass for the dynamic compiled Java class! If the methods
+ * (below) are not implemented in the subclass (Model) the methods of this class
+ * are executed!
+ */
 public abstract class Model {
 
 	/**
@@ -34,7 +34,6 @@ public abstract class Model {
 		});
 	}
 
-
 	/**
 	 * The main method which is called from the calculation thread!
 	 */
@@ -44,6 +43,7 @@ public abstract class Model {
 
 	/**
 	 * The main OpenGL method with the OpenGL context as parameters!
+	 * 
 	 * @param gl
 	 * @param glu
 	 * @param glut
@@ -51,10 +51,10 @@ public abstract class Model {
 	public void run(GL2 gl, GLU glu, GLUT glut) {
 
 	}
-	
 
 	/**
 	 * The setup OpenGL method with the OpenGL context as parameters!
+	 * 
 	 * @param gl
 	 * @param glu
 	 * @param glut
@@ -64,10 +64,20 @@ public abstract class Model {
 	}
 
 	/**
-	 * The draw method for the Points panel with the Graphics context to draw directly on the panel with available Java routines!
+	 * The draw method for the Points panel with the Graphics context to draw
+	 * directly on the panel with available Java routines!
+	 * 
 	 * @param g
 	 */
 	public void draw(Graphics2D g) {
+
+	}
+
+	/**
+	 * A method to allow closing operations with a compiled Model class
+	 * called,e.g., from the CustomView implementation.
+	 */
+	public void close() {
 
 	}
 

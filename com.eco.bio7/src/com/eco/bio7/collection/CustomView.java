@@ -2,9 +2,12 @@ package com.eco.bio7.collection;
 
 import java.awt.Panel;
 import java.util.Vector;
+
 import javafx.embed.swt.FXCanvas;
 import javafx.scene.Scene;
+
 import javax.swing.JPanel;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.draw2d.LightweightSystem;
 import org.eclipse.swt.SWT;
@@ -19,7 +22,11 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.jfree.chart.ChartPanel;
+
 import processing.core.PApplet;
+
+import com.eco.bio7.compile.Model;
+import com.eco.bio7.methods.Compiled;
 import com.jogamp.opengl.util.Animator;
 
 /**
@@ -391,7 +398,7 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	 * the close event (do save) we clean up all data and close the tab items!
 	 */
 	public void doSave(IProgressMonitor monitor) {
-
+        
 		/*
 		 * CTabItem[] items = tabFolder.getItems();
 		 * 
@@ -404,6 +411,8 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 		 */
 		Vector<?> ve = (Vector<?>) customViewParent.getData();
 		closeTabPanels(ve);
+		/*Call the close method of the Model class!*/
+		Compiled.getModel().close();
 
 	}
 
