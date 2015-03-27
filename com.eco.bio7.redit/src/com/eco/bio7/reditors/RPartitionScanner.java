@@ -17,14 +17,18 @@ import java.util.List;
 
 import org.eclipse.jface.text.rules.*;
 
+import com.eco.bio7.scenebuilder.xmleditor.TagRule;
+
 /*Leave this class for maybe later use!*/
 public class RPartitionScanner extends RuleBasedPartitionScanner {
 
 	public final static String R_DEFAULT = "RDefault"; //$NON-NLS-1$
 
 	//public final static String R_DOC = "__java_javadoc"; //$NON-NLS-1$
+	
+	public final static String R_STRING = "__r_string";
 
-	public final static String[] R_PARTITION_TYPES = new String[] { R_DEFAULT };
+	public final static String[] R_PARTITION_TYPES = new String[] { R_DEFAULT,R_STRING };
 
 	/**
 	 * Detector for empty comments.
@@ -79,18 +83,26 @@ public class RPartitionScanner extends RuleBasedPartitionScanner {
 		super();
 
 		//IToken comment = new Token(R_MULTILINE_COMMENT);
-
-		List<EndOfLineRule> rules = new ArrayList<EndOfLineRule>();
+		
+		
+		IToken rString = new Token(R_STRING);
+		
+		List<PatternRule> rules = new ArrayList<PatternRule>();
+		rules.add(new MultiLineRule("\"", "\"", rString));
+		rules.add(new MultiLineRule("\'", "\'", rString));
 
 		// Add rule for single line comments.
 		rules.add(new EndOfLineRule("#", Token.UNDEFINED)); //$NON-NLS-1$
-
+		
 		// Add rule for strings and character constants.
 		//rules.add(new SingleLineRule("\"", "\"", Token.UNDEFINED, '\\')); 
 		//rules.add(new SingleLineRule("'", "'", Token.UNDEFINED, '\\')); 
 
 		// Add special case word rule.
 		//rules.add(new WordPredicateRule(comment));
+		
+		
+		
 
 		IPredicateRule[] result = new IPredicateRule[rules.size()];
 		rules.toArray(result);

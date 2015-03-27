@@ -14,7 +14,9 @@ package com.eco.bio7.discrete;
 
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.util.ArrayList;
 
+import org.eclipse.nebula.widgets.grid.Grid;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.REngineException;
@@ -25,6 +27,7 @@ import cern.jet.random.tfloat.FloatUniform;
 import cern.jet.random.tfloat.engine.FloatMersenneTwister;
 
 import com.eco.bio7.collection.ResizeArray;
+import com.eco.bio7.database.StateTable;
 import com.eco.bio7.info.InfoView;
 import com.eco.bio7.methods.CurrentStates;
 import com.eco.bio7.rbridge.RServe;
@@ -448,6 +451,39 @@ public class Field {
 	 */
 	public static void setStateArray(int[][] xyold) {
 		Field.xystate = xyold;
+	}
+	
+	/**
+	 * Removes all states from the Field and from the state table.
+	 */
+	public  static void removeAllStates() {
+
+		
+
+		Display display = PlatformUI.getWorkbench().getDisplay();
+		display.syncExec(new Runnable() {
+
+			public void run() {
+				Grid grid = StateTable.grid;
+				/*
+				 * We don't use the list directly but the grid entrys. Since we
+				 * remove it iterately (At each iteration step a state will be
+				 * removed)!
+				 */
+
+				for (int i = 0; i < grid.getItemCount(); i++) {
+
+					String state = grid.getItem(i).getText(0);
+
+					StateTable.unsetCell(state);
+
+				}
+
+				grid.removeAll();
+
+			}
+		});
+
 	}
 
 	/**

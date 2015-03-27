@@ -39,6 +39,8 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.internal.text.html.HTMLTextPresenter;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DefaultIndentLineAutoEditStrategy;
 import org.eclipse.jface.text.DefaultInformationControl;
@@ -67,7 +69,10 @@ import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
@@ -87,6 +92,9 @@ import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.browser.BrowserView;
+import com.eco.bio7.browser.editor.IXMLColorConstants;
+import com.eco.bio7.browser.editor.NonRuleBasedDamagerRepairer;
+import com.eco.bio7.browser.editor.XMLPartitionScanner;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.code.RAssistProcessor;
@@ -146,7 +154,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 	public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
 		// return new String[] { IDocument.DEFAULT_CONTENT_TYPE,
 		// RPartitionScanner.R_DOC, RPartitionScanner.R_MULTILINE_COMMENT };
-		return new String[] { IDocument.DEFAULT_CONTENT_TYPE };
+		return new String[] { IDocument.DEFAULT_CONTENT_TYPE, RPartitionScanner.R_STRING };
 	}
 
 	public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
@@ -157,6 +165,13 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 		DefaultDamagerRepairer dr = new DefaultDamagerRepairer(Bio7REditorPlugin.getDefault().getRCodeScanner());
 		reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
 		reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
+		
+		IPreferenceStore store = Bio7REditorPlugin.getDefault().getPreferenceStore();
+		RGB rgbkey2 = PreferenceConverter.getColor(store, "colourkey2");
+		FontData f2 = PreferenceConverter.getFontData(store, "colourkeyfont2");
+		NonRuleBasedDamagerRepairer ndr = new NonRuleBasedDamagerRepairer(new TextAttribute(provider.getColor(rgbkey2), null, 1, new Font(Display.getCurrent(), f2)));
+		reconciler.setDamager(ndr, RPartitionScanner.R_STRING);
+		reconciler.setRepairer(ndr, RPartitionScanner.R_STRING);
 
 		return reconciler;
 	}
@@ -261,7 +276,6 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 			final int resultedLength = length - minusLength - 1;
 
 			if (resultedLength > 0) {
-
 
 				try {
 					htmlHelpText = textViewer.getDocument().get(wordOffset, resultedLength);

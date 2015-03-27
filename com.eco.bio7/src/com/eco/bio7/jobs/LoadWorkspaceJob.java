@@ -46,7 +46,7 @@ public class LoadWorkspaceJob extends WorkspaceJob {
 
 	private String source;
 
-	private ArrayList<String> li;
+	//private ArrayList<String> li;
 
 	DataDescriptorGrids grid = null;
 
@@ -180,7 +180,7 @@ public class LoadWorkspaceJob extends WorkspaceJob {
 
 	private void unsetAllStates() {
 
-		li = CurrentStates.getStateList();
+		//li = CurrentStates.getStateList();
 
 		Display display = PlatformUI.getWorkbench().getDisplay();
 		display.syncExec(new Runnable() {

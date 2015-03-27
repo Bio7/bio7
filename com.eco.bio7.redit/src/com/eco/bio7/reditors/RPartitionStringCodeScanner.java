@@ -1,6 +1,6 @@
 package com.eco.bio7.reditors;
 
-import org.eclipse.jface.preference.IPreferenceStore;
+/*import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextAttribute;
@@ -35,4 +35,4 @@ public class RPartitionStringCodeScanner extends BufferedRuleBasedScanner {
 	}
 
 	
-}
+}*/

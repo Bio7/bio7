@@ -22,7 +22,7 @@ import org.eclipse.swt.widgets.Display;
  */
 public class RColorProvider {
 
-	public static final RGB MULTI_LINE_COMMENT= new RGB(128, 0, 0);
+	//public static final RGB MULTI_LINE_COMMENT= new RGB(128, 0, 0);
 	
 	
 

@@ -23,13 +23,27 @@ public class Bio7State {
 
 	}
 
-	
-	/*public static void removeState(String name) {
+	/**
+	 * Creates states from a given String array.
+	 * 
+	 * @param names
+	 *            the  name state array.
+	 */
+	public static void createStates(String[] names) {
+		for (int i = 0; i < names.length; i++) {
+			StateTable.setCell(names[i]);
+		}
 
-		StateTable.unsetCell(name);
-		
+	}
 
-	}*/
+	/*
+	 * public static void removeState(String name) {
+	 * 
+	 * StateTable.unsetCell(name);
+	 * 
+	 * 
+	 * }
+	 */
 
 	/**
 	 * Returns how many states are present in the Bio7 application.
