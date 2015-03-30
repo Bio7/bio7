@@ -89,7 +89,9 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.editors.text.TextEditor;
+import org.eclipse.ui.texteditor.ChainedPreferenceStore;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
@@ -584,6 +586,9 @@ public class REditor extends TextEditor {
 		colorManager = new RColorManager();
 		rconf = new RConfiguration(colorManager, this);
 		setSourceViewerConfiguration(rconf);
+		
+		 IPreferenceStore preferenceStore = new ChainedPreferenceStore(new IPreferenceStore[] {
+				 Bio7REditorPlugin.getDefault().getPreferenceStore(), EditorsUI.getPreferenceStore() });
 
 		// IEditorPart editor = (IEditorPart)
 		// PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
@@ -603,6 +608,7 @@ public class REditor extends TextEditor {
 
 				Bio7REditorPlugin fginstance = Bio7REditorPlugin.getDefault();
 				RCodeScanner scanner = (RCodeScanner) fginstance.getRCodeScanner();
+				RPartitionScanner pscanner=(RPartitionScanner) fginstance.getRPartitionScanner();
 
 				RColorProvider provider = Bio7REditorPlugin.getDefault().getRColorProvider();
 				IPreferenceStore store = Bio7REditorPlugin.getDefault().getPreferenceStore();
@@ -635,6 +641,11 @@ public class REditor extends TextEditor {
 				scanner.braces.setData(new TextAttribute(provider.getColor(rgbkey6), null, 1, new Font(Display.getCurrent(), f6)));
 				scanner.numbers.setData(new TextAttribute(provider.getColor(rgbkey7), null, 1, new Font(Display.getCurrent(), f7)));
 				scanner.assignment.setData(new TextAttribute(provider.getColor(rgbkey8), null, 1, new Font(Display.getCurrent(), f8)));
+				
+				
+				
+				//pscanner.rString.setData(new TextAttribute(provider.getColor(rgbkey2), null, 1, new Font(Display.getCurrent(), f2)));
+				
 				if (REditor.this != null) {
 					if (REditor.this.getSourceViewer() != null) {
 						REditor.this.getSourceViewer().invalidateTextPresentation();

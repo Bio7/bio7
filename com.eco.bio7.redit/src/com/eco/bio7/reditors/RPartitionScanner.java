@@ -15,20 +15,32 @@ package com.eco.bio7.reditors;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferenceConverter;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.*;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.widgets.Display;
 
-import com.eco.bio7.scenebuilder.xmleditor.TagRule;
+import com.eco.bio7.reditor.Bio7REditorPlugin;
+
+
 
 /*Leave this class for maybe later use!*/
 public class RPartitionScanner extends RuleBasedPartitionScanner {
 
-	public final static String R_DEFAULT = "RDefault"; //$NON-NLS-1$
+	//public final static String R_DEFAULT = "RDefault"; //$NON-NLS-1$
 
 	//public final static String R_DOC = "__java_javadoc"; //$NON-NLS-1$
 	
-	public final static String R_STRING = "__r_string";
+	//public final static String R_STRING = "__r_string";
 
-	public final static String[] R_PARTITION_TYPES = new String[] { R_DEFAULT,R_STRING };
+	public final static String[] R_PARTITION_TYPES = new String[] { IDocument.DEFAULT_CONTENT_TYPE,"R_MULTILINE_STRING" };
+
+	public Token rString;
 
 	/**
 	 * Detector for empty comments.
@@ -85,7 +97,18 @@ public class RPartitionScanner extends RuleBasedPartitionScanner {
 		//IToken comment = new Token(R_MULTILINE_COMMENT);
 		
 		
-		IToken rString = new Token(R_STRING);
+		 rString = new Token("R_MULTILINE_STRING");
+		
+		 /*RColorProvider provider = Bio7REditorPlugin.getDefault().getRColorProvider();
+		 IPreferenceStore store = Bio7REditorPlugin.getDefault().getPreferenceStore();
+		
+			
+			RGB rgbkey2 = PreferenceConverter.getColor(store, "colourkey2");
+			
+
+			
+		FontData f2 = PreferenceConverter.getFontData(store, "colourkeyfont2");
+		 rString.setData(new TextAttribute(provider.getColor(rgbkey2), null, 1, new Font(Display.getCurrent(), f2)));*/
 		
 		List<PatternRule> rules = new ArrayList<PatternRule>();
 		rules.add(new MultiLineRule("\"", "\"", rString));

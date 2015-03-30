@@ -52,7 +52,7 @@ public class PyPartitionScanner extends RuleBasedPartitionScanner {
 	public final static String PY_BACKQUOTES = "__python_backquotes";
 	
 	
-	public Token keyword;
+	/*public Token keyword;
 	public Token type;
 	public Token string;
 	public Token comment;
@@ -60,7 +60,7 @@ public class PyPartitionScanner extends RuleBasedPartitionScanner {
 	public Token operators;
 	public Token braces;
 	public Token numbers;
-	public Token multiLineComment;
+	public Token multiLineComment;*/
 	private  PythonScriptColorProvider provider;
 	
     
@@ -72,7 +72,7 @@ public class PyPartitionScanner extends RuleBasedPartitionScanner {
 		super();
 		
 		this.provider=PythonEditorPlugin.plugin.getScriptColorProvider();
-		IPreferenceStore store = PythonEditorPlugin.getDefault().getPreferenceStore();
+		/*IPreferenceStore store = PythonEditorPlugin.getDefault().getPreferenceStore();
 		RGB rgbkey = PreferenceConverter.getColor(store, "colourkey");
 		RGB rgbkey1 = PreferenceConverter.getColor(store, "colourkey1");
 		RGB rgbkey2 = PreferenceConverter.getColor(store, "colourkey2");
@@ -105,7 +105,7 @@ public class PyPartitionScanner extends RuleBasedPartitionScanner {
 		operators = new Token(new TextAttribute(provider.getColor(rgbkey5), null, 1,new Font(Display.getCurrent(),f5)));
 		braces = new Token(new TextAttribute(provider.getColor(rgbkey6), null, 1,new Font(Display.getCurrent(),f6)));
 		numbers = new Token(new TextAttribute(provider.getColor(rgbkey7), null, 1,new Font(Display.getCurrent(),f7)));
-		multiLineComment = new Token(new TextAttribute(provider.getColor(rgbkey8), null, 1,new Font(Display.getCurrent(),f8)));
+		multiLineComment = new Token(new TextAttribute(provider.getColor(rgbkey8), null, 1,new Font(Display.getCurrent(),f8)));*/
 		
 		
 		

@@ -119,8 +119,8 @@ public class RCodeScanner extends RuleBasedScanner {
 		rules.add(new EndOfLineRule("#", comment));
 
 		// Add rule for strings and character constants.
-		rules.add(new SingleLineRule("\"", "\"", string, '\\'));
-		rules.add(new SingleLineRule("'", "'", string, '\\'));
+		
+		
 		// rules.add(new SingleLineRule("<-","<-", type));
 		// Add generic whitespace rule.
 		rules.add(new WhitespaceRule(new RWhitespaceDetector()));
@@ -168,6 +168,8 @@ public class RCodeScanner extends RuleBasedScanner {
 		 */
 
 		rules.add(wordRule);
+		rules.add(new MultiLineRule("\"", "\"", string, '\\'));
+		rules.add(new MultiLineRule("'", "'", string, '\\'));
 
 		IRule[] result = new IRule[rules.size()];
 		rules.toArray(result);
