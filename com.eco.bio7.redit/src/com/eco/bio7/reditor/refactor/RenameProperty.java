@@ -55,7 +55,7 @@ public class RenameProperty implements IEditorActionDelegate {
   public void setActiveEditor( final IAction action, 
                                final IEditorPart targetEditor ) {
     this.targetEditor = targetEditor;
-    onPropertiesFile = false;
+    onPropertiesFile = true;
     IFile file = getFile();
     /*Changed for Bio7 to avoid null exception if no file extension!*/
     if(    file != null &&file.getFileExtension()!=null
@@ -65,16 +65,19 @@ public class RenameProperty implements IEditorActionDelegate {
   }
 
   public void run( final IAction action ) {
-    if( !onPropertiesFile ) {
+    /*if( !onPropertiesFile ) {
       refuse();
-    } else {
+    } else {*/
       if( selection != null && selection instanceof ITextSelection ) {
         applySelection( ( ITextSelection )selection );
         if( saveAll() ) {
-          openWizard();
+				openWizard();
         }
       }
-    }
+      else{
+    	  System.out.println("No Selection!");
+      }
+    //}
   }
 
   public void selectionChanged( final IAction action, 
@@ -143,8 +146,7 @@ public class RenameProperty implements IEditorActionDelegate {
     RefactoringProcessor processor = new RenamePropertyProcessor( info );
     RenamePropertyRefactoring ref = new RenamePropertyRefactoring( processor );
     RenamePropertyWizard wizard = new RenamePropertyWizard( ref, info );
-    RefactoringWizardOpenOperation op 
-      = new RefactoringWizardOpenOperation( wizard );
+    RefactoringWizardOpenOperation op = new RefactoringWizardOpenOperation( wizard );
     try {
       String titleForFailedChecks = ""; //$NON-NLS-1$
       op.run( getShell(), titleForFailedChecks );

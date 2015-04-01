@@ -17,13 +17,28 @@ public class AssignmentRule implements IRule {
 
 				return token;
 			}
-		scanner.unread();
+
+			else if (c == '<') {
+				c = scanner.read();
+				if (c == '-') {
+
+					return token;
+				}
+			}
+			scanner.unread();
 		} else if (c == '-') {
 
 			c = scanner.read();
 			if (c == '>') {
 
-				return token;
+				c = scanner.read();
+				if (c == '>') {
+					return token;
+				} else {
+					//scanner.unread();
+					return token;
+				}
+
 			}
 		}
 		scanner.unread();

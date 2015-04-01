@@ -37,7 +37,7 @@ public class RCodeScanner extends RuleBasedScanner {
 
 	public static final String[] fgSeperators = { ";", "," };
 
-	public static final String[] fgAssignmentoperators = { "<-", "->", "=" };
+	public static final String[] fgAssignmentoperators = {"<<-","->>","->","<-","=",":="};
 
 	public static final String[] fgdefaultoperators = { "+", "-", "*", "/", "%%", "^", // arithmetic
 			">", ">=", "<", "<=", "==", "!=", // relational
