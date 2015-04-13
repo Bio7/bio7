@@ -34,13 +34,14 @@ public class AssignmentRule implements IRule {
 				c = scanner.read();
 				if (c == '>') {
 					return token;
-				} else {
-					//scanner.unread();
-					return token;
-				}
+				} 
 
 			}
+			else{
+				scanner.unread();
+			}
 		}
+		
 		scanner.unread();
 		return Token.UNDEFINED;
 	}

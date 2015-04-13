@@ -22,12 +22,7 @@ import org.eclipse.jface.text.rules.IToken;
  * @author P.Tomaszewski
  */
 public class COperatorRule extends SingleCharRule {
-	public static final String[] fgdefaultoperators = { "+", "-", "*", "/", "%%", "^", // arithmetic
-		">", ">=", "<", "<=", "==", "!=", // relational
-		"!", "&", "|", // logical
-		"~", // model formulae
-		":" // sequence
-};
+	
 	/**
 	 * Creates new rule.
 	 * 
