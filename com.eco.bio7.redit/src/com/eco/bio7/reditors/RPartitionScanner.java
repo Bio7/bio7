@@ -8,33 +8,30 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *     
- *     M.Austenfeld - Minor changes for the Bio7 application.
+ *     M.Austenfeld - Changes for the Bio7 application.
  *******************************************************************************/
 package com.eco.bio7.reditors;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.TextAttribute;
-import org.eclipse.jface.text.rules.*;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.widgets.Display;
-
-import com.eco.bio7.reditor.Bio7REditorPlugin;
+import org.eclipse.jface.text.rules.EndOfLineRule;
+import org.eclipse.jface.text.rules.IPredicateRule;
+import org.eclipse.jface.text.rules.MultiLineRule;
+import org.eclipse.jface.text.rules.PatternRule;
+import org.eclipse.jface.text.rules.RuleBasedPartitionScanner;
+import org.eclipse.jface.text.rules.Token;
 
 
 
 /*Leave this class for maybe later use!*/
 public class RPartitionScanner extends RuleBasedPartitionScanner {
 
-	public final static String[] R_PARTITION_TYPES = new String[] { IDocument.DEFAULT_CONTENT_TYPE,"R_MULTILINE_STRING" };
+	public final static String[] R_PARTITION_TYPES = new String[] { IDocument.DEFAULT_CONTENT_TYPE,"R_MULTILINE_STRING","R_COMMENT" };
 
 	public Token rString;
+
+	private Token rComment;
 
 	
 
@@ -43,11 +40,12 @@ public class RPartitionScanner extends RuleBasedPartitionScanner {
 	 */
 	public RPartitionScanner() {
 		super();
-	
-		
+	   /*Added a comment Token else if a quotation occurs in a comment the syntax coloring fails!*/
+		rComment = new Token("R_COMMENT");
 		rString = new Token("R_MULTILINE_STRING");
 	
 		List<PatternRule> rules = new ArrayList<PatternRule>();
+		rules.add(new EndOfLineRule("#", rComment));
 		rules.add(new MultiLineRule("\"", "\"", rString,'\\'));
 		rules.add(new MultiLineRule("'", "'", rString,'\\'));
 

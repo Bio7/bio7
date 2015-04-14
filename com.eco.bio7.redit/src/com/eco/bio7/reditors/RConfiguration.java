@@ -124,7 +124,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 	public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
 		// return new String[] { IDocument.DEFAULT_CONTENT_TYPE,
 		// RPartitionScanner.R_DOC, RPartitionScanner.R_MULTILINE_COMMENT };
-		return new String[] { IDocument.DEFAULT_CONTENT_TYPE, "R_MULTILINE_STRING" };
+		return new String[] { IDocument.DEFAULT_CONTENT_TYPE, "R_MULTILINE_STRING","R_COMMENT" };
 	}
 
 	public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
@@ -139,10 +139,16 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 		IPreferenceStore store = Bio7REditorPlugin.getDefault().getPreferenceStore();
 		RGB rgbkey2 = PreferenceConverter.getColor(store, "colourkey2");
 		FontData f2 = PreferenceConverter.getFontData(store, "colourkeyfont2");
+		RGB rgbkey3 = PreferenceConverter.getColor(store, "colourkey3");
+		FontData f3 = PreferenceConverter.getFontData(store, "colourkeyfont3");
 		
 		DefaultDamagerRepairer ndr= new DefaultDamagerRepairer(new SingleTokenScanner(new TextAttribute(new Color(Display.getDefault(),rgbkey2), null, 1, new Font(Display.getCurrent(), f2))));
 		reconciler.setDamager(ndr,"R_MULTILINE_STRING");
 		reconciler.setRepairer(ndr,"R_MULTILINE_STRING");
+		/*We have to set the comments separately, too (to ignore quotes in comments!)*/
+		DefaultDamagerRepairer ndrcomment= new DefaultDamagerRepairer(new SingleTokenScanner(new TextAttribute(new Color(Display.getDefault(),rgbkey3), null, 1, new Font(Display.getCurrent(), f3))));
+		reconciler.setDamager(ndrcomment,"R_COMMENT");
+		reconciler.setRepairer(ndrcomment,"R_COMMENT");
 		
 		
 		/*DefaultDamagerRepairer ndr = new DefaultDamagerRepairer(Bio7REditorPlugin.getDefault().getRPartitionScanner());

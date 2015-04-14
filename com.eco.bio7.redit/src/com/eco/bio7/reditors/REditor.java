@@ -642,7 +642,7 @@ public class REditor extends TextEditor {
 				scanner.numbers.setData(new TextAttribute(provider.getColor(rgbkey7), null, 1, new Font(Display.getCurrent(), f7)));
 				scanner.assignment.setData(new TextAttribute(provider.getColor(rgbkey8), null, 1, new Font(Display.getCurrent(), f8)));
 				
-				System.out.println(pscanner.rString.getData().toString());
+				//System.out.println(pscanner.rString.getData().toString());
 				
 				//pscanner.rString.setData(new TextAttribute(provider.getColor(rgbkey2), null, 1, new Font(Display.getCurrent(), f2)));
 				

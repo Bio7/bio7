@@ -42,9 +42,7 @@ public abstract class SingleCharRule implements IRule {
 	public IToken evaluate(ICharacterScanner scanner) {
 		int ch = scanner.read();
 		
-		/*if(ch=='='){
-			ch = scanner.read();
-		}*/
+		
 
 		if (isRuleChar(ch)) {
 			return token;

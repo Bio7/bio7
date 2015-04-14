@@ -66,7 +66,7 @@ public class RCodeScanner extends RuleBasedScanner {
 	public Token keyword;
 	public Token type;
 	public Token string;
-	public Token comment;
+	public static Token comment;
 	public Token other;
 	public Token operators;
 	public Token braces;
@@ -118,30 +118,15 @@ public class RCodeScanner extends RuleBasedScanner {
 		// Add rule for single line comments.
 		rules.add(new EndOfLineRule("#", comment));
 
-		// Add rule for strings and character constants.
 		
-		
-		// rules.add(new SingleLineRule("<-","<-", type));
-		// Add generic whitespace rule.
 		rules.add(new WhitespaceRule(new RWhitespaceDetector()));
-		rules.add(new AssignmentRule(assignment));
+		rules.add(new AssignmentRule(operators,assignment));
 		rules.add(new COperatorRule(operators));
 		rules.add(new REditorBraceRule(braces));
 		// rules.add(new NumberRule(numbers));
 		rules.add(new WordRule(new NumberDetector(), numbers));
 
-		// rules.add(new PatternRule("<-", "<-", assignmentOps, (char) 0,
-		// false));
-		// rules.add(new PatternRule("->", "->", assignmentOps, (char) 0,
-		// false));
-
-		/*
-		 * rules.add(new SingleLineRule("<-"," ", assignmentOps)); rules.add(new
-		 * MultiLineRule("->", " ", assignmentOps)); rules.add(new
-		 * SingleLineRule("=", " ", assignmentOps));
-		 */
-
-		// Add word rule for keywords, types, and constants.
+		
 
 		// ORDER is important - try to switch order of '=' and '==' !
 
