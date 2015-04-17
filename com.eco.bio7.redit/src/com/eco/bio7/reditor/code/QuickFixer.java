@@ -1,4 +1,4 @@
-package com.eco.bio7.reditor.code;
+/*package com.eco.bio7.reditor.code;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
@@ -19,4 +19,4 @@ public class QuickFixer implements IMarkerResolutionGenerator {
             return new IMarkerResolution[0];
          }
       }
-   }
+   }*/

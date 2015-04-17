@@ -12,6 +12,7 @@ package com.eco.bio7.reditor.antlr;
 
 import java.util.ArrayList;
 import java.util.Stack;
+
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.Token;
@@ -20,6 +21,7 @@ import org.antlr.v4.runtime.misc.NotNull;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.texteditor.IDocumentProvider;
+
 import com.eco.bio7.reditor.outline.REditorOutlineNode;
 import com.eco.bio7.reditors.REditor;
 
@@ -215,6 +217,88 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
+	/* if condition! */
+	public void enterE21(@NotNull RParser.E21Context ctx) {
+
+		Interval sourceInterval = ctx.getSourceInterval();
+
+		Token firstToken = tokens.get(sourceInterval.a);
+		int lineStart = firstToken.getStartIndex();
+
+		Token lastToken = tokens.get(sourceInterval.b);
+		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
+
+		// Add to the editor folding action.
+		startStop.add(lineStart + "," + lineEnd);
+
+	}
+
+	/* if condition 2 of grammar file! */
+	public void enterE22(@NotNull RParser.E22Context ctx) {
+		
+
+		Interval sourceInterval = ctx.getSourceInterval();
+
+		Token firstToken = tokens.get(sourceInterval.a);
+		int lineStart = firstToken.getStartIndex();
+
+		Token lastToken = tokens.get(sourceInterval.b);
+		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
+
+		// Add to the editor folding action.
+		startStop.add(lineStart + "," + lineEnd);
+
+	}
+
+	/* for loop! */
+	public void enterE23(@NotNull RParser.E23Context ctx) {
+
+		Interval sourceInterval = ctx.getSourceInterval();
+
+		Token firstToken = tokens.get(sourceInterval.a);
+		int lineStart = firstToken.getStartIndex();
+
+		Token lastToken = tokens.get(sourceInterval.b);
+		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
+
+		// Add to the editor folding action.
+		startStop.add(lineStart + "," + lineEnd);
+
+	}
+
+	/* while loop! */
+	public void enterE24(@NotNull RParser.E24Context ctx) {
+
+		Interval sourceInterval = ctx.getSourceInterval();
+
+		Token firstToken = tokens.get(sourceInterval.a);
+		int lineStart = firstToken.getStartIndex();
+
+		Token lastToken = tokens.get(sourceInterval.b);
+		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
+
+		// Add to the editor folding action.
+		startStop.add(lineStart + "," + lineEnd);
+
+	}
+
+	/* repeat loop! */
+	public void enterE25(@NotNull RParser.E25Context ctx) {
+
+		Interval sourceInterval = ctx.getSourceInterval();
+
+		Token firstToken = tokens.get(sourceInterval.a);
+
+		int lineStart = firstToken.getStartIndex();
+
+		Token lastToken = tokens.get(sourceInterval.b);
+		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
+
+		// Add to the editor folding action.
+		startStop.add(lineStart + "," + lineEnd);
+
+	}
+
 	@Override
 	public void enterE17VariableDeclaration(@NotNull RParser.E17VariableDeclarationContext ctx) {
 
@@ -378,15 +462,15 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	/*
-	 * public void exitErr6(@NotNull RParser.Err6Context ctx) { Token lastToken
-	 * = tokens.get(ctx.getChild(2).getSourceInterval().b);
-	 * parser.notifyErrorListeners(lastToken, "Err6:Closing if brace missing!",
-	 * null);
-	 * 
-	 * 
-	 * }
-	 */
+	
+	  /*public void exitErr6(@NotNull RParser.Err6Context ctx) { 
+		  
+		  parser.notifyErrorListeners(ctx.extra, "Err6:Too many parentheses in left if definition!", null);
+	  
+	  
+	  
+	  }*/
+	 
 
 	public void exitErr7(@NotNull RParser.Err7Context ctx) {
 

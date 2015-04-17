@@ -69,6 +69,16 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		PreferenceConverter.setDefault(storeR, "colourkeyfont6", new FontData(font, fsize, 0));
 		PreferenceConverter.setDefault(storeR, "colourkeyfont7", new FontData(font, fsize, 0));
 		PreferenceConverter.setDefault(storeR, "colourkeyfont8", new FontData(font, fsize, 0));
+		
+		storeR.setDefault("FUNCTIONS_FOLDING", true);
+		storeR.setDefault("FOR_LOOP_FOLDING", true);
+		storeR.setDefault("WHILE_LOOP_FOLDING", true);
+		storeR.setDefault("REPEAT_LOOP_FOLDING", true);
+		storeR.setDefault("IF_CONDITION_FOLDING", true);
+		
+		storeR.setDefault("SHOW_INFOPOPUP", true);
+		storeR.setDefault("MARK_WORDS", true);
+
 
 	}
 

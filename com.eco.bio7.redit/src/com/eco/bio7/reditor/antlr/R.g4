@@ -64,7 +64,7 @@ expr:
     |   expr '(' sublist ')' extra=')'   				#err3
     //|   'function' '(' formlist?  expr 					#err4
     |   'function' '(' formlist? ')' extra=')' expr 	#err5
-   // |   'if' '(' expr  expr								#err6
+    //|   'if' '(' extra='(' expr ')'  expr								#err6
     |   'if' '(' expr ')' extra=')'  expr				#err7
    // |   expr '[' sublist 	    						#err8
     |   expr '[' sublist ']' extra=']'					#err9

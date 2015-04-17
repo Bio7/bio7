@@ -304,7 +304,7 @@ public class REditor extends TextEditor {
 			}
 
 		}
-
+       /*Here we search for similar words of a selected word in the editor. The results will be marked!*/
 		public void markWords(int offset, IDocument doc, IEditorPart editor) {
 
 			int length = 0;

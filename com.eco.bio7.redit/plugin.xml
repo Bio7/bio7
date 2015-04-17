@@ -41,6 +41,12 @@
             id="prefr"
             name="Preferences Editor">
        </page>
+      <page
+            category="com.eco.bio7.R"
+            class="com.eco.bio7.rpreferences.RCodePreferences"
+            id="RCodePreferences"
+            name="Preferences Editor Code">
+      </page>
       
    </extension>
 
