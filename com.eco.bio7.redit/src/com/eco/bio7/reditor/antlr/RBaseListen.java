@@ -18,10 +18,12 @@ import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.misc.NotNull;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
+import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.outline.REditorOutlineNode;
 import com.eco.bio7.reditors.REditor;
 
@@ -34,6 +36,7 @@ public class RBaseListen extends RBaseListener {
 	private Parser parser;
 	private Stack<REditorOutlineNode> methods;// A stack for nested nodes!
 	private Stack<RScope> scopes;
+	private IPreferenceStore store;
 
 	public RBaseListen(CommonTokenStream tokens, REditor editor, Parser parser) {
 		this.tokens = tokens;
@@ -42,6 +45,7 @@ public class RBaseListen extends RBaseListener {
 		methods = new Stack<REditorOutlineNode>();
 		scopes = new Stack<RScope>();
 		scopes.push(new RScope(null));
+		store = Bio7REditorPlugin.getDefault().getPreferenceStore();
 
 	}
 
@@ -177,8 +181,10 @@ public class RBaseListen extends RBaseListener {
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 		// String ct2=ctx.getText();
 
-		// Add to the editor folding action.
-		startStop.add(lineStart + "," + lineEnd);
+		// Add to the editor folding action if enabled in the preferences!
+		if (store.getBoolean("FUNCTIONS_FOLDING")) {
+			startStop.add(lineStart + "," + lineEnd);
+		}
 		int lineMethod = calculateLine(lineStart);
 		int childs = ctx.getParent().getChildCount();
 		int posTree = 0;
@@ -228,14 +234,15 @@ public class RBaseListen extends RBaseListener {
 		Token lastToken = tokens.get(sourceInterval.b);
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 
-		// Add to the editor folding action.
-		startStop.add(lineStart + "," + lineEnd);
+		// Add to the editor folding action if enabled in the preferences!
+		if (store.getBoolean("IF_CONDITION_FOLDING")) {
+			startStop.add(lineStart + "," + lineEnd);
+		}
 
 	}
 
 	/* if condition 2 of grammar file! */
 	public void enterE22(@NotNull RParser.E22Context ctx) {
-		
 
 		Interval sourceInterval = ctx.getSourceInterval();
 
@@ -245,8 +252,10 @@ public class RBaseListen extends RBaseListener {
 		Token lastToken = tokens.get(sourceInterval.b);
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 
-		// Add to the editor folding action.
-		startStop.add(lineStart + "," + lineEnd);
+		// Add to the editor folding action if enabled in the preferences!
+		if (store.getBoolean("IF_CONDITION_FOLDING")) {
+			startStop.add(lineStart + "," + lineEnd);
+		}
 
 	}
 
@@ -261,8 +270,10 @@ public class RBaseListen extends RBaseListener {
 		Token lastToken = tokens.get(sourceInterval.b);
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 
-		// Add to the editor folding action.
-		startStop.add(lineStart + "," + lineEnd);
+		// Add to the editor folding action if enabled in the preferences!
+		if (store.getBoolean("FOR_LOOP_FOLDING")) {
+			startStop.add(lineStart + "," + lineEnd);
+		}
 
 	}
 
@@ -277,8 +288,10 @@ public class RBaseListen extends RBaseListener {
 		Token lastToken = tokens.get(sourceInterval.b);
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 
-		// Add to the editor folding action.
-		startStop.add(lineStart + "," + lineEnd);
+		// Add to the editor folding action if enabled in the preferences!
+		if (store.getBoolean("WHILE_LOOP_FOLDING")) {
+			startStop.add(lineStart + "," + lineEnd);
+		}
 
 	}
 
@@ -294,8 +307,10 @@ public class RBaseListen extends RBaseListener {
 		Token lastToken = tokens.get(sourceInterval.b);
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 
-		// Add to the editor folding action.
-		startStop.add(lineStart + "," + lineEnd);
+		// Add to the editor folding action if enabled in the preferences!
+		if (store.getBoolean("REPEAT_LOOP_FOLDING")) {
+			startStop.add(lineStart + "," + lineEnd);
+		}
 
 	}
 
@@ -462,15 +477,16 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	
-	  /*public void exitErr6(@NotNull RParser.Err6Context ctx) { 
-		  
-		  parser.notifyErrorListeners(ctx.extra, "Err6:Too many parentheses in left if definition!", null);
-	  
-	  
-	  
-	  }*/
-	 
+	/*
+	 * public void exitErr6(@NotNull RParser.Err6Context ctx) {
+	 * 
+	 * parser.notifyErrorListeners(ctx.extra,
+	 * "Err6:Too many parentheses in left if definition!", null);
+	 * 
+	 * 
+	 * 
+	 * }
+	 */
 
 	public void exitErr7(@NotNull RParser.Err7Context ctx) {
 

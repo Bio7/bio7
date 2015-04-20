@@ -157,6 +157,8 @@ public class REditor extends TextEditor {
 
 	protected ArrayList<TreeItem> selectedItems;
 
+	private IPreferenceStore store;
+
 	public RConfiguration getRconf() {
 		return rconf;
 	}
@@ -178,7 +180,7 @@ public class REditor extends TextEditor {
 		getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
 		selectedItems = new ArrayList<TreeItem>();
 		// ISourceViewer viewer = getSourceViewer();
-
+		store = Bio7REditorPlugin.getDefault().getPreferenceStore();
 		// updateFoldingStructure(new ArrayList());
 	}
 
@@ -234,7 +236,9 @@ public class REditor extends TextEditor {
 
 									ITextSelection textSelection = (ITextSelection) editor.getSite().getSelectionProvider().getSelection();
 									int offset = textSelection.getOffset();
-									markWords(offset, document, editor);
+									if (store.getBoolean("MARK_WORDS")) {
+										markWords(offset, document, editor);
+									}
 
 									int lineNumber = 0;
 
@@ -304,7 +308,11 @@ public class REditor extends TextEditor {
 			}
 
 		}
-       /*Here we search for similar words of a selected word in the editor. The results will be marked!*/
+
+		/*
+		 * Here we search for similar words of a selected word in the editor.
+		 * The results will be marked!
+		 */
 		public void markWords(int offset, IDocument doc, IEditorPart editor) {
 
 			int length = 0;
@@ -586,9 +594,8 @@ public class REditor extends TextEditor {
 		colorManager = new RColorManager();
 		rconf = new RConfiguration(colorManager, this);
 		setSourceViewerConfiguration(rconf);
-		
-		 IPreferenceStore preferenceStore = new ChainedPreferenceStore(new IPreferenceStore[] {
-				 Bio7REditorPlugin.getDefault().getPreferenceStore(), EditorsUI.getPreferenceStore() });
+
+		IPreferenceStore preferenceStore = new ChainedPreferenceStore(new IPreferenceStore[] { Bio7REditorPlugin.getDefault().getPreferenceStore(), EditorsUI.getPreferenceStore() });
 
 		// IEditorPart editor = (IEditorPart)
 		// PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
@@ -608,7 +615,7 @@ public class REditor extends TextEditor {
 
 				Bio7REditorPlugin fginstance = Bio7REditorPlugin.getDefault();
 				RCodeScanner scanner = (RCodeScanner) fginstance.getRCodeScanner();
-				RPartitionScanner pscanner=(RPartitionScanner) fginstance.getRPartitionScanner();
+				RPartitionScanner pscanner = (RPartitionScanner) fginstance.getRPartitionScanner();
 
 				RColorProvider provider = Bio7REditorPlugin.getDefault().getRColorProvider();
 				IPreferenceStore store = Bio7REditorPlugin.getDefault().getPreferenceStore();
@@ -641,11 +648,13 @@ public class REditor extends TextEditor {
 				scanner.braces.setData(new TextAttribute(provider.getColor(rgbkey6), null, 1, new Font(Display.getCurrent(), f6)));
 				scanner.numbers.setData(new TextAttribute(provider.getColor(rgbkey7), null, 1, new Font(Display.getCurrent(), f7)));
 				scanner.assignment.setData(new TextAttribute(provider.getColor(rgbkey8), null, 1, new Font(Display.getCurrent(), f8)));
-				
-				//System.out.println(pscanner.rString.getData().toString());
-				
-				//pscanner.rString.setData(new TextAttribute(provider.getColor(rgbkey2), null, 1, new Font(Display.getCurrent(), f2)));
-				
+
+				// System.out.println(pscanner.rString.getData().toString());
+
+				// pscanner.rString.setData(new
+				// TextAttribute(provider.getColor(rgbkey2), null, 1, new
+				// Font(Display.getCurrent(), f2)));
+
 				if (REditor.this != null) {
 					if (REditor.this.getSourceViewer() != null) {
 						REditor.this.getSourceViewer().invalidateTextPresentation();

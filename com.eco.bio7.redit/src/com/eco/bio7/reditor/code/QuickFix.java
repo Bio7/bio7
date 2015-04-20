@@ -1,4 +1,4 @@
-package com.eco.bio7.reditor.code;
+/*package com.eco.bio7.reditor.code;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -28,4 +28,4 @@ public class QuickFix implements IMarkerResolution2 {
 		// TODO Auto-generated method stub
 		return null;
 	}
-   }
+   }*/

@@ -3,10 +3,8 @@ package com.eco.bio7.rpreferences;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
-
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 
 public class PreferenceInitializer extends AbstractPreferenceInitializer {
@@ -78,7 +76,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		
 		storeR.setDefault("SHOW_INFOPOPUP", true);
 		storeR.setDefault("MARK_WORDS", true);
-
+		storeR.setDefault("TYPED_CODE_COMPLETION", false);
 
 	}
 

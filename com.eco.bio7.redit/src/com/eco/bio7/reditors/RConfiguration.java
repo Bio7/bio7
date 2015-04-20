@@ -74,7 +74,7 @@ import com.eco.bio7.rpreferences.template.RCompletionProcessor;
 
 public class RConfiguration extends TextSourceViewerConfiguration {
 
-	private RDoubleClickStrategy doubleClickStrategy;
+	//private RDoubleClickStrategy doubleClickStrategy;
 
 	private RColorManager colorManager;
 
@@ -82,11 +82,14 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 	private REditor rEditor;
 
+	private IPreferenceStore store;
+
 	public static String htmlHelpText = "";
 
 	public RConfiguration(RColorManager colorManager, REditor rEditor) {
 		this.colorManager = colorManager;
 		this.rEditor = rEditor;
+		store = Bio7REditorPlugin.getDefault().getPreferenceStore();
 	}
 
 	public static class SingleTokenScanner extends BufferedRuleBasedScanner {
@@ -124,41 +127,49 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 	public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
 		// return new String[] { IDocument.DEFAULT_CONTENT_TYPE,
 		// RPartitionScanner.R_DOC, RPartitionScanner.R_MULTILINE_COMMENT };
-		return new String[] { IDocument.DEFAULT_CONTENT_TYPE, "R_MULTILINE_STRING","R_COMMENT" };
+		return new String[] { IDocument.DEFAULT_CONTENT_TYPE, "R_MULTILINE_STRING", "R_COMMENT" };
 	}
 
 	public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
-		//RColorProvider provider = Bio7REditorPlugin.getDefault().getRColorProvider();
+		// RColorProvider provider =
+		// Bio7REditorPlugin.getDefault().getRColorProvider();
 		PresentationReconciler reconciler = new PresentationReconciler();
 		reconciler.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
 
 		DefaultDamagerRepairer dr = new DefaultDamagerRepairer(Bio7REditorPlugin.getDefault().getRCodeScanner());
 		reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
 		reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
-		
-		IPreferenceStore store = Bio7REditorPlugin.getDefault().getPreferenceStore();
+
+		//IPreferenceStore store = Bio7REditorPlugin.getDefault().getPreferenceStore();
 		RGB rgbkey2 = PreferenceConverter.getColor(store, "colourkey2");
 		FontData f2 = PreferenceConverter.getFontData(store, "colourkeyfont2");
 		RGB rgbkey3 = PreferenceConverter.getColor(store, "colourkey3");
 		FontData f3 = PreferenceConverter.getFontData(store, "colourkeyfont3");
-		
-		DefaultDamagerRepairer ndr= new DefaultDamagerRepairer(new SingleTokenScanner(new TextAttribute(new Color(Display.getDefault(),rgbkey2), null, 1, new Font(Display.getCurrent(), f2))));
-		reconciler.setDamager(ndr,"R_MULTILINE_STRING");
-		reconciler.setRepairer(ndr,"R_MULTILINE_STRING");
-		/*We have to set the comments separately, too (to ignore quotes in comments!)*/
-		DefaultDamagerRepairer ndrcomment= new DefaultDamagerRepairer(new SingleTokenScanner(new TextAttribute(new Color(Display.getDefault(),rgbkey3), null, 1, new Font(Display.getCurrent(), f3))));
-		reconciler.setDamager(ndrcomment,"R_COMMENT");
-		reconciler.setRepairer(ndrcomment,"R_COMMENT");
-		
-		
-		/*DefaultDamagerRepairer ndr = new DefaultDamagerRepairer(Bio7REditorPlugin.getDefault().getRPartitionScanner());
-			NonRuleBasedDamagerRepairer ndr =
-					new NonRuleBasedDamagerRepairer(
-							new TextAttribute(new Color(Display.getDefault(),rgbkey2), null, 1, new Font(Display.getCurrent(), f2)));
-		//NonRuleBasedDamagerRepairer ndr = new NonRuleBasedDamagerRepairer(new TextAttribute(provider.getColor(rgbkey2), null, 1, new Font(Display.getCurrent(), f2)));
-		reconciler.setDamager(ndr,"R_MULTILINE_STRING");
-		reconciler.setRepairer(ndr,"R_MULTILINE_STRING");
-*/
+
+		DefaultDamagerRepairer ndr = new DefaultDamagerRepairer(new SingleTokenScanner(new TextAttribute(new Color(Display.getDefault(), rgbkey2), null, 1, new Font(Display.getCurrent(), f2))));
+		reconciler.setDamager(ndr, "R_MULTILINE_STRING");
+		reconciler.setRepairer(ndr, "R_MULTILINE_STRING");
+		/*
+		 * We have to set the comments separately, too (to ignore quotes in
+		 * comments!)
+		 */
+		DefaultDamagerRepairer ndrcomment = new DefaultDamagerRepairer(new SingleTokenScanner(new TextAttribute(new Color(Display.getDefault(), rgbkey3), null, 1, new Font(Display.getCurrent(), f3))));
+		reconciler.setDamager(ndrcomment, "R_COMMENT");
+		reconciler.setRepairer(ndrcomment, "R_COMMENT");
+
+		/*
+		 * DefaultDamagerRepairer ndr = new
+		 * DefaultDamagerRepairer(Bio7REditorPlugin
+		 * .getDefault().getRPartitionScanner()); NonRuleBasedDamagerRepairer
+		 * ndr = new NonRuleBasedDamagerRepairer( new TextAttribute(new
+		 * Color(Display.getDefault(),rgbkey2), null, 1, new
+		 * Font(Display.getCurrent(), f2))); //NonRuleBasedDamagerRepairer ndr =
+		 * new NonRuleBasedDamagerRepairer(new
+		 * TextAttribute(provider.getColor(rgbkey2), null, 1, new
+		 * Font(Display.getCurrent(), f2)));
+		 * reconciler.setDamager(ndr,"R_MULTILINE_STRING");
+		 * reconciler.setRepairer(ndr,"R_MULTILINE_STRING");
+		 */
 		return reconciler;
 	}
 
@@ -196,15 +207,19 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 	@Override
 	public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
-
-		return new MarkdownTextHover();
+		
+		if (store.getBoolean("SHOW_INFOPOPUP")) {
+			return new MarkdownTextHover();
+		}
+		return null;
 	}
 
 	public class MarkdownTextHover implements ITextHover, ITextHoverExtension2 {
 
 		protected String help = "";
 
-		//R Return information to be shown when the cursor is on the given region
+		// R Return information to be shown when the cursor is on the given
+		// region
 		@Override
 		public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
 

@@ -20,7 +20,7 @@ public class RCodePreferences extends FieldEditorPreferencePage implements IWork
 		super(GRID);
 
 		setPreferenceStore(Bio7REditorPlugin.getDefault().getPreferenceStore());
-		setDescription("R Code Preferences");
+		//setDescription("R Code Preferences");
 	}
 
 	public void createFieldEditors() {
@@ -37,6 +37,8 @@ public class RCodePreferences extends FieldEditorPreferencePage implements IWork
 		addField(new LabelFieldEditor("Code context:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("SHOW_INFOPOPUP", "Show Infopopup", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("MARK_WORDS", "Mark selected words", getFieldEditorParent()));
+		addField(new LabelFieldEditor("Code completion/templates:", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("TYPED_CODE_COMPLETION", "Open code completion/templates when typing", getFieldEditorParent()));
 	}
 
 	public void init(IWorkbench workbench) {
@@ -50,6 +52,7 @@ public class RCodePreferences extends FieldEditorPreferencePage implements IWork
 		
 		store.setDefault("SHOW_INFOPOPUP", true);
 		store.setDefault("MARK_WORDS", true);
+		store.setDefault("TYPED_CODE_COMPLETION", false);
 
 	}
 

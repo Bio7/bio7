@@ -42,6 +42,7 @@ import org.eclipse.jface.text.templates.TemplateProposal;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
+import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditors.TemplateEditorUI;
 
 /**
@@ -52,7 +53,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 	private static final Comparator fgProposalComparator = new ProposalComparator();
 
 	private static final String DEFAULT_IMAGE = "$nl$/icons/template.gif"; //$NON-NLS-1$
-	
+
 	private static final String CALCULATED_TEMPLATE_IMAGE = "$nl$/icons/methpub_obj.gif"; //$NON-NLS-1$
 
 	public static String[] statistics;
@@ -62,16 +63,18 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 	public static String[] statisticsSet;
 
 	private boolean triggerNext;
-	
-	private int count = 0;//Variable to count the listed template.
-	
-	private int defaultTemplatesLength;//Global variable to get the current template amount.
 
+	private int count = 0;// Variable to count the listed template.
 
+	private int defaultTemplatesLength;// Global variable to get the current
+										// template amount.
+
+	private IPreferenceStore store;
 
 	public RCompletionProcessor(boolean startupTemplates) {
 
 		loadRCodePackageTemplates(startupTemplates);
+		store = Bio7REditorPlugin.getDefault().getPreferenceStore();
 
 	}
 
@@ -190,7 +193,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 	@SuppressWarnings("unchecked")
 	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
-		count=0;
+		count = 0;
 
 		ITextSelection selection = (ITextSelection) viewer.getSelectionProvider().getSelection();
 
@@ -282,13 +285,16 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 	// add the chars for Completion here !!!
 
-	/*
-	 * public char[] getCompletionProposalAutoActivationCharacters() {
-	 * 
-	 * return "abcdefghijklmnopqrstuvwxyz".toCharArray();
-	 * 
-	 * }
-	 */
+	public char[] getCompletionProposalAutoActivationCharacters() {
+
+		if (store.getBoolean("TYPED_CODE_COMPLETION")) {
+
+			return "abcdefghijklmnopqrstuvwxyz".toCharArray();
+		}
+
+		return null;
+
+	}
 
 	/**
 	 * Return the R context type that is supported by this plug-in.
@@ -314,26 +320,20 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 		if (count < defaultTemplatesLength) {
 			count++;
-			ImageRegistry registry = TemplateEditorUI.getDefault()
-					.getImageRegistry();
+			ImageRegistry registry = TemplateEditorUI.getDefault().getImageRegistry();
 			Image image = registry.get(DEFAULT_IMAGE);
 			if (image == null) {
-				ImageDescriptor desc = TemplateEditorUI
-						.imageDescriptorFromPlugin(
-								"com.eco.bio7.redit", DEFAULT_IMAGE); //$NON-NLS-1$
+				ImageDescriptor desc = TemplateEditorUI.imageDescriptorFromPlugin("com.eco.bio7.redit", DEFAULT_IMAGE); //$NON-NLS-1$
 				registry.put(DEFAULT_IMAGE, desc);
 				image = registry.get(DEFAULT_IMAGE);
 			}
 			return image;
 		} else {
 
-			ImageRegistry registry = TemplateEditorUI.getDefault()
-					.getImageRegistry();
+			ImageRegistry registry = TemplateEditorUI.getDefault().getImageRegistry();
 			Image image = registry.get(CALCULATED_TEMPLATE_IMAGE);
 			if (image == null) {
-				ImageDescriptor desc = TemplateEditorUI
-						.imageDescriptorFromPlugin(
-								"com.eco.bio7.redit", CALCULATED_TEMPLATE_IMAGE); //$NON-NLS-1$
+				ImageDescriptor desc = TemplateEditorUI.imageDescriptorFromPlugin("com.eco.bio7.redit", CALCULATED_TEMPLATE_IMAGE); //$NON-NLS-1$
 				registry.put(CALCULATED_TEMPLATE_IMAGE, desc);
 				image = registry.get(CALCULATED_TEMPLATE_IMAGE);
 			}
