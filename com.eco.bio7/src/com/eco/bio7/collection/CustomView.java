@@ -293,7 +293,7 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 
 			}
 		});
-		
+
 		CustomView viewReturn = null;
 		if (activated instanceof CustomView) {
 			final CustomView view = (CustomView) activated;
@@ -306,7 +306,7 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 					}
 				}
 			});
-			
+
 			viewReturn = view;
 		}
 		return viewReturn.getCustomViewParent();
@@ -398,7 +398,7 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	 * the close event (do save) we clean up all data and close the tab items!
 	 */
 	public void doSave(IProgressMonitor monitor) {
-        
+
 		/*
 		 * CTabItem[] items = tabFolder.getItems();
 		 * 
@@ -411,8 +411,18 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 		 */
 		Vector<?> ve = (Vector<?>) customViewParent.getData();
 		closeTabPanels(ve);
-		/*Call the close method of the Model class!*/
-		Compiled.getModel().close();
+		
+		/* Call the close method of the Model class! */
+		Model model=Compiled.getModel();
+		/*Check if compiled!*/
+		if (model != null) {
+			try {
+				model.close();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 
 	}
 
