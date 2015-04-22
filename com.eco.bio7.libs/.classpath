@@ -36,8 +36,6 @@
 	<classpathentry exported="true" kind="lib" path="libs/grid.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jcollada-0-9-12.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/commons-io-1.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/MozillaGlue.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/MozillaInterfaces.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/xmlbeans-2.3.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/dom4j-1.6.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geronimo-stax-api_1.0_spec-1.0.jar"/>
