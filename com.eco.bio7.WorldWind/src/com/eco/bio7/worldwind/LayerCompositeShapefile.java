@@ -11,8 +11,10 @@
 
 package com.eco.bio7.worldwind;
 
+import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.LayerList;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -20,19 +22,27 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Scale;
+import org.eclipse.swt.widgets.Shell;
+
 import gov.nasa.worldwind.render.SurfaceImage;
+import gov.nasa.worldwindx.examples.util.ExampleUtil;
 public class LayerCompositeShapefile extends Composite {
 
 	private int number;
+	private Sector secto;
+	
 
 	/**
 	 * Create the composite
 	 * @param parent
 	 * @param style
+	 * @param sect 
 	 */
-	public LayerCompositeShapefile(Composite parent, int style,final Layer layer) {
+	public LayerCompositeShapefile(Composite parent, int style,final Layer layer, final Sector sect) {
 		super(parent, style);
+		this.secto=sect;
 		final Scale scale = new Scale(this, SWT.NONE);
 		scale.setMinimum(1);
 		scale.setMaximum(100);
@@ -64,6 +74,35 @@ public class LayerCompositeShapefile extends Composite {
 			}
 		});
 		r.setBounds(204, 12, 41, 25);
+		final Button goTo = new Button(this, SWT.NONE);
+		goTo.setText("Loc");
+		goTo.setSelection(true);
+		goTo.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				if (secto != null) {
+					WorldWindOptionsView.setMinLat(String.valueOf(secto.getMinLatitude().degrees));
+					WorldWindOptionsView.setMinLon(String.valueOf(secto.getMinLongitude().degrees));
+					WorldWindOptionsView.setMaxLat(String.valueOf(secto.getMaxLatitude().degrees));
+					WorldWindOptionsView.setMaxLon(String.valueOf(secto.getMaxLongitude().degrees));
+					ExampleUtil.goTo(WorldWindView.getWwd(), secto);
+				}
+
+				else {
+					MessageBox messageBox = new MessageBox(new Shell(),
+
+							SWT.ICON_WARNING);
+							messageBox.setText("Info!");
+							messageBox.setMessage("No georeference available!");
+							messageBox.open();
+
+				}
+
+				WorldWindOptionsView.computeScrolledSize();
+				WorldWindView.getWwd().redraw();
+
+			}
+		});
+		goTo.setBounds(244, 12, 41, 25);
 		final Button b = new Button(this, SWT.CHECK);
 		b.setText(layer.getName());
 		b.setToolTipText(layer.getName());

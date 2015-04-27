@@ -43,6 +43,7 @@ public class LayerComposite extends Composite {
 	public LayerComposite(Composite parent, int style, final SurfaceImage si, final RenderableLayer layerImages, final Sector sector) {
 		super(parent, style);
 		this.sector = sector;
+		
 		final Scale scale = new Scale(this, SWT.NONE);
 		scale.setMinimum(1);
 		scale.setMaximum(100);
@@ -78,6 +79,10 @@ public class LayerComposite extends Composite {
 		goTo.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				if (sector != null) {
+					WorldWindOptionsView.setMinLat(String.valueOf(sector.getMinLatitude().degrees));
+					WorldWindOptionsView.setMinLon(String.valueOf(sector.getMinLongitude().degrees));
+					WorldWindOptionsView.setMaxLat(String.valueOf(sector.getMaxLatitude().degrees));
+					WorldWindOptionsView.setMaxLon(String.valueOf(sector.getMaxLongitude().degrees));
 					ExampleUtil.goTo(WorldWindView.getWwd(), sector);
 				}
 

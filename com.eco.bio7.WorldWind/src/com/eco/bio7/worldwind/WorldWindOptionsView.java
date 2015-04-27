@@ -137,9 +137,7 @@ import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
-
 import worldw.Activator;
-
 import com.eco.bio7.image.CanvasView;
 import com.swtdesigner.SWTResourceManager;
 
@@ -444,11 +442,12 @@ public class WorldWindOptionsView extends ViewPart {
 
 			@Override
 			public void mouseDoubleClick(org.eclipse.swt.events.MouseEvent e) {
+				if(scrolLList.getItemCount()>0){
 				String pos = scrolLList.getItem(scrolLList.getSelectionIndex());
 				/* Left out the name! */
 				String[] p = pos.split(",");
 				text.setText(p[1] + "," + p[2]);
-
+				}
 			}
 
 			@Override
@@ -514,7 +513,9 @@ public class WorldWindOptionsView extends ViewPart {
 		deleteButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+				if(scrolLList.getItemCount()>0){
 				scrolLList.remove(scrolLList.getSelectionIndex());
+				}
 				StringBuffer buff = new StringBuffer();
 				for (int i = 0; i < scrolLList.getItemCount(); i++) {
 					buff.append(scrolLList.getItem(i) + ";");
@@ -2074,8 +2075,29 @@ public class WorldWindOptionsView extends ViewPart {
 			// create one.
 			if (!(subRaster instanceof BufferedImageRaster))
 				throw new Exception("Cannot get BufferedImage.");
-			BufferedImage image = ((BufferedImageRaster) subRaster).getBufferedImage();
+			final BufferedImage image = ((BufferedImageRaster) subRaster).getBufferedImage();
 
+			Display display = PlatformUI.getWorkbench().getDisplay();
+			display.syncExec(new Runnable() {
+				public void run() {
+
+					MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+					message.setMessage("Do you want to open the image in ImageJ, too?");
+					message.setText("Bio7");
+					int response = message.open();
+					if (response == SWT.YES) {
+						new ImagePlus("geotiff",image).show();
+
+					} else {
+						
+
+					}
+
+				}
+			});
+
+			
+			
 			// The sub-raster can now be disposed. Disposal won't affect the
 			// BufferedImage.
 			subRaster.dispose();
@@ -2092,7 +2114,7 @@ public class WorldWindOptionsView extends ViewPart {
 			layerImages.setName(new File(IMAGE_PATH).getName());
 			layerImages.setPickEnabled(false);
 			layerImages.addRenderable(si1);
-			Display display = PlatformUI.getWorkbench().getDisplay();
+			
 			display.syncExec(new Runnable() {
 
 				public void run() {
