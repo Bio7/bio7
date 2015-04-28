@@ -1,13 +1,13 @@
 #ImageJ 1.49p Preferences
-#Wed Apr 22 14:24:14 CEST 2015
+#Mon Apr 27 16:53:40 CEST 2015
 new.fill=1
 .arrows.loc=846,219
 pp.options=1
-bcolor=\#000000
+bcolor=\#FFFFFF
 .results.height=679
 noise.sd=25.0
 raw.offset=0
-fcolor=\#080808
+fcolor=\#010101
 raw.width=512
 .manager.loc=1443,215
 prefs.options=541347840
@@ -16,7 +16,7 @@ measurements=51
 showcolor=\#00FFFF
 fps=7.0
 raw.height=512
-.results.loc=1306,146
+.results.loc=1459,117
 jpeg=85
 .results.width=400
 .options.ext=.csv

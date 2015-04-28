@@ -114,7 +114,7 @@ public class FileSaver {
 			file.write(out);
 			out.close();
 		} catch (IOException e) {
-			showErrorMessage(e);
+			showErrorMessage("saveAsTiff", path, e);
 			return false;
 		} finally {
 			if (out!=null)
@@ -202,7 +202,7 @@ public class FileSaver {
 			file.write(out);
 			out.close();
 		} catch (IOException e) {
-			showErrorMessage(e);
+			showErrorMessage("saveAsTiffStack", path, e);
 			return false;
 		} finally {
 			if (out!=null)
@@ -302,7 +302,7 @@ public class FileSaver {
 			out.close();
 		}
 		catch (IOException e) {
-			showErrorMessage(e);
+			showErrorMessage("saveAsZip", path, e);
 			return false;
 		} finally {
 			if (out!=null)
@@ -473,7 +473,6 @@ public class FileSaver {
 	}
 	
 	/** Save the image as raw data using the specified path. */
-	/** Save the image as raw data using the specified path. */
 	public boolean saveAsRaw(String path) {
 		fi.nImages = 1;
 		fi.intelByteOrder = Prefs.intelByteOrder;
@@ -495,7 +494,7 @@ public class FileSaver {
 			out.close();
 		}
 		catch (IOException e) {
-			showErrorMessage(e);
+			showErrorMessage("saveAsRaw", path, e);
 			return false;
 		} finally {
 			if (out!=null)
@@ -539,7 +538,7 @@ public class FileSaver {
 			file.write(out);
 			out.close();
 		} catch (IOException e) {
-			showErrorMessage(e);
+			showErrorMessage("saveAsRawStack", path, e);
 			return false;
 		} finally {
 			if (out!=null)
@@ -580,7 +579,7 @@ public class FileSaver {
 			file.write(out);
 			out.close();
 		} catch (IOException e) {
-			showErrorMessage(e);
+			showErrorMessage("saveAsText", path, e);
 			return false;
 		} finally {
 			if (out!=null)
@@ -636,7 +635,7 @@ public class FileSaver {
 			out.close();
 		}
 		catch (IOException e) {
-			showErrorMessage(e);
+			showErrorMessage("saveAsLut", path, e);
 			return false;
 		} finally {
 			if (out!=null)
@@ -680,11 +679,12 @@ public class FileSaver {
 		}
 	}
 
-	void showErrorMessage(IOException e) {
+	private void showErrorMessage(String title, String path, IOException e) {
 		String msg = e.getMessage();
 		if (msg.length()>100)
 			msg = msg.substring(0, 100);
-		error("An error occured writing the file.\n \n" + msg);
+		msg = "File saving error (IOException):\n   \"" + msg + "\"";
+		IJ.error("FileSaver."+title, msg+" \n   "+path);
 	}
 	
 	private void error(String msg) {
@@ -772,6 +772,11 @@ public class FileSaver {
 			sb.append("zorigin="+cal.zOrigin+"\n");
 		if (cal.info!=null && cal.info.length()<=64 && cal.info.indexOf('=')==-1 && cal.info.indexOf('\n')==-1)
 			appendEscapedLine(sb, "info="+cal.info);
+			
+		// get invertY flag
+		if (cal.getInvertY())
+			sb.append("inverty=true\n");
+
 		if (saveName)
 			appendEscapedLine(sb, "name="+imp.getTitle());
 		sb.append((char)0);

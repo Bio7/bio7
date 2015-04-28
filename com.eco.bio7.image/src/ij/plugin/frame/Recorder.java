@@ -512,6 +512,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 				else if (name.equals("Run...")) // Plugins>Macros>Run
 					;
 				else {
+					if (name.equals("Calibrate...") && commandOptions.startsWith("function=None"))
+						commandOptions = commandOptions.substring(0, 13);
 					String prefix = "run(";
 					if (scriptMode) {
 						boolean addImp = imageUpdated || (WindowManager.getCurrentImage() != null && (name.equals("Properties... ") || name.equals("Fit Spline") || commandOptions.contains("save=")));
@@ -530,7 +532,12 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 					textArea.append((scriptMode ? "//IJ." : "//") + "run(\"" + name + "\");\n");
 				else if (name.equals("Start Animation [\\]"))
 					textArea.append("doCommand(\"Start Animation [\\\\]\");\n");
-				else if (name.equals("Add to Manager"))
+				else if (name.equals("Split Channels") && scriptMode) {
+					String text = "channels = ChannelSplitter.split(imp);\n";
+					if (javaMode())
+						text = "ImagePlus[] " + text;
+					textArea.append(text);
+				} else if (name.equals("Add to Manager"))
 					;
 				else if (roi != null && (roi instanceof TextRoi) && (name.equals("Draw") || name.equals("Add Selection...")))
 					textArea.append(((TextRoi) roi).getMacroCode(name, imp));
@@ -568,8 +575,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	}
 
 	static boolean isSaveAs() {
-		return commandName.equals("Tiff...") || commandName.equals("Gif...") || commandName.equals("Jpeg...") || commandName.equals("Text Image...") || commandName.equals("ZIP...") || commandName.equals("Raw Data...") || commandName.equals("BMP...") || commandName.equals("PNG...")
-				|| commandName.equals("PGM...") || commandName.equals("FITS...") || commandName.equals("LUT...") || commandName.equals("Selection...") || commandName.equals("XY Coordinates...")
+		return commandName.equals("Tiff...") || commandName.equals("Gif...") || commandName.equals("Jpeg...") || commandName.equals("Text Image...") || commandName.equals("ZIP...") || commandName.equals("Raw Data...") || commandName.equals("BMP...") || commandName.equals("PNG...") || commandName.equals("PGM...") || commandName.equals("FITS...") || commandName.equals("LUT...")
+				|| commandName.equals("Selection...") || commandName.equals("XY Coordinates...")
 				// || commandName.equals("Results...")
 				|| commandName.equals("Text... ");
 	}
@@ -756,8 +763,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	}
 
 	void showHelp() {
-		IJ.showMessage("Recorder", "Click \"Create\" to open recorded commands\n" + "as a macro in an editor window.\n" + " \n" + "In the editor:\n" + " \n" + "    Type ctrl+R (Macros>Run Macro) to\n" + "    run the macro.\n" + " \n" + "    Use File>Save As to save it and\n"
-				+ "    ImageJ's Open command to open it.\n" + " \n" + "    To create a command, save in the plugins\n" + "    folder and run Help>Refresh Menus.\n");
+		IJ.showMessage("Recorder", "Click \"Create\" to open recorded commands\n" + "as a macro in an editor window.\n" + " \n" + "In the editor:\n" + " \n" + "    Type ctrl+R (Macros>Run Macro) to\n" + "    run the macro.\n" + " \n" + "    Use File>Save As to save it and\n" + "    ImageJ's Open command to open it.\n" + " \n" + "    To create a command, save in the plugins\n"
+				+ "    folder and run Help>Refresh Menus.\n");
 	}
 
 	public void close() {

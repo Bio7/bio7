@@ -33,8 +33,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	//private static int counter;
 	private static boolean unsavedMeasurements;
 	public static Color darkBlue = new Color(0,0,160);
-	private static int systemMeasurements = 51;// Changed for Bio7!
-	//private static int systemMeasurements = Prefs.getInt(MEASUREMENTS,AREA+MEAN+MIN_MAX);
+	private static int systemMeasurements = Prefs.getInt(MEASUREMENTS,AREA+MEAN+MIN_MAX);
 	public static int markWidth;
 	public static int precision = Prefs.getInt(PRECISION,3);
 	private static float[] umeans = new float[MAX_STANDARDS];
@@ -220,7 +219,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			else
 				systemMeasurements &= ~list[i];
 		}
-		if ((oldMeasurements&(~LIMIT)&(~SCIENTIFIC_NOTATION))!=(systemMeasurements&(~LIMIT)&(~SCIENTIFIC_NOTATION))&&IJ.isResultsWindow()) {
+		if ((oldMeasurements&(~SCIENTIFIC_NOTATION))!=(systemMeasurements&(~SCIENTIFIC_NOTATION))&&IJ.isResultsWindow()) {
 				rt.setPrecision((systemMeasurements&SCIENTIFIC_NOTATION)!=0?-precision:precision);
 				clearSummary();
 				rt.update(systemMeasurements, imp, null);
@@ -232,7 +231,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	/** Measures the image or selection and adds the results to the default results table. */
 	public void measure() {
 		String lastHdr = rt.getColumnHeading(ResultsTable.LAST_HEADING);
-		if (lastHdr==null || lastHdr.charAt(0)!='S') {
+		if (lastHdr==null || lastHdr.charAt(0)!='M') {
 			if (!reset()) return;
 		}
 		firstParticle = lastParticle = 0;
@@ -592,6 +591,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 			} else if (roi.getType()==Roi.POINT)
 				savePoints(roi);
 		}
+		//if ((measurements&LIMIT)!=0 && imp.getBitDepth()!=24) {
+		//	rt.addValue(ResultsTable.MIN_THRESHOLD, stats.lowerThreshold);
+		//	rt.addValue(ResultsTable.MAX_THRESHOLD, stats.upperThreshold);
+		//}
 	}
 	
 	private void clearSummary() {
@@ -614,33 +617,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		return (Math.abs(carea/2.0));
 	}
-	
-	/*
-	final double getConvexPerimeter(Roi roi, Polygon ch) {
-		if (roi==null || ch==null || !(roi instanceof PolygonRoi))
-			return 0.0;
-		int[] xp = ((PolygonRoi)roi).getXCoordinates();
-		int[] yp = ((PolygonRoi)roi).getYCoordinates();
-		int n = ((PolygonRoi)roi).getNCoordinates();
-		double perim = getPerimeter(xp, yp, n);
-		double convexPerim = getPerimeter(ch.xpoints, ch.ypoints, ch.npoints);
-		return convexPerim;
-	}
-	
-	final double getPerimeter(int[] xp, int yp[], int n) {
-		double dx, dy, perim=0.0;
-		for (int i=0; i<n-1; i++) {
-			dx = xp[i+1]-xp[i];
-			dy = yp[i+1]-yp[i];
-			perim += Math.sqrt(dx*dx+dy*dy);
-		}
-		dx = xp[n-1] - xp[0];
-		dy = yp[n-1] - yp[0];
-		perim += Math.sqrt(dx*dx+dy*dy);
-		return perim;
-	}
-	*/
-	
+		
 	void savePoints(Roi roi) {
 		if (imp==null) {
 			rt.addValue("X", 0.0);
