@@ -3,28 +3,23 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.util.Tools;
-import ij.io.Opener;
-
+import ij.io.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-
-/** This plugin implements the File/Batch/Convert command, 
+/** This plugin implements the File/ /Convert command, 
 	which converts the images in a folder to a specified format. */
 	public class BatchConverter implements PlugIn, ActionListener {
 		private static final String[] formats = {"TIFF", "8-bit TIFF", "JPEG", "GIF", "PNG", "PGM", "BMP", "FITS", "Text Image", "ZIP", "Raw"};
 		private static String format = formats[0];
-		//private static int height;
 		private static double scale = 1.0;
 		private static boolean useBioFormats;
 		private static int interpolationMethod = ImageProcessor.BILINEAR;
+		private static boolean averageWhenDownSizing;
 		private String[] methods = ImageProcessor.getInterpolationMethods();
-		private JButton input, output;
-		private JTextField inputDir, outputDir;
+		private Button input, output;
+		private TextField inputDir, outputDir;
 		private GenericDialog gd;
 
 	public void run(String arg) {
@@ -51,9 +46,10 @@ import javax.swing.JTextField;
 			return;
 		}
 		String[] list = (new File(inputPath)).list();
-		ImageJ ij = IJ.getInstance();
-		if (ij!=null) ij.getProgressBar().setBatchMode(true);
 		IJ.resetEscape();
+		Opener opener = new Opener();
+		opener.setSilentMode(true);
+		long t0 = System.currentTimeMillis();
 		for (int i=0; i<list.length; i++) {
 			if (IJ.escapePressed())
 				break;
@@ -63,13 +59,14 @@ import javax.swing.JTextField;
 				continue;
 			if (list[i].startsWith(".")||list[i].endsWith(".avi")||list[i].endsWith(".AVI"))
 				continue;
+			IJ.showStatus(i+"/"+list.length);
 			IJ.showProgress(i+1, list.length);
 			ImagePlus imp = null;
 			IJ.redirectErrorMessages(true);
 			if (useBioFormats)
 				imp = Opener.openUsingBioFormats(path);
 			else
-				imp = IJ.openImage(path);
+				imp = opener.openImage(inputPath,list[i]);
 			IJ.redirectErrorMessages(false);
 			if (imp==null) {
 				String reader = useBioFormats?"Bio-Formats not found or":"IJ.openImage()";
@@ -81,7 +78,9 @@ import javax.swing.JTextField;
 				int height = (int)(scale*imp.getHeight());
 				ImageProcessor ip = imp.getProcessor();
 				ip.setInterpolationMethod(interpolationMethod);
-				imp.setProcessor(null, ip.resize(width,height,true));
+				ip.setProgressBar(null);
+				imp.setProcessor(null, ip.resize(width,height,averageWhenDownSizing));
+				ip = null;
 			}
 			if (format.equals("8-bit TIFF") || format.equals("GIF")) {
 				if (imp.getBitDepth()==24)
@@ -89,9 +88,19 @@ import javax.swing.JTextField;
 				else
 					IJ.run(imp, "8-bit", "");
 			}
-			IJ.saveAs(imp, format, outputPath+list[i]);
+			String path2 = outputPath+list[i];
+			if (format.equals("TIFF"))
+				(new FileSaver(imp)).saveAsTiff(path2);
+			else if (format.equals("JPEG"))
+				(new FileSaver(imp)).saveAsJpeg(path2);
+			else if (format.equals("PNG"))
+				(new FileSaver(imp)).saveAsPng(path2);
+			else
+				IJ.saveAs(imp, format, path2);
 			imp.close();
+			imp = null;
 		}
+		IJ.showStatus(list.length+" files converted in "+IJ.d2s((System.currentTimeMillis()-t0)/1000.0,2)+" seconds");
 		IJ.showProgress(1,1);
 		Prefs.set("batch.input", inputDir.getText());
 		Prefs.set("batch.output", outputDir.getText());
@@ -105,6 +114,7 @@ import javax.swing.JTextField;
 		gd.addChoice("Interpolation:", methods, methods[interpolationMethod]);
 		//gd.addStringField("Height (pixels): ", height==0?"\u2014":""+height, 6);
 		gd.addNumericField("Scale factor:", scale, 2);
+		gd.addCheckbox("Average when downsizing", averageWhenDownSizing);
 		gd.addCheckbox("Read images using Bio-Formats", useBioFormats);
 		gd.setOKLabel("Convert");
 		gd.showDialog();
@@ -114,25 +124,26 @@ import javax.swing.JTextField;
 		interpolationMethod = gd.getNextChoiceIndex();
 		//height = (int)Tools.parseDouble(gd.getNextString(), 0.0);
 		scale = gd.getNextNumber();
+		averageWhenDownSizing = gd.getNextBoolean();
 		useBioFormats = gd.getNextBoolean();
 		return true;
 	}
 
 	void addPanels(GenericDialog gd) {
-		JPanel p = new JPanel();
+		Panel p = new Panel();
     	p.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
-		input = new JButton("Input...");
+		input = new Button("Input...");
 		input.addActionListener(this);
 		p.add(input);
-		inputDir = new JTextField(Prefs.get("batch.input", ""), 45);
+		inputDir = new TextField(Prefs.get("batch.input", ""), 45);
 		p.add(inputDir);
 		gd.addPanel(p);
-		p = new JPanel();
+		p = new Panel();
     	p.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
-		output = new JButton("Output...");
+		output = new Button("Output...");
 		output.addActionListener(this);
 		p.add(output);
-		outputDir = new JTextField(Prefs.get("batch.output", ""), 45);
+		outputDir = new TextField(Prefs.get("batch.output", ""), 45);
 		p.add(outputDir);
 		gd.addPanel(p);
 	}

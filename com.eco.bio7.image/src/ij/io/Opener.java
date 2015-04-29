@@ -824,8 +824,9 @@ public class Opener {
 		TiffDecoder td = new TiffDecoder(getDir(path), getName(path));
 		if (IJ.debugMode) td.enableDebugging();
 		FileInfo[] info=null;
-		try {info = td.getTiffInfo();}
-		catch (IOException e) {
+		try {
+						info = td.getTiffInfo();
+					} catch (IOException e) {
 			String msg = e.getMessage();
 			if (msg==null||msg.equals("")) msg = ""+e;
 			IJ.error("Open TIFF", msg);
@@ -851,6 +852,19 @@ public class Opener {
 		FileOpener fo = new FileOpener(fi);
 		return fo.open(false);
 	}
+	
+	/** Returns the FileInfo of the specified TIFF file. */
+		public static FileInfo[] getTiffFileInfo(String path) {
+			Opener o = new Opener();
+			TiffDecoder td = new TiffDecoder(o.getDir(path), o.getName(path));
+			if (IJ.debugMode) td.enableDebugging();
+			try {
+				return td.getTiffInfo();
+			} catch (IOException e) {
+				return null;
+			}
+		}
+	
 
 	/** Attempts to open the specified inputStream as a
 		TIFF, returning an ImagePlus object if successful. */
@@ -1069,8 +1083,8 @@ public class Opener {
 	/** Opens a lookup table (LUT) and returns it as a LUT object, or returns null if there is an error.
 	 * @see ij.ImagePlus#setLut
 	*/
-	public static LUT openLut(String path) {
-		return LutLoader.openLut(path);
+	public static LUT openLut(String filePathOrUrl) {
+				return LutLoader.openLut(filePathOrUrl);
 	}
 
 	/** Opens a tab or comma delimited text file in the Results window. */

@@ -56,6 +56,7 @@ import ij.WindowManager;
 import ij.gui.OvalRoi;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
+import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 
 import java.awt.Color;
@@ -137,7 +138,9 @@ import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
+
 import worldw.Activator;
+
 import com.eco.bio7.image.CanvasView;
 import com.swtdesigner.SWTResourceManager;
 
@@ -211,13 +214,12 @@ public class WorldWindOptionsView extends ViewPart {
 	private Label errorLabel;
 	protected ToolTip captureTip;
 	private Spinner spinner;
-	private static int takeImagefromIJ=0;
+	private BufferedImage image;
+	private static int takeImagefromIJ = 0;
 
 	// These corners do not form a Sector, so SurfaceImage must generate a
 	// texture rather than simply using the source
 	// image.
-
-	
 
 	static {
 		LINE.add(Position.fromDegrees(44, 7, 0));
@@ -364,8 +366,7 @@ public class WorldWindOptionsView extends ViewPart {
 				infoTip = new ToolTip(new Shell(), SWT.BALLOON | SWT.ICON_INFORMATION);
 				infoTip.setText("Projection");
 
-				infoTip.setMessage("Equirectangular projection \nDatum: WGS 84\nEPSG: 4326\n\n" + "Enter city or coordinates like:\n" + "Street, City\n" + "39.53, -119.816  (Reno, NV)\n"
-						+ "21 10 14 N, 86 51 0 W (Cancun)" + "\n-31¡ 59' 43\", 115¡ 45' 32\" (Perth)");
+				infoTip.setMessage("Equirectangular projection \nDatum: WGS 84\nEPSG: 4326\n\n" + "Enter city or coordinates like:\n" + "Street, City\n" + "39.53, -119.816  (Reno, NV)\n" + "21 10 14 N, 86 51 0 W (Cancun)" + "\n-31¡ 59' 43\", 115¡ 45' 32\" (Perth)");
 				infoTip.setVisible(true);
 
 			}
@@ -442,11 +443,11 @@ public class WorldWindOptionsView extends ViewPart {
 
 			@Override
 			public void mouseDoubleClick(org.eclipse.swt.events.MouseEvent e) {
-				if(scrolLList.getItemCount()>0){
-				String pos = scrolLList.getItem(scrolLList.getSelectionIndex());
-				/* Left out the name! */
-				String[] p = pos.split(",");
-				text.setText(p[1] + "," + p[2]);
+				if (scrolLList.getItemCount() > 0) {
+					String pos = scrolLList.getItem(scrolLList.getSelectionIndex());
+					/* Left out the name! */
+					String[] p = pos.split(",");
+					text.setText(p[1] + "," + p[2]);
 				}
 			}
 
@@ -513,8 +514,8 @@ public class WorldWindOptionsView extends ViewPart {
 		deleteButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-				if(scrolLList.getItemCount()>0){
-				scrolLList.remove(scrolLList.getSelectionIndex());
+				if (scrolLList.getItemCount() > 0) {
+					scrolLList.remove(scrolLList.getSelectionIndex());
 				}
 				StringBuffer buff = new StringBuffer();
 				for (int i = 0; i < scrolLList.getItemCount(); i++) {
@@ -1001,12 +1002,12 @@ public class WorldWindOptionsView extends ViewPart {
 		fd_btnNewButton.left = new FormAttachment(0, 7);
 		btnNewButton.setLayoutData(fd_btnNewButton);
 		btnNewButton.setText("Add Shapefile");
-		
+
 		final Spinner spinner_1 = new Spinner(composite_1, SWT.BORDER);
 		spinner_1.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
-				
-				takeImagefromIJ=spinner_1.getSelection();
+
+				takeImagefromIJ = spinner_1.getSelection();
 			}
 		});
 		FormData fd_spinner_1 = new FormData();
@@ -1108,8 +1109,7 @@ public class WorldWindOptionsView extends ViewPart {
 				captureTip = new ToolTip(new Shell(), SWT.BALLOON | SWT.ICON_INFORMATION);
 				captureTip.setText("Info");
 
-				captureTip.setMessage("" + "If the globe is resized within the capture mode the recording\n" + "is interrupted!\n" + "The captured images are added to an ImageJ stack which\n"
-						+ "can be saved e.g. as an *.avi or animated *.gif file.");
+				captureTip.setMessage("" + "If the globe is resized within the capture mode the recording\n" + "is interrupted!\n" + "The captured images are added to an ImageJ stack which\n" + "can be saved e.g. as an *.avi or animated *.gif file.");
 				captureTip.setVisible(true);
 			}
 		});
@@ -1578,8 +1578,7 @@ public class WorldWindOptionsView extends ViewPart {
 			measureTool.addPropertyChangeListener(new PropertyChangeListener() {
 				public void propertyChange(PropertyChangeEvent event) {
 					// Add, remove or change positions
-					if (event.getPropertyName().equals(MeasureTool.EVENT_POSITION_ADD) || event.getPropertyName().equals(MeasureTool.EVENT_POSITION_REMOVE)
-							|| event.getPropertyName().equals(MeasureTool.EVENT_POSITION_REPLACE)) {
+					if (event.getPropertyName().equals(MeasureTool.EVENT_POSITION_ADD) || event.getPropertyName().equals(MeasureTool.EVENT_POSITION_REMOVE) || event.getPropertyName().equals(MeasureTool.EVENT_POSITION_REPLACE)) {
 
 					}
 					// The tool was armed / disarmed
@@ -1792,10 +1791,8 @@ public class WorldWindOptionsView extends ViewPart {
 					}
 				});
 
-				if (layer.getName().equals("MS Virtual Earth Aerial") || layer.getName().equals("Bing Imagery") || layer.getName().equals("MS Virtual Earth Hybrid")
-						|| layer.getName().equals("MS Virtual Earth Roads") || layer.getName().equals("OpenStreetMap") || layer.getName().equals("USGS Urban Area")
-						|| layer.getName().equals("USDA NAIP") || layer.getName().equals("i-cubed Landsat") || layer.getName().equals("Blue Marble (WMS) 2004")
-						|| layer.getName().equals("NASA Blue Marble Image") || layer.getName().equals("USGS Urban Area Ortho")) {
+				if (layer.getName().equals("MS Virtual Earth Aerial") || layer.getName().equals("Bing Imagery") || layer.getName().equals("MS Virtual Earth Hybrid") || layer.getName().equals("MS Virtual Earth Roads") || layer.getName().equals("OpenStreetMap") || layer.getName().equals("USGS Urban Area") || layer.getName().equals("USDA NAIP") || layer.getName().equals("i-cubed Landsat")
+						|| layer.getName().equals("Blue Marble (WMS) 2004") || layer.getName().equals("NASA Blue Marble Image") || layer.getName().equals("USGS Urban Area Ortho")) {
 
 					final Scale scale = new Scale(composite, SWT.NONE);
 					scale.setMinimum(1);
@@ -2086,18 +2083,15 @@ public class WorldWindOptionsView extends ViewPart {
 					message.setText("Bio7");
 					int response = message.open();
 					if (response == SWT.YES) {
-						new ImagePlus("geotiff",image).show();
+						new ImagePlus("geotiff", image).show();
 
 					} else {
-						
 
 					}
 
 				}
 			});
 
-			
-			
 			// The sub-raster can now be disposed. Disposal won't affect the
 			// BufferedImage.
 			subRaster.dispose();
@@ -2114,7 +2108,7 @@ public class WorldWindOptionsView extends ViewPart {
 			layerImages.setName(new File(IMAGE_PATH).getName());
 			layerImages.setPickEnabled(false);
 			layerImages.addRenderable(si1);
-			
+
 			display.syncExec(new Runnable() {
 
 				public void run() {
@@ -2135,7 +2129,7 @@ public class WorldWindOptionsView extends ViewPart {
 	}
 
 	public void addImageJDynamicImage(final double minLatitude, final double maxLatitude, final double minLongitude, final double maxLongitude) {
-
+		image = null;
 		if (makeDynamicIJImage() != null) {
 			RenderableLayer layer = new RenderableLayer();
 			layer.setPickEnabled(false);
@@ -2144,7 +2138,7 @@ public class WorldWindOptionsView extends ViewPart {
 			final SurfaceImage surfaceImage = new SurfaceImage(makeDynamicIJImage(), Sector.fromDegrees(minLatitude, maxLatitude, minLongitude, maxLongitude));
 			layer.addRenderable(surfaceImage);
 			layer.setOpacity(0.5);
-			javax.swing.Timer timer = new javax.swing.Timer(40, new ActionListener() {
+			javax.swing.Timer timer = new javax.swing.Timer(20, new ActionListener() {
 				public void actionPerformed(ActionEvent actionEvent) {
 					BufferedImage im = makeDynamicIJImage();
 					if (im != null) {
@@ -2152,7 +2146,7 @@ public class WorldWindOptionsView extends ViewPart {
 						if (wC != null) {
 							wC.redraw();
 						}
-						im = null;
+						// im = null;
 					}
 				}
 			});
@@ -2178,22 +2172,21 @@ public class WorldWindOptionsView extends ViewPart {
 
 	/* Create a dynamic texture from the ImageJ view! */
 	private BufferedImage makeDynamicIJImage() {
-		BufferedImage image = null;
-		// Graphics2D g = image.createGraphics();
+
 		if (WindowManager.getImageCount() > 0) {
-			int selImage=WorldWindOptionsView.getTakeImagefromIJ();
+			int selImage = WorldWindOptionsView.getTakeImagefromIJ();
 			ImagePlus imp;
-			if(selImage>0){
+			if (selImage > 0) {
 				imp = WindowManager.getImage(selImage);
 			}
-			
-			else{
+
+			else {
 				imp = WindowManager.getCurrentWindow().getImagePlus();
 			}
-			
+
 			if (imp != null) {
 				ImageProcessor pr = imp.getProcessor();
-
+				/*If the image is a color image convert it to RGBA buffered image. If pixel RGB values are 0 alpha value becomes transparent (0)!*/
 				if (pr instanceof ColorProcessor) {
 					ColorProcessor cp = (ColorProcessor) pr;
 					int w = pr.getWidth();
@@ -2214,10 +2207,113 @@ public class WorldWindOptionsView extends ViewPart {
 					}
 
 					cp.setChannel(4, alpha);
-					image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+					if (image == null) {
+						image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+					}
 					WritableRaster raster = image.getRaster();
+					if(raster.getWidth()==w&&raster.getHeight()==h){
 					raster.setDataElements(0, 0, w, h, cp.getPixels());
-				} else {
+					}
+				}
+
+				
+                /*If the image is a greyscale image convert to RGBA buffered image. If greyscale value is 0 the pixel becomes transparent!*/
+				else if (pr instanceof ByteProcessor) {
+					
+					
+
+					ByteProcessor cpByte = (ByteProcessor) pr;
+					int w = pr.getWidth();
+					int h = pr.getHeight();
+					if (image == null) {
+						image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+
+					}
+				
+					
+					for (int i = 0; i < w; i++) {
+
+						for (int u = 0; u < h; u++) {
+							
+							int grey = cpByte.getPixel(i, u);
+							if (grey == 0) {
+								
+								
+								int r = 0; // red 
+								int g = 0;// green 
+								int b = 0; // blue 
+								int a = 0; // alpha 
+											
+								int col = (a << 24) | (r << 16) | (g << 8) | b;
+								image.setRGB(i, u, col);
+								
+							} else {
+								int r = grey; // red 
+								int g = grey;// green 
+								int b = grey; // blue 
+								int a = 255; // alpha 
+												
+								int col = (a << 24) | (r << 16) | (g << 8) | b;
+
+								image.setRGB(i, u, col);
+
+								
+							}
+
+						}
+					}
+
+
+				}
+					else if (pr instanceof FloatProcessor) {
+					
+					
+
+					FloatProcessor floatProc = (FloatProcessor) pr;
+					int w = pr.getWidth();
+					int h = pr.getHeight();
+					if (image == null) {
+						image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+
+					}
+				
+					
+					for (int i = 0; i < w; i++) {
+
+						for (int u = 0; u < h; u++) {
+							
+							int grey = floatProc.getPixel(i, u);
+							if (grey == 0) {
+								
+								
+								int r = 0; // red 
+								int g = 0;// green 
+								int b = 0; // blue 
+								int a = 0; // alpha 
+											
+								int col = (a << 24) | (r << 16) | (g << 8) | b;
+								image.setRGB(i, u, col);
+								
+							} else {
+								int r = grey; // red 
+								int g = grey;// green 
+								int b = grey; // blue 
+								int a = 255; // alpha 
+												
+								int col = (a << 24) | (r << 16) | (g << 8) | b;
+
+								image.setRGB(i, u, col);
+
+								
+							}
+
+						}
+					}
+
+
+				}
+                /*Non transparent conversion to buffered image (faster!)*/
+				else {
 
 					image = imp.getBufferedImage();
 				}
@@ -2562,6 +2658,7 @@ public class WorldWindOptionsView extends ViewPart {
 			}
 		}
 	}
+
 	public static int getTakeImagefromIJ() {
 		return takeImagefromIJ;
 	}

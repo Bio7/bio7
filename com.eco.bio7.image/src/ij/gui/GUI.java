@@ -46,7 +46,7 @@ public class GUI {
 		if (bounds.x>300 || bounds.equals(unionOfBounds))
 			bounds = getZeroBasedMonitor(ge, bounds);
 		if (bounds.x<0 || bounds.x>300 || bounds.width<300) {
-			Dimension screen = IJ.getScreenSize();
+			Dimension screen = getScreenSize();
 			bounds = new Rectangle(0, 0, screen.width, screen.height);
 		}
 		if (IJ.debugMode) IJ.log("GUI.getMaxWindowBounds: "+bounds);
@@ -59,6 +59,17 @@ public class GUI {
 			getMaxWindowBounds();
 		if (IJ.debugMode) IJ.log("GUI.getZeroBasedMaxBounds: "+zeroBasedMaxBounds);
 		return zeroBasedMaxBounds;
+	}
+	
+	private static Dimension getScreenSize() {
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		GraphicsDevice[] gd = ge.getScreenDevices();
+		GraphicsConfiguration[] gc = gd[0].getConfigurations();
+		Rectangle bounds = gc[0].getBounds();
+		if ((bounds.x==0&&bounds.y==0) || (IJ.isLinux()&&gc.length>1))
+			return new Dimension(bounds.width, bounds.height);
+		else
+			return Toolkit.getDefaultToolkit().getScreenSize();
 	}
 	
 	public static Rectangle getUnionOfBounds() {
@@ -132,4 +143,14 @@ public class GUI {
 		}
     }
     
+    public static boolean showCompositeAdvisory(ImagePlus imp, String title) {
+    	if (imp==null || imp.getCompositeMode()!=IJ.COMPOSITE || imp.getNChannels()==1 || IJ.macroRunning())
+    		return true;
+    	String msg = "Channel "+imp.getC()+" of this color composite image will be processed.";
+		GenericDialog gd = new GenericDialog(title);
+		gd.addMessage(msg);
+		gd.showDialog();
+		return !gd.wasCanceled();
+	}
+
 }

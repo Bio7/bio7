@@ -1,14 +1,23 @@
+<<<<<<< HEAD
 #ImageJ 1.49p Preferences
 #Wed Apr 29 22:29:42 CEST 2015
+=======
+#ImageJ 1.49s Preferences
+#Wed Apr 29 16:22:43 CEST 2015
+>>>>>>> branch 'master' of https://bitbucket.org/maustenfeld/bio7-new.git
 new.fill=1
+.log.height=250
 .arrows.loc=846,219
 pp.options=1
-bcolor=\#000000
+.log.loc=760,227
+bcolor=\#FFFFFF
 .results.height=679
 noise.sd=25.0
+recent00=C\:\\Users\\elk\\Desktop\\FotoNeu.jpg
 raw.offset=0
-fcolor=\#080808
+fcolor=\#010101
 raw.width=512
+.log.width=400
 .manager.loc=1443,215
 prefs.options=541347840
 new.height=400
@@ -16,7 +25,7 @@ measurements=51
 showcolor=\#00FFFF
 fps=7.0
 raw.height=512
-.results.loc=1306,146
+.results.loc=1459,117
 jpeg=85
 .results.width=400
 .options.ext=.csv
@@ -26,10 +35,10 @@ ij.y=0
 ij.x=1072
 new.slices=1
 menu.size=15
-.cp.loc=894,200
 raw.n=1
-div-by-zero=Infinity
+.cp.loc=894,200
 new.type=0
+div-by-zero=Infinity
 raw.options=0
 new.width=400
 .threshold.dark=false
@@ -38,4 +47,7 @@ prefs.options2=2
 precision=3
 roicolor=\#FFFF00
 ap.options=65
+dir.image=C\:\\Users\\elk\\Desktop\\
+.hyperstack.new=8-bit Color 400 300 3 4 5 1
+.command-finder.close=false
 raw.type=0

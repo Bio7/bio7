@@ -95,7 +95,7 @@ public class ImageJ extends Frame implements ActionListener, MouseListener, KeyL
 	 * Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the
 	 * version string.
 	 */
-	public static final String VERSION = "1.49p";
+	public static final String VERSION = "1.49s";
 	public static final String BUILD = "";
 	public static Color backgroundColor = new Color(237, 237, 237);
 	/** SansSerif, 12-point, plain font. */
@@ -128,6 +128,7 @@ public class ImageJ extends Frame implements ActionListener, MouseListener, KeyL
 	private Vector classes = new Vector();
 	private boolean exitWhenQuitting;
 	private boolean quitting;
+	private boolean quitMacro;
 	private long keyPressedTime, actionPerformedTime;
 	private String lastKeyCommand;
 	private boolean embedded;
@@ -786,6 +787,7 @@ public class ImageJ extends Frame implements ActionListener, MouseListener, KeyL
 
 	/** Called by ImageJ when the user selects Quit. */
 	public void quit() {
+		quitMacro = IJ.macroRunning();
 		Thread thread = new Thread(this, "Quit");
 		thread.setPriority(Thread.NORM_PRIORITY);
 		thread.start();
@@ -795,6 +797,14 @@ public class ImageJ extends Frame implements ActionListener, MouseListener, KeyL
 	/** Returns true if ImageJ is exiting. */
 	public boolean quitting() {
 		return quitting;
+	}
+
+	/**
+	 * Returns true if ImageJ is quitting as a result of a run("Quit") macro
+	 * call.
+	 */
+	public boolean quittingViaMacro() {
+		return quitting && quitMacro;
 	}
 
 	/** Called once when ImageJ quits. */

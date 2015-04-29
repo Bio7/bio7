@@ -109,7 +109,7 @@ public class WindowManager {
 		if (currentWindow != null)
 			return currentWindow.getImagePlus();
 		else if (frontWindow != null && (frontWindow instanceof ImageWindow))
-			return ((ImageWindow) frontWindow).getImagePlus();
+			return frontWindow != null ? ((ImageWindow) frontWindow).getImagePlus() : null;
 		else if (imageList.size() > 0) {
 			ImageWindow win = (ImageWindow) imageList.elementAt(imageList.size() - 1);
 			return win.getImagePlus();
@@ -424,7 +424,8 @@ public class WindowManager {
 			/* Changed for Bio7! */
 			if (!((ImageWindow) imageList.elementAt(0)).bio7TabClose())
 				return false;
-			IJ.wait(100);
+			if (!quittingViaMacro())
+				IJ.wait(100);
 		}
 		JFrame[] nonImages = getNonImageWindows();
 		for (int i = 0; i < nonImages.length; i++) {
@@ -433,7 +434,8 @@ public class WindowManager {
 				((Editor) frame).close();
 				if (((Editor) frame).fileChanged())
 					return false;
-				IJ.wait(100);
+				if (!quittingViaMacro())
+					IJ.wait(100);
 			}
 		}
 		ImageJ ij = IJ.getInstance();
@@ -451,6 +453,11 @@ public class WindowManager {
 			}
 		}
 		return true;
+	}
+
+	private static boolean quittingViaMacro() {
+		ImageJ ij = IJ.getInstance();
+		return ij != null && ij.quittingViaMacro();
 	}
 
 	/** Activates the next image window on the window list. */
@@ -560,7 +567,8 @@ public class WindowManager {
 		int start = Menus.WINDOW_MENU_ITEMS + Menus.windowMenuItems2;
 		for (int j = start; j < n; j++) {
 			MenuItem mi = Menus.window.getItem(j);
-			((CheckboxMenuItem) mi).setState((j - start) == index);
+			if (mi instanceof CheckboxMenuItem)
+				((CheckboxMenuItem) mi).setState((j - start) == index);
 		}
 	}
 

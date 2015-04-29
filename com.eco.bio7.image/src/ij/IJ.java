@@ -352,6 +352,8 @@ public class IJ {
 	 * from the ImageJ menu bar.
 	 */
 	public static void run(ImagePlus imp, String command, String options) {
+		if (ij == null && Menus.getCommands() == null)
+			init();
 		if (imp != null) {
 			ImagePlus temp = WindowManager.getTempCurrentImage();
 			WindowManager.setTempCurrentImage(imp);
@@ -1136,8 +1138,7 @@ public class IJ {
 			else if (d.yesPressed()) {
 				if (imp.getStack().isVirtual() && ((flags & PlugInFilter.NO_CHANGES) == 0)) {
 					int size = (stackSize * imp.getWidth() * imp.getHeight() * imp.getBytesPerPixel() + 524288) / 1048576;
-					String msg = "Use the Process>Batch>Virtual Stack command\n" + "to process a virtual stack or convert it into a\n" + "normal stack using Image>Duplicate, which\n"
-							+ "will require " + size + "MB of additional memory.";
+					String msg = "Use the Process>Batch>Virtual Stack command\n" + "to process a virtual stack or convert it into a\n" + "normal stack using Image>Duplicate, which\n" + "will require " + size + "MB of additional memory.";
 					error(msg);
 					return PlugInFilter.DONE;
 				}
@@ -1747,6 +1748,11 @@ public class IJ {
 		}
 	}
 
+	/** Alias for getDirectory(). */
+	public static String getDir(String title) {
+		return getDirectory(title);
+	}
+
 	/**
 	 * Displays an open file dialog and returns the path to the choosen file, or
 	 * returns null if the dialog is canceled.
@@ -1865,16 +1871,25 @@ public class IJ {
 
 	/**
 	 * Saves the specified image, lookup table or selection to the specified
-	 * file path. The file path must end with ".tif", ".jpg", ".gif", ".zip",
+	 * file path. The file path should end with ".tif", ".jpg", ".gif", ".zip",
 	 * ".raw", ".avi", ".bmp", ".fits", ".pgm", ".png", ".lut", ".roi" or
-	 * ".txt".
+	 * ".txt". The specified image is saved in TIFF format if there is no
+	 * extension.
 	 */
+
 	public static void save(ImagePlus imp, String path) {
+		ImagePlus imp2 = imp;
+		if (imp2 == null)
+			imp2 = WindowManager.getCurrentImage();
 		int dotLoc = path.lastIndexOf('.');
+		if (dotLoc == -1 && imp2 != null) {
+			path = path + ".tif"; // save as TIFF if file name does not have an
+									// extension
+			dotLoc = path.lastIndexOf('.');
+		}
+
 		if (dotLoc != -1) {
-			ImagePlus imp2 = imp;
-			if (imp2 == null)
-				imp2 = WindowManager.getCurrentImage();
+
 			String title = imp2 != null ? imp2.getTitle() : null;
 			saveAs(imp, path.substring(dotLoc + 1), path);
 			if (title != null)
@@ -1919,7 +1934,7 @@ public class IJ {
 			path = updateExtension(path, ".txt");
 			format = "Text Image...";
 		} else if (format.indexOf("text") != -1 || format.indexOf("txt") != -1) {
-			if (path != null && !path.endsWith(".xls"))
+			if (path != null && !path.endsWith(".xls") && !path.endsWith(".csv"))
 				path = updateExtension(path, ".txt");
 			format = "Text...";
 		} else if (format.indexOf("zip") != -1) {

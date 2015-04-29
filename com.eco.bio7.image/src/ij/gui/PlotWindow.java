@@ -5,6 +5,12 @@ import java.awt.event.*;
 import java.io.*;
 import java.awt.datatransfer.*;
 import java.util.*;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
 import ij.*;
 import ij.process.*;
 import ij.util.*;
@@ -44,9 +50,10 @@ public class PlotWindow extends ImageWindow implements ActionListener,
 	private static final int LIST_VALUES = 4;
 	private static final int INTERPOLATE = 8;
 	private static final int NO_GRID_LINES = 16;
-
-	private Button list, save, copy, live;
-	private Label coordinates;
+    /*Changed for Bio7!*/
+	private JButton list;
+	private JButton save, copy, live;
+	private JLabel coordinates;
 	private static String defaultDirectory = null;
 	private static int options;
 	private int defaultDigits = -1;
@@ -178,28 +185,35 @@ public class PlotWindow extends ImageWindow implements ActionListener,
 
 	/** Displays the plot. */
 	public void draw() {
-		Panel buttons = new Panel();
+		/*Changed for Bio7!
+		 * Button in extra frame because no*/
+		JPanel buttons = new JPanel();
 		int hgap = IJ.isMacOSX()?1:5;
 		buttons.setLayout(new FlowLayout(FlowLayout.RIGHT,hgap,0));
-		list = new Button(" List ");
+		list = new JButton(" List ");
 		list.addActionListener(this);
 		buttons.add(list);
-		save = new Button("Save...");
+		save = new JButton("Save...");
 		save.addActionListener(this);
 		buttons.add(save);
-		copy = new Button("Copy...");
+		copy = new JButton("Copy...");
 		copy.addActionListener(this);
 		buttons.add(copy);
 		if (plot!=null && plot.getPlotMaker()!=null) {
-			live = new Button("Live");
+			live = new JButton("Live");
 			live.addActionListener(this);
 			buttons.add(live);
 		}		
-		coordinates = new Label("X=12345678, Y=12345678"); 
+		coordinates = new JLabel("X=12345678, Y=12345678"); 
 		coordinates.setFont(new Font("Monospaced", Font.PLAIN, 12));
 		coordinates.setBackground(new Color(220, 220, 220));
 		buttons.add(coordinates);
-		add(buttons);
+		//add(buttons);
+		JFrame fr=new JFrame();
+		fr.add(buttons);
+		fr.setSize(300, 100);
+		fr.setAlwaysOnTop(true);
+		fr.setVisible(true);
 		plot.draw();
 		pack();
 		coordinates.setText(blankLabel);
