@@ -8,6 +8,7 @@ import java.awt.datatransfer.*;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -195,7 +196,13 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			valueAndCount.add(count);
 			buttons.add(valueAndCount);
 		}
-		add(buttons);
+		/*Changed for Bio7!*/
+		JFrame fr=new JFrame();
+		fr.add(buttons);
+		fr.setSize(300, 100);
+		fr.setAlwaysOnTop(true);
+		fr.setVisible(true);
+		//add(buttons);
 		pack();
 	}
 
