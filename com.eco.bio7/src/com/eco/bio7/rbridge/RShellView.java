@@ -164,7 +164,6 @@ public class RShellView extends ViewPart {
 	private String[] tempHistory;
 	private Button plotButton;
 	private Button xyButton;
-	private ExpandItem newItemExpandItem_8;
 	protected REXPLogical isDataframe;
 	protected REXPLogical isMatrix;
 	private KeyStroke strokeCompletion;
@@ -184,6 +183,8 @@ public class RShellView extends ViewPart {
 
 	private CTabFolder tab;
 	private CTabItem plotTabItem;
+	private Button loadButton_1;
+	private Button fontButton;
 	private static RShellView instance;
 
 	public RShellView() {
@@ -209,10 +210,6 @@ public class RShellView extends ViewPart {
 		parent.setLayout(new FormLayout());
 		parent.addControlListener(new ControlAdapter() {
 			public void controlResized(final ControlEvent e) {
-				if (newItemExpandItem_8 != null) {
-					newItemExpandItem_8.setHeight(parent.getBounds().height - 100);
-
-				}
 
 			}
 		});
@@ -226,24 +223,81 @@ public class RShellView extends ViewPart {
 		tempHistory = RFunctions.getPropsHistInstance().getTemphistory();
 
 		prov = new SimpleContentProposalProvider(history);
+		/* Return key listener! */
+		/*
+		 * ControlDecoration dec = new ControlDecoration(text, SWT.TOP |
+		 * SWT.LEFT); FieldDecoration infoFieldIndicator =
+		 * FieldDecorationRegistry
+		 * .getDefault().getFieldDecoration(FieldDecorationRegistry
+		 * .DEC_CONTENT_PROPOSAL); dec.setImage(infoFieldIndicator.getImage());
+		 * dec.setDescriptionText("Press UP ARROW key to get the History!");
+		 */
+		textAdapter = new TextContentAdapter();
+		textAdapter2 = new TextContentAdapter();
+
+		stroke = KeyStroke.getInstance(SWT.ARROW_UP);
+		strokeCompletion = KeyStroke.getInstance(SWT.ARROW_RIGHT);
+		// adapter2 = new ContentProposalAdapter(text, textAdapter2,
+		// provCompletion, strokeCompletion, null);
+
+		/*
+		 * adapter2.addContentProposalListener(new IContentProposalListener2() {
+		 * 
+		 * public void proposalPopupClosed(ContentProposalAdapter adapter) {
+		 * 
+		 * }
+		 * 
+		 * public void proposalPopupOpened(ContentProposalAdapter adapter) {
+		 * 
+		 * } });
+		 */
+
+		// adapter.setProposalAcceptanceStyle
+		// (ContentProposalAdapter.PROPOSAL_REPLACE );
+
+		stroke2 = KeyStroke.getInstance(SWT.F3);
+
+		/* Create the plot tab! */
+
+		Button loadButton;
+
+		Button saveButton;
+
+		Transfer[] types = new Transfer[] { TextTransfer.getInstance() };
+		int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
+
+		SashForm sashForm;
+
+		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		FontData currentFont = PreferenceConverter.getFontData(store,
+				"RShellFonts");
+
+		/* Set the font from the preference store! */
+		Button fontButton;
+
+		Button loadButton_1;
+
+		Composite composite_1 = new Composite(parent, SWT.NONE);
+		composite_1.setLayout(new GridLayout(6, true));
+		FormData fd_composite_1 = new FormData();
+		fd_composite_1.top = new FormAttachment(0, 10);
+		fd_composite_1.left = new FormAttachment(0, 5);
+		fd_composite_1.right = new FormAttachment(100, -5);
+		composite_1.setLayoutData(fd_composite_1);
 		// provCompletion = new SimpleContentProposalProvider(new String[] {
 		// "a", "b", "c" });
 
-		text = new Text(parent, SWT.SINGLE | SWT.BORDER);
-		/* Return key listener! */
+		text = new Text(composite_1, SWT.SINGLE | SWT.BORDER);
+		GridData gd_text = new GridData(SWT.FILL, SWT.FILL, true, true, 6, 1);
+		gd_text.heightHint = 49;
+		gd_text.widthHint = 570;
+		text.setLayoutData(gd_text);
 		text.addListener(SWT.DefaultSelection, new Listener() {
 			public void handleEvent(Event e) {
 				evaluate();
 
 			}
 		});
-
-		final FormData fd_text = new FormData();
-		fd_text.right = new FormAttachment(100, -5);
-		fd_text.bottom = new FormAttachment(0, 30);
-		fd_text.top = new FormAttachment(0, 5);
-		fd_text.left = new FormAttachment(0, 5);
-		text.setLayoutData(fd_text);
 		text.addKeyListener(new KeyListener() {
 
 			@Override
@@ -299,92 +353,259 @@ public class RShellView extends ViewPart {
 
 			}
 		});
-		/*
-		 * ControlDecoration dec = new ControlDecoration(text, SWT.TOP |
-		 * SWT.LEFT); FieldDecoration infoFieldIndicator =
-		 * FieldDecorationRegistry
-		 * .getDefault().getFieldDecoration(FieldDecorationRegistry
-		 * .DEC_CONTENT_PROPOSAL); dec.setImage(infoFieldIndicator.getImage());
-		 * dec.setDescriptionText("Press UP ARROW key to get the History!");
-		 */
-		textAdapter = new TextContentAdapter();
-		textAdapter2 = new TextContentAdapter();
 
-		stroke = KeyStroke.getInstance(SWT.ARROW_UP);
-		strokeCompletion = KeyStroke.getInstance(SWT.ARROW_RIGHT);
+		adapter = new ContentProposalAdapter(text, textAdapter, prov, stroke,
+				null);
 
-		adapter = new ContentProposalAdapter(text, textAdapter, prov, stroke, null);
-		// adapter2 = new ContentProposalAdapter(text, textAdapter2,
-		// provCompletion, strokeCompletion, null);
+		DropTarget target = new DropTarget(text, operations);
+		target.setTransfer(types);
 
-		/*
-		 * adapter2.addContentProposalListener(new IContentProposalListener2() {
-		 * 
-		 * public void proposalPopupClosed(ContentProposalAdapter adapter) {
-		 * 
-		 * }
-		 * 
-		 * public void proposalPopupOpened(ContentProposalAdapter adapter) {
-		 * 
-		 * } });
-		 */
-
-		// adapter.setProposalAcceptanceStyle
-		// (ContentProposalAdapter.PROPOSAL_REPLACE );
-
-		stroke2 = KeyStroke.getInstance(SWT.F3);
-
-		Button button = new Button(parent, SWT.F2);
-		final FormData fd_button = new FormData();
-		fd_button.left = new FormAttachment(0, 5);
-		fd_button.bottom = new FormAttachment(0, 56);
-		fd_button.top = new FormAttachment(0, 31);
-		button.setLayoutData(fd_button);
-		button.setText("Evaluate Expression");
-		button.addSelectionListener(new SelectionAdapter() {
+		Button btnEvaluate = new Button(composite_1, SWT.F2);
+		GridData gd_btnEvaluate = new GridData(SWT.FILL, SWT.FILL, true, false, 1,
+				1);
+		gd_btnEvaluate.heightHint = 43;
+		btnEvaluate.setLayoutData(gd_btnEvaluate);
+		btnEvaluate.setText("Evaluate");
+		btnEvaluate.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				evaluate();
 
 			}
 
 		});
-
-		final ExpandBar expandBar = new ExpandBar(parent, SWT.NONE | SWT.V_SCROLL);
-		expandBar.addExpandListener(new ExpandAdapter() {
-			public void itemExpanded(final ExpandEvent e) {
-				ExpandItem ex = (ExpandItem) e.item;
-
-				if (ex.getText().equals("Objects")) {
-					isConsoleExpanded = true;
-				}
-			}
-
-			public void itemCollapsed(final ExpandEvent e) {
-				ExpandItem ex = (ExpandItem) e.item;
-
-				if (ex.getText().equals("Objects")) {
-					isConsoleExpanded = false;
-				}
-
+		loadButton = new Button(composite_1, SWT.NONE);
+		GridData gd_loadButton = new GridData(SWT.FILL, SWT.FILL, false, true,
+				1, 1);
+		gd_loadButton.heightHint = 53;
+		loadButton.setLayoutData(gd_loadButton);
+		loadButton.setToolTipText("Load history");
+		loadButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				loadScript();
 			}
 		});
+		loadButton.setText("Load");
+		saveButton = new Button(composite_1, SWT.NONE);
+		saveButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true,
+				1, 1));
+		saveButton.setToolTipText("Save history");
+		saveButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				saveScript();
+			}
+		});
+		saveButton.setText("Save");
+		
+				final Button rhelpButton = new Button(composite_1, SWT.NONE);
+				rhelpButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false,
+						false, 1, 1));
+				rhelpButton.addSelectionListener(new SelectionAdapter() {
+					public void widgetSelected(final SelectionEvent e) {
 
-		final FormData fd_expandBar = new FormData();
-		fd_expandBar.bottom = new FormAttachment(100, -5);
-		fd_expandBar.right = new FormAttachment(100, -5);
-		fd_expandBar.top = new FormAttachment(0, 62);
-		fd_expandBar.left = new FormAttachment(0, 0);
-		expandBar.setLayoutData(fd_expandBar);
-		expandBar.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
+						if (RServe.isAliveDialog()) {
+							if (RState.isBusy() == false) {
+								RState.setBusy(true);
+								Job job = new Job("Html help") {
+									@Override
+									protected IStatus run(IProgressMonitor monitor) {
+										monitor.beginTask("Help ...",
+												IProgressMonitor.UNKNOWN);
 
-		Composite composite_3 = new Composite(expandBar, SWT.NONE);
+										try {
+											RServe.getConnection()
+													.eval("try(help.start(remote=paste(\"file://\", R.home(), sep=\"\")))");
 
-		newItemExpandItem_8 = new ExpandItem(expandBar, SWT.NONE);
-		newItemExpandItem_8.setHeight(288);
-		newItemExpandItem_8.setText("Objects");
+										} catch (RserveException e1) {
 
-		newItemExpandItem_8.setExpanded(true);
-		tab = new CTabFolder(expandBar, SWT.NONE);
+											e1.printStackTrace();
+										}
+
+										monitor.done();
+										return Status.OK_STATUS;
+									}
+
+								};
+								job.addJobChangeListener(new JobChangeAdapter() {
+									public void done(IJobChangeEvent event) {
+										if (event.getResult().isOK()) {
+
+											RState.setBusy(false);
+										} else {
+
+											RState.setBusy(false);
+										}
+									}
+								});
+								// job.setSystem(true);
+								job.schedule();
+							} else {
+								Bio7Dialog.message("Rserve is busy!");
+							}
+						}
+
+					}
+				});
+				rhelpButton.setText("R Docu");
+		
+				Button helpButton = new Button(composite_1, SWT.NONE);
+				GridData gd_helpButton = new GridData(SWT.FILL, SWT.FILL, false, false,
+						1, 1);
+				gd_helpButton.widthHint = 51;
+				helpButton.setLayoutData(gd_helpButton);
+				helpButton.addSelectionListener(new SelectionAdapter() {
+
+					public void widgetSelected(SelectionEvent e) {
+						Work.openView("com.eco.bio7.browser.Browser");
+
+						htmlHelpText = null;
+						if (RServe.isAliveDialog()) {
+							if (RState.isBusy() == false) {
+								RState.setBusy(true);
+								Job job = new Job("Html help") {
+									@Override
+									protected IStatus run(IProgressMonitor monitor) {
+										monitor.beginTask("Help ...",
+												IProgressMonitor.UNKNOWN);
+
+										try {
+											RConnection c = RServe.getConnection();
+
+											Display display = PlatformUI.getWorkbench()
+													.getDisplay();
+
+											display.syncExec(new Runnable() {
+
+												public void run() {
+													htmlHelpText = text.getText();
+												}
+											});
+											c.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".html\", sep=\"\"))")
+													.toString();
+											c.eval("try(tools::Rd2HTML(utils:::.getHelpFile(?"
+													+ htmlHelpText
+													+ "),.bio7TempHtmlHelpFile,package=\"tools\", stages=c(\"install\", \"render\")))");
+											String out = null;
+											try {
+												out = (String) c.eval(
+														"try(.bio7TempHtmlHelpFile)")
+														.asString();
+											} catch (REXPMismatchException e) {
+
+												e.printStackTrace();
+											}
+
+											String pattern = "file:///" + out;
+											url = pattern.replace("\\", "/");
+
+											display.syncExec(new Runnable() {
+
+												public void run() {
+													BrowserView b = BrowserView
+															.getBrowserInstance();
+													b.setLocation(url);
+												}
+											});
+
+										} catch (RserveException e1) {
+
+											e1.printStackTrace();
+										}
+
+										monitor.done();
+										return Status.OK_STATUS;
+									}
+
+								};
+								job.addJobChangeListener(new JobChangeAdapter() {
+									public void done(IJobChangeEvent event) {
+										if (event.getResult().isOK()) {
+
+											RState.setBusy(false);
+										} else {
+
+											RState.setBusy(false);
+										}
+									}
+								});
+								// job.setSystem(true);
+								job.schedule();
+							} else {
+								Bio7Dialog.message("Rserve is busy!");
+							}
+						}
+
+					}
+				});
+				helpButton.setText("?");
+		
+				Button btnNewButton = new Button(composite_1, SWT.NONE);
+				GridData gd_btnNewButton = new GridData(SWT.FILL, SWT.FILL, false, true,
+						1, 1);
+				gd_btnNewButton.heightHint = 48;
+				gd_btnNewButton.widthHint = 86;
+				btnNewButton.setLayoutData(gd_btnNewButton);
+				btnNewButton.addSelectionListener(new SelectionAdapter() {
+					@Override
+					public void widgetSelected(SelectionEvent e) {
+						String interpreterSelection = ConsolePageParticipant
+								.getInterpreterSelection();
+						Process RProcess = ConsolePageParticipant
+								.getConsolePageParticipantInstance().getRProcess();
+						Pid rPid = ConsolePageParticipant
+								.getConsolePageParticipantInstance().getrPid();
+						if (Bio7Dialog.getOS().equals("Windows")) {
+							Bundle bundle = Platform.getBundle("com.eco.bio7.os");
+
+							URL locationUrl = FileLocator.find(bundle, new Path("/"),
+									null);
+							URL fileUrl = null;
+							try {
+								fileUrl = FileLocator.toFileURL(locationUrl);
+							} catch (IOException e2) {
+
+								e2.printStackTrace();
+							}
+							File fi = new File(fileUrl.getPath());
+							String pathBundle = fi.toString() + "/win/64";
+
+							if (interpreterSelection.equals("R")) {
+								try {
+									Process p = Runtime.getRuntime().exec(
+											pathBundle + "/SendSignalCtrlC.exe "
+													+ rPid.getPidWindows(RProcess));
+
+								} catch (IOException ex) {
+									ex.printStackTrace();
+								}
+
+							}
+						} else {
+							if (interpreterSelection.equals("R")) {
+								try {
+									Process p = Runtime.getRuntime().exec(
+											"kill -INT " + rPid.getPidUnix(RProcess));
+
+								} catch (IOException ex) {
+									ex.printStackTrace();
+								}
+								System.out.println(rPid.getPidWindows(RProcess));
+							}
+
+						}
+
+					}
+				});
+				btnNewButton.setToolTipText("Interrupt R execution");
+				btnNewButton.setImage(org.eclipse.wb.swt.ResourceManager
+						.getPluginImage("com.eco.bio7", "icons/delete.gif"));
+		tab = new CTabFolder(parent, SWT.NONE);
+		fd_composite_1.bottom = new FormAttachment(tab, -16);
+		FormData fd_tab = new FormData();
+		fd_tab.top = new FormAttachment(0, 115);
+		fd_tab.bottom = new FormAttachment(100);
+		fd_tab.left = new FormAttachment(0);
+		fd_tab.right = new FormAttachment(100);
+		tab.setLayoutData(fd_tab);
 		tab.setRegion(null);
 		tab.setTabHeight(22);
 		tab.addSelectionListener(new SelectionListener() {
@@ -397,14 +618,9 @@ public class RShellView extends ViewPart {
 			}
 
 			public void widgetSelected(SelectionEvent e) {
-				if (newItemExpandItem_8 != null) {
-					CTabItem it = (CTabItem) e.item;
 
-					newItemExpandItem_8.setText(it.getText());
-				}
 			}
 		});
-		newItemExpandItem_8.setControl(tab);
 
 		final CTabItem objectsTabItem = new CTabItem(tab, SWT.NONE);
 		objectsTabItem.setText("Objects");
@@ -413,56 +629,56 @@ public class RShellView extends ViewPart {
 
 		composite = new Composite(objectsTabItem.getParent(), SWT.NONE);
 		objectsTabItem.setControl(composite);
+		composite.setLayout(new GridLayout(7, true));
 
 		objectsButton = new Button(composite, SWT.NONE);
+		GridData gd_objectsButton = new GridData(SWT.FILL, SWT.CENTER, true,
+				false, 1, 1);
+		gd_objectsButton.heightHint = 39;
+		objectsButton.setLayoutData(gd_objectsButton);
 		objectsButton.setToolTipText("Refresh the R workspace");
 		objectsButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				if (RServe.isAliveDialog()) {
-				displayRObjects();
+					displayRObjects();
 
-				createAttachedPackageTree();
+					createAttachedPackageTree();
 				}
 
 			}
 		});
 		objectsButton.setText("Refresh");
 
-		iButton = new Button(composite, SWT.NONE);
-		iButton.setImage(ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/help.gif"));
-		iButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				ToolTip infoTip = new ToolTip(new Shell(), SWT.BALLOON | SWT.ICON_INFORMATION);
-				infoTip.setText("Info!");
-
-				infoTip.setMessage("Click = Object properties\n" + "Right-Click = Menu\n" + "Select variable(s) = To show, summarize, plot, transfer and convert data!\n"
-						+ "\nPress the \"UP ARROW\" key to get the History in the expression textfield!\n"
-						+ "\nIf you plot a PDF please close the Window of an opened reader (old plot)\nto get the new plot!\n"
-						+ "\nRight-Click on \"Plot Data\" textfield detour = Menu to inject text commands (a help to customize plots!)");
-				infoTip.setVisible(true);
-
-			}
-		});
-
-		xButton = new Button(composite, SWT.NONE);
-		xButton.setToolTipText("Clear the text field");
-		xButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				textConsole.setText("");
-			}
-		});
-		xButton.setText("Clear");
-
 		removeButton = new Button(composite, SWT.NONE);
-		removeButton.setToolTipText("Remove selected variables from the workspace");
+		removeButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false,
+				false, 1, 1));
+		removeButton
+				.setToolTipText("Remove selected variables from the workspace");
 		removeButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				removeSelectedVars();
 			}
 		});
 		removeButton.setText("Remove");
+		loadButton_1 = new Button(composite, SWT.NONE);
+		loadButton_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false,
+				false, 1, 1));
+		loadButton_1
+				.setToolTipText("Saves the current workspace to \nthe temporary location");
+		loadButton_1.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				if (RServe.isAliveDialog()) {
+					fastSaveRWorkspace();
+				}
+			}
+
+		});
+		loadButton_1.setImage(ResourceManager.getPluginImage(
+				Bio7Plugin.getDefault(), "icons/ordner_zu.gif"));
 
 		gcButton = new Button(composite, SWT.FLAT);
+		gcButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false,
+				1, 1));
 		gcButton.setToolTipText("Causes a garbage collection to take place");
 		gcButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -479,8 +695,6 @@ public class RShellView extends ViewPart {
 			}
 		});
 		gcButton.setText("Gc");
-
-		/* Create the plot tab! */
 		plotTabItem = new CTabItem(tab, SWT.NONE);
 		plotTabItem.setText("Plot Data");
 		new RPlot(tab, SWT.NONE, plotTabItem);
@@ -535,9 +749,11 @@ public class RShellView extends ViewPart {
 							if (RState.isBusy() == false) {
 
 								RConnection c = RServe.getConnection();
-								String selectedPackage = tree.getSelection()[0].getText();
+								String selectedPackage = tree.getSelection()[0]
+										.getText();
 								try {
-									c.eval("try(detach(package:" + selectedPackage + "))");
+									c.eval("try(detach(package:"
+											+ selectedPackage + "))");
 									createAttachedPackageTree();
 								} catch (RserveException e1) {
 
@@ -668,7 +884,8 @@ public class RShellView extends ViewPart {
 		final CTabItem createextractDataTabItem = new CTabItem(tab, SWT.NONE);
 		createextractDataTabItem.setText("Data");
 
-		list_1 = new List(createextractDataTabItem.getParent(), SWT.BORDER | SWT.V_SCROLL);
+		list_1 = new List(createextractDataTabItem.getParent(), SWT.BORDER
+				| SWT.V_SCROLL);
 		list_1.addMouseListener(new MouseAdapter() {
 			public void mouseDoubleClick(final MouseEvent e) {
 				if (e.button == 3) {
@@ -721,7 +938,8 @@ public class RShellView extends ViewPart {
 		final CTabItem statisticsTabItem = new CTabItem(tab, SWT.NONE);
 		statisticsTabItem.setText("Statistics");
 
-		list_4 = new List(statisticsTabItem.getParent(), SWT.BORDER | SWT.V_SCROLL);
+		list_4 = new List(statisticsTabItem.getParent(), SWT.BORDER
+				| SWT.V_SCROLL);
 		list_4.addMouseListener(new MouseAdapter() {
 			public void mouseDoubleClick(final MouseEvent e) {
 				if (e.button == 3) {
@@ -747,7 +965,8 @@ public class RShellView extends ViewPart {
 		final CTabItem dataConversionTabItem = new CTabItem(tab, SWT.NONE);
 		dataConversionTabItem.setText("Data Conversion");
 
-		list_2 = new List(dataConversionTabItem.getParent(), SWT.BORDER | SWT.V_SCROLL);
+		list_2 = new List(dataConversionTabItem.getParent(), SWT.BORDER
+				| SWT.V_SCROLL);
 		list_2.addMouseListener(new MouseAdapter() {
 			public void mouseDoubleClick(final MouseEvent e) {
 				if (e.button == 3) {
@@ -828,7 +1047,8 @@ public class RShellView extends ViewPart {
 		final CTabItem spatialStatisticsTabItem = new CTabItem(tab, SWT.NONE);
 		spatialStatisticsTabItem.setText("Spatial Statistics");
 
-		list_5 = new List(spatialStatisticsTabItem.getParent(), SWT.BORDER | SWT.V_SCROLL);
+		list_5 = new List(spatialStatisticsTabItem.getParent(), SWT.BORDER
+				| SWT.V_SCROLL);
 		list_5.addMouseListener(new MouseAdapter() {
 			public void mouseDoubleClick(final MouseEvent e) {
 				if (e.button == 3) {
@@ -852,61 +1072,77 @@ public class RShellView extends ViewPart {
 		list_5.setItems(RFunctions.getPropsHistInstance().spatialStats);
 		spatialStatisticsTabItem.setControl(list_5);
 
-		Button loadButton;
-		loadButton = new Button(parent, SWT.NONE);
-		fd_button.right = new FormAttachment(loadButton);
-		loadButton.setToolTipText("Load history");
-		loadButton.addSelectionListener(new SelectionAdapter() {
+		xButton = new Button(composite, SWT.NONE);
+		xButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false,
+				1, 1));
+		xButton.setToolTipText("Clear the text field");
+		xButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				loadScript();
+				textConsole.setText("");
 			}
 		});
-		final FormData fd_loadButton = new FormData();
-		fd_loadButton.right = new FormAttachment(0, 208);
-		fd_loadButton.top = new FormAttachment(text, 1);
-		fd_loadButton.bottom = new FormAttachment(button, 0, SWT.BOTTOM);
-		fd_loadButton.left = new FormAttachment(0, 156);
-		loadButton.setLayoutData(fd_loadButton);
-		loadButton.setText("Load");
-
-		Button saveButton;
-		saveButton = new Button(parent, SWT.NONE);
-		saveButton.setToolTipText("Save history");
-		saveButton.addSelectionListener(new SelectionAdapter() {
+		xButton.setText("Clear");
+		fontButton = new Button(composite, SWT.NONE);
+		fontButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false,
+				false, 1, 1));
+		fontButton
+				.setToolTipText("Changes the fonts for the list and \nthe results view.\nChanges are stored");
+		fontButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				saveScript();
-			}
-		});
-		final FormData fd_saveButton = new FormData();
-		fd_saveButton.right = new FormAttachment(0, 254);
-		fd_saveButton.top = new FormAttachment(text, 1);
-		fd_saveButton.bottom = new FormAttachment(button, 0, SWT.BOTTOM);
-		fd_saveButton.left = new FormAttachment(0, 208);
-		saveButton.setLayoutData(fd_saveButton);
-		saveButton.setText("Save");
+				IPreferenceStore store = Bio7Plugin.getDefault()
+						.getPreferenceStore();
 
-		Transfer[] types = new Transfer[] { TextTransfer.getInstance() };
-		int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
+				FontData defaultFont = PreferenceConverter.getFontData(store,
+						"RShellFonts");
+				FontDialog fd = new FontDialog(new Shell(), SWT.NONE);
+				fd.setText("Select Font");
+				fd.setRGB(new RGB(0, 0, 0));
 
-		DropTarget target = new DropTarget(text, operations);
-		target.setTransfer(types);
-		target.addDropListener(new DropTargetAdapter() {
-			public void drop(DropTargetEvent event) {
-				if (event.data == null) {
-					event.detail = DND.DROP_NONE;
+				fd.setFontData(defaultFont);
+				FontData newFont = fd.open();
+				if (newFont == null)
 					return;
-				}
+				textConsole.setFont(new Font(Display.getDefault(), newFont));
+				listShell.setFont(new Font(Display.getDefault(), newFont));
+				textConsole.setForeground(new Color(Display.getDefault(), fd
+						.getRGB()));
+				listShell.setForeground(new Color(Display.getDefault(), fd
+						.getRGB()));
+				PreferenceConverter.setValue(store, "RShellFonts", newFont);
 
-				text.setText((String) event.data);
 			}
 		});
+		fontButton.setText("Font");
 
-		SashForm sashForm;
+		iButton = new Button(composite, SWT.NONE);
+		iButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false,
+				1, 1));
+		iButton.setImage(ResourceManager.getPluginImage(
+				Bio7Plugin.getDefault(), "icons/help.gif"));
+		iButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				ToolTip infoTip = new ToolTip(new Shell(), SWT.BALLOON
+						| SWT.ICON_INFORMATION);
+				infoTip.setText("Info!");
+
+				infoTip.setMessage("Click = Object properties\n"
+						+ "Right-Click = Menu\n"
+						+ "Select variable(s) = To show, summarize, plot, transfer and convert data!\n"
+						+ "\nPress the \"UP ARROW\" key to get the History in the expression textfield!\n"
+						+ "\nIf you plot a PDF please close the Window of an opened reader (old plot)\nto get the new plot!\n"
+						+ "\nRight-Click on \"Plot Data\" textfield detour = Menu to inject text commands (a help to customize plots!)");
+				infoTip.setVisible(true);
+
+			}
+		});
 		sashForm = new SashForm(composite, SWT.NONE);
+		sashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 7,
+				1));
 
 		SashForm sashForm_1 = new SashForm(sashForm, SWT.VERTICAL);
 
-		listShell = new List(sashForm_1, SWT.V_SCROLL | SWT.MULTI | SWT.H_SCROLL | SWT.BORDER);
+		listShell = new List(sashForm_1, SWT.V_SCROLL | SWT.MULTI
+				| SWT.H_SCROLL | SWT.BORDER);
 		listShell.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
@@ -993,12 +1229,15 @@ public class RShellView extends ViewPart {
 					/* This avoids a deadlock under MacOSX! */
 					int in = listShell.getSelectionIndex();
 					if (in >= 0) {
-						String selected = listShell.getItem(listShell.getSelectionIndex());
+						String selected = listShell.getItem(listShell
+								.getSelectionIndex());
 						RConnection c = RServe.getConnection();
 						if (RServe.isAliveDialog()) {
 
 							try {
-								REXPLogical bolDataExists = (REXPLogical) c.eval("try(exists(\"" + selected + "\"))");
+								REXPLogical bolDataExists = (REXPLogical) c
+										.eval("try(exists(\"" + selected
+												+ "\"))");
 								bolExists = bolDataExists.isTRUE();
 							} catch (RserveException e2) {
 
@@ -1016,16 +1255,23 @@ public class RShellView extends ViewPart {
 								buf.append("(");
 								try {
 
-									cl = c.eval("class(" + selected + ")").asString();
-									type = c.eval("typeof(" + selected + ")").asString();
+									cl = c.eval("class(" + selected + ")")
+											.asString();
+									type = c.eval("typeof(" + selected + ")")
+											.asString();
 
-									REXPLogical bolRawExists = (REXPLogical) c.eval("is.null(dim(" + selected + "))");
+									REXPLogical bolRawExists = (REXPLogical) c
+											.eval("is.null(dim(" + selected
+													+ "))");
 									bolRaw = bolRawExists.isTRUE();
 									if (bolRaw[0]) {
-										sizeList = c.eval("length(" + selected + ")").asString();
+										sizeList = c.eval(
+												"length(" + selected + ")")
+												.asString();
 									} else {
 
-										size = c.eval("dim(" + selected + ")").asStrings();
+										size = c.eval("dim(" + selected + ")")
+												.asStrings();
 										for (int i = 0; i < size.length; i++) {
 											if (i < size.length - 1) {
 												buf.append(size[i] + ":");
@@ -1044,14 +1290,26 @@ public class RShellView extends ViewPart {
 									e1.printStackTrace();
 								}
 								if (bolRaw[0]) {
-									textConsole.setText("Object description:\n\n" + "type    = " + type + "\n" + "class   = " + cl + "\n" + "size     = " + sizeList);
+									textConsole
+											.setText("Object description:\n\n"
+													+ "type    = " + type
+													+ "\n" + "class   = " + cl
+													+ "\n" + "size     = "
+													+ sizeList);
 								} else {
-									textConsole.setText("Object description:\n\n" + "type    = " + type + "\n" + "class   = " + cl + "\n" + "dim     = " + buf.toString());
+									textConsole
+											.setText("Object description:\n\n"
+													+ "type    = " + type
+													+ "\n" + "class   = " + cl
+													+ "\n" + "dim     = "
+													+ buf.toString());
 
 								}
 								buf = null;
 							} else {
-								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
+								Bio7Dialog.message("Data not existent in\n"
+										+ "the current workspace.\n"
+										+ "Please refresh the list!");
 							}
 						}
 					}
@@ -1068,13 +1326,15 @@ public class RShellView extends ViewPart {
 		source.addDragListener(new DragSourceListener() {
 			public void dragStart(DragSourceEvent event) {
 				if (listShell.getItemCount() > 0) {
-					event.doit = (listShell.getItem(listShell.getSelectionIndex()).length() != 0);
+					event.doit = (listShell.getItem(
+							listShell.getSelectionIndex()).length() != 0);
 				}
 			}
 
 			public void dragSetData(DragSourceEvent event) {
 				if (listShell.getItemCount() > 0) {
-					event.data = listShell.getItem(listShell.getSelectionIndex());
+					event.data = listShell.getItem(listShell
+							.getSelectionIndex());
 				} else {
 					event.data = " ";
 				}
@@ -1104,7 +1364,8 @@ public class RShellView extends ViewPart {
 							RConnection c = RServe.getConnection();
 
 							try {
-								REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected + "\")");
+								REXPLogical bolDataExists = (REXPLogical) c
+										.eval("exists(\"" + selected + "\")");
 								bolExists = bolDataExists.isTRUE();
 							} catch (RserveException e2) {
 
@@ -1115,7 +1376,9 @@ public class RShellView extends ViewPart {
 
 								RServe.printJob("" + selected + "");
 							} else {
-								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
+								Bio7Dialog.message("Data not existent in\n"
+										+ "the current workspace.\n"
+										+ "Please refresh the list!");
 							}
 						}
 					}
@@ -1140,7 +1403,8 @@ public class RShellView extends ViewPart {
 						if (selIndex != -1) {
 							String selected = listShell.getItem(selIndex);
 							try {
-								REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected + "\")");
+								REXPLogical bolDataExists = (REXPLogical) c
+										.eval("exists(\"" + selected + "\")");
 								bolExists = bolDataExists.isTRUE();
 							} catch (RserveException e2) {
 
@@ -1151,7 +1415,9 @@ public class RShellView extends ViewPart {
 
 								RServe.printJob("summary(" + selected + ")");
 							} else {
-								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
+								Bio7Dialog.message("Data not existent in\n"
+										+ "the current workspace.\n"
+										+ "Please refresh the list!");
 							}
 						}
 					}
@@ -1181,7 +1447,8 @@ public class RShellView extends ViewPart {
 						// List all variables in the R workspace!
 
 						try {
-							RServe.getConnection().eval("varWorkspaceType<-NULL;for(i in 1:length(ls())){if(is.matrix(get(ls()[i]))==TRUE){varWorkspaceType<-append(varWorkspaceType,ls()[i])}}");
+							RServe.getConnection()
+									.eval("varWorkspaceType<-NULL;for(i in 1:length(ls())){if(is.matrix(get(ls()[i]))==TRUE){varWorkspaceType<-append(varWorkspaceType,ls()[i])}}");
 							x = RServe.getConnection().eval("varWorkspaceType");
 							if (x.isNull() == false) {
 								try {
@@ -1191,7 +1458,8 @@ public class RShellView extends ViewPart {
 									e1.printStackTrace();
 								}
 							}
-							RServe.getConnection().eval("remove(varWorkspaceType)");
+							RServe.getConnection().eval(
+									"remove(varWorkspaceType)");
 						} catch (RserveException e1) {
 
 							e1.printStackTrace();
@@ -1226,7 +1494,8 @@ public class RShellView extends ViewPart {
 						// List all variables in the R workspace!
 
 						try {
-							RServe.getConnection().eval("varWorkspaceType<-NULL;for(i in 1:length(ls())){if(is.vector(get(ls()[i]))==TRUE){varWorkspaceType<-append(varWorkspaceType,ls()[i])}}");
+							RServe.getConnection()
+									.eval("varWorkspaceType<-NULL;for(i in 1:length(ls())){if(is.vector(get(ls()[i]))==TRUE){varWorkspaceType<-append(varWorkspaceType,ls()[i])}}");
 							x = RServe.getConnection().eval("varWorkspaceType");
 							if (x.isNull() == false) {
 								try {
@@ -1236,7 +1505,8 @@ public class RShellView extends ViewPart {
 									e1.printStackTrace();
 								}
 							}
-							RServe.getConnection().eval("remove(varWorkspaceType)");
+							RServe.getConnection().eval(
+									"remove(varWorkspaceType)");
 						} catch (RserveException e1) {
 
 							e1.printStackTrace();
@@ -1272,7 +1542,8 @@ public class RShellView extends ViewPart {
 						// List all variables in the R workspace!
 
 						try {
-							RServe.getConnection().eval("varWorkspaceType<-NULL;for(i in 1:length(ls())){if(is.function(get(ls()[i]))==TRUE){varWorkspaceType<-append(varWorkspaceType,ls()[i])}}");
+							RServe.getConnection()
+									.eval("varWorkspaceType<-NULL;for(i in 1:length(ls())){if(is.function(get(ls()[i]))==TRUE){varWorkspaceType<-append(varWorkspaceType,ls()[i])}}");
 							x = RServe.getConnection().eval("varWorkspaceType");
 							if (x.isNull() == false) {
 								try {
@@ -1282,7 +1553,8 @@ public class RShellView extends ViewPart {
 									e1.printStackTrace();
 								}
 							}
-							RServe.getConnection().eval("remove(varWorkspaceType)");
+							RServe.getConnection().eval(
+									"remove(varWorkspaceType)");
 						} catch (RserveException e1) {
 
 							e1.printStackTrace();
@@ -1317,7 +1589,8 @@ public class RShellView extends ViewPart {
 						// List all variables in the R workspace!
 
 						try {
-							RServe.getConnection().eval("varWorkspaceType<-NULL;for(i in 1:length(ls())){if(is.factor(get(ls()[i]))==TRUE){varWorkspaceType<-append(varWorkspaceType,ls()[i])}}");
+							RServe.getConnection()
+									.eval("varWorkspaceType<-NULL;for(i in 1:length(ls())){if(is.factor(get(ls()[i]))==TRUE){varWorkspaceType<-append(varWorkspaceType,ls()[i])}}");
 							x = RServe.getConnection().eval("varWorkspaceType");
 							if (x.isNull() == false) {
 								try {
@@ -1327,7 +1600,8 @@ public class RShellView extends ViewPart {
 									e1.printStackTrace();
 								}
 							}
-							RServe.getConnection().eval("remove(varWorkspaceType)");
+							RServe.getConnection().eval(
+									"remove(varWorkspaceType)");
 						} catch (RserveException e1) {
 
 							e1.printStackTrace();
@@ -1362,7 +1636,8 @@ public class RShellView extends ViewPart {
 						// List all variables in the R workspace!
 
 						try {
-							RServe.getConnection().eval("varWorkspaceType<-NULL;for(i in 1:length(ls())){if(is.data.frame(get(ls()[i]))==TRUE){varWorkspaceType<-append(varWorkspaceType,ls()[i])}}");
+							RServe.getConnection()
+									.eval("varWorkspaceType<-NULL;for(i in 1:length(ls())){if(is.data.frame(get(ls()[i]))==TRUE){varWorkspaceType<-append(varWorkspaceType,ls()[i])}}");
 							x = RServe.getConnection().eval("varWorkspaceType");
 							if (x.isNull() == false) {
 								try {
@@ -1372,7 +1647,8 @@ public class RShellView extends ViewPart {
 									e1.printStackTrace();
 								}
 							}
-							RServe.getConnection().eval("remove(varWorkspaceType)");
+							RServe.getConnection().eval(
+									"remove(varWorkspaceType)");
 						} catch (RserveException e1) {
 
 							e1.printStackTrace();
@@ -1414,7 +1690,8 @@ public class RShellView extends ViewPart {
 						if (selected.length == 1) {
 
 							try {
-								REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected[0] + "\")");
+								REXPLogical bolDataExists = (REXPLogical) c
+										.eval("exists(\"" + selected[0] + "\")");
 								bolExists = bolDataExists.isTRUE();
 							} catch (RserveException e2) {
 
@@ -1423,19 +1700,27 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(new Shell(), "To dataframe", "Create a name for the dataframe!", selected[0], null);
+								InputDialog inp = new InputDialog(new Shell(),
+										"To dataframe",
+										"Create a name for the dataframe!",
+										selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
-									RServe.printJob("" + input + "<-as.data.frame(" + selected[0] + ")");
+									RServe.printJob("" + input
+											+ "<-as.data.frame(" + selected[0]
+											+ ")");
 								}
 
 							} else {
-								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
+								Bio7Dialog.message("Data not existent in\n"
+										+ "the current workspace.\n"
+										+ "Please refresh the list!");
 							}
 						} else if (selected.length > 1) {
 							try {
-								REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected[0] + "\")");
+								REXPLogical bolDataExists = (REXPLogical) c
+										.eval("exists(\"" + selected[0] + "\")");
 								bolExists = bolDataExists.isTRUE();
 							} catch (RserveException e2) {
 
@@ -1444,19 +1729,25 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(new Shell(), "To dataframe", "Create a name for the dataframe!", selected[0], null);
+								InputDialog inp = new InputDialog(new Shell(),
+										"To dataframe",
+										"Create a name for the dataframe!",
+										selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
 									try {
-										c.eval("" + input + "<-data.frame(" + selected[0] + ")");
+										c.eval("" + input + "<-data.frame("
+												+ selected[0] + ")");
 									} catch (RserveException e1) {
 
 										e1.printStackTrace();
 									}
 									for (int i = 1; i < selected.length; i++) {
 										try {
-											c.eval("" + input + "<-cbind(" + input + "," + selected[i] + ")");
+											c.eval("" + input + "<-cbind("
+													+ input + "," + selected[i]
+													+ ")");
 										} catch (RserveException e1) {
 
 											e1.printStackTrace();
@@ -1466,7 +1757,9 @@ public class RShellView extends ViewPart {
 								}
 
 							} else {
-								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
+								Bio7Dialog.message("Data not existent in\n"
+										+ "the current workspace.\n"
+										+ "Please refresh the list!");
 							}
 
 						}
@@ -1492,7 +1785,8 @@ public class RShellView extends ViewPart {
 						if (selected.length == 1) {
 
 							try {
-								REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected[0] + "\")");
+								REXPLogical bolDataExists = (REXPLogical) c
+										.eval("exists(\"" + selected[0] + "\")");
 								bolExists = bolDataExists.isTRUE();
 							} catch (RserveException e2) {
 
@@ -1501,19 +1795,26 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(new Shell(), "To Matrix", "Create a name for the matrix!", selected[0], null);
+								InputDialog inp = new InputDialog(new Shell(),
+										"To Matrix",
+										"Create a name for the matrix!",
+										selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
-									RServe.printJob("" + input + "<-as.matrix(" + selected[0] + ")");
+									RServe.printJob("" + input + "<-as.matrix("
+											+ selected[0] + ")");
 								}
 
 							} else {
-								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
+								Bio7Dialog.message("Data not existent in\n"
+										+ "the current workspace.\n"
+										+ "Please refresh the list!");
 							}
 						} else if (selected.length > 1) {
 							try {
-								REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected[0] + "\")");
+								REXPLogical bolDataExists = (REXPLogical) c
+										.eval("exists(\"" + selected[0] + "\")");
 								bolExists = bolDataExists.isTRUE();
 							} catch (RserveException e2) {
 
@@ -1522,20 +1823,26 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(new Shell(), "To Matrix", "Create a name for the matrix!", selected[0], null);
+								InputDialog inp = new InputDialog(new Shell(),
+										"To Matrix",
+										"Create a name for the matrix!",
+										selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
 									try {
 										c.eval("" + input + "<-NULL");
-										c.eval("" + input + "<-cbind(" + input + "," + selected[0] + ")");
+										c.eval("" + input + "<-cbind(" + input
+												+ "," + selected[0] + ")");
 									} catch (RserveException e1) {
 
 										e1.printStackTrace();
 									}
 									for (int i = 1; i < selected.length; i++) {
 										try {
-											c.eval("" + input + "<-cbind(" + input + "," + selected[i] + ")");
+											c.eval("" + input + "<-cbind("
+													+ input + "," + selected[i]
+													+ ")");
 										} catch (RserveException e1) {
 
 											e1.printStackTrace();
@@ -1545,7 +1852,9 @@ public class RShellView extends ViewPart {
 								}
 
 							} else {
-								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
+								Bio7Dialog.message("Data not existent in\n"
+										+ "the current workspace.\n"
+										+ "Please refresh the list!");
 							}
 
 						}
@@ -1572,7 +1881,8 @@ public class RShellView extends ViewPart {
 						if (selected.length == 1) {
 
 							try {
-								REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected[0] + "\")");
+								REXPLogical bolDataExists = (REXPLogical) c
+										.eval("exists(\"" + selected[0] + "\")");
 								bolExists = bolDataExists.isTRUE();
 							} catch (RserveException e2) {
 
@@ -1581,18 +1891,25 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(new Shell(), "To Vector", "Create a name for the vector!", selected[0], null);
+								InputDialog inp = new InputDialog(new Shell(),
+										"To Vector",
+										"Create a name for the vector!",
+										selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
-									RServe.printJob("" + input + "<-as.vector(" + selected[0] + ")");
+									RServe.printJob("" + input + "<-as.vector("
+											+ selected[0] + ")");
 								}
 
 							} else {
-								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
+								Bio7Dialog.message("Data not existent in\n"
+										+ "the current workspace.\n"
+										+ "Please refresh the list!");
 							}
 						} else {
-							Bio7Dialog.message("Please select only one Variable!");
+							Bio7Dialog
+									.message("Please select only one Variable!");
 						}
 					} else {
 						Bio7Dialog.message("Rserve is busy!");
@@ -1616,7 +1933,8 @@ public class RShellView extends ViewPart {
 						if (selected.length == 1) {
 
 							try {
-								REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected[0] + "\")");
+								REXPLogical bolDataExists = (REXPLogical) c
+										.eval("exists(\"" + selected[0] + "\")");
 								bolExists = bolDataExists.isTRUE();
 							} catch (RserveException e2) {
 
@@ -1625,15 +1943,22 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(new Shell(), "To Vector", "Create a name for the vector!", selected[0], null);
+								InputDialog inp = new InputDialog(new Shell(),
+										"To Vector",
+										"Create a name for the vector!",
+										selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
-									RServe.printJob("" + input + "<-as.numeric(" + selected[0] + ")");
+									RServe.printJob("" + input
+											+ "<-as.numeric(" + selected[0]
+											+ ")");
 								}
 
 							} else {
-								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
+								Bio7Dialog.message("Data not existent in\n"
+										+ "the current workspace.\n"
+										+ "Please refresh the list!");
 							}
 						} else {
 
@@ -1661,7 +1986,8 @@ public class RShellView extends ViewPart {
 						if (selected.length == 1) {
 
 							try {
-								REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected[0] + "\")");
+								REXPLogical bolDataExists = (REXPLogical) c
+										.eval("exists(\"" + selected[0] + "\")");
 								bolExists = bolDataExists.isTRUE();
 							} catch (RserveException e2) {
 
@@ -1670,15 +1996,21 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(new Shell(), "To Factor", "Create a name for the factor!", selected[0], null);
+								InputDialog inp = new InputDialog(new Shell(),
+										"To Factor",
+										"Create a name for the factor!",
+										selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
-									RServe.printJob("" + input + "<-as.factor(" + selected[0] + ")");
+									RServe.printJob("" + input + "<-as.factor("
+											+ selected[0] + ")");
 								}
 
 							} else {
-								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
+								Bio7Dialog.message("Data not existent in\n"
+										+ "the current workspace.\n"
+										+ "Please refresh the list!");
 							}
 						} else {
 
@@ -1706,7 +2038,8 @@ public class RShellView extends ViewPart {
 						if (selected.length == 1) {
 
 							try {
-								REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected[0] + "\")");
+								REXPLogical bolDataExists = (REXPLogical) c
+										.eval("exists(\"" + selected[0] + "\")");
 								bolExists = bolDataExists.isTRUE();
 							} catch (RserveException e2) {
 
@@ -1715,15 +2048,22 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(new Shell(), "To Character", "Create a name for the character!", selected[0], null);
+								InputDialog inp = new InputDialog(new Shell(),
+										"To Character",
+										"Create a name for the character!",
+										selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
-									RServe.printJob("" + input + "<-as.character(" + selected[0] + ")");
+									RServe.printJob("" + input
+											+ "<-as.character(" + selected[0]
+											+ ")");
 								}
 
 							} else {
-								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
+								Bio7Dialog.message("Data not existent in\n"
+										+ "the current workspace.\n"
+										+ "Please refresh the list!");
 							}
 						} else {
 
@@ -1755,7 +2095,10 @@ public class RShellView extends ViewPart {
 
 						if (name.length >= 1) {
 							try {
-								isDataframe = (REXPLogical) RServe.getConnection().eval("try(is.data.frame(" + name[0] + "))");
+								isDataframe = (REXPLogical) RServe
+										.getConnection().eval(
+												"try(is.data.frame(" + name[0]
+														+ "))");
 
 							} catch (RserveException e1) {
 
@@ -1766,7 +2109,8 @@ public class RShellView extends ViewPart {
 							if (bolE[0]) {
 								if (RState.isBusy() == false) {
 									RState.setBusy(true);
-									TransferDataframeToGridJob job = new TransferDataframeToGridJob(true, name[0]);
+									TransferDataframeToGridJob job = new TransferDataframeToGridJob(
+											true, name[0]);
 									System.out.println("Transferred");
 
 									job.addJobChangeListener(new JobChangeAdapter() {
@@ -1787,7 +2131,8 @@ public class RShellView extends ViewPart {
 								}
 
 							} else {
-								Bio7Dialog.message("Selected variable can't be transferred.\nVariable must be a dataframe with head!");
+								Bio7Dialog
+										.message("Selected variable can't be transferred.\nVariable must be a dataframe with head!");
 							}
 
 						}
@@ -1809,7 +2154,10 @@ public class RShellView extends ViewPart {
 						// for (int i = 0; i < name.length; i++) {
 						if (name.length >= 1) {
 							try {
-								isDataframe = (REXPLogical) RServe.getConnection().eval("try(is.data.frame(" + name[0] + "))");
+								isDataframe = (REXPLogical) RServe
+										.getConnection().eval(
+												"try(is.data.frame(" + name[0]
+														+ "))");
 
 							} catch (RserveException e1) {
 
@@ -1820,7 +2168,8 @@ public class RShellView extends ViewPart {
 
 								if (RState.isBusy() == false) {
 									RState.setBusy(true);
-									TransferDataframeToGridJob job = new TransferDataframeToGridJob(false, name[0]);
+									TransferDataframeToGridJob job = new TransferDataframeToGridJob(
+											false, name[0]);
 
 									job.addJobChangeListener(new JobChangeAdapter() {
 										public void done(IJobChangeEvent event) {
@@ -1840,7 +2189,8 @@ public class RShellView extends ViewPart {
 								}
 
 							} else {
-								Bio7Dialog.message("Selected variable can't be transferred.\nVariable must be a dataframe!");
+								Bio7Dialog
+										.message("Selected variable can't be transferred.\nVariable must be a dataframe!");
 
 							}
 							// }
@@ -1865,7 +2215,9 @@ public class RShellView extends ViewPart {
 						if (name.length >= 1) {
 							// for (int i = 0; i < name.length; i++) {
 							try {
-								isMatrix = (REXPLogical) RServe.getConnection().eval("try(is.matrix(" + name[0] + "))");
+								isMatrix = (REXPLogical) RServe
+										.getConnection()
+										.eval("try(is.matrix(" + name[0] + "))");
 
 							} catch (RserveException e1) {
 
@@ -1876,7 +2228,8 @@ public class RShellView extends ViewPart {
 
 								if (RState.isBusy() == false) {
 									RState.setBusy(true);
-									TransferMatrixToGridJob job = new TransferMatrixToGridJob(name[0]);
+									TransferMatrixToGridJob job = new TransferMatrixToGridJob(
+											name[0]);
 
 									job.addJobChangeListener(new JobChangeAdapter() {
 										public void done(IJobChangeEvent event) {
@@ -1896,7 +2249,8 @@ public class RShellView extends ViewPart {
 								}
 
 							} else {
-								Bio7Dialog.message("Selected variable can't be transferred.\nVariable must be a numeric matrix!");
+								Bio7Dialog
+										.message("Selected variable can't be transferred.\nVariable must be a numeric matrix!");
 							}
 						}
 					}
@@ -1920,7 +2274,9 @@ public class RShellView extends ViewPart {
 						if (name.length >= 1) {
 							// for (int i = 0; i < name.length; i++) {
 							try {
-								isVector = (REXPLogical) RServe.getConnection().eval("try(is.vector(" + name[0] + "))");
+								isVector = (REXPLogical) RServe
+										.getConnection()
+										.eval("try(is.vector(" + name[0] + "))");
 
 							} catch (RserveException e1) {
 
@@ -1931,7 +2287,8 @@ public class RShellView extends ViewPart {
 
 								if (RState.isBusy() == false) {
 									RState.setBusy(true);
-									TransferVectorToGridJob job = new TransferVectorToGridJob(name[0], true);
+									TransferVectorToGridJob job = new TransferVectorToGridJob(
+											name[0], true);
 
 									job.addJobChangeListener(new JobChangeAdapter() {
 										public void done(IJobChangeEvent event) {
@@ -1951,7 +2308,8 @@ public class RShellView extends ViewPart {
 								}
 
 							} else {
-								Bio7Dialog.message("Selected variable can't be transferred.\nVariable must be of type character or numeric!");
+								Bio7Dialog
+										.message("Selected variable can't be transferred.\nVariable must be of type character or numeric!");
 							}
 						}
 					}
@@ -1974,7 +2332,9 @@ public class RShellView extends ViewPart {
 						if (name.length >= 1) {
 							// for (int i = 0; i < name.length; i++) {
 							try {
-								isVector = (REXPLogical) RServe.getConnection().eval("try(is.vector(" + name[0] + "))");
+								isVector = (REXPLogical) RServe
+										.getConnection()
+										.eval("try(is.vector(" + name[0] + "))");
 
 							} catch (RserveException e1) {
 
@@ -1985,7 +2345,8 @@ public class RShellView extends ViewPart {
 
 								if (RState.isBusy() == false) {
 									RState.setBusy(true);
-									TransferVectorToGridJob job = new TransferVectorToGridJob(name[0], false);
+									TransferVectorToGridJob job = new TransferVectorToGridJob(
+											name[0], false);
 
 									job.addJobChangeListener(new JobChangeAdapter() {
 										public void done(IJobChangeEvent event) {
@@ -2005,7 +2366,8 @@ public class RShellView extends ViewPart {
 								}
 
 							} else {
-								Bio7Dialog.message("Selected variable can't be transferred.\nVariable must be of type character or numeric!");
+								Bio7Dialog
+										.message("Selected variable can't be transferred.\nVariable must be of type character or numeric!");
 							}
 						}
 					}
@@ -2040,10 +2402,14 @@ public class RShellView extends ViewPart {
 					}
 				}
 
-				store = Bio7Plugin.getDefault().getPreferenceStore();
+				// IPreferenceStore storeSc =
+				// Bio7Plugin.getDefault().getPreferenceStore();
 
-				File files = new File(store.getString(PreferenceConstants.D_RSHELL_SCRIPTS));
-				final File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".r", ".R", ".bsh", ".groovy", ".py" });
+				File files = new File(store
+						.getString(PreferenceConstants.D_RSHELL_SCRIPTS));
+				final File[] fil = new Util().ListFilesDirectory(files,
+						new String[] { ".java", ".r", ".R", ".bsh", ".groovy",
+								".py" });
 
 				for (int i = 0; i < fil.length; i++) {
 
@@ -2051,7 +2417,8 @@ public class RShellView extends ViewPart {
 
 					MenuItem item = new MenuItem(menuScripts, SWT.NONE);
 
-					item.setText(fil[i].getName().substring(0, fil[i].getName().lastIndexOf(".")));
+					item.setText(fil[i].getName().substring(0,
+							fil[i].getName().lastIndexOf(".")));
 
 					item.addSelectionListener(new SelectionListener() {
 
@@ -2061,15 +2428,21 @@ public class RShellView extends ViewPart {
 								System.out.println("No script available!");
 							}
 
-							else if (fil[scriptCount].getName().endsWith(".R") || fil[scriptCount].getName().endsWith(".r")) {
+							else if (fil[scriptCount].getName().endsWith(".R")
+									|| fil[scriptCount].getName()
+											.endsWith(".r")) {
 								if (RServe.isAliveDialog()) {
 									if (RState.isBusy() == false) {
 										RState.setBusy(true);
-										final RInterpreterJob Do = new RInterpreterJob(null, true, fil[scriptCount].toString());
+										final RInterpreterJob Do = new RInterpreterJob(
+												null, true, fil[scriptCount]
+														.toString());
 										Do.addJobChangeListener(new JobChangeAdapter() {
-											public void done(IJobChangeEvent event) {
+											public void done(
+													IJobChangeEvent event) {
 												if (event.getResult().isOK()) {
-													int countDev = RServe.getDisplayNumber();
+													int countDev = RServe
+															.getDisplayNumber();
 													RState.setBusy(false);
 													if (countDev > 0) {
 														RServe.closeAndDisplay();
@@ -2087,34 +2460,53 @@ public class RShellView extends ViewPart {
 								}
 							}
 
-							else if (fil[scriptCount].getName().endsWith(".bsh")) {
+							else if (fil[scriptCount].getName()
+									.endsWith(".bsh")) {
 
-								BeanShellInterpreter.interpretJob(null, fil[scriptCount].toString());
+								BeanShellInterpreter.interpretJob(null,
+										fil[scriptCount].toString());
 
-							} else if (fil[scriptCount].getName().endsWith(".groovy")) {
+							} else if (fil[scriptCount].getName().endsWith(
+									".groovy")) {
 
-								GroovyInterpreter.interpretJob(null, fil[scriptCount].toString());
+								GroovyInterpreter.interpretJob(null,
+										fil[scriptCount].toString());
 
-							} else if (fil[scriptCount].getName().endsWith(".py")) {
+							} else if (fil[scriptCount].getName().endsWith(
+									".py")) {
 
-								PythonInterpreter.interpretJob(null, fil[scriptCount].toString());
+								PythonInterpreter.interpretJob(null,
+										fil[scriptCount].toString());
 
-							} else if (fil[scriptCount].getName().endsWith(".java")) {
+							} else if (fil[scriptCount].getName().endsWith(
+									".java")) {
 
 								Job job = new Job("Compile Java") {
 									@Override
-									protected IStatus run(IProgressMonitor monitor) {
-										monitor.beginTask("Compile Java...", IProgressMonitor.UNKNOWN);
-										String name = fil[scriptCount].getName().replaceFirst("[.][^.]+$", "");
+									protected IStatus run(
+											IProgressMonitor monitor) {
+										monitor.beginTask("Compile Java...",
+												IProgressMonitor.UNKNOWN);
+										String name = fil[scriptCount]
+												.getName().replaceFirst(
+														"[.][^.]+$", "");
 										// IWorkspace workspace =
 										// ResourcesPlugin.getWorkspace();
-										IPath location = Path.fromOSString(fil[scriptCount].getAbsolutePath());
+										IPath location = Path
+												.fromOSString(fil[scriptCount]
+														.getAbsolutePath());
 
 										// IFile ifile =
 										// workspace.getRoot().getFileForLocation(location);
 										CompileClassAndMultipleClasses cp = new CompileClassAndMultipleClasses();
 										try {
-											cp.compileAndLoad(new File(location.toOSString()), new File(location.toOSString()).getParent(), name, null, true);
+											cp.compileAndLoad(
+													new File(location
+															.toOSString()),
+													new File(location
+															.toOSString())
+															.getParent(), name,
+													null, true);
 										} catch (Exception e) {
 											// TODO Auto-generated catch block
 											// Bio7Dialog.message(e.getMessage());
@@ -2150,269 +2542,25 @@ public class RShellView extends ViewPart {
 
 			}
 		});
-
-		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		FontData currentFont = PreferenceConverter.getFontData(store, "RShellFonts");
 		listShell.setFont(new Font(Display.getCurrent(), currentFont));
 
 		sashForm_1.setWeights(new int[] { 1 });
 
-		textConsole = new Text(sashForm, SWT.WRAP | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
-
-		/* Set the font from the preference store! */
+		textConsole = new Text(sashForm, SWT.WRAP | SWT.MULTI | SWT.V_SCROLL
+				| SWT.H_SCROLL | SWT.BORDER);
 
 		textConsole.setFont(new Font(Display.getCurrent(), currentFont));
-		Button fontButton;
-		fontButton = new Button(composite, SWT.NONE);
-		fontButton.setToolTipText("Changes the fonts for the list and \nthe results view.\nChanges are stored");
-		fontButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-
-				FontData defaultFont = PreferenceConverter.getFontData(store, "RShellFonts");
-				FontDialog fd = new FontDialog(new Shell(), SWT.NONE);
-				fd.setText("Select Font");
-				fd.setRGB(new RGB(0, 0, 0));
-
-				fd.setFontData(defaultFont);
-				FontData newFont = fd.open();
-				if (newFont == null)
-					return;
-				textConsole.setFont(new Font(Display.getDefault(), newFont));
-				listShell.setFont(new Font(Display.getDefault(), newFont));
-				textConsole.setForeground(new Color(Display.getDefault(), fd.getRGB()));
-				listShell.setForeground(new Color(Display.getDefault(), fd.getRGB()));
-				PreferenceConverter.setValue(store, "RShellFonts", newFont);
-
-			}
-		});
-		fontButton.setText("Font");
-
-		Button loadButton_1;
-		loadButton_1 = new Button(composite, SWT.NONE);
-		loadButton_1.setToolTipText("Saves the current workspace to \nthe temporary location");
-		loadButton_1.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				if (RServe.isAliveDialog()) {
-					fastSaveRWorkspace();
-				}
-			}
-
-		});
-		loadButton_1.setImage(ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/ordner_zu.gif"));
-
-		final Button rhelpButton = new Button(parent, SWT.NONE);
-		rhelpButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-
-				if (RServe.isAliveDialog()) {
-					if (RState.isBusy() == false) {
-						RState.setBusy(true);
-						Job job = new Job("Html help") {
-							@Override
-							protected IStatus run(IProgressMonitor monitor) {
-								monitor.beginTask("Help ...", IProgressMonitor.UNKNOWN);
-
-								try {
-									RServe.getConnection().eval("try(help.start(remote=paste(\"file://\", R.home(), sep=\"\")))");
-
-								} catch (RserveException e1) {
-
-									e1.printStackTrace();
-								}
-
-								monitor.done();
-								return Status.OK_STATUS;
-							}
-
-						};
-						job.addJobChangeListener(new JobChangeAdapter() {
-							public void done(IJobChangeEvent event) {
-								if (event.getResult().isOK()) {
-
-									RState.setBusy(false);
-								} else {
-
-									RState.setBusy(false);
-								}
-							}
-						});
-						// job.setSystem(true);
-						job.schedule();
-					} else {
-						Bio7Dialog.message("Rserve is busy!");
-					}
-				}
-
-			}
-		});
-		final FormData fd_rhelpButton = new FormData();
-		fd_rhelpButton.right = new FormAttachment(saveButton, 59, SWT.RIGHT);
-		fd_rhelpButton.left = new FormAttachment(saveButton, 1);
-		fd_rhelpButton.bottom = new FormAttachment(expandBar, -6);
-		fd_rhelpButton.top = new FormAttachment(button, 0, SWT.TOP);
-		rhelpButton.setLayoutData(fd_rhelpButton);
-		rhelpButton.setText("R Docu");
-
-		Button helpButton = new Button(parent, SWT.NONE);
-		helpButton.addSelectionListener(new SelectionAdapter() {
-
-			public void widgetSelected(SelectionEvent e) {
-				Work.openView("com.eco.bio7.browser.Browser");
-
-				htmlHelpText = null;
-				if (RServe.isAliveDialog()) {
-					if (RState.isBusy() == false) {
-						RState.setBusy(true);
-						Job job = new Job("Html help") {
-							@Override
-							protected IStatus run(IProgressMonitor monitor) {
-								monitor.beginTask("Help ...", IProgressMonitor.UNKNOWN);
-
-								try {
-									RConnection c = RServe.getConnection();
-
-									Display display = PlatformUI.getWorkbench().getDisplay();
-
-									display.syncExec(new Runnable() {
-
-										public void run() {
-											htmlHelpText = text.getText();
-										}
-									});
-									c.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".html\", sep=\"\"))").toString();
-									c.eval("try(tools::Rd2HTML(utils:::.getHelpFile(?" + htmlHelpText + "),.bio7TempHtmlHelpFile,package=\"tools\", stages=c(\"install\", \"render\")))");
-									String out = null;
-									try {
-										out = (String) c.eval("try(.bio7TempHtmlHelpFile)").asString();
-									} catch (REXPMismatchException e) {
-
-										e.printStackTrace();
-									}
-
-									String pattern = "file:///" + out;
-									url = pattern.replace("\\", "/");
-
-									display.syncExec(new Runnable() {
-
-										public void run() {
-											BrowserView b = BrowserView.getBrowserInstance();
-											b.setLocation(url);
-										}
-									});
-
-								} catch (RserveException e1) {
-
-									e1.printStackTrace();
-								}
-
-								monitor.done();
-								return Status.OK_STATUS;
-							}
-
-						};
-						job.addJobChangeListener(new JobChangeAdapter() {
-							public void done(IJobChangeEvent event) {
-								if (event.getResult().isOK()) {
-
-									RState.setBusy(false);
-								} else {
-
-									RState.setBusy(false);
-								}
-							}
-						});
-						// job.setSystem(true);
-						job.schedule();
-					} else {
-						Bio7Dialog.message("Rserve is busy!");
-					}
-				}
-
-			}
-		});
-		FormData formDataButtonPackRefresh = new FormData();
-		formDataButtonPackRefresh.right = new FormAttachment(rhelpButton, 47, SWT.RIGHT);
-		formDataButtonPackRefresh.left = new FormAttachment(rhelpButton, 1);
-		formDataButtonPackRefresh.bottom = new FormAttachment(button, 0, SWT.BOTTOM);
-		formDataButtonPackRefresh.top = new FormAttachment(button, 0, SWT.TOP);
-		helpButton.setLayoutData(formDataButtonPackRefresh);
-		helpButton.setText("?");
-
-		Button btnNewButton = new Button(parent, SWT.NONE);
-		btnNewButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				String interpreterSelection = ConsolePageParticipant.getInterpreterSelection();
-				Process RProcess = ConsolePageParticipant.getConsolePageParticipantInstance().getRProcess();
-				Pid rPid = ConsolePageParticipant.getConsolePageParticipantInstance().getrPid();
-				if (Bio7Dialog.getOS().equals("Windows")) {
-					Bundle bundle = Platform.getBundle("com.eco.bio7.os");
-
-					URL locationUrl = FileLocator.find(bundle, new Path("/"), null);
-					URL fileUrl = null;
-					try {
-						fileUrl = FileLocator.toFileURL(locationUrl);
-					} catch (IOException e2) {
-
-						e2.printStackTrace();
-					}
-					File fi = new File(fileUrl.getPath());
-					String pathBundle = fi.toString() + "/win/64";
-
-					if (interpreterSelection.equals("R")) {
-						try {
-							Process p = Runtime.getRuntime().exec(pathBundle + "/SendSignalCtrlC.exe " + rPid.getPidWindows(RProcess));
-
-						} catch (IOException ex) {
-							ex.printStackTrace();
-						}
-
-					}
-				} else {
-					if (interpreterSelection.equals("R")) {
-						try {
-							Process p = Runtime.getRuntime().exec("kill -INT " + rPid.getPidUnix(RProcess));
-
-						} catch (IOException ex) {
-							ex.printStackTrace();
-						}
-						System.out.println(rPid.getPidWindows(RProcess));
-					}
-
-				}
-
-			}
-		});
-		btnNewButton.setToolTipText("Interrupt R execution");
-		btnNewButton.setImage(org.eclipse.wb.swt.ResourceManager.getPluginImage("com.eco.bio7", "icons/delete.gif"));
-		FormData fd_btnNewButton = new FormData();
-		fd_btnNewButton.bottom = new FormAttachment(button, 0, SWT.BOTTOM);
-		fd_btnNewButton.top = new FormAttachment(button, 0, SWT.TOP);
-		fd_btnNewButton.right = new FormAttachment(helpButton, 47, SWT.RIGHT);
-		fd_btnNewButton.left = new FormAttachment(helpButton, 1);
-		btnNewButton.setLayoutData(fd_btnNewButton);
 		sashForm.setWeights(new int[] { 233, 319 });
-		GroupLayout gl_composite = new GroupLayout(composite);
-		gl_composite.setHorizontalGroup(gl_composite.createParallelGroup(GroupLayout.LEADING).add(
-				gl_composite
-						.createSequentialGroup()
-						.add(gl_composite
-								.createParallelGroup(GroupLayout.LEADING)
-								.add(gl_composite.createSequentialGroup().add(objectsButton, GroupLayout.PREFERRED_SIZE, 70, GroupLayout.PREFERRED_SIZE)
-										.add(removeButton, GroupLayout.PREFERRED_SIZE, 70, GroupLayout.PREFERRED_SIZE).add(loadButton_1, GroupLayout.PREFERRED_SIZE, 45, GroupLayout.PREFERRED_SIZE)
-										.add(gcButton, GroupLayout.PREFERRED_SIZE, 45, GroupLayout.PREFERRED_SIZE).add(xButton, GroupLayout.PREFERRED_SIZE, 45, GroupLayout.PREFERRED_SIZE)
-										.add(fontButton, GroupLayout.PREFERRED_SIZE, 45, GroupLayout.PREFERRED_SIZE).add(iButton, GroupLayout.PREFERRED_SIZE, 45, GroupLayout.PREFERRED_SIZE))
-								.add(sashForm, GroupLayout.DEFAULT_SIZE, 570, Short.MAX_VALUE)).addContainerGap()));
-		gl_composite.setVerticalGroup(gl_composite.createParallelGroup(GroupLayout.LEADING).add(
-				gl_composite
-						.createSequentialGroup()
-						.add(gl_composite.createParallelGroup(GroupLayout.LEADING).add(objectsButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE)
-								.add(removeButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE).add(loadButton_1, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE)
-								.add(gcButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE).add(xButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE)
-								.add(fontButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE).add(iButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE)).add(5)
-						.add(sashForm, GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)));
-		composite.setLayout(gl_composite);
+		target.addDropListener(new DropTargetAdapter() {
+			public void drop(DropTargetEvent event) {
+				if (event.data == null) {
+					event.detail = DND.DROP_NONE;
+					return;
+				}
+
+				text.setText((String) event.data);
+			}
+		});
 	}
 
 	/*
@@ -2544,7 +2692,8 @@ public class RShellView extends ViewPart {
 	}
 
 	private void setInDocument(List aList) {
-		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench()
+				.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		if (editor != null && editor instanceof REditor) {
 
 			String[] items = aList.getSelection();
@@ -2612,7 +2761,8 @@ public class RShellView extends ViewPart {
 	}
 
 	private void initializeToolBar() {
-		IToolBarManager toolBarManager = getViewSite().getActionBars().getToolBarManager();
+		IToolBarManager toolBarManager = getViewSite().getActionBars()
+				.getToolBarManager();
 	}
 
 	public static boolean isConsoleExpanded() {
@@ -2658,7 +2808,8 @@ public class RShellView extends ViewPart {
 
 			if (selected != null) {
 
-				String save = "try(save.image(file =\"" + selected + ".RData" + "\", version = NULL, ascii = FALSE))";
+				String save = "try(save.image(file =\"" + selected + ".RData"
+						+ "\", version = NULL, ascii = FALSE))";
 				if (RState.isBusy() == false) {
 					RState.setBusy(true);
 
@@ -2729,7 +2880,8 @@ public class RShellView extends ViewPart {
 
 		if (RServe.isAliveDialog()) {
 			if (RState.isBusy() == false) {
-				MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+				MessageBox message = new MessageBox(new Shell(),
+						SWT.ICON_QUESTION | SWT.YES | SWT.NO);
 				message.setMessage("Do you really want to remove the selected object(s)?");
 				message.setText("Remove objects");
 				int response = message.open();
@@ -2739,9 +2891,11 @@ public class RShellView extends ViewPart {
 					try {
 						for (int i = 0; i < data.length; i++) {
 							if (data[i].equals(".bio7Device") == false) {
-								RServe.getConnection().eval("try(remove(" + data[i] + "))");
+								RServe.getConnection().eval(
+										"try(remove(" + data[i] + "))");
 							} else {
-								System.out.println("Variable .bio7Device wasn't deleted\nNecessary function definition (defined in the Rserve preferences) for the default plot device in Bio7!");
+								System.out
+										.println("Variable .bio7Device wasn't deleted\nNecessary function definition (defined in the Rserve preferences) for the default plot device in Bio7!");
 							}
 						}
 
