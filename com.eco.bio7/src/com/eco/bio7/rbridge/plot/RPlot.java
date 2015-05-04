@@ -73,7 +73,9 @@ public class RPlot extends Composite {
 		setLayout(new GridLayout(4, true));
 
 		plotButton = new Button(composite_1, SWT.NONE);
-		plotButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		GridData gd_plotButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+		gd_plotButton.heightHint = 30;
+		plotButton.setLayoutData(gd_plotButton);
 		plotButton.setText("Boxplot");
 		// plotButton.setToolTipText("Draws a boxplot from a vector or a dataframe.");
 		plotButton.addSelectionListener(new SelectionAdapter() {
@@ -130,7 +132,9 @@ public class RPlot extends Composite {
 		 */
 		
 				xyButton = new Button(composite_1, SWT.NONE);
-				xyButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+				GridData gd_xyButton = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+				gd_xyButton.heightHint = 30;
+				xyButton.setLayoutData(gd_xyButton);
 				// xyButton.setToolTipText("Executes the general plot command.\nOne or two(x,y) arguments can be plotted.");
 				xyButton.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(final SelectionEvent e) {
@@ -184,7 +188,9 @@ public class RPlot extends Composite {
 				xyButton.setText("Plot");
 																										
 																												perspButton = new Button(composite_1, SWT.NONE);
-																												perspButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+																												GridData gd_perspButton = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+																												gd_perspButton.heightHint = 30;
+																												perspButton.setLayoutData(gd_perspButton);
 																												perspButton.addSelectionListener(new SelectionAdapter() {
 																													public void widgetSelected(final SelectionEvent e) {
 																														if (RServe.isAliveDialog()) {
@@ -221,7 +227,9 @@ public class RPlot extends Composite {
 																												perspButton.setText("Persp.");
 																										
 																												voronoiButton = new Button(composite_1, SWT.NONE);
-																												voronoiButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+																												GridData gd_voronoiButton = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+																												gd_voronoiButton.heightHint = 30;
+																												voronoiButton.setLayoutData(gd_voronoiButton);
 																												fd_pdfCheckBox.right = new FormAttachment(voronoiButton, 70, SWT.RIGHT);
 																												fd_pdfCheckBox.left = new FormAttachment(voronoiButton, 5, SWT.RIGHT);
 																												voronoiButton.setToolTipText("Draws a voronoi plot.\nTwo arguments(x,y) are required");
@@ -280,7 +288,9 @@ public class RPlot extends Composite {
 																												voronoiButton.setText("Voronoi");
 																				
 																						histButton = new Button(composite_1, SWT.NONE);
-																						histButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+																						GridData gd_histButton = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+																						gd_histButton.heightHint = 30;
+																						histButton.setLayoutData(gd_histButton);
 																						// histButton.setToolTipText("Draws a histogram from a vector");
 																						histButton.addSelectionListener(new SelectionAdapter() {
 																							public void widgetSelected(final SelectionEvent e) {
@@ -316,7 +326,9 @@ public class RPlot extends Composite {
 																						histButton.setText("Hist");
 																				
 																						pieButton = new Button(composite_1, SWT.NONE);
-																						pieButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+																						GridData gd_pieButton = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+																						gd_pieButton.heightHint = 30;
+																						pieButton.setLayoutData(gd_pieButton);
 																						// pieButton.setToolTipText("Draws a piechart from a vector");
 																						pieButton.addSelectionListener(new SelectionAdapter() {
 																							public void widgetSelected(final SelectionEvent e) {
@@ -353,7 +365,9 @@ public class RPlot extends Composite {
 																						pieButton.setText("Pie");
 																				
 																						contourButton = new Button(composite_1, SWT.NONE);
-																						contourButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+																						GridData gd_contourButton = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+																						gd_contourButton.heightHint = 30;
+																						contourButton.setLayoutData(gd_contourButton);
 																						contourButton.setToolTipText("Draws a contour plot.\nA matrix is required by default");
 																						contourButton.addSelectionListener(new SelectionAdapter() {
 																							public void widgetSelected(final SelectionEvent e) {
@@ -390,7 +404,9 @@ public class RPlot extends Composite {
 																						contourButton.setText("Contour");
 																		
 																				imageButton = new Button(composite_1, SWT.NONE);
-																				imageButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+																				GridData gd_imageButton = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+																				gd_imageButton.heightHint = 30;
+																				imageButton.setLayoutData(gd_imageButton);
 																				imageButton.setToolTipText("Draws the image plot from a matrix");
 																				imageButton.addSelectionListener(new SelectionAdapter() {
 																					public void widgetSelected(final SelectionEvent e) {
@@ -429,7 +445,7 @@ public class RPlot extends Composite {
 												
 														titleText = new Text(composite_1, SWT.BORDER);
 														GridData gd_titleText = new GridData(SWT.FILL, SWT.CENTER, false, false, 3, 1);
-														gd_titleText.heightHint = 33;
+														gd_titleText.heightHint = 30;
 														titleText.setLayoutData(gd_titleText);
 														titleText.setText("Plot");
 												
@@ -437,7 +453,7 @@ public class RPlot extends Composite {
 														titleLabel.setText("Title");
 										xText = new Text(composite_1, SWT.BORDER);
 										GridData gd_xText = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
-										gd_xText.heightHint = 34;
+										gd_xText.heightHint = 30;
 										xText.setLayoutData(gd_xText);
 										xText.setText("x");
 										new Label(this, SWT.NONE);
@@ -448,7 +464,7 @@ public class RPlot extends Composite {
 						
 								yText = new Text(composite_1, SWT.BORDER);
 								GridData gd_yText = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
-								gd_yText.heightHint = 36;
+								gd_yText.heightHint = 30;
 								yText.setLayoutData(gd_yText);
 								yText.setText("y");
 						new Label(this, SWT.NONE);
@@ -458,6 +474,9 @@ public class RPlot extends Composite {
 								label_1.setText("Y-label");
 		
 				plotButton_1 = new Button(composite_1, SWT.NONE);
+				GridData gd_plotButton_1 = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+				gd_plotButton_1.heightHint = 30;
+				plotButton_1.setLayoutData(gd_plotButton_1);
 				plotButton_1.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(final SelectionEvent e) {
 						if (RServe.isAliveDialog()) {
@@ -481,6 +500,8 @@ public class RPlot extends Composite {
 					}
 				});
 				plotButton_1.setText("Draw Plot");
+		new Label(this, SWT.NONE);
+		new Label(this, SWT.NONE);
 		
 				sendButton = new Button(composite_1, SWT.CHECK);
 				sendButton.setToolTipText("Transfers the plotting commands\nto the text panel for customisation");
@@ -496,8 +517,6 @@ public class RPlot extends Composite {
 							}
 						});
 						sendButton.setText("Detour");
-		new Label(this, SWT.NONE);
-		new Label(this, SWT.NONE);
 
 		text_1 = new Text(composite_1, SWT.V_SCROLL | SWT.MULTI | SWT.H_SCROLL | SWT.BORDER);
 		GridData gd_text_1 = new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1);
