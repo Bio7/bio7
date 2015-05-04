@@ -176,9 +176,7 @@ public class WorldWindOptionsView extends ViewPart {
 	private ExpandItem newItemExpandItem_1;
 	private ExpandBar expandBar;
 	private LayerList layers;
-	// private GUIBuilder builder;
-	private static ScrolledComposite scrolledComposite;
-	public static Composite composite_4;
+	public static Composite compositeLayers;
 	String[] measureTitle = { "Length", "Area", "Width", "Height", "Heading", "Center" };
 	public static MeasureTool measureTool;
 	private Button freehandButton;
@@ -334,293 +332,293 @@ public class WorldWindOptionsView extends ViewPart {
 			}
 		}
 		composite_2.setLayout(new GridLayout(1, true));
-		
+
 		Composite composite_8 = new Composite(composite_2, SWT.NONE);
 		GridData gd_composite_8 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_composite_8.heightHint = 322;
 		gd_composite_8.widthHint = 634;
 		composite_8.setLayoutData(gd_composite_8);
 		composite_8.setLayout(new GridLayout(3, true));
-				
-						final Button iButton = new Button(composite_8, SWT.NONE);
-						iButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-						iButton.setToolTipText("Info!");
-						iButton.addSelectionListener(new SelectionAdapter() {
-							private ToolTip infoTip;
 
-							public void widgetSelected(final SelectionEvent e) {
-								infoTip = new ToolTip(new Shell(), SWT.BALLOON | SWT.ICON_INFORMATION);
-								infoTip.setText("Projection");
+		final Button iButton = new Button(composite_8, SWT.NONE);
+		iButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		iButton.setToolTipText("Info!");
+		iButton.addSelectionListener(new SelectionAdapter() {
+			private ToolTip infoTip;
 
-								infoTip.setMessage("Equirectangular projection \nDatum: WGS 84\nEPSG: 4326\n\n" + "Enter city or coordinates like:\n" + "Street, City\n" + "39.53, -119.816  (Reno, NV)\n" + "21 10 14 N, 86 51 0 W (Cancun)" + "\n-31¡ 59' 43\", 115¡ 45' 32\" (Perth)");
-								infoTip.setVisible(true);
+			public void widgetSelected(final SelectionEvent e) {
+				infoTip = new ToolTip(new Shell(), SWT.BALLOON | SWT.ICON_INFORMATION);
+				infoTip.setText("Projection");
 
-							}
-						});
-						iButton.setText("Info");
-								
-										final Button cacheButton = new Button(composite_8, SWT.NONE);
-										cacheButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-										cacheButton.setToolTipText("Clear the WorldWind cache");
-										cacheButton.addSelectionListener(new SelectionAdapter() {
+				infoTip.setMessage("Equirectangular projection \nDatum: WGS 84\nEPSG: 4326\n\n" + "Enter city or coordinates like:\n" + "Street, City\n" + "39.53, -119.816  (Reno, NV)\n" + "21 10 14 N, 86 51 0 W (Cancun)" + "\n-31¡ 59' 43\", 115¡ 45' 32\" (Perth)");
+				infoTip.setVisible(true);
 
-											public void widgetSelected(final SelectionEvent e) {
-												FileStore store = new BasicDataFileStore();
-												cacheRoot = store.getWriteLocation();
+			}
+		});
+		iButton.setText("Info");
 
-												Job job = new Job("Delete...") {
-													@Override
-													protected IStatus run(IProgressMonitor monitor) {
-														monitor.beginTask("Delete... ", IProgressMonitor.UNKNOWN);
-														dataSets = FileStoreDataSet.getDataSets(cacheRoot);
-														for (FileStoreDataSet ds : dataSets) {
-															/* False - do not print the deleted folders! */
-															ds.delete(false);
-															monitor.worked(1);
-														}
+		final Button cacheButton = new Button(composite_8, SWT.NONE);
+		cacheButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		cacheButton.setToolTipText("Clear the WorldWind cache");
+		cacheButton.addSelectionListener(new SelectionAdapter() {
 
-														monitor.done();
-														return Status.OK_STATUS;
-													}
+			public void widgetSelected(final SelectionEvent e) {
+				FileStore store = new BasicDataFileStore();
+				cacheRoot = store.getWriteLocation();
 
-												};
+				Job job = new Job("Delete...") {
+					@Override
+					protected IStatus run(IProgressMonitor monitor) {
+						monitor.beginTask("Delete... ", IProgressMonitor.UNKNOWN);
+						dataSets = FileStoreDataSet.getDataSets(cacheRoot);
+						for (FileStoreDataSet ds : dataSets) {
+							/* False - do not print the deleted folders! */
+							ds.delete(false);
+							monitor.worked(1);
+						}
 
-												// job.setSystem(true);
-												job.schedule();
+						monitor.done();
+						return Status.OK_STATUS;
+					}
 
-											}
-										});
-										cacheButton.setText("Clear Cache");
-												
-														final Button openCacheButton = new Button(composite_8, SWT.NONE);
-														openCacheButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-														openCacheButton.setToolTipText("Open the WorldWind cache location!");
-														openCacheButton.addSelectionListener(new SelectionAdapter() {
-															public void widgetSelected(final SelectionEvent e) {
-																FileStore store = new BasicDataFileStore();
-																File cacheRoot = store.getWriteLocation();
-																DirectoryDialog dlg = new DirectoryDialog(new Shell());
+				};
 
-																dlg.setFilterPath(cacheRoot.getAbsolutePath());
+				// job.setSystem(true);
+				job.schedule();
 
-																dlg.setText("Bio7");
+			}
+		});
+		cacheButton.setText("Clear Cache");
 
-																dlg.setMessage("Delete Folders!");
+		final Button openCacheButton = new Button(composite_8, SWT.NONE);
+		openCacheButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		openCacheButton.setToolTipText("Open the WorldWind cache location!");
+		openCacheButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				FileStore store = new BasicDataFileStore();
+				File cacheRoot = store.getWriteLocation();
+				DirectoryDialog dlg = new DirectoryDialog(new Shell());
 
-																dlg.open();
+				dlg.setFilterPath(cacheRoot.getAbsolutePath());
 
-															}
-														});
-														openCacheButton.setText("Open Cache");
-														
-																text = new Text(composite_8, SWT.BORDER);
-																text.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-																text.addListener(SWT.DefaultSelection, new Listener() {
-																	public void handleEvent(Event e) {
-																		flyToCoords();
-																	}
-																});
-																
-																		final Button setButton = new Button(composite_8, SWT.NONE);
-																		setButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-																		setButton.setToolTipText("Fly to the coordinates");
-																		setButton.addSelectionListener(new SelectionAdapter() {
-																			public void widgetSelected(final SelectionEvent e) {
-																				/*
-																				 * LatLon latLon = computeLatLonFromString(text.getText(),
-																				 * WorldWindView.getWwd().getModel().getGlobe());
-																				 * updateResult(latLon); if (latLon != null) { OrbitView view =
-																				 * (OrbitView) WorldWindView.getWwd().getView(); Globe globe =
-																				 * WorldWindView.getWwd().getModel().getGlobe();
-																				 * 
-																				 * ((BasicOrbitView) view).addPanToAnimator(new Position(latLon,
-																				 * 0), view.getHeading(), view.getPitch(), view.getZoom(),
-																				 * true); }
-																				 */
-																				flyToCoords();
+				dlg.setText("Bio7");
 
-																			}
-																		});
-																		setButton.setText("Set");
-																new Label(composite_8, SWT.NONE);
-																		
-																				final Label coordinatesLabel = new Label(composite_8, SWT.NONE);
-																				coordinatesLabel.setText("Coordinates");
-																		new Label(composite_8, SWT.NONE);
-																		new Label(composite_8, SWT.NONE);
-																		
-																				scrolLList = new org.eclipse.swt.widgets.List(composite_8, SWT.V_SCROLL | SWT.MULTI | SWT.H_SCROLL | SWT.BORDER);
-																				GridData gd_scrolLList = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 4);
-																				gd_scrolLList.heightHint = 44;
-																				scrolLList.setLayoutData(gd_scrolLList);
-																				scrolLList.addMouseListener(new MouseListener() {
+				dlg.setMessage("Delete Folders!");
 
-																					@Override
-																					public void mouseDoubleClick(org.eclipse.swt.events.MouseEvent e) {
-																						if (scrolLList.getItemCount() > 0) {
-																							String pos = scrolLList.getItem(scrolLList.getSelectionIndex());
-																							/* Left out the name! */
-																							String[] p = pos.split(",");
-																							text.setText(p[1] + "," + p[2]);
-																						}
-																					}
+				dlg.open();
 
-																					@Override
-																					public void mouseDown(org.eclipse.swt.events.MouseEvent e) {
+			}
+		});
+		openCacheButton.setText("Open Cache");
 
-																					}
+		text = new Text(composite_8, SWT.BORDER);
+		text.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		text.addListener(SWT.DefaultSelection, new Listener() {
+			public void handleEvent(Event e) {
+				flyToCoords();
+			}
+		});
 
-																					@Override
-																					public void mouseUp(org.eclipse.swt.events.MouseEvent e) {
+		final Button setButton = new Button(composite_8, SWT.NONE);
+		setButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		setButton.setToolTipText("Fly to the coordinates");
+		setButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				/*
+				 * LatLon latLon = computeLatLonFromString(text.getText(),
+				 * WorldWindView.getWwd().getModel().getGlobe());
+				 * updateResult(latLon); if (latLon != null) { OrbitView view =
+				 * (OrbitView) WorldWindView.getWwd().getView(); Globe globe =
+				 * WorldWindView.getWwd().getModel().getGlobe();
+				 * 
+				 * ((BasicOrbitView) view).addPanToAnimator(new Position(latLon,
+				 * 0), view.getHeading(), view.getPitch(), view.getZoom(),
+				 * true); }
+				 */
+				flyToCoords();
 
-																					}
+			}
+		});
+		setButton.setText("Set");
+		new Label(composite_8, SWT.NONE);
 
-																				});
-																				
-																						final Button addButton = new Button(composite_8, SWT.NONE);
-																						addButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-																						addButton.setToolTipText("Add coordinates which should be stored");
-																						addButton.addSelectionListener(new SelectionAdapter() {
-																							IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+		final Label coordinatesLabel = new Label(composite_8, SWT.NONE);
+		coordinatesLabel.setText("Coordinates");
+		new Label(composite_8, SWT.NONE);
+		new Label(composite_8, SWT.NONE);
 
-																							public void widgetSelected(final SelectionEvent e) {
-																								InputDialog dialog = new InputDialog(new Shell(), "Enter Description", "Please enter a description!", "", new IInputValidator() {
+		scrolLList = new org.eclipse.swt.widgets.List(composite_8, SWT.V_SCROLL | SWT.MULTI | SWT.H_SCROLL | SWT.BORDER);
+		GridData gd_scrolLList = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 4);
+		gd_scrolLList.heightHint = 44;
+		scrolLList.setLayoutData(gd_scrolLList);
+		scrolLList.addMouseListener(new MouseListener() {
 
-																									public String isValid(String text) {
-																										if (text.length() == 0) {
-																											return "Please enter a description!";
-																										}
-																										return null;
-																									}
+			@Override
+			public void mouseDoubleClick(org.eclipse.swt.events.MouseEvent e) {
+				if (scrolLList.getItemCount() > 0) {
+					String pos = scrolLList.getItem(scrolLList.getSelectionIndex());
+					/* Left out the name! */
+					String[] p = pos.split(",");
+					text.setText(p[1] + "," + p[2]);
+				}
+			}
 
-																								});
+			@Override
+			public void mouseDown(org.eclipse.swt.events.MouseEvent e) {
 
-																								if (dialog.open() == Window.OK) {
+			}
 
-																									Rectangle r = WorldWindView.getWwd().getBounds();
-																									View view = WorldWindView.getWwd().getView();
+			@Override
+			public void mouseUp(org.eclipse.swt.events.MouseEvent e) {
 
-																									if (view != null) {
+			}
 
-																										Position eye = view.getEyePosition();
+		});
 
-																										String eLat = String.valueOf(eye.latitude.degrees);
-																										String eLon = String.valueOf(eye.longitude.degrees);
+		final Button addButton = new Button(composite_8, SWT.NONE);
+		addButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		addButton.setToolTipText("Add coordinates which should be stored");
+		addButton.addSelectionListener(new SelectionAdapter() {
+			IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
-																										scrolLList.add(dialog.getValue() + "," + eLat + "," + eLon);
+			public void widgetSelected(final SelectionEvent e) {
+				InputDialog dialog = new InputDialog(new Shell(), "Enter Description", "Please enter a description!", "", new IInputValidator() {
 
-																									}
-																									StringBuffer buff = new StringBuffer();
-																									for (int i = 0; i < scrolLList.getItemCount(); i++) {
-																										buff.append(scrolLList.getItem(i) + ";");
-																									}
-																									store.setValue("WorldWindLinks", buff.toString());
-																									buff = null;
+					public String isValid(String text) {
+						if (text.length() == 0) {
+							return "Please enter a description!";
+						}
+						return null;
+					}
 
-																								}
+				});
 
-																							}
-																						});
-																						addButton.setText("Add");
-																								
-																										final Button deleteButton = new Button(composite_8, SWT.NONE);
-																										deleteButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-																										deleteButton.setToolTipText("Delete stored coordinates");
-																										deleteButton.addSelectionListener(new SelectionAdapter() {
-																											public void widgetSelected(final SelectionEvent e) {
-																												IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-																												if (scrolLList.getItemCount() > 0) {
-																													scrolLList.remove(scrolLList.getSelectionIndex());
-																												}
-																												StringBuffer buff = new StringBuffer();
-																												for (int i = 0; i < scrolLList.getItemCount(); i++) {
-																													buff.append(scrolLList.getItem(i) + ";");
-																												}
-																												store.setValue("WorldWindLinks", buff.toString());
-																												buff = null;
+				if (dialog.open() == Window.OK) {
 
-																											}
-																										});
-																										deleteButton.setText("Delete");
-																												
-																														final Button loadButton = new Button(composite_8, SWT.NONE);
-																														loadButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-																														loadButton.setToolTipText("Load coordinates from a *.txt file");
-																														loadButton.addSelectionListener(new SelectionAdapter() {
-																															public void widgetSelected(final SelectionEvent e) {
-																																IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+					Rectangle r = WorldWindView.getWwd().getBounds();
+					View view = WorldWindView.getWwd().getView();
 
-																																Shell s = new Shell(SWT.ON_TOP);
-																																FileDialog fd = new FileDialog(s, SWT.OPEN);
-																																fd.setText("Load");
+					if (view != null) {
 
-																																file = fd.open();
+						Position eye = view.getEyePosition();
 
-																																File fil = new File(file);
+						String eLat = String.valueOf(eye.latitude.degrees);
+						String eLon = String.valueOf(eye.longitude.degrees);
 
-																																try {
+						scrolLList.add(dialog.getValue() + "," + eLat + "," + eLon);
 
-																																	FileReader fileReader = new FileReader(fil);
-																																	BufferedReader reader = new BufferedReader(fileReader);
-																																	String str;
+					}
+					StringBuffer buff = new StringBuffer();
+					for (int i = 0; i < scrolLList.getItemCount(); i++) {
+						buff.append(scrolLList.getItem(i) + ";");
+					}
+					store.setValue("WorldWindLinks", buff.toString());
+					buff = null;
 
-																																	while ((str = reader.readLine()) != null) {
+				}
 
-																																		scrolLList.add(str);
+			}
+		});
+		addButton.setText("Add");
 
-																																	}
-																																	reader.close();
+		final Button deleteButton = new Button(composite_8, SWT.NONE);
+		deleteButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		deleteButton.setToolTipText("Delete stored coordinates");
+		deleteButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+				if (scrolLList.getItemCount() > 0) {
+					scrolLList.remove(scrolLList.getSelectionIndex());
+				}
+				StringBuffer buff = new StringBuffer();
+				for (int i = 0; i < scrolLList.getItemCount(); i++) {
+					buff.append(scrolLList.getItem(i) + ";");
+				}
+				store.setValue("WorldWindLinks", buff.toString());
+				buff = null;
 
-																																} catch (IOException ex) {
+			}
+		});
+		deleteButton.setText("Delete");
 
-																																}
-																																StringBuffer buff = new StringBuffer();
-																																for (int i = 0; i < scrolLList.getItemCount(); i++) {
-																																	buff.append(scrolLList.getItem(i) + ";");
-																																}
-																																store.setValue("WorldWindLinks", buff.toString());
-																																buff = null;
-																															}
-																														});
-																														loadButton.setText("Load");
-																																
-																																		final Button saveButton = new Button(composite_8, SWT.NONE);
-																																		saveButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-																																		saveButton.setToolTipText("Save coordinates to a *.txt file");
-																																		saveButton.addSelectionListener(new SelectionAdapter() {
-																																			public void widgetSelected(final SelectionEvent e) {
-																																				StringBuffer buffer = new StringBuffer();
-																																				for (int i = 0; i < scrolLList.getItemCount(); i++) {
-																																					buffer.append(scrolLList.getItem(i));
-																																					buffer.append(System.getProperty("line.separator"));
-																																				}
-																																				Shell s = new Shell(SWT.ON_TOP);
-																																				FileDialog fd = new FileDialog(s, SWT.SAVE);
-																																				fd.setText("Save");
+		final Button loadButton = new Button(composite_8, SWT.NONE);
+		loadButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		loadButton.setToolTipText("Load coordinates from a *.txt file");
+		loadButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
-																																				String file = fd.open();
-																																				File fil = new File(file);
-																																				FileWriter fileWriter = null;
-																																				try {
-																																					fileWriter = new FileWriter(fil);
+				Shell s = new Shell(SWT.ON_TOP);
+				FileDialog fd = new FileDialog(s, SWT.OPEN);
+				fd.setText("Load");
 
-																																					BufferedWriter buffWriter = new BufferedWriter(fileWriter);
+				file = fd.open();
 
-																																					String write = buffer.toString();
-																																					buffWriter.write(write, 0, write.length());
-																																					buffWriter.close();
-																																				} catch (IOException ex) {
+				File fil = new File(file);
 
-																																				} finally {
-																																					try {
-																																						fileWriter.close();
-																																					} catch (IOException ex) {
+				try {
 
-																																					}
-																																				}
-																																			}
-																																		});
-																																		saveButton.setText("Save");
+					FileReader fileReader = new FileReader(fil);
+					BufferedReader reader = new BufferedReader(fileReader);
+					String str;
+
+					while ((str = reader.readLine()) != null) {
+
+						scrolLList.add(str);
+
+					}
+					reader.close();
+
+				} catch (IOException ex) {
+
+				}
+				StringBuffer buff = new StringBuffer();
+				for (int i = 0; i < scrolLList.getItemCount(); i++) {
+					buff.append(scrolLList.getItem(i) + ";");
+				}
+				store.setValue("WorldWindLinks", buff.toString());
+				buff = null;
+			}
+		});
+		loadButton.setText("Load");
+
+		final Button saveButton = new Button(composite_8, SWT.NONE);
+		saveButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		saveButton.setToolTipText("Save coordinates to a *.txt file");
+		saveButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				StringBuffer buffer = new StringBuffer();
+				for (int i = 0; i < scrolLList.getItemCount(); i++) {
+					buffer.append(scrolLList.getItem(i));
+					buffer.append(System.getProperty("line.separator"));
+				}
+				Shell s = new Shell(SWT.ON_TOP);
+				FileDialog fd = new FileDialog(s, SWT.SAVE);
+				fd.setText("Save");
+
+				String file = fd.open();
+				File fil = new File(file);
+				FileWriter fileWriter = null;
+				try {
+					fileWriter = new FileWriter(fil);
+
+					BufferedWriter buffWriter = new BufferedWriter(fileWriter);
+
+					String write = buffer.toString();
+					buffWriter.write(write, 0, write.length());
+					buffWriter.close();
+				} catch (IOException ex) {
+
+				} finally {
+					try {
+						fileWriter.close();
+					} catch (IOException ex) {
+
+					}
+				}
+			}
+		});
+		saveButton.setText("Save");
 
 		final ExpandItem newItemExpandItem = new ExpandItem(expandBar, SWT.NONE);
 		newItemExpandItem.setHeight(1550);
@@ -632,7 +630,7 @@ public class WorldWindOptionsView extends ViewPart {
 		createLayers();
 		composite.layout();
 		newItemExpandItem_1 = new ExpandItem(expandBar, SWT.NONE);
-		newItemExpandItem_1.setHeight(600);
+		newItemExpandItem_1.setHeight(1200);
 		newItemExpandItem_1.setText("Layers");
 
 		composite_1 = new Composite(expandBar, SWT.NONE);
@@ -647,33 +645,16 @@ public class WorldWindOptionsView extends ViewPart {
 
 		Button dynamicButton;
 
-		scrolledComposite = new ScrolledComposite(composite_1, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-		final FormData fd_scrolledComposite = new FormData();
-		fd_scrolledComposite.bottom = new FormAttachment(100, -10);
-		fd_scrolledComposite.right = new FormAttachment(100, -5);
-		fd_scrolledComposite.left = new FormAttachment(0, 0);
-		scrolledComposite.setLayoutData(fd_scrolledComposite);
-		scrolledComposite.getVerticalBar().setMinimum(100);
-		scrolledComposite.getVerticalBar().setMaximum(200);
-		scrolledComposite.getHorizontalBar().setMaximum(200);
-		scrolledComposite.getHorizontalBar().setMinimum(100);
-
-		composite_4 = new Composite(scrolledComposite, SWT.NONE);
-		composite_4.setLayout(new RowLayout());
-		composite_4.setSize(305, 203);
-		scrolledComposite.setContent(composite_4);
-
 		Button goButton;
 
 		Button videoButton;
-		
+
 		Composite composite_7 = new Composite(composite_1, SWT.NONE);
-		fd_scrolledComposite.top = new FormAttachment(0, 333);
 		composite_7.setLayout(new GridLayout(3, true));
 		FormData fd_composite_7 = new FormData();
-		fd_composite_7.right = new FormAttachment(scrolledComposite, 0, SWT.RIGHT);
-		fd_composite_7.bottom = new FormAttachment(scrolledComposite, -6);
+		fd_composite_7.bottom = new FormAttachment(100, -876);
 		fd_composite_7.top = new FormAttachment(0, 10);
+		fd_composite_7.right = new FormAttachment(100, -5);
 		fd_composite_7.left = new FormAttachment(0);
 		composite_7.setLayoutData(fd_composite_7);
 		new Label(composite_7, SWT.NONE);
@@ -681,298 +662,308 @@ public class WorldWindOptionsView extends ViewPart {
 		latitudeLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
 		latitudeLabel.setAlignment(SWT.CENTER);
 		latitudeLabel.setText("Latitude");
-						new Label(composite_7, SWT.NONE);
-						new Label(composite_7, SWT.NONE);
-				
-						minLat = new Text(composite_7, SWT.BORDER);
-						minLat.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
-						minLat.setToolTipText("Min");
-						minLat.setText("50.999583");
-						
-								final Label longitudeLabel = new Label(composite_7, SWT.CENTER);
-								longitudeLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-								longitudeLabel.setAlignment(SWT.CENTER);
-								longitudeLabel.setText("Longitude");
-						
-								minLon = new Text(composite_7, SWT.BORDER);
-								minLon.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-								minLon.setToolTipText("Min");
-								minLon.setText("9.999583");
-						goButton = new Button(composite_7, SWT.NONE);
-						goButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-						goButton.setToolTipText("Fly to the specified area");
-						goButton.addSelectionListener(new SelectionAdapter() {
-							public void widgetSelected(final SelectionEvent e) {
-								double meanLat = (Double.parseDouble(minLat.getText()) + Double.parseDouble(maxLat.getText())) / 2;
-								double meanLon = (Double.parseDouble(minLon.getText()) + Double.parseDouble(maxLon.getText())) / 2;
-								Position p = new Position(new LatLon(Angle.fromDegrees(meanLat), Angle.fromDegrees(meanLon)), 2000);
-								Coordinates.flyTo(p);
+		new Label(composite_7, SWT.NONE);
+		new Label(composite_7, SWT.NONE);
+
+		minLat = new Text(composite_7, SWT.BORDER);
+		minLat.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		minLat.setToolTipText("Min");
+		minLat.setText("50.999583");
+
+		final Label longitudeLabel = new Label(composite_7, SWT.CENTER);
+		longitudeLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		longitudeLabel.setAlignment(SWT.CENTER);
+		longitudeLabel.setText("Longitude");
+
+		minLon = new Text(composite_7, SWT.BORDER);
+		minLon.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		minLon.setToolTipText("Min");
+		minLon.setText("9.999583");
+		goButton = new Button(composite_7, SWT.NONE);
+		goButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		goButton.setToolTipText("Fly to the specified area");
+		goButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				double meanLat = (Double.parseDouble(minLat.getText()) + Double.parseDouble(maxLat.getText())) / 2;
+				double meanLon = (Double.parseDouble(minLon.getText()) + Double.parseDouble(maxLon.getText())) / 2;
+				Position p = new Position(new LatLon(Angle.fromDegrees(meanLat), Angle.fromDegrees(meanLon)), 2000);
+				Coordinates.flyTo(p);
+
+			}
+		});
+		goButton.setText("Go to");
+
+		maxLon = new Text(composite_7, SWT.BORDER);
+		maxLon.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		maxLon.setToolTipText("Max");
+		maxLon.setText("11.00042");
+		new Label(composite_7, SWT.NONE);
+
+		maxLat = new Text(composite_7, SWT.BORDER);
+		maxLat.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		maxLat.setToolTipText("Max");
+		maxLat.setText("52.00042");
+		new Label(composite_7, SWT.NONE);
+		new Label(composite_7, SWT.NONE);
+		new Label(composite_7, SWT.NONE);
+		new Label(composite_7, SWT.NONE);
+
+		final Button addImageLayerButton = new Button(composite_7, SWT.NONE);
+		addImageLayerButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		addImageLayerButton.setToolTipText("Add an image from a file location");
+		addImageLayerButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				final String f = openFile(new String[] { "*.tif", "*" });
+
+				if (f != null) {
+					// addImages(f, new Double(minLat.getText()), new
+					// Double(maxLat.getText()), new Double(minLon.getText()),
+					// new Double(maxLon.getText()));
+					Job job = new Job("Open Tiff") {
+						@Override
+						protected IStatus run(IProgressMonitor monitor) {
+							monitor.beginTask("Open Tiff file ...", IProgressMonitor.UNKNOWN);
+
+							importImagery(f);
+
+							monitor.done();
+							return Status.OK_STATUS;
+						}
+
+					};
+					job.addJobChangeListener(new JobChangeAdapter() {
+						public void done(IJobChangeEvent event) {
+							if (event.getResult().isOK()) {
+
+							} else {
 
 							}
-						});
-						goButton.setText("Go to");
-								
-										maxLon = new Text(composite_7, SWT.BORDER);
-										maxLon.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
-										maxLon.setToolTipText("Max");
-										maxLon.setText("11.00042");
-														new Label(composite_7, SWT.NONE);
-												
-														maxLat = new Text(composite_7, SWT.BORDER);
-														maxLat.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
-														maxLat.setToolTipText("Max");
-														maxLat.setText("52.00042");
-																new Label(composite_7, SWT.NONE);
-																new Label(composite_7, SWT.NONE);
-																new Label(composite_7, SWT.NONE);
-																new Label(composite_7, SWT.NONE);
-														
-																final Button addImageLayerButton = new Button(composite_7, SWT.NONE);
-																addImageLayerButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
-																addImageLayerButton.setToolTipText("Add an image from a file location");
-																addImageLayerButton.addSelectionListener(new SelectionAdapter() {
-																	public void widgetSelected(final SelectionEvent e) {
-																		final String f = openFile(new String[] { "*.tif", "*" });
+						}
+					});
+					// job.setSystem(true);
+					job.schedule();
 
-																		if (f != null) {
-																			// addImages(f, new Double(minLat.getText()), new
-																			// Double(maxLat.getText()), new Double(minLon.getText()),
-																			// new Double(maxLon.getText()));
-																			Job job = new Job("Open Tiff") {
-																				@Override
-																				protected IStatus run(IProgressMonitor monitor) {
-																					monitor.beginTask("Open Tiff file ...", IProgressMonitor.UNKNOWN);
+				}
 
-																					importImagery(f);
+			}
+		});
+		addImageLayerButton.setText("Add GeoTIFF");
+		fromImagejButton = new Button(composite_7, SWT.NONE);
+		fromImagejButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		fromImagejButton.setToolTipText("Add an active ImageJ image \nfrom the ImageJ view");
+		fromImagejButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
 
-																					monitor.done();
-																					return Status.OK_STATUS;
-																				}
+				ImagePlus imp = null;
 
-																			};
-																			job.addJobChangeListener(new JobChangeAdapter() {
-																				public void done(IJobChangeEvent event) {
-																					if (event.getResult().isOK()) {
+				CanvasView canvasView = CanvasView.getCanvas_view();
+				CTabItem[] items = canvasView.tabFolder.getItems();
+				if (items.length > 0) {
+					imp = WindowManager.getCurrentWindow().getImagePlus();
 
-																					} else {
+					BufferedImage image = imp.getBufferedImage();
+					addBufferedImages(image, imp.getTitle(), new Double(minLat.getText()), new Double(maxLat.getText()), new Double(minLon.getText()), new Double(maxLon.getText()));
+				} else {
+					MessageBox messageBox = new MessageBox(new Shell(),
 
-																					}
-																				}
-																			});
-																			// job.setSystem(true);
-																			job.schedule();
+					SWT.ICON_WARNING);
+					messageBox.setText("Info!");
+					messageBox.setMessage("No image available!");
+					messageBox.open();
+				}
 
-																		}
+			}
+		});
+		fromImagejButton.setText("IJ image");
+		videoButton = new Button(composite_7, SWT.NONE);
+		videoButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		videoButton.setToolTipText("Enables a dynamic ImageJ layer\non top of the globe");
+		videoButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				addImageJDynamicImage(new Double(minLat.getText()), new Double(maxLat.getText()), new Double(minLon.getText()), new Double(maxLon.getText()));
+			}
+		});
+		videoButton.setText("IJ Dynamic");
+		dynamicButton = new Button(composite_7, SWT.NONE);
+		dynamicButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		dynamicButton.setToolTipText("Add a dynamic layer which executes compiled code");
+		dynamicButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
 
-																	}
-																});
-																addImageLayerButton.setText("Add GeoTIFF");
-														fromImagejButton = new Button(composite_7, SWT.NONE);
-														fromImagejButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
-														fromImagejButton.setToolTipText("Add an active ImageJ image \nfrom the ImageJ view");
-														fromImagejButton.addSelectionListener(new SelectionAdapter() {
-															public void widgetSelected(final SelectionEvent e) {
+				addDynamiclayer();
 
-																ImagePlus imp = null;
+			}
+		});
+		dynamicButton.setText("Dyn. Layer");
+		removeAllButton = new Button(composite_7, SWT.NONE);
+		removeAllButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		removeAllButton.setToolTipText("Add an area to the text fields.\nThe variables have to be defined in the current R workspace");
+		removeAllButton.addSelectionListener(new SelectionAdapter() {
+			private REXPLogical bolExistsMaxLon;
+			private REXPLogical bolExistsMinLon;
+			private REXPLogical bolExistsMaxLat;
+			private REXPLogical bolExistsMinLat;
 
-																CanvasView canvasView = CanvasView.getCanvas_view();
-																CTabItem[] items = canvasView.tabFolder.getItems();
-																if (items.length > 0) {
-																	imp = WindowManager.getCurrentWindow().getImagePlus();
+			public void widgetSelected(final SelectionEvent e) {
+				RConnection c = WorldWindView.getRConnection();
+				if (c != null) {
+					try {
+						bolExistsMaxLon = (REXPLogical) c.eval("try(exists(\"maxLon\"))");
+						bolExistsMinLon = (REXPLogical) c.eval("try(exists(\"minLon\"))");
+						bolExistsMaxLat = (REXPLogical) c.eval("try(exists(\"maxLat\"))");
+						bolExistsMinLat = (REXPLogical) c.eval("try(exists(\"minLat\"))");
 
-																	BufferedImage image = imp.getBufferedImage();
-																	addBufferedImages(image, imp.getTitle(), new Double(minLat.getText()), new Double(maxLat.getText()), new Double(minLon.getText()), new Double(maxLon.getText()));
-																} else {
-																	MessageBox messageBox = new MessageBox(new Shell(),
+						boolean[] bolEMaxLon = bolExistsMaxLon.isTrue();
+						boolean[] bolEMinLon = bolExistsMinLon.isTrue();
+						boolean[] bolEMaxLat = bolExistsMaxLat.isTrue();
+						boolean[] bolEMinLat = bolExistsMinLat.isTrue();
+						if (bolEMaxLon[0] || bolEMinLon[0] || bolEMaxLat[0] || bolEMinLat[0]) {
+							double maxLo = c.eval("maxLon").asDouble();
+							maxLon.setText("" + maxLo);
 
-																	SWT.ICON_WARNING);
-																	messageBox.setText("Info!");
-																	messageBox.setMessage("No image available!");
-																	messageBox.open();
-																}
+							double minLo = c.eval("minLon").asDouble();
+							minLon.setText("" + minLo);
 
-															}
-														});
-														fromImagejButton.setText("IJ image");
-														videoButton = new Button(composite_7, SWT.NONE);
-														videoButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
-														videoButton.setToolTipText("Enables a dynamic ImageJ layer\non top of the globe");
-														videoButton.addSelectionListener(new SelectionAdapter() {
-															public void widgetSelected(final SelectionEvent e) {
-																addImageJDynamicImage(new Double(minLat.getText()), new Double(maxLat.getText()), new Double(minLon.getText()), new Double(maxLon.getText()));
-															}
-														});
-														videoButton.setText("IJ Dynamic");
-														dynamicButton = new Button(composite_7, SWT.NONE);
-														dynamicButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
-														dynamicButton.setToolTipText("Add a dynamic layer which executes compiled code");
-														dynamicButton.addSelectionListener(new SelectionAdapter() {
-															public void widgetSelected(final SelectionEvent e) {
+							double maxLa = c.eval("maxLat").asDouble();
+							maxLat.setText("" + maxLa);
 
-																addDynamiclayer();
+							double minLa = c.eval("minLat").asDouble();
+							minLat.setText("" + minLa);
+						} else {
+							MessageBox messageBox = new MessageBox(new Shell(),
 
-															}
-														});
-														dynamicButton.setText("Dyn. Layer");
-														removeAllButton = new Button(composite_7, SWT.NONE);
-														removeAllButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
-														removeAllButton.setToolTipText("Add an area to the text fields.\nThe variables have to be defined in the current R workspace");
-														removeAllButton.addSelectionListener(new SelectionAdapter() {
-															private REXPLogical bolExistsMaxLon;
-															private REXPLogical bolExistsMinLon;
-															private REXPLogical bolExistsMaxLat;
-															private REXPLogical bolExistsMinLat;
+							SWT.ICON_WARNING);
+							messageBox.setText("Info!");
+							messageBox.setMessage("Lat-Lon variables are not available\n" + "in R workspace!");
+							messageBox.open();
+						}
 
-															public void widgetSelected(final SelectionEvent e) {
-																RConnection c = WorldWindView.getRConnection();
-																if (c != null) {
-																	try {
-																		bolExistsMaxLon = (REXPLogical) c.eval("try(exists(\"maxLon\"))");
-																		bolExistsMinLon = (REXPLogical) c.eval("try(exists(\"minLon\"))");
-																		bolExistsMaxLat = (REXPLogical) c.eval("try(exists(\"maxLat\"))");
-																		bolExistsMinLat = (REXPLogical) c.eval("try(exists(\"minLat\"))");
+					} catch (REXPMismatchException e1) {
 
-																		boolean[] bolEMaxLon = bolExistsMaxLon.isTrue();
-																		boolean[] bolEMinLon = bolExistsMinLon.isTrue();
-																		boolean[] bolEMaxLat = bolExistsMaxLat.isTrue();
-																		boolean[] bolEMinLat = bolExistsMinLat.isTrue();
-																		if (bolEMaxLon[0] || bolEMinLon[0] || bolEMaxLat[0] || bolEMinLat[0]) {
-																			double maxLo = c.eval("maxLon").asDouble();
-																			maxLon.setText("" + maxLo);
+						e1.printStackTrace();
+					} catch (RserveException e1) {
 
-																			double minLo = c.eval("minLon").asDouble();
-																			minLon.setText("" + minLo);
+						e1.printStackTrace();
+					}
 
-																			double maxLa = c.eval("maxLat").asDouble();
-																			maxLat.setText("" + maxLa);
+				} else {
+					MessageBox messageBox = new MessageBox(new Shell(),
 
-																			double minLa = c.eval("minLat").asDouble();
-																			minLat.setText("" + minLa);
-																		} else {
-																			MessageBox messageBox = new MessageBox(new Shell(),
+					SWT.ICON_WARNING);
+					messageBox.setText("Info!");
+					messageBox.setMessage("Rserve is not Alive!");
+					messageBox.open();
 
-																			SWT.ICON_WARNING);
-																			messageBox.setText("Info!");
-																			messageBox.setMessage("Lat-Lon variables are not available\n" + "in R workspace!");
-																			messageBox.open();
-																		}
+				}
+			}
+		});
+		removeAllButton.setText("Get Area");
 
-																	} catch (REXPMismatchException e1) {
+		computeButton = new Button(composite_7, SWT.NONE);
+		computeButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		computeButton.setToolTipText("Computes coordinates for the Lat, Lon \ntextfields alternately (min, max!)");
+		computeButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				mouseCount = 1;
+				if (selectionButtonEnabled) {
+					if (wC != null) {
+						((Component) wC).setCursor(Cursor.getDefaultCursor());
+					}
+					selectionButtonEnabled = false;
 
-																		e1.printStackTrace();
-																	} catch (RserveException e1) {
+					for (int j = 0; j < layers.size(); j++) {
 
-																		e1.printStackTrace();
-																	}
+						if (j < 14) {
+							layers.get(j).setPickEnabled(false);
 
-																} else {
-																	MessageBox messageBox = new MessageBox(new Shell(),
+						}
 
-																	SWT.ICON_WARNING);
-																	messageBox.setText("Info!");
-																	messageBox.setMessage("Rserve is not Alive!");
-																	messageBox.open();
+					}
 
-																}
-															}
-														});
-														removeAllButton.setText("Get Area");
-														
-																computeButton = new Button(composite_7, SWT.NONE);
-																computeButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
-																computeButton.setToolTipText("Computes coordinates for the Lat, Lon \ntextfields alternately (min, max!)");
-																computeButton.addSelectionListener(new SelectionAdapter() {
-																	public void widgetSelected(final SelectionEvent e) {
-																		mouseCount = 1;
-																		if (selectionButtonEnabled) {
-																			if (wC != null) {
-																				((Component) wC).setCursor(Cursor.getDefaultCursor());
-																			}
-																			selectionButtonEnabled = false;
+					computeButton.setText("Compute");
+					/* SWT Text Color Buttons on Windows not working! */
+					// computeButton.setForeground(new
+					// org.eclipse.swt.graphics.Color(Display.getCurrent(),255,255,255));
+				} else if (selectionButtonEnabled == false) {
+					if (wC != null) {
+						((Component) wC).setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+					}
 
-																			for (int j = 0; j < layers.size(); j++) {
+					computeButton.setText("Armed");
+					/* SWT Text Color Buttons on Windows not working! */
+					// computeButton.setForeground(new
+					// org.eclipse.swt.graphics.Color(Display.getCurrent(),155,155,155));
+					layers = WorldWindView.getWwd().getModel().getLayers();
+					for (int j = 0; j < layers.size(); j++) {
+						// System.out.println(j+": "+layers.get(j).getName());
+						if (j < 11) {
+							layers.get(j).setPickEnabled(true);
+						}
 
-																				if (j < 14) {
-																					layers.get(j).setPickEnabled(false);
+					}
+					selectionButtonEnabled = true;
+				}
+				/*
+				 * Rectangle r=WorldWindView.getWwd().getBounds(); View view =
+				 * WorldWindView.getWwd().getView();
+				 * 
+				 * Position upperLeft; Position lowerLeft; if(view!=null){
+				 * upperLeft = view.computePositionFromScreenPoint(0, 0);
+				 * lowerLeft = view.computePositionFromScreenPoint(r.width,
+				 * r.height);
+				 * 
+				 * 
+				 * 
+				 * 
+				 * 
+				 * 
+				 * minLat.setText(String.valueOf(upperLeft.latitude.degrees)) ;
+				 * minLon.setText(String.valueOf(upperLeft.longitude.degrees ));
+				 * maxLat.setText(String.valueOf(lowerLeft.latitude.degrees ));
+				 * maxLon.setText(String.valueOf(lowerLeft.longitude.degrees ));
+				 * //System.out.println(r.x+" "+r.y+" "+r.width+" "+ r.height);
+				 * System.out.println(upperLeft.latitude);
+				 */
 
-																				}
+			}
+		});
+		computeButton.setText("Compute");
 
-																			}
+		Button btnNewButton = new Button(composite_7, SWT.NONE);
+		btnNewButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		btnNewButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				final String f = openFile(new String[] { "*.shp", "*" });
 
-																			computeButton.setText("Compute");
-																			/* SWT Text Color Buttons on Windows not working! */
-																			// computeButton.setForeground(new
-																			// org.eclipse.swt.graphics.Color(Display.getCurrent(),255,255,255));
-																		} else if (selectionButtonEnabled == false) {
-																			if (wC != null) {
-																				((Component) wC).setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
-																			}
+				if (f != null) {
+					LoadShapefileJob shapeFileJob = new LoadShapefileJob(f, compositeLayers);
+					shapeFileJob.schedule();
+				}
 
-																			computeButton.setText("Armed");
-																			/* SWT Text Color Buttons on Windows not working! */
-																			// computeButton.setForeground(new
-																			// org.eclipse.swt.graphics.Color(Display.getCurrent(),155,155,155));
-																			layers = WorldWindView.getWwd().getModel().getLayers();
-																			for (int j = 0; j < layers.size(); j++) {
-																				// System.out.println(j+": "+layers.get(j).getName());
-																				if (j < 11) {
-																					layers.get(j).setPickEnabled(true);
-																				}
+			}
+		});
+		btnNewButton.setText("Add Shapefile");
+		new Label(composite_7, SWT.NONE);
 
-																			}
-																			selectionButtonEnabled = true;
-																		}
-																		/*
-																		 * Rectangle r=WorldWindView.getWwd().getBounds(); View view =
-																		 * WorldWindView.getWwd().getView();
-																		 * 
-																		 * Position upperLeft; Position lowerLeft; if(view!=null){
-																		 * upperLeft = view.computePositionFromScreenPoint(0, 0);
-																		 * lowerLeft = view.computePositionFromScreenPoint(r.width,
-																		 * r.height);
-																		 * 
-																		 * 
-																		 * 
-																		 * 
-																		 * 
-																		 * 
-																		 * minLat.setText(String.valueOf(upperLeft.latitude.degrees)) ;
-																		 * minLon.setText(String.valueOf(upperLeft.longitude.degrees ));
-																		 * maxLat.setText(String.valueOf(lowerLeft.latitude.degrees ));
-																		 * maxLon.setText(String.valueOf(lowerLeft.longitude.degrees ));
-																		 * //System.out.println(r.x+" "+r.y+" "+r.width+" "+ r.height);
-																		 * System.out.println(upperLeft.latitude);
-																		 */
+		final Spinner spinner_1 = new Spinner(composite_7, SWT.BORDER);
+		spinner_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
 
-																	}
-																});
-																computeButton.setText("Compute");
-																		
-																				Button btnNewButton = new Button(composite_7, SWT.NONE);
-																				btnNewButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
-																				btnNewButton.addSelectionListener(new SelectionAdapter() {
-																					@Override
-																					public void widgetSelected(SelectionEvent e) {
-																						final String f = openFile(new String[] { "*.shp", "*" });
+		compositeLayers = new Composite(composite_1, SWT.NONE);
+		compositeLayers.setLayout(new GridLayout(1, true));
+		FormData fd_composite_4 = new FormData();
+		fd_composite_4.top = new FormAttachment(composite_7, 6);
+		fd_composite_4.bottom = new FormAttachment(100, -10);
+		fd_composite_4.right = new FormAttachment(100, -5);
+		fd_composite_4.left = new FormAttachment(0);
+		compositeLayers.setLayoutData(fd_composite_4);
+		compositeLayers.setSize(305, 203);
+		spinner_1.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
 
-																						if (f != null) {
-																							LoadShapefileJob shapeFileJob = new LoadShapefileJob(f, composite_4);
-																							shapeFileJob.schedule();
-																						}
-
-																					}
-																				});
-																				btnNewButton.setText("Add Shapefile");
-																				new Label(composite_7, SWT.NONE);
-																		
-																				final Spinner spinner_1 = new Spinner(composite_7, SWT.BORDER);
-																				spinner_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
-																				spinner_1.addModifyListener(new ModifyListener() {
-																					public void modifyText(ModifyEvent e) {
-
-																						takeImagefromIJ = spinner_1.getSelection();
-																					}
-																				});
+				takeImagefromIJ = spinner_1.getSelection();
+			}
+		});
 
 		final ExpandItem newItemExpandItem_2 = new ExpandItem(expandBar, SWT.NONE);
 		newItemExpandItem_2.setHeight(200);
@@ -981,103 +972,103 @@ public class WorldWindOptionsView extends ViewPart {
 		final Composite composite_3 = new Composite(expandBar, SWT.NONE);
 		newItemExpandItem_2.setControl(composite_3);
 		composite_3.setLayout(new GridLayout(1, true));
-		
+
 		Composite composite_9 = new Composite(composite_3, SWT.NONE);
 		GridData gd_composite_9 = new GridData(SWT.FILL, SWT.CENTER, true, true, 3, 1);
 		gd_composite_9.heightHint = 150;
 		gd_composite_9.widthHint = 215;
 		composite_9.setLayoutData(gd_composite_9);
 		composite_9.setLayout(new GridLayout(3, true));
-		
-				capture = new Button(composite_9, SWT.NONE);
-				capture.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-				capture.addSelectionListener(new SelectionAdapter() {
-					@Override
-					public void widgetSelected(SelectionEvent e) {
 
-						int countTo = Integer.parseInt(countToText.getText());
+		capture = new Button(composite_9, SWT.NONE);
+		capture.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		capture.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
 
-						ScreenRecording screen = new ScreenRecording(capture);
-						if (screen.doCapture() == false) {
-							capture.setText("Rec.");
-							screen.setCount(countTo);
-							screen.setFps(spinner.getSelection());
-							screen.setupCaptureImages();
-							screen.setCapture(true);
-							screen.docaptureAnimationJob();
-						}
+				int countTo = Integer.parseInt(countToText.getText());
 
-						else {
-							screen.setCapture(false);
-							capture.setText("Capture");
-						}
+				ScreenRecording screen = new ScreenRecording(capture);
+				if (screen.doCapture() == false) {
+					capture.setText("Rec.");
+					screen.setCount(countTo);
+					screen.setFps(spinner.getSelection());
+					screen.setupCaptureImages();
+					screen.setCapture(true);
+					screen.docaptureAnimationJob();
+				}
 
-					}
-				});
-				capture.setText("Capture");
+				else {
+					screen.setCapture(false);
+					capture.setText("Capture");
+				}
+
+			}
+		});
+		capture.setText("Capture");
 
 		countToText = new Text(composite_9, SWT.BORDER);
 		countToText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
 		countToText.setText("100");
-		
-				Label lblNewLabel = new Label(composite_9, SWT.NONE);
-				lblNewLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
-				lblNewLabel.setText("Frames");
-												
-														final Button screenshotButton = new Button(composite_9, SWT.NONE);
-														screenshotButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-														screenshotButton.setToolTipText("Creates a screenshot image in ImageJ");
-														screenshotButton.addSelectionListener(new SelectionAdapter() {
-															public void widgetSelected(final SelectionEvent e) {
-																SwingUtilities.invokeLater(new Runnable() {
 
-																	public void run() {
+		Label lblNewLabel = new Label(composite_9, SWT.NONE);
+		lblNewLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+		lblNewLabel.setText("Frames");
 
-																		ScreenRecording screen = new ScreenRecording(capture);
-																		ImagePlus ip = screen.captureImage();
-																		ip.show();
+		final Button screenshotButton = new Button(composite_9, SWT.NONE);
+		screenshotButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		screenshotButton.setToolTipText("Creates a screenshot image in ImageJ");
+		screenshotButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SwingUtilities.invokeLater(new Runnable() {
 
-																		// WorldWindowGLAutoDrawable.screenshot = true;
+					public void run() {
 
-																	}
-																});
+						ScreenRecording screen = new ScreenRecording(capture);
+						ImagePlus ip = screen.captureImage();
+						ip.show();
 
-															}
-														});
-														screenshotButton.setText("Screenshot");
-												
-														spinner = new Spinner(composite_9, SWT.BORDER);
-														spinner.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
-														spinner.setMaximum(60);
-														spinner.setMinimum(1);
-														spinner.setSelection(25);
-														spinner.addSelectionListener(new SelectionAdapter() {
-															@Override
-															public void widgetSelected(SelectionEvent e) {
-															}
-														});
-												
-														Label lblFps = new Label(composite_9, SWT.NONE);
-														lblFps.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
-														lblFps.setText("FPS");
-										
-												Button infoCaptureButton = new Button(composite_9, SWT.NONE);
-												infoCaptureButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-												infoCaptureButton.addSelectionListener(new SelectionAdapter() {
-													@Override
-													public void widgetSelected(SelectionEvent e) {
-														captureTip = new ToolTip(new Shell(), SWT.BALLOON | SWT.ICON_INFORMATION);
-														captureTip.setText("Info");
+						// WorldWindowGLAutoDrawable.screenshot = true;
 
-														captureTip.setMessage("" + "If the globe is resized within the capture mode the recording\n" + "is interrupted!\n" + "The captured images are added to an ImageJ stack which\n" + "can be saved e.g. as an *.avi or animated *.gif file.");
-														captureTip.setVisible(true);
-													}
-												});
-												infoCaptureButton.setText("Info");
-								
-										errorLabel = new Label(composite_9, SWT.NONE);
-										errorLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 2));
-														new Label(composite_9, SWT.NONE);
+					}
+				});
+
+			}
+		});
+		screenshotButton.setText("Screenshot");
+
+		spinner = new Spinner(composite_9, SWT.BORDER);
+		spinner.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+		spinner.setMaximum(60);
+		spinner.setMinimum(1);
+		spinner.setSelection(25);
+		spinner.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+			}
+		});
+
+		Label lblFps = new Label(composite_9, SWT.NONE);
+		lblFps.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+		lblFps.setText("FPS");
+
+		Button infoCaptureButton = new Button(composite_9, SWT.NONE);
+		infoCaptureButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		infoCaptureButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				captureTip = new ToolTip(new Shell(), SWT.BALLOON | SWT.ICON_INFORMATION);
+				captureTip.setText("Info");
+
+				captureTip.setMessage("" + "If the globe is resized within the capture mode the recording\n" + "is interrupted!\n" + "The captured images are added to an ImageJ stack which\n" + "can be saved e.g. as an *.avi or animated *.gif file.");
+				captureTip.setVisible(true);
+			}
+		});
+		infoCaptureButton.setText("Info");
+
+		errorLabel = new Label(composite_9, SWT.NONE);
+		errorLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 2));
+		new Label(composite_9, SWT.NONE);
 		countToText.addListener(SWT.Modify, new Listener() {
 			private Integer value;
 
@@ -1152,303 +1143,303 @@ public class WorldWindOptionsView extends ViewPart {
 			}
 		});
 		pointsButton.setText("Colour Points");
-		
-				final Button tooltipButton = new Button(composite_6, SWT.NONE);
-				tooltipButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-				tooltipButton.setToolTipText("Colour for the tooltips!");
-				tooltipButton.addSelectionListener(new SelectionAdapter() {
-					public void widgetSelected(final SelectionEvent e) {
-						Shell shell = new Shell();
-						ColorDialog dialog = new ColorDialog(shell, SWT.APPLICATION_MODAL);
 
-						RGB color = dialog.open();
-						Color c = null;
-						if (color != null) {
-							c = new Color(new Integer(color.red), new Integer(color.green), new Integer(color.blue));
-						}
+		final Button tooltipButton = new Button(composite_6, SWT.NONE);
+		tooltipButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		tooltipButton.setToolTipText("Colour for the tooltips!");
+		tooltipButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Shell shell = new Shell();
+				ColorDialog dialog = new ColorDialog(shell, SWT.APPLICATION_MODAL);
 
-						if (c != null) {
+				RGB color = dialog.open();
+				Color c = null;
+				if (color != null) {
+					c = new Color(new Integer(color.red), new Integer(color.green), new Integer(color.blue));
+				}
 
-							measureTool.getAnnotationAttributes().setTextColor(c);
-						}
+				if (c != null) {
 
-					}
-				});
-				tooltipButton.setText("Colour Tooltip");
-						
-						Label label = new Label(composite_6, SWT.SEPARATOR | SWT.HORIZONTAL);
-						GridData gd_label = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
-						gd_label.widthHint = 133;
-						label.setLayoutData(gd_label);
-						label.setText("Colours");
-								
-										final Label coloursLabel = new Label(composite_6, SWT.NONE);
-										coloursLabel.setLayoutData(new GridData(SWT.CENTER, SWT.FILL, false, true, 1, 1));
-										coloursLabel.setAlignment(SWT.CENTER);
-										coloursLabel.setText("Colours");
-						
-								final Label lblColours = new Label(composite_6, SWT.SEPARATOR | SWT.HORIZONTAL);
-								lblColours.setText("Colours");
-								GridData gd_lblColours = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-								gd_lblColours.widthHint = 133;
-								lblColours.setLayoutData(gd_lblColours);
-				new Label(composite_6, SWT.NONE);
-				new Label(composite_6, SWT.NONE);
-				new Label(composite_6, SWT.NONE);
-				
-						final Label shapeLabel = new Label(composite_6, SWT.NONE);
-						shapeLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
-						shapeLabel.setText("Shape:");
-				new Label(composite_6, SWT.NONE);
-				
-						combo_1 = new Combo(composite_6, SWT.READ_ONLY);
-						combo_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
-						combo_1.setToolTipText("Selects the measure type!");
-						combo_1.addSelectionListener(new SelectionAdapter() {
-							public void widgetSelected(final SelectionEvent e) {
+					measureTool.getAnnotationAttributes().setTextColor(c);
+				}
 
-								String item = combo_1.getItem(combo_1.getSelectionIndex());
-								if (item.equals("Line"))
-									measureTool.setMeasureShapeType(MeasureTool.SHAPE_LINE);
-								else if (item.equals("Path"))
-									measureTool.setMeasureShapeType(MeasureTool.SHAPE_PATH);
-								else if (item.equals("Polygon"))
-									measureTool.setMeasureShapeType(MeasureTool.SHAPE_POLYGON);
-								else if (item.equals("Circle"))
-									measureTool.setMeasureShapeType(MeasureTool.SHAPE_CIRCLE);
-								else if (item.equals("Ellipse"))
-									measureTool.setMeasureShapeType(MeasureTool.SHAPE_ELLIPSE);
-								else if (item.equals("Square"))
-									measureTool.setMeasureShapeType(MeasureTool.SHAPE_SQUARE);
-								else if (item.equals("Rectangle"))
-									measureTool.setMeasureShapeType(MeasureTool.SHAPE_QUAD);
+			}
+		});
+		tooltipButton.setText("Colour Tooltip");
 
-							}
-						});
-						combo_1.setItems(new String[] { "Line", "Path", "Polygon", "Circle", "Ellipse", "Square", "Rectangle" });
-						combo_1.select(0);
-				
-						final Label pathTypeLabel = new Label(composite_6, SWT.NONE);
-						pathTypeLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 1, 1));
-						pathTypeLabel.setText("Path type:");
-				new Label(composite_6, SWT.NONE);
-				
-						combo_2 = new Combo(composite_6, SWT.READ_ONLY);
-						combo_2.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
-						combo_2.addSelectionListener(new SelectionAdapter() {
-							public void widgetSelected(final SelectionEvent e) {
-								String item = combo_2.getItem(combo_2.getSelectionIndex());
-								if (item.equals("Linear"))
-									measureTool.setPathType(AVKey.LINEAR);
-								else if (item.equals("Rhumb"))
-									measureTool.setPathType(AVKey.RHUMB_LINE);
-								else if (item.equals("Great circle"))
-									measureTool.setPathType(AVKey.GREAT_CIRCLE);
-							}
-						});
-						combo_2.setItems(new String[] { "Linear", "Rhumb", "Great circle" });
-						combo_2.select(0);
-				
-						final Label unitsLabel = new Label(composite_6, SWT.NONE);
-						unitsLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, true, 1, 1));
-						unitsLabel.setText("Units:");
-						new Label(composite_6, SWT.NONE);
-						
-								combo_3 = new Combo(composite_6, SWT.READ_ONLY);
-								GridData gd_combo_3 = new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1);
-								gd_combo_3.heightHint = 39;
-								combo_3.setLayoutData(gd_combo_3);
-								combo_3.addSelectionListener(new SelectionAdapter() {
-									public void widgetSelected(final SelectionEvent e) {
+		Label label = new Label(composite_6, SWT.SEPARATOR | SWT.HORIZONTAL);
+		GridData gd_label = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		gd_label.widthHint = 133;
+		label.setLayoutData(gd_label);
+		label.setText("Colours");
 
-										String item = combo_3.getItem(combo_3.getSelectionIndex());
-										if (item.equals("M/M\u00b2")) {
-											measureTool.getUnitsFormat().setLengthUnits(UnitsFormat.METERS);
-											measureTool.getUnitsFormat().setAreaUnits(UnitsFormat.SQUARE_METERS);
-										} else if (item.equals("KM/KM\u00b2")) {
-											measureTool.getUnitsFormat().setLengthUnits(UnitsFormat.KILOMETERS);
-											measureTool.getUnitsFormat().setAreaUnits(UnitsFormat.SQUARE_KILOMETERS);
-										} else if (item.equals("KM/Hectare")) {
-											measureTool.getUnitsFormat().setLengthUnits(UnitsFormat.KILOMETERS);
-											measureTool.getUnitsFormat().setAreaUnits(UnitsFormat.HECTARE);
-										} else if (item.equals("Feet/Feet\u00b2")) {
-											measureTool.getUnitsFormat().setLengthUnits(UnitsFormat.FEET);
-											measureTool.getUnitsFormat().setAreaUnits(UnitsFormat.SQUARE_FEET);
-										} else if (item.equals("Miles/Miles\u00b2")) {
-											measureTool.getUnitsFormat().setLengthUnits(UnitsFormat.MILES);
-											measureTool.getUnitsFormat().setAreaUnits(UnitsFormat.SQUARE_MILES);
-										} else if (item.equals("Nm/Miles\u00b2")) {
-											measureTool.getUnitsFormat().setLengthUnits(UnitsFormat.NAUTICAL_MILES);
-											measureTool.getUnitsFormat().setAreaUnits(UnitsFormat.SQUARE_MILES);
-										} else if (item.equals("Yards/Acres")) {
-											measureTool.getUnitsFormat().setLengthUnits(UnitsFormat.YARDS);
-											measureTool.getUnitsFormat().setAreaUnits(UnitsFormat.ACRE);
-										}
+		final Label coloursLabel = new Label(composite_6, SWT.NONE);
+		coloursLabel.setLayoutData(new GridData(SWT.CENTER, SWT.FILL, false, true, 1, 1));
+		coloursLabel.setAlignment(SWT.CENTER);
+		coloursLabel.setText("Colours");
 
-									}
-								});
-								combo_3.setItems(new String[] { "M/M^2", "KM/KM^2", "KM/Hectare", "Feet/Feet^2", "Miles/Miles^2", "Nm/Miles^2", "Yards/Acres" });
-								combo_3.select(0);
-				
-						final Label angleFormatLabel = new Label(composite_6, SWT.NONE);
-						angleFormatLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, true, 1, 1));
-						angleFormatLabel.setText("Angle Format:");
-				new Label(composite_6, SWT.NONE);
-						
-								combo_4 = new Combo(composite_6, SWT.READ_ONLY);
-								GridData gd_combo_4 = new GridData(SWT.FILL, SWT.CENTER, false, true, 1, 1);
-								gd_combo_4.heightHint = 40;
-								combo_4.setLayoutData(gd_combo_4);
-								combo_4.addSelectionListener(new SelectionAdapter() {
-									public void widgetSelected(final SelectionEvent e) {
-										String item = combo_4.getItem(combo_4.getSelectionIndex());
-										measureTool.getUnitsFormat().setShowDMS(item.equals("DMS"));
-									}
-								});
-								combo_4.setItems(new String[] { "DD", "DMS" });
-								combo_4.select(0);
-						new Label(composite_6, SWT.NONE);
-				new Label(composite_6, SWT.NONE);
-				new Label(composite_6, SWT.NONE);
-						
-								final Button followTerrainButton = new Button(composite_6, SWT.CHECK);
-								followTerrainButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-								followTerrainButton.setToolTipText("If enabled lines, circles or \nsegments will follow the terrain!");
-								followTerrainButton.addSelectionListener(new SelectionAdapter() {
-									public void widgetSelected(final SelectionEvent e) {
-										measureTool.setFollowTerrain(followTerrainButton.getSelection());
-										if (wC != null) {
-											wC.redraw();
-										}
-									}
-								});
-								followTerrainButton.setText("Follow terrain");
-						
-								final Button controlPointsButton = new Button(composite_6, SWT.CHECK);
-								controlPointsButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, true, 1, 1));
-								controlPointsButton.setToolTipText("Enables or disables the control points!");
-								controlPointsButton.setSelection(true);
-								controlPointsButton.addSelectionListener(new SelectionAdapter() {
-									public void widgetSelected(final SelectionEvent e) {
-										measureTool.setShowControlPoints(controlPointsButton.getSelection());
-										if (wC != null) {
-											wC.redraw();
-										}
-									}
-								});
-								controlPointsButton.setText("Control points");
-						new Label(composite_6, SWT.NONE);
-						
-								final Button rubberBandButton = new Button(composite_6, SWT.CHECK);
-								rubberBandButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-								rubberBandButton.setToolTipText("Enables or disables the \"Rubber band\" option!");
-								rubberBandButton.setSelection(true);
-								rubberBandButton.addSelectionListener(new SelectionAdapter() {
-									public void widgetSelected(final SelectionEvent e) {
-										measureTool.getController().setUseRubberBand(rubberBandButton.getSelection());
-										freehandButton.setEnabled(rubberBandButton.getSelection());
-										if (wC != null) {
-											wC.redraw();
-										}
-									}
-								});
-								rubberBandButton.setText("Rubber band");
-				
-						freehandButton = new Button(composite_6, SWT.CHECK);
-						freehandButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, true, 1, 1));
-						freehandButton.setToolTipText("Enables or disables freehand selections!");
-						freehandButton.addSelectionListener(new SelectionAdapter() {
-							public void widgetSelected(final SelectionEvent e) {
-								measureTool.getController().setFreeHand(freehandButton.getSelection());
-								if (wC != null) {
-									wC.redraw();
-								}
-
-							}
-						});
-						freehandButton.setText("Free Hand");
-				new Label(composite_6, SWT.NONE);
-						
-								final Button tooltipButton_1 = new Button(composite_6, SWT.CHECK);
-								tooltipButton_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, true, 1, 1));
-								tooltipButton_1.setToolTipText("Enables or disables the tooltips!");
-								tooltipButton_1.setSelection(true);
-								tooltipButton_1.addSelectionListener(new SelectionAdapter() {
-									public void widgetSelected(final SelectionEvent e) {
-										measureTool.setShowAnnotation(tooltipButton_1.getSelection());
-										if (wC != null) {
-											wC.redraw();
-										}
-									}
-								});
-								tooltipButton_1.setText("Tooltip");
-						new Label(composite_6, SWT.NONE);
-				new Label(composite_6, SWT.NONE);
-				new Label(composite_6, SWT.NONE);
-				new Label(composite_6, SWT.NONE);
+		final Label lblColours = new Label(composite_6, SWT.SEPARATOR | SWT.HORIZONTAL);
+		lblColours.setText("Colours");
+		GridData gd_lblColours = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_lblColours.widthHint = 133;
+		lblColours.setLayoutData(gd_lblColours);
 		new Label(composite_6, SWT.NONE);
-		
-				newButton = new Button(composite_6, SWT.NONE);
-				newButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
-				newButton.setToolTipText("Start a new measurement!");
-				newButton.addSelectionListener(new SelectionAdapter() {
-					public void widgetSelected(final SelectionEvent e) {
+		new Label(composite_6, SWT.NONE);
+		new Label(composite_6, SWT.NONE);
 
-						Display display = PlatformUI.getWorkbench().getDisplay();
-						display.syncExec(new Runnable() {
+		final Label shapeLabel = new Label(composite_6, SWT.NONE);
+		shapeLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		shapeLabel.setText("Shape:");
+		new Label(composite_6, SWT.NONE);
 
-							public void run() {
-								new TableItem(table, SWT.NONE);
-							}
-						});
-						SwingUtilities.invokeLater(new Runnable() {
-							// !!
-							public void run() {
-								measureTool.clear();
-								measureTool.setArmed(true);
-							}
-						});
+		combo_1 = new Combo(composite_6, SWT.READ_ONLY);
+		combo_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		combo_1.setToolTipText("Selects the measure type!");
+		combo_1.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
 
-					}
-				});
-				newButton.setText("New Measur.");
-				newButton.setEnabled(true);
-		
-				pauseButton = new Button(composite_6, SWT.NONE);
-				pauseButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-				pauseButton.setToolTipText("Edit a measurement!");
-				pauseButton.addSelectionListener(new SelectionAdapter() {
-					public void widgetSelected(final SelectionEvent e) {
-						measureTool.setArmed(!measureTool.isArmed());
-						pauseButton.setText(!measureTool.isArmed() ? "Resume" : "Pause");
-						pauseButton.setEnabled(true);
-						if (wC != null) {
-							((Component) wC).setCursor(!measureTool.isArmed() ? Cursor.getDefaultCursor() : Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
-						}
-					}
-				});
-				pauseButton.setEnabled(false);
-				pauseButton.setText("Edit");
-		
-				endButton = new Button(composite_6, SWT.NONE);
-				endButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-				endButton.setToolTipText("Stop a measurement!");
-				endButton.addSelectionListener(new SelectionAdapter() {
-					public void widgetSelected(final SelectionEvent e) {
-						measureTool.setArmed(false);
-					}
-				});
-				endButton.setText("End");
-				endButton.setEnabled(false);
-		
-				table = new Table(composite_6, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL | SWT.VIRTUAL);
-				GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, true, 3, 3);
-				gd_table.heightHint = 99;
-				table.setLayoutData(gd_table);
-				table.setLinesVisible(true);
-				table.setHeaderVisible(true);
-				
+				String item = combo_1.getItem(combo_1.getSelectionIndex());
+				if (item.equals("Line"))
+					measureTool.setMeasureShapeType(MeasureTool.SHAPE_LINE);
+				else if (item.equals("Path"))
+					measureTool.setMeasureShapeType(MeasureTool.SHAPE_PATH);
+				else if (item.equals("Polygon"))
+					measureTool.setMeasureShapeType(MeasureTool.SHAPE_POLYGON);
+				else if (item.equals("Circle"))
+					measureTool.setMeasureShapeType(MeasureTool.SHAPE_CIRCLE);
+				else if (item.equals("Ellipse"))
+					measureTool.setMeasureShapeType(MeasureTool.SHAPE_ELLIPSE);
+				else if (item.equals("Square"))
+					measureTool.setMeasureShapeType(MeasureTool.SHAPE_SQUARE);
+				else if (item.equals("Rectangle"))
+					measureTool.setMeasureShapeType(MeasureTool.SHAPE_QUAD);
+
+			}
+		});
+		combo_1.setItems(new String[] { "Line", "Path", "Polygon", "Circle", "Ellipse", "Square", "Rectangle" });
+		combo_1.select(0);
+
+		final Label pathTypeLabel = new Label(composite_6, SWT.NONE);
+		pathTypeLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 1, 1));
+		pathTypeLabel.setText("Path type:");
+		new Label(composite_6, SWT.NONE);
+
+		combo_2 = new Combo(composite_6, SWT.READ_ONLY);
+		combo_2.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		combo_2.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				String item = combo_2.getItem(combo_2.getSelectionIndex());
+				if (item.equals("Linear"))
+					measureTool.setPathType(AVKey.LINEAR);
+				else if (item.equals("Rhumb"))
+					measureTool.setPathType(AVKey.RHUMB_LINE);
+				else if (item.equals("Great circle"))
+					measureTool.setPathType(AVKey.GREAT_CIRCLE);
+			}
+		});
+		combo_2.setItems(new String[] { "Linear", "Rhumb", "Great circle" });
+		combo_2.select(0);
+
+		final Label unitsLabel = new Label(composite_6, SWT.NONE);
+		unitsLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, true, 1, 1));
+		unitsLabel.setText("Units:");
+		new Label(composite_6, SWT.NONE);
+
+		combo_3 = new Combo(composite_6, SWT.READ_ONLY);
+		GridData gd_combo_3 = new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1);
+		gd_combo_3.heightHint = 39;
+		combo_3.setLayoutData(gd_combo_3);
+		combo_3.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+
+				String item = combo_3.getItem(combo_3.getSelectionIndex());
+				if (item.equals("M/M\u00b2")) {
+					measureTool.getUnitsFormat().setLengthUnits(UnitsFormat.METERS);
+					measureTool.getUnitsFormat().setAreaUnits(UnitsFormat.SQUARE_METERS);
+				} else if (item.equals("KM/KM\u00b2")) {
+					measureTool.getUnitsFormat().setLengthUnits(UnitsFormat.KILOMETERS);
+					measureTool.getUnitsFormat().setAreaUnits(UnitsFormat.SQUARE_KILOMETERS);
+				} else if (item.equals("KM/Hectare")) {
+					measureTool.getUnitsFormat().setLengthUnits(UnitsFormat.KILOMETERS);
+					measureTool.getUnitsFormat().setAreaUnits(UnitsFormat.HECTARE);
+				} else if (item.equals("Feet/Feet\u00b2")) {
+					measureTool.getUnitsFormat().setLengthUnits(UnitsFormat.FEET);
+					measureTool.getUnitsFormat().setAreaUnits(UnitsFormat.SQUARE_FEET);
+				} else if (item.equals("Miles/Miles\u00b2")) {
+					measureTool.getUnitsFormat().setLengthUnits(UnitsFormat.MILES);
+					measureTool.getUnitsFormat().setAreaUnits(UnitsFormat.SQUARE_MILES);
+				} else if (item.equals("Nm/Miles\u00b2")) {
+					measureTool.getUnitsFormat().setLengthUnits(UnitsFormat.NAUTICAL_MILES);
+					measureTool.getUnitsFormat().setAreaUnits(UnitsFormat.SQUARE_MILES);
+				} else if (item.equals("Yards/Acres")) {
+					measureTool.getUnitsFormat().setLengthUnits(UnitsFormat.YARDS);
+					measureTool.getUnitsFormat().setAreaUnits(UnitsFormat.ACRE);
+				}
+
+			}
+		});
+		combo_3.setItems(new String[] { "M/M^2", "KM/KM^2", "KM/Hectare", "Feet/Feet^2", "Miles/Miles^2", "Nm/Miles^2", "Yards/Acres" });
+		combo_3.select(0);
+
+		final Label angleFormatLabel = new Label(composite_6, SWT.NONE);
+		angleFormatLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, true, 1, 1));
+		angleFormatLabel.setText("Angle Format:");
+		new Label(composite_6, SWT.NONE);
+
+		combo_4 = new Combo(composite_6, SWT.READ_ONLY);
+		GridData gd_combo_4 = new GridData(SWT.FILL, SWT.CENTER, false, true, 1, 1);
+		gd_combo_4.heightHint = 40;
+		combo_4.setLayoutData(gd_combo_4);
+		combo_4.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				String item = combo_4.getItem(combo_4.getSelectionIndex());
+				measureTool.getUnitsFormat().setShowDMS(item.equals("DMS"));
+			}
+		});
+		combo_4.setItems(new String[] { "DD", "DMS" });
+		combo_4.select(0);
+		new Label(composite_6, SWT.NONE);
+		new Label(composite_6, SWT.NONE);
+		new Label(composite_6, SWT.NONE);
+
+		final Button followTerrainButton = new Button(composite_6, SWT.CHECK);
+		followTerrainButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		followTerrainButton.setToolTipText("If enabled lines, circles or \nsegments will follow the terrain!");
+		followTerrainButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				measureTool.setFollowTerrain(followTerrainButton.getSelection());
+				if (wC != null) {
+					wC.redraw();
+				}
+			}
+		});
+		followTerrainButton.setText("Follow terrain");
+
+		final Button controlPointsButton = new Button(composite_6, SWT.CHECK);
+		controlPointsButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, true, 1, 1));
+		controlPointsButton.setToolTipText("Enables or disables the control points!");
+		controlPointsButton.setSelection(true);
+		controlPointsButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				measureTool.setShowControlPoints(controlPointsButton.getSelection());
+				if (wC != null) {
+					wC.redraw();
+				}
+			}
+		});
+		controlPointsButton.setText("Control points");
+		new Label(composite_6, SWT.NONE);
+
+		final Button rubberBandButton = new Button(composite_6, SWT.CHECK);
+		rubberBandButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		rubberBandButton.setToolTipText("Enables or disables the \"Rubber band\" option!");
+		rubberBandButton.setSelection(true);
+		rubberBandButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				measureTool.getController().setUseRubberBand(rubberBandButton.getSelection());
+				freehandButton.setEnabled(rubberBandButton.getSelection());
+				if (wC != null) {
+					wC.redraw();
+				}
+			}
+		});
+		rubberBandButton.setText("Rubber band");
+
+		freehandButton = new Button(composite_6, SWT.CHECK);
+		freehandButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, true, 1, 1));
+		freehandButton.setToolTipText("Enables or disables freehand selections!");
+		freehandButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				measureTool.getController().setFreeHand(freehandButton.getSelection());
+				if (wC != null) {
+					wC.redraw();
+				}
+
+			}
+		});
+		freehandButton.setText("Free Hand");
+		new Label(composite_6, SWT.NONE);
+
+		final Button tooltipButton_1 = new Button(composite_6, SWT.CHECK);
+		tooltipButton_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, true, 1, 1));
+		tooltipButton_1.setToolTipText("Enables or disables the tooltips!");
+		tooltipButton_1.setSelection(true);
+		tooltipButton_1.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				measureTool.setShowAnnotation(tooltipButton_1.getSelection());
+				if (wC != null) {
+					wC.redraw();
+				}
+			}
+		});
+		tooltipButton_1.setText("Tooltip");
+		new Label(composite_6, SWT.NONE);
+		new Label(composite_6, SWT.NONE);
+		new Label(composite_6, SWT.NONE);
+		new Label(composite_6, SWT.NONE);
+		new Label(composite_6, SWT.NONE);
+
+		newButton = new Button(composite_6, SWT.NONE);
+		newButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		newButton.setToolTipText("Start a new measurement!");
+		newButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+
+				Display display = PlatformUI.getWorkbench().getDisplay();
+				display.syncExec(new Runnable() {
+
+					public void run() {
 						new TableItem(table, SWT.NONE);
+					}
+				});
+				SwingUtilities.invokeLater(new Runnable() {
+					// !!
+					public void run() {
+						measureTool.clear();
+						measureTool.setArmed(true);
+					}
+				});
+
+			}
+		});
+		newButton.setText("New Measur.");
+		newButton.setEnabled(true);
+
+		pauseButton = new Button(composite_6, SWT.NONE);
+		pauseButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		pauseButton.setToolTipText("Edit a measurement!");
+		pauseButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				measureTool.setArmed(!measureTool.isArmed());
+				pauseButton.setText(!measureTool.isArmed() ? "Resume" : "Pause");
+				pauseButton.setEnabled(true);
+				if (wC != null) {
+					((Component) wC).setCursor(!measureTool.isArmed() ? Cursor.getDefaultCursor() : Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+				}
+			}
+		});
+		pauseButton.setEnabled(false);
+		pauseButton.setText("Edit");
+
+		endButton = new Button(composite_6, SWT.NONE);
+		endButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		endButton.setToolTipText("Stop a measurement!");
+		endButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				measureTool.setArmed(false);
+			}
+		});
+		endButton.setText("End");
+		endButton.setEnabled(false);
+
+		table = new Table(composite_6, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL | SWT.VIRTUAL);
+		GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, true, 3, 3);
+		gd_table.heightHint = 99;
+		table.setLayoutData(gd_table);
+		table.setLinesVisible(true);
+		table.setHeaderVisible(true);
+
+		new TableItem(table, SWT.NONE);
 
 		if (measureTool != null) {
 			rubberBandButton.setSelection(measureTool.getController().isUseRubberBand());
@@ -1456,62 +1447,62 @@ public class WorldWindOptionsView extends ViewPart {
 		if (measureTool != null) {
 			freehandButton.setSelection(measureTool.getController().isFreeHand());
 		}
-						
-								final Button toSpreadButton = new Button(composite_6, SWT.NONE);
-								GridData gd_toSpreadButton = new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1);
-								gd_toSpreadButton.heightHint = 40;
-								toSpreadButton.setLayoutData(gd_toSpreadButton);
-								toSpreadButton.setToolTipText("Adds the current measurments to a dataframe.\nDelete the dataframe to start a new measurement series!");
-								toSpreadButton.addSelectionListener(new SelectionAdapter() {
-									public void widgetSelected(final SelectionEvent e) {
 
-										RConnection con = WorldWindView.getRConnection();
-										if (con != null) {
+		final Button toSpreadButton = new Button(composite_6, SWT.NONE);
+		GridData gd_toSpreadButton = new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1);
+		gd_toSpreadButton.heightHint = 40;
+		toSpreadButton.setLayoutData(gd_toSpreadButton);
+		toSpreadButton.setToolTipText("Adds the current measurments to a dataframe.\nDelete the dataframe to start a new measurement series!");
+		toSpreadButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
 
-											String val1 = table.getItem(0).getText(0);
-											String val2 = table.getItem(0).getText(1);
-											String val3 = table.getItem(0).getText(2);
-											String val4 = table.getItem(0).getText(3);
-											String val5 = table.getItem(0).getText(4);
-											String val6 = table.getItem(0).getText(5);
-											String[] v = { val1, val2, val3, val4, val5, val6 };
+				RConnection con = WorldWindView.getRConnection();
+				if (con != null) {
 
-											try {
-												con.assign("meas", v);
-											} catch (REngineException e1) {
+					String val1 = table.getItem(0).getText(0);
+					String val2 = table.getItem(0).getText(1);
+					String val3 = table.getItem(0).getText(2);
+					String val4 = table.getItem(0).getText(3);
+					String val5 = table.getItem(0).getText(4);
+					String val6 = table.getItem(0).getText(5);
+					String[] v = { val1, val2, val3, val4, val5, val6 };
 
-												e1.printStackTrace();
-											}
-											try {
+					try {
+						con.assign("meas", v);
+					} catch (REngineException e1) {
 
-												con.eval("df<-cbind(df,meas)");
-												con.eval("df[,1]<-c('Length','Area','Width','Height','Heading','Center')");
-											} catch (RserveException e1) {
+						e1.printStackTrace();
+					}
+					try {
 
-												e1.printStackTrace();
-											}
-											MessageBox messageBox = new MessageBox(new Shell(),
+						con.eval("df<-cbind(df,meas)");
+						con.eval("df[,1]<-c('Length','Area','Width','Height','Heading','Center')");
+					} catch (RserveException e1) {
 
-											SWT.ICON_INFORMATION);
-											messageBox.setText("Info!");
-											messageBox.setMessage("Value(s) transferred!");
-											messageBox.open();
+						e1.printStackTrace();
+					}
+					MessageBox messageBox = new MessageBox(new Shell(),
 
-										} else {
-											MessageBox messageBox = new MessageBox(new Shell(),
+					SWT.ICON_INFORMATION);
+					messageBox.setText("Info!");
+					messageBox.setMessage("Value(s) transferred!");
+					messageBox.open();
 
-											SWT.ICON_WARNING);
-											messageBox.setText("Info!");
-											messageBox.setMessage("Rserve is not Alive!");
-											messageBox.open();
+				} else {
+					MessageBox messageBox = new MessageBox(new Shell(),
 
-										}
+					SWT.ICON_WARNING);
+					messageBox.setText("Info!");
+					messageBox.setMessage("Rserve is not Alive!");
+					messageBox.open();
 
-									}
-								});
-								toSpreadButton.setText("Values->R");
-						new Label(composite_6, SWT.NONE);
-						new Label(composite_6, SWT.NONE);
+				}
+
+			}
+		});
+		toSpreadButton.setText("Values->R");
+		new Label(composite_6, SWT.NONE);
+		new Label(composite_6, SWT.NONE);
 		Listener sortListener = new Listener() {
 			public void handleEvent(Event e) {
 				GridColumn column = (GridColumn) e.widget;
@@ -1992,7 +1983,7 @@ public class WorldWindOptionsView extends ViewPart {
 			layerImages.setName(new File(path).getName());
 			layerImages.setPickEnabled(false);
 			layerImages.addRenderable(si1);
-			LayerComposite lc = new LayerComposite(composite_4, SWT.NONE, si1, layerImages, null);
+			LayerComposite lc = new LayerComposite(compositeLayers, SWT.NONE, si1, layerImages, null);
 			lc.setBounds(10, 10, 300, 60);
 			computeScrolledSize();
 			if (wC != null) {
@@ -2122,7 +2113,7 @@ public class WorldWindOptionsView extends ViewPart {
 			display.syncExec(new Runnable() {
 
 				public void run() {
-					LayerComposite lc = new LayerComposite(composite_4, SWT.NONE, si1, layerImages, sector);
+					LayerComposite lc = new LayerComposite(compositeLayers, SWT.NONE, si1, layerImages, sector);
 					lc.setBounds(10, 10, 300, 60);
 					computeScrolledSize();
 				}
@@ -2161,7 +2152,7 @@ public class WorldWindOptionsView extends ViewPart {
 				}
 			});
 			timer.start();
-			LayerCompositeVideo lc = new LayerCompositeVideo(composite_4, SWT.NONE, surfaceImage, layer, timer);
+			LayerCompositeVideo lc = new LayerCompositeVideo(compositeLayers, SWT.NONE, surfaceImage, layer, timer);
 			lc.setBounds(10, 10, 300, 60);
 			computeScrolledSize();
 			if (wC != null) {
@@ -2196,7 +2187,11 @@ public class WorldWindOptionsView extends ViewPart {
 
 			if (imp != null) {
 				ImageProcessor pr = imp.getProcessor();
-				/*If the image is a color image convert it to RGBA buffered image. If pixel RGB values are 0 alpha value becomes transparent (0)!*/
+				/*
+				 * If the image is a color image convert it to RGBA buffered
+				 * image. If pixel RGB values are 0 alpha value becomes
+				 * transparent (0)!
+				 */
 				if (pr instanceof ColorProcessor) {
 					ColorProcessor cp = (ColorProcessor) pr;
 					int w = pr.getWidth();
@@ -2221,16 +2216,16 @@ public class WorldWindOptionsView extends ViewPart {
 						image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
 					}
 					WritableRaster raster = image.getRaster();
-					if(raster.getWidth()==w&&raster.getHeight()==h){
-					raster.setDataElements(0, 0, w, h, cp.getPixels());
+					if (raster.getWidth() == w && raster.getHeight() == h) {
+						raster.setDataElements(0, 0, w, h, cp.getPixels());
 					}
 				}
 
-				
-                /*If the image is a greyscale image convert to RGBA buffered image. If greyscale value is 0 the pixel becomes transparent!*/
+				/*
+				 * If the image is a greyscale image convert to RGBA buffered
+				 * image. If greyscale value is 0 the pixel becomes transparent!
+				 */
 				else if (pr instanceof ByteProcessor) {
-					
-					
 
 					ByteProcessor byteProc = (ByteProcessor) pr;
 					int w = pr.getWidth();
@@ -2239,47 +2234,41 @@ public class WorldWindOptionsView extends ViewPart {
 						image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
 
 					}
-				
-					
+
 					for (int i = 0; i < w; i++) {
 
 						for (int u = 0; u < h; u++) {
-							
+
 							int grey = byteProc.getPixel(i, u);
 							if (grey == 0) {
-								
-								
-								int r = 0; // red 
-								int g = 0;// green 
-								int b = 0; // blue 
-								int a = 0; // alpha 
-											
-								int col = (a << 24) | (r << 16) | (g << 8) | b;
-								image.setRGB(i, u, col);
-								
-							} else {
-								int r = grey; // red 
-								int g = grey;// green 
-								int b = grey; // blue 
-								int a = 255; // alpha 
-												
-								int col = (a << 24) | (r << 16) | (g << 8) | b;
-								
-								if(byteProc.getWidth()==w&&byteProc.getHeight()==h){
 
+								int r = 0; // red
+								int g = 0;// green
+								int b = 0; // blue
+								int a = 0; // alpha
+
+								int col = (a << 24) | (r << 16) | (g << 8) | b;
 								image.setRGB(i, u, col);
+
+							} else {
+								int r = grey; // red
+								int g = grey;// green
+								int b = grey; // blue
+								int a = 255; // alpha
+
+								int col = (a << 24) | (r << 16) | (g << 8) | b;
+
+								if (byteProc.getWidth() == w && byteProc.getHeight() == h) {
+
+									image.setRGB(i, u, col);
 								}
-								
+
 							}
 
 						}
 					}
 
-
-				}
-					else if (pr instanceof FloatProcessor) {
-					
-					
+				} else if (pr instanceof FloatProcessor) {
 
 					FloatProcessor floatProc = (FloatProcessor) pr;
 					int w = pr.getWidth();
@@ -2288,33 +2277,31 @@ public class WorldWindOptionsView extends ViewPart {
 						image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
 
 					}
-				
-					
+
 					for (int i = 0; i < w; i++) {
 
 						for (int u = 0; u < h; u++) {
-							
+
 							int grey = floatProc.getPixel(i, u);
 							if (grey == 0) {
-								
-								
-								int r = 0; // red 
-								int g = 0;// green 
-								int b = 0; // blue 
-								int a = 0; // alpha 
-											
+
+								int r = 0; // red
+								int g = 0;// green
+								int b = 0; // blue
+								int a = 0; // alpha
+
 								int col = (a << 24) | (r << 16) | (g << 8) | b;
 								image.setRGB(i, u, col);
-								
+
 							} else {
-								int r = grey; // red 
-								int g = grey;// green 
-								int b = grey; // blue 
-								int a = 255; // alpha 
-												
+								int r = grey; // red
+								int g = grey;// green
+								int b = grey; // blue
+								int a = 255; // alpha
+
 								int col = (a << 24) | (r << 16) | (g << 8) | b;
-								if(floatProc.getWidth()==w&&floatProc.getHeight()==h){
-								image.setRGB(i, u, col);
+								if (floatProc.getWidth() == w && floatProc.getHeight() == h) {
+									image.setRGB(i, u, col);
 
 								}
 							}
@@ -2322,9 +2309,8 @@ public class WorldWindOptionsView extends ViewPart {
 						}
 					}
 
-
 				}
-                /*Non transparent conversion to buffered image (faster!)*/
+				/* Non transparent conversion to buffered image (faster!) */
 				else {
 
 					image = imp.getBufferedImage();
@@ -2344,7 +2330,7 @@ public class WorldWindOptionsView extends ViewPart {
 			layerImages.setName(name);
 			layerImages.setPickEnabled(false);
 			layerImages.addRenderable(si1);
-			LayerComposite lc = new LayerComposite(composite_4, SWT.NONE, si1, layerImages, null);
+			LayerComposite lc = new LayerComposite(compositeLayers, SWT.NONE, si1, layerImages, null);
 			lc.setBounds(10, 10, 300, 60);
 			computeScrolledSize();
 			if (wC != null) {
@@ -2372,7 +2358,7 @@ public class WorldWindOptionsView extends ViewPart {
 		display.syncExec(new Runnable() {
 
 			public void run() {
-				LayerCompositeDynamic lc = new LayerCompositeDynamic(composite_4, SWT.NONE, layer);
+				LayerCompositeDynamic lc = new LayerCompositeDynamic(compositeLayers, SWT.NONE, layer);
 				lc.setBounds(10, 10, 300, 60);
 				computeScrolledSize();
 			}
@@ -2384,11 +2370,32 @@ public class WorldWindOptionsView extends ViewPart {
 	}
 
 	public static void computeScrolledSize() {
-		Control co[] = composite_4.getChildren();
-		composite_4.setSize(300, 55 * co.length);
-		scrolledComposite.setMinSize(300, 55 * co.length);
-		composite_4.layout(true);
-		scrolledComposite.layout(true);
+		
+		/*Control children[] = compositeLayers.getChildren();
+		
+		 if (children.length == 0){
+			 
+		 }
+		   
+		  else{
+			  
+		 
+		    for (Control tmp : children) {
+		       // The check below will not work because x, y and the control's bounds could be
+		       // relative to different parents... Better to convert all coordinates to display
+		       // by using Control.toDisplay() and then compare below
+		     System.out.println( tmp.getBounds().y);
+		    
+		     
+		     if(tmp.getBounds().y>200){
+		    	 
+		     }
+		    }
+
+		    }
+		// scrolledComposite.setMinSize(300, 55 * co.length);
+*/		compositeLayers.layout(true);
+		// scrolledComposite.layout(true);
 	}
 
 	public static void insertBeforeCompass(WorldWindow wwd, Layer layer) {

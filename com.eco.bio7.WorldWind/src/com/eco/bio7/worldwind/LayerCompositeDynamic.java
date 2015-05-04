@@ -19,6 +19,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -26,6 +27,8 @@ import org.eclipse.swt.widgets.Scale;
 
 import com.eco.bio7.worldwind.DynamicLayer;
 import com.eco.bio7.worldwind.SurfaceImage;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Label;
 public class LayerCompositeDynamic extends Composite {
 
 	private int number;
@@ -37,7 +40,30 @@ public class LayerCompositeDynamic extends Composite {
 	 */
 	public LayerCompositeDynamic(Composite parent, int style,final RenderableLayer layer) {
 		super(parent, style);
+		/*Important to set the layout data for this composite to scale relative to the parent!*/
+		this.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		setLayout(new GridLayout(4, true));
+		final Button b = new Button(this, SWT.CHECK);
+		b.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 2));
+		b.setText("Dynamic");
+		b.setSelection(true);
+		b.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+
+				if (b.getSelection()) {
+					layer.setEnabled(true);
+					WorldWindView.getWwd().redraw();
+
+				} else {
+					layer.setEnabled(false);
+					WorldWindView.getWwd().redraw();
+				}
+
+				WorldWindView.getWwd().redraw();
+			}
+		});
 		final Scale scale = new Scale(this, SWT.NONE);
+		scale.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 2));
 		scale.setMinimum(1);
 		scale.setMaximum(1000);
 		scale.setSelection(1000);
@@ -47,11 +73,24 @@ public class LayerCompositeDynamic extends Composite {
 				
 			}
 		});
-		scale.setBounds(78, 0, 120, 49);
+		
+				final Button setupButton = new Button(this, SWT.NONE);
+				GridData gd_setupButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+				gd_setupButton.heightHint = 35;
+				setupButton.setLayoutData(gd_setupButton);
+				setupButton.addSelectionListener(new SelectionAdapter() {
+					public void widgetSelected(final SelectionEvent e) {
+						DynamicLayer.invokeSetup();
+					}
+				});
+				setupButton.setText("Setup");
 		
 
 		
 		final Button r = new Button(this, SWT.NONE);
+		GridData gd_r = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_r.heightHint = 35;
+		r.setLayoutData(gd_r);
 		//r.setText("X");
 		r.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/images/delete.gif")));
 		r.setSelection(true);
@@ -73,35 +112,6 @@ public class LayerCompositeDynamic extends Composite {
 
 			}
 		});
-		r.setBounds(204, 24, 42, 25);
-		final Button b = new Button(this, SWT.CHECK);
-		b.setText("Dynamic");
-		b.setSelection(true);
-		b.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-
-				if (b.getSelection()) {
-					layer.setEnabled(true);
-					WorldWindView.getWwd().redraw();
-
-				} else {
-					layer.setEnabled(false);
-					WorldWindView.getWwd().redraw();
-				}
-
-				WorldWindView.getWwd().redraw();
-			}
-		});
-		b.setBounds(10, 4, 68, 40);
-
-		final Button setupButton = new Button(this, SWT.NONE);
-		setupButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				DynamicLayer.invokeSetup();
-			}
-		});
-		setupButton.setText("Setup");
-		setupButton.setBounds(204, 0, 42, 25);
 		//
 	}
 	

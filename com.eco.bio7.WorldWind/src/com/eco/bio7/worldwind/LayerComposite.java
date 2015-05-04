@@ -29,6 +29,10 @@ import org.eclipse.swt.widgets.Shell;
 import gov.nasa.worldwind.render.SurfaceImage;
 import gov.nasa.worldwindx.examples.util.ExampleUtil;
 
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.layout.GridData;
+
 public class LayerComposite extends Composite {
 
 	private int number;
@@ -43,37 +47,70 @@ public class LayerComposite extends Composite {
 	public LayerComposite(Composite parent, int style, final SurfaceImage si, final RenderableLayer layerImages, final Sector sector) {
 		super(parent, style);
 		this.sector = sector;
-		
-		final Scale scale = new Scale(this, SWT.NONE);
-		scale.setMinimum(1);
-		scale.setMaximum(100);
-		scale.setSelection(100);
-		scale.addSelectionListener(new SelectionAdapter() {
+		setLayout(new GridLayout(4, true));
+		/*Important to set the layout data for this composite to scale relative to the parent!*/
+		this.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		final Button b = new Button(this, SWT.CHECK);
+		GridData gd_b = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_b.widthHint = 100;
+		b.setLayoutData(gd_b);
+		b.setText(layerImages.getName());
+		b.setToolTipText(layerImages.getName());
+		b.setSelection(true);
+		b.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				si.setOpacity(((double) scale.getSelection()) / 100);
+
+				if (b.getSelection()) {
+					layerImages.setEnabled(true);
+					WorldWindView.getWwd().redraw();
+
+				} else {
+					layerImages.setEnabled(false);
+					WorldWindView.getWwd().redraw();
+				}
+
 				WorldWindView.getWwd().redraw();
 			}
 		});
-		scale.setBounds(78, 0, 120, 49);
+				
+				final Scale scale = new Scale(this, SWT.NONE);
+				GridData gd_scale = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+				gd_scale.heightHint = 36;
+				gd_scale.widthHint = 93;
+				scale.setLayoutData(gd_scale);
+				scale.setMinimum(1);
+				scale.setMaximum(100);
+				scale.setSelection(100);
+				scale.addSelectionListener(new SelectionAdapter() {
+					public void widgetSelected(final SelectionEvent e) {
+						si.setOpacity(((double) scale.getSelection()) / 100);
+						WorldWindView.getWwd().redraw();
+					}
+				});
+						
+								final Button r = new Button(this, SWT.NONE);
+								GridData gd_r = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+								gd_r.heightHint = 35;
+								r.setLayoutData(gd_r);
+								//r.setText("X");
+								r.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/images/delete.gif")));
+								r.setSelection(true);
+								r.addSelectionListener(new SelectionAdapter() {
+									public void widgetSelected(final SelectionEvent e) {
 
-		final Button r = new Button(this, SWT.NONE);
-		//r.setText("X");
-		r.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/images/delete.gif")));
-		r.setSelection(true);
-		r.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
+										LayerList layers = WorldWindView.getWwd().getModel().getLayers();
+										layers.remove(layerImages);
 
-				LayerList layers = WorldWindView.getWwd().getModel().getLayers();
-				layers.remove(layerImages);
+										dispose();
+										WorldWindOptionsView.getOptionsInstance().computeScrolledSize();
+										WorldWindView.getWwd().redraw();
 
-				dispose();
-				WorldWindOptionsView.computeScrolledSize();
-				WorldWindView.getWwd().redraw();
-
-			}
-		});
-		r.setBounds(204, 12, 41, 25);
+									}
+								});
 		final Button goTo = new Button(this, SWT.NONE);
+		GridData gd_goTo = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_goTo.heightHint = 35;
+		goTo.setLayoutData(gd_goTo);
 		goTo.setText("Loc");
 		goTo.setSelection(true);
 		goTo.addSelectionListener(new SelectionAdapter() {
@@ -96,32 +133,11 @@ public class LayerComposite extends Composite {
 
 				}
 
-				WorldWindOptionsView.computeScrolledSize();
+				WorldWindOptionsView.getOptionsInstance().computeScrolledSize();
 				WorldWindView.getWwd().redraw();
 
 			}
 		});
-		goTo.setBounds(244, 12, 41, 25);
-		final Button b = new Button(this, SWT.CHECK);
-		b.setText(layerImages.getName());
-		b.setToolTipText(layerImages.getName());
-		b.setSelection(true);
-		b.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-
-				if (b.getSelection()) {
-					layerImages.setEnabled(true);
-					WorldWindView.getWwd().redraw();
-
-				} else {
-					layerImages.setEnabled(false);
-					WorldWindView.getWwd().redraw();
-				}
-
-				WorldWindView.getWwd().redraw();
-			}
-		});
-		b.setBounds(10, 4, 68, 40);
 		//
 	}
 

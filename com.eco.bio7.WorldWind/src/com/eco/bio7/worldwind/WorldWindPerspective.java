@@ -30,7 +30,7 @@ public class WorldWindPerspective implements IPerspectiveFactory {
 		layout.setEditorAreaVisible(false);
 		
 		
-		layout.addPlaceholder(WorldWindOptionsView.ID, IPageLayout.LEFT, 0.35f, "Right");
+		layout.addPlaceholder(WorldWindOptionsView.ID, IPageLayout.LEFT, 0.25f, "Right");
 
 	}
 
