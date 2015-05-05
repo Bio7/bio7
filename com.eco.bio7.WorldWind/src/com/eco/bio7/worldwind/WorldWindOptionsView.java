@@ -215,6 +215,8 @@ public class WorldWindOptionsView extends ViewPart {
 	protected ToolTip captureTip;
 	private Spinner spinner;
 	private BufferedImage image;
+	private Button imageAlphaButton;
+	protected boolean imageAlpha;
 	private static int takeImagefromIJ = 0;
 
 	// These corners do not form a Sector, so SurfaceImage must generate a
@@ -630,6 +632,7 @@ public class WorldWindOptionsView extends ViewPart {
 		createLayers();
 		composite.layout();
 		newItemExpandItem_1 = new ExpandItem(expandBar, SWT.NONE);
+		newItemExpandItem_1.setExpanded(true);
 		newItemExpandItem_1.setHeight(1200);
 		newItemExpandItem_1.setText("Layers");
 
@@ -652,35 +655,44 @@ public class WorldWindOptionsView extends ViewPart {
 		Composite composite_7 = new Composite(composite_1, SWT.NONE);
 		composite_7.setLayout(new GridLayout(3, true));
 		FormData fd_composite_7 = new FormData();
-		fd_composite_7.bottom = new FormAttachment(100, -876);
 		fd_composite_7.top = new FormAttachment(0, 10);
 		fd_composite_7.right = new FormAttachment(100, -5);
 		fd_composite_7.left = new FormAttachment(0);
 		composite_7.setLayoutData(fd_composite_7);
 		new Label(composite_7, SWT.NONE);
 		latitudeLabel = new Label(composite_7, SWT.NONE);
-		latitudeLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		GridData gd_latitudeLabel = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		gd_latitudeLabel.heightHint = 25;
+		latitudeLabel.setLayoutData(gd_latitudeLabel);
 		latitudeLabel.setAlignment(SWT.CENTER);
 		latitudeLabel.setText("Latitude");
 		new Label(composite_7, SWT.NONE);
 		new Label(composite_7, SWT.NONE);
 
 		minLat = new Text(composite_7, SWT.BORDER);
-		minLat.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		GridData gd_minLat = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		gd_minLat.heightHint = 25;
+		minLat.setLayoutData(gd_minLat);
 		minLat.setToolTipText("Min");
 		minLat.setText("50.999583");
 
 		final Label longitudeLabel = new Label(composite_7, SWT.CENTER);
-		longitudeLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		GridData gd_longitudeLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_longitudeLabel.heightHint = 25;
+		longitudeLabel.setLayoutData(gd_longitudeLabel);
 		longitudeLabel.setAlignment(SWT.CENTER);
 		longitudeLabel.setText("Longitude");
 
 		minLon = new Text(composite_7, SWT.BORDER);
-		minLon.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		GridData gd_minLon = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		gd_minLon.heightHint = 25;
+		minLon.setLayoutData(gd_minLon);
 		minLon.setToolTipText("Min");
 		minLon.setText("9.999583");
 		goButton = new Button(composite_7, SWT.NONE);
-		goButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		GridData gd_goButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_goButton.heightHint = 25;
+		goButton.setLayoutData(gd_goButton);
 		goButton.setToolTipText("Fly to the specified area");
 		goButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -694,13 +706,17 @@ public class WorldWindOptionsView extends ViewPart {
 		goButton.setText("Go to");
 
 		maxLon = new Text(composite_7, SWT.BORDER);
-		maxLon.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		GridData gd_maxLon = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_maxLon.heightHint = 25;
+		maxLon.setLayoutData(gd_maxLon);
 		maxLon.setToolTipText("Max");
 		maxLon.setText("11.00042");
 		new Label(composite_7, SWT.NONE);
 
 		maxLat = new Text(composite_7, SWT.BORDER);
-		maxLat.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		GridData gd_maxLat = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_maxLat.heightHint = 25;
+		maxLat.setLayoutData(gd_maxLat);
 		maxLat.setToolTipText("Max");
 		maxLat.setText("52.00042");
 		new Label(composite_7, SWT.NONE);
@@ -709,7 +725,9 @@ public class WorldWindOptionsView extends ViewPart {
 		new Label(composite_7, SWT.NONE);
 
 		final Button addImageLayerButton = new Button(composite_7, SWT.NONE);
-		addImageLayerButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		GridData gd_addImageLayerButton = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		gd_addImageLayerButton.heightHint = 25;
+		addImageLayerButton.setLayoutData(gd_addImageLayerButton);
 		addImageLayerButton.setToolTipText("Add an image from a file location");
 		addImageLayerButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -749,7 +767,9 @@ public class WorldWindOptionsView extends ViewPart {
 		});
 		addImageLayerButton.setText("Add GeoTIFF");
 		fromImagejButton = new Button(composite_7, SWT.NONE);
-		fromImagejButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		GridData gd_fromImagejButton = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		gd_fromImagejButton.heightHint = 25;
+		fromImagejButton.setLayoutData(gd_fromImagejButton);
 		fromImagejButton.setToolTipText("Add an active ImageJ image \nfrom the ImageJ view");
 		fromImagejButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -776,7 +796,9 @@ public class WorldWindOptionsView extends ViewPart {
 		});
 		fromImagejButton.setText("IJ image");
 		videoButton = new Button(composite_7, SWT.NONE);
-		videoButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		GridData gd_videoButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_videoButton.heightHint = 41;
+		videoButton.setLayoutData(gd_videoButton);
 		videoButton.setToolTipText("Enables a dynamic ImageJ layer\non top of the globe");
 		videoButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -785,7 +807,9 @@ public class WorldWindOptionsView extends ViewPart {
 		});
 		videoButton.setText("IJ Dynamic");
 		dynamicButton = new Button(composite_7, SWT.NONE);
-		dynamicButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		GridData gd_dynamicButton = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		gd_dynamicButton.heightHint = 25;
+		dynamicButton.setLayoutData(gd_dynamicButton);
 		dynamicButton.setToolTipText("Add a dynamic layer which executes compiled code");
 		dynamicButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -796,7 +820,9 @@ public class WorldWindOptionsView extends ViewPart {
 		});
 		dynamicButton.setText("Dyn. Layer");
 		removeAllButton = new Button(composite_7, SWT.NONE);
-		removeAllButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		GridData gd_removeAllButton = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		gd_removeAllButton.heightHint = 42;
+		removeAllButton.setLayoutData(gd_removeAllButton);
 		removeAllButton.setToolTipText("Add an area to the text fields.\nThe variables have to be defined in the current R workspace");
 		removeAllButton.addSelectionListener(new SelectionAdapter() {
 			private REXPLogical bolExistsMaxLon;
@@ -860,7 +886,9 @@ public class WorldWindOptionsView extends ViewPart {
 		removeAllButton.setText("Get Area");
 
 		computeButton = new Button(composite_7, SWT.NONE);
-		computeButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		GridData gd_computeButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_computeButton.heightHint = 25;
+		computeButton.setLayoutData(gd_computeButton);
 		computeButton.setToolTipText("Computes coordinates for the Lat, Lon \ntextfields alternately (min, max!)");
 		computeButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -930,7 +958,9 @@ public class WorldWindOptionsView extends ViewPart {
 		computeButton.setText("Compute");
 
 		Button btnNewButton = new Button(composite_7, SWT.NONE);
-		btnNewButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		GridData gd_btnNewButton = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		gd_btnNewButton.heightHint = 25;
+		btnNewButton.setLayoutData(gd_btnNewButton);
 		btnNewButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -944,16 +974,36 @@ public class WorldWindOptionsView extends ViewPart {
 			}
 		});
 		btnNewButton.setText("Add Shapefile");
-		new Label(composite_7, SWT.NONE);
+
+		imageAlphaButton = new Button(composite_7, SWT.CHECK);
+		imageAlphaButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if (imageAlphaButton.getSelection()) {
+					image = null;
+					imageAlpha = true;
+
+				} else {
+					image = null;
+					imageAlpha = false;
+				}
+			}
+		});
+		imageAlphaButton.setToolTipText("If this button is checked image\r\npixels with value 0 (RGB, greyscale, float, etc.) \r\nwill rendered transparent.");
+		imageAlphaButton.setText("Image Alpha");
 
 		final Spinner spinner_1 = new Spinner(composite_7, SWT.BORDER);
-		spinner_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		spinner_1.setToolTipText("Select the layer (image tab) which will be rendered to ImageJ.\r\nThis action allows the rendering and simulation simultanously\r\nwith WorldWind and ImageJ.");
+		GridData gd_spinner_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_spinner_1.heightHint = 22;
+		spinner_1.setLayoutData(gd_spinner_1);
 
 		compositeLayers = new Composite(composite_1, SWT.NONE);
+		fd_composite_7.bottom = new FormAttachment(compositeLayers, -6);
 		compositeLayers.setLayout(new GridLayout(1, true));
 		FormData fd_composite_4 = new FormData();
-		fd_composite_4.top = new FormAttachment(composite_7, 6);
 		fd_composite_4.bottom = new FormAttachment(100, -10);
+		fd_composite_4.top = new FormAttachment(0, 342);
 		fd_composite_4.right = new FormAttachment(100, -5);
 		fd_composite_4.left = new FormAttachment(0);
 		compositeLayers.setLayoutData(fd_composite_4);
@@ -2192,123 +2242,129 @@ public class WorldWindOptionsView extends ViewPart {
 				 * image. If pixel RGB values are 0 alpha value becomes
 				 * transparent (0)!
 				 */
-				if (pr instanceof ColorProcessor) {
-					ColorProcessor cp = (ColorProcessor) pr;
-					int w = pr.getWidth();
-					int h = pr.getHeight();
+				if (imageAlpha) {
+					if (pr instanceof ColorProcessor) {
+						ColorProcessor cp = (ColorProcessor) pr;
+						int w = pr.getWidth();
+						int h = pr.getHeight();
 
-					ByteProcessor alpha = cp.getChannel(4, null);
-					for (int i = 0; i < w; i++) {
+						ByteProcessor alpha = cp.getChannel(4, null);
+						for (int i = 0; i < w; i++) {
 
-						for (int u = 0; u < h; u++) {
-							int[] rgb = cp.getPixel(i, u, null);
-							if (rgb[0] == 0 && rgb[1] == 0 && rgb[2] == 0) {
+							for (int u = 0; u < h; u++) {
+								int[] rgb = cp.getPixel(i, u, null);
+								if (rgb[0] == 0 && rgb[1] == 0 && rgb[2] == 0) {
 
-								alpha.set(i, u, 0);
+									alpha.set(i, u, 0);
+
+								}
 
 							}
+						}
 
+						cp.setChannel(4, alpha);
+						if (image == null) {
+							image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+						}
+						WritableRaster raster = image.getRaster();
+						if (raster.getWidth() == w && raster.getHeight() == h) {
+							raster.setDataElements(0, 0, w, h, cp.getPixels());
 						}
 					}
 
-					cp.setChannel(4, alpha);
-					if (image == null) {
-						image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-					}
-					WritableRaster raster = image.getRaster();
-					if (raster.getWidth() == w && raster.getHeight() == h) {
-						raster.setDataElements(0, 0, w, h, cp.getPixels());
-					}
-				}
+					/*
+					 * If the image is a greyscale image convert to RGBA
+					 * buffered image. If greyscale value is 0 the pixel becomes
+					 * transparent!
+					 */
+					else if (pr instanceof ByteProcessor) {
 
-				/*
-				 * If the image is a greyscale image convert to RGBA buffered
-				 * image. If greyscale value is 0 the pixel becomes transparent!
-				 */
-				else if (pr instanceof ByteProcessor) {
+						ByteProcessor byteProc = (ByteProcessor) pr;
+						int w = pr.getWidth();
+						int h = pr.getHeight();
+						if (image == null) {
+							image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
 
-					ByteProcessor byteProc = (ByteProcessor) pr;
-					int w = pr.getWidth();
-					int h = pr.getHeight();
-					if (image == null) {
-						image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+						}
 
-					}
+						for (int i = 0; i < w; i++) {
 
-					for (int i = 0; i < w; i++) {
+							for (int u = 0; u < h; u++) {
 
-						for (int u = 0; u < h; u++) {
+								int grey = byteProc.getPixel(i, u);
+								if (grey == 0) {
 
-							int grey = byteProc.getPixel(i, u);
-							if (grey == 0) {
+									int r = 0; // red
+									int g = 0;// green
+									int b = 0; // blue
+									int a = 0; // alpha
 
-								int r = 0; // red
-								int g = 0;// green
-								int b = 0; // blue
-								int a = 0; // alpha
+									int col = (a << 24) | (r << 16) | (g << 8) | b;
+									if (image != null)
+										image.setRGB(i, u, col);
 
-								int col = (a << 24) | (r << 16) | (g << 8) | b;
-								image.setRGB(i, u, col);
+								} else {
+									int r = grey; // red
+									int g = grey;// green
+									int b = grey; // blue
+									int a = 255; // alpha
 
-							} else {
-								int r = grey; // red
-								int g = grey;// green
-								int b = grey; // blue
-								int a = 255; // alpha
+									int col = (a << 24) | (r << 16) | (g << 8) | b;
 
-								int col = (a << 24) | (r << 16) | (g << 8) | b;
+									if (byteProc.getWidth() == w && byteProc.getHeight() == h) {
+										if (image != null)
+											image.setRGB(i, u, col);
+									}
 
-								if (byteProc.getWidth() == w && byteProc.getHeight() == h) {
-
-									image.setRGB(i, u, col);
 								}
 
 							}
+						}
+
+					} else if (pr instanceof FloatProcessor) {
+
+						FloatProcessor floatProc = (FloatProcessor) pr;
+						int w = pr.getWidth();
+						int h = pr.getHeight();
+						if (image == null) {
+							image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
 
 						}
-					}
 
-				} else if (pr instanceof FloatProcessor) {
+						for (int i = 0; i < w; i++) {
 
-					FloatProcessor floatProc = (FloatProcessor) pr;
-					int w = pr.getWidth();
-					int h = pr.getHeight();
-					if (image == null) {
-						image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+							for (int u = 0; u < h; u++) {
 
-					}
+								int grey = floatProc.getPixel(i, u);
+								if (grey == 0) {
 
-					for (int i = 0; i < w; i++) {
+									int r = 0; // red
+									int g = 0;// green
+									int b = 0; // blue
+									int a = 0; // alpha
 
-						for (int u = 0; u < h; u++) {
+									int col = (a << 24) | (r << 16) | (g << 8) | b;
+									if (image != null)
+										image.setRGB(i, u, col);
 
-							int grey = floatProc.getPixel(i, u);
-							if (grey == 0) {
+								} else {
+									int r = grey; // red
+									int g = grey;// green
+									int b = grey; // blue
+									int a = 255; // alpha
 
-								int r = 0; // red
-								int g = 0;// green
-								int b = 0; // blue
-								int a = 0; // alpha
+									int col = (a << 24) | (r << 16) | (g << 8) | b;
+									if (floatProc.getWidth() == w && floatProc.getHeight() == h) {
+										if (image != null)
+											image.setRGB(i, u, col);
 
-								int col = (a << 24) | (r << 16) | (g << 8) | b;
-								image.setRGB(i, u, col);
-
-							} else {
-								int r = grey; // red
-								int g = grey;// green
-								int b = grey; // blue
-								int a = 255; // alpha
-
-								int col = (a << 24) | (r << 16) | (g << 8) | b;
-								if (floatProc.getWidth() == w && floatProc.getHeight() == h) {
-									image.setRGB(i, u, col);
-
+									}
 								}
+
 							}
-
 						}
-					}
 
+					}
 				}
 				/* Non transparent conversion to buffered image (faster!) */
 				else {
@@ -2370,31 +2426,30 @@ public class WorldWindOptionsView extends ViewPart {
 	}
 
 	public static void computeScrolledSize() {
-		
-		/*Control children[] = compositeLayers.getChildren();
-		
-		 if (children.length == 0){
-			 
-		 }
-		   
-		  else{
-			  
-		 
-		    for (Control tmp : children) {
-		       // The check below will not work because x, y and the control's bounds could be
-		       // relative to different parents... Better to convert all coordinates to display
-		       // by using Control.toDisplay() and then compare below
-		     System.out.println( tmp.getBounds().y);
-		    
-		     
-		     if(tmp.getBounds().y>200){
-		    	 
-		     }
-		    }
 
-		    }
-		// scrolledComposite.setMinSize(300, 55 * co.length);
-*/		compositeLayers.layout(true);
+		/*
+		 * Control children[] = compositeLayers.getChildren();
+		 * 
+		 * if (children.length == 0){
+		 * 
+		 * }
+		 * 
+		 * else{
+		 * 
+		 * 
+		 * for (Control tmp : children) { // The check below will not work
+		 * because x, y and the control's bounds could be // relative to
+		 * different parents... Better to convert all coordinates to display //
+		 * by using Control.toDisplay() and then compare below
+		 * System.out.println( tmp.getBounds().y);
+		 * 
+		 * 
+		 * if(tmp.getBounds().y>200){
+		 * 
+		 * } }
+		 * 
+		 * } // scrolledComposite.setMinSize(300, 55 * co.length);
+		 */compositeLayers.layout(true);
 		// scrolledComposite.layout(true);
 	}
 
