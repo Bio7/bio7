@@ -10,7 +10,6 @@
 	<classpathentry exported="true" kind="lib" path="libs/common.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jcommon-0.9.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jfreechart-0.9.20.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/log4j.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/swing-layout-1.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="baseline.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/swt-grouplayout.jar"/>

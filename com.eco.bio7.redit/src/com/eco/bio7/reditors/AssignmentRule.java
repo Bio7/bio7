@@ -39,6 +39,15 @@ public class AssignmentRule implements IRule {
 		
 			
 		} 
+		/*Scan for the special infix operator :=  defined by e.g. by the data.table package!*/
+		else if(c == ':'){
+			c = scanner.read();
+			if (c == '=') {
+
+				return tokenAssign;
+			}
+			scanner.unread();
+		}
 		/*Exclude >=*/
 		else if (c == '>') {
 			c = scanner.read();

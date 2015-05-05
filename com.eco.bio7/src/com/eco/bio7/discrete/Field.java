@@ -453,38 +453,7 @@ public class Field {
 		Field.xystate = xyold;
 	}
 	
-	/**
-	 * Removes all states from the Field and from the state table.
-	 */
-	public  static void removeAllStates() {
-
-		
-
-		Display display = PlatformUI.getWorkbench().getDisplay();
-		display.syncExec(new Runnable() {
-
-			public void run() {
-				Grid grid = StateTable.grid;
-				/*
-				 * We don't use the list directly but the grid entrys. Since we
-				 * remove it iterately (At each iteration step a state will be
-				 * removed)!
-				 */
-
-				for (int i = 0; i < grid.getItemCount(); i++) {
-
-					String state = grid.getItem(i).getText(0);
-
-					StateTable.unsetCell(state);
-
-				}
-
-				grid.removeAll();
-
-			}
-		});
-
-	}
+	
 
 	/**
 	 * Transfers the Quadgrid pattern to the R workspace!

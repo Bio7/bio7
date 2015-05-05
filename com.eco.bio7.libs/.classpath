@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry exported="true" kind="lib" path="libs/j3dcore.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/j3dutils.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/vecmath.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/guava-18.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="hardware/jssc.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/poi-3.10.1-20140818.jar"/>
@@ -29,7 +26,6 @@
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry exported="true" kind="lib" path="math/joone-engine.jar" sourcepath="com.eco.bio7.libssrc.zip"/>
-	<classpathentry exported="true" kind="lib" path="math/jscience.jar" sourcepath="com.eco.bio7.libssrc.zip"/>
 	<classpathentry exported="true" kind="lib" path="OpenOffice/juh.jar" sourcepath="com.eco.bio7.libssrc.zip"/>
 	<classpathentry exported="true" kind="lib" path="OpenOffice/jurt.jar"/>
 	<classpathentry exported="true" kind="lib" path="OpenOffice/ridl.jar"/>

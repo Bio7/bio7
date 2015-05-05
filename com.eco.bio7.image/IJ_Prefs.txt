@@ -1,14 +1,5 @@
-<<<<<<< HEAD
-#ImageJ 1.49p Preferences
-#Wed Apr 29 22:29:42 CEST 2015
-=======
 #ImageJ 1.49s Preferences
-<<<<<<< HEAD
-#Thu Apr 30 16:53:45 CEST 2015
-=======
-#Wed Apr 29 16:22:43 CEST 2015
->>>>>>> branch 'master' of https://bitbucket.org/maustenfeld/bio7-new.git
->>>>>>> branch 'master' of https://bitbucket.org/maustenfeld/bio7-new.git
+#Tue May 05 16:26:26 CEST 2015
 new.fill=1
 .log.height=250
 .arrows.loc=846,219

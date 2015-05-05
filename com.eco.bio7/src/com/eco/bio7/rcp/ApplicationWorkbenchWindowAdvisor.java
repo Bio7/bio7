@@ -520,7 +520,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		} else if (getOS().equals("Mac")) {
 			store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "Ã„, ,Ã¤,Ã–,Ã¶,Ãœ,Ã¼,+,!,Â§,$,%,&,/,(,),=,?,[,],Â°,^,;,:,>,<,|,*,Âµ,\\,@,\",â€œ,Â¸,`,~,#,},{,Â¹,Â²,Â³,_,-");
 		} else {
-			store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "ï¿½, ,ï¿½,ï¿½,ï¿½,ï¿½,ï¿½,+,!,ï¿½,ï¿½,$,%,&,/,(,),=,?,[,],ï¿½,^,;,:,>,<,|,*,ï¿½,\\,ï¿½,@,\",ï¿½,ï¿½,ï¿½,`,~,#,},{,ï¿½,ï¿½,_,-");
+			store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "Ä, ,ä,Ö,ö,Ü,ü,+,!,ü,§,$,%,&,/,(,),=,?,[,],°,^,;,:,>,<,|,*,µ,\\,”,@,\",“,”,´,`,~,#,},{,²,³,_,-");
 		}
 
 		store.setDefault("RSERVE_NATIVE_START", true);

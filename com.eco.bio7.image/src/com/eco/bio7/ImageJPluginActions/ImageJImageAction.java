@@ -26,7 +26,7 @@ public class ImageJImageAction extends Action implements IMenuCreator {
 
 	private Menu fMenu;
 	String[] thetype = { "8-bit", "16-bit", "32-bit", "8-bit Color",
-			"RGB Color", "RGB Stack", "HSB Stack" };
+			"RGB Color", "RGB Stack", "HSB Stack","Lab Stack"};
 	String[] theadjust = { "Brightness/Contrast...", "Window/Level...",
 			"Color Balance...", "Threshold...", "Size...", "Canvas Size...","Line Width... "};
 	String[] thecolour = { "Stack to RGB", "Make Composite",

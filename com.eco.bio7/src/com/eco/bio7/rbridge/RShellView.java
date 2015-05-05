@@ -363,7 +363,7 @@ public class RShellView extends ViewPart {
 		Button btnEvaluate = new Button(composite_1, SWT.F2);
 		GridData gd_btnEvaluate = new GridData(SWT.FILL, SWT.FILL, true, false, 1,
 				1);
-		gd_btnEvaluate.heightHint = 43;
+		gd_btnEvaluate.heightHint = 39;
 		btnEvaluate.setLayoutData(gd_btnEvaluate);
 		btnEvaluate.setText("Evaluate");
 		btnEvaluate.addSelectionListener(new SelectionAdapter() {
