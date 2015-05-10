@@ -74,7 +74,7 @@ public class RPlot extends Composite {
 
 		plotButton = new Button(composite_1, SWT.NONE);
 		GridData gd_plotButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_plotButton.heightHint = 30;
+		gd_plotButton.heightHint = 40;
 		plotButton.setLayoutData(gd_plotButton);
 		plotButton.setText("Boxplot");
 		// plotButton.setToolTipText("Draws a boxplot from a vector or a dataframe.");
@@ -133,7 +133,7 @@ public class RPlot extends Composite {
 		
 				xyButton = new Button(composite_1, SWT.NONE);
 				GridData gd_xyButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-				gd_xyButton.heightHint = 30;
+				gd_xyButton.heightHint = 40;
 				xyButton.setLayoutData(gd_xyButton);
 				// xyButton.setToolTipText("Executes the general plot command.\nOne or two(x,y) arguments can be plotted.");
 				xyButton.addSelectionListener(new SelectionAdapter() {
@@ -189,7 +189,7 @@ public class RPlot extends Composite {
 																										
 																												perspButton = new Button(composite_1, SWT.NONE);
 																												GridData gd_perspButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-																												gd_perspButton.heightHint = 30;
+																												gd_perspButton.heightHint = 40;
 																												perspButton.setLayoutData(gd_perspButton);
 																												perspButton.addSelectionListener(new SelectionAdapter() {
 																													public void widgetSelected(final SelectionEvent e) {
@@ -228,7 +228,7 @@ public class RPlot extends Composite {
 																										
 																												voronoiButton = new Button(composite_1, SWT.NONE);
 																												GridData gd_voronoiButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-																												gd_voronoiButton.heightHint = 30;
+																												gd_voronoiButton.heightHint = 40;
 																												voronoiButton.setLayoutData(gd_voronoiButton);
 																												fd_pdfCheckBox.right = new FormAttachment(voronoiButton, 70, SWT.RIGHT);
 																												fd_pdfCheckBox.left = new FormAttachment(voronoiButton, 5, SWT.RIGHT);
@@ -289,7 +289,7 @@ public class RPlot extends Composite {
 																				
 																						histButton = new Button(composite_1, SWT.NONE);
 																						GridData gd_histButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-																						gd_histButton.heightHint = 30;
+																						gd_histButton.heightHint = 40;
 																						histButton.setLayoutData(gd_histButton);
 																						// histButton.setToolTipText("Draws a histogram from a vector");
 																						histButton.addSelectionListener(new SelectionAdapter() {
@@ -327,7 +327,7 @@ public class RPlot extends Composite {
 																				
 																						pieButton = new Button(composite_1, SWT.NONE);
 																						GridData gd_pieButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-																						gd_pieButton.heightHint = 30;
+																						gd_pieButton.heightHint = 40;
 																						pieButton.setLayoutData(gd_pieButton);
 																						// pieButton.setToolTipText("Draws a piechart from a vector");
 																						pieButton.addSelectionListener(new SelectionAdapter() {
@@ -366,7 +366,7 @@ public class RPlot extends Composite {
 																				
 																						contourButton = new Button(composite_1, SWT.NONE);
 																						GridData gd_contourButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-																						gd_contourButton.heightHint = 30;
+																						gd_contourButton.heightHint = 40;
 																						contourButton.setLayoutData(gd_contourButton);
 																						contourButton.setToolTipText("Draws a contour plot.\nA matrix is required by default");
 																						contourButton.addSelectionListener(new SelectionAdapter() {
@@ -405,7 +405,7 @@ public class RPlot extends Composite {
 																		
 																				imageButton = new Button(composite_1, SWT.NONE);
 																				GridData gd_imageButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-																				gd_imageButton.heightHint = 30;
+																				gd_imageButton.heightHint = 40;
 																				imageButton.setLayoutData(gd_imageButton);
 																				imageButton.setToolTipText("Draws the image plot from a matrix");
 																				imageButton.addSelectionListener(new SelectionAdapter() {
@@ -478,7 +478,7 @@ public class RPlot extends Composite {
 		
 				plotButton_1 = new Button(composite_1, SWT.NONE);
 				GridData gd_plotButton_1 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-				gd_plotButton_1.heightHint = 30;
+				gd_plotButton_1.heightHint = 40;
 				plotButton_1.setLayoutData(gd_plotButton_1);
 				plotButton_1.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(final SelectionEvent e) {

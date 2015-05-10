@@ -122,7 +122,7 @@ public class PackagesList extends Shell {
 										
 												final Button updateButton = new Button(this, SWT.NONE);
 												GridData gd_updateButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-												gd_updateButton.heightHint = 35;
+												gd_updateButton.heightHint = 40;
 												updateButton.setLayoutData(gd_updateButton);
 												updateButton.addSelectionListener(new SelectionAdapter() {
 													public void widgetSelected(final SelectionEvent e) {
@@ -154,7 +154,7 @@ public class PackagesList extends Shell {
 												
 														final Button installButton = new Button(this, SWT.NONE);
 														GridData gd_installButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-														gd_installButton.heightHint = 35;
+														gd_installButton.heightHint = 40;
 														installButton.setLayoutData(gd_installButton);
 														installButton.addSelectionListener(new SelectionAdapter() {
 															public void widgetSelected(final SelectionEvent e) {

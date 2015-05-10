@@ -85,7 +85,7 @@ public class RLibraryList extends Shell {
 		
 				final Button uninstallButton = new Button(this, SWT.NONE);
 				GridData gd_uninstallButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
-				gd_uninstallButton.heightHint = 35;
+				gd_uninstallButton.heightHint = 40;
 				uninstallButton.setLayoutData(gd_uninstallButton);
 				uninstallButton.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(final SelectionEvent e) {

@@ -363,7 +363,7 @@ public class RShellView extends ViewPart {
 		Button btnEvaluate = new Button(composite_1, SWT.F2);
 		GridData gd_btnEvaluate = new GridData(SWT.FILL, SWT.FILL, true, false, 1,
 				1);
-		gd_btnEvaluate.heightHint = 39;
+		gd_btnEvaluate.heightHint = 40;
 		btnEvaluate.setLayoutData(gd_btnEvaluate);
 		btnEvaluate.setText("Evaluate");
 		btnEvaluate.addSelectionListener(new SelectionAdapter() {
@@ -376,7 +376,7 @@ public class RShellView extends ViewPart {
 		loadButton = new Button(composite_1, SWT.NONE);
 		GridData gd_loadButton = new GridData(SWT.FILL, SWT.FILL, true, true,
 				1, 1);
-		gd_loadButton.heightHint = 53;
+		gd_loadButton.heightHint = 40;
 		loadButton.setLayoutData(gd_loadButton);
 		loadButton.setToolTipText("Load history");
 		loadButton.addSelectionListener(new SelectionAdapter() {
@@ -386,8 +386,10 @@ public class RShellView extends ViewPart {
 		});
 		loadButton.setText("Load");
 		saveButton = new Button(composite_1, SWT.NONE);
-		saveButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true,
-				1, 1));
+		GridData gd_saveButton = new GridData(SWT.FILL, SWT.FILL, true, true,
+				1, 1);
+		gd_saveButton.heightHint = 40;
+		saveButton.setLayoutData(gd_saveButton);
 		saveButton.setToolTipText("Save history");
 		saveButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -397,8 +399,10 @@ public class RShellView extends ViewPart {
 		saveButton.setText("Save");
 		
 				final Button rhelpButton = new Button(composite_1, SWT.NONE);
-				rhelpButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true,
-						false, 1, 1));
+				GridData gd_rhelpButton = new GridData(SWT.FILL, SWT.FILL, true,
+						false, 1, 1);
+				gd_rhelpButton.heightHint = 40;
+				rhelpButton.setLayoutData(gd_rhelpButton);
 				rhelpButton.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(final SelectionEvent e) {
 
@@ -450,6 +454,7 @@ public class RShellView extends ViewPart {
 				Button helpButton = new Button(composite_1, SWT.NONE);
 				GridData gd_helpButton = new GridData(SWT.FILL, SWT.FILL, true, false,
 						1, 1);
+				gd_helpButton.heightHint = 40;
 				gd_helpButton.widthHint = 51;
 				helpButton.setLayoutData(gd_helpButton);
 				helpButton.addSelectionListener(new SelectionAdapter() {
@@ -541,7 +546,7 @@ public class RShellView extends ViewPart {
 				Button btnNewButton = new Button(composite_1, SWT.NONE);
 				GridData gd_btnNewButton = new GridData(SWT.FILL, SWT.FILL, true, true,
 						1, 1);
-				gd_btnNewButton.heightHint = 48;
+				gd_btnNewButton.heightHint = 40;
 				gd_btnNewButton.widthHint = 86;
 				btnNewButton.setLayoutData(gd_btnNewButton);
 				btnNewButton.addSelectionListener(new SelectionAdapter() {
@@ -634,7 +639,7 @@ public class RShellView extends ViewPart {
 		objectsButton = new Button(composite, SWT.NONE);
 		GridData gd_objectsButton = new GridData(SWT.FILL, SWT.CENTER, true,
 				false, 1, 1);
-		gd_objectsButton.heightHint = 39;
+		gd_objectsButton.heightHint = 40;
 		objectsButton.setLayoutData(gd_objectsButton);
 		objectsButton.setToolTipText("Refresh the R workspace");
 		objectsButton.addSelectionListener(new SelectionAdapter() {
@@ -650,8 +655,10 @@ public class RShellView extends ViewPart {
 		objectsButton.setText("Refresh");
 
 		removeButton = new Button(composite, SWT.NONE);
-		removeButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true,
-				false, 1, 1));
+		GridData gd_removeButton = new GridData(SWT.FILL, SWT.FILL, true,
+				false, 1, 1);
+		gd_removeButton.heightHint = 40;
+		removeButton.setLayoutData(gd_removeButton);
 		removeButton
 				.setToolTipText("Remove selected variables from the workspace");
 		removeButton.addSelectionListener(new SelectionAdapter() {
@@ -661,8 +668,10 @@ public class RShellView extends ViewPart {
 		});
 		removeButton.setText("Remove");
 		loadButton_1 = new Button(composite, SWT.NONE);
-		loadButton_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true,
-				false, 1, 1));
+		GridData gd_loadButton_1 = new GridData(SWT.FILL, SWT.FILL, true,
+				false, 1, 1);
+		gd_loadButton_1.heightHint = 40;
+		loadButton_1.setLayoutData(gd_loadButton_1);
 		loadButton_1
 				.setToolTipText("Saves the current workspace to \nthe temporary location");
 		loadButton_1.addSelectionListener(new SelectionAdapter() {
@@ -677,8 +686,10 @@ public class RShellView extends ViewPart {
 				Bio7Plugin.getDefault(), "icons/ordner_zu.gif"));
 
 		gcButton = new Button(composite, SWT.NONE);
-		gcButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false,
-				1, 1));
+		GridData gd_gcButton = new GridData(SWT.FILL, SWT.FILL, true, false,
+				1, 1);
+		gd_gcButton.heightHint = 40;
+		gcButton.setLayoutData(gd_gcButton);
 		gcButton.setToolTipText("Causes a garbage collection to take place");
 		gcButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -1073,8 +1084,10 @@ public class RShellView extends ViewPart {
 		spatialStatisticsTabItem.setControl(list_5);
 
 		xButton = new Button(composite, SWT.NONE);
-		xButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false,
-				1, 1));
+		GridData gd_xButton = new GridData(SWT.FILL, SWT.FILL, true, false,
+				1, 1);
+		gd_xButton.heightHint = 40;
+		xButton.setLayoutData(gd_xButton);
 		xButton.setToolTipText("Clear the text field");
 		xButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -1083,8 +1096,10 @@ public class RShellView extends ViewPart {
 		});
 		xButton.setText("Clear");
 		fontButton = new Button(composite, SWT.NONE);
-		fontButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true,
-				false, 1, 1));
+		GridData gd_fontButton = new GridData(SWT.FILL, SWT.FILL, true,
+				false, 1, 1);
+		gd_fontButton.heightHint = 40;
+		fontButton.setLayoutData(gd_fontButton);
 		fontButton
 				.setToolTipText("Changes the fonts for the list and \nthe results view.\nChanges are stored");
 		fontButton.addSelectionListener(new SelectionAdapter() {
@@ -1115,8 +1130,10 @@ public class RShellView extends ViewPart {
 		fontButton.setText("Font");
 
 		iButton = new Button(composite, SWT.NONE);
-		iButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false,
-				1, 1));
+		GridData gd_iButton = new GridData(SWT.FILL, SWT.FILL, true, false,
+				1, 1);
+		gd_iButton.heightHint = 40;
+		iButton.setLayoutData(gd_iButton);
 		iButton.setImage(ResourceManager.getPluginImage(
 				Bio7Plugin.getDefault(), "icons/help.gif"));
 		iButton.addSelectionListener(new SelectionAdapter() {
