@@ -676,7 +676,7 @@ public class RShellView extends ViewPart {
 		loadButton_1.setImage(ResourceManager.getPluginImage(
 				Bio7Plugin.getDefault(), "icons/ordner_zu.gif"));
 
-		gcButton = new Button(composite, SWT.FLAT);
+		gcButton = new Button(composite, SWT.NONE);
 		gcButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false,
 				1, 1));
 		gcButton.setToolTipText("Causes a garbage collection to take place");
