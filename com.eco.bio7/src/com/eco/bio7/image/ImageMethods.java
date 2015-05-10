@@ -209,10 +209,12 @@ public class ImageMethods extends ViewPart {
 		gridData14.widthHint = 86;
 		gridData14.horizontalIndent = 0;
 		GridData gridData3 = new GridData();
+		gridData3.heightHint = 35;
 		gridData3.horizontalAlignment = GridData.FILL;
 		gridData3.grabExcessHorizontalSpace = true;
 		gridData3.verticalAlignment = GridData.CENTER;
 		GridData gridData21 = new GridData();
+		gridData21.heightHint = 35;
 		gridData21.horizontalAlignment = GridData.FILL;
 		gridData21.horizontalIndent = 0;
 		gridData21.grabExcessHorizontalSpace = true;
@@ -230,7 +232,7 @@ public class ImageMethods extends ViewPart {
 		top.setLayout(gridLayout1);
 		label = new Label(top, SWT.NONE);
 		label.setText("Alpha Image");
-		label.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
+		label.setLayoutData(new GridData(SWT.CENTER, SWT.FILL, false, false, 1, 1));
 		label1 = new Label(top, SWT.NONE);
 		label1.setText("Alpha Quadgrid");
 		label1.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
@@ -264,6 +266,7 @@ public class ImageMethods extends ViewPart {
 		button5.setLayoutData(gridData3);
 		button5.setToolTipText("Remove the current image of the Points panel");
 		GridData gridData1 = new GridData(SWT.FILL, SWT.FILL, true, false);
+		gridData1.heightHint = 35;
 		gridData1.horizontalIndent = 0;
 		button1 = new Button(top, SWT.NONE);
 		regelmaessigGif = new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/regelmaessig.gif"));
@@ -278,6 +281,7 @@ public class ImageMethods extends ViewPart {
 
 		});
 		GridData gridData20 = new GridData();
+		gridData20.heightHint = 35;
 		gridData20.horizontalAlignment = GridData.FILL;
 		gridData20.grabExcessHorizontalSpace = true;
 		gridData20.verticalAlignment = SWT.FILL;
@@ -456,7 +460,7 @@ public class ImageMethods extends ViewPart {
 			}
 		});
 		final GridData gd_voronoiButton = new GridData(SWT.FILL, SWT.FILL, false, false);
-		gd_voronoiButton.heightHint = 30;
+		gd_voronoiButton.heightHint = 35;
 		voronoiButton.setLayoutData(gd_voronoiButton);
 		voronoiButton.setText("Voronoi");
 
@@ -474,12 +478,14 @@ public class ImageMethods extends ViewPart {
 			}
 		});
 		final GridData gd_delauneyButton = new GridData(SWT.FILL, SWT.CENTER, false, false);
-		gd_delauneyButton.heightHint = 30;
+		gd_delauneyButton.heightHint = 35;
 		delauneyButton.setLayoutData(gd_delauneyButton);
 		delauneyButton.setText("Delauney");
 
 		final Button dynamicButton = new Button(top, SWT.CHECK);
-		dynamicButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		GridData gd_dynamicButton = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		gd_dynamicButton.heightHint = 30;
+		dynamicButton.setLayoutData(gd_dynamicButton);
 		dynamicButton.setToolTipText("Dynamic Voronoi visualization");
 		dynamicButton.setSelection(true);
 		dynamicButton.addSelectionListener(new SelectionAdapter() {
@@ -492,7 +498,9 @@ public class ImageMethods extends ViewPart {
 		dynamicButton.setText("Dynamic Voro.");
 
 		final Button drawAreasButton = new Button(top, SWT.CHECK);
-		drawAreasButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		GridData gd_drawAreasButton = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		gd_drawAreasButton.heightHint = 30;
+		drawAreasButton.setLayoutData(gd_drawAreasButton);
 		drawAreasButton.setToolTipText("Clip Voronoi Areas");
 		drawAreasButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -514,7 +522,9 @@ public class ImageMethods extends ViewPart {
 		drawAreasButton.setText("Clip Areas");
 
 		Button btnDynamic = new Button(top, SWT.CHECK);
-		btnDynamic.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		GridData gd_btnDynamic = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		gd_btnDynamic.heightHint = 30;
+		btnDynamic.setLayoutData(gd_btnDynamic);
 		btnDynamic.setToolTipText("Dynamic Delauney visualization");
 		btnDynamic.addSelectionListener(new SelectionAdapter() {
 
@@ -528,7 +538,9 @@ public class ImageMethods extends ViewPart {
 		btnDynamic.setText("Dynamic Del.");
 
 		btnAreas = new Button(top, SWT.CHECK);
-		btnAreas.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		GridData gd_btnAreas = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		gd_btnAreas.heightHint = 30;
+		btnAreas.setLayoutData(gd_btnAreas);
 		btnAreas.setToolTipText("Draw Voronoi Areas");
 		btnAreas.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -570,7 +582,7 @@ public class ImageMethods extends ViewPart {
 		lblNewLabel_4.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 2, 1));
 		lblNewLabel_4.setText("ImageJ And Points Panel");
 		GridData gridData22 = new GridData();
-		gridData22.heightHint = 30;
+		gridData22.heightHint = 35;
 		gridData22.horizontalAlignment = GridData.FILL;
 		gridData22.grabExcessHorizontalSpace = false;
 		gridData22.verticalAlignment = GridData.CENTER;
@@ -590,7 +602,7 @@ public class ImageMethods extends ViewPart {
 
 		});
 		GridData gridData12 = new GridData();
-		gridData12.heightHint = 30;
+		gridData12.heightHint = 35;
 		gridData12.horizontalAlignment = GridData.FILL;
 		gridData12.grabExcessHorizontalSpace = true;
 		gridData12.verticalAlignment = GridData.CENTER;
@@ -620,7 +632,7 @@ public class ImageMethods extends ViewPart {
 			}
 		});
 		GridData gridData31 = new GridData(SWT.FILL, SWT.CENTER, true, false);
-		gridData31.heightHint = 30;
+		gridData31.heightHint = 35;
 		button8 = new Button(top, SWT.NONE);
 		// button8.setFont(SWTResourceManager.getFont("Courier New", 9,
 		// SWT.BOLD));
@@ -637,7 +649,7 @@ public class ImageMethods extends ViewPart {
 		});
 
 		GridData gridData13 = new GridData(SWT.FILL, SWT.FILL, false, false);
-		gridData13.heightHint = 30;
+		gridData13.heightHint = 35;
 		// button8.setFont(new Font(Display.getDefault(), "Tahoma", 8,
 		// SWT.BOLD));
 		button7 = new Button(top, SWT.NONE);
@@ -661,6 +673,7 @@ public class ImageMethods extends ViewPart {
 		lblNewLabel.setText("Transfer Selected Data To R");
 
 		Button btnNewButton = new Button(top, SWT.NONE);
+		btnNewButton.setToolTipText("Transfers the ImageJ \"Results Table\" data\r\nas a dataframe to R (datatype double).");
 		rGif = org.eclipse.wb.swt.ResourceManager.getPluginImage("com.eco.bio7", "bin/pics/r.gif");
 		btnNewButton.setImage(rGif);
 		btnNewButton.addSelectionListener(new SelectionAdapter() {
@@ -680,11 +693,12 @@ public class ImageMethods extends ViewPart {
 			}
 		});
 		GridData gd_btnNewButton = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
-		gd_btnNewButton.heightHint = 30;
+		gd_btnNewButton.heightHint = 35;
 		btnNewButton.setLayoutData(gd_btnNewButton);
 		btnNewButton.setText("IJ RT       ");
 
 		btnNewButton_1 = new Button(top, SWT.NONE);
+		btnNewButton_1.setToolTipText("Transfers an opened ImageJ stack (pixel data)\r\nas a matrix list or RasterStack to R.\r\nThe datatype can be selected, too!");
 		rGif = org.eclipse.wb.swt.ResourceManager.getPluginImage("com.eco.bio7", "bin/pics/r.gif");
 		btnNewButton_1.setImage(rGif);
 		btnNewButton_1.addSelectionListener(new SelectionAdapter() {
@@ -739,11 +753,11 @@ public class ImageMethods extends ViewPart {
 			}
 		});
 		GridData gd_btnNewButton_1 = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
-		gd_btnNewButton_1.heightHint = 30;
+		gd_btnNewButton_1.heightHint = 35;
 		btnNewButton_1.setLayoutData(gd_btnNewButton_1);
 		btnNewButton_1.setText("IJ RasterStack");
 		GridData gridData = new org.eclipse.swt.layout.GridData(SWT.FILL, SWT.FILL, false, false);
-		gridData.heightHint = 30;
+		gridData.heightHint = 35;
 		button2 = new Button(top, SWT.NONE);
 		// button2.setFont(SWTResourceManager.getFont("Courier New", 9,
 		// SWT.BOLD));
@@ -770,7 +784,7 @@ public class ImageMethods extends ViewPart {
 			}
 		});
 		GridData gridData131 = new GridData(SWT.FILL, SWT.FILL, true, false);
-		gridData131.heightHint = 30;
+		gridData131.heightHint = 35;
 		button4 = new Button(top, SWT.NONE);
 		// button4.setFont(SWTResourceManager.getFont("Courier New", 9,
 		// SWT.BOLD));
@@ -779,7 +793,7 @@ public class ImageMethods extends ViewPart {
 		// button4.setFont(new Font(Display.getDefault(), "Tahoma", 8,
 		// SWT.BOLD));
 		button4.setLayoutData(gridData131);
-		button4.setToolTipText("Transfer particle measurement to R");
+		button4.setToolTipText("Transfers a particle measurement to R.\r\nThe image has to be thresholded and in\r\nthe ImageJ \"Analyze Particles\" dialog the option\r\n\"Display results\" has to be selected.\r\nSimply automates an ImageJ \"Results\r\nTable\" transfer workflow (see \"IJ RT\" action).");
 		button4.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
 			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
 				if (RState.isBusy() == false) {
@@ -823,7 +837,7 @@ public class ImageMethods extends ViewPart {
 		});
 
 		final GridData gd_selectedPixelsButton = new GridData(SWT.FILL, SWT.FILL, false, false);
-		gd_selectedPixelsButton.heightHint = 30;
+		gd_selectedPixelsButton.heightHint = 35;
 		selectedPixelsButton.setLayoutData(gd_selectedPixelsButton);
 		selectedPixelsButton.setText("Pixel       ");
 
@@ -845,7 +859,7 @@ public class ImageMethods extends ViewPart {
 			}
 		});
 		final GridData gd_matchingButton = new GridData(SWT.FILL, SWT.FILL, false, false);
-		gd_matchingButton.heightHint = 30;
+		gd_matchingButton.heightHint = 35;
 		matchingButton.setLayoutData(gd_matchingButton);
 		matchingButton.setText("Selection       ");
 
@@ -880,7 +894,7 @@ public class ImageMethods extends ViewPart {
 			}
 		});
 		GridData gd_selectedRoiPixelButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-		gd_selectedRoiPixelButton.heightHint = 30;
+		gd_selectedRoiPixelButton.heightHint = 35;
 		selectedRoiPixelButton.setLayoutData(gd_selectedRoiPixelButton);
 
 		btnPixelRoiStack = new Button(top, SWT.NONE);
@@ -912,7 +926,7 @@ public class ImageMethods extends ViewPart {
 			}
 		});
 		GridData gd_btnPixelRoiStack = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-		gd_btnPixelRoiStack.heightHint = 30;
+		gd_btnPixelRoiStack.heightHint = 35;
 		btnPixelRoiStack.setLayoutData(gd_btnPixelRoiStack);
 
 		CLabel lblNewLabel_1 = new CLabel(top, SWT.NONE);
@@ -956,7 +970,7 @@ public class ImageMethods extends ViewPart {
 		});
 
 		final GridData gd_picToRButton = new GridData(SWT.FILL, SWT.FILL, false, false);
-		gd_picToRButton.heightHint = 30;
+		gd_picToRButton.heightHint = 35;
 		picToRButton.setLayoutData(gd_picToRButton);
 
 		final Button picButton = new Button(top, SWT.NONE);
@@ -1009,7 +1023,7 @@ public class ImageMethods extends ViewPart {
 			}
 		});
 		final GridData gd_picButton = new GridData(SWT.FILL, SWT.CENTER, false, false);
-		gd_picButton.heightHint = 30;
+		gd_picButton.heightHint = 35;
 		picButton.setLayoutData(gd_picButton);
 
 		transferTypeCombo = new Combo(top, SWT.READ_ONLY);
@@ -1111,7 +1125,7 @@ public class ImageMethods extends ViewPart {
 			}
 		});
 		final GridData gd_clusterImageButton = new GridData(SWT.FILL, SWT.CENTER, true, false);
-		gd_clusterImageButton.heightHint = 30;
+		gd_clusterImageButton.heightHint = 35;
 		clusterImageButton.setLayoutData(gd_clusterImageButton);
 
 		final Button pcaButton = new Button(top, SWT.NONE);
@@ -1160,7 +1174,7 @@ public class ImageMethods extends ViewPart {
 			}
 		});
 		final GridData gd_pcaButton = new GridData(SWT.FILL, SWT.CENTER, false, false);
-		gd_pcaButton.heightHint = 30;
+		gd_pcaButton.heightHint = 35;
 		pcaButton.setLayoutData(gd_pcaButton);
 		button5.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
 			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {

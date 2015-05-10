@@ -32,7 +32,7 @@ import com.eco.bio7.preferences.PreferenceConstants;
 public class InstallRPackagesJob extends WorkspaceJob {
 
 	protected String[] items;
-	protected String[] itemsSpatial;
+	//protected String[] itemsSpatial;
 
 	public InstallRPackagesJob() {
 		super("Install packages...");
@@ -48,7 +48,7 @@ public class InstallRPackagesJob extends WorkspaceJob {
 
 				public void run() {
 					items = PackagesList.getAllList().getSelection();
-					itemsSpatial = PackagesList.getSpatialList().getSelection();
+					//itemsSpatial = PackagesList.getSpatialList().getSelection();
 				}
 			});
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
@@ -80,7 +80,7 @@ public class InstallRPackagesJob extends WorkspaceJob {
 
 			}
 			/* If thematic (spatial) packages are selected! */
-			for (int i = 0; i < itemsSpatial.length; i++) {
+			/*for (int i = 0; i < itemsSpatial.length; i++) {
 
 				String out = null;
 				try {
@@ -97,7 +97,7 @@ public class InstallRPackagesJob extends WorkspaceJob {
 
 				System.out.println(out);
 
-			}
+			}*/
 
 		}
 		return Status.OK_STATUS;

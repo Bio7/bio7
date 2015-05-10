@@ -29,6 +29,8 @@ import com.eco.bio7.discrete3d.Quad3dview;
 import com.eco.bio7.methods.CurrentStates;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.jogamp.opengl.util.FPSAnimator;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.GridData;
 
 public class MidpointGui extends Shell {
 
@@ -41,20 +43,19 @@ public class MidpointGui extends Shell {
 	 * @param args
 	 */
 	public MidpointGui() {
-		try {
-			Display display = Display.getDefault();
-			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
-				shell = new MidpointGui(display, SWT.SHELL_TRIM | SWT.TOOL | SWT.ON_TOP);
-			} else {
-				shell = new MidpointGui(display, SWT.SHELL_TRIM);
 
-			}
-			shell.open();
-			shell.layout();
+		/* Remove the if clause to edit in the WindowBuilder!!!!! */
+		Display display = Display.getDefault();
+		if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+			shell = new MidpointGui(display, SWT.SHELL_TRIM | SWT.TOOL
+					| SWT.ON_TOP);
+		} else {
+			shell = new MidpointGui(display, SWT.SHELL_TRIM);
 
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
+		shell.open();
+		shell.layout();
+
 	}
 
 	private Spinner spinner;
@@ -66,6 +67,14 @@ public class MidpointGui extends Shell {
 	private Spinner spinner_1;
 	protected boolean accepted;
 	protected String[] textWeights;
+	private Label fractalDimensionLabel;
+	private Label randomAdditionsLabel;
+	private Label seedLabel;
+	private Button okButton;
+	private Button cancelButton;
+	private Label lblScale;
+	private Button shuffleButton;
+	private Label standardDeviationLabel;
 
 	/**
 	 * Create the shell
@@ -83,21 +92,31 @@ public class MidpointGui extends Shell {
 	 */
 	protected void createContents() {
 		setText("Midpoint 2D");
-		setSize(244, 377);
+		setSize(417, 493);
+		setLayout(new GridLayout(3, true));
 		spinner = new Spinner(this, SWT.BORDER);
+		GridData gd_spinner = new GridData(SWT.FILL, SWT.FILL, true, false, 1,
+				1);
+		gd_spinner.heightHint = 25;
+		spinner.setLayoutData(gd_spinner);
 		spinner.setToolTipText("Maximal number of recursions (n = 2 ^ maxlevel)");
 		spinner.setMaximum(12);
 		spinner.setSelection(6);
-		spinner.setBounds(11, 13, 84, 22);
 
 		Label sizeLabel;
 		sizeLabel = new Label(this, SWT.NONE);
-		sizeLabel.setBounds(119, 16, 103, 15);
+		GridData gd_sizeLabel = new GridData(SWT.FILL, SWT.FILL, false, false,
+				1, 1);
+		gd_sizeLabel.heightHint = 30;
+		sizeLabel.setLayoutData(gd_sizeLabel);
 		sizeLabel.setText("Maxlevel");
+		new Label(this, SWT.NONE);
 
 		text = new Text(this, SWT.BORDER);
+		GridData gd_text = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+		gd_text.heightHint = 25;
+		text.setLayoutData(gd_text);
 		text.setToolTipText("Initial standard deviation");
-		text.setBounds(11, 43, 84, 25);
 		text.setText("1.0");
 		text.addListener(SWT.Modify, new Listener() {
 			private Double value;
@@ -110,22 +129,26 @@ public class MidpointGui extends Shell {
 					accepted = true;
 
 				} catch (Exception e) {
-					text.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
+					text.setForeground(new Color(Display.getCurrent(), 255, 0,
+							0));
 
 					accepted = false;
 				}
 			}
 
 		});
-
-		Label standardDeviationLabel;
 		standardDeviationLabel = new Label(this, SWT.NONE);
-		standardDeviationLabel.setBounds(119, 46, 100, 15);
 		standardDeviationLabel.setText("Standard Deviation");
 
+		Label standardDeviationLabel;
+		new Label(this, SWT.NONE);
+
 		text_1 = new Text(this, SWT.BORDER);
+		GridData gd_text_1 = new GridData(SWT.FILL, SWT.FILL, false, false, 1,
+				1);
+		gd_text_1.heightHint = 25;
+		text_1.setLayoutData(gd_text_1);
 		text_1.setToolTipText("Parameter that determines fractal dimension (dd = 3 - h)");
-		text_1.setBounds(11, 76, 84, 25);
 		text_1.setText("1.0");
 		text_1.addListener(SWT.Modify, new Listener() {
 			private Double value;
@@ -134,11 +157,13 @@ public class MidpointGui extends Shell {
 
 				try {
 					value = new Double(text_1.getText());
-					text_1.setForeground(new Color(Display.getCurrent(), 0, 0, 0));
+					text_1.setForeground(new Color(Display.getCurrent(), 0, 0,
+							0));
 					accepted = true;
 
 				} catch (Exception e) {
-					text_1.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
+					text_1.setForeground(new Color(Display.getCurrent(), 255,
+							0, 0));
 
 					accepted = false;
 				}
@@ -146,16 +171,33 @@ public class MidpointGui extends Shell {
 
 		});
 
+		fractalDimensionLabel = new Label(this, SWT.NONE);
+		fractalDimensionLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL,
+				false, false, 1, 1));
+		fractalDimensionLabel.setText("Fractal Dimension");
+		new Label(this, SWT.NONE);
+
 		combo = new Combo(this, SWT.NONE);
+		GridData gd_combo = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+		gd_combo.heightHint = 25;
+		combo.setLayoutData(gd_combo);
 		combo.setToolTipText("Turns on/off random additions");
 		combo.select(0);
-		combo.setBounds(11, 109, 84, 23);
 
 		combo.setItems(new String[] { "True", "False" });
 		combo.select(0);
+
+		randomAdditionsLabel = new Label(this, SWT.NONE);
+		randomAdditionsLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL,
+				false, false, 1, 1));
+		randomAdditionsLabel.setText("Random additions");
+		new Label(this, SWT.NONE);
 		text_2 = new Text(this, SWT.BORDER);
+		GridData gd_text_2 = new GridData(SWT.FILL, SWT.FILL, false, false, 1,
+				1);
+		gd_text_2.heightHint = 25;
+		text_2.setLayoutData(gd_text_2);
 		text_2.setToolTipText("Seed value for random number generator");
-		text_2.setBounds(11, 140, 84, 25);
 		text_2.setText("-9999");
 		text_2.addListener(SWT.Modify, new Listener() {
 			private Integer value;
@@ -164,11 +206,13 @@ public class MidpointGui extends Shell {
 
 				try {
 					value = new Integer(text_2.getText());
-					text_2.setForeground(new Color(Display.getCurrent(), 0, 0, 0));
+					text_2.setForeground(new Color(Display.getCurrent(), 0, 0,
+							0));
 					accepted = true;
 
 				} catch (Exception e) {
-					text_2.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
+					text_2.setForeground(new Color(Display.getCurrent(), 255,
+							0, 0));
 
 					accepted = false;
 				}
@@ -176,22 +220,109 @@ public class MidpointGui extends Shell {
 
 		});
 
-		Label fractalDimensionLabel;
-		fractalDimensionLabel = new Label(this, SWT.NONE);
-		fractalDimensionLabel.setBounds(119, 79, 100, 15);
-		fractalDimensionLabel.setText("Fractal Dimension");
-
-		Label randomAdditionsLabel;
-		randomAdditionsLabel = new Label(this, SWT.NONE);
-		randomAdditionsLabel.setBounds(119, 109, 100, 15);
-		randomAdditionsLabel.setText("Random additions");
-
-		Label seedLabel;
 		seedLabel = new Label(this, SWT.NONE);
-		seedLabel.setBounds(101, 143, 39, 15);
+		seedLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false,
+				false, 1, 1));
 		seedLabel.setText("Seed");
 
-		final Button okButton = new Button(this, SWT.NONE);
+		shuffleButton = new Button(this, SWT.NONE);
+		GridData gd_shuffleButton = new GridData(SWT.FILL, SWT.FILL, false,
+				false, 1, 1);
+		gd_shuffleButton.heightHint = 35;
+		shuffleButton.setLayoutData(gd_shuffleButton);
+		shuffleButton.setToolTipText("Creates a random seed!");
+		shuffleButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				text_2.setText("" + (int) (Math.random() * 100000000));
+			}
+		});
+		shuffleButton.setText("Shuffle");
+
+		text_3 = new Text(this, SWT.BORDER);
+		GridData gd_text_3 = new GridData(SWT.FILL, SWT.FILL, false, false, 2,
+				1);
+		gd_text_3.heightHint = 25;
+		text_3.setLayoutData(gd_text_3);
+		text_3.setToolTipText("Weighted states!");
+		text_3.addListener(SWT.Modify, new Listener() {
+			private Double value;
+
+			public void handleEvent(Event event) {
+				textWeights = text_3.getText().split(",");
+
+				for (int i = 0; i < textWeights.length; i++) {
+					try {
+						value = new Double(textWeights[i]);
+						text_3.setForeground(new Color(Display.getCurrent(), 0,
+								0, 0));
+						accepted = true;
+
+					} catch (Exception e) {
+						text_3.setForeground(new Color(Display.getCurrent(),
+								255, 0, 0));
+
+						accepted = false;
+					}
+				}
+
+			}
+
+		});
+		StringBuffer buff = applyWeights();
+		text_3.setText(buff.toString());
+		new Label(this, SWT.NONE);
+		{
+			Button btnCreateWeights = new Button(this, SWT.NONE);
+			GridData gd_btnCreateWeights = new GridData(SWT.FILL, SWT.FILL,
+					false, false, 1, 1);
+			gd_btnCreateWeights.heightHint = 35;
+			btnCreateWeights.setLayoutData(gd_btnCreateWeights);
+			btnCreateWeights.setToolTipText("Creates a weight for each state!");
+			btnCreateWeights.addSelectionListener(new SelectionAdapter() {
+
+				public void widgetSelected(SelectionEvent e) {
+					StringBuffer buff = applyWeights();
+					text_3.setText(buff.toString());
+
+				}
+			});
+			btnCreateWeights.setText("Create Weights");
+		}
+		new Label(this, SWT.NONE);
+		new Label(this, SWT.NONE);
+
+		createImageButton = new Button(this, SWT.CHECK);
+		GridData gd_createImageButton = new GridData(SWT.FILL, SWT.FILL, false,
+				false, 1, 1);
+		gd_createImageButton.heightHint = 30;
+		createImageButton.setLayoutData(gd_createImageButton);
+		createImageButton.setToolTipText("Creates a fractal image in ImageJ");
+		createImageButton.setText("Create Image");
+
+		spinner_1 = new Spinner(this, SWT.BORDER);
+		GridData gd_spinner_1 = new GridData(SWT.FILL, SWT.FILL, false, false,
+				1, 1);
+		gd_spinner_1.heightHint = 25;
+		spinner_1.setLayoutData(gd_spinner_1);
+		spinner_1.setToolTipText("Values of the image*scale!");
+		spinner_1.setMinimum(-10000);
+		spinner_1.setMaximum(10000);
+		spinner_1.setSelection(100);
+		{
+			lblScale = new Label(this, SWT.NONE);
+			lblScale.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false,
+					false, 1, 1));
+			lblScale.setText("Scale");
+		}
+		new Label(this, SWT.NONE);
+		new Label(this, SWT.NONE);
+		new Label(this, SWT.NONE);
+
+		okButton = new Button(this, SWT.NONE);
+		GridData gd_okButton = new GridData(SWT.FILL, SWT.FILL, false, false,
+				1, 1);
+		gd_okButton.heightHint = 35;
+		okButton.setLayoutData(gd_okButton);
 		okButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				int po = spinner.getSelection();
@@ -207,7 +338,8 @@ public class MidpointGui extends Shell {
 
 					if (t.length == CurrentStates.getStateList().size()) {
 
-						if (t.length > 1 && CurrentStates.getStateList().size() > 1) {
+						if (t.length > 1
+								&& CurrentStates.getStateList().size() > 1) {
 							final int pow = (int) Math.pow(2, po);
 							/*
 							 * Adjust the size of the discrete grids! Stop the
@@ -220,7 +352,9 @@ public class MidpointGui extends Shell {
 							}
 							/* Adjust the fieldsize of the different grids! */
 							Field.setSize(pow, pow);
-							CreateMidpointJob job = new CreateMidpointJob(po, sigma, fractal, selected, seed, scale, t, createImage);
+							CreateMidpointJob job = new CreateMidpointJob(po,
+									sigma, fractal, selected, seed, scale, t,
+									createImage);
 							// job.setSystem(true);
 							job.schedule();
 							/* Restart the animator */
@@ -228,15 +362,18 @@ public class MidpointGui extends Shell {
 								an.start();
 							}
 						} else {
-							Bio7Dialog.message("At least one State and two weights\nhave to be selected!");
+							Bio7Dialog
+									.message("At least one State and two weights\nhave to be selected!");
 						}
 					} else {
 
-						Bio7Dialog.message("To many or few weights selected!\nPlease create weights!");
+						Bio7Dialog
+								.message("To many or few weights selected!\nPlease create weights!");
 
 					}
 				} else {
-					CreateMidpointJob job = new CreateMidpointJob(po, sigma, fractal, selected, seed, scale, t, createImage);
+					CreateMidpointJob job = new CreateMidpointJob(po, sigma,
+							fractal, selected, seed, scale, t, createImage);
 					// job.setSystem(true);
 					job.schedule();
 
@@ -245,85 +382,19 @@ public class MidpointGui extends Shell {
 			}
 		});
 		okButton.setText("Ok");
-		okButton.setBounds(11, 279, 84, 25);
 
-		final Button cancelButton = new Button(this, SWT.NONE);
+		cancelButton = new Button(this, SWT.NONE);
+		GridData gd_cancelButton = new GridData(SWT.FILL, SWT.FILL, false,
+				false, 1, 1);
+		gd_cancelButton.heightHint = 35;
+		cancelButton.setLayoutData(gd_cancelButton);
 		cancelButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				dispose();
 			}
 		});
 		cancelButton.setText("Cancel");
-		cancelButton.setBounds(119, 279, 80, 25);
-
-		text_3 = new Text(this, SWT.BORDER);
-		text_3.setToolTipText("Weighted states!");
-		text_3.setBounds(11, 171, 211, 25);
-		text_3.addListener(SWT.Modify, new Listener() {
-			private Double value;
-
-			public void handleEvent(Event event) {
-				textWeights = text_3.getText().split(",");
-
-				for (int i = 0; i < textWeights.length; i++) {
-					try {
-						value = new Double(textWeights[i]);
-						text_3.setForeground(new Color(Display.getCurrent(), 0, 0, 0));
-						accepted = true;
-
-					} catch (Exception e) {
-						text_3.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
-
-						accepted = false;
-					}
-				}
-
-			}
-
-		});
-		StringBuffer buff = applyWeights();
-		text_3.setText(buff.toString());
-
-		createImageButton = new Button(this, SWT.CHECK);
-		createImageButton.setToolTipText("Creates a fractal image in ImageJ");
-		createImageButton.setText("Create Image");
-		createImageButton.setBounds(11, 246, 93, 16);
-
-		spinner_1 = new Spinner(this, SWT.BORDER);
-		spinner_1.setToolTipText("Values of the image*scale!");
-		spinner_1.setMinimum(-10000);
-		spinner_1.setMaximum(10000);
-		spinner_1.setSelection(100);
-		spinner_1.setBounds(119, 245, 84, 20);
-		{
-			Button btnCreateWeights = new Button(this, SWT.NONE);
-			btnCreateWeights.setToolTipText("Creates a weight for each state!");
-			btnCreateWeights.addSelectionListener(new SelectionAdapter() {
-
-				public void widgetSelected(SelectionEvent e) {
-					StringBuffer buff = applyWeights();
-					text_3.setText(buff.toString());
-
-				}
-			});
-			btnCreateWeights.setBounds(11, 202, 84, 25);
-			btnCreateWeights.setText("Create Weights");
-		}
-		{
-			Label lblScale = new Label(this, SWT.NONE);
-			lblScale.setBounds(209, 248, 39, 18);
-			lblScale.setText("Scale");
-		}
-
-		final Button shuffleButton = new Button(this, SWT.NONE);
-		shuffleButton.setToolTipText("Creates a random seed!");
-		shuffleButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				text_2.setText("" + (int) (Math.random() * 100000000));
-			}
-		});
-		shuffleButton.setText("Shuffle");
-		shuffleButton.setBounds(146, 136, 46, 27);
+		new Label(this, SWT.NONE);
 
 	}
 

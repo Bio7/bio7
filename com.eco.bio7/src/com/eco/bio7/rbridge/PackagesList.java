@@ -42,22 +42,145 @@ import org.eclipse.wb.swt.layout.grouplayout.LayoutStyle;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.rbridge.RState;
 import com.swtdesigner.SWTResourceManager;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.layout.GridData;
 
 
 public class PackagesList extends Shell {
 
 	private Text text;
-	private static List spatialList;
 	private static List allPackagesList;
 	private HashMap<String, String[]> map = new HashMap<String, String[]>();
-	private Button btnContextSensitive;
 
 	public PackagesList(Display display, int style) {
 		super(display, style);
 		createContents();
-		setLayout(new FillLayout());
 		
 		setImage(SWTResourceManager.getImage(PackagesList.class, "/pics/logo.gif"));
+		
+				allPackagesList = new List(this, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
+				allPackagesList.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 6));
+				
+				allPackagesList.addSelectionListener(new SelectionAdapter() {
+					public void widgetSelected(final SelectionEvent e) {
+						String[] items = allPackagesList.getSelection();
+
+					}
+				});
+														
+														Label lblSearch = new Label(this, SWT.NONE);
+														lblSearch.setText("Search");
+														
+														Button btnContextSensitive = new Button(this, SWT.CHECK);
+														btnContextSensitive.setText("Context Sensitive");
+												
+														text = new Text(this, SWT.BORDER);
+														text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
+														text.addListener(SWT.Modify, new Listener() {
+															public void handleEvent(Event event) {
+																if(btnContextSensitive.getSelection()){
+																allPackagesList.deselectAll();
+																text.getText();
+																
+																for (int i = 0; i < allPackagesList.getItemCount(); i++) {
+																	String it = allPackagesList.getItem(i);
+																	
+																	if (it.startsWith(text.getText())) {
+
+																		allPackagesList.select(i);
+																		allPackagesList.showSelection();
+																		return;
+																	}
+																}	
+																}
+																
+																else{
+																	allPackagesList.deselectAll();
+																	text.getText();
+																	
+																	for (int i = 0; i < allPackagesList.getItemCount(); i++) {
+																		 
+																		 String it = allPackagesList.getItem(i).toLowerCase();
+																			if (it.startsWith(text.getText().toLowerCase())) {
+
+																				allPackagesList.select(i);
+																				allPackagesList.showSelection();
+																				return;
+																			}
+																	}	
+																	
+																}
+
+																
+															}
+														});
+												new Label(this, SWT.NONE);
+												new Label(this, SWT.NONE);
+												
+												
+										
+												final Button updateButton = new Button(this, SWT.NONE);
+												GridData gd_updateButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+												gd_updateButton.heightHint = 35;
+												updateButton.setLayoutData(gd_updateButton);
+												updateButton.addSelectionListener(new SelectionAdapter() {
+													public void widgetSelected(final SelectionEvent e) {
+														if (RState.isBusy() == false) {
+															RState.setBusy(true);
+															ListRPackagesJob Do = new ListRPackagesJob();
+															Do.addJobChangeListener(new JobChangeAdapter() {
+																public void done(IJobChangeEvent event) {
+																	if (event.getResult().isOK()) {
+																		RState.setBusy(false);
+																	} else {
+																		RState.setBusy(false);
+																	}
+																}
+															});
+															Do.setUser(true);
+															Do.schedule();
+
+														} else {
+
+															Bio7Dialog.message("Rserve is busy!");
+
+														}
+
+													}
+
+												});
+												updateButton.setText("Get List");
+												
+														final Button installButton = new Button(this, SWT.NONE);
+														GridData gd_installButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+														gd_installButton.heightHint = 35;
+														installButton.setLayoutData(gd_installButton);
+														installButton.addSelectionListener(new SelectionAdapter() {
+															public void widgetSelected(final SelectionEvent e) {
+																if (RState.isBusy() == false) {
+																	RState.setBusy(true);
+																	InstallRPackagesJob Do = new InstallRPackagesJob();
+																	Do.addJobChangeListener(new JobChangeAdapter() {
+																		public void done(IJobChangeEvent event) {
+																			if (event.getResult().isOK()) {
+																				RState.setBusy(false);
+																			} else {
+																				RState.setBusy(false);
+																			}
+																		}
+																	});
+																	Do.setUser(true);
+																	Do.schedule();
+
+																} else {
+
+																	Bio7Dialog.message("Rserve is busy!");
+
+																}
+															}
+														});
+														installButton.setText("Install Selected");
 		map.clear();
 		map.put("spatstat", new String[] { "A library for the statistical analysis of spatial data, \n mainly spatial point patterns.", "http://www.spatstat.org" });
 		map.put("maptools", new String[] { "Tools for reading and handling spatial objects", "http://cran.r-project.org/web/packages/maptools/index.html" });
@@ -87,208 +210,8 @@ public class PackagesList extends Shell {
 	 */
 	protected void createContents() {
 		setText("Packages");
-		setSize(221, 581);
-
-		final ExpandBar expandBar = new ExpandBar(this, SWT.V_SCROLL);
-		expandBar.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
-		final ExpandItem newItemExpandItem = new ExpandItem(expandBar, SWT.NONE);
-		newItemExpandItem.setExpanded(true);
-		newItemExpandItem.setHeight(400);
-		newItemExpandItem.setText("All");
-
-		final Composite composite = new Composite(expandBar, SWT.NONE);
-		composite.setLayout(new FillLayout());
-		newItemExpandItem.setControl(composite);
-
-		allPackagesList = new List(composite, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
-		allPackagesList.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				String[] items = allPackagesList.getSelection();
-
-			}
-		});
-
-		final ExpandItem expandItem = new ExpandItem(expandBar, SWT.NONE);
-		expandItem.setHeight(60);
-		expandItem.setText("Search");
-
-		final Composite composite_3 = new Composite(expandBar, SWT.NONE);
-		expandItem.setControl(composite_3);
-
-		text = new Text(composite_3, SWT.BORDER);
-		
-		 btnContextSensitive = new Button(composite_3, SWT.CHECK);
-		 btnContextSensitive.setText("Case Sensitive");
-		 GroupLayout gl_composite_3 = new GroupLayout(composite_3);
-		 gl_composite_3.setHorizontalGroup(
-		 	gl_composite_3.createParallelGroup(GroupLayout.LEADING)
-		 		.add(btnContextSensitive, GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE)
-		 		.add(text, GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE)
-		 );
-		 gl_composite_3.setVerticalGroup(
-		 	gl_composite_3.createParallelGroup(GroupLayout.LEADING)
-		 		.add(gl_composite_3.createSequentialGroup()
-		 			.add(text, GroupLayout.PREFERRED_SIZE, 23, GroupLayout.PREFERRED_SIZE)
-		 			.addPreferredGap(LayoutStyle.UNRELATED)
-		 			.add(btnContextSensitive)
-		 			.add(9))
-		 );
-		 composite_3.setLayout(gl_composite_3);
-		text.addListener(SWT.Modify, new Listener() {
-			public void handleEvent(Event event) {
-				if(btnContextSensitive.getSelection()){
-				allPackagesList.deselectAll();
-				text.getText();
-				
-				for (int i = 0; i < allPackagesList.getItemCount(); i++) {
-					String it = allPackagesList.getItem(i);
-					
-					if (it.startsWith(text.getText())) {
-
-						allPackagesList.select(i);
-						allPackagesList.showSelection();
-						return;
-					}
-				}	
-				}
-				
-				else{
-					allPackagesList.deselectAll();
-					text.getText();
-					
-					for (int i = 0; i < allPackagesList.getItemCount(); i++) {
-						 
-						 String it = allPackagesList.getItem(i).toLowerCase();
-							if (it.startsWith(text.getText().toLowerCase())) {
-
-								allPackagesList.select(i);
-								allPackagesList.showSelection();
-								return;
-							}
-					}	
-					
-				}
-
-				
-			}
-		});
-
-		final ExpandItem newItemExpandItem_1 = new ExpandItem(expandBar, SWT.NONE);
-		newItemExpandItem_1.setHeight(150);
-		newItemExpandItem_1.setText("Spatial");
-
-		final Composite composite_1 = new Composite(expandBar, SWT.NONE);
-		composite_1.setLayout(new FillLayout());
-		newItemExpandItem_1.setControl(composite_1);
-
-		spatialList = new List(composite_1, SWT.BORDER);
-		spatialList.addMouseListener(new MouseAdapter() {
-			public void mouseDoubleClick(final MouseEvent e) {
-				String[] items = spatialList.getSelection();
-				String[] info = map.get(items[0]);
-				// Get the URL!
-
-				URL url = null;
-				try {
-					url = new URL(info[1]);
-				} catch (MalformedURLException e1) {
-
-					e1.printStackTrace();
-				}
-				try {
-					PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(url);
-				} catch (PartInitException e1) {
-
-					e1.printStackTrace();
-				}
-
-			}
-		});
-		spatialList.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				String[] items = spatialList.getSelection();
-				String[] info = map.get(items[0]);
-				// Get the information!
-				spatialList.setToolTipText(info[0]);
-
-			}
-		});
-		spatialList.add("spatstat");
-		spatialList.add("maptools");
-		spatialList.add("gstat");
-		spatialList.add("maps");
-		spatialList.add("rgdal");
-		spatialList.add("PBSmapping");
-		spatialList.add("shapefiles");
-		spatialList.add("RSAGA");
-		spatialList.add("geoR");
-		spatialList.add("geoRglm");
-		spatialList.add("SDMTools");
-
-		final ExpandItem newItemExpandItem_2 = new ExpandItem(expandBar, SWT.NONE);
-		newItemExpandItem_2.setHeight(30);
-		newItemExpandItem_2.setExpanded(true);
-		newItemExpandItem_2.setText("Update List");
-
-		final Composite composite_2 = new Composite(expandBar, SWT.NONE);
-		composite_2.setLayout(new FillLayout());
-		newItemExpandItem_2.setControl(composite_2);
-
-		final Button updateButton = new Button(composite_2, SWT.NONE);
-		updateButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				if (RState.isBusy() == false) {
-					RState.setBusy(true);
-					ListRPackagesJob Do = new ListRPackagesJob();
-					Do.addJobChangeListener(new JobChangeAdapter() {
-						public void done(IJobChangeEvent event) {
-							if (event.getResult().isOK()) {
-								RState.setBusy(false);
-							} else {
-								RState.setBusy(false);
-							}
-						}
-					});
-					Do.setUser(true);
-					Do.schedule();
-
-				} else {
-
-					Bio7Dialog.message("Rserve is busy!");
-
-				}
-
-			}
-
-		});
-		updateButton.setText("Get List");
-
-		final Button installButton = new Button(composite_2, SWT.NONE);
-		installButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				if (RState.isBusy() == false) {
-					RState.setBusy(true);
-					InstallRPackagesJob Do = new InstallRPackagesJob();
-					Do.addJobChangeListener(new JobChangeAdapter() {
-						public void done(IJobChangeEvent event) {
-							if (event.getResult().isOK()) {
-								RState.setBusy(false);
-							} else {
-								RState.setBusy(false);
-							}
-						}
-					});
-					Do.setUser(true);
-					Do.schedule();
-
-				} else {
-
-					Bio7Dialog.message("Rserve is busy!");
-
-				}
-			}
-		});
-		installButton.setText("Install Selected");
+		setSize(306, 730);
+		setLayout(new GridLayout(2, true));
 
 		//
 	}
@@ -302,8 +225,6 @@ public class PackagesList extends Shell {
 		return allPackagesList;
 	}
 
-	public static List getSpatialList() {
-		return spatialList;
-	}
+	
 
 }
