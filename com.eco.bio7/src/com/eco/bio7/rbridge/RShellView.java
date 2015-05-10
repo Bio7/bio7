@@ -661,7 +661,7 @@ public class RShellView extends ViewPart {
 		});
 		removeButton.setText("Remove");
 		loadButton_1 = new Button(composite, SWT.NONE);
-		loadButton_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false,
+		loadButton_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true,
 				false, 1, 1));
 		loadButton_1
 				.setToolTipText("Saves the current workspace to \nthe temporary location");
@@ -677,7 +677,7 @@ public class RShellView extends ViewPart {
 				Bio7Plugin.getDefault(), "icons/ordner_zu.gif"));
 
 		gcButton = new Button(composite, SWT.NONE);
-		gcButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false,
+		gcButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false,
 				1, 1));
 		gcButton.setToolTipText("Causes a garbage collection to take place");
 		gcButton.addSelectionListener(new SelectionAdapter() {
@@ -1073,7 +1073,7 @@ public class RShellView extends ViewPart {
 		spatialStatisticsTabItem.setControl(list_5);
 
 		xButton = new Button(composite, SWT.NONE);
-		xButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false,
+		xButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false,
 				1, 1));
 		xButton.setToolTipText("Clear the text field");
 		xButton.addSelectionListener(new SelectionAdapter() {
