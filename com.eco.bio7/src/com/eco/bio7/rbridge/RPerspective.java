@@ -40,14 +40,13 @@ public class RPerspective implements IPerspectiveFactory {
 		topLeft.addView("com.eco.bio7.RShell");
 		topLeft.addView("org.eclipse.ui.views.ResourceNavigator");
 		
-		bottomLeft.addView("org.eclipse.ui.views.ContentOutline");
+		
+		bottomLeft.addView("org.eclipse.ui.console.ConsoleView");
 		bottomLeft.addView("com.eco.bio7.rbridge.debug.DebugTextView");
 		bottomLeft.addView("com.eco.bio7.rbridge.debug.DebugVariablesView");
-		
-		viewRight.addView(RTable.ID);
-		viewRight.addView("org.eclipse.ui.console.ConsoleView");
+		viewRight.addView(RTable.ID);		
 		viewRight.addView("org.eclipse.wst.common.snippets.internal.ui.SnippetsView");
-
+		layout.addView("org.eclipse.ui.views.ContentOutline", IPageLayout.RIGHT, 0.66f, editorArea);
 	}
 
 }
