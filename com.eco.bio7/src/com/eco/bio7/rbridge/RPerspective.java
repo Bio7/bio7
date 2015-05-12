@@ -46,7 +46,7 @@ public class RPerspective implements IPerspectiveFactory {
 		bottomLeft.addView("com.eco.bio7.rbridge.debug.DebugVariablesView");
 		viewRight.addView(RTable.ID);		
 		viewRight.addView("org.eclipse.wst.common.snippets.internal.ui.SnippetsView");
-		layout.addView("org.eclipse.ui.views.ContentOutline", IPageLayout.RIGHT, 0.66f, editorArea);
+		layout.addView("org.eclipse.ui.views.ContentOutline", IPageLayout.RIGHT, 0.735f, editorArea);
 	}
 
 }

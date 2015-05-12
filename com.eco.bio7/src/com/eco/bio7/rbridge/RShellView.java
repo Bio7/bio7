@@ -1392,6 +1392,7 @@ public class RShellView extends ViewPart {
 							if (bolExists[0]) {
 
 								RServe.printJob("" + selected + "");
+								System.out.println();
 							} else {
 								Bio7Dialog.message("Data not existent in\n"
 										+ "the current workspace.\n"
@@ -1431,6 +1432,7 @@ public class RShellView extends ViewPart {
 							if (bolExists[0]) {
 
 								RServe.printJob("summary(" + selected + ")");
+								System.out.println();
 							} else {
 								Bio7Dialog.message("Data not existent in\n"
 										+ "the current workspace.\n"

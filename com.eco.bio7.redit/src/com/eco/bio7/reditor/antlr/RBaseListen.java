@@ -390,7 +390,8 @@ public class RBaseListen extends RBaseListener {
 			line = document.getLineOfOffset(lineStart) + 1;
 		} catch (BadLocationException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Bad line location!");
+			//e.printStackTrace();
 		}
 		return line;
 	}
