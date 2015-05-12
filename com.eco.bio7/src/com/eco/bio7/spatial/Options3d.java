@@ -149,7 +149,7 @@ public class Options3d extends ViewPart {
 		new Label(composite, SWT.NONE);
 		new Label(composite, SWT.NONE);
 		sizeXLabel = new Label(composite, SWT.NONE);
-		GridData gd_sizeXLabel = new GridData(SWT.CENTER, SWT.CENTER, false, false, 3, 1);
+		GridData gd_sizeXLabel = new GridData(SWT.CENTER, SWT.CENTER, true, false, 3, 1);
 		gd_sizeXLabel.heightHint = 25;
 		sizeXLabel.setLayoutData(gd_sizeXLabel);
 
@@ -178,7 +178,7 @@ public class Options3d extends ViewPart {
 		new Label(composite, SWT.NONE);
 
 		sizeYLabel = new Label(composite, SWT.NONE);
-		GridData gd_sizeYLabel = new GridData(SWT.CENTER, SWT.FILL, false, false, 3, 1);
+		GridData gd_sizeYLabel = new GridData(SWT.CENTER, SWT.FILL, true, false, 3, 1);
 		gd_sizeYLabel.heightHint = 25;
 		sizeYLabel.setLayoutData(gd_sizeYLabel);
 		scale_1 = new Scale(composite, SWT.NONE);
@@ -229,7 +229,7 @@ public class Options3d extends ViewPart {
 		label_3.setText("Label");
 
 		octantButton = new Button(composite, SWT.CHECK);
-		GridData gd_octantButton = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+		GridData gd_octantButton = new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
 		gd_octantButton.heightHint = 25;
 		octantButton.setLayoutData(gd_octantButton);
 		octantButton.setToolTipText("Changes the visualization to the first octant.");
@@ -245,7 +245,7 @@ public class Options3d extends ViewPart {
 		octantButton.setText("Octant");
 
 		showAxesButton = new Button(composite, SWT.CHECK);
-		GridData gd_showAxesButton = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+		GridData gd_showAxesButton = new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
 		gd_showAxesButton.heightHint = 25;
 		showAxesButton.setLayoutData(gd_showAxesButton);
 		showAxesButton.setSelection(true);
@@ -265,7 +265,7 @@ public class Options3d extends ViewPart {
 		showAxesButton.setText("Show Axes");
 
 		showQuadButton = new Button(composite, SWT.CHECK);
-		GridData gd_showQuadButton = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		GridData gd_showQuadButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		gd_showQuadButton.heightHint = 25;
 		showQuadButton.setLayoutData(gd_showQuadButton);
 		showQuadButton.setSelection(true);
@@ -290,7 +290,7 @@ public class Options3d extends ViewPart {
 		label.setLayoutData(gd_label);
 
 		showGridButton = new Button(composite, SWT.CHECK);
-		GridData gd_showGridButton = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+		GridData gd_showGridButton = new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
 		gd_showGridButton.heightHint = 25;
 		showGridButton.setLayoutData(gd_showGridButton);
 		showGridButton.setSelection(true);
@@ -309,7 +309,7 @@ public class Options3d extends ViewPart {
 		showGridButton.setText("Show Grid");
 
 		final Spinner spinner_12 = new Spinner(composite, SWT.BORDER);
-		GridData gd_spinner_12 = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		GridData gd_spinner_12 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		gd_spinner_12.heightHint = 25;
 		spinner_12.setLayoutData(gd_spinner_12);
 		spinner_12.setSelection(50);
@@ -325,13 +325,13 @@ public class Options3d extends ViewPart {
 		});
 
 		final Label girdSizeLabel = new Label(composite, SWT.NONE);
-		GridData gd_girdSizeLabel = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		GridData gd_girdSizeLabel = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		gd_girdSizeLabel.heightHint = 25;
 		girdSizeLabel.setLayoutData(gd_girdSizeLabel);
 		girdSizeLabel.setText("Size");
 
 		final Button xzButton = new Button(composite, SWT.CHECK);
-		GridData gd_xzButton = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+		GridData gd_xzButton = new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
 		gd_xzButton.heightHint = 25;
 		xzButton.setLayoutData(gd_xzButton);
 		xzButton.setText("XZ");
@@ -350,7 +350,7 @@ public class Options3d extends ViewPart {
 		});
 
 		final Button yzButton = new Button(composite, SWT.CHECK);
-		GridData gd_yzButton = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+		GridData gd_yzButton = new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
 		gd_yzButton.heightHint = 25;
 		yzButton.setLayoutData(gd_yzButton);
 		yzButton.addSelectionListener(new SelectionAdapter() {
@@ -370,7 +370,7 @@ public class Options3d extends ViewPart {
 		yzButton.setText("YZ");
 
 		final Button xyButton = new Button(composite, SWT.CHECK);
-		GridData gd_xyButton = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+		GridData gd_xyButton = new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
 		gd_xyButton.heightHint = 25;
 		xyButton.setLayoutData(gd_xyButton);
 		xyButton.setSelection(true);
@@ -390,15 +390,15 @@ public class Options3d extends ViewPart {
 		xyButton.setText("XY");
 
 		final Label label_2 = new Label(composite, SWT.HORIZONTAL | SWT.SEPARATOR);
-		GridData gd_label_2 = new GridData(SWT.FILL, SWT.CENTER, false, false, 3, 1);
+		GridData gd_label_2 = new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
 		gd_label_2.heightHint = 25;
 		label_2.setLayoutData(gd_label_2);
 		label_2.setText("Label");
 		sizeYLabel.setText("Size Y: " + scale_1.getSelection() * 2);
 
 		final Button colourButton = new Button(composite, SWT.NONE);
-		GridData gd_colourButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-		gd_colourButton.heightHint = 39;
+		GridData gd_colourButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_colourButton.heightHint = 40;
 		colourButton.setLayoutData(gd_colourButton);
 		colourButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -420,8 +420,8 @@ public class Options3d extends ViewPart {
 		colourButton.setText("Colour Space");
 
 		final Button colourLinesButton = new Button(composite, SWT.NONE);
-		GridData gd_colourLinesButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-		gd_colourLinesButton.heightHint = 39;
+		GridData gd_colourLinesButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_colourLinesButton.heightHint = 40;
 		colourLinesButton.setLayoutData(gd_colourLinesButton);
 		colourLinesButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -443,19 +443,19 @@ public class Options3d extends ViewPart {
 		new Label(composite, SWT.NONE);
 
 		final Label label_2_1 = new Label(composite, SWT.HORIZONTAL | SWT.SEPARATOR);
-		GridData gd_label_2_1 = new GridData(SWT.FILL, SWT.CENTER, false, false, 3, 1);
+		GridData gd_label_2_1 = new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
 		gd_label_2_1.heightHint = 25;
 		label_2_1.setLayoutData(gd_label_2_1);
 		label_2_1.setText("Label");
 
 		Label lblSpeedDistance = new Label(composite, SWT.NONE);
-		GridData gd_lblSpeedDistance = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		GridData gd_lblSpeedDistance = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		gd_lblSpeedDistance.heightHint = 25;
 		lblSpeedDistance.setLayoutData(gd_lblSpeedDistance);
 		lblSpeedDistance.setText("Speed Drag Distance");
 
 		final Label worldExtentLabel = new Label(composite, SWT.NONE);
-		GridData gd_worldExtentLabel = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+		GridData gd_worldExtentLabel = new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
 		gd_worldExtentLabel.heightHint = 25;
 		worldExtentLabel.setLayoutData(gd_worldExtentLabel);
 		worldExtentLabel.setText("World Extent");
@@ -463,7 +463,7 @@ public class Options3d extends ViewPart {
 		new Label(composite, SWT.NONE);
 
 		multiplyDragCameraSpeedSpinner = new Spinner(composite, SWT.BORDER);
-		GridData gd_multiplyDragCameraSpeedSpinner = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		GridData gd_multiplyDragCameraSpeedSpinner = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		gd_multiplyDragCameraSpeedSpinner.heightHint = 25;
 		multiplyDragCameraSpeedSpinner.setLayoutData(gd_multiplyDragCameraSpeedSpinner);
 		multiplyDragCameraSpeedSpinner.addSelectionListener(new SelectionAdapter() {
@@ -477,7 +477,7 @@ public class Options3d extends ViewPart {
 		multiplyDragCameraSpeedSpinner.setSelection(1);
 
 		worldExtent = new Text(composite, SWT.BORDER);
-		GridData gd_worldExtent = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+		GridData gd_worldExtent = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_worldExtent.heightHint = 25;
 		worldExtent.setLayoutData(gd_worldExtent);
 		worldExtent.setToolTipText("Set the world extent");
@@ -501,8 +501,8 @@ public class Options3d extends ViewPart {
 		new Label(composite, SWT.NONE);
 
 		Button btnResetView = new Button(composite, SWT.NONE);
-		GridData gd_btnResetView = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
-		gd_btnResetView.heightHint = 39;
+		GridData gd_btnResetView = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_btnResetView.heightHint = 40;
 		btnResetView.setLayoutData(gd_btnResetView);
 		btnResetView.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -520,6 +520,7 @@ public class Options3d extends ViewPart {
 		new Label(composite, SWT.NONE);
 		new Label(composite, SWT.NONE);
 		worldExtentError = new Label(composite, SWT.NONE);
+		worldExtentError.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		new Label(composite, SWT.NONE);
 
 		if (we != 0) {
@@ -536,7 +537,7 @@ public class Options3d extends ViewPart {
 
 		playPauseButton = new Button(composite_2, SWT.TOGGLE);
 		GridData gd_playPauseButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_playPauseButton.heightHint = 35;
+		gd_playPauseButton.heightHint = 40;
 		playPauseButton.setLayoutData(gd_playPauseButton);
 		playPauseButton.setToolTipText("Enables the triggering of the run method with the default Jogl timer.\n The timer fps determines the speed of triggering");
 		playPauseButton.addSelectionListener(new SelectionAdapter() {
@@ -556,7 +557,7 @@ public class Options3d extends ViewPart {
 
 		final Button setupButton = new Button(composite_2, SWT.NONE);
 		GridData gd_setupButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-		gd_setupButton.heightHint = 35;
+		gd_setupButton.heightHint = 40;
 		setupButton.setLayoutData(gd_setupButton);
 		setupButton.setToolTipText("Triggers the setup method of the compiled java code");
 		setupButton.addSelectionListener(new SelectionAdapter() {
@@ -715,7 +716,7 @@ public class Options3d extends ViewPart {
 		text.setText(store.getString("objectFile"));
 		final Button pathButton = new Button(composite_1, SWT.NONE);
 		GridData gd_pathButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_pathButton.heightHint = 35;
+		gd_pathButton.heightHint = 40;
 		pathButton.setLayoutData(gd_pathButton);
 		pathButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -778,7 +779,7 @@ public class Options3d extends ViewPart {
 
 		final Button reloadButton = new Button(composite_1, SWT.NONE);
 		GridData gd_reloadButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_reloadButton.heightHint = 35;
+		gd_reloadButton.heightHint = 40;
 		reloadButton.setLayoutData(gd_reloadButton);
 		reloadButton.setToolTipText("Load or reload the model");
 		reloadButton.addSelectionListener(new SelectionAdapter() {
@@ -1015,7 +1016,7 @@ public class Options3d extends ViewPart {
 
 		final Button storeButton_1 = new Button(composite_1, SWT.NONE);
 		GridData gd_storeButton_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1);
-		gd_storeButton_1.heightHint = 35;
+		gd_storeButton_1.heightHint = 40;
 		storeButton_1.setLayoutData(gd_storeButton_1);
 		storeButton_1.setToolTipText("Store the position, rotation and scale (only as integer!)");
 		storeButton_1.addSelectionListener(new SelectionAdapter() {
@@ -1103,7 +1104,7 @@ public class Options3d extends ViewPart {
 						
 								final Button pathButton_2 = new Button(composite_5, SWT.NONE);
 								GridData gd_pathButton_2 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-								gd_pathButton_2.heightHint = 35;
+								gd_pathButton_2.heightHint = 40;
 								pathButton_2.setLayoutData(gd_pathButton_2);
 								pathButton_2.addSelectionListener(new SelectionAdapter() {
 									public void widgetSelected(final SelectionEvent e) {
@@ -1166,7 +1167,7 @@ public class Options3d extends ViewPart {
 						
 								final Button setButton = new Button(composite_5, SWT.NONE);
 								GridData gd_setButton = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-								gd_setButton.heightHint = 35;
+								gd_setButton.heightHint = 40;
 								setButton.setLayoutData(gd_setButton);
 								setButton.setToolTipText("Changes the texture selection");
 								setButton.addSelectionListener(new SelectionAdapter() {
@@ -1663,7 +1664,7 @@ public class Options3d extends ViewPart {
 		
 				final Button storeButton = new Button(composite_4, SWT.NONE);
 				GridData gd_storeButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-				gd_storeButton.heightHint = 35;
+				gd_storeButton.heightHint = 40;
 				storeButton.setLayoutData(gd_storeButton);
 				storeButton.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(final SelectionEvent e) {
@@ -2090,7 +2091,7 @@ public class Options3d extends ViewPart {
 
 		final Button getImageButton = new Button(composite_8, SWT.NONE);
 		GridData gd_getImageButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_getImageButton.heightHint = 35;
+		gd_getImageButton.heightHint = 40;
 		getImageButton.setLayoutData(gd_getImageButton);
 		getImageButton.setToolTipText("Creates a screenshot image in ImageJ");
 		getImageButton.addSelectionListener(new SelectionAdapter() {
@@ -2112,7 +2113,7 @@ public class Options3d extends ViewPart {
 						
 								final Button renderFramesButton = new Button(composite_8, SWT.NONE);
 								GridData gd_renderFramesButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-								gd_renderFramesButton.heightHint = 35;
+								gd_renderFramesButton.heightHint = 40;
 								renderFramesButton.setLayoutData(gd_renderFramesButton);
 								renderFramesButton.setToolTipText("Starts and stops rendering - \n" + "Creates a stack in Imagej and renders the current\n" + " frame of the Spatial view to the stack until \n" + "rendering is stopped or the max. numbers of frames\n (specified in the textfield) have been reached");
 								renderFramesButton.addSelectionListener(new SelectionAdapter() {
