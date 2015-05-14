@@ -47,9 +47,9 @@ public class LayerCompositeShapefile extends Composite {
 		super(parent, style);
 		this.secto=sect;
 		this.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-		setLayout(new GridLayout(4, true));
+		setLayout(new GridLayout(5, true));
 		final Button b = new Button(this, SWT.CHECK);
-		b.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 2));
+		b.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 		b.setText(layer.getName());
 		b.setToolTipText(layer.getName());
 		b.setSelection(true);
@@ -69,7 +69,7 @@ public class LayerCompositeShapefile extends Composite {
 			}
 		});
 		final Scale scale = new Scale(this, SWT.NONE);
-		scale.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 2));
+		scale.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 		scale.setMinimum(1);
 		scale.setMaximum(100);
 		scale.setSelection(100);
@@ -83,8 +83,8 @@ public class LayerCompositeShapefile extends Composite {
 
 		
 		final Button r = new Button(this, SWT.NONE);
-		GridData gd_r = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
-		gd_r.heightHint = 35;
+		GridData gd_r = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_r.heightHint = 50;
 		r.setLayoutData(gd_r);
 		//r.setText("X");
 		r.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/images/delete.gif")));
@@ -102,8 +102,8 @@ public class LayerCompositeShapefile extends Composite {
 			}
 		});
 		final Button goTo = new Button(this, SWT.NONE);
-		GridData gd_goTo = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
-		gd_goTo.heightHint = 35;
+		GridData gd_goTo = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_goTo.heightHint = 50;
 		goTo.setLayoutData(gd_goTo);
 		goTo.setText("Loc");
 		goTo.setSelection(true);
@@ -132,6 +132,11 @@ public class LayerCompositeShapefile extends Composite {
 
 			}
 		});
+		new Label(this, SWT.NONE);
+		new Label(this, SWT.NONE);
+		new Label(this, SWT.NONE);
+		new Label(this, SWT.NONE);
+		new Label(this, SWT.NONE);
 		//
 	}
 	

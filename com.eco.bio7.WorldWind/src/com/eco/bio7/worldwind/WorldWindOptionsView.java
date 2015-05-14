@@ -324,15 +324,7 @@ public class WorldWindOptionsView extends ViewPart {
 
 		final Composite composite_2 = new Composite(expandBar, SWT.NONE);
 		newItemExpandItem_3.setControl(composite_2);
-		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-		String link = store.getString("WorldWindLinks");
-		if (link.equals("") == false) {
-			String[] links = link.split(";");
-
-			for (int i = 0; i < links.length; i++) {
-				scrolLList.add(links[i]);
-			}
-		}
+		
 		composite_2.setLayout(new GridLayout(1, true));
 
 		Composite composite_8 = new Composite(composite_2, SWT.NONE);
@@ -343,7 +335,7 @@ public class WorldWindOptionsView extends ViewPart {
 		composite_8.setLayout(new GridLayout(3, true));
 
 		final Button iButton = new Button(composite_8, SWT.NONE);
-		GridData gd_iButton = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		GridData gd_iButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_iButton.heightHint = 40;
 		iButton.setLayoutData(gd_iButton);
 		iButton.setToolTipText("Info!");
@@ -362,7 +354,7 @@ public class WorldWindOptionsView extends ViewPart {
 		iButton.setText("Info");
 
 		final Button cacheButton = new Button(composite_8, SWT.NONE);
-		GridData gd_cacheButton = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		GridData gd_cacheButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_cacheButton.heightHint = 40;
 		cacheButton.setLayoutData(gd_cacheButton);
 		cacheButton.setToolTipText("Clear the WorldWind cache");
@@ -397,7 +389,7 @@ public class WorldWindOptionsView extends ViewPart {
 		cacheButton.setText("Clear Cache");
 
 		final Button openCacheButton = new Button(composite_8, SWT.NONE);
-		GridData gd_openCacheButton = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		GridData gd_openCacheButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_openCacheButton.heightHint = 40;
 		openCacheButton.setLayoutData(gd_openCacheButton);
 		openCacheButton.setToolTipText("Open the WorldWind cache location!");
@@ -420,7 +412,7 @@ public class WorldWindOptionsView extends ViewPart {
 		openCacheButton.setText("Open Cache");
 
 		text = new Text(composite_8, SWT.BORDER);
-		text.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
+		text.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 		text.addListener(SWT.DefaultSelection, new Listener() {
 			public void handleEvent(Event e) {
 				flyToCoords();
@@ -428,7 +420,7 @@ public class WorldWindOptionsView extends ViewPart {
 		});
 		
 				final Button setButton = new Button(composite_8, SWT.NONE);
-				GridData gd_setButton = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+				GridData gd_setButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 				gd_setButton.heightHint = 40;
 				setButton.setLayoutData(gd_setButton);
 				setButton.setToolTipText("Fly to the coordinates");
@@ -452,14 +444,26 @@ public class WorldWindOptionsView extends ViewPart {
 				setButton.setText("Set");
 
 		final Label coordinatesLabel = new Label(composite_8, SWT.NONE);
+		GridData gd_coordinatesLabel = new GridData(SWT.LEFT, SWT.FILL, true, false, 1, 1);
+		gd_coordinatesLabel.heightHint = 30;
+		coordinatesLabel.setLayoutData(gd_coordinatesLabel);
 		coordinatesLabel.setText("Coordinates");
 		new Label(composite_8, SWT.NONE);
 		new Label(composite_8, SWT.NONE);
 
 		scrolLList = new org.eclipse.swt.widgets.List(composite_8, SWT.V_SCROLL | SWT.MULTI | SWT.H_SCROLL | SWT.BORDER);
-		GridData gd_scrolLList = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 4);
+		GridData gd_scrolLList = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 4);
 		gd_scrolLList.heightHint = 44;
 		scrolLList.setLayoutData(gd_scrolLList);
+		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+		String link = store.getString("WorldWindLinks");
+		if (link.equals("") == false) {
+			String[] links = link.split(";");
+
+			for (int i = 0; i < links.length; i++) {
+				scrolLList.add(links[i]);
+			}
+		}
 		scrolLList.addMouseListener(new MouseListener() {
 
 			@Override
@@ -485,7 +489,7 @@ public class WorldWindOptionsView extends ViewPart {
 		});
 
 		final Button addButton = new Button(composite_8, SWT.NONE);
-		GridData gd_addButton = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		GridData gd_addButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_addButton.heightHint = 40;
 		addButton.setLayoutData(gd_addButton);
 		addButton.setToolTipText("Add coordinates which should be stored");
@@ -533,7 +537,7 @@ public class WorldWindOptionsView extends ViewPart {
 		addButton.setText("Add");
 
 		final Button deleteButton = new Button(composite_8, SWT.NONE);
-		GridData gd_deleteButton = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		GridData gd_deleteButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_deleteButton.heightHint = 40;
 		deleteButton.setLayoutData(gd_deleteButton);
 		deleteButton.setToolTipText("Delete stored coordinates");
@@ -555,7 +559,7 @@ public class WorldWindOptionsView extends ViewPart {
 		deleteButton.setText("Delete");
 
 		final Button loadButton = new Button(composite_8, SWT.NONE);
-		GridData gd_loadButton = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		GridData gd_loadButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_loadButton.heightHint = 40;
 		loadButton.setLayoutData(gd_loadButton);
 		loadButton.setToolTipText("Load coordinates from a *.txt file");
@@ -598,7 +602,7 @@ public class WorldWindOptionsView extends ViewPart {
 		loadButton.setText("Load");
 
 		final Button saveButton = new Button(composite_8, SWT.NONE);
-		GridData gd_saveButton = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		GridData gd_saveButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_saveButton.heightHint = 40;
 		saveButton.setLayoutData(gd_saveButton);
 		saveButton.setToolTipText("Save coordinates to a *.txt file");
@@ -685,8 +689,8 @@ public class WorldWindOptionsView extends ViewPart {
 		new Label(composite_7, SWT.NONE);
 
 		minLat = new Text(composite_7, SWT.BORDER);
-		GridData gd_minLat = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-		gd_minLat.heightHint = 25;
+		GridData gd_minLat = new GridData(SWT.FILL, SWT.TOP, true, true, 1, 1);
+		gd_minLat.heightHint = 35;
 		minLat.setLayoutData(gd_minLat);
 		minLat.setToolTipText("Min");
 		minLat.setText("50.999583");
@@ -699,8 +703,8 @@ public class WorldWindOptionsView extends ViewPart {
 		longitudeLabel.setText("Longitude");
 
 		minLon = new Text(composite_7, SWT.BORDER);
-		GridData gd_minLon = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-		gd_minLon.heightHint = 25;
+		GridData gd_minLon = new GridData(SWT.FILL, SWT.TOP, true, true, 1, 1);
+		gd_minLon.heightHint = 35;
 		minLon.setLayoutData(gd_minLon);
 		minLon.setToolTipText("Min");
 		minLon.setText("9.999583");
@@ -721,16 +725,16 @@ public class WorldWindOptionsView extends ViewPart {
 		goButton.setText("Go to");
 
 		maxLon = new Text(composite_7, SWT.BORDER);
-		GridData gd_maxLon = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_maxLon.heightHint = 25;
+		GridData gd_maxLon = new GridData(SWT.FILL, SWT.TOP, true, false, 1, 1);
+		gd_maxLon.heightHint = 35;
 		maxLon.setLayoutData(gd_maxLon);
 		maxLon.setToolTipText("Max");
 		maxLon.setText("11.00042");
 		new Label(composite_7, SWT.NONE);
 
 		maxLat = new Text(composite_7, SWT.BORDER);
-		GridData gd_maxLat = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_maxLat.heightHint = 25;
+		GridData gd_maxLat = new GridData(SWT.FILL, SWT.TOP, true, false, 1, 1);
+		gd_maxLat.heightHint = 35;
 		maxLat.setLayoutData(gd_maxLat);
 		maxLat.setToolTipText("Max");
 		maxLat.setText("52.00042");
@@ -1010,8 +1014,8 @@ public class WorldWindOptionsView extends ViewPart {
 
 		final Spinner spinner_1 = new Spinner(composite_7, SWT.BORDER);
 		spinner_1.setToolTipText("Select the layer (image tab) which will be rendered to ImageJ.\r\nThis action allows the rendering and simulation simultanously\r\nwith WorldWind and ImageJ.");
-		GridData gd_spinner_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_spinner_1.heightHint = 22;
+		GridData gd_spinner_1 = new GridData(SWT.FILL, SWT.TOP, true, false, 1, 1);
+		gd_spinner_1.heightHint = 30;
 		spinner_1.setLayoutData(gd_spinner_1);
 
 		compositeLayers = new Composite(composite_1, SWT.NONE);
@@ -1040,14 +1044,14 @@ public class WorldWindOptionsView extends ViewPart {
 		composite_3.setLayout(new GridLayout(1, true));
 
 		Composite composite_9 = new Composite(composite_3, SWT.NONE);
-		GridData gd_composite_9 = new GridData(SWT.FILL, SWT.CENTER, true, true, 3, 1);
+		GridData gd_composite_9 = new GridData(SWT.FILL, SWT.FILL, true, true, 3, 1);
 		gd_composite_9.heightHint = 150;
 		gd_composite_9.widthHint = 215;
 		composite_9.setLayoutData(gd_composite_9);
 		composite_9.setLayout(new GridLayout(3, true));
 
 		capture = new Button(composite_9, SWT.NONE);
-		GridData gd_capture = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		GridData gd_capture = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_capture.heightHint = 40;
 		capture.setLayoutData(gd_capture);
 		capture.addSelectionListener(new SelectionAdapter() {
@@ -1076,7 +1080,9 @@ public class WorldWindOptionsView extends ViewPart {
 		capture.setText("Capture");
 
 		countToText = new Text(composite_9, SWT.BORDER);
-		countToText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		GridData gd_countToText = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_countToText.heightHint = 30;
+		countToText.setLayoutData(gd_countToText);
 		countToText.setText("100");
 
 		Label lblNewLabel = new Label(composite_9, SWT.NONE);
@@ -1084,7 +1090,7 @@ public class WorldWindOptionsView extends ViewPart {
 		lblNewLabel.setText("Frames");
 
 		final Button screenshotButton = new Button(composite_9, SWT.NONE);
-		GridData gd_screenshotButton = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		GridData gd_screenshotButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_screenshotButton.heightHint = 40;
 		screenshotButton.setLayoutData(gd_screenshotButton);
 		screenshotButton.setToolTipText("Creates a screenshot image in ImageJ");
@@ -1108,7 +1114,9 @@ public class WorldWindOptionsView extends ViewPart {
 		screenshotButton.setText("Screenshot");
 
 		spinner = new Spinner(composite_9, SWT.BORDER);
-		spinner.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		GridData gd_spinner = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_spinner.heightHint = 30;
+		spinner.setLayoutData(gd_spinner);
 		spinner.setMaximum(60);
 		spinner.setMinimum(1);
 		spinner.setSelection(25);
@@ -1123,7 +1131,7 @@ public class WorldWindOptionsView extends ViewPart {
 		lblFps.setText("FPS");
 
 		Button infoCaptureButton = new Button(composite_9, SWT.NONE);
-		GridData gd_infoCaptureButton = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		GridData gd_infoCaptureButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_infoCaptureButton.heightHint = 40;
 		infoCaptureButton.setLayoutData(gd_infoCaptureButton);
 		infoCaptureButton.addSelectionListener(new SelectionAdapter() {
@@ -1139,7 +1147,9 @@ public class WorldWindOptionsView extends ViewPart {
 		infoCaptureButton.setText("Info");
 
 		errorLabel = new Label(composite_9, SWT.NONE);
-		errorLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 2));
+		errorLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
+		new Label(composite_9, SWT.NONE);
+		new Label(composite_9, SWT.NONE);
 		new Label(composite_9, SWT.NONE);
 		countToText.addListener(SWT.Modify, new Listener() {
 			private Integer value;
@@ -1161,7 +1171,7 @@ public class WorldWindOptionsView extends ViewPart {
 		});
 
 		final ExpandItem newItemExpandItem_5 = new ExpandItem(expandBar, SWT.NONE);
-		newItemExpandItem_5.setHeight(600);
+		newItemExpandItem_5.setHeight(650);
 		newItemExpandItem_5.setText("Measure");
 
 		final Composite composite_6 = new Composite(expandBar, SWT.NONE);
@@ -1221,7 +1231,7 @@ public class WorldWindOptionsView extends ViewPart {
 		pointsButton.setText("Colour Points");
 
 		final Button tooltipButton = new Button(composite_6, SWT.NONE);
-		GridData gd_tooltipButton = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		GridData gd_tooltipButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_tooltipButton.heightHint = 40;
 		tooltipButton.setLayoutData(gd_tooltipButton);
 		tooltipButton.setToolTipText("Colour for the tooltips!");
@@ -1247,18 +1257,22 @@ public class WorldWindOptionsView extends ViewPart {
 
 		Label label = new Label(composite_6, SWT.SEPARATOR | SWT.HORIZONTAL);
 		GridData gd_label = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_label.heightHint = 30;
 		gd_label.widthHint = 133;
 		label.setLayoutData(gd_label);
 		label.setText("Colours");
 
 		final Label coloursLabel = new Label(composite_6, SWT.NONE);
-		coloursLabel.setLayoutData(new GridData(SWT.CENTER, SWT.FILL, true, true, 1, 1));
+		GridData gd_coloursLabel = new GridData(SWT.CENTER, SWT.FILL, true, true, 1, 1);
+		gd_coloursLabel.heightHint = 30;
+		coloursLabel.setLayoutData(gd_coloursLabel);
 		coloursLabel.setAlignment(SWT.CENTER);
 		coloursLabel.setText("Colours");
 
 		final Label lblColours = new Label(composite_6, SWT.SEPARATOR | SWT.HORIZONTAL);
 		lblColours.setText("Colours");
 		GridData gd_lblColours = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_lblColours.heightHint = 30;
 		gd_lblColours.widthHint = 133;
 		lblColours.setLayoutData(gd_lblColours);
 		new Label(composite_6, SWT.NONE);
@@ -1266,12 +1280,16 @@ public class WorldWindOptionsView extends ViewPart {
 		new Label(composite_6, SWT.NONE);
 
 		final Label shapeLabel = new Label(composite_6, SWT.NONE);
-		shapeLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		GridData gd_shapeLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_shapeLabel.heightHint = 30;
+		shapeLabel.setLayoutData(gd_shapeLabel);
 		shapeLabel.setText("Shape:");
 		new Label(composite_6, SWT.NONE);
 
 		combo_1 = new Combo(composite_6, SWT.READ_ONLY);
-		combo_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		GridData gd_combo_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_combo_1.heightHint = 30;
+		combo_1.setLayoutData(gd_combo_1);
 		combo_1.setToolTipText("Selects the measure type!");
 		combo_1.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -1298,12 +1316,16 @@ public class WorldWindOptionsView extends ViewPart {
 		combo_1.select(0);
 
 		final Label pathTypeLabel = new Label(composite_6, SWT.NONE);
-		pathTypeLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 1, 1));
+		GridData gd_pathTypeLabel = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_pathTypeLabel.heightHint = 30;
+		pathTypeLabel.setLayoutData(gd_pathTypeLabel);
 		pathTypeLabel.setText("Path type:");
 		new Label(composite_6, SWT.NONE);
 
 		combo_2 = new Combo(composite_6, SWT.READ_ONLY);
-		combo_2.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		GridData gd_combo_2 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_combo_2.heightHint = 30;
+		combo_2.setLayoutData(gd_combo_2);
 		combo_2.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				String item = combo_2.getItem(combo_2.getSelectionIndex());
@@ -1319,13 +1341,15 @@ public class WorldWindOptionsView extends ViewPart {
 		combo_2.select(0);
 
 		final Label unitsLabel = new Label(composite_6, SWT.NONE);
-		unitsLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 1, 1));
+		GridData gd_unitsLabel = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_unitsLabel.heightHint = 30;
+		unitsLabel.setLayoutData(gd_unitsLabel);
 		unitsLabel.setText("Units:");
 		new Label(composite_6, SWT.NONE);
 
 		combo_3 = new Combo(composite_6, SWT.READ_ONLY);
-		GridData gd_combo_3 = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-		gd_combo_3.heightHint = 39;
+		GridData gd_combo_3 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_combo_3.heightHint = 30;
 		combo_3.setLayoutData(gd_combo_3);
 		combo_3.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -1360,13 +1384,15 @@ public class WorldWindOptionsView extends ViewPart {
 		combo_3.select(0);
 
 		final Label angleFormatLabel = new Label(composite_6, SWT.NONE);
-		angleFormatLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 1, 1));
+		GridData gd_angleFormatLabel = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_angleFormatLabel.heightHint = 30;
+		angleFormatLabel.setLayoutData(gd_angleFormatLabel);
 		angleFormatLabel.setText("Angle Format:");
 		new Label(composite_6, SWT.NONE);
 
 		combo_4 = new Combo(composite_6, SWT.READ_ONLY);
-		GridData gd_combo_4 = new GridData(SWT.FILL, SWT.CENTER, true, true, 1, 1);
-		gd_combo_4.heightHint = 40;
+		GridData gd_combo_4 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_combo_4.heightHint = 30;
 		combo_4.setLayoutData(gd_combo_4);
 		combo_4.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -1381,7 +1407,9 @@ public class WorldWindOptionsView extends ViewPart {
 		new Label(composite_6, SWT.NONE);
 
 		final Button followTerrainButton = new Button(composite_6, SWT.CHECK);
-		followTerrainButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		GridData gd_followTerrainButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_followTerrainButton.heightHint = 30;
+		followTerrainButton.setLayoutData(gd_followTerrainButton);
 		followTerrainButton.setToolTipText("If enabled lines, circles or \nsegments will follow the terrain!");
 		followTerrainButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -1394,7 +1422,9 @@ public class WorldWindOptionsView extends ViewPart {
 		followTerrainButton.setText("Follow terrain");
 
 		final Button controlPointsButton = new Button(composite_6, SWT.CHECK);
-		controlPointsButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 1, 1));
+		GridData gd_controlPointsButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_controlPointsButton.heightHint = 30;
+		controlPointsButton.setLayoutData(gd_controlPointsButton);
 		controlPointsButton.setToolTipText("Enables or disables the control points!");
 		controlPointsButton.setSelection(true);
 		controlPointsButton.addSelectionListener(new SelectionAdapter() {
@@ -1409,7 +1439,9 @@ public class WorldWindOptionsView extends ViewPart {
 		new Label(composite_6, SWT.NONE);
 
 		final Button rubberBandButton = new Button(composite_6, SWT.CHECK);
-		rubberBandButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		GridData gd_rubberBandButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_rubberBandButton.heightHint = 30;
+		rubberBandButton.setLayoutData(gd_rubberBandButton);
 		rubberBandButton.setToolTipText("Enables or disables the \"Rubber band\" option!");
 		rubberBandButton.setSelection(true);
 		rubberBandButton.addSelectionListener(new SelectionAdapter() {
@@ -1424,7 +1456,9 @@ public class WorldWindOptionsView extends ViewPart {
 		rubberBandButton.setText("Rubber band");
 
 		freehandButton = new Button(composite_6, SWT.CHECK);
-		freehandButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 1, 1));
+		GridData gd_freehandButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_freehandButton.heightHint = 30;
+		freehandButton.setLayoutData(gd_freehandButton);
 		freehandButton.setToolTipText("Enables or disables freehand selections!");
 		freehandButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -1439,7 +1473,9 @@ public class WorldWindOptionsView extends ViewPart {
 		new Label(composite_6, SWT.NONE);
 
 		final Button tooltipButton_1 = new Button(composite_6, SWT.CHECK);
-		tooltipButton_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 1, 1));
+		GridData gd_tooltipButton_1 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_tooltipButton_1.heightHint = 30;
+		tooltipButton_1.setLayoutData(gd_tooltipButton_1);
 		tooltipButton_1.setToolTipText("Enables or disables the tooltips!");
 		tooltipButton_1.setSelection(true);
 		tooltipButton_1.addSelectionListener(new SelectionAdapter() {
@@ -1458,7 +1494,9 @@ public class WorldWindOptionsView extends ViewPart {
 		new Label(composite_6, SWT.NONE);
 
 		newButton = new Button(composite_6, SWT.NONE);
-		newButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		GridData gd_newButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_newButton.heightHint = 40;
+		newButton.setLayoutData(gd_newButton);
 		newButton.setToolTipText("Start a new measurement!");
 		newButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -1484,7 +1522,9 @@ public class WorldWindOptionsView extends ViewPart {
 		newButton.setEnabled(true);
 
 		pauseButton = new Button(composite_6, SWT.NONE);
-		pauseButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		GridData gd_pauseButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_pauseButton.heightHint = 40;
+		pauseButton.setLayoutData(gd_pauseButton);
 		pauseButton.setToolTipText("Edit a measurement!");
 		pauseButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -1500,7 +1540,9 @@ public class WorldWindOptionsView extends ViewPart {
 		pauseButton.setText("Edit");
 
 		endButton = new Button(composite_6, SWT.NONE);
-		endButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		GridData gd_endButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_endButton.heightHint = 40;
+		endButton.setLayoutData(gd_endButton);
 		endButton.setToolTipText("Stop a measurement!");
 		endButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -1511,7 +1553,7 @@ public class WorldWindOptionsView extends ViewPart {
 		endButton.setEnabled(false);
 
 		table = new Table(composite_6, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL | SWT.VIRTUAL);
-		GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, true, 3, 3);
+		GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 3);
 		gd_table.heightHint = 99;
 		table.setLayoutData(gd_table);
 		table.setLinesVisible(true);
@@ -1527,7 +1569,7 @@ public class WorldWindOptionsView extends ViewPart {
 		}
 
 		final Button toSpreadButton = new Button(composite_6, SWT.NONE);
-		GridData gd_toSpreadButton = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		GridData gd_toSpreadButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_toSpreadButton.heightHint = 40;
 		toSpreadButton.setLayoutData(gd_toSpreadButton);
 		toSpreadButton.setToolTipText("Adds the current measurments to a dataframe.\nDelete the dataframe to start a new measurement series!");

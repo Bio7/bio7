@@ -15,9 +15,10 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.GridData;
 
 public class PcaDialog extends Dialog {
-
 
 	private Text text;
 	private List list_1;
@@ -25,8 +26,6 @@ public class PcaDialog extends Dialog {
 	private Spinner spinner;
 	protected boolean onlyTransfer;
 	private Button onlyTransferButton;
-
-	
 
 	public Spinner getSpinner() {
 		return spinner;
@@ -38,6 +37,7 @@ public class PcaDialog extends Dialog {
 
 	/**
 	 * Create the dialog
+	 * 
 	 * @param parentShell
 	 */
 	public PcaDialog(Shell parentShell) {
@@ -46,104 +46,124 @@ public class PcaDialog extends Dialog {
 
 	/**
 	 * Create contents of the dialog
+	 * 
 	 * @param parent
 	 */
 	@Override
 	protected Control createDialogArea(Composite parent) {
-		
+
 		Composite container = (Composite) super.createDialogArea(parent);
-		container.setLayout(null);
 
 		Label numberOfClustersLabel;
-		numberOfClustersLabel = new Label(container, SWT.NONE);
-		numberOfClustersLabel.setBounds(119, 14, 138, 15);
-		numberOfClustersLabel.setText("Number of Components");
+		container.setLayout(new GridLayout(5, true));
 
 		spinner = new Spinner(container, SWT.BORDER);
+		GridData gd_spinner = new GridData(SWT.FILL, SWT.FILL, true, false, 1,
+				1);
+		gd_spinner.heightHint = 30;
+		spinner.setLayoutData(gd_spinner);
 		spinner.setSelection(2);
 		spinner.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				ClusterJob.setCluster(spinner.getSelection());
 			}
 		});
-		spinner.setBounds(10, 11, 103, 20);
-
-		list = new List(container, SWT.V_SCROLL | SWT.MULTI | SWT.H_SCROLL | SWT.BORDER);
-		list.setBounds(10, 116, 149, 123);
-		CTabItem[] items = CanvasView.getCanvas_view().tabFolder.getItems();
-		for (int i = 0; i < items.length; i++) {
-			String title=items[i].getText();
-			list.add(title, i);
-			
-			
-		}
-
-		list_1 = new List(container, SWT.V_SCROLL | SWT.MULTI | SWT.H_SCROLL | SWT.BORDER);
-		list_1.setBounds(219, 116, 149, 123);
-		CTabItem item = CanvasView.tabFolder.getSelection();
-        list_1.add(item.getText());
-		final Button button = new Button(container, SWT.NONE);
-		button.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				String [] sel=list.getSelection();
-				for (int i = 0; i < sel.length; i++) {
-					list_1.add(sel[i], i);
-					
-					
-				}
-				
-			}
-		});
-		button.setText(">>");
-		button.setBounds(165, 115, 48, 25);
-
-		final Button button_1 = new Button(container, SWT.NONE);
-		button_1.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				int []sel=list_1.getSelectionIndices();
-				for (int i = 0; i < sel.length; i++) {
-					list_1.remove(sel);
-				}
-				
-			}
-		});
-		button_1.setText("<<");
-		button_1.setBounds(165, 157, 48, 25);
+		numberOfClustersLabel = new Label(container, SWT.NONE);
+		GridData gd_numberOfClustersLabel = new GridData(SWT.FILL, SWT.FILL,
+				true, false, 3, 1);
+		gd_numberOfClustersLabel.heightHint = 30;
+		numberOfClustersLabel.setLayoutData(gd_numberOfClustersLabel);
+		numberOfClustersLabel.setText("Number of Components");
+		new Label(container, SWT.NONE);
 		text = new Text(container, SWT.BORDER);
+		text.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 4, 1));
 		text.setEnabled(false);
-		text.setBounds(10, 45, 295, 25);
 		final Button euclideanButton = new Button(container, SWT.CHECK);
+		GridData gd_euclideanButton = new GridData(SWT.FILL, SWT.FILL, true,
+				false, 1, 1);
+		gd_euclideanButton.heightHint = 30;
+		euclideanButton.setLayoutData(gd_euclideanButton);
 		euclideanButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				text.setEnabled(!text.isEnabled());
 			}
 		});
 		euclideanButton.setText("arguments");
-		euclideanButton.setBounds(311, 47, 93, 16);
 
 		onlyTransferButton = new Button(container, SWT.CHECK);
+		GridData gd_onlyTransferButton = new GridData(SWT.FILL, SWT.FILL, true,
+				false, 2, 1);
+		gd_onlyTransferButton.heightHint = 30;
+		onlyTransferButton.setLayoutData(gd_onlyTransferButton);
 		onlyTransferButton.addSelectionListener(new SelectionAdapter() {
-			
 
 			public void widgetSelected(final SelectionEvent e) {
-				if(onlyTransfer){
-					onlyTransfer=false;
-				}
-				else{
-					onlyTransfer=true;
+				if (onlyTransfer) {
+					onlyTransfer = false;
+				} else {
+					onlyTransfer = true;
 				}
 			}
 		});
 		onlyTransferButton.setText("Only Transfer");
-		onlyTransferButton.setBounds(10, 94, 93, 16);
+		new Label(container, SWT.NONE);
+		new Label(container, SWT.NONE);
+		new Label(container, SWT.NONE);
 
-		
+		list = new List(container, SWT.V_SCROLL | SWT.MULTI | SWT.H_SCROLL
+				| SWT.BORDER);
+		list.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 2));
+		final Button button = new Button(container, SWT.NONE);
+		GridData gd_button = new GridData(SWT.FILL, SWT.BOTTOM, true, true, 1,
+				1);
+		gd_button.heightHint = 40;
+		button.setLayoutData(gd_button);
+		button.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				String[] sel = list.getSelection();
+				for (int i = 0; i < sel.length; i++) {
+					list_1.add(sel[i], i);
+
+				}
+
+			}
+		});
+		button.setText(">>");
+
+		list_1 = new List(container, SWT.V_SCROLL | SWT.MULTI | SWT.H_SCROLL
+				| SWT.BORDER);
+		list_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 2));
+		CTabItem item = CanvasView.tabFolder.getSelection();
+		list_1.add(item.getText());
+		CTabItem[] items = CanvasView.getCanvas_view().tabFolder.getItems();
+		for (int i = 0; i < items.length; i++) {
+			String title = items[i].getText();
+			list.add(title, i);
+
+		}
+
+		final Button button_1 = new Button(container, SWT.NONE);
+		GridData gd_button_1 = new GridData(SWT.FILL, SWT.TOP, true, true, 1, 1);
+		gd_button_1.heightHint = 40;
+		button_1.setLayoutData(gd_button_1);
+		button_1.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				int[] sel = list_1.getSelectionIndices();
+				for (int i = 0; i < sel.length; i++) {
+					list_1.remove(sel);
+				}
+
+			}
+		});
+		button_1.setText("<<");
+
 		//
 		return container;
 	}
 
 	/**
 	 * Create contents of the button bar
+	 * 
 	 * @param parent
 	 */
 	@Override
@@ -159,12 +179,14 @@ public class PcaDialog extends Dialog {
 	 */
 	@Override
 	protected Point getInitialSize() {
-		return new Point(430, 336);
+		return new Point(620, 415);
 	}
+
 	protected void configureShell(Shell newShell) {
 		super.configureShell(newShell);
 		newShell.setText("Cluster Images");
 	}
+
 	protected void buttonPressed(int buttonId) {
 		if (buttonId == IDialogConstants.CANCEL_ID) {
 			PcaJob.doClusterImages(false);

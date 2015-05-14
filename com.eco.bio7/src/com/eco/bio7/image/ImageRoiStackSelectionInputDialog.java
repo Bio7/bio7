@@ -24,6 +24,8 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.wb.swt.SWTResourceManager;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.GridData;
 
 public class ImageRoiStackSelectionInputDialog extends Dialog {
 	public Spinner spinner;
@@ -47,19 +49,51 @@ public class ImageRoiStackSelectionInputDialog extends Dialog {
 	@Override
 	protected Control createDialogArea(Composite parent) {
 		Composite container = (Composite) super.createDialogArea(parent);
-		container.setLayout(null);
-		{
-			spinner = new Spinner(container, SWT.BORDER);
-			spinner.setBounds(10, 150, 88, 31);
-		}
-		{
-			lblSignature = new Label(container, SWT.NONE);
-			lblSignature.setBounds(121, 153, 310, 28);
-			lblSignature.setText("Custom Class Signature");
-		}
+		container.setLayout(new GridLayout(2, true));
+		ImagePlus impd = WindowManager.getCurrentImage();
+		int stackSize=impd.getStackSize();
+		Label lblTransferStackIntervall = new Label(container, SWT.NONE);
+		GridData gd_lblTransferStackIntervall = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+		gd_lblTransferStackIntervall.heightHint = 30;
+		lblTransferStackIntervall.setLayoutData(gd_lblTransferStackIntervall);
+		lblTransferStackIntervall.setText("Transfer Selected Stack Slice Selections");
+		
+		Label lblFrom = new Label(container, SWT.NONE);
+		GridData gd_lblFrom = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_lblFrom.heightHint = 30;
+		lblFrom.setLayoutData(gd_lblFrom);
+		lblFrom.setText("From");
+		
+		Label lblTo = new Label(container, SWT.NONE);
+		GridData gd_lblTo = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_lblTo.heightHint = 30;
+		lblTo.setLayoutData(gd_lblTo);
+		lblTo.setText("To");
+		
+		spinner_1 = new Spinner(container, SWT.BORDER);
+		GridData gd_spinner_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_spinner_1.heightHint = 30;
+		spinner_1.setLayoutData(gd_spinner_1);
+		spinner_1.setMinimum(1);
+		spinner_1.setSelection(1);
+		
+		spinner_2 = new Spinner(container, SWT.BORDER);
+		GridData gd_spinner_2 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_spinner_2.heightHint = 30;
+		spinner_2.setLayoutData(gd_spinner_2);
+		spinner_2.setMinimum(1);
+		spinner_2.setSelection(stackSize);
+		spinner_2.setMaximum(stackSize);
+		
+		Label label = new Label(container, SWT.SEPARATOR | SWT.HORIZONTAL);
+		GridData gd_label = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+		gd_label.heightHint = 30;
+		label.setLayoutData(gd_label);
 		{
 			btnCreateSignature = new Button(container, SWT.CHECK);
-			btnCreateSignature.setBounds(10, 120, 421, 27);
+			GridData gd_btnCreateSignature = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+			gd_btnCreateSignature.heightHint = 30;
+			btnCreateSignature.setLayoutData(gd_btnCreateSignature);
 			btnCreateSignature.addSelectionListener(new SelectionAdapter() {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
@@ -67,36 +101,22 @@ public class ImageRoiStackSelectionInputDialog extends Dialog {
 				}
 			});
 			btnCreateSignature.setSelection(true);
-			btnCreateSignature.setText("Create Custom Class Signature (else increasing sign. is created!)");
+			btnCreateSignature.setText("Create Custom Class Signature (else increasing signature is created!)");
+		}
+		{
+			spinner = new Spinner(container, SWT.BORDER);
+			GridData gd_spinner = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+			gd_spinner.heightHint = 30;
+			spinner.setLayoutData(gd_spinner);
+		}
+		{
+			lblSignature = new Label(container, SWT.NONE);
+			GridData gd_lblSignature = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+			gd_lblSignature.heightHint = 30;
+			lblSignature.setLayoutData(gd_lblSignature);
+			lblSignature.setText("Custom Class Signature");
 		}
 		
-		spinner_1 = new Spinner(container, SWT.BORDER);
-		spinner_1.setBounds(10, 80, 88, 27);
-		spinner_1.setMinimum(1);
-		spinner_1.setSelection(1);
-		
-		spinner_2 = new Spinner(container, SWT.BORDER);
-		spinner_2.setBounds(111, 80, 88, 27);
-		ImagePlus impd = WindowManager.getCurrentImage();
-		int stackSize=impd.getStackSize();
-		spinner_2.setMinimum(1);
-		spinner_2.setSelection(stackSize);
-		spinner_2.setMaximum(stackSize);
-		
-		Label lblTransferStackIntervall = new Label(container, SWT.NONE);
-		lblTransferStackIntervall.setBounds(10, 10, 421, 37);
-		lblTransferStackIntervall.setText("Transfer Selected Stack Slice Selections");
-		
-		Label lblFrom = new Label(container, SWT.NONE);
-		lblFrom.setBounds(10, 53, 95, 21);
-		lblFrom.setText("From");
-		
-		Label lblTo = new Label(container, SWT.NONE);
-		lblTo.setBounds(112, 53, 224, 21);
-		lblTo.setText("To");
-		
-		Label label = new Label(container, SWT.SEPARATOR | SWT.HORIZONTAL);
-		label.setBounds(10, 108, 189, 18);
 
 		return container;
 	}
@@ -116,7 +136,7 @@ public class ImageRoiStackSelectionInputDialog extends Dialog {
 	 */
 	@Override
 	protected Point getInitialSize() {
-		return new Point(447, 260);
+		return new Point(620, 441);
 	}
 	protected void buttonPressed(int buttonId) {
 		if (buttonId == IDialogConstants.CANCEL_ID) {

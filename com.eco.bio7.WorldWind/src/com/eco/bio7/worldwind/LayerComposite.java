@@ -47,7 +47,7 @@ public class LayerComposite extends Composite {
 	public LayerComposite(Composite parent, int style, final SurfaceImage si, final RenderableLayer layerImages, final Sector sector) {
 		super(parent, style);
 		this.sector = sector;
-		setLayout(new GridLayout(4, true));
+		setLayout(new GridLayout(5, true));
 		/*Important to set the layout data for this composite to scale relative to the parent!*/
 		this.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 		final Button b = new Button(this, SWT.CHECK);
@@ -74,8 +74,8 @@ public class LayerComposite extends Composite {
 		});
 				
 				final Scale scale = new Scale(this, SWT.NONE);
-				GridData gd_scale = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-				gd_scale.heightHint = 36;
+				GridData gd_scale = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+				gd_scale.heightHint = 50;
 				gd_scale.widthHint = 93;
 				scale.setLayoutData(gd_scale);
 				scale.setMinimum(1);
@@ -87,29 +87,29 @@ public class LayerComposite extends Composite {
 						WorldWindView.getWwd().redraw();
 					}
 				});
-						
-								final Button r = new Button(this, SWT.NONE);
-								GridData gd_r = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-								gd_r.heightHint = 35;
-								r.setLayoutData(gd_r);
-								//r.setText("X");
-								r.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/images/delete.gif")));
-								r.setSelection(true);
-								r.addSelectionListener(new SelectionAdapter() {
-									public void widgetSelected(final SelectionEvent e) {
+		
+				final Button r = new Button(this, SWT.NONE);
+				GridData gd_r = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+				gd_r.heightHint = 40;
+				r.setLayoutData(gd_r);
+				//r.setText("X");
+				r.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/images/delete.gif")));
+				r.setSelection(true);
+				r.addSelectionListener(new SelectionAdapter() {
+					public void widgetSelected(final SelectionEvent e) {
 
-										LayerList layers = WorldWindView.getWwd().getModel().getLayers();
-										layers.remove(layerImages);
+						LayerList layers = WorldWindView.getWwd().getModel().getLayers();
+						layers.remove(layerImages);
 
-										dispose();
-										WorldWindOptionsView.getOptionsInstance().computeScrolledSize();
-										WorldWindView.getWwd().redraw();
+						dispose();
+						WorldWindOptionsView.getOptionsInstance().computeScrolledSize();
+						WorldWindView.getWwd().redraw();
 
-									}
-								});
+					}
+				});
 		final Button goTo = new Button(this, SWT.NONE);
 		GridData gd_goTo = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_goTo.heightHint = 35;
+		gd_goTo.heightHint = 40;
 		goTo.setLayoutData(gd_goTo);
 		goTo.setText("Loc");
 		goTo.setSelection(true);

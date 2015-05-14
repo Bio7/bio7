@@ -42,7 +42,7 @@ public class LayerCompositeVideo extends Composite {
 		super(parent, style);
 		/*Important to set the layout data for this composite to scale relative to the parent!*/
 		this.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-		setLayout(new GridLayout(4, true));
+		setLayout(new GridLayout(5, true));
 		final Button b = new Button(this, SWT.CHECK);
 		b.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		b.setText(layerImages.getName());
@@ -81,8 +81,8 @@ public class LayerCompositeVideo extends Composite {
 
 		
 		final Button r = new Button(this, SWT.NONE);
-		GridData gd_r = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-		gd_r.heightHint = 35;
+		GridData gd_r = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_r.heightHint = 50;
 		r.setLayoutData(gd_r);
 		//r.setText("X");
 		r.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/images/delete.gif")));
