@@ -205,22 +205,24 @@ public class ImageMethods extends ViewPart {
 		// store = Bio7Plugin.getDefault().getPreferenceStore();
 		im = this;
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.imagemethods");
-		GridData gridData14 = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		GridData gridData14 = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
 		gridData14.widthHint = 86;
 		gridData14.horizontalIndent = 0;
 		GridData gridData3 = new GridData();
+		gridData3.grabExcessVerticalSpace = true;
 		gridData3.heightHint = 35;
 		gridData3.horizontalAlignment = GridData.FILL;
 		gridData3.grabExcessHorizontalSpace = true;
-		gridData3.verticalAlignment = GridData.CENTER;
+		gridData3.verticalAlignment = SWT.FILL;
 		GridData gridData21 = new GridData();
 		gridData21.heightHint = 35;
 		gridData21.horizontalAlignment = GridData.FILL;
 		gridData21.horizontalIndent = 0;
 		gridData21.grabExcessHorizontalSpace = true;
-		gridData21.grabExcessVerticalSpace = false;
-		gridData21.verticalAlignment = GridData.CENTER;
+		gridData21.grabExcessVerticalSpace = true;
+		gridData21.verticalAlignment = SWT.FILL;
 		GridLayout gridLayout1 = new GridLayout();
+		gridLayout1.marginHeight = 1;
 		gridLayout1.marginRight = 3;
 		gridLayout1.marginLeft = 3;
 		gridLayout1.makeColumnsEqualWidth = true;
@@ -232,10 +234,10 @@ public class ImageMethods extends ViewPart {
 		top.setLayout(gridLayout1);
 		label = new Label(top, SWT.NONE);
 		label.setText("Alpha Image");
-		label.setLayoutData(new GridData(SWT.CENTER, SWT.FILL, false, false, 1, 1));
+		label.setLayoutData(new GridData(SWT.CENTER, SWT.FILL, true, true, 1, 1));
 		label1 = new Label(top, SWT.NONE);
 		label1.setText("Alpha Quadgrid");
-		label1.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
+		label1.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true, 1, 1));
 		scale = new Scale(top, SWT.NONE);
 		scale.setMaximum(255);
 		scale.setToolTipText("Alpha value of the image in the Points panel");
@@ -245,7 +247,7 @@ public class ImageMethods extends ViewPart {
 		scale1.setMaximum(255);
 		scale1.setSelection(255);
 		scale1.setToolTipText("Alpha value for the Quadgrid");
-		GridData gd_scale1 = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		GridData gd_scale1 = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
 		gd_scale1.widthHint = 78;
 		scale1.setLayoutData(gd_scale1);
 
@@ -265,7 +267,7 @@ public class ImageMethods extends ViewPart {
 		button5.setImage(deletePicGif);
 		button5.setLayoutData(gridData3);
 		button5.setToolTipText("Remove the current image of the Points panel");
-		GridData gridData1 = new GridData(SWT.FILL, SWT.FILL, true, false);
+		GridData gridData1 = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gridData1.heightHint = 35;
 		gridData1.horizontalIndent = 0;
 		button1 = new Button(top, SWT.NONE);
@@ -281,6 +283,7 @@ public class ImageMethods extends ViewPart {
 
 		});
 		GridData gridData20 = new GridData();
+		gridData20.grabExcessVerticalSpace = true;
 		gridData20.heightHint = 35;
 		gridData20.horizontalAlignment = GridData.FILL;
 		gridData20.grabExcessHorizontalSpace = true;
@@ -307,11 +310,11 @@ public class ImageMethods extends ViewPart {
 		});
 
 		final Label resizeQuadsLabel = new Label(top, SWT.NONE);
-		resizeQuadsLabel.setLayoutData(new GridData(SWT.CENTER, SWT.FILL, true, false, 1, 1));
+		resizeQuadsLabel.setLayoutData(new GridData(SWT.CENTER, SWT.FILL, true, true, 1, 1));
 		resizeQuadsLabel.setText("Resize Quads");
 		label2 = new Label(top, SWT.NONE);
 		label2.setText("Resize Points Panel");
-		label2.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
+		label2.setLayoutData(new GridData(SWT.CENTER, SWT.FILL, true, true, 1, 1));
 
 		final Scale scale_1 = new Scale(top, SWT.NONE);
 		scale_1.setToolTipText("If Quads are enabled this slider resizes the quads from the Quads view");
@@ -331,7 +334,7 @@ public class ImageMethods extends ViewPart {
 				});
 			}
 		});
-		GridData gd_scale_1 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		GridData gd_scale_1 = new GridData(SWT.FILL, SWT.CENTER, true, true, 1, 1);
 		gd_scale_1.widthHint = 84;
 		scale_1.setLayoutData(gd_scale_1);
 		scale2 = new Scale(top, SWT.NONE);
@@ -339,7 +342,7 @@ public class ImageMethods extends ViewPart {
 		scale2.setToolTipText("Scale down the Points panel");
 		scale2.setPageIncrement(10000);
 		scale2.setIncrement(10000);
-		GridData gd_scale2 = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		GridData gd_scale2 = new GridData(SWT.FILL, SWT.CENTER, true, true, 1, 1);
 		gd_scale2.widthHint = 66;
 		scale2.setLayoutData(gd_scale2);
 		scale2.setMaximum(10000);
@@ -352,20 +355,26 @@ public class ImageMethods extends ViewPart {
 
 		});
 		GridData gridData10 = new GridData();
+		gridData10.grabExcessHorizontalSpace = true;
+		gridData10.grabExcessVerticalSpace = true;
 		gridData10.horizontalAlignment = GridData.CENTER;
-		gridData10.verticalAlignment = GridData.CENTER;
+		gridData10.verticalAlignment = SWT.FILL;
 		label51 = new Label(top, SWT.NONE);
 		label51.setText("Fieldsize X");
 		label51.setLayoutData(gridData10);
 		GridData gridData9 = new GridData();
+		gridData9.grabExcessHorizontalSpace = true;
+		gridData9.grabExcessVerticalSpace = true;
 		gridData9.horizontalAlignment = GridData.CENTER;
-		gridData9.verticalAlignment = GridData.CENTER;
+		gridData9.verticalAlignment = SWT.FILL;
 		label52 = new Label(top, SWT.NONE);
 		label52.setText("Fieldsize Y");
 		label52.setLayoutData(gridData9);
 		GridData gridData15 = new GridData();
+		gridData15.grabExcessHorizontalSpace = true;
+		gridData15.grabExcessVerticalSpace = true;
 		gridData15.horizontalAlignment = GridData.FILL;
-		gridData15.verticalAlignment = GridData.CENTER;
+		gridData15.verticalAlignment = SWT.FILL;
 		spinner = new Spinner(top, SWT.BORDER);
 		spinner.setMaximum(1000000);
 		spinner.setLayoutData(gridData15);
@@ -379,8 +388,10 @@ public class ImageMethods extends ViewPart {
 
 		});
 		GridData gridData2 = new GridData();
+		gridData2.grabExcessHorizontalSpace = true;
+		gridData2.grabExcessVerticalSpace = true;
 		gridData2.horizontalAlignment = GridData.FILL;
-		gridData2.verticalAlignment = GridData.CENTER;
+		gridData2.verticalAlignment = SWT.FILL;
 		spinner1 = new Spinner(top, SWT.BORDER);
 		spinner1.setMaximum(1000000);
 		spinner1.setLayoutData(gridData2);
@@ -396,21 +407,27 @@ public class ImageMethods extends ViewPart {
 
 		});
 		GridData gridData121 = new GridData();
+		gridData121.grabExcessHorizontalSpace = true;
+		gridData121.grabExcessVerticalSpace = true;
 		gridData121.horizontalAlignment = GridData.CENTER;
-		gridData121.verticalAlignment = GridData.CENTER;
+		gridData121.verticalAlignment = SWT.FILL;
 		label53 = new Label(top, SWT.NONE);
 		label53.setText("Point Size");
 		label53.setLayoutData(gridData121);
 
 		GridData gridData23 = new GridData();
+		gridData23.grabExcessHorizontalSpace = true;
+		gridData23.grabExcessVerticalSpace = true;
 		gridData23.horizontalAlignment = GridData.CENTER;
-		gridData23.verticalAlignment = GridData.CENTER;
+		gridData23.verticalAlignment = SWT.FILL;
 		label55 = new Label(top, SWT.NONE);
 		label55.setText("Alpha");
 		label55.setLayoutData(gridData23);
 		GridData gridData111 = new GridData();
+		gridData111.grabExcessHorizontalSpace = true;
+		gridData111.grabExcessVerticalSpace = true;
 		gridData111.horizontalAlignment = GridData.FILL;
-		gridData111.verticalAlignment = GridData.CENTER;
+		gridData111.verticalAlignment = SWT.FILL;
 		spinner2 = new Spinner(top, SWT.NONE);
 		spinner2.setToolTipText("Adjust the point size in the Points panel");
 
@@ -425,8 +442,10 @@ public class ImageMethods extends ViewPart {
 
 		});
 		GridData gridData11 = new GridData();
+		gridData11.grabExcessHorizontalSpace = true;
+		gridData11.grabExcessVerticalSpace = true;
 		gridData11.horizontalAlignment = GridData.FILL;
-		gridData11.verticalAlignment = GridData.CENTER;
+		gridData11.verticalAlignment = SWT.FILL;
 		spinner3 = new Spinner(top, SWT.NONE);
 		spinner3.setToolTipText("Adjust the alpha value of the points in the Points panel");
 		spinner3.setMaximum(255);
@@ -441,7 +460,7 @@ public class ImageMethods extends ViewPart {
 		});
 
 		CLabel lblNewLabel_3 = new CLabel(top, SWT.NONE);
-		lblNewLabel_3.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 2, 1));
+		lblNewLabel_3.setLayoutData(new GridData(SWT.CENTER, SWT.FILL, true, true, 2, 1));
 		lblNewLabel_3.setText("Voronoi / Delauney");
 
 		final Button voronoiButton = new Button(top, SWT.NONE);
@@ -459,7 +478,7 @@ public class ImageMethods extends ViewPart {
 
 			}
 		});
-		final GridData gd_voronoiButton = new GridData(SWT.FILL, SWT.FILL, false, false);
+		final GridData gd_voronoiButton = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gd_voronoiButton.heightHint = 35;
 		voronoiButton.setLayoutData(gd_voronoiButton);
 		voronoiButton.setText("Voronoi");
@@ -477,13 +496,13 @@ public class ImageMethods extends ViewPart {
 
 			}
 		});
-		final GridData gd_delauneyButton = new GridData(SWT.FILL, SWT.CENTER, false, false);
+		final GridData gd_delauneyButton = new GridData(SWT.FILL, SWT.CENTER, true, true);
 		gd_delauneyButton.heightHint = 35;
 		delauneyButton.setLayoutData(gd_delauneyButton);
 		delauneyButton.setText("Delauney");
 
 		final Button dynamicButton = new Button(top, SWT.CHECK);
-		GridData gd_dynamicButton = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		GridData gd_dynamicButton = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
 		gd_dynamicButton.heightHint = 30;
 		dynamicButton.setLayoutData(gd_dynamicButton);
 		dynamicButton.setToolTipText("Dynamic Voronoi visualization");
@@ -498,7 +517,7 @@ public class ImageMethods extends ViewPart {
 		dynamicButton.setText("Dynamic Voro.");
 
 		final Button drawAreasButton = new Button(top, SWT.CHECK);
-		GridData gd_drawAreasButton = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		GridData gd_drawAreasButton = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
 		gd_drawAreasButton.heightHint = 30;
 		drawAreasButton.setLayoutData(gd_drawAreasButton);
 		drawAreasButton.setToolTipText("Clip Voronoi Areas");
@@ -522,7 +541,7 @@ public class ImageMethods extends ViewPart {
 		drawAreasButton.setText("Clip Areas");
 
 		Button btnDynamic = new Button(top, SWT.CHECK);
-		GridData gd_btnDynamic = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		GridData gd_btnDynamic = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
 		gd_btnDynamic.heightHint = 30;
 		btnDynamic.setLayoutData(gd_btnDynamic);
 		btnDynamic.setToolTipText("Dynamic Delauney visualization");
@@ -538,7 +557,7 @@ public class ImageMethods extends ViewPart {
 		btnDynamic.setText("Dynamic Del.");
 
 		btnAreas = new Button(top, SWT.CHECK);
-		GridData gd_btnAreas = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		GridData gd_btnAreas = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
 		gd_btnAreas.heightHint = 30;
 		btnAreas.setLayoutData(gd_btnAreas);
 		btnAreas.setToolTipText("Draw Voronoi Areas");
@@ -558,7 +577,7 @@ public class ImageMethods extends ViewPart {
 
 		Label lblAreas = new Label(top, SWT.NONE);
 		lblAreas.setAlignment(SWT.CENTER);
-		lblAreas.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
+		lblAreas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 		lblAreas.setText("Draw Area Size");
 
 		scale_2 = new Scale(top, SWT.NONE);
@@ -574,18 +593,19 @@ public class ImageMethods extends ViewPart {
 		scale_2.setMaximum(10);
 		scale_2.setMinimum(1);
 		scale_2.setSelection(10);
-		GridData gd_scale_2 = new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1);
+		GridData gd_scale_2 = new GridData(SWT.FILL, SWT.CENTER, true, true, 2, 1);
 		gd_scale_2.widthHint = 71;
 		scale_2.setLayoutData(gd_scale_2);
 
 		CLabel lblNewLabel_4 = new CLabel(top, SWT.NONE);
-		lblNewLabel_4.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 2, 1));
+		lblNewLabel_4.setLayoutData(new GridData(SWT.CENTER, SWT.FILL, true, true, 2, 1));
 		lblNewLabel_4.setText("ImageJ And Points Panel");
 		GridData gridData22 = new GridData();
+		gridData22.grabExcessVerticalSpace = true;
 		gridData22.heightHint = 35;
 		gridData22.horizontalAlignment = GridData.FILL;
-		gridData22.grabExcessHorizontalSpace = false;
-		gridData22.verticalAlignment = GridData.CENTER;
+		gridData22.grabExcessHorizontalSpace = true;
+		gridData22.verticalAlignment = SWT.FILL;
 		button6 = new Button(top, SWT.NONE);
 		// button6.setFont(SWTResourceManager.getFont("Courier New", 9,
 		// SWT.BOLD));
@@ -602,10 +622,11 @@ public class ImageMethods extends ViewPart {
 
 		});
 		GridData gridData12 = new GridData();
+		gridData12.grabExcessVerticalSpace = true;
 		gridData12.heightHint = 35;
 		gridData12.horizontalAlignment = GridData.FILL;
 		gridData12.grabExcessHorizontalSpace = true;
-		gridData12.verticalAlignment = GridData.CENTER;
+		gridData12.verticalAlignment = SWT.FILL;
 		// button6.setFont(new Font(Display.getDefault(), "Tahoma", 8,
 		// SWT.BOLD));
 
@@ -631,7 +652,7 @@ public class ImageMethods extends ViewPart {
 				PointPanel.doPaint();
 			}
 		});
-		GridData gridData31 = new GridData(SWT.FILL, SWT.CENTER, true, false);
+		GridData gridData31 = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gridData31.heightHint = 35;
 		button8 = new Button(top, SWT.NONE);
 		// button8.setFont(SWTResourceManager.getFont("Courier New", 9,
@@ -648,7 +669,7 @@ public class ImageMethods extends ViewPart {
 
 		});
 
-		GridData gridData13 = new GridData(SWT.FILL, SWT.FILL, false, false);
+		GridData gridData13 = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gridData13.heightHint = 35;
 		// button8.setFont(new Font(Display.getDefault(), "Tahoma", 8,
 		// SWT.BOLD));
@@ -669,7 +690,7 @@ public class ImageMethods extends ViewPart {
 		});
 
 		CLabel lblNewLabel = new CLabel(top, SWT.NONE);
-		lblNewLabel.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 2, 1));
+		lblNewLabel.setLayoutData(new GridData(SWT.CENTER, SWT.FILL, true, true, 2, 1));
 		lblNewLabel.setText("Transfer Selected Data To R");
 
 		Button btnNewButton = new Button(top, SWT.NONE);
@@ -692,7 +713,7 @@ public class ImageMethods extends ViewPart {
 				}
 			}
 		});
-		GridData gd_btnNewButton = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		GridData gd_btnNewButton = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
 		gd_btnNewButton.heightHint = 35;
 		btnNewButton.setLayoutData(gd_btnNewButton);
 		btnNewButton.setText("IJ RT       ");
@@ -752,11 +773,11 @@ public class ImageMethods extends ViewPart {
 
 			}
 		});
-		GridData gd_btnNewButton_1 = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		GridData gd_btnNewButton_1 = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
 		gd_btnNewButton_1.heightHint = 35;
 		btnNewButton_1.setLayoutData(gd_btnNewButton_1);
 		btnNewButton_1.setText("IJ RasterStack");
-		GridData gridData = new org.eclipse.swt.layout.GridData(SWT.FILL, SWT.FILL, false, false);
+		GridData gridData = new org.eclipse.swt.layout.GridData(SWT.FILL, SWT.FILL, true, true);
 		gridData.heightHint = 35;
 		button2 = new Button(top, SWT.NONE);
 		// button2.setFont(SWTResourceManager.getFont("Courier New", 9,
@@ -783,7 +804,7 @@ public class ImageMethods extends ViewPart {
 				}
 			}
 		});
-		GridData gridData131 = new GridData(SWT.FILL, SWT.FILL, true, false);
+		GridData gridData131 = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gridData131.heightHint = 35;
 		button4 = new Button(top, SWT.NONE);
 		// button4.setFont(SWTResourceManager.getFont("Courier New", 9,
@@ -836,7 +857,7 @@ public class ImageMethods extends ViewPart {
 			}
 		});
 
-		final GridData gd_selectedPixelsButton = new GridData(SWT.FILL, SWT.FILL, false, false);
+		final GridData gd_selectedPixelsButton = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gd_selectedPixelsButton.heightHint = 35;
 		selectedPixelsButton.setLayoutData(gd_selectedPixelsButton);
 		selectedPixelsButton.setText("Pixel       ");
@@ -858,7 +879,7 @@ public class ImageMethods extends ViewPart {
 
 			}
 		});
-		final GridData gd_matchingButton = new GridData(SWT.FILL, SWT.FILL, false, false);
+		final GridData gd_matchingButton = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gd_matchingButton.heightHint = 35;
 		matchingButton.setLayoutData(gd_matchingButton);
 		matchingButton.setText("Selection       ");
@@ -893,7 +914,7 @@ public class ImageMethods extends ViewPart {
 
 			}
 		});
-		GridData gd_selectedRoiPixelButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+		GridData gd_selectedRoiPixelButton = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
 		gd_selectedRoiPixelButton.heightHint = 35;
 		selectedRoiPixelButton.setLayoutData(gd_selectedRoiPixelButton);
 
@@ -925,12 +946,12 @@ public class ImageMethods extends ViewPart {
 
 			}
 		});
-		GridData gd_btnPixelRoiStack = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+		GridData gd_btnPixelRoiStack = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
 		gd_btnPixelRoiStack.heightHint = 35;
 		btnPixelRoiStack.setLayoutData(gd_btnPixelRoiStack);
 
 		CLabel lblNewLabel_1 = new CLabel(top, SWT.NONE);
-		lblNewLabel_1.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 2, 1));
+		lblNewLabel_1.setLayoutData(new GridData(SWT.CENTER, SWT.FILL, true, true, 2, 1));
 		lblNewLabel_1.setText("Transfer Image Data From and To R");
 
 		final Button picToRButton = new Button(top, SWT.NONE);
@@ -969,7 +990,7 @@ public class ImageMethods extends ViewPart {
 			}
 		});
 
-		final GridData gd_picToRButton = new GridData(SWT.FILL, SWT.FILL, false, false);
+		final GridData gd_picToRButton = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gd_picToRButton.heightHint = 35;
 		picToRButton.setLayoutData(gd_picToRButton);
 
@@ -1022,7 +1043,7 @@ public class ImageMethods extends ViewPart {
 				}
 			}
 		});
-		final GridData gd_picButton = new GridData(SWT.FILL, SWT.CENTER, false, false);
+		final GridData gd_picButton = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gd_picButton.heightHint = 35;
 		picButton.setLayoutData(gd_picButton);
 
@@ -1036,7 +1057,7 @@ public class ImageMethods extends ViewPart {
 		});
 		transferTypeCombo.setItems(new String[] { "Double", "Integer", "Byte", "RGB Byte" });
 		transferTypeCombo.setText("Double");
-		transferTypeCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		transferTypeCombo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
 		toimageJCombo = new Combo(top, SWT.READ_ONLY);
 		toimageJCombo.setToolTipText("Selects the image type which will be created in Imagej");
@@ -1048,7 +1069,7 @@ public class ImageMethods extends ViewPart {
 		});
 		toimageJCombo.setItems(new String[] { "Colour", "Greyscale", "Float", "Short" });
 		toimageJCombo.setText("Float");
-		toimageJCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		toimageJCombo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		// greyscaleButton.setToolTipText(
 		// "Create from the image data in R a greyscale image (ByteProcessor) in ImageJ"
 		// );
@@ -1066,15 +1087,15 @@ public class ImageMethods extends ViewPart {
 
 		imageMatrixNameToR.setToolTipText("The name for the data which will be created if selected");
 		imageMatrixNameToR.setText("imageMatrix");
-		imageMatrixNameToR.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		imageMatrixNameToR.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
 		imageMatrixNameFromR = new Text(top, SWT.BORDER);
 		imageMatrixNameFromR.setToolTipText("The name of the data which will be used to create the image in ImageJ");
 		imageMatrixNameFromR.setText("imageMatrix");
-		imageMatrixNameFromR.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		imageMatrixNameFromR.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
 		CLabel lblNewLabel_2 = new CLabel(top, SWT.NONE);
-		lblNewLabel_2.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 2, 1));
+		lblNewLabel_2.setLayoutData(new GridData(SWT.CENTER, SWT.FILL, true, true, 2, 1));
 		lblNewLabel_2.setText("Multivariate Image Analysis");
 
 		final Button clusterImageButton = new Button(top, SWT.NONE);
@@ -1124,7 +1145,7 @@ public class ImageMethods extends ViewPart {
 				}
 			}
 		});
-		final GridData gd_clusterImageButton = new GridData(SWT.FILL, SWT.CENTER, true, false);
+		final GridData gd_clusterImageButton = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gd_clusterImageButton.heightHint = 35;
 		clusterImageButton.setLayoutData(gd_clusterImageButton);
 
@@ -1173,9 +1194,14 @@ public class ImageMethods extends ViewPart {
 
 			}
 		});
-		final GridData gd_pcaButton = new GridData(SWT.FILL, SWT.CENTER, false, false);
+		final GridData gd_pcaButton = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gd_pcaButton.heightHint = 35;
 		pcaButton.setLayoutData(gd_pcaButton);
+		
+		Label label_1 = new Label(top, SWT.SEPARATOR | SWT.HORIZONTAL);
+		GridData gd_label_1 = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
+		gd_label_1.heightHint = 35;
+		label_1.setLayoutData(gd_label_1);
 		button5.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
 			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
 
