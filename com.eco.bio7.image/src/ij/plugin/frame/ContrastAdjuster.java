@@ -3,12 +3,10 @@ package ij.plugin.frame;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
-
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
-
 import ij.*;
 import ij.plugin.*;
 import ij.process.*;
@@ -50,8 +48,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable, ActionLi
 	double defaultMin, defaultMax;
 	int contrast, brightness;
 	boolean RGBImage;
-	JScrollBar minSlider;
-	JScrollBar maxSlider, contrastSlider, brightnessSlider;
+	JScrollBar minSlider, maxSlider, contrastSlider, brightnessSlider;
 	JLabel minLabel, maxLabel, windowLabel, levelLabel;
 	boolean done;
 	int autoThreshold;
@@ -415,8 +412,6 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable, ActionLi
 			imp.setDisplayRange(min, max, channels);
 		else
 			imp.setDisplayRange(min, max);
-		if (!rgb)
-			imp.getProcessor().setSnapshotPixels(null); // disable undo
 	}
 
 	void updatePlot() {
@@ -640,22 +635,33 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable, ActionLi
 			imp.unlock();
 			return;
 		}
-		if (imp.getType() != ImagePlus.GRAY8) {
+		int bitDepth = imp.getBitDepth();
+		if (bitDepth == 32) {
 			IJ.beep();
-			IJ.showStatus("Apply requires an 8-bit grayscale image or an RGB stack");
+			IJ.showStatus("\"Apply\" does not work with 32-bit images");
 			imp.unlock();
 			return;
 		}
-		int[] table = new int[256];
+		int range = 256;
+		if (bitDepth == 16) {
+			range = 65536;
+			int defaultRange = imp.getDefault16bitRange();
+			if (defaultRange > 0)
+				range = (int) Math.pow(2, defaultRange) - 1;
+		}
+		int tableSize = bitDepth == 16 ? 65536 : 256;
+		int[] table = new int[tableSize];
 		int min = (int) imp.getDisplayRangeMin();
 		int max = (int) imp.getDisplayRangeMax();
-		for (int i = 0; i < 256; i++) {
+		if (IJ.debugMode)
+			IJ.log("Apply: mapping " + min + "-" + max + " to 0-" + (range - 1));
+		for (int i = 0; i < tableSize; i++) {
 			if (i <= min)
 				table[i] = 0;
 			else if (i >= max)
-				table[i] = 255;
+				table[i] = range - 1;
 			else
-				table[i] = (int) (((double) (i - min) / (max - min)) * 255);
+				table[i] = (int) (((double) (i - min) / (max - min)) * range);
 		}
 		ip.setRoi(imp.getRoi());
 		if (imp.getStackSize() > 1 && !imp.isComposite()) {
@@ -1218,7 +1224,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable, ActionLi
 
 } // ContrastAdjuster class
 
-class ContrastPlot extends JPanel implements MouseListener {
+class ContrastPlot extends Canvas implements MouseListener {
 
 	static final int WIDTH = 128, HEIGHT = 64;
 	double defaultMin = 0;
@@ -1277,12 +1283,11 @@ class ContrastPlot extends JPanel implements MouseListener {
 		os = null;
 	}
 
-	/*
-	 * public void update(Graphics g) { paint(g); }
-	 */
+	public void update(Graphics g) {
+		paint(g);
+	}
 
-	public void paintComponent(Graphics g) {
-		super.paintComponent(g);
+	public void paint(Graphics g) {
 		int x1, y1, x2, y2;
 		double scale = (double) WIDTH / (defaultMax - defaultMin);
 		double slope = 0.0;

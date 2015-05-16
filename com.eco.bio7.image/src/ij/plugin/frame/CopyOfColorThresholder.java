@@ -9,7 +9,9 @@ import java.util.*;
 import java.awt.event.*;
 
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 
 import ij.measure.*;
 import ij.plugin.*;
@@ -49,7 +51,7 @@ import ij.plugin.filter.ThresholdToSelection;
  */
 
 /**  Selects pixels according to hsb or rgb components.  */
-public class ColorThresholder extends PlugInFrame implements PlugIn, Measurements,
+public class CopyOfColorThresholder extends PlugInFrame implements PlugIn, Measurements,
  ActionListener, AdjustmentListener, FocusListener, ItemListener, Runnable{
 
 	private static final int HSB=0, RGB=1, LAB=2, YUV=3;
@@ -74,7 +76,8 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 	private int minHue = 0, minSat = 0, minBri = 0;
 	private int maxHue = 255, maxSat = 255, maxBri = 255;
 	private Scrollbar minSlider, maxSlider, minSlider2, maxSlider2, minSlider3, maxSlider3;
-	private Label label1, label2, label3, label4, label5, label6, labelh, labels, labelb, labelf;
+	private Label label1, label2, label3, label4, label5, label6, labelh, labelb, labelf;
+	Label labels;
 	private boolean done;
 	private byte[] hSource, sSource, bSource;
 	private boolean applyingStack;
@@ -91,7 +94,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 	private ImageStack stack;
 	private int width, height, numPixels;
 
-	public ColorThresholder() {
+	public CopyOfColorThresholder() {
 		super("Threshold Color");
 		if (instance!=null) {
 			WindowManager.toFront(instance);
@@ -326,7 +329,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		GridBagLayout gridbag2 = new GridBagLayout();
 		GridBagConstraints c2 = new GridBagConstraints();
 		int y2 = 0;
-		Panel panel = new Panel();
+		JPanel panel = new JPanel();
 		panel.setLayout(gridbag2);
 		
 		// threshoding method choice
@@ -406,7 +409,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 
 		// buttons
 		int trim = IJ.isMacOSX()?10:0;
-		panel = new Panel();
+		panel = new JPanel();
 		panel.setLayout(new GridLayout(0, 4, 0, 0));
 		originalB = new TrimmedButton("Original", trim);
 		//originalB.setEnabled(false);
@@ -1130,7 +1133,8 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				else
 					fillMask[j] = fill;
 			}
-		} else if(!bandPassH.getState() && !bandPassS.getState() && !bandPassB.getState()){ //SSS All stop
+		}
+		else if(!bandPassH.getState() && !bandPassS.getState() && !bandPassB.getState()){ //SSS All stop
 			for (int j = 0; j < numPixels; j++){
 				int hue = hSource[j]&0xff;
 				int sat = sSource[j]&0xff;
@@ -1140,7 +1144,8 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				else
 					fillMask[j] = fill;
 			}
-		} else if(bandPassH.getState() && bandPassS.getState() && !bandPassB.getState()){ //PPS
+		}
+		else if(bandPassH.getState() && bandPassS.getState() && !bandPassB.getState()){ //PPS
 			for (int j = 0; j < numPixels; j++){
 				int hue = hSource[j]&0xff;
 				int sat = sSource[j]&0xff;
@@ -1150,7 +1155,8 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				else
 					fillMask[j] = fill;
 			}
-		} else if(!bandPassH.getState() && !bandPassS.getState() && bandPassB.getState()){ //SSP
+		}
+		else if(!bandPassH.getState() && !bandPassS.getState() && bandPassB.getState()){ //SSP
 			for (int j = 0; j < numPixels; j++){
 				int hue = hSource[j]&0xff;
 				int sat = sSource[j]&0xff;
@@ -1160,7 +1166,8 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				else
 					fillMask[j] = fill;
 			}
-		} else if (bandPassH.getState() && !bandPassS.getState() && !bandPassB.getState()){ //PSS
+		}
+		else if (bandPassH.getState() && !bandPassS.getState() && !bandPassB.getState()){ //PSS
 			for (int j = 0; j < numPixels; j++){
 				int hue = hSource[j]&0xff;
 				int sat = sSource[j]&0xff;
@@ -1170,7 +1177,8 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				else
 					fillMask[j] = fill;
 			}
-		} else if(!bandPassH.getState() && bandPassS.getState() && bandPassB.getState()){ //SPP
+		}
+		else if(!bandPassH.getState() && bandPassS.getState() && bandPassB.getState()){ //SPP
 			for (int j = 0; j < numPixels; j++){
 				int hue = hSource[j]&0xff;
 				int sat = sSource[j]&0xff;
@@ -1180,7 +1188,8 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				else
 					fillMask[j] = fill;
 			}
-		} else if (!bandPassH.getState() && bandPassS.getState() && !bandPassB.getState()){ //SPS
+		}
+		else if (!bandPassH.getState() && bandPassS.getState() && !bandPassB.getState()){ //SPS
 			for (int j = 0; j < numPixels; j++){
 				int hue = hSource[j]&0xff;
 				int sat = sSource[j]&0xff;
@@ -1190,7 +1199,8 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				else
 					fillMask[j] = fill;
 			}
-		} else if(bandPassH.getState() && !bandPassS.getState() && bandPassB.getState()){ //PSP
+		}
+		else if(bandPassH.getState() && !bandPassS.getState() && bandPassB.getState()){ //PSP
 			for (int j = 0; j < numPixels; j++){
 				int hue = hSource[j]&0xff;
 				int sat = sSource[j]&0xff;
@@ -1254,12 +1264,10 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 			originalImage.setProcessor(ip.duplicate());
 			imp.setProperty("OriginalImage", originalImage);
 		}
-		if (originalImage.getBitDepth()==24) {
-			int[] restore = (int[])originalImage.getProcessor().getPixels();
-			int[] pixels = (int[])ip.getPixels();
-			for (int i=0; i<numPixels; i++)
-				pixels[i] = restore[i];
-		}
+		int[] restore = (int[])originalImage.getProcessor().getPixels();
+		int[] pixels = (int[])ip.getPixels();
+		for (int i=0; i<numPixels; i++)
+			pixels[i] = restore[i];
 	}
 
     public void windowActivated(WindowEvent e) {
@@ -1285,21 +1293,75 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		}
 	}
 
-	/** Returns Lab in 3 byte arrays. */
-	public static void getLab(ImageProcessor ip, byte[] L, byte[] a, byte[] b) {
-		ColorSpaceConverter converter = new ColorSpaceConverter();
-		int[] pixels = (int[])ip.getPixels();
-		for (int i=0; i<pixels.length; i++) {
-			double[] values = converter.RGBtoLAB(pixels[i]);
-			int L1 = (int) (values[0] * 2.55);
-			int a1 = (int) (Math.floor((1.0625 * values[1] + 128) + 0.5));
-			int b1 = (int) (Math.floor((1.0625 * values[2] + 128) + 0.5));
-			L[i] = (byte)((int)(L1<0?0:(L1>255?255:L1)) & 0xff);
-			a[i] = (byte)((int)(a1<0?0:(a1>255?255:a1)) & 0xff);
-			b[i] = (byte)((int)(b1<0?0:(b1>255?255:b1)) & 0xff);
+	public void getLab(ImageProcessor ip, byte[] L, byte[] a, byte[] b) {
+		// Returns Lab in 3 byte arrays.
+		//http://www.brucelindbloom.com/index.html?WorkingSpaceInfo.html#Specifications
+		//http://www.easyrgb.com/math.php?MATH=M7#text7
+		int c, x, y, i=0;
+		double rf, gf, bf;
+		double X, Y, Z, fX, fY, fZ;
+		double La, aa, bb;
+		double ot=1/3.0, cont = 16/116.0;
+
+		int width=ip.getWidth();
+		int height=ip.getHeight();
+
+		for(y=0;y<height; y++) {
+			for (x=0; x< width;x++){
+				c = ip.getPixel(x,y);
+
+				// RGB to XYZ
+				rf = ((c&0xff0000)>>16)/255.0; //R 0..1
+				gf = ((c&0x00ff00)>>8)/255.0; //G 0..1
+				bf = ( c&0x0000ff)/255.0; //B 0..1
+
+				// gamma = 1.0?
+				//white reference D65 PAL/SECAM
+				X = 0.430587 * rf + 0.341545 * gf + 0.178336 * bf;
+				Y = 0.222021 * rf + 0.706645 * gf + 0.0713342* bf;
+				Z = 0.0201837* rf + 0.129551 * gf + 0.939234 * bf;
+
+				// XYZ to Lab
+				if ( X > 0.008856 )
+					fX =  Math.pow(X, ot);
+				else
+					fX = ( 7.78707 * X ) + cont;
+					//7.7870689655172
+
+				if ( Y > 0.008856 )
+					fY = Math.pow(Y, ot);
+				else
+					fY = ( 7.78707 * Y ) + cont;
+
+				if ( Z > 0.008856 )
+					fZ =  Math.pow(Z, ot);
+				else
+					fZ = ( 7.78707 * Z ) + cont;
+
+				La = ( 116 * fY ) - 16;
+				aa = 500 * ( fX - fY );
+				bb = 200 * ( fY - fZ );
+
+				// rescale
+				La = (int) (La * 2.55);
+				aa = (int) (Math.floor((1.0625 * aa + 128) + 0.5));
+				bb = (int) (Math.floor((1.0625 * bb + 128) + 0.5));
+
+				//hsb = Color.RGBtoHSB(r, g, b, hsb);
+				// a* and b* range from -120 to 120 in the 8 bit space
+
+				//L[i] = (byte)((int)(La*2.55) & 0xff);
+				//a[i] = (byte)((int)(Math.floor((1.0625 * aa + 128) + 0.5)) & 0xff);
+				//b[i] = (byte)((int)(Math.floor((1.0625 * bb + 128) + 0.5)) & 0xff);
+
+				L[i] = (byte)((int)(La<0?0:(La>255?255:La)) & 0xff);
+				a[i] = (byte)((int)(aa<0?0:(aa>255?255:aa)) & 0xff);
+				b[i] = (byte)((int)(bb<0?0:(bb>255?255:bb)) & 0xff);
+				i++;
+			}
 		}
 	}
-		
+	
 	public void getYUV(ImageProcessor ip, byte[] Y, byte[] U, byte[] V) {
 		// Returns YUV in 3 byte arrays.
 		
@@ -1343,22 +1405,77 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 	
 	/** Converts the current image from RGB to CIE L*a*b* and stores the results 
 	* in the same RGB image R=L*, G=a*, B=b*. Values are therfore offset and rescaled.
+	* see:
+	* http://www.brucelindbloom.com/index.html?WorkingSpaceInfo.html#Specifications
+	* http://www.easyrgb.com/math.php?MATH=M7#text7
+	* Author: Gabriel Landini,  G.Landini@bham.ac.uk
 	*/
 	public static void RGBtoLab() {
 		ImagePlus imp = IJ.getImage();
-		if (imp.getBitDepth()==24)
-			imp.setProcessor(RGBtoLab(imp.getProcessor()));
+		if (imp.getBitDepth()==24) {
+			RGBtoLab(imp.getProcessor());
+			imp.updateAndDraw();
+		}
 	}
 	
-	private static ImageProcessor RGBtoLab(ImageProcessor ip) {
-		int n = ip.getPixelCount();
-		byte[] L = new byte[n];
-		byte[] a = new byte[n];
-		byte[] b = new byte[n];
-		ColorThresholder.getLab(ip, L, a, b);
-		ColorProcessor cp = new ColorProcessor(ip.getWidth(),ip.getHeight());
-		cp.setRGB(L,a,b);
-		return cp;
+	static void RGBtoLab(ImageProcessor ip) {
+		int xe = ip.getWidth();
+		int ye = ip.getHeight();
+		int c, x, y, i=0;
+		double rf, gf, bf;
+		double X, Y, Z, fX, fY, fZ;
+		double La, aa, bb;
+		double ot=1/3.0, cont = 16/116.0;
+		int Li, ai, bi;
+		ImagePlus imp = WindowManager.getCurrentImage();
+
+		for(y=0;y<ye;y++){
+			for (x=0;x<xe;x++){
+				c=ip.getPixel(x,y);
+
+				// RGB to XYZ
+				rf = ((c&0xff0000)>>16)/255.0; //R 0..1
+				gf = ((c&0x00ff00)>>8)/255.0; //G 0..1
+				bf = ( c&0x0000ff)/255.0; //B 0..1
+
+				//white reference D65 PAL/SECAM
+				X = 0.430587 * rf + 0.341545 * gf + 0.178336 * bf;
+				Y = 0.222021 * rf + 0.706645 * gf + 0.0713342* bf;
+				Z = 0.0201837* rf + 0.129551 * gf + 0.939234 * bf;
+
+				// XYZ to Lab
+				if ( X > 0.008856 )
+					fX =  Math.pow(X, ot);
+				else
+					fX = ( 7.78707 * X ) + cont;//7.7870689655172
+
+				if ( Y > 0.008856 )
+					fY = Math.pow(Y, ot);
+				else
+					fY = ( 7.78707 * Y ) + cont;
+
+				if ( Z > 0.008856 )
+					fZ =  Math.pow(Z, ot);
+				else
+					fZ = ( 7.78707 * Z ) + cont;
+
+				La = ( 116 * fY ) - 16;
+				aa = 500 * ( fX - fY );
+				bb = 200 * ( fY - fZ );
+
+				// Lab rescaled to the 0..255 range
+				// a* and b* range from -120 to 120 in the 8 bit space
+				La =  La * 2.55;
+				aa =  Math.floor((1.0625 * aa + 128) + 0.5);
+				bb =  Math.floor((1.0625 * bb + 128) + 0.5);
+
+				// bracketing
+				Li = (int)(La<0?0:(La>255?255:La));
+				ai = (int)(aa<0?0:(aa>255?255:aa));
+				bi = (int)(bb<0?0:(bb>255?255:bb));
+				ip.putPixel(x,y, ((Li&0xff)<<16)+((ai&0xff)<<8)+(bi&0xff));
+			}
+		}
 	}
 	
 	/** Converts the current image from RGB to YUV and stores 
