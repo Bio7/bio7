@@ -2115,7 +2115,7 @@ public class Options3d extends ViewPart {
 								GridData gd_renderFramesButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
 								gd_renderFramesButton.heightHint = 40;
 								renderFramesButton.setLayoutData(gd_renderFramesButton);
-								renderFramesButton.setToolTipText("Starts and stops rendering - \n" + "Creates a stack in Imagej and renders the current\n" + " frame of the Spatial view to the stack until \n" + "rendering is stopped or the max. numbers of frames\n (specified in the textfield) have been reached");
+								renderFramesButton.setToolTipText("Starts and stops rendering - \r\ncreates a stack in Imagej and renders the current\r\nframe of the spatial view to the stack until \r\nrendering is stopped or the max. numbers of frames\r\n(specified in the textfield) has been reached.");
 								renderFramesButton.addSelectionListener(new SelectionAdapter() {
 									public void widgetSelected(final SelectionEvent e) {
 										SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
