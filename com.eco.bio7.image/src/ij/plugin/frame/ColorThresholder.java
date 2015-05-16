@@ -9,6 +9,7 @@ import java.util.*;
 import java.awt.event.*;
 
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import ij.measure.*;
@@ -74,7 +75,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 	private int minHue = 0, minSat = 0, minBri = 0;
 	private int maxHue = 255, maxSat = 255, maxBri = 255;
 	private Scrollbar minSlider, maxSlider, minSlider2, maxSlider2, minSlider3, maxSlider3;
-	private Label label1, label2, label3, label4, label5, label6, labelh, labels, labelb, labelf;
+	private JLabel label1, label2, label3, label4, label5, label6, labelh, labels, labelb, labelf;
 	private boolean done;
 	private byte[] hSource, sSource, bSource;
 	private boolean applyingStack;
@@ -113,7 +114,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridwidth = 1;
 		c.weightx = 0;
 		c.insets = new Insets(5, 0, 0, 0);
-		labelh = new Label("Hue", Label.CENTER);
+		labelh = new JLabel("Hue", JLabel.CENTER);
 		add(labelh, c);
 
 		c.gridx = 1;
@@ -121,7 +122,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridwidth = 1;
 		c.weightx = 0;
 		c.insets = new Insets(7, 0, 0, 0);
-		labelf = new Label("", Label.RIGHT);
+		labelf = new JLabel("", JLabel.RIGHT);
 		add(labelf, c);
 
 		// plot
@@ -161,7 +162,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridwidth = 1;
 		c.weightx = IJ.isMacintosh()?10:0;
 		c.insets = new Insets(5, 0, 0, 0);
-		label1 = new Label("       ", Label.LEFT);
+		label1 = new JLabel("       ", JLabel.LEFT);
 		label1.setFont(font);
 		add(label1, c);
 
@@ -182,7 +183,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridy = y++;
 		c.weightx = 0;
 		c.insets = new Insets(5, 0, 0, 0);
-		label2 = new Label("       ", Label.LEFT);
+		label2 = new JLabel("       ", JLabel.LEFT);
 		label2.setFont(font);
 		add(label2, c);
 
@@ -192,7 +193,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridwidth = 1;
 		c.weightx = 0;
 		c.insets = new Insets(10, 0, 0, 0);
-		labels = new Label("Saturation", Label.CENTER);
+		labels = new JLabel("Saturation", JLabel.CENTER);
 		add(labels, c);
 
 		// plot
@@ -231,7 +232,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridwidth = 1;
 		c.weightx = IJ.isMacintosh()?10:0;
 		c.insets = new Insets(5, 0, 0, 0);
-		label3 = new Label("       ", Label.LEFT);
+		label3 = new JLabel("       ", JLabel.LEFT);
 		label3.setFont(font);
 		add(label3, c);
 
@@ -251,7 +252,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridwidth = 1;
 		c.weightx = 0;
 		c.insets = new Insets(5, 0, 0, 0);
-		label4 = new Label("       ", Label.LEFT);
+		label4 = new JLabel("       ", JLabel.LEFT);
 		label4.setFont(font);
 		add(label4, c);
 
@@ -261,7 +262,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridy = y++;
 		c.weightx = 0;
 		c.insets = new Insets(10, 0, 0, 0);
-		labelb = new Label("Brightness", Label.CENTER);
+		labelb = new JLabel("Brightness", JLabel.CENTER);
 		add(labelb, c);
 
 		c.gridx = 0;
@@ -299,7 +300,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridwidth = 1;
 		c.weightx = IJ.isMacintosh()?10:0;
 		c.insets = new Insets(5, 0, 0, 0);
-		label5 = new Label("       ", Label.LEFT);
+		label5 = new JLabel("       ", JLabel.LEFT);
 		label5.setFont(font);
 		add(label5, c);
 
@@ -319,14 +320,14 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridwidth = 1;
 		c.weightx = 0;
 		c.insets = new Insets(5, 0, 0, 0);
-		label6 = new Label("       ", Label.LEFT);
+		label6 = new JLabel("       ", JLabel.LEFT);
 		label6.setFont(font);
 		add(label6, c);
 
 		GridBagLayout gridbag2 = new GridBagLayout();
 		GridBagConstraints c2 = new GridBagConstraints();
 		int y2 = 0;
-		Panel panel = new Panel();
+		JPanel panel = new JPanel();
 		panel.setLayout(gridbag2);
 		
 		// threshoding method choice
@@ -334,7 +335,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c2.anchor = GridBagConstraints.EAST;
 		c2.gridwidth = 1;
 		c2.insets = new Insets(5, 0, 0, 0);
-		Label theLabel = new Label("Thresholding method:");
+		JLabel theLabel = new JLabel("Thresholding method:");
 		gridbag2.setConstraints(theLabel, c2);
 		panel.add(theLabel);
 		methodChoice = new Choice();
@@ -352,7 +353,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c2.gridx = 0; c2.gridy = y2;
 		c2.anchor = GridBagConstraints.EAST;
 		c2.insets = new Insets(0, 0, 0, 0);
-		theLabel = new Label("Threshold color:");
+		theLabel = new JLabel("Threshold color:");
 		gridbag2.setConstraints(theLabel, c2);
 		panel.add(theLabel);
 		modeChoice = new Choice();
@@ -369,7 +370,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		// color space choice
 		c2.gridx = 0; c2.gridy = y2;
 		c2.anchor = GridBagConstraints.EAST;
-		theLabel = new Label("Color space:");
+		theLabel = new JLabel("Color space:");
 		gridbag2.setConstraints(theLabel, c2);
 		panel.add(theLabel);
 		colorSpaceChoice = new Choice();
@@ -406,7 +407,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 
 		// buttons
 		int trim = IJ.isMacOSX()?10:0;
-		panel = new Panel();
+		panel = new JPanel();
 		panel.setLayout(new GridLayout(0, 4, 0, 0));
 		originalB = new TrimmedButton("Original", trim);
 		//originalB.setEnabled(false);
@@ -1406,7 +1407,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 
 
 	
-	class BandPlot extends Canvas implements Measurements, MouseListener {
+	class BandPlot extends JPanel implements Measurements, MouseListener {
 	
 		final int WIDTH = 256, HEIGHT=64;
 		double minHue = 0, minSat=0, minBri=0;
@@ -1523,7 +1524,8 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 			paint(g);
 		}
 	
-		public void paint(Graphics g ) {
+		public void paintComponent(Graphics g ) {
+			super.paintComponent(g);
 			int hHist=0;
 			if (histogram!=null) {
 				if (os==null) {

@@ -584,8 +584,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		/* Dialog Sizes for ImageJ dialogs! */
 		store.setDefault("IMAGE_METHODS_SIZE_X", 360);// 260
 		store.setDefault("IMAGE_METHODS_SIZE_Y", 1000);// 790
-		store.setDefault("IMAGEJ_TOOLBAR_SIZE_X", 600);// 580
-		store.setDefault("IMAGEJ_TOOLBAR_SIZE_Y", 135);// 130
+		store.setDefault("IMAGEJ_TOOLBAR_SIZE_X", 750);// 580
+		store.setDefault("IMAGEJ_TOOLBAR_SIZE_Y", 150);// 130
 
 		/*
 		 * IPreferenceStore storeBsh =

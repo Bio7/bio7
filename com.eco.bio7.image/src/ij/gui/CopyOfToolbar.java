@@ -1,4 +1,4 @@
-package ij.gui;
+/*package ij.gui;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -22,8 +22,8 @@ import ij.plugin.tool.PlugInTool;
 import ij.plugin.tool.MacroToolRunner;
 import ij.macro.Program;
 
-/** The ImageJ toolbar. */
-public class Toolbar extends JPanel implements MouseListener, MouseMotionListener, ItemListener, ActionListener {
+*//** The ImageJ toolbar. *//*
+public class CopyOfToolbar extends JPanel implements MouseListener, MouseMotionListener, ItemListener, ActionListener {
 
 	public static final int RECTANGLE = 0;
 	public static final int OVAL = 1;
@@ -60,9 +60,9 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 	private static final int MAX_EXTRA_TOOLS = 8;
 	private static final int MAX_TOOLS = NUM_TOOLS+MAX_EXTRA_TOOLS;
 	private static final int NUM_BUTTONS = 21;
-	private static final int SIZE = 34;
+	private static final int SIZE = 28;
 	private static final int GAP_SIZE = 9;
-	private static final int OFFSET = 9;
+	private static final int OFFSET = 6;
 	private static final String BRUSH_SIZE = "toolbar.brush.size";
 	public static final String CORNER_DIAMETER = "toolbar.arc.size";
 	public static String TOOL_KEY = "toolbar.tool";
@@ -75,7 +75,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 	private int xOffset, yOffset;
 	private long mouseDownTime;
 	private Graphics g;
-	private static Toolbar instance;
+	private static CopyOfToolbar instance;
 	private int mpPrevious = RECTANGLE;
 	private String[] names = new String[MAX_TOOLS];
 	private String[] icons = new String[MAX_TOOLS];
@@ -115,12 +115,12 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 	private Color triangleColor = new Color(150, 0, 0);
 	private Color toolColor = new Color(0, 25, 45);
 	
-	/** Obsolete public constants */
+	*//** Obsolete public constants *//*
 	public static final int SPARE1=UNUSED, SPARE2=CUSTOM1, SPARE3=CUSTOM2, SPARE4=CUSTOM3, 
 		SPARE5=CUSTOM4, SPARE6=CUSTOM5, SPARE7=CUSTOM6, SPARE8=CUSTOM7, SPARE9=22;
 
 
-	public Toolbar() {
+	public CopyOfToolbar() {
 		down = new boolean[MAX_TOOLS];
 		resetButtons();
 		down[0] = true;
@@ -132,7 +132,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 		names[getNumTools()-1] = "\"More Tools\" menu (switch toolsets or add tools)";
 		icons[getNumTools()-1] = "C900T1c13>T7c13>"; // ">>"
 		addPopupMenus();
-		/* Changed for Bio7! */
+		 Changed for Bio7! 
 		Prefs.antialiasedTools = true;
 	}
 
@@ -196,7 +196,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 		add(switchPopup);
 	}
 	
-	/** Returns the ID of the current tool (Toolbar.RECTANGLE, Toolbar.OVAL, etc.). */
+	*//** Returns the ID of the current tool (Toolbar.RECTANGLE, Toolbar.OVAL, etc.). *//*
 	public static int getToolId() {
 		int id = current;
 		if (legacyMode) {
@@ -208,8 +208,8 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 		return id;
 	}
 
-	/** Returns the ID of the tool whose name (the description displayed in the status bar)
-		starts with the specified string, or -1 if the tool is not found. */
+	*//** Returns the ID of the tool whose name (the description displayed in the status bar)
+		starts with the specified string, or -1 if the tool is not found. *//*
 	public int getToolId(String name) {
 		int tool =  -1;
 		for (int i=0; i<getNumTools(); i++) {
@@ -221,8 +221,8 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 		return tool;
 	}
 
-	/** Returns a reference to the ImageJ toolbar. */
-	public static Toolbar getInstance() {
+	*//** Returns a reference to the ImageJ toolbar. *//*
+	public static CopyOfToolbar getInstance() {
 		return instance;
 	}
 
@@ -288,10 +288,10 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 			case RECTANGLE:
 				xOffset = x; yOffset = y;
 				if (roundRectMode)
-					g.drawRoundRect(x, y+1, 23, 16, 8, 8);
+					g.drawRoundRect(x, y+1, 17, 13, 8, 8);
 				else
-					g.drawRect(x, y+1, 23, 16);
-				drawTriangle(19,18);
+					g.drawRect(x, y+1, 17, 13);
+				drawTriangle(16,15);
 				return;
 			case OVAL:
 				xOffset = x; yOffset = y;
@@ -302,8 +302,8 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 					yOffset = y + 1;
 					polyline(11,0,13,0,14,1,15,1,16,2,17,3,17,7,12,12,11,12,10,13,8,13,7,14,4,14,3,13,2,13,1,12,1,11,0,10,0,9,1,8,1,7,6,2,7,2,8,1,10,1,11,0);
 				} else
-					g.drawOval(x, y+1, 21, 15);
-				drawTriangle(19,18);
+					g.drawOval(x, y+1, 17, 13);
+				drawTriangle(16,15);
 				return;
 			case POLYGON:
 				xOffset = x+1; yOffset = y+2;
@@ -383,7 +383,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 				polyline(10,7,12,7,12,9);
 				polyline(8,7,2,13,2,15,4,15,11,8);
 				g.setColor(backgroundColor);
-				polyline(-1,-1,24,-1,24,20,-1,20,-1,-1);
+				polyline(-1,-1,18,-1,18,17,-1,17,-1,-1);
 				return;
 			case ANGLE:
 				xOffset = x; yOffset = y+2;
@@ -688,7 +688,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 		return ok;
 	}
 	
-	/** Returns the name of the current tool. */
+	*//** Returns the name of the current tool. *//*
 	public static String getToolName() {
 		String name = instance.getName(current);
 		if (current>=UNUSED && current<instance.getNumTools() && instance.names[current]!=null)
@@ -696,7 +696,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 		return name!=null?name:"";
 	}
 
-	/** Returns the name of the specified tool. */
+	*//** Returns the name of the specified tool. *//*
 	String getName(int id) {
 		switch (id) {
 			case RECTANGLE: return roundRectMode?"roundrect":"rectangle";
@@ -779,18 +779,18 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 		return true;
 	}
 
-	/**
+	*//**
 	* @deprecated
 	* replaced by getForegroundColor()
-	*/
+	*//*
 	public Color getColor() {
 		return foregroundColor;
 	}
 
-	/**
+	*//**
 	* @deprecated
 	* replaced by setForegroundColor()
-	*/
+	*//*
 	public void setColor(Color c) {
 		if (c!=null) {
 			foregroundColor = c;
@@ -839,7 +839,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 		}
 	}
 
-	/** Returns the size of the selection brush tool, or 0 if the brush tool is not enabled. */
+	*//** Returns the size of the selection brush tool, or 0 if the brush tool is not enabled. *//*
 	public static int getBrushSize() {
 		if (ovalType==BRUSH_ROI)
 			return brushSize;
@@ -847,14 +847,14 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 			return 0;
 	}
 
-	/** Set the size of the selection brush tool, in pixels. */
+	*//** Set the size of the selection brush tool, in pixels. *//*
 	public static void setBrushSize(int size) {
 		brushSize = size;
 		if (brushSize<1) brushSize = 1;
 		Prefs.set(BRUSH_SIZE, brushSize);
 	}
 		
-	/** Returns the rounded rectangle arc size, or 0 if the rounded rectangle tool is not enabled. */
+	*//** Returns the rounded rectangle arc size, or 0 if the rounded rectangle tool is not enabled. *//*
 	public static int getRoundRectArcSize() {
 		if (!roundRectMode)
 			return 0;
@@ -862,7 +862,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 			return arcSize;
 	}
 
-	/** Sets the rounded rectangle corner diameter (pixels). */
+	*//** Sets the rounded rectangle corner diameter (pixels). *//*
 	public static void setRoundRectArcSize(int size) {
 		if (size<=0)
 			roundRectMode = false;
@@ -877,12 +877,12 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 			roi.setCornerDiameter(roundRectMode?arcSize:0);
 	}
 
-	/** Returns 'true' if the multi-point tool is enabled. */
+	*//** Returns 'true' if the multi-point tool is enabled. *//*
 	public static boolean getMultiPointMode() {
 		return multiPointMode;
 	}
 
-	/** Returns the oval tool type (OVAL_ROI, ELLIPSE_ROI or BRUSH_ROI). */
+	*//** Returns the oval tool type (OVAL_ROI, ELLIPSE_ROI or BRUSH_ROI). *//*
 	public static int getOvalToolType() {
 		return ovalType;
 	}
@@ -893,7 +893,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 	
 	static void repaintTool(int tool) {
 		if (IJ.getInstance()!=null) {
-			Toolbar tb = getInstance();
+			CopyOfToolbar tb = getInstance();
 			Graphics g = tb.getGraphics();
 			if (IJ.debugMode) IJ.log("Toolbar.repaintTool: "+tool+" "+g);
 			if (g==null) return;
@@ -1369,7 +1369,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 	}
 	
 	public static void restoreTools() {
-		Toolbar tb = Toolbar.getInstance();
+		CopyOfToolbar tb = CopyOfToolbar.getInstance();
 		if (tb!=null) {
 			if (tb.getToolId()>=UNUSED)
 				tb.setTool(RECTANGLE);
@@ -1434,10 +1434,10 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 			showMessage(toolID(x));
 	}
 
-	/** Adds a tool to the toolbar. The 'toolTip' string is displayed in the status bar
+	*//** Adds a tool to the toolbar. The 'toolTip' string is displayed in the status bar
 		 when the mouse is over the tool icon. The 'toolTip' string may include icon 
 		(http://imagej.nih.gov/ij/developer/macro/macros.html#tools).
-		Returns the tool ID, or -1 if all tool slots are in use. */
+		Returns the tool ID, or -1 if all tool slots are in use. *//*
 	public int addTool(String toolTip) {
 		int index = toolTip.indexOf('-');
 		boolean hasIcon = index>=0 && (toolTip.length()-index)>4;
@@ -1521,7 +1521,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
         if (tool==current) setTool(RECTANGLE);
     }
     
-	/** Used by the MacroInstaller class to install a set of macro tools. */
+	*//** Used by the MacroInstaller class to install a set of macro tools. *//*
 	public void addMacroTool(String name, MacroInstaller macroInstaller, int id) {
 		if (id==0) {
 			resetTools();
@@ -1557,7 +1557,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 		}
 	}
 	
-	/** Used by the MacroInstaller class to add a macro tool to the toolbar. */
+	*//** Used by the MacroInstaller class to add a macro tool to the toolbar. *//*
 	public void addMacroTool(String name, MacroInstaller macroInstaller) {
 		String custom1Name = names[CUSTOM1];
 		this.macroInstaller = macroInstaller;
@@ -1619,8 +1619,8 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 		}
 	}
 
-	/** Adds a plugin tool to the first available toolbar slot,
-		or to the last slot if the toolbar is full. */
+	*//** Adds a plugin tool to the first available toolbar slot,
+		or to the last slot if the toolbar is full. *//*
 	public static void addPlugInTool(PlugInTool tool) {
 		if (instance==null) return;
 		String nameAndIcon = tool.getToolName()+" - "+tool.getToolIcon();
@@ -1739,10 +1739,10 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 			if (tool!=null) tool.run("pencil");
 			
 			
-			/*
+			
 			 * Changed for Bio7! Tools are not installed from *.jar!
 			 * (installFromJar())
-			 */
+			 
 		} else if (label.startsWith("Flood Fill")) {
 			(new MacroInstaller()).installFile(getBio7Path() + "/macros/FloodFillTool.txt");
 		} else if (label.startsWith("Spray Can")) {
@@ -1768,14 +1768,14 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 	}
 	
 	public static boolean installStartupMacrosTools() {
-		String customTool0 = Prefs.get(Toolbar.TOOL_KEY+"00", "");
+		String customTool0 = Prefs.get(CopyOfToolbar.TOOL_KEY+"00", "");
 		return customTool0.equals("") || Character.isDigit(customTool0.charAt(0));
 	}
 	
 	public int getNumTools() {
 		return NUM_TOOLS + nExtraTools;
 	}
-	/* Changed for Bio7! */
+	 Changed for Bio7! 
 	public String getBio7Path() {
 
 		Bundle bundle = Platform.getBundle("com.eco.bio7.image");
@@ -1796,3 +1796,4 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 	//}
 
 }
+*/

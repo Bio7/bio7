@@ -160,9 +160,11 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 
 	private void setup(ImagePlus imp) {
 		boolean isRGB = imp.getType() == ImagePlus.COLOR_RGB;
+		/*Changed for Bio7! Introduced new JFrame because we have no real Image Window in Bio7!*/
 		JPanel buttons = new JPanel();
+		buttons.setLayout(new GridLayout(2, 4, 0, 0));
 		int hgap = IJ.isMacOSX() || isRGB ? 1 : 5;
-		buttons.setLayout(new FlowLayout(FlowLayout.RIGHT, hgap, 0));
+		//buttons.setLayout(new FlowLayout(FlowLayout.RIGHT, hgap, 0));
 		int trim = IJ.isMacOSX() ? 6 : 0;
 		list = new TrimmedButton("List", trim);
 		list.addActionListener(this);
@@ -197,9 +199,11 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			buttons.add(valueAndCount);
 		}
 		/*Changed for Bio7!*/
+		/*Changed for Bio7!*/
 		JFrame fr=new JFrame();
-		fr.add(buttons);
-		fr.setSize(300, 100);
+		fr.setContentPane(buttons);
+		fr.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		fr.setBounds(100, 100, 450, 172);
 		fr.setAlwaysOnTop(true);
 		fr.setVisible(true);
 		//add(buttons);

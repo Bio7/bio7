@@ -8,7 +8,9 @@ import java.util.*;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
 
 import ij.*;
 import ij.process.*;
@@ -82,7 +84,7 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 	private JButton list, save, more, live;
 	private PopupMenu popupMenu;
 	private MenuItem[] menuItems;
-	private Label coordinates;
+	private JLabel coordinates;
 	private static String defaultDirectory = null;
 	private static int options;
 	private int defaultDigits = -1;
@@ -214,12 +216,13 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 	/** Displays the plot. */
 	public void draw() {
 		JPanel bottomPanel = new JPanel();
+		bottomPanel.setLayout(new GridLayout(2, 4, 0, 0));
 		int hgap = IJ.isMacOSX()?1:5;
-
+		//bottomPanel.setLayout(new GridLayout(100, 100, 1, 5));
 		list = new JButton(" List ");
 		list.addActionListener(this);
 		bottomPanel.add(list);
-		bottomPanel.setLayout(new FlowLayout(FlowLayout.RIGHT,hgap,0));
+		//bottomPanel.setLayout(new FlowLayout(FlowLayout.RIGHT,hgap,0));
 		save = new JButton("Save...");
 		save.addActionListener(this);
 		bottomPanel.add(save);
@@ -231,7 +234,7 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 			live.addActionListener(this);
 			bottomPanel.add(live);
 		}
-		coordinates = new Label(blankLabel);
+		coordinates = new JLabel(blankLabel);
 		coordinates.setFont(new Font("Monospaced", Font.PLAIN, 12));
 		coordinates.setBackground(new Color(220, 220, 220));
 		bottomPanel.add(coordinates);
@@ -239,12 +242,14 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 		
 		more.add(getPopupMenu());
 		plot.draw();
-		/*Changed for Bio7!*/
+		/*Changed for Bio7! Introduced new JFrame because we have no real Image Window in Bio7!*/
 		JFrame fr=new JFrame();
-		fr.add(bottomPanel);
-		fr.setSize(300, 100);
+		fr.setContentPane(bottomPanel);
+		fr.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		fr.setBounds(100, 100, 450, 172);
 		fr.setAlwaysOnTop(true);
-		fr.setVisible(true);
+		fr.setVisible(true);	
+		
 		plot.draw();
 		pack();
 		LayoutManager lm = getLayout();
