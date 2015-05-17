@@ -54,9 +54,6 @@ http://bio7.org
 
    <intro introId="com.eco.bio7.intro"/>
 
-   <vm>
-      <windows include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8</windows>
-   </vm>
 
    <plugins>
       <plugin id="Bundled_R"/>
