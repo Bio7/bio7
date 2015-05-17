@@ -121,21 +121,20 @@ public class ImageJWindowAction extends Action implements IMenuCreator {
 						if (p.getCurSharedRef() != null) {
 							p = p.getCurSharedRef();
 
-							s.detach(p, (pt.x + pSize.x) - 290, pt.y + 30, xSize, ySize);
+							s.detach(p, (pt.x + pSize.x/2), pt.y + 30, xSize, ySize);
 						}
 
 					} else if (os.equals("Windows")) {
 						if (p.getCurSharedRef() != null) {
 							p = p.getCurSharedRef();
 
-							s.detach(p, (pt.x + pSize.x) - 290, pt.y + 30, xSize, ySize);
-						}
+							s.detach(p, (pt.x + pSize.x/2), pt.y + 30, xSize, ySize);						}
 
 					} else if (os.equals("Mac")) {
 						if (p.getCurSharedRef() != null) {
 							p = p.getCurSharedRef();
 
-							s.detach(p, (pt.x + pSize.x) - 290, pt.y + 30, xSize, ySize);
+							s.detach(p, (pt.x + pSize.x/2), pt.y + 30, xSize, ySize);
 						}
 
 					}
