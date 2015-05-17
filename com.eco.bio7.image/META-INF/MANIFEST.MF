@@ -4,7 +4,7 @@ Created-By: 1.6.0_02-b05 (Sun Microsystems Inc.)
 Bundle-ManifestVersion: 2
 Bundle-Name: ImageJ Plug-in
 Bundle-SymbolicName: com.eco.bio7.image;singleton:=true
-Bundle-Version: 1.49.13
+Bundle-Version: 1.49.20
 Bundle-Activator: com.eco.bio7.image.Activator
 Bundle-Vendor: ECO
 Bundle-Localization: plugin

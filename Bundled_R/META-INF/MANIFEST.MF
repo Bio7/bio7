@@ -4,7 +4,7 @@ Created-By: 10.0-b19 (Sun Microsystems Inc.)
 Bundle-ManifestVersion: 2
 Bundle-Name: Bundled_R Plug-in
 Bundle-SymbolicName: Bundled_R; singleton:=true
-Bundle-Version: 3.1.2
+Bundle-Version: 3.2.0
 Bundle-Activator: bundled_r.Activator
 Bundle-Localization: plugin
 Require-Bundle: org.eclipse.ui,

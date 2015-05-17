@@ -21,7 +21,7 @@ public class Perspective3d implements IPerspectiveFactory, IPerspectiveListener 
 
 		Right.addView(SpatialView.ID);
 		//Right.addView(Quad3dview.ID);
-		layout.addView(Options3d.ID, IPageLayout.LEFT, 0.30f, "Right");
+		layout.addView(Options3d.ID, IPageLayout.LEFT, 0.25f, "Right");
 
 	}
 

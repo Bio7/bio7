@@ -75,6 +75,7 @@ import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -200,8 +201,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 													public void run() {
 
 														MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
-														message.setMessage("Recalculate the classpath?\n\n" + "Info: This will set the imported Bio7 Java project classpath\n"
-																+ "to your local installation.");
+														message.setMessage("Recalculate the classpath?\n\n" + "Info: This will set the imported Bio7 Java project classpath\n" + "to your local installation.");
 														message.setText("Bio7");
 														int response = message.open();
 														if (response == SWT.YES) {
@@ -293,7 +293,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
 
-		//Display display = configurer.getWindow().getWorkbench().getDisplay();
+		// Display display = configurer.getWindow().getWorkbench().getDisplay();
 
 		Shell shell = configurer.getWindow().getShell();
 
@@ -490,8 +490,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			// String pathTempR3 = pathTempR2.replace("\\", "\\\\");
 			store.setDefault(PreferenceConstants.P_TEMP_R, pathTempR2);
 			store.setDefault("Console_Encoding", "CP850");
-			store.setDefault("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTempR2 + "tempDevicePlot%05d.tiff"
-					+ "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")");
+			store.setDefault("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTempR2 + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")");
 			store.setDefault("DEVICE_FILENAME", "");
 			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
 		} else if (getOS().equals("Linux")) {
@@ -499,8 +498,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault(PreferenceConstants.P_TEMP_R, pathTempR);
 			store.setDefault("Console_Encoding", "UTF-8");
 			store.setDefault("shell_arguments", "");
-			store.setDefault("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTempR + "tempDevicePlot%05d.tiff"
-					+ "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")");
+			store.setDefault("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTempR + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")");
 			store.setDefault("DEVICE_FILENAME", "");
 			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
 		} else if (getOS().equals("Mac")) {
@@ -508,8 +506,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault(PreferenceConstants.P_TEMP_R, pathTempR);
 			store.setDefault("Console_Encoding", "UTF-8");
 			store.setDefault("shell_arguments", "export TERM=xterm");
-			store.setDefault("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTempR + "tempDevicePlot%05d.tiff"
-					+ "\") { tiff(filename,width = 480, height = 480)}; options(device=\".bio7Device\")");
+			store.setDefault("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTempR + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 480, height = 480)}; options(device=\".bio7Device\")");
 			store.setDefault("DEVICE_FILENAME", "");
 			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
 		}
@@ -580,7 +577,19 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			fsize = 14;
 
 		}
+		// Monitor []mon = Display.getDefault().getMonitors(); // returns an
+		// array of monitors attached to device and 0 fetches first one.
 
+		// System.out.println(mon[0].getBounds());//Rectangle {0, 0, 1920, 1080}
+		// or:
+		/*
+		 * Device device = Display.getDefault();
+		 * 
+		 * System.out.println("getBounds(): " + device.getBounds());
+		 * System.out.println("getClientArea(): " + device.getClientArea());
+		 * System.out.println("getDepth(): " + device.getDepth());
+		 * System.out.println("getDPI(): " + device.getDPI());
+		 */
 		/* Dialog Sizes for ImageJ dialogs! */
 		store.setDefault("IMAGE_METHODS_SIZE_X", 360);// 260
 		store.setDefault("IMAGE_METHODS_SIZE_Y", 1000);// 790
@@ -804,22 +813,19 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 					if (sel.equals("PLOT_IMAGE")) {
 
-						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff"
-								+ "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")");
+						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")");
 						prefsPlotRserve.deviceFilename.setStringValue("");
 						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 					} else if (sel.equals("PLOT_CAIRO")) {
 
-						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff"
-								+ "\") { tiff(filename,width = 480, height = 480, type=\"cairo\")}; options(device=\".bio7Device\")");
+						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 480, height = 480, type=\"cairo\")}; options(device=\".bio7Device\")");
 						prefsPlotRserve.deviceFilename.setStringValue("");
 						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 					}
 
 					else if (sel.equals("PLOT_PRINT")) {
 
-						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff"
-								+ "\") { tiff(filename,width = 6, height = 6, units=\"in\",res=600)}; options(device=\".bio7Device\")");
+						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 6, height = 6, units=\"in\",res=600)}; options(device=\".bio7Device\")");
 						prefsPlotRserve.deviceFilename.setStringValue("");
 						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 					} else if (sel.equals("PLOT_PDF")) {
@@ -1170,7 +1176,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		}
 
 		addExecutionListener();
-
+		/*Start Bio7 maximized!*/
+		configurer.getWindow().getShell().setMaximized(true);
 	}
 
 	/* The listener for save events of the Java editor! */

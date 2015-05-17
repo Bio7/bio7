@@ -2,7 +2,7 @@
 <feature
       id="com.eco.bio7.r.feature"
       label="Bio7 R Container Plugin"
-      version="3.1.2.qualifier"
+      version="3.2.0.qualifier"
       provider-name="Bio7">
 
    <description url="http://www.example.com/description">

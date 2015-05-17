@@ -13,10 +13,15 @@ import gov.nasa.worldwind.exception.WWRuntimeException;
 import gov.nasa.worldwind.formats.tiff.*;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.util.*;
+
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.gdal.gdal.*;
 import org.gdal.gdalconst.*;
 import org.gdal.ogr.ogr;
 import org.gdal.osr.*;
+import org.osgi.framework.Bundle;
 
 import java.awt.*;
 import java.awt.color.*;
@@ -24,6 +29,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.awt.image.*;
 import java.io.*;
 import java.lang.reflect.*;
+import java.net.URL;
 import java.nio.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -178,6 +184,18 @@ public class GDALUtils
     {
         try
         {
+        	/*Bundle bundle = Platform.getBundle("com.eco.bio7.libs");
+
+			URL locationUrl = FileLocator.find(bundle, new Path("/"), null);
+			URL fileUrl = null;
+			try {
+				fileUrl = FileLocator.toFileURL(locationUrl);
+			} catch (IOException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			}
+			String pathBundle = fileUrl.getFile();
+			System.out.println(pathBundle);*/
             boolean runningAsJavaWebStart = (null != System.getProperty("javawebstart.version", null));
 
 			// attempt to load library from default locations

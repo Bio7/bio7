@@ -20,6 +20,9 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ltk.core.refactoring.participants.RefactoringProcessor;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.eclipse.ui.ide.IDE;
@@ -68,7 +71,7 @@ public class RenameProperty implements IEditorActionDelegate {
     /*if( !onPropertiesFile ) {
       refuse();
     } else {*/
-      if( selection != null && selection instanceof ITextSelection ) {
+      /*if( selection != null && selection instanceof ITextSelection ) {
         applySelection( ( ITextSelection )selection );
         if( saveAll() ) {
 				openWizard();
@@ -76,7 +79,18 @@ public class RenameProperty implements IEditorActionDelegate {
       }
       else{
     	  System.out.println("No Selection!");
-      }
+      }*/
+	  Display display = PlatformUI.getWorkbench().getDisplay();
+		display.syncExec(new Runnable() {
+			public void run() {
+				MessageBox messageBox = new MessageBox(new Shell(),
+
+				SWT.ICON_WARNING);
+				messageBox.setText("Info!");
+				messageBox.setMessage("Refactor methods not implemented yet!");
+				messageBox.open();
+			}
+		});
     //}
   }
 

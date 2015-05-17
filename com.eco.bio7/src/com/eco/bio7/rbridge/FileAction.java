@@ -64,7 +64,7 @@ public class FileAction extends Action implements IMenuCreator {
 
 		MenuItem menuItem01 = new MenuItem(fMenu, SWT.PUSH);
 
-		menuItem01.setText("Import Excel (2007-2010)");
+		menuItem01.setText("Import Excel (2007-2013)");
 
 		new MenuItem(fMenu, SWT.SEPARATOR);
 

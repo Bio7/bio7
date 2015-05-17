@@ -26,7 +26,7 @@ Require-Bundle: org.eclipse.ui,
  com.eco.bio7.util;bundle-version="2.0.0",
  com.eco.bio7.browser;bundle-version="2.0.0",
  com.eco.bio7.scenebuilder;bundle-version="2.0.0",
- Bundled_R;bundle-version="3.1.2"
+ Bundled_R;bundle-version="3.2.0"
 Eclipse-LazyStart: true
 Export-Package: com.eco.bio7.reditor,
  com.eco.bio7.reditor.actions,
