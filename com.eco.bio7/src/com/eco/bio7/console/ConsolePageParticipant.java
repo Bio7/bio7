@@ -300,7 +300,13 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 							e2.printStackTrace();
 						}
 						File fi = new File(fileUrl.getPath());
-						String pathBundle = fi.toString() + "/win/64";
+						String pathBundle = null;
+						if (ApplicationWorkbenchWindowAdvisor.is64BitVM()) {
+							pathBundle = fi.toString() + "/win/64";
+						} else {
+							pathBundle = fi.toString() + "/win/32";
+						}
+
 						if (interpreterSelection.equals("R")) {
 							try {
 								Process p = Runtime.getRuntime().exec(pathBundle + "/SendSignalCtrlC.exe " + rPid.getPidWindows(RProcess));
@@ -586,7 +592,11 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				String rPath = store.getString(PreferenceConstants.PATH_R);
 
 				List<String> args = new ArrayList<String>();
-				args.add(rPath + "/bin/x64/rterm");
+				if (ApplicationWorkbenchWindowAdvisor.is64BitVM()) {
+					args.add(rPath + "/bin/x64/rterm");
+				} else {
+					args.add(rPath + "/bin/i386/rterm");
+				}
 				args.add("--ess");
 				ProcessBuilder builder = new ProcessBuilder(args);
 				builder.redirectErrorStream(true);
