@@ -1,4 +1,4 @@
-The application Bio7 is an integrated development environment for ecological modelling, statistical and scientific image analysis. The application itself is based on an RCP-Eclipse-Environment (Rich-Client-Platform) which offers a huge flexibility in configuration and extensibility because of its plug-in structure and the possibility of customization.
+The application Bio7 is an integrated development environment for ecological modeling, statistical and scientific image analysis. The application itself is based on an RCP-Eclipse-Environment (Rich-Client-Platform) which offers a huge flexibility in configuration and extensibility because of its plug-in structure and the possibility of customization.
 
 Features:
 
