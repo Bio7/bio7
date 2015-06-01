@@ -170,6 +170,14 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	}
 
 	public void preWindowOpen() {
+		String osname = System.getProperty("os.name");
+		if (osname.startsWith("Windows")) {
+			OS = "Windows";
+		} else if (osname.equals("Linux")) {
+			OS = "Linux";
+		} else if (osname.startsWith("Mac")) {
+			OS = "Mac";
+		}
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		IResourceChangeListener listener = new IResourceChangeListener() {
 			public void resourceChanged(IResourceChangeEvent event) {
@@ -219,7 +227,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 															vmStandin.setName("Bio7 Bundled JRE");
 
 															String path = Platform.getInstallLocation().getURL().getPath();
-															vmStandin.setInstallLocation(new File(path + "/jre"));
+															/*Extra path for the different MacOSX installation paths!*/
+															if (OS.equals("Mac")) {
+																vmStandin.setInstallLocation(new File(path + "../MacOS/jre"));
+
+															} else {
+																vmStandin.setInstallLocation(new File(path + "/jre"));
+															}
 
 															IVMInstall vmInstall = vmStandin.convertToRealVM();
 
@@ -282,14 +296,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		IWorkbenchActivitySupport workbenchActivitySupport = PlatformUI.getWorkbench().getActivitySupport();
 		IActivityManager activityManager = workbenchActivitySupport.getActivityManager();
 
-		String osname = System.getProperty("os.name");
-		if (osname.startsWith("Windows")) {
-			OS = "Windows";
-		} else if (osname.equals("Linux")) {
-			OS = "Linux";
-		} else if (osname.startsWith("Mac")) {
-			OS = "Mac";
-		}
+		
 
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
 
@@ -467,7 +474,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault("pdfLatex", "/usr/bin");
 			store.setDefault("RSERVE_ARGS", "");
 
-			reg2 = "/usr/lib/openoffice/program";
+			reg2 = "/usr/lib";
 			store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, reg2);
 
 		}

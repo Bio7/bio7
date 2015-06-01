@@ -44,7 +44,7 @@ public class RLibraryList extends Shell {
 	public RLibraryList(Display display, int style) {
 		super(display, style);
 		
-		setImage(SWTResourceManager.getImage(RLibraryList.class, "/pics/logo.gif"));
+		//setImage(SWTResourceManager.getImage(RLibraryList.class, "/pics/logo.gif"));
 				
 						allPackagesList = new List(this, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
 						allPackagesList.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 4));

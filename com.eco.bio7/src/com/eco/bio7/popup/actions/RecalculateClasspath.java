@@ -28,6 +28,7 @@ import org.eclipse.ui.PlatformUI;
 
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.utils.ScanClassPath;
+import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 
 public class RecalculateClasspath implements IObjectActionDelegate {
 
@@ -71,8 +72,14 @@ public class RecalculateClasspath implements IObjectActionDelegate {
 
 							String path = Platform.getInstallLocation()
 									.getURL().getPath();
-							vmStandin
-									.setInstallLocation(new File(path + "/jre"));
+							/*Extra path for the different MacOSX installation paths!*/
+							String OS = ApplicationWorkbenchWindowAdvisor.getOS();
+							if (OS.equals("Mac")) {
+								vmStandin.setInstallLocation(new File(path + "../MacOS/jre"));
+
+							} else {
+								vmStandin.setInstallLocation(new File(path + "/jre"));
+							}
 
 							IVMInstall vmInstall = vmStandin.convertToRealVM();
 

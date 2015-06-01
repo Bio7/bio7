@@ -57,7 +57,7 @@ public class PackagesList extends Shell {
 		super(display, style);
 		createContents();
 		
-		setImage(SWTResourceManager.getImage(PackagesList.class, "/pics/logo.gif"));
+		//setImage(SWTResourceManager.getImage(PackagesList.class, "/pics/logo.gif"));
 		
 				allPackagesList = new List(this, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
 				allPackagesList.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 6));

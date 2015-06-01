@@ -24,6 +24,7 @@ import org.eclipse.jdt.launching.LibraryLocation;
 import org.eclipse.jdt.launching.VMStandin;
 
 import com.eco.bio7.compile.utils.ScanClassPath;
+import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 
 public class CreateBio7JdtProject {
 
@@ -59,7 +60,14 @@ public class CreateBio7JdtProject {
 			vmStandin.setName("Bio7 Bundled JRE");
 
 			String path = Platform.getInstallLocation().getURL().getPath();
-			vmStandin.setInstallLocation(new File(path + "/jre"));
+			String OS=ApplicationWorkbenchWindowAdvisor.getOS();
+			/*Extra path for the different MacOSX installation paths!*/
+			if (OS.equals("Mac")) {
+				vmStandin.setInstallLocation(new File(path + "../MacOS/jre"));
+
+			} else {
+				vmStandin.setInstallLocation(new File(path + "/jre"));
+			}
 			
 
 			IVMInstall vmInstall = vmStandin.convertToRealVM();
