@@ -84,7 +84,7 @@ public class RPackageSkeleton implements IObjectActionDelegate {
 				if (RServe.isAliveDialog()) {
 					RConnection c = RServe.getConnection();
 					try {
-						c.assign("tempPackageFiles", stringsToR);
+						c.assign(".tempPackageFiles", stringsToR);
 
 					} catch (REngineException e1) {
 						// TODO Auto-generated catch block
@@ -104,7 +104,7 @@ public class RPackageSkeleton implements IObjectActionDelegate {
 
 									RConnection c = RServe.getConnection();
 									try {
-										c.assign("listOfVariables", includeRVariables);
+										c.assign(".listOfVariables", includeRVariables);
 									} catch (REngineException e1) {
 										// TODO Auto-generated catch block
 										e1.printStackTrace();
@@ -113,13 +113,13 @@ public class RPackageSkeleton implements IObjectActionDelegate {
 									try {
 
 										if (builtFromVariables) {
-											c.eval("try(package.skeleton(name=\"" + packageName + "\",path=\"" + dirPath + "\",listOfVariables))");
+											c.eval("try(package.skeleton(name=\"" + packageName + "\",path=\"" + dirPath + "\",.listOfVariables))");
 										} else {
-											c.eval("try(package.skeleton(name=\"" + packageName + "\",path=\"" + dirPath + "\",code_files =tempPackageFiles))");
+											c.eval("try(package.skeleton(name=\"" + packageName + "\",path=\"" + dirPath + "\",code_files =.tempPackageFiles))");
 										}
 										/* Remove the temporary variable! */
-										c.eval("try(remove(tempPackageFiles))");
-										c.eval("try(remove(listOfVariables))");
+										c.eval("try(remove(.tempPackageFiles))");
+										c.eval("try(remove(.listOfVariables))");
 									} catch (RserveException e) {
 										// TODO Auto-generated catch block
 										e.printStackTrace();

@@ -96,6 +96,9 @@ public class KnitrAction implements IObjectActionDelegate {
 					dirPath = new File(fi).getParentFile().getPath().replace("\\", "/");
 
 					String extens = selectedFile.getFileExtension();
+					
+					IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+					String knitrOptions=store.getString("knitroptions");
 
 					Job job = new Job("Knitr file") {
 						@Override
@@ -116,6 +119,8 @@ public class KnitrAction implements IObjectActionDelegate {
 
 										c.eval("try(library(knitr))");
 										c.eval("setwd('" + dirPath + "')");
+										c.eval("try("+knitrOptions+")");
+										
 										System.out.println(selFile);
 										RServe.print("try(knit('" + selFile + "','" + theName + "." + fileext + "'))");
 
