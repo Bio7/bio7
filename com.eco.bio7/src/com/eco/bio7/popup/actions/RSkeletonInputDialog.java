@@ -19,12 +19,16 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Button;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
+import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.image.CanvasView;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
+
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.GridData;
 
 public class RSkeletonInputDialog extends Dialog {
 	private Text txtMypackage;
@@ -33,81 +37,37 @@ public class RSkeletonInputDialog extends Dialog {
 	private List list_1;
 	private Button btnUseRList;
 	private Button btnUseSelectedFiles;
+
 	/**
 	 * Create the dialog.
+	 * 
 	 * @param parentShell
 	 */
 	public RSkeletonInputDialog(Shell parentShell, RPackageSkeleton packageSkeleton) {
 		super(parentShell);
-		pack=packageSkeleton;
+		setShellStyle(SWT.RESIZE | SWT.TITLE | SWT.APPLICATION_MODAL);
+		pack = packageSkeleton;
 	}
 
 	/**
 	 * Create contents of the dialog.
+	 * 
 	 * @param parent
 	 */
 	@Override
 	protected Control createDialogArea(Composite parent) {
 		Composite container = (Composite) super.createDialogArea(parent);
-		container.setLayout(null);
-		
-		txtMypackage = new Text(container, SWT.BORDER);
-		txtMypackage.setText("MyPackage");
-		txtMypackage.setBounds(10, 217, 209, 26);
-		
-		Label lblNameOfThe = new Label(container, SWT.NONE);
-		lblNameOfThe.setBounds(249, 220, 169, 26);
-		lblNameOfThe.setText("Enter a name for the package");
-		
-		list = new List(container, SWT.V_SCROLL | SWT.MULTI | SWT.H_SCROLL | SWT.BORDER);
-		list.setBounds(10, 65, 149, 123);
-		
-		
-		
+		GridLayout gridLayout = (GridLayout) container.getLayout();
+		gridLayout.makeColumnsEqualWidth = true;
+		gridLayout.makeColumnsEqualWidth = true;
+		gridLayout.makeColumnsEqualWidth = true;
+		gridLayout.numColumns = 3;
+		container.setLayout(new GridLayout(3, false));
 
-		list_1 = new List(container, SWT.V_SCROLL | SWT.MULTI | SWT.H_SCROLL | SWT.BORDER);
-		list_1.setBounds(219, 65, 149, 123);
-		
-		final Button button = new Button(container, SWT.NONE);
-		button.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				String [] sel=list.getSelection();
-				for (int i = 0; i < sel.length; i++) {
-					list_1.add(sel[i], i);
-					
-					
-				}
-				
-			}
-		});
-		button.setText(">>");
-		button.setBounds(165, 64, 48, 25);
-
-		final Button button_1 = new Button(container, SWT.NONE);
-		button_1.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				int []sel=list_1.getSelectionIndices();
-				for (int i = 0; i < sel.length; i++) {
-					list_1.remove(sel);
-				}
-				
-			}
-		});
-		button_1.setText("<<");
-		button_1.setBounds(165, 106, 48, 25);
-		
-		btnUseRList = new Button(container, SWT.CHECK);
-		btnUseRList.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				
-				btnUseSelectedFiles.setSelection(false);
-			}
-		});
-		btnUseRList.setBounds(10, 42, 408, 16);
-		btnUseRList.setText("Use Selected R Workspace Variables");
-		
 		btnUseSelectedFiles = new Button(container, SWT.CHECK);
+		GridData gd_btnUseSelectedFiles = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+		gd_btnUseSelectedFiles.heightHint = 30;
+		btnUseSelectedFiles.setLayoutData(gd_btnUseSelectedFiles);
 		btnUseSelectedFiles.setSelection(true);
 		btnUseSelectedFiles.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -116,11 +76,73 @@ public class RSkeletonInputDialog extends Dialog {
 				list_1.removeAll();
 			}
 		});
-		btnUseSelectedFiles.setBounds(10, 10, 203, 16);
 		btnUseSelectedFiles.setText("Use Selected Files");
+		new Label(container, SWT.NONE);
+
+		btnUseRList = new Button(container, SWT.CHECK);
+		GridData gd_btnUseRList = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+		gd_btnUseRList.heightHint = 30;
+		btnUseRList.setLayoutData(gd_btnUseRList);
+		btnUseRList.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+
+				btnUseSelectedFiles.setSelection(false);
+			}
+		});
+		btnUseRList.setText("Use Selected R Workspace Variables");
+		new Label(container, SWT.NONE);
+
+		list = new List(container, SWT.V_SCROLL | SWT.MULTI | SWT.H_SCROLL | SWT.BORDER);
+		list.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 2));
+
+		final Button button = new Button(container, SWT.NONE);
+		GridData gd_button = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		gd_button.heightHint = 35;
+		button.setLayoutData(gd_button);
+		button.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				String[] sel = list.getSelection();
+				for (int i = 0; i < sel.length; i++) {
+					list_1.add(sel[i], i);
+
+				}
+
+			}
+		});
+		button.setText(">>");
+
+		list_1 = new List(container, SWT.V_SCROLL | SWT.MULTI | SWT.H_SCROLL | SWT.BORDER);
+		list_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 2));
+
+		final Button button_1 = new Button(container, SWT.NONE);
+		GridData gd_button_1 = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		gd_button_1.heightHint = 35;
+		button_1.setLayoutData(gd_button_1);
+		button_1.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				int[] sel = list_1.getSelectionIndices();
+				for (int i = 0; i < sel.length; i++) {
+					list_1.remove(sel);
+				}
+
+			}
+		});
+		button_1.setText("<<");
+
+		txtMypackage = new Text(container, SWT.BORDER);
+		txtMypackage.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		txtMypackage.setText("MyPackage");
+
+		Label lblNameOfThe = new Label(container, SWT.NONE);
+		GridData gd_lblNameOfThe = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_lblNameOfThe.heightHint = 30;
+		lblNameOfThe.setLayoutData(gd_lblNameOfThe);
+		lblNameOfThe.setText("Enter a name for the package");
 		displayRObjects();
 		return container;
 	}
+
 	private void displayRObjects() {
 		REXP x = null;
 		list.removeAll();
@@ -131,15 +153,23 @@ public class RSkeletonInputDialog extends Dialog {
 				// List all variables in the R workspace!
 
 				try {
-					RServe.getConnection().eval("try(XXXXXvarXXXXX<-ls())");
-					x = RServe.getConnection().eval("try(XXXXXvarXXXXX)");
+
+					RConnection c = RServe.getConnection();
+					
+					/*Create a custom environment for temporary files!*/
+					c.eval("try(.bio7TempEnvPackage<- new.env())");
+					/*Create a variable list (variables in current environment) in the custom environment!*/
+					c.eval("try(assign(\"tempPackageBio7VariablesName\", ls(), env=.bio7TempEnvPackage))");
+
+					x = c.eval("try(.bio7TempEnvPackage$tempPackageBio7VariablesName)");
 					try {
 						v = x.asStrings();
 					} catch (REXPMismatchException e1) {
 
 						e1.printStackTrace();
 					}
-					RServe.getConnection().eval("try(remove(XXXXXvarXXXXX))");
+					/*Remove the temp. variable from the custom environment!*/
+					c.eval("try(remove(tempPackageBio7VariablesName,envir=.bio7TempEnvPackage))");
 				} catch (RserveException e1) {
 
 					e1.printStackTrace();
@@ -160,6 +190,7 @@ public class RSkeletonInputDialog extends Dialog {
 
 	/**
 	 * Create contents of the button bar.
+	 * 
 	 * @param parent
 	 */
 	@Override
@@ -173,22 +204,23 @@ public class RSkeletonInputDialog extends Dialog {
 	 */
 	@Override
 	protected Point getInitialSize() {
-		return new Point(434, 329);
+		return new Point(523, 333);
 	}
+
 	protected void buttonPressed(int buttonId) {
 		if (buttonId == IDialogConstants.CANCEL_ID) {
 			this.cancelPressed();
-			pack.cancelCreation=true;
-			pack.packageName="myPackage";
-		
+			pack.cancelCreation = true;
+			pack.packageName = "myPackage";
+
 			return;
 		}
 		if (buttonId == IDialogConstants.OK_ID) {
-			pack.cancelCreation=false;
-			pack.packageName=txtMypackage.getText();
-			pack.includeRVariables=list_1.getItems();
-			pack.builtFromVariables=btnUseRList.getSelection();
-			
+			pack.cancelCreation = false;
+			pack.packageName = txtMypackage.getText();
+			pack.includeRVariables = list_1.getItems();
+			pack.builtFromVariables = btnUseRList.getSelection();
+
 			this.okPressed();
 			return;
 		}

@@ -24,9 +24,13 @@ http://bio7.org
    <launcherArgs>
       <programArgs>-clearPersistedState
       </programArgs>
+      <programArgsMac>-vm
+jre/lib/jli/libjli.dylib
+      </programArgsMac>
       <vmArgs>-Xms1024m -Xmx1024m
       </vmArgs>
-      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
+      <vmArgsMac>-XstartOnFirstThread
+-Dprism.order=sw
       </vmArgsMac>
    </launcherArgs>
 
@@ -53,6 +57,12 @@ http://bio7.org
    </launcher>
 
    <intro introId="com.eco.bio7.intro"/>
+<<<<<<< HEAD
+=======
+
+   <vm>
+   </vm>
+>>>>>>> branch 'master' of https://bitbucket.org/maustenfeld/bio7-new.git
 
    <plugins>
       <plugin id="Bundled_R"/>
