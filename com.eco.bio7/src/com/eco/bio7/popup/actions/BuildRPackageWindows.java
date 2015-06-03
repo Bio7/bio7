@@ -19,7 +19,7 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
-
+/*The 'Install' action for Windows!*/
 public class BuildRPackageWindows implements IObjectActionDelegate{
 
 	public BuildRPackageWindows() {
@@ -28,6 +28,7 @@ public class BuildRPackageWindows implements IObjectActionDelegate{
 
 	@Override
 	public void run(IAction action) {
+		ConsolePageParticipant.setNativeInterpreterSelection("shell");
 		String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 		if (selectionConsole.equals("shell")) {
 

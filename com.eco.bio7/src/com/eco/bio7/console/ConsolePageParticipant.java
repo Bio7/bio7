@@ -1285,8 +1285,16 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		return interpreterSelection;
 	}
 
-	public static void setInterpreterSelection(String interpreterSelection) {
-		interpreterSelection = interpreterSelection;
+	public static void setNativeInterpreterSelection(String interpreterSelection) {
+		if (interpreterSelection.equals("shell")) {
+			ConsoleInterpreterAction.getInstance().startShell();
+		} else if (interpreterSelection.equals("R")) {
+			ConsoleInterpreterAction.getInstance().startR();
+		}
+
+		else if (interpreterSelection.equals("Python")) {
+			ConsoleInterpreterAction.getInstance().startPython();
+		}
 	}
 
 	private void fastSaveAndReloadRWorkspace() {
