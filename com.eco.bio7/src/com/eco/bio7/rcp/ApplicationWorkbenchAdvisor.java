@@ -14,7 +14,7 @@ import com.eco.bio7.collection.Work;
 
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
-	private static final String PERSPECTIVE_ID = "com.eco.bio7.rbridge.RPerspective";
+	private static final String PERSPECTIVE_ID = "com.eco.bio7.perspective_2d";
 
 	public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(
 			IWorkbenchWindowConfigurer configurer) {
@@ -46,7 +46,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 					.getActiveWorkbenchWindow();
 
 			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
-				//Work.openPerspective("com.eco.bio7.perspective_2d");
+				Work.openPerspective("com.eco.bio7.perspective_2d");
 			}
 
 		}

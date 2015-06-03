@@ -227,13 +227,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 															vmStandin.setName("Bio7 Bundled JRE");
 
 															String path = Platform.getInstallLocation().getURL().getPath();
-															/*
-															 * Extra path for
-															 * the different
-															 * MacOSX
-															 * installation
-															 * paths!
-															 */
+															/*Extra path for the different MacOSX installation paths!*/
 															if (OS.equals("Mac")) {
 																vmStandin.setInstallLocation(new File(path + "../MacOS/jre"));
 
@@ -301,6 +295,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		IWorkbenchActivitySupport workbenchActivitySupport = PlatformUI.getWorkbench().getActivitySupport();
 		IActivityManager activityManager = workbenchActivitySupport.getActivityManager();
+
+		
 
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
 
@@ -530,7 +526,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		} else {
 			store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "Ä, ,ä,Ö,ö,Ü,ü,+,!,ü,§,$,%,&,/,(,),=,?,[,],°,^,;,:,>,<,|,*,µ,\\,”,@,\",“,”,´,`,~,#,},{,²,³,_,-");
 		}
-
+		
 		store.setDefault("knitroptions", "opts_chunk$set(dev=\"png\", dev.args=list(type=\"cairo\"),dpi=96)");
 
 		store.setDefault("RSERVE_NATIVE_START", true);
@@ -1157,14 +1153,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
 		try {
-			/*
-			 * The R perpsective is now the default perspective as defined in
-			 * class ApplicationWorkbenchAdvisor to workaround a crash on MacOSX
-			 * in conjunction with JavaFX (QuantumRenderer)!
-			 */
+
 			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.perspective_image", configurer.getWindow());
 
-			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.perspective_2d", configurer.getWindow());
+			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.rbridge.RPerspective", configurer.getWindow());
 
 			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.browser.SceneBuilderPerspective", configurer.getWindow());
 
@@ -1193,7 +1185,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		}
 
 		addExecutionListener();
-		/* Start Bio7 maximized! */
+		/*Start Bio7 maximized!*/
 		configurer.getWindow().getShell().setMaximized(true);
 	}
 
