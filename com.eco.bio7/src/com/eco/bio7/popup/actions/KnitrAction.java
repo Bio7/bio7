@@ -119,7 +119,7 @@ public class KnitrAction implements IObjectActionDelegate {
 
 										c.eval("try(library(knitr))");
 										c.eval("setwd('" + dirPath + "')");
-										c.eval("try("+knitrOptions+")");
+										//c.eval("try("+knitrOptions+")");
 										
 										System.out.println(selFile);
 										RServe.print("try(knit('" + selFile + "','" + theName + "." + fileext + "'))");
