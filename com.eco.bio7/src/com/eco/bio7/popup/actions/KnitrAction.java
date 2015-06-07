@@ -119,7 +119,10 @@ public class KnitrAction implements IObjectActionDelegate {
 
 										c.eval("try(library(knitr))");
 										c.eval("setwd('" + dirPath + "')");
-										//c.eval("try("+knitrOptions+")");
+
+										if (fileext.equals("html")) {
+										c.eval("try("+knitrOptions+")");
+										}
 										
 										System.out.println(selFile);
 										RServe.print("try(knit('" + selFile + "','" + theName + "." + fileext + "'))");
@@ -174,8 +177,8 @@ public class KnitrAction implements IObjectActionDelegate {
 
 										} catch (IOException e) {
 
-											Bio7Dialog.message("Rserve executable not available !");
-											RServe.setConnection(null);
+											/*Bio7Dialog.message("Rserve executable not available !");
+											RServe.setConnection(null);*/
 										}
 
 										input = new BufferedReader(new InputStreamReader(proc.getInputStream()));

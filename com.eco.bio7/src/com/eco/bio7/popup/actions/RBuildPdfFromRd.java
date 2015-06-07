@@ -28,6 +28,7 @@ public class RBuildPdfFromRd implements IObjectActionDelegate{
 
 	@Override
 	public void run(IAction action) {
+		ConsolePageParticipant.setNativeInterpreterSelection("shell");
 		String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 		if (selectionConsole.equals("shell")) {
 

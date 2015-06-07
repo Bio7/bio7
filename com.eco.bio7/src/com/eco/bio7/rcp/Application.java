@@ -76,8 +76,8 @@ public class Application implements IApplication {
 			}
 			/* Finally save the workspace! */
 			saveWorkspace();
-
-			display.dispose();
+           /*Do not close display. Changed for Mac to close the JOGL pperspectives!*/
+			//display.dispose();
 		}
 	}
 

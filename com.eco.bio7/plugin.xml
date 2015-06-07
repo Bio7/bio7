@@ -1071,6 +1071,59 @@
     </objectContribution>
     <objectContribution
           adaptable="false"
+          id="CheckBuildRPackage2"
+          objectClass="org.eclipse.core.resources.IProject">
+       <action
+             class="com.eco.bio7.popup.actions.CheckRPackage"
+             id="com.eco.bio7.checkrpackage"
+             label="Check R Package"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupR"
+             tooltip="Checks a R package">
+       </action>
+       <action
+             class="com.eco.bio7.popup.actions.BuildRPackage"
+             id="com.eco.bio7.buildrpackage"
+             label="Build R Package"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupBuildR"
+             tooltip="Builds a R package">
+       </action>
+       <action
+             class="com.eco.bio7.popup.actions.BuildRPackageWindows"
+             id="com.eco.bio7.buildrpackagewindows"
+             label="Install R Package"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupInstallR"
+             tooltip="Builds a R package for Windows">
+       </action>
+       <action
+             class="com.eco.bio7.popup.actions.RBuildPdfFromRd"
+             id="com.eco.bio7.rdtopdf"
+             label="Build PDF From Rd"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupR"
+             tooltip="Builds *.pdf files from *.Rd files">
+       </action>
+       <menu
+             id="com.eco.bio7.RPackages.subMenu"
+             label="R Packages"
+             path="additions.R">
+          <separator
+                name="groupR">
+          </separator>
+          <separator
+                name="groupBuildR">
+          </separator>
+          <separator
+                name="groupRSkeleton">
+          </separator>
+          <groupMarker
+                name="groupInstallR">
+          </groupMarker>
+          <groupMarker
+                name="groupPdf">
+          </groupMarker>
+       </menu>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
           id="RunClass"
           nameFilter="*.class"
           objectClass="org.eclipse.core.resources.IFile">
