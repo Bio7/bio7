@@ -23,7 +23,6 @@
 	<classpathentry exported="true" kind="lib" path="libs/org.eclipse.nebula.visualization.widgets_1.0.0.201410030023.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/org.eclipse.nebula.visualization.xygraph_1.0.0.201410030023.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/opal-1.0.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/jsoup-1.7.3.jar"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry exported="true" kind="lib" path="math/joone-engine.jar" sourcepath="com.eco.bio7.libssrc.zip"/>
