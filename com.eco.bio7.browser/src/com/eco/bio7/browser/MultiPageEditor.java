@@ -63,6 +63,11 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import com.eco.bio7.browser.editor.XMLEditor;
 
 /**
@@ -431,11 +436,27 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 							}
 							WebView webView = (WebView) htmlEditor.lookup("WebView");
 							try {
-								webView.getEngine().executeScript(getInsertHtmlAtCurstorJS("<!--begin.rcode "+knitrCode+" end.rcode-->"));
+								//webView.getEngine().executeScript(getInsertHtmlAtCurstorJS("<!--begin.rcode "+knitrCode+" end.rcode-->"));
+								webView.getEngine().executeScript(getInsertHtmlAtCurstorJS("<div id=\"knitrcode\" style=\"width: 560px; color: black; background-color: lightgrey; border: 2px solid grey; padding: 5px;\">"
+										+ "<p>"+knitrCode+"</p><p></p>"));
+								
 							} catch (Exception e) {
 								// TODO Auto-generated catch block
 								//e.printStackTrace();
 							}
+							
+							Document doc = Jsoup.parse(htmlEditor.getHtmlText());
+							
+							Elements contents =  doc.select("#knitrcode"); // a with href
+							for (int i = 0; i < contents.size(); i++) {
+								contents.get(i).after("<!--begin.rcode\n "+contents.get(i).text()+" \nend.rcode-->");
+								contents.get(i).remove();
+								
+								//System.out.println();
+							}
+
+							htmlEditor.setHtmlText(doc.html());
+							
 							
 							
 						}
