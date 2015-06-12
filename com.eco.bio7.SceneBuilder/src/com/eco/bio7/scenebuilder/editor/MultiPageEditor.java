@@ -145,6 +145,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 							Source s = new Source(editorController.getFxmlText());
 
 							doc.set(editorController.getFxmlText());
+							
 
 						}
 					}

@@ -423,7 +423,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 							try {
 								//webView.getEngine().executeScript(getInsertHtmlAtCurstorJS("<!--begin.rcode "+knitrCode+" end.rcode-->"));
 								webView.getEngine().executeScript(getInsertHtmlAtCurstorJS("<br><div id=\"knitrcode\" style=\"width: 560px; color: black; background-color: lightgrey; border: 2px solid grey; padding: 5px;\">"
-										+ knitrCode+"<br></br></div></br>"));
+										+ knitrCode+"<br></div></br>"));
 								
 							} catch (Exception e) {
 								// TODO Auto-generated catch block

@@ -1,11 +1,17 @@
 package com.eco.bio7.browser.editor;
 
+import java.util.Vector;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.reconciler.DirtyRegion;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension;
+import org.eclipse.swt.widgets.Display;
+
+import com.eco.bio7.browser.editor.outline.HTMLEditorOutlineNode;
+
 
 
 //import com.eco.bio7.browser.BrowserEditorNewView;
@@ -13,6 +19,7 @@ import org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension;
 public class XmlReconcilingStrategy implements IReconcilingStrategy, IReconcilingStrategyExtension {
 
 	private XMLEditor xmlEditor;
+	private Vector<HTMLEditorOutlineNode> editorOldNodes;
 	/**
 	 * How long the reconciler will wait for further text changes before
 	 * reconciling
@@ -25,6 +32,22 @@ public class XmlReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
 	/* Update the HTML Editor view! */
 	private void doReconcile() {
+		   editorOldNodes=xmlEditor.nodes;
+		/*Create the category base node for the outline! */
+		xmlEditor.createNodes();
+		
+		/* Update the outline! */
+
+		Display.getDefault().asyncExec(new Runnable() {
+			public void run() {
+				
+				
+				//editor.updateFoldingStructure(fPositions);
+
+				xmlEditor.outlineInputChanged(editorOldNodes, xmlEditor.nodes);
+			}
+
+		});
 		/*final BrowserView bv = BrowserView.getBrowserInstance();
 
 		Display display = PlatformUI.getWorkbench().getDisplay();
