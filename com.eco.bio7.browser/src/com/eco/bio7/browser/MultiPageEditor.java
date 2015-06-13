@@ -542,7 +542,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	private String formatHtml() {
 		String t = htmlEditor.getHtmlText();
 		Document sf = Jsoup.parse(t);
-		//Source s = new Source(t);
+		Source s = new Source(t);
 		//SourceFormatter sf = new SourceFormatter(s);
 		return sf.html();
 	}

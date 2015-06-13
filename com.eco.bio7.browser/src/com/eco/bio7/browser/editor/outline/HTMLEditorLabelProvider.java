@@ -36,7 +36,8 @@ public class HTMLEditorLabelProvider implements ILabelProvider {
 
 		}
 
-		return im;
+		//return im;
+		return null;
 	}
 
 	public void addListener(ILabelProviderListener arg0) {
