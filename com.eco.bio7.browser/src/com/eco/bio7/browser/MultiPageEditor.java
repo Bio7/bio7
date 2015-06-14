@@ -417,12 +417,12 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 						public void run() {
 							
 							/*Insert HTML layer with JavaScript at selected cursor location!*/
-							String knitrCode = "#Knitr section:<br>";
+							String knitrCode = "<p>";
 							
 							WebView webView = (WebView) htmlEditor.lookup("WebView");
 							try {
 								//webView.getEngine().executeScript(getInsertHtmlAtCurstorJS("<!--begin.rcode "+knitrCode+" end.rcode-->"));
-								webView.getEngine().executeScript(getInsertHtmlAtCurstorJS("<br><div id=\"knitrcode\" style=\"width: 560px; color: black; background-color: lightgrey; border: 2px solid grey; padding: 5px;\">"
+								webView.getEngine().executeScript(getInsertHtmlAtCurstorJS("<br><div id=\"knitrcode\" style=\"color: black; background-color: lightgrey; border: 1px solid grey;\">"
 										+ knitrCode+"<br></div></br>"));
 								
 							} catch (Exception e) {
