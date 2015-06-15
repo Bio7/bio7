@@ -204,14 +204,14 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 								public void run() {
 
-									SourceFormatter sf = formatHtml();
+									String sf = formatHtml();
 
 									try {
 										IEditorInput ed = getEditor(1).getEditorInput();
 
 										IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(ed);
 
-										doc.set(sf.toString());
+										doc.set(sf);
 									} catch (Exception e) {
 										/*
 										 * Listener won't work (if two editors
@@ -415,48 +415,20 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 					Display display = PlatformUI.getWorkbench().getDisplay();
 					display.syncExec(new Runnable() {
 						public void run() {
-							String knitrCode = "";
-							TextDialog inp = new TextDialog(new Shell(), "Image");
 							
-
-							if (inp.open() == Dialog.OK) {
-
-								knitrCode = inp.getText();
-								knitrCode=knitrCode.replace("\r\n", "\\n");
-								knitrCode=knitrCode.replace("\t", "\\t");
-								knitrCode=knitrCode.replace("\f", "\\f");
-								knitrCode=knitrCode.replace("\b", "\\b");
-								knitrCode=knitrCode.replace("\r", "\\r");
-								knitrCode=knitrCode.replace("\"", "\\\"");
-								knitrCode=knitrCode.replace("\'", "\\\'");
-								knitrCode="\\n"+knitrCode+"\\n";
-								
-								
-
-							}
+							/*Insert HTML layer with JavaScript at selected cursor location!*/
+							String knitrCode = "<p>";
+							
 							WebView webView = (WebView) htmlEditor.lookup("WebView");
 							try {
 								//webView.getEngine().executeScript(getInsertHtmlAtCurstorJS("<!--begin.rcode "+knitrCode+" end.rcode-->"));
-								webView.getEngine().executeScript(getInsertHtmlAtCurstorJS("<div id=\"knitrcode\" style=\"width: 560px; color: black; background-color: lightgrey; border: 2px solid grey; padding: 5px;\">"
-										+ "<p>"+knitrCode+"</p><p></p>"));
+								webView.getEngine().executeScript(getInsertHtmlAtCurstorJS("<br><div id=\"knitrcode\" style=\"color: black; background-color: lightgrey; border: 1px solid grey;\">"
+										+ knitrCode+"<br></div></br>"));
 								
 							} catch (Exception e) {
 								// TODO Auto-generated catch block
 								//e.printStackTrace();
 							}
-							
-							Document doc = Jsoup.parse(htmlEditor.getHtmlText());
-							
-							Elements contents =  doc.select("#knitrcode"); // a with href
-							for (int i = 0; i < contents.size(); i++) {
-								contents.get(i).after("<!--begin.rcode\n "+contents.get(i).text()+" \nend.rcode-->");
-								contents.get(i).remove();
-								
-								//System.out.println();
-							}
-
-							htmlEditor.setHtmlText(doc.html());
-							
 							
 							
 						}
@@ -559,20 +531,20 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 			htmlEditor.setHtmlText(doc.get());
 		} else if (newPageIndex == 1) {
 
-			SourceFormatter sf = formatHtml();
+			String parsed = formatHtml();
 
 			IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
 
-			doc.set(sf.toString());
+			doc.set(parsed);
 		}
 	}
 
-	private SourceFormatter formatHtml() {
+	private String formatHtml() {
 		String t = htmlEditor.getHtmlText();
-
+		Document sf = Jsoup.parse(t);
 		Source s = new Source(t);
-		SourceFormatter sf = new SourceFormatter(s);
-		return sf;
+		//SourceFormatter sf = new SourceFormatter(s);
+		return sf.html();
 	}
 
 	/**

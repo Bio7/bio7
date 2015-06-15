@@ -104,15 +104,10 @@ public class HtmlPluginWizard extends Wizard implements INewWizard {
 
 	private InputStream openContentStream(String filename) {
 		String linefeed = "\r\n";
-		String contents = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">"+
+		String contents =
 		"<html>"+linefeed+
-		"\t<head>"+linefeed+
-		   "\t\t<title>Template</title>"+linefeed+
-		   "\t\t<!-- Comment -->"+linefeed+
+		"\t<head>"+linefeed+ 
 		  "\t</head>"+linefeed+
-		  "\t<body>"+linefeed+
-		    "\t\t<p>Template</p>"+linefeed+
-		 "\t</body>"+linefeed+
 		"</html>";
 
 		

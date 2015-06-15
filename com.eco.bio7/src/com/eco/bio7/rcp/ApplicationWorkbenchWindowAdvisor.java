@@ -527,7 +527,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "Ä, ,ä,Ö,ö,Ü,ü,+,!,ü,§,$,%,&,/,(,),=,?,[,],°,^,;,:,>,<,|,*,µ,\\,”,@,\",“,”,´,`,~,#,},{,²,³,_,-");
 		}
 		
-		store.setDefault("knitroptions", "opts_chunk$set(dev=\"png\", dev.args=list(type=\"cairo\"),dpi=96)");
+		store.setDefault("knitroptions", "opts_chunk$set(dev=\"png\",echo=TRUE, dev.args=list(type=\"cairo\"),dpi=96)");
 
 		store.setDefault("RSERVE_NATIVE_START", true);
 		store.setDefault("R_DEBUG_PORT", 21555);

@@ -107,16 +107,10 @@ public class KnitrHtmlPluginWizard extends Wizard implements INewWizard {
 		String linefeed = "\r\n";
 
 		String contents = "<html>"+linefeed+
-	"<head>"+linefeed+linefeed+
-	"<title>Template</title>"+linefeed+
-	"</head>"+linefeed+
-	"<body contenteditable=\"true\">"+linefeed+linefeed+
-	"<p style=\"text-align: left;\">knitr Template</p>"+linefeed+linefeed+
-	"<!--begin.rcode"+linefeed+linefeed+
-	"rnorm(10)"+linefeed+
-	"end.rcode-->"+linefeed+linefeed+
-	"</body>"+linefeed+
-	"</html>";
+				"<head>"+linefeed+linefeed+
+				"<title>Template</title>"+linefeed+
+				"</head>"+linefeed+
+				"</html>";
 
 		return new ByteArrayInputStream(contents.getBytes());
 	}

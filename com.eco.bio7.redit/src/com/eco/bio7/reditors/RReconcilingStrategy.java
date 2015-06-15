@@ -167,6 +167,7 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 		ParseTreeWalker walker = new ParseTreeWalker();
 
 		RuleContext tree = parser.prog();
+		/*Create the listener to create the outline, etc.*/
 		RBaseListen list = new RBaseListen(tokens, editor, parser);
 
 		list.startStop.clear();
