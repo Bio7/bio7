@@ -55,6 +55,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -457,6 +458,8 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	protected void createPages() {
 		createPage0();
 		createPage1();
+		
+		setActivePage(1);
 
 	}
 
@@ -499,8 +502,8 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	 * (non-Javadoc) Method declared on IEditorPart
 	 */
 	public void gotoMarker(IMarker marker) {
-		setActivePage(0);
-		IDE.gotoMarker(getEditor(0), marker);
+		setActivePage(1);
+		IDE.gotoMarker(getEditor(1), marker);
 	}
 
 	/**
@@ -519,6 +522,27 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	public boolean isSaveAsAllowed() {
 		return false;
 	}
+	/*Workaround to close and reopen Outline for multipage editor is cited here: 
+	 http://stackoverflow.com/questions/24694269/how-to-keep-off-multipageeditor-with-structuredtexteditor-to-show-outline-view-f
+	 I added setActivePage() method so that the Outline is available if the multipage editor has been opened.
+	 */
+	
+	public void refreshOutlineView() {
+	    //get the activePage
+	    IWorkbenchPage wp =  PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+	    //Find desired view by its visual ID
+	    IViewPart myView=wp.findView("org.eclipse.ui.views.ContentOutline");
+
+	    //Hide the view :
+	    wp.hideView(myView);
+	    try {
+	      //show the view again     
+	      PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("org.eclipse.ui.views.ContentOutline");
+	    } catch (PartInitException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+	    } 
+	}
 
 	/**
 	 * Calculates the contents of page 2 when the it is activated.
@@ -530,13 +554,15 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 			htmlEditor.setHtmlText(doc.get());
 		} else if (newPageIndex == 1) {
-
+			
 			String parsed = formatHtml();
 
 			IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
 
 			doc.set(parsed);
+			
 		}
+		refreshOutlineView();
 	}
 
 	private String formatHtml() {
