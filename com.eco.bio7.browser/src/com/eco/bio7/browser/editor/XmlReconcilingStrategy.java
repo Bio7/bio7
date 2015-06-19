@@ -51,10 +51,10 @@ public class XmlReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 		
 		for (int i = 0; i < el.size(); i++) {
 			
-			line = getLineNumber(element, line);
+			line = getLineNumber(el.get(i), line);
 			
 		
-			methods.push(new HTMLEditorOutlineNode("<" + element.getName() + ">", line-1, "library", methods.peek()));
+			methods.push(new HTMLEditorOutlineNode("<" + el.get(i).getName() + ">", line+1, "library", methods.peek()));
 			
 			
 			getAllHTML((Element) el.get(i));
@@ -101,17 +101,18 @@ public class XmlReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 		
 		//OutputDocument outputDocument = new OutputDocument(source);
 		List<Element> elements = source.getChildElements();
-		
+		if(elements.size()>0){
 		if (methods.size() == 0) {
+           
+			methods.push(new HTMLEditorOutlineNode("<HTML>",  getLineNumber(elements.get(0),elements.get(0).getBegin()+1), "library", xmlEditor.baseNode));
+		
 
-			methods.push(new HTMLEditorOutlineNode("Document", 0, "library", xmlEditor.baseNode));
+		//for (Element element : elements) {
+       
+			getAllHTML(elements.get(0));
 		}
-
-		for (Element element : elements) {
-
-			getAllHTML(element);
-
 		}
+		//}
 
 		/*
 		 * Document document = Jsoup.parse(doc.get()); document.traverse(new
