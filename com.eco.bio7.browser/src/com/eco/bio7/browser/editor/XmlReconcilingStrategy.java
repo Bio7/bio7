@@ -48,22 +48,19 @@ public class XmlReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 	public void getAllHTML(Element element) {
 		int line = 0;
 		List<Element> el = element.getChildElements();
-		
+
 		for (int i = 0; i < el.size(); i++) {
-			
+
 			line = getLineNumber(el.get(i), line);
-			
-		
-			methods.push(new HTMLEditorOutlineNode("<" + el.get(i).getName() + ">", line+1, "library", methods.peek()));
-			
-			
+
+			methods.push(new HTMLEditorOutlineNode("<" + el.get(i).getName() + ">", line + 1, "library", methods.peek()));
+
 			getAllHTML((Element) el.get(i));
-			
+
 		}
 		if (methods.empty() == false) {
 			methods.pop();
 		}
-		
 
 	}
 
@@ -73,16 +70,15 @@ public class XmlReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 		if (prov != null) {
 			IDocument document = prov.getDocument(inp);
 			if (document != null) {
-				
 
 				try {
 
 					line = document.getLineOfOffset(element.getBegin());
-					
+
 				} catch (BadLocationException e) {
 
 				}
-				
+
 			}
 		}
 		return line;
@@ -98,52 +94,17 @@ public class XmlReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 		IDocument doc = ((ITextEditor) xmlEditor).getDocumentProvider().getDocument(ed);
 
 		Source source = new Source(doc.get());
-		
-		//OutputDocument outputDocument = new OutputDocument(source);
+
+		// OutputDocument outputDocument = new OutputDocument(source);
 		List<Element> elements = source.getChildElements();
-		if(elements.size()>0){
-		if (methods.size() == 0) {
-           
-			methods.push(new HTMLEditorOutlineNode("<HTML>",  getLineNumber(elements.get(0),elements.get(0).getBegin()+1), "library", xmlEditor.baseNode));
-		
+		if (elements.size() > 0) {
+			if (methods.size() == 0) {
 
-		//for (Element element : elements) {
-       
-			getAllHTML(elements.get(0));
-		}
-		}
-		//}
+				methods.push(new HTMLEditorOutlineNode("<HTML>", getLineNumber(elements.get(0), elements.get(0).getBegin() + 1), "library", xmlEditor.baseNode));
 
-		/*
-		 * Document document = Jsoup.parse(doc.get()); document.traverse(new
-		 * NodeVisitor() { public void head(Node node, int depth) { if ((node
-		 * instanceof TextNode) == false && node.nodeName().equals("#document")
-		 * == false) {
-		 * 
-		 * if (methods.size() == 0) {
-		 * 
-		 * methods.push(new HTMLEditorOutlineNode("<" + node.nodeName() + ">",
-		 * 0, "library", xmlEditor.baseNode));
-		 * 
-		 * } else { methods.push(new HTMLEditorOutlineNode("<" + node.nodeName()
-		 * + ">", 0, "library", methods.peek()));
-		 * 
-		 * }
-		 * 
-		 * // System.out.println("Entering tag: " + //
-		 * node.nodeName()+" depth:"+depth); }
-		 * 
-		 * }
-		 * 
-		 * public void tail(Node node, int depth) { if ((node instanceof
-		 * TextNode) == false) { Exit scope!
-		 * 
-		 * if (methods.empty() == false) { methods.pop(); } //
-		 * System.out.println("Exiting tag: " + //
-		 * node.nodeName()+" depth:"+depth); } }
-		 * 
-		 * });
-		 */
+				getAllHTML(elements.get(0));
+			}
+		}
 
 		/* Update the outline! */
 
@@ -156,41 +117,6 @@ public class XmlReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 			}
 
 		});
-		/*
-		 * final BrowserView bv = BrowserView.getBrowserInstance();
-		 * 
-		 * Display display = PlatformUI.getWorkbench().getDisplay();
-		 * display.syncExec(new Runnable() { public void run() { if
-		 * (MultiPageEditor.multiEditor!= null && bv != null) {
-		 * MultiPageEditor.multiEditor.doSave(null); } try { if
-		 * (MultiPageEditor.multiEditor.ifile != null && bv != null) {
-		 * bv.browser
-		 * .setUrl(MultiPageEditor.multiEditor.ifile.getLocationURI().toURL
-		 * ().toString());
-		 * bv.txt.setText(MultiPageEditor.multiEditor.ifile.getLocationURI
-		 * ().toURL().toString()); } } catch (MalformedURLException e) { // TODO
-		 * Auto-generated catch block e.printStackTrace(); } } });
-		 */
-
-		/*
-		 * if (xmlEditor != null) {
-		 * 
-		 * if (xmlEditor instanceof XMLEditor) { Display display =
-		 * PlatformUI.getWorkbench().getDisplay(); display.asyncExec(new
-		 * Runnable() {
-		 * 
-		 * public void run() { ITextEditor editor2 = (ITextEditor) xmlEditor;
-		 * 
-		 * IDocumentProvider dp = editor2.getDocumentProvider(); IDocument doc =
-		 * dp.getDocument(xmlEditor.getEditorInput());
-		 * if(BrowserEditorNewView.htmlEditor!=null){
-		 * BrowserEditorNewView.htmlEditor.setHtmlText(doc.get()); } } });
-		 * 
-		 * 
-		 * }
-		 * 
-		 * }
-		 */
 
 	}
 

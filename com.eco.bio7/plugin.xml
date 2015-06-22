@@ -395,6 +395,11 @@
             id="com.eco.bio7.interpretpythonaction"
             name="Interpret Python Action">
       </command>
+      <command
+            description="Interpret Knitr"
+            id="com.eco.bio7.browser.knitrAction"
+            name="Knitr Action">
+      </command>
    </extension>
    <extension
          id="product"
@@ -1354,6 +1359,27 @@
                     </equals>
                     <equals
                           value="org.python.pydev.editor.PythonEditor">
+                    </equals>
+                 </or>
+              </with>
+           </visibleWhen>
+        </command>
+        <command
+              commandId="com.eco.bio7.browser.knitrAction"
+              disabledIcon="icons/rkompilieren_rahmen.gif"
+              icon="icons/rkompilieren_rahmen.gif"
+              id="bio7toolbar.executer"
+              label="Knitr"
+              style="push">
+           <visibleWhen>
+              <with
+                    variable="activePartId">
+                 <or>
+                    <equals
+                          value="com.eco.bio7.browser.guieditor">
+                    </equals>
+                    <equals
+                          value="net.sourceforge.texlipse.TexEditor">
                     </equals>
                  </or>
               </with>

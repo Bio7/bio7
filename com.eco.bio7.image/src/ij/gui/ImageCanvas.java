@@ -1194,7 +1194,8 @@ public class ImageCanvas extends JPanel implements MouseListener,MouseWheelListe
 				break;
 			case Toolbar.WAND:
 				Roi roi = imp.getRoi();
-				if (roi!=null && roi.contains(ox, oy)) {
+				double tolerance = WandToolOptions.getTolerance();
+				if (roi!=null && (tolerance==0.0||imp.isThreshold()) && roi.contains(ox, oy)) {
 					Rectangle r = roi.getBounds();
 					if (r.width==imageWidth && r.height==imageHeight)
 						imp.deleteRoi();
@@ -1212,7 +1213,6 @@ public class ImageCanvas extends JPanel implements MouseListener,MouseWheelListe
 				}
 				setRoiModState(e, roi, -1);
 				String mode = WandToolOptions.getMode();
-				double tolerance = WandToolOptions.getTolerance();
 				int npoints = IJ.doWand(ox, oy, tolerance, mode);
 				if (Recorder.record && npoints>0) {
 					if (Recorder.scriptMode())

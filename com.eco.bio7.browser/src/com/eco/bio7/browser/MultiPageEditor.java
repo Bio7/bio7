@@ -231,7 +231,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 					};
 
-					job.schedule(1000);
+					job.schedule(500);
 
 				}
 
@@ -359,18 +359,19 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 							if (inp.open() == Dialog.OK) {
 
 								url = inp.getValue();
+								WebView webView = (WebView) htmlEditor.lookup("WebView");
+								String selected = (String) webView.getEngine().executeScript("window.getSelection().toString();");
+								String hyperlinkHtml = "<a href=\"" + url.trim() + "\" title=\"" + selected + "\" target=\"_blank\">" + selected + "</a>";
+								try {
+									webView.getEngine().executeScript(getInsertHtmlAtCurstorJS(hyperlinkHtml));
+								} catch (Exception e) {
+									// TODO Auto-generated catch block
+									//e.printStackTrace();
+								}
 
 							}
 
-							WebView webView = (WebView) htmlEditor.lookup("WebView");
-							String selected = (String) webView.getEngine().executeScript("window.getSelection().toString();");
-							String hyperlinkHtml = "<a href=\"" + url.trim() + "\" title=\"" + selected + "\" target=\"_blank\">" + selected + "</a>";
-							try {
-								webView.getEngine().executeScript(getInsertHtmlAtCurstorJS(hyperlinkHtml));
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								//e.printStackTrace();
-							}
+							
 						}
 					});
 
@@ -385,21 +386,22 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 					display.syncExec(new Runnable() {
 						public void run() {
 							String imageLocation = "";
-							InputDialog inp = new InputDialog(new Shell(), "Image", "Select", "Image", null);
+							InputDialog inp = new InputDialog(new Shell(), "Image path", "Enter image path", "image/yourImage.jpg", null);
 
 							if (inp.open() == Dialog.OK) {
 
 								imageLocation = inp.getValue();
+								WebView webView = (WebView) htmlEditor.lookup("WebView");
+								
+								try {
+									webView.getEngine().executeScript(getInsertHtmlAtCurstorJS("<img alt=\"Image\" src=\""+imageLocation+"\"/>"));
+								} catch (Exception e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
 
 							}
-							WebView webView = (WebView) htmlEditor.lookup("WebView");
 							
-							try {
-								webView.getEngine().executeScript(getInsertHtmlAtCurstorJS("<img alt=\"Image\" src=\""+imageLocation+"\"/>"));
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
 							
 							
 						}
@@ -522,6 +524,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	public boolean isSaveAsAllowed() {
 		return false;
 	}
+	
 	/*Workaround to close and reopen Outline for multipage editor is cited here: 
 	 http://stackoverflow.com/questions/24694269/how-to-keep-off-multipageeditor-with-structuredtexteditor-to-show-outline-view-f
 	 I added setActivePage() method so that the Outline is available if the multipage editor has been opened.

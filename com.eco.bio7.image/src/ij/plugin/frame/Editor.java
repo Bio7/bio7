@@ -10,7 +10,6 @@ import ij.util.Tools;
 import ij.text.*;
 import ij.macro.*;
 import ij.plugin.MacroInstaller;
-import ij.plugin.NewPlugin;
 import ij.plugin.Commands;
 import ij.plugin.Macro_Runner;
 import ij.io.SaveDialog;
@@ -85,6 +84,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
     private FunctionFinder functionFinder;
     private ArrayList undoBuffer = new ArrayList();
     private boolean performingUndo;
+    private boolean checkForCurlyQuotes;
 	
 	public Editor() {
 		this(16, 60, 0, MENU_BAR);
@@ -133,7 +133,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		boolean shortcutsBroken = IJ.isWindows()
 			&& (System.getProperty("java.version").indexOf("1.1.8")>=0
 			||System.getProperty("java.version").indexOf("1.5.")>=0);
-shortcutsBroken = false;
+		shortcutsBroken = false;
 		if (shortcutsBroken)
 			item = new MenuItem("Cut  Ctrl+X");
 		else
@@ -175,7 +175,10 @@ shortcutsBroken = false;
 		m.add(new MenuItem("Save Settings"));
 		m.addActionListener(this);
 		mb.add(m);
-	}
+		
+		m = Menus.getExamplesMenu(this);
+		mb.add(m);
+	}			
 			
 	public void positionWindow() {
 		Dimension screen = IJ.getScreenSize();
@@ -246,6 +249,7 @@ shortcutsBroken = false;
 			dontShowWindow = false;
 		}
 		WindowManager.setWindow(this);
+		checkForCurlyQuotes = true;
 		changes = false;
 	}
 
@@ -374,6 +378,28 @@ shortcutsBroken = false;
 			text = ta.getText();
 		else
 			text = ta.getSelectedText();
+		Interpreter instance = Interpreter.getInstance();
+		if (instance!=null) { // abort any currently running macro
+			instance.abortMacro();
+			long t0 = System.currentTimeMillis();
+			while (Interpreter.getInstance()!=null && (System.currentTimeMillis()-t0)<3000L)
+				IJ.wait(10);
+		}
+		if (checkForCurlyQuotes && text.contains("\u201D")) {
+			// replace curly quotes with standard quotes
+ 			text = text.replaceAll("\u201C", "\""); 
+			text = text.replaceAll("\u201D", "\"");
+			if (start==end)
+				ta.setText(text);
+			else {
+				String text2 = ta.getText();
+ 				text2 = text2.replaceAll("\u201C", "\""); 
+				text2 = text2.replaceAll("\u201D", "\"");
+				ta.setText(text2);
+			}
+			changes = true;
+			checkForCurlyQuotes = false;
+		}
 		new MacroRunner(text, debug?this:null);
 	}
 	
@@ -400,10 +426,14 @@ shortcutsBroken = false;
 		}
 	}
 
-	void evaluateScript(String ext) {
+	public void evaluateScript(String ext) {
 		if (downloading) {
 			IJ.beep();
 			IJ.showStatus("Download in progress");
+			return;
+		}
+		if (ext.endsWith(".js")) {
+			evaluateJavaScript();
 			return;
 		}
 		if (!getTitle().endsWith(ext))
@@ -599,6 +629,7 @@ shortcutsBroken = false;
 		ta.replaceRange(s, start, end);
 		if (IJ.isMacOSX())
 			ta.setCaretPosition(start+s.length());
+		checkForCurlyQuotes = true;
 	}
 
 	void copyToInfo() { 
@@ -702,12 +733,62 @@ shortcutsBroken = false;
 			IJ.open();
 		else if (what.equals("Copy to Image Info"))
 			copyToInfo();
+		else if (what.endsWith(".ijm") || what.endsWith(".java") || what.endsWith(".js") || what.endsWith(".bsh") || what.endsWith(".py"))
+			openExample(what, e);
 		else {
 			if (altKeyDown) {
 				enableDebugging();
 				installer.runMacro(what, this);
 			} else
 				installer.runMacro(what, null);
+		}
+	}
+	
+	private void openExample(String name, ActionEvent e) {
+		boolean isJava = name.endsWith(".java");
+		boolean isJavaScript = name.endsWith(".js");
+		boolean isBeanShell = name.endsWith(".bsh");
+		boolean isPython = name.endsWith(".py");
+		int flags = e.getModifiers();
+		boolean shift = (flags & KeyEvent.SHIFT_MASK) != 0;
+		boolean control = (flags & KeyEvent.CTRL_MASK) != 0;
+		boolean alt = (flags & KeyEvent.ALT_MASK) != 0;
+		boolean run = !isJava && (shift || control || alt);
+		int rows = 24;
+		int columns = 70;
+		int options = MENU_BAR;
+		String text = null;
+		Editor ed = new Editor(rows, columns, 0, options);
+		String dir = "Macro/";
+		if (isJava)
+			dir = "Java/";
+		else if (isJavaScript)
+			dir = "JavaScript/";
+		else if (isBeanShell)
+			dir = "BeanShell/";
+		else if (isPython)
+			dir = "Python/";
+		String url = "http://wsr.imagej.net/download/Examples/"+dir+name;
+		text = IJ.openUrlAsString(url);
+		if (text.startsWith("<Error: ")) {
+			IJ.error("Open Example", text);
+			return;
+		}
+		if (ta!=null && ta.getText().length()==0 && !(isJava||isJavaScript||isBeanShell||isPython)) {
+			ta.setText(text);
+			ta.setCaretPosition(0);
+			setTitle(name);
+		} else
+			ed.create(name, text);
+		if (run) {
+			if (isJavaScript)
+				ed.evaluateJavaScript();
+			else if (isBeanShell)
+				ed.evaluateScript(".bsh");
+			else if (isPython)
+				ed.evaluateScript(".py");
+			else
+				IJ.runMacro(text);
 		}
 	}
 	
@@ -759,11 +840,6 @@ shortcutsBroken = false;
 
 	final void enableDebugging() {
 			step = true;
-			Interpreter interp = Interpreter.getInstance();
-			if (interp!=null && interp.getDebugger()==this) {
-				interp.abort();
-				IJ.wait(100);
-			}
 			int start = ta.getSelectionStart();
 			int end = ta.getSelectionEnd();
 			if (start==debugStart && end==debugEnd)
@@ -822,7 +898,7 @@ shortcutsBroken = false;
 	public void close() {
 		boolean okayToClose = true;
 		ImageJ ij = IJ.getInstance();
-		if (!getTitle().equals("Errors") && changes && !IJ.isMacro() && ij!=null) {
+		if (!getTitle().equals("Errors") && changes && !IJ.isMacro() && ij!=null && !ij.quittingViaMacro()) {
 			String msg = "Save changes to \"" + getTitle() + "\"?";
 			YesNoCancelDialog d = new YesNoCancelDialog(this, "Editor", msg);
 			if (d.cancelPressed())

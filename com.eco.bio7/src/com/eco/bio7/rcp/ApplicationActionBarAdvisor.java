@@ -66,6 +66,7 @@ import com.eco.bio7.actions.SetupDiscrete;
 import com.eco.bio7.actions.ShowEditorAreaAction;
 import com.eco.bio7.actions.Start;
 import com.eco.bio7.actions.Start3d;
+import com.eco.bio7.popup.actions.KnitrAction;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.actions.ActivateRPlots;
 import com.eco.bio7.rbridge.actions.ClearRWorkspace;
@@ -220,6 +221,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	private Interpret interpretGrovvyBeanShell;
 
 	private InterpretPython interpretPython;
+	
+	private KnitrAction knitrAction;
 
 	private GenerateControllerAction generateControllerAction;
 
@@ -420,6 +423,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		interpretPython = new InterpretPython("Interpret Python");
 		register(interpretPython);
+		
+		knitrAction = new KnitrAction();
+		register(knitrAction);
 
 		generateControllerAction = new GenerateControllerAction("Generate Controller Class");
 		register(generateControllerAction);

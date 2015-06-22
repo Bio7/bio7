@@ -225,7 +225,8 @@ public class HyperStackConverter implements PlugIn {
 	}
 
 	void convertHSToStack(ImagePlus imp) {
-		if (!imp.isHyperStack()) return;
+		if (!(imp.isHyperStack()||imp.isComposite()))
+			return;
 		ImagePlus imp2 = imp;
 		if (imp.isComposite()) {
 			ImageStack stack = imp.getStack();

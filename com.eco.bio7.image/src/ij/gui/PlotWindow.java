@@ -751,6 +751,11 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 		live.setForeground(Color.black);
 	}
 	
+	/** Returns the Plot associated with this PlotWindow. */
+	public Plot getPlot() {
+		return plot;
+	}
+
 }
 
 

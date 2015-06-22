@@ -592,14 +592,16 @@ public class Opener {
 	}
 
 	ImagePlus openPngUsingURL(String title, URL url) {
-		if (url==null) return null;
+		if (url == null)
+			return null;
 		Image img = null;
 		try {
-			img = ImageIO.read(url);
+			InputStream in = new BufferedInputStream(url.openStream());
+			img = ImageIO.read(in);
 		} catch (IOException e) {
-			IJ.log(""+e);
+			IJ.handleException(e);
 		}
-		if (img!=null) {
+		if (img != null) {
 			ImagePlus imp = new ImagePlus(title, img);
 			return imp;
 		} else
