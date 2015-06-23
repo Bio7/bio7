@@ -239,7 +239,9 @@ public class REditor extends TextEditor {
 									if (store.getBoolean("MARK_WORDS")) {
 										markWords(offset, document, editor);
 									}
-
+									
+									
+									if (store.getBoolean("EDITOR_TO_OUTLINE")) {
 									int lineNumber = 0;
 
 									try {
@@ -288,6 +290,7 @@ public class REditor extends TextEditor {
 											}
 
 										}
+									}
 									}
 
 								}

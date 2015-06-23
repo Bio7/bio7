@@ -232,7 +232,7 @@ Bundle-ClassPath:
  baseline.jar,
  libs/swt-grouplayout.jar,
  libs/groovy-all-2.4.3.jar,
- libs/jython-standalone-2.7.0.jar,
+ libs/jython-standalone-2.5.3.jar,
  external:$java.home$/lib/jfxswt.jar,
  libs/py4j0.8.2.1.jar
 

@@ -77,6 +77,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		storeR.setDefault("SHOW_INFOPOPUP", true);
 		storeR.setDefault("MARK_WORDS", true);
 		storeR.setDefault("TYPED_CODE_COMPLETION", false);
+		storeR.setDefault("EDITOR_TO_OUTLINE", true);
 
 	}
 
