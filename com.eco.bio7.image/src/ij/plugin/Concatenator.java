@@ -3,13 +3,18 @@ import ij.*;
 import ij.macro.Interpreter;
 import ij.process.*;
 import ij.gui.*;
+
 import java.awt.*;
+
 import ij.measure.*;
 import ij.plugin.filter.*;
+
 import java.awt.event.*;
 import java.util.*;
 import java.lang.*;
 import java.awt.image.ColorModel;
+
+import javax.swing.JCheckBox;
 
 /** This plugin, which concatenates two or more images or stacks,
  *	implements the Image/Stacks/Tools/Concatenate command.
@@ -30,7 +35,7 @@ public class Concatenator implements PlugIn, ItemListener{
 	private String[] imageTitles;
 	private ImagePlus[] images;
 	private Vector choices;
-	private Checkbox allWindows;
+	private JCheckBox allWindows;
 	private final String none = "-- None --";
 	private String newtitle = "Concatenated Stacks";
 	private ImagePlus newImp;
@@ -317,7 +322,7 @@ public class Concatenator implements PlugIn, ItemListener{
 			for (Enumeration e = choices.elements() ; e.hasMoreElements() ;)
 				((Choice)e.nextElement()).addItemListener(this);
 			Vector v = gd.getCheckboxes();
-			allWindows = (Checkbox)v.firstElement();
+			allWindows = (JCheckBox)v.firstElement();
 			allWindows.addItemListener(this);
 			if (all_option) itemStateChanged(new ItemEvent(allWindows, ItemEvent.ITEM_STATE_CHANGED, null, ItemEvent.SELECTED));
 		}
@@ -375,7 +380,7 @@ public class Concatenator implements PlugIn, ItemListener{
 		Choice c;
 		if (ie.getSource() == allWindows) { // User selected / unselected 'all windows' button
 			int count = 0;
-			if (allWindows.getState()) {
+			if (allWindows.isSelected()) {
 				for (Enumeration e = choices.elements() ; e.hasMoreElements() ;) {
 					c = (Choice)e.nextElement();
 					c.select(count++);
