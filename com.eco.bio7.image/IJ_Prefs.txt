@@ -1,9 +1,5 @@
-#ImageJ 1.49t Preferences
-<<<<<<< HEAD
-#Tue Jun 09 14:30:29 CEST 2015
-=======
-#Sun Jun 07 11:06:12 CEST 2015
->>>>>>> branch 'master' of https://bitbucket.org/maustenfeld/bio7-new.git
+#ImageJ 1.49u Preferences
+#Tue Jun 23 09:14:53 CEST 2015
 new.fill=1
 .log.height=250
 .arrows.loc=846,219
