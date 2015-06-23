@@ -231,8 +231,8 @@ Bundle-ClassPath:
  libs/swing-layout-1.0.jar,
  baseline.jar,
  libs/swt-grouplayout.jar,
- libs/groovy-all-2.3.7.jar,
- libs/jython-standalone-2.5.3.jar,
+ libs/groovy-all-2.4.3.jar,
+ libs/jython-standalone-2.7.0.jar,
  external:$java.home$/lib/jfxswt.jar,
  libs/py4j0.8.2.1.jar
 

@@ -25,6 +25,5 @@ Export-Package: com.eco.bio7.browser,
  com.swtdesigner,
  org.eclipse.swt.widgets.baseline
 Bundle-ClassPath: bin/,
- jericho-html-3.2.jar,
  external:$java.home$/lib/jfxswt.jar
 

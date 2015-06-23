@@ -1,10 +1,11 @@
 #ImageJ 1.49u Preferences
-#Tue Jun 23 09:14:53 CEST 2015
+#Tue Jun 23 10:14:22 CEST 2015
 new.fill=1
 .log.height=250
 .arrows.loc=846,219
 pp.options=1
 .log.loc=760,227
+.editor.dir=C\:\\Users\\elk\\git\\bio7main\\com.eco.bio7.image\\plugins\\
 bcolor=\#FFFFFF
 .results.height=679
 noise.sd=25.0
@@ -34,10 +35,12 @@ ij.y=0
 .threshold.mode=0
 .line.loc=551,272
 ij.x=1072
+.toolbar.tool04=
 new.slices=1
 .toolbar.tool03=
 .toolbar.tool02=
 menu.size=15
+.toolbar.tool01=
 .point.size=1
 raw.n=1
 .cp.loc=894,200

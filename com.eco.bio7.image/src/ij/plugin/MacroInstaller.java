@@ -1,7 +1,10 @@
 package ij.plugin;
 import java.awt.*;
 import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.awt.event.*;
+
 import ij.*;
 import ij.gui.*;
 import ij.macro.*;
@@ -10,7 +13,15 @@ import ij.util.Tools;
 import ij.io.*;
 import ij.macro.MacroConstants;
 import ij.plugin.frame.*;
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                import java.util.*;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+
+import java.util.*;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
+import org.osgi.framework.Bundle;
 
 /** This plugin implements the Plugins/Macros/Install Macros command. It is also used by the Editor
 	class to install macro in menus and by the ImageJ class to install macros at startup. */
@@ -373,9 +384,30 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		}
 	}
 	 
+	/*Changed for Bio7! ImageJ resources are not wrapped in a *.jar. So we calculate and return the paths!*/
 	 /** Returns a text file contained in ij.jar. */
 	 public String openFromIJJar(String path) {
-		String text = null;
+		
+		 Bundle bundle = Platform.getBundle("com.eco.bio7.image");
+
+			URL locationUrl = FileLocator.find(bundle, new Path("/"), null);
+			URL fileUrl = null;
+			try {
+				fileUrl = FileLocator.toFileURL(locationUrl);
+			} catch (IOException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			}
+			String pathDir = fileUrl.getFile().toString();
+			path=pathDir+path;
+			
+			/*String currentDir = path;
+			// System.out.println(path);
+			pluginsPath = path + "plugins/";// plugins dir;
+			macrosPath = path + "macros/";// macros dir;
+			ImageJPath = path;*/
+		
+		/*String text = null;
 		  try {
 			InputStream is = this.getClass().getResourceAsStream(path);
 			//IJ.log(is+"	"+path);
@@ -388,8 +420,17 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 					 sb.append(b,0, n);
 				text = sb.toString();
 		  }
-		  catch (IOException e) {}
-		  return text;
+		  catch (IOException e) {}*/
+			/*Open the calculated file with the ApacheIO lib!*/
+			File file = new File(path);
+			String result = null;
+			try {
+				result = FileUtils.readFileToString(file);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		  return result;
 	}
 	
 	//void runMacro() {
