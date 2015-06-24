@@ -24,7 +24,10 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.console.IConsoleManager;
+import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.texteditor.ITextEditor;
+
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
 import com.eco.bio7.compile.CompilerMessages;
 import com.eco.bio7.compile.JavaCompileWorkspaceJob;
@@ -48,8 +51,12 @@ public class Compile extends Action {
 	public void run() {
 		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
 		if (utils != null) {
+			/*Bring the console to the front and clear it!*/
+			utils.cons.activate();
 			utils.cons.clear();
 		}
+		
+		
 		IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
 		classbody = store.getBoolean("classbody");
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();

@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -40,6 +41,7 @@ import org.jsoup.select.Elements;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
+
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.BatchModel;
 import com.eco.bio7.batch.Bio7Dialog;
@@ -47,6 +49,7 @@ import com.eco.bio7.browser.BrowserView;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.rcp.StartBio7Utils;
 
 public class KnitrAction extends Action implements IObjectActionDelegate {
 
@@ -66,6 +69,12 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 	}
 
 	public void run(IAction action) {
+		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
+		if (utils != null) {
+			/*Bring the console to the front and clear it!*/
+			utils.cons.activate();
+			utils.cons.clear();
+		}
 		String project = null;
 		ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().getSelection();
 		IStructuredSelection strucSelection = null;
@@ -92,6 +101,12 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 
 	}
 	public void run() {
+		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
+		if (utils != null) {
+			/*Bring the console to the front and clear it!*/
+			utils.cons.activate();
+			utils.cons.clear();
+		}
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench()
 				.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		if (editor.isDirty()) {

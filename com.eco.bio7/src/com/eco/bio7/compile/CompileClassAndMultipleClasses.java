@@ -15,6 +15,9 @@ import ij.plugin.filter.PlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -65,6 +68,7 @@ public class CompileClassAndMultipleClasses {
 	private IWorkbenchPage pag;
 	private IFile ifile;
 	private IEditorPart editor;
+	private Thread processThread;
 
 	public void compileClasses(IResource res, IFile ifil, IWorkbenchPage page) {
 		this.resource = res;
@@ -91,8 +95,8 @@ public class CompileClassAndMultipleClasses {
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
-		//IFolder folder = proj.getFolder("src");
-		//IFolder folder = proj.getFolder("bin");
+		// IFolder folder = proj.getFolder("src");
+		// IFolder folder = proj.getFolder("bin");
 		IPath pa = proj.getLocation();
 
 		fi = pa.toFile();
@@ -111,7 +115,8 @@ public class CompileClassAndMultipleClasses {
 			dir = pa.toFile().getPath().replace("\\", "/") + "/src";
 		} else if (editor instanceof JavaEditor) {
 			dir = pa.toFile().getPath().replace("\\", "/");
-		} else {//Compilation triggered from the Flow or the popup menu with no active editor opened!
+		} else {// Compilation triggered from the Flow or the popup menu with no
+				// active editor opened!
 			dir = pa.toFile().getPath().replace("\\", "/") + "/src";
 		}
 
@@ -124,7 +129,7 @@ public class CompileClassAndMultipleClasses {
 			protected IStatus run(IProgressMonitor monitor) {
 				monitor.beginTask("Compile And Run...", IProgressMonitor.UNKNOWN);
 				// JavaSourceClassLoader.directCall = true;
-				compileAndLoad(fi, dir, name, pag,false);
+				compileAndLoad(fi, dir, name, pag, false);
 				// JavaSourceClassLoader.directCall = false;
 				monitor.done();
 				return Status.OK_STATUS;
@@ -144,7 +149,7 @@ public class CompileClassAndMultipleClasses {
 		job.schedule();
 	}
 
-	public void compileAndLoad(File path, String dir, String name, IWorkbenchPage pag,boolean startupScript) {
+	public void compileAndLoad(File path, String dir, String name, IWorkbenchPage pag, boolean startupScript) {
 
 		JavaSourceClassLoader cla = new JavaSourceClassLoader(Bio7Plugin.class.getClassLoader());
 		cla.pag = pag;
@@ -158,11 +163,17 @@ public class CompileClassAndMultipleClasses {
 			// JavaEditor editor=JavaEditor.javaEditor;
 			/* If we have an opened Java Editor! */
 			if (editor != null && (editor instanceof JavaEditor || editor instanceof CompilationUnitEditor)) {
-				/* If the class is in a package we receive the package name from the AST! */
+				/*
+				 * If the class is in a package we receive the package name from
+				 * the AST!
+				 */
 				org.eclipse.jdt.core.dom.CompilationUnit compUnit = null;
 				if (editor instanceof JavaEditor) {
 					JavaEditor jedit = (JavaEditor) editor;
-					/* If the class is in a package we receive the package name from the AST! */
+					/*
+					 * If the class is in a package we receive the package name
+					 * from the AST!
+					 */
 					compUnit = jedit.getCompUnit();
 				}
 
@@ -173,17 +184,26 @@ public class CompileClassAndMultipleClasses {
 					ICompilationUnit cu = mgr.getWorkingCopy(jedit.getEditorInput());
 					ASTParser parser = ASTParser.newParser(AST.JLS8);
 					parser.setSource(cu);
-					// CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+					// CompilationUnit cu = (CompilationUnit)
+					// parser.createAST(null);
 					compUnit = (CompilationUnit) parser.createAST(null);
 
-					/* If the class is in a package we receive the package name from the AST! */
+					/*
+					 * If the class is in a package we receive the package name
+					 * from the AST!
+					 */
 
-					// org.eclipse.jdt.internal.ui.javaeditor.ASTProvider.getASTProvider().getAST(input, null, null);
+					// org.eclipse.jdt.internal.ui.javaeditor.ASTProvider.getASTProvider().getAST(input,
+					// null, null);
 
 				}
 
-				/* If the class is in a package we receive the package name from the AST! */
-				// org.eclipse.jdt.core.dom.CompilationUnit compUnit = jedit.getCompUnit();
+				/*
+				 * If the class is in a package we receive the package name from
+				 * the AST!
+				 */
+				// org.eclipse.jdt.core.dom.CompilationUnit compUnit =
+				// jedit.getCompUnit();
 				PackageDeclaration pdecl = compUnit.getPackage();
 				if (pdecl != null) {
 					Name packName = pdecl.getName();
@@ -196,14 +216,15 @@ public class CompileClassAndMultipleClasses {
 				}
 
 			}
-			/*Compile startup scripts!*/
-			else if(startupScript){
-				org.eclipse.jdt.core.dom.CompilationUnit compUnit=null;
+			/* Compile startup scripts! */
+			else if (startupScript) {
+				org.eclipse.jdt.core.dom.CompilationUnit compUnit = null;
 				Document doc = new Document(BatchModel.fileToString(path.getAbsolutePath()));
-				
+
 				ASTParser parser = ASTParser.newParser(AST.JLS8);
 				parser.setSource(doc.get().toCharArray());
-				// CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+				// CompilationUnit cu = (CompilationUnit)
+				// parser.createAST(null);
 				compUnit = (CompilationUnit) parser.createAST(null);
 				PackageDeclaration pdecl = compUnit.getPackage();
 				if (pdecl != null) {
@@ -215,16 +236,20 @@ public class CompileClassAndMultipleClasses {
 				} else {
 					cl = cla.findClass(name);
 				}
-				
+
 			}
-			/* If we compile from the context menu or the Flow editor we create the AST from the file! */
+			/*
+			 * If we compile from the context menu or the Flow editor we create
+			 * the AST from the file!
+			 */
 			else {
-				org.eclipse.jdt.core.dom.CompilationUnit compUnit=null;
+				org.eclipse.jdt.core.dom.CompilationUnit compUnit = null;
 				Document doc = new Document(BatchModel.fileToString(ifile.getRawLocation().toString()));
-				
+
 				ASTParser parser = ASTParser.newParser(AST.JLS8);
 				parser.setSource(doc.get().toCharArray());
-				// CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+				// CompilationUnit cu = (CompilationUnit)
+				// parser.createAST(null);
 				compUnit = (CompilationUnit) parser.createAST(null);
 				PackageDeclaration pdecl = compUnit.getPackage();
 				if (pdecl != null) {
@@ -236,7 +261,7 @@ public class CompileClassAndMultipleClasses {
 				} else {
 					cl = cla.findClass(name);
 				}
-				
+
 			}
 
 			// System.out.println(name);
@@ -323,14 +348,15 @@ public class CompileClassAndMultipleClasses {
 	private void callMainMethod(Method method) {
 
 		Object retVal;
-
+		/**/
 		try {
-			String[] params = null;
+			String[] params = {""};
 			method.invoke(null, (Object) params);
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
 	}
 
 }
