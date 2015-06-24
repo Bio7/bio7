@@ -182,7 +182,7 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 				participant.ignore = true;
 				ioConsole.getInputStream().appendData(System.getProperty("line.separator"));
 
-				participant.styledText.setEditable(true);
+				participant.styledText.setEditable(false);
 			}
 
 			public void widgetDefaultSelected(SelectionEvent e) {
