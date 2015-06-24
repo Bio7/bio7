@@ -261,7 +261,8 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 									proc = pb.start();
 
 								} catch (IOException e) {
-
+									
+									e.printStackTrace();
 									/*
 									 * Bio7Dialog.message(
 									 * "Rserve executable not available !"

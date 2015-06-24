@@ -20,6 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -40,6 +41,9 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.IProgressService;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
@@ -486,8 +490,60 @@ public class ExecuteBatchFile {
 
 						c.eval("try(library(knitr))");
 						c.eval("setwd('" + dir + "')");
+						IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+						String knitrOptions = store.getString("knitroptions");
+						if (fileext.equals("html")) {
+							c.eval("try(" + knitrOptions + ")");
+						}
 
-						RServe.print("try(knit('" + name + "','" + theName + "." + fileext + "'))");
+						
+						//File file = selectedFile.getLocation().toFile();
+						String docTemp = null;
+						try {
+							docTemp = BatchModel.fileToString(fi.getCanonicalPath());
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+
+						// String docTemp=doc.get();
+						Document docHtml = Jsoup.parse(docTemp);
+                       /*Search for divs with the selected id!*/
+						Elements contents = docHtml.select("#knitrcode"); // a
+																			// with
+																			// href
+						for (int i = 0; i < contents.size(); i++) {
+							/*Replace in the div the linebreak and page tags with text linebreak(s)!*/
+							contents.get(i).select("br").append("\\n");
+							contents.get(i).select("p").prepend("\\n\\n");
+							
+							String cleaned=contents.get(i).text().replaceAll("\\\\n", "\n");
+							/*Wrap the parsed div text in a knitr section!*/
+							contents.get(i).after("<!--begin.rcode\n " +cleaned  + " \nend.rcode-->");
+							contents.get(i).remove();
+						}
+						/*Create a temp file for the parsed and edited *.html file for processing with knitr!*/
+						File temp = null;
+						try {
+							 temp = File.createTempFile(theName, ".tmp");
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} 
+						
+						/*Write the changes to the file with the help of the ApacheIO lib!*/
+						try {
+							FileUtils.writeStringToFile(temp,docHtml.html());
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						/*Clean the path for R and knitr!*/
+						String cleanedPath=temp.getPath().replace("\\","/");
+                         
+						RServe.print("try(knit('" + cleanedPath + "','" + theName + "." + fileext + "'))");
+
+						//RServe.print("try(knit('" + name + "','" + theName + "." + fileext + "'))");
 
 					} catch (RserveException e1) {
 
