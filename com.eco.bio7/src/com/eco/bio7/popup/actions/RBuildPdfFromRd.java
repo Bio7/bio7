@@ -40,14 +40,25 @@ public class RBuildPdfFromRd implements IObjectActionDelegate{
 				Object selectedObj = strucSelection.getFirstElement();
 				IResource resource = (IResource) strucSelection.getFirstElement();
 				final IProject activeProject = resource.getParent().getProject();
-				if (selectedObj instanceof IFolder) {
-					IFolder selectedFolder = (IFolder) selectedObj;
+				if (selectedObj instanceof IFolder||selectedObj instanceof IProject) {
+					IFolder selectedFolder = null;
+					 String loc;
+					if (selectedObj instanceof IProject){
+						IProject proj=(IProject)selectedObj;
+						loc = proj.getLocation().toOSString();
+						
+						
+					}
+					else{
+					 selectedFolder = (IFolder) selectedObj;
+					  loc = selectedFolder.getLocation().toString();
+					}
 					//System.out.println(selectedFolder.getName());
 					//System.out.println(selectedFolder.getLocation());
 					IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 					String pathR = store.getString(PreferenceConstants.PATH_R);
 					if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
-						String loc = selectedFolder.getLocation().toString().replace("/", "\\");
+						 loc = loc.replace("/", "\\");
 						ConsolePageParticipant.pipeInputToConsole("cd " + "\"" + loc + "\"",true,false);
 						if (ApplicationWorkbenchWindowAdvisor.is64BitVM()) {
 							ConsolePageParticipant.pipeInputToConsole("\""+pathR + "/bin/x64/R\""+" CMD Rd2pdf " + "\"" + loc + "\"",true,false);
@@ -59,7 +70,7 @@ public class RBuildPdfFromRd implements IObjectActionDelegate{
 						
 						
 					} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
-						String loc = selectedFolder.getLocation().toString();
+						//String loc = selectedFolder.getLocation().toString();
 						ConsolePageParticipant.pipeInputToConsole("cd " + "\"" + loc + "\"",true,false);
 						
 						ConsolePageParticipant.pipeInputToConsole(pathR + "/bin/R CMD Rd2pdf "+ "\"" + loc + "\"",true,false);
@@ -67,22 +78,31 @@ public class RBuildPdfFromRd implements IObjectActionDelegate{
 					}
 
 					else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
-						String loc = selectedFolder.getLocation().toString();
+						//String loc = selectedFolder.getLocation().toString();
 						ConsolePageParticipant.pipeInputToConsole("cd " + "\"" + loc + "\"",true,false);
 						
 						ConsolePageParticipant.pipeInputToConsole(pathR + "/bin/R CMD Rd2pdf "+ "\"" + loc + "\"",true,false);
 
 					}
 					IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-					IProject proj = root.getProject(activeProject.getName());
-					
-					
-					try {
-						proj.refreshLocal(IResource.DEPTH_INFINITE, null);
-					} catch (CoreException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+					if ((selectedObj instanceof IProject) == false) {
+						IProject proj = root.getProject(activeProject.getName());
+						try {
+							proj.refreshLocal(IResource.DEPTH_INFINITE, null);
+						} catch (CoreException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					} else {
+						try {
+							IProject proj = (IProject) selectedObj;
+							proj.refreshLocal(IResource.DEPTH_INFINITE, null);
+						} catch (CoreException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}
+
 
 				}
 
