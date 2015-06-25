@@ -229,7 +229,6 @@ public class ScanClassPath {
 						}
 
 						else {
-							System.out.println(File.pathSeparator + bundlePaths.get(i) + elements[u].getValue());
 							buf.add(File.pathSeparator + bundlePaths.get(i) + elements[u].getValue());
 						}
 
