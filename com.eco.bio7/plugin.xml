@@ -408,9 +408,6 @@
             application="com.eco.bio7.application"
             name="Bio7">
          <property
-               name="preferenceCustomization"
-               value="plugin_customization.ini"/>
-         <property
                name="windowImage"
                value="icons/logo.gif"/>
          <property
@@ -442,6 +439,10 @@
 	name="applicationCSSResources"
 	value="platform:/plugin/com.eco.bio7.themes/images/">
 </property>
+         <property
+               name="preferenceCustomization"
+               value="plugin_customization.ini">
+         </property>
       </product>
    </extension>
    <extension

@@ -57,12 +57,10 @@ jre/lib/jli/libjli.dylib
    </launcher>
 
    <intro introId="com.eco.bio7.intro"/>
-<<<<<<< HEAD
-=======
 
    <vm>
    </vm>
->>>>>>> branch 'master' of https://bitbucket.org/maustenfeld/bio7-new.git
+
 
    <plugins>
       <plugin id="Bundled_R"/>
@@ -192,20 +190,27 @@ jre/lib/jli/libjli.dylib
       <feature id="org.eclipse.ecf.filetransfer.feature"/>
       <feature id="org.eclipse.ecf.core.feature"/>
       <feature id="org.eclipse.ecf.filetransfer.httpclient4.ssl.feature"/>
-      <feature id="org.eclipse.equinox.p2.rcp.feature" version="1.2.0.v20140523-0116"/>
-      <feature id="org.eclipse.equinox.p2.core.feature" version="1.3.0.v20140523-0116"/>
       <feature id="com.eco.bio7.themes.feature" version="2.0.0.qualifier"/>
       <feature id="net.sourceforge.texlipse" version="1.5.0"/>
-      <feature id="org.eclipse.emf.common" version="2.10.1.v20150123-0348"/>
-      <feature id="org.eclipse.jdt" version="3.10.1.v20150204-1700"/>
-      <feature id="org.eclipse.emf.ecore" version="2.10.2.v20150123-0348"/>
-      <feature id="org.eclipse.rcp" version="4.4.2.v20150204-1700"/>
+      <feature id="org.eclipse.equinox.p2.rcp.feature" version="1.2.100.v20150527-1706"/>
+      <feature id="org.eclipse.equinox.p2.core.feature" version="1.3.100.v20150527-1706"/>
+      <feature id="org.eclipse.emf.common" version="2.11.0.v20150512-0501"/>
+      <feature id="org.eclipse.jdt" version="3.11.0.v20150603-2000"/>
+      <feature id="org.eclipse.emf.ecore" version="2.11.0.v20150512-0501"/>
+      <feature id="org.eclipse.rcp" version="4.5.0.v20150603-2331"/>
    </features>
 
 
    <repositories>
-      <repository location="http://download.eclipse.org/eclipse/updates/4.4" enabled="true" />
-      <repository location="http://download.eclipse.org/releases/luna" enabled="true" />
+      <repository location="http://download.eclipse.org/eclipse/updates/4.5" enabled="true" />
+      <repository location="http://download.eclipse.org/releases/mars" enabled="true" />
    </repositories>
+
+   <preferencesInfo>
+      <targetfile overwrite="false"/>
+   </preferencesInfo>
+
+   <cssInfo>
+   </cssInfo>
 
 </product>
