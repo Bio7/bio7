@@ -119,6 +119,11 @@ public class GenericDialog extends JDialog implements ActionListener, TextListen
 		addKeyListener(this);
 		addWindowListener(this);
 	}
+	/*Changed for Bio7! Get the layout from a Swing dialog!*/
+	public  LayoutManager getLayout(){
+        return this.getContentPane().getLayout();
+    }
+
 
 	// void showFields(String id) {
 	// String s = id+": ";
