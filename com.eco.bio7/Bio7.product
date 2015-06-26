@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Bio7" uid="2.1.0" id="com.eco.bio7.product" application="com.eco.bio7.application" version="2.1.0.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="Bio7" uid="2.2.0" id="com.eco.bio7.product" application="com.eco.bio7.application" version="2.2.0.qualifier" useFeatures="true" includeLaunchers="true">
 
    <aboutInfo>
       <image path="/com.eco.bio7/icons/bio7app/bio7_48.png"/>
@@ -60,7 +60,6 @@ jre/lib/jli/libjli.dylib
 
    <vm>
    </vm>
-
 
    <plugins>
       <plugin id="Bundled_R"/>
@@ -174,12 +173,12 @@ jre/lib/jli/libjli.dylib
       <feature id="com.eco.bio7.edit.feature" version="2.0.0.qualifier"/>
       <feature id="com.eco.bio7.floweditor.feature" version="2.0.0.qualifier"/>
       <feature id="com.eco.bio7.javaedit.feature" version="2.0.0.qualifier"/>
-      <feature id="com.eco.bio7.r.feature" version="3.2.0.qualifier"/>
+      <feature id="com.eco.bio7.r.feature" version="3.2.1.qualifier"/>
       <feature id="com.eco.bio7.libs.feature" version="2.0.0.qualifier"/>
       <feature id="com.eco.bio7.redit.feature" version="2.0.0.qualifier"/>
       <feature id="com.eco.bio7.util.feature" version="2.0.0.qualifier"/>
       <feature id="com.eco.bio7.worldwind.feature" version="2.0.0.qualifier"/>
-      <feature id="com.eco.bio7.image.feature" version="1.49.20.qualifier"/>
+      <feature id="com.eco.bio7.image.feature" version="1.49.21.qualifier"/>
       <feature id="com.eco.bio7.pythonedit.feature" version="2.0.0.qualifier"/>
       <feature id="com.eco.bio7.scenebuilder.feature" version="2.0.0.qualifier"/>
       <feature id="org.eclipse.e4.rcp"/>
