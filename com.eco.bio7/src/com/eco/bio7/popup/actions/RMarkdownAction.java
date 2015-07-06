@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -41,7 +40,6 @@ import org.jsoup.select.Elements;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
-
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.BatchModel;
 import com.eco.bio7.batch.Bio7Dialog;
@@ -51,17 +49,17 @@ import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.StartBio7Utils;
 
-public class KnitrAction extends Action implements IObjectActionDelegate {
+public class RMarkdownAction extends Action implements IObjectActionDelegate {
 
 	private BufferedReader input;
 	private OutputStream stdin;
 	private String fi;
 	private String name;
 
-	public KnitrAction() {
+	public RMarkdownAction() {
 		super();
-		setId("com.eco.bio7.browser.knitr");
-		setActionDefinitionId("com.eco.bio7.browser.knitrAction");
+		setId("com.eco.bio7.rmarkdown");
+		setActionDefinitionId("com.eco.bio7.RMarkdownAction");
 	}
 
 	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
@@ -92,7 +90,7 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 				IResource resource = (IResource) strucSelection.getFirstElement();
 				final IProject activeProject = resource.getProject();
 
-				knitrFile(selectedObj, activeProject);
+				markdownFile(selectedObj, activeProject);
 
 			}
 			
@@ -121,10 +119,10 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 			aFile = ((IFileEditorInput) editorInput).getFile();
 		}
 		
-			knitrFile(aFile, aFile.getProject());
+			markdownFile(aFile, aFile.getProject());
 	}
 
-	private void knitrFile(Object selectedObj, final IProject activeProject) {
+	private void markdownFile(Object selectedObj, final IProject activeProject) {
 		String project;
 		final String nameofiofile;
 		if (selectedObj instanceof IFile) {
@@ -152,10 +150,10 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 
 			System.out.println(dirPath);
 
-			Job job = new Job("Knitr file") {
+			Job job = new Job("Markdown file") {
 				@Override
 				protected IStatus run(IProgressMonitor monitor) {
-					monitor.beginTask("Knitr file...", IProgressMonitor.UNKNOWN);
+					monitor.beginTask("Markdown file...", IProgressMonitor.UNKNOWN);
 
 					if (RServe.isAliveDialog()) {
 						if (RState.isBusy() == false) {
@@ -163,65 +161,22 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 							RConnection c = RServe.getConnection();
 
 							try {
-								REXPLogical rl = (REXPLogical) c.eval("require(knitr)");
+								REXPLogical rl = (REXPLogical) c.eval("require(rmarkdown)");
 								if (!(rl.isTRUE()[0])) {
 
-									Bio7Dialog.message("Cannot load 'knitr' package!");
+									Bio7Dialog.message("Cannot load 'markdown' package!");
 								}
 
-								c.eval("try(library(knitr))");
+								c.eval("try(library(rmarkdown))");
 								c.eval("setwd('" + dirPath + "')");
 								IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-								String knitrOptions = store.getString("knitroptions");
-								if (fileext.equals("html")) {
-									c.eval("try(" + knitrOptions + ")");
-									//File file = selectedFile.getLocation().toFile();
-									String docTemp = BatchModel.fileToString(selectedFile.getLocation().toString());
-
-									// String docTemp=doc.get();
-									Document docHtml = Jsoup.parse(docTemp);
-			                       /*Search for divs with the selected id!*/
-									Elements contents = docHtml.select("#knitrcode"); // a
-																						// with
-																						// href
-									for (int i = 0; i < contents.size(); i++) {
-										/*Replace in the div the linebreak and page tags with text linebreak(s)!*/
-										contents.get(i).select("br").append("\\n");
-										contents.get(i).select("p").prepend("\\n\\n");
-										
-										String cleaned=contents.get(i).text().replaceAll("\\\\n", "\n");
-										/*Wrap the parsed div text in a knitr section!*/
-										contents.get(i).after("<!--begin.rcode\n " +cleaned  + " \nend.rcode-->");
-										contents.get(i).remove();
-									}
-									/*Create a temp file for the parsed and edited *.html file for processing with knitr!*/
-									File temp = null;
-									try {
-										 temp = File.createTempFile(theName, ".tmp");
-									} catch (IOException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									} 
-									
-									/*Write the changes to the file with the help of the ApacheIO lib!*/
-									try {
-										FileUtils.writeStringToFile(temp,docHtml.html());
-									} catch (IOException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-								}
-									/*Clean the path for R and knitr!*/
-									String cleanedPath=temp.getPath().replace("\\","/");
-
-									RServe.print("try(knit('" + cleanedPath + "','" + theName + "." + fileext + "'))");
-
+								//String knitrOptions = store.getString("knitroptions");
 								
-								}
 								
-								else if (fileext.equals("tex")) {
-									
-									RServe.print("try(knit('" + selFile + "','" + theName + "." + fileext + "'))");
-								}
+								 
+									System.out.println(selFile);
+									RServe.print("try(render(\"" + selFile +"\"),all)");
+								
 								
 		                         
 								
@@ -271,7 +226,7 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 								// " " + dirPath + "/" + theName +
 								// ".tex");
 								List<String> args = new ArrayList<String>();
-								args.add("\""+pdfLatexPath + "/pdflatex"+"\"");
+								args.add(pdfLatexPath + "/pdflatex");
 								args.add("-interaction=nonstopmode");
 								args.add("-output-directory=" + dirPath);
 								args.add(dirPath + "/" + theName + ".tex");

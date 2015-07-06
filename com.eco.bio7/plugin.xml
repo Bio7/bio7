@@ -1207,6 +1207,32 @@
              menubarPath="additions.path">
        </action>
     </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="RMarkdown"
+          nameFilter="*.Rmd"
+          objectClass="org.eclipse.core.resources.IFile">
+       <action
+             class="com.eco.bio7.popup.actions.RMarkdownAction"
+             icon="icons/konsole.gif"
+             id="com.eco.bio7.rmarkdown"
+             label="R Markdown"
+             menubarPath="additions.rmarkdown">
+       </action>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="RMarkdownHtml"
+          nameFilter="*.Rhtml"
+          objectClass="org.eclipse.core.resources.IFile">
+       <action
+             class="com.eco.bio7.popup.actions.RMarkdownAction"
+             icon="icons/konsole.gif"
+             id="com.eco.bio7.rmarkdown"
+             label="R Markdown"
+             menubarPath="additions.rmarkdown">
+       </action>
+    </objectContribution>
   </extension>
   <extension
         id="bshextension"
