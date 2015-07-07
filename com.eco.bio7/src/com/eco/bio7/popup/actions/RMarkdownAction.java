@@ -175,7 +175,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 								
 								 
 									System.out.println(selFile);
-									RServe.print("try(render(\"" + selFile +"\"),all)");
+									RServe.print("try(render(\"" + selFile +"\"))");
 								
 								
 		                         

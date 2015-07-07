@@ -400,6 +400,11 @@
             id="com.eco.bio7.browser.knitrAction"
             name="Knitr Action">
       </command>
+      <command
+            description="Interpret Markdown"
+            id="com.eco.bio7.RMarkdownAction"
+            name="Markdown Action">
+      </command>
    </extension>
    <extension
          id="product"
@@ -1223,7 +1228,7 @@
     <objectContribution
           adaptable="false"
           id="RMarkdownHtml"
-          nameFilter="*.Rhtml"
+          nameFilter="*.R"
           objectClass="org.eclipse.core.resources.IFile">
        <action
              class="com.eco.bio7.popup.actions.RMarkdownAction"
@@ -1407,6 +1412,27 @@
                     </equals>
                     <equals
                           value="net.sourceforge.texlipse.TexEditor">
+                    </equals>
+                 </or>
+              </with>
+           </visibleWhen>
+        </command>
+        <command
+              commandId="com.eco.bio7.RMarkdownAction"
+              disabledIcon="icons/rkompilieren_rahmen.gif"
+              icon="icons/rkompilieren_rahmen.gif"
+              id="bio7toolbar.executer"
+              label="Markdown"
+              style="push">
+           <visibleWhen>
+              <with
+                    variable="activePartId">
+                 <or>
+                    <equals
+                          value="org.eclipse.ui.DefaultTextEditor">
+                    </equals>
+                    <equals
+                          value="winterwell.markdown.editors.MarkdownEditor">
                     </equals>
                  </or>
               </with>

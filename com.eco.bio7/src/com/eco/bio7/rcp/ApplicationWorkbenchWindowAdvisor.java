@@ -1434,66 +1434,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_PROBLEMS_VIEW_ERROR, PATH_EVIEW + "problems_view_error.png", true);
 		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_PROBLEMS_VIEW_WARNING, PATH_EVIEW + "problems_view_warning.png", true);
 
-		// declareWorkbenchImage(ideBundle,
-		// IDEInternalWorkbenchImages.IMG_WIZBAN_NEWFOLDER_WIZ, PATH_WIZBAN +
-		// "newfolder_wiz.png", false);
-
-		// declareWorkbenchImage(ideBundle, IDE.SharedImages.IMG_OBJ_PROJECT,
-		// PATH_OBJECT + "prj_obj.gif", true);
-		// declareWorkbenchImage(ideBundle,
-		// IDE.SharedImages.IMG_OBJ_PROJECT_CLOSED, PATH_OBJECT +
-		// "cprj_obj.gif", true);
-
-		// QuickFix images
-
-		// declareWorkbenchImage(ideBundle,
-		// IDEInternalWorkbenchImages.IMG_ELCL_QUICK_FIX_ENABLED,
-		// PATH_ELOCALTOOL + "smartmode_co.gif", true);
-
-		// declareWorkbenchImage(ideBundle,
-		// IDEInternalWorkbenchImages.IMG_DLCL_QUICK_FIX_DISABLED,
-		// PATH_DLOCALTOOL + "smartmode_co.gif", true);
-
-		// declareWorkbenchImage(ideBundle,
-		// IDEInternalWorkbenchImages.IMG_OBJS_FIXABLE_WARNING, PATH_OBJECT +
-		// "quickfix_warning_obj.gif", true);
-		// declareWorkbenchImage(ideBundle,
-		// IDEInternalWorkbenchImages.IMG_OBJS_FIXABLE_ERROR, PATH_OBJECT +
-		// "quickfix_error_obj.gif", true);
-
-		// Task images
-		// declareRegistryImage(IDEInternalWorkbenchImages.IMG_OBJS_HPRIO_TSK,
-		// PATH_OBJECT+"hprio_tsk.gif");
-		// declareRegistryImage(IDEInternalWorkbenchImages.IMG_OBJS_MPRIO_TSK,
-		// PATH_OBJECT+"mprio_tsk.gif");
-		// declareRegistryImage(IDEInternalWorkbenchImages.IMG_OBJS_LPRIO_TSK,
-		// PATH_OBJECT+"lprio_tsk.gif");
-
-		/*
-		 * declareWorkbenchImage(ideBundle,
-		 * IDEInternalWorkbenchImages.IMG_WIZBAN_NEWPRJ_WIZ, PATH_WIZBAN +
-		 * "newprj_wiz.gif", false); declareWorkbenchImage(ideBundle,
-		 * IDEInternalWorkbenchImages.IMG_WIZBAN_NEWFOLDER_WIZ, BIO7_PATH +
-		 * "ordner_zu.gif", false); declareWorkbenchImage(ideBundle,
-		 * IDEInternalWorkbenchImages.IMG_WIZBAN_NEWFILE_WIZ, PATH_WIZBAN +
-		 * "newfile_wiz.gif", false);
-		 * 
-		 * declareWorkbenchImage(ideBundle,
-		 * IDEInternalWorkbenchImages.IMG_WIZBAN_IMPORTDIR_WIZ, PATH_WIZBAN +
-		 * "importdir_wiz.gif", false); declareWorkbenchImage(ideBundle,
-		 * IDEInternalWorkbenchImages.IMG_WIZBAN_IMPORTZIP_WIZ, PATH_WIZBAN +
-		 * "importzip_wiz.gif", false);
-		 * 
-		 * declareWorkbenchImage(ideBundle,
-		 * IDEInternalWorkbenchImages.IMG_WIZBAN_EXPORTDIR_WIZ, PATH_WIZBAN +
-		 * "exportdir_wiz.gif", false); declareWorkbenchImage(ideBundle,
-		 * IDEInternalWorkbenchImages.IMG_WIZBAN_EXPORTZIP_WIZ, PATH_WIZBAN +
-		 * "exportzip_wiz.gif", false);
-		 * 
-		 * declareWorkbenchImage(ideBundle,
-		 * IDEInternalWorkbenchImages.IMG_DLGBAN_SAVEAS_DLG, PATH_WIZBAN +
-		 * "saveas_wiz.gif", false);
-		 */
 
 	}
 

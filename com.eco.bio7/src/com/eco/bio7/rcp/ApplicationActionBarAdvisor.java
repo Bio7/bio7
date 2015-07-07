@@ -67,6 +67,7 @@ import com.eco.bio7.actions.ShowEditorAreaAction;
 import com.eco.bio7.actions.Start;
 import com.eco.bio7.actions.Start3d;
 import com.eco.bio7.popup.actions.KnitrAction;
+import com.eco.bio7.popup.actions.RMarkdownAction;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.actions.ActivateRPlots;
 import com.eco.bio7.rbridge.actions.ClearRWorkspace;
@@ -223,6 +224,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	private InterpretPython interpretPython;
 	
 	private KnitrAction knitrAction;
+	
+	private RMarkdownAction markdownAction;
 
 	private GenerateControllerAction generateControllerAction;
 
@@ -426,6 +429,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		
 		knitrAction = new KnitrAction();
 		register(knitrAction);
+		
+		markdownAction = new RMarkdownAction();
+		register(markdownAction);
 
 		generateControllerAction = new GenerateControllerAction("Generate Controller Class");
 		register(generateControllerAction);
