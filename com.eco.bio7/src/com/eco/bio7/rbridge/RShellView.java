@@ -1763,6 +1763,94 @@ public class RShellView extends ViewPart {
 			}
 		});
 		newItemMenuItem_2.setText("To Matrix");
+		
+		MenuItem mntmToList = new MenuItem(menu_1, SWT.NONE);
+		mntmToList.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if (RServe.isAliveDialog()) {
+					RConnection c = RServe.getConnection();
+
+					if (RState.isBusy() == false) {
+						boolean[] bolExists = null;
+
+						String[] selected = listShell.getSelection();
+						if (selected.length == 1) {
+
+							try {
+								REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected[0] + "\")");
+								bolExists = bolDataExists.isTRUE();
+							} catch (RserveException e2) {
+
+								e2.printStackTrace();
+							}
+
+							if (bolExists[0]) {
+
+								InputDialog inp = new InputDialog(new Shell(), "To list", "Create a name for the List!", selected[0], null);
+
+								if (inp.open() == Dialog.OK) {
+									String input = inp.getValue();
+									try {
+										c.eval("try(" + input + "<-list())");
+										c.eval("try(" + input + "[[1]]<-"+ selected[0] +")");
+									} catch (RserveException e1) {
+
+										e1.printStackTrace();
+									}
+									
+									RServe.printJob("" + input + "");
+								}
+
+							} else {
+								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
+							}
+						} else if (selected.length > 1) {
+							try {
+								REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected[0] + "\")");
+								bolExists = bolDataExists.isTRUE();
+							} catch (RserveException e2) {
+
+								e2.printStackTrace();
+							}
+
+							if (bolExists[0]) {
+
+								InputDialog inp = new InputDialog(new Shell(), "To list", "Create a name for the list!", selected[0], null);
+
+								if (inp.open() == Dialog.OK) {
+									String input = inp.getValue();
+									try {
+										c.eval("try(" + input + "<-list())");
+									} catch (RserveException e1) {
+
+										e1.printStackTrace();
+									}
+									for (int i = 0; i < selected.length; i++) {
+										try {
+											c.eval("try(" + input + "[["+(i+1)+"]]<-"+ selected[i] +")");
+										} catch (RserveException e1) {
+
+											e1.printStackTrace();
+										}
+									}
+									RServe.printJob("" + input + "");
+								}
+
+							} else {
+								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
+							}
+
+						}
+					} else {
+						Bio7Dialog.message("Rserve is busy!");
+
+					}
+				}
+				
+			}
+		});
+		mntmToList.setText("To List");
 
 		final MenuItem newItemMenuItem_3 = new MenuItem(menu_1, SWT.NONE);
 		newItemMenuItem_3.addSelectionListener(new SelectionAdapter() {
