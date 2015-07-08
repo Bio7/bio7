@@ -852,6 +852,14 @@
             id="com.eco.bio7.bio7jython"
             name="Jython/Python">
       </category>
+      <wizard
+            category="com.eco.bio7.RCategory"
+            class="com.eco.bio7.wizards.RMarkdownPluginWizard"
+            icon="icons/knitr.gif"
+            id="com.eco.bio7.markdown.Wizard"
+            name="R Markdown"
+            project="false">
+      </wizard>
       
    </extension>
    <extension
