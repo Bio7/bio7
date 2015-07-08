@@ -21,10 +21,8 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.ContainerSelectionDialog;
 import org.eclipse.swt.widgets.Combo;
 
-
-
 public class RMarkdownWizardPage extends WizardPage {
-	
+
 	private Text containerText;
 	private Text fileText;
 	private ISelection selection;
@@ -35,29 +33,26 @@ public class RMarkdownWizardPage extends WizardPage {
 	private Label lblNewLabel_2;
 	private Combo combo;
 
-	
 	public Combo getCombo() {
 		return combo;
 	}
-	
+
 	public Text getTextTitle() {
 		return textTitle;
 	}
-	
+
 	public Text getTextAuthor() {
 		return textAuthor;
 	}
 
-
-
 	public RMarkdownWizardPage(ISelection selection) {
 		super("wizardPage");
 		setTitle("Markdown File");
-		setDescription("This wizard creates a new file with *.Rmarkdown extension that can be opened by the default Rmarkdown editor and compiled with the R markdown package.");
+		setDescription(
+				"This wizard creates a new file with *.Rmarkdown extension that can be opened by the default editor.");
 		this.selection = selection;
 	}
 
-	
 	public void createControl(Composite parent) {
 		Composite container = new Composite(parent, SWT.NULL);
 		GridLayout layout = new GridLayout();
@@ -98,42 +93,40 @@ public class RMarkdownWizardPage extends WizardPage {
 		dialogChanged();
 		setControl(container);
 		new Label(container, SWT.NONE);
-		
+
 		lblNewLabel = new Label(container, SWT.NONE);
 		lblNewLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
 		lblNewLabel.setText("Title");
-		
+
 		textTitle = new Text(container, SWT.BORDER);
 		textTitle.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		new Label(container, SWT.NONE);
-		
+
 		lblNewLabel_1 = new Label(container, SWT.NONE);
 		lblNewLabel_1.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
 		lblNewLabel_1.setText("Author");
-		
+
 		textAuthor = new Text(container, SWT.BORDER);
 		textAuthor.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		new Label(container, SWT.NONE);
 		new Label(container, SWT.NONE);
 		new Label(container, SWT.NONE);
 		new Label(container, SWT.NONE);
-		
+
 		lblNewLabel_2 = new Label(container, SWT.NONE);
 		lblNewLabel_2.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
 		lblNewLabel_2.setText("Format");
-		
+
 		combo = new Combo(container, SWT.NONE);
-		combo.setItems(new String[] {"HTML", "PDF", "Word", "HTML (Presentation ioslides)", "HTML (Presentation slidy)", "PDF (Presentation Beamer)"});
+		combo.setItems(new String[] { "HTML", "PDF", "Word", "HTML (Presentation ioslides)",
+				"HTML (Presentation slidy)", "PDF (Presentation Beamer)" });
 		combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		combo.select(0);
 		new Label(container, SWT.NONE);
 	}
 
-	
-
 	private void initialize() {
-		if (selection != null && selection.isEmpty() == false
-				&& selection instanceof IStructuredSelection) {
+		if (selection != null && selection.isEmpty() == false && selection instanceof IStructuredSelection) {
 			IStructuredSelection ssel = (IStructuredSelection) selection;
 			if (ssel.size() > 1)
 				return;
@@ -150,12 +143,9 @@ public class RMarkdownWizardPage extends WizardPage {
 		fileText.setText("template.Rmd");
 	}
 
-	
-
 	private void handleBrowse() {
-		ContainerSelectionDialog dialog = new ContainerSelectionDialog(
-				getShell(), ResourcesPlugin.getWorkspace().getRoot(), false,
-				"Select new file container");
+		ContainerSelectionDialog dialog = new ContainerSelectionDialog(getShell(),
+				ResourcesPlugin.getWorkspace().getRoot(), false, "Select new file container");
 		if (dialog.open() == ContainerSelectionDialog.OK) {
 			Object[] result = dialog.getResult();
 			if (result.length == 1) {
@@ -167,16 +157,14 @@ public class RMarkdownWizardPage extends WizardPage {
 	
 
 	private void dialogChanged() {
-		IResource container = ResourcesPlugin.getWorkspace().getRoot()
-				.findMember(new Path(getContainerName()));
+		IResource container = ResourcesPlugin.getWorkspace().getRoot().findMember(new Path(getContainerName()));
 		String fileName = getFileName();
 
 		if (getContainerName().length() == 0) {
 			updateStatus("File container must be specified");
 			return;
 		}
-		if (container == null
-				|| (container.getType() & (IResource.PROJECT | IResource.FOLDER)) == 0) {
+		if (container == null || (container.getType() & (IResource.PROJECT | IResource.FOLDER)) == 0) {
 			updateStatus("File container must exist");
 			return;
 		}
@@ -188,6 +176,12 @@ public class RMarkdownWizardPage extends WizardPage {
 			updateStatus("File name must be specified");
 			return;
 		}
+		final IContainer containerFolder = WizardUtil.getContainer(getContainerName());
+		if (fileName != null && !fileName.equals("") && containerFolder.getFile(new Path(fileName)).exists()) { //$NON-NLS-1$
+			updateStatus("File with that name already exists!");
+			return;
+		}
+
 		if (fileName.replace('\\', '/').indexOf('/', 1) > 0) {
 			updateStatus("File name must be valid");
 			return;

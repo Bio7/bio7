@@ -115,6 +115,7 @@ public class HtmlJavaScriptWizardPage extends WizardPage {
 	}
 
 	
+	
 
 	private void dialogChanged() {
 		IResource container = ResourcesPlugin.getWorkspace().getRoot()
@@ -136,6 +137,11 @@ public class HtmlJavaScriptWizardPage extends WizardPage {
 		}
 		if (fileName.length() == 0) {
 			updateStatus("File name must be specified");
+			return;
+		}
+		final IContainer containerFolder = WizardUtil.getContainer(getContainerName());
+		if (fileName != null && !fileName.equals("") && containerFolder.getFile(new Path(fileName)).exists()) { //$NON-NLS-1$
+			updateStatus("File with that name already exists!");
 			return;
 		}
 		if (fileName.replace('\\', '/').indexOf('/', 1) > 0) {
