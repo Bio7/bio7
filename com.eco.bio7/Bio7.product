@@ -197,6 +197,7 @@ jre/lib/jli/libjli.dylib
       <feature id="org.eclipse.jdt" version="3.11.0.v20150603-2000"/>
       <feature id="org.eclipse.emf.ecore" version="2.11.0.v20150512-0501"/>
       <feature id="org.eclipse.rcp" version="4.5.0.v20150603-2331"/>
+      <feature id="com.eco.bio7.markdownedit.feature" version="1.0.0.qualifier"/>
    </features>
 
 

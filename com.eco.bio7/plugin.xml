@@ -1437,7 +1437,7 @@
                     variable="activePartId">
                  <or>
                     <equals
-                          value="org.eclipse.ui.DefaultTextEditor">
+                          value="com.eco.bio7.markdownedit">
                     </equals>
                     <equals
                           value="winterwell.markdown.editors.MarkdownEditor">

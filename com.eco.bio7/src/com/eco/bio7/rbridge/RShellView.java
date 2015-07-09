@@ -1787,7 +1787,7 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(new Shell(), "To list", "Create a name for the List!", selected[0], null);
+								InputDialog inp = new InputDialog(new Shell(), "To list of objects", "Create a name for the List!", selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
@@ -1850,7 +1850,7 @@ public class RShellView extends ViewPart {
 				
 			}
 		});
-		mntmToList.setText("To List");
+		mntmToList.setText("To List of Objects");
 
 		final MenuItem newItemMenuItem_3 = new MenuItem(menu_1, SWT.NONE);
 		newItemMenuItem_3.addSelectionListener(new SelectionAdapter() {

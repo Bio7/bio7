@@ -7,7 +7,11 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -24,6 +28,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.program.Program;
@@ -34,6 +39,7 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -55,6 +61,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 	private OutputStream stdin;
 	private String fi;
 	private String name;
+	private String docType;
 
 	public RMarkdownAction() {
 		super();
@@ -118,6 +125,27 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 		if (editorInput instanceof IFileEditorInput) {
 			aFile = ((IFileEditorInput) editorInput).getFile();
 		}
+		IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
+		/*Extract the header information for the doctype and open a registered viewer in Bio7!*/
+		String title = StringUtils.substringBetween(doc.get(), "---", "---");
+		String sub=title.substring(title.lastIndexOf("output:") + 7);
+		System.out.println(":::::::"+sub);
+		if (sub.contains("html_document")||sub.contains("ioslides_presentation")||sub.contains("slidy_presentation")) {
+			
+			docType="Html";
+			
+		}
+		else if(sub.contains("pdf_document")||sub.contains("beamer_presentation")){
+			docType="Pdf";
+		}
+		
+		else if(sub.contains("word_document")){
+			docType="Word";
+		}
+		else{
+			docType="";
+		}
+		//System.out.println("title:" + title); // good
 		
 			markdownFile(aFile, aFile.getProject());
 	}
@@ -146,7 +174,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 
 			String dirPath = new File(fi).getParentFile().getPath().replace("\\", "/");
 
-			String extens = selectedFile.getFileExtension();
+			
 
 			System.out.println(dirPath);
 
@@ -194,7 +222,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
-							if (fileext.equals("html")) {
+							if (docType.equals("Html")) {
 
 								Work.openView("com.eco.bio7.browser.Browser");
 								Display display = PlatformUI.getWorkbench().getDisplay();
@@ -209,8 +237,10 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 									}
 								});
 
-							} else if (fileext.equals("tex")) {
-								IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+							} 
+								
+								else if (docType.equals("Pdf")) {
+								/*IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 								String pdfLatexPath = store.getString("pdfLatex");
 
 								pdfLatexPath = pdfLatexPath.replace("\\", "/");
@@ -240,26 +270,22 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 								} catch (IOException e) {
 									
 									e.printStackTrace();
-									/*
+									
 									 * Bio7Dialog.message(
 									 * "Rserve executable not available !"
 									 * ); RServe.setConnection(null);
-									 */
+									 
 								}
 
 								input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-								stdin = proc.getOutputStream();
+								stdin = proc.getOutputStream();*/
 
 								new Thread() {
 
 									public void run() {
 										setPriority(Thread.MAX_PRIORITY);
 										String line;
-										try {
-
-											while ((line = input.readLine()) != null) {
-												System.out.println(line);
-											}
+										
 											File fil = new File(dirPath + "/" + theName + ".pdf");
 											if (fil.exists()) {
 												Program.launch(dirPath + "/" + theName + ".pdf");
@@ -267,10 +293,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 												Bio7Dialog.message("*.pdf file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
 											}
 
-										} catch (IOException e) {
-
-											e.printStackTrace();
-										}
+										
 										IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 										IProject proj = root.getProject(activeProject.getName());
 										try {
@@ -285,6 +308,37 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 								}.start();
 
 							}
+								else if (docType.equals("Word")) {
+									
+
+									new Thread() {
+
+										public void run() {
+											setPriority(Thread.MAX_PRIORITY);
+											String line;
+										
+												File fil = new File(dirPath + "/" + theName + ".docx");
+												if (fil.exists()) {
+													Program.launch(dirPath + "/" + theName + ".docx");
+												} else {
+													Bio7Dialog.message("*.docx file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
+												}
+
+											
+											IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+											IProject proj = root.getProject(activeProject.getName());
+											try {
+												proj.refreshLocal(IResource.DEPTH_INFINITE, null);
+											} catch (CoreException e) {
+												// TODO Auto-generated catch
+												// block
+												e.printStackTrace();
+											}
+
+										}
+									}.start();
+
+								}
 						}
 
 					}
