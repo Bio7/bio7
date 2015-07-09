@@ -87,21 +87,18 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 	public void run(IAction action) {
 		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
 		if (utils != null) {
-			/*Bring the console to the front and clear it!*/
+			/* Bring the console to the front and clear it! */
 			utils.cons.activate();
 			utils.cons.clear();
 		}
 		String project = null;
-		ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().getSelection();
+		ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService()
+				.getSelection();
 		IStructuredSelection strucSelection = null;
 		if (selection instanceof IStructuredSelection) {
 			strucSelection = (IStructuredSelection) selection;
 			if (strucSelection.size() == 0) {
-              
-				
-				
-				
-				
+
 			} else if (strucSelection.size() == 1) {
 				final String nameofiofile;
 				Object selectedObj = strucSelection.getFirstElement();
@@ -112,25 +109,24 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 				markdownFile(selectedObj, activeProject);
 
 			}
-			
+
 		}
 
 	}
+
 	public void run() {
 		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
 		if (utils != null) {
-			/*Bring the console to the front and clear it!*/
+			/* Bring the console to the front and clear it! */
 			utils.cons.activate();
 			utils.cons.clear();
 		}
-		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench()
-				.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+				.getActiveEditor();
 		if (editor.isDirty()) {
 			editor.doSave(new NullProgressMonitor());
 		}
 
-		
-		
 		IEditorInput editorInput = editor.getEditorInput();
 		IFile aFile = null;
 
@@ -138,28 +134,30 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 			aFile = ((IFileEditorInput) editorInput).getFile();
 		}
 		IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
-		/*Extract the header information for the doctype and open a registered viewer in Bio7!*/
+		/*
+		 * Extract the header information for the doctype and open a registered
+		 * viewer in Bio7!
+		 */
 		String title = StringUtils.substringBetween(doc.get(), "---", "---");
-		String sub=title.substring(title.lastIndexOf("output:") + 7);
-		
-		if (sub.contains("html_document")||sub.contains("ioslides_presentation")||sub.contains("slidy_presentation")) {
-			
-			docType="Html";
-			
+		String sub = title.substring(title.lastIndexOf("output:") + 7);
+
+		if (sub.contains("html_document") || sub.contains("ioslides_presentation")
+				|| sub.contains("slidy_presentation")) {
+
+			docType = "Html";
+
+		} else if (sub.contains("pdf_document") || sub.contains("beamer_presentation")) {
+			docType = "Pdf";
 		}
-		else if(sub.contains("pdf_document")||sub.contains("beamer_presentation")){
-			docType="Pdf";
+
+		else if (sub.contains("word_document")) {
+			docType = "Word";
+		} else {
+			docType = "";
 		}
-		
-		else if(sub.contains("word_document")){
-			docType="Word";
-		}
-		else{
-			docType="";
-		}
-		//System.out.println("title:" + title); // good
-		
-			markdownFile(aFile, aFile.getProject());
+		// System.out.println("title:" + title); // good
+
+		markdownFile(aFile, aFile.getProject());
 	}
 
 	private void markdownFile(Object selectedObj, final IProject activeProject) {
@@ -182,11 +180,9 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 			project = project.replace("\\", "/");
 			fi = selectedFile.getRawLocation().toString();
 			name = nameofiofile;
-			//dirPath = null;
+			// dirPath = null;
 
 			String dirPath = new File(fi).getParentFile().getPath().replace("\\", "/");
-
-			
 
 			System.out.println(dirPath);
 
@@ -210,21 +206,16 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 								c.eval("try(library(rmarkdown))");
 								c.eval("setwd('" + dirPath + "')");
 								IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-								//String knitrOptions = store.getString("knitroptions");
-								
-								
-								 
-									System.out.println(selFile);
-									RServe.print("try(render(\"" + selFile +"\"))");
-								
-								
-		                         
-								
+								// String knitrOptions =
+								// store.getString("knitroptions");
+
+								System.out.println(selFile);
+								RServe.print("try(render(\"" + selFile + "\"))");
+
 							} catch (RserveException e1) {
 
 								e1.printStackTrace();
 							}
-							
 
 							IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 							IProject proj = root.getProject(activeProject.getName());
@@ -235,8 +226,10 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 								e.printStackTrace();
 							}
 							if (docType.equals("Html")) {
-
-								Work.openView("com.eco.bio7.browser.Browser");
+								boolean dec = Bio7Dialog.decision("Open JavaFX browser?");
+								if (dec == false) {
+									Work.openView("com.eco.bio7.browser.Browser");
+								}
 								Display display = PlatformUI.getWorkbench().getDisplay();
 								display.asyncExec(new Runnable() {
 
@@ -244,114 +237,128 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 										String temp = "file:///" + dirPath + "/" + theName + ".html";
 										String url = temp.replace("\\", "/");
 										System.out.println(url);
-										BrowserView b = BrowserView.getBrowserInstance();
-										b.setLocation(url);
-										
-										Group group=new Group();
-										
+										if (dec == false) {
+											BrowserView b = BrowserView.getBrowserInstance();
+											b.setLocation(url);
+										}
 
-								       
-										AnchorPane anchorPane = new AnchorPane();
-                                     
-								        final WebView brow = new WebView();
-								        
-								        final WebEngine webEng = brow.getEngine();
-								        
-								        
-								       // AnchorPane anchorPane = new AnchorPane();
-								        //GridPane.setHgrow(brow, Priority.ALWAYS);
-										//GridPane.setVgrow(brow, Priority.ALWAYS);
+										else {
 
-								       
-								        AnchorPane.setTopAnchor(brow, 0.0);
-								        AnchorPane.setBottomAnchor(brow, 0.0);
-								        AnchorPane.setLeftAnchor(brow, 0.0);
-								        AnchorPane.setRightAnchor(brow, 0.0);
+											Group group = new Group();
 
-								        //Add WebView to AnchorPane
-								       anchorPane.getChildren().add(brow);
-								        
+											AnchorPane anchorPane = new AnchorPane();
 
-								       /* ScrollPane scrollPane = new ScrollPane();
-								        scrollPane.setMaxHeight(2000);
-								        scrollPane.setMaxWidth(2000);
-								        scrollPane.setContent(brow);*/
-								        
-								        
-								       
-								        
-								       
+											final WebView brow = new WebView();
 
-								       // group.getChildren().add(anchorPane);
-								       
-								        webEng.load(url);
-										CustomView view = new CustomView();
-										view.setSceneCanvas("HTML");
-									
-										Scene scene = new Scene(anchorPane);
-										view.addScene(scene);
+											final WebEngine webEng = brow.getEngine();
+
+											AnchorPane.setTopAnchor(brow, 0.0);
+											AnchorPane.setBottomAnchor(brow, 0.0);
+											AnchorPane.setLeftAnchor(brow, 0.0);
+											AnchorPane.setRightAnchor(brow, 0.0);
+
+											anchorPane.getChildren().add(brow);
+
+											webEng.load(url);
+											CustomView view = new CustomView();
+											view.setSceneCanvas("HTML");
+
+											Scene scene = new Scene(anchorPane);
+											view.addScene(scene);
+										}
 									}
 								});
-								
-								
 
-							} 
-								
-								else if (docType.equals("Pdf")) {
-								/*IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-								String pdfLatexPath = store.getString("pdfLatex");
+							}
 
-								pdfLatexPath = pdfLatexPath.replace("\\", "/");
-
-								// String temp=dirPath+"/" +
-								// theName+".tex";
-								// String url = temp.replace("\\", "/");
-
-								// Process proc =
-								// Runtime.getRuntime().exec(
-								// pdfLatexPath+"/pdflatex -interaction=nonstopmode "
-								// + "-output-directory=" + dirPath +
-								// " " + dirPath + "/" + theName +
-								// ".tex");
-								List<String> args = new ArrayList<String>();
-								args.add(pdfLatexPath + "/pdflatex");
-								args.add("-interaction=nonstopmode");
-								args.add("-output-directory=" + dirPath);
-								args.add(dirPath + "/" + theName + ".tex");
-
-								Process proc = null;
-								ProcessBuilder pb = new ProcessBuilder(args);
-								pb.redirectErrorStream();
-								try {
-									proc = pb.start();
-
-								} catch (IOException e) {
-									
-									e.printStackTrace();
-									
-									 * Bio7Dialog.message(
-									 * "Rserve executable not available !"
-									 * ); RServe.setConnection(null);
-									 
-								}
-
-								input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-								stdin = proc.getOutputStream();*/
+							else if (docType.equals("Pdf")) {
+								/*
+								 * IPreferenceStore store =
+								 * Bio7Plugin.getDefault().getPreferenceStore();
+								 * String pdfLatexPath =
+								 * store.getString("pdfLatex");
+								 * 
+								 * pdfLatexPath = pdfLatexPath.replace("\\", "
+								 * /");
+								 * 
+								 * // String temp=dirPath+"/" + //
+								 * theName+".tex"; // String url = temp.replace(
+								 * "\\", "/");
+								 * 
+								 * // Process proc = //
+								 * Runtime.getRuntime().exec( // pdfLatexPath+
+								 * "/pdflatex -interaction=nonstopmode " // +
+								 * "-output-directory=" + dirPath + // " " +
+								 * dirPath + "/" + theName + // ".tex");
+								 * List<String> args = new ArrayList<String>();
+								 * args.add(pdfLatexPath + "/pdflatex");
+								 * args.add("-interaction=nonstopmode");
+								 * args.add("-output-directory=" + dirPath);
+								 * args.add(dirPath + "/" + theName + ".tex");
+								 * 
+								 * Process proc = null; ProcessBuilder pb = new
+								 * ProcessBuilder(args);
+								 * pb.redirectErrorStream(); try { proc =
+								 * pb.start();
+								 * 
+								 * } catch (IOException e) {
+								 * 
+								 * e.printStackTrace();
+								 * 
+								 * Bio7Dialog.message(
+								 * "Rserve executable not available !" );
+								 * RServe.setConnection(null);
+								 * 
+								 * }
+								 * 
+								 * input = new BufferedReader(new
+								 * InputStreamReader(proc.getInputStream()));
+								 * stdin = proc.getOutputStream();
+								 */
 
 								new Thread() {
 
 									public void run() {
 										setPriority(Thread.MAX_PRIORITY);
 										String line;
-										
-											File fil = new File(dirPath + "/" + theName + ".pdf");
-											if (fil.exists()) {
-												Program.launch(dirPath + "/" + theName + ".pdf");
-											} else {
-												Bio7Dialog.message("*.pdf file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
-											}
 
-										
+										File fil = new File(dirPath + "/" + theName + ".pdf");
+										if (fil.exists()) {
+											Program.launch(dirPath + "/" + theName + ".pdf");
+										} else {
+											Bio7Dialog.message(
+													"*.pdf file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
+										}
+
+										IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+										IProject proj = root.getProject(activeProject.getName());
+										try {
+											proj.refreshLocal(IResource.DEPTH_INFINITE, null);
+										} catch (CoreException e) {
+											// TODO Auto-generated catch
+											// block
+											e.printStackTrace();
+										}
+
+									}
+								}.start();
+
+							} else if (docType.equals("Word")) {
+
+								new Thread() {
+
+									public void run() {
+										setPriority(Thread.MAX_PRIORITY);
+										String line;
+
+										File fil = new File(dirPath + "/" + theName + ".docx");
+										if (fil.exists()) {
+											Program.launch(dirPath + "/" + theName + ".docx");
+										} else {
+											Bio7Dialog.message(
+													"*.docx file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
+										}
+
 										IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 										IProject proj = root.getProject(activeProject.getName());
 										try {
@@ -366,37 +373,6 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 								}.start();
 
 							}
-								else if (docType.equals("Word")) {
-									
-
-									new Thread() {
-
-										public void run() {
-											setPriority(Thread.MAX_PRIORITY);
-											String line;
-										
-												File fil = new File(dirPath + "/" + theName + ".docx");
-												if (fil.exists()) {
-													Program.launch(dirPath + "/" + theName + ".docx");
-												} else {
-													Bio7Dialog.message("*.docx file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
-												}
-
-											
-											IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-											IProject proj = root.getProject(activeProject.getName());
-											try {
-												proj.refreshLocal(IResource.DEPTH_INFINITE, null);
-											} catch (CoreException e) {
-												// TODO Auto-generated catch
-												// block
-												e.printStackTrace();
-											}
-
-										}
-									}.start();
-
-								}
 						}
 
 					}
