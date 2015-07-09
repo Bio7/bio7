@@ -50,10 +50,22 @@ import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.BatchModel;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.browser.BrowserView;
+import com.eco.bio7.collection.CustomView;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.StartBio7Utils;
+
+import javafx.scene.Group;
+import javafx.scene.Scene;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 
 public class RMarkdownAction extends Action implements IObjectActionDelegate {
 
@@ -129,7 +141,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 		/*Extract the header information for the doctype and open a registered viewer in Bio7!*/
 		String title = StringUtils.substringBetween(doc.get(), "---", "---");
 		String sub=title.substring(title.lastIndexOf("output:") + 7);
-		System.out.println(":::::::"+sub);
+		
 		if (sub.contains("html_document")||sub.contains("ioslides_presentation")||sub.contains("slidy_presentation")) {
 			
 			docType="Html";
@@ -234,8 +246,54 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 										System.out.println(url);
 										BrowserView b = BrowserView.getBrowserInstance();
 										b.setLocation(url);
+										
+										Group group=new Group();
+										
+
+								       
+										AnchorPane anchorPane = new AnchorPane();
+                                     
+								        final WebView brow = new WebView();
+								        
+								        final WebEngine webEng = brow.getEngine();
+								        
+								        
+								       // AnchorPane anchorPane = new AnchorPane();
+								        //GridPane.setHgrow(brow, Priority.ALWAYS);
+										//GridPane.setVgrow(brow, Priority.ALWAYS);
+
+								       
+								        AnchorPane.setTopAnchor(brow, 0.0);
+								        AnchorPane.setBottomAnchor(brow, 0.0);
+								        AnchorPane.setLeftAnchor(brow, 0.0);
+								        AnchorPane.setRightAnchor(brow, 0.0);
+
+								        //Add WebView to AnchorPane
+								       anchorPane.getChildren().add(brow);
+								        
+
+								       /* ScrollPane scrollPane = new ScrollPane();
+								        scrollPane.setMaxHeight(2000);
+								        scrollPane.setMaxWidth(2000);
+								        scrollPane.setContent(brow);*/
+								        
+								        
+								       
+								        
+								       
+
+								       // group.getChildren().add(anchorPane);
+								       
+								        webEng.load(url);
+										CustomView view = new CustomView();
+										view.setSceneCanvas("HTML");
+									
+										Scene scene = new Scene(anchorPane);
+										view.addScene(scene);
 									}
 								});
+								
+								
 
 							} 
 								
