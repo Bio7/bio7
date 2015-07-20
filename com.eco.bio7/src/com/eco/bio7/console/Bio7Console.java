@@ -26,7 +26,8 @@ public class Bio7Console {
 	 * @param command
 	 *            a command for the console
 	 * @param lineSeperator
-	 *            a boolean if a line seperator should be written to the console.
+	 *            a boolean if a line seperator should be written to the
+	 *            console.
 	 * @param addToHistory
 	 *            if the command should be added to the command history.
 	 */
@@ -56,6 +57,17 @@ public class Bio7Console {
 	public static String getConsoleSelection() {
 		String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 		return selectionConsole;
+	}
+
+	/**
+	 * A method to open or start the shell, R or Python in the Bio7 console.
+	 * 
+	 * @param selection
+	 *            the selected shell or native interpreter.
+	 */
+	public static void setConsoleSelection(String selection) {
+
+		ConsolePageParticipant.setNativeInterpreterSelection(selection);
 	}
 
 }
