@@ -1246,6 +1246,28 @@
              menubarPath="additions.rmarkdown">
        </action>
     </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="SetRWorkingDirFolder"
+          objectClass="org.eclipse.core.resources.IFolder">
+       <action
+             class="com.eco.bio7.popup.actions.SetWdRAction"
+             id="com.eco.bio7.setwdr"
+             label="Set Working Directory (R)"
+             menubarPath="additions.path">
+       </action>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="SetRWorkingDirProject"
+          objectClass="org.eclipse.core.resources.IProject">
+       <action
+             class="com.eco.bio7.popup.actions.SetWdRAction"
+             id="com.eco.bio7.setwdr"
+             label="Set Working Directory (R)"
+             menubarPath="additions.path">
+       </action>
+    </objectContribution>
   </extension>
   <extension
         id="bshextension"

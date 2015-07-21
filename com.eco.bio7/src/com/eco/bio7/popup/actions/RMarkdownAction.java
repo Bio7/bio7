@@ -1,16 +1,6 @@
 package com.eco.bio7.popup.actions;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -27,7 +17,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -40,14 +29,9 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
-import com.eco.bio7.Bio7Plugin;
-import com.eco.bio7.batch.BatchModel;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.browser.BrowserView;
 import com.eco.bio7.collection.CustomView;
@@ -55,24 +39,17 @@ import com.eco.bio7.collection.Work;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.StartBio7Utils;
-
-import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 
 public class RMarkdownAction extends Action implements IObjectActionDelegate {
 
-	private BufferedReader input;
-	private OutputStream stdin;
+	//private BufferedReader input;
+	//private OutputStream stdin;
 	private String fi;
-	private String name;
+	//private String name;
 	private String docType;
 
 	public RMarkdownAction() {
@@ -91,7 +68,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 			utils.cons.activate();
 			utils.cons.clear();
 		}
-		String project = null;
+		//String project = null;
 		ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService()
 				.getSelection();
 		IStructuredSelection strucSelection = null;
@@ -100,7 +77,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 			if (strucSelection.size() == 0) {
 
 			} else if (strucSelection.size() == 1) {
-				final String nameofiofile;
+				//final String nameofiofile;
 				Object selectedObj = strucSelection.getFirstElement();
 
 				IResource resource = (IResource) strucSelection.getFirstElement();
@@ -162,24 +139,24 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 
 	private void markdownFile(Object selectedObj, final IProject activeProject) {
 		String project;
-		final String nameofiofile;
+		String nameofiofile;
 		if (selectedObj instanceof IFile) {
 			IFile selectedFile = (IFile) selectedObj;
 			final String selFile = selectedFile.getName();
 
-			int extIndex = selFile.lastIndexOf(".");
+			//int extIndex = selFile.lastIndexOf(".");
 			/* Get the file extension! */
-			String extension = selFile.substring(extIndex + 1);
+			//String extension = selFile.substring(extIndex + 1);
 			/* The file extension for the output! */
-			String fileext2 = extension.replace("R", "");
-			final String fileext = fileext2.replace("r", "");
+			//String fileext2 = extension.replace("R", "");
+			//final String fileext = fileext2.replace("r", "");
 
 			final String theName = selFile.replaceFirst("[.][^.]+$", "");
 			nameofiofile = getFileName(selFile);
 			project = selectedFile.getLocation().toString();
 			project = project.replace("\\", "/");
 			fi = selectedFile.getRawLocation().toString();
-			name = nameofiofile;
+			//name = nameofiofile;
 			// dirPath = null;
 
 			String dirPath = new File(fi).getParentFile().getPath().replace("\\", "/");
@@ -205,7 +182,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 
 								c.eval("try(library(rmarkdown))");
 								c.eval("setwd('" + dirPath + "')");
-								IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+								//IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 								// String knitrOptions =
 								// store.getString("knitroptions");
 
@@ -244,7 +221,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 
 										else {
 
-											Group group = new Group();
+											//Group group = new Group();
 
 											AnchorPane anchorPane = new AnchorPane();
 
@@ -272,55 +249,12 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 							}
 
 							else if (docType.equals("Pdf")) {
-								/*
-								 * IPreferenceStore store =
-								 * Bio7Plugin.getDefault().getPreferenceStore();
-								 * String pdfLatexPath =
-								 * store.getString("pdfLatex");
-								 * 
-								 * pdfLatexPath = pdfLatexPath.replace("\\", "
-								 * /");
-								 * 
-								 * // String temp=dirPath+"/" + //
-								 * theName+".tex"; // String url = temp.replace(
-								 * "\\", "/");
-								 * 
-								 * // Process proc = //
-								 * Runtime.getRuntime().exec( // pdfLatexPath+
-								 * "/pdflatex -interaction=nonstopmode " // +
-								 * "-output-directory=" + dirPath + // " " +
-								 * dirPath + "/" + theName + // ".tex");
-								 * List<String> args = new ArrayList<String>();
-								 * args.add(pdfLatexPath + "/pdflatex");
-								 * args.add("-interaction=nonstopmode");
-								 * args.add("-output-directory=" + dirPath);
-								 * args.add(dirPath + "/" + theName + ".tex");
-								 * 
-								 * Process proc = null; ProcessBuilder pb = new
-								 * ProcessBuilder(args);
-								 * pb.redirectErrorStream(); try { proc =
-								 * pb.start();
-								 * 
-								 * } catch (IOException e) {
-								 * 
-								 * e.printStackTrace();
-								 * 
-								 * Bio7Dialog.message(
-								 * "Rserve executable not available !" );
-								 * RServe.setConnection(null);
-								 * 
-								 * }
-								 * 
-								 * input = new BufferedReader(new
-								 * InputStreamReader(proc.getInputStream()));
-								 * stdin = proc.getOutputStream();
-								 */
 
 								new Thread() {
 
 									public void run() {
 										setPriority(Thread.MAX_PRIORITY);
-										String line;
+										//String line;
 
 										File fil = new File(dirPath + "/" + theName + ".pdf");
 										if (fil.exists()) {
@@ -349,7 +283,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 
 									public void run() {
 										setPriority(Thread.MAX_PRIORITY);
-										String line;
+										//String line;
 
 										File fil = new File(dirPath + "/" + theName + ".docx");
 										if (fil.exists()) {

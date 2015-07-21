@@ -80,7 +80,8 @@ public class RServe {
 
 	/**
 	 * Evaluates an R expression without running in a job. This method can be
-	 * used to evaluate R scripts from e.g. Groovy (running already in a job). R plots a possible, too.
+	 * used to evaluate R scripts from e.g. Groovy (running already in a job). R
+	 * plots a possible, too.
 	 * 
 	 * @param expression
 	 *            a R expression.
@@ -146,31 +147,31 @@ public class RServe {
 			Process p;
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 			if (store.getBoolean("RSERVE_NATIVE_START")) {
-				ConsolePageParticipant consol=ConsolePageParticipant.getConsolePageParticipantInstance();
+				ConsolePageParticipant consol = ConsolePageParticipant.getConsolePageParticipantInstance();
 				p = consol.getRProcess();
 			} else {
-				
+
 				p = RConnectionJob.getProc();
 			}
 
 			// Write to the output!
-			if(p!=null){
-			final OutputStream os = p.getOutputStream();
-			final OutputStreamWriter osw = new OutputStreamWriter(os);
-			final BufferedWriter bw = new BufferedWriter(osw, 100);
+			if (p != null) {
+				final OutputStream os = p.getOutputStream();
+				final OutputStreamWriter osw = new OutputStreamWriter(os);
+				final BufferedWriter bw = new BufferedWriter(osw, 100);
 
-			try {
-				bw.write(expression);
+				try {
+					bw.write(expression);
 
-				bw.newLine();
+					bw.newLine();
 
-				os.flush();
-				bw.flush();
-				// bw.close();
-				System.out.flush();
-			} catch (IOException e) {
-				System.err.println("");
-			}
+					os.flush();
+					bw.flush();
+					// bw.close();
+					System.out.flush();
+				} catch (IOException e) {
+					System.err.println("");
+				}
 			}
 
 			// Bio7Dialog.message("Rserve is busy!");
@@ -225,7 +226,8 @@ public class RServe {
 	public static void print(String expression) {
 
 		try {
-			RServe.rout = RServe.connection.eval("try(paste(capture.output(print(" + expression + ")),collapse=\"\\n\"))").asString();
+			RServe.rout = RServe.connection
+					.eval("try(paste(capture.output(print(" + expression + ")),collapse=\"\\n\"))").asString();
 		} catch (REXPMismatchException e) {
 
 			e.printStackTrace();
@@ -423,7 +425,8 @@ public class RServe {
 			/* Call the custom Rscript ! */
 			String rout = null;
 			try {
-				rout = RServe.getConnection().eval("" + "try(paste(capture.output(source(fileroot,echo=T)),collapse=\"\\n\"))").asString();
+				rout = RServe.getConnection()
+						.eval("" + "try(paste(capture.output(source(fileroot,echo=T)),collapse=\"\\n\"))").asString();
 			} catch (REXPMismatchException e) {
 
 				e.printStackTrace();
@@ -529,15 +532,18 @@ public class RServe {
 			String plotPathR = store.getString(PreferenceConstants.P_TEMP_R);
 			String fileName = store.getString("DEVICE_FILENAME");
 
-			if (fileName.endsWith("pdf") || fileName.endsWith("eps") || fileName.endsWith("xfig") || fileName.endsWith("bitmap") || fileName.endsWith("pictex")) {
-				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows") || ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
+			if (fileName.endsWith("pdf") || fileName.endsWith("eps") || fileName.endsWith("xfig")
+					|| fileName.endsWith("bitmap") || fileName.endsWith("pictex")) {
+				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")
+						|| ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 					Program.launch(plotPathR + fileName);
 				} else {
 					plotLinux(plotPathR + fileName);
 				}
 
 			} else if (fileName.endsWith("svg")) {
-				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows") || ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
+				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")
+						|| ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 					Program.launch(plotPathR + fileName);
 				} else {
 					plotLinuxSVG(plotPathR + fileName);
@@ -550,7 +556,8 @@ public class RServe {
 
 				// System.out.println(plotPathR);
 
-				File[] files = ListFilesDirectory(new File(plotPathR), new String[] { ".tiff", ".tif", ".jpg", ".jpeg", ".png", ".bmp" });
+				File[] files = ListFilesDirectory(new File(plotPathR),
+						new String[] { ".tiff", ".tif", ".jpg", ".jpeg", ".png", ".bmp" });
 				if (files.length > 0) {
 					ImagePlus plu = new ImagePlus(files[0].toString());
 					ImageStack stack = new ImageStack(plu.getWidth(), plu.getHeight());
@@ -618,8 +625,9 @@ public class RServe {
 		// Filter the extension of the file.
 		FilenameFilter filter = new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2]) || name.endsWith(extensions[3]) || name.endsWith(extensions[4]) || name
-						.endsWith(extensions[5]));
+				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2])
+						|| name.endsWith(extensions[3]) || name.endsWith(extensions[4])
+						|| name.endsWith(extensions[5]));
 			}
 		};
 
@@ -676,18 +684,22 @@ public class RServe {
 
 	/**
 	 * A method to store the current RSession.
-	 * @param rSess the RSession
+	 * 
+	 * @param rSess
+	 *            the RSession
 	 */
 	public static void setRsession(RSession rSess) {
-		rSession=rSess;
-		
+		rSession = rSess;
+
 	}
+
 	/**
 	 * A method to get the current stored RSession.
+	 * 
 	 * @return the RSession
 	 */
 	public static RSession getRsession() {
-		
+
 		return rSession;
 	}
 
