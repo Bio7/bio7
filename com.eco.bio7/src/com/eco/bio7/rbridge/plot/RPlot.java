@@ -77,7 +77,8 @@ public class RPlot extends Composite {
 		gd_plotButton.heightHint = 40;
 		plotButton.setLayoutData(gd_plotButton);
 		plotButton.setText("Boxplot");
-		// plotButton.setToolTipText("Draws a boxplot from a vector or a dataframe.");
+		// plotButton.setToolTipText("Draws a boxplot from a vector or a
+		// dataframe.");
 		plotButton.addSelectionListener(new SelectionAdapter() {
 
 			public void widgetSelected(final SelectionEvent e) {
@@ -98,10 +99,12 @@ public class RPlot extends Composite {
 							 */
 
 							if (text_1.isEnabled() == false) {
-								RServe.printJob("boxplot(" + data[0] + ",main=\"" + titleText.getText() + "\",xlab=\"" + xText.getText() + "\",ylab=\"" + yText.getText() + "\")");
+								RServe.printJob("boxplot(" + data[0] + ",main=\"" + titleText.getText() + "\",xlab=\""
+										+ xText.getText() + "\",ylab=\"" + yText.getText() + "\")");
 
 							} else {
-								text_1.setText("boxplot(" + data[0] + ",main=\"" + titleText.getText() + "\",xlab=\"" + xText.getText() + "\",ylab=\"" + yText.getText() + "\")");
+								text_1.setText("boxplot(" + data[0] + ",main=\"" + titleText.getText() + "\",xlab=\""
+										+ xText.getText() + "\",ylab=\"" + yText.getText() + "\")");
 							}
 						} else {
 							Bio7Dialog.message("No data selected!");
@@ -130,397 +133,412 @@ public class RPlot extends Composite {
 		 * "If selected plot is displayed\n in the ImageJ view.");
 		 * pdfCheckBox.setText("IJ");
 		 */
-		
-				xyButton = new Button(composite_1, SWT.NONE);
-				GridData gd_xyButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-				gd_xyButton.heightHint = 40;
-				xyButton.setLayoutData(gd_xyButton);
-				// xyButton.setToolTipText("Executes the general plot command.\nOne or two(x,y) arguments can be plotted.");
-				xyButton.addSelectionListener(new SelectionAdapter() {
-					public void widgetSelected(final SelectionEvent e) {
-						if (RServe.isAliveDialog()) {
-							if (RState.isBusy() == false) {
-								List listShell = RShellView.getListShell();
 
-								String[] selections = listShell.getSelection();
-								if (selections.length > 0) {
-									/*
-									 * if (pdfCheckBox.getSelection() == false) {
-									 * 
-									 * PlotJob.setPdf(true);
-									 * PlotJob.setPlotInch(spinnerInchX.getSelection(),
-									 * spinnerInchY.getSelection()); } else {
-									 * PlotJob.setPdf(false);
-									 * PlotJob.setPlotPixel(spinnerX.getSelection(),
-									 * spinnerY.getSelection()); }
-									 */
-									if (selections.length == 2) {
-										if (text_1.isEnabled() == false) {
+		xyButton = new Button(composite_1, SWT.NONE);
+		GridData gd_xyButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_xyButton.heightHint = 40;
+		xyButton.setLayoutData(gd_xyButton);
+		// xyButton.setToolTipText("Executes the general plot command.\nOne or
+		// two(x,y) arguments can be plotted.");
+		xyButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				if (RServe.isAliveDialog()) {
+					if (RState.isBusy() == false) {
+						List listShell = RShellView.getListShell();
 
-											RServe.printJob("plot(" + selections[0] + "," + selections[1] + ",main=\"" + titleText.getText() + "\",xlab=\"" + xText.getText() + "\",ylab=\"" + yText.getText()
-													+ "\")");
-										} else {
-											text_1.setText("plot(" + selections[0] + "," + selections[1] + ",main=\"" + titleText.getText() + "\",xlab=\"" + xText.getText() + "\",ylab=\"" + yText.getText()
-													+ "\")");
-										}
+						String[] selections = listShell.getSelection();
+						if (selections.length > 0) {
+							/*
+							 * if (pdfCheckBox.getSelection() == false) {
+							 * 
+							 * PlotJob.setPdf(true);
+							 * PlotJob.setPlotInch(spinnerInchX.getSelection(),
+							 * spinnerInchY.getSelection()); } else {
+							 * PlotJob.setPdf(false);
+							 * PlotJob.setPlotPixel(spinnerX.getSelection(),
+							 * spinnerY.getSelection()); }
+							 */
+							if (selections.length == 2) {
+								if (text_1.isEnabled() == false) {
 
-									} else if (selections.length == 1) {
-
-										if (text_1.isEnabled() == false) {
-
-											RServe.printJob("plot(" + selections[0] + ",main=\"" + titleText.getText() + "\",xlab=\"" + xText.getText() + "\",ylab=\"" + yText.getText() + "\")");
-										} else {
-											text_1.setText("plot(" + selections[0] + ",main=\"" + titleText.getText() + "\",xlab=\"" + xText.getText() + "\",ylab=\"" + yText.getText() + "\")");
-										}
-
-									}
+									RServe.printJob("plot(" + selections[0] + "," + selections[1] + ",main=\""
+											+ titleText.getText() + "\",xlab=\"" + xText.getText() + "\",ylab=\""
+											+ yText.getText() + "\")");
 								} else {
-
-									Bio7Dialog.message("No data selected!");
-
+									text_1.setText("plot(" + selections[0] + "," + selections[1] + ",main=\""
+											+ titleText.getText() + "\",xlab=\"" + xText.getText() + "\",ylab=\""
+											+ yText.getText() + "\")");
 								}
-							} else {
-								Bio7Dialog.message("Rserve is busy!");
-							}
-						}
-					}
-				});
-				xyButton.setText("Plot");
-																										
-																												perspButton = new Button(composite_1, SWT.NONE);
-																												GridData gd_perspButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-																												gd_perspButton.heightHint = 40;
-																												perspButton.setLayoutData(gd_perspButton);
-																												perspButton.addSelectionListener(new SelectionAdapter() {
-																													public void widgetSelected(final SelectionEvent e) {
-																														if (RServe.isAliveDialog()) {
-																															if (RState.isBusy() == false) {
-																																List listShell = RShellView.getListShell();
-																																String[] data = listShell.getSelection();
-																																if (data.length > 0) {
-																																	/*
-																																	 * if (pdfCheckBox.getSelection() == false) {
-																																	 * 
-																																	 * PlotJob.setPdf(true);
-																																	 * PlotJob.setPlotInch(spinnerInchX.getSelection(),
-																																	 * spinnerInchY.getSelection()); } else {
-																																	 * PlotJob.setPdf(false);
-																																	 * PlotJob.setPlotPixel(spinnerX.getSelection(),
-																																	 * spinnerY.getSelection()); }
-																																	 */
 
-																																	if (text_1.isEnabled() == false) {
-																																		RServe.printJob("persp(" + data[0] + ",main=\"" + titleText.getText() + "\",theta = 30, phi = 30, expand = 0.5, col = \"grey\")");
-																																	} else {
-																																		text_1.setText("persp(" + data[0] + ",main=\"" + titleText.getText() + "\",theta = 30, phi = 30, expand = 0.5, col = \"grey\")");
-																																	}
-																																} else {
-																																	Bio7Dialog.message("No data selected!");
-																																}
-																															} else {
-																																Bio7Dialog.message("Rserve is busy!");
-																															}
-																														}
-																													}
-																												});
-																												perspButton.setToolTipText("Draws a perspective plot.\nA matrix is required by default");
-																												perspButton.setText("Persp.");
-																										
-																												voronoiButton = new Button(composite_1, SWT.NONE);
-																												GridData gd_voronoiButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-																												gd_voronoiButton.heightHint = 40;
-																												voronoiButton.setLayoutData(gd_voronoiButton);
-																												fd_pdfCheckBox.right = new FormAttachment(voronoiButton, 70, SWT.RIGHT);
-																												fd_pdfCheckBox.left = new FormAttachment(voronoiButton, 5, SWT.RIGHT);
-																												voronoiButton.setToolTipText("Draws a voronoi plot.\nTwo arguments(x,y) are required");
-																												voronoiButton.addSelectionListener(new SelectionAdapter() {
-																													public void widgetSelected(final SelectionEvent e) {
+							} else if (selections.length == 1) {
 
-																														if (RServe.isAliveDialog()) {
-																															if (RState.isBusy() == false) {
-																																RConnection c = RServe.getConnection();
-																																try {
-																																	c.eval("try(library(tripack))");
-																																} catch (RserveException e1) {
+								if (text_1.isEnabled() == false) {
 
-																																	e1.printStackTrace();
-																																}
-																																List listShell = RShellView.getListShell();
-																																String[] selections = listShell.getSelection();
-																																/*
-																																 * if (pdfCheckBox.getSelection() == false) {
-																																 * 
-																																 * PlotJob.setPdf(true);
-																																 * PlotJob.setPlotInch(spinnerInchX.getSelection(),
-																																 * spinnerInchY.getSelection()); } else {
-																																 * PlotJob.setPdf(false);
-																																 * PlotJob.setPlotPixel(spinnerX.getSelection(),
-																																 * spinnerY.getSelection()); }
-																																 */
-																																if (selections.length == 2) {
-
-																																	try {
-																																		c.eval("try(tri.vm <- voronoi.mosaic(" + selections[0] + "," + selections[1] + ",duplicate=\"remove\"))");
-																																		c.eval("try(tri.vm.areas <- voronoi.area(tri.vm))");
-																																	} catch (RserveException e1) {
-
-																																		e1.printStackTrace();
-																																	}
-
-																																	if (text_1.isEnabled() == false) {
-
-																																		RServe.printJob("plot(tri.vm,main=\"" + titleText.getText() + "\",xlab=\"" + xText.getText() + "\",ylab=\"" + yText.getText() + "\");" + "text(" + selections[0] + ","
-																																				+ selections[1] + ", tri.vm.areas, cex=0.5);" + "points(" + selections[0] + "," + selections[1] + ",cex=0.5)");
-																																	} else {
-																																		text_1.setText("plot(tri.vm,main=\"" + titleText.getText() + "\",xlab=\"" + xText.getText() + "\",ylab=\"" + yText.getText() + "\");" + "text(" + selections[0] + ","
-																																				+ selections[1] + ", tri.vm.areas, cex=0.5);" + "points(" + selections[0] + "," + selections[1] + ",cex=0.5)");
-																																	}
-
-																																} else if (selections.length <= 1) {
-																																	Bio7Dialog.message("Voronoi plot needs two arguments (x,y)!");
-																																}
-																															} else {
-																																Bio7Dialog.message("Rserve is busy!");
-																															}
-																														}
-																													}
-																												});
-																												voronoiButton.setText("Voronoi");
-																				
-																						histButton = new Button(composite_1, SWT.NONE);
-																						GridData gd_histButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-																						gd_histButton.heightHint = 40;
-																						histButton.setLayoutData(gd_histButton);
-																						// histButton.setToolTipText("Draws a histogram from a vector");
-																						histButton.addSelectionListener(new SelectionAdapter() {
-																							public void widgetSelected(final SelectionEvent e) {
-																								if (RServe.isAliveDialog()) {
-																									if (RState.isBusy() == false) {
-																										List listShell = RShellView.getListShell();
-																										String[] data = listShell.getSelection();
-																										if (data.length > 0) {
-																											/*
-																											 * if (pdfCheckBox.getSelection() == false) {
-																											 * 
-																											 * PlotJob.setPdf(true);
-																											 * PlotJob.setPlotInch(spinnerInchX.getSelection(),
-																											 * spinnerInchY.getSelection()); } else {
-																											 * PlotJob.setPdf(false);
-																											 * PlotJob.setPlotPixel(spinnerX.getSelection(),
-																											 * spinnerY.getSelection()); }
-																											 */
-																											if (text_1.isEnabled() == false) {
-																												RServe.printJob("hist(" + data[0] + ",main=\"" + titleText.getText() + "\",xlab=\"" + xText.getText() + "\",ylab=\"" + yText.getText() + "\")");
-																											} else {
-																												text_1.setText("hist(" + data[0] + ",main=\"" + titleText.getText() + "\",xlab=\"" + xText.getText() + "\",ylab=\"" + yText.getText() + "\")");
-																											}
-																										} else {
-																											Bio7Dialog.message("No data selected!");
-																										}
-																									} else {
-																										Bio7Dialog.message("Rserve is busy!");
-																									}
-																								}
-																							}
-																						});
-																						histButton.setText("Hist");
-																				
-																						pieButton = new Button(composite_1, SWT.NONE);
-																						GridData gd_pieButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-																						gd_pieButton.heightHint = 40;
-																						pieButton.setLayoutData(gd_pieButton);
-																						// pieButton.setToolTipText("Draws a piechart from a vector");
-																						pieButton.addSelectionListener(new SelectionAdapter() {
-																							public void widgetSelected(final SelectionEvent e) {
-																								if (RServe.isAliveDialog()) {
-																									if (RState.isBusy() == false) {
-																										List listShell = RShellView.getListShell();
-																										String[] data = listShell.getSelection();
-																										if (data.length > 0) {
-																											/*
-																											 * if (pdfCheckBox.getSelection() == false) {
-																											 * 
-																											 * PlotJob.setPdf(true);
-																											 * PlotJob.setPlotInch(spinnerInchX.getSelection(),
-																											 * spinnerInchY.getSelection()); } else {
-																											 * PlotJob.setPdf(false);
-																											 * PlotJob.setPlotPixel(spinnerX.getSelection(),
-																											 * spinnerY.getSelection()); }
-																											 */
-																											if (text_1.isEnabled() == false) {
-																												RServe.printJob("pie(" + data[0] + ",main=\"" + titleText.getText() + "\")");
-																											} else {
-																												text_1.setText("pie(" + data[0] + ",main=\"" + titleText.getText() + "\")");
-																											}
-																										} else {
-																											Bio7Dialog.message("No data selected!");
-																										}
-
-																									} else {
-																										Bio7Dialog.message("Rserve is busy!");
-																									}
-																								}
-																							}
-																						});
-																						pieButton.setText("Pie");
-																				
-																						contourButton = new Button(composite_1, SWT.NONE);
-																						GridData gd_contourButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-																						gd_contourButton.heightHint = 40;
-																						contourButton.setLayoutData(gd_contourButton);
-																						contourButton.setToolTipText("Draws a contour plot.\nA matrix is required by default");
-																						contourButton.addSelectionListener(new SelectionAdapter() {
-																							public void widgetSelected(final SelectionEvent e) {
-																								if (RServe.isAliveDialog()) {
-																									if (RState.isBusy() == false) {
-																										List listShell = RShellView.getListShell();
-																										String[] data = listShell.getSelection();
-																										if (data.length > 0) {
-																											/*
-																											 * if (pdfCheckBox.getSelection() == false) {
-																											 * 
-																											 * PlotJob.setPdf(true);
-																											 * PlotJob.setPlotInch(spinnerInchX.getSelection(),
-																											 * spinnerInchY.getSelection()); } else {
-																											 * PlotJob.setPdf(false);
-																											 * PlotJob.setPlotPixel(spinnerX.getSelection(),
-																											 * spinnerY.getSelection()); }
-																											 */
-
-																											if (text_1.isEnabled() == false) {
-																												RServe.printJob("contour(" + data[0] + ",main=\"" + titleText.getText() + "\")");
-																											} else {
-																												text_1.setText("contour(" + data[0] + ",main=\"" + titleText.getText() + "\")");
-																											}
-																										} else {
-																											Bio7Dialog.message("No data selected!");
-																										}
-																									} else {
-																										Bio7Dialog.message("Rserve is busy!");
-																									}
-																								}
-																							}
-																						});
-																						contourButton.setText("Contour");
-																		
-																				imageButton = new Button(composite_1, SWT.NONE);
-																				GridData gd_imageButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-																				gd_imageButton.heightHint = 40;
-																				imageButton.setLayoutData(gd_imageButton);
-																				imageButton.setToolTipText("Draws the image plot from a matrix");
-																				imageButton.addSelectionListener(new SelectionAdapter() {
-																					public void widgetSelected(final SelectionEvent e) {
-																						if (RServe.isAliveDialog()) {
-																							if (RState.isBusy() == false) {
-																								List listShell = RShellView.getListShell();
-																								String[] data = listShell.getSelection();
-																								if (data.length > 0) {
-																									/*
-																									 * if (pdfCheckBox.getSelection() == false) {
-																									 * 
-																									 * PlotJob.setPdf(true);
-																									 * PlotJob.setPlotInch(spinnerInchX.getSelection(),
-																									 * spinnerInchY.getSelection()); } else {
-																									 * PlotJob.setPdf(false);
-																									 * PlotJob.setPlotPixel(spinnerX.getSelection(),
-																									 * spinnerY.getSelection()); }
-																									 */
-
-																									if (text_1.isEnabled() == false) {
-																										RServe.printJob("image(" + data[0] + ",main=\"" + titleText.getText() + "\",useRaster=TRUE)");
-																									} else {
-																										text_1.setText("image(" + data[0] + ",main=\"" + titleText.getText() + "\")");
-																									}
-																								} else {
-																									Bio7Dialog.message("No data selected!");
-																								}
-																							} else {
-																								Bio7Dialog.message("Rserve is busy!");
-																							}
-																						}
-
-																					}
-																				});
-																				imageButton.setText("Image");
-												
-														titleText = new Text(composite_1, SWT.BORDER);
-														GridData gd_titleText = new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
-														gd_titleText.heightHint = 30;
-														titleText.setLayoutData(gd_titleText);
-														titleText.setText("Plot");
-												
-														titleLabel = new Label(composite_1, SWT.NONE);
-														titleLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
-														titleLabel.setText("Title");
-										xText = new Text(composite_1, SWT.BORDER);
-										GridData gd_xText = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-										gd_xText.heightHint = 30;
-										xText.setLayoutData(gd_xText);
-										xText.setText("x");
-										new Label(this, SWT.NONE);
-												new Label(this, SWT.NONE);
-										
-												label = new Label(composite_1, SWT.NONE);
-												label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
-												label.setText("X-label");
-						
-								yText = new Text(composite_1, SWT.BORDER);
-								GridData gd_yText = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-								gd_yText.heightHint = 30;
-								yText.setLayoutData(gd_yText);
-								yText.setText("y");
-						new Label(this, SWT.NONE);
-								new Label(this, SWT.NONE);
-						
-								label_1 = new Label(composite_1, SWT.NONE);
-								label_1.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
-								label_1.setText("Y-label");
-		
-				plotButton_1 = new Button(composite_1, SWT.NONE);
-				GridData gd_plotButton_1 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-				gd_plotButton_1.heightHint = 40;
-				plotButton_1.setLayoutData(gd_plotButton_1);
-				plotButton_1.addSelectionListener(new SelectionAdapter() {
-					public void widgetSelected(final SelectionEvent e) {
-						if (RServe.isAliveDialog()) {
-							if (RState.isBusy() == false) {
-								/*
-								 * if (pdfCheckBox.getSelection() == false) {
-								 * 
-								 * PlotJob.setPdf(true);
-								 * PlotJob.setPlotInch(spinnerInchX.getSelection(),
-								 * spinnerInchY.getSelection()); } else {
-								 * PlotJob.setPdf(false);
-								 * PlotJob.setPlotPixel(spinnerX.getSelection(),
-								 * spinnerY.getSelection()); }
-								 */
-								RScript.rScriptJob(text_1.getText(), null);
+									RServe.printJob("plot(" + selections[0] + ",main=\"" + titleText.getText()
+											+ "\",xlab=\"" + xText.getText() + "\",ylab=\"" + yText.getText() + "\")");
+								} else {
+									text_1.setText("plot(" + selections[0] + ",main=\"" + titleText.getText()
+											+ "\",xlab=\"" + xText.getText() + "\",ylab=\"" + yText.getText() + "\")");
+								}
 
 							}
 						} else {
-							Bio7Dialog.message("Rserve is busy!");
+
+							Bio7Dialog.message("No data selected!");
+
 						}
+					} else {
+						Bio7Dialog.message("Rserve is busy!");
 					}
-				});
-				plotButton_1.setText("Draw Plot");
-		new Label(this, SWT.NONE);
-		new Label(this, SWT.NONE);
-		
-				sendButton = new Button(composite_1, SWT.CHECK);
-				sendButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
-				sendButton.setToolTipText("Transfers the plotting commands\nto the text panel for customisation");
-				
-						sendButton.addSelectionListener(new SelectionAdapter() {
-							public void widgetSelected(final SelectionEvent e) {
-								if (sendButton.getSelection()) {
-									text_1.setEnabled(true);
-				
-								} else {
-									text_1.setEnabled(false);
-								}
+				}
+			}
+		});
+		xyButton.setText("Plot");
+
+		perspButton = new Button(composite_1, SWT.NONE);
+		GridData gd_perspButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_perspButton.heightHint = 40;
+		perspButton.setLayoutData(gd_perspButton);
+		perspButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				if (RServe.isAliveDialog()) {
+					if (RState.isBusy() == false) {
+						List listShell = RShellView.getListShell();
+						String[] data = listShell.getSelection();
+						if (data.length > 0) {
+							/*
+							 * if (pdfCheckBox.getSelection() == false) {
+							 * 
+							 * PlotJob.setPdf(true);
+							 * PlotJob.setPlotInch(spinnerInchX.getSelection(),
+							 * spinnerInchY.getSelection()); } else {
+							 * PlotJob.setPdf(false);
+							 * PlotJob.setPlotPixel(spinnerX.getSelection(),
+							 * spinnerY.getSelection()); }
+							 */
+
+							if (text_1.isEnabled() == false) {
+								RServe.printJob("persp(" + data[0] + ",main=\"" + titleText.getText()
+										+ "\",theta = 30, phi = 30, expand = 0.5, col = \"grey\")");
+							} else {
+								text_1.setText("persp(" + data[0] + ",main=\"" + titleText.getText()
+										+ "\",theta = 30, phi = 30, expand = 0.5, col = \"grey\")");
 							}
-						});
-						sendButton.setText("Detour");
+						} else {
+							Bio7Dialog.message("No data selected!");
+						}
+					} else {
+						Bio7Dialog.message("Rserve is busy!");
+					}
+				}
+			}
+		});
+		perspButton.setToolTipText("Draws a perspective plot.\nA matrix is required by default");
+		perspButton.setText("Persp.");
+
+		voronoiButton = new Button(composite_1, SWT.NONE);
+		GridData gd_voronoiButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_voronoiButton.heightHint = 40;
+		voronoiButton.setLayoutData(gd_voronoiButton);
+		fd_pdfCheckBox.right = new FormAttachment(voronoiButton, 70, SWT.RIGHT);
+		fd_pdfCheckBox.left = new FormAttachment(voronoiButton, 5, SWT.RIGHT);
+		voronoiButton.setToolTipText("Draws a voronoi plot.\nTwo arguments(x,y) are required");
+		voronoiButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+
+				if (RServe.isAliveDialog()) {
+					if (RState.isBusy() == false) {
+						RConnection c = RServe.getConnection();
+						try {
+							c.eval("try(library(tripack))");
+						} catch (RserveException e1) {
+
+							e1.printStackTrace();
+						}
+						List listShell = RShellView.getListShell();
+						String[] selections = listShell.getSelection();
+						/*
+						 * if (pdfCheckBox.getSelection() == false) {
+						 * 
+						 * PlotJob.setPdf(true);
+						 * PlotJob.setPlotInch(spinnerInchX.getSelection(),
+						 * spinnerInchY.getSelection()); } else {
+						 * PlotJob.setPdf(false);
+						 * PlotJob.setPlotPixel(spinnerX.getSelection(),
+						 * spinnerY.getSelection()); }
+						 */
+						if (selections.length == 2) {
+
+							try {
+								c.eval("try(tri.vm <- voronoi.mosaic(" + selections[0] + "," + selections[1]
+										+ ",duplicate=\"remove\"))");
+								c.eval("try(tri.vm.areas <- voronoi.area(tri.vm))");
+							} catch (RserveException e1) {
+
+								e1.printStackTrace();
+							}
+
+							if (text_1.isEnabled() == false) {
+
+								RServe.printJob("plot(tri.vm,main=\"" + titleText.getText() + "\",xlab=\""
+										+ xText.getText() + "\",ylab=\"" + yText.getText() + "\");" + "text("
+										+ selections[0] + "," + selections[1] + ", tri.vm.areas, cex=0.5);" + "points("
+										+ selections[0] + "," + selections[1] + ",cex=0.5)");
+							} else {
+								text_1.setText("plot(tri.vm,main=\"" + titleText.getText() + "\",xlab=\""
+										+ xText.getText() + "\",ylab=\"" + yText.getText() + "\");" + "text("
+										+ selections[0] + "," + selections[1] + ", tri.vm.areas, cex=0.5);" + "points("
+										+ selections[0] + "," + selections[1] + ",cex=0.5)");
+							}
+
+						} else if (selections.length <= 1) {
+							Bio7Dialog.message("Voronoi plot needs two arguments (x,y)!");
+						}
+					} else {
+						Bio7Dialog.message("Rserve is busy!");
+					}
+				}
+			}
+		});
+		voronoiButton.setText("Voronoi");
+
+		histButton = new Button(composite_1, SWT.NONE);
+		GridData gd_histButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_histButton.heightHint = 40;
+		histButton.setLayoutData(gd_histButton);
+		// histButton.setToolTipText("Draws a histogram from a vector");
+		histButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				if (RServe.isAliveDialog()) {
+					if (RState.isBusy() == false) {
+						List listShell = RShellView.getListShell();
+						String[] data = listShell.getSelection();
+						if (data.length > 0) {
+							/*
+							 * if (pdfCheckBox.getSelection() == false) {
+							 * 
+							 * PlotJob.setPdf(true);
+							 * PlotJob.setPlotInch(spinnerInchX.getSelection(),
+							 * spinnerInchY.getSelection()); } else {
+							 * PlotJob.setPdf(false);
+							 * PlotJob.setPlotPixel(spinnerX.getSelection(),
+							 * spinnerY.getSelection()); }
+							 */
+							if (text_1.isEnabled() == false) {
+								RServe.printJob("hist(" + data[0] + ",main=\"" + titleText.getText() + "\",xlab=\""
+										+ xText.getText() + "\",ylab=\"" + yText.getText() + "\")");
+							} else {
+								text_1.setText("hist(" + data[0] + ",main=\"" + titleText.getText() + "\",xlab=\""
+										+ xText.getText() + "\",ylab=\"" + yText.getText() + "\")");
+							}
+						} else {
+							Bio7Dialog.message("No data selected!");
+						}
+					} else {
+						Bio7Dialog.message("Rserve is busy!");
+					}
+				}
+			}
+		});
+		histButton.setText("Hist");
+
+		pieButton = new Button(composite_1, SWT.NONE);
+		GridData gd_pieButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_pieButton.heightHint = 40;
+		pieButton.setLayoutData(gd_pieButton);
+		// pieButton.setToolTipText("Draws a piechart from a vector");
+		pieButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				if (RServe.isAliveDialog()) {
+					if (RState.isBusy() == false) {
+						List listShell = RShellView.getListShell();
+						String[] data = listShell.getSelection();
+						if (data.length > 0) {
+							/*
+							 * if (pdfCheckBox.getSelection() == false) {
+							 * 
+							 * PlotJob.setPdf(true);
+							 * PlotJob.setPlotInch(spinnerInchX.getSelection(),
+							 * spinnerInchY.getSelection()); } else {
+							 * PlotJob.setPdf(false);
+							 * PlotJob.setPlotPixel(spinnerX.getSelection(),
+							 * spinnerY.getSelection()); }
+							 */
+							if (text_1.isEnabled() == false) {
+								RServe.printJob("pie(" + data[0] + ",main=\"" + titleText.getText() + "\")");
+							} else {
+								text_1.setText("pie(" + data[0] + ",main=\"" + titleText.getText() + "\")");
+							}
+						} else {
+							Bio7Dialog.message("No data selected!");
+						}
+
+					} else {
+						Bio7Dialog.message("Rserve is busy!");
+					}
+				}
+			}
+		});
+		pieButton.setText("Pie");
+
+		contourButton = new Button(composite_1, SWT.NONE);
+		GridData gd_contourButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_contourButton.heightHint = 40;
+		contourButton.setLayoutData(gd_contourButton);
+		contourButton.setToolTipText("Draws a contour plot.\nA matrix is required by default");
+		contourButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				if (RServe.isAliveDialog()) {
+					if (RState.isBusy() == false) {
+						List listShell = RShellView.getListShell();
+						String[] data = listShell.getSelection();
+						if (data.length > 0) {
+							/*
+							 * if (pdfCheckBox.getSelection() == false) {
+							 * 
+							 * PlotJob.setPdf(true);
+							 * PlotJob.setPlotInch(spinnerInchX.getSelection(),
+							 * spinnerInchY.getSelection()); } else {
+							 * PlotJob.setPdf(false);
+							 * PlotJob.setPlotPixel(spinnerX.getSelection(),
+							 * spinnerY.getSelection()); }
+							 */
+
+							if (text_1.isEnabled() == false) {
+								RServe.printJob("contour(" + data[0] + ",main=\"" + titleText.getText() + "\")");
+							} else {
+								text_1.setText("contour(" + data[0] + ",main=\"" + titleText.getText() + "\")");
+							}
+						} else {
+							Bio7Dialog.message("No data selected!");
+						}
+					} else {
+						Bio7Dialog.message("Rserve is busy!");
+					}
+				}
+			}
+		});
+		contourButton.setText("Contour");
+
+		imageButton = new Button(composite_1, SWT.NONE);
+		GridData gd_imageButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_imageButton.heightHint = 40;
+		imageButton.setLayoutData(gd_imageButton);
+		imageButton.setToolTipText("Draws the image plot from a matrix");
+		imageButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				if (RServe.isAliveDialog()) {
+					if (RState.isBusy() == false) {
+						List listShell = RShellView.getListShell();
+						String[] data = listShell.getSelection();
+						if (data.length > 0) {
+							/*
+							 * if (pdfCheckBox.getSelection() == false) {
+							 * 
+							 * PlotJob.setPdf(true);
+							 * PlotJob.setPlotInch(spinnerInchX.getSelection(),
+							 * spinnerInchY.getSelection()); } else {
+							 * PlotJob.setPdf(false);
+							 * PlotJob.setPlotPixel(spinnerX.getSelection(),
+							 * spinnerY.getSelection()); }
+							 */
+
+							if (text_1.isEnabled() == false) {
+								RServe.printJob(
+										"image(" + data[0] + ",main=\"" + titleText.getText() + "\",useRaster=TRUE)");
+							} else {
+								text_1.setText("image(" + data[0] + ",main=\"" + titleText.getText() + "\")");
+							}
+						} else {
+							Bio7Dialog.message("No data selected!");
+						}
+					} else {
+						Bio7Dialog.message("Rserve is busy!");
+					}
+				}
+
+			}
+		});
+		imageButton.setText("Image");
+
+		titleText = new Text(composite_1, SWT.BORDER);
+		GridData gd_titleText = new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
+		gd_titleText.heightHint = 30;
+		titleText.setLayoutData(gd_titleText);
+		titleText.setText("Plot");
+
+		titleLabel = new Label(composite_1, SWT.NONE);
+		titleLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		titleLabel.setText("Title");
+		xText = new Text(composite_1, SWT.BORDER);
+		GridData gd_xText = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_xText.heightHint = 30;
+		xText.setLayoutData(gd_xText);
+		xText.setText("x");
+		new Label(this, SWT.NONE);
+		new Label(this, SWT.NONE);
+
+		label = new Label(composite_1, SWT.NONE);
+		label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		label.setText("X-label");
+
+		yText = new Text(composite_1, SWT.BORDER);
+		GridData gd_yText = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_yText.heightHint = 30;
+		yText.setLayoutData(gd_yText);
+		yText.setText("y");
+		new Label(this, SWT.NONE);
+		new Label(this, SWT.NONE);
+
+		label_1 = new Label(composite_1, SWT.NONE);
+		label_1.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		label_1.setText("Y-label");
+
+		plotButton_1 = new Button(composite_1, SWT.NONE);
+		GridData gd_plotButton_1 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_plotButton_1.heightHint = 40;
+		plotButton_1.setLayoutData(gd_plotButton_1);
+		plotButton_1.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				if (RServe.isAliveDialog()) {
+					if (RState.isBusy() == false) {
+						/*
+						 * if (pdfCheckBox.getSelection() == false) {
+						 * 
+						 * PlotJob.setPdf(true);
+						 * PlotJob.setPlotInch(spinnerInchX.getSelection(),
+						 * spinnerInchY.getSelection()); } else {
+						 * PlotJob.setPdf(false);
+						 * PlotJob.setPlotPixel(spinnerX.getSelection(),
+						 * spinnerY.getSelection()); }
+						 */
+						RScript.rScriptJob(text_1.getText(), null);
+
+					}
+				} else {
+					Bio7Dialog.message("Rserve is busy!");
+				}
+			}
+		});
+		plotButton_1.setText("Draw Plot");
+		new Label(this, SWT.NONE);
+		new Label(this, SWT.NONE);
+
+		sendButton = new Button(composite_1, SWT.CHECK);
+		sendButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		sendButton.setToolTipText("Transfers the plotting commands\nto the text panel for customisation");
+
+		sendButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				if (sendButton.getSelection()) {
+					text_1.setEnabled(true);
+
+				} else {
+					text_1.setEnabled(false);
+				}
+			}
+		});
+		sendButton.setText("Detour");
 
 		text_1 = new Text(composite_1, SWT.V_SCROLL | SWT.MULTI | SWT.H_SCROLL | SWT.BORDER);
 		GridData gd_text_1 = new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1);
@@ -615,10 +633,10 @@ public class RPlot extends Composite {
 		 * path=store.getString(PreferenceConstants.P_TEMP_R); int
 		 * valx=spinnerX.getSelection(); String newValue=old.replace(arg0, arg1)
 		 * store.setValue("DEVICE_DEFINITION",
-		 * "bio7Device <- function(filename = \""
-		 * +path+"tempDevicePlot.png"+"\") { png(filename,width = "
-		 * +valx+", height = 480, units = \"px\")}; options(device=\"bio7Device\")"
-		 * ); } }); fd_titleLabel.right = new FormAttachment(spinnerX, 0,
+		 * "bio7Device <- function(filename = \"" +path+"tempDevicePlot.png"+
+		 * "\") { png(filename,width = " +valx+
+		 * ", height = 480, units = \"px\")}; options(device=\"bio7Device\")" );
+		 * } }); fd_titleLabel.right = new FormAttachment(spinnerX, 0,
 		 * SWT.LEFT); final FormData fd_spinnerX = new FormData();
 		 * fd_spinnerX.bottom = new FormAttachment(0, 85); fd_spinnerX.top = new
 		 * FormAttachment(0, 62); fd_spinnerX.right = new FormAttachment(0,
@@ -638,10 +656,10 @@ public class RPlot extends Composite {
 		 * Bio7Plugin.getDefault().getPreferenceStore(); String
 		 * path=store.getString(PreferenceConstants.P_TEMP_R); int
 		 * valy=spinnerY.getSelection(); store.setValue("DEVICE_DEFINITION",
-		 * "bio7Device <- function(filename = \""
-		 * +path+"tempDevicePlot.png"+"\") { png(filename,width = 480, height = "
-		 * +valy+", units = \"px\")}; options(device=\"bio7Device\")"); } });
-		 * final FormData fd_spinnerY = new FormData(); fd_spinnerY.bottom = new
+		 * "bio7Device <- function(filename = \"" +path+"tempDevicePlot.png"+
+		 * "\") { png(filename,width = 480, height = " +valy+
+		 * ", units = \"px\")}; options(device=\"bio7Device\")"); } }); final
+		 * FormData fd_spinnerY = new FormData(); fd_spinnerY.bottom = new
 		 * FormAttachment(0, 85); fd_spinnerY.top = new FormAttachment(0, 62);
 		 * fd_spinnerY.right = new FormAttachment(0, 271); fd_spinnerY.left =
 		 * new FormAttachment(0, 219); spinnerY.setLayoutData(fd_spinnerY);
@@ -687,8 +705,8 @@ public class RPlot extends Composite {
 		 * FormAttachment(0, 360); fd_pixelLabel.bottom = new FormAttachment(0,
 		 * 80); fd_pixelLabel.top = new FormAttachment(0, 65);
 		 * fd_pixelLabel.left = new FormAttachment(0, 277);
-		 * pixelLabel.setLayoutData(fd_pixelLabel);
-		 * pixelLabel.setText("Image Pixel");
+		 * pixelLabel.setLayoutData(fd_pixelLabel); pixelLabel.setText(
+		 * "Image Pixel");
 		 * 
 		 * final Label inchLabel = new Label(composite_1, SWT.NONE); final
 		 * FormData fd_inchLabel = new FormData(); fd_inchLabel.right = new
