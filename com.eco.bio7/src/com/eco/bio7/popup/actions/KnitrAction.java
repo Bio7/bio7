@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IFile;
@@ -46,10 +47,18 @@ import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.BatchModel;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.browser.BrowserView;
+import com.eco.bio7.collection.CustomView;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.StartBio7Utils;
+
+import javafx.collections.ListChangeListener;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 
 public class KnitrAction extends Action implements IObjectActionDelegate {
 
@@ -240,17 +249,54 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 								e.printStackTrace();
 							}
 							if (fileext.equals("html")) {
+								
 
-								Work.openView("com.eco.bio7.browser.Browser");
+								
 								Display display = PlatformUI.getWorkbench().getDisplay();
 								display.asyncExec(new Runnable() {
 
 									public void run() {
+
+										IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+										boolean openInJavaFXBrowser=store.getBoolean("javafxbrowser");
+										
 										String temp = "file:///" + dirPath + "/" + theName + ".html";
 										String url = temp.replace("\\", "/");
 										System.out.println(url);
+										if (openInJavaFXBrowser==false) {
+										Work.openView("com.eco.bio7.browser.Browser");
 										BrowserView b = BrowserView.getBrowserInstance();
 										b.setLocation(url);
+										}
+										else{
+											AnchorPane anchorPane = new AnchorPane();
+
+										 WebView brow = new WebView();
+											brow.getChildrenUnmodifiable().addListener(new ListChangeListener<Node>() {
+											    @Override public void onChanged(Change<? extends Node> change) {
+											        Set<Node> scrolls = brow.lookupAll(".scroll-bar");
+											        for (Node scroll : scrolls) {
+											            scroll.setVisible(false);
+											        }
+											    }
+											});
+
+											final WebEngine webEng = brow.getEngine();
+
+											AnchorPane.setTopAnchor(brow, 0.0);
+											AnchorPane.setBottomAnchor(brow, 0.0);
+											AnchorPane.setLeftAnchor(brow, 0.0);
+											AnchorPane.setRightAnchor(brow, 0.0);
+
+											anchorPane.getChildren().add(brow);
+
+											webEng.load(url);
+											CustomView view = new CustomView();
+											view.setSceneCanvas("HTML");
+
+											Scene scene = new Scene(anchorPane);
+											view.addScene(scene);
+										}
 									}
 								});
 

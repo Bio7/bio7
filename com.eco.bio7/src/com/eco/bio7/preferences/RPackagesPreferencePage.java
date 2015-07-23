@@ -1,6 +1,7 @@
 package com.eco.bio7.preferences;
 
 
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.ui.IWorkbench;
@@ -32,6 +33,8 @@ public class RPackagesPreferencePage extends FieldEditorPreferencePage implement
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new LabelFieldEditor("Knitr Options HTML:", getFieldEditorParent()));
 		addField(new StringFieldEditor("knitroptions", "Knitr Options", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
+		addField(new BooleanFieldEditor("javafxbrowser","Open HTML in JavaFX browser", StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
 	}
 
 	/**

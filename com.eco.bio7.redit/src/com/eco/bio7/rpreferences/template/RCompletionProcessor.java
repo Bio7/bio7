@@ -46,7 +46,7 @@ import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditors.TemplateEditorUI;
 
 /**
- * A completion processor for XML templates.
+ * A completion processor for R templates.
  */
 public class RCompletionProcessor extends TemplateCompletionProcessor {
 

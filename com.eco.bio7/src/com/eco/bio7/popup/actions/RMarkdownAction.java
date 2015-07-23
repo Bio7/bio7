@@ -1,6 +1,8 @@
 package com.eco.bio7.popup.actions;
 
 import java.io.File;
+import java.util.Set;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -17,6 +19,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -32,6 +35,8 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
+
+import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.browser.BrowserView;
 import com.eco.bio7.collection.CustomView;
@@ -39,6 +44,10 @@ import com.eco.bio7.collection.Work;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.StartBio7Utils;
+
+import javafx.collections.ListChangeListener;
+import javafx.collections.ListChangeListener.Change;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.web.WebEngine;
@@ -144,20 +153,11 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 			IFile selectedFile = (IFile) selectedObj;
 			final String selFile = selectedFile.getName();
 
-			//int extIndex = selFile.lastIndexOf(".");
-			/* Get the file extension! */
-			//String extension = selFile.substring(extIndex + 1);
-			/* The file extension for the output! */
-			//String fileext2 = extension.replace("R", "");
-			//final String fileext = fileext2.replace("r", "");
-
 			final String theName = selFile.replaceFirst("[.][^.]+$", "");
 			nameofiofile = getFileName(selFile);
 			project = selectedFile.getLocation().toString();
 			project = project.replace("\\", "/");
 			fi = selectedFile.getRawLocation().toString();
-			//name = nameofiofile;
-			// dirPath = null;
 
 			String dirPath = new File(fi).getParentFile().getPath().replace("\\", "/");
 
@@ -182,10 +182,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 
 								c.eval("try(library(rmarkdown))");
 								c.eval("setwd('" + dirPath + "')");
-								//IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-								// String knitrOptions =
-								// store.getString("knitroptions");
-
+								
 								System.out.println(selFile);
 								RServe.print("try(render(\"" + selFile + "\"))");
 
@@ -199,14 +196,14 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 							try {
 								proj.refreshLocal(IResource.DEPTH_INFINITE, null);
 							} catch (CoreException e) {
-								// TODO Auto-generated catch block
+								
 								e.printStackTrace();
 							}
 							if (docType.equals("Html")) {
-								boolean dec = Bio7Dialog.decision("Open JavaFX browser?");
-								if (dec == false) {
-									Work.openView("com.eco.bio7.browser.Browser");
-								}
+								//boolean dec = Bio7Dialog.decision("Open JavaFX browser?");
+								//if (dec == false) {
+									
+								//}
 								Display display = PlatformUI.getWorkbench().getDisplay();
 								display.asyncExec(new Runnable() {
 
@@ -214,18 +211,34 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 										String temp = "file:///" + dirPath + "/" + theName + ".html";
 										String url = temp.replace("\\", "/");
 										System.out.println(url);
-										if (dec == false) {
+										
+										IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+										boolean openInJavaFXBrowser=store.getBoolean("javafxbrowser");
+										
+										
+										if (openInJavaFXBrowser==false) {
+											Work.openView("com.eco.bio7.browser.Browser");
 											BrowserView b = BrowserView.getBrowserInstance();
 											b.setLocation(url);
 										}
 
 										else {
 
-											//Group group = new Group();
+											
 
 											AnchorPane anchorPane = new AnchorPane();
 
-											final WebView brow = new WebView();
+											 WebView brow = new WebView();
+											
+											
+											brow.getChildrenUnmodifiable().addListener(new ListChangeListener<Node>() {
+											    @Override public void onChanged(Change<? extends Node> change) {
+											        Set<Node> scrolls = brow.lookupAll(".scroll-bar");
+											        for (Node scroll : scrolls) {
+											            scroll.setVisible(false);
+											        }
+											    }
+											});
 
 											final WebEngine webEng = brow.getEngine();
 
