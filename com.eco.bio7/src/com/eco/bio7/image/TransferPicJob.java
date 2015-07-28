@@ -262,6 +262,8 @@ class TransferPicJob extends WorkspaceJob {
 				if (createMatrix) {
 					try {
 						c.eval("try(" + name + "<-matrix(" + name + "," + w + "," + h + "))");
+						
+						//or the transpose c.eval("try(" + name + "<-matrix(" + name + "," + h + "," + w + ", byrow = TRUE))");
 
 					} catch (RserveException e) {
 

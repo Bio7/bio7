@@ -274,8 +274,8 @@ public class IJTranserResultsTable {
 			if (d != null) {
 
 				try {
-					d.voidEval("ImageHeight<-" + WindowManager.getCurrentImage().getHeight() + "");
-					d.voidEval("ImageWidth<-" + WindowManager.getCurrentImage().getWidth() + "");
+					d.voidEval("imageSizeX<-" + WindowManager.getCurrentImage().getHeight() + "");
+					d.voidEval("imageSizeY<-" + WindowManager.getCurrentImage().getWidth() + "");
 				} catch (RserveException e1) {
 
 				}
