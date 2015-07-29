@@ -38,6 +38,7 @@ import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.CTabItem;
@@ -73,6 +74,7 @@ import com.eco.bio7.image.r.IJTranserResultsTable;
 import com.eco.bio7.image.r.TransferImageStack;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.util.Util;
 import com.swtdesigner.ResourceManager;
 
 /**
@@ -870,12 +872,28 @@ public class ImageMethods extends ViewPart {
 		matchingButton.addSelectionListener(new SelectionAdapter() {
 
 			public void widgetSelected(final SelectionEvent e) {
-				TransferSelectionCoordsJob job = new TransferSelectionCoordsJob();
-				// job.setSystem(true);
-				job.schedule();
-				/*
-				 * MatchingDialoge m=new MatchingDialoge(new Shell()); m.open()
-				 */;
+				
+				TransferSelectionCoordsDialog dialog = new TransferSelectionCoordsDialog(Util.getShell());
+
+				dialog.create();
+				if (dialog.open() == Window.OK) {
+					int selection=dialog.getGeometrySelectionSelection();
+					boolean transferAsList=dialog.transferAsList();
+					TransferSelectionCoordsJob job = new TransferSelectionCoordsJob(transferAsList,selection);
+					// job.setSystem(true);
+					job.schedule();
+					/*
+					 * MatchingDialoge m=new MatchingDialoge(new Shell()); m.open()
+					 */;
+				}
+				
+				else{
+					
+				}
+				
+				
+				
+				
 
 			}
 		});

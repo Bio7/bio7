@@ -123,6 +123,7 @@ import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.compile.utils.ScanClassPath;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.discrete.Quad2d;
+import com.eco.bio7.image.CanvasView;
 import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 import com.eco.bio7.jobs.LoadData;
 import com.eco.bio7.popup.actions.RecalculateClasspath;
@@ -227,7 +228,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 															vmStandin.setName("Bio7 Bundled JRE");
 
 															String path = Platform.getInstallLocation().getURL().getPath();
-															/*Extra path for the different MacOSX installation paths!*/
+															/*
+															 * Extra path for
+															 * the different
+															 * MacOSX
+															 * installation
+															 * paths!
+															 */
 															if (OS.equals("Mac")) {
 																vmStandin.setInstallLocation(new File(path + "../MacOS/jre"));
 
@@ -262,7 +269,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 																System.out.println("Minor error! Please check the classpath of the project and if necessary calculate again!");
 															}
 															System.out.println("Java Bio7 Project Libraries Recalculated!");
-															// Bio7Dialog.message("Java Bio7 Project Libraries Recalculated!");
+															// Bio7Dialog.message("Java
+															// Bio7 Project
+															// Libraries
+															// Recalculated!");
 														} else {
 
 														}
@@ -296,8 +306,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		IWorkbenchActivitySupport workbenchActivitySupport = PlatformUI.getWorkbench().getActivitySupport();
 		IActivityManager activityManager = workbenchActivitySupport.getActivityManager();
 
-		
-
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
 
 		// Display display = configurer.getWindow().getWorkbench().getDisplay();
@@ -326,7 +334,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		// Remove unused preference pages by ID:
 		/*
-		 * preferenceManager.remove("org.eclipse.help.ui.browsersPreferencePage")
+		 * preferenceManager.remove(
+		 * "org.eclipse.help.ui.browsersPreferencePage")
 		 * ;preferenceManager.remove(
 		 * "org.eclipse.update.internal.ui.preferences.MainPreferencePage");
 		 */
@@ -521,19 +530,17 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault(PreferenceConstants.PACKAGE_R_SERVER, "http://cran.r-project.org");
 		if (getOS().equals("Linux")) {
 			store.setDefault("knitroptions", "opts_chunk$set(dev=\"png\",echo=TRUE, dev.args=list(type=\"cairo\"),dpi=96)");
-			
+
 			store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "Ã„, ,Ã¤,Ã–,Ã¶,Ãœ,Ã¼,+,!,Â§,$,%,&,/,(,),=,?,[,],Â°,^,;,:,>,<,|,*,Âµ,\\,@,\",â€œ,Â¸,`,~,#,},{,Â¹,Â²,Â³,_,-");
 		} else if (getOS().equals("Mac")) {
 			store.setDefault("knitroptions", "opts_chunk$set(dev=\"png\",echo=TRUE, dev.args=list(type=\"quartz\"),dpi=96)");
-			
+
 			store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "Ã„, ,Ã¤,Ã–,Ã¶,Ãœ,Ã¼,+,!,Â§,$,%,&,/,(,),=,?,[,],Â°,^,;,:,>,<,|,*,Âµ,\\,@,\",â€œ,Â¸,`,~,#,},{,Â¹,Â²,Â³,_,-");
 		} else {
 			store.setDefault("knitroptions", "opts_chunk$set(dev=\"png\",echo=TRUE, dev.args=list(type=\"cairo\"),dpi=96)");
-			
+
 			store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "Ä, ,ä,Ö,ö,Ü,ü,+,!,ü,§,$,%,&,/,(,),=,?,[,],°,^,;,:,>,<,|,*,µ,\\,”,@,\",“,”,´,`,~,#,},{,²,³,_,-");
 		}
-		
-		
 
 		store.setDefault("RSERVE_NATIVE_START", true);
 		store.setDefault("R_DEBUG_PORT", 21555);
@@ -863,6 +870,45 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 						prefsPlotRserve.deviceFilename.setEnabled(true, prefsPlotRserve.getFieldEditorParentControl());
 					}
 
+					else if (sel.equals("PLOT_IMAGEJ_IMAGESIZE")) {
+
+						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = imageSizeX, height = imageSizeY, units = \"px\")}; options(device=\".bio7Device\")");
+						prefsPlotRserve.deviceFilename.setStringValue("");
+						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
+					}
+
+					else if (sel.equals("PLOT_IMAGEJ_IMAGESIZE_CAIRO")) {
+
+						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = imageSizeX, height = imageSizeY, type=\"cairo\")}; options(device=\".bio7Device\")");
+						prefsPlotRserve.deviceFilename.setStringValue("");
+						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
+					}
+					
+					
+					else if (sel.equals("PLOT_IMAGEJ_DISPLAYSIZE_CAIRO")) {
+						
+						CanvasView view=CanvasView.getCanvas_view();
+						if(view!=null){
+						Rectangle rec=view.getParent2().getClientArea();
+						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = " + rec.width + ", height = " + rec.height + ", type=\"cairo\")}; options(device=\".bio7Device\")");
+						prefsPlotRserve.deviceFilename.setStringValue("");
+						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
+						}
+					
+					} else if (sel.equals("PLOT_IMAGEJ_DISPLAYSIZE")) {
+						
+						CanvasView view=CanvasView.getCanvas_view();
+						if(view!=null){
+					Rectangle rec=view.getParent2().getClientArea();
+						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width =  " + rec.width + ", height = " + rec.height + ", units = \"px\")}; options(device=\".bio7Device\")");
+						prefsPlotRserve.deviceFilename.setStringValue("");
+						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
+						}
+					}
+					
+					
+					
+
 				}
 			}
 
@@ -926,7 +972,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		UIManager.put("ViewportFont.font", fontResource); //$NON-NLS-1$
 		UIManager.put("MenuItem.font", fontResource); //$NON-NLS-1$
 		UIManager.put("CheckboxMenuItem.font", fontResource); //$NON-NLS-1$
-		UIManager.put("PopupMenu.font", fontResource); //$NON-NLS-1
+		UIManager.put("PopupMenu.font", fontResource); // $NON-NLS-1
 
 		java.util.Enumeration keys = UIManager.getDefaults().keys();
 		while (keys.hasMoreElements()) {
@@ -1191,7 +1237,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		}
 
 		addExecutionListener();
-		/*Start Bio7 maximized!*/
+		/* Start Bio7 maximized! */
 		configurer.getWindow().getShell().setMaximized(true);
 	}
 
@@ -1439,7 +1485,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_PROBLEMS_VIEW, PATH_EVIEW + "problems_view.png", true);
 		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_PROBLEMS_VIEW_ERROR, PATH_EVIEW + "problems_view_error.png", true);
 		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_PROBLEMS_VIEW_WARNING, PATH_EVIEW + "problems_view_warning.png", true);
-
 
 	}
 

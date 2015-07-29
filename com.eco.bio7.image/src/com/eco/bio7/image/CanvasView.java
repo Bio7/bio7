@@ -30,9 +30,12 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import org.eclipse.albireo.core.AwtEnvironment;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.action.ControlContribution;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabFolder2Listener;
@@ -44,11 +47,14 @@ import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -60,6 +66,7 @@ import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 import com.eco.bio7.ImageJPluginActions.ImageJAnalyzeAction;
 import com.eco.bio7.ImageJPluginActions.ImageJEditAction;
@@ -103,7 +110,7 @@ public class CanvasView extends ViewPart {
 
 	public static CTabFolder tabFolder;
 
-	//private ArrayList<String> detachedSecViewIDs = new ArrayList<String>();
+	// private ArrayList<String> detachedSecViewIDs = new ArrayList<String>();
 
 	public CanvasView() {
 		super();
@@ -116,6 +123,29 @@ public class CanvasView extends ViewPart {
 		AwtEnvironment awt = new AwtEnvironment(parent.getDisplay());
 
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.imagej");
+
+		parent.addControlListener(new ControlAdapter() {
+			@Override
+			public void controlResized(final ControlEvent e) {
+
+				Rectangle rec = parent.getClientArea();
+
+				IPreferenceStore store = new ScopedPreferenceStore(InstanceScope.INSTANCE, "com.eco.bio7");
+				if (store != null) {
+					String selection = store.getString("PLOT_DEVICE_SELECTION");
+					String pathTo = store.getString("pathTempR");
+
+					if (selection.equals("PLOT_IMAGEJ_DISPLAYSIZE_CAIRO")) {
+						store.setValue("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = " + rec.width + ", height = " + rec.height + ", type=\"cairo\")}; options(device=\".bio7Device\")");
+					} else if (selection.equals("PLOT_IMAGEJ_DISPLAYSIZE")) {
+						store.setValue("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width =  " + rec.width + ", height = " + rec.height + ", units = \"px\")}; options(device=\".bio7Device\")");
+
+					}
+				}
+
+			}
+		});
+
 		getViewSite().getPage().addPartListener(new IPartListener() {
 			public void partActivated(IWorkbenchPart part) {
 				if (part instanceof CanvasView) {
@@ -310,7 +340,7 @@ public class CanvasView extends ViewPart {
 			public void mouseDown(MouseEvent mouseevent)
 
 			{
-				if (mouseevent.button == 3&&mouseevent.count>1) {
+				if (mouseevent.button == 3 && mouseevent.count > 1) {
 					CTabFolder ctab = (CTabFolder) mouseevent.widget;
 					if (ctab.getItemCount() > 0) {
 						Vector ve = (Vector) ctab.getSelection().getData();
@@ -322,7 +352,7 @@ public class CanvasView extends ViewPart {
 						CustomView custom = new CustomView();
 						/* Create ImageJ view with unique ID! */
 						String id = UUID.randomUUID().toString();
-						//detachedSecViewIDs.add(id);
+						// detachedSecViewIDs.add(id);
 						custom.setPanel(current, id);
 						custom.setData(plu, win);
 						IJTabs.hideTab();
@@ -437,8 +467,9 @@ public class CanvasView extends ViewPart {
 		IJ.register(DragAndDrop.class);
 	}
 
-	/*public ArrayList<String> getDetachedSecViewIDs() {
-		return detachedSecViewIDs;
-	}*/
+	/*
+	 * public ArrayList<String> getDetachedSecViewIDs() { return
+	 * detachedSecViewIDs; }
+	 */
 
 }

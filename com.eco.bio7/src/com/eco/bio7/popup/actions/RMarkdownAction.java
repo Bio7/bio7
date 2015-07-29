@@ -148,13 +148,13 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 
 	private void markdownFile(Object selectedObj, final IProject activeProject) {
 		String project;
-		String nameofiofile;
+		
 		if (selectedObj instanceof IFile) {
 			IFile selectedFile = (IFile) selectedObj;
 			final String selFile = selectedFile.getName();
 
 			final String theName = selFile.replaceFirst("[.][^.]+$", "");
-			nameofiofile = getFileName(selFile);
+			
 			project = selectedFile.getLocation().toString();
 			project = project.replace("\\", "/");
 			fi = selectedFile.getRawLocation().toString();

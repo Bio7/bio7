@@ -600,7 +600,7 @@ public class REditor extends TextEditor {
 		rconf = new RConfiguration(colorManager, this);
 		setSourceViewerConfiguration(rconf);
 
-		IPreferenceStore preferenceStore = new ChainedPreferenceStore(new IPreferenceStore[] { Bio7REditorPlugin.getDefault().getPreferenceStore(), EditorsUI.getPreferenceStore() });
+		//IPreferenceStore preferenceStore = new ChainedPreferenceStore(new IPreferenceStore[] { Bio7REditorPlugin.getDefault().getPreferenceStore(), EditorsUI.getPreferenceStore() });
 
 		// IEditorPart editor = (IEditorPart)
 		// PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
