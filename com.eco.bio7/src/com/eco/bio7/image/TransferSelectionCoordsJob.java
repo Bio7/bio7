@@ -29,10 +29,27 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 
 	private int selectedType;
 
-	public TransferSelectionCoordsJob(boolean transfer, int selection) {
+	private boolean setCrs;
+
+	private boolean setDf;
+
+	private String crsString;
+
+	private String selDataframe;
+
+	public TransferSelectionCoordsJob(boolean transfer, int selection,boolean doSetCRS,boolean doSetDf,String crs,String selectedDf) {
 		super("Match progress....");
 		this.transferAsList = transfer;
 		this.selectedType = selection;
+		this.setCrs=doSetCRS;
+		this.setDf=doSetDf;
+		this.crsString=crs;
+		this.selDataframe=selectedDf;
+		System.out.println(setCrs);
+		System.out.println(setDf);
+		System.out.println(crsString);
+		System.out.println(selDataframe);
+		
 	}
 
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
@@ -149,12 +166,20 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 					/* If polygon export is selected! */
 					if (selection == 0) {
 				
-						try {
-							
+						/*try {
+							c.eval("listpolygons<-NULL");
 							c.eval("listpolygons<-list()");
 						} catch (RserveException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
+						}*/
+						
+						try {
+							c.eval("lx<-list()");
+							c.eval("ly<-list()");
+						} catch (RserveException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
 						}
 
 						int u;
@@ -168,16 +193,25 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 							try {
 								c.assign("x", x);
 								c.assign("y", y);
+								
 							} catch (REngineException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							
+							try {
+								c.eval("try(lx[[" + (i + 1) + "]]<-x)");
+								c.eval("try(ly[[" + (i + 1) + "]]<-y)");
+							} catch (RserveException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
 
 							/* Close the ring which is not default by ImageJ! */
-							try {
-								c.eval("try(x<-append(x,x[1]))");
+							/*try {
+								//c.eval("try(x<-append(x,x[1]))");
 
-								c.eval("try(y<-append(y,y[1]))");
+								//c.eval("try(y<-append(y,y[1]))");
 
 								c.eval("p" + u + "<-Polygon(cbind(x,y))");
 								c.eval("try(polygons<-Polygons(list(p" + u + "),\"" + u + "\"))");
@@ -190,30 +224,48 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
-
+*/
 						}
-
+						
+						/*A function to convert the list of ROIs to SpatialPolygons!*/
+                        if(setDf==false){
 						try {
-							c.eval("try(spatpolygons<-SpatialPolygons(listpolygons, 1:length(listpolygons)))");
+							//c.eval("try(spatpolygons<-SpatialPolygons(listpolygons, 1:length(listpolygons)))");
+							c.eval("spatialPolygons<-SpatialPolygons(mapply(function(x, y,id) {Polygons(list(Polygon(cbind(x,y))),id)} ,lx,ly,as.character(1:length(lx))))");
+							
 						} catch (RserveException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
+                        }
+                        else{
+                        	
+                        	try {
+    							//c.eval("try(spatpolygons<-SpatialPolygons(listpolygons, 1:length(listpolygons)))");
+    							c.eval("spatialPolygonsDataFrame<-SpatialPolygonsDataFrame(SpatialPolygons(mapply(function(x, y,id) {Polygons(list(Polygon(cbind(x,y))),id)} ,lx,ly,as.character(1:length(lx)))),"+selDataframe+")");
+    							
+    						} catch (RserveException e) {
+    							// TODO Auto-generated catch block
+    							e.printStackTrace();
+    						}
+                        	
+                        }
+                        
 
 					}
 					/* If line export is selected! */
 					else if (selection == 1) {
 
 						try {
-							
-							c.eval("try(listlines<-list())");
-						} catch (RserveException e) {
+							c.eval("lx<-list()");
+							c.eval("ly<-list()");
+						} catch (RserveException e1) {
 							// TODO Auto-generated catch block
-							e.printStackTrace();
+							e1.printStackTrace();
 						}
 
 						int u;
-						// int linelength = r.length;
+						// int length = r.length;
 						for (int i = 0; i < r.length; i++) {
 							u = i + 1;
 							Polygon p = r[i].getPolygon();
@@ -223,26 +275,44 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 							try {
 								c.assign("x", x);
 								c.assign("y", y);
-
-								c.eval("p" + u + "<-Line(cbind(x,y))");
-								c.eval("try(lines<-Lines(list(p" + u + "),\"" + u + "\"))");
-
-								c.eval("try(listlines[[" + u + "]]<-lines)");
-
-								c.eval("remove(p" + u + ")");
-								c.eval("remove(lines" + u + ")");
+								
 							} catch (REngineException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
+							
+							try {
+								c.eval("try(lx[[" + (i + 1) + "]]<-x)");
+								c.eval("try(ly[[" + (i + 1) + "]]<-y)");
+							} catch (RserveException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+
+						
 
 						}
+						
+						/*A function to convert the list of ROIs to SpatialLines!*/
+						 if(setDf==false){
 						try {
-							c.eval("try(spatlines<-SpatialLines(listlines))");
+							//c.eval("try(spatpolygons<-SpatialPolygons(listpolygons, 1:length(listpolygons)))");
+							c.eval("spatialLines<-SpatialLines(mapply(function(x, y,id) {Lines(list(Line(cbind(x,y))),id)} ,lx,ly,as.character(1:length(lx))))");
 						} catch (RserveException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
+						 }
+						 
+						 else{
+							 try {
+									//c.eval("try(spatpolygons<-SpatialPolygons(listpolygons, 1:length(listpolygons)))");
+								 c.eval("spatialLinesDataFrame<-SpatialLinesDataFrame(SpatialLines(mapply(function(x, y,id) {Lines(list(Line(cbind(x,y))),id)} ,lx,ly,as.character(1:length(lx)))),"+selDataframe+")");
+								} catch (RserveException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+						 }
 
 					}
 					/* If point export is selected! */
@@ -279,8 +349,12 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 						}
 						try {
 							c.eval("try(xy<-cbind(xp,yp))");
-
-							c.eval("try(spatpoints<-SpatialPoints(xy))");
+							 if(setDf==false){
+							c.eval("try(spatialPoints<-SpatialPoints(xy))");
+							 }
+							 else{
+								 c.eval("try(spatialPointsDataFrame<-SpatialPointsDataFrame(xy,"+selDataframe+"))");
+							 }
 						} catch (RserveException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();

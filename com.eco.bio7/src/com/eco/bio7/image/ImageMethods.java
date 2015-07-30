@@ -879,7 +879,13 @@ public class ImageMethods extends ViewPart {
 				if (dialog.open() == Window.OK) {
 					int selection=dialog.getGeometrySelectionSelection();
 					boolean transferAsList=dialog.transferAsList();
-					TransferSelectionCoordsJob job = new TransferSelectionCoordsJob(transferAsList,selection);
+					
+					boolean doSetCRS=dialog.isDoSetCrs();
+					boolean doSetDf=dialog.isDoSetDataframe();
+					String crs=dialog.getCrsText();
+					String selectedDf=dialog.getSelDataframe();
+					
+					TransferSelectionCoordsJob job = new TransferSelectionCoordsJob(transferAsList,selection,doSetCRS,doSetDf,crs,selectedDf);
 					// job.setSystem(true);
 					job.schedule();
 					/*
