@@ -37,6 +37,7 @@ public class TransferSelectionCoordsDialog extends Dialog {
 	protected String crsText;
 	protected boolean doSetCrs=false;
 	protected boolean doSetDataframe=false;
+	private Text text;
 
 	public boolean transferAsList() {
 		return transferAsList;
@@ -58,7 +59,7 @@ public class TransferSelectionCoordsDialog extends Dialog {
 	protected Control createDialogArea(Composite parent) {
 		Composite container = (Composite) super.createDialogArea(parent);
 		GridLayout gridLayout = (GridLayout) container.getLayout();
-		gridLayout.marginHeight = 14;
+		gridLayout.marginHeight = 30;
 		gridLayout.marginHeight = 14;
 		gridLayout.marginHeight = 30;
 		gridLayout.makeColumnsEqualWidth = true;
@@ -188,6 +189,20 @@ public class TransferSelectionCoordsDialog extends Dialog {
 		combo_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		combo_1.select(0);
 		combo_1.setEnabled(false);
+		
+		Button btnAddProjectionFrom = new Button(container, SWT.CHECK);
+		btnAddProjectionFrom.setText("Add projection from georeferenced file");
+		
+		text = new Text(container, SWT.BORDER);
+		GridData gd_text = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_text.heightHint = 30;
+		text.setLayoutData(gd_text);
+		
+		Button btnNewButton = new Button(container, SWT.NONE);
+		GridData gd_btnNewButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+		gd_btnNewButton.heightHint = 30;
+		btnNewButton.setLayoutData(gd_btnNewButton);
+		btnNewButton.setText("Load File");
 		return container;
 	}
 
