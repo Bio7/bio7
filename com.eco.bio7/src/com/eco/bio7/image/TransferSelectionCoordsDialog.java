@@ -38,6 +38,7 @@ public class TransferSelectionCoordsDialog extends Dialog {
 	protected boolean doSetCrs=false;
 	protected boolean doSetDataframe=false;
 	private Text text;
+	private Button btnNewButton;
 
 	public boolean transferAsList() {
 		return transferAsList;
@@ -191,14 +192,43 @@ public class TransferSelectionCoordsDialog extends Dialog {
 		combo_1.setEnabled(false);
 		
 		Button btnAddProjectionFrom = new Button(container, SWT.CHECK);
+		btnAddProjectionFrom.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				
+				if(btnAddProjectionFrom.getSelection()){
+					
+					doSetCrs=true;
+					text.setEnabled(true);
+					btnNewButton.setEnabled(true);
+				}
+				
+				else{
+					text.setEnabled(false);
+					btnNewButton.setEnabled(false);
+					doSetCrs=false;
+				}
+				
+			}
+		});
 		btnAddProjectionFrom.setText("Add projection from georeferenced file");
 		
 		text = new Text(container, SWT.BORDER);
+		text.setEnabled(false);
 		GridData gd_text = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_text.heightHint = 30;
 		text.setLayoutData(gd_text);
 		
-		Button btnNewButton = new Button(container, SWT.NONE);
+		 btnNewButton = new Button(container, SWT.NONE);
+		 btnNewButton.setEnabled(false);
+		btnNewButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				
+				crsText=Bio7Dialog.openFile();
+				text.setText(crsText);
+			}
+		});
 		GridData gd_btnNewButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
 		gd_btnNewButton.heightHint = 30;
 		btnNewButton.setLayoutData(gd_btnNewButton);
@@ -218,9 +248,7 @@ public class TransferSelectionCoordsDialog extends Dialog {
 		return crsText;
 	}
 
-	public void setCrsText(String crsText) {
-		this.crsText = crsText;
-	}
+	
 
 	public boolean isDoSetCrs() {
 		return doSetCrs;
