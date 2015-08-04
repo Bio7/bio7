@@ -64,7 +64,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
 
-		monitor.beginTask("Match search is running.....", IProgressMonitor.UNKNOWN);
+		monitor.beginTask("Transfer selections.....", IProgressMonitor.UNKNOWN);
 
 		if (transferAsList) {
 			exportShape();
@@ -86,29 +86,33 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 						System.out.println("The image could not be read.");
 
 					}
+					
+					else{
+						/* The array which contains the transform parameters! */
+						adfGeoTransform = new double[6];
+						/*
+						 * Put the transform parameters in the given array! See:
+						 * http://gdal.org/java/org/gdal/gdal/Dataset.html#
+						 * GetGeoTransform%28double[]%29
+						 */
+						poDataset.GetGeoTransform(adfGeoTransform);
+                        /*Get the spatial reference, projection and convert from Wkt to Proj4!*/
+						SpatialReference layerProjection = new SpatialReference();
+						layerProjection.ImportFromWkt(poDataset.GetProjectionRef());
+						System.out.println(layerProjection.ExportToProj4());
+						proj4String = layerProjection.ExportToProj4();
+
+						startExport(selectedType);
+					}
 				} catch (Exception e) {
 					System.err.println("Exception caught.");
 					System.err.println(e.getMessage());
 					e.printStackTrace();
 
 				}
-				/* The array which contains the transform parameters! */
-				adfGeoTransform = new double[6];
-				/*
-				 * Put the transform parameters in the given array! See:
-				 * http://gdal.org/java/org/gdal/gdal/Dataset.html#
-				 * GetGeoTransform%28double[]%29
-				 */
-				poDataset.GetGeoTransform(adfGeoTransform);
-
-				SpatialReference layerProjection = new SpatialReference();
-				layerProjection.ImportFromWkt(poDataset.GetProjectionRef());
-				System.out.println(layerProjection.ExportToProj4());
-				proj4String = layerProjection.ExportToProj4();
-
-				startExport(selectedType);
+				
 			}
-
+            /*Export of selections as a list!*/
 			else {
 				startExport(selectedType);
 			}
@@ -482,7 +486,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 									e.printStackTrace();
 								}
 							} else {
-								
+
 								/*
 								 * Transform the coordinates to the CRS
 								 * coordinates!
@@ -504,8 +508,6 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 
 									e.printStackTrace();
 								}
-								
-								
 
 							}
 

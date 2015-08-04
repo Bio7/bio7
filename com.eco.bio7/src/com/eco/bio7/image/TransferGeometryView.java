@@ -1,21 +1,17 @@
-/*package com.eco.bio7.image;
+package com.eco.bio7.image;
 
-import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.window.Window;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.part.ViewPart;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.Rserve.RserveException;
@@ -24,10 +20,9 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 
-import org.eclipse.swt.widgets.Label;
+public class TransferGeometryView extends ViewPart {
 
-public class TransferSelectionCoordsDialog extends Dialog {
-
+	public static final String ID = "com.eco.bio7.image.TransferGeometryView"; //$NON-NLS-1$
 	private Combo combo;
 	protected boolean transferAsList = true;
 	protected String geometrySelection;
@@ -36,46 +31,34 @@ public class TransferSelectionCoordsDialog extends Dialog {
 	private Button btnAddDataframe;
 	protected String selDataframe;
 	protected String crsText;
-	protected boolean doSetCrs=false;
-	protected boolean doSetDataframe=false;
+	protected boolean doSetCrs = false;
+	protected boolean doSetDataframe = false;
 	private Text text;
 	private Button btnNewButton;
 	private Button btnAddProjectionFrom;
 	private Button btnTransfer;
 
-	public boolean transferAsList() {
-		return transferAsList;
+	public TransferGeometryView() {
 	}
 
-	public String getGeometrySelection() {
-		return geometrySelection;
-	}
-
-	public int getGeometrySelectionSelection() {
-		return geometrySelectionSelection;
-	}
-
-	public TransferSelectionCoordsDialog(Shell parentShell) {
-		super(parentShell);
-		setShellStyle(SWT.CLOSE | SWT.MODELESS | SWT.BORDER | SWT.TITLE);
-		setBlockOnOpen(false);
-	}
-
+	/**
+	 * Create contents of the view part.
+	 * 
+	 * @param parent
+	 */
 	@Override
-	protected Control createDialogArea(Composite parent) {
-		
-		Composite container = (Composite) super.createDialogArea(parent);
-		GridLayout gridLayout = (GridLayout) container.getLayout();
-		gridLayout.marginHeight = 30;
-		gridLayout.marginHeight = 14;
-		gridLayout.marginHeight = 30;
-		gridLayout.makeColumnsEqualWidth = true;
-		gridLayout.makeColumnsEqualWidth = true;
-		GridLayout gl_container = new GridLayout(1, false);
-		gl_container.marginHeight = 30;
-		container.setLayout(gl_container);
+	public void createPartControl(Composite parent) {
+		Composite container = new Composite(parent, SWT.NONE);
+
+		createActions();
+		initializeToolBar();
+		initializeMenu();
+		container.setLayout(new GridLayout(1, true));
 
 		Button btnSelectionCoordinatesAs = new Button(container, SWT.RADIO);
+		GridData gd_btnSelectionCoordinatesAs = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_btnSelectionCoordinatesAs.heightHint = 30;
+		btnSelectionCoordinatesAs.setLayoutData(gd_btnSelectionCoordinatesAs);
 		btnSelectionCoordinatesAs.addSelectionListener(new SelectionAdapter() {
 
 			public void widgetSelected(SelectionEvent e) {
@@ -87,19 +70,20 @@ public class TransferSelectionCoordsDialog extends Dialog {
 				btnAddProjectionFrom.setEnabled(false);
 				btnAddDataframe.setSelection(false);
 				btnAddProjectionFrom.setSelection(false);
-				text.setEnabled(false);
-				btnAddCrs.setEnabled(false);
-				btnLoadFromFile.setEnabled(false);
+				/*
+				 * text.setEnabled(false); btnAddCrs.setEnabled(false);
+				 * btnLoadFromFile.setEnabled(false);
+				 */
 				transferAsList = true;
 			}
 		});
-		GridData gd_btnSelectionCoordinatesAs = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-		gd_btnSelectionCoordinatesAs.heightHint = 30;
-		btnSelectionCoordinatesAs.setLayoutData(gd_btnSelectionCoordinatesAs);
 		btnSelectionCoordinatesAs.setSelection(true);
 		btnSelectionCoordinatesAs.setText("Selection coordinates as a list");
 
 		Button btnRadioButton = new Button(container, SWT.RADIO);
+		GridData gd_btnRadioButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_btnRadioButton.heightHint = 30;
+		btnRadioButton.setLayoutData(gd_btnRadioButton);
 		btnRadioButton.addSelectionListener(new SelectionAdapter() {
 
 			public void widgetSelected(SelectionEvent e) {
@@ -107,18 +91,19 @@ public class TransferSelectionCoordsDialog extends Dialog {
 				combo_1.setEnabled(true);
 				btnAddDataframe.setEnabled(true);
 				btnAddProjectionFrom.setEnabled(true);
-				text.setEnabled(true);
-				btnAddCrs.setEnabled(true);
-				btnLoadFromFile.setEnabled(true);
+				/*
+				 * text.setEnabled(true); btnAddCrs.setEnabled(true);
+				 * btnLoadFromFile.setEnabled(true);
+				 */
 				transferAsList = false;
 			}
 		});
-		GridData gd_btnRadioButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-		gd_btnRadioButton.heightHint = 30;
-		btnRadioButton.setLayoutData(gd_btnRadioButton);
 		btnRadioButton.setText("Spatial Geometries (R package 'sp' and 'maptools' required!)\r\n");
 
 		combo = new Combo(container, SWT.NONE);
+		GridData gd_combo = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_combo.heightHint = 30;
+		combo.setLayoutData(gd_combo);
 		combo.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -129,14 +114,14 @@ public class TransferSelectionCoordsDialog extends Dialog {
 			}
 		});
 		combo.setItems(new String[] { "SpatialPolygons", "SpatialLines", "SpatialPoints" });
-		GridData gd_combo = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_combo.heightHint = 30;
-		combo.setLayoutData(gd_combo);
 		combo.setText("Geometries");
 		combo.select(0);
 		combo.setEnabled(false);
 
 		btnAddDataframe = new Button(container, SWT.CHECK);
+		GridData gd_btnAddDataframe = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_btnAddDataframe.heightHint = 30;
+		btnAddDataframe.setLayoutData(gd_btnAddDataframe);
 		btnAddDataframe.setEnabled(false);
 		btnAddDataframe.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -191,6 +176,9 @@ public class TransferSelectionCoordsDialog extends Dialog {
 		btnAddDataframe.setText("Add selected dataframe");
 
 		combo_1 = new Combo(container, SWT.NONE);
+		GridData gd_combo_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_combo_1.heightHint = 30;
+		combo_1.setLayoutData(gd_combo_1);
 		combo_1.addSelectionListener(new SelectionAdapter() {
 
 			public void widgetSelected(SelectionEvent e) {
@@ -199,82 +187,96 @@ public class TransferSelectionCoordsDialog extends Dialog {
 			}
 		});
 		combo_1.setItems(new String[] { "-Select-" });
-		combo_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		combo_1.select(0);
 		combo_1.setEnabled(false);
-		
-		 btnAddProjectionFrom = new Button(container, SWT.CHECK);
-		 btnAddProjectionFrom.setEnabled(false);
+
+		btnAddProjectionFrom = new Button(container, SWT.CHECK);
+		GridData gd_btnAddProjectionFrom = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_btnAddProjectionFrom.heightHint = 30;
+		btnAddProjectionFrom.setLayoutData(gd_btnAddProjectionFrom);
+		btnAddProjectionFrom.setEnabled(false);
 		btnAddProjectionFrom.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				
-				if(btnAddProjectionFrom.getSelection()){
-					
-					doSetCrs=true;
+
+				if (btnAddProjectionFrom.getSelection()) {
+
+					doSetCrs = true;
 					text.setEnabled(true);
 					btnNewButton.setEnabled(true);
 				}
-				
-				else{
+
+				else {
 					text.setEnabled(false);
 					btnNewButton.setEnabled(false);
-					doSetCrs=false;
+					doSetCrs = false;
 				}
-				
+
 			}
 		});
 		btnAddProjectionFrom.setText("Add projection from georeferenced file");
-		
+
 		text = new Text(container, SWT.BORDER);
-		text.setEnabled(false);
 		GridData gd_text = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_text.heightHint = 30;
 		text.setLayoutData(gd_text);
-		
-		 btnNewButton = new Button(container, SWT.NONE);
-		 btnNewButton.setEnabled(false);
+		text.setEnabled(false);
+
+		btnNewButton = new Button(container, SWT.NONE);
+		GridData gd_btnNewButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_btnNewButton.heightHint = 30;
+		btnNewButton.setLayoutData(gd_btnNewButton);
+		btnNewButton.setEnabled(false);
 		btnNewButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				
-				crsText=Bio7Dialog.openFile();
+
+				crsText = Bio7Dialog.openFile();
 				text.setText(crsText);
 			}
 		});
-		GridData gd_btnNewButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-		gd_btnNewButton.heightHint = 30;
-		btnNewButton.setLayoutData(gd_btnNewButton);
 		btnNewButton.setText("Load File");
-		
+
 		btnTransfer = new Button(container, SWT.NONE);
+		GridData gd_btnTransfer = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_btnTransfer.heightHint = 30;
+		btnTransfer.setLayoutData(gd_btnTransfer);
 		btnTransfer.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				//if (dialog.open() == Window.OK) {
-					int selection=getGeometrySelectionSelection();
-					boolean transferAsList=transferAsList();
-					
-					boolean doSetCRS=isDoSetCrs();
-					boolean doSetDf=isDoSetDataframe();
-					String crs=getCrsText();
-					String selectedDf=getSelDataframe();
-					
-					TransferSelectionCoordsJob job = new TransferSelectionCoordsJob(transferAsList,selection,doSetCRS,doSetDf,crs,selectedDf);
-					// job.setSystem(true);
-					job.schedule();
-					
-					 * MatchingDialoge m=new MatchingDialoge(new Shell()); m.open()
-					 ;
-				//}
-				
+				// if (dialog.open() == Window.OK) {
+				int selection = getGeometrySelectionSelection();
+				boolean transferAsList = transferAsList();
+
+				boolean doSetCRS = isDoSetCrs();
+				boolean doSetDf = isDoSetDataframe();
+				String crs = getCrsText();
+				String selectedDf = getSelDataframe();
+
+				TransferSelectionCoordsJob job = new TransferSelectionCoordsJob(transferAsList, selection, doSetCRS, doSetDf, crs, selectedDf);
+				// job.setSystem(true);
+				job.schedule();
+				/*
+				 * MatchingDialoge m=new MatchingDialoge(new Shell()); m.open()
+				 */;
+				// }
+
 			}
 		});
-		GridData gd_btnTransfer = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-		gd_btnTransfer.heightHint = 30;
-		btnTransfer.setLayoutData(gd_btnTransfer);
 		btnTransfer.setText("Transfer!");
-		return container;
+
+	}
+
+	public boolean transferAsList() {
+		return transferAsList;
+	}
+
+	public String getGeometrySelection() {
+		return geometrySelection;
+	}
+
+	public int getGeometrySelectionSelection() {
+		return geometrySelectionSelection;
 	}
 
 	public String getSelDataframe() {
@@ -288,8 +290,6 @@ public class TransferSelectionCoordsDialog extends Dialog {
 	public String getCrsText() {
 		return crsText;
 	}
-
-	
 
 	public boolean isDoSetCrs() {
 		return doSetCrs;
@@ -307,26 +307,30 @@ public class TransferSelectionCoordsDialog extends Dialog {
 		this.doSetDataframe = doSetDataframe;
 	}
 
+	/**
+	 * Create the actions.
+	 */
+	private void createActions() {
+		// Create the actions
+	}
 
-	protected void configureShell(Shell newShell) {
-		super.configureShell(newShell);
-		newShell.setText("Transfer ROI selections");
+	/**
+	 * Initialize the toolbar.
+	 */
+	private void initializeToolBar() {
+		IToolBarManager toolbarManager = getViewSite().getActionBars().getToolBarManager();
+	}
+
+	/**
+	 * Initialize the menu.
+	 */
+	private void initializeMenu() {
+		IMenuManager menuManager = getViewSite().getActionBars().getMenuManager();
 	}
 
 	@Override
-	protected Point getInitialSize() {
-		return new Point(450, 428);
+	public void setFocus() {
+		// Set the focus
 	}
 
-	@Override
-	protected void okPressed() {
-
-		super.okPressed();
-	}
-
-	protected void cancelPressed() {
-
-		super.cancelPressed();
-	}
-
-}*/
+}

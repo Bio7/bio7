@@ -68,6 +68,7 @@ import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.collection.Work;
 import com.eco.bio7.discrete.Field;
 import com.eco.bio7.discrete.Quad2d;
 import com.eco.bio7.image.r.IJTranserResultsTable;
@@ -873,29 +874,11 @@ public class ImageMethods extends ViewPart {
 
 			public void widgetSelected(final SelectionEvent e) {
 				
-				TransferSelectionCoordsDialog dialog = new TransferSelectionCoordsDialog(Util.getShell());
+				/*TransferSelectionCoordsDialog dialog = new TransferSelectionCoordsDialog(Util.getShell());
 
 				dialog.create();
-				if (dialog.open() == Window.OK) {
-					int selection=dialog.getGeometrySelectionSelection();
-					boolean transferAsList=dialog.transferAsList();
-					
-					boolean doSetCRS=dialog.isDoSetCrs();
-					boolean doSetDf=dialog.isDoSetDataframe();
-					String crs=dialog.getCrsText();
-					String selectedDf=dialog.getSelDataframe();
-					
-					TransferSelectionCoordsJob job = new TransferSelectionCoordsJob(transferAsList,selection,doSetCRS,doSetDf,crs,selectedDf);
-					// job.setSystem(true);
-					job.schedule();
-					/*
-					 * MatchingDialoge m=new MatchingDialoge(new Shell()); m.open()
-					 */;
-				}
-				
-				else{
-					
-				}
+				dialog.open();*/
+			Work.openView("com.eco.bio7.image.TransferGeometryView");
 				
 				
 				

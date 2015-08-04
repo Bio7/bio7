@@ -261,6 +261,12 @@
             id="com.eco.bio7.scenebuilder"
             name="SceneBuilder">
       </category>
+      <view
+            class="com.eco.bio7.image.TransferGeometryView"
+            icon="icons/rkompilierung.gif"
+            id="com.eco.bio7.image.TransferGeometryView"
+            name="Geometry Selections">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.commands">

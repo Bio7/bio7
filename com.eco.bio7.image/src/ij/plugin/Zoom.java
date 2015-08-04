@@ -54,6 +54,9 @@ public class Zoom implements PlugIn{
 		if (roi==null) return;
 		Rectangle w = imp.getWindow().getBounds();
 		Rectangle r = roi.getBounds();
+		
+		
+		
 		double mag = ic.getMagnification();
 		int marginw = (int)((w.width - mag * imp.getWidth()));
 		int marginh = (int)((w.height - mag * imp.getHeight()));

@@ -227,6 +227,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		} else 
 			pack();
 	}
+	
+	
 					
 	Rectangle getMaxWindow(int xloc, int yloc) {
 		/*Rectangle bounds = GUI.getMaxWindowBounds();
