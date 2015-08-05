@@ -19,6 +19,7 @@ import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
+import org.eclipse.swt.widgets.Label;
 
 public class TransferGeometryView extends ViewPart {
 
@@ -98,7 +99,7 @@ public class TransferGeometryView extends ViewPart {
 				transferAsList = false;
 			}
 		});
-		btnRadioButton.setText("Spatial Geometries (R package 'sp' and 'maptools' required!)\r\n");
+		btnRadioButton.setText("Spatial Data (R package 'sp' required!)\r\n");
 
 		combo = new Combo(container, SWT.NONE);
 		GridData gd_combo = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
@@ -173,7 +174,7 @@ public class TransferGeometryView extends ViewPart {
 				combo_1.select(0);
 			}
 		});
-		btnAddDataframe.setText("Add selected dataframe");
+		btnAddDataframe.setText("Add selected dataframe (reselect for a refresh!)");
 
 		combo_1 = new Combo(container, SWT.NONE);
 		GridData gd_combo_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
@@ -236,34 +237,35 @@ public class TransferGeometryView extends ViewPart {
 			}
 		});
 		btnNewButton.setText("Load File");
+				new Label(container, SWT.NONE);
+		
+				btnTransfer = new Button(container, SWT.NONE);
+				GridData gd_btnTransfer = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+				gd_btnTransfer.heightHint = 30;
+				btnTransfer.setLayoutData(gd_btnTransfer);
+				btnTransfer.addSelectionListener(new SelectionAdapter() {
+					@Override
+					public void widgetSelected(SelectionEvent e) {
+						// if (dialog.open() == Window.OK) {
+						int selection = getGeometrySelectionSelection();
+						boolean transferAsList = transferAsList();
 
-		btnTransfer = new Button(container, SWT.NONE);
-		GridData gd_btnTransfer = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_btnTransfer.heightHint = 30;
-		btnTransfer.setLayoutData(gd_btnTransfer);
-		btnTransfer.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				// if (dialog.open() == Window.OK) {
-				int selection = getGeometrySelectionSelection();
-				boolean transferAsList = transferAsList();
+						boolean doSetCRS = isDoSetCrs();
+						boolean doSetDf = isDoSetDataframe();
+						String crs = getCrsText();
+						String selectedDf = getSelDataframe();
 
-				boolean doSetCRS = isDoSetCrs();
-				boolean doSetDf = isDoSetDataframe();
-				String crs = getCrsText();
-				String selectedDf = getSelDataframe();
+						TransferSelectionCoordsJob job = new TransferSelectionCoordsJob(transferAsList, selection, doSetCRS, doSetDf, crs, selectedDf);
+						// job.setSystem(true);
+						job.schedule();
+						/*
+						 * MatchingDialoge m=new MatchingDialoge(new Shell()); m.open()
+						 */;
+						// }
 
-				TransferSelectionCoordsJob job = new TransferSelectionCoordsJob(transferAsList, selection, doSetCRS, doSetDf, crs, selectedDf);
-				// job.setSystem(true);
-				job.schedule();
-				/*
-				 * MatchingDialoge m=new MatchingDialoge(new Shell()); m.open()
-				 */;
-				// }
-
-			}
-		});
-		btnTransfer.setText("Transfer!");
+					}
+				});
+				btnTransfer.setText("Transfer to R!");
 
 	}
 

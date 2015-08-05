@@ -564,7 +564,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 			if (bolE[0]) {
 
 				try {
-					c.eval("library(maptools)");
+					//c.eval("library(maptools)");
 					c.eval("library(sp)");
 				} catch (RserveException e) {
 					// TODO Auto-generated catch block
@@ -574,7 +574,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 				exportShapeGeometry(selection);
 
 			} else {
-				Bio7Dialog.message("Can't load 'maptools' package!");
+				Bio7Dialog.message("Can't load 'sp' package!");
 			}
 		} else {
 			Bio7Dialog.message("No Rserve connection available!");
