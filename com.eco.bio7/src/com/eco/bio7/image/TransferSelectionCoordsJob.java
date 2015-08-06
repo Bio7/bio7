@@ -47,7 +47,9 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 
 	private String proj4String;
 
-	public TransferSelectionCoordsJob(boolean transfer, int selection, boolean doSetCRS, boolean doSetDf, String crs, String selectedDf) {
+	private boolean centroidCoords;
+
+	public TransferSelectionCoordsJob(boolean transfer, int selection, boolean doSetCRS, boolean doSetDf, String crs, String selectedDf,boolean centroids) {
 		super("Match progress....");
 		this.transferAsList = transfer;
 		this.selectedType = selection;
@@ -55,10 +57,11 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 		this.setDf = doSetDf;
 		this.crsString = crs;
 		this.selDataframe = selectedDf;
-		System.out.println(setCrs);
+		/*System.out.println(setCrs);
 		System.out.println(setDf);
 		System.out.println(crsString);
-		System.out.println(selDataframe);
+		System.out.println(selDataframe);*/
+		this.centroidCoords=centroids;
 
 	}
 
@@ -86,8 +89,8 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 						System.out.println("The image could not be read.");
 
 					}
-					
-					else{
+
+					else {
 						/* The array which contains the transform parameters! */
 						adfGeoTransform = new double[6];
 						/*
@@ -96,7 +99,10 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 						 * GetGeoTransform%28double[]%29
 						 */
 						poDataset.GetGeoTransform(adfGeoTransform);
-                        /*Get the spatial reference, projection and convert from Wkt to Proj4!*/
+						/*
+						 * Get the spatial reference, projection and convert
+						 * from Wkt to Proj4!
+						 */
 						SpatialReference layerProjection = new SpatialReference();
 						layerProjection.ImportFromWkt(poDataset.GetProjectionRef());
 						System.out.println(layerProjection.ExportToProj4());
@@ -110,9 +116,9 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 					e.printStackTrace();
 
 				}
-				
+
 			}
-            /*Export of selections as a list!*/
+			/* Export of selections as a list! */
 			else {
 				startExport(selectedType);
 			}
@@ -121,9 +127,42 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 		return Status.OK_STATUS;
 	}
 
+	public double getTransformedCentroidCoordsX(int row, int col) {
+
+		/*
+		 * Returns the centroid coordinates of a selection! From the java gdal
+		 * API: In a north up image, geoTransformArray[1] is the pixel width,
+		 * and geoTransformArray[5] is the pixel height. The upper left corner
+		 * of the upper left pixel is at position
+		 * (geoTransformArray[0],geoTransformArray[3]).
+		 * 
+		 */
+
+		double xp = (adfGeoTransform[1] * col) + (adfGeoTransform[2] * row) + (adfGeoTransform[1] * 0.5) + (adfGeoTransform[2] * 0.5) + adfGeoTransform[0];
+
+		return xp;
+	}
+
+	public double getTransformedCentroidCoordsY(int row, int col) {
+
+		/*
+		 * Returns the centroid coordinates of a selection! From the java gdal
+		 * API: In a north up image, geoTransformArray[1] is the pixel width,
+		 * and geoTransformArray[5] is the pixel height. The upper left corner
+		 * of the upper left pixel is at position
+		 * (geoTransformArray[0],geoTransformArray[3]).
+		 * 
+		 */
+
+		double yp = (adfGeoTransform[4] * col) + (adfGeoTransform[5] * row) + (adfGeoTransform[4] * 0.5) + (adfGeoTransform[5] * 0.5) + adfGeoTransform[3];
+
+		return yp;
+	}
+
 	public double getTransformedCoordsX(int row, int col) {
 
 		/*
+		 *
 		 * From the java gdal API: In a north up image, geoTransformArray[1] is
 		 * the pixel width, and geoTransformArray[5] is the pixel height. The
 		 * upper left corner of the upper left pixel is at position
@@ -131,7 +170,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 		 * 
 		 */
 
-		double xp = (adfGeoTransform[1] * col) + (adfGeoTransform[2] * row) + (adfGeoTransform[1] * 0.5) + (adfGeoTransform[2] * 0.5) + adfGeoTransform[0];
+		double xp = (adfGeoTransform[1] * col) + (adfGeoTransform[2] * row) + adfGeoTransform[0];
 
 		return xp;
 	}
@@ -146,7 +185,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 		 * 
 		 */
 
-		double yp = (adfGeoTransform[4] * col) + (adfGeoTransform[5] * row) + (adfGeoTransform[4] * 0.5) + (adfGeoTransform[5] * 0.5) + adfGeoTransform[3];
+		double yp = (adfGeoTransform[4] * col) + (adfGeoTransform[5] * row) + adfGeoTransform[3];
 
 		return yp;
 	}
@@ -296,8 +335,15 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 
 								for (int poi = 0; poi < x.length; poi++) {
 									/* row=y, column=x ! */
-									transX[poi] = getTransformedCoordsX(y[poi], x[poi]);
-									transY[poi] = getTransformedCoordsY(y[poi], x[poi]);
+									if (centroidCoords == false) {
+										transX[poi] = getTransformedCoordsX(y[poi], x[poi]);
+										transY[poi] = getTransformedCoordsY(y[poi], x[poi]);
+									}
+
+									else {
+										transX[poi] = getTransformedCentroidCoordsX(y[poi], x[poi]);
+										transY[poi] = getTransformedCentroidCoordsY(y[poi], x[poi]);
+									}
 								}
 								try {
 									c.assign("x", transX);
@@ -396,8 +442,15 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 
 								for (int poi = 0; poi < x.length; poi++) {
 									/* row=y, column=x ! */
-									transX[poi] = getTransformedCoordsX(y[poi], x[poi]);
-									transY[poi] = getTransformedCoordsY(y[poi], x[poi]);
+									if (centroidCoords == false) {
+										transX[poi] = getTransformedCoordsX(y[poi], x[poi]);
+										transY[poi] = getTransformedCoordsY(y[poi], x[poi]);
+									}
+
+									else {
+										transX[poi] = getTransformedCentroidCoordsX(y[poi], x[poi]);
+										transY[poi] = getTransformedCentroidCoordsY(y[poi], x[poi]);
+									}
 								}
 								try {
 									c.assign("x", transX);
@@ -496,8 +549,15 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 
 								for (int poi = 0; poi < x.length; poi++) {
 									/* row=y, column=x ! */
-									transX[poi] = getTransformedCoordsX(y[poi], x[poi]);
-									transY[poi] = getTransformedCoordsY(y[poi], x[poi]);
+									if (centroidCoords == false) {
+										transX[poi] = getTransformedCoordsX(y[poi], x[poi]);
+										transY[poi] = getTransformedCoordsY(y[poi], x[poi]);
+									}
+
+									else {
+										transX[poi] = getTransformedCentroidCoordsX(y[poi], x[poi]);
+										transY[poi] = getTransformedCentroidCoordsY(y[poi], x[poi]);
+									}
 								}
 								try {
 									c.assign("x", transX);
@@ -564,7 +624,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 			if (bolE[0]) {
 
 				try {
-					//c.eval("library(maptools)");
+					// c.eval("library(maptools)");
 					c.eval("library(sp)");
 				} catch (RserveException e) {
 					// TODO Auto-generated catch block

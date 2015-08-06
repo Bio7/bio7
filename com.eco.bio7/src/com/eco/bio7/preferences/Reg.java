@@ -93,9 +93,9 @@ public class Reg {
 				e.printStackTrace();
 			}
 			try {
-				WinRegistry.writeStringValue(WinRegistry.HKEY_LOCAL_MACHINE, "SOFTWARE\\R-core\\R", "Current Version", "3.2.0");
+				WinRegistry.writeStringValue(WinRegistry.HKEY_LOCAL_MACHINE, "SOFTWARE\\R-core\\R", "Current Version", "3.2.1");
 				WinRegistry.writeStringValue(WinRegistry.HKEY_LOCAL_MACHINE, "SOFTWARE\\R-core\\R", "InstallPath", path_to_r);
-				WinRegistry.writeStringValue(WinRegistry.HKEY_LOCAL_MACHINE, "SOFTWARE\\R-core\\R\\3.2.0", "InstallPath", path_to_r);
+				WinRegistry.writeStringValue(WinRegistry.HKEY_LOCAL_MACHINE, "SOFTWARE\\R-core\\R\\3.2.1", "InstallPath", path_to_r);
 			} catch (IllegalArgumentException e) {
 
 				e.printStackTrace();

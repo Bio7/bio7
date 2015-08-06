@@ -38,6 +38,10 @@ public class TransferGeometryView extends ViewPart {
 	private Button btnNewButton;
 	private Button btnAddProjectionFrom;
 	private Button btnTransfer;
+	private Button btnTransferAsCentroid;
+	protected boolean transferCentroid;
+
+	
 
 	public TransferGeometryView() {
 	}
@@ -69,8 +73,10 @@ public class TransferGeometryView extends ViewPart {
 				btnNewButton.setEnabled(false);
 				text.setEnabled(false);
 				btnAddProjectionFrom.setEnabled(false);
+				btnTransferAsCentroid.setEnabled(false);
 				btnAddDataframe.setSelection(false);
 				btnAddProjectionFrom.setSelection(false);
+				btnTransferAsCentroid.setSelection(false);
 				/*
 				 * text.setEnabled(false); btnAddCrs.setEnabled(false);
 				 * btnLoadFromFile.setEnabled(false);
@@ -92,6 +98,7 @@ public class TransferGeometryView extends ViewPart {
 				combo_1.setEnabled(true);
 				btnAddDataframe.setEnabled(true);
 				btnAddProjectionFrom.setEnabled(true);
+				btnTransferAsCentroid.setEnabled(true);
 				/*
 				 * text.setEnabled(true); btnAddCrs.setEnabled(true);
 				 * btnLoadFromFile.setEnabled(true);
@@ -191,6 +198,23 @@ public class TransferGeometryView extends ViewPart {
 		combo_1.select(0);
 		combo_1.setEnabled(false);
 
+		btnTransferAsCentroid = new Button(container, SWT.CHECK);
+		GridData gd_btnTransferAsCentroid = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+		gd_btnTransferAsCentroid.heightHint = 30;
+		btnTransferAsCentroid.setLayoutData(gd_btnTransferAsCentroid);
+		btnTransferAsCentroid.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if (btnTransferAsCentroid.getSelection()) {
+					transferCentroid = true;
+				} else {
+					transferCentroid = false;
+				}
+			}
+		});
+		btnTransferAsCentroid.setEnabled(false);
+		btnTransferAsCentroid.setText("Transfer as centroid coordinates");
+
 		btnAddProjectionFrom = new Button(container, SWT.CHECK);
 		GridData gd_btnAddProjectionFrom = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_btnAddProjectionFrom.heightHint = 30;
@@ -237,35 +261,36 @@ public class TransferGeometryView extends ViewPart {
 			}
 		});
 		btnNewButton.setText("Load File");
-				new Label(container, SWT.NONE);
-		
-				btnTransfer = new Button(container, SWT.NONE);
-				GridData gd_btnTransfer = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-				gd_btnTransfer.heightHint = 30;
-				btnTransfer.setLayoutData(gd_btnTransfer);
-				btnTransfer.addSelectionListener(new SelectionAdapter() {
-					@Override
-					public void widgetSelected(SelectionEvent e) {
-						// if (dialog.open() == Window.OK) {
-						int selection = getGeometrySelectionSelection();
-						boolean transferAsList = transferAsList();
+		new Label(container, SWT.NONE);
 
-						boolean doSetCRS = isDoSetCrs();
-						boolean doSetDf = isDoSetDataframe();
-						String crs = getCrsText();
-						String selectedDf = getSelDataframe();
+		btnTransfer = new Button(container, SWT.NONE);
+		GridData gd_btnTransfer = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_btnTransfer.heightHint = 30;
+		btnTransfer.setLayoutData(gd_btnTransfer);
+		btnTransfer.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				// if (dialog.open() == Window.OK) {
+				int selection = getGeometrySelectionSelection();
+				boolean transferAsList = transferAsList();
 
-						TransferSelectionCoordsJob job = new TransferSelectionCoordsJob(transferAsList, selection, doSetCRS, doSetDf, crs, selectedDf);
-						// job.setSystem(true);
-						job.schedule();
-						/*
-						 * MatchingDialoge m=new MatchingDialoge(new Shell()); m.open()
-						 */;
-						// }
+				boolean doSetCRS = isDoSetCrs();
+				boolean doSetDf = isDoSetDataframe();
+				String crs = getCrsText();
+				String selectedDf = getSelDataframe();
+				boolean asCentroid=isTransferCentroid();
 
-					}
-				});
-				btnTransfer.setText("Transfer to R!");
+				TransferSelectionCoordsJob job = new TransferSelectionCoordsJob(transferAsList, selection, doSetCRS, doSetDf, crs, selectedDf,asCentroid);
+				// job.setSystem(true);
+				job.schedule();
+				/*
+				 * MatchingDialoge m=new MatchingDialoge(new Shell()); m.open()
+				 */;
+				// }
+
+			}
+		});
+		btnTransfer.setText("Transfer to R!");
 
 	}
 
@@ -307,6 +332,10 @@ public class TransferGeometryView extends ViewPart {
 
 	public void setDoSetDataframe(boolean doSetDataframe) {
 		this.doSetDataframe = doSetDataframe;
+	}
+	
+	public boolean isTransferCentroid() {
+		return transferCentroid;
 	}
 
 	/**
