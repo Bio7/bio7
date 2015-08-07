@@ -872,14 +872,18 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 					else if (sel.equals("PLOT_IMAGEJ_IMAGESIZE")) {
 
-						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = imageSizeX, height = imageSizeY, units = \"px\")}; options(device=\".bio7Device\")");
+						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") {"
+								+ " tryCatch(tiff(filename,width = imageSizeX, height = imageSizeY, units = \"px\"),error = function (x) {tiff(filename,width = 512, height = 512, units = \"px\"); print('ImageSizeX and ImageSizeY variables not defined in R Workspace. Applied default values!')})"
+								+ "}; options(device=\".bio7Device\")");
 						prefsPlotRserve.deviceFilename.setStringValue("");
 						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 					}
 
 					else if (sel.equals("PLOT_IMAGEJ_IMAGESIZE_CAIRO")) {
 
-						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = imageSizeX, height = imageSizeY, type=\"cairo\")}; options(device=\".bio7Device\")");
+						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { "
+								+"tryCatch(tiff(filename,width = imageSizeX, height = imageSizeY, units = \"px\",type=\"cairo\"),error = function (x) {tiff(filename,width = 512, height = 512, units = \"px\",type=\"cairo\"); print('ImageSizeX and ImageSizeY variables not defined in R Workspace. Applied default values!')})"
+								+ "}; options(device=\".bio7Device\")");
 						prefsPlotRserve.deviceFilename.setStringValue("");
 						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 					}

@@ -127,7 +127,7 @@ public class CanvasView extends ViewPart {
 		parent.addControlListener(new ControlAdapter() {
 			@Override
 			public void controlResized(final ControlEvent e) {
-
+               /*Here we write the values in the com.eco.bio7 plugin preferences with the help of scoped preferences!*/
 				Rectangle rec = parent.getClientArea();
 
 				IPreferenceStore store = new ScopedPreferenceStore(InstanceScope.INSTANCE, "com.eco.bio7");
@@ -149,7 +149,7 @@ public class CanvasView extends ViewPart {
 		getViewSite().getPage().addPartListener(new IPartListener() {
 			public void partActivated(IWorkbenchPart part) {
 				if (part instanceof CanvasView) {
-					// setFocus();
+					
 				}
 			}
 

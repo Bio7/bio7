@@ -222,8 +222,8 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 
 					try {
 
-						c.eval("lx<-list()");
-						c.eval("ly<-list()");
+						c.eval("roiXSelectionCoordinates<-list()");
+						c.eval("roiYSelectionCoordinates<-list()");
 
 						for (int i = 0; i < r.length; i++) {
 
@@ -232,15 +232,15 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 							int[] y = p.ypoints;
 
 							try {
-								c.assign("x", x);
-								c.assign("y", y);
+								c.assign(".xTempVarRoiSelectionCoordinates", x);
+								c.assign(".yTempVarRoiSelectionCoordinates", y);
 							} catch (REngineException e) {
 
 								e.printStackTrace();
 							}
 
-							c.eval("try(lx[[" + (i + 1) + "]]<-x)");
-							c.eval("try(ly[[" + (i + 1) + "]]<-y)");
+							c.eval("try(roiXSelectionCoordinates[[" + (i + 1) + "]]<-.xTempVarRoiSelectionCoordinates)");
+							c.eval("try(roiYSelectionCoordinates[[" + (i + 1) + "]]<-.yTempVarRoiSelectionCoordinates)");
 
 						}
 					} catch (RserveException e) {
@@ -298,8 +298,8 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 						 */
 
 						try {
-							c.eval("lx<-list()");
-							c.eval("ly<-list()");
+							c.eval(".listRoiXPoints<-list()");
+							c.eval(".listRoiYPoints<-list()");
 						} catch (RserveException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
@@ -316,11 +316,10 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 							if (setCrs == false) {
 
 								try {
-									c.assign("x", x);
-									c.assign("y", y);
-
+									c.assign(".xTempVarRoiSelectionCoordinates", x);
+									c.assign(".yTempVarRoiSelectionCoordinates", y);
 								} catch (REngineException e) {
-									// TODO Auto-generated catch block
+
 									e.printStackTrace();
 								}
 							}
@@ -346,8 +345,8 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 									}
 								}
 								try {
-									c.assign("x", transX);
-									c.assign("y", transY);
+									c.assign(".xTempVarRoiSelectionCoordinates", transX);
+									c.assign(".yTempVarRoiSelectionCoordinates", transY);
 								} catch (REngineException e) {
 
 									e.printStackTrace();
@@ -355,8 +354,8 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 							}
 
 							try {
-								c.eval("try(lx[[" + (i + 1) + "]]<-x)");
-								c.eval("try(ly[[" + (i + 1) + "]]<-y)");
+								c.eval("try(.listRoiXPoints[[" + (i + 1) + "]]<-.xTempVarRoiSelectionCoordinates)");
+								c.eval("try(.listRoiYPoints[[" + (i + 1) + "]]<-.yTempVarRoiSelectionCoordinates)");
 							} catch (RserveException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
@@ -373,9 +372,9 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 								// c.eval("try(spatpolygons<-SpatialPolygons(listpolygons,
 								// 1:length(listpolygons)))");
 								if (setCrs == false) {
-									c.eval("spatialPolygons<-SpatialPolygons(mapply(function(x, y,id) {Polygons(list(Polygon(cbind(x,y))),id)} ,lx,ly,as.character(1:length(lx))))");
+									c.eval("spatialPolygons<-SpatialPolygons(mapply(function(x, y,id) {Polygons(list(Polygon(cbind(x,y))),id)} ,.listRoiXPoints,.listRoiYPoints,as.character(1:length(.listRoiXPoints))))");
 								} else {
-									c.eval("spatialPolygons<-SpatialPolygons(mapply(function(x, y,id) {Polygons(list(Polygon(cbind(x,y))),id)} ,lx,ly,as.character(1:length(lx))),proj4string=CRS(\"" + proj4String + "\"))");
+									c.eval("spatialPolygons<-SpatialPolygons(mapply(function(x, y,id) {Polygons(list(Polygon(cbind(x,y))),id)} ,.listRoiXPoints,.listRoiYPoints,as.character(1:length(.listRoiXPoints))),proj4string=CRS(\"" + proj4String + "\"))");
 								}
 
 							} catch (RserveException e) {
@@ -388,9 +387,9 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 								// c.eval("try(spatpolygons<-SpatialPolygons(listpolygons,
 								// 1:length(listpolygons)))");
 								if (setCrs == false) {
-									c.eval("spatialPolygonsDataFrame<-SpatialPolygonsDataFrame(SpatialPolygons(mapply(function(x, y,id) {Polygons(list(Polygon(cbind(x,y))),id)} ,lx,ly,as.character(1:length(lx))))," + selDataframe + ")");
+									c.eval("spatialPolygonsDataFrame<-SpatialPolygonsDataFrame(SpatialPolygons(mapply(function(x, y,id) {Polygons(list(Polygon(cbind(x,y))),id)} ,.listRoiXPoints,.listRoiYPoints,as.character(1:length(.listRoiXPoints))))," + selDataframe + ")");
 								} else {
-									c.eval("spatialPolygonsDataFrame<-SpatialPolygonsDataFrame(SpatialPolygons(mapply(function(x, y,id) {Polygons(list(Polygon(cbind(x,y))),id)} ,lx,ly,as.character(1:length(lx))),proj4string=CRS(\"" + proj4String + "\"))," + selDataframe + ")");
+									c.eval("spatialPolygonsDataFrame<-SpatialPolygonsDataFrame(SpatialPolygons(mapply(function(x, y,id) {Polygons(list(Polygon(cbind(x,y))),id)} ,.listRoiXPoints,.listRoiYPoints,as.character(1:length(.listRoiXPoints))),proj4string=CRS(\"" + proj4String + "\"))," + selDataframe + ")");
 								}
 
 							} catch (RserveException e) {
@@ -405,8 +404,8 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 					else if (selection == 1) {
 
 						try {
-							c.eval("lx<-list()");
-							c.eval("ly<-list()");
+							c.eval(".listRoiXPoints<-list()");
+							c.eval(".listRoiYPoints<-list()");
 						} catch (RserveException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
@@ -423,8 +422,8 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 							if (setCrs == false) {
 
 								try {
-									c.assign("x", x);
-									c.assign("y", y);
+									c.assign(".xTempVarRoiSelectionCoordinates", x);
+									c.assign(".yTempVarRoiSelectionCoordinates", y);
 
 								} catch (REngineException e) {
 									// TODO Auto-generated catch block
@@ -453,8 +452,8 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 									}
 								}
 								try {
-									c.assign("x", transX);
-									c.assign("y", transY);
+									c.assign(".xTempVarRoiSelectionCoordinates", transX);
+									c.assign(".yTempVarRoiSelectionCoordinates", transY);
 								} catch (REngineException e) {
 
 									e.printStackTrace();
@@ -462,8 +461,8 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 							}
 
 							try {
-								c.eval("try(lx[[" + (i + 1) + "]]<-x)");
-								c.eval("try(ly[[" + (i + 1) + "]]<-y)");
+								c.eval("try(.listRoiXPoints[[" + (i + 1) + "]]<-.xTempVarRoiSelectionCoordinates)");
+								c.eval("try(.listRoiYPoints[[" + (i + 1) + "]]<-.yTempVarRoiSelectionCoordinates)");
 							} catch (RserveException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
@@ -480,9 +479,9 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 								// c.eval("try(spatpolygons<-SpatialPolygons(listpolygons,
 								// 1:length(listpolygons)))");
 								if (setCrs == false) {
-									c.eval("spatialLiness<-SpatialLines(mapply(function(x, y,id) {Lines(list(Line(cbind(x,y))),id)} ,lx,ly,as.character(1:length(lx))))");
+									c.eval("spatialLines<-SpatialLines(mapply(function(x, y,id) {Lines(list(Line(cbind(x,y))),id)} ,.listRoiXPoints,.listRoiYPoints,as.character(1:length(.listRoiXPoints))))");
 								} else {
-									c.eval("spatialLines<-SpatialLines(mapply(function(x, y,id) {Lines(list(Line(cbind(x,y))),id)} ,lx,ly,as.character(1:length(lx))),proj4string=CRS(\"" + proj4String + "\"))");
+									c.eval("spatialLines<-SpatialLines(mapply(function(x, y,id) {Lines(list(Line(cbind(x,y))),id)} ,.listRoiXPoints,.listRoiYPoints,as.character(1:length(.listRoiXPoints))),proj4string=CRS(\"" + proj4String + "\"))");
 								}
 
 							} catch (RserveException e) {
@@ -495,9 +494,9 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 								// c.eval("try(spatpolygons<-SpatialPolygons(listpolygons,
 								// 1:length(listpolygons)))");
 								if (setCrs == false) {
-									c.eval("spatialLinesDataFrame<-SpatialLinesDataFrame(SpatialLines(mapply(function(x, y,id) {Lines(list(Line(cbind(x,y))),id)} ,lx,ly,as.character(1:length(lx))))," + selDataframe + ")");
+									c.eval("spatialLinesDataFrame<-SpatialLinesDataFrame(SpatialLines(mapply(function(x, y,id) {Lines(list(Line(cbind(x,y))),id)} ,.listRoiXPoints,.listRoiYPoints,as.character(1:length(.listRoiXPoints))))," + selDataframe + ")");
 								} else {
-									c.eval("spatialLinesDataFrame<-SpatialLinesDataFrame(SpatialLines(mapply(function(x, y,id) {Lines(list(Line(cbind(x,y))),id)} ,lx,ly,as.character(1:length(lx))),proj4string=CRS(\"" + proj4String + "\"))," + selDataframe + ")");
+									c.eval("spatialLinesDataFrame<-SpatialLinesDataFrame(SpatialLines(mapply(function(x, y,id) {Lines(list(Line(cbind(x,y))),id)} ,.listRoiXPoints,.listRoiYPoints,as.character(1:length(.listRoiXPoints))),proj4string=CRS(\"" + proj4String + "\"))," + selDataframe + ")");
 								}
 
 							} catch (RserveException e) {
@@ -512,8 +511,8 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 					else {
 
 						try {
-							c.eval("xp<-NULL");
-							c.eval("yp<-NULL");
+							c.eval(".xpoints<-NULL");
+							c.eval(".ypoints<-NULL");
 						} catch (RserveException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -527,10 +526,10 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 							int[] y = p.ypoints;
 							if (setCrs == false) {
 								try {
-									c.assign("x", x);
-									c.assign("y", y);
-									c.eval("try(xp<-append(xp,x))");
-									c.eval("try(yp<-append(yp,y))");
+									c.assign(".xTempVarRoiSelectionCoordinates", x);
+									c.assign(".yTempVarRoiSelectionCoordinates", y);
+									c.eval("try(.xpoints<-append(.xpoints,.xTempVarRoiSelectionCoordinates))");
+									c.eval("try(.ypoints<-append(.ypoints,.yTempVarRoiSelectionCoordinates))");
 								} catch (RserveException e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
@@ -560,10 +559,10 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 									}
 								}
 								try {
-									c.assign("x", transX);
-									c.assign("y", transY);
-									c.eval("try(xp<-append(xp,x))");
-									c.eval("try(yp<-append(yp,y))");
+									c.assign(".xTempVarRoiSelectionCoordinates", transX);
+									c.assign(".yTempVarRoiSelectionCoordinates", transY);
+									c.eval("try(.xpoints<-append(.xpoints,.xTempVarRoiSelectionCoordinates))");
+									c.eval("try(.ypoints<-append(.ypoints,.yTempVarRoiSelectionCoordinates))");
 								} catch (REngineException e) {
 
 									e.printStackTrace();
@@ -574,18 +573,18 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 						}
 
 						try {
-							c.eval("try(xy<-cbind(xp,yp))");
+							c.eval("try(.xyTempVarPoints<-cbind(.xpoints,.ypoints))");
 							if (setDf == false) {
 								if (setCrs == false) {
-									c.eval("try(spatialPoints<-SpatialPoints(xy))");
+									c.eval("try(spatialPoints<-SpatialPoints(.xyTempVarPoints))");
 								} else {
-									c.eval("try(spatialPoints<-SpatialPoints(xy,proj4string=CRS(\"" + proj4String + "\")))");
+									c.eval("try(spatialPoints<-SpatialPoints(.xyTempVarPoints,proj4string=CRS(\"" + proj4String + "\")))");
 								}
 							} else {
 								if (setCrs == false) {
-									c.eval("try(spatialPointsDataFrame<-SpatialPointsDataFrame(xy," + selDataframe + "))");
+									c.eval("try(spatialPointsDataFrame<-SpatialPointsDataFrame(.xyTempVarPoints," + selDataframe + "))");
 								} else {
-									c.eval("try(spatialPointsDataFrame<-SpatialPointsDataFrame(xy," + selDataframe + ",proj4string=CRS(\"" + proj4String + "\")))");
+									c.eval("try(spatialPointsDataFrame<-SpatialPointsDataFrame(.xyTempVarPoints," + selDataframe + ",proj4string=CRS(\"" + proj4String + "\")))");
 								}
 							}
 						} catch (RserveException e) {
