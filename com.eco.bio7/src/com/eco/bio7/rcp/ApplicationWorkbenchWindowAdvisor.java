@@ -892,9 +892,21 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 					else if (sel.equals("PLOT_IMAGEJ_DISPLAYSIZE_CAIRO")) {
 						
 						CanvasView view=CanvasView.getCanvas_view();
+						/*Height correction for the plot!*/
+						int correction=0;
+						if(CanvasView.tabFolder.isDisposed()==false&&CanvasView.tabFolder!=null){
+							correction=CanvasView.tabFolder.getTabHeight();
+						}
+						
 						if(view!=null){
 						Rectangle rec=view.getParent2().getClientArea();
-						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = " + rec.width + ", height = " + rec.height + ", type=\"cairo\")}; options(device=\".bio7Device\")");
+						if(rec.width>0&&rec.height>correction){
+						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = "  + rec.width + ", height = " + (rec.height-100) + ", type=\"cairo\")}; options(device=\".bio7Device\")");
+						}
+						else{
+							prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = " + 512 + ", height = " + 512 + ", type=\"cairo\")}; options(device=\".bio7Device\")");
+
+						}
 						prefsPlotRserve.deviceFilename.setStringValue("");
 						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 						}
@@ -902,9 +914,20 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 					} else if (sel.equals("PLOT_IMAGEJ_DISPLAYSIZE")) {
 						
 						CanvasView view=CanvasView.getCanvas_view();
+						/*Height correction for the plot!*/
+						int correction=0;
+						if(CanvasView.tabFolder.isDisposed()==false&&CanvasView.tabFolder!=null){
+							correction=CanvasView.tabFolder.getTabHeight();
+						}
 						if(view!=null){
 					Rectangle rec=view.getParent2().getClientArea();
-						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width =  " + rec.width + ", height = " + rec.height + ", units = \"px\")}; options(device=\".bio7Device\")");
+					if(rec.width>0&&rec.height>correction){
+						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width =  " + rec.width + ", height = " + (rec.height-correction) + ", units = \"px\")}; options(device=\".bio7Device\")");
+					}
+					else{
+						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width =  " + 512 + ", height = " + 512 + ", units = \"px\")}; options(device=\".bio7Device\")");
+
+					}
 						prefsPlotRserve.deviceFilename.setStringValue("");
 						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 						}

@@ -134,11 +134,17 @@ public class CanvasView extends ViewPart {
 				if (store != null) {
 					String selection = store.getString("PLOT_DEVICE_SELECTION");
 					String pathTo = store.getString("pathTempR");
+					int correction=0;
+					if(tabFolder.isDisposed()==false&&tabFolder!=null){
+						/*Height correction for the plot!*/
+						correction=CanvasView.tabFolder.getTabHeight();
+					}
 
 					if (selection.equals("PLOT_IMAGEJ_DISPLAYSIZE_CAIRO")) {
-						store.setValue("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = " + rec.width + ", height = " + rec.height + ", type=\"cairo\")}; options(device=\".bio7Device\")");
+						
+						store.setValue("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = " + rec.width + ", height = " + (rec.height-correction) + ", type=\"cairo\")}; options(device=\".bio7Device\")");
 					} else if (selection.equals("PLOT_IMAGEJ_DISPLAYSIZE")) {
-						store.setValue("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width =  " + rec.width + ", height = " + rec.height + ", units = \"px\")}; options(device=\".bio7Device\")");
+						store.setValue("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width =  " + rec.width + ", height = " + (rec.height-correction) + ", units = \"px\")}; options(device=\".bio7Device\")");
 
 					}
 				}
@@ -355,6 +361,7 @@ public class CanvasView extends ViewPart {
 						// detachedSecViewIDs.add(id);
 						custom.setPanel(current, id);
 						custom.setData(plu, win);
+						/*Only hide the tab without to close the ImagePlus object!*/
 						IJTabs.hideTab();
 					}
 

@@ -48,9 +48,10 @@ public class REvaluateJob extends WorkspaceJob {
 		}
 		RServe.setRout(out);
 		
-		//	
-
+	 /*Avoid the printing of an empty object - 'NULL'!*/
+      if(out.equals("NULL")==false){
 		StartBio7Utils.getConsoleInstance().cons.println(out);
+      }
 
 		/* Send also the output to the R console view! */
 		if (RShellView.isConsoleExpanded()) {
