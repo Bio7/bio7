@@ -105,6 +105,21 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 				});
 
 				if (cancelJob == false) {
+					
+					/* Get the image processor of the image ! */
+					ImageProcessor ip = impd.getProcessor();
+					int w = ip.getWidth();
+					int h = ip.getHeight();
+
+					try {
+						connection.eval("imageSizeY<-" + h);
+
+						connection.eval("imageSizeX<-" + w);
+
+					} catch (RserveException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 
 					Roi[] r = RoiManager.getInstance().getRoisAsArray();
 					items = CanvasView.getCanvas_view().tabFolder.getItems();

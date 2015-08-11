@@ -49,7 +49,7 @@ public class REvaluateJob extends WorkspaceJob {
 		RServe.setRout(out);
 		
 	 /*Avoid the printing of an empty object - 'NULL'!*/
-      if(out.equals("NULL")==false){
+      if(out!=null&&out.equals("NULL")==false){
 		StartBio7Utils.getConsoleInstance().cons.println(out);
       }
 

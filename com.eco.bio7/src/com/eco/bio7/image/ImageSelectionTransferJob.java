@@ -134,8 +134,17 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 			});
 
 			int sig = input2;
+			
+			/* Get the image processor of the image ! */
+			ImageProcessor ipSize = impDefault.getProcessor();
+			int w = ipSize.getWidth();
+			int h = ipSize.getHeight();
+
+			
 
 			try {
+				con.eval("imageSizeY<-" + h);
+				con.eval("imageSizeX<-" + w);
 				con.eval("" + input + "<-NULL");
 
 			} catch (RserveException e2) {

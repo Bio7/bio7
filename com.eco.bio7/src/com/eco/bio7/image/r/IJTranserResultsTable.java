@@ -7,10 +7,12 @@ import java.awt.geom.Point2D;
 import javax.swing.SwingUtilities;
 
 import ij.IJ;
+import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.Roi;
 import ij.measure.ResultsTable;
 import ij.plugin.filter.Analyzer;
+import ij.process.ImageProcessor;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
@@ -103,10 +105,28 @@ public class IJTranserResultsTable {
 		Roi roi = null;
 
 		if (d != null) {
-
+			ImagePlus plu=WindowManager.getCurrentImage();
 			double xydia[][] = PointPanel.pointToArray();
-			if (WindowManager.getCurrentImage() != null) {
-				roi = WindowManager.getCurrentImage().getRoi();
+			if (plu != null) {
+				
+				/* Get the image processor of the image ! */
+				ImageProcessor ip = plu.getProcessor();
+				int w = ip.getWidth();
+				int h = ip.getHeight();
+
+				try {
+					d.eval("imageSizeY<-" + h);
+
+					d.eval("imageSizeX<-" + w);
+
+				} catch (RserveException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+				
+				
+				roi = plu.getRoi();
 				int[] roix = null;
 				int[] roiy = null;
 				if (roi != null) {

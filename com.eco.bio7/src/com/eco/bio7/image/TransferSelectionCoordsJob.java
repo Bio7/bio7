@@ -273,9 +273,9 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 				if (RServe.isAlive()) {
 
 					/* Get the image processor of the image ! */
-					ImageProcessor ip = imp.getProcessor();
-					int w = ip.getWidth();
-					int h = ip.getHeight();
+					ImageProcessor ipSize = imp.getProcessor();
+					int w = ipSize.getWidth();
+					int h = ipSize.getHeight();
 
 					try {
 						c.eval("imageSizeY<-" + h);
