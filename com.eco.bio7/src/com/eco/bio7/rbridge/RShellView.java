@@ -2625,7 +2625,10 @@ public class RShellView extends ViewPart {
 						com.eco.bio7.rbridge.RServe.printJob(text.getText());
 						System.out.println();
 					} else {
-						String[] t = text.getText().split(";");
+						
+						//See: http://stackoverflow.com/questions/1757065/java-splitting-a-comma-separated-string-but-ignoring-commas-in-quotes
+				        //Changed to exclude quoted semicolons!
+						String[] t = text.getText().split(";(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1);
 						/* Send multiple expressions and evaluate them! */
 						com.eco.bio7.rbridge.RServe.printJobs(t);
 						/* Linebreak in the job for multiple expressions! */

@@ -9,7 +9,6 @@
  *     M. Austenfeld
  *******************************************************************************/
 
-
 package com.eco.bio7.rbridge;
 
 import org.eclipse.core.resources.WorkspaceJob;
@@ -38,25 +37,27 @@ public class REvaluateJob extends WorkspaceJob {
 
 		String out = null;
 		try {
-			out = RServe.getConnection().eval("paste(capture.output(print(" + trybegin + trybegin +"("+ toprint+")" + tryend + tryend + ")),collapse=\"\\n\")").asString();
+			out = RServe.getConnection().eval("paste(capture.output(print(" + trybegin + trybegin + "(" + toprint + ")" + tryend + tryend + ")),collapse=\"\\n\")").asString();
 
 		} catch (REXPMismatchException e) {
-			
+
 			e.printStackTrace();
 		} catch (RserveException e) {
 			System.out.println("Error : " + e.getMessage());
 		}
 		RServe.setRout(out);
-		
-	 /*Avoid the printing of an empty object - 'NULL'!*/
-      if(out!=null&&out.equals("NULL")==false){
-		StartBio7Utils.getConsoleInstance().cons.println(out);
-      }
 
-		/* Send also the output to the R console view! */
-		if (RShellView.isConsoleExpanded()) {
-			RShellView.setTextConsole(out);
+		/* Avoid the printing of an empty object - 'NULL'! */
+		if (out != null && out.equals("NULL") == false) {
+			StartBio7Utils.getConsoleInstance().cons.println(out);
+			/* Send also the output to the R console view! */
+			if (RShellView.isConsoleExpanded()) {
+
+				RShellView.setTextConsole(out);
+
+			}
 		}
+
 		out = null;
 		return Status.OK_STATUS;
 	}

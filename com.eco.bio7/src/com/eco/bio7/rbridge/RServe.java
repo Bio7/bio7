@@ -226,8 +226,7 @@ public class RServe {
 	public static void print(String expression) {
 
 		try {
-			RServe.rout = RServe.connection
-					.eval("try(paste(capture.output(print(" + expression + ")),collapse=\"\\n\"))").asString();
+			RServe.rout = RServe.connection.eval("try(paste(capture.output(print(" + expression + ")),collapse=\"\\n\"))").asString();
 		} catch (REXPMismatchException e) {
 
 			e.printStackTrace();
@@ -236,10 +235,16 @@ public class RServe {
 			e.printStackTrace();
 		}
 
-		StartBio7Utils.getConsoleInstance().cons.println(RServe.rout);
-		/* Send also the output to the R console view! */
-		if (RShellView.isConsoleExpanded()) {
-			RShellView.setTextConsole(RServe.rout);
+		// StartBio7Utils.getConsoleInstance().cons.println(RServe.rout);
+
+		if (RServe.rout != null && RServe.rout.equals("NULL") == false) {
+			StartBio7Utils.getConsoleInstance().cons.println(RServe.rout);
+			/* Send also the output to the R console view! */
+			if (RShellView.isConsoleExpanded()) {
+
+				RShellView.setTextConsole(RServe.rout);
+
+			}
 		}
 
 	}
@@ -425,17 +430,20 @@ public class RServe {
 			/* Call the custom Rscript ! */
 			String rout = null;
 			try {
-				rout = RServe.getConnection()
-						.eval("" + "try(paste(capture.output(source(fileroot,echo=T)),collapse=\"\\n\"))").asString();
+				rout = RServe.getConnection().eval("" + "try(paste(capture.output(source(fileroot,echo=T)),collapse=\"\\n\"))").asString();
 			} catch (REXPMismatchException e) {
 
 				e.printStackTrace();
 			}
 			Console cons = StartBio7Utils.getConsoleInstance().cons;
-			cons.println(rout);
-			/* Send also the output to the R console view! */
-			if (RShellView.isConsoleExpanded()) {
-				RShellView.setTextConsole(rout);
+			if (rout != null && rout.equals("NULL") == false) {
+				cons.println(rout);
+				/* Send also the output to the R console view! */
+				if (RShellView.isConsoleExpanded()) {
+
+					RShellView.setTextConsole(rout);
+
+				}
 			}
 
 		} catch (RserveException e) {
@@ -532,18 +540,15 @@ public class RServe {
 			String plotPathR = store.getString(PreferenceConstants.P_TEMP_R);
 			String fileName = store.getString("DEVICE_FILENAME");
 
-			if (fileName.endsWith("pdf") || fileName.endsWith("eps") || fileName.endsWith("xfig")
-					|| fileName.endsWith("bitmap") || fileName.endsWith("pictex")) {
-				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")
-						|| ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
+			if (fileName.endsWith("pdf") || fileName.endsWith("eps") || fileName.endsWith("xfig") || fileName.endsWith("bitmap") || fileName.endsWith("pictex")) {
+				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows") || ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 					Program.launch(plotPathR + fileName);
 				} else {
 					plotLinux(plotPathR + fileName);
 				}
 
 			} else if (fileName.endsWith("svg")) {
-				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")
-						|| ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
+				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows") || ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 					Program.launch(plotPathR + fileName);
 				} else {
 					plotLinuxSVG(plotPathR + fileName);
@@ -556,8 +561,7 @@ public class RServe {
 
 				// System.out.println(plotPathR);
 
-				File[] files = ListFilesDirectory(new File(plotPathR),
-						new String[] { ".tiff", ".tif", ".jpg", ".jpeg", ".png", ".bmp" });
+				File[] files = ListFilesDirectory(new File(plotPathR), new String[] { ".tiff", ".tif", ".jpg", ".jpeg", ".png", ".bmp" });
 				if (files.length > 0) {
 					ImagePlus plu = new ImagePlus(files[0].toString());
 					ImageStack stack = new ImageStack(plu.getWidth(), plu.getHeight());
@@ -625,9 +629,7 @@ public class RServe {
 		// Filter the extension of the file.
 		FilenameFilter filter = new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2])
-						|| name.endsWith(extensions[3]) || name.endsWith(extensions[4])
-						|| name.endsWith(extensions[5]));
+				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2]) || name.endsWith(extensions[3]) || name.endsWith(extensions[4]) || name.endsWith(extensions[5]));
 			}
 		};
 

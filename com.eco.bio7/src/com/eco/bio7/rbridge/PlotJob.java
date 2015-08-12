@@ -381,12 +381,19 @@ public class PlotJob extends WorkspaceJob {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			Console cons = StartBio7Utils.getConsoleInstance().cons;
-			cons.println(rout);
-			/* Send also the output to the R console view! */
-			if (RShellView.isConsoleExpanded()) {
-				RShellView.setTextConsole(rout);
-			}
+			/*Console cons = StartBio7Utils.getConsoleInstance().cons;
+			cons.println(rout);*/
+			
+			if(rout!=null&&rout.equals("NULL")==false){
+				StartBio7Utils.getConsoleInstance().cons.println(rout);
+				/* Send also the output to the R console view! */
+				if (RShellView.isConsoleExpanded()) {
+					RShellView.setTextConsole(rout);
+				}
+		      }
+			
+			
+			
 
 		} catch (RserveException e) {
 			// TODO Auto-generated catch block

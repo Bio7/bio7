@@ -9,7 +9,6 @@
  *     M. Austenfeld
  *******************************************************************************/
 
-
 package com.eco.bio7.rbridge;
 
 import org.eclipse.core.resources.WorkspaceJob;
@@ -33,7 +32,7 @@ public class REvaluateExpressionsJob extends WorkspaceJob {
 
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
 		monitor.beginTask("Evaluate Expression", IProgressMonitor.UNKNOWN);
-		
+
 		for (int i = 0; i < expressionArray.length; i++) {
 			evaluate(i);
 			System.out.println();
@@ -51,20 +50,24 @@ public class REvaluateExpressionsJob extends WorkspaceJob {
 			out = RServe.getConnection().eval("paste(capture.output(print(" + trybegin + trybegin + "(" + expressionArray[i] + ")" + tryend + tryend + ")),collapse=\"\\n\")").asString();
 
 		} catch (REXPMismatchException e) {
-			
+
 			e.printStackTrace();
 		} catch (RserveException e) {
 			System.out.println("Error : " + e.getMessage());
 		}
 		RServe.setRout(out);
 
-		//	
+		//
 
-		StartBio7Utils.getConsoleInstance().cons.println(out);
+		/* Avoid the printing of an empty object - 'NULL'! */
+		if (out != null && out.equals("NULL") == false) {
+			StartBio7Utils.getConsoleInstance().cons.println(out);
+			/* Send also the output to the R console view! */
+			if (RShellView.isConsoleExpanded()) {
 
-		/* Send also the output to the R console view! */
-		if (RShellView.isConsoleExpanded()) {
-			RShellView.setTextConsole(out);
+				RShellView.setTextConsole(out);
+
+			}
 		}
 
 		out = null;
