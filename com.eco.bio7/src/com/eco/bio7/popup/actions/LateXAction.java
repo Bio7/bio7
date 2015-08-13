@@ -32,7 +32,7 @@ public class LateXAction implements IObjectActionDelegate {
 
 	private BufferedReader input;
 	private OutputStream stdin;
-	private Object dirPath;
+	private String dirPath;
 	private String fi;
 	private String name;
 
@@ -85,6 +85,13 @@ public class LateXAction implements IObjectActionDelegate {
 
 					Process proc = null;
 					ProcessBuilder pb = new ProcessBuilder(args);
+					//set environment variable u
+					/*String otexinputs =env.get("TEXINPUTS");
+					System.out.println(otexinputs);
+			        env.put("TEXINPUTS", otexinputs+"/"+dirPath);*/
+					//System.out.println(pb.directory());
+					/*Set the working directory for the process from Java!*/
+					pb.directory(new File(dirPath));
 					pb.redirectErrorStream();
 					try {
 						proc = pb.start();

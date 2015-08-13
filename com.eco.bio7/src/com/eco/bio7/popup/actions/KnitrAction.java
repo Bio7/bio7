@@ -336,6 +336,13 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 
 								Process proc = null;
 								ProcessBuilder pb = new ProcessBuilder(args);
+								//set environment variable u
+								/*String otexinputs =env.get("TEXINPUTS");
+						        env.put("TEXINPUTS", otexinputs+"/"+dirPath);*/
+								
+								/*Set the working directory for the process from Java!*/
+								pb.directory(new File(dirPath));
+								
 								pb.redirectErrorStream();
 								try {
 									proc = pb.start();

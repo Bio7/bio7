@@ -78,7 +78,8 @@ public class LibreOfficeConnectionJob extends WorkspaceJob {
 					MessageDialog.openWarning(new Shell(), "LibreOffice", "LibreOffice version >4.0 executable not available !" +
 							"\nPlease adjust the path in the Bio7 preferences.\n" +
 							"Example Windows: C:\\Program Files\\LibreOffice x.x\\program\n"+
-							"Example Linux (MacOSX): /usr/lib/libreoffice/program");
+							"Example Linux: /usr/lib/libreoffice/program\n"+
+							"Example MacOSX: /Applications/LibreOffice.app/Contents/MacOS");
 					canceled = true;
 				}
 			});
