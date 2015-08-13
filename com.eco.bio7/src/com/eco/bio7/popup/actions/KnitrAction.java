@@ -51,6 +51,7 @@ import com.eco.bio7.collection.CustomView;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
 
 import javafx.collections.ListChangeListener;
@@ -79,7 +80,7 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 	public void run(IAction action) {
 		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
 		if (utils != null) {
-			/*Bring the console to the front and clear it!*/
+			/* Bring the console to the front and clear it! */
 			utils.cons.activate();
 			utils.cons.clear();
 		}
@@ -89,11 +90,7 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 		if (selection instanceof IStructuredSelection) {
 			strucSelection = (IStructuredSelection) selection;
 			if (strucSelection.size() == 0) {
-              
-				
-				
-				
-				
+
 			} else if (strucSelection.size() == 1) {
 				final String nameofiofile;
 				Object selectedObj = strucSelection.getFirstElement();
@@ -104,33 +101,31 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 				knitrFile(selectedObj, activeProject);
 
 			}
-			
+
 		}
 
 	}
+
 	public void run() {
 		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
 		if (utils != null) {
-			/*Bring the console to the front and clear it!*/
+			/* Bring the console to the front and clear it! */
 			utils.cons.activate();
 			utils.cons.clear();
 		}
-		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench()
-				.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		if (editor.isDirty()) {
 			editor.doSave(new NullProgressMonitor());
 		}
 
-		
-		
 		IEditorInput editorInput = editor.getEditorInput();
 		IFile aFile = null;
 
 		if (editorInput instanceof IFileEditorInput) {
 			aFile = ((IFileEditorInput) editorInput).getFile();
 		}
-		
-			knitrFile(aFile, aFile.getProject());
+
+		knitrFile(aFile, aFile.getProject());
 	}
 
 	private void knitrFile(Object selectedObj, final IProject activeProject) {
@@ -153,7 +148,7 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 			project = project.replace("\\", "/");
 			fi = selectedFile.getRawLocation().toString();
 			name = nameofiofile;
-			//dirPath = null;
+			// dirPath = null;
 
 			String dirPath = new File(fi).getParentFile().getPath().replace("\\", "/");
 
@@ -184,61 +179,71 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 								String knitrOptions = store.getString("knitroptions");
 								if (fileext.equals("html")) {
 									c.eval("try(" + knitrOptions + ")");
-									//File file = selectedFile.getLocation().toFile();
+									// File file =
+									// selectedFile.getLocation().toFile();
 									String docTemp = BatchModel.fileToString(selectedFile.getLocation().toString());
 
 									// String docTemp=doc.get();
 									Document docHtml = Jsoup.parse(docTemp);
-			                       /*Search for divs with the selected id!*/
+									/* Search for divs with the selected id! */
 									Elements contents = docHtml.select("#knitrcode"); // a
 																						// with
 																						// href
 									for (int i = 0; i < contents.size(); i++) {
-										/*Replace in the div the linebreak and page tags with text linebreak(s)!*/
+										/*
+										 * Replace in the div the linebreak and
+										 * page tags with text linebreak(s)!
+										 */
 										contents.get(i).select("br").append("\\n");
 										contents.get(i).select("p").prepend("\\n\\n");
-										
-										String cleaned=contents.get(i).text().replaceAll("\\\\n", "\n");
-										/*Wrap the parsed div text in a knitr section!*/
-										contents.get(i).after("<!--begin.rcode\n " +cleaned  + " \nend.rcode-->");
+
+										String cleaned = contents.get(i).text().replaceAll("\\\\n", "\n");
+										/*
+										 * Wrap the parsed div text in a knitr
+										 * section!
+										 */
+										contents.get(i).after("<!--begin.rcode\n " + cleaned + " \nend.rcode-->");
 										contents.get(i).remove();
 									}
-									/*Create a temp file for the parsed and edited *.html file for processing with knitr!*/
+									/*
+									 * Create a temp file for the parsed and
+									 * edited *.html file for processing with
+									 * knitr!
+									 */
 									File temp = null;
 									try {
-										 temp = File.createTempFile(theName, ".tmp");
+										temp = File.createTempFile(theName, ".tmp");
 									} catch (IOException e) {
 										// TODO Auto-generated catch block
 										e.printStackTrace();
-									} 
-									
-									/*Write the changes to the file with the help of the ApacheIO lib!*/
+									}
+
+									/*
+									 * Write the changes to the file with the
+									 * help of the ApacheIO lib!
+									 */
 									try {
-										FileUtils.writeStringToFile(temp,docHtml.html());
+										FileUtils.writeStringToFile(temp, docHtml.html());
 									} catch (IOException e) {
 										// TODO Auto-generated catch block
 										e.printStackTrace();
-								}
-									/*Clean the path for R and knitr!*/
-									String cleanedPath=temp.getPath().replace("\\","/");
+									}
+									/* Clean the path for R and knitr! */
+									String cleanedPath = temp.getPath().replace("\\", "/");
 
 									RServe.print("try(knit('" + cleanedPath + "','" + theName + "." + fileext + "'))");
 
-								
 								}
-								
+
 								else if (fileext.equals("tex")) {
-									
+
 									RServe.print("try(knit('" + selFile + "','" + theName + "." + fileext + "'))");
 								}
-								
-		                         
-								
+
 							} catch (RserveException e1) {
 
 								e1.printStackTrace();
 							}
-							
 
 							IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 							IProject proj = root.getProject(activeProject.getName());
@@ -249,36 +254,34 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 								e.printStackTrace();
 							}
 							if (fileext.equals("html")) {
-								
 
-								
 								Display display = PlatformUI.getWorkbench().getDisplay();
 								display.asyncExec(new Runnable() {
 
 									public void run() {
 
 										IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-										boolean openInJavaFXBrowser=store.getBoolean("javafxbrowser");
-										
+										boolean openInJavaFXBrowser = store.getBoolean("javafxbrowser");
+
 										String temp = "file:///" + dirPath + "/" + theName + ".html";
 										String url = temp.replace("\\", "/");
 										System.out.println(url);
-										if (openInJavaFXBrowser==false) {
-										Work.openView("com.eco.bio7.browser.Browser");
-										BrowserView b = BrowserView.getBrowserInstance();
-										b.setLocation(url);
-										}
-										else{
+										if (openInJavaFXBrowser == false) {
+											Work.openView("com.eco.bio7.browser.Browser");
+											BrowserView b = BrowserView.getBrowserInstance();
+											b.setLocation(url);
+										} else {
 											AnchorPane anchorPane = new AnchorPane();
 
-										 WebView brow = new WebView();
+											WebView brow = new WebView();
 											brow.getChildrenUnmodifiable().addListener(new ListChangeListener<Node>() {
-											    @Override public void onChanged(Change<? extends Node> change) {
-											        Set<Node> scrolls = brow.lookupAll(".scroll-bar");
-											        for (Node scroll : scrolls) {
-											            scroll.setVisible(false);
-											        }
-											    }
+												@Override
+												public void onChanged(Change<? extends Node> change) {
+													Set<Node> scrolls = brow.lookupAll(".scroll-bar");
+													for (Node scroll : scrolls) {
+														scroll.setVisible(false);
+													}
+												}
 											});
 
 											final WebEngine webEng = brow.getEngine();
@@ -312,12 +315,21 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 
 								// Process proc =
 								// Runtime.getRuntime().exec(
-								// pdfLatexPath+"/pdflatex -interaction=nonstopmode "
+								// pdfLatexPath+"/pdflatex
+								// -interaction=nonstopmode "
 								// + "-output-directory=" + dirPath +
 								// " " + dirPath + "/" + theName +
 								// ".tex");
+                               /*Eventually take care of whitespaces in path!*/
 								List<String> args = new ArrayList<String>();
-								args.add("\""+pdfLatexPath + "/pdflatex"+"\"");
+
+								if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+									args.add("\"" + pdfLatexPath + "/pdflatex" + "\"");
+								}
+
+								else {
+									args.add(pdfLatexPath + "/pdflatex");
+								}
 								args.add("-interaction=nonstopmode");
 								args.add("-output-directory=" + dirPath);
 								args.add(dirPath + "/" + theName + ".tex");
@@ -329,12 +341,12 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 									proc = pb.start();
 
 								} catch (IOException e) {
-									
+
 									e.printStackTrace();
 									/*
 									 * Bio7Dialog.message(
-									 * "Rserve executable not available !"
-									 * ); RServe.setConnection(null);
+									 * "Rserve executable not available !" );
+									 * RServe.setConnection(null);
 									 */
 								}
 

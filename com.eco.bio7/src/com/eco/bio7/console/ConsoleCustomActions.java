@@ -272,7 +272,7 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 		});
 
 		MenuItem menuItem5 = new MenuItem(fMenu, SWT.PUSH);
-		menuItem5.setText("Stop Native R Process");
+		menuItem5.setText("Stop All Native R Processes");
 
 		menuItem5.addSelectionListener(new SelectionListener() {
 
@@ -282,9 +282,9 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 			public void widgetSelected(SelectionEvent e) {
 
-				boolean destroy = Bio7Dialog.decision("Should the Rterm (Windows) or R (Linux, Mac) process be destroyed?\n" 
+				boolean destroy = Bio7Dialog.decision("Should all running Rterm (Windows) or R (Linux, Mac) processes be destroyed?\n" 
 				+ "If you you confirm all Rterm, R processes on the OS will be terminated!\n"
-				+ "Use only if no other Rterm instances are running!");
+				+ "Use only if no other Rterm, R instances are running!");
 
 				if (destroy) {
 
