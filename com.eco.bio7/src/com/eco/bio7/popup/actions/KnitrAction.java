@@ -306,29 +306,48 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 							} else if (fileext.equals("tex")) {
 								IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 								String pdfLatexPath = store.getString("pdfLatex");
-
-								pdfLatexPath = pdfLatexPath.replace("\\", "/");
-
-								// String temp=dirPath+"/" +
-								// theName+".tex";
-								// String url = temp.replace("\\", "/");
-
-								// Process proc =
-								// Runtime.getRuntime().exec(
-								// pdfLatexPath+"/pdflatex
-								// -interaction=nonstopmode "
-								// + "-output-directory=" + dirPath +
-								// " " + dirPath + "/" + theName +
-								// ".tex");
-                               /*Eventually take care of whitespaces in path!*/
 								List<String> args = new ArrayList<String>();
 
-								if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
-									args.add("\"" + pdfLatexPath + "/pdflatex" + "\"");
-								}
+								if (pdfLatexPath.isEmpty() == false) {
 
+									pdfLatexPath = pdfLatexPath.replace("\\", "/");
+
+									// String temp=dirPath+"/" +
+									// theName+".tex";
+									// String url = temp.replace("\\", "/");
+
+									// Process proc =
+									// Runtime.getRuntime().exec(
+									// pdfLatexPath+"/pdflatex
+									// -interaction=nonstopmode "
+									// + "-output-directory=" + dirPath +
+									// " " + dirPath + "/" + theName +
+									// ".tex");
+									/*
+									 * Eventually take care of whitespaces in
+									 * path!
+									 */
+
+									if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+										args.add("\"" + pdfLatexPath + "/pdflatex" + "\"");
+									}
+
+									else {
+										args.add(pdfLatexPath + "/pdflatex");
+									}
+								}
+								/*Try to start from the PATH environment!*/
 								else {
-									args.add(pdfLatexPath + "/pdflatex");
+
+									
+									if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+										args.add("pdflatex");
+									}
+
+									else {
+										args.add("pdflatex");
+									}
+
 								}
 								args.add("-interaction=nonstopmode");
 								args.add("-output-directory=" + dirPath);
@@ -336,13 +355,18 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 
 								Process proc = null;
 								ProcessBuilder pb = new ProcessBuilder(args);
-								//set environment variable u
-								/*String otexinputs =env.get("TEXINPUTS");
-						        env.put("TEXINPUTS", otexinputs+"/"+dirPath);*/
-								
-								/*Set the working directory for the process from Java!*/
+								// set environment variable u
+								/*
+								 * String otexinputs =env.get("TEXINPUTS");
+								 * env.put("TEXINPUTS", otexinputs+"/"+dirPath);
+								 */
+
+								/*
+								 * Set the working directory for the process
+								 * from Java!
+								 */
 								pb.directory(new File(dirPath));
-								
+
 								pb.redirectErrorStream();
 								try {
 									proc = pb.start();

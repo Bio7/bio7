@@ -33,7 +33,7 @@ public class ImageJPluginsAction extends Action implements IMenuCreator {
 
 	String[] themacros = { "Install...", "Run...", "Startup Macros...", "Record..."};
 
-	String[] theshortcuts = { "List Shortcuts...", "Create Shortcut... ", "Install Plugin...", "Remove..." };
+	String[] theshortcuts = { "List Shortcuts...", "Create Shortcut... ", "Add Shortcut by Name... ", "Remove..." };
 
 	String[] theutilities = { "Control Panel...", "ImageJ Properties...", "Find Commands...", "Threads...", "Benchmark", "Reset...", "Monitor Memory...","Monitor Events...", "Search...", "Capture Screen",
 			"Capture Image" };

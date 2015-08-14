@@ -67,6 +67,9 @@ public class IJ {
 	private static Vector eventListeners = new Vector();
 	private static String lastErrorMessage;
 	private static Properties properties;
+	private static DecimalFormat[] df;
+	private static DecimalFormat[] sf;
+	private static DecimalFormatSymbols dfs;
 
 	static {
 		osname = System.getProperty("os.name");
@@ -80,6 +83,18 @@ public class IJ {
 			isJava17 = version.compareTo("1.6") > 0;
 			isJava18 = version.compareTo("1.7") > 0;
 		}
+		dfs = new DecimalFormatSymbols(Locale.US);
+		df = new DecimalFormat[10];
+		df[0] = new DecimalFormat("0", dfs);
+		df[1] = new DecimalFormat("0.0", dfs);
+		df[2] = new DecimalFormat("0.00", dfs);
+		df[3] = new DecimalFormat("0.000", dfs);
+		df[4] = new DecimalFormat("0.0000", dfs);
+		df[5] = new DecimalFormat("0.00000", dfs);
+		df[6] = new DecimalFormat("0.000000", dfs);
+		df[7] = new DecimalFormat("0.0000000", dfs);
+		df[8] = new DecimalFormat("0.00000000", dfs);
+		df[9] = new DecimalFormat("0.000000000", dfs);
 	}
 
 	static void init(ImageJ imagej, Applet theApplet) {
@@ -284,7 +299,8 @@ public class IJ {
 	 * (Plugins/Macro/Record) and run commands from the ImageJ menu bar.
 	 */
 	public static void run(String command, String options) {
-		// IJ.log("run1: "+command+" "+Thread.currentThread().hashCode()+" "+options);
+		// IJ.log("run1: "+command+" "+Thread.currentThread().hashCode()+"
+		// "+options);
 		if (ij == null && Menus.getCommands() == null)
 			init();
 		Macro.abort = false;
@@ -846,10 +862,6 @@ public class IJ {
 		return d2s(n, 2);
 	}
 
-	private static DecimalFormat[] df;
-	private static DecimalFormat[] sf;
-	private static DecimalFormatSymbols dfs;
-
 	/**
 	 * Converts a number to a rounded formatted string. The 'decimalPlaces'
 	 * argument specifies the number of digits to the right of the decimal point
@@ -887,20 +899,7 @@ public class IJ {
 			decimalPlaces = 0;
 		if (decimalPlaces > 9)
 			decimalPlaces = 9;
-		if (df == null) {
-			dfs = new DecimalFormatSymbols(Locale.US);
-			df = new DecimalFormat[10];
-			df[0] = new DecimalFormat("0", dfs);
-			df[1] = new DecimalFormat("0.0", dfs);
-			df[2] = new DecimalFormat("0.00", dfs);
-			df[3] = new DecimalFormat("0.000", dfs);
-			df[4] = new DecimalFormat("0.0000", dfs);
-			df[5] = new DecimalFormat("0.00000", dfs);
-			df[6] = new DecimalFormat("0.000000", dfs);
-			df[7] = new DecimalFormat("0.0000000", dfs);
-			df[8] = new DecimalFormat("0.00000000", dfs);
-			df[9] = new DecimalFormat("0.000000000", dfs);
-		}
+
 		return df[decimalPlaces].format(n);
 	}
 
@@ -977,9 +976,11 @@ public class IJ {
 			break;
 		case KeyEvent.VK_ALT:
 			altDown = true;
+			updateStatus();
 			break;
 		case KeyEvent.VK_SHIFT:
 			shiftDown = true;
+			updateStatus();
 			if (debugMode)
 				beep();
 			break;
@@ -1010,9 +1011,11 @@ public class IJ {
 			break;
 		case KeyEvent.VK_ALT:
 			altDown = false;
+			updateStatus();
 			break;
 		case KeyEvent.VK_SHIFT:
 			shiftDown = false;
+			updateStatus();
 			if (debugMode)
 				beep();
 			break;
@@ -1025,6 +1028,17 @@ public class IJ {
 		case ALL_KEYS:
 			shiftDown = controlDown = altDown = spaceDown = false;
 			break;
+		}
+	}
+
+	private static void updateStatus() {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp != null) {
+			ImageCanvas ic = imp.getCanvas();
+			if (ic != null && imp.getCalibration().scaled()) {
+				Point p = ic.getCursorLoc();
+				imp.mouseMoved(p.x, p.y);
+			}
 		}
 	}
 
@@ -1319,22 +1333,35 @@ public class IJ {
 	/**
 	 * Sets the lower and upper threshold levels of the specified image and
 	 * updates the display using the specified <code>displayMode</code> ("Red",
-	 * "Black & White", "Over/Under" or "No Update").
+	 * "Black & White", "Over/Under" or "No Update"). With calibrated images,
+	 * 'lowerThreshold' and 'upperThreshold' must be density calibrated values.
+	 * Use setRawThreshold() to set the threshold using raw (uncalibrated)
+	 * values.
 	 */
 	public static void setThreshold(ImagePlus img, double lowerThreshold, double upperThreshold, String displayMode) {
+		Calibration cal = img.getCalibration();
+		if (displayMode == null || !displayMode.contains("raw")) {
+			lowerThreshold = cal.getRawValue(lowerThreshold);
+			upperThreshold = cal.getRawValue(upperThreshold);
+		}
+		setRawThreshold(img, lowerThreshold, upperThreshold, displayMode);
+	}
+
+	/**
+	 * This is a version of setThreshold() that always uses raw (uncalibrated)
+	 * values in the range 0-255 for 8-bit images and 0-65535 for 16-bit images.
+	 */
+	public static void setRawThreshold(ImagePlus img, double lowerThreshold, double upperThreshold, String displayMode) {
 		int mode = ImageProcessor.RED_LUT;
 		if (displayMode != null) {
 			displayMode = displayMode.toLowerCase(Locale.US);
-			if (displayMode.indexOf("black") != -1)
+			if (displayMode.contains("black"))
 				mode = ImageProcessor.BLACK_AND_WHITE_LUT;
-			else if (displayMode.indexOf("over") != -1)
+			else if (displayMode.contains("over"))
 				mode = ImageProcessor.OVER_UNDER_LUT;
-			else if (displayMode.indexOf("no") != -1)
+			else if (displayMode.contains("no"))
 				mode = ImageProcessor.NO_LUT_UPDATE;
 		}
-		Calibration cal = img.getCalibration();
-		lowerThreshold = cal.getRawValue(lowerThreshold);
-		upperThreshold = cal.getRawValue(upperThreshold);
 		img.getProcessor().setThreshold(lowerThreshold, upperThreshold, mode);
 		if (mode != ImageProcessor.NO_LUT_UPDATE && img.getWindow() != null) {
 			img.getProcessor().setLutAnimation(true);

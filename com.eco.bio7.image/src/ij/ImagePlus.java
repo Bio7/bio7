@@ -89,6 +89,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	private boolean hideOverlay;
 	private static int default16bitDisplayRange;
 	private boolean antialiasRendering = true;
+	private boolean ignoreGlobalCalibration;
 	
 
     /** Constructs an uninitialized ImagePlus. */
@@ -1589,7 +1590,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public void setRoi(Roi newRoi) {
 		setRoi(newRoi, true);
 	}
-
+	
 	/** Assigns 'newRoi'  to this image and displays it if 'updateDisplay' is true. */
 	public void setRoi(Roi newRoi, boolean updateDisplay) {
 		if (newRoi==null)
@@ -1621,7 +1622,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 		roi.setImage(this);
 		if (updateDisplay) draw();
-		roi.notifyListeners(RoiListener.CREATED);
+		//roi.notifyListeners(RoiListener.CREATED);
 	}
 	
 	/** Creates a rectangular selection. */
@@ -2065,7 +2066,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Returns this image's calibration. */
 	public Calibration getCalibration() {
 		//IJ.log("getCalibration: "+globalCalibration+" "+calibration);
-		if (globalCalibration!=null) {
+		if (globalCalibration!=null && !ignoreGlobalCalibration) {
 			Calibration gc = globalCalibration.copy();
 			gc.setImage(this);
 			return gc;
@@ -2089,7 +2090,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
     /** Sets the system-wide calibration. */
     public void setGlobalCalibration(Calibration global) {
-		//IJ.log("setGlobalCalibration ("+getTitle()+"): "+global);
+		//IJ.log("setGlobalCalibration: "+calibration);
 		if (global==null)
 			globalCalibration = null;
 		else
@@ -2107,6 +2108,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (calibration==null)
 			calibration = new Calibration(this);
 		return calibration;
+	}
+	
+	public void setIgnoreGlobalCalibration(boolean ignoreGlobalCalibration) {
+		this.ignoreGlobalCalibration = ignoreGlobalCalibration;
 	}
 
     /** Displays the cursor coordinates and pixel value in the status bar.
@@ -2151,7 +2156,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		Calibration cal = getCalibration();
 		if (getProperty("FHT")!=null)
 			return getFFTLocation(x, height-y, cal);
-		if (!IJ.altKeyDown()) {
+		if (!(IJ.altKeyDown()||IJ.shiftKeyDown())) {
 			String s = " x="+d2s(cal.getX(x)) + ", y=" + d2s(cal.getY(y,height));
 			if (getStackSize()>1) {
 				int z = isDisplayedHyperStack()?getSlice()-1:getCurrentSlice()-1;
@@ -2413,9 +2418,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	
 	/** Returns 'true' if this image is thresholded. */
 	public boolean isThreshold() {
-		return ip != null && ip.getMinThreshold() != ImageProcessor.NO_THRESHOLD;
+		return ip!=null && ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD;
 	}
-	
+
     /** Set the default 16-bit display range, where 'bitDepth' must be 0 (auto-scaling), 
     	8 (0-255), 10 (0-1023), 12 (0-4095, 14 (0-16383), 15 (0-32767) or 16 (0-65535). */
     public static void setDefault16bitRange(int bitDepth) {
@@ -2438,31 +2443,31 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	
 	/** Returns a "flattened" version of this image, in RGB format. */
 	public ImagePlus flatten() {
-		if (IJ.debugMode)
-			IJ.log("flatten");
+		if (IJ.debugMode) IJ.log("flatten");
 		ImagePlus imp2 = createImagePlus();
 		ImageCanvas ic2 = new ImageCanvas(imp2);
 		imp2.flatteningCanvas = ic2;
 		imp2.setRoi(getRoi());
-		if (getStackSize() > 1) {
+		if (getStackSize()>1) {
 			imp2.setStack(getStack());
 			imp2.setSlice(getCurrentSlice());
 			if (isHyperStack()) {
-				imp2.setDimensions(getNChannels(), getNSlices(), getNFrames());
-				imp2.setPosition(getChannel(), getSlice(), getFrame());
+				imp2.setDimensions(getNChannels(),getNSlices(),getNFrames());
+				imp2.setPosition(getChannel(),getSlice(),getFrame());
 				imp2.setOpenAsHyperStack(true);
 			}
 		}
 		Overlay overlay2 = getOverlay();
 		ic2.setOverlay(overlay2);
 		ImageCanvas ic = getCanvas();
-		if (ic != null)
+		if (ic!=null)
 			ic2.setShowAllList(ic.getShowAllList());
 		BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-		Graphics2D g = (Graphics2D) bi.getGraphics();
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, antialiasRendering ? RenderingHints.VALUE_ANTIALIAS_ON : RenderingHints.VALUE_ANTIALIAS_OFF);
+		Graphics2D g = (Graphics2D)bi.getGraphics();
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+			antialiasRendering?RenderingHints.VALUE_ANTIALIAS_ON:RenderingHints.VALUE_ANTIALIAS_OFF);
 		g.drawImage(getImage(), 0, 0, null);
-		// ic2.paint(g);
+		//ic2.paint(g);
 		/* Changed for Bio7! */
 		ic2.paintComponent(g);
 		imp2.flatteningCanvas = null;
@@ -2634,7 +2639,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public boolean getHideOverlay() {
 		return hideOverlay;
 	}
-	
+		
 	/** Enable/disable use of antialiasing by the flatten() method. */
 	public void setAntialiasRendering(boolean antialiasRendering) {
 		this.antialiasRendering = antialiasRendering;

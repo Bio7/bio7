@@ -75,9 +75,20 @@ public class LateXAction implements IObjectActionDelegate {
 					pdfLatexPath = pdfLatexPath.replace("\\", "/");
 
 					// Process proc = Runtime.getRuntime().exec(
-					// pdfLatexPath+"/pdflatex -interaction=nonstopmode -include-directory=" + sweaveScriptLocation + " " + "-output-directory=" + dirPath + " " + dirPath + "/" + name + ".tex");
+					// pdfLatexPath+"/pdflatex -interaction=nonstopmode
+					// -include-directory=" + sweaveScriptLocation + " " +
+					// "-output-directory=" + dirPath + " " + dirPath + "/" +
+					// name + ".tex");
 					List<String> args = new ArrayList<String>();
-					args.add(pdfLatexPath + "/pdflatex");
+
+					if (pdfLatexPath.isEmpty() == false) {
+						args.add(pdfLatexPath + "/pdflatex");
+					} 
+					/*Try to start from the PATH environment!*/
+					else {
+						
+						args.add("pdflatex");
+					}
 					args.add("-interaction=nonstopmode");
 					args.add("-include-directory=" + sweaveScriptLocation);
 					args.add("-output-directory=" + dirPath);
@@ -85,12 +96,14 @@ public class LateXAction implements IObjectActionDelegate {
 
 					Process proc = null;
 					ProcessBuilder pb = new ProcessBuilder(args);
-					//set environment variable u
-					/*String otexinputs =env.get("TEXINPUTS");
-					System.out.println(otexinputs);
-			        env.put("TEXINPUTS", otexinputs+"/"+dirPath);*/
-					//System.out.println(pb.directory());
-					/*Set the working directory for the process from Java!*/
+					// set environment variable u
+					/*
+					 * String otexinputs =env.get("TEXINPUTS");
+					 * System.out.println(otexinputs); env.put("TEXINPUTS",
+					 * otexinputs+"/"+dirPath);
+					 */
+					// System.out.println(pb.directory());
+					/* Set the working directory for the process from Java! */
 					pb.directory(new File(dirPath));
 					pb.redirectErrorStream();
 					try {
@@ -98,7 +111,7 @@ public class LateXAction implements IObjectActionDelegate {
 
 					} catch (IOException e) {
 						e.printStackTrace();
-						
+
 					}
 
 					input = new BufferedReader(new InputStreamReader(proc.getInputStream()));

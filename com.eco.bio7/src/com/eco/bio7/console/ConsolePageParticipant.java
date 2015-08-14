@@ -506,7 +506,13 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 				String cPython = store.getString("python_pipe_path");
 				List<String> args = new ArrayList<String>();
-				args.add(cPython + "/python");
+				if (cPython.isEmpty() == false) {
+					args.add(cPython + "/python");
+				} 
+				/*Try to start from the PATH environment!*/
+				else {
+					args.add("python");
+				}
 				args.add("-i");
 				ProcessBuilder builder = new ProcessBuilder(args);
 				builder.environment().put("Path", builder.environment().get("Path") + cPython);
@@ -522,7 +528,13 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 				String cPython = store.getString("python_pipe_path");
 				List<String> args = new ArrayList<String>();
-				args.add(cPython + "/python");
+				if (cPython.isEmpty() == false) {
+					args.add(cPython + "/python");
+				} 
+				/*Try to start from the PATH environment!*/
+				else {
+					args.add("python");
+				}
 				args.add("-i");
 				ProcessBuilder builder = new ProcessBuilder(args);
 				builder.redirectErrorStream(true);
@@ -537,7 +549,13 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 				String cPython = store.getString("python_pipe_path");
 				List<String> args = new ArrayList<String>();
-				args.add(cPython + "/python");
+				if (cPython.isEmpty() == false) {
+					args.add(cPython + "/python");
+				} 
+				/*Try to start from the PATH environment!*/
+				else {
+					args.add("python");
+				}
 				args.add("-i");
 				ProcessBuilder builder = new ProcessBuilder(args);
 				builder.redirectErrorStream(true);

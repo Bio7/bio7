@@ -2619,16 +2619,24 @@ public class RShellView extends ViewPart {
 
 	private void evaluate() {
 		try {
-			if (text.getText() != null) {
+			String tex=text.getText();
+			if (tex != null) {
+				/*Omit escape sequences. Lead to an error if a windows path is specified wrong by chance!*/
+				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+				tex=tex.replace("\\", "/");
+				}
+				System.out.println(tex);
 				if (RServe.isAliveDialog()) {
-					if (!text.getText().contains(";")) {
-						com.eco.bio7.rbridge.RServe.printJob(text.getText());
+					
+					
+					if (!tex.contains(";")) {
+						com.eco.bio7.rbridge.RServe.printJob(tex);
 						System.out.println();
 					} else {
 						
 						//See: http://stackoverflow.com/questions/1757065/java-splitting-a-comma-separated-string-but-ignoring-commas-in-quotes
 				        //Changed to exclude quoted semicolons!
-						String[] t = text.getText().split(";(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+						String[] t = tex.split(";(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1);
 						/* Send multiple expressions and evaluate them! */
 						com.eco.bio7.rbridge.RServe.printJobs(t);
 						/* Linebreak in the job for multiple expressions! */

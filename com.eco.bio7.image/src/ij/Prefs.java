@@ -166,7 +166,6 @@ public class Prefs {
 	 * Slice commands.
 	 */
 	public static boolean reverseNextPreviousOrder;
-
 	static Properties ijPrefs = new Properties();
 	static Properties props = new Properties(ijPrefs);
 	static String prefsDir;

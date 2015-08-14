@@ -425,7 +425,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				/* Default install location for the packages! */
 				store.setDefault("InstallLocation", reg1 + "\\site-library");
 				store.setDefault("SweaveScriptLocation", reg1 + "/share/texmf/tex/latex");
-				store.setDefault("pdfLatex", "C:/");
+				store.setDefault("pdfLatex", "");
 				store.setDefault("RSERVE_ARGS", "");
 
 				/*
@@ -452,7 +452,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, reg2);
 			store.setDefault("InstallLocation", "/usr/lib/R/site-library");
 			store.setDefault("SweaveScriptLocation", "/usr/share/R/share/texmf/tex/latex");
-			store.setDefault("pdfLatex", "/usr/bin");
+			store.setDefault("pdfLatex", "");
 			store.setDefault("RSERVE_ARGS", "");
 
 			/*
@@ -480,7 +480,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			/* Default install location for the packages! */
 			store.setDefault("InstallLocation", path + "/site-library");
 			store.setDefault("SweaveScriptLocation", path + "/usr/share/R/share/texmf/tex/latex");
-			store.setDefault("pdfLatex", "/usr/bin");
+			store.setDefault("pdfLatex", "");
 			store.setDefault("RSERVE_ARGS", "");
 
 			reg2 = "/usr/lib";

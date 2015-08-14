@@ -970,9 +970,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	 * on all the slices of a stack and returns a ResultsTable arranged with one
 	 * row per slice.
 	 * 
-	 * @see <a
-	 *      href="http://imagej.nih.gov/ij/macros/js/MultiMeasureDemo.js">JavaScript
-	 *      example</a>
+	 * @see <a href="http://imagej.nih.gov/ij/macros/js/MultiMeasureDemo.js">
+	 *      JavaScript example</a>
 	 */
 	public ResultsTable multiMeasure(ImagePlus imp) {
 		ResultsTable rt = multiMeasure(imp, getIndexes(), imp.getStackSize(), false);
@@ -1324,7 +1323,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			Roi roi = (Roi) rois.get(label);
 			if (roi == null)
 				continue;
-			// IJ.log("set "+color+"	 "+lineWidth+"	"+fillColor);
+			// IJ.log("set "+color+" "+lineWidth+" "+fillColor);
 			if (color != null)
 				roi.setStrokeColor(color);
 			if (lineWidth >= 0)
@@ -1701,7 +1700,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			labelsCheckbox.setSelected(true);
 			showAll(LABELS);
 		}
-		IJ.doCommand("Labels...");
+		try {
+			IJ.run("Labels...");
+		} catch (Exception e) {
+		}
+		Overlay defaultOverlay = OverlayLabels.createOverlay();
+		Prefs.useNamesAsLabels = defaultOverlay.getDrawNames();
 	}
 
 	private void options() {
@@ -1724,9 +1728,16 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp != null) {
 			Overlay overlay = imp.getOverlay();
-			if (overlay != null)
+			if (overlay == null) {
+				ImageCanvas ic = imp.getCanvas();
+				if (ic != null)
+					overlay = ic.getShowAllList();
+			}
+			if (overlay != null) {
 				overlay.drawNames(Prefs.useNamesAsLabels);
-			imp.draw();
+				setOverlay(imp, overlay);
+			} else
+				imp.draw();
 		}
 		if (record()) {
 			Recorder.record("roiManager", "Associate", Prefs.showAllSliceOnly ? "true" : "false");
@@ -1906,7 +1917,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return -1;
 	}
 
-	/** Returns the index of the first selected ROI or -1 if no ROI is selected. */
+	/**
+	 * Returns the index of the first selected ROI or -1 if no ROI is selected.
+	 */
 	public int getSelectedIndex() {
 		return list.getSelectedIndex();
 	}
@@ -2389,7 +2402,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				index = 0;
 			if (index >= getCount())
 				index = getCount();
-			// IJ.log(index+"  "+rot);
+			// IJ.log(index+" "+rot);
 			select(index);
 			if (IJ.isWindows())
 				list.requestFocusInWindow();
