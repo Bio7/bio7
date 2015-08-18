@@ -840,9 +840,15 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 					} else if (sel.equals("PLOT_CAIRO")) {
 
-						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 480, height = 480, type=\"cairo\")}; options(device=\".bio7Device\")");
-						prefsPlotRserve.deviceFilename.setStringValue("");
-						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
+						if (getOS().equals("Mac")) {
+
+							Bio7Dialog.message("Cairo not supported on MacOSX!");
+
+						} else {
+							prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 480, height = 480, type=\"cairo\")}; options(device=\".bio7Device\")");
+							prefsPlotRserve.deviceFilename.setStringValue("");
+							prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
+						}
 					}
 
 					else if (sel.equals("PLOT_PRINT")) {
@@ -881,60 +887,62 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 					else if (sel.equals("PLOT_IMAGEJ_IMAGESIZE_CAIRO")) {
 
-						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { "
-								+"tryCatch(tiff(filename,width = imageSizeX, height = imageSizeY, units = \"px\",type=\"cairo\"),error = function (x) {tiff(filename,width = 512, height = 512, units = \"px\",type=\"cairo\"); print('ImageSizeX and ImageSizeY variables not defined in R Workspace. Applied default values!')})"
-								+ "}; options(device=\".bio7Device\")");
-						prefsPlotRserve.deviceFilename.setStringValue("");
-						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
+						if (getOS().equals("Mac")) {
+							Bio7Dialog.message("Cairo not supported on MacOSX!");
+						} else {
+
+							prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { "
+									+ "tryCatch(tiff(filename,width = imageSizeX, height = imageSizeY, units = \"px\",type=\"cairo\"),error = function (x) {tiff(filename,width = 512, height = 512, units = \"px\",type=\"cairo\"); print('ImageSizeX and ImageSizeY variables not defined in R Workspace. Applied default values!')})"
+									+ "}; options(device=\".bio7Device\")");
+							prefsPlotRserve.deviceFilename.setStringValue("");
+							prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
+						}
 					}
-					
-					
+
 					else if (sel.equals("PLOT_IMAGEJ_DISPLAYSIZE_CAIRO")) {
-						
-						CanvasView view=CanvasView.getCanvas_view();
-						/*Height correction for the plot!*/
-						int correction=0;
-						if(CanvasView.tabFolder.isDisposed()==false&&CanvasView.tabFolder!=null){
-							correction=CanvasView.tabFolder.getTabHeight();
-						}
-						
-						if(view!=null){
-						Rectangle rec=view.getParent2().getClientArea();
-						if(rec.width>0&&rec.height>correction){
-						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = "  + rec.width + ", height = " + (rec.height-100) + ", type=\"cairo\")}; options(device=\".bio7Device\")");
-						}
-						else{
-							prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = " + 512 + ", height = " + 512 + ", type=\"cairo\")}; options(device=\".bio7Device\")");
+						if (getOS().equals("Mac")) {
+							Bio7Dialog.message("Cairo not supported on MacOSX!");
+						} else {
+							CanvasView view = CanvasView.getCanvas_view();
+							/* Height correction for the plot! */
+							int correction = 0;
+							if (CanvasView.tabFolder.isDisposed() == false && CanvasView.tabFolder != null) {
+								correction = CanvasView.tabFolder.getTabHeight();
+							}
 
+							if (view != null) {
+								Rectangle rec = view.getParent2().getClientArea();
+								if (rec.width > 0 && rec.height > correction) {
+									prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = " + rec.width + ", height = " + (rec.height - 100) + ", type=\"cairo\")}; options(device=\".bio7Device\")");
+								} else {
+									prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = " + 512 + ", height = " + 512 + ", type=\"cairo\")}; options(device=\".bio7Device\")");
+
+								}
+								prefsPlotRserve.deviceFilename.setStringValue("");
+								prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
+							}
 						}
-						prefsPlotRserve.deviceFilename.setStringValue("");
-						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
-						}
-					
+
 					} else if (sel.equals("PLOT_IMAGEJ_DISPLAYSIZE")) {
-						
-						CanvasView view=CanvasView.getCanvas_view();
-						/*Height correction for the plot!*/
-						int correction=0;
-						if(CanvasView.tabFolder.isDisposed()==false&&CanvasView.tabFolder!=null){
-							correction=CanvasView.tabFolder.getTabHeight();
-						}
-						if(view!=null){
-					Rectangle rec=view.getParent2().getClientArea();
-					if(rec.width>0&&rec.height>correction){
-						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width =  " + rec.width + ", height = " + (rec.height-correction) + ", units = \"px\")}; options(device=\".bio7Device\")");
-					}
-					else{
-						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width =  " + 512 + ", height = " + 512 + ", units = \"px\")}; options(device=\".bio7Device\")");
 
-					}
-						prefsPlotRserve.deviceFilename.setStringValue("");
-						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
+						CanvasView view = CanvasView.getCanvas_view();
+						/* Height correction for the plot! */
+						int correction = 0;
+						if (CanvasView.tabFolder.isDisposed() == false && CanvasView.tabFolder != null) {
+							correction = CanvasView.tabFolder.getTabHeight();
+						}
+						if (view != null) {
+							Rectangle rec = view.getParent2().getClientArea();
+							if (rec.width > 0 && rec.height > correction) {
+								prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width =  " + rec.width + ", height = " + (rec.height - correction) + ", units = \"px\")}; options(device=\".bio7Device\")");
+							} else {
+								prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width =  " + 512 + ", height = " + 512 + ", units = \"px\")}; options(device=\".bio7Device\")");
+
+							}
+							prefsPlotRserve.deviceFilename.setStringValue("");
+							prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 						}
 					}
-					
-					
-					
 
 				}
 			}
