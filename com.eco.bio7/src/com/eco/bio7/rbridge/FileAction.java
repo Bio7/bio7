@@ -32,7 +32,7 @@ public class FileAction extends Action implements IMenuCreator {
 
 	protected Grid grid;
 
-	//protected Sheet sheet = null;
+	// protected Sheet sheet = null;
 
 	protected Color colo;
 
@@ -51,11 +51,11 @@ public class FileAction extends Action implements IMenuCreator {
 			fMenu.dispose();
 		}
 		fMenu = new Menu(parent);
-		
+
 		MenuItem menuItem51 = new MenuItem(fMenu, SWT.PUSH);
 
 		menuItem51.setText("Load Bio7 XML");
-		
+
 		new MenuItem(fMenu, SWT.SEPARATOR);
 
 		MenuItem menuItem = new MenuItem(fMenu, SWT.PUSH);
@@ -68,22 +68,24 @@ public class FileAction extends Action implements IMenuCreator {
 
 		new MenuItem(fMenu, SWT.SEPARATOR);
 
-		/*MenuItem menuItem3 = new MenuItem(fMenu, SWT.PUSH);
-
-		menuItem3.setText("Import OpenOffice");
-		
-		new MenuItem(fMenu, SWT.SEPARATOR);*/
+		/*
+		 * MenuItem menuItem3 = new MenuItem(fMenu, SWT.PUSH);
+		 * 
+		 * menuItem3.setText("Import OpenOffice");
+		 * 
+		 * new MenuItem(fMenu, SWT.SEPARATOR);
+		 */
 
 		MenuItem menuItem5 = new MenuItem(fMenu, SWT.PUSH);
 
 		menuItem5.setText("Import CSV");
-		
+
 		new MenuItem(fMenu, SWT.SEPARATOR);
-		
+
 		MenuItem menuItem6 = new MenuItem(fMenu, SWT.PUSH);
 
 		menuItem6.setText("Save as Bio7 XML");
-		
+
 		new MenuItem(fMenu, SWT.SEPARATOR);
 
 		MenuItem menuItem1 = new MenuItem(fMenu, SWT.PUSH);
@@ -96,29 +98,31 @@ public class FileAction extends Action implements IMenuCreator {
 
 		new MenuItem(fMenu, SWT.SEPARATOR);
 
-		/*MenuItem menuItem4 = new MenuItem(fMenu, SWT.PUSH);
-
-		menuItem4.setText("Export as OpenOffice");
-		
-		new MenuItem(fMenu, SWT.SEPARATOR);*/
+		/*
+		 * MenuItem menuItem4 = new MenuItem(fMenu, SWT.PUSH);
+		 * 
+		 * menuItem4.setText("Export as OpenOffice");
+		 * 
+		 * new MenuItem(fMenu, SWT.SEPARATOR);
+		 */
 
 		MenuItem menuItem2 = new MenuItem(fMenu, SWT.PUSH);
 
 		menuItem2.setText("Export as Text");
-
-		
 
 		menuItem6.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
 
 				final String file = Bio7Dialog.saveFile("*.bgjar");
-				new File(file).getAbsolutePath();
-				grid = RTable.getGrid();
 				if (file != null) {
-					SaveGridXMLJob job = new SaveGridXMLJob(file, new File(file).getParent(), grid);
-					// job.setSystem(true);
-					job.schedule();
+					new File(file).getAbsolutePath();
+					grid = RTable.getGrid();
+					if (file != null) {
+						SaveGridXMLJob job = new SaveGridXMLJob(file, new File(file).getParent(), grid);
+						// job.setSystem(true);
+						job.schedule();
+					}
 				}
 
 			}
@@ -161,31 +165,25 @@ public class FileAction extends Action implements IMenuCreator {
 			}
 		});
 
-		/*menuItem3.addSelectionListener(new SelectionListener() {
-
-			public void widgetSelected(SelectionEvent e) {
-				String file = null;
-				file = Bio7Dialog.openFile(new String[] { "*.ods", "*." });
-				File fil = null;
-				if (file != null) {
-
-					fil = new File(file);
-
-					if (fil.exists()) {
-						LoadOpenOfficeJob job = new LoadOpenOfficeJob(fil);
-						job.setSystem(true);
-						job.schedule();
-					} else {
-						Bio7Dialog.message("File not found!");
-					}
-				}
-
-			}
-
-			public void widgetDefaultSelected(SelectionEvent e) {
-
-			}
-		});*/
+		/*
+		 * menuItem3.addSelectionListener(new SelectionListener() {
+		 * 
+		 * public void widgetSelected(SelectionEvent e) { String file = null;
+		 * file = Bio7Dialog.openFile(new String[] { "*.ods", "*." }); File fil
+		 * = null; if (file != null) {
+		 * 
+		 * fil = new File(file);
+		 * 
+		 * if (fil.exists()) { LoadOpenOfficeJob job = new
+		 * LoadOpenOfficeJob(fil); job.setSystem(true); job.schedule(); } else {
+		 * Bio7Dialog.message("File not found!"); } }
+		 * 
+		 * }
+		 * 
+		 * public void widgetDefaultSelected(SelectionEvent e) {
+		 * 
+		 * } });
+		 */
 
 		menuItem.addSelectionListener(new SelectionListener() {
 
@@ -241,23 +239,20 @@ public class FileAction extends Action implements IMenuCreator {
 
 			}
 		});
-		/*menuItem4.addSelectionListener(new SelectionListener() {
-
-			public void widgetSelected(SelectionEvent e) {
-				final String file = Bio7Dialog.saveFile("*.ods");
-				grid = RTable.getGrid();
-				if (file != null) {
-					SaveOpenOfficeJob job = new SaveOpenOfficeJob(file, grid);
-					 job.setSystem(true);
-					job.schedule();
-				}
-
-			}
-
-			public void widgetDefaultSelected(SelectionEvent e) {
-
-			}
-		});*/
+		/*
+		 * menuItem4.addSelectionListener(new SelectionListener() {
+		 * 
+		 * public void widgetSelected(SelectionEvent e) { final String file =
+		 * Bio7Dialog.saveFile("*.ods"); grid = RTable.getGrid(); if (file !=
+		 * null) { SaveOpenOfficeJob job = new SaveOpenOfficeJob(file, grid);
+		 * job.setSystem(true); job.schedule(); }
+		 * 
+		 * }
+		 * 
+		 * public void widgetDefaultSelected(SelectionEvent e) {
+		 * 
+		 * } });
+		 */
 		menuItem11.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {

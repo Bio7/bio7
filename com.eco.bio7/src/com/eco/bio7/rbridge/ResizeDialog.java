@@ -24,6 +24,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.wb.swt.layout.grouplayout.GroupLayout;
 import org.eclipse.wb.swt.layout.grouplayout.LayoutStyle;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.GridData;
 
 public class ResizeDialog extends Dialog {
 
@@ -45,9 +47,13 @@ public class ResizeDialog extends Dialog {
 	@Override
 	protected Control createDialogArea(Composite parent) {
 		Composite container = (Composite) super.createDialogArea(parent);
+		container.setLayout(new GridLayout(4, false));
 
 		
 		spinner = new Spinner(container, SWT.BORDER);
+		GridData gd_spinner = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_spinner.heightHint = 30;
+		spinner.setLayoutData(gd_spinner);
 		spinner.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				Grid grid = RTable.getGrid();
@@ -72,66 +78,48 @@ public class ResizeDialog extends Dialog {
 		spinner.setMinimum(1);
 		spinner.setMaximum(1000);
 
-		
-		spinner_1 = new Spinner(container, SWT.BORDER);
-		spinner_1.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				Grid grid = RTable.getGrid();
-				if (grid != null) {
-
-					Point[] sel = grid.getCellSelection();
-					int temp = 0;
-					for (Point selection : sel) {
-
-						
-
-						grid.getItem(selection.y).setHeight(spinner_1.getSelection());
-						grid.getColumn(selection.x).setWidth(spinner.getSelection());
-					}
-
-				}
-				
-			
-			}
-		});
-		spinner_1.setSelection(20);
-		spinner_1.setMinimum(1);
-		spinner_1.setMaximum(1000);
-
 		Label widthLabel;
 		widthLabel = new Label(container, SWT.NONE);
+		GridData gd_widthLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_widthLabel.heightHint = 30;
+		widthLabel.setLayoutData(gd_widthLabel);
 		widthLabel.setText("Width");
 
 		Label heightLabel;
+		
+				
+				spinner_1 = new Spinner(container, SWT.BORDER);
+				GridData gd_spinner_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+				gd_spinner_1.heightHint = 30;
+				spinner_1.setLayoutData(gd_spinner_1);
+				spinner_1.addSelectionListener(new SelectionAdapter() {
+					public void widgetSelected(final SelectionEvent e) {
+						Grid grid = RTable.getGrid();
+						if (grid != null) {
+
+							Point[] sel = grid.getCellSelection();
+							int temp = 0;
+							for (Point selection : sel) {
+
+								
+
+								grid.getItem(selection.y).setHeight(spinner_1.getSelection());
+								grid.getColumn(selection.x).setWidth(spinner.getSelection());
+							}
+
+						}
+						
+					
+					}
+				});
+				spinner_1.setSelection(20);
+				spinner_1.setMinimum(1);
+				spinner_1.setMaximum(1000);
 		heightLabel = new Label(container, SWT.NONE);
+		GridData gd_heightLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_heightLabel.heightHint = 30;
+		heightLabel.setLayoutData(gd_heightLabel);
 		heightLabel.setText("Height");
-		final GroupLayout groupLayout = new GroupLayout(container);
-		groupLayout.setHorizontalGroup(
-			groupLayout.createParallelGroup(GroupLayout.LEADING)
-				.add(groupLayout.createSequentialGroup()
-					.addContainerGap()
-					.add(spinner, GroupLayout.PREFERRED_SIZE, 102, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(LayoutStyle.RELATED)
-					.add(widthLabel, GroupLayout.PREFERRED_SIZE, 43, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(LayoutStyle.RELATED)
-					.add(spinner_1, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(LayoutStyle.RELATED)
-					.add(heightLabel, GroupLayout.DEFAULT_SIZE, 51, Short.MAX_VALUE)
-					.addContainerGap())
-		);
-		groupLayout.setVerticalGroup(
-			groupLayout.createParallelGroup(GroupLayout.LEADING)
-				.add(groupLayout.createSequentialGroup()
-					.addContainerGap()
-					.add(groupLayout.createParallelGroup(GroupLayout.BASELINE)
-						.add(spinner_1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.add(heightLabel)
-						.add(widthLabel)
-						.add(spinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addContainerGap(47, Short.MAX_VALUE))
-		);
-		groupLayout.linkSize(new org.eclipse.swt.widgets.Control[] {spinner, spinner_1}, GroupLayout.HORIZONTAL);
-		container.setLayout(groupLayout);
 
 		return container;
 	}
@@ -149,7 +137,7 @@ public class ResizeDialog extends Dialog {
 	 */
 	@Override
 	protected Point getInitialSize() {
-		return new Point(319, 91);
+		return new Point(492, 178);
 	}
 	protected void configureShell(Shell newShell) {
 		super.configureShell(newShell);

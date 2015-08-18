@@ -35,6 +35,8 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 
+import com.eco.bio7.util.Util;
+
 public class EditAction extends Action implements IMenuCreator {
 
 	private Menu fMenu;
@@ -326,7 +328,7 @@ public class EditAction extends Action implements IMenuCreator {
 		menuResizeSelCell.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
-				new ResizeDialog(new Shell()).open();
+				new ResizeDialog(Util.getShell()).open();
 
 			}
 
