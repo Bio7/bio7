@@ -735,7 +735,7 @@ public class ImageMethods extends ViewPart {
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);
 						
-								MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+								MessageBox message = new MessageBox(Util.getShell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
 								message.setMessage("Should a Raster Stack be created?");
 								message.setText("Raster?");
 								int response = message.open();
@@ -1125,7 +1125,7 @@ public class ImageMethods extends ViewPart {
 					if (items.length > 0) {
 						if (RState.isBusy() == false) {
 							RState.setBusy(true);
-							ClusterDialog co = new ClusterDialog(new Shell());
+							ClusterDialog co = new ClusterDialog(Util.getShell());
 							co.open();
 							ClusterJob clusterjob = new ClusterJob();
 							clusterjob.addJobChangeListener(new JobChangeAdapter() {
@@ -1173,7 +1173,7 @@ public class ImageMethods extends ViewPart {
 					if (items.length > 0) {
 						if (RState.isBusy() == false) {
 							RState.setBusy(true);
-							PcaDialog pca = new PcaDialog(new Shell());
+							PcaDialog pca = new PcaDialog(Util.getShell());
 							pca.open();
 							PcaJob pcaJob = new PcaJob();
 							pcaJob.addJobChangeListener(new JobChangeAdapter() {

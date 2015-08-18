@@ -27,6 +27,7 @@ import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.util.Util;
 
 public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobChangeListener {
 
@@ -98,7 +99,7 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 				Display.getDefault().syncExec(new Runnable() {
 
 					public void run() {
-						ImageRoiSelectionInputDialog in = new ImageRoiSelectionInputDialog(new Shell());
+						ImageRoiSelectionInputDialog in = new ImageRoiSelectionInputDialog(Util.getShell());
 						in.open();
 
 					}
