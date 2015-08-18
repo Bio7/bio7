@@ -21,6 +21,7 @@ import com.eco.bio7.preferences.RServePrefs;
 import com.eco.bio7.rpreferences.RCodePreferences;
 import com.eco.bio7.rpreferences.TemplatesPreferencePage;
 import com.eco.bio7.rpreferences.WorkbenchPreferenceR;
+import com.eco.bio7.util.Util;
 
 /**
  * Open the preferences dialog
@@ -107,7 +108,7 @@ public class OpenRservePreferencesAction extends Action implements ActionFactory
 		manager.addToRoot(targetNode4);
 		manager.addToRoot(targetNode6);
 		manager.addToRoot(targetNode7);
-		final PreferenceDialog dialog = new WorkbenchPreferenceDialog(new Shell(), manager);
+		final PreferenceDialog dialog = new WorkbenchPreferenceDialog(Util.getShell(), manager);
 		BusyIndicator.showWhile(Display.getCurrent(), new Runnable() {
 			public void run() {
 				dialog.create();

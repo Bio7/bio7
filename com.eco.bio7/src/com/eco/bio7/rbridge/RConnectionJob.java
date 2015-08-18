@@ -37,6 +37,7 @@ import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.reditors.REditor;
+import com.eco.bio7.util.Util;
 import com.eco.bio7.worldwind.WorldWindView;
 
 public class RConnectionJob extends WorkspaceJob {
@@ -51,7 +52,6 @@ public class RConnectionJob extends WorkspaceJob {
 
 	private BufferedReader input;
 
-
 	public RConnectionJob() {
 		super("Connecting To RServer");
 
@@ -64,29 +64,26 @@ public class RConnectionJob extends WorkspaceJob {
 		// If remote!
 		boolean remote = store.getBoolean("REMOTE");
 		String rserveArgs = store.getString("RSERVE_ARGS");
-		
+
 		if (remote == false) {
 			/* Start up the process of R and Rserve! */
-			
-			if(store.getBoolean("RSERVE_NATIVE_START")){
+
+			if (store.getBoolean("RSERVE_NATIVE_START")) {
 				String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
-				
+
 				if (selectionConsole.equals("R")) {
-					
-					ConsolePageParticipant.pipeInputToConsole("library(Rserve)",true,false);
-					ConsolePageParticipant.pipeInputToConsole("run.Rserve(" + rserveArgs + ")",true,false);
-					
-				}
-				else{
+
+					ConsolePageParticipant.pipeInputToConsole("library(Rserve)", true, false);
+					ConsolePageParticipant.pipeInputToConsole("run.Rserve(" + rserveArgs + ")", true, false);
+
+				} else {
 					Bio7Dialog.message("Please start the native R connection in the Bio7 Console!");
 				}
-				
-			}
-			else{
-				/*Start Rserve without shell (deprecated)!*/
+
+			} else {
+				/* Start Rserve without shell (deprecated)! */
 				startExec();
 			}
-			
 
 		} // Remote connection!
 		for (int i = 0; i < 11; i++) {
@@ -111,8 +108,7 @@ public class RConnectionJob extends WorkspaceJob {
 
 					}
 
-					monitor.setTaskName("Connect to Rserver: " + (i)
-							+ " from 10");
+					monitor.setTaskName("Connect to Rserver: " + (i) + " from 10");
 
 					try {
 						Thread.sleep(500);
@@ -123,19 +119,12 @@ public class RConnectionJob extends WorkspaceJob {
 						RServe.setRrunning(false);
 
 						monitor.worked(10);
-						Display display = PlatformUI.getWorkbench()
-								.getDisplay();
+						Display display = PlatformUI.getWorkbench().getDisplay();
 						display.syncExec(new Runnable() {
 
 							public void run() {
 
-								MessageDialog
-										.openWarning(
-												new Shell(),
-												"R",
-												"R-Server connection could not be established"
-														+ "\n"
-														+ "probably the firewall is active->Please try again !");
+								MessageDialog.openWarning(Util.getShell(), "R", "R-Server connection could not be established" + "\n" + "probably the firewall is active->Please try again !");
 								RServe.setConnection(null);
 							}
 						});
@@ -152,14 +141,11 @@ public class RConnectionJob extends WorkspaceJob {
 					} else {
 						RServe.setRrunning(false);
 						monitor.worked(10);
-						Display display = PlatformUI.getWorkbench()
-								.getDisplay();
+						Display display = PlatformUI.getWorkbench().getDisplay();
 						display.syncExec(new Runnable() {
 
 							public void run() {
-								MessageDialog.openWarning(new Shell(), "R",
-										"R-Server connection could not be established"
-												+ "->Please try again !");
+								MessageDialog.openWarning(Util.getShell(), "R", "R-Server connection could not be established" + "->Please try again !");
 								RServe.setConnection(null);
 
 							}
@@ -187,26 +173,25 @@ public class RConnectionJob extends WorkspaceJob {
 		 * situations!
 		 */
 		try {
-			IPreferenceStore store = Bio7Plugin.getDefault()
-					.getPreferenceStore();
+			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 			String tempPath = store.getString(PreferenceConstants.P_TEMP_R);
 			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
-				
+
 				tempPath = tempPath.replace("\\", "/");
 			}
-			//System.out.println(tempPath);
+			// System.out.println(tempPath);
 			con.eval("try(options(max.print=5000))");
-			/*Define a new R environment!*/
-            con.eval("try(.bio7TempEnvPath<- new.env())");
-            /*Set Bio7 temp path in R!*/
-            con.eval("try(assign(\"pathTemp\", \""+tempPath+"\", env=.bio7TempEnvPath))");
-            /*Make the default completion function in R available!*/
-            con.eval("try(source(paste(.bio7TempEnvPath$pathTemp,'calculateRCompletion.R',sep='')))");
-			//con.eval("try(setHook(packageEvent(\"spatstat\",\"onLoad\"),\"writeFunctionDef\"))");
-            /*
+			/* Define a new R environment! */
+			con.eval("try(.bio7TempEnvPath<- new.env())");
+			/* Set Bio7 temp path in R! */
+			con.eval("try(assign(\"pathTemp\", \"" + tempPath + "\", env=.bio7TempEnvPath))");
+			/* Make the default completion function in R available! */
+			con.eval("try(source(paste(.bio7TempEnvPath$pathTemp,'calculateRCompletion.R',sep='')))");
+			// con.eval("try(setHook(packageEvent(\"spatstat\",\"onLoad\"),\"writeFunctionDef\"))");
+			/*
 			 * Set the default install location for the add on packages!
 			 */
-			
+
 			String rPackages = store.getString("InstallLocation");
 			String dev = store.getString("DEVICE_DEFINITION");
 			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
@@ -220,10 +205,10 @@ public class RConnectionJob extends WorkspaceJob {
 			if (customDevice) {
 				con.eval(dev);
 			}
-			/*Set the custom startup preferences options!*/
-			String rStartupArgs=store.getString("R_STARTUP_ARGS");
+			/* Set the custom startup preferences options! */
+			String rStartupArgs = store.getString("R_STARTUP_ARGS");
 			rStartupArgs = rStartupArgs.replace('\r', ' ');// Replace
-			con.eval(""+rStartupArgs+"");
+			con.eval("" + rStartupArgs + "");
 			/*
 			 * If Rserve is unavailable reset the variable which indicates if
 			 * Rserve is busy!
@@ -249,21 +234,18 @@ public class RConnectionJob extends WorkspaceJob {
 
 		rt = Runtime.getRuntime();
 
-		boolean startRShell = store
-				.getBoolean(PreferenceConstants.R_START_SHELL);
+		boolean startRShell = store.getBoolean(PreferenceConstants.R_START_SHELL);
 		String rserveArgs = store.getString("RSERVE_ARGS");
 		String rArgs = store.getString("R_STARTUP_ARGS");
 
 		if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 			String pathR;
 			if (ApplicationWorkbenchWindowAdvisor.is64BitVM()) {
-				pathR = store.getString(PreferenceConstants.PATH_R)
-						+ "/bin/x64/r";
+				pathR = store.getString(PreferenceConstants.PATH_R) + "/bin/x64/r";
 			} else {
-				pathR = store.getString(PreferenceConstants.PATH_R)
-						+ "/bin/i386/r";
+				pathR = store.getString(PreferenceConstants.PATH_R) + "/bin/i386/r";
 			}
-			
+
 			if (startRShell == false) {
 
 				List<String> args = new ArrayList<String>();
@@ -299,8 +281,7 @@ public class RConnectionJob extends WorkspaceJob {
 
 				} catch (IOException e) {
 
-					MessageDialog.openWarning(new Shell(), "R",
-							"Rserve executable not available !");
+					MessageDialog.openWarning(Util.getShell(), "R", "Rserve executable not available !");
 					RServe.setConnection(null);
 				}
 			}
@@ -310,33 +291,30 @@ public class RConnectionJob extends WorkspaceJob {
 		} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
 			String path;
 			if (ApplicationWorkbenchWindowAdvisor.is64BitVM()) {
-				path = store.getString(PreferenceConstants.PATH_R)
-						+ "/bin/R";
+				path = store.getString(PreferenceConstants.PATH_R) + "/bin/R";
 			} else {
-				path = store.getString(PreferenceConstants.PATH_R)
-						+ "/bin/R";
+				path = store.getString(PreferenceConstants.PATH_R) + "/bin/R";
 			}
 			if (startRShell == true) {
-				String shellType=store.getString("LINUX_SHELL");
+				String shellType = store.getString("LINUX_SHELL");
 				// Runtime runtime = Runtime.getRuntime();
 				// proc = runtime.exec("xterm -hold -e " + pathR +
 				// "/bin/R -e library(Rserve);Rserve();");
 				List<String> args = new ArrayList<String>();
-				if(shellType.equals("XTERM")){
-				
-				args.add("xterm");
-				args.add("-hold");
-				args.add("-e");
-				args.add(path);
-				args.add("-e");
-				args.add("library(Rserve);Rserve();");
-				}
-				else if(shellType.equals("GNOME")){
-					args.add("gnome-terminal");
-					
+				if (shellType.equals("XTERM")) {
+
+					args.add("xterm");
+					args.add("-hold");
 					args.add("-e");
-					args.add("sh -c \""+path+" -e 'library(Rserve);Rserve();'; exec bash\"");
-					
+					args.add(path);
+					args.add("-e");
+					args.add("library(Rserve);Rserve();");
+				} else if (shellType.equals("GNOME")) {
+					args.add("gnome-terminal");
+
+					args.add("-e");
+					args.add("sh -c \"" + path + " -e 'library(Rserve);Rserve();'; exec bash\"");
+
 				}
 
 				ProcessBuilder pb = new ProcessBuilder(args);
@@ -346,28 +324,27 @@ public class RConnectionJob extends WorkspaceJob {
 
 				} catch (IOException e) {
 
-					MessageDialog.openWarning(new Shell(), "R",
-							"Rserve executable not available !");
+					MessageDialog.openWarning(Util.getShell(), "R", "Rserve executable not available !");
 					RServe.setConnection(null);
 				}
 
 			} else {
-				
+
 				List<String> args = new ArrayList<String>();
 				args.add("/bin/sh");
 				args.add("-c");
-				args.add("echo 'library(Rserve);Rserve(args=\"" + rserveArgs +"\")'|"+path+" "+rArgs);
+				args.add("echo 'library(Rserve);Rserve(args=\"" + rserveArgs + "\")'|" + path + " " + rArgs);
 				// Runtime runtime = Runtime.getRuntime();
 				// proc = runtime.exec("xterm -e " + pathR +
 				// "/bin/R -e library(Rserve);Rserve(args='" + rserveArgs +
 				// "');");
-				/*List<String> args = new ArrayList<String>();
-				args.add("xterm");
-				args.add("-e");
-				args.add(path);
-				args.add(rArgs);
-				args.add("-e");
-				args.add("library(Rserve);Rserve(args='" + rserveArgs + "');");*/
+				/*
+				 * List<String> args = new ArrayList<String>();
+				 * args.add("xterm"); args.add("-e"); args.add(path);
+				 * args.add(rArgs); args.add("-e");
+				 * args.add("library(Rserve);Rserve(args='" + rserveArgs +
+				 * "');");
+				 */
 
 				ProcessBuilder pb = new ProcessBuilder(args);
 				pb.redirectErrorStream();
@@ -376,8 +353,7 @@ public class RConnectionJob extends WorkspaceJob {
 
 				} catch (IOException e) {
 
-					MessageDialog.openWarning(new Shell(), "R",
-							"Rserve executable not available !");
+					MessageDialog.openWarning(Util.getShell(), "R", "Rserve executable not available !");
 					RServe.setConnection(null);
 				}
 
@@ -387,9 +363,8 @@ public class RConnectionJob extends WorkspaceJob {
 			// String
 			// path="/Library/Frameworks/R.framework/Versions/2.10.0/Resources/bin/R";
 			String path;
-			
-				path = store.getString(PreferenceConstants.PATH_R)+ "/bin/R";
-			
+
+			path = store.getString(PreferenceConstants.PATH_R) + "/bin/R";
 
 			if (startRShell == true) {
 
@@ -408,8 +383,7 @@ public class RConnectionJob extends WorkspaceJob {
 
 				} catch (IOException e) {
 
-					MessageDialog.openWarning(new Shell(), "R",
-							"Rserve executable not available !");
+					MessageDialog.openWarning(Util.getShell(), "R", "Rserve executable not available !");
 					RServe.setConnection(null);
 				}
 
@@ -430,8 +404,7 @@ public class RConnectionJob extends WorkspaceJob {
 
 				} catch (IOException e) {
 
-					MessageDialog.openWarning(new Shell(), "R",
-							"Rserve executable not available !");
+					MessageDialog.openWarning(Util.getShell(), "R", "Rserve executable not available !");
 					RServe.setConnection(null);
 				}
 			}

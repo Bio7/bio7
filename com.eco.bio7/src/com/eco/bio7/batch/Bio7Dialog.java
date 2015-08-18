@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
+import com.eco.bio7.util.Util;
 
 /**
  * This class provides some default dialogs for the Bio7 application.
@@ -189,7 +190,7 @@ public class Bio7Dialog {
 		display.syncExec(new Runnable() {
 			public void run() {
 
-				MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+				MessageBox message = new MessageBox(Util.getShell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
 				message.setMessage(text);
 				message.setText("Bio7");
 				int response = message.open();
@@ -224,7 +225,7 @@ public class Bio7Dialog {
 		Display display = PlatformUI.getWorkbench().getDisplay();
 		display.syncExec(new Runnable() {
 			public void run() {
-				MessageBox messageBox = new MessageBox(new Shell(),
+				MessageBox messageBox = new MessageBox(Util.getShell(),
 
 				SWT.ICON_WARNING);
 				messageBox.setText("Info!");
