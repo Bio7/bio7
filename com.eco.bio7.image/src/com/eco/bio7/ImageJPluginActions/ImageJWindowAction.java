@@ -112,8 +112,8 @@ public class ImageJWindowAction extends Action implements IMenuCreator {
 				EModelService s = (EModelService) part.getService(EModelService.class);
 
 				MPartSashContainerElement p = (MPart) part.getService(MPart.class);
-				Util ut = new Util();
-				String os = ut.getOS();
+				
+				String os = Util.getOS();
 				if (os != null) {
 					Point pt = CanvasView.getCanvas_view().tabFolder.getShell().getLocation();
 					Point pSize = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell().getSize();
@@ -192,8 +192,7 @@ public class ImageJWindowAction extends Action implements IMenuCreator {
 		MPartSashContainerElement p = (MPart) part.getService(MPart.class);
 
 		Point pt = null;
-		Util ut = new Util();
-		String os = ut.getOS();
+		String os = Util.getOS();
 		if (os != null) {
 			pt = CanvasView.getCanvas_view().tabFolder.getShell().getLocation();
 			if (os.equals("Linux")) {

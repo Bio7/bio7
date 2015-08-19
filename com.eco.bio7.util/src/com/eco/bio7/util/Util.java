@@ -13,7 +13,7 @@ import org.eclipse.ui.PlatformUI;
 
 public class Util {
 
-	public String getOS() {
+	public static String getOS() {
 		String OS = null;
 		String osname = System.getProperty("os.name");
 		if (osname.startsWith("Windows")) {

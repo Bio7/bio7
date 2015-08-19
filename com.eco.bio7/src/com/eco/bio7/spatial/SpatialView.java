@@ -46,7 +46,7 @@ public class SpatialView extends ViewPart {
 	public SpatialView() {
 
 		instance = this;
-       if(new Util().getOS().equals("Windows")){
+       if(Util.getOS().equals("Windows")){
 		SwingUtilities.invokeLater(new Runnable() {
 			// !!
 			public void run() {

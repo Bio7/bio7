@@ -92,6 +92,8 @@ import com.eco.bio7.util.Util;
 
 public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	private static StatusLineContributionItem userItem = null;
+	
+	private IWorkbenchWindow window;
 
 	private IWorkbenchAction exitAction;
 
@@ -488,7 +490,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 																			// it
 
 		MenuManager prefMenu = new MenuManager("Preferences");
-
+		/*Set not an references extra menu for MacOSX!*/
+		prefMenu.setVisible(!Util.getOS().equals("Mac"));
 		MenuManager rMenu = new MenuManager("R");
 		MenuManager OpenOfficeMenu = new MenuManager("LibreOffice");
 		// MenuManager BeanShellMenu = new MenuManager("Bsh");
@@ -874,5 +877,25 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	public static StatusLineContributionItem getUserItem() {
 		return userItem;
 	}
+	
+	protected MenuManager createSubMenu(String text, String id, ContributionItemFactory factory)
+    {
+        MenuManager submenu = new MenuManager(text, id);
+        submenu.add(factory.create(this.window));
+        return submenu;
+    }
+
+    protected MenuManager createSubMenu(String text, String id, Object... items)
+    {
+        MenuManager submenu = new MenuManager(text, id);
+        for (Object i : items)
+        {
+            if (i instanceof IContributionItem)
+                submenu.add((IContributionItem) i);
+            else if (i instanceof IWorkbenchAction)
+                submenu.add((IWorkbenchAction) i);
+        }
+        return submenu;
+    }
 
 }

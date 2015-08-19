@@ -871,6 +871,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		// }
 		// }.start();
 		/* Destroy the IOConsole! */
+		
 		ioc.partitionerFinished();
 		ioc.destroy();
 	}
