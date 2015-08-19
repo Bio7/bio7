@@ -724,7 +724,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		fileMenu.add(Import);
 		fileMenu.add(Export);
 		fileMenu.add(new Separator());
+		
+		if (!Util.getOS().equals("Mac")){
 		fileMenu.add(exitAction);
+		}
 
 		editMenu.add(undo);
 		editMenu.add(redo);
