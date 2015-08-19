@@ -80,14 +80,14 @@ public class Application implements IApplication {
 			}
 			IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
 
-			/*IConsole[] consoles = manager.getConsoles();
+			IConsole[] consoles = manager.getConsoles();
 			for (int i = 0; i < consoles.length; i++) {
 				if(consoles[i] instanceof IOConsole){
 				IOConsole io = (IOConsole) consoles[i];
 				io.partitionerFinished();
 				io.destroy();
 				}
-			}*/
+			}
 			/* Finally save the workspace! */
 			saveWorkspace();
            /*Do not close display. Changed for Mac to close the JOGL pperspectives!*/
