@@ -86,7 +86,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorRegistry;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IPerspectiveDescriptor;
+import org.eclipse.ui.IPerspectiveListener3;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PerspectiveAdapter;
 import org.eclipse.ui.PlatformUI;
@@ -115,6 +117,7 @@ import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.actions.Bio7Action;
 import com.eco.bio7.batch.BatchModel;
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.collection.Work;
 import com.eco.bio7.compile.BeanShellInterpreter;
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
 import com.eco.bio7.compile.GroovyInterpreter;
@@ -341,24 +344,62 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		 */
 
 		// Listen to changed perspective !!!!
-		configurer.getWindow().addPerspectiveListener(new PerspectiveAdapter() {
+		// Listen to changed perspective !!!!
+		configurer.getWindow().addPerspectiveListener(new IPerspectiveListener3() {
+
+			@Override
+			public void perspectiveChanged(IWorkbenchPage page, IPerspectiveDescriptor perspective, IWorkbenchPartReference partRef, String changeId) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
 			public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-
-				if (perspective.getId().equals("com.eco.bio7.perspective_image")) {
-
-				}
+				// TODO Auto-generated method stub
 
 			}
 
-			public void perspectiveSavedAs(IWorkbenchPage page, IPerspectiveDescriptor oldPerspective, IPerspectiveDescriptor newPerspective) {
+			@Override
+			public void perspectiveChanged(IWorkbenchPage page, IPerspectiveDescriptor perspective, String changeId) {
+				// TODO Auto-generated method stub
 
 			}
 
+			@Override
+			public void perspectiveOpened(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void perspectiveClosed(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
+
+			}
+
+			@Override
 			public void perspectiveDeactivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-				if (perspective.getId().equals("com.eco.bio7.perspective_image")) {
+				//Workaround a bug on MacOSX when closing a SWT_AWT perspective 3D and WorldWind!
+				if (OS.equals("Mac")) {
+					if (perspective.getId().equals("com.eco.bio7.perspective_3d")) {
 
+						
+						Work.closeView("com.eco.bio7.spatial");
+					}
+
+					else if (perspective.getId().equals("com.eco.bio7.WorldWind.3dglobe")) {
+						Work.closeView("com.eco.bio7.worldwind.WorldWindView");
+
+					}
 				}
+
 			}
+
+			@Override
+			public void perspectiveSavedAs(IWorkbenchPage page, IPerspectiveDescriptor oldPerspective, IPerspectiveDescriptor newPerspective) {
+				// TODO Auto-generated method stub
+
+			}
+
 		});
 
 		/*

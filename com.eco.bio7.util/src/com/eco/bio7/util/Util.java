@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -127,5 +128,17 @@ public class Util {
 		}
 		return null;
 	}
+	/**
+	 * Returns a default display.
+	 * 
+	 * @return a display
+	 */
+	public static Display getDisplay() {
+	      Display display = Display.getCurrent();
+	      //may be null if outside the UI thread
+	      if (display == null)
+	         display = Display.getDefault();
+	      return display;		
+	   }
 
 }
