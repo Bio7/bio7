@@ -14,6 +14,10 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.console.ConsolePlugin;
+import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.console.IConsoleManager;
+import org.eclipse.ui.console.IOConsole;
 import org.rosuda.REngine.Rserve.RConnection;
 
 import com.eco.bio7.Bio7Plugin;
@@ -74,6 +78,16 @@ public class Application implements IApplication {
 
 				e.printStackTrace();
 			}
+			IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
+
+			/*IConsole[] consoles = manager.getConsoles();
+			for (int i = 0; i < consoles.length; i++) {
+				if(consoles[i] instanceof IOConsole){
+				IOConsole io = (IOConsole) consoles[i];
+				io.partitionerFinished();
+				io.destroy();
+				}
+			}*/
 			/* Finally save the workspace! */
 			saveWorkspace();
            /*Do not close display. Changed for Mac to close the JOGL pperspectives!*/

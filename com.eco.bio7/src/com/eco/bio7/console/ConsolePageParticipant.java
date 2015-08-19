@@ -508,8 +508,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				List<String> args = new ArrayList<String>();
 				if (cPython.isEmpty() == false) {
 					args.add(cPython + "/python");
-				} 
-				/*Try to start from the PATH environment!*/
+				}
+				/* Try to start from the PATH environment! */
 				else {
 					args.add("python");
 				}
@@ -530,8 +530,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				List<String> args = new ArrayList<String>();
 				if (cPython.isEmpty() == false) {
 					args.add(cPython + "/python");
-				} 
-				/*Try to start from the PATH environment!*/
+				}
+				/* Try to start from the PATH environment! */
 				else {
 					args.add("python");
 				}
@@ -551,8 +551,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				List<String> args = new ArrayList<String>();
 				if (cPython.isEmpty() == false) {
 					args.add(cPython + "/python");
-				} 
-				/*Try to start from the PATH environment!*/
+				}
+				/* Try to start from the PATH environment! */
 				else {
 					args.add("python");
 				}
@@ -829,48 +829,50 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		 * Use a thread to ensure that the other threads will be destroyed -
 		 * maybee not necessary!
 		 */
-		new Thread() {
-			@Override
-			public void run() {
-				if (shellProcess != null) {
-					shellProcess.destroy();
-				}
+		// new Thread() {
+		// @Override
+		// public void run() {
+		if (shellProcess != null) {
+			shellProcess.destroy();
+		}
 
-				if (RProcess != null) {
-					RProcess.destroy();
-				}
+		if (RProcess != null) {
+			RProcess.destroy();
+		}
 
-				if (nativeShellProcess != null) {
-					nativeShellProcess.destroy();
-				}
+		if (nativeShellProcess != null) {
+			nativeShellProcess.destroy();
+		}
 
-				if (pythonProcess != null) {
-					pythonProcess.destroy();
-				}
+		if (pythonProcess != null) {
+			pythonProcess.destroy();
+		}
 
-				if (initializationThread != null) {
-					initializationThread.interrupt();
-				}
-				if (processThread != null) {
-					processThread.interrupt();
-				}
+		if (initializationThread != null) {
+			initializationThread.interrupt();
+		}
+		if (processThread != null) {
+			processThread.interrupt();
+		}
 
-				if (RprocessThread != null) {
-					RprocessThread.interrupt();
-				}
+		if (RprocessThread != null) {
+			RprocessThread.interrupt();
+		}
 
-				if (nativeShellprocessThread != null) {
-					nativeShellprocessThread.interrupt();
-				}
+		if (nativeShellprocessThread != null) {
+			nativeShellprocessThread.interrupt();
+		}
 
-				if (pythonProcessThread != null) {
-					pythonProcessThread.interrupt();
-				}
-				in = null;
+		if (pythonProcessThread != null) {
+			pythonProcessThread.interrupt();
+		}
+		in = null;
 
-			}
-		}.start();
-
+		// }
+		// }.start();
+		/* Destroy the IOConsole! */
+		ioc.partitionerFinished();
+		ioc.destroy();
 	}
 
 	@Override
