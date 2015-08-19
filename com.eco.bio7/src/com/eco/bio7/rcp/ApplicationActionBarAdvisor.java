@@ -92,7 +92,7 @@ import com.eco.bio7.util.Util;
 
 public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	private static StatusLineContributionItem userItem = null;
-	
+
 	private IWorkbenchWindow window;
 
 	private IWorkbenchAction exitAction;
@@ -224,9 +224,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	private Interpret interpretGrovvyBeanShell;
 
 	private InterpretPython interpretPython;
-	
+
 	private KnitrAction knitrAction;
-	
+
 	private RMarkdownAction markdownAction;
 
 	private GenerateControllerAction generateControllerAction;
@@ -314,9 +314,11 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		propAction = ActionFactory.PREFERENCES.create(window);
 		register(propAction);
-
-		exitAction = ActionFactory.QUIT.create(window);
-		register(exitAction);
+		/*Avoid buggy action on MacOSX*/
+		if (!Util.getOS().equals("Mac")) {
+			exitAction = ActionFactory.QUIT.create(window);
+			register(exitAction);
+		}
 
 		aboutAction = ActionFactory.ABOUT.create(window);
 		register(aboutAction);
@@ -367,9 +369,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		/*
 		 * savepattern.setToolTipText("Save a pattern to a file" + '\n' +
 		 * "Bio7"); loadpattern = new LoadPattern("Load Pattern", window);
-		 * register(loadpattern);
-		 * loadpattern.setToolTipText("Load a pattern from a file" + '\n' +
-		 * "Bio7");
+		 * register(loadpattern); loadpattern.setToolTipText(
+		 * "Load a pattern from a file" + '\n' + "Bio7");
 		 */
 
 		re = ContributionItemFactory.VIEWS_SHORTLIST.create(window);
@@ -428,10 +429,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		interpretPython = new InterpretPython("Interpret Python");
 		register(interpretPython);
-		
+
 		knitrAction = new KnitrAction();
 		register(knitrAction);
-		
+
 		markdownAction = new RMarkdownAction();
 		register(markdownAction);
 
@@ -449,16 +450,13 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		// SHOW_JDT_GUI
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		boolean showJDTGui = store.getBoolean("SHOW_JDT_GUI");
-		if (showJDTGui==false) {
+		if (showJDTGui == false) {
 			final ActionSetRegistry reg = WorkbenchPlugin.getDefault().getActionSetRegistry();
 			final IActionSetDescriptor[] actionSets = reg.getActionSets();
-			final String[] removeActionSets = new String[] { "org.eclipse.search.searchActionSet", "org.eclipse.ui.cheatsheets.actionSet", "org.eclipse.ui.actionSet.keyBindings",
-					"org.eclipse.ui.edit.text.actionSet.navigation", "org.eclipse.ui.edit.text.actionSet.annotationNavigation", "org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo",
-					"org.eclipse.ui.edit.text.actionSet.openExternalFile", "org.eclipse.ui.externaltools.ExternalToolsSet", "org.eclipse.ui.externaltools.ExternalToolsSet",
-					"org.eclipse.ui.WorkingSetActionSet", "org.eclipse.update.ui.softwareUpdates", "org.eclipse.ui.actionSet.openFiles", "org.eclipse.mylyn.tasks.ui.navigation",
-					"org.eclipse.debug.ui.launchActionSet", "org.eclipse.jdt.ui.JavaElementCreationActionSet", "org.eclipse.jdt.ui.JavaActionSet", "org.eclipse.ui.edit.text.actionSet.presentation",
-					"org.eclipse.ui.cheatsheets.actionSet", "org.eclipse.ui.externaltools.ExternalToolsSet", "org.eclipse.jdt.ui.text.java.actionSet.presentation",
-					"org.eclipse.debug.ui.breakpointActionSet", "org.eclipse.wb.core.ui.actionset"};
+			final String[] removeActionSets = new String[] { "org.eclipse.search.searchActionSet", "org.eclipse.ui.cheatsheets.actionSet", "org.eclipse.ui.actionSet.keyBindings", "org.eclipse.ui.edit.text.actionSet.navigation", "org.eclipse.ui.edit.text.actionSet.annotationNavigation",
+					"org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo", "org.eclipse.ui.edit.text.actionSet.openExternalFile", "org.eclipse.ui.externaltools.ExternalToolsSet", "org.eclipse.ui.externaltools.ExternalToolsSet", "org.eclipse.ui.WorkingSetActionSet",
+					"org.eclipse.update.ui.softwareUpdates", "org.eclipse.ui.actionSet.openFiles", "org.eclipse.mylyn.tasks.ui.navigation", "org.eclipse.debug.ui.launchActionSet", "org.eclipse.jdt.ui.JavaElementCreationActionSet", "org.eclipse.jdt.ui.JavaActionSet",
+					"org.eclipse.ui.edit.text.actionSet.presentation", "org.eclipse.ui.cheatsheets.actionSet", "org.eclipse.ui.externaltools.ExternalToolsSet", "org.eclipse.jdt.ui.text.java.actionSet.presentation", "org.eclipse.debug.ui.breakpointActionSet", "org.eclipse.wb.core.ui.actionset" };
 
 			for (int i = 0; i < actionSets.length; i++) {
 				boolean found = false;
@@ -490,7 +488,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 																			// it
 
 		MenuManager prefMenu = new MenuManager("Preferences");
-		/*Set not an references extra menu for MacOSX!*/
+		/* Set not an references extra menu for MacOSX! */
 		prefMenu.setVisible(!Util.getOS().equals("Mac"));
 		MenuManager rMenu = new MenuManager("R");
 		MenuManager OpenOfficeMenu = new MenuManager("LibreOffice");
@@ -724,9 +722,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		fileMenu.add(Import);
 		fileMenu.add(Export);
 		fileMenu.add(new Separator());
-		
-		if (!Util.getOS().equals("Mac")){
-		fileMenu.add(exitAction);
+        /*Avoid buggy action on MacOSX*/
+		if (!Util.getOS().equals("Mac")) {
+			fileMenu.add(exitAction);
 		}
 
 		editMenu.add(undo);
@@ -880,25 +878,22 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	public static StatusLineContributionItem getUserItem() {
 		return userItem;
 	}
-	
-	protected MenuManager createSubMenu(String text, String id, ContributionItemFactory factory)
-    {
-        MenuManager submenu = new MenuManager(text, id);
-        submenu.add(factory.create(this.window));
-        return submenu;
-    }
 
-    protected MenuManager createSubMenu(String text, String id, Object... items)
-    {
-        MenuManager submenu = new MenuManager(text, id);
-        for (Object i : items)
-        {
-            if (i instanceof IContributionItem)
-                submenu.add((IContributionItem) i);
-            else if (i instanceof IWorkbenchAction)
-                submenu.add((IWorkbenchAction) i);
-        }
-        return submenu;
-    }
+	protected MenuManager createSubMenu(String text, String id, ContributionItemFactory factory) {
+		MenuManager submenu = new MenuManager(text, id);
+		submenu.add(factory.create(this.window));
+		return submenu;
+	}
+
+	protected MenuManager createSubMenu(String text, String id, Object... items) {
+		MenuManager submenu = new MenuManager(text, id);
+		for (Object i : items) {
+			if (i instanceof IContributionItem)
+				submenu.add((IContributionItem) i);
+			else if (i instanceof IWorkbenchAction)
+				submenu.add((IWorkbenchAction) i);
+		}
+		return submenu;
+	}
 
 }
