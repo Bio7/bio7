@@ -64,7 +64,10 @@ public class RConnectionJob extends WorkspaceJob {
 		// If remote!
 		boolean remote = store.getBoolean("REMOTE");
 		String rserveArgs = store.getString("RSERVE_ARGS");
-
+		/*
+		 * R started in the ConsolePageParticipants class as a native
+		 * application. Here we call now Rserve!
+		 */
 		if (remote == false) {
 			/* Start up the process of R and Rserve! */
 
@@ -230,6 +233,7 @@ public class RConnectionJob extends WorkspaceJob {
 		}
 	}
 
+	/* Deprecated startup without native shell! */
 	private void startExec() {
 
 		rt = Runtime.getRuntime();
@@ -306,14 +310,24 @@ public class RConnectionJob extends WorkspaceJob {
 					args.add("xterm");
 					args.add("-hold");
 					args.add("-e");
-					args.add(path);
+					if (path.isEmpty() == false) {
+						args.add(path);
+					} else {
+						args.add("R");
+					}
 					args.add("-e");
 					args.add("library(Rserve);Rserve();");
 				} else if (shellType.equals("GNOME")) {
 					args.add("gnome-terminal");
 
 					args.add("-e");
-					args.add("sh -c \"" + path + " -e 'library(Rserve);Rserve();'; exec bash\"");
+					if (path.isEmpty() == false) {
+						args.add("sh -c \"" + path + " -e 'library(Rserve);Rserve();'; exec bash\"");
+					}
+
+					else {
+						args.add("sh -c \"" + "R" + " -e 'library(Rserve);Rserve();'; exec bash\"");
+					}
 
 				}
 
@@ -333,7 +347,14 @@ public class RConnectionJob extends WorkspaceJob {
 				List<String> args = new ArrayList<String>();
 				args.add("/bin/sh");
 				args.add("-c");
-				args.add("echo 'library(Rserve);Rserve(args=\"" + rserveArgs + "\")'|" + path + " " + rArgs);
+				if (path.isEmpty() == false) {
+					args.add("echo 'library(Rserve);Rserve(args=\"" + rserveArgs + "\")'|" + path + " " + rArgs);
+				}
+
+				else {
+					args.add("echo 'library(Rserve);Rserve(args=\"" + rserveArgs + "\")'|" + "R" + " " + rArgs);
+				}
+
 				// Runtime runtime = Runtime.getRuntime();
 				// proc = runtime.exec("xterm -e " + pathR +
 				// "/bin/R -e library(Rserve);Rserve(args='" + rserveArgs +
@@ -372,7 +393,11 @@ public class RConnectionJob extends WorkspaceJob {
 				args.add("/usr/x11/bin/xterm");
 				args.add("-hold");
 				args.add("-e");
-				args.add(path);
+				if (path.isEmpty() == false) {
+					args.add(path);
+				} else {
+					args.add("R");
+				}
 				args.add("-e");
 				args.add("library(Rserve);Rserve();");
 
@@ -392,7 +417,11 @@ public class RConnectionJob extends WorkspaceJob {
 				List<String> args = new ArrayList<String>();
 				args.add("/usr/x11/bin/xterm");
 				args.add("-e");
-				args.add(path);
+				if (path.isEmpty() == false) {
+					args.add(path);
+				} else {
+					args.add("R");
+				}
 				args.add(rArgs);
 				args.add("-e");
 				args.add("library(Rserve);Rserve(args='" + rserveArgs + "');");

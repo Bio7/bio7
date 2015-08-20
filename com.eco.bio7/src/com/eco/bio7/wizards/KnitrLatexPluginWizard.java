@@ -112,7 +112,7 @@ public class KnitrLatexPluginWizard extends Wizard implements INewWizard {
 		"%% for inline R code: if the inline code is not correctly parsed, you will see a message"+linefeed+
 		"\\newcommand{\\rinline}[1]{SOMETHING WRONG WITH knitr}"+linefeed+
 		"%% begin.rcode setup, include=FALSE"+linefeed+
-		"% opts_chunk$set(fig.path='figure/latex-', cache.path='cache/latex-')"+linefeed+
+		"% opts_chunk$set(fig.path='figure/latex-', cache.path='cache/latex-',dev.args=NULL)"+linefeed+
 		"%% end.rcode"+linefeed+
 		"\\begin{document}"+linefeed+
 		"knitr Example:"+linefeed+
@@ -124,7 +124,6 @@ public class KnitrLatexPluginWizard extends Wizard implements INewWizard {
 
 		return new ByteArrayInputStream(contents.getBytes());
 	}
-
 	private void throwCoreException(String message) throws CoreException {
 		IStatus status = new Status(IStatus.ERROR, "com.eco.bio7", IStatus.OK,
 				message, null);

@@ -60,7 +60,7 @@ import com.eco.bio7.rbridge.RState;
 import com.swtdesigner.ResourceManager;
 
 public class Spreadview extends ViewPart {
-	private java.awt.Frame frame;
+	
 
 	public static final String ID = "com.eco.bio7.spreadsheet";
 	

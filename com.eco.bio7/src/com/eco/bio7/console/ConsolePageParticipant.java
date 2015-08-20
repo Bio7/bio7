@@ -631,7 +631,15 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				String rPath = store.getString(PreferenceConstants.PATH_R);
 
 				List<String> args = new ArrayList<String>();
-				args.add(rPath + "/bin/R");
+				if (rPath.isEmpty() == false) {
+					args.add(rPath + "/bin/R");
+					
+				}
+				
+				else{
+					args.add("R");
+				}
+				
 				args.add("--interactive");
 
 				ProcessBuilder builder = new ProcessBuilder(args);
@@ -649,7 +657,12 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				String rPath = store.getString(PreferenceConstants.PATH_R);
 
 				List<String> args = new ArrayList<String>();
+				if (rPath.isEmpty() == false) {
 				args.add(rPath + "/bin/R");
+				}
+				else{
+					args.add("R");
+				}
 				args.add("--interactive");
 
 				ProcessBuilder builder = new ProcessBuilder(args);
