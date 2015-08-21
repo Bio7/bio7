@@ -336,10 +336,9 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 										args.add(pdfLatexPath + "/pdflatex");
 									}
 								}
-								/*Try to start from the PATH environment!*/
+								/* Try to start from the PATH environment! */
 								else {
 
-									
 									if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 										args.add("pdflatex");
 									}
@@ -396,7 +395,15 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 											}
 											File fil = new File(dirPath + "/" + theName + ".pdf");
 											if (fil.exists()) {
-												Program.launch(dirPath + "/" + theName + ".pdf");
+
+												if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
+													RServe.plotLinux(dirPath + "/" + theName + ".pdf");
+												}
+
+												else {
+
+													Program.launch(dirPath + "/" + theName + ".pdf");
+												}
 											} else {
 												Bio7Dialog.message("*.pdf file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
 											}

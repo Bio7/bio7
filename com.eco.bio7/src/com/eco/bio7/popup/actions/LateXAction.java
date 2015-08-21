@@ -27,6 +27,7 @@ import org.eclipse.ui.PlatformUI;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 
 public class LateXAction implements IObjectActionDelegate {
 
@@ -83,10 +84,10 @@ public class LateXAction implements IObjectActionDelegate {
 
 					if (pdfLatexPath.isEmpty() == false) {
 						args.add(pdfLatexPath + "/pdflatex");
-					} 
-					/*Try to start from the PATH environment!*/
+					}
+					/* Try to start from the PATH environment! */
 					else {
-						
+
 						args.add("pdflatex");
 					}
 					args.add("-interaction=nonstopmode");
@@ -129,7 +130,13 @@ public class LateXAction implements IObjectActionDelegate {
 								}
 								File fil = new File(dirPath + "/" + name + ".pdf");
 								if (fil.exists()) {
-									Program.launch(dirPath + "/" + name + ".pdf");
+									if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
+										RServe.plotLinux(dirPath + "/" + name + ".pdf");
+									}
+
+									else {
+										Program.launch(dirPath + "/" + name + ".pdf");
+									}
 								} else {
 									Bio7Dialog.message("*.pdf file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
 								}

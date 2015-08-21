@@ -648,7 +648,7 @@ public class RServe {
 		}
 	}
 
-	private static void plotLinux(String finalpath) {
+	public static void plotLinux(String finalpath) {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		String pdfReader = store.getString("PDF_READER");
 
