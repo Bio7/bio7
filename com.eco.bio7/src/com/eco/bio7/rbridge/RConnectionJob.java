@@ -201,8 +201,15 @@ public class RConnectionJob extends WorkspaceJob {
 
 				rPackages = rPackages.replace("\\", "/");
 				dev = dev.replace("\\", "/");
+				con.eval("try(.libPaths(\"" + rPackages + "\"))");
 			}
-			con.eval("try(.libPaths(\"" + rPackages + "\"))");
+			/*For Linux and Mac if there is no path we will take the default defined!*/
+			else{
+				if (rPackages.isEmpty() == false) {
+				con.eval("try(.libPaths(\"" + rPackages + "\"))");
+				}
+			}
+			
 			/* Set the default device! */
 			boolean customDevice = store.getBoolean("USE_CUSTOM_DEVICE");
 			if (customDevice) {

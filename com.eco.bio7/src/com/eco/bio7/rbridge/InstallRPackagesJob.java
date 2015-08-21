@@ -58,27 +58,76 @@ public class InstallRPackagesJob extends WorkspaceJob {
 				/* If a location is given! */
 
 				destdir = destdir.replace("\\", "\\\\");
+				for (int i = 0; i < items.length; i++) {
 
-			}
+					String out = null;
+					try {
+						out = c.eval(
+								"try(paste(capture.output(install.packages(\"" + items[i] + "\",dependencies=TRUE,repos =\"" + server + "\",lib=\"" + destdir + "\",destdir=\"" + destdir
+										+ "\")),collapse=\"\\n\"))").asString();
+					} catch (REXPMismatchException e) {
 
-			for (int i = 0; i < items.length; i++) {
+						e.printStackTrace();
+					} catch (RserveException e) {
 
-				String out = null;
-				try {
-					out = c.eval(
-							"try(paste(capture.output(install.packages(\"" + items[i] + "\",dependencies=TRUE,repos =\"" + server + "\",lib=\"" + destdir + "\",destdir=\"" + destdir
-									+ "\")),collapse=\"\\n\"))").asString();
-				} catch (REXPMismatchException e) {
+						e.printStackTrace();
+					}
 
-					e.printStackTrace();
-				} catch (RserveException e) {
+					System.out.println(out);
 
-					e.printStackTrace();
 				}
 
-				System.out.println(out);
-
 			}
+			/*For the packages on Linux and Mac we try the default path if no custom path is given!*/
+			else{
+				
+				if (destdir.isEmpty() == false) {
+					for (int i = 0; i < items.length; i++) {
+
+						String out = null;
+						try {
+							out = c.eval(
+									"try(paste(capture.output(install.packages(\"" + items[i] + "\",dependencies=TRUE,repos =\"" + server + "\",lib=\"" + destdir + "\",destdir=\"" + destdir
+											+ "\")),collapse=\"\\n\"))").asString();
+						} catch (REXPMismatchException e) {
+
+							e.printStackTrace();
+						} catch (RserveException e) {
+
+							e.printStackTrace();
+						}
+
+						System.out.println(out);
+
+					}
+					
+				}
+				else{
+					for (int i = 0; i < items.length; i++) {
+
+						String out = null;
+						try {
+							out = c.eval(
+									"try(paste(capture.output(install.packages(\"" + items[i] + "\",dependencies=TRUE,repos =\"" + server + "\")),collapse=\"\\n\"))").asString();
+						} catch (REXPMismatchException e) {
+
+							e.printStackTrace();
+						} catch (RserveException e) {
+
+							e.printStackTrace();
+						}
+
+						System.out.println(out);
+
+					}
+					
+				}
+				
+				
+			
+			}
+
+			
 			/* If thematic (spatial) packages are selected! */
 			/*for (int i = 0; i < itemsSpatial.length; i++) {
 

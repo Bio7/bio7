@@ -590,9 +590,15 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 
 			rPackages = rPackages.replace("\\", "/");
-
+			pipeInputToConsole(".libPaths(\"" + rPackages + "\")");
 		}
-		pipeInputToConsole(".libPaths(\"" + rPackages + "\")");
+		/*For Linux and Mac if there is no path we will take the default defined!*/
+		else{
+			if (rPackages.isEmpty() == false) {
+			pipeInputToConsole(".libPaths(\"" + rPackages + "\")");
+			}
+		}
+		
 	}
 
 	public void processRCommand() {

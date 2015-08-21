@@ -491,7 +491,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			reg2 = "/usr/lib/libreoffice/program";
 			store.setDefault(PreferenceConstants.PATH_R, reg1);
 			store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, reg2);
-			store.setDefault("InstallLocation", "/usr/lib/R/site-library");
+			/*For the packages on Linux we try the default path if no custom path is given!*/
+			store.setDefault("InstallLocation", "");
 			store.setDefault("SweaveScriptLocation", "/usr/share/R/share/texmf/tex/latex");
 			store.setDefault("pdfLatex", "");
 			store.setDefault("RSERVE_ARGS", "");
@@ -517,9 +518,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			File file = new File(fileUrlMac.getFile());
 			path = file.getAbsolutePath();
 			store.setDefault(PreferenceConstants.PATH_R, path);
-			store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, " /Users");
-			/* Default install location for the packages! */
-			store.setDefault("InstallLocation", path + "/site-library");
+			store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, "");
+			/*For the packages on Linux we try the default path if no custom path is given!*/
+			store.setDefault("InstallLocation", "");
 			store.setDefault("SweaveScriptLocation", path + "/usr/share/R/share/texmf/tex/latex");
 			store.setDefault("pdfLatex", "");
 			store.setDefault("RSERVE_ARGS", "");
