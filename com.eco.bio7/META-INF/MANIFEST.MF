@@ -12,7 +12,7 @@ Eclipse-BuddyPolicy: ext
 Eclipse-RegisterBuddy: com.eco.bio7.redit
 Export-Package: bsh,
  bsh.classpath,
- bsh.collection,
+ bsh.collection, 
  bsh.commands,
  bsh.engine,
  bsh.org.objectweb.asm,

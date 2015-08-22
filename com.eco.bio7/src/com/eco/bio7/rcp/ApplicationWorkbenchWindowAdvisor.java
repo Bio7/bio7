@@ -551,6 +551,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTempR2 + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")");
 			store.setDefault("DEVICE_FILENAME", "");
 			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
+			store.setDefault("PDF_READER", "ACROBAT");
 		} else if (getOS().equals("Linux")) {
 			pathTempR = pathTempR + "/bio7temp/";
 			store.setDefault(PreferenceConstants.P_TEMP_R, pathTempR);
@@ -559,6 +560,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTempR + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")");
 			store.setDefault("DEVICE_FILENAME", "");
 			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
+			store.setDefault("PDF_READER", "EVINCE");
 		} else if (getOS().equals("Mac")) {
 			pathTempR = pathTempR + "/bio7temp/";
 			store.setDefault(PreferenceConstants.P_TEMP_R, pathTempR);
@@ -567,6 +569,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTempR + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 480, height = 480)}; options(device=\".bio7Device\")");
 			store.setDefault("DEVICE_FILENAME", "");
 			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
+			store.setDefault("PDF_READER", "ACROBAT");
 		}
 		store.setDefault("RSERVE_AUTOSTART", false);
 		store.setDefault(PreferenceConstants.PACKAGE_R_SERVER, "http://cran.r-project.org");
@@ -588,7 +591,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("R_DEBUG_PORT", 21555);
 
 		store.setDefault("LINUX_SHELL", "GNOME");
-		store.setDefault("PDF_READER", "ACROBAT");
+		
 
 		store.setDefault("USE_CUSTOM_DEVICE", true);
 
