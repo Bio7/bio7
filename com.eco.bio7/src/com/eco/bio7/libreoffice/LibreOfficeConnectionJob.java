@@ -53,33 +53,44 @@ public class LibreOfficeConnectionJob extends WorkspaceJob {
 
 		try {
 			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
-				
+
 				List<String> args = new ArrayList<String>();
-				args.add (store.getString(PreferenceConstants.PATH_LIBREOFFICE) + "\\soffice"); 	
-				args.add ("-nologo"); 
-				args.add ("-nodefault"); 
-				args.add ("-accept=socket,host=0,port=2002;urp;"); 
-				ProcessBuilder pb = new ProcessBuilder (args);
+				args.add(store.getString(PreferenceConstants.PATH_LIBREOFFICE) + "\\soffice");
+				args.add("-nologo");
+				args.add("-nodefault");
+				args.add("-accept=socket,host=0,port=2002;urp;");
+				ProcessBuilder pb = new ProcessBuilder(args);
 				pb.start();
-				//String []lo={store.getString(PreferenceConstants.PATH_LIBREOFFICE) + "\\soffice" ,"-nologo" ,"-nodefault" ,"-accept=socket,host=0,port=2002;urp;"};
-				//Runtime.getRuntime().exec(lo);
-				//Runtime.getRuntime().exec(store.getString(PreferenceConstants.PATH_LIBREOFFICE) + "\\soffice -nologo -nodefault -accept=socket,host=0,port=2002;urp;");
+				// String
+				// []lo={store.getString(PreferenceConstants.PATH_LIBREOFFICE) +
+				// "\\soffice" ,"-nologo" ,"-nodefault"
+				// ,"-accept=socket,host=0,port=2002;urp;"};
+				// Runtime.getRuntime().exec(lo);
+				// Runtime.getRuntime().exec(store.getString(PreferenceConstants.PATH_LIBREOFFICE)
+				// + "\\soffice -nologo -nodefault
+				// -accept=socket,host=0,port=2002;urp;");
 			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
-				Runtime.getRuntime().exec(store.getString(PreferenceConstants.PATH_LIBREOFFICE) + "/soffice -nologo -nodefault -accept=socket,host=0,port=2002;urp;");
-			}
-			else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
-				Runtime.getRuntime().exec(store.getString(PreferenceConstants.PATH_LIBREOFFICE) + "/soffice -nologo -nodefault -accept=socket,host=0,port=2002;urp;");
+				String path = store.getString(PreferenceConstants.PATH_LIBREOFFICE);
+				if (path.isEmpty() == false) {
+					Runtime.getRuntime().exec(path + "/soffice -nologo -nodefault -accept=socket,host=0,port=2002;urp;");
+				} else {
+					Runtime.getRuntime().exec("soffice -nologo -nodefault -accept=socket,host=0,port=2002;urp;");
+				}
+			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
+				String path = store.getString(PreferenceConstants.PATH_LIBREOFFICE);
+				if (path.isEmpty() == false) {
+					Runtime.getRuntime().exec(path + "/soffice -nologo -nodefault -accept=socket,host=0,port=2002;urp;");
+				} else {
+					Runtime.getRuntime().exec("soffice -nologo -nodefault -accept=socket,host=0,port=2002;urp;");
+				}
 			}
 		} catch (IOException e1) {
 			Display display = PlatformUI.getWorkbench().getDisplay();
 			display.syncExec(new Runnable() {
 
 				public void run() {
-					MessageDialog.openWarning(new Shell(), "LibreOffice", "LibreOffice version >4.0 executable not available !" +
-							"\nPlease adjust the path in the Bio7 preferences.\n" +
-							"Example Windows: C:\\Program Files\\LibreOffice x.x\\program\n"+
-							"Example Linux: /usr/lib/libreoffice/program\n"+
-							"Example MacOSX: /Applications/LibreOffice.app/Contents/MacOS");
+					MessageDialog.openWarning(new Shell(), "LibreOffice", "LibreOffice version >4.0 executable not available !" + "\nPlease adjust the path in the Bio7 preferences.\n" + "Example Windows: C:\\Program Files\\LibreOffice x.x\\program\n" + "Example Linux: /usr/lib/libreoffice/program\n"
+							+ "Example MacOSX: /Applications/LibreOffice.app/Contents/MacOS");
 					canceled = true;
 				}
 			});
@@ -112,8 +123,7 @@ public class LibreOfficeConnectionJob extends WorkspaceJob {
 
 							public void run() {
 
-								MessageDialog.openWarning(new Shell(), "LibreOffice", "LibreOffice connection could not be established !" + "\n"
-										+ "Probably the firewall is active !" + "\n" + "Please deactivate the firewall and try again !");
+								MessageDialog.openWarning(new Shell(), "LibreOffice", "LibreOffice connection could not be established !" + "\n" + "Probably the firewall is active !" + "\n" + "Please deactivate the firewall and try again !");
 
 							}
 						});
