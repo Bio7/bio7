@@ -487,9 +487,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			}
 		} else if (getOS().equals("Linux")) {
 			store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, reg2);
-			reg1 = "/usr/lib/R";
+			//reg1 = "/usr/lib/R";
 			reg2 = "/usr/lib/libreoffice/program";
-			store.setDefault(PreferenceConstants.PATH_R, reg1);
+			/*Now leave the R path empty by default to grab the systems path!*/
+			store.setDefault(PreferenceConstants.PATH_R, "");
 			store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, reg2);
 			/*For the packages on Linux we try the default path if no custom path is given!*/
 			store.setDefault("InstallLocation", "");
@@ -504,7 +505,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			 */
 
 		} else if (getOS().equals("Mac")) {
-			Bundle bundlenew = Platform.getBundle("Bundled_R");
+			/*Bundle bundlenew = Platform.getBundle("Bundled_R");
 
 			URL locationUrlMac = FileLocator.find(bundlenew, new Path("/R"), null);
 			URL fileUrlMac = null;
@@ -516,8 +517,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			}
 
 			File file = new File(fileUrlMac.getFile());
-			path = file.getAbsolutePath();
-			store.setDefault(PreferenceConstants.PATH_R, path);
+			path = file.getAbsolutePath();*/
+			/*Now leave the R path empty by default to grab the systems path!*/
+			store.setDefault(PreferenceConstants.PATH_R, "");
 			store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, "");
 			/*For the packages on Linux we try the default path if no custom path is given!*/
 			store.setDefault("InstallLocation", "");
