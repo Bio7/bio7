@@ -47,6 +47,7 @@ import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.TerminateRserve;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.scriptengines.ScriptEngineConnection;
+import com.eco.bio7.util.Util;
 import com.eco.bio7.worldwind.WorldWindView;
 
 public class ConsoleCustomActions extends Action implements IMenuCreator {
@@ -414,7 +415,7 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 						IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 
-						InputDialog dlg = new InputDialog(Display.getCurrent().getActiveShell(), "", "Enter Encoding", store.getString("Console_Encoding"), null);
+						InputDialog dlg = new InputDialog(Util.getShell(), "", "Enter Encoding", store.getString("Console_Encoding"), null);
 						if (dlg.open() == Window.OK) {
 							// User clicked OK; update the label with the input
 

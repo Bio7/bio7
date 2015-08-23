@@ -441,7 +441,7 @@ public class Bio7Dialog {
 	 * @return a String value.
 	 */
 	public String inputDialog(String text, String text1, String text2) {
-		InputDialog inp = new InputDialog(new Shell(), text, text1, text2, null);
+		InputDialog inp = new InputDialog(Util.getShell(), text, text1, text2, null);
 		String theInput = "";
 		if (inp.open() == Dialog.OK) {
 

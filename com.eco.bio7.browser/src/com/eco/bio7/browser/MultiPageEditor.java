@@ -70,6 +70,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.eco.bio7.browser.editor.XMLEditor;
+import com.eco.bio7.util.Util;
 
 /**
  * An example showing how to create a multi-page editor. This example has 3
@@ -354,7 +355,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 					display.syncExec(new Runnable() {
 						public void run() {
 							String url = "";
-							InputDialog inp = new InputDialog(new Shell(), "Link", "Select", "Link", null);
+							InputDialog inp = new InputDialog(Util.getShell(), "Link", "Select", "Link", null);
 
 							if (inp.open() == Dialog.OK) {
 
@@ -386,7 +387,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 					display.syncExec(new Runnable() {
 						public void run() {
 							String imageLocation = "";
-							InputDialog inp = new InputDialog(new Shell(), "Image path", "Enter image path", "image/yourImage.jpg", null);
+							InputDialog inp = new InputDialog(Util.getShell(), "Image path", "Enter image path", "image/yourImage.jpg", null);
 
 							if (inp.open() == Dialog.OK) {
 

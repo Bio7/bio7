@@ -23,6 +23,7 @@ import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.TerminateRserve;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
+import com.eco.bio7.util.Util;
 import com.eco.bio7.worldwind.WorldWindView;
 
 public class StartRServe extends Action {
@@ -132,7 +133,7 @@ public class StartRServe extends Action {
 					display.syncExec(new Runnable() {
 
 						public void run() {
-							MessageDialog.openInformation(new Shell(), "R", "R-Server shutdown!");
+							MessageDialog.openInformation(Util.getShell(), "R", "R-Server shutdown!");
 						}
 					});
 
@@ -242,7 +243,7 @@ public class StartRServe extends Action {
 					display.syncExec(new Runnable() {
 
 						public void run() {
-							MessageDialog.openInformation(new Shell(), "R", "This is a remote Rserve connection\n" + "Please wait until the job has finished!\nA long running connection operation\n"
+							MessageDialog.openInformation(Util.getShell(), "R", "This is a remote Rserve connection\n" + "Please wait until the job has finished!\nA long running connection operation\n"
 									+ "could be caused by an unavailable server!");
 						}
 					});
@@ -286,7 +287,7 @@ public class StartRServe extends Action {
 				display.syncExec(new Runnable() {
 
 					public void run() {
-						MessageDialog.openInformation(new Shell(), "R", "R-Server shutdown!\n" + "This is a remote Rserve connection\n" + "Please wait until the job has finished!\n");
+						MessageDialog.openInformation(Util.getShell(), "R", "R-Server shutdown!\n" + "This is a remote Rserve connection\n" + "Please wait until the job has finished!\n");
 					}
 				});
 

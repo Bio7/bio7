@@ -19,6 +19,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolTip;
 
+import com.eco.bio7.util.Util;
+
 public class DebugInfoAction extends Action {
 	
 
@@ -35,7 +37,7 @@ public class DebugInfoAction extends Action {
 	}
 
 	public void run() {
-		ToolTip infoTip = new ToolTip(new Shell(), SWT.BALLOON | SWT.ICON_INFORMATION);
+		ToolTip infoTip = new ToolTip(Util.getShell(), SWT.BALLOON | SWT.ICON_INFORMATION);
 		infoTip.setText("Info!");
 		infoTip.setAutoHide(false);
 		infoTip.setMessage(""

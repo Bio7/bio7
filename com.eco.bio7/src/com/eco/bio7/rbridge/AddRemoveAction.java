@@ -30,6 +30,8 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 
+import com.eco.bio7.util.Util;
+
 public class AddRemoveAction extends Action implements IMenuCreator {
 
 	private Menu fMenu;
@@ -111,7 +113,7 @@ public class AddRemoveAction extends Action implements IMenuCreator {
 			}
 
 			public void widgetSelected(SelectionEvent e) {
-				new SizedSpreadDialog(new Shell()).open();
+				new SizedSpreadDialog(Util.getShell()).open();
 			}
 
 			public void widgetDefaultSelected(SelectionEvent e) {
@@ -303,7 +305,7 @@ public class AddRemoveAction extends Action implements IMenuCreator {
 
 				CTabItem item = RTable.getTabFolder().getSelection();
 				if (item != null) {
-					InputDialog dialog = new InputDialog(new Shell(), "Rename Tab", "Please enter a title!", item.getText(), new IInputValidator() {
+					InputDialog dialog = new InputDialog(Util.getShell(), "Rename Tab", "Please enter a title!", item.getText(), new IInputValidator() {
 
 						public String isValid(String text) {
 							if (text.length() == 0) {

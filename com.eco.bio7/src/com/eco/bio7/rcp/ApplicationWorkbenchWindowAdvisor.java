@@ -524,7 +524,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			/*For the packages on Linux we try the default path if no custom path is given!*/
 			store.setDefault("InstallLocation", "");
 			store.setDefault("SweaveScriptLocation", "");
-			store.setDefault("pdfLatex", "");
+			store.setDefault("pdfLatex", "/Library/TeX/texbin");
 			store.setDefault("RSERVE_ARGS", "");
 			reg2="";
 			//reg2 = "/Applications/LibreOffice.app/Contents/MacOS";

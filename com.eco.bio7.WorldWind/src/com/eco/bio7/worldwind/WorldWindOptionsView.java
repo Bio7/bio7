@@ -142,6 +142,7 @@ import org.rosuda.REngine.Rserve.RserveException;
 import worldw.Activator;
 
 import com.eco.bio7.image.CanvasView;
+import com.eco.bio7.util.Util;
 import com.swtdesigner.SWTResourceManager;
 
 import org.eclipse.swt.widgets.Spinner;
@@ -497,7 +498,7 @@ public class WorldWindOptionsView extends ViewPart {
 			IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
 			public void widgetSelected(final SelectionEvent e) {
-				InputDialog dialog = new InputDialog(new Shell(), "Enter Description", "Please enter a description!", "", new IInputValidator() {
+				InputDialog dialog = new InputDialog(Util.getShell(), "Enter Description", "Please enter a description!", "", new IInputValidator() {
 
 					public String isValid(String text) {
 						if (text.length() == 0) {

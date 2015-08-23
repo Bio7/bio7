@@ -45,6 +45,7 @@ import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.util.Util;
 
 
 public class FromSpreadAction extends Action implements IMenuCreator {
@@ -680,7 +681,7 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 
 					@Override
 					public void run() {
-						InputDialog inp = new InputDialog(new Shell(), "To R", "Create a name for the vector!", "vector", null);
+						InputDialog inp = new InputDialog(Util.getShell(), "To R", "Create a name for the vector!", "vector", null);
 						input = "vector";
 						if (inp.open() == Dialog.OK) {
 
@@ -736,7 +737,7 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 
 					@Override
 					public void run() {
-						InputDialog inp = new InputDialog(new Shell(), "To R", "Create a name for the vector!", "vector", null);
+						InputDialog inp = new InputDialog(Util.getShell(), "To R", "Create a name for the vector!", "vector", null);
 						input = "vector";
 						if (inp.open() == Dialog.OK) {
 							input = replaceWrongWord(inp.getValue());
@@ -787,7 +788,7 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 
 					@Override
 					public void run() {
-						InputDialog inp = new InputDialog(new Shell(), "To R", "Create a name for the vector!", "vector", null);
+						InputDialog inp = new InputDialog(Util.getShell(), "To R", "Create a name for the vector!", "vector", null);
 						input = "vector";
 						if (inp.open() == Dialog.OK) {
 							input = replaceWrongWord(inp.getValue());

@@ -51,6 +51,7 @@ import org.eclipse.ui.part.ViewPart;
 
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.util.PlaceholderLabel;
+import com.eco.bio7.util.Util;
 
 public class RTable extends ViewPart {
 
@@ -185,7 +186,7 @@ public class RTable extends ViewPart {
 
 					CTabItem item = tabFolder.getSelection();
 					if (item != null) {
-						InputDialog dialog = new InputDialog(new Shell(), "Rename Tab", "Please enter a title!", item.getText(), new IInputValidator() {
+						InputDialog dialog = new InputDialog(Util.getShell(), "Rename Tab", "Please enter a title!", item.getText(), new IInputValidator() {
 
 							public String isValid(String text) {
 								if (text.length() == 0) {

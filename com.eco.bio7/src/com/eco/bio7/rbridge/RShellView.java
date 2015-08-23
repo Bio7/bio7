@@ -1628,7 +1628,7 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(new Shell(), "To dataframe", "Create a name for the dataframe!", selected[0], null);
+								InputDialog inp = new InputDialog(Util.getShell(), "To dataframe", "Create a name for the dataframe!", selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
@@ -1649,7 +1649,7 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(new Shell(), "To dataframe", "Create a name for the dataframe!", selected[0], null);
+								InputDialog inp = new InputDialog(Util.getShell(), "To dataframe", "Create a name for the dataframe!", selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
@@ -1706,7 +1706,7 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(new Shell(), "To Matrix", "Create a name for the matrix!", selected[0], null);
+								InputDialog inp = new InputDialog(Util.getShell(), "To Matrix", "Create a name for the matrix!", selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
@@ -1727,7 +1727,7 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(new Shell(), "To Matrix", "Create a name for the matrix!", selected[0], null);
+								InputDialog inp = new InputDialog(Util.getShell(), "To Matrix", "Create a name for the matrix!", selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
@@ -1787,7 +1787,7 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(new Shell(), "To list of objects", "Create a name for the List!", selected[0], null);
+								InputDialog inp = new InputDialog(Util.getShell(), "To list of objects", "Create a name for the List!", selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
@@ -1816,7 +1816,7 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(new Shell(), "To list", "Create a name for the list!", selected[0], null);
+								InputDialog inp = new InputDialog(Util.getShell(), "To list", "Create a name for the list!", selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
@@ -1874,7 +1874,7 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(new Shell(), "To Vector", "Create a name for the vector!", selected[0], null);
+								InputDialog inp = new InputDialog(Util.getShell(), "To Vector", "Create a name for the vector!", selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
@@ -1918,7 +1918,7 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(new Shell(), "To Vector", "Create a name for the vector!", selected[0], null);
+								InputDialog inp = new InputDialog(Util.getShell(), "To Vector", "Create a name for the vector!", selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
@@ -1963,7 +1963,7 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(new Shell(), "To Factor", "Create a name for the factor!", selected[0], null);
+								InputDialog inp = new InputDialog(Util.getShell(), "To Factor", "Create a name for the factor!", selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
@@ -2008,7 +2008,7 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(new Shell(), "To Character", "Create a name for the character!", selected[0], null);
+								InputDialog inp = new InputDialog(Util.getShell(), "To Character", "Create a name for the character!", selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
@@ -2789,7 +2789,7 @@ public class RShellView extends ViewPart {
 
 		if (RServe.isAliveDialog()) {
 			if (RState.isBusy() == false) {
-				MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+				MessageBox message = new MessageBox(Util.getShell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
 				message.setMessage("Do you really want to remove the selected object(s)?");
 				message.setText("Remove objects");
 				int response = message.open();

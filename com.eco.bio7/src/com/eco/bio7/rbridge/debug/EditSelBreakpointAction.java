@@ -32,6 +32,7 @@ import org.eclipse.ui.texteditor.AbstractRulerActionDelegate;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import com.eco.bio7.console.ConsolePageParticipant;
+import com.eco.bio7.util.Util;
 
 public class EditSelBreakpointAction extends AbstractRulerActionDelegate implements IEditorActionDelegate {
 
@@ -98,7 +99,7 @@ public class EditSelBreakpointAction extends AbstractRulerActionDelegate impleme
 								e.printStackTrace();
 							}
 
-							InputDialog dlg = new InputDialog(Display.getCurrent().getActiveShell(), "Expression", "Enter Expressions:  e.g. 'if(x==5) browser()'", expression, null);
+							InputDialog dlg = new InputDialog(Util.getShell(), "Expression", "Enter Expressions:  e.g. 'if(x==5) browser()'", expression, null);
 
 							if (dlg.open() == Window.OK) {
 								

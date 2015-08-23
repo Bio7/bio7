@@ -33,6 +33,7 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.eco.bio7.console.ConsolePageParticipant;
+import com.eco.bio7.util.Util;
 
 public class ToggleDebugConditionalBreakpointAction extends AbstractRulerActionDelegate implements IEditorActionDelegate {
 
@@ -56,7 +57,7 @@ public class ToggleDebugConditionalBreakpointAction extends AbstractRulerActionD
 			String rDebugExpression = null;
 			IEditorPart editore = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 
-			InputDialog dlg = new InputDialog(Display.getCurrent().getActiveShell(), "", "Enter Expressions:  e.g. 'if(x==5) browser()'", "", null);
+			InputDialog dlg = new InputDialog(Util.getShell(), "", "Enter Expressions:  e.g. 'if(x==5) browser()'", "", null);
 			if (dlg.open() == Window.OK) {
 				
 				rDebugExpression = dlg.getValue();
