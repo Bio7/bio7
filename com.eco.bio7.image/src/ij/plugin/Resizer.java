@@ -429,8 +429,8 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
    }
 
 	public void itemStateChanged(ItemEvent e) {
-		Checkbox cb = (Checkbox)checkboxes.elementAt(0);
-        boolean newConstrain = cb.getState();
+		JCheckBox cb = (JCheckBox)checkboxes.elementAt(0);
+        boolean newConstrain = cb.isSelected();
         if (newConstrain && newConstrain!=constrain)
         	updateFields();
         constrain = newConstrain;

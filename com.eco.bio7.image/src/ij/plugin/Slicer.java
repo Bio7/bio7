@@ -651,8 +651,8 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 
 	public void itemStateChanged(ItemEvent e) {
 		if (IJ.isMacOSX()) IJ.wait(100);
-		Checkbox cb = (Checkbox)checkboxes.elementAt(2);
-        nointerpolate = cb.getState();
+		JCheckBox cb = (JCheckBox)checkboxes.elementAt(2);
+        nointerpolate = cb.isSelected();
         updateSize();
 	}
 

@@ -8,6 +8,8 @@ import ij.util.Tools;
 import java.awt.*;
 import java.util.*;
 
+import javax.swing.JCheckBox;
+
 /** This ImageJ plug-in filter finds the maxima (or minima) of an image.
  * It can create a mask where the local maxima of the current image are
  * marked (255; unmarked pixels 0).
@@ -168,7 +170,8 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
                 return false;               // if faulty input is not detected during preview, "cancel" quits
             thresholdWarningShown = true;
             useMinThreshold = false;
-            ((Checkbox)(checkboxes.elementAt(1))).setState(false); //reset "Above Lower Threshold" checkbox
+           
+            ((JCheckBox)(checkboxes.elementAt(1))).setSelected(false); //reset "Above Lower Threshold" checkbox
         }
         if (!gd.isPreviewActive())
             messageArea.setText("");        // no "nnn Maxima" message when not previewing

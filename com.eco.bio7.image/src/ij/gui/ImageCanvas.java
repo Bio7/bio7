@@ -888,19 +888,21 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 		Dimension newSize = canEnlarge(newWidth, newHeight);
 		if (newSize != null) {
 			setSize(newSize.width, newSize.height);
-			if (newSize.width != newWidth || newSize.height != newHeight)
+			//if (newSize.width != newWidth || newSize.height != newHeight)
+			setMagnification(newMag);
+			CanvasView.getCurrent().validate();
 				adjustSourceRect(newMag, zoomTargetOX, zoomTargetOY);
-			else
-				setMagnification(newMag);
-			imp.getWindow().pack();
+			//else
+			//	setMagnification(newMag);
+			//imp.getWindow().pack();
 		} else // can't enlarge window
 			adjustSourceRect(newMag, zoomTargetOX, zoomTargetOY);
 		repaint();
 
 		/* changed for Bio7! */
 
-		CanvasView.getCurrent().validate();
-		adjustSourceRect(newMag, sx, sy);
+		//CanvasView.getCurrent().validate();
+		//adjustSourceRect(newMag, sx, sy);
 		/*
 		 * if (srcRect.width<imageWidth || srcRect.height<imageHeight)
 		 * resetMaxBounds();
@@ -1027,7 +1029,7 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 			/* Changes for Bio7! */
 			// CanvasView.getCurrent().invalidate();
 			CanvasView.getCurrent().validate();
-			adjustSourceRect(newMag, sx, sy);
+			//adjustSourceRect(newMag, sx, sy);
 
 			return;
 		}
@@ -1064,7 +1066,7 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 		repaint();
 		/* Changes for Bio7! */
 		CanvasView.getCurrent().validate();
-		adjustSourceRect(newMag, sx, sy);
+		//adjustSourceRect(newMag, sx, sy);
 	}
 
 	int sqr(int x) {

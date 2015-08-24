@@ -2,6 +2,9 @@ package ij.plugin;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Vector;
+
+import javax.swing.JCheckBox;
+
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
@@ -22,7 +25,7 @@ public class Duplicator implements PlugIn, TextListener {
 	private static boolean duplicateStack;
 	private boolean duplicateSubstack;
 	private int first, last;
-	private Checkbox checkbox;
+	private JCheckBox checkbox;
 	private TextField rangeField;
 	private TextField[] rangeFields;
 	private int firstC, lastC, firstZ, lastZ, firstT, lastT;
@@ -252,7 +255,7 @@ public class Duplicator implements PlugIn, TextListener {
 				Vector v = gd.getStringFields();
 				rangeField = (TextField)v.elementAt(1);
 				rangeField.addTextListener(this);
-				checkbox = (Checkbox)(gd.getCheckboxes().elementAt(0));
+				checkbox = (JCheckBox)(gd.getCheckboxes().elementAt(0));
 			}
 		} else
 			duplicateStack = false;
@@ -346,7 +349,7 @@ public class Duplicator implements PlugIn, TextListener {
 			rangeFields[i] = (TextField)v.elementAt(i+1);
 			rangeFields[i].addTextListener(this);
 		}
-		checkbox = (Checkbox)(gd.getCheckboxes().elementAt(0));
+		checkbox = (JCheckBox)(gd.getCheckboxes().elementAt(0));
 		gd.setSmartRecording(true);
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -416,7 +419,7 @@ public class Duplicator implements PlugIn, TextListener {
 	}
 
 	public void textValueChanged(TextEvent e) {
-		checkbox.setState(true);
+		checkbox.setSelected(true);
 	}
 	
 }
