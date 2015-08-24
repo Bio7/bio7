@@ -46,6 +46,12 @@
             id="com.eco.bio7.rbridge.RPerspective"
             name="R">
       </perspective>
+      <perspective
+            class="com.eco.bio7.collection.CustomPerspective"
+            icon="icons/logo.gif"
+            id="com.eco.bio7.CustomPerspective"
+            name="Custom">
+      </perspective>
    </extension>
    <extension
          point="org.eclipse.ui.views">

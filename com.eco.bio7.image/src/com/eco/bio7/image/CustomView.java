@@ -284,8 +284,11 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 
 	public void doSave(IProgressMonitor monitor) {
 
-		Vector<?> ve = (Vector<?>) customViewParent.getData();
-		closeTabPanels(ve);
+		Object data = customViewParent.getData();
+		if (data instanceof Vector) {
+			Vector<?> ve = (Vector<?>) data;
+			closeTabPanels(ve);
+		}
 
 	}
 

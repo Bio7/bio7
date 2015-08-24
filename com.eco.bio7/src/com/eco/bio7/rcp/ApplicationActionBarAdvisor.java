@@ -32,6 +32,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import org.eclipse.ui.actions.ContributionItemFactory;
@@ -40,6 +41,8 @@ import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.registry.ActionSetRegistry;
 import org.eclipse.ui.internal.registry.IActionSetDescriptor;
+import org.eclipse.ui.views.IViewDescriptor;
+import org.eclipse.ui.views.IViewRegistry;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.actions.BeanShellClearAction;
@@ -59,6 +62,7 @@ import com.eco.bio7.actions.OfficeOpenAction;
 import com.eco.bio7.actions.OfficeSendValueAction;
 import com.eco.bio7.actions.OfficeValueAction;
 import com.eco.bio7.actions.OpenBio7BrowserAction;
+import com.eco.bio7.actions.OpenViewMenuAction;
 import com.eco.bio7.actions.LibreOfficeConnection;
 import com.eco.bio7.actions.Random;
 import com.eco.bio7.actions.ResetField;
@@ -92,6 +96,9 @@ import com.eco.bio7.util.Util;
 
 public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	private static StatusLineContributionItem userItem = null;
+
+	private String id[] = new String[] { "org.eclipse.ui.views.ResourceNavigator", "org.eclipse.ui.console.ConsoleView", "com.eco.bio7.RShell", "com.eco.bio7.rbridge.RTable", "com.eco.bio7.imagej", "com.eco.bio7.ijtoolbar", "com.eco.bio7.image_methods", "com.eco.bio7.points",
+			"com.eco.bio7.browser.Browser", "com.eco.bio7.worldwind.WorldWindView", "com.eco.bio7.worldwind.WorldWindOptionsView", "com.eco.bio7.spatial", "com.eco.bio7.discrete3d.Options3d", "com.eco.bio7.control","com.eco.bio7.spreadsheet","com.eco.bio7.states","com.eco.bio7.quadgrid", "com.eco.bio7.hexgrid","com.eco.bio7.linechart","com.eco.bio7.piechart" };
 
 	private IWorkbenchWindow window;
 
@@ -314,7 +321,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		propAction = ActionFactory.PREFERENCES.create(window);
 		register(propAction);
-		/*Avoid buggy action on MacOSX*/
+		/* Avoid buggy action on MacOSX */
 		if (!Util.getOS().equals("Mac")) {
 			exitAction = ActionFactory.QUIT.create(window);
 			register(exitAction);
@@ -688,7 +695,59 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		exportScriptMenu.addMenuListener(listener3);
 
-		showViewMenu.add(re);
+		/* Implement a custom show view action! */
+
+		MenuManager viewMenu = new MenuManager("&Show Selected View");
+		viewMenu.add(new ExecuteScriptAction("Empty", window2, new File("")));
+		viewMenu.setRemoveAllWhenShown(true);
+		IMenuListener listenerView = new IMenuListener() {
+			public void menuAboutToShow(IMenuManager m) {
+
+				IViewRegistry viewRegistry = PlatformUI.getWorkbench().getViewRegistry();
+				IViewDescriptor[] views = viewRegistry.getViews();
+				for (int i = 0; i < id.length; i++) {
+					if (i==2||i==4||i==8||i==9||i==11||i==13) {
+						viewMenu.add(new Separator());
+					}
+					for (int j = 0; j < views.length; j++) {
+
+						if (id[i].equals(views[j].getId()))
+							viewMenu.add(new OpenViewMenuAction(views[j].getLabel(), views[j].getId()));
+						
+
+					}
+
+				}
+
+			}
+
+		};
+
+		viewMenu.addMenuListener(listenerView);
+
+		// showViewMenu.add(re);
+
+		/* Implement a custom show view action! */
+		MenuManager viewMenuAll = new MenuManager("&Show All Views (Unordered)");
+		viewMenuAll.add(new ExecuteScriptAction("Empty", window2, new File("")));
+		viewMenuAll.setRemoveAllWhenShown(true);
+		IMenuListener listenerViewAll = new IMenuListener() {
+			public void menuAboutToShow(IMenuManager m) {
+				IViewRegistry viewRegistry = PlatformUI.getWorkbench().getViewRegistry();
+				IViewDescriptor[] views = viewRegistry.getViews();
+				for (IViewDescriptor iViewDescriptor : views) {
+
+					viewMenuAll.add(new OpenViewMenuAction(iViewDescriptor.getLabel(), iViewDescriptor.getId()));
+
+				}
+			}
+
+		};
+
+		viewMenuAll.addMenuListener(listenerViewAll);
+
+		// showViewMenu.add(re);
+
 		openPerspectiveMenu.add(perspect);
 		prefMenu.add(propAction);
 
@@ -722,7 +781,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		fileMenu.add(Import);
 		fileMenu.add(Export);
 		fileMenu.add(new Separator());
-        /*Avoid buggy action on MacOSX*/
+		/* Avoid buggy action on MacOSX */
 		if (!Util.getOS().equals("Mac")) {
 			fileMenu.add(exitAction);
 		}
@@ -788,8 +847,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		 * BeanShellMenu.add(bshclearaction); BeanShellMenu.add(new
 		 * Separator()); BeanShellMenu.add(bshimportaction);
 		 */
+		WindowMenu.add(viewMenu);
+		WindowMenu.add(viewMenuAll);
+		// WindowMenu.add(showViewMenu); // Displays the show menu.
 
-		WindowMenu.add(showViewMenu); // Displays the show menu.
 		WindowMenu.add(openPerspectiveMenu);
 		WindowMenu.add(new Separator());
 		WindowMenu.add(new ShowEditorAreaAction("Show/Hide Editor", window2));

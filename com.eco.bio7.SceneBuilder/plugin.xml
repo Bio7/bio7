@@ -6,15 +6,6 @@
       <view
             allowMultiple="true"
             category="com.eco.bio7.scenebuilder"
-            class="com.eco.bio7.scenebuilder.editor.BrowserView"
-            icon="src/pics/logo.gif"
-            id="com.eco.bio7.browser.SceneBuilderCanvas"
-            name="Canvas"
-            restorable="true">
-      </view>
-      <view
-            allowMultiple="true"
-            category="com.eco.bio7.scenebuilder"
             class="com.eco.bio7.scenebuilder.HierachyView"
             icon="pics/logo.gif"
             id="com.eco.bio7.scenebuilder.hierachy"
