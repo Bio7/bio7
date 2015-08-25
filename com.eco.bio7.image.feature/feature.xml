@@ -2,7 +2,7 @@
 <feature
       id="com.eco.bio7.image.feature"
       label="Bio7 ImageJ Plugin"
-      version="1.49.21.qualifier"
+      version="1.50.1.qualifier"
       provider-name="Bio7">
 
    <description url="http://www.example.com/description">

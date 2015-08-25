@@ -830,7 +830,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 			rMenu.add(new SaveRWorkspaceand_Start("Start RGui with Workspace", window2));
 		} else {
-			rMenu.add(new SaveRWorkspaceand_Start("Start R Shell", window2));
+			//No R shell for Bio7 Linux and Mac.
+			//rMenu.add(new SaveRWorkspaceand_Start("Start R Shell", window2));
 		}
 		rMenu.add(new Separator());
 		rMenu.add(openRservePref);

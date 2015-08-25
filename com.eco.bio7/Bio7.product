@@ -178,7 +178,7 @@ jre/lib/jli/libjli.dylib
       <feature id="com.eco.bio7.redit.feature" version="2.0.0.qualifier"/>
       <feature id="com.eco.bio7.util.feature" version="2.0.0.qualifier"/>
       <feature id="com.eco.bio7.worldwind.feature" version="2.0.0.qualifier"/>
-      <feature id="com.eco.bio7.image.feature" version="1.49.21.qualifier"/>
+      <feature id="com.eco.bio7.image.feature" version="1.50.1.qualifier"/>
       <feature id="com.eco.bio7.pythonedit.feature" version="2.0.0.qualifier"/>
       <feature id="com.eco.bio7.scenebuilder.feature" version="2.0.0.qualifier"/>
       <feature id="org.eclipse.e4.rcp"/>
