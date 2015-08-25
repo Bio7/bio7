@@ -1384,10 +1384,18 @@ public class RShellView extends ViewPart {
 					if (RState.isBusy() == false) {
 						String[] v = null;
 						// List all variables in the R workspace!
+						
+						
 
 						try {
-							RServe.getConnection().eval("varWorkspaceType<-NULL;for(i in 1:length(ls())){if(is.matrix(get(ls()[i]))==TRUE){varWorkspaceType<-append(varWorkspaceType,ls()[i])}}");
-							x = RServe.getConnection().eval("varWorkspaceType");
+							
+							RConnection con=RServe.getConnection();
+							
+							con.eval(".bio7TempVarEnvironment <- new.env()");
+							
+							
+							con.eval(".bio7TempVarEnvironment$workspVar<-NULL;for(i in 1:length(ls())){if(is.matrix(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}}");
+							x = RServe.getConnection().eval(".bio7TempVarEnvironment$workspVar");
 							if (x.isNull() == false) {
 								try {
 									v = x.asStrings();
@@ -1396,7 +1404,7 @@ public class RShellView extends ViewPart {
 									e1.printStackTrace();
 								}
 							}
-							RServe.getConnection().eval("remove(varWorkspaceType)");
+							con.eval("try(rm(workspVar,envir=.bio7TempVarEnvironment))");
 						} catch (RserveException e1) {
 
 							e1.printStackTrace();
@@ -1431,8 +1439,11 @@ public class RShellView extends ViewPart {
 						// List all variables in the R workspace!
 
 						try {
-							RServe.getConnection().eval("varWorkspaceType<-NULL;for(i in 1:length(ls())){if(is.vector(get(ls()[i]))==TRUE){varWorkspaceType<-append(varWorkspaceType,ls()[i])}}");
-							x = RServe.getConnection().eval("varWorkspaceType");
+							RConnection con=RServe.getConnection();
+							
+							con.eval(".bio7TempVarEnvironment <- new.env()");
+							con.eval(".bio7TempVarEnvironment$workspVar<-NULL;for(i in 1:length(ls())){if(is.vector(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}}");
+							x = RServe.getConnection().eval(".bio7TempVarEnvironment$workspVar");
 							if (x.isNull() == false) {
 								try {
 									v = x.asStrings();
@@ -1441,14 +1452,14 @@ public class RShellView extends ViewPart {
 									e1.printStackTrace();
 								}
 							}
-							RServe.getConnection().eval("remove(varWorkspaceType)");
+							con.eval("try(rm(workspVar,envir=.bio7TempVarEnvironment))");
 						} catch (RserveException e1) {
 
 							e1.printStackTrace();
 						}
 						if (v != null) {
 							for (int i = 0; i < v.length; i++) {
-								if (v[i].equals("varWorkspaceType") == false) {
+								if (v[i].equals(".varWorkspaceType") == false) {
 									listShell.add(v[i]);
 								}
 
@@ -1477,8 +1488,11 @@ public class RShellView extends ViewPart {
 						// List all variables in the R workspace!
 
 						try {
-							RServe.getConnection().eval("varWorkspaceType<-NULL;for(i in 1:length(ls())){if(is.function(get(ls()[i]))==TRUE){varWorkspaceType<-append(varWorkspaceType,ls()[i])}}");
-							x = RServe.getConnection().eval("varWorkspaceType");
+							RConnection con=RServe.getConnection();
+							
+							con.eval(".bio7TempVarEnvironment <- new.env()");
+							con.eval(".bio7TempVarEnvironment$workspVar<-NULL;for(i in 1:length(ls())){if(is.function(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}}");
+							x = RServe.getConnection().eval(".bio7TempVarEnvironment$workspVar");
 							if (x.isNull() == false) {
 								try {
 									v = x.asStrings();
@@ -1487,7 +1501,7 @@ public class RShellView extends ViewPart {
 									e1.printStackTrace();
 								}
 							}
-							RServe.getConnection().eval("remove(varWorkspaceType)");
+							con.eval("try(rm(workspVar,envir=.bio7TempVarEnvironment))");
 						} catch (RserveException e1) {
 
 							e1.printStackTrace();
@@ -1522,8 +1536,11 @@ public class RShellView extends ViewPart {
 						// List all variables in the R workspace!
 
 						try {
-							RServe.getConnection().eval("varWorkspaceType<-NULL;for(i in 1:length(ls())){if(is.factor(get(ls()[i]))==TRUE){varWorkspaceType<-append(varWorkspaceType,ls()[i])}}");
-							x = RServe.getConnection().eval("varWorkspaceType");
+							RConnection con=RServe.getConnection();
+							
+							con.eval(".bio7TempVarEnvironment <- new.env()");
+							con.eval(".bio7TempVarEnvironment$workspVar<-NULL;for(i in 1:length(ls())){if(is.factor(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}}");
+							x = RServe.getConnection().eval(".bio7TempVarEnvironment$workspVar");
 							if (x.isNull() == false) {
 								try {
 									v = x.asStrings();
@@ -1532,7 +1549,7 @@ public class RShellView extends ViewPart {
 									e1.printStackTrace();
 								}
 							}
-							RServe.getConnection().eval("remove(varWorkspaceType)");
+							con.eval("try(rm(workspVar,envir=.bio7TempVarEnvironment))");
 						} catch (RserveException e1) {
 
 							e1.printStackTrace();
@@ -1567,8 +1584,11 @@ public class RShellView extends ViewPart {
 						// List all variables in the R workspace!
 
 						try {
-							RServe.getConnection().eval("varWorkspaceType<-NULL;for(i in 1:length(ls())){if(is.data.frame(get(ls()[i]))==TRUE){varWorkspaceType<-append(varWorkspaceType,ls()[i])}}");
-							x = RServe.getConnection().eval("varWorkspaceType");
+							RConnection con=RServe.getConnection();
+							
+							con.eval(".bio7TempVarEnvironment <- new.env()");
+							con.eval(".bio7TempVarEnvironment$workspVar<-NULL;for(i in 1:length(ls())){if(is.data.frame(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}}");
+							x = RServe.getConnection().eval(".bio7TempVarEnvironment$workspVar");
 							if (x.isNull() == false) {
 								try {
 									v = x.asStrings();
@@ -1577,7 +1597,7 @@ public class RShellView extends ViewPart {
 									e1.printStackTrace();
 								}
 							}
-							RServe.getConnection().eval("remove(varWorkspaceType)");
+							con.eval("try(rm(workspVar,envir=.bio7TempVarEnvironment))");
 						} catch (RserveException e1) {
 
 							e1.printStackTrace();
@@ -2757,15 +2777,21 @@ public class RShellView extends ViewPart {
 				// List all variables in the R workspace!
 
 				try {
-					RServe.getConnection().eval("try(var<-ls())");
-					x = RServe.getConnection().eval("try(var)");
+					RConnection con=RServe.getConnection();
+					
+					con.eval(".bio7TempVarEnvironment <- new.env()");
+					con.eval(".bio7TempVarEnvironment$workspVar <-ls()");
+					
+					//RServe.getConnection().eval("try(.varRWorkspaceObjects<-ls())");
+					x = con.eval("try(.bio7TempVarEnvironment$workspVar)");
 					try {
 						v = x.asStrings();
 					} catch (REXPMismatchException e1) {
 
 						e1.printStackTrace();
 					}
-					RServe.getConnection().eval("try(remove(var))");
+					con.eval("try(rm(workspVar,envir=.bio7TempVarEnvironment))");
+					
 				} catch (RserveException e1) {
 
 					e1.printStackTrace();
@@ -2815,15 +2841,19 @@ public class RShellView extends ViewPart {
 					// List all variables in the R workspace!
 
 					try {
-						RServe.getConnection().eval("var<-ls()");
-						x = RServe.getConnection().eval("var");
+						RConnection con=RServe.getConnection();
+						
+						con.eval(".bio7TempVarEnvironment <- new.env()");
+						con.eval(".bio7TempVarEnvironment$workspVar <-ls()");
+						//RServe.getConnection().eval(".varRWorkspaceObject<-ls()");
+						x = RServe.getConnection().eval("try(.bio7TempVarEnvironment$workspVar)");
 						try {
 							v = x.asStrings();
 						} catch (REXPMismatchException e1) {
 
 							e1.printStackTrace();
 						}
-						RServe.getConnection().eval("remove(var)");
+						con.eval("try(rm(workspVar,envir=.bio7TempVarEnvironment))");
 					} catch (RserveException e1) {
 
 						e1.printStackTrace();
@@ -2853,15 +2883,19 @@ public class RShellView extends ViewPart {
 				// List all variables in the R workspace!
 
 				try {
-					RServe.getConnection().eval("try(packs<-.packages())");
-					pack = RServe.getConnection().eval("try(packs)");
+					RConnection con=RServe.getConnection();
+					
+					con.eval(".bio7TempVarEnvironment <- new.env()");
+					con.eval("try(.bio7TempVarEnvironment$workspaceRPackages<-.packages())");
+					pack = RServe.getConnection().eval("try(.bio7TempVarEnvironment$workspaceRPackages)");
 					try {
 						v = pack.asStrings();
 					} catch (REXPMismatchException e1) {
 
 						e1.printStackTrace();
 					}
-					RServe.getConnection().eval("try(remove(packs))");
+					con.eval("try(rm(workspaceRPackages,envir=.bio7TempVarEnvironment))");
+					
 				} catch (RserveException e1) {
 
 					e1.printStackTrace();
