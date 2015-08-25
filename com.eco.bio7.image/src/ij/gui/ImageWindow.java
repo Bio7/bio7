@@ -402,6 +402,14 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		if (digits>2) digits=2;
 		return IJ.d2s(n,digits);
     }
+    
+    /*Changed for Bio7!*/
+   /* public Rectangle  getBounds(){
+    GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+	 Changed for Bio7! 
+	Rectangle bounds = CanvasView.getCanvas_view().getCurrent().getBounds();
+	return bounds;
+    }*/
 
     public void paint(Graphics g) {
 		//if (IJ.debugMode) IJ.log("wPaint: " + imp.getTitle());

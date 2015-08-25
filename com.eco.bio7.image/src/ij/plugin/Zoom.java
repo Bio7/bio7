@@ -5,6 +5,11 @@ import ij.process.*;
 import ij.measure.*;
 import java.awt.*;
 
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
+
+import com.eco.bio7.image.CanvasView;
+
 /** This plugin implements the commands in the Image/Zoom submenu. */
 public class Zoom implements PlugIn{
 
@@ -38,8 +43,11 @@ public class Zoom implements PlugIn{
     		ic.zoom100Percent();
 		else if (arg.equals("to"))
 			zoomToSelection(imp, ic);
-		else if (arg.equals("set"))
+		else if (arg.equals("set")){
 			setZoom(imp, ic);
+    	/*Changed for Bio7!*/
+		CanvasView.getCurrent().doLayout();
+		}
 		else if (arg.equals("max")) {
 			ImageWindow win = imp.getWindow();
 			win.setBounds(win.getMaximumBounds());
