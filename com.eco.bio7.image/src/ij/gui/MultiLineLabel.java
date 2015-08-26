@@ -95,7 +95,9 @@ public class MultiLineLabel extends JPanel {
     	super.paintComponent(g);
         int x, y;
         Dimension d = this.getSize();
-		if (!ij.IJ.isLinux()) setAntialiasedText(g);
+        /*Changed for Bio7!*/
+		//if (!ij.IJ.isLinux()) setAntialiasedText(g);
+        setAntialiasedText(g);
         y = line_ascent + (d.height - num_lines * line_height)/2;
         for(int i = 0; i < num_lines; i++, y += line_height) {
             x = margin_width;

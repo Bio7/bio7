@@ -326,7 +326,8 @@ public class LookAndFeelHandler {
             // Update the look and feel defaults to use new font.
             // Swing should take care of this on its own, but it does not seem
             // to do it when mixed with SWT.
-            updateLookAndFeelFonts(awtFont);
+            //Changed for Bio7!
+           // updateLookAndFeelFonts(awtFont);
         }
         return awtFont;
     }

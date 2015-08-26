@@ -35,7 +35,11 @@ public class Bio7ImageJPreferences extends FieldEditorPreferencePage implements 
 
 		addField(new BooleanFieldEditor("RESULTS_TABLE", "&Results Table window on top", getFieldEditorParent()));
 		
-		addField(new BooleanFieldEditor("MACRO_RECORDER", "&Macro Recorder window on top", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("MACRO_RECORDER", "&Macro Recorder window on top", getFieldEditorParent()));	    
+			
+		addField(new IntegerFieldEditor("FONT_SIZE_CORRECTION", "Fontsize correction (Restart necessary)", getFieldEditorParent()));
+		
+		addField(new BooleanFieldEditor("FONT_ANTIALIASED", "Antialiased Fonts", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 	}
 
 	/*

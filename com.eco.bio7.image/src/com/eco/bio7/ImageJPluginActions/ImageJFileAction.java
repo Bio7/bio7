@@ -172,6 +172,7 @@ public class ImageJFileAction extends Action implements IMenuCreator {
 							 * url[count]); WindowManager.checkForDuplicateName
 							 * = true;
 							 */
+							if(imp!=null){
 							SwingUtilities.invokeLater(new Runnable() {
 								// !!
 								public void run() {
@@ -180,7 +181,7 @@ public class ImageJFileAction extends Action implements IMenuCreator {
 									IJ.showStatus("");
 								}
 							});
-
+							}
 							monitor.done();
 							return Status.OK_STATUS;
 						}

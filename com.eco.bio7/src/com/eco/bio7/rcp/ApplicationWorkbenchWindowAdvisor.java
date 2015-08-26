@@ -126,6 +126,7 @@ import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.compile.utils.ScanClassPath;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.discrete.Quad2d;
+import com.eco.bio7.image.Activator;
 import com.eco.bio7.image.CanvasView;
 import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 import com.eco.bio7.jobs.LoadData;
@@ -1002,6 +1003,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	}
 
 	private void setComponentFont() {
+		IPreferenceStore store = com.eco.bio7.image.Activator.getDefault().getPreferenceStore();
+		boolean antialiasedFonts=false;
+		antialiasedFonts=store.getBoolean("FONT_ANTIALIASED");
+		if(antialiasedFonts){
+		System.setProperty("awt.useSystemAAFontSettings","on");
+		System.setProperty("swing.aatext", "true");
+		}
 
 		Display dis = Display.getDefault();
 
@@ -1013,14 +1021,15 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		int awtFontSize = (int) Math.round((double) fontData.getHeight() * resolution / 72.0);
 		java.awt.Font awtFont = null;
-		/* Font size Linux! */
-		if (getOS().equals("Linux")) {
-			awtFont = new java.awt.Font(fontData.getName(), fontData.getStyle(), awtFontSize);
-		}
+		
+		
+		int fontSizeCorrection=0;
+		fontSizeCorrection=store.getInt("FONT_SIZE_CORRECTION");
+		/* Font size correction! */
 
-		else {
-			awtFont = new java.awt.Font(fontData.getName(), fontData.getStyle(), awtFontSize);
-		}
+	
+			awtFont = new java.awt.Font(fontData.getName(), fontData.getStyle(), awtFontSize+fontSizeCorrection);
+		
 
 		// Update the look and feel defaults to use new font.
 		updateLookAndFeel(awtFont);
