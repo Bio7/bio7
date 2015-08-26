@@ -16,8 +16,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
 	private static final String PERSPECTIVE_ID = "com.eco.bio7.perspective_2d";
 
-	public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(
-			IWorkbenchWindowConfigurer configurer) {
+	public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
 		return new ApplicationWorkbenchWindowAdvisor(configurer);
 	}
 
@@ -36,14 +35,14 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
 		return "com.eco.bio7.preferences.Bio7PreferencePage";
 	}
-   /*Workaround for MacOSX related to JavaFX and a shutdown error!*/
+
+	/* Workaround for MacOSX related to JavaFX and a shutdown error! */
 	public boolean preShutdown() {
 		boolean close = super.preShutdown();
 		if (close) {
 			close = true;
 			IWorkbench workbench = PlatformUI.getWorkbench();
-			final IWorkbenchWindow window = workbench
-					.getActiveWorkbenchWindow();
+			final IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
 
 			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 				Work.openPerspective("com.eco.bio7.perspective_2d");

@@ -379,11 +379,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 			@Override
 			public void perspectiveDeactivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-				//Workaround a bug on MacOSX when closing a SWT_AWT perspective 3D and WorldWind!
+				// Workaround a bug on MacOSX when closing a SWT_AWT perspective
+				// 3D and WorldWind!
 				if (OS.equals("Mac")) {
 					if (perspective.getId().equals("com.eco.bio7.perspective_3d")) {
 
-						
 						Work.closeView("com.eco.bio7.spatial");
 					}
 
@@ -488,12 +488,17 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			}
 		} else if (getOS().equals("Linux")) {
 			store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, reg2);
-			//reg1 = "/usr/lib/R";
+			// reg1 = "/usr/lib/R";
 			reg2 = "/usr/lib/libreoffice/program";
-			/*Now leave the R path empty by default to grab the systems path!*/
+			/*
+			 * Now leave the R path empty by default to grab the systems path!
+			 */
 			store.setDefault(PreferenceConstants.PATH_R, "");
 			store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, "");
-			/*For the packages on Linux we try the default path if no custom path is given!*/
+			/*
+			 * For the packages on Linux we try the default path if no custom
+			 * path is given!
+			 */
 			store.setDefault("InstallLocation", "");
 			store.setDefault("SweaveScriptLocation", "");
 			store.setDefault("pdfLatex", "");
@@ -506,29 +511,33 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			 */
 
 		} else if (getOS().equals("Mac")) {
-			/*Bundle bundlenew = Platform.getBundle("Bundled_R");
-
-			URL locationUrlMac = FileLocator.find(bundlenew, new Path("/R"), null);
-			URL fileUrlMac = null;
-			try {
-				fileUrlMac = FileLocator.toFileURL(locationUrlMac);
-			} catch (IOException e2) {
-
-				e2.printStackTrace();
-			}
-
-			File file = new File(fileUrlMac.getFile());
-			path = file.getAbsolutePath();*/
-			/*Now leave the R path empty by default to grab the systems path!*/
+			/*
+			 * Bundle bundlenew = Platform.getBundle("Bundled_R");
+			 * 
+			 * URL locationUrlMac = FileLocator.find(bundlenew, new Path("/R"),
+			 * null); URL fileUrlMac = null; try { fileUrlMac =
+			 * FileLocator.toFileURL(locationUrlMac); } catch (IOException e2) {
+			 * 
+			 * e2.printStackTrace(); }
+			 * 
+			 * File file = new File(fileUrlMac.getFile()); path =
+			 * file.getAbsolutePath();
+			 */
+			/*
+			 * Now leave the R path empty by default to grab the systems path!
+			 */
 			store.setDefault(PreferenceConstants.PATH_R, "");
 			store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, "");
-			/*For the packages on Linux we try the default path if no custom path is given!*/
+			/*
+			 * For the packages on Linux we try the default path if no custom
+			 * path is given!
+			 */
 			store.setDefault("InstallLocation", "");
 			store.setDefault("SweaveScriptLocation", "");
 			store.setDefault("pdfLatex", "/Library/TeX/texbin");
 			store.setDefault("RSERVE_ARGS", "");
-			reg2="";
-			//reg2 = "/Applications/LibreOffice.app/Contents/MacOS";
+			reg2 = "";
+			// reg2 = "/Applications/LibreOffice.app/Contents/MacOS";
 			store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, reg2);
 
 		}
@@ -594,7 +603,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("R_DEBUG_PORT", 21555);
 
 		store.setDefault("LINUX_SHELL", "GNOME");
-		
 
 		store.setDefault("USE_CUSTOM_DEVICE", true);
 
@@ -1004,11 +1012,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 	private void setComponentFont() {
 		IPreferenceStore store = com.eco.bio7.image.Activator.getDefault().getPreferenceStore();
-		boolean antialiasedFonts=false;
-		antialiasedFonts=store.getBoolean("FONT_ANTIALIASED");
-		if(antialiasedFonts){
-		System.setProperty("awt.useSystemAAFontSettings","on");
-		System.setProperty("swing.aatext", "true");
+		boolean antialiasedFonts = false;
+		antialiasedFonts = store.getBoolean("FONT_ANTIALIASED");
+		if (antialiasedFonts) {
+			System.setProperty("awt.useSystemAAFontSettings", "on");
+			System.setProperty("swing.aatext", "true");
 		}
 
 		Display dis = Display.getDefault();
@@ -1021,15 +1029,12 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		int awtFontSize = (int) Math.round((double) fontData.getHeight() * resolution / 72.0);
 		java.awt.Font awtFont = null;
-		
-		
-		int fontSizeCorrection=0;
-		fontSizeCorrection=store.getInt("FONT_SIZE_CORRECTION");
+
+		int fontSizeCorrection = 0;
+		fontSizeCorrection = store.getInt("FONT_SIZE_CORRECTION");
 		/* Font size correction! */
 
-	
-			awtFont = new java.awt.Font(fontData.getName(), fontData.getStyle(), awtFontSize+fontSizeCorrection);
-		
+		awtFont = new java.awt.Font(fontData.getName(), fontData.getStyle(), awtFontSize + fontSizeCorrection);
 
 		// Update the look and feel defaults to use new font.
 		updateLookAndFeel(awtFont);
