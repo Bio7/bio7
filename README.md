@@ -23,12 +23,4 @@ Features:
 *     Sensitivity analysis with an embedded flowchart editor in which scripts, macros and compiled code can be dragged and executed.
 *     Creation of 3d OpenGL (Jogl) models.
 *     Visualizations and simulations on an embedded 3d globe (World Wind Java SDK).
-<<<<<<< HEAD
 *     Creation of Graphical User Interfaces with the embedded JavaFX SceneBuilder.
-=======
-# bio7
-Bio7
->>>>>>> branch 'master' of https://github.com/Bio7/bio7.git
-=======
-*     Creation of Graphical User Interfaces with the embedded JavaFX SceneBuilder.
->>>>>>> branch 'master' of https://github.com/Bio7/bio7.git
