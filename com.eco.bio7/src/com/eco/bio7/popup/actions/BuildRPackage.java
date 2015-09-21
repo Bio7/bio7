@@ -60,7 +60,7 @@ public class BuildRPackage implements IObjectActionDelegate {
 					String optionsBuild = store.getString("rcmdbuild");
 					if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 						 loc = loc.replace("/", "\\");
-						ConsolePageParticipant.pipeInputToConsole("cd " + "\"" + loc + "\"",true,false);
+						ConsolePageParticipant.pipeInputToConsole("cd /d" + "\"" + loc + "\"",true,false);
 						if (ApplicationWorkbenchWindowAdvisor.is64BitVM()) {
 							ConsolePageParticipant.pipeInputToConsole("\"" + pathR + "/bin/x64/R\"" + " CMD build " + optionsBuild + " " + "\"" + loc + "\"",true,false);
 						} else {
