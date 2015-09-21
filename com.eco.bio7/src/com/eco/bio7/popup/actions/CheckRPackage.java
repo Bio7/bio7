@@ -62,7 +62,7 @@ public class CheckRPackage implements IObjectActionDelegate {
 					String optionsCheck = store.getString("rcmdcheck");
 					if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 						 loc = loc.replace("/", "\\");
-						ConsolePageParticipant.pipeInputToConsole("cd /d" + "\"" + loc + "\"",true,false);
+						ConsolePageParticipant.pipeInputToConsole("cd /d " + "\"" + loc + "\"",true,false);
 						if (ApplicationWorkbenchWindowAdvisor.is64BitVM()) {
 							ConsolePageParticipant.pipeInputToConsole("\"" + pathR + "/bin/x64/R\"" + " CMD check " + optionsCheck + " " + "\"" + loc + "\"",true,false);
 						} else {

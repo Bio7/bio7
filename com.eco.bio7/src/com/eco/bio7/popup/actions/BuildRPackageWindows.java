@@ -59,7 +59,7 @@ public class BuildRPackageWindows implements IObjectActionDelegate{
 					String optionsInstall = store.getString("rcmdinstall");
 					if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 						 loc = loc.replace("/", "\\");
-						ConsolePageParticipant.pipeInputToConsole("cd /d" + "\"" + loc + "\"",true,false);
+						ConsolePageParticipant.pipeInputToConsole("cd /d " + "\"" + loc + "\"",true,false);
 						
 						if (ApplicationWorkbenchWindowAdvisor.is64BitVM()) {
 							ConsolePageParticipant.pipeInputToConsole("\""+pathR + "/bin/x64/R\""+" CMD INSTALL "+optionsInstall+" " + "\"" + loc + "\"",true,false);
