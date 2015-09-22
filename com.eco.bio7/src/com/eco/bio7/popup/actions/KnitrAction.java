@@ -283,9 +283,11 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 													}
 												}
 											});
-
+											
 											final WebEngine webEng = brow.getEngine();
-
+											
+											webEng.setJavaScriptEnabled(true);
+											
 											AnchorPane.setTopAnchor(brow, 0.0);
 											AnchorPane.setBottomAnchor(brow, 0.0);
 											AnchorPane.setLeftAnchor(brow, 0.0);

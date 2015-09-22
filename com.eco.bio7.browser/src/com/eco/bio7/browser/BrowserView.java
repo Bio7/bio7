@@ -56,6 +56,9 @@ public class BrowserView extends ViewPart {
 		container.setLayout(new FillLayout());
 
 		browser = new Browser(container, SWT.NONE);
+		
+		browser.setJavascriptEnabled(true);
+		
 		browser.setUrl("http://bio7.org/manual/Main.html");
 
 		createActions();
