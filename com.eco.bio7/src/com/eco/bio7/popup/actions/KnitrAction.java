@@ -54,12 +54,7 @@ import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
 
-import javafx.collections.ListChangeListener;
-import javafx.scene.Node;
-import javafx.scene.Scene;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebView;
+
 
 public class KnitrAction extends Action implements IObjectActionDelegate {
 
@@ -269,38 +264,10 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 										if (openInJavaFXBrowser == false) {
 											Work.openView("com.eco.bio7.browser.Browser");
 											BrowserView b = BrowserView.getBrowserInstance();
+											b.browser.setJavascriptEnabled(true);
 											b.setLocation(url);
 										} else {
-											AnchorPane anchorPane = new AnchorPane();
-
-											WebView brow = new WebView();
-											brow.getChildrenUnmodifiable().addListener(new ListChangeListener<Node>() {
-												@Override
-												public void onChanged(Change<? extends Node> change) {
-													Set<Node> scrolls = brow.lookupAll(".scroll-bar");
-													for (Node scroll : scrolls) {
-														scroll.setVisible(false);
-													}
-												}
-											});
-											
-											final WebEngine webEng = brow.getEngine();
-											
-											webEng.setJavaScriptEnabled(true);
-											
-											AnchorPane.setTopAnchor(brow, 0.0);
-											AnchorPane.setBottomAnchor(brow, 0.0);
-											AnchorPane.setLeftAnchor(brow, 0.0);
-											AnchorPane.setRightAnchor(brow, 0.0);
-
-											anchorPane.getChildren().add(brow);
-
-											webEng.load(url);
-											CustomView view = new CustomView();
-											view.setSceneCanvas("HTML");
-
-											Scene scene = new Scene(anchorPane);
-											view.addScene(scene);
+											new JavaFXWebBrowser().createBrowser(url);
 										}
 									}
 								});

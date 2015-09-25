@@ -1,8 +1,6 @@
 package com.eco.bio7.popup.actions;
 
 import java.io.File;
-import java.util.Set;
-
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -35,23 +33,13 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
-
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.browser.BrowserView;
-import com.eco.bio7.collection.CustomView;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.StartBio7Utils;
-
-import javafx.collections.ListChangeListener;
-import javafx.collections.ListChangeListener.Change;
-import javafx.scene.Node;
-import javafx.scene.Scene;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebView;
 
 public class RMarkdownAction extends Action implements IObjectActionDelegate {
 
@@ -219,6 +207,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 										if (openInJavaFXBrowser==false) {
 											Work.openView("com.eco.bio7.browser.Browser");
 											BrowserView b = BrowserView.getBrowserInstance();
+											b.browser.setJavascriptEnabled(true);
 											b.setLocation(url);
 										}
 
@@ -226,35 +215,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 
 											
 
-											AnchorPane anchorPane = new AnchorPane();
-
-											 WebView brow = new WebView();
-											
-											
-											brow.getChildrenUnmodifiable().addListener(new ListChangeListener<Node>() {
-											    @Override public void onChanged(Change<? extends Node> change) {
-											        Set<Node> scrolls = brow.lookupAll(".scroll-bar");
-											        for (Node scroll : scrolls) {
-											            scroll.setVisible(false);
-											        }
-											    }
-											});
-
-											final WebEngine webEng = brow.getEngine();
-
-											AnchorPane.setTopAnchor(brow, 0.0);
-											AnchorPane.setBottomAnchor(brow, 0.0);
-											AnchorPane.setLeftAnchor(brow, 0.0);
-											AnchorPane.setRightAnchor(brow, 0.0);
-
-											anchorPane.getChildren().add(brow);
-
-											webEng.load(url);
-											CustomView view = new CustomView();
-											view.setSceneCanvas("HTML");
-
-											Scene scene = new Scene(anchorPane);
-											view.addScene(scene);
+											new JavaFXWebBrowser().createBrowser(url);
 										}
 									}
 								});
