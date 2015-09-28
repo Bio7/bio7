@@ -9,6 +9,7 @@ import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.web.WebEngine;
@@ -68,6 +69,42 @@ public class JavaFXWebBrowser {
     	  }
         
       }
+    });
+    
+    /*public void handle(KeyEvent event) {
+        if (event.getCode() == KeyCode.TAB && event.isControlDown()) { 
+        }
+    }*/
+    
+    brow.setOnKeyTyped(new EventHandler<KeyEvent>() {
+        public void handle(KeyEvent ke) {
+            //String text = "Key Typed: " + ke.getCharacter();
+            //System.out.println(text);
+            if (ke.isAltDown()) {
+                
+            }
+            if (ke.getCharacter().equals("+")) {
+            	
+                brow.setZoom(brow.getZoom() * 1.1);
+                
+                ke.consume();
+               
+            }
+            if (ke.getCharacter().equals("-")) {
+            	
+                brow.setZoom(brow.getZoom() / 1.1);
+                
+                ke.consume();
+               
+            }
+            if (ke.isMetaDown()) {
+               
+            }
+            if (ke.isShiftDown()) {
+              
+            }
+           
+        }
     });
 	
 	final WebEngine webEng = brow.getEngine();
