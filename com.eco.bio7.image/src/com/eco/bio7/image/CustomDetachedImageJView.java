@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2013 M. Austenfeld
+ * Copyright (c) 2007-2015 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,21 +10,12 @@
  *******************************************************************************/
 package com.eco.bio7.image;
 
-import ij.ImageJ;
-import ij.ImagePlus;
-import ij.WindowManager;
-import ij.gui.ImageWindow;
-
 import java.awt.Panel;
-import java.util.ArrayList;
 import java.util.Vector;
-
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IPartListener2;
@@ -36,6 +27,10 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
+import ij.ImageJ;
+import ij.ImagePlus;
+import ij.WindowManager;
+import ij.gui.ImageWindow;
 
 /**
  * This class provides some static methods for the creation of custom views
@@ -44,7 +39,7 @@ import org.eclipse.ui.part.ViewPart;
  * @author Bio7
  * 
  */
-public class CustomView extends ViewPart implements ISaveablePart2 {
+public class CustomDetachedImageJView extends ViewPart implements ISaveablePart2 {
 
 	protected int insertMark = -1;
 
@@ -58,8 +53,6 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 
 	protected IViewPart activated;
 
-	protected boolean singleView = false;
-
 	private ImagePlus plus;
 
 	private ImageWindow win;
@@ -68,15 +61,15 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 
 	public IViewReference ref2;
 
-	private CustomView customView;
+	private CustomDetachedImageJView customView;
 
 	protected ImageJPartListener2 palist;
 
-	public CustomView getCustomView() {
+	public CustomDetachedImageJView getCustomView() {
 		return customView;
 	}
 
-	public CustomView() {
+	public CustomDetachedImageJView() {
 		// customView=this;
 	}
 
@@ -188,28 +181,20 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 		display.syncExec(new Runnable() {
 			public void run() {
 				try {
-					if (singleView) {
-						IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-						activated = page.showView("com.eco.bio7.image.detachedImage");
-					} else {
-						IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-						page.showView("com.eco.bio7.image.detachedImage", secId, IWorkbenchPage.VIEW_CREATE);
-						activated = page.showView("com.eco.bio7.image.detachedImage", secId, IWorkbenchPage.VIEW_ACTIVATE);
 
-						palist = new ImageJPartListener2();
-						page.addPartListener(palist);
-					}
+					IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+					page.showView("com.eco.bio7.image.detachedImage", secId, IWorkbenchPage.VIEW_CREATE);
+					activated = page.showView("com.eco.bio7.image.detachedImage", secId, IWorkbenchPage.VIEW_ACTIVATE);
+
+					palist = new ImageJPartListener2();
+					page.addPartListener(palist);
 
 				} catch (PartInitException e) {
-					// TODO Auto-generated catch block
+
 					e.printStackTrace();
 				}
-				if (activated instanceof CustomView) {
-					customView = (CustomView) activated;
-					/*
-					 * Control c[] = view.getCustomViewParent().getChildren();
-					 * for (int i = 0; i < c.length; i++) { c[i].dispose(); }
-					 */
+				if (activated instanceof CustomDetachedImageJView) {
+					customView = (CustomDetachedImageJView) activated;
 
 					SwtAwtCustom swt = new SwtAwtCustom(viewPanel, customView);
 					swt.addTab(id);
@@ -230,34 +215,6 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	 * @param title
 	 *            the title of the tab.
 	 */
-	/*
-	 * public void setPanel(final Panel panel, final String id) {
-	 * 
-	 * secId = id; Display display = PlatformUI.getWorkbench().getDisplay();
-	 * display.syncExec(new Runnable() { public void run() { try { if
-	 * (singleView) { IWorkbenchPage page =
-	 * PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-	 * activated = page.showView("com.eco.bio7.image.detachedImage"); } else {
-	 * IWorkbenchPage page =
-	 * PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-	 * page.showView("com.eco.bio7.image.detachedImage", secId,
-	 * IWorkbenchPage.VIEW_CREATE); activated =
-	 * page.showView("com.eco.bio7.image.detachedImage", secId,
-	 * IWorkbenchPage.VIEW_ACTIVATE); }
-	 * 
-	 * } catch (PartInitException e) { // TODO Auto-generated catch block
-	 * e.printStackTrace(); } if (activated instanceof CustomView) { CustomView
-	 * view = (CustomView) activated; Control c[] =
-	 * view.getCustomViewParent().getChildren(); Vector ve = (Vector)
-	 * view.getCustomViewParent().getData(); if (ve != null && ve.size() > 0) {
-	 * closeTabPanels(ve); } for (int i = 0; i < c.length; i++) { //
-	 * System.out.println(c[i]); c[i].dispose(); } SwtAwtCustom swt = new
-	 * SwtAwtCustom(panel, view); swt.addAWTTab(id); }
-	 * 
-	 * } });
-	 */
-
-	// }
 
 	/**
 	 * Returns the display of the view.
@@ -335,10 +292,6 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 			}
 
 		}
-	}
-
-	public void setSingleView(boolean singleView) {
-		this.singleView = singleView;
 	}
 
 	public void setstatusline(String message) {

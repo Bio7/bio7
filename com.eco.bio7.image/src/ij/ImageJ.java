@@ -28,7 +28,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 
 import com.eco.bio7.image.CanvasView;
-import com.eco.bio7.image.CustomView;
+import com.eco.bio7.image.CustomDetachedImageJView;
 import com.eco.bio7.image.Fullscreen;
 import com.eco.bio7.image.IJTabs;
 
@@ -136,7 +136,7 @@ public class ImageJ extends Frame implements ActionListener, MouseListener, KeyL
 	private static String commandName;
 	/* Changed for Bio7! -> Bio7 variables! */
 	public static Fullscreen full;
-	public static CustomView customImageJView;
+	public static CustomDetachedImageJView customImageJView;
 	private JPanel currentPanel;
 	private JPanel root;
 	private int index;
@@ -1025,7 +1025,7 @@ public class ImageJ extends Frame implements ActionListener, MouseListener, KeyL
 	}
 
 	/* Changed for Bio7! */
-	public static void setCustomView(CustomView customView) {
+	public static void setCustomView(CustomDetachedImageJView customView) {
 		customImageJView = customView;
 
 	}

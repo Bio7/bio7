@@ -47,13 +47,13 @@ public class SwtAwtCustom {
 
 	private GLCanvas canvas;
 
-	private CustomView view;
+	private CustomDetachedImageJView view;
 
 	protected Scene scene;
 
 	protected Stage stage2;
 
-	public SwtAwtCustom(JPanel Jpanel,CustomView view) {
+	public SwtAwtCustom(JPanel Jpanel,CustomDetachedImageJView view) {
 		 this.view=view;
 		this.jpanel = Jpanel;
 		ve = new Vector();
@@ -61,7 +61,7 @@ public class SwtAwtCustom {
 
 	}
 	
-	public SwtAwtCustom(Panel panel,CustomView view) {
+	public SwtAwtCustom(Panel panel,CustomDetachedImageJView view) {
 		 this.view=view;
 		this.awtPanel = panel;
 		ve = new Vector();

@@ -355,7 +355,7 @@ public class CanvasView extends ViewPart {
 						ImageWindow win = (ImageWindow) ve.get(1);
 						// JPanel current = (JPanel) ve.get(2);
 
-						CustomView custom = new CustomView();
+						CustomDetachedImageJView custom = new CustomDetachedImageJView();
 						/* Create ImageJ view with unique ID! */
 						String id = UUID.randomUUID().toString();
 						// detachedSecViewIDs.add(id);
