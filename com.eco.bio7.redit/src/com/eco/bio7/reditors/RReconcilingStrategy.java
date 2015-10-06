@@ -146,16 +146,21 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 		ANTLRInputStream input = new ANTLRInputStream(doc.get());
 		RLexer lexer = new RLexer(input);
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
+		UnderlineListener li=new UnderlineListener(editor);
 		RFilter filter = new RFilter(tokens);
+		/*We have to remove the filter, too! Else we get error messages on the console!*/
+		filter.removeErrorListeners();
+		//filter.addErrorListener(li);
+		
 		filter.stream(); // call start rule: stream
 		tokens.reset();
 
 		RParser parser = new RParser(tokens);
        // parser.setErrorHandler(new RErrorStrategy());
 		parser.setBuildParseTree(true);
-		UnderlineListener li=new UnderlineListener(editor);
+		
 		lexer.removeErrorListeners();
-		lexer.addErrorListener(li);
+		//lexer.addErrorListener(li);
 		parser.removeErrorListeners();
 		// parser.getInterpreter().setPredictionMode(PredictionMode.LL_EXACT_AMBIG_DETECTION);
 		parser.addErrorListener(li);
