@@ -97,7 +97,7 @@ import com.eco.bio7.util.Util;
 public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	private static StatusLineContributionItem userItem = null;
 
-	private String id[] = new String[] { "org.eclipse.ui.views.ResourceNavigator", "org.eclipse.ui.console.ConsoleView", "com.eco.bio7.RShell", "com.eco.bio7.rbridge.RTable", "com.eco.bio7.imagej", "com.eco.bio7.ijtoolbar", "com.eco.bio7.image_methods", "com.eco.bio7.points",
+	private String id[] = new String[] { "org.eclipse.ui.views.ResourceNavigator", "org.eclipse.ui.console.ConsoleView", "com.eco.bio7.RShell", "com.eco.bio7.rbridge.RTable", "com.eco.bio7.imagej", "com.eco.bio7.ijtoolbar", "com.eco.bio7.image_methods", "com.eco.bio7.points","com.eco.bio7.image.TransferGeometryView",
 			"com.eco.bio7.browser.Browser", "com.eco.bio7.worldwind.WorldWindView", "com.eco.bio7.worldwind.WorldWindOptionsView", "com.eco.bio7.spatial", "com.eco.bio7.discrete3d.Options3d", "com.eco.bio7.control","com.eco.bio7.spreadsheet","com.eco.bio7.states","com.eco.bio7.quadgrid", "com.eco.bio7.hexgrid","com.eco.bio7.linechart","com.eco.bio7.piechart" };
 
 	private IWorkbenchWindow window;
@@ -706,7 +706,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 				IViewRegistry viewRegistry = PlatformUI.getWorkbench().getViewRegistry();
 				IViewDescriptor[] views = viewRegistry.getViews();
 				for (int i = 0; i < id.length; i++) {
-					if (i==2||i==4||i==8||i==9||i==11||i==13) {
+					if (i==2||i==4||i==9||i==10||i==12||i==14) {
 						viewMenu.add(new Separator());
 					}
 					for (int j = 0; j < views.length; j++) {

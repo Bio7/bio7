@@ -191,13 +191,13 @@ jre/lib/jli/libjli.dylib
       <feature id="org.eclipse.ecf.filetransfer.httpclient4.ssl.feature"/>
       <feature id="com.eco.bio7.themes.feature" version="2.0.0.qualifier"/>
       <feature id="net.sourceforge.texlipse" version="1.5.0"/>
-      <feature id="org.eclipse.equinox.p2.rcp.feature" version="1.2.100.v20150527-1706"/>
       <feature id="org.eclipse.equinox.p2.core.feature" version="1.3.100.v20150527-1706"/>
-      <feature id="org.eclipse.emf.common" version="2.11.0.v20150512-0501"/>
-      <feature id="org.eclipse.jdt" version="3.11.0.v20150603-2000"/>
-      <feature id="org.eclipse.emf.ecore" version="2.11.0.v20150512-0501"/>
-      <feature id="org.eclipse.rcp" version="4.5.0.v20150603-2331"/>
       <feature id="com.eco.bio7.markdownedit.feature" version="1.0.0.qualifier"/>
+      <feature id="org.eclipse.equinox.p2.rcp.feature" version="1.2.101.v20150826-1318"/>
+      <feature id="org.eclipse.rcp" version="4.5.1.v20150904-0015"/>
+      <feature id="org.eclipse.emf.ecore" version="2.11.1.v20150805-0538"/>
+      <feature id="org.eclipse.jdt" version="3.11.1.v20150904-0015"/>
+      <feature id="org.eclipse.emf.common" version="2.11.0.v20150805-0538"/>
    </features>
 
 
