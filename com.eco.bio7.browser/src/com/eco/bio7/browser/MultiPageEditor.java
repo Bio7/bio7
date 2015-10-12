@@ -157,13 +157,14 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 			node.setOnMouseExited(onMouseExitedHandler);
 		}
 
-		htmlEditor.setOnKeyReleased(new EventHandler<KeyEvent>() {
+		htmlEditor.setOnKeyPressed(new EventHandler<KeyEvent>() {
 
 			@Override
 			public void handle(KeyEvent evt) {
 
 				final KeyCombination combo = new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN);
 				final KeyCombination combo2 = new KeyCodeCombination(KeyCode.Y, KeyCombination.CONTROL_DOWN);
+				final KeyCombination combo3 = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN);
 
 				if (combo.match(evt)) {
 
@@ -176,6 +177,13 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 					IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
 
 					htmlEditor.setHtmlText(doc.get());
+				}
+				/* Save! */
+				else if(evt.isControlDown()){
+				 if(combo3.match(evt)){
+					
+				}
+				 return;
 				}
 				/* Select All! */
 				else if (evt.isShortcutDown() && evt.getCode() == KeyCode.A) {
