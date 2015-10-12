@@ -15,17 +15,15 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jdt.core,
  org.eclipse.draw2d,
  com.eco.bio7.albireo;bundle-version="2.0.0",
- com.eco.bio7.libs;bundle-version="2.0.0",
- com.eco.bio7.javaedit;bundle-version="2.0.0",
  com.eco.bio7.util;bundle-version="2.0.0",
  org.eclipse.e4.ui.model.workbench,
- org.eclipse.e4.ui.workbench,
- com.eco.bio7.scenebuilder;bundle-version="2.0.0"
+ org.eclipse.e4.ui.workbench
 Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: plugins/,
- bin/
+ bin/,
+ libs/
 Export-Package: .,
  com.eco.bio7.ImageJPluginActions,
  com.eco.bio7.image,

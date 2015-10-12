@@ -16,7 +16,6 @@ import java.awt.Panel;
 import java.util.Vector;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import javax.media.opengl.awt.GLCanvas;
 import javax.swing.JApplet;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
@@ -45,7 +44,6 @@ public class SwtAwtCustom {
 
 	private Vector ve;
 
-	private GLCanvas canvas;
 
 	private CustomDetachedImageJView view;
 

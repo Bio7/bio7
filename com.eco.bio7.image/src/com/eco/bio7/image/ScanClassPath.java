@@ -1,4 +1,4 @@
-package com.eco.bio7.image;
+/*package com.eco.bio7.image;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,10 +29,10 @@ public class ScanClassPath {
 	
 
 	public String scan() {
-		/*
+		
 		 * Scan all necessary plugins for libs and calculate the paths to the
 		 * libs decoupled from JDT because we still need this for the custom Java compiler, Flow editor and Bio7 model import!
-		 */
+		 
 		IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
 		
 		ArrayList<String> bundlePaths = new ArrayList<String>();
@@ -60,10 +60,10 @@ public class ScanClassPath {
 			// requireBundles=(String)bundle.getHeaders().get(Constants.REQUIRE_BUNDLE);
 			// System.out.println(requires);
 
-			/*
+			
 			 * Get the *.jar list from the Bio7 Java preferences and add them to
 			 * the classpath!
-			 */
+			 
 			String libs = store.getString("javaLibs");
 			String[] conv = convert(libs);
 			for (int j = 0; j < conv.length; j++) {
@@ -90,7 +90,7 @@ public class ScanClassPath {
 
 		}
 		
-		/* Here we add the required Eclipse *.jars! 
+		 Here we add the required Eclipse *.jars! 
 		for (int i = 0; i < bundlesEclipse.length; i++) {
 			Bundle bundle = Platform.getBundle(bundlesEclipse[i]);
 			String loc = bundle.getLocation().substring(15);
@@ -109,7 +109,7 @@ public class ScanClassPath {
 			// System.out.println(File.pathSeparator +loc);
 
 		}
-*/
+
 		
 		buf.append(File.pathSeparator + bundlePaths.get(0) + "/bin");
 		buf.append(File.pathSeparator + bundlePaths.get(2) + "/bin");
@@ -126,7 +126,7 @@ public class ScanClassPath {
 		return classpaths;
 	}
 	
-	/* Convert the string from the preferences! */
+	 Convert the string from the preferences! 
 	private String[] convert(String preferenceValue) {
 		StringTokenizer tokenizer = new StringTokenizer(preferenceValue, ";");
 		int tokenCount = tokenizer.countTokens();
@@ -142,3 +142,4 @@ public class ScanClassPath {
 	
 
 }
+*/

@@ -30,8 +30,8 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Locale;
 
-import com.eco.bio7.image.ScanClassPath;
-import com.eco.bio7.javaeditor.Bio7EditorPlugin;
+//import com.eco.bio7.image.ScanClassPath;
+//import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 
 /** Compiles and runs plugins using the javac compiler. */
 public class Compiler implements PlugIn, FilenameFilter {
@@ -165,11 +165,11 @@ public class Compiler implements PlugIn, FilenameFilter {
 		// IJ.log("classpath: " + classpath);
 		output.reset();
 		Vector<String> options = new Vector<String>();
-		IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
-		String version = store.getString("compiler_version");
-		boolean debug = store.getBoolean("compiler_debug");
-		boolean verbose = store.getBoolean("compiler_verbose");
-		boolean warnings = store.getBoolean("compiler_warnings");
+		//IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
+		String version ="1.8"; //store.getString("compiler_version");
+		boolean debug = false;//store.getBoolean("compiler_debug");
+		boolean verbose =false; //store.getBoolean("compiler_verbose");
+		boolean warnings =false; //store.getBoolean("compiler_warnings");
 		options.addElement("-source");
 		options.addElement(version);
 		options.addElement("-target");
@@ -189,7 +189,8 @@ public class Compiler implements PlugIn, FilenameFilter {
 		}
 		options.addElement("-classpath");
 		/*Add the Bio7 classpath and the path to the file (to compile the dependencies, too)!*/
-		options.addElement(new ScanClassPath().scan()+fileDirectory);
+		//options.addElement(new ScanClassPath().scan()+fileDirectory);
+		options.addElement(fileDirectory);
 		options.addElement(path);
 		String[] arguments = new String[options.size()];
 		options.copyInto((String[]) arguments);
