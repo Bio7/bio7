@@ -7,7 +7,7 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+ *******************************************************************************//*
 package com.eco.bio7.reditors;
 
 
@@ -17,17 +17,17 @@ import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextUtilities;
 
-/**
+*//**
  * Auto indent line strategy sensitive to brackets.
- */
+ *//*
 public class RAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 
 	public RAutoIndentStrategy() {
 	}
 	
-	/* (non-Javadoc)
+	 (non-Javadoc)
 	 * Method declared on IAutoIndentStrategy
-	 */
+	 
 	public void customizeDocumentCommand(IDocument d, DocumentCommand c) {
 		if (c.length == 0 && c.text != null && endsWithDelimiter(d, c.text))
 			smartIndentAfterNewLine(d, c);
@@ -36,13 +36,13 @@ public class RAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 		}
 	}
 	
-	/**
+	*//**
 	 * Returns whether or not the given text ends with one of the documents legal line delimiters.
 	 * 
 	 * @param d the document
 	 * @param txt the text
 	 * @return <code>true</code> if <code>txt</code> ends with one of the document's line delimiters, <code>false</code> otherwise
-	 */
+	 *//*
 	private boolean endsWithDelimiter(IDocument d, String txt) {
 		String[] delimiters= d.getLegalLineDelimiters();
 		if (delimiters != null)
@@ -50,7 +50,7 @@ public class RAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 		return false;
 	}
 	
-	/**
+	*//**
 	 * Returns the line number of the next bracket after end.
 	 * 
 	 * @param document - the document being parsed
@@ -59,7 +59,7 @@ public class RAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 	 * @param closingBracketIncrease - the number of brackets to skip
 	 * @return the line number of the next matching bracket after end
 	 * @throws BadLocationException in case the line numbers are invalid in the document
-	 */
+	 *//*
 	 protected int findMatchingOpenBracket(IDocument document, int line, int end, int closingBracketIncrease) throws BadLocationException {
 
 		int start= document.getLineOffset(line);
@@ -79,7 +79,7 @@ public class RAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 		return line;
 	}
 	
-	/**
+	*//**
 	 * Returns the bracket value of a section of text. Closing brackets have a value of -1 and 
 	 * open brackets have a value of 1.
 	 * 
@@ -89,7 +89,7 @@ public class RAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 	 * @param ignoreCloseBrackets - whether or not to ignore closing brackets in the count
 	 * @return the bracket value of a section of text
 	 * @throws BadLocationException in case the positions are invalid in the document
-	 */
+	 *//*
 	 private int getBracketCount(IDocument document, int start, int end, boolean ignoreCloseBrackets) throws BadLocationException {
 
 		int begin = start;
@@ -139,7 +139,7 @@ public class RAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 		return bracketcount;
 	}
 	
-	/**
+	*//**
 	 * Returns the end position of a comment starting at the given <code>position</code>.
 	 * 
 	 * @param document - the document being parsed
@@ -147,7 +147,7 @@ public class RAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 	 * @param end - the end position for the search
 	 * @return the end position of a comment starting at the given <code>position</code>
 	 * @throws BadLocationException in case <code>position</code> and <code>end</code> are invalid in the document
-	 */
+	 *//*
 	 private int getCommentEnd(IDocument document, int position, int end) throws BadLocationException {
 		int currentPosition = position;
 		while (currentPosition < end) {
@@ -162,14 +162,14 @@ public class RAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 		return end;
 	}
 	
-	/**
+	*//**
 	 * Returns the content of the given line without the leading whitespace.
 	 * 
 	 * @param document - the document being parsed
 	 * @param line - the line being searched
 	 * @return the content of the given line without the leading whitespace
 	 * @throws BadLocationException in case <code>line</code> is invalid in the document
-	 */
+	 *//*
 	 protected String getIndentOfLine(IDocument document, int line) throws BadLocationException {
 		if (line > -1) {
 			int start= document.getLineOffset(line);
@@ -180,7 +180,7 @@ public class RAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 		return ""; 
 	}
 	
-	/**
+	*//**
 	 * Returns the position of the <code>character</code> in the <code>document</code> after <code>position</code>.
 	 * 
 	 * @param document - the document being parsed
@@ -189,7 +189,7 @@ public class RAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 	 * @param character - the character you are trying to match
 	 * @return the next location of <code>character</code>
 	 * @throws BadLocationException in case <code>position</code> is invalid in the document
-	 */
+	 *//*
 	 private int getStringEnd(IDocument document, int position, int end, char character) throws BadLocationException {
 		int currentPosition = position;
 		while (currentPosition < end) {
@@ -205,11 +205,11 @@ public class RAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 		return end;
 	}
 	
-	/**
+	*//**
 	 * Set the indent of a new line based on the command provided in the supplied document.
 	 * @param document - the document being parsed
 	 * @param command - the command being performed
-	 */
+	 *//*
 	 protected void smartIndentAfterNewLine(IDocument document, DocumentCommand command) {
 
 		int docLength= document.getLength();
@@ -242,11 +242,11 @@ public class RAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 		}
 	}
 	
-	/**
+	*//**
 	 * Set the indent of a bracket based on the command provided in the supplied document.
 	 * @param document - the document being parsed
 	 * @param command - the command being performed
-	 */
+	 *//*
 	 protected void smartInsertAfterBracket(IDocument document, DocumentCommand command) {
 		if (command.offset == -1 || document.getLength() == 0)
 			return;
@@ -278,3 +278,4 @@ public class RAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 		}
 	}
 }
+*/

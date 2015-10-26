@@ -45,6 +45,7 @@ public class REditorEditStrategy implements IAutoEditStrategy {
 		}
 
 	}
+	
 
 	private String getOffsetAndIdent(IDocument document, DocumentCommand command) {
 		int line = 0;
