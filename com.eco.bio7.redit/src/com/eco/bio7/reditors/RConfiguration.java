@@ -74,7 +74,7 @@ import com.eco.bio7.rpreferences.template.RCompletionProcessor;
 
 public class RConfiguration extends TextSourceViewerConfiguration {
 
-	//private RDoubleClickStrategy doubleClickStrategy;
+	// private RDoubleClickStrategy doubleClickStrategy;
 
 	private RColorManager colorManager;
 
@@ -102,11 +102,19 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 		return new RDoubleClickSelector();
 
 	}
-
+    /*Method to set automatically an extra char when editing the source, e.g., closing a brace!*/
 	public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {
-		IAutoEditStrategy strategy = (IDocument.DEFAULT_CONTENT_TYPE.equals(contentType) ? new RAutoIndentStrategy() : new DefaultIndentLineAutoEditStrategy());
+		IAutoEditStrategy strategy = (IDocument.DEFAULT_CONTENT_TYPE.equals(contentType) ? new REditorEditStrategy() : new DefaultIndentLineAutoEditStrategy());
 		return new IAutoEditStrategy[] { strategy };
 	}
+
+	/*
+	 * public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer
+	 * sourceViewer, String contentType) { IAutoEditStrategy strategy =
+	 * (IDocument.DEFAULT_CONTENT_TYPE.equals(contentType) ? new
+	 * RAutoIndentStrategy() : new DefaultIndentLineAutoEditStrategy()); return
+	 * new IAutoEditStrategy[] { strategy }; }
+	 */
 
 	public String getConfiguredDocumentPartitioning(ISourceViewer sourceViewer) {
 		return Bio7REditorPlugin.R_PARTITIONING;
@@ -140,7 +148,8 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 		reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
 		reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
 
-		//IPreferenceStore store = Bio7REditorPlugin.getDefault().getPreferenceStore();
+		// IPreferenceStore store =
+		// Bio7REditorPlugin.getDefault().getPreferenceStore();
 		RGB rgbkey2 = PreferenceConverter.getColor(store, "colourkey2");
 		FontData f2 = PreferenceConverter.getFontData(store, "colourkeyfont2");
 		RGB rgbkey3 = PreferenceConverter.getColor(store, "colourkey3");
@@ -207,7 +216,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 	@Override
 	public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
-		
+
 		if (store.getBoolean("SHOW_INFOPOPUP")) {
 			return new MarkdownTextHover();
 		}
