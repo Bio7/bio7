@@ -16,9 +16,11 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.rosuda.REngine.REXPMismatchException;
+import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.console.Console;
 import com.eco.bio7.rcp.StartBio7Utils;
+import com.eco.bio7.util.Util;
 
 public class RClipboardScriptJob extends WorkspaceJob {
 
@@ -30,14 +32,25 @@ public class RClipboardScriptJob extends WorkspaceJob {
 
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
 		monitor.beginTask("Evaluate Clipboard", IProgressMonitor.UNKNOWN);
-		if (RServe.getConnection() != null) {
+		RConnection con = RServe.getConnection();
+		if (con != null) {
 
 			try {
-				RServe.getConnection().eval("try(f <- file(\"clipboard\", open=\"r\"))");
+				
+					if (Util.getOS().equals("Mac")) {
+					
+				
+					con.eval("try(clip <- file(pipe(\"pbpaste\"), sep=\"\t\", header=T))");
+				} else {
+					con.eval("try(f <- file(\"clipboard\", open=\"r\"))");
+				}
+				
+				
+				//RServe.getConnection().eval("try(f <- file(\"clipboard\", open=\"r\"))");
 
 				String rout = null;
 				try {
-					rout = RServe.getConnection().eval("try(paste(capture.output(source(f,echo=T)),collapse=\"\\n\"))").asString();
+					rout = con.eval("try(paste(capture.output(source(f,echo=T)),collapse=\"\\n\"))").asString();
 				} catch (REXPMismatchException e) {
 
 					e.printStackTrace();
@@ -48,8 +61,8 @@ public class RClipboardScriptJob extends WorkspaceJob {
 					RShellView.setTextConsole(rout);
 				}
 
-				RServe.getConnection().eval("try(close(f))");
-				RServe.getConnection().eval("try(rm(f))");
+				con.eval("try(close(f))");
+				con.eval("try(rm(f))");
 			} catch (RserveException e) {
 
 				e.printStackTrace();
