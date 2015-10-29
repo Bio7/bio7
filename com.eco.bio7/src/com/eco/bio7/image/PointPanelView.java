@@ -23,6 +23,7 @@ import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.PlatformUI;
@@ -30,6 +31,8 @@ import org.eclipse.ui.part.ViewPart;
 
 import com.eco.bio7.actions.PlaceholderAction;
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.collection.SwingFxSwtView;
+import com.eco.bio7.discrete.Quad2d;
 import com.eco.bio7.swt.SwtAwt;
 
 public class PointPanelView extends ViewPart {
@@ -51,7 +54,8 @@ public class PointPanelView extends ViewPart {
 
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.bio7image");
 
-		top = new Composite(parent, SWT.NO_BACKGROUND | SWT.EMBEDDED);
+		top = new Composite(parent, SWT.NONE);
+		top.setLayout(new FillLayout());
 		DropTarget dt = new DropTarget(top, DND.DROP_DEFAULT | DND.DROP_MOVE);
 		dt.setTransfer(new Transfer[] { FileTransfer.getInstance() });
 		dt.addDropListener(new DropTargetAdapter() {
@@ -72,7 +76,7 @@ public class PointPanelView extends ViewPart {
 				}
 			}
 		});
-		try {
+		/*try {
 			System.setProperty("sun.awt.noerasebackground", "true");
 		} catch (NoSuchMethodError error) {
 		}
@@ -89,7 +93,7 @@ public class PointPanelView extends ViewPart {
 		});
 		JApplet panel = new JApplet() {
 			public void update(java.awt.Graphics g) {
-				/* Do not erase the background */
+				 Do not erase the background 
 				paint(g);
 			}
 		};
@@ -105,13 +109,25 @@ public class PointPanelView extends ViewPart {
 		jp.setPreferredSize(new Dimension(jp.getScaledx(), jp.getScaledy()));
 
 		scroll.setViewportView(jp);
-		/*For MacOSX necessary!*/
+		For MacOSX necessary!
 		SwingUtilities.invokeLater(new Runnable() {
 			// !!
 			public void run() {
 				contentPane.add(scroll);
 			}
-		});
+		});*/
+		scroll = new JScrollPane();
+		jp = new PointPanel();
+		jp.getHeight();
+		jp.setPreferredSize(new Dimension(jp.getScaledx(), jp.getScaledy()));
+
+		scroll.setViewportView(jp);
+		
+		SwingFxSwtView view=new SwingFxSwtView();
+		view.embedd(top,scroll);
+		
+		
+		
 		initializeToolBar();
 
 	}

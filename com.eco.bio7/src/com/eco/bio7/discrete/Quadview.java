@@ -24,7 +24,13 @@ import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -41,14 +47,27 @@ import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.collection.SwingFxSwtView;
 import com.eco.bio7.jobs.LoadData;
 import com.eco.bio7.jobs.LoadWorkspaceJob;
 import com.eco.bio7.methods.Compiled;
 import com.eco.bio7.methods.CurrentStates;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.swt.SwtAwt;
 import com.eco.bio7.time.Time;
+
+import javafx.embed.swing.SwingNode;
+import javafx.embed.swt.FXCanvas;
+import javafx.event.EventHandler;
+import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.StackPane;
+import javafx.stage.Screen;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 public class Quadview extends ViewPart {
 	public static final String ID = "com.eco.bio7.quadgrid";
@@ -61,15 +80,35 @@ public class Quadview extends ViewPart {
 
 	private java.awt.Frame frame;
 
-	private JRootPane root;
+	// private JRootPane root;
 
 	protected String[] fileList;
-	
+
 	private static Quadview quadview;
-	
+
 	private Action transferCounts;
 
 	private Action transferPattern;
+
+	private Scene scene;
+
+	// private Parent root;
+
+	private Stage stage1;
+
+	private Stage stage2;
+
+	private Stage stage3;
+
+	private Stage stage4;
+
+	private Stage primaryStage;
+
+	private FXCanvas canvas;
+
+	private SwingNode swingNode;
+
+	private StackPane pane;
 
 	public Quadview() {
 
@@ -80,7 +119,7 @@ public class Quadview extends ViewPart {
 
 	public void createPartControl(Composite parent) {
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.quadgrid");
-		 createActions();
+		createActions();
 		initializeToolBar();
 		getViewSite().getPage().addPartListener(new IPartListener() {
 			public void partActivated(IWorkbenchPart part) {
@@ -111,7 +150,8 @@ public class Quadview extends ViewPart {
 			}
 		});
 
-		top = new Composite(parent, SWT.NO_BACKGROUND | SWT.EMBEDDED);
+		this.top = new Composite(parent, SWT.NONE);
+		top.setLayout(new FillLayout());
 		DropTarget dt = new DropTarget(top, DND.DROP_DEFAULT | DND.DROP_MOVE);
 		dt.setTransfer(new Transfer[] { FileTransfer.getInstance() });
 		dt.addDropListener(new DropTargetAdapter() {
@@ -123,14 +163,13 @@ public class Quadview extends ViewPart {
 				if (ft.isSupportedType(event.currentDataType)) {
 					fileList = (String[]) event.data;
 					if (fileList[0].endsWith("exml")) {
-						/*The same call as in Spreadview!*/ 
+						/* The same call as in Spreadview! */
 						LoadData.load(fileList[0].toString());
-						
-						
+
 					} else {
 						MessageBox messageBox = new MessageBox(new Shell(),
 
-						SWT.ICON_WARNING);
+								SWT.ICON_WARNING);
 						messageBox.setMessage("File is not an *.exml file!");
 						messageBox.open();
 
@@ -140,27 +179,29 @@ public class Quadview extends ViewPart {
 
 			}
 		});
-		try {
-			System.setProperty("sun.awt.noerasebackground", "true");
-		} catch (NoSuchMethodError error) {
-		}
-
-		frame = SWT_AWT.new_Frame(top);
-		SwtAwt.setSwtAwtFocus(frame, top);
+		/*
+		 * try { System.setProperty("sun.awt.noerasebackground", "true"); }
+		 * catch (NoSuchMethodError error) { }
+		 * 
+		 * frame = SWT_AWT.new_Frame(top); SwtAwt.setSwtAwtFocus(frame, top);
+		 * 
+		 * panel = new JApplet();
+		 * 
+		 * frame.add(panel); root = new JRootPane(); panel.add(root);
+		 * java.awt.Container contentPane = root.getContentPane();
+		 * 
+		 * Time.setPause(true);
+		 * 
+		 * contentPane.add(Quad2d.getQuad2dInstance().jScrollPane);
+		 */
 		
-		 panel = new JApplet();
-
-		frame.add(panel);
-		root = new JRootPane();
-		panel.add(root);
-		java.awt.Container contentPane = root.getContentPane();
-
+		
 		Time.setPause(true);
+		SwingFxSwtView view=new SwingFxSwtView();
+		view.embedd(top,Quad2d.getQuad2dInstance().jScrollPane);
 
-		contentPane.add(Quad2d.getQuad2dInstance().jScrollPane);
-
+		
 	}
-	
 
 	public void setFocus() {
 
@@ -196,13 +237,15 @@ public class Quadview extends ViewPart {
 	public void setTop(Composite top) {
 		this.top = top;
 	}
+
 	private void initializeToolBar() {
 		IToolBarManager toolbarManager = getViewSite().getActionBars().getToolBarManager();
-		
+
 		toolbarManager.add(transferPattern);
-		toolbarManager.add(transferCounts);	
+		toolbarManager.add(transferCounts);
 
 	}
+
 	private void createActions() {
 
 		transferPattern = new Action("Transfer pattern to R") {
@@ -214,9 +257,7 @@ public class Quadview extends ViewPart {
 							@Override
 							protected IStatus run(IProgressMonitor monitor) {
 								monitor.beginTask("Transfer ...", IProgressMonitor.UNKNOWN);
-								
-								
-										
+
 								RConnection c = RServe.getConnection();
 								int h = Field.getHeight();
 								int w = Field.getWidth();
@@ -253,8 +294,8 @@ public class Quadview extends ViewPart {
 								} catch (RserveException e) {
 
 									e.printStackTrace();
-								}					
-								pInt=null;
+								}
+								pInt = null;
 								monitor.done();
 								return Status.OK_STATUS;
 							}
@@ -278,7 +319,7 @@ public class Quadview extends ViewPart {
 						Bio7Dialog.message("Rserve is busy!");
 					}
 				}
-				
+
 			}
 		};
 		transferPattern.setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/regelmaessig.gif"));
@@ -291,25 +332,23 @@ public class Quadview extends ViewPart {
 							@Override
 							protected IStatus run(IProgressMonitor monitor) {
 								monitor.beginTask("Transfer ...", IProgressMonitor.UNKNOWN);
-								
-								
-										
-											RConnection c=RServe.getConnection();
-											for (int i = 0; i < CurrentStates.getStateList().size(); i++) {
-												
-												CounterModel zahl = (CounterModel) Quad2d.getQuad2dInstance().zaehlerlist.get(i);
 
-												int z[] = zahl.getCounterListasArray();
-												
-												try {
-													c.assign("State_"+CurrentStates.getStateName(i), z);
-												} catch (REngineException e) {
-													// TODO Auto-generated catch block
-													e.printStackTrace();
-												}
-												
-											}
-											
+								RConnection c = RServe.getConnection();
+								for (int i = 0; i < CurrentStates.getStateList().size(); i++) {
+
+									CounterModel zahl = (CounterModel) Quad2d.getQuad2dInstance().zaehlerlist.get(i);
+
+									int z[] = zahl.getCounterListasArray();
+
+									try {
+										c.assign("State_" + CurrentStates.getStateName(i), z);
+									} catch (REngineException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+
+								}
+
 								monitor.done();
 								return Status.OK_STATUS;
 							}
@@ -333,16 +372,12 @@ public class Quadview extends ViewPart {
 						Bio7Dialog.message("Rserve is busy!");
 					}
 				}
-				
-				
-				
-				
+
 			}
 		};
 		transferCounts.setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/diagramm.gif"));
-		
-		}
+
+	}
+
 	
-
-
 }

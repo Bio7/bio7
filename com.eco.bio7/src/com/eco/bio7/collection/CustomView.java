@@ -120,6 +120,49 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 		});
 
 	}
+	
+	/**
+	 * Creates a given JPanel tab inside a custom view embedded in a JavaFX panel which in turn is embedded in a SWT canvas.
+	 * 
+	 * @param jpanel
+	 *            a JPanel
+	 * @param id
+	 *            the id of the tab.
+	 */
+	public void setPanelFX(final JPanel jpanel, final String id) {
+		secId = id;
+
+		Display display = PlatformUI.getWorkbench().getDisplay();
+		display.syncExec(new Runnable() {
+			public void run() {
+				try {
+					if (singleView) {
+						IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+						activated = page.showView("com.eco.bio7.custom_controls");
+					} else {
+						IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+						page.showView("com.eco.bio7.custom_controls", secId, IWorkbenchPage.VIEW_CREATE);
+						activated = page.showView("com.eco.bio7.custom_controls", secId, IWorkbenchPage.VIEW_ACTIVATE);
+					}
+
+				} catch (PartInitException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				if (activated instanceof CustomView) {
+					CustomView view = (CustomView) activated;
+					Control c[] = view.getCustomViewParent().getChildren();
+					for (int i = 0; i < c.length; i++) {
+						c[i].dispose();
+					}
+					SwtFXSwingCustom swt = new SwtFXSwingCustom(jpanel, view);
+					swt.addTab(id);
+				}
+
+			}
+		});
+
+	}
 
 	/**
 	 * Creates a JavaFX Scene tab inside a custom view from a *.fxml file.

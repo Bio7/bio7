@@ -46,21 +46,20 @@ public class SpatialView extends ViewPart {
 	public SpatialView() {
 
 		instance = this;
-       if(Util.getOS().equals("Windows")){
-		SwingUtilities.invokeLater(new Runnable() {
-			// !!
-			public void run() {
+		if (Util.getOS().equals("Windows")) {
+			SwingUtilities.invokeLater(new Runnable() {
+				// !!
+				public void run() {
 
-				spat = new SpatialStructure(instance);
-				
-			}
-		});
-       }
-       else{
-    	   /*For Linux!*/
-    	   spat = new SpatialStructure(instance);
-    	  
-       }
+					spat = new SpatialStructure(instance);
+
+				}
+			});
+		} else {
+			/* For Linux! */
+			spat = new SpatialStructure(instance);
+
+		}
 
 	}
 
@@ -87,6 +86,14 @@ public class SpatialView extends ViewPart {
 			}
 		});
 	}
+
+	/*
+	 * JavaFX performant?
+	 * 
+	 * top = new Composite(parent, SWT.NONE); top.setLayout(new FillLayout());
+	 * SwingFxSwtView view=new SwingFxSwtView(); canvas = spat.getCanvas();
+	 * view.embedd(top,canvas);
+	 */
 
 	public void createFullscreen() {
 		spat.getAnimator().stop();

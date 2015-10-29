@@ -246,10 +246,10 @@ public class IJTranserResultsTable {
 				double[] xcol = rt.getColumnAsDoubles(x);
 				double[] ycol = rt.getColumnAsDoubles(y);
 				if (xcol != null && ycol != null) {
-					System.out.println("xxxxxx   " + x);
+					//System.out.println("xxxxxx   " + x);
 
 					for (int j = 0; j < xcol.length; j++) {
-						System.out.println(xcol[j]);
+						//System.out.println(xcol[j]);
 						cmx = xcol[j] * ImageMethods.getPointScale();
 						/* Values with scale for precision ! */
 						cmy = ycol[j] * ImageMethods.getPointScale();
