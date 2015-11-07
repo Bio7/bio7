@@ -198,13 +198,20 @@ CTabItem:selected {
 	background-color: '#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_BG_END';
 }
 
- /* .MToolBar.Draggable {
-	handle-image:  url(./win7Handle.png);
-	
-}*/
+.MToolBar.Draggable {
+  handle-image: url(./dragHandle.png);
+}
+
+.MToolControl.TrimStack {
+  handle-image: url(./dragHandle.png);
+}
 
 .MToolControl.Draggable {
-	handle-image:  url(./win7Handle.png);
+  handle-image: url(./dragHandle.png);
+}
+
+.DragFeedback {
+  background-color: #e0e0e0;
 }
 
 
@@ -304,7 +311,7 @@ CTabItem:selected {
 	eclipse-perspective-keyline-color: #dddddd;
 	background-image: url('./bio7.png');
 	background-color: #ffffff;
-	handle-image: none;
+	#handle-image: none;
 		
 }
 /*Colour around views (evtl shadows?!*/
