@@ -361,5 +361,64 @@ CTabFolder {
 Bounds: x=1082 y=186 h=31 w=31;
 }*/
 
+/*Font size for the view menus important for MacOSX!*/
+#com-eco-bio7-imagej.MToolBar {
+    /*background-color:  #eeeeee;*/
+    font-size: 14px;
+}
+
+#com-eco-bio7-rbridge-RTable.MToolBar {
+   
+    font-size: 14px;
+}
+#com-eco-bio7-imagej.MToolBar {
+   
+    font-size: 14px;
+}
+#com-eco-bio7-thumbnails.MToolBar {
+   
+    font-size: 14px;
+}
+
+#org-eclipse-ui-console-ConsoleView.MToolBar {
+    background-color:  #eeeeee;
+    font-size: 14px;
+}
+
+#com-eco-bio7-browser-Browser.MToolBar {
+    background-color:  #eeeeee;
+    font-size: 14px;
+}
+
+/*.ToolItemElement{
+    image: url('./win7.png');
+    background-color: white #eeeeee #dddddd 25% 25% 50%;
+    #Bounds: x=1082 y=186 h=31 w=31;
+}*/
+
+/*.CompositeElement{
+Bounds: x=1082 y=186 h=31 w=31;
+}*/
+/*Font size for the PerspectiveBar important for MacOSX!*/
+#PerspectiveSwitcher ToolBar {
+  font-size: 14px;
+}
+/*Package Explorer!*/
+#org-eclipse-jdt-ui-PackageExplorer {
+      font-size:20;
+      background:black;
+}
+
+/*
+* {
+  font-size:16;
+  /*font-weight: bold;*/
+  /*font-family: "Terminal";*/
+} 
+*/
+
+
+
+
 
 
