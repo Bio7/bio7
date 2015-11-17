@@ -45,7 +45,6 @@ public class REditorEditStrategy implements IAutoEditStrategy {
 		}
 
 	}
-	
 
 	private String getOffsetAndIdent(IDocument document, DocumentCommand command) {
 		int line = 0;
@@ -81,7 +80,12 @@ public class REditorEditStrategy implements IAutoEditStrategy {
 			int start = document.getLineOffset(line);
 			int end = start + document.getLineLength(line) - 1;
 			int whiteend = findEndOfWhiteSpace(document, start, end);
-			return document.get(start, whiteend - start);
+			/*Avoid a bad location exception!*/
+			if ((whiteend - start) >= 0) {
+				return document.get(start, whiteend - start);
+			} else {
+				return document.get(start, 0);
+			}
 		} else {
 			return ";";
 		}

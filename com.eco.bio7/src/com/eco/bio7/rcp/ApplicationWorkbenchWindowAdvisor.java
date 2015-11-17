@@ -524,9 +524,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			 * file.getAbsolutePath();
 			 */
 			/*
-			 * Now leave the R path empty by default to grab the systems path!
+			 * We adjust the R default path for MacOSX!
 			 */
-			store.setDefault(PreferenceConstants.PATH_R, "");
+			store.setDefault(PreferenceConstants.PATH_R, "/Library/Frameworks/R.framework/Resources");
 			store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, "");
 			/*
 			 * For the packages on Linux we try the default path if no custom

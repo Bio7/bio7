@@ -1,4 +1,4 @@
-package com.eco.bio7.rpreferences.template;
+/*package com.eco.bio7.rpreferences.template;
 
 import java.util.ArrayList;
 
@@ -27,10 +27,10 @@ public class CompletionProcessor implements
         // ArrayList result = new ArrayList();
         // String prefix = lastWord(document, offset);
          //String indent = lastIndent(document, offset);
-        /* EscriptModel model =
+         EscriptModel model =
                      EscriptModel.getModel(document, null);
          model.getContentProposals(prefix, indent,
-                                          offset, result);*/
+                                          offset, result);
          
          
          
@@ -104,4 +104,4 @@ public IContextInformationValidator getContextInformationValidator() {
 	// TODO Auto-generated method stub
 	return null;
 }
-}
+}*/

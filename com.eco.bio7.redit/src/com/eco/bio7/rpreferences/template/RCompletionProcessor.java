@@ -39,7 +39,12 @@ import org.eclipse.jface.text.templates.TemplateContext;
 import org.eclipse.jface.text.templates.TemplateContextType;
 import org.eclipse.jface.text.templates.TemplateException;
 import org.eclipse.jface.text.templates.TemplateProposal;
+import org.eclipse.jface.window.DefaultToolTip;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 import com.eco.bio7.reditor.Bio7REditorPlugin;
@@ -138,7 +143,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 	}
 
 	/**
-	 * We watch for angular brackets since those are often part of XML
+	 * We watch for brackets since those are often part of a R function
 	 * templates.
 	 * 
 	 * @param viewer
@@ -156,7 +161,11 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		try {
 			while (i > 0) {
 				char ch = document.getChar(i - 1);
-				if (ch != '<' && !Character.isJavaIdentifierPart(ch))
+				/*
+				 * We add the detection of functions and function calls with
+				 * '.'!
+				 */
+				if (ch != '(' && ch != '.' && !Character.isJavaIdentifierPart(ch))
 					break;
 				i--;
 			}
@@ -178,7 +187,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 	 *         <code>prefix</code>
 	 */
 	protected int getRelevance(Template template, String prefix) {
-		if (prefix.startsWith("<"))
+		if (prefix.startsWith("("))
 			prefix = prefix.substring(1);
 		if (template.getName().startsWith(prefix))
 			return 90;
@@ -202,12 +211,51 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 			offset = selection.getOffset() + selection.getLength();
 
 		String prefix = extractPrefix(viewer, offset);
-		Region region = new Region(offset - prefix.length(), prefix.length());
+
+		int leng = prefix.length();
+		Region region;
+		/* In parentheses we show an popup instead of the completion dialog! */
+		if (prefix.endsWith("(")) {
+			prefix = prefix.substring(0, leng - 1);
+			prefix = prefix.trim();
+
+			for (int i = 0; i < statisticsSet.length; i++) {
+
+				if (prefix.equals(statistics[i])) {
+					// System.out.println(statisticsSet[i]);
+					//viewer.setSelectedRange(offset, prefix.length());
+					//Point select = viewer.getSelectedRange();
+
+					// return new Region(select.x, select.y);
+					DefaultToolTip tooltip = new DefaultToolTip(viewer.getTextWidget(), SWT.NONE, true);
+					tooltip.setText(statisticsSet[i]);
+					
+					// show the tooltip at the specified location
+					StyledText te=viewer.getTextWidget();
+					
+					Point p=te.getLocationAtOffset(offset);
+					Point p2=new Point(p.x,p.y-30);
+					
+					tooltip.show(p2);
+                    //tooltip.setHideDelay(-5);
+				}
+			}
+			/* Return null so that no information center is shown! */
+			return null;
+		} else {
+			// System.out.println("Prefix is: "+ prefix);
+			region = new Region(offset - prefix.length(), prefix.length());
+		}
 		TemplateContext context = createContext(viewer, region);
 		if (context == null)
 			return new ICompletionProposal[0];
 
-		context.setVariable("selection", selection.getText()); // name of the selection variables {line, word}_selection //$NON-NLS-1$
+		context.setVariable("selection", selection.getText()); // name //$NON-NLS-1$
+																// of the
+																// selection
+																// variables
+																// {line,
+																// word}_selection
 
 		Template[] templates = getTemplates(context.getContextType().getId());
 		defaultTemplatesLength = templates.length;
@@ -289,7 +337,8 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 		if (store.getBoolean("TYPED_CODE_COMPLETION")) {
 
-			return "abcdefghijklmnopqrstuvwxyz".toCharArray();
+			//return "abcdefghijklmnopqrstuvwxyz".toCharArray();
+			return "(.".toCharArray();
 		}
 
 		return null;
