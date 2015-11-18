@@ -13,6 +13,7 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
+import org.eclipse.jface.preference.StringFieldEditor;
 
 public class RCodePreferences extends FieldEditorPreferencePage implements IWorkbenchPreferencePage, PropertyChangeListener {
 
@@ -39,6 +40,7 @@ public class RCodePreferences extends FieldEditorPreferencePage implements IWork
 		addField(new BooleanFieldEditor("MARK_WORDS", "Mark selected words", getFieldEditorParent()));
 		addField(new LabelFieldEditor("Code completion/templates:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("TYPED_CODE_COMPLETION", "Open code completion/templates when typing", getFieldEditorParent()));
+		addField(new StringFieldEditor("ACTIVATION_CHARS", "Activation chars", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
 		addField(new LabelFieldEditor("Editor performance:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("EDITOR_TO_OUTLINE", "Show editor position in 'Outline' view", getFieldEditorParent()));
 	}

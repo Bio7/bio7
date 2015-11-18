@@ -297,7 +297,7 @@ public class REditor extends TextEditor {
 
 							}
 							selectedItems.clear();
-
+                          
 						}
 
 						@Override

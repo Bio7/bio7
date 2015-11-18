@@ -42,6 +42,7 @@ import org.eclipse.jface.text.templates.TemplateProposal;
 import org.eclipse.jface.window.DefaultToolTip;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Event;
@@ -75,6 +76,8 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 										// template amount.
 
 	private IPreferenceStore store;
+
+	private DefaultToolTip tooltip;
 
 	public RCompletionProcessor(boolean startupTemplates) {
 
@@ -159,12 +162,20 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 			return "";
 
 		try {
+			int countBrace=0;
 			while (i > 0) {
 				char ch = document.getChar(i - 1);
 				/*
 				 * We add the detection of functions and function calls with
 				 * '.'!
 				 */
+				/*Detect nested braces!*/
+				if(ch=='('){
+					countBrace++;
+					if(countBrace==2){
+						break;
+					}
+				}
 				if (ch != '(' && ch != '.' && !Character.isJavaIdentifierPart(ch))
 					break;
 				i--;
@@ -214,32 +225,12 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 		int leng = prefix.length();
 		Region region;
-		/* In parentheses we show an popup instead of the completion dialog! */
+		/*
+		 * In parentheses we show an popup instead of the completion dialog! We
+		 * return null to avoid the opening of the template dialog!
+		 */
 		if (prefix.endsWith("(")) {
-			prefix = prefix.substring(0, leng - 1);
-			prefix = prefix.trim();
-
-			for (int i = 0; i < statisticsSet.length; i++) {
-
-				if (prefix.equals(statistics[i])) {
-					// System.out.println(statisticsSet[i]);
-					//viewer.setSelectedRange(offset, prefix.length());
-					//Point select = viewer.getSelectedRange();
-
-					// return new Region(select.x, select.y);
-					DefaultToolTip tooltip = new DefaultToolTip(viewer.getTextWidget(), SWT.NONE, true);
-					tooltip.setText(statisticsSet[i]);
-					
-					// show the tooltip at the specified location
-					StyledText te=viewer.getTextWidget();
-					
-					Point p=te.getLocationAtOffset(offset);
-					Point p2=new Point(p.x,p.y-30);
-					
-					tooltip.show(p2);
-                    //tooltip.setHideDelay(-5);
-				}
-			}
+			prefix = tooltipAction(viewer, offset, prefix, leng);
 			/* Return null so that no information center is shown! */
 			return null;
 		} else {
@@ -309,6 +300,38 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 	}
 
+	/* Method to open a tooltip instead of the template suggestions! */
+	private String tooltipAction(ITextViewer viewer, int offset, String prefix, int leng) {
+		prefix = prefix.substring(0, leng - 1);
+		prefix = prefix.trim();
+
+		for (int i = 0; i < statisticsSet.length; i++) {
+
+			if (prefix.equals(statistics[i])) {
+				// System.out.println(statisticsSet[i]);
+				// viewer.setSelectedRange(offset, prefix.length());
+				// Point select = viewer.getSelectedRange();
+
+				// return new Region(select.x, select.y);
+				tooltip = new DefaultToolTip(viewer.getTextWidget(), SWT.NONE, true);
+				tooltip.setText(statisticsSet[i]);
+
+				// show the tooltip at the specified location
+				StyledText te = viewer.getTextWidget();
+				Font f = te.getFont();
+				tooltip.setFont(f);
+				/* Corrections for the fontsize! */
+				int height = f.getFontData()[0].getHeight();
+				Point p = te.getLocationAtOffset(offset);
+				Point p2 = new Point(p.x, p.y - 30 - height);
+
+				tooltip.show(p2);
+				// tooltip.setHideDelay(-5);
+			}
+		}
+		return prefix;
+	}
+
 	/*
 	 * public static ICompletionProposal[] join(ICompletionProposal [] ...
 	 * parms) { // calculate size of target array int size = 0; for
@@ -336,9 +359,13 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 	public char[] getCompletionProposalAutoActivationCharacters() {
 
 		if (store.getBoolean("TYPED_CODE_COMPLETION")) {
+			String ac = store.getString("ACTIVATION_CHARS");
+			// return "abcdefghijklmnopqrstuvwxyz".toCharArray();
+			if (ac == null || ac.isEmpty()) {
 
-			//return "abcdefghijklmnopqrstuvwxyz".toCharArray();
-			return "(.".toCharArray();
+				return null;
+			}
+			return ac.toCharArray();
 		}
 
 		return null;
