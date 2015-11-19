@@ -84,12 +84,22 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 	private IPreferenceStore store;
 
+	private RCompletionProcessor processor;
+
+	
+
 	public static String htmlHelpText = "";
+	
+	
 
 	public RConfiguration(RColorManager colorManager, REditor rEditor) {
 		this.colorManager = colorManager;
 		this.rEditor = rEditor;
 		store = Bio7REditorPlugin.getDefault().getPreferenceStore();
+	}
+	
+	public RCompletionProcessor getProcessor() {
+		return processor;
 	}
 
 	public static class SingleTokenScanner extends BufferedRuleBasedScanner {
@@ -186,7 +196,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 		ContentAssistant assistant = new ContentAssistant();
 		assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
 
-		IContentAssistProcessor processor = new RCompletionProcessor(true);
+		processor = new RCompletionProcessor();
 		assistant.setContentAssistProcessor(processor, IDocument.DEFAULT_CONTENT_TYPE);
 
 		assistant.enableAutoActivation(true);

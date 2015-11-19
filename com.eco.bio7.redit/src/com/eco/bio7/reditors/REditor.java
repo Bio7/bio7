@@ -67,6 +67,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.window.DefaultToolTip;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
@@ -108,6 +109,7 @@ import com.eco.bio7.reditor.outline.REditorLabelProvider;
 import com.eco.bio7.reditor.outline.REditorOutlineNode;
 import com.eco.bio7.reditor.outline.REditorTreeContentProvider;
 import com.eco.bio7.reditor.refactor.CompareEditorAction;
+import com.eco.bio7.rpreferences.template.RCompletionProcessor;
 
 /**
  * 
@@ -239,70 +241,74 @@ public class REditor extends TextEditor {
 									if (store.getBoolean("MARK_WORDS")) {
 										markWords(offset, document, editor);
 									}
-									
-									
+
 									if (store.getBoolean("EDITOR_TO_OUTLINE")) {
-									int lineNumber = 0;
+										int lineNumber = 0;
 
-									try {
-										lineNumber = document.getLineOfOffset(offset);
-									} catch (BadLocationException e1) {
+										try {
+											lineNumber = document.getLineOfOffset(offset);
+										} catch (BadLocationException e1) {
 
-										e1.printStackTrace();
-									}
+											e1.printStackTrace();
+										}
 
-									TreeItem treeItem = null;
-									if (contentOutlineViewer.getTree().isDisposed() == false) {
-										if (contentOutlineViewer.getTree().getItemCount() > 0) {
-											if (contentOutlineViewer.getTree().getItem(0).isDisposed() == false) {
-												treeItem = contentOutlineViewer.getTree().getItem(0);
-												contentOutlineViewer.getTree().setRedraw(false);
+										TreeItem treeItem = null;
+										if (contentOutlineViewer.getTree().isDisposed() == false) {
+											if (contentOutlineViewer.getTree().getItemCount() > 0) {
+												if (contentOutlineViewer.getTree().getItem(0).isDisposed() == false) {
+													treeItem = contentOutlineViewer.getTree().getItem(0);
+													contentOutlineViewer.getTree().setRedraw(false);
 
-												// Object[] exp =
-												// contentOutlineViewer.getExpandedElements();
+													// Object[] exp =
+													// contentOutlineViewer.getExpandedElements();
 
-												TreePath[] treePaths = contentOutlineViewer.getExpandedTreePaths();
-												contentOutlineViewer.expandAll();
-												contentOutlineViewer.refresh();
-												walkTreeLineNumber(treeItem, lineNumber + 1);
+													TreePath[] treePaths = contentOutlineViewer.getExpandedTreePaths();
+													contentOutlineViewer.expandAll();
+													contentOutlineViewer.refresh();
+													walkTreeLineNumber(treeItem, lineNumber + 1);
 
-												// contentOutlineViewer.setExpandedElements(expanded);
+													// contentOutlineViewer.setExpandedElements(expanded);
 
-												contentOutlineViewer.setExpandedTreePaths(treePaths);
-												for (int i = 0; i < selectedItems.size(); i++) {
-													TreeItem it = (TreeItem) selectedItems.get(i);
-													it.setExpanded(true);
-													TreeItem parent = it;
-													while (parent != null) {
-														if (parent.getParentItem() != null) {
-															parent = parent.getParentItem();
-															parent.setExpanded(true);
-														} else {
-															break;
+													contentOutlineViewer.setExpandedTreePaths(treePaths);
+													for (int i = 0; i < selectedItems.size(); i++) {
+														TreeItem it = (TreeItem) selectedItems.get(i);
+														it.setExpanded(true);
+														TreeItem parent = it;
+														while (parent != null) {
+															if (parent.getParentItem() != null) {
+																parent = parent.getParentItem();
+																parent.setExpanded(true);
+															} else {
+																break;
+															}
+
 														}
-
+														contentOutlineViewer.refresh(it);
 													}
-													contentOutlineViewer.refresh(it);
+
+													contentOutlineViewer.getTree().setRedraw(true);
+
 												}
 
-												contentOutlineViewer.getTree().setRedraw(true);
-
 											}
-
 										}
-									}
 									}
 
 								}
 
 							}
 							selectedItems.clear();
-                          
+
 						}
 
 						@Override
 						public void mouseUp(MouseEvent e) {
-
+							/*Hide the code completion tooltip if the mouse is clicked!*/
+							RCompletionProcessor processor = getRconf().getProcessor();
+							DefaultToolTip tip = processor.getTooltip();
+							if (tip != null) {
+								tip.hide();
+							}
 						}
 
 					});
@@ -311,8 +317,6 @@ public class REditor extends TextEditor {
 			}
 
 		}
-
-		
 
 		private void updateHierachyView(IWorkbenchPartReference partRef, final boolean closed) {
 
@@ -349,10 +353,10 @@ public class REditor extends TextEditor {
 		}
 
 	};
-	
+
 	/*
-	 * Here we search for similar words of a selected word in the editor.
-	 * The results will be marked!
+	 * Here we search for similar words of a selected word in the editor. The
+	 * results will be marked!
 	 */
 	public void markWords(int offset, IDocument doc, IEditorPart editor) {
 
@@ -472,9 +476,9 @@ public class REditor extends TextEditor {
 	}
 
 	/*
-	 * This method is recursively called to walk all subtrees and compare
-	 * the line numbers of selected tree items with the selected line number
-	 * in the editor!
+	 * This method is recursively called to walk all subtrees and compare the
+	 * line numbers of selected tree items with the selected line number in the
+	 * editor!
 	 */
 
 	public void walkTreeLineNumber(TreeItem item, int lineNumber) {
@@ -512,8 +516,7 @@ public class REditor extends TextEditor {
 							} else {
 
 								/*
-								 * Recursive call of the method for
-								 * subnodes!
+								 * Recursive call of the method for subnodes!
 								 */
 								// if(treeItemLine.size()>2){
 								/* Set recursion depth! */
@@ -600,7 +603,10 @@ public class REditor extends TextEditor {
 		rconf = new RConfiguration(colorManager, this);
 		setSourceViewerConfiguration(rconf);
 
-		//IPreferenceStore preferenceStore = new ChainedPreferenceStore(new IPreferenceStore[] { Bio7REditorPlugin.getDefault().getPreferenceStore(), EditorsUI.getPreferenceStore() });
+		// IPreferenceStore preferenceStore = new ChainedPreferenceStore(new
+		// IPreferenceStore[] {
+		// Bio7REditorPlugin.getDefault().getPreferenceStore(),
+		// EditorsUI.getPreferenceStore() });
 
 		// IEditorPart editor = (IEditorPart)
 		// PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
@@ -719,15 +725,15 @@ public class REditor extends TextEditor {
 		setAction("ContentAssistTip", a);
 
 		/*
-		 * setplotmarkers = new
-		 * com.eco.bio7.reditor.actions.SetMarkers("Set Plotmarker",
-		 * PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-		 * setAction("Add Plotmarker", setplotmarkers);
+		 * setplotmarkers = new com.eco.bio7.reditor.actions.SetMarkers(
+		 * "Set Plotmarker",
+		 * PlatformUI.getWorkbench().getActiveWorkbenchWindow()); setAction(
+		 * "Add Plotmarker", setplotmarkers);
 		 * 
 		 * deleteplotmarkers = new
 		 * com.eco.bio7.reditor.actions.DeletePlotMarkers("Delete Plotmarker",
-		 * PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-		 * setAction("Delete Plotmarker", deleteplotmarkers);
+		 * PlatformUI.getWorkbench().getActiveWorkbenchWindow()); setAction(
+		 * "Delete Plotmarker", deleteplotmarkers);
 		 */
 
 		setcomment = new com.eco.bio7.reditor.actions.SetComment("Add Comment", PlatformUI.getWorkbench().getActiveWorkbenchWindow());

@@ -10,18 +10,10 @@
  *******************************************************************************/
 package com.eco.bio7.rpreferences.template;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import org.eclipse.core.runtime.Preferences;
-import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
@@ -31,7 +23,6 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
-import org.eclipse.jface.text.contentassist.CompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.templates.Template;
 import org.eclipse.jface.text.templates.TemplateCompletionProcessor;
@@ -45,9 +36,6 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.ui.preferences.ScopedPreferenceStore;
-
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditors.TemplateEditorUI;
 
@@ -62,12 +50,6 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 	private static final String CALCULATED_TEMPLATE_IMAGE = "$nl$/icons/methpub_obj.gif"; //$NON-NLS-1$
 
-	public static String[] statistics;
-
-	public static String[] statisticsContext;
-
-	public static String[] statisticsSet;
-
 	private boolean triggerNext;
 
 	private int count = 0;// Variable to count the listed template.
@@ -79,70 +61,16 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 	private DefaultToolTip tooltip;
 
-	public RCompletionProcessor(boolean startupTemplates) {
-
-		loadRCodePackageTemplates(startupTemplates);
+	public RCompletionProcessor() {
+        /*At startup load the default R proposals and add them to the templates!*/
+		CalculateRProposals.loadRCodePackageTemplates();
+		
 		store = Bio7REditorPlugin.getDefault().getPreferenceStore();
 
 	}
 
-	public static void loadRCodePackageTemplates(boolean startupTempl) {
-		IPreferenceStore s = new ScopedPreferenceStore(InstanceScope.INSTANCE, "com.eco.bio7");
-
-		ArrayList<String> data0 = new ArrayList<String>();
-		ArrayList<String> data1 = new ArrayList<String>();
-		ArrayList<String> data2 = new ArrayList<String>();
-		String tempPath;
-		if (startupTempl == false) {
-			tempPath = s.getString("pathTempR") + "rproposals.txt";
-		} else {
-			tempPath = s.getString("pathTempR") + "rproposalsDefault.txt";
-		}
-		tempPath = tempPath.replace("\\", "/");
-		// System.out.println(tempPath);
-		BufferedReader br = null;
-		try {
-			File rPropFile = new File(tempPath);
-			if (rPropFile.exists()) {
-
-				br = new BufferedReader(new FileReader(rPropFile));
-			}
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		String line;
-		try {
-			while ((line = br.readLine()) != null) {
-				/* Split the string to get the seperated values! */
-				String[] theline = line.split("####");
-				// System.out.println(theline.length);
-
-				try {
-					data0.add(theline[0]);
-					data1.add(theline[1]);
-					data2.add(theline[2]);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-
-				}
-
-			}
-			br.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		if (data0.size() == data1.size() && data0.size() == data2.size()) {
-			statistics = data0.toArray(new String[data0.size()]);
-			statisticsContext = data1.toArray(new String[data1.size()]);
-			statisticsSet = data2.toArray(new String[data2.size()]);
-		} else {
-			statistics = new String[] { "Error in Template file!" };
-			statisticsContext = new String[] { "Error in Template file!" };
-			statisticsSet = new String[] { "Error in Template file!" };
-		}
+	public DefaultToolTip getTooltip() {
+		return tooltip;
 	}
 
 	/**
@@ -162,17 +90,17 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 			return "";
 
 		try {
-			int countBrace=0;
+			int countBrace = 0;
 			while (i > 0) {
 				char ch = document.getChar(i - 1);
 				/*
 				 * We add the detection of functions and function calls with
 				 * '.'!
 				 */
-				/*Detect nested braces!*/
-				if(ch=='('){
+				/* Detect nested braces! */
+				if (ch == '(') {
 					countBrace++;
-					if(countBrace==2){
+					if (countBrace == 2) {
 						break;
 					}
 				}
@@ -198,8 +126,8 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 	 *         <code>prefix</code>
 	 */
 	protected int getRelevance(Template template, String prefix) {
-		if (prefix.startsWith("("))
-			prefix = prefix.substring(1);
+		/*if (prefix.startsWith("("))
+			prefix = prefix.substring(1);*/
 		if (template.getName().startsWith(prefix))
 			return 90;
 		return 0;
@@ -267,10 +195,10 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 		/* Proposals from List! */
 		// if(triggerNext){
-		Template[] temp = new Template[statistics.length];
+		Template[] temp = new Template[CalculateRProposals.statistics.length];
 
 		for (int i = 0; i < temp.length; i++) {
-			temp[i] = new Template(statistics[i], statisticsContext[i], context.getContextType().getId(), statisticsSet[i], true);
+			temp[i] = new Template(CalculateRProposals.statistics[i], CalculateRProposals.statisticsContext[i], context.getContextType().getId(), CalculateRProposals.statisticsSet[i], true);
 
 		}
 		for (int i = 0; i < temp.length; i++) {
@@ -305,18 +233,13 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		prefix = prefix.substring(0, leng - 1);
 		prefix = prefix.trim();
 
-		for (int i = 0; i < statisticsSet.length; i++) {
+		for (int i = 0; i < CalculateRProposals.statisticsSet.length; i++) {
 
-			if (prefix.equals(statistics[i])) {
-				// System.out.println(statisticsSet[i]);
-				// viewer.setSelectedRange(offset, prefix.length());
-				// Point select = viewer.getSelectedRange();
-
-				// return new Region(select.x, select.y);
+			if (prefix.equals(CalculateRProposals.statistics[i])) {
+				
 				tooltip = new DefaultToolTip(viewer.getTextWidget(), SWT.NONE, true);
-				tooltip.setText(statisticsSet[i]);
-
-				// show the tooltip at the specified location
+				tooltip.setText(CalculateRProposals.statisticsSet[i]);
+				/* Show the tooltip at the specified location*/
 				StyledText te = viewer.getTextWidget();
 				Font f = te.getFont();
 				tooltip.setFont(f);
