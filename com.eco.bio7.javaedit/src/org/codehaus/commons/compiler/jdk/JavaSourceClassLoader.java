@@ -97,7 +97,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 	}
 
 	private void init() {
-		 //this.compiler = ToolProvider.getSystemJavaCompiler();
+		// this.compiler = ToolProvider.getSystemJavaCompiler();
 		// JavaCompiler compiler = new EclipseCompiler();
 		this.compiler = com.sun.tools.javac.api.JavacTool.create();
 		if (this.compiler == null) {
@@ -192,6 +192,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 				boolean debug = store.getBoolean("compiler_debug");
 				boolean verbose = store.getBoolean("compiler_verbose");
 				boolean warnings = store.getBoolean("compiler_warnings");
+				boolean createMarker = store.getBoolean("compiler_marker");
 				optionList.addElement("-source");
 				optionList.addElement(version);
 				optionList.addElement("-target");
@@ -221,11 +222,11 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 						diagnosticsCollector, optionList, // options
 						null, // classes
 						Collections.singleton(sourceFileObject) // compilationUnits
-						).call();
+				).call();
 
 				if (!success) {
 
-					markError(diagnosticsCollector);
+					markError(diagnosticsCollector, createMarker);
 
 					throw new ClassNotFoundException(className + ": Compilation failed");
 				}
@@ -266,11 +267,10 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 			throw new DiagnosticException(ioe);
 		}
 
-		return this.defineClass(className, ba, 0, size,
-				(this.optionalProtectionDomainFactory == null ? null : this.optionalProtectionDomainFactory.getProtectionDomain(getSourceResourceName(className))));
+		return this.defineClass(className, ba, 0, size, (this.optionalProtectionDomainFactory == null ? null : this.optionalProtectionDomainFactory.getProtectionDomain(getSourceResourceName(className))));
 	}
 
-	private void markError(DiagnosticCollector<JavaFileObject> diagnosticsCollector) {
+	private void markError(DiagnosticCollector<JavaFileObject> diagnosticsCollector, boolean markerCreation) {
 
 		for (Diagnostic diagnostic : diagnosticsCollector.getDiagnostics()) {
 			System.out.format("Error on line %d" + " -> ", diagnostic.getLineNumber(), diagnostic);
@@ -319,26 +319,27 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
 			// System.out.format("Error on line %d in %s"+"\n",
 			// diagnostic.getLineNumber(), diagnostic);
+			if (markerCreation == true) {
+				int lnr = (int) diagnostic.getLineNumber();
+				int startPos = (int) diagnostic.getStartPosition();
+				int stopPos = (int) diagnostic.getEndPosition();
+				if (ifile != null) {
+					IMarker marker;
+					try {
+						marker = ifile.createMarker(IMarker.PROBLEM);
+						marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+						marker.setAttribute(IMarker.MESSAGE, diagnostic.getMessage(null));
+						marker.setAttribute(IMarker.LINE_NUMBER, lnr);
+						// if (pos.offset != 0) {
+						// System.out.println(startPos);
+						// System.out.println(stopPos);
 
-			int lnr = (int) diagnostic.getLineNumber();
-			int startPos = (int) diagnostic.getStartPosition();
-			int stopPos = (int) diagnostic.getEndPosition();
-			if (ifile != null) {
-				IMarker marker;
-				try {
-					marker = ifile.createMarker(IMarker.PROBLEM);
-					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-					marker.setAttribute(IMarker.MESSAGE, diagnostic.getMessage(null));
-					marker.setAttribute(IMarker.LINE_NUMBER, lnr);
-					// if (pos.offset != 0) {
-					// System.out.println(startPos);
-					// System.out.println(stopPos);
-
-					marker.setAttribute(IMarker.CHAR_START, startPos);
-					marker.setAttribute(IMarker.CHAR_END, stopPos - 1);
-				} catch (CoreException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+						marker.setAttribute(IMarker.CHAR_START, startPos);
+						marker.setAttribute(IMarker.CHAR_END, stopPos - 1);
+					} catch (CoreException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 

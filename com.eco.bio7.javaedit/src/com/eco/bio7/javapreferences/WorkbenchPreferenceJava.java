@@ -34,6 +34,7 @@ public class WorkbenchPreferenceJava extends FieldEditorPreferencePage implement
 		addField(new BooleanFieldEditor("compiler_debug", "Generate Debugging Information", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		addField(new BooleanFieldEditor("compiler_verbose", "Verbose", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		addField(new BooleanFieldEditor("compiler_warnings", "Generate Warnings", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addField(new BooleanFieldEditor("compiler_marker", "Create Compilation Markers", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		{
 			LabelFieldEditor labelFieldEditor = new LabelFieldEditor("Editor:", getFieldEditorParent());

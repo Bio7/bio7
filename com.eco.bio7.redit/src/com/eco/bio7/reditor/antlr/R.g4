@@ -71,10 +71,10 @@ expr:
    // |	'(' expr         							    #e28Error2
    // | 	'{'  exprlist  	 								#err10
     |	'{' exprlist  '}' extra='}'						#err11
-    |	extra='true'									#err12
-    |	extra='false'									#err13
-    |	extra='null'									#err14
-    |	extra='na'										#err15
+    //|	extra='true'									#err12
+    //|	extra='false'									#err13
+    //|	extra='null'									#err14
+    //|	extra='na'										#err15
     |   'while' '(' expr ')' extra=')' expr				#err16
     //|   'while' '(' expr  expr							#err17
     |   'for' '(' ID 'in' expr ')' extra=')' expr		#err18
