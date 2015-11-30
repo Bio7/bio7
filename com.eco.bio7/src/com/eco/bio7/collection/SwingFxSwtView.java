@@ -1,6 +1,8 @@
 package com.eco.bio7.collection;
 
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
@@ -40,61 +42,62 @@ public class SwingFxSwtView {
 
 	private StackPane pane;
 
-	
-	
-	public void embedd(Composite top, JComponent comp){
-	
-	canvas = new FXCanvas(top, SWT.NORMAL) {
-		public Point computeSize(int wHint, int hHint, boolean changed) {
-			getScene().getWindow().sizeToScene();
-			int width = (int) getScene().getWidth();
-			int height = (int) getScene().getHeight();
-			return new Point(width, height);
-		}
-	};
-	canvas.setData("false");
-	canvas.addPaintListener(new PaintListener() {
+	public void embedd(Composite top, JComponent comp) {
 
-		@Override
-		public void paintControl(PaintEvent e) {
-			String full = (String) canvas.getData();
-			if (full.equals("true")) {
-				GC gc = new GC(canvas);
-				gc.fillRectangle(canvas.getBounds());
-				gc.setFont(new Font(Display.getDefault(), "Arial", 20, SWT.NORMAL));
-				gc.drawString("Fullscreen Mode! Press ESC in the fullscreen window", 10, 10);
-				gc.drawString("to return the display to this view!", 10, 60);
+		canvas = new FXCanvas(top, SWT.NORMAL) {
+			public Point computeSize(int wHint, int hHint, boolean changed) {
+				getScene().getWindow().sizeToScene();
+				int width = (int) getScene().getWidth();
+				int height = (int) getScene().getHeight();
+				return new Point(width, height);
+			}
+		};
+		canvas.setData("false");
+		canvas.addPaintListener(new PaintListener() {
 
-			} else {
+			@Override
+			public void paintControl(PaintEvent e) {
+				String full = (String) canvas.getData();
+				if (full.equals("true")) {
+					GC gc = new GC(canvas);
+					gc.fillRectangle(canvas.getBounds());
+					gc.setFont(new Font(Display.getDefault(), "Arial", 20, SWT.NORMAL));
+					gc.drawString("Fullscreen Mode! Press ESC in the fullscreen window", 10, 10);
+					gc.drawString("to return the display to this view!", 10, 60);
+
+				} else {
+
+				}
 
 			}
+		});
 
-		}
-	});
+		swingNode = new SwingNode();
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				swingNode.setContent(comp);
+			}
+		});
 
-	swingNode = new SwingNode();
+		pane = new StackPane();
+		pane.getChildren().add(swingNode);
 
-	swingNode.setContent(comp);
+		scene = new Scene(pane);
+		scene.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
 
-	pane = new StackPane();
-	pane.getChildren().add(swingNode);
+			public void handle(KeyEvent ke) {
+				fullscreen(ke, scene, top);
 
-	scene = new Scene(pane);
-	scene.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
-
-		public void handle(KeyEvent ke) {
-			fullscreen(ke, scene,top);
-
-		}
-	});
-	canvas.setScene(scene);
-	canvas.layout();
-	top.layout();
-	// contentPane.add(jpanel);
-	// view.getCustomViewParent().layout();
+			}
+		});
+		canvas.setScene(scene);
+		canvas.layout();
+		top.layout();
+		// contentPane.add(jpanel);
+		// view.getCustomViewParent().layout();
 	}
-	
-	private void fullscreen(KeyEvent ke, Scene scene,Composite top) {
+
+	private void fullscreen(KeyEvent ke, Scene scene, Composite top) {
 		if (ke.getCode() == KeyCode.F2) {
 			if (canvas.isDisposed() == false) {
 				canvas.setData("true");
@@ -225,7 +228,5 @@ public class SwingFxSwtView {
 			}
 		}
 	}
-
-
 
 }
