@@ -295,3 +295,11 @@ StatusLine, ImageBasedFrame{
     background-color: #415062;
     color: #9ac9d8;
 }
+
+Grid {
+  background-color: #2F2F2F ;
+  flat-scroll-bar: true;
+  flat-scroll-bar-thumb: #a6a6a6;
+  flat-scroll-bar-page-increment: #f0f0f0;
+}
+

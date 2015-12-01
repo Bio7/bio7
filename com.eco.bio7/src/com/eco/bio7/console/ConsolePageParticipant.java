@@ -107,6 +107,7 @@ import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
 import com.eco.bio7.scriptengines.ScriptEngineConnection;
 import com.eco.bio7.util.PlaceholderLabel;
+import com.pty4j.PtyProcess;
 
 public class ConsolePageParticipant implements IConsolePageParticipant {
 
@@ -455,6 +456,12 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
 				// Some Useful commands: export TERM=xterm; top -b; ssh -tt
 				// gksudo 'apt-get --yes install abiword'
+				
+				
+				String[] env = { "TERM=xterm" };
+				nativeShellProcess = PtyProcess.exec(new String[]{"/bin/sh","-i"});
+				
+				
 				List<String> args = new ArrayList<String>();
 				args.add("/bin/sh");
 				args.add("-i");
