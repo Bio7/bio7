@@ -45,14 +45,7 @@ public class Bio7PaintPreferences extends FieldEditorPreferencePage
 		addField(new StringFieldEditor("DEFAULT_CUSTOM_PERSPECTIVE2", "Additional perspective at startup (ID)", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
 		addField(new StringFieldEditor("DEFAULT_CUSTOM_PERSPECTIVE3", "Additional perspective at startup (ID)", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
 		*/
-		addField(new SpacerFieldEditor(getFieldEditorParent()));
-		addField(new LabelFieldEditor("Image Methods Dialog Size:", getFieldEditorParent()));
-		addField(new IntegerFieldEditor("IMAGE_METHODS_SIZE_X", "x", getFieldEditorParent()));
-		addField(new IntegerFieldEditor("IMAGE_METHODS_SIZE_Y", "y", getFieldEditorParent()));
-		addField(new SpacerFieldEditor(getFieldEditorParent()));
-		addField(new LabelFieldEditor("ImageJ Toolbar Dialog Size:", getFieldEditorParent()));
-		addField(new IntegerFieldEditor("IMAGEJ_TOOLBAR_SIZE_X", "x", getFieldEditorParent()));
-		addField(new IntegerFieldEditor("IMAGEJ_TOOLBAR_SIZE_Y", "y", getFieldEditorParent()));
+		
 	}
 
 	public void init(IWorkbench workbench) {
