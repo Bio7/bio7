@@ -44,7 +44,7 @@ public class RErrorStrategy extends DefaultErrorStrategy {
 	 * @param e
 	 *            the recognition exception
 	 */
-	protected void reportNoViableAlternative(@NotNull Parser recognizer, @NotNull NoViableAltException e) {
+	protected void reportNoViableAlternative(Parser recognizer, NoViableAltException e) {
 		TokenStream tokens = recognizer.getInputStream();
 		String input;
 		if (tokens != null) {
@@ -70,12 +70,11 @@ public class RErrorStrategy extends DefaultErrorStrategy {
 	 * @param e
 	 *            the recognition exception
 	 */
-	protected void reportInputMismatch(@NotNull Parser recognizer, @NotNull InputMismatchException e) {
-		String msg = "Bio7 mismatched input " + getTokenErrorDisplay(e.getOffendingToken()) + " expecting the following symbols: " + "\n"+e.getExpectedTokens().toString(recognizer.getTokenNames());
+	protected void reportInputMismatch(Parser recognizer, InputMismatchException e) {
+		String msg = "Bio7 mismatched input " + getTokenErrorDisplay(e.getOffendingToken()) + " expecting the following symbols: " + "\n" + e.getExpectedTokens().toString(recognizer.getTokenNames());
 		recognizer.notifyErrorListeners(e.getOffendingToken(), msg, e);
 	}
-	
-	
+
 	/**
 	 * This is called by {@link #reportError} when the exception is a
 	 * {@link FailedPredicateException}.
@@ -88,7 +87,7 @@ public class RErrorStrategy extends DefaultErrorStrategy {
 	 *            the recognition exception
 	 */
 
-	protected void reportUnwantedToken(@NotNull Parser recognizer) {
+	protected void reportUnwantedToken(Parser recognizer) {
 		if (inErrorRecoveryMode(recognizer)) {
 			return;
 		}
@@ -96,7 +95,7 @@ public class RErrorStrategy extends DefaultErrorStrategy {
 		Token t = recognizer.getCurrentToken();
 		String tokenName = getTokenErrorDisplay(t);
 		IntervalSet expecting = getExpectedTokens(recognizer);
-		String msg = "Bio7 extraneous input " + tokenName + " expecting the following symbols: " + "\n"+ expecting.toString(recognizer.getTokenNames());
+		String msg = "Bio7 extraneous input " + tokenName + " expecting the following symbols: " + "\n" + expecting.toString(recognizer.getTokenNames());
 		recognizer.notifyErrorListeners(t, msg, null);
 	}
 
@@ -122,7 +121,7 @@ public class RErrorStrategy extends DefaultErrorStrategy {
 	 * @param recognizer
 	 *            the parser instance
 	 */
-	protected void reportMissingToken(@NotNull Parser recognizer) {
+	protected void reportMissingToken(Parser recognizer) {
 		if (inErrorRecoveryMode(recognizer)) {
 			return;
 		}

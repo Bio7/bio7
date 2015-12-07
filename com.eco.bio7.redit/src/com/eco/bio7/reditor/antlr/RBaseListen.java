@@ -53,8 +53,8 @@ public class RBaseListen extends RBaseListener {
 	/*
 	 * public void exitExprError(@NotNull RParser.ExprErrorContext ctx) {
 	 * 
-	 * parser.notifyErrorListeners(ctx.start,
-	 * "One Opening Parentheses to much!", null);
+	 * parser.notifyErrorListeners(ctx.start, "One Opening Parentheses to much!"
+	 * , null);
 	 * 
 	 * }
 	 *//**
@@ -106,9 +106,8 @@ public class RBaseListen extends RBaseListener {
 	 * System.out.println(firstToken.get(i).getText()); if
 	 * (firstToken.get(i).getText().equals("(")) { count = i; break; } }
 	 * 
-	 * ctx.getChild(2).getSourceInterval();
-	 * System.out.println("This brace is at:"
-	 * +ctx.start.getCharPositionInLine());
+	 * ctx.getChild(2).getSourceInterval(); System.out.println(
+	 * "This brace is at:" +ctx.start.getCharPositionInLine());
 	 * 
 	 * Notify the parser! parser.notifyErrorListeners(ctx.start,
 	 * "One Opening Brace to much!", null);
@@ -147,7 +146,7 @@ public class RBaseListen extends RBaseListener {
 	 * 
 	 * }
 	 */
-	public void exitE19DefFunction(@NotNull RParser.E19DefFunctionContext ctx) {
+	public void exitE19DefFunction(RParser.E19DefFunctionContext ctx) {
 		/* Exit scope! */
 		scopes.pop();
 		if (methods.empty() == false) {
@@ -162,7 +161,7 @@ public class RBaseListen extends RBaseListener {
 	 * The default implementation does nothing.
 	 */
 	@Override
-	public void enterE19DefFunction(@NotNull RParser.E19DefFunctionContext ctx) {
+	public void enterE19DefFunction(RParser.E19DefFunctionContext ctx) {
 		/*
 		 * Insert function as current scope with a parent current scope
 		 * (scope.peek)!
@@ -224,7 +223,7 @@ public class RBaseListen extends RBaseListener {
 	}
 
 	/* if condition! */
-	public void enterE21(@NotNull RParser.E21Context ctx) {
+	public void enterE21(RParser.E21Context ctx) {
 
 		Interval sourceInterval = ctx.getSourceInterval();
 
@@ -242,7 +241,7 @@ public class RBaseListen extends RBaseListener {
 	}
 
 	/* if condition 2 of grammar file! */
-	public void enterE22(@NotNull RParser.E22Context ctx) {
+	public void enterE22(RParser.E22Context ctx) {
 
 		Interval sourceInterval = ctx.getSourceInterval();
 
@@ -260,7 +259,7 @@ public class RBaseListen extends RBaseListener {
 	}
 
 	/* for loop! */
-	public void enterE23(@NotNull RParser.E23Context ctx) {
+	public void enterE23(RParser.E23Context ctx) {
 
 		Interval sourceInterval = ctx.getSourceInterval();
 
@@ -278,7 +277,7 @@ public class RBaseListen extends RBaseListener {
 	}
 
 	/* while loop! */
-	public void enterE24(@NotNull RParser.E24Context ctx) {
+	public void enterE24(RParser.E24Context ctx) {
 
 		Interval sourceInterval = ctx.getSourceInterval();
 
@@ -296,7 +295,7 @@ public class RBaseListen extends RBaseListener {
 	}
 
 	/* repeat loop! */
-	public void enterE25(@NotNull RParser.E25Context ctx) {
+	public void enterE25(RParser.E25Context ctx) {
 
 		Interval sourceInterval = ctx.getSourceInterval();
 
@@ -315,7 +314,7 @@ public class RBaseListen extends RBaseListener {
 	}
 
 	@Override
-	public void enterE17VariableDeclaration(@NotNull RParser.E17VariableDeclarationContext ctx) {
+	public void enterE17VariableDeclaration(RParser.E17VariableDeclarationContext ctx) {
 
 		Interval sourceInterval = ctx.getSourceInterval();
 		int start = sourceInterval.a;
@@ -391,18 +390,18 @@ public class RBaseListen extends RBaseListener {
 		} catch (BadLocationException e) {
 			// TODO Auto-generated catch block
 			System.out.println("Bad line location!");
-			//e.printStackTrace();
+			// e.printStackTrace();
 		}
 		return line;
 	}
 
 	@Override
-	public void exitE17VariableDeclaration(@NotNull RParser.E17VariableDeclarationContext ctx) {
+	public void exitE17VariableDeclaration(RParser.E17VariableDeclarationContext ctx) {
 
 	}
 
 	@Override
-	public void enterE20CallFunction(@NotNull RParser.E20CallFunctionContext ctx) {
+	public void enterE20CallFunction(RParser.E20CallFunctionContext ctx) {
 		/*
 		 * Interval sourceInterval = ctx.getSourceInterval(); int start =
 		 * sourceInterval.a; Token assign = tokens.get(start);
@@ -439,7 +438,7 @@ public class RBaseListen extends RBaseListener {
 	}
 
 	@Override
-	public void exitE20CallFunction(@NotNull RParser.E20CallFunctionContext ctx) {
+	public void exitE20CallFunction(RParser.E20CallFunctionContext ctx) {
 
 	}
 
@@ -460,19 +459,19 @@ public class RBaseListen extends RBaseListener {
 		return check;
 	}
 
-	public void exitErr1(@NotNull RParser.Err1Context ctx) {
+	public void exitErr1(RParser.Err1Context ctx) {
 
 		parser.notifyErrorListeners(ctx.extra, "Err1:Too many parentheses!", null);
 
 	}
 
-	public void exitErr3(@NotNull RParser.Err3Context ctx) {
+	public void exitErr3(RParser.Err3Context ctx) {
 
 		parser.notifyErrorListeners(ctx.extra, "Err3:Too many parentheses in function call!", null);
 
 	}
 
-	public void exitErr5(@NotNull RParser.Err5Context ctx) {
+	public void exitErr5(RParser.Err5Context ctx) {
 
 		parser.notifyErrorListeners(ctx.extra, "Err5:Too many parentheses in function definition!", null);
 
@@ -489,7 +488,7 @@ public class RBaseListen extends RBaseListener {
 	 * }
 	 */
 
-	public void exitErr7(@NotNull RParser.Err7Context ctx) {
+	public void exitErr7(RParser.Err7Context ctx) {
 
 		// int index = ctx.extra.getStartIndex();
 
@@ -497,62 +496,68 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	public void exitErr9(@NotNull RParser.Err9Context ctx) {
+	public void exitErr9(RParser.Err9Context ctx) {
 
 		parser.notifyErrorListeners(ctx.extra, "Err9:Too many brackets!", null);
 
 	}
 
-	public void exitErr11(@NotNull RParser.Err11Context ctx) {
+	public void exitErr11(RParser.Err11Context ctx) {
 
 		parser.notifyErrorListeners(ctx.extra, "Err11:Too many braces!", null);
 
 	}
 
-	/*public void exitErr12(@NotNull RParser.Err12Context ctx) {
+	/*
+	 * public void exitErr12(@NotNull RParser.Err12Context ctx) {
+	 * 
+	 * parser.notifyErrorListeners(ctx.extra,
+	 * "Err12:Wrong constant: 'TRUE' required!", null);
+	 * 
+	 * }
+	 * 
+	 * public void exitErr13(@NotNull RParser.Err13Context ctx) {
+	 * 
+	 * parser.notifyErrorListeners(ctx.extra,
+	 * "Err13:Wrong constant: 'FALSE' required!", null);
+	 * 
+	 * }
+	 * 
+	 * public void exitErr14(@NotNull RParser.Err14Context ctx) {
+	 * 
+	 * parser.notifyErrorListeners(ctx.extra,
+	 * "Err14:Wrong constant: 'NULL' required!", null);
+	 * 
+	 * }
+	 * 
+	 * public void exitErr15(@NotNull RParser.Err15Context ctx) {
+	 * 
+	 * parser.notifyErrorListeners(ctx.extra,
+	 * "Err15:Wrong constant: 'NA' required!", null);
+	 * 
+	 * }
+	 */
 
-		parser.notifyErrorListeners(ctx.extra, "Err12:Wrong constant: 'TRUE' required!", null);
-
-	}
-
-	public void exitErr13(@NotNull RParser.Err13Context ctx) {
-
-		parser.notifyErrorListeners(ctx.extra, "Err13:Wrong constant: 'FALSE' required!", null);
-
-	}
-
-	public void exitErr14(@NotNull RParser.Err14Context ctx) {
-
-		parser.notifyErrorListeners(ctx.extra, "Err14:Wrong constant: 'NULL' required!", null);
-
-	}
-
-	public void exitErr15(@NotNull RParser.Err15Context ctx) {
-
-		parser.notifyErrorListeners(ctx.extra, "Err15:Wrong constant: 'NA' required!", null);
-
-	}*/
-
-	public void exitErr16(@NotNull RParser.Err16Context ctx) {
+	public void exitErr16(RParser.Err16Context ctx) {
 
 		parser.notifyErrorListeners(ctx.extra, "Err16:Too many braces in while statement!", null);
 
 	}
 
-	public void exitErr18(@NotNull RParser.Err18Context ctx) {
+	public void exitErr18(RParser.Err18Context ctx) {
 
 		parser.notifyErrorListeners(ctx.extra, "Err18:Too many braces in for statement!", null);
 
 	}
 
-	public void exitErr20(@NotNull RParser.Err20Context ctx) {
+	public void exitErr20(RParser.Err20Context ctx) {
 
 		Token firstToken = tokens.get(ctx.getChild(1).getSourceInterval().a);
 		parser.notifyErrorListeners(firstToken, "Err20:Wrong comparison!", null);
 
 	}
 
-	public void exitErr21(@NotNull RParser.Err21Context ctx) {
+	public void exitErr21(RParser.Err21Context ctx) {
 
 		Token firstToken = tokens.get(ctx.getChild(1).getSourceInterval().a);
 		parser.notifyErrorListeners(firstToken, "Err21:Wrong comparison!", null);
