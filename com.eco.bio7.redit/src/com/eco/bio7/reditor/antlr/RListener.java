@@ -33,18 +33,6 @@ public interface RListener extends ParseTreeListener {
 	 */
 	void exitE31(@NotNull RParser.E31Context ctx);
 	/**
-	 * Enter a parse tree produced by the {@code err12}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterErr12(@NotNull RParser.Err12Context ctx);
-	/**
-	 * Exit a parse tree produced by the {@code err12}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitErr12(@NotNull RParser.Err12Context ctx);
-	/**
 	 * Enter a parse tree produced by the {@code e30}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
@@ -56,18 +44,6 @@ public interface RListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitE30(@NotNull RParser.E30Context ctx);
-	/**
-	 * Enter a parse tree produced by the {@code err13}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterErr13(@NotNull RParser.Err13Context ctx);
-	/**
-	 * Exit a parse tree produced by the {@code err13}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitErr13(@NotNull RParser.Err13Context ctx);
 	/**
 	 * Enter a parse tree produced by the {@code e32}
 	 * labeled alternative in {@link RParser#expr}.
@@ -164,30 +140,6 @@ public interface RListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitE38(@NotNull RParser.E38Context ctx);
-	/**
-	 * Enter a parse tree produced by the {@code err14}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterErr14(@NotNull RParser.Err14Context ctx);
-	/**
-	 * Exit a parse tree produced by the {@code err14}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitErr14(@NotNull RParser.Err14Context ctx);
-	/**
-	 * Enter a parse tree produced by the {@code err15}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterErr15(@NotNull RParser.Err15Context ctx);
-	/**
-	 * Exit a parse tree produced by the {@code err15}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitErr15(@NotNull RParser.Err15Context ctx);
 	/**
 	 * Enter a parse tree produced by the {@code err16}
 	 * labeled alternative in {@link RParser#expr}.

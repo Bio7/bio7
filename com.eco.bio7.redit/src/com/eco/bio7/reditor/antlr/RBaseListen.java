@@ -509,7 +509,7 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	public void exitErr12(@NotNull RParser.Err12Context ctx) {
+	/*public void exitErr12(@NotNull RParser.Err12Context ctx) {
 
 		parser.notifyErrorListeners(ctx.extra, "Err12:Wrong constant: 'TRUE' required!", null);
 
@@ -531,7 +531,7 @@ public class RBaseListen extends RBaseListener {
 
 		parser.notifyErrorListeners(ctx.extra, "Err15:Wrong constant: 'NA' required!", null);
 
-	}
+	}*/
 
 	public void exitErr16(@NotNull RParser.Err16Context ctx) {
 
