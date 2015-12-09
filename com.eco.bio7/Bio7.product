@@ -167,14 +167,14 @@ jre/lib/jli/libjli.dylib
    </plugins>
 
    <features>
-      <feature id="com.eco.bio7.albireo.feature" version="2.0.0.qualifier"/>
+      <feature id="com.eco.bio7.albireo.feature" version="2.1.0.qualifier"/>
       <feature id="com.eco.bio7.browser.feature" version="2.0.0.qualifier"/>
       <feature id="com.eco.bio7.core.feature" version="2.0.0.qualifier"/>
       <feature id="com.eco.bio7.edit.feature" version="2.0.0.qualifier"/>
       <feature id="com.eco.bio7.floweditor.feature" version="2.0.0.qualifier"/>
       <feature id="com.eco.bio7.javaedit.feature" version="2.0.0.qualifier"/>
       <feature id="com.eco.bio7.r.feature" version="3.2.1.qualifier"/>
-      <feature id="com.eco.bio7.image.feature" version="1.50.5.qualifier"/>
+      <feature id="com.eco.bio7.image.feature" version="1.5.51.qualifier"/>
       <feature id="com.eco.bio7.libs.feature" version="2.0.0.qualifier"/>
       <feature id="com.eco.bio7.redit.feature" version="2.0.0.qualifier"/>
       <feature id="com.eco.bio7.util.feature" version="2.0.0.qualifier"/>
