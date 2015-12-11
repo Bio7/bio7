@@ -121,8 +121,8 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
-
-					Roi[] r = RoiManager.getInstance().getRoisAsArray();
+                   /*Only transfer selected ROI's from the ROI Manager or all if no ROI is selected!*/
+					Roi[] r = RoiManager.getInstance().getSelectedRoisAsArray();
 					items = CanvasView.getCanvas_view().tabFolder.getItems();
 					for (int ro = 0; ro < r.length; ro++) {
 

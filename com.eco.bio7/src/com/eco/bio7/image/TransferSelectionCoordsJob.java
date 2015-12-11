@@ -195,7 +195,8 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp != null) {
 			if (RoiManager.getInstance() != null) {
-				Roi[] r = RoiManager.getInstance().getRoisAsArray();
+				 /*Only transfer selected ROI's from the ROI Manager or all if no ROI is selected!*/
+				Roi[] r = RoiManager.getInstance().getSelectedRoisAsArray();
 				c = RServe.getConnection();
 				if (RServe.isAlive()) {
 
@@ -268,7 +269,8 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp != null) {
 			if (RoiManager.getInstance() != null) {
-				Roi[] r = RoiManager.getInstance().getRoisAsArray();
+				/*Only transfer selected ROI's from the ROI Manager or all if no ROI is selected!*/
+				Roi[] r = RoiManager.getInstance().getSelectedRoisAsArray();
 				c = RServe.getConnection();
 				if (RServe.isAlive()) {
 
