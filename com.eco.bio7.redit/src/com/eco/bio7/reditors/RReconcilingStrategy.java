@@ -138,8 +138,27 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
+				 /*Delete all problem markers!*/
+				IMarker[] markers = findMyMarkers(resource);
+				int lineNumb = -1;
+				for (int i = 0; i < markers.length; i++) {
+
+					try {
+						lineNumb = (int) markers[i].getAttribute(IMarker.LINE_NUMBER);
+
+						/*if (lineNumb == line) {
+							markers[i].delete();
+							// System.out.println(recognizer.getRuleNames()[i]);
+						}*/
+					} catch (CoreException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
 			}
 		}
+		
+		
 
 		IDocument doc = fDocument;
 
@@ -209,6 +228,18 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 		
 		
 
+	}
+	public IMarker[] findMyMarkers(IResource target) {
+		String type = "org.eclipse.core.resources.problemmarker";
+
+		IMarker[] markers = null;
+		try {
+			markers = target.findMarkers(type, true, IResource.DEPTH_INFINITE);
+		} catch (CoreException e) {
+
+			e.printStackTrace();
+		}
+		return markers;
 	}
 
 }

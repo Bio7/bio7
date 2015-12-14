@@ -81,7 +81,11 @@ expr:
     //|   'for' '(' ID 'in' expr expr						#err19
     |	expr '=>' expr										#err20
     |	expr '=<' expr										#err21
+    |   unknowns											#err22
     ;
+unknowns : UNKNOWN+ ;//Catch all unknown tokens and delegate them to the parser!
+
+ 
 
 exprlist
     :   expr ((';'|NL) expr?)*
@@ -175,3 +179,5 @@ COMMENT :      '#' ~[\r\n]*  -> type(NL);
 NL      :   '\r'? '\n' ;
 
 WS      :   [ \t]+ -> skip ;// Removed!
+
+UNKNOWN : . ;//Unknown tokens!

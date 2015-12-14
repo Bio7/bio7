@@ -537,7 +537,7 @@ public class RBaseListen extends RBaseListener {
 	  
 	  }
 	 
-
+   /*With this error message we produce QuickFixes. The errors start with 'Err' to seperate them later in the RBaseListen class!*/
 	public void exitErr16(RParser.Err16Context ctx) {
 
 		parser.notifyErrorListeners(ctx.extra, "Err16:Too many braces in while statement!", null);
@@ -561,6 +561,13 @@ public class RBaseListen extends RBaseListener {
 
 		Token firstToken = tokens.get(ctx.getChild(1).getSourceInterval().a);
 		parser.notifyErrorListeners(firstToken, "Err21:Wrong comparison!", null);
+
+	}
+	
+	public void exitErr22(RParser.Err22Context ctx){
+
+		Token firstToken = ctx.start;
+		parser.notifyErrorListeners(firstToken, "Unknown Token!", null);
 
 	}
 

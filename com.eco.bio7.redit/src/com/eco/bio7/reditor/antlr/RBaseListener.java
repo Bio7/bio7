@@ -208,6 +208,18 @@ public class RBaseListener implements RListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterErr22(RParser.Err22Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitErr22(RParser.Err22Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterE41(RParser.E41Context ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -671,6 +683,18 @@ public class RBaseListener implements RListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitE9(RParser.E9Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterUnknowns(RParser.UnknownsContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitUnknowns(RParser.UnknownsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

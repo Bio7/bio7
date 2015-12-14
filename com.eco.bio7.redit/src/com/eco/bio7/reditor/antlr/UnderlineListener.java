@@ -1,18 +1,15 @@
 package com.eco.bio7.reditor.antlr;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.Token;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.texteditor.IDocumentProvider;
-
 import com.eco.bio7.reditors.REditor;
 
 public class UnderlineListener extends BaseErrorListener {
@@ -20,6 +17,8 @@ public class UnderlineListener extends BaseErrorListener {
 	public static IResource resource;
 	private REditor editor;
 	private boolean warn=false;
+	private Token offSymbol;
+	private int offSymbolTokenLength=0;
 
 	public UnderlineListener(REditor editor) {
 		this.editor = editor;
@@ -27,12 +26,19 @@ public class UnderlineListener extends BaseErrorListener {
 
 	public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
 		String quickFix = null;
-		//System.err.println(msg);
+		
+		if(offendingSymbol!=null){
+			 offSymbol=(Token)offendingSymbol;
+			 offSymbolTokenLength=offSymbol.getText().length();
+		}
+		//System.out.println(offSymbol.getText());
 		if (msg.startsWith("Err")) {
 			warn=false;
 			String[] split = msg.split(":");
 			quickFix = split[0];
 			msg=split[1];
+			msg.replace("'", "");
+			//System.out.println(msg);
 		}
 		else if(msg.startsWith("Warn")){
 			warn=true;
@@ -47,23 +53,7 @@ public class UnderlineListener extends BaseErrorListener {
 			IDocumentProvider provider = editor.getDocumentProvider();
 			IDocument document = provider.getDocument(editor.getEditorInput());
 			int lineOffsetStart = 0;
-
-			IMarker[] markers = findMyMarkers(resource);
-			int lineNumb = -1;
-			for (int i = 0; i < markers.length; i++) {
-
-				try {
-					lineNumb = (int) markers[i].getAttribute(IMarker.LINE_NUMBER);
-
-					if (lineNumb == line) {
-						markers[i].delete();
-						// System.out.println(recognizer.getRuleNames()[i]);
-					}
-				} catch (CoreException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
+            
 			// System.out.println("Char  is at:" + charPositionInLine);
 
 			try {
@@ -93,19 +83,19 @@ public class UnderlineListener extends BaseErrorListener {
     					marker.setAttribute(IMarker.TEXT, "NA");
     			//	}
     				/* Correct the underline error if it is */
-    				if ((lineOffsetStart + charPositionInLine) + 1 > document.getLength()) {
+    				if ((lineOffsetStart + charPositionInLine) + 1+offSymbolTokenLength > document.getLength()) {
     					//marker.setAttribute(IMarker.CHAR_START, (lineOffsetStart + charPositionInLine) - 1);
     					//marker.setAttribute(IMarker.CHAR_END, (lineOffsetStart + charPositionInLine));
     					
     				} else {
     					marker.setAttribute(IMarker.CHAR_START, (lineOffsetStart + charPositionInLine));
-    					marker.setAttribute(IMarker.CHAR_END, (lineOffsetStart + charPositionInLine) + 1);
+    					marker.setAttribute(IMarker.CHAR_END, (lineOffsetStart + charPositionInLine) + 1+offSymbolTokenLength);
     				}
     			} catch (CoreException ex) {
 
     				ex.printStackTrace();
     			}
-            	
+            	warn=false;//reset warning flag!
             }
             else{
 			try {
@@ -141,17 +131,6 @@ public class UnderlineListener extends BaseErrorListener {
 
 	}
 
-	public IMarker[] findMyMarkers(IResource target) {
-		String type = "org.eclipse.core.resources.problemmarker";
-
-		IMarker[] markers = null;
-		try {
-			markers = target.findMarkers(type, true, IResource.DEPTH_INFINITE);
-		} catch (CoreException e) {
-
-			e.printStackTrace();
-		}
-		return markers;
-	}
+	
 
 }
