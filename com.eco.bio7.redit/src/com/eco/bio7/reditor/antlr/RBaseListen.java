@@ -509,28 +509,28 @@ public class RBaseListen extends RBaseListener {
 	}
 
 	/*Here we create some warnings from the parser!*/
-	  public void exitWarn12( RParser.Warn12Context ctx) {
+	  public void exitWarn12(RParser.Warn12Context ctx) {
 	  
 	  parser.notifyErrorListeners(ctx.extra,
 	  "Warn12:Wrong constant: 'TRUE' required!", null);
 	  
 	  }
 	  
-	  public void exitWarn13( RParser.Warn13Context ctx) {
+	  public void exitWarn13(RParser.Warn13Context ctx) {
 	  
 	  parser.notifyErrorListeners(ctx.extra,
 	  "Warn13:Wrong constant: 'FALSE' required!", null);
 	  
 	  }
 	  
-	  public void exitWarn14( RParser.Warn14Context ctx) {
+	  public void exitWarn14(RParser.Warn14Context ctx) {
 	  
 	  parser.notifyErrorListeners(ctx.extra,
 	  "Warn14:Wrong constant: 'NULL' required!", null);
 	  
 	  }
 	  
-	  public void exitWarn15( RParser.Warn15Context ctx) {
+	  public void exitWarn15(RParser.Warn15Context ctx) {
 	  
 	  parser.notifyErrorListeners(ctx.extra,
 	  "Warn15:Wrong constant: 'NA' required!", null);

@@ -19,6 +19,7 @@ public class UnderlineListener extends BaseErrorListener {
 
 	public static IResource resource;
 	private REditor editor;
+	private boolean warn=false;
 
 	public UnderlineListener(REditor editor) {
 		this.editor = editor;
@@ -26,8 +27,15 @@ public class UnderlineListener extends BaseErrorListener {
 
 	public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
 		String quickFix = null;
-		// System.err.println(msg);
-		if (msg.startsWith("Err")||msg.startsWith("Warn")) {
+		//System.err.println(msg);
+		if (msg.startsWith("Err")) {
+			warn=false;
+			String[] split = msg.split(":");
+			quickFix = split[0];
+			msg=split[1];
+		}
+		else if(msg.startsWith("Warn")){
+			warn=true;
 			String[] split = msg.split(":");
 			quickFix = split[0];
 			msg=split[1];
@@ -67,9 +75,10 @@ public class UnderlineListener extends BaseErrorListener {
 				e1.printStackTrace();
 			}
 			IMarker marker;
-            if(msg.startsWith("Warn")){
+            if(warn){
+            	
             	try {
-    				marker = resource.createMarker(IMarker.SEVERITY);
+    				marker = resource.createMarker(IMarker.PROBLEM);
     				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
     				// marker.setAttribute(IMarker.MESSAGE, "line " + line + ":" +
     				// charPositionInLine + " " + msg);
