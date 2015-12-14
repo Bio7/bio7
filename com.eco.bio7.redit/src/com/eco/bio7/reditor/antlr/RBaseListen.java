@@ -508,35 +508,35 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	/*
-	 * public void exitErr12(@NotNull RParser.Err12Context ctx) {
-	 * 
-	 * parser.notifyErrorListeners(ctx.extra,
-	 * "Err12:Wrong constant: 'TRUE' required!", null);
-	 * 
-	 * }
-	 * 
-	 * public void exitErr13(@NotNull RParser.Err13Context ctx) {
-	 * 
-	 * parser.notifyErrorListeners(ctx.extra,
-	 * "Err13:Wrong constant: 'FALSE' required!", null);
-	 * 
-	 * }
-	 * 
-	 * public void exitErr14(@NotNull RParser.Err14Context ctx) {
-	 * 
-	 * parser.notifyErrorListeners(ctx.extra,
-	 * "Err14:Wrong constant: 'NULL' required!", null);
-	 * 
-	 * }
-	 * 
-	 * public void exitErr15(@NotNull RParser.Err15Context ctx) {
-	 * 
-	 * parser.notifyErrorListeners(ctx.extra,
-	 * "Err15:Wrong constant: 'NA' required!", null);
-	 * 
-	 * }
-	 */
+	/*Here we create some warnings from the parser!*/
+	  public void exitWarn12( RParser.Warn12Context ctx) {
+	  
+	  parser.notifyErrorListeners(ctx.extra,
+	  "Warn12:Wrong constant: 'TRUE' required!", null);
+	  
+	  }
+	  
+	  public void exitWarn13( RParser.Warn13Context ctx) {
+	  
+	  parser.notifyErrorListeners(ctx.extra,
+	  "Warn13:Wrong constant: 'FALSE' required!", null);
+	  
+	  }
+	  
+	  public void exitWarn14( RParser.Warn14Context ctx) {
+	  
+	  parser.notifyErrorListeners(ctx.extra,
+	  "Warn14:Wrong constant: 'NULL' required!", null);
+	  
+	  }
+	  
+	  public void exitWarn15( RParser.Warn15Context ctx) {
+	  
+	  parser.notifyErrorListeners(ctx.extra,
+	  "Warn15:Wrong constant: 'NA' required!", null);
+	  
+	  }
+	 
 
 	public void exitErr16(RParser.Err16Context ctx) {
 

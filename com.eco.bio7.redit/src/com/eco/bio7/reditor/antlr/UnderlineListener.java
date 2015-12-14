@@ -27,7 +27,7 @@ public class UnderlineListener extends BaseErrorListener {
 	public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
 		String quickFix = null;
 		// System.err.println(msg);
-		if (msg.startsWith("Err")) {
+		if (msg.startsWith("Err")||msg.startsWith("Warn")) {
 			String[] split = msg.split(":");
 			quickFix = split[0];
 			msg=split[1];
@@ -66,8 +66,39 @@ public class UnderlineListener extends BaseErrorListener {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-
 			IMarker marker;
+            if(msg.startsWith("Warn")){
+            	try {
+    				marker = resource.createMarker(IMarker.SEVERITY);
+    				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+    				// marker.setAttribute(IMarker.MESSAGE, "line " + line + ":" +
+    				// charPositionInLine + " " + msg);
+    				marker.setAttribute(IMarker.MESSAGE, msg);
+    				marker.setAttribute(IMarker.LINE_NUMBER, line);
+    				marker.setAttribute(IMarker.LOCATION, lineOffsetStart + charPositionInLine);
+    				/*if (quickFix != null) {
+    					marker.setAttribute(IMarker.TEXT, quickFix);
+    				}*/
+    				
+    				//else{
+    					marker.setAttribute(IMarker.TEXT, "NA");
+    			//	}
+    				/* Correct the underline error if it is */
+    				if ((lineOffsetStart + charPositionInLine) + 1 > document.getLength()) {
+    					//marker.setAttribute(IMarker.CHAR_START, (lineOffsetStart + charPositionInLine) - 1);
+    					//marker.setAttribute(IMarker.CHAR_END, (lineOffsetStart + charPositionInLine));
+    					
+    				} else {
+    					marker.setAttribute(IMarker.CHAR_START, (lineOffsetStart + charPositionInLine));
+    					marker.setAttribute(IMarker.CHAR_END, (lineOffsetStart + charPositionInLine) + 1);
+    				}
+    			} catch (CoreException ex) {
+
+    				ex.printStackTrace();
+    			}
+            	
+            }
+            else{
 			try {
 				marker = resource.createMarker(IMarker.PROBLEM);
 				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
@@ -96,7 +127,7 @@ public class UnderlineListener extends BaseErrorListener {
 
 				ex.printStackTrace();
 			}
-
+            }
 		}
 
 	}
