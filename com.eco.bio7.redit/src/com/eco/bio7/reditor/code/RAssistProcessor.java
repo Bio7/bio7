@@ -44,11 +44,17 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 		if (text != null && text.startsWith("Err")) {
 			errorCode = text;
 			return true;
-		} else {
+		} 
+		
+		else if(text != null && text.startsWith("Warn")) {
+			errorCode = text;
+			return true;
+			}
+		
+		else {
 			return false;
 		}
-		// System.out.println(annotation.getText());
-		// TODO Auto-generated method stub
+		
 
 	}
 
@@ -112,25 +118,25 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 
 						new QuickFixCompletionProposal("Remove '}'", offset, text.length(), "",1)};
 				break;
-			case "Err12":
+			case "Warn12":
 				prop = new ICompletionProposal[] {
 
 						new QuickFixCompletionProposal("Replace 'true' with 'TRUE'", offset, text.length(), "TRUE",4)};
 
 				break;
-			case "Err13":
+			case "Warn13":
 				prop = new ICompletionProposal[] {
 
 						new QuickFixCompletionProposal("Replace 'false' with 'FALSE'", offset, text.length(), "FALSE",5)};
 
 				break;
-			case "Err14":
+			case "Warn14":
 				prop = new ICompletionProposal[] {
 
 						new QuickFixCompletionProposal("Replace 'null' with 'NULL'", offset, text.length(), "NULL",4)};
 
 				break;
-			case "Err15":
+			case "Warn15":
 				prop = new ICompletionProposal[] {
 
 						new QuickFixCompletionProposal("Replace 'na' with 'NA'", offset, text.length(), "NA",2)};

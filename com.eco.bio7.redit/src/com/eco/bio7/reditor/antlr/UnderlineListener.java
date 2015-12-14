@@ -37,7 +37,7 @@ public class UnderlineListener extends BaseErrorListener {
 			String[] split = msg.split(":");
 			quickFix = split[0];
 			msg=split[1];
-			msg.replace("'", "");
+			
 			//System.out.println(msg);
 		}
 		else if(msg.startsWith("Warn")){
@@ -75,13 +75,13 @@ public class UnderlineListener extends BaseErrorListener {
     				marker.setAttribute(IMarker.MESSAGE, msg);
     				marker.setAttribute(IMarker.LINE_NUMBER, line);
     				marker.setAttribute(IMarker.LOCATION, lineOffsetStart + charPositionInLine);
-    				/*if (quickFix != null) {
+    				if (quickFix != null) {
     					marker.setAttribute(IMarker.TEXT, quickFix);
-    				}*/
+    				}
     				
-    				//else{
+    				else{
     					marker.setAttribute(IMarker.TEXT, "NA");
-    			//	}
+    				}
     				/* Correct the underline error if it is */
     				if ((lineOffsetStart + charPositionInLine) + 1+offSymbolTokenLength > document.getLength()) {
     					//marker.setAttribute(IMarker.CHAR_START, (lineOffsetStart + charPositionInLine) - 1);

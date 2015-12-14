@@ -62,6 +62,31 @@ public class REditorRulerQuickFixAction extends AbstractRulerActionDelegate {
 
 							}
 						}
+						else if (((String) markersfind[i].getAttribute(IMarker.TEXT)).startsWith("Warn") && line == (int) markersfind[i].getAttribute(IMarker.LINE_NUMBER)) {
+							selectedMarker = markersfind[i];
+							// System.out.println(i+" "+markersfind[i].getAttribute(IMarker.MESSAGE));
+							// System.out.println("Message: " +
+							// selectedMarker.getAttribute(IMarker.MESSAGE));
+							// System.out.println("Message: " +
+							// selectedMarker.getAttribute(IMarker.LOCATION));
+
+							ITextOperationTarget operation = (ITextOperationTarget) editor.getAdapter(ITextOperationTarget.class);
+
+							final int opCode = ISourceViewer.QUICK_ASSIST;
+
+							if (operation != null && operation.canDoOperation(opCode)) {
+
+								try {
+									editor.selectAndReveal((int) selectedMarker.getAttribute(IMarker.LOCATION), 1);
+								} catch (CoreException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+
+								operation.doOperation(opCode);
+
+							}
+						}
 					}
 				} catch (CoreException e) {
 					// TODO Auto-generated catch block
