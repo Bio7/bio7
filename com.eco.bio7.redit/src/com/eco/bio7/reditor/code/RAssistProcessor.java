@@ -89,7 +89,7 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 				if (startChar > 0 && endChar > 0 && offset <= endChar && offset >= startChar) {
 					try {
 						String errorProposal = (String) (marker.getAttribute(IMarker.TEXT));
-						prop = theProposals(errorProposal, offset, text, prop);
+						prop = theProposals(errorProposal, offset, endChar, prop);
 					} catch (CoreException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -103,13 +103,13 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 
 	}
 
-	private ICompletionProposal[] theProposals(String errorCode, int offset, String text, ICompletionProposal[] prop) {
+	private ICompletionProposal[] theProposals(String errorCode, int offset, int endChar, ICompletionProposal[] prop) {
 		if (errorCode != null) {
 			switch (errorCode) {
 			case "Err1":
 				prop = new ICompletionProposal[] {
 
-						new QuickFixCompletionProposal("Remove ')'", offset, text.length(), "", 1) };
+						new QuickFixCompletionProposal("Remove ')'", offset, endChar, "", 1) };
 				break;
 			case "Err2":
 
@@ -117,7 +117,7 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 			case "Err3":
 				prop = new ICompletionProposal[] {
 
-						new QuickFixCompletionProposal("Remove ')'", offset, text.length(), "", 1) };
+						new QuickFixCompletionProposal("Remove ')'", offset, endChar, "", 1) };
 				break;
 			case "Err4":
 
@@ -125,7 +125,7 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 			case "Err5":
 				prop = new ICompletionProposal[] {
 
-						new QuickFixCompletionProposal("Remove ')'", offset, text.length(), "", 1) };
+						new QuickFixCompletionProposal("Remove ')'", offset, endChar, "", 1) };
 				break;
 			case "Err6":
 
@@ -133,18 +133,18 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 			case "Err7":
 				prop = new ICompletionProposal[] {
 
-						new QuickFixCompletionProposal("Remove ')'", offset, text.length(), "", 1) };
+						new QuickFixCompletionProposal("Remove ')'", offset, endChar, "", 1) };
 				break;
 			case "Err8":
 				prop = new ICompletionProposal[] {
 
-						new QuickFixCompletionProposal("Remove ']'", offset, text.length(), "", 1) };
+						new QuickFixCompletionProposal("Remove ']'", offset, endChar, "", 1) };
 
 				break;
 			case "Err9":
 				prop = new ICompletionProposal[] {
 
-						new QuickFixCompletionProposal("Remove ']'", offset, text.length(), "", 1) };
+						new QuickFixCompletionProposal("Remove ']'", offset, endChar, "", 1) };
 				break;
 			case "Err10":
 
@@ -152,36 +152,36 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 			case "Err11":
 				prop = new ICompletionProposal[] {
 
-						new QuickFixCompletionProposal("Remove '}'", offset, text.length(), "", 1) };
+						new QuickFixCompletionProposal("Remove '}'", offset, endChar, "", 1) };
 				break;
 			case "Warn12":
 				prop = new ICompletionProposal[] {
 
-						new QuickFixCompletionProposal("Replace 'true' with 'TRUE'", offset, text.length(), "TRUE", 4) };
+						new QuickFixCompletionProposal("Replace 'true' with 'TRUE'", offset, endChar, "TRUE", 4) };
 
 				break;
 			case "Warn13":
 				prop = new ICompletionProposal[] {
 
-						new QuickFixCompletionProposal("Replace 'false' with 'FALSE'", offset, text.length(), "FALSE", 5) };
+						new QuickFixCompletionProposal("Replace 'false' with 'FALSE'", offset, endChar, "FALSE", 5) };
 
 				break;
 			case "Warn14":
 				prop = new ICompletionProposal[] {
 
-						new QuickFixCompletionProposal("Replace 'null' with 'NULL'", offset, text.length(), "NULL", 4) };
+						new QuickFixCompletionProposal("Replace 'null' with 'NULL'", offset, endChar, "NULL", 4) };
 
 				break;
 			case "Warn15":
 				prop = new ICompletionProposal[] {
 
-						new QuickFixCompletionProposal("Replace 'na' with 'NA'", offset, text.length(), "NA", 2) };
+						new QuickFixCompletionProposal("Replace 'na' with 'NA'", offset, endChar, "NA", 2) };
 
 				break;
 			case "Err16":
 				prop = new ICompletionProposal[] {
 
-						new QuickFixCompletionProposal("Remove ')'", offset, text.length(), "", 1) };
+						new QuickFixCompletionProposal("Remove ')'", offset, endChar, "", 1) };
 
 				break;
 			case "Err17":
@@ -190,7 +190,7 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 			case "Err18":
 				prop = new ICompletionProposal[] {
 
-						new QuickFixCompletionProposal("Remove ')'", offset, text.length(), "", 1) };
+						new QuickFixCompletionProposal("Remove ')'", offset, endChar, "", 1) };
 				break;
 			case "Err19":
 
@@ -198,12 +198,12 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 			case "Err20":
 				prop = new ICompletionProposal[] {
 
-						new QuickFixCompletionProposal("Replace '=>' with '>='", offset, text.length(), ">=", 2) };
+						new QuickFixCompletionProposal("Replace '=>' with '>='", offset, endChar, ">=", 2) };
 				break;
 			case "Err21":
 				prop = new ICompletionProposal[] {
 
-						new QuickFixCompletionProposal("Replace '=<' with '<='", offset, text.length(), "<=", 2) };
+						new QuickFixCompletionProposal("Replace '=<' with '<='", offset, endChar, "<=", 2) };
 				break;
 
 			default:
@@ -213,11 +213,11 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 			 * if (errorCode.equals("Err7")) { prop = new ICompletionProposal[]
 			 * {
 			 * 
-			 * new QuickFixCompletionProposal("Remove", offset, text.length(),
+			 * new QuickFixCompletionProposal("Remove", offset, text,
 			 * ""),
 			 * 
 			 * // new // QuickFixCompletionProposal(
-			 * "This is the second proposal!",offset,text.length(),"")
+			 * "This is the second proposal!",offset,text,"")
 			 * 
 			 * }; }
 			 */
