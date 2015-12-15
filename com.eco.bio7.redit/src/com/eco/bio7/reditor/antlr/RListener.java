@@ -438,6 +438,18 @@ public interface RListener extends ParseTreeListener {
 	 */
 	void exitErr9(RParser.Err9Context ctx);
 	/**
+	 * Enter a parse tree produced by the {@code err8}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterErr8(RParser.Err8Context ctx);
+	/**
+	 * Exit a parse tree produced by the {@code err8}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitErr8(RParser.Err8Context ctx);
+	/**
 	 * Enter a parse tree produced by the {@code err7}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree

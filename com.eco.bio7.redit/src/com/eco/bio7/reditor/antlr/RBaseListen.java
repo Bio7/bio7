@@ -495,6 +495,14 @@ public class RBaseListen extends RBaseListener {
 		parser.notifyErrorListeners(ctx.extra, "Err7:Too many parentheses in if condition!", null);
 
 	}
+	
+	public void exitErr8(RParser.Err8Context ctx) {
+
+		// int index = ctx.extra.getStartIndex();
+
+		parser.notifyErrorListeners(ctx.extra, "Err8:Too many brackets!", null);
+
+	}
 
 	public void exitErr9(RParser.Err9Context ctx) {
 
