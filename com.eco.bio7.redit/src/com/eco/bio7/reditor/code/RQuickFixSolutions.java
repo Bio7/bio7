@@ -3,7 +3,7 @@ package com.eco.bio7.reditor.code;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 
 public class RQuickFixSolutions  {
-	
+	/*Hardcoded. We could also refactor out the solutions to a properties file!*/
 	public ICompletionProposal[] getProposals(String errorCode, int offset, int endChar, ICompletionProposal[] prop) {
 		if (errorCode != null) {
 			switch (errorCode) {

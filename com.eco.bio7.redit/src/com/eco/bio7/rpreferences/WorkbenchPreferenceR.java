@@ -41,6 +41,8 @@ public class WorkbenchPreferenceR extends FieldEditorPreferencePage implements I
 		addField(new FontFieldEditor("colourkeyfont7", "Font:", getFieldEditorParent()));
 		addField(new ColorFieldEditor("colourkey8", "Assignment:", getFieldEditorParent()));
 		addField(new FontFieldEditor("colourkeyfont8", "Font:", getFieldEditorParent()));
+		//addField(new SpacerFieldEditor(getFieldEditorParent()));
+		//addField(new FontFieldEditor("colourkeyfontall", "Change All Fonts:", getFieldEditorParent()));
 
 	}
 

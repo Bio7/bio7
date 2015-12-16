@@ -627,7 +627,7 @@ public class REditor extends TextEditor {
 				Bio7REditorPlugin fginstance = Bio7REditorPlugin.getDefault();
 				RCodeScanner scanner = (RCodeScanner) fginstance.getRCodeScanner();
 				RPartitionScanner pscanner = (RPartitionScanner) fginstance.getRPartitionScanner();
-
+                
 				RColorProvider provider = Bio7REditorPlugin.getDefault().getRColorProvider();
 				IPreferenceStore store = Bio7REditorPlugin.getDefault().getPreferenceStore();
 				RGB rgbkey = PreferenceConverter.getColor(store, "colourkey");
@@ -652,13 +652,17 @@ public class REditor extends TextEditor {
 
 				scanner.keyword.setData(new TextAttribute(provider.getColor(rgbkey), null, 1, new Font(Display.getCurrent(), f)));
 				scanner.type.setData(new TextAttribute(provider.getColor(rgbkey1), null, 1, new Font(Display.getCurrent(), f1)));
-				scanner.string.setData(new TextAttribute(provider.getColor(rgbkey2), null, 1, new Font(Display.getCurrent(), f2)));
-				scanner.comment.setData(new TextAttribute(provider.getColor(rgbkey3), null, 1, new Font(Display.getCurrent(), f3)));
+				//scanner.string.setData(new TextAttribute(provider.getColor(rgbkey2), null, 1, new Font(Display.getCurrent(), f2)));
+				//scanner.comment.setData(new TextAttribute(provider.getColor(rgbkey3), null, 1, new Font(Display.getCurrent(), f3)));
 				scanner.other.setData(new TextAttribute(provider.getColor(rgbkey4), null, 1, new Font(Display.getCurrent(), f4)));
 				scanner.operators.setData(new TextAttribute(provider.getColor(rgbkey5), null, 1, new Font(Display.getCurrent(), f5)));
 				scanner.braces.setData(new TextAttribute(provider.getColor(rgbkey6), null, 1, new Font(Display.getCurrent(), f6)));
 				scanner.numbers.setData(new TextAttribute(provider.getColor(rgbkey7), null, 1, new Font(Display.getCurrent(), f7)));
 				scanner.assignment.setData(new TextAttribute(provider.getColor(rgbkey8), null, 1, new Font(Display.getCurrent(), f8)));
+				
+				/*Special treatment for multiline strings and comments!*/
+				getRconf().resetMultilineStringToken(rgbkey2, f2);
+				getRconf().resetCommentToken(rgbkey3, f3);
 
 				// System.out.println(pscanner.rString.getData().toString());
 

@@ -66,7 +66,7 @@ public class RCodeScanner extends RuleBasedScanner {
 	public Token keyword;
 	public Token type;
 	public Token string;
-	public static Token comment;
+	public  Token comment;
 	public Token other;
 	public Token operators;
 	public Token braces;
@@ -113,10 +113,10 @@ public class RCodeScanner extends RuleBasedScanner {
 		numbers = new Token(new TextAttribute(provider.getColor(rgbkey7), null, 1, new Font(Display.getCurrent(), f7)));
 		assignment = new Token(new TextAttribute(provider.getColor(rgbkey8), null, 1, new Font(Display.getCurrent(), f8)));
 
-		List rules = new ArrayList();
-
+		List<IRule> rules = new ArrayList<IRule>();
+        /*Comments and multiline strings (tokens) are treated specially in the RConfiguration class!*/
 		// Add rule for single line comments.
-		rules.add(new EndOfLineRule("#", comment));
+		//rules.add(new EndOfLineRule("#", comment));
 
 		
 		rules.add(new WhitespaceRule(new RWhitespaceDetector()));
@@ -153,8 +153,9 @@ public class RCodeScanner extends RuleBasedScanner {
 		 */
 
 		rules.add(wordRule);
-		rules.add(new MultiLineRule("\"", "\"", string, '\\'));
-		rules.add(new MultiLineRule("'", "'", string, '\\'));
+		/*Comments and multiline strings (tokens) are treated specially in the RConfiguration class!*/
+		//rules.add(new MultiLineRule("\"", "\"", string, '\\'));
+		//rules.add(new MultiLineRule("'", "'", string, '\\'));
 
 		IRule[] result = new IRule[rules.size()];
 		rules.toArray(result);

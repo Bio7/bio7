@@ -439,7 +439,14 @@ public class RBaseListen extends RBaseListener {
 
 	@Override
 	public void exitE20CallFunction(RParser.E20CallFunctionContext ctx) {
-
+		/*Interval sourceInterval = ctx.getSourceInterval();
+		int start = sourceInterval.a;
+		String name = tokens.get(start).getText();
+		String op = tokens.get(start + 1).getText();
+		if(op.equals("<-")||op.equals("=")||op.equals("<<-")){
+			name=tokens.get(start + 2).getText();
+		}
+		System.out.println("function:"+name);*/
 	}
 
 	/*
@@ -577,6 +584,17 @@ public class RBaseListen extends RBaseListener {
 		Token firstToken = ctx.start;
 		parser.notifyErrorListeners(firstToken, "Unknown Token!", null);
 
+	}
+	@Override
+	public void exitE30(RParser.E30Context ctx) {
+		/*Interval sourceInterval = ctx.getSourceInterval();
+		int start = sourceInterval.a;
+		String name = tokens.get(start).getText();
+		String op = tokens.get(start + 1).getText();
+		if(op.equals("<-")||op.equals("=")||op.equals("<<-")){
+			name=tokens.get(start + 2).getText();
+		}
+		System.out.println("ID:"+name);*/
 	}
 
 }
