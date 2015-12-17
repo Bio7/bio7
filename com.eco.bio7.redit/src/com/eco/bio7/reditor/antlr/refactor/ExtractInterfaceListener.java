@@ -1,16 +1,8 @@
 package com.eco.bio7.reditor.antlr.refactor;
-/***
- * Excerpted from "The Definitive ANTLR 4 Reference",
- * published by The Pragmatic Bookshelf.
- * Copyrights apply to this code. It may not be used to create training material, 
- * courses, books, articles, and the like. Contact us if you are in doubt.
- * We make no guarantees that this code is fit for any purpose. 
- * Visit http://www.pragmaticprogrammer.com/titles/tpantlr2 for more book information.
-***/
+
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Token;
-
 import com.eco.bio7.reditor.antlr.RBaseListener;
 import com.eco.bio7.reditor.antlr.RParser;
 
@@ -150,14 +142,7 @@ public class ExtractInterfaceListener extends RBaseListener {
 
 	@Override
 	public void exitE30(RParser.E30Context ctx) {
-		/*
-		 * Interval sourceInterval = ctx.getSourceInterval(); int start =
-		 * sourceInterval.a; String name = tokens.get(start).getText(); String
-		 * op = tokens.get(start + 1).getText();
-		 * if(op.equals("<-")||op.equals("=")||op.equals("<<-")){
-		 * name=tokens.get(start + 2).getText(); }
-		 * System.out.println("ID:"+name);
-		 */
+		
 	}
 
 }

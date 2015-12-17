@@ -72,7 +72,7 @@ public class ExtractMethod implements IEditorActionDelegate {
 						//off = doc.getLineOffset(start);
 						//offStop = doc.getLineOffset(startline);
 
-						int length = selection.getLength() + 1;
+						int length = selection.getLength() ;
 						doc.replace(start, length, "myNewFunc()");
 
 					} catch (BadLocationException e) {
@@ -114,7 +114,7 @@ public class ExtractMethod implements IEditorActionDelegate {
 			else {
 				System.out.println("How many errors3: " + parser.getNumberOfSyntaxErrors());
 				//System.out.println("final"+rewriter.getText());
-				//doc.set(docText);
+				doc.set(docText);
 				return;
 			}
 
