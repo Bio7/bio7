@@ -24,25 +24,17 @@ import com.eco.bio7.reditor.antlr.RParser.ProgContext;
 import com.eco.bio7.reditor.antlr.refactor.ExtractInterfaceListener;
 import com.eco.bio7.reditor.antlr.refactor.ParseErrorListener;
 
-
 public class ExtractMethod implements IEditorActionDelegate {
-
-	
 
 	private ISelection selection;
 	private IEditorPart targetEditor;
-	
-
 	private CommonTokenStream tokens;
-
 	private RParser parser;
-
 	private TokenStreamRewriter rewriter;
 	private ProgContext tree;
 
 	public void setActiveEditor(final IAction action, final IEditorPart targetEditor) {
 		this.targetEditor = targetEditor;
-		
 
 	}
 
@@ -64,15 +56,10 @@ public class ExtractMethod implements IEditorActionDelegate {
 			if (errors == false) {
 				if (!selection.isEmpty()) {
 					int start = selection.getOffset();
-					//int stop = selection.getOffset();
 
 					try {
-						
 
-						//off = doc.getLineOffset(start);
-						//offStop = doc.getLineOffset(startline);
-
-						int length = selection.getLength() ;
+						int length = selection.getLength();
 						doc.replace(start, length, "myNewFunc()");
 
 					} catch (BadLocationException e) {
@@ -94,8 +81,8 @@ public class ExtractMethod implements IEditorActionDelegate {
 			/* Selection */
 			if (error == false) {
 				rewriter = new TokenStreamRewriter(tokens);
-				//Token token = tokens.get(0);
-                
+				// Token token = tokens.get(0);
+
 				rewriter.insertAfter(tree.start, "\r\nmyNewFunc<-function(){\r\n" + text + "\r\n}\r\n");
 				// System.out.println("myFunc<-function(){\n\t"+rewriter.getText()+"\n}");
 				// System.out.println(rewriter.getText());
@@ -108,22 +95,21 @@ public class ExtractMethod implements IEditorActionDelegate {
 
 			if (errorNewText == false) {
 				doc.set(rewriter.getText());
-				
+
 			}
 
 			else {
 				System.out.println("How many errors3: " + parser.getNumberOfSyntaxErrors());
-				//System.out.println("final"+rewriter.getText());
+				// System.out.println("final"+rewriter.getText());
 				doc.set(docText);
 				return;
 			}
 
 		}
 
-		
-
 	}
-   /*Here we parse the text and test for possible errors!*/
+
+	/* Here we parse the text and test for possible errors! */
 	private boolean parseSource(String fullText) {
 		boolean errors;
 		ANTLRInputStream input = new ANTLRInputStream(fullText);
@@ -141,7 +127,7 @@ public class ExtractMethod implements IEditorActionDelegate {
 		// parser.getInterpreter().setPredictionMode(PredictionMode.LL_EXACT_AMBIG_DETECTION);
 		parser.addErrorListener(parseErrorListener);
 
-		 tree = parser.prog();
+		tree = parser.prog();
 		ParseTreeWalker walker = new ParseTreeWalker(); // create standard
 														// walker
 		ExtractInterfaceListener extractor = new ExtractInterfaceListener(tokens, parser);
