@@ -241,11 +241,21 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
          refactoring itself decide whether the operation can run.
       -->
     <viewerContribution targetID="#TextEditorContext" 
-                        id="com.eco.bio7.reditor,refactor.renameProperty">
+                        id="com.eco.bio7.reditor.refactor.renameProperty">
       <action label="Refactor"
               class="com.eco.bio7.reditor.refactor.RenameProperty" 
               menubarPath="additions"
               id="com.eco.bio7.reditor.refactor.RenameProperty"/>
+    </viewerContribution>
+    <viewerContribution
+          id="com.eco.bio7.reditor.refactor.extract.method"
+          targetID="#TextEditorContext">
+       <action
+             class="com.eco.bio7.reditor.actions.ExtractMethod"
+             id="com.eco.bio7.reditor.refactor.extract.method"
+             label="Extract Method"
+             menubarPath="additions">
+       </action>
     </viewerContribution>
   </extension>
    

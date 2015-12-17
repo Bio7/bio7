@@ -178,6 +178,6 @@ COMMENT :      '#' ~[\r\n]*  -> type(NL);
 // Match both UNIX and Windows newlines
 NL      :   '\r'? '\n' ;
 
-WS      :   [ \t]+ -> skip ;// Removed!
+WS      :   [ \t]+ ->  channel(HIDDEN) ;// Removed!
 
 UNKNOWN : . ;//Unknown tokens!
