@@ -29,6 +29,7 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorActionDelegate;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
@@ -48,17 +49,19 @@ import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditors.REditor;
 
-public class RFormatAction extends Action implements IObjectActionDelegate {
+public class RFormatAction  implements IObjectActionDelegate, IEditorActionDelegate {
 
 	private int startOffset;
 	private int selLength;
 	private Socket debugSocket;
 	private IProject iproj;
 
-	public RFormatAction() {
-		super("Format");
-
-	}
+	@Override
+	public void setActiveEditor(IAction action, IEditorPart targetEditor) {
+		action.setActionDefinitionId("com.eco.bio7.reditor.format");
+	     if(targetEditor!=null)
+	     targetEditor.getSite().getKeyBindingService().registerAction(action);
+		}
 
 	public void run(IAction action) {
 
@@ -283,8 +286,12 @@ public class RFormatAction extends Action implements IObjectActionDelegate {
 
 	@Override
 	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
-		// TODO Auto-generated method stub
+		    
 
 	}
+
+	
+		
+	
 
 }

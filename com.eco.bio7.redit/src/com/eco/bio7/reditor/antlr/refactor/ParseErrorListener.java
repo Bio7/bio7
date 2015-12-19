@@ -15,7 +15,7 @@ public class ParseErrorListener extends BaseErrorListener {
 
 	public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
 	   
-	   System.out.println("error occured");
+	   //To do!
 	
 	}
 	
