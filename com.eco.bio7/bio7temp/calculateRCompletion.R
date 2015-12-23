@@ -29,6 +29,7 @@
     }
     all <- paste(.bio7ListAllLoadedFunction, "####", .bio7listAllFunctions, .listOfArguments, sep = "")
     all <- gsub(" ", "", all)  #replace whitespace at beginning
+    all<-grep("^[a-zA-Z]",all,value=TRUE)# extract those which starts with a letter!
     all <- sort(all)
     
     write(all, file = paste(.bio7TempEnvPath$pathTemp, "rproposals.txt", sep = ""))
