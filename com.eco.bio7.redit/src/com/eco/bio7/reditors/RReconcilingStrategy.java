@@ -175,7 +175,8 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 		tokens.reset();
 
 		RParser parser = new RParser(tokens);
-       // parser.setErrorHandler(new RErrorStrategy());
+		/*parser.removeErrorListeners();
+       parser.setErrorHandler(new RErrorStrategy());*/
 		parser.setBuildParseTree(true);
 		
 		lexer.removeErrorListeners();
