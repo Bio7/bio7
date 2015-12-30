@@ -29,10 +29,11 @@ public class UnderlineListener extends BaseErrorListener {
 			String msg, RecognitionException e) {
 		String quickFix = null;
 		{
-			System.err.println("line "+line+":"+charPositionInLine+" "+msg); 
+			//System.err.println("line "+line+":"+charPositionInLine+" "+msg); 
 			underlineError(recognizer,(Token)offendingSymbol, line, charPositionInLine);
 			}
-
+        //msg=msg.replace("'", "");
+        msg=msg.replace("\\r\\n", "\n");
 
 		if (offendingSymbol != null) {
 			offSymbol = (Token) offendingSymbol;
@@ -108,6 +109,7 @@ public class UnderlineListener extends BaseErrorListener {
 				warn = false;// reset warning flag!
 			} else {
 				try {
+					System.out.println(offSymbol.getText());
 					marker = resource.createMarker(IMarker.PROBLEM);
 					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
 					// marker.setAttribute(IMarker.MESSAGE, "line " + line + ":"
@@ -127,15 +129,20 @@ public class UnderlineListener extends BaseErrorListener {
 					if (offSymbol.getStartIndex()==offSymbol.getStopIndex()) {
 						marker.setAttribute(IMarker.CHAR_START, offSymbol.getStartIndex());
 						marker.setAttribute(IMarker.CHAR_END, offSymbol.getStopIndex()+1);
-						// marker.setAttribute(IMarker.CHAR_START,
-						// (lineOffsetStart + charPositionInLine) - 1);
-						// marker.setAttribute(IMarker.CHAR_END,
-						// (lineOffsetStart + charPositionInLine));
+						
 
 					} else {
-						System.out.println(offSymbol.getStartIndex()+" "+offSymbol.getStopIndex());
-						marker.setAttribute(IMarker.CHAR_START, offSymbol.getStartIndex()-1);
-						marker.setAttribute(IMarker.CHAR_END, offSymbol.getStopIndex()-1);
+						
+						if(offSymbol.getText().equals(System.lineSeparator())){
+							
+							marker.setAttribute(IMarker.CHAR_START, offSymbol.getStartIndex()-1);
+							marker.setAttribute(IMarker.CHAR_END, offSymbol.getStopIndex());
+						}
+						else{
+						//System.out.println(offSymbol.getStartIndex()+" "+offSymbol.getStopIndex());
+						marker.setAttribute(IMarker.CHAR_START, offSymbol.getStartIndex());
+						marker.setAttribute(IMarker.CHAR_END, offSymbol.getStopIndex());
+						}
 					}
 				} catch (CoreException ex) {
 
