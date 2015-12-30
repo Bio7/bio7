@@ -33,7 +33,9 @@ public class UnderlineListener extends BaseErrorListener {
 			underlineError(recognizer,(Token)offendingSymbol, line, charPositionInLine);
 			}
         //msg=msg.replace("'", "");
+		
         msg=msg.replace("\\r\\n", "\n");
+		msg=msg.replace("\\n", "\n");
 
 		if (offendingSymbol != null) {
 			offSymbol = (Token) offendingSymbol;
@@ -90,18 +92,7 @@ public class UnderlineListener extends BaseErrorListener {
 					else {
 						marker.setAttribute(IMarker.TEXT, "NA");
 					}
-					/* Correct the underline error if it is */
-					if ((lineOffsetStart + charPositionInLine) + 1 + offSymbolTokenLength > document.getLength()) {
-						// marker.setAttribute(IMarker.CHAR_START,
-						// (lineOffsetStart + charPositionInLine) - 1);
-						// marker.setAttribute(IMarker.CHAR_END,
-						// (lineOffsetStart + charPositionInLine));
-
-					} else {
-						marker.setAttribute(IMarker.CHAR_START, (lineOffsetStart + charPositionInLine));
-						marker.setAttribute(IMarker.CHAR_END,
-								(lineOffsetStart + charPositionInLine) + 1 + offSymbolTokenLength);
-					}
+					createUnderlineMarker(marker);
 				} catch (CoreException ex) {
 
 					ex.printStackTrace();
@@ -109,7 +100,7 @@ public class UnderlineListener extends BaseErrorListener {
 				warn = false;// reset warning flag!
 			} else {
 				try {
-					System.out.println(offSymbol.getText());
+					//System.out.println(offSymbol.getText());
 					marker = resource.createMarker(IMarker.PROBLEM);
 					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
 					// marker.setAttribute(IMarker.MESSAGE, "line " + line + ":"
@@ -125,25 +116,7 @@ public class UnderlineListener extends BaseErrorListener {
 					else {
 						marker.setAttribute(IMarker.TEXT, "NA");
 					}
-					/* Correct the underline error if it is */
-					if (offSymbol.getStartIndex()==offSymbol.getStopIndex()) {
-						marker.setAttribute(IMarker.CHAR_START, offSymbol.getStartIndex());
-						marker.setAttribute(IMarker.CHAR_END, offSymbol.getStopIndex()+1);
-						
-
-					} else {
-						
-						if(offSymbol.getText().equals(System.lineSeparator())){
-							
-							marker.setAttribute(IMarker.CHAR_START, offSymbol.getStartIndex()-1);
-							marker.setAttribute(IMarker.CHAR_END, offSymbol.getStopIndex());
-						}
-						else{
-						//System.out.println(offSymbol.getStartIndex()+" "+offSymbol.getStopIndex());
-						marker.setAttribute(IMarker.CHAR_START, offSymbol.getStartIndex());
-						marker.setAttribute(IMarker.CHAR_END, offSymbol.getStopIndex());
-						}
-					}
+					createUnderlineMarker(marker);
 				} catch (CoreException ex) {
 
 					ex.printStackTrace();
@@ -151,6 +124,28 @@ public class UnderlineListener extends BaseErrorListener {
 			}
 		}
 
+	}
+
+	private void createUnderlineMarker(IMarker marker) throws CoreException {
+		/* Correct the underline error if start and stop index is equal!*/
+		if (offSymbol.getStartIndex()==offSymbol.getStopIndex()) {
+			marker.setAttribute(IMarker.CHAR_START, offSymbol.getStartIndex());
+			marker.setAttribute(IMarker.CHAR_END, offSymbol.getStopIndex()+1);
+			
+
+		} else {
+			/* Correct the underline error if it is a linebreak!*/
+			if(offSymbol.getText().equals(System.lineSeparator())){
+				
+				marker.setAttribute(IMarker.CHAR_START, offSymbol.getStartIndex()-1);
+				marker.setAttribute(IMarker.CHAR_END, offSymbol.getStopIndex());
+			}
+			else{
+			//System.out.println(offSymbol.getStartIndex()+" "+offSymbol.getStopIndex());
+			marker.setAttribute(IMarker.CHAR_START, offSymbol.getStartIndex());
+			marker.setAttribute(IMarker.CHAR_END, offSymbol.getStopIndex());
+			}
+		}
 	}
 
 	protected void underlineError(Recognizer recognizer, Token offendingToken, int line, int charPositionInLine) {
