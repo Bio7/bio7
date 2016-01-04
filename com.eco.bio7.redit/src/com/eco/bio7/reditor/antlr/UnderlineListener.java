@@ -27,6 +27,7 @@ public class UnderlineListener extends BaseErrorListener {
 
 	public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine,
 			String msg, RecognitionException e) {
+		System.out.println("Cause: ");
 		String quickFix = null;
 		{
 			//System.err.println("line "+line+":"+charPositionInLine+" "+msg); 
