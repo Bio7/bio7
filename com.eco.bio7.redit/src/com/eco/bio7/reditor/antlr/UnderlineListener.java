@@ -27,16 +27,16 @@ public class UnderlineListener extends BaseErrorListener {
 
 	public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine,
 			String msg, RecognitionException e) {
-		System.out.println("Cause: ");
+
 		String quickFix = null;
 		{
-			//System.err.println("line "+line+":"+charPositionInLine+" "+msg); 
-			underlineError(recognizer,(Token)offendingSymbol, line, charPositionInLine);
-			}
-        //msg=msg.replace("'", "");
-		
-        msg=msg.replace("\\r\\n", "\n");
-		msg=msg.replace("\\n", "\n");
+			// System.err.println("line "+line+":"+charPositionInLine+" "+msg);
+			underlineError(recognizer, (Token) offendingSymbol, line, charPositionInLine);
+		}
+		// msg=msg.replace("'", "");
+
+		msg = msg.replace("\\r\\n", "\n");
+		msg = msg.replace("\\n", "\n");
 
 		if (offendingSymbol != null) {
 			offSymbol = (Token) offendingSymbol;
@@ -101,7 +101,7 @@ public class UnderlineListener extends BaseErrorListener {
 				warn = false;// reset warning flag!
 			} else {
 				try {
-					//System.out.println(offSymbol.getText());
+					// System.out.println(offSymbol.getText());
 					marker = resource.createMarker(IMarker.PROBLEM);
 					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
 					// marker.setAttribute(IMarker.MESSAGE, "line " + line + ":"
@@ -128,23 +128,22 @@ public class UnderlineListener extends BaseErrorListener {
 	}
 
 	private void createUnderlineMarker(IMarker marker) throws CoreException {
-		/* Correct the underline error if start and stop index is equal!*/
-		if (offSymbol.getStartIndex()==offSymbol.getStopIndex()) {
+		/* Correct the underline error if start and stop index is equal! */
+		if (offSymbol.getStartIndex() == offSymbol.getStopIndex()) {
 			marker.setAttribute(IMarker.CHAR_START, offSymbol.getStartIndex());
-			marker.setAttribute(IMarker.CHAR_END, offSymbol.getStopIndex()+1);
-			
+			marker.setAttribute(IMarker.CHAR_END, offSymbol.getStopIndex() + 1);
 
 		} else {
-			/* Correct the underline error if it is a linebreak!*/
-			if(offSymbol.getText().equals(System.lineSeparator())){
-				
-				marker.setAttribute(IMarker.CHAR_START, offSymbol.getStartIndex()-1);
+			/* Correct the underline error if it is a linebreak! */
+			if (offSymbol.getText().equals(System.lineSeparator())) {
+
+				marker.setAttribute(IMarker.CHAR_START, offSymbol.getStartIndex() - 1);
 				marker.setAttribute(IMarker.CHAR_END, offSymbol.getStopIndex());
-			}
-			else{
-			//System.out.println(offSymbol.getStartIndex()+" "+offSymbol.getStopIndex());
-			marker.setAttribute(IMarker.CHAR_START, offSymbol.getStartIndex());
-			marker.setAttribute(IMarker.CHAR_END, offSymbol.getStopIndex());
+			} else {
+				// System.out.println(offSymbol.getStartIndex()+"
+				// "+offSymbol.getStopIndex());
+				marker.setAttribute(IMarker.CHAR_START, offSymbol.getStartIndex());
+				marker.setAttribute(IMarker.CHAR_END, offSymbol.getStopIndex() + 1);
 			}
 		}
 	}
@@ -153,18 +152,18 @@ public class UnderlineListener extends BaseErrorListener {
 		CommonTokenStream tokens = (CommonTokenStream) recognizer.getInputStream();
 		String input = tokens.getTokenSource().getInputStream().toString();
 		String[] lines = input.split("\n");
-		if(line>0&&line<=lines.length-1){
-		String errorLine = lines[line - 1];
-		System.err.println(errorLine);
-		for (int i = 0; i < charPositionInLine; i++)
-			System.err.print(" ");
-		int start = offendingToken.getStartIndex();
-		int stop = offendingToken.getStopIndex();
-		if (start >= 0 && stop >= 0) {
-			for (int i = start; i <= stop; i++)
-				System.err.print("^");
-		}
-		System.err.println();
+		if (line > 0 && line <= lines.length - 1) {
+			String errorLine = lines[line - 1];
+			System.err.println(errorLine);
+			for (int i = 0; i < charPositionInLine; i++)
+				System.err.print(" ");
+			int start = offendingToken.getStartIndex();
+			int stop = offendingToken.getStopIndex();
+			if (start >= 0 && stop >= 0) {
+				for (int i = start; i <= stop; i++)
+					System.err.print("^");
+			}
+			System.err.println();
 		}
 	}
 
