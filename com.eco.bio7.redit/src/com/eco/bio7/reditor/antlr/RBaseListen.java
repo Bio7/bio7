@@ -15,15 +15,21 @@ import java.util.Stack;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Parser;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.misc.NotNull;
+import org.antlr.v4.runtime.tree.ParseTreeProperty;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import com.eco.bio7.reditor.Bio7REditorPlugin;
+import com.eco.bio7.reditor.antlr.ref.FunctionSymbol;
+import com.eco.bio7.reditor.antlr.ref.GlobalScope;
+import com.eco.bio7.reditor.antlr.ref.Scope;
+import com.eco.bio7.reditor.antlr.ref.RVariableSymbol;
 import com.eco.bio7.reditor.outline.REditorOutlineNode;
 import com.eco.bio7.reditors.REditor;
 
@@ -34,19 +40,38 @@ public class RBaseListen extends RBaseListener {
 	// public ClassModel cm = new ClassModel();
 	private REditor editor;
 	private Parser parser;
-	private Stack<REditorOutlineNode> methods;// A stack for nested nodes!
-	private Stack<RScope> scopes;
+	private Stack<REditorOutlineNode> methods = new Stack<REditorOutlineNode>();// A
+																				// stack
+																				// for
+																				// nested
+																				// nodes!
+	private Stack<RScope> scopes = new Stack<RScope>();;
 	private IPreferenceStore store;
+	public ParseTreeProperty<Scope> scopeNew = new ParseTreeProperty<Scope>();
+	public GlobalScope globals;
+	public Scope currentScope; // define symbols in this scop
 
 	public RBaseListen(CommonTokenStream tokens, REditor editor, Parser parser) {
 		this.tokens = tokens;
 		this.editor = editor;
 		this.parser = parser;
-		methods = new Stack<REditorOutlineNode>();
-		scopes = new Stack<RScope>();
-		scopes.push(new RScope(null));
+
 		store = Bio7REditorPlugin.getDefault().getPreferenceStore();
 
+	}
+
+	public void enterProg(RParser.ProgContext ctx) {
+
+		scopes.push(new RScope(null));
+
+		globals = new GlobalScope(null);
+		currentScope = globals;
+
+	}
+
+	public void exitProg(RParser.ProgContext ctx) {
+
+		System.out.println(globals);
 	}
 
 	@Override
@@ -152,6 +177,9 @@ public class RBaseListen extends RBaseListener {
 		if (methods.empty() == false) {
 			methods.pop();
 		}
+		if (currentScope.getEnclosingScope() != null) {
+			currentScope = currentScope.getEnclosingScope(); // pop scope
+		}
 
 	}
 
@@ -166,6 +194,7 @@ public class RBaseListen extends RBaseListener {
 		 * Insert function as current scope with a parent current scope
 		 * (scope.peek)!
 		 */
+
 		scopes.push(new RScope(scopes.peek()));
 
 		Interval sourceInterval = ctx.getSourceInterval();
@@ -196,7 +225,14 @@ public class RBaseListen extends RBaseListener {
 			String op = ctx.getParent().getChild(posTree - 1).getText();
 			String name = ctx.getParent().getChild(posTree - 2).getText();
 
-			if (op.equals("<-") || op.equals("<<-")) {
+			
+
+			if (op.equals("<-") || op.equals("<<-")|| op.equals("=")) {
+				
+				// push new scope by making new one that points to enclosing scope
+				FunctionSymbol function = new FunctionSymbol(name, currentScope);
+				currentScope.define(function); // Define function in current scope
+				scopeNew.put(ctx, function); // Push: set function's parent to
 
 				if (methods.size() == 0) {
 
@@ -209,6 +245,10 @@ public class RBaseListen extends RBaseListener {
 
 			}
 		} else if (posTree == 0) {
+			// push new scope by making new one that points to enclosing scope
+			FunctionSymbol function = new FunctionSymbol(ctx.getText(), currentScope);
+			currentScope.define(function); // Define function in current scope
+			scopeNew.put(ctx, function); // Push: set function's parent to
 			if (methods.size() == 0) {
 
 				methods.push(new REditorOutlineNode(ctx.getText(), lineMethod, "function", editor.baseNode));
@@ -319,7 +359,7 @@ public class RBaseListen extends RBaseListener {
 		Interval sourceInterval = ctx.getSourceInterval();
 		int start = sourceInterval.a;
 		Token assign = tokens.get(start + 2);
-
+       //System.out.println(ctx.ASSIGN_OP().getText());
 		String subExpr = assign.getText();
 
 		if (subExpr.equals("function") == false) {
@@ -339,6 +379,9 @@ public class RBaseListen extends RBaseListener {
 						if (checkVarName(name)) {
 							RScope scope = scopes.peek();
 							scope.add(name);
+							
+							 RVariableSymbol var = new RVariableSymbol(name);
+						      currentScope.define(var); // Define symbol in current scope
 
 							new REditorOutlineNode(name, line, "variable", editor.baseNode);
 						}
@@ -347,6 +390,9 @@ public class RBaseListen extends RBaseListener {
 						if (checkVarName(name)) {
 							RScope scope = scopes.peek();
 							scope.add(name);
+							
+							RVariableSymbol var = new RVariableSymbol(name);
+						      currentScope.define(var); // Define symbol in current scope
 
 							new REditorOutlineNode(name, line, "variable", methods.peek());
 						}
@@ -439,14 +485,14 @@ public class RBaseListen extends RBaseListener {
 
 	@Override
 	public void exitE20CallFunction(RParser.E20CallFunctionContext ctx) {
-		/*Interval sourceInterval = ctx.getSourceInterval();
-		int start = sourceInterval.a;
-		String name = tokens.get(start).getText();
-		String op = tokens.get(start + 1).getText();
-		if(op.equals("<-")||op.equals("=")||op.equals("<<-")){
-			name=tokens.get(start + 2).getText();
-		}
-		System.out.println("function:"+name);*/
+		/*
+		 * Interval sourceInterval = ctx.getSourceInterval(); int start =
+		 * sourceInterval.a; String name = tokens.get(start).getText(); String
+		 * op = tokens.get(start + 1).getText();
+		 * if(op.equals("<-")||op.equals("=")||op.equals("<<-")){
+		 * name=tokens.get(start + 2).getText(); }
+		 * System.out.println("function:"+name);
+		 */
 	}
 
 	/*
@@ -502,7 +548,7 @@ public class RBaseListen extends RBaseListener {
 		parser.notifyErrorListeners(ctx.extra, "Err7:Too many parentheses in if condition!", null);
 
 	}
-	
+
 	public void exitErr8(RParser.Err8Context ctx) {
 
 		// int index = ctx.extra.getStartIndex();
@@ -523,36 +569,35 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	/*Here we create some warnings from the parser!*/
-	  public void exitWarn12(RParser.Warn12Context ctx) {
-	  
-	  parser.notifyErrorListeners(ctx.extra,
-	  "Warn12:Wrong constant: 'TRUE' required!", null);
-	  
-	  }
-	  
-	  public void exitWarn13(RParser.Warn13Context ctx) {
-	  
-	  parser.notifyErrorListeners(ctx.extra,
-	  "Warn13:Wrong constant: 'FALSE' required!", null);
-	  
-	  }
-	  
-	  public void exitWarn14(RParser.Warn14Context ctx) {
-	  
-	  parser.notifyErrorListeners(ctx.extra,
-	  "Warn14:Wrong constant: 'NULL' required!", null);
-	  
-	  }
-	  
-	  public void exitWarn15(RParser.Warn15Context ctx) {
-	  
-	  parser.notifyErrorListeners(ctx.extra,
-	  "Warn15:Wrong constant: 'NA' required!", null);
-	  
-	  }
-	 
-   /*With this error message we produce QuickFixes. The errors start with 'Err' to seperate them later in the RBaseListen class!*/
+	/* Here we create some warnings from the parser! */
+	public void exitWarn12(RParser.Warn12Context ctx) {
+
+		parser.notifyErrorListeners(ctx.extra, "Warn12:Wrong constant: 'TRUE' required!", null);
+
+	}
+
+	public void exitWarn13(RParser.Warn13Context ctx) {
+
+		parser.notifyErrorListeners(ctx.extra, "Warn13:Wrong constant: 'FALSE' required!", null);
+
+	}
+
+	public void exitWarn14(RParser.Warn14Context ctx) {
+
+		parser.notifyErrorListeners(ctx.extra, "Warn14:Wrong constant: 'NULL' required!", null);
+
+	}
+
+	public void exitWarn15(RParser.Warn15Context ctx) {
+
+		parser.notifyErrorListeners(ctx.extra, "Warn15:Wrong constant: 'NA' required!", null);
+
+	}
+
+	/*
+	 * With this error message we produce QuickFixes. The errors start with
+	 * 'Err' to seperate them later in the RBaseListen class!
+	 */
 	public void exitErr16(RParser.Err16Context ctx) {
 
 		parser.notifyErrorListeners(ctx.extra, "Err16:Too many braces in while statement!", null);
@@ -578,23 +623,24 @@ public class RBaseListen extends RBaseListener {
 		parser.notifyErrorListeners(firstToken, "Err21:Wrong comparison!", null);
 
 	}
-	
-	public void exitErr22(RParser.Err22Context ctx){
+
+	public void exitErr22(RParser.Err22Context ctx) {
 
 		Token firstToken = ctx.start;
-		parser.notifyErrorListeners(firstToken, "Unknown Token!", null);
+		parser.notifyErrorListeners(firstToken, "Err22:Unknown Token!", null);
 
 	}
+
 	@Override
 	public void exitE30(RParser.E30Context ctx) {
-		/*Interval sourceInterval = ctx.getSourceInterval();
-		int start = sourceInterval.a;
-		String name = tokens.get(start).getText();
-		String op = tokens.get(start + 1).getText();
-		if(op.equals("<-")||op.equals("=")||op.equals("<<-")){
-			name=tokens.get(start + 2).getText();
-		}
-		System.out.println("ID:"+name);*/
+		/*
+		 * Interval sourceInterval = ctx.getSourceInterval(); int start =
+		 * sourceInterval.a; String name = tokens.get(start).getText(); String
+		 * op = tokens.get(start + 1).getText();
+		 * if(op.equals("<-")||op.equals("=")||op.equals("<<-")){
+		 * name=tokens.get(start + 2).getText(); }
+		 * System.out.println("ID:"+name);
+		 */
 	}
 
 }

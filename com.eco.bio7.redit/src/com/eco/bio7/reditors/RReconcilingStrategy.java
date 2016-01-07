@@ -6,7 +6,12 @@ package com.eco.bio7.reditors;
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License - v 1.0
  * which is available at http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Used as a basis for a R editor.
+ * Extended with ANTLR parser and R editor context.
+ *(c) 2014 - 2016 Marcel Austenfeld
  *******************************************************************************/
+
 
 import java.util.ArrayList;
 import java.util.Vector;
@@ -35,6 +40,7 @@ import com.eco.bio7.reditor.antlr.RFilter;
 import com.eco.bio7.reditor.antlr.RLexer;
 import com.eco.bio7.reditor.antlr.RParser;
 import com.eco.bio7.reditor.antlr.UnderlineListener;
+import com.eco.bio7.reditor.antlr.ref.RefPhase;
 import com.eco.bio7.reditor.outline.REditorOutlineNode;
 
 
@@ -139,22 +145,22 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 					e1.printStackTrace();
 				}
 				 /*Delete all problem markers!*/
-				IMarker[] markers = findMyMarkers(resource);
+				/*IMarker[] markers = findMyMarkers(resource);
 				int lineNumb = -1;
 				for (int i = 0; i < markers.length; i++) {
 
 					try {
 						lineNumb = (int) markers[i].getAttribute(IMarker.LINE_NUMBER);
 
-						/*if (lineNumb == line) {
+						if (lineNumb == line) {
 							markers[i].delete();
 							// System.out.println(recognizer.getRuleNames()[i]);
-						}*/
+						}
 					} catch (CoreException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
-				}
+				}*/
 			}
 		}
 		
@@ -197,6 +203,9 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 
 		list.startStop.clear();
 		walker.walk(list, tree);
+		
+		RefPhase ref = new RefPhase(list.globals, list.scopeNew);
+        walker.walk(ref, tree);
 		
 		/*long startTime = System.currentTimeMillis();
 		

@@ -106,6 +106,11 @@ public class RQuickFixSolutions  {
 
 						new RQuickFixCompletionProposal("Replace '=<' with '<='", offset, endChar, "<=", 2) };
 				break;
+			case "Err22":
+				prop = new ICompletionProposal[] {
+
+						new RQuickFixCompletionProposal("Remove unknown token", offset, endChar, "", 1) };
+				break;
 
 			default:
 				break;

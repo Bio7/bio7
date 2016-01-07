@@ -20,6 +20,7 @@ public class UnderlineListener extends BaseErrorListener {
 	private boolean warn = false;
 	private Token offSymbol;
 	private int offSymbolTokenLength = 0;
+	String quickFix = null;
 
 	public UnderlineListener(REditor editor) {
 		this.editor = editor;
@@ -28,7 +29,7 @@ public class UnderlineListener extends BaseErrorListener {
 	public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine,
 			String msg, RecognitionException e) {
 
-		String quickFix = null;
+		
 		{
 			// System.err.println("line "+line+":"+charPositionInLine+" "+msg);
 			underlineError(recognizer, (Token) offendingSymbol, line, charPositionInLine);
@@ -80,6 +81,7 @@ public class UnderlineListener extends BaseErrorListener {
 				try {
 					marker = resource.createMarker(IMarker.PROBLEM);
 					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+					marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_NORMAL);
 					// marker.setAttribute(IMarker.MESSAGE, "line " + line + ":"
 					// +
 					// charPositionInLine + " " + msg);
@@ -87,6 +89,7 @@ public class UnderlineListener extends BaseErrorListener {
 					marker.setAttribute(IMarker.LINE_NUMBER, line);
 					marker.setAttribute(IMarker.LOCATION, lineOffsetStart + charPositionInLine);
 					if (quickFix != null) {
+						marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
 						marker.setAttribute(IMarker.TEXT, quickFix);
 					}
 
@@ -104,6 +107,7 @@ public class UnderlineListener extends BaseErrorListener {
 					// System.out.println(offSymbol.getText());
 					marker = resource.createMarker(IMarker.PROBLEM);
 					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+					marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_NORMAL);
 					// marker.setAttribute(IMarker.MESSAGE, "line " + line + ":"
 					// +
 					// charPositionInLine + " " + msg);
@@ -111,6 +115,7 @@ public class UnderlineListener extends BaseErrorListener {
 					marker.setAttribute(IMarker.LINE_NUMBER, line);
 					marker.setAttribute(IMarker.LOCATION, lineOffsetStart + charPositionInLine);
 					if (quickFix != null) {
+						marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
 						marker.setAttribute(IMarker.TEXT, quickFix);
 					}
 

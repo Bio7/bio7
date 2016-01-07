@@ -39,6 +39,7 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 		/* Text is not NA! */
 		if (text != null && text.startsWith("Err")) {
 			// errorCode = text;
+			//System.out.println("true to fix");
 			return true;
 		}
 		/* Text is not NA! */
