@@ -40,7 +40,7 @@ import com.eco.bio7.reditor.antlr.RFilter;
 import com.eco.bio7.reditor.antlr.RLexer;
 import com.eco.bio7.reditor.antlr.RParser;
 import com.eco.bio7.reditor.antlr.UnderlineListener;
-import com.eco.bio7.reditor.antlr.ref.RefPhase;
+import com.eco.bio7.reditor.antlr.ref.RRefPhaseListen;
 import com.eco.bio7.reditor.outline.REditorOutlineNode;
 
 
@@ -204,7 +204,7 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 		list.startStop.clear();
 		walker.walk(list, tree);
 		
-		RefPhase ref = new RefPhase(list.globals, list.scopeNew);
+		RRefPhaseListen ref = new RRefPhaseListen(list.globals, list.scopeNew);
         walker.walk(ref, tree);
 		
 		/*long startTime = System.currentTimeMillis();

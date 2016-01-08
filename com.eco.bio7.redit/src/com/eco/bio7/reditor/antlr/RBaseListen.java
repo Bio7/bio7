@@ -12,6 +12,7 @@ package com.eco.bio7.reditor.antlr;
 
 import java.util.ArrayList;
 import java.util.Stack;
+import java.util.UUID;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Parser;
@@ -26,8 +27,8 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import com.eco.bio7.reditor.Bio7REditorPlugin;
-import com.eco.bio7.reditor.antlr.ref.FunctionSymbol;
-import com.eco.bio7.reditor.antlr.ref.GlobalScope;
+import com.eco.bio7.reditor.antlr.ref.RFunctionSymbol;
+import com.eco.bio7.reditor.antlr.ref.RGlobalScope;
 import com.eco.bio7.reditor.antlr.ref.Scope;
 import com.eco.bio7.reditor.antlr.ref.RVariableSymbol;
 import com.eco.bio7.reditor.outline.REditorOutlineNode;
@@ -48,7 +49,7 @@ public class RBaseListen extends RBaseListener {
 	private Stack<RScope> scopes = new Stack<RScope>();;
 	private IPreferenceStore store;
 	public ParseTreeProperty<Scope> scopeNew = new ParseTreeProperty<Scope>();
-	public GlobalScope globals;
+	public RGlobalScope globals;
 	public Scope currentScope; // define symbols in this scop
 
 	public RBaseListen(CommonTokenStream tokens, REditor editor, Parser parser) {
@@ -64,7 +65,7 @@ public class RBaseListen extends RBaseListener {
 
 		scopes.push(new RScope(null));
 
-		globals = new GlobalScope(null);
+		globals = new RGlobalScope(null);
 		currentScope = globals;
 
 	}
@@ -177,9 +178,8 @@ public class RBaseListen extends RBaseListener {
 		if (methods.empty() == false) {
 			methods.pop();
 		}
-		if (currentScope.getEnclosingScope() != null) {
-			currentScope = currentScope.getEnclosingScope(); // pop scope
-		}
+
+		currentScope = currentScope.getEnclosingScope(); // pop scope
 
 	}
 
@@ -225,14 +225,16 @@ public class RBaseListen extends RBaseListener {
 			String op = ctx.getParent().getChild(posTree - 1).getText();
 			String name = ctx.getParent().getChild(posTree - 2).getText();
 
-			
+			if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
 
-			if (op.equals("<-") || op.equals("<<-")|| op.equals("=")) {
-				
-				// push new scope by making new one that points to enclosing scope
-				FunctionSymbol function = new FunctionSymbol(name, currentScope);
-				currentScope.define(function); // Define function in current scope
-				scopeNew.put(ctx, function); // Push: set function's parent to
+				RFunctionSymbol function = new RFunctionSymbol(name, currentScope);
+				currentScope.define(function); // Define function in current
+												// scope
+				scopeNew.put(ctx, function);
+				currentScope = function;
+
+				// push new scope by making new one that points to enclosing
+				// scope
 
 				if (methods.size() == 0) {
 
@@ -245,16 +247,21 @@ public class RBaseListen extends RBaseListener {
 
 			}
 		} else if (posTree == 0) {
-			// push new scope by making new one that points to enclosing scope
-			FunctionSymbol function = new FunctionSymbol(ctx.getText(), currentScope);
+			RFunctionSymbol function = new RFunctionSymbol(UUID.randomUUID().toString(), currentScope);
 			currentScope.define(function); // Define function in current scope
-			scopeNew.put(ctx, function); // Push: set function's parent to
+			scopeNew.put(ctx, function);
+			currentScope = function;
+			// Push: set function's parent to
+			// push new scope by making new one that points to enclosing scope
+
 			if (methods.size() == 0) {
 
-				methods.push(new REditorOutlineNode(ctx.getText(), lineMethod, "function", editor.baseNode));
+				methods.push(
+						new REditorOutlineNode(UUID.randomUUID().toString(), lineMethod, "function", editor.baseNode));
 
 			} else {
-				methods.push(new REditorOutlineNode(ctx.getText(), lineMethod, "function", methods.peek()));
+				methods.push(
+						new REditorOutlineNode(UUID.randomUUID().toString(), lineMethod, "function", methods.peek()));
 
 			}
 
@@ -359,7 +366,7 @@ public class RBaseListen extends RBaseListener {
 		Interval sourceInterval = ctx.getSourceInterval();
 		int start = sourceInterval.a;
 		Token assign = tokens.get(start + 2);
-       //System.out.println(ctx.ASSIGN_OP().getText());
+		// System.out.println(ctx.ASSIGN_OP().getText());
 		String subExpr = assign.getText();
 
 		if (subExpr.equals("function") == false) {
@@ -379,9 +386,15 @@ public class RBaseListen extends RBaseListener {
 						if (checkVarName(name)) {
 							RScope scope = scopes.peek();
 							scope.add(name);
-							
-							 RVariableSymbol var = new RVariableSymbol(name);
-						      currentScope.define(var); // Define symbol in current scope
+
+							RVariableSymbol var = new RVariableSymbol(name);
+							if (currentScope != null) {
+								currentScope.define(var); // Define symbol in
+															// current scope
+							} else {
+								System.out.println("Current Scope is null");
+								;
+							}
 
 							new REditorOutlineNode(name, line, "variable", editor.baseNode);
 						}
@@ -390,9 +403,10 @@ public class RBaseListen extends RBaseListener {
 						if (checkVarName(name)) {
 							RScope scope = scopes.peek();
 							scope.add(name);
-							
+
 							RVariableSymbol var = new RVariableSymbol(name);
-						      currentScope.define(var); // Define symbol in current scope
+							currentScope.define(var); // Define symbol in
+														// current scope
 
 							new REditorOutlineNode(name, line, "variable", methods.peek());
 						}
@@ -407,7 +421,9 @@ public class RBaseListen extends RBaseListener {
 						if (checkVarName(name)) {
 							RScope scope = scopes.peek();
 							scope.add(name);
-
+							RVariableSymbol var = new RVariableSymbol(name);
+							currentScope.define(var); // Define symbol in
+														// current scope
 							new REditorOutlineNode(name, line, "variable", editor.baseNode);
 						}
 
@@ -415,6 +431,9 @@ public class RBaseListen extends RBaseListener {
 						if (checkVarName(name)) {
 							RScope scope = scopes.peek();
 							scope.add(name);
+							RVariableSymbol var = new RVariableSymbol(name);
+							currentScope.define(var); // Define symbol in
+														// current scope
 
 							new REditorOutlineNode(name, line, "variable", methods.peek());
 						}
