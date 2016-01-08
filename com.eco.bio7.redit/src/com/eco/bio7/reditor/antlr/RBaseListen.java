@@ -72,106 +72,9 @@ public class RBaseListen extends RBaseListener {
 
 	public void exitProg(RParser.ProgContext ctx) {
 
-		System.out.println(globals);
+		//System.out.println(globals);
 	}
 
-	@Override
-	/*
-	 * public void exitExprError(@NotNull RParser.ExprErrorContext ctx) {
-	 * 
-	 * parser.notifyErrorListeners(ctx.start, "One Opening Parentheses to much!"
-	 * , null);
-	 * 
-	 * }
-	 *//**
-		 * {@inheritDoc}
-		 * <p/>
-		 * The default implementation does nothing.
-		 *//*
-		 * @Override public void exitExprError2(@NotNull
-		 * RParser.ExprError2Context ctx) {
-		 * 
-		 * 
-		 * 
-		 * Notify the parser! parser.notifyErrorListeners(ctx.stop,
-		 * "One Closing Parentheses to much!", null); }
-		 */
-	/*
-	 * public void enterAmountRightBraceError(@NotNull
-	 * RParser.AmountRightBraceErrorContext ctx) { }
-	 * 
-	 * public void exitAmountRightBraceError(@NotNull
-	 * RParser.AmountRightBraceErrorContext ctx) {
-	 * 
-	 * Interval sourceInterval = ctx.getSourceInterval(); int count = -1; int
-	 * start = sourceInterval.a; We calculate the token position from the
-	 * expression! List<Token> firstToken = tokens.get(sourceInterval.a,
-	 * sourceInterval.b); for (int i = 0; i < firstToken.size(); i++) { //
-	 * System.out.println(firstToken.get(i).getText()); if
-	 * (firstToken.get(i).getText().equals("(")) { count = i; break; } } //
-	 * System.out.println(count);
-	 * 
-	 * Notify the parser! parser.notifyErrorListeners(ctx.stop,
-	 * "One Closing Brace to much!", null); }
-	 */
-	/*
-	 * public void enterAmountLeftBraceError2(@NotNull
-	 * RParser.AmountLeftBraceError2Context ctx) {
-	 * 
-	 * 
-	 * }
-	 * 
-	 * public void exitAmountLeftBraceError2(@NotNull
-	 * RParser.AmountLeftBraceError2Context ctx) { Interval sourceInterval =
-	 * ctx.getSourceInterval();
-	 * 
-	 * int count = -1; int start = sourceInterval.a; We calculate the token
-	 * position from the expression! List<Token> firstToken =
-	 * tokens.get(sourceInterval.a, sourceInterval.b); for (int i = 0; i <
-	 * firstToken.size(); i++) { //
-	 * System.out.println(firstToken.get(i).getText()); if
-	 * (firstToken.get(i).getText().equals("(")) { count = i; break; } }
-	 * 
-	 * ctx.getChild(2).getSourceInterval(); System.out.println(
-	 * "This brace is at:" +ctx.start.getCharPositionInLine());
-	 * 
-	 * Notify the parser! parser.notifyErrorListeners(ctx.start,
-	 * "One Opening Brace to much!", null);
-	 * 
-	 * }
-	 */
-	/*
-	 * public void enterClosingRightBraceError(@NotNull
-	 * RParser.ClosingRightBraceErrorContext ctx) {
-	 * 
-	 * 
-	 * }
-	 * 
-	 * public void exitClosingRightBraceError(@NotNull
-	 * RParser.ClosingRightBraceErrorContext ctx) {
-	 * 
-	 * Notify the parser! parser.notifyErrorListeners(ctx.stop,
-	 * "Closing Brace Missing!", null);
-	 * 
-	 * }
-	 * 
-	 * public void exitClosingLeftBraceError(@NotNull
-	 * RParser.ClosingLeftBraceErrorContext ctx) {
-	 * 
-	 * Notify the parser! parser.notifyErrorListeners(ctx.start,
-	 * "Opening Brace Missing!", null);
-	 * 
-	 * }
-	 */
-	/*
-	 * public void exitClosingLeftEmptyBraceError(@NotNull
-	 * RParser.ClosingLeftEmptyBraceErrorContext ctx) {
-	 * 
-	 * Notify the parser! parser.notifyErrorListeners(ctx.start,
-	 * "Right Brace Missing!", null);
-	 * 
-	 * }
-	 */
 	public void exitE19DefFunction(RParser.E19DefFunctionContext ctx) {
 		/* Exit scope! */
 		scopes.pop();
@@ -200,14 +103,11 @@ public class RBaseListen extends RBaseListener {
 		Interval sourceInterval = ctx.getSourceInterval();
 
 		Token firstToken = tokens.get(sourceInterval.a);
-		// System.out.println(ctx.getParent().getChild(0).getText());
-		int lineStart = firstToken.getStartIndex();
-		// String ct=ctx.getText();
 
-		// System.out.println("function start at line:"+lineStart);
+		int lineStart = firstToken.getStartIndex();
+
 		Token lastToken = tokens.get(sourceInterval.b);
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
-		// String ct2=ctx.getText();
 
 		// Add to the editor folding action if enabled in the preferences!
 		if (store.getBoolean("FUNCTIONS_FOLDING")) {
@@ -226,15 +126,12 @@ public class RBaseListen extends RBaseListener {
 			String name = ctx.getParent().getChild(posTree - 2).getText();
 
 			if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
-
+				/* Create a new scope and add the function (symbol)! */
 				RFunctionSymbol function = new RFunctionSymbol(name, currentScope);
-				currentScope.define(function); // Define function in current
+				currentScope.define(function); // Define function in current //
 												// scope
 				scopeNew.put(ctx, function);
 				currentScope = function;
-
-				// push new scope by making new one that points to enclosing
-				// scope
 
 				if (methods.size() == 0) {
 
@@ -247,21 +144,20 @@ public class RBaseListen extends RBaseListener {
 
 			}
 		} else if (posTree == 0) {
-			RFunctionSymbol function = new RFunctionSymbol(UUID.randomUUID().toString(), currentScope);
+			/* Create a new scope and add the function (symbol)! */
+			RFunctionSymbol function = new RFunctionSymbol(ctx.start.getText(), currentScope);
 			currentScope.define(function); // Define function in current scope
 			scopeNew.put(ctx, function);
 			currentScope = function;
-			// Push: set function's parent to
-			// push new scope by making new one that points to enclosing scope
 
 			if (methods.size() == 0) {
 
 				methods.push(
-						new REditorOutlineNode(UUID.randomUUID().toString(), lineMethod, "function", editor.baseNode));
+						new REditorOutlineNode(ctx.start.getText(), lineMethod, "function", editor.baseNode));
 
 			} else {
 				methods.push(
-						new REditorOutlineNode(UUID.randomUUID().toString(), lineMethod, "function", methods.peek()));
+						new REditorOutlineNode(ctx.start.getText(), lineMethod, "function", methods.peek()));
 
 			}
 
@@ -386,15 +282,10 @@ public class RBaseListen extends RBaseListener {
 						if (checkVarName(name)) {
 							RScope scope = scopes.peek();
 							scope.add(name);
-
+							
+							/* Create a new a new var in current scope! */
 							RVariableSymbol var = new RVariableSymbol(name);
-							if (currentScope != null) {
-								currentScope.define(var); // Define symbol in
-															// current scope
-							} else {
-								System.out.println("Current Scope is null");
-								;
-							}
+							currentScope.define(var);
 
 							new REditorOutlineNode(name, line, "variable", editor.baseNode);
 						}
@@ -403,7 +294,7 @@ public class RBaseListen extends RBaseListener {
 						if (checkVarName(name)) {
 							RScope scope = scopes.peek();
 							scope.add(name);
-
+							/* Create a new a new var in current scope! */
 							RVariableSymbol var = new RVariableSymbol(name);
 							currentScope.define(var); // Define symbol in
 														// current scope
@@ -421,6 +312,7 @@ public class RBaseListen extends RBaseListener {
 						if (checkVarName(name)) {
 							RScope scope = scopes.peek();
 							scope.add(name);
+							/*Create a new a new var in current scope!*/
 							RVariableSymbol var = new RVariableSymbol(name);
 							currentScope.define(var); // Define symbol in
 														// current scope
@@ -431,9 +323,9 @@ public class RBaseListen extends RBaseListener {
 						if (checkVarName(name)) {
 							RScope scope = scopes.peek();
 							scope.add(name);
+							/*Create a new a new var in current scope!*/
 							RVariableSymbol var = new RVariableSymbol(name);
-							currentScope.define(var); // Define symbol in
-														// current scope
+							currentScope.define(var); 
 
 							new REditorOutlineNode(name, line, "variable", methods.peek());
 						}

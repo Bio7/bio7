@@ -1,5 +1,8 @@
 package com.eco.bio7.reditor.antlr.ref;
 
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 import com.eco.bio7.reditor.antlr.RBaseListener;
 import com.eco.bio7.reditor.antlr.RParser;
@@ -8,10 +11,12 @@ public class RRefPhaseListen extends RBaseListener {
 	ParseTreeProperty<Scope> scopes;
 	RGlobalScope globals;
 	Scope currentScope; // resolve symbols starting in this scope
+	private CommonTokenStream tokens;
 
-	public RRefPhaseListen(RGlobalScope globals, ParseTreeProperty<Scope> scopes) {
+	public RRefPhaseListen(CommonTokenStream tokens,RGlobalScope globals, ParseTreeProperty<Scope> scopes) {
 		this.scopes = scopes;
 		this.globals = globals;
+		this.tokens=tokens;
 	}
 
 	public void enterProg(RParser.ProgContext ctx) {
@@ -59,7 +64,11 @@ public class RRefPhaseListen extends RBaseListener {
 	}
 
 	public void enterE20CallFunction(RParser.E20CallFunctionContext ctx) {
-		String funcName = ctx.start.getText();
+		/*Get the last token which should be the name of the called function!*/
+		Token stop = ctx.expr().getStop();
+		//Token lastToken = tokens.get(sourceInterval.b);
+		
+		String funcName = stop.getText();
 		RSymbol meth = currentScope.resolve(funcName);
 		if (meth == null)
 			System.out.println("Function: " + funcName + " is not available!");
