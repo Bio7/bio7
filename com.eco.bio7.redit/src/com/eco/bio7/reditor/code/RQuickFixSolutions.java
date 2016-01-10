@@ -79,6 +79,12 @@ public class RQuickFixSolutions  {
 						new RQuickFixCompletionProposal("Replace 'na' with 'NA'", offset, endChar, "NA", 2) };
 
 				break;
+			case "Warn16":
+				prop = new ICompletionProposal[] {
+
+						new RQuickFixCompletionProposal("Create function", offset, endChar, "function(){}", 0) };
+
+				break;
 			case "Err16":
 				prop = new ICompletionProposal[] {
 

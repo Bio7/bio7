@@ -32,7 +32,7 @@ public class UnderlineListener extends BaseErrorListener {
 		
 		{
 			// System.err.println("line "+line+":"+charPositionInLine+" "+msg);
-			underlineError(recognizer, (Token) offendingSymbol, line, charPositionInLine);
+			//underlineError(recognizer, (Token) offendingSymbol, line, charPositionInLine);
 		}
 		// msg=msg.replace("'", "");
 

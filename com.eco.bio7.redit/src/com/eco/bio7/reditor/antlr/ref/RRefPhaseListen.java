@@ -1,6 +1,7 @@
 package com.eco.bio7.reditor.antlr.ref;
 
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
@@ -12,11 +13,13 @@ public class RRefPhaseListen extends RBaseListener {
 	RGlobalScope globals;
 	Scope currentScope; // resolve symbols starting in this scope
 	private CommonTokenStream tokens;
+	private Parser parser;
 
-	public RRefPhaseListen(CommonTokenStream tokens,RGlobalScope globals, ParseTreeProperty<Scope> scopes) {
+	public RRefPhaseListen(CommonTokenStream tokens,RGlobalScope globals, ParseTreeProperty<Scope> scopes,Parser parser) {
 		this.scopes = scopes;
 		this.globals = globals;
 		this.tokens=tokens;
+		this.parser=parser;
 	}
 
 	public void enterProg(RParser.ProgContext ctx) {
@@ -70,11 +73,16 @@ public class RRefPhaseListen extends RBaseListener {
 		
 		String funcName = stop.getText();
 		RSymbol meth = currentScope.resolve(funcName);
-		if (meth == null)
-			System.out.println("Function: " + funcName + " is not available!");
+		if (meth == null){
+			parser.notifyErrorListeners(stop, "Warn16:Function not available?: " + funcName + " seems to be missing!", null);
+
+			//System.out.println("Function: " + funcName + " is not available!");
+		}
 
 		if (meth instanceof RVariableSymbol) {
 			// System.out.println("Function: "+funcName+" is not a function!");
+			//System.out.println("Function: " + funcName + " is not available!");
+			parser.notifyErrorListeners(stop, "Warn16:Function not available?: " + funcName + " seems to be missing!", null);
 
 		}
 
