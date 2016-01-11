@@ -7,6 +7,7 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 import com.eco.bio7.reditor.antlr.RBaseListener;
 import com.eco.bio7.reditor.antlr.RParser;
+import com.eco.bio7.rpreferences.template.RCompletionProcessor;
 
 public class RRefPhaseListen extends RBaseListener {
 	ParseTreeProperty<Scope> scopes;
@@ -72,6 +73,9 @@ public class RRefPhaseListen extends RBaseListener {
 		//Token lastToken = tokens.get(sourceInterval.b);
 		
 		String funcName = stop.getText();
+		
+		//RCompletionProcessor processor = getRconf().getProcessor();
+		
 		RSymbol meth = currentScope.resolve(funcName);
 		if (meth == null){
 			parser.notifyErrorListeners(stop, "Warn16:Function not available?: " + funcName + " seems to be missing!", null);

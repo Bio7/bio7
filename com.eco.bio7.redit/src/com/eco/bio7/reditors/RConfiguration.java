@@ -38,6 +38,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.ITextHoverExtension2;
+import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextAttribute;
@@ -276,11 +277,12 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 					if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false)
 						break;
-
-					length++;
-					if (offset + length >= doc.getLength()) {
+					if (offset + length >= doc.getLength()-1) {
+						
 						break;
 					}
+					length++;
+					
 				} else {
 					break;
 				}
@@ -362,6 +364,26 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 					RState.setBusy(false);
 				}
 			}
+			/*QuickFix operation!*/
+			/*if (resultedLength > 0) {
+				Display display2 = PlatformUI.getWorkbench().getDisplay();
+				display2.syncExec(new Runnable() {
+
+					public void run() {
+						ITextOperationTarget operation = (ITextOperationTarget) rEditor.getAdapter(ITextOperationTarget.class);
+				
+						if (operation != null && operation.canDoOperation(ISourceViewer.QUICK_ASSIST)) {
+                            //if(wordOffset+resultedLength<doc.getLength()-1){
+							rEditor.selectAndReveal(wordOffset, resultedLength);
+
+							operation.doOperation(ISourceViewer.QUICK_ASSIST);
+                           // }
+
+						}
+				
+					}
+				});
+			}*/
 
 			return help;
 

@@ -21,6 +21,7 @@ public class UnderlineListener extends BaseErrorListener {
 	private Token offSymbol;
 	private int offSymbolTokenLength = 0;
 	String quickFix = null;
+	
 
 	public UnderlineListener(REditor editor) {
 		this.editor = editor;
@@ -81,7 +82,7 @@ public class UnderlineListener extends BaseErrorListener {
 				try {
 					marker = resource.createMarker(IMarker.PROBLEM);
 					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
-					marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_NORMAL);
+					//marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_NORMAL);
 					// marker.setAttribute(IMarker.MESSAGE, "line " + line + ":"
 					// +
 					// charPositionInLine + " " + msg);
@@ -107,7 +108,7 @@ public class UnderlineListener extends BaseErrorListener {
 					// System.out.println(offSymbol.getText());
 					marker = resource.createMarker(IMarker.PROBLEM);
 					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-					marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_NORMAL);
+					//marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_NORMAL);
 					// marker.setAttribute(IMarker.MESSAGE, "line " + line + ":"
 					// +
 					// charPositionInLine + " " + msg);
