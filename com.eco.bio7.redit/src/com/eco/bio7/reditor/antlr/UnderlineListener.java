@@ -92,6 +92,7 @@ public class UnderlineListener extends BaseErrorListener {
 					if (quickFix != null) {
 						marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
 						marker.setAttribute(IMarker.TEXT, quickFix);
+						marker.setAttribute(IMarker.SOURCE_ID, offSymbol.getText());
 					}
 
 					else {
@@ -118,6 +119,7 @@ public class UnderlineListener extends BaseErrorListener {
 					if (quickFix != null) {
 						marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
 						marker.setAttribute(IMarker.TEXT, quickFix);
+						marker.setAttribute(IMarker.SOURCE_ID, offSymbol.getText());
 					}
 
 					else {

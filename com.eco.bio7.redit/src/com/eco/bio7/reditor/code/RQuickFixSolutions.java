@@ -4,7 +4,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 
 public class RQuickFixSolutions  {
 	/*Hardcoded. We could also refactor out the solutions to a properties file!*/
-	public ICompletionProposal[] getProposals(String errorCode, int offset, int endChar, ICompletionProposal[] prop) {
+	public ICompletionProposal[] getProposals(String errorCode, int offset, int endChar, ICompletionProposal[] prop, String tokenText) {
 		if (errorCode != null) {
 			switch (errorCode) {
 			case "Err1":
@@ -82,7 +82,7 @@ public class RQuickFixSolutions  {
 			case "Warn16":
 				prop = new ICompletionProposal[] {
 
-						new RQuickFixCompletionProposal("Create function", offset, endChar, "function(){}", 0) };
+						new RQuickFixCompletionProposal("Create function", offset, endChar, System.lineSeparator()+tokenText+"<-function(){}"+ System.lineSeparator(), 0) };
 
 				break;
 			case "Err16":
