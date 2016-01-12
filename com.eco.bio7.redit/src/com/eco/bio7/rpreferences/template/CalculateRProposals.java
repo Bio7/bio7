@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashMap;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
@@ -23,15 +23,22 @@ public class CalculateRProposals {
 	public static String[] statisticsContext;
 
 	public static String[] statisticsSet;
-    
+
 	private static boolean startupTemplate = true;
+
+	public static HashMap<Integer, String> stat;
+
+	private static HashMap<Integer, String> statContext;
+
+	private static HashMap<Integer, String> statSet;
 
 	public static void loadRCodePackageTemplates() {
 		IPreferenceStore s = new ScopedPreferenceStore(InstanceScope.INSTANCE, "com.eco.bio7");
 		/* Temporary lists to load the proposals! */
-		ArrayList<String> dataTemp1 = new ArrayList<String>();
-		ArrayList<String> dataTemp2 = new ArrayList<String>();
-		ArrayList<String> dataTemp3 = new ArrayList<String>();
+		/*The HashMap is choosen for a fast lookup of the R parser!*/
+		stat = new HashMap<Integer, String>();
+		statContext = new HashMap<Integer, String>();
+		statSet = new HashMap<Integer, String>();
 		String tempPath;
 		/* Load the new calculated templates else use the default templates! */
 		if (startupTemplate == false) {
@@ -53,6 +60,7 @@ public class CalculateRProposals {
 			e.printStackTrace();
 		}
 		String line;
+		int count = 0;
 		try {
 			while ((line = br.readLine()) != null) {
 				/* Split the string to get the seperated values! */
@@ -60,33 +68,35 @@ public class CalculateRProposals {
 				// System.out.println(theline.length);
 
 				try {
-					dataTemp1.add(theline[0]);
-					dataTemp2.add(theline[1]);
-					dataTemp3.add(theline[2]);
+					stat.put(count, theline[0]);
+					statContext.put(count, theline[1]);
+					statSet.put(count, theline[2]);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 
 				}
-
+				count++;
 			}
 			br.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		if (dataTemp1.size() == dataTemp2.size() && dataTemp1.size() == dataTemp3.size()) {
-			statistics = dataTemp1.toArray(new String[dataTemp1.size()]);
-			statisticsContext = dataTemp2.toArray(new String[dataTemp2.size()]);
-			statisticsSet = dataTemp3.toArray(new String[dataTemp3.size()]);
-		} else {
-			statistics = new String[] { "Error in Template file!" };
-			statisticsContext = new String[] { "Error in Template file!" };
-			statisticsSet = new String[] { "Error in Template file!" };
+       /*Create arrays!*/
+		statistics = new String[stat.size()];
+		statisticsContext = new String[statContext.size()];
+		statisticsSet = new String[stat.size()];
+        /*Copy values from HashMap to array!*/
+		for (int i = 0; i < stat.size(); i++) {
+			statistics[i] = stat.get(i);
+			statisticsContext[i] = statContext.get(i);
+			statisticsSet[i] = statSet.get(i);
 		}
-		dataTemp1 = null;
-		dataTemp2 = null;
-		dataTemp3 = null;
+
+		// stat = null;
+		// statContext = null;
+		// statSet = null;
 
 	}
 
