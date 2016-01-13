@@ -1,10 +1,13 @@
 package com.eco.bio7.reditor.actions;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.BufferedTokenStream;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStreamRewriter;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.jdt.core.IRegion;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.text.BadLocationException;
@@ -28,6 +31,7 @@ import com.eco.bio7.reditor.antlr.RParser.ProgContext;
 import com.eco.bio7.reditor.antlr.refactor.ExtractInterfaceListener;
 import com.eco.bio7.reditor.antlr.refactor.ParseErrorListener;
 import com.eco.bio7.util.Util;
+import org.antlr.v4.runtime.TokenStream;
 
 public class ExtractMethod implements IEditorActionDelegate {
 
@@ -37,6 +41,7 @@ public class ExtractMethod implements IEditorActionDelegate {
 	private RParser parser;
 	private TokenStreamRewriter rewriter;
 	private ProgContext tree;
+	private BufferedTokenStream bufferTokenStream;
 
 	public void setActiveEditor(final IAction action, final IEditorPart targetEditor) {
 		this.targetEditor = targetEditor;
@@ -77,13 +82,29 @@ public class ExtractMethod implements IEditorActionDelegate {
 				} else {
 					return;
 				}
+				
+				/*try {
+					org.eclipse.jface.text.IRegion line= doc.getLineInformationOfOffset(selection.getOffset());
+					//int lineOffset= line.getOffset();
+					int lengthOff = line.getLength();
+					int endLi=findEndOfWhiteSpace(doc,selection.getOffset(),selection.getOffset()+lengthOff);
+					int length = selection.getLength();
+					System.out.println(endLi);
+					System.out.println(length);
+					doc.replace(endLi, length, "");
 
+				} catch (BadLocationException e) {
+
+					e.printStackTrace();
+				}*/
+
+				/* Delete the text of the selection! */
 				int start = selection.getOffset();
 
 				try {
 
 					int length = selection.getLength();
-					doc.replace(start, length, functionName + "()");
+					doc.replace(start, length, "");
 
 				} catch (BadLocationException e) {
 
@@ -105,30 +126,68 @@ public class ExtractMethod implements IEditorActionDelegate {
 			if (error == false) {
 				rewriter = new TokenStreamRewriter(tokens);
 				// Token token = tokens.get(0);
+				Token selectedToken = null;
+				TokenStream tokStream = rewriter.getTokenStream();
+				/* Search for the token at offset!*/
+				for (int i = 0; i < tokStream.size(); i++) {
+					Token tempToken = rewriter.getTokenStream().get(i);
+					int start = tempToken.getStartIndex();
+					if (selection.getOffset() == start) {
 
-				rewriter.insertAfter(tree.start, "\r\n" + functionName + "<-function(){\r\n" + text + "\r\n}\r\n");
+						selectedToken = rewriter.getTokenStream().get(i);
+					}
+				}
+
+				/*
+				 * If we have found the token with the required offset we
+				 * insert!
+				 */
+				int startLine=selection.getStartLine();
+				int intEndLine=selection.getEndLine();
+				StringBuffer buffWhite=getLeadingWhitespace(selection.getOffset(), doc);
+				String whitesp=buffWhite.toString();
+				
+				StringBuffer buff = new StringBuffer();
+				//buff.append(System.lineSeparator());
+				buff.append(functionName);
+				buff.append("<-function(){");
+				buff.append(System.lineSeparator());
+				buff.append(whitesp+"\t"+text);
+				buff.append(System.lineSeparator());
+				buff.append(whitesp+"}");
+				buff.append(System.lineSeparator());
+				buff.append(whitesp+functionName);
+				buff.append("()");
+				buff.append(System.lineSeparator());
+                /*Set function local!*/
+				if (selectedToken != null) {
+					rewriter.insertBefore(selectedToken, buff.toString());
+				} else {
+					rewriter.insertAfter(tree.stop, buff.toString());
+				}
+				
 				// System.out.println("myFunc<-function(){\n\t"+rewriter.getText()+"\n}");
 				// System.out.println(rewriter.getText());
 			} else {
 				errorMessage("Parser error occured!\nPlease select valid R expressions!");
 				doc.set(docText);
-				// System.out.println("How many errors2: " +
-				// parser.getNumberOfSyntaxErrors());
+				//System.out.println("How many errors2: " + parser.getNumberOfSyntaxErrors());
 				return;
 			}
 			/* Third parse for the final result! */
 			boolean errorNewText = parseSource(rewriter.getText());
 
 			if (errorNewText == false) {
+				/*Write to the editor!*/
 				doc.set(rewriter.getText());
-
+				/*Scroll to the selection!*/
+				editor.selectAndReveal(selection.getOffset(), 0);
 			}
 
 			else {
 				errorMessage("Parser error occured!\nPlease select valid R expressions!");
-				// System.out.println("How many errors3: " +
-				// parser.getNumberOfSyntaxErrors());
-				// System.out.println("final"+rewriter.getText());
+				//System.out.println("How many errors3: " + parser.getNumberOfSyntaxErrors());
+				//System.out.println("final" + rewriter.getText());
 				doc.set(docText);
 				return;
 			}
@@ -143,6 +202,7 @@ public class ExtractMethod implements IEditorActionDelegate {
 		ANTLRInputStream input = new ANTLRInputStream(fullText);
 		RLexer lexer = new RLexer(input);
 		tokens = new CommonTokenStream(lexer);
+		bufferTokenStream = new BufferedTokenStream(lexer);
 		RFilter filter = new RFilter(tokens);
 		filter.removeErrorListeners();
 		filter.stream(); // call start rule: stream
@@ -161,6 +221,7 @@ public class ExtractMethod implements IEditorActionDelegate {
 														// walker
 		ExtractInterfaceListener extractor = new ExtractInterfaceListener(tokens, parser);
 		walker.walk(extractor, tree);
+
 		if (parser.getNumberOfSyntaxErrors() == 0) {
 			errors = false;
 		} else {
@@ -191,6 +252,41 @@ public class ExtractMethod implements IEditorActionDelegate {
 				messageBox.open();
 			}
 		});
+	}
+	/*The following methods from class: XmlDocumentFormatter in package: org.eclipse.ant.internal.ui.editor.formatter;
+	 * *******************************************************************************
+ * Copyright (c) 2004, 2006s John-Mason P. Shackelford and others.
+ * All rights reserved. This program and the accompanying materials 
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors:
+ *     John-Mason P. Shackelford - initial API and implementation
+ * 	   IBM Corporation - bug fixes
+ *******************************************************************************/
+	
+	public static StringBuffer getLeadingWhitespace(int offset, IDocument document) {
+		StringBuffer indent= new StringBuffer();
+		try {
+			org.eclipse.jface.text.IRegion line= document.getLineInformationOfOffset(offset);
+			int lineOffset= line.getOffset();
+			int nonWS= findEndOfWhiteSpace(document, lineOffset, lineOffset + line.getLength());
+			indent.append(document.get(lineOffset, nonWS - lineOffset));
+			return indent;
+		} catch (BadLocationException e) {
+			return indent;
+		}
+	}
+	public static int findEndOfWhiteSpace(IDocument document, int offset, int end) throws BadLocationException {
+		while (offset < end) {
+			char c= document.getChar(offset);
+			if (c != ' ' && c != '\t') {
+				return offset;
+			}
+			offset++;
+		}
+		return end;
 	}
 
 }

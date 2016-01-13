@@ -178,6 +178,7 @@ COMMENT :      '#' ~[\r\n]*  -> type(NL);
 // Match both UNIX and Windows newlines
 NL      :   '\r'? '\n' ;
 
-WS      :   [ \t]+ ->  skip ;// Removed!
+// Changed for TokenRewriter, see http://stackoverflow.com/questions/21889071/antlr4-tokenstreamrewriter-output-doesnt-have-proper-format-removes-whitespac
+WS      :   [ \t]+ ->  channel(HIDDEN);
 
 UNKNOWN : . ;//Unknown tokens!
