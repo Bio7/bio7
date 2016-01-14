@@ -127,7 +127,7 @@ public class RBaseListen extends RBaseListener {
 
 			if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
 				/* Create a new scope and add the function (symbol)! */
-				RFunctionSymbol function = new RFunctionSymbol(name, currentScope);
+				RFunctionSymbol function = new RFunctionSymbol(name, currentScope,globals);
 				currentScope.define(function); // Define function in current //
 												// scope
 				scopeNew.put(ctx, function);
@@ -145,7 +145,7 @@ public class RBaseListen extends RBaseListener {
 			}
 		} else if (posTree == 0) {
 			/* Create a new scope and add the function (symbol)! */
-			RFunctionSymbol function = new RFunctionSymbol(ctx.start.getText(), currentScope);
+			RFunctionSymbol function = new RFunctionSymbol(ctx.start.getText(), currentScope,globals);
 			currentScope.define(function); // Define function in current scope
 			scopeNew.put(ctx, function);
 			currentScope = function;
