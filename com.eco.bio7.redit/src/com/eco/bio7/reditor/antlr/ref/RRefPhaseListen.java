@@ -1,5 +1,7 @@
 package com.eco.bio7.reditor.antlr.ref;
 
+import java.util.List;
+
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.Token;
@@ -10,6 +12,8 @@ import org.eclipse.ui.PlatformUI;
 
 import com.eco.bio7.reditor.antlr.RBaseListener;
 import com.eco.bio7.reditor.antlr.RParser;
+import com.eco.bio7.reditor.antlr.RParser.SubContext;
+import com.eco.bio7.reditor.antlr.RParser.SublistContext;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.rpreferences.template.CalculateRProposals;
 import com.eco.bio7.rpreferences.template.RCompletionProcessor;
@@ -82,6 +86,24 @@ public class RRefPhaseListen extends RBaseListener {
 		//Get the last token which should be the name of the called function!
 		Token stop = ctx.expr().getStop();
 		//Token lastToken = tokens.get(sourceInterval.b);
+		 SublistContext subList = ctx.sublist();
+		 List<SubContext> con=subList.sub();
+		
+		 for (int i = 0; i < con.size(); i++) {
+			 
+			 System.out.println( con.get(i).getText());
+			 /*if (con.get(i).expr()!=null){
+				 if(con.get(i).expr()!=null)
+					System.out.println( con.get(i).expr().getStop().getText());
+				}*/
+				/*if(con.get(i).STRING()!=null)	{
+					System.out.println( con.get(i).STRING().getText());
+				}*/
+		}
+		
+		
+		//System.out.println(con.getText());
+		//System.out.println(subList);
 		
 		String funcName = stop.getText();
 		 /*IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();

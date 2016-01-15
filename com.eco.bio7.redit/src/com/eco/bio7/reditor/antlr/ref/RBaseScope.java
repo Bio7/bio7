@@ -11,13 +11,21 @@ public abstract class RBaseScope implements Scope {
 	public RBaseScope(Scope enclosingScope) {
 		this.enclosingScope = enclosingScope;
 	}
-  /*Only resolve symbol in local scope for R!*/
+
+	/*
+	 * Only resolve symbol in local scope and parent scopes up to the global
+	 * scope!
+	 */
 	public RSymbol resolve(String name) {
+		 /*Resolve symbol in nested environments for R!*/
 		RSymbol s = symbols.get(name);
 		if (s != null)
 			return s;
-		
+		if (enclosingScope != null) {
+			return enclosingScope.resolve(name);
+		}
 		return null; 
+
 	}
 
 	public void define(RSymbol sym) {

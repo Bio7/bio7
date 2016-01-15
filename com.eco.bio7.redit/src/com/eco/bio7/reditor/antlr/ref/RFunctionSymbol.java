@@ -8,26 +8,25 @@ import java.util.Map;
 public class RFunctionSymbol extends RSymbol implements Scope {
     Map<String, RSymbol> arguments = new LinkedHashMap<String, RSymbol>();
     Scope enclosingScope;
-	private RGlobalScope globalScope;
+	
     
-    public RFunctionSymbol(String name, Scope enclosingScope, RGlobalScope globals) {
+    public RFunctionSymbol(String name, Scope enclosingScope) {
         super(name);
         this.enclosingScope = enclosingScope;
-        this.globalScope=globals;
+        
     }
 
     public RSymbol resolve(String name) {
-    /*Only resolve symbol in local environment for R!*/
-        RSymbol s = arguments.get(name);
-        if ( s!=null ) 
-        	return s;
-        
-     /*Check global environment*/
-        if ( globalScope != null ) {
-            return globalScope.resolve(name);
+    /*Resolve symbol in nested environments for R!*/
+    	RSymbol s = arguments.get(name);
+        if ( s!=null ) return s;
+        if ( getEnclosingScope() != null ) {
+            return getEnclosingScope().resolve(name);
         }
-
         return null; 
+
+
+        
     }
 
     public void define(RSymbol sym) {
