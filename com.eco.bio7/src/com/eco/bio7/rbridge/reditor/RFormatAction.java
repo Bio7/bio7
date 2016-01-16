@@ -211,7 +211,8 @@ public class RFormatAction  implements IObjectActionDelegate, IEditorActionDeleg
 				/*Add a linebreak in R*/
 				con.pipeToRConsole("cat(\"\r\")");
 				getTextSocket(doc, input, port);
-
+				/*Scroll to the selection!*/
+				editor.selectAndReveal(selection.getOffset(), 0);
 				/* Clipboard data should be available! */
 				// setClipboardData(doc);
 			}

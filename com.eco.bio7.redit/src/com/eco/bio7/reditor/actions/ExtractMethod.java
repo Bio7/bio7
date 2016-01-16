@@ -99,7 +99,7 @@ public class ExtractMethod implements IEditorActionDelegate {
 				}*/
 
 				/* Delete the text of the selection! */
-				int start = selection.getOffset();
+				/*int start = selection.getOffset();
 
 				try {
 
@@ -109,10 +109,11 @@ public class ExtractMethod implements IEditorActionDelegate {
 				} catch (BadLocationException e) {
 
 					e.printStackTrace();
-				}
+				}*/
 
 			} else {
 				errorMessage("Parser error occured!\nPlease select valid R expressions!");
+				/*Revert changes if parser has errors!*/
 				doc.set(docText);
 				// System.out.println("How many errors1: " +
 				// parser.getNumberOfSyntaxErrors());
@@ -122,30 +123,42 @@ public class ExtractMethod implements IEditorActionDelegate {
 			String fullTextWithoutSel = doc.get();
 			boolean error = parseSource(fullTextWithoutSel);
 
-			/* Selection */
+			/* extract selection offset!*/
+			int selectionOffset = selection.getOffset();
 			if (error == false) {
 				rewriter = new TokenStreamRewriter(tokens);
+				
 				// Token token = tokens.get(0);
-				Token selectedToken = null;
+				Token startToken = null;
+				Token stopToken = null;
 				TokenStream tokStream = rewriter.getTokenStream();
 				/* Search for the token at offset!*/
 				for (int i = 0; i < tokStream.size(); i++) {
-					Token tempToken = rewriter.getTokenStream().get(i);
-					int start = tempToken.getStartIndex();
-					if (selection.getOffset() == start) {
+					Token tempToken = tokStream.get(i);
+					int currentToken = tempToken.getStartIndex();
+					if (selectionOffset == currentToken) {
 
-						selectedToken = rewriter.getTokenStream().get(i);
+						startToken = rewriter.getTokenStream().get(i);
+						System.out.println("token start");;
+					}
+					else if(selectionOffset+selection.getLength() == currentToken){
+						stopToken = rewriter.getTokenStream().get(i);
+						System.out.println("token end");;
 					}
 				}
-
+				
 				/*
 				 * If we have found the token with the required offset we
 				 * insert!
 				 */
-				int startLine=selection.getStartLine();
-				int intEndLine=selection.getEndLine();
-				StringBuffer buffWhite=getLeadingWhitespace(selection.getOffset(), doc);
+				//int startLine=selection.getStartLine();
+				//int intEndLine=selection.getEndLine();
+				StringBuffer buffWhite=getLeadingWhitespace(selectionOffset, doc);
 				String whitesp=buffWhite.toString();
+				
+				String tempText=tokStream.getText(startToken, stopToken);
+				text=tempText.replaceAll(System.lineSeparator(),System.lineSeparator()+"\t");
+				
 				
 				StringBuffer buff = new StringBuffer();
 				//buff.append(System.lineSeparator());
@@ -153,23 +166,25 @@ public class ExtractMethod implements IEditorActionDelegate {
 				buff.append("<-function(){");
 				buff.append(System.lineSeparator());
 				buff.append(whitesp+"\t"+text);
-				buff.append(System.lineSeparator());
+				//buff.append(System.lineSeparator());
 				buff.append(whitesp+"}");
 				buff.append(System.lineSeparator());
 				buff.append(whitesp+functionName);
 				buff.append("()");
 				buff.append(System.lineSeparator());
                 /*Set function local!*/
-				if (selectedToken != null) {
-					rewriter.insertBefore(selectedToken, buff.toString());
+				if (startToken != null) {
+					rewriter.insertBefore(startToken, buff.toString());
 				} else {
 					rewriter.insertAfter(tree.stop, buff.toString());
 				}
-				
+				/*We delete the selected text!*/
+				 rewriter.delete(startToken, stopToken);
 				// System.out.println("myFunc<-function(){\n\t"+rewriter.getText()+"\n}");
 				// System.out.println(rewriter.getText());
 			} else {
 				errorMessage("Parser error occured!\nPlease select valid R expressions!");
+				/*Revert changes if parser has errors!*/
 				doc.set(docText);
 				//System.out.println("How many errors2: " + parser.getNumberOfSyntaxErrors());
 				return;
@@ -181,7 +196,7 @@ public class ExtractMethod implements IEditorActionDelegate {
 				/*Write to the editor!*/
 				doc.set(rewriter.getText());
 				/*Scroll to the selection!*/
-				editor.selectAndReveal(selection.getOffset(), 0);
+				editor.selectAndReveal(selectionOffset, 0);
 			}
 
 			else {
@@ -273,6 +288,20 @@ public class ExtractMethod implements IEditorActionDelegate {
 			int lineOffset= line.getOffset();
 			int nonWS= findEndOfWhiteSpace(document, lineOffset, lineOffset + line.getLength());
 			indent.append(document.get(lineOffset, nonWS - lineOffset));
+			return indent;
+		} catch (BadLocationException e) {
+			return indent;
+		}
+	}
+	//int numWhite=getLeadingWhitespaceNumber(selectionOffset, doc);
+	//System.out.println("Whitespaces: "+numWhite);
+	public static int getLeadingWhitespaceNumber(int offset, IDocument document) {
+		int indent = 0;
+		try {
+			org.eclipse.jface.text.IRegion line = document.getLineInformationOfOffset(offset);
+			int lineOffset = line.getOffset();
+			int nonWS = findEndOfWhiteSpace(document, lineOffset, lineOffset + line.getLength());
+			indent = nonWS - lineOffset;
 			return indent;
 		} catch (BadLocationException e) {
 			return indent;
