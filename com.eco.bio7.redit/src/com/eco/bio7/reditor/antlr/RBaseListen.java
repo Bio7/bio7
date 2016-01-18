@@ -46,7 +46,7 @@ public class RBaseListen extends RBaseListener {
 																				// for
 																				// nested
 																				// nodes!
-	private Stack<RScope> scopes = new Stack<RScope>();;
+	private Stack<RScope> scopes = new Stack<RScope>();//Just for variable lookup in current scope! 
 	private IPreferenceStore store;
 	public ParseTreeProperty<Scope> scopeNew = new ParseTreeProperty<Scope>();
 	public RGlobalScope globals;
@@ -97,16 +97,20 @@ public class RBaseListen extends RBaseListener {
 		 * Insert function as current scope with a parent current scope
 		 * (scope.peek)!
 		 */
+		//System.out.println(ctx.getStart().getStartIndex()+" "+ctx.getStart().getText());
 
 		scopes.push(new RScope(scopes.peek()));
 
-		Interval sourceInterval = ctx.getSourceInterval();
+		//Interval sourceInterval = ctx.getSourceInterval();
 
-		Token firstToken = tokens.get(sourceInterval.a);
+		Token firstToken = ctx.getStart();
+		
+		Interval sourceInterval = ctx.getSourceInterval();
+		int start = sourceInterval.a;
 
 		int lineStart = firstToken.getStartIndex();
 
-		Token lastToken = tokens.get(sourceInterval.b);
+		Token lastToken = ctx.getStop();
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 
 		// Add to the editor folding action if enabled in the preferences!
@@ -114,17 +118,26 @@ public class RBaseListen extends RBaseListener {
 			startStop.add(lineStart + "," + lineEnd);
 		}
 		int lineMethod = calculateLine(lineStart);
-		int childs = ctx.getParent().getChildCount();
-		int posTree = 0;
-		for (int i = 0; i < childs; i++) {
+		//int childs = ctx.getParent().getChildCount();
+		//int posTree = 2;//If defined with name it has position 2!
+		/*Find the position of the function token!*/
+		/*for (int i = 0; i < childs; i++) {
 			if (ctx.getText().equals(ctx.getParent().getChild(i).getText())) {
 				posTree = i;
+				System.out.println("PosTree: "+posTree);
 			}
-		}
-		if (ctx.getParent().getChild(posTree - 1) != null && ctx.getParent().getChild(posTree - 2) != null) {
-			String op = ctx.getParent().getChild(posTree - 1).getText();
-			String name = ctx.getParent().getChild(posTree - 2).getText();
-
+		}*/
+		/*If we have defined a variable for the function!*/
+		//ParseTree child1 = ctx.getParent().getChild(ctx.getStart().getStartIndex()-1);
+		//ParseTree child0 = ctx.getParent().getChild(ctx.getStart().getStartIndex()-2);
+		
+		Token child1=tokens.get(start-1);//the assignment symbol
+		Token child0=tokens.get(start-2);//The name
+		
+		if (child1 != null && child0 != null) {
+			String op = child1.getText();
+			String name = child0.getText();
+           System.out.println("Name= "+name);
 			if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
 				/* Create a new scope and add the function (symbol)! */
 				RFunctionSymbol function = new RFunctionSymbol(name, currentScope);
@@ -143,7 +156,7 @@ public class RBaseListen extends RBaseListener {
 				}
 
 			}
-		} else if (posTree == 0) {
+		} else  {
 			/* Create a new scope and add the function (symbol)! */
 			RFunctionSymbol function = new RFunctionSymbol(ctx.start.getText(), currentScope);
 			currentScope.define(function); // Define function in current scope

@@ -43,22 +43,36 @@ public class RRefPhaseListen extends RBaseListener {
 
 	/* Variable call! */
 	public void exitE30(RParser.E30Context ctx) {
-        /*Token tok=ctx.ID().getSymbol();
+		
+		
+        Token tok=ctx.ID().getSymbol();
+        //System.out.println("Token Text: "+tok.getText());
 		String varName = tok.getText();
-		System.out.println(ctx.getText());
+		int index=tok.getTokenIndex();
+		Token idNextToken = tokens.get(index+1);
+		//System.out.println("Next Symbol= "+idNextToken.getText());
+		if(idNextToken!=null){
+			if(idNextToken.getText().equals("=")||idNextToken.getText().equals("<-")||idNextToken.getText().equals("(")){
+				return;
+			}
+			else{
+				RSymbol var = currentScope.resolve(varName);
+				if (var instanceof RFunctionSymbol) {
+					return;
+					//System.out.println("Var: " + name + " is not available!");
+				}
+				if (var == null) {
+					//System.out.println("Var: " + name + " is not available!");
+					parser.notifyErrorListeners(tok, "Warn16:Variable not available?: " + varName + " seems to be missing!", null);
+
+				}
+			}
+		}
+		
 		//Token lastToken = tokens.get(sourceInterval.b);
 		
 		
-		RSymbol var = currentScope.resolve(varName);
-		if (var instanceof RFunctionSymbol) {
-			return;
-			//System.out.println("Var: " + name + " is not available!");
-		}
-		if (var == null) {
-			//System.out.println("Var: " + name + " is not available!");
-			parser.notifyErrorListeners(tok, "Warn16:Variable not available?: " + varName + " seems to be missing!", null);
-
-		}*/
+		
 		
 
 	}
@@ -91,7 +105,7 @@ public class RRefPhaseListen extends RBaseListener {
 		
 		 for (int i = 0; i < con.size(); i++) {
 			 
-			 System.out.println( con.get(i).getText());
+			// System.out.println( con.get(i).getText());
 			 /*if (con.get(i).expr()!=null){
 				 if(con.get(i).expr()!=null)
 					System.out.println( con.get(i).expr().getStop().getText());
