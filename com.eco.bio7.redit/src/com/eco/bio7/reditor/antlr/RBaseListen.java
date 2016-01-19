@@ -46,7 +46,9 @@ public class RBaseListen extends RBaseListener {
 																				// for
 																				// nested
 																				// nodes!
-	private Stack<RScope> scopes = new Stack<RScope>();//Just for variable lookup in current scope! 
+	private Stack<RScope> scopes = new Stack<RScope>();// Just for variable
+														// lookup in current
+														// scope!
 	private IPreferenceStore store;
 	public ParseTreeProperty<Scope> scopeNew = new ParseTreeProperty<Scope>();
 	public RGlobalScope globals;
@@ -72,7 +74,7 @@ public class RBaseListen extends RBaseListener {
 
 	public void exitProg(RParser.ProgContext ctx) {
 
-		//System.out.println(globals);
+		// System.out.println(globals);
 	}
 
 	public void exitE19DefFunction(RParser.E19DefFunctionContext ctx) {
@@ -96,15 +98,11 @@ public class RBaseListen extends RBaseListener {
 		/*
 		 * Insert function as current scope with a parent current scope
 		 * (scope.peek)!
-		 */
-		//System.out.println(ctx.getStart().getStartIndex()+" "+ctx.getStart().getText());
-
+		 */	
 		scopes.push(new RScope(scopes.peek()));
 
-		//Interval sourceInterval = ctx.getSourceInterval();
-
 		Token firstToken = ctx.getStart();
-		
+
 		Interval sourceInterval = ctx.getSourceInterval();
 		int start = sourceInterval.a;
 
@@ -118,64 +116,65 @@ public class RBaseListen extends RBaseListener {
 			startStop.add(lineStart + "," + lineEnd);
 		}
 		int lineMethod = calculateLine(lineStart);
-		//int childs = ctx.getParent().getChildCount();
-		//int posTree = 2;//If defined with name it has position 2!
-		/*Find the position of the function token!*/
-		/*for (int i = 0; i < childs; i++) {
-			if (ctx.getText().equals(ctx.getParent().getChild(i).getText())) {
-				posTree = i;
-				System.out.println("PosTree: "+posTree);
-			}
-		}*/
-		/*If we have defined a variable for the function!*/
-		//ParseTree child1 = ctx.getParent().getChild(ctx.getStart().getStartIndex()-1);
-		//ParseTree child0 = ctx.getParent().getChild(ctx.getStart().getStartIndex()-2);
 		
-		Token child1=tokens.get(start-1);//the assignment symbol
-		Token child0=tokens.get(start-2);//The name
-		
-		if (child1 != null && child0 != null) {
-			String op = child1.getText();
-			String name = child0.getText();
-           System.out.println("Name= "+name);
-			if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
-				/* Create a new scope and add the function (symbol)! */
-				RFunctionSymbol function = new RFunctionSymbol(name, currentScope);
-				currentScope.define(function); // Define function in current //
-												// scope
-				scopeNew.put(ctx, function);
-				currentScope = function;
+		/*If we have at least 2 tokens else we create a function without variable assignment!*/
+		if ((start - 2) >= 0) {
+			
+			Token child1 = tokens.get(start - 1);// The assignment symbol!
+			Token child0 = tokens.get(start - 2);// The name!
+           
+			
+				String op = child1.getText();
+				String name = child0.getText();
+				/*Check if we have an assignment symbol available! else we create a function without variable assignment!*/
+				if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
+					/* Create a new scope and add the function (symbol)! */
+					RFunctionSymbol function = new RFunctionSymbol(name, currentScope);
+					currentScope.define(function); // Define function in current
+													// //
+													// scope
+					scopeNew.put(ctx, function);
+					currentScope = function;
+					/*Here we create the outline nodes in the Outline view!*/
+					if (methods.size() == 0) {
 
-				if (methods.size() == 0) {
+						methods.push(new REditorOutlineNode(name, lineMethod, "function", editor.baseNode));
 
-					methods.push(new REditorOutlineNode(name, lineMethod, "function", editor.baseNode));
+					} else {
+						methods.push(new REditorOutlineNode(name, lineMethod, "function", methods.peek()));
+
+					}
 
 				} else {
-					methods.push(new REditorOutlineNode(name, lineMethod, "function", methods.peek()));
 
-				}
+					createFunctionWithoutName(ctx, lineMethod);
 
+				
 			}
-		} else  {
-			/* Create a new scope and add the function (symbol)! */
-			RFunctionSymbol function = new RFunctionSymbol(ctx.start.getText(), currentScope);
-			currentScope.define(function); // Define function in current scope
-			scopeNew.put(ctx, function);
-			currentScope = function;
-
-			if (methods.size() == 0) {
-
-				methods.push(
-						new REditorOutlineNode(ctx.start.getText(), lineMethod, "function", editor.baseNode));
-
-			} else {
-				methods.push(
-						new REditorOutlineNode(ctx.start.getText(), lineMethod, "function", methods.peek()));
-
-			}
-
+		}
+		
+		else{
+			createFunctionWithoutName(ctx, lineMethod);
+			
 		}
 
+	}
+
+	private void createFunctionWithoutName(RParser.E19DefFunctionContext ctx, int lineMethod) {
+		/* Create a new scope and add the function (symbol)! */
+		RFunctionSymbol function = new RFunctionSymbol(ctx.start.getText(), currentScope);
+		currentScope.define(function); // Define function in current scope
+		scopeNew.put(ctx, function);
+		currentScope = function;
+        /*Here we create the outline nodes in the Outline view!*/
+		if (methods.size() == 0) {
+
+			methods.push(new REditorOutlineNode(ctx.start.getText(), lineMethod, "function", editor.baseNode));
+
+		} else {
+			methods.push(new REditorOutlineNode(ctx.start.getText(), lineMethod, "function", methods.peek()));
+
+		}
 	}
 
 	/* if condition! */
@@ -285,7 +284,7 @@ public class RBaseListen extends RBaseListener {
 
 			int line = calculateLine(lineStart);
 
-			if (ctx.getParent().getChild(1) != null) {
+			//if (ctx.getParent().getChild(1) != null) {
 
 				String op = tokens.get(start + 1).getText();
 
@@ -295,7 +294,7 @@ public class RBaseListen extends RBaseListener {
 						if (checkVarName(name)) {
 							RScope scope = scopes.peek();
 							scope.add(name);
-							
+
 							/* Create a new a new var in current scope! */
 							RVariableSymbol var = new RVariableSymbol(name);
 							currentScope.define(var);
@@ -325,7 +324,7 @@ public class RBaseListen extends RBaseListener {
 						if (checkVarName(name)) {
 							RScope scope = scopes.peek();
 							scope.add(name);
-							/*Create a new a new var in current scope!*/
+							/* Create a new a new var in current scope! */
 							RVariableSymbol var = new RVariableSymbol(name);
 							currentScope.define(var); // Define symbol in
 														// current scope
@@ -336,9 +335,9 @@ public class RBaseListen extends RBaseListener {
 						if (checkVarName(name)) {
 							RScope scope = scopes.peek();
 							scope.add(name);
-							/*Create a new a new var in current scope!*/
+							/* Create a new a new var in current scope! */
 							RVariableSymbol var = new RVariableSymbol(name);
-							currentScope.define(var); 
+							currentScope.define(var);
 
 							new REditorOutlineNode(name, line, "variable", methods.peek());
 						}
@@ -346,7 +345,7 @@ public class RBaseListen extends RBaseListener {
 
 				}
 			}
-		}
+		//}
 
 	}
 
@@ -377,9 +376,9 @@ public class RBaseListen extends RBaseListener {
 		 * sourceInterval.a; Token assign = tokens.get(start);
 		 */
 		Token start = ctx.start;
-		String subExpr = start.getText();
+		String startText = start.getText();
 		/* Detect libraries and add them to the outline! */
-		if (subExpr.equals("library") || subExpr.equals("require")) {
+		if (startText.equals("library") || startText.equals("require")) {
 			Token firstToken = start;
 
 			int lineStart = firstToken.getStartIndex();
