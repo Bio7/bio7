@@ -53,6 +53,7 @@ public class RBaseListen extends RBaseListener {
 	public ParseTreeProperty<Scope> scopeNew = new ParseTreeProperty<Scope>();
 	public RGlobalScope globals;
 	public Scope currentScope; // define symbols in this scop
+	private boolean inFunction;
 
 	public RBaseListen(CommonTokenStream tokens, REditor editor, Parser parser) {
 		this.tokens = tokens;
@@ -276,8 +277,9 @@ public class RBaseListen extends RBaseListener {
 		Token assign = tokens.get(start + 2);
 		// System.out.println(ctx.ASSIGN_OP().getText());
 		String subExpr = assign.getText();
-
-		if (subExpr.equals("function") == false) {
+		String isFunc=ctx.expr(1).start.getText();
+       System.out.println(ctx.expr(1).start.getText());
+		if (isFunc.equals("function") == false) {
 			Token firstToken = tokens.get(start);
 
 			int lineStart = firstToken.getStartIndex();
@@ -285,7 +287,7 @@ public class RBaseListen extends RBaseListener {
 			int line = calculateLine(lineStart);
 
 			//if (ctx.getParent().getChild(1) != null) {
-
+               
 				String op = tokens.get(start + 1).getText();
 
 				if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
@@ -375,6 +377,7 @@ public class RBaseListen extends RBaseListener {
 		 * Interval sourceInterval = ctx.getSourceInterval(); int start =
 		 * sourceInterval.a; Token assign = tokens.get(start);
 		 */
+		inFunction=true;
 		Token start = ctx.start;
 		String startText = start.getText();
 		/* Detect libraries and add them to the outline! */
