@@ -11,6 +11,8 @@
 package com.eco.bio7.reditor.antlr;
 
 import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.List;
 import java.util.Stack;
 import java.util.UUID;
 
@@ -103,13 +105,14 @@ public class RBaseListen extends RBaseListener {
 		scopes.push(new RScope(scopes.peek()));
 
 		Token firstToken = ctx.getStart();
+		Token lastToken = ctx.getStop();
 
 		Interval sourceInterval = ctx.getSourceInterval();
 		int start = sourceInterval.a;
 
 		int lineStart = firstToken.getStartIndex();
 
-		Token lastToken = ctx.getStop();
+		
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 
 		// Add to the editor folding action if enabled in the preferences!
@@ -121,12 +124,13 @@ public class RBaseListen extends RBaseListener {
 		/*If we have at least 2 tokens else we create a function without variable assignment!*/
 		if ((start - 2) >= 0) {
 			
-			Token child1 = tokens.get(start - 1);// The assignment symbol!
-			Token child0 = tokens.get(start - 2);// The name!
+			//System.out.println("child: "+ctx.getParent().getChild(1).getText());
+			//Token child1 = ctx.getParent().getChild(1);// The assignment symbol!
+			//Token child0 = tokens.get(start - 2);// The name!
            
 			
-				String op = child1.getText();
-				String name = child0.getText();
+				String op = ctx.getParent().getChild(1).getText();
+				String name =ctx.getParent().getChild(0).getText();
 				/*Check if we have an assignment symbol available! else we create a function without variable assignment!*/
 				if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
 					/* Create a new scope and add the function (symbol)! */
@@ -181,12 +185,13 @@ public class RBaseListen extends RBaseListener {
 	/* if condition! */
 	public void enterE21(RParser.E21Context ctx) {
 
-		Interval sourceInterval = ctx.getSourceInterval();
+		
 
-		Token firstToken = tokens.get(sourceInterval.a);
+		Token firstToken = ctx.getStart();
+		Token lastToken = ctx.getStop();
 		int lineStart = firstToken.getStartIndex();
 
-		Token lastToken = tokens.get(sourceInterval.b);
+	
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 
 		// Add to the editor folding action if enabled in the preferences!
@@ -199,12 +204,13 @@ public class RBaseListen extends RBaseListener {
 	/* if condition 2 of grammar file! */
 	public void enterE22(RParser.E22Context ctx) {
 
-		Interval sourceInterval = ctx.getSourceInterval();
+		
 
-		Token firstToken = tokens.get(sourceInterval.a);
+		Token firstToken = ctx.getStart();
+		Token lastToken = ctx.getStop();
 		int lineStart = firstToken.getStartIndex();
 
-		Token lastToken = tokens.get(sourceInterval.b);
+		
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 
 		// Add to the editor folding action if enabled in the preferences!
@@ -217,12 +223,13 @@ public class RBaseListen extends RBaseListener {
 	/* for loop! */
 	public void enterE23(RParser.E23Context ctx) {
 
-		Interval sourceInterval = ctx.getSourceInterval();
+		
 
-		Token firstToken = tokens.get(sourceInterval.a);
+		Token firstToken = ctx.getStart();
+		Token lastToken = ctx.getStop();
 		int lineStart = firstToken.getStartIndex();
 
-		Token lastToken = tokens.get(sourceInterval.b);
+		
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 
 		// Add to the editor folding action if enabled in the preferences!
@@ -235,12 +242,14 @@ public class RBaseListen extends RBaseListener {
 	/* while loop! */
 	public void enterE24(RParser.E24Context ctx) {
 
-		Interval sourceInterval = ctx.getSourceInterval();
+		
 
-		Token firstToken = tokens.get(sourceInterval.a);
+		Token firstToken = ctx.getStart();
+		Token lastToken = ctx.getStop();
+		
 		int lineStart = firstToken.getStartIndex();
 
-		Token lastToken = tokens.get(sourceInterval.b);
+		
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 
 		// Add to the editor folding action if enabled in the preferences!
@@ -253,13 +262,14 @@ public class RBaseListen extends RBaseListener {
 	/* repeat loop! */
 	public void enterE25(RParser.E25Context ctx) {
 
-		Interval sourceInterval = ctx.getSourceInterval();
+		
 
-		Token firstToken = tokens.get(sourceInterval.a);
+		Token firstToken = ctx.getStart();
+		Token lastToken = ctx.getStop();
 
 		int lineStart = firstToken.getStartIndex();
 
-		Token lastToken = tokens.get(sourceInterval.b);
+		
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 
 		// Add to the editor folding action if enabled in the preferences!
@@ -271,27 +281,36 @@ public class RBaseListen extends RBaseListener {
 
 	@Override
 	public void enterE17VariableDeclaration(RParser.E17VariableDeclarationContext ctx) {
-
+       
 		Interval sourceInterval = ctx.getSourceInterval();
 		int start = sourceInterval.a;
-		Token assign = tokens.get(start + 2);
+		int stop = sourceInterval.b;
+		Token firstToken = ctx.getStart();
+		Token lastToken = ctx.getStop();
+		
+		//Token assign = tokens.get(start + 2);
 		// System.out.println(ctx.ASSIGN_OP().getText());
-		String subExpr = assign.getText();
+		//String subExpr = assign.getText();
 		String isFunc=ctx.expr(1).start.getText();
-       System.out.println(ctx.expr(1).start.getText());
+       //System.out.println(ctx.expr(1).start.getText());
+		
 		if (isFunc.equals("function") == false) {
-			Token firstToken = tokens.get(start);
+			
 
 			int lineStart = firstToken.getStartIndex();
 
 			int line = calculateLine(lineStart);
 
 			//if (ctx.getParent().getChild(1) != null) {
-               
-				String op = tokens.get(start + 1).getText();
-
+               // List <Token>tokenS= tokens.getTokens(start, stop,RParser.USER_OP);
+                //System.out.println(tokenS+" "+"start "+start+" stop "+stop+"");
+               // if(tokenS!=null&&tokenS.size()>0)
+				//System.out.println("start "+start+" stop "+stop+"Token stream: "+tokenS.get(0).getText());
+               // String op = tokens.get(start + 1).getText();
+               //System.out.println("ctc= "+ctx.getText());
+			    String op=ctx.ASS_OP().getText();
 				if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
-					String name = tokens.get(start).getText();
+					String name = firstToken.getText();
 					if (methods.size() == 0) {
 						if (checkVarName(name)) {
 							RScope scope = scopes.peek();
@@ -321,7 +340,7 @@ public class RBaseListen extends RBaseListener {
 				}
 
 				else if (op.equals("->") || op.equals("->>")) {
-					String name = tokens.get(start + 2).getText();
+					String name = lastToken.getText();
 					if (methods.size() == 0) {
 						if (checkVarName(name)) {
 							RScope scope = scopes.peek();

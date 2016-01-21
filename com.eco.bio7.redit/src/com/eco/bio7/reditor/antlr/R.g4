@@ -36,7 +36,7 @@ expr:
     |   expr ('|'|'||') expr	#e14   
     |   '~' expr	#e15  
     |   expr '~' expr	#e16 
-    |   expr ('<-'|'<<-'|'='|'->'|'->>'|':=') expr	#e17VariableDeclaration
+    |   expr ASS_OP expr	#e17VariableDeclaration
     |   '{' exprlist '}' 	#e18// compound statement
     |   'function' '(' formlist? ')' expr #e19DefFunction// define function
     |   expr '(' sublist ')'   	#e20CallFunction           // call function
@@ -113,6 +113,8 @@ sub :   expr
     |   '...'
     |
     ;
+    
+ASS_OP: ('<-'|'<<-'|'='|'->'|'->>'|':=');
 
 HEX :   '0' ('x'|'X') HEXDIGIT+ [Ll]? ;
 
@@ -183,8 +185,8 @@ NL      :   '\r'? '\n' ;
 // Changed for TokenRewriter, see http://stackoverflow.com/questions/21889071/antlr4-tokenstreamrewriter-output-doesnt-have-proper-format-removes-whitespac
 //WS		 :  {skipwhitespace==false}? WS1 | {skipwhitespace}? WS2;
 
-//WS      :   [ \t]+ ->  channel(HIDDEN);
+WS      :   [ \t]+ ->  channel(HIDDEN);
 
-WS       :    [ \t]+ ->  skip   ;// Removed!;
+//WS       :    [ \t]+ ->  skip   ;// Removed!;
 
 UNKNOWN : . ;//Unknown tokens!
