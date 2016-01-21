@@ -122,7 +122,7 @@ public class RBaseListen extends RBaseListener {
 		int lineMethod = calculateLine(lineStart);
 		
 		/*If we have at least 2 tokens else we create a function without variable assignment!*/
-		if ((start - 2) >= 0) {
+		if ((start - 2) >= 0&&ctx.getParent().getChild(1) != null && ctx.getParent().getChild(0) != null) {
 			
 			//System.out.println("child: "+ctx.getParent().getChild(1).getText());
 			//Token child1 = ctx.getParent().getChild(1);// The assignment symbol!
