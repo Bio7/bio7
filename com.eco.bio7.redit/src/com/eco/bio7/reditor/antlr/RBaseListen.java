@@ -55,7 +55,7 @@ public class RBaseListen extends RBaseListener {
 	public ParseTreeProperty<Scope> scopeNew = new ParseTreeProperty<Scope>();
 	public RGlobalScope globals;
 	public Scope currentScope; // define symbols in this scop
-	private boolean inFunction;
+	
 
 	public RBaseListen(CommonTokenStream tokens, REditor editor, Parser parser) {
 		this.tokens = tokens;
@@ -122,12 +122,8 @@ public class RBaseListen extends RBaseListener {
 		int lineMethod = calculateLine(lineStart);
 		
 		/*If we have at least 2 tokens else we create a function without variable assignment!*/
-		if ((start - 2) >= 0&&ctx.getParent().getChild(1) != null && ctx.getParent().getChild(0) != null) {
+		if ((start - 2) >= 0&&ctx.getParent().getChild(1) != null && ctx.getParent().getChild(2) != null) {
 			
-			//System.out.println("child: "+ctx.getParent().getChild(1).getText());
-			//Token child1 = ctx.getParent().getChild(1);// The assignment symbol!
-			//Token child0 = tokens.get(start - 2);// The name!
-           
 			
 				String op = ctx.getParent().getChild(1).getText();
 				String name =ctx.getParent().getChild(0).getText();
@@ -283,34 +279,39 @@ public class RBaseListen extends RBaseListener {
 	public void enterE17VariableDeclaration(RParser.E17VariableDeclarationContext ctx) {
        
 		Interval sourceInterval = ctx.getSourceInterval();
+		
+		Token firstToken = ctx.getStart();
 		int start = sourceInterval.a;
 		int stop = sourceInterval.b;
-		Token firstToken = ctx.getStart();
-		Token lastToken = ctx.getStop();
-		
-		//Token assign = tokens.get(start + 2);
-		// System.out.println(ctx.ASSIGN_OP().getText());
-		//String subExpr = assign.getText();
 		String isFunc=ctx.expr(1).start.getText();
-       //System.out.println(ctx.expr(1).start.getText());
 		
 		if (isFunc.equals("function") == false) {
-			
-
+		
 			int lineStart = firstToken.getStartIndex();
 
 			int line = calculateLine(lineStart);
 
-			//if (ctx.getParent().getChild(1) != null) {
-               // List <Token>tokenS= tokens.getTokens(start, stop,RParser.USER_OP);
-                //System.out.println(tokenS+" "+"start "+start+" stop "+stop+"");
-               // if(tokenS!=null&&tokenS.size()>0)
-				//System.out.println("start "+start+" stop "+stop+"Token stream: "+tokenS.get(0).getText());
-               // String op = tokens.get(start + 1).getText();
-               //System.out.println("ctc= "+ctx.getText());
-			    String op=ctx.ASS_OP().getText();
+			/*Extract the token with the assignment operator and (to exclude
+			 *whitespace in stream because of the hidden() rule the whitespace is present
+			 *in the CommonTokenStream!)*/
+			  int i=start+1;
+			  Token assignOp = null;
+               while(i<=stop){
+            	   Token tok=tokens.get(i);
+            	   if(tok.getType()!=RParser.WS){
+            		   assignOp=tok;
+            		   break;
+            	   }
+            	   if(tok.getType() == RParser.EOF)
+                   {
+                       break;
+                   }
+            	   i++;
+               }
+			   
+                String op = assignOp.getText();
 				if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
-					String name = firstToken.getText();
+					String name =firstToken.getText();
 					if (methods.size() == 0) {
 						if (checkVarName(name)) {
 							RScope scope = scopes.peek();
@@ -340,7 +341,7 @@ public class RBaseListen extends RBaseListener {
 				}
 
 				else if (op.equals("->") || op.equals("->>")) {
-					String name = lastToken.getText();
+					String name = tokens.get(start + 2).getText();
 					if (methods.size() == 0) {
 						if (checkVarName(name)) {
 							RScope scope = scopes.peek();
@@ -396,7 +397,7 @@ public class RBaseListen extends RBaseListener {
 		 * Interval sourceInterval = ctx.getSourceInterval(); int start =
 		 * sourceInterval.a; Token assign = tokens.get(start);
 		 */
-		inFunction=true;
+		
 		Token start = ctx.start;
 		String startText = start.getText();
 		/* Detect libraries and add them to the outline! */

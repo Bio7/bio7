@@ -36,7 +36,7 @@ expr:
     |   expr ('|'|'||') expr	#e14   
     |   '~' expr	#e15  
     |   expr '~' expr	#e16 
-    |   expr ASS_OP expr	#e17VariableDeclaration
+    |   expr ('<-'|'<<-'|'='|'->'|'->>'|':=') expr	#e17VariableDeclaration
     |   '{' exprlist '}' 	#e18// compound statement
     |   'function' '(' formlist? ')' expr #e19DefFunction// define function
     |   expr '(' sublist ')'   	#e20CallFunction           // call function
@@ -113,8 +113,6 @@ sub :   expr
     |   '...'
     |
     ;
-    
-ASS_OP: ('<-'|'<<-'|'='|'->'|'->>'|':=');
 
 HEX :   '0' ('x'|'X') HEXDIGIT+ [Ll]? ;
 
@@ -163,7 +161,7 @@ OCTAL_ESCAPE
     |   '\\' [0-7]
     ;
 
-fragment
+fragment 
 HEX_ESCAPE
     :   '\\' HEXDIGIT HEXDIGIT?
     ;
