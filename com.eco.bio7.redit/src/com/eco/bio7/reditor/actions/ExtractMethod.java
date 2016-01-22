@@ -136,14 +136,17 @@ public class ExtractMethod implements IEditorActionDelegate {
 				for (int i = 0; i < tokStream.size(); i++) {
 					Token tempToken = tokStream.get(i);
 					int currentToken = tempToken.getStartIndex();
-					if (selectionOffset == currentToken) {
+					//System.out.println("Offset: "+selectionOffset+"Token: "+tempToken.getStartIndex()+" Type: "+tempToken.getType());
+					if (selectionOffset >= currentToken) {
 
-						startToken = rewriter.getTokenStream().get(i);
-						System.out.println("token start");;
+						startToken = tempToken;
+						//System.out.println("token start");;
+						
 					}
-					else if(selectionOffset+selection.getLength() == currentToken){
-						stopToken = rewriter.getTokenStream().get(i);
-						System.out.println("token end");;
+					else if(selectionOffset+selection.getLength() >= currentToken){
+						stopToken = tempToken;
+						//System.out.println("token end");;
+						
 					}
 				}
 				
@@ -155,19 +158,25 @@ public class ExtractMethod implements IEditorActionDelegate {
 				//int intEndLine=selection.getEndLine();
 				StringBuffer buffWhite=getLeadingWhitespace(selectionOffset, doc);
 				String whitesp=buffWhite.toString();
-				
+				//int numWhite=getLeadingWhitespaceNumber(selectionOffset, doc);
 				String tempText=tokStream.getText(startToken, stopToken);
 				text=tempText.replaceAll(System.lineSeparator(),System.lineSeparator()+"\t");
-				
-				
+				/*String[] lines = text.split(System.getProperty("line.separator"));
+				for (int i = 0; i < lines.length; i++) {
+					int count=lines[i].indexOf(lines[i].trim());
+					for (int j = 0; j <=count; j++) {
+						buff.append("\t");
+					}
+					buff.append(lines[i]);
+				}*/
 				StringBuffer buff = new StringBuffer();
 				//buff.append(System.lineSeparator());
 				buff.append(functionName);
 				buff.append("<-function(){");
 				buff.append(System.lineSeparator());
 				buff.append(whitesp+"\t"+text);
-				//buff.append(System.lineSeparator());
-				buff.append(whitesp+"}");
+				buff.append(System.lineSeparator());
+				buff.append("}");
 				buff.append(System.lineSeparator());
 				buff.append(whitesp+functionName);
 				buff.append("()");

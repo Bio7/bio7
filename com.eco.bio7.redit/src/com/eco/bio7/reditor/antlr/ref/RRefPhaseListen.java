@@ -63,7 +63,7 @@ public class RRefPhaseListen extends RBaseListener {
 				}
 				if (var == null) {
 					//System.out.println("Var: " + name + " is not available!");
-					parser.notifyErrorListeners(tok, "Warn16:Variable not available?: " + varName + " seems to be missing!", null);
+					//parser.notifyErrorListeners(tok, "Warn16:Variable not available?: " + varName + " seems to be missing!", null);
 
 				}
 			}
