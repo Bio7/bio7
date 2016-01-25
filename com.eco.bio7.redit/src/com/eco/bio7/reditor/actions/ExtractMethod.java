@@ -19,6 +19,7 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorActionDelegate;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
@@ -30,6 +31,7 @@ import com.eco.bio7.reditor.antlr.RParser;
 import com.eco.bio7.reditor.antlr.RParser.ProgContext;
 import com.eco.bio7.reditor.antlr.refactor.ExtractInterfaceListener;
 import com.eco.bio7.reditor.antlr.refactor.ParseErrorListener;
+import com.eco.bio7.reditor.antlr.refactor.RefactorDialog;
 import com.eco.bio7.util.Util;
 import org.antlr.v4.runtime.TokenStream;
 
@@ -42,6 +44,7 @@ public class ExtractMethod implements IEditorActionDelegate {
 	private TokenStreamRewriter rewriter;
 	private ProgContext tree;
 	private BufferedTokenStream bufferTokenStream;
+	private boolean global;
 
 	public void setActiveEditor(final IAction action, final IEditorPart targetEditor) {
 		this.targetEditor = targetEditor;
@@ -74,11 +77,11 @@ public class ExtractMethod implements IEditorActionDelegate {
 			boolean errors = parseSource(text);
 			if (errors == false) {
 
-				InputDialog dlg = new InputDialog(Display.getCurrent().getActiveShell(), "", "Enter Name", functionName, null);
+				RefactorDialog dlg = new RefactorDialog(Display.getCurrent().getActiveShell());
 				if (dlg.open() == Window.OK) {
 					// User clicked OK; update the label with the input
-
 					functionName = dlg.getValue();
+					global = dlg.isGlobal();
 				} else {
 					return;
 				}
@@ -137,9 +140,7 @@ public class ExtractMethod implements IEditorActionDelegate {
 				for (int i = 0; i < tokStream.size(); i++) {
 					Token tempToken = tokStream.get(i);
 					int currentToken = tempToken.getStartIndex();
-					// System.out.println("Offset: "+selectionOffset+"Token:
-					// "+tempToken.getStartIndex()+" Type:
-					// "+tempToken.getType());
+					
 					if (selectionOffset >= currentToken) {
 
 						startToken = tempToken;
@@ -155,18 +156,33 @@ public class ExtractMethod implements IEditorActionDelegate {
 				/*
 				 * If we have found the token with the required offset we
 				 * insert!
-				 */				
-				
+				 */
+				int defaultIndent = 2;
 				int numWhite = getLeadingWhitespaceNumber(selectionOffset, doc);
+				int numWhiteGlobalTemp=numWhite;
+				if(global){
+					numWhite=0;
+					
+				}
 				StringBuffer buff = new StringBuffer();
 
 				String[] lines = text.split(System.getProperty("line.separator"));
-				/* Calculate the leading whitespaces in the first line
-				 (selection could be with whitespaces)!*/
+				/*
+				 * Calculate the leading whitespaces in the first line
+				 * (selection could be with whitespaces)!
+				 */
 				int count = lines[0].indexOf(lines[0].trim());
 				// First line remove leading whitespace from selection text!
-				String li = lines[0].trim();
-                int defaultIndent=2;
+				//if(global==false){
+					lines[0] = lines[0].trim();
+				//}
+				
+				/*else{
+					for (int i = 0; i < lines.length; i++) {
+						lines[i] = lines[i].trim();
+					}
+				}*/
+				
 				/*
 				 * If the first line is indented and the selection is not
 				 * precise (including counted whitespaces)
@@ -182,9 +198,9 @@ public class ExtractMethod implements IEditorActionDelegate {
 				if (numWhite > 0) {
 					buff.append(String.format("%-" + (numWhite + defaultIndent) + "s", ""));
 				} else {
-					buff.append(String.format("%-"+defaultIndent+"s", ""));
+					buff.append(String.format("%-" + defaultIndent + "s", ""));
 				}
-				buff.append(li);
+				buff.append(lines[0]);
 				// rest of lines
 				buff.append(System.lineSeparator());
 				/*
@@ -193,7 +209,7 @@ public class ExtractMethod implements IEditorActionDelegate {
 				 * whitespaces (due to the selection)!
 				 */
 				for (int i = 1; i < lines.length; i++) {
-					buff.append(String.format("%-"+defaultIndent+"s", ""));
+					buff.append(String.format("%-" + defaultIndent + "s", ""));
 					buff.append(lines[i]);
 
 					buff.append(System.lineSeparator());
@@ -203,22 +219,41 @@ public class ExtractMethod implements IEditorActionDelegate {
 					buff.append(String.format("%-" + numWhite + "s", ""));
 				}
 				buff.append("}");
+				if(global==false){
 				buff.append(System.lineSeparator());
 				if (numWhite > 0) {
 					buff.append(String.format("%-" + numWhite + "s", ""));
 				}
-				/*Write the function call!*/
+				/* Write the function call! */
+				
 				buff.append(functionName);
 				buff.append("()");
 				buff.append(System.lineSeparator());
-				
-				/* Set function local! */
-				if (startToken != null) {
-					rewriter.insertBefore(startToken, buff.toString());
-				} else {
-				/*Set the function global!*/
-					rewriter.insertAfter(tree.stop, buff.toString());
 				}
+
+				
+				
+				if (startToken != null) {
+					if(global==false){
+						/* Set function local! */
+						rewriter.insertBefore(startToken, buff.toString());
+					}
+					else{
+						StringBuffer buff2=new StringBuffer();
+						//buff2.append(System.lineSeparator());
+						if (numWhiteGlobalTemp > 0&& count > 0) {
+							buff2.append(String.format("%-" + numWhiteGlobalTemp + "s", ""));
+						}
+						buff2.append(functionName);
+						buff2.append("()");
+						buff2.append(System.lineSeparator());
+						rewriter.insertBefore(startToken, buff2.toString());	
+						rewriter.insertAfter(tree.stop, buff.toString());
+						}
+					}
+				
+
+				
 				/* We delete the selected text! */
 				rewriter.delete(startToken, stopToken);
 				// System.out.println("myFunc<-function(){\n\t"+rewriter.getText()+"\n}");
@@ -338,7 +373,6 @@ public class ExtractMethod implements IEditorActionDelegate {
 		}
 	}
 
-	
 	public static int getLeadingWhitespaceNumber(int offset, IDocument document) {
 		int indent = 0;
 		try {
