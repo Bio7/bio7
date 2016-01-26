@@ -240,23 +240,30 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
          target this more specifically. This way, we must have the
          refactoring itself decide whether the operation can run.
       -->
-    <viewerContribution targetID="#TextEditorContext" 
-                        id="com.eco.bio7.reditor.refactor.renameProperty">
-      <action
-            class="com.eco.bio7.reditor.refactor.RenameProperty"
-            id="com.eco.bio7.reditor.refactor.RenameProperty"
-            label="Refactor"
-            menubarPath="additions"/>
-    </viewerContribution>
     <viewerContribution
           id="com.eco.bio7.reditor.refactor.extract.method"
           targetID="#TextEditorContext">
+          <menu
+               label="Refactor"
+               path="additions"
+               id="refactor.menu">
+            <separator
+                  name="refact">
+            </separator>
+         </menu>
        <action
              class="com.eco.bio7.reditor.actions.ExtractMethod"
              definitionId="com.eco.bio7.reditor.refactor.extract.method"
              id="com.eco.bio7.reditor.refactor.extract.meth"
              label="Extract Method"
-             menubarPath="additions">
+             menubarPath="refactor.menu/refact">
+       </action>
+       <action
+             class="com.eco.bio7.reditor.actions.ExtractVariable"
+             definitionId="com.eco.bio7.reditor.refactor.extract.variable"
+             id="com.eco.bio7.reditor.refactor.extract.var"
+             label="Extract Variable"
+             menubarPath="refactor.menu/refact">
        </action>
     </viewerContribution>
   </extension>
@@ -276,6 +283,24 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
           description="Extract a Method"
           id="com.eco.bio7.reditor.refactor.extract.method"
           name="Extract Method">
+    </command>
+ </extension>
+ <extension
+       id="com.eco.bio7.reditor.refactor.extract.variable"
+       point="org.eclipse.ui.bindings">
+    <key
+          commandId="com.eco.bio7.reditor.refactor.extract.variable"
+          contextId="org.eclipse.ui.contexts.window"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+SHIFT+F12">
+    </key>
+ </extension>
+ <extension
+       point="org.eclipse.ui.commands">
+    <command
+          description="Extract a Variable"
+          id="com.eco.bio7.reditor.refactor.extract.variable"
+          name="Extract Variable">
     </command>
  </extension>
    

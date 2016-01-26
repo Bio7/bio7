@@ -127,7 +127,7 @@ public class ExtractMethod implements IEditorActionDelegate {
 			String fullTextWithoutSel = doc.get();
 			boolean error = parseSource(fullTextWithoutSel);
 
-			/* extract selection offset! */
+			/* Extract selection offset! */
 			int selectionOffset = selection.getOffset();
 			if (error == false) {
 				rewriter = new TokenStreamRewriter(tokens);
@@ -140,15 +140,13 @@ public class ExtractMethod implements IEditorActionDelegate {
 				for (int i = 0; i < tokStream.size(); i++) {
 					Token tempToken = tokStream.get(i);
 					int currentToken = tempToken.getStartIndex();
-					
+
 					if (selectionOffset >= currentToken) {
 
 						startToken = tempToken;
-						// System.out.println("token start");;
 
 					} else if (selectionOffset + selection.getLength() >= currentToken) {
 						stopToken = tempToken;
-						// System.out.println("token end");;
 
 					}
 				}
@@ -157,32 +155,25 @@ public class ExtractMethod implements IEditorActionDelegate {
 				 * If we have found the token with the required offset we
 				 * insert!
 				 */
-				int defaultIndent = 2;
-				int numWhite = getLeadingWhitespaceNumber(selectionOffset, doc);
-				int numWhiteGlobalTemp=numWhite;
-				if(global){
-					numWhite=0;
-					
-				}
-				StringBuffer buff = new StringBuffer();
+				int defaultIndent = 2;//default indention after function wrapper!
+				int numWhite = getLeadingWhitespaceNumber(selectionOffset, doc);//calculate the indention of the first selected line!
+				int numWhiteGlobalTemp = numWhite;//Create a temporary variable for the global method!
+				if (global) {
+					numWhite = 0;//For global methods we start at 0!
 
+				}
+				StringBuffer buff = new StringBuffer();//StringBuffer preserves the whitespace of the selection!
+                /*We need to handle the selected lines differentely to calculate indention, etc.!*/
 				String[] lines = text.split(System.getProperty("line.separator"));
 				/*
 				 * Calculate the leading whitespaces in the first line
-				 * (selection could be with whitespaces)!
+				 * (selection could be with whitespaces so we need the correct value here)!
 				 */
 				int count = lines[0].indexOf(lines[0].trim());
-				// First line remove leading whitespace from selection text!
-				//if(global==false){
-					lines[0] = lines[0].trim();
-				//}
-				
-				/*else{
-					for (int i = 0; i < lines.length; i++) {
-						lines[i] = lines[i].trim();
-					}
-				}*/
-				
+				/*First line remove leading whitespace from selection text!*/
+
+				lines[0] = lines[0].trim();
+
 				/*
 				 * If the first line is indented and the selection is not
 				 * precise (including counted whitespaces)
@@ -190,7 +181,11 @@ public class ExtractMethod implements IEditorActionDelegate {
 				if (numWhite > 0 && count > 0) {
 					buff.append(String.format("%-" + numWhite + "s", ""));
 				}
-
+				/* if the doc has no linebreak at the end! */
+				if (global) {
+					buff.append(System.lineSeparator());
+				}
+				/*Wrap in function!*/
 				buff.append(functionName);
 				buff.append("<-function(){");
 				buff.append(System.lineSeparator());
@@ -200,70 +195,104 @@ public class ExtractMethod implements IEditorActionDelegate {
 				} else {
 					buff.append(String.format("%-" + defaultIndent + "s", ""));
 				}
-				buff.append(lines[0]);
-				// rest of lines
+				/* Write the content of the the first line!*/
+				buff.append(lines[0]);				
 				buff.append(System.lineSeparator());
 				/*
 				 * Write the text starting at the second line which is already
 				 * formatted (whitespaces are in the text) and indent it with
 				 * whitespaces (due to the selection)!
 				 */
-				for (int i = 1; i < lines.length; i++) {
-					buff.append(String.format("%-" + defaultIndent + "s", ""));
-					buff.append(lines[i]);
 
+				if (global == false) {
+					for (int i = 1; i < lines.length; i++) {
+						buff.append(String.format("%-" + defaultIndent + "s", ""));
+						buff.append(lines[i]);
+
+						buff.append(System.lineSeparator());
+					}
+					/* Calculate the closing parentheses! */
+					if (numWhite > 0) {
+						buff.append(String.format("%-" + numWhite + "s", ""));
+					}
+					buff.append("}");
+				}
+
+				else {
+
+					for (int i = 1; i < lines.length; i++) {
+
+						int amountWs = lines[i].indexOf(lines[i].trim());
+						/*
+						 * Calculate the difference from the first selected line
+						 * to indent properly for global methods. Preserve the
+						 * indention of the following lines relative to the
+						 * first line!
+						 */
+						int res = amountWs - numWhiteGlobalTemp;
+						/* Remove all whitespaces! */
+						lines[i] = lines[i].trim();
+						/*
+						 * If the following lines are indented relative to the
+						 * first sel line write the difference as whitespaces!
+						 */
+						if (res > 0) {
+							buff.append(String.format("%-" + (res + defaultIndent) + "s", ""));
+						} else {
+							buff.append(String.format("%-" + defaultIndent + "s", ""));
+						}
+						/* Write line the content! */
+						buff.append(lines[i]);
+
+						buff.append(System.lineSeparator());
+					}
+					/* Calculate the closing parentheses! */
+					/*
+					 * if (numWhiteGlobalTemp > 0) {
+					 * buff.append(String.format("%-" + numWhiteGlobalTemp +
+					 * "s", "")); }
+					 */
+					buff.append("}");
+
+				}
+
+				if (global == false) {
+					buff.append(System.lineSeparator());
+					if (numWhite > 0) {
+						buff.append(String.format("%-" + numWhite + "s", ""));
+					}
+					/* Write the function call! */
+
+					buff.append(functionName);
+					buff.append("()");
 					buff.append(System.lineSeparator());
 				}
-				/* Calculate the closing parentheses! */
-				if (numWhite > 0) {
-					buff.append(String.format("%-" + numWhite + "s", ""));
-				}
-				buff.append("}");
-				if(global==false){
-				buff.append(System.lineSeparator());
-				if (numWhite > 0) {
-					buff.append(String.format("%-" + numWhite + "s", ""));
-				}
-				/* Write the function call! */
-				
-				buff.append(functionName);
-				buff.append("()");
-				buff.append(System.lineSeparator());
-				}
-
-				
-				
+               /*Use the TokenStreamRewriter of ANTLR to insert the changes!*/
 				if (startToken != null) {
-					if(global==false){
+					if (global == false) {
 						/* Set function local! */
 						rewriter.insertBefore(startToken, buff.toString());
-					}
-					else{
-						StringBuffer buff2=new StringBuffer();
-						//buff2.append(System.lineSeparator());
-						if (numWhiteGlobalTemp > 0&& count > 0) {
+					} else {
+						StringBuffer buff2 = new StringBuffer();
+
+						if (numWhiteGlobalTemp > 0 && count > 0) {
 							buff2.append(String.format("%-" + numWhiteGlobalTemp + "s", ""));
 						}
 						buff2.append(functionName);
 						buff2.append("()");
 						buff2.append(System.lineSeparator());
-						rewriter.insertBefore(startToken, buff2.toString());	
+						rewriter.insertBefore(startToken, buff2.toString());
 						rewriter.insertAfter(tree.stop, buff.toString());
-						}
 					}
-				
+				}
 
-				
-				/* We delete the selected text! */
+				/* We delete the selected text with the TokenStreamRewriter!*/
 				rewriter.delete(startToken, stopToken);
-				// System.out.println("myFunc<-function(){\n\t"+rewriter.getText()+"\n}");
-				// System.out.println(rewriter.getText());
+
 			} else {
 				errorMessage("Parser error occured!\nPlease select valid R expressions!");
 				/* Revert changes if parser has errors! */
 				doc.set(docText);
-				// System.out.println("How many errors2: " +
-				// parser.getNumberOfSyntaxErrors());
 				return;
 			}
 			/* Third parse for the final result! */
@@ -278,9 +307,6 @@ public class ExtractMethod implements IEditorActionDelegate {
 
 			else {
 				errorMessage("Parser error occured!\nPlease select valid R expressions!");
-				// System.out.println("How many errors3: " +
-				// parser.getNumberOfSyntaxErrors());
-				// System.out.println("final" + rewriter.getText());
 				doc.set(docText);
 				return;
 			}
