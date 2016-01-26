@@ -251,6 +251,14 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
                   name="refact">
             </separator>
          </menu>
+         <menu
+               label="R Format"
+               path="additions"
+               id="format.menu">
+            <separator
+                  name="format">
+            </separator>
+         </menu>
        <action
              class="com.eco.bio7.reditor.actions.ExtractMethod"
              definitionId="com.eco.bio7.reditor.refactor.extract.method"
@@ -264,6 +272,13 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
              id="com.eco.bio7.reditor.refactor.extract.var"
              label="Extract Variable"
              menubarPath="refactor.menu/refact">
+       </action>
+       <action
+             class="com.eco.bio7.reditor.actions.RFormatAction"
+             definitionId="com.eco.bio7.reditor.rserve.format"
+             id="com.eco.bio7.reditor.rserve.for"
+             label="Format R Source (Rserve)"
+             menubarPath="format.menu/format">
        </action>
     </viewerContribution>
   </extension>
@@ -301,6 +316,25 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
           description="Extract a Variable"
           id="com.eco.bio7.reditor.refactor.extract.variable"
           name="Extract Variable">
+    </command>
+ </extension>
+ 
+ <extension
+       id="com.eco.bio7.reditor.rserve.format"
+       point="org.eclipse.ui.bindings">
+    <key
+          commandId="com.eco.bio7.reditor.rserve.format"
+          contextId="org.eclipse.ui.contexts.window"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+SHIFT+F10">
+    </key>
+ </extension>
+ <extension
+       point="org.eclipse.ui.commands">
+    <command
+          description="Format R Source"
+          id="com.eco.bio7.reditor.rserve.format"
+          name="Format R Source">
     </command>
  </extension>
    
