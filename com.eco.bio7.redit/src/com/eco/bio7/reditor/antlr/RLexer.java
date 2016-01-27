@@ -95,6 +95,7 @@ public class RLexer extends Lexer {
 		return VOCABULARY;
 	}
 
+	public static boolean skipwhitespace = true;
 
 	public RLexer(CharStream input) {
 		super(input);

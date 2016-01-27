@@ -4,6 +4,8 @@ http://cran.r-project.org/doc/manuals/R-lang.html#Parser
 */
 grammar R;
 
+@lexer::members {public static boolean skipwhitespace = true;}
+
 prog:   (   expr (';'|NL|EOF)// Added!
         |   NL
         )*
@@ -159,7 +161,7 @@ OCTAL_ESCAPE
     |   '\\' [0-7]
     ;
 
-fragment
+fragment 
 HEX_ESCAPE
     :   '\\' HEXDIGIT HEXDIGIT?
     ;
@@ -179,6 +181,10 @@ COMMENT :      '#' ~[\r\n]*  -> type(NL);
 NL      :   '\r'? '\n' ;
 
 // Changed for TokenRewriter, see http://stackoverflow.com/questions/21889071/antlr4-tokenstreamrewriter-output-doesnt-have-proper-format-removes-whitespac
+//WS		 :  {skipwhitespace==false}? WS1 | {skipwhitespace}? WS2;
+
 WS      :   [ \t]+ ->  channel(HIDDEN);
+
+//WS       :    [ \t]+ ->  skip   ;// Removed!;
 
 UNKNOWN : . ;//Unknown tokens!

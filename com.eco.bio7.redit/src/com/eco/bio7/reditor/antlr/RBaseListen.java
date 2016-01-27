@@ -11,6 +11,8 @@
 package com.eco.bio7.reditor.antlr;
 
 import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.List;
 import java.util.Stack;
 import java.util.UUID;
 
@@ -46,11 +48,14 @@ public class RBaseListen extends RBaseListener {
 																				// for
 																				// nested
 																				// nodes!
-	private Stack<RScope> scopes = new Stack<RScope>();;
+	private Stack<RScope> scopes = new Stack<RScope>();// Just for variable
+														// lookup in current
+														// scope!
 	private IPreferenceStore store;
 	public ParseTreeProperty<Scope> scopeNew = new ParseTreeProperty<Scope>();
 	public RGlobalScope globals;
 	public Scope currentScope; // define symbols in this scop
+	
 
 	public RBaseListen(CommonTokenStream tokens, REditor editor, Parser parser) {
 		this.tokens = tokens;
@@ -72,7 +77,7 @@ public class RBaseListen extends RBaseListener {
 
 	public void exitProg(RParser.ProgContext ctx) {
 
-		//System.out.println(globals);
+		// System.out.println(globals);
 	}
 
 	public void exitE19DefFunction(RParser.E19DefFunctionContext ctx) {
@@ -96,17 +101,18 @@ public class RBaseListen extends RBaseListener {
 		/*
 		 * Insert function as current scope with a parent current scope
 		 * (scope.peek)!
-		 */
-
+		 */	
 		scopes.push(new RScope(scopes.peek()));
 
-		Interval sourceInterval = ctx.getSourceInterval();
+		Token firstToken = ctx.getStart();
+		Token lastToken = ctx.getStop();
 
-		Token firstToken = tokens.get(sourceInterval.a);
+		Interval sourceInterval = ctx.getSourceInterval();
+		int start = sourceInterval.a;
 
 		int lineStart = firstToken.getStartIndex();
 
-		Token lastToken = tokens.get(sourceInterval.b);
+		
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 
 		// Add to the editor folding action if enabled in the preferences!
@@ -114,66 +120,74 @@ public class RBaseListen extends RBaseListener {
 			startStop.add(lineStart + "," + lineEnd);
 		}
 		int lineMethod = calculateLine(lineStart);
-		int childs = ctx.getParent().getChildCount();
-		int posTree = 0;
-		for (int i = 0; i < childs; i++) {
-			if (ctx.getText().equals(ctx.getParent().getChild(i).getText())) {
-				posTree = i;
-			}
-		}
-		if (ctx.getParent().getChild(posTree - 1) != null && ctx.getParent().getChild(posTree - 2) != null) {
-			String op = ctx.getParent().getChild(posTree - 1).getText();
-			String name = ctx.getParent().getChild(posTree - 2).getText();
+		
+		/*If we have at least 2 tokens else we create a function without variable assignment!*/
+		if ((start - 2) >= 0&&ctx.getParent().getChild(1) != null && ctx.getParent().getChild(2) != null) {
+			
+			
+				String op = ctx.getParent().getChild(1).getText();
+				String name =ctx.getParent().getChild(0).getText();
+				/*Check if we have an assignment symbol available! else we create a function without variable assignment!*/
+				if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
+					/* Create a new scope and add the function (symbol)! */
+					RFunctionSymbol function = new RFunctionSymbol(name, currentScope);
+					currentScope.define(function); // Define function in current
+													// //
+													// scope
+					scopeNew.put(ctx, function);
+					currentScope = function;
+					/*Here we create the outline nodes in the Outline view!*/
+					if (methods.size() == 0) {
 
-			if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
-				/* Create a new scope and add the function (symbol)! */
-				RFunctionSymbol function = new RFunctionSymbol(name, currentScope);
-				currentScope.define(function); // Define function in current //
-												// scope
-				scopeNew.put(ctx, function);
-				currentScope = function;
+						methods.push(new REditorOutlineNode(name, lineMethod, "function", editor.baseNode));
 
-				if (methods.size() == 0) {
+					} else {
+						methods.push(new REditorOutlineNode(name, lineMethod, "function", methods.peek()));
 
-					methods.push(new REditorOutlineNode(name, lineMethod, "function", editor.baseNode));
+					}
 
 				} else {
-					methods.push(new REditorOutlineNode(name, lineMethod, "function", methods.peek()));
 
-				}
+					createFunctionWithoutName(ctx, lineMethod);
 
+				
 			}
-		} else if (posTree == 0) {
-			/* Create a new scope and add the function (symbol)! */
-			RFunctionSymbol function = new RFunctionSymbol(ctx.start.getText(), currentScope);
-			currentScope.define(function); // Define function in current scope
-			scopeNew.put(ctx, function);
-			currentScope = function;
-
-			if (methods.size() == 0) {
-
-				methods.push(
-						new REditorOutlineNode(ctx.start.getText(), lineMethod, "function", editor.baseNode));
-
-			} else {
-				methods.push(
-						new REditorOutlineNode(ctx.start.getText(), lineMethod, "function", methods.peek()));
-
-			}
-
+		}
+		
+		else{
+			createFunctionWithoutName(ctx, lineMethod);
+			
 		}
 
+	}
+
+	private void createFunctionWithoutName(RParser.E19DefFunctionContext ctx, int lineMethod) {
+		/* Create a new scope and add the function (symbol)! */
+		RFunctionSymbol function = new RFunctionSymbol(ctx.start.getText(), currentScope);
+		currentScope.define(function); // Define function in current scope
+		scopeNew.put(ctx, function);
+		currentScope = function;
+        /*Here we create the outline nodes in the Outline view!*/
+		if (methods.size() == 0) {
+
+			methods.push(new REditorOutlineNode(ctx.start.getText(), lineMethod, "function", editor.baseNode));
+
+		} else {
+			methods.push(new REditorOutlineNode(ctx.start.getText(), lineMethod, "function", methods.peek()));
+
+		}
 	}
 
 	/* if condition! */
 	public void enterE21(RParser.E21Context ctx) {
 
-		Interval sourceInterval = ctx.getSourceInterval();
+		
 
-		Token firstToken = tokens.get(sourceInterval.a);
+		Token firstToken = ctx.getStart();
+		Token lastToken = ctx.getStop();
 		int lineStart = firstToken.getStartIndex();
 
-		Token lastToken = tokens.get(sourceInterval.b);
+	
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 
 		// Add to the editor folding action if enabled in the preferences!
@@ -186,12 +200,13 @@ public class RBaseListen extends RBaseListener {
 	/* if condition 2 of grammar file! */
 	public void enterE22(RParser.E22Context ctx) {
 
-		Interval sourceInterval = ctx.getSourceInterval();
+		
 
-		Token firstToken = tokens.get(sourceInterval.a);
+		Token firstToken = ctx.getStart();
+		Token lastToken = ctx.getStop();
 		int lineStart = firstToken.getStartIndex();
 
-		Token lastToken = tokens.get(sourceInterval.b);
+		
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 
 		// Add to the editor folding action if enabled in the preferences!
@@ -204,12 +219,13 @@ public class RBaseListen extends RBaseListener {
 	/* for loop! */
 	public void enterE23(RParser.E23Context ctx) {
 
-		Interval sourceInterval = ctx.getSourceInterval();
+		
 
-		Token firstToken = tokens.get(sourceInterval.a);
+		Token firstToken = ctx.getStart();
+		Token lastToken = ctx.getStop();
 		int lineStart = firstToken.getStartIndex();
 
-		Token lastToken = tokens.get(sourceInterval.b);
+		
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 
 		// Add to the editor folding action if enabled in the preferences!
@@ -222,12 +238,14 @@ public class RBaseListen extends RBaseListener {
 	/* while loop! */
 	public void enterE24(RParser.E24Context ctx) {
 
-		Interval sourceInterval = ctx.getSourceInterval();
+		
 
-		Token firstToken = tokens.get(sourceInterval.a);
+		Token firstToken = ctx.getStart();
+		Token lastToken = ctx.getStop();
+		
 		int lineStart = firstToken.getStartIndex();
 
-		Token lastToken = tokens.get(sourceInterval.b);
+		
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 
 		// Add to the editor folding action if enabled in the preferences!
@@ -240,13 +258,14 @@ public class RBaseListen extends RBaseListener {
 	/* repeat loop! */
 	public void enterE25(RParser.E25Context ctx) {
 
-		Interval sourceInterval = ctx.getSourceInterval();
+		
 
-		Token firstToken = tokens.get(sourceInterval.a);
+		Token firstToken = ctx.getStart();
+		Token lastToken = ctx.getStop();
 
 		int lineStart = firstToken.getStartIndex();
 
-		Token lastToken = tokens.get(sourceInterval.b);
+		
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 
 		// Add to the editor folding action if enabled in the preferences!
@@ -258,31 +277,46 @@ public class RBaseListen extends RBaseListener {
 
 	@Override
 	public void enterE17VariableDeclaration(RParser.E17VariableDeclarationContext ctx) {
-
+       
 		Interval sourceInterval = ctx.getSourceInterval();
+		
+		Token firstToken = ctx.getStart();
 		int start = sourceInterval.a;
-		Token assign = tokens.get(start + 2);
-		// System.out.println(ctx.ASSIGN_OP().getText());
-		String subExpr = assign.getText();
-
-		if (subExpr.equals("function") == false) {
-			Token firstToken = tokens.get(start);
-
+		int stop = sourceInterval.b;
+		String isFunc=ctx.expr(1).start.getText();
+		
+		if (isFunc.equals("function") == false) {
+		
 			int lineStart = firstToken.getStartIndex();
 
 			int line = calculateLine(lineStart);
 
-			if (ctx.getParent().getChild(1) != null) {
-
-				String op = tokens.get(start + 1).getText();
-
+			/*Extract the token with the assignment operator and (to exclude
+			 *whitespace in stream because of the hidden() rule the whitespace is present
+			 *in the CommonTokenStream!)*/
+			  int i=start+1;
+			  Token assignOp = null;
+               while(i<=stop){
+            	   Token tok=tokens.get(i);
+            	   if(tok.getType()!=RParser.WS){
+            		   assignOp=tok;
+            		   break;
+            	   }
+            	   if(tok.getType() == RParser.EOF)
+                   {
+                       break;
+                   }
+            	   i++;
+               }
+			   
+                String op = assignOp.getText();
 				if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
-					String name = tokens.get(start).getText();
+					String name =firstToken.getText();
 					if (methods.size() == 0) {
 						if (checkVarName(name)) {
 							RScope scope = scopes.peek();
 							scope.add(name);
-							
+
 							/* Create a new a new var in current scope! */
 							RVariableSymbol var = new RVariableSymbol(name);
 							currentScope.define(var);
@@ -312,7 +346,7 @@ public class RBaseListen extends RBaseListener {
 						if (checkVarName(name)) {
 							RScope scope = scopes.peek();
 							scope.add(name);
-							/*Create a new a new var in current scope!*/
+							/* Create a new a new var in current scope! */
 							RVariableSymbol var = new RVariableSymbol(name);
 							currentScope.define(var); // Define symbol in
 														// current scope
@@ -323,9 +357,9 @@ public class RBaseListen extends RBaseListener {
 						if (checkVarName(name)) {
 							RScope scope = scopes.peek();
 							scope.add(name);
-							/*Create a new a new var in current scope!*/
+							/* Create a new a new var in current scope! */
 							RVariableSymbol var = new RVariableSymbol(name);
-							currentScope.define(var); 
+							currentScope.define(var);
 
 							new REditorOutlineNode(name, line, "variable", methods.peek());
 						}
@@ -333,7 +367,7 @@ public class RBaseListen extends RBaseListener {
 
 				}
 			}
-		}
+		//}
 
 	}
 
@@ -363,10 +397,11 @@ public class RBaseListen extends RBaseListener {
 		 * Interval sourceInterval = ctx.getSourceInterval(); int start =
 		 * sourceInterval.a; Token assign = tokens.get(start);
 		 */
+		
 		Token start = ctx.start;
-		String subExpr = start.getText();
+		String startText = start.getText();
 		/* Detect libraries and add them to the outline! */
-		if (subExpr.equals("library") || subExpr.equals("require")) {
+		if (startText.equals("library") || startText.equals("require")) {
 			Token firstToken = start;
 
 			int lineStart = firstToken.getStartIndex();

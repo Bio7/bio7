@@ -170,6 +170,7 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 
 		ANTLRInputStream input = new ANTLRInputStream(doc.get());
 		RLexer lexer = new RLexer(input);
+		
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 		UnderlineListener li=new UnderlineListener(editor);
 		RFilter filter = new RFilter(tokens);
