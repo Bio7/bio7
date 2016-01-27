@@ -72,6 +72,50 @@ public class ExtractMethod implements IEditorActionDelegate {
 				errorMessage("Nothing selected!");
 				return;
 			}
+			
+			/*int startLine = selection.getStartLine();
+			int selLength = selection.getLength();
+			StringBuffer tempBuff = new StringBuffer();
+			We need to handle the selected lines differentely to calculate indention, etc.!
+			String[] linesPrep = text.split(System.getProperty("line.separator"));
+			
+			int enOffsetWs = 0;
+			int offStart = 0;
+			org.eclipse.jface.text.IRegion line = null;
+			
+			for (int i = 0; i < linesPrep.length; i++) {
+				//System.out.println(linesPrep[i]);
+				try {
+					offStart=doc.getLineOffset(startLine+i);
+					line = doc.getLineInformationOfOffset(offStart);
+					
+					enOffsetWs=findEndOfWhiteSpace(doc,offStart,line.getLength());
+				} catch (BadLocationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				//int WsResult=enOffsetWs-offStart;
+				linesPrep[i] = linesPrep[i].trim();
+				System.out.println("linelength: "+line.getLength()+" starline: "+(startLine+i)+" "+"linetrim: "+linesPrep[i]+" offstart: "+offStart+" endOffset: "+enOffsetWs);
+				System.out.println(linesPrep[i]);
+					
+					//tempBuff.append(String.format("%-" + enOffsetWs + "s", ""));
+					tempBuff.append(linesPrep[i]);
+					tempBuff.append(System.lineSeparator());
+				
+			}
+			//System.out.println(tempBuff.toString());
+			try {
+				doc.replace(doc.getLineOffset(startLine), selLength, tempBuff.toString());
+			} catch (BadLocationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}*/
+
+			//String text = selection.getText();
+			
+			
 
 			/* First parse of the selection! */
 			boolean errors = parseSource(text);
