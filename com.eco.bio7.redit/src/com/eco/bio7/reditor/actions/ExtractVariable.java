@@ -86,7 +86,7 @@ public class ExtractVariable implements IEditorActionDelegate {
 			} else {
 				errorMessage("Parser error occured!\nPlease select valid R expressions!");
 				/* Revert changes if parser has errors! */
-				doc.set(docText);
+				//doc.set(docText);
 				// System.out.println("How many errors1: " +
 				// parser.getNumberOfSyntaxErrors());
 				return;
@@ -120,34 +120,73 @@ public class ExtractVariable implements IEditorActionDelegate {
 				}
 
 				if (startToken != null) {
-					if (global == false) {
+					if (global) {
 						/* Set function local! */
 						StringBuffer str = new StringBuffer();
+						/* if the doc has no linebreak at the end! */
+
+						
+
 						str.append(varName);
 						str.append(" <- ");
 						str.append(text);
 						str.append(System.getProperty("line.separator"));
-						rewriter.insertAfter(tree.start, str.toString());
+						rewriter.insertBefore(tree.start, str.toString());
+						/*
+						 * We replace the selected text with the
+						 * TokenStreamRewriter!
+						 */
+
 					} else {
 
-						// rewriter.insertBefore(startToken, buff2.toString());
-						// rewriter.insertAfter(tree.stop, buff.toString());
+						
+
+						int ws = getLeadingWhitespaceNumber(selectionOffset, doc);
+						/* Set function local! */
+						StringBuffer str = new StringBuffer();
+						
+						if (ws > 0) {
+							str.append(String.format("%-" + ws + "s", ""));
+						}
+						str.append(varName);
+						str.append(" <- ");
+						str.append(text);
+						str.append(System.getProperty("line.separator"));
+
+						/*
+						 * Here we calculate the first token in line from the
+						 * token stream (note that the doc line starts with 0 so
+						 * startToken.getLine()-1 is the correct line in the
+						 * document!
+						 */
+						for (int i = 0; i < tokStream.size(); i++) {
+							Token tempToken = tokStream.get(i);
+							if (tempToken.getLine() == startToken.getLine()) {
+								System.out.println("ws is: " + ws);
+								rewriter.insertBefore(tempToken, str.toString());
+								break;
+							}
+						}
+
+						/*
+						 * We replace the selected text with the
+						 * TokenStreamRewriter!
+						 */
+
 					}
+
+					if (stopToken == null) {
+						rewriter.replace(startToken, varName);
+					} else {
+						rewriter.replace(startToken, stopToken, varName);
+					}
+
 				}
 
-				/* We delete the selected text with the TokenStreamRewriter! */
-				// Token
-				// tokEnd=rewriter.getTokenStream().get(stopToken.getStartIndex());
-				if (stopToken == null) {
-					rewriter.replace(startToken, varName);
-				} else {
-					rewriter.replace(startToken, stopToken, varName);
-				}
-				System.out.println(rewriter.getText());
 			} else {
 				errorMessage("Parser error occured!\nPlease select valid R expressions!");
 				/* Revert changes if parser has errors! */
-				doc.set(docText);
+				//doc.set(docText);
 				return;
 			}
 			/* Third parse for the final result! */

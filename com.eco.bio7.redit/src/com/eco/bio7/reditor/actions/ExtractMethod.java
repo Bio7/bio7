@@ -162,7 +162,7 @@ public class ExtractMethod implements IEditorActionDelegate {
 			} else {
 				errorMessage("Parser error occured!\nPlease select valid R expressions!");
 				/* Revert changes if parser has errors! */
-				doc.set(docText);
+				//doc.set(docText);
 				// System.out.println("How many errors1: " +
 				// parser.getNumberOfSyntaxErrors());
 				return;
@@ -336,7 +336,7 @@ public class ExtractMethod implements IEditorActionDelegate {
 			} else {
 				errorMessage("Parser error occured!\nPlease select valid R expressions!");
 				/* Revert changes if parser has errors! */
-				doc.set(docText);
+				//doc.set(docText);
 				return;
 			}
 			/* Third parse for the final result! */
