@@ -130,7 +130,7 @@ public class RBaseListen extends RBaseListener {
 				/*Check if we have an assignment symbol available! else we create a function without variable assignment!*/
 				if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
 					/* Create a new scope and add the function (symbol)! */
-					RFunctionSymbol function = new RFunctionSymbol(name, currentScope);
+					RFunctionSymbol function = new RFunctionSymbol(name, currentScope,ctx.formlist());
 					currentScope.define(function); // Define function in current
 													// //
 													// scope
@@ -163,7 +163,7 @@ public class RBaseListen extends RBaseListener {
 
 	private void createFunctionWithoutName(RParser.E19DefFunctionContext ctx, int lineMethod) {
 		/* Create a new scope and add the function (symbol)! */
-		RFunctionSymbol function = new RFunctionSymbol(ctx.start.getText(), currentScope);
+		RFunctionSymbol function = new RFunctionSymbol(ctx.start.getText(), currentScope,ctx.formlist());
 		currentScope.define(function); // Define function in current scope
 		scopeNew.put(ctx, function);
 		currentScope = function;
@@ -578,7 +578,7 @@ public class RBaseListen extends RBaseListener {
 	}
 
 	@Override
-	public void exitE30(RParser.E30Context ctx) {
+	public void enterE30(RParser.E30Context ctx) {
 		/*
 		 * Interval sourceInterval = ctx.getSourceInterval(); int start =
 		 * sourceInterval.a; String name = tokens.get(start).getText(); String

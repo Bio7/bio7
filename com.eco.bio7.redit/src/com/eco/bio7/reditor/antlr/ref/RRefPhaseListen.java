@@ -7,11 +7,13 @@ import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 
 import com.eco.bio7.reditor.antlr.RBaseListener;
 import com.eco.bio7.reditor.antlr.RParser;
+import com.eco.bio7.reditor.antlr.RParser.FormContext;
 import com.eco.bio7.reditor.antlr.RParser.SubContext;
 import com.eco.bio7.reditor.antlr.RParser.SublistContext;
 import com.eco.bio7.reditors.REditor;
@@ -25,11 +27,11 @@ public class RRefPhaseListen extends RBaseListener {
 	private CommonTokenStream tokens;
 	private Parser parser;
 
-	public RRefPhaseListen(CommonTokenStream tokens,RGlobalScope globals, ParseTreeProperty<Scope> scopes,Parser parser) {
+	public RRefPhaseListen(CommonTokenStream tokens, RGlobalScope globals, ParseTreeProperty<Scope> scopes, Parser parser) {
 		this.scopes = scopes;
 		this.globals = globals;
-		this.tokens=tokens;
-		this.parser=parser;
+		this.tokens = tokens;
+		this.parser = parser;
 	}
 
 	public void enterProg(RParser.ProgContext ctx) {
@@ -43,37 +45,33 @@ public class RRefPhaseListen extends RBaseListener {
 
 	/* Variable call! */
 	public void exitE30(RParser.E30Context ctx) {
-		
-		
-        Token tok=ctx.ID().getSymbol();
-        //System.out.println("Token Text: "+tok.getText());
+
+		Token tok = ctx.ID().getSymbol();
+		// System.out.println("Token Text: "+tok.getText());
 		String varName = tok.getText();
-		int index=tok.getTokenIndex();
-		Token idNextToken = tokens.get(index+1);
-		//System.out.println("Next Symbol= "+idNextToken.getText());
-		if(idNextToken!=null){
-			if(idNextToken.getText().equals("=")||idNextToken.getText().equals("<-")||idNextToken.getText().equals("(")){
+		int index = tok.getTokenIndex();
+		Token idNextToken = tokens.get(index + 1);
+		// System.out.println("Next Symbol= "+idNextToken.getText());
+		if (idNextToken != null) {
+			if (idNextToken.getText().equals("=") || idNextToken.getText().equals("<-") || idNextToken.getText().equals("(")) {
 				return;
-			}
-			else{
+			} else {
 				RSymbol var = currentScope.resolve(varName);
 				if (var instanceof RFunctionSymbol) {
 					return;
-					//System.out.println("Var: " + name + " is not available!");
+					// System.out.println("Var: " + name + " is not
+					// available!");
 				}
 				if (var == null) {
-					//System.out.println("Var: " + name + " is not available!");
-					//parser.notifyErrorListeners(tok, "Warn16:Variable not available?: " + varName + " seems to be missing!", null);
+					// System.out.println("Var: " + name + " is not
+					// available!");
+					parser.notifyErrorListeners(tok, "Warn16:Variable not available?: " + varName + " seems to be missing!", null);
 
 				}
 			}
 		}
-		
-		//Token lastToken = tokens.get(sourceInterval.b);
-		
-		
-		
-		
+
+		// Token lastToken = tokens.get(sourceInterval.b);
 
 	}
 
@@ -97,48 +95,88 @@ public class RRefPhaseListen extends RBaseListener {
 	}
 
 	public void enterE20CallFunction(RParser.E20CallFunctionContext ctx) {
-		//Get the last token which should be the name of the called function!
+		// Get the last token which should be the name of the called function!
 		Token stop = ctx.expr().getStop();
-		//Token lastToken = tokens.get(sourceInterval.b);
-		 SublistContext subList = ctx.sublist();
-		 List<SubContext> con=subList.sub();
-		
-		 for (int i = 0; i < con.size(); i++) {
-			 
-			// System.out.println( con.get(i).getText());
-			 /*if (con.get(i).expr()!=null){
-				 if(con.get(i).expr()!=null)
-					System.out.println( con.get(i).expr().getStop().getText());
-				}*/
-				/*if(con.get(i).STRING()!=null)	{
-					System.out.println( con.get(i).STRING().getText());
-				}*/
-		}
-		
-		
-		//System.out.println(con.getText());
-		//System.out.println(subList);
-		
+		// Token lastToken = tokens.get(sourceInterval.b);
+		SublistContext subList = ctx.sublist();
+		List<SubContext> sub = subList.sub();
+		String argText = subList.getText();
+
+		// System.out.println("subList Text= "+subList.getText());
+		// System.out.println("Argument size: "+sub.size());
+		int callSize = sub.size();
+
+		// System.out.println("***********************************************************");
+
 		String funcName = stop.getText();
-		 /*IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		    if(editor instanceof REditor){
-		   REditor edit=(REditor) editor;
-		RCompletionProcessor processor = edit.getRconf().getProcessor();*/
-		if(CalculateRProposals.stat!=null){
-		if (funcName!=null&&CalculateRProposals.stat.containsValue(funcName)){
-			return;
+		/*
+		 * IEditorPart editor = (IEditorPart)
+		 * PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().
+		 * getActiveEditor(); if(editor instanceof REditor){ REditor
+		 * edit=(REditor) editor; RCompletionProcessor processor =
+		 * edit.getRconf().getProcessor();
+		 */
+		if (CalculateRProposals.stat != null) {
+			if (funcName != null && CalculateRProposals.stat.containsValue(funcName)) {
+				return;
+			}
 		}
-		}
+		/* Return number of args and names after function call! */
 		RSymbol meth = currentScope.resolve(funcName);
-		if (meth == null){
+
+		if (meth == null) {
 			parser.notifyErrorListeners(stop, "Warn16:Function not available?: " + funcName + " seems to be missing!", null);
 
-			//System.out.println("Function: " + funcName + " is not available!");
+			// System.out.println("Function: " + funcName + " is not
+			// available!");
+		} else if (meth != null && meth instanceof RFunctionSymbol) {
+			RFunctionSymbol me = (RFunctionSymbol) meth;
+			/* If the function has arguments! */
+			if (me.getFormlist() != null) {
+				List<FormContext> formList = me.getFormlist().form();
+				int functionDefSize = formList.size();
+				// System.out.println("Argument size: "+formList.size());
+				if (argText.isEmpty() == false) {
+					if (callSize <= functionDefSize) {
+						for (int i = callSize; i < formList.size(); i++) {
+							FormContext fo = formList.get(i);
+							TerminalNode ar = fo.ID();
+							System.out.println("The following arg is missing: " + fo.ID());
+						}
+					} else {
+						/*
+						 * Test for functions where the last argument '...'
+						 * allows any number of arguments!
+						 */
+						FormContext fo = formList.get(functionDefSize - 1);
+						String ar = fo.getText();
+						// System.out.println("text is: "+ar);
+						if (ar.equals("...") == false) {
+							System.out.println("To many args in function call!");
+						}
+					}
+					/*
+					 * If we have no arguments in the function call (we have to
+					 * control the sublist because a sub token could also be an
+					 * empty string according to the grammar definition!)
+					 */
+				} else {
+					// List<FormContext> formList = me.getFormlist().form();
+					for (int i = 0; i < formList.size(); i++) {
+						FormContext fo = formList.get(i);
+						TerminalNode ar = fo.ID();
+						System.out.println("The following arg is missing: " + fo.ID());
+					}
+				}
+
+			}
+
 		}
 
 		if (meth instanceof RVariableSymbol) {
 			// System.out.println("Function: "+funcName+" is not a function!");
-			//System.out.println("Function: " + funcName + " is not available!");
+			// System.out.println("Function: " + funcName + " is not
+			// available!");
 			parser.notifyErrorListeners(stop, "Warn16:Function not available?: " + funcName + " seems to be missing!", null);
 
 		}
