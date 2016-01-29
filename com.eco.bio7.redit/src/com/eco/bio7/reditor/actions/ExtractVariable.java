@@ -146,7 +146,7 @@ public class ExtractVariable implements IEditorActionDelegate {
 						for (int i = 0; i < tokStream.size(); i++) {
 							Token tempToken = tokStream.get(i);
 							if (tempToken.getLine() == startToken.getLine()) {
-								System.out.println("ws is: " + ws);
+								//System.out.println("ws is: " + ws);
 								rewriter.insertBefore(tempToken, str.toString());
 								break;
 							}

@@ -5,15 +5,22 @@ package com.eco.bio7.reditor.antlr.ref;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import com.eco.bio7.reditor.antlr.RParser.FormlistContext;
+
 public class RFunctionSymbol extends RSymbol implements Scope {
     Map<String, RSymbol> arguments = new LinkedHashMap<String, RSymbol>();
     Scope enclosingScope;
+	private FormlistContext formlist;
 	
     
-    public RFunctionSymbol(String name, Scope enclosingScope) {
+    public FormlistContext getFormlist() {
+		return formlist;
+	}
+
+	public RFunctionSymbol(String name, Scope enclosingScope, FormlistContext formlistContext) {
         super(name);
         this.enclosingScope = enclosingScope;
-        
+        this.formlist=formlistContext;
     }
 
     public RSymbol resolve(String name) {
@@ -37,5 +44,5 @@ public class RFunctionSymbol extends RSymbol implements Scope {
     public Scope getEnclosingScope() { return enclosingScope; }
     public String getScopeName() { return name; }
 
-    public String toString() { return "function"+super.toString()+":"+arguments.values(); }
+    public String toString() { return "function"+super.toString()+": "+arguments.values(); }
 }
