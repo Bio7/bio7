@@ -105,7 +105,8 @@ public class RRefPhaseListen extends RBaseListener {
 		// System.out.println("subList Text= "+subList.getText());
 		// System.out.println("Argument size: "+sub.size());
 		int callSize = sub.size();
-
+		String callText = sub.get(0).getText();
+		// System.out.println("Argument: "+ sub.get(0).getText());
 		// System.out.println("***********************************************************");
 
 		String funcName = stop.getText();
@@ -132,28 +133,52 @@ public class RRefPhaseListen extends RBaseListener {
 		} else if (meth != null && meth instanceof RFunctionSymbol) {
 			RFunctionSymbol me = (RFunctionSymbol) meth;
 			/* If the function has arguments! */
+			
 			if (me.getFormlist() != null) {
+				String arguments = me.getFormlist().getText();
+
 				List<FormContext> formList = me.getFormlist().form();
 				int functionDefSize = formList.size();
-				// System.out.println("Argument size: "+formList.size());
+				// System.out.println("Arguments: "+me.getFormlist().getText());
 				if (argText.isEmpty() == false) {
-					if (callSize <= functionDefSize) {
-						for (int i = callSize; i < formList.size(); i++) {
-							FormContext fo = formList.get(i);
-							TerminalNode ar = fo.ID();
-							System.out.println("The following arg is missing: " + fo.ID());
+					StringBuffer str = new StringBuffer();
+					if (arguments.contains("...") == false) {
+					
+						if (callSize < functionDefSize) {
+							for (int i = callSize; i < formList.size(); i++) {
+								FormContext fo = formList.get(i);
+
+								TerminalNode ar = fo.ID();
+								
+								str.append(ar);
+
+								if (i < formList.size() - 1) {
+									str.append(", ");
+								}
+
+							}
+
+							System.out.println("sie: " + formList.size());
+							System.out.println("The following arg is missing: " + str.toString());
+							parser.notifyErrorListeners(stop, "Warn16:The following arg is missing-> " + str.toString() + ": ", null);
 						}
-					} else {
-						/*
-						 * Test for functions where the last argument '...'
-						 * allows any number of arguments!
-						 */
-						FormContext fo = formList.get(functionDefSize - 1);
-						String ar = fo.getText();
-						// System.out.println("text is: "+ar);
-						if (ar.equals("...") == false) {
-							System.out.println("To many args in function call!");
+
+						else if (callSize > functionDefSize) {
+							/*
+							 * Test for functions where the last argument is a
+							 * ellipsis '...' allows any number of arguments!
+							 */
+							FormContext fo = formList.get(functionDefSize - 1);
+							String ar = fo.getText();
+							System.out.println("text is: " + ar);
+							
+								parser.notifyErrorListeners(stop, "Warn16:To many args in function call!: ", null);
+								
+							
 						}
+					}
+					else{
+						System.out.println("Ellipsis: ...");
 					}
 					/*
 					 * If we have no arguments in the function call (we have to
@@ -161,14 +186,34 @@ public class RRefPhaseListen extends RBaseListener {
 					 * empty string according to the grammar definition!)
 					 */
 				} else {
+
+					StringBuffer str = new StringBuffer();
 					// List<FormContext> formList = me.getFormlist().form();
 					for (int i = 0; i < formList.size(); i++) {
 						FormContext fo = formList.get(i);
 						TerminalNode ar = fo.ID();
-						System.out.println("The following arg is missing: " + fo.ID());
+						str.append(ar);
+						if (i < formList.size() - 1) {
+							str.append(", ");
+						}
+
 					}
+					System.out.println("Empty comma calls: " + formList.size());
+					parser.notifyErrorListeners(stop, "Warn16:The following arg is missing-> " + str.toString() + ": ", null);
+					System.out.println("The following arg is missing: " + str.toString());
+
 				}
 
+			}
+			/*
+			 * The function definition has no arguments but the function call
+			 * has!
+			 */
+			else {
+				if (callText.isEmpty() == false) {
+					parser.notifyErrorListeners(stop, "Warn16:The function definiton has no arguments to call! ", null);
+					System.out.println("The function definiton has no arguments to call!");
+				}
 			}
 
 		}
@@ -177,7 +222,7 @@ public class RRefPhaseListen extends RBaseListener {
 			// System.out.println("Function: "+funcName+" is not a function!");
 			// System.out.println("Function: " + funcName + " is not
 			// available!");
-			parser.notifyErrorListeners(stop, "Warn16:Function not available?: " + funcName + " seems to be missing!", null);
+			parser.notifyErrorListeners(stop, "Warn16:Function not available? " + funcName + ": seems to be missing!", null);
 
 		}
 
