@@ -133,23 +133,23 @@ public class RRefPhaseListen extends RBaseListener {
 		} else if (meth != null && meth instanceof RFunctionSymbol) {
 			RFunctionSymbol me = (RFunctionSymbol) meth;
 			/* If the function has arguments! */
-			
+
 			if (me.getFormlist() != null) {
 				String arguments = me.getFormlist().getText();
 
 				List<FormContext> formList = me.getFormlist().form();
 				int functionDefSize = formList.size();
 				// System.out.println("Arguments: "+me.getFormlist().getText());
-				if (argText.isEmpty() == false) {
-					StringBuffer str = new StringBuffer();
-					if (arguments.contains("...") == false) {
-					
+				//
+				StringBuffer str = new StringBuffer();
+				if (arguments.contains("...") == false) {
+					if (argText.isEmpty() == false) {
 						if (callSize < functionDefSize) {
 							for (int i = callSize; i < formList.size(); i++) {
 								FormContext fo = formList.get(i);
 
 								TerminalNode ar = fo.ID();
-								
+
 								str.append(ar);
 
 								if (i < formList.size() - 1) {
@@ -171,38 +171,59 @@ public class RRefPhaseListen extends RBaseListener {
 							FormContext fo = formList.get(functionDefSize - 1);
 							String ar = fo.getText();
 							System.out.println("text is: " + ar);
-							
-								parser.notifyErrorListeners(stop, "Warn16:To many args in function call!: ", null);
-								
-							
+
+							parser.notifyErrorListeners(stop, "Warn16:To many args in function call!: ", null);
+
+						} 
+						
+					}
+					else {
+
+						StringBuffer str2 = new StringBuffer();
+						// List<FormContext> formList =
+						// me.getFormlist().form();
+						for (int i = 0; i < formList.size(); i++) {
+							FormContext fo = formList.get(i);
+							TerminalNode ar = fo.ID();
+							str2.append(ar);
+							if (i < formList.size() - 1) {
+								str2.append(", ");
+							}
+
 						}
+						System.out.println("Empty comma calls: " + formList.size());
+						parser.notifyErrorListeners(stop, "Warn16:The following arg is missing-> " + str2.toString() + ": ", null);
+						System.out.println("The following arg is missing: " + str2.toString());
+
 					}
-					else{
-						System.out.println("Ellipsis: ...");
-					}
-					/*
-					 * If we have no arguments in the function call (we have to
-					 * control the sublist because a sub token could also be an
-					 * empty string according to the grammar definition!)
-					 */
+					
+
 				} else {
-
-					StringBuffer str = new StringBuffer();
-					// List<FormContext> formList = me.getFormlist().form();
-					for (int i = 0; i < formList.size(); i++) {
-						FormContext fo = formList.get(i);
-						TerminalNode ar = fo.ID();
-						str.append(ar);
-						if (i < formList.size() - 1) {
-							str.append(", ");
-						}
-
-					}
-					System.out.println("Empty comma calls: " + formList.size());
-					parser.notifyErrorListeners(stop, "Warn16:The following arg is missing-> " + str.toString() + ": ", null);
-					System.out.println("The following arg is missing: " + str.toString());
+					System.out.println("Ellipsis: ...");
 
 				}
+				/*
+				 * If we have no arguments in the function call (we have to
+				 * control the sublist because a sub token could also be an
+				 * empty string according to the grammar definition!)
+				 */
+				/*
+				 * } else {
+				 * 
+				 * StringBuffer str = new StringBuffer(); // List<FormContext>
+				 * formList = me.getFormlist().form(); for (int i = 0; i <
+				 * formList.size(); i++) { FormContext fo = formList.get(i);
+				 * TerminalNode ar = fo.ID(); str.append(ar); if (i <
+				 * formList.size() - 1) { str.append(", "); }
+				 * 
+				 * } System.out.println("Empty comma calls: " +
+				 * formList.size()); parser.notifyErrorListeners(stop,
+				 * "Warn16:The following arg is missing-> " + str.toString() +
+				 * ": ", null); System.out.println(
+				 * "The following arg is missing: " + str.toString());
+				 * 
+				 * }
+				 */
 
 			}
 			/*
