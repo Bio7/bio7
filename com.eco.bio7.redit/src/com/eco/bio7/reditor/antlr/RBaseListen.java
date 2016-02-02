@@ -29,7 +29,6 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import com.eco.bio7.reditor.Bio7REditorPlugin;
-import com.eco.bio7.reditor.antlr.ref.RFunctionCallSymbol;
 import com.eco.bio7.reditor.antlr.ref.RFunctionSymbol;
 import com.eco.bio7.reditor.antlr.ref.RGlobalScope;
 import com.eco.bio7.reditor.antlr.ref.Scope;
@@ -398,16 +397,9 @@ public class RBaseListen extends RBaseListener {
 		 * Interval sourceInterval = ctx.getSourceInterval(); int start =
 		 * sourceInterval.a; Token assign = tokens.get(start);
 		 */
-		/* Create a new a new var in current scope! */
-		
 		
 		Token start = ctx.start;
 		String startText = start.getText();
-		
-		/*Add call to symbol table to detect unused function declarations in the Reference Phase!*/
-		/*RFunctionCallSymbol functionCall = new RFunctionCallSymbol(startText);
-		currentScope.define(functionCall);*/
-		
 		/* Detect libraries and add them to the outline! */
 		if (startText.equals("library") || startText.equals("require")) {
 			Token firstToken = start;

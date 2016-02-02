@@ -57,7 +57,7 @@ public class RRefPhaseListen extends RBaseListener {
 				return;
 			} else {
 				RSymbol var = currentScope.resolve(varName);
-				if (var instanceof RFunctionSymbol||var instanceof RFunctionCallSymbol) {
+				if (var instanceof RFunctionSymbol) {
 					return;
 					// System.out.println("Var: " + name + " is not
 					// available!");
