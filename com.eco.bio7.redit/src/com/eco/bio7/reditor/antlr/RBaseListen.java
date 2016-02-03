@@ -15,7 +15,6 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.Stack;
 import java.util.UUID;
-
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -23,12 +22,14 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import com.eco.bio7.reditor.Bio7REditorPlugin;
+import com.eco.bio7.reditor.antlr.RParser.FormContext;
 import com.eco.bio7.reditor.antlr.ref.RFunctionSymbol;
 import com.eco.bio7.reditor.antlr.ref.RGlobalScope;
 import com.eco.bio7.reditor.antlr.ref.Scope;
@@ -136,6 +137,21 @@ public class RBaseListen extends RBaseListener {
 													// scope
 					scopeNew.put(ctx, function);
 					currentScope = function;
+					
+					/* Create the function arguments as known symbol table vars in current scope! */
+					List<FormContext> formList = ctx.formlist().form();
+					int functionDefSize = formList.size();
+					for (int i = 0; i < functionDefSize; i++) {
+						FormContext fo = formList.get(i);
+
+						TerminalNode ar = fo.ID();
+						if(ar!=null){
+						RVariableSymbol var = new RVariableSymbol(ar.getText());
+						currentScope.define(var);
+						}
+					
+					}
+					
 					/*Here we create the outline nodes in the Outline view!*/
 					if (methods.size() == 0) {
 

@@ -11,9 +11,17 @@ public class RFunctionSymbol extends RSymbol implements Scope {
     Map<String, RSymbol> arguments = new LinkedHashMap<String, RSymbol>();
     Scope enclosingScope;
 	private FormlistContext formlist;
-	
+	private boolean used;
     
-    public FormlistContext getFormlist() {
+    public boolean isUsed() {
+		return used;
+	}
+
+	public void setUsed(boolean used) {
+		this.used = used;
+	}
+
+	public FormlistContext getFormlist() {
 		return formlist;
 	}
 

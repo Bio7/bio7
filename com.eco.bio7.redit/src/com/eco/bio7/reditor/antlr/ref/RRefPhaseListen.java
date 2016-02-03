@@ -38,6 +38,10 @@ public class RRefPhaseListen extends RBaseListener {
 		currentScope = globals;
 
 	}
+	public void exitProg(RParser.ProgContext ctx) {
+		
+       
+	}
 
 	public void enterE30(RParser.E30Context ctx) {
 
@@ -55,13 +59,17 @@ public class RRefPhaseListen extends RBaseListener {
 		if (idNextToken != null) {
 			if (idNextToken.getText().equals("=") || idNextToken.getText().equals("<-") || idNextToken.getText().equals("(")) {
 				return;
-			} else {
+			} 
+			
+			
+			else {
 				RSymbol var = currentScope.resolve(varName);
 				if (var instanceof RFunctionSymbol) {
 					return;
 					// System.out.println("Var: " + name + " is not
 					// available!");
 				}
+				
 				if (var == null) {
 					// System.out.println("Var: " + name + " is not
 					// available!");
@@ -146,21 +154,25 @@ public class RRefPhaseListen extends RBaseListener {
 
 		String funcName = stop.getText();
 		
-		if (CalculateRProposals.stat != null) {
-			if (funcName != null && CalculateRProposals.stat.containsValue(funcName)) {
-				return;
-			}
-		}
+		
 		/* Return number of args and names after function call! */
 		RSymbol meth = currentScope.resolve(funcName);
 
 		if (meth == null) {
+			/*If we do not find the functions in the current file we search in the loaded packages!*/
+			if (CalculateRProposals.stat != null) {
+				if (funcName != null && CalculateRProposals.stat.containsValue(funcName)) {
+					return;
+				}
+			}
 			parser.notifyErrorListeners(stop, "Warn16:Function not available?: " + funcName + " seems to be missing!", null);
 
 			// System.out.println("Function: " + funcName + " is not
 			// available!");
 		} else if (meth instanceof RFunctionSymbol) {
 			RFunctionSymbol me = (RFunctionSymbol) meth;
+			/*Add boolean true to mark the method as used!*/
+	           me.setUsed(true);
 			/* If the function has arguments! */
 
 			if (me.getFormlist() != null) {
@@ -266,7 +278,8 @@ public class RRefPhaseListen extends RBaseListener {
 					System.out.println("calltext " + callText);
 				}
 			}
-
+			
+			
 		}
 
 		else if (meth instanceof RVariableSymbol) {
@@ -277,7 +290,7 @@ public class RRefPhaseListen extends RBaseListener {
 
 		}
 		
-
+	
 	}
 
 	public void exitE20CallFunction(RParser.E20CallFunctionContext ctx) {
