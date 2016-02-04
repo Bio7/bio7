@@ -12,7 +12,9 @@ package com.eco.bio7.reditor.antlr;
 
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 import java.util.UUID;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -52,11 +54,14 @@ public class RBaseListen extends RBaseListener {
 	private Stack<RScope> scopes = new Stack<RScope>();// Just for variable
 														// lookup in current
 														// scope!
+	/* A stack to store the method declarations and calls in scope! */
+	private Stack<DeclCallStore> storeDeclCall = new Stack<DeclCallStore>();
+	public Set<String> finalFuncDecl = new HashSet<String>();
+
 	private IPreferenceStore store;
 	public ParseTreeProperty<Scope> scopeNew = new ParseTreeProperty<Scope>();
 	public RGlobalScope globals;
 	public Scope currentScope; // define symbols in this scop
-	
 
 	public RBaseListen(CommonTokenStream tokens, REditor editor, Parser parser) {
 		this.tokens = tokens;
@@ -73,11 +78,12 @@ public class RBaseListen extends RBaseListener {
 
 		globals = new RGlobalScope(null);
 		currentScope = globals;
-
+		storeDeclCall.push(new DeclCallStore());
+		
 	}
 
 	public void exitProg(RParser.ProgContext ctx) {
-
+		//storeDeclCall.pop();
 		// System.out.println(globals);
 	}
 
@@ -87,6 +93,13 @@ public class RBaseListen extends RBaseListener {
 		if (methods.empty() == false) {
 			methods.pop();
 		}
+		/* Has the function be called in this scope? */
+		DeclCallStore st = storeDeclCall.peek();
+		Set<String> subScope = st.substract();
+		/* Add the scoped uncalled functions to the global store! */
+		finalFuncDecl.addAll(subScope);
+		/* Leave the scope (remove from stack)! */
+		storeDeclCall.pop();
 
 		currentScope = currentScope.getEnclosingScope(); // pop scope
 
@@ -102,8 +115,10 @@ public class RBaseListen extends RBaseListener {
 		/*
 		 * Insert function as current scope with a parent current scope
 		 * (scope.peek)!
-		 */	
+		 */
 		scopes.push(new RScope(scopes.peek()));
+		
+		
 
 		Token firstToken = ctx.getStart();
 		Token lastToken = ctx.getStop();
@@ -113,7 +128,6 @@ public class RBaseListen extends RBaseListener {
 
 		int lineStart = firstToken.getStartIndex();
 
-		
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 
 		// Add to the editor folding action if enabled in the preferences!
@@ -121,69 +135,84 @@ public class RBaseListen extends RBaseListener {
 			startStop.add(lineStart + "," + lineEnd);
 		}
 		int lineMethod = calculateLine(lineStart);
-		
-		/*If we have at least 2 tokens else we create a function without variable assignment!*/
-		if ((start - 2) >= 0&&ctx.getParent().getChild(1) != null && ctx.getParent().getChild(2) != null) {
-			
-			
-				String op = ctx.getParent().getChild(1).getText();
-				String name =ctx.getParent().getChild(0).getText();
-				/*Check if we have an assignment symbol available! else we create a function without variable assignment!*/
-				if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
-					/* Create a new scope and add the function (symbol)! */
-					RFunctionSymbol function = new RFunctionSymbol(name, currentScope,ctx.formlist());
-					currentScope.define(function); // Define function in current
-													// //
-													// scope
-					scopeNew.put(ctx, function);
-					currentScope = function;
-					
-					/* Create the function arguments as known symbol table vars in current scope! */
+
+		/*
+		 * If we have at least 2 tokens else we create a function without
+		 * variable assignment!
+		 */
+		if ((start - 2) >= 0 && ctx.getParent().getChild(1) != null && ctx.getParent().getChild(2) != null) {
+
+			String op = ctx.getParent().getChild(1).getText();
+			String name = ctx.getParent().getChild(0).getText();
+			/*
+			 * Check if we have an assignment symbol available! else we create a
+			 * function without variable assignment!
+			 */
+			if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
+				/* Create a new scope and add the function (symbol)! */
+				RFunctionSymbol function = new RFunctionSymbol(name, currentScope, ctx.formlist());
+				currentScope.define(function); // Define function in current
+												// //
+												// scope
+				scopeNew.put(ctx, function);
+				currentScope = function;
+
+				/* Put the method declaration name in the call set! */
+				/* Get the current scope stack elements! */
+				DeclCallStore st = storeDeclCall.peek();
+				/* add the called method to the call set! */
+				st.decl.add(name);
+				storeDeclCall.push(new DeclCallStore());
+				/*
+				 * Create the function arguments as known symbol table vars in
+				 * current scope!
+				 */
+				if (ctx.formlist() != null) {
 					List<FormContext> formList = ctx.formlist().form();
 					int functionDefSize = formList.size();
 					for (int i = 0; i < functionDefSize; i++) {
 						FormContext fo = formList.get(i);
 
 						TerminalNode ar = fo.ID();
-						if(ar!=null){
-						RVariableSymbol var = new RVariableSymbol(ar.getText());
-						currentScope.define(var);
+						if (ar != null) {
+							RVariableSymbol var = new RVariableSymbol(ar.getText());
+							currentScope.define(var);
 						}
-					
-					}
-					
-					/*Here we create the outline nodes in the Outline view!*/
-					if (methods.size() == 0) {
-
-						methods.push(new REditorOutlineNode(name, lineMethod, "function", editor.baseNode));
-
-					} else {
-						methods.push(new REditorOutlineNode(name, lineMethod, "function", methods.peek()));
 
 					}
+				}
+
+				/* Here we create the outline nodes in the Outline view! */
+				if (methods.size() == 0) {
+
+					methods.push(new REditorOutlineNode(name, lineMethod, "function", editor.baseNode));
 
 				} else {
+					methods.push(new REditorOutlineNode(name, lineMethod, "function", methods.peek()));
 
-					createFunctionWithoutName(ctx, lineMethod);
+				}
 
-				
+			} else {
+
+				createFunctionWithoutName(ctx, lineMethod);
+
 			}
 		}
-		
-		else{
+
+		else {
 			createFunctionWithoutName(ctx, lineMethod);
-			
+
 		}
 
 	}
 
 	private void createFunctionWithoutName(RParser.E19DefFunctionContext ctx, int lineMethod) {
 		/* Create a new scope and add the function (symbol)! */
-		RFunctionSymbol function = new RFunctionSymbol(ctx.start.getText(), currentScope,ctx.formlist());
+		RFunctionSymbol function = new RFunctionSymbol(ctx.start.getText(), currentScope, ctx.formlist());
 		currentScope.define(function); // Define function in current scope
 		scopeNew.put(ctx, function);
 		currentScope = function;
-        /*Here we create the outline nodes in the Outline view!*/
+		/* Here we create the outline nodes in the Outline view! */
 		if (methods.size() == 0) {
 
 			methods.push(new REditorOutlineNode(ctx.start.getText(), lineMethod, "function", editor.baseNode));
@@ -197,13 +226,10 @@ public class RBaseListen extends RBaseListener {
 	/* if condition! */
 	public void enterE21(RParser.E21Context ctx) {
 
-		
-
 		Token firstToken = ctx.getStart();
 		Token lastToken = ctx.getStop();
 		int lineStart = firstToken.getStartIndex();
 
-	
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 
 		// Add to the editor folding action if enabled in the preferences!
@@ -216,13 +242,10 @@ public class RBaseListen extends RBaseListener {
 	/* if condition 2 of grammar file! */
 	public void enterE22(RParser.E22Context ctx) {
 
-		
-
 		Token firstToken = ctx.getStart();
 		Token lastToken = ctx.getStop();
 		int lineStart = firstToken.getStartIndex();
 
-		
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 
 		// Add to the editor folding action if enabled in the preferences!
@@ -235,13 +258,10 @@ public class RBaseListen extends RBaseListener {
 	/* for loop! */
 	public void enterE23(RParser.E23Context ctx) {
 
-		
-
 		Token firstToken = ctx.getStart();
 		Token lastToken = ctx.getStop();
 		int lineStart = firstToken.getStartIndex();
 
-		
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 
 		// Add to the editor folding action if enabled in the preferences!
@@ -254,14 +274,11 @@ public class RBaseListen extends RBaseListener {
 	/* while loop! */
 	public void enterE24(RParser.E24Context ctx) {
 
-		
-
 		Token firstToken = ctx.getStart();
 		Token lastToken = ctx.getStop();
-		
+
 		int lineStart = firstToken.getStartIndex();
 
-		
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 
 		// Add to the editor folding action if enabled in the preferences!
@@ -274,14 +291,11 @@ public class RBaseListen extends RBaseListener {
 	/* repeat loop! */
 	public void enterE25(RParser.E25Context ctx) {
 
-		
-
 		Token firstToken = ctx.getStart();
 		Token lastToken = ctx.getStop();
 
 		int lineStart = firstToken.getStartIndex();
 
-		
 		int lineEnd = lastToken.getStopIndex() + 1 - lineStart;
 
 		// Add to the editor folding action if enabled in the preferences!
@@ -293,97 +307,98 @@ public class RBaseListen extends RBaseListener {
 
 	@Override
 	public void enterE17VariableDeclaration(RParser.E17VariableDeclarationContext ctx) {
-       
+
 		Interval sourceInterval = ctx.getSourceInterval();
-		
+
 		Token firstToken = ctx.getStart();
 		int start = sourceInterval.a;
 		int stop = sourceInterval.b;
-		String isFunc=ctx.expr(1).start.getText();
-		
+		String isFunc = ctx.expr(1).start.getText();
+
 		if (isFunc.equals("function") == false) {
-		
+
 			int lineStart = firstToken.getStartIndex();
 
 			int line = calculateLine(lineStart);
 
-			/*Extract the token with the assignment operator and (to exclude
-			 *whitespace in stream because of the hidden() rule the whitespace is present
-			 *in the CommonTokenStream!)*/
-			  int i=start+1;
-			  Token assignOp = null;
-               while(i<=stop){
-            	   Token tok=tokens.get(i);
-            	   if(tok.getType()!=RParser.WS){
-            		   assignOp=tok;
-            		   break;
-            	   }
-            	   if(tok.getType() == RParser.EOF)
-                   {
-                       break;
-                   }
-            	   i++;
-               }
-			   
-                String op = assignOp.getText();
-				if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
-					String name =firstToken.getText();
-					if (methods.size() == 0) {
-						if (checkVarName(name)) {
-							RScope scope = scopes.peek();
-							scope.add(name);
-
-							/* Create a new a new var in current scope! */
-							RVariableSymbol var = new RVariableSymbol(name);
-							currentScope.define(var);
-
-							new REditorOutlineNode(name, line, "variable", editor.baseNode);
-						}
-
-					} else {
-						if (checkVarName(name)) {
-							RScope scope = scopes.peek();
-							scope.add(name);
-							/* Create a new a new var in current scope! */
-							RVariableSymbol var = new RVariableSymbol(name);
-							currentScope.define(var); // Define symbol in
-														// current scope
-
-							new REditorOutlineNode(name, line, "variable", methods.peek());
-						}
-
-					}
-
+			/*
+			 * Extract the token with the assignment operator and (to exclude
+			 * whitespace in stream because of the hidden() rule the whitespace
+			 * is present in the CommonTokenStream!)
+			 */
+			int i = start + 1;
+			Token assignOp = null;
+			while (i <= stop) {
+				Token tok = tokens.get(i);
+				if (tok.getType() != RParser.WS) {
+					assignOp = tok;
+					break;
 				}
-
-				else if (op.equals("->") || op.equals("->>")) {
-					String name = tokens.get(start + 2).getText();
-					if (methods.size() == 0) {
-						if (checkVarName(name)) {
-							RScope scope = scopes.peek();
-							scope.add(name);
-							/* Create a new a new var in current scope! */
-							RVariableSymbol var = new RVariableSymbol(name);
-							currentScope.define(var); // Define symbol in
-														// current scope
-							new REditorOutlineNode(name, line, "variable", editor.baseNode);
-						}
-
-					} else {
-						if (checkVarName(name)) {
-							RScope scope = scopes.peek();
-							scope.add(name);
-							/* Create a new a new var in current scope! */
-							RVariableSymbol var = new RVariableSymbol(name);
-							currentScope.define(var);
-
-							new REditorOutlineNode(name, line, "variable", methods.peek());
-						}
-					}
-
+				if (tok.getType() == RParser.EOF) {
+					break;
 				}
+				i++;
 			}
-		//}
+
+			String op = assignOp.getText();
+			if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
+				String name = firstToken.getText();
+				if (methods.size() == 0) {
+					if (checkVarName(name)) {
+						RScope scope = scopes.peek();
+						scope.add(name);
+
+						/* Create a new a new var in current scope! */
+						RVariableSymbol var = new RVariableSymbol(name);
+						currentScope.define(var);
+
+						new REditorOutlineNode(name, line, "variable", editor.baseNode);
+					}
+
+				} else {
+					if (checkVarName(name)) {
+						RScope scope = scopes.peek();
+						scope.add(name);
+						/* Create a new a new var in current scope! */
+						RVariableSymbol var = new RVariableSymbol(name);
+						currentScope.define(var); // Define symbol in
+													// current scope
+
+						new REditorOutlineNode(name, line, "variable", methods.peek());
+					}
+
+				}
+
+			}
+
+			else if (op.equals("->") || op.equals("->>")) {
+				String name = tokens.get(start + 2).getText();
+				if (methods.size() == 0) {
+					if (checkVarName(name)) {
+						RScope scope = scopes.peek();
+						scope.add(name);
+						/* Create a new a new var in current scope! */
+						RVariableSymbol var = new RVariableSymbol(name);
+						currentScope.define(var); // Define symbol in
+													// current scope
+						new REditorOutlineNode(name, line, "variable", editor.baseNode);
+					}
+
+				} else {
+					if (checkVarName(name)) {
+						RScope scope = scopes.peek();
+						scope.add(name);
+						/* Create a new a new var in current scope! */
+						RVariableSymbol var = new RVariableSymbol(name);
+						currentScope.define(var);
+
+						new REditorOutlineNode(name, line, "variable", methods.peek());
+					}
+				}
+
+			}
+		}
+		// }
 
 	}
 
@@ -413,9 +428,14 @@ public class RBaseListen extends RBaseListener {
 		 * Interval sourceInterval = ctx.getSourceInterval(); int start =
 		 * sourceInterval.a; Token assign = tokens.get(start);
 		 */
-		
+
 		Token start = ctx.start;
 		String startText = start.getText();
+		/* Get the current scope stack elements! */
+		DeclCallStore st = storeDeclCall.peek();
+		/* add the called method to the call set! */
+		st.call.add(startText);
+       System.out.println(startText);
 		/* Detect libraries and add them to the outline! */
 		if (startText.equals("library") || startText.equals("require")) {
 			Token firstToken = start;

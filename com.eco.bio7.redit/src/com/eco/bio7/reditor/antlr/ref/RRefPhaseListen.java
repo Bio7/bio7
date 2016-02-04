@@ -1,6 +1,9 @@
 package com.eco.bio7.reditor.antlr.ref;
 
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Parser;
@@ -26,16 +29,22 @@ public class RRefPhaseListen extends RBaseListener {
 	Scope currentScope; // resolve symbols starting in this scope
 	private CommonTokenStream tokens;
 	private Parser parser;
+	private Set<String> finalFuncDecl;
 
-	public RRefPhaseListen(CommonTokenStream tokens, RGlobalScope globals, ParseTreeProperty<Scope> scopes, Parser parser) {
+	public RRefPhaseListen(CommonTokenStream tokens, RGlobalScope globals, ParseTreeProperty<Scope> scopes, Set<String> finalFuncDecl, Parser parser) {
 		this.scopes = scopes;
 		this.globals = globals;
 		this.tokens = tokens;
 		this.parser = parser;
+		this.finalFuncDecl=finalFuncDecl;
 	}
 
 	public void enterProg(RParser.ProgContext ctx) {
 		currentScope = globals;
+		Iterator<String> itr = finalFuncDecl.iterator();
+        while(itr.hasNext()){
+            System.out.println("object: " + itr.next());
+        }
 
 	}
 	public void exitProg(RParser.ProgContext ctx) {
@@ -98,6 +107,8 @@ public class RRefPhaseListen extends RBaseListener {
 
 		Interval sourceInterval = ctx.getSourceInterval();
 		int start = sourceInterval.a;
+		
+		
 
 		/*
 		 * If we have at least 2 tokens else we create a function without
@@ -119,12 +130,14 @@ public class RRefPhaseListen extends RBaseListener {
 				Token st=tokens.get(ctx.getParent().getChild(0).getSourceInterval().a);
 				//System.out.println("Name is: "+name);
 				/*RSymbol meth = currentScope.resolveFuncCalls(name);
-				if (meth == null) {
-				
+				 * 
+				 */
+				boolean isNotCalled=finalFuncDecl.contains(name);
+				if (isNotCalled) {
 					
 						parser.notifyErrorListeners(st, "Warn16:Function " + name + " is defined but not used!:", null);
 					
-				}*/
+				}
 
 			}
 
