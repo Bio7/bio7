@@ -205,7 +205,7 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 		list.startStop.clear();
 		walker.walk(list, tree);
 		
-		RRefPhaseListen ref = new RRefPhaseListen(tokens,list.globals, list.scopeNew,parser);
+		RRefPhaseListen ref = new RRefPhaseListen(tokens,list.globals, list.scopeNew,list.finalFuncDecl,list.finalVarDecl,parser);
         walker.walk(ref, tree);
 		
 		/*long startTime = System.currentTimeMillis();

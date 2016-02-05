@@ -1,6 +1,9 @@
 package com.eco.bio7.reditor.antlr.ref;
 
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Parser;
@@ -26,24 +29,36 @@ public class RRefPhaseListen extends RBaseListener {
 	Scope currentScope; // resolve symbols starting in this scope
 	private CommonTokenStream tokens;
 	private Parser parser;
+	private Set<String> finalFuncDecl;
+	private Set<String> finalVarDecl;
 
-	public RRefPhaseListen(CommonTokenStream tokens, RGlobalScope globals, ParseTreeProperty<Scope> scopes, Parser parser) {
+	public RRefPhaseListen(CommonTokenStream tokens, RGlobalScope globals, ParseTreeProperty<Scope> scopes, Set<String> finalFuncDecl, Set<String> finalVarDecl, Parser parser) {
 		this.scopes = scopes;
 		this.globals = globals;
 		this.tokens = tokens;
 		this.parser = parser;
+		this.finalFuncDecl=finalFuncDecl;
+		this.finalVarDecl=finalVarDecl;
 	}
 
 	public void enterProg(RParser.ProgContext ctx) {
 		currentScope = globals;
+		/*Iterator<String> itr = finalVarDecl.iterator();
+        while(itr.hasNext()){
+            System.out.println("object: " + itr.next());
+        }*/
 
+	}
+	public void exitProg(RParser.ProgContext ctx) {
+		
+       
 	}
 
 	public void enterE30(RParser.E30Context ctx) {
 
 	}
 
-	/* Variable call! */
+	/* Variable call! To do: Need to calculate position of <- */
 	public void exitE30(RParser.E30Context ctx) {
 
 		Token tok = ctx.ID().getSymbol();
@@ -55,13 +70,17 @@ public class RRefPhaseListen extends RBaseListener {
 		if (idNextToken != null) {
 			if (idNextToken.getText().equals("=") || idNextToken.getText().equals("<-") || idNextToken.getText().equals("(")) {
 				return;
-			} else {
+			} 
+			
+			
+			else {
 				RSymbol var = currentScope.resolve(varName);
 				if (var instanceof RFunctionSymbol) {
 					return;
 					// System.out.println("Var: " + name + " is not
 					// available!");
 				}
+				
 				if (var == null) {
 					// System.out.println("Var: " + name + " is not
 					// available!");
@@ -76,15 +95,64 @@ public class RRefPhaseListen extends RBaseListener {
 	}
 
 	public void enterE17VariableDeclaration(RParser.E17VariableDeclarationContext ctx) {
-
+		Token firstToken = ctx.getStart();
+		String name=firstToken.getText();
+		//System.out.println(name);
+		/*Look up is the variable definition is used somewhere in the scope and nested scopes!*/
+		boolean isNotCalled=finalVarDecl.contains(name);
+		if (isNotCalled) {
+			
+				parser.notifyErrorListeners(firstToken, "Warn16:Variable " + name + " is defined but not used!:", null);
+			
+		}
 	}
 
 	public void exitE17VariableDeclaration(RParser.E17VariableDeclarationContext ctx) {
-
+       
 	}
 
 	public void enterE19DefFunction(RParser.E19DefFunctionContext ctx) {
 		currentScope = scopes.get(ctx);
+		Token firstToken = ctx.getStart();
+		Token lastToken = ctx.getStop();
+
+		Interval sourceInterval = ctx.getSourceInterval();
+		int start = sourceInterval.a;
+		
+		
+
+		/*
+		 * If we have at least 2 tokens else we create a function without
+		 * variable assignment!
+		 */
+		if ((start - 2) >= 0 && ctx.getParent().getChild(1) != null && ctx.getParent().getChild(2) != null) {
+
+			String op = ctx.getParent().getChild(1).getText();
+			String name = ctx.getParent().getChild(0).getText();
+			/*
+			 * Check if we have an assignment symbol available! else we create a
+			 * function without variable assignment!
+			 */
+			if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
+				/*
+				 * Check if this method is called in the current or a parent
+				 * scope!
+				 */
+				Token st=tokens.get(ctx.getParent().getChild(0).getSourceInterval().a);
+				//System.out.println("Name is: "+name);
+				/*RSymbol meth = currentScope.resolveFuncCalls(name);
+				 * 
+				 */
+				boolean isNotCalled=finalFuncDecl.contains(name);
+				if (isNotCalled) {
+					
+						parser.notifyErrorListeners(st, "Warn16:Function " + name + " is defined but not used!:", null);
+					
+				}
+
+			}
+
+		}
 
 	}
 
@@ -106,32 +174,29 @@ public class RRefPhaseListen extends RBaseListener {
 		// System.out.println("Argument size: "+sub.size());
 		int callSize = sub.size();
 		String callText = sub.get(0).getText();
-		// System.out.println("Argument: "+ sub.get(0).getText());
-		// System.out.println("***********************************************************");
+		
 
 		String funcName = stop.getText();
-		/*
-		 * IEditorPart editor = (IEditorPart)
-		 * PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().
-		 * getActiveEditor(); if(editor instanceof REditor){ REditor
-		 * edit=(REditor) editor; RCompletionProcessor processor =
-		 * edit.getRconf().getProcessor();
-		 */
-		if (CalculateRProposals.stat != null) {
-			if (funcName != null && CalculateRProposals.stat.containsValue(funcName)) {
-				return;
-			}
-		}
+		
+		
 		/* Return number of args and names after function call! */
 		RSymbol meth = currentScope.resolve(funcName);
 
 		if (meth == null) {
+			/*If we do not find the functions in the current file we search in the loaded packages!*/
+			if (CalculateRProposals.stat != null) {
+				if (funcName != null && CalculateRProposals.stat.containsValue(funcName)) {
+					return;
+				}
+			}
 			parser.notifyErrorListeners(stop, "Warn16:Function not available?: " + funcName + " seems to be missing!", null);
 
 			// System.out.println("Function: " + funcName + " is not
 			// available!");
-		} else if (meth != null && meth instanceof RFunctionSymbol) {
+		} else if (meth instanceof RFunctionSymbol) {
 			RFunctionSymbol me = (RFunctionSymbol) meth;
+			/*Add boolean true to mark the method as used!*/
+	           me.setUsed(true);
 			/* If the function has arguments! */
 
 			if (me.getFormlist() != null) {
@@ -158,9 +223,10 @@ public class RRefPhaseListen extends RBaseListener {
 
 							}
 
-							System.out.println("sie: " + formList.size());
-							System.out.println("The following arg is missing: " + str.toString());
-							parser.notifyErrorListeners(stop, "Warn16:The following arg is missing-> " + str.toString() + ": ", null);
+							// System.out.println("sie: " + formList.size());
+							// System.out.println("The following arg is missing:
+							// " + str.toString());
+							parser.notifyErrorListeners(stop, "Warn16:The following args are missing -> " + str.toString() + ": ", null);
 						}
 
 						else if (callSize > functionDefSize) {
@@ -170,14 +236,13 @@ public class RRefPhaseListen extends RBaseListener {
 							 */
 							FormContext fo = formList.get(functionDefSize - 1);
 							String ar = fo.getText();
-							System.out.println("text is: " + ar);
+							// System.out.println("text is: " + ar);
 
 							parser.notifyErrorListeners(stop, "Warn16:To many args in function call!: ", null);
 
-						} 
-						
-					}
-					else {
+						}
+
+					} else {
 
 						StringBuffer str2 = new StringBuffer();
 						// List<FormContext> formList =
@@ -191,15 +256,16 @@ public class RRefPhaseListen extends RBaseListener {
 							}
 
 						}
-						System.out.println("Empty comma calls: " + formList.size());
-						parser.notifyErrorListeners(stop, "Warn16:The following arg is missing-> " + str2.toString() + ": ", null);
-						System.out.println("The following arg is missing: " + str2.toString());
+						// System.out.println("Empty comma calls: " +
+						// formList.size());
+						parser.notifyErrorListeners(stop, "Warn16:The following args are missing -> " + str2.toString() + ": ", null);
+						// System.out.println("The following arg is missing: " +
+						// str2.toString());
 
 					}
-					
 
 				} else {
-					System.out.println("Ellipsis: ...");
+					// System.out.println("Ellipsis: ...");
 
 				}
 				/*
@@ -231,22 +297,24 @@ public class RRefPhaseListen extends RBaseListener {
 			 * has!
 			 */
 			else {
-				if (callText.isEmpty() == false) {
+				if (argText.isEmpty() == false) {
 					parser.notifyErrorListeners(stop, "Warn16:The function definiton has no arguments to call! ", null);
-					System.out.println("The function definiton has no arguments to call!");
+					System.out.println("calltext " + callText);
 				}
 			}
-
+			
+			
 		}
 
-		if (meth instanceof RVariableSymbol) {
+		else if (meth instanceof RVariableSymbol) {
 			// System.out.println("Function: "+funcName+" is not a function!");
 			// System.out.println("Function: " + funcName + " is not
 			// available!");
 			parser.notifyErrorListeners(stop, "Warn16:Function not available? " + funcName + ": seems to be missing!", null);
 
 		}
-
+		
+	
 	}
 
 	public void exitE20CallFunction(RParser.E20CallFunctionContext ctx) {
