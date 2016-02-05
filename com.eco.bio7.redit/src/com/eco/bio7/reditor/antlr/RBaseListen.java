@@ -11,31 +11,27 @@
 package com.eco.bio7.reditor.antlr;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
-import java.util.UUID;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
-import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.texteditor.IDocumentProvider;
-
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.antlr.RParser.FormContext;
 import com.eco.bio7.reditor.antlr.ref.RFunctionSymbol;
 import com.eco.bio7.reditor.antlr.ref.RGlobalScope;
-import com.eco.bio7.reditor.antlr.ref.Scope;
+import com.eco.bio7.reditor.antlr.ref.RSymbol;
 import com.eco.bio7.reditor.antlr.ref.RVariableSymbol;
+import com.eco.bio7.reditor.antlr.ref.Scope;
 import com.eco.bio7.reditor.outline.REditorOutlineNode;
 import com.eco.bio7.reditors.REditor;
 
@@ -57,6 +53,7 @@ public class RBaseListen extends RBaseListener {
 	/* A stack to store the method declarations and calls in scope! */
 	private Stack<DeclCallStore> storeDeclCall = new Stack<DeclCallStore>();
 	public Set<String> finalFuncDecl = new HashSet<String>();
+	public Set<String> finalVarDecl = new HashSet<String>();
 
 	private IPreferenceStore store;
 	public ParseTreeProperty<Scope> scopeNew = new ParseTreeProperty<Scope>();
@@ -78,13 +75,32 @@ public class RBaseListen extends RBaseListener {
 
 		globals = new RGlobalScope(null);
 		currentScope = globals;
+
 		storeDeclCall.push(new DeclCallStore());
-		
+
 	}
 
 	public void exitProg(RParser.ProgContext ctx) {
-		//storeDeclCall.pop();
+		// storeDeclCall.pop();
 		// System.out.println(globals);
+		/* Exit scope! */
+		scopes.pop();
+		if (methods.empty() == false) {
+			methods.pop();
+		}
+
+		/* Has the function be called in this scope? */
+		DeclCallStore st = storeDeclCall.peek();
+		Set<String> subScope = st.substract();
+		Set<String> subScopeVar = st.substractVars();
+
+		/* Add the scoped uncalled functions to the global store! */
+		finalFuncDecl.addAll(subScope);
+		/* Add the scoped uncalled variables to the global store! */
+		finalVarDecl.addAll(subScopeVar);
+		/* Leave the scope (remove from stack)! */
+		storeDeclCall.pop();
+		currentScope = currentScope.getEnclosingScope(); // pop scope
 	}
 
 	public void exitE19DefFunction(RParser.E19DefFunctionContext ctx) {
@@ -95,12 +111,30 @@ public class RBaseListen extends RBaseListener {
 		}
 		/* Has the function be called in this scope? */
 		DeclCallStore st = storeDeclCall.peek();
+		/* Make a snaphot of function call for bottom up transfer! */
+		Set<String> tempCall = st.call;
+		/* Make a snaphot of variable call for bottom up transfer! */
+		Set<String> tempVarCall = st.varCall;
+
 		Set<String> subScope = st.substract();
+
+		Set<String> subScopeVar = st.substractVars();
 		/* Add the scoped uncalled functions to the global store! */
+
 		finalFuncDecl.addAll(subScope);
+
+		finalVarDecl.addAll(subScopeVar);
 		/* Leave the scope (remove from stack)! */
 		storeDeclCall.pop();
 
+		DeclCallStore stAdd = storeDeclCall.peek();
+		/*
+		 * Add the function calls to the parent scope (function) if it is called
+		 * there!
+		 */
+		stAdd.call.addAll(tempCall);
+
+		stAdd.varCall.addAll(tempVarCall);
 		currentScope = currentScope.getEnclosingScope(); // pop scope
 
 	}
@@ -117,8 +151,6 @@ public class RBaseListen extends RBaseListener {
 		 * (scope.peek)!
 		 */
 		scopes.push(new RScope(scopes.peek()));
-		
-		
 
 		Token firstToken = ctx.getStart();
 		Token lastToken = ctx.getStop();
@@ -352,6 +384,13 @@ public class RBaseListen extends RBaseListener {
 						RVariableSymbol var = new RVariableSymbol(name);
 						currentScope.define(var);
 
+						DeclCallStore st = storeDeclCall.peek();
+						/*
+						 * Add the called var to the call set to detect unused
+						 * vaiables!
+						 */
+						st.varDecl.add(name);
+
 						new REditorOutlineNode(name, line, "variable", editor.baseNode);
 					}
 
@@ -363,6 +402,12 @@ public class RBaseListen extends RBaseListener {
 						RVariableSymbol var = new RVariableSymbol(name);
 						currentScope.define(var); // Define symbol in
 													// current scope
+						DeclCallStore st = storeDeclCall.peek();
+						/*
+						 * Add the called var to the call set to detect unused
+						 * vaiables!
+						 */
+						st.varDecl.add(name);
 
 						new REditorOutlineNode(name, line, "variable", methods.peek());
 					}
@@ -381,6 +426,13 @@ public class RBaseListen extends RBaseListener {
 						RVariableSymbol var = new RVariableSymbol(name);
 						currentScope.define(var); // Define symbol in
 													// current scope
+						DeclCallStore st = storeDeclCall.peek();
+						/*
+						 * Add the called var to the call set to detect unused
+						 * vaiables!
+						 */
+						st.varDecl.add(name);
+
 						new REditorOutlineNode(name, line, "variable", editor.baseNode);
 					}
 
@@ -391,6 +443,13 @@ public class RBaseListen extends RBaseListener {
 						/* Create a new a new var in current scope! */
 						RVariableSymbol var = new RVariableSymbol(name);
 						currentScope.define(var);
+
+						DeclCallStore st = storeDeclCall.peek();
+						/*
+						 * Add the called var to the call set to detect unused
+						 * vaiables!
+						 */
+						st.varDecl.add(name);
 
 						new REditorOutlineNode(name, line, "variable", methods.peek());
 					}
@@ -435,7 +494,7 @@ public class RBaseListen extends RBaseListener {
 		DeclCallStore st = storeDeclCall.peek();
 		/* add the called method to the call set! */
 		st.call.add(startText);
-       System.out.println(startText);
+
 		/* Detect libraries and add them to the outline! */
 		if (startText.equals("library") || startText.equals("require")) {
 			Token firstToken = start;
@@ -467,14 +526,7 @@ public class RBaseListen extends RBaseListener {
 
 	@Override
 	public void exitE20CallFunction(RParser.E20CallFunctionContext ctx) {
-		/*
-		 * Interval sourceInterval = ctx.getSourceInterval(); int start =
-		 * sourceInterval.a; String name = tokens.get(start).getText(); String
-		 * op = tokens.get(start + 1).getText();
-		 * if(op.equals("<-")||op.equals("=")||op.equals("<<-")){
-		 * name=tokens.get(start + 2).getText(); }
-		 * System.out.println("function:"+name);
-		 */
+
 	}
 
 	/*
@@ -613,8 +665,28 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	@Override
+	/* ID call (variables) Need to calculate position of <-  */
 	public void enterE30(RParser.E30Context ctx) {
+		Token tok = ctx.ID().getSymbol();
+		// System.out.println("Token Text: "+tok.getText());
+		String varName = tok.getText();
+		int index = tok.getTokenIndex();
+		Token idNextToken = tokens.get(index + 1);
+		// System.out.println("Next Symbol= "+idNextToken.getText());
+		if (idNextToken != null) {
+			if (idNextToken.getText().equals("=") || idNextToken.getText().equals("<-") || idNextToken.getText().equals("(")) {
+				return;
+			}
+
+			else {
+				/* Get the current scope stack elements! */
+				DeclCallStore st = storeDeclCall.peek();
+				/* Add the called method to the call set! */
+				st.varCall.add(varName);
+
+			}
+		}
+
 		/*
 		 * Interval sourceInterval = ctx.getSourceInterval(); int start =
 		 * sourceInterval.a; String name = tokens.get(start).getText(); String

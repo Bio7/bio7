@@ -30,21 +30,23 @@ public class RRefPhaseListen extends RBaseListener {
 	private CommonTokenStream tokens;
 	private Parser parser;
 	private Set<String> finalFuncDecl;
+	private Set<String> finalVarDecl;
 
-	public RRefPhaseListen(CommonTokenStream tokens, RGlobalScope globals, ParseTreeProperty<Scope> scopes, Set<String> finalFuncDecl, Parser parser) {
+	public RRefPhaseListen(CommonTokenStream tokens, RGlobalScope globals, ParseTreeProperty<Scope> scopes, Set<String> finalFuncDecl, Set<String> finalVarDecl, Parser parser) {
 		this.scopes = scopes;
 		this.globals = globals;
 		this.tokens = tokens;
 		this.parser = parser;
 		this.finalFuncDecl=finalFuncDecl;
+		this.finalVarDecl=finalVarDecl;
 	}
 
 	public void enterProg(RParser.ProgContext ctx) {
 		currentScope = globals;
-		Iterator<String> itr = finalFuncDecl.iterator();
+		/*Iterator<String> itr = finalVarDecl.iterator();
         while(itr.hasNext()){
             System.out.println("object: " + itr.next());
-        }
+        }*/
 
 	}
 	public void exitProg(RParser.ProgContext ctx) {
@@ -56,7 +58,7 @@ public class RRefPhaseListen extends RBaseListener {
 
 	}
 
-	/* Variable call! */
+	/* Variable call! To do: Need to calculate position of <- */
 	public void exitE30(RParser.E30Context ctx) {
 
 		Token tok = ctx.ID().getSymbol();
@@ -93,11 +95,20 @@ public class RRefPhaseListen extends RBaseListener {
 	}
 
 	public void enterE17VariableDeclaration(RParser.E17VariableDeclarationContext ctx) {
-
+		Token firstToken = ctx.getStart();
+		String name=firstToken.getText();
+		//System.out.println(name);
+		/*Look up is the variable definition is used somewhere in the scope and nested scopes!*/
+		boolean isNotCalled=finalVarDecl.contains(name);
+		if (isNotCalled) {
+			
+				parser.notifyErrorListeners(firstToken, "Warn16:Variable " + name + " is defined but not used!:", null);
+			
+		}
 	}
 
 	public void exitE17VariableDeclaration(RParser.E17VariableDeclarationContext ctx) {
-
+       
 	}
 
 	public void enterE19DefFunction(RParser.E19DefFunctionContext ctx) {
