@@ -244,6 +244,12 @@ public class RBaseListen extends RBaseListener {
 		currentScope.define(function); // Define function in current scope
 		scopeNew.put(ctx, function);
 		currentScope = function;
+		/* Put the method declaration name in the call set! */
+		/* Get the current scope stack elements! */
+		DeclCallStore st = storeDeclCall.peek();
+		/* add the called method to the call set! */
+		st.decl.add(ctx.start.getText());
+		storeDeclCall.push(new DeclCallStore());
 		/* Here we create the outline nodes in the Outline view! */
 		if (methods.size() == 0) {
 

@@ -19,13 +19,13 @@ import java.util.Vector;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RuleContext;
-import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Position;
@@ -33,9 +33,8 @@ import org.eclipse.jface.text.reconciler.DirtyRegion;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension;
 import org.eclipse.swt.widgets.Display;
-
+import com.eco.bio7.reditor.antlr.ErrorWarnMarkerCreation;
 import com.eco.bio7.reditor.antlr.RBaseListen;
-import com.eco.bio7.reditor.antlr.RErrorStrategy;
 import com.eco.bio7.reditor.antlr.RFilter;
 import com.eco.bio7.reditor.antlr.RLexer;
 import com.eco.bio7.reditor.antlr.RParser;
@@ -172,6 +171,7 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 		RLexer lexer = new RLexer(input);
 		
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
+		
 		UnderlineListener li=new UnderlineListener(editor);
 		RFilter filter = new RFilter(tokens);
 		/*We have to remove the filter, too! Else we get error messages on the console!*/
@@ -237,6 +237,19 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 
 		});
 		
+		ErrorWarnMarkerCreation markerJob=new ErrorWarnMarkerCreation("Create Markers",editor,li.getErrWarn());
+		
+		markerJob.addJobChangeListener(new JobChangeAdapter() {
+			public void done(IJobChangeEvent event) {
+				if (event.getResult().isOK()) {
+					
+				} else {
+					
+				}
+			}
+		});
+		markerJob.setUser(true);
+		markerJob.schedule();
 		
 
 	}
