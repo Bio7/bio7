@@ -258,18 +258,6 @@ public interface RListener extends ParseTreeListener {
 	 */
 	void exitWarn13(RParser.Warn13Context ctx);
 	/**
-	 * Enter a parse tree produced by the {@code warn15}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterWarn15(RParser.Warn15Context ctx);
-	/**
-	 * Exit a parse tree produced by the {@code warn15}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitWarn15(RParser.Warn15Context ctx);
-	/**
 	 * Enter a parse tree produced by the {@code e19DefFunction}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree

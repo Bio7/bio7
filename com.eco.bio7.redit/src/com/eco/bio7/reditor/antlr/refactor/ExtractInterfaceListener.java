@@ -97,11 +97,11 @@ public class ExtractInterfaceListener extends RBaseListener {
 
 	}
 
-	public void exitWarn15(RParser.Warn15Context ctx) {
+	/*public void exitWarn15(RParser.Warn15Context ctx) {
 
 		parser.notifyErrorListeners(ctx.extra, "Warn15:Wrong constant: 'NA' required!", null);
 
-	}
+	}*/
 
 	/*
 	 * With this error message we produce QuickFixes. The errors start with
