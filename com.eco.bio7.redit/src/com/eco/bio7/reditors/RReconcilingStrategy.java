@@ -35,6 +35,7 @@ import org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension;
 import org.eclipse.swt.widgets.Display;
 import com.eco.bio7.reditor.antlr.ErrorWarnMarkerCreation;
 import com.eco.bio7.reditor.antlr.RBaseListen;
+import com.eco.bio7.reditor.antlr.RErrorStrategy;
 import com.eco.bio7.reditor.antlr.RFilter;
 import com.eco.bio7.reditor.antlr.RLexer;
 import com.eco.bio7.reditor.antlr.RParser;
@@ -182,8 +183,8 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 		tokens.reset();
 
 		RParser parser = new RParser(tokens);
-		/*parser.removeErrorListeners();
-       parser.setErrorHandler(new RErrorStrategy());*/
+		parser.removeErrorListeners();
+       parser.setErrorHandler(new RErrorStrategy());
 		parser.setBuildParseTree(true);
 		
 		lexer.removeErrorListeners();
