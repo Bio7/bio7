@@ -12,7 +12,6 @@ package com.eco.bio7.reditors;
  *(c) 2014 - 2016 Marcel Austenfeld
  *******************************************************************************/
 
-
 import java.util.ArrayList;
 import java.util.Vector;
 
@@ -43,7 +42,6 @@ import com.eco.bio7.reditor.antlr.UnderlineListener;
 import com.eco.bio7.reditor.antlr.ref.RRefPhaseListen;
 import com.eco.bio7.reditor.outline.REditorOutlineNode;
 
-
 public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingStrategyExtension {
 
 	private REditor editor;
@@ -73,7 +71,9 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.eclipse.jface.text.reconciler.IReconcilingStrategy#setDocument(org.eclipse.jface.text.IDocument)
+	 * @see
+	 * org.eclipse.jface.text.reconciler.IReconcilingStrategy#setDocument(org.
+	 * eclipse.jface.text.IDocument)
 	 */
 	public void setDocument(IDocument document) {
 		this.fDocument = document;
@@ -83,7 +83,10 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.eclipse.jface.text.reconciler.IReconcilingStrategy#reconcile(org.eclipse.jface.text.reconciler.DirtyRegion, org.eclipse.jface.text.IRegion)
+	 * @see
+	 * org.eclipse.jface.text.reconciler.IReconcilingStrategy#reconcile(org.
+	 * eclipse.jface.text.reconciler.DirtyRegion,
+	 * org.eclipse.jface.text.IRegion)
 	 */
 	public void reconcile(DirtyRegion dirtyRegion, IRegion subRegion) {
 		initialReconcile();
@@ -92,7 +95,9 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.eclipse.jface.text.reconciler.IReconcilingStrategy#reconcile(org.eclipse.jface.text.IRegion)
+	 * @see
+	 * org.eclipse.jface.text.reconciler.IReconcilingStrategy#reconcile(org.
+	 * eclipse.jface.text.IRegion)
 	 */
 	public void reconcile(IRegion partition) {
 		initialReconcile();
@@ -101,7 +106,8 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension#setProgressMonitor(org.eclipse.core.runtime.IProgressMonitor)
+	 * @see org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension#
+	 * setProgressMonitor(org.eclipse.core.runtime.IProgressMonitor)
 	 */
 	public void setProgressMonitor(IProgressMonitor monitor) {
 		// TODO Auto-generated method stub
@@ -111,7 +117,8 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension#initialReconcile()
+	 * @see org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension#
+	 * initialReconcile()
 	 */
 	public void initialReconcile() {
 		fOffset = 0;
@@ -121,16 +128,14 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 	}
 
 	/**
-	 * next character position - used locally and only valid while {@link #calculatePositions()} is in progress.
+	 * next character position - used locally and only valid while
+	 * {@link #calculatePositions()} is in progress.
 	 */
-	
 
-
-	
 	protected void calculatePositions() {
-		
-		Vector<REditorOutlineNode>  editorOldNodes=editor.nodes;
-		/*Create the category base node for the outline! */
+
+		Vector<REditorOutlineNode> editorOldNodes = editor.nodes;
+		/* Create the category base node for the outline! */
 		editor.createNodes();
 
 		if (editor != null) {
@@ -144,55 +149,52 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-				 /*Delete all problem markers!*/
-				/*IMarker[] markers = findMyMarkers(resource);
-				int lineNumb = -1;
-				for (int i = 0; i < markers.length; i++) {
-
-					try {
-						lineNumb = (int) markers[i].getAttribute(IMarker.LINE_NUMBER);
-
-						if (lineNumb == line) {
-							markers[i].delete();
-							// System.out.println(recognizer.getRuleNames()[i]);
-						}
-					} catch (CoreException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-				}*/
+				/* Delete all problem markers! */
+				/*
+				 * IMarker[] markers = findMyMarkers(resource); int lineNumb =
+				 * -1; for (int i = 0; i < markers.length; i++) {
+				 * 
+				 * try { lineNumb = (int)
+				 * markers[i].getAttribute(IMarker.LINE_NUMBER);
+				 * 
+				 * if (lineNumb == line) { markers[i].delete(); //
+				 * System.out.println(recognizer.getRuleNames()[i]); } } catch
+				 * (CoreException e1) { // TODO Auto-generated catch block
+				 * e1.printStackTrace(); } }
+				 */
 			}
 		}
-		
-		
 
 		IDocument doc = fDocument;
 
 		ANTLRInputStream input = new ANTLRInputStream(doc.get());
 		RLexer lexer = new RLexer(input);
-		
+
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
-		
-		UnderlineListener li=new UnderlineListener(editor);
+
+		UnderlineListener li = new UnderlineListener(editor);
 		RFilter filter = new RFilter(tokens);
-		/*We have to remove the filter, too! Else we get error messages on the console!*/
+		/*
+		 * We have to remove the filter, too! Else we get error messages on the
+		 * console!
+		 */
 		filter.removeErrorListeners();
-		//filter.addErrorListener(li);
-		
+		// filter.addErrorListener(li);
+
 		filter.stream(); // call start rule: stream
 		tokens.reset();
 
 		RParser parser = new RParser(tokens);
 		parser.removeErrorListeners();
-       parser.setErrorHandler(new RErrorStrategy());
+		parser.setErrorHandler(new RErrorStrategy());
 		parser.setBuildParseTree(true);
-		
+
 		lexer.removeErrorListeners();
-		//lexer.addErrorListener(li);
+		// lexer.addErrorListener(li);
 		parser.removeErrorListeners();
 		// parser.getInterpreter().setPredictionMode(PredictionMode.LL_EXACT_AMBIG_DETECTION);
 		parser.addErrorListener(li);
-       
+
 		// Token to= parser.match(0);
 
 		// System.out.println("Errors: " + parser.getNumberOfSyntaxErrors());
@@ -200,20 +202,22 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 		ParseTreeWalker walker = new ParseTreeWalker();
 
 		RuleContext tree = parser.prog();
-		/*Create the listener to create the outline, etc.*/
+		/* Create the listener to create the outline, etc. */
 		RBaseListen list = new RBaseListen(tokens, editor, parser);
 
 		list.startStop.clear();
 		walker.walk(list, tree);
-		
-		RRefPhaseListen ref = new RRefPhaseListen(tokens,list.globals, list.scopeNew,list.finalFuncDecl,list.finalVarDecl,parser);
-        walker.walk(ref, tree);
-		
-		/*long startTime = System.currentTimeMillis();
-		
-		long stopTime = System.currentTimeMillis();
-	      long elapsedTime = stopTime - startTime;
-	      System.out.println(elapsedTime);*/
+
+		RRefPhaseListen ref = new RRefPhaseListen(tokens, list.globals, list.scopeNew, list.finalFuncDecl,
+				list.finalVarDecl, parser);
+		walker.walk(ref, tree);
+
+		/*
+		 * long startTime = System.currentTimeMillis();
+		 * 
+		 * long stopTime = System.currentTimeMillis(); long elapsedTime =
+		 * stopTime - startTime; System.out.println(elapsedTime);
+		 */
 
 		fPositions.clear();
 
@@ -229,31 +233,30 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
-				
-				
+
 				editor.updateFoldingStructure(fPositions);
 
 				editor.outlineInputChanged(editorOldNodes, editor.nodes);
 			}
 
 		});
-		
-		ErrorWarnMarkerCreation markerJob=new ErrorWarnMarkerCreation("Create Markers",editor,li.getErrWarn());
-		
+
+		ErrorWarnMarkerCreation markerJob = new ErrorWarnMarkerCreation("Create Markers", editor, li.getErrWarn());
+
 		markerJob.addJobChangeListener(new JobChangeAdapter() {
 			public void done(IJobChangeEvent event) {
 				if (event.getResult().isOK()) {
-					
+
 				} else {
-					
+
 				}
 			}
 		});
 		markerJob.setUser(true);
 		markerJob.schedule();
-		
 
 	}
+
 	public IMarker[] findMyMarkers(IResource target) {
 		String type = "org.eclipse.core.resources.problemmarker";
 
