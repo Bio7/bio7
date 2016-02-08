@@ -186,18 +186,6 @@ public interface RListener extends ParseTreeListener {
 	 */
 	void exitE17VariableDeclaration(RParser.E17VariableDeclarationContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code err21}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterErr21(RParser.Err21Context ctx);
-	/**
-	 * Exit a parse tree produced by the {@code err21}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitErr21(RParser.Err21Context ctx);
-	/**
 	 * Enter a parse tree produced by the {@code err22}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
@@ -221,18 +209,6 @@ public interface RListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitE41(RParser.E41Context ctx);
-	/**
-	 * Enter a parse tree produced by the {@code err20}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterErr20(RParser.Err20Context ctx);
-	/**
-	 * Exit a parse tree produced by the {@code err20}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitErr20(RParser.Err20Context ctx);
 	/**
 	 * Enter a parse tree produced by the {@code e19DefFunction}
 	 * labeled alternative in {@link RParser#expr}.

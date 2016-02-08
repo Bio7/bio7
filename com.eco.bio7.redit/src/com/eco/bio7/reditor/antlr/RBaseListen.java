@@ -26,6 +26,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
+import com.eco.bio7.reditor.antlr.RParser.ExprContext;
 import com.eco.bio7.reditor.antlr.RParser.FormContext;
 import com.eco.bio7.reditor.antlr.ref.RFunctionSymbol;
 import com.eco.bio7.reditor.antlr.ref.RGlobalScope;
@@ -462,8 +463,32 @@ public class RBaseListen extends RBaseListener {
 				}
 
 			}
+
 		}
-		// }
+		/* Check for wrong constants! */
+		ExprContext ctxExpr = ctx.expr(1);
+		if (ctxExpr != null) {
+			Token startctxExpr = ctxExpr.getStart();
+			String wrongConstants = ctxExpr.getStart().getText();
+			switch (wrongConstants) {
+			case "true":
+				parser.notifyErrorListeners(startctxExpr, "Warn12:Wrong constant 'TRUE' required!", null);
+				break;
+			case "false":
+				parser.notifyErrorListeners(startctxExpr, "Warn13:Wrong constant 'FALSE' required!", null);
+				break;
+
+			case "na":
+				parser.notifyErrorListeners(startctxExpr, "Warn15:Wrong constant 'NA' required!", null);
+				break;
+			case "null":
+				parser.notifyErrorListeners(startctxExpr, "Warn14:Wrong constant 'NULL' required!", null);
+				break;
+
+			default:
+				break;
+			}
+		}
 
 	}
 
@@ -609,30 +634,37 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	/* Here we create some warnings from the parser! 
-	public void exitWarn12(RParser.Warn12Context ctx) {
-
-		parser.notifyErrorListeners(ctx.extra, "Warn12:Wrong constant: 'TRUE' required!", null);
-
-	}
-
-	public void exitWarn13(RParser.Warn13Context ctx) {
-
-		parser.notifyErrorListeners(ctx.extra, "Warn13:Wrong constant: 'FALSE' required!", null);
-
-	}
-
-	public void exitWarn14(RParser.Warn14Context ctx) {
-
-		parser.notifyErrorListeners(ctx.extra, "Warn14:Wrong constant: 'NULL' required!", null);
-
-	}
-*/
-	/*public void exitWarn15(RParser.Warn15Context ctx) {
-
-		parser.notifyErrorListeners(ctx.extra, "Warn15:Wrong constant: 'NA' required!", null);
-
-	}*/
+	/*
+	 * Here we create some warnings from the parser! public void
+	 * exitWarn12(RParser.Warn12Context ctx) {
+	 * 
+	 * parser.notifyErrorListeners(ctx.extra,
+	 * "Warn12:Wrong constant: 'TRUE' required!", null);
+	 * 
+	 * }
+	 * 
+	 * public void exitWarn13(RParser.Warn13Context ctx) {
+	 * 
+	 * parser.notifyErrorListeners(ctx.extra,
+	 * "Warn13:Wrong constant: 'FALSE' required!", null);
+	 * 
+	 * }
+	 * 
+	 * public void exitWarn14(RParser.Warn14Context ctx) {
+	 * 
+	 * parser.notifyErrorListeners(ctx.extra,
+	 * "Warn14:Wrong constant: 'NULL' required!", null);
+	 * 
+	 * }
+	 */
+	/*
+	 * public void exitWarn15(RParser.Warn15Context ctx) {
+	 * 
+	 * parser.notifyErrorListeners(ctx.extra,
+	 * "Warn15:Wrong constant: 'NA' required!", null);
+	 * 
+	 * }
+	 */
 
 	/*
 	 * With this error message we produce QuickFixes. The errors start with
@@ -650,7 +682,7 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	public void exitErr20(RParser.Err20Context ctx) {
+	/*public void exitE11(RParser.Err20Context ctx) {
 
 		Token firstToken = tokens.get(ctx.getChild(1).getSourceInterval().a);
 		parser.notifyErrorListeners(firstToken, "Err20:Wrong comparison!", null);
@@ -662,7 +694,7 @@ public class RBaseListen extends RBaseListener {
 		Token firstToken = tokens.get(ctx.getChild(1).getSourceInterval().a);
 		parser.notifyErrorListeners(firstToken, "Err21:Wrong comparison!", null);
 
-	}
+	}*/
 
 	public void exitErr22(RParser.Err22Context ctx) {
 
@@ -671,7 +703,7 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	/* ID call (variables) Need to calculate position of <-  */
+	/* ID call (variables) Need to calculate position of <- */
 	public void enterE30(RParser.E30Context ctx) {
 		Token tok = ctx.ID().getSymbol();
 		// System.out.println("Token Text: "+tok.getText());

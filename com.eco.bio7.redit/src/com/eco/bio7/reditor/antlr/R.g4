@@ -77,8 +77,6 @@ expr:
     //|   'while' '(' expr  expr							#err17
     |   'for' '(' ID 'in' expr ')' extra=')' expr		#err18
     //|   'for' '(' ID 'in' expr expr						#err19
-    |	expr '=>' expr										#err20
-    |	expr '=<' expr										#err21
     |   unknowns											#err22
     ;
 unknowns : UNKNOWN+ ;//Catch all unknown tokens and delegate them to the parser!
