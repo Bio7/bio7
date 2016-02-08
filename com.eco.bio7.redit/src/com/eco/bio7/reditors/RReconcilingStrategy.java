@@ -186,6 +186,7 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 
 		RParser parser = new RParser(tokens);
 		parser.removeErrorListeners();
+		/*Add some modified error messages by implementing a custom error strategy!*/
 		parser.setErrorHandler(new RErrorStrategy());
 		parser.setBuildParseTree(true);
 
@@ -194,10 +195,6 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 		parser.removeErrorListeners();
 		// parser.getInterpreter().setPredictionMode(PredictionMode.LL_EXACT_AMBIG_DETECTION);
 		parser.addErrorListener(li);
-
-		// Token to= parser.match(0);
-
-		// System.out.println("Errors: " + parser.getNumberOfSyntaxErrors());
 
 		ParseTreeWalker walker = new ParseTreeWalker();
 

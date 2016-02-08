@@ -15,7 +15,12 @@ public class RefactorParse {
 	private BufferedTokenStream bufferTokenStream;
 	private RParser parser;
 	private ProgContext tree;
+	private StringBuffer id;
 	
+	public StringBuffer getId() {
+		return id;
+	}
+
 	public CommonTokenStream getTokens() {
 		return tokens;
 	}
@@ -30,7 +35,7 @@ public class RefactorParse {
 
 
 	/* Here we parse the text and test for possible errors! */
-	public boolean parseSource(String fullText) {
+	public boolean parseSource(String fullText,boolean captureId) {
 		boolean errors;
 		ANTLRInputStream input = new ANTLRInputStream(fullText);
 		RLexer lexer = new RLexer(input);
@@ -52,9 +57,11 @@ public class RefactorParse {
 		tree = parser.prog();
 		ParseTreeWalker walker = new ParseTreeWalker(); // create standard
 														// walker
-		ExtractInterfaceListener extractor = new ExtractInterfaceListener(tokens, parser);
+		ExtractInterfaceListener extractor = new ExtractInterfaceListener(tokens, parser,captureId);
 		walker.walk(extractor, tree);
-
+		id=extractor.capId;
+		
+		
 		if (parser.getNumberOfSyntaxErrors() == 0) {
 			errors = false;
 		} else {

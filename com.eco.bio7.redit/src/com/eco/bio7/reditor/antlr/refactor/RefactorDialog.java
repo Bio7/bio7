@@ -26,7 +26,21 @@ public class RefactorDialog extends Dialog {
 
 	private Button globalCheckbox;
 
+	private String id;
 	
+	public Text args;
+
+	private String argsText;
+
+	
+
+	public String getArgsText() {
+		return argsText;
+	}
+
+	public void setArgsText(String argsText) {
+		this.argsText = argsText;
+	}
 
 	public boolean isGlobal() {
 		return global;
@@ -47,9 +61,11 @@ public class RefactorDialog extends Dialog {
 	/**
 	 * Create the dialog.
 	 * @param parentShell
+	 * @param iD 
 	 */
-	public RefactorDialog(Shell parentShell) {
+	public RefactorDialog(Shell parentShell, String id) {
 		super(parentShell);
+		this.id=id;
 	}
 
 	/**
@@ -83,6 +99,10 @@ public class RefactorDialog extends Dialog {
 		    }  
 		});
 		
+		
+		args = new Text(container, SWT.BORDER);
+		args.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		args.setText(id);
 		globalCheckbox = new Button(container, SWT.CHECK);
 		GridData gd_btnCheckButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_btnCheckButton.heightHint = 25;
@@ -115,7 +135,7 @@ public class RefactorDialog extends Dialog {
 	 private void saveInput() {
 		    value = text.getText();
 		    global=globalCheckbox.getSelection();
-		   
+		    argsText=args.getText();
 
 		  }
 

@@ -29,6 +29,7 @@ public class ExtractMethod implements IEditorActionDelegate {
 	private IEditorPart targetEditor;
 	private TokenStreamRewriter rewriter;
 	private boolean global;
+	private String args;
 
 	public void setActiveEditor(final IAction action, final IEditorPart targetEditor) {
 		this.targetEditor = targetEditor;
@@ -101,14 +102,20 @@ public class ExtractMethod implements IEditorActionDelegate {
 			
 			
 
-			/* First parse of the selection! */
-			boolean errors = parse.parseSource(text);
+			/* First parse of the selection with a capture of the available variables (ID's)! */
+			boolean errors = parse.parseSource(text,true);
 			if (errors == false) {
-
-				RefactorDialog dlg = new RefactorDialog(Display.getCurrent().getActiveShell());
+				StringBuffer buffIds=parse.getId();
+	               String iD=buffIds.toString();
+	               if(iD.isEmpty()==false){
+	               iD = iD.substring(0, iD.length()-1);
+	               }
+	               
+				RefactorDialog dlg = new RefactorDialog(Display.getCurrent().getActiveShell(),iD);
 				if (dlg.open() == Window.OK) {
 					// User clicked OK; update the label with the input
 					functionName = dlg.getValue();
+					args=dlg.getArgsText();
 					global = dlg.isGlobal();
 				} else {
 					return;
@@ -153,7 +160,7 @@ public class ExtractMethod implements IEditorActionDelegate {
 			}
 			/* Second parse of the whole text without the selected text! */
 			String fullTextWithoutSel = doc.get();
-			boolean error = parse.parseSource(fullTextWithoutSel);
+			boolean error = parse.parseSource(fullTextWithoutSel,false);
 
 			/* Extract selection offset! */
 			int selectionOffset = selection.getOffset();
@@ -215,7 +222,14 @@ public class ExtractMethod implements IEditorActionDelegate {
 				}
 				/*Wrap in function!*/
 				buff.append(functionName);
+				if(args!=null&&args.isEmpty()==false){
+					buff.append("<-function(");
+					buff.append(args);
+					buff.append("){");
+				}
+				else{
 				buff.append("<-function(){");
+				}
 				buff.append(System.lineSeparator());
 
 				if (numWhite > 0) {
@@ -324,7 +338,7 @@ public class ExtractMethod implements IEditorActionDelegate {
 				return;
 			}
 			/* Third parse for the final result! */
-			boolean errorNewText = parse.parseSource(rewriter.getText());
+			boolean errorNewText = parse.parseSource(rewriter.getText(),false);
 
 			if (errorNewText == false) {
 				/* Write to the editor! */

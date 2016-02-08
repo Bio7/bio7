@@ -59,10 +59,10 @@ public class ExtractVariable implements IEditorActionDelegate {
 			}
 			RefactorParse parse = new RefactorParse();
 			/* First parse of the selection! */
-			boolean errors = parse.parseSource(text);
+			boolean errors = parse.parseSource(text,false);
 			if (errors == false) {
 
-				RefactorDialog dlg = new RefactorDialog(Display.getCurrent().getActiveShell());
+				RefactorDialog dlg = new RefactorDialog(Display.getCurrent().getActiveShell(),null);
 				if (dlg.open() == Window.OK) {
 					// User clicked OK; update the label with the input
 					varName = dlg.getValue();
@@ -81,7 +81,7 @@ public class ExtractVariable implements IEditorActionDelegate {
 			}
 			/* Second parse of the whole text without the selected text! */
 			String fullTextWithoutSel = doc.get();
-			boolean error = parse.parseSource(fullTextWithoutSel);
+			boolean error = parse.parseSource(fullTextWithoutSel,false);
 
 			/* Extract selection offset! */
 			int selectionOffset = selection.getOffset();
@@ -174,7 +174,7 @@ public class ExtractVariable implements IEditorActionDelegate {
 				return;
 			}
 			/* Third parse for the final result! */
-			boolean errorNewText = parse.parseSource(rewriter.getText());
+			boolean errorNewText = parse.parseSource(rewriter.getText(),false);
 
 			if (errorNewText == false) {
 				/* Write to the editor! */

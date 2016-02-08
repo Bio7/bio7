@@ -151,6 +151,7 @@ public class RBaseListen extends RBaseListener {
 		 * Insert function as current scope with a parent current scope
 		 * (scope.peek)!
 		 */
+		
 		scopes.push(new RScope(scopes.peek()));
 
 		Token firstToken = ctx.getStart();
@@ -360,24 +361,7 @@ public class RBaseListen extends RBaseListener {
 
 			int line = calculateLine(lineStart);
 
-			/*
-			 * Extract the token with the assignment operator and (to exclude
-			 * whitespace in stream because of the hidden() rule the whitespace
-			 * is present in the CommonTokenStream!)
-			 */
-			int i = start + 1;
-			Token assignOp = null;
-			while (i <= stop) {
-				Token tok = tokens.get(i);
-				if (tok.getType() != RParser.WS) {
-					assignOp = tok;
-					break;
-				}
-				if (tok.getType() == RParser.EOF) {
-					break;
-				}
-				i++;
-			}
+			Token assignOp = whitespaceTokenFilter(start, stop);
 
 			String op = assignOp.getText();
 			if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
@@ -682,19 +666,21 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	/*public void exitE11(RParser.Err20Context ctx) {
-
-		Token firstToken = tokens.get(ctx.getChild(1).getSourceInterval().a);
-		parser.notifyErrorListeners(firstToken, "Err20:Wrong comparison!", null);
-
-	}
-
-	public void exitErr21(RParser.Err21Context ctx) {
-
-		Token firstToken = tokens.get(ctx.getChild(1).getSourceInterval().a);
-		parser.notifyErrorListeners(firstToken, "Err21:Wrong comparison!", null);
-
-	}*/
+	/*
+	 * public void exitE11(RParser.Err20Context ctx) {
+	 * 
+	 * Token firstToken = tokens.get(ctx.getChild(1).getSourceInterval().a);
+	 * parser.notifyErrorListeners(firstToken, "Err20:Wrong comparison!", null);
+	 * 
+	 * }
+	 * 
+	 * public void exitErr21(RParser.Err21Context ctx) {
+	 * 
+	 * Token firstToken = tokens.get(ctx.getChild(1).getSourceInterval().a);
+	 * parser.notifyErrorListeners(firstToken, "Err21:Wrong comparison!", null);
+	 * 
+	 * }
+	 */
 
 	public void exitErr22(RParser.Err22Context ctx) {
 
@@ -705,11 +691,15 @@ public class RBaseListen extends RBaseListener {
 
 	/* ID call (variables) Need to calculate position of <- */
 	public void enterE30(RParser.E30Context ctx) {
+		
 		Token tok = ctx.ID().getSymbol();
 		// System.out.println("Token Text: "+tok.getText());
 		String varName = tok.getText();
 		int index = tok.getTokenIndex();
-		Token idNextToken = tokens.get(index + 1);
+		
+		Token idNextToken =whitespaceTokenFilter(index,ctx.stop.getStopIndex());
+		
+		//Token idNextToken = tokens.get(index + 1);
 		// System.out.println("Next Symbol= "+idNextToken.getText());
 		if (idNextToken != null) {
 			if (idNextToken.getText().equals("=") || idNextToken.getText().equals("<-") || idNextToken.getText().equals("(")) {
@@ -724,15 +714,30 @@ public class RBaseListen extends RBaseListener {
 
 			}
 		}
+	}
+	/*
+	 * Extract the token with the assignment operator and (to exclude whitespace
+	 * in stream because of the hidden() rule the whitespace is present in the
+	 * CommonTokenStream!)
+	 */
 
-		/*
-		 * Interval sourceInterval = ctx.getSourceInterval(); int start =
-		 * sourceInterval.a; String name = tokens.get(start).getText(); String
-		 * op = tokens.get(start + 1).getText();
-		 * if(op.equals("<-")||op.equals("=")||op.equals("<<-")){
-		 * name=tokens.get(start + 2).getText(); }
-		 * System.out.println("ID:"+name);
-		 */
+	private Token whitespaceTokenFilter(int start, int stop) {
+
+		int i = start + 1;
+		Token assignOp = null;
+		while (i <= stop) {
+			Token tok = tokens.get(i);
+			if (tok.getType() != RParser.WS) {
+				assignOp = tok;
+				break;
+			}
+			if (tok.getType() == RParser.EOF) {
+				break;
+			}
+			i++;
+		}
+		
+		return assignOp;
 	}
 
 }
