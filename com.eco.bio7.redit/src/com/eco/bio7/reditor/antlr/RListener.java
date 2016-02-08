@@ -234,30 +234,6 @@ public interface RListener extends ParseTreeListener {
 	 */
 	void exitErr20(RParser.Err20Context ctx);
 	/**
-	 * Enter a parse tree produced by the {@code warn14}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterWarn14(RParser.Warn14Context ctx);
-	/**
-	 * Exit a parse tree produced by the {@code warn14}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitWarn14(RParser.Warn14Context ctx);
-	/**
-	 * Enter a parse tree produced by the {@code warn13}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterWarn13(RParser.Warn13Context ctx);
-	/**
-	 * Exit a parse tree produced by the {@code warn13}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitWarn13(RParser.Warn13Context ctx);
-	/**
 	 * Enter a parse tree produced by the {@code e19DefFunction}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
@@ -269,18 +245,6 @@ public interface RListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitE19DefFunction(RParser.E19DefFunctionContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code warn12}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterWarn12(RParser.Warn12Context ctx);
-	/**
-	 * Exit a parse tree produced by the {@code warn12}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitWarn12(RParser.Warn12Context ctx);
 	/**
 	 * Enter a parse tree produced by the {@code err3}
 	 * labeled alternative in {@link RParser#expr}.

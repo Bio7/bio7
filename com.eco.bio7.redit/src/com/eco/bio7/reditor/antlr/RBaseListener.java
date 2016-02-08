@@ -244,30 +244,6 @@ public class RBaseListener implements RListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterWarn14(RParser.Warn14Context ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitWarn14(RParser.Warn14Context ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterWarn13(RParser.Warn13Context ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitWarn13(RParser.Warn13Context ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterE19DefFunction(RParser.E19DefFunctionContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -275,18 +251,6 @@ public class RBaseListener implements RListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitE19DefFunction(RParser.E19DefFunctionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterWarn12(RParser.Warn12Context ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitWarn12(RParser.Warn12Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

@@ -78,7 +78,7 @@ public class ExtractInterfaceListener extends RBaseListener {
 
 	}
 
-	/* Here we create some warnings from the parser! */
+	/* Here we create some warnings from the parser! 
 	public void exitWarn12(RParser.Warn12Context ctx) {
 
 		parser.notifyErrorListeners(ctx.extra, "Warn12:Wrong constant: 'TRUE' required!", null);
@@ -95,7 +95,7 @@ public class ExtractInterfaceListener extends RBaseListener {
 
 		parser.notifyErrorListeners(ctx.extra, "Warn14:Wrong constant: 'NULL' required!", null);
 
-	}
+	}*/
 
 	/*public void exitWarn15(RParser.Warn15Context ctx) {
 

@@ -73,10 +73,6 @@ expr:
    // |	'(' expr         							    #e28Error2
    // | 	'{'  exprlist  	 								#err10
     |	'{' exprlist  '}' extra='}'						#err11
-    |	extra='true'									#warn12
-    |	extra='false'									#warn13
-    |	extra='null'									#warn14
-  //  |	extra='na'										#warn15
     |   'while' '(' expr ')' extra=')' expr				#err16
     //|   'while' '(' expr  expr							#err17
     |   'for' '(' ID 'in' expr ')' extra=')' expr		#err18
