@@ -32,12 +32,17 @@ import org.eclipse.jface.text.templates.TemplateException;
 import org.eclipse.jface.text.templates.TemplateProposal;
 import org.eclipse.jface.window.DefaultToolTip;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.PopupList;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditors.TemplateEditorUI;
+
+import jdk.nashorn.tools.Shell;
 
 /**
  * A completion processor for R templates.
@@ -159,6 +164,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		 */
 		if (prefix.endsWith("(")) {
 			prefix = tooltipAction(viewer, offset, prefix, leng);
+			
 			/* Return null so that no information center is shown! */
 			return null;
 		} else {
@@ -230,25 +236,54 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 	/* Method to open a tooltip instead of the template suggestions! */
 	private String tooltipAction(ITextViewer viewer, int offset, String prefix, int leng) {
+		/*trim the method name!*/
 		prefix = prefix.substring(0, leng - 1);
 		prefix = prefix.trim();
 
 		for (int i = 0; i < CalculateRProposals.statisticsSet.length; i++) {
-
+            /*Do we have the method in the proposals?*/
 			if (prefix.equals(CalculateRProposals.statistics[i])) {
 				
-				tooltip = new DefaultToolTip(viewer.getTextWidget(), SWT.NONE, true);
-				tooltip.setText(CalculateRProposals.statisticsSet[i]);
+				//tooltip = new DefaultToolTip(viewer.getTextWidget(), SWT.NONE, true);
+				//tooltip.setText(CalculateRProposals.statisticsSet[i]);
 				/* Show the tooltip at the specified location*/
 				StyledText te = viewer.getTextWidget();
 				Font f = te.getFont();
-				tooltip.setFont(f);
+				//tooltip.setFont(f);
 				/* Corrections for the fontsize! */
 				int height = f.getFontData()[0].getHeight();
 				Point p = te.getLocationAtOffset(offset);
-				Point p2 = new Point(p.x, p.y - 30 - height);
+				//Point p2 = new Point(p.x, p.y - 30 - height);
 
-				tooltip.show(p2);
+				//tooltip.show(p2);
+				StyledText sh=viewer.getTextWidget();
+				
+				Point poi=sh.getLocationAtOffset(offset);
+				poi=sh.toDisplay(poi);
+				int locx=poi.x;
+				int locy=poi.y;
+				 PopupList list = new PopupList(viewer.getTextWidget().getShell());
+				 String calc=CalculateRProposals.statisticsSet[i];
+				 int parOpen = calc.indexOf("(");
+				 int parClose = calc.indexOf(")");
+				 calc = calc.substring(parOpen+1, parClose);
+				 String[] splitMethod =calc.split(",");
+				
+				
+			        //String[] OPTIONS = { CalculateRProposals.statisticsSet[i], "B", "C"};
+                    list.setFont(f);
+			        list.setItems(splitMethod);
+                    Rectangle rect=new Rectangle(locx, locy - height-150,300,200);
+			        String selected = list.open(rect);
+                    try {
+						viewer.getDocument().replace(offset, 0, selected);
+					} catch (BadLocationException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+			       // System.out.println(selected);
+				
+				
 				// tooltip.setHideDelay(-5);
 			}
 		}

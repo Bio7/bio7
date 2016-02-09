@@ -295,11 +295,11 @@ public class REditor extends TextEditor {
 						@Override
 						public void mouseUp(MouseEvent e) {
 							/*Hide the code completion tooltip if the mouse is clicked!*/
-							RCompletionProcessor processor = getRconf().getProcessor();
+							/*RCompletionProcessor processor = getRconf().getProcessor();
 							DefaultToolTip tip = processor.getTooltip();
 							if (tip != null) {
 								tip.hide();
-							}
+							}*/
 						}
 
 					});

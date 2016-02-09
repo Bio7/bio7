@@ -223,9 +223,6 @@ public class RRefPhaseListen extends RBaseListener {
 
 							}
 
-							// System.out.println("sie: " + formList.size());
-							// System.out.println("The following arg is missing:
-							// " + str.toString());
 							parser.notifyErrorListeners(stop, "Warn16:The following args are missing -> " + str.toString() + ": ", null);
 						}
 
@@ -245,8 +242,7 @@ public class RRefPhaseListen extends RBaseListener {
 					} else {
 
 						StringBuffer str2 = new StringBuffer();
-						// List<FormContext> formList =
-						// me.getFormlist().form();
+						
 						for (int i = 0; i < formList.size(); i++) {
 							FormContext fo = formList.get(i);
 							TerminalNode ar = fo.ID();
@@ -268,28 +264,7 @@ public class RRefPhaseListen extends RBaseListener {
 					// System.out.println("Ellipsis: ...");
 
 				}
-				/*
-				 * If we have no arguments in the function call (we have to
-				 * control the sublist because a sub token could also be an
-				 * empty string according to the grammar definition!)
-				 */
-				/*
-				 * } else {
-				 * 
-				 * StringBuffer str = new StringBuffer(); // List<FormContext>
-				 * formList = me.getFormlist().form(); for (int i = 0; i <
-				 * formList.size(); i++) { FormContext fo = formList.get(i);
-				 * TerminalNode ar = fo.ID(); str.append(ar); if (i <
-				 * formList.size() - 1) { str.append(", "); }
-				 * 
-				 * } System.out.println("Empty comma calls: " +
-				 * formList.size()); parser.notifyErrorListeners(stop,
-				 * "Warn16:The following arg is missing-> " + str.toString() +
-				 * ": ", null); System.out.println(
-				 * "The following arg is missing: " + str.toString());
-				 * 
-				 * }
-				 */
+				
 
 			}
 			/*
