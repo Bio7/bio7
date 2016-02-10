@@ -49,14 +49,12 @@ public class InterpretR extends Action {
 		if (utils != null) {
 			utils.cons.clear();
 		}
-		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench()
-				.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		if (editor.isDirty()) {
 			editor.doSave(new NullProgressMonitor());
 		}
 
-		IDocument doc = ((ITextEditor) editor).getDocumentProvider()
-				.getDocument(editor.getEditorInput());
+		IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
 		RConnection d = RServe.getConnection();
 		IEditorInput editorInput = editor.getEditorInput();
 		IFile aFile = null;
@@ -66,24 +64,20 @@ public class InterpretR extends Action {
 		}
 		String loc = aFile.getLocation().toString();
 
-		boolean remote = Bio7Plugin.getDefault().getPreferenceStore()
-				.getBoolean("REMOTE");
+		boolean remote = Bio7Plugin.getDefault().getPreferenceStore().getBoolean("REMOTE");
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		// boolean rPipe = store.getBoolean("r_pipe");
 
 		if (d == null) {
-			String selectionConsole = ConsolePageParticipant
-					.getInterpreterSelection();
+			String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 
 			if (selectionConsole.equals("R")) {
 
-				ConsolePageParticipant.pipeInputToConsole("source('" + loc
-						+ "')", true, true);
+				ConsolePageParticipant.pipeInputToConsole("source('" + loc + "')", true, true);
 				System.out.print("source('" + loc + "')");
 				System.out.println();
 			} else {
-				Bio7Dialog
-						.message("Please start the \"Native R\" shell in the Bio7 console!");
+				Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
 			}
 
 		} else {

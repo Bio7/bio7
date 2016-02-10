@@ -14,6 +14,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.RuleContext;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
@@ -38,8 +43,18 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.texteditor.ITextEditor;
+import org.rosuda.REngine.Rserve.RConnection;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
+import com.eco.bio7.reditor.antlr.RBaseListen;
+import com.eco.bio7.reditor.antlr.RErrorStrategy;
+import com.eco.bio7.reditor.antlr.RFilter;
+import com.eco.bio7.reditor.antlr.RLexer;
+import com.eco.bio7.reditor.antlr.RParser;
+import com.eco.bio7.reditor.antlr.UnderlineListener;
+import com.eco.bio7.reditor.antlr.ref.RRefPhaseListen;
+import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.reditors.TemplateEditorUI;
 
 import jdk.nashorn.tools.Shell;
@@ -66,10 +81,16 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 	private DefaultToolTip tooltip;
 
-	public RCompletionProcessor() {
-        /*At startup load the default R proposals and add them to the templates!*/
+	private REditor editor;
+
+	public RCompletionProcessor(REditor rEditor) {
+		this.editor = rEditor;
+		/*
+		 * At startup load the default R proposals and add them to the
+		 * templates!
+		 */
 		CalculateRProposals.loadRCodePackageTemplates();
-		
+
 		store = Bio7REditorPlugin.getDefault().getPreferenceStore();
 
 	}
@@ -131,8 +152,9 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 	 *         <code>prefix</code>
 	 */
 	protected int getRelevance(Template template, String prefix) {
-		/*if (prefix.startsWith("("))
-			prefix = prefix.substring(1);*/
+		/*
+		 * if (prefix.startsWith("(")) prefix = prefix.substring(1);
+		 */
 		if (template.getName().startsWith(prefix))
 			return 90;
 		return 0;
@@ -162,9 +184,10 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		 * In parentheses we show an popup instead of the completion dialog! We
 		 * return null to avoid the opening of the template dialog!
 		 */
+		
 		if (prefix.endsWith("(")) {
 			prefix = tooltipAction(viewer, offset, prefix, leng);
-			
+
 			/* Return null so that no information center is shown! */
 			return null;
 		} else {
@@ -236,6 +259,68 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 	/* Method to open a tooltip instead of the template suggestions! */
 	private String tooltipAction(ITextViewer viewer, int offset, String prefix, int leng) {
+
+		IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
+
+		ANTLRInputStream input = new ANTLRInputStream(doc.get());
+		RLexer lexer = new RLexer(input);
+
+		CommonTokenStream tokens = new CommonTokenStream(lexer);
+
+		UnderlineListener li = new UnderlineListener(editor);
+		RFilter filter = new RFilter(tokens);
+		/*
+		 * We have to remove the filter, too! Else we get error messages on the
+		 * console!
+		 */
+		filter.removeErrorListeners();
+		// filter.addErrorListener(li);
+
+		filter.stream(); // call start rule: stream
+		tokens.reset();
+
+		RParser parser = new RParser(tokens);
+		parser.removeErrorListeners();
+		/*
+		 * Add some modified error messages by implementing a custom error
+		 * strategy!
+		 */
+		parser.setErrorHandler(new RErrorStrategy());
+		parser.setBuildParseTree(true);
+
+		lexer.removeErrorListeners();
+		// lexer.addErrorListener(li);
+		parser.removeErrorListeners();
+		// parser.getInterpreter().setPredictionMode(PredictionMode.LL_EXACT_AMBIG_DETECTION);
+		parser.addErrorListener(li);
+
+		ParseTreeWalker walker = new ParseTreeWalker();
+
+		RuleContext tree = parser.prog();
+		/* Create the listener to create the outline, etc. */
+		RBaseListen list = new RBaseListen(tokens, editor, parser);
+
+		list.startStop.clear();
+		walker.walk(list, tree);
+
+		RRefPhaseListen ref = new RRefPhaseListen(tokens, list, parser,offset);
+		walker.walk(ref, tree);
+		StringBuffer resultmethodVars=ref.getMethodCallVars();
+		
+		if(resultmethodVars!=null&&resultmethodVars.length()>0){
+			
+			
+			
+			 String[] splitMethod =resultmethodVars.toString().split(",");
+			 
+			 creatPopupList(viewer, offset, splitMethod);
+		       
+			
+			
+		}
+        
+		else{
+		
 		/*trim the method name!*/
 		prefix = prefix.substring(0, leng - 1);
 		prefix = prefix.trim();
@@ -244,51 +329,51 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
             /*Do we have the method in the proposals?*/
 			if (prefix.equals(CalculateRProposals.statistics[i])) {
 				
-				//tooltip = new DefaultToolTip(viewer.getTextWidget(), SWT.NONE, true);
-				//tooltip.setText(CalculateRProposals.statisticsSet[i]);
-				/* Show the tooltip at the specified location*/
-				StyledText te = viewer.getTextWidget();
-				Font f = te.getFont();
-				//tooltip.setFont(f);
-				/* Corrections for the fontsize! */
-				int height = f.getFontData()[0].getHeight();
-				Point p = te.getLocationAtOffset(offset);
-				//Point p2 = new Point(p.x, p.y - 30 - height);
-
-				//tooltip.show(p2);
-				StyledText sh=viewer.getTextWidget();
-				
-				Point poi=sh.getLocationAtOffset(offset);
-				poi=sh.toDisplay(poi);
-				int locx=poi.x;
-				int locy=poi.y;
-				 PopupList list = new PopupList(viewer.getTextWidget().getShell());
 				 String calc=CalculateRProposals.statisticsSet[i];
 				 int parOpen = calc.indexOf("(");
 				 int parClose = calc.indexOf(")");
 				 calc = calc.substring(parOpen+1, parClose);
 				 String[] splitMethod =calc.split(",");
 				
-				
-			        //String[] OPTIONS = { CalculateRProposals.statisticsSet[i], "B", "C"};
-                    list.setFont(f);
-			        list.setItems(splitMethod);
-                    Rectangle rect=new Rectangle(locx, locy - height-150,300,200);
-			        String selected = list.open(rect);
-                    try {
-						viewer.getDocument().replace(offset, 0, selected);
-					} catch (BadLocationException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-			       // System.out.println(selected);
-				
-				
-				// tooltip.setHideDelay(-5);
+			
+					creatPopupList(viewer, offset, splitMethod);
+			       
+			}
 			}
 		}
+		
 		return prefix;
 	}
+
+	private void creatPopupList(ITextViewer viewer, int offset, String[] splitMethod) {
+		StyledText te = viewer.getTextWidget();
+		Font f = te.getFont();
+
+		int height = f.getFontData()[0].getHeight();
+
+		StyledText sh = viewer.getTextWidget();
+
+		Point poi = sh.getLocationAtOffset(offset);
+		poi = sh.toDisplay(poi);
+		int locx = poi.x;
+		int locy = poi.y;
+		PopupList listPopup = new PopupList(viewer.getTextWidget().getShell());
+
+		// String[] OPTIONS = {
+		// CalculateRProposals.statisticsSet[i], "B", "C"};
+		listPopup.setFont(f);
+		listPopup.setItems(splitMethod);
+		Rectangle rect = new Rectangle(locx, locy - height - 150, 300, 200);
+		String selected = listPopup.open(rect);
+		try {
+			viewer.getDocument().replace(offset, 0, selected);
+		} catch (BadLocationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	
 
 	/*
 	 * public static ICompletionProposal[] join(ICompletionProposal [] ...

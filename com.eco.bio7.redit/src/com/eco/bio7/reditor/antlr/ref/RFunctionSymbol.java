@@ -9,7 +9,12 @@ import com.eco.bio7.reditor.antlr.RParser.FormlistContext;
 
 public class RFunctionSymbol extends RSymbol implements Scope {
     Map<String, RSymbol> arguments = new LinkedHashMap<String, RSymbol>();
-    Scope enclosingScope;
+    
+    public Map<String, RSymbol> getArguments() {
+		return arguments;
+	}
+
+	Scope enclosingScope;
 	private FormlistContext formlist;
 	private boolean used;
     

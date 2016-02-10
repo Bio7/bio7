@@ -212,7 +212,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 		ContentAssistant assistant = new ContentAssistant();
 		assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
 
-		processor = new RCompletionProcessor();
+		processor = new RCompletionProcessor(rEditor);
 		assistant.setContentAssistProcessor(processor, IDocument.DEFAULT_CONTENT_TYPE);
 
 		assistant.enableAutoActivation(true);
