@@ -180,13 +180,66 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 		int leng = prefix.length();
 		Region region;
+		
+		
+		
+		IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
+
+		ANTLRInputStream input = new ANTLRInputStream(doc.get());
+		RLexer lexer = new RLexer(input);
+
+		CommonTokenStream tokens = new CommonTokenStream(lexer);
+
+		UnderlineListener li = new UnderlineListener(editor);
+		RFilter filter = new RFilter(tokens);
+		/*
+		 * We have to remove the filter, too! Else we get error messages on the
+		 * console!
+		 */
+		filter.removeErrorListeners();
+		// filter.addErrorListener(li);
+
+		filter.stream(); // call start rule: stream
+		tokens.reset();
+
+		RParser parser = new RParser(tokens);
+		parser.removeErrorListeners();
+		/*
+		 * Add some modified error messages by implementing a custom error
+		 * strategy!
+		 */
+		parser.setErrorHandler(new RErrorStrategy());
+		parser.setBuildParseTree(true);
+
+		lexer.removeErrorListeners();
+		// lexer.addErrorListener(li);
+		parser.removeErrorListeners();
+		// parser.getInterpreter().setPredictionMode(PredictionMode.LL_EXACT_AMBIG_DETECTION);
+		parser.addErrorListener(li);
+
+		ParseTreeWalker walker = new ParseTreeWalker();
+
+		RuleContext tree = parser.prog();
+		/* Create the listener to create the outline, etc. */
+		RBaseListen list = new RBaseListen(tokens, editor, parser);
+
+		list.startStop.clear();
+		walker.walk(list, tree);
+
+		RRefPhaseListen ref = new RRefPhaseListen(tokens, list, parser,offset);
+		walker.walk(ref, tree);
+		
+		
+		StringBuffer buffScopedFunctions=ref.getBuffScopeFunctions();
+		String [] splitBuffScopedFun=buffScopedFunctions.toString().split(",");
+		
 		/*
 		 * In parentheses we show an popup instead of the completion dialog! We
 		 * return null to avoid the opening of the template dialog!
 		 */
 		
 		if (prefix.endsWith("(")) {
-			prefix = tooltipAction(viewer, offset, prefix, leng);
+			prefix = tooltipAction(viewer, offset, prefix, leng,ref);
 
 			/* Return null so that no information center is shown! */
 			return null;
@@ -244,6 +297,31 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 			// triggerNext=false;
 		}
+		
+		/* Proposals from local defined functions! */
+		// if(triggerNext){
+		if(splitBuffScopedFun.length>0){
+		Template[] tempLocalFunctions = new Template[splitBuffScopedFun.length];
+
+		for (int i = 0; i < tempLocalFunctions.length; i++) {
+			tempLocalFunctions[i] = new Template(splitBuffScopedFun[i], splitBuffScopedFun[i], context.getContextType().getId(), splitBuffScopedFun[i], true);
+
+		}
+		for (int i = 0; i < tempLocalFunctions.length; i++) {
+				Template template = tempLocalFunctions[i];
+			try {
+				context.getContextType().validate(template.getPattern());
+			} catch (TemplateException e) {
+				continue;
+			}
+			if (template.matches(prefix, context.getContextType().getId()))
+				matches.add(createProposal(template, context, (IRegion) region, getRelevance(template, prefix)));
+
+			// }
+
+			// triggerNext=false;
+		}
+		}
 
 		Collections.sort(matches, fgProposalComparator);
 
@@ -258,56 +336,20 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 	}
 
 	/* Method to open a tooltip instead of the template suggestions! */
-	private String tooltipAction(ITextViewer viewer, int offset, String prefix, int leng) {
+	private String tooltipAction(ITextViewer viewer, int offset, String prefix, int leng, RRefPhaseListen ref) {
 
-		IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
-
-		ANTLRInputStream input = new ANTLRInputStream(doc.get());
-		RLexer lexer = new RLexer(input);
-
-		CommonTokenStream tokens = new CommonTokenStream(lexer);
-
-		UnderlineListener li = new UnderlineListener(editor);
-		RFilter filter = new RFilter(tokens);
-		/*
-		 * We have to remove the filter, too! Else we get error messages on the
-		 * console!
-		 */
-		filter.removeErrorListeners();
-		// filter.addErrorListener(li);
-
-		filter.stream(); // call start rule: stream
-		tokens.reset();
-
-		RParser parser = new RParser(tokens);
-		parser.removeErrorListeners();
-		/*
-		 * Add some modified error messages by implementing a custom error
-		 * strategy!
-		 */
-		parser.setErrorHandler(new RErrorStrategy());
-		parser.setBuildParseTree(true);
-
-		lexer.removeErrorListeners();
-		// lexer.addErrorListener(li);
-		parser.removeErrorListeners();
-		// parser.getInterpreter().setPredictionMode(PredictionMode.LL_EXACT_AMBIG_DETECTION);
-		parser.addErrorListener(li);
-
-		ParseTreeWalker walker = new ParseTreeWalker();
-
-		RuleContext tree = parser.prog();
-		/* Create the listener to create the outline, etc. */
-		RBaseListen list = new RBaseListen(tokens, editor, parser);
-
-		list.startStop.clear();
-		walker.walk(list, tree);
-
-		RRefPhaseListen ref = new RRefPhaseListen(tokens, list, parser,offset);
-		walker.walk(ref, tree);
-		StringBuffer resultmethodVars=ref.getMethodCallVars();
 		
+		
+		
+		
+		
+		StringBuffer resultmethodVars=ref.getMethodCallVars();
 		if(resultmethodVars!=null&&resultmethodVars.length()>0){
+		resultmethodVars.append(",");
+		StringBuffer resultBuffScopeVars=ref.getBuffScopeVars();
+		/*Append the variables after the method call variables!*/
+		resultmethodVars.append(resultBuffScopeVars);
+		
 			
 			
 			

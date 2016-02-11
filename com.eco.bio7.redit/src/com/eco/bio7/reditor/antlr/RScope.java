@@ -1,6 +1,7 @@
 package com.eco.bio7.reditor.antlr;
 /*Source from: http://stackoverflow.com/questions/15050137/once-grammar-is-complete-whats-the-best-way-to-walk-an-antlr-v4-tree*/
 import java.util.HashSet;
+import java.util.Map;
 
 import com.eco.bio7.reditor.antlr.ref.Scope;
 import com.eco.bio7.reditor.antlr.ref.RSymbol;
@@ -44,6 +45,12 @@ class RScope extends HashSet<String> implements Scope{
 
 	@Override
 	public RSymbol resolve(String name) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Map<String, RSymbol> getArguments() {
 		// TODO Auto-generated method stub
 		return null;
 	}

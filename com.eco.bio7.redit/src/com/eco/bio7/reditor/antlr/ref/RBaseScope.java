@@ -7,6 +7,10 @@ import java.util.Map;
 public abstract class RBaseScope implements Scope {
 	Scope enclosingScope; // Returns null if scope is base scope!
 	Map<String, RSymbol> symbols = new LinkedHashMap<String, RSymbol>();
+	
+	 public Map<String, RSymbol> getArguments() {
+			return symbols;
+		}
 
 	public RBaseScope(Scope enclosingScope) {
 		this.enclosingScope = enclosingScope;

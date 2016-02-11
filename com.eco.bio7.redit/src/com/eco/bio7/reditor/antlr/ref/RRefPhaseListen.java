@@ -3,6 +3,7 @@ package com.eco.bio7.reditor.antlr.ref;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Parser;
@@ -28,6 +29,18 @@ public class RRefPhaseListen extends RBaseListener {
 	private Set<String> finalVarDecl;
 	private int offsetCodeCompl;
 	private StringBuffer methodCallVars;
+	private StringBuffer buffScopeVars;
+	private StringBuffer buffScopeFunctions;
+	private int stopStartDifference = 100000000;
+	private Scope tempCodeComplScope;
+
+	public StringBuffer getBuffScopeFunctions() {
+		return buffScopeFunctions;
+	}
+
+	public StringBuffer getBuffScopeVars() {
+		return buffScopeVars;
+	}
 
 	public StringBuffer getMethodCallVars() {
 		return methodCallVars;
@@ -52,7 +65,7 @@ public class RRefPhaseListen extends RBaseListener {
 		this.tokens = tokens;
 		this.parser = parser;
 		this.offsetCodeCompl = offset;
-		System.out.println(offsetCodeCompl);
+
 	}
 
 	public void enterProg(RParser.ProgContext ctx) {
@@ -65,7 +78,9 @@ public class RRefPhaseListen extends RBaseListener {
 	}
 
 	public void exitProg(RParser.ProgContext ctx) {
-
+		
+		buffScopeFunctions = new StringBuffer();
+		getScopeDefFunctions(tempCodeComplScope);
 	}
 
 	public void enterE30(RParser.E30Context ctx) {
@@ -170,6 +185,30 @@ public class RRefPhaseListen extends RBaseListener {
 	}
 
 	public void exitE19DefFunction(RParser.E19DefFunctionContext ctx) {
+		/*
+		 * Implement here the function call completion through all parent
+		 * scopes!
+		 */
+		/* For code completion detect the parentheses! */
+		int startIndex = ctx.getStart().getStartIndex();
+		int stopIndex = ctx.getStop().getStopIndex();
+
+		/* Store function call args for code completion! */
+
+		/*
+		 * For code completion get all defined functions in scope and parent
+		 * scopes up to here and store it in an string buffer!
+		 */
+		/*
+		 * Calculate the closest function to the offset when closest found at
+		 * the exit of the prog calculate the functions in the scope!
+		 */
+		int nearBy = Math.abs(offsetCodeCompl - startIndex);
+		//System.out.println("NearBy " + nearBy);
+		if (nearBy < stopStartDifference) {
+			stopStartDifference = nearBy;
+			tempCodeComplScope = currentScope;
+		}
 
 		currentScope = currentScope.getEnclosingScope(); // pop scope
 
@@ -331,23 +370,68 @@ public class RRefPhaseListen extends RBaseListener {
 		/* Store function call args for code completion! */
 		if (offsetCodeCompl >= startIndex && offsetCodeCompl <= stopIndex) {
 			/* Return number of args and names after function call! */
-			if (currentScope instanceof RFunctionSymbol) {
-				RFunctionSymbol rfu = (RFunctionSymbol) currentScope;
-				// System.out.println("Name is:"+ctx.start.getText()+"proposal:
-				// "+str.toString());
-				Map map = rfu.getArguments();
-				map.keySet();
-				Iterator it = map.entrySet().iterator();
-				while (it.hasNext()) {
+			buffScopeVars = new StringBuffer();
+			getScopeVars(currentScope);
+		}
 
-					Map.Entry pair = (Map.Entry) it.next();
+	}
 
-					if (pair.getValue() instanceof RVariableSymbol) {
-						System.out.println(pair.getKey() + " = " + pair.getValue());
-						it.remove(); // avoids a ConcurrentModificationException
-					}
-				}
+	/*
+	 * Recursive get all visible function definitions in the current and parent
+	 * scopes!
+	 */
+	public void getScopeDefFunctions(Scope currentScope) {
+
+		/* Get the defined variables! */
+		Map<String, RSymbol> map = currentScope.getArguments();
+		map.keySet();
+		Iterator<Entry<String, RSymbol>> it = map.entrySet().iterator();
+		while (it.hasNext()) {
+
+			Map.Entry<String, RSymbol> pair = it.next();
+
+			if (pair.getValue() instanceof RFunctionSymbol) {
+
+				// buffScopeVars.append(",");
+				buffScopeFunctions.append(pair.getKey());
+				buffScopeFunctions.append(",");
+				//System.out.println(pair.getKey());
+				it.remove(); // avoids a ConcurrentModificationException
+
 			}
+		}
+		/* Go through all parent scopes! */
+		if (currentScope.getEnclosingScope() != null) {
+			getScopeDefFunctions(currentScope.getEnclosingScope());
+		}
+
+	}
+
+	/* Recursive get all visible vars in the current and parent scopes! */
+	public void getScopeVars(Scope currentScope) {
+
+		/* Get the defined variables! */
+		Map<String, RSymbol> map = currentScope.getArguments();
+		map.keySet();
+		Iterator<Entry<String, RSymbol>> it = map.entrySet().iterator();
+		while (it.hasNext()) {
+
+			Map.Entry<String, RSymbol> pair = it.next();
+
+			if (pair.getValue() instanceof RVariableSymbol) {
+
+				// buffScopeVars.append(",");
+				buffScopeVars.append(pair.getKey());
+				buffScopeVars.append(",");
+				// System.out.println(pair.getKey() + " = " +
+				// pair.getValue());
+				it.remove(); // avoids a ConcurrentModificationException
+
+			}
+		}
+		/* Go through all parent scopes! */
+		if (currentScope.getEnclosingScope() != null) {
+			getScopeVars(currentScope.getEnclosingScope());
 		}
 
 	}
