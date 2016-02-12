@@ -11,6 +11,8 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.antlr.v4.runtime.tree.TerminalNodeImpl;
+
 import com.eco.bio7.reditor.antlr.RBaseListen;
 import com.eco.bio7.reditor.antlr.RBaseListener;
 import com.eco.bio7.reditor.antlr.RParser;
@@ -27,12 +29,17 @@ public class RRefPhaseListen extends RBaseListener {
 	private Parser parser;
 	private Set<String> finalFuncDecl;
 	private Set<String> finalVarDecl;
-	private int offsetCodeCompl;
+	private int offsetCodeCompl = -1;
 	private StringBuffer methodCallVars;
 	private StringBuffer buffScopeVars;
 	private StringBuffer buffScopeFunctions;
-	private int stopStartDifference = 100000000;
+	private int tempDifferenceStart = 10000000;
 	private Scope tempCodeComplScope;
+	private boolean isInVarCall;
+
+	public boolean isInVarCall() {
+		return isInVarCall;
+	}
 
 	public StringBuffer getBuffScopeFunctions() {
 		return buffScopeFunctions;
@@ -78,9 +85,19 @@ public class RRefPhaseListen extends RBaseListener {
 	}
 
 	public void exitProg(RParser.ProgContext ctx) {
-		
+		/*
+		 * This calcuates the available functions for code completion
+		 * recursively through all available scopes!
+		 */
 		buffScopeFunctions = new StringBuffer();
-		getScopeDefFunctions(tempCodeComplScope);
+		buffScopeVars = new StringBuffer();
+		if (tempCodeComplScope != null) {
+			getScopeDefFunctions(tempCodeComplScope);
+			getScopeVars(tempCodeComplScope);
+		} else {
+			getScopeDefFunctions(currentScope);
+			getScopeVars(currentScope);
+		}
 	}
 
 	public void enterE30(RParser.E30Context ctx) {
@@ -185,29 +202,36 @@ public class RRefPhaseListen extends RBaseListener {
 	}
 
 	public void exitE19DefFunction(RParser.E19DefFunctionContext ctx) {
-		/*
-		 * Implement here the function call completion through all parent
-		 * scopes!
-		 */
-		/* For code completion detect the parentheses! */
-		int startIndex = ctx.getStart().getStartIndex();
-		int stopIndex = ctx.getStop().getStopIndex();
-
-		/* Store function call args for code completion! */
 
 		/*
-		 * For code completion get all defined functions in scope and parent
-		 * scopes up to here and store it in an string buffer!
+		 * For code completion detect the parentheses index according to
+		 * grammar!
 		 */
+		int startIndex = ctx.expr().getStart().getStartIndex();
 		/*
 		 * Calculate the closest function to the offset when closest found at
 		 * the exit of the prog calculate the functions in the scope!
 		 */
-		int nearBy = Math.abs(offsetCodeCompl - startIndex);
-		//System.out.println("NearBy " + nearBy);
-		if (nearBy < stopStartDifference) {
-			stopStartDifference = nearBy;
-			tempCodeComplScope = currentScope;
+		/* If we have a selected offset (not by opening the file)! */
+		if (offsetCodeCompl >= 0) {
+			int distanceFromStart = offsetCodeCompl - startIndex;
+			/* If we have an positive offset after function parentheses! */
+			if (distanceFromStart > 0) {
+				/*
+				 * lookup if we have already the closest distance. If not take
+				 * this distance as closest!
+				 */
+				if (distanceFromStart < tempDifferenceStart) {
+					tempDifferenceStart = distanceFromStart;
+					/*
+					 * Store temporary the scope! Used at program in this file
+					 * exit!
+					 */
+					tempCodeComplScope = currentScope;
+
+				}
+
+			}
 		}
 
 		currentScope = currentScope.getEnclosingScope(); // pop scope
@@ -215,10 +239,13 @@ public class RRefPhaseListen extends RBaseListener {
 	}
 
 	public void enterE20CallFunction(RParser.E20CallFunctionContext ctx) {
-		/* For code completion detetct the parentheses! */
-		int startIndex = ctx.getStart().getStartIndex();
-		int stopIndex = ctx.getStop().getStopIndex();
+		/* For code completion detect the parentheses! */
+		Token parenth = ((TerminalNodeImpl) ctx.getChild(1)).getSymbol();
+		// System.out.println(ctx.getChild(1).getText());
 
+		int startIndex = parenth.getStopIndex();
+		int stopIndex = ctx.getStop().getStopIndex();
+		// System.out.println(offsetCodeCompl+" "+startIndex+" "+stopIndex);
 		// Get the last token which should be the name of the called function!
 		Token stop = ctx.expr().getStop();
 		// Token lastToken = tokens.get(sourceInterval.b);
@@ -261,11 +288,38 @@ public class RRefPhaseListen extends RBaseListener {
 
 				List<FormContext> formList = me.getFormlist().form();
 				int functionDefSize = formList.size();
-				// System.out.println("Arguments: "+me.getFormlist().getText());
-				//
+
+				/* Store function call args for code completion! */
+				if (offsetCodeCompl > startIndex && offsetCodeCompl <= stopIndex) {
+					/*
+					 * We collect all vars here for code completion unlike the
+					 * warning above!
+					 */
+					StringBuffer strAll = new StringBuffer();
+					for (int i = 0; i < formList.size(); i++) {
+						FormContext fo = formList.get(i);
+
+						TerminalNode ar = fo.ID();
+
+						strAll.append(ar);
+
+						if (i < formList.size()) {
+							strAll.append("=,");
+						}
+
+					}
+
+					methodCallVars = strAll;
+					isInVarCall = true;
+				} else {
+					isInVarCall = false;
+				}
+                /*Here we generate warnings/errors if the amount of functions vars differs from the implementation!*/
 				StringBuffer str = new StringBuffer();
+				/*Function call with Ellipsis can have multiple arguments so we test if that applies here!*/
 				if (arguments.contains("...") == false) {
 					if (argText.isEmpty() == false) {
+
 						if (callSize < functionDefSize) {
 							for (int i = callSize; i < formList.size(); i++) {
 								FormContext fo = formList.get(i);
@@ -274,21 +328,13 @@ public class RRefPhaseListen extends RBaseListener {
 
 								str.append(ar);
 
-								if (i < formList.size() - 1) {
-									str.append(",");
+								if (i < formList.size()) {
+									str.append("=,");
 								}
 
 							}
 
 							parser.notifyErrorListeners(stop, "Warn16:The following args are missing -> " + str.toString() + ": ", null);
-							/* Store function call args for code completion! */
-							if (offsetCodeCompl >= startIndex && offsetCodeCompl <= stopIndex) {
-								// System.out.println("Name
-								// is:"+ctx.start.getText()+"proposal:
-								// "+str.toString());
-								methodCallVars = str;
-
-							}
 
 						}
 
@@ -313,8 +359,8 @@ public class RRefPhaseListen extends RBaseListener {
 							FormContext fo = formList.get(i);
 							TerminalNode ar = fo.ID();
 							str2.append(ar);
-							if (i < formList.size() - 1) {
-								str2.append(",");
+							if (i < formList.size()) {
+								str2.append("=,");
 							}
 
 						}
@@ -323,12 +369,16 @@ public class RRefPhaseListen extends RBaseListener {
 						parser.notifyErrorListeners(stop, "Warn16:The following args are missing -> " + str2.toString() + ": ", null);
 
 						/* Store function call args for code completion! */
-						if (offsetCodeCompl >= startIndex && offsetCodeCompl <= stopIndex) {
+						if (offsetCodeCompl > startIndex && offsetCodeCompl <= stopIndex) {
 
 							// System.out.println("Name
 							// is:"+ctx.start.getText()+"proposal:
 							// "+str2.toString());
 							methodCallVars = str2;
+							isInVarCall = true;
+						} else {
+							isInVarCall = false;
+
 						}
 
 					}
@@ -363,7 +413,7 @@ public class RRefPhaseListen extends RBaseListener {
 	}
 
 	public void exitE20CallFunction(RParser.E20CallFunctionContext ctx) {
-		/* For code completion detetct the parentheses! */
+		/* For code completion detect the parentheses! */
 		int startIndex = ctx.getStart().getStartIndex();
 		int stopIndex = ctx.getStop().getStopIndex();
 
@@ -372,6 +422,7 @@ public class RRefPhaseListen extends RBaseListener {
 			/* Return number of args and names after function call! */
 			buffScopeVars = new StringBuffer();
 			getScopeVars(currentScope);
+
 		}
 
 	}
@@ -395,7 +446,7 @@ public class RRefPhaseListen extends RBaseListener {
 				// buffScopeVars.append(",");
 				buffScopeFunctions.append(pair.getKey());
 				buffScopeFunctions.append(",");
-				//System.out.println(pair.getKey());
+				// System.out.println(pair.getKey());
 				it.remove(); // avoids a ConcurrentModificationException
 
 			}

@@ -109,7 +109,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 	 *            the offset left of which the prefix is detected
 	 * @return the detected prefix
 	 */
-	protected String extractPrefix(ITextViewer viewer, int offset) {
+	/*protected String extractPrefix(ITextViewer viewer, int offset) {
 		IDocument document = viewer.getDocument();
 		int i = offset;
 		if (i > document.getLength())
@@ -119,11 +119,11 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 			int countBrace = 0;
 			while (i > 0) {
 				char ch = document.getChar(i - 1);
-				/*
+				
 				 * We add the detection of functions and function calls with
 				 * '.'!
-				 */
-				/* Detect nested braces! */
+				 
+				 Detect nested braces! 
 				if (ch == '(') {
 					countBrace++;
 					if (countBrace == 2) {
@@ -139,7 +139,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 			return "";
 		}
 	}
-
+*/
 	/**
 	 * Cut out angular brackets for relevance sorting, since the template name
 	 * does not contain the brackets.
@@ -180,9 +180,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 		int leng = prefix.length();
 		Region region;
-		
-		
-		
+
 		IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
 
 		ANTLRInputStream input = new ANTLRInputStream(doc.get());
@@ -226,20 +224,28 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		list.startStop.clear();
 		walker.walk(list, tree);
 
-		RRefPhaseListen ref = new RRefPhaseListen(tokens, list, parser,offset);
+		RRefPhaseListen ref = new RRefPhaseListen(tokens, list, parser, offset);
 		walker.walk(ref, tree);
+
+		StringBuffer buffScopedFunctions = ref.getBuffScopeFunctions();
+		String[] splitBuffScopedFun = buffScopedFunctions.toString().split(",");
+
+		StringBuffer resultmethodVars = ref.getBuffScopeVars();
+		String[] splitVars = resultmethodVars.toString().split(",");
+		
+		boolean isInVarCall=ref.isInVarCall();
 		
 		
-		StringBuffer buffScopedFunctions=ref.getBuffScopeFunctions();
-		String [] splitBuffScopedFun=buffScopedFunctions.toString().split(",");
 		
+		
+
 		/*
 		 * In parentheses we show an popup instead of the completion dialog! We
 		 * return null to avoid the opening of the template dialog!
 		 */
-		
-		if (prefix.endsWith("(")) {
-			prefix = tooltipAction(viewer, offset, prefix, leng,ref);
+      
+		if (isInVarCall) {
+			 tooltipAction(viewer, offset, "aov", leng, ref,splitVars);
 
 			/* Return null so that no information center is shown! */
 			return null;
@@ -297,30 +303,54 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 			// triggerNext=false;
 		}
-		
+
 		/* Proposals from local defined functions! */
 		// if(triggerNext){
-		if(splitBuffScopedFun.length>0){
-		Template[] tempLocalFunctions = new Template[splitBuffScopedFun.length];
+		if (splitBuffScopedFun.length > 0) {
+			Template[] tempLocalFunctions = new Template[splitBuffScopedFun.length];
 
-		for (int i = 0; i < tempLocalFunctions.length; i++) {
-			tempLocalFunctions[i] = new Template(splitBuffScopedFun[i], splitBuffScopedFun[i], context.getContextType().getId(), splitBuffScopedFun[i], true);
+			for (int i = 0; i < tempLocalFunctions.length; i++) {
+				tempLocalFunctions[i] = new Template(splitBuffScopedFun[i] + " (decl. Fun)", splitBuffScopedFun[i], context.getContextType().getId(), splitBuffScopedFun[i] + "()", true);
 
-		}
-		for (int i = 0; i < tempLocalFunctions.length; i++) {
-				Template template = tempLocalFunctions[i];
-			try {
-				context.getContextType().validate(template.getPattern());
-			} catch (TemplateException e) {
-				continue;
 			}
-			if (template.matches(prefix, context.getContextType().getId()))
-				matches.add(createProposal(template, context, (IRegion) region, getRelevance(template, prefix)));
+			for (int i = 0; i < tempLocalFunctions.length; i++) {
+				Template template = tempLocalFunctions[i];
+				try {
+					context.getContextType().validate(template.getPattern());
+				} catch (TemplateException e) {
+					continue;
+				}
+				if (template.matches(prefix, context.getContextType().getId()))
+					matches.add(createProposal(template, context, (IRegion) region, getRelevance(template, prefix)));
 
-			// }
+				// }
 
-			// triggerNext=false;
+				// triggerNext=false;
+			}
 		}
+		/* Proposals from local defined variables! */
+
+		if (splitVars.length > 0) {
+			Template[] tempLocalVars = new Template[splitVars.length];
+
+			for (int i = 0; i < tempLocalVars.length; i++) {
+				tempLocalVars[i] = new Template(splitVars[i] + "(decl. Var)", splitVars[i], context.getContextType().getId(), splitVars[i], true);
+
+			}
+			for (int i = 0; i < tempLocalVars.length; i++) {
+				Template template = tempLocalVars[i];
+				try {
+					context.getContextType().validate(template.getPattern());
+				} catch (TemplateException e) {
+					continue;
+				}
+				if (template.matches(prefix, context.getContextType().getId()))
+					matches.add(createProposal(template, context, (IRegion) region, getRelevance(template, prefix)));
+
+				// }
+
+				// triggerNext=false;
+			}
 		}
 
 		Collections.sort(matches, fgProposalComparator);
@@ -336,58 +366,50 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 	}
 
 	/* Method to open a tooltip instead of the template suggestions! */
-	private String tooltipAction(ITextViewer viewer, int offset, String prefix, int leng, RRefPhaseListen ref) {
+	private void tooltipAction(ITextViewer viewer, int offset, String funcNameFromProposals, int leng, RRefPhaseListen ref, String[] splitVars) {
+		System.out.println(funcNameFromProposals);
+		StringBuffer resultmethodVars = ref.getMethodCallVars();
+		if (resultmethodVars != null && resultmethodVars.length() > 0) {
+			resultmethodVars.append(",");
+			StringBuffer resultBuffScopeVars = ref.getBuffScopeVars();
+			/* Append the variables after the method call variables! */
+			resultmethodVars.append(resultBuffScopeVars);
 
-		
-		
-		
-		
-		
-		StringBuffer resultmethodVars=ref.getMethodCallVars();
-		if(resultmethodVars!=null&&resultmethodVars.length()>0){
-		resultmethodVars.append(",");
-		StringBuffer resultBuffScopeVars=ref.getBuffScopeVars();
-		/*Append the variables after the method call variables!*/
-		resultmethodVars.append(resultBuffScopeVars);
-		
-			
-			
-			
-			 String[] splitMethod =resultmethodVars.toString().split(",");
-			 
-			 creatPopupList(viewer, offset, splitMethod);
-		       
-			
-			
+			String[] splitMethod = resultmethodVars.toString().split(",");
+
+			creatPopupList(viewer, offset, splitMethod,splitVars);
+
 		}
-        
-		else{
-		
-		/*trim the method name!*/
-		prefix = prefix.substring(0, leng - 1);
-		prefix = prefix.trim();
 
-		for (int i = 0; i < CalculateRProposals.statisticsSet.length; i++) {
-            /*Do we have the method in the proposals?*/
-			if (prefix.equals(CalculateRProposals.statistics[i])) {
-				
-				 String calc=CalculateRProposals.statisticsSet[i];
-				 int parOpen = calc.indexOf("(");
-				 int parClose = calc.indexOf(")");
-				 calc = calc.substring(parOpen+1, parClose);
-				 String[] splitMethod =calc.split(",");
-				
+		else {
 			
-					creatPopupList(viewer, offset, splitMethod);
-			       
+			/* trim the method name! */
+			/*prefix = prefix.substring(0, leng - 1);
+			prefix = prefix.trim();*/
+			if(funcNameFromProposals!=null){
+             System.out.println(funcNameFromProposals);
+			for (int i = 0; i < CalculateRProposals.statisticsSet.length; i++) {
+				/* Do we have the method in the proposals? */
+				if (funcNameFromProposals.equals(CalculateRProposals.statistics[i])) {
+
+					String calc = CalculateRProposals.statisticsSet[i];
+					System.out.println(calc);
+					int parOpen = calc.indexOf("(");
+					int parClose = calc.indexOf(")");
+					calc = calc.substring(parOpen + 1, parClose);
+					String[] splitMethod = calc.split(",");
+
+					creatPopupList(viewer, offset, splitMethod,splitVars);
+
+				}
 			}
 			}
 		}
+
 		
-		return prefix;
 	}
 
-	private void creatPopupList(ITextViewer viewer, int offset, String[] splitMethod) {
+	private void creatPopupList(ITextViewer viewer, int offset, String[] splitMethod, String[] splitVars) {
 		StyledText te = viewer.getTextWidget();
 		Font f = te.getFont();
 
@@ -405,6 +427,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		// CalculateRProposals.statisticsSet[i], "B", "C"};
 		listPopup.setFont(f);
 		listPopup.setItems(splitMethod);
+		
 		Rectangle rect = new Rectangle(locx, locy - height - 150, 300, 200);
 		String selected = listPopup.open(rect);
 		try {
@@ -414,8 +437,6 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 			e.printStackTrace();
 		}
 	}
-	
-	
 
 	/*
 	 * public static ICompletionProposal[] join(ICompletionProposal [] ...
