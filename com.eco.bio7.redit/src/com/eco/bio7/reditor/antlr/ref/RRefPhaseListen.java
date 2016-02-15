@@ -36,6 +36,11 @@ public class RRefPhaseListen extends RBaseListener {
 	private int tempDifferenceStart = 10000000;
 	private Scope tempCodeComplScope;
 	private boolean isInVarCall;
+	private String proposalFuncFound;
+
+	public String getProposalFuncFound() {
+		return proposalFuncFound;
+	}
 
 	public boolean isInVarCall() {
 		return isInVarCall;
@@ -60,7 +65,7 @@ public class RRefPhaseListen extends RBaseListener {
 		this.finalVarDecl = list.finalVarDecl;
 		this.tokens = tokens;
 		this.parser = parser;
-
+		
 	}
 
 	/* Constructor for code completion! */
@@ -72,7 +77,7 @@ public class RRefPhaseListen extends RBaseListener {
 		this.tokens = tokens;
 		this.parser = parser;
 		this.offsetCodeCompl = offset;
-
+		
 	}
 
 	public void enterProg(RParser.ProgContext ctx) {
@@ -86,17 +91,16 @@ public class RRefPhaseListen extends RBaseListener {
 
 	public void exitProg(RParser.ProgContext ctx) {
 		/*
-		 * This calcuates the available functions for code completion
+		 * This calculates the available functions for code completion
 		 * recursively through all available scopes!
 		 */
-		buffScopeFunctions = new StringBuffer();
+		//System.out.println("exit found func "+proposalFuncFound);
 		buffScopeVars = new StringBuffer();
+		buffScopeFunctions = new StringBuffer();
 		if (tempCodeComplScope != null) {
+			System.out.println("Next scope is:"+tempCodeComplScope);
 			getScopeDefFunctions(tempCodeComplScope);
 			getScopeVars(tempCodeComplScope);
-		} else {
-			getScopeDefFunctions(currentScope);
-			getScopeVars(currentScope);
 		}
 	}
 
@@ -208,6 +212,7 @@ public class RRefPhaseListen extends RBaseListener {
 		 * grammar!
 		 */
 		int startIndex = ctx.expr().getStart().getStartIndex();
+		int stopIndex = ctx.expr().getStop().getStopIndex();
 		/*
 		 * Calculate the closest function to the offset when closest found at
 		 * the exit of the prog calculate the functions in the scope!
@@ -228,7 +233,7 @@ public class RRefPhaseListen extends RBaseListener {
 					 * exit!
 					 */
 					tempCodeComplScope = currentScope;
-
+                    
 				}
 
 			}
@@ -269,11 +274,24 @@ public class RRefPhaseListen extends RBaseListener {
 			 * the loaded packages!
 			 */
 			if (CalculateRProposals.stat != null) {
-				if (funcName != null && CalculateRProposals.stat.containsValue(funcName)) {
-					return;
+				if (CalculateRProposals.stat.containsValue(funcName)) {
+					/* Store function call args for code completion! */
+					if (offsetCodeCompl >= startIndex && offsetCodeCompl <= stopIndex) {
+						isInVarCall = true;
+						proposalFuncFound = funcName;
+						System.out.println("here is: "+funcName);
+						// System.out.println("proposal
+						// found:"+proposalFuncFound);
+						// methodCallVars = str2;
+
+					}
+
+				} else {
+					parser.notifyErrorListeners(stop, "Warn16:Function not available?: " + funcName + " seems to be missing!", null);
+					
 				}
+
 			}
-			parser.notifyErrorListeners(stop, "Warn16:Function not available?: " + funcName + " seems to be missing!", null);
 
 			// System.out.println("Function: " + funcName + " is not
 			// available!");
@@ -311,12 +329,16 @@ public class RRefPhaseListen extends RBaseListener {
 
 					methodCallVars = strAll;
 					isInVarCall = true;
-				} else {
-					isInVarCall = false;
-				}
-                /*Here we generate warnings/errors if the amount of functions vars differs from the implementation!*/
+				} 
+				/*
+				 * Here we generate warnings/errors if the amount of functions
+				 * vars differs from the implementation!
+				 */
 				StringBuffer str = new StringBuffer();
-				/*Function call with Ellipsis can have multiple arguments so we test if that applies here!*/
+				/*
+				 * Function call with Ellipsis can have multiple arguments so we
+				 * test if that applies here!
+				 */
 				if (arguments.contains("...") == false) {
 					if (argText.isEmpty() == false) {
 
@@ -376,10 +398,7 @@ public class RRefPhaseListen extends RBaseListener {
 							// "+str2.toString());
 							methodCallVars = str2;
 							isInVarCall = true;
-						} else {
-							isInVarCall = false;
-
-						}
+						} 
 
 					}
 
@@ -414,14 +433,17 @@ public class RRefPhaseListen extends RBaseListener {
 
 	public void exitE20CallFunction(RParser.E20CallFunctionContext ctx) {
 		/* For code completion detect the parentheses! */
-		int startIndex = ctx.getStart().getStartIndex();
+		Token parenth = ((TerminalNodeImpl) ctx.getChild(1)).getSymbol();
+		// System.out.println(ctx.getChild(1).getText());
+
+		int startIndex = parenth.getStopIndex();
 		int stopIndex = ctx.getStop().getStopIndex();
 
 		/* Store function call args for code completion! */
 		if (offsetCodeCompl >= startIndex && offsetCodeCompl <= stopIndex) {
 			/* Return number of args and names after function call! */
-			buffScopeVars = new StringBuffer();
-			getScopeVars(currentScope);
+			//buffScopeVars = new StringBuffer();
+			//getScopeVars(currentScope);
 
 		}
 
@@ -432,6 +454,8 @@ public class RRefPhaseListen extends RBaseListener {
 	 * scopes!
 	 */
 	public void getScopeDefFunctions(Scope currentScope) {
+		
+		
 
 		/* Get the defined variables! */
 		Map<String, RSymbol> map = currentScope.getArguments();
@@ -460,7 +484,7 @@ public class RRefPhaseListen extends RBaseListener {
 
 	/* Recursive get all visible vars in the current and parent scopes! */
 	public void getScopeVars(Scope currentScope) {
-
+		
 		/* Get the defined variables! */
 		Map<String, RSymbol> map = currentScope.getArguments();
 		map.keySet();
@@ -474,8 +498,8 @@ public class RRefPhaseListen extends RBaseListener {
 				// buffScopeVars.append(",");
 				buffScopeVars.append(pair.getKey());
 				buffScopeVars.append(",");
-				// System.out.println(pair.getKey() + " = " +
-				// pair.getValue());
+				 //System.out.println(pair.getKey() + " = " +
+				 //pair.getValue());
 				it.remove(); // avoids a ConcurrentModificationException
 
 			}
