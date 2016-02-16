@@ -21,6 +21,7 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -112,9 +113,9 @@ public class RBaseListen extends RBaseListener {
 		}
 		/* Has the function be called in this scope? */
 		DeclCallStore st = storeDeclCall.peek();
-		/* Make a snaphot of function call for bottom up transfer! */
+		/* Make a snapshot of function call for bottom up transfer! */
 		Set<String> tempCall = st.call;
-		/* Make a snaphot of variable call for bottom up transfer! */
+		/* Make a snapshot of variable call for bottom up transfer! */
 		Set<String> tempVarCall = st.varCall;
 
 		Set<String> subScope = st.substract();
@@ -360,8 +361,10 @@ public class RBaseListen extends RBaseListener {
 			int lineStart = firstToken.getStartIndex();
 
 			int line = calculateLine(lineStart);
+			
+			Token assignOp = ((TerminalNodeImpl) ctx.getChild(1)).getSymbol();
 
-			Token assignOp = whitespaceTokenFilter(start, stop);
+			//Token assignOp = whitespaceTokenFilter(start, stop);
 
 			String op = assignOp.getText();
 			if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
