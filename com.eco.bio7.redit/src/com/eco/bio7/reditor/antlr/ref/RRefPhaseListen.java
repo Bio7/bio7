@@ -9,6 +9,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
@@ -16,6 +17,8 @@ import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 import com.eco.bio7.reditor.antlr.RBaseListen;
 import com.eco.bio7.reditor.antlr.RBaseListener;
 import com.eco.bio7.reditor.antlr.RParser;
+import com.eco.bio7.reditor.antlr.RParser.E17VariableDeclarationContext;
+import com.eco.bio7.reditor.antlr.RParser.E20CallFunctionContext;
 import com.eco.bio7.reditor.antlr.RParser.FormContext;
 import com.eco.bio7.reditor.antlr.RParser.SubContext;
 import com.eco.bio7.reditor.antlr.RParser.SublistContext;
@@ -98,7 +101,7 @@ public class RRefPhaseListen extends RBaseListener {
 		buffScopeVars = new StringBuffer();
 		buffScopeFunctions = new StringBuffer();
 		if (tempCodeComplScope != null) {
-			//System.out.println("Next scope is:" + tempCodeComplScope);
+			// System.out.println("Next scope is:" + tempCodeComplScope);
 			getScopeDefFunctions(tempCodeComplScope);
 			getScopeVars(tempCodeComplScope);
 		} else {
@@ -240,8 +243,25 @@ public class RRefPhaseListen extends RBaseListener {
 		SublistContext subList = ctx.sublist();
 		List<SubContext> sub = subList.sub();
 		String argText = subList.getText();
+		/*Extract the variable assignment in function calls!*/
+		for (int i = 0; i < sub.size(); i++) {
+			ParseTree tree = sub.get(i).getChild(0);
+			if (tree != null) {
+				//System.out.println(tree.getText());
+				if (tree instanceof E17VariableDeclarationContext) {
+					
+					E17VariableDeclarationContext tr = (E17VariableDeclarationContext) tree;
 
-		
+					System.out.println(tr.expr(0).getText());
+				}
+				/*else if(tree instanceof E20CallFunctionContext){
+					E20CallFunctionContext tr=(E20CallFunctionContext)tree;
+					System.out.println(tr.getStart().getText());
+				}*/
+			}
+
+		}
+
 		int callSize = sub.size();
 		String callText = sub.get(0).getText();
 
@@ -271,7 +291,6 @@ public class RRefPhaseListen extends RBaseListener {
 
 			}
 
-			
 		} else if (meth instanceof RFunctionSymbol) {
 			RFunctionSymbol me = (RFunctionSymbol) meth;
 			/* Add boolean true to mark the method as used! */
@@ -295,13 +314,15 @@ public class RRefPhaseListen extends RBaseListener {
 						FormContext fo = formList.get(i);
 
 						TerminalNode ar = fo.ID();
-                        if(ar==null){
-                        	strAll.append("...");
-                        }
-                        else{
-						strAll.append(ar);
-                        }
-                       /*We set a '=' to mark a function argument. ',' is the seperator char!*/
+						if (ar == null) {
+							strAll.append("...");
+						} else {
+							strAll.append(ar);
+						}
+						/*
+						 * We set a '=' to mark a function argument. ',' is the
+						 * seperator char!
+						 */
 						if (i < formList.size()) {
 							strAll.append(" = ,");
 						}
@@ -346,7 +367,6 @@ public class RRefPhaseListen extends RBaseListener {
 							 * Test for functions where the last argument is a
 							 * ellipsis '...' allows any number of arguments!
 							 */
-							
 
 							parser.notifyErrorListeners(stop, "Warn16:To many args in function call!: ", null);
 
@@ -365,13 +385,12 @@ public class RRefPhaseListen extends RBaseListener {
 							}
 
 						}
-						
+
 						parser.notifyErrorListeners(stop, "Warn16:The following args are missing -> " + str2.toString() + ": ", null);
 
 						/* Store function call args for code completion! */
 						if (offsetCodeCompl > startIndex && offsetCodeCompl <= stopIndex) {
 
-							
 							methodCallVars = str2;
 							isInVarCall = true;
 						}
@@ -379,7 +398,6 @@ public class RRefPhaseListen extends RBaseListener {
 					}
 
 				} else {
-					
 
 				}
 
@@ -398,7 +416,7 @@ public class RRefPhaseListen extends RBaseListener {
 		}
 
 		else if (meth instanceof RVariableSymbol) {
-			
+
 			parser.notifyErrorListeners(stop, "Warn16:Function not available? " + funcName + ": seems to be missing!", null);
 
 		}
@@ -416,7 +434,7 @@ public class RRefPhaseListen extends RBaseListener {
 			int distanceFromStop = offsetCodeCompl - stopIndex;
 			/* If we have an positive offset after function parentheses! */
 			if (distanceFromStart > 0 && distanceFromStop < 0) {
-				//System.out.println(distanceFromStart);
+				// System.out.println(distanceFromStart);
 				/*
 				 * lookup if we have already the closest distance. If not take
 				 * this distance as closest!
