@@ -123,7 +123,7 @@ public class ExtractInterfaceListener extends RBaseListener {
 	}
 
 	/* ID call (variables) Need to calculate position of <- */
-	public void enterE30(RParser.E30Context ctx) {
+	public void enterId(RParser.E30Context ctx) {
 		
 		Token tok = ctx.ID().getSymbol();
 		// System.out.println("Token Text: "+tok.getText());
