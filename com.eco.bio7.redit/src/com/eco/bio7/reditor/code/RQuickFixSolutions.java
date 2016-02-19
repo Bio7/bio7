@@ -83,6 +83,11 @@ public class RQuickFixSolutions  {
 				prop = new ICompletionProposal[] {
 
 						new RQuickFixCompletionProposal("Create function", offset, endChar, System.lineSeparator()+tokenText+"<-function(){}"+ System.lineSeparator(), 0) };
+				
+			case "Warn17":
+				/*prop = new ICompletionProposal[] {
+
+						new RQuickFixCompletionProposal("Create function", offset, endChar, System.lineSeparator()+tokenText+"<-function(){}"+ System.lineSeparator(), 0) };*/
 
 				break;
 			case "Err16":
@@ -117,6 +122,10 @@ public class RQuickFixSolutions  {
 
 						new RQuickFixCompletionProposal("Remove unknown token", offset, endChar, "", 1) };
 				break;
+			case "Err23":
+				prop = new ICompletionProposal[] {
+
+						new RQuickFixCompletionProposal("Remove function variable", offset, endChar, "", 1) };
 
 			default:
 				break;

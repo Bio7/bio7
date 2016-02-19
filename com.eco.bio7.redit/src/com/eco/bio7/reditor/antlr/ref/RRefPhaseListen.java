@@ -139,7 +139,7 @@ public class RRefPhaseListen extends RBaseListener {
 				if (var == null) {
 					// System.out.println("Var: " + name + " is not
 					// available!");
-					parser.notifyErrorListeners(tok, "Warn16:Variable not available?: " + varName + " seems to be missing!", null);
+					parser.notifyErrorListeners(tok, "Warn17:Variable not available?: " + varName + " seems to be missing!", null);
 
 				}
 			}
@@ -160,7 +160,7 @@ public class RRefPhaseListen extends RBaseListener {
 		boolean isNotCalled = finalVarDecl.contains(name);
 		if (isNotCalled) {
 
-			parser.notifyErrorListeners(firstToken, "Warn16:Variable " + name + " is defined but not used!:", null);
+			parser.notifyErrorListeners(firstToken, "Warn17:Variable " + name + " is defined but not used!:", null);
 
 		}
 	}
@@ -201,7 +201,7 @@ public class RRefPhaseListen extends RBaseListener {
 				boolean isNotCalled = finalFuncDecl.contains(name);
 				if (isNotCalled) {
 
-					parser.notifyErrorListeners(st, "Warn16:Function " + name + " is defined but not used!:", null);
+					parser.notifyErrorListeners(st, "Warn17:Function " + name + " is defined but not used!:", null);
 
 				}
 
@@ -243,27 +243,11 @@ public class RRefPhaseListen extends RBaseListener {
 		SublistContext subList = ctx.sublist();
 		List<SubContext> sub = subList.sub();
 		String argText = subList.getText();
-		/*Extract the variable assignment in function calls!*/
-		for (int i = 0; i < sub.size(); i++) {
-			ParseTree tree = sub.get(i).getChild(0);
-			if (tree != null) {
-				//System.out.println(tree.getText());
-				if (tree instanceof E17VariableDeclarationContext) {
-					
-					E17VariableDeclarationContext tr = (E17VariableDeclarationContext) tree;
-
-					System.out.println(tr.expr(0).getText());
-				}
-				/*else if(tree instanceof E20CallFunctionContext){
-					E20CallFunctionContext tr=(E20CallFunctionContext)tree;
-					System.out.println(tr.getStart().getText());
-				}*/
-			}
-
-		}
 
 		int callSize = sub.size();
-		String callText = sub.get(0).getText();
+		
+
+		// String callText = sub.get(0).getText();
 
 		String funcName = stop.getText();
 
@@ -290,7 +274,10 @@ public class RRefPhaseListen extends RBaseListener {
 				}
 
 			}
-
+			/*
+			 * In the function symbol we have also stored the arguments which we
+			 * use here!
+			 */
 		} else if (meth instanceof RFunctionSymbol) {
 			RFunctionSymbol me = (RFunctionSymbol) meth;
 			/* Add boolean true to mark the method as used! */
@@ -358,7 +345,7 @@ public class RRefPhaseListen extends RBaseListener {
 
 							}
 
-							parser.notifyErrorListeners(stop, "Warn16:The following args are missing -> " + str.toString() + ": ", null);
+							parser.notifyErrorListeners(stop, "Warn17:The following args are missing -> " + str.toString() + ": ", null);
 
 						}
 
@@ -368,8 +355,46 @@ public class RRefPhaseListen extends RBaseListener {
 							 * ellipsis '...' allows any number of arguments!
 							 */
 
-							parser.notifyErrorListeners(stop, "Warn16:To many args in function call!: ", null);
+							parser.notifyErrorListeners(stop, "Warn17:To many args in function call!: ", null);
 
+						}
+						/*
+						 * Control if the assigned argument, e.g., x=3 can be
+						 * found in the function definition!
+						 */
+						/* Extract the variable assignment in function calls! */
+						Token tempFuncCallArray[] = new Token[callSize];
+						for (int i = 0; i < callSize; i++) {
+							
+							ParseTree tree = sub.get(i).getChild(0);
+							if (tree != null) {
+								// System.out.println(tree.getText());
+								if (tree instanceof E17VariableDeclarationContext) {
+
+									E17VariableDeclarationContext tr = (E17VariableDeclarationContext) tree;
+									/*Get the token!*/
+									tempFuncCallArray[i] = tr.expr(0).start;
+
+								}
+
+							}
+
+						}
+						for (int i = 0; i < formList.size(); i++) {
+							FormContext fo = formList.get(i);
+
+							TerminalNode ar = fo.ID();
+							if (i < tempFuncCallArray.length) {
+
+								if (tempFuncCallArray[i] != null) {
+									if (tempFuncCallArray[i].getText().equals(ar.getText()) == false) {
+										
+										//System.out.println("wrong function call assignment!" + " definition: " + ar.getText() + " array: " + tempFuncCallArray[i]);
+										parser.notifyErrorListeners(tempFuncCallArray[i], "Err23:Wrong function call assignment!" + " definition: " + ar.getText() + " array: " + tempFuncCallArray[i] + ": ", null);
+									}
+
+								}
+							}
 						}
 
 					} else {
@@ -386,7 +411,7 @@ public class RRefPhaseListen extends RBaseListener {
 
 						}
 
-						parser.notifyErrorListeners(stop, "Warn16:The following args are missing -> " + str2.toString() + ": ", null);
+						parser.notifyErrorListeners(stop, "Warn17:The following args are missing -> " + str2.toString() + ": ", null);
 
 						/* Store function call args for code completion! */
 						if (offsetCodeCompl > startIndex && offsetCodeCompl <= stopIndex) {
@@ -408,7 +433,7 @@ public class RRefPhaseListen extends RBaseListener {
 			 */
 			else {
 				if (argText.isEmpty() == false) {
-					parser.notifyErrorListeners(stop, "Warn16:The function definiton has no arguments to call! ", null);
+					parser.notifyErrorListeners(stop, "Warn17:The function definiton has no arguments to call! ", null);
 					// System.out.println("calltext " + callText);
 				}
 			}

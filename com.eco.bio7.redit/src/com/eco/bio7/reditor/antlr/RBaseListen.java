@@ -184,6 +184,19 @@ public class RBaseListen extends RBaseListener {
 			 * function without variable assignment!
 			 */
 			if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
+				
+				/*Do we have already defined the same name for a function? If so create a warning!*/
+				RSymbol funThere= currentScope.resolve(name) ;
+				if(funThere instanceof RFunctionSymbol){
+				if(currentScope.resolve(name) != null){
+					
+					//System.out.println("Function: "+name+" already declared!");
+					parser.notifyErrorListeners(firstToken, "Warn16:Function "+name+" already defined??: " + name + " seems to be already defined!", null);
+					}
+				}
+				
+				
+				
 				/* Create a new scope and add the function (symbol)! */
 				RFunctionSymbol function = new RFunctionSymbol(name, currentScope, ctx.formlist());
 				currentScope.define(function); // Define function in current
@@ -195,6 +208,11 @@ public class RBaseListen extends RBaseListener {
 				/* Put the method declaration name in the call set! */
 				/* Get the current scope stack elements! */
 				DeclCallStore st = storeDeclCall.peek();
+				
+				
+				
+				
+				
 				/* add the called method to the call set! */
 				st.decl.add(name);
 				storeDeclCall.push(new DeclCallStore());
