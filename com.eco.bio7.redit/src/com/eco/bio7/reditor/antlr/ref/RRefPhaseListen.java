@@ -245,12 +245,11 @@ public class RRefPhaseListen extends RBaseListener {
 		String argText = subList.getText();
 
 		int callSize = sub.size();
-		
 
 		// String callText = sub.get(0).getText();
 
 		String funcName = stop.getText();
-
+		System.out.println(funcName);
 		/* Return number of args and names after function call! */
 		RSymbol meth = currentScope.resolve(funcName);
 
@@ -260,7 +259,9 @@ public class RRefPhaseListen extends RBaseListener {
 			 * the loaded packages!
 			 */
 			if (CalculateRProposals.stat != null) {
+				System.out.println("Is there: " + funcName);
 				if (CalculateRProposals.stat.containsValue(funcName)) {
+
 					/* Store function call args for code completion! */
 					if (offsetCodeCompl >= startIndex && offsetCodeCompl <= stopIndex) {
 						isInVarCall = true;
@@ -278,174 +279,186 @@ public class RRefPhaseListen extends RBaseListener {
 			 * In the function symbol we have also stored the arguments which we
 			 * use here!
 			 */
-		} else if (meth instanceof RFunctionSymbol) {
-			RFunctionSymbol me = (RFunctionSymbol) meth;
-			/* Add boolean true to mark the method as used! */
-			me.setUsed(true);
-			/* If the function has arguments! */
+		} else {
+            System.out.println("resolved "+funcName);
+			if (meth instanceof RFunctionSymbol) {
+				RFunctionSymbol me = (RFunctionSymbol) meth;
+				/* Add boolean true to mark the method as used! */
+				me.setUsed(true);
+				/* If the function has arguments! */
 
-			if (me.getFormlist() != null) {
-				String arguments = me.getFormlist().getText();
+				if (me.getFormlist() != null) {
+					String arguments = me.getFormlist().getText();
 
-				List<FormContext> formList = me.getFormlist().form();
-				int functionDefSize = formList.size();
+					List<FormContext> formList = me.getFormlist().form();
+					int functionDefSize = formList.size();
 
-				/* Store function call args for code completion! */
-				if (offsetCodeCompl > startIndex && offsetCodeCompl <= stopIndex) {
-					/*
-					 * We collect all vars here for code completion unlike the
-					 * warning below!
-					 */
-					StringBuffer strAll = new StringBuffer();
-					for (int i = 0; i < formList.size(); i++) {
-						FormContext fo = formList.get(i);
-
-						TerminalNode ar = fo.ID();
-						if (ar == null) {
-							strAll.append("...");
-						} else {
-							strAll.append(ar);
-						}
+					/* Store function call args for code completion! */
+					if (offsetCodeCompl > startIndex && offsetCodeCompl <= stopIndex) {
 						/*
-						 * We set a '=' to mark a function argument. ',' is the
-						 * seperator char!
+						 * We collect all vars here for code completion unlike
+						 * the warning below!
 						 */
-						if (i < formList.size()) {
-							strAll.append(" = ,");
-						}
-
-					}
-
-					methodCallVars = strAll;
-					isInVarCall = true;
-				}
-				/*
-				 * Here we generate warnings/errors if the amount of functions
-				 * vars differs from the implementation!
-				 */
-				StringBuffer str = new StringBuffer();
-				/*
-				 * Function call with Ellipsis can have multiple arguments so we
-				 * test if that applies here!
-				 */
-				if (arguments.contains("...") == false) {
-					if (argText.isEmpty() == false) {
-
-						if (callSize < functionDefSize) {
-							for (int i = callSize; i < formList.size(); i++) {
-								FormContext fo = formList.get(i);
-
-								TerminalNode ar = fo.ID();
-
-								str.append(ar);
-
-								if (i < formList.size()) {
-									str.append("=,");
-								}
-
-							}
-
-							parser.notifyErrorListeners(stop, "Warn17:The following args are missing -> " + str.toString() + ": ", null);
-
-						}
-
-						else if (callSize > functionDefSize) {
-							/*
-							 * Test for functions where the last argument is a
-							 * ellipsis '...' allows any number of arguments!
-							 */
-
-							parser.notifyErrorListeners(stop, "Warn17:To many args in function call!: ", null);
-
-						}
-						/*
-						 * Control if the assigned argument, e.g., x=3 can be
-						 * found in the function definition!
-						 */
-						/* Extract the variable assignment in function calls! */
-						Token tempFuncCallArray[] = new Token[callSize];
-						for (int i = 0; i < callSize; i++) {
-							
-							ParseTree tree = sub.get(i).getChild(0);
-							if (tree != null) {
-								// System.out.println(tree.getText());
-								if (tree instanceof E17VariableDeclarationContext) {
-
-									E17VariableDeclarationContext tr = (E17VariableDeclarationContext) tree;
-									/*Get the token!*/
-									tempFuncCallArray[i] = tr.expr(0).start;
-
-								}
-
-							}
-
-						}
+						StringBuffer strAll = new StringBuffer();
 						for (int i = 0; i < formList.size(); i++) {
 							FormContext fo = formList.get(i);
 
 							TerminalNode ar = fo.ID();
-							if (i < tempFuncCallArray.length) {
+							if (ar == null) {
+								strAll.append("...");
+							} else {
+								strAll.append(ar);
+							}
+							/*
+							 * We set a '=' to mark a function argument. ',' is
+							 * the seperator char!
+							 */
+							if (i < formList.size()) {
+								strAll.append(" = ,");
+							}
 
-								if (tempFuncCallArray[i] != null) {
-									if (tempFuncCallArray[i].getText().equals(ar.getText()) == false) {
-										
-										//System.out.println("wrong function call assignment!" + " definition: " + ar.getText() + " array: " + tempFuncCallArray[i]);
-										parser.notifyErrorListeners(tempFuncCallArray[i], "Err23:Wrong function call assignment!" + " definition: " + ar.getText() + " array: " + tempFuncCallArray[i] + ": ", null);
+						}
+
+						methodCallVars = strAll;
+						isInVarCall = true;
+					}
+					/*
+					 * Here we generate warnings/errors if the amount of
+					 * functions vars differs from the implementation!
+					 */
+					StringBuffer str = new StringBuffer();
+					/*
+					 * Function call with Ellipsis can have multiple arguments
+					 * so we test if that applies here!
+					 */
+					if (arguments.contains("...") == false) {
+						if (argText.isEmpty() == false) {
+
+							if (callSize < functionDefSize) {
+								for (int i = callSize; i < formList.size(); i++) {
+									FormContext fo = formList.get(i);
+
+									TerminalNode ar = fo.ID();
+
+									str.append(ar);
+
+									if (i < formList.size()) {
+										str.append("=,");
 									}
 
 								}
+
+								parser.notifyErrorListeners(stop, "Warn17:The following args are missing -> " + str.toString() + ": ", null);
+
 							}
+
+							else if (callSize > functionDefSize) {
+								/*
+								 * Test for functions where the last argument is
+								 * a ellipsis '...' allows any number of
+								 * arguments!
+								 */
+
+								parser.notifyErrorListeners(stop, "Warn17:To many args in function call!: ", null);
+
+							}
+							/*
+							 * Control if the assigned argument, e.g., x=3 can
+							 * be found in the function definition!
+							 */
+							/*
+							 * Extract the variable assignment in function
+							 * calls!
+							 */
+							Token tempFuncCallArray[] = new Token[callSize];
+							for (int i = 0; i < callSize; i++) {
+
+								ParseTree tree = sub.get(i).getChild(0);
+								if (tree != null) {
+									// System.out.println(tree.getText());
+									if (tree instanceof E17VariableDeclarationContext) {
+
+										E17VariableDeclarationContext tr = (E17VariableDeclarationContext) tree;
+										/* Get the token! */
+										tempFuncCallArray[i] = tr.expr(0).start;
+
+									}
+
+								}
+
+							}
+							for (int i = 0; i < formList.size(); i++) {
+								FormContext fo = formList.get(i);
+
+								TerminalNode ar = fo.ID();
+								if (i < tempFuncCallArray.length) {
+
+									if (tempFuncCallArray[i] != null) {
+										if (tempFuncCallArray[i].getText().equals(ar.getText()) == false) {
+
+											// System.out.println("wrong
+											// function call assignment!" + "
+											// definition: " + ar.getText() + "
+											// array: " + tempFuncCallArray[i]);
+											parser.notifyErrorListeners(tempFuncCallArray[i], "Err23:Wrong function call assignment!" + " definition: " + ar.getText() + " array: " + tempFuncCallArray[i] + ": ", null);
+										}
+
+									}
+								}
+							}
+
+						} else {
+
+							StringBuffer str2 = new StringBuffer();
+
+							for (int i = 0; i < formList.size(); i++) {
+								FormContext fo = formList.get(i);
+								TerminalNode ar = fo.ID();
+								str2.append(ar);
+								if (i < formList.size()) {
+									str2.append(" = ,");
+								}
+
+							}
+
+							parser.notifyErrorListeners(stop, "Warn17:The following args are missing -> " + str2.toString() + ": ", null);
+
+							/* Store function call args for code completion! */
+							if (offsetCodeCompl > startIndex && offsetCodeCompl <= stopIndex) {
+
+								methodCallVars = str2;
+								isInVarCall = true;
+							}
+
 						}
 
 					} else {
 
-						StringBuffer str2 = new StringBuffer();
-
-						for (int i = 0; i < formList.size(); i++) {
-							FormContext fo = formList.get(i);
-							TerminalNode ar = fo.ID();
-							str2.append(ar);
-							if (i < formList.size()) {
-								str2.append(" = ,");
-							}
-
-						}
-
-						parser.notifyErrorListeners(stop, "Warn17:The following args are missing -> " + str2.toString() + ": ", null);
-
-						/* Store function call args for code completion! */
-						if (offsetCodeCompl > startIndex && offsetCodeCompl <= stopIndex) {
-
-							methodCallVars = str2;
-							isInVarCall = true;
-						}
-
 					}
 
-				} else {
-
+				}
+				/*
+				 * The function definition has no arguments but the function
+				 * call has!
+				 */
+				else {
+					if (argText.isEmpty() == false) {
+						parser.notifyErrorListeners(stop, "Warn17:The function definiton has no arguments to call! ", null);
+						// System.out.println("calltext " + callText);
+					}
 				}
 
 			}
-			/*
-			 * The function definition has no arguments but the function call
-			 * has!
-			 */
-			else {
-				if (argText.isEmpty() == false) {
-					parser.notifyErrorListeners(stop, "Warn17:The function definiton has no arguments to call! ", null);
-					// System.out.println("calltext " + callText);
-				}
+
+			else if (meth instanceof RVariableSymbol) {
+
+				return;
+
 			}
-
+			/*else{
+				parser.notifyErrorListeners(stop, "Warn16:Function not available? " + funcName + ": seems to be missing!", null);
+			}*/
 		}
-
-		else if (meth instanceof RVariableSymbol) {
-
-			parser.notifyErrorListeners(stop, "Warn16:Function not available? " + funcName + ": seems to be missing!", null);
-
-		}
-
 	}
 
 	/*

@@ -19,6 +19,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
@@ -27,8 +28,11 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
+import com.eco.bio7.reditor.antlr.RParser.E17VariableDeclarationContext;
 import com.eco.bio7.reditor.antlr.RParser.ExprContext;
 import com.eco.bio7.reditor.antlr.RParser.FormContext;
+import com.eco.bio7.reditor.antlr.RParser.SubContext;
+import com.eco.bio7.reditor.antlr.RParser.SublistContext;
 import com.eco.bio7.reditor.antlr.ref.RFunctionSymbol;
 import com.eco.bio7.reditor.antlr.ref.RGlobalScope;
 import com.eco.bio7.reditor.antlr.ref.RSymbol;
@@ -557,6 +561,30 @@ public class RBaseListen extends RBaseListener {
 				}
 			}
 		}
+		
+		// Add the call function args to the called vars!
+				/*SublistContext subList = ctx.sublist();
+				List<SubContext> sub = subList.sub();
+				
+
+				int callSize = sub.size();
+				//Token tempFuncCallArray[] = new Token[callSize];
+				for (int i = 0; i < callSize; i++) {
+					
+					ParseTree tree = sub.get(i).getChild(0);
+					if (tree != null) {
+						// System.out.println(tree.getText());
+						if (tree instanceof E17VariableDeclarationContext) {
+
+							E17VariableDeclarationContext tr = (E17VariableDeclarationContext) tree;
+							st.varCall.add(tr.expr(0).start.getText());
+
+						}
+
+					}
+
+				}*/
+		
 
 	}
 
@@ -730,7 +758,7 @@ public class RBaseListen extends RBaseListener {
 			else {
 				/* Get the current scope stack elements! */
 				DeclCallStore st = storeDeclCall.peek();
-				/* Add the called method to the call set! */
+				/* Add the called var to the call set! */
 				st.varCall.add(varName);
 
 			}
