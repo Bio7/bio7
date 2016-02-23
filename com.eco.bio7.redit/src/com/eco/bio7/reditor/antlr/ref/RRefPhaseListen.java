@@ -249,7 +249,7 @@ public class RRefPhaseListen extends RBaseListener {
 		// String callText = sub.get(0).getText();
 
 		String funcName = stop.getText();
-		System.out.println(funcName);
+		//System.out.println(funcName);
 		/* Return number of args and names after function call! */
 		RSymbol meth = currentScope.resolve(funcName);
 
@@ -259,7 +259,7 @@ public class RRefPhaseListen extends RBaseListener {
 			 * the loaded packages!
 			 */
 			if (CalculateRProposals.stat != null) {
-				System.out.println("Is there: " + funcName);
+				//System.out.println("Is there: " + funcName);
 				if (CalculateRProposals.stat.containsValue(funcName)) {
 
 					/* Store function call args for code completion! */
@@ -280,7 +280,7 @@ public class RRefPhaseListen extends RBaseListener {
 			 * use here!
 			 */
 		} else {
-            System.out.println("resolved "+funcName);
+            //System.out.println("resolved "+funcName);
 			if (meth instanceof RFunctionSymbol) {
 				RFunctionSymbol me = (RFunctionSymbol) meth;
 				/* Add boolean true to mark the method as used! */
