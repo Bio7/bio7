@@ -533,7 +533,7 @@ public class RRefPhaseListen extends RBaseListener {
 
 			Map.Entry<String, RSymbol> pair = it.next();
 
-			if (pair.getValue() instanceof RVariableSymbol) {
+			if (pair.getValue() instanceof RVariableSymbol) { 
 
 				// buffScopeVars.append(",");
 				buffScopeVars.append(pair.getKey());
