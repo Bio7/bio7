@@ -219,7 +219,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.draw2d,
  org.eclipse.swt,
  com.eco.bio7.themes;bundle-version="2.0.0",
- com.eco.bio7.jfxswt;bundle-version="2.0.0";resolution:=optional
+ com.eco.bio7.jfxswt;bundle-version="2.0.0";resolution:=optional,
+ com.eco.bio7.imagej2;bundle-version="1.0.0"
 Eclipse-LazyStart: true
 Bundle-ClassPath: 
  bin/,
