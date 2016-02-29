@@ -42,7 +42,7 @@ expr:
     |   expr '(' sublist ')'   	#e20CallFunction           // call function
     |   'if' '(' expr ')' expr	#e21
     |   'if' '(' expr ')' expr 'else' expr	#e22
-    |   'for' '(' ID 'in' expr ')' expr	#e23
+    |   'for' '(' ID 'in' expr ')' expr	#ForLoop
     |   'while' '(' expr ')' expr	#e24
     |   'repeat' expr	#e25
     |   '?' expr 	#e26// get help on expr, usually string or ID

@@ -8,17 +8,17 @@ import java.util.Set;
  *         in a stack to find unused method and var declarations.
  */
 public class DeclCallStore {
-	Set<String> decl = new HashSet<String>();
-	Set<String> call = new HashSet<String>();
+	Set<String> methDecl = new HashSet<String>();
+	Set<String> methCall = new HashSet<String>();
 
 	Set<String> varDecl = new HashSet<String>();
 	Set<String> varCall = new HashSet<String>();
 
 	/* Substract the method calls from the method declarations! */
 	public Set<String> substract() {
-		decl.removeAll(call);
+		methDecl.removeAll(methCall);
 
-		return decl;
+		return methDecl;
 	}
 
 	/* Substract the variable calls from the method declarations! */

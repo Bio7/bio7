@@ -29,6 +29,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.antlr.RParser.E17VariableDeclarationContext;
+import com.eco.bio7.reditor.antlr.RParser.E20CallFunctionContext;
 import com.eco.bio7.reditor.antlr.RParser.ExprContext;
 import com.eco.bio7.reditor.antlr.RParser.FormContext;
 import com.eco.bio7.reditor.antlr.RParser.SubContext;
@@ -118,7 +119,7 @@ public class RBaseListen extends RBaseListener {
 		/* Has the function be called in this scope? */
 		DeclCallStore st = storeDeclCall.peek();
 		/* Make a snapshot of function call for bottom up transfer! */
-		Set<String> tempCall = st.call;
+		Set<String> tempCall = st.methCall;
 		/* Make a snapshot of variable call for bottom up transfer! */
 		Set<String> tempVarCall = st.varCall;
 
@@ -138,7 +139,7 @@ public class RBaseListen extends RBaseListener {
 		 * Add the function calls to the parent scope (function) if it is called
 		 * there!
 		 */
-		stAdd.call.addAll(tempCall);
+		stAdd.methCall.addAll(tempCall);
 
 		stAdd.varCall.addAll(tempVarCall);
 		currentScope = currentScope.getEnclosingScope(); // pop scope
@@ -156,7 +157,7 @@ public class RBaseListen extends RBaseListener {
 		 * Insert function as current scope with a parent current scope
 		 * (scope.peek)!
 		 */
-		
+
 		scopes.push(new RScope(scopes.peek()));
 
 		Token firstToken = ctx.getStart();
@@ -188,19 +189,21 @@ public class RBaseListen extends RBaseListener {
 			 * function without variable assignment!
 			 */
 			if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
-				
-				/*Do we have already defined the same name for a function? If so create a warning!*/
-				RSymbol funThere= currentScope.resolve(name) ;
-				if(funThere instanceof RFunctionSymbol){
-				if(currentScope.resolve(name) != null){
-					
-					//System.out.println("Function: "+name+" already declared!");
-					parser.notifyErrorListeners(firstToken, "Warn16:Function "+name+" already defined??: " + name + " seems to be already defined!", null);
+
+				/*
+				 * Do we have already defined the same name for a function? If
+				 * so create a warning!
+				 */
+				RSymbol funThere = currentScope.resolve(name);
+				if (funThere instanceof RFunctionSymbol) {
+					if (currentScope.resolve(name) != null) {
+
+						// System.out.println("Function: "+name+" already
+						// declared!");
+						parser.notifyErrorListeners(firstToken, "Warn16:Function " + name + " already defined??: " + name + " seems to be already defined!", null);
 					}
 				}
-				
-				
-				
+
 				/* Create a new scope and add the function (symbol)! */
 				RFunctionSymbol function = new RFunctionSymbol(name, currentScope, ctx.formlist());
 				currentScope.define(function); // Define function in current
@@ -212,13 +215,9 @@ public class RBaseListen extends RBaseListener {
 				/* Put the method declaration name in the call set! */
 				/* Get the current scope stack elements! */
 				DeclCallStore st = storeDeclCall.peek();
-				
-				
-				
-				
-				
+
 				/* add the called method to the call set! */
-				st.decl.add(name);
+				st.methDecl.add(name);
 				storeDeclCall.push(new DeclCallStore());
 				/*
 				 * Create the function arguments as known symbol table vars in
@@ -273,7 +272,7 @@ public class RBaseListen extends RBaseListener {
 		/* Get the current scope stack elements! */
 		DeclCallStore st = storeDeclCall.peek();
 		/* add the called method to the call set! */
-		st.decl.add(ctx.start.getText());
+		st.methDecl.add(ctx.start.getText());
 		storeDeclCall.push(new DeclCallStore());
 		/* Here we create the outline nodes in the Outline view! */
 		if (methods.size() == 0) {
@@ -319,9 +318,10 @@ public class RBaseListen extends RBaseListener {
 	}
 
 	/* for loop! */
-	public void enterE23(RParser.E23Context ctx) {
+	public void enterForLoop(RParser.ForLoopContext ctx) {
 
 		Token firstToken = ctx.getStart();
+		String loopVar = ctx.ID().getText();
 		Token lastToken = ctx.getStop();
 		int lineStart = firstToken.getStartIndex();
 
@@ -331,6 +331,17 @@ public class RBaseListen extends RBaseListener {
 		if (store.getBoolean("FOR_LOOP_FOLDING")) {
 			startStop.add(lineStart + "," + lineEnd);
 		}
+
+		/* Create a new a new var of the loop in current scope! */
+		RVariableSymbol var = new RVariableSymbol(loopVar);
+		currentScope.define(var);
+
+		DeclCallStore st = storeDeclCall.peek();
+		/*
+		 * Add the called var to the call set to detect unused variables
+		 * (varDecl-varCalls)!
+		 */
+		st.varDecl.add(loopVar);
 
 	}
 
@@ -371,11 +382,20 @@ public class RBaseListen extends RBaseListener {
 	@Override
 	public void enterE17VariableDeclaration(RParser.E17VariableDeclarationContext ctx) {
 
+		
+
 		Interval sourceInterval = ctx.getSourceInterval();
 
 		Token firstToken = ctx.getStart();
 		int start = sourceInterval.a;
 		int stop = sourceInterval.b;
+		
+		/* Throw out variable assignment of function calls! */
+		if (ctx.expr(0) instanceof E20CallFunctionContext) {
+
+			return;
+
+		}
 		String isFunc = ctx.expr(1).start.getText();
 
 		if (isFunc.equals("function") == false) {
@@ -383,10 +403,10 @@ public class RBaseListen extends RBaseListener {
 			int lineStart = firstToken.getStartIndex();
 
 			int line = calculateLine(lineStart);
-			
+
 			Token assignOp = ((TerminalNodeImpl) ctx.getChild(1)).getSymbol();
 
-			//Token assignOp = whitespaceTokenFilter(start, stop);
+			// Token assignOp = whitespaceTokenFilter(start, stop);
 
 			String op = assignOp.getText();
 			if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
@@ -403,7 +423,7 @@ public class RBaseListen extends RBaseListener {
 						DeclCallStore st = storeDeclCall.peek();
 						/*
 						 * Add the called var to the call set to detect unused
-						 * vaiables!
+						 * variables!
 						 */
 						st.varDecl.add(name);
 
@@ -533,7 +553,7 @@ public class RBaseListen extends RBaseListener {
 		/* Get the current scope stack elements! */
 		DeclCallStore st = storeDeclCall.peek();
 		/* add the called method to the call set! */
-		st.call.add(startText);
+		st.methCall.add(startText);
 
 		/* Detect libraries and add them to the outline! */
 		if (startText.equals("library") || startText.equals("require")) {
@@ -561,30 +581,29 @@ public class RBaseListen extends RBaseListener {
 				}
 			}
 		}
-		
+
 		// Add the call function args to the called vars!
-				/*SublistContext subList = ctx.sublist();
-				List<SubContext> sub = subList.sub();
-				
-
-				int callSize = sub.size();
-				//Token tempFuncCallArray[] = new Token[callSize];
-				for (int i = 0; i < callSize; i++) {
-					
-					ParseTree tree = sub.get(i).getChild(0);
-					if (tree != null) {
-						// System.out.println(tree.getText());
-						if (tree instanceof E17VariableDeclarationContext) {
-
-							E17VariableDeclarationContext tr = (E17VariableDeclarationContext) tree;
-							st.varCall.add(tr.expr(0).start.getText());
-
-						}
-
-					}
-
-				}*/
-		
+		/*
+		 * SublistContext subList = ctx.sublist(); List<SubContext> sub =
+		 * subList.sub();
+		 * 
+		 * 
+		 * int callSize = sub.size(); //Token tempFuncCallArray[] = new
+		 * Token[callSize]; for (int i = 0; i < callSize; i++) {
+		 * 
+		 * ParseTree tree = sub.get(i).getChild(0); if (tree != null) { //
+		 * System.out.println(tree.getText()); if (tree instanceof
+		 * E17VariableDeclarationContext) {
+		 * 
+		 * E17VariableDeclarationContext tr = (E17VariableDeclarationContext)
+		 * tree; st.varCall.add(tr.expr(0).start.getText());
+		 * 
+		 * }
+		 * 
+		 * }
+		 * 
+		 * }
+		 */
 
 	}
 
@@ -740,15 +759,15 @@ public class RBaseListen extends RBaseListener {
 
 	/* ID call (variables) Need to calculate position of <- */
 	public void enterE30(RParser.E30Context ctx) {
-		
+
 		Token tok = ctx.ID().getSymbol();
 		// System.out.println("Token Text: "+tok.getText());
 		String varName = tok.getText();
 		int index = tok.getTokenIndex();
-		
-		Token idNextToken =whitespaceTokenFilter(index,ctx.stop.getStopIndex());
-		
-		//Token idNextToken = tokens.get(index + 1);
+
+		Token idNextToken = whitespaceTokenFilter(index, ctx.stop.getStopIndex());
+
+		// Token idNextToken = tokens.get(index + 1);
 		// System.out.println("Next Symbol= "+idNextToken.getText());
 		if (idNextToken != null) {
 			if (idNextToken.getText().equals("=") || idNextToken.getText().equals("<-") || idNextToken.getText().equals("(")) {
@@ -785,7 +804,7 @@ public class RBaseListen extends RBaseListener {
 			}
 			i++;
 		}
-		
+
 		return assignOp;
 	}
 

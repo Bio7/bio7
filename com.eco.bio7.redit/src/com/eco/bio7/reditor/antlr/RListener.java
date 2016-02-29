@@ -210,6 +210,18 @@ public interface RListener extends ParseTreeListener {
 	 */
 	void exitE41(RParser.E41Context ctx);
 	/**
+	 * Enter a parse tree produced by the {@code ForLoop}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterForLoop(RParser.ForLoopContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code ForLoop}
+	 * labeled alternative in {@link RParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitForLoop(RParser.ForLoopContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code e19DefFunction}
 	 * labeled alternative in {@link RParser#expr}.
 	 * @param ctx the parse tree
@@ -437,18 +449,6 @@ public interface RListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitE24(RParser.E24Context ctx);
-	/**
-	 * Enter a parse tree produced by the {@code e23}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterE23(RParser.E23Context ctx);
-	/**
-	 * Exit a parse tree produced by the {@code e23}
-	 * labeled alternative in {@link RParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitE23(RParser.E23Context ctx);
 	/**
 	 * Enter a parse tree produced by the {@code e26}
 	 * labeled alternative in {@link RParser#expr}.
