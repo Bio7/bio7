@@ -198,7 +198,6 @@ jre/lib/jli/libjli.dylib
       <feature id="org.eclipse.emf.ecore" version="2.11.1.v20150805-0538"/>
       <feature id="org.eclipse.jdt" version="3.11.1.v20150904-0015"/>
       <feature id="org.eclipse.emf.common" version="2.11.0.v20150805-0538"/>
-      <feature id="com.eco.bio7.imagej2.feature" version="1.0.0.qualifier"/>
    </features>
 
 
