@@ -389,7 +389,7 @@ public class RBaseListen extends RBaseListener {
 		Token firstToken = ctx.getStart();
 		int start = sourceInterval.a;
 		int stop = sourceInterval.b;
-		 //System.out.println("Is Type!"+ ctx.getParent().getClass());
+		 System.out.println("Is Type!"+ ctx.getParent().getClass());
 		/* Throw out variable assignment of function calls! */
 		
 		if (ctx.expr(0) instanceof E20CallFunctionContext) {
@@ -417,7 +417,7 @@ public class RBaseListen extends RBaseListener {
 			String op = assignOp.getText();
 			if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
 				String name = firstToken.getText();
-				System.out.println("varName=" +name+ "Is Type!"+ ctx.expr(0).getParent().getParent().getClass());
+				//System.out.println("varName=" +name+ "Is Type!"+ ctx.expr(0).getParent().getParent().getClass());
 				
 				if (methods.size() == 0) {
 					if (checkVarName(name)) {
