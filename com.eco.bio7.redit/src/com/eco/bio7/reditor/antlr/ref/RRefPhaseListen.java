@@ -137,8 +137,12 @@ public class RRefPhaseListen extends RBaseListener {
 				}
 
 				if (var == null) {
-					// System.out.println("Var: " + name + " is not
-					// available!");
+					if (ctx.getParent().getParent() != null) {
+						if (ctx.getParent().getParent() instanceof SubContext) {
+							System.out.println("Class: " + ctx.getParent().getParent().getClass());
+							return;
+						}
+					}
 					parser.notifyErrorListeners(tok, "Warn17:Variable not available?: " + varName + " seems to be missing!", null);
 
 				}
@@ -249,7 +253,7 @@ public class RRefPhaseListen extends RBaseListener {
 		// String callText = sub.get(0).getText();
 
 		String funcName = stop.getText();
-		//System.out.println(funcName);
+		// System.out.println(funcName);
 		/* Return number of args and names after function call! */
 		RSymbol meth = currentScope.resolve(funcName);
 
@@ -259,7 +263,7 @@ public class RRefPhaseListen extends RBaseListener {
 			 * the loaded packages!
 			 */
 			if (CalculateRProposals.stat != null) {
-				//System.out.println("Is there: " + funcName);
+				// System.out.println("Is there: " + funcName);
 				if (CalculateRProposals.stat.containsValue(funcName)) {
 
 					/* Store function call args for code completion! */
@@ -280,7 +284,7 @@ public class RRefPhaseListen extends RBaseListener {
 			 * use here!
 			 */
 		} else {
-            //System.out.println("resolved "+funcName);
+			// System.out.println("resolved "+funcName);
 			if (meth instanceof RFunctionSymbol) {
 				RFunctionSymbol me = (RFunctionSymbol) meth;
 				/* Add boolean true to mark the method as used! */
@@ -455,9 +459,11 @@ public class RRefPhaseListen extends RBaseListener {
 				return;
 
 			}
-			/*else{
-				parser.notifyErrorListeners(stop, "Warn16:Function not available? " + funcName + ": seems to be missing!", null);
-			}*/
+			/*
+			 * else{ parser.notifyErrorListeners(stop,
+			 * "Warn16:Function not available? " + funcName +
+			 * ": seems to be missing!", null); }
+			 */
 		}
 	}
 
@@ -533,7 +539,7 @@ public class RRefPhaseListen extends RBaseListener {
 
 			Map.Entry<String, RSymbol> pair = it.next();
 
-			if (pair.getValue() instanceof RVariableSymbol) { 
+			if (pair.getValue() instanceof RVariableSymbol) {
 
 				// buffScopeVars.append(",");
 				buffScopeVars.append(pair.getKey());

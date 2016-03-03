@@ -389,12 +389,18 @@ public class RBaseListen extends RBaseListener {
 		Token firstToken = ctx.getStart();
 		int start = sourceInterval.a;
 		int stop = sourceInterval.b;
-		
+		 //System.out.println("Is Type!"+ ctx.getParent().getClass());
 		/* Throw out variable assignment of function calls! */
+		
 		if (ctx.expr(0) instanceof E20CallFunctionContext) {
-
+          
 			return;
 
+		}
+		/*Throw out function call assignments like */
+		else if(ctx.getParent() instanceof SubContext){
+			 //System.out.println("Call Function detected!");
+			return;
 		}
 		String isFunc = ctx.expr(1).start.getText();
 
@@ -411,6 +417,8 @@ public class RBaseListen extends RBaseListener {
 			String op = assignOp.getText();
 			if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
 				String name = firstToken.getText();
+				System.out.println("varName=" +name+ "Is Type!"+ ctx.expr(0).getParent().getParent().getClass());
+				
 				if (methods.size() == 0) {
 					if (checkVarName(name)) {
 						RScope scope = scopes.peek();
@@ -425,6 +433,7 @@ public class RBaseListen extends RBaseListener {
 						 * Add the called var to the call set to detect unused
 						 * variables!
 						 */
+						
 						st.varDecl.add(name);
 
 						new REditorOutlineNode(name, line, "variable", editor.baseNode);
