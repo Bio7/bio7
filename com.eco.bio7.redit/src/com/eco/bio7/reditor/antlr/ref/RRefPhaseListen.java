@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Parser;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -22,6 +23,7 @@ import com.eco.bio7.reditor.antlr.RParser.E20CallFunctionContext;
 import com.eco.bio7.reditor.antlr.RParser.FormContext;
 import com.eco.bio7.reditor.antlr.RParser.SubContext;
 import com.eco.bio7.reditor.antlr.RParser.SublistContext;
+import com.eco.bio7.reditor.antlr.util.Utils;
 import com.eco.bio7.rpreferences.template.CalculateRProposals;
 
 public class RRefPhaseListen extends RBaseListener {
@@ -113,6 +115,25 @@ public class RRefPhaseListen extends RBaseListener {
 	public void enterE30(RParser.E30Context ctx) {
 
 	}
+	public boolean getCtxParent(ParserRuleContext p) {
+
+		if (p.getParent() != null) {
+			ParserRuleContext parent = p.getParent();
+			if (parent instanceof SubContext || parent instanceof SublistContext) {
+				// System.out.println("p is SubContetx"+p.getText());
+
+				//System.out.println(parent.getText() + ": p is " + parent.getClass());
+				return true;
+
+			} else {
+
+				return getCtxParent(parent);
+			}
+
+		}
+
+		return false;
+	}
 
 	/* Variable call! To do: Need to calculate position of <- */
 	public void exitE30(RParser.E30Context ctx) {
@@ -137,12 +158,13 @@ public class RRefPhaseListen extends RBaseListener {
 				}
 
 				if (var == null) {
-					if (ctx.getParent().getParent() != null) {
-						if (ctx.getParent().getParent() instanceof SubContext) {
-							System.out.println("Class: " + ctx.getParent().getParent().getClass());
-							return;
-						}
+					boolean isSubTrue = Utils.getCtxParent(ctx);
+
+					//System.out.println("has Sub?: " + isSubTrue);
+					if (isSubTrue == true) {
+						return;
 					}
+
 					parser.notifyErrorListeners(tok, "Warn17:Variable not available?: " + varName + " seems to be missing!", null);
 
 				}

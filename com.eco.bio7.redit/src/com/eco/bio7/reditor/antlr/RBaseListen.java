@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.Stack;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Parser;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -32,6 +33,7 @@ import com.eco.bio7.reditor.antlr.RParser.E17VariableDeclarationContext;
 import com.eco.bio7.reditor.antlr.RParser.E20CallFunctionContext;
 import com.eco.bio7.reditor.antlr.RParser.ExprContext;
 import com.eco.bio7.reditor.antlr.RParser.FormContext;
+import com.eco.bio7.reditor.antlr.RParser.ProgContext;
 import com.eco.bio7.reditor.antlr.RParser.SubContext;
 import com.eco.bio7.reditor.antlr.RParser.SublistContext;
 import com.eco.bio7.reditor.antlr.ref.RFunctionSymbol;
@@ -39,6 +41,7 @@ import com.eco.bio7.reditor.antlr.ref.RGlobalScope;
 import com.eco.bio7.reditor.antlr.ref.RSymbol;
 import com.eco.bio7.reditor.antlr.ref.RVariableSymbol;
 import com.eco.bio7.reditor.antlr.ref.Scope;
+import com.eco.bio7.reditor.antlr.util.Utils;
 import com.eco.bio7.reditor.outline.REditorOutlineNode;
 import com.eco.bio7.reditors.REditor;
 
@@ -379,29 +382,33 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
+	
+
 	@Override
 	public void enterE17VariableDeclaration(RParser.E17VariableDeclarationContext ctx) {
-
-		
 
 		Interval sourceInterval = ctx.getSourceInterval();
 
 		Token firstToken = ctx.getStart();
 		int start = sourceInterval.a;
 		int stop = sourceInterval.b;
-		 System.out.println("Is Type!"+ ctx.getParent().getClass());
+		// System.out.println(firstToken.getText() + " Is Type!" +
+		// ctx.getParent().getClass());
 		/* Throw out variable assignment of function calls! */
-		
+
 		if (ctx.expr(0) instanceof E20CallFunctionContext) {
-          
+
 			return;
 
 		}
-		/*Throw out function call assignments like */
-		else if(ctx.getParent() instanceof SubContext){
-			 //System.out.println("Call Function detected!");
+
+		boolean isSubTrue = Utils.getCtxParent(ctx.expr(0));
+
+		// System.out.println("has Sub?: " + isSubTrue);
+		if (isSubTrue == true) {
 			return;
 		}
+
 		String isFunc = ctx.expr(1).start.getText();
 
 		if (isFunc.equals("function") == false) {
@@ -417,8 +424,9 @@ public class RBaseListen extends RBaseListener {
 			String op = assignOp.getText();
 			if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
 				String name = firstToken.getText();
-				//System.out.println("varName=" +name+ "Is Type!"+ ctx.expr(0).getParent().getParent().getClass());
-				
+				// System.out.println("varName=" +name+ "Is Type!"+
+				// ctx.expr(0).getParent().getParent().getClass());
+
 				if (methods.size() == 0) {
 					if (checkVarName(name)) {
 						RScope scope = scopes.peek();
@@ -433,7 +441,7 @@ public class RBaseListen extends RBaseListener {
 						 * Add the called var to the call set to detect unused
 						 * variables!
 						 */
-						
+
 						st.varDecl.add(name);
 
 						new REditorOutlineNode(name, line, "variable", editor.baseNode);
