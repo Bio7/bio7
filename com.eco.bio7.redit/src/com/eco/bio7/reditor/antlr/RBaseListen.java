@@ -781,13 +781,13 @@ public class RBaseListen extends RBaseListener {
 		// System.out.println("Token Text: "+tok.getText());
 		String varName = tok.getText();
 		int index = tok.getTokenIndex();
-
-		Token idNextToken = whitespaceTokenFilter(index, ctx.stop.getStopIndex());
+		/*Filter whitespace out because we use Token channel hidden!*/
+		Token idNextToken = Utils.whitespaceTokenFilter(index, ctx.stop.getStopIndex(),tokens);
 
 		// Token idNextToken = tokens.get(index + 1);
 		// System.out.println("Next Symbol= "+idNextToken.getText());
 		if (idNextToken != null) {
-			if (idNextToken.getText().equals("=") || idNextToken.getText().equals("<-") || idNextToken.getText().equals("(")) {
+			if (idNextToken.getText().equals("=") || idNextToken.getText().equals("<-") || idNextToken.getText().equals("<<-") ||idNextToken.getText().equals("(")) {
 				return;
 			}
 
@@ -800,29 +800,6 @@ public class RBaseListen extends RBaseListener {
 			}
 		}
 	}
-	/*
-	 * Extract the token with the assignment operator and (to exclude whitespace
-	 * in stream because of the hidden() rule the whitespace is present in the
-	 * CommonTokenStream!)
-	 */
-
-	private Token whitespaceTokenFilter(int start, int stop) {
-
-		int i = start + 1;
-		Token assignOp = null;
-		while (i <= stop) {
-			Token tok = tokens.get(i);
-			if (tok.getType() != RParser.WS) {
-				assignOp = tok;
-				break;
-			}
-			if (tok.getType() == RParser.EOF) {
-				break;
-			}
-			i++;
-		}
-
-		return assignOp;
-	}
+	
 
 }

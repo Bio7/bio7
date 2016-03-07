@@ -142,10 +142,12 @@ public class RRefPhaseListen extends RBaseListener {
 		// System.out.println("Token Text: "+tok.getText());
 		String varName = tok.getText();
 		int index = tok.getTokenIndex();
-		Token idNextToken = tokens.get(index + 1);
+		//Token idNextToken = tokens.get(index + 1);
+		/*Filter whitespace out because we use Token channel hidden!*/
+		Token idNextToken = Utils.whitespaceTokenFilter(index, ctx.stop.getStopIndex(),tokens);
 		// System.out.println("Next Symbol= "+idNextToken.getText());
 		if (idNextToken != null) {
-			if (idNextToken.getText().equals("=") || idNextToken.getText().equals("<-") || idNextToken.getText().equals("(")) {
+			if (idNextToken.getText().equals("=") || idNextToken.getText().equals("<-") || idNextToken.getText().equals("<<-") ||idNextToken.getText().equals("(")) {
 				return;
 			}
 
@@ -158,6 +160,7 @@ public class RRefPhaseListen extends RBaseListener {
 				}
 
 				if (var == null) {
+					/*Find out recursively if the variable assignment is in a method call (sublist)!*/
 					boolean isSubTrue = Utils.getCtxParent(ctx);
 
 					//System.out.println("has Sub?: " + isSubTrue);
