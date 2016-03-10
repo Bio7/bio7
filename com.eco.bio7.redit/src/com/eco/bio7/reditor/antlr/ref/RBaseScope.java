@@ -17,7 +17,7 @@ public abstract class RBaseScope implements Scope {
 	}
 
 	/*
-	 * Only resolve symbol in local scope and parent scopes up to the global
+	 * Resolve symbol in local scope and parent scopes up to the global
 	 * scope!
 	 */
 	public RSymbol resolve(String name) {

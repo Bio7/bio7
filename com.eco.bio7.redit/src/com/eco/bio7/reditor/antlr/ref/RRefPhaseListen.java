@@ -96,8 +96,8 @@ public class RRefPhaseListen extends RBaseListener {
 
 	public void exitProg(RParser.ProgContext ctx) {
 		/*
-		 * This calculates the available functions for code completion
-		 * recursively through all available scopes!
+		 * This calculates the available functions/variables for code completion
+		 * recursively through all available scopes for code completion!
 		 */
 		// System.out.println("exit found func "+proposalFuncFound);
 		buffScopeVars = new StringBuffer();
@@ -115,7 +115,7 @@ public class RRefPhaseListen extends RBaseListener {
 	public void enterE30(RParser.E30Context ctx) {
 
 	}
-	public boolean getCtxParent(ParserRuleContext p) {
+	/*public boolean getCtxParent(ParserRuleContext p) {
 
 		if (p.getParent() != null) {
 			ParserRuleContext parent = p.getParent();
@@ -133,7 +133,7 @@ public class RRefPhaseListen extends RBaseListener {
 		}
 
 		return false;
-	}
+	}*/
 
 	/* Variable call! To do: Need to calculate position of <- */
 	public void exitE30(RParser.E30Context ctx) {
@@ -153,6 +153,10 @@ public class RRefPhaseListen extends RBaseListener {
 
 			else {
 				RSymbol var = currentScope.resolve(varName);
+				
+				
+				
+				
 				if (var instanceof RFunctionSymbol) {
 					return;
 					// System.out.println("Var: " + name + " is not

@@ -11,7 +11,7 @@
  *******************************************************************************/
 
 /*******************************************************************************
- * Copyright (c) 2007-2014 M. Austenfeld
+ * Copyright (c) 2005-2016 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -97,6 +97,7 @@ import org.rosuda.REngine.Rserve.RConnection;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.actions.OpenPreferences;
 import com.eco.bio7.reditor.actions.UnsetComment;
+import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditor.outline.REditorLabelProvider;
 import com.eco.bio7.reditor.outline.REditorOutlineNode;
 import com.eco.bio7.reditor.outline.REditorTreeContentProvider;
@@ -152,6 +153,12 @@ public class REditor extends TextEditor {
 
 	private IPreferenceStore store;
 
+	private Parse parser;
+
+	public Parse getParser() {
+		return parser;
+	}
+
 	public RConfiguration getRconf() {
 		return rconf;
 	}
@@ -175,6 +182,7 @@ public class REditor extends TextEditor {
 		// ISourceViewer viewer = getSourceViewer();
 		store = Bio7REditorPlugin.getDefault().getPreferenceStore();
 		// updateFoldingStructure(new ArrayList());
+		parser=new Parse(this);
 	}
 
 	private IPartListener2 partListener = new IPartListener2() {
@@ -969,6 +977,18 @@ public class REditor extends TextEditor {
 
 	public static RConnection getRserveConnection() {
 		return rserveConnection;
+	}
+	public IMarker[] findMyMarkers(IResource target) {
+		String type = "org.eclipse.core.resources.problemmarker";
+
+		IMarker[] markers = null;
+		try {
+			markers = target.findMarkers(type, true, IResource.DEPTH_INFINITE);
+		} catch (CoreException e) {
+
+			e.printStackTrace();
+		}
+		return markers;
 	}
 
 }

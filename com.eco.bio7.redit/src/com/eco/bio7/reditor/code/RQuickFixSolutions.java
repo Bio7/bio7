@@ -81,7 +81,7 @@ public class RQuickFixSolutions  {
 				break;
 			case "Warn16":
 				prop = new ICompletionProposal[] {
-
+						new RQuickFixCompletionProposal("Functions available:", offset, endChar, tokenText, tokenText.length()),
 						new RQuickFixCompletionProposal("Create function", offset, endChar, System.lineSeparator()+tokenText+"<-function(){}"+ System.lineSeparator(), 0) };
 				
 			case "Warn17":

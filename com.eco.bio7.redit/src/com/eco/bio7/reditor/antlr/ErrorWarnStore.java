@@ -1,7 +1,7 @@
 package com.eco.bio7.reditor.antlr;
 
 /**
- * @author Marcel
+ *
  * A class to store ANTLR error messages which will be collected in a list!
  */
 public class ErrorWarnStore {

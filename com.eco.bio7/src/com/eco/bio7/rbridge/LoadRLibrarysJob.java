@@ -28,9 +28,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
-
 import com.eco.bio7.rpreferences.template.CalculateRProposals;
-import com.eco.bio7.rpreferences.template.RCompletionProcessor;
+
 
 
 public class LoadRLibrarysJob extends WorkspaceJob {

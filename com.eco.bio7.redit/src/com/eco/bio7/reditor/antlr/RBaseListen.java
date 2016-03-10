@@ -401,7 +401,7 @@ public class RBaseListen extends RBaseListener {
 			return;
 
 		}
-
+       /*Check and ignore if this assignment is inside a function call!*/
 		boolean isSubTrue = Utils.getCtxParent(ctx.expr(0));
 
 		// System.out.println("has Sub?: " + isSubTrue);
