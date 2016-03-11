@@ -10,7 +10,15 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
+import com.eco.bio7.reditors.REditor;
+
 public class RAssistProcessor implements IQuickAssistProcessor {
+
+	private REditor rEditor;
+
+	public RAssistProcessor(REditor rEditor) {
+		this.rEditor=rEditor;
+	}
 
 	public String getErrorMessage() {
 
@@ -66,7 +74,7 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 		int offset = invocationContext.getOffset();
 		// String text = getCompleteText(viewer.getDocument(), offset);
 		ICompletionProposal[] prop = null;
-		RQuickFixSolutions solutions = new RQuickFixSolutions();
+		RQuickFixSolutions solutions = new RQuickFixSolutions(viewer,rEditor);
 		Iterator<?> it = viewer.getAnnotationModel().getAnnotationIterator();
 
 		while (it.hasNext()) {

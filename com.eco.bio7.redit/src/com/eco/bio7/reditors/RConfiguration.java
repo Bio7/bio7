@@ -235,7 +235,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 	public IQuickAssistAssistant getQuickAssistAssistant(ISourceViewer sourceViewer) {
 		IQuickAssistAssistant quickAssist = new QuickAssistAssistant();
-		quickAssist.setQuickAssistProcessor(new RAssistProcessor());
+		quickAssist.setQuickAssistProcessor(new RAssistProcessor(rEditor));
 		quickAssist.setInformationControlCreator(getInformationControlCreator(sourceViewer));
 		return quickAssist;
 	}
