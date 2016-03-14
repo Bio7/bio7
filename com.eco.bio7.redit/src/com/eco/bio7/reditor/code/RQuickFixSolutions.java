@@ -2,6 +2,9 @@ package com.eco.bio7.reditor.code;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -12,6 +15,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditor.antlr.RBaseListen;
 import com.eco.bio7.reditor.antlr.RErrorStrategy;
 import com.eco.bio7.reditor.antlr.RFilter;
@@ -20,6 +24,8 @@ import com.eco.bio7.reditor.antlr.RParser;
 import com.eco.bio7.reditor.antlr.UnderlineListener;
 import com.eco.bio7.reditor.antlr.ref.RRefPhaseListen;
 import com.eco.bio7.reditors.REditor;
+
+import javafx.util.Pair;
 
 public class RQuickFixSolutions {
 	private ISourceViewer viewer;
@@ -112,79 +118,51 @@ public class RQuickFixSolutions {
 			case "Warn16":
 
 				IDocument doc = viewer.getDocument();
-
-				ANTLRInputStream input = new ANTLRInputStream(doc.get());
-				RLexer lexer = new RLexer(input);
-
-				CommonTokenStream tokens = new CommonTokenStream(lexer);
-
-				UnderlineListener li = new UnderlineListener(editor);
-				RFilter filter = new RFilter(tokens);
-				/*
-				 * We have to remove the filter, too! Else we get error messages
-				 * on the console!
-				 */
-				filter.removeErrorListeners();
-				// filter.addErrorListener(li);
-
-				filter.stream(); // call start rule: stream
-				tokens.reset();
-
-				RParser parser = new RParser(tokens);
-				parser.removeErrorListeners();
-				/*
-				 * Add some modified error messages by implementing a custom
-				 * error strategy!
-				 */
-				parser.setErrorHandler(new RErrorStrategy());
-				parser.setBuildParseTree(true);
-
-				lexer.removeErrorListeners();
-				// lexer.addErrorListener(li);
-				parser.removeErrorListeners();
-				// parser.getInterpreter().setPredictionMode(PredictionMode.LL_EXACT_AMBIG_DETECTION);
-				parser.addErrorListener(li);
-
-				ParseTreeWalker walker = new ParseTreeWalker();
-
-				RuleContext tree = parser.prog();
-				/* Create the listener to create the outline, etc. */
-				RBaseListen list = new RBaseListen(tokens, editor, parser);
-
-				list.startStop.clear();
-				walker.walk(list, tree);
-
-				RRefPhaseListen ref = new RRefPhaseListen(tokens, list, parser, offset);
-				walker.walk(ref, tree);
-
+				RRefPhaseListen ref = new Parse(editor).parseFromOffset(offset);
 				StringBuffer buffScopedFunctions = ref.getBuffScopeFunctions();
 				String[] splitBuffScopedFun = buffScopedFunctions.toString().split(",");
-				
-				String[]pcPro=new String[splitBuffScopedFun.length];
-				
+
+				List<Pair<String, Double>> words = new ArrayList<Pair<String, Double>>();
+
 				for (int i = 0; i < splitBuffScopedFun.length; i++) {
-					double dist=Levenshtein.getLevenshteinDistance(tokenText, splitBuffScopedFun[i]);
-					
-					double max= Math.max(tokenText.length(),splitBuffScopedFun[i].length());
-					double perct = round(1.0 - (dist / max),2);
-					System.out.println(dist+" : "+perct);
-					pcPro[i]= String.valueOf(perct);
-				}			
-				
-				prop = new ICompletionProposal[splitBuffScopedFun.length + 1];
-				
-				prop[0] = new RQuickFixCompletionProposal("Create function", offset, endChar, System.lineSeparator() + tokenText + "<-function(){}" + System.lineSeparator(), 0);
-				
-				for (int i = 0; i < splitBuffScopedFun.length; i++) {
-					if(splitBuffScopedFun[i]!=null){
-					prop[i+1] = new RQuickFixCompletionProposal("Functions available:"+" '"+splitBuffScopedFun[i] +"' Similarity:"+" "+pcPro[i], offset, endChar, splitBuffScopedFun[i], endChar-offset);
+					/* Calculate the LevenShtein distance! */
+					double dist = Levenshtein.getLevenshteinDistance(tokenText, splitBuffScopedFun[i]);
+					/* Calculate as percent! */
+					double max = Math.max(tokenText.length(), splitBuffScopedFun[i].length());
+					double perct = round(1.0 - (dist / max), 2);
+					/* Add to a Pair to sort the distances! */
+					words.add(new Pair<String, Double>(splitBuffScopedFun[i], perct));
+				}
+				/* Sort the Levenshtein distances in descending order! */
+				words.sort(new Comparator<Pair<String, Double>>() {
+					@Override
+					public int compare(Pair<String, Double> levPair1, Pair<String, Double> levPair2) {
+						if (levPair1.getValue() > levPair2.getValue()) {
+							return -1;
+						} else if (levPair1.getValue().equals(levPair2.getValue())) {
+							return 0;
+						} else {
+							return 1;
+						}
 					}
-					else{
-						prop[i+1] = new RQuickFixCompletionProposal("Functions available: NA", offset, endChar, "NA", 2);	
+				});
+
+				prop = new ICompletionProposal[words.size() + 1];
+				/* First proposal to create a function! */
+				prop[0] = new RQuickFixCompletionProposal("Create function", offset, endChar, System.lineSeparator() + tokenText + "<-function(){}" + System.lineSeparator(), 0);
+				/*
+				 * The following proposals all sorted functions from
+				 * Levenshstein distances!
+				 */
+				for (int i = 0; i < words.size(); i++) {
+					if (words.get(i) != null) {
+						Pair<String, Double> sugOrdered = words.get(i);
+
+						prop[i + 1] = new RQuickFixCompletionProposal("Functions available:" + " '" + sugOrdered.getKey() + "' Similarity:" + " " + sugOrdered.getValue(), offset, endChar, sugOrdered.getKey(), endChar - offset);
+					} else {
+						prop[i + 1] = new RQuickFixCompletionProposal("Functions available: NA", offset, endChar, "NA", 2);
 					}
 				}
-
-				
 
 			case "Warn17":
 				/*
@@ -240,13 +218,19 @@ public class RQuickFixSolutions {
 		}
 		return prop;
 	}
-	/*From: http://stackoverflow.com/questions/2808535/round-a-double-to-2-decimal-places?lq=1*/
-	public static double round(double value, int places) {
-	    if (places < 0) throw new IllegalArgumentException();
 
-	    BigDecimal bd = new BigDecimal(value);
-	    bd = bd.setScale(places, RoundingMode.HALF_UP);
-	    return bd.doubleValue();
+	/*
+	 * From:
+	 * http://stackoverflow.com/questions/2808535/round-a-double-to-2-decimal-
+	 * places?lq=1
+	 */
+	public static double round(double value, int places) {
+		if (places < 0)
+			throw new IllegalArgumentException();
+
+		BigDecimal bd = new BigDecimal(value);
+		bd = bd.setScale(places, RoundingMode.HALF_UP);
+		return bd.doubleValue();
 	}
 
 }

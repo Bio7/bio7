@@ -25,6 +25,8 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.eclipse.ui.texteditor.ITextEditor;
+
 import com.eco.bio7.reditor.antlr.ref.RRefPhaseListen;
 import com.eco.bio7.reditor.outline.REditorOutlineNode;
 import com.eco.bio7.reditors.REditor;
@@ -44,7 +46,8 @@ public class Parse {
 	}
 
 	/**
-	 * A method to parse the editor code with an ANTLR generated R parser. Called, e.g., from the editor reconciler.
+	 * A method to parse the editor code with an ANTLR generated R parser.
+	 * Called, e.g., from the editor reconciler.
 	 */
 	public void parse() {
 
@@ -154,7 +157,7 @@ public class Parse {
 			}
 
 		});
-       /*Create all collected markers in a job!*/
+		/* Create all collected markers in a job! */
 		ErrorWarnMarkerCreation markerJob = new ErrorWarnMarkerCreation("Create Markers", editor, li.getErrWarn());
 
 		markerJob.addJobChangeListener(new JobChangeAdapter() {
@@ -169,6 +172,59 @@ public class Parse {
 		markerJob.setUser(true);
 		markerJob.schedule();
 
+	}
+
+	
+
+	public RRefPhaseListen parseFromOffset(int offset) {
+
+		IDocumentProvider dp = editor.getDocumentProvider();
+		IDocument doc = dp.getDocument(editor.getEditorInput());
+
+		ANTLRInputStream input = new ANTLRInputStream(doc.get());
+		RLexer lexer = new RLexer(input);
+
+		CommonTokenStream tokens = new CommonTokenStream(lexer);
+
+		UnderlineListener li = new UnderlineListener(editor);
+		RFilter filter = new RFilter(tokens);
+		/*
+		 * We have to remove the filter, too! Else we get error messages on the
+		 * console!
+		 */
+		filter.removeErrorListeners();
+		// filter.addErrorListener(li);
+
+		filter.stream(); // call start rule: stream
+		tokens.reset();
+
+		RParser parser = new RParser(tokens);
+		parser.removeErrorListeners();
+		/*
+		 * Add some modified error messages by implementing a custom error
+		 * strategy!
+		 */
+		parser.setErrorHandler(new RErrorStrategy());
+		parser.setBuildParseTree(true);
+
+		lexer.removeErrorListeners();
+		// lexer.addErrorListener(li);
+		parser.removeErrorListeners();
+		// parser.getInterpreter().setPredictionMode(PredictionMode.LL_EXACT_AMBIG_DETECTION);
+		parser.addErrorListener(li);
+
+		ParseTreeWalker walker = new ParseTreeWalker();
+
+		RuleContext tree = parser.prog();
+		/* Create the listener to create the outline, etc. */
+		RBaseListen list = new RBaseListen(tokens, editor, parser);
+
+		list.startStop.clear();
+		walker.walk(list, tree);
+
+		RRefPhaseListen ref = new RRefPhaseListen(tokens, list, parser, offset);
+		walker.walk(ref, tree);
+		return ref;
 	}
 
 }

@@ -48,6 +48,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.rosuda.REngine.Rserve.RConnection;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
+import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditor.antlr.RBaseListen;
 import com.eco.bio7.reditor.antlr.RErrorStrategy;
 import com.eco.bio7.reditor.antlr.RFilter;
@@ -168,51 +169,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		int leng = prefix.length();
 		Region region;
 
-		IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
-
-		ANTLRInputStream input = new ANTLRInputStream(doc.get());
-		RLexer lexer = new RLexer(input);
-
-		CommonTokenStream tokens = new CommonTokenStream(lexer);
-
-		UnderlineListener li = new UnderlineListener(editor);
-		RFilter filter = new RFilter(tokens);
-		/*
-		 * We have to remove the filter, too! Else we get error messages on the
-		 * console!
-		 */
-		filter.removeErrorListeners();
-		// filter.addErrorListener(li);
-
-		filter.stream(); // call start rule: stream
-		tokens.reset();
-
-		RParser parser = new RParser(tokens);
-		parser.removeErrorListeners();
-		/*
-		 * Add some modified error messages by implementing a custom error
-		 * strategy!
-		 */
-		parser.setErrorHandler(new RErrorStrategy());
-		parser.setBuildParseTree(true);
-
-		lexer.removeErrorListeners();
-		// lexer.addErrorListener(li);
-		parser.removeErrorListeners();
-		// parser.getInterpreter().setPredictionMode(PredictionMode.LL_EXACT_AMBIG_DETECTION);
-		parser.addErrorListener(li);
-
-		ParseTreeWalker walker = new ParseTreeWalker();
-
-		RuleContext tree = parser.prog();
-		/* Create the listener to create the outline, etc. */
-		RBaseListen list = new RBaseListen(tokens, editor, parser);
-
-		list.startStop.clear();
-		walker.walk(list, tree);
-
-		ref = new RRefPhaseListen(tokens, list, parser, offset);
-		walker.walk(ref, tree);
+		RRefPhaseListen ref = new Parse(editor).parseFromOffset(offset);
 
 		StringBuffer buffScopedFunctions = ref.getBuffScopeFunctions();
 		String[] splitBuffScopedFun = buffScopedFunctions.toString().split(",");
@@ -275,8 +232,48 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 		}
 
+		/* Proposals from local defined variables! */
+
+		if (splitVars.length > 0) {
+			Template[] tempLocalVars = new Template[splitVars.length];
+
+			for (int i = 0; i < tempLocalVars.length; i++) {
+				tempLocalVars[i] = new Template(splitVars[i] + "(decl. Var)", splitVars[i], context.getContextType().getId(), splitVars[i], true);
+
+				Template template = tempLocalVars[i];
+				try {
+					context.getContextType().validate(template.getPattern());
+				} catch (TemplateException e) {
+					continue;
+				}
+				if (template.matches(prefix, context.getContextType().getId()))
+					matches.add(createProposal(template, context, (IRegion) region, getRelevance(template, prefix)));
+
+			}
+		}
+		/* Proposals from local defined functions! */
+		// if(triggerNext){
+		if (splitBuffScopedFun.length > 0) {
+			Template[] tempLocalFunctions = new Template[splitBuffScopedFun.length];
+
+			for (int i = 0; i < tempLocalFunctions.length; i++) {
+				tempLocalFunctions[i] = new Template(splitBuffScopedFun[i] + " (decl. Fun)", splitBuffScopedFun[i], context.getContextType().getId(), splitBuffScopedFun[i] + "()", true);
+
+				Template template = tempLocalFunctions[i];
+				try {
+					context.getContextType().validate(template.getPattern());
+				} catch (TemplateException e) {
+					continue;
+				}
+				if (template.matches(prefix, context.getContextType().getId()))
+					matches.add(createProposal(template, context, (IRegion) region, getRelevance(template, prefix)));
+
+			}
+
+		}
+
 		/* Proposals from List! */
-		
+
 		Template[] temp = new Template[CalculateRProposals.statistics.length];
 
 		for (int i = 0; i < temp.length; i++) {
@@ -290,57 +287,8 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 			if (template.matches(prefix, context.getContextType().getId()))
 				matches.add(createProposal(template, context, (IRegion) region, getRelevance(template, prefix)));
 		}
-		
-
-		/* Proposals from local defined functions! */
-		// if(triggerNext){
-		if (splitBuffScopedFun.length > 0) {
-			Template[] tempLocalFunctions = new Template[splitBuffScopedFun.length];
-
-			for (int i = 0; i < tempLocalFunctions.length; i++) {
-				tempLocalFunctions[i] = new Template(splitBuffScopedFun[i] + " (decl. Fun)", splitBuffScopedFun[i], context.getContextType().getId(), splitBuffScopedFun[i] + "()", true);
-
-			
-			
-				Template template = tempLocalFunctions[i];
-				try {
-					context.getContextType().validate(template.getPattern());
-				} catch (TemplateException e) {
-					continue;
-				}
-				if (template.matches(prefix, context.getContextType().getId()))
-					matches.add(createProposal(template, context, (IRegion) region, getRelevance(template, prefix)));
-
-				
-			}
-				
-			
-		}
-		/* Proposals from local defined variables! */
-
-		if (splitVars.length > 0) {
-			Template[] tempLocalVars = new Template[splitVars.length];
-
-			for (int i = 0; i < tempLocalVars.length; i++) {
-				tempLocalVars[i] = new Template(splitVars[i] + "(decl. Var)", splitVars[i], context.getContextType().getId(), splitVars[i], true);
-
-			
-			
-				Template template = tempLocalVars[i];
-				try {
-					context.getContextType().validate(template.getPattern());
-				} catch (TemplateException e) {
-					continue;
-				}
-				if (template.matches(prefix, context.getContextType().getId()))
-					matches.add(createProposal(template, context, (IRegion) region, getRelevance(template, prefix)));
-
-				
-			}
-		}
 
 		Collections.sort(matches, fgProposalComparator);
-
 
 		ICompletionProposal[] pro = (ICompletionProposal[]) matches.toArray(new ICompletionProposal[matches.size()]);
 
@@ -376,20 +324,20 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		 * prefix = prefix.substring(0, leng - 1); prefix = prefix.trim();
 		 */
 		if (funcNameFromProposals != null) {
-			//System.out.println(funcNameFromProposals);
+			// System.out.println(funcNameFromProposals);
 			for (int i = 0; i < CalculateRProposals.statisticsSet.length; i++) {
 				/* Do we have the method in the proposals? */
 				if (funcNameFromProposals.equals(CalculateRProposals.statistics[i])) {
 
 					String calc = CalculateRProposals.statisticsSet[i];
-					/*Find the arguments in the template proposals!*/
+					/* Find the arguments in the template proposals! */
 					int parOpen = calc.indexOf("(");
 					int parClose = calc.indexOf(")");
 					calc = calc.substring(parOpen + 1, parClose);
-					calc=calc.replace(",", " = ,");
-					calc=calc.concat(" = ");
+					calc = calc.replace(",", " = ,");
+					calc = calc.concat(" = ");
 					String[] proposalMethods = calc.split(",");
-				
+
 					String[] scopedVars = resultBuffScopeVars.toString().split(",");
 					String[] scopedFunctions = buffScopedFunctions.toString().split(",");
 
