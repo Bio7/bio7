@@ -565,16 +565,19 @@ public class RBaseListen extends RBaseListener {
 		 * sourceInterval.a; Token assign = tokens.get(start);
 		 */
 
-		Token start = ctx.start;
-		String startText = start.getText();
+		//Token start = ctx.start;
+		//String startText = start.getText();
+		Token stop = ctx.expr().getStop();
+		String stopText = stop.getText();
 		/* Get the current scope stack elements! */
 		DeclCallStore st = storeDeclCall.peek();
 		/* add the called method to the call set! */
-		st.methCall.add(startText);
+		//System.out.println(stop.getText());
+		st.methCall.add(stopText);
 
 		/* Detect libraries and add them to the outline! */
-		if (startText.equals("library") || startText.equals("require")) {
-			Token firstToken = start;
+		if (stopText.equals("library") || stopText.equals("require")) {
+			Token firstToken = stop;
 
 			int lineStart = firstToken.getStartIndex();
 
