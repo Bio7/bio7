@@ -2,7 +2,6 @@ package com.eco.bio7.reditor.actions;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.preference.PreferenceDialog;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 
 public class OpenPreferences extends Action {

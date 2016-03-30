@@ -37,6 +37,9 @@ import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.browser.BrowserView;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.reditor.actions.OpenHelpBrowserAction;
+import com.eco.bio7.reditor.actions.OpenPreferences;
+import com.eco.bio7.reditor.actions.OpenWebHelpBrowser;
 
 /**
  * Default implementation of {@link org.eclipse.jface.text.IInformationControl}.
@@ -81,7 +84,8 @@ public class RDefaultInformationControl extends AbstractInformationControl imple
 		 * @deprecated As of 3.2, replaced by
 		 *             {@link RDefaultInformationControl.IInformationPresenterExtension#updatePresentation(Drawable, String, TextPresentation, int, int)}
 		 */
-		String updatePresentation(Display display, String hoverInfo, TextPresentation presentation, int maxWidth, int maxHeight);
+		String updatePresentation(Display display, String hoverInfo, TextPresentation presentation, int maxWidth,
+				int maxHeight);
 	}
 
 	/**
@@ -119,7 +123,8 @@ public class RDefaultInformationControl extends AbstractInformationControl imple
 		 *
 		 * @return the manipulated information
 		 */
-		String updatePresentation(Drawable drawable, String hoverInfo, TextPresentation presentation, int maxWidth, int maxHeight);
+		String updatePresentation(Drawable drawable, String hoverInfo, TextPresentation presentation, int maxWidth,
+				int maxHeight);
 	}
 
 	/**
@@ -146,6 +151,8 @@ public class RDefaultInformationControl extends AbstractInformationControl imple
 	private String htmlHelpText;
 
 	protected boolean canBrowse = true;
+
+	private ToolBarManager toolBarManager;
 
 	/**
 	 * Creates a default information control with the given shell as parent. An
@@ -222,6 +229,7 @@ public class RDefaultInformationControl extends AbstractInformationControl imple
 	 */
 	public RDefaultInformationControl(Shell parent, ToolBarManager toolBarManager, IInformationPresenter presenter) {
 		super(parent, toolBarManager);
+		this.toolBarManager = toolBarManager;
 		fAdditionalTextStyles = SWT.V_SCROLL | SWT.H_SCROLL;
 		fPresenter = presenter;
 		create();
@@ -326,7 +334,8 @@ public class RDefaultInformationControl extends AbstractInformationControl imple
 	 * @deprecated As of 3.4, replaced by
 	 *             {@link #DefaultInformationControl(Shell, String, RDefaultInformationControl.IInformationPresenter)}
 	 */
-	public RDefaultInformationControl(Shell parent, int textStyles, IInformationPresenter presenter, String statusFieldText) {
+	public RDefaultInformationControl(Shell parent, int textStyles, IInformationPresenter presenter,
+			String statusFieldText) {
 		super(parent, statusFieldText);
 		fAdditionalTextStyles = textStyles;
 		fPresenter = presenter;
@@ -334,9 +343,8 @@ public class RDefaultInformationControl extends AbstractInformationControl imple
 	}
 
 	/*
-	 * @see
-	 * org.eclipse.jface.text.AbstractInformationControl#createContent(org.eclipse
-	 * .swt.widgets.Composite)
+	 * @see org.eclipse.jface.text.AbstractInformationControl#createContent(org.
+	 * eclipse .swt.widgets.Composite)
 	 */
 	protected void createContent(Composite parent) {
 
@@ -344,7 +352,7 @@ public class RDefaultInformationControl extends AbstractInformationControl imple
 		fText.addListener(SWT.MouseDown, new Listener() {
 			@Override
 			public void handleEvent(Event event) {
-				if (event.button == 3) {
+				/*if (event.button == 3) {
 					Job job = new Job("Html help") {
 						private String url;
 
@@ -361,8 +369,10 @@ public class RDefaultInformationControl extends AbstractInformationControl imple
 
 										htmlHelpText = RConfiguration.htmlHelpText;
 
-										c.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".html\", sep=\"\"))").toString();
-										c.eval("try(tools::Rd2HTML(utils:::.getHelpFile(?" + htmlHelpText + "),.bio7TempHtmlHelpFile,package=\"tools\", stages=c(\"install\", \"render\")))");
+										c.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".html\", sep=\"\"))")
+												.toString();
+										c.eval("try(tools::Rd2HTML(utils:::.getHelpFile(?" + htmlHelpText
+												+ "),.bio7TempHtmlHelpFile,package=\"tools\", stages=c(\"install\", \"render\")))");
 										String out = null;
 										try {
 											out = (String) c.eval("try(.bio7TempHtmlHelpFile)").asString();
@@ -387,8 +397,7 @@ public class RDefaultInformationControl extends AbstractInformationControl imple
 												}
 											}
 										});
-									}
-									else{
+									} else {
 										System.out.println("Rserve is busy!");
 									}
 								}
@@ -459,8 +468,8 @@ public class RDefaultInformationControl extends AbstractInformationControl imple
 						});
 						// job.setSystem(true);
 						job.schedule();
-					}
-				}
+					}*/
+				//}
 			}
 
 		});
@@ -531,9 +540,11 @@ public class RDefaultInformationControl extends AbstractInformationControl imple
 				maxHeight = Integer.MAX_VALUE;
 
 			if (fPresenter instanceof IInformationPresenterExtension)
-				content = ((IInformationPresenterExtension) fPresenter).updatePresentation(fText, content, fPresentation, maxWidth, maxHeight);
+				content = ((IInformationPresenterExtension) fPresenter).updatePresentation(fText, content,
+						fPresentation, maxWidth, maxHeight);
 			else
-				content = fPresenter.updatePresentation(getShell().getDisplay(), content, fPresentation, maxWidth, maxHeight);
+				content = fPresenter.updatePresentation(getShell().getDisplay(), content, fPresentation, maxWidth,
+						maxHeight);
 
 			if (content != null) {
 				fText.setText(content);
@@ -626,7 +637,13 @@ public class RDefaultInformationControl extends AbstractInformationControl imple
 			 * createInformationControl(org.eclipse.swt.widgets.Shell)
 			 */
 			public IInformationControl createInformationControl(Shell parent) {
-				return new RDefaultInformationControl(parent, (ToolBarManager) null, fPresenter);
+				ToolBarManager tbm = new ToolBarManager(SWT.FLAT);
+				OpenHelpBrowserAction localBrowserHelp = new OpenHelpBrowserAction();
+				OpenWebHelpBrowser webHelp= new OpenWebHelpBrowser();
+				tbm.add(localBrowserHelp);
+				tbm.add(webHelp);
+				tbm.update(true);
+				return new RDefaultInformationControl(parent, (ToolBarManager) tbm, fPresenter);
 			}
 		};
 	}

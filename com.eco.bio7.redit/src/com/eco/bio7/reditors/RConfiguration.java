@@ -419,8 +419,10 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 		return new IInformationControlCreator() {
 			public IInformationControl createInformationControl(Shell parent) {
 
-				/* SeeRHoverInfomrationControll for HTML implementation! */
-				return new RDefaultInformationControl(parent, "Mouse Right-Click To Open Help Browser", null);
+				/* SeeRHoverInformationControl for HTML implementation!
+				 * ToolBar is added in the InformationControl! 
+				 */
+				return new RDefaultInformationControl(parent);
 			}
 		};
 	}
