@@ -1,5 +1,12 @@
 package com.eco.bio7.reditors;
 
+import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.text.AbstractInformationControl;
+import org.eclipse.jface.text.IInformationControl;
+import org.eclipse.jface.text.IInformationControlCreator;
+import org.eclipse.jface.text.TextPresentation;
+import org.eclipse.jface.util.Geometry;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.DisposeEvent;
@@ -14,31 +21,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.jface.internal.text.html.HTMLTextPresenter;
-import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.text.AbstractInformationControl;
-import org.eclipse.jface.text.IInformationControl;
-import org.eclipse.jface.text.IInformationControlCreator;
-import org.eclipse.jface.text.TextPresentation;
-import org.eclipse.jface.util.Geometry;
-import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RConnection;
-import org.rosuda.REngine.Rserve.RserveException;
-
-import com.eco.bio7.browser.BrowserView;
-import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.actions.OpenHelpBrowserAction;
-import com.eco.bio7.reditor.actions.OpenPreferences;
 import com.eco.bio7.reditor.actions.OpenWebHelpBrowser;
 
 /**
@@ -352,124 +335,7 @@ public class RDefaultInformationControl extends AbstractInformationControl imple
 		fText.addListener(SWT.MouseDown, new Listener() {
 			@Override
 			public void handleEvent(Event event) {
-				/*if (event.button == 3) {
-					Job job = new Job("Html help") {
-						private String url;
-
-						@Override
-						protected IStatus run(IProgressMonitor monitor) {
-							monitor.beginTask("Help ...", IProgressMonitor.UNKNOWN);
-
-							try {
-								RConnection c = REditor.getRserveConnection();
-								if (c != null) {
-									if (RState.isBusy() == false) {
-										RState.setBusy(true);
-										Display display = openBrowser();
-
-										htmlHelpText = RConfiguration.htmlHelpText;
-
-										c.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".html\", sep=\"\"))")
-												.toString();
-										c.eval("try(tools::Rd2HTML(utils:::.getHelpFile(?" + htmlHelpText
-												+ "),.bio7TempHtmlHelpFile,package=\"tools\", stages=c(\"install\", \"render\")))");
-										String out = null;
-										try {
-											out = (String) c.eval("try(.bio7TempHtmlHelpFile)").asString();
-										} catch (REXPMismatchException e) {
-
-											e.printStackTrace();
-										}
-
-										String pattern = "file:///" + out;
-										url = pattern.replace("\\", "/");
-
-										display.asyncExec(new Runnable() {
-
-											public void run() {
-												BrowserView b = BrowserView.getBrowserInstance();
-												try {
-													b.setLocation(url);
-												} catch (Exception e) {
-													// TODO Auto-generated catch
-													// block
-													e.printStackTrace();
-												}
-											}
-										});
-									} else {
-										System.out.println("Rserve is busy!");
-									}
-								}
-
-							} catch (RserveException e1) {
-
-								e1.printStackTrace();
-							}
-
-							monitor.done();
-							return Status.OK_STATUS;
-						}
-
-					};
-					job.addJobChangeListener(new JobChangeAdapter() {
-						public void done(IJobChangeEvent event) {
-							if (event.getResult().isOK()) {
-
-								RState.setBusy(false);
-							} else {
-
-							}
-						}
-					});
-					// job.setSystem(true);
-					job.schedule();
-				} else if (event.button == 2) {
-
-					if (canBrowse) {
-
-						Job job = new Job("Html help") {
-							private String url;
-
-							@Override
-							protected IStatus run(IProgressMonitor monitor) {
-								monitor.beginTask("Help ...", IProgressMonitor.UNKNOWN);
-								canBrowse = false;
-								Display display = openBrowser();
-
-								htmlHelpText = RConfiguration.htmlHelpText;
-
-								display.asyncExec(new Runnable() {
-
-									public void run() {
-										BrowserView b = BrowserView.getBrowserInstance();
-										try {
-											b.setLocation("http://www.rdocumentation.org" + "#" + htmlHelpText);
-										} catch (Exception e) {
-											// TODO Auto-generated catch block
-											e.printStackTrace();
-										}
-									}
-								});
-
-								monitor.done();
-								return Status.OK_STATUS;
-							}
-
-						};
-						job.addJobChangeListener(new JobChangeAdapter() {
-							public void done(IJobChangeEvent event) {
-								if (event.getResult().isOK()) {
-									canBrowse = true;
-								} else {
-
-								}
-							}
-						});
-						// job.setSystem(true);
-						job.schedule();
-					}*/
-				//}
+				
 			}
 
 		});
@@ -488,23 +354,7 @@ public class RDefaultInformationControl extends AbstractInformationControl imple
 		}
 	}
 
-	/*private Display openBrowser() {
-		Display display = PlatformUI.getWorkbench().getDisplay();
-		display.syncExec(new Runnable() {
-			public void run() {
-				try {
-					IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-					page.showView("com.eco.bio7.browser.Browser");
-				} catch (PartInitException e) {
-					// TODO Auto-generated catch
-					// block
-					e.printStackTrace();
-				}
-
-			}
-		});
-		return display;
-	}*/
+	
 
 	/*
 	 * @see IInformationControl#setInformation(String)
