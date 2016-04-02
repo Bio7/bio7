@@ -488,7 +488,7 @@ public class RDefaultInformationControl extends AbstractInformationControl imple
 		}
 	}
 
-	private Display openBrowser() {
+	/*private Display openBrowser() {
 		Display display = PlatformUI.getWorkbench().getDisplay();
 		display.syncExec(new Runnable() {
 			public void run() {
@@ -504,7 +504,7 @@ public class RDefaultInformationControl extends AbstractInformationControl imple
 			}
 		});
 		return display;
-	}
+	}*/
 
 	/*
 	 * @see IInformationControl#setInformation(String)
