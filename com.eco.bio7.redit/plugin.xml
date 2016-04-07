@@ -47,6 +47,12 @@
             id="RCodePreferences"
             name="Preferences Editor Code">
       </page>
+      <page
+            category="com.eco.bio7.R"
+            class="com.eco.bio7.rpreferences.RCodeAnalysisPreferences"
+            id="RCodeAnalysisPreferences"
+            name="Preferences Editor Code Analysis">
+      </page>
       
    </extension>
 
