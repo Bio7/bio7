@@ -24,8 +24,8 @@ public class RCodeAnalysisPreferences extends FieldEditorPreferencePage implemen
 		
 		addField(new LabelFieldEditor("Code Analysis:", getFieldEditorParent()));
 		
-		addField(new BooleanFieldEditor("UNUSED_FUNCTIONS", "Detect Unused Functions", getFieldEditorParent()));
-		addField(new BooleanFieldEditor("FUNCTION_AVAILABLE", "Detect if function is available", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("UNUSED_FUNCTION", "Detect Unused Functions", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("MISSING_FUNCTION", "Detect if function is available", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("UNUSED_VAR", "Detect if variable is used", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("MISSING_VAR", "Detect if variable is available", getFieldEditorParent()));		
 		
@@ -35,10 +35,9 @@ public class RCodeAnalysisPreferences extends FieldEditorPreferencePage implemen
 	public void init(IWorkbench workbench) {
 
 		IPreferenceStore store = Bio7REditorPlugin.getDefault().getPreferenceStore();
-		store.setDefault("UNUSED_FUNCTIONS", true);
-		store.setDefault("FUNCTION_AVAILABLE", true);
+		store.setDefault("UNUSED_FUNCTION", true);
+		store.setDefault("MISSING_FUNCTION", true);
 		store.setDefault("UNUSED_VAR", true);
-		store.setDefault("REPEAT_LOOP_FOLDING", true);
 		store.setDefault("MISSING_VAR", true);
 		
 		

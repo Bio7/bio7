@@ -95,6 +95,7 @@ import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.rosuda.REngine.Rserve.RConnection;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
+import com.eco.bio7.reditor.actions.OpenPlotPreferences;
 import com.eco.bio7.reditor.actions.OpenPreferences;
 import com.eco.bio7.reditor.actions.UnsetComment;
 import com.eco.bio7.reditor.antlr.Parse;
@@ -124,6 +125,8 @@ public class REditor extends TextEditor {
 	private Action refactor;
 
 	private OpenPreferences preferences;
+	
+	private OpenPlotPreferences plotPreferences;
 
 	private ProjectionSupport projectionSupport;
 
@@ -352,6 +355,8 @@ public class REditor extends TextEditor {
 		}
 
 	};
+
+	
 
 	/*
 	 * Here we search for similar words of a selected word in the editor. The
@@ -706,6 +711,9 @@ public class REditor extends TextEditor {
 		addAction(menu, "Refactor");
 		menu.add(new Separator());
 		addAction(menu, "R Preferences");
+		menu.add(new Separator());
+		addAction(menu, "R Plot Preferences");
+		
 
 	}
 
@@ -754,6 +762,9 @@ public class REditor extends TextEditor {
 
 		preferences = new com.eco.bio7.reditor.actions.OpenPreferences();
 		setAction("R Preferences", preferences);
+		
+		plotPreferences = new com.eco.bio7.reditor.actions.OpenPlotPreferences();
+		setAction("R Plot Preferences", plotPreferences);
 
 	}
 

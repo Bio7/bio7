@@ -14,7 +14,9 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
+import org.eclipse.jface.preference.IPreferenceStore;
 
+import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.antlr.RBaseListen;
 import com.eco.bio7.reditor.antlr.RBaseListener;
 import com.eco.bio7.reditor.antlr.RParser;
@@ -42,6 +44,7 @@ public class RRefPhaseListen extends RBaseListener {
 	private Scope tempCodeComplScope;
 	private boolean isInVarCall;
 	private String proposalFuncFound;
+	private IPreferenceStore store;
 
 	public String getProposalFuncFound() {
 		return proposalFuncFound;
@@ -70,7 +73,7 @@ public class RRefPhaseListen extends RBaseListener {
 		this.finalVarDecl = list.finalVarDecl;
 		this.tokens = tokens;
 		this.parser = parser;
-
+		store = Bio7REditorPlugin.getDefault().getPreferenceStore();
 	}
 
 	/* Constructor for code completion! */
@@ -82,7 +85,7 @@ public class RRefPhaseListen extends RBaseListener {
 		this.tokens = tokens;
 		this.parser = parser;
 		this.offsetCodeCompl = offset;
-
+		store = Bio7REditorPlugin.getDefault().getPreferenceStore();
 	}
 
 	public void enterProg(RParser.ProgContext ctx) {
@@ -115,86 +118,87 @@ public class RRefPhaseListen extends RBaseListener {
 	public void enterE30(RParser.E30Context ctx) {
 
 	}
-	/*public boolean getCtxParent(ParserRuleContext p) {
-
-		if (p.getParent() != null) {
-			ParserRuleContext parent = p.getParent();
-			if (parent instanceof SubContext || parent instanceof SublistContext) {
-				// System.out.println("p is SubContetx"+p.getText());
-
-				//System.out.println(parent.getText() + ": p is " + parent.getClass());
-				return true;
-
-			} else {
-
-				return getCtxParent(parent);
-			}
-
-		}
-
-		return false;
-	}*/
+	/*
+	 * public boolean getCtxParent(ParserRuleContext p) {
+	 * 
+	 * if (p.getParent() != null) { ParserRuleContext parent = p.getParent(); if
+	 * (parent instanceof SubContext || parent instanceof SublistContext) { //
+	 * System.out.println("p is SubContetx"+p.getText());
+	 * 
+	 * //System.out.println(parent.getText() + ": p is " + parent.getClass());
+	 * return true;
+	 * 
+	 * } else {
+	 * 
+	 * return getCtxParent(parent); }
+	 * 
+	 * }
+	 * 
+	 * }
+	 */
 
 	/* Variable call! To do: Need to calculate position of <- */
 	public void exitE30(RParser.E30Context ctx) {
-
-		Token tok = ctx.ID().getSymbol();
-		// System.out.println("Token Text: "+tok.getText());
-		String varName = tok.getText();
-		int index = tok.getTokenIndex();
-		//Token idNextToken = tokens.get(index + 1);
-		/*Filter whitespace out because we use Token channel hidden!*/
-		Token idNextToken = Utils.whitespaceTokenFilter(index, ctx.stop.getStopIndex(),tokens);
-		// System.out.println("Next Symbol= "+idNextToken.getText());
-		if (idNextToken != null) {
-			if (idNextToken.getText().equals("=") || idNextToken.getText().equals("<-") || idNextToken.getText().equals("<<-") ||idNextToken.getText().equals("(")) {
-				return;
-			}
-
-			else {
-				RSymbol var = currentScope.resolve(varName);
-				
-				
-				
-				
-				if (var instanceof RFunctionSymbol) {
+		if (store.getBoolean("MISSING_VAR")) {
+			Token tok = ctx.ID().getSymbol();
+			// System.out.println("Token Text: "+tok.getText());
+			String varName = tok.getText();
+			int index = tok.getTokenIndex();
+			// Token idNextToken = tokens.get(index + 1);
+			/* Filter whitespace out because we use Token channel hidden! */
+			Token idNextToken = Utils.whitespaceTokenFilter(index, ctx.stop.getStopIndex(), tokens);
+			// System.out.println("Next Symbol= "+idNextToken.getText());
+			if (idNextToken != null) {
+				if (idNextToken.getText().equals("=") || idNextToken.getText().equals("<-") || idNextToken.getText().equals("<<-") || idNextToken.getText().equals("(")) {
 					return;
-					// System.out.println("Var: " + name + " is not
-					// available!");
 				}
 
-				if (var == null) {
-					/*Find out recursively if the variable assignment is in a method call (sublist)!*/
-					boolean isSubTrue = Utils.getCtxParent(ctx);
+				else {
+					RSymbol var = currentScope.resolve(varName);
 
-					//System.out.println("has Sub?: " + isSubTrue);
-					if (isSubTrue == true) {
+					if (var instanceof RFunctionSymbol) {
 						return;
+						// System.out.println("Var: " + name + " is not
+						// available!");
 					}
 
-					parser.notifyErrorListeners(tok, "Warn17:Variable not available?: " + varName + " seems to be missing!", null);
+					if (var == null) {
+						/*
+						 * Find out recursively if the variable assignment is in
+						 * a method call (sublist)!
+						 */
+						boolean isSubTrue = Utils.getCtxParent(ctx);
 
+						// System.out.println("has Sub?: " + isSubTrue);
+						if (isSubTrue == true) {
+							return;
+						}
+
+						parser.notifyErrorListeners(tok, "Warn17:Variable not available?: " + varName + " seems to be missing!", null);
+
+					}
 				}
 			}
 		}
-
 		// Token lastToken = tokens.get(sourceInterval.b);
 
 	}
 
 	public void enterE17VariableDeclaration(RParser.E17VariableDeclarationContext ctx) {
-		Token firstToken = ctx.getStart();
-		String name = firstToken.getText();
-		// System.out.println(name);
-		/*
-		 * Look up is the variable definition is used somewhere in the scope and
-		 * nested scopes!
-		 */
-		boolean isNotCalled = finalVarDecl.contains(name);
-		if (isNotCalled) {
+		if (store.getBoolean("UNUSED_VAR")) {
+			Token firstToken = ctx.getStart();
+			String name = firstToken.getText();
+			// System.out.println(name);
+			/*
+			 * Look up is the variable definition is used somewhere in the scope
+			 * and nested scopes!
+			 */
+			boolean isNotCalled = finalVarDecl.contains(name);
+			if (isNotCalled) {
 
-			parser.notifyErrorListeners(firstToken, "Warn17:Variable " + name + " is defined but not used!:", null);
+				parser.notifyErrorListeners(firstToken, "Warn17:Variable " + name + " is defined but not used!:", null);
 
+			}
 		}
 	}
 
@@ -205,41 +209,48 @@ public class RRefPhaseListen extends RBaseListener {
 	public void enterE19DefFunction(RParser.E19DefFunctionContext ctx) {
 		currentScope = scopes.get(ctx);
 
-		Interval sourceInterval = ctx.getSourceInterval();
-		int start = sourceInterval.a;
+		if (store.getBoolean("UNUSED_FUNCTION")) {
+			Interval sourceInterval = ctx.getSourceInterval();
+			int start = sourceInterval.a;
 
-		/*
-		 * If we have at least 2 tokens else we create a function without
-		 * variable assignment!
-		 */
-		if ((start - 2) >= 0 && ctx.getParent().getChild(1) != null && ctx.getParent().getChild(2) != null) {
-
-			String op = ctx.getParent().getChild(1).getText();
-			String name = ctx.getParent().getChild(0).getText();
 			/*
-			 * Check if we have an assignment symbol available! else we create a
-			 * function without variable assignment!
+			 * If we have at least 2 tokens else we create a function without
+			 * variable assignment!
 			 */
-			if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
-				/*
-				 * Check if this method is called in the current or a parent
-				 * scope!
-				 */
-				Token st = tokens.get(ctx.getParent().getChild(0).getSourceInterval().a);
-				// System.out.println("Name is: "+name);
-				/*
-				 * RSymbol meth = currentScope.resolveFuncCalls(name);
-				 * 
-				 */
-				boolean isNotCalled = finalFuncDecl.contains(name);
-				if (isNotCalled) {
+			if ((start - 2) >= 0 && ctx.getParent().getChild(1) != null && ctx.getParent().getChild(2) != null) {
 
-					parser.notifyErrorListeners(st, "Warn17:Function " + name + " is defined but not used!:", null);
+				String op = ctx.getParent().getChild(1).getText();
+				String name = ctx.getParent().getChild(0).getText();
+				/*
+				 * Check if we have an assignment symbol available! else we
+				 * create a function without variable assignment!
+				 * store.setDefault("UNUSED_FUNCTIONS", true);
+				 * store.setDefault("FUNCTION_AVAILABLE", true);
+				 * store.setDefault("UNUSED_VAR", true);
+				 * store.setDefault("REPEAT_LOOP_FOLDING", true);
+				 * store.setDefault("MISSING_VAR", true); return false;
+				 */
+				if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
+					/*
+					 * Check if this method is called in the current or a parent
+					 * scope!
+					 */
+					Token st = tokens.get(ctx.getParent().getChild(0).getSourceInterval().a);
+					// System.out.println("Name is: "+name);
+					/*
+					 * RSymbol meth = currentScope.resolveFuncCalls(name);
+					 * 
+					 */
+					boolean isNotCalled = finalFuncDecl.contains(name);
+					if (isNotCalled) {
+
+						parser.notifyErrorListeners(st, "Warn17:Function " + name + " is defined but not used!:", null);
+
+					}
 
 				}
 
 			}
-
 		}
 
 	}
@@ -287,6 +298,7 @@ public class RRefPhaseListen extends RBaseListener {
 		RSymbol meth = currentScope.resolve(funcName);
 
 		if (meth == null) {
+
 			/*
 			 * If we do not find the functions in the current file we search in
 			 * the loaded packages!
@@ -303,7 +315,9 @@ public class RRefPhaseListen extends RBaseListener {
 					}
 
 				} else {
-					parser.notifyErrorListeners(stop, "Warn16:Function not available?: " + funcName + " seems to be missing!", null);
+					if (store.getBoolean("MISSING_FUNCTION")) {
+						parser.notifyErrorListeners(stop, "Warn16:Function not available?: " + funcName + " seems to be missing!", null);
+					}
 
 				}
 

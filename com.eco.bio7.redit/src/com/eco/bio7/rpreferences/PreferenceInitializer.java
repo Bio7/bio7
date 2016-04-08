@@ -26,8 +26,6 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			OS = "Mac";
 		}
 
-		// TODO Auto-generated method stub
-
 		IPreferenceStore storeR = Bio7REditorPlugin.getDefault().getPreferenceStore();
 		String font = null;
 		int fsize = 10;
@@ -67,18 +65,23 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		PreferenceConverter.setDefault(storeR, "colourkeyfont6", new FontData(font, fsize, 0));
 		PreferenceConverter.setDefault(storeR, "colourkeyfont7", new FontData(font, fsize, 0));
 		PreferenceConverter.setDefault(storeR, "colourkeyfont8", new FontData(font, fsize, 0));
-		
+
 		storeR.setDefault("FUNCTIONS_FOLDING", true);
 		storeR.setDefault("FOR_LOOP_FOLDING", true);
 		storeR.setDefault("WHILE_LOOP_FOLDING", true);
 		storeR.setDefault("REPEAT_LOOP_FOLDING", true);
 		storeR.setDefault("IF_CONDITION_FOLDING", true);
-		
+
 		storeR.setDefault("SHOW_INFOPOPUP", true);
 		storeR.setDefault("MARK_WORDS", false);
 		storeR.setDefault("TYPED_CODE_COMPLETION", true);
 		storeR.setDefault("EDITOR_TO_OUTLINE", false);
 		storeR.setDefault("ACTIVATION_CHARS", "(");
+
+		storeR.setDefault("UNUSED_FUNCTION", true);
+		storeR.setDefault("MISSING_FUNCTION", true);
+		storeR.setDefault("UNUSED_VAR", true);
+		storeR.setDefault("MISSING_VAR", true);
 
 	}
 

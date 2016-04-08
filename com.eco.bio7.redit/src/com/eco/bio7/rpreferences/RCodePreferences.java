@@ -58,6 +58,12 @@ public class RCodePreferences extends FieldEditorPreferencePage implements IWork
 		store.setDefault("MARK_WORDS", true);
 		store.setDefault("TYPED_CODE_COMPLETION", false);
 		store.setDefault("EDITOR_TO_OUTLINE", true);
+		
+		
+		store.setDefault("UNUSED_FUNCTION", true);
+		store.setDefault("MISSING_FUNCTION", true);
+		store.setDefault("UNUSED_VAR", true);
+		store.setDefault("MISSING_VAR", true);
 
 	}
 

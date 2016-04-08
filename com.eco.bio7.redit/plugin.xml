@@ -343,6 +343,25 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
           name="Format R Source">
     </command>
  </extension>
+ 
+ <extension
+       id="com.eco.bio7.reditor.rserve.plot.preferences"
+       point="org.eclipse.ui.bindings">
+    <key
+          commandId="com.eco.bio7.reditor.rserve.plot.preferences"
+          contextId="org.eclipse.ui.contexts.window"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+SHIFT+P">
+    </key>
+ </extension>
+ <extension
+       point="org.eclipse.ui.commands">
+    <command
+          description="R Plot Preferences"
+          id="com.eco.bio7.reditor.rserve.plot.preferences"
+          name="R Plot Preferences">
+    </command>
+ </extension>
    
 
 </plugin>
