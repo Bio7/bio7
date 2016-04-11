@@ -85,7 +85,7 @@ public class RRefPhaseListen extends RBaseListener {
 		this.tokens = tokens;
 		this.parser = parser;
 		this.offsetCodeCompl = offset;
-		store = Bio7REditorPlugin.getDefault().getPreferenceStore();
+		store = Bio7REditorPlugin.getDefault().getPreferenceStore(); 
 	}
 
 	public void enterProg(RParser.ProgContext ctx) {
