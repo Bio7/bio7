@@ -1,5 +1,7 @@
 package com.eco.bio7.reditor.antlr.refactor;
 
+import java.util.HashSet;
+
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.BufferedTokenStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -15,9 +17,9 @@ public class RefactorParse {
 	private BufferedTokenStream bufferTokenStream;
 	private RParser parser;
 	private ProgContext tree;
-	private StringBuffer id;
+	private String[] id;
 	
-	public StringBuffer getId() {
+	public String[] getId() {
 		return id;
 	}
 
@@ -59,8 +61,9 @@ public class RefactorParse {
 														// walker
 		ExtractInterfaceListener extractor = new ExtractInterfaceListener(tokens, parser,captureId);
 		walker.walk(extractor, tree);
-		id=extractor.capId;
-		
+        /*Using HashSet to avoid duplicates!*/
+        HashSet<String> hashSet=extractor.capId;
+		id=hashSet.toArray(new String[hashSet.size()]);
 		
 		if (parser.getNumberOfSyntaxErrors() == 0) {
 			errors = false;

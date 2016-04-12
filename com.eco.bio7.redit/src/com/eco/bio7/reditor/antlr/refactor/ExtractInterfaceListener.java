@@ -1,22 +1,25 @@
 package com.eco.bio7.reditor.antlr.refactor;
 
+import java.util.HashSet;
+
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Token;
 
 import com.eco.bio7.reditor.antlr.DeclCallStore;
 import com.eco.bio7.reditor.antlr.RBaseListener;
 import com.eco.bio7.reditor.antlr.RParser;
+import com.eco.bio7.reditor.antlr.util.Utils;
 
 public class ExtractInterfaceListener extends RBaseListener {
 	RParser parser;
 	private CommonTokenStream tokens;
-	private boolean captureId;
-	StringBuffer capId=new StringBuffer();
+	private boolean captureId = true;
+	HashSet<String> capId = new HashSet<String>();
 
-	public ExtractInterfaceListener(CommonTokenStream tokens, RParser parser,boolean captureId) {
+	public ExtractInterfaceListener(CommonTokenStream tokens, RParser parser, boolean captureId) {
 		this.parser = parser;
-		this.tokens=tokens;
-		this.captureId=captureId;
+		this.tokens = tokens;
+		this.captureId = captureId;
 	}
 
 	/** Listen to matches of classDeclaration */
@@ -123,55 +126,32 @@ public class ExtractInterfaceListener extends RBaseListener {
 	}
 
 	/* ID call (variables) Need to calculate position of <- */
-	public void enterId(RParser.E30Context ctx) {
-		
+	public void enterE30(RParser.E30Context ctx) {
+
 		Token tok = ctx.ID().getSymbol();
 		// System.out.println("Token Text: "+tok.getText());
 		String varName = tok.getText();
 		int index = tok.getTokenIndex();
-		
-		Token idNextToken =whitespaceTokenFilter(index,ctx.stop.getStopIndex());
-		
-		//Token idNextToken = tokens.get(index + 1);
-		
+		/* Filter whitespace out because we use Token channel hidden! */
+		Token idNextToken = Utils.whitespaceTokenFilter(index, ctx.stop.getStopIndex(), tokens);
+
+		// Token idNextToken = tokens.get(index + 1);
+
 		if (idNextToken != null) {
 			if (idNextToken.getText().equals("=") || idNextToken.getText().equals("<-") || idNextToken.getText().equals("(")) {
-				
+
 				return;
 			}
 
 			else {
-				if(captureId){
-					capId.append(varName);
-					capId.append(",");
+				if (captureId) {
+					// System.out.println(captureId);
+					capId.add(varName);
+
 				}
 
 			}
 		}
-	}
-	/*
-	 * Extract the token with the assignment operator and (to exclude whitespace
-	 * in stream because of the hidden() rule the whitespace is present in the
-	 * CommonTokenStream!)
-	 */
-
-	private Token whitespaceTokenFilter(int start, int stop) {
-
-		int i = start + 1;
-		Token assignOp = null;
-		while (i <= stop) {
-			Token tok = tokens.get(i);
-			if (tok.getType() != RParser.WS) {
-				assignOp = tok;
-				break;
-			}
-			if (tok.getType() == RParser.EOF) {
-				break;
-			}
-			i++;
-		}
-		
-		return assignOp;
 	}
 
 	@Override
