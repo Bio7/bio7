@@ -3,16 +3,21 @@ package com.eco.bio7.rbridge.actions;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RSession;
 import org.rosuda.REngine.Rserve.RserveException;
-
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RInterpreterJob;
@@ -26,9 +31,11 @@ import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.util.Util;
 import com.eco.bio7.worldwind.WorldWindView;
 
-public class StartRServe extends Action {
+public class StartRServe extends Action implements IMenuCreator {
 
 	private final IWorkbenchWindow window;
+
+	private Menu fMenu;
 
 	private RConnectionJob job;
 
@@ -36,24 +43,27 @@ public class StartRServe extends Action {
 
 	private boolean reserveDetach = false;
 
-	private RSession rSession = null;
-
 	private static boolean fromDragDrop;
 
 	private static String[] fileList;
 
 	public StartRServe(String text, IWorkbenchWindow window) {
-		super(text);
+		super(text, AS_DROP_DOWN_MENU);
 		this.window = window;
 
 		setId("com.eco.bio7.start_rserve");
 
 		setActionDefinitionId("com.eco.bio7.Start_RServe_Action");
 		setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/R.gif"));
+		setMenuCreator(this);
 
 	}
 
 	public void run() {
+		startStopRserve();
+	}
+
+	private void startStopRserve() {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		boolean remote = store.getBoolean("REMOTE");
 		if (remote == false) {
@@ -96,7 +106,9 @@ public class StartRServe extends Action {
 					job.addJobChangeListener(new JobChangeAdapter() {
 						public void done(IJobChangeEvent event) {
 							if (event.getResult().isOK()) {
-								/* This will only be executed on a drag event! */
+								/*
+								 * This will only be executed on a drag event!
+								 */
 								if (fromDragDrop) {
 									loadFile();
 									fromDragDrop = false;
@@ -170,7 +182,9 @@ public class StartRServe extends Action {
 					job.addJobChangeListener(new JobChangeAdapter() {
 						public void done(IJobChangeEvent event) {
 							if (event.getResult().isOK()) {
-								/* This will only be executed on a drag event! */
+								/*
+								 * This will only be executed on a drag event!
+								 */
 								if (fromDragDrop) {
 									loadFile();
 									fromDragDrop = false;
@@ -225,7 +239,9 @@ public class StartRServe extends Action {
 						public void done(IJobChangeEvent event) {
 							if (event.getResult().isOK()) {
 								remoteJob = false;
-								/* This will only be executed on a drag event! */
+								/*
+								 * This will only be executed on a drag event!
+								 */
 								if (fromDragDrop) {
 									loadFile();
 									fromDragDrop = false;
@@ -243,8 +259,7 @@ public class StartRServe extends Action {
 					display.syncExec(new Runnable() {
 
 						public void run() {
-							MessageDialog.openInformation(Util.getShell(), "R", "This is a remote Rserve connection\n" + "Please wait until the job has finished!\nA long running connection operation\n"
-									+ "could be caused by an unavailable server!");
+							MessageDialog.openInformation(Util.getShell(), "R", "This is a remote Rserve connection\n" + "Please wait until the job has finished!\nA long running connection operation\n" + "could be caused by an unavailable server!");
 						}
 					});
 
@@ -336,6 +351,146 @@ public class StartRServe extends Action {
 
 	public static void setFromDragDrop(boolean fromDragDrop) {
 		StartRServe.fromDragDrop = fromDragDrop;
+	}
+
+	@Override
+	public void dispose() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public Menu getMenu(Control parent) {
+		if (fMenu != null) {
+			fMenu.dispose();
+		}
+		fMenu = new Menu(parent);
+		
+		MenuItem menuItem = new MenuItem(fMenu, SWT.PUSH);
+		menuItem.setText("Start Rserve/Stop Rserve (and change to native R)");
+
+		menuItem.addSelectionListener(new SelectionListener() {
+
+			public void widgetSelected(SelectionEvent e) {
+				startStopRserve();
+			}
+
+			public void widgetDefaultSelected(SelectionEvent e) {
+
+			}
+
+		});
+
+		MenuItem terminateRProcessMenuItem = new MenuItem(fMenu, SWT.PUSH);
+		terminateRProcessMenuItem.setText("Stop R Process");
+
+		terminateRProcessMenuItem.addSelectionListener(new SelectionListener() {
+
+			public void widgetSelected(SelectionEvent e) {
+
+				ConsolePageParticipant cpp = ConsolePageParticipant.getConsolePageParticipantInstance();
+				String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
+				new Thread() {
+					@Override
+					public void run() {
+
+						if (selectionConsole.equals("R")) {
+
+							if (cpp.getRProcess() != null) {
+								try {
+									cpp.getRProcess().destroy();
+									RConnection con = RServe.getConnection();
+									if (con != null) {
+										con.close();
+										RServe.setConnection(null);
+										WorldWindView.setRConnection(null);
+										RServe.setRrunning(false);
+									}
+								} catch (Exception e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+								cpp.setRProcess(null);
+							}
+						}
+					}
+				}.start();
+
+				Bio7Dialog.message("Process terminated!");
+
+			}
+
+			public void widgetDefaultSelected(SelectionEvent e) {
+
+			}
+
+		});
+		MenuItem menuItemFractal = new MenuItem(fMenu, SWT.PUSH);
+		menuItemFractal.setText("Kill All R Processes");
+
+		menuItemFractal.addSelectionListener(new SelectionListener() {
+
+			public void widgetSelected(SelectionEvent e) {
+				boolean destroy = Bio7Dialog.decision("Should all running Rterm (Windows) or R (Linux, Mac) processes be destroyed?\n" + "If you you confirm all Rterm, R processes on the OS will be terminated!\n" + "Use only if no other Rterm, R instances are running!");
+
+				if (destroy) {
+
+					if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+
+						TerminateRserve.killProcessRtermWindows();
+					}
+
+					else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
+						TerminateRserve.killProcessRtermLinux();
+					}
+
+					else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
+						TerminateRserve.killProcessRtermMac();
+					}
+
+					ConsolePageParticipant cpp = ConsolePageParticipant.getConsolePageParticipantInstance();
+					String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
+
+					if (selectionConsole.equals("R")) {
+
+						if (cpp.getRProcess() != null) {
+							try {
+								cpp.getRProcess().destroy();
+								RConnection con = RServe.getConnection();
+								if (con != null) {
+									con.close();
+									RServe.setConnection(null);
+									WorldWindView.setRConnection(null);
+									RServe.setRrunning(false);
+								}
+							} catch (Exception e2) {
+								// TODO Auto-generated catch block
+								e2.printStackTrace();
+							}
+							cpp.setRProcess(null);
+						}
+						Bio7Dialog.message("Terminated R process!");
+					} else {
+						Bio7Dialog.message("Please select the R console to terminate the process");
+					}
+
+				}
+
+			}
+
+			public void widgetDefaultSelected(SelectionEvent e) {
+
+			}
+
+		});
+
+		return fMenu;
+	}
+
+	@Override
+	public Menu getMenu(Menu parent) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

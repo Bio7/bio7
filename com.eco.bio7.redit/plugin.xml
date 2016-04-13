@@ -332,7 +332,7 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
           commandId="com.eco.bio7.reditor.rserve.format"
           contextId="org.eclipse.ui.contexts.window"
           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-          sequence="CTRL+SHIFT+A">
+          sequence="CTRL+SHIFT+F">
     </key>
  </extension>
  <extension

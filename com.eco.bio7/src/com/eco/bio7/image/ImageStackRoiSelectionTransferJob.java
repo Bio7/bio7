@@ -6,6 +6,8 @@ import ij.WindowManager;
 import ij.gui.Roi;
 import ij.plugin.frame.RoiManager;
 import ij.process.ImageProcessor;
+
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import org.eclipse.core.resources.WorkspaceJob;
@@ -141,7 +143,10 @@ public class ImageStackRoiSelectionTransferJob extends WorkspaceJob implements I
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
-					 /*Only transfer selected ROI's from the ROI Manager or all if no ROI is selected!*/
+					/*
+					 * Only transfer selected ROI's from the ROI Manager or all
+					 * if no ROI is selected!
+					 */
 					Roi[] r = RoiManager.getInstance().getSelectedRoisAsArray();
 					items = CanvasView.getCanvas_view().tabFolder.getItems();
 					for (int ro = 0; ro < r.length; ro++) {
@@ -165,8 +170,7 @@ public class ImageStackRoiSelectionTransferJob extends WorkspaceJob implements I
 							/* Get the image processor of the image ! */
 							ImageProcessor ip = stack.getProcessor(i);
 							ip.setRoi(roiDefault);
-							
-							
+
 							// imp.setRoi(roiDefault);
 							if (roiDefault != null && !roiDefault.isArea()) {
 								Bio7Dialog.message("The command require\n" + "an area selection, or no selection.");
@@ -246,8 +250,6 @@ public class ImageStackRoiSelectionTransferJob extends WorkspaceJob implements I
 									e1.printStackTrace();
 								}
 							}
-							
-							
 
 						}
 
@@ -291,7 +293,6 @@ public class ImageStackRoiSelectionTransferJob extends WorkspaceJob implements I
 							}
 
 						}
-						
 
 					}
 					Bio7Dialog.message("Selected Pixels transferred to R!");
@@ -312,6 +313,18 @@ public class ImageStackRoiSelectionTransferJob extends WorkspaceJob implements I
 
 	}
 
+	private ArrayList getRoiPixels(ImageProcessor ip, Roi roi) {
+		//New from: http://imagej.1557.x6.nabble.com/Iterator-over-Roi-points-anywhere-td5016087.html
+		
+		int count = 0;
+		ArrayList<Double> values = new ArrayList<Double>();
+		/*for (Point p : roi.getContainedPoints()) {
+			count++;
+			values.add(new Double(ip.getf(p.x, p.y)));
+		}*/
+		return values;
+	}
+
 	private ArrayList<Double> getROIPixelsDouble(ImageProcessor ip, Roi roi) {
 		// ImageProcessor ip = ipr;
 		ImageProcessor mask = roi != null ? roi.getMask() : null;
@@ -323,7 +336,7 @@ public class ImageStackRoiSelectionTransferJob extends WorkspaceJob implements I
 			for (int x = 0; x < r.width; x++) {
 				if (mask == null || mask.getPixel(x, y) != 0) {
 					count++;
-
+                  
 					// ip.set(x + r.x, y + r.y, 0);
 					values.add(new Double(ip.getPixelValue(x + r.x, y + r.y)));
 				}

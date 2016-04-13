@@ -105,7 +105,7 @@ public class ExtractMethod implements IEditorActionDelegate {
 
 				
 
-				RefactorDialog dlg = new RefactorDialog(Display.getCurrent().getActiveShell(), buffIds);
+				RefactorDialog dlg = new RefactorDialog(Display.getCurrent().getActiveShell(), buffIds,true);
 				if (dlg.open() == Window.OK) {
 					// User clicked OK; update the label with the input
 					functionName = dlg.getValue();

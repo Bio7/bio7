@@ -21,20 +21,19 @@ public class RCodePreferences extends FieldEditorPreferencePage implements IWork
 		super(GRID);
 
 		setPreferenceStore(Bio7REditorPlugin.getDefault().getPreferenceStore());
-		//setDescription("R Code Preferences");
+		// setDescription("R Code Preferences");
 	}
 
 	public void createFieldEditors() {
 
-		
 		addField(new LabelFieldEditor("Code Folding:", getFieldEditorParent()));
-		
+
 		addField(new BooleanFieldEditor("FUNCTIONS_FOLDING", "Functions", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("FOR_LOOP_FOLDING", "For loop", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("WHILE_LOOP_FOLDING", "While loop", getFieldEditorParent()));
-		addField(new BooleanFieldEditor("REPEAT_LOOP_FOLDING", "Repeat loop", getFieldEditorParent()));		
+		addField(new BooleanFieldEditor("REPEAT_LOOP_FOLDING", "Repeat loop", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("IF_CONDITION_FOLDING", "If condition", getFieldEditorParent()));
-		
+
 		addField(new LabelFieldEditor("Code context:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("SHOW_INFOPOPUP", "Show Infopopup", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("MARK_WORDS", "Mark selected words", getFieldEditorParent()));
@@ -43,27 +42,31 @@ public class RCodePreferences extends FieldEditorPreferencePage implements IWork
 		addField(new StringFieldEditor("ACTIVATION_CHARS", "Activation chars", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
 		addField(new LabelFieldEditor("Editor performance:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("EDITOR_TO_OUTLINE", "Show editor position in 'Outline' view", getFieldEditorParent()));
+
+		addField(new LabelFieldEditor("Automatic close:", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("CLOSE_BRACES", "{Braces}", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("CLOSE_PARENTHESES", "(Parentheses)", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("CLOSE_BRACKETS", "[Brackets]", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("CLOSE_DOUBLE_QUOTE", "\"Strings\"", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("CLOSE_SINGLEQUOTE", "'Strings'", getFieldEditorParent()));
 	}
 
 	public void init(IWorkbench workbench) {
 
-		IPreferenceStore store = Bio7REditorPlugin.getDefault().getPreferenceStore();
-		store.setDefault("FUNCTIONS_FOLDING", true);
-		store.setDefault("FOR_LOOP_FOLDING", true);
-		store.setDefault("WHILE_LOOP_FOLDING", true);
-		store.setDefault("REPEAT_LOOP_FOLDING", true);
-		store.setDefault("IF_CONDITION_FOLDING", true);
-		
-		store.setDefault("SHOW_INFOPOPUP", true);
-		store.setDefault("MARK_WORDS", true);
-		store.setDefault("TYPED_CODE_COMPLETION", false);
-		store.setDefault("EDITOR_TO_OUTLINE", true);
-		
-		
-		store.setDefault("UNUSED_FUNCTION", true);
-		store.setDefault("MISSING_FUNCTION", true);
-		store.setDefault("UNUSED_VAR", true);
-		store.setDefault("MISSING_VAR", true);
+		/*
+		 * IPreferenceStore store =
+		 * Bio7REditorPlugin.getDefault().getPreferenceStore();
+		 * store.setDefault("FUNCTIONS_FOLDING", true);
+		 * store.setDefault("FOR_LOOP_FOLDING", true);
+		 * store.setDefault("WHILE_LOOP_FOLDING", true);
+		 * store.setDefault("REPEAT_LOOP_FOLDING", true);
+		 * store.setDefault("IF_CONDITION_FOLDING", true);
+		 * 
+		 * store.setDefault("SHOW_INFOPOPUP", true);
+		 * store.setDefault("MARK_WORDS", true);
+		 * store.setDefault("TYPED_CODE_COMPLETION", false);
+		 * store.setDefault("EDITOR_TO_OUTLINE", true);
+		 */
 
 	}
 

@@ -1,9 +1,12 @@
 package com.eco.bio7.reditors;
 
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
+
+import com.eco.bio7.reditor.Bio7REditorPlugin;
 
 public class REditorEditStrategy implements IAutoEditStrategy {
 
@@ -11,33 +14,44 @@ public class REditorEditStrategy implements IAutoEditStrategy {
 
 	{
 		String indent;
-
+		IPreferenceStore store = Bio7REditorPlugin.getDefault().getPreferenceStore();
 		switch (command.text) {
 
 		case "{":
-			indent = getOffsetAndIdent(document, command);
-			command.text = "{" + "\r\n" + indent + "}";
-			configureCommand(command);
+			if (store.getBoolean("CLOSE_BRACES")) {
+				indent = getOffsetAndIdent(document, command);
+				// command.text = "{" + "\r\n" + indent + "}";
+				command.text = "{" + indent + "}";
+				configureCommand(command);
+			}
 			break;
 		case "\"":
-			indent = getOffsetAndIdent(document, command);
-			command.text = "\"\"";
-			configureCommand(command);
+			if (store.getBoolean("CLOSE_DOUBLE_QUOTE")) {
+				indent = getOffsetAndIdent(document, command);
+				command.text = "\"\"";
+				configureCommand(command);
+			}
 			break;
 		case "'":
-			indent = getOffsetAndIdent(document, command);
-			command.text = "''";
-			configureCommand(command);
+			if (store.getBoolean("CLOSE_SINGLEQUOTE")) {
+				indent = getOffsetAndIdent(document, command);
+				command.text = "''";
+				configureCommand(command);
+			}
 			break;
 		case "[":
-			indent = getOffsetAndIdent(document, command);
-			command.text = "[]";
-			configureCommand(command);
+			if (store.getBoolean("CLOSE_BRACKETS")) {
+				indent = getOffsetAndIdent(document, command);
+				command.text = "[]";
+				configureCommand(command);
+			}
 			break;
 		case "(":
-			indent = getOffsetAndIdent(document, command);
-			command.text = "()";
-			configureCommand(command);
+			if (store.getBoolean("CLOSE_PARENTHESES")) {
+				indent = getOffsetAndIdent(document, command);
+				command.text = "()";
+				configureCommand(command);
+			}
 			break;
 
 		default:
@@ -80,7 +94,7 @@ public class REditorEditStrategy implements IAutoEditStrategy {
 			int start = document.getLineOffset(line);
 			int end = start + document.getLineLength(line) - 1;
 			int whiteend = findEndOfWhiteSpace(document, start, end);
-			/*Avoid a bad location exception!*/
+			/* Avoid a bad location exception! */
 			if ((whiteend - start) >= 0) {
 				return document.get(start, whiteend - start);
 			} else {

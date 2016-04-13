@@ -62,7 +62,7 @@ public class ExtractVariable implements IEditorActionDelegate {
 			boolean errors = parse.parseSource(text,false);
 			if (errors == false) {
 
-				RefactorDialog dlg = new RefactorDialog(Display.getCurrent().getActiveShell(),null);
+				RefactorDialog dlg = new RefactorDialog(Display.getCurrent().getActiveShell(),null,false);
 				if (dlg.open() == Window.OK) {
 					// User clicked OK; update the label with the input
 					varName = dlg.getValue();

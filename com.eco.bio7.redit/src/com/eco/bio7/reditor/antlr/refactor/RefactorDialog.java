@@ -42,6 +42,8 @@ public class RefactorDialog extends Dialog {
 
 	private CheckboxTableViewer checkboxTableViewer;
 
+	private boolean isMethod;
+
 	public String getArgsText() {
 		return argsText;
 	}
@@ -70,11 +72,13 @@ public class RefactorDialog extends Dialog {
 	 * Create the dialog.
 	 * 
 	 * @param parentShell
+	 * @param isMethod
 	 * @param iD
 	 */
-	public RefactorDialog(Shell parentShell, String[] buffIds) {
+	public RefactorDialog(Shell parentShell, String[] buffIds, boolean isMethod) {
 		super(parentShell);
 		this.id = buffIds;
+		this.isMethod = isMethod;
 	}
 
 	/**
@@ -114,7 +118,7 @@ public class RefactorDialog extends Dialog {
 		gd_btnCheckButton.heightHint = 25;
 		globalCheckbox.setLayoutData(gd_btnCheckButton);
 		globalCheckbox.setText("Global?");
-		
+
 		ScrolledComposite scrolledComposite = new ScrolledComposite(container, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
 		scrolledComposite.setAlwaysShowScrollBars(true);
 		GridData gd_scrolledComposite = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
@@ -142,12 +146,16 @@ public class RefactorDialog extends Dialog {
 		tblclmnVariables.setText("Parameters");
 		scrolledComposite.setContent(table);
 		scrolledComposite.setMinSize(table.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		if (isMethod) {
 
-		if (id.length > 0) {
-			for (int i = 0; i < id.length; i++) {
-				String temp = id[i];
-				new TableItem(table, SWT.CHECK).setText(0, temp);
+			if (id != null && id.length > 0) {
+				for (int i = 0; i < id.length; i++) {
+					String temp = id[i];
+					new TableItem(table, SWT.CHECK).setText(0, temp);
+				}
 			}
+		} else {
+			scrolledComposite.setVisible(false);
 		}
 
 		return container;
@@ -171,7 +179,11 @@ public class RefactorDialog extends Dialog {
 	 */
 	@Override
 	protected Point getInitialSize() {
-		return new Point(450, 479);
+		if (isMethod) {
+			return new Point(450, 479);
+		} else {
+			return new Point(450, 200);
+		}
 	}
 
 	private void saveInput() {

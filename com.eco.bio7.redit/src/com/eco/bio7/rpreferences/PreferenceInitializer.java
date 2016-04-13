@@ -83,6 +83,12 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		storeR.setDefault("UNUSED_VAR", true);
 		storeR.setDefault("MISSING_VAR", true);
 
+		storeR.setDefault("CLOSE_BRACES", true);
+		storeR.setDefault("CLOSE_PARENTHESES", true);
+		storeR.setDefault("CLOSE_BRACKETS", true);
+		storeR.setDefault("CLOSE_DOUBLE_QUOTE", true);
+		storeR.setDefault("CLOSE_SINGLEQUOTE", true);
+
 	}
 
 }
