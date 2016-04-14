@@ -102,6 +102,7 @@ import org.eclipse.swt.widgets.ToolTip;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
@@ -581,7 +582,7 @@ public class RShellView extends ViewPart {
 			}
 		});
 		btnNewButton.setToolTipText("Interrupt R execution");
-		btnNewButton.setImage(org.eclipse.wb.swt.ResourceManager.getPluginImage("com.eco.bio7", "icons/delete.gif"));
+		btnNewButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
 		tab = new CTabFolder(parent, SWT.NONE);
 		fd_composite_1.bottom = new FormAttachment(tab, -16);
 		FormData fd_tab = new FormData();

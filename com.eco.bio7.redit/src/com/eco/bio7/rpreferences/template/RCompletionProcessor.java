@@ -71,6 +71,10 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 	private static final String DEFAULT_IMAGE = "$nl$/icons/template.gif"; //$NON-NLS-1$
 
 	private static final String CALCULATED_TEMPLATE_IMAGE = "$nl$/icons/methpub_obj.gif"; //$NON-NLS-1$
+	
+	private static final String FIELD_IMAGE = "$nl$/icons/imp_obj.png"; //$NON-NLS-1$
+	
+	private static final String METHOD_IMAGE = "$nl$/icons/field_public_obj.png"; //$NON-NLS-1$
 
 	private boolean triggerNext;
 
@@ -86,6 +90,10 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 	private REditor editor;
 
 	private RRefPhaseListen ref;
+
+	private String[] splitBuffScopedFun;
+
+	private String[] splitVars;
 
 	public RCompletionProcessor(REditor rEditor) {
 		this.editor = rEditor;
@@ -172,10 +180,10 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		RRefPhaseListen ref = new Parse(editor).parseFromOffset(offset);
 
 		StringBuffer buffScopedFunctions = ref.getBuffScopeFunctions();
-		String[] splitBuffScopedFun = buffScopedFunctions.toString().split(",");
+		 splitBuffScopedFun = buffScopedFunctions.toString().split(",");
 
 		StringBuffer buffScopedVars = ref.getBuffScopeVars();
-		String[] splitVars = buffScopedVars.toString().split(",");
+		 splitVars = buffScopedVars.toString().split(",");
 
 		boolean isInVarCall = ref.isInVarCall();
 
@@ -452,7 +460,35 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 				image = registry.get(DEFAULT_IMAGE);
 			}
 			return image;
-		} else {
+			
+		} 
+		else if(count>=defaultTemplatesLength&&count<defaultTemplatesLength+splitBuffScopedFun.length){
+			count++;
+			ImageRegistry registry = TemplateEditorUI.getDefault().getImageRegistry();
+			Image image = registry.get(METHOD_IMAGE);
+			if (image == null) {
+				ImageDescriptor desc = TemplateEditorUI.imageDescriptorFromPlugin("com.eco.bio7.redit", METHOD_IMAGE); //$NON-NLS-1$
+				registry.put(METHOD_IMAGE, desc);
+				image = registry.get(METHOD_IMAGE);
+			}
+			return image;
+		}
+		else if(count>=defaultTemplatesLength+splitBuffScopedFun.length&&count<defaultTemplatesLength+splitBuffScopedFun.length+splitVars.length){
+			count++;
+			ImageRegistry registry = TemplateEditorUI.getDefault().getImageRegistry();
+			Image image = registry.get(FIELD_IMAGE);
+			if (image == null) {
+				ImageDescriptor desc = TemplateEditorUI.imageDescriptorFromPlugin("com.eco.bio7.redit", FIELD_IMAGE); //$NON-NLS-1$
+				registry.put(FIELD_IMAGE, desc);
+				image = registry.get(FIELD_IMAGE);
+			}
+			return image;
+		}
+		
+		
+		
+		
+		else {
 
 			ImageRegistry registry = TemplateEditorUI.getDefault().getImageRegistry();
 			Image image = registry.get(CALCULATED_TEMPLATE_IMAGE);

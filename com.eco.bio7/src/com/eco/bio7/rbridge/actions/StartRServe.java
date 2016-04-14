@@ -9,10 +9,12 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.Rserve.RConnection;
@@ -367,8 +369,9 @@ public class StartRServe extends Action implements IMenuCreator {
 		fMenu = new Menu(parent);
 		
 		MenuItem menuItem = new MenuItem(fMenu, SWT.PUSH);
-		menuItem.setText("Start Rserve/Stop Rserve (and change to native R)");
-
+		menuItem.setText("Start Rserve/Stop Rserve (within R)");
+		//Image image = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
+		
 		menuItem.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
@@ -382,8 +385,8 @@ public class StartRServe extends Action implements IMenuCreator {
 		});
 
 		MenuItem terminateRProcessMenuItem = new MenuItem(fMenu, SWT.PUSH);
-		terminateRProcessMenuItem.setText("Stop R Process");
-
+		terminateRProcessMenuItem.setText("Terminate R");
+		terminateRProcessMenuItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
 		terminateRProcessMenuItem.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
@@ -427,7 +430,7 @@ public class StartRServe extends Action implements IMenuCreator {
 		});
 		MenuItem menuItemFractal = new MenuItem(fMenu, SWT.PUSH);
 		menuItemFractal.setText("Kill All R Processes");
-
+		menuItemFractal.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
 		menuItemFractal.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
