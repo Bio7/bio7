@@ -22,10 +22,10 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ltk.ui.refactoring,
  org.eclipse.jdt.core,
  org.eclipse.ltk.core.refactoring,
- com.eco.bio7.libs;bundle-version="2.0.0",
  com.eco.bio7.util;bundle-version="2.0.0",
  com.eco.bio7.browser;bundle-version="2.0.0",
  com.eco.bio7.scenebuilder;bundle-version="2.0.0",
+ com.eco.bio7.libs;bundle-version="2.0.0",
  Bundled_R;bundle-version="3.2.0"
 Eclipse-LazyStart: true
 Export-Package: com.eco.bio7.reditor,

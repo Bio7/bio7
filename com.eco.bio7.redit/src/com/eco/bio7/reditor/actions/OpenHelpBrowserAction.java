@@ -8,6 +8,8 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
@@ -28,7 +30,9 @@ public class OpenHelpBrowserAction extends Action {
 	public OpenHelpBrowserAction() {
 		super("Help Browser");
 		setId("com.eco.bio7.r_editor_help_browser");
-
+		ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/help_contents.png")));
+		this.setImageDescriptor(desc);
+   
 		setText("Help Browser");
 
 	}

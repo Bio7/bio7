@@ -71,10 +71,10 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 	private static final String DEFAULT_IMAGE = "$nl$/icons/template.gif"; //$NON-NLS-1$
 
 	private static final String CALCULATED_TEMPLATE_IMAGE = "$nl$/icons/methpub_obj.gif"; //$NON-NLS-1$
-	
-	private static final String FIELD_IMAGE = "$nl$/icons/imp_obj.png"; //$NON-NLS-1$
-	
-	private static final String METHOD_IMAGE = "$nl$/icons/field_public_obj.png"; //$NON-NLS-1$
+
+	private static final String FIELD_IMAGE = "$nl$/icons/default_co.png"; //$NON-NLS-1$
+
+	private static final String METHOD_IMAGE = "$nl$/icons/brkp_obj.png"; //$NON-NLS-1$
 
 	private boolean triggerNext;
 
@@ -180,10 +180,10 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		RRefPhaseListen ref = new Parse(editor).parseFromOffset(offset);
 
 		StringBuffer buffScopedFunctions = ref.getBuffScopeFunctions();
-		 splitBuffScopedFun = buffScopedFunctions.toString().split(",");
+		splitBuffScopedFun = buffScopedFunctions.toString().split(",");
 
 		StringBuffer buffScopedVars = ref.getBuffScopeVars();
-		 splitVars = buffScopedVars.toString().split(",");
+		splitVars = buffScopedVars.toString().split(",");
 
 		boolean isInVarCall = ref.isInVarCall();
 
@@ -246,7 +246,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 			Template[] tempLocalVars = new Template[splitVars.length];
 
 			for (int i = 0; i < tempLocalVars.length; i++) {
-				tempLocalVars[i] = new Template(splitVars[i] + "(decl. Var)", splitVars[i], context.getContextType().getId(), splitVars[i], true);
+				tempLocalVars[i] = new Template(splitVars[i] + " (variable) ", splitVars[i], context.getContextType().getId(), splitVars[i], true);
 
 				Template template = tempLocalVars[i];
 				try {
@@ -265,7 +265,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 			Template[] tempLocalFunctions = new Template[splitBuffScopedFun.length];
 
 			for (int i = 0; i < tempLocalFunctions.length; i++) {
-				tempLocalFunctions[i] = new Template(splitBuffScopedFun[i] + " (decl. Fun)", splitBuffScopedFun[i], context.getContextType().getId(), splitBuffScopedFun[i] + "()", true);
+				tempLocalFunctions[i] = new Template(splitBuffScopedFun[i] + " (function) ", splitBuffScopedFun[i], context.getContextType().getId(), splitBuffScopedFun[i] + "()", true);
 
 				Template template = tempLocalFunctions[i];
 				try {
@@ -460,9 +460,8 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 				image = registry.get(DEFAULT_IMAGE);
 			}
 			return image;
-			
-		} 
-		else if(count>=defaultTemplatesLength&&count<defaultTemplatesLength+splitBuffScopedFun.length){
+
+		} else if (count >= defaultTemplatesLength && count < defaultTemplatesLength + splitVars.length) {
 			count++;
 			ImageRegistry registry = TemplateEditorUI.getDefault().getImageRegistry();
 			Image image = registry.get(METHOD_IMAGE);
@@ -472,8 +471,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 				image = registry.get(METHOD_IMAGE);
 			}
 			return image;
-		}
-		else if(count>=defaultTemplatesLength+splitBuffScopedFun.length&&count<defaultTemplatesLength+splitBuffScopedFun.length+splitVars.length){
+		} else if (count >= defaultTemplatesLength + splitVars.length && count < defaultTemplatesLength + splitBuffScopedFun.length + splitVars.length) {
 			count++;
 			ImageRegistry registry = TemplateEditorUI.getDefault().getImageRegistry();
 			Image image = registry.get(FIELD_IMAGE);
@@ -484,10 +482,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 			}
 			return image;
 		}
-		
-		
-		
-		
+
 		else {
 
 			ImageRegistry registry = TemplateEditorUI.getDefault().getImageRegistry();

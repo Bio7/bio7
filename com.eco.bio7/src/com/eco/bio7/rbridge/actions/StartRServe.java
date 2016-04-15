@@ -6,6 +6,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -371,7 +372,8 @@ public class StartRServe extends Action implements IMenuCreator {
 		MenuItem menuItem = new MenuItem(fMenu, SWT.PUSH);
 		menuItem.setText("Start Rserve/Stop Rserve (within R)");
 		//Image image = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
-		
+
+		menuItem.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/run_tool.png")));
 		menuItem.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
