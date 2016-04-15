@@ -22,6 +22,7 @@ import com.eco.bio7.reditors.RConfiguration;
 public class OpenWebHelpBrowser extends Action {
 	private boolean canBrowse = true;
 	private String htmlHelpText;
+
 	public OpenWebHelpBrowser() {
 		super("Web Help");
 		setId("com.eco.bio7.r_editor_web_help");
@@ -76,6 +77,5 @@ public class OpenWebHelpBrowser extends Action {
 			job.schedule();
 		}
 	}
-	
 
 }

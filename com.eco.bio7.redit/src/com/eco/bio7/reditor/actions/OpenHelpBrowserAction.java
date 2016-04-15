@@ -32,7 +32,7 @@ public class OpenHelpBrowserAction extends Action {
 		setId("com.eco.bio7.r_editor_help_browser");
 		ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/help_contents.png")));
 		this.setImageDescriptor(desc);
-   
+
 		setText("Help Browser");
 
 	}
@@ -55,8 +55,7 @@ public class OpenHelpBrowserAction extends Action {
 							htmlHelpText = RConfiguration.htmlHelpText;
 
 							c.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".html\", sep=\"\"))").toString();
-							c.eval("try(tools::Rd2HTML(utils:::.getHelpFile(?" + htmlHelpText
-									+ "),.bio7TempHtmlHelpFile,package=\"tools\", stages=c(\"install\", \"render\")))");
+							c.eval("try(tools::Rd2HTML(utils:::.getHelpFile(?" + htmlHelpText + "),.bio7TempHtmlHelpFile,package=\"tools\", stages=c(\"install\", \"render\")))");
 							String out = null;
 							try {
 								out = (String) c.eval("try(.bio7TempHtmlHelpFile)").asString();
@@ -109,7 +108,5 @@ public class OpenHelpBrowserAction extends Action {
 		// job.setSystem(true);
 		job.schedule();
 	}
-
-	
 
 }
