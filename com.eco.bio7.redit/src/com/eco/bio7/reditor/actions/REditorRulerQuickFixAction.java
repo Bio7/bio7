@@ -21,7 +21,6 @@ public class REditorRulerQuickFixAction extends AbstractRulerActionDelegate {
 	protected IAction createAction(ITextEditor editor, IVerticalRulerInfo rulerInfo) {
 		int line = rulerInfo.getLineOfLastMouseButtonActivity() + 1;
 
-		
 		if (line > 0) {
 
 			IEditorPart editore = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
@@ -36,14 +35,11 @@ public class REditorRulerQuickFixAction extends AbstractRulerActionDelegate {
 				try {
 
 					/* QuickFix produced in RAssistProcessor! */
-					if (markersfind!=null&&markersfind.length > 0) {
+					if (markersfind != null && markersfind.length > 0) {
+						int charStart = (int) markersfind[i].getAttribute(IMarker.CHAR_START);
+						int charStop = (int) markersfind[i].getAttribute(IMarker.CHAR_END);
 						if (((String) markersfind[i].getAttribute(IMarker.TEXT)).startsWith("Err") && line == (int) markersfind[i].getAttribute(IMarker.LINE_NUMBER)) {
 							selectedMarker = markersfind[i];
-							// System.out.println(i+" "+markersfind[i].getAttribute(IMarker.MESSAGE));
-							// System.out.println("Message: " +
-							// selectedMarker.getAttribute(IMarker.MESSAGE));
-							// System.out.println("Message: " +
-							// selectedMarker.getAttribute(IMarker.LOCATION));
 
 							ITextOperationTarget operation = (ITextOperationTarget) editor.getAdapter(ITextOperationTarget.class);
 
@@ -51,37 +47,21 @@ public class REditorRulerQuickFixAction extends AbstractRulerActionDelegate {
 
 							if (operation != null && operation.canDoOperation(opCode)) {
 
-								try {
-									editor.selectAndReveal((int) selectedMarker.getAttribute(IMarker.LOCATION), 1);
-								} catch (CoreException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
+								editor.selectAndReveal(charStart, charStop - charStart);
 
 								operation.doOperation(opCode);
 
 							}
-						}
-						else if (((String) markersfind[i].getAttribute(IMarker.TEXT)).startsWith("Warn") && line == (int) markersfind[i].getAttribute(IMarker.LINE_NUMBER)) {
+						} else if (((String) markersfind[i].getAttribute(IMarker.TEXT)).startsWith("Warn") && line == (int) markersfind[i].getAttribute(IMarker.LINE_NUMBER)) {
 							selectedMarker = markersfind[i];
-							// System.out.println(i+" "+markersfind[i].getAttribute(IMarker.MESSAGE));
-							// System.out.println("Message: " +
-							// selectedMarker.getAttribute(IMarker.MESSAGE));
-							// System.out.println("Message: " +
-							// selectedMarker.getAttribute(IMarker.LOCATION));
 
 							ITextOperationTarget operation = (ITextOperationTarget) editor.getAdapter(ITextOperationTarget.class);
 
 							final int opCode = ISourceViewer.QUICK_ASSIST;
 
 							if (operation != null && operation.canDoOperation(opCode)) {
-
-								try {
-									editor.selectAndReveal((int) selectedMarker.getAttribute(IMarker.LOCATION), 1);
-								} catch (CoreException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
+								
+								editor.selectAndReveal(charStart, charStop - charStart);
 
 								operation.doOperation(opCode);
 

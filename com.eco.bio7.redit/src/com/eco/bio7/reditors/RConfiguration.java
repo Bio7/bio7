@@ -26,6 +26,9 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.text.BadLocationException;
@@ -42,6 +45,7 @@ import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextAttribute;
+import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
@@ -55,13 +59,17 @@ import org.eclipse.jface.text.rules.BufferedRuleBasedScanner;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 import org.rosuda.REngine.REXPMismatchException;
@@ -72,6 +80,7 @@ import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.code.RAssistProcessor;
 import com.eco.bio7.rpreferences.template.RCompletionProcessor;
+import com.eco.bio7.util.Util;
 
 public class RConfiguration extends TextSourceViewerConfiguration {
 
@@ -91,16 +100,16 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 	private SingleTokenScanner comment;
 
+	public IMarker selectedMarker;
+
 	public static String htmlHelpText = "";
-	
-	
 
 	public RConfiguration(RColorManager colorManager, REditor rEditor) {
 		this.colorManager = colorManager;
 		this.rEditor = rEditor;
 		store = Bio7REditorPlugin.getDefault().getPreferenceStore();
 	}
-	
+
 	public RCompletionProcessor getProcessor() {
 		return processor;
 	}
@@ -115,7 +124,11 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 		return new RDoubleClickSelector();
 
 	}
-    /*Method to set automatically an extra char when editing the source, e.g., closing a brace!*/
+
+	/*
+	 * Method to set automatically an extra char when editing the source, e.g.,
+	 * closing a brace!
+	 */
 	public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {
 		IAutoEditStrategy strategy = (IDocument.DEFAULT_CONTENT_TYPE.equals(contentType) ? new REditorEditStrategy() : new DefaultIndentLineAutoEditStrategy());
 		return new IAutoEditStrategy[] { strategy };
@@ -146,7 +159,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 	}
 
 	public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
-		
+
 		return new String[] { IDocument.DEFAULT_CONTENT_TYPE, "R_MULTILINE_STRING", "R_COMMENT" };
 	}
 
@@ -166,8 +179,8 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 		FontData f2 = PreferenceConverter.getFontData(store, "colourkeyfont2");
 		RGB rgbkey3 = PreferenceConverter.getColor(store, "colourkey3");
 		FontData f3 = PreferenceConverter.getFontData(store, "colourkeyfont3");
-		
-		single=new SingleTokenScanner(new TextAttribute(new Color(Display.getDefault(), rgbkey2), null, 1, new Font(Display.getCurrent(), f2)));
+
+		single = new SingleTokenScanner(new TextAttribute(new Color(Display.getDefault(), rgbkey2), null, 1, new Font(Display.getCurrent(), f2)));
 		DefaultDamagerRepairer ndr = new DefaultDamagerRepairer(single);
 		reconciler.setDamager(ndr, "R_MULTILINE_STRING");
 		reconciler.setRepairer(ndr, "R_MULTILINE_STRING");
@@ -175,7 +188,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 		 * We have to set the comments separately, too (to ignore quotes in
 		 * comments!)
 		 */
-		comment=new SingleTokenScanner(new TextAttribute(new Color(Display.getDefault(), rgbkey3), null, 1, new Font(Display.getCurrent(), f3)));
+		comment = new SingleTokenScanner(new TextAttribute(new Color(Display.getDefault(), rgbkey3), null, 1, new Font(Display.getCurrent(), f3)));
 		DefaultDamagerRepairer ndrcomment = new DefaultDamagerRepairer(comment);
 		reconciler.setDamager(ndrcomment, "R_COMMENT");
 		reconciler.setRepairer(ndrcomment, "R_COMMENT");
@@ -196,16 +209,16 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 		return reconciler;
 	}
 
-	public void  resetMultilineStringToken(RGB rgbkey2, FontData f2) {
-		
+	public void resetMultilineStringToken(RGB rgbkey2, FontData f2) {
+
 		single.setDefaultReturnToken(new Token(new TextAttribute(new Color(Display.getDefault(), rgbkey2), null, 1, new Font(Display.getCurrent(), f2))));
-		
+
 	}
-	
+
 	public void resetCommentToken(RGB rgbkey3, FontData f3) {
-		
+
 		comment.setDefaultReturnToken(new Token(new TextAttribute(new Color(Display.getDefault(), rgbkey3), null, 1, new Font(Display.getCurrent(), f3))));
-		
+
 	}
 
 	public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
@@ -261,6 +274,8 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 			int offset = hoverRegion.getOffset();
 			int length = 0;
 			int minusLength = 0;
+			/* Test if a QuickFix is available! */
+			triggerQuickFixFromOffset(offset);
 
 			IDocument doc = textViewer.getDocument();
 
@@ -277,12 +292,12 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 					if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false)
 						break;
-					if (offset + length >= doc.getLength()-1) {
-						
+					if (offset + length >= doc.getLength() - 1) {
+
 						break;
 					}
 					length++;
-					
+
 				} else {
 					break;
 				}
@@ -364,29 +379,82 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 					RState.setBusy(false);
 				}
 			}
-			/*QuickFix operation!*/
-			/*if (resultedLength > 0) {
-				Display display2 = PlatformUI.getWorkbench().getDisplay();
-				display2.syncExec(new Runnable() {
-
-					public void run() {
-						ITextOperationTarget operation = (ITextOperationTarget) rEditor.getAdapter(ITextOperationTarget.class);
-				
-						if (operation != null && operation.canDoOperation(ISourceViewer.QUICK_ASSIST)) {
-                            //if(wordOffset+resultedLength<doc.getLength()-1){
-							rEditor.selectAndReveal(wordOffset, resultedLength);
-
-							operation.doOperation(ISourceViewer.QUICK_ASSIST);
-                           // }
-
-						}
-				
-					}
-				});
-			}*/
 
 			return help;
 
+		}
+
+		/*
+		 * Triggers a QuickFix action if the hover offset is matching a marker!
+		 */
+		private void triggerQuickFixFromOffset(int offset) {
+			
+			/*Workaround to close the QuickFix window to avoid the display of the old QuickFix!!*/
+			Display dis = Util.getDisplay();
+			dis.asyncExec(new Runnable() {
+
+				public void run() {
+					Event event = new Event();
+					event.type = SWT.KeyDown;
+					event.keyCode = SWT.ESC;
+					// event.character='[';
+					dis.post(event);
+					try {
+						Thread.sleep(10);
+					} catch (InterruptedException e) {
+					}
+					event.type = SWT.KeyUp;
+					dis.post(event);
+				}
+			});
+
+			IResource resource = (IResource) rEditor.getEditorInput().getAdapter(IResource.class);
+
+			IMarker[] markersfind = findMyMarkers(resource);
+
+			for (int i = 0; i < markersfind.length; i++) {
+				try {
+
+					/* QuickFix produced in RAssistProcessor! */
+					if (markersfind != null && markersfind.length > 0) {
+						int charStart = (int) markersfind[i].getAttribute(IMarker.CHAR_START);
+						int charStop = (int) markersfind[i].getAttribute(IMarker.CHAR_END);
+
+						if (charStart <= offset && charStop >= offset) {
+
+							selectedMarker = markersfind[i];
+
+							ITextOperationTarget operation = (ITextOperationTarget) rEditor.getAdapter(ITextOperationTarget.class);
+
+							final int opCode = ISourceViewer.QUICK_ASSIST;
+
+							Display display = Util.getDisplay();
+							display.asyncExec(new Runnable() {
+
+								public void run() {
+
+									if (operation != null && operation.canDoOperation(opCode)) {
+
+										// rEditor.getViewer().setSelection(new
+										// TextSelection(charStart, charStop -
+										// charStart),false);
+										rEditor.selectAndReveal(charStart, charStop - charStart);
+										// rEditor.getViewer().setSelectedRange(charStart,
+										// charStop - charStart);
+										operation.doOperation(opCode);
+
+									}
+								}
+							});
+						}
+
+					}
+				} catch (CoreException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+			}
 		}
 
 		String readFile(String path, Charset encoding) throws IOException {
@@ -419,12 +487,26 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 		return new IInformationControlCreator() {
 			public IInformationControl createInformationControl(Shell parent) {
 
-				/* SeeRHoverInformationControl for HTML implementation!
-				 * ToolBar is added in the InformationControl! 
+				/*
+				 * SeeRHoverInformationControl for HTML implementation! ToolBar
+				 * is added in the InformationControl!
 				 */
 				return new RDefaultInformationControl(parent);
 			}
 		};
+	}
+
+	public IMarker[] findMyMarkers(IResource target) {
+		String type = "org.eclipse.core.resources.problemmarker";
+
+		IMarker[] markers = null;
+		try {
+			markers = target.findMarkers(type, true, IResource.DEPTH_INFINITE);
+		} catch (CoreException e) {
+
+			e.printStackTrace();
+		}
+		return markers;
 	}
 
 }

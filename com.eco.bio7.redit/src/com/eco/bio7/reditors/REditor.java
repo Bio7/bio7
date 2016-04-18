@@ -161,6 +161,10 @@ public class REditor extends TextEditor {
 	public Parse getParser() {
 		return parser;
 	}
+	
+	public ProjectionViewer getViewer() {
+		return viewer;
+	}
 
 	public RConfiguration getRconf() {
 		return rconf;
