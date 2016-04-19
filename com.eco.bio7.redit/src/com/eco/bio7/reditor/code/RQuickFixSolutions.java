@@ -46,7 +46,7 @@ public class RQuickFixSolutions {
 			case "Err1":
 				prop = new ICompletionProposal[] {
 
-						new RQuickFixCompletionProposal("Remove ')'", offset, endChar, "", 1) };
+						new RQuickFixCompletionProposal("Remove ')'","Remove the additional parentheses", offset, endChar, "", 1) };
 				break;
 			case "Err2":
 
@@ -54,7 +54,7 @@ public class RQuickFixSolutions {
 			case "Err3":
 				prop = new ICompletionProposal[] {
 
-						new RQuickFixCompletionProposal("Remove ')'", offset, endChar, "", 1) };
+						new RQuickFixCompletionProposal("Remove ')'","Remove the additional parentheses", offset, endChar, "", 1) };
 				break;
 			case "Err4":
 
@@ -62,7 +62,7 @@ public class RQuickFixSolutions {
 			case "Err5":
 				prop = new ICompletionProposal[] {
 
-						new RQuickFixCompletionProposal("Remove ')'", offset, endChar, "", 1) };
+						new RQuickFixCompletionProposal("Remove ')'","Remove the additional parentheses", offset, endChar, "", 1) };
 				break;
 			case "Err6":
 
@@ -70,18 +70,18 @@ public class RQuickFixSolutions {
 			case "Err7":
 				prop = new ICompletionProposal[] {
 
-						new RQuickFixCompletionProposal("Remove ')'", offset, endChar, "", 1) };
+						new RQuickFixCompletionProposal("Remove ')'","Remove the additional parentheses", offset, endChar, "", 1) };
 				break;
 			case "Err8":
 				prop = new ICompletionProposal[] {
 
-						new RQuickFixCompletionProposal("Remove ']'", offset, endChar, "", 1) };
+						new RQuickFixCompletionProposal("Remove ']'","Remove the additional parentheses", offset, endChar, "", 1) };
 
 				break;
 			case "Err9":
 				prop = new ICompletionProposal[] {
 
-						new RQuickFixCompletionProposal("Remove ']'", offset, endChar, "", 1) };
+						new RQuickFixCompletionProposal("Remove ']'","Remove the additional parentheses", offset, endChar, "", 1) };
 				break;
 			case "Err10":
 
@@ -89,30 +89,30 @@ public class RQuickFixSolutions {
 			case "Err11":
 				prop = new ICompletionProposal[] {
 
-						new RQuickFixCompletionProposal("Remove '}'", offset, endChar, "", 1) };
+						new RQuickFixCompletionProposal("Remove '}'","Remove the additional parentheses", offset, endChar, "", 1) };
 				break;
 			case "Warn12":
 				prop = new ICompletionProposal[] {
 
-						new RQuickFixCompletionProposal("Replace 'true' with 'TRUE'", offset, endChar, "TRUE", 4) };
+						new RQuickFixCompletionProposal("Replace 'true' with 'TRUE'","Remove the wrong boolean assignment", offset, endChar, "TRUE", 4) };
 
 				break;
 			case "Warn13":
 				prop = new ICompletionProposal[] {
 
-						new RQuickFixCompletionProposal("Replace 'false' with 'FALSE'", offset, endChar, "FALSE", 5) };
+						new RQuickFixCompletionProposal("Replace 'false' with 'FALSE'","Remove the wrong boolean assignment", offset, endChar, "FALSE", 5) };
 
 				break;
 			case "Warn14":
 				prop = new ICompletionProposal[] {
 
-						new RQuickFixCompletionProposal("Replace 'null' with 'NULL'", offset, endChar, "NULL", 4) };
+						new RQuickFixCompletionProposal("Replace 'null' with 'NULL'","Remove the wrong assignment", offset, endChar, "NULL", 4) };
 
 				break;
 			case "Warn15":
 				prop = new ICompletionProposal[] {
 
-						new RQuickFixCompletionProposal("Replace 'na' with 'NA'", offset, endChar, "NA", 2) };
+						new RQuickFixCompletionProposal("Replace 'na' with 'NA'", "Remove the wrong assignment",offset, endChar, "NA", 2) };
 
 				break;
 			case "Warn16":
@@ -149,7 +149,7 @@ public class RQuickFixSolutions {
 
 				prop = new ICompletionProposal[words.size() + 1];
 				/* First proposal to create a function! */
-				prop[0] = new RQuickFixCompletionProposal("Create function", offset, endChar, System.lineSeparator() + tokenText + "<-function(){}" + System.lineSeparator(), 0);
+				prop[0] = new RQuickFixCompletionProposal("Create function","Create a new function", offset, endChar, System.lineSeparator() + tokenText + "<-function(){}" + System.lineSeparator(), 0);
 				/*
 				 * The following proposals all sorted functions from
 				 * Levenshstein distances!
@@ -158,9 +158,9 @@ public class RQuickFixSolutions {
 					if (words.get(i) != null) {
 						Pair<String, Double> sugOrdered = words.get(i);
 
-						prop[i + 1] = new RQuickFixCompletionProposal("Functions available:" + " '" + sugOrdered.getKey() + "' Similarity:" + " " + sugOrdered.getValue(), offset, endChar, sugOrdered.getKey(), endChar - offset);
+						prop[i + 1] = new RQuickFixCompletionProposal("Functions available:" + " '" + sugOrdered.getKey() + "' Similarity:" + " " + sugOrdered.getValue(),null, offset, endChar, sugOrdered.getKey(), endChar - offset);
 					} else {
-						prop[i + 1] = new RQuickFixCompletionProposal("Functions available: NA", offset, endChar, "NA", 2);
+						prop[i + 1] = new RQuickFixCompletionProposal("Functions available: NA",null, offset, endChar, "NA", 2);
 					}
 				}
 
@@ -177,7 +177,7 @@ public class RQuickFixSolutions {
 			case "Err16":
 				prop = new ICompletionProposal[] {
 
-						new RQuickFixCompletionProposal("Remove ')'", offset, endChar, "", 1) };
+						new RQuickFixCompletionProposal("Remove ')'","Remove the additional parentheses", offset, endChar, "", 1) };
 
 				break;
 			case "Err17":
@@ -186,7 +186,7 @@ public class RQuickFixSolutions {
 			case "Err18":
 				prop = new ICompletionProposal[] {
 
-						new RQuickFixCompletionProposal("Remove ')'", offset, endChar, "", 1) };
+						new RQuickFixCompletionProposal("Remove ')'","Remove the additional parentheses", offset, endChar, "", 1) };
 				break;
 			case "Err19":
 
@@ -194,22 +194,22 @@ public class RQuickFixSolutions {
 			case "Err20":
 				prop = new ICompletionProposal[] {
 
-						new RQuickFixCompletionProposal("Replace '=>' with '>='", offset, endChar, ">=", 2) };
+						new RQuickFixCompletionProposal("Replace '=>' with '>='","Replace the wrong comparison operator", offset, endChar, ">=", 2) };
 				break;
 			case "Err21":
 				prop = new ICompletionProposal[] {
 
-						new RQuickFixCompletionProposal("Replace '=<' with '<='", offset, endChar, "<=", 2) };
+						new RQuickFixCompletionProposal("Replace '=<' with '<='","Replace the wrong comparison operator", offset, endChar, "<=", 2) };
 				break;
 			case "Err22":
 				prop = new ICompletionProposal[] {
 
-						new RQuickFixCompletionProposal("Remove unknown token", offset, endChar, "", 1) };
+						new RQuickFixCompletionProposal("Remove unknown token","Remove unknown token", offset, endChar, "", 1) };
 				break;
 			case "Err23":
 				prop = new ICompletionProposal[] {
 
-						new RQuickFixCompletionProposal("Remove function variable", offset, endChar, "", 1) };
+						new RQuickFixCompletionProposal("Remove function variable","Remove the wrong function call parameter", offset, endChar, "", 1) };
 
 			default:
 				break;

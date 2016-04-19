@@ -1,11 +1,13 @@
 package com.eco.bio7.reditor.code;
 
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Display;
 
 public class RQuickFixCompletionProposal implements ICompletionProposal {
 
@@ -17,9 +19,12 @@ public class RQuickFixCompletionProposal implements ICompletionProposal {
 
 	private int lengthToReplace = 1;
 
-	RQuickFixCompletionProposal(String text, int offset, int contextTextLength, String replace, int lengthToReplace) {
+	private String contextText;
+
+	RQuickFixCompletionProposal(String text, String contextText, int offset, int contextTextLength, String replace, int lengthToReplace) {
 
 		this.text = text;
+		this.contextText = contextText;
 		this.lengthToReplace = lengthToReplace;
 		this.offset = offset;
 
@@ -58,9 +63,9 @@ public class RQuickFixCompletionProposal implements ICompletionProposal {
 
 	public String getAdditionalProposalInfo() {
 
-		// TODO Auto-generated method stub
+		// if null no context is generated!
 
-		return null;
+		return contextText;
 
 	}
 
@@ -76,7 +81,9 @@ public class RQuickFixCompletionProposal implements ICompletionProposal {
 
 	public Image getImage() {
 
-		return null;
+		Image image = new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/smartmode_co.png"));
+
+		return image;
 
 	}
 
