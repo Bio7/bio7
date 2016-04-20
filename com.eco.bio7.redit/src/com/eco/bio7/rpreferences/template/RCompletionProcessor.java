@@ -68,9 +68,9 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 	private static final Comparator fgProposalComparator = new ProposalComparator();
 
-	private static final String DEFAULT_IMAGE = "$nl$/icons/template.gif"; //$NON-NLS-1$
+	private static final String DEFAULT_IMAGE = "$nl$/icons/template_obj.png"; //$NON-NLS-1$
 
-	private static final String CALCULATED_TEMPLATE_IMAGE = "$nl$/icons/methpub_obj.gif"; //$NON-NLS-1$
+	private static final String CALCULATED_TEMPLATE_IMAGE = "$nl$/icons/methpub_obj.png"; //$NON-NLS-1$
 
 	private static final String FIELD_IMAGE = "$nl$/icons/default_co.png"; //$NON-NLS-1$
 

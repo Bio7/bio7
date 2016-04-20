@@ -6,10 +6,10 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 
 public class REditorLabelProvider implements ILabelProvider {
-	private Image publicMethodIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/methpub_obj.gif"));
+	private Image publicMethodIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/methpub_obj.png"));
 	private Image publicFieldIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/field_public_obj.png"));
 	private Image importIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/imp_obj.png"));
-	private Image baseNode = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/source_attach_attrib.gif"));
+	private Image baseNode = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/file_obj.png"));
 
 	public String getText(Object element) {
 		return ((REditorOutlineNode) element).getName();
