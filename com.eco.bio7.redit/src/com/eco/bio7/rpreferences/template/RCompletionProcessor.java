@@ -427,6 +427,27 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		return null;
 
 	}
+	/*Extend prefixes for R functions with a dot, e.g. t.test()*/
+	protected String extractPrefix(ITextViewer viewer, int offset) {
+		int i= offset;
+		IDocument document= viewer.getDocument();
+		if (i > document.getLength())
+			return ""; //$NON-NLS-1$
+
+		try {
+			while (i > 0) {
+				char ch= document.getChar(i - 1);
+				if (!Character.isJavaIdentifierPart(ch)&&(ch=='.')==false)
+					break;
+				i--;
+			}
+
+			return document.get(i, offset - i);
+		} catch (BadLocationException e) {
+			return ""; //$NON-NLS-1$
+		}
+	}
+	
 
 	/**
 	 * Return the R context type that is supported by this plug-in.
