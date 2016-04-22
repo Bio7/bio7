@@ -229,7 +229,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 		assistant.setContentAssistProcessor(processor, IDocument.DEFAULT_CONTENT_TYPE);
 
 		assistant.enableAutoActivation(true);
-		assistant.setAutoActivationDelay(200);
+		assistant.setAutoActivationDelay(500);
 
 		assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
 		assistant.setInformationControlCreator(getInformationControlCreator(sourceViewer));

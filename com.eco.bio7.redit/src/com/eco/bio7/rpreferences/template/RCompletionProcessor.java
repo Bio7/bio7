@@ -29,6 +29,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
+import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.templates.Template;
 import org.eclipse.jface.text.templates.TemplateCompletionProcessor;
@@ -58,6 +59,7 @@ import com.eco.bio7.reditor.antlr.UnderlineListener;
 import com.eco.bio7.reditor.antlr.ref.RRefPhaseListen;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.reditors.TemplateEditorUI;
+import com.eco.bio7.util.Util;
 
 import jdk.nashorn.tools.Shell;
 
@@ -95,6 +97,12 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 	private String[] splitVars;
 
+	private boolean writeAllTemplateArguments = false;
+
+	String[] statistics;
+	String[] statisticsContext;
+	String[] statisticsSet;
+
 	public RCompletionProcessor(REditor rEditor) {
 		this.editor = rEditor;
 		/*
@@ -102,6 +110,10 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		 * templates!
 		 */
 		CalculateRProposals.loadRCodePackageTemplates();
+		/* Load the created proposals! */
+		statistics = CalculateRProposals.getStatistics();
+		statisticsContext = CalculateRProposals.getStatisticsContext();
+		statisticsSet = CalculateRProposals.getStatisticsSet();
 
 		store = Bio7REditorPlugin.getDefault().getPreferenceStore();
 
@@ -282,10 +294,14 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 		/* Proposals from List! */
 
-		Template[] temp = new Template[CalculateRProposals.statistics.length];
+		Template[] temp = new Template[statistics.length];
 
 		for (int i = 0; i < temp.length; i++) {
-			temp[i] = new Template(CalculateRProposals.statistics[i], CalculateRProposals.statisticsContext[i], context.getContextType().getId(), CalculateRProposals.statisticsSet[i], true);
+			if (writeAllTemplateArguments) {
+				temp[i] = new Template(statistics[i], statisticsContext[i], context.getContextType().getId(), statisticsSet[i], true);
+			} else {
+				temp[i] = new Template(statistics[i], statisticsContext[i], context.getContextType().getId(), statistics[i] + "()", true);
+			}
 			Template template = temp[i];
 			try {
 				context.getContextType().validate(template.getPattern());
@@ -311,7 +327,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		// System.out.println(funcNameFromProposals);
 
 		if (resultmethodCallVars != null && resultmethodCallVars.length() > 0) {
-			resultmethodCallVars.append(",");
+			// resultmethodCallVars.append(",");
 
 			/* Append the variables after the method call variables! */
 			String[] scopedVars = resultBuffScopeVars.toString().split(",");
@@ -319,8 +335,10 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 			String[] resultMethodCallVars = resultmethodCallVars.toString().split(",");
 
-			String[] funcArgAndScopedVars = ArrayUtils.addAll(ArrayUtils.addAll(resultMethodCallVars, scopedVars), scopedFunctions);
-			creatPopupList(viewer, offset, funcArgAndScopedVars);
+			// String[] funcArgAndScopedVars =
+			// ArrayUtils.addAll(ArrayUtils.addAll(resultMethodCallVars,
+			// scopedVars), scopedFunctions);
+			creatPopupTable(viewer, offset, resultMethodCallVars, scopedVars, scopedFunctions);
 
 		}
 	}
@@ -331,26 +349,36 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		/*
 		 * prefix = prefix.substring(0, leng - 1); prefix = prefix.trim();
 		 */
+
 		if (funcNameFromProposals != null) {
 			// System.out.println(funcNameFromProposals);
-			for (int i = 0; i < CalculateRProposals.statisticsSet.length; i++) {
+			for (int i = 0; i < statisticsSet.length; i++) {
 				/* Do we have the method in the proposals? */
-				if (funcNameFromProposals.equals(CalculateRProposals.statistics[i])) {
+				if (funcNameFromProposals.equals(statistics[i])) {
 
-					String calc = CalculateRProposals.statisticsSet[i];
+					String calc = statisticsSet[i];
 					/* Find the arguments in the template proposals! */
 					int parOpen = calc.indexOf("(");
-					int parClose = calc.indexOf(")");
+					int parClose = calc.lastIndexOf(")");
 					calc = calc.substring(parOpen + 1, parClose);
-					calc = calc.replace(",", " = ,");
-					calc = calc.concat(" = ");
-					String[] proposalMethods = calc.split(",");
+					/*
+					 * System.out.println(calc); calc = calc.replace(",", " = ,"
+					 * ); System.out.println(calc);
+					 */
+					/*
+					 * if(calc.contains("=")==false){ calc = calc.concat(" = ");
+					 * } calc.substring(0,calc.indexOf("="));
+					 */
 
+					// String[] proposalMethods = calc.split(",");
+					String[] proposalMethods = split(calc).toArray(new String[0]);
 					String[] scopedVars = resultBuffScopeVars.toString().split(",");
 					String[] scopedFunctions = buffScopedFunctions.toString().split(",");
 
-					String[] funcNameFromProposalsFinal = ArrayUtils.addAll(ArrayUtils.addAll(proposalMethods, scopedVars), scopedFunctions);
-					creatPopupList(viewer, offset, funcNameFromProposalsFinal);
+					// String[] funcNameFromProposalsFinal =
+					// ArrayUtils.addAll(ArrayUtils.addAll(proposalMethods,
+					// scopedVars), scopedFunctions);
+					creatPopupTable(viewer, offset, proposalMethods, scopedVars, scopedFunctions);
 
 				}
 
@@ -359,7 +387,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 	}
 
-	private void creatPopupList(ITextViewer viewer, int offset, String[] splitMethod) {
+	private void creatPopupTable(ITextViewer viewer, int offset, String[] proposalMethod, String[] scopedVars, String[] scopedFunctions) {
 		StyledText te = viewer.getTextWidget();
 		Font f = te.getFont();
 
@@ -371,21 +399,43 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		poi = sh.toDisplay(poi);
 		int locx = poi.x;
 		int locy = poi.y;
-		PopupList listPopup = new PopupList(viewer.getTextWidget().getShell());
+		Util.getDisplay().asyncExec(new Runnable() {
+			public void run() {
 
-		// String[] OPTIONS = {
-		// CalculateRProposals.statisticsSet[i], "B", "C"};
-		listPopup.setFont(f);
-		listPopup.setItems(splitMethod);
+				RPopupTable listPopup = new RPopupTable(viewer.getTextWidget().getShell());
 
-		Rectangle rect = new Rectangle(locx, locy - height - 150, 300, 200);
-		String selected = listPopup.open(rect);
-		try {
-			viewer.getDocument().replace(offset, 0, selected);
-		} catch (BadLocationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+				// String[] OPTIONS = {
+				// CalculateRProposals.statisticsSet[i], "B", "C"};
+				listPopup.setFont(f);
+				listPopup.setItems(proposalMethod, "arguments");
+				if (scopedVars.length == 1 && scopedVars[0].isEmpty()) {
+					
+				} else {
+					listPopup.setItems(scopedVars, "variables");
+				}
+
+				if (scopedFunctions.length == 1 && scopedFunctions[0].isEmpty()) {
+
+					
+
+				} else {
+					listPopup.setItems(scopedFunctions, "functions");
+				}
+
+				Rectangle rect = new Rectangle(locx, locy - height - 150, 300, 200);
+				String selected = listPopup.open(rect);
+				if (selected != null) {
+					try {
+						viewer.getDocument().replace(offset, 0, selected);
+						editor.getSelectionProvider().setSelection(new TextSelection(offset + selected.length(), 0));
+					} catch (BadLocationException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+				}
+			}
+		});
 	}
 
 	/*
@@ -427,17 +477,18 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		return null;
 
 	}
-	/*Extend prefixes for R functions with a dot, e.g. t.test()*/
+
+	/* Extend prefixes for R functions with a dot, e.g. t.test() */
 	protected String extractPrefix(ITextViewer viewer, int offset) {
-		int i= offset;
-		IDocument document= viewer.getDocument();
+		int i = offset;
+		IDocument document = viewer.getDocument();
 		if (i > document.getLength())
 			return ""; //$NON-NLS-1$
 
 		try {
 			while (i > 0) {
-				char ch= document.getChar(i - 1);
-				if (!Character.isJavaIdentifierPart(ch)&&(ch=='.')==false)
+				char ch = document.getChar(i - 1);
+				if (!Character.isJavaIdentifierPart(ch) && (ch == '.') == false)
 					break;
 				i--;
 			}
@@ -447,7 +498,6 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 			return ""; //$NON-NLS-1$
 		}
 	}
-	
 
 	/**
 	 * Return the R context type that is supported by this plug-in.
@@ -516,6 +566,41 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 			return image;
 		}
 
+	}
+
+	/*
+	 * Answer and source from StackOverflow:
+	 * http://stackoverflow.com/questions/34388828/java-splitting-a-comma-
+	 * separated-string-but-ignoring-commas-in-parentheses/34389323#34389323
+	 * Author: Tagir Valeev Profile:
+	 * http://stackoverflow.com/users/4856258/tagir-valeev
+	 */
+	public List<String> split(String input) {
+		int nParens = 0;
+		int start = 0;
+		List<String> result = new ArrayList<>();
+		for (int i = 0; i < input.length(); i++) {
+			switch (input.charAt(i)) {
+			case ',':
+				if (nParens == 0) {
+					result.add(input.substring(start, i));
+					start = i + 1;
+				}
+				break;
+			case '(':
+				nParens++;
+				break;
+			case ')':
+				nParens--;
+				if (nParens < 0)
+					throw new IllegalArgumentException("Unbalanced parenthesis at offset #" + i);
+				break;
+			}
+		}
+		if (nParens > 0)
+			throw new IllegalArgumentException("Missing closing parenthesis");
+		result.add(input.substring(start));
+		return result;
 	}
 
 }

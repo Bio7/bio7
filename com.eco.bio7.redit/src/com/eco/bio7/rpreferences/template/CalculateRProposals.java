@@ -18,11 +18,11 @@ import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 public class CalculateRProposals {
 
-	public static String[] statistics;
+	private static String[] statistics;
 
-	public static String[] statisticsContext;
+	private static String[] statisticsContext;
 
-	public static String[] statisticsSet;
+	private static String[] statisticsSet;
 
 	private static boolean startupTemplate = true;
 
@@ -31,6 +31,18 @@ public class CalculateRProposals {
 	private static HashMap<Integer, String> statContext;
 
 	private static HashMap<Integer, String> statSet;
+	
+	public static String[] getStatistics() {
+		return statistics;
+	}
+
+	public static String[] getStatisticsSet() {
+		return statisticsSet;
+	}
+
+	public static String[] getStatisticsContext() {
+		return statisticsContext;
+	}
 
 	public static void loadRCodePackageTemplates() {
 		IPreferenceStore s = new ScopedPreferenceStore(InstanceScope.INSTANCE, "com.eco.bio7");
