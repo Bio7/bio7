@@ -187,7 +187,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		String prefix = extractPrefix(viewer, offset);
 
 		int leng = prefix.length();
-		Region region;
+		Region region = null;
 
 		RRefPhaseListen ref = new Parse(editor).parseFromOffset(offset);
 
@@ -208,8 +208,8 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		 * return null to avoid the opening of the template dialog!
 		 */
 
-		if (isInVarCall) {
-
+		if (isInVarCall&&leng<=2) {
+            
 			if (proposalNameFound != null) {
 
 				tooltipActionTemplates(viewer, offset, leng, ref, proposalNameFound, buffScopedVars, buffScopedFunctions);
@@ -221,8 +221,9 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 			/* Return null so that no information center is shown! */
 			return null;
 		} else {
-
+            
 			region = new Region(offset - prefix.length(), prefix.length());
+            
 		}
 		TemplateContext context = createContext(viewer, region);
 		if (context == null)
@@ -360,6 +361,9 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 					/* Find the arguments in the template proposals! */
 					int parOpen = calc.indexOf("(");
 					int parClose = calc.lastIndexOf(")");
+					System.out.println("length "+parOpen + 1+ parClose);
+					/*Here we control the length. Must be greater -1!*/
+					if(parOpen + 1+ parClose>=0){
 					calc = calc.substring(parOpen + 1, parClose);
 					/*
 					 * System.out.println(calc); calc = calc.replace(",", " = ,"
@@ -379,6 +383,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 					// ArrayUtils.addAll(ArrayUtils.addAll(proposalMethods,
 					// scopedVars), scopedFunctions);
 					creatPopupTable(viewer, offset, proposalMethods, scopedVars, scopedFunctions);
+					}
 
 				}
 

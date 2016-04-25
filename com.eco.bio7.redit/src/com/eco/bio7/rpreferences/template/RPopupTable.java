@@ -111,7 +111,7 @@ public class RPopupTable {
 	}
 
 	private static int checkStyle(int style) {
-		int mask = SWT.LEFT_TO_RIGHT | SWT.RIGHT_TO_LEFT;
+		int mask = SWT.LEFT_TO_RIGHT | SWT.RIGHT_TO_LEFT|SWT.DIALOG_TRIM|SWT.ON_TOP;
 		return style & mask;
 	}
 

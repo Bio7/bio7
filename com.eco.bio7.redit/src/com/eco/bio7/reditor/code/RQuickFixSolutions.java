@@ -209,7 +209,7 @@ public class RQuickFixSolutions {
 			case "Err23":
 				prop = new ICompletionProposal[] {
 
-						new RQuickFixCompletionProposal("Remove function variable","Remove the wrong function call parameter", offset, endChar, "", 1) };
+						new RQuickFixCompletionProposal("Remove function variable","Remove the wrong function call parameter", offset, endChar, "", endChar-offset) };
 
 			default:
 				break;
