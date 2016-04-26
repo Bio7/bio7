@@ -76,6 +76,7 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -125,7 +126,7 @@ public class REditor extends TextEditor {
 	private Action refactor;
 
 	private OpenPreferences preferences;
-	
+
 	private OpenPlotPreferences plotPreferences;
 
 	private ProjectionSupport projectionSupport;
@@ -161,7 +162,7 @@ public class REditor extends TextEditor {
 	public Parse getParser() {
 		return parser;
 	}
-	
+
 	public ProjectionViewer getViewer() {
 		return viewer;
 	}
@@ -189,7 +190,7 @@ public class REditor extends TextEditor {
 		// ISourceViewer viewer = getSourceViewer();
 		store = Bio7REditorPlugin.getDefault().getPreferenceStore();
 		// updateFoldingStructure(new ArrayList());
-		parser=new Parse(this);
+		parser = new Parse(this);
 	}
 
 	private IPartListener2 partListener = new IPartListener2() {
@@ -215,8 +216,7 @@ public class REditor extends TextEditor {
 
 						@Override
 						public void keyPressed(KeyEvent event) {
-							// if (event.stateMask == SWT.ALT && event.keyCode
-							// == 99) { -> CTRL+C
+							closeRPopupTableShell();
 							switch (event.keyCode) {
 
 							case SWT.CR: {
@@ -304,17 +304,23 @@ public class REditor extends TextEditor {
 
 							}
 							selectedItems.clear();
+							
 
 						}
 
 						@Override
 						public void mouseUp(MouseEvent e) {
-							/*Hide the code completion tooltip if the mouse is clicked!*/
-							/*RCompletionProcessor processor = getRconf().getProcessor();
-							DefaultToolTip tip = processor.getTooltip();
-							if (tip != null) {
-								tip.hide();
-							}*/
+							closeRPopupTableShell();
+							/*
+							 * Hide the code completion tooltip if the mouse is
+							 * clicked!
+							 */
+							/*
+							 * RCompletionProcessor processor =
+							 * getRconf().getProcessor(); DefaultToolTip tip =
+							 * processor.getTooltip(); if (tip != null) {
+							 * tip.hide(); }
+							 */
 						}
 
 					});
@@ -359,8 +365,6 @@ public class REditor extends TextEditor {
 		}
 
 	};
-
-	
 
 	/*
 	 * Here we search for similar words of a selected word in the editor. The
@@ -635,7 +639,7 @@ public class REditor extends TextEditor {
 				Bio7REditorPlugin fginstance = Bio7REditorPlugin.getDefault();
 				RCodeScanner scanner = (RCodeScanner) fginstance.getRCodeScanner();
 				RPartitionScanner pscanner = (RPartitionScanner) fginstance.getRPartitionScanner();
-                
+
 				RColorProvider provider = Bio7REditorPlugin.getDefault().getRColorProvider();
 				IPreferenceStore store = Bio7REditorPlugin.getDefault().getPreferenceStore();
 				RGB rgbkey = PreferenceConverter.getColor(store, "colourkey");
@@ -660,15 +664,19 @@ public class REditor extends TextEditor {
 
 				scanner.keyword.setData(new TextAttribute(provider.getColor(rgbkey), null, 1, new Font(Display.getCurrent(), f)));
 				scanner.type.setData(new TextAttribute(provider.getColor(rgbkey1), null, 1, new Font(Display.getCurrent(), f1)));
-				//scanner.string.setData(new TextAttribute(provider.getColor(rgbkey2), null, 1, new Font(Display.getCurrent(), f2)));
-				//scanner.comment.setData(new TextAttribute(provider.getColor(rgbkey3), null, 1, new Font(Display.getCurrent(), f3)));
+				// scanner.string.setData(new
+				// TextAttribute(provider.getColor(rgbkey2), null, 1, new
+				// Font(Display.getCurrent(), f2)));
+				// scanner.comment.setData(new
+				// TextAttribute(provider.getColor(rgbkey3), null, 1, new
+				// Font(Display.getCurrent(), f3)));
 				scanner.other.setData(new TextAttribute(provider.getColor(rgbkey4), null, 1, new Font(Display.getCurrent(), f4)));
 				scanner.operators.setData(new TextAttribute(provider.getColor(rgbkey5), null, 1, new Font(Display.getCurrent(), f5)));
 				scanner.braces.setData(new TextAttribute(provider.getColor(rgbkey6), null, 1, new Font(Display.getCurrent(), f6)));
 				scanner.numbers.setData(new TextAttribute(provider.getColor(rgbkey7), null, 1, new Font(Display.getCurrent(), f7)));
 				scanner.assignment.setData(new TextAttribute(provider.getColor(rgbkey8), null, 1, new Font(Display.getCurrent(), f8)));
-				
-				/*Special treatment for multiline strings and comments!*/
+
+				/* Special treatment for multiline strings and comments! */
 				getRconf().resetMultilineStringToken(rgbkey2, f2);
 				getRconf().resetCommentToken(rgbkey3, f3);
 
@@ -717,7 +725,6 @@ public class REditor extends TextEditor {
 		addAction(menu, "R Preferences");
 		menu.add(new Separator());
 		addAction(menu, "R Plot Preferences");
-		
 
 	}
 
@@ -766,7 +773,7 @@ public class REditor extends TextEditor {
 
 		preferences = new com.eco.bio7.reditor.actions.OpenPreferences();
 		setAction("R Preferences", preferences);
-		
+
 		plotPreferences = new com.eco.bio7.reditor.actions.OpenPlotPreferences();
 		setAction("R Plot Preferences", plotPreferences);
 
@@ -827,6 +834,8 @@ public class REditor extends TextEditor {
 		}
 
 	};
+
+	private Shell editorPopupShell;
 
 	private static void goToLine(IEditorPart editorPart, int toLine) {
 		if ((editorPart instanceof REditor) || toLine <= 0) {
@@ -993,6 +1002,7 @@ public class REditor extends TextEditor {
 	public static RConnection getRserveConnection() {
 		return rserveConnection;
 	}
+
 	public IMarker[] findMyMarkers(IResource target) {
 		String type = "org.eclipse.core.resources.problemmarker";
 
@@ -1004,6 +1014,20 @@ public class REditor extends TextEditor {
 			e.printStackTrace();
 		}
 		return markers;
+	}
+	/*A method to set the current code completion popup shell (class: RPopupTable)!*/
+	public void setRPopupShell(Shell popUpshell) {
+		this.editorPopupShell = popUpshell;
+
+	}
+   /*A method to close the code completion popup shell (class: RPopupTable)!*/
+	private void closeRPopupTableShell() {
+		if (editorPopupShell != null) {
+			if (editorPopupShell.isDisposed() == false) {
+				
+					editorPopupShell.setVisible(false);
+				}
+			}
 	}
 
 }

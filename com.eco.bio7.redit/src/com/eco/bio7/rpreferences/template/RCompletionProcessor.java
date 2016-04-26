@@ -30,6 +30,7 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextSelection;
+import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.templates.Template;
 import org.eclipse.jface.text.templates.TemplateCompletionProcessor;
@@ -85,6 +86,30 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 	private int defaultTemplatesLength;// Global variable to get the current
 										// template amount.
 
+	public static String[] getStatistics() {
+		return statistics;
+	}
+
+	public static void setStatistics(String[] statistics) {
+		RCompletionProcessor.statistics = statistics;
+	}
+
+	public static String[] getStatisticsContext() {
+		return statisticsContext;
+	}
+
+	public static void setStatisticsContext(String[] statisticsContext) {
+		RCompletionProcessor.statisticsContext = statisticsContext;
+	}
+
+	public static String[] getStatisticsSet() {
+		return statisticsSet;
+	}
+
+	public static void setStatisticsSet(String[] statisticsSet) {
+		RCompletionProcessor.statisticsSet = statisticsSet;
+	}
+
 	private IPreferenceStore store;
 
 	private DefaultToolTip tooltip;
@@ -99,11 +124,11 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 	private boolean writeAllTemplateArguments = false;
 
-	String[] statistics;
-	String[] statisticsContext;
-	String[] statisticsSet;
+	private static String[] statistics;
+	private static String[] statisticsContext;
+	private static String[] statisticsSet;
 
-	public RCompletionProcessor(REditor rEditor) {
+	public RCompletionProcessor(REditor rEditor, ContentAssistant assistant) {
 		this.editor = rEditor;
 		/*
 		 * At startup load the default R proposals and add them to the
@@ -208,22 +233,31 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		 * return null to avoid the opening of the template dialog!
 		 */
 
-		if (isInVarCall&&leng<=2) {
-            
-			if (proposalNameFound != null) {
+		if (isInVarCall) {
+			if (leng <= 0) {
+				if (proposalNameFound != null) {
 
-				tooltipActionTemplates(viewer, offset, leng, ref, proposalNameFound, buffScopedVars, buffScopedFunctions);
+					tooltipActionTemplates(viewer, offset, leng, ref, proposalNameFound, buffScopedVars, buffScopedFunctions);
+				} else {
+
+					tooltipAction(viewer, offset, leng, ref, resultMethodCallVars, buffScopedVars, buffScopedFunctions);
+				}
+				/* Return null so that no information center is shown! */
+				return null;
+			} else if (leng >= 2) {
+
+				region = new Region(offset - prefix.length(), prefix.length());
+
 			} else {
-
-				tooltipAction(viewer, offset, leng, ref, resultMethodCallVars, buffScopedVars, buffScopedFunctions);
+				return null;
+			}
+		} else {
+			if (leng >= 2) {
+				region = new Region(offset - prefix.length(), prefix.length());
+			} else {
+				return null;
 			}
 
-			/* Return null so that no information center is shown! */
-			return null;
-		} else {
-            
-			region = new Region(offset - prefix.length(), prefix.length());
-            
 		}
 		TemplateContext context = createContext(viewer, region);
 		if (context == null)
@@ -278,7 +312,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 			Template[] tempLocalFunctions = new Template[splitBuffScopedFun.length];
 
 			for (int i = 0; i < tempLocalFunctions.length; i++) {
-				tempLocalFunctions[i] = new Template(splitBuffScopedFun[i] + " (function) ", splitBuffScopedFun[i], context.getContextType().getId(), splitBuffScopedFun[i] + "()", true);
+				tempLocalFunctions[i] = new Template(splitBuffScopedFun[i] + " (function) ", splitBuffScopedFun[i], context.getContextType().getId(), splitBuffScopedFun[i] + "(${cursor})", true);
 
 				Template template = tempLocalFunctions[i];
 				try {
@@ -301,7 +335,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 			if (writeAllTemplateArguments) {
 				temp[i] = new Template(statistics[i], statisticsContext[i], context.getContextType().getId(), statisticsSet[i], true);
 			} else {
-				temp[i] = new Template(statistics[i], statisticsContext[i], context.getContextType().getId(), statistics[i] + "()", true);
+				temp[i] = new Template(statistics[i], statisticsContext[i], context.getContextType().getId(), statistics[i] + "(${cursor})", true);
 			}
 			Template template = temp[i];
 			try {
@@ -361,28 +395,28 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 					/* Find the arguments in the template proposals! */
 					int parOpen = calc.indexOf("(");
 					int parClose = calc.lastIndexOf(")");
-					System.out.println("length "+parOpen + 1+ parClose);
-					/*Here we control the length. Must be greater -1!*/
-					if(parOpen + 1+ parClose>=0){
-					calc = calc.substring(parOpen + 1, parClose);
-					/*
-					 * System.out.println(calc); calc = calc.replace(",", " = ,"
-					 * ); System.out.println(calc);
-					 */
-					/*
-					 * if(calc.contains("=")==false){ calc = calc.concat(" = ");
-					 * } calc.substring(0,calc.indexOf("="));
-					 */
+					System.out.println("length " + parOpen + 1 + parClose);
+					/* Here we control the length. Must be greater -1! */
+					if (parOpen + 1 + parClose >= 0) {
+						calc = calc.substring(parOpen + 1, parClose);
+						/*
+						 * System.out.println(calc); calc = calc.replace(",",
+						 * " = ," ); System.out.println(calc);
+						 */
+						/*
+						 * if(calc.contains("=")==false){ calc = calc.concat(
+						 * " = "); } calc.substring(0,calc.indexOf("="));
+						 */
 
-					// String[] proposalMethods = calc.split(",");
-					String[] proposalMethods = split(calc).toArray(new String[0]);
-					String[] scopedVars = resultBuffScopeVars.toString().split(",");
-					String[] scopedFunctions = buffScopedFunctions.toString().split(",");
+						// String[] proposalMethods = calc.split(",");
+						String[] proposalMethods = split(calc).toArray(new String[0]);
+						String[] scopedVars = resultBuffScopeVars.toString().split(",");
+						String[] scopedFunctions = buffScopedFunctions.toString().split(",");
 
-					// String[] funcNameFromProposalsFinal =
-					// ArrayUtils.addAll(ArrayUtils.addAll(proposalMethods,
-					// scopedVars), scopedFunctions);
-					creatPopupTable(viewer, offset, proposalMethods, scopedVars, scopedFunctions);
+						// String[] funcNameFromProposalsFinal =
+						// ArrayUtils.addAll(ArrayUtils.addAll(proposalMethods,
+						// scopedVars), scopedFunctions);
+						creatPopupTable(viewer, offset, proposalMethods, scopedVars, scopedFunctions);
 					}
 
 				}
@@ -408,20 +442,19 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 			public void run() {
 
 				RPopupTable listPopup = new RPopupTable(viewer.getTextWidget().getShell());
+				editor.setRPopupShell(listPopup.getShell());
 
 				// String[] OPTIONS = {
 				// CalculateRProposals.statisticsSet[i], "B", "C"};
 				listPopup.setFont(f);
 				listPopup.setItems(proposalMethod, "arguments");
 				if (scopedVars.length == 1 && scopedVars[0].isEmpty()) {
-					
+
 				} else {
 					listPopup.setItems(scopedVars, "variables");
 				}
 
 				if (scopedFunctions.length == 1 && scopedFunctions[0].isEmpty()) {
-
-					
 
 				} else {
 					listPopup.setItems(scopedFunctions, "functions");

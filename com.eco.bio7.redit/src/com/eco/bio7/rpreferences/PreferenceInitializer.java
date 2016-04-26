@@ -76,7 +76,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		storeR.setDefault("MARK_WORDS", false);
 		storeR.setDefault("TYPED_CODE_COMPLETION", true);
 		storeR.setDefault("EDITOR_TO_OUTLINE", false);
-		storeR.setDefault("ACTIVATION_CHARS", "(");
+		storeR.setDefault("ACTIVATION_CHARS", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.");
 
 		storeR.setDefault("UNUSED_FUNCTION", true);
 		storeR.setDefault("MISSING_FUNCTION", true);

@@ -115,4 +115,11 @@ public class CalculateRProposals {
 	public static void setStartupTemplate(boolean startupTemplates) {
 		startupTemplate = startupTemplates;
 	}
+
+	public static void updateCompletions() {
+		RCompletionProcessor.setStatistics(getStatistics());
+		RCompletionProcessor.setStatisticsContext(getStatisticsContext());
+		RCompletionProcessor.setStatisticsSet(getStatisticsSet());
+		
+	}
 }

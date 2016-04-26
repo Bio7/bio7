@@ -5,6 +5,8 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
 
+import com.eco.bio7.reditors.REditor;
+
 /**
  * A RPopupTable is a table of selectable items that appears in its own shell
  * positioned above its parent shell. It is used for selecting items when
@@ -53,7 +55,7 @@ public class RPopupTable {
 		int listStyle = SWT.SINGLE | SWT.V_SCROLL;
 		if ((style & SWT.H_SCROLL) != 0)
 			listStyle |= SWT.H_SCROLL;
-
+		
 		shell = new Shell(parent, checkStyle(style));
 
 		// list = new List(shell, listStyle);
@@ -66,6 +68,7 @@ public class RPopupTable {
 				shell.setVisible(false);
 			}
 		});
+		
 
 		// resize shell when list resizes
 		shell.addControlListener(new ControlListener() {
@@ -110,8 +113,12 @@ public class RPopupTable {
 
 	}
 
+	public Shell getShell() {
+		return shell;
+	}
+
 	private static int checkStyle(int style) {
-		int mask = SWT.LEFT_TO_RIGHT | SWT.RIGHT_TO_LEFT|SWT.DIALOG_TRIM|SWT.ON_TOP;
+		int mask = SWT.LEFT_TO_RIGHT | SWT.RIGHT_TO_LEFT | SWT.TOOL | SWT.NO_FOCUS;
 		return style & mask;
 	}
 
@@ -217,9 +224,12 @@ public class RPopupTable {
 		int x = rect.x + rect.width - listSize.x;
 
 		shell.setBounds(x, y, listSize.x, listSize.y);
-
-		shell.open();
-		table.setFocus();
+		/*
+		 * Instead of using open the text widget will not loose the
+		 * focus(SWT_NO_FOCUS)!
+		 */
+		shell.setVisible(true);
+		// table.setFocus();
 
 		Display display = shell.getDisplay();
 		while (!shell.isDisposed() && shell.isVisible()) {

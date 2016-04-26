@@ -29,6 +29,7 @@ import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.rpreferences.template.CalculateRProposals;
+import com.eco.bio7.rpreferences.template.RCompletionProcessor;
 
 
 
@@ -51,7 +52,7 @@ public class LoadRLibrarysJob extends WorkspaceJob {
 					items = RLibraryList.getAllPackagesList().getSelection();
 				}
 			});
-
+   
 			for (int i = 0; i < items.length; i++) {
 				RConnection c = RServe.getConnection();
 				
@@ -71,6 +72,8 @@ public class LoadRLibrarysJob extends WorkspaceJob {
 			/*Reload the code proposals (not the templates) for the R editor!*/
 			CalculateRProposals.setStartupTemplate(false);
 			CalculateRProposals.loadRCodePackageTemplates();
+			CalculateRProposals.updateCompletions();
+			
 		}
 
 		return Status.OK_STATUS;
