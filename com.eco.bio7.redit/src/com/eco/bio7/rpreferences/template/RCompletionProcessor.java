@@ -232,19 +232,21 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		 * In parentheses we show an popup instead of the completion dialog! We
 		 * return null to avoid the opening of the template dialog!
 		 */
+		
+		int callTemplates=store.getInt("ACTIVATION_AMOUNT_CHAR_COMPLETION");
 
 		if (isInVarCall) {
 			if (leng <= 0) {
 				if (proposalNameFound != null) {
-
-					tooltipActionTemplates(viewer, offset, leng, ref, proposalNameFound, buffScopedVars, buffScopedFunctions);
+					
+					tooltipActionTemplates(viewer, offset, leng, proposalNameFound, buffScopedVars, buffScopedFunctions);
 				} else {
 
 					tooltipAction(viewer, offset, leng, ref, resultMethodCallVars, buffScopedVars, buffScopedFunctions);
 				}
 				/* Return null so that no information center is shown! */
 				return null;
-			} else if (leng >= 2) {
+			} else if (leng >= callTemplates) {
 
 				region = new Region(offset - prefix.length(), prefix.length());
 
@@ -252,7 +254,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 				return null;
 			}
 		} else {
-			if (leng >= 2) {
+			if (leng >= callTemplates) {
 				region = new Region(offset - prefix.length(), prefix.length());
 			} else {
 				return null;
@@ -378,7 +380,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		}
 	}
 
-	private void tooltipActionTemplates(ITextViewer viewer, int offset, int leng, RRefPhaseListen ref, String funcNameFromProposals, StringBuffer resultBuffScopeVars, StringBuffer buffScopedFunctions) {
+	private void tooltipActionTemplates(ITextViewer viewer, int offset, int leng, String funcNameFromProposals, StringBuffer resultBuffScopeVars, StringBuffer buffScopedFunctions) {
 
 		/* trim the method name! */
 		/*
@@ -395,7 +397,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 					/* Find the arguments in the template proposals! */
 					int parOpen = calc.indexOf("(");
 					int parClose = calc.lastIndexOf(")");
-					System.out.println("length " + parOpen + 1 + parClose);
+					
 					/* Here we control the length. Must be greater -1! */
 					if (parOpen + 1 + parClose >= 0) {
 						calc = calc.substring(parOpen + 1, parClose);

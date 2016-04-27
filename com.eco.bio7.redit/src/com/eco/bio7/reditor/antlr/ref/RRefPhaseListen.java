@@ -311,7 +311,7 @@ public class RRefPhaseListen extends RBaseListener {
 					if (offsetCodeCompl >= startIndex && offsetCodeCompl <= stopIndex) {
 						isInVarCall = true;
 						proposalFuncFound = funcName;
-
+						
 					}
 
 				} else {
@@ -342,6 +342,8 @@ public class RRefPhaseListen extends RBaseListener {
 
 					/* Store function call args for code completion! */
 					if (offsetCodeCompl > startIndex && offsetCodeCompl <= stopIndex) {
+						/*Set the proposalFuncFound to null for nested function calls in code completion if this is the closest match!*/
+						proposalFuncFound=null;
 						/*
 						 * We collect all vars here for code completion unlike
 						 * the warning below!
