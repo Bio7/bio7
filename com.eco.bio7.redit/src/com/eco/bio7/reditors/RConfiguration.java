@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Iterator;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -47,18 +48,23 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.quickassist.IQuickAssistAssistant;
+import org.eclipse.jface.text.quickassist.IQuickAssistInvocationContext;
 import org.eclipse.jface.text.quickassist.QuickAssistAssistant;
 import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.reconciler.MonoReconciler;
 import org.eclipse.jface.text.rules.BufferedRuleBasedScanner;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.Token;
+import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -72,12 +78,14 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
+import org.eclipse.ui.texteditor.MarkerAnnotation;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
+import com.eco.bio7.reditor.code.InvocationContext;
 import com.eco.bio7.reditor.code.RAssistProcessor;
 import com.eco.bio7.rpreferences.template.RCompletionProcessor;
 import com.eco.bio7.util.Util;
@@ -101,6 +109,8 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 	private SingleTokenScanner comment;
 
 	public IMarker selectedMarker;
+
+	private RAssistProcessor rAssist;
 
 	public static String htmlHelpText = "";
 
@@ -224,10 +234,10 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 	public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
 		ContentAssistant assistant = new ContentAssistant();
 		assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
-        
-		processor = new RCompletionProcessor(rEditor,assistant);
+
+		processor = new RCompletionProcessor(rEditor, assistant);
 		assistant.setContentAssistProcessor(processor, IDocument.DEFAULT_CONTENT_TYPE);
-       
+
 		assistant.enableAutoActivation(true);
 		assistant.setAutoActivationDelay(500);
 
@@ -248,7 +258,8 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 	public IQuickAssistAssistant getQuickAssistAssistant(ISourceViewer sourceViewer) {
 		IQuickAssistAssistant quickAssist = new QuickAssistAssistant();
-		quickAssist.setQuickAssistProcessor(new RAssistProcessor(rEditor));
+		rAssist = new RAssistProcessor(rEditor);
+		quickAssist.setQuickAssistProcessor(rAssist);
 		quickAssist.setInformationControlCreator(getInformationControlCreator(sourceViewer));
 		return quickAssist;
 	}
@@ -274,8 +285,59 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 			int offset = hoverRegion.getOffset();
 			int length = 0;
 			int minusLength = 0;
+
+			IAnnotationModel model = ((SourceViewer) textViewer).getAnnotationModel();
+
+			// Iterator parent = ((IAnnotationModelExtension2)
+			// model).getAnnotationIterator(hoverRegion.getOffset(),
+			// hoverRegion.getLength(), true, true);
+			Iterator<Annotation> iter = model.getAnnotationIterator();
+			while (iter.hasNext()) {
+				Annotation annotation = iter.next();
+				if (annotation.isMarkedDeleted())
+					continue;
+
+				if (annotation instanceof MarkerAnnotation) {
+					IMarker marker = ((MarkerAnnotation) annotation).getMarker();
+					try {
+						if (marker.exists()) {
+							/*There is a warning or error else null is returned, see RAssistProcessor!*/
+							if (marker.getAttribute(IMarker.TEXT) != null) {
+								/* Get String error code or text is 'NA'! */
+								// System.out.println(offset+"
+								// "+(int)marker.getAttribute(IMarker.CHAR_START));
+								int offsetStart = (int) marker.getAttribute(IMarker.CHAR_START);
+								int offsetEnd = (int) marker.getAttribute(IMarker.CHAR_END);
+								if (offset >= offsetStart && offset <= offsetEnd) {
+									/*Use the RAssistProcessor to get the available proposals!*/
+									ICompletionProposal[] proposals = rAssist.computeQuickAssistProposals(new InvocationContext(offsetStart, offsetEnd - offsetStart, rEditor.getViewer()));
+									if (proposals != null) {
+										for (int i = 0; i < proposals.length; i++) {
+											System.out.println(proposals[i].getDisplayString());
+											Display display = Util.getDisplay();
+											display.asyncExec(new Runnable() {
+
+												public void run() {
+													proposals[0].apply(rEditor.getViewer().getDocument());
+												}
+											});
+										}
+									}
+								}
+
+							}
+						}
+					} catch (CoreException e) {
+
+						e.printStackTrace();
+					}
+				}
+
+				// System.out.println(annotation.getText());
+			}
+
 			/* Test if a QuickFix is available! */
-			triggerQuickFixFromOffset(offset);
+			// triggerQuickFixFromOffset(offset);
 
 			IDocument doc = textViewer.getDocument();
 
@@ -387,9 +449,12 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 		/*
 		 * Triggers a QuickFix action if the hover offset is matching a marker!
 		 */
-		private void triggerQuickFixFromOffset(int offset) {
+		/*private void triggerQuickFixFromOffset(int offset) {
+
 			
-			/*Workaround to close the QuickFix window to avoid the display of the old QuickFix!!*/
+			 * Workaround to close the QuickFix window to avoid the display of
+			 * the old QuickFix!!
+			 
 			Display dis = Util.getDisplay();
 			dis.asyncExec(new Runnable() {
 
@@ -415,7 +480,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 			for (int i = 0; i < markersfind.length; i++) {
 				try {
 
-					/* QuickFix produced in RAssistProcessor! */
+					 QuickFix produced in RAssistProcessor! 
 					if (markersfind != null && markersfind.length > 0) {
 						int charStart = (int) markersfind[i].getAttribute(IMarker.CHAR_START);
 						int charStop = (int) markersfind[i].getAttribute(IMarker.CHAR_END);
@@ -455,7 +520,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 				}
 
 			}
-		}
+		}*/
 
 		String readFile(String path, Charset encoding) throws IOException {
 			byte[] encoded = Files.readAllBytes(Paths.get(path));
