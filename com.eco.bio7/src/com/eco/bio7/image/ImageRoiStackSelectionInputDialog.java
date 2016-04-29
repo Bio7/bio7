@@ -82,8 +82,9 @@ public class ImageRoiStackSelectionInputDialog extends Dialog {
 		gd_spinner_2.heightHint = 30;
 		spinner_2.setLayoutData(gd_spinner_2);
 		spinner_2.setMinimum(1);
+		spinner_2.setMaximum(10000000);
 		spinner_2.setSelection(stackSize);
-		spinner_2.setMaximum(stackSize);
+		
 		
 		Label label = new Label(container, SWT.SEPARATOR | SWT.HORIZONTAL);
 		GridData gd_label = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
