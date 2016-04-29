@@ -69,6 +69,7 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
@@ -311,6 +312,7 @@ public class REditor extends TextEditor {
 						@Override
 						public void mouseUp(MouseEvent e) {
 							closeRPopupTableShell();
+							closeRHooverPopupTableShell();
 							/*
 							 * Hide the code completion tooltip if the mouse is
 							 * clicked!
@@ -323,6 +325,15 @@ public class REditor extends TextEditor {
 							 */
 						}
 
+					});
+					((StyledText) editor.getAdapter(Control.class)).addMouseMoveListener(new MouseMoveListener() {
+
+						@Override
+						public void mouseMove(MouseEvent e) {
+							//closeRHooverPopupTableShell();
+							
+						}
+						
 					});
 				}
 
@@ -837,6 +848,8 @@ public class REditor extends TextEditor {
 
 	private Shell editorPopupShell;
 
+	private Shell editorHooverPopupShell;
+
 	private static void goToLine(IEditorPart editorPart, int toLine) {
 		if ((editorPart instanceof REditor) || toLine <= 0) {
 
@@ -1026,6 +1039,21 @@ public class REditor extends TextEditor {
 			if (editorPopupShell.isDisposed() == false) {
 				
 					editorPopupShell.setVisible(false);
+				}
+			}
+	}
+	
+	/*A method to set the current code completion popup shell (class: RPopupTable)!*/
+	public void setRHooverPopupShell(Shell popUpshell) {
+		this.editorHooverPopupShell = popUpshell;
+
+	}
+   /*A method to close the code completion popup shell (class: RPopupTable)!*/
+	private void closeRHooverPopupTableShell() {
+		if (editorHooverPopupShell != null) {
+			if (editorHooverPopupShell.isDisposed() == false) {
+				
+				editorHooverPopupShell.setVisible(false);
 				}
 			}
 	}

@@ -67,11 +67,13 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Shell;
@@ -87,6 +89,7 @@ import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.code.InvocationContext;
 import com.eco.bio7.reditor.code.RAssistProcessor;
+import com.eco.bio7.reditor.code.RHoverQuickFixTable;
 import com.eco.bio7.rpreferences.template.RCompletionProcessor;
 import com.eco.bio7.util.Util;
 
@@ -276,6 +279,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 	public class MarkdownTextHover implements ITextHover, ITextHoverExtension2 {
 
 		protected String help = "";
+		protected RHoverQuickFixTable hoverTable;
 
 		// R Return information to be shown when the cursor is on the given
 		// region
@@ -285,56 +289,8 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 			int offset = hoverRegion.getOffset();
 			int length = 0;
 			int minusLength = 0;
-
-			IAnnotationModel model = ((SourceViewer) textViewer).getAnnotationModel();
-
-			// Iterator parent = ((IAnnotationModelExtension2)
-			// model).getAnnotationIterator(hoverRegion.getOffset(),
-			// hoverRegion.getLength(), true, true);
-			Iterator<Annotation> iter = model.getAnnotationIterator();
-			while (iter.hasNext()) {
-				Annotation annotation = iter.next();
-				if (annotation.isMarkedDeleted())
-					continue;
-
-				if (annotation instanceof MarkerAnnotation) {
-					IMarker marker = ((MarkerAnnotation) annotation).getMarker();
-					try {
-						if (marker.exists()) {
-							/*There is a warning or error else null is returned, see RAssistProcessor!*/
-							if (marker.getAttribute(IMarker.TEXT) != null) {
-								/* Get String error code or text is 'NA'! */
-								// System.out.println(offset+"
-								// "+(int)marker.getAttribute(IMarker.CHAR_START));
-								int offsetStart = (int) marker.getAttribute(IMarker.CHAR_START);
-								int offsetEnd = (int) marker.getAttribute(IMarker.CHAR_END);
-								if (offset >= offsetStart && offset <= offsetEnd) {
-									/*Use the RAssistProcessor to get the available proposals!*/
-									ICompletionProposal[] proposals = rAssist.computeQuickAssistProposals(new InvocationContext(offsetStart, offsetEnd - offsetStart, rEditor.getViewer()));
-									if (proposals != null) {
-										for (int i = 0; i < proposals.length; i++) {
-											System.out.println(proposals[i].getDisplayString());
-											Display display = Util.getDisplay();
-											display.asyncExec(new Runnable() {
-
-												public void run() {
-													proposals[0].apply(rEditor.getViewer().getDocument());
-												}
-											});
-										}
-									}
-								}
-
-							}
-						}
-					} catch (CoreException e) {
-
-						e.printStackTrace();
-					}
-				}
-
-				// System.out.println(annotation.getText());
-			}
+			
+			openPopupHoverTable(textViewer, offset);
 
 			/* Test if a QuickFix is available! */
 			// triggerQuickFixFromOffset(offset);
@@ -446,81 +402,153 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 		}
 
-		/*
-		 * Triggers a QuickFix action if the hover offset is matching a marker!
-		 */
-		/*private void triggerQuickFixFromOffset(int offset) {
-
-			
-			 * Workaround to close the QuickFix window to avoid the display of
-			 * the old QuickFix!!
-			 
+		private void openPopupHoverTable(ITextViewer textViewer, int offset) {
+			/*Delete the previous hoover popup table!*/
 			Display dis = Util.getDisplay();
 			dis.asyncExec(new Runnable() {
 
 				public void run() {
-					Event event = new Event();
-					event.type = SWT.KeyDown;
-					event.keyCode = SWT.ESC;
-					// event.character='[';
-					dis.post(event);
-					try {
-						Thread.sleep(10);
-					} catch (InterruptedException e) {
+					if (hoverTable != null) {
+						if (hoverTable.getShell().isDisposed() == false) {
+
+							hoverTable.getShell().setVisible(false);
+						}
 					}
-					event.type = SWT.KeyUp;
-					dis.post(event);
 				}
 			});
 
-			IResource resource = (IResource) rEditor.getEditorInput().getAdapter(IResource.class);
 
-			IMarker[] markersfind = findMyMarkers(resource);
+			IAnnotationModel model = ((SourceViewer) textViewer).getAnnotationModel();
 
-			for (int i = 0; i < markersfind.length; i++) {
-				try {
+			Iterator<Annotation> iter = model.getAnnotationIterator();
+			while (iter.hasNext()) {
+				Annotation annotation = iter.next();
+				if (annotation.isMarkedDeleted())
+					continue;
 
-					 QuickFix produced in RAssistProcessor! 
-					if (markersfind != null && markersfind.length > 0) {
-						int charStart = (int) markersfind[i].getAttribute(IMarker.CHAR_START);
-						int charStop = (int) markersfind[i].getAttribute(IMarker.CHAR_END);
+				if (annotation instanceof MarkerAnnotation) {
+					IMarker marker = ((MarkerAnnotation) annotation).getMarker();
+					try {
+						if (marker.exists()) {
+							/*
+							 * There is a warning or error else null is
+							 * returned, see RAssistProcessor!
+							 */
+							if (marker.getAttribute(IMarker.TEXT) != null) {
+								/* Get String error code or text is 'NA'! */
+								// System.out.println(offset+"
+								// "+(int)marker.getAttribute(IMarker.CHAR_START));
+								int offsetStart = (int) marker.getAttribute(IMarker.CHAR_START);
+								int offsetEnd = (int) marker.getAttribute(IMarker.CHAR_END);
+								if (offset >= offsetStart && offset <= offsetEnd) {
+									/*
+									 * Use the RAssistProcessor to get the
+									 * available proposals!
+									 */
+									ICompletionProposal[] proposals = rAssist.computeQuickAssistProposals(new InvocationContext(offsetStart, offsetEnd - offsetStart, rEditor.getViewer()));
+									if (proposals != null) {
+										for (int i = 0; i < proposals.length; i++) {
+											// System.out.println(proposals[i].getDisplayString());
 
-						if (charStart <= offset && charStop >= offset) {
+										}
+										Display display = Util.getDisplay();
+										display.asyncExec(new Runnable() {
 
-							selectedMarker = markersfind[i];
+											public void run() {
+												if (hoverTable != null) {
+													hoverTable.getShell().dispose();
+												}
+												StyledText sh = rEditor.getViewer().getTextWidget();
+												Font f = sh.getFont();
 
-							ITextOperationTarget operation = (ITextOperationTarget) rEditor.getAdapter(ITextOperationTarget.class);
-
-							final int opCode = ISourceViewer.QUICK_ASSIST;
-
-							Display display = Util.getDisplay();
-							display.asyncExec(new Runnable() {
-
-								public void run() {
-
-									if (operation != null && operation.canDoOperation(opCode)) {
-
-										// rEditor.getViewer().setSelection(new
-										// TextSelection(charStart, charStop -
-										// charStart),false);
-										rEditor.selectAndReveal(charStart, charStop - charStart);
-										// rEditor.getViewer().setSelectedRange(charStart,
-										// charStop - charStart);
-										operation.doOperation(opCode);
+												int height = f.getFontData()[0].getHeight();
+												Point poi = sh.getLocationAtOffset(offset);
+												poi = sh.toDisplay(poi);
+												int locx = poi.x;
+												int locy = poi.y;
+												hoverTable = new RHoverQuickFixTable(Util.getShell(), rEditor, proposals);
+												rEditor.setRHooverPopupShell(hoverTable.getShell());
+												Rectangle rect = new Rectangle(locx, locy - height - 150, 300, 200);
+												hoverTable.open(rect);
+											}
+										});
 
 									}
 								}
-							});
-						}
 
+							} 
+						}
+					} catch (CoreException e) {
+
+						e.printStackTrace();
 					}
-				} catch (CoreException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				} else {
+
 				}
 
+				// System.out.println(annotation.getText());
 			}
-		}*/
+		}
+
+		/*
+		 * Triggers a QuickFix action if the hover offset is matching a marker!
+		 */
+		/*
+		 * private void triggerQuickFixFromOffset(int offset) {
+		 * 
+		 * 
+		 * Workaround to close the QuickFix window to avoid the display of the
+		 * old QuickFix!!
+		 * 
+		 * Display dis = Util.getDisplay(); dis.asyncExec(new Runnable() {
+		 * 
+		 * public void run() { Event event = new Event(); event.type =
+		 * SWT.KeyDown; event.keyCode = SWT.ESC; // event.character='[';
+		 * dis.post(event); try { Thread.sleep(10); } catch
+		 * (InterruptedException e) { } event.type = SWT.KeyUp; dis.post(event);
+		 * } });
+		 * 
+		 * IResource resource = (IResource)
+		 * rEditor.getEditorInput().getAdapter(IResource.class);
+		 * 
+		 * IMarker[] markersfind = findMyMarkers(resource);
+		 * 
+		 * for (int i = 0; i < markersfind.length; i++) { try {
+		 * 
+		 * QuickFix produced in RAssistProcessor! if (markersfind != null &&
+		 * markersfind.length > 0) { int charStart = (int)
+		 * markersfind[i].getAttribute(IMarker.CHAR_START); int charStop = (int)
+		 * markersfind[i].getAttribute(IMarker.CHAR_END);
+		 * 
+		 * if (charStart <= offset && charStop >= offset) {
+		 * 
+		 * selectedMarker = markersfind[i];
+		 * 
+		 * ITextOperationTarget operation = (ITextOperationTarget)
+		 * rEditor.getAdapter(ITextOperationTarget.class);
+		 * 
+		 * final int opCode = ISourceViewer.QUICK_ASSIST;
+		 * 
+		 * Display display = Util.getDisplay(); display.asyncExec(new Runnable()
+		 * {
+		 * 
+		 * public void run() {
+		 * 
+		 * if (operation != null && operation.canDoOperation(opCode)) {
+		 * 
+		 * // rEditor.getViewer().setSelection(new // TextSelection(charStart,
+		 * charStop - // charStart),false); rEditor.selectAndReveal(charStart,
+		 * charStop - charStart); //
+		 * rEditor.getViewer().setSelectedRange(charStart, // charStop -
+		 * charStart); operation.doOperation(opCode);
+		 * 
+		 * } } }); }
+		 * 
+		 * } } catch (CoreException e) { // TODO Auto-generated catch block
+		 * e.printStackTrace(); }
+		 * 
+		 * } }
+		 */
 
 		String readFile(String path, Charset encoding) throws IOException {
 			byte[] encoded = Files.readAllBytes(Paths.get(path));
