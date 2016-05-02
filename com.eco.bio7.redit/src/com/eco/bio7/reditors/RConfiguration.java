@@ -447,10 +447,11 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 									 */
 									ICompletionProposal[] proposals = rAssist.computeQuickAssistProposals(new InvocationContext(offsetStart, offsetEnd - offsetStart, rEditor.getViewer()));
 									if (proposals != null) {
-										for (int i = 0; i < proposals.length; i++) {
+										/*for (int i = 0; i < proposals.length; i++) {
 											// System.out.println(proposals[i].getDisplayString());
 
-										}
+										}*/
+										System.out.println(proposals.length);
 										Display display = Util.getDisplay();
 										display.asyncExec(new Runnable() {
 

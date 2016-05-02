@@ -24,6 +24,7 @@ import com.eco.bio7.reditor.antlr.RParser;
 import com.eco.bio7.reditor.antlr.UnderlineListener;
 import com.eco.bio7.reditor.antlr.ref.RRefPhaseListen;
 import com.eco.bio7.reditors.REditor;
+import com.eco.bio7.rpreferences.template.CalculateRProposals;
 
 import javafx.util.Pair;
 
@@ -123,7 +124,26 @@ public class RQuickFixSolutions {
 				String[] splitBuffScopedFun = buffScopedFunctions.toString().split(",");
 
 				List<Pair<String, Double>> words = new ArrayList<Pair<String, Double>>();
-
+				List<Pair<String, Double>> proposals = new ArrayList<Pair<String, Double>>();
+				
+				/*First we add the proposals function from already loaded packages and the sort them!*/
+				String[] statistics = CalculateRProposals.getStatistics();
+				for (int i = 0; i < statistics.length; i++) {
+					/* Calculate the LevenShtein distance! */
+					double dist = Levenshtein.getLevenshteinDistance(tokenText, statistics[i]);
+					/* Calculate as percent! */
+					double max = Math.max(tokenText.length(), statistics[i].length());
+					double perct = round(1.0 - (dist / max), 2);
+					/* Add to a Pair to sort the distances! */
+					proposals.add(new Pair<String, Double>(statistics[i], perct));
+				}
+				/* Sort the Levenshtein distances in descending order! */
+				sort(proposals);
+				/*We only add 10 sorted functions from the packages to the final suggestions!*/
+				for (int i = 0; i < 10; i++) {
+					words.add(proposals.get(i));
+				}
+                /*Now we add the local defined functions and sort them!*/
 				for (int i = 0; i < splitBuffScopedFun.length; i++) {
 					/* Calculate the LevenShtein distance! */
 					double dist = Levenshtein.getLevenshteinDistance(tokenText, splitBuffScopedFun[i]);
@@ -133,19 +153,9 @@ public class RQuickFixSolutions {
 					/* Add to a Pair to sort the distances! */
 					words.add(new Pair<String, Double>(splitBuffScopedFun[i], perct));
 				}
+				
 				/* Sort the Levenshtein distances in descending order! */
-				words.sort(new Comparator<Pair<String, Double>>() {
-					@Override
-					public int compare(Pair<String, Double> levPair1, Pair<String, Double> levPair2) {
-						if (levPair1.getValue() > levPair2.getValue()) {
-							return -1;
-						} else if (levPair1.getValue().equals(levPair2.getValue())) {
-							return 0;
-						} else {
-							return 1;
-						}
-					}
-				});
+				sort(words);
 
 				prop = new ICompletionProposal[words.size() + 1];
 				/* First proposal to create a function! */
@@ -218,11 +228,27 @@ public class RQuickFixSolutions {
 		}
 		return prop;
 	}
+	
+	public void sort(List<Pair<String, Double>> list){
+		list.sort(new Comparator<Pair<String, Double>>() {
+			@Override
+			public int compare(Pair<String, Double> levPair1, Pair<String, Double> levPair2) {
+				if (levPair1.getValue() > levPair2.getValue()) {
+					return -1;
+				} else if (levPair1.getValue().equals(levPair2.getValue())) {
+					return 0;
+				} else {
+					return 1;
+				}
+			}
+		});
+	}
 
 	/*
 	 * From:
 	 * http://stackoverflow.com/questions/2808535/round-a-double-to-2-decimal-
 	 * places?lq=1
+	 * author: jonik : http://stackoverflow.com/users/56285/jonik
 	 */
 	public static double round(double value, int places) {
 		if (places < 0)

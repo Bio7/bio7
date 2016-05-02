@@ -362,6 +362,25 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
           name="R Plot Preferences">
     </command>
  </extension>
+ 
+ <extension
+       id="com.eco.bio7.reditor.rserve.refresh.packages"
+       point="org.eclipse.ui.bindings">
+    <key
+          commandId="com.eco.bio7.reditor.rserve.refresh.packages"
+          contextId="org.eclipse.ui.contexts.window"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+ALT+R">
+    </key>
+ </extension>
+ <extension
+       point="org.eclipse.ui.commands">
+    <command
+          description="Refresh the R packages for code completion"
+          id="com.eco.bio7.reditor.rserve.refresh.packages"
+          name="Refresh R Package Completion">
+    </command>
+ </extension>
    
 
 </plugin>

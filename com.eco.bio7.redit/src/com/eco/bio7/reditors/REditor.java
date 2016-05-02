@@ -99,6 +99,7 @@ import org.rosuda.REngine.Rserve.RConnection;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.actions.OpenPlotPreferences;
 import com.eco.bio7.reditor.actions.OpenPreferences;
+import com.eco.bio7.reditor.actions.RefreshLoadedPackagesForCompletion;
 import com.eco.bio7.reditor.actions.UnsetComment;
 import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditor.outline.REditorLabelProvider;
@@ -127,6 +128,8 @@ public class REditor extends TextEditor {
 	private Action refactor;
 
 	private OpenPreferences preferences;
+	
+	private RefreshLoadedPackagesForCompletion reloadPackages;
 
 	private OpenPlotPreferences plotPreferences;
 
@@ -733,6 +736,8 @@ public class REditor extends TextEditor {
 		menu.add(new Separator());
 		addAction(menu, "Refactor");
 		menu.add(new Separator());
+		addAction(menu, "Reload R packages for Completion");
+		menu.add(new Separator());
 		addAction(menu, "R Preferences");
 		menu.add(new Separator());
 		addAction(menu, "R Plot Preferences");
@@ -781,6 +786,8 @@ public class REditor extends TextEditor {
 		 * ,PlatformUI.getWorkbench().getActiveWorkbenchWindow());
 		 * setAction("Refactor", refactor);
 		 */
+		reloadPackages = new com.eco.bio7.reditor.actions.RefreshLoadedPackagesForCompletion();
+		setAction("Reload R packages for Completion", reloadPackages);		
 
 		preferences = new com.eco.bio7.reditor.actions.OpenPreferences();
 		setAction("R Preferences", preferences);
