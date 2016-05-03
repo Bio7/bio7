@@ -357,9 +357,9 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
  <extension
        point="org.eclipse.ui.commands">
     <command
-          description="R Plot Preferences"
+          description="Plot Preferences"
           id="com.eco.bio7.reditor.rserve.plot.preferences"
-          name="R Plot Preferences">
+          name="Plot Preferences">
     </command>
  </extension>
  
@@ -376,9 +376,66 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
  <extension
        point="org.eclipse.ui.commands">
     <command
-          description="Refresh the R packages for code completion"
+          description="Refresh Package Completion"
           id="com.eco.bio7.reditor.rserve.refresh.packages"
-          name="Refresh R Package Completion">
+          name="Refresh Package Completion">
+    </command>
+ </extension>
+ 
+ <extension
+       id="com.eco.bio7.r_editor_preferences"
+       point="org.eclipse.ui.bindings">
+    <key
+          commandId="com.eco.bio7.r_editor_preferences"
+          contextId="org.eclipse.ui.contexts.window"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+ALT+T">
+    </key>
+ </extension>
+ <extension
+       point="org.eclipse.ui.commands">
+    <command
+          description="Open Font Preferences"
+          id="com.eco.bio7.r_editor_preferences"
+          name="Open Font Preferences">
+    </command>
+ </extension>
+ 
+ <extension
+       id="com.eco.bio7.r_editor_set_comment"
+       point="org.eclipse.ui.bindings">
+    <key
+          commandId="com.eco.bio7.r_editor_set_comment"
+          contextId="org.eclipse.ui.contexts.window"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+#">
+    </key>
+ </extension>
+ <extension
+       point="org.eclipse.ui.commands">
+    <command
+          description="Add Comment(s)"
+          id="com.eco.bio7.r_editor_set_comment"
+          name="Add Comment(s)">
+    </command>
+ </extension>
+ 
+ <extension
+       id="com.eco.bio7.r_editor_unset_comment"
+       point="org.eclipse.ui.bindings">
+    <key
+          commandId="com.eco.bio7.r_editor_unset_comment"
+          contextId="org.eclipse.ui.contexts.window"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="Alt+#">
+    </key>
+ </extension>
+ <extension
+       point="org.eclipse.ui.commands">
+    <command
+          description="Remove Comment(s)"
+          id="com.eco.bio7.r_editor_unset_comment"
+          name="Remove Comment(s)">
     </command>
  </extension>
    

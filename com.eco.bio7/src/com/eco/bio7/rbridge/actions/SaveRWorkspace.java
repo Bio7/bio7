@@ -29,6 +29,7 @@ public class SaveRWorkspace extends Action {
 	public SaveRWorkspace(String text, IWorkbenchWindow window) {
 		super(text);
 		this.window = window;
+		setActionDefinitionId("com.eco.bio7.save_r_workspace2");
 		setId("com.eco.bio7.save_r_workspace2");
 
 	}

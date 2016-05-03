@@ -10,12 +10,12 @@ public class OpenPlotPreferences extends Action {
 
 	
 
-	public OpenPlotPreferences() {
-		super("R Plot Preferences");
+	public OpenPlotPreferences(String text) {
+		super(text);
 		setActionDefinitionId("com.eco.bio7.reditor.rserve.plot.preferences");
 		setId("com.eco.bio7.reditor.plot.preferences");
 
-		setText("R Plot Preferences");
+		//setText("R Plot Preferences");
 
 	}
 

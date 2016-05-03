@@ -34,6 +34,7 @@ public class ClearRWorkspace extends Action {
 	public ClearRWorkspace(String text, IWorkbenchWindow window) {
 		super(text);
 		this.window = window;
+		setActionDefinitionId("com.eco.bio7.clear_r_workspace");
 		setId("com.eco.bio7.clear_r_workspace");
 
 	}

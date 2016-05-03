@@ -238,6 +238,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 	private GenerateControllerAction generateControllerAction;
 
+	private ClearRWorkspace clearWorkspace;
+
 	public ApplicationActionBarAdvisor(IActionBarConfigurer configurer) {
 		super(configurer);
 		store = Bio7Plugin.getDefault().getPreferenceStore();
@@ -415,6 +417,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		saveR = new SaveRWorkspace("Save Workspace", window);
 		register(saveR);
+		
+		clearWorkspace=new ClearRWorkspace("Remove all objects", window);
+		register(clearWorkspace);
 
 		openBrowser = new OpenBio7BrowserAction("Bio7 Internet", window);
 		register(openBrowser);
@@ -822,7 +827,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		rMenu.add(new Separator());
 		rMenu.add(clipboardRValues);
 		rMenu.add(new Separator());
-		rMenu.add(new ClearRWorkspace("Remove all objects", window2));
+		rMenu.add(clearWorkspace);
 		rMenu.add(new Separator());
 		rMenu.add(installRPackage);
 		rMenu.add(loadRLibrary);

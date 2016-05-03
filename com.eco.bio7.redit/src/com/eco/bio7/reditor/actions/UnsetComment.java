@@ -23,7 +23,7 @@ public class UnsetComment extends Action {
 	public UnsetComment(String text, IWorkbenchWindow window) {
 		super(text);
 		this.window = window;
-
+		setActionDefinitionId("com.eco.bio7.r_editor_unset_comment");
 	}
 
 	public void run() {

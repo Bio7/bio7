@@ -736,11 +736,11 @@ public class REditor extends TextEditor {
 		menu.add(new Separator());
 		addAction(menu, "Refactor");
 		menu.add(new Separator());
-		addAction(menu, "Reload R packages for Completion");
+		addAction(menu, "Reload Packages Completion");
 		menu.add(new Separator());
-		addAction(menu, "R Preferences");
+		addAction(menu, "Font Preferences");
 		menu.add(new Separator());
-		addAction(menu, "R Plot Preferences");
+		addAction(menu, "Plot Preferences");
 
 	}
 
@@ -775,10 +775,10 @@ public class REditor extends TextEditor {
 		 */
 
 		setcomment = new com.eco.bio7.reditor.actions.SetComment("Add Comment", PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-		setAction("Add Comment", setcomment);
+		setAction("Add Comment(s)", setcomment);
 
 		unsetcomment = new com.eco.bio7.reditor.actions.UnsetComment("Remove Comment", PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-		setAction("Remove Comment", unsetcomment);
+		setAction("Remove Comment(s)", unsetcomment);
 
 		/*
 		 * refactor = new
@@ -786,14 +786,14 @@ public class REditor extends TextEditor {
 		 * ,PlatformUI.getWorkbench().getActiveWorkbenchWindow());
 		 * setAction("Refactor", refactor);
 		 */
-		reloadPackages = new com.eco.bio7.reditor.actions.RefreshLoadedPackagesForCompletion();
-		setAction("Reload R packages for Completion", reloadPackages);		
+		reloadPackages = new com.eco.bio7.reditor.actions.RefreshLoadedPackagesForCompletion("Reload Packages Completion");
+		setAction("Reload Packages Completion", reloadPackages);		
 
-		preferences = new com.eco.bio7.reditor.actions.OpenPreferences();
-		setAction("R Preferences", preferences);
+		preferences = new com.eco.bio7.reditor.actions.OpenPreferences("Font Preferences");
+		setAction("Font Preferences", preferences);
 
-		plotPreferences = new com.eco.bio7.reditor.actions.OpenPlotPreferences();
-		setAction("R Plot Preferences", plotPreferences);
+		plotPreferences = new com.eco.bio7.reditor.actions.OpenPlotPreferences("Plot Preferences");
+		setAction("Plot Preferences", plotPreferences);
 
 	}
 

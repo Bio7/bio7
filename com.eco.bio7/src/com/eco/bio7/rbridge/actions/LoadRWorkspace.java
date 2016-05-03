@@ -31,6 +31,7 @@ public class LoadRWorkspace extends Action {
 
 		super(text);
 		this.window = window;
+		setActionDefinitionId("com.eco.bio7.load_r_workspace");
 		setId("com.eco.bio7.load_r_workspace");
 
 	}

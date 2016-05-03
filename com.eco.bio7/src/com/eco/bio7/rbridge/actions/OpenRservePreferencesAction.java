@@ -33,6 +33,7 @@ public class OpenRservePreferencesAction extends Action implements ActionFactory
 
 	public OpenRservePreferencesAction() {
 		super("Rserve");
+		setActionDefinitionId("com.eco.bio7.rserve_openPreferences");
 		setId("com.eco.bio7.r.rserve");
 		setText("Preferences");
 

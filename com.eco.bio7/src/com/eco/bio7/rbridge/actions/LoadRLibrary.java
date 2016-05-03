@@ -20,9 +20,9 @@ public class LoadRLibrary extends Action {
 
 	public LoadRLibrary(String text, IWorkbenchWindow window) {
 		super(text);
-
+		setActionDefinitionId("com.eco.bio7.rserve_loadRLibrary");
 		setId("com.eco.bio7.rserve_loadRLibrary");
-		//setActionDefinitionId("com.eco.bio7.execute_r_load_RLibrary");
+		
 	}
 
 	public void run() {

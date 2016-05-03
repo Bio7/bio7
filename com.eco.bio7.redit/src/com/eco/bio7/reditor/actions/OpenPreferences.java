@@ -10,11 +10,12 @@ public class OpenPreferences extends Action {
 
 	
 
-	public OpenPreferences() {
-		super("Preferences");
-		setId("com.eco.bio7.r_editor_preferences");
+	public OpenPreferences(String text) {
+		super(text);
+		setActionDefinitionId("com.eco.bio7.r_editor_preferences");
+		setId("com.eco.bio7.r_editor_open_preferences");
 
-		setText("R Preferences");
+		
 
 	}
 

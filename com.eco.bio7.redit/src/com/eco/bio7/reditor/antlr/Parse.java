@@ -11,8 +11,10 @@
 package com.eco.bio7.reditor.antlr;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Vector;
 import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.BufferedTokenStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -28,6 +30,8 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.eco.bio7.reditor.antlr.ref.RRefPhaseListen;
+import com.eco.bio7.reditor.antlr.refactor.ExtractInterfaceListener;
+import com.eco.bio7.reditor.antlr.refactor.ParseErrorListener;
 import com.eco.bio7.reditor.outline.REditorOutlineNode;
 import com.eco.bio7.reditors.REditor;
 
@@ -213,6 +217,41 @@ public class Parse {
 		RRefPhaseListen ref = new RRefPhaseListen(tokens, list, parser, offset);
 		walker.walk(ref, tree);
 		return ref;
+	}
+	
+	/* Here we parse the text and test for possible errors! */
+	public boolean parseShellSource(String fullText) {
+		boolean errors;
+		ANTLRInputStream input = new ANTLRInputStream(fullText);
+		RLexer lexer = new RLexer(input);
+		CommonTokenStream tokens = new CommonTokenStream(lexer);
+		//bufferTokenStream = new BufferedTokenStream(lexer);
+		RFilter filter = new RFilter(tokens);
+		filter.removeErrorListeners();
+		filter.stream(); // call start rule: stream
+		tokens.reset();
+		ParseErrorListener parseErrorListener = new ParseErrorListener();
+		RParser parser = new RParser(tokens);
+
+		lexer.removeErrorListeners();
+		// lexer.addErrorListener(li);
+		parser.removeErrorListeners();
+
+		parser.addErrorListener(parseErrorListener);
+
+		RuleContext tree = parser.prog();
+		ParseTreeWalker walker = new ParseTreeWalker(); // create standard
+														// walker
+		ExtractInterfaceListener extractor = new ExtractInterfaceListener(tokens, parser,false);
+		walker.walk(extractor, tree);
+        
+		
+		if (parser.getNumberOfSyntaxErrors() == 0) {
+			errors = false;
+		} else {
+			errors = true;
+		}
+		return errors;
 	}
 
 }

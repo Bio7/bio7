@@ -418,6 +418,66 @@
             id="com.eco.bio7.RMarkdownAction"
             name="Markdown Action">
       </command>
+      <command
+            description="Clear the R workspace"
+            id="com.eco.bio7.clear_r_workspace"
+            name="Clear R workspace">
+      </command>
+      <keyBinding
+            commandId="com.eco.bio7.clear_r_workspace"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="ALT+C">
+      </keyBinding>
+      <command
+            description="Load a R workspace"
+            id="com.eco.bio7.load_r_workspace"
+            name="Load R workspace">
+      </command>
+      <keyBinding
+            commandId="com.eco.bio7.load_r_workspace"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+ALT+L">
+      </keyBinding>
+      <command
+            description="Save a R workspace"
+            id="com.eco.bio7.save_r_workspace2"
+            name="Save R workspace">
+      </command>
+      <keyBinding
+            commandId="com.eco.bio7.save_r_workspace2"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+ALT+S">
+      </keyBinding>
+      <command
+            description="Install R packages"
+            id="com.eco.bio7.rserve_installRPackage"
+            name="Install R packages">
+      </command>
+      <keyBinding
+            commandId="com.eco.bio7.rserve_installRPackage"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+ALT+I">
+      </keyBinding>
+      <command
+            description="Load R packages"
+            id="com.eco.bio7.rserve_loadRLibrary"
+            name="Load R packages">
+      </command>
+      <keyBinding
+            commandId="com.eco.bio7.rserve_loadRLibrary"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+ALT+U">
+      </keyBinding>
+      <command
+            description="Open the R preferences"
+            id="com.eco.bio7.rserve_openPreferences"
+            name="Open R preferences">
+      </command>
+      <keyBinding
+            commandId="com.eco.bio7.rserve_openPreferences"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+ALT+P">
+      </keyBinding>
    </extension>
    <extension
          id="product"

@@ -20,12 +20,10 @@ import com.eco.bio7.util.Util;
 
 public class RefreshLoadedPackagesForCompletion extends Action {
 
-	public RefreshLoadedPackagesForCompletion() {
-		super("Reload R packages for Completion");
+	public RefreshLoadedPackagesForCompletion(String text) {
+		super(text);
 		setActionDefinitionId("com.eco.bio7.reditor.rserve.refresh.packages");
 		setId("com.eco.bio7.reditor.refresh.packages");
-
-		setText("Reload R packages for Completion");
 
 	}
 
