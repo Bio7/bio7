@@ -58,7 +58,7 @@ public class LibreOfficeConnectionJob extends WorkspaceJob {
 				args.add(store.getString(PreferenceConstants.PATH_LIBREOFFICE) + "\\soffice");
 				args.add("-nologo");
 				args.add("-nodefault");
-				args.add("-accept=socket,host=0,port=2002;urp;");
+				args.add("-accept=socket,host=localhost,port=8100;urp;");
 				ProcessBuilder pb = new ProcessBuilder(args);
 				pb.start();
 				// String
@@ -72,16 +72,16 @@ public class LibreOfficeConnectionJob extends WorkspaceJob {
 			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
 				String path = store.getString(PreferenceConstants.PATH_LIBREOFFICE);
 				if (path.isEmpty() == false) {
-					Runtime.getRuntime().exec(path + "/soffice -nologo -nodefault -accept=socket,host=0,port=2002;urp;");
+					Runtime.getRuntime().exec(path + "/soffice -nologo -nodefault -accept=socket,host=localhost,port=8100;urp;");
 				} else {
-					Runtime.getRuntime().exec("soffice -nologo -nodefault -accept=socket,host=0,port=2002;urp;");
+					Runtime.getRuntime().exec("soffice -nologo -nodefault -accept=socket,host=localhost,port=8100;urp;");
 				}
 			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 				String path = store.getString(PreferenceConstants.PATH_LIBREOFFICE);
 				if (path.isEmpty() == false) {
-					Runtime.getRuntime().exec(path + "/soffice -nologo -nodefault -accept=socket,host=0,port=2002;urp;");
+					Runtime.getRuntime().exec(path + "/soffice -nologo -nodefault -accept=socket,host=localhost,port=8100;urp;");
 				} else {
-					Runtime.getRuntime().exec("soffice -nologo -nodefault -accept=socket,host=0,port=2002;urp;");
+					Runtime.getRuntime().exec("soffice -nologo -nodefault -accept=socket,host=localhost,port=8100;urp;");
 				}
 			}
 		} catch (IOException e1) {
@@ -171,7 +171,7 @@ public class LibreOfficeConnectionJob extends WorkspaceJob {
 	private void doconnect() {
 
 		try {
-			LibreOffice.setXRemoteServiceManager(this.getRemoteServiceManager("uno:socket,host=localhost,port=2002;urp;StarOffice.ServiceManager"));
+			LibreOffice.setXRemoteServiceManager(this.getRemoteServiceManager("uno:socket,host=localhost,port=8100;urp;StarOffice.ServiceManager"));
 		} catch (Exception e) {
 
 		}

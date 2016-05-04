@@ -35,6 +35,9 @@ import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
+import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.jface.fieldassist.FieldDecoration;
+import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -76,6 +79,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FillLayout;
@@ -131,6 +135,7 @@ import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.plot.RPlot;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
+import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.util.Util;
 import com.swtdesigner.ResourceManager;
@@ -186,6 +191,8 @@ public class RShellView extends ViewPart {
 	private CTabItem plotTabItem;
 	private Button loadButton_1;
 	private Button fontButton;
+	protected boolean cmdError;
+	protected Parse parse;
 	private static RShellView instance;
 
 	public RShellView() {
@@ -292,10 +299,23 @@ public class RShellView extends ViewPart {
 		gd_text.heightHint = 49;
 		gd_text.widthHint = 570;
 		text.setLayoutData(gd_text);
+		final ControlDecoration txtIndication = new ControlDecoration(text, SWT.TOP | SWT.LEFT);
+		FieldDecoration textDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_ERROR);
+		Image img = textDecoration.getImage();
+		txtIndication.setImage(img);
+		txtIndication.setDescriptionText("Parse error! Please enter valid R commands!");
+		// hiding it initially
+		txtIndication.hide();
+
 		text.addListener(SWT.DefaultSelection, new Listener() {
 			public void handleEvent(Event e) {
-				evaluate();
-
+				if (RServe.isAliveDialog()) {
+					if (cmdError == false) {
+						evaluate();
+					} else {
+						Bio7Dialog.message("Parser error!\n\nPlease enter valid R commands!");
+					}
+				}
 			}
 		});
 		text.addKeyListener(new KeyListener() {
@@ -339,22 +359,36 @@ public class RShellView extends ViewPart {
 					 * RState.setBusy(false); } else {
 					 * 
 					 * RState.setBusy(false); } } }); // job.setSystem(true);
-					 * job.schedule(); } else {
-					 * Bio7Dialog.message("Rserve is busy!"); } }
+					 * job.schedule(); } else { Bio7Dialog.message(
+					 * "Rserve is busy!"); } }
 					 */
 
 				}
-				
-				
-				
 
 			}
 
 			@Override
 			public void keyReleased(KeyEvent e) {
-				// TODO Auto-generated method stub
-
+				Text text = (Text) e.getSource();
+				String command = text.getText();
+				/*
+				 * Here we parse the command(s) which comes from the textfield!
+				 * Parsing is very fast so we don't need a text listener delay
+				 * here. Each key stroke is evaluated!
+				 */
+				if (parse == null) {
+					parse = new Parse(null);
+					cmdError = parse.parseShellSource(command);
+				} else {
+					cmdError = parse.parseShellSource(command);
+				}
+				if (cmdError) {
+					txtIndication.show();
+				} else {
+					txtIndication.hide();
+				}
 			}
+
 		});
 
 		adapter = new ContentProposalAdapter(text, textAdapter, prov, stroke, null);
@@ -369,8 +403,13 @@ public class RShellView extends ViewPart {
 		btnEvaluate.setText("Evaluate");
 		btnEvaluate.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				evaluate();
-
+				if (RServe.isAliveDialog()) {
+					if (cmdError == false) {
+						evaluate();
+					} else {
+						Bio7Dialog.message("Parser error!\n\nPlease enter valid R commands!");
+					}
+				}
 			}
 
 		});
@@ -769,8 +808,8 @@ public class RShellView extends ViewPart {
 				 * = store.getString("InstallLocation"); String server =
 				 * store.getString(PreferenceConstants.PACKAGE_R_SERVER);
 				 * 
-				 * RConnection c = RServe.getConnection(); try {
-				 * c.eval("try(update.packages(repos =\"" + server +
+				 * RConnection c = RServe.getConnection(); try { c.eval(
+				 * "try(update.packages(repos =\"" + server +
 				 * "\",ask=FALSE));"); } catch (RserveException e1) {
 				 * 
 				 * e1.printStackTrace(); }
@@ -797,8 +836,8 @@ public class RShellView extends ViewPart {
 				 * c.eval("try(remove.packages(\"" + selectedPackage + "\"))");
 				 * } catch (RserveException ex) {
 				 * 
-				 * ex.printStackTrace(); }
-				 * System.out.println("Removed library "+selectedPackage);
+				 * ex.printStackTrace(); } System.out.println("Removed library "
+				 * +selectedPackage);
 				 * 
 				 * } else { Bio7Dialog.message("Rserve is busy!"); } }
 				 * 
@@ -1242,7 +1281,8 @@ public class RShellView extends ViewPart {
 										}
 									}
 									buf.append(")");
-									// "{length("+selected+")}else {dim("+selected+")}").asStrings();
+									// "{length("+selected+")}else
+									// {dim("+selected+")}").asStrings();
 								} catch (REXPMismatchException e1) {
 									// TODO Auto-generated catch block
 									e1.printStackTrace();
@@ -1388,16 +1428,13 @@ public class RShellView extends ViewPart {
 					if (RState.isBusy() == false) {
 						String[] v = null;
 						// List all variables in the R workspace!
-						
-						
 
 						try {
-							
-							RConnection con=RServe.getConnection();
-							
+
+							RConnection con = RServe.getConnection();
+
 							con.eval(".bio7TempVarEnvironment <- new.env()");
-							
-							
+
 							con.eval(".bio7TempVarEnvironment$workspVar<-NULL;for(i in 1:length(ls())){if(is.matrix(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}}");
 							x = RServe.getConnection().eval(".bio7TempVarEnvironment$workspVar");
 							if (x.isNull() == false) {
@@ -1443,8 +1480,8 @@ public class RShellView extends ViewPart {
 						// List all variables in the R workspace!
 
 						try {
-							RConnection con=RServe.getConnection();
-							
+							RConnection con = RServe.getConnection();
+
 							con.eval(".bio7TempVarEnvironment <- new.env()");
 							con.eval(".bio7TempVarEnvironment$workspVar<-NULL;for(i in 1:length(ls())){if(is.vector(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}}");
 							x = RServe.getConnection().eval(".bio7TempVarEnvironment$workspVar");
@@ -1492,8 +1529,8 @@ public class RShellView extends ViewPart {
 						// List all variables in the R workspace!
 
 						try {
-							RConnection con=RServe.getConnection();
-							
+							RConnection con = RServe.getConnection();
+
 							con.eval(".bio7TempVarEnvironment <- new.env()");
 							con.eval(".bio7TempVarEnvironment$workspVar<-NULL;for(i in 1:length(ls())){if(is.function(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}}");
 							x = RServe.getConnection().eval(".bio7TempVarEnvironment$workspVar");
@@ -1540,8 +1577,8 @@ public class RShellView extends ViewPart {
 						// List all variables in the R workspace!
 
 						try {
-							RConnection con=RServe.getConnection();
-							
+							RConnection con = RServe.getConnection();
+
 							con.eval(".bio7TempVarEnvironment <- new.env()");
 							con.eval(".bio7TempVarEnvironment$workspVar<-NULL;for(i in 1:length(ls())){if(is.factor(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}}");
 							x = RServe.getConnection().eval(".bio7TempVarEnvironment$workspVar");
@@ -1588,8 +1625,8 @@ public class RShellView extends ViewPart {
 						// List all variables in the R workspace!
 
 						try {
-							RConnection con=RServe.getConnection();
-							
+							RConnection con = RServe.getConnection();
+
 							con.eval(".bio7TempVarEnvironment <- new.env()");
 							con.eval(".bio7TempVarEnvironment$workspVar<-NULL;for(i in 1:length(ls())){if(is.data.frame(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}}");
 							x = RServe.getConnection().eval(".bio7TempVarEnvironment$workspVar");
@@ -1787,7 +1824,7 @@ public class RShellView extends ViewPart {
 			}
 		});
 		newItemMenuItem_2.setText("To Matrix");
-		
+
 		MenuItem mntmToList = new MenuItem(menu_1, SWT.NONE);
 		mntmToList.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -1817,12 +1854,12 @@ public class RShellView extends ViewPart {
 									String input = inp.getValue();
 									try {
 										c.eval("try(" + input + "<-list())");
-										c.eval("try(" + input + "[[1]]<-"+ selected[0] +")");
+										c.eval("try(" + input + "[[1]]<-" + selected[0] + ")");
 									} catch (RserveException e1) {
 
 										e1.printStackTrace();
 									}
-									
+
 									RServe.printJob("" + input + "");
 								}
 
@@ -1852,7 +1889,7 @@ public class RShellView extends ViewPart {
 									}
 									for (int i = 0; i < selected.length; i++) {
 										try {
-											c.eval("try(" + input + "[["+(i+1)+"]]<-"+ selected[i] +")");
+											c.eval("try(" + input + "[[" + (i + 1) + "]]<-" + selected[i] + ")");
 										} catch (RserveException e1) {
 
 											e1.printStackTrace();
@@ -1871,7 +1908,7 @@ public class RShellView extends ViewPart {
 
 					}
 				}
-				
+
 			}
 		});
 		mntmToList.setText("To List of Objects");
@@ -2643,31 +2680,32 @@ public class RShellView extends ViewPart {
 
 	private void evaluate() {
 		try {
-			String tex=text.getText();
+			String tex = text.getText();
 			if (tex != null) {
-				/*Omit escape sequences. Lead to an error if a windows path is specified wrong by chance!*/
+				/*
+				 * Omit escape sequences. Lead to an error if a windows path is
+				 * specified wrong by chance!
+				 */
 				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
-				tex=tex.replace("\\", "/");
+					tex = tex.replace("\\", "/");
 				}
 				System.out.println(tex);
-				if (RServe.isAliveDialog()) {
-					
-					
-					if (!tex.contains(";")) {
-						com.eco.bio7.rbridge.RServe.printJob(tex);
-						System.out.println();
-					} else {
-						
-						//See: http://stackoverflow.com/questions/1757065/java-splitting-a-comma-separated-string-but-ignoring-commas-in-quotes
-				        //Changed to exclude quoted semicolons!
-						String[] t = tex.split(";(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1);
-						/* Send multiple expressions and evaluate them! */
-						com.eco.bio7.rbridge.RServe.printJobs(t);
-						/* Linebreak in the job for multiple expressions! */
 
-					}
+				if (!tex.contains(";")) {
+					com.eco.bio7.rbridge.RServe.printJob(tex);
+					System.out.println();
+				} else {
+
+					// See:
+					// http://stackoverflow.com/questions/1757065/java-splitting-a-comma-separated-string-but-ignoring-commas-in-quotes
+					// Changed to exclude quoted semicolons!
+					String[] t = tex.split(";(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+					/* Send multiple expressions and evaluate them! */
+					com.eco.bio7.rbridge.RServe.printJobs(t);
+					/* Linebreak in the job for multiple expressions! */
 
 				}
+
 			}
 		} catch (RuntimeException ev) {
 
@@ -2781,12 +2819,12 @@ public class RShellView extends ViewPart {
 				// List all variables in the R workspace!
 
 				try {
-					RConnection con=RServe.getConnection();
-					
+					RConnection con = RServe.getConnection();
+
 					con.eval(".bio7TempVarEnvironment <- new.env()");
 					con.eval(".bio7TempVarEnvironment$workspVar <-ls()");
-					
-					//RServe.getConnection().eval("try(.varRWorkspaceObjects<-ls())");
+
+					// RServe.getConnection().eval("try(.varRWorkspaceObjects<-ls())");
 					x = con.eval("try(.bio7TempVarEnvironment$workspVar)");
 					try {
 						v = x.asStrings();
@@ -2795,7 +2833,7 @@ public class RShellView extends ViewPart {
 						e1.printStackTrace();
 					}
 					con.eval("try(rm(workspVar,envir=.bio7TempVarEnvironment))");
-					
+
 				} catch (RserveException e1) {
 
 					e1.printStackTrace();
@@ -2845,11 +2883,11 @@ public class RShellView extends ViewPart {
 					// List all variables in the R workspace!
 
 					try {
-						RConnection con=RServe.getConnection();
-						
+						RConnection con = RServe.getConnection();
+
 						con.eval(".bio7TempVarEnvironment <- new.env()");
 						con.eval(".bio7TempVarEnvironment$workspVar <-ls()");
-						//RServe.getConnection().eval(".varRWorkspaceObject<-ls()");
+						// RServe.getConnection().eval(".varRWorkspaceObject<-ls()");
 						x = RServe.getConnection().eval("try(.bio7TempVarEnvironment$workspVar)");
 						try {
 							v = x.asStrings();
@@ -2887,8 +2925,8 @@ public class RShellView extends ViewPart {
 				// List all variables in the R workspace!
 
 				try {
-					RConnection con=RServe.getConnection();
-					
+					RConnection con = RServe.getConnection();
+
 					con.eval(".bio7TempVarEnvironment <- new.env()");
 					con.eval("try(.bio7TempVarEnvironment$workspaceRPackages<-.packages())");
 					pack = RServe.getConnection().eval("try(.bio7TempVarEnvironment$workspaceRPackages)");
@@ -2899,7 +2937,7 @@ public class RShellView extends ViewPart {
 						e1.printStackTrace();
 					}
 					con.eval("try(rm(workspaceRPackages,envir=.bio7TempVarEnvironment))");
-					
+
 				} catch (RserveException e1) {
 
 					e1.printStackTrace();
