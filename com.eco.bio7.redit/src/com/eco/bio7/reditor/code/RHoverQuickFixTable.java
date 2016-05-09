@@ -29,6 +29,7 @@ public class RHoverQuickFixTable {
 	private String result;
 	private REditor rEditor;
 	private ICompletionProposal[] proposals;
+	private String message;
 
 	/**
 	 * Creates a PopupList above the specified shell.
@@ -37,8 +38,8 @@ public class RHoverQuickFixTable {
 	 *            a Shell control which will be the parent of the new instance
 	 *            (cannot be null)
 	 */
-	public RHoverQuickFixTable(Shell parent, REditor rEditor, ICompletionProposal[] proposals) {
-		this(parent, 0, rEditor, proposals);
+	public RHoverQuickFixTable(Shell parent, REditor rEditor, String message, ICompletionProposal[] proposals) {
+		this(parent, 0, rEditor, message, proposals);
 
 	}
 
@@ -53,21 +54,23 @@ public class RHoverQuickFixTable {
 	 * 
 	 * @since 3.0
 	 */
-	public RHoverQuickFixTable(Shell parent, int style, REditor rEditor, ICompletionProposal[] proposals) {
-		this.rEditor = rEditor;
-		this.proposals = proposals;
+	public RHoverQuickFixTable(Shell parent, int style, REditor rEditor, String message, ICompletionProposal[] proposals) {
+
 		int listStyle = SWT.SINGLE | SWT.V_SCROLL;
 		if ((style & SWT.H_SCROLL) != 0)
 			listStyle |= SWT.H_SCROLL;
 
+		this.rEditor = rEditor;
+		this.proposals = proposals;
+		this.message = message;
 		shell = new Shell(parent, checkStyle(style));
-		
+
 		MouseTrackAdapter listener = new MouseEnterExitListener();
-       
+
 		// list = new List(shell, listStyle);
 		table = new Table(shell, listStyle);
 		table.setSize(200, 300);
-		//table.setLinesVisible(true);
+		// table.setLinesVisible(true);
 		table.addMouseTrackListener(listener);
 		// close dialog if user selects outside of the shell
 		shell.addListener(SWT.Deactivate, new Listener() {
@@ -90,17 +93,19 @@ public class RHoverQuickFixTable {
 		// return list selection on Mouse Up or Carriage Return
 		table.addMouseListener(new MouseListener() {
 			public void mouseDoubleClick(MouseEvent e) {
-				int selection = table.getSelectionIndex();
+				if (proposals != null) {
+					int selection = table.getSelectionIndex();
 
-				Display display = Util.getDisplay();
-				display.asyncExec(new Runnable() {
+					Display display = Util.getDisplay();
+					display.asyncExec(new Runnable() {
 
-					public void run() {
-						proposals[selection].apply(rEditor.getViewer().getDocument());
-					}
-				});
+						public void run() {
+							proposals[selection].apply(rEditor.getViewer().getDocument());
+						}
+					});
 
-				shell.setVisible(false);
+					shell.setVisible(false);
+				}
 			}
 
 			public void mouseDown(MouseEvent e) {
@@ -349,11 +354,17 @@ public class RHoverQuickFixTable {
 	 *                </ul>
 	 */
 	public void setItems() {
-		for (int i = 0; i < proposals.length; i++) {
-			TableItem item = new TableItem(table, 0);
-			item.setText(proposals[i].getDisplayString());
-			item.setImage(proposals[i].getImage());
+		if (proposals != null) {
+			for (int i = 0; i < proposals.length; i++) {
+				TableItem item = new TableItem(table, 0);
+				item.setText(proposals[i].getDisplayString());
+				item.setImage(proposals[i].getImage());
 
+			}
+		} else {
+			TableItem item = new TableItem(table, 0);
+			item.setText(message);
+			// item.setImage(proposals[i].getImage());
 		}
 
 		// list.setItems(strings);
@@ -371,13 +382,14 @@ public class RHoverQuickFixTable {
 
 		minimumWidth = width;
 	}
-	class MouseEnterExitListener extends MouseTrackAdapter {
-		  public void mouseEnter(MouseEvent e) {
-		       
-		  }
 
-		  public void mouseExit(MouseEvent arg0) {
-			  shell.setVisible(false);
-		  }
+	class MouseEnterExitListener extends MouseTrackAdapter {
+		public void mouseEnter(MouseEvent e) {
+
 		}
+
+		public void mouseExit(MouseEvent arg0) {
+			shell.setVisible(false);
+		}
+	}
 }

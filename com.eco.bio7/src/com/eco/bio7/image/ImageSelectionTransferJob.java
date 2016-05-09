@@ -4,6 +4,8 @@ import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
+
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Vector;
@@ -167,10 +169,10 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 
 				// ImagePlus imp = WindowManager.getImage(title);
 				imp.setRoi(roiDefault);
-				if (roiDefault != null && !roiDefault.isArea()) {
+				/*if (roiDefault != null && !roiDefault.isArea()) {
 					Bio7Dialog.message("The command require\n" + "an area selection, or no selection.");
 					return;
-				}
+				}*/
 				if (transferType == 0) {
 					valuesDouble = getROIPixelsDouble(imp, roiDefault);
 
@@ -284,8 +286,38 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 		Bio7Dialog.message("Selected Pixels transferred to R!");
 		imp = null;
 	}
-
+	
 	private ArrayList<Double> getROIPixelsDouble(ImagePlus imp, Roi roi) {
+		ImageProcessor ip = imp.getProcessor();
+		ArrayList<Double> values = new ArrayList<Double>();
+		for (Point p : roi.getContainedPoints()) {
+
+			values.add(new Double(ip.getPixelValue(p.x, p.y)));
+		}
+		return values;
+	}
+
+	private ArrayList<Integer> getROIPixelsInteger(ImagePlus imp, Roi roi) {
+		ImageProcessor ip = imp.getProcessor();
+		ArrayList<Integer> values = new ArrayList<Integer>();
+		for (Point p : roi.getContainedPoints()) {
+
+			values.add(new Integer(ip.getPixel(p.x, p.y)));
+		}
+		return values;
+	}
+
+	private ArrayList<Byte> getROIPixelsByte(ImagePlus imp, Roi roi) {
+		ImageProcessor ip = imp.getProcessor();
+		ArrayList<Byte> values = new ArrayList<Byte>();
+		for (Point p : roi.getContainedPoints()) {
+
+			values.add(new Byte((byte) (ip.getPixel(p.x, p.y))));
+		}
+		return values;
+	}
+
+	/*private ArrayList<Double> getROIPixelsDouble(ImagePlus imp, Roi roi) {
 		ImageProcessor ip = imp.getProcessor();
 		ImageProcessor mask = roi != null ? roi.getMask() : null;
 		Rectangle r = roi != null ? roi.getBounds() : new Rectangle(0, 0, ip.getWidth(), ip.getHeight());
@@ -343,7 +375,7 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 			}
 		}
 		return values;
-	}
+	}*/
 
 	public void aboutToRun(IJobChangeEvent event) {
 

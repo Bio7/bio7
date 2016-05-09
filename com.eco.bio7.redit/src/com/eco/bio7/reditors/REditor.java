@@ -775,10 +775,10 @@ public class REditor extends TextEditor {
 		 */
 
 		setcomment = new com.eco.bio7.reditor.actions.SetComment("Add Comment", PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-		setAction("Add Comment(s)", setcomment);
+		setAction("Add Comment", setcomment);
 
 		unsetcomment = new com.eco.bio7.reditor.actions.UnsetComment("Remove Comment", PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-		setAction("Remove Comment(s)", unsetcomment);
+		setAction("Remove Comment", unsetcomment);
 
 		/*
 		 * refactor = new

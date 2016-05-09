@@ -5,6 +5,8 @@ import ij.WindowManager;
 import ij.gui.Roi;
 import ij.plugin.frame.RoiManager;
 import ij.process.ImageProcessor;
+
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Vector;
@@ -106,7 +108,7 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 				});
 
 				if (cancelJob == false) {
-					
+
 					/* Get the image processor of the image ! */
 					ImageProcessor ip = impd.getProcessor();
 					int w = ip.getWidth();
@@ -121,7 +123,10 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
-                   /*Only transfer selected ROI's from the ROI Manager or all if no ROI is selected!*/
+					/*
+					 * Only transfer selected ROI's from the ROI Manager or all
+					 * if no ROI is selected!
+					 */
 					Roi[] r = RoiManager.getInstance().getSelectedRoisAsArray();
 					items = CanvasView.getCanvas_view().tabFolder.getItems();
 					for (int ro = 0; ro < r.length; ro++) {
@@ -155,10 +160,10 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 							});
 							// ImagePlus imp = WindowManager.getImage(title);
 							imp.setRoi(roiDefault);
-							if (roiDefault != null && !roiDefault.isArea()) {
+							/*if (roiDefault != null && !roiDefault.isArea()) {
 								Bio7Dialog.message("The command requires\n" + "an area selection, or no selection.");
 								return;
-							}
+							}*/
 
 							if (transferType == 0) {
 								valuesDouble = getROIPixelsDouble(imp, roiDefault);
@@ -293,63 +298,71 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 
 	private ArrayList<Double> getROIPixelsDouble(ImagePlus imp, Roi roi) {
 		ImageProcessor ip = imp.getProcessor();
-		ImageProcessor mask = roi != null ? roi.getMask() : null;
-		Rectangle r = roi != null ? roi.getBounds() : new Rectangle(0, 0, ip.getWidth(), ip.getHeight());
-
-		int count = 0;
 		ArrayList<Double> values = new ArrayList<Double>();
-		for (int y = 0; y < r.height; y++) {
-			for (int x = 0; x < r.width; x++) {
-				if (mask == null || mask.getPixel(x, y) != 0) {
-					count++;
+		for (Point p : roi.getContainedPoints()) {
 
-					// ip.set(x + r.x, y + r.y, 0);
-					values.add(new Double(ip.getPixelValue(x + r.x, y + r.y)));
-				}
-			}
+			values.add(new Double(ip.getPixelValue(p.x, p.y)));
 		}
 		return values;
 	}
 
 	private ArrayList<Integer> getROIPixelsInteger(ImagePlus imp, Roi roi) {
 		ImageProcessor ip = imp.getProcessor();
-		ImageProcessor mask = roi != null ? roi.getMask() : null;
-		Rectangle r = roi != null ? roi.getBounds() : new Rectangle(0, 0, ip.getWidth(), ip.getHeight());
-
-		int count = 0;
 		ArrayList<Integer> values = new ArrayList<Integer>();
-		for (int y = 0; y < r.height; y++) {
-			for (int x = 0; x < r.width; x++) {
-				if (mask == null || mask.getPixel(x, y) != 0) {
-					count++;
+		for (Point p : roi.getContainedPoints()) {
 
-					// ip.set(x + r.x, y + r.y, 0);
-					values.add(new Integer(ip.getPixel(x + r.x, y + r.y)));
-				}
-			}
+			values.add(new Integer(ip.getPixel(p.x, p.y)));
 		}
 		return values;
 	}
 
 	private ArrayList<Byte> getROIPixelsByte(ImagePlus imp, Roi roi) {
 		ImageProcessor ip = imp.getProcessor();
-		ImageProcessor mask = roi != null ? roi.getMask() : null;
-		Rectangle r = roi != null ? roi.getBounds() : new Rectangle(0, 0, ip.getWidth(), ip.getHeight());
-
-		int count = 0;
 		ArrayList<Byte> values = new ArrayList<Byte>();
-		for (int y = 0; y < r.height; y++) {
-			for (int x = 0; x < r.width; x++) {
-				if (mask == null || mask.getPixel(x, y) != 0) {
-					count++;
+		for (Point p : roi.getContainedPoints()) {
 
-					// ip.set(x + r.x, y + r.y, 0);
-					values.add(new Byte((byte) (ip.getPixel(x + r.x, y + r.y))));
-				}
-			}
+			values.add(new Byte((byte) (ip.getPixel(p.x, p.y))));
 		}
 		return values;
 	}
+
+	/*
+	 * private ArrayList<Double> getROIPixelsDouble(ImagePlus imp, Roi roi) {
+	 * ImageProcessor ip = imp.getProcessor(); ImageProcessor mask = roi != null
+	 * ? roi.getMask() : null; Rectangle r = roi != null ? roi.getBounds() : new
+	 * Rectangle(0, 0, ip.getWidth(), ip.getHeight());
+	 * 
+	 * int count = 0; ArrayList<Double> values = new ArrayList<Double>(); for
+	 * (int y = 0; y < r.height; y++) { for (int x = 0; x < r.width; x++) { if
+	 * (mask == null || mask.getPixel(x, y) != 0) { count++;
+	 * 
+	 * // ip.set(x + r.x, y + r.y, 0); values.add(new Double(ip.getPixelValue(x
+	 * + r.x, y + r.y))); } } } return values; }
+	 * 
+	 * private ArrayList<Integer> getROIPixelsInteger(ImagePlus imp, Roi roi) {
+	 * ImageProcessor ip = imp.getProcessor(); ImageProcessor mask = roi != null
+	 * ? roi.getMask() : null; Rectangle r = roi != null ? roi.getBounds() : new
+	 * Rectangle(0, 0, ip.getWidth(), ip.getHeight());
+	 * 
+	 * int count = 0; ArrayList<Integer> values = new ArrayList<Integer>(); for
+	 * (int y = 0; y < r.height; y++) { for (int x = 0; x < r.width; x++) { if
+	 * (mask == null || mask.getPixel(x, y) != 0) { count++;
+	 * 
+	 * // ip.set(x + r.x, y + r.y, 0); values.add(new Integer(ip.getPixel(x +
+	 * r.x, y + r.y))); } } } return values; }
+	 * 
+	 * private ArrayList<Byte> getROIPixelsByte(ImagePlus imp, Roi roi) {
+	 * ImageProcessor ip = imp.getProcessor(); ImageProcessor mask = roi != null
+	 * ? roi.getMask() : null; Rectangle r = roi != null ? roi.getBounds() : new
+	 * Rectangle(0, 0, ip.getWidth(), ip.getHeight());
+	 * 
+	 * int count = 0; ArrayList<Byte> values = new ArrayList<Byte>(); for (int y
+	 * = 0; y < r.height; y++) { for (int x = 0; x < r.width; x++) { if (mask ==
+	 * null || mask.getPixel(x, y) != 0) { count++;
+	 * 
+	 * // ip.set(x + r.x, y + r.y, 0); values.add(new Byte((byte) (ip.getPixel(x
+	 * + r.x, y + r.y)))); } } } return values; }
+	 */
 
 	public void aboutToRun(IJobChangeEvent event) {
 
@@ -376,9 +389,12 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 	}
 
 	public String correctChars(String name) {
-		/*IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		String st = store.getString(PreferenceConstants.D_OPENOFFICE_HEAD);
-		String[] a = st.split(",");*/
+		/*
+		 * IPreferenceStore store =
+		 * Bio7Plugin.getDefault().getPreferenceStore(); String st =
+		 * store.getString(PreferenceConstants.D_OPENOFFICE_HEAD); String[] a =
+		 * st.split(",");
+		 */
 
 		/*
 		 * Replace the comma since it is the split argument!

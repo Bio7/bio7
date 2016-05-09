@@ -391,8 +391,8 @@ public class RRefPhaseListen extends RBaseListener {
 
 									str.append(ar);
 
-									if (i < formList.size()) {
-										str.append("=,");
+									if (i < formList.size()-1) {
+										str.append(" , ");
 									}
 
 								}
@@ -464,9 +464,10 @@ public class RRefPhaseListen extends RBaseListener {
 								FormContext fo = formList.get(i);
 								TerminalNode ar = fo.ID();
 								str2.append(ar);
-								if (i < formList.size()) {
-									str2.append(" = ,");
+								if (i < formList.size()-1) {
+									str2.append(" ,");
 								}
+								
 
 							}
 

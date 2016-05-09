@@ -289,7 +289,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 			int offset = hoverRegion.getOffset();
 			int length = 0;
 			int minusLength = 0;
-			
+
 			openPopupHoverTable(textViewer, offset);
 
 			/* Test if a QuickFix is available! */
@@ -403,7 +403,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 		}
 
 		private void openPopupHoverTable(ITextViewer textViewer, int offset) {
-			/*Delete the previous hoover popup table!*/
+			/* Delete the previous hoover popup table! */
 			Display dis = Util.getDisplay();
 			dis.asyncExec(new Runnable() {
 
@@ -416,7 +416,6 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 					}
 				}
 			});
-
 
 			IAnnotationModel model = ((SourceViewer) textViewer).getAnnotationModel();
 
@@ -446,38 +445,24 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 									 * available proposals!
 									 */
 									ICompletionProposal[] proposals = rAssist.computeQuickAssistProposals(new InvocationContext(offsetStart, offsetEnd - offsetStart, rEditor.getViewer()));
+									String message = (String) marker.getAttribute(IMarker.MESSAGE);
 									if (proposals != null) {
-										/*for (int i = 0; i < proposals.length; i++) {
-											// System.out.println(proposals[i].getDisplayString());
 
-										}*/
-										System.out.println(proposals.length);
-										Display display = Util.getDisplay();
-										display.asyncExec(new Runnable() {
+										/*
+										 * Here we call the table just with an
+										 * info! The proposals are set to null!
+										 */
+										createHoverTable(offset, proposals, null);
+									} else {
 
-											public void run() {
-												if (hoverTable != null) {
-													hoverTable.getShell().dispose();
-												}
-												StyledText sh = rEditor.getViewer().getTextWidget();
-												Font f = sh.getFont();
+										if (message != null) {
 
-												int height = f.getFontData()[0].getHeight();
-												Point poi = sh.getLocationAtOffset(offset);
-												poi = sh.toDisplay(poi);
-												int locx = poi.x;
-												int locy = poi.y;
-												hoverTable = new RHoverQuickFixTable(Util.getShell(), rEditor, proposals);
-												rEditor.setRHooverPopupShell(hoverTable.getShell());
-												Rectangle rect = new Rectangle(locx, locy - height - 150, 300, 200);
-												hoverTable.open(rect);
-											}
-										});
-
+											createHoverTable(offset, null, message);
+										}
 									}
 								}
 
-							} 
+							}
 						}
 					} catch (CoreException e) {
 
@@ -489,6 +474,30 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 				// System.out.println(annotation.getText());
 			}
+		}
+
+		private void createHoverTable(int offset, ICompletionProposal[] proposals, String message) {
+			Display display = Util.getDisplay();
+			display.asyncExec(new Runnable() {
+
+				public void run() {
+					if (hoverTable != null) {
+						hoverTable.getShell().dispose();
+					}
+					StyledText sh = rEditor.getViewer().getTextWidget();
+					Font f = sh.getFont();
+
+					int height = f.getFontData()[0].getHeight();
+					Point poi = sh.getLocationAtOffset(offset);
+					poi = sh.toDisplay(poi);
+					int locx = poi.x;
+					int locy = poi.y;
+					hoverTable = new RHoverQuickFixTable(Util.getShell(), rEditor, message, proposals);
+					rEditor.setRHooverPopupShell(hoverTable.getShell());
+					Rectangle rect = new Rectangle(locx, locy - height - 150, 300, 200);
+					hoverTable.open(rect);
+				}
+			});
 		}
 
 		/*

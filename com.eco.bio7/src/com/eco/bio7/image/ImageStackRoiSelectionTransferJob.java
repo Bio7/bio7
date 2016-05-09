@@ -172,10 +172,10 @@ public class ImageStackRoiSelectionTransferJob extends WorkspaceJob implements I
 							ip.setRoi(roiDefault);
 
 							// imp.setRoi(roiDefault);
-							if (roiDefault != null && !roiDefault.isArea()) {
+							/*if (roiDefault != null && !roiDefault.isArea()) {
 								Bio7Dialog.message("The command require\n" + "an area selection, or no selection.");
 								return;
-							}
+							}*/
 
 							if (transferType == 0) {
 								valuesDouble = getROIPixelsDouble(ip, roiDefault);
@@ -313,19 +313,36 @@ public class ImageStackRoiSelectionTransferJob extends WorkspaceJob implements I
 
 	}
 
-	private ArrayList getRoiPixels(ImageProcessor ip, Roi roi) {
-		//New from: http://imagej.1557.x6.nabble.com/Iterator-over-Roi-points-anywhere-td5016087.html
+	
+	private ArrayList<Double> getROIPixelsDouble(ImageProcessor ip, Roi roi) {
 		
-		int count = 0;
 		ArrayList<Double> values = new ArrayList<Double>();
-		/*for (Point p : roi.getContainedPoints()) {
-			count++;
-			values.add(new Double(ip.getf(p.x, p.y)));
-		}*/
+		for (Point p : roi.getContainedPoints()) {
+			
+			values.add(new Double(ip.getPixelValue(p.x, p.y)));
+		}
 		return values;
 	}
-
-	private ArrayList<Double> getROIPixelsDouble(ImageProcessor ip, Roi roi) {
+	
+	private ArrayList<Integer> getROIPixelsInteger(ImageProcessor ip, Roi roi) {
+		
+		ArrayList<Integer> values = new ArrayList<Integer>();
+		for (Point p : roi.getContainedPoints()) {
+			
+			values.add(new Integer(ip.getPixel(p.x, p.y)));
+		}
+		return values;
+	}
+	
+	private ArrayList<Byte> getROIPixelsByte(ImageProcessor ip, Roi roi) {
+		ArrayList<Byte> values = new ArrayList<Byte>();
+		for (Point p : roi.getContainedPoints()) {
+			
+			values.add(new Byte((byte) (ip.getPixel(p.x, p.y))));
+		}
+		return values;
+	}
+	/*private ArrayList<Double> getROIPixelsDouble(ImageProcessor ip, Roi roi) {
 		// ImageProcessor ip = ipr;
 		ImageProcessor mask = roi != null ? roi.getMask() : null;
 		Rectangle r = roi != null ? roi.getBounds() : new Rectangle(0, 0, ip.getWidth(), ip.getHeight());
@@ -343,9 +360,9 @@ public class ImageStackRoiSelectionTransferJob extends WorkspaceJob implements I
 			}
 		}
 		return values;
-	}
+	}*/
 
-	private ArrayList<Integer> getROIPixelsInteger(ImageProcessor ip, Roi roi) {
+	/*private ArrayList<Integer> getROIPixelsInteger(ImageProcessor ip, Roi roi) {
 		// ImageProcessor ip = imp.getProcessor();
 		ImageProcessor mask = roi != null ? roi.getMask() : null;
 		Rectangle r = roi != null ? roi.getBounds() : new Rectangle(0, 0, ip.getWidth(), ip.getHeight());
@@ -363,9 +380,9 @@ public class ImageStackRoiSelectionTransferJob extends WorkspaceJob implements I
 			}
 		}
 		return values;
-	}
+	}*/
 
-	private ArrayList<Byte> getROIPixelsByte(ImageProcessor ip, Roi roi) {
+	/*private ArrayList<Byte> getROIPixelsByte(ImageProcessor ip, Roi roi) {
 		// ImageProcessor ip = imp.getProcessor();
 		ImageProcessor mask = roi != null ? roi.getMask() : null;
 		Rectangle r = roi != null ? roi.getBounds() : new Rectangle(0, 0, ip.getWidth(), ip.getHeight());
@@ -383,7 +400,7 @@ public class ImageStackRoiSelectionTransferJob extends WorkspaceJob implements I
 			}
 		}
 		return values;
-	}
+	}*/
 
 	public void aboutToRun(IJobChangeEvent event) {
 
