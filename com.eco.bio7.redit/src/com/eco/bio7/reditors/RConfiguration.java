@@ -41,6 +41,7 @@ import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.ITextHover;
+import org.eclipse.jface.text.ITextHoverExtension;
 import org.eclipse.jface.text.ITextHoverExtension2;
 import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.ITextViewer;
@@ -62,6 +63,7 @@ import org.eclipse.jface.text.rules.BufferedRuleBasedScanner;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewer;
@@ -87,6 +89,7 @@ import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
+import com.eco.bio7.reditor.code.AnnotationHover;
 import com.eco.bio7.reditor.code.InvocationContext;
 import com.eco.bio7.reditor.code.RAssistProcessor;
 import com.eco.bio7.reditor.code.RHoverQuickFixTable;
@@ -275,8 +278,14 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 		}
 		return null;
 	}
+	@Override
+	public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
+		// TODO Auto-generated method stub
+		//return super.getAnnotationHover(sourceViewer);
+		return new AnnotationHover();
+	}
 
-	public class MarkdownTextHover implements ITextHover, ITextHoverExtension2 {
+	public class MarkdownTextHover implements ITextHover,ITextHoverExtension, ITextHoverExtension2 {
 
 		protected String help = "";
 		protected RHoverQuickFixTable hoverTable;
@@ -583,9 +592,23 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 			return new Region(offset, 0);
 		}
 
+		/*Displays the hover popup with a toolbar!*/
+		public IInformationControlCreator getHoverControlCreator() {
+			return new IInformationControlCreator() {
+				public IInformationControl createInformationControl(Shell parent) {
+
+					/*
+					 * SeeRHoverInformationControl for HTML implementation! ToolBar
+					 * is added in the InformationControl!
+					 */
+					return new RDefaultInformationControl(parent);
+				}
+			};
+		}
+
 	}
 
-	@Override
+	/*Displays the code completion popup without a toolbar!*/
 	public IInformationControlCreator getInformationControlCreator(ISourceViewer sourceViewer) {
 		return new IInformationControlCreator() {
 			public IInformationControl createInformationControl(Shell parent) {
@@ -594,7 +617,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 				 * SeeRHoverInformationControl for HTML implementation! ToolBar
 				 * is added in the InformationControl!
 				 */
-				return new RDefaultInformationControl(parent);
+				return new RSimpleDefaultInformationControl(parent);
 			}
 		};
 	}

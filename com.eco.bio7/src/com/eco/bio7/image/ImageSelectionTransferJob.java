@@ -293,6 +293,7 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 		for (Point p : roi.getContainedPoints()) {
 
 			values.add(new Double(ip.getPixelValue(p.x, p.y)));
+			System.out.println(ip.getPixelValue(p.x, p.y));
 		}
 		return values;
 	}
