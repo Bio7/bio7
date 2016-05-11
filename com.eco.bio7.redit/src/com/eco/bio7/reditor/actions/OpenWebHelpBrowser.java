@@ -17,6 +17,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 
 import com.eco.bio7.browser.BrowserView;
+import com.eco.bio7.reditors.REditorTextHover;
 import com.eco.bio7.reditors.RConfiguration;
 
 public class OpenWebHelpBrowser extends Action {
@@ -44,7 +45,7 @@ public class OpenWebHelpBrowser extends Action {
 					canBrowse = false;
 					Display display = ActionUtil.openBrowser();
 
-					htmlHelpText = RConfiguration.htmlHelpText;
+					htmlHelpText = REditorTextHover.getHtmlHelpText();
 
 					display.asyncExec(new Runnable() {
 

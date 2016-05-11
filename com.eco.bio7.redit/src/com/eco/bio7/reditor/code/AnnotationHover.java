@@ -8,6 +8,10 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlCreator;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextHoverExtension;
+import org.eclipse.jface.text.ITextHoverExtension2;
+import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.information.IInformationProviderExtension2;
 import org.eclipse.jface.text.source.IAnnotationHover;
@@ -19,8 +23,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import com.eco.bio7.reditors.RSimpleDefaultInformationControl;
-//public class AnnotationHover implements IAnnotationHover,IAnnotationHoverExtension {
-public class AnnotationHover implements IAnnotationHover {
+public class AnnotationHover implements IAnnotationHover,ITextHoverExtension,ITextHoverExtension2 {
+//public class AnnotationHover implements IAnnotationHover {
 
 	@Override
     public String getHoverInfo(ISourceViewer sourceViewer, int lineNumber) {
@@ -79,6 +83,18 @@ public class AnnotationHover implements IAnnotationHover {
         }
         return false;
     }
+
+	@Override
+	public IInformationControlCreator getHoverControlCreator() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
+		System.out.println("fgsfgd");
+		return null;
+	}
 
 	
 

@@ -21,6 +21,7 @@ import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.browser.BrowserView;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.reditors.REditorTextHover;
 import com.eco.bio7.reditors.RConfiguration;
 import com.eco.bio7.reditors.REditor;
 
@@ -52,7 +53,7 @@ public class OpenHelpBrowserAction extends Action {
 							RState.setBusy(true);
 							Display display = ActionUtil.openBrowser();
 
-							htmlHelpText = RConfiguration.htmlHelpText;
+							htmlHelpText = REditorTextHover.getHtmlHelpText();
 
 							c.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".html\", sep=\"\"))").toString();
 							c.eval("try(tools::Rd2HTML(utils:::.getHelpFile(?" + htmlHelpText + "),.bio7TempHtmlHelpFile,package=\"tools\", stages=c(\"install\", \"render\")))");
