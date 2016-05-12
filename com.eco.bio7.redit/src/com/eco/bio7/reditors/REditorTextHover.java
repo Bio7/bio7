@@ -215,7 +215,7 @@ public class REditorTextHover implements ITextHover, ITextHoverExtension, ITextH
 							 * There is a warning or error else null is
 							 * returned, see RAssistProcessor!
 							 */
-							if (marker.getAttribute(IMarker.TEXT) != null) {
+							if (marker.getAttribute(IMarker.TEXT) != null&&marker.getAttribute(IMarker.CHAR_START)!=null&&marker.getAttribute(IMarker.CHAR_END)!=null) {
 								/* Get String error code or text is 'NA'! */
 								// System.out.println(offset+"
 								// "+(int)marker.getAttribute(IMarker.CHAR_START));

@@ -52,6 +52,20 @@
             id="com.eco.bio7.CustomPerspective"
             name="Custom">
       </perspective>
+      <perspective
+            class="com.eco.bio7.rbridge.RImagePerspective"
+            fixed="false"
+            icon="icons/rkompilierung.gif"
+            id="com.eco.bio7.rbridge.RImagePerspective"
+            name="R ImageJ Analysis">
+      </perspective>
+      <perspective
+            class="com.eco.bio7.rbridge.RDebugPerspective"
+            fixed="false"
+            icon="icons/rkompilierung.gif"
+            id="com.eco.bio7.rbridge.RDebugPerspective"
+            name="R Debug">
+      </perspective>
    </extension>
    <extension
          point="org.eclipse.ui.views">
