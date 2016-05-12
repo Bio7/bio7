@@ -487,7 +487,13 @@ public class RSimpleDefaultInformationControl extends AbstractInformationControl
 			 */
 			public IInformationControl createInformationControl(Shell parent) {
 				
-				return new RSimpleDefaultInformationControl(parent,  fPresenter);
+				ToolBarManager tbm = new ToolBarManager(SWT.FLAT);
+				/*OpenHelpBrowserAction localBrowserHelp = new OpenHelpBrowserAction();
+				OpenWebHelpBrowser webHelp= new OpenWebHelpBrowser();
+				tbm.add(localBrowserHelp);
+				tbm.add(webHelp);
+				tbm.update(true);*/
+				return new RSimpleDefaultInformationControl(parent, (ToolBarManager) tbm, fPresenter);
 			}
 		};
 	}

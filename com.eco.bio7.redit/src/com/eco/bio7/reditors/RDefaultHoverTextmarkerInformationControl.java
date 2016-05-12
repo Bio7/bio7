@@ -78,8 +78,7 @@ public class RDefaultHoverTextmarkerInformationControl extends AbstractInformati
 		 * @deprecated As of 3.2, replaced by
 		 *             {@link RDefaultHoverTextmarkerInformationControl.IInformationPresenterExtension#updatePresentation(Drawable, String, TextPresentation, int, int)}
 		 */
-		String updatePresentation(Display display, String hoverInfo, TextPresentation presentation, int maxWidth,
-				int maxHeight);
+		String updatePresentation(Display display, String hoverInfo, TextPresentation presentation, int maxWidth, int maxHeight);
 	}
 
 	/**
@@ -117,8 +116,7 @@ public class RDefaultHoverTextmarkerInformationControl extends AbstractInformati
 		 *
 		 * @return the manipulated information
 		 */
-		String updatePresentation(Drawable drawable, String hoverInfo, TextPresentation presentation, int maxWidth,
-				int maxHeight);
+		String updatePresentation(Drawable drawable, String hoverInfo, TextPresentation presentation, int maxWidth, int maxHeight);
 	}
 
 	/**
@@ -243,30 +241,31 @@ public class RDefaultHoverTextmarkerInformationControl extends AbstractInformati
 	 *
 	 * @param parent
 	 *            the parent shell
-	 * @param proposals 
+	 * @param proposals
 	 */
-	public RDefaultHoverTextmarkerInformationControl(Shell parent, ICompletionProposal[] proposals,String message, REditor rEditor) {
+	public RDefaultHoverTextmarkerInformationControl(Shell parent, ICompletionProposal[] proposals, String message, REditor rEditor) {
 		this(parent, (String) null, null);
-		this.proposals=proposals;
-		this.rEditor=rEditor;
-		this.message=message;
+		this.proposals = proposals;
+		this.rEditor = rEditor;
+		this.message = message;
 	}
+
 	/**
 	 * Creates a default information control with the given shell as parent. No
 	 * information presenter is used to process the information to be displayed.
 	 *
 	 * @param parent
 	 *            the parent shell
-	 * @param fPresenter2 
-	 * @param tbm 
-	 * @param proposals 
+	 * @param fPresenter2
+	 * @param tbm
+	 * @param proposals
 	 */
-	public RDefaultHoverTextmarkerInformationControl(Shell parent, ToolBarManager tbm, IInformationPresenter fPresenter2, ICompletionProposal[] proposals,String message, REditor rEditor) {
+	public RDefaultHoverTextmarkerInformationControl(Shell parent, ToolBarManager tbm, IInformationPresenter fPresenter2, ICompletionProposal[] proposals, String message, REditor rEditor) {
 		this(parent, tbm, fPresenter2);
-		
-		this.proposals=proposals;
-		this.rEditor=rEditor;
-		this.message=message;
+
+		this.proposals = proposals;
+		this.rEditor = rEditor;
+		this.message = message;
 	}
 
 	/**
@@ -321,24 +320,23 @@ public class RDefaultHoverTextmarkerInformationControl extends AbstractInformati
 	 * @deprecated As of 3.4, replaced by simpler constructors
 	 */
 
-	
-
-	
-
 	/*
 	 * @see org.eclipse.jface.text.AbstractInformationControl#createContent(org.
 	 * eclipse .swt.widgets.Composite)
 	 */
 	protected void createContent(Composite parent) {
 
-		table = new Table(parent,SWT.NONE);
+		table = new Table(parent, SWT.NONE);
 		table.setSize(200, 300);
 		// table.setLinesVisible(true);
-		
 
 		// return list selection on Mouse Up or Carriage Return
 		table.addMouseListener(new MouseListener() {
 			public void mouseDoubleClick(MouseEvent e) {
+
+			}
+
+			public void mouseDown(MouseEvent e) {
 				if (proposals != null) {
 					int selection = table.getSelectionIndex();
 
@@ -347,15 +345,11 @@ public class RDefaultHoverTextmarkerInformationControl extends AbstractInformati
 
 						public void run() {
 							proposals[selection].apply(rEditor.getViewer().getDocument());
+							parent.getShell().dispose();
 						}
 					});
 
-					
 				}
-				
-			}
-
-			public void mouseDown(MouseEvent e) {
 			}
 
 			public void mouseUp(MouseEvent e) {
@@ -368,14 +362,12 @@ public class RDefaultHoverTextmarkerInformationControl extends AbstractInformati
 
 			public void keyPressed(KeyEvent e) {
 				if (e.character == '\r') {
-					//shell.setVisible(false);
+					// shell.setVisible(false);
 				}
 			}
 		});
-		
-	}
 
-	
+	}
 
 	/*
 	 * @see IInformationControl#setInformation(String)
@@ -393,39 +385,27 @@ public class RDefaultHoverTextmarkerInformationControl extends AbstractInformati
 			item.setText(content);
 			// item.setImage(proposals[i].getImage());
 		}
-		
-		
-			
-			
-		
+
 	}
-	
 
 	/*
 	 * @see IInformationControl#setVisible(boolean)
 	 */
-	/*public void setVisible(boolean visible) {
-		if (visible) {
-			if (fText.getWordWrap()) {
-				Point currentSize = getShell().getSize();
-				getShell().pack(true);
-				Point newSize = getShell().getSize();
-				if (newSize.x > currentSize.x || newSize.y > currentSize.y)
-					setSize(currentSize.x, currentSize.y); // restore previous
-															// size
-			}
-		}
-
-		super.setVisible(visible);
-	}*/
+	/*
+	 * public void setVisible(boolean visible) { if (visible) { if
+	 * (fText.getWordWrap()) { Point currentSize = getShell().getSize();
+	 * getShell().pack(true); Point newSize = getShell().getSize(); if
+	 * (newSize.x > currentSize.x || newSize.y > currentSize.y)
+	 * setSize(currentSize.x, currentSize.y); // restore previous // size } }
+	 * 
+	 * super.setVisible(visible); }
+	 */
 
 	/*
 	 * @see IInformationControl#computeSizeHint()
 	 */
 	public Point computeSizeHint() {
 		// see https://bugs.eclipse.org/bugs/show_bug.cgi?id=117602
-	
-		
 
 		return getShell().computeSize(300, SWT.DEFAULT, true);
 	}
@@ -433,9 +413,10 @@ public class RDefaultHoverTextmarkerInformationControl extends AbstractInformati
 	/*
 	 * @see org.eclipse.jface.text.AbstractInformationControl#computeTrim()
 	 */
-	/*public Rectangle computeTrim() {
-		return Geometry.add(super.computeTrim(), table.computeTrim(0, 0, 0, 0));
-	}*/
+	/*
+	 * public Rectangle computeTrim() { return Geometry.add(super.computeTrim(),
+	 * table.computeTrim(0, 0, 0, 0)); }
+	 */
 
 	/*
 	 * @see IInformationControl#setForegroundColor(Color)
@@ -482,12 +463,13 @@ public class RDefaultHoverTextmarkerInformationControl extends AbstractInformati
 			 */
 			public IInformationControl createInformationControl(Shell parent) {
 				ToolBarManager tbm = new ToolBarManager(SWT.FLAT);
-				OpenHelpBrowserAction localBrowserHelp = new OpenHelpBrowserAction();
-				OpenWebHelpBrowser webHelp= new OpenWebHelpBrowser();
-				tbm.add(localBrowserHelp);
-				tbm.add(webHelp);
-				tbm.update(true);
-				return new RDefaultHoverTextmarkerInformationControl(parent, (ToolBarManager) tbm, fPresenter,proposals, message,  rEditor);
+				/*
+				 * OpenHelpBrowserAction localBrowserHelp = new
+				 * OpenHelpBrowserAction(); OpenWebHelpBrowser webHelp= new
+				 * OpenWebHelpBrowser(); tbm.add(localBrowserHelp);
+				 * tbm.add(webHelp); tbm.update(true);
+				 */
+				return new RDefaultHoverTextmarkerInformationControl(parent, (ToolBarManager) tbm, fPresenter, proposals, message, rEditor);
 			}
 		};
 	}

@@ -408,7 +408,7 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
           commandId="com.eco.bio7.r_editor_set_comment"
           contextId="org.eclipse.ui.contexts.window"
           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-          sequence="CTRL+#">
+          sequence="CTRL+ALT+N">
     </key>
  </extension>
  <extension
@@ -427,7 +427,7 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
           commandId="com.eco.bio7.r_editor_unset_comment"
           contextId="org.eclipse.ui.contexts.window"
           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-          sequence="Alt+#">
+          sequence="CTRL+ALT+M">
     </key>
  </extension>
  <extension
