@@ -39,7 +39,7 @@ public class LineSelectionJob extends WorkspaceJob {
 		if (RServe.getConnection() != null) {
 			final RConnection cscript = RServe.getConnection();
 			/* If the R expression is evaluated with the line selection! */
-			if (Bio7Plugin.getDefault().getPreferenceStore().getBoolean(PreferenceConstants.R_START_SHELL)) {
+			/*if (Bio7Plugin.getDefault().getPreferenceStore().getBoolean(PreferenceConstants.R_START_SHELL)) {
 				
 					try {
 						cscript.eval("try(f <- file(\"clipboard\", open=\"r\"))");
@@ -53,7 +53,7 @@ public class LineSelectionJob extends WorkspaceJob {
 					}
 				
 
-			} else {
+			} else {*/
 
 				
 					try {
@@ -69,7 +69,7 @@ public class LineSelectionJob extends WorkspaceJob {
 						e.printStackTrace();
 					}
 
-			}
+			//}
 
 		} else {
 

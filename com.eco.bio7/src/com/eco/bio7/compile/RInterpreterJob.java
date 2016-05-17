@@ -78,7 +78,7 @@ public class RInterpreterJob extends WorkspaceJob {
 		if (RServe.isRrunning()) {
 			if (cscript != null) {
 				try {
-					boolean startShell = Bio7Plugin.getDefault().getPreferenceStore().getBoolean(PreferenceConstants.R_START_SHELL);
+					//boolean startShell = Bio7Plugin.getDefault().getPreferenceStore().getBoolean(PreferenceConstants.R_START_SHELL);
 					
 					if (Bio7Dialog.getOS().equals("Windows")) {
 						/* If a location is given! */
@@ -86,10 +86,10 @@ public class RInterpreterJob extends WorkspaceJob {
 							loc = loc.replace("/", "\\");
 
 							cscript.assign(".bio7TempRScriptFile", loc);
-							if (startShell) {
+							/*if (startShell) {
 								cscript.voidEval("try(source(.bio7TempRScriptFile,echo=T))");
 
-							} else {
+							} else {*/
 
 								String rout = null;
 								try {
@@ -111,7 +111,7 @@ public class RInterpreterJob extends WorkspaceJob {
 									RShellView.setTextConsole(rout);
 									
 								}
-							}
+							//}
 
 						} else {
 
@@ -130,10 +130,10 @@ public class RInterpreterJob extends WorkspaceJob {
 
 						if (loc != null) {
 							cscript.assign(".bio7TempRScriptFile", loc);
-							if (startShell) {
+							/*if (startShell) {
 								cscript.voidEval("try(source(.bio7TempRScriptFile))");
 
-							} else {
+							} else {*/
 								String rout = null;
 								try {
 									rout = cscript.eval(rCommand).asString();
@@ -147,7 +147,7 @@ public class RInterpreterJob extends WorkspaceJob {
 								if (RShellView.isConsoleExpanded()) {
 									RShellView.setTextConsole(rout);
 								}
-							}
+							//}
 
 						} else {
 

@@ -71,7 +71,7 @@ public class RConnectionJob extends WorkspaceJob {
 		if (remote == false) {
 			/* Start up the process of R and Rserve! */
 
-			if (store.getBoolean("RSERVE_NATIVE_START")) {
+			//if (store.getBoolean("RSERVE_NATIVE_START")) {
 				String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 
 				if (selectionConsole.equals("R")) {
@@ -83,10 +83,10 @@ public class RConnectionJob extends WorkspaceJob {
 					Bio7Dialog.message("Please start the native R connection in the Bio7 Console!");
 				}
 
-			} else {
-				/* Start Rserve without shell (deprecated)! */
+			/*} else {
+				 Start Rserve without shell (deprecated)! 
 				startExec();
-			}
+			}*/
 
 		} // Remote connection!
 		for (int i = 0; i < 11; i++) {
@@ -241,7 +241,7 @@ public class RConnectionJob extends WorkspaceJob {
 	}
 
 	/* Deprecated startup without native shell! */
-	private void startExec() {
+	/*private void startExec() {
 
 		rt = Runtime.getRuntime();
 
@@ -366,13 +366,13 @@ public class RConnectionJob extends WorkspaceJob {
 				// proc = runtime.exec("xterm -e " + pathR +
 				// "/bin/R -e library(Rserve);Rserve(args='" + rserveArgs +
 				// "');");
-				/*
+				
 				 * List<String> args = new ArrayList<String>();
 				 * args.add("xterm"); args.add("-e"); args.add(path);
 				 * args.add(rArgs); args.add("-e");
 				 * args.add("library(Rserve);Rserve(args='" + rserveArgs +
 				 * "');");
-				 */
+				 
 
 				ProcessBuilder pb = new ProcessBuilder(args);
 				pb.redirectErrorStream();
@@ -447,7 +447,7 @@ public class RConnectionJob extends WorkspaceJob {
 			consoleOutput();
 		}
 
-	}
+	}*/
 
 	/* Print the input stream for errors etc.! */
 	private void consoleOutput() {

@@ -583,7 +583,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
 			store.setDefault("PDF_READER", "ACROBAT");
 		}
-		store.setDefault("RSERVE_AUTOSTART", false);
+		//store.setDefault("RSERVE_AUTOSTART", false);
 		store.setDefault(PreferenceConstants.PACKAGE_R_SERVER, "http://cran.r-project.org");
 		if (getOS().equals("Linux")) {
 			store.setDefault("knitroptions", "opts_chunk$set(dev=\"png\",echo=TRUE, dev.args=list(type=\"cairo\"),dpi=96)");
@@ -599,7 +599,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "Ä, ,ä,Ö,ö,Ü,ü,+,!,ü,§,$,%,&,/,(,),=,?,[,],°,^,;,:,>,<,|,*,µ,\\,”,@,\",“,”,´,`,~,#,},{,²,³,_,-");
 		}
 
-		store.setDefault("RSERVE_NATIVE_START", true);
+		//store.setDefault("RSERVE_NATIVE_START", true);
 		store.setDefault("R_DEBUG_PORT", 21555);
 
 		store.setDefault("LINUX_SHELL", "GNOME");
@@ -1320,9 +1320,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				startupScripts();
 			}
 
-			if (store.getBoolean("RSERVE_AUTOSTART")) {
+			/*if (store.getBoolean("RSERVE_AUTOSTART")) {
 				Bio7Action.callRserve();
-			}
+			}*/
 
 		} catch (WorkbenchException e) {
 			e.printStackTrace();

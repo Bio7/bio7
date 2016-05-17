@@ -153,9 +153,9 @@ public class Application implements IApplication {
 				WorldWindView.setRConnection(null);
 			}
             /*Only killall Rserve instances if using the deprecated Rserve start function!*/
-			if (store.getBoolean("RSERVE_NATIVE_START") == false) {
+			/*if (store.getBoolean("RSERVE_NATIVE_START") == false) {
 				TerminateRserve.killProcessLinux();
-			}
+			}*/
 
 		} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 			RConnection con = RServe.getConnection();
@@ -165,9 +165,9 @@ public class Application implements IApplication {
 				WorldWindView.setRConnection(null);
 			}
 			 /*Only killall Rserve instances if using the deprecated Rserve start function!*/
-			if (store.getBoolean("RSERVE_NATIVE_START") == false) {
+			/*if (store.getBoolean("RSERVE_NATIVE_START") == false) {
 				TerminateRserve.killProcessMac();
-			}
+			}*/
 
 		}
 	}

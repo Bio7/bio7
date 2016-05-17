@@ -145,14 +145,14 @@ public class RServe {
 			job.schedule();
 		} else {
 			Process p;
-			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-			if (store.getBoolean("RSERVE_NATIVE_START")) {
+			//IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+			//if (store.getBoolean("RSERVE_NATIVE_START")) {
 				ConsolePageParticipant consol = ConsolePageParticipant.getConsolePageParticipantInstance();
 				p = consol.getRProcess();
-			} else {
+			/*} else {
 
 				p = RConnectionJob.getProc();
-			}
+			}*/
 
 			// Write to the output!
 			if (p != null) {

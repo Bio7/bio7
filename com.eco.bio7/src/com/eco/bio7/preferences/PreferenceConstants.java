@@ -10,7 +10,7 @@ public class PreferenceConstants {
 	
 	public static final String P_BOOLEAN = "booleanPreference";
 	
-	public static final String R_START_SHELL = "booleanPreference2";
+	//public static final String R_START_SHELL = "booleanPreference2";
 
 	public static final String P_CHOICE = "choicePreference";
 
