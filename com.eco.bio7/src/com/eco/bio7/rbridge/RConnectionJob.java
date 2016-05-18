@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2014 M. Austenfeld
+ * Copyright (c) 2007-2016 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,9 +15,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -25,16 +22,13 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
-
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.preferences.PreferenceConstants;
-import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.util.Util;
@@ -240,214 +234,7 @@ public class RConnectionJob extends WorkspaceJob {
 		}
 	}
 
-	/* Deprecated startup without native shell! */
-	/*private void startExec() {
-
-		rt = Runtime.getRuntime();
-
-		boolean startRShell = store.getBoolean(PreferenceConstants.R_START_SHELL);
-		String rserveArgs = store.getString("RSERVE_ARGS");
-		String rArgs = store.getString("R_STARTUP_ARGS");
-
-		if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
-			String pathR;
-			if (ApplicationWorkbenchWindowAdvisor.is64BitVM()) {
-				pathR = store.getString(PreferenceConstants.PATH_R) + "/bin/x64/r";
-			} else {
-				pathR = store.getString(PreferenceConstants.PATH_R) + "/bin/i386/r";
-			}
-
-			if (startRShell == false) {
-
-				List<String> args = new ArrayList<String>();
-				args.add(pathR);
-				args.add(rArgs);
-				args.add("-e");
-				args.add("library(Rserve);Rserve(args='" + rserveArgs + "');");
-
-				ProcessBuilder pb = new ProcessBuilder(args);
-				pb.redirectErrorStream();
-				try {
-					proc = pb.start();
-
-				} catch (IOException e) {
-
-					e.printStackTrace();
-				}
-			} else {
-				List<String> args = new ArrayList<String>();
-				args.add("CMD");
-				args.add("/c");
-
-				args.add("start");
-				args.add("\"Rserve\"");
-				args.add(pathR);
-				args.add("-e");
-				args.add("library(Rserve);Rserve();");
-
-				ProcessBuilder pb = new ProcessBuilder(args);
-				pb.redirectErrorStream();
-				try {
-					proc = pb.start();
-
-				} catch (IOException e) {
-
-					MessageDialog.openWarning(Util.getShell(), "R", "Rserve executable not available !");
-					RServe.setConnection(null);
-				}
-			}
-
-			consoleOutput();
-
-		} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
-			String path;
-			if (ApplicationWorkbenchWindowAdvisor.is64BitVM()) {
-				path = store.getString(PreferenceConstants.PATH_R) + "/bin/R";
-			} else {
-				path = store.getString(PreferenceConstants.PATH_R) + "/bin/R";
-			}
-			if (startRShell == true) {
-				String shellType = store.getString("LINUX_SHELL");
-				// Runtime runtime = Runtime.getRuntime();
-				// proc = runtime.exec("xterm -hold -e " + pathR +
-				// "/bin/R -e library(Rserve);Rserve();");
-				List<String> args = new ArrayList<String>();
-				if (shellType.equals("XTERM")) {
-
-					args.add("xterm");
-					args.add("-hold");
-					args.add("-e");
-					if (path.isEmpty() == false) {
-						args.add(path);
-					} else {
-						args.add("R");
-					}
-					args.add("-e");
-					args.add("library(Rserve);Rserve();");
-				} else if (shellType.equals("GNOME")) {
-					args.add("gnome-terminal");
-
-					args.add("-e");
-					if (path.isEmpty() == false) {
-						args.add("sh -c \"" + path + " -e 'library(Rserve);Rserve();'; exec bash\"");
-					}
-
-					else {
-						args.add("sh -c \"" + "R" + " -e 'library(Rserve);Rserve();'; exec bash\"");
-					}
-
-				}
-
-				ProcessBuilder pb = new ProcessBuilder(args);
-				pb.redirectErrorStream();
-				try {
-					proc = pb.start();
-
-				} catch (IOException e) {
-
-					MessageDialog.openWarning(Util.getShell(), "R", "Rserve executable not available !");
-					RServe.setConnection(null);
-				}
-
-			} else {
-
-				List<String> args = new ArrayList<String>();
-				args.add("/bin/sh");
-				args.add("-c");
-				if (path.isEmpty() == false) {
-					args.add("echo 'library(Rserve);Rserve(args=\"" + rserveArgs + "\")'|" + path + " " + rArgs);
-				}
-
-				else {
-					args.add("echo 'library(Rserve);Rserve(args=\"" + rserveArgs + "\")'|" + "R" + " " + rArgs);
-				}
-
-				// Runtime runtime = Runtime.getRuntime();
-				// proc = runtime.exec("xterm -e " + pathR +
-				// "/bin/R -e library(Rserve);Rserve(args='" + rserveArgs +
-				// "');");
-				
-				 * List<String> args = new ArrayList<String>();
-				 * args.add("xterm"); args.add("-e"); args.add(path);
-				 * args.add(rArgs); args.add("-e");
-				 * args.add("library(Rserve);Rserve(args='" + rserveArgs +
-				 * "');");
-				 
-
-				ProcessBuilder pb = new ProcessBuilder(args);
-				pb.redirectErrorStream();
-				try {
-					proc = pb.start();
-
-				} catch (IOException e) {
-
-					MessageDialog.openWarning(Util.getShell(), "R", "Rserve executable not available !");
-					RServe.setConnection(null);
-				}
-
-			}
-			consoleOutput();
-		} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
-			// String
-			// path="/Library/Frameworks/R.framework/Versions/2.10.0/Resources/bin/R";
-			String path;
-
-			path = store.getString(PreferenceConstants.PATH_R) + "/bin/R";
-
-			if (startRShell == true) {
-
-				List<String> args = new ArrayList<String>();
-				args.add("/usr/x11/bin/xterm");
-				args.add("-hold");
-				args.add("-e");
-				if (path.isEmpty() == false) {
-					args.add(path);
-				} else {
-					args.add("R");
-				}
-				args.add("-e");
-				args.add("library(Rserve);Rserve();");
-
-				ProcessBuilder pb = new ProcessBuilder(args);
-				pb.redirectErrorStream();
-				try {
-					proc = pb.start();
-
-				} catch (IOException e) {
-
-					MessageDialog.openWarning(Util.getShell(), "R", "Rserve executable not available !");
-					RServe.setConnection(null);
-				}
-
-			} else {
-
-				List<String> args = new ArrayList<String>();
-				args.add("/usr/x11/bin/xterm");
-				args.add("-e");
-				if (path.isEmpty() == false) {
-					args.add(path);
-				} else {
-					args.add("R");
-				}
-				args.add(rArgs);
-				args.add("-e");
-				args.add("library(Rserve);Rserve(args='" + rserveArgs + "');");
-
-				ProcessBuilder pb = new ProcessBuilder(args);
-				pb.redirectErrorStream();
-				try {
-					proc = pb.start();
-
-				} catch (IOException e) {
-
-					MessageDialog.openWarning(Util.getShell(), "R", "Rserve executable not available !");
-					RServe.setConnection(null);
-				}
-			}
-			consoleOutput();
-		}
-
-	}*/
+	
 
 	/* Print the input stream for errors etc.! */
 	private void consoleOutput() {

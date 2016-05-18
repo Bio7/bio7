@@ -34,6 +34,7 @@ import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.TerminateRserve;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
+import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.util.Util;
 import com.eco.bio7.worldwind.WorldWindView;
 
@@ -89,73 +90,7 @@ public class StartRServe extends Action implements IMenuCreator {
 
 		if (remote == false) {
 
-			/*
-			 * if (store.getBoolean("RSERVE_NATIVE_START") == false) {
-			 * 
-			 * if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows"))
-			 * { if (RConnectionJob.getProc() != null) {
-			 * RConnectionJob.getProc().destroy(); RServe.setConnection(null);
-			 * WorldWindView.setRConnection(null); }
-			 * TerminateRserve.killProcessWindows();
-			 * 
-			 * }
-			 * 
-			 * else if
-			 * (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) { if
-			 * (c != null) { c.close(); RServe.setConnection(null);
-			 * WorldWindView.setRConnection(null); }
-			 * 
-			 * TerminateRserve.killProcessLinux();
-			 * 
-			 * } else if
-			 * (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) { if (c
-			 * != null) { c.close(); RServe.setConnection(null);
-			 * WorldWindView.setRConnection(null); }
-			 * 
-			 * TerminateRserve.killProcessMac();
-			 * 
-			 * } Establish a new Rserve connection! if (RServe.isRrunning() ==
-			 * false) { RConnectionJob.setStore(Bio7Plugin.getDefault().
-			 * getPreferenceStore()); job = new RConnectionJob();
-			 * job.addJobChangeListener(new JobChangeAdapter() { public void
-			 * done(IJobChangeEvent event) { if (event.getResult().isOK()) {
-			 * 
-			 * This will only be executed on a drag event!
-			 * 
-			 * if (fromDragDrop) { loadFile(); fromDragDrop = false;
-			 * 
-			 * }
-			 * 
-			 * } } });
-			 * 
-			 * job.setUser(true); job.schedule();
-			 * 
-			 * } Shutdown Rserve! else {
-			 * 
-			 * RConnectionJob.setCanceled(true);
-			 * 
-			 * RServe.setRrunning(false);
-			 * 
-			 * RConnectionJob.getProc().destroy();
-			 * 
-			 * RServe.setConnection(null);
-			 * 
-			 * WorldWindView.setRConnection(null);
-			 * 
-			 * if (RCompletionShell.getShellInstance() != null) {
-			 * RCompletionShell.getShellInstance().dispose(); }
-			 * 
-			 * 
-			 * // the following wrapped for BeanShell ! Display display =
-			 * PlatformUI.getWorkbench().getDisplay(); display.syncExec(new
-			 * Runnable() {
-			 * 
-			 * public void run() {
-			 * MessageDialog.openInformation(Util.getShell(), "R",
-			 * "R-Server shutdown!"); } });
-			 * 
-			 * } }
-			 * 
+			/*			
 			 * This actions starts Rserve by default in the native shell! else {
 			 */
 
@@ -163,20 +98,20 @@ public class StartRServe extends Action implements IMenuCreator {
 			/* Start the native R process! */
 			inst.startR();
 
-			RConnection con = c;
+			//RConnection con = c;
 
 			/* Close an existing Rserve connection! */
-			if (con != null) {
+			if (c != null) {
 				try {
-					con.shutdown();
+					c.shutdown();
 				} catch (RserveException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				RConnectionJob.setCanceled(true);
-				con.close();
+				c.close();
 				RServe.setConnection(null);
-
+                REditor.setConnection(null);
 				WorldWindView.setRConnection(null);
 			}
 			/* Start a new Rserve connection! */
@@ -210,6 +145,8 @@ public class StartRServe extends Action implements IMenuCreator {
 				RServe.setConnection(null);
 
 				WorldWindView.setRConnection(null);
+				
+				REditor.setConnection(null);
 
 			}
 
@@ -294,6 +231,8 @@ public class StartRServe extends Action implements IMenuCreator {
 				RServe.setRrunning(false);
 
 				RServe.setConnection(null);
+				
+				REditor.setConnection(null);
 
 				WorldWindView.setRConnection(null);
 				/*
@@ -410,6 +349,7 @@ public class StartRServe extends Action implements IMenuCreator {
 									if (con != null) {
 										con.close();
 										RServe.setConnection(null);
+										REditor.setConnection(null);
 										WorldWindView.setRConnection(null);
 										RServe.setRrunning(false);
 									}
@@ -489,11 +429,11 @@ public class StartRServe extends Action implements IMenuCreator {
 		else if (Util.getOS().equals("Linux")) {
 			try {
 				String line;
-				Process p = Runtime.getRuntime().exec("ps -e");
+				Process p = Runtime.getRuntime().exec("ps -ef");
 				BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
 				while ((line = input.readLine()) != null) {
 
-					if (line.contains("R")) {
+					if (line.contains("/exec/R")) {
 						killOrphanedRProcess = orphanedRRunningMessage();
 						break;
 					}
@@ -562,6 +502,7 @@ public class StartRServe extends Action implements IMenuCreator {
 					if (con != null) {
 						con.close();
 						RServe.setConnection(null);
+						REditor.setConnection(null);
 						WorldWindView.setRConnection(null);
 						RServe.setRrunning(false);
 					}

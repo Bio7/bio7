@@ -11,11 +11,6 @@
 
 package com.eco.bio7.rbridge;
 
-import ij.ImagePlus;
-import ij.ImageStack;
-import ij.io.Opener;
-
-import java.awt.EventQueue;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -23,7 +18,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
-
 import org.apache.commons.io.comparator.NameFileComparator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -31,7 +25,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.program.Program;
@@ -52,10 +45,11 @@ import com.eco.bio7.collection.Work;
 import com.eco.bio7.console.Console;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.preferences.PreferenceConstants;
-import com.eco.bio7.rbridge.RState;
-import com.eco.bio7.rcp.ApplicationWorkbenchAdvisor;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
+
+import ij.ImagePlus;
+import ij.ImageStack;
 
 /**
  * This class provides methods for the communication with the Rserve

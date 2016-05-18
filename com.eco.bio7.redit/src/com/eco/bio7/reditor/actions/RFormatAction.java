@@ -85,12 +85,11 @@ public class RFormatAction implements IObjectActionDelegate, IEditorActionDelega
 				protected IStatus run(IProgressMonitor monitor) {
 					monitor.beginTask("Format R source ...", IProgressMonitor.UNKNOWN);
 
-					RConnection c = REditor.getRserveConnection();
-					if (c != null) {
+					if (con != null) {
 						if (RState.isBusy() == false) {
 							RState.setBusy(true);
 							try {
-								bol = (REXPLogical) c.eval("require(formatR)");
+								bol = (REXPLogical) con.eval("require(formatR)");
 							} catch (RserveException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
@@ -98,7 +97,7 @@ public class RFormatAction implements IObjectActionDelegate, IEditorActionDelega
 							if (bol.isTRUE()[0]) {
 
 								try {
-									c.eval("library(formatR);try(tidy_source(source = \"" + loc + "\",file = \"" + loc + "\"))");
+									con.eval("library(formatR);try(tidy_source(source = \"" + loc + "\",file = \"" + loc + "\"))");
 									// rcon.eval("tidy.source(source =
 									// \""+loc+"\",file = \"clipboard\")");
 
