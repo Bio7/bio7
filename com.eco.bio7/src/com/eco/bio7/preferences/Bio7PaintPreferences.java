@@ -23,6 +23,8 @@ import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 public class Bio7PaintPreferences extends FieldEditorPreferencePage
 		implements IWorkbenchPreferencePage {
 
+	private MultiLineTextFieldEditor mult;
+
 	public Bio7PaintPreferences() {
 		super(GRID);
 		setPreferenceStore(Bio7Plugin.getDefault().getPreferenceStore());
@@ -36,6 +38,10 @@ public class Bio7PaintPreferences extends FieldEditorPreferencePage
 		addField(new BooleanFieldEditor("RECORD_VALUES", "Record at each iteration step the amount of states (Quadgrid, Hexgrid)", getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new BooleanFieldEditor("STARTUP_SCRIPTS", "Enable startup scripts", getFieldEditorParent()));
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
+		mult=new MultiLineTextFieldEditor("BIO7_STARTUP_COMMANDS", "Startup Commands (Groovy Script)", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent());
+		addField(mult);
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new LabelFieldEditor("JDT:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("SHOW_JDT_GUI", "Enable JDT Gui elements", getFieldEditorParent()));

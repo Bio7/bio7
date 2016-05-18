@@ -80,7 +80,11 @@ public class StartRServe extends Action implements IMenuCreator {
 		 */
 		ConsolePageParticipant consInst = ConsolePageParticipant.getConsolePageParticipantInstance();
 		if (consInst.getRProcess() == null) {
-			checkRRunning();
+
+			boolean detectRProcess = store.getBoolean("DETECT_R_PROCESS");
+			if (detectRProcess) {
+				checkRRunning();
+			}
 		}
 
 		if (remote == false) {

@@ -34,25 +34,40 @@ import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 public class ScanClassPath {
 
 	private String pathBundle;
-	String[] bundles = new String[] { "com.eco.bio7", "com.eco.bio7.libs", "com.eco.bio7.javaedit", "com.eco.bio7.image", "com.eco.bio7.WorldWind",
-			"com.eco.bio7.scenebuilder", "com.eco.bio7.browser","Bundled_R","com.eco.bio7.imagej2"};// "org.eclipse.ui.workbench","org.eclipse.core.commands"
+	String[] bundles = new String[] { "com.eco.bio7", "com.eco.bio7.libs", "com.eco.bio7.javaedit", "com.eco.bio7.image", "com.eco.bio7.WorldWind", "com.eco.bio7.scenebuilder", "com.eco.bio7.browser", "Bundled_R", "com.eco.bio7.imagej2" };// "org.eclipse.ui.workbench","org.eclipse.core.commands"
 
-	String[] bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui", "org.eclipse.swt", "org.eclipse.swt.win32.win32.x86_64",
-			"org.eclipse.draw2d", "org.eclipse.equinox.registry", "org.eclipse.equinox.common","org.eclipse.core.runtime","org.eclipse.core.jobs","org.eclipse.jface" };
-	
-	
+	String[] bundlesEclipse;
+	private String OS;
+
+	private void assignBundleLibs() {
+		OS = getOS();
+		if (OS.equals("Windows")) {
+			if (getArch().equals("64")) {
+				bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui", "org.eclipse.swt", "org.eclipse.swt.win32.win32.x86_64", "org.eclipse.draw2d", "org.eclipse.equinox.registry", "org.eclipse.equinox.common", "org.eclipse.core.runtime", "org.eclipse.core.jobs", "org.eclipse.jface" };
+			} else {
+				bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui", "org.eclipse.swt", "org.eclipse.swt.win32.win32.x86", "org.eclipse.draw2d", "org.eclipse.equinox.registry", "org.eclipse.equinox.common", "org.eclipse.core.runtime", "org.eclipse.core.jobs", "org.eclipse.jface" };
+
+			}
+		} else if (OS.equals("Mac")) {
+			bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui", "org.eclipse.swt", "org.eclipse.swt.cocoa.macosx.x86_64", "org.eclipse.draw2d", "org.eclipse.equinox.registry", "org.eclipse.equinox.common", "org.eclipse.core.runtime", "org.eclipse.core.jobs", "org.eclipse.jface" };
+		}
+
+		else if (OS.equals("Linux")) {
+			bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui", "org.eclipse.swt", "org.eclipse.swt.gtk.linux.x86_64", "org.eclipse.draw2d", "org.eclipse.equinox.registry", "org.eclipse.equinox.common", "org.eclipse.core.runtime", "org.eclipse.core.jobs", "org.eclipse.jface" };
+		}
+	}
 
 	public String scan() {
+		assignBundleLibs();
 		/*
 		 * Scan all necessary plugins for libs and calculate the paths to the
-		 * libs decoupled from JDT because we still need this for the custom Java compiler, Flow editor and Bio7 model import!
+		 * libs decoupled from JDT because we still need this for the custom
+		 * Java compiler, Flow editor and Bio7 model import!
 		 */
 		IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
-		
+
 		ArrayList<String> bundlePaths = new ArrayList<String>();
 		StringBuffer buf = new StringBuffer();
-
-		
 
 		for (int i = 0; i < bundles.length; i++) {
 			Bundle bundle = Platform.getBundle(bundles[i]);
@@ -100,37 +115,81 @@ public class ScanClassPath {
 
 				}
 			}
-			
 
 		}
-		
+
 		/* Here we add the required Eclipse *.jars! */
 		for (int i = 0; i < bundlesEclipse.length; i++) {
 			Bundle bundle = Platform.getBundle(bundlesEclipse[i]);
-			String loc = bundle.getLocation().substring(15);
-			//System.out.println("loc: " + loc);
-			/*Eclipse PDE and exported RCP paths are different (absolute vs. relative)!*/
-			if (loc.startsWith("/")) {
-				loc = loc.substring(1);
-			}
-			java.nio.file.Path path;
-            /*Calculate an absolute path to the resource. Exported RCP has a relative path!*/
-			path = Paths.get(loc);
+			if (OS.equals("Windows")) {
+				String loc = bundle.getLocation().substring(15);
+				// System.out.println("loc: " + loc);
+				/*
+				 * Eclipse PDE and exported RCP paths are different (absolute
+				 * vs. relative)!
+				 */
+				if (loc.startsWith("/")) {
+					loc = loc.substring(1);
+				}
+				java.nio.file.Path path;
+				/*
+				 * Calculate an absolute path to the resource. Exported RCP has
+				 * a relative path!
+				 */
+				path = Paths.get(loc);
 
-			//System.out.println("path:" + File.pathSeparator + path.toAbsolutePath().toString());
-			buf.append(File.pathSeparator + path.toAbsolutePath().toString());
+				// System.out.println("path:" + File.pathSeparator +
+				// path.toAbsolutePath().toString());
+				buf.append(File.pathSeparator + path.toAbsolutePath().toString());
+			} else if (OS.equals("Mac")) {
+				String loc = Platform.getInstallLocation().getURL() + "/plugins/";
+				String[] bundleName = bundle.toString().split(" ");
+				String locat = (loc + bundleName[0] + ".jar");
+				locat = locat.replace("file", "");
+
+				// java.nio.file.Path path = Paths.get(loc);
+
+				// System.out.println("path:" + File.pathSeparator +
+				// path.toAbsolutePath().toString());
+				buf.append(locat);
+			}
+
+			else if (OS.equals("Linux")) {
+				String loc = bundle.getLocation().substring(15);
+				// System.out.println("loc: " + loc);
+				/*
+				 * Eclipse PDE and exported RCP paths are different (absolute
+				 * vs. relative)!
+				 */
+
+				/*
+				 * if (loc.startsWith("/")) { loc = loc.substring(1); }
+				 */
+				loc = loc.replace("::", "");
+				loc = loc.replace(":", "/");
+				java.nio.file.Path path;
+				/*
+				 * Calculate an absolute path to the resource. Exported RCP has
+				 * a relative path!
+				 */
+
+				path = Paths.get(loc);
+
+				// System.out.println("path:" + File.pathSeparator +
+				// path.toAbsolutePath().toString());
+				buf.append(File.pathSeparator + path.toAbsolutePath().toString());
+			}
 
 			// System.out.println(File.pathSeparator +loc);
 
 		}
 
-		
 		buf.append(File.pathSeparator + bundlePaths.get(0) + "/bin");
 		buf.append(File.pathSeparator + bundlePaths.get(2) + "/bin");
 		buf.append(File.pathSeparator + bundlePaths.get(3) + "/bin");
 		buf.append(File.pathSeparator + bundlePaths.get(4) + "/bin");
 		buf.append(File.pathSeparator + bundlePaths.get(7) + "/bin");
-		
+
 		// buf.append(File.pathSeparator+Platform.getInstallLocation().getURL().getPath()+"plugins/org.eclipse.ui.workbench_3.7.0.I20110519-0100.jar");
 		// buf.append(File.pathSeparator+Platform.getInstallLocation().getURL().getPath()+"/plugins/org.eclipse.core.commands_3.6.0.I20110111-0800.jar");
 		// System.out.println(buf.toString());
@@ -154,12 +213,12 @@ public class ScanClassPath {
 	}
 
 	public IClasspathEntry[] scanForJDT() {
+		assignBundleLibs();
 		/*
 		 * Scan all necessary plugins for libs and calculate the paths to the
 		 * libs!
 		 */
 		IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
-		
 
 		ArrayList<String> bundlePaths = new ArrayList<String>();
 		ArrayList<String> buf = new ArrayList<String>();
@@ -178,7 +237,7 @@ public class ScanClassPath {
 			}
 			pathBundle = fileUrl.getFile();
 			bundlePaths.add(File.pathSeparator + pathBundle);
-			//System.out.println("2:" + File.pathSeparator + pathBundle);
+			// System.out.println("2:" + File.pathSeparator + pathBundle);
 			ManifestElement[] elements = null;
 			String requires = (String) bundle.getHeaders().get(Constants.BUNDLE_CLASSPATH);
 			// String
@@ -211,15 +270,18 @@ public class ScanClassPath {
 			}
 			if (elements != null) {
 				/* We only parse the *. jar libs! */
-				if (i == 0 | i == 1 || i == 6|| i == 8) {
+				if (i == 0 | i == 1 || i == 6 || i == 8) {
 					for (int u = 0; u < elements.length; u++) {
 
-						
-						/* We do not need the external referenced jfxswt.jar listed here (browser plugin with external reference is not listed!)! */
-						 if (i == 0 ||i == 6) {
+						/*
+						 * We do not need the external referenced jfxswt.jar
+						 * listed here (browser plugin with external reference
+						 * is not listed!)!
+						 */
+						if (i == 0 || i == 6) {
 
 							String lib = File.pathSeparator + bundlePaths.get(i) + elements[u].getValue();
-							//System.out.println(lib);
+							// System.out.println(lib);
 							String external = "external";
 							if (lib.toLowerCase().contains(external.toLowerCase()) == false) {
 								// System.out.println(lib);
@@ -241,19 +303,64 @@ public class ScanClassPath {
 		/* Here we add the required Eclipse *.jars! */
 		for (int i = 0; i < bundlesEclipse.length; i++) {
 			Bundle bundle = Platform.getBundle(bundlesEclipse[i]);
-			String loc = bundle.getLocation().substring(15);
-			//System.out.println("loc: " + loc);
-			
-			/*Eclipse PDE and exported RCP paths are different (absolute vs. relative)!*/
-			if (loc.startsWith("/")) {
-				loc = loc.substring(1);
-			}
-			java.nio.file.Path path;
-            /*Calculate an absolute path to the resource. Exported RCP has a relative path!*/
-			path = Paths.get(loc);
+			if (OS.equals("Windows")) {
+				String loc = bundle.getLocation().substring(15);
+				// System.out.println("loc: " + loc);
 
-			//System.out.println("path:" + File.pathSeparator + path.toAbsolutePath().toString());
-			buf.add(File.pathSeparator + path.toAbsolutePath().toString());
+				/*
+				 * Eclipse PDE and exported RCP paths are different (absolute
+				 * vs. relative)!
+				 */
+				if (loc.startsWith("/")) {
+					loc = loc.substring(1);
+				}
+				java.nio.file.Path path;
+				/*
+				 * Calculate an absolute path to the resource. Exported RCP has
+				 * a relative path!
+				 */
+				path = Paths.get(loc);
+
+				// System.out.println("path:" + File.pathSeparator +
+				// path.toAbsolutePath().toString());
+				buf.add(File.pathSeparator + path.toAbsolutePath().toString());
+			}
+
+			else if (OS.equals("Mac")) {
+				String loc = Platform.getInstallLocation().getURL() + "/plugins/";
+				String[] bundleName = bundle.toString().split(" ");
+				String locat = (loc + bundleName[0] + ".jar");
+				locat = locat.replace("file", "");
+
+				// java.nio.file.Path path = Paths.get(loc);
+
+				// System.out.println("path:" + File.pathSeparator +
+				// path.toAbsolutePath().toString());
+				buf.add(locat);
+			}
+
+			else if (OS.equals("Linux")) {
+				String loc = bundle.getLocation().substring(15);
+				// System.out.println("loc: " + loc);
+
+				/*
+				 * Eclipse PDE and exported RCP paths are different (absolute
+				 * vs. relative)!
+				 */
+				if (loc.startsWith("/")) {
+					loc = loc.substring(1);
+				}
+				java.nio.file.Path path;
+				/*
+				 * Calculate an absolute path to the resource. Exported RCP has
+				 * a relative path!
+				 */
+				path = Paths.get(loc);
+
+				// System.out.println("path:" + File.pathSeparator +
+				// path.toAbsolutePath().toString());
+				buf.add(File.pathSeparator + path);
+			}
 
 			// System.out.println(File.pathSeparator +loc);
 
@@ -270,52 +377,130 @@ public class ScanClassPath {
 		 * Here we add the results to the classpath. Src entries are created,
 		 * too for necessary plugins!
 		 */
+
 		IClasspathEntry[] entries = new IClasspathEntry[buf.size()];
-		for (int k = 0; k < buf.size(); k++) {
-			String rep = buf.get(k).replace(";", "");
-			/* We add the source! */
-			if (k == temp) {
+		if (OS.equals("Windows")) {
+			for (int k = 0; k < buf.size(); k++) {
+				String rep = buf.get(k).replace(";", "");
+				/* We add the source! */
+				if (k == temp) {
 
-				String pathSr = File.pathSeparator + bundlePaths.get(0) + "/src";
-				String pathSrc = pathSr.replace(";", "");
+					String pathSr = File.pathSeparator + bundlePaths.get(0) + "/src";
+					String pathSrc = pathSr.replace(";", "");
 
-				entries[k] = JavaCore.newLibraryEntry(new Path(rep), new Path(pathSrc), null, false);
-				/* With ImageJ plugin source! */
-			} else if (k == (temp + 2)) {
+					entries[k] = JavaCore.newLibraryEntry(new Path(rep), new Path(pathSrc), null, false);
+					/* With ImageJ plugin source! */
+				} else if (k == (temp + 2)) {
 
-				String pathSr = File.pathSeparator + bundlePaths.get(2) + "/src";
-				String pathSrc = pathSr.replace(";", "");
+					String pathSr = File.pathSeparator + bundlePaths.get(2) + "/src";
+					String pathSrc = pathSr.replace(";", "");
 
-				entries[k] = JavaCore.newLibraryEntry(new Path(rep), new Path(pathSrc), null, false);
-				/* With ImageJ plugin source! */
+					entries[k] = JavaCore.newLibraryEntry(new Path(rep), new Path(pathSrc), null, false);
+					/* With ImageJ plugin source! */
+				}
+
+				else if (k == (temp + 3)) {
+					String pathSr = File.pathSeparator + bundlePaths.get(3) + "/src";
+					String pathSrc = pathSr.replace(";", "");
+
+					entries[k] = JavaCore.newLibraryEntry(new Path(rep), new Path(pathSrc), null, false);
+
+				}
+				/* With WorldWind plugin source! */
+				else if (k == (temp + 4)) {
+					String pathSr = File.pathSeparator + bundlePaths.get(4) + "/src";
+					String pathSrc = pathSr.replace(";", "");
+
+					entries[k] = JavaCore.newLibraryEntry(new Path(rep), new Path(pathSrc), null, false);
+
+				}
+
+				else {
+					entries[k] = JavaCore.newLibraryEntry(new Path(rep), null, // no
+																				// source
+							null, // no source
+							false); // not exported
+
+				}
 			}
+		}
+		else{
+			for (int k = 0; k < buf.size(); k++) {
+				String rep = buf.get(k).replace("::", "");
+				rep = rep.replace(":", "/");
+				
+				/* We add the source! */
+				if (k == temp) {
 
-			else if (k == (temp + 3)) {
-				String pathSr = File.pathSeparator + bundlePaths.get(3) + "/src";
-				String pathSrc = pathSr.replace(";", "");
+					String pathSr = File.pathSeparator + bundlePaths.get(0) + "/src";
+					String pathSrc = pathSr.replace("::", "");
 
-				entries[k] = JavaCore.newLibraryEntry(new Path(rep), new Path(pathSrc), null, false);
+					entries[k] = JavaCore.newLibraryEntry(new Path(rep), new Path(pathSrc), null, false);
+					/* With ImageJ plugin source! */
+				} else if (k == (temp + 2)) {
 
-			}
-			/* With WorldWind plugin source! */
-			else if (k == (temp + 4)) {
-				String pathSr = File.pathSeparator + bundlePaths.get(4) + "/src";
-				String pathSrc = pathSr.replace(";", "");
+					String pathSr = File.pathSeparator + bundlePaths.get(2) + "/src";
+					String pathSrc = pathSr.replace("::", "");
 
-				entries[k] = JavaCore.newLibraryEntry(new Path(rep), new Path(pathSrc), null, false);
+					entries[k] = JavaCore.newLibraryEntry(new Path(rep), new Path(pathSrc), null, false);
+					/* With ImageJ plugin source! */
+				}
 
-			}
+				else if (k == (temp + 3)) {
+					String pathSr = File.pathSeparator + bundlePaths.get(3) + "/src";
+					String pathSrc = pathSr.replace("::", "");
 
-			else {
-				entries[k] = JavaCore.newLibraryEntry(new Path(rep), null, // no
-																			// source
-						null, // no source
-						false); // not exported
+					entries[k] = JavaCore.newLibraryEntry(new Path(rep), new Path(pathSrc), null, false);
 
+				}
+				/* With WorldWind plugin source! */
+				else if (k == (temp + 4)) {
+					String pathSr = File.pathSeparator + bundlePaths.get(4) + "/src";
+					String pathSrc = pathSr.replace("::", "");
+
+					entries[k] = JavaCore.newLibraryEntry(new Path(rep), new Path(pathSrc), null, false);
+
+				}
+
+				else {
+					entries[k] = JavaCore.newLibraryEntry(new Path(rep), null, // no
+																				// source
+							null, // no source
+							false); // not exported
+
+				}
 			}
 		}
 
 		return entries;
+	}
+
+	public String getOS() {
+		String OS = null;
+		String osname = System.getProperty("os.name");
+		if (osname.startsWith("Windows")) {
+			OS = "Windows";
+		} else if (osname.equals("Linux")) {
+			OS = "Linux";
+		} else if (osname.startsWith("Mac")) {
+			OS = "Mac";
+		}
+		return OS;
+	}
+
+	/*
+	 * From:
+	 * http://stackoverflow.com/questions/4748673/how-can-i-check-the-bitness-of
+	 * -my-os-using-java-j2se-not-os-arch/5940770#5940770 Author: ChrisH:
+	 * http://stackoverflow.com/users/71109/chrish
+	 */
+
+	public String getArch() {
+		String arch = System.getenv("PROCESSOR_ARCHITECTURE");
+		String wow64Arch = System.getenv("PROCESSOR_ARCHITEW6432");
+
+		String realArch = arch.endsWith("64") || wow64Arch != null && wow64Arch.endsWith("64") ? "64" : "32";
+		return realArch;
 	}
 
 }

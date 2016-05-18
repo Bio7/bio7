@@ -599,7 +599,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "Ä, ,ä,Ö,ö,Ü,ü,+,!,ü,§,$,%,&,/,(,),=,?,[,],°,^,;,:,>,<,|,*,µ,\\,”,@,\",“,”,´,`,~,#,},{,²,³,_,-");
 		}
 
-		//store.setDefault("RSERVE_NATIVE_START", true);
+		store.setDefault("DETECT_R_PROCESS", true);
 		store.setDefault("R_DEBUG_PORT", 21555);
 
 		store.setDefault("LINUX_SHELL", "GNOME");
@@ -1158,6 +1158,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 	private void startupScripts() {
 		String startupDirectory = null;
+		String startupCommands=null;
 		IPreferenceStore store = null;
 
 		try {
@@ -1168,15 +1169,16 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		}
 		if (store != null) {
 			startupDirectory = store.getString(PreferenceConstants.D_STRING);
+			startupCommands = store.getString("BIO7_STARTUP_COMMANDS");
 		}
 
 		if (startupDirectory != null && startupDirectory != "") {
 
 			File[] files = new Util().ListFilesDirectory(new File(startupDirectory), new String[] { ".java", ".r", ".R", ".bsh", ".groovy", ".py" });
-			System.out.println(files.length);
+			//System.out.println(files.length);
 			if (files.length > 0) {
 				for (int i = 0; i < files.length; i++) {
-					System.out.println(files[i].getName());
+					//System.out.println(files[i].getName());
 					if (files[i].getName().endsWith(".R") || files[i].getName().endsWith(".r")) {
 						if (RServe.isAliveDialog()) {
 							if (RState.isBusy() == false) {
@@ -1262,6 +1264,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				}
 
 			}
+		}
+		/*Evaluate a startup command from the preferences dialog in Groovy!*/
+		if (startupCommands != null && startupCommands.isEmpty()==false) {
+			GroovyInterpreter.interpretJob(startupCommands, null);
 		}
 
 	}

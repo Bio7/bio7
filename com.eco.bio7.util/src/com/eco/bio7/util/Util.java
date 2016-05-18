@@ -13,6 +13,11 @@ import org.eclipse.ui.PlatformUI;
 
 public class Util {
 
+	/**
+	 * A method to detetct the Operating System.
+	 * 
+	 * @return the name of the Operating System (Windows, Linux, Mac)
+	 */
 	public static String getOS() {
 		String OS = null;
 		String osname = System.getProperty("os.name");
@@ -24,6 +29,27 @@ public class Util {
 			OS = "Mac";
 		}
 		return OS;
+	}
+
+	/*
+	 * From:
+	 * http://stackoverflow.com/questions/4748673/how-can-i-check-the-bitness-of
+	 * -my-os-using-java-j2se-not-os-arch/5940770#5940770 
+	 * Author: ChrisH:
+	 * http://stackoverflow.com/users/71109/chrish
+	 */
+	/**
+	 * A method to detect the architecture of the Operating System (32-bit,
+	 * 64-bit).
+	 * 
+	 * @return the architecture (32, 64)
+	 */
+	public static String getArch() {
+		String arch = System.getenv("PROCESSOR_ARCHITECTURE");
+		String wow64Arch = System.getenv("PROCESSOR_ARCHITEW6432");
+
+		String realArch = arch.endsWith("64") || wow64Arch != null && wow64Arch.endsWith("64") ? "64" : "32";
+		return realArch;
 	}
 
 	public File[] ListFilesDirectory(File filedirectory, final String[] extensions) {
@@ -42,9 +68,7 @@ public class Util {
 		// Filter the extension of the file.
 		FilenameFilter filter = new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2])
-						|| name.endsWith(extensions[3]) || name.endsWith(extensions[4])
-						|| name.endsWith(extensions[5]));
+				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2]) || name.endsWith(extensions[3]) || name.endsWith(extensions[4]) || name.endsWith(extensions[5]));
 			}
 		};
 
@@ -128,17 +152,18 @@ public class Util {
 		}
 		return null;
 	}
+
 	/**
 	 * Returns a default display.
 	 * 
 	 * @return a display
 	 */
 	public static Display getDisplay() {
-	      Display display = Display.getCurrent();
-	      //may be null if outside the UI thread
-	      if (display == null)
-	         display = Display.getDefault();
-	      return display;		
-	   }
+		Display display = Display.getCurrent();
+		// may be null if outside the UI thread
+		if (display == null)
+			display = Display.getDefault();
+		return display;
+	}
 
 }
