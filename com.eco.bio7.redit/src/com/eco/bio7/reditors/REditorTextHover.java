@@ -86,7 +86,7 @@ public class REditorTextHover implements ITextHover, ITextHoverExtension, ITextH
 						e.printStackTrace();
 					}
 
-					if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false) {
+					if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false && (c == ':') == false) {
 						break;
 					}
 					if (offset + length >= doc.getLength() - 1) {
@@ -110,7 +110,7 @@ public class REditorTextHover implements ITextHover, ITextHoverExtension, ITextH
 						e.printStackTrace();
 					}
 
-					if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false) {
+					if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false&& (c == ':') == false) {
 						break;
 					}
 

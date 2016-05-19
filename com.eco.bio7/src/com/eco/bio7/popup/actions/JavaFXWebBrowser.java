@@ -25,6 +25,8 @@ public class JavaFXWebBrowser {
 	AnchorPane anchorPane = new AnchorPane();
 
 	WebView brow = new WebView();
+	WebEngine webEngine = brow.getEngine();
+	webEngine.setJavaScriptEnabled(true);
 	brow.getChildrenUnmodifiable().addListener(new ListChangeListener<Node>() {
 		@Override
 		public void onChanged(Change<? extends Node> change) {

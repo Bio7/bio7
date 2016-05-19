@@ -293,6 +293,10 @@ public class RRefPhaseListen extends RBaseListener {
 		// String callText = sub.get(0).getText();
 
 		String funcName = stop.getText();
+		/*Ignore functions without assigned names!*/
+		if(funcName.equals("function")){
+			return;
+		}
 		// System.out.println(funcName);
 		/* Return number of args and names after function call! */
 		RSymbol meth = currentScope.resolve(funcName);

@@ -33,6 +33,8 @@ import java.util.regex.Pattern;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
@@ -102,6 +104,7 @@ import com.eco.bio7.reditor.actions.OpenPreferences;
 import com.eco.bio7.reditor.actions.RefreshLoadedPackagesForCompletion;
 import com.eco.bio7.reditor.actions.UnsetComment;
 import com.eco.bio7.reditor.antlr.Parse;
+import com.eco.bio7.reditor.antlr.WordMarkerCreation;
 import com.eco.bio7.reditor.outline.REditorLabelProvider;
 import com.eco.bio7.reditor.outline.REditorOutlineNode;
 import com.eco.bio7.reditor.outline.REditorTreeContentProvider;
@@ -385,8 +388,22 @@ public class REditor extends TextEditor {
 	 * results will be marked!
 	 */
 	public void markWords(int offset, IDocument doc, IEditorPart editor) {
+		
+		WordMarkerCreation markerJob = new WordMarkerCreation(offset, editor,doc);
 
-		int length = 0;
+		markerJob.addJobChangeListener(new JobChangeAdapter() {
+			public void done(IJobChangeEvent event) {
+				if (event.getResult().isOK()) {
+
+				} else {
+
+				}
+			}
+		});
+		markerJob.setUser(true);
+		markerJob.schedule();
+
+		/*int length = 0;
 		int minusLength = 0;
 
 		while (true) {
@@ -448,13 +465,13 @@ public class REditor extends TextEditor {
 					e.printStackTrace();
 				}
 			}
-			/*
+			
 			 * Display display = PlatformUI.getWorkbench().getDisplay();
 			 * display.syncExec(new Runnable() {
 			 * 
 			 * public void run() { textViewer.setSelectedRange(wordOffset,
 			 * resultedLength); } });
-			 */
+			 
 
 			if (searchForWord != null) {
 				IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
@@ -485,11 +502,11 @@ public class REditor extends TextEditor {
 
 			}
 
-			/*
+			
 			 * try { htmlHelpText = textViewer.getDocument().get(wordOffset,
 			 * resultedLength); } catch (BadLocationException e) { // TODO
 			 * Auto-generated catch block e.printStackTrace(); }
-			 */
+			 
 		} else {
 			IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
 			try {
@@ -498,7 +515,7 @@ public class REditor extends TextEditor {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}
+		}*/
 	}
 
 	/*
@@ -895,7 +912,7 @@ public class REditor extends TextEditor {
 
 	public void outlineInputChanged(Vector nodesALt, Vector nodesNew) {
 
-		if (contentOutlineViewer != null) {
+		if (contentOutlineViewer != null&&contentOutlineViewer.getTree().isDisposed()==false) {
 			/* Store temporary the old expanded elements! */
 			expanded = contentOutlineViewer.getExpandedElements();
 

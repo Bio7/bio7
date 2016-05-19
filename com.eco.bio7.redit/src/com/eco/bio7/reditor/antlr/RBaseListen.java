@@ -540,15 +540,20 @@ public class RBaseListen extends RBaseListener {
 
 	/* Calculates the line from the editor document! */
 	private int calculateLine(int lineStart) {
-		IDocumentProvider provider = editor.getDocumentProvider();
-		IDocument document = provider.getDocument(editor.getEditorInput());
+		IDocument document = null;
 		int line = 0;
+		if(editor.getEditorInput()!=null&&editor.getDocumentProvider()!=null){
+		IDocumentProvider provider = editor.getDocumentProvider();
+		 document = provider.getDocument(editor.getEditorInput());
+		
+		
 		try {
 			line = document.getLineOfOffset(lineStart) + 1;
 		} catch (BadLocationException e) {
 			// TODO Auto-generated catch block
 			System.out.println("Bad line location!");
 			// e.printStackTrace();
+		}
 		}
 		return line;
 	}
