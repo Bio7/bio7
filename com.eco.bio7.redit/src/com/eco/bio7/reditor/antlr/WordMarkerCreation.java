@@ -8,7 +8,10 @@ import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.ILock;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextOperationTarget;
@@ -20,6 +23,7 @@ public class WordMarkerCreation extends WorkspaceJob {
 	private IEditorPart editor;
 	private IDocument doc;
 	private int offset;
+	private static ILock lock = Job.getJobManager().newLock();
 
 	public WordMarkerCreation(int offset, IEditorPart editor, IDocument doc) {
 		super("marker");
@@ -34,6 +38,21 @@ public class WordMarkerCreation extends WorkspaceJob {
 	public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
 		monitor.beginTask("Create Markers", IProgressMonitor.UNKNOWN);
 
+		create();
+
+		return Status.OK_STATUS;
+	}
+
+	private void deleteMarkers(IResource resource) {
+		try {
+			resource.deleteMarkers("com.eco.bio7.reditor.wordmarker", false, IResource.DEPTH_ZERO);
+		} catch (CoreException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	}
+
+	public void create() {
 		int length = 0;
 		int minusLength = 0;
 
@@ -91,6 +110,7 @@ public class WordMarkerCreation extends WorkspaceJob {
 				ITextViewer textViewer = (ITextViewer) target;
 				try {
 					searchForWord = textViewer.getDocument().get(wordOffset, resultedLength);
+					
 				} catch (BadLocationException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -105,25 +125,33 @@ public class WordMarkerCreation extends WorkspaceJob {
 			 */
 
 			if (searchForWord != null) {
-
-				deleteMarkers(resource);
-				Pattern findWordPattern = Pattern.compile("\\b" + searchForWord + "\\b");
-				Matcher matcher = findWordPattern.matcher(doc.get());
-				while (matcher.find()) {
-					int offsetStart = matcher.start();
-					int offsetEnd = matcher.end();
-					// do something with offsetStart and offsetEnd
+				/*Create a lock for the marker job. Else some marker exceptions occur, see:
+				 *https://eclipse.org/articles/Article-Concurrency/jobs-api.html*/
+				try {
+					lock.acquire();
+					deleteMarkers(resource);
+					Pattern findWordPattern = Pattern.compile("" + searchForWord + "");
+					Matcher matcher = findWordPattern.matcher(doc.get());
 					IMarker marker;
+					while (matcher.find()) {
+						int offsetStart = matcher.start();
+						int offsetEnd = matcher.end();
+						// do something with offsetStart and offsetEnd
 
-					try {
+						try {
 
-						marker = resource.createMarker("com.eco.bio7.reditor.wordmarker");
-						marker.setAttribute(IMarker.CHAR_START, offsetStart);
-						marker.setAttribute(IMarker.CHAR_END, offsetEnd);
-					} catch (CoreException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+							marker = resource.createMarker("com.eco.bio7.reditor.wordmarker");
+
+							marker.setAttribute(IMarker.CHAR_START, offsetStart);
+							marker.setAttribute(IMarker.CHAR_END, offsetEnd);
+						} catch (CoreException e) {
+							System.out.println("Error:" + offsetStart + "" + offsetEnd);
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}
+				} finally {
+					lock.release();
 				}
 
 			}
@@ -134,19 +162,14 @@ public class WordMarkerCreation extends WorkspaceJob {
 			 * Auto-generated catch block e.printStackTrace(); }
 			 */
 		} else {
-
-			deleteMarkers(resource);
+			try {
+				lock.acquire();
+				deleteMarkers(resource);
+			} finally {
+				lock.release();
+			}
 		}
-		return Status.OK_STATUS;
-	}
 
-	private void deleteMarkers(IResource resource) {
-		try {
-			resource.deleteMarkers("com.eco.bio7.reditor.wordmarker", false, IResource.DEPTH_ZERO);
-		} catch (CoreException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
 	}
 
 }

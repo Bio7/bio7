@@ -11,6 +11,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.ILock;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.IEditorInput;
@@ -27,6 +29,8 @@ public class ErrorWarnMarkerCreation extends WorkspaceJob {
 	private int offSymbolTokenLength = 0;
 	String quickFix = null;
 	private ArrayList<ErrorWarnStore> errors;
+	private static ILock lock = Job.getJobManager().newLock();
+
 
 	public ErrorWarnMarkerCreation(String name, REditor editor, ArrayList<ErrorWarnStore> errors) {
 		super(name);
@@ -91,6 +95,8 @@ public class ErrorWarnMarkerCreation extends WorkspaceJob {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
+					try {
+						lock.acquire();
 					IMarker marker;
 					if (warn) {
 
@@ -151,6 +157,10 @@ public class ErrorWarnMarkerCreation extends WorkspaceJob {
 
 							ex.printStackTrace();
 						}
+					}
+					}
+					finally{
+						lock.release();
 					}
 				}
 			}

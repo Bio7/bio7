@@ -394,7 +394,7 @@ public class REditor extends TextEditor {
 		markerJob.addJobChangeListener(new JobChangeAdapter() {
 			public void done(IJobChangeEvent event) {
 				if (event.getResult().isOK()) {
-
+                 
 				} else {
 
 				}
