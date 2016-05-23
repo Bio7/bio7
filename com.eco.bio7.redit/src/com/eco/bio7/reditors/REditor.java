@@ -803,7 +803,7 @@ public class REditor extends TextEditor {
 		 * ,PlatformUI.getWorkbench().getActiveWorkbenchWindow());
 		 * setAction("Refactor", refactor);
 		 */
-		reloadPackages = new com.eco.bio7.reditor.actions.RefreshLoadedPackagesForCompletion("Reload Packages Completion");
+		reloadPackages = new com.eco.bio7.reditor.actions.RefreshLoadedPackagesForCompletion("Reload Packages Completion",this);
 		setAction("Reload Packages Completion", reloadPackages);		
 
 		preferences = new com.eco.bio7.reditor.actions.OpenPreferences("Font Preferences");

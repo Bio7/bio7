@@ -1,5 +1,7 @@
 package com.eco.bio7.rcp;
 
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IWorkbench;
@@ -26,6 +28,12 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 		super.initialize(configurer);
 		configurer.setSaveAndRestore(false);
 	}
+	
+	
+	  /*Refresh e.g. the Project Explorer when opening!*/
+	  public IAdaptable getDefaultPageInput() {
+	    return  ResourcesPlugin.getWorkspace().getRoot();
+	  }
 
 	public String getInitialWindowPerspectiveId() {
 		return PERSPECTIVE_ID;

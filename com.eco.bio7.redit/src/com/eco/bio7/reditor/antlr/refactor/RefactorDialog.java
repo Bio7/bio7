@@ -115,7 +115,7 @@ public class RefactorDialog extends Dialog {
 		// args.setText(id);
 		globalCheckbox = new Button(container, SWT.CHECK);
 		GridData gd_btnCheckButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_btnCheckButton.heightHint = 25;
+		gd_btnCheckButton.heightHint = 30;
 		globalCheckbox.setLayoutData(gd_btnCheckButton);
 		globalCheckbox.setText("Global?");
 

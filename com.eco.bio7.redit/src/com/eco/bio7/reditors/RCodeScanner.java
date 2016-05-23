@@ -188,10 +188,10 @@ public class RCodeScanner extends RuleBasedScanner {
 		 * Check if we are still in the number
 		 */
 		public boolean isWordPart(char c) {
-			// ok, we have to test for scientific notation e.g.: 10.9e10
+			// Test for scientific notation e.g.: 10.9e10
 
 			if ((c == 'x' || c == 'X') && buffer.length() == 1 && buffer.charAt(0) == '0') {
-				// it is an hexadecimal
+				// Hexadecimal!
 				buffer.append(c);
 				isInHexa = true;
 				return true;

@@ -14,16 +14,20 @@ import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.rpreferences.template.CalculateRProposals;
 import com.eco.bio7.util.Util;
 
 public class RefreshLoadedPackagesForCompletion extends Action {
 
-	public RefreshLoadedPackagesForCompletion(String text) {
+	private REditor rEditor;
+
+	public RefreshLoadedPackagesForCompletion(String text, REditor rEditor) {
 		super(text);
 		setActionDefinitionId("com.eco.bio7.reditor.rserve.refresh.packages");
 		setId("com.eco.bio7.reditor.refresh.packages");
+		this.rEditor=rEditor;
 
 	}
 
@@ -60,6 +64,9 @@ public class RefreshLoadedPackagesForCompletion extends Action {
 							CalculateRProposals.setStartupTemplate(false);
 							CalculateRProposals.loadRCodePackageTemplates();
 							CalculateRProposals.updateCompletions();
+							/*Reparse the document!*/
+							Parse parse=rEditor.getParser();
+							parse.parse();
 						}
 
 					}

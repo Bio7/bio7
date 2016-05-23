@@ -394,6 +394,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 				if (funcNameFromProposals.equals(statistics[i])) {
 
 					String calc = statisticsSet[i];
+					
 					/* Find the arguments in the template proposals! */
 					int parOpen = calc.indexOf("(");
 					int parClose = calc.lastIndexOf(")");
@@ -615,15 +616,19 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 	 * Author: Tagir Valeev Profile:
 	 * http://stackoverflow.com/users/4856258/tagir-valeev
 	 */
-	public List<String> split(String input) {
+	public List<String> split(String input2) {
 		int nParens = 0;
 		int start = 0;
+		/*Temporary replace comma in quotes else the argument "," will be splitted!*/
+		String tempReplacement= "$$null$$";
+		String input=input2.replace("\",\"",tempReplacement);
 		List<String> result = new ArrayList<>();
 		for (int i = 0; i < input.length(); i++) {
 			switch (input.charAt(i)) {
 			case ',':
 				if (nParens == 0) {
-					result.add(input.substring(start, i));
+					/*Replace the temporary comma in quote replacement!*/
+					result.add(input.substring(start, i).replace(tempReplacement, "\",\""));
 					start = i + 1;
 				}
 				break;
@@ -639,7 +644,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		}
 		if (nParens > 0)
 			throw new IllegalArgumentException("Missing closing parenthesis");
-		result.add(input.substring(start));
+		result.add(input.substring(start).replace(tempReplacement, "\",\""));
 		return result;
 	}
 

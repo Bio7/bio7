@@ -52,12 +52,9 @@ public class RBaseListen extends RBaseListener {
 	// public ClassModel cm = new ClassModel();
 	private REditor editor;
 	private Parser parser;
-	private Stack<REditorOutlineNode> methods = new Stack<REditorOutlineNode>();// A
-																				// stack
-																				// for
-																				// nested
-																				// nodes!
-	private Stack<RScope> scopes = new Stack<RScope>();// Just for variable
+	/* A stack for nested nodes!*/
+	private Stack<REditorOutlineNode> methods = new Stack<REditorOutlineNode>();
+	//private Stack<RScope> scopes = new Stack<RScope>();// Just for variable
 														// lookup in current
 														// scope!
 	/* A stack to store the method declarations and calls in scope! */
@@ -68,7 +65,7 @@ public class RBaseListen extends RBaseListener {
 	private IPreferenceStore store;
 	public ParseTreeProperty<Scope> scopeNew = new ParseTreeProperty<Scope>();
 	public RGlobalScope globals;
-	public Scope currentScope; // define symbols in this scop
+	public Scope currentScope; // Define symbols in this scope.
 
 	public RBaseListen(CommonTokenStream tokens, REditor editor, Parser parser) {
 		this.tokens = tokens;
@@ -81,7 +78,7 @@ public class RBaseListen extends RBaseListener {
 
 	public void enterProg(RParser.ProgContext ctx) {
 
-		scopes.push(new RScope(null));
+		//scopes.push(new RScope(null));
 
 		globals = new RGlobalScope(null);
 		currentScope = globals;
@@ -94,13 +91,14 @@ public class RBaseListen extends RBaseListener {
 		// storeDeclCall.pop();
 		// System.out.println(globals);
 		/* Exit scope! */
-		scopes.pop();
+		//scopes.pop();
 		if (methods.empty() == false) {
 			methods.pop();
 		}
 
 		/* Has the function be called in this scope? */
 		DeclCallStore st = storeDeclCall.peek();
+		/*Avoid duplicates!*/
 		Set<String> subScope = st.substract();
 		Set<String> subScopeVar = st.substractVars();
 
@@ -115,7 +113,7 @@ public class RBaseListen extends RBaseListener {
 
 	public void exitE19DefFunction(RParser.E19DefFunctionContext ctx) {
 		/* Exit scope! */
-		scopes.pop();
+		//scopes.pop();
 		if (methods.empty() == false) {
 			methods.pop();
 		}
@@ -149,19 +147,14 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
-	@Override
+	
 	public void enterE19DefFunction(RParser.E19DefFunctionContext ctx) {
 		/*
 		 * Insert function as current scope with a parent current scope
 		 * (scope.peek)!
 		 */
 
-		scopes.push(new RScope(scopes.peek()));
+		//scopes.push(new RScope(scopes.peek()));
 
 		Token firstToken = ctx.getStart();
 		Token lastToken = ctx.getStop();
@@ -288,7 +281,7 @@ public class RBaseListen extends RBaseListener {
 		}
 	}
 
-	/* if condition! */
+	/* If condition! */
 	public void enterE21(RParser.E21Context ctx) {
 
 		Token firstToken = ctx.getStart();
@@ -304,7 +297,7 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	/* if condition 2 of grammar file! */
+	/* If condition 2 of grammar file! */
 	public void enterE22(RParser.E22Context ctx) {
 
 		Token firstToken = ctx.getStart();
@@ -320,7 +313,7 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	/* for loop! */
+	/* For loop! */
 	public void enterForLoop(RParser.ForLoopContext ctx) {
 
 		Token firstToken = ctx.getStart();
@@ -348,7 +341,7 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	/* while loop! */
+	/* While loop! */
 	public void enterE24(RParser.E24Context ctx) {
 
 		Token firstToken = ctx.getStart();
@@ -429,8 +422,8 @@ public class RBaseListen extends RBaseListener {
 
 				if (methods.size() == 0) {
 					if (checkVarName(name)) {
-						RScope scope = scopes.peek();
-						scope.add(name);
+						//RScope scope = scopes.peek();
+						//scope.add(name);
 
 						/* Create a new a new var in current scope! */
 						RVariableSymbol var = new RVariableSymbol(name);
@@ -449,8 +442,8 @@ public class RBaseListen extends RBaseListener {
 
 				} else {
 					if (checkVarName(name)) {
-						RScope scope = scopes.peek();
-						scope.add(name);
+						//RScope scope = scopes.peek();
+						//scope.add(name);
 						/* Create a new a new var in current scope! */
 						RVariableSymbol var = new RVariableSymbol(name);
 						currentScope.define(var); // Define symbol in
@@ -473,8 +466,8 @@ public class RBaseListen extends RBaseListener {
 				String name = tokens.get(start + 2).getText();
 				if (methods.size() == 0) {
 					if (checkVarName(name)) {
-						RScope scope = scopes.peek();
-						scope.add(name);
+						//RScope scope = scopes.peek();
+						//scope.add(name);
 						/* Create a new a new var in current scope! */
 						RVariableSymbol var = new RVariableSymbol(name);
 						currentScope.define(var); // Define symbol in
@@ -491,8 +484,8 @@ public class RBaseListen extends RBaseListener {
 
 				} else {
 					if (checkVarName(name)) {
-						RScope scope = scopes.peek();
-						scope.add(name);
+						//RScope scope = scopes.peek();
+						//scope.add(name);
 						/* Create a new a new var in current scope! */
 						RVariableSymbol var = new RVariableSymbol(name);
 						currentScope.define(var);
@@ -644,11 +637,18 @@ public class RBaseListen extends RBaseListener {
 	 */
 	private boolean checkVarName(String varName) {
 		boolean check;
-		RScope scope = scopes.peek();
+		/*RScope scope = scopes.peek();
 		if (scope.inScope(varName)) {
 
 			check = false;
 		} else {
+			check = true;
+		}*/
+		RSymbol var=currentScope.resolve(varName);
+		if(var instanceof RVariableSymbol){
+			check = false;
+		}
+		else{
 			check = true;
 		}
 		return check;

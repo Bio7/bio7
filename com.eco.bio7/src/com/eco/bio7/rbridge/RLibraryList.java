@@ -25,6 +25,8 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
@@ -38,7 +40,9 @@ public class RLibraryList extends Shell {
 		super(display, style);
 		
 		//setImage(SWTResourceManager.getImage(RLibraryList.class, "/pics/logo.gif"));
-				
+		/* Reparse the document! */
+		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		
 						allPackagesList = new List(this, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
 						allPackagesList.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 4));
 						
@@ -47,7 +51,7 @@ public class RLibraryList extends Shell {
 										if (RServe.isAlive()) {
 											if (RState.isBusy() == false) {
 												RState.setBusy(true);
-												LoadRLibrarysJob Do = new LoadRLibrarysJob();
+												LoadRLibrarysJob Do = new LoadRLibrarysJob(editor);
 												Do.addJobChangeListener(new JobChangeAdapter() {
 													public void done(IJobChangeEvent event) {
 														if (event.getResult().isOK()) {

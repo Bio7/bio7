@@ -10,6 +10,7 @@
  *******************************************************************************/
 
 package com.eco.bio7.rbridge;
+
 /*******************************************************************************
  * Copyright (c) 2007-2014 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
@@ -25,20 +26,24 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
+
+import com.eco.bio7.reditor.antlr.Parse; 
+import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.rpreferences.template.CalculateRProposals;
 import com.eco.bio7.rpreferences.template.RCompletionProcessor;
 
-
-
-public class LoadRLibrarysJob extends WorkspaceJob {
+public class LoadRLibrarysJob extends WorkspaceJob { 
 
 	protected String[] items;
+	private IEditorPart editor;
 
-	public LoadRLibrarysJob() {
+	public LoadRLibrarysJob(IEditorPart editor) {
 		super("Load...");
+		this.editor=editor;
 
 	}
 
@@ -52,32 +57,41 @@ public class LoadRLibrarysJob extends WorkspaceJob {
 					items = RLibraryList.getAllPackagesList().getSelection();
 				}
 			});
-   
+
 			for (int i = 0; i < items.length; i++) {
 				RConnection c = RServe.getConnection();
-				
-					try {
-						c.eval("try(library(" + items[i] + "))");
-						
-						/*Function loaded at Rserve startup. Writes the available functions to a file!*/
-						c.eval(".bio7WriteFunctionDef();");
-					} catch (RserveException e) {
-						
-						e.printStackTrace();
-					}
-					System.out.println("Loaded library "+items[i]);
-				
+
+				try {
+					c.eval("try(library(" + items[i] + "))");
+
+					/*
+					 * Function loaded at Rserve startup. Writes the available
+					 * functions to a file!
+					 */
+					c.eval(".bio7WriteFunctionDef();");
+				} catch (RserveException e) {
+
+					e.printStackTrace();
+				}
+				System.out.println("Loaded library " + items[i]);
+
 			}
-			
-			/*Reload the code proposals (not the templates) for the R editor!*/
+
+			/*
+			 * Reload the code proposals (not the templates) for the R editor!
+			 */
 			CalculateRProposals.setStartupTemplate(false);
 			CalculateRProposals.loadRCodePackageTemplates();
 			CalculateRProposals.updateCompletions();
+			if (editor instanceof REditor) {
+				REditor rEditor = (REditor) editor;
+				Parse parse = rEditor.getParser();
+				parse.parse();
+			}
 			
 		}
 
 		return Status.OK_STATUS;
 	}
-	
 
 }
