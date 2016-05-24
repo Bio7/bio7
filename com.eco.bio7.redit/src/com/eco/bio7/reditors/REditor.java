@@ -26,10 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Stack;
 import java.util.Vector;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -47,7 +44,6 @@ import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.source.Annotation;
@@ -62,9 +58,7 @@ import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.window.DefaultToolTip;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.KeyEvent;
@@ -108,7 +102,6 @@ import com.eco.bio7.reditor.antlr.WordMarkerCreation;
 import com.eco.bio7.reditor.outline.REditorLabelProvider;
 import com.eco.bio7.reditor.outline.REditorOutlineNode;
 import com.eco.bio7.reditor.outline.REditorTreeContentProvider;
-import com.eco.bio7.rpreferences.template.RCompletionProcessor;
 
 /**
  * 
@@ -156,9 +149,9 @@ public class REditor extends TextEditor {
 
 	public ProjectionViewer viewer;
 
-	Stack<Boolean> treeItemLine = new Stack<Boolean>();
+	/*Stack<Boolean> treeItemLine = new Stack<Boolean>();
 
-	protected boolean found;
+	protected boolean found;*/
 
 	protected ArrayList<TreeItem> selectedItems;
 
@@ -264,47 +257,21 @@ public class REditor extends TextEditor {
 
 											e1.printStackTrace();
 										}
+                                       // new WalkTreeNodes(contentOutlineViewer, lineNumber,selectedItems);
+                                        WalkTreeNodes walkTreeJob = new WalkTreeNodes(contentOutlineViewer, lineNumber,selectedItems);
 
-										TreeItem treeItem = null;
-										if (contentOutlineViewer.getTree().isDisposed() == false) {
-											if (contentOutlineViewer.getTree().getItemCount() > 0) {
-												if (contentOutlineViewer.getTree().getItem(0).isDisposed() == false) {
-													treeItem = contentOutlineViewer.getTree().getItem(0);
-													contentOutlineViewer.getTree().setRedraw(false);
+                                        walkTreeJob.addJobChangeListener(new JobChangeAdapter() {
+                                			public void done(IJobChangeEvent event) {
+                                				if (event.getResult().isOK()) {
+                                                 
+                                				} else {
 
-													// Object[] exp =
-													// contentOutlineViewer.getExpandedElements();
-
-													TreePath[] treePaths = contentOutlineViewer.getExpandedTreePaths();
-													contentOutlineViewer.expandAll();
-													contentOutlineViewer.refresh();
-													walkTreeLineNumber(treeItem, lineNumber + 1);
-
-													// contentOutlineViewer.setExpandedElements(expanded);
-
-													contentOutlineViewer.setExpandedTreePaths(treePaths);
-													for (int i = 0; i < selectedItems.size(); i++) {
-														TreeItem it = (TreeItem) selectedItems.get(i);
-														it.setExpanded(true);
-														TreeItem parent = it;
-														while (parent != null) {
-															if (parent.getParentItem() != null) {
-																parent = parent.getParentItem();
-																parent.setExpanded(true);
-															} else {
-																break;
-															}
-
-														}
-														contentOutlineViewer.refresh(it);
-													}
-
-													contentOutlineViewer.getTree().setRedraw(true);
-
-												}
-
-											}
-										}
+                                				}
+                                			}
+                                		});
+                                        walkTreeJob.setUser(true);
+                                        walkTreeJob.schedule();
+										
 									}
 
 								}
@@ -403,190 +370,10 @@ public class REditor extends TextEditor {
 		markerJob.setUser(true);
 		markerJob.schedule();
 
-		/*int length = 0;
-		int minusLength = 0;
-
-		while (true) {
-			char c = 0;
-			if (offset + length >= 0 && offset + length < doc.getLength()) {
-
-				try {
-					c = doc.getChar(offset + length);
-				} catch (BadLocationException e) {
-
-					e.printStackTrace();
-				}
-
-				if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false && (c == '_') == false)
-					break;
-
-				length++;
-				if (offset + length >= doc.getLength()) {
-					break;
-				}
-			} else {
-				break;
-			}
-		}
-		while (true) {
-			char c = 0;
-			if (offset + length >= 0 && offset + length < doc.getLength()) {
-
-				try {
-					c = doc.getChar(offset + minusLength);
-				} catch (BadLocationException e) {
-
-					e.printStackTrace();
-				}
-
-				if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false && (c == '_') == false)
-					break;
-
-				minusLength--;
-				if (offset + minusLength <= 0) {
-					break;
-				}
-			} else {
-				break;
-			}
-		}
-		final int wordOffset = offset + minusLength + 1;
-		final int resultedLength = length - minusLength - 1;
-
-		if (resultedLength > 0) {
-			String searchForWord = null;
-			ITextOperationTarget target = (ITextOperationTarget) editor.getAdapter(ITextOperationTarget.class);
-			if (target instanceof ITextViewer) {
-				ITextViewer textViewer = (ITextViewer) target;
-				try {
-					searchForWord = textViewer.getDocument().get(wordOffset, resultedLength);
-				} catch (BadLocationException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			
-			 * Display display = PlatformUI.getWorkbench().getDisplay();
-			 * display.syncExec(new Runnable() {
-			 * 
-			 * public void run() { textViewer.setSelectedRange(wordOffset,
-			 * resultedLength); } });
-			 
-
-			if (searchForWord != null) {
-				IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
-				try {
-					resource.deleteMarkers("com.eco.bio7.reditor.wordmarker", false, IResource.DEPTH_ZERO);
-				} catch (CoreException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-				Pattern findWordPattern = Pattern.compile("\\b" + searchForWord + "\\b");
-				Matcher matcher = findWordPattern.matcher(doc.get());
-				while (matcher.find()) {
-					int offsetStart = matcher.start();
-					int offsetEnd = matcher.end();
-					// do something with offsetStart and offsetEnd
-					IMarker marker;
-
-					try {
-
-						marker = resource.createMarker("com.eco.bio7.reditor.wordmarker");
-						marker.setAttribute(IMarker.CHAR_START, offsetStart);
-						marker.setAttribute(IMarker.CHAR_END, offsetEnd);
-					} catch (CoreException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-
-			}
-
-			
-			 * try { htmlHelpText = textViewer.getDocument().get(wordOffset,
-			 * resultedLength); } catch (BadLocationException e) { // TODO
-			 * Auto-generated catch block e.printStackTrace(); }
-			 
-		} else {
-			IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
-			try {
-				resource.deleteMarkers("com.eco.bio7.reditor.wordmarker", false, IResource.DEPTH_ZERO);
-			} catch (CoreException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}*/
+		
 	}
 
-	/*
-	 * This method is recursively called to walk all subtrees and compare the
-	 * line numbers of selected tree items with the selected line number in the
-	 * editor!
-	 */
-
-	public void walkTreeLineNumber(TreeItem item, int lineNumber) {
-
-		if (item.isDisposed() == false) {
-			found = false;
-			boolean isExpanded = item.getExpanded();
-
-			/* Push the temp info on the stack! */
-			treeItemLine.push(isExpanded);
-			// if (item.getItemCount() > 0) {
-			// item.setExpanded(true);
-			// update the viewer
-			// contentOutlineViewer.refresh();
-			// }
-			if (item.isDisposed() == false) {
-				for (int j = 0; j < item.getItemCount(); j++) {
-
-					TreeItem it = item.getItem(j);
-					if (it.isDisposed() == false) {
-						if (((REditorOutlineNode) it.getData() != null)) {
-							if (lineNumber == ((REditorOutlineNode) it.getData()).getLineNumber()) {
-								contentOutlineViewer.getTree().setSelection(it);
-								// item.setExpanded(true);
-								// update the viewer
-								// contentOutlineViewer.refresh();
-
-								selectedItems.add(it);
-								found = true;
-								if (treeItemLine.isEmpty() == false) {
-									treeItemLine.clear();
-								}
-
-								break;
-							} else {
-
-								/*
-								 * Recursive call of the method for subnodes!
-								 */
-								// if(treeItemLine.size()>2){
-								/* Set recursion depth! */
-								// break;
-								// }
-								walkTreeLineNumber(it, lineNumber);
-							}
-						}
-					}
-				}
-				if (found == false) {
-					if (treeItemLine.isEmpty() == false) {
-						if (treeItemLine.peek() == false) {
-
-							// item.setExpanded(false);
-							// update the viewer
-							// contentOutlineViewer.refresh();
-
-						}
-						treeItemLine.pop();
-					}
-				}
-			}
-		}
-
-	}
-
+	
 	// private Annotation[] oldAnnotations;
 
 	public void updateFoldingStructure(ArrayList positions) {

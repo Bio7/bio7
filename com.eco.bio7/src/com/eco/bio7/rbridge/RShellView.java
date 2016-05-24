@@ -775,13 +775,16 @@ public class RShellView extends ViewPart {
 							if (RState.isBusy() == false) {
 
 								RConnection c = RServe.getConnection();
+								if (tree.getSelection().length > 0) {
 								String selectedPackage = tree.getSelection()[0].getText();
-								try {
-									c.eval("try(detach(package:" + selectedPackage + "))");
-									createAttachedPackageTree();
-								} catch (RserveException e1) {
+								
+									try {
+										c.eval("try(detach(package:" + selectedPackage + ", unload=TRUE))");
+										createAttachedPackageTree();
+									} catch (RserveException e1) {
 
-									e1.printStackTrace();
+										e1.printStackTrace();
+									}
 								}
 
 							} else {
