@@ -12,6 +12,7 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TreeItem;
 import com.eco.bio7.reditor.outline.REditorOutlineNode;
+import com.eco.bio7.util.Util;
 
 public class WalkTreeNodes extends WorkspaceJob {
 	private TreeViewer contentOutlineViewer;
@@ -32,7 +33,7 @@ public class WalkTreeNodes extends WorkspaceJob {
 	public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
 		// TODO Auto-generated method stub
 
-		Display display = contentOutlineViewer.getTree().getDisplay();
+		Display display = Util.getDisplay();
 		display.syncExec(new Runnable() {
 
 			public void run() {

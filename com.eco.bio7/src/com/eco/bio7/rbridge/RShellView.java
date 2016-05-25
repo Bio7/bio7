@@ -133,21 +133,18 @@ import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.os.pid.Pid;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.rbridge.completion.ShellCompletion;
 import com.eco.bio7.rbridge.plot.RPlot;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.util.Util;
 import com.swtdesigner.ResourceManager;
-
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.GridData;
 
 public class RShellView extends ViewPart {
-	private Text text_1;
-	private Text yText;
-	private Text xText;
-	private Text titleText;
+	
 	private static List listShell;
 	private static boolean isConsoleExpanded = true;
 	private List list_7;
@@ -168,8 +165,6 @@ public class RShellView extends ViewPart {
 	private KeyStroke stroke2;
 	private String[] history;
 	private String[] tempHistory;
-	private Button plotButton;
-	private Button xyButton;
 	protected REXPLogical isDataframe;
 	protected REXPLogical isMatrix;
 	private KeyStroke strokeCompletion;
@@ -194,6 +189,11 @@ public class RShellView extends ViewPart {
 	protected boolean cmdError;
 	protected Parse parse;
 	private static RShellView instance;
+	/* Create the plot tab! */
+	private Button loadButton;
+	private Button saveButton;
+	private SashForm sashForm;
+	
 
 	public RShellView() {
 		instance = this;
@@ -265,24 +265,17 @@ public class RShellView extends ViewPart {
 
 		stroke2 = KeyStroke.getInstance(SWT.F3);
 
-		/* Create the plot tab! */
-
-		Button loadButton;
-
-		Button saveButton;
+		
 
 		Transfer[] types = new Transfer[] { TextTransfer.getInstance() };
 		int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
 
-		SashForm sashForm;
+		
 
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		FontData currentFont = PreferenceConverter.getFontData(store, "RShellFonts");
 
-		/* Set the font from the preference store! */
-		Button fontButton;
-
-		Button loadButton_1;
+		
 
 		Composite composite_1 = new Composite(parent, SWT.NONE);
 		composite_1.setLayout(new GridLayout(6, true));
@@ -309,11 +302,27 @@ public class RShellView extends ViewPart {
 
 		text.addListener(SWT.DefaultSelection, new Listener() {
 			public void handleEvent(Event e) {
-				if (RServe.isAliveDialog()) {
+				if (RServe.isAlive()) {
 					if (cmdError == false) {
 						evaluate();
 					} else {
 						Bio7Dialog.message("Parser error!\n\nPlease enter valid R commands!");
+					}
+				}
+				else{
+					String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
+					if (selectionConsole.equals("R")) {
+						if (cmdError == false) {
+						String inhalt= text.getText();
+
+						ConsolePageParticipant.pipeInputToConsole(inhalt,true,true);
+						System.out.println(inhalt);
+						
+					} else {
+						Bio7Dialog.message("Parser error!\n\nPlease enter valid R commands!");
+					}
+					} else {
+						Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
 					}
 				}
 			}
@@ -324,44 +333,7 @@ public class RShellView extends ViewPart {
 			public void keyPressed(KeyEvent e) {
 				if (e.keyCode == SWT.ARROW_RIGHT) {
 
-					/*
-					 * if (RServe.isAliveDialog()) { if (RState.isBusy() ==
-					 * false) { RState.setBusy(true); Job job = new
-					 * Job("Completion...") {
-					 * 
-					 * @Override protected IStatus run(IProgressMonitor monitor)
-					 * { monitor.beginTask("Completion...",
-					 * IProgressMonitor.UNKNOWN); String[] li = null;
-					 * 
-					 * Display display = PlatformUI.getWorkbench().getDisplay();
-					 * display.syncExec(new Runnable() {
-					 * 
-					 * public void run() { t = text.getText(); } }); try {
-					 * RServe.getConnection().eval("try(library('svMisc'))");
-					 * 
-					 * try { li = RServe.getConnection().eval(
-					 * "try(as.vector(as.matrix(CompletePlus(\"" + t +
-					 * "\")[1])))").asStrings(); } catch (REXPMismatchException
-					 * e) { // TODO Auto-generated catch block
-					 * e.printStackTrace(); } if (li != null) {
-					 * provCompletion.setProposals(li);
-					 * 
-					 * } } catch (RserveException e1) {
-					 * 
-					 * e1.printStackTrace(); }
-					 * 
-					 * monitor.done(); return Status.OK_STATUS; }
-					 * 
-					 * }; job.addJobChangeListener(new JobChangeAdapter() {
-					 * public void done(IJobChangeEvent event) { if
-					 * (event.getResult().isOK()) {
-					 * 
-					 * RState.setBusy(false); } else {
-					 * 
-					 * RState.setBusy(false); } } }); // job.setSystem(true);
-					 * job.schedule(); } else { Bio7Dialog.message(
-					 * "Rserve is busy!"); } }
-					 */
+					
 
 				}
 
@@ -392,6 +364,8 @@ public class RShellView extends ViewPart {
 		});
 
 		adapter = new ContentProposalAdapter(text, textAdapter, prov, stroke, null);
+		
+		new ShellCompletion(text, new TextContentAdapter());
 
 		DropTarget target = new DropTarget(text, operations);
 		target.setTransfer(types);
@@ -403,11 +377,27 @@ public class RShellView extends ViewPart {
 		btnEvaluate.setText("Evaluate");
 		btnEvaluate.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				if (RServe.isAliveDialog()) {
+				if (RServe.isAlive()) {
 					if (cmdError == false) {
 						evaluate();
 					} else {
 						Bio7Dialog.message("Parser error!\n\nPlease enter valid R commands!");
+					}
+				}
+				else{
+					String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
+					if (selectionConsole.equals("R")) {
+						if (cmdError == false) {
+						String inhalt= text.getText();
+
+						ConsolePageParticipant.pipeInputToConsole(inhalt,true,true);
+						System.out.println(inhalt);
+						
+					} else {
+						Bio7Dialog.message("Parser error!\n\nPlease enter valid R commands!");
+					}
+					} else {
+						Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
 					}
 				}
 			}
@@ -2692,7 +2682,7 @@ public class RShellView extends ViewPart {
 				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 					tex = tex.replace("\\", "/");
 				}
-				System.out.println(tex);
+				//System.out.println(tex);
 
 				if (!tex.contains(";")) {
 					com.eco.bio7.rbridge.RServe.printJob(tex);
