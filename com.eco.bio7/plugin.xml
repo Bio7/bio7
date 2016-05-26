@@ -1261,6 +1261,46 @@
                id="RPopupMenu.newAction">
          </action>
       </objectContribution>
+      <objectContribution
+            objectClass="org.eclipse.ui.IEditorInput"
+            nameFilter="*.R*"
+            id="RContextMenu.contribution">
+         <menu
+               label="Profile Script Selection (profvis)"
+               path="additions"
+               id="REditorMenu.menu">
+            <separator
+                  name="group1">
+            </separator>
+         </menu>
+         <action
+               label="Profile Script Selection (profvis)"
+               class="com.eco.bio7.rbridge.actions.ProfileSelectionAction"
+               menubarPath="REditorMenu.menu"
+               enablesFor="1"
+               id="RPopupMenu.newAction">
+         </action>
+      </objectContribution>
+      <objectContribution
+            objectClass="org.eclipse.ui.IEditorInput"
+            nameFilter="*.R*"
+            id="RContextMenu.contribution">
+         <menu
+               label="Profile Script (profvis)"
+               path="additions"
+               id="REditorMenu.menu">
+            <separator
+                  name="group1">
+            </separator>
+         </menu>
+         <action
+               label="Profile Script (profvis)"
+               class="com.eco.bio7.rbridge.actions.ProfileScriptAction"
+               menubarPath="REditorMenu.menu"
+               enablesFor="1"
+               id="RPopupMenu.newAction">
+         </action>
+      </objectContribution>
     <viewerContribution
           id="REditorDebug.rulerActions"
           targetID="com.eco.bio7.reditors.TemplateEditor.RulerContext">

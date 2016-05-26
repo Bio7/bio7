@@ -159,10 +159,8 @@ public class RShellView extends ViewPart {
 	private SimpleContentProposalProvider prov;
 	private ContentProposalAdapter adapter;
 	private ContentProposalAdapter adapter2;
-	private TextContentAdapter textAdapter;
-	private TextContentAdapter textAdapter2;
 	private KeyStroke stroke;
-	private KeyStroke stroke2;
+	//private KeyStroke stroke2;
 	private String[] history;
 	private String[] tempHistory;
 	protected REXPLogical isDataframe;
@@ -230,7 +228,7 @@ public class RShellView extends ViewPart {
 
 		tempHistory = RFunctions.getPropsHistInstance().getTemphistory();
 
-		prov = new SimpleContentProposalProvider(history);
+		
 		/* Return key listener! */
 		/*
 		 * ControlDecoration dec = new ControlDecoration(text, SWT.TOP |
@@ -240,8 +238,7 @@ public class RShellView extends ViewPart {
 		 * .DEC_CONTENT_PROPOSAL); dec.setImage(infoFieldIndicator.getImage());
 		 * dec.setDescriptionText("Press UP ARROW key to get the History!");
 		 */
-		textAdapter = new TextContentAdapter();
-		textAdapter2 = new TextContentAdapter();
+		
 
 		stroke = KeyStroke.getInstance(SWT.ARROW_UP);
 		strokeCompletion = KeyStroke.getInstance(SWT.ARROW_RIGHT);
@@ -263,7 +260,7 @@ public class RShellView extends ViewPart {
 		// adapter.setProposalAcceptanceStyle
 		// (ContentProposalAdapter.PROPOSAL_REPLACE );
 
-		stroke2 = KeyStroke.getInstance(SWT.F3);
+		//stroke2 = KeyStroke.getInstance(SWT.F3);
 
 		
 
@@ -362,9 +359,9 @@ public class RShellView extends ViewPart {
 			}
 
 		});
-
-		adapter = new ContentProposalAdapter(text, textAdapter, prov, stroke, null);
-		
+		prov = new SimpleContentProposalProvider(history);
+		adapter = new ContentProposalAdapter(text, new TextContentAdapter(), prov, stroke, null);
+		/*Add code completion to textfield!*/
 		new ShellCompletion(text, new TextContentAdapter());
 
 		DropTarget target = new DropTarget(text, operations);
@@ -2610,21 +2607,6 @@ public class RShellView extends ViewPart {
 		this.adapter2 = adapter2;
 	}
 
-	public TextContentAdapter getTextadapter() {
-		return textAdapter;
-	}
-
-	public void setTextadapter(TextContentAdapter textadapter) {
-		this.textAdapter = textadapter;
-	}
-
-	public TextContentAdapter getTextadapter2() {
-		return textAdapter2;
-	}
-
-	public void setTextadapter2(TextContentAdapter textadapter2) {
-		this.textAdapter2 = textadapter2;
-	}
 
 	public SimpleContentProposalProvider getProv() {
 		return prov;
