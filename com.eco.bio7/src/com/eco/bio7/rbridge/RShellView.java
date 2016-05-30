@@ -314,6 +314,9 @@ public class RShellView extends ViewPart {
 
 						ConsolePageParticipant.pipeInputToConsole(inhalt,true,true);
 						System.out.println(inhalt);
+						/*Add text to history!*/
+						history();
+						text.setText("");
 						
 					} else {
 						Bio7Dialog.message("Parser error!\n\nPlease enter valid R commands!");
@@ -389,6 +392,9 @@ public class RShellView extends ViewPart {
 
 						ConsolePageParticipant.pipeInputToConsole(inhalt,true,true);
 						System.out.println(inhalt);
+						/*Add text to history!*/
+						history();
+						text.setText("");
 						
 					} else {
 						Bio7Dialog.message("Parser error!\n\nPlease enter valid R commands!");
@@ -2686,7 +2692,12 @@ public class RShellView extends ViewPart {
 
 			ev.printStackTrace();
 		}
+       /*Add text to history!*/
+		history();
 
+	}
+
+	private void history() {
 		for (int i = 0; i < history.length - 1; i++) {
 
 			tempHistory[i + 1] = history[i];
@@ -2700,7 +2711,6 @@ public class RShellView extends ViewPart {
 		prov.setProposals(history);
 		text.setText("");
 		text.setFocus();
-
 	}
 
 	@Override

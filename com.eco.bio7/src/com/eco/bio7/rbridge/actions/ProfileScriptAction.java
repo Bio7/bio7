@@ -1,5 +1,8 @@
 package com.eco.bio7.rbridge.actions;
 
+import java.io.File;
+
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
@@ -43,9 +46,6 @@ public class ProfileScriptAction implements IObjectActionDelegate, IEditorAction
 		if (canEvaluate) {
 
 			IEditorPart rEditor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-			ITextEditor editor = (ITextEditor) rEditor;
-			IDocumentProvider dp = editor.getDocumentProvider();
-			IDocument doc = dp.getDocument(editor.getEditorInput());
 
 			// IPreferenceStore store =
 			// Bio7Plugin.getDefault().getPreferenceStore();
@@ -55,7 +55,7 @@ public class ProfileScriptAction implements IObjectActionDelegate, IEditorAction
 				if (rEditor instanceof REditor) {
 					String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 					if (selectionConsole.equals("R")) {
-						String editorScript = profileSource(rEditor);
+						String editorScript = new ProfileRScript().profileSource(rEditor,false);
 						ConsolePageParticipant.pipeInputToConsole(editorScript, true, true);
 						System.out.println(editorScript);
 					} else {
@@ -72,7 +72,8 @@ public class ProfileScriptAction implements IObjectActionDelegate, IEditorAction
 					if (RServe.isAliveDialog()) {
 						if (RState.isBusy() == false) {
 							RState.setBusy(true);
-							String editorScript = profileSource(rEditor);
+							ProfileRScript prof=new ProfileRScript();
+							String editorScript = prof.profileSourceRserve(rEditor,false);
 							final RInterpreterJob Do = new RInterpreterJob(editorScript, true, null);
 							Do.addJobChangeListener(new JobChangeAdapter() {
 								public void done(IJobChangeEvent event) {
@@ -82,6 +83,7 @@ public class ProfileScriptAction implements IObjectActionDelegate, IEditorAction
 										if (countDev > 0) {
 											RServe.closeAndDisplay();
 										}
+										prof.openWebBrowser();
 
 									}
 								}
@@ -118,28 +120,9 @@ public class ProfileScriptAction implements IObjectActionDelegate, IEditorAction
 		}
 	}
 
-	private String profileSource(IEditorPart rEditor) {
-		StringBuffer buff = new StringBuffer();
-		buff.append("library(profvis)");
-		buff.append(System.lineSeparator());
-		buff.append("p<-profvis({");
-		buff.append(System.lineSeparator());
-		buff.append(getText(rEditor));
-		buff.append(System.lineSeparator());
-		buff.append("})");
-		buff.append(System.lineSeparator());
-		buff.append("p");
-		String editorScript = buff.toString();
-		return editorScript;
-	}
+	
 
-	private String getText(IEditorPart rEditor) {
-		ITextEditor editor = (ITextEditor) rEditor;
-		IDocumentProvider dp = editor.getDocumentProvider();
-		IDocument doc = dp.getDocument(editor.getEditorInput());
-
-		return doc.get();
-	}
+	
 
 	
 

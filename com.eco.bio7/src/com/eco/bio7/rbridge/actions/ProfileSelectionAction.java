@@ -3,10 +3,7 @@ package com.eco.bio7.rbridge.actions;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
@@ -15,8 +12,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.texteditor.IDocumentProvider;
-import org.eclipse.ui.texteditor.ITextEditor;
 import org.rosuda.REngine.Rserve.RConnection;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RInterpreterJob;
@@ -41,9 +36,7 @@ public class ProfileSelectionAction implements IObjectActionDelegate, IEditorAct
 		if (canEvaluate) {
 
 			IEditorPart rEditor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-			ITextEditor editor = (ITextEditor) rEditor;
-			IDocumentProvider dp = editor.getDocumentProvider();
-			IDocument doc = dp.getDocument(editor.getEditorInput());
+			
 
 			// IPreferenceStore store =
 			// Bio7Plugin.getDefault().getPreferenceStore();
@@ -53,7 +46,7 @@ public class ProfileSelectionAction implements IObjectActionDelegate, IEditorAct
 				if (rEditor instanceof REditor) {
 					String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 					if (selectionConsole.equals("R")) {
-						String editorScript = profileSource(rEditor);
+						String editorScript = new ProfileRScript().profileSource(rEditor, true);
 						ConsolePageParticipant.pipeInputToConsole(editorScript, true, true);
 						System.out.println(editorScript);
 					} else {
@@ -70,7 +63,8 @@ public class ProfileSelectionAction implements IObjectActionDelegate, IEditorAct
 					if (RServe.isAliveDialog()) {
 						if (RState.isBusy() == false) {
 							RState.setBusy(true);
-							String editorScript = profileSource(rEditor);
+							ProfileRScript prof=new ProfileRScript();
+							String editorScript = prof.profileSourceRserve(rEditor, true);
 							final RInterpreterJob Do = new RInterpreterJob(editorScript, true, null);
 							Do.addJobChangeListener(new JobChangeAdapter() {
 								public void done(IJobChangeEvent event) {
@@ -80,6 +74,7 @@ public class ProfileSelectionAction implements IObjectActionDelegate, IEditorAct
 										if (countDev > 0) {
 											RServe.closeAndDisplay();
 										}
+										prof.openWebBrowser();
 
 									}
 								}
@@ -103,46 +98,9 @@ public class ProfileSelectionAction implements IObjectActionDelegate, IEditorAct
 
 				}
 
-				/*
-				 * else { MessageBox messageBox = new MessageBox(new Shell(),
-				 * 
-				 * SWT.ICON_WARNING); messageBox.setMessage(
-				 * "RServer connection failed - Server is not running !");
-				 * messageBox.open();
-				 * 
-				 * }
-				 */
+				
 			}
 		}
-	}
-
-	private String profileSource(IEditorPart rEditor) {
-		StringBuffer buff = new StringBuffer();
-		buff.append("library(profvis)");
-		buff.append(System.lineSeparator());
-		buff.append("p<-profvis({");
-		buff.append(System.lineSeparator());
-		buff.append(getText(rEditor));
-		buff.append(System.lineSeparator());
-		buff.append("})");
-		buff.append(System.lineSeparator());
-		buff.append("p");
-		String editorScript = buff.toString();
-		return editorScript;
-	}
-
-	private String getText(IEditorPart rEditor) {
-		ITextEditor editor = (ITextEditor) rEditor;
-		IDocumentProvider dp = editor.getDocumentProvider();
-		IDocument doc = dp.getDocument(editor.getEditorInput());
-
-		ISelectionProvider sp = editor.getSelectionProvider();
-
-		ISelection selectionsel = sp.getSelection();
-
-		ITextSelection selection = (ITextSelection) selectionsel;
-		
-		return selection.getText();
 	}
 
 	@Override
@@ -156,4 +114,5 @@ public class ProfileSelectionAction implements IObjectActionDelegate, IEditorAct
 		// TODO Auto-generated method stub
 
 	}
+	
 }

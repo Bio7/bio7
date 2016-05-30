@@ -84,21 +84,21 @@ public class ShellCompletion {
 			@Override
 			public void proposalAccepted(IContentProposal proposal) {
 				/* We have to care about the custom replacements! */
-				// proposal.getContent();
+				
 				String content = control.getText();
 				control.setSelection(contentProposalProvider.lastIndex + 1, control.getCaretPosition());
 				Point selection = control.getSelection();
 
 				/*
-				 * Get the first non-selected part, add "Ball" and get the
-				 * second non-selected part
+				 * Insert the completion proposal in between selection start and
+				 * selection end!
 				 */
-				content = content.substring(0, selection.x) + proposal.getContent() + "()";
-
+				content = content.substring(0, selection.x) + proposal.getContent() + "()" + content.substring(selection.y, content.length());
+				/* Calculate the cursor position after inserting parentheses! */
+				int cursorPosition = (content.substring(0, selection.x) + proposal.getContent() + "()").length() - 1;
 				control.setText(content);
-				control.setSelection(control.getText().length() - 1);
-				// control.replaceTextRange(contentProposalProvider.lastIndex,
-				// control.getCaretOffset(), proposal.getContent());
+				control.setSelection(cursorPosition);
+				
 
 			}
 
@@ -149,9 +149,11 @@ public class ShellCompletion {
 				String contentLast;
 				if (lastIndex > 0) {
 					textLength = offset - lastIndex - 1;
-					contentLast = control.getText(lastIndex + 1, offset).replace(")", "");
+					contentLast = control.getText(lastIndex + 1, offset - 1);
+					// System.out.println("last Index:"+ lastIndex+"
+					// "+contentLast+" tex length: "+textLength);
 					// contentLast=contentLastTemp.replace("(", "");
-					System.out.println(contentLast + "" + textLength);
+
 				} else {
 					textLength = control.getText().length();
 					contentLast = control.getText();
