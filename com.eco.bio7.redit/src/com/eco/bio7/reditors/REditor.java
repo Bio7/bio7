@@ -285,7 +285,7 @@ public class REditor extends TextEditor {
 						@Override
 						public void mouseUp(MouseEvent e) {
 							closeRPopupTableShell();
-							closeRHooverPopupTableShell();
+							//closeRHooverPopupTableShell();
 							/*
 							 * Hide the code completion tooltip if the mouse is
 							 * clicked!
@@ -849,7 +849,7 @@ public class REditor extends TextEditor {
 		if (editorPopupShell != null) {
 			if (editorPopupShell.isDisposed() == false) {
 				
-					editorPopupShell.setVisible(false);
+					editorPopupShell.dispose();
 				}
 			}
 	}
@@ -859,14 +859,6 @@ public class REditor extends TextEditor {
 		this.editorHooverPopupShell = popUpshell;
 
 	}
-   /*A method to close the code completion popup shell (class: RPopupTable)!*/
-	private void closeRHooverPopupTableShell() {
-		if (editorHooverPopupShell != null) {
-			if (editorHooverPopupShell.isDisposed() == false) {
-				
-				editorHooverPopupShell.setVisible(false);
-				}
-			}
-	}
+  
 
 }

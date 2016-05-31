@@ -35,11 +35,11 @@ public class RefreshLoadedPackagesForCompletion extends Action {
 
 		RConnection con = REditor.getRserveConnection();
 		if (con != null) {
-			Job job = new Job("formatR") {
+			Job job = new Job("Reload") {
 
 				@Override
 				protected IStatus run(IProgressMonitor monitor) {
-					monitor.beginTask("Format R source ...", IProgressMonitor.UNKNOWN);
+					monitor.beginTask("Reload package information...", IProgressMonitor.UNKNOWN);
 
 					RConnection c = REditor.getRserveConnection();
 					if (c != null) {

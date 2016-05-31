@@ -118,7 +118,7 @@ public class RQuickFixSolutions {
 				break;
 			case "Warn16":
 
-				IDocument doc = viewer.getDocument();
+				
 				RRefPhaseListen ref = new Parse(editor).parseFromOffset(offset);
 				StringBuffer buffScopedFunctions = ref.getBuffScopeFunctions();
 				String[] splitBuffScopedFun = buffScopedFunctions.toString().split(",");
@@ -157,9 +157,9 @@ public class RQuickFixSolutions {
 				/* Sort the Levenshtein distances in descending order! */
 				sort(words);
 
-				prop = new ICompletionProposal[words.size() + 1];
+				prop = new ICompletionProposal[words.size()];
 				/* First proposal to create a function! */
-				prop[0] = new RQuickFixCompletionProposal("Create function","Create a new function", offset, endChar, System.lineSeparator() + tokenText + "<-function(){}" + System.lineSeparator(), 0);
+				//prop[0] = new RQuickFixCompletionProposal("Create function","Create a new function", offset, endChar, System.lineSeparator() + tokenText + "<-function(){}" + System.lineSeparator(), 0);
 				/*
 				 * The following proposals all sorted functions from
 				 * Levenshstein distances!
@@ -168,9 +168,9 @@ public class RQuickFixSolutions {
 					if (words.get(i) != null) {
 						Pair<String, Double> sugOrdered = words.get(i);
 
-						prop[i + 1] = new RQuickFixCompletionProposal("Functions available:" + " '" + sugOrdered.getKey() + "' Similarity:" + " " + sugOrdered.getValue(),null, offset, endChar, sugOrdered.getKey(), endChar - offset);
+						prop[i] = new RQuickFixCompletionProposal("Functions available:" + " '" + sugOrdered.getKey() + "' Similarity:" + " " + sugOrdered.getValue(),null, offset, endChar, sugOrdered.getKey(), endChar - offset);
 					} else {
-						prop[i + 1] = new RQuickFixCompletionProposal("Functions available: NA",null, offset, endChar, "NA", 2);
+						prop[i] = new RQuickFixCompletionProposal("Functions available: NA",null, offset, endChar, "NA", 2);
 					}
 				}
 

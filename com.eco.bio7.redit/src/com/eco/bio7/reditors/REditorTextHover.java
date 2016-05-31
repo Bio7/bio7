@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.util.Iterator;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControl;
@@ -30,6 +31,7 @@ import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.code.InvocationContext;
 import com.eco.bio7.reditor.code.RAssistProcessor;
 import com.eco.bio7.reditor.code.RHoverQuickFixTable;
@@ -44,6 +46,7 @@ public class REditorTextHover implements ITextHover, ITextHoverExtension, ITextH
 	private ICompletionProposal[] proposals;
 	private static String htmlHelpText = "";
 	String message = "";
+	private IPreferenceStore store;
 
 	public static String getHtmlHelpText() {
 		return htmlHelpText;
@@ -56,6 +59,7 @@ public class REditorTextHover implements ITextHover, ITextHoverExtension, ITextH
 	public REditorTextHover(REditor rEditor, RAssistProcessor rAssist) {
 		this.rEditor = rEditor;
 		this.rAssist = rAssist;
+		store = Bio7REditorPlugin.getDefault().getPreferenceStore();
 	}
 
 	// R Return information to be shown when the cursor is on the given
@@ -66,8 +70,12 @@ public class REditorTextHover implements ITextHover, ITextHoverExtension, ITextH
 		int offset = hoverRegion.getOffset();
 		int length = 0;
 		int minusLength = 0;
-
-		informationControlText = openPopupHoverTable(textViewer, offset);
+		/*If enabled in the preferences we show proposals when hovering over a marker in the editor!*/
+		if (store.getBoolean("SHOW_HOVERPOPUP")) {
+			informationControlText = openPopupHoverTable(textViewer, offset);
+		} else {
+			hoverMarker = false;
+		}
 
 		/* Test if a QuickFix is available! */
 		// triggerQuickFixFromOffset(offset);
@@ -86,7 +94,7 @@ public class REditorTextHover implements ITextHover, ITextHoverExtension, ITextH
 						e.printStackTrace();
 					}
 
-					if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false && (c == ':') == false) {
+					if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false && (c == ':') == false&& (c == '_') == false) {
 						break;
 					}
 					if (offset + length >= doc.getLength() - 1) {
@@ -110,7 +118,7 @@ public class REditorTextHover implements ITextHover, ITextHoverExtension, ITextH
 						e.printStackTrace();
 					}
 
-					if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false&& (c == ':') == false) {
+					if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false && (c == ':') == false&& (c == '_') == false) {
 						break;
 					}
 

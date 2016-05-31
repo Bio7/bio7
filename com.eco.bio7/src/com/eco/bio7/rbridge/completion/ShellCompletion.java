@@ -84,7 +84,7 @@ public class ShellCompletion {
 			@Override
 			public void proposalAccepted(IContentProposal proposal) {
 				/* We have to care about the custom replacements! */
-				
+
 				String content = control.getText();
 				control.setSelection(contentProposalProvider.lastIndex + 1, control.getCaretPosition());
 				Point selection = control.getSelection();
@@ -98,7 +98,6 @@ public class ShellCompletion {
 				int cursorPosition = (content.substring(0, selection.x) + proposal.getContent() + "()").length() - 1;
 				control.setText(content);
 				control.setSelection(cursorPosition);
-				
 
 			}
 
@@ -164,11 +163,12 @@ public class ShellCompletion {
 				 * offset); te.lastIndexOf('('); if (te.equals("(") ||
 				 * te.equals(" ")) { textLength=0; } }
 				 */
+				if (textLength >= 0) {
+					for (int i = 0; i < statistics.length; i++) {
 
-				for (int i = 0; i < statistics.length; i++) {
-
-					if (statistics[i].length() >= textLength && statistics[i].substring(0, textLength).equalsIgnoreCase(contentLast)) {
-						list.add(makeContentProposal(statistics[i], statisticsContext[i], statisticsSet[i]));
+						if (statistics[i].length() >= textLength && statistics[i].substring(0, textLength).equalsIgnoreCase(contentLast)) {
+							list.add(makeContentProposal(statistics[i], statisticsContext[i], statisticsSet[i]));
+						}
 					}
 				}
 				return makeProposalArray((IContentProposal[]) list.toArray(new IContentProposal[list.size()]));

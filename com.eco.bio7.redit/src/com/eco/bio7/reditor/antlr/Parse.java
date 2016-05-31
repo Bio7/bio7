@@ -169,6 +169,9 @@ public class Parse {
 	
 
 	public RRefPhaseListen parseFromOffset(int offset) {
+		Vector<REditorOutlineNode> editorOldNodes = editor.nodes;
+		/* Create the category base node for the outline! */
+		editor.createNodes();
 
 		IDocumentProvider dp = editor.getDocumentProvider();
 		IDocument doc = dp.getDocument(editor.getEditorInput());
@@ -216,6 +219,18 @@ public class Parse {
 
 		RRefPhaseListen ref = new RRefPhaseListen(tokens, list, parser, offset);
 		walker.walk(ref, tree);
+		
+		/* Update the outline! */
+
+		Display.getDefault().asyncExec(new Runnable() {
+			public void run() {
+
+				editor.updateFoldingStructure(fPositions);
+
+				editor.outlineInputChanged(editorOldNodes, editor.nodes);
+			}
+
+		});
 		return ref;
 	}
 	
