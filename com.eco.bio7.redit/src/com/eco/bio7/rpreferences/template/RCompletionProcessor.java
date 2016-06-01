@@ -14,12 +14,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.RuleContext;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
@@ -39,30 +33,17 @@ import org.eclipse.jface.text.templates.TemplateContextType;
 import org.eclipse.jface.text.templates.TemplateException;
 import org.eclipse.jface.text.templates.TemplateProposal;
 import org.eclipse.jface.window.DefaultToolTip;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.PopupList;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.texteditor.ITextEditor;
-import org.rosuda.REngine.Rserve.RConnection;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.antlr.Parse;
-import com.eco.bio7.reditor.antlr.RBaseListen;
-import com.eco.bio7.reditor.antlr.RErrorStrategy;
-import com.eco.bio7.reditor.antlr.RFilter;
-import com.eco.bio7.reditor.antlr.RLexer;
-import com.eco.bio7.reditor.antlr.RParser;
-import com.eco.bio7.reditor.antlr.UnderlineListener;
 import com.eco.bio7.reditor.antlr.ref.RRefPhaseListen;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.reditors.TemplateEditorUI;
 import com.eco.bio7.util.Util;
-
-import jdk.nashorn.tools.Shell;
 
 /**
  * A completion processor for R templates.
@@ -79,7 +60,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 	private static final String METHOD_IMAGE = "$nl$/icons/brkp_obj.png"; //$NON-NLS-1$
 
-	private boolean triggerNext;
+	// private boolean triggerNext;
 
 	private int count = 0;// Variable to count the listed template.
 
@@ -149,31 +130,6 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 	}
 
 	/**
-	 * We watch for brackets since those are often part of a R function
-	 * templates.
-	 * 
-	 * @param viewer
-	 *            the viewer
-	 * @param offset
-	 *            the offset left of which the prefix is detected
-	 * @return the detected prefix
-	 */
-	/*
-	 * protected String extractPrefix(ITextViewer viewer, int offset) {
-	 * IDocument document = viewer.getDocument(); int i = offset; if (i >
-	 * document.getLength()) return "";
-	 * 
-	 * try { int countBrace = 0; while (i > 0) { char ch = document.getChar(i -
-	 * 1);
-	 * 
-	 * We add the detection of functions and function calls with '.'!
-	 * 
-	 * Detect nested braces! if (ch == '(') { countBrace++; if (countBrace == 2)
-	 * { break; } } if (ch != '(' && ch != '.' &&
-	 * !Character.isJavaIdentifierPart(ch)) break; i--; } return document.get(i,
-	 * offset - i); } catch (BadLocationException e) { return ""; } }
-	 */
-	/**
 	 * Cut out angular brackets for relevance sorting, since the template name
 	 * does not contain the brackets.
 	 * 
@@ -205,7 +161,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 		ITextSelection selection = (ITextSelection) viewer.getSelectionProvider().getSelection();
 
-		// adjust offset to end of normalized selection
+		// Adjust offset to end of normalized selection
 		if (selection.getOffset() == offset)
 			offset = selection.getOffset() + selection.getLength();
 
@@ -232,13 +188,13 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		 * In parentheses we show an popup instead of the completion dialog! We
 		 * return null to avoid the opening of the template dialog!
 		 */
-		
-		int callTemplates=store.getInt("ACTIVATION_AMOUNT_CHAR_COMPLETION");
+
+		int callTemplates = store.getInt("ACTIVATION_AMOUNT_CHAR_COMPLETION");
 
 		if (isInVarCall) {
 			if (leng <= 0) {
 				if (proposalNameFound != null) {
-					
+
 					tooltipActionTemplates(viewer, offset, leng, proposalNameFound, buffScopedVars, buffScopedFunctions);
 				} else {
 
@@ -265,7 +221,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		if (context == null)
 			return new ICompletionProposal[0];
 
-		context.setVariable("selection", selection.getText()); // name //$NON-NLS-1$
+		context.setVariable("selection", selection.getText()); // name 
 																// of the
 																// selection
 																// variables
@@ -353,7 +309,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 		ICompletionProposal[] pro = (ICompletionProposal[]) matches.toArray(new ICompletionProposal[matches.size()]);
 
-		triggerNext = true;
+		// triggerNext = true;
 
 		return pro;
 
@@ -361,10 +317,8 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 	/* Method to open a tooltip instead of the template suggestions! */
 	private void tooltipAction(ITextViewer viewer, int offset, int leng, RRefPhaseListen ref, StringBuffer resultmethodCallVars, StringBuffer resultBuffScopeVars, StringBuffer buffScopedFunctions) {
-		// System.out.println(funcNameFromProposals);
 
 		if (resultmethodCallVars != null && resultmethodCallVars.length() > 0) {
-			// resultmethodCallVars.append(",");
 
 			/* Append the variables after the method call variables! */
 			String[] scopedVars = resultBuffScopeVars.toString().split(",");
@@ -372,9 +326,6 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 			String[] resultMethodCallVars = resultmethodCallVars.toString().split(",");
 
-			// String[] funcArgAndScopedVars =
-			// ArrayUtils.addAll(ArrayUtils.addAll(resultMethodCallVars,
-			// scopedVars), scopedFunctions);
 			creatPopupTable(viewer, offset, resultMethodCallVars, scopedVars, scopedFunctions);
 
 		}
@@ -382,43 +333,26 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 	private void tooltipActionTemplates(ITextViewer viewer, int offset, int leng, String funcNameFromProposals, StringBuffer resultBuffScopeVars, StringBuffer buffScopedFunctions) {
 
-		/* trim the method name! */
-		/*
-		 * prefix = prefix.substring(0, leng - 1); prefix = prefix.trim();
-		 */
-
 		if (funcNameFromProposals != null) {
-			// System.out.println(funcNameFromProposals);
+
 			for (int i = 0; i < statisticsSet.length; i++) {
 				/* Do we have the method in the proposals? */
 				if (funcNameFromProposals.equals(statistics[i])) {
 
 					String calc = statisticsSet[i];
-					
+
 					/* Find the arguments in the template proposals! */
 					int parOpen = calc.indexOf("(");
 					int parClose = calc.lastIndexOf(")");
-					
+
 					/* Here we control the length. Must be greater -1! */
 					if (parOpen + 1 + parClose >= 0) {
 						calc = calc.substring(parOpen + 1, parClose);
-						/*
-						 * System.out.println(calc); calc = calc.replace(",",
-						 * " = ," ); System.out.println(calc);
-						 */
-						/*
-						 * if(calc.contains("=")==false){ calc = calc.concat(
-						 * " = "); } calc.substring(0,calc.indexOf("="));
-						 */
 
-						// String[] proposalMethods = calc.split(",");
 						String[] proposalMethods = split(calc).toArray(new String[0]);
 						String[] scopedVars = resultBuffScopeVars.toString().split(",");
 						String[] scopedFunctions = buffScopedFunctions.toString().split(",");
 
-						// String[] funcNameFromProposalsFinal =
-						// ArrayUtils.addAll(ArrayUtils.addAll(proposalMethods,
-						// scopedVars), scopedFunctions);
 						creatPopupTable(viewer, offset, proposalMethods, scopedVars, scopedFunctions);
 					}
 
@@ -447,8 +381,6 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 				RPopupTable listPopup = new RPopupTable(viewer.getTextWidget().getShell());
 				editor.setRPopupShell(listPopup.getShell());
 
-				// String[] OPTIONS = {
-				// CalculateRProposals.statisticsSet[i], "B", "C"};
 				listPopup.setFont(f);
 				listPopup.setItems(proposalMethod, "arguments");
 				if (scopedVars.length == 1 && scopedVars[0].isEmpty()) {
@@ -478,17 +410,6 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 			}
 		});
 	}
-
-	/*
-	 * public static ICompletionProposal[] join(ICompletionProposal [] ...
-	 * parms) { // calculate size of target array int size = 0; for
-	 * (ICompletionProposal[] array : parms) { size += array.length; }
-	 * 
-	 * ICompletionProposal[] result = new ICompletionProposal[size];
-	 * 
-	 * int j = 0; for (ICompletionProposal[] array : parms) { for
-	 * (ICompletionProposal s : array) { result[j++] = s; } } return result; }
-	 */
 
 	/**
 	 * Simply return all templates.
@@ -524,7 +445,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 		int i = offset;
 		IDocument document = viewer.getDocument();
 		if (i > document.getLength())
-			return ""; //$NON-NLS-1$
+			return "";
 
 		try {
 			while (i > 0) {
@@ -536,7 +457,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 
 			return document.get(i, offset - i);
 		} catch (BadLocationException e) {
-			return ""; //$NON-NLS-1$
+			return "";
 		}
 	}
 
@@ -615,19 +536,24 @@ public class RCompletionProcessor extends TemplateCompletionProcessor {
 	 * separated-string-but-ignoring-commas-in-parentheses/34389323#34389323
 	 * Author: Tagir Valeev Profile:
 	 * http://stackoverflow.com/users/4856258/tagir-valeev
+	 * 
+	 * Adaptions to ignore comma n quotes!
 	 */
 	public List<String> split(String input2) {
 		int nParens = 0;
 		int start = 0;
-		/*Temporary replace comma in quotes else the argument "," will be splitted!*/
-		String tempReplacement= "$$null$$";
-		String input=input2.replace("\",\"",tempReplacement);
+		/*
+		 * Temporary replace comma in quotes else the argument "," will be
+		 * splitted!
+		 */
+		String tempReplacement = "$$null$$";
+		String input = input2.replace("\",\"", tempReplacement);
 		List<String> result = new ArrayList<>();
 		for (int i = 0; i < input.length(); i++) {
 			switch (input.charAt(i)) {
 			case ',':
 				if (nParens == 0) {
-					/*Replace the temporary comma in quote replacement!*/
+					/* Replace the temporary comma in quote replacement! */
 					result.add(input.substring(start, i).replace(tempReplacement, "\",\""));
 					start = i + 1;
 				}

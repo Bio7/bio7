@@ -196,7 +196,7 @@ public class RBaseListen extends RBaseListener {
 
 						// System.out.println("Function: "+name+" already
 						// declared!");
-						parser.notifyErrorListeners(firstToken, "Warn16:Function " + name + " already defined??: " + name + " seems to be already defined!", null);
+						parser.notifyErrorListeners(firstToken, "Warn19####Function with name '" + name + "' is already defined?!", null);
 					}
 				}
 
@@ -511,17 +511,17 @@ public class RBaseListen extends RBaseListener {
 			String wrongConstants = ctxExpr.getStart().getText();
 			switch (wrongConstants) {
 			case "true":
-				parser.notifyErrorListeners(startctxExpr, "Warn12:Wrong constant 'TRUE' required!", null);
+				parser.notifyErrorListeners(startctxExpr, "Warn12####Wrong constant 'TRUE' required!", null);
 				break;
 			case "false":
-				parser.notifyErrorListeners(startctxExpr, "Warn13:Wrong constant 'FALSE' required!", null);
+				parser.notifyErrorListeners(startctxExpr, "Warn13####Wrong constant 'FALSE' required!", null);
 				break;
 
 			case "na":
-				parser.notifyErrorListeners(startctxExpr, "Warn15:Wrong constant 'NA' required!", null);
+				parser.notifyErrorListeners(startctxExpr, "Warn15####Wrong constant 'NA' required!", null);
 				break;
 			case "null":
-				parser.notifyErrorListeners(startctxExpr, "Warn14:Wrong constant 'NULL' required!", null);
+				parser.notifyErrorListeners(startctxExpr, "Warn14####Wrong constant 'NULL' required!", null);
 				break;
 
 			default:
@@ -656,19 +656,19 @@ public class RBaseListen extends RBaseListener {
 
 	public void exitErr1(RParser.Err1Context ctx) {
 
-		parser.notifyErrorListeners(ctx.extra, "Err1:Too many parentheses!", null);
+		parser.notifyErrorListeners(ctx.extra, "Err1####Too many parentheses!", null);
 
 	}
 
 	public void exitErr3(RParser.Err3Context ctx) {
 
-		parser.notifyErrorListeners(ctx.extra, "Err3:Too many parentheses in function call!", null);
+		parser.notifyErrorListeners(ctx.extra, "Err3####Too many parentheses in function call!", null);
 
 	}
 
 	public void exitErr5(RParser.Err5Context ctx) {
 
-		parser.notifyErrorListeners(ctx.extra, "Err5:Too many parentheses in function definition!", null);
+		parser.notifyErrorListeners(ctx.extra, "Err5####Too many parentheses in function definition!", null);
 
 	}
 
@@ -687,7 +687,7 @@ public class RBaseListen extends RBaseListener {
 
 		// int index = ctx.extra.getStartIndex();
 
-		parser.notifyErrorListeners(ctx.extra, "Err7:Too many parentheses in if condition!", null);
+		parser.notifyErrorListeners(ctx.extra, "Err7####Too many parentheses in if condition!", null);
 
 	}
 
@@ -695,19 +695,19 @@ public class RBaseListen extends RBaseListener {
 
 		// int index = ctx.extra.getStartIndex();
 
-		parser.notifyErrorListeners(ctx.extra, "Err8:Too many brackets!", null);
+		parser.notifyErrorListeners(ctx.extra, "Err8####Too many brackets!", null);
 
 	}
 
 	public void exitErr9(RParser.Err9Context ctx) {
 
-		parser.notifyErrorListeners(ctx.extra, "Err9:Too many brackets!", null);
+		parser.notifyErrorListeners(ctx.extra, "Err9####Too many brackets!", null);
 
 	}
 
 	public void exitErr11(RParser.Err11Context ctx) {
 
-		parser.notifyErrorListeners(ctx.extra, "Err11:Too many braces!", null);
+		parser.notifyErrorListeners(ctx.extra, "Err11####Too many braces!", null);
 
 	}
 
@@ -749,13 +749,13 @@ public class RBaseListen extends RBaseListener {
 	 */
 	public void exitErr16(RParser.Err16Context ctx) {
 
-		parser.notifyErrorListeners(ctx.extra, "Err16:Too many braces in while statement!", null);
+		parser.notifyErrorListeners(ctx.extra, "Err16####Too many braces in while statement!", null);
 
 	}
 
 	public void exitErr18(RParser.Err18Context ctx) {
 
-		parser.notifyErrorListeners(ctx.extra, "Err18:Too many braces in for statement!", null);
+		parser.notifyErrorListeners(ctx.extra, "Err18####Too many braces in for statement!", null);
 
 	}
 
@@ -778,7 +778,7 @@ public class RBaseListen extends RBaseListener {
 	public void exitErr22(RParser.Err22Context ctx) {
 
 		Token firstToken = ctx.start;
-		parser.notifyErrorListeners(firstToken, "Err22:Unknown Token!", null);
+		parser.notifyErrorListeners(firstToken, "Err22####Unknown Token!", null);
 
 	}
 

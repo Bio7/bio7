@@ -158,11 +158,7 @@ public class ShellCompletion {
 					contentLast = control.getText();
 				}
 
-				/*
-				 * if (textLength > 0) { String te = control.getText(offset - 1,
-				 * offset); te.lastIndexOf('('); if (te.equals("(") ||
-				 * te.equals(" ")) { textLength=0; } }
-				 */
+				/*If text length after parenheses is at least 0!*/
 				if (textLength >= 0) {
 					for (int i = 0; i < statistics.length; i++) {
 
@@ -170,9 +166,18 @@ public class ShellCompletion {
 							list.add(makeContentProposal(statistics[i], statisticsContext[i], statisticsSet[i]));
 						}
 					}
+				} 
+				/*If text length after parenheses is -1!*/
+				else {
+					for (int i = 0; i < statistics.length; i++) {
+
+						list.add(makeContentProposal(statistics[i], statisticsContext[i], statisticsSet[i]));
+
+					}
 				}
 				return makeProposalArray((IContentProposal[]) list.toArray(new IContentProposal[list.size()]));
 			}
+			/*If filtering is true!*/
 			if (contentProposals == null) {
 				contentProposals = new IContentProposal[statistics.length];
 

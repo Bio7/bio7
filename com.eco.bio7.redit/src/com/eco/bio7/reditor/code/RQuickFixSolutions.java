@@ -40,7 +40,7 @@ public class RQuickFixSolutions {
 	/*
 	 * Hardcoded. We could also refactor out the solutions to a properties file!
 	 */
-	public ICompletionProposal[] getProposals(String errorCode, int offset, int endChar, ICompletionProposal[] prop, String tokenText) {
+	public ICompletionProposal[] getProposals(String errorCode, int offset, int endChar, ICompletionProposal[] prop, String tokenText,String replacement) {
 		if (errorCode != null) {
 
 			switch (errorCode) {
@@ -92,6 +92,43 @@ public class RQuickFixSolutions {
 
 						new RQuickFixCompletionProposal("Remove '}'","Remove the additional parentheses", offset, endChar, "", 1) };
 				break;
+			/*To many args in function call!*/	
+			case "Err12":
+				
+				break;
+			case "Err16":
+				prop = new ICompletionProposal[] {
+
+						new RQuickFixCompletionProposal("Remove ')'","Remove the additional parentheses", offset, endChar, "", 1) };
+
+				break;
+			case "Err17":
+
+				break;
+			case "Err18":
+				prop = new ICompletionProposal[] {
+
+						new RQuickFixCompletionProposal("Remove ')'","Remove the additional parentheses", offset, endChar, "", 1) };
+				break;
+			case "Err19":
+
+				break;
+			case "Err20":
+				prop = new ICompletionProposal[] {
+
+						new RQuickFixCompletionProposal("Replace '=>' with '>='","Replace the wrong comparison operator", offset, endChar, ">=", 2) };
+				break;
+			case "Err21":
+				prop = new ICompletionProposal[] {
+
+						new RQuickFixCompletionProposal("Replace '=<' with '<='","Replace the wrong comparison operator", offset, endChar, "<=", 2) };
+				break;
+			case "Err22":
+				prop = new ICompletionProposal[] {
+
+						new RQuickFixCompletionProposal("Remove unknown token","Remove unknown token", offset, endChar, "", 1) };
+				break;
+			
 			case "Warn12":
 				prop = new ICompletionProposal[] {
 
@@ -173,6 +210,7 @@ public class RQuickFixSolutions {
 						prop[i] = new RQuickFixCompletionProposal("Functions available: NA",null, offset, endChar, "NA", 2);
 					}
 				}
+				break;
 
 			case "Warn17":
 				/*
@@ -184,42 +222,18 @@ public class RQuickFixSolutions {
 				 */
 
 				break;
-			case "Err16":
+			case "Warn18":
 				prop = new ICompletionProposal[] {
 
-						new RQuickFixCompletionProposal("Remove ')'","Remove the additional parentheses", offset, endChar, "", 1) };
-
+						new RQuickFixCompletionProposal("Replace function call parameter","Replace the wrong function call parameter with the parameter name defined in the function definition", offset, endChar, replacement, endChar-offset) };
 				break;
-			case "Err17":
+				
+			case "Warn19":
+				
 
+						
 				break;
-			case "Err18":
-				prop = new ICompletionProposal[] {
-
-						new RQuickFixCompletionProposal("Remove ')'","Remove the additional parentheses", offset, endChar, "", 1) };
-				break;
-			case "Err19":
-
-				break;
-			case "Err20":
-				prop = new ICompletionProposal[] {
-
-						new RQuickFixCompletionProposal("Replace '=>' with '>='","Replace the wrong comparison operator", offset, endChar, ">=", 2) };
-				break;
-			case "Err21":
-				prop = new ICompletionProposal[] {
-
-						new RQuickFixCompletionProposal("Replace '=<' with '<='","Replace the wrong comparison operator", offset, endChar, "<=", 2) };
-				break;
-			case "Err22":
-				prop = new ICompletionProposal[] {
-
-						new RQuickFixCompletionProposal("Remove unknown token","Remove unknown token", offset, endChar, "", 1) };
-				break;
-			case "Err23":
-				prop = new ICompletionProposal[] {
-
-						new RQuickFixCompletionProposal("Remove function variable","Remove the wrong function call parameter", offset, endChar, "", endChar-offset) };
+			
 
 			default:
 				break;

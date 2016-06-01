@@ -174,7 +174,7 @@ public class RRefPhaseListen extends RBaseListener {
 							return;
 						}
 
-						parser.notifyErrorListeners(tok, "Warn17:Variable not available?: " + varName + " seems to be missing!", null);
+						parser.notifyErrorListeners(tok, "Warn17####Variable not available?#### " + varName + " seems to be missing!", null);
 
 					}
 				}
@@ -196,7 +196,7 @@ public class RRefPhaseListen extends RBaseListener {
 			boolean isNotCalled = finalVarDecl.contains(name);
 			if (isNotCalled) {
 
-				parser.notifyErrorListeners(firstToken, "Warn17:Variable " + name + " is defined but not used!:", null);
+				parser.notifyErrorListeners(firstToken, "Warn17####Variable " + name + " is defined but not used!", null);
 
 			}
 		}
@@ -224,11 +224,6 @@ public class RRefPhaseListen extends RBaseListener {
 				/*
 				 * Check if we have an assignment symbol available! else we
 				 * create a function without variable assignment!
-				 * store.setDefault("UNUSED_FUNCTIONS", true);
-				 * store.setDefault("FUNCTION_AVAILABLE", true);
-				 * store.setDefault("UNUSED_VAR", true);
-				 * store.setDefault("REPEAT_LOOP_FOLDING", true);
-				 * store.setDefault("MISSING_VAR", true); return false;
 				 */
 				if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
 					/*
@@ -244,7 +239,7 @@ public class RRefPhaseListen extends RBaseListener {
 					boolean isNotCalled = finalFuncDecl.contains(name);
 					if (isNotCalled) {
 
-						parser.notifyErrorListeners(st, "Warn17:Function " + name + " is defined but not used!:", null);
+						parser.notifyErrorListeners(st, "Warn17####Function " + name + " is defined but not used!", null);
 
 					}
 
@@ -320,7 +315,7 @@ public class RRefPhaseListen extends RBaseListener {
 
 				} else {
 					if (store.getBoolean("MISSING_FUNCTION")) {
-						parser.notifyErrorListeners(stop, "Warn16:Function not available?: " + funcName + " seems to be missing!", null);
+						parser.notifyErrorListeners(stop, "Warn16####Function not available?#### " + funcName + " seems to be missing!", null);
 					}
 
 				}
@@ -331,7 +326,7 @@ public class RRefPhaseListen extends RBaseListener {
 			 * use here!
 			 */
 		} else {
-			// System.out.println("resolved "+funcName);
+			
 			if (meth instanceof RFunctionSymbol) {
 				RFunctionSymbol me = (RFunctionSymbol) meth;
 				/* Add boolean true to mark the method as used! */
@@ -401,7 +396,7 @@ public class RRefPhaseListen extends RBaseListener {
 
 								}
 
-								parser.notifyErrorListeners(stop, "Warn17:The following args are missing -> " + str.toString() + ": ", null);
+								parser.notifyErrorListeners(stop, "Warn17####The following args are missing: " + str.toString(), null);
 
 							}
 
@@ -412,7 +407,7 @@ public class RRefPhaseListen extends RBaseListener {
 								 * arguments!
 								 */
 
-								parser.notifyErrorListeners(stop, "Warn17:To many args in function call!: ", null);
+								parser.notifyErrorListeners(stop, "Err12####To many args in function call (unused arguments)!", null);
 
 							}
 							/*
@@ -447,13 +442,12 @@ public class RRefPhaseListen extends RBaseListener {
 								if (i < tempFuncCallArray.length) {
 
 									if (tempFuncCallArray[i] != null) {
-										if (tempFuncCallArray[i].getText().equals(ar.getText()) == false) {
+										String expectedArg=ar.getText();
+										if (tempFuncCallArray[i].getText().equals(expectedArg) == false) {
 
-											// System.out.println("wrong
-											// function call assignment!" + "
-											// definition: " + ar.getText() + "
-											// array: " + tempFuncCallArray[i]);
-											parser.notifyErrorListeners(tempFuncCallArray[i], "Err23:Wrong function call assignment!" + " definition: " + ar.getText() + " array: " + tempFuncCallArray[i] + ": ", null);
+											
+											/*Text is splitted with':' and can have three different messages! Here we use two ':'!*/
+											parser.notifyErrorListeners(tempFuncCallArray[i], "Warn18####Wrong function call parameter name!####"+expectedArg+"", null);
 										}
 
 									}
@@ -475,7 +469,7 @@ public class RRefPhaseListen extends RBaseListener {
 
 							}
 
-							parser.notifyErrorListeners(stop, "Warn17:The following args are missing -> " + str2.toString() + ": ", null);
+							parser.notifyErrorListeners(stop, "Warn17####The following args are missing: " + str2.toString(), null);
 
 							/* Store function call args for code completion! */
 							if (offsetCodeCompl > startIndex && offsetCodeCompl <= stopIndex) {
@@ -497,7 +491,7 @@ public class RRefPhaseListen extends RBaseListener {
 				 */
 				else {
 					if (argText.isEmpty() == false) {
-						parser.notifyErrorListeners(stop, "Warn17:The function definiton has no arguments to call! ", null);
+						parser.notifyErrorListeners(stop, "Warn17####The function definiton has no arguments to call! ", null);
 						// System.out.println("calltext " + callText);
 					}
 				}

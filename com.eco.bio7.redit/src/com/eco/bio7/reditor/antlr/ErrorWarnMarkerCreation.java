@@ -29,8 +29,8 @@ public class ErrorWarnMarkerCreation extends WorkspaceJob {
 	private int offSymbolTokenLength = 0;
 	String quickFix = null;
 	private ArrayList<ErrorWarnStore> errors;
+	private String replacementText = null;
 	private static ILock lock = Job.getJobManager().newLock();
-
 
 	public ErrorWarnMarkerCreation(String name, REditor editor, ArrayList<ErrorWarnStore> errors) {
 		super(name);
@@ -50,7 +50,7 @@ public class ErrorWarnMarkerCreation extends WorkspaceJob {
 
 		return Status.OK_STATUS;
 	}
-
+    /*At the moment we split the ANTLR message (String) into up to three components. The error or warn number, the description and eventually the replacement (solution)! */
 	public void createMarkers(Object offendingSymbol, int line, int charPositionInLine, String msg) {
 		if (editor.getPage().getWorkbenchWindow().getShell().isDisposed() == false) {
 			msg = msg.replace("\\r\\n", "\n");
@@ -63,16 +63,28 @@ public class ErrorWarnMarkerCreation extends WorkspaceJob {
 			// System.out.println(offSymbol.getText());
 			if (msg.startsWith("Err")) {
 				warn = false;
-				String[] split = msg.split(":");
+				String[] split = msg.split("####");
 				quickFix = split[0];
 				msg = split[1];
+				/*If we have a replacement text!*/
+				if (split.length > 2) {
+					replacementText = split[2];
+				} else {
+					replacementText = "";
+				}
 
 				// System.out.println(msg);
 			} else if (msg.startsWith("Warn")) {
 				warn = true;
-				String[] split = msg.split(":");
+				String[] split = msg.split("####");
 				quickFix = split[0];
 				msg = split[1];
+				/*If we have a replacement text!*/
+				if (split.length > 2) {
+					replacementText = split[2];
+				} else {
+					replacementText = "";
+				}
 			}
 
 			if (editor != null) {
@@ -97,69 +109,72 @@ public class ErrorWarnMarkerCreation extends WorkspaceJob {
 					}
 					try {
 						lock.acquire();
-					IMarker marker;
-					if (warn) {
+						IMarker marker;
+						if (warn) {
 
-						try {
-							marker = resource.createMarker(IMarker.PROBLEM);
-							marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
-							// marker.setAttribute(IMarker.PRIORITY,
-							// IMarker.PRIORITY_NORMAL);
-							// marker.setAttribute(IMarker.MESSAGE, "line " +
-							// line +
-							// ":"
-							// +
-							// charPositionInLine + " " + msg);
-							marker.setAttribute(IMarker.MESSAGE, msg);
-							marker.setAttribute(IMarker.LINE_NUMBER, line);
-							marker.setAttribute(IMarker.LOCATION, lineOffsetStart + charPositionInLine);
-							if (quickFix != null) {
-								marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
-								marker.setAttribute(IMarker.TEXT, quickFix);
-								marker.setAttribute("TOKEN_TEXT", offSymbol.getText());
+							try {
+								marker = resource.createMarker(IMarker.PROBLEM);
+								marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+								// marker.setAttribute(IMarker.PRIORITY,
+								// IMarker.PRIORITY_NORMAL);
+								// marker.setAttribute(IMarker.MESSAGE, "line "
+								// +
+								// line +
+								// ":"
+								// +
+								// charPositionInLine + " " + msg);
+								marker.setAttribute(IMarker.MESSAGE, msg);
+								marker.setAttribute(IMarker.LINE_NUMBER, line);
+								marker.setAttribute(IMarker.LOCATION, lineOffsetStart + charPositionInLine);
+								if (quickFix != null) {
+									marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+									marker.setAttribute(IMarker.TEXT, quickFix);
+									marker.setAttribute("TOKEN_TEXT", offSymbol.getText());
+									marker.setAttribute("REPLACEMENT_TEXT", replacementText);
+								}
+
+								else {
+									marker.setAttribute(IMarker.TEXT, "NA");
+								}
+								createUnderlineMarker(marker);
+							} catch (CoreException ex) {
+
+								ex.printStackTrace();
 							}
+							warn = false;// reset warning flag!
+						} else {
+							try {
+								// System.out.println(offSymbol.getText());
+								marker = resource.createMarker(IMarker.PROBLEM);
+								marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+								// marker.setAttribute(IMarker.PRIORITY,
+								// IMarker.PRIORITY_NORMAL);
+								// marker.setAttribute(IMarker.MESSAGE, "line "
+								// +
+								// line +
+								// ":"
+								// +
+								// charPositionInLine + " " + msg);
+								marker.setAttribute(IMarker.MESSAGE, msg);
+								marker.setAttribute(IMarker.LINE_NUMBER, line);
+								marker.setAttribute(IMarker.LOCATION, lineOffsetStart + charPositionInLine);
+								if (quickFix != null) {
+									marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+									marker.setAttribute(IMarker.TEXT, quickFix);
+									marker.setAttribute("TOKEN_TEXT", offSymbol.getText());
+									marker.setAttribute("REPLACEMENT_TEXT", replacementText);
+								}
 
-							else {
-								marker.setAttribute(IMarker.TEXT, "NA");
+								else {
+									marker.setAttribute(IMarker.TEXT, "NA");
+								}
+								createUnderlineMarker(marker);
+							} catch (CoreException ex) {
+
+								ex.printStackTrace();
 							}
-							createUnderlineMarker(marker);
-						} catch (CoreException ex) {
-
-							ex.printStackTrace();
 						}
-						warn = false;// reset warning flag!
-					} else {
-						try {
-							// System.out.println(offSymbol.getText());
-							marker = resource.createMarker(IMarker.PROBLEM);
-							marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-							// marker.setAttribute(IMarker.PRIORITY,
-							// IMarker.PRIORITY_NORMAL);
-							// marker.setAttribute(IMarker.MESSAGE, "line " +
-							// line +
-							// ":"
-							// +
-							// charPositionInLine + " " + msg);
-							marker.setAttribute(IMarker.MESSAGE, msg);
-							marker.setAttribute(IMarker.LINE_NUMBER, line);
-							marker.setAttribute(IMarker.LOCATION, lineOffsetStart + charPositionInLine);
-							if (quickFix != null) {
-								marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
-								marker.setAttribute(IMarker.TEXT, quickFix);
-								marker.setAttribute("TOKEN_TEXT", offSymbol.getText());
-							}
-
-							else {
-								marker.setAttribute(IMarker.TEXT, "NA");
-							}
-							createUnderlineMarker(marker);
-						} catch (CoreException ex) {
-
-							ex.printStackTrace();
-						}
-					}
-					}
-					finally{
+					} finally {
 						lock.release();
 					}
 				}

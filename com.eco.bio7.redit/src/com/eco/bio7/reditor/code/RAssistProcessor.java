@@ -88,10 +88,12 @@ public class RAssistProcessor implements IQuickAssistProcessor {
 				Integer startChar = marker.getAttribute(IMarker.CHAR_START, -1);
 				Integer endChar = marker.getAttribute(IMarker.CHAR_END, -1);
                 String tokenText=marker.getAttribute("TOKEN_TEXT","");
+                String replacementText=marker.getAttribute("REPLACEMENT_TEXT","");
+                
 				if (startChar > 0 && endChar > 0 && offset <= endChar && offset >= startChar) {
 					try {
 						String errorProposal = (String) (marker.getAttribute(IMarker.TEXT));
-						prop = solutions.getProposals(errorProposal, offset, endChar, prop,tokenText);
+						prop = solutions.getProposals(errorProposal, offset, endChar, prop,tokenText,replacementText);
 					} catch (CoreException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
