@@ -85,7 +85,7 @@ public class RRefPhaseListen extends RBaseListener {
 		this.tokens = tokens;
 		this.parser = parser;
 		this.offsetCodeCompl = offset;
-		store = Bio7REditorPlugin.getDefault().getPreferenceStore(); 
+		store = Bio7REditorPlugin.getDefault().getPreferenceStore();
 	}
 
 	public void enterProg(RParser.ProgContext ctx) {
@@ -288,8 +288,8 @@ public class RRefPhaseListen extends RBaseListener {
 		// String callText = sub.get(0).getText();
 
 		String funcName = stop.getText();
-		/*Ignore functions without assigned names!*/
-		if(funcName.equals("function")){
+		/* Ignore functions without assigned names! */
+		if (funcName.equals("function")) {
 			return;
 		}
 		// System.out.println(funcName);
@@ -310,7 +310,7 @@ public class RRefPhaseListen extends RBaseListener {
 					if (offsetCodeCompl >= startIndex && offsetCodeCompl <= stopIndex) {
 						isInVarCall = true;
 						proposalFuncFound = funcName;
-						
+
 					}
 
 				} else {
@@ -326,7 +326,7 @@ public class RRefPhaseListen extends RBaseListener {
 			 * use here!
 			 */
 		} else {
-			
+
 			if (meth instanceof RFunctionSymbol) {
 				RFunctionSymbol me = (RFunctionSymbol) meth;
 				/* Add boolean true to mark the method as used! */
@@ -341,8 +341,12 @@ public class RRefPhaseListen extends RBaseListener {
 
 					/* Store function call args for code completion! */
 					if (offsetCodeCompl > startIndex && offsetCodeCompl <= stopIndex) {
-						/*Set the proposalFuncFound to null for nested function calls in code completion if this is the closest match!*/
-						proposalFuncFound=null;
+						/*
+						 * Set the proposalFuncFound to null for nested function
+						 * calls in code completion if this is the closest
+						 * match!
+						 */
+						proposalFuncFound = null;
 						/*
 						 * We collect all vars here for code completion unlike
 						 * the warning below!
@@ -383,6 +387,7 @@ public class RRefPhaseListen extends RBaseListener {
 						if (argText.isEmpty() == false) {
 
 							if (callSize < functionDefSize) {
+
 								for (int i = callSize; i < formList.size(); i++) {
 									FormContext fo = formList.get(i);
 
@@ -390,13 +395,14 @@ public class RRefPhaseListen extends RBaseListener {
 
 									str.append(ar);
 
-									if (i < formList.size()-1) {
+									if (i < formList.size() - 1) {
 										str.append(" , ");
 									}
 
 								}
-
-								parser.notifyErrorListeners(stop, "Warn17####The following args are missing: " + str.toString(), null);
+								if (store.getBoolean("CHECK_MISSING_FUNCTION_CALL_ARGS")) {
+									parser.notifyErrorListeners(stop, "Warn17####The following args are missing: " + str.toString(), null);
+								}
 
 							}
 
@@ -406,9 +412,9 @@ public class RRefPhaseListen extends RBaseListener {
 								 * a ellipsis '...' allows any number of
 								 * arguments!
 								 */
-
-								parser.notifyErrorListeners(stop, "Err12####To many args in function call (unused arguments)!", null);
-
+								if (store.getBoolean("CHECK_EXCESSIVE_FUNCTION_CALL_ARGS")) {
+									parser.notifyErrorListeners(stop, "Err12####To many args in function call (unused arguments)!", null);
+								}
 							}
 							/*
 							 * Control if the assigned argument, e.g., x=3 can
@@ -418,38 +424,44 @@ public class RRefPhaseListen extends RBaseListener {
 							 * Extract the variable assignment in function
 							 * calls!
 							 */
-							Token tempFuncCallArray[] = new Token[callSize];
-							for (int i = 0; i < callSize; i++) {
+							if (store.getBoolean("CHECK_VARIABLE_ASSIGNMENT_FUNCTION_CALL_ARGS")) {
+								Token tempFuncCallArray[] = new Token[callSize];
+								for (int i = 0; i < callSize; i++) {
 
-								ParseTree tree = sub.get(i).getChild(0);
-								if (tree != null) {
-									// System.out.println(tree.getText());
-									if (tree instanceof E17VariableDeclarationContext) {
+									ParseTree tree = sub.get(i).getChild(0);
+									if (tree != null) {
+										// System.out.println(tree.getText());
+										if (tree instanceof E17VariableDeclarationContext) {
 
-										E17VariableDeclarationContext tr = (E17VariableDeclarationContext) tree;
-										/* Get the token! */
-										tempFuncCallArray[i] = tr.expr(0).start;
+											E17VariableDeclarationContext tr = (E17VariableDeclarationContext) tree;
+											/* Get the token! */
+											tempFuncCallArray[i] = tr.expr(0).start;
+
+										}
 
 									}
 
 								}
+								for (int i = 0; i < formList.size(); i++) {
+									FormContext fo = formList.get(i);
 
-							}
-							for (int i = 0; i < formList.size(); i++) {
-								FormContext fo = formList.get(i);
+									TerminalNode ar = fo.ID();
+									if (i < tempFuncCallArray.length) {
 
-								TerminalNode ar = fo.ID();
-								if (i < tempFuncCallArray.length) {
+										if (tempFuncCallArray[i] != null) {
+											String expectedArg = ar.getText();
+											if (tempFuncCallArray[i].getText().equals(expectedArg) == false) {
 
-									if (tempFuncCallArray[i] != null) {
-										String expectedArg=ar.getText();
-										if (tempFuncCallArray[i].getText().equals(expectedArg) == false) {
+												/*
+												 * Text is splitted with':' and
+												 * can have three different
+												 * messages! Here we use two
+												 * ':'!
+												 */
+												parser.notifyErrorListeners(tempFuncCallArray[i], "Warn18####Wrong function call parameter name!####" + expectedArg + "", null);
+											}
 
-											
-											/*Text is splitted with':' and can have three different messages! Here we use two ':'!*/
-											parser.notifyErrorListeners(tempFuncCallArray[i], "Warn18####Wrong function call parameter name!####"+expectedArg+"", null);
 										}
-
 									}
 								}
 							}
@@ -462,16 +474,18 @@ public class RRefPhaseListen extends RBaseListener {
 								FormContext fo = formList.get(i);
 								TerminalNode ar = fo.ID();
 								str2.append(ar);
-								if (i < formList.size()-1) {
+								if (i < formList.size() - 1) {
 									str2.append(" ,");
 								}
-								
 
 							}
+							if (store.getBoolean("CHECK_MISSING_FUNCTION_CALL_ARGS")) {
+								parser.notifyErrorListeners(stop, "Warn17####The following args are missing: " + str2.toString(), null);
+							}
 
-							parser.notifyErrorListeners(stop, "Warn17####The following args are missing: " + str2.toString(), null);
-
-							/* Store function call args for code completion! */
+							/*
+							 * Store function call args for code completion!
+							 */
 							if (offsetCodeCompl > startIndex && offsetCodeCompl <= stopIndex) {
 
 								methodCallVars = str2;
@@ -479,8 +493,6 @@ public class RRefPhaseListen extends RBaseListener {
 							}
 
 						}
-
-					} else {
 
 					}
 
@@ -491,7 +503,8 @@ public class RRefPhaseListen extends RBaseListener {
 				 */
 				else {
 					if (argText.isEmpty() == false) {
-						parser.notifyErrorListeners(stop, "Warn17####The function definiton has no arguments to call! ", null);
+						if (store.getBoolean("CHECK_FOR_EMPTY_ARG_FUNCTION"))
+							parser.notifyErrorListeners(stop, "Warn17####The function definiton has no arguments to call! ", null);
 						// System.out.println("calltext " + callText);
 					}
 				}

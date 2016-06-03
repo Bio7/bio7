@@ -28,27 +28,30 @@ public class RCodePreferences extends FieldEditorPreferencePage implements IWork
 	public void createFieldEditors() {
 
 		addField(new LabelFieldEditor("Code Folding:", getFieldEditorParent()));
-
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new BooleanFieldEditor("FUNCTIONS_FOLDING", "Functions", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("FOR_LOOP_FOLDING", "For loop", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("WHILE_LOOP_FOLDING", "While loop", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("REPEAT_LOOP_FOLDING", "Repeat loop", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("IF_CONDITION_FOLDING", "If condition", getFieldEditorParent()));
-
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new LabelFieldEditor("Code context:", getFieldEditorParent()));
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new BooleanFieldEditor("SHOW_INFOPOPUP", "Show Infopopup", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("SHOW_HOVERPOPUP", "Show Hover Popup", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("MARK_WORDS", "Mark selected words", getFieldEditorParent()));
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new LabelFieldEditor("Code completion/templates:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("TYPED_CODE_COMPLETION", "Open code completion/templates when typing", getFieldEditorParent()));
 		addField(new StringFieldEditor("ACTIVATION_CHARS", "Activation chars", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
-		addField(new LabelFieldEditor("Use '3' if 'Open code completion/templates when typing' is enabled else use the default value(s)", getFieldEditorParent()));
+		addField(new LabelFieldEditor("Use e.g. '3' if 'Open code completion/templates when typing' is enabled else use the default value(s)!", getFieldEditorParent()));
 		addField(new IntegerFieldEditor("ACTIVATION_AMOUNT_CHAR_COMPLETION", "Activate Templates after word length", getFieldEditorParent()));
-		
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new LabelFieldEditor("Editor performance:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("EDITOR_TO_OUTLINE", "Show editor position in 'Outline' view", getFieldEditorParent()));
-
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new LabelFieldEditor("Automatic close:", getFieldEditorParent()));
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new BooleanFieldEditor("CLOSE_BRACES", "{Braces}", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("CLOSE_PARENTHESES", "(Parentheses)", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("CLOSE_BRACKETS", "[Brackets]", getFieldEditorParent()));

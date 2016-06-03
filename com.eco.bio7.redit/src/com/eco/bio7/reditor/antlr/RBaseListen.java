@@ -17,10 +17,8 @@ import java.util.Set;
 import java.util.Stack;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
-import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
@@ -29,13 +27,9 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
-import com.eco.bio7.reditor.antlr.RParser.E17VariableDeclarationContext;
 import com.eco.bio7.reditor.antlr.RParser.E20CallFunctionContext;
 import com.eco.bio7.reditor.antlr.RParser.ExprContext;
 import com.eco.bio7.reditor.antlr.RParser.FormContext;
-import com.eco.bio7.reditor.antlr.RParser.ProgContext;
-import com.eco.bio7.reditor.antlr.RParser.SubContext;
-import com.eco.bio7.reditor.antlr.RParser.SublistContext;
 import com.eco.bio7.reditor.antlr.ref.RFunctionSymbol;
 import com.eco.bio7.reditor.antlr.ref.RGlobalScope;
 import com.eco.bio7.reditor.antlr.ref.RSymbol;
@@ -52,11 +46,11 @@ public class RBaseListen extends RBaseListener {
 	// public ClassModel cm = new ClassModel();
 	private REditor editor;
 	private Parser parser;
-	/* A stack for nested nodes!*/
+	/* A stack for nested nodes! */
 	private Stack<REditorOutlineNode> methods = new Stack<REditorOutlineNode>();
-	//private Stack<RScope> scopes = new Stack<RScope>();// Just for variable
-														// lookup in current
-														// scope!
+	// private Stack<RScope> scopes = new Stack<RScope>();// Just for variable
+	// lookup in current
+	// scope!
 	/* A stack to store the method declarations and calls in scope! */
 	private Stack<DeclCallStore> storeDeclCall = new Stack<DeclCallStore>();
 	public Set<String> finalFuncDecl = new HashSet<String>();
@@ -78,7 +72,7 @@ public class RBaseListen extends RBaseListener {
 
 	public void enterProg(RParser.ProgContext ctx) {
 
-		//scopes.push(new RScope(null));
+		// scopes.push(new RScope(null));
 
 		globals = new RGlobalScope(null);
 		currentScope = globals;
@@ -91,14 +85,14 @@ public class RBaseListen extends RBaseListener {
 		// storeDeclCall.pop();
 		// System.out.println(globals);
 		/* Exit scope! */
-		//scopes.pop();
+		// scopes.pop();
 		if (methods.empty() == false) {
 			methods.pop();
 		}
 
 		/* Has the function be called in this scope? */
 		DeclCallStore st = storeDeclCall.peek();
-		/*Avoid duplicates!*/
+		/* Avoid duplicates! */
 		Set<String> subScope = st.substract();
 		Set<String> subScopeVar = st.substractVars();
 
@@ -113,7 +107,7 @@ public class RBaseListen extends RBaseListener {
 
 	public void exitE19DefFunction(RParser.E19DefFunctionContext ctx) {
 		/* Exit scope! */
-		//scopes.pop();
+		// scopes.pop();
 		if (methods.empty() == false) {
 			methods.pop();
 		}
@@ -147,14 +141,13 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	
 	public void enterE19DefFunction(RParser.E19DefFunctionContext ctx) {
 		/*
 		 * Insert function as current scope with a parent current scope
 		 * (scope.peek)!
 		 */
 
-		//scopes.push(new RScope(scopes.peek()));
+		// scopes.push(new RScope(scopes.peek()));
 
 		Token firstToken = ctx.getStart();
 		Token lastToken = ctx.getStop();
@@ -190,16 +183,17 @@ public class RBaseListen extends RBaseListener {
 				 * Do we have already defined the same name for a function? If
 				 * so create a warning!
 				 */
-				RSymbol funThere = currentScope.resolve(name);
-				if (funThere instanceof RFunctionSymbol) {
-					if (currentScope.resolve(name) != null) {
+				if (store.getBoolean("FUNCTION_ALREADY_DEFINED")) {
+					RSymbol funThere = currentScope.resolve(name);
+					if (funThere instanceof RFunctionSymbol) {
+						if (currentScope.resolve(name) != null) {
 
-						// System.out.println("Function: "+name+" already
-						// declared!");
-						parser.notifyErrorListeners(firstToken, "Warn19####Function with name '" + name + "' is already defined?!", null);
+							// System.out.println("Function: "+name+" already
+							// declared!");
+							parser.notifyErrorListeners(firstToken, "Warn19####Function with name '" + name + "' is already defined?!", null);
+						}
 					}
 				}
-
 				/* Create a new scope and add the function (symbol)! */
 				RFunctionSymbol function = new RFunctionSymbol(name, currentScope, ctx.formlist());
 				currentScope.define(function); // Define function in current
@@ -375,8 +369,6 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	
-
 	@Override
 	public void enterE17VariableDeclaration(RParser.E17VariableDeclarationContext ctx) {
 
@@ -394,7 +386,7 @@ public class RBaseListen extends RBaseListener {
 			return;
 
 		}
-       /*Check and ignore if this assignment is inside a function call!*/
+		/* Check and ignore if this assignment is inside a function call! */
 		boolean isSubTrue = Utils.getCtxParent(ctx.expr(0));
 
 		// System.out.println("has Sub?: " + isSubTrue);
@@ -422,8 +414,8 @@ public class RBaseListen extends RBaseListener {
 
 				if (methods.size() == 0) {
 					if (checkVarName(name)) {
-						//RScope scope = scopes.peek();
-						//scope.add(name);
+						// RScope scope = scopes.peek();
+						// scope.add(name);
 
 						/* Create a new a new var in current scope! */
 						RVariableSymbol var = new RVariableSymbol(name);
@@ -442,8 +434,8 @@ public class RBaseListen extends RBaseListener {
 
 				} else {
 					if (checkVarName(name)) {
-						//RScope scope = scopes.peek();
-						//scope.add(name);
+						// RScope scope = scopes.peek();
+						// scope.add(name);
 						/* Create a new a new var in current scope! */
 						RVariableSymbol var = new RVariableSymbol(name);
 						currentScope.define(var); // Define symbol in
@@ -466,8 +458,8 @@ public class RBaseListen extends RBaseListener {
 				String name = tokens.get(start + 2).getText();
 				if (methods.size() == 0) {
 					if (checkVarName(name)) {
-						//RScope scope = scopes.peek();
-						//scope.add(name);
+						// RScope scope = scopes.peek();
+						// scope.add(name);
 						/* Create a new a new var in current scope! */
 						RVariableSymbol var = new RVariableSymbol(name);
 						currentScope.define(var); // Define symbol in
@@ -484,8 +476,8 @@ public class RBaseListen extends RBaseListener {
 
 				} else {
 					if (checkVarName(name)) {
-						//RScope scope = scopes.peek();
-						//scope.add(name);
+						// RScope scope = scopes.peek();
+						// scope.add(name);
 						/* Create a new a new var in current scope! */
 						RVariableSymbol var = new RVariableSymbol(name);
 						currentScope.define(var);
@@ -505,27 +497,29 @@ public class RBaseListen extends RBaseListener {
 
 		}
 		/* Check for wrong constants! */
-		ExprContext ctxExpr = ctx.expr(1);
-		if (ctxExpr != null) {
-			Token startctxExpr = ctxExpr.getStart();
-			String wrongConstants = ctxExpr.getStart().getText();
-			switch (wrongConstants) {
-			case "true":
-				parser.notifyErrorListeners(startctxExpr, "Warn12####Wrong constant 'TRUE' required!", null);
-				break;
-			case "false":
-				parser.notifyErrorListeners(startctxExpr, "Warn13####Wrong constant 'FALSE' required!", null);
-				break;
+		if (store.getBoolean("CHECK_CONSTANTS")) {
+			ExprContext ctxExpr = ctx.expr(1);
+			if (ctxExpr != null) {
+				Token startctxExpr = ctxExpr.getStart();
+				String wrongConstants = ctxExpr.getStart().getText();
+				switch (wrongConstants) {
+				case "true":
+					parser.notifyErrorListeners(startctxExpr, "Warn12####Wrong constant 'TRUE' required!", null);
+					break;
+				case "false":
+					parser.notifyErrorListeners(startctxExpr, "Warn13####Wrong constant 'FALSE' required!", null);
+					break;
 
-			case "na":
-				parser.notifyErrorListeners(startctxExpr, "Warn15####Wrong constant 'NA' required!", null);
-				break;
-			case "null":
-				parser.notifyErrorListeners(startctxExpr, "Warn14####Wrong constant 'NULL' required!", null);
-				break;
+				case "na":
+					parser.notifyErrorListeners(startctxExpr, "Warn15####Wrong constant 'NA' required!", null);
+					break;
+				case "null":
+					parser.notifyErrorListeners(startctxExpr, "Warn14####Wrong constant 'NULL' required!", null);
+					break;
 
-			default:
-				break;
+				default:
+					break;
+				}
 			}
 		}
 
@@ -535,18 +529,17 @@ public class RBaseListen extends RBaseListener {
 	private int calculateLine(int lineStart) {
 		IDocument document = null;
 		int line = 0;
-		if(editor.getEditorInput()!=null&&editor.getDocumentProvider()!=null){
-		IDocumentProvider provider = editor.getDocumentProvider();
-		 document = provider.getDocument(editor.getEditorInput());
-		
-		
-		try {
-			line = document.getLineOfOffset(lineStart) + 1;
-		} catch (BadLocationException e) {
-			// TODO Auto-generated catch block
-			System.out.println("Bad line location!");
-			// e.printStackTrace();
-		}
+		if (editor.getEditorInput() != null && editor.getDocumentProvider() != null) {
+			IDocumentProvider provider = editor.getDocumentProvider();
+			document = provider.getDocument(editor.getEditorInput());
+
+			try {
+				line = document.getLineOfOffset(lineStart) + 1;
+			} catch (BadLocationException e) {
+				// TODO Auto-generated catch block
+				System.out.println("Bad line location!");
+				// e.printStackTrace();
+			}
 		}
 		return line;
 	}
@@ -563,14 +556,14 @@ public class RBaseListen extends RBaseListener {
 		 * sourceInterval.a; Token assign = tokens.get(start);
 		 */
 
-		//Token start = ctx.start;
-		//String startText = start.getText();
+		// Token start = ctx.start;
+		// String startText = start.getText();
 		Token stop = ctx.expr().getStop();
 		String stopText = stop.getText();
 		/* Get the current scope stack elements! */
 		DeclCallStore st = storeDeclCall.peek();
 		/* add the called method to the call set! */
-		//System.out.println(stop.getText());
+		// System.out.println(stop.getText());
 		st.methCall.add(stopText);
 
 		/* Detect libraries and add them to the outline! */
@@ -637,18 +630,15 @@ public class RBaseListen extends RBaseListener {
 	 */
 	private boolean checkVarName(String varName) {
 		boolean check;
-		/*RScope scope = scopes.peek();
-		if (scope.inScope(varName)) {
-
+		/*
+		 * RScope scope = scopes.peek(); if (scope.inScope(varName)) {
+		 * 
+		 * check = false; } else { check = true; }
+		 */
+		RSymbol var = currentScope.resolve(varName);
+		if (var instanceof RVariableSymbol) {
 			check = false;
 		} else {
-			check = true;
-		}*/
-		RSymbol var=currentScope.resolve(varName);
-		if(var instanceof RVariableSymbol){
-			check = false;
-		}
-		else{
 			check = true;
 		}
 		return check;
@@ -789,13 +779,13 @@ public class RBaseListen extends RBaseListener {
 		// System.out.println("Token Text: "+tok.getText());
 		String varName = tok.getText();
 		int index = tok.getTokenIndex();
-		/*Filter whitespace out because we use Token channel hidden!*/
-		Token idNextToken = Utils.whitespaceTokenFilter(index, ctx.stop.getStopIndex(),tokens);
+		/* Filter whitespace out because we use Token channel hidden! */
+		Token idNextToken = Utils.whitespaceTokenFilter(index, ctx.stop.getStopIndex(), tokens);
 
 		// Token idNextToken = tokens.get(index + 1);
 		// System.out.println("Next Symbol= "+idNextToken.getText());
 		if (idNextToken != null) {
-			if (idNextToken.getText().equals("=") || idNextToken.getText().equals("<-") || idNextToken.getText().equals("<<-") ||idNextToken.getText().equals("(")) {
+			if (idNextToken.getText().equals("=") || idNextToken.getText().equals("<-") || idNextToken.getText().equals("<<-") || idNextToken.getText().equals("(")) {
 				return;
 			}
 
@@ -808,6 +798,5 @@ public class RBaseListen extends RBaseListener {
 			}
 		}
 	}
-	
 
 }
