@@ -178,22 +178,8 @@ public class RBaseListen extends RBaseListener {
 			 * function without variable assignment!
 			 */
 			if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
-
-				/*
-				 * Do we have already defined the same name for a function? If
-				 * so create a warning!
-				 */
-				if (store.getBoolean("FUNCTION_ALREADY_DEFINED")) {
-					RSymbol funThere = currentScope.resolve(name);
-					if (funThere instanceof RFunctionSymbol) {
-						if (currentScope.resolve(name) != null) {
-
-							// System.out.println("Function: "+name+" already
-							// declared!");
-							parser.notifyErrorListeners(firstToken, "Warn19####Function with name '" + name + "' is already defined?!", null);
-						}
-					}
-				}
+                /*Check if a function or variable with this name is already defined!*/
+				alreadyDefined(firstToken, name);
 				/* Create a new scope and add the function (symbol)! */
 				RFunctionSymbol function = new RFunctionSymbol(name, currentScope, ctx.formlist());
 				currentScope.define(function); // Define function in current
@@ -250,6 +236,28 @@ public class RBaseListen extends RBaseListener {
 
 		}
 
+	}
+
+	private void alreadyDefined(Token firstToken, String name) {
+		/*
+		 * Do we have already defined the same name for a function? If
+		 * so create a warning!
+		 */
+		if (store.getBoolean("FUNCTION_ALREADY_DEFINED")) {
+			RSymbol funThere = currentScope.resolve(name);
+			if (funThere instanceof RFunctionSymbol) {
+				if (currentScope.resolve(name) != null) {
+
+					parser.notifyErrorListeners(firstToken, "Warn19####A function with name '" + name + "' is already defined!", null);
+				}
+			}
+			else if(funThere instanceof RVariableSymbol){
+				if (currentScope.resolve(name) != null) {
+
+					parser.notifyErrorListeners(firstToken, "Warn19####A variable with name '" + name + "' is already defined!", null);
+				}
+			}
+		}
 	}
 
 	private void createFunctionWithoutName(RParser.E19DefFunctionContext ctx, int lineMethod) {
@@ -457,6 +465,7 @@ public class RBaseListen extends RBaseListener {
 			else if (op.equals("->") || op.equals("->>")) {
 				String name = tokens.get(start + 2).getText();
 				if (methods.size() == 0) {
+					/*Is this variable already defined in the scope?*/
 					if (checkVarName(name)) {
 						// RScope scope = scopes.peek();
 						// scope.add(name);
@@ -467,7 +476,7 @@ public class RBaseListen extends RBaseListener {
 						DeclCallStore st = storeDeclCall.peek();
 						/*
 						 * Add the called var to the call set to detect unused
-						 * vaiables!
+						 * variables!
 						 */
 						st.varDecl.add(name);
 
@@ -475,6 +484,7 @@ public class RBaseListen extends RBaseListener {
 					}
 
 				} else {
+					/*Is this variable already defined in the scope?*/
 					if (checkVarName(name)) {
 						// RScope scope = scopes.peek();
 						// scope.add(name);
@@ -485,7 +495,7 @@ public class RBaseListen extends RBaseListener {
 						DeclCallStore st = storeDeclCall.peek();
 						/*
 						 * Add the called var to the call set to detect unused
-						 * vaiables!
+						 * variables!
 						 */
 						st.varDecl.add(name);
 
@@ -623,11 +633,7 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	/*
-	 * Adapted method source from:
-	 * http://stackoverflow.com/questions/15050137/once
-	 * -grammar-is-complete-whats-the-best-way-to-walk-an-antlr-v4-tree
-	 */
+	/*Is this variable already defined in the scope?*/
 	private boolean checkVarName(String varName) {
 		boolean check;
 		/*
