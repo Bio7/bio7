@@ -36,19 +36,28 @@ public class LoadCsvJob extends WorkspaceJob {
 	private FileReader fi;
 	private CSVReader reader;
 	private String fileToRead;
-	protected char c;
-	protected char c2;
+	protected char sep;
+	protected char quot;
 	protected int sel;
 	protected String name;
 	protected Grid grid;
 	private File fil;
+	private boolean strictQuotes;
+	private boolean ignoreWs;
+	private boolean keepCr;
+	private char esc;
 
-	public LoadCsvJob(String fileToRead_, char c_, char c_2, int sel_, String name_) {
+	public LoadCsvJob(String fileToRead_, char sep, char quot,char esc, int sel_,boolean strictQuotes, boolean ignoreWs, boolean keepCr, String name_) {
 		super("Csv");
 		this.fileToRead = fileToRead_;
 		this.sel = sel_;
-		this.c = c_;
-		this.c2 = c_2;
+		this.sep = sep;
+		this.quot = quot;
+		this.esc = esc;		
+		this.strictQuotes=strictQuotes;
+		this.ignoreWs=ignoreWs;
+		this.keepCr=keepCr;
+		
 		this.name = name_;
 
 	}
@@ -63,7 +72,7 @@ public class LoadCsvJob extends WorkspaceJob {
 				e2.printStackTrace();
 			}
 
-			reader = new CSVReader(fi, c, c2, sel);
+			reader = new CSVReader(fi, sep, quot,esc, sel,strictQuotes,  ignoreWs,  keepCr);
 
 			sizey = 0;
 			sizex = 0;
@@ -140,7 +149,7 @@ public class LoadCsvJob extends WorkspaceJob {
 		}
 		readTable();
 		if (fil.exists()) {
-			reader = new CSVReader(fi, c, c2, sel);
+			reader = new CSVReader(fi, sep, quot, sel);
 			Display display = PlatformUI.getWorkbench().getDisplay();
 			display.syncExec(new Runnable() {
 
