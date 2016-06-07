@@ -546,7 +546,7 @@ public class RBaseListen extends RBaseListener {
 			try {
 				line = document.getLineOfOffset(lineStart) + 1;
 			} catch (BadLocationException e) {
-				// TODO Auto-generated catch block
+				
 				System.out.println("Bad line location!");
 				// e.printStackTrace();
 			}
@@ -561,13 +561,7 @@ public class RBaseListen extends RBaseListener {
 
 	@Override
 	public void enterE20CallFunction(RParser.E20CallFunctionContext ctx) {
-		/*
-		 * Interval sourceInterval = ctx.getSourceInterval(); int start =
-		 * sourceInterval.a; Token assign = tokens.get(start);
-		 */
-
-		// Token start = ctx.start;
-		// String startText = start.getText();
+		
 		Token stop = ctx.expr().getStop();
 		String stopText = stop.getText();
 		/* Get the current scope stack elements! */
