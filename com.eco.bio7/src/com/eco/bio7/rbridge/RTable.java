@@ -107,36 +107,34 @@ public class RTable extends ViewPart {
 		tabFolder.addCTabFolder2Listener(new CTabFolder2Listener() {
 
 			public void close(final CTabFolderEvent event) {
-				
-				 item = (CTabItem) event.item;// tabFolder.getSelection();
+
+				item = (CTabItem) event.item;// tabFolder.getSelection();
 				/* Garbage collector can work!!!! */
 				grid = (Grid) event.item.getData();
-				
-				/*Dispose swt colors and images explicitly! */
+
+				/* Dispose swt colors and images explicitly! */
 				for (int i = 0; i < grid.getItemCount(); i++) {
 					for (int j = 0; j < grid.getColumnCount(); j++) {
-						//Color foreg = grid.getItem(i).getForeground(j);
-						//Color backg = grid.getItem(i).getBackground(j);
+						// Color foreg = grid.getItem(i).getForeground(j);
+						// Color backg = grid.getItem(i).getBackground(j);
 						Image im = grid.getItem(i).getImage(j);
-						/*if (foreg != null) {
-							foreg.dispose();
-						}*/
-						/*if (backg != null) {
-							backg.dispose();
-						}*/
+						/*
+						 * if (foreg != null) { foreg.dispose(); }
+						 */
+						/*
+						 * if (backg != null) { backg.dispose(); }
+						 */
 						if (im != null) {
 							im.dispose();
 						}
 
 					}
 				}
-					
-				
-				grid.removeAll();
-				
+
+				grid.disposeAllItems();
+
 				item.dispose();
-				
-				
+
 				/* Necessary to set the grid from the now active item! */
 				if (tabFolder.getSelection() != null) {
 					grid = (Grid) tabFolder.getSelection().getData();
@@ -301,7 +299,7 @@ public class RTable extends ViewPart {
 	 */
 	private void initializeToolBar() {
 		IToolBarManager toolbarManager = getViewSite().getActionBars().getToolBarManager();
-		toolbarManager.add(fi);	
+		toolbarManager.add(fi);
 		toolbarManager.add(edit);
 		toolbarManager.add(add);
 		toolbarManager.add(fromSpread);
@@ -309,7 +307,7 @@ public class RTable extends ViewPart {
 		toolbarManager.add(addSpread);
 		toolbarManager.add(addColumn);
 		toolbarManager.add(addRow);
-			
+
 		toolbarManager.add(new PlaceholderLabel().getPlaceholderLabel());
 
 	}

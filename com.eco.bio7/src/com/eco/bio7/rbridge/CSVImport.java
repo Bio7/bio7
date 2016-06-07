@@ -11,14 +11,16 @@
 
 package com.eco.bio7.rbridge;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.StringReader;
 import org.eclipse.nebula.widgets.grid.Grid;
 import org.eclipse.nebula.widgets.grid.GridColumn;
 import org.eclipse.nebula.widgets.grid.GridItem;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
@@ -32,6 +34,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.wb.swt.SWTResourceManager;
+
+import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.util.Util;
 import com.opencsv.CSVReader;
 
 public class CSVImport {
@@ -39,7 +44,7 @@ public class CSVImport {
 	public Shell sShell = null;
 	private Grid table = null;
 	private Text textSeperator = null;
-	private Text text3 = null;
+	private Text textFile = null;
 	private Button button = null;
 	private Button button2 = null;
 	private Button button3 = null;
@@ -53,12 +58,7 @@ public class CSVImport {
 	private Button kommaButton;
 	private Button semicolonButton;
 	private Button otherButton;
-	private int count;
-	private int sizey;
-	private int sizex;
-	private FileReader fi;
 	private CSVReader reader;
-	private String fileToRead;
 	protected char c;
 	protected char c2;
 	protected int sel;
@@ -74,13 +74,10 @@ public class CSVImport {
 	private Label label;
 	private Label labelError;
 	private Label lblMessage;
+	private Button btnClipboardData;
+	private boolean noProblemsDetected;
 
-	/**
-	 * This method initializes combo
-	 * 
-	 */
-	private void createCombo() {
-	}
+	
 
 	/**
 	 * @param args
@@ -125,10 +122,10 @@ public class CSVImport {
 		sShell.setSize(new Point(518, 717));
 		sShell.setLayout(new GridLayout(3, true));
 
-		text3 = new Text(sShell, SWT.BORDER);
+		textFile = new Text(sShell, SWT.BORDER);
 		GridData gd_text3 = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
 		gd_text3.heightHint = 25;
-		text3.setLayoutData(gd_text3);
+		textFile.setLayoutData(gd_text3);
 		button = new Button(sShell, SWT.NONE);
 		GridData gd_button = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_button.heightHint = 35;
@@ -138,12 +135,26 @@ public class CSVImport {
 			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
 				String f = openFile(sShell.getDisplay());
 				if (f != null) {
-					text3.setText(f);
+					textFile.setText(f);
 				}
 				modified();
 
 			}
 		});
+
+		btnClipboardData = new Button(sShell, SWT.CHECK);
+		btnClipboardData.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				textFile.setText("");
+				modified();
+			}
+		});
+		GridData gd_btnClipboardData = new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1);
+		gd_btnClipboardData.heightHint = 30;
+		btnClipboardData.setLayoutData(gd_btnClipboardData);
+		btnClipboardData.setText("From clipboard");
+		new Label(sShell, SWT.NONE);
 		table = new Grid(sShell, SWT.V_SCROLL | SWT.H_SCROLL | SWT.VIRTUAL);
 		GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, true, 3, 5);
 		gd_table.widthHint = 411;
@@ -246,7 +257,7 @@ public class CSVImport {
 			public void widgetSelected(final SelectionEvent e) {
 				if (otherButton.getSelection()) {
 					textSeperator.setEnabled(true);
-					textSeperator.setText(" ");
+					// textSeperator.setText(" ");
 					kommaButton.setSelection(false);
 					semicolonButton.setSelection(false);
 					tabButton.setSelection(false);
@@ -381,10 +392,12 @@ public class CSVImport {
 		new Label(sShell, SWT.NONE);
 
 		labelError = new Label(sShell, SWT.NONE);
+		labelError.setForeground(SWTResourceManager.getColor(SWT.COLOR_RED));
 		GridData gd_labelError = new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1);
 		gd_labelError.heightHint = 25;
 		labelError.setLayoutData(gd_labelError);
-		labelError.setText("No parsing  problems detected!");
+		labelError.setText("Please select a file or enable the clipboard!");
+		noProblemsDetected = false;
 
 		button2 = new Button(sShell, SWT.NONE);
 		GridData gd_button2 = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
@@ -393,17 +406,17 @@ public class CSVImport {
 		button2.setText("OK");
 		button2.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
 			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
-				String fileToRead = text3.getText();
-				String name = new File(fileToRead).getName();
-				char sep = textSeperator.getText().charAt(0);
-				char quot = textQuotedChar.getText().charAt(0);
-				char esc=textEscape.getText().charAt(0);
-				int sel = spinner.getSelection();
-				LoadCsvJob job = new LoadCsvJob(fileToRead, sep, quot,esc, sel,strictQuotes.getSelection(), ignoreWs.getSelection(), keepCr.getSelection(), name);
-				// job.setSystem(true);
-				job.schedule();
+				if (noProblemsDetected) {
+					String fileToRead = textFile.getText();
+					LoadCsvJob job = new LoadCsvJob(CSVImport.this, fileToRead);
+					// job.setSystem(true);
+					job.schedule();
+					sShell.dispose();
+				} else {
+					Bio7Dialog.message("Problems detected! Please read the parser message!");
+				}
 
-				sShell.dispose();
+				
 
 			}
 		});
@@ -419,7 +432,8 @@ public class CSVImport {
 
 			}
 		});
-		createCombo();
+		
+		
 
 	}
 
@@ -431,14 +445,20 @@ public class CSVImport {
 			}
 		}
 		table.setRedraw(true);
-		CSVReader reader = null;
+
 		/* Detect if char is given! */
 
-		if (textSeperator.getText().length() <= 0 || textQuotedChar.getText().length()<= 0 || textEscape.getText().length()<= 0) {
+		if (textSeperator.getText().length() <= 0 || textQuotedChar.getText().length() <= 0 || textEscape.getText().length() <= 0) {
 			labelError.setForeground(SWTResourceManager.getColor(SWT.COLOR_RED));
 			labelError.setText("The separator, quote, and escape characters could'nt be empty!");
-
+			noProblemsDetected = false;
 			return;
+		}
+
+		else {
+			labelError.setForeground(SWTResourceManager.getColor(SWT.COLOR_BLACK));
+			labelError.setText("No problems detected!");
+			noProblemsDetected = true;
 		}
 
 		char seperator = textSeperator.getText().charAt(0);
@@ -451,17 +471,52 @@ public class CSVImport {
 
 			// Bio7Dialog.message("The separator, quote, and escape
 			// characters must be different!");
+			noProblemsDetected = false;
 			return;
 		} else {
 			labelError.setForeground(SWTResourceManager.getColor(SWT.COLOR_BLACK));
 			labelError.setText("No problems detected!");
+			noProblemsDetected = true;
 		}
 
 		FileReader fi = null;
+		StringReader st = null;
 		try {
-			fi = new FileReader(text3.getText());
 
-			reader = new CSVReader(fi, seperator, quoteChar, escape, spinner.getSelection(), strictQuotes.getSelection(), ignoreWs.getSelection(), keepCr.getSelection());
+			if (btnClipboardData.getSelection()) {
+				Clipboard clipboard = new Clipboard(Util.getDisplay());
+
+				String plainText = (String) clipboard.getContents(TextTransfer.getInstance());
+				if (plainText != null && plainText.isEmpty() == false) {
+					st = new StringReader(plainText);
+					reader = new CSVReader(st, seperator, quoteChar, escape, spinner.getSelection(), strictQuotes.getSelection(), ignoreWs.getSelection(), keepCr.getSelection());
+					clipboard.dispose();
+					labelError.setForeground(SWTResourceManager.getColor(SWT.COLOR_BLACK));
+					labelError.setText("No problems detected!");
+					noProblemsDetected = true;
+				} else {
+					labelError.setForeground(SWTResourceManager.getColor(SWT.COLOR_RED));
+					labelError.setText("The clipboard is empty or contains no text!");
+					noProblemsDetected = false;
+					return;
+				}
+			}
+
+			else {
+				String fil = textFile.getText();
+				if (fil != null && fil.isEmpty() == false) {
+					fi = new FileReader(textFile.getText());
+					reader = new CSVReader(fi, seperator, quoteChar, escape, spinner.getSelection(), strictQuotes.getSelection(), ignoreWs.getSelection(), keepCr.getSelection());
+					labelError.setForeground(SWTResourceManager.getColor(SWT.COLOR_BLACK));
+					labelError.setText("No problems detected!");
+					noProblemsDetected = true;
+				} else {
+					labelError.setForeground(SWTResourceManager.getColor(SWT.COLOR_RED));
+					labelError.setText("Please select a file or the clipboard!");
+					noProblemsDetected = false;
+					return;
+				}
+			}
 
 			String[] nextLine;
 			int count = 0;
@@ -491,48 +546,6 @@ public class CSVImport {
 
 	}
 
-	private void readTable() {
-
-		try {
-			fi = new FileReader(fileToRead);
-		} catch (FileNotFoundException e2) {
-
-			e2.printStackTrace();
-		}
-
-		reader = new CSVReader(fi, c, c2, sel);
-
-		sizey = 0;
-		sizex = 0;
-		String[] nextLine;
-
-		try {
-			while ((nextLine = reader.readNext()) != null) {
-
-				for (int i = 0; i < nextLine.length; i++) {
-					if (nextLine.length > sizex) {
-						sizex = nextLine.length;
-					}
-
-				}
-
-				sizey++;
-
-			}
-		} catch (IOException e) {
-
-			e.printStackTrace();
-		}
-
-		/* Now Load the File definitely ! */
-		try {
-			fi = new FileReader(fileToRead);
-		} catch (FileNotFoundException e2) {
-
-			e2.printStackTrace();
-		}
-
-	}
 	/*
 	 * The following methods were copied from the CSV source:
 	 * 
@@ -550,6 +563,14 @@ public class CSVImport {
 	 * License for the specific language governing permissions and limitations
 	 * under the License.
 	 */
+
+	public Button getBtnClipboardData() {
+		return btnClipboardData;
+	}
+
+	public void setBtnClipboardData(Button btnClipboardData) {
+		this.btnClipboardData = btnClipboardData;
+	}
 
 	/**
 	 * Checks to see if any two of the three characters are the same. This is
@@ -581,6 +602,43 @@ public class CSVImport {
 	 */
 	private boolean isSameCharacter(char c1, char c2) {
 		return c1 != '\0' && c1 == c2;
+	}
+
+	public boolean isClipboard() {
+		return btnClipboardData.getSelection();
+	}
+
+	public char getSep() {
+		return textSeperator.getText().charAt(0);
+	}
+
+	public char getQuot() {
+
+		return textQuotedChar.getText().charAt(0);
+
+	}
+
+	public char getEsc() {
+		return textEscape.getText().charAt(0);
+
+	}
+
+	public int getSelectedRange() {
+		return spinner.getSelection();
+
+	}
+
+	public boolean getStrictQuotes() {
+		return strictQuotes.getSelection();
+
+	}
+
+	public boolean getIgnoreWs() {
+		return ignoreWs.getSelection();
+	}
+
+	public boolean getKeepCr() {
+		return keepCr.getSelection();
 	}
 
 }

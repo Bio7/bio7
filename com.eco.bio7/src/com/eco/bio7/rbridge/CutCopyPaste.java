@@ -67,6 +67,13 @@ public class CutCopyPaste {
 
 			Point[] sel = grid.getCellSelection();
 
+			if (sel == null) {
+				return;
+			}
+			if (sel.length <= 0) {
+				return;
+			}
+
 			int temp = sel[0].y;
 			// int columncount = 0;// Temp variable for columncounts!
 			// storecount = 0;// A counter for the amount of columns!
@@ -157,27 +164,25 @@ public class CutCopyPaste {
 					if (row < grid.getItemCount() && column < grid.getColumnCount()) {
 						grid.getItem(row).setText(column, value);
 					}
-					/*Create row or columns if grid is to small!*/
-					else{
-					    
-					    if(row >= grid.getItemCount()){
-					    	Bio7Grid.createRow(row, grid.getItemHeight());
-					    
-					    }
-					    
-					    else if(column>=grid.getColumnCount()){
-					    	Bio7Grid.createColumn(column, 50, "C" + (column + 1));
-					    }
-					    grid.getItem(row).setText(column, value);
+					/* Create row or columns if grid is to small! */
+					else {
+
+						if (row >= grid.getItemCount()) {
+							Bio7Grid.createRow(row, grid.getItemHeight());
+
+						}
+
+						else if (column >= grid.getColumnCount()) {
+							Bio7Grid.createColumn(column, 50, "C" + (column + 1));
+						}
+						grid.getItem(row).setText(column, value);
 					}
 
-					
 				}
 			}
-			
 
 		}
-		
+
 	}
 
 	public void delete() {
