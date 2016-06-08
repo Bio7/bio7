@@ -52,8 +52,8 @@ public class RErrorStrategy extends DefaultErrorStrategy {
 	}
 
 	protected void reportInputMismatch(Parser recognizer, InputMismatchException e) {
-		String msg = "mismatched input " + getTokenErrorDisplay(e.getOffendingToken()) + " expecting "
-				+ e.getExpectedTokens().toString(recognizer.getVocabulary());
+		String msg = "mismatched input " + getTokenErrorDisplay(e.getOffendingToken()) + "\n\nexpecting:\n\n"
+				+ (e.getExpectedTokens().toString(recognizer.getVocabulary())).replaceAll("(.{79})", "$1\n");
 		recognizer.notifyErrorListeners(e.getOffendingToken(), msg, e);
 	}
 
@@ -67,7 +67,7 @@ public class RErrorStrategy extends DefaultErrorStrategy {
 		Token t = recognizer.getCurrentToken();
 		String tokenName = getTokenErrorDisplay(t);
 		IntervalSet expecting = getExpectedTokens(recognizer);
-		String msg = "extraneous input " + tokenName + " expecting " + expecting.toString(recognizer.getVocabulary());
+		String msg = "extraneous input " + tokenName + "\n\nexpecting:\n\n" + (expecting.toString(recognizer.getVocabulary())).replaceAll("(.{79})", "$1\n");
 		recognizer.notifyErrorListeners(t, msg, null);
 	}
 

@@ -235,5 +235,5 @@ Bundle-ClassPath:
  libs/groovy-all-2.4.3.jar,
  libs/jython-standalone-2.5.3.jar,
  external:$java.home$/lib/jfxswt.jar,
- libs/py4j0.8.2.1.jar
+ libs/py4j0.10.1.jar
 

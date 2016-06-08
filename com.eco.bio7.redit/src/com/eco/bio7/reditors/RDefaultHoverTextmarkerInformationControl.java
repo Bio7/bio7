@@ -130,17 +130,12 @@ public class RDefaultHoverTextmarkerInformationControl extends AbstractInformati
 	private StyledText fText;
 	/** The information presenter, or <code>null</code> if none. */
 	private final IInformationPresenter fPresenter;
-	/** A cached text presentation */
-	private final TextPresentation fPresentation = new TextPresentation();
-
 	/**
 	 * Additional styles to use for the text control.
 	 * 
 	 * @since 3.4, previously called <code>fTextStyle</code>
 	 */
 	private final int fAdditionalTextStyles;
-
-	private String htmlHelpText;
 
 	protected boolean canBrowse = true;
 
@@ -407,7 +402,7 @@ public class RDefaultHoverTextmarkerInformationControl extends AbstractInformati
 	public Point computeSizeHint() {
 		// see https://bugs.eclipse.org/bugs/show_bug.cgi?id=117602
 
-		return getShell().computeSize(300, SWT.DEFAULT, true);
+		return getShell().computeSize(500, SWT.DEFAULT, true);
 	}
 
 	/*

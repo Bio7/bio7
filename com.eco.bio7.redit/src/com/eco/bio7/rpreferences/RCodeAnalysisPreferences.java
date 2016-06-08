@@ -28,7 +28,7 @@ public class RCodeAnalysisPreferences extends FieldEditorPreferencePage implemen
 		addField(new BooleanFieldEditor("UNUSED_VAR", "Detect if variable is used", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("MISSING_VAR", "Detect if variable is available", getFieldEditorParent()));	
 		addField(new BooleanFieldEditor("CHECK_CONSTANTS", "Check for wrong constants (na, true, false, null)", getFieldEditorParent()));	
-		addField(new BooleanFieldEditor("FUNCTION_ALREADY_DEFINED", "Check if a function is already defined", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("FUNCTION_ALREADY_DEFINED", "Check for functions if a function (or variable) with that name is already defined", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("CHECK_MISSING_FUNCTION_CALL_ARGS", "Check if a function call argument is missing", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("CHECK_EXCESSIVE_FUNCTION_CALL_ARGS", "Check if a function call has to many arguments", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("CHECK_VARIABLE_ASSIGNMENT_FUNCTION_CALL_ARGS", "Check if the name of a variable assignment in a function call is wrong", getFieldEditorParent()));

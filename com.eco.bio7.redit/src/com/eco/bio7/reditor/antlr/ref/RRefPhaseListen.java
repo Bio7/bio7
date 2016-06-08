@@ -239,7 +239,7 @@ public class RRefPhaseListen extends RBaseListener {
 					boolean isNotCalled = finalFuncDecl.contains(name);
 					if (isNotCalled) {
 
-						parser.notifyErrorListeners(st, "Warn17####Function " + name + " is defined but not used!", null);
+						parser.notifyErrorListeners(st, "Warn17####Function " + name + " is defined but not called!\n(Eventually used as an argument!)", null);
 
 					}
 
