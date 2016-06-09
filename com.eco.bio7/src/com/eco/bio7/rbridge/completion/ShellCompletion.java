@@ -12,12 +12,26 @@ See license info below
  *   Konstantin Komissarchik - initial implementation and ongoing maintenance
  *   Kamesh Sampath - [354199] Support content proposals in text field property editor
  *   Roded Bahat - [376198] Vertically align actions for @LongString property editors
- ******************************************************************************/
+ ******************************************************************************
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ */
 
 package com.eco.bio7.rbridge.completion;
 
 import java.util.ArrayList;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.IContentProposal;
@@ -29,7 +43,11 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Text;
+import org.rosuda.REngine.Rserve.RConnection;
+import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
+import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.rpreferences.template.CalculateRProposals;
 import com.swtdesigner.ResourceManager;
 
@@ -37,14 +55,14 @@ public class ShellCompletion {
 	private ContentProposalProvider contentProposalProvider;
 	private ContentProposalAdapter contentProposalAdapter;
 	private KeyStroke stroke;
-	private static String[] statistics;
-	private static String[] statisticsContext;
-	private static String[] statisticsSet;
 	private static final String LCL = "abcdefghijklmnopqrstuvwxyz";
 	private static final String UCL = LCL.toUpperCase();
 	private static final String NUMS = "0123456789";
-	Image image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/template_obj.png");
+	private Image image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/template_obj.png");
 	private Text control;
+	private String[] statistics;
+	private String[] statisticsContext;
+	private String[] statisticsSet;
 
 	/*
 	 * Next two methods adapted from:
@@ -105,6 +123,75 @@ public class ShellCompletion {
 
 	}
 
+	public void update() {
+
+		RConnection con = REditor.getRserveConnection();
+		if (con != null) {
+			Job job = new Job("Reload") {
+
+				@Override
+				protected IStatus run(IProgressMonitor monitor) {
+					monitor.beginTask("Reload package information...", IProgressMonitor.UNKNOWN);
+
+					RConnection c = REditor.getRserveConnection();
+					if (c != null) {
+						if (RState.isBusy() == false) {
+							RState.setBusy(true);
+							try {
+
+								/*
+								 * Function loaded at Rserve startup. Writes the
+								 * available functions to a file!
+								 */
+								c.eval(".bio7WriteFunctionDef();");
+							} catch (RserveException e) {
+
+								e.printStackTrace();
+							}
+
+							/*
+							 * Reload the code proposals (not the templates) for
+							 * the R editor!
+							 */
+							CalculateRProposals.setStartupTemplate(false);
+							CalculateRProposals.loadRCodePackageTemplates();
+							/* Load the created proposals! */
+							statistics = CalculateRProposals.getStatistics();
+							statisticsContext = CalculateRProposals.getStatisticsContext();
+							statisticsSet = CalculateRProposals.getStatisticsSet();
+
+							/**/
+							// contentProposalProvider = new
+							// ContentProposalProvider();
+							// contentProposalAdapter.setContentProposalProvider(contentProposalProvider);
+
+						}
+
+					}
+
+					monitor.done();
+					return Status.OK_STATUS;
+				}
+
+			};
+			job.addJobChangeListener(new JobChangeAdapter() {
+				public void done(IJobChangeEvent event) {
+					if (event.getResult().isOK()) {
+
+						RState.setBusy(false);
+					} else {
+
+					}
+				}
+			});
+			// job.setSystem(true);
+			job.schedule();
+		} else {
+			// message("Rserve is not alive!");
+		}
+
+	}
+
 	public void setProposals(final String[] proposals) {
 		contentProposalProvider.setProposals(proposals);
 	}
@@ -118,8 +205,7 @@ public class ShellCompletion {
 	}
 
 	public class ContentProposalProvider implements IContentProposalProvider {
-		private String[] statistics;
-		private String[] statisticsContext;
+
 		private IContentProposal[] contentProposals;
 		private boolean filterProposals = true;
 		public int lastIndex;
@@ -130,7 +216,9 @@ public class ShellCompletion {
 			 * At startup load the default R proposals and add them to the
 			 * templates!
 			 */
+
 			CalculateRProposals.loadRCodePackageTemplates();
+
 			/* Load the created proposals! */
 			statistics = CalculateRProposals.getStatistics();
 			statisticsContext = CalculateRProposals.getStatisticsContext();
@@ -138,6 +226,7 @@ public class ShellCompletion {
 		}
 
 		public IContentProposal[] getProposals(String contents, int position) {
+
 			if (filterProposals) {
 				ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
 				int offset = control.getCaretPosition();
@@ -158,7 +247,7 @@ public class ShellCompletion {
 					contentLast = control.getText();
 				}
 
-				/*If text length after parenheses is at least 0!*/
+				/* If text length after parenheses is at least 0! */
 				if (textLength >= 0) {
 					for (int i = 0; i < statistics.length; i++) {
 
@@ -166,8 +255,8 @@ public class ShellCompletion {
 							list.add(makeContentProposal(statistics[i], statisticsContext[i], statisticsSet[i]));
 						}
 					}
-				} 
-				/*If text length after parenheses is -1!*/
+				}
+				/* If text length after parenheses is -1! */
 				else {
 					for (int i = 0; i < statistics.length; i++) {
 
@@ -177,7 +266,7 @@ public class ShellCompletion {
 				}
 				return makeProposalArray((IContentProposal[]) list.toArray(new IContentProposal[list.size()]));
 			}
-			/*If filtering is true!*/
+			/* If filtering is true! */
 			if (contentProposals == null) {
 				contentProposals = new IContentProposal[statistics.length];
 
@@ -206,7 +295,7 @@ public class ShellCompletion {
 		}
 
 		public void setProposals(String[] items) {
-			this.statistics = items;
+			statistics = items;
 			contentProposals = null;
 		}
 

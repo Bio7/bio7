@@ -7,7 +7,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -15,13 +14,11 @@ import org.antlr.v4.runtime.tree.ParseTreeProperty;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 import org.eclipse.jface.preference.IPreferenceStore;
-
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.antlr.RBaseListen;
 import com.eco.bio7.reditor.antlr.RBaseListener;
 import com.eco.bio7.reditor.antlr.RParser;
 import com.eco.bio7.reditor.antlr.RParser.E17VariableDeclarationContext;
-import com.eco.bio7.reditor.antlr.RParser.E20CallFunctionContext;
 import com.eco.bio7.reditor.antlr.RParser.FormContext;
 import com.eco.bio7.reditor.antlr.RParser.SubContext;
 import com.eco.bio7.reditor.antlr.RParser.SublistContext;
@@ -31,7 +28,7 @@ import com.eco.bio7.rpreferences.template.CalculateRProposals;
 public class RRefPhaseListen extends RBaseListener {
 	private ParseTreeProperty<Scope> scopes;
 	private RGlobalScope globals;
-	private Scope currentScope; // resolve symbols starting in this scope
+	private Scope currentScope; // Resolve symbols starting in this scope
 	private CommonTokenStream tokens;
 	private Parser parser;
 	private Set<String> finalFuncDecl;
@@ -156,16 +153,10 @@ public class RRefPhaseListen extends RBaseListener {
 				else {
 					RSymbol var = currentScope.resolve(varName);
 
-					if (var instanceof RFunctionSymbol) {
-						return;
-						// System.out.println("Var: " + name + " is not
-						// available!");
-					}
-
 					if (var == null) {
 						/*
 						 * Find out recursively if the variable assignment is in
-						 * a method call (sublist)!
+						 * a method call (sublist) to avoid to many warnings in a method call!
 						 */
 						boolean isSubTrue = Utils.getCtxParent(ctx);
 
@@ -176,6 +167,12 @@ public class RRefPhaseListen extends RBaseListener {
 
 						parser.notifyErrorListeners(tok, "Warn17####Variable not available?#### " + varName + " seems to be missing!", null);
 
+					} else {
+						if (var instanceof RFunctionSymbol) {
+							return;
+							// System.out.println("Var: " + name + " is not
+							// available!");
+						}
 					}
 				}
 			}
@@ -239,7 +236,7 @@ public class RRefPhaseListen extends RBaseListener {
 					boolean isNotCalled = finalFuncDecl.contains(name);
 					if (isNotCalled) {
 
-						parser.notifyErrorListeners(st, "Warn17####Function " + name + " is defined but not called!\n(Eventually used as an argument!)", null);
+						parser.notifyErrorListeners(st, "Warn17####Function " + name + " is defined but not called! \nEventually used as an argument!", null);
 
 					}
 
@@ -453,10 +450,10 @@ public class RRefPhaseListen extends RBaseListener {
 											if (tempFuncCallArray[i].getText().equals(expectedArg) == false) {
 
 												/*
-												 * Text is splitted with':' and
+												 * Text is splitted with'####' and
 												 * can have three different
 												 * messages! Here we use two
-												 * ':'!
+												 * '####'!
 												 */
 												parser.notifyErrorListeners(tempFuncCallArray[i], "Warn18####Wrong function call parameter name!####" + expectedArg + "", null);
 											}

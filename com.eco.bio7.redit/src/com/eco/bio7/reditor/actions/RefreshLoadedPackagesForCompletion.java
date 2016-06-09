@@ -48,8 +48,7 @@ public class RefreshLoadedPackagesForCompletion extends Action {
 							try {
 
 								/*
-								 * Function loaded at Rserve startup. Writes the
-								 * available functions to a file!
+								 * Writes the available functions to a file!
 								 */
 								c.eval(".bio7WriteFunctionDef();");
 							} catch (RserveException e) {

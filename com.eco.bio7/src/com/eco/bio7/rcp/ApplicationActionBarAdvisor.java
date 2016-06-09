@@ -150,8 +150,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 	private IWorkbenchAction propAction;
 
-	private IWorkbenchAction findAction;
-
 	private IWorkbenchAction helpAction;
 
 	private static Action start3d;
@@ -168,13 +166,11 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 	private static Action flowstop;
 
-	private IContributionItem re;
+	private IContributionItem viewShortlist;
 
 	private IContributionItem perspect;
 
 	private IWorkbenchWindow window2;
-
-	// private static NutrientAction nutrientaction;
 
 	private IPreferenceStore store;
 
@@ -187,8 +183,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	private OfficeValueAction officevalue;
 
 	private OfficeSendValueAction officepopdata;
-
-	private BeanShellClearAction bshclearaction;
 
 	private static BeanShellImportAction bshimportaction;
 
@@ -239,6 +233,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	private GenerateControllerAction generateControllerAction;
 
 	private ClearRWorkspace clearWorkspace;
+
+	private IContributionItem showViewItem;
 
 	public ApplicationActionBarAdvisor(IActionBarConfigurer configurer) {
 		super(configurer);
@@ -334,26 +330,17 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		newWindowAction = ActionFactory.OPEN_NEW_WINDOW.create(window);
 		register(newWindowAction);
-
+		
+		 showViewItem = ContributionItemFactory.VIEWS_SHORTLIST.create(window);
+		
 		libreofficeconnection = new LibreOfficeConnection("Open LibreOffice Connection", window);
 		register(libreofficeconnection);
-
-		/*
-		 * bshclearaction = new BeanShellClearAction("Clear", window);
-		 * register(bshclearaction);
-		 * 
-		 * bshimportaction = new BeanShellImportAction("Import", window);
-		 * register(bshimportaction);
-		 */
 
 		start = new Start("Start", window);
 		register(start);
 
 		start3d = new Start3d("Start/Stop Animation", window);
 		register(start3d);
-
-		// nutrientaction = new NutrientAction("nutrient_action", window);
-		// register(nutrientaction);
 
 		resetfield = new ResetField("Reset Field", window);
 		register(resetfield);
@@ -375,14 +362,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		setup = new SetupDiscrete("Save Pattern", window);
 		register(setup);
-		/*
-		 * savepattern.setToolTipText("Save a pattern to a file" + '\n' +
-		 * "Bio7"); loadpattern = new LoadPattern("Load Pattern", window);
-		 * register(loadpattern); loadpattern.setToolTipText(
-		 * "Load a pattern from a file" + '\n' + "Bio7");
-		 */
 
-		re = ContributionItemFactory.VIEWS_SHORTLIST.create(window);
+		viewShortlist = ContributionItemFactory.VIEWS_SHORTLIST.create(window);
+		
 		perspect = ContributionItemFactory.PERSPECTIVES_SHORTLIST.create(window);
 
 		flowexternalstartaction = new FlowExternalStartAction("Flowexternalstart", window);
@@ -508,7 +490,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		MenuManager WindowMenu = new MenuManager("&Window");
 		helpMenu = new MenuManager("&Help", IWorkbenchActionConstants.M_HELP);// p2
-		MenuManager showViewMenu = new MenuManager("Show View");
+		MenuManager showViewMenuMgr = new MenuManager("Show View", "showView");
+		
+		//MenuManager showViewMenu = new MenuManager("Show View");
 		MenuManager openPerspectiveMenu = new MenuManager("Open Perspective");
 		MenuManager scriptMenu = new MenuManager("&Scripts");
 		//
@@ -855,7 +839,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		 */
 		WindowMenu.add(viewMenu);
 		WindowMenu.add(viewMenuAll);
-		// WindowMenu.add(showViewMenu); // Displays the show menu.
+		showViewMenuMgr.add(showViewItem);
+		WindowMenu.add(showViewMenuMgr);
+		//WindowMenu.add(showViewMenu); // Displays the show menu.
 
 		WindowMenu.add(openPerspectiveMenu);
 		WindowMenu.add(new Separator());

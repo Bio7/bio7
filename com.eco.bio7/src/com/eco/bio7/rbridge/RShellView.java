@@ -138,13 +138,14 @@ import com.eco.bio7.rbridge.plot.RPlot;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditors.REditor;
+import com.eco.bio7.rpreferences.template.CalculateRProposals;
 import com.eco.bio7.util.Util;
 import com.swtdesigner.ResourceManager;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.GridData;
 
 public class RShellView extends ViewPart {
-	
+
 	private static List listShell;
 	private static boolean isConsoleExpanded = true;
 	private List list_7;
@@ -160,14 +161,14 @@ public class RShellView extends ViewPart {
 	private ContentProposalAdapter adapter;
 	private ContentProposalAdapter adapter2;
 	private KeyStroke stroke;
-	//private KeyStroke stroke2;
+	// private KeyStroke stroke2;
 	private String[] history;
 	private String[] tempHistory;
 	protected REXPLogical isDataframe;
 	protected REXPLogical isMatrix;
 	private KeyStroke strokeCompletion;
 	private static RCompletionShell shellInstance = null;
-	private String t;
+	// private String t;
 	private String url;
 	protected Object htmlHelpText;
 	protected REXPLogical isVector;
@@ -178,7 +179,7 @@ public class RShellView extends ViewPart {
 	private Button gcButton;
 	private Composite composite;
 	private Tree tree;
-	private IPreferenceStore store;
+	// private IPreferenceStore store;
 
 	private CTabFolder tab;
 	private CTabItem plotTabItem;
@@ -191,7 +192,7 @@ public class RShellView extends ViewPart {
 	private Button loadButton;
 	private Button saveButton;
 	private SashForm sashForm;
-	
+	private ShellCompletion shellCompletion;
 
 	public RShellView() {
 		instance = this;
@@ -228,7 +229,6 @@ public class RShellView extends ViewPart {
 
 		tempHistory = RFunctions.getPropsHistInstance().getTemphistory();
 
-		
 		/* Return key listener! */
 		/*
 		 * ControlDecoration dec = new ControlDecoration(text, SWT.TOP |
@@ -238,7 +238,6 @@ public class RShellView extends ViewPart {
 		 * .DEC_CONTENT_PROPOSAL); dec.setImage(infoFieldIndicator.getImage());
 		 * dec.setDescriptionText("Press UP ARROW key to get the History!");
 		 */
-		
 
 		stroke = KeyStroke.getInstance(SWT.ARROW_UP);
 		strokeCompletion = KeyStroke.getInstance(SWT.ARROW_RIGHT);
@@ -260,19 +259,13 @@ public class RShellView extends ViewPart {
 		// adapter.setProposalAcceptanceStyle
 		// (ContentProposalAdapter.PROPOSAL_REPLACE );
 
-		//stroke2 = KeyStroke.getInstance(SWT.F3);
-
-		
+		// stroke2 = KeyStroke.getInstance(SWT.F3);
 
 		Transfer[] types = new Transfer[] { TextTransfer.getInstance() };
 		int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
 
-		
-
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		FontData currentFont = PreferenceConverter.getFontData(store, "RShellFonts");
-
-		
 
 		Composite composite_1 = new Composite(parent, SWT.NONE);
 		composite_1.setLayout(new GridLayout(6, true));
@@ -305,22 +298,21 @@ public class RShellView extends ViewPart {
 					} else {
 						Bio7Dialog.message("Parser error!\n\nPlease enter valid R commands!");
 					}
-				}
-				else{
+				} else {
 					String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 					if (selectionConsole.equals("R")) {
 						if (cmdError == false) {
-						String inhalt= text.getText();
+							String inhalt = text.getText();
 
-						ConsolePageParticipant.pipeInputToConsole(inhalt,true,true);
-						System.out.println(inhalt);
-						/*Add text to history!*/
-						history();
-						text.setText("");
-						
-					} else {
-						Bio7Dialog.message("Parser error!\n\nPlease enter valid R commands!");
-					}
+							ConsolePageParticipant.pipeInputToConsole(inhalt, true, true);
+							System.out.println(inhalt);
+							/* Add text to history! */
+							history();
+							text.setText("");
+
+						} else {
+							Bio7Dialog.message("Parser error!\n\nPlease enter valid R commands!");
+						}
 					} else {
 						Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
 					}
@@ -331,9 +323,20 @@ public class RShellView extends ViewPart {
 
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if (e.keyCode == SWT.ARROW_RIGHT) {
+				if (((e.stateMask & SWT.CTRL) == SWT.CTRL) && (e.stateMask & SWT.ALT) == SWT.ALT && (e.keyCode == 'r')) {
 
-					
+					/* Add code completion to textfield! */
+					/*
+					 * At startup load the default R proposals and add them to
+					 * the templates!
+					 */
+					/*
+					 * Update completion porposals if a new package has been
+					 * loaded!
+					 */
+					shellCompletion.update();
+					System.out.println("Reloaded code completion!");
+					;
 
 				}
 
@@ -364,8 +367,8 @@ public class RShellView extends ViewPart {
 		});
 		prov = new SimpleContentProposalProvider(history);
 		adapter = new ContentProposalAdapter(text, new TextContentAdapter(), prov, stroke, null);
-		/*Add code completion to textfield!*/
-		new ShellCompletion(text, new TextContentAdapter());
+		/* Add code completion to textfield! */
+		shellCompletion = new ShellCompletion(text, new TextContentAdapter());
 
 		DropTarget target = new DropTarget(text, operations);
 		target.setTransfer(types);
@@ -383,22 +386,21 @@ public class RShellView extends ViewPart {
 					} else {
 						Bio7Dialog.message("Parser error!\n\nPlease enter valid R commands!");
 					}
-				}
-				else{
+				} else {
 					String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 					if (selectionConsole.equals("R")) {
 						if (cmdError == false) {
-						String inhalt= text.getText();
+							String inhalt = text.getText();
 
-						ConsolePageParticipant.pipeInputToConsole(inhalt,true,true);
-						System.out.println(inhalt);
-						/*Add text to history!*/
-						history();
-						text.setText("");
-						
-					} else {
-						Bio7Dialog.message("Parser error!\n\nPlease enter valid R commands!");
-					}
+							ConsolePageParticipant.pipeInputToConsole(inhalt, true, true);
+							System.out.println(inhalt);
+							/* Add text to history! */
+							history();
+							text.setText("");
+
+						} else {
+							Bio7Dialog.message("Parser error!\n\nPlease enter valid R commands!");
+						}
 					} else {
 						Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
 					}
@@ -769,8 +771,8 @@ public class RShellView extends ViewPart {
 
 								RConnection c = RServe.getConnection();
 								if (tree.getSelection().length > 0) {
-								String selectedPackage = tree.getSelection()[0].getText();
-								
+									String selectedPackage = tree.getSelection()[0].getText();
+
 									try {
 										c.eval("try(detach(package:" + selectedPackage + ", unload=TRUE))");
 										createAttachedPackageTree();
@@ -2613,7 +2615,6 @@ public class RShellView extends ViewPart {
 		this.adapter2 = adapter2;
 	}
 
-
 	public SimpleContentProposalProvider getProv() {
 		return prov;
 	}
@@ -2670,7 +2671,7 @@ public class RShellView extends ViewPart {
 				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 					tex = tex.replace("\\", "/");
 				}
-				//System.out.println(tex);
+				// System.out.println(tex);
 
 				if (!tex.contains(";")) {
 					com.eco.bio7.rbridge.RServe.printJob(tex);
@@ -2692,7 +2693,7 @@ public class RShellView extends ViewPart {
 
 			ev.printStackTrace();
 		}
-       /*Add text to history!*/
+		/* Add text to history! */
 		history();
 
 	}
