@@ -33,6 +33,7 @@ public class RCodeAnalysisPreferences extends FieldEditorPreferencePage implemen
 		addField(new BooleanFieldEditor("CHECK_EXCESSIVE_FUNCTION_CALL_ARGS", "Check if a function call has to many arguments", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("CHECK_VARIABLE_ASSIGNMENT_FUNCTION_CALL_ARGS", "Check if the name of a variable assignment in a function call is wrong", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("CHECK_FOR_EMPTY_ARG_FUNCTION", "Check function call with parameter on a parameterless function", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("CHECK_VARIABLES_IN_FUNCTION_CALLS", "Check variables in function calls and square brackets", getFieldEditorParent()));
 
 		
 		
@@ -52,6 +53,7 @@ public class RCodeAnalysisPreferences extends FieldEditorPreferencePage implemen
 		store.setDefault("CHECK_EXCESSIVE_FUNCTION_CALL_ARGS", true);
 		store.setDefault("CHECK_VARIABLE_ASSIGNMENT_FUNCTION_CALL_ARGS", true);
 		store.setDefault("CHECK_FOR_EMPTY_ARG_FUNCTION", true);
+		store.setDefault("CHECK_VARIABLES_IN_FUNCTION_CALLS", false);
 		
 		
 

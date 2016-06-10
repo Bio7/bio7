@@ -155,14 +155,19 @@ public class RRefPhaseListen extends RBaseListener {
 
 					if (var == null) {
 						/*
-						 * Find out recursively if the variable assignment is in
-						 * a method call (sublist) to avoid to many warnings in a method call!
+						 * Find out (if enabled in the preferences) recursively (bottom up) if the variable
+						 * assignment is in a sublist to avoid to
+						 * many warnings in the analysis! Sublist occurs in
+						 * method calls and vector, array square parentheses (rule E1,
+						 * E2)!
 						 */
-						boolean isSubTrue = Utils.getCtxParent(ctx);
+						if (store.getBoolean("CHECK_VARIABLES_IN_FUNCTION_CALLS")==false) {
+							boolean isSubTrue = Utils.getCtxParent(ctx);
 
-						// System.out.println("has Sub?: " + isSubTrue);
-						if (isSubTrue == true) {
-							return;
+							// System.out.println("has Sub?: " + isSubTrue);
+							if (isSubTrue == true) {
+								return;
+							}
 						}
 
 						parser.notifyErrorListeners(tok, "Warn17####Variable not available?#### " + varName + " seems to be missing!", null);
@@ -450,8 +455,8 @@ public class RRefPhaseListen extends RBaseListener {
 											if (tempFuncCallArray[i].getText().equals(expectedArg) == false) {
 
 												/*
-												 * Text is splitted with'####' and
-												 * can have three different
+												 * Text is splitted with'####'
+												 * and can have three different
 												 * messages! Here we use two
 												 * '####'!
 												 */

@@ -61,7 +61,7 @@ public class ImageStackRoiSelectionTransferJob extends WorkspaceJob implements I
 	public ImageStackRoiSelectionTransferJob(int selectedImageType) {
 		super("Transfer progress....");
 		this.transferType = selectedImageType;
-		System.out.println(transferType);
+		
 	}
 
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
@@ -107,10 +107,16 @@ public class ImageStackRoiSelectionTransferJob extends WorkspaceJob implements I
 			Bio7Dialog.message("RGB special transfer not supported!\nPlease split the RGB channels\nand transfer the(slice) selection in e.g. byte mode!");
 			return;
 		}
+		
 
 		RConnection connection = RServe.getConnection();
 
 		if (RoiManager.getInstance() != null) {
+			Roi[] r = RoiManager.getInstance().getSelectedRoisAsArray();
+			if(r.length<1){
+				Bio7Dialog.message("NO ROI's available in ROI Manager!");
+				return;
+			}
 			if (RServe.isAliveDialog()) {
 				ImagePlus impd = WindowManager.getCurrentImage();
 				currentStackSize = impd.getStackSize();
@@ -147,7 +153,7 @@ public class ImageStackRoiSelectionTransferJob extends WorkspaceJob implements I
 					 * Only transfer selected ROI's from the ROI Manager or all
 					 * if no ROI is selected!
 					 */
-					Roi[] r = RoiManager.getInstance().getSelectedRoisAsArray();
+					//Roi[] r = RoiManager.getInstance().getSelectedRoisAsArray();
 					items = CanvasView.getCanvas_view().tabFolder.getItems();
 					for (int ro = 0; ro < r.length; ro++) {
 

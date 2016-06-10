@@ -58,7 +58,7 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 	public ImageRoiSelectionTransferJob(int selectedImageType) {
 		super("Transfer progress....");
 		this.transferType = selectedImageType;
-		System.out.println(transferType);
+		
 	}
 
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
@@ -92,6 +92,11 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 		RConnection connection = RServe.getConnection();
 
 		if (RoiManager.getInstance() != null) {
+			Roi[] r = RoiManager.getInstance().getSelectedRoisAsArray();
+			if(r.length<1){
+				Bio7Dialog.message("NO ROI's available in ROI Manager!");
+				return;
+			}
 			if (RServe.isAliveDialog()) {
 				ImagePlus impd = WindowManager.getCurrentImage();
 				if ((impd.getStackSize()) > 1) {
@@ -127,7 +132,7 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 					 * Only transfer selected ROI's from the ROI Manager or all
 					 * if no ROI is selected!
 					 */
-					Roi[] r = RoiManager.getInstance().getSelectedRoisAsArray();
+					//Roi[] r = RoiManager.getInstance().getSelectedRoisAsArray();
 					items = CanvasView.getCanvas_view().tabFolder.getItems();
 					for (int ro = 0; ro < r.length; ro++) {
 

@@ -89,6 +89,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		storeR.setDefault("CHECK_EXCESSIVE_FUNCTION_CALL_ARGS", true);
 		storeR.setDefault("CHECK_VARIABLE_ASSIGNMENT_FUNCTION_CALL_ARGS", true);
 		storeR.setDefault("CHECK_FOR_EMPTY_ARG_FUNCTION", true);
+		storeR.setDefault("CHECK_VARIABLES_IN_FUNCTION_CALLS", false);
 		
 		
 		

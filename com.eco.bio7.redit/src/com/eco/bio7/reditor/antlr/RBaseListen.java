@@ -27,9 +27,12 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
+import com.eco.bio7.reditor.antlr.RParser.E17VariableDeclarationContext;
 import com.eco.bio7.reditor.antlr.RParser.E20CallFunctionContext;
 import com.eco.bio7.reditor.antlr.RParser.ExprContext;
 import com.eco.bio7.reditor.antlr.RParser.FormContext;
+import com.eco.bio7.reditor.antlr.RParser.SubContext;
+import com.eco.bio7.reditor.antlr.RParser.SublistContext;
 import com.eco.bio7.reditor.antlr.ref.RFunctionSymbol;
 import com.eco.bio7.reditor.antlr.ref.RGlobalScope;
 import com.eco.bio7.reditor.antlr.ref.RSymbol;
@@ -43,7 +46,6 @@ public class RBaseListen extends RBaseListener {
 
 	private CommonTokenStream tokens;
 	public ArrayList<String> startStop = new ArrayList<String>();
-	// public ClassModel cm = new ClassModel();
 	private REditor editor;
 	private Parser parser;
 	/* A stack for nested nodes! */
@@ -178,7 +180,10 @@ public class RBaseListen extends RBaseListener {
 			 * function without variable assignment!
 			 */
 			if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
-                /*Check if a function or variable with this name is already defined!*/
+				/*
+				 * Check if a function or variable with this name is already
+				 * defined!
+				 */
 				alreadyDefined(firstToken, name);
 				/* Create a new scope and add the function (symbol)! */
 				RFunctionSymbol function = new RFunctionSymbol(name, currentScope, ctx.formlist());
@@ -240,8 +245,8 @@ public class RBaseListen extends RBaseListener {
 
 	private void alreadyDefined(Token firstToken, String name) {
 		/*
-		 * Do we have already defined the same name for a function? If
-		 * so create a warning!
+		 * Do we have already defined the same name for a function? If so create
+		 * a warning!
 		 */
 		if (store.getBoolean("FUNCTION_ALREADY_DEFINED")) {
 			RSymbol funThere = currentScope.resolve(name);
@@ -250,8 +255,7 @@ public class RBaseListen extends RBaseListener {
 
 					parser.notifyErrorListeners(firstToken, "Warn19####A function with name '" + name + "' is already defined!", null);
 				}
-			}
-			else if(funThere instanceof RVariableSymbol){
+			} else if (funThere instanceof RVariableSymbol) {
 				if (currentScope.resolve(name) != null) {
 
 					parser.notifyErrorListeners(firstToken, "Warn19####A variable with name '" + name + "' is already defined!", null);
@@ -465,7 +469,7 @@ public class RBaseListen extends RBaseListener {
 			else if (op.equals("->") || op.equals("->>")) {
 				String name = tokens.get(start + 2).getText();
 				if (methods.size() == 0) {
-					/*Is this variable already defined in the scope?*/
+					/* Is this variable already defined in the scope? */
 					if (checkVarName(name)) {
 						// RScope scope = scopes.peek();
 						// scope.add(name);
@@ -484,7 +488,7 @@ public class RBaseListen extends RBaseListener {
 					}
 
 				} else {
-					/*Is this variable already defined in the scope?*/
+					/* Is this variable already defined in the scope? */
 					if (checkVarName(name)) {
 						// RScope scope = scopes.peek();
 						// scope.add(name);
@@ -546,7 +550,7 @@ public class RBaseListen extends RBaseListener {
 			try {
 				line = document.getLineOfOffset(lineStart) + 1;
 			} catch (BadLocationException e) {
-				
+
 				System.out.println("Bad line location!");
 				// e.printStackTrace();
 			}
@@ -561,7 +565,7 @@ public class RBaseListen extends RBaseListener {
 
 	@Override
 	public void enterE20CallFunction(RParser.E20CallFunctionContext ctx) {
-		
+
 		Token stop = ctx.expr().getStop();
 		String stopText = stop.getText();
 		/* Get the current scope stack elements! */
@@ -597,37 +601,62 @@ public class RBaseListen extends RBaseListener {
 			}
 		}
 
-		// Add the call function args to the called vars!
-		/*
-		 * SublistContext subList = ctx.sublist(); List<SubContext> sub =
-		 * subList.sub();
-		 * 
-		 * 
-		 * int callSize = sub.size(); //Token tempFuncCallArray[] = new
-		 * Token[callSize]; for (int i = 0; i < callSize; i++) {
-		 * 
-		 * ParseTree tree = sub.get(i).getChild(0); if (tree != null) { //
-		 * System.out.println(tree.getText()); if (tree instanceof
-		 * E17VariableDeclarationContext) {
-		 * 
-		 * E17VariableDeclarationContext tr = (E17VariableDeclarationContext)
-		 * tree; st.varCall.add(tr.expr(0).start.getText());
-		 * 
-		 * }
-		 * 
-		 * }
-		 * 
-		 * }
-		 */
-
 	}
 
-	@Override
+	/* Here we filter out variable declarations in method calls! */
 	public void exitE20CallFunction(RParser.E20CallFunctionContext ctx) {
+		SublistContext subList = ctx.sublist();
+		extractVariableAssignments(subList);
 
 	}
 
-	/*Is this variable already defined in the scope?*/
+	/*
+	 * Here we filter out variable declarations in parentheses! expr '[['sublist ']' ']'
+	 */
+	public void exitE1(RParser.E1Context ctx) {
+		SublistContext subList = ctx.sublist();
+		extractVariableAssignments(subList);
+	}
+
+	/*
+	 * Here we filter out variable declarations in parentheses! expr '[' sublist ']'
+	 */
+	public void exitE2(RParser.E2Context ctx) {
+		SublistContext subList = ctx.sublist();
+		extractVariableAssignments(subList);
+	}
+
+	/*
+	 * In this method we filter out variable declarations in method, calls and
+	 * parentheses!
+	 */
+	private void extractVariableAssignments(SublistContext subList) {
+		/* Here we filter out variable declarations in method calls! */
+
+		List<SubContext> subL = subList.sub();
+		String resultedVar = null;
+		for (int i = 0; i < subL.size(); i++) {
+			if (subL.get(i) instanceof SubContext) {
+
+				SubContext su = (SubContext) subL.get(i);
+
+				if (su.expr() != null && su.expr() instanceof E17VariableDeclarationContext) {
+					resultedVar = su.start.getText();
+					DeclCallStore st = storeDeclCall.peek();
+					/*
+					 * We add the var assignment name to the declaration and
+					 * call list to ignore it in the analysis!
+					 */
+					st.varDecl.add(resultedVar);
+					st.varCall.add(resultedVar);
+
+				}
+
+			}
+		}
+	}
+
+	/* Is this variable already defined in the scope? */
 	private boolean checkVarName(String varName) {
 		boolean check;
 		/*
@@ -662,20 +691,8 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	/*
-	 * public void exitErr6(@NotNull RParser.Err6Context ctx) {
-	 * 
-	 * parser.notifyErrorListeners(ctx.extra,
-	 * "Err6:Too many parentheses in left if definition!", null);
-	 * 
-	 * 
-	 * 
-	 * }
-	 */
 
 	public void exitErr7(RParser.Err7Context ctx) {
-
-		// int index = ctx.extra.getStartIndex();
 
 		parser.notifyErrorListeners(ctx.extra, "Err7####Too many parentheses in if condition!", null);
 
@@ -701,37 +718,6 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	/*
-	 * Here we create some warnings from the parser! public void
-	 * exitWarn12(RParser.Warn12Context ctx) {
-	 * 
-	 * parser.notifyErrorListeners(ctx.extra,
-	 * "Warn12:Wrong constant: 'TRUE' required!", null);
-	 * 
-	 * }
-	 * 
-	 * public void exitWarn13(RParser.Warn13Context ctx) {
-	 * 
-	 * parser.notifyErrorListeners(ctx.extra,
-	 * "Warn13:Wrong constant: 'FALSE' required!", null);
-	 * 
-	 * }
-	 * 
-	 * public void exitWarn14(RParser.Warn14Context ctx) {
-	 * 
-	 * parser.notifyErrorListeners(ctx.extra,
-	 * "Warn14:Wrong constant: 'NULL' required!", null);
-	 * 
-	 * }
-	 */
-	/*
-	 * public void exitWarn15(RParser.Warn15Context ctx) {
-	 * 
-	 * parser.notifyErrorListeners(ctx.extra,
-	 * "Warn15:Wrong constant: 'NA' required!", null);
-	 * 
-	 * }
-	 */
 
 	/*
 	 * With this error message we produce QuickFixes. The errors start with
@@ -749,21 +735,6 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	/*
-	 * public void exitE11(RParser.Err20Context ctx) {
-	 * 
-	 * Token firstToken = tokens.get(ctx.getChild(1).getSourceInterval().a);
-	 * parser.notifyErrorListeners(firstToken, "Err20:Wrong comparison!", null);
-	 * 
-	 * }
-	 * 
-	 * public void exitErr21(RParser.Err21Context ctx) {
-	 * 
-	 * Token firstToken = tokens.get(ctx.getChild(1).getSourceInterval().a);
-	 * parser.notifyErrorListeners(firstToken, "Err21:Wrong comparison!", null);
-	 * 
-	 * }
-	 */
 
 	public void exitErr22(RParser.Err22Context ctx) {
 
@@ -779,6 +750,8 @@ public class RBaseListen extends RBaseListener {
 		// System.out.println("Token Text: "+tok.getText());
 		String varName = tok.getText();
 		int index = tok.getTokenIndex();
+
+
 		/* Filter whitespace out because we use Token channel hidden! */
 		Token idNextToken = Utils.whitespaceTokenFilter(index, ctx.stop.getStopIndex(), tokens);
 
