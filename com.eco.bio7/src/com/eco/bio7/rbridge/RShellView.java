@@ -508,11 +508,18 @@ public class RShellView extends ViewPart {
 									display.syncExec(new Runnable() {
 
 										public void run() {
-											htmlHelpText = text.getText();
+											String selText=text.getSelectionText();
+											if(selText.isEmpty()){
+												htmlHelpText = text.getText();	
+											}
+											else{
+												htmlHelpText=selText;
+											}
+											
 										}
 									});
 									c.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".html\", sep=\"\"))").toString();
-									c.eval("try(tools::Rd2HTML(utils:::.getHelpFile(?" + htmlHelpText + "),.bio7TempHtmlHelpFile,package=\"tools\", stages=c(\"install\", \"render\")))");
+									c.eval("tryCatch(tools::Rd2HTML(utils:::.getHelpFile(?" + htmlHelpText + "),.bio7TempHtmlHelpFile,package=\"tools\", stages=c(\"install\", \"render\")),warning = function(w) {print(paste(\"negative argument\", x))})");
 									String out = null;
 									try {
 										out = (String) c.eval("try(.bio7TempHtmlHelpFile)").asString();
@@ -2667,10 +2674,10 @@ public class RShellView extends ViewPart {
 				/*
 				 * Omit escape sequences. Lead to an error if a windows path is
 				 * specified wrong by chance!
-				 */
+				 
 				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 					tex = tex.replace("\\", "/");
-				}
+				}*/
 				// System.out.println(tex);
 
 				if (!tex.contains(";")) {

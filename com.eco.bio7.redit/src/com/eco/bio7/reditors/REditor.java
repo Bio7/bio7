@@ -93,6 +93,7 @@ import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.rosuda.REngine.Rserve.RConnection;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
+import com.eco.bio7.reditor.actions.OpenColorDialog;
 import com.eco.bio7.reditor.actions.OpenPlotPreferences;
 import com.eco.bio7.reditor.actions.OpenPreferences;
 import com.eco.bio7.reditor.actions.RefreshLoadedPackagesForCompletion;
@@ -350,6 +351,8 @@ public class REditor extends TextEditor {
 
 	};
 
+	private OpenColorDialog openColorDialog;
+
 	/*
 	 * Here we search for similar words of a selected word in the editor. The
 	 * results will be marked!
@@ -432,7 +435,8 @@ public class REditor extends TextEditor {
 		colorManager = new RColorManager();
 		rconf = new RConfiguration(colorManager, this);
 		setSourceViewerConfiguration(rconf);
-
+		/*Set the context to avoid that menus appear in a different editor. E.g., refactor dialogs!*/
+		setEditorContextMenuId("#REditorContext"); 
 		// IPreferenceStore preferenceStore = new ChainedPreferenceStore(new
 		// IPreferenceStore[] {
 		// Bio7REditorPlugin.getDefault().getPreferenceStore(),
@@ -538,6 +542,8 @@ public class REditor extends TextEditor {
 		addAction(menu, "Add Comment");
 		addAction(menu, "Remove Comment");
 		menu.add(new Separator());
+		addAction(menu, "Open Color Dialog");
+		menu.add(new Separator());
 		addAction(menu, "Refactor");
 		menu.add(new Separator());
 		addAction(menu, "Reload Packages Completion");
@@ -583,6 +589,10 @@ public class REditor extends TextEditor {
 
 		unsetcomment = new com.eco.bio7.reditor.actions.UnsetComment("Remove Comment", PlatformUI.getWorkbench().getActiveWorkbenchWindow());
 		setAction("Remove Comment", unsetcomment);
+		
+		openColorDialog = new com.eco.bio7.reditor.actions.OpenColorDialog("Open Color Dialog", PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+		setAction("Open Color Dialog", openColorDialog);
+		
 
 		/*
 		 * refactor = new

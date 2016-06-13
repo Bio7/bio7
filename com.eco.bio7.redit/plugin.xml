@@ -248,7 +248,7 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
       -->
     <viewerContribution
           id="com.eco.bio7.reditor.refactor.extract.method"
-          targetID="#TextEditorContext">
+          targetID="#REditorContext">
           <menu
                label="Refactor"
                path="additions"
@@ -436,6 +436,24 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
           description="Remove Comment(s)"
           id="com.eco.bio7.r_editor_unset_comment"
           name="Remove Comment(s)">
+    </command>
+ </extension>
+ <extension
+       id="com.eco.bio7.r_editor_open_color_dialog"
+       point="org.eclipse.ui.bindings">
+    <key
+          commandId="com.eco.bio7.r_editor_open_color_dialog"
+          contextId="org.eclipse.ui.contexts.window"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+SHIFT+C">
+    </key>
+ </extension>
+ <extension
+       point="org.eclipse.ui.commands">
+    <command
+          description="Open color dialog"
+          id="com.eco.bio7.r_editor_open_color_dialog"
+          name="Open color dialog">
     </command>
  </extension>
    

@@ -641,6 +641,7 @@ public class RBaseListen extends RBaseListener {
 				SubContext su = (SubContext) subL.get(i);
 
 				if (su.expr() != null && su.expr() instanceof E17VariableDeclarationContext) {
+					
 					resultedVar = su.start.getText();
 					DeclCallStore st = storeDeclCall.peek();
 					/*
@@ -649,7 +650,16 @@ public class RBaseListen extends RBaseListener {
 					 */
 					st.varDecl.add(resultedVar);
 					st.varCall.add(resultedVar);
+                     if(su.expr().getText().contains("<-")){
+                    	 /* Create a new a new var in current scope! */
+ 						RVariableSymbol var = new RVariableSymbol(resultedVar);
+ 						currentScope.define(var); // Define symbol in
+ 													// current scope
+ 						int lineStart = su.start.getStartIndex();
 
+ 						int line = calculateLine(lineStart);
+ 						new REditorOutlineNode(resultedVar, line, "variable", editor.baseNode);
+                     }
 				}
 
 			}
