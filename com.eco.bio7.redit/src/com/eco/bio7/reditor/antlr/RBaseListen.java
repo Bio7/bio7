@@ -250,18 +250,24 @@ public class RBaseListen extends RBaseListener {
 		 */
 		if (store.getBoolean("FUNCTION_ALREADY_DEFINED")) {
 			RSymbol funThere = currentScope.resolve(name);
-			if (funThere instanceof RFunctionSymbol) {
-				if (currentScope.resolve(name) != null) {
+			if (funThere != null) {
+				if (funThere instanceof RFunctionSymbol) {
 
 					parser.notifyErrorListeners(firstToken, "Warn19####A function with name '" + name + "' is already defined!", null);
-				}
-			} else if (funThere instanceof RVariableSymbol) {
-				if (currentScope.resolve(name) != null) {
+				} else if (funThere instanceof RVariableSymbol) {
 
 					parser.notifyErrorListeners(firstToken, "Warn19####A variable with name '" + name + "' is already defined!", null);
 				}
 			}
+
 		}
+
+		/*
+		 * RSymbol var = currentScope.resolve(varName); if (var instanceof
+		 * RVariableSymbol) { check = false; } else { check = true; } return
+		 * check;
+		 */
+
 	}
 
 	private void createFunctionWithoutName(RParser.E19DefFunctionContext ctx, int lineMethod) {
@@ -335,15 +341,55 @@ public class RBaseListen extends RBaseListener {
 		}
 
 		/* Create a new a new var of the loop in current scope! */
-		RVariableSymbol var = new RVariableSymbol(loopVar);
-		currentScope.define(var);
+		// RVariableSymbol var = new RVariableSymbol(loopVar);
+		// currentScope.define(var);
 
-		DeclCallStore st = storeDeclCall.peek();
-		/*
-		 * Add the called var to the call set to detect unused variables
-		 * (varDecl-varCalls)!
-		 */
-		st.varDecl.add(loopVar);
+		if (methods.size() == 0) {
+			if (checkVarName(loopVar)) {
+				// RScope scope = scopes.peek();
+				// scope.add(name);
+
+				/* Create a new a new var in current scope! */
+				RVariableSymbol var = new RVariableSymbol(loopVar);
+				currentScope.define(var);
+
+				DeclCallStore st = storeDeclCall.peek();
+				/*
+				 * Add the called var to the call set to detect unused
+				 * variables!
+				 */
+
+				st.varDecl.add(loopVar);
+
+				new REditorOutlineNode(loopVar, lineStart, "variable", editor.baseNode);
+			} else {
+				/*
+				 * Check if a function or variable with this name is already
+				 * defined!
+				 */
+				alreadyDefined(ctx.ID().getSymbol(), loopVar);
+			}
+
+		} else {
+			if (checkVarName(loopVar)) {
+				// RScope scope = scopes.peek();
+				// scope.add(name);
+				/* Create a new a new var in current scope! */
+				RVariableSymbol var = new RVariableSymbol(loopVar);
+				currentScope.define(var); // Define symbol in
+											// current scope
+				DeclCallStore st = storeDeclCall.peek();
+				/*
+				 * Add the called var to the call set to detect unused vaiables!
+				 */
+				st.varDecl.add(loopVar);
+
+				new REditorOutlineNode(loopVar, lineStart, "variable", methods.peek());
+			} else {
+				alreadyDefined(ctx.ID().getSymbol(), loopVar);
+			}
+
+		}
 
 	}
 
@@ -442,6 +488,8 @@ public class RBaseListen extends RBaseListener {
 						st.varDecl.add(name);
 
 						new REditorOutlineNode(name, line, "variable", editor.baseNode);
+					} else {
+						alreadyDefined(firstToken, name);
 					}
 
 				} else {
@@ -460,6 +508,8 @@ public class RBaseListen extends RBaseListener {
 						st.varDecl.add(name);
 
 						new REditorOutlineNode(name, line, "variable", methods.peek());
+					} else {
+						alreadyDefined(firstToken, name);
 					}
 
 				}
@@ -485,6 +535,8 @@ public class RBaseListen extends RBaseListener {
 						st.varDecl.add(name);
 
 						new REditorOutlineNode(name, line, "variable", editor.baseNode);
+					} else {
+						alreadyDefined(firstToken, name);
 					}
 
 				} else {
@@ -504,6 +556,8 @@ public class RBaseListen extends RBaseListener {
 						st.varDecl.add(name);
 
 						new REditorOutlineNode(name, line, "variable", methods.peek());
+					} else {
+						alreadyDefined(firstToken, name);
 					}
 				}
 
@@ -611,7 +665,8 @@ public class RBaseListen extends RBaseListener {
 	}
 
 	/*
-	 * Here we filter out variable declarations in parentheses! expr '[['sublist ']' ']'
+	 * Here we filter out variable declarations in parentheses! expr '[['sublist
+	 * ']' ']'
 	 */
 	public void exitE1(RParser.E1Context ctx) {
 		SublistContext subList = ctx.sublist();
@@ -619,7 +674,8 @@ public class RBaseListen extends RBaseListener {
 	}
 
 	/*
-	 * Here we filter out variable declarations in parentheses! expr '[' sublist ']'
+	 * Here we filter out variable declarations in parentheses! expr '[' sublist
+	 * ']'
 	 */
 	public void exitE2(RParser.E2Context ctx) {
 		SublistContext subList = ctx.sublist();
@@ -639,27 +695,34 @@ public class RBaseListen extends RBaseListener {
 			if (subL.get(i) instanceof SubContext) {
 
 				SubContext su = (SubContext) subL.get(i);
+				// System.out.println("var: "+su.expr().getText());
+				if (su.expr() != null) {
+					if (su.expr() instanceof E17VariableDeclarationContext) {
 
-				if (su.expr() != null && su.expr() instanceof E17VariableDeclarationContext) {
-					
-					resultedVar = su.start.getText();
-					DeclCallStore st = storeDeclCall.peek();
-					/*
-					 * We add the var assignment name to the declaration and
-					 * call list to ignore it in the analysis!
-					 */
-					st.varDecl.add(resultedVar);
-					st.varCall.add(resultedVar);
-                     if(su.expr().getText().contains("<-")){
-                    	 /* Create a new a new var in current scope! */
- 						RVariableSymbol var = new RVariableSymbol(resultedVar);
- 						currentScope.define(var); // Define symbol in
- 													// current scope
- 						int lineStart = su.start.getStartIndex();
+						resultedVar = su.start.getText();
+						DeclCallStore st = storeDeclCall.peek();
+						/*
+						 * We add the var assignment name to the declaration and
+						 * call list to ignore it in the analysis!
+						 */
 
- 						int line = calculateLine(lineStart);
- 						new REditorOutlineNode(resultedVar, line, "variable", editor.baseNode);
-                     }
+						st.varDecl.add(resultedVar);
+						st.varCall.add(resultedVar);
+						if (su.expr().getText().contains("<-") || su.expr().getText().contains("<<-") || su.expr().getText().contains("->") || su.expr().getText().contains("->>")) {
+							/* Create a new a new var in current scope! */
+							if (checkVarName(resultedVar)) {
+								RVariableSymbol var = new RVariableSymbol(resultedVar);
+								currentScope.define(var); // Define symbol in
+															// current scope
+								int lineStart = su.start.getStartIndex();
+
+								int line = calculateLine(lineStart);
+								new REditorOutlineNode(resultedVar, line, "variable", editor.baseNode);
+							} else {
+								alreadyDefined(su.start, resultedVar);
+							}
+						}
+					}
 				}
 
 			}
@@ -701,7 +764,6 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-
 	public void exitErr7(RParser.Err7Context ctx) {
 
 		parser.notifyErrorListeners(ctx.extra, "Err7####Too many parentheses in if condition!", null);
@@ -728,7 +790,6 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-
 	/*
 	 * With this error message we produce QuickFixes. The errors start with
 	 * 'Err' to seperate them later in the RBaseListen class!
@@ -745,7 +806,6 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-
 	public void exitErr22(RParser.Err22Context ctx) {
 
 		Token firstToken = ctx.start;
@@ -760,7 +820,6 @@ public class RBaseListen extends RBaseListener {
 		// System.out.println("Token Text: "+tok.getText());
 		String varName = tok.getText();
 		int index = tok.getTokenIndex();
-
 
 		/* Filter whitespace out because we use Token channel hidden! */
 		Token idNextToken = Utils.whitespaceTokenFilter(index, ctx.stop.getStopIndex(), tokens);

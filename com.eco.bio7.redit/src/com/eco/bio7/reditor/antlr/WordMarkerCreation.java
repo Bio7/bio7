@@ -47,7 +47,7 @@ public class WordMarkerCreation extends WorkspaceJob {
 		try {
 			resource.deleteMarkers("com.eco.bio7.reditor.wordmarker", false, IResource.DEPTH_ZERO);
 		} catch (CoreException e1) {
-			// TODO Auto-generated catch block
+
 			e1.printStackTrace();
 		}
 	}
@@ -110,27 +110,28 @@ public class WordMarkerCreation extends WorkspaceJob {
 				ITextViewer textViewer = (ITextViewer) target;
 				try {
 					searchForWord = textViewer.getDocument().get(wordOffset, resultedLength);
-					
+
 				} catch (BadLocationException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
-			/*
-			 * Display display = PlatformUI.getWorkbench().getDisplay();
-			 * display.syncExec(new Runnable() {
-			 * 
-			 * public void run() { textViewer.setSelectedRange(wordOffset,
-			 * resultedLength); } });
-			 */
 
 			if (searchForWord != null) {
-				/*Create a lock for the marker job. Else some marker exceptions occur, see:
-				 *https://eclipse.org/articles/Article-Concurrency/jobs-api.html*/
+				/*
+				 * Create a lock for the marker job. Else some marker exceptions
+				 * occur, see:
+				 * https://eclipse.org/articles/Article-Concurrency/jobs-api.
+				 * html
+				 */
 				try {
 					lock.acquire();
 					deleteMarkers(resource);
-					Pattern findWordPattern = Pattern.compile("" + searchForWord + "");
+					/*
+					 * Match only whole word and not only parts. The search word
+					 * embedded in '\\b' will find the whole words!
+					 */
+					Pattern findWordPattern = Pattern.compile("\\b" + searchForWord + "\\b");
 					Matcher matcher = findWordPattern.matcher(doc.get());
 					IMarker marker;
 					while (matcher.find()) {
@@ -156,11 +157,6 @@ public class WordMarkerCreation extends WorkspaceJob {
 
 			}
 
-			/*
-			 * try { htmlHelpText = textViewer.getDocument().get(wordOffset,
-			 * resultedLength); } catch (BadLocationException e) { // TODO
-			 * Auto-generated catch block e.printStackTrace(); }
-			 */
 		} else {
 			try {
 				lock.acquire();
