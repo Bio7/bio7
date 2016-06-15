@@ -243,33 +243,6 @@ public class RBaseListen extends RBaseListener {
 
 	}
 
-	private void alreadyDefined(Token firstToken, String name) {
-		/*
-		 * Do we have already defined the same name for a function? If so create
-		 * a warning!
-		 */
-		if (store.getBoolean("FUNCTION_ALREADY_DEFINED")) {
-			RSymbol funThere = currentScope.resolve(name);
-			if (funThere != null) {
-				if (funThere instanceof RFunctionSymbol) {
-
-					parser.notifyErrorListeners(firstToken, "Warn19####A function with name '" + name + "' is already defined!", null);
-				} else if (funThere instanceof RVariableSymbol) {
-
-					parser.notifyErrorListeners(firstToken, "Warn19####A variable with name '" + name + "' is already defined!", null);
-				}
-			}
-
-		}
-
-		/*
-		 * RSymbol var = currentScope.resolve(varName); if (var instanceof
-		 * RVariableSymbol) { check = false; } else { check = true; } return
-		 * check;
-		 */
-
-	}
-
 	private void createFunctionWithoutName(RParser.E19DefFunctionContext ctx, int lineMethod) {
 		/* Create a new scope and add the function (symbol)! */
 		RFunctionSymbol function = new RFunctionSymbol(ctx.start.getText(), currentScope, ctx.formlist());
@@ -345,7 +318,7 @@ public class RBaseListen extends RBaseListener {
 		// currentScope.define(var);
 
 		if (methods.size() == 0) {
-			if (checkVarName(loopVar)) {
+			if (alreadyDefined(ctx.getStart(), loopVar)) {
 				// RScope scope = scopes.peek();
 				// scope.add(name);
 
@@ -362,16 +335,10 @@ public class RBaseListen extends RBaseListener {
 				st.varDecl.add(loopVar);
 
 				new REditorOutlineNode(loopVar, lineStart, "variable", editor.baseNode);
-			} else {
-				/*
-				 * Check if a function or variable with this name is already
-				 * defined!
-				 */
-				alreadyDefined(ctx.ID().getSymbol(), loopVar);
 			}
 
 		} else {
-			if (checkVarName(loopVar)) {
+			if (alreadyDefined(ctx.getStart(), loopVar)) {
 				// RScope scope = scopes.peek();
 				// scope.add(name);
 				/* Create a new a new var in current scope! */
@@ -385,8 +352,6 @@ public class RBaseListen extends RBaseListener {
 				st.varDecl.add(loopVar);
 
 				new REditorOutlineNode(loopVar, lineStart, "variable", methods.peek());
-			} else {
-				alreadyDefined(ctx.ID().getSymbol(), loopVar);
 			}
 
 		}
@@ -435,8 +400,7 @@ public class RBaseListen extends RBaseListener {
 		Token firstToken = ctx.getStart();
 		int start = sourceInterval.a;
 		int stop = sourceInterval.b;
-		// System.out.println(firstToken.getText() + " Is Type!" +
-		// ctx.getParent().getClass());
+
 		/* Throw out variable assignment of function calls! */
 
 		if (ctx.expr(0) instanceof E20CallFunctionContext) {
@@ -471,7 +435,7 @@ public class RBaseListen extends RBaseListener {
 				// ctx.expr(0).getParent().getParent().getClass());
 
 				if (methods.size() == 0) {
-					if (checkVarName(name)) {
+					if (alreadyDefined(ctx.getStart(), name)) {
 						// RScope scope = scopes.peek();
 						// scope.add(name);
 
@@ -488,12 +452,10 @@ public class RBaseListen extends RBaseListener {
 						st.varDecl.add(name);
 
 						new REditorOutlineNode(name, line, "variable", editor.baseNode);
-					} else {
-						alreadyDefined(firstToken, name);
 					}
 
 				} else {
-					if (checkVarName(name)) {
+					if (alreadyDefined(ctx.getStart(), name)) {
 						// RScope scope = scopes.peek();
 						// scope.add(name);
 						/* Create a new a new var in current scope! */
@@ -508,8 +470,6 @@ public class RBaseListen extends RBaseListener {
 						st.varDecl.add(name);
 
 						new REditorOutlineNode(name, line, "variable", methods.peek());
-					} else {
-						alreadyDefined(firstToken, name);
 					}
 
 				}
@@ -520,7 +480,7 @@ public class RBaseListen extends RBaseListener {
 				String name = tokens.get(start + 2).getText();
 				if (methods.size() == 0) {
 					/* Is this variable already defined in the scope? */
-					if (checkVarName(name)) {
+					if (alreadyDefined(ctx.getStart(), name)) {
 						// RScope scope = scopes.peek();
 						// scope.add(name);
 						/* Create a new a new var in current scope! */
@@ -535,13 +495,11 @@ public class RBaseListen extends RBaseListener {
 						st.varDecl.add(name);
 
 						new REditorOutlineNode(name, line, "variable", editor.baseNode);
-					} else {
-						alreadyDefined(firstToken, name);
 					}
 
 				} else {
 					/* Is this variable already defined in the scope? */
-					if (checkVarName(name)) {
+					if (alreadyDefined(ctx.getStart(), name)) {
 						// RScope scope = scopes.peek();
 						// scope.add(name);
 						/* Create a new a new var in current scope! */
@@ -556,8 +514,6 @@ public class RBaseListen extends RBaseListener {
 						st.varDecl.add(name);
 
 						new REditorOutlineNode(name, line, "variable", methods.peek());
-					} else {
-						alreadyDefined(firstToken, name);
 					}
 				}
 
@@ -710,7 +666,7 @@ public class RBaseListen extends RBaseListener {
 						st.varCall.add(resultedVar);
 						if (su.expr().getText().contains("<-") || su.expr().getText().contains("<<-") || su.expr().getText().contains("->") || su.expr().getText().contains("->>")) {
 							/* Create a new a new var in current scope! */
-							if (checkVarName(resultedVar)) {
+							if (alreadyDefined(su.start, resultedVar)) {
 								RVariableSymbol var = new RVariableSymbol(resultedVar);
 								currentScope.define(var); // Define symbol in
 															// current scope
@@ -718,8 +674,6 @@ public class RBaseListen extends RBaseListener {
 
 								int line = calculateLine(lineStart);
 								new REditorOutlineNode(resultedVar, line, "variable", editor.baseNode);
-							} else {
-								alreadyDefined(su.start, resultedVar);
 							}
 						}
 					}
@@ -730,19 +684,43 @@ public class RBaseListen extends RBaseListener {
 	}
 
 	/* Is this variable already defined in the scope? */
-	private boolean checkVarName(String varName) {
-		boolean check;
+	/*
+	 * private boolean checkVarName(String varName) { boolean check;
+	 * 
+	 * RScope scope = scopes.peek(); if (scope.inScope(varName)) {
+	 * 
+	 * check = false; } else { check = true; }
+	 * 
+	 * RSymbol var = currentScope.resolve(varName); if (var instanceof
+	 * RVariableSymbol) { check = false; } else { check = true; } return check;
+	 * }
+	 */
+
+	private boolean alreadyDefined(Token firstToken, String name) {
 		/*
-		 * RScope scope = scopes.peek(); if (scope.inScope(varName)) {
-		 * 
-		 * check = false; } else { check = true; }
+		 * Do we have already defined the same name for a function or variable? If so create
+		 * a warning!
 		 */
-		RSymbol var = currentScope.resolve(varName);
-		if (var instanceof RVariableSymbol) {
-			check = false;
+		boolean check = false;
+
+		RSymbol funThere = currentScope.resolve(name);
+		if (funThere != null) {
+			if (funThere instanceof RFunctionSymbol) {
+				check = false;
+				if (store.getBoolean("FUNCTION_ALREADY_DEFINED")) {
+					parser.notifyErrorListeners(firstToken, "Warn19####A function with name '" + name + "' is already defined!", null);
+				}
+			} else if (funThere instanceof RVariableSymbol) {
+				check = false;
+				if (store.getBoolean("VARIABLE_ALREADY_DEFINED")) {
+					parser.notifyErrorListeners(firstToken, "Warn19####A variable with name '" + name + "' is already defined!", null);
+				}
+			}
+
 		} else {
 			check = true;
 		}
+
 		return check;
 	}
 
