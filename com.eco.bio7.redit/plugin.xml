@@ -286,6 +286,20 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
              label="Format R Source (Rserve)"
              menubarPath="format.menu/format">
        </action>
+       <action
+             class="com.eco.bio7.reditor.actions.ExtractSelectionToFile"
+             definitionId="com.eco.bio7.reditor.refactor.extract.selection"
+             id="com.eco.bio7.reditor.refactor.extract.selection"
+             label="Extract Editor Selection to File"
+             menubarPath="refactor.menu/refact">
+       </action>
+       <action
+             class="com.eco.bio7.reditor.actions.CreateRFileFromClipboard"
+             definitionId="com.eco.bio7.reditor.refactor.create.file.clipboard"
+             id="com.eco.bio7.reditor.refactor.create.file.clipboard"
+             label="Create new File from Clipboard"
+             menubarPath="refactor.menu/refact">
+       </action>
     </viewerContribution>
   </extension>
  <extension
@@ -456,6 +470,42 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
           name="Open color dialog">
     </command>
  </extension>
-   
+ <extension
+       id="com.eco.bio7.reditor.refactor.extract.selection"
+       point="org.eclipse.ui.bindings">
+    <key
+          commandId="com.eco.bio7.reditor.refactor.extract.selection"
+          contextId="org.eclipse.ui.contexts.window"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+ALT+E">
+    </key>
+ </extension>
+ <extension
+       point="org.eclipse.ui.commands">
+    <command
+          description="Extract editor selection to file"
+          id="com.eco.bio7.reditor.refactor.extract.selection"
+          name="Extract editor selection to file">
+    </command>
+ </extension>  
+ <extension
+       id="com.eco.bio7.reditor.refactor.create.file.clipboard"
+       point="org.eclipse.ui.bindings">
+    <key
+          commandId="com.eco.bio7.reditor.refactor.create.file.clipboard"
+          contextId="org.eclipse.ui.contexts.window"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+ALT+Z">
+    </key>
+ </extension>
+ <extension
+       point="org.eclipse.ui.commands">
+    <command
+          description="Create new file from clipboard"
+          id="com.eco.bio7.reditor.refactor.create.file.clipboard"
+          name="Create new File from clipboard">
+    </command>
+ </extension>  
+ 
 
 </plugin>

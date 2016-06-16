@@ -318,9 +318,10 @@ public class RBaseListen extends RBaseListener {
 		// currentScope.define(var);
 
 		if (methods.size() == 0) {
-			if (alreadyDefined(ctx.getStart(), loopVar)) {
+			if (alreadyDefined(ctx.ID().getSymbol(), loopVar)) {
 				// RScope scope = scopes.peek();
 				// scope.add(name);
+				int line = calculateLine(lineStart);
 
 				/* Create a new a new var in current scope! */
 				RVariableSymbol var = new RVariableSymbol(loopVar);
@@ -334,13 +335,15 @@ public class RBaseListen extends RBaseListener {
 
 				st.varDecl.add(loopVar);
 
-				new REditorOutlineNode(loopVar, lineStart, "variable", editor.baseNode);
+				new REditorOutlineNode(loopVar, line, "loopVariable", editor.baseNode);
 			}
 
 		} else {
-			if (alreadyDefined(ctx.getStart(), loopVar)) {
+			if (alreadyDefined(ctx.ID().getSymbol(), loopVar)) {
 				// RScope scope = scopes.peek();
 				// scope.add(name);
+				int line = calculateLine(lineStart);
+
 				/* Create a new a new var in current scope! */
 				RVariableSymbol var = new RVariableSymbol(loopVar);
 				currentScope.define(var); // Define symbol in
@@ -351,7 +354,7 @@ public class RBaseListen extends RBaseListener {
 				 */
 				st.varDecl.add(loopVar);
 
-				new REditorOutlineNode(loopVar, lineStart, "variable", methods.peek());
+				new REditorOutlineNode(loopVar, line, "loopVariable", methods.peek());
 			}
 
 		}
@@ -404,7 +407,16 @@ public class RBaseListen extends RBaseListener {
 		/* Throw out variable assignment of function calls! */
 
 		if (ctx.expr(0) instanceof E20CallFunctionContext) {
+			String exprName = ctx.expr(0).start.getText();
 
+			if (exprName.equals("class")) {
+				int line = calculateLine(ctx.expr(0).getStart().getStartIndex());
+				if (methods.size() == 0) {
+					new REditorOutlineNode(exprName, line, "s3Class", editor.baseNode);
+				} else {
+					new REditorOutlineNode(exprName, line, "s3Class", methods.peek());
+				}
+			}
 			return;
 
 		}
@@ -422,8 +434,6 @@ public class RBaseListen extends RBaseListener {
 
 			int lineStart = firstToken.getStartIndex();
 
-			int line = calculateLine(lineStart);
-
 			Token assignOp = ((TerminalNodeImpl) ctx.getChild(1)).getSymbol();
 
 			// Token assignOp = whitespaceTokenFilter(start, stop);
@@ -438,7 +448,7 @@ public class RBaseListen extends RBaseListener {
 					if (alreadyDefined(ctx.getStart(), name)) {
 						// RScope scope = scopes.peek();
 						// scope.add(name);
-
+						int line = calculateLine(lineStart);
 						/* Create a new a new var in current scope! */
 						RVariableSymbol var = new RVariableSymbol(name);
 						currentScope.define(var);
@@ -451,13 +461,21 @@ public class RBaseListen extends RBaseListener {
 
 						st.varDecl.add(name);
 
-						new REditorOutlineNode(name, line, "variable", editor.baseNode);
+						if (isFunc.equals("setClass")) {
+							new REditorOutlineNode(name, line, "s4Class", editor.baseNode);
+						}
+						if (isFunc.equals("setRefClass")) {
+							new REditorOutlineNode(name, line, "refClass", editor.baseNode);
+						} else {
+							new REditorOutlineNode(name, line, "variable", editor.baseNode);
+						}
 					}
 
 				} else {
 					if (alreadyDefined(ctx.getStart(), name)) {
 						// RScope scope = scopes.peek();
 						// scope.add(name);
+						int line = calculateLine(lineStart);
 						/* Create a new a new var in current scope! */
 						RVariableSymbol var = new RVariableSymbol(name);
 						currentScope.define(var); // Define symbol in
@@ -468,8 +486,14 @@ public class RBaseListen extends RBaseListener {
 						 * vaiables!
 						 */
 						st.varDecl.add(name);
-
-						new REditorOutlineNode(name, line, "variable", methods.peek());
+						if (isFunc.equals("setClass")) {
+							new REditorOutlineNode(name, line, "s4Class", methods.peek());
+						}
+						if (isFunc.equals("setRefClass")) {
+							new REditorOutlineNode(name, line, "refClass", methods.peek());
+						} else {
+							new REditorOutlineNode(name, line, "variable", methods.peek());
+						}
 					}
 
 				}
@@ -483,6 +507,7 @@ public class RBaseListen extends RBaseListener {
 					if (alreadyDefined(ctx.getStart(), name)) {
 						// RScope scope = scopes.peek();
 						// scope.add(name);
+						int line = calculateLine(lineStart);
 						/* Create a new a new var in current scope! */
 						RVariableSymbol var = new RVariableSymbol(name);
 						currentScope.define(var); // Define symbol in
@@ -502,6 +527,7 @@ public class RBaseListen extends RBaseListener {
 					if (alreadyDefined(ctx.getStart(), name)) {
 						// RScope scope = scopes.peek();
 						// scope.add(name);
+						int line = calculateLine(lineStart);
 						/* Create a new a new var in current scope! */
 						RVariableSymbol var = new RVariableSymbol(name);
 						currentScope.define(var);
@@ -610,6 +636,26 @@ public class RBaseListen extends RBaseListener {
 				}
 			}
 		}
+		/*
+		 * Detect function call with id class to add the S3 name only to the
+		 * outline view!
+		 */
+		else if (stopText.equals("class")) {
+
+			String exprName = stopText;
+
+			if (exprName.equals("class")) {
+				int lineStart = stop.getStartIndex();
+				int line = calculateLine(lineStart);
+
+				if (methods.size() == 0) {
+					new REditorOutlineNode(exprName, line, "s3Class", editor.baseNode);
+				} else {
+					new REditorOutlineNode(exprName, line, "s3Class", methods.peek());
+				}
+			}
+
+		}
 
 	}
 
@@ -673,7 +719,7 @@ public class RBaseListen extends RBaseListener {
 								int lineStart = su.start.getStartIndex();
 
 								int line = calculateLine(lineStart);
-								new REditorOutlineNode(resultedVar, line, "variable", editor.baseNode);
+								new REditorOutlineNode(resultedVar, line, "methodCallField", editor.baseNode);
 							}
 						}
 					}
@@ -698,8 +744,8 @@ public class RBaseListen extends RBaseListener {
 
 	private boolean alreadyDefined(Token firstToken, String name) {
 		/*
-		 * Do we have already defined the same name for a function or variable? If so create
-		 * a warning!
+		 * Do we have already defined the same name for a function or variable?
+		 * If so create a warning!
 		 */
 		boolean check = false;
 
