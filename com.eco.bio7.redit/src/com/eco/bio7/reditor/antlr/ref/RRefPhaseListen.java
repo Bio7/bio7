@@ -224,8 +224,7 @@ public class RRefPhaseListen extends RBaseListener {
 				String op = ctx.getParent().getChild(1).getText();
 				String name = ctx.getParent().getChild(0).getText();
 				/*
-				 * Check if we have an assignment symbol available! else we
-				 * create a function without variable assignment!
+				 * Check if we have an assignment symbol available! 
 				 */
 				if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
 					/*

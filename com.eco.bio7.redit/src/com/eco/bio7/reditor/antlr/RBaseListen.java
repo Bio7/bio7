@@ -29,6 +29,7 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.antlr.RParser.E17VariableDeclarationContext;
 import com.eco.bio7.reditor.antlr.RParser.E20CallFunctionContext;
+import com.eco.bio7.reditor.antlr.RParser.E30Context;
 import com.eco.bio7.reditor.antlr.RParser.ExprContext;
 import com.eco.bio7.reditor.antlr.RParser.FormContext;
 import com.eco.bio7.reditor.antlr.RParser.SubContext;
@@ -180,10 +181,8 @@ public class RBaseListen extends RBaseListener {
 			 * function without variable assignment!
 			 */
 			if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
-				/*
-				 * Check if a function or variable with this name is already
-				 * defined!
-				 */
+				/*Here we check for already defined functions without to return because we add the call arguments
+				 * to the known symbol table. We would also get with this implementation a null pointer exception*/
 				alreadyDefined(firstToken, name);
 				/* Create a new scope and add the function (symbol)! */
 				RFunctionSymbol function = new RFunctionSymbol(name, currentScope, ctx.formlist());
@@ -397,18 +396,18 @@ public class RBaseListen extends RBaseListener {
 
 	@Override
 	public void enterE17VariableDeclaration(RParser.E17VariableDeclarationContext ctx) {
-
+		
 		Interval sourceInterval = ctx.getSourceInterval();
 
 		Token firstToken = ctx.getStart();
 		int start = sourceInterval.a;
-		int stop = sourceInterval.b;
-
+		//int stop = sourceInterval.b;
+        
 		/* Throw out variable assignment of function calls! */
-
+		//System.out.println("varName= " + ctx.expr(0).getText() + "Is Type! " + ctx.expr(0).getClass());
 		if (ctx.expr(0) instanceof E20CallFunctionContext) {
 			String exprName = ctx.expr(0).start.getText();
-
+			//System.out.println("varName= " + exprName + "Is Type! " + ctx.expr(0).getParent().getParent().getClass());
 			if (exprName.equals("class")) {
 				int line = calculateLine(ctx.expr(0).getStart().getStartIndex());
 				if (methods.size() == 0) {
@@ -416,20 +415,25 @@ public class RBaseListen extends RBaseListener {
 				} else {
 					new REditorOutlineNode(exprName, line, "s3Class", methods.peek());
 				}
+               return;
 			}
-			return;
 
 		}
+		
+		/*Now we only want to consider variables with an ID! (E30Context)*/
+		if(ctx.expr(0) instanceof E30Context==false){
+        	return;
+        }
 		/* Check and ignore if this assignment is inside a function call! */
-		boolean isSubTrue = Utils.getCtxParent(ctx.expr(0));
-
-		// System.out.println("has Sub?: " + isSubTrue);
-		if (isSubTrue == true) {
-			return;
-		}
+		/*
+		 * boolean isSubTrue = Utils.getCtxParent(ctx.expr(0));
+		 * 
+		 * // System.out.println("has Sub?: " + isSubTrue); if (isSubTrue ==
+		 * true) { return; }
+		 */
 
 		String isFunc = ctx.expr(1).start.getText();
-
+		//System.out.println("fun detetcted?= " + ctx.expr(1).getText() + "Is Type! " + ctx.expr(1).getClass());
 		if (isFunc.equals("function") == false) {
 
 			int lineStart = firstToken.getStartIndex();
@@ -439,7 +443,7 @@ public class RBaseListen extends RBaseListener {
 			// Token assignOp = whitespaceTokenFilter(start, stop);
 
 			String op = assignOp.getText();
-			if (op.equals("<-") || op.equals("<<-") || op.equals("=")) {
+			if (op.equals("<-") || op.equals("<<-")) {
 				String name = firstToken.getText();
 				// System.out.println("varName=" +name+ "Is Type!"+
 				// ctx.expr(0).getParent().getParent().getClass());
@@ -499,7 +503,7 @@ public class RBaseListen extends RBaseListener {
 				}
 
 			}
-
+			/* We leave out the class detection for S3 here! */
 			else if (op.equals("->") || op.equals("->>")) {
 				String name = tokens.get(start + 2).getText();
 				if (methods.size() == 0) {
@@ -541,6 +545,79 @@ public class RBaseListen extends RBaseListener {
 
 						new REditorOutlineNode(name, line, "variable", methods.peek());
 					}
+				}
+
+			}
+
+			if (op.equals("=")) {
+
+				/*
+				 * Check and ignore if this assignment is inside a function
+				 * call!
+				 */
+				boolean isSubTrue = Utils.getCtxParent(ctx.expr(0));
+
+				// System.out.println("has Sub?: " + isSubTrue);
+				if (isSubTrue == true) {
+					return;
+				}
+
+				String name = firstToken.getText();
+				// System.out.println("varName=" +name+ "Is Type!"+
+				// ctx.expr(0).getParent().getParent().getClass());
+
+				if (methods.size() == 0) {
+					if (alreadyDefined(ctx.getStart(), name)) {
+						// RScope scope = scopes.peek();
+						// scope.add(name);
+						int line = calculateLine(lineStart);
+						/* Create a new a new var in current scope! */
+						RVariableSymbol var = new RVariableSymbol(name);
+						currentScope.define(var);
+
+						DeclCallStore st = storeDeclCall.peek();
+						/*
+						 * Add the called var to the call set to detect unused
+						 * variables!
+						 */
+
+						st.varDecl.add(name);
+
+						if (isFunc.equals("setClass")) {
+							new REditorOutlineNode(name, line, "s4Class", editor.baseNode);
+						}
+						if (isFunc.equals("setRefClass")) {
+							new REditorOutlineNode(name, line, "refClass", editor.baseNode);
+						} else {
+							new REditorOutlineNode(name, line, "variable", editor.baseNode);
+						}
+					}
+
+				} else {
+					if (alreadyDefined(ctx.getStart(), name)) {
+						// RScope scope = scopes.peek();
+						// scope.add(name);
+						int line = calculateLine(lineStart);
+						/* Create a new a new var in current scope! */
+						RVariableSymbol var = new RVariableSymbol(name);
+						currentScope.define(var); // Define symbol in
+													// current scope
+						DeclCallStore st = storeDeclCall.peek();
+						/*
+						 * Add the called var to the call set to detect unused
+						 * vaiables!
+						 */
+						st.varDecl.add(name);
+						if (isFunc.equals("setClass")) {
+							new REditorOutlineNode(name, line, "s4Class", methods.peek());
+						}
+						if (isFunc.equals("setRefClass")) {
+							new REditorOutlineNode(name, line, "refClass", methods.peek());
+						} else {
+							new REditorOutlineNode(name, line, "variable", methods.peek());
+						}
+					}
+
 				}
 
 			}
@@ -640,7 +717,7 @@ public class RBaseListen extends RBaseListener {
 		 * Detect function call with id class to add the S3 name only to the
 		 * outline view!
 		 */
-		else if (stopText.equals("class")) {
+		/*else if (stopText.equals("class")) {
 
 			String exprName = stopText;
 
@@ -655,14 +732,16 @@ public class RBaseListen extends RBaseListener {
 				}
 			}
 
-		}
+		}*/
 
 	}
 
 	/* Here we filter out variable declarations in method calls! */
 	public void exitE20CallFunction(RParser.E20CallFunctionContext ctx) {
-		SublistContext subList = ctx.sublist();
-		extractVariableAssignments(subList);
+		/*
+		 * SublistContext subList = ctx.sublist();
+		 * extractVariableAssignments(subList);
+		 */
 
 	}
 
@@ -671,8 +750,10 @@ public class RBaseListen extends RBaseListener {
 	 * ']' ']'
 	 */
 	public void exitE1(RParser.E1Context ctx) {
-		SublistContext subList = ctx.sublist();
-		extractVariableAssignments(subList);
+		/*
+		 * SublistContext subList = ctx.sublist();
+		 * extractVariableAssignments(subList);
+		 */
 	}
 
 	/*
@@ -680,8 +761,10 @@ public class RBaseListen extends RBaseListener {
 	 * ']'
 	 */
 	public void exitE2(RParser.E2Context ctx) {
-		SublistContext subList = ctx.sublist();
-		extractVariableAssignments(subList);
+		/*
+		 * SublistContext subList = ctx.sublist();
+		 * extractVariableAssignments(subList);
+		 */
 	}
 
 	/*
@@ -699,6 +782,7 @@ public class RBaseListen extends RBaseListener {
 				SubContext su = (SubContext) subL.get(i);
 				// System.out.println("var: "+su.expr().getText());
 				if (su.expr() != null) {
+
 					if (su.expr() instanceof E17VariableDeclarationContext) {
 
 						resultedVar = su.start.getText();
@@ -722,6 +806,14 @@ public class RBaseListen extends RBaseListener {
 								new REditorOutlineNode(resultedVar, line, "methodCallField", editor.baseNode);
 							}
 						}
+					}
+
+					else if (su.expr() instanceof E20CallFunctionContext) {
+						/*
+						 * System.out.println("expr: "+su.expr().getText()+" "
+						 * +su.expr().getClass()); System.out.println("expr: "
+						 * +su.start.getText()+" "+su.expr().getClass());
+						 */
 					}
 				}
 

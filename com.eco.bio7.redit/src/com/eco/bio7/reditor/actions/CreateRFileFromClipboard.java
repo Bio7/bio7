@@ -2,19 +2,13 @@ package com.eco.bio7.reditor.actions;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.StringReader;
-
-import org.antlr.v4.runtime.TokenStreamRewriter;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.InputDialog;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
@@ -30,8 +24,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
-import org.eclipse.ui.texteditor.IDocumentProvider;
-import org.eclipse.ui.texteditor.ITextEditor;
 import com.eco.bio7.reditor.antlr.refactor.RefactorParse;
 import com.eco.bio7.util.Util;
 
@@ -39,9 +31,6 @@ public class CreateRFileFromClipboard implements IEditorActionDelegate {
 
 	private ISelection selection;
 	private IEditorPart targetEditor;
-	private TokenStreamRewriter rewriter;
-
-	private boolean global;
 
 	public void setActiveEditor(final IAction action, final IEditorPart targetEditor) {
 		this.targetEditor = targetEditor;
@@ -62,22 +51,19 @@ public class CreateRFileFromClipboard implements IEditorActionDelegate {
 		IResource resource = (IResource) targetEditor.getEditorInput().getAdapter(IResource.class);
 		if (resource != null) {
 
-			ITextEditor editor = (ITextEditor) targetEditor;
-			IDocumentProvider dp = editor.getDocumentProvider();
-			// IDocument doc = dp.getDocument(editor.getEditorInput());
-
 			/* Try the clipboard! */
 			Clipboard clipboard = new Clipboard(Util.getDisplay());
 			String text = (String) clipboard.getContents(TextTransfer.getInstance());
 			String varName = "fileName";
 
-			if (text.isEmpty() || text == null) {
+			if (text == null) {
 
-				
-				if (text == null && text.isEmpty()) {
-					errorMessage("Nothing selected!");
-					return;
-				}
+				return;
+			}
+			if (text.isEmpty()) {
+
+				errorMessage("Nothing selected!");
+				return;
 
 			}
 			RefactorParse parse = new RefactorParse();
@@ -88,7 +74,7 @@ public class CreateRFileFromClipboard implements IEditorActionDelegate {
 				InputDialog dlg = new InputDialog(Display.getCurrent().getActiveShell(), "fileName", "Enter a file name!", null, null);
 
 				if (dlg.open() == Window.OK) {
-					// User clicked OK; update the label with the input
+
 					varName = dlg.getValue();
 					IFile file = (IFile) extractResource(targetEditor);
 
@@ -101,7 +87,7 @@ public class CreateRFileFromClipboard implements IEditorActionDelegate {
 						try {
 							fil.create(source, IResource.NONE, null);
 						} catch (CoreException e) {
-							// TODO Auto-generated catch block
+
 							e.printStackTrace();
 						}
 
@@ -126,10 +112,7 @@ public class CreateRFileFromClipboard implements IEditorActionDelegate {
 
 			} else {
 				errorMessage("Parser error occured!\nPlease select valid R expressions!");
-				/* Revert changes if parser has errors! */
-				// doc.set(docText);
-				// System.out.println("How many errors1: " +
-				// parser.getNumberOfSyntaxErrors());
+
 				return;
 			}
 		}

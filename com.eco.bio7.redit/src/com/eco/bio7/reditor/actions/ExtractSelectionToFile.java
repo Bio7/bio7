@@ -2,8 +2,6 @@ package com.eco.bio7.reditor.actions;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-
-import org.antlr.v4.runtime.TokenStreamRewriter;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -37,9 +35,6 @@ public class ExtractSelectionToFile implements IEditorActionDelegate {
 
 	private ISelection selection;
 	private IEditorPart targetEditor;
-	private TokenStreamRewriter rewriter;
-
-	private boolean global;
 
 	public void setActiveEditor(final IAction action, final IEditorPart targetEditor) {
 		this.targetEditor = targetEditor;
@@ -70,9 +65,15 @@ public class ExtractSelectionToFile implements IEditorActionDelegate {
 			String text = selection.getText();
 			String varName = "fileName";
 
-			if (text.isEmpty() || text == null) {
+			if (text == null) {
+
+				return;
+			}
+			if (text.isEmpty()) {
+
 				errorMessage("Nothing selected!");
 				return;
+
 			}
 			RefactorParse parse = new RefactorParse();
 			/* First parse of the selection! */
@@ -82,7 +83,6 @@ public class ExtractSelectionToFile implements IEditorActionDelegate {
 				InputDialog dlg = new InputDialog(Display.getCurrent().getActiveShell(), "fileName", "Enter a file name!", null, null);
 
 				if (dlg.open() == Window.OK) {
-					// User clicked OK; update the label with the input
 					varName = dlg.getValue();
 					IFile file = (IFile) extractResource(targetEditor);
 
@@ -95,7 +95,7 @@ public class ExtractSelectionToFile implements IEditorActionDelegate {
 						try {
 							fil.create(source, IResource.NONE, null);
 						} catch (CoreException e) {
-							// TODO Auto-generated catch block
+
 							e.printStackTrace();
 						}
 
@@ -117,20 +117,17 @@ public class ExtractSelectionToFile implements IEditorActionDelegate {
 				} else {
 					return;
 				}
-				/*Delete the selected text!*/
+				/* Delete the selected text! */
 				try {
 					doc.replace(selection.getOffset(), selection.getLength(), "");
 				} catch (BadLocationException e) {
-					// TODO Auto-generated catch block
+
 					e.printStackTrace();
 				}
 
 			} else {
 				errorMessage("Parser error occured!\nPlease select valid R expressions!");
-				/* Revert changes if parser has errors! */
-				// doc.set(docText);
-				// System.out.println("How many errors1: " +
-				// parser.getNumberOfSyntaxErrors());
+
 				return;
 			}
 		}
