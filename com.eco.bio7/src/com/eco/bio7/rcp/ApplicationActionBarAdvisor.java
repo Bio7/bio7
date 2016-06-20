@@ -38,6 +38,7 @@ import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import org.eclipse.ui.actions.ContributionItemFactory;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
+import org.eclipse.ui.ide.IDEActionFactory;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.registry.ActionSetRegistry;
 import org.eclipse.ui.internal.registry.IActionSetDescriptor;
@@ -236,6 +237,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 	private IContributionItem showViewItem;
 
+	private IWorkbenchAction switchWorkspaceAction;
+
+	private IWorkbenchAction refreshAction;
+
 	public ApplicationActionBarAdvisor(IActionBarConfigurer configurer) {
 		super(configurer);
 		store = Bio7Plugin.getDefault().getPreferenceStore();
@@ -432,6 +437,12 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		generateControllerAction = new GenerateControllerAction("Generate Controller Class");
 		register(generateControllerAction);
+		
+		switchWorkspaceAction = IDEActionFactory.OPEN_WORKSPACE.create(window);
+		register(switchWorkspaceAction);
+		
+		refreshAction = ActionFactory.REFRESH.create(window);
+		register(refreshAction);
 
 	}
 
@@ -766,6 +777,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		fileMenu.add(save);
 		fileMenu.add(saveall);
 		fileMenu.add(saveas);
+		fileMenu.add(refreshAction);
+		fileMenu.add(switchWorkspaceAction);
 		fileMenu.add(new Separator());
 		fileMenu.add(Import);
 		fileMenu.add(Export);

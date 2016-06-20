@@ -12,9 +12,10 @@ public class REditorLabelProvider implements ILabelProvider {
 	private Image publicMethodCallFieldIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/field_private_obj.png"));
 	private Image importIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/imp_obj.png"));
 	private Image baseNode = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/file_obj.png"));
+	private Image s3ClassIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/innerclass_public_obj.png"));
 	private Image s4ClassIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/innerclass_private_obj.png"));
 	private Image refClassIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/innerclass_protected_obj.png"));
-	private Image s3ClassIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/innerclass_default_obj.png"));
+	private Image r6ClassIcon = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/innerclass_default_obj.png"));
 
 	public String getText(Object element) {
 		return ((REditorOutlineNode) element).getName();
@@ -26,28 +27,21 @@ public class REditorLabelProvider implements ILabelProvider {
 			REditorOutlineNode cm = (REditorOutlineNode) element;
 			if (cm.getType().equals("function")) {
 				im = publicMethodIcon;
-
-			}
-
-			else if (cm.getType().equals("variable")) {
+			} else if (cm.getType().equals("variable")) {
 				im = publicFieldIcon;
-			}
-
-			else if (cm.getType().equals("loopVariable")) {
+			} else if (cm.getType().equals("loopVariable")) {
 				im = publicFieldLoopIcon;
-			}
-
-			else if (cm.getType().equals("methodCallField")) {
+			} else if (cm.getType().equals("methodCallField")) {
 				im = publicMethodCallFieldIcon;
+			} else if (cm.getType().equals("s3Class")) {
+				im = s3ClassIcon;
 			} else if (cm.getType().equals("s4Class")) {
 				im = s4ClassIcon;
 			} else if (cm.getType().equals("refClass")) {
 				im = refClassIcon;
-			} else if (cm.getType().equals("s3Class")) {
-				im = s3ClassIcon;
-			}
-
-			else if (cm.getType().equals("library")) {
+			} else if (cm.getType().equals("r6Class")) {
+				im = r6ClassIcon;
+			} else if (cm.getType().equals("library")) {
 				im = importIcon;
 			} else if (cm.getType().equals("base")) {
 				im = baseNode;
@@ -65,6 +59,7 @@ public class REditorLabelProvider implements ILabelProvider {
 		s3ClassIcon.dispose();
 		s4ClassIcon.dispose();
 		refClassIcon.dispose();
+		r6ClassIcon.dispose();
 		publicFieldIcon.dispose();
 		publicFieldLoopIcon.dispose();
 		publicMethodCallFieldIcon.dispose();

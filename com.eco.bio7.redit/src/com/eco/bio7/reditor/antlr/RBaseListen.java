@@ -404,19 +404,11 @@ public class RBaseListen extends RBaseListener {
 		//int stop = sourceInterval.b;
         
 		/* Throw out variable assignment of function calls! */
-		//System.out.println("varName= " + ctx.expr(0).getText() + "Is Type! " + ctx.expr(0).getClass());
+		
 		if (ctx.expr(0) instanceof E20CallFunctionContext) {
-			String exprName = ctx.expr(0).start.getText();
-			//System.out.println("varName= " + exprName + "Is Type! " + ctx.expr(0).getParent().getParent().getClass());
-			if (exprName.equals("class")) {
-				int line = calculateLine(ctx.expr(0).getStart().getStartIndex());
-				if (methods.size() == 0) {
-					new REditorOutlineNode(exprName, line, "s3Class", editor.baseNode);
-				} else {
-					new REditorOutlineNode(exprName, line, "s3Class", methods.peek());
-				}
+			
                return;
-			}
+			
 
 		}
 		
@@ -465,12 +457,15 @@ public class RBaseListen extends RBaseListener {
 
 						st.varDecl.add(name);
 
-						if (isFunc.equals("setClass")) {
-							new REditorOutlineNode(name, line, "s4Class", editor.baseNode);
-						}
-						if (isFunc.equals("setRefClass")) {
+						
+						 if (isFunc.equals("setRefClass")) {
 							new REditorOutlineNode(name, line, "refClass", editor.baseNode);
-						} else {
+						}
+						else if (isFunc.equals("R6Class")) {
+							new REditorOutlineNode(name, line, "r6Class", editor.baseNode);
+						} 
+						
+						else {
 							new REditorOutlineNode(name, line, "variable", editor.baseNode);
 						}
 					}
@@ -490,12 +485,15 @@ public class RBaseListen extends RBaseListener {
 						 * vaiables!
 						 */
 						st.varDecl.add(name);
-						if (isFunc.equals("setClass")) {
-							new REditorOutlineNode(name, line, "s4Class", methods.peek());
-						}
-						if (isFunc.equals("setRefClass")) {
+						
+						 if (isFunc.equals("setRefClass")) {
 							new REditorOutlineNode(name, line, "refClass", methods.peek());
-						} else {
+						} 
+						else if (isFunc.equals("R6Class")) {
+							new REditorOutlineNode(name, line, "r6Class", methods.peek());
+						} 
+						
+						else {
 							new REditorOutlineNode(name, line, "variable", methods.peek());
 						}
 					}
@@ -583,12 +581,15 @@ public class RBaseListen extends RBaseListener {
 
 						st.varDecl.add(name);
 
-						if (isFunc.equals("setClass")) {
-							new REditorOutlineNode(name, line, "s4Class", editor.baseNode);
-						}
-						if (isFunc.equals("setRefClass")) {
+						
+						 if (isFunc.equals("setRefClass")) {
 							new REditorOutlineNode(name, line, "refClass", editor.baseNode);
-						} else {
+						} 
+						
+						else if (isFunc.equals("R6Class")) {
+							new REditorOutlineNode(name, line, "r6Class", editor.baseNode);
+						} 
+						else {
 							new REditorOutlineNode(name, line, "variable", editor.baseNode);
 						}
 					}
@@ -608,12 +609,16 @@ public class RBaseListen extends RBaseListener {
 						 * vaiables!
 						 */
 						st.varDecl.add(name);
-						if (isFunc.equals("setClass")) {
-							new REditorOutlineNode(name, line, "s4Class", methods.peek());
-						}
-						if (isFunc.equals("setRefClass")) {
+						
+						 if (isFunc.equals("setRefClass")) {
 							new REditorOutlineNode(name, line, "refClass", methods.peek());
-						} else {
+						} 
+						
+						else if (isFunc.equals("R6Class")) {
+							new REditorOutlineNode(name, line, "r6Class", methods.peek());
+						} 
+						
+						else {
 							new REditorOutlineNode(name, line, "variable", methods.peek());
 						}
 					}
@@ -713,26 +718,48 @@ public class RBaseListen extends RBaseListener {
 				}
 			}
 		}
+		
+		
 		/*
 		 * Detect function call with id class to add the S3 name only to the
 		 * outline view!
 		 */
-		/*else if (stopText.equals("class")) {
+		else if (stopText.equals("class")) {
 
-			String exprName = stopText;
-
-			if (exprName.equals("class")) {
+			
+			String name=ctx.sublist().getStart().getText();
+			
 				int lineStart = stop.getStartIndex();
 				int line = calculateLine(lineStart);
 
 				if (methods.size() == 0) {
-					new REditorOutlineNode(exprName, line, "s3Class", editor.baseNode);
+					new REditorOutlineNode(name, line, "s3Class", editor.baseNode);
 				} else {
-					new REditorOutlineNode(exprName, line, "s3Class", methods.peek());
+					new REditorOutlineNode(name, line, "s3Class", methods.peek());
 				}
-			}
+			
 
-		}*/
+		}
+		/*
+		 * Detect function call with  setClass to add the S4 name only to the
+		 * outline view!
+		 */
+		else if (stopText.equals("setClass")) {
+
+		
+			String name=ctx.sublist().getStart().getText().replace("\"", "");
+			
+				int lineStart = stop.getStartIndex();
+				int line = calculateLine(lineStart);
+
+				if (methods.size() == 0) {
+					new REditorOutlineNode(name, line, "s4Class", editor.baseNode);
+				} else {
+					new REditorOutlineNode(name, line, "s4Class", methods.peek());
+				}
+			
+
+		}
 
 	}
 
