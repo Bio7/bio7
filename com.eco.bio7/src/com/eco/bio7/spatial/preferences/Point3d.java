@@ -13,7 +13,7 @@ package com.eco.bio7.spatial.preferences;
 
 
 
-import org.eclipse.swt.internal.SerializableCompatibility;
+
 
 /**
  * Instances of this class represent places on the (x, y)
@@ -39,7 +39,7 @@ import org.eclipse.swt.internal.SerializableCompatibility;
  * @see Rectangle
  */
 
-public final class Point3d implements SerializableCompatibility {
+public final class Point3d  {
 	
 	/**
 	 * the x coordinate of the point
