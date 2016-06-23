@@ -8,6 +8,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
+import com.eco.bio7.image.SwingFxSwtView;
+
 public class LineChartView extends ViewPart {
 	public static final String ID = "com.eco.bio7.linechart";
 
@@ -22,7 +24,7 @@ public class LineChartView extends ViewPart {
 
 	public void createPartControl(Composite parent) {
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.charts");
-		Composite top = new Composite(parent, SWT.NO_BACKGROUND | SWT.EMBEDDED);
+		/*Composite top = new Composite(parent, SWT.NO_BACKGROUND | SWT.EMBEDDED);
 		try {
 			System.setProperty("sun.awt.noerasebackground", "true");
 		} catch (NoSuchMethodError error) {
@@ -31,7 +33,7 @@ public class LineChartView extends ViewPart {
 		frame = SWT_AWT.new_Frame(top);
 		JApplet panel = new JApplet() {
 		      public void update(java.awt.Graphics g) {
-		        /* Do not erase the background */
+		         Do not erase the background 
 		        paint(g);
 		      }
 		    };
@@ -41,9 +43,12 @@ public class LineChartView extends ViewPart {
 		panel.add(root);
 		java.awt.Container contentPane = root.getContentPane();
 
-		linechart = new LineChart();
+		
 
-		contentPane.add(linechart.getChartPanel());
+		contentPane.add(linechart.getChartPanel());*/
+		linechart = new LineChart();
+		SwingFxSwtView view=new SwingFxSwtView();
+		view.embedd(parent,linechart.getChartPanel());
 
 	}
 

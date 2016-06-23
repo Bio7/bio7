@@ -10,6 +10,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.jfree.chart.ChartPanel;
 
+import com.eco.bio7.image.SwingFxSwtView;
+
 public class PieChartView extends ViewPart {
 
 	public static final String ID = "com.eco.bio7.piechart";
@@ -18,29 +20,28 @@ public class PieChartView extends ViewPart {
 
 	public void createPartControl(Composite parent) {
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.charts");
-		Composite top = new Composite(parent, SWT.NO_BACKGROUND | SWT.EMBEDDED);
-		try {
-			System.setProperty("sun.awt.noerasebackground", "true");
-		} catch (NoSuchMethodError error) {
-		}
-
-		frame = SWT_AWT.new_Frame(top);
-		JApplet panel = new JApplet() {
-		      public void update(java.awt.Graphics g) {
-		        /* Do not erase the background */
-		        paint(g);
-		      }
-		    };
-
-		frame.add(panel);
-		JRootPane root = new JRootPane();
-		panel.add(root);
-		java.awt.Container contentPane = root.getContentPane();
+		/*
+		 * Composite top = new Composite(parent, SWT.NO_BACKGROUND |
+		 * SWT.EMBEDDED); try { System.setProperty("sun.awt.noerasebackground",
+		 * "true"); } catch (NoSuchMethodError error) { }
+		 * 
+		 * frame = SWT_AWT.new_Frame(top); JApplet panel = new JApplet() {
+		 * public void update(java.awt.Graphics g) { Do not erase the background
+		 * paint(g); } };
+		 * 
+		 * frame.add(panel); JRootPane root = new JRootPane(); panel.add(root);
+		 * java.awt.Container contentPane = root.getContentPane();
+		 */
 
 		piechart = new Pie();
 
+		/*
+		 * ChartPanel chartPanel = new ChartPanel(piechart.getChart());
+		 * contentPane.add(chartPanel);
+		 */
 		ChartPanel chartPanel = new ChartPanel(piechart.getChart());
-		contentPane.add(chartPanel);
+		SwingFxSwtView view = new SwingFxSwtView();
+		view.embedd(parent, chartPanel);
 
 	}
 
