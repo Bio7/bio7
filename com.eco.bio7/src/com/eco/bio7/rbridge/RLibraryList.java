@@ -14,6 +14,11 @@ package com.eco.bio7.rbridge;
 
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
@@ -27,10 +32,14 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.reditors.REditor;
+import org.eclipse.swt.widgets.Label;
 
 public class RLibraryList extends Shell {
 
@@ -81,6 +90,7 @@ public class RLibraryList extends Shell {
 								});
 		
 				final Button uninstallButton = new Button(this, SWT.NONE);
+				uninstallButton.setToolTipText("Removes installed packages/bundles and updates index information as necessary. ");
 				GridData gd_uninstallButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 				gd_uninstallButton.heightHint = 40;
 				uninstallButton.setLayoutData(gd_uninstallButton);
@@ -123,6 +133,20 @@ public class RLibraryList extends Shell {
 		setText("Libraries");
 		setSize(323, 743);
 		setLayout(new GridLayout(2, true));
+		
+		Button btnAddLibraryDeclaration = new Button(this, SWT.NONE);
+		btnAddLibraryDeclaration.addSelectionListener(new SelectionAdapter() {
+			
+			public void widgetSelected(SelectionEvent e) {
+				setInDocument(allPackagesList);
+			}
+		});
+		btnAddLibraryDeclaration.setToolTipText("Add selected package items as library declaration to R editor source");
+		GridData gd_btnAddLibraryDeclaration = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
+		gd_btnAddLibraryDeclaration.widthHint = 301;
+		gd_btnAddLibraryDeclaration.heightHint = 40;
+		btnAddLibraryDeclaration.setLayoutData(gd_btnAddLibraryDeclaration);
+		btnAddLibraryDeclaration.setText("Add selected to R editor");
 		RConnection c = RServe.getConnection();
 		int b = 0;
 		if (c != null) {
@@ -178,6 +202,37 @@ public class RLibraryList extends Shell {
 
 	public static List getAllPackagesList() {
 		return allPackagesList;
+	}
+	private void setInDocument(List aList) {
+		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		if (editor != null && editor instanceof REditor) {
+
+			String[] items = aList.getSelection();
+			StringBuffer buff=new StringBuffer();
+			for (int i = 0; i < items.length; i++) {
+				buff.append("library(");
+				buff.append(items[i]);
+				buff.append(")");
+				buff.append(System.lineSeparator());
+			}
+			ITextEditor editor2 = (ITextEditor) editor;
+
+			IDocumentProvider dp = editor2.getDocumentProvider();
+			IDocument doc = dp.getDocument(editor.getEditorInput());
+
+			ISelectionProvider sp = editor2.getSelectionProvider();
+			ISelection selectionsel = sp.getSelection();
+			ITextSelection selection = (ITextSelection) selectionsel;
+
+			int off = selection.getOffset();
+
+			try {
+				doc.replace(off, 0, buff.toString());
+			} catch (BadLocationException e1) {
+				e1.printStackTrace();
+			}
+
+		}
 	}
 
 }

@@ -119,7 +119,7 @@ public class CSVImport {
 	void createSShell() {
 		sShell = new Shell(SWT.CLOSE | SWT.RESIZE | SWT.TITLE);
 		sShell.setText("CSV Reader");
-		sShell.setSize(new Point(518, 717));
+		sShell.setSize(new Point(518, 812));
 		sShell.setLayout(new GridLayout(3, true));
 
 		textFile = new Text(sShell, SWT.BORDER);
@@ -150,7 +150,7 @@ public class CSVImport {
 				modified();
 			}
 		});
-		GridData gd_btnClipboardData = new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1);
+		GridData gd_btnClipboardData = new GridData(SWT.LEFT, SWT.CENTER, true, false, 2, 1);
 		gd_btnClipboardData.heightHint = 30;
 		btnClipboardData.setLayoutData(gd_btnClipboardData);
 		btnClipboardData.setText("From clipboard");
@@ -179,14 +179,14 @@ public class CSVImport {
 		lblSeperator.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1));
 		seperatorLabel = new Label(sShell, SWT.NONE);
 		GridData gd_seperatorLabel = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-		gd_seperatorLabel.heightHint = 25;
+		gd_seperatorLabel.heightHint = 30;
 		seperatorLabel.setLayoutData(gd_seperatorLabel);
 		seperatorLabel.setText("Seperator character:");
 		new Label(sShell, SWT.NONE);
 		new Label(sShell, SWT.NONE);
 
 		final Button tabButton = new Button(sShell, SWT.CHECK);
-		GridData gd_tabButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+		GridData gd_tabButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_tabButton.heightHint = 30;
 		tabButton.setLayoutData(gd_tabButton);
 		tabButton.addSelectionListener(new SelectionAdapter() {
@@ -207,7 +207,7 @@ public class CSVImport {
 		tabButton.setText("Tab");
 
 		semicolonButton = new Button(sShell, SWT.CHECK);
-		GridData gd_semicolonButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+		GridData gd_semicolonButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_semicolonButton.heightHint = 30;
 		semicolonButton.setLayoutData(gd_semicolonButton);
 		semicolonButton.addSelectionListener(new SelectionAdapter() {
@@ -229,7 +229,7 @@ public class CSVImport {
 
 		kommaButton = new Button(sShell, SWT.CHECK);
 		kommaButton.setSelection(true);
-		GridData gd_kommaButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+		GridData gd_kommaButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_kommaButton.heightHint = 30;
 		kommaButton.setLayoutData(gd_kommaButton);
 		kommaButton.addSelectionListener(new SelectionAdapter() {
@@ -249,7 +249,7 @@ public class CSVImport {
 		kommaButton.setText("Komma");
 
 		otherButton = new Button(sShell, SWT.CHECK);
-		GridData gd_otherButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+		GridData gd_otherButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_otherButton.heightHint = 30;
 		otherButton.setLayoutData(gd_otherButton);
 		otherButton.setToolTipText("Default = Whitespace");
@@ -286,13 +286,16 @@ public class CSVImport {
 		new Label(sShell, SWT.NONE);
 
 		lblExtra = new Label(sShell, SWT.NONE);
+		GridData gd_lblExtra = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+		gd_lblExtra.heightHint = 30;
+		lblExtra.setLayoutData(gd_lblExtra);
 		lblExtra.setText("Extra:");
 		new Label(sShell, SWT.NONE);
 		new Label(sShell, SWT.NONE);
 
 		strictQuotes = new Button(sShell, SWT.CHECK);
-		GridData gd_strictQuotes = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-		gd_strictQuotes.heightHint = 25;
+		GridData gd_strictQuotes = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_strictQuotes.heightHint = 30;
 		strictQuotes.setLayoutData(gd_strictQuotes);
 		strictQuotes.addSelectionListener(new SelectionAdapter() {
 
@@ -303,8 +306,8 @@ public class CSVImport {
 		strictQuotes.setText("Strict Quotes");
 
 		ignoreWs = new Button(sShell, SWT.CHECK);
-		GridData gd_ignoreWs = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-		gd_ignoreWs.heightHint = 25;
+		GridData gd_ignoreWs = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_ignoreWs.heightHint = 30;
 		ignoreWs.setLayoutData(gd_ignoreWs);
 		ignoreWs.addSelectionListener(new SelectionAdapter() {
 
@@ -316,8 +319,8 @@ public class CSVImport {
 		ignoreWs.setText("Ignore Leading WS");
 
 		keepCr = new Button(sShell, SWT.CHECK);
-		GridData gd_keepCr = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-		gd_keepCr.heightHint = 25;
+		GridData gd_keepCr = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_keepCr.heightHint = 30;
 		keepCr.setLayoutData(gd_keepCr);
 		keepCr.addSelectionListener(new SelectionAdapter() {
 
@@ -329,8 +332,8 @@ public class CSVImport {
 		keepCr.setText("Keep CR");
 
 		label_1 = new Label(sShell, SWT.SEPARATOR | SWT.HORIZONTAL);
-		GridData gd_label_1 = new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1);
-		gd_label_1.heightHint = 25;
+		GridData gd_label_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1);
+		gd_label_1.heightHint = 30;
 		label_1.setLayoutData(gd_label_1);
 
 		lblNewLabel = new Label(sShell, SWT.NONE);
@@ -352,7 +355,7 @@ public class CSVImport {
 		textEscape = new Text(sShell, SWT.BORDER);
 		textEscape.setText("\\");
 		GridData gd_text_1 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-		gd_text_1.heightHint = 20;
+		gd_text_1.heightHint = 30;
 		textEscape.setTextLimit(1);
 		textEscape.setLayoutData(gd_text_1);
 		textEscape.addModifyListener(new org.eclipse.swt.events.ModifyListener() {
@@ -387,6 +390,9 @@ public class CSVImport {
 		label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
 
 		lblMessage = new Label(sShell, SWT.NONE);
+		GridData gd_lblMessage = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+		gd_lblMessage.heightHint = 30;
+		lblMessage.setLayoutData(gd_lblMessage);
 		lblMessage.setText("Help message:");
 		new Label(sShell, SWT.NONE);
 		new Label(sShell, SWT.NONE);
@@ -394,7 +400,7 @@ public class CSVImport {
 		labelError = new Label(sShell, SWT.NONE);
 		labelError.setForeground(SWTResourceManager.getColor(SWT.COLOR_RED));
 		GridData gd_labelError = new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1);
-		gd_labelError.heightHint = 25;
+		gd_labelError.heightHint = 30;
 		labelError.setLayoutData(gd_labelError);
 		labelError.setText("Please select a file or enable the clipboard!");
 		noProblemsDetected = false;
