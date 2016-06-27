@@ -23,10 +23,9 @@ http://bio7.org
 
    <launcherArgs>
       <programArgs>-clearPersistedState
-      </programArgs>
-      <programArgsMac>-vm
+-vm
 jre/lib/jli/libjli.dylib
-      </programArgsMac>
+      </programArgs>
       <vmArgs>-Xms1024m -Xmx1024m
       </vmArgs>
       <vmArgsMac>-XstartOnFirstThread
