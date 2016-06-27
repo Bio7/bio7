@@ -61,6 +61,7 @@ jre/lib/jli/libjli.dylib
    <vm>
    </vm>
 
+
    <plugins>
       <plugin id="Bundled_R"/>
       <plugin id="com.eco.bio7"/>
@@ -173,14 +174,14 @@ jre/lib/jli/libjli.dylib
       <feature id="com.eco.bio7.edit.feature" version="2.0.0.qualifier"/>
       <feature id="com.eco.bio7.floweditor.feature" version="2.0.0.qualifier"/>
       <feature id="com.eco.bio7.javaedit.feature" version="2.0.0.qualifier"/>
-      <feature id="com.eco.bio7.r.feature" version="3.2.1.qualifier"/>
-      <feature id="com.eco.bio7.image.feature" version="1.50.5.qualifier"/>
+      <feature id="com.eco.bio7.r.feature" version="3.3.1.qualifier"/>
+      <feature id="com.eco.bio7.image.feature" version="1.51.4.qualifier"/>
       <feature id="com.eco.bio7.libs.feature" version="2.0.0.qualifier"/>
       <feature id="com.eco.bio7.redit.feature" version="2.0.0.qualifier"/>
       <feature id="com.eco.bio7.util.feature" version="2.0.0.qualifier"/>
       <feature id="com.eco.bio7.worldwind.feature" version="2.0.0.qualifier"/>
       <feature id="com.eco.bio7.pythonedit.feature" version="2.0.0.qualifier"/>
-      <feature id="com.eco.bio7.scenebuilder.feature" version="2.0.0.qualifier"/>
+      <feature id="com.eco.bio7.scenebuilder.feature" version="2.2.0.qualifier"/>
       <feature id="org.eclipse.e4.rcp"/>
       <feature id="com.eco.bio7.os.feature" version="2.0.0.qualifier"/>
       <feature id="org.eclipse.ecf.filetransfer.httpclient4.feature"/>
@@ -202,13 +203,15 @@ jre/lib/jli/libjli.dylib
 
 
    <repositories>
-      <repository location="http://download.eclipse.org/eclipse/updates/4.6" enabled="true" />
       <repository location="http://download.eclipse.org/releases/neon" enabled="true" />
+      <repository location="http://download.eclipse.org/eclipse/updates/4.6" enabled="true" />
    </repositories>
 
    <preferencesInfo>
       <targetfile overwrite="false"/>
    </preferencesInfo>
 
-   
+   <cssInfo>
+   </cssInfo>
+
 </product>
