@@ -10,7 +10,8 @@ Require-Bundle: org.eclipse.ui,
  com.eco.bio7.javaedit;bundle-version="2.0.0",
  com.eco.bio7.libs;bundle-version="2.0.0",
  com.eco.bio7.os,
- com.eco.bio7.util
+ com.eco.bio7.util,
+ org.eclipse.nebula.widgets.grid;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: com.eco.bio7.worldwind,
