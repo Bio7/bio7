@@ -2,7 +2,6 @@ package com.eco.bio7.rbridge.actions;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;

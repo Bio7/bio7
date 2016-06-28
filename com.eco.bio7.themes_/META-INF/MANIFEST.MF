@@ -8,3 +8,4 @@ Bundle-Localization: plugin
 Require-Bundle: org.eclipse.e4.ui.css.swt.theme
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Eclipse-BundleShape: dir
+Bundle-ActivationPolicy: lazy

@@ -71,7 +71,6 @@ public class CSVImport {
 	private Button keepCr;
 	private Text textEscape;
 	private Label lblNewLabel;
-	private Label label;
 	private Label labelError;
 	private Label lblMessage;
 	private Button btnClipboardData;
@@ -385,9 +384,6 @@ public class CSVImport {
 		gd_spinner.heightHint = 25;
 		spinner.setLayoutData(gd_spinner);
 		spinner.setMaximum(1000000);
-
-		label = new Label(sShell, SWT.SEPARATOR | SWT.HORIZONTAL);
-		label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
 
 		lblMessage = new Label(sShell, SWT.NONE);
 		GridData gd_lblMessage = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);

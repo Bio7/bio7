@@ -23,10 +23,11 @@ http://bio7.org
 
    <launcherArgs>
       <programArgs>-clearPersistedState
--vm
-jre/lib/jli/libjli.dylib
       </programArgs>
-      <vmArgs>-Xms1024m -Xmx1024m
+      <programArgsMac>-vm
+jre/lib/jli/libjli.dylib
+      </programArgsMac>
+      <vmArgs>-Xms1024m -Xmx4096m
       </vmArgs>
       <vmArgsMac>-XstartOnFirstThread
 -Dprism.order=sw
@@ -59,7 +60,6 @@ jre/lib/jli/libjli.dylib
 
    <vm>
    </vm>
-
 
    <plugins>
       <plugin id="Bundled_R"/>

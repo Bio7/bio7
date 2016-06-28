@@ -6,11 +6,13 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
@@ -92,6 +94,9 @@ public class Application implements IApplication {
 			saveWorkspace();
            /*Do not close display. Changed for Mac to close the JOGL pperspectives!*/
 			//display.dispose();
+			Location instanceLoc = Platform.getInstanceLocation();
+            if (instanceLoc != null)
+            	instanceLoc.release();
 		}
 	}
 
