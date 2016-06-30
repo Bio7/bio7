@@ -237,7 +237,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 	private IContributionItem showViewItem;
 
-	private IWorkbenchAction switchWorkspaceAction;
+	//private IWorkbenchAction switchWorkspaceAction;
 
 	private IWorkbenchAction refreshAction;
 
@@ -438,8 +438,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		generateControllerAction = new GenerateControllerAction("Generate Controller Class");
 		register(generateControllerAction);
 		
-		switchWorkspaceAction = IDEActionFactory.OPEN_WORKSPACE.create(window);
-		register(switchWorkspaceAction);
+		/*switchWorkspaceAction = IDEActionFactory.OPEN_WORKSPACE.create(window);
+		register(switchWorkspaceAction);*/
 		
 		refreshAction = ActionFactory.REFRESH.create(window);
 		register(refreshAction);
@@ -778,7 +778,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		fileMenu.add(saveall);
 		fileMenu.add(saveas);
 		fileMenu.add(refreshAction);
-		fileMenu.add(switchWorkspaceAction);
+		//fileMenu.add(switchWorkspaceAction);
 		fileMenu.add(new Separator());
 		fileMenu.add(Import);
 		fileMenu.add(Export);
