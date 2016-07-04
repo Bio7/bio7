@@ -1116,10 +1116,10 @@ public class RShellView extends ViewPart {
 				FontData newFont = fd.open();
 				if (newFont == null)
 					return;
-				textConsole.setFont(new Font(Display.getDefault(), newFont));
-				listShell.setFont(new Font(Display.getDefault(), newFont));
-				textConsole.setForeground(new Color(Display.getDefault(), fd.getRGB()));
-				listShell.setForeground(new Color(Display.getDefault(), fd.getRGB()));
+				textConsole.setFont(new Font(Util.getDisplay(), newFont));
+				listShell.setFont(new Font(Util.getDisplay(), newFont));
+				textConsole.setForeground(new Color(Util.getDisplay(), fd.getRGB()));
+				listShell.setForeground(new Color(Util.getDisplay(), fd.getRGB()));
 				PreferenceConverter.setValue(store, "RShellFonts", newFont);
 
 			}
@@ -2544,13 +2544,13 @@ public class RShellView extends ViewPart {
 
 			}
 		});
-		listShell.setFont(new Font(Display.getCurrent(), currentFont));
+		listShell.setFont(new Font(Util.getDisplay(), currentFont));
 
 		sashForm_1.setWeights(new int[] { 1 });
 
 		textConsole = new Text(sashForm, SWT.WRAP | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
 
-		textConsole.setFont(new Font(Display.getCurrent(), currentFont));
+		textConsole.setFont(new Font(Util.getDisplay(), currentFont));
 		sashForm.setWeights(new int[] { 233, 319 });
 		target.addDropListener(new DropTargetAdapter() {
 			public void drop(DropTargetEvent event) {

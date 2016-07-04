@@ -340,26 +340,16 @@ public class ScanClassPath {
 			}
 
 			else if (OS.equals("Linux")) {
-				String loc = bundle.getLocation().substring(15);
-				// System.out.println("loc: " + loc);
+				String loc = Platform.getInstallLocation().getURL() + "/plugins/";
+				String[] bundleName = bundle.toString().split(" ");
+				String locat = (loc + bundleName[0] + ".jar");
+				locat = locat.replace("file", "");
 
-				/*
-				 * Eclipse PDE and exported RCP paths are different (absolute
-				 * vs. relative)!
-				 */
-				if (loc.startsWith("/")) {
-					loc = loc.substring(1);
-				}
-				java.nio.file.Path path;
-				/*
-				 * Calculate an absolute path to the resource. Exported RCP has
-				 * a relative path!
-				 */
-				path = Paths.get(loc);
+				// java.nio.file.Path path = Paths.get(loc);
 
 				// System.out.println("path:" + File.pathSeparator +
 				// path.toAbsolutePath().toString());
-				buf.add(File.pathSeparator + path);
+				buf.add(locat);
 			}
 
 			// System.out.println(File.pathSeparator +loc);

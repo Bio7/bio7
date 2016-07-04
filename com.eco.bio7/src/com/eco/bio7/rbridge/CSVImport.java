@@ -117,6 +117,8 @@ public class CSVImport {
 	 */
 	void createSShell() {
 		sShell = new Shell(SWT.CLOSE | SWT.RESIZE | SWT.TITLE);
+		/*On Linux GTK this flag cares about the right background!*/
+		sShell.setBackgroundMode(SWT.INHERIT_DEFAULT);
 		sShell.setText("CSV Reader");
 		sShell.setSize(new Point(518, 812));
 		sShell.setLayout(new GridLayout(3, true));
