@@ -118,7 +118,7 @@ public class RMarkdownWizardPage extends WizardPage {
 		lblNewLabel_2.setText("Format");
 
 		combo = new Combo(container, SWT.NONE);
-		combo.setItems(new String[] { "HTML", "PDF", "Word", "HTML (Presentation ioslides)",
+		combo.setItems(new String[] { "HTML", "PDF", "Word","ODT","RTF","Md","Github", "HTML (Presentation ioslides)",
 				"HTML (Presentation slidy)", "PDF (Presentation Beamer)" });
 		combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		combo.select(0);

@@ -130,6 +130,18 @@ public class RMarkdownPluginWizard extends Wizard implements INewWizard {
 		case "Word":
 			format = "word_document";
 			break;
+		case "ODT":
+			format = "odt_document";
+			break;
+		case "RTF":
+			format = "rtf_document";
+			break;
+		case "Md":
+			format = "md_document";
+			break;
+		case "Github":
+			format = "github_document";
+			break;
 		case "HTML (Presentation ioslides)":
 			format = "ioslides_presentation";
 			break;
