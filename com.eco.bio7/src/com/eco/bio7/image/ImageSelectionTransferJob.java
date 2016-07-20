@@ -56,7 +56,7 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 	public ImageSelectionTransferJob(int selectedImageType) {
 		super("Transfer progress....");
 		this.transferType = selectedImageType;
-		System.out.println(transferType);
+		// System.out.println(transferType);
 	}
 
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
@@ -83,7 +83,8 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 	public void transfer() {
 
 		if (transferType == 3) {
-			Bio7Dialog.message("RGB special transfer not supported!\nPlease split the RGB channels\nand transfer the(layer) selection in e.g. byte mode!");
+			Bio7Dialog.message(
+					"RGB special transfer not supported!\nPlease split the RGB channels\nand transfer the(layer) selection in e.g. byte mode!");
 			return;
 		}
 
@@ -97,6 +98,10 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 		// int imageCount = WindowManager.getImageCount();
 		ImagePlus impDefault = WindowManager.getCurrentWindow().getImagePlus();
 		Roi roiDefault = impDefault.getRoi();
+		if (roiDefault == null) {
+			Bio7Dialog.message("No selection available!");
+			return;
+		}
 		Display display = PlatformUI.getWorkbench().getDisplay();
 		display.syncExec(new Runnable() {
 
@@ -137,13 +142,11 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 			});
 
 			int sig = input2;
-			
+
 			/* Get the image processor of the image ! */
 			ImageProcessor ipSize = impDefault.getProcessor();
 			int w = ipSize.getWidth();
 			int h = ipSize.getHeight();
-
-			
 
 			try {
 				con.eval("imageSizeY<-" + h);
@@ -169,10 +172,11 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 
 				// ImagePlus imp = WindowManager.getImage(title);
 				imp.setRoi(roiDefault);
-				/*if (roiDefault != null && !roiDefault.isArea()) {
-					Bio7Dialog.message("The command require\n" + "an area selection, or no selection.");
-					return;
-				}*/
+				/*
+				 * if (roiDefault != null && !roiDefault.isArea()) {
+				 * Bio7Dialog.message("The command require\n" +
+				 * "an area selection, or no selection."); return; }
+				 */
 				if (transferType == 0) {
 					valuesDouble = getROIPixelsDouble(imp, roiDefault);
 
@@ -262,7 +266,8 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 
 				} else if (transferType == 1) {
 					try {
-						con.eval("" + input + "<-cbind(rep(c(as.integer(" + sig + ")),length(" + input + "[,1]))," + input + ")");
+						con.eval("" + input + "<-cbind(rep(c(as.integer(" + sig + ")),length(" + input + "[,1])),"
+								+ input + ")");
 						con.eval("colnames(" + input + ")[1] <- \"Class\"");
 					} catch (RserveException e1) {
 						// TODO Auto-generated catch block
@@ -271,7 +276,8 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 
 				} else if (transferType == 2) {
 					try {
-						con.eval("" + input + "<-cbind(rep(c(as.raw(" + sig + ")),length(" + input + "[,1]))," + input + ")");
+						con.eval("" + input + "<-cbind(rep(c(as.raw(" + sig + ")),length(" + input + "[,1]))," + input
+								+ ")");
 						con.eval("colnames(" + input + ")[1] <- \"Class\"");
 					} catch (RserveException e1) {
 						// TODO Auto-generated catch block
@@ -286,14 +292,14 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 		Bio7Dialog.message("Selected Pixels transferred to R!");
 		imp = null;
 	}
-	
+
 	private ArrayList<Double> getROIPixelsDouble(ImagePlus imp, Roi roi) {
 		ImageProcessor ip = imp.getProcessor();
 		ArrayList<Double> values = new ArrayList<Double>();
 		for (Point p : roi.getContainedPoints()) {
 
 			values.add(new Double(ip.getPixelValue(p.x, p.y)));
-			System.out.println(ip.getPixelValue(p.x, p.y));
+
 		}
 		return values;
 	}
@@ -318,65 +324,43 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 		return values;
 	}
 
-	/*private ArrayList<Double> getROIPixelsDouble(ImagePlus imp, Roi roi) {
-		ImageProcessor ip = imp.getProcessor();
-		ImageProcessor mask = roi != null ? roi.getMask() : null;
-		Rectangle r = roi != null ? roi.getBounds() : new Rectangle(0, 0, ip.getWidth(), ip.getHeight());
-
-		int count = 0;
-		ArrayList<Double> values = new ArrayList<Double>();
-		for (int y = 0; y < r.height; y++) {
-			for (int x = 0; x < r.width; x++) {
-				if (mask == null || mask.getPixel(x, y) != 0) {
-					count++;
-
-					// ip.set(x + r.x, y + r.y, 0);
-					values.add(new Double(ip.getPixelValue(x + r.x, y + r.y)));
-				}
-			}
-		}
-		return values;
-	}
-
-	private ArrayList<Integer> getROIPixelsInteger(ImagePlus imp, Roi roi) {
-		ImageProcessor ip = imp.getProcessor();
-		ImageProcessor mask = roi != null ? roi.getMask() : null;
-		Rectangle r = roi != null ? roi.getBounds() : new Rectangle(0, 0, ip.getWidth(), ip.getHeight());
-
-		int count = 0;
-		ArrayList<Integer> values = new ArrayList<Integer>();
-		for (int y = 0; y < r.height; y++) {
-			for (int x = 0; x < r.width; x++) {
-				if (mask == null || mask.getPixel(x, y) != 0) {
-					count++;
-
-					// ip.set(x + r.x, y + r.y, 0);
-					values.add(new Integer(ip.getPixel(x + r.x, y + r.y)));
-				}
-			}
-		}
-		return values;
-	}
-
-	private ArrayList<Byte> getROIPixelsByte(ImagePlus imp, Roi roi) {
-		ImageProcessor ip = imp.getProcessor();
-		ImageProcessor mask = roi != null ? roi.getMask() : null;
-		Rectangle r = roi != null ? roi.getBounds() : new Rectangle(0, 0, ip.getWidth(), ip.getHeight());
-
-		int count = 0;
-		ArrayList<Byte> values = new ArrayList<Byte>();
-		for (int y = 0; y < r.height; y++) {
-			for (int x = 0; x < r.width; x++) {
-				if (mask == null || mask.getPixel(x, y) != 0) {
-					count++;
-
-					// ip.set(x + r.x, y + r.y, 0);
-					values.add(new Byte((byte) (ip.getPixel(x + r.x, y + r.y))));
-				}
-			}
-		}
-		return values;
-	}*/
+	/*
+	 * private ArrayList<Double> getROIPixelsDouble(ImagePlus imp, Roi roi) {
+	 * ImageProcessor ip = imp.getProcessor(); ImageProcessor mask = roi != null
+	 * ? roi.getMask() : null; Rectangle r = roi != null ? roi.getBounds() : new
+	 * Rectangle(0, 0, ip.getWidth(), ip.getHeight());
+	 * 
+	 * int count = 0; ArrayList<Double> values = new ArrayList<Double>(); for
+	 * (int y = 0; y < r.height; y++) { for (int x = 0; x < r.width; x++) { if
+	 * (mask == null || mask.getPixel(x, y) != 0) { count++;
+	 * 
+	 * // ip.set(x + r.x, y + r.y, 0); values.add(new Double(ip.getPixelValue(x
+	 * + r.x, y + r.y))); } } } return values; }
+	 * 
+	 * private ArrayList<Integer> getROIPixelsInteger(ImagePlus imp, Roi roi) {
+	 * ImageProcessor ip = imp.getProcessor(); ImageProcessor mask = roi != null
+	 * ? roi.getMask() : null; Rectangle r = roi != null ? roi.getBounds() : new
+	 * Rectangle(0, 0, ip.getWidth(), ip.getHeight());
+	 * 
+	 * int count = 0; ArrayList<Integer> values = new ArrayList<Integer>(); for
+	 * (int y = 0; y < r.height; y++) { for (int x = 0; x < r.width; x++) { if
+	 * (mask == null || mask.getPixel(x, y) != 0) { count++;
+	 * 
+	 * // ip.set(x + r.x, y + r.y, 0); values.add(new Integer(ip.getPixel(x +
+	 * r.x, y + r.y))); } } } return values; }
+	 * 
+	 * private ArrayList<Byte> getROIPixelsByte(ImagePlus imp, Roi roi) {
+	 * ImageProcessor ip = imp.getProcessor(); ImageProcessor mask = roi != null
+	 * ? roi.getMask() : null; Rectangle r = roi != null ? roi.getBounds() : new
+	 * Rectangle(0, 0, ip.getWidth(), ip.getHeight());
+	 * 
+	 * int count = 0; ArrayList<Byte> values = new ArrayList<Byte>(); for (int y
+	 * = 0; y < r.height; y++) { for (int x = 0; x < r.width; x++) { if (mask ==
+	 * null || mask.getPixel(x, y) != 0) { count++;
+	 * 
+	 * // ip.set(x + r.x, y + r.y, 0); values.add(new Byte((byte) (ip.getPixel(x
+	 * + r.x, y + r.y)))); } } } return values; }
+	 */
 
 	public void aboutToRun(IJobChangeEvent event) {
 
