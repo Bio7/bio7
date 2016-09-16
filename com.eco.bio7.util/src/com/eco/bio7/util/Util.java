@@ -1,5 +1,6 @@
 package com.eco.bio7.util;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -12,6 +13,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
 public class Util {
+	private static Color col;
 
 	/**
 	 * A method to detetct the Operating System.
@@ -34,8 +36,7 @@ public class Util {
 	/*
 	 * From:
 	 * http://stackoverflow.com/questions/4748673/how-can-i-check-the-bitness-of
-	 * -my-os-using-java-j2se-not-os-arch/5940770#5940770 
-	 * Author: ChrisH:
+	 * -my-os-using-java-j2se-not-os-arch/5940770#5940770 Author: ChrisH:
 	 * http://stackoverflow.com/users/71109/chrish
 	 */
 	/**
@@ -68,7 +69,8 @@ public class Util {
 		// Filter the extension of the file.
 		FilenameFilter filter = new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2]) || name.endsWith(extensions[3]) || name.endsWith(extensions[4]) || name.endsWith(extensions[5]));
+				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2]) || name.endsWith(extensions[3]) || name.endsWith(extensions[4])
+						|| name.endsWith(extensions[5]));
 			}
 		};
 
@@ -164,6 +166,30 @@ public class Util {
 		if (display == null)
 			display = Display.getDefault();
 		return display;
+	}
+
+	/**
+	 * A method to return the default color as an AWT color.
+	 * 
+	 * @return a color
+	 */
+	public static Color getSWTBackgroundToAWT() {
+
+		Display display = PlatformUI.getWorkbench().getDisplay();
+		display.syncExec(new Runnable() {
+
+			public void run() {
+
+				org.eclipse.swt.graphics.Color colswt = getShell().getBackground();
+				int r = colswt.getRed();
+				int g = colswt.getGreen();
+				int b = colswt.getBlue();
+				col = new Color(r, g, b);
+
+			}
+		});
+		return col;
+
 	}
 
 }

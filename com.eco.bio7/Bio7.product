@@ -170,39 +170,39 @@ jre/lib/jli/libjli.dylib
    </plugins>
 
    <features>
-      <feature id="com.eco.bio7.albireo.feature" version="2.1.0.qualifier"/>
-      <feature id="com.eco.bio7.browser.feature" version="2.0.0.qualifier"/>
-      <feature id="com.eco.bio7.core.feature" version="2.0.0.qualifier"/>
-      <feature id="com.eco.bio7.edit.feature" version="2.0.0.qualifier"/>
-      <feature id="com.eco.bio7.floweditor.feature" version="2.0.0.qualifier"/>
-      <feature id="com.eco.bio7.javaedit.feature" version="2.0.0.qualifier"/>
-      <feature id="com.eco.bio7.r.feature" version="3.3.1.qualifier"/>
-      <feature id="com.eco.bio7.image.feature" version="1.51.4.qualifier"/>
-      <feature id="com.eco.bio7.libs.feature" version="2.0.0.qualifier"/>
-      <feature id="com.eco.bio7.redit.feature" version="2.0.0.qualifier"/>
-      <feature id="com.eco.bio7.util.feature" version="2.0.0.qualifier"/>
-      <feature id="com.eco.bio7.worldwind.feature" version="2.0.0.qualifier"/>
-      <feature id="com.eco.bio7.pythonedit.feature" version="2.0.0.qualifier"/>
-      <feature id="com.eco.bio7.scenebuilder.feature" version="2.2.0.qualifier"/>
+      <feature id="com.eco.bio7.albireo.feature"/>
+      <feature id="com.eco.bio7.browser.feature"/>
+      <feature id="com.eco.bio7.core.feature"/>
+      <feature id="com.eco.bio7.edit.feature"/>
+      <feature id="com.eco.bio7.floweditor.feature"/>
+      <feature id="com.eco.bio7.javaedit.feature"/>
+      <feature id="com.eco.bio7.r.feature"/>
+      <feature id="com.eco.bio7.image.feature"/>
+      <feature id="com.eco.bio7.libs.feature"/>
+      <feature id="com.eco.bio7.redit.feature"/>
+      <feature id="com.eco.bio7.util.feature"/>
+      <feature id="com.eco.bio7.worldwind.feature"/>
+      <feature id="com.eco.bio7.pythonedit.feature"/>
+      <feature id="com.eco.bio7.scenebuilder.feature"/>
       <feature id="org.eclipse.e4.rcp"/>
-      <feature id="com.eco.bio7.os.feature" version="2.0.0.qualifier"/>
+      <feature id="com.eco.bio7.os.feature"/>
       <feature id="org.eclipse.ecf.filetransfer.httpclient4.feature"/>
       <feature id="org.eclipse.ecf.core.ssl.feature"/>
       <feature id="org.eclipse.ecf.filetransfer.ssl.feature"/>
       <feature id="org.eclipse.ecf.filetransfer.feature"/>
       <feature id="org.eclipse.ecf.core.feature"/>
       <feature id="org.eclipse.ecf.filetransfer.httpclient4.ssl.feature"/>
-      <feature id="com.eco.bio7.themes.feature" version="2.0.0.qualifier"/>
-      <feature id="net.sourceforge.texlipse" version="1.5.0"/>
-      <feature id="com.eco.bio7.markdownedit.feature" version="1.0.0.qualifier"/>
+      <feature id="com.eco.bio7.themes.feature"/>
+      <feature id="net.sourceforge.texlipse"/>
+      <feature id="com.eco.bio7.markdownedit.feature"/>
       <feature id="org.eclipse.equinox.p2.core.feature" version="1.3.200.v20160606-1311"/>
       <feature id="org.eclipse.equinox.p2.rcp.feature" version="1.2.200.v20160606-1311"/>
       <feature id="org.eclipse.jdt" version="3.12.0.v20160606-1100"/>
       <feature id="org.eclipse.rcp" version="4.6.0.v20160606-1342"/>
       <feature id="org.eclipse.emf.ecore" version="2.12.0.v20160420-0247"/>
       <feature id="org.eclipse.emf.common" version="2.12.0.v20160420-0247"/>
-      <feature id="org.eclipse.nebula.widgets.grid.feature" version="1.0.0.qualifier"/>
-      <feature id="com.eco.bio7.imagej2.feature" version="1.0.0.qualifier"/>
+      <feature id="org.eclipse.nebula.widgets.grid.feature"/>
+      <feature id="com.eco.bio7.imagej2.feature"/>
    </features>
 
 
