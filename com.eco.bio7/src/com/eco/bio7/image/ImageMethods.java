@@ -2677,7 +2677,7 @@ public class ImageMethods extends ViewPart {
 		}
 	}
 
-	private ArrayList<Double> getROIPixels(ImagePlus imp, Roi roi) {
+	/*private ArrayList<Double> getROIPixels(ImagePlus imp, Roi roi) {
 		ImageProcessor ip = imp.getProcessor();
 		ImageProcessor mask = roi != null ? roi.getMask() : null;
 		Rectangle r = roi != null ? roi.getBounds() : new Rectangle(0, 0, ip.getWidth(), ip.getHeight());
@@ -2695,7 +2695,7 @@ public class ImageMethods extends ViewPart {
 			}
 		}
 		return values;
-	}
+	}*/
 
 	public void dispose() {
 
