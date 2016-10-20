@@ -21,100 +21,93 @@ import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.reditors.REditor;
 
 public class REditorListener {
-	
-	
-	
-	public IPartListener2 listen(){
-		
-	
-		IPartListener2 list=new IPartListener2() {
 
-		@Override
-		public void partActivated(IWorkbenchPartReference partRef) {
-			
-			ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
-			if (con != null) {
+	public IPartListener2 listen() {
 
-				IEditorPart editor = partRef.getPage().getActiveEditor();
-				if (editor instanceof REditor) {
-					REditor reditor = (REditor) editor;
-					IResource resource = (IResource) reditor.getEditorInput().getAdapter(IResource.class);
-					String type = "com.eco.bio7.redit.debugMarker";
+		IPartListener2 list = new IPartListener2() {
 
-					IMarker[] markers = null;
-					try {
-						markers = resource.findMarkers(type, true, IResource.DEPTH_INFINITE);
-					} catch (CoreException e) {
-						e.printStackTrace();
-					}
-
-					if (markers.length > 0) {
-
-						con.setRDebugToolbarActions();
-					} else {
-						con.deleteDebugToolbarActions();
-					}
-
-				} else if (editor !=null) {
-					if(con!=null){
-					con.deleteDebugToolbarActions();
-					}
-
-				}
-			}
-
-		}
-
-		@Override
-		public void partBroughtToTop(IWorkbenchPartReference partRef) {
-
-		}
-
-		@Override
-		public void partClosed(IWorkbenchPartReference partRef) {
-			IEditorPart editor = partRef.getPage().getActiveEditor();
-			if (editor == null) {
+			@Override
+			public void partActivated(IWorkbenchPartReference partRef) {
 
 				ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
 				if (con != null) {
-					con.deleteDebugToolbarActions();
+
+					IEditorPart editor = partRef.getPage().getActiveEditor();
+					if (editor instanceof REditor) {
+						REditor reditor = (REditor) editor;
+						IResource resource = (IResource) reditor.getEditorInput().getAdapter(IResource.class);
+						String type = "com.eco.bio7.redit.debugMarker";
+
+						IMarker[] markers = null;
+						try {
+							markers = resource.findMarkers(type, true, IResource.DEPTH_INFINITE);
+						} catch (CoreException e) {
+							e.printStackTrace();
+						}
+
+						if (markers.length > 0) {
+
+							con.setRDebugToolbarActions();
+						} else {
+							con.deleteDebugToolbarActions();
+						}
+
+					} else if (editor != null) {
+						if (con != null) {
+							con.deleteDebugToolbarActions();
+						}
+
+					}
 				}
+
 			}
 
-		}
+			@Override
+			public void partBroughtToTop(IWorkbenchPartReference partRef) {
 
-		@Override
-		public void partDeactivated(IWorkbenchPartReference partRef) {
+			}
 
-			
+			@Override
+			public void partClosed(IWorkbenchPartReference partRef) {
+				IEditorPart editor = partRef.getPage().getActiveEditor();
+				if (editor == null) {
 
-		}
+					ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
+					if (con != null) {
+						con.deleteDebugToolbarActions();
+					}
+				}
 
-		@Override
-		public void partOpened(IWorkbenchPartReference partRef) {
+			}
 
-		}
+			@Override
+			public void partDeactivated(IWorkbenchPartReference partRef) {
 
-		@Override
-		public void partHidden(IWorkbenchPartReference partRef) {
-			
+			}
 
-		}
+			@Override
+			public void partOpened(IWorkbenchPartReference partRef) {
 
-		@Override
-		public void partVisible(IWorkbenchPartReference partRef) {
-			
+			}
 
-		}
+			@Override
+			public void partHidden(IWorkbenchPartReference partRef) {
 
-		@Override
-		public void partInputChanged(IWorkbenchPartReference partRef) {
-			
+			}
 
-		}
+			@Override
+			public void partVisible(IWorkbenchPartReference partRef) {
 
-	};
-	
-	return list;
+			}
 
-}}
+			@Override
+			public void partInputChanged(IWorkbenchPartReference partRef) {
+
+			}
+
+		};
+
+		return list;
+
+	}
+}

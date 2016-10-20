@@ -12,7 +12,6 @@
 package com.eco.bio7.rcp;
 
 import java.io.File;
-import java.io.FilenameFilter;
 
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.jface.action.Action;
@@ -38,33 +37,31 @@ import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import org.eclipse.ui.actions.ContributionItemFactory;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
-import org.eclipse.ui.ide.IDEActionFactory;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.registry.ActionSetRegistry;
 import org.eclipse.ui.internal.registry.IActionSetDescriptor;
 import org.eclipse.ui.views.IViewDescriptor;
 import org.eclipse.ui.views.IViewRegistry;
-
 import com.eco.bio7.Bio7Plugin;
-import com.eco.bio7.actions.BeanShellClearAction;
 import com.eco.bio7.actions.BeanShellImportAction;
 import com.eco.bio7.actions.Compile;
 import com.eco.bio7.actions.CounterReset;
 import com.eco.bio7.actions.EnableSelection;
 import com.eco.bio7.actions.ExecuteImageMacroAction;
 import com.eco.bio7.actions.ExecuteScriptAction;
+//import com.eco.bio7.actions.FastOpenScriptAction;
 import com.eco.bio7.actions.FlowEditorAction;
 import com.eco.bio7.actions.FlowEditorTestAction;
 import com.eco.bio7.actions.FlowExternalStartAction;
 import com.eco.bio7.actions.FlowStopAction;
 import com.eco.bio7.actions.Interpret;
 import com.eco.bio7.actions.InterpretPython;
+import com.eco.bio7.actions.LibreOfficeConnection;
 import com.eco.bio7.actions.OfficeOpenAction;
 import com.eco.bio7.actions.OfficeSendValueAction;
 import com.eco.bio7.actions.OfficeValueAction;
 import com.eco.bio7.actions.OpenBio7BrowserAction;
 import com.eco.bio7.actions.OpenViewMenuAction;
-import com.eco.bio7.actions.LibreOfficeConnection;
 import com.eco.bio7.actions.Random;
 import com.eco.bio7.actions.ResetField;
 import com.eco.bio7.actions.SetupDiscrete;
@@ -240,6 +237,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	//private IWorkbenchAction switchWorkspaceAction;
 
 	private IWorkbenchAction refreshAction;
+
+	//private FastOpenScriptAction fastOpenScriptAction;
 
 	public ApplicationActionBarAdvisor(IActionBarConfigurer configurer) {
 		super(configurer);
@@ -440,6 +439,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		
 		/*switchWorkspaceAction = IDEActionFactory.OPEN_WORKSPACE.create(window);
 		register(switchWorkspaceAction);*/
+		
+		/*fastOpenScriptAction = new FastOpenScriptAction("Script");
+		register(fastOpenScriptAction);*/
 		
 		refreshAction = ActionFactory.REFRESH.create(window);
 		register(refreshAction);
@@ -906,6 +908,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		toolbar.add(libreofficeconnection);
 		toolbar.add(startrserve);
 		toolbar.add(print);
+		//toolbar.add(fastOpenScriptAction);
 
 	}
 

@@ -64,6 +64,7 @@ jre/lib/jli/libjli.dylib
    <vm>
    </vm>
 
+
    <plugins>
       <plugin id="Bundled_R"/>
       <plugin id="com.eco.bio7"/>
@@ -197,8 +198,8 @@ jre/lib/jli/libjli.dylib
       <feature id="com.eco.bio7.markdownedit.feature"/>
       <feature id="org.eclipse.equinox.p2.core.feature"/>
       <feature id="org.eclipse.equinox.p2.rcp.feature"/>
-      <feature id="org.eclipse.emf.ecore" version="2.12.0.v20160420-0247"/>
-      <feature id="org.eclipse.emf.common" version="2.12.0.v20160420-0247"/>
+      <feature id="org.eclipse.emf.ecore"/>
+      <feature id="org.eclipse.emf.common"/>
       <feature id="org.eclipse.nebula.widgets.grid.feature"/>
       <feature id="com.eco.bio7.imagej2.feature"/>
       <feature id="org.eclipse.rcp"/>
