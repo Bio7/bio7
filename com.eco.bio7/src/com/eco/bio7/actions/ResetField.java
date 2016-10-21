@@ -28,7 +28,7 @@ public class ResetField extends Action implements IMenuCreator {
 		setId("com.eco.bio7.empty_field");
 		setActionDefinitionId("com.eco.bio7.empty_field");
 		setImageDescriptor(com.eco.bio7.Bio7Plugin
-				.getImageDescriptor("/icons/feld_null.gif"));
+				.getImageDescriptor("icons/maintoolbar/reset_field.png"));
 		setMenuCreator(this);
 	}
 

@@ -22,7 +22,7 @@ public class SetupDiscrete extends Action {
 
 		setId("com.eco.bio7.setup_discrete");
 
-		setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/setup.gif"));
+		setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("icons/maintoolbar/setup.png"));
 		this.setToolTipText("Setup - Invokes the Java setup method if compiled available!");
 	}
 
