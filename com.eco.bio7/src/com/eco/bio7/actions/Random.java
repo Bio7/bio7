@@ -37,7 +37,7 @@ public class Random extends Action implements IMenuCreator {
 
 		setId("com.eco.bio7.random");
 
-		setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/zufall.gif"));
+		setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/maintoolbar/random.png"));
 		setMenuCreator(this);
 	}
 
