@@ -14,7 +14,7 @@ public class LibreOfficeConnection extends Action {
 		super(text);
 		this.window = window;
 		setId("com.eco.bio7.openoffice_connection");
-		setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/libre_office.gif"));
+		setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/maintoolbar/libre_office.png"));
 	}
 
 	public void run() {

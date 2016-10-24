@@ -20,7 +20,7 @@ public class CounterReset extends Action {
 		
 		setId("com.eco.bio7.counter_reset");
 		
-		setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/counter_null.gif"));
+		setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/maintoolbar/counter_reset.png"));
 	}
 
 	public void run() {

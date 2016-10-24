@@ -1573,8 +1573,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				BIO7_PATH + "resource_persp.gif", false);
 		/* Image for the printer! */
 		declareWorkbenchImage(bio7, org.eclipse.ui.ISharedImages.IMG_ETOOL_PRINT_EDIT_DISABLED,
-				BIO7_PATH + "print_edit.gif", false);
-		declareWorkbenchImage(bio7, org.eclipse.ui.ISharedImages.IMG_ETOOL_PRINT_EDIT, BIO7_PATH + "print_edit.gif",
+				BIO7_PATH + "print.png", false);
+		declareWorkbenchImage(bio7, org.eclipse.ui.ISharedImages.IMG_ETOOL_PRINT_EDIT, BIO7_PATH + "print.png",
 				false);
 		/* Image for the folders! */
 		declareWorkbenchImage(bio7, org.eclipse.ui.ISharedImages.IMG_OBJ_FOLDER, BIO7_PATH + "prj_obj.gif", false);

@@ -59,7 +59,7 @@ public class StartRServe extends Action implements IMenuCreator {
 		setId("com.eco.bio7.start_rserve");
 
 		setActionDefinitionId("com.eco.bio7.Start_RServe_Action");
-		setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/R.gif"));
+		setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/maintoolbar/R.png"));
 		setMenuCreator(this);
 
 	}
