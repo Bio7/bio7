@@ -16,9 +16,9 @@
    id="svg243247"
    version="1.1"
    inkscape:version="0.91 r13725"
-   inkscape:export-filename="C:\Users\elk\Downloads\playpause.png"
-   inkscape:export-xdpi="0.54623657"
-   inkscape:export-ydpi="0.54623657"
+   inkscape:export-filename="C:\Users\Marcel\git\bio7\com.eco.bio7\icons\maintoolbar\play_pause@2x.png"
+   inkscape:export-xdpi="0.79452586"
+   inkscape:export-ydpi="0.79452586"
    sodipodi:docname="Button.svg">
   <defs
      id="defs243249">
@@ -173,6 +173,19 @@
          result="composite2"
          id="feComposite324094" />
     </filter>
+    <filter
+       inkscape:collect="always"
+       style="color-interpolation-filters:sRGB"
+       id="filter4213"
+       x="-0.045186847"
+       width="1.0903737"
+       y="-0.089261809"
+       height="1.1785236">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="65.365189"
+         id="feGaussianBlur4215" />
+    </filter>
   </defs>
   <sodipodi:namedview
      id="base"
@@ -182,15 +195,15 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.16"
-     inkscape:cx="2596.2902"
-     inkscape:cy="2193.7648"
+     inkscape:cx="1129.4961"
+     inkscape:cy="1774.8594"
      inkscape:document-units="px"
-     inkscape:current-layer="layer10"
+     inkscape:current-layer="layer9"
      showgrid="false"
      showguides="true"
      inkscape:guide-bbox="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1140"
+     inkscape:window-width="1536"
+     inkscape:window-height="801"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1">
@@ -218,7 +231,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -249,7 +262,18 @@
        y="99.342163"
        transform="matrix(1.0401821,0,0,1.043655,-69.400827,-68.554218)"
        ry="491.83755" />
-  </g>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot4293"
+       style="fill:black;stroke:none;stroke-opacity:1;stroke-width:1px;stroke-linejoin:miter;stroke-linecap:butt;fill-opacity:1;font-family:sans-serif;font-style:normal;font-weight:normal;font-size:180px;line-height:125%;letter-spacing:0px;word-spacing:0px;"><flowRegion
+         id="flowRegion4295"><rect
+           id="rect4297"
+           width="543.75"
+           height="643.75"
+           x="-1431.25"
+           y="1374.8031"
+           style="font-size:180px;" /></flowRegion><flowPara
+         id="flowPara4299"></flowPara></flowRoot>  </g>
   <g
      inkscape:groupmode="layer"
      id="layer11"
@@ -283,13 +307,14 @@
      id="layer10"
      inkscape:label="glow">
     <rect
-       style="opacity:1;fill:url(#linearGradient321053);fill-opacity:1;stroke:url(#linearGradient321045);stroke-width:0;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:70.19999695;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;fill:url(#linearGradient321053);fill-opacity:1;stroke:url(#linearGradient321045);stroke-width:0;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:70.19999695;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;filter:url(#filter4213)"
        id="rect321037"
        width="3471.7283"
        height="1757.4868"
        x="101.06865"
        y="120.9776"
        ry="395.64804"
-       rx="0" />
+       rx="0"
+       transform="matrix(1.0072428,0,0,0.84005287,-13.304546,6.7774987)" />
   </g>
 </svg>
