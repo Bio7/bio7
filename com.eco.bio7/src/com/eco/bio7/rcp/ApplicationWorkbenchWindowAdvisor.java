@@ -1548,6 +1548,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		final String ICONS_PATH = "$nl$/icons/full/";
 		final String BIO7_PATH = "/icons/workbench/";
+		final String BIO7_TOOLBAR_PATH = "/icons/maintoolbar/";
 		final String PATH_ELOCALTOOL = ICONS_PATH + "elcl16/";
 		// Enabled toolbar icons.
 		final String PATH_ETOOL = ICONS_PATH + "etool16/"; // Enabled
@@ -1566,18 +1567,18 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		Bundle bio7 = Platform.getBundle("com.eco.bio7");
 		/* Image for the projects! */
-		declareWorkbenchImage(bio7, IDE.SharedImages.IMG_OBJ_PROJECT, BIO7_PATH + "prj_obj.gif", false);
+		declareWorkbenchImage(bio7, IDE.SharedImages.IMG_OBJ_PROJECT, BIO7_PATH + "prj_obj.png", false);
 		declareWorkbenchImage(bio7, IDE.SharedImages.IMG_OBJ_PROJECT_CLOSED, BIO7_PATH + "file.gif", false);
 
 		declareWorkbenchImage(bio7, IDEInternalWorkbenchImages.IMG_WIZBAN_NEWFOLDER_WIZ,
 				BIO7_PATH + "resource_persp.gif", false);
 		/* Image for the printer! */
 		declareWorkbenchImage(bio7, org.eclipse.ui.ISharedImages.IMG_ETOOL_PRINT_EDIT_DISABLED,
-				BIO7_PATH + "print.png", false);
-		declareWorkbenchImage(bio7, org.eclipse.ui.ISharedImages.IMG_ETOOL_PRINT_EDIT, BIO7_PATH + "print.png",
+				BIO7_TOOLBAR_PATH + "print_file.png", false);
+		declareWorkbenchImage(bio7, org.eclipse.ui.ISharedImages.IMG_ETOOL_PRINT_EDIT, BIO7_TOOLBAR_PATH + "print_file.png",
 				false);
 		/* Image for the folders! */
-		declareWorkbenchImage(bio7, org.eclipse.ui.ISharedImages.IMG_OBJ_FOLDER, BIO7_PATH + "prj_obj.gif", false);
+		declareWorkbenchImage(bio7, org.eclipse.ui.ISharedImages.IMG_OBJ_FOLDER, BIO7_PATH + "prj_obj.png", false);
 
 		// declareWorkbenchImage(ideBundle,
 		// IDE.SharedImages.IMG_OBJ_PROJECT_CLOSED, PATH_OBJECT +
