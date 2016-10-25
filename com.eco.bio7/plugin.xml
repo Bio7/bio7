@@ -16,53 +16,53 @@
       <perspective
             class="com.eco.bio7.rcp.Perspective"
             fixed="false"
-            icon="icons/regelmaessig.gif"
+            icon="icons/perspective/2dpersp.png"
             id="com.eco.bio7.perspective_2d"
             name=" 2d">
       </perspective>
       <perspective
             class="com.eco.bio7.discrete3d.Perspective3d"
             fixed="false"
-            icon="icons/3d.gif"
+            icon="icons/perspective/3dpersp.png"
             id="com.eco.bio7.perspective_3d"
             name="3d"/>
       <perspective
             class="com.eco.bio7.image.ImagePerspective"
             fixed="false"
-            icon="icons/bild.gif"
+            icon="icons/perspective/imagepersp.png"
             id="com.eco.bio7.perspective_image"
             name="Image"/>
       <perspective
             class="com.eco.bio7.rcp.Bio7ResourcePerspective"
             fixed="false"
-            icon="icons/resource_persp.gif"
+            icon="icons/perspective/resourcepersp.png"
             id="com.eco.bio7.bio7resource"
             name="Resource">
       </perspective>
       <perspective
             class="com.eco.bio7.rbridge.RPerspective"
             fixed="false"
-            icon="icons/rkompilierung.gif"
+            icon="icons/perspective/rpersp.png"
             id="com.eco.bio7.rbridge.RPerspective"
             name="R">
       </perspective>
       <perspective
             class="com.eco.bio7.collection.CustomPerspective"
-            icon="icons/logo.gif"
+            icon="icons/perspective/custompersp.png"
             id="com.eco.bio7.CustomPerspective"
             name="Custom">
       </perspective>
       <perspective
             class="com.eco.bio7.rbridge.RImagePerspective"
             fixed="false"
-            icon="icons/rkompilierung.gif"
+            icon="icons/perspective/rimageanalysispersp.png"
             id="com.eco.bio7.rbridge.RImagePerspective"
             name="R ImageJ Analysis">
       </perspective>
       <perspective
             class="com.eco.bio7.rbridge.RDebugPerspective"
             fixed="false"
-            icon="icons/rkompilierung.gif"
+            icon="icons/perspective/rdebugpersp.png"
             id="com.eco.bio7.rbridge.RDebugPerspective"
             name="R Debug">
       </perspective>

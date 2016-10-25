@@ -23,7 +23,7 @@
          point="org.eclipse.ui.perspectives">
       <perspective
             class="com.eco.bio7.worldwind.WorldWindPerspective"
-            icon="src/images/logo.gif"
+            icon="src/images/worldwindpersp.png"
             id="com.eco.bio7.WorldWind.3dglobe"
             name="WorldWind">
       </perspective>
