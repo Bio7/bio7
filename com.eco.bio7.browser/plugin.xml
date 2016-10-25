@@ -17,7 +17,7 @@
          point="org.eclipse.ui.perspectives">
       <perspective
             class="com.eco.bio7.browser.HtmlEditorPerspective"
-            icon="pics/logo.gif"
+            icon="pics/webpersp.png"
             id="com.eco.bio7.browser.HtmlEditorPerspective"
             name="Web">
       </perspective>
