@@ -73,7 +73,7 @@
             allowMultiple="true"
             category="com.eco.bio7.ecolab"
             class="com.eco.bio7.discrete3d.Quad3dview"
-            icon="icons/3d.gif"
+            icon="icons/views/3dperspview.png"
             id="com.eco.bio7.3d"
             name="3Dgrid"
             restorable="true">
@@ -82,7 +82,7 @@
             allowMultiple="true"
             category="com.eco.bio7.charts"
             class="com.eco.bio7.plot.PieChartView"
-            icon="icons/piechart.gif"
+            icon="icons/views/piechartview.png"
             id="com.eco.bio7.piechart"
             name="Piechart"
             restorable="true">
@@ -91,7 +91,7 @@
             allowMultiple="true"
             category="com.eco.bio7.charts"
             class="com.eco.bio7.plot.LineChartView"
-            icon="icons/diagramm.gif"
+            icon="icons/views/linechartview.png"
             id="com.eco.bio7.linechart"
             name="Linechart"
             restorable="true"/>
@@ -99,7 +99,7 @@
             allowMultiple="true"
             category="com.eco.bio7.discrete"
             class="com.eco.bio7.discrete.Quadview"
-            icon="icons/regelmaessig.gif"
+            icon="icons/views/2dperspview.png"
             id="com.eco.bio7.quadgrid"
             name="Quadgrid"
             restorable="true"/>
@@ -107,7 +107,7 @@
             allowMultiple="true"
             category="com.eco.bio7.database"
             class="com.eco.bio7.database.Spreadview"
-            icon="icons/database.gif"
+            icon="icons/views/tableview.png"
             id="com.eco.bio7.spreadsheet"
             name="Spreadsheet"
             restorable="true"/>
@@ -116,7 +116,7 @@
             allowMultiple="true"
             category="com.eco.bio7.control"
             class="com.eco.bio7.discrete.StateButtonView"
-            icon="icons/regelmaessig.gif"
+            icon="icons/views/2dperspview.png"
             id="com.eco.bio7.states"
             name="State"
             restorable="true"/>
@@ -124,7 +124,7 @@
             allowMultiple="true"
             category="com.eco.bio7.discrete"
             class="com.eco.bio7.discrete.Hexview"
-            icon="icons/regelmaessig.gif"
+            icon="icons/views/2dperspview.png"
             id="com.eco.bio7.hexgrid"
             name="Hexgrid"
             restorable="true"/>
@@ -132,7 +132,7 @@
             allowMultiple="true"
             category="com.eco.bio7.custom"
             class="com.eco.bio7.plot.ChartView"
-            icon="icons/diagramm.gif"
+            icon="icons/views/linechartview.png"
             id="com.eco.bio7.custom_chart"
             name="Custom Chart"
             restorable="true"/>
@@ -156,7 +156,7 @@
             allowMultiple="true"
             category="com.eco.bio7.console"
             class="com.eco.bio7.scriptengines.BshView"
-            icon="icons/konsole.gif"
+            icon="icons/views/console.png"
             id="com.eco.bio7.bsh"
             name="Bsh-Console"
             restorable="true"/>
@@ -164,7 +164,7 @@
             allowMultiple="true"
             category="com.eco.bio7.control"
             class="com.eco.bio7.info.InfoView"
-            icon="icons/zufallsalter.gif"
+            icon="icons/views/timeview.png"
             id="com.eco.bio7.control"
             name="Control"
             restorable="true"/>
@@ -210,7 +210,7 @@
             allowMultiple="true"
             category="com.eco.bio7.custom"
             class="com.eco.bio7.collection.CustomView"
-            icon="icons/konsole.gif"
+            icon="icons/views/custom.png"
             id="com.eco.bio7.custom_controls"
             name="Custom Controls"
             restorable="true"/>
@@ -218,7 +218,7 @@
             allowMultiple="true"
             category="com.eco.bio7.custom"
             class="com.eco.bio7.collection.Custom3D"
-            icon="icons/konsole.gif"
+            icon="icons/views/custom.png"
             id="com.eco.bio7.custom_3d"
             name="Custom 3D"
             restorable="true"/>
@@ -229,7 +229,7 @@
             allowMultiple="true"
             category="com.eco.bio7.ecolab"
             class="com.eco.bio7.spatial.SpatialView"
-            icon="icons/3d.gif"
+            icon="icons/views/3dperspview.png"
             id="com.eco.bio7.spatial"
             name="Space"
             restorable="true">
@@ -238,7 +238,7 @@
             allowMultiple="true"
             category="com.eco.bio7.ecolab"
             class="com.eco.bio7.spatial.Options3d"
-            icon="icons/3d.gif"
+            icon="icons/views/3dperspview.png"
             id="com.eco.bio7.discrete3d.Options3d"
             name="Options Space"
             restorable="true">
@@ -247,7 +247,7 @@
             allowMultiple="true"
             category="com.eco.bio7.rapplication"
             class="com.eco.bio7.rbridge.RShellView"
-            icon="icons/rkompilierung.gif"
+            icon="icons/views/rview.png"
             id="com.eco.bio7.RShell"
             name="R-Shell"
             restorable="true">
@@ -256,7 +256,7 @@
             allowMultiple="true"
             category="com.eco.bio7.rapplication"
             class="com.eco.bio7.rbridge.RTable"
-            icon="icons/logo.gif"
+            icon="icons/views/tableview.png"
             id="com.eco.bio7.rbridge.RTable"
             name="Table"
             restorable="true">
@@ -265,7 +265,7 @@
             allowMultiple="true"
             category="com.eco.bio7.rapplication"
             class="com.eco.bio7.rbridge.debug.DebugVariablesView"
-            icon="icons/rkompilierung.gif"
+            icon="icons/views/rview.png"
             id="com.eco.bio7.rbridge.debug.DebugVariablesView"
             name="Debug (x)">
       </view>
@@ -273,7 +273,7 @@
             allowMultiple="true"
             category="com.eco.bio7.rapplication"
             class="com.eco.bio7.rbridge.debug.DebugTextView"
-            icon="icons/rkompilierung.gif"
+            icon="icons/views/rview.png"
             id="com.eco.bio7.rbridge.debug.DebugTextView"
             name="Debug Text">
       </view>
@@ -284,7 +284,7 @@
       <view
             category="com.eco.bio7.image"
             class="com.eco.bio7.image.TransferGeometryView"
-            icon="icons/rkompilierung.gif"
+            icon="icons/views/rview.png"
             id="com.eco.bio7.image.TransferGeometryView"
             name="Geometry Selections">
       </view>
@@ -1449,8 +1449,8 @@
            label="Editor Actions">
         <command
               commandId="com.eco.bio7.execute_r_script2"
-              disabledIcon="icons/rkompilieren_rahmen.gif"
-              icon="icons/rkompilieren_rahmen.gif"
+              disabledIcon="icons/editor/rinterpret.png"
+              icon="icons/editor/rinterpret.png"
               id="bio7toolbar.executer"
               label="R"
               style="push">
@@ -1465,8 +1465,8 @@
         </command>
         <command
               commandId="com.eco.bio7.compilejavaaction"
-              disabledIcon="icons/javakompilieren_rahmen.gif"
-              icon="icons/javakompilieren_rahmen.gif"
+              disabledIcon="icons/editor/javacompile.png"
+              icon="icons/editor/javacompile.png"
               id="bio7toolbar.compilejava"
               label="Compile Java"
               style="push">
@@ -1481,8 +1481,8 @@
         </command>
         <command
               commandId="com.eco.bio7.executeflowaction"
-              disabledIcon="icons/flow_execute.png"
-              icon="icons/flow_execute.png"
+              disabledIcon="icons/editor/flowexecute.png"
+              icon="icons/editor/flowexecute.png"
               id="bio7toolbar.executeflow"
               label="Flow Action"
               style="push">
@@ -1555,8 +1555,8 @@
         </command>
         <command
               commandId="com.eco.bio7.browser.knitrAction"
-              disabledIcon="icons/rkompilieren_rahmen.gif"
-              icon="icons/rkompilieren_rahmen.gif"
+              disabledIcon="icons/editor/rview.png"
+              icon="icons/editor/rview.png"
               id="bio7toolbar.executer"
               label="Knitr"
               style="push">
@@ -1576,8 +1576,8 @@
         </command>
         <command
               commandId="com.eco.bio7.RMarkdownAction"
-              disabledIcon="icons/rkompilieren_rahmen.gif"
-              icon="icons/rkompilieren_rahmen.gif"
+              disabledIcon="icons/editor/rview.png"
+              icon="icons/editor/rview.png"
               id="bio7toolbar.executer"
               label="Markdown"
               style="push">
