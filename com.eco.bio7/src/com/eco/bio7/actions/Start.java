@@ -38,7 +38,7 @@ public class Start extends Action {
 
 		setId("com.eco.bio7.start");
 		this.setToolTipText("Start/Stop the repeated time based invocation\n of the Java run method if available!");
-		//setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("icons/maintoolbar/play_pause.png"));
+		setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/maintoolbar/counter_reset.png"));
 		this.quad2d = Quad2d.getQuad2dInstance();
 		this.hex = Hexagon.getHexagonInstance();
 
