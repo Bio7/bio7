@@ -211,9 +211,9 @@ public class Quadview extends ViewPart {
 		IActionBars bars = getViewSite().getActionBars();
 		Image im;
 
-		im = new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/logo.gif"));
+		//im = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/views/2dperspview.png"));
 
-		bars.getStatusLineManager().setMessage(im, message);
+		bars.getStatusLineManager().setMessage(message);
 
 	}
 
@@ -375,7 +375,7 @@ public class Quadview extends ViewPart {
 
 			}
 		};
-		transferCounts.setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/diagramm.gif"));
+		transferCounts.setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/views/linechartview.png"));
 
 	}
 

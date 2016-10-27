@@ -170,7 +170,7 @@ public class Spreadview extends ViewPart {
 
 			}
 		};
-		saveStateSetup.setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/save_edit.gif"));
+		saveStateSetup.setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/views/savefile.png"));
 		addStateAction = new Action("(+)") {
 			public void run() {
 
@@ -179,7 +179,7 @@ public class Spreadview extends ViewPart {
 				Field.doPaint();
 			}
 		};
-		addStateAction.setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/add.gif"));
+		addStateAction.setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/views/add.png"));
 		openStateSetup = new Action("Open") {
 
 			public void run() {
@@ -199,7 +199,7 @@ public class Spreadview extends ViewPart {
 			}
 		};
 
-		openStateSetup.setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/file.gif"));
+		openStateSetup.setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/views/openfile.png"));
 
 		removeStateAction = new Action("(-)") {
 
@@ -229,7 +229,7 @@ public class Spreadview extends ViewPart {
 			}
 
 		};
-		removeStateAction.setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/delete.gif"));
+		removeStateAction.setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/views/deleteentry.png"));
 	}
 
 	class TextItem extends ControlContribution {
