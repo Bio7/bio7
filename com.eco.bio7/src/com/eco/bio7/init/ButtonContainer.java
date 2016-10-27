@@ -21,6 +21,8 @@ import org.eclipse.swt.widgets.ColorDialog;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+
+import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.discrete.Hexagon;
 import com.eco.bio7.discrete.StateButtonView;
 import com.eco.bio7.discrete.Quad2d;
@@ -81,16 +83,18 @@ public class ButtonContainer {
 													// species !
 
 					Image im;
-					try {
+					/*try {
 						im = new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/" + pic + ".gif"));
 						butt.setImage(im);
-					} catch (RuntimeException e1) {
+					} catch (RuntimeException e1) {*/
 						butt.setText(plant);
 						butt.setToolTipText(plant);
-						im = new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/nopic.gif"));
+						//im = new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/state.png"));
+						im = Bio7Plugin.getImageDescriptor("/icons/views/state.png").createImage();
+						
 						butt.setImage(im);
 
-					}
+					//}
 
 					top.layout(true);
 					butt.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {

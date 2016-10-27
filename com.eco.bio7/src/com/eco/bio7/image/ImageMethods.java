@@ -261,12 +261,13 @@ public class ImageMethods extends ViewPart {
 
 		});
 		button = new Button(top, SWT.NONE);
-		bildGif = new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/bild.gif"));
+		bildGif = Bio7Plugin.getImageDescriptor("/icons/views/addimageaction.png").createImage();
+		//bildGif = new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/bild.gif"));
 		button.setImage(bildGif);
 		button.setToolTipText("Open an image in the Points panel");
 		button.setLayoutData(gridData21);
 		button5 = new Button(top, SWT.NONE);
-		deletePicGif = new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/deletepic.gif"));
+		deletePicGif = Bio7Plugin.getImageDescriptor("/icons/views/deleteimageaction.png").createImage();
 		button5.setImage(deletePicGif);
 		button5.setLayoutData(gridData3);
 		button5.setToolTipText("Remove the current image of the Points panel");
@@ -274,7 +275,7 @@ public class ImageMethods extends ViewPart {
 		gridData1.heightHint = 35;
 		gridData1.horizontalIndent = 0;
 		button1 = new Button(top, SWT.NONE);
-		regelmaessigGif = new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/regelmaessig.gif"));
+		regelmaessigGif = Bio7Plugin.getImageDescriptor("/icons/views/2dperspview.png").createImage();
 		button1.setImage(regelmaessigGif);
 		button1.setToolTipText("Set or unset the Quadgrid as a layer in the Points panel");
 		button1.setLayoutData(gridData1);
@@ -292,7 +293,7 @@ public class ImageMethods extends ViewPart {
 		gridData20.grabExcessHorizontalSpace = true;
 		gridData20.verticalAlignment = SWT.FILL;
 		button3 = new Button(top, SWT.NONE);
-		deletePoints = new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/deletepoints.gif"));
+		deletePoints = Bio7Plugin.getImageDescriptor("/icons/views/deletepointsaction.png").createImage();
 		button3.setImage(deletePoints);
 		button3.setLayoutData(gridData20);
 		button3.setToolTipText("Delete points in the Points panel");
@@ -613,7 +614,7 @@ public class ImageMethods extends ViewPart {
 		// button6.setFont(SWTResourceManager.getFont("Courier New", 9,
 		// SWT.BOLD));
 		button6.setText("Pic->     ");
-		toIJGif = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "bin/pics/toij.gif");
+		toIJGif = Bio7Plugin.getImageDescriptor("/icons/views/imagejview.png").createImage();
 		button6.setImage(toIJGif);
 		button6.setLayoutData(gridData22);
 		button6.setToolTipText("Send an image from the ImageJ-Canvas to the Points panel");
@@ -698,7 +699,7 @@ public class ImageMethods extends ViewPart {
 
 		Button btnNewButton = new Button(top, SWT.NONE);
 		btnNewButton.setToolTipText("Transfers the ImageJ \"Results Table\" data\r\nas a dataframe to R (datatype double).");
-		rGif = org.eclipse.wb.swt.ResourceManager.getPluginImage("com.eco.bio7", "bin/pics/r.gif");
+		rGif = Bio7Plugin.getImageDescriptor("/icons/views/raction.png").createImage();
 		btnNewButton.setImage(rGif);
 		btnNewButton.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -723,7 +724,7 @@ public class ImageMethods extends ViewPart {
 
 		btnNewButton_1 = new Button(top, SWT.NONE);
 		btnNewButton_1.setToolTipText("Transfers an opened ImageJ stack (pixel data)\r\nas a matrix list or RasterStack to R.\r\nThe datatype can be selected, too!");
-		rGif = org.eclipse.wb.swt.ResourceManager.getPluginImage("com.eco.bio7", "bin/pics/r.gif");
+		rGif = Bio7Plugin.getImageDescriptor("/icons/views/raction.png").createImage();
 		btnNewButton_1.setImage(rGif);
 		btnNewButton_1.addSelectionListener(new SelectionAdapter() {
 			boolean convertToRaster;
@@ -786,7 +787,7 @@ public class ImageMethods extends ViewPart {
 		// button2.setFont(SWTResourceManager.getFont("Courier New", 9,
 		// SWT.BOLD));
 		button2.setText("Points     ");
-		rGif = org.eclipse.wb.swt.ResourceManager.getPluginImage("com.eco.bio7", "bin/pics/r.gif");
+		rGif = Bio7Plugin.getImageDescriptor("/icons/views/raction.png").createImage();
 		button2.setImage(rGif);
 		button2.setToolTipText("Transfer data from the Points panel \nto R and (or) the selection coordinates\nto R ");
 
@@ -837,7 +838,7 @@ public class ImageMethods extends ViewPart {
 		final Button selectedPixelsButton = new Button(top, SWT.NONE);
 		selectedPixelsButton.setToolTipText("" + "Transfers the selected pixels (Freehand, Rectangular etc.)\n" + "with or without a signature as a matrix to R.\n"
 				+ "The transfer type can be selected, too!");
-		selectedPixelsButton.setImage(ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "bin/pics/r.gif"));
+		selectedPixelsButton.setImage(Bio7Plugin.getImageDescriptor("/icons/views/raction.png").createImage());
 		// selectedPixelsButton.setFont(SWTResourceManager.getFont("Courier New",
 		// 9, SWT.BOLD));
 		selectedPixelsButton.addSelectionListener(new SelectionAdapter() {
