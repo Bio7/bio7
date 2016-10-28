@@ -13,6 +13,7 @@
 package com.eco.bio7.floweditor.model;
 
 import org.eclipse.swt.graphics.Image;
+import com.eco.bio7.floweditor.shapes.ShapesPlugin;
 
 /**
  * A rectangular shape.
@@ -21,7 +22,7 @@ import org.eclipse.swt.graphics.Image;
  */
 public class BeanShellScript extends Shape {
 	/** A 16x16 pictogram of a rectangular shape. */
-	private static final Image BEAN_SHELL_ICON = createImage("icons/logo.gif");
+	private static final Image BEAN_SHELL_ICON = ShapesPlugin.getImageDescriptor("/icons/file_green.png").createImage();
 
 	private static final long serialVersionUID = 1;
 

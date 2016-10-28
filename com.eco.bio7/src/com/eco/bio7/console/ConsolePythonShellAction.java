@@ -16,6 +16,8 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 
+import com.eco.bio7.Bio7Plugin;
+
 public class ConsolePythonShellAction extends Action {
 
 	public ConsolePythonShellAction() {
@@ -24,7 +26,7 @@ public class ConsolePythonShellAction extends Action {
 		setId("Python");
 		setText("Python");
 
-		ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/python_16x16.png")));
+		ImageDescriptor desc = ImageDescriptor.createFromImage(Bio7Plugin.getImageDescriptor("/icons/views/pythonaction.png").createImage());
 
 		this.setImageDescriptor(desc);
 	}

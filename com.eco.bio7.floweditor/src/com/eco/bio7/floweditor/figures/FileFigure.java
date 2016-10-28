@@ -15,6 +15,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
+import com.eco.bio7.floweditor.shapes.ShapesPlugin;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.IFigure;
@@ -31,7 +32,7 @@ public class FileFigure extends Figure implements MouseListener {
 
 	public Color BG = new Color(null, 242, 240, 255);
 
-	static Image classImage = new Image(null, FileFigure.class.getResourceAsStream("logo.gif"));
+	static Image classImage = ShapesPlugin.getImageDescriptor("/icons/file.png").createImage();
 
 	static Font BOLD = new Font(null, "", 10, SWT.BOLD);
 

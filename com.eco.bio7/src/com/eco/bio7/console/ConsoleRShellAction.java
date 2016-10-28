@@ -16,6 +16,8 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 
+import com.eco.bio7.Bio7Plugin;
+
 public class ConsoleRShellAction extends Action {
 
 	public ConsoleRShellAction() {
@@ -23,7 +25,7 @@ public class ConsoleRShellAction extends Action {
 		setId("RConsole");
 		setText("R Shell");
 
-		ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/r/Rlogo.png")));
+		ImageDescriptor desc = ImageDescriptor.createFromImage(Bio7Plugin.getImageDescriptor("/icons/views/raction.png").createImage());
 
 		this.setImageDescriptor(desc);
 	}

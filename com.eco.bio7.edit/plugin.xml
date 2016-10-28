@@ -12,7 +12,7 @@
             contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
             default="true"
             extensions="bsh,groovy,js"
-            icon="icons/groovy.gif"
+            icon="icons/groovy.png"
             id="com.eco.bio7.editors.TemplateEditor"
             name="Bio7 Editor">
       </editor>

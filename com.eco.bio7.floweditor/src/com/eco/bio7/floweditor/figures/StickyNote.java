@@ -62,7 +62,7 @@ public class StickyNote extends FlowPage {
 		add(text);
 		text.setText("A Bio7 flow-file");
 		Display display = Display.getCurrent();
-		setBackgroundColor(new Color(display, 126, 199, 55));
+		setBackgroundColor(new Color(display, 99, 141, 67));
 		setOpaque(true);
 	}
 

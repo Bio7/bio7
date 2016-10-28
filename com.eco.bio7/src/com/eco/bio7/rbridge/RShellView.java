@@ -615,8 +615,9 @@ public class RShellView extends ViewPart {
 
 			}
 		});
+		
 		btnNewButton.setToolTipText("Interrupt R execution");
-		btnNewButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
+		btnNewButton.setImage(Bio7Plugin.getImageDescriptor("/icons/views/deleteaction.png").createImage());
 		tab = new CTabFolder(parent, SWT.NONE);
 		fd_composite_1.bottom = new FormAttachment(tab, -16);
 		FormData fd_tab = new FormData();
@@ -691,7 +692,7 @@ public class RShellView extends ViewPart {
 			}
 
 		});
-		loadButton_1.setImage(ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/ordner_zu.gif"));
+		loadButton_1.setImage(Bio7Plugin.getImageDescriptor("/icons/views/savefile.png").createImage());
 
 		gcButton = new Button(composite, SWT.NONE);
 		GridData gd_gcButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
@@ -1130,7 +1131,7 @@ public class RShellView extends ViewPart {
 		GridData gd_iButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_iButton.heightHint = 40;
 		iButton.setLayoutData(gd_iButton);
-		iButton.setImage(ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/help.gif"));
+		iButton.setImage(Bio7Plugin.getImageDescriptor("/icons/views/helpaction.png").createImage());
 		iButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				ToolTip infoTip = new ToolTip(new Shell(), SWT.BALLOON | SWT.ICON_INFORMATION);

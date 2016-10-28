@@ -12,6 +12,8 @@ package com.eco.bio7.floweditor.model;
 
 import org.eclipse.swt.graphics.Image;
 
+import com.eco.bio7.floweditor.shapes.ShapesPlugin;
+
 /**
  * A rectangular shape.
  * 
@@ -19,7 +21,7 @@ import org.eclipse.swt.graphics.Image;
  */
 public class TriangleShape extends Shape {
 	/** A 16x16 pictogram of a rectangular shape. */
-	private static final Image TRIANGLE_ICON = createImage("icons/start.gif");
+	private static final Image TRIANGLE_ICON = ShapesPlugin.getImageDescriptor("/icons/start.png").createImage();
 
 	private static final long serialVersionUID = 1;
 
