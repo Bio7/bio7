@@ -1497,8 +1497,8 @@
         </command>
         <command
               commandId="com.eco.bio7.debugflowaction"
-              disabledIcon="icons/flow_debug.png"
-              icon="icons/flow_debug.png"
+              disabledIcon="icons/editor/flowdebug.png"
+              icon="icons/editor/flowdebug.png"
               id="bio7toolbar.debugflow"
               label="Debug Flow Action"
               style="push">
@@ -1513,8 +1513,8 @@
         </command>
         <command
               commandId="com.eco.bio7.interpretgroovybeanshellaction"
-              disabledIcon="icons/groovy_compile.gif"
-              icon="icons/groovy_compile.gif"
+              disabledIcon="icons/editor/groovy.png"
+              icon="icons/editor/groovy.png"
               id="bio7toolbar.interpretgroovybeanshell"
               label="Interpret Groovy/BeanShell"
               style="push">
@@ -1534,8 +1534,8 @@
         </command>
         <command
               commandId="com.eco.bio7.interpretpythonaction"
-              disabledIcon="icons/jython_interpret.gif"
-              icon="icons/jython_interpret.gif"
+              disabledIcon="icons/editor/python.png"
+              icon="icons/editor/python.png"
               id="bio7toolbar.interpretpython"
               label="Interpret Python"
               style="push">

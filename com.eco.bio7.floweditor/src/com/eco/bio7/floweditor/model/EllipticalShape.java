@@ -11,6 +11,7 @@
 package com.eco.bio7.floweditor.model;
 
 import org.eclipse.swt.graphics.Image;
+import com.eco.bio7.floweditor.shapes.ShapesPlugin;
 
 /**
  * An elliptical shape.
@@ -20,8 +21,7 @@ import org.eclipse.swt.graphics.Image;
 public class EllipticalShape extends Shape {
 
 	/** A 16x16 pictogram of an elliptical shape. */
-	private static final Image ELLIPSE_ICON = createImage("icons/loop.gif");
-
+	private static final Image ELLIPSE_ICON = ShapesPlugin.getImageDescriptor("/icons/loop.png").createImage();
 	private static final long serialVersionUID = 1;
 
 	public Image getIcon() {

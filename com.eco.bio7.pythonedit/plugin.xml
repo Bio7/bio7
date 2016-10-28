@@ -7,7 +7,7 @@
       <editor
             name="Python Editor"
             extensions="py"
-            icon="icons/jython.gif"
+            icon="icons/python.png"
             contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
             class="com.eco.bio7.editors.python.PythonEditor"
             id="com.eco.bio7.pythoneditors.PythonEditor">

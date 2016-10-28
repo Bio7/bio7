@@ -49,6 +49,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
+import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.util.PlaceholderLabel;
 import com.eco.bio7.util.Util;
@@ -240,7 +241,7 @@ public class RTable extends ViewPart {
 
 			}
 		};
-		ImageDescriptor desc1 = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/newspread.gif")));
+		ImageDescriptor desc1 = ImageDescriptor.createFromImage(Bio7Plugin.getImageDescriptor("/icons/views/addspreadaction.png").createImage());
 		addSpread.setImageDescriptor(desc1);
 
 		addColumn = new Action("Add Column") {
@@ -268,7 +269,7 @@ public class RTable extends ViewPart {
 				}
 			}
 		};
-		ImageDescriptor desc2 = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/newcolumn.gif")));
+		ImageDescriptor desc2 = ImageDescriptor.createFromImage(Bio7Plugin.getImageDescriptor("/icons/views/addcolumnaction.png").createImage());
 		addColumn.setImageDescriptor(desc2);
 
 		addRow = new Action("Add Row") {
@@ -282,7 +283,7 @@ public class RTable extends ViewPart {
 
 			}
 		};
-		ImageDescriptor desc3 = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/newrow.gif")));
+		ImageDescriptor desc3 = ImageDescriptor.createFromImage(Bio7Plugin.getImageDescriptor("/icons/views/addrowaction.png").createImage());
 		addRow.setImageDescriptor(desc3);
 
 	}

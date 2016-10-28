@@ -185,12 +185,12 @@ class ShapeEditPart extends AbstractGraphicalEditPart implements PropertyChangeL
 			f.setOpaque(true);
 			Display display = Display.getCurrent();
 
-			f.setBackgroundColor(new Color(display, 126, 199, 55));
+			f.setBackgroundColor(new Color(display,  99, 141, 67));
 			StackLayout layout = new StackLayout();
 
 			f.setLayoutManager(layout);
 			f.setSize(10, 10);
-			label.setBackgroundColor(new Color(display, 126, 199, 55));
+			label.setBackgroundColor(new Color(display,  99, 141, 67));
 			label.setOpaque(false);
 			f.add(label);
 
@@ -202,7 +202,7 @@ class ShapeEditPart extends AbstractGraphicalEditPart implements PropertyChangeL
 			f.setOpaque(true);
 			Display display = Display.getCurrent();
 
-			f.setBackgroundColor(new Color(display, 126, 199, 55));
+			f.setBackgroundColor(new Color(display,  99, 141, 67));
 
 			StackLayout layout = new StackLayout();
 
@@ -221,7 +221,7 @@ class ShapeEditPart extends AbstractGraphicalEditPart implements PropertyChangeL
 			f.setOpaque(true);
 			Display display = Display.getCurrent();
 
-			f.setBackgroundColor(new Color(display, 126, 199, 55));
+			f.setBackgroundColor(new Color(display,  99, 141, 67));
 			StackLayout layout = new StackLayout();
 
 			f.setLayoutManager(layout);
@@ -236,7 +236,7 @@ class ShapeEditPart extends AbstractGraphicalEditPart implements PropertyChangeL
 			f.setOpaque(true);
 			Display display = Display.getCurrent();
 
-			f.setBackgroundColor(new Color(display, 126, 199, 55));
+			f.setBackgroundColor(new Color(display,  99, 141, 67));
 			StackLayout layout = new StackLayout();
 
 			f.setLayoutManager(layout);
@@ -255,7 +255,7 @@ class ShapeEditPart extends AbstractGraphicalEditPart implements PropertyChangeL
 			f.setOpaque(true);
 			Display display = Display.getCurrent();
 
-			f.setBackgroundColor(new Color(display, 126, 199, 55));
+			f.setBackgroundColor(new Color(display,  99, 141, 67));
 
 			f.setLayoutManager(new ToolbarLayout(false));
 
@@ -271,7 +271,7 @@ class ShapeEditPart extends AbstractGraphicalEditPart implements PropertyChangeL
 			f.setOpaque(true);
 			Display display = Display.getCurrent();
 
-			f.setBackgroundColor(new Color(display, 126, 199, 55));
+			f.setBackgroundColor(new Color(display, 99, 141, 67));
 
 			StackLayout layout = new StackLayout();
 
@@ -426,7 +426,7 @@ class ShapeEditPart extends AbstractGraphicalEditPart implements PropertyChangeL
 
 				public void run() {
 					IFigure ifigure = getFigure();
-					ifigure.setBackgroundColor(new Color(null, 126, 199, 55));
+					ifigure.setBackgroundColor(new Color(null,  99, 141, 67));
 
 					ifigure.repaint();
 				}

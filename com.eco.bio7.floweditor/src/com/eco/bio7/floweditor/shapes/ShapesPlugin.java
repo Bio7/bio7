@@ -12,6 +12,7 @@ package com.eco.bio7.floweditor.shapes;
 
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 /**
@@ -48,6 +49,16 @@ public class ShapesPlugin extends AbstractUIPlugin {
 		if (singleton == null) {
 			singleton = this;
 		}
+	}
+	/**
+	 * Returns an image descriptor for the image file at the given
+	 * plug-in relative path.
+	 *
+	 * @param path the path
+	 * @return the image descriptor
+	 */
+	public static ImageDescriptor getImageDescriptor(String path) {
+		return AbstractUIPlugin.imageDescriptorFromPlugin("com.eco.bio7.floweditor", path);
 	}
 
 }
