@@ -19,6 +19,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolTip;
 
+import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.util.Util;
 
 public class DebugInfoAction extends Action {
@@ -31,8 +32,8 @@ public class DebugInfoAction extends Action {
 		setText("(?)");
 
         
-		ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/help.gif")));
-
+		//ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/help.gif")));
+		ImageDescriptor desc = Bio7Plugin.getImageDescriptor("/icons/rdebug/help_contents.png");
 		this.setImageDescriptor(desc);
 	}
 

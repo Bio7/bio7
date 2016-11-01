@@ -16,6 +16,8 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 
+import com.eco.bio7.Bio7Plugin;
+
 public class DebugStepFinishAction extends Action {
 	
 	private DebugProgress progress;
@@ -26,8 +28,8 @@ public class DebugStepFinishAction extends Action {
 		setId("Finish");
 		setText("Finish (f) - Finishes the current loop or function.");
         
-		ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/stepbystep_co.gif")));
-
+		//ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/stepbystep_co.gif")));
+		ImageDescriptor desc = Bio7Plugin.getImageDescriptor("/icons/rdebug/stepbystep_co.png");
 		this.setImageDescriptor(desc);
 	}
 
