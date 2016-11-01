@@ -16,6 +16,8 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 
+import com.eco.bio7.Bio7Plugin;
+
 public class DebugStepIntoAction extends Action {
 	
 	private DebugProgress progress;
@@ -26,8 +28,8 @@ public class DebugStepIntoAction extends Action {
 		setId("StepInto");
 		setText("Step Into - Step into function calls");
 
-		ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/stepinto_co.gif")));
-
+		//ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/stepinto_co.gif")));
+		ImageDescriptor desc = Bio7Plugin.getImageDescriptor("/icons/rdebug/stepinto_co.png");
 		this.setImageDescriptor(desc);
 	}
 
