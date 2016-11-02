@@ -677,14 +677,14 @@
       
             category="com.eco.bio7.bio7beanshell"
             class="com.eco.bio7.wizards.BeanShellNewWizard"
-            icon="icons/bsh_kompilieren.gif"
+            icon="icons/editor/groovy.png"
             id="com.eco.bio7.wizards.SampleNewWizard"
             name="BeanShell Script"
             project="false"/>
       <wizard
             category="com.eco.bio7.RCategory"
             class="com.eco.bio7.wizards.RScriptNewWizard"
-            icon="icons/rkompilierung.gif"
+            icon="icons/editor/rfile.png"
             id="com.eco.bio7.wizard1"
             name="R Script"
             project="false"/>
@@ -694,7 +694,7 @@
       <wizard
             category="com.eco.bio7.bio7java"
             class="com.eco.bio7.wizards.JavaNewWizard"
-            icon="icons/javakompilierung.gif"
+            icon="icons/editor/java.png"
             id="com.eco.bio7.wizard2"
             name="Bio7 Java (Classbody)"
             project="false">
@@ -702,7 +702,7 @@
       <wizard
             category="com.eco.bio7.bio7java"
             class="com.eco.bio7.wizards.JavaJoglNewWizard"
-            icon="icons/javakompilierung.gif"
+            icon="icons/editor/java.png"
             id="com.eco.bio7.openglwizard"
             name="Bio7 Java OpenGL (Classbody)"
             project="false">
@@ -710,7 +710,7 @@
       <wizard
             category="com.eco.bio7.bio7java"
             class="com.eco.bio7.wizards.JavaBio7ClassPluginWizard"
-            icon="icons/javakompilierung.gif"
+            icon="icons/editor/java.png"
             id="com.eco.bio7.wizardJavaModelClass"
             name="Bio7 Java (Class)"
             project="false">
@@ -718,7 +718,7 @@
       <wizard
             category="com.eco.bio7.bio7java"
             class="com.eco.bio7.wizards.JavaClassJoglPluginWizard"
-            icon="icons/javakompilierung.gif"
+            icon="icons/editor/java.png"
             id="com.eco.bio7.wizardJavaModelClass"
             name="Bio7 Java OpenGL (Class)"
             project="false">
@@ -726,7 +726,7 @@
       <wizard
             category="com.eco.bio7.bio7groovy"
             class="com.eco.bio7.wizards.GroovyNewWizard"
-            icon="icons/groovy.gif"
+            icon="icons/editor/groovy.png"
             id="com.eco.bio7.groovyScript"
             name="Groovy Script"
             project="false">
@@ -734,7 +734,7 @@
       <wizard
             category="com.eco.bio7.ImageJ"
             class="com.eco.bio7.wizards.ImageJPluginWizard"
-            icon="icons/javakompilierung.gif"
+            icon="icons/editor/java.png"
             id="com.eco.bio7.wizardImageJPlugin"
             name="ImageJ Plugin File"
             project="false">
@@ -746,7 +746,7 @@
       <wizard
             category="com.eco.bio7.bio7java"
             class="com.eco.bio7.wizards.JavaClassPluginWizard"
-            icon="icons/javakompilierung.gif"
+            icon="icons/editor/java.png"
             id="com.eco.bio7.wizardJavaclass"
             name="Java Class File"
             project="false">
@@ -754,7 +754,7 @@
       <wizard
             category="com.eco.bio7.ImageJ"
             class="com.eco.bio7.wizards.ImageJFilterWizard"
-            icon="icons/javakompilierung.gif"
+            icon="icons/editor/java.png"
             id="com.eco.bio7.wizardImageJFilter"
             name="ImageJ Filter File"
             project="false">
@@ -766,7 +766,7 @@
       <wizard
             category="com.eco.bio7.RCategory"
             class="com.eco.bio7.wizards.SweavePluginWizard"
-            icon="icons/sweave.gif"
+            icon="icons/editor/sweavefile.png"
             id="com.eco.bio7.sweaveWizard"
             name="Sweave"
             project="false">
@@ -774,7 +774,7 @@
       <wizard
             category="com.eco.bio7.ImageJ"
             class="com.eco.bio7.wizards.ImageJPluginConfigWizard"
-            icon="icons/javakompilierung.gif"
+            icon="icons/editor/java.png"
             id="com.eco.bio7.wizardImageJPluginConfig"
             name="ImageJ Configuration File"
             project="false">
@@ -786,7 +786,7 @@
       <wizard
             category="com.eco.bio7.bio7java"
             class="com.eco.bio7.wizards.JavaBio7ClassPluginWizard"
-            icon="icons/javakompilierung.gif"
+            icon="icons/editor/java.png"
             id="com.eco.bio7.wizardJavaManifest"
             name="Java Manifest File"
             project="false">
@@ -794,7 +794,7 @@
       <wizard
             category="com.eco.bio7.bio7java"
             class="com.eco.bio7.wizards.JavaFXWizard"
-            icon="icons/javakompilierung.gif"
+            icon="icons/editor/java.png"
             id="com.eco.bio7.javafx"
             name="Java FX Template (Classbody)"
             project="false">
@@ -802,7 +802,7 @@
       <wizard
             category="com.eco.bio7.bio7groovy"
             class="com.eco.bio7.wizards.GroovyFXWizard"
-            icon="icons/groovy.gif"
+            icon="icons/editor/groovy.png"
             id="com.eco.bio7.groovyfx"
             name="Groovy FX Template"
             project="false">
@@ -810,7 +810,7 @@
       <wizard
             category="com.eco.bio7.bio7java"
             class="com.eco.bio7.wizards.JavaFXBio7ClassWizard"
-            icon="icons/javakompilierung.gif"
+            icon="icons/editor/java.png"
             id="com.eco.bio7.javafxclass"
             name="Java FX Template (Class)"
             project="false">
@@ -818,7 +818,7 @@
       <wizard
             category="com.eco.bio7.web"
             class="com.eco.bio7.wizards.HtmlPluginWizard"
-            icon="icons/html.gif"
+            icon="icons/editor/htmlfile.png"
             id="com.eco.bio7.html"
             name="Html"
             project="false">
@@ -826,7 +826,7 @@
       <wizard
             category="com.eco.bio7.web"
             class="com.eco.bio7.wizards.JavaScriptPluginWizard"
-            icon="icons/javascript.gif"
+            icon="icons/editor/javascriptfile.png"
             id="com.eco.bio7.javascript"
             name="JavaScript"
             project="false">
@@ -834,7 +834,7 @@
       <wizard
             category="com.eco.bio7.web"
             class="com.eco.bio7.wizards.HtmlJavaScriptWizard"
-            icon="icons/html.gif"
+            icon="icons/editor/htmlfile.png"
             id="com.eco.bio7.htmljavascript"
             name="Html+JavaScript"
             project="false">
@@ -842,7 +842,7 @@
       <wizard
             category="com.eco.bio7.web"
             class="com.eco.bio7.wizards.HtmlPanelPluginWizard"
-            icon="icons/html.gif"
+            icon="icons/editor/htmlfile.png"
             id="com.eco.bio7.htmlcanvas"
             name="Html 2D Canvas"
             project="false">
@@ -850,7 +850,7 @@
       <wizard
             category="com.eco.bio7.web"
             class="com.eco.bio7.wizards.HtmlWebGLPluginWizard"
-            icon="icons/html.gif"
+            icon="icons/editor/htmlfile.png"
             id="com.eco.bio7.htmlwebgl"
             name="Html WebGL"
             project="false">
@@ -862,7 +862,7 @@
       <wizard
             category="com.eco.bio7.bio7jython"
             class="com.eco.bio7.wizards.JythonNewWizard"
-            icon="icons/jython.gif"
+            icon="icons/editor/python.png"
             id="com.eco.bio7.jythonScript"
             name="Jython Script"
             project="false">
@@ -870,7 +870,7 @@
       <wizard
             category="com.eco.bio7.RCategory"
             class="com.eco.bio7.wizards.KnitrHtmlPluginWizard"
-            icon="icons/knitr.gif"
+            icon="icons/editor/knitr.png"
             id="com.eco.bio7.knitrHtmlWizard"
             name="knitr Html"
             project="false">
@@ -878,7 +878,7 @@
       <wizard
             category="com.eco.bio7.RCategory"
             class="com.eco.bio7.wizards.KnitrLatexPluginWizard"
-            icon="icons/knitr.gif"
+            icon="icons/editor/knitr.png"
             id="com.eco.bio7.knitrLatexWizard"
             name="knitr Latex"
             project="false">
@@ -942,7 +942,7 @@
       <wizard
             category="com.eco.bio7.RCategory"
             class="com.eco.bio7.wizards.RMarkdownPluginWizard"
-            icon="icons/knitr.gif"
+            icon="icons/editor/rmarkdownfile.png"
             id="com.eco.bio7.markdown.Wizard"
             name="R Markdown"
             project="false">
@@ -978,7 +978,7 @@
             objectClass="org.eclipse.core.resources.IFile">
          <action
                class="com.eco.bio7.popup.actions.CompileImageJClass"
-               icon="icons/javakompilierung.gif"
+               icon="icons/editor/java.png"
                id="com.eco.bio7.compileImageJClass"
                label="Compile Java To File"
                menubarPath="additions.path">
@@ -991,7 +991,7 @@
           objectClass="org.eclipse.core.resources.IFile">
        <action
              class="com.eco.bio7.popup.actions.CompileGroovyAction"
-             icon="icons/groovy.gif"
+             icon="icons/editor/groovy.png"
              id="com.eco.bio7.action1"
              label="Compile Groovy"
              menubarPath="additions.groovy"
@@ -1005,7 +1005,7 @@
           objectClass="org.eclipse.core.resources.IFile">
        <action
              class="com.eco.bio7.popup.actions.SweaveAction"
-             icon="icons/sweave.gif"
+             icon="icons/editor/sweavefile.png"
              id="com.eco.bio7.SweaveAction"
              label="Sweave"
              menubarPath="additions.sweave">
@@ -1035,7 +1035,7 @@
           objectClass="org.eclipse.core.resources.IFile">
        <action
              class="com.eco.bio7.popup.actions.CompileAndLoadDirectory"
-             icon="icons/javakompilierung.gif"
+             icon="icons/editor/java.png"
              id="com.eco.bio7.action2"
              label="Compile Java"
              menubarPath="additions.path"
@@ -1049,7 +1049,7 @@
           objectClass="org.eclipse.core.resources.IFile">
        <action
              class="com.eco.bio7.popup.actions.KnitrAction"
-             icon="icons/knitr.gif"
+             icon="icons/editor/knitr.png"
              id="com.eco.bio7.knitrtex"
              label="Knitr"
              menubarPath="additions.knitr">
@@ -1062,7 +1062,7 @@
           objectClass="org.eclipse.core.resources.IFile">
        <action
              class="com.eco.bio7.popup.actions.KnitrAction"
-             icon="icons/knitr.gif"
+             icon="icons/editor/knitr.png"
              id="com.eco.bio7.knitrhtml"
              label="Knitr"
              menubarPath="additions.knitr">
@@ -1075,7 +1075,7 @@
           objectClass="org.eclipse.core.resources.IFile">
        <action
              class="com.eco.bio7.popup.actions.KnitrAction"
-             icon="icons/knitr.gif"
+             icon="icons/editor/knitr.png"
              id="com.eco.bio7.knitrrmd"
              label="Knitr"
              menubarPath="additions.knitr">
@@ -1088,7 +1088,7 @@
           objectClass="org.eclipse.core.resources.IFile">
        <action
              class="com.eco.bio7.popup.actions.KnitrAction"
-             icon="icons/knitr.gif"
+             icon="icons/editor/knitr.png"
              id="com.eco.bio7.knitrrrst"
              label="Knitr"
              menubarPath="additions.knitr">
@@ -1235,7 +1235,7 @@
           objectClass="org.eclipse.core.resources.IFile">
        <action
              class="com.eco.bio7.popup.actions.RunJavaClassFile"
-             icon="icons/javakompilierung.gif"
+             icon="icons/editor/java.png"
              id="com.eco.bio7.runclass"
              label="Run Compiled Java Class"
              menubarPath="additions.path">
@@ -1341,7 +1341,7 @@
           objectClass="org.eclipse.core.resources.IResource">
        <action
              class="com.eco.bio7.popup.actions.RecalculateClasspath"
-             icon="icons/javakompilierung.gif"
+             icon="icons/editor/java.png"
              id="com.eco.bio7.recalculateClasspath"
              label="Fix Project Classpath"
              menubarPath="additions.path">
@@ -1354,7 +1354,7 @@
           objectClass="org.eclipse.core.resources.IFile">
        <action
              class="com.eco.bio7.popup.actions.RMarkdownAction"
-             icon="icons/konsole.gif"
+             icon="icons/editor/rmarkdownfile.png"
              id="com.eco.bio7.rmarkdown"
              label="R Markdown"
              menubarPath="additions.rmarkdown">
@@ -1367,7 +1367,7 @@
           objectClass="org.eclipse.core.resources.IFile">
        <action
              class="com.eco.bio7.popup.actions.RMarkdownAction"
-             icon="icons/konsole.gif"
+             icon="icons/editor/rmarkdownfile.png"
              id="com.eco.bio7.rmarkdown"
              label="R Markdown"
              menubarPath="additions.rmarkdown">

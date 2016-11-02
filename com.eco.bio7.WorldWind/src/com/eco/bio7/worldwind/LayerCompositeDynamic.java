@@ -11,24 +11,18 @@
 
 package com.eco.bio7.worldwind;
 
-import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
-import gov.nasa.worldwind.layers.LayerList;
-import gov.nasa.worldwind.layers.RenderableLayer;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Scale;
-
-import com.eco.bio7.worldwind.DynamicLayer;
-import com.eco.bio7.worldwind.SurfaceImage;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Label;
+import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
+import gov.nasa.worldwind.layers.LayerList;
+import gov.nasa.worldwind.layers.RenderableLayer;
+import worldw.Activator;
 public class LayerCompositeDynamic extends Composite {
 
 	private int number;
@@ -83,7 +77,7 @@ public class LayerCompositeDynamic extends Composite {
 				gd_r.heightHint = 50;
 				r.setLayoutData(gd_r);
 				//r.setText("X");
-				r.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/images/delete.gif")));
+				r.setImage(Activator.getImageDescriptor("/pics/deleteaction.png").createImage());
 				r.setSelection(true);
 				r.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(final SelectionEvent e) {
