@@ -83,10 +83,12 @@ public class ButtonContainer {
 													// species !
 
 					Image im;
-					/*try {
-						im = new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/" + pic + ".gif"));
+					try {
+						im = Bio7Plugin.getImageDescriptor("/icons/" + pic + ".png").createImage();
 						butt.setImage(im);
-					} catch (RuntimeException e1) {*/
+						butt.setText(plant);
+						butt.setToolTipText(plant);
+					} catch (RuntimeException e1) {
 						butt.setText(plant);
 						butt.setToolTipText(plant);
 						//im = new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/state.png"));
@@ -94,7 +96,7 @@ public class ButtonContainer {
 						
 						butt.setImage(im);
 
-					//}
+					}
 
 					top.layout(true);
 					butt.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {

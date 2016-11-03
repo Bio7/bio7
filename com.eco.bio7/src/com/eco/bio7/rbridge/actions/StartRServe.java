@@ -312,7 +312,7 @@ public class StartRServe extends Action implements IMenuCreator {
 		// Image image =
 		// PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
 
-		menuItem.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/run_tool.png")));
+		menuItem.setImage(Bio7Plugin.getImageDescriptor("/icons/views/raction.png").createImage());
 		menuItem.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
@@ -327,7 +327,8 @@ public class StartRServe extends Action implements IMenuCreator {
 
 		MenuItem terminateRProcessMenuItem = new MenuItem(fMenu, SWT.PUSH);
 		terminateRProcessMenuItem.setText("Terminate R");
-		terminateRProcessMenuItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
+		//terminateRProcessMenuItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
+		terminateRProcessMenuItem.setImage(Bio7Plugin.getImageDescriptor("/icons/views/stopraction.png").createImage());
 		terminateRProcessMenuItem.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
@@ -372,7 +373,8 @@ public class StartRServe extends Action implements IMenuCreator {
 		});
 		MenuItem menuItemFractal = new MenuItem(fMenu, SWT.PUSH);
 		menuItemFractal.setText("Kill All R Processes");
-		menuItemFractal.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
+		//menuItemFractal.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
+		menuItemFractal.setImage(Bio7Plugin.getImageDescriptor("/icons/views/stopraction.png").createImage());
 		menuItemFractal.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {

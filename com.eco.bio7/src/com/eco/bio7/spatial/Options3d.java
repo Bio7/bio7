@@ -539,7 +539,7 @@ public class Options3d extends ViewPart {
 		GridData gd_playPauseButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_playPauseButton.heightHint = 40;
 		playPauseButton.setLayoutData(gd_playPauseButton);
-		playPauseButton.setToolTipText("Enables the triggering of the run method with the default Jogl timer.\n The timer fps determines the speed of triggering");
+		playPauseButton.setToolTipText("Play/Pause: Invokes the compiled run method with the default Jogl timer.\n The timer fps determines the speed of invocation");
 		playPauseButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 
@@ -553,13 +553,13 @@ public class Options3d extends ViewPart {
 				}
 			}
 		});
-		playPauseButton.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/playneu.gif")));
+		playPauseButton.setImage(Bio7Plugin.getImageDescriptor("/icons/maintoolbar/play_pause.png").createImage());
 
 		final Button setupButton = new Button(composite_2, SWT.NONE);
 		GridData gd_setupButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
 		gd_setupButton.heightHint = 40;
 		setupButton.setLayoutData(gd_setupButton);
-		setupButton.setToolTipText("Triggers the setup method of the compiled java code");
+		setupButton.setToolTipText("Setup: Invokes the setup method of the compiled java code");
 		setupButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
@@ -569,7 +569,8 @@ public class Options3d extends ViewPart {
 
 			}
 		});
-		setupButton.setText("Setup");
+		setupButton.setImage(Bio7Plugin.getImageDescriptor("/icons/maintoolbar/setup.png").createImage());
+		//setupButton.setText("Setup");
 		new Label(composite_2, SWT.NONE);
 		new Label(composite_2, SWT.NONE);
 

@@ -13,10 +13,11 @@
  *******************************************************************************/
 package com.eco.bio7.editor;
 
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import com.eco.bio7.editors.ScriptCodeScanner;
-import com.eco.bio7.editors.ScriptColorProvider; 
+import com.eco.bio7.editors.ScriptColorProvider;
 import com.eco.bio7.editors.ScriptPartitionScanner;
 
 /**
@@ -74,4 +75,7 @@ public class BeanshellEditorPlugin extends AbstractUIPlugin {
 		return fColorProvider;
 	}
 
+	public static ImageDescriptor getImageDescriptor(String path) {
+		return AbstractUIPlugin.imageDescriptorFromPlugin("com.eco.bio7.edit", path);
+	}
 }

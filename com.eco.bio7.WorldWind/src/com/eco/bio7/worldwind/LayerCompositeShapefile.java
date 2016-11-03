@@ -11,26 +11,23 @@
 
 package com.eco.bio7.worldwind;
 
-import gov.nasa.worldwind.geom.Sector;
-import gov.nasa.worldwind.layers.Layer;
-import gov.nasa.worldwind.layers.LayerList;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Scale;
 import org.eclipse.swt.widgets.Shell;
-
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.layers.Layer;
+import gov.nasa.worldwind.layers.LayerList;
 import gov.nasa.worldwind.render.SurfaceImage;
 import gov.nasa.worldwindx.examples.util.ExampleUtil;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Label;
+import worldw.Activator;
 public class LayerCompositeShapefile extends Composite {
 
 	private int number;
@@ -87,7 +84,7 @@ public class LayerCompositeShapefile extends Composite {
 		gd_r.heightHint = 50;
 		r.setLayoutData(gd_r);
 		//r.setText("X");
-		r.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/images/delete.gif")));
+		r.setImage(Activator.getImageDescriptor("/pics/deleteaction.png").createImage());
 		r.setSelection(true);
 		r.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -105,7 +102,9 @@ public class LayerCompositeShapefile extends Composite {
 		GridData gd_goTo = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_goTo.heightHint = 50;
 		goTo.setLayoutData(gd_goTo);
-		goTo.setText("Loc");
+		//goTo.setText("Loc");
+		goTo.setImage(Activator.getImageDescriptor("/pics/worldwindpersp.png").createImage());
+		goTo.setToolTipText("Move to location");
 		goTo.setSelection(true);
 		goTo.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {

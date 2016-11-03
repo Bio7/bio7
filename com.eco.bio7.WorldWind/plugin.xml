@@ -6,7 +6,7 @@
       <view
             category="com.eco.bio7.worldwind"
             class="com.eco.bio7.worldwind.WorldWindView"
-            icon="src/images/logo.gif"
+            icon="pics/worldwindpersp.png"
             id="com.eco.bio7.worldwind.WorldWindView"
             name="WorldWind"
             restorable="true">
@@ -14,7 +14,7 @@
       <view
             category="com.eco.bio7.worldwind"
             class="com.eco.bio7.worldwind.WorldWindOptionsView"
-            icon="src/images/logo.gif"
+            icon="pics/worldwindpersp.png"
             id="com.eco.bio7.worldwind.WorldWindOptionsView"
             name="Options WorldWind ">
       </view>
@@ -23,7 +23,7 @@
          point="org.eclipse.ui.perspectives">
       <perspective
             class="com.eco.bio7.worldwind.WorldWindPerspective"
-            icon="src/images/worldwindpersp.png"
+            icon="pics/worldwindpersp.png"
             id="com.eco.bio7.WorldWind.3dglobe"
             name="WorldWind">
       </perspective>

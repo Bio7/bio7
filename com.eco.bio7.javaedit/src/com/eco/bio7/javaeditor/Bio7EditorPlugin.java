@@ -12,6 +12,7 @@
  *******************************************************************************/
 package com.eco.bio7.javaeditor;
 
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import com.eco.bio7.javaeditors.JavaCodeScanner;
@@ -79,5 +80,7 @@ public class Bio7EditorPlugin extends AbstractUIPlugin {
 	 * 
 	 * @return the singleton Javadoc scanner
 	 */
-
+	public static ImageDescriptor getImageDescriptor(String path) {
+		return AbstractUIPlugin.imageDescriptorFromPlugin("com.eco.bio7.javaedit", path);
+	}
 }

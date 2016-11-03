@@ -30,6 +30,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
+import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.jobs.LoadWorkspaceJob;
 import com.eco.bio7.swt.SwtAwt;
 
@@ -140,7 +141,7 @@ public class Hexview extends ViewPart {
 		IActionBars bars = getViewSite().getActionBars();
 		Image im;
 
-		im = new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/logo.gif"));
+		im = Bio7Plugin.getImageDescriptor("/icons/bio7new.png").createImage();
 
 		bars.getStatusLineManager().setMessage(im, message);
 

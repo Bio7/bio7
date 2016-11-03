@@ -7,7 +7,7 @@
             allowMultiple="true"
             category="com.eco.bio7.web"
             class="com.eco.bio7.browser.BrowserView"
-            icon="src/pics/logo.gif"
+            icon="pics/webpersp.png"
             id="com.eco.bio7.browser.Browser"
             name="Browser"
             restorable="true">
@@ -28,7 +28,7 @@
             class="com.eco.bio7.browser.MultiPageEditor"
             default="true"
             extensions="html,Rhtml"
-            icon="icons/html.gif"
+            icon="pics/htmlfile.png"
             id="com.eco.bio7.browser.guieditor"
             name="Html Gui Editor">
       </editor>

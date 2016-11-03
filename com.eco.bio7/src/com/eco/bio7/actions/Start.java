@@ -50,7 +50,7 @@ public class Start extends Action {
 
 		Bundle bundle = Platform.getBundle("com.eco.bio7");
 
-		URL locationUrl = FileLocator.find(bundle, new Path("icons/bio7.gif"), null);
+		URL locationUrl = FileLocator.find(bundle, new Path("icons/bio7new.png"), null);
 		URL url = null;
 		try {
 			url = FileLocator.toFileURL(locationUrl);
@@ -131,7 +131,7 @@ public class Start extends Action {
 
 	private void setcursor_quad() {
 		Cursor c = quad2d.getToolkit().createCustomCursor(new ImageIcon(file.getPath()).getImage(), new Point(5, 5), "Cursor");
-		quad2d.setCursor(c);
+		quad2d.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 	}
 
 	private void stopconditionshex() {

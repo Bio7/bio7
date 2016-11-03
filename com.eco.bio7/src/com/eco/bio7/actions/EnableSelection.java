@@ -3,6 +3,8 @@ package com.eco.bio7.actions;
 import java.awt.Cursor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.ui.IWorkbenchWindow;
+
+import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.discrete.Quad2d;
 
 public class EnableSelection extends Action {
@@ -16,8 +18,7 @@ public class EnableSelection extends Action {
 		setId("com.eco.bio7.enable_selection");
 
 		setActionDefinitionId("com.eco.bio7.Enable_Selection");
-		setImageDescriptor(com.eco.bio7.Bio7Plugin
-				.getImageDescriptor("/icons/feld_null.gif"));
+		setImageDescriptor(Bio7Plugin.getImageDescriptor("/icons/bio7new.png"));
 	}
 
 	public void run() {
