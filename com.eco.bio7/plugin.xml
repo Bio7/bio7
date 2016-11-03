@@ -3,14 +3,14 @@
 <plugin>
 
      <extension
-         id="application"
-         point="org.eclipse.core.runtime.applications">
-      <application>
-         <run
-               class="com.eco.bio7.rcp.Application">
-         </run>
-      </application>
-   </extension>
+           id="application"
+           point="org.eclipse.core.runtime.applications">
+        <application>
+           <run
+                 class="com.eco.bio7.rcp.Application">
+           </run>
+        </application>
+     </extension>
    <extension
          point="org.eclipse.ui.perspectives">
       <perspective
@@ -501,13 +501,13 @@
             name="Bio7">
          <property
                name="windowImage"
-               value="icons/logo.gif"/>
+               value="icons/bio7new.png"/>
          <property
                name="startupProgressRect"
                value="95,50,510,30"/>
-         <property
+          <!-- <property
                name="aboutImage"
-               value="icons/bio7app/bio7_48.png"/>
+               value="icons/bio7new.png"/>-->
          <property
                name="startupForegroundColor"
                value="000000"/>
@@ -886,7 +886,7 @@
       <wizard
             category="com.eco.bio7.bio7javaproject"
             class="com.eco.bio7.wizards.java.JavaFXBio7ClassWizard"
-            icon="icons/newjprj_wiz.gif"
+            icon="icons/javaproject.png"
             id="com.eco.bio7.javafxclassjdt"
             name="Bio7 Java Project (JavaFX Model Template)"
             project="true">
@@ -894,7 +894,7 @@
       <wizard
             category="com.eco.bio7.bio7javaproject"
             class="com.eco.bio7.wizards.java.Bio7JDTProjectPluginWizard"
-            icon="icons/newjprj_wiz.gif"
+            icon="icons/javaproject.png"
             id="com.eco.bio7.wizardJavaJdtEmtpy"
             name="Bio7 Java Project (Empty)"
             project="true">
@@ -902,7 +902,7 @@
       <wizard
             category="com.eco.bio7.bio7javaproject"
             class="com.eco.bio7.wizards.java.JavaBio7ModelClassPluginWizard"
-            icon="icons/newjprj_wiz.gif"
+            icon="icons/javaproject.png"
             id="com.eco.bio7.wizardJavaJdtBio7Model"
             name="Bio7 Java  Project (Model Template)"
             project="true">
@@ -910,7 +910,7 @@
       <wizard
             category="com.eco.bio7.bio7javaproject"
             class="com.eco.bio7.wizards.java.JavaClassJoglPluginWizard"
-            icon="icons/newjprj_wiz.gif"
+            icon="icons/javaproject.png"
             id="com.eco.bio7.wizardJavaJdtBio7ModelJogl"
             name="Bio7 Java Project (OpenGL Model Template)"
             project="true">
@@ -918,7 +918,7 @@
       <wizard
             category="com.eco.bio7.bio7javaproject"
             class="com.eco.bio7.wizards.java.JavaWindowBuilderBio7ClassWizard"
-            icon="icons/newjprj_wiz.gif"
+            icon="icons/javaproject.png"
             id="com.eco.bio7.javafxclassjdtwindowbuilder"
             name="Bio7 Java Project (WindowBuilder Template)"
             project="true">

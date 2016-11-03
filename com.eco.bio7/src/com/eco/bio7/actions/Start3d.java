@@ -2,6 +2,8 @@ package com.eco.bio7.actions;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.ui.IWorkbenchWindow;
+
+import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.discrete3d.Quad3dview;
 
 public class Start3d extends Action {
@@ -12,8 +14,7 @@ public class Start3d extends Action {
 		super(text, AS_CHECK_BOX);
 		this.window = window;
 		setId("com.eco.bio7.start3d");
-		setImageDescriptor(com.eco.bio7.Bio7Plugin
-				.getImageDescriptor("/icons/playneu.gif"));
+		setImageDescriptor(Bio7Plugin.getImageDescriptor("/icons/maintoolbar/play_pause.png"));
 
 	}
 

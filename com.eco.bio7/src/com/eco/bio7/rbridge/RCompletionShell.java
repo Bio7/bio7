@@ -53,6 +53,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
+
+import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.reditors.REditor;
 
@@ -168,7 +170,7 @@ public class RCompletionShell extends Shell {
 		setDefaultButton(button);
 		pack();
 		setSize(296, 388);
-		Image image = new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/rkompilierung.gif"));
+		Image image = Bio7Plugin.getImageDescriptor("/icons/views/raction.png").createImage();
 		setImage(image);
 
 		final ExpandBar expandBar = new ExpandBar(this, SWT.NONE | SWT.V_SCROLL);

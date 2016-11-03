@@ -19,7 +19,7 @@ public class NutrientAction extends Action {
 		setId("com.eco.bio7.soil_action");
 
 		setImageDescriptor(com.eco.bio7.Bio7Plugin
-				.getImageDescriptor("/icons/logo.gif"));
+				.getImageDescriptor("/icons/bio7new.png"));
 	}
 
 	public void run() {

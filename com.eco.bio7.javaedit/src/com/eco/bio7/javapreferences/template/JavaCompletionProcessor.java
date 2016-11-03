@@ -29,7 +29,7 @@ import com.eco.bio7.javaeditors.TemplateEditorUI;
  * A completion processor for XML templates.
  */
 public class JavaCompletionProcessor extends TemplateCompletionProcessor {
-	private static final String DEFAULT_IMAGE= "$nl$/icons/template.gif"; //$NON-NLS-1$
+	private static final String DEFAULT_IMAGE= "$nl$/icons/template_obj.png"; //$NON-NLS-1$
 	private JavaEditor editor;
 
 	public  JavaCompletionProcessor(JavaEditor editor){

@@ -7,7 +7,7 @@
       <editor
             name="R Markdown Editor"
             extensions="Rmd"
-            icon="icons/rkompilierung.gif"
+            icon="icons/rmarkdownfile.png"
             contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
             class="com.eco.bio7.markdownedit.editors.MarkdownEditor"
             id="com.eco.bio7.markdownedit">

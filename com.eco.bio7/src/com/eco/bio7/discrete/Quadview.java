@@ -46,6 +46,7 @@ import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
+import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.collection.SwingFxSwtView;
 import com.eco.bio7.jobs.LoadData;
@@ -322,7 +323,7 @@ public class Quadview extends ViewPart {
 
 			}
 		};
-		transferPattern.setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/regelmaessig.gif"));
+		transferPattern.setImageDescriptor(Bio7Plugin.getImageDescriptor("/icons/views/2dperspview.png"));
 		transferCounts = new Action("Transfer population count to R") {
 			public void run() {
 				if (RServe.isAliveDialog()) {
