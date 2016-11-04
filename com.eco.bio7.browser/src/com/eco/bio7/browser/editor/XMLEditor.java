@@ -5,7 +5,6 @@ import java.util.Stack;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -14,13 +13,10 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextOperationTarget;
-import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
@@ -43,15 +39,10 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
-
 import com.eco.bio7.browser.Activator;
 import com.eco.bio7.browser.editor.outline.HTMLEditorLabelProvider;
 import com.eco.bio7.browser.editor.outline.HTMLEditorOutlineNode;
 import com.eco.bio7.browser.editor.outline.HTMLEditorTreeContentProvider;
-
-
-
-
 
 
 public class XMLEditor extends TextEditor  {
@@ -110,6 +101,128 @@ public class XMLEditor extends TextEditor  {
 		// ISourceViewer viewer = getSourceViewer();
 		store = Activator.getDefault().getPreferenceStore();
 		// updateFoldingStructure(new ArrayList());
+		
+
+		//System.out.println(partRef.getId());
+		// IEditorPart editorPart =
+		// getSite().getPage().getActiveEditor();
+
+		  editor = this;//partRef.getPage().getActiveEditor();
+		//ITextOperationTarget target = (ITextOperationTarget) editor.getAdapter(ITextOperationTarget.class);
+
+		//final ITextEditor textEditor = (ITextEditor) editor;
+		if (editor instanceof XMLEditor) {
+
+			((StyledText) editor.getAdapter(Control.class)).addKeyListener(new KeyListener() {
+
+				@Override
+				public void keyReleased(KeyEvent e) {
+
+				}
+
+				@Override
+				public void keyPressed(KeyEvent event) {
+					// if (event.stateMask == SWT.ALT && event.keyCode
+					// == 99) { -> CTRL+C
+					switch (event.keyCode) {
+
+					case SWT.CR: {
+
+					}
+						break;
+					}
+				}
+			});
+
+			((StyledText) editor.getAdapter(Control.class)).addMouseListener(new MouseListener() {
+
+				@Override
+				public void mouseDoubleClick(MouseEvent e) {
+
+				}
+
+				@Override
+				public void mouseDown(MouseEvent e) {
+					/*IDocumentProvider prov = textEditor.getDocumentProvider();
+					IEditorInput inp = editor.getEditorInput();
+					if (prov != null) {
+						IDocument document = prov.getDocument(inp);
+						if (document != null) {
+
+							ITextSelection textSelection = (ITextSelection) editor.getSite().getSelectionProvider().getSelection();
+							int offset = textSelection.getOffset();
+							if (store.getBoolean("MARK_WORDS")) {
+								markWords(offset, document, editor);
+							}
+
+							int lineNumber = 0;
+
+							try {
+								lineNumber = document.getLineOfOffset(offset);
+							} catch (BadLocationException e1) {
+
+								e1.printStackTrace();
+							}
+
+							TreeItem treeItem = null;
+							if (contentOutlineViewer.getTree().isDisposed() == false) {
+								if (contentOutlineViewer.getTree().getItemCount() > 0) {
+									if (contentOutlineViewer.getTree().getItem(0).isDisposed() == false) {
+										treeItem = contentOutlineViewer.getTree().getItem(0);
+										contentOutlineViewer.getTree().setRedraw(false);
+
+										// Object[] exp =
+										// contentOutlineViewer.getExpandedElements();
+
+										TreePath[] treePaths = contentOutlineViewer.getExpandedTreePaths();
+										contentOutlineViewer.expandAll();
+										contentOutlineViewer.refresh();
+										walkTreeLineNumber(treeItem, lineNumber + 1);
+
+										// contentOutlineViewer.setExpandedElements(expanded);
+
+										contentOutlineViewer.setExpandedTreePaths(treePaths);
+										for (int i = 0; i < selectedItems.size(); i++) {
+											TreeItem it = (TreeItem) selectedItems.get(i);
+											it.setExpanded(true);
+											TreeItem parent = it;
+											while (parent != null) {
+												if (parent.getParentItem() != null) {
+													parent = parent.getParentItem();
+													parent.setExpanded(true);
+												} else {
+													break;
+												}
+
+											}
+											contentOutlineViewer.refresh(it);
+										}
+
+										contentOutlineViewer.getTree().setRedraw(true);
+
+									}
+
+								}
+							}
+
+						}
+
+					}
+					selectedItems.clear();*/
+
+				}
+
+				@Override
+				public void mouseUp(MouseEvent e) {
+
+				}
+
+			});
+		}
+
+	
+		
+		
 	}
 	
 	public void dispose() {
@@ -121,123 +234,7 @@ public class XMLEditor extends TextEditor  {
 		@Override
 		public void partActivated(IWorkbenchPartReference partRef) { //
 			if (partRef.getId().equals("com.eco.bio7.browser.guieditor")) {
-				//System.out.println(partRef.getId());
-				// IEditorPart editorPart =
-				// getSite().getPage().getActiveEditor();
-
-				  editor = partRef.getPage().getActiveEditor();
-				ITextOperationTarget target = (ITextOperationTarget) editor.getAdapter(ITextOperationTarget.class);
-
-				//final ITextEditor textEditor = (ITextEditor) editor;
-				if (editor instanceof XMLEditor) {
-
-					((StyledText) editor.getAdapter(Control.class)).addKeyListener(new KeyListener() {
-
-						@Override
-						public void keyReleased(KeyEvent e) {
-
-						}
-
-						@Override
-						public void keyPressed(KeyEvent event) {
-							// if (event.stateMask == SWT.ALT && event.keyCode
-							// == 99) { -> CTRL+C
-							switch (event.keyCode) {
-
-							case SWT.CR: {
-
-							}
-								break;
-							}
-						}
-					});
-
-					((StyledText) editor.getAdapter(Control.class)).addMouseListener(new MouseListener() {
-
-						@Override
-						public void mouseDoubleClick(MouseEvent e) {
-
-						}
-
-						@Override
-						public void mouseDown(MouseEvent e) {
-							/*IDocumentProvider prov = textEditor.getDocumentProvider();
-							IEditorInput inp = editor.getEditorInput();
-							if (prov != null) {
-								IDocument document = prov.getDocument(inp);
-								if (document != null) {
-
-									ITextSelection textSelection = (ITextSelection) editor.getSite().getSelectionProvider().getSelection();
-									int offset = textSelection.getOffset();
-									if (store.getBoolean("MARK_WORDS")) {
-										markWords(offset, document, editor);
-									}
-
-									int lineNumber = 0;
-
-									try {
-										lineNumber = document.getLineOfOffset(offset);
-									} catch (BadLocationException e1) {
-
-										e1.printStackTrace();
-									}
-
-									TreeItem treeItem = null;
-									if (contentOutlineViewer.getTree().isDisposed() == false) {
-										if (contentOutlineViewer.getTree().getItemCount() > 0) {
-											if (contentOutlineViewer.getTree().getItem(0).isDisposed() == false) {
-												treeItem = contentOutlineViewer.getTree().getItem(0);
-												contentOutlineViewer.getTree().setRedraw(false);
-
-												// Object[] exp =
-												// contentOutlineViewer.getExpandedElements();
-
-												TreePath[] treePaths = contentOutlineViewer.getExpandedTreePaths();
-												contentOutlineViewer.expandAll();
-												contentOutlineViewer.refresh();
-												walkTreeLineNumber(treeItem, lineNumber + 1);
-
-												// contentOutlineViewer.setExpandedElements(expanded);
-
-												contentOutlineViewer.setExpandedTreePaths(treePaths);
-												for (int i = 0; i < selectedItems.size(); i++) {
-													TreeItem it = (TreeItem) selectedItems.get(i);
-													it.setExpanded(true);
-													TreeItem parent = it;
-													while (parent != null) {
-														if (parent.getParentItem() != null) {
-															parent = parent.getParentItem();
-															parent.setExpanded(true);
-														} else {
-															break;
-														}
-
-													}
-													contentOutlineViewer.refresh(it);
-												}
-
-												contentOutlineViewer.getTree().setRedraw(true);
-
-											}
-
-										}
-									}
-
-								}
-
-							}
-							selectedItems.clear();*/
-
-						}
-
-						@Override
-						public void mouseUp(MouseEvent e) {
-
-						}
-
-					});
-				}
-
+				
 			}
 
 		}

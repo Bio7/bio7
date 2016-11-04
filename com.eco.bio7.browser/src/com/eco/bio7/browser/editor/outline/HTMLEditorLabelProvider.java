@@ -14,7 +14,7 @@ public class HTMLEditorLabelProvider implements ILabelProvider {
 	public String getText(Object element) {
 		return ((HTMLEditorOutlineNode) element).getName();
 	}
-
+   /*Not used at the moment!*/
 	public Image getImage(Object element) {
 		Image im = null;
 		if (element instanceof HTMLEditorOutlineNode) {

@@ -148,7 +148,7 @@
             allowMultiple="true"
             category="com.eco.bio7.image"
             class="com.eco.bio7.image.ImageMethods"
-            icon="icons/toij.gif"
+            icon="icons/views/imagejview.png"
             id="com.eco.bio7.image_methods"
             name="Image-Methods"
             restorable="true"/>
