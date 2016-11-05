@@ -3,7 +3,9 @@ package com.eco.bio7.javapreferences;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
 
@@ -34,7 +36,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		// TODO Auto-generated method stub
 
 		IPreferenceStore storeJava = Bio7EditorPlugin.getDefault().getPreferenceStore();
-		String font = null;
+		/*String font = null;
 		int fsize = 10;
 		
 	
@@ -53,8 +55,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			font = "Helvetica Neue";
 			fsize = 14;
 
-		}
-		
+		}*/
+		Font f= JFaceResources.getFont(JFaceResources.TEXT_FONT);
 		PreferenceConverter.setDefault(storeJava, "colourkey", new RGB(127, 0, 85));
 		PreferenceConverter.setDefault(storeJava, "colourkey1", new RGB(127, 0, 85));
 		PreferenceConverter.setDefault(storeJava, "colourkey2", new RGB(42, 0, 255));
@@ -66,14 +68,14 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		// PreferenceConverter.setDefault(storeJava, "colourkey8", new RGB(0,
 		// 150, 150));
 
-		PreferenceConverter.setDefault(storeJava, "colourkeyfont", new FontData(font, fsize, 1));
-		PreferenceConverter.setDefault(storeJava, "colourkeyfont1", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeJava, "colourkeyfont2", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeJava, "colourkeyfont3", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeJava, "colourkeyfont4", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeJava, "colourkeyfont5", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeJava, "colourkeyfont6", new FontData(font, fsize, 0));
-		PreferenceConverter.setDefault(storeJava, "colourkeyfont7", new FontData(font, fsize, 0));
+		PreferenceConverter.setDefault(storeJava, "colourkeyfont", f.getFontData());
+		PreferenceConverter.setDefault(storeJava, "colourkeyfont1", f.getFontData());
+		PreferenceConverter.setDefault(storeJava, "colourkeyfont2", f.getFontData());
+		PreferenceConverter.setDefault(storeJava, "colourkeyfont3", f.getFontData());
+		PreferenceConverter.setDefault(storeJava, "colourkeyfont4", f.getFontData());
+		PreferenceConverter.setDefault(storeJava, "colourkeyfont5", f.getFontData());
+		PreferenceConverter.setDefault(storeJava, "colourkeyfont6", f.getFontData());
+		PreferenceConverter.setDefault(storeJava, "colourkeyfont7", f.getFontData());
 
 		
 	}

@@ -12,7 +12,7 @@
             contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
             default="false"
             extensions="java,jav"
-            icon="icons/javakompilierung.gif"
+            icon="icons/java.png"
             id="com.eco.bio7.javaeditors.TemplateEditor"
             name="Bio7 Java-Editor">
       </editor>
