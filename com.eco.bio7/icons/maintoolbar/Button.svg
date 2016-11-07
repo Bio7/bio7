@@ -173,6 +173,19 @@
          result="composite2"
          id="feComposite324094" />
     </filter>
+    <filter
+       inkscape:collect="always"
+       style="color-interpolation-filters:sRGB"
+       id="filter81485"
+       x="-0.072298954"
+       width="1.1445979"
+       y="-0.14281889"
+       height="1.2856378">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="104.5843"
+         id="feGaussianBlur81487" />
+    </filter>
   </defs>
   <sodipodi:namedview
      id="base"
@@ -182,7 +195,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.16"
-     inkscape:cx="2596.2902"
+     inkscape:cx="1211.9152"
      inkscape:cy="2193.7648"
      inkscape:document-units="px"
      inkscape:current-layer="layer10"
@@ -218,7 +231,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -283,7 +296,7 @@
      id="layer10"
      inkscape:label="glow">
     <rect
-       style="opacity:1;fill:url(#linearGradient321053);fill-opacity:1;stroke:url(#linearGradient321045);stroke-width:0;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:70.19999695;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;fill:url(#linearGradient321053);fill-opacity:1;stroke:url(#linearGradient321045);stroke-width:0;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:70.19999695;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;filter:url(#filter81485)"
        id="rect321037"
        width="3471.7283"
        height="1757.4868"
