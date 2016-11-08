@@ -37,7 +37,7 @@ jre/lib/jli/libjli.dylib
       </vmArgsMac>
    </launcherArgs>
 
-   <windowImages i16="icons/bio7app/bio7_16.png" i32="icons/bio7app/bio7_32.png" i48="icons/bio7app/bio7_48.png" i64="icons/bio7app/bio7_64.png" i128="icons/bio7app/bio7_128.png" i256="icons/bio7app/bio7_256.png"/>
+   <windowImages i16="/com.eco.bio7/icons/bio7app/bio7_16_new.png" i32="/com.eco.bio7/icons/bio7app/bio7_32_new.png" i48="/com.eco.bio7/icons/bio7app/bio7_48_new.png" i64="/com.eco.bio7/icons/bio7app/bio7_64_new.png" i128="/com.eco.bio7/icons/bio7app/bio7_128_new.png" i256="/com.eco.bio7/icons/bio7app/bio7_256_new.png"/>
 
    <splash
       location="com.eco.bio7"
@@ -63,7 +63,6 @@ jre/lib/jli/libjli.dylib
 
    <vm>
    </vm>
-
 
    <plugins>
       <plugin id="Bundled_R"/>

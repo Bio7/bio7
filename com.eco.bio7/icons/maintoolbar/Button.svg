@@ -176,6 +176,7 @@
     <filter
        inkscape:collect="always"
        style="color-interpolation-filters:sRGB"
+<<<<<<< HEAD
        id="filter4213"
        x="-0.045186847"
        width="1.0903737"
@@ -185,6 +186,17 @@
          inkscape:collect="always"
          stdDeviation="65.365189"
          id="feGaussianBlur4215" />
+=======
+       id="filter81485"
+       x="-0.072298954"
+       width="1.1445979"
+       y="-0.14281889"
+       height="1.2856378">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="104.5843"
+         id="feGaussianBlur81487" />
+>>>>>>> branch 'master' of https://github.com/Bio7/bio7.git
     </filter>
   </defs>
   <sodipodi:namedview
@@ -195,8 +207,13 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.16"
+<<<<<<< HEAD
      inkscape:cx="1129.4961"
      inkscape:cy="1774.8594"
+=======
+     inkscape:cx="1211.9152"
+     inkscape:cy="2193.7648"
+>>>>>>> branch 'master' of https://github.com/Bio7/bio7.git
      inkscape:document-units="px"
      inkscape:current-layer="layer9"
      showgrid="false"
@@ -307,7 +324,11 @@
      id="layer10"
      inkscape:label="glow">
     <rect
+<<<<<<< HEAD
        style="opacity:1;fill:url(#linearGradient321053);fill-opacity:1;stroke:url(#linearGradient321045);stroke-width:0;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:70.19999695;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;filter:url(#filter4213)"
+=======
+       style="opacity:1;fill:url(#linearGradient321053);fill-opacity:1;stroke:url(#linearGradient321045);stroke-width:0;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:70.19999695;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;filter:url(#filter81485)"
+>>>>>>> branch 'master' of https://github.com/Bio7/bio7.git
        id="rect321037"
        width="3471.7283"
        height="1757.4868"

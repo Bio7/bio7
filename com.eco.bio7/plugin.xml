@@ -524,13 +524,17 @@
          </property>
          <property
                name="windowImages"
-               value="icons/bio7app/bio7_16.png,icons/bio7app/bio7_32.png,icons/bio7app/bio7_48.png,icons/bio7app/bio7_64.png,icons/bio7app/bio7_128.png,icons/bio7app/bio7_256.png">
+               value="icons/bio7app/bio7_16_new.png,icons/bio7app/bio7_32_new.png,icons/bio7app/bio7_48_new.png,icons/bio7app/bio7_64_new.png,icons/bio7app/bio7_128_new.png,icons/bio7app/bio7_256_new.png">
          </property>
          
          <property
 	name="applicationCSSResources"
 	value="platform:/plugin/com.eco.bio7.themes/images/">
 </property>
+         <property
+               name="aboutImage"
+               value="icons/bio7app/bio7_48.png">
+         </property>
          <property
                name="preferenceCustomization"
                value="plugin_customization.ini">
@@ -1513,8 +1517,8 @@
         </command>
         <command
               commandId="com.eco.bio7.interpretgroovybeanshellaction"
-              disabledIcon="icons/editor/groovy.png"
-              icon="icons/editor/groovy.png"
+              disabledIcon="icons/editor/groovyinterpret.png"
+              icon="icons/editor/groovyinterpret.png"
               id="bio7toolbar.interpretgroovybeanshell"
               label="Interpret Groovy/BeanShell"
               style="push">
@@ -1534,8 +1538,8 @@
         </command>
         <command
               commandId="com.eco.bio7.interpretpythonaction"
-              disabledIcon="icons/editor/python.png"
-              icon="icons/editor/python.png"
+              disabledIcon="icons/editor/pythoninterpret.png"
+              icon="icons/editor/pythoninterpret.png"
               id="bio7toolbar.interpretpython"
               label="Interpret Python"
               style="push">
@@ -1555,8 +1559,8 @@
         </command>
         <command
               commandId="com.eco.bio7.browser.knitrAction"
-              disabledIcon="icons/editor/rview.png"
-              icon="icons/editor/rview.png"
+              disabledIcon="icons/editor/knitraction.png"
+              icon="icons/editor/knitraction.png"
               id="bio7toolbar.executer"
               label="Knitr"
               style="push">
@@ -1576,8 +1580,8 @@
         </command>
         <command
               commandId="com.eco.bio7.RMarkdownAction"
-              disabledIcon="icons/editor/rview.png"
-              icon="icons/editor/rview.png"
+              disabledIcon="icons/editor/rmarkdownaction.png"
+              icon="icons/editor/rmarkdownaction.png"
               id="bio7toolbar.executer"
               label="Markdown"
               style="push">
