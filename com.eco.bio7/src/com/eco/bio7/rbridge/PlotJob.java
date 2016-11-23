@@ -21,6 +21,8 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
 
+import javax.swing.SwingUtilities;
+
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -194,7 +196,7 @@ public class PlotJob extends WorkspaceJob {
 			final File pathfinal = new File(finalpath);
 
 			if (com.eco.bio7.image.CanvasView.getCanvas_view() != null) {
-				EventQueue.invokeLater(new Runnable() {
+				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
 
 						Opener o = new Opener();
