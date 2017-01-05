@@ -21,7 +21,7 @@ import java.util.*;
  * Also illustrates the use of the "show positions" feature of {@link Path}.
  *
  * @author tag
- * @version $Id: MultiResPath.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: MultiResPath.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class MultiResPath extends ApplicationTemplate
 {
@@ -97,7 +97,6 @@ public class MultiResPath extends ApplicationTemplate
             RenderableLayer rLayer = new RenderableLayer();
             rLayer.addRenderable(path);
             insertBeforeCompass(getWwd(), rLayer);
-            this.getLayerPanel().update(this.getWwd());
         }
     }
 

@@ -25,7 +25,7 @@ import java.util.ArrayList;
  * Also illustrates the use of the "show positions" feature of {@link Path}.
  *
  * @author dcollins
- * @version $Id: PathPositionColors.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: PathPositionColors.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class PathPositionColors extends ApplicationTemplate
 {
@@ -83,9 +83,6 @@ public class PathPositionColors extends ApplicationTemplate
 
             // Add the layer to the model.
             insertBeforeCompass(getWwd(), layer);
-
-            // Update layer panel
-            this.getLayerPanel().update(this.getWwd());
 
             // Establish a select listener that causes the tooltip controller to show the picked path position's
             // ordinal.

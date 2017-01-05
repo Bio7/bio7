@@ -23,12 +23,14 @@ import java.util.List;
  * their relative order. Indicates when any portion of an image layer is actually rendered.
  *
  * @author tag
- * @version $Id: LayerManagerPanel.java 1179 2013-02-15 17:47:37Z tgaskins $
+ * @version $Id: LayerManagerPanel.java 2147 2014-07-11 23:29:45Z tgaskins $
  */
 public class LayerManagerPanel extends JPanel
 {
     protected JPanel layerNamesPanel;
     protected List<LayerPanel> layerPanels = new ArrayList<LayerPanel>();
+    protected Font plainFont;
+    protected Font boldFont;
 
     public LayerManagerPanel(final WorldWindow wwd)
     {
@@ -57,6 +59,9 @@ public class LayerManagerPanel extends JPanel
         this.add(titlePanel, BorderLayout.CENTER);
 
         this.fill(wwd);
+
+        this.plainFont = this.getFont().deriveFont(Font.PLAIN);
+        this.boldFont = this.getFont().deriveFont(Font.BOLD);
 
         // Register a rendering listener that updates the was-rendered state of each image layer.
         wwd.addRenderingListener(new RenderingListener()
@@ -160,22 +165,22 @@ public class LayerManagerPanel extends JPanel
                 && layerTimeStamp.longValue() == frameTimeStamp.longValue())
             {
                 // Set the font to bold if the layer was just rendered.
-                layerPanel.setLayerNameFont(layerPanel.getLayerNameFont().deriveFont(Font.BOLD));
+                layerPanel.setLayerNameFont(this.boldFont);
             }
             else if (layerPanel.getLayer() instanceof TiledImageLayer)
             {
                 // Set the font to plain if the layer was not just rendered.
-                layerPanel.setLayerNameFont(layerPanel.getLayerNameFont().deriveFont(Font.PLAIN));
+                layerPanel.setLayerNameFont(this.plainFont);
             }
             else if (layerPanel.getLayer().isEnabled())
             {
                 // Set enabled layer types other than TiledImageLayer to bold.
-                layerPanel.setLayerNameFont(layerPanel.getLayerNameFont().deriveFont(Font.BOLD));
+                layerPanel.setLayerNameFont(this.boldFont);
             }
             else if (!layerPanel.getLayer().isEnabled())
             {
                 // Set disabled layer types other than TiledImageLayer to plain.
-                layerPanel.setLayerNameFont(layerPanel.getLayerNameFont().deriveFont(Font.PLAIN));
+                layerPanel.setLayerNameFont(this.plainFont);
             }
         }
     }

@@ -42,7 +42,7 @@ import java.io.InputStream;
  * </ul>
  *
  * @author pabercrombie
- * @version $Id: Balloons.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: Balloons.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class Balloons extends ApplicationTemplate
 {
@@ -68,7 +68,6 @@ public class Balloons extends ApplicationTemplate
             this.layer = new RenderableLayer();
             this.layer.setName("Balloons");
             insertBeforePlacenames(getWwd(), this.layer);
-            this.getLayerPanel().update(this.getWwd());
 
             // Add an AnnotationBalloon and a BrowserBalloon to the balloon layer.
             this.makeAnnotationBalloon();

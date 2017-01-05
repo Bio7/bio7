@@ -29,7 +29,7 @@ import java.util.List;
  * to render the point graphic.)
  *
  * @author pabercrombie
- * @version $Id: TacticalGraphicSymbol.java 710 2012-08-13 16:10:58Z pabercrombie $
+ * @version $Id: TacticalGraphicSymbol.java 2196 2014-08-06 19:42:15Z tgaskins $
  * @see MilStd2525PointGraphic
  */
 public class TacticalGraphicSymbol extends AbstractTacticalSymbol
@@ -281,7 +281,7 @@ public class TacticalGraphicSymbol extends AbstractTacticalSymbol
      * @param modifiers Modifiers applied to this graphic.
      */
     @Override
-    protected void layoutTextModifiers(DrawContext dc, AVList modifiers)
+    protected void layoutTextModifiers(DrawContext dc, AVList modifiers, OrderedSymbol osym)
     {
         this.currentLabels.clear();
 
@@ -311,11 +311,11 @@ public class TacticalGraphicSymbol extends AbstractTacticalSymbol
             // single instance case.
             if (value instanceof Iterable)
             {
-                this.layoutMultiLabel(dc, font, offsets, (Iterable) value, mode);
+                this.layoutMultiLabel(dc, font, offsets, (Iterable) value, mode, osym);
             }
             else if (value != null)
             {
-                this.layoutLabel(dc, font, layout.offsets.get(0), value.toString(), mode);
+                this.layoutLabel(dc, font, layout.offsets.get(0), value.toString(), mode, osym);
             }
         }
     }
@@ -333,7 +333,7 @@ public class TacticalGraphicSymbol extends AbstractTacticalSymbol
     }
 
     @Override
-    protected void layoutDynamicModifiers(DrawContext dc, AVList modifiers)
+    protected void layoutDynamicModifiers(DrawContext dc, AVList modifiers, OrderedSymbol osym)
     {
         this.currentLines.clear();
 
@@ -350,8 +350,8 @@ public class TacticalGraphicSymbol extends AbstractTacticalSymbol
             double length = this.iconRect.getHeight();
 
             java.util.List<? extends Point2D> points = MilStd2525Util.computeGroundHeadingIndicatorPoints(dc,
-                this.placePoint, (Angle) o, length, this.iconRect.getHeight());
-            this.addLine(dc, BELOW_BOTTOM_CENTER_OFFSET, points, LAYOUT_RELATIVE, points.size() - 1);
+                osym.placePoint, (Angle) o, length, this.iconRect.getHeight());
+            this.addLine(dc, BELOW_BOTTOM_CENTER_OFFSET, points, LAYOUT_RELATIVE, points.size() - 1, osym);
         }
     }
 
@@ -389,16 +389,17 @@ public class TacticalGraphicSymbol extends AbstractTacticalSymbol
         return value;
     }
 
-    protected void layoutLabel(DrawContext dc, Font font, OffsetPair layout, String value, String mode)
+    protected void layoutLabel(DrawContext dc, Font font, OffsetPair layout, String value, String mode,
+        OrderedSymbol osym)
     {
         if (!WWUtil.isEmpty(value))
         {
-            this.addLabel(dc, layout.offset, layout.hotSpot, value, font, null, mode);
+            this.addLabel(dc, layout.offset, layout.hotSpot, value, font, null, mode, osym);
         }
     }
 
     protected void layoutMultiLabel(DrawContext dc, Font font, java.util.List<OffsetPair> layouts, Iterable values,
-        String mode)
+        String mode, OrderedSymbol osym)
     {
         Iterator valueIterator = values.iterator();
         Iterator<OffsetPair> layoutIterator = layouts.iterator();
@@ -409,7 +410,7 @@ public class TacticalGraphicSymbol extends AbstractTacticalSymbol
             Object value = valueIterator.next();
             if (value != null)
             {
-                this.layoutLabel(dc, font, layout, value.toString(), mode);
+                this.layoutLabel(dc, font, layout, value.toString(), mode, osym);
             }
         }
     }
@@ -431,18 +432,18 @@ public class TacticalGraphicSymbol extends AbstractTacticalSymbol
     }
 
     @Override
-    protected void computeTransform(DrawContext dc)
+    protected void computeTransform(DrawContext dc, OrderedSymbol osym)
     {
-        super.computeTransform(dc);
+        super.computeTransform(dc, osym);
 
         // Compute an appropriate offset if the application has not specified an offset and this symbol supports the
         // direction of movement indicator. Only the CBRN graphics in MIL-STD-2525C support this indicator. (Using the
         // graphic's default offset would cause the direction of movement line and location label to be cut off by the
         // surface when the globe is tilted.)
-        if (this.iconRect != null && this.layoutRect != null && this.isShowDirectionOfMovement())
+        if (this.iconRect != null && osym.layoutRect != null && this.isShowDirectionOfMovement())
         {
-            this.dx = -this.iconRect.getCenterX();
-            this.dy = -this.layoutRect.getMinY();
+            osym.dx = -this.iconRect.getCenterX();
+            osym.dy = -osym.layoutRect.getMinY();
         }
     }
 }

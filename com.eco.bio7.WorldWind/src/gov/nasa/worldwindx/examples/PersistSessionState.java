@@ -15,7 +15,7 @@ import java.util.logging.Level;
 
 /**
  * @author dcollins
- * @version $Id: PersistSessionState.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: PersistSessionState.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class PersistSessionState extends ApplicationTemplate
 {
@@ -83,7 +83,6 @@ public class PersistSessionState extends ApplicationTemplate
                 // Update the layer panel to display changes in the layer list, and cause the WorldWindow to repaint
                 // itself. These two lines should be omitted in applications that automatically handle layer panel
                 // updates and WorldWindow repaints when the layer list changes.
-                this.getLayerPanel().update(this.getWwd());
                 this.getWwd().redraw();
             }
             catch (Exception e)

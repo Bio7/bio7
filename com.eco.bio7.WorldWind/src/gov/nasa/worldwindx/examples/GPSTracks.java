@@ -26,7 +26,7 @@ import java.util.*;
  * the coordinates of that point will be printed to stdout.
  *
  * @author tag
- * @version $Id: GPSTracks.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: GPSTracks.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class GPSTracks extends ApplicationTemplate
 {
@@ -40,7 +40,6 @@ public class GPSTracks extends ApplicationTemplate
 
             MarkerLayer layer = this.buildTracksLayer();
             insertBeforeCompass(this.getWwd(), layer);
-            this.getLayerPanel().update(this.getWwd());
 
             this.getWwd().addSelectListener(new SelectListener()
             {

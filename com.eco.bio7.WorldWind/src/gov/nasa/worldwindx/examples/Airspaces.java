@@ -5,26 +5,15 @@
  */
 package gov.nasa.worldwindx.examples;
 
-import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.event.*;
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.layers.AirspaceLayer;
-import gov.nasa.worldwind.pick.PickedObjectList;
-import gov.nasa.worldwind.render.*;
+import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.render.airspaces.*;
 import gov.nasa.worldwind.render.airspaces.Box;
-import gov.nasa.worldwind.render.airspaces.Polygon;
-import gov.nasa.worldwind.util.*;
-import gov.nasa.worldwind.view.orbit.BasicOrbitView;
+import gov.nasa.worldwind.util.BasicDragger;
+import gov.nasa.worldwindx.examples.util.RandomShapeAttributes;
 
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.util.*;
+import java.util.Arrays;
 
 /**
  * Illustrates how to configure and display World Wind <code>{@link Airspace}</code> shapes. Airspace shapes are
@@ -45,440 +34,54 @@ import java.util.*;
  * locations.</li> </ul>
  *
  * @author dcollins
- * @version $Id: Airspaces.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: Airspaces.java 3423 2015-09-23 20:59:03Z tgaskins $
  */
 public class Airspaces extends ApplicationTemplate
 {
-    public static final String ACTION_COMMAND_ANTIALIAS = "gov.nasa.worldwind.avkey.ActionCommandAntialias";
-    public static final String ACTION_COMMAND_DEPTH_OFFSET = "gov.nasa.worldwind.avkey.ActionCommandDepthOffset";
-    public static final String ACTION_COMMAND_DRAW_EXTENT = "gov.nasa.worldwind.avkey.ActionCommandDrawExtent";
-    public static final String ACTION_COMMAND_DRAW_WIREFRAME = "gov.nasa.worldwind.avkey.ActionCommandDrawWireframe";
-    public static final String ACTION_COMMAND_LOAD_DATELINE_CROSSING_AIRSPACES
-        = "ActionCommandLoadDatelineCrossingAirspaces";
-    public static final String ACTION_COMMAND_LOAD_DEMO_AIRSPACES = "ActionCommandLoadDemoAirspaces";
-    public static final String ACTION_COMMAND_LOAD_INTERSECTING_AIRSPACES = "ActionCommandLoadIntersectingAirspaces";
-    public static final String ACTION_COMMAND_ZOOM_TO_DEMO_AIRSPACES = "ActionCommandZoomToDemoAirspaces";
-    public static final String ACTION_COMMAND_SAVE_AIRSPACES = "ActionCommandSaveAirspaces";
-    public static final String ACTION_COMMAND_READ_AIRSPACES = "ActionCommandReadAirspaces";
-
     public static class AppFrame extends ApplicationTemplate.AppFrame
     {
-        protected AirspacesController controller;
-        protected AirspacesPanel airspacesPanel;
-        protected FlatWorldPanel flatWorldPanel;
+        protected RandomShapeAttributes randomAttrs = new RandomShapeAttributes();
+        protected Airspace lastHighlightAirspace;
+        protected AirspaceAttributes lastAttrs;
 
         public AppFrame()
         {
-            this.controller = new AirspacesController(this);
-            this.controller.actionPerformed(new ActionEvent(this, 0, ACTION_COMMAND_LOAD_DEMO_AIRSPACES));
-            this.getLayerPanel().update(this.getWwd());
-
-            this.airspacesPanel = new AirspacesPanel();
-            this.airspacesPanel.addActionListener(this.controller);
-
-            this.flatWorldPanel = new FlatWorldPanel(this.getWwd());
-
-            javax.swing.Box box = javax.swing.Box.createVerticalBox();
-            box.add(this.airspacesPanel);
-            box.add(this.flatWorldPanel);
-            this.getLayerPanel().add(box, BorderLayout.SOUTH);
-
-            this.pack();
-        }
-
-        public LayerPanel getLayerPanel()
-        {
-            return this.layerPanel;
-        }
-    }
-
-    public static class AirspacesPanel extends JPanel implements ActionListener
-    {
-        protected EventListenerList eventListeners = new EventListenerList();
-
-        public AirspacesPanel()
-        {
-            this.makePanel();
-        }
-
-        protected void makePanel()
-        {
-            this.setLayout(new GridLayout(0, 1, 0, 5)); // rows, cols, hgap, vgap
-            this.setBorder(
-                new CompoundBorder(BorderFactory.createEmptyBorder(9, 9, 9, 9), new TitledBorder("Airspaces")));
-
-            JButton btn = new JButton("Load Demo Airspaces");
-            btn.setActionCommand(ACTION_COMMAND_LOAD_DEMO_AIRSPACES);
-            btn.addActionListener(this);
-            this.add(btn);
-
-            btn = new JButton("Load Intersecting Airspaces");
-            btn.setActionCommand(ACTION_COMMAND_LOAD_INTERSECTING_AIRSPACES);
-            btn.addActionListener(this);
-            this.add(btn);
-
-            btn = new JButton("Load Dateline Crossing Airspaces");
-            btn.setActionCommand(ACTION_COMMAND_LOAD_DATELINE_CROSSING_AIRSPACES);
-            btn.addActionListener(this);
-            this.add(btn);
-
-            btn = new JButton("Zoom to Demo Airspaces");
-            btn.setActionCommand(ACTION_COMMAND_ZOOM_TO_DEMO_AIRSPACES);
-            btn.addActionListener(this);
-            this.add(btn);
-
-            btn = new JButton("Save Airspaces");
-            btn.setActionCommand(ACTION_COMMAND_SAVE_AIRSPACES);
-            btn.addActionListener(this);
-            this.add(btn);
-
-            btn = new JButton("Read Airspaces");
-            btn.setActionCommand(ACTION_COMMAND_READ_AIRSPACES);
-            btn.addActionListener(this);
-            this.add(btn);
-
-            JCheckBox cb = new JCheckBox("Antialias", false);
-            cb.setActionCommand(ACTION_COMMAND_ANTIALIAS);
-            cb.addActionListener(this);
-            this.add(cb);
-
-            cb = new JCheckBox("Fix Z-Fighting", false);
-            cb.setActionCommand(ACTION_COMMAND_DEPTH_OFFSET);
-            cb.addActionListener(this);
-            this.add(cb);
-
-            cb = new JCheckBox("Show Wireframe", false);
-            cb.setActionCommand(ACTION_COMMAND_DRAW_WIREFRAME);
-            cb.addActionListener(this);
-            this.add(cb);
-
-            cb = new JCheckBox("Show Bounds", false);
-            cb.setActionCommand(ACTION_COMMAND_DRAW_EXTENT);
-            cb.addActionListener(this);
-            this.add(cb);
-        }
-
-        public void addActionListener(ActionListener listener)
-        {
-            this.eventListeners.add(ActionListener.class, listener);
-        }
-
-        public void removeActionListener(ActionListener listener)
-        {
-            this.eventListeners.remove(ActionListener.class, listener);
-        }
-
-        public void actionPerformed(ActionEvent actionEvent)
-        {
-            this.callActionListeners(actionEvent);
-        }
-
-        protected void callActionListeners(ActionEvent actionEvent)
-        {
-            ActionListener[] actionListeners = this.eventListeners.getListeners(ActionListener.class);
-            if (actionListeners == null)
-                return;
-
-            for (ActionListener listener : actionListeners)
-            {
-                listener.actionPerformed(actionEvent);
-            }
-        }
-    }
-
-    public static class AirspacesController implements ActionListener
-    {
-        protected AppFrame frame;
-        // AWT/Swing stuff.
-        protected JFileChooser fileChooser;
-        // World Wind stuff.
-        protected AirspaceLayer aglAirspaces;
-        protected AirspaceLayer amslAirspaces;
-        protected Airspace lastHighlit;
-        protected AirspaceAttributes lastAttrs;
-        protected Annotation lastAnnotation;
-        protected BasicDragger dragger;
-
-        public AirspacesController(AppFrame appFrame)
-        {
-            this.frame = appFrame;
-
-            // Construct a layer that will hold the airspaces and annotations.
-            this.aglAirspaces = new AirspaceLayer();
-            this.amslAirspaces = new AirspaceLayer();
-            this.aglAirspaces.setName("AGL Airspaces");
-            this.amslAirspaces.setName("AMSL Airspaces");
-            this.aglAirspaces.setEnableBatchPicking(false);
-            this.amslAirspaces.setEnableBatchPicking(false);
-            insertBeforePlacenames(this.frame.getWwd(), this.aglAirspaces);
-            insertBeforePlacenames(this.frame.getWwd(), this.amslAirspaces);
-
+            insertBeforePlacenames(this.getWwd(), this.makeAGLAirspaces());
+            insertBeforePlacenames(this.getWwd(), this.makeAMSLAirspaces());
+            insertBeforePlacenames(this.getWwd(), this.makeDatelineCrossingAirspaces());
+            insertBeforePlacenames(this.getWwd(), this.makeIntersectingAirspaces());
             this.initializeSelectionMonitoring();
         }
 
-        public WorldWindow getWwd()
+        public Layer makeAGLAirspaces()
         {
-            return this.frame.getWwd();
-        }
-
-        public void actionPerformed(ActionEvent e)
-        {
-            if (ACTION_COMMAND_LOAD_DEMO_AIRSPACES.equalsIgnoreCase(e.getActionCommand()))
-            {
-                this.doLoadDemoAirspaces();
-            }
-            else if (ACTION_COMMAND_LOAD_DATELINE_CROSSING_AIRSPACES.equalsIgnoreCase(e.getActionCommand()))
-            {
-                this.doLoadDatelineCrossingAirspaces();
-            }
-            else if (ACTION_COMMAND_LOAD_INTERSECTING_AIRSPACES.equalsIgnoreCase(e.getActionCommand()))
-            {
-                this.doLoadIntersectingAirspaces();
-            }
-            else if (ACTION_COMMAND_ZOOM_TO_DEMO_AIRSPACES.equalsIgnoreCase(e.getActionCommand()))
-            {
-                this.doZoomToAirspaces();
-            }
-            else if (ACTION_COMMAND_SAVE_AIRSPACES.equalsIgnoreCase(e.getActionCommand()))
-            {
-                this.doSaveAirspaces(e);
-            }
-            else if (ACTION_COMMAND_READ_AIRSPACES.equalsIgnoreCase(e.getActionCommand()))
-            {
-                this.doReadAirspaces(e);
-            }
-            else if (ACTION_COMMAND_ANTIALIAS.equalsIgnoreCase(e.getActionCommand()))
-            {
-                JCheckBox cb = (JCheckBox) e.getSource();
-                this.aglAirspaces.setEnableAntialiasing(cb.isSelected());
-                this.amslAirspaces.setEnableAntialiasing(cb.isSelected());
-                this.getWwd().redraw();
-            }
-            else if (ACTION_COMMAND_DEPTH_OFFSET.equalsIgnoreCase(e.getActionCommand()))
-            {
-                JCheckBox cb = (JCheckBox) e.getSource();
-                this.aglAirspaces.setEnableDepthOffset(cb.isSelected());
-                this.amslAirspaces.setEnableDepthOffset(cb.isSelected());
-                this.getWwd().redraw();
-            }
-            else if (ACTION_COMMAND_DRAW_WIREFRAME.equalsIgnoreCase(e.getActionCommand()))
-            {
-                JCheckBox cb = (JCheckBox) e.getSource();
-                this.aglAirspaces.setDrawWireframe(cb.isSelected());
-                this.amslAirspaces.setDrawWireframe(cb.isSelected());
-                this.getWwd().redraw();
-            }
-            else if (ACTION_COMMAND_DRAW_EXTENT.equalsIgnoreCase(e.getActionCommand()))
-            {
-                JCheckBox cb = (JCheckBox) e.getSource();
-                this.aglAirspaces.setDrawExtents(cb.isSelected());
-                this.amslAirspaces.setDrawExtents(cb.isSelected());
-                this.getWwd().redraw();
-            }
-        }
-
-        public void setAirspaces(Collection<Airspace> airspaces)
-        {
-            this.aglAirspaces.removeAllAirspaces();
-            this.amslAirspaces.removeAllAirspaces();
-
-            if (airspaces != null)
-            {
-                for (Airspace a : airspaces)
-                {
-                    if (a == null)
-                        continue;
-
-                    if (a.getAltitudeDatum()[0].equals(AVKey.ABOVE_MEAN_SEA_LEVEL) &&
-                        a.getAltitudeDatum()[1].equals(AVKey.ABOVE_MEAN_SEA_LEVEL))
-                    {
-                        this.amslAirspaces.addAirspace(a);
-                    }
-                    else
-                    {
-                        this.aglAirspaces.addAirspace(a);
-                    }
-                }
-            }
-
-            this.getWwd().redraw();
-        }
-
-        public void initializeSelectionMonitoring()
-        {
-            this.dragger = new BasicDragger(this.getWwd());
-            this.getWwd().addSelectListener(new SelectListener()
-            {
-                public void selected(SelectEvent event)
-                {
-                    // Have rollover events highlight the rolled-over object.
-                    if (event.getEventAction().equals(SelectEvent.ROLLOVER) && !dragger.isDragging())
-                    {
-                        if (AirspacesController.this.highlight(event.getTopObject()))
-                            AirspacesController.this.getWwd().redraw();
-                    }
-                    // Have drag events drag the selected object.
-                    else if (event.getEventAction().equals(SelectEvent.DRAG_END)
-                        || event.getEventAction().equals(SelectEvent.DRAG))
-                    {
-                        // Delegate dragging computations to a dragger.
-                        dragger.selected(event);
-
-                        // We missed any roll-over events while dragging, so highlight any under the cursor now,
-                        // or de-highlight the dragged shape if it's no longer under the cursor.
-                        if (event.getEventAction().equals(SelectEvent.DRAG_END))
-                        {
-                            PickedObjectList pol = AirspacesController.this.getWwd().getObjectsAtCurrentPosition();
-                            if (pol != null)
-                            {
-                                AirspacesController.this.highlight(pol.getTopObject());
-                                AirspacesController.this.getWwd().redraw();
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        protected boolean highlight(Object o)
-        {
-            if (this.lastHighlit == o)
-                return false; // Same thing selected
-
-            // Turn off highlight if on.
-            if (this.lastHighlit != null)
-            {
-                this.lastHighlit.setAttributes(this.lastAttrs);
-                this.lastHighlit = null;
-                this.lastAttrs = null;
-            }
-
-            // Turn on highlight if selected object is a SurfaceImage.
-            if (o instanceof Airspace)
-            {
-                this.lastHighlit = (Airspace) o;
-                this.lastAttrs = this.lastHighlit.getAttributes();
-                BasicAirspaceAttributes highlitAttrs = new BasicAirspaceAttributes(this.lastAttrs);
-                highlitAttrs.setMaterial(Material.WHITE);
-                this.lastHighlit.setAttributes(highlitAttrs);
-            }
-
-            return true;
-        }
-
-        protected void setupDefaultMaterial(Airspace a, Color color)
-        {
-            a.getAttributes().setDrawOutline(true);
-            a.getAttributes().setMaterial(new Material(color));
-            a.getAttributes().setOutlineMaterial(new Material(WWUtil.makeColorBrighter(color)));
-            a.getAttributes().setOpacity(0.8);
-            a.getAttributes().setOutlineOpacity(0.9);
-            a.getAttributes().setOutlineWidth(3.0);
-        }
-
-        public void doLoadDatelineCrossingAirspaces()
-        {
-            ArrayList<Airspace> airspaces = new ArrayList<Airspace>();
-
-            // Curtains of different path types crossing the dateline.
-            Curtain curtain = new Curtain();
-            curtain.setLocations(Arrays.asList(LatLon.fromDegrees(27.0, -112.0), LatLon.fromDegrees(35.0, 138.0)));
-            curtain.setAltitudes(1000.0, 100000.0);
-            curtain.setTerrainConforming(false, false);
-            curtain.setValue(AVKey.DISPLAY_NAME, "Great arc Curtain from America to Japan.");
-            this.setupDefaultMaterial(curtain, Color.MAGENTA);
-            airspaces.add(curtain);
-
-            curtain = new Curtain();
-            curtain.setLocations(Arrays.asList(LatLon.fromDegrees(27.0, -112.0), LatLon.fromDegrees(35.0, 138.0)));
-            curtain.setPathType(AVKey.RHUMB_LINE);
-            curtain.setAltitudes(1000.0, 100000.0);
-            curtain.setTerrainConforming(false, false);
-            curtain.setValue(AVKey.DISPLAY_NAME, "Rhumb Curtain from America to Japan.");
-            this.setupDefaultMaterial(curtain, Color.CYAN);
-            airspaces.add(curtain);
-
-            // Continent sized sphere
-            SphereAirspace sphere = new SphereAirspace();
-            sphere.setLocation(LatLon.fromDegrees(0.0, -180.0));
-            sphere.setAltitude(0.0);
-            sphere.setTerrainConforming(false);
-            sphere.setRadius(1000000.0);
-            this.setupDefaultMaterial(sphere, Color.RED);
-            airspaces.add(sphere);
-
-            this.setAirspaces(airspaces);
-        }
-
-        public void doLoadDemoAirspaces()
-        {
-            ArrayList<Airspace> airspaces = new ArrayList<Airspace>();
+            AirspaceAttributes attrs = this.randomAttrs.nextAttributes().asAirspaceAttributes();
+            RenderableLayer layer = new RenderableLayer();
+            layer.setName("AGL Airspaces");
 
             // Cylinder.
-            CappedCylinder cyl = new CappedCylinder();
+            CappedCylinder cyl = new CappedCylinder(attrs);
             cyl.setCenter(LatLon.fromDegrees(47.7477, -123.6372));
             cyl.setRadius(30000.0);
             cyl.setAltitudes(5000.0, 10000.0);
             cyl.setTerrainConforming(true, true);
-            cyl.setValue(AVKey.DISPLAY_NAME, "30,000m Radius Cylinder. Top & bottom terrain conformance.");
-            this.setupDefaultMaterial(cyl, Color.BLUE);
-            airspaces.add(cyl);
-
-            // Continent-sized cylinder.
-            cyl = new CappedCylinder();
-            cyl.setCenter(LatLon.fromDegrees(0.0, 0.0));
-            cyl.setRadii(1000000.0, 3000000.0);
-            cyl.setAltitudes(100000.0, 500000.0);
-            cyl.setTerrainConforming(false, false);
-            cyl.setValue(AVKey.DISPLAY_NAME, "3,000,000m Cylinder.");
-            this.setupDefaultMaterial(cyl, Color.RED);
-            airspaces.add(cyl);
+            cyl.setValue(AVKey.DISPLAY_NAME, "30km radius Cylinder with top and bottom terrain conformance");
+            layer.addRenderable(cyl);
 
             // Radarc
-            PartialCappedCylinder partCyl = new PartialCappedCylinder();
-            partCyl.setCenter(LatLon.fromDegrees(46.7477, -123.6372));
-            partCyl.setAltitudes(5000.0, 10000.0);
-            partCyl.setTerrainConforming(false, false);
             // To render a Radarc,
             // (1) Specify inner radius and outer radius.
             // (2) Specify start and stop azimuth.
-            partCyl.setRadii(15000.0, 30000.0);
-            partCyl.setAzimuths(Angle.fromDegrees(0.0), Angle.fromDegrees(90.0));
-            partCyl.setValue(AVKey.DISPLAY_NAME, "Partial Cylinder from 0 to 90 degrees.");
-            this.setupDefaultMaterial(partCyl, Color.DARK_GRAY);
-            airspaces.add(partCyl);
-
-            // Radarc
-            partCyl = new PartialCappedCylinder();
+            PartialCappedCylinder partCyl = new PartialCappedCylinder(attrs);
             partCyl.setCenter(LatLon.fromDegrees(46.7477, -122.6372));
-            partCyl.setAltitudes(5000.0, 10000.0);
-            partCyl.setTerrainConforming(true, true);
-            // To render a Radarc,
-            // (1) Specify inner radius and outer radius.
-            // (2) Specify start and stop azimuth.
             partCyl.setRadii(15000.0, 30000.0);
+            partCyl.setAltitudes(5000.0, 10000.0);
             partCyl.setAzimuths(Angle.fromDegrees(90.0), Angle.fromDegrees(0.0));
-            partCyl.setValue(AVKey.DISPLAY_NAME, "Partial Cylinder from 90 to 0 degrees.");
-            this.setupDefaultMaterial(partCyl, Color.GRAY);
-            airspaces.add(partCyl);
+            partCyl.setTerrainConforming(true, true);
+            partCyl.setValue(AVKey.DISPLAY_NAME, "Partial Cylinder from 90 to 0 degrees");
+            layer.addRenderable(partCyl);
 
-            // Cake
-            Cake cake = new Cake();
-            cake.setLayers(Arrays.asList(
-                new Cake.Layer(LatLon.fromDegrees(46.7477, -121.6372), 10000.0, Angle.fromDegrees(190.0),
-                    Angle.fromDegrees(170.0), 10000.0, 15000.0),
-                new Cake.Layer(LatLon.fromDegrees(46.7477, -121.6372), 15000.0, Angle.fromDegrees(190.0),
-                    Angle.fromDegrees(90.0), 16000.0, 21000.0),
-                new Cake.Layer(LatLon.fromDegrees(46.7477, -121.6372), 12500.0, Angle.fromDegrees(270.0),
-                    Angle.fromDegrees(60.0), 22000.0, 27000.0)));
-            cake.getLayers().get(0).setTerrainConforming(false, false);
-            cake.getLayers().get(1).setTerrainConforming(false, false);
-            cake.getLayers().get(2).setTerrainConforming(false, false);
-            cake.setValue(AVKey.DISPLAY_NAME, "3 layer Cake.");
-            this.setupDefaultMaterial(cake, Color.YELLOW);
-            airspaces.add(cake);
-
-            cake = new Cake();
+            Cake cake = new Cake(attrs);
             cake.setLayers(Arrays.asList(
                 new Cake.Layer(LatLon.fromDegrees(36, -121), 10000.0, Angle.fromDegrees(0.0),
                     Angle.fromDegrees(360.0), 10000.0, 15000.0),
@@ -489,91 +92,62 @@ public class Airspaces extends ApplicationTemplate
             cake.getLayers().get(0).setTerrainConforming(true, true);
             cake.getLayers().get(1).setTerrainConforming(true, true);
             cake.getLayers().get(2).setTerrainConforming(true, true);
-            cake.setValue(AVKey.DISPLAY_NAME, "3 layer Cake. With disjoint layers.");
-            this.setupDefaultMaterial(cake, Color.MAGENTA);
-            airspaces.add(cake);
-
-            // Left Orbit
-            Orbit orbit = new Orbit();
-            orbit.setLocations(LatLon.fromDegrees(45.7477, -123.6372), LatLon.fromDegrees(45.7477, -122.6372));
-            orbit.setAltitudes(10000.0, 20000.0);
-            orbit.setWidth(30000.0);
-            orbit.setOrbitType(Orbit.OrbitType.LEFT);
-            orbit.setTerrainConforming(false, false);
-            orbit.setValue(AVKey.DISPLAY_NAME, "LEFT Orbit.");
-            this.setupDefaultMaterial(orbit, Color.LIGHT_GRAY);
-            airspaces.add(orbit);
+            cake.setValue(AVKey.DISPLAY_NAME, "3 layer Cake with disjoint layers");
+            layer.addRenderable(cake);
 
             // Center Orbit
-            orbit = new Orbit();
+            Orbit orbit = new Orbit(attrs);
             orbit.setLocations(LatLon.fromDegrees(45.7477, -123.6372), LatLon.fromDegrees(45.7477, -122.6372));
             orbit.setAltitudes(15000.0, 25000.0);
             orbit.setWidth(30000.0);
             orbit.setOrbitType(Orbit.OrbitType.CENTER);
             orbit.setTerrainConforming(true, true);
-            orbit.setValue(AVKey.DISPLAY_NAME, "CENTER Orbit.");
-            this.setupDefaultMaterial(orbit, Color.GRAY);
-            airspaces.add(orbit);
-
-            // Right Orbit
-            orbit = new Orbit();
-            orbit.setLocations(LatLon.fromDegrees(45.7477, -123.6372), LatLon.fromDegrees(45.7477, -122.6372));
-            orbit.setAltitudes(10000.0, 20000.0);
-            orbit.setWidth(30000.0);
-            orbit.setOrbitType(Orbit.OrbitType.RIGHT);
-            orbit.setTerrainConforming(false, false);
-            orbit.setValue(AVKey.DISPLAY_NAME, "RIGHT Orbit.");
-            this.setupDefaultMaterial(orbit, Color.DARK_GRAY);
-            airspaces.add(orbit);
+            orbit.setValue(AVKey.DISPLAY_NAME, "Center Orbit");
+            layer.addRenderable(orbit);
 
             // Orbit from Los Angeles to New York
-            orbit = new Orbit();
+            orbit = new Orbit(attrs);
             orbit.setLocations(LatLon.fromDegrees(34.0489, -118.2481), LatLon.fromDegrees(40.7137, -74.0065));
             orbit.setAltitudes(10000.0, 100000.0);
             orbit.setWidth(500000.0);
             orbit.setOrbitType(Orbit.OrbitType.CENTER);
             orbit.setTerrainConforming(true, true);
-            orbit.setValue(AVKey.DISPLAY_NAME, "Orbit From L.A. to N.Y.");
-            this.setupDefaultMaterial(orbit, Color.RED);
-            airspaces.add(orbit);
+            orbit.setValue(AVKey.DISPLAY_NAME, "Orbit from L.A. to N.Y");
+            layer.addRenderable(orbit);
 
             // Curtain around Snohomish County, WA
-            Curtain curtain = new Curtain();
+            Curtain curtain = new Curtain(attrs);
             curtain.setLocations(makeLatLon(SNOHOMISH_COUNTY));
             curtain.setAltitudes(5000.0, 10000.0);
             curtain.setTerrainConforming(true, true);
-            curtain.setValue(AVKey.DISPLAY_NAME, "Curtain around Snohomish County, WA.");
-            this.setupDefaultMaterial(curtain, Color.GREEN);
-            airspaces.add(curtain);
+            curtain.setValue(AVKey.DISPLAY_NAME, "Curtain around Snohomish County, WA");
+            layer.addRenderable(curtain);
 
             // Curtain around San Juan County, WA
-            curtain = new Curtain();
+            curtain = new Curtain(attrs);
             curtain.setLocations(makeLatLon(SAN_JUAN_COUNTY_2));
             curtain.setAltitudes(5000.0, 10000.0);
             curtain.setTerrainConforming(true, true);
-            curtain.setValue(AVKey.DISPLAY_NAME, "Curtain around San Juan County, WA.");
-            this.setupDefaultMaterial(curtain, Color.GREEN);
-            airspaces.add(curtain);
+            curtain.setValue(AVKey.DISPLAY_NAME, "Curtain around San Juan County, WA");
+            layer.addRenderable(curtain);
 
             // Polygons of San Juan County, WA
-            Polygon poly = new Polygon();
+            Polygon poly = new Polygon(attrs);
             poly.setLocations(makeLatLon(SAN_JUAN_COUNTY_1));
             poly.setAltitudes(5000.0, 10000.0);
             poly.setTerrainConforming(true, true);
-            poly.setValue(AVKey.DISPLAY_NAME, "Polygon of San Juan County, WA.");
-            this.setupDefaultMaterial(poly, Color.GREEN);
-            airspaces.add(poly);
+            poly.setValue(AVKey.DISPLAY_NAME, "Polygon of San Juan County, WA");
+            layer.addRenderable(poly);
 
-            poly = new Polygon();
+            poly = new Polygon(attrs);
             poly.setLocations(makeLatLon(SAN_JUAN_COUNTY_3));
             poly.setAltitudes(5000.0, 10000.0);
             poly.setTerrainConforming(true, true);
-            poly.setValue(AVKey.DISPLAY_NAME, "Polygon of San Juan County, WA.");
-            this.setupDefaultMaterial(poly, Color.GREEN);
-            airspaces.add(poly);
+            poly.setValue(AVKey.DISPLAY_NAME, "Polygon of San Juan County, WA");
+            layer.addRenderable(poly);
 
             // Polygon over the Sierra Nevada mountains.
-            poly = new Polygon();
+            poly = new Polygon(attrs);
             poly.setLocations(Arrays.asList(
                 LatLon.fromDegrees(40.1323, -122.0911),
                 LatLon.fromDegrees(38.0062, -120.7711),
@@ -584,12 +158,11 @@ public class Airspaces extends ApplicationTemplate
                 LatLon.fromDegrees(40.2609, -120.8295)));
             poly.setAltitudes(0, 5000);
             poly.setAltitudeDatum(AVKey.ABOVE_GROUND_LEVEL, AVKey.ABOVE_GROUND_REFERENCE);
-            poly.setValue(AVKey.DISPLAY_NAME, "Polygon over the Sierra Nevada mountains.");
-            this.setupDefaultMaterial(poly, Color.LIGHT_GRAY);
-            airspaces.add(poly);
+            poly.setValue(AVKey.DISPLAY_NAME, "Polygon over the Sierra Nevada mountains");
+            layer.addRenderable(poly);
 
             // Continent sized polygon.
-            poly = new Polygon();
+            poly = new Polygon(attrs);
             poly.setLocations(Arrays.asList(
                 LatLon.fromDegrees(-40, 60),
                 LatLon.fromDegrees(-40, 80),
@@ -598,11 +171,144 @@ public class Airspaces extends ApplicationTemplate
             ));
             poly.setAltitudes(100000.0, 500000.0);
             poly.setTerrainConforming(true, true);
-            this.setupDefaultMaterial(poly, Color.RED);
-            airspaces.add(poly);
+            poly.setValue(AVKey.DISPLAY_NAME, "Continent sized Polygon");
+            layer.addRenderable(poly);
+
+            TrackAirspace track = new TrackAirspace(attrs);
+            track.setValue(AVKey.DISPLAY_NAME, "Disconnected Track");
+            double leftWidth = 80000d;
+            double rightWidth = 80000d;
+            double minAlt = 150000d;
+            double maxAlt = 250000d;
+            track.addLeg(LatLon.fromDegrees(29.9970, -108.6046), LatLon.fromDegrees(33.5132, -107.7544), minAlt / 6,
+                maxAlt / 6, leftWidth, rightWidth).setTerrainConforming(false, false);
+            track.addLeg(LatLon.fromDegrees(29.4047, -103.0465), LatLon.fromDegrees(34.4955, -102.2151), minAlt / 4,
+                maxAlt / 4, leftWidth, rightWidth).setTerrainConforming(false, true);
+            track.addLeg(LatLon.fromDegrees(28.9956, -99.8026), LatLon.fromDegrees(36.0133, -98.3489), minAlt / 2,
+                maxAlt / 2, leftWidth, rightWidth).setTerrainConforming(true, true);
+            track.addLeg(LatLon.fromDegrees(28.5986, -96.6126), LatLon.fromDegrees(36.8515, -95.0324), minAlt, maxAlt,
+                leftWidth, rightWidth).setTerrainConforming(true, false);
+            track.addLeg(LatLon.fromDegrees(30.4647, -94.1764), LatLon.fromDegrees(35.5636, -92.9371), minAlt / 2,
+                maxAlt / 2, leftWidth, rightWidth).setTerrainConforming(false, false);
+            track.addLeg(LatLon.fromDegrees(31.0959, -90.9424), LatLon.fromDegrees(35.1470, -89.4267), minAlt / 4,
+                maxAlt / 4, leftWidth, rightWidth).setTerrainConforming(false, true);
+            track.addLeg(LatLon.fromDegrees(31.5107, -88.5723), LatLon.fromDegrees(34.2444, -87.4563), minAlt / 6,
+                maxAlt / 6, leftWidth, rightWidth).setTerrainConforming(true, true);
+            layer.addRenderable(track);
+
+            track = new TrackAirspace(attrs);
+            track.setValue(AVKey.DISPLAY_NAME, "Track with center line independent left/right width");
+            track.setTerrainConforming(true, true);
+            track.setEnableInnerCaps(false);
+            track.setEnableCenterLine(true);
+            track.addLeg(LatLon.fromDegrees(42.95, -122.20), LatLon.fromDegrees(42.94, -122.12), 1000, 1300, 300, 600);
+            track.addLeg(LatLon.fromDegrees(42.94, -122.12), LatLon.fromDegrees(42.97, -121.99), 1000, 1300, 300, 600);
+            track.addLeg(LatLon.fromDegrees(42.97, -121.99), LatLon.fromDegrees(42.90, -121.95), 1000, 1300, 300, 600);
+            track.addLeg(LatLon.fromDegrees(42.90, -121.95), LatLon.fromDegrees(42.80, -122.04), 1000, 1300, 300, 600);
+            layer.addRenderable(track);
+
+            // Sphere
+            SphereAirspace sphere = new SphereAirspace(attrs);
+            sphere.setLocation(LatLon.fromDegrees(47.7477, -122.6372));
+            sphere.setAltitude(5000.0);
+            sphere.setRadius(5000.0);
+            sphere.setTerrainConforming(true);
+            sphere.setValue(AVKey.DISPLAY_NAME, "Sphere centered 5km above terrain");
+            layer.addRenderable(sphere);
+
+            sphere = new SphereAirspace(attrs);
+            sphere.setLocation(LatLon.fromDegrees(47.7477, -121.6372));
+            sphere.setAltitude(0.0);
+            sphere.setRadius(5000.0);
+            sphere.setTerrainConforming(true);
+            sphere.setValue(AVKey.DISPLAY_NAME, "Sphere centered on terrain");
+            layer.addRenderable(sphere);
+
+            CappedEllipticalCylinder ellipticalCylinder = new CappedEllipticalCylinder(attrs);
+            ellipticalCylinder.setCenter(LatLon.fromDegrees(51, -110));
+            ellipticalCylinder.setRadii(10e3, 15e3, 50e3, 75e3);
+            ellipticalCylinder.setAltitudes(100000.0, 500000.0);
+            ellipticalCylinder.setHeading(Angle.fromDegrees(180));
+            ellipticalCylinder.setTerrainConforming(true);
+            ellipticalCylinder.setValue(AVKey.DISPLAY_NAME, "Elliptical Cylinder above terrain");
+            layer.addRenderable(ellipticalCylinder);
+
+            CappedCylinder cappedCylinder = new CappedCylinder(attrs);
+            cappedCylinder.setCenter(LatLon.fromDegrees(51, -105));
+            cappedCylinder.setRadii(15e3, 75e3);
+            cappedCylinder.setAltitudes(100000.0, 500000.0);
+            cappedCylinder.setTerrainConforming(true);
+            cappedCylinder.setValue(AVKey.DISPLAY_NAME, "Capped Cylinder above terrain");
+            layer.addRenderable(cappedCylinder);
+
+            return layer;
+        }
+
+        protected Layer makeAMSLAirspaces()
+        {
+            AirspaceAttributes attrs = randomAttrs.nextAttributes().asAirspaceAttributes();
+            RenderableLayer layer = new RenderableLayer();
+            layer.setName("AMSL Airspaces");
+
+            // Continent-sized cylinder.
+            CappedCylinder cyl = new CappedCylinder(attrs);
+            cyl.setCenter(LatLon.fromDegrees(0.0, 0.0));
+            cyl.setRadii(1000000.0, 3000000.0);
+            cyl.setAltitudes(100000.0, 500000.0);
+            cyl.setTerrainConforming(false, false);
+            cyl.setValue(AVKey.DISPLAY_NAME, "3,000km Cylinder");
+            layer.addRenderable(cyl);
+
+            // Radarc
+            // To render a Radarc,
+            // (1) Specify inner radius and outer radius.
+            // (2) Specify start and stop azimuth.
+            PartialCappedCylinder partCyl = new PartialCappedCylinder(attrs);
+            partCyl.setCenter(LatLon.fromDegrees(46.7477, -123.6372));
+            partCyl.setRadii(15000.0, 30000.0);
+            partCyl.setAltitudes(5000.0, 10000.0);
+            partCyl.setAzimuths(Angle.fromDegrees(0.0), Angle.fromDegrees(90.0));
+            partCyl.setTerrainConforming(false, false);
+            partCyl.setValue(AVKey.DISPLAY_NAME, "Partial Cylinder from 0 to 90 degrees");
+            layer.addRenderable(partCyl);
+
+            // Cake
+            Cake cake = new Cake(attrs);
+            cake.setLayers(Arrays.asList(
+                new Cake.Layer(LatLon.fromDegrees(46.7477, -121.6372), 10000.0, Angle.fromDegrees(190.0),
+                    Angle.fromDegrees(170.0), 10000.0, 15000.0),
+                new Cake.Layer(LatLon.fromDegrees(46.7477, -121.6372), 15000.0, Angle.fromDegrees(190.0),
+                    Angle.fromDegrees(90.0), 16000.0, 21000.0),
+                new Cake.Layer(LatLon.fromDegrees(46.7477, -121.6372), 12500.0, Angle.fromDegrees(270.0),
+                    Angle.fromDegrees(60.0), 22000.0, 27000.0)));
+            cake.getLayers().get(0).setTerrainConforming(false, false);
+            cake.getLayers().get(1).setTerrainConforming(false, false);
+            cake.getLayers().get(2).setTerrainConforming(false, false);
+            cake.setValue(AVKey.DISPLAY_NAME, "3 layer Cake");
+            layer.addRenderable(cake);
+
+            // Left Orbit
+            Orbit orbit = new Orbit(attrs);
+            orbit.setLocations(LatLon.fromDegrees(45.7477, -123.6372), LatLon.fromDegrees(45.7477, -122.6372));
+            orbit.setAltitudes(10000.0, 20000.0);
+            orbit.setWidth(30000.0);
+            orbit.setOrbitType(Orbit.OrbitType.LEFT);
+            orbit.setTerrainConforming(false, false);
+            orbit.setValue(AVKey.DISPLAY_NAME, "Left Orbit");
+            layer.addRenderable(orbit);
+
+            // Right Orbit
+            orbit = new Orbit(attrs);
+            orbit.setLocations(LatLon.fromDegrees(45.7477, -123.6372), LatLon.fromDegrees(45.7477, -122.6372));
+            orbit.setAltitudes(10000.0, 20000.0);
+            orbit.setWidth(30000.0);
+            orbit.setOrbitType(Orbit.OrbitType.RIGHT);
+            orbit.setTerrainConforming(false, false);
+            orbit.setValue(AVKey.DISPLAY_NAME, "Right Orbit");
+            layer.addRenderable(orbit);
 
             // PolyArc
-            PolyArc polyArc = new PolyArc();
+            PolyArc polyArc = new PolyArc(attrs);
             polyArc.setLocations(Arrays.asList(
                 LatLon.fromDegrees(45.5, -122.0),
                 LatLon.fromDegrees(46.0, -122.0),
@@ -612,11 +318,11 @@ public class Airspaces extends ApplicationTemplate
             polyArc.setRadius(30000.0);
             polyArc.setAzimuths(Angle.fromDegrees(-45.0), Angle.fromDegrees(135.0));
             polyArc.setTerrainConforming(false, false);
-            this.setupDefaultMaterial(polyArc, Color.GRAY);
-            airspaces.add(polyArc);
+            polyArc.setValue(AVKey.DISPLAY_NAME, "PolyArc with 30km radius from -45 to 135 degrees");
+            layer.addRenderable(polyArc);
 
             // Route
-            Route route = new Route();
+            Route route = new Route(attrs);
             route.setAltitudes(5000.0, 20000.0);
             route.setWidth(20000.0);
             route.setLocations(Arrays.asList(
@@ -625,12 +331,14 @@ public class Airspaces extends ApplicationTemplate
                 LatLon.fromDegrees(44.0, -120.0),
                 LatLon.fromDegrees(43.0, -120.0)));
             route.setTerrainConforming(false, false);
-            this.setupDefaultMaterial(route, Color.GREEN);
-            airspaces.add(route);
+            route.setValue(AVKey.DISPLAY_NAME, "Route");
+            layer.addRenderable(route);
 
             // Track
-            TrackAirspace track = new TrackAirspace();
+            TrackAirspace track = new TrackAirspace(attrs);
             track.setEnableInnerCaps(false);
+            track.setEnableCenterLine(true);
+            track.setValue(AVKey.DISPLAY_NAME, "Semi-connected Track");
             double leftWidth = 100000d;
             double rightWidth = 100000d;
             double minAlt = 150000d;
@@ -647,364 +355,91 @@ public class Airspaces extends ApplicationTemplate
             leg = track.addLeg(LatLon.fromDegrees(47.0121, -94.9218), LatLon.fromDegrees(44.7964, -68.4230), minAlt / 4,
                 maxAlt / 4, leftWidth, rightWidth);
             leg.setTerrainConforming(false, false);
-            this.setupDefaultMaterial(track, Color.ORANGE);
-            airspaces.add(track);
+            layer.addRenderable(track);
 
-            track = new TrackAirspace();
-            leftWidth = 80000d;
-            rightWidth = 80000d;
-            minAlt = 150000d;
-            maxAlt = 250000d;
-            track.addLeg(LatLon.fromDegrees(29.9970, -108.6046), LatLon.fromDegrees(33.5132, -107.7544), minAlt / 6,
-                maxAlt / 6, leftWidth, rightWidth).setTerrainConforming(false, false);
-            track.addLeg(LatLon.fromDegrees(29.4047, -103.0465), LatLon.fromDegrees(34.4955, -102.2151), minAlt / 4,
-                maxAlt / 4, leftWidth, rightWidth).setTerrainConforming(false, true);
-            track.addLeg(LatLon.fromDegrees(28.9956, -99.8026), LatLon.fromDegrees(36.0133, -98.3489), minAlt / 2,
-                maxAlt / 2, leftWidth, rightWidth).setTerrainConforming(true, true);
-            track.addLeg(LatLon.fromDegrees(28.5986, -96.6126), LatLon.fromDegrees(36.8515, -95.0324), minAlt, maxAlt,
-                leftWidth, rightWidth).setTerrainConforming(true, false);
-            track.addLeg(LatLon.fromDegrees(30.4647, -94.1764), LatLon.fromDegrees(35.5636, -92.9371), minAlt / 2,
-                maxAlt / 2, leftWidth, rightWidth).setTerrainConforming(false, false);
-            track.addLeg(LatLon.fromDegrees(31.0959, -90.9424), LatLon.fromDegrees(35.1470, -89.4267), minAlt / 4,
-                maxAlt / 4, leftWidth, rightWidth).setTerrainConforming(false, true);
-            track.addLeg(LatLon.fromDegrees(31.5107, -88.5723), LatLon.fromDegrees(34.2444, -87.4563), minAlt / 6,
-                maxAlt / 6, leftWidth, rightWidth).setTerrainConforming(true, true);
-            this.setupDefaultMaterial(track, Color.MAGENTA);
-            airspaces.add(track);
+            return layer;
+        }
 
-            // Sphere
-            SphereAirspace sphere = new SphereAirspace();
-            sphere.setLocation(LatLon.fromDegrees(47.7477, -122.6372));
-            sphere.setAltitude(5000.0);
-            sphere.setTerrainConforming(true);
-            sphere.setRadius(5000.0);
-            this.setupDefaultMaterial(sphere, Color.ORANGE);
-            airspaces.add(sphere);
+        public Layer makeIntersectingAirspaces()
+        {
+            AirspaceAttributes attrs = randomAttrs.nextAttributes().asAirspaceAttributes();
+            RenderableLayer layer = new RenderableLayer();
+            layer.setName("Intersecting Airspaces");
 
-            sphere = new SphereAirspace();
-            sphere.setLocation(LatLon.fromDegrees(47.7477, -121.6372));
+            double bottom = 1000;
+            double top = 10000;
+
+            // Cake with intersecting layers
+            Cake cake = new Cake(attrs);
+            cake.setLayers(Arrays.asList(
+                new Cake.Layer(LatLon.fromDegrees(25, -100), 50000, Angle.ZERO, Angle.ZERO, bottom, top),
+                new Cake.Layer(LatLon.fromDegrees(24, -100), 100000, Angle.ZERO, Angle.ZERO, bottom, top),
+                new Cake.Layer(LatLon.fromDegrees(23, -100), 150000, Angle.ZERO, Angle.ZERO, bottom, top)));
+            cake.getLayers().get(0).setEnableDepthOffset(true);
+            cake.getLayers().get(1).setEnableDepthOffset(true);
+            cake.getLayers().get(2).setEnableDepthOffset(true);
+            cake.setValue(AVKey.DISPLAY_NAME, "Cake with intersecting layers (depth offset enabled)");
+            layer.addRenderable(cake);
+
+            // Orbit intersecting Cylinder
+            Orbit orbit = new Orbit(attrs);
+            orbit.setLocations(LatLon.fromDegrees(20, -100), LatLon.fromDegrees(15, -90));
+            orbit.setAltitudes(bottom, top);
+            orbit.setWidth(400000);
+            orbit.setEnableDepthOffset(true);
+            orbit.setValue(AVKey.DISPLAY_NAME, "Orbit intersecting Cylinder (depth offset enabled)");
+            layer.addRenderable(orbit);
+
+            // Cylinder intersecting Orbit
+            CappedCylinder cyl = new CappedCylinder(attrs);
+            cyl.setCenter(LatLon.fromDegrees(18, -95));
+            cyl.setRadius(400000);
+            cyl.setAltitudes(bottom, top);
+            cyl.setEnableDepthOffset(true);
+            cyl.setValue(AVKey.DISPLAY_NAME, "Cylinder intersecting Orbit (depth offset enabled)");
+            layer.addRenderable(cyl);
+
+            return layer;
+        }
+
+        public Layer makeDatelineCrossingAirspaces()
+        {
+            randomAttrs.nextAttributes(); // skip the yellow attribute
+            AirspaceAttributes attrs = randomAttrs.nextAttributes().asAirspaceAttributes();
+            RenderableLayer layer = new RenderableLayer();
+            layer.setName("Dateline Crossing Airspaces");
+
+            // Curtains of different path types crossing the dateline.
+            Curtain curtain = new Curtain(attrs);
+            curtain.setLocations(Arrays.asList(LatLon.fromDegrees(27.0, -112.0), LatLon.fromDegrees(35.0, 138.0)));
+            curtain.setAltitudes(1000.0, 100000.0);
+            curtain.setTerrainConforming(false, false);
+            curtain.setValue(AVKey.DISPLAY_NAME, "Great-arc Curtain from America to Japan");
+            layer.addRenderable(curtain);
+
+            curtain = new Curtain(attrs);
+            curtain.setLocations(Arrays.asList(LatLon.fromDegrees(27.0, -112.0), LatLon.fromDegrees(35.0, 138.0)));
+            curtain.setPathType(AVKey.RHUMB_LINE);
+            curtain.setAltitudes(1000.0, 100000.0);
+            curtain.setTerrainConforming(false, false);
+            curtain.setValue(AVKey.DISPLAY_NAME, "Rhumb Curtain from America to Japan");
+            layer.addRenderable(curtain);
+
+            // Continent sized sphere
+            SphereAirspace sphere = new SphereAirspace(attrs);
+            sphere.setLocation(LatLon.fromDegrees(0.0, -180.0));
             sphere.setAltitude(0.0);
-            sphere.setTerrainConforming(true);
-            sphere.setRadius(5000.0);
-            this.setupDefaultMaterial(sphere, Color.MAGENTA);
-            airspaces.add(sphere);
+            sphere.setRadius(1000000.0);
+            sphere.setTerrainConforming(false);
+            sphere.setValue(AVKey.DISPLAY_NAME, "1,000km radius Sphere on the antimeridian");
+            layer.addRenderable(sphere);
 
-            this.setAirspaces(airspaces);
+            return layer;
         }
 
-        public void doLoadIntersectingAirspaces()
+        public void initializeSelectionMonitoring()
         {
-            ArrayList<Airspace> airspaces = new ArrayList<Airspace>();
-            double minAltitude = 1000;
-            double maxAltitude = 10000;
-
-            // Cylinder.
-            CappedCylinder cyl = new CappedCylinder();
-            cyl.setCenter(LatLon.fromDegrees(47.7477, -123.6372));
-            cyl.setRadius(30000.0);
-            cyl.setAltitudes(minAltitude, maxAltitude);
-            cyl.setTerrainConforming(false, false);
-            cyl.setValue(AVKey.DISPLAY_NAME, "30,000m Radius Cylinder. Top & bottom terrain conformance.");
-            this.setupDefaultMaterial(cyl, Color.BLUE);
-            airspaces.add(cyl);
-
-            // Radarc
-            PartialCappedCylinder partCyl = new PartialCappedCylinder();
-            partCyl.setCenter(LatLon.fromDegrees(46.7477, -123.6372));
-            partCyl.setAltitudes(minAltitude, maxAltitude);
-            partCyl.setTerrainConforming(false, false);
-            // To render a Radarc,
-            // (1) Specify inner radius and outer radius.
-            // (2) Specify start and stop azimuth.
-            partCyl.setRadii(15000.0, 30000.0);
-            partCyl.setAzimuths(Angle.fromDegrees(0.0), Angle.fromDegrees(90.0));
-            partCyl.setValue(AVKey.DISPLAY_NAME, "Partial Cylinder from 0 to 90 degrees.");
-            this.setupDefaultMaterial(partCyl, Color.DARK_GRAY);
-            airspaces.add(partCyl);
-
-            // Radarc
-            partCyl = new PartialCappedCylinder();
-            partCyl.setCenter(LatLon.fromDegrees(46.7477, -122.6372));
-            partCyl.setAltitudes(minAltitude, maxAltitude);
-            partCyl.setTerrainConforming(false, false);
-            // To render a Radarc,
-            // (1) Specify inner radius and outer radius.
-            // (2) Specify start and stop azimuth.
-            partCyl.setRadii(15000.0, 30000.0);
-            partCyl.setAzimuths(Angle.fromDegrees(90.0), Angle.fromDegrees(0.0));
-            partCyl.setValue(AVKey.DISPLAY_NAME, "Partial Cylinder from 90 to 0 degrees.");
-            this.setupDefaultMaterial(partCyl, Color.GRAY);
-            airspaces.add(partCyl);
-
-            // Cake
-            Cake cake = new Cake();
-            cake.setLayers(Arrays.asList(
-                new Cake.Layer(LatLon.fromDegrees(46.7477, -121.6372), 10000.0, Angle.fromDegrees(190.0),
-                    Angle.fromDegrees(170.0), 10000.0, 15000.0),
-                new Cake.Layer(LatLon.fromDegrees(46.7477, -121.6372), 15000.0, Angle.fromDegrees(190.0),
-                    Angle.fromDegrees(90.0), 16000.0, 21000.0),
-                new Cake.Layer(LatLon.fromDegrees(46.7477, -121.6372), 12500.0, Angle.fromDegrees(270.0),
-                    Angle.fromDegrees(60.0), 22000.0, 27000.0)));
-            cake.getLayers().get(0).setTerrainConforming(false, false);
-            cake.getLayers().get(1).setTerrainConforming(false, false);
-            cake.getLayers().get(2).setTerrainConforming(false, false);
-            cake.setValue(AVKey.DISPLAY_NAME, "3 layer Cake.");
-            this.setupDefaultMaterial(cake, Color.YELLOW);
-            airspaces.add(cake);
-
-            cake = new Cake();
-            cake.setLayers(Arrays.asList(
-                new Cake.Layer(LatLon.fromDegrees(36, -121), 10000.0, Angle.fromDegrees(0.0),
-                    Angle.fromDegrees(360.0), 10000.0, 15000.0),
-                new Cake.Layer(LatLon.fromDegrees(36.1, -121.1), 15000.0, Angle.fromDegrees(0.0),
-                    Angle.fromDegrees(360.0), 16000.0, 21000.0),
-                new Cake.Layer(LatLon.fromDegrees(35.9, -120.9), 12500.0, Angle.fromDegrees(0.0),
-                    Angle.fromDegrees(360.0), 22000.0, 27000.0)));
-            cake.getLayers().get(0).setTerrainConforming(false, false);
-            cake.getLayers().get(1).setTerrainConforming(false, false);
-            cake.getLayers().get(2).setTerrainConforming(false, false);
-            cake.setValue(AVKey.DISPLAY_NAME, "3 layer Cake. With disjoint layers.");
-            this.setupDefaultMaterial(cake, Color.MAGENTA);
-            airspaces.add(cake);
-
-            // Left Orbit
-            Orbit orbit = new Orbit();
-            orbit.setLocations(LatLon.fromDegrees(45.7477, -123.6372), LatLon.fromDegrees(45.7477, -122.6372));
-            orbit.setAltitudes(minAltitude, maxAltitude);
-            orbit.setWidth(30000.0);
-            orbit.setOrbitType(Orbit.OrbitType.LEFT);
-            orbit.setTerrainConforming(false, false);
-            orbit.setValue(AVKey.DISPLAY_NAME, "LEFT Orbit.");
-            this.setupDefaultMaterial(orbit, Color.LIGHT_GRAY);
-            airspaces.add(orbit);
-
-            // Center Orbit
-            orbit = new Orbit();
-            orbit.setLocations(LatLon.fromDegrees(45.7477, -123.6372), LatLon.fromDegrees(45.7477, -122.6372));
-            orbit.setAltitudes(minAltitude, maxAltitude);
-            orbit.setWidth(30000.0);
-            orbit.setOrbitType(Orbit.OrbitType.CENTER);
-            orbit.setTerrainConforming(false, false);
-            orbit.setValue(AVKey.DISPLAY_NAME, "CENTER Orbit.");
-            this.setupDefaultMaterial(orbit, Color.GRAY);
-            airspaces.add(orbit);
-
-            // Right Orbit
-            orbit = new Orbit();
-            orbit.setLocations(LatLon.fromDegrees(45.7477, -123.6372), LatLon.fromDegrees(45.7477, -122.6372));
-            orbit.setAltitudes(minAltitude, maxAltitude);
-            orbit.setWidth(30000.0);
-            orbit.setOrbitType(Orbit.OrbitType.RIGHT);
-            orbit.setTerrainConforming(false, false);
-            orbit.setValue(AVKey.DISPLAY_NAME, "RIGHT Orbit.");
-            this.setupDefaultMaterial(orbit, Color.DARK_GRAY);
-            airspaces.add(orbit);
-
-            // Orbit from Los Angeles to New York
-            orbit = new Orbit();
-            orbit.setLocations(LatLon.fromDegrees(34.0489, -118.2481), LatLon.fromDegrees(40.7137, -74.0065));
-            orbit.setAltitudes(minAltitude, maxAltitude);
-            orbit.setWidth(500000.0);
-            orbit.setOrbitType(Orbit.OrbitType.CENTER);
-            orbit.setTerrainConforming(false, false);
-            orbit.setValue(AVKey.DISPLAY_NAME, "Orbit From L.A. to N.Y.");
-            this.setupDefaultMaterial(orbit, Color.RED);
-            airspaces.add(orbit);
-
-            this.setAirspaces(airspaces);
-        }
-
-        public void doZoomToAirspaces()
-        {
-            BasicOrbitView view = (BasicOrbitView) this.getWwd().getView();
-            Position center = Position.fromDegrees(46.7477, -122.6372, 0.0);
-            Angle heading = Angle.fromDegrees(0.0);
-            Angle pitch = Angle.fromDegrees(30.0);
-            double zoom = 600000.0;
-            view.addPanToAnimator(center, heading, pitch, zoom, true);
-        }
-
-        public void doSaveAirspaces(final ActionEvent e)
-        {
-            if (this.fileChooser == null)
-            {
-                this.fileChooser = new JFileChooser();
-                this.fileChooser.setCurrentDirectory(new File(Configuration.getCurrentWorkingDirectory()));
-            }
-
-            this.fileChooser.setDialogTitle("Choose Directory to Place Airspaces");
-            this.fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            this.fileChooser.setMultiSelectionEnabled(false);
-            int status = this.fileChooser.showSaveDialog(null);
-            if (status != JFileChooser.APPROVE_OPTION)
-                return;
-
-            final File dir = this.fileChooser.getSelectedFile();
-            if (dir == null)
-                return;
-
-            if (!dir.exists())
-            {
-                //noinspection ResultOfMethodCallIgnored
-                dir.mkdirs();
-            }
-
-            final ArrayList<Airspace> airspaces = new ArrayList<Airspace>();
-
-            Iterable<Airspace> iterable = this.aglAirspaces.getAirspaces();
-            for (Airspace a : iterable)
-            {
-                airspaces.add(a);
-            }
-
-            iterable = this.amslAirspaces.getAirspaces();
-            for (Airspace a : iterable)
-            {
-                airspaces.add(a);
-            }
-
-            Thread t = new Thread(new Runnable()
-            {
-                public void run()
-                {
-                    try
-                    {
-                        java.text.DecimalFormat f = new java.text.DecimalFormat("####");
-                        f.setMinimumIntegerDigits(4);
-                        int counter = 0;
-
-                        for (Airspace a : airspaces)
-                        {
-                            String xmlString = a.getRestorableState();
-                            if (xmlString == null)
-                                continue;
-
-                            try
-                            {
-                                PrintWriter of = new PrintWriter(
-                                    new File(dir, a.getClass().getName() + "-" + f.format(counter++) + ".xml"));
-                                of.write(xmlString);
-                                of.flush();
-                                of.close();
-                            }
-                            catch (FileNotFoundException e)
-                            {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        SwingUtilities.invokeLater(new Runnable()
-                        {
-                            public void run()
-                            {
-                                frame.setCursor(Cursor.getDefaultCursor());
-                                ((Component) e.getSource()).setEnabled(true);
-                            }
-                        });
-                    }
-                }
-            });
-            ((Component) e.getSource()).setEnabled(false);
-            frame.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-            t.start();
-        }
-
-        public void doReadAirspaces(final ActionEvent e)
-        {
-            if (this.fileChooser == null)
-            {
-                this.fileChooser = new JFileChooser();
-                this.fileChooser.setCurrentDirectory(new File(Configuration.getCurrentWorkingDirectory()));
-            }
-
-            this.fileChooser.setDialogTitle("Choose Airspace File Directory");
-            this.fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            this.fileChooser.setMultiSelectionEnabled(false);
-            int status = this.fileChooser.showOpenDialog(null);
-            if (status != JFileChooser.APPROVE_OPTION)
-                return;
-
-            final File dir = this.fileChooser.getSelectedFile();
-            if (dir == null)
-                return;
-
-            Thread t = new Thread(new Runnable()
-            {
-                public void run()
-                {
-                    final ArrayList<Airspace> airspaces = new ArrayList<Airspace>();
-                    try
-                    {
-                        File[] files = dir.listFiles(new FilenameFilter()
-                        {
-                            public boolean accept(File dir, String name)
-                            {
-                                return name.startsWith("gov.nasa.worldwind.render.airspaces") && name.endsWith(".xml");
-                            }
-                        });
-
-                        for (File file : files)
-                        {
-                            String[] name = file.getName().split("-");
-                            try
-                            {
-                                Class c = Class.forName(name[0]);
-                                Airspace airspace = (Airspace) c.newInstance();
-                                BufferedReader input = new BufferedReader(new FileReader(file));
-                                String s = input.readLine();
-                                airspace.restoreState(s);
-                                airspaces.add(airspace);
-
-                                AirspaceAttributes attribs = airspace.getAttributes();
-                                if (!attribs.isDrawOutline())
-                                {
-                                    Color color = attribs.getMaterial().getDiffuse();
-                                    attribs.setDrawOutline(true);
-                                    attribs.setOutlineMaterial(new Material(WWUtil.makeColorBrighter(color)));
-                                }
-                            }
-                            catch (ClassNotFoundException e)
-                            {
-                                e.printStackTrace();
-                            }
-                            catch (IllegalAccessException e)
-                            {
-                                e.printStackTrace();
-                            }
-                            catch (InstantiationException e)
-                            {
-                                e.printStackTrace();
-                            }
-                            catch (FileNotFoundException e)
-                            {
-                                e.printStackTrace();
-                            }
-                            catch (IOException e)
-                            {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        SwingUtilities.invokeLater(new Runnable()
-                        {
-                            public void run()
-                            {
-                                AirspacesController.this.setAirspaces(airspaces);
-                                getWwd().redraw();
-                                frame.setCursor(Cursor.getDefaultCursor());
-                                ((Component) e.getSource()).setEnabled(true);
-                            }
-                        });
-                    }
-                }
-            });
-            ((Component) e.getSource()).setEnabled(false);
-            frame.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-            t.start();
+            this.getWwd().addSelectListener(new BasicDragger(this.getWwd()));
         }
     }
 
@@ -1013,22 +448,18 @@ public class Airspaces extends ApplicationTemplate
         start("World Wind Airspaces", AppFrame.class);
     }
 
-    protected static Iterable<LatLon> makeLatLon(double[] src, int offset, int length)
-    {
-        int numCoords = (int) Math.floor(length / 2.0);
-        LatLon[] dest = new LatLon[numCoords];
-        for (int i = 0; i < numCoords; i++)
-        {
-            double lonDegrees = src[offset + 2 * i];
-            double latDegrees = src[offset + 2 * i + 1];
-            dest[i] = LatLon.fromDegrees(latDegrees, lonDegrees);
-        }
-        return Arrays.asList(dest);
-    }
-
     protected static Iterable<LatLon> makeLatLon(double[] src)
     {
-        return makeLatLon(src, 0, src.length);
+        LatLon[] locations = new LatLon[src.length / 2];
+
+        for (int i = 0; i < locations.length; i++)
+        {
+            double lonDegrees = src[2 * i];
+            double latDegrees = src[2 * i + 1];
+            locations[i] = LatLon.fromDegrees(latDegrees, lonDegrees);
+        }
+
+        return Arrays.asList(locations);
     }
 
     // Boundary data for San Juan and Snohomish Counties take from

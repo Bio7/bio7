@@ -20,7 +20,7 @@ import java.io.*;
  * to create an image that can be dragged around the screen using the mouse.
  *
  * @author tag
- * @version $Id: ScreenImageDragging.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ScreenImageDragging.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class ScreenImageDragging extends ApplicationTemplate
 {
@@ -39,7 +39,6 @@ public class ScreenImageDragging extends ApplicationTemplate
             layer.addRenderable(screenImage);
 
             this.getWwd().getModel().getLayers().add(layer);
-            this.getLayerPanel().update(this.getWwd());
 
             // Tell the input handler to pass mouse events here
             this.getWwd().getInputHandler().addMouseMotionListener(new MouseMotionAdapter()

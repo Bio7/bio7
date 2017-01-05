@@ -26,7 +26,7 @@ import javax.media.opengl.GL2;
  * The view model is based on
  *
  * @author jym
- * @version $Id: BasicView.java 1933 2014-04-14 22:54:19Z dcollins $
+ * @version $Id: BasicView.java 2204 2014-08-07 23:35:03Z dcollins $
  */
 public class BasicView extends WWObjectImpl implements View
 {
@@ -656,6 +656,10 @@ public class BasicView extends WWObjectImpl implements View
                 double maxNearDistance = ViewUtil.computePerspectiveNearDistance(this.fieldOfView, distanceToSurface);
                 if (nearDistance > maxNearDistance)
                     nearDistance = maxNearDistance;
+            }
+            else
+            {
+                nearDistance = MINIMUM_NEAR_DISTANCE;
             }
         }
 

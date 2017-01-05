@@ -22,7 +22,7 @@ import java.util.List;
  * A collection of useful math methods, all static.
  *
  * @author tag
- * @version $Id: WWMath.java 1677 2013-10-21 18:57:51Z dcollins $
+ * @version $Id: WWMath.java 2191 2014-08-01 23:28:20Z dcollins $
  */
 public class WWMath
 {
@@ -144,6 +144,83 @@ public class WWMath
     public static int clamp(int v, int min, int max)
     {
         return v < min ? min : v > max ? max : v;
+    }
+
+    /**
+     * Returns a number between 0.0 and 1.0 indicating whether a specified floating point value is before, between or
+     * after the specified min and max. Returns a linear interpolation of min and max when the value is between the
+     * two.
+     * <p/>
+     * The returned number is undefined if min > max. Otherwise, the returned number is equivalent to the following:
+     * <ul> <li>0.0 - If value < min</li> <li>1.0 - If value > max</li> <li>Linear interpolation of min and max - If min
+     * <= value <= max</li> </ul>
+     *
+     * @param value the value to compare to the minimum and maximum.
+     * @param min   the minimum value.
+     * @param max   the maximum value.
+     *
+     * @return a floating point number between 0.0 and 1.0, inclusive.
+     */
+    public static double stepValue(double value, double min, double max)
+    {
+        // Note: when min==max this returns 0 if the value is on or before the min, and 1 if the value is after the max.
+        // The case that would cause a divide by zero error is never evaluated. The value is always less than, equal to,
+        // or greater than the min/max.
+
+        if (value <= min)
+        {
+            return 0;
+        }
+        else if (value >= max)
+        {
+            return 1;
+        }
+        else
+        {
+            return (value - min) / (max - min);
+        }
+    }
+
+    /**
+     * Returns a number between 0.0 and 1.0 indicating whether a specified floating point value is before, between or
+     * after the specified min and max. Returns a smooth interpolation of min and max when the value is between the
+     * two.
+     * <p/>
+     * This method's smooth interpolation is similar to the interpolation performed by {@link #stepValue(double, double,
+     * double)}, except that the first derivative of the returned number approaches zero as the value approaches the
+     * minimum or maximum. This causes the returned number to ease-in and ease-out as the value travels between the
+     * minimum and maximum.
+     * <p/>
+     * The returned number is undefined if min > max. Otherwise, the returned number is equivalent to the following:
+     * <p/>
+     * <ul> <li>0.0 - If value < min</li> <li>1.0 - If value > max</li> <li>Smooth interpolation of min and max - If min
+     * <= value <= max</li> </ul>
+     *
+     * @param value the value to compare to the minimum and maximum.
+     * @param min   the minimum value.
+     * @param max   the maximum value.
+     *
+     * @return a floating point number between 0.0 and 1.0, inclusive.
+     */
+    public static double smoothStepValue(double value, double min, double max)
+    {
+        // When the min and max are equivalent this cannot distinguish between the two. In this case, this returns 0 if
+        // the value is on or before the min, and 1 if the value is after the max. The case that would cause a divide by
+        // zero error is never evaluated. The value is always less than, equal to, or greater than the min/max.
+
+        if (value <= min)
+        {
+            return 0;
+        }
+        else if (value >= max)
+        {
+            return 1;
+        }
+        else
+        {
+            double step = (value - min) / (max - min);
+            return step * step * (3 - 2 * step);
+        }
     }
 
     /**

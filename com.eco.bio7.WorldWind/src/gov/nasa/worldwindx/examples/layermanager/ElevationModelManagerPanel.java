@@ -22,7 +22,7 @@ import java.util.List;
  * Manages visibility and Z order of elevation models, similar to the layer manager.
  *
  * @author tag
- * @version $Id: ElevationModelManagerPanel.java 1179 2013-02-15 17:47:37Z tgaskins $
+ * @version $Id: ElevationModelManagerPanel.java 2071 2014-06-21 21:04:34Z tgaskins $
  */
 public class ElevationModelManagerPanel extends JPanel
 {
@@ -80,6 +80,8 @@ public class ElevationModelManagerPanel extends JPanel
         // Repopulate this elevation model manager.
 
         this.fill(wwd);
+        this.revalidate();
+        this.repaint();
     }
 
     protected void fill(WorldWindow wwd)

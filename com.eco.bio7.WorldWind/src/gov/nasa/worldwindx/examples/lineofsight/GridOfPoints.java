@@ -21,7 +21,7 @@ import java.util.*;
  * polygon.
  *
  * @author tag
- * @version $Id: GridOfPoints.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: GridOfPoints.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class GridOfPoints extends ApplicationTemplate
 {
@@ -71,8 +71,6 @@ public class GridOfPoints extends ApplicationTemplate
             this.layer = new RenderableLayer();
             this.layer.addRenderable(grid);
             insertBeforeCompass(getWwd(), this.layer);
-
-            this.layerPanel.update(getWwd());
 
             // Establish a select listener that causes the tooltip controller to show the picked position's data value.
             this.setToolTipController(new ToolTipController(getWwd())

@@ -30,7 +30,7 @@ import java.util.logging.Level;
  * provide the core functionality of World Wind.
  *
  * @author Tom Gaskins
- * @version $Id: WorldWindowGLAutoDrawable.java 1855 2014-02-28 23:01:02Z tgaskins $
+ * @version $Id: WorldWindowGLAutoDrawable.java 2047 2014-06-06 22:48:33Z tgaskins $
  */
 public class WorldWindowGLAutoDrawable extends WorldWindowImpl implements WorldWindowGLDrawable, GLEventListener
 {
@@ -55,6 +55,7 @@ public class WorldWindowGLAutoDrawable extends WorldWindowImpl implements WorldW
     protected long lastViewID;
     /** Schedule task to send the {@link View#VIEW_STOPPED} message after the view stop time elapses. */
     protected ScheduledFuture viewRefreshTask;
+    protected boolean enableGpuCacheReinitialization = true;
 
     /** Construct a new <code>WorldWindowGLCanvas</code> for a specified {@link GLDrawable}. */
     public WorldWindowGLAutoDrawable()
@@ -100,6 +101,18 @@ public class WorldWindowGLAutoDrawable extends WorldWindowImpl implements WorldW
         this.drawable = glAutoDrawable;
         this.drawable.setAutoSwapBufferMode(false);
         this.drawable.addGLEventListener(this);
+    }
+
+    @Override
+    public boolean isEnableGpuCacheReinitialization()
+    {
+        return enableGpuCacheReinitialization;
+    }
+
+    @Override
+    public void setEnableGpuCacheReinitialization(boolean enableGpuCacheReinitialization)
+    {
+        this.enableGpuCacheReinitialization = enableGpuCacheReinitialization;
     }
 
     public void initGpuResourceCache(GpuResourceCache cache)
@@ -210,7 +223,7 @@ public class WorldWindowGLAutoDrawable extends WorldWindowImpl implements WorldW
 
         if (this.firstInit)
             this.firstInit = false;
-        else
+        else if (this.enableGpuCacheReinitialization)
             this.reinitialize(glAutoDrawable);
 
         // Disables use of the OpenGL extension GL_ARB_texture_rectangle by JOGL's Texture creation utility.

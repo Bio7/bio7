@@ -14,6 +14,7 @@ import gov.nasa.worldwind.exception.WWUnrecognizedException;
 import gov.nasa.worldwind.globes.ElevationModel;
 import gov.nasa.worldwind.ogc.OGCCapabilities;
 import gov.nasa.worldwind.ogc.OGCConstants;
+import gov.nasa.worldwind.ogc.wcs.wcs100.WCS100Capabilities;
 import gov.nasa.worldwind.ogc.wms.WMSCapabilities;
 import gov.nasa.worldwind.ogc.wms.WMSLayerCapabilities;
 import gov.nasa.worldwind.util.Logging;
@@ -26,7 +27,7 @@ import java.util.List;
  * A factory to create {@link gov.nasa.worldwind.globes.ElevationModel}s.
  *
  * @author tag
- * @version $Id: BasicElevationModelFactory.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: BasicElevationModelFactory.java 2347 2014-09-24 23:37:03Z dcollins $
  */
 public class BasicElevationModelFactory extends BasicFactory
 {
@@ -34,7 +35,7 @@ public class BasicElevationModelFactory extends BasicFactory
      * Creates an elevation model from a general configuration source. The source can be one of the following: <ul>
      * <li>a {@link java.net.URL}</li> <li>a {@link java.io.File}</li> <li>a {@link java.io.InputStream}</li> <li> an
      * {@link org.w3c.dom.Element}</li> <li>a {@link String} holding a file name, a name of a resource on the classpath,
-     * or a string represenation of a URL</li> </ul>
+     * or a string representation of a URL</li> </ul>
      * <p/>
      * For non-compound models, this method maps the <code>serviceName</code> attribute of the
      * <code>ElevationModel/Service</code> element of the XML configuration document to the appropriate elevation-model
@@ -97,6 +98,11 @@ public class BasicElevationModelFactory extends BasicFactory
         }
 
         return new WMSBasicElevationModel((WMSCapabilities) caps, params);
+    }
+
+    protected Object doCreateFromCapabilities(WCS100Capabilities caps, AVList params)
+    {
+        return new WCSElevationModel(caps, params);
     }
 
     /**
@@ -205,6 +211,10 @@ public class BasicElevationModelFactory extends BasicFactory
         else if (serviceName.equals(OGCConstants.WMS_SERVICE_NAME))
         {
             em = new WMSBasicElevationModel(domElement, params);
+        }
+        else if (serviceName.equals(OGCConstants.WCS_SERVICE_NAME))
+        {
+            em = new WCSElevationModel(domElement, params);
         }
         else if (AVKey.SERVICE_NAME_LOCAL_RASTER_SERVER.equals(serviceName))
         {

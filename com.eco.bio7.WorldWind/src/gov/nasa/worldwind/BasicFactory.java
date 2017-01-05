@@ -8,6 +8,7 @@ package gov.nasa.worldwind;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.exception.*;
 import gov.nasa.worldwind.ogc.OGCCapabilities;
+import gov.nasa.worldwind.ogc.wcs.wcs100.WCS100Capabilities;
 import gov.nasa.worldwind.ogc.wms.WMSCapabilities;
 import gov.nasa.worldwind.util.*;
 import org.w3c.dom.*;
@@ -19,7 +20,7 @@ import java.util.logging.Level;
  * A basic implementation of the {@link Factory} interface.
  *
  * @author tag
- * @version $Id: BasicFactory.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: BasicFactory.java 2072 2014-06-21 21:20:25Z tgaskins $
  */
 public class BasicFactory implements Factory
 {
@@ -89,8 +90,10 @@ public class BasicFactory implements Factory
     /**
      * Creates an object from a general configuration source. The source can be one of the following: <ul> <li>{@link
      * java.net.URL}</li> <li>{@link java.io.File}</li> <li>{@link java.io.InputStream}</li> <li>{@link Element}</li>
-     * <li>{@link gov.nasa.worldwind.ogc.OGCCapabilities}</li> <li>{@link String} holding a file name, a name of a
-     * resource on the classpath, or a string represenation of a URL</li></ul>
+     * <li>{@link gov.nasa.worldwind.ogc.OGCCapabilities}</li>
+     * <li>{@link gov.nasa.worldwind.ogc.wcs.wcs100.WCS100Capabilities}</li>
+     * <li>{@link String} holding a file name, a name of a resource on the classpath, or a string representation of a
+     * URL</li></ul>
      * <p/>
      *
      * @param configSource the configuration source. See above for supported types.
@@ -123,6 +126,8 @@ public class BasicFactory implements Factory
             }
             else if (configSource instanceof OGCCapabilities)
                 o = this.doCreateFromCapabilities((OGCCapabilities) configSource, params);
+            else if (configSource instanceof WCS100Capabilities)
+                o = this.doCreateFromCapabilities((WCS100Capabilities) configSource, params);
             else
             {
                 Document doc = WWXML.openDocument(configSource);
@@ -198,6 +203,21 @@ public class BasicFactory implements Factory
      * @return the requested object.
      */
     protected Object doCreateFromCapabilities(OGCCapabilities caps, AVList params)
+    {
+        return null;
+    }
+
+    /**
+     * Implemented by subclasses to perform the actual object creation. This default implementation always returns
+     * null.
+     *
+     * @param caps   the capabilities document.
+     * @param params a list of configuration properties. These properties override any specified in the capabilities
+     *               document.
+     *
+     * @return the requested object.
+     */
+    protected Object doCreateFromCapabilities(WCS100Capabilities caps, AVList params)
     {
         return null;
     }

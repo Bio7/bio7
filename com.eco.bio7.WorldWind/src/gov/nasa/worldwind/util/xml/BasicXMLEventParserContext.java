@@ -23,7 +23,7 @@ import java.util.logging.Level;
  * the base class for schema-specific parsers.
  *
  * @author tag
- * @version $Id: BasicXMLEventParserContext.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: BasicXMLEventParserContext.java 1981 2014-05-08 03:59:04Z tgaskins $
  */
 public class BasicXMLEventParserContext extends AVListImpl implements XMLEventParserContext
 {
@@ -150,13 +150,8 @@ public class BasicXMLEventParserContext extends AVListImpl implements XMLEventPa
         this.parsers.put(UNRECOGNIZED, new UnrecognizedXMLEventParser(null));
     }
 
-    /**
-     * Add string parsers for a list of element types and qualified for a specified namespace.
-     *
-     * @param namespace    the namespace URI.
-     * @param stringFields the string parsers.
-     */
-    protected void addStringParsers(String namespace, String[] stringFields)
+    @Override
+    public void addStringParsers(String namespace, String[] stringFields)
     {
         StringXMLEventParser stringParser = this.getStringParser();
         for (String s : stringFields)
@@ -165,13 +160,8 @@ public class BasicXMLEventParserContext extends AVListImpl implements XMLEventPa
         }
     }
 
-    /**
-     * Add double parsers for a list of element types and qualified for a specified namespace.
-     *
-     * @param namespace    the namespace URI.
-     * @param doubleFields the string parsers.
-     */
-    protected void addDoubleParsers(String namespace, String[] doubleFields)
+    @Override
+    public void addDoubleParsers(String namespace, String[] doubleFields)
     {
         DoubleXMLEventParser doubleParser = this.getDoubleParser();
         for (String s : doubleFields)
@@ -180,13 +170,8 @@ public class BasicXMLEventParserContext extends AVListImpl implements XMLEventPa
         }
     }
 
-    /**
-     * Add integer parsers for a list of element types and qualified for a specified namespace.
-     *
-     * @param namespace     the namespace URI.
-     * @param integerFields the string parsers.
-     */
-    protected void addIntegerParsers(String namespace, String[] integerFields)
+    @Override
+    public void addIntegerParsers(String namespace, String[] integerFields)
     {
         IntegerXMLEventParser integerParser = this.getIntegerParser();
         for (String s : integerFields)
@@ -195,13 +180,8 @@ public class BasicXMLEventParserContext extends AVListImpl implements XMLEventPa
         }
     }
 
-    /**
-     * Add boolean parsers for a list of element types and qualified for a specified namespace.
-     *
-     * @param namespace     the namespace URI.
-     * @param booleanFields the string parsers.
-     */
-    protected void addBooleanParsers(String namespace, String[] booleanFields)
+    @Override
+    public void addBooleanParsers(String namespace, String[] booleanFields)
     {
         BooleanXMLEventParser booleanParser = this.getBooleanParser();
         for (String s : booleanFields)
@@ -210,13 +190,8 @@ public class BasicXMLEventParserContext extends AVListImpl implements XMLEventPa
         }
     }
 
-    /**
-     * Add boolean integer parsers for a list of element types and qualified for a specified namespace.
-     *
-     * @param namespace            the namespace URI.
-     * @param booleanIntegerFields the string parser.
-     */
-    protected void addBooleanIntegerParsers(String namespace, String[] booleanIntegerFields)
+    @Override
+    public void addBooleanIntegerParsers(String namespace, String[] booleanIntegerFields)
     {
         BooleanIntegerXMLEventParser booleanIntegerParser = this.getBooleanIntegerParser();
         for (String s : booleanIntegerFields)
@@ -437,6 +412,25 @@ public class BasicXMLEventParserContext extends AVListImpl implements XMLEventPa
         }
 
         return (event.isStartElement() && this.isSameName(event.asStartElement().getName(), elementName));
+    }
+
+    public boolean isStartElement(XMLEvent event, String elementName)
+    {
+        if (event == null)
+        {
+            String message = Logging.getMessage("nullValue.EventIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (elementName == null)
+        {
+            String message = Logging.getMessage("nullValue.ElementNameIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        return (event.isStartElement() && event.asStartElement().getName().getLocalPart().equals(elementName));
     }
 
     public boolean isEndElement(XMLEvent event, XMLEvent startElement)

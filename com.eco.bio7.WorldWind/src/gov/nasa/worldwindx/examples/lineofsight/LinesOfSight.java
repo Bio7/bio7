@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * computation. <br/> Alt-click: Re-run the most recent line of sight calculation.
  *
  * @author tag
- * @version $Id: LinesOfSight.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: LinesOfSight.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class LinesOfSight extends ApplicationTemplate
 {
@@ -118,8 +118,6 @@ public class LinesOfSight extends ApplicationTemplate
             this.sightLinesLayer = new RenderableLayer();
             this.sightLinesLayer.setName("Sight Lines");
             this.getWwd().getModel().getLayers().add(this.sightLinesLayer);
-
-            getLayerPanel().update(getWwd());
 
             // Create a Terrain object that uses high-resolution elevation data to compute intersections.
             this.terrain = new HighResolutionTerrain(this.getWwd().getModel().getGlobe(), TARGET_RESOLUTION);
@@ -588,7 +586,6 @@ public class LinesOfSight extends ApplicationTemplate
                 public void run()
                 {
                     insertBeforePlacenames(wwd, layer);
-                    layerPanel.update(wwd);
                 }
             });
         }

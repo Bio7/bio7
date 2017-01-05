@@ -24,7 +24,7 @@ import java.util.List;
  * when the globe is constructed.
  *
  * @author Tom Gaskins
- * @version $Id: EllipsoidalGlobe.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: EllipsoidalGlobe.java 2295 2014-09-04 17:33:25Z tgaskins $
  */
 public class EllipsoidalGlobe extends WWObjectImpl implements Globe
 {
@@ -207,24 +207,32 @@ public class EllipsoidalGlobe extends WWObjectImpl implements Globe
     {
         if (latitude == null || longitude == null)
         {
-            String msg = Logging.getMessage("nullValue.AngleIsNull");
+            String msg = Logging.getMessage("nullValue.LatitudeOrLongitudeIsNull");
             Logging.logger().severe(msg);
             throw new IllegalArgumentException(msg);
         }
 
-        return this.computePointFromPosition(latitude, longitude, 0d).getLength3();
+        // The radius for an ellipsoidal globe is a function of its latitude. The following solution was derived by
+        // observing that the length of the ellipsoidal point at the specified latitude and longitude indicates the
+        // radius at that location. The formula for the length of the ellipsoidal point was then converted into the
+        // simplified form below.
+
+        double sinLat = Math.sin(latitude.radians);
+        double rpm = this.equatorialRadius / Math.sqrt(1.0 - this.es * sinLat * sinLat);
+
+        return rpm * Math.sqrt(1.0 + (this.es * this.es - 2.0 * this.es) * sinLat * sinLat);
     }
 
-    public double getRadiusAt(LatLon latLon)
+    public double getRadiusAt(LatLon location)
     {
-        if (latLon == null)
+        if (location == null)
         {
-            String msg = Logging.getMessage("nullValue.LatLonIsNull");
+            String msg = Logging.getMessage("nullValue.LocationIsNull");
             Logging.logger().severe(msg);
             throw new IllegalArgumentException(msg);
         }
 
-        return this.computePointFromPosition(latLon.getLatitude(), latLon.getLongitude(), 0d).getLength3();
+        return this.getRadiusAt(location.latitude, location.longitude);
     }
 
     public double getEccentricitySquared()
@@ -458,6 +466,26 @@ public class EllipsoidalGlobe extends WWObjectImpl implements Globe
         return resolution;
     }
 
+    public double[] getElevations(Sector sector, List<? extends LatLon> latLons, double[] targetResolution,
+        double[] elevations)
+    {
+        if (this.elevationModel == null)
+            return new double[] {0};
+
+        double[] resolution = this.elevationModel.getElevations(sector, latLons, targetResolution, elevations);
+
+        if (this.egm96 != null)
+        {
+            for (int i = 0; i < elevations.length; i++)
+            {
+                LatLon latLon = latLons.get(i);
+                elevations[i] = elevations[i] + this.egm96.getOffset(latLon.getLatitude(), latLon.getLongitude());
+            }
+        }
+
+        return resolution;
+    }
+
     public double getElevation(Angle latitude, Angle longitude)
     {
         if (latitude == null || longitude == null)
@@ -538,6 +566,41 @@ public class EllipsoidalGlobe extends WWObjectImpl implements Globe
         return this.cartesianToGeodetic(point);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void computePointsFromPositions(Sector sector, int numLat, int numLon, double[] metersElevation, Vec4[] out)
+    {
+        if (sector == null)
+        {
+            String message = Logging.getMessage("nullValue.SectorIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (numLat <= 0 || numLon <= 0)
+        {
+            String message = Logging.getMessage("generic.ArgumentOutOfRange", "numLat <= 0 or numLon <= 0");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (metersElevation == null)
+        {
+            String message = Logging.getMessage("nullValue.ElevationsIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (out == null)
+        {
+            String message = Logging.getMessage("nullValue.OutputIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        this.geodeticToCartesian(sector, numLat, numLon, metersElevation, out);
+    }
+
     /**
      * Returns the normal to the Globe at the specified position.
      *
@@ -555,19 +618,7 @@ public class EllipsoidalGlobe extends WWObjectImpl implements Globe
             throw new IllegalArgumentException(message);
         }
 
-        double cosLat = latitude.cos();
-        double cosLon = longitude.cos();
-        double sinLat = latitude.sin();
-        double sinLon = longitude.sin();
-
-        double eqSquared = this.equatorialRadius * this.equatorialRadius;
-        double polSquared = this.polarRadius * this.polarRadius;
-
-        double x = cosLat * sinLon / eqSquared;
-        double y = (1.0 - this.es) * sinLat / polSquared;
-        double z = cosLat * cosLon / eqSquared;
-
-        return new Vec4(x, y, z).normalize3();
+        return this.computeEllipsoidalNormalAtLocation(latitude, longitude);
     }
 
     /**
@@ -651,17 +702,7 @@ public class EllipsoidalGlobe extends WWObjectImpl implements Globe
             throw new IllegalArgumentException(message);
         }
 
-        Vec4 point = this.geodeticToCartesian(latitude, longitude, metersElevation);
-        // Transform to the cartesian coordinates of (latitude, longitude, metersElevation).
-        Matrix transform = Matrix.fromTranslation(point);
-        // Rotate the coordinate system to match the longitude.
-        // Longitude is treated as counter-clockwise rotation about the Y-axis.
-        transform = transform.multiply(Matrix.fromRotationY(longitude));
-        // Rotate the coordinate system to match the latitude.
-        // Latitude is treated clockwise as rotation about the X-axis. We flip the latitude value so that a positive
-        // rotation produces a clockwise rotation (when facing the axis).
-        transform = transform.multiply(Matrix.fromRotationX(latitude.multiply(-1.0)));
-        return transform;
+        return this.computeEllipsoidalOrientationAtPosition(latitude, longitude, metersElevation);
     }
 
     /** {@inheritDoc} */
@@ -676,6 +717,113 @@ public class EllipsoidalGlobe extends WWObjectImpl implements Globe
 
         return this.computeSurfaceOrientationAtPosition(position.getLatitude(), position.getLongitude(),
             position.getElevation());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vec4 computeEllipsoidalPointFromPosition(Angle latitude, Angle longitude, double metersElevation)
+    {
+        if (latitude == null || longitude == null)
+        {
+            String message = Logging.getMessage("nullValue.LatitudeOrLongitudeIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        return this.geodeticToEllipsoidal(latitude, longitude, metersElevation);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vec4 computeEllipsoidalPointFromPosition(Position position)
+    {
+        if (position == null)
+        {
+            String message = Logging.getMessage("nullValue.PositionIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        return this.computeEllipsoidalPointFromPosition(position.getLatitude(), position.getLongitude(),
+            position.getAltitude());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vec4 computeEllipsoidalPointFromLocation(LatLon location)
+    {
+        if (location == null)
+        {
+            String message = Logging.getMessage("nullValue.LocationIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        return this.geodeticToEllipsoidal(location.getLatitude(), location.getLongitude(), 0);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Position computePositionFromEllipsoidalPoint(Vec4 ellipsoidalPoint)
+    {
+        if (ellipsoidalPoint == null)
+        {
+            String message = Logging.getMessage("nullValue.PointIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        return this.ellipsoidalToGeodetic(ellipsoidalPoint);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vec4 computeEllipsoidalNormalAtLocation(Angle latitude, Angle longitude)
+    {
+        if (latitude == null || longitude == null)
+        {
+            String message = Logging.getMessage("nullValue.LatitudeOrLongitudeIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        double cosLat = latitude.cos();
+        double cosLon = longitude.cos();
+        double sinLat = latitude.sin();
+        double sinLon = longitude.sin();
+
+        double eq2 = this.equatorialRadius * this.equatorialRadius;
+        double pol2 = this.polarRadius * this.polarRadius;
+
+        double x = cosLat * sinLon / eq2;
+        double y = (1.0 - this.es) * sinLat / pol2;
+        double z = cosLat * cosLon / eq2;
+
+        return new Vec4(x, y, z).normalize3();
+    }
+
+    @Override
+    public Matrix computeEllipsoidalOrientationAtPosition(Angle latitude, Angle longitude,
+        double metersElevation)
+    {
+        if (latitude == null || longitude == null)
+        {
+            String message = Logging.getMessage("nullValue.LatitudeOrLongitudeIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        Vec4 point = this.computeEllipsoidalPointFromPosition(latitude, longitude, metersElevation);
+        // Transform to the cartesian coordinates of (latitude, longitude, metersElevation).
+        Matrix transform = Matrix.fromTranslation(point);
+        // Rotate the coordinate system to match the longitude.
+        // Longitude is treated as counter-clockwise rotation about the Y-axis.
+        transform = transform.multiply(Matrix.fromRotationY(longitude));
+        // Rotate the coordinate system to match the latitude.
+        // Latitude is treated clockwise as rotation about the X-axis. We flip the latitude value so that a positive
+        // rotation produces a clockwise rotation (when facing the axis).
+        transform = transform.multiply(Matrix.fromRotationX(latitude.multiply(-1.0)));
+        return transform;
     }
 
     public Position getIntersectionPosition(Line line)
@@ -708,6 +856,25 @@ public class EllipsoidalGlobe extends WWObjectImpl implements Globe
      */
     protected Vec4 geodeticToCartesian(Angle latitude, Angle longitude, double metersElevation)
     {
+        return this.geodeticToEllipsoidal(latitude, longitude, metersElevation);
+    }
+
+    /**
+     * Maps a position to ellipsoidal coordinates. The Y axis points to the north pole. The Z axis points to the
+     * intersection of the prime meridian and the equator, in the equatorial plane. The X axis completes a right-handed
+     * coordinate system, and is 90 degrees east of the Z axis and also in the equatorial plane. Sea level is at z =
+     * zero.
+     *
+     * @param latitude        the latitude of the position.
+     * @param longitude       the longitude of the position.
+     * @param metersElevation the number of meters above or below mean sea level.
+     *
+     * @return The ellipsoidal point corresponding to the input position.
+     *
+     * @see #ellipsoidalToGeodetic(gov.nasa.worldwind.geom.Vec4)
+     */
+    protected Vec4 geodeticToEllipsoidal(Angle latitude, Angle longitude, double metersElevation)
+    {
         if (latitude == null || longitude == null)
         {
             String message = Logging.getMessage("nullValue.LatitudeOrLongitudeIsNull");
@@ -729,7 +896,82 @@ public class EllipsoidalGlobe extends WWObjectImpl implements Globe
 
         return new Vec4(x, y, z);
     }
-//
+
+    /**
+     * Maps a grid of geographic positions to Cartesian coordinates. The Y axis points to the north pole. The Z axis
+     * points to the intersection of the prime meridian and the equator, in the equatorial plane. The X axis completes a
+     * right-handed coordinate system, and is 90 degrees east of the Z axis and also in the equatorial plane. Sea level
+     * is at z = zero.
+     * <p/>
+     * This method provides an interface for efficient generation of a grid of cartesian points within a sector. The
+     * grid is constructed by dividing the sector into <code>numLon x numLat</code> evenly separated points in
+     * geographic coordinates. The first and last points in latitude and longitude are placed at the sector's minimum
+     * and maximum boundary, and the remaining points are spaced evenly between those boundary points.
+     * <p/>
+     * For each grid point within the sector, an elevation value is specified via an array of elevations. The
+     * calculation at each position incorporates the associated elevation.
+     *
+     * @param sector          The sector over which to generate the points.
+     * @param numLat          The number of points to generate latitudinally.
+     * @param numLon          The number of points to generate longitudinally.
+     * @param metersElevation An array of elevations to incorporate in the point calculations. There must be one
+     *                        elevation value in the array for each generated point, so the array must have a length of
+     *                        at least <code>numLon x numLat</code>. Elevations are read from this array in row major
+     *                        order, beginning with the row of minimum latitude.
+     * @param out             An array to hold the computed cartesian points. It must have a length of at least
+     *                        <code>numLon x numLat</code>. Points are written to this array in row major order,
+     *                        beginning with the row of minimum latitude.
+     *
+     * @throws IllegalArgumentException If any argument is null, or if numLat or numLon are less than or equal to zero.
+     */
+    protected void geodeticToCartesian(Sector sector, int numLat, int numLon, double[] metersElevation, Vec4[] out)
+    {
+        double minLat = sector.getMinLatitude().radians;
+        double maxLat = sector.getMaxLatitude().radians;
+        double minLon = sector.getMinLongitude().radians;
+        double maxLon = sector.getMaxLongitude().radians;
+        double deltaLat = (maxLat - minLat) / (numLat > 1 ? numLat - 1 : 1);
+        double deltaLon = (maxLon - minLon) / (numLon > 1 ? numLon - 1 : 1);
+        int pos = 0;
+
+        // Compute the cosine and sine of each longitude value. This eliminates the need to re-compute the same values
+        // for each row of constant latitude (and varying longitude).
+        double[] cosLon = new double[numLon];
+        double[] sinLon = new double[numLon];
+        double lon = minLon;
+        for (int i = 0; i < numLon; i++, lon += deltaLon)
+        {
+            if (i == numLon - 1) // explicitly set the last lon to the max longitude to ensure alignment
+                lon = maxLon;
+
+            cosLon[i] = Math.cos(lon);
+            sinLon[i] = Math.sin(lon);
+        }
+
+        // Iterate over the latitude and longitude coordinates in the specified sector, computing the Cartesian point
+        // corresponding to each latitude and longitude.
+        double lat = minLat;
+        for (int j = 0; j < numLat; j++, lat += deltaLat)
+        {
+            if (j == numLat - 1) // explicitly set the last lat to the max latitude to ensure alignment
+                lat = maxLat;
+
+            // Latitude is constant for each row. Values that are a function of latitude can be computed once per row.
+            double cosLat = Math.cos(lat);
+            double sinLat = Math.sin(lat);
+            double rpm = this.equatorialRadius / Math.sqrt(1.0 - this.es * sinLat * sinLat);
+
+            for (int i = 0; i < numLon; i++)
+            {
+                double elev = metersElevation[pos];
+                double x = (rpm + elev) * cosLat * sinLon[i];
+                double y = (rpm * (1.0 - this.es) + elev) * sinLat;
+                double z = (rpm + elev) * cosLat * cosLon[i];
+                out[pos++] = new Vec4(x, y, z);
+            }
+        }
+    }
+
 //    protected Position cartesianToGeodeticOriginal(Vec4 cart)
 //    {
 //        if (cart == null)
@@ -781,8 +1023,22 @@ public class EllipsoidalGlobe extends WWObjectImpl implements Globe
      *
      * @see #geodeticToCartesian(gov.nasa.worldwind.geom.Angle, gov.nasa.worldwind.geom.Angle, double)
      */
-    @SuppressWarnings({"SuspiciousNameCombination"})
     protected Position cartesianToGeodetic(Vec4 cart)
+    {
+        return this.ellipsoidalToGeodetic(cart);
+    }
+
+    /**
+     * Compute the geographic position to corresponds to an ellipsoidal point.
+     *
+     * @param cart Ellipsoidal point to convert to geographic.
+     *
+     * @return The geographic position of {@code cart}.
+     *
+     * @see #geodeticToEllipsoidal(gov.nasa.worldwind.geom.Angle, gov.nasa.worldwind.geom.Angle, double)
+     */
+    @SuppressWarnings({"SuspiciousNameCombination"})
+    protected Position ellipsoidalToGeodetic(Vec4 cart)
     {
         // Contributed by Nathan Kronenfeld. Integrated 1/24/2011. Brings this calculation in line with Vermeille's
         // most recent update.

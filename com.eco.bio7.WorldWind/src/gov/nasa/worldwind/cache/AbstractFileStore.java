@@ -13,7 +13,7 @@ import java.util.logging.Level;
 
 /**
  * @author tag
- * @version $Id: AbstractFileStore.java 1951 2014-04-20 18:57:50Z tgaskins $
+ * @version $Id: AbstractFileStore.java 2190 2014-08-01 21:54:20Z pabercrombie $
  */
 public abstract class AbstractFileStore extends WWObjectImpl implements FileStore
 {
@@ -505,6 +505,16 @@ public abstract class AbstractFileStore extends WWObjectImpl implements FileStor
             java.net.URL url = this.getClass().getClassLoader().getResource(fileName);
             if (url != null)
                 return url;
+
+            // Check for a thread context class loader. This allows the file store to find resources in a case
+            // in which different parts of the application are handled by different class loaders.
+            ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+            if (tccl != null)
+            {
+                url = tccl.getResource(fileName);
+                if (url != null)
+                    return url;
+            }
         }
 
         for (StoreLocation location : this.readLocations)
@@ -602,8 +612,8 @@ public abstract class AbstractFileStore extends WWObjectImpl implements FileStor
     }
 
     /**
-     * @param url the "file:" URL of the file to remove from the file store. Only files in the writable World Wind
-     *            disk cache or temp file directory are removed by this method.
+     * @param url the "file:" URL of the file to remove from the file store. Only files in the writable World Wind disk
+     *            cache or temp file directory are removed by this method.
      *
      * @throws IllegalArgumentException if <code>url</code> is null
      */

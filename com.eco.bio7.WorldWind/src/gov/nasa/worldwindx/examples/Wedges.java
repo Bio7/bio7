@@ -23,7 +23,7 @@ import java.util.Hashtable;
  * materials, and textures applied.
  *
  * @author ccrick
- * @version $Id: Wedges.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: Wedges.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class Wedges extends ApplicationTemplate
 {
@@ -34,7 +34,7 @@ public class Wedges extends ApplicationTemplate
             super(true, true, false);
 
             // Add detail hint slider panel
-            this.getLayerPanel().add(makeDetailHintControlPanel(), BorderLayout.SOUTH);
+            this.getControlPanel().add(makeDetailHintControlPanel(), BorderLayout.SOUTH);
 
             RenderableLayer layer = new RenderableLayer();
 
@@ -139,9 +139,6 @@ public class Wedges extends ApplicationTemplate
 
             // Add the layer to the model.
             insertBeforeCompass(getWwd(), layer);
-
-            // Update layer panel
-            this.getLayerPanel().update(this.getWwd());
         }
 
         protected JPanel makeDetailHintControlPanel()

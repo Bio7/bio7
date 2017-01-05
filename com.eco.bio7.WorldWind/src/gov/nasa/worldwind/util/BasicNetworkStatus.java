@@ -335,7 +335,7 @@ public class BasicNetworkStatus extends AVListImpl implements NetworkStatus
 
     /**
      * Determine if a host is reachable by attempting to resolve the host name, and then attempting to open a
-     * connection.
+     * connection using either https or http.
      *
      * @param hostName Name of the host to connect to.
      *
@@ -369,18 +369,23 @@ public class BasicNetworkStatus extends AVListImpl implements NetworkStatus
         URLConnection connection = null;
         try
         {
-            URL url = new URL("http://" + hostName);
-            Proxy proxy = WWIO.configureProxy();
-            if (proxy != null)
-                connection = url.openConnection(proxy);
-            else
-                connection = url.openConnection();
+            final String[] protocols = new String[] {"https://", "http://"};
+            for (String protocol: protocols)
+            {
+                URL url = new URL(protocol + hostName);
 
-            connection.setConnectTimeout(2000);
-            connection.setReadTimeout(2000);
-            String ct = connection.getContentType();
-            if (ct != null)
-                return true;
+                Proxy proxy = WWIO.configureProxy();
+                if (proxy != null)
+                    connection = url.openConnection(proxy);
+                else
+                    connection = url.openConnection();
+
+                connection.setConnectTimeout(2000);
+                connection.setReadTimeout(2000);
+                String ct = connection.getContentType();
+                if (ct != null)
+                    return true;
+            }
         }
         catch (IOException e)
         {
@@ -395,18 +400,4 @@ public class BasicNetworkStatus extends AVListImpl implements NetworkStatus
 
         return false;
     }
-//
-//    public static void main(String[] args)
-//    {
-//        try
-//        {
-//            NetworkStatus ns = new BasicNetworkStatus();
-//            boolean tf = ns.isWorlWindServerUnavailable();
-//            tf = ns.isNetworkUnavailable();
-//        }
-//        catch (Exception e)
-//        {
-//            e.printStackTrace();
-//        }
-//    }
 }

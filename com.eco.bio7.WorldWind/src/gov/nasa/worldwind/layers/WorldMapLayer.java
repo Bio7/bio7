@@ -29,7 +29,7 @@ import java.util.ArrayList;
  * Note: This layer may not be shared among multiple {@link WorldWindow}s.
  *
  * @author Patrick Murris
- * @version $Id: WorldMapLayer.java 1953 2014-04-21 15:43:35Z tgaskins $
+ * @version $Id: WorldMapLayer.java 2230 2014-08-14 18:19:48Z tgaskins $
  */
 public class WorldMapLayer extends AbstractLayer
 {
@@ -48,6 +48,8 @@ public class WorldMapLayer extends AbstractLayer
     protected boolean showFootprint = true;
     protected ArrayList<? extends LatLon> footPrintPositions;
     protected PickSupport pickSupport = new PickSupport();
+    protected long frameStampForPicking;
+    protected long frameStampForDrawing;
 
     // Draw it as ordered with an eye distance of 0 so that it shows up in front of most other things.
     protected OrderedIcon orderedImage = new OrderedIcon();
@@ -325,15 +327,27 @@ public class WorldMapLayer extends AbstractLayer
     @Override
     public void doRender(DrawContext dc)
     {
+        // Ensure that this shape isn't added to the ordered renderable list more than once per frame.
+        if (dc.isContinuous2DGlobe() && this.frameStampForDrawing == dc.getFrameTimeStamp())
+            return;
+
         // Delegate drawing to the ordered renderable list
         dc.addOrderedRenderable(this.orderedImage);
+
+        this.frameStampForDrawing = dc.getFrameTimeStamp();
     }
 
     @Override
     public void doPick(DrawContext dc, Point pickPoint)
     {
+        // Ensure that this shape isn't added to the ordered renderable list more than once per frame.
+        if (dc.isContinuous2DGlobe() && this.frameStampForPicking == dc.getFrameTimeStamp())
+            return;
+
         // Delegate drawing to the ordered renderable list
         dc.addOrderedRenderable(this.orderedImage);
+
+        this.frameStampForPicking = dc.getFrameTimeStamp();
     }
 
     protected void drawIcon(DrawContext dc)
@@ -433,7 +447,7 @@ public class WorldMapLayer extends AbstractLayer
                 }
 
                 // Draw view footprint in map icon space
-                if (this.showFootprint)
+                if (!dc.is2DGlobe() && this.showFootprint)
                 {
                     this.footPrintPositions = this.computeViewFootPrint(dc, 32);
                     if (this.footPrintPositions != null)

@@ -25,7 +25,7 @@ import java.util.HashMap;
  * smoothly and automatically animate to your new location.
  *
  * @author jym
- * @version $Id: ViewSwitch.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ViewSwitch.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class ViewSwitch extends ApplicationTemplate
 {
@@ -278,7 +278,7 @@ public class ViewSwitch extends ApplicationTemplate
         public AppFrame()
         {
             super(true, true, true);
-            this.getLayerPanel().add(makeControlPanel(), BorderLayout.SOUTH);
+            this.getControlPanel().add(makeControlPanel(), BorderLayout.SOUTH);
 
             viewDisplay.setEventSource(this.getWwd());
         }

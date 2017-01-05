@@ -18,10 +18,10 @@ import gov.nasa.worldwind.globes.Globe;
  * batch rendering capabilities.
  *
  * @author dcollins
- * @version $Id: SurfaceShape.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: SurfaceShape.java 2339 2014-09-22 18:22:37Z tgaskins $
  */
 public interface SurfaceShape
-    extends SurfaceObject, Highlightable, ExtentHolder, MeasurableArea, MeasurableLength, Restorable
+    extends SurfaceObject, Highlightable, ExtentHolder, MeasurableArea, MeasurableLength, Restorable, Attributable
 {
     /**
      * Indicates whether to highlight the surface shape.

@@ -9,18 +9,19 @@ package gov.nasa.worldwindx.examples;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.Position;
-import gov.nasa.worldwind.layers.RenderableLayer;
+import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.util.WWUtil;
+import gov.nasa.worldwind.render.markers.*;
+import gov.nasa.worldwind.util.*;
 
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Example of {@link Path} usage. A Path is a line or curve between positions. The path may follow terrain, and may be
  * turned into a curtain by extruding the path to the ground.
  *
  * @author tag
- * @version $Id: Paths.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: Paths.java 2292 2014-09-02 21:13:05Z tgaskins $
  */
 public class Paths extends ApplicationTemplate
 {
@@ -29,6 +30,9 @@ public class Paths extends ApplicationTemplate
         public AppFrame()
         {
             super(true, true, false);
+
+            // Add a dragger to enable shape dragging
+            this.getWwd().addSelectListener(new BasicDragger(this.getWwd()));
 
             RenderableLayer layer = new RenderableLayer();
 
@@ -64,7 +68,7 @@ public class Paths extends ApplicationTemplate
             path = new Path(pathPositions);
             path.setAltitudeMode(WorldWind.ABSOLUTE);
             path.setExtrude(true);
-            path.setPathType(AVKey.GREAT_CIRCLE);
+            path.setPathType(AVKey.LINEAR);
 
             attrs = new BasicShapeAttributes();
             attrs.setOutlineMaterial(new Material(WWUtil.makeRandomColor(null)));
@@ -77,8 +81,11 @@ public class Paths extends ApplicationTemplate
             // Add the layer to the model.
             insertBeforeCompass(getWwd(), layer);
 
-            // Update layer panel
-            this.getLayerPanel().update(this.getWwd());
+            List<Marker> markers = new ArrayList<Marker>(1);
+            markers.add(new BasicMarker(Position.fromDegrees(90, 0), new BasicMarkerAttributes()));
+            MarkerLayer markerLayer = new MarkerLayer();
+            markerLayer.setMarkers(markers);
+            insertBeforeCompass(getWwd(), markerLayer);
         }
     }
 

@@ -30,14 +30,14 @@ import java.util.logging.Level;
  * Using the EarthFlat and FlatOrbitView to display USGS latest earthquakes rss feed.
  *
  * @author Patrick Murris
- * @version $Id: FlatWorldEarthquakes.java 1624 2013-09-19 21:12:00Z dcollins $
+ * @version $Id: FlatWorldEarthquakes.java 2219 2014-08-11 21:39:44Z dcollins $
  */
 public class FlatWorldEarthquakes extends ApplicationTemplate
 {
     // See the USGS GeoJSON feed documentation for information on this earthquake data feed:
-    // http://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php
+    // https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php
     protected static final String USGS_EARTHQUAKE_FEED_URL
-        = "http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson";
+        = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson";
     protected static final String USGS_EARTHQUAKE_MAGNITUDE = "mag";
     protected static final String USGS_EARTHQUAKE_PLACE = "place";
     protected static final String USGS_EARTHQUAKE_TIME = "time";
@@ -63,19 +63,6 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
         {
             super(true, true, false);
 
-            // Change atmosphere SkyGradientLayer for SkyColorLayer
-            // and set worldmap and compass max active altitude
-            LayerList layers = this.getWwd().getModel().getLayers();
-            for (int i = 0; i < layers.size(); i++)
-            {
-                if (layers.get(i) instanceof SkyGradientLayer)
-                    layers.set(i, new SkyColorLayer());
-                else if (layers.get(i) instanceof WorldMapLayer)
-                    (layers.get(i)).setMaxActiveAltitude(20e6);
-                else if (layers.get(i) instanceof CompassLayer)
-                    (layers.get(i)).setMaxActiveAltitude(20e6);
-            }
-
             // Init tooltip annotation
             this.tooltipAnnotation = new GlobeAnnotation("", Position.fromDegrees(0, 0, 0));
             Font font = Font.decode("Arial-Plain-16");
@@ -92,9 +79,6 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
             controls.setLayout(new BoxLayout(controls, BoxLayout.Y_AXIS));
             // Add earthquakes view control panel
             controls.add(makeEarthquakesPanel());
-            // Add flat world projection control panel
-            controls.add(new FlatWorldPanel(this.getWwd()));
-            this.getLayerPanel().add(controls, BorderLayout.SOUTH);
 
             // Add select listener for earthquake picking
             this.getWwd().addSelectListener(new SelectListener()
@@ -402,7 +386,6 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
                 this.eqLayer = newLayer;
                 this.eqLayer.addRenderable(this.tooltipAnnotation);
                 insertBeforePlacenames(this.getWwd(), this.eqLayer);
-                this.getLayerPanel().update(this.getWwd());
                 this.applyMagnitudeFilter(Double.parseDouble((String) magnitudeCombo.getSelectedItem()));
 
                 if (this.statusLabel != null)
@@ -626,7 +609,6 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
         Configuration.setValue(AVKey.INITIAL_LONGITUDE, 0);
         Configuration.setValue(AVKey.INITIAL_ALTITUDE, 50e6);
         Configuration.setValue(AVKey.GLOBE_CLASS_NAME, EarthFlat.class.getName());
-        Configuration.setValue(AVKey.VIEW_CLASS_NAME, FlatOrbitView.class.getName());
         ApplicationTemplate.start("World Wind USGS Earthquakes M 2.5+ - 7 days", AppFrame.class);
     }
 }

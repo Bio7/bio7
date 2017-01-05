@@ -22,7 +22,7 @@ import java.util.logging.Level;
  * Utility class to load data from a GeoJSON source into a layer.
  *
  * @author dcollins
- * @version $Id: GeoJSONLoader.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: GeoJSONLoader.java 2326 2014-09-17 22:35:45Z dcollins $
  */
 public class GeoJSONLoader
 {
@@ -412,13 +412,13 @@ public class GeoJSONLoader
     protected PointPlacemarkAttributes createPointAttributes(GeoJSONGeometry geom, Layer layer)
     {
         if (layer == null)
-            return randomAttrs.nextPointAttributes();
+            return randomAttrs.nextAttributes().asPointAttributes();
 
         String key = this.getClass().getName() + ".PointAttributes";
         PointPlacemarkAttributes attrs = (PointPlacemarkAttributes) layer.getValue(key);
         if (attrs == null)
         {
-            attrs = randomAttrs.nextPointAttributes();
+            attrs = randomAttrs.nextAttributes().asPointAttributes();
             layer.setValue(key, attrs);
         }
 
@@ -429,13 +429,13 @@ public class GeoJSONLoader
     protected ShapeAttributes createPolylineAttributes(GeoJSONGeometry geom, Layer layer)
     {
         if (layer == null)
-            return randomAttrs.nextPolylineAttributes();
+            return randomAttrs.nextAttributes().asShapeAttributes();
 
         String key = this.getClass().getName() + ".PolylineAttributes";
         ShapeAttributes attrs = (ShapeAttributes) layer.getValue(key);
         if (attrs == null)
         {
-            attrs = randomAttrs.nextPolylineAttributes();
+            attrs = randomAttrs.nextAttributes().asShapeAttributes();
             layer.setValue(key, attrs);
         }
 
@@ -446,13 +446,13 @@ public class GeoJSONLoader
     protected ShapeAttributes createPolygonAttributes(GeoJSONGeometry geom, Layer layer)
     {
         if (layer == null)
-            return randomAttrs.nextPolygonAttributes();
+            return randomAttrs.nextAttributes().asShapeAttributes();
 
         String key = this.getClass().getName() + ".PolygonAttributes";
         ShapeAttributes attrs = (ShapeAttributes) layer.getValue(key);
         if (attrs == null)
         {
-            attrs = randomAttrs.nextPolygonAttributes();
+            attrs = randomAttrs.nextAttributes().asShapeAttributes();
             layer.setValue(key, attrs);
         }
 

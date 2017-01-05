@@ -19,7 +19,7 @@ import java.util.List;
 
 /**
  * @author tag
- * @version $Id: AbstractElevationModel.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: AbstractElevationModel.java 3420 2015-09-10 23:25:43Z tgaskins $
  */
 abstract public class AbstractElevationModel extends WWObjectImpl implements ElevationModel
 {
@@ -137,6 +137,23 @@ abstract public class AbstractElevationModel extends WWObjectImpl implements Ele
 
         double e = this.getUnmappedElevation(latitude, longitude);
         return e == this.missingDataFlag ? this.missingDataValue : e;
+    }
+
+    public double[] getElevations(Sector sector, List<? extends LatLon> latLons, double[] targetResolutions,
+        double[] elevations)
+    {
+        return new double[] {this.getElevations(sector, latLons, targetResolutions[0], elevations)};
+    }
+
+    public double[] getUnmappedElevations(Sector sector, List<? extends LatLon> latLons, double[] targetResolutions,
+        double[] elevations)
+    {
+        return new double[] {this.getElevations(sector, latLons, targetResolutions[0], elevations)};
+    }
+
+    public double[] getBestResolutions(Sector sector)
+    {
+        return new double[] {this.getBestResolution(sector)};
     }
 
     public String getRestorableState()
@@ -339,5 +356,10 @@ abstract public class AbstractElevationModel extends WWObjectImpl implements Ele
     public double getLocalDataAvailability(Sector sector, Double targetResolution)
     {
         return 1d;
+    }
+
+    public double getUnmappedLocalSourceElevation(Angle latitude, Angle longitude)
+    {
+        return this.getUnmappedElevation(latitude, longitude);
     }
 }

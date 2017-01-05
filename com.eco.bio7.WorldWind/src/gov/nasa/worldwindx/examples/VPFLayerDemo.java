@@ -27,7 +27,7 @@ import java.io.File;
  * VPF shapes are displayed as gray outlines, and icons are displayed as a gray question mark.
  *
  * @author dcollins
- * @version $Id: VPFLayerDemo.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: VPFLayerDemo.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class VPFLayerDemo extends ApplicationTemplate
 {
@@ -43,7 +43,6 @@ public class VPFLayerDemo extends ApplicationTemplate
             VPFDatabase db = VPFUtils.readDatabase(file);
             VPFLayer layer = new VPFLayer(db);
             insertBeforePlacenames(this.getWwd(), layer);
-            this.getLayerPanel().update(this.getWwd());
             this.openVPFCoveragePanel(db, layer);
         }
 
@@ -88,7 +87,7 @@ public class VPFLayerDemo extends ApplicationTemplate
             box.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30)); // top, left, bottom, right
             box.add(button);
 
-            this.getLayerPanel().add(box, BorderLayout.SOUTH);
+            this.getControlPanel().add(box, BorderLayout.SOUTH);
         }
     }
 

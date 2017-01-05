@@ -14,7 +14,7 @@ import gov.nasa.worldwind.render.Renderable;
  * GeoRSS documents.
  *
  * @author dcollins
- * @version $Id: GeoRSS.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: GeoRSS.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class GeoRSS extends ApplicationTemplate
 {
@@ -27,7 +27,6 @@ public class GeoRSS extends ApplicationTemplate
             RenderableLayer layer = this.buildGeoRSSLayer();
             layer.setName("GeoRSS Shapes");
             insertBeforePlacenames(this.getWwd(), layer);
-            this.getLayerPanel().update(this.getWwd());
         }
 
         private RenderableLayer buildGeoRSSLayer()

@@ -8,6 +8,7 @@ package gov.nasa.worldwind.pick;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.util.Range;
 
 import javax.media.opengl.*;
 import java.awt.*;
@@ -15,7 +16,7 @@ import java.util.*;
 
 /**
  * @author tag
- * @version $Id: PickSupport.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: PickSupport.java 2281 2014-08-29 23:08:04Z dcollins $
  */
 public class PickSupport
 {
@@ -25,6 +26,12 @@ public class PickSupport
      */
     protected Map<Integer, PickedObject> pickableObjects = new HashMap<Integer, PickedObject>();
     /**
+     * The picked object color code ranges currently registered with this PickSupport, represented as a map of color
+     * code ranges to picked object factories. PickSupport uses these factories to delay PickedObject construction until
+     * a matching pick color is identified.
+     */
+    protected Map<Range, PickedObjectFactory> pickableObjectRanges = new HashMap<Range, PickedObjectFactory>();
+    /**
      * Indicates the minimum and maximum color code associated with the picked objects in the pickableObjects map.
      * Initially <code>null</code>, indicating that the minimum and maximum color codes are unknown.
      */
@@ -33,6 +40,7 @@ public class PickSupport
     public void clearPickList()
     {
         this.getPickableObjects().clear();
+        this.getPickableObjectRanges().clear();
         this.minAndMaxColorCodes = null; // Reset the min and max color codes.
     }
 
@@ -60,16 +68,34 @@ public class PickSupport
         this.adjustExtremeColorCodes(po.getColorCode());
     }
 
+    /**
+     * Associates a collection of picked objects with a range of pick colors. PickSupport uses the factory to delay
+     * PickedObject construction until a matching pick color is identified by getTopObject or resolvePick. This
+     * eliminates the overhead of creating and managing a large collection of PickedObject instances when only a few may
+     * actually be picked.
+     *
+     * @param colorCode the first color code associated with the range of sequential color codes.
+     * @param count     the number of sequential color codes in the range of sequential color codes.
+     * @param factory   the PickedObjectFactory to use when creating a PickedObject for a color in the specified range.
+     */
+    public void addPickableObjectRange(int colorCode, int count, PickedObjectFactory factory)
+    {
+        Range range = new Range(colorCode, count);
+        this.pickableObjectRanges.put(range, factory);
+        this.adjustExtremeColorCodes(colorCode);
+        this.adjustExtremeColorCodes(colorCode + count - 1); // max code is last element in sequence of count codes
+    }
+
     public PickedObject getTopObject(DrawContext dc, Point pickPoint)
     {
-        if (this.getPickableObjects().isEmpty())
+        if (!this.hasPickableObjects()) // avoid reading the current GL color when no pickable objects are registered
             return null;
 
         int colorCode = this.getTopColor(dc, pickPoint);
         if (colorCode == 0) // getTopColor returns 0 if the pick point selects the clear color.
             return null;
 
-        PickedObject pickedObject = getPickableObjects().get(colorCode);
+        PickedObject pickedObject = this.lookupPickableObject(colorCode);
         if (pickedObject == null)
             return null;
 
@@ -95,8 +121,7 @@ public class PickSupport
      */
     public PickedObject resolvePick(DrawContext dc, Point pickPoint, Layer layer)
     {
-        // Avoid performing any additional work there are no picked objects registered with this PickSupport.
-        if (this.getPickableObjects().isEmpty())
+        if (!this.hasPickableObjects()) // avoid reading the current GL color when no pickable objects are registered
             return null;
 
         PickedObject po = null;
@@ -167,7 +192,7 @@ public class PickSupport
             if (colorCode == 0) // This should never happen, but we check anyway.
                 continue;
 
-            PickedObject po = this.getPickableObjects().get(colorCode);
+            PickedObject po = this.lookupPickableObject(colorCode);
             if (po == null)
                 continue;
 
@@ -219,11 +244,45 @@ public class PickSupport
     {
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         gl.glPopAttrib();
+
+        // Some nvidia Quadro cards have a bug in which the current color is not restored. Restore it to the
+        // default here.
+        gl.glColor3ub((byte) 255, (byte) 255, (byte) 255);
     }
 
     protected Map<Integer, PickedObject> getPickableObjects()
     {
         return this.pickableObjects;
+    }
+
+    protected Map<Range, PickedObjectFactory> getPickableObjectRanges()
+    {
+        return this.pickableObjectRanges;
+    }
+
+    protected boolean hasPickableObjects()
+    {
+        return this.getPickableObjects().size() > 0 || this.getPickableObjectRanges().size() > 0;
+    }
+
+    protected PickedObject lookupPickableObject(int colorCode)
+    {
+        // Try looking up the color code in the pickable object map.
+        PickedObject po = this.getPickableObjects().get(colorCode);
+        if (po != null)
+            return po;
+
+        // Try matching the color code to one of the pickable object ranges.
+        for (Map.Entry<Range, PickedObjectFactory> entry : this.getPickableObjectRanges().entrySet())
+        {
+            Range range = entry.getKey();
+            PickedObjectFactory factory = entry.getValue();
+
+            if (range.contains(colorCode) && factory != null)
+                return factory.createPickedObject(colorCode);
+        }
+
+        return null;
     }
 
     /**

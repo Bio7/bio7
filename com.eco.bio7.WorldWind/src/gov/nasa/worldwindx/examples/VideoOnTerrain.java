@@ -30,7 +30,7 @@ import java.util.Arrays;
  * continually changed, but this example doesn't do that.
  *
  * @author tag
- * @version $Id: VideoOnTerrain.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: VideoOnTerrain.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class VideoOnTerrain extends ApplicationTemplate
 {
@@ -56,7 +56,6 @@ public class VideoOnTerrain extends ApplicationTemplate
             RenderableLayer layer = new RenderableLayer();
             layer.setName("Video on terrain");
             insertBeforePlacenames(this.getWwd(), layer);
-            this.layerPanel.update(this.getWwd()); // makes the ApplicationTemplate layer list show the new layer
 
             // Set up a SelectListener to drag the SurfaceImage.
             this.getWwd().addSelectListener(new SurfaceImageDragger(this.getWwd()));

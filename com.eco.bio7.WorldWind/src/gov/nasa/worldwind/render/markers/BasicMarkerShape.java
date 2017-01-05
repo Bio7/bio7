@@ -22,7 +22,7 @@ import java.util.ArrayList;
  * This is the base class for marker symbols.
  *
  * @author tag
- * @version $Id: BasicMarkerShape.java 1181 2013-02-15 22:27:10Z dcollins $
+ * @version $Id: BasicMarkerShape.java 2279 2014-08-29 21:32:19Z tgaskins $
  */
 public class BasicMarkerShape
 {
@@ -418,23 +418,27 @@ public class BasicMarkerShape
 
             // This performs the same operation as Vec4.axisAngle() but with a "v2" of <0, 0, 1>.
             // Compute rotation angle
-            Angle angle = Angle.fromRadians(Math.acos(normal.z));
-            // Compute the direction cosine factors that define the rotation axis
-            double A = -normal.y;
-            double B = normal.x;
-            double L = Math.sqrt(A * A + B * B);
-
-            // Rotate the cube so that one of the faces points north
-            Position position = dc.getGlobe().computePositionFromPoint(point);
-            Vec4 north = dc.getGlobe().computeNorthPointingTangentAtLocation(position.getLatitude(),
-                position.getLongitude());
-            Vec4 rotatedY = Vec4.UNIT_NEGATIVE_Y.transformBy3(Matrix.fromAxisAngle(angle, A / L, B / L, 0));
-            Angle northAngle = rotatedY.angleBetween3(north);
-
             GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
-            gl.glRotated(angle.degrees, A / L, B / L, 0);  // rotate cube normal to globe
 
-            gl.glRotated(northAngle.degrees, 0, 0, 1); // rotate to face north
+            if (!(normal.equals(Vec4.UNIT_Z) || normal.equals(Vec4.UNIT_NEGATIVE_Z)))
+            {
+                Angle angle = Angle.fromRadians(Math.acos(normal.z));
+                // Compute the direction cosine factors that define the rotation axis
+                double A = -normal.y;
+                double B = normal.x;
+                double L = Math.sqrt(A * A + B * B);
+
+                // Rotate the cube so that one of the faces points north
+                Position position = dc.getGlobe().computePositionFromPoint(point);
+                Vec4 north = dc.getGlobe().computeNorthPointingTangentAtLocation(position.getLatitude(),
+                    position.getLongitude());
+                Vec4 rotatedY = Vec4.UNIT_NEGATIVE_Y.transformBy3(Matrix.fromAxisAngle(angle, A / L, B / L, 0));
+                Angle northAngle = rotatedY.angleBetween3(north);
+
+                gl.glRotated(angle.degrees, A / L, B / L, 0);  // rotate cube normal to globe
+
+                gl.glRotated(northAngle.degrees, 0, 0, 1); // rotate to face north
+            }
 
             // Apply heading, pitch, and roll
             if (this.isApplyOrientation())
@@ -480,16 +484,24 @@ public class BasicMarkerShape
                     marker.getPitch());
             }
 
-            // This code performs the same operation as Vec4.axisAngle() but with a "v2" of <0, 0, 1>.
-            // Compute rotation angle
-            Angle angle = Angle.fromRadians(Math.acos(orientation.z));
-            // Compute the direction cosine factors that define the rotation axis
-            double A = -orientation.y;
-            double B = orientation.x;
-            double L = Math.sqrt(A * A + B * B);
-
             GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
-            gl.glRotated(angle.degrees, A / L, B / L, 0);  // rotate shape to proper heading and pitch
+
+            if (!(orientation.equals(Vec4.UNIT_Z) || orientation.equals(Vec4.UNIT_NEGATIVE_Z)))
+            {
+                // This code performs the same operation as Vec4.axisAngle() but with a "v2" of <0, 0, 1>.
+                // Compute rotation angle
+                Angle angle = Angle.fromRadians(Math.acos(orientation.z));
+                // Compute the direction cosine factors that define the rotation axis
+                double A = -orientation.y;
+                double B = orientation.x;
+                double L = Math.sqrt(A * A + B * B);
+
+                gl.glRotated(angle.degrees, A / L, B / L, 0);  // rotate shape to proper heading and pitch
+            }
+            else if (orientation.equals(Vec4.UNIT_NEGATIVE_Z))
+            {
+                gl.glRotated(180, 1, 0, 0); // rotate to point cone away from globe's surface
+            }
 
             gl.glScaled(size, size, size);                 // scale
             gl.glCallList(dlResource[0]);
@@ -537,16 +549,20 @@ public class BasicMarkerShape
                     marker.getPitch());
             }
 
-            // This performs the same operation as Vec4.axisAngle() but with a "v2" of <0, 0, 1>.
-            // Compute rotation angle
-            Angle angle = Angle.fromRadians(Math.acos(orientation.z));
-            // Compute the direction cosine factors that define the rotation axis
-            double A = -orientation.y;
-            double B = orientation.x;
-            double L = Math.sqrt(A * A + B * B);
-
             GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
-            gl.glRotated(angle.degrees, A / L, B / L, 0);  // rotate to proper heading and pitch
+
+            if (!(orientation.equals(Vec4.UNIT_Z) || orientation.equals(Vec4.UNIT_NEGATIVE_Z)))
+            {
+                // This performs the same operation as Vec4.axisAngle() but with a "v2" of <0, 0, 1>.
+                // Compute rotation angle
+                Angle angle = Angle.fromRadians(Math.acos(orientation.z));
+                // Compute the direction cosine factors that define the rotation axis
+                double A = -orientation.y;
+                double B = orientation.x;
+                double L = Math.sqrt(A * A + B * B);
+
+                gl.glRotated(angle.degrees, A / L, B / L, 0);  // rotate to proper heading and pitch
+            }
 
             gl.glScaled(size, size, size);                 // scale
             gl.glCallList(dlResource[0]);
@@ -603,22 +619,23 @@ public class BasicMarkerShape
                     attrs.getHeadingMaterial().apply(gl, GL2.GL_FRONT);
             }
 
-            // To compute rotation of the line axis toward the proper heading, find a second point in that direction.
-            Position pos = dc.getGlobe().computePositionFromPoint(point);
-            LatLon p2ll = LatLon.greatCircleEndPosition(pos, marker.getHeading(), Angle.fromDegrees(.1));
-            Vec4 p2 = dc.getGlobe().computePointFromPosition(p2ll.getLatitude(), p2ll.getLongitude(),
-                pos.getElevation());
+            // Orient the unit shape to lie parallel to the globe's surface at its position and oriented to the
+            // specified heading.
+            if (dc.is2DGlobe())
+            {
+                Vec4 npt = dc.getGlobe().computeNorthPointingTangentAtLocation(marker.getPosition().getLatitude(),
+                    marker.getPosition().getLongitude());
+                //noinspection SuspiciousNameCombination
+                double npta = Math.atan2(npt.x, npt.y);
+                gl.glRotated(-marker.getHeading().degrees - npta * 180 / Math.PI, 0, 0, 1);
+            }
+            else
+            {
+                gl.glRotated(marker.getPosition().getLongitude().degrees, 0, 1, 0);
+                gl.glRotated(-marker.getPosition().getLatitude().degrees, 1, 0, 0);
+                gl.glRotated(-marker.getHeading().degrees, 0, 0, 1);
+            }
 
-            // This method then performs the same operation as Vec4.axisAngle() but with a "v2" of <0, 0, 1>.
-            Vec4 p1p2 = p2.subtract3(point).normalize3();
-            // Compute rotation angle
-            Angle directionAngle = Angle.fromRadians(Math.acos(p1p2.z));
-            // Compute the direction cosine factors that define the rotation axis
-            double A = -p1p2.y;
-            double B = p1p2.x;
-            double L = Math.sqrt(A * A + B * B);
-
-            gl.glRotated(directionAngle.degrees, A / L, B / L, 0);  // point line toward p2
             double scale = attrs.getHeadingScale() * size;
             gl.glScaled(scale, scale, scale);                       // scale
             gl.glCallList(dlResource[0]);
@@ -634,9 +651,9 @@ public class BasicMarkerShape
         {
             GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
             gl.glBegin(GL2.GL_LINE_STRIP);
-            gl.glNormal3f(0f, 1f, 0f);
+            gl.glNormal3f(0f, 0f, 1f);
             gl.glVertex3f(0, 0, 0);
-            gl.glVertex3f(0, 0, 1);
+            gl.glVertex3f(0, 1, 0);
             gl.glEnd();
 
             return 3 * 3 * 4; // three vertices and a normal each with 3 float coordinates
@@ -675,30 +692,23 @@ public class BasicMarkerShape
                     attrs.getHeadingMaterial().apply(gl, GL2.GL_FRONT);
             }
 
-            // To compute rotation of the arrow axis toward the proper heading, find a second point in that direction.
-            Position pos = dc.getGlobe().computePositionFromPoint(point);
-            LatLon p2ll = LatLon.greatCircleEndPosition(pos, marker.getHeading(), Angle.fromDegrees(.1));
-            Vec4 p2 = dc.getGlobe().computePointFromPosition(p2ll.getLatitude(), p2ll.getLongitude(),
-                pos.getElevation());
+            // Orient the unit shape to lie parallel to the globe's surface at its position and oriented to the
+            // specified heading.
+            if (dc.is2DGlobe())
+            {
+                Vec4 npt = dc.getGlobe().computeNorthPointingTangentAtLocation(marker.getPosition().getLatitude(),
+                    marker.getPosition().getLongitude());
+                //noinspection SuspiciousNameCombination
+                double npta = Math.atan2(npt.x, npt.y);
+                gl.glRotated(-marker.getHeading().degrees - npta * 180 / Math.PI, 0, 0, 1);
+            }
+            else
+            {
+                gl.glRotated(marker.getPosition().getLongitude().degrees, 0, 1, 0);
+                gl.glRotated(-marker.getPosition().getLatitude().degrees, 1, 0, 0);
+                gl.glRotated(-marker.getHeading().degrees, 0, 0, 1);
+            }
 
-            // This method then performs the same operation as Vec4.axisAngle() but with a "v2" of <0, 0, 1>.
-            Vec4 p1p2 = p2.subtract3(point).normalize3();
-            // Compute rotation angle
-            Angle directionAngle = Angle.fromRadians(Math.acos(p1p2.z));
-            // Compute the direction cosine factors that define the rotation axis
-            double A = -p1p2.y;
-            double B = p1p2.x;
-            double L = Math.sqrt(A * A + B * B);
-
-            // Compute rotation angle on z (roll) to keep the arrow plane parallel to the ground
-            Vec4 horizontalVector = dc.getGlobe().computeSurfaceNormalAtPoint(point).cross3(p1p2);
-            Vec4 rotatedX = Vec4.UNIT_X.transformBy3(Matrix.fromAxisAngle(directionAngle, A / L, B / L, 0));
-            Angle rollAngle = rotatedX.angleBetween3(horizontalVector);
-            // Find out which way to do the roll
-            double rollDirection = Math.signum(-horizontalVector.cross3(rotatedX).dot3(p1p2));
-
-            gl.glRotated(directionAngle.degrees, A / L, B / L, 0);  // point arrow toward p2
-            gl.glRotated(rollAngle.degrees, 0, 0, rollDirection);   // roll arrow to keep it parallel to the ground
             double scale = attrs.getHeadingScale() * size;
             gl.glScaled(scale, scale, scale);                       // scale
             gl.glCallList(dlResource[0]);
@@ -714,9 +724,9 @@ public class BasicMarkerShape
         {
             GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
             gl.glBegin(GL2.GL_POLYGON);
-            gl.glNormal3f(0f, 1f, 0f);
+            gl.glNormal3f(0f, 0f, 1f);
             gl.glVertex3f(-.5f, 0, 0);
-            gl.glVertex3f(0, 0, 1);
+            gl.glVertex3f(0, 1, 0);
             gl.glVertex3f(0.5f, 0, 0);
             gl.glVertex3f(-0.5f, 0, 0);
             gl.glEnd();

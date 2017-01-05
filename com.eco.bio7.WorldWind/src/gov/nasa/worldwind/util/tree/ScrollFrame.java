@@ -6,7 +6,6 @@
 
 package gov.nasa.worldwind.util.tree;
 
-import com.jogamp.opengl.util.awt.TextRenderer;
 import com.jogamp.opengl.util.texture.*;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
@@ -36,7 +35,7 @@ import java.util.List;
  * directly when the frame is rendered.
  *
  * @author pabercrombie
- * @version $Id: ScrollFrame.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ScrollFrame.java 2053 2014-06-10 20:16:57Z tgaskins $
  */
 public class ScrollFrame extends DragControl implements PreRenderable, Renderable
 {

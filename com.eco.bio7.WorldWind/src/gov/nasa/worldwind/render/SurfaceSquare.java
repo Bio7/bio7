@@ -10,7 +10,7 @@ import gov.nasa.worldwind.util.Logging;
 
 /**
  * @author dcollins
- * @version $Id: SurfaceSquare.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: SurfaceSquare.java 2302 2014-09-08 20:40:47Z tgaskins $
  */
 public class SurfaceSquare extends SurfaceQuad
 {
@@ -20,6 +20,16 @@ public class SurfaceSquare extends SurfaceQuad
      */
     public SurfaceSquare()
     {
+    }
+
+    /**
+     * Creates a shallow copy of the specified source shape.
+     *
+     * @param source the shape to copy.
+     */
+    public SurfaceSquare(SurfaceSquare source)
+    {
+        super(source);
     }
 
     /**

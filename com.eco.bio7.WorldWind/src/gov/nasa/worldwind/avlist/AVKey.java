@@ -7,7 +7,7 @@ package gov.nasa.worldwind.avlist;
 
 /**
  * @author Tom Gaskins
- * @version $Id: AVKey.java 1933 2014-04-14 22:54:19Z dcollins $
+ * @version $Id: AVKey.java 2375 2014-10-10 23:35:05Z tgaskins $
  */
 public interface AVKey // TODO: Eliminate unused constants, if any
 {
@@ -67,6 +67,7 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String COORDINATE_SYSTEM_UNKNOWN = "gov.nasa.worldwind.avkey.CoordinateSystem.Unknown";
 
     final String COUNTER_CLOCKWISE = "gov.nasa.worldwind.avkey.CounterClockWise";
+    final String COVERAGE_IDENTIFIERS = "gov.nasa.worldwind.avkey.CoverageIdentifiers";
 
     final String DATA_CACHE_NAME = "gov.nasa.worldwind.avkey.DataCacheNameKey";
     final String DATA_FILE_STORE_CLASS_NAME = "gov.nasa.worldwind.avkey.DataFileStoreClassName";
@@ -95,6 +96,14 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String DETAIL_HINT = "gov.nasa.worldwind.avkey.DetailHint";
     final String DISPLAY_ICON = "gov.nasa.worldwind.avkey.DisplayIcon";
     final String DISPLAY_NAME = "gov.nasa.worldwind.avkey.DisplayName";
+    final String DOCUMENT = "gov.nasa.worldwind.avkey.Document";
+    /**
+     * Indicates the state of dragging. Provided by the {@link gov.nasa.worldwind.drag.DragContext} object to objects
+     * implementing {@link gov.nasa.worldwind.drag.Draggable}.
+     */
+    final String DRAG_BEGIN = "gov.nasa.worldwind.avkey.DragBegin";
+    final String DRAG_CHANGE = "gov.nasa.worldwind.avkey.DragChange";
+    final String DRAG_ENDED = "gov.nasa.worldwind.avkey.DragEnded";
 
     final String DTED_LEVEL = "gov.nasa.worldwind.avkey.DTED.Level";
 
@@ -144,12 +153,15 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String GDAL_PATH = "gov.nasa.worldwind.avkey.GDAL.Path";
 
     final String GET_CAPABILITIES_URL = "gov.nasa.worldwind.avkey.GetCapabilitiesURL";
+    final String GET_COVERAGE_URL = "gov.nasa.worldwind.avkey.GetCoverageURL";
     final String GET_MAP_URL = "gov.nasa.worldwind.avkey.GetMapURL";
+    final String GEOGRAPHIC_PROJECTION_CLASS_NAME = "gov.nasa.worldwind.globes.GeographicProjectionClassName";
     final String GLOBE = "gov.nasa.worldwind.avkey.GlobeObject";
     final String GLOBE_CLASS_NAME = "gov.nasa.worldwind.avkey.GlobeClassName";
     final String GRAYSCALE = "gov.nasa.worldwind.avkey.Grayscale";
     final String GREAT_CIRCLE = "gov.nasa.worldwind.avkey.GreatCircle";
 
+    final String HEADING = "gov.nasa.worldwind.avkey.Heading";
     final String HEIGHT = "gov.nasa.worldwind.avkey.Height";
     final String HIDDEN = "gov.nasa.worldwind.avkey.Hidden";
     final String HORIZONTAL = "gov.nasa.worldwind.avkey.Horizontal";
@@ -180,6 +192,7 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String INT32 = "gov.nasa.worldwind.avkey.Int32";
     final String INT64 = "gov.nasa.worldwind.avkey.Int64";
 
+    final String LABEL = "gov.nasa.worldwind.avkey.Label";
     final String LAST_UPDATE = "gov.nasa.worldwind.avkey.LastUpdateKey";
     final String LAYER = "gov.nasa.worldwind.avkey.LayerObject";
     final String LAYER_ABSTRACT = "gov.nasa.worldwind.avkey.LayerAbstract";
@@ -274,6 +287,7 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String PICKED_OBJECT_PARENT_LAYER = "gov.nasa.worldwind.avkey.PickedObject.ParentLayer";
     final String PICKED_OBJECT_PARENT_LAYER_NAME = "gov.nasa.worldwind.avkey.PickedObject.ParentLayer.Name";
     final String PICKED_OBJECT_SIZE = "gov.nasa.worldwind.avkey.PickedObject.Size";
+    final String PICK_ENABLED = "gov.nasa.worldwind.avkey.PickEnabled";
     final String PIXELS = "gov.nasa.worldwind.avkey.Pixels";
     /**
      * Indicates whether a raster's pixel values represent imagery or elevation data. When used as a key, the
@@ -317,6 +331,7 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String RELATIVE_TO_GLOBE = "gov.nasa.worldwind.avkey.RelativeToGlobe";
     final String RELATIVE_TO_SCREEN = "gov.nasa.worldwind.avkey.RelativeToScreen";
 
+    final String RANGE = "gov.nasa.worldwind.avkey.Range";
     final String RASTER_BAND_ACTUAL_BITS_PER_PIXEL = "gov.nasa.worldwind.avkey.RasterBand.ActualBitsPerPixel";
     final String RASTER_BAND_MIN_PIXEL_VALUE = "gov.nasa.worldwind.avkey.RasterBand.MinPixelValue";
     final String RASTER_BAND_MAX_PIXEL_VALUE = "gov.nasa.worldwind.avkey.RasterBand.MaxPixelValue";
@@ -359,6 +374,7 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String RHUMB_LINE = "gov.nasa.worldwind.avkey.RhumbLine";
     final String RIGHT = "gov.nasa.worldwind.avkey.Right";
     final String RIGHT_OF_CENTER = "gov.nasa.worldwind.avkey.RightOfCenter";
+    final String ROLL = "gov.nasa.worldwind.avkey.Roll";
     final String ROLLOVER_TEXT = "gov.nasa.worldwind.avkey.RolloverText";
 
     final String SCHEDULED_TASK_POOL_SIZE = "gov.nasa.worldwind.avkey.ScheduledTaskPoolSize";
@@ -395,6 +411,8 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String SHAPE_RECTANGLE = "gov.nasa.worldwind.avkey.ShapeRectangle";
     final String SHAPE_SQUARE = "gov.nasa.worldwind.avkey.ShapeSquare";
     final String SHAPE_TRIANGLE = "gov.nasa.worldwind.avkey.ShapeTriangle";
+    final String SHAPEFILE_GEOMETRY_CACHE_SIZE = "gov.nasa.worldwind.avkey.ShapefileGeometryCacheSize";
+    final String SHAPEFILE_LAYER_FACTORY = "gov.nasa.worldwind.avkey.ShapefileLayerFactory";
     final String SHORT_DESCRIPTION = "gov.nasa.worldwind.avkey.Server.ShortDescription";
     final String SIZE_FIT_TEXT = "gov.nasa.worldwind.avkey.SizeFitText";
     final String SIZE_FIXED = "gov.nasa.worldwind.avkey.SizeFixed";
@@ -440,6 +458,7 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String TILED_RASTER_PRODUCER_LARGE_DATASET_THRESHOLD =
         "gov.nasa.worldwind.avkey.TiledRasterProducerLargeDatasetThreshold";
     final String TILED_RASTER_PRODUCER_LIMIT_MAX_LEVEL = "gov.nasa.worldwind.avkey.TiledRasterProducer.LimitMaxLevel";
+    final String TILT = "gov.nasa.worldwind.avkey.Tilt";
     final String TITLE = "gov.nasa.worldwind.avkey.Title";
     final String TOP = "gov.nasa.worldwind.avkey.Top";
     final String TRANSPARENCY_COLORS = "gov.nasa.worldwind.avkey.TransparencyColors";
@@ -495,6 +514,7 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String WMS_BACKGROUND_COLOR = "gov.nasa.worldwind.avkey.BackgroundColor";
 
     final String WFS_URL = "gov.nasa.worldwind.avkey.WFS.URL";
+    final String WCS_VERSION = "gov.nasa.worldwind.avkey.WCSVersion";
     final String WMS_VERSION = "gov.nasa.worldwind.avkey.WMSVersion";
     final String WORLD_MAP_IMAGE_PATH = "gov.nasa.worldwind.avkey.WorldMapImagePath";
     final String WORLD_WIND_DOT_NET_LAYER_SET = "gov.nasa.worldwind.avkey.WorldWindDotNetLayerSet";

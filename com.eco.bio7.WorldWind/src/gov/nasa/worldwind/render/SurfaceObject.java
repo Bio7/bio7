@@ -6,16 +6,14 @@
 package gov.nasa.worldwind.render;
 
 import gov.nasa.worldwind.avlist.AVList;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Extent;
 
 import java.awt.*;
-import java.util.List;
 
 /**
  * Common interface for renderables that are drawn on the Globe's surface terrain, such as {@link
  * gov.nasa.worldwind.render.SurfaceShape}. SurfaceObject implements the {@link gov.nasa.worldwind.render.Renderable}
- * and {@link gov.nasa.worldwind.render.PreRenderable} interfaces, so a surface object may be aggregated within any
- * layer or within some arbitrary rendering code.
+ * interface, so a surface object may be aggregated within any layer or within some arbitrary rendering code.
  * <p/>
  * SurfaceObjects automatically aggregate themselves in the DrawContext's ordered surface renderable queue by calling
  * {@link gov.nasa.worldwind.render.DrawContext#addOrderedSurfaceRenderable(OrderedRenderable)} during the preRender,
@@ -28,9 +26,9 @@ import java.util.List;
  * subsequent calls to pick or render until the next call preRender.
  *
  * @author dcollins
- * @version $Id: SurfaceObject.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: SurfaceObject.java 2283 2014-08-30 15:58:43Z dcollins $
  */
-public interface SurfaceObject extends OrderedRenderable, PreRenderable, AVList
+public interface SurfaceObject extends OrderedRenderable, SurfaceRenderable, PreRenderable, AVList
 {
     /**
      * Indicates whether the surface object should be drawn during rendering.
@@ -47,14 +45,22 @@ public interface SurfaceObject extends OrderedRenderable, PreRenderable, AVList
     void setVisible(boolean visible);
 
     /**
-     * Returns an object that uniquely identifies the surface object's state on the specified draw context. This object
-     * is guaranteed to be globally unique; an equality test with a state key from another always returns false.
+     * Indicates whether batch picking is enabled.
      *
-     * @param dc the draw context the state key relates to.
+     * @return <code>true</code> to enable batch picking; <code>false</code> otherwise.
      *
-     * @return an object representing surface object's current state.
+     * @see #setEnableBatchPicking(boolean)
      */
-    Object getStateKey(DrawContext dc);
+    boolean isEnableBatchPicking();
+
+    /**
+     * Specifies whether adjacent SurfaceObjects in the DrawContext's ordered surface renderable list may be rendered
+     * together during picking if they are contained in the same layer. This increases performance and there is seldom a
+     * reason to disable it.
+     *
+     * @param enable <code>true</code> to enable batch picking; <code>false</code> otherwise.
+     */
+    void setEnableBatchPicking(boolean enable);
 
     /**
      * Returns zero to indicate that the surface object's distance from the eye is unknown. SurfaceObjects are processed
@@ -86,16 +92,6 @@ public interface SurfaceObject extends OrderedRenderable, PreRenderable, AVList
     void setDelegateOwner(Object owner);
 
     /**
-     * Returns a {@link java.util.List} of {@link gov.nasa.worldwind.geom.Sector} instances that bound the surface
-     * object on the specified DrawContext.
-     *
-     * @param dc the DrawContext the surface object is related to.
-     *
-     * @return the surface object's bounding Sectors.
-     */
-    List<Sector> getSectors(DrawContext dc);
-
-    /**
      * Returns the surface object's enclosing volume as an {@link gov.nasa.worldwind.geom.Extent} in model coordinates,
      * given a specified {@link gov.nasa.worldwind.render.DrawContext}.
      *
@@ -125,14 +121,4 @@ public interface SurfaceObject extends OrderedRenderable, PreRenderable, AVList
      * @throws IllegalArgumentException if the draw context is null.
      */
     void pick(DrawContext dc, Point pickPoint);
-
-    /**
-     * Causes the surface object to render a representation of itself on the surface terrain, using the provided draw
-     * context.
-     *
-     * @param dc the current draw context.
-     *
-     * @throws IllegalArgumentException if the draw context is null.
-     */
-    void render(DrawContext dc);
 }

@@ -50,7 +50,7 @@ import java.util.List;
  * GridPointAttributes are used.
  *
  * @author dcollins
- * @version $Id: AnalyticSurface.java 1847 2014-02-18 00:32:16Z dcollins $
+ * @version $Id: AnalyticSurface.java 3020 2015-04-14 21:23:03Z dcollins $
  */
 public class AnalyticSurface implements Renderable, PreRenderable
 {
@@ -136,14 +136,14 @@ public class AnalyticSurface implements Renderable, PreRenderable
 
         if (width <= 0)
         {
-            String message = Logging.getMessage("Geom.WidthInvalid", width);
+            String message = Logging.getMessage("generic.InvalidWidth", width);
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
         }
 
         if (height <= 0)
         {
-            String message = Logging.getMessage("Geom.HeightInvalid", width);
+            String message = Logging.getMessage("generic.InvalidHeight", height);
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
         }
@@ -1266,6 +1266,7 @@ public class AnalyticSurface implements Renderable, PreRenderable
         {
             if (this.shadowSurface == null)
                 this.shadowSurface = this.createShadowSurface();
+            this.shadowSurface.setDelegateOwner(this.getPickObject() != null ? this.getPickObject() : this);
             this.shadowSurface.preRender(dc);
         }
 
@@ -1273,6 +1274,7 @@ public class AnalyticSurface implements Renderable, PreRenderable
         {
             if (this.clampToGroundSurface == null)
                 this.clampToGroundSurface = this.createClampToGroundSurface();
+            this.clampToGroundSurface.setDelegateOwner(this.getPickObject() != null ? this.getPickObject() : this);
             this.clampToGroundSurface.preRender(dc);
         }
     }

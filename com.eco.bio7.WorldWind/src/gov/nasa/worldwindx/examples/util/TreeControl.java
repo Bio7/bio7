@@ -14,7 +14,7 @@ import gov.nasa.worldwind.util.tree.*;
  * This example demonstrates the use of the on-screen tree control using {@link gov.nasa.worldwind.util.tree.BasicTree}.
  *
  * @author pabercrombie
- * @version $Id: TreeControl.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: TreeControl.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class TreeControl extends ApplicationTemplate
 {
@@ -70,9 +70,6 @@ public class TreeControl extends ApplicationTemplate
 
             // Add the layer to the model.
             insertBeforeCompass(this.getWwd(), layer);
-
-            // Update layer panel
-            this.getLayerPanel().update(this.getWwd());
         }
     }
 

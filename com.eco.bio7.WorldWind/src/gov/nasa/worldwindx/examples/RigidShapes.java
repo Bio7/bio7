@@ -23,7 +23,7 @@ import java.util.ArrayList;
  * scaled, rotated, skewed and textured. Standard attributes and altitude modes may also be specified.
  *
  * @author ccrick
- * @version $Id: RigidShapes.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: RigidShapes.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class RigidShapes extends ApplicationTemplate
 {
@@ -153,7 +153,6 @@ public class RigidShapes extends ApplicationTemplate
 
             // Add the layer to the model and update the layer panel.
             insertBeforePlacenames(getWwd(), layer);
-            this.getLayerPanel().update(this.getWwd());
         }
     }
 

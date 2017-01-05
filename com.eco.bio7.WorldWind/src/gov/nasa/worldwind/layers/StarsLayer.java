@@ -5,9 +5,9 @@
  */
 package gov.nasa.worldwind.layers;
 
-import gov.nasa.worldwind.Configuration;
+import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.cache.GpuResourceCache;
-import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.*;
 
@@ -19,7 +19,7 @@ import java.nio.*;
  * Renders a star background based on a subset of ESA Hipparcos catalog.
  *
  * @author Patrick Murris
- * @version $Id: StarsLayer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: StarsLayer.java 2176 2014-07-25 16:35:25Z dcollins $
  */
 public class StarsLayer extends RenderableLayer
 {
@@ -187,6 +187,9 @@ public class StarsLayer extends RenderableLayer
     @Override
     public void doRender(DrawContext dc)
     {
+        if (dc.is2DGlobe())
+            return; // Layer doesn't make sense in 2D
+
         // Load or reload stars if not previously loaded
         if (this.starsBuffer == null || this.rebuild)
         {
@@ -198,26 +201,34 @@ public class StarsLayer extends RenderableLayer
         if (this.starsBuffer == null)
             return;
 
+        // Exit if the viewport is not visible, in which case rendering results in exceptions.
+        View view = dc.getView();
+        if (view.getViewport().getWidth() == 0 || view.getViewport().getHeight() == 0)
+            return;
+
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         OGLStackHandler ogsh = new OGLStackHandler();
+        double[] matrixArray = new double[16];
 
         try
         {
             gl.glDisable(GL.GL_DEPTH_TEST);
 
-            // Set far clipping far enough
+            // Override the default projection matrix in order to extend the far clip plane to include the stars.
+            Matrix projection = Matrix.fromPerspective(view.getFieldOfView(), view.getViewport().width,
+                view.getViewport().height, 1, this.radius + 1);
             ogsh.pushProjectionIdentity(gl);
-            double distanceFromOrigin = dc.getView().getEyePoint().getLength3();
-            double near = distanceFromOrigin;
-            double far = this.radius + distanceFromOrigin;
-            dc.getGLU().gluPerspective(dc.getView().getFieldOfView().degrees,
-                dc.getView().getViewport().getWidth() / dc.getView().getViewport().getHeight(),
-                near, far);
+            gl.glLoadMatrixd(projection.toArray(matrixArray, 0, false), 0);
 
-            // Rotate sphere
-            ogsh.pushModelview(gl);
-            gl.glRotatef((float) this.longitudeOffset.degrees, 0.0f, 1.0f, 0.0f);
-            gl.glRotatef((float) -this.latitudeOffset.degrees, 1.0f, 0.0f, 0.0f);
+            // Override the default modelview matrix in order to force the eye point to the origin, and apply the
+            // latitude and longitude rotations for the stars dataset. Forcing the eye point to the origin causes the
+            // stars to appear at an infinite distance, regardless of the view's eye point.
+            Matrix modelview = view.getModelviewMatrix();
+            modelview = modelview.multiply(Matrix.fromTranslation(view.getEyePoint()));
+            modelview = modelview.multiply(Matrix.fromAxisAngle(this.longitudeOffset, 0, 1, 0));
+            modelview = modelview.multiply(Matrix.fromAxisAngle(Angle.fromDegrees(-this.latitudeOffset.degrees), 1, 0, 0));
+            ogsh.pushModelviewIdentity(gl);
+            gl.glLoadMatrixd(modelview.toArray(matrixArray, 0, false), 0);
 
             // Draw
             ogsh.pushClientAttrib(gl, GL2.GL_CLIENT_VERTEX_ARRAY_BIT);

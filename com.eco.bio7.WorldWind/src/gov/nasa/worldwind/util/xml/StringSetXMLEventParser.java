@@ -17,7 +17,7 @@ import java.util.*;
  * Parses a list of XML strings.
  *
  * @author tag
- * @version $Id: StringSetXMLEventParser.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: StringSetXMLEventParser.java 1981 2014-05-08 03:59:04Z tgaskins $
  */
 public class StringSetXMLEventParser extends AbstractXMLEventParser implements Iterable<String>
 {
@@ -44,6 +44,16 @@ public class StringSetXMLEventParser extends AbstractXMLEventParser implements I
         super(namespaceURI);
 
         this.elementName = elementName;
+    }
+
+    @Override
+    public XMLEventParser newInstance() throws Exception
+    {
+        StringSetXMLEventParser copy = (StringSetXMLEventParser) super.newInstance();
+        if (copy != null)
+            copy.elementName = this.elementName;
+
+        return copy;
     }
 
     public Object parse(XMLEventParserContext ctx, XMLEvent listEvent, Object... args) throws XMLStreamException

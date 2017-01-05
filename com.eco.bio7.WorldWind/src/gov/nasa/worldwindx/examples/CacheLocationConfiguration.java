@@ -15,7 +15,7 @@ import gov.nasa.worldwind.Configuration;
  * cache so that any previously cached data will be found and used.
  *
  * @author tag
- * @version $Id: CacheLocationConfiguration.java 608 2012-05-30 15:58:05Z tgaskins $
+ * @version $Id: CacheLocationConfiguration.java 2851 2015-02-26 01:09:46Z tgaskins $
  */
 public class CacheLocationConfiguration extends ApplicationTemplate
 {
@@ -24,7 +24,7 @@ public class CacheLocationConfiguration extends ApplicationTemplate
         // Prior to starting World Wind, specify the cache configuration file to Configuration.
         Configuration.setValue(
             "gov.nasa.worldwind.avkey.DataFileStoreConfigurationFileName",
-            "gov/nasa/worldwindx/examples/CacheLocationConfiguration.xml");
+            "gov/nasa/worldwindx/examples/data/CacheLocationConfiguration.xml");
 
         ApplicationTemplate.start("World Wind Cache Configuration", AppFrame.class);
     }

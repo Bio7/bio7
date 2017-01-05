@@ -5,7 +5,6 @@
  */
 package gov.nasa.worldwind.render;
 
-import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.geom.*;
@@ -120,7 +119,7 @@ import java.awt.*;
  * counterpart, except that the new image is now compatible with most graphics hardware.
  *
  * @author Patrick Murris
- * @version $Id: AbstractAnnotation.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: AbstractAnnotation.java 2053 2014-06-10 20:16:57Z tgaskins $
  * @see AnnotationAttributes
  * @see AnnotationRenderer
  */

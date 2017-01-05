@@ -9,7 +9,7 @@ import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.Globe;
-import gov.nasa.worldwind.layers.AirspaceLayer;
+import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.pick.PickedObjectList;
 import gov.nasa.worldwind.render.Material;
 import gov.nasa.worldwind.render.airspaces.*;
@@ -61,7 +61,7 @@ import java.util.zip.*;
  * data for these shapes is located in the World Wind project under src/gov/nasa/worldwindx/examples/data/AirspaceBuilder-DemoShapes.zip.
  *
  * @author dcollins
- * @version $Id: AirspaceBuilder.java 1674 2013-10-17 19:22:22Z dcollins $
+ * @version $Id: AirspaceBuilder.java 2231 2014-08-15 19:03:12Z dcollins $
  */
 public class AirspaceBuilder extends ApplicationTemplate
 {
@@ -432,10 +432,10 @@ public class AirspaceBuilder extends ApplicationTemplate
     public static AirspaceAttributes getDefaultAttributes()
     {
         AirspaceAttributes attributes = new BasicAirspaceAttributes();
-        attributes.setMaterial(new Material(Color.BLACK, Color.LIGHT_GRAY, Color.DARK_GRAY, Color.BLACK, 0.0f));
+        attributes.setInteriorMaterial(new Material(Color.BLACK, Color.LIGHT_GRAY, Color.DARK_GRAY, Color.BLACK, 0.0f));
         attributes.setOutlineMaterial(Material.DARK_GRAY);
         attributes.setDrawOutline(true);
-        attributes.setOpacity(0.95);
+        attributes.setInteriorOpacity(0.95);
         attributes.setOutlineOpacity(.95);
         attributes.setOutlineWidth(2);
         return attributes;
@@ -444,10 +444,10 @@ public class AirspaceBuilder extends ApplicationTemplate
     public static AirspaceAttributes getSelectionAttributes()
     {
         AirspaceAttributes attributes = new BasicAirspaceAttributes();
-        attributes.setMaterial(Material.WHITE);
+        attributes.setInteriorMaterial(Material.WHITE);
         attributes.setOutlineMaterial(Material.BLACK);
         attributes.setDrawOutline(true);
-        attributes.setOpacity(0.8);
+        attributes.setInteriorOpacity(0.8);
         attributes.setOutlineOpacity(0.8);
         attributes.setOutlineWidth(2);
         return attributes;
@@ -456,16 +456,16 @@ public class AirspaceBuilder extends ApplicationTemplate
     public static AirspaceAttributes getIntersectionAttributes()
     {
         AirspaceAttributes attributes = new BasicAirspaceAttributes();
-        attributes.setMaterial(Material.RED);
-        attributes.setOpacity(0.95);
+        attributes.setInteriorMaterial(Material.RED);
+        attributes.setInteriorOpacity(0.95);
         return attributes;
     }
 
     public static AirspaceAttributes getSelectionAndIntersectionAttributes()
     {
         AirspaceAttributes attributes = new BasicAirspaceAttributes();
-        attributes.setMaterial(Material.ORANGE);
-        attributes.setOpacity(0.8);
+        attributes.setInteriorMaterial(Material.ORANGE);
+        attributes.setInteriorOpacity(0.8);
         return attributes;
     }
 
@@ -1021,7 +1021,7 @@ public class AirspaceBuilder extends ApplicationTemplate
             this.getModel().addEntry(entry);
             this.updateShapeIntersection();
 
-            this.getApp().getAirspaceLayer().addAirspace(entry.getAirspace());
+            this.getApp().getAirspaceLayer().addRenderable(entry.getAirspace());
             this.getApp().getWwd().redraw();
         }
 
@@ -1037,7 +1037,7 @@ public class AirspaceBuilder extends ApplicationTemplate
             this.getModel().removeEntry(entry);
             this.updateShapeIntersection();
 
-            this.getApp().getAirspaceLayer().removeAirspace(entry.getAirspace());
+            this.getApp().getAirspaceLayer().removeRenderable(entry.getAirspace());
             this.getApp().getWwd().redraw();
         }
 
@@ -1473,17 +1473,16 @@ public class AirspaceBuilder extends ApplicationTemplate
     protected static class AppFrame extends ApplicationTemplate.AppFrame
     {
         // Airspace layer and editor UI components.
-        protected AirspaceLayer airspaceLayer;
+        protected RenderableLayer airspaceLayer;
         protected AirspaceBuilderModel builderModel;
         protected AirspaceBuilderPanel builderView;
         protected AirspaceBuilderController builderController;
 
         public AppFrame()
         {
-            this.airspaceLayer = new AirspaceLayer();
+            this.airspaceLayer = new RenderableLayer();
             this.airspaceLayer.setName(AIRSPACE_LAYER_NAME);
             insertBeforePlacenames(this.getWwd(), this.airspaceLayer);
-            this.getLayerPanel().update(this.getWwd());
 
             this.builderController = new AirspaceBuilderController(this);
             this.builderModel = new AirspaceBuilderModel();
@@ -1502,7 +1501,7 @@ public class AirspaceBuilder extends ApplicationTemplate
             return this.builderView;
         }
 
-        public AirspaceLayer getAirspaceLayer()
+        public RenderableLayer getAirspaceLayer()
         {
             return this.airspaceLayer;
         }

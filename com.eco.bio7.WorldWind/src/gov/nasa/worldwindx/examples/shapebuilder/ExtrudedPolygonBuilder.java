@@ -28,7 +28,7 @@ import java.util.*;
  * surface of the globe.
  *
  * @author pabercrombie
- * @version $Id: ExtrudedPolygonBuilder.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ExtrudedPolygonBuilder.java 2109 2014-06-30 16:52:38Z tgaskins $
  * @see ExtrudedPolygon
  */
 
@@ -865,7 +865,6 @@ public class ExtrudedPolygonBuilder extends ApplicationTemplate
             this.polygonLayer = new RenderableLayer();
             this.polygonLayer.setName(POLYGON_LAYER_NAME);
             insertBeforePlacenames(this.getWwd(), this.polygonLayer);
-            this.getLayerPanel().update(this.getWwd());
 
             this.builderController = new PolygonBuilderController(this);
             this.builderModel = new PolygonBuilderModel();

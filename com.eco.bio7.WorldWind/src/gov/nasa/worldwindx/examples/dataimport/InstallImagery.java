@@ -32,7 +32,7 @@ import java.io.File;
  * gov.nasa.worldwind.Factory#createFromConfigSource(Object, gov.nasa.worldwind.avlist.AVList)}.</li> </ol>
  *
  * @author tag
- * @version $Id: InstallImagery.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: InstallImagery.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class InstallImagery extends ApplicationTemplate
 {
@@ -84,9 +84,6 @@ public class InstallImagery extends ApplicationTemplate
                 {
                     // Add the layer created by the install method to the layer list.
                     insertBeforePlacenames(AppFrame.this.getWwd(), layer);
-
-                    // Update the layer panel to display the new layer for the installed imagery.
-                    AppFrame.this.getLayerPanel().update(AppFrame.this.getWwd());
 
                     // Set the view to look at the installed image. Get the location from the layer's construction
                     // parameters.

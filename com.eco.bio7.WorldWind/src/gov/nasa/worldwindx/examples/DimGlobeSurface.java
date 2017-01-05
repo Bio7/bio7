@@ -25,7 +25,7 @@ import java.awt.image.*;
  * <code>SurfaceImage</code> would need blending controls, but it doesn't have them.
  *
  * @author tag
- * @version $Id: DimGlobeSurface.java 319 2012-01-26 21:31:58Z tgaskins $
+ * @version $Id: DimGlobeSurface.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class DimGlobeSurface extends ApplicationTemplate
 {
@@ -58,11 +58,7 @@ public class DimGlobeSurface extends ApplicationTemplate
             opacityPanel.add(new JLabel("Opacity"), BorderLayout.WEST);
             this.makeOpacitySlider();
             opacityPanel.add(this.opacitySlider, BorderLayout.CENTER);
-            this.getLayerPanel().add(opacityPanel, BorderLayout.SOUTH);
-
-            // Update the layer panel to show the new layer.
-
-            this.getLayerPanel().update(this.getWwd());
+            this.getControlPanel().add(opacityPanel, BorderLayout.SOUTH);
         }
 
         protected BufferedImage makeFilterImage()

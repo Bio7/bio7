@@ -36,7 +36,7 @@ import java.util.logging.Level;
  * bounding rectangle in screen coordinates.</td></tr> </table>
  *
  * @author tag
- * @version $Id: IconRenderer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: IconRenderer.java 2260 2014-08-23 00:14:06Z tgaskins $
  */
 public class IconRenderer
 {
@@ -105,7 +105,7 @@ public class IconRenderer
     /**
      * Indicates whether to render icons outside the view volume. This is primarily to control icon visibility beyond
      * the far view clipping plane. Some important use cases demand that clipping not be performed. If horizon clipping
-     * is enabled, the icon is also tested for horizon clipping. The default is <code>false</code>, view volume clipping
+     * is enabled, the icon is also tested for horizon clipping. The default is <code>true</code>, view volume clipping
      * is not performed.
      *
      * @param viewClippingEnabled <code>true</code> if view clipping should be performed, otherwise <code>false</code>.
@@ -271,7 +271,11 @@ public class IconRenderer
             // otherwise draw it from the globe.
             Position pos = icon.getPosition();
             Vec4 iconPoint = null;
-            if (pos.getElevation() < dc.getGlobe().getMaxElevation() && !this.isAlwaysUseAbsoluteElevation())
+            if (dc.is2DGlobe())
+            {
+                iconPoint = dc.getGlobe().computePointFromLocation(pos);
+            }
+            else if (pos.getElevation() < dc.getGlobe().getMaxElevation() && !this.isAlwaysUseAbsoluteElevation())
             {
                 iconPoint = dc.getSurfaceGeometry().getSurfacePoint(icon.getPosition());
             }
@@ -288,7 +292,7 @@ public class IconRenderer
 
             double eyeDistance = icon.isAlwaysOnTop() ? 0 : dc.getView().getEyePoint().distanceTo3(iconPoint);
 
-            if (this.isHorizonClippingEnabled() && eyeDistance > horizon)
+            if (this.isHorizonClippingEnabled() && !dc.is2DGlobe() && eyeDistance > horizon)
             {
                 // Record feedback data for this WWIcon if feedback is enabled.
                 this.recordFeedback(dc, icon, iconPoint, null);

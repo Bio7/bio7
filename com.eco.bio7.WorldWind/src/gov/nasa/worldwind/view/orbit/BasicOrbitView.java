@@ -17,7 +17,7 @@ import javax.media.opengl.GL;
 
 /**
  * @author dcollins
- * @version $Id: BasicOrbitView.java 1933 2014-04-14 22:54:19Z dcollins $
+ * @version $Id: BasicOrbitView.java 2253 2014-08-22 16:33:46Z dcollins $
  */
 public class BasicOrbitView extends BasicView implements OrbitView
 {
@@ -133,7 +133,7 @@ public class BasicOrbitView extends BasicView implements OrbitView
         }
 
         this.center = normalizedCenterPosition(center);
-        this.center = BasicOrbitViewLimits.limitCenterPosition(this.center, this.getOrbitViewLimits());
+        this.center = this.getOrbitViewLimits().limitCenterPosition(this, this.center);
         resolveCollisionsWithCenterPosition();
 
         this.updateModelViewStateID();
@@ -149,7 +149,7 @@ public class BasicOrbitView extends BasicView implements OrbitView
         }
 
         this.heading = normalizedHeading(heading);
-        this.heading = BasicOrbitViewLimits.limitHeading(this.heading, this.getOrbitViewLimits());
+        this.heading = this.getOrbitViewLimits().limitHeading(this, this.heading);
         resolveCollisionsWithPitch();
 
         this.updateModelViewStateID();
@@ -165,7 +165,7 @@ public class BasicOrbitView extends BasicView implements OrbitView
         }
 
         this.pitch = normalizedPitch(pitch);
-        this.pitch = BasicOrbitViewLimits.limitPitch(this.pitch, this.getOrbitViewLimits());
+        this.pitch = this.getOrbitViewLimits().limitPitch(this, this.pitch);
         resolveCollisionsWithPitch();
 
         this.updateModelViewStateID();
@@ -186,7 +186,7 @@ public class BasicOrbitView extends BasicView implements OrbitView
         }
 
         this.zoom = zoom;
-        this.zoom = BasicOrbitViewLimits.limitZoom(this.zoom, this.getOrbitViewLimits());
+        this.zoom = this.getOrbitViewLimits().limitZoom(this, this.zoom);
         resolveCollisionsWithCenterPosition();
 
         this.updateModelViewStateID();
@@ -627,9 +627,16 @@ public class BasicOrbitView extends BasicView implements OrbitView
             throw new IllegalArgumentException(message);
         }
 
-        // Update DrawContext and Globe references.
+        // Update the draw context and the globe, then re-apply the current view property limits. Apply view property
+        // limits after updating the globe so that globe-specific property limits are applied correctly.
         this.dc = dc;
         this.globe = this.dc.getGlobe();
+        this.center = this.getOrbitViewLimits().limitCenterPosition(this, this.center);
+        this.heading = this.getOrbitViewLimits().limitHeading(this, this.heading);
+        this.pitch = this.getOrbitViewLimits().limitPitch(this, this.pitch);
+        this.roll = this.getOrbitViewLimits().limitRoll(this, this.roll);
+        this.zoom = this.getOrbitViewLimits().limitZoom(this, this.zoom);
+
         //========== modelview matrix state ==========//
         // Compute the current modelview matrix.
         this.modelview = OrbitViewInputSupport.computeTransformMatrix(this.globe, this.center,
@@ -689,21 +696,21 @@ public class BasicOrbitView extends BasicView implements OrbitView
             if (modelCoords.getCenterPosition() != null)
             {
                 this.center = normalizedCenterPosition(modelCoords.getCenterPosition());
-                this.center = BasicOrbitViewLimits.limitCenterPosition(this.center, this.getOrbitViewLimits());
+                this.center = this.getOrbitViewLimits().limitCenterPosition(this, this.center);
             }
             if (modelCoords.getHeading() != null)
             {
                 this.heading = normalizedHeading(modelCoords.getHeading());
-                this.heading = BasicOrbitViewLimits.limitHeading(this.heading, this.getOrbitViewLimits());
+                this.heading = this.getOrbitViewLimits().limitHeading(this, this.heading);
             }
             if (modelCoords.getPitch() != null)
             {
                 this.pitch = normalizedPitch(modelCoords.getPitch());
-                this.pitch = BasicOrbitViewLimits.limitPitch(this.pitch, this.getOrbitViewLimits());
+                this.pitch = this.getOrbitViewLimits().limitPitch(this, this.pitch);
             }
 
             this.zoom = modelCoords.getZoom();
-            this.zoom = BasicOrbitViewLimits.limitZoom(this.zoom, this.getOrbitViewLimits());
+            this.zoom = this.getOrbitViewLimits().limitZoom(this, this.zoom);
 
             this.updateModelViewStateID();
         }
@@ -720,6 +727,47 @@ public class BasicOrbitView extends BasicView implements OrbitView
             && modelCoords.getPitch().degrees >= 0
             && modelCoords.getPitch().degrees <= 90
             && modelCoords.getZoom() >= 0);
+    }
+
+    @Override
+    protected double computeHorizonDistance(Position eyePosition)
+    {
+        if (this.dc.is2DGlobe())
+        {
+            return Double.MAX_VALUE; // Horizon distance doesn't make sense for the 2D globe.
+        }
+        else
+        {
+            return super.computeHorizonDistance(eyePosition);
+        }
+    }
+
+    @Override
+    protected double computeFarDistance(Position eyePosition)
+    {
+        if (this.dc.is2DGlobe())
+        {
+            // TODO: Compute the smallest far distance for a flat or a tilted view.
+            // Use max distance to six points around the map
+            Vec4 eyePoint = this.globe.computePointFromPosition(eyePosition);
+            Vec4 p = this.globe.computePointFromPosition(Angle.POS90, Angle.NEG180, 0); // NW
+            double far = eyePoint.distanceTo3(p);
+            p = this.globe.computePointFromPosition(Angle.POS90, Angle.POS180, 0); // NE
+            far = Math.max(far, eyePoint.distanceTo3(p));
+            p = this.globe.computePointFromPosition(Angle.NEG90, Angle.NEG180, 0); // SW
+            far = Math.max(far, eyePoint.distanceTo3(p));
+            p = this.globe.computePointFromPosition(Angle.NEG90, Angle.POS180, 0); // SE
+            far = Math.max(far, eyePoint.distanceTo3(p));
+            p = this.globe.computePointFromPosition(Angle.ZERO, Angle.POS180, 0); // E
+            far = Math.max(far, eyePoint.distanceTo3(p));
+            p = this.globe.computePointFromPosition(Angle.ZERO, Angle.NEG180, 0); // W
+            far = Math.max(far, eyePoint.distanceTo3(p));
+            return far < MINIMUM_FAR_DISTANCE ? MINIMUM_FAR_DISTANCE : far;
+        }
+        else
+        {
+            return super.computeHorizonDistance(eyePosition);
+        }
     }
 
     //**************************************************************//
@@ -782,7 +830,7 @@ public class BasicOrbitView extends BasicView implements OrbitView
     {
         RestorableSupport.StateObject so = rs.getStateObject(context, "orbitViewLimits");
         if (so != null)
-            this.getOrbitViewLimits().restoreState(rs, so);
+            this.getViewPropertyLimits().restoreState(rs, so);
     }
 
     //**************************************************************//

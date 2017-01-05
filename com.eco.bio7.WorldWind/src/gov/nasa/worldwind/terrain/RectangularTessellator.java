@@ -6,13 +6,12 @@
 package gov.nasa.worldwind.terrain;
 
 import com.jogamp.common.nio.Buffers;
-import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.cache.*;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.geom.Cylinder;
-import gov.nasa.worldwind.globes.Globe;
+import gov.nasa.worldwind.globes.*;
 import gov.nasa.worldwind.pick.*;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
@@ -25,7 +24,7 @@ import java.util.List;
 
 /**
  * @author tag
- * @version $Id: RectangularTessellator.java 1824 2014-01-22 22:41:10Z dcollins $
+ * @version $Id: RectangularTessellator.java 2922 2015-03-24 23:56:58Z tgaskins $
  */
 public class RectangularTessellator extends WWObjectImpl implements Tessellator
 {
@@ -367,6 +366,16 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         }
     }
 
+    protected static class TopLevelTiles
+    {
+        protected ArrayList<RectTile> topLevels;
+
+        public TopLevelTiles(ArrayList<RectTile> topLevels)
+        {
+            this.topLevels = topLevels;
+        }
+    }
+
     // TODO: Make all this configurable
     protected static final int DEFAULT_MAX_LEVEL = 30;
     protected static final double DEFAULT_LOG10_RESOLUTION_TARGET = 1.3;
@@ -387,7 +396,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
     protected int numLevel0LatSubdivisions = DEFAULT_NUM_LAT_SUBDIVISIONS;
     protected int numLevel0LonSubdivisions = DEFAULT_NUM_LON_SUBDIVISIONS;
-    protected ArrayList<RectTile> topLevels;
+    protected SessionCache topLevelTilesCache = new BasicSessionCache(3);
     protected PickSupport pickSupport = new PickSupport();
     protected SectorGeometryList currentTiles = new SectorGeometryList();
     protected Frustum currentFrustum;
@@ -425,15 +434,19 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
         this.maxLevel = Configuration.getIntegerValue(AVKey.RECTANGULAR_TESSELLATOR_MAX_LEVEL, DEFAULT_MAX_LEVEL);
 
-        if (this.topLevels == null)
-            this.topLevels = this.createTopLevelTiles(dc);
+        TopLevelTiles topLevels = (TopLevelTiles) this.topLevelTilesCache.get(dc.getGlobe().getStateKey(dc));
+        if (topLevels == null)
+        {
+            topLevels = new TopLevelTiles(this.createTopLevelTiles(dc));
+            this.topLevelTilesCache.put(dc.getGlobe().getStateKey(dc), topLevels);
+        }
 
         this.currentTiles.clear();
         this.currentLevel = 0;
         this.currentCoverage = null;
 
         this.currentFrustum = dc.getView().getFrustumInModelCoordinates();
-        for (RectTile tile : this.topLevels)
+        for (RectTile tile : topLevels.topLevels)
         {
             this.selectVisibleTiles(dc, tile);
         }
@@ -445,7 +458,11 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             this.makeVerts(dc, (RectTile) tile);
         }
 
-        return this.currentTiles;
+        // Make a copy of the SGL because the tessellator may be called multiple times per frame with a different globe.
+        // See SceneController2D.
+        SectorGeometryList sgl = new SectorGeometryList(this.currentTiles);
+        sgl.setSector(this.currentTiles.getSector());
+        return sgl;
     }
 
     protected ArrayList<RectTile> createTopLevelTiles(DrawContext dc)
@@ -473,13 +490,38 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
                     lon = Angle.POS180;
 
                 Sector tileSector = new Sector(lastLat, lat, lastLon, lon);
-                tops.add(this.createTile(dc, tileSector, 0));
+                boolean skipTile = dc.is2DGlobe() && this.skipTile(dc, tileSector);
+
+                if (!skipTile)
+                {
+                    tops.add(this.createTile(dc, tileSector, 0));
+                }
+
                 lastLon = lon;
             }
             lastLat = lat;
         }
 
         return tops;
+    }
+
+    /**
+     * Determines whether a tile is within a 2D globe's projection limits.
+     *
+     * @param dc     the current draw context. The globe contained in the context must be a {@link
+     *               gov.nasa.worldwind.globes.Globe2D}.
+     * @param sector the tile's sector.
+     *
+     * @return <code>true</code> if the tile should be skipped -- it's outside the globe's projection limits --
+     * otherwise <code>false</code>.
+     */
+    protected boolean skipTile(DrawContext dc, Sector sector)
+    {
+        Sector limits = ((Globe2D) dc.getGlobe()).getProjection().getProjectionLimits();
+        if (limits == null || limits.equals(Sector.FULL_SPHERE))
+            return false;
+
+        return !sector.intersectsInterior(limits);
     }
 
     protected RectTile createTile(DrawContext dc, Sector tileSector, int level)
@@ -511,6 +553,9 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
     protected void selectVisibleTiles(DrawContext dc, RectTile tile)
     {
+        if (dc.is2DGlobe() && this.skipTile(dc, tile.getSector()))
+            return;
+
         Extent extent = tile.getExtent();
         if (extent != null && !extent.intersects(this.currentFrustum))
             return;
@@ -551,7 +596,11 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         // than one thousandth of the eye distance. The field of view scale is specified as a ratio between the current
         // field of view and a the default field of view. In a perspective projection, decreasing the field of view by
         // 50% has the same effect on object size as decreasing the distance between the eye and the object by 50%.
-        double detailScale = Math.pow(10, -this.computeTileResolutionTarget(dc, tile));
+        // The detail hint is reduced by 50% for tiles above 75 degrees north and below 75 degrees south.
+        double s = this.computeTileResolutionTarget(dc, tile);
+        if (tile.getSector().getMinLatitude().degrees >= 75 || tile.getSector().getMaxLatitude().degrees <= -75)
+            s *= 0.5;
+        double detailScale = Math.pow(10, -s);
         double fieldOfViewScale = dc.getView().getFieldOfView().tanHalfAngle() / Angle.fromDegrees(45).tanHalfAngle();
         fieldOfViewScale = WWMath.clamp(fieldOfViewScale, 0, 1);
 
@@ -599,7 +648,6 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
     {
         // First see if the vertices have been previously computed and are in the cache. Since the elevation model
         // contents can change between frames, regenerate and re-cache vertices every second.
-        // TODO: Go back to event-generated geometry re-computation.
         MemoryCache cache = WorldWind.getMemoryCache(CACHE_ID);
         CacheKey cacheKey = this.createCacheKey(dc, tile);
         tile.ri = (RenderInfo) cache.getObject(cacheKey);
@@ -1335,7 +1383,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
      * @param line the ray for which an intersection is to be found.
      *
      * @return an array of <code>Intersection</code> sorted by increasing distance from the line origin, or null if no
-     *         intersection was found.
+     * intersection was found.
      */
     protected Intersection[] intersect(RectTile tile, Line line)
     {
@@ -1350,16 +1398,28 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             return null;
 
         // Compute 'vertical' plane perpendicular to the ground, that contains the ray
-        Vec4 normalV = line.getDirection().cross3(globe.computeSurfaceNormalAtPoint(line.getOrigin()));
-        Plane verticalPlane = new Plane(normalV.x(), normalV.y(), normalV.z(), -line.getOrigin().dot3(normalV));
-        if (!tile.getExtent().intersects(verticalPlane))
-            return null;
+        Plane verticalPlane = null;
+        Plane horizontalPlane = null;
+        double effectiveRadiusVertical = Double.MAX_VALUE;
+        double effectiveRadiusHorizontal = Double.MAX_VALUE;
+        Vec4 surfaceNormal = globe.computeSurfaceNormalAtPoint(line.getOrigin());
+        if (Math.abs(line.getDirection().normalize3().dot3(surfaceNormal)) < 1.0) // if not colinear
+        {
+            Vec4 normalV = line.getDirection().cross3(globe.computeSurfaceNormalAtPoint(line.getOrigin()));
+            verticalPlane = new Plane(normalV.x(), normalV.y(), normalV.z(), -line.getOrigin().dot3(normalV));
+            if (!tile.getExtent().intersects(verticalPlane))
+                return null;
 
-        // Compute 'horizontal' plane perpendicular to the vertical plane, that contains the ray
-        Vec4 normalH = line.getDirection().cross3(normalV);
-        Plane horizontalPlane = new Plane(normalH.x(), normalH.y(), normalH.z(), -line.getOrigin().dot3(normalH));
-        if (!tile.getExtent().intersects(horizontalPlane))
-            return null;
+            // Compute 'horizontal' plane perpendicular to the vertical plane, that contains the ray
+            Vec4 normalH = line.getDirection().cross3(normalV);
+            horizontalPlane = new Plane(normalH.x(), normalH.y(), normalH.z(), -line.getOrigin().dot3(normalH));
+            if (!tile.getExtent().intersects(horizontalPlane))
+                return null;
+
+            // Compute maximum cell size based on tile delta lat, density and globe radius
+            effectiveRadiusVertical = tile.extent.getEffectiveRadius(verticalPlane);
+            effectiveRadiusHorizontal = tile.extent.getEffectiveRadius(horizontalPlane);
+        }
 
         Intersection[] hits;
         ArrayList<Intersection> list = new ArrayList<Intersection>();
@@ -1377,10 +1437,6 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         double centerX = tile.ri.referenceCenter.x;
         double centerY = tile.ri.referenceCenter.y;
         double centerZ = tile.ri.referenceCenter.z;
-
-        // Compute maximum cell size based on tile delta lat, density and globe radius
-        double effectiveRadiusVertical = tile.extent.getEffectiveRadius(verticalPlane);
-        double effectiveRadiusHorizontal = tile.extent.getEffectiveRadius(horizontalPlane);
 
         // Loop through all tile cells - triangle pairs
         int startIndex = (density + 2) * 2 + 6; // skip first skirt row and a couple degenerate cells
@@ -1409,12 +1465,15 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             Vec4 cellCenter = Vec4.mix3(.5, v1, v2);
 
             // Test cell center distance to vertical plane
-            if (Math.abs(verticalPlane.distanceTo(cellCenter)) > effectiveRadiusVertical)
-                continue;
+            if (verticalPlane != null)
+            {
+                if (Math.abs(verticalPlane.distanceTo(cellCenter)) > effectiveRadiusVertical)
+                    continue;
 
-            // Test cell center distance to horizontal plane
-            if (Math.abs(horizontalPlane.distanceTo(cellCenter)) > effectiveRadiusHorizontal)
-                continue;
+                // Test cell center distance to horizontal plane
+                if (Math.abs(horizontalPlane.distanceTo(cellCenter)) > effectiveRadiusHorizontal)
+                    continue;
+            }
 
             // Prepare to test triangles - get other two vertices v0 & v3
             Vec4 p;
@@ -1645,7 +1704,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
      * @param density the number of intervals along the sector's side
      *
      * @return a decimal ranged [0,1] representing the position between two columns or rows, rather than between two
-     *         edges of the sector
+     * edges of the sector
      */
     protected static double createPosition(int start, double decimal, int density)
     {
@@ -1667,7 +1726,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
      * @param ri     the render info holding the vertices, etc.
      *
      * @return a <code>Point</code> geometrically within or on the boundary of the quadrilateral whose bottom left
-     *         corner is indexed by (<code>row</code>, <code>column</code>)
+     * corner is indexed by (<code>row</code>, <code>column</code>)
      */
     protected static Vec4 interpolate(int row, int column, double xDec, double yDec, RenderInfo ri)
     {

@@ -9,7 +9,9 @@ import gov.nasa.worldwind.geom.*;
 
 /**
  * @author Patrick Muris
- * @version $Id: FlatOrbitView.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: FlatOrbitView.java 2219 2014-08-11 21:39:44Z dcollins $
+ * @deprecated Use {@link gov.nasa.worldwind.view.orbit.BasicOrbitView} instead. BasicOrbitView implements the correct
+ *             horizon distance and far clip distance when used with a 2D globe.
  */
 public class FlatOrbitView extends BasicOrbitView
 {

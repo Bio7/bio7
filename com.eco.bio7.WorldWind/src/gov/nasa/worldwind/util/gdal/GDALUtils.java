@@ -14,14 +14,10 @@ import gov.nasa.worldwind.formats.tiff.*;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.util.*;
 
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
 import org.gdal.gdal.*;
 import org.gdal.gdalconst.*;
 import org.gdal.ogr.ogr;
 import org.gdal.osr.*;
-import org.osgi.framework.Bundle;
 
 import java.awt.*;
 import java.awt.color.*;
@@ -29,7 +25,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.awt.image.*;
 import java.io.*;
 import java.lang.reflect.*;
-import java.net.URL;
 import java.nio.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,7 +32,7 @@ import java.util.logging.Level;
 
 /**
  * @author Lado Garakanidze
- * @version $Id: GDALUtils.java 1837 2014-02-05 18:25:20Z tgaskins $
+ * @version $Id: GDALUtils.java 3031 2015-04-17 14:53:23Z tgaskins $
  */
 public class GDALUtils
 {
@@ -184,18 +179,6 @@ public class GDALUtils
     {
         try
         {
-        	/*Bundle bundle = Platform.getBundle("com.eco.bio7.libs");
-
-			URL locationUrl = FileLocator.find(bundle, new Path("/"), null);
-			URL fileUrl = null;
-			try {
-				fileUrl = FileLocator.toFileURL(locationUrl);
-			} catch (IOException e2) {
-				// TODO Auto-generated catch block
-				e2.printStackTrace();
-			}
-			String pathBundle = fileUrl.getFile();
-			System.out.println(pathBundle);*/
             boolean runningAsJavaWebStart = (null != System.getProperty("javawebstart.version", null));
 
 			// attempt to load library from default locations
@@ -818,6 +801,39 @@ public class GDALUtils
             cm = band1.GetRasterColorTable().getIndexColorModel(gdal.GetDataTypeSize(bandDataType));
             img = new BufferedImage(cm, raster, false, null);
         }
+        else if (band1.GetRasterColorInterpretation() == gdalconstConstants.GCI_GrayIndex && reqBandCount == 2)
+        {
+            int transparency = Transparency.BITMASK;
+            int baseColorSpace = ColorSpace.CS_GRAY;
+            ColorSpace cs = ColorSpace.getInstance(baseColorSpace);
+            int[] nBits = new int[reqBandCount];
+            for (int i = 0; i < reqBandCount; i++)
+            {
+                nBits[i] = actualBitsPerColor;
+            }
+
+            cm = new ComponentColorModel(cs, nBits, hasAlpha, false, transparency, bufferType);
+            
+            // Work around for
+            // Bug ID: JDK-5051418 Grayscale TYPE_CUSTOM BufferedImages are rendered lighter than TYPE_BYTE_GRAY
+            BufferedImage tmpImg = new BufferedImage(cm, raster, false, null);
+            //keep the alpha
+            img = new BufferedImage(tmpImg.getWidth(), tmpImg.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
+
+            Raster srcRaster = tmpImg.getRaster();
+            WritableRaster dstRaster = img.getRaster();
+            int[] gray = null, alpha = null;
+            int w = srcRaster.getWidth();
+            for (int y = 0; y < tmpImg.getHeight(); y++) {
+                gray = srcRaster.getSamples(0, y, w, 1, 0, gray);
+                alpha = srcRaster.getSamples(0, y, w, 1, 1, alpha);
+
+                dstRaster.setSamples(0, y, w, 1, 0, gray);
+                dstRaster.setSamples(0, y, w, 1, 1, gray);
+                dstRaster.setSamples(0, y, w, 1, 2, gray);
+                dstRaster.setSamples(0, y, w, 1, 3, alpha);
+            }
+        }
         else
         {
             // Determine the color space.
@@ -1377,8 +1393,13 @@ public class GDALUtils
             }
             else if (dataType == gdalconst.GDT_Byte)
             {
-                // if has only one band => one byte index of the palette, 216 marks voids
-                params.setValue(AVKey.IMAGE_COLOR_FORMAT, AVKey.COLOR);
+                int colorInt = band.GetColorInterpretation();
+                if (colorInt == gdalconst.GCI_GrayIndex && bandCount < 3) {
+                    params.setValue(AVKey.IMAGE_COLOR_FORMAT, AVKey.GRAYSCALE);
+                } else {
+                    // if has only one band => one byte index of the palette, 216 marks voids
+                    params.setValue(AVKey.IMAGE_COLOR_FORMAT, AVKey.COLOR);
+                }
                 params.setValue(AVKey.PIXEL_FORMAT, AVKey.IMAGE);
                 params.setValue(AVKey.DATA_TYPE, AVKey.INT8);
             }

@@ -18,7 +18,7 @@ import java.util.List;
  * Renders a textured plane at a given elevation.
  *
  * @author Patrick Murris
- * @version $Id: ElevationPlane.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ElevationPlane.java 2231 2014-08-15 19:03:12Z dcollins $
  */
 public class ElevationPlane extends Polygon
 {
@@ -30,7 +30,7 @@ public class ElevationPlane extends Polygon
 
     public ElevationPlane()
     {
-        this.getRenderer().setEnableLighting(false);
+        this.getAttributes().setEnableLighting(false);
     }
 
     /**

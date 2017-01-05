@@ -26,7 +26,7 @@ import java.util.*;
  * has m-coordinates, then <code>{@link #getMValues()}</code> returns a non-<code>null</code> array of values.
  *
  * @author Patrick Murris
- * @version $Id: ShapefileRecordPolygon.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ShapefileRecordPolygon.java 2303 2014-09-14 22:33:36Z dcollins $
  */
 public class ShapefileRecordPolygon extends ShapefileRecordPolyline
 {
@@ -34,6 +34,13 @@ public class ShapefileRecordPolygon extends ShapefileRecordPolyline
     public ShapefileRecordPolygon(Shapefile shapeFile, ByteBuffer buffer)
     {
         super(shapeFile, buffer);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isPolygonRecord()
+    {
+        return true;
     }
 
     /**

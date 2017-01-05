@@ -20,7 +20,7 @@ import java.util.*;
  * The top-level interface common to all toolkit-specific World Wind windows.
  *
  * @author Tom Gaskins
- * @version $Id: WorldWindow.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: WorldWindow.java 2047 2014-06-06 22:48:33Z tgaskins $
  */
 public interface WorldWindow extends AVList
 {
@@ -237,4 +237,22 @@ public interface WorldWindow extends AVList
      * @return the <code>GLContext</code> associated with this window. May be null.
      */
     GLContext getContext();
+
+    /**
+     * Indicates whether the GPU resource cache is reinitialized when this window is reinitialized.
+     *
+     * @return <code>true</code> if reinitialization is enabled, otherwise <code>false</code>.
+     */
+    boolean isEnableGpuCacheReinitialization();
+
+    /**
+     * Specifies whether to reinitialize the GPU resource cache when this window is reinitialized. A value of
+     * <code>true</code> indicates that the GPU resource cache this window is using should be cleared when its init()
+     * method is called, typically when re-parented. Set this to <code>false</code> when this window is sharing context
+     * with other windows and is likely to be re-parented. It prevents the flashing caused by clearing and
+     * re-populating the GPU resource cache during re-parenting. The default value is <code>true</code>.
+     *
+     * @param enableGpuCacheReinitialization <code>true</code> to enable reinitialization, otherwise <code>false</code>.
+     */
+    void setEnableGpuCacheReinitialization(boolean enableGpuCacheReinitialization);
 }

@@ -18,7 +18,7 @@ import java.util.logging.Level;
 
 /**
  * @author tag
- * @version $Id: LocalRasterServerRetriever.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: LocalRasterServerRetriever.java 2257 2014-08-22 18:02:19Z tgaskins $
  */
 public class LocalRasterServerRetriever extends WWObjectImpl implements Retriever
 {
@@ -70,7 +70,7 @@ public class LocalRasterServerRetriever extends WWObjectImpl implements Retrieve
 
     public String getName()
     {
-        Object o = this.getValue(AVKey.DISPLAY_NAME);
+        Object o = this.getStringValue(AVKey.DISPLAY_NAME);
         return (WWUtil.isEmpty(o)) ? null : (String) o;
     }
 

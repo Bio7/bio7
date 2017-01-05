@@ -7,7 +7,6 @@
 package gov.nasa.worldwindx.applications.antenna;
 
 import com.jogamp.common.nio.Buffers;
-import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.Globe;
@@ -27,7 +26,7 @@ import java.nio.*;
  * counterclockwise from the horizon.
  *
  * @author tag
- * @version $Id: AntennaAxes.java 1676 2013-10-21 18:32:30Z dcollins $
+ * @version $Id: AntennaAxes.java 2053 2014-06-10 20:16:57Z tgaskins $
  */
 public class AntennaAxes extends AbstractShape
 {

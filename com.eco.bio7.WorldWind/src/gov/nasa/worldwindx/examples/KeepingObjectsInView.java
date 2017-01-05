@@ -34,7 +34,7 @@ import java.util.*;
  * KeepingObjectsInView.ViewController} and {@link gov.nasa.worldwindx.examples.KeepingObjectsInView.ViewAnimator}.
  *
  * @author dcollins
- * @version $Id: KeepingObjectsInView.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: KeepingObjectsInView.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class KeepingObjectsInView extends ApplicationTemplate
 {
@@ -103,8 +103,6 @@ public class KeepingObjectsInView extends ApplicationTemplate
             shapesLayer.setName("Shapes to Track");
             insertBeforePlacenames(this.getWwd(), shapesLayer);
 
-            this.getLayerPanel().update(this.getWwd());
-
             // Add the objects to track to the layers.
             for (Object o : objectsToTrack)
             {
@@ -161,7 +159,7 @@ public class KeepingObjectsInView extends ApplicationTemplate
             box.add(Box.createVerticalStrut(5));
             box.add(button);
 
-            this.getLayerPanel().add(box, BorderLayout.SOUTH);
+            this.getControlPanel().add(box, BorderLayout.SOUTH);
         }
     }
 

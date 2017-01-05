@@ -26,7 +26,7 @@ import java.io.File;
  * Manages the installed-data table and related actions.
  *
  * @author tag
- * @version $Id: FileStorePanel.java 1180 2013-02-15 18:40:47Z tgaskins $
+ * @version $Id: FileStorePanel.java 2982 2015-04-06 19:52:46Z tgaskins $
  */
 public class FileStorePanel extends JPanel implements ListSelectionListener
 {
@@ -145,7 +145,7 @@ public class FileStorePanel extends JPanel implements ListSelectionListener
     }
 
     @Override
-    public void valueChanged(ListSelectionEvent event)
+    public void valueChanged(final ListSelectionEvent event)
     {
         // This method is called when the table selection changes.
 
@@ -156,21 +156,29 @@ public class FileStorePanel extends JPanel implements ListSelectionListener
             return;
 
         // This list is searched below to determine whether a data set is selected.
-        java.util.List<FileStoreDataSet> selectedDataSets = this.fileStoreTable.getSelectedDataSets();
+        final java.util.List<FileStoreDataSet> selectedDataSets = this.fileStoreTable.getSelectedDataSets();
 
-        // Loop through the selected interval and determine whether the rows were selected or deselected.
-        for (int i = event.getFirstIndex(); i <= event.getLastIndex(); i++)
+        Thread t = new Thread(new Runnable()
         {
-            int modelRow = this.fileStoreTable.convertRowIndexToModel(i);
-            FileStoreDataSet dataSet = ((FileStoreTableModel) this.fileStoreTable.getModel()).getRow(modelRow);
+            @Override
+            public void run()
+            {
+                // Loop through the selected interval and determine whether the rows were selected or deselected.
+                for (int i = event.getFirstIndex(); i <= event.getLastIndex(); i++)
+                {
+                    int modelRow = fileStoreTable.convertRowIndexToModel(i);
+                    FileStoreDataSet dataSet = ((FileStoreTableModel) fileStoreTable.getModel()).getRow(modelRow);
 
-            if (dataSet.isImagery())
-                this.manageLayer(dataSet, selectedDataSets.contains(dataSet));
-            else if (dataSet.isElevation())
-                this.manageElevationModel(dataSet, selectedDataSets.contains(dataSet));
-        }
+                    if (dataSet.isImagery())
+                        manageLayer(dataSet, selectedDataSets.contains(dataSet));
+                    else if (dataSet.isElevation())
+                        manageElevationModel(dataSet, selectedDataSets.contains(dataSet));
+                }
 
-        this.fileStoreTable.repaint();
+                fileStoreTable.repaint();
+            }
+        });
+        t.start();
     }
 
     protected void manageLayer(FileStoreDataSet dataSet, boolean tf)

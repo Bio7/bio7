@@ -17,7 +17,7 @@ import java.util.zip.*;
  * Utilities for working with shapefiles.
  *
  * @author Patrick Murris
- * @version $Id: ShapefileUtils.java 1740 2013-12-06 21:08:20Z tgaskins $
+ * @version $Id: ShapefileUtils.java 2068 2014-06-20 21:33:09Z dcollins $
  */
 public class ShapefileUtils
 {
@@ -161,5 +161,29 @@ public class ShapefileUtils
         }
 
         return null;
+    }
+
+    /**
+     * Determines whether a shapefile's records contain a height attribute.
+     *
+     * @param shapefile the shapefile to search.
+     *
+     * @return true if the shapefile's records contain a height attribute, otherwise false.
+     */
+    public static boolean hasHeightAttribute(Shapefile shapefile)
+    {
+        Set<String> attrNames = shapefile.getAttributeNames();
+        if (attrNames == null)
+            return false;
+
+        for (String name : attrNames)
+        {
+            if (name.equalsIgnoreCase("height") || name.equalsIgnoreCase("hgt"))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -24,7 +24,7 @@ import java.util.HashSet;
  * to those in a specific region.
  *
  * @author tag
- * @version $Id: TreeFiltering.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: TreeFiltering.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class TreeFiltering extends ApplicationTemplate
 {
@@ -38,7 +38,6 @@ public class TreeFiltering extends ApplicationTemplate
             layer.setKeepSeparated(false);
             layer.setPickEnabled(true);
             insertBeforePlacenames(this.getWwd(), layer);
-            this.getLayerPanel().update(this.getWwd());
 
             this.getWwd().addPositionListener(new PositionListener()
             {

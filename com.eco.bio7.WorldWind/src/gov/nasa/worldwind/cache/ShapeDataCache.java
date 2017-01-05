@@ -23,7 +23,7 @@ import java.util.*;
  * #getEntry(gov.nasa.worldwind.globes.Globe)} is called.
  *
  * @author tag
- * @version $Id: ShapeDataCache.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ShapeDataCache.java 2152 2014-07-16 00:00:33Z tgaskins $
  */
 public class ShapeDataCache implements Iterable<ShapeDataCache.ShapeDataCacheEntry>
 {
@@ -41,6 +41,8 @@ public class ShapeDataCache implements Iterable<ShapeDataCache.ShapeDataCacheEnt
         protected Extent extent;
         /** Indicates the eye distance of the shape in the globe-relative coordinate system. */
         protected double eyeDistance;
+        /** Indicates the eye distance current when the cache entry's remaining time was last adjusted. */
+        protected double timerAdjustedEyeDistance;
 
         /**
          * Constructs an entry using the globe and vertical exaggeration of a specified draw context.
@@ -54,7 +56,7 @@ public class ShapeDataCache implements Iterable<ShapeDataCache.ShapeDataCacheEnt
         public ShapeDataCacheEntry(DrawContext dc, long minExpiryTime, long maxExpiryTime)
         {
             this.timer = new TimedExpirySupport(Math.max(minExpiryTime, 0), Math.max(maxExpiryTime, 0));
-            this.globeStateKey = dc != null ? dc.getGlobe().getGlobeStateKey(dc) : null;
+            this.globeStateKey = dc != null ? dc.getGlobe().getGlobeStateKey() : null;
             this.verticalExaggeration = dc != null ? dc.getVerticalExaggeration() : 1d;
         }
 
@@ -107,6 +109,34 @@ public class ShapeDataCache implements Iterable<ShapeDataCache.ShapeDataCacheEnt
         }
 
         /**
+         * Adjust the timer's expiration time by comparing the cached eye distance to the current eye distance. The
+         * remaining expiration time is reduced by 50% each time the eye distance decreases by 50%. This method may be
+         * called many times, and the remaining expiration time is reduced only after the eye distance is reduced by
+         * 50%. This has no effect if the cached eye distance is unknown, or if the expiration time has already been
+         * reached.
+         *
+         * @param dc             the current draw context.
+         * @param newEyeDistance the current eye distance.
+         */
+        public void adjustTimer(DrawContext dc, double newEyeDistance)
+        {
+            if (this.timerAdjustedEyeDistance == 0) // do nothing, there's previous eye distance to compare with
+                return;
+
+            if (this.timer.isExpired(dc)) // do nothing, the timer has already expired
+                return;
+
+            double oldPixelSize = dc.getView().computePixelSizeAtDistance(this.timerAdjustedEyeDistance);
+            double newPixelSize = dc.getView().computePixelSizeAtDistance(newEyeDistance);
+            if (newPixelSize < oldPixelSize / 2)
+            {
+                long remainingTime = this.timer.getExpiryTime() - dc.getFrameTimeStamp();
+                this.timer.setExpiryTime(dc.getFrameTimeStamp() + remainingTime / 2);
+                this.timerAdjustedEyeDistance = newEyeDistance;
+            }
+        }
+
+        /**
          * Indicates this entry's eye distance.
          *
          * @return this entry's eye distance, in meters.
@@ -124,6 +154,7 @@ public class ShapeDataCache implements Iterable<ShapeDataCache.ShapeDataCacheEnt
         public void setEyeDistance(double eyeDistance)
         {
             this.eyeDistance = eyeDistance;
+            this.timerAdjustedEyeDistance = eyeDistance; // reset the eye distance used by adjustTimer
         }
 
         /**
@@ -205,7 +236,7 @@ public class ShapeDataCache implements Iterable<ShapeDataCache.ShapeDataCacheEnt
 
     // usually only 1, but few at most
     /** This cache's map of entries. Typically one entry per open window. */
-    protected HashMap<Globe, ShapeDataCacheEntry> entries = new HashMap<Globe, ShapeDataCacheEntry>(1);
+    protected HashMap<GlobeStateKey, ShapeDataCacheEntry> entries = new HashMap<GlobeStateKey, ShapeDataCacheEntry>(1);
     /** The maximum number of milliseconds an entry may remain in the cache without being used. */
     protected long maxTimeSinceLastUsed;
 
@@ -235,7 +266,7 @@ public class ShapeDataCache implements Iterable<ShapeDataCache.ShapeDataCacheEnt
         if (entry == null)
             return;
 
-        this.entries.put(entry.globeStateKey.getGlobe(), entry);
+        this.entries.put(entry.globeStateKey, entry);
         entry.lastUsed = System.currentTimeMillis();
     }
 
@@ -257,7 +288,7 @@ public class ShapeDataCache implements Iterable<ShapeDataCache.ShapeDataCacheEnt
         if (globe == null)
             return null;
 
-        ShapeDataCacheEntry entry = this.entries.get(globe);
+        ShapeDataCacheEntry entry = this.entries.get(globe.getGlobeStateKey());
         if (entry != null)
             entry.lastUsed = now;
 

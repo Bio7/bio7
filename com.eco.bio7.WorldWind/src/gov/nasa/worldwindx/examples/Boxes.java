@@ -17,7 +17,7 @@ import gov.nasa.worldwind.render.Box;
  * oriented box at a geographic position on the Globe.
  *
  * @author ccrick
- * @version $Id: Boxes.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: Boxes.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class Boxes extends ApplicationTemplate
 {
@@ -128,8 +128,6 @@ public class Boxes extends ApplicationTemplate
 
             // Add the layer to the model.
             insertBeforeCompass(getWwd(), layer);
-            // Update layer panel.
-            this.getLayerPanel().update(this.getWwd());
         }
     }
 

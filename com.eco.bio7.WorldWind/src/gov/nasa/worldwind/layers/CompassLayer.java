@@ -21,11 +21,11 @@ import java.io.*;
 
 /**
  * @author tag
- * @version $Id: CompassLayer.java 1953 2014-04-21 15:43:35Z tgaskins $
+ * @version $Id: CompassLayer.java 2121 2014-07-03 03:10:54Z tgaskins $
  */
 public class CompassLayer extends AbstractLayer
 {
-    protected String iconFilePath = "images/notched-compass.png"; // TODO: make configurable
+    protected String iconFilePath = "images/notched-compass.dds"; // TODO: make configurable
     protected double compassToViewportScale = 0.2; // TODO: make configurable
     protected double iconScale = 0.5;
     protected int borderWidth = 20; // TODO: make configurable
@@ -37,6 +37,8 @@ public class CompassLayer extends AbstractLayer
     protected Vec4 locationOffset = null;
     protected boolean showTilt = true;
     protected PickSupport pickSupport = new PickSupport();
+    protected long frameStampForPicking;
+    protected long frameStampForDrawing;
 
     // Draw it as ordered with an eye distance of 0 so that it shows up in front of most other things.
     protected OrderedIcon orderedImage = new OrderedIcon();
@@ -273,12 +275,22 @@ public class CompassLayer extends AbstractLayer
 
     protected void doRender(DrawContext dc)
     {
+        if (dc.isContinuous2DGlobe() && this.frameStampForDrawing == dc.getFrameTimeStamp())
+            return;
+
         dc.addOrderedRenderable(this.orderedImage);
+
+        this.frameStampForDrawing = dc.getFrameTimeStamp();
     }
 
     protected void doPick(DrawContext dc, Point pickPoint)
     {
+        if (dc.isContinuous2DGlobe() && this.frameStampForPicking == dc.getFrameTimeStamp())
+            return;
+
         dc.addOrderedRenderable(this.orderedImage);
+
+        this.frameStampForPicking = dc.getFrameTimeStamp();
     }
 
     public boolean isShowTilt()

@@ -7,11 +7,12 @@ package gov.nasa.worldwind.geom;
 
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.formats.worldfile.WorldFile;
+import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.util.*;
 
 /**
  * @author dcollins
- * @version $Id: Matrix.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: Matrix.java 2201 2014-08-07 23:17:54Z dcollins $
  */
 public class Matrix
 {
@@ -2417,6 +2418,130 @@ public class Matrix
     public final Vec4 getTranslation()
     {
         return new Vec4(this.m14, this.m24, this.m34);
+    }
+
+    /**
+     * Extracts this viewing matrix's eye point.
+     * <p/>
+     * This method assumes that this matrix represents a viewing matrix. If this does not represent a viewing matrix the
+     * results are undefined.
+     * <p/>
+     * In model coordinates, a viewing matrix's eye point is the point the viewer is looking from and maps to the center
+     * of the screen.
+     *
+     * @return this viewing matrix's eye point, in model coordinates.
+     */
+    public Vec4 extractEyePoint()
+    {
+        // The eye point of a modelview matrix is computed by transforming the origin (0, 0, 0, 1) by the matrix's
+        // inverse. This is equivalent to transforming the inverse of this matrix's translation components in the
+        // rightmost column by the transpose of its upper 3x3 components.
+        double x = -(m11 * m14) - (m21 * m24) - (m31 * m34);
+        double y = -(m12 * m14) - (m22 * m24) - (m32 * m34);
+        double z = -(m13 * m14) - (m23 * m24) - (m33 * m34);
+
+        return new Vec4(x, y, z);
+    }
+
+    /**
+     * Extracts this viewing matrix's forward vector.
+     * <p/>
+     * This method assumes that this matrix represents a viewing matrix. If this does not represent a viewing matrix the
+     * results are undefined.
+     * <p/>
+     * In model coordinates, a viewing matrix's forward vector is the direction the viewer is looking and maps to a
+     * vector going into the screen.
+     *
+     * @return this viewing matrix's forward vector, in model coordinates.
+     */
+    public Vec4 extractForwardVector()
+    {
+        // The forward vector of a modelview matrix is computed by transforming the negative Z axis (0, 0, -1, 0) by the
+        // matrix's inverse. We have pre-computed the result inline here to simplify this computation.
+        return new Vec4(-this.m31, -this.m32, -this.m33);
+    }
+
+    /**
+     * Extracts this viewing matrix's parameters given a viewing origin and a globe.
+     * <p/>
+     * This method assumes that this matrix represents a viewing matrix. If this does not represent a viewing matrix the
+     * results are undefined.
+     * <p/>
+     * This returns a parameterization of this viewing matrix based on the specified origin and globe. The origin
+     * indicates the model coordinate point that the view's orientation is relative to, while the globe provides the
+     * necessary model coordinate context for the origin and the orientation. The origin should be either the view's eye
+     * point or a point on the view's forward vector. The view's roll must be specified in order to disambiguate heading
+     * and roll when the view's tilt is zero.
+     *
+     * The following list outlines the returned key-value pairs and their meanings:
+     * <ul>
+     * <li>AVKey.ORIGIN - The geographic position corresponding to the origin point.</li>
+     * <li>AVKey.RANGE - The distance between the specified origin point and the view's eye point, in model coordinates.</li>
+     * <li>AVKey.HEADING - The view's heading angle relative to the globe's north pointing tangent at the origin point.</li>
+     * <li>AVKey.TILT - The view's tilt angle relative to the globe's normal vector at the origin point.</li>
+     * <li>AVKey.ROLL - The view's roll relative to the globe's normal vector at the origin point.</li>
+     * </ul>
+     *
+     * @param origin the origin of the viewing parameters, in model coordinates.
+     * @param roll   the view's roll.
+     * @param globe  the globe the viewer is looking at.
+     *
+     * @return a parameterization of this viewing matrix as a list of key-value pairs.
+     *
+     * @throws IllegalArgumentException if any argument is null.
+     */
+    public AVList extractViewingParameters(Vec4 origin, Angle roll, Globe globe)
+    {
+        if (origin == null)
+        {
+            String msg = Logging.getMessage("nullValue.OriginIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (roll == null)
+        {
+            String msg = Logging.getMessage("nullValue.RollIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (globe == null)
+        {
+            String msg = Logging.getMessage("nullValue.GlobeIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        // Transform the modelview matrix to a local coordinate system at the origin. This eliminates the geographic
+        // transform contained in the modelview matrix while maintaining rotation and translation relative to the origin.
+        Position originPos = globe.computePositionFromPoint(origin);
+        Matrix modelviewLocal = this.multiply(globe.computeModelCoordinateOriginTransform(originPos));
+
+        // Extract the viewing parameters from the transform in local coordinates.
+        // TODO: Document how these parameters are extracted. See [WWMatrix extractViewingParameters] in WWiOS.
+
+        Matrix m = modelviewLocal;
+        double range = -m.m34;
+
+        double ct = m.m33;
+        double st = Math.sqrt(m.m13 * m.m13 + m.m23 * m.m23);
+        double tilt = Math.atan2(st, ct);
+
+        double cr = Math.cos(roll.radians);
+        double sr = Math.sin(roll.radians);
+        double ch = cr * m.m11 - sr * m.m21;
+        double sh = sr * m.m22 - cr * m.m12;
+        double heading = Math.atan2(sh, ch);
+
+        AVList params = new AVListImpl();
+        params.setValue(AVKey.ORIGIN, originPos);
+        params.setValue(AVKey.RANGE, range);
+        params.setValue(AVKey.HEADING, Angle.fromRadians(heading));
+        params.setValue(AVKey.TILT, Angle.fromRadians(tilt));
+        params.setValue(AVKey.ROLL, roll);
+
+        return params;
     }
 
     // ============== Helper Functions ======================= //

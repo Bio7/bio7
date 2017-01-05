@@ -15,7 +15,7 @@ import gov.nasa.worldwind.util.*;
 
 /**
  * @author tag
- * @version $Id: KMLLineStringPlacemarkImpl.java 1770 2013-12-18 02:31:10Z tgaskins $
+ * @version $Id: KMLLineStringPlacemarkImpl.java 2151 2014-07-15 17:12:46Z tgaskins $
  */
 public class KMLLineStringPlacemarkImpl extends Path implements KMLRenderable
 {
@@ -93,7 +93,7 @@ public class KMLLineStringPlacemarkImpl extends Path implements KMLRenderable
 
     public void preRender(KMLTraversalContext tc, DrawContext dc)
     {
-        // Intentionally left blank; KML line string placemark does nothing during the preRender phase.
+        super.preRender(dc);
     }
 
     public void render(KMLTraversalContext tc, DrawContext dc)

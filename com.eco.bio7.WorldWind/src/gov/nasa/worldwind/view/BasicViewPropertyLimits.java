@@ -5,16 +5,19 @@
  */
 package gov.nasa.worldwind.view;
 
+import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.globes.*;
 import gov.nasa.worldwind.util.*;
 
 /**
+ * BasicViewPropertyLimits provides an implementation of ViewPropertyLimits.
+ *
  * @author jym
- * @version $Id: BasicViewPropertyLimits.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: BasicViewPropertyLimits.java 2253 2014-08-22 16:33:46Z dcollins $
  */
 public class BasicViewPropertyLimits implements ViewPropertyLimits
 {
-
     protected Sector eyeLocationLimits;
     protected Angle minHeading;
     protected Angle maxHeading;
@@ -25,24 +28,21 @@ public class BasicViewPropertyLimits implements ViewPropertyLimits
     protected double minEyeElevation;
     protected double maxEyeElevation;
 
+    /** Creates a new BasicViewPropertyLimits with default limits. */
     public BasicViewPropertyLimits()
     {
-        this.eyeLocationLimits = Sector.FULL_SPHERE;
-        this.minEyeElevation = -Double.MAX_VALUE;
-        this.maxEyeElevation = Double.MAX_VALUE;
-        this.minHeading = Angle.NEG180;
-        this.maxHeading = Angle.POS180;
-        this.minPitch = Angle.ZERO;
-        this.maxPitch = Angle.POS90;
-        this.minRoll = Angle.NEG180;
-        this.maxRoll = Angle.POS180;
+        this.reset();
     }
 
+    /** {@inheritDoc} */
+    @Override
     public Sector getEyeLocationLimits()
     {
         return this.eyeLocationLimits;
     }
 
+    /** {@inheritDoc} */
+    @Override
     public void setEyeLocationLimits(Sector sector)
     {
         if (sector == null)
@@ -55,22 +55,30 @@ public class BasicViewPropertyLimits implements ViewPropertyLimits
         this.eyeLocationLimits = sector;
     }
 
+    /** {@inheritDoc} */
+    @Override
     public double[] getEyeElevationLimits()
     {
         return new double[] {this.minEyeElevation, this.maxEyeElevation};
     }
 
+    /** {@inheritDoc} */
+    @Override
     public void setEyeElevationLimits(double minValue, double maxValue)
     {
         this.minEyeElevation = minValue;
         this.maxEyeElevation = maxValue;
     }
 
-     public Angle[] getHeadingLimits()
+    /** {@inheritDoc} */
+    @Override
+    public Angle[] getHeadingLimits()
     {
         return new Angle[] {this.minHeading, this.maxHeading};
     }
 
+    /** {@inheritDoc} */
+    @Override
     public void setHeadingLimits(Angle minAngle, Angle maxAngle)
     {
         if (minAngle == null || maxAngle == null)
@@ -84,11 +92,15 @@ public class BasicViewPropertyLimits implements ViewPropertyLimits
         this.maxHeading = maxAngle;
     }
 
+    /** {@inheritDoc} */
+    @Override
     public Angle[] getPitchLimits()
     {
         return new Angle[] {this.minPitch, this.maxPitch};
     }
 
+    /** {@inheritDoc} */
+    @Override
     public void setPitchLimits(Angle minAngle, Angle maxAngle)
     {
         if (minAngle == null || maxAngle == null)
@@ -102,22 +114,15 @@ public class BasicViewPropertyLimits implements ViewPropertyLimits
         this.maxPitch = maxAngle;
     }
 
-    /**
-     * Get the limits for roll.
-     *
-     * @return The roll limits as a two element array {minRoll, maxRoll},
-     */
+    /** {@inheritDoc} */
+    @Override
     public Angle[] getRollLimits()
     {
-        return new Angle[] { this.minRoll, this.maxRoll };
+        return new Angle[] {this.minRoll, this.maxRoll};
     }
 
-    /**
-     * Set the roll limits.
-     *
-     * @param minAngle The smallest allowable roll.
-     * @param maxAngle The largest allowable roll.
-     */
+    /** {@inheritDoc} */
+    @Override
     public void setRollLimits(Angle minAngle, Angle maxAngle)
     {
         if (minAngle == null || maxAngle == null)
@@ -131,7 +136,139 @@ public class BasicViewPropertyLimits implements ViewPropertyLimits
         this.maxRoll = maxAngle;
     }
 
-     public static Angle limitHeading(Angle angle, ViewPropertyLimits viewLimits)
+    /** {@inheritDoc} */
+    public void reset()
+    {
+        this.eyeLocationLimits = Sector.FULL_SPHERE;
+        this.minEyeElevation = -Double.MAX_VALUE;
+        this.maxEyeElevation = Double.MAX_VALUE;
+        this.minHeading = Angle.NEG180;
+        this.maxHeading = Angle.POS180;
+        this.minPitch = Angle.ZERO;
+        this.maxPitch = Angle.POS90;
+        this.minRoll = Angle.NEG180;
+        this.maxRoll = Angle.POS180;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Position limitEyePosition(View view, Position position)
+    {
+        if (view == null)
+        {
+            String message = Logging.getMessage("nullValue.ViewIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (position == null)
+        {
+            String message = Logging.getMessage("nullValue.PositionIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        Sector sector = this.eyeLocationLimits;
+        Angle lat = Angle.clamp(position.latitude, sector.getMinLatitude(), sector.getMaxLatitude());
+        Angle lon = Angle.clamp(position.longitude, sector.getMinLongitude(), sector.getMaxLongitude());
+        double alt = WWMath.clamp(position.elevation, this.minEyeElevation, this.maxEyeElevation);
+
+        return new Position(lat, lon, alt);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Angle limitHeading(View view, Angle angle)
+    {
+        if (view == null)
+        {
+            String message = Logging.getMessage("nullValue.ViewIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (angle == null)
+        {
+            String message = Logging.getMessage("nullValue.AngleIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (this.isNonContinous2DGlobe(view.getGlobe()))
+        {
+            return angle; // ignore the heading limit on non-continuous 2D globes
+        }
+
+        return Angle.clamp(angle, this.minHeading, this.maxHeading);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Angle limitPitch(View view, Angle angle)
+    {
+        if (view == null)
+        {
+            String message = Logging.getMessage("nullValue.ViewIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (angle == null)
+        {
+            String message = Logging.getMessage("nullValue.AngleIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (this.is2DGlobe(view.getGlobe()))
+        {
+            return Angle.ZERO; // keep the view looking straight down on 2D globes
+        }
+
+        return Angle.clamp(angle, this.minPitch, this.maxPitch);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Angle limitRoll(View view, Angle angle)
+    {
+        if (view == null)
+        {
+            String message = Logging.getMessage("nullValue.ViewIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (angle == null)
+        {
+            String message = Logging.getMessage("nullValue.AngleIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        return Angle.clamp(angle, this.minRoll, this.maxRoll);
+    }
+
+    protected boolean is2DGlobe(Globe globe)
+    {
+        return globe instanceof Globe2D;
+    }
+
+    protected boolean isNonContinous2DGlobe(Globe globe)
+    {
+        return globe instanceof Globe2D && !((Globe2D) globe).isContinuous();
+    }
+
+    /**
+     * Clamp a heading angle to the range specified in a limit object.
+     *
+     * @param angle      angle to clamp to the allowed range.
+     * @param viewLimits defines the heading limits.
+     *
+     * @throws IllegalArgumentException if any argument is null.
+     * @deprecated Use {@link #limitHeading(gov.nasa.worldwind.View, gov.nasa.worldwind.geom.Angle)} instead.
+     */
+    public static Angle limitHeading(Angle angle, ViewPropertyLimits viewLimits)
     {
         if (angle == null)
         {
@@ -161,6 +298,15 @@ public class BasicViewPropertyLimits implements ViewPropertyLimits
         return newAngle;
     }
 
+    /**
+     * Clamp a pitch angle to the range specified in a limit object.
+     *
+     * @param angle      angle to clamp to the allowed range.
+     * @param viewLimits defines the pitch limits.
+     *
+     * @throws IllegalArgumentException if any argument is null.
+     * @deprecated Use {@link #limitPitch(gov.nasa.worldwind.View, gov.nasa.worldwind.geom.Angle)} instead.
+     */
     public static Angle limitPitch(Angle angle, ViewPropertyLimits viewLimits)
     {
         if (angle == null)
@@ -193,8 +339,11 @@ public class BasicViewPropertyLimits implements ViewPropertyLimits
     /**
      * Clamp a roll angle to the range specified in a limit object.
      *
-     * @param angle      Angle to clamp to the allowed range.
-     * @param viewLimits defines the roll limits. 
+     * @param angle      angle to clamp to the allowed range.
+     * @param viewLimits defines the roll limits.
+     *
+     * @throws IllegalArgumentException if any argument is null.
+     * @deprecated Use {@link #limitRoll(gov.nasa.worldwind.View, gov.nasa.worldwind.geom.Angle)} instead.
      */
     public static Angle limitRoll(Angle angle, ViewPropertyLimits viewLimits)
     {
@@ -225,6 +374,15 @@ public class BasicViewPropertyLimits implements ViewPropertyLimits
         return newAngle;
     }
 
+    /**
+     * Clamp an eye elevation to the range specified in a limit object.
+     *
+     * @param elevation  elevation to clamp to the allowed range.
+     * @param viewLimits defines the eye elevation limits.
+     *
+     * @throws IllegalArgumentException if any argument is null.
+     * @deprecated Use {@link #limitEyePosition(gov.nasa.worldwind.View, gov.nasa.worldwind.geom.Position)} instead.
+     */
     public static double limitEyeElevation(double elevation, ViewPropertyLimits viewLimits)
     {
         if (viewLimits == null)
@@ -238,15 +396,25 @@ public class BasicViewPropertyLimits implements ViewPropertyLimits
 
         if (elevation < elevLimits[0])
         {
-             newElevation = elevLimits[0];
+            newElevation = elevLimits[0];
         }
         else if (elevation > elevLimits[1])
         {
             newElevation = elevLimits[1];
         }
-        return(newElevation);
+        return (newElevation);
     }
 
+    /**
+     * Clamp eye location angles to the range specified in a limit object.
+     *
+     * @param latitude   latitude angle to clamp to the allowed range.
+     * @param longitude  longitude angle to clamp to the allowed range.
+     * @param viewLimits defines the eye location limits.
+     *
+     * @throws IllegalArgumentException if any argument is null.
+     * @deprecated Use {@link #limitEyePosition(gov.nasa.worldwind.View, gov.nasa.worldwind.geom.Position)} instead.
+     */
     public static LatLon limitEyePositionLocation(Angle latitude, Angle longitude, ViewPropertyLimits viewLimits)
     {
         if (latitude == null || longitude == null)
@@ -346,6 +514,5 @@ public class BasicViewPropertyLimits implements ViewPropertyLimits
 
         if (min != null || max != null)
             this.setPitchLimits(minAndMaxAngle[0], minAndMaxAngle[1]);
-
     }
 }

@@ -19,7 +19,7 @@ import javax.media.opengl.GLAutoDrawable;
  * OpenGL features World Wind uses during rendering.
  *
  * @author dcollins
- * @version $Id: ConfiguringGLRuntimeCapabilities.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ConfiguringGLRuntimeCapabilities.java 3432 2015-10-01 19:40:30Z dcollins $
  */
 public class ConfiguringGLRuntimeCapabilities extends ApplicationTemplate
 {
@@ -45,9 +45,9 @@ public class ConfiguringGLRuntimeCapabilities extends ApplicationTemplate
     }
 
     /**
-     * Subclass of {@link gov.nasa.worldwind.WorldWindowGLAutoDrawable} which overrides the method override the method
-     * {@link gov.nasa.worldwind.WorldWindowGLAutoDrawable#init(javax.media.opengl.GLAutoDrawable)} to configure the
-     * OpenGL features used by the World Wind SDK.
+     * Subclass of {@link gov.nasa.worldwind.WorldWindowGLAutoDrawable} which overrides the method {@link
+     * gov.nasa.worldwind.WorldWindowGLAutoDrawable#init(javax.media.opengl.GLAutoDrawable)} to configure the OpenGL
+     * features used by the World Wind SDK.
      */
     public static class MyGLAutoDrawable extends WorldWindowGLAutoDrawable
     {

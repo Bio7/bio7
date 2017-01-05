@@ -16,7 +16,7 @@ import java.util.Map;
 
 /**
  * @author tag
- * @version $Id: WorldWindDiagnostics.java 1535 2013-08-07 18:11:17Z dcollins $
+ * @version $Id: WorldWindDiagnostics.java 2319 2014-09-17 19:22:58Z dcollins $
  */
 public class WorldWindDiagnostics
 {
@@ -60,7 +60,8 @@ public class WorldWindDiagnostics
                 new Attr(GL.GL_MAX_TEXTURE_SIZE, "max texture size"),
                 new Attr(GL2.GL_MAX_ELEMENTS_INDICES, "max elements indices"),
                 new Attr(GL2.GL_MAX_ELEMENTS_VERTICES, "max elements vertices"),
-                new Attr(GL2.GL_MAX_LIGHTS, "max lights")
+                new Attr(GL2.GL_MAX_LIGHTS, "max lights"),
+                new Attr(GL2.GL_LINE_WIDTH_RANGE, "line width range")
             };
 
         public void init(GLAutoDrawable glAutoDrawable)
@@ -93,17 +94,18 @@ public class WorldWindDiagnostics
             String oglRenderer = gl.glGetString(GL.GL_RENDERER);
             sb.append("OpenGL renderer: " + oglRenderer + "\n");
 
-            String value = "";
-            int[] intVals = new int[1];
+            int[] intVals = new int[2];
             for (Attr attr : attrs)
             {
+                sb.append(attr.name).append(": ");
+
                 if (attr.attr instanceof Integer)
                 {
                     gl.glGetIntegerv((Integer) attr.attr, intVals, 0);
-                    value = Integer.toString(intVals[0]);
+                    sb.append(intVals[0]).append(intVals[1] > 0 ? ", " + intVals[1] : "");
                 }
 
-                sb.append(attr.name + ": " + value + "\n");
+                sb.append("\n");
             }
 
             String extensionString = gl.glGetString(GL.GL_EXTENSIONS);

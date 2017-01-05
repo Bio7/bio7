@@ -84,7 +84,7 @@ import java.util.Hashtable;
 
 /**
  * @author tag
- * @version $Id: EllipsoidsEverywhere.java 1057 2013-01-01 19:00:22Z dcollins $
+ * @version $Id: EllipsoidsEverywhere.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class EllipsoidsEverywhere extends ApplicationTemplate
 {
@@ -99,7 +99,7 @@ public class EllipsoidsEverywhere extends ApplicationTemplate
 
             //getWwd().getSceneController().getGLRuntimeCapabilities().setVertexBufferObjectEnabled(true);
 
-            this.getLayerPanel().add(makeShapesControlPanel(), BorderLayout.SOUTH);
+            this.getControlPanel().add(makeShapesControlPanel(), BorderLayout.SOUTH);
 
             RenderableLayer layer = new RenderableLayer();
             //layer.setPickEnabled(true);
@@ -155,8 +155,6 @@ public class EllipsoidsEverywhere extends ApplicationTemplate
             }
             System.out.printf("%d %s, Altitude mode = %s\n", count, shapeType,
                 altitudeMode == WorldWind.RELATIVE_TO_GROUND ? "RELATIVE_TO_GROUND" : "ABSOLUTE");
-
-            this.getLayerPanel().update(this.getWwd());
         }
 
         protected JPanel makeShapesControlPanel()

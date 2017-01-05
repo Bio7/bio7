@@ -21,7 +21,7 @@ import java.util.logging.Level;
 
 /**
  * @author tag
- * @version $Id: MarkerRenderer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: MarkerRenderer.java 2325 2014-09-17 21:55:48Z tgaskins $
  */
 public class MarkerRenderer
 {
@@ -246,7 +246,7 @@ public class MarkerRenderer
         Vec4 eyePoint = dc.getView().getEyePoint();
 
         // If this is a new frame, recompute surface points.
-        if (dc.getFrameTimeStamp() != this.frameTimeStamp)
+        if (dc.getFrameTimeStamp() != this.frameTimeStamp || dc.isContinuous2DGlobe())
         {
             this.frameTimeStamp = dc.getFrameTimeStamp();
             this.computeSurfacePoints(dc, markers);
@@ -291,8 +291,23 @@ public class MarkerRenderer
             gl.glPushAttrib(GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT | GL2.GL_LIGHTING_BIT | GL2.GL_TRANSFORM_BIT
                 | GL2.GL_COLOR_BUFFER_BIT);
 
-            float[] lightPosition =
-                {(float) (cameraPosition.x * 2), (float) (cameraPosition.y / 2), (float) (cameraPosition.z), 0.0f};
+            float[] lightPosition = new float[4];
+
+            if (dc.is2DGlobe())
+            {
+                lightPosition[0] = 0.2f;
+                lightPosition[1] = -0.5f;
+                lightPosition[2] = 1f;
+                lightPosition[3] = 0f;
+            }
+            else
+            {
+                lightPosition[0] = (float) cameraPosition.x * 2;
+                lightPosition[1] = (float) cameraPosition.y() / 2;
+                lightPosition[2] = (float) cameraPosition.z();
+                lightPosition[3] = 0f;
+            }
+
             float[] lightDiffuse = {1.0f, 1.0f, 1.0f, 1.0f};
             float[] lightAmbient = {1.0f, 1.0f, 1.0f, 1.0f};
             float[] lightSpecular = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -361,23 +376,24 @@ public class MarkerRenderer
     {
         double ve = dc.getVerticalExaggeration();
         if (!this.overrideMarkerElevation)
-            return dc.getGlobe().computePointFromPosition(pos, pos.getElevation() * ve);
+            return dc.getGlobe().computePointFromPosition(pos, dc.is2DGlobe() ? 0 : pos.getElevation() * ve);
 
         // Compute points that are at the renderer-specified elevation
+        double effectiveElevation = dc.is2DGlobe() ? 0 : this.elevation;
         Vec4 point = dc.getSurfaceGeometry().getSurfacePoint(pos.getLatitude(), pos.getLongitude(),
-            this.elevation * ve);
+            effectiveElevation * ve);
         if (point != null)
             return point;
 
         // Point is outside the current sector geometry, so compute it from the globe.
-        return dc.getGlobe().computePointFromPosition(pos.getLatitude(), pos.getLongitude(), this.elevation * ve);
+        return dc.getGlobe().computePointFromPosition(pos.getLatitude(), pos.getLongitude(), effectiveElevation * ve);
     }
 
     protected double computeMarkerRadius(DrawContext dc, Vec4 point, Marker marker)
     {
         double d = point.distanceTo3(dc.getView().getEyePoint());
         double radius = marker.getAttributes().getMarkerPixels() * dc.getView().computePixelSizeAtDistance(d);
-        if (radius < marker.getAttributes().getMinMarkerSize())
+        if (radius < marker.getAttributes().getMinMarkerSize() && marker.getAttributes().getMinMarkerSize() > 0)
             radius = marker.getAttributes().getMinMarkerSize();
         else if (radius > marker.getAttributes().getMaxMarkerSize())
             radius = marker.getAttributes().getMaxMarkerSize();

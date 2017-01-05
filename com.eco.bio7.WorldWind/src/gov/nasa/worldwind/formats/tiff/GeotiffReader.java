@@ -23,7 +23,7 @@ import java.util.ArrayList;
 
 /**
  * @author brownrigg
- * @version $Id: GeotiffReader.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: GeotiffReader.java 3289 2015-06-30 15:55:33Z tgaskins $
  */
 public class GeotiffReader implements Disposable
 {
@@ -228,8 +228,8 @@ public class GeotiffReader implements Disposable
         {
             String msg = Logging.getMessage("GeotiffReader.InvalidIFDEntryValue", tiff.rowsPerStrip,
                 "RowsPerStrip", Tiff.Tag.ROWS_PER_STRIP);
-            Logging.logger().severe(msg);
-            throw new IOException(msg);
+            Logging.logger().fine(msg);
+            tiff.rowsPerStrip = Integer.MAX_VALUE;
         }
 
         if (tiff.planarConfig != Tiff.PlanarConfiguration.PLANAR

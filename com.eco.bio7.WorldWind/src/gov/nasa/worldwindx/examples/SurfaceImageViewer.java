@@ -34,7 +34,7 @@ import java.io.*;
  * image.jgw           // accompanying world file
  *
  * @author tag
- * @version $Id: SurfaceImageViewer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: SurfaceImageViewer.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class SurfaceImageViewer extends ApplicationTemplate
 {
@@ -58,9 +58,7 @@ public class SurfaceImageViewer extends ApplicationTemplate
 
                 insertBeforeCompass(this.getWwd(), layer);
 
-                this.getLayerPanel().add(makeControlPanel(), BorderLayout.SOUTH);
-
-                this.getLayerPanel().update(this.getWwd());
+                this.getControlPanel().add(makeControlPanel(), BorderLayout.SOUTH);
             }
             catch (Exception e)
             {

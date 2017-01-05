@@ -6,17 +6,22 @@
 package gov.nasa.worldwind.render;
 
 import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.drag.*;
 import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.ogc.kml.KMLConstants;
 import gov.nasa.worldwind.ogc.kml.gx.GXConstants;
+import gov.nasa.worldwind.pick.PickSupport;
 import gov.nasa.worldwind.util.Logging;
 
 import javax.media.opengl.*;
 import javax.xml.stream.*;
+import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
 import java.net.URL;
 import java.util.*;
+import java.util.List;
 
 /**
  * Renders a single image contained in a local file, a remote file, or a <code>BufferedImage</code>.
@@ -25,10 +30,10 @@ import java.util.*;
  * gov.nasa.worldwind.event.SelectEvent}s and will not respond to the user's attempts at navigation when the cursor is
  * over the image. If this is not the desired behavior, disable picking for the layer containing the surface image.
  *
- * @version $Id: SurfaceImage.java 1518 2013-07-24 20:05:23Z tgaskins $
+ * @version $Id: SurfaceImage.java 3419 2015-08-28 00:09:50Z dcollins $
  */
 public class SurfaceImage extends WWObjectImpl
-    implements SurfaceTile, Renderable, PreRenderable, Movable, Disposable, Exportable
+    implements SurfaceTile, OrderedRenderable, PreRenderable, Movable, Disposable, Exportable, Draggable
 {
     // TODO: Handle date-line spanning sectors
 
@@ -36,6 +41,9 @@ public class SurfaceImage extends WWObjectImpl
     private Position referencePosition;
     private double opacity = 1.0;
     private boolean pickEnabled = true;
+    protected boolean alwaysOnTop = false;
+    protected PickSupport pickSupport;
+    protected Layer pickLayer;
 
     protected Object imageSource;
     protected WWTexture sourceTexture;
@@ -44,6 +52,8 @@ public class SurfaceImage extends WWObjectImpl
     protected WWTexture previousSourceTexture;
     protected WWTexture previousGeneratedTexture;
     protected boolean generatedTextureExpired;
+    protected boolean dragEnabled = true;
+    protected DraggableSupport draggableSupport = null;
 
     /**
      * A list that contains only a reference to this instance. Used as an argument to the surface tile renderer to
@@ -143,6 +153,32 @@ public class SurfaceImage extends WWObjectImpl
         this.pickEnabled = pickEnabled;
     }
 
+    /**
+     * Indicates the state of this surface image's always-on-top flag.
+     *
+     * @return <code>true</code> if the always-on-top flag is set, otherwise <code>false</code>.
+     *
+     * @see #setAlwaysOnTop(boolean)
+     */
+    public boolean isAlwaysOnTop()
+    {
+        return this.alwaysOnTop;
+    }
+
+    /**
+     * Specifies whether this surface image should appear on top of other image layers and surface shapes in the scene.
+     * If the flag is <code>true</code>, this surface image appears visually above other image layers and surface
+     * shapes. Otherwise, this surface image appears interleaved with other image layers according to its relative order
+     * in the layer list, and appears beneath all surface shapes. The default is <code>false</code>.
+     *
+     * @param alwaysOnTop <code>true</code> if the surface image should appear always on top, otherwise
+     *                    <code>false</code>.
+     */
+    public void setAlwaysOnTop(boolean alwaysOnTop)
+    {
+        this.alwaysOnTop = alwaysOnTop;
+    }
+
     protected void initializeGeometry(Iterable<? extends LatLon> corners)
     {
         this.corners = new ArrayList<LatLon>(4);
@@ -220,8 +256,17 @@ public class SurfaceImage extends WWObjectImpl
 
     // Renderable interface
 
+    @Override
+    public double getDistanceFromEye()
+    {
+        return 0; // Method required by the ordered surface renderable contract but never used. The return value is meaningless.
+    }
+
     public void preRender(DrawContext dc)
     {
+        if (dc.isOrderedRenderingMode())
+            return; // preRender is called twice - during layer rendering then again during ordered surface rendering
+
         if (this.previousSourceTexture != null)
         {
             dc.getTextureCache().remove(this.previousSourceTexture.getImageSource());
@@ -270,6 +315,42 @@ public class SurfaceImage extends WWObjectImpl
         if (this.sourceTexture == null && this.generatedTexture == null)
             return;
 
+        if (!dc.isOrderedRenderingMode() && this.isAlwaysOnTop())
+        {
+            this.pickLayer = dc.getCurrentLayer();
+            dc.addOrderedSurfaceRenderable(this);
+            return;
+        }
+
+        this.draw(dc);
+    }
+
+    @Override
+    public void pick(DrawContext dc, Point pickPoint)
+    {
+        // Lazily allocate the pick support property, since it's only used when alwaysOnTop is set to true.
+        if (this.pickSupport == null)
+            this.pickSupport = new PickSupport();
+
+        try
+        {
+            this.pickSupport.beginPicking(dc);
+
+            java.awt.Color color = dc.getUniquePickColor();
+            dc.getGL().getGL2().glColor3ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue());
+            this.pickSupport.addPickableObject(color.getRGB(), this);
+
+            this.draw(dc);
+        }
+        finally
+        {
+            this.pickSupport.endPicking(dc);
+            this.pickSupport.resolvePick(dc, pickPoint, this.pickLayer);
+        }
+    }
+
+    protected void draw(DrawContext dc)
+    {
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         try
         {
@@ -387,6 +468,35 @@ public class SurfaceImage extends WWObjectImpl
         this.referencePosition = referencePosition;
     }
 
+    @Override
+    public boolean isDragEnabled()
+    {
+        return this.dragEnabled;
+    }
+
+    @Override
+    public void setDragEnabled(boolean enabled)
+    {
+        this.dragEnabled = enabled;
+    }
+
+    @Override
+    public void drag(DragContext dragContext)
+    {
+        if (!this.dragEnabled)
+            return;
+
+        if (this.draggableSupport == null)
+            this.draggableSupport = new DraggableSupport(this, WorldWind.CLAMP_TO_GROUND);
+
+        this.doDrag(dragContext);
+    }
+
+    protected void doDrag(DragContext dragContext)
+    {
+        this.draggableSupport.dragGlobeSizeConstant(dragContext);
+    }
+
     public boolean equals(Object o)
     {
         if (this == o)
@@ -396,6 +506,9 @@ public class SurfaceImage extends WWObjectImpl
             return false;
 
         SurfaceImage that = (SurfaceImage) o;
+
+        if (this.getSector() == null || that.getSector() == null)
+            return false;
 
         if (this.getImageSource() == null)
             return that.imageSource == null && this.getSector().equals(that.getSector());

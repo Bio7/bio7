@@ -6,8 +6,8 @@
 package gov.nasa.worldwindx.examples;
 
 import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
@@ -25,7 +25,7 @@ import java.io.File;
  * the view center position to stay within this box. The view can also be constrained by heading, pitch, and zoom.
  *
  * @author dcollins
- * @version $Id: ViewLimits.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ViewLimits.java 2259 2014-08-22 23:03:59Z dcollins $
  */
 public class ViewLimits extends ApplicationTemplate
 {
@@ -286,7 +286,7 @@ public class ViewLimits extends ApplicationTemplate
 
                 controlPanel.add(box, BorderLayout.NORTH);
             }
-            this.getLayerPanel().add(controlPanel, BorderLayout.SOUTH);
+            this.getControlPanel().add(controlPanel, BorderLayout.SOUTH);
 
             JMenuBar menuBar = new JMenuBar();
             {
@@ -346,6 +346,7 @@ public class ViewLimits extends ApplicationTemplate
             this.appFrame = appFrame;
 
             this.surfaceSector = new SurfaceSector();
+            this.surfaceSector.setPathType(AVKey.LINEAR);
             ShapeAttributes attr = new BasicShapeAttributes();
             attr.setInteriorMaterial(Material.WHITE);
             attr.setOutlineMaterial(Material.GREEN);
@@ -355,6 +356,7 @@ public class ViewLimits extends ApplicationTemplate
             this.surfaceSector.setAttributes(attr);
 
             this.layer = new RenderableLayer();
+            this.layer.setName("Sector Limits");
             this.layer.setPickEnabled(false);
             this.layer.addRenderable(this.surfaceSector);
             insertBeforePlacenames(this.appFrame.getWwd(), this.layer);
@@ -362,16 +364,8 @@ public class ViewLimits extends ApplicationTemplate
             OrbitView view = this.getOrbitView();
             if (view != null)
             {
-                OrbitViewLimits limits = view.getOrbitViewLimits();
-                if (limits != null)
-                {
-                    Globe globe = this.appFrame.getWwd().getModel().getGlobe();
-                    double maxZoom = 3 * globe.getRadius();
-
-                    limits.setCenterLocationLimits(DEFAULT_SECTOR_LIMITS);
-                    limits.setZoomLimits(0, maxZoom);
-                    BasicOrbitViewLimits.applyLimits(view, limits);
-                }
+                view.getOrbitViewLimits().setCenterLocationLimits(DEFAULT_SECTOR_LIMITS);
+                view.getOrbitViewLimits().setZoomLimits(0, 20e6);
             }
         }
 
@@ -432,8 +426,6 @@ public class ViewLimits extends ApplicationTemplate
             if (values != null)
                 limits.setZoomLimits(values[0], values[1]);
 
-            BasicOrbitViewLimits.applyLimits(view, limits);
-
             this.updateRenderables();
         }
 
@@ -475,14 +467,7 @@ public class ViewLimits extends ApplicationTemplate
 
             View view = this.appFrame.getWwd().getView();
             String xmlString = WWIO.readTextFile(file);
-
             view.restoreState(xmlString);
-
-            if (view instanceof OrbitView)
-            {
-                OrbitView orbitView = (OrbitView) view;
-                BasicOrbitViewLimits.applyLimits(orbitView, orbitView.getOrbitViewLimits());
-            }
 
             this.appFrame.updateComponents();
         }

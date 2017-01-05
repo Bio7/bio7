@@ -47,7 +47,7 @@ import java.util.*;
  * Edited shapes are Restorable and may be saved to or loaded from a file using options in the File menu.
  *
  * @author ccrick
- * @version $Id: RigidShapeBuilder.java 1674 2013-10-17 19:22:22Z dcollins $
+ * @version $Id: RigidShapeBuilder.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class RigidShapeBuilder extends ApplicationTemplate
 {
@@ -1806,7 +1806,6 @@ public class RigidShapeBuilder extends ApplicationTemplate
             this.shapeLayer = new RenderableLayer();
             this.shapeLayer.setName(SHAPE_LAYER_NAME);
             insertBeforePlacenames(this.getWwd(), this.shapeLayer);
-            this.getLayerPanel().update(this.getWwd());
 
             this.builderController = new AbstractShapeBuilderController(this);
             this.builderModel = new AbstractShapeBuilderModel();

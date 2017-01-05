@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 United States Government as represented by the Administrator of the
+ * Copyright (C) 2014 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -12,21 +12,54 @@ import gov.nasa.worldwind.util.*;
 import javax.media.opengl.*;
 
 /**
- * A container for common attributes applied to renderable shapes.
+ * Basic implementation of the {@link gov.nasa.worldwind.render.airspaces.AirspaceAttributes} interface.
+ * AirspaceAttributes was originally designed as a special purpose attribute bundle for {@link Airspace} shapes, but is
+ * now redundant subclass of {@link gov.nasa.worldwind.render.BasicShapeAttributes}. BasicAirspaceAttributes is still
+ * supported to ensure backward compatibility with earlier versions of World Wind. Usage of methods unique to
+ * AirspaceAttributes should be replaced with the equivalent methods in ShapeAttributes.
  *
  * @author tag
- * @version $Id: BasicAirspaceAttributes.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: BasicAirspaceAttributes.java 2318 2014-09-17 18:26:33Z tgaskins $
  */
-public class BasicAirspaceAttributes implements AirspaceAttributes
+public class BasicAirspaceAttributes extends BasicShapeAttributes implements AirspaceAttributes
 {
-    private boolean drawInterior = true;
-    private boolean drawOutline = false;
-    private Material material = Material.WHITE;
-    private Material outlineMaterial = Material.BLACK;
-    private double opacity = 1.0;
-    private double outlineOpacity = 1.0;
-    private double outlineWidth = 1.0;
+    /**
+     * Creates a new BasicAirspaceAttributes with the default attributes. The default attributes differ from
+     * BasicShapeAttributes, and are as follows:
+     * <p/>
+     * <table> <tr><th>Attribute</th><th>Default Value</th></tr> <tr><td>unresolved</td><td><code>true</code></td></tr>
+     * <tr><td>drawInterior</td><td><code>true</code></td></tr> <tr><td>drawOutline</td><td><code>false</code></td></tr>
+     * <tr><td>enableAntialiasing</td><td><code>false</code></td></tr> <tr><td>enableLighting</td><td><code>true</code></td></tr>
+     * <tr><td>interiorMaterial</td><td>{@link gov.nasa.worldwind.render.Material#WHITE}</td></tr>
+     * <tr><td>outlineMaterial</td><td>{@link gov.nasa.worldwind.render.Material#BLACK}</td></tr>
+     * <tr><td>interiorOpacity</td><td>1.0</td></tr> <tr><td>outlineOpacity</td><td>1.0</td></tr>
+     * <tr><td>outlineWidth</td><td>1.0</td></tr> <tr><td>outlineStippleFactor</td><td>0</td></tr>
+     * <tr><td>outlineStipplePattern</td><td>0xF0F0</td></tr> <tr><td>imageSource</td><td><code>null</code></td></tr>
+     * <tr><td>imageScale</td><td>1.0</td></tr> </table>
+     */
+    public BasicAirspaceAttributes()
+    {
+        // Configure this AirspaceAttributes to preserve the original defaults of BasicAirspaceAttributes and
+        // AirspaceRenderer.
 
+        this.drawOutline = false;
+        this.enableAntialiasing = false;
+        this.enableLighting = true;
+    }
+
+    /**
+     * Creates a new BasicAirspaceAttributes with the specified interior material and interior opacity. All other
+     * attributes are set to the default values, which differ from BasicShapeAttributes, and are as follows:
+     * <p/>
+     * <table> <tr><th>Attribute</th><th>Default Value</th></tr> <tr><td>unresolved</td><td><code>true</code></td></tr>
+     * <tr><td>drawInterior</td><td><code>true</code></td></tr> <tr><td>drawOutline</td><td><code>false</code></td></tr>
+     * <tr><td>enableAntialiasing</td><td><code>false</code></td></tr> <tr><td>enableLighting</td><td><code>true</code></td></tr>
+     * <tr><td>interiorMaterial</td><td>material</td></tr> <tr><td>outlineMaterial</td><td>{@link
+     * gov.nasa.worldwind.render.Material#BLACK}</td></tr> <tr><td>interiorOpacity</td><td>opacity</td></tr>
+     * <tr><td>outlineOpacity</td><td>1.0</td></tr> <tr><td>outlineWidth</td><td>1.0</td></tr>
+     * <tr><td>outlineStippleFactor</td><td>0</td></tr> <tr><td>outlineStipplePattern</td><td>0xF0F0</td></tr>
+     * <tr><td>imageSource</td><td><code>null</code></td></tr> <tr><td>imageScale</td><td>1.0</td></tr> </table>
+     */
     public BasicAirspaceAttributes(Material material, double opacity)
     {
         if (material == null)
@@ -35,6 +68,7 @@ public class BasicAirspaceAttributes implements AirspaceAttributes
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
         }
+
         if (opacity < 0.0 || opacity > 1.0)
         {
             String message = Logging.getMessage("generic.ArgumentOutOfRange", "opacity=" + opacity);
@@ -42,107 +76,67 @@ public class BasicAirspaceAttributes implements AirspaceAttributes
             throw new IllegalArgumentException(message);
         }
 
-        this.material = material;
-        this.opacity = opacity;
-    }
+        // Configure this AirspaceAttributes to preserve the original defaults of BasicAirspaceAttributes and
+        // AirspaceRenderer.
 
-    public BasicAirspaceAttributes(AirspaceAttributes that)
-    {
-        if (that == null)
-        {
-            String message = Logging.getMessage("nullValue.AttributesIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        this.drawInterior = that.isDrawInterior();
-        this.drawOutline = that.isDrawOutline();
-        this.material = that.getMaterial();
-        this.outlineMaterial = that.getOutlineMaterial();
-        this.opacity = that.getOpacity();
-        this.outlineOpacity = that.getOutlineOpacity();
-        this.outlineWidth = that.getOutlineWidth();
-    }
-
-    public BasicAirspaceAttributes(ShapeAttributes shapeAttrs)
-    {
-        if (shapeAttrs == null)
-        {
-            String message = Logging.getMessage("nullValue.AttributesIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        // TODO: This is a temporary measure to convert ShapeAttributes to AirspaceAttributes.
-        // TODO: Modify airspaces to use Attributes.
-
-        this.drawInterior = shapeAttrs.isDrawInterior();
-        this.drawOutline = shapeAttrs.isDrawOutline();
-        this.material = shapeAttrs.getInteriorMaterial();
-        this.outlineMaterial = shapeAttrs.getOutlineMaterial();
-        this.opacity = shapeAttrs.getInteriorOpacity();
-        this.outlineOpacity = shapeAttrs.getOutlineOpacity();
-        this.outlineWidth = shapeAttrs.getOutlineWidth();
-    }
-
-    public BasicAirspaceAttributes()
-    {
+        this.drawOutline = false;
+        this.enableAntialiasing = false;
+        this.enableLighting = true;
+        this.interiorMaterial = material;
+        this.interiorOpacity = opacity;
     }
 
     /**
-     * Determines whether the shape interior or volume is being drawn.
+     * Creates a new <code>BasicAirspaceAttributes</code> configured with the specified
+     * {@link gov.nasa.worldwind.render.ShapeAttributes}.
      *
-     * @return <code>true</code> if the shape interior or volume is being drawn.
+     * @param attributes the attributes to configure the new <code>BasicAirspaceAttributes</code> with.
+     *
+     * @throws IllegalArgumentException if <code>attributes</code> is <code>null</code>.
      */
-    public boolean isDrawInterior()
+    public BasicAirspaceAttributes(ShapeAttributes attributes)
     {
-        return this.drawInterior;
+        super(attributes);
     }
 
     /**
-     * Sets whether the shape interior or volume should be drawn.
+     * Creates a new <code>BasicAirspaceAttributes</code> configured with the specified <code>attributes</code>.
      *
-     * @param state <code>true</code> if the shape interior or volume should be drawn.
+     * @param attributes the attributes to configure the new <code>BasicAirspaceAttributes</code> with.
+     *
+     * @throws IllegalArgumentException if <code>attributes</code> is <code>null</code>.
      */
-    public void setDrawInterior(boolean state)
+    public BasicAirspaceAttributes(AirspaceAttributes attributes)
     {
-        this.drawInterior = state;
+        super(attributes);
+    }
+
+    /** {@inheritDoc} */
+    public AirspaceAttributes copy()
+    {
+        return new BasicAirspaceAttributes(this);
+    }
+
+    /** {@inheritDoc} */
+    public void copy(AirspaceAttributes attributes)
+    {
+        super.copy(attributes);
     }
 
     /**
-     * Determines whether the shape border or outline is being drawn.
+     * {@inheritDoc}
      *
-     * @return <code>true</code> if the shape border or outline is being drawn.
-     */
-    public boolean isDrawOutline()
-    {
-        return this.drawOutline;
-    }
-
-    /**
-     * Sets whether the shape border or outline should be drawn.
-     *
-     * @param state <code>true</code> if the shape border or outline should be drawn.
-     */
-    public void setDrawOutline(boolean state)
-    {
-        this.drawOutline = state;
-    }
-
-    /**
-     * Get the <code>Material</code> used to draw the shape interior or volume.
-     *
-     * @return the <code>Material</code> used to draw the shape interior or volume.
+     * @deprecated Use {@link #getInteriorMaterial()} instead.
      */
     public Material getMaterial()
     {
-        return this.material;
+        return this.getInteriorMaterial();
     }
 
     /**
-     * Sets the <code>Material</code> used to draw the shape interior or volume.
+     * {@inheritDoc}
      *
-     * @param material the <code>Material</code> used to draw the shape interior or volume.
+     * @deprecated Use {@link #setInteriorMaterial(gov.nasa.worldwind.render.Material)} instead.
      */
     public void setMaterial(Material material)
     {
@@ -153,121 +147,41 @@ public class BasicAirspaceAttributes implements AirspaceAttributes
             throw new IllegalArgumentException(message);
         }
 
-        this.material = material;
+        this.setInteriorMaterial(material);
     }
 
     /**
-     * Get the <code>Material</code> used to draw the shape border or outline.
+     * {@inheritDoc}
      *
-     * @return the <code>Material</code> used to draw the shape border or outline.
-     */
-    public Material getOutlineMaterial()
-    {
-        return this.outlineMaterial;
-    }
-
-    /**
-     * Sets the <code>Material</code> used to draw the shape border or outline.
-     *
-     * @param materal the <code>Material</code> used to draw the shape border or outline.
-     */
-    public void setOutlineMaterial(Material materal)
-    {
-        if (materal == null)
-        {
-            String message = Logging.getMessage("nullValue.MaterialIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        this.outlineMaterial = materal;
-    }
-
-    /**
-     * Returns the shape's opacity.
-     *
-     * @return the shape's opacity in the range [0, 1], where 0 indicates full transparency and 1 indicates full
-     *         opacity.
+     * @deprecated Use {@link #getInteriorOpacity()} instead.
      */
     public double getOpacity()
     {
-        return this.opacity;
+        return this.getInteriorOpacity();
     }
 
     /**
-     * Set the shape's opacity.
+     * {@inheritDoc}
      *
-     * @param opacity the shape's opacity in the range [0, 1], where 0 indicates full transparency and 1 indicates full
-     *                opacity.
+     * @deprecated Use {@link #setInteriorOpacity(double)} instead.
      */
     public void setOpacity(double opacity)
     {
-        if (opacity < 0.0 || opacity > 1.0)
+        if (opacity < 0 || opacity > 1)
         {
-            String message = Logging.getMessage("generic.ArgumentOutOfRange", "opacity=" + opacity);
+            String message = Logging.getMessage("generic.OpacityOutOfRange", opacity);
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
         }
 
-        this.opacity = opacity;
+        this.setInteriorOpacity(opacity);
     }
 
     /**
-     * Returns the shape's outline or border opacity.
+     * {@inheritDoc}
      *
-     * @return the shape's outline or borderopacity in the range [0, 1], where 0 indicates full transparency and 1
-     *         indicates full opacity.
+     * @deprecated Use {@link Material#apply(javax.media.opengl.GL2, int)} or make OpenGL state changes directly.
      */
-    public double getOutlineOpacity()
-    {
-        return this.outlineOpacity;
-    }
-
-    /**
-     * Set the shape's outline or border opacity.
-     *
-     * @param opacity the shape's outline or border opacity in the range [0, 1], where 0 indicates full transparency and
-     *                1 indicates full opacity.
-     */
-    public void setOutlineOpacity(double opacity)
-    {
-        if (opacity < 0.0 || opacity > 1.0)
-        {
-            String message = Logging.getMessage("generic.ArgumentOutOfRange", "opacity=" + opacity);
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        this.outlineOpacity = opacity;
-    }
-
-    /**
-     * Get the shape border or outline width in pixels.
-     *
-     * @return the shape border or outline width in pixels.
-     */
-    public double getOutlineWidth()
-    {
-        return this.outlineWidth;
-    }
-
-    /**
-     * Sets the shape border or outline width in pixels.
-     *
-     * @param width the shape border or outline width in pixels.
-     */
-    public void setOutlineWidth(double width)
-    {
-        if (width < 0.0)
-        {
-            String message = Logging.getMessage("generic.ArgumentOutOfRange", "width=" + width);
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        this.outlineWidth = width;
-    }
-
     public void applyInterior(DrawContext dc, boolean enableMaterial)
     {
         if (dc == null)
@@ -276,16 +190,15 @@ public class BasicAirspaceAttributes implements AirspaceAttributes
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
         }
-        if (dc.getGL() == null)
-        {
-            String message = Logging.getMessage("nullValue.DrawingContextGLIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalStateException(message);
-        }
 
-        this.applyMaterial(dc, this.getMaterial(), this.getOpacity(), enableMaterial);
+        this.applyMaterial(dc, this.getInteriorMaterial(), this.getInteriorOpacity(), enableMaterial);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @deprecated Use {@link Material#apply(javax.media.opengl.GL2, int)} or make OpenGL state changes directly.
+     */
     public void applyOutline(DrawContext dc, boolean enableMaterial)
     {
         if (dc == null)
@@ -294,12 +207,6 @@ public class BasicAirspaceAttributes implements AirspaceAttributes
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
         }
-        if (dc.getGL() == null)
-        {
-            String message = Logging.getMessage("nullValue.DrawingContextGLIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalStateException(message);
-        }
 
         this.applyMaterial(dc, this.getOutlineMaterial(), this.getOutlineOpacity(), enableMaterial);
 
@@ -307,52 +214,25 @@ public class BasicAirspaceAttributes implements AirspaceAttributes
         gl.glLineWidth((float) this.getOutlineWidth());
     }
 
-    public void getRestorableState(RestorableSupport rs, RestorableSupport.StateObject so)
-    {
-        rs.addStateValueAsBoolean(so, "drawInterior", this.isDrawInterior());
-
-        rs.addStateValueAsBoolean(so, "drawOutline", this.isDrawOutline());
-
-        this.getMaterial().getRestorableState(rs, rs.addStateObject(so, "material"));
-
-        this.getOutlineMaterial().getRestorableState(rs, rs.addStateObject(so, "outlineMaterial"));
-
-        rs.addStateValueAsDouble(so, "opacity", this.getOpacity());
-
-        rs.addStateValueAsDouble(so, "outlineOpacity", this.getOutlineOpacity());
-
-        rs.addStateValueAsDouble(so, "outlineWidth", this.getOutlineWidth());
-    }
-
+    /** {@inheritDoc} */
     public void restoreState(RestorableSupport rs, RestorableSupport.StateObject so)
     {
-        Boolean b = rs.getStateValueAsBoolean(so, "drawInterior");
-        if (b != null)
-            this.setDrawInterior(b);
+        super.restoreState(rs, so);
 
-        b = rs.getStateValueAsBoolean(so, "drawOutline");
-        if (b != null)
-            this.setDrawOutline(b);
+        this.restoreDeprecatedState(rs, so);
+    }
 
+    protected void restoreDeprecatedState(RestorableSupport rs, RestorableSupport.StateObject so)
+    {
+        // Restore deprecated interior material state used prior to integration with ShapeAttributes.
         RestorableSupport.StateObject mo = rs.getStateObject(so, "material");
         if (mo != null)
-            this.setMaterial(this.getMaterial().restoreState(rs, mo));
+            this.setInteriorMaterial(this.getInteriorMaterial().restoreState(rs, mo));
 
-        mo = rs.getStateObject(so, "outlineMaterial");
-        if (mo != null)
-            this.setOutlineMaterial(this.getOutlineMaterial().restoreState(rs, mo));
-
+        // Restore deprecated interior opacity state used prior to integration with ShapeAttributes.
         Double d = rs.getStateValueAsDouble(so, "opacity");
         if (d != null)
-            this.setOpacity(d);
-
-        d = rs.getStateValueAsDouble(so, "outlineOpacity");
-        if (d != null)
-            this.setOutlineOpacity(d);
-
-        d = rs.getStateValueAsDouble(so, "outlineWidth");
-        if (d != null)
-            this.setOutlineWidth(d);
+            this.setInteriorOpacity(d);
     }
 
     protected void applyMaterial(DrawContext dc, Material material, double opacity, boolean enableMaterial)

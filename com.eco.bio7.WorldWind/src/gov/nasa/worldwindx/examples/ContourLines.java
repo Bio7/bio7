@@ -22,7 +22,7 @@ import java.util.*;
  * class <code>{@link ContourLine}</code> to compute and display the contour lines.
  *
  * @author Patrick Murris
- * @version $Id: ContourLines.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ContourLines.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class ContourLines extends ApplicationTemplate
 {
@@ -39,7 +39,6 @@ public class ContourLines extends ApplicationTemplate
 
             // Add the contour line layer to the World Window and update the layer panel.
             insertBeforePlacenames(getWwd(), layer);
-            this.getLayerPanel().update(this.getWwd());
 
             // Add a global moving contour line to the layer.
             this.contourLine = new ContourLine();
@@ -71,7 +70,7 @@ public class ContourLines extends ApplicationTemplate
             }
 
             // Add a contour line control panel to the application window.
-            this.getLayerPanel().add(this.makeContourLineControlPanel(), BorderLayout.SOUTH);
+            this.getControlPanel().add(this.makeContourLineControlPanel(), BorderLayout.SOUTH);
         }
 
         protected JPanel makeContourLineControlPanel()

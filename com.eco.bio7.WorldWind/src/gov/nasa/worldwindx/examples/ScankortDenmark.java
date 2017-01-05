@@ -20,7 +20,7 @@ import gov.nasa.worldwind.terrain.*;
  * while information for loading the elevation data is in: config/Earth/ScankortDenmarkDSMElevationModel.xml.
  *
  * @author dcollins
- * @version $Id: ScankortDenmark.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ScankortDenmark.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class ScankortDenmark
 {
@@ -61,7 +61,6 @@ public class ScankortDenmark
                 null);
             layer.setEnabled(true);
             ApplicationTemplate.insertBeforePlacenames(this.getWwd(), layer);
-            this.getLayerPanel().update(this.getWwd());
 
             // Add the high resolution elevations.
             Factory emf = new BasicElevationModelFactory();

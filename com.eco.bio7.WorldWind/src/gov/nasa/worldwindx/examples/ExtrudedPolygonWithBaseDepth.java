@@ -20,7 +20,7 @@ import java.util.ArrayList;
  * valley floor.
  *
  * @author tag
- * @version $Id: ExtrudedPolygonWithBaseDepth.java 1857 2014-03-06 00:22:52Z tgaskins $
+ * @version $Id: ExtrudedPolygonWithBaseDepth.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class ExtrudedPolygonWithBaseDepth extends ApplicationTemplate
 {
@@ -75,9 +75,6 @@ public class ExtrudedPolygonWithBaseDepth extends ApplicationTemplate
 
             // Add the layer to the model.
             insertBeforeCompass(getWwd(), layer);
-
-            // Update layer panel
-            this.getLayerPanel().update(this.getWwd());
 
             getWwd().getView().setEyePosition(
                 Position.fromDegrees(43.843162670564354, -114.63551647988652, 2652.865781935775));

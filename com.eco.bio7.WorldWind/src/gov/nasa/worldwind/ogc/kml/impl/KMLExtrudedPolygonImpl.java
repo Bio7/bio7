@@ -17,7 +17,7 @@ import gov.nasa.worldwind.util.*;
 
 /**
  * @author tag
- * @version $Id: KMLExtrudedPolygonImpl.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: KMLExtrudedPolygonImpl.java 2151 2014-07-15 17:12:46Z tgaskins $
  */
 public class KMLExtrudedPolygonImpl extends ExtrudedPolygon implements KMLRenderable
 {
@@ -101,7 +101,7 @@ public class KMLExtrudedPolygonImpl extends ExtrudedPolygon implements KMLRender
 
     public void preRender(KMLTraversalContext tc, DrawContext dc)
     {
-        // Intentionally left blank; KML extruded polygon does nothing during the preRender phase.
+        super.preRender(dc);
     }
 
     public void render(KMLTraversalContext tc, DrawContext dc)

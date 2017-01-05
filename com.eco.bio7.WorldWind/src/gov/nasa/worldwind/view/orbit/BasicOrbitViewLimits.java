@@ -5,13 +5,16 @@
  */
 package gov.nasa.worldwind.view.orbit;
 
+import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.util.*;
 import gov.nasa.worldwind.view.BasicViewPropertyLimits;
 
 /**
+ * BasicOrbitViewLimits provides an implementation of OrbitViewLimits.
+ *
  * @author dcollins
- * @version $Id: BasicOrbitViewLimits.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: BasicOrbitViewLimits.java 2253 2014-08-22 16:33:46Z dcollins $
  */
 public class BasicOrbitViewLimits extends BasicViewPropertyLimits implements OrbitViewLimits
 {
@@ -21,24 +24,21 @@ public class BasicOrbitViewLimits extends BasicViewPropertyLimits implements Orb
     protected double minZoom;
     protected double maxZoom;
 
+    /** Creates a new BasicOrbitViewLimits with default limits. */
     public BasicOrbitViewLimits()
     {
-        this.centerLocationLimits = Sector.FULL_SPHERE;
-        this.minCenterElevation = -Double.MAX_VALUE;
-        this.maxCenterElevation = Double.MAX_VALUE;
-        this.minHeading = Angle.NEG180;
-        this.maxHeading = Angle.POS180;
-        this.minPitch = Angle.ZERO;
-        this.maxPitch = Angle.POS90;
-        this.minZoom = 0;
-        this.maxZoom = Double.MAX_VALUE;
+        this.reset();
     }
 
+    /** {@inheritDoc} */
+    @Override
     public Sector getCenterLocationLimits()
     {
         return this.centerLocationLimits;
     }
 
+    /** {@inheritDoc} */
+    @Override
     public void setCenterLocationLimits(Sector sector)
     {
         if (sector == null)
@@ -51,28 +51,113 @@ public class BasicOrbitViewLimits extends BasicViewPropertyLimits implements Orb
         this.centerLocationLimits = sector;
     }
 
+    /** {@inheritDoc} */
+    @Override
     public double[] getCenterElevationLimits()
     {
         return new double[] {this.minCenterElevation, this.maxCenterElevation};
     }
 
+    /** {@inheritDoc} */
+    @Override
     public void setCenterElevationLimits(double minValue, double maxValue)
     {
         this.minCenterElevation = minValue;
         this.maxCenterElevation = maxValue;
     }
 
+    /** {@inheritDoc} */
+    @Override
     public double[] getZoomLimits()
     {
         return new double[] {this.minZoom, this.maxZoom};
     }
 
+    /** {@inheritDoc} */
+    @Override
     public void setZoomLimits(double minValue, double maxValue)
     {
         this.minZoom = minValue;
         this.maxZoom = maxValue;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void reset()
+    {
+        super.reset();
+
+        this.centerLocationLimits = Sector.FULL_SPHERE;
+        this.minCenterElevation = -Double.MAX_VALUE;
+        this.maxCenterElevation = Double.MAX_VALUE;
+        this.minZoom = 0;
+        this.maxZoom = Double.MAX_VALUE;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Position limitCenterPosition(View view, Position position)
+    {
+        if (view == null)
+        {
+            String message = Logging.getMessage("nullValue.ViewIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (position == null)
+        {
+            String message = Logging.getMessage("nullValue.PositionIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        Sector sector = this.centerLocationLimits;
+        Angle lat = Angle.clamp(position.latitude, sector.getMinLatitude(), sector.getMaxLatitude());
+        Angle lon = Angle.clamp(position.longitude, sector.getMinLongitude(), sector.getMaxLongitude());
+        double alt = WWMath.clamp(position.elevation, this.minCenterElevation, this.maxCenterElevation);
+
+        return new Position(lat, lon, alt);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double limitZoom(View view, double value)
+    {
+        if (view == null)
+        {
+            String message = Logging.getMessage("nullValue.ViewIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        double minZoom = this.minZoom;
+        double maxZoom = this.maxZoom;
+
+        if (this.is2DGlobe(view.getGlobe())) // limit zoom to ~360 degrees of visible longitude on 2D globes
+        {
+            double max2DZoom = Math.PI * view.getGlobe().getEquatorialRadius() / view.getFieldOfView().tanHalfAngle();
+            if (minZoom > max2DZoom)
+                minZoom = max2DZoom;
+            if (maxZoom > max2DZoom)
+                maxZoom = max2DZoom;
+        }
+
+        return WWMath.clamp(value, minZoom, maxZoom);
+    }
+
+    /**
+     * Applies the orbit view property limits to the specified view.
+     *
+     * @param view       the view that receives the property limits.
+     * @param viewLimits defines the view property limits.
+     *
+     * @throws IllegalArgumentException if any argument is null.
+     * @deprecated Use methods that limit individual view properties directly: {@link #limitCenterPosition(gov.nasa.worldwind.View,
+     *             gov.nasa.worldwind.geom.Position)}, {@link #limitHeading(gov.nasa.worldwind.View,
+     *             gov.nasa.worldwind.geom.Angle)}, etc.
+     */
+    @SuppressWarnings("deprecation")
     public static void applyLimits(OrbitView view, OrbitViewLimits viewLimits)
     {
         if (view == null)
@@ -94,6 +179,16 @@ public class BasicOrbitViewLimits extends BasicViewPropertyLimits implements Orb
         view.setZoom(limitZoom(view.getZoom(), viewLimits));
     }
 
+    /**
+     * Clamp center location angles and elevation to the range specified in a limit object.
+     *
+     * @param position   position to clamp to the allowed range.
+     * @param viewLimits defines the center location and elevation limits.
+     *
+     * @throws IllegalArgumentException if any argument is null.
+     * @deprecated Use {@link #limitCenterPosition(gov.nasa.worldwind.View, gov.nasa.worldwind.geom.Position)} instead.
+     */
+    @SuppressWarnings("deprecation")
     public static Position limitCenterPosition(Position position, OrbitViewLimits viewLimits)
     {
         if (position == null)
@@ -110,11 +205,20 @@ public class BasicOrbitViewLimits extends BasicViewPropertyLimits implements Orb
         }
 
         return new Position(
-            limitCenterLocation(position.getLatitude(), position.getLongitude(), viewLimits), 
+            limitCenterLocation(position.getLatitude(), position.getLongitude(), viewLimits),
             limitCenterElevation(position.getElevation(), viewLimits));
-
     }
 
+    /**
+     * Clamp center location angles to the range specified in a limit object.
+     *
+     * @param latitude   latitude angle to clamp to the allowed range.
+     * @param longitude  longitude angle to clamp to the allowed range.
+     * @param viewLimits defines the center location limits.
+     *
+     * @throws IllegalArgumentException if any argument is null.
+     * @deprecated Use {@link #limitCenterPosition(gov.nasa.worldwind.View, gov.nasa.worldwind.geom.Position)} instead.
+     */
     public static LatLon limitCenterLocation(Angle latitude, Angle longitude, OrbitViewLimits viewLimits)
     {
         if (latitude == null || longitude == null)
@@ -155,6 +259,15 @@ public class BasicOrbitViewLimits extends BasicViewPropertyLimits implements Orb
         return new LatLon(newLatitude, newLongitude);
     }
 
+    /**
+     * Clamp an center elevation to the range specified in a limit object.
+     *
+     * @param value      elevation to clamp to the allowed range.
+     * @param viewLimits defines the center elevation limits.
+     *
+     * @throws IllegalArgumentException if any argument is null.
+     * @deprecated Use {@link #limitCenterPosition(gov.nasa.worldwind.View, gov.nasa.worldwind.geom.Position)} instead.
+     */
     public static double limitCenterElevation(double value, OrbitViewLimits viewLimits)
     {
         if (viewLimits == null)
@@ -179,8 +292,15 @@ public class BasicOrbitViewLimits extends BasicViewPropertyLimits implements Orb
         return newValue;
     }
 
-   
-
+    /**
+     * Clamp an zoom distance to the range specified in a limit object.
+     *
+     * @param value      distance to clamp to the allowed range.
+     * @param viewLimits defines the zoom distance limits.
+     *
+     * @throws IllegalArgumentException if any argument is null.
+     * @deprecated Use {@link #limitZoom(gov.nasa.worldwind.View, double)} instead.
+     */
     public static double limitZoom(double value, OrbitViewLimits viewLimits)
     {
         if (viewLimits == null)
@@ -189,7 +309,7 @@ public class BasicOrbitViewLimits extends BasicViewPropertyLimits implements Orb
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
         }
-        
+
         double[] limits = viewLimits.getZoomLimits();
         double newValue = value;
 
@@ -208,7 +328,7 @@ public class BasicOrbitViewLimits extends BasicViewPropertyLimits implements Orb
     //**************************************************************//
     //******************** Restorable State  ***********************//
     //**************************************************************//
-    
+
     public void getRestorableState(RestorableSupport rs, RestorableSupport.StateObject context)
     {
         super.getRestorableState(rs, context);

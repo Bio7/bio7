@@ -13,16 +13,17 @@ import gov.nasa.worldwind.exception.WWRuntimeException;
 import gov.nasa.worldwind.formats.dds.DDSCompressor;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.util.*;
-import org.w3c.dom.*;
 
-import javax.xml.xpath.*;
+import javax.xml.stream.XMLStreamException;
 import java.awt.*;
 import java.io.File;
 import java.nio.ByteBuffer;
+import java.util.List;
+import java.util.*;
 
 /**
  * @author Lado Garakanidze
- * @version $Id: BasicRasterServer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: BasicRasterServer.java 2813 2015-02-18 23:35:24Z tgaskins $
  */
 
 /**
@@ -31,11 +32,6 @@ import java.nio.ByteBuffer;
  */
 public class BasicRasterServer extends WWObjectImpl implements RasterServer
 {
-    protected final String XPATH_RASTER_SERVER = "/RasterServer";
-    protected final String XPATH_RASTER_SERVER_PROPERTY = XPATH_RASTER_SERVER + "/Property";
-    protected final String XPATH_RASTER_SERVER_SOURCE = XPATH_RASTER_SERVER + "/Sources/Source";
-    protected final String XPATH_RASTER_SERVER_SOURCE_SECTOR = XPATH_RASTER_SERVER_SOURCE + "/Sector";
-
     protected java.util.List<DataRaster> dataRasterList = new java.util.ArrayList<DataRaster>();
 
     protected DataRasterReaderFactory readerFactory;
@@ -101,45 +97,37 @@ public class BasicRasterServer extends WWObjectImpl implements RasterServer
             throw new IllegalArgumentException(message);
         }
 
-        Element rootElement = null;
+//        if (null == rootElement)
+//        {
+//            String message = Logging.getMessage("generic.UnexpectedObjectType", o.getClass().getName());
+//            Logging.logger().severe(message);
+//            throw new IllegalArgumentException(message);
+//        }
+//
+//        String rootElementName = rootElement.getNodeName();
+//        if (!"RasterServer".equals(rootElementName))
+//        {
+//            String message = Logging.getMessage("generic.InvalidDataSource", rootElementName);
+//            Logging.logger().severe(message);
+//            throw new IllegalArgumentException(message);
+//        }
 
-        if (o instanceof Element)
+        RasterServerConfiguration config = new RasterServerConfiguration(o);
+        try
         {
-            rootElement = (Element) o;
+            config.parse();
         }
-        else if (o instanceof Document)
+        catch (XMLStreamException e)
         {
-            rootElement = ((Document) o).getDocumentElement();
-        }
-        else
-        {
-            Document doc = WWXML.openDocument(o);
-            if (null != doc)
-            {
-                rootElement = doc.getDocumentElement();
-            }
-        }
-
-        if (null == rootElement)
-        {
-            String message = Logging.getMessage("generic.UnexpectedObjectType", o.getClass().getName());
+            String message = Logging.getMessage("generic.InvalidDataSource", "");
+            message += "\n" + e.getMessage();
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
         }
 
-        String rootElementName = rootElement.getNodeName();
-        if (!"RasterServer".equals(rootElementName))
-        {
-            String message = Logging.getMessage("generic.InvalidDataSource", rootElementName);
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
+        this.extractProperties(config);
 
-        XPath xpath = WWXML.makeXPath();
-
-        this.extractProperties(rootElement, xpath);
-
-        if( this.readRasterSources(rootElement, xpath) )
+        if( this.readRasterSources(config) )
         {
             // success, all raster sources are available
             String message = Logging.getMessage("generic.DataSetAvailable", this.getDataSetName() );
@@ -177,53 +165,24 @@ public class BasicRasterServer extends WWObjectImpl implements RasterServer
     /**
      * Extracts all <Property/> key and values from the given DOM element
      *
-     * @param domElement XML object as DOM
-     * @param xpath      XPath instance
+     * @param config Parsed configuration document.
      */
-    protected void extractProperties(Element domElement, XPath xpath)
+    protected void extractProperties(RasterServerConfiguration config)
     {
-        Element[] props = WWXML.getElements(domElement, XPATH_RASTER_SERVER_PROPERTY, xpath);
-
-        if (props != null && props.length > 0)
+        for (Map.Entry<String, String> prop : config.getProperties().entrySet())
         {
-            for (Element prop : props)
-            {
-                String key = prop.getAttribute("name");
-                String value = prop.getAttribute("value");
-                if (!WWUtil.isEmpty(key) && !WWUtil.isEmpty(value))
-                {
-                    if (!this.hasKey(key))
-                    {
-                        this.setValue(key, value);
-                    }
-                    else
-                    {
-                        Object oldValue = this.getValue(key);
-                        if (value.equals(oldValue))
-                        {
-                            continue;
-                        }
-
-                        String msg = Logging.getMessage("generic.AttemptToChangeExistingProperty", key, oldValue,
-                            value);
-                        Logging.logger().fine(msg);
-                    }
-                }
-            }
+            this.setValue(prop.getKey(), prop.getValue());
         }
     }
-
     /**
      * Reads XML document and extracts raster sources
      *
-     * @param domElement DOM element
-     *
-     * @param xpath XPath instance
+     * @param config Parsed configuration document.
      *
      * @return TRUE, if all raster sources are available, FALSE otherwise
      *
      */
-    protected boolean readRasterSources(Element domElement, XPath xpath)
+    protected boolean readRasterSources(RasterServerConfiguration config)
     {
         long startTime = System.currentTimeMillis();
 
@@ -234,30 +193,19 @@ public class BasicRasterServer extends WWObjectImpl implements RasterServer
 
         try
         {
-            XPathExpression xpExpression = xpath.compile(XPATH_RASTER_SERVER_SOURCE);
-            NodeList nodes = (NodeList) xpExpression.evaluate(domElement, XPathConstants.NODESET);
+            List<RasterServerConfiguration.Source> sources = config.getSources();
 
-            if (nodes == null || nodes.getLength() == 0)
+            if (sources == null || sources.size() == 0)
             {
                 return false;
             }
 
-            numSources = nodes.getLength();
-            for (int i = 0; i < numSources; i++)
-            {
+            numSources = sources.size();
+            for (RasterServerConfiguration.Source source : sources) {
                 Thread.yield();
                 try
                 {
-                    Node node = nodes.item(i);
-                    node.getParentNode().removeChild(node);
-                    if (node.getNodeType() != Node.ELEMENT_NODE)
-                    {
-                        continue;
-                    }
-
-                    Element source = (Element) node;
-
-                    String rasterSourcePath = source.getAttribute("path");
+                    String rasterSourcePath = source.getPath();
                     if (WWUtil.isEmpty(rasterSourcePath))
                     {
                         continue;
@@ -294,13 +242,13 @@ public class BasicRasterServer extends WWObjectImpl implements RasterServer
                         continue;
                     }
 
-                    Sector sector = WWXML.getSector(source, "Sector", xpath);
+                    Sector sector = source.getSector();
                     if (null == sector)
                     {
                         rasterReader.readMetadata(rasterSourceFile, rasterMetadata);
 
                         Object o = rasterMetadata.getValue(AVKey.SECTOR);
-                        sector = (o instanceof Sector) ? (Sector) o : sector;
+                        sector = (o instanceof Sector) ? (Sector) o : null;
                     }
                     else
                     {
@@ -348,7 +296,6 @@ public class BasicRasterServer extends WWObjectImpl implements RasterServer
                         hasUnavailableRasterSources = true;
                         String reason = Logging.getMessage("generic.NoSectorSpecified", rasterSourcePath );
                         Logging.logger().warning(reason);
-                        continue;
                     }
                 }
                 catch (Throwable t)

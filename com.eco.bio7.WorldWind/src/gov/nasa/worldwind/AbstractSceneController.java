@@ -23,7 +23,7 @@ import java.util.logging.Level;
 
 /**
  * @author tag
- * @version $Id: AbstractSceneController.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: AbstractSceneController.java 2442 2014-11-19 22:50:42Z tgaskins $
  */
 public abstract class AbstractSceneController extends WWObjectImpl implements SceneController
 {
@@ -71,14 +71,18 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
     protected ScreenCreditController screenCreditController;
     protected GLRuntimeCapabilities glRuntimeCaps = new GLRuntimeCapabilities();
     protected ArrayList<Point> pickPoints = new ArrayList<Point>();
-    /** Support class used to build the composite representation of surface objects as a list of SurfaceTiles. */
-    protected SurfaceObjectTileBuilder surfaceObjectTileBuilder;
-    /** The composite surface object representation. Populated each frame by the {@link #surfaceObjectTileBuilder}. */
-    protected Collection<SurfaceTile> surfaceObjectTiles = new ArrayList<SurfaceTile>();
+    /**
+     * Support class used to build the composite representation of surface objects as a list of SurfaceTiles. We keep a
+     * reference to the tile builder instance used to build tiles because it acts as a cache key to the tiles and
+     * determines when the tiles must be updated. The tile builder does not retain any references the SurfaceObjects, so
+     * keeping a reference to it does not leak memory.
+     */
+    protected SurfaceObjectTileBuilder surfaceObjectTileBuilder = new SurfaceObjectTileBuilder();
     /** The display name for the surface object tile count performance statistic. */
     protected static final String SURFACE_OBJECT_TILE_COUNT_NAME = "Surface Object Tiles";
     protected ClutterFilter clutterFilter = new BasicClutterFilter();
-//    protected Map<String, GroupingFilter> groupingFilters = new HashMap<String, GroupingFilter>();
+    //protected Map<String, GroupingFilter> groupingFilters = new HashMap<String, GroupingFilter>();
+    protected boolean deferOrderedRendering;
 
     public AbstractSceneController()
     {
@@ -375,13 +379,22 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
 //        }
 //    }
 
+    public boolean isDeferOrderedRendering()
+    {
+        return deferOrderedRendering;
+    }
+
+    public void setDeferOrderedRendering(boolean deferOrderedRendering)
+    {
+        this.deferOrderedRendering = deferOrderedRendering;
+    }
+
     public int repaint()
     {
         this.frameTime = System.currentTimeMillis();
 
         this.perFrameStatistics.clear();
         this.renderingExceptions.clear(); // Clear the rendering exceptions accumulated during the last frame.
-        this.surfaceObjectTiles.clear(); // Clear the surface object tiles generated during the last frame.
         this.glRuntimeCaps.initialize(GLContext.getCurrent());
         this.initializeDrawContext(this.dc);
         this.doRepaint(this.dc);
@@ -444,10 +457,17 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
         dc.setPickPoint(this.pickPoint);
         dc.setPickRectangle(this.pickRect);
         dc.setViewportCenterScreenPoint(this.getViewportCenter(dc));
+        dc.setViewportCenterPosition(null);
         dc.setClutterFilter(this.getClutterFilter());
 //        dc.setGroupingFilters(this.groupingFilters);
 
         long frameTimeStamp = System.currentTimeMillis();
+        // Ensure that the frame time stamps differ between frames. This is necessary on machines with low-resolution
+        // JVM clocks or that are so fast that they render under 1 millisecond.
+        if (frameTimeStamp == dc.getFrameTimeStamp())
+        {
+            ++frameTimeStamp;
+        }
         dc.setFrameTimeStamp(frameTimeStamp);
         // Indicate the frame time stamp to apps.
         this.setValue(AVKey.FRAME_TIMESTAMP, frameTimeStamp);
@@ -600,10 +620,8 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
             if (dc.getPickPoint() != null)
                 this.pickPoints.add(dc.getPickPoint());
 
-            // Clear viewportCenterPosition.
-            dc.setViewportCenterPosition(null);
             Point vpc = dc.getViewportCenterScreenPoint();
-            if (vpc != null)
+            if (vpc != null && dc.getViewportCenterPosition() == null)
                 this.pickPoints.add(vpc);
 
             if (this.pickPoints.size() == 0)
@@ -761,6 +779,10 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
             dc.enablePickingMode();
             this.pickTerrain(dc);
             this.doNonTerrainPick(dc);
+
+            if (this.isDeferOrderedRendering())
+                return;
+
             this.resolveTopPick(dc);
             this.lastPickedObjects = new PickedObjectList(dc.getPickedObjects());
             this.lastObjectsInPickRect = new PickedObjectList(dc.getObjectsInPickRectangle());
@@ -793,6 +815,9 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
 
         // Pick against the deferred/ordered surface renderables.
         this.pickOrderedSurfaceRenderables(dc);
+
+        if (this.isDeferOrderedRendering())
+            return;
 
         // Pick against the screen credits.
         if (this.screenCreditController != null)
@@ -884,6 +909,9 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
 
             // Draw the deferred/ordered surface renderables.
             this.drawOrderedSurfaceRenderables(dc);
+
+            if (this.isDeferOrderedRendering())
+                return;
 
             if (this.screenCreditController != null)
                 this.screenCreditController.render(dc);
@@ -1055,22 +1083,10 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
      */
     protected void buildCompositeSurfaceObjects(DrawContext dc)
     {
-        // If the the draw context's ordered surface renderable queue is empty, then there are no surface objects to
-        // build a composite representation of.
-        if (dc.getOrderedSurfaceRenderables().isEmpty())
-            return;
-
-        // Lazily create the support object used to build the composite representation. We keep a reference to the
-        // SurfaceObjectTileBuilder used to build the tiles because it acts as a cache key to the tiles and determines
-        // when the tiles must be updated. The tile builder does not retain any references the SurfaceObjects, so
-        // keeping a reference to it does not leak memory should we never use it again.
-        if (this.surfaceObjectTileBuilder == null)
-            this.surfaceObjectTileBuilder = this.createSurfaceObjectTileBuilder();
-
-        // Build the composite representation as a list of surface tiles.
-        List<SurfaceTile> tiles = this.surfaceObjectTileBuilder.buildTiles(dc, dc.getOrderedSurfaceRenderables());
-        if (tiles != null)
-            this.surfaceObjectTiles.addAll(tiles);
+        if (dc.getOrderedSurfaceRenderables().size() > 0)
+        {
+            this.surfaceObjectTileBuilder.buildTiles(dc, dc.getOrderedSurfaceRenderables());
+        }
     }
 
     /**
@@ -1083,9 +1099,8 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
      */
     protected void drawCompositeSurfaceObjects(DrawContext dc)
     {
-        // The composite representation is stored as a list of surface tiles. If the list is empty, then there are no
-        // SurfaceObjects to draw.
-        if (this.surfaceObjectTiles.isEmpty())
+        int tileCount = this.surfaceObjectTileBuilder.getTileCount(dc);
+        if (tileCount == 0)
             return;
 
         int attributeMask =
@@ -1101,28 +1116,15 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
             gl.glEnable(GL.GL_CULL_FACE);
             gl.glCullFace(GL.GL_BACK);
             gl.glPolygonMode(GL2.GL_FRONT, GL2.GL_FILL);
-            // Enable blending in premultiplied color mode. The color components in each surface object tile are
-            // premultiplied by the alpha component.
-            OGLUtil.applyBlending(gl, true);
+            OGLUtil.applyBlending(gl, true); // the RGB colors in surface object tiles are premultiplied
 
-            dc.getGeographicSurfaceTileRenderer().renderTiles(dc, this.surfaceObjectTiles);
-            dc.setPerFrameStatistic(PerformanceStatistic.IMAGE_TILE_COUNT, SURFACE_OBJECT_TILE_COUNT_NAME,
-                this.surfaceObjectTiles.size());
+            dc.getGeographicSurfaceTileRenderer().renderTiles(dc, this.surfaceObjectTileBuilder.getTiles(dc));
+            dc.setPerFrameStatistic(PerformanceStatistic.IMAGE_TILE_COUNT, SURFACE_OBJECT_TILE_COUNT_NAME, tileCount);
         }
         finally
         {
             ogsh.pop(gl);
+            this.surfaceObjectTileBuilder.clearTiles(dc);
         }
-    }
-
-    /**
-     * Returns a new {@link gov.nasa.worldwind.render.SurfaceObjectTileBuilder} configured to build a composite
-     * representation of {@link gov.nasa.worldwind.render.SurfaceObject} instances.
-     *
-     * @return A new {@link gov.nasa.worldwind.render.SurfaceObjectTileBuilder}.
-     */
-    protected SurfaceObjectTileBuilder createSurfaceObjectTileBuilder()
-    {
-        return new SurfaceObjectTileBuilder();
     }
 }

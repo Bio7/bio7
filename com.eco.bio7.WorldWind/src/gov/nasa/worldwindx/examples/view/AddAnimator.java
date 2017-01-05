@@ -22,7 +22,7 @@ import java.awt.*;
  * simply specifying a location's name or lat-long coordinates.
  *
  * @author jym
- * @version $Id: AddAnimator.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: AddAnimator.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class AddAnimator extends ApplicationTemplate
 {
@@ -83,7 +83,7 @@ public class AddAnimator extends ApplicationTemplate
         public AppFrame()
         {
             super(true, true, true);
-            this.getLayerPanel().add(makeControlPanel(), BorderLayout.SOUTH);
+            this.getControlPanel().add(makeControlPanel(), BorderLayout.SOUTH);
 
             WorldWindow wwd = this.getWwd();
 

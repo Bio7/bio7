@@ -6,7 +6,6 @@
 
 package gov.nasa.worldwind.util.tree;
 
-import com.jogamp.opengl.util.awt.TextRenderer;
 import com.jogamp.opengl.util.texture.TextureCoords;
 import gov.nasa.worldwind.WWObjectImpl;
 import gov.nasa.worldwind.avlist.AVKey;
@@ -26,7 +25,7 @@ import java.util.List;
  * Layout that draws a {@link Tree} similar to a file browser tree.
  *
  * @author pabercrombie
- * @version $Id: BasicTreeLayout.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: BasicTreeLayout.java 2053 2014-06-10 20:16:57Z tgaskins $
  */
 public class BasicTreeLayout extends WWObjectImpl implements TreeLayout, Scrollable, PreRenderable
 {

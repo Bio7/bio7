@@ -1,61 +1,36 @@
 /*
-Copyright (C) 2001, 2009 United States Government
-as represented by the Administrator of the
-National Aeronautics and Space Administration.
-All Rights Reserved.
-*/
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
+ * National Aeronautics and Space Administration.
+ * All Rights Reserved.
+ */
 package com.eco.bio7.extralayers;
 
-import static javax.media.opengl.GL.GL_COLOR_BUFFER_BIT;
-import static javax.media.opengl.GL2.GL_CURRENT_BIT;
-import static javax.media.opengl.GL2.GL_POLYGON_BIT;
-import static javax.media.opengl.GL2ES1.GL_CURRENT_COLOR;
-import static javax.media.opengl.GL2GL3.GL_FILL;
-import gov.nasa.worldwind.View;
-import gov.nasa.worldwind.WorldWind;
-import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.geom.Cylinder;
-import gov.nasa.worldwind.geom.LatLon;
-import gov.nasa.worldwind.geom.Position;
-import gov.nasa.worldwind.geom.Sector;
-import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.layers.AbstractLayer;
-import gov.nasa.worldwind.render.DrawContext;
-import gov.nasa.worldwind.retrieve.HTTPRetriever;
-import gov.nasa.worldwind.retrieve.RetrievalPostProcessor;
-import gov.nasa.worldwind.retrieve.Retriever;
-import gov.nasa.worldwind.retrieve.URLRetriever;
-import gov.nasa.worldwind.util.Level;
-import gov.nasa.worldwind.util.LevelSet;
-import gov.nasa.worldwind.util.Logging;
-import gov.nasa.worldwind.util.OGLTextRenderer;
-import gov.nasa.worldwind.util.PerformanceStatistic;
-import gov.nasa.worldwind.util.Tile;
-import gov.nasa.worldwind.util.TileKey;
-import gov.nasa.worldwind.util.WWIO;
-import java.awt.Graphics2D;
-import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.concurrent.PriorityBlockingQueue;
+import gov.nasa.worldwind.render.*;
+import gov.nasa.worldwind.retrieve.*;
+import gov.nasa.worldwind.util.*;
+
 import javax.imageio.ImageIO;
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
-import com.jogamp.opengl.util.awt.TextRenderer;
+import javax.media.opengl.*;
+import java.awt.*;
+import java.awt.geom.*;
+import java.awt.image.*;
+import java.io.*;
+import java.net.*;
+import java.nio.ByteBuffer;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.PriorityBlockingQueue;
+
 /**
  * TiledImageLayer modified 2009-02-03 to add support for Mercator projections.
  *
  * @author tag
- * @version $Id: MercatorTiledImageLayer.java 14006 2010-10-22 04:08:19Z tgaskins $
+ * @version $Id: MercatorTiledImageLayer.java 2053 2014-06-10 20:16:57Z tgaskins $
  */
 public abstract class MercatorTiledImageLayer extends AbstractLayer
 {
@@ -67,13 +42,9 @@ public abstract class MercatorTiledImageLayer extends AbstractLayer
     private boolean levelZeroLoaded = false;
     private boolean retainLevelZeroTiles = false;
     private String tileCountName;
+    @SuppressWarnings({"FieldCanBeLocal"})
     private double splitScale = 0.9; // TODO: Make configurable
-    /*Changed for Bio7!*/
-    public void setSplitScale(double splitScale) {
-		this.splitScale = splitScale;
-	}
-
-	private boolean useMipMaps = false;
+    private boolean useMipMaps = false;
     private ArrayList<String> supportedImageFormats = new ArrayList<String>();
 
     // Diagnostic flags
@@ -91,8 +62,7 @@ public abstract class MercatorTiledImageLayer extends AbstractLayer
     private PriorityBlockingQueue<Runnable> requestQ = new PriorityBlockingQueue<Runnable>(
         200);
 
-    abstract protected void requestTexture(DrawContext dc,
-        MercatorTextureTile tile);
+    abstract protected void requestTexture(DrawContext dc, MercatorTextureTile tile);
 
     abstract protected void forceTextureLoad(MercatorTextureTile tile);
 
@@ -112,6 +82,11 @@ public abstract class MercatorTiledImageLayer extends AbstractLayer
         this.setPickEnabled(false); // textures are assumed to be terrain unless specifically indicated otherwise.
         this.tileCountName = this.getName() + " Tiles";
     }
+    
+    /*Changed for Bio7!*/
+    public void setSplitScale(double splitScale) {
+		this.splitScale = splitScale;
+	}
 
     @Override
     public void setName(String name)
@@ -579,22 +554,22 @@ public abstract class MercatorTiledImageLayer extends AbstractLayer
             sortedTiles = this.currentTiles.toArray(sortedTiles);
             Arrays.sort(sortedTiles, levelComparer);
 
-            GL2 gl = dc.getGL().getGL2();
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
             if (this.isUseTransparentTextures() || this.getOpacity() < 1)
             {
-                gl.glPushAttrib(GL_COLOR_BUFFER_BIT | GL_POLYGON_BIT
-                    | GL_CURRENT_BIT);
+                gl.glPushAttrib(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_POLYGON_BIT
+                    | GL2.GL_CURRENT_BIT);
                 gl.glColor4d(1d, 1d, 1d, this.getOpacity());
                 gl.glEnable(GL.GL_BLEND);
                 gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
             }
             else
             {
-                gl.glPushAttrib(GL.GL_COLOR_BUFFER_BIT | GL_POLYGON_BIT);
+                gl.glPushAttrib(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_POLYGON_BIT);
             }
 
-            gl.glPolygonMode(GL.GL_FRONT, GL_FILL);
+            gl.glPolygonMode(GL2.GL_FRONT, GL2.GL_FILL);
             gl.glEnable(GL.GL_CULL_FACE);
             gl.glCullFace(GL.GL_BACK);
 
@@ -727,28 +702,30 @@ public abstract class MercatorTiledImageLayer extends AbstractLayer
     private void drawBoundingVolumes(DrawContext dc,
         ArrayList<MercatorTextureTile> tiles)
     {
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+
         float[] previousColor = new float[4];
-        dc.getGL().getGL2().glGetFloatv(GL_CURRENT_COLOR, previousColor, 0);
-        dc.getGL().getGL2().glColor3d(0, 1, 0);
+        gl.glGetFloatv(GL2.GL_CURRENT_COLOR, previousColor, 0);
+        gl.glColor3d(0, 1, 0);
 
         for (MercatorTextureTile tile : tiles)
         {
             ((Cylinder) tile.getExtent(dc)).render(dc);
         }
 
-        Cylinder c = Sector.computeBoundingCylinder(dc.getGlobe(),
-            dc.getVerticalExaggeration(), this.levels.getSector());
-        dc.getGL().getGL2().glColor3d(1, 1, 0);
+        Cylinder c = Sector.computeBoundingCylinder(dc.getGlobe(), dc.getVerticalExaggeration(),
+            this.levels.getSector());
+        gl.glColor3d(1, 1, 0);
         c.render(dc);
 
-        dc.getGL().getGL2().glColor4fv(previousColor, 0);
+        gl.glColor4fv(previousColor, 0);
     }
 
     // ============== Image Composition ======================= //
     // ============== Image Composition ======================= //
     // ============== Image Composition ======================= //
 
-    public ArrayList<String> getAvailableImageFormats()
+    public List<String> getAvailableImageFormats()
     {
         return new ArrayList<String>(this.supportedImageFormats);
     }
@@ -836,8 +813,8 @@ public abstract class MercatorTiledImageLayer extends AbstractLayer
 
         if ("http".equalsIgnoreCase(protocol))
         {
-            retriever = new HTTPRetriever(resourceURL,
-                new HttpRetrievalPostProcessor(tile));
+            retriever = new HTTPRetriever(resourceURL, new HttpRetrievalPostProcessor(tile));
+            retriever.setValue(URLRetriever.EXTRACT_ZIP_ENTRY, "true"); // supports legacy layers
         }
         else
         {
@@ -911,7 +888,7 @@ public abstract class MercatorTiledImageLayer extends AbstractLayer
                 Logging.getMessage(
                     "generic.LevelRequestedGreaterThanMaxLevel",
                     levelNumber, this.levels.getLastLevel()
-                        .getLevelNumber()));
+                    .getLevelNumber()));
             levelNumber = this.levels.getLastLevel().getLevelNumber();
         }
 
@@ -977,7 +954,7 @@ public abstract class MercatorTiledImageLayer extends AbstractLayer
 
                     String message = Logging.getMessage(
                         "generic.ExceptionWhileRequestingImage", tile
-                            .getPath());
+                        .getPath());
                     Logging.logger().log(java.util.logging.Level.WARNING,
                         message, e);
                 }

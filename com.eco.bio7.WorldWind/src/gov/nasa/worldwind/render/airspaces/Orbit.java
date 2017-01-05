@@ -9,7 +9,7 @@ package gov.nasa.worldwind.render.airspaces;
 import gov.nasa.worldwind.geom.Box;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.Globe;
-import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
 import javax.media.opengl.*;
@@ -17,7 +17,7 @@ import java.util.*;
 
 /**
  * @author tag
- * @version $Id: Orbit.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: Orbit.java 2454 2014-11-21 17:52:49Z dcollins $
  */
 public class Orbit extends AbstractAirspace
 {
@@ -78,6 +78,23 @@ public class Orbit extends AbstractAirspace
         this.location2 = location2;
         this.orbitType = orbitType;
         this.width = width;
+        this.makeDefaultDetailLevels();
+    }
+
+    public Orbit(Orbit source)
+    {
+        super(source);
+
+        this.location1 = source.location1;
+        this.location2 = source.location2;
+        this.orbitType = source.orbitType;
+        this.width = source.width;
+        this.enableCaps = source.enableCaps;
+        this.arcSlices = source.arcSlices;
+        this.lengthSlices = source.lengthSlices;
+        this.stacks = source.stacks;
+        this.loops = source.loops;
+
         this.makeDefaultDetailLevels();
     }
 
@@ -166,7 +183,34 @@ public class Orbit extends AbstractAirspace
 
         this.location1 = location1;
         this.location2 = location2;
-        this.setExtentOutOfDate();
+        this.invalidateAirspaceData();
+    }
+
+    protected LatLon[] getAdjustedLocations(Globe globe)
+    {
+        LatLon[] locations = this.getLocations();
+
+        if (OrbitType.CENTER.equals(this.getOrbitType()))
+        {
+            return locations;
+        }
+
+        double az1 = LatLon.greatCircleAzimuth(locations[0], locations[1]).radians;
+        double az2 = LatLon.greatCircleAzimuth(locations[1], locations[0]).radians;
+        double r = (this.getWidth() / 2) / globe.getRadius();
+
+        if (Orbit.OrbitType.LEFT.equals(this.getOrbitType()))
+        {
+            locations[0] = LatLon.greatCircleEndPosition(locations[0], az1 - (Math.PI / 2), r);
+            locations[1] = LatLon.greatCircleEndPosition(locations[1], az2 + (Math.PI / 2), r);
+        }
+        else if (Orbit.OrbitType.RIGHT.equals(this.getOrbitType()))
+        {
+            locations[0] = LatLon.greatCircleEndPosition(locations[0], az1 + (Math.PI / 2), r);
+            locations[1] = LatLon.greatCircleEndPosition(locations[1], az2 - (Math.PI / 2), r);
+        }
+
+        return locations;
     }
 
     public String getOrbitType()
@@ -184,7 +228,7 @@ public class Orbit extends AbstractAirspace
         }
 
         this.orbitType = orbitType;
-        this.setExtentOutOfDate();
+        this.invalidateAirspaceData();
     }
 
     public double getWidth()
@@ -202,7 +246,7 @@ public class Orbit extends AbstractAirspace
         }
 
         this.width = width;
-        this.setExtentOutOfDate();
+        this.invalidateAirspaceData();
     }
 
     public boolean isEnableCaps()
@@ -233,36 +277,38 @@ public class Orbit extends AbstractAirspace
     @Override
     protected List<Vec4> computeMinimalGeometry(Globe globe, double verticalExaggeration)
     {
-        Matrix transform = this.computeTransform(globe, verticalExaggeration);
-
-        Vec4 point1 = globe.computePointFromPosition(this.location1.getLatitude(), this.location1.getLongitude(), 0.0);
-        Vec4 point2 = globe.computePointFromPosition(this.location2.getLatitude(), this.location2.getLongitude(), 0.0);
-        double radius = this.width / 2.0;
-        double length = point1.distanceTo3(point2);
-
+        LatLon[] center = this.getAdjustedLocations(globe);
+        double radius = this.getWidth() / 2.0;
         GeometryBuilder gb = this.getGeometryBuilder();
-        int count = gb.getLongDiskIndexCount(MINIMAL_GEOMETRY_ARC_SLICES, MINIMAL_GEOMETRY_LENGTH_SLICES,
-            MINIMAL_GEOMETRY_LOOPS);
-        int numCoords = 3 * count;
-        float[] verts = new float[numCoords];
-        gb.makeLongDiskVertices(0f, (float) radius, // Inner radius, outer radius.
-            (float) length, // Length
-            MINIMAL_GEOMETRY_ARC_SLICES, MINIMAL_GEOMETRY_LENGTH_SLICES, MINIMAL_GEOMETRY_LOOPS,
-            // Arc slices, length slices, loops.
-            verts);
-
-        List<LatLon> locations = new ArrayList<LatLon>();
-        for (int i = 0; i < numCoords; i += 3)
-        {
-            Vec4 v = new Vec4(verts[i], verts[i + 1], verts[i + 2]);
-            v = v.transformBy4(transform);
-            locations.add(globe.computePositionFromPoint(v));
-        }
+        LatLon[] locations = gb.makeLongDiskLocations(globe, center[0], center[1], 0, radius,
+            MINIMAL_GEOMETRY_ARC_SLICES, MINIMAL_GEOMETRY_LENGTH_SLICES, MINIMAL_GEOMETRY_LOOPS);
 
         ArrayList<Vec4> points = new ArrayList<Vec4>();
-        this.makeExtremePoints(globe, verticalExaggeration, locations, points);
+        this.makeExtremePoints(globe, verticalExaggeration, Arrays.asList(locations), points);
 
         return points;
+    }
+
+    protected void doMoveTo(Globe globe, Position oldRef, Position newRef)
+    {
+        if (oldRef == null)
+        {
+            String message = "nullValue.OldRefIsNull";
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+        if (newRef == null)
+        {
+            String message = "nullValue.NewRefIsNull";
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        List<LatLon> newLocations = LatLon.computeShiftedLocations(globe, oldRef, newRef,
+            Arrays.asList(this.getLocations()));
+        this.setLocations(newLocations.get(0), newLocations.get(1));
+
+        super.doMoveTo(oldRef, newRef);
     }
 
     protected void doMoveTo(Position oldRef, Position newRef)
@@ -291,6 +337,32 @@ public class Orbit extends AbstractAirspace
             locations[i] = LatLon.greatCircleEndPosition(newRef, azimuth, distance);
         }
         this.setLocations(locations[0], locations[1]);
+    }
+
+    @Override
+    protected SurfaceShape createSurfaceShape()
+    {
+        return new SurfacePolygon();
+    }
+
+    @Override
+    protected void updateSurfaceShape(DrawContext dc, SurfaceShape shape)
+    {
+        super.updateSurfaceShape(dc, shape);
+
+        boolean mustDrawInterior = this.getActiveAttributes().isDrawInterior() && this.isEnableCaps();
+        shape.getAttributes().setDrawInterior(mustDrawInterior); // suppress the shape interior when caps are disabled
+    }
+
+    @Override
+    protected void regenerateSurfaceShape(DrawContext dc, SurfaceShape shape)
+    {
+        LatLon[] center = this.getAdjustedLocations(dc.getGlobe());
+        double radius = this.getWidth() / 2.0;
+        GeometryBuilder gb = this.getGeometryBuilder();
+        LatLon[] locations = gb.makeLongCylinderLocations(dc.getGlobe(), center[0], center[1], radius, this.arcSlices,
+            this.lengthSlices);
+        ((SurfacePolygon) shape).setOuterBoundary(Arrays.asList(locations));
     }
 
     protected int getArcSlices()
@@ -370,16 +442,17 @@ public class Orbit extends AbstractAirspace
 
         Globe globe = dc.getGlobe();
         double[] altitudes = this.getAltitudes(dc.getVerticalExaggeration());
-        Vec4 point1 = globe.computePointFromPosition(
-            this.location1.getLatitude(), this.location1.getLongitude(), altitudes[0]);
-        Vec4 point2 = globe.computePointFromPosition(
-            this.location2.getLatitude(), this.location2.getLongitude(), altitudes[0]);
+        Vec4 point1 = globe.computeEllipsoidalPointFromPosition(
+            this.location1.latitude, this.location1.longitude, altitudes[0]);
+        Vec4 point2 = globe.computeEllipsoidalPointFromPosition(
+            this.location2.latitude, this.location2.longitude, altitudes[0]);
         Vec4 centerPoint = Vec4.mix3(0.5, point1, point2);
-        Position centerPos = globe.computePositionFromPoint(centerPoint);
-        return globe.computePointFromPosition(centerPos.getLatitude(), centerPos.getLongitude(), altitudes[0]);
+        Position centerPos = globe.computePositionFromEllipsoidalPoint(centerPoint);
+        return globe.computePointFromPosition(centerPos.latitude, centerPos.longitude,
+            altitudes[0]); // model-coordinate reference center
     }
 
-    protected Matrix computeTransform(Globe globe, double verticalExaggeration)
+    protected Matrix computeEllipsoidalTransform(Globe globe, double verticalExaggeration)
     {
         if (globe == null)
         {
@@ -391,12 +464,13 @@ public class Orbit extends AbstractAirspace
         double[] altitudes = this.getAltitudes(verticalExaggeration);
         double radius = this.width / 2.0;
 
-        Vec4 point1 = globe.computePointFromPosition(
+        Vec4 point1 = globe.computeEllipsoidalPointFromPosition(
             this.location1.getLatitude(), this.location1.getLongitude(), altitudes[0]);
-        Vec4 point2 = globe.computePointFromPosition(
+        Vec4 point2 = globe.computeEllipsoidalPointFromPosition(
             this.location2.getLatitude(), this.location2.getLongitude(), altitudes[0]);
         Vec4 centerPoint = Vec4.mix3(0.5, point1, point2);
-        Vec4 upVec = globe.computeSurfaceNormalAtPoint(centerPoint);
+        Position centerPos = globe.computePositionFromEllipsoidalPoint(centerPoint);
+        Vec4 upVec = globe.computeEllipsoidalNormalAtLocation(centerPos.latitude, centerPos.longitude);
         Vec4 axis = point2.subtract3(point1);
         axis = axis.normalize3();
 
@@ -430,21 +504,14 @@ public class Orbit extends AbstractAirspace
             throw new IllegalArgumentException(message);
         }
 
+        LatLon[] locations = this.getAdjustedLocations(dc.getGlobe());
         double[] altitudes = this.getAltitudes(dc.getVerticalExaggeration());
         boolean[] terrainConformant = this.isTerrainConforming();
         double[] radii = new double[] {0.0, this.width / 2};
-        String type = this.orbitType;
         int arcSlices = this.arcSlices;
         int lengthSlices = this.lengthSlices;
         int stacks = this.stacks;
         int loops = this.loops;
-
-        Globe globe = dc.getGlobe();
-        Vec4 point1 = globe.computePointFromPosition(
-            this.location1.getLatitude(), this.location1.getLongitude(), altitudes[0]);
-        Vec4 point2 = globe.computePointFromPosition(
-            this.location2.getLatitude(), this.location2.getLongitude(), altitudes[0]);
-        double length = point1.distanceTo3(point2);
 
         if (this.isEnableLevelOfDetail())
         {
@@ -483,7 +550,7 @@ public class Orbit extends AbstractAirspace
 
             if (Airspace.DRAW_STYLE_OUTLINE.equals(drawStyle))
             {
-                this.drawLongCylinderOutline(dc, radii[1], length, altitudes, terrainConformant, type,
+                this.drawLongCylinderOutline(dc, locations[0], locations[1], radii[1], altitudes, terrainConformant,
                     arcSlices, lengthSlices, stacks, GeometryBuilder.OUTSIDE, referenceCenter);
             }
             else if (Airspace.DRAW_STYLE_FILL.equals(drawStyle))
@@ -500,12 +567,12 @@ public class Orbit extends AbstractAirspace
                     // Caps aren't rendered if radii are equal.
                     if (radii[0] != radii[1])
                     {
-                        this.drawLongDisk(dc, radii, length, altitudes[1], terrainConformant[1], type,
+                        this.drawLongDisk(dc, locations[0], locations[1], radii, altitudes[1], terrainConformant[1],
                             arcSlices, lengthSlices, loops, GeometryBuilder.OUTSIDE, referenceCenter);
                         // Bottom cap isn't rendered if airspace is collapsed.
                         if (!this.isAirspaceCollapsed())
                         {
-                            this.drawLongDisk(dc, radii, length, altitudes[0], terrainConformant[0], type,
+                            this.drawLongDisk(dc, locations[0], locations[1], radii, altitudes[0], terrainConformant[0],
                                 arcSlices, lengthSlices, loops, GeometryBuilder.INSIDE, referenceCenter);
                         }
                     }
@@ -514,7 +581,7 @@ public class Orbit extends AbstractAirspace
                 // Long cylinder isn't rendered if airspace is collapsed.
                 if (!this.isAirspaceCollapsed())
                 {
-                    this.drawLongCylinder(dc, radii[1], length, altitudes, terrainConformant, type,
+                    this.drawLongCylinder(dc, locations[0], locations[1], radii[1], altitudes, terrainConformant,
                         arcSlices, lengthSlices, stacks, GeometryBuilder.OUTSIDE, referenceCenter);
                 }
             }
@@ -530,17 +597,14 @@ public class Orbit extends AbstractAirspace
     //********************  Long Cylinder       ********************//
     //**************************************************************//
 
-    private void drawLongCylinder(DrawContext dc,
-        double radius, double length, double[] altitudes, boolean[] terrainConformant,
-        String type,
-        int arcSlices, int lengthSlices, int stacks, int orientation,
-        Vec4 referenceCenter)
+    private void drawLongCylinder(DrawContext dc, LatLon center1, LatLon center2, double radius, double[] altitudes,
+        boolean[] terrainConformant, int arcSlices, int lengthSlices, int stacks, int orientation, Vec4 referenceCenter)
     {
-        Geometry vertexGeom = createLongCylinderVertexGeometry(dc, radius, length, altitudes, terrainConformant, type,
-            arcSlices, lengthSlices, stacks, orientation, referenceCenter);
+        Geometry vertexGeom = this.createLongCylinderVertexGeometry(dc, center1, center2, radius, altitudes,
+            terrainConformant, arcSlices, lengthSlices, stacks, orientation, referenceCenter);
 
-        Object cacheKey = new Geometry.CacheKey(this.getClass(), "LongCylinder.Indices",
-            arcSlices, lengthSlices, stacks, orientation);
+        Object cacheKey = new Geometry.CacheKey(this.getClass(), "LongCylinder.Indices", arcSlices, lengthSlices,
+            stacks, orientation);
         Geometry indexGeom = (Geometry) this.getGeometryCache().getObject(cacheKey);
         if (indexGeom == null)
         {
@@ -549,20 +613,18 @@ public class Orbit extends AbstractAirspace
             this.getGeometryCache().add(cacheKey, indexGeom);
         }
 
-        this.getRenderer().drawGeometry(dc, indexGeom, vertexGeom);
+        this.drawGeometry(dc, indexGeom, vertexGeom);
     }
 
-    private void drawLongCylinderOutline(DrawContext dc,
-        double radius, double length, double[] altitudes, boolean[] terrainConformant,
-        String type,
-        int arcSlices, int lengthSlices, int stacks, int orientation,
+    private void drawLongCylinderOutline(DrawContext dc, LatLon center1, LatLon center2, double radius,
+        double[] altitudes, boolean[] terrainConformant, int arcSlices, int lengthSlices, int stacks, int orientation,
         Vec4 referenceCenter)
     {
-        Geometry vertexGeom = createLongCylinderVertexGeometry(dc, radius, length, altitudes, terrainConformant, type,
-            arcSlices, lengthSlices, stacks, orientation, referenceCenter);
+        Geometry vertexGeom = this.createLongCylinderVertexGeometry(dc, center1, center2, radius, altitudes,
+            terrainConformant, arcSlices, lengthSlices, stacks, orientation, referenceCenter);
 
-        Object cacheKey = new Geometry.CacheKey(this.getClass(), "LongCylinder.OutlineIndices",
-            arcSlices, lengthSlices, stacks, orientation);
+        Object cacheKey = new Geometry.CacheKey(this.getClass(), "LongCylinder.OutlineIndices", arcSlices, lengthSlices,
+            stacks, orientation);
         Geometry outlineIndexGeom = (Geometry) this.getGeometryCache().getObject(cacheKey);
         if (outlineIndexGeom == null)
         {
@@ -571,24 +633,23 @@ public class Orbit extends AbstractAirspace
             this.getGeometryCache().add(cacheKey, outlineIndexGeom);
         }
 
-        this.getRenderer().drawGeometry(dc, outlineIndexGeom, vertexGeom);
+        this.drawGeometry(dc, outlineIndexGeom, vertexGeom);
     }
 
-    private Geometry createLongCylinderVertexGeometry(DrawContext dc, double radius, double length,
-        double[] altitudes, boolean[] terrainConformant, String type,
-        int arcSlices, int lengthSlices, int stacks, int orientation,
+    private Geometry createLongCylinderVertexGeometry(DrawContext dc, LatLon center1, LatLon center2, double radius,
+        double[] altitudes, boolean[] terrainConformant, int arcSlices, int lengthSlices, int stacks, int orientation,
         Vec4 referenceCenter)
     {
         Object cacheKey = new Geometry.CacheKey(dc.getGlobe(), this.getClass(), "LongCylinder.Vertices",
-            radius, length, altitudes[0], altitudes[1], terrainConformant[0], terrainConformant[1], type,
-            arcSlices, lengthSlices, stacks, orientation, referenceCenter);
+            center1, center2, radius, altitudes[0], altitudes[1], terrainConformant[0], terrainConformant[1], arcSlices,
+            lengthSlices, stacks, orientation, referenceCenter);
         Geometry vertexGeom = (Geometry) this.getGeometryCache().getObject(cacheKey);
         if (vertexGeom == null || this.isExpired(dc, vertexGeom))
         {
             if (vertexGeom == null)
                 vertexGeom = new Geometry();
-            this.makeLongCylinder(dc, radius, length, altitudes, terrainConformant,
-                arcSlices, lengthSlices, stacks, orientation, referenceCenter, vertexGeom);
+            this.makeLongCylinder(dc, center1, center2, radius, altitudes, terrainConformant, arcSlices, lengthSlices,
+                stacks, orientation, referenceCenter, vertexGeom);
             this.updateExpiryCriteria(dc, vertexGeom);
             this.getGeometryCache().add(cacheKey, vertexGeom);
         }
@@ -596,64 +657,25 @@ public class Orbit extends AbstractAirspace
         return vertexGeom;
     }
 
-    private void makeLongCylinder(DrawContext dc,
-        double radius, double length, double[] altitudes, boolean[] terrainConformant,
-        int arcSlices, int lengthSlices, int stacks, int orientation,
-        Vec4 referenceCenter,
+    private void makeLongCylinder(DrawContext dc, LatLon center1, LatLon center2, double radius, double[] altitudes,
+        boolean[] terrainConformant, int arcSlices, int lengthSlices, int stacks, int orientation, Vec4 referenceCenter,
         Geometry dest)
     {
         GeometryBuilder gb = this.getGeometryBuilder();
         gb.setOrientation(orientation);
-        float height = (float) (altitudes[1] - altitudes[0]);
 
         int count = gb.getLongCylinderVertexCount(arcSlices, lengthSlices, stacks);
-        int numCoords = 3 * count;
-        float[] verts = new float[numCoords];
-        float[] norms = new float[numCoords];
-        gb.makeLongCylinderVertices((float) radius, (float) length, height,
-            arcSlices, lengthSlices, stacks, verts);
-        this.makeLongCylinderTerrainConformant(dc, arcSlices, lengthSlices, stacks, verts,
-            altitudes, terrainConformant, referenceCenter);
+        float[] verts = new float[3 * count];
+        float[] norms = new float[3 * count];
+        gb.makeLongCylinderVertices(dc.getTerrain(), center1, center2, radius, altitudes, terrainConformant, arcSlices,
+            lengthSlices, stacks, referenceCenter, verts);
         gb.makeLongCylinderNormals(arcSlices, lengthSlices, stacks, norms);
 
         dest.setVertexData(count, verts);
         dest.setNormalData(count, norms);
     }
 
-    private void makeLongCylinderTerrainConformant(DrawContext dc, int arcSlices, int lengthSlices, int stacks,
-        float[] verts, double[] altitudes, boolean[] terrainConformant,
-        Vec4 referenceCenter)
-    {
-        Globe globe = dc.getGlobe();
-        Matrix transform = this.computeTransform(dc.getGlobe(), dc.getVerticalExaggeration());
-        int slices = 2 * (arcSlices + 1) + 2 * (lengthSlices - 1);
-
-        for (int i = 0; i < slices; i++)
-        {
-            int index = i;
-            index = 3 * index;
-            Vec4 vec = new Vec4(verts[index], verts[index + 1], verts[index + 2]);
-            vec = vec.transformBy4(transform);
-            Position p = globe.computePositionFromPoint(vec);
-
-            for (int j = 0; j <= stacks; j++)
-            {
-                double elevation = altitudes[j];
-                if (terrainConformant[j])
-                    elevation += this.computeElevationAt(dc, p.getLatitude(), p.getLongitude());
-                vec = globe.computePointFromPosition(p.getLatitude(), p.getLongitude(), elevation);
-
-                index = i + j * slices;
-                index = 3 * index;
-                verts[index] = (float) (vec.x - referenceCenter.x);
-                verts[index + 1] = (float) (vec.y - referenceCenter.y);
-                verts[index + 2] = (float) (vec.z - referenceCenter.z);
-            }
-        }
-    }
-
-    private void makeLongCylinderIndices(int arcSlices, int lengthSlices, int stacks, int orientation,
-        Geometry dest)
+    private void makeLongCylinderIndices(int arcSlices, int lengthSlices, int stacks, int orientation, Geometry dest)
     {
         GeometryBuilder gb = this.getGeometryBuilder();
         gb.setOrientation(orientation);
@@ -684,28 +706,25 @@ public class Orbit extends AbstractAirspace
     //********************  Long Disk           ********************//
     //**************************************************************//
 
-    private void drawLongDisk(DrawContext dc,
-        double[] radii, double length, double altitudes, boolean terrainConformant, String type,
-        int arcSlices, int lengthSlices, int loops, int orientation,
-        Vec4 referenceCenter)
+    private void drawLongDisk(DrawContext dc, LatLon center1, LatLon center2, double[] radii, double altitude,
+        boolean terrainConformant, int arcSlices, int lengthSlices, int loops, int orientation, Vec4 referenceCenter)
     {
-        Object cacheKey = new Geometry.CacheKey(dc.getGlobe(), this.getClass(), "LongDisk.Vertices",
-            radii[0], radii[1], length, altitudes, terrainConformant, type,
-            arcSlices, lengthSlices, loops, orientation,
+        Object cacheKey = new Geometry.CacheKey(dc.getGlobe(), this.getClass(), "LongDisk.Vertices", center1, center2,
+            radii[0], radii[1], altitude, terrainConformant, arcSlices, lengthSlices, loops, orientation,
             referenceCenter);
         Geometry vertexGeom = (Geometry) this.getGeometryCache().getObject(cacheKey);
         if (vertexGeom == null || this.isExpired(dc, vertexGeom))
         {
             if (vertexGeom == null)
                 vertexGeom = new Geometry();
-            this.makeLongDisk(dc, radii, length, altitudes, terrainConformant,
-                arcSlices, lengthSlices, loops, orientation, referenceCenter, vertexGeom);
+            this.makeLongDisk(dc, center1, center2, radii, altitude, terrainConformant, arcSlices, lengthSlices, loops,
+                orientation, referenceCenter, vertexGeom);
             this.updateExpiryCriteria(dc, vertexGeom);
             this.getGeometryCache().add(cacheKey, vertexGeom);
         }
 
-        cacheKey = new Geometry.CacheKey(this.getClass(), "LongDisk.Indices",
-            arcSlices, lengthSlices, loops, orientation);
+        cacheKey = new Geometry.CacheKey(this.getClass(), "LongDisk.Indices", arcSlices, lengthSlices, loops,
+            orientation);
         Geometry indexGeom = (Geometry) this.getGeometryCache().getObject(cacheKey);
         if (indexGeom == null)
         {
@@ -714,59 +733,29 @@ public class Orbit extends AbstractAirspace
             this.getGeometryCache().add(cacheKey, indexGeom);
         }
 
-        this.getRenderer().drawGeometry(dc, indexGeom, vertexGeom);
+        this.drawGeometry(dc, indexGeom, vertexGeom);
     }
 
-    private void makeLongDisk(DrawContext dc,
-        double[] radii, double length, double altitudes, boolean terrainConformant,
-        int arcSlices, int lengthSlices, int loops, int orientation,
-        Vec4 referenceCenter,
+    private void makeLongDisk(DrawContext dc, LatLon center1, LatLon center2, double[] radii, double altitude,
+        boolean terrainConformant, int arcSlices, int lengthSlices, int loops, int orientation, Vec4 referenceCenter,
         Geometry dest)
     {
         GeometryBuilder gb = this.getGeometryBuilder();
         gb.setOrientation(orientation);
 
         int count = gb.getLongDiskVertexCount(arcSlices, lengthSlices, loops);
-        int numCoords = 3 * count;
-        float[] verts = new float[numCoords];
-        float[] norms = new float[numCoords];
-        gb.makeLongDiskVertices((float) radii[0], (float) radii[1], (float) length,
-            arcSlices, lengthSlices, loops, verts);
-        this.makeLongDiskTerrainConformant(dc, numCoords, verts,
-            altitudes, terrainConformant, referenceCenter);
-        gb.makeLongDiskVertexNormals((float) radii[0], (float) radii[1], (float) length,
-            arcSlices, lengthSlices, loops, verts, norms);
+        float[] verts = new float[3 * count];
+        float[] norms = new float[3 * count];
+        gb.makeLongDiskVertices(dc.getTerrain(), center1, center2, radii[0], radii[1], altitude, terrainConformant,
+            arcSlices, lengthSlices, loops, referenceCenter, verts);
+        gb.makeLongDiskVertexNormals((float) radii[0], (float) radii[1], 0, arcSlices, lengthSlices, loops, verts,
+            norms);
 
         dest.setVertexData(count, verts);
         dest.setNormalData(count, norms);
     }
 
-    private void makeLongDiskTerrainConformant(DrawContext dc, int numCoords, float[] verts,
-        double altitude, boolean terrainConformant,
-        Vec4 referenceCenter)
-    {
-        Globe globe = dc.getGlobe();
-        Matrix transform = this.computeTransform(dc.getGlobe(), dc.getVerticalExaggeration());
-
-        for (int i = 0; i < numCoords; i += 3)
-        {
-            Vec4 vec = new Vec4(verts[i], verts[i + 1], verts[i + 2]);
-            vec = vec.transformBy4(transform);
-            Position p = globe.computePositionFromPoint(vec);
-
-            double elevation = altitude;
-            if (terrainConformant)
-                elevation += this.computeElevationAt(dc, p.getLatitude(), p.getLongitude());
-            vec = globe.computePointFromPosition(p.getLatitude(), p.getLongitude(), elevation);
-
-            verts[i] = (float) (vec.x - referenceCenter.x);
-            verts[i + 1] = (float) (vec.y - referenceCenter.y);
-            verts[i + 2] = (float) (vec.z - referenceCenter.z);
-        }
-    }
-
-    private void makeLongDiskIndices(int arcSlices, int lengthSlices, int loops, int orientation,
-        Geometry dest)
+    private void makeLongDiskIndices(int arcSlices, int lengthSlices, int loops, int orientation, Geometry dest)
     {
         GeometryBuilder gb = this.getGeometryBuilder();
         gb.setOrientation(orientation);

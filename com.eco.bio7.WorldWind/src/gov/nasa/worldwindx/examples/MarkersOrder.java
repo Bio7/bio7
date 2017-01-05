@@ -36,7 +36,7 @@ import java.util.*;
  * controls in the lower left corner of the window to change the ordering mode.
  *
  * @author Patrick Murris
- * @version $Id: MarkersOrder.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: MarkersOrder.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class MarkersOrder extends ApplicationTemplate
 {
@@ -187,9 +187,6 @@ public class MarkersOrder extends ApplicationTemplate
             updateScreenAnnotation(this.dayOfWeekLegend);
             insertBeforePlacenames(getWwd(), this.renderableLayer);
 
-            // Update layer panel
-            this.getLayerPanel().update(this.getWwd());
-
             // Add UI to control the layer color ramp type and scale
             JPanel controlPanel = new JPanel();
             controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.Y_AXIS));
@@ -315,7 +312,7 @@ public class MarkersOrder extends ApplicationTemplate
             });
             comboPanel.add(colorRampCombo);
             controlPanel.add(comboPanel);
-            this.getLayerPanel().add(controlPanel, BorderLayout.SOUTH);
+            this.getControlPanel().add(controlPanel, BorderLayout.SOUTH);
 
             // Setup select listener to highlight markers on rollover
             this.getWwd().addSelectListener(new SelectListener()

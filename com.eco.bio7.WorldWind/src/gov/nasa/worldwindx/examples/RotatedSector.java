@@ -21,7 +21,7 @@ import java.awt.event.*;
  * to the desired rotation angle.
  *
  * @author tag
- * @version $Id: RotatedSector.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: RotatedSector.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class RotatedSector extends ApplicationTemplate
 {
@@ -49,7 +49,6 @@ public class RotatedSector extends ApplicationTemplate
 
                 // Add the layer to the model and update the ApplicationTemplate's layer manager
                 insertBeforeCompass(this.getWwd(), layer);
-                this.getLayerPanel().update(this.getWwd());
 
                 // Rotate the quad continuously
                 Timer timer = new Timer(50, new ActionListener()

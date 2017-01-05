@@ -18,7 +18,7 @@ import java.util.logging.Level;
 
 /**
  * @author tag
- * @version $Id: SurfaceTileRenderer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: SurfaceTileRenderer.java 2288 2014-08-30 20:24:56Z dcollins $
  */
 public abstract class SurfaceTileRenderer implements Disposable
 {
@@ -26,8 +26,8 @@ public abstract class SurfaceTileRenderer implements Disposable
 
     protected Texture alphaTexture;
     protected Texture outlineTexture;
-
-    private boolean showImageTileOutlines = false;
+    protected boolean showImageTileOutlines = false;
+    protected boolean useImageTilePickColors = false;
 
     /**
      * Free internal resources held by this surface tile renderer. A GL context must be current when this method is
@@ -59,6 +59,31 @@ public abstract class SurfaceTileRenderer implements Disposable
     public void setShowImageTileOutlines(boolean showImageTileOutlines)
     {
         this.showImageTileOutlines = showImageTileOutlines;
+    }
+
+    /**
+     * Indicates how this SurfaceTileRenderer interprets image tile colors during picking. When true, image tile RGB
+     * colors are drawn during picking. When false, image tile RGB colors are replaced with the current RGB color.
+     * Initially false.
+     *
+     * @return true if image tile RGB colors are drawn during picking, false if image tile RGB colors are replaced by
+     *         the current RGB color.
+     */
+    public boolean isUseImageTilePickColors()
+    {
+        return this.useImageTilePickColors;
+    }
+
+    /**
+     * Specifies how this SurfaceTileRenderer interprets image tile colors during picking. When true, image tile RGB
+     * colors are drawn during picking. When false, image tile RGB colors are replaced with the current RGB color.
+     *
+     * @param useImageTilePickColors true if image tile RGB colors should be drawn during picking, false if image tile
+     *                               RGB colors should be replaced by the current RGB color.
+     */
+    public void setUseImageTilePickColors(boolean useImageTilePickColors)
+    {
+        this.useImageTilePickColors = useImageTilePickColors;
     }
 
     public void renderTile(DrawContext dc, SurfaceTile tile)
@@ -140,11 +165,15 @@ public abstract class SurfaceTileRenderer implements Disposable
             gl.glEnable(GL.GL_TEXTURE_2D);
             gl.glMatrixMode(GL2.GL_TEXTURE);
             gl.glPushMatrix();
-            if (!dc.isPickingMode())
+            if (!dc.isPickingMode()) // treat texture as an image; modulate RGBA with the current color
             {
                 gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_MODULATE);
             }
-            else
+            else if (this.useImageTilePickColors) // treat texture as pick colors; use texture RGBA directly
+            {
+                gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_REPLACE);
+            }
+            else // treat texture as a pick mask; replace RGB with the current pick color
             {
                 gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_COMBINE);
                 gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_RGB, GL2.GL_PREVIOUS);

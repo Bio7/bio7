@@ -16,7 +16,7 @@ import java.util.ArrayList;
 
 /**
  * @author tag
- * @version $Id: ExtrudedPolygonsEverywhere.java 968 2012-12-06 02:52:49Z dcollins $
+ * @version $Id: ExtrudedPolygonsEverywhere.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class ExtrudedPolygonsEverywhere extends ApplicationTemplate
 {
@@ -105,7 +105,6 @@ public class ExtrudedPolygonsEverywhere extends ApplicationTemplate
                 altitudeMode == WorldWind.RELATIVE_TO_GROUND ? "RELATIVE_TO_GROUND" : "ABSOLUTE");
 
             insertBeforeCompass(getWwd(), layer);
-            this.getLayerPanel().update(this.getWwd());
         }
     }
 

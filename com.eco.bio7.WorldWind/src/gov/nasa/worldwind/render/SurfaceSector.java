@@ -19,7 +19,7 @@ import java.util.*;
 
 /**
  * @author dcollins
- * @version $Id: SurfaceSector.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: SurfaceSector.java 2406 2014-10-29 23:39:29Z dcollins $
  */
 public class SurfaceSector extends AbstractSurfaceShape implements Exportable
 {
@@ -120,14 +120,13 @@ public class SurfaceSector extends AbstractSurfaceShape implements Exportable
         return Arrays.asList(locations);
     }
 
-    protected List<List<LatLon>> createGeometry(Globe globe, SurfaceTileDrawContext sdc)
+    protected List<List<LatLon>> createGeometry(Globe globe, double edgeIntervalsPerDegree)
     {
         Iterable<? extends LatLon> originalLocations = this.getLocations(globe);
         if (originalLocations == null)
             return null;
 
         ArrayList<LatLon> drawLocations = new ArrayList<LatLon>();
-        double edgeIntervalsPerDegree = this.computeEdgeIntervalsPerDegree(sdc);
         this.generateIntermediateLocations(originalLocations, edgeIntervalsPerDegree, false, drawLocations);
 
         ArrayList<List<LatLon>> geom = new ArrayList<List<LatLon>>();
@@ -157,7 +156,12 @@ public class SurfaceSector extends AbstractSurfaceShape implements Exportable
             newLocations[0].getLongitude(), newLocations[1].getLongitude()));
     }
 
-    //**************************************************************//
+    @Override
+    protected void doMoveTo(Globe globe, Position oldReferencePosition, Position newReferencePosition)
+    {
+        this.doMoveTo(oldReferencePosition, newReferencePosition);
+    }
+//**************************************************************//
     //******************** Restorable State  ***********************//
     //**************************************************************//
 
@@ -228,7 +232,7 @@ public class SurfaceSector extends AbstractSurfaceShape implements Exportable
 
         xmlWriter.writeStartElement("Placemark");
 
-        String property = (String) getValue(AVKey.DISPLAY_NAME);
+        String property = getStringValue(AVKey.DISPLAY_NAME);
         if (property != null)
         {
             xmlWriter.writeStartElement("name");

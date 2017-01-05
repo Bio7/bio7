@@ -21,7 +21,7 @@ import java.util.ArrayList;
 
 /**
  * @author pabercrombie
- * @version $Id: ExtrudedPolygonEditor.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ExtrudedPolygonEditor.java 2215 2014-08-09 20:05:40Z tgaskins $
  */
 public class ExtrudedPolygonEditor extends AbstractShapeEditor
 {
@@ -88,7 +88,8 @@ public class ExtrudedPolygonEditor extends AbstractShapeEditor
         this.controlPoints = new ArrayList<Marker>();
 
         this.assembleVertexControlPoints(dc);
-        this.assembleHeightControlPoints();
+        if (!dc.is2DGlobe())
+            this.assembleHeightControlPoints();
     }
 
     protected void assembleVertexControlPoints(DrawContext dc)

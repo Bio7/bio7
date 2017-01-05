@@ -15,12 +15,12 @@ import gov.nasa.worldwind.render.SurfaceImage;
  * World Wind retrieval service. Once the image is retrieved, <code>SurfaceImage</code> renders it on the globe.
  *
  * @author dcollins
- * @version $Id: RemoteSurfaceImage.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: RemoteSurfaceImage.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class RemoteSurfaceImage extends ApplicationTemplate
 {
     // The remote image to display.
-    protected static final String IMAGE_URL = "http://eoimages.gsfc.nasa.gov/ve//1438/earth_lights_lrg.jpg";
+    protected static final String IMAGE_URL = "https://eoimages.gsfc.nasa.gov/ve//1438/earth_lights_lrg.jpg";
 
     public static class AppFrame extends ApplicationTemplate.AppFrame
     {
@@ -35,7 +35,6 @@ public class RemoteSurfaceImage extends ApplicationTemplate
             layer.setPickEnabled(false);
 
             insertBeforePlacenames(this.getWwd(), layer);
-            this.getLayerPanel().update(this.getWwd());
         }
     }
 

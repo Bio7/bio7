@@ -17,7 +17,7 @@ import java.awt.*;
  * interface on layers and elevation models that support it.
  *
  * @author Patrick Murris
- * @version $Id: BulkDownload.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: BulkDownload.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class BulkDownload extends ApplicationTemplate
 {
@@ -26,7 +26,7 @@ public class BulkDownload extends ApplicationTemplate
         public AppFrame()
         {
             // Add the bulk download control panel.
-            this.getLayerPanel().add(new BulkDownloadPanel(this.getWwd()), BorderLayout.SOUTH);
+            this.getControlPanel().add(new BulkDownloadPanel(this.getWwd()), BorderLayout.SOUTH);
 
             // Size the application window to provide enough screen space for the World Window and the bulk download
             // panel, then center the application window on the screen.

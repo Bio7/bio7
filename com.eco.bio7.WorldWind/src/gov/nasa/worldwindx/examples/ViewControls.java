@@ -19,7 +19,7 @@ import java.awt.event.*;
  * and available controls.
  *
  * @author Patrick Murris
- * @version $Id: ViewControls.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ViewControls.java 2109 2014-06-30 16:52:38Z tgaskins $
  * @see gov.nasa.worldwind.layers.ViewControlsLayer
  * @see gov.nasa.worldwind.layers.ViewControlsSelectListener
  * @see gov.nasa.worldwind.layers.CompassLayer
@@ -40,12 +40,11 @@ public class ViewControls extends ApplicationTemplate
                 if (layer instanceof ViewControlsLayer)
                 {
                     viewControlsLayer = (ViewControlsLayer) layer;
-                    getLayerPanel().update(getWwd());
                 }
             }
 
             // Add view controls selection panel
-            this.getLayerPanel().add(makeControlPanel(), BorderLayout.SOUTH);
+            this.getControlPanel().add(makeControlPanel(), BorderLayout.SOUTH);
         }
 
         private JPanel makeControlPanel()

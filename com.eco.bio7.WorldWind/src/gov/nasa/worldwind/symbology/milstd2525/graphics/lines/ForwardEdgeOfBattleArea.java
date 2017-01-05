@@ -23,7 +23,7 @@ import java.util.List;
  * Implementation of the Forward Edge of Battle Area (FEBA) graphic (2.X.2.4.2.1).
  *
  * @author pabercrombie
- * @version $Id: ForwardEdgeOfBattleArea.java 676 2012-07-02 20:27:31Z pabercrombie $
+ * @version $Id: ForwardEdgeOfBattleArea.java 2196 2014-08-06 19:42:15Z tgaskins $
  */
 public class ForwardEdgeOfBattleArea extends AbstractMilStd2525TacticalGraphic
 {
@@ -91,7 +91,7 @@ public class ForwardEdgeOfBattleArea extends AbstractMilStd2525TacticalGraphic
 
         /** {@inheritDoc} */
         @Override
-        protected void layoutTextModifiers(DrawContext dc, AVList modifiers)
+        protected void layoutTextModifiers(DrawContext dc, AVList modifiers, OrderedSymbol osym)
         {
             this.currentLabels.clear();
 
@@ -99,7 +99,7 @@ public class ForwardEdgeOfBattleArea extends AbstractMilStd2525TacticalGraphic
             Offset imgOffset = this.leftAlign ? RIGHT_CENTER : LEFT_CENTER;
             Offset txtOffset = this.leftAlign ? LEFT_CENTER : RIGHT_CENTER;
 
-            this.addLabel(dc, imgOffset, txtOffset, this.getText(), font, null, null);
+            this.addLabel(dc, imgOffset, txtOffset, this.getText(), font, null, null, osym);
         }
 
         /**

@@ -8,14 +8,14 @@ package gov.nasa.worldwind.render.airspaces;
 
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.Globe;
-import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
 import java.util.*;
 
 /**
  * @author tag
- * @version $Id: PolyArc.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: PolyArc.java 2450 2014-11-20 21:41:54Z dcollins $
  */
 public class PolyArc extends Polygon
 {
@@ -130,6 +130,7 @@ public class PolyArc extends Polygon
         }
 
         this.radius = radius;
+        this.invalidateAirspaceData();
     }
 
     public Angle[] getAzimuths()
@@ -157,6 +158,7 @@ public class PolyArc extends Polygon
 
         this.leftAzimuth = leftAzimuth;
         this.rightAzimuth = rightAzimuth;
+        this.invalidateAirspaceData();
     }
 
     protected int getSlices()
@@ -179,12 +181,13 @@ public class PolyArc extends Polygon
     @Override
     protected List<Vec4> computeMinimalGeometry(Globe globe, double verticalExaggeration)
     {
-        if (this.getLocationList() == null)
+        List<LatLon> locations = this.getLocationList();
+        if (locations == null || locations.isEmpty())
             return null;
 
         ArrayList<LatLon> arcLocations = new ArrayList<LatLon>();
         ArrayList<Boolean> arcFlags = new ArrayList<Boolean>();
-        this.makePolyArcLocations(globe, this.getLocationList(), 8, arcLocations, arcFlags);
+        this.makePolyArcLocations(globe, locations, 8, arcLocations, arcFlags);
 
         ArrayList<LatLon> tessellatedLocations = new ArrayList<LatLon>();
         this.makeTessellatedLocations(globe, MINIMAL_GEOMETRY_SUBDIVISIONS, arcLocations, tessellatedLocations);
@@ -193,6 +196,16 @@ public class PolyArc extends Polygon
         this.makeExtremePoints(globe, verticalExaggeration, tessellatedLocations, points);
 
         return points;
+    }
+
+    @Override
+    protected void regenerateSurfaceShape(DrawContext dc, SurfaceShape shape)
+    {
+        ArrayList<LatLon> arcLocations = new ArrayList<LatLon>();
+        ArrayList<Boolean> arcFlags = new ArrayList<Boolean>();
+        this.makePolyArcLocations(dc.getGlobe(), this.getLocationList(), this.slices, arcLocations, arcFlags);
+
+        ((SurfacePolygon) shape).setOuterBoundary(arcLocations);
     }
 
     //**************************************************************//
@@ -246,13 +259,11 @@ public class PolyArc extends Polygon
             double[] angles = this.computeAngles();
             double radius = this.radius;
             LatLon first = locations.get(0);
-            int arcCount = this.getArcVertexCount(slices);
-            LatLon[] arcLocations = new LatLon[arcCount];
-            this.makeArc(globe, first, radius, slices, angles[0], angles[2], arcLocations);
+            LatLon[] arcLocations = this.makeArc(globe, first, radius, slices, angles[0], angles[2]);
 
-            for (int i = 0; i < arcCount; i++)
+            for (LatLon ll : arcLocations)
             {
-                polyArcLocations.add(arcLocations[i]);
+                polyArcLocations.add(ll);
                 edgeFlags.add(false);
             }
 
@@ -270,7 +281,7 @@ public class PolyArc extends Polygon
                 GeometryBuilder gb = this.getGeometryBuilder();
                 Vec4[] polyPoints = new Vec4[locationCount + 1];
                 Matrix[] polyTransform = new Matrix[1];
-                int polyCount = this.computeCartesianPolygon(globe, locations, null, polyPoints, null, polyTransform);
+                int polyCount = this.computeEllipsoidalPolygon(globe, locations, null, polyPoints, null, polyTransform);
                 int polyWinding = gb.computePolygonWindingOrder2(0, polyCount, polyPoints);
 
                 if (polyWinding == GeometryBuilder.COUNTER_CLOCKWISE)
@@ -293,38 +304,19 @@ public class PolyArc extends Polygon
         }
     }
 
-    private int getArcVertexCount(int slices)
+    private LatLon[] makeArc(Globe globe, LatLon center, double radius, int slices, double start, double sweep)
     {
-        return slices + 1;
-    }
-
-    private void makeArc(Globe globe, LatLon center, double radius, int slices, double start, double sweep,
-        LatLon[] locations)
-    {
-        int count = this.getArcVertexCount(slices);
-        Matrix transform = globe.computeSurfaceOrientationAtPosition(center.getLatitude(), center.getLongitude(), 0.0);
-        Vec4[] points = new Vec4[count];
-        this.makeArc(radius, slices, start, sweep, transform, points);
-
-        for (int i = 0; i < count; i++)
-        {
-            Position pos = globe.computePositionFromPoint(points[i]);
-            locations[i] = new LatLon(pos.getLatitude(), pos.getLongitude());
-        }
-    }
-
-    private void makeArc(double radius, int slices, double start, double sweep, Matrix transform, Vec4[] points)
-    {
-        double aStep = sweep / (double) slices;
+        double da = sweep / slices;
+        double r = radius / globe.getRadius();
+        LatLon[] locations = new LatLon[slices + 1];
 
         for (int i = 0; i <= slices; i++)
         {
-            double a = start + i * aStep;
-            double x = Math.sin(a);
-            double y = Math.cos(a);
-            points[i] = new Vec4(x * radius, y * radius, 0.0);
-            points[i] = points[i].transformBy4(transform);
+            double a = i * da + start;
+            locations[i] = LatLon.greatCircleEndPosition(center, a, r);
         }
+
+        return locations;
     }
 
     private Angle normalizedAzimuth(Angle azimuth)

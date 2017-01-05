@@ -6,20 +6,21 @@
 package gov.nasa.worldwindx.examples.util;
 
 import gov.nasa.worldwind.render.*;
+import gov.nasa.worldwind.render.airspaces.*;
 import gov.nasa.worldwind.util.WWUtil;
 
 import java.awt.*;
 
 /**
  * @author dcollins
- * @version $Id: RandomShapeAttributes.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: RandomShapeAttributes.java 2326 2014-09-17 22:35:45Z dcollins $
  */
 public class RandomShapeAttributes
 {
-    protected int attrIndex = 0;
+    protected int attrIndex = -1;
     protected PointPlacemarkAttributes[] pointAttrs;
-    protected ShapeAttributes[] polylineAttrs;
-    protected ShapeAttributes[] polygonAttrs;
+    protected ShapeAttributes[] shapeAttrs;
+    protected AirspaceAttributes[] airspaceAttrs;
 
     public RandomShapeAttributes()
     {
@@ -28,53 +29,47 @@ public class RandomShapeAttributes
 
     protected void initialize()
     {
-        this.pointAttrs = new PointPlacemarkAttributes[]
-            {
-                this.createPointAttributes(Color.YELLOW),
-                this.createPointAttributes(Color.BLUE),
-                this.createPointAttributes(Color.RED),
-                this.createPointAttributes(Color.GREEN),
-                this.createPointAttributes(Color.CYAN),
-                this.createPointAttributes(Color.ORANGE),
-                this.createPointAttributes(Color.MAGENTA),
-            };
+        Color[] shapeColors = {
+            new Color(255, 9, 84), // red
+            new Color(255, 133, 0), // orange
+            new Color(255, 198, 0), // yellow
+            new Color(79, 213, 33), // green
+            new Color(7, 152, 249), // blue
+            new Color(193, 83, 220), // purple
+        };
 
-        this.polylineAttrs = new ShapeAttributes[]
-            {
-                this.createPolylineAttributes(Color.YELLOW),
-                this.createPolylineAttributes(Color.BLUE),
-                this.createPolylineAttributes(Color.RED),
-                this.createPolylineAttributes(Color.GREEN),
-                this.createPolylineAttributes(Color.CYAN),
-                this.createPolylineAttributes(Color.ORANGE),
-                this.createPolylineAttributes(Color.MAGENTA),
-            };
+        this.pointAttrs = new PointPlacemarkAttributes[shapeColors.length];
+        this.shapeAttrs = new ShapeAttributes[shapeColors.length];
+        this.airspaceAttrs = new AirspaceAttributes[shapeColors.length];
 
-        this.polygonAttrs = new ShapeAttributes[]
-            {
-                this.createPolygonAttributes(Color.YELLOW),
-                this.createPolygonAttributes(Color.BLUE),
-                this.createPolygonAttributes(Color.RED),
-                this.createPolygonAttributes(Color.GREEN),
-                this.createPolygonAttributes(Color.CYAN),
-                this.createPolygonAttributes(Color.ORANGE),
-                this.createPolygonAttributes(Color.MAGENTA),
-            };
+        for (int i = 0; i < shapeColors.length; i++)
+        {
+            this.pointAttrs[i] = this.createPointAttributes(shapeColors[i]);
+            this.shapeAttrs[i] = this.createShapeAttributes(shapeColors[i]);
+            this.airspaceAttrs[i] = this.createAirspaceAttributes(shapeColors[i]);
+        }
     }
 
-    public PointPlacemarkAttributes nextPointAttributes()
+    public RandomShapeAttributes nextAttributes()
     {
-        return this.pointAttrs[this.attrIndex++ % this.pointAttrs.length];
+        this.attrIndex++;
+
+        return this;
     }
 
-    public ShapeAttributes nextPolylineAttributes()
+    public PointPlacemarkAttributes asPointAttributes()
     {
-        return this.polylineAttrs[this.attrIndex++ % this.polylineAttrs.length];
+        return this.pointAttrs[this.attrIndex % this.pointAttrs.length];
     }
 
-    public ShapeAttributes nextPolygonAttributes()
+    public ShapeAttributes asShapeAttributes()
     {
-        return this.polygonAttrs[this.attrIndex++ % this.polygonAttrs.length];
+        return this.shapeAttrs[this.attrIndex % this.shapeAttrs.length];
+    }
+
+    public AirspaceAttributes asAirspaceAttributes()
+    {
+        return this.airspaceAttrs[this.attrIndex % this.airspaceAttrs.length];
     }
 
     protected PointPlacemarkAttributes createPointAttributes(Color color)
@@ -86,21 +81,26 @@ public class RandomShapeAttributes
         return attrs;
     }
 
-    protected ShapeAttributes createPolylineAttributes(Color color)
-    {
-        ShapeAttributes attrs = new BasicShapeAttributes();
-        attrs.setOutlineMaterial(new Material(color));
-        attrs.setOutlineWidth(1.5);
-        return attrs;
-    }
-
-    protected ShapeAttributes createPolygonAttributes(Color color)
+    protected ShapeAttributes createShapeAttributes(Color color)
     {
         ShapeAttributes attrs = new BasicShapeAttributes();
         attrs.setInteriorMaterial(new Material(color));
         attrs.setOutlineMaterial(new Material(WWUtil.makeColorBrighter(color)));
         attrs.setInteriorOpacity(0.5);
-        attrs.setOutlineWidth(3);
+        attrs.setOutlineWidth(2);
+        return attrs;
+    }
+
+    protected AirspaceAttributes createAirspaceAttributes(Color color)
+    {
+        AirspaceAttributes attrs = new BasicAirspaceAttributes();
+        attrs.setInteriorMaterial(new Material(color));
+        attrs.setOutlineMaterial(new Material(WWUtil.makeColorBrighter(color)));
+        attrs.setInteriorOpacity(0.7);
+        attrs.setOutlineWidth(2);
+        attrs.setDrawOutline(true);
+        attrs.setEnableAntialiasing(true);
+        attrs.setEnableLighting(true);
         return attrs;
     }
 }
