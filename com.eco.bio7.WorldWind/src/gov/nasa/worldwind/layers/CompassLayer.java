@@ -25,7 +25,7 @@ import java.io.*;
  */
 public class CompassLayer extends AbstractLayer
 {
-    protected String iconFilePath = "images/notched-compass.dds"; // TODO: make configurable
+	 protected String iconFilePath = "images/notched-compass.png"; // TODO: make configurable
     protected double compassToViewportScale = 0.2; // TODO: make configurable
     protected double iconScale = 0.5;
     protected int borderWidth = 20; // TODO: make configurable

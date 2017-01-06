@@ -15,6 +15,8 @@ import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 import org.w3c.dom.*;
 
+import com.eco.bio7.worldwind.WorldWindOptionsView;
+
 import javax.xml.xpath.*;
 import java.awt.*;
 import java.util.Map;
@@ -93,6 +95,11 @@ public class ShapefileLayerFactory implements Factory, ShapefileRenderable.Attri
     protected PointPlacemarkAttributes highlightPointAttributes;
     protected ShapefileRenderable.AttributeDelegate attributeDelegate;
 
+    private  Sector sect;
+
+	public  Sector getSect() {
+		return sect;
+	}
     /**
      * Indicates the mappings between shapefile attribute names and av-list keys attached to created shapes.
      *
@@ -535,6 +542,18 @@ public class ShapefileLayerFactory implements Factory, ShapefileRenderable.Attri
                 try
                 {
                     shp = loadShapefile(shapefileSource);
+                    /*Changed for Bio7!*/
+                    sect = Sector.fromDegrees((shp.getBoundingRectangle()));
+        			if (sect == null) {
+                    System.out.println("Sector null....................................!");
+        			} else {
+
+        				WorldWindOptionsView.setMinLat(String.valueOf(sect.getMinLatitude().degrees));
+        				WorldWindOptionsView.setMinLon(String.valueOf(sect.getMinLongitude().degrees));
+        				WorldWindOptionsView.setMaxLat(String.valueOf(sect.getMaxLatitude().degrees));
+        				WorldWindOptionsView.setMaxLon(String.valueOf(sect.getMaxLongitude().degrees));
+
+        			}
                     assembleShapefileLayer(shp, layer);
                 }
                 catch (Exception e)
