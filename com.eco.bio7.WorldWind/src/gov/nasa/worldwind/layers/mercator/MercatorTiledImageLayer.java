@@ -5,12 +5,12 @@
  */
 package gov.nasa.worldwind.layers.mercator;
 
-import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Cylinder;
 import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.layers.AbstractLayer;
-import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.retrieve.*;
 import gov.nasa.worldwind.util.*;
 
@@ -30,7 +30,7 @@ import java.util.concurrent.PriorityBlockingQueue;
  * TiledImageLayer modified 2009-02-03 to add support for Mercator projections.
  *
  * @author tag
- * @version $Id: MercatorTiledImageLayer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: MercatorTiledImageLayer.java 2053 2014-06-10 20:16:57Z tgaskins $
  */
 public abstract class MercatorTiledImageLayer extends AbstractLayer
 {

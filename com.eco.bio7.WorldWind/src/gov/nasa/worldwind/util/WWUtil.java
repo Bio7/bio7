@@ -12,13 +12,13 @@ import gov.nasa.worldwind.geom.coords.UTMCoord;
 
 import java.awt.*;
 import java.lang.reflect.*;
-import java.nio.DoubleBuffer;
+import java.nio.*;
 import java.text.*;
 import java.util.regex.Pattern;
 
 /**
  * @author tag
- * @version $Id: WWUtil.java 1927 2014-04-11 20:01:26Z tgaskins $
+ * @version $Id: WWUtil.java 2396 2014-10-27 23:46:42Z tgaskins $
  */
 public class WWUtil
 {
@@ -1181,5 +1181,93 @@ public class WWUtil
         }
 
         return 0; // the versions match
+    }
+
+    /**
+     * Generates average normal vectors for the vertices of a triangle strip.
+     *
+     * @param vertices the triangle strip vertices.
+     * @param indices  the indices identifying the triangle strip from the specified vertices.
+     * @param normals  a buffer to accept the output normals. The buffer must be allocated and all its values must be
+     *                 initialized to 0. The buffer's size limit must be at least as large as that of the specified
+     *                 vertex buffer.
+     *
+     * @throws IllegalArgumentException if any of the specified buffers are null or the limit of the normal
+     *                                            buffer is less than that of the vertex buffer.
+     */
+    public static void generateTriStripNormals(FloatBuffer vertices, IntBuffer indices, FloatBuffer normals)
+    {
+        if (vertices == null || indices == null || normals == null)
+        {
+            String message = Logging.getMessage("nullValue.BufferIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (normals.limit() < vertices.limit())
+        {
+            String message = Logging.getMessage("generic.BufferSize", normals.limit());
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        for (int i = 0; i < indices.limit() - 2; i++)
+        {
+            int i1 = 3 * indices.get(i);
+            int i2 = 3 * indices.get(i + 1);
+            int i3 = 3 * indices.get(i + 2);
+
+            Vec4 t0 = new Vec4(vertices.get(i1), vertices.get(i1 + 1), vertices.get(i1 + 2));
+            Vec4 t1 = new Vec4(vertices.get(i2), vertices.get(i2 + 1), vertices.get(i2 + 2));
+            Vec4 t2 = new Vec4(vertices.get(i3), vertices.get(i3 + 1), vertices.get(i3 + 2));
+            Vec4 va = new Vec4(t1.x - t0.x, t1.y - t0.y, t1.z - t0.z);
+            Vec4 vb = new Vec4(t2.x - t0.x, t2.y - t0.y, t2.z - t0.z);
+
+            Vec4 facetNormal;
+            if (i % 2 == 0)
+            {
+                facetNormal = va.cross3(vb).normalize3();
+            }
+            else
+            {
+                facetNormal = vb.cross3(va).normalize3();
+            }
+
+            normals.put(i1, normals.get(i1) + (float) facetNormal.x);
+            normals.put(i1 + 1, normals.get(i1 + 1) + (float) facetNormal.y);
+            normals.put(i1 + 2, normals.get(i1 + 2) + (float) facetNormal.z);
+
+            normals.put(i2, normals.get(i2) + (float) facetNormal.x);
+            normals.put(i2 + 1, normals.get(i2 + 1) + (float) facetNormal.y);
+            normals.put(i2 + 2, normals.get(i2 + 2) + (float) facetNormal.z);
+
+            normals.put(i3, normals.get(i3) + (float) facetNormal.x);
+            normals.put(i3 + 1, normals.get(i3 + 1) + (float) facetNormal.y);
+            normals.put(i3 + 2, normals.get(i3 + 2) + (float) facetNormal.z);
+        }
+
+        // Normalize all the computed normals.
+        for (int i = 0; i < indices.limit() - 2; i++)
+        {
+            int i1 = 3 * indices.get(i);
+            int i2 = 3 * indices.get(i + 1);
+            int i3 = 3 * indices.get(i + 2);
+
+            Vec4 n1 = new Vec4(normals.get(i1), normals.get(i1 + 1), normals.get(i1 + 2)).normalize3();
+            Vec4 n2 = new Vec4(normals.get(i2), normals.get(i2 + 1), normals.get(i2 + 2)).normalize3();
+            Vec4 n3 = new Vec4(normals.get(i3), normals.get(i3 + 1), normals.get(i3 + 2)).normalize3();
+
+            normals.put(i1, (float) n1.x);
+            normals.put(i1 + 1, (float) n1.y);
+            normals.put(i1 + 2, (float) n1.z);
+
+            normals.put(i2, (float) n2.x);
+            normals.put(i2 + 1, (float) n2.y);
+            normals.put(i2 + 2, (float) n2.z);
+
+            normals.put(i3, (float) n3.x);
+            normals.put(i3 + 1, (float) n3.y);
+            normals.put(i3 + 2, (float) n3.z);
+        }
     }
 }

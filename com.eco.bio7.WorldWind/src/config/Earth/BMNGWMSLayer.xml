@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (C) 2012 United States Government as represented by the Administrator of the
+  ~ National Aeronautics and Space Administration.
+  ~ All Rights Reserved.
+  -->
+
 <!--Blue Marble Next generation 2004 + Bathymetry imagery, using the default month (May).-->
-<!--$Id: BMNGWMSLayer.xml 47 2011-09-02 14:59:13Z tgaskins $-->
+<!--$Id: BMNGWMSLayer.xml 1958 2014-04-24 19:25:37Z tgaskins $-->
+<!--DEPRECATED. Use BMNGWMSLayer2.xml-->
 <Layer version="1" layerType="TiledImageLayer">
     <DisplayName>Blue Marble (WMS) 2004</DisplayName>
     <Service serviceName="OGC:WMS" version="1.3">
-        <GetCapabilitiesURL>http://data.worldwind.arc.nasa.gov/wms</GetCapabilitiesURL>
-        <GetMapURL>http://data.worldwind.arc.nasa.gov/wms</GetMapURL>
+        <GetCapabilitiesURL>https://data.worldwind.arc.nasa.gov/wms</GetCapabilitiesURL>
+        <GetMapURL>https://data.worldwind.arc.nasa.gov/wms</GetMapURL>
         <LayerNames>bmng200405</LayerNames>
     </Service>
     <RetrievePropertiesFromService>true</RetrievePropertiesFromService>

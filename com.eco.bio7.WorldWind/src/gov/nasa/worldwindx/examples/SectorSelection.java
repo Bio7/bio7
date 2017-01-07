@@ -17,7 +17,7 @@ import java.beans.*;
  * Demonstrates how to use the {@link gov.nasa.worldwindx.examples.util.SectorSelector} utility.
  *
  * @author tag
- * @version $Id: SectorSelection.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: SectorSelection.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class SectorSelection extends ApplicationTemplate
 {
@@ -41,7 +41,7 @@ public class SectorSelection extends ApplicationTemplate
             JPanel p = new JPanel(new BorderLayout(5, 5));
             p.add(btn, BorderLayout.CENTER);
 
-            this.getLayerPanel().add(p, BorderLayout.SOUTH);
+            this.getControlPanel().add(p, BorderLayout.SOUTH);
 
             // Listen for changes to the sector selector's region. Could also just wait until the user finishes
             // and query the result using selector.getSector().

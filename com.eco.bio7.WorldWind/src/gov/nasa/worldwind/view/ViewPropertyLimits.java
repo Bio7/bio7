@@ -5,93 +5,155 @@
  */
 package gov.nasa.worldwind.view;
 
+import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.util.RestorableSupport;
 
 /**
+ * ViewPropertyLimits defines a restriction on the viewing parameters of a {@link View}.
+ *
  * @author jym
- * @version $Id: ViewPropertyLimits.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ViewPropertyLimits.java 2253 2014-08-22 16:33:46Z dcollins $
  */
 public interface ViewPropertyLimits
 {
     /**
-     * Sets the <code>Sector</code> which will limit the <code>View</code> eye position latitude and longitude.
+     * Sets the Sector which will limit a view's eye latitude and longitude.
      *
-     * @param sector <code>Sector</code> which will limit the eye position latitude and longitude.
-     * @throws IllegalArgumentException if <code>sector</code> is null.
+     * @param sector Sector which will limit the eye latitude and longitude.
+     *
+     * @throws IllegalArgumentException if sector is null.
      */
     void setEyeLocationLimits(Sector sector);
+
     /**
-     * Returns the <code>Sector</code> which limits the <code>View</code> eye position latitude and longitude.
+     * Returns the Sector which limits a view's eye latitude and longitude.
      *
-     * @return <code>Sector</code> which limits the eye position latitude and longitude.
+     * @return Sector which limits the eye latitude and longitude.
      */
     Sector getEyeLocationLimits();
 
     /**
-     * Returns the minimum and maximum values for the <code>View</code> elevation.
+     * Returns the minimum and maximum values for a view's eye elevation.
      *
-     * @return minimum and maximum allowable values for the elevation.
+     * @return Minimum and maximum allowable values for the elevation.
      */
     double[] getEyeElevationLimits();
 
     /**
-     * Sets the minimum and maximum values for the <code>View</code> elevation.
+     * Sets the minimum and maximum values for a view's eye elevation.
      *
-     * @param minValue The minimum elevation.
-     * @param maxValue The maximum elevation.
+     * @param minValue the minimum elevation.
+     * @param maxValue the maximum elevation.
      */
     void setEyeElevationLimits(double minValue, double maxValue);
 
     /**
-     * Returns the minimum and maximum <code>Angles</code> for the <code>OrbitView</code> heading property.
+     * Returns the minimum and maximum angles for a view's heading property.
      *
-     * @return minimum and maximum allowable <code>Angles</code> for heading.
+     * @return Minimum and maximum allowable angles for heading.
      */
     Angle[] getHeadingLimits();
 
     /**
-     * Sets the minimum and maximum <code>Angles</code> which will limit the <code>OrbitView</code> heading property.
+     * Sets the minimum and maximum angles which will limit a view's heading property.
      *
      * @param minAngle the minimum allowable angle for heading.
      * @param maxAngle the maximum allowable angle for heading.
-     * @throws IllegalArgumentException if either <code>minAngle</code> or <code>maxAngle</code> is null.
+     *
+     * @throws IllegalArgumentException if either minAngle or maxAngle is null.
      */
     void setHeadingLimits(Angle minAngle, Angle maxAngle);
 
     /**
-     * Returns the minimum and maximum <code>Angles</code> for the <code>OrbitView</code> pitch property.
+     * Returns the minimum and maximum angles for a view's pitch property.
      *
-     * @return minimum and maximum allowable <code>Angles</code> for pitch.
+     * @return Minimum and maximum allowable angles for pitch.
      */
     Angle[] getPitchLimits();
 
     /**
-     * Sets the minimum and maximum <code>Angles</code> which will limit the <code>OrbitView</code> pitch property.
+     * Sets the minimum and maximum angles which will limit a view's pitch property.
      *
      * @param minAngle the minimum allowable angle for pitch.
      * @param maxAngle the maximum allowable angle for pitch.
-     * @throws IllegalArgumentException if either <code>minAngle</code> or <code>maxAngle</code> is null.
+     *
+     * @throws IllegalArgumentException if either minAngle or maxAngle is null.
      */
     void setPitchLimits(Angle minAngle, Angle maxAngle);
 
     /**
-     * Returns the minimum and maximum <code>Angles</code> for the <code>OrbitView</code> roll property.
+     * Returns the minimum and maximum angles for a view's roll property.
      *
-     * @return minimum and maximum allowable <code>Angles</code> for roll.
+     * @return Minimum and maximum allowable angles for roll.
      */
     Angle[] getRollLimits();
 
     /**
-     * Sets the minimum and maximum <code>Angles</code> which will limit the <code>OrbitView</code> roll property.
+     * Sets the minimum and maximum angles which will limit a view's roll property.
      *
      * @param minAngle the minimum allowable angle for roll.
      * @param maxAngle the maximum allowable angle for roll.
      *
-     * @throws IllegalArgumentException if either <code>minAngle</code> or <code>maxAngle</code> is null.
+     * @throws IllegalArgumentException if either minAngle or maxAngle is null.
      */
     void setRollLimits(Angle minAngle, Angle maxAngle);
 
+    /** Resets all property limits to their default values. */
+    void reset();
+
+    /**
+     * Returns a position clamped to the eye location limits and the eye elevation limits specified by this limit
+     * object. This method does not modify the specified view's properties, but may use the view as a context for
+     * determining how to apply the limits.
+     *
+     * @param view     the view associated with the center position and the property limits.
+     * @param position position to clamp to the allowed range.
+     *
+     * @return The clamped position.
+     *
+     * @throws IllegalArgumentException if any argument is null.
+     */
+    Position limitEyePosition(View view, Position position);
+
+    /**
+     * Returns an angle clamped to the heading limits specified by this limit object. This method does not modify the
+     * specified view's properties, but may use the view as a context for determining how to apply the limits.
+     *
+     * @param view  the view associated with the heading angle and the property limits.
+     * @param angle angle to clamp to the allowed range.
+     *
+     * @return The clamped angle.
+     *
+     * @throws IllegalArgumentException if any argument is null.
+     */
+    Angle limitHeading(View view, Angle angle);
+
+    /**
+     * Returns an angle clamped to the pitch limits specified by this limit object. This method does not modify the
+     * specified view's properties, but may use the view as a context for determining how to apply the limits.
+     *
+     * @param view  the view associated with the pitch angle and the property limits.
+     * @param angle angle to clamp to the allowed range.
+     *
+     * @return The clamped angle.
+     *
+     * @throws IllegalArgumentException if any argument is null.
+     */
+    Angle limitPitch(View view, Angle angle);
+
+    /**
+     * Returns an angle clamped to the roll limits specified by this limit object. This method does not modify the
+     * specified view's properties, but may use the view as a context for determining how to apply the limits.
+     *
+     * @param view  the view associated with the roll angle and the property limits.
+     * @param angle angle to clamp to the allowed range.
+     *
+     * @return The clamped angle.
+     *
+     * @throws IllegalArgumentException if any argument is null.
+     */
+    Angle limitRoll(View view, Angle angle);
 
     void getRestorableState(RestorableSupport rs, RestorableSupport.StateObject context);
 

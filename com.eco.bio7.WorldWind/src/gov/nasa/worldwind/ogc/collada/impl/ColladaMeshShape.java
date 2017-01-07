@@ -10,6 +10,7 @@ import com.jogamp.common.nio.Buffers;
 import gov.nasa.worldwind.cache.GpuResourceCache;
 import gov.nasa.worldwind.geom.Box;
 import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.globes.*;
 import gov.nasa.worldwind.ogc.collada.*;
 import gov.nasa.worldwind.pick.PickSupport;
 import gov.nasa.worldwind.render.*;
@@ -32,7 +33,7 @@ import java.util.List;
  * This shape supports only COLLADA line and triangle geometries.
  *
  * @author pabercrombie
- * @version $Id: ColladaMeshShape.java 1696 2013-10-31 18:46:55Z tgaskins $
+ * @version $Id: ColladaMeshShape.java 2216 2014-08-11 20:29:24Z tgaskins $
  */
 public class ColladaMeshShape extends AbstractGeneralShape
 {
@@ -145,6 +146,52 @@ public class ColladaMeshShape extends AbstractGeneralShape
         }
     }
 
+    protected static class ExtentCacheKey
+    {
+        protected GlobeStateKey globeStateKey;
+        protected Matrix matrix;
+
+        public ExtentCacheKey(Globe globe, Matrix matrix)
+        {
+            this.globeStateKey = globe.getGlobeStateKey();
+            this.matrix = matrix;
+        }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o)
+            {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass())
+            {
+                return false;
+            }
+
+            ExtentCacheKey that = (ExtentCacheKey) o;
+
+            if (globeStateKey != null ? !globeStateKey.equals(that.globeStateKey) : that.globeStateKey != null)
+            {
+                return false;
+            }
+            if (matrix != null ? !matrix.equals(that.matrix) : that.matrix != null)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            int result = globeStateKey != null ? globeStateKey.hashCode() : 0;
+            result = 31 * result + (matrix != null ? matrix.hashCode() : 0);
+            return result;
+        }
+    }
+
     /** OpenGL element type for this shape (GL.GL_LINES or GL.GL_TRIANGLES). */
     protected int elementType;
     /** Number of vertices per shape. Two in the case of a line mesh, three in the case of a triangle mesh. */
@@ -159,7 +206,7 @@ public class ColladaMeshShape extends AbstractGeneralShape
     /** Geometry objects that describe different parts of the mesh. */
     protected List<Geometry> geometries;
     /** Cache of shape extents computed for different transform matrices. */
-    protected Map<Matrix, Extent> extentCache = new HashMap<Matrix, Extent>();
+    protected Map<ExtentCacheKey, Extent> extentCache = new HashMap<ExtentCacheKey, Extent>();
 
     /**
      * The vertex data buffer for this shape data. The first part contains vertex coordinates, the second part contains
@@ -309,11 +356,12 @@ public class ColladaMeshShape extends AbstractGeneralShape
         // may be drawn multiple times during a single frame with different transforms. Attempt to calculate the extent
         // if not available in the cache. It may not be possible to calculate the extent if the shape geometry has not
         // been built, in which case the extent will be computed by createMinimalGeometry.
-        Extent extent = this.extentCache.get(matrix);
+        ExtentCacheKey extentCacheKey = new ExtentCacheKey(dc.getGlobe(), matrix);
+        Extent extent = this.extentCache.get(extentCacheKey);
         if (extent == null)
         {
             extent = this.computeExtent(dc);
-            this.extentCache.put(matrix, extent);
+            this.extentCache.put(extentCacheKey, extent);
         }
         current.setExtent(extent);
 
@@ -696,7 +744,7 @@ public class ColladaMeshShape extends AbstractGeneralShape
         if (shapeData.getExtent() == null)
         {
             Extent extent = this.computeExtent(dc);
-            this.extentCache.put(shapeData.renderMatrix, extent);
+            this.extentCache.put(new ExtentCacheKey(dc.getGlobe(), shapeData.renderMatrix), extent);
             shapeData.setExtent(extent);
         }
     }

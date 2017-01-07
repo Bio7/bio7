@@ -18,7 +18,7 @@ import java.util.*;
  *
  * @author Dave Collins
  * @author Patrick Murris
- * @version $Id: SurfacePolylines.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: SurfacePolylines.java 2406 2014-10-29 23:39:29Z dcollins $
  */
 public class SurfacePolylines extends AbstractSurfaceShape
 {
@@ -105,6 +105,11 @@ public class SurfacePolylines extends AbstractSurfaceShape
         return null;
     }
 
+    protected List<List<LatLon>> createGeometry(Globe globe, double edgeIntervalsPerDegree)
+    {
+        return null;
+    }
+
     public Iterable<? extends LatLon> getLocations()
     {
         return this.buffer.getLocations();
@@ -144,6 +149,24 @@ public class SurfacePolylines extends AbstractSurfaceShape
                 Angle heading = LatLon.greatCircleAzimuth(oldReferencePosition, ll);
                 Angle pathLength = LatLon.greatCircleDistance(oldReferencePosition, ll);
                 vb.putLocation(pos, LatLon.greatCircleEndPosition(newReferencePosition, heading, pathLength));
+            }
+        }
+
+        this.onGeometryChanged();
+    }
+
+    protected void doMoveTo(Globe globe, Position oldReferencePosition, Position newReferencePosition)
+    {
+        for (int i = 0; i < this.buffer.size(); i++)
+        {
+            VecBuffer vb = this.buffer.subBuffer(i);
+
+            List<LatLon> newLocations = LatLon.computeShiftedLocations(globe, oldReferencePosition,
+                newReferencePosition, vb.getLocations());
+
+            for (int pos = 0; pos < vb.getSize(); pos++)
+            {
+                vb.putLocation(pos, newLocations.get(i));
             }
         }
 

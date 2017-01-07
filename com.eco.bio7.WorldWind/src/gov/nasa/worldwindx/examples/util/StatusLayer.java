@@ -5,7 +5,6 @@
  */
 package gov.nasa.worldwindx.examples.util;
 
-import com.jogamp.opengl.util.awt.TextRenderer;
 import com.jogamp.opengl.util.texture.*;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.event.*;
@@ -26,7 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author jparsons
- * @version $Id: StatusLayer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: StatusLayer.java 2053 2014-06-10 20:16:57Z tgaskins $
  */
 
 /**

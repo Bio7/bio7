@@ -24,7 +24,7 @@ import java.awt.event.*;
  * features.
  *
  * @author tag
- * @version $Id: TerrainProfiler.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: TerrainProfiler.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class TerrainProfiler extends ApplicationTemplate
 {
@@ -55,7 +55,6 @@ public class TerrainProfiler extends ApplicationTemplate
                 this.tpl.setStartLatLon(LatLon.fromDegrees(0, -10));
                 this.tpl.setEndLatLon(LatLon.fromDegrees(0, 65));
                 insertBeforeCompass(this.getWwd(), tpl);
-                this.getLayerPanel().update(this.getWwd());
 
                 // retreive default values
                 this.follow = this.tpl.getFollow();
@@ -66,7 +65,7 @@ public class TerrainProfiler extends ApplicationTemplate
                 this.profileLengthFactor = tpl.getProfileLenghtFactor();
 
                 // Add control panel
-                this.getLayerPanel().add(makeControlPanel(), BorderLayout.SOUTH);
+                this.getControlPanel().add(makeControlPanel(), BorderLayout.SOUTH);
             }
             catch (Exception e)
             {

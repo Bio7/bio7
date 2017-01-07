@@ -8,7 +8,7 @@ package gov.nasa.worldwind.render.airspaces;
 import com.jogamp.common.nio.Buffers;
 import gov.nasa.worldwind.avlist.AVListImpl;
 import gov.nasa.worldwind.cache.Cacheable;
-import gov.nasa.worldwind.globes.Globe;
+import gov.nasa.worldwind.globes.*;
 
 import javax.media.opengl.*;
 import java.nio.*;
@@ -16,13 +16,13 @@ import java.util.Arrays;
 
 /**
  * @author dcollins
- * @version $Id: Geometry.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: Geometry.java 2210 2014-08-08 22:06:02Z tgaskins $
  */
 public class Geometry extends AVListImpl implements Cacheable
 {
     public static class CacheKey
     {
-        private final Globe globe;
+        private final GlobeStateKey globeStateKey;
         private final Class cls;
         private final String key;
         private final Object[] params;
@@ -30,7 +30,7 @@ public class Geometry extends AVListImpl implements Cacheable
 
         public CacheKey(Globe globe, Class cls, String key, Object... params)
         {
-            this.globe = globe;
+            this.globeStateKey = globe != null ? globe.getGlobeStateKey() : null;
             this.cls = cls;
             this.key = key;
             this.params = params;
@@ -55,7 +55,7 @@ public class Geometry extends AVListImpl implements Cacheable
 
             CacheKey that = (CacheKey) o;
 
-            if (this.globe != null ? !this.globe.equals(that.globe) : that.globe != null)
+            if (this.globeStateKey != null ? !this.globeStateKey.equals(that.globeStateKey) : that.globeStateKey != null)
                 return false;
             if (this.cls != null ? !this.cls.equals(that.cls) : that.cls != null)
                 return false;
@@ -73,7 +73,7 @@ public class Geometry extends AVListImpl implements Cacheable
             if (this.hash == 0)
             {
                 int result;
-                result = (this.globe != null ? this.globe.hashCode() : 0);
+                result = (this.globeStateKey != null ? this.globeStateKey.hashCode() : 0);
                 result = 31 * result + (this.cls != null ? this.cls.hashCode() : 0);
                 result = 31 * result + (this.key != null ? this.key.hashCode() : 0);
                 result = 31 * result + (this.params != null ? Arrays.deepHashCode(this.params) : 0);

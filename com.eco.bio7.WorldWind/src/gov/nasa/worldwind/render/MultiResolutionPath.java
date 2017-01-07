@@ -20,9 +20,12 @@ import java.util.Iterator;
  * the application. The default algorithm skips up to four positions, depending on the eye distance from the positions.
  * Also, if the segment between any two positions is too small to be distinguished, it is not drawn. See {@link
  * #makePositions(DrawContext, gov.nasa.worldwind.render.Path.PathData)}.
+ * <p/>
+ * NOTE: This shape does not draw correctly on a 2D globe when its positions span the dateline.
  *
  * @author tag
- * @version $Id: MultiResolutionPath.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: MultiResolutionPath.java 2185 2014-07-29 20:15:04Z tgaskins $
+ * @deprecated
  */
 public class MultiResolutionPath extends Path
 {

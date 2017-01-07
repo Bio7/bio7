@@ -18,7 +18,7 @@ import java.awt.event.*;
 
 /**
  * @author jym
- * @version $Id: FlyViewInputHandler.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: FlyViewInputHandler.java 2179 2014-07-25 21:43:39Z dcollins $
  */
 public class FlyViewInputHandler extends BasicViewInputHandler
 {
@@ -241,7 +241,8 @@ public class FlyViewInputHandler extends BasicViewInputHandler
         actionAttrs.setActionListener(new ResetPitchActionListener());
     }
 
-    protected void onMoveTo(Position focalPosition, ViewInputAttributes.DeviceAttributes deviceAttributes,
+    protected void onMoveTo(Position focalPosition,
+        ViewInputAttributes.DeviceAttributes deviceAttributes,
         ViewInputAttributes.ActionAttributes actionAttribs)
     {
         BasicFlyView view = (BasicFlyView) this.getView();
@@ -298,17 +299,6 @@ public class FlyViewInputHandler extends BasicViewInputHandler
                 ViewPropertyAccessor.createEyePositionAccessor(view)));
 
         view.firePropertyChange(AVKey.VIEW, null, view);
-    }
-
-    protected void onMoveTo(Position focalPosition, ViewInputAttributes.ActionAttributes actionAttribs)
-    {
-
-    }
-
-    protected void onHorizontalTranslateAbs(Angle latitudeChange, Angle longitudeChange,
-        ViewInputAttributes.ActionAttributes actionAttribs)
-    {
-
     }
 
     protected void onHorizontalTranslateRel(double forwardInput, double sideInput,
@@ -518,12 +508,6 @@ public class FlyViewInputHandler extends BasicViewInputHandler
         this.setEyePosition(uiAnimControl, view, newPos, actionAttribs);
 
         view.firePropertyChange(AVKey.VIEW, null, view);
-    }
-
-    protected void onVerticalTranslate(double translateChange,
-        ViewInputAttributes.ActionAttributes actionAttribs)
-    {
-
     }
 
     public void apply()

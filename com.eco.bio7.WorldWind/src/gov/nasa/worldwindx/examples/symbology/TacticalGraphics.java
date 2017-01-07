@@ -31,7 +31,7 @@ import java.util.List;
  * See the {@link TacticalSymbols} for a detailed example of using World Wind tactical symbols in an application.
  *
  * @author pabercrombie
- * @version $Id: TacticalGraphics.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: TacticalGraphics.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class TacticalGraphics extends ApplicationTemplate
 {
@@ -78,8 +78,6 @@ public class TacticalGraphics extends ApplicationTemplate
             insertBeforePlacenames(getWwd(), this.pointLayer);
             insertBeforePlacenames(getWwd(), this.lineLayer);
             insertBeforePlacenames(getWwd(), this.areaLayer);
-
-            this.getLayerPanel().update(this.getWwd());
 
             // Add a BasicDragger so that graphics can be moved by clicking and dragging.
             this.getWwd().addSelectListener(new BasicDragger(this.getWwd()));
@@ -1040,7 +1038,7 @@ public class TacticalGraphics extends ApplicationTemplate
             box.add(javax.swing.Box.createVerticalStrut(10));
             box.add(cb);
 
-            this.getLayerPanel().add(box, BorderLayout.SOUTH);
+            this.getControlPanel().add(box, BorderLayout.SOUTH);
         }
     }
 

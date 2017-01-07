@@ -14,7 +14,7 @@ import java.util.Random;
  * Handles expiration after some interval of time has passed. Expiration time is computed as a random value between a
  * specified minimum and a specified maximum delay interval.
  *
- * @version $Id: TimedExpirySupport.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: TimedExpirySupport.java 2065 2014-06-20 16:58:48Z dcollins $
  */
 public class TimedExpirySupport
 {
@@ -62,6 +62,17 @@ public class TimedExpirySupport
     public long getExpiryTime()
     {
         return this.expiryTime;
+    }
+
+    /**
+     * Sets the current expiration time to a specified value. This method ignores the configured minimum and maximum
+     * expiry times.
+     *
+     * @param expiryTime the new expiration time, in milliseconds.
+     */
+    public void setExpiryTime(long expiryTime)
+    {
+        this.expiryTime = expiryTime;
     }
 
     /**

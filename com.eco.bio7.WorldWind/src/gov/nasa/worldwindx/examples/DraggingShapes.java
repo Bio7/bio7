@@ -14,12 +14,12 @@ import java.awt.*;
 import java.util.Arrays;
 
 /**
- * Illustrates how to enable shape dragging in World Wind by using a <code>{@link BasicDragger}</code>. This creates
+ * Illustrates how to enable shape dragging in World Wind by using a <code>{@link gov.nasa.worldwind.util.BasicDragger}</code>. This creates
  * multiple shapes on the surface terrain that can be dragged to a new location on the terrain. The shapes retain their
  * form when dragged.
  *
  * @author dcollins
- * @version $Id: DraggingShapes.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: DraggingShapes.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class DraggingShapes extends ApplicationTemplate
 {
@@ -30,7 +30,7 @@ public class DraggingShapes extends ApplicationTemplate
         public AppFrame()
         {
             // Add a basic dragger to the World Window's select listeners to enable shape dragging.
-            this.getWwd().addSelectListener(new BasicDragger((this.getWwd())));
+            this.getWwd().addSelectListener(new BasicDragger(this.getWwd()));
 
             // Create a layer of shapes to drag.
             this.makeShapes();
@@ -182,7 +182,6 @@ public class DraggingShapes extends ApplicationTemplate
 
             // Add the layer to the model and update the layer panel.
             insertBeforeCompass(this.getWwd(), layer);
-            this.getLayerPanel().update(this.getWwd());
         }
     }
 

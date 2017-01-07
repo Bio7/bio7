@@ -22,7 +22,7 @@ import java.util.logging.Level;
  * java.beans.PropertyChangeSupport}.
  *
  * @author Tom Gaskins
- * @version $Id: AVListImpl.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: AVListImpl.java 2255 2014-08-22 17:36:32Z tgaskins $
  */
 public class AVListImpl implements AVList
 {
@@ -107,7 +107,8 @@ public class AVListImpl implements AVList
         }
         try
         {
-            return (String) this.getValue(key);
+            Object value = this.getValue(key);
+            return value != null ? value.toString() : null;
         }
         catch (ClassCastException e)
         {

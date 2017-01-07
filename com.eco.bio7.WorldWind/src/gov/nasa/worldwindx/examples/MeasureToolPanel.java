@@ -23,7 +23,7 @@ import java.util.ArrayList;
 * Control panel for the MeasureTool.
 *
 * @author Patrick Murris
-* @version $Id: MeasureToolPanel.java 1171 2013-02-11 21:45:02Z dcollins $
+* @version $Id: MeasureToolPanel.java 2226 2014-08-14 15:56:45Z tgaskins $
 * @see gov.nasa.worldwind.util.measure.MeasureTool
 */
 @SuppressWarnings("unchecked")
@@ -133,7 +133,8 @@ public class MeasureToolPanel extends JPanel
         JPanel shapePanel = new JPanel(new GridLayout(1, 2, 5, 5));
         shapePanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         shapePanel.add(new JLabel("Shape:"));
-        shapeCombo = new JComboBox(new String[] {"Line", "Path", "Polygon", "Circle", "Ellipse", "Square", "Rectangle"});
+        shapeCombo = new JComboBox(new String[]
+            {"Line", "Path", "Polygon", "Circle", "Ellipse", "Square", "Rectangle"});
         shapeCombo.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent event)

@@ -6,6 +6,7 @@
 package gov.nasa.worldwind.layers;
 
 import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.globes.GlobeStateKey;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.terrain.SectorGeometryList;
 import gov.nasa.worldwind.util.*;
@@ -18,7 +19,7 @@ import java.util.*;
  * for rendering and picking operations.
  *
  * @author tag
- * @version $Id: IconLayer.java 1935 2014-04-15 19:25:18Z tgaskins $
+ * @version $Id: IconLayer.java 2140 2014-07-10 18:56:05Z tgaskins $
  * @see gov.nasa.worldwind.render.WWIcon
  * @see gov.nasa.worldwind.render.IconRenderer
  */
@@ -30,8 +31,8 @@ public class IconLayer extends AbstractLayer
     private Pedestal pedestal;
     private boolean regionCulling = true;
 
-    // These enable the render pass to use the same non-culled icons computed by the pick pass.
-    protected Set<WWIcon> lastActiveIcons;
+    // These fields enable the render pass to use the same non-culled icons computed by the pick pass.
+    protected HashMap<GlobeStateKey, Set<WWIcon>> lastActiveIconsLists = new HashMap<GlobeStateKey, Set<WWIcon>>(1);
     protected long frameId;
 
     /** Creates a new <code>IconLayer</code> with an empty collection of Icons. */
@@ -161,7 +162,7 @@ public class IconLayer extends AbstractLayer
     {
         if (this.iconsOverride != null)
             return this.iconsOverride;
-        
+
         if (this.icons != null)
             return this.icons;
 
@@ -206,10 +207,11 @@ public class IconLayer extends AbstractLayer
         if (this.iconsOverride != null)
             return this.iconsOverride;
 
-        if (this.lastActiveIcons != null && this.frameId == dc.getFrameTimeStamp())
-            return this.lastActiveIcons;
-
-        this.lastActiveIcons = null;
+        // Use the active icons computed in the pick pass.
+        Set<WWIcon> lastActiveIcons = this.lastActiveIconsLists.get(dc.getGlobe().getGlobeStateKey());
+        this.lastActiveIconsLists.remove(dc.getGlobe().getGlobeStateKey()); // remove it on re-use
+        if (lastActiveIcons != null && this.frameId == dc.getFrameTimeStamp())
+            return lastActiveIcons;
 
         if (!this.isRegionCulling())
             return this.icons;
@@ -218,10 +220,11 @@ public class IconLayer extends AbstractLayer
         if (sgList == null || sgList.size() == 0)
             return Collections.emptyList();
 
-        this.lastActiveIcons = this.icons.getItemsInRegions(sgList, new HashSet<WWIcon>());
+        lastActiveIcons = this.icons.getItemsInRegions(sgList, new HashSet<WWIcon>());
+        this.lastActiveIconsLists.put(dc.getGlobe().getGlobeStateKey(), lastActiveIcons);
         this.frameId = dc.getFrameTimeStamp();
 
-        return this.lastActiveIcons;
+        return lastActiveIcons;
     }
 
     /**

@@ -6,7 +6,6 @@
 
 package gov.nasa.worldwind.symbology;
 
-import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
@@ -26,10 +25,83 @@ import java.awt.geom.*;
  * The label will be drawn along a line connecting the label's position to the orientation position.
  *
  * @author pabercrombie
- * @version $Id: TacticalGraphicLabel.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: TacticalGraphicLabel.java 2200 2014-08-07 18:05:43Z tgaskins $
  */
-public class TacticalGraphicLabel implements OrderedRenderable
+public class TacticalGraphicLabel
 {
+    protected class OrderedLabel implements OrderedRenderable
+    {
+        /** Geographic position in cartesian coordinates. */
+        protected Vec4 placePoint;
+        /** Location of the place point projected onto the screen. */
+        protected Vec4 screenPlacePoint;
+        /**
+         * Location of the upper left corner of the text measured from the lower left corner of the viewport. This point
+         * in OGL coordinates.
+         */
+        protected Point screenPoint;
+        /** Rotation applied to the label. This is computed each frame based on the orientation position. */
+        protected Angle rotation;
+        /** Extent of the label on the screen. */
+        protected Rectangle screenExtent;
+        /** Distance from the eye point to the label's geographic location. */
+        protected double eyeDistance;
+
+        @Override
+        public double getDistanceFromEye()
+        {
+            return this.eyeDistance;
+        }
+
+        @Override
+        public void pick(DrawContext dc, Point pickPoint)
+        {
+            TacticalGraphicLabel.this.pick(dc, pickPoint, this);
+        }
+
+        @Override
+        public void render(DrawContext dc)
+        {
+
+            TacticalGraphicLabel.this.drawOrderedRenderable(dc, this);
+        }
+
+        public boolean isEnableBatchRendering()
+        {
+            return TacticalGraphicLabel.this.isEnableBatchRendering();
+        }
+
+        public boolean isEnableBatchPicking()
+        {
+            return TacticalGraphicLabel.this.isEnableBatchPicking();
+        }
+
+        public Layer getPickLayer()
+        {
+            return TacticalGraphicLabel.this.pickLayer;
+        }
+
+        protected void doDrawOrderedRenderable(DrawContext dc, PickSupport pickCandidates)
+        {
+            TacticalGraphicLabel.this.doDrawOrderedRenderable(dc, pickCandidates, this);
+        }
+
+        protected Font getFont()
+        {
+            return TacticalGraphicLabel.this.getFont();
+        }
+
+        protected boolean isDrawInterior()
+        {
+            return TacticalGraphicLabel.this.isDrawInterior();
+        }
+
+        protected void doDrawText(TextRenderer textRenderer)
+        {
+            TacticalGraphicLabel.this.doDrawText(textRenderer, this);
+        }
+    }
+
     /** Default font. */
     public static final Font DEFAULT_FONT = Font.decode("Arial-BOLD-16");
     /**
@@ -74,7 +146,7 @@ public class TacticalGraphicLabel implements OrderedRenderable
     protected boolean drawInterior;
 
     /** Indicates whether or not batch rendering is enabled. */
-    protected boolean enableBatchRendering = false;
+    protected boolean enableBatchRendering = true;
     /** Indicates whether or not batch picking is enabled. */
     protected boolean enableBatchPicking = true;
 
@@ -83,27 +155,17 @@ public class TacticalGraphicLabel implements OrderedRenderable
 
     // Computed each frame
     protected long frameTimeStamp = -1L;
-    /** Geographic position in cartesian coordinates. */
-    protected Vec4 placePoint;
-    /** Location of the place point projected onto the screen. */
-    protected Vec4 screenPlacePoint;
-    /**
-     * Location of the upper left corner of the text measured from the lower left corner of the viewport. This point in
-     * OGL coordinates.
-     */
-    protected Point screenPoint;
-    /** Rotation applied to the label. This is computed each frame based on the orientation position. */
-    protected Angle rotation;
-    /** Height of a line of text, computed in {@link #computeBoundsIfNeeded(gov.nasa.worldwind.render.DrawContext)}. */
-    protected int lineHeight;
+    protected OrderedLabel thisFramesOrderedLabel;
+
+    // Computed only when text or font changes
     /** Size of the label. */
     protected Rectangle2D bounds;
     /** Cached bounds for each line of text. */
     protected Rectangle2D[] lineBounds;
-    /** Extent of the label on the screen. */
-    protected Rectangle screenExtent;
-    /** Distance from the eye point to the label's geographic location. */
-    protected double eyeDistance;
+    /**
+     * Height of a line of text, computed in {@link #computeBoundsIfNeeded(gov.nasa.worldwind.render.DrawContext)}.
+     */
+    protected int lineHeight;
 
     /** Stack handler used for beginDrawing/endDrawing state. */
     protected OGLStackHandler BEogsh = new OGLStackHandler();
@@ -190,7 +252,7 @@ public class TacticalGraphicLabel implements OrderedRenderable
 
         // Label has moved, need to recompute screen extent. Explicitly set the extent to null so that it will be
         // recomputed even if the application calls setPosition multiple times per frame.
-        this.screenExtent = null;
+        this.thisFramesOrderedLabel = null;
     }
 
     /**
@@ -519,7 +581,7 @@ public class TacticalGraphicLabel implements OrderedRenderable
      * object returned during picking. If null, the label itself is the pickable object returned during picking.
      *
      * @return the object used as the pickable object returned during picking, or null to indicate the the label is
-     *         returned during picking.
+     * returned during picking.
      */
     public Object getDelegateOwner()
     {
@@ -607,25 +669,23 @@ public class TacticalGraphicLabel implements OrderedRenderable
         }
 
         this.computeGeometryIfNeeded(dc);
-        return this.screenExtent;
+
+        return this.thisFramesOrderedLabel.screenExtent;
     }
 
-    /**
-     * Compute label geometry, if it has not already been computed this frame, or if the label position has changed
-     * since the extent was last computed.
-     *
-     * @param dc Current geometry.
-     */
     protected void computeGeometryIfNeeded(DrawContext dc)
     {
         // Re-use rendering state values already calculated this frame. If the screenExtent is null, recompute even if
         // the timestamp is the same. This prevents using a stale position if the application calls setPosition and
         // getBounds multiple times before the label is rendered.
-        long timeStamp = dc.getFrameTimeStamp();
-        if (timeStamp != this.frameTimeStamp || this.screenExtent == null)
+
+        if (dc.getFrameTimeStamp() != this.frameTimeStamp || this.thisFramesOrderedLabel == null
+            || dc.isContinuous2DGlobe())
         {
-            this.computeGeometry(dc);
-            this.frameTimeStamp = timeStamp;
+            OrderedLabel olbl = new OrderedLabel();
+            this.computeGeometry(dc, olbl);
+            this.thisFramesOrderedLabel = olbl;
+            this.frameTimeStamp = dc.getFrameTimeStamp();
         }
     }
 
@@ -668,19 +728,20 @@ public class TacticalGraphicLabel implements OrderedRenderable
     /**
      * Compute the label's screen position from its geographic position.
      *
-     * @param dc Current draw context.
+     * @param dc   Current draw context.
+     * @param olbl The ordered label to compute geometry for.
      */
-    protected void computeGeometry(DrawContext dc)
+    protected void computeGeometry(DrawContext dc, OrderedLabel olbl)
     {
         // Project the label position onto the viewport
         Position pos = this.getPosition();
         if (pos == null)
             return;
 
-        this.placePoint = dc.computeTerrainPoint(pos.getLatitude(), pos.getLongitude(), 0);
-        this.screenPlacePoint = dc.getView().project(this.placePoint);
+        olbl.placePoint = dc.computeTerrainPoint(pos.getLatitude(), pos.getLongitude(), 0);
+        olbl.screenPlacePoint = dc.getView().project(olbl.placePoint);
 
-        this.eyeDistance = this.placePoint.distanceTo3(dc.getView().getEyePoint());
+        olbl.eyeDistance = olbl.placePoint.distanceTo3(dc.getView().getEyePoint());
 
         boolean orientationReversed = false;
         if (this.orientationPosition != null)
@@ -690,12 +751,12 @@ public class TacticalGraphicLabel implements OrderedRenderable
                 this.orientationPosition.getLongitude(), 0);
             Vec4 orientationScreenPoint = dc.getView().project(orientationPlacePoint);
 
-            this.rotation = this.computeRotation(this.screenPlacePoint, orientationScreenPoint);
+            olbl.rotation = this.computeRotation(olbl.screenPlacePoint, orientationScreenPoint);
 
             // The orientation is reversed if the orientation point falls to the right of the screen point. Text is
             // never drawn upside down, so when the orientation is reversed the text flips vertically to keep the text
             // right side up.
-            orientationReversed = (orientationScreenPoint.x <= this.screenPlacePoint.x);
+            orientationReversed = (orientationScreenPoint.x <= olbl.screenPlacePoint.x);
         }
 
         this.computeBoundsIfNeeded(dc);
@@ -706,7 +767,7 @@ public class TacticalGraphicLabel implements OrderedRenderable
         // If a rotation is applied to the text, then rotate the offset as well. An offset in the x direction
         // will move the text along the orientation line, and a offset in the y direction will move the text
         // perpendicular to the orientation line.
-        if (this.rotation != null)
+        if (olbl.rotation != null)
         {
             double dy = offsetPoint.getY();
 
@@ -720,44 +781,45 @@ public class TacticalGraphicLabel implements OrderedRenderable
             }
 
             Vec4 pOffset = new Vec4(offsetPoint.getX(), dy);
-            Matrix rot = Matrix.fromRotationZ(this.rotation.multiply(-1));
+            Matrix rot = Matrix.fromRotationZ(olbl.rotation.multiply(-1));
 
             pOffset = pOffset.transformBy3(rot);
 
             offsetPoint = new Point((int) pOffset.getX(), (int) pOffset.getY());
         }
 
-        int x = (int) (this.screenPlacePoint.x + offsetPoint.getX());
-        int y = (int) (this.screenPlacePoint.y - offsetPoint.getY());
+        int x = (int) (olbl.screenPlacePoint.x + offsetPoint.getX());
+        int y = (int) (olbl.screenPlacePoint.y - offsetPoint.getY());
 
-        this.screenPoint = new Point(x, y);
-        this.screenExtent = this.computeTextExtent(x, y, this.rotation);
+        olbl.screenPoint = new Point(x, y);
+        olbl.screenExtent = this.computeTextExtent(x, y, olbl);
     }
 
     /**
      * Determine if this label intersects the view or pick frustum.
      *
-     * @param dc Current draw context.
+     * @param dc   Current draw context.
+     * @param olbl The ordered label to intersect.
      *
      * @return True if this label intersects the active frustum (view or pick). Otherwise false.
      */
-    protected boolean intersectsFrustum(DrawContext dc)
+    protected boolean intersectsFrustum(DrawContext dc, OrderedLabel olbl)
     {
         View view = dc.getView();
         Frustum frustum = view.getFrustumInModelCoordinates();
 
         // Test the label's model coordinate point against the near and far clipping planes.
-        if (this.placePoint != null
-            && (frustum.getNear().distanceTo(this.placePoint) < 0
-            || frustum.getFar().distanceTo(this.placePoint) < 0))
+        if (olbl.placePoint != null
+            && (frustum.getNear().distanceTo(olbl.placePoint) < 0
+            || frustum.getFar().distanceTo(olbl.placePoint) < 0))
         {
             return false;
         }
 
         if (dc.isPickingMode())
-            return dc.getPickFrustums().intersectsAny(this.screenExtent);
+            return dc.getPickFrustums().intersectsAny(olbl.screenExtent);
         else
-            return view.getViewport().intersects(this.screenExtent);
+            return view.getViewport().intersects(olbl.screenExtent);
     }
 
     /**
@@ -786,18 +848,10 @@ public class TacticalGraphicLabel implements OrderedRenderable
     }
 
     /** {@inheritDoc} */
-    public double getDistanceFromEye()
-    {
-        return this.eyeDistance;
-    }
-
-    /** {@inheritDoc} */
     public void render(DrawContext dc)
     {
-        // This render method is called three times during frame generation. It's first called as a Renderable
-        // during Renderable picking. It's called again during normal rendering. And it's called a third
-        // time as an OrderedRenderable. The first two calls determine whether to add the label the ordered renderable
-        // list during pick and render. The third call just draws the ordered renderable.
+        // This render method is called twice during frame generation. It's first called as a Renderable
+        // during Renderable picking. It's called again during normal rendering.
 
         if (dc == null)
         {
@@ -806,14 +860,10 @@ public class TacticalGraphicLabel implements OrderedRenderable
             throw new IllegalArgumentException(msg);
         }
 
-        if (dc.isOrderedRenderingMode())
-            this.drawOrderedRenderable(dc);
-        else
-            this.makeOrderedRenderable(dc);
+        this.makeOrderedRenderable(dc);
     }
 
-    /** {@inheritDoc} */
-    public void pick(DrawContext dc, Point pickPoint)
+    public void pick(DrawContext dc, Point pickPoint, OrderedLabel olbl)
     {
         // This method is called only when ordered renderables are being drawn.
         // Arg checked within call to render.
@@ -829,7 +879,7 @@ public class TacticalGraphicLabel implements OrderedRenderable
         try
         {
             this.pickSupport.beginPicking(dc);
-            this.render(dc);
+            this.drawOrderedRenderable(dc, olbl);
         }
         finally
         {
@@ -852,11 +902,11 @@ public class TacticalGraphicLabel implements OrderedRenderable
 
         // Don't draw if beyond the horizon.
         double horizon = dc.getView().getHorizonDistance();
-        if (this.eyeDistance > horizon)
+        if (!dc.is2DGlobe() && this.thisFramesOrderedLabel.eyeDistance > horizon)
             return;
 
-        if (this.intersectsFrustum(dc))
-            dc.addOrderedRenderable(this);
+        if (this.intersectsFrustum(dc, this.thisFramesOrderedLabel))
+            dc.addOrderedRenderable(this.thisFramesOrderedLabel);
 
         if (dc.isPickingMode())
             this.pickLayer = dc.getCurrentLayer();
@@ -865,17 +915,18 @@ public class TacticalGraphicLabel implements OrderedRenderable
     /**
      * Draws the graphic as an ordered renderable.
      *
-     * @param dc the current draw context.
+     * @param dc   the current draw context.
+     * @param olbl The ordered label to draw.
      */
-    protected void drawOrderedRenderable(DrawContext dc)
+    protected void drawOrderedRenderable(DrawContext dc, OrderedLabel olbl)
     {
         this.beginDrawing(dc);
         try
         {
-            this.doDrawOrderedRenderable(dc, this.pickSupport);
+            this.doDrawOrderedRenderable(dc, this.pickSupport, olbl);
 
             if (this.isEnableBatchRendering())
-                this.drawBatched(dc);
+                this.drawBatched(dc, olbl);
         }
         finally
         {
@@ -888,17 +939,18 @@ public class TacticalGraphicLabel implements OrderedRenderable
      *
      * @param dc          Current draw context.
      * @param pickSupport Support object used during picking.
+     * @param olbl        The ordered label to draw.
      */
-    protected void doDrawOrderedRenderable(DrawContext dc, PickSupport pickSupport)
+    protected void doDrawOrderedRenderable(DrawContext dc, PickSupport pickSupport, OrderedLabel olbl)
     {
         TextRenderer textRenderer = OGLTextRenderer.getOrCreateTextRenderer(dc.getTextRendererCache(), font);
         if (dc.isPickingMode())
         {
-            this.doPick(dc, pickSupport);
+            this.doPick(dc, pickSupport, olbl);
         }
         else
         {
-            this.drawText(dc, textRenderer);
+            this.drawText(dc, textRenderer, olbl);
         }
     }
 
@@ -956,12 +1008,13 @@ public class TacticalGraphicLabel implements OrderedRenderable
      *
      * @param dc          Current draw context.
      * @param pickSupport the PickSupport instance to be used.
+     * @param olbl        The ordered label to pick.
      */
-    protected void doPick(DrawContext dc, PickSupport pickSupport)
+    protected void doPick(DrawContext dc, PickSupport pickSupport, OrderedLabel olbl)
     {
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-        Angle heading = this.rotation;
+        Angle heading = olbl.rotation;
 
         double headingDegrees;
         if (heading != null)
@@ -969,8 +1022,8 @@ public class TacticalGraphicLabel implements OrderedRenderable
         else
             headingDegrees = 0;
 
-        int x = this.screenPoint.x;
-        int y = this.screenPoint.y;
+        int x = olbl.screenPoint.x;
+        int y = olbl.screenPoint.y;
 
         boolean matrixPushed = false;
         try
@@ -991,7 +1044,7 @@ public class TacticalGraphicLabel implements OrderedRenderable
                 double width = bounds.getWidth();
                 double height = bounds.getHeight();
 
-                x = this.screenPoint.x;
+                x = olbl.screenPoint.x;
                 if (this.textAlign.equals(AVKey.CENTER))
                     x = x - (int) (width / 2.0);
                 else if (this.textAlign.equals(AVKey.RIGHT))
@@ -1033,17 +1086,18 @@ public class TacticalGraphicLabel implements OrderedRenderable
     }
 
     /**
-     * Draw the label's text. This method sets up the text renderer, and then calls {@link #doDrawText(TextRenderer)
-     * doDrawText} to actually draw the text.
+     * Draw the label's text. This method sets up the text renderer, and then calls {@link #doDrawText(TextRenderer,
+     * gov.nasa.worldwind.symbology.TacticalGraphicLabel.OrderedLabel) doDrawText} to actually draw the text.
      *
      * @param dc           Current draw context.
      * @param textRenderer Text renderer.
+     * @param olbl         The ordered label to draw.
      */
-    protected void drawText(DrawContext dc, TextRenderer textRenderer)
+    protected void drawText(DrawContext dc, TextRenderer textRenderer, OrderedLabel olbl)
     {
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-        Angle heading = this.rotation;
+        Angle heading = olbl.rotation;
 
         double headingDegrees;
         if (heading != null)
@@ -1054,8 +1108,8 @@ public class TacticalGraphicLabel implements OrderedRenderable
         boolean matrixPushed = false;
         try
         {
-            int x = this.screenPoint.x;
-            int y = this.screenPoint.y;
+            int x = olbl.screenPoint.x;
+            int y = olbl.screenPoint.y;
 
             if (headingDegrees != 0)
             {
@@ -1068,16 +1122,16 @@ public class TacticalGraphicLabel implements OrderedRenderable
             }
 
             if (this.isDrawInterior())
-                this.drawInterior(dc);
+                this.drawInterior(dc, olbl);
 
             textRenderer.begin3DRendering();
             try
             {
-                this.doDrawText(textRenderer);
+                this.doDrawText(textRenderer, olbl);
 
                 // Draw other labels that share the same text renderer configuration, if possible.
                 if (this.isEnableBatchRendering())
-                    this.drawBatchedText(dc, textRenderer);
+                    this.drawBatchedText(dc, textRenderer, olbl);
             }
             finally
             {
@@ -1096,17 +1150,18 @@ public class TacticalGraphicLabel implements OrderedRenderable
     /**
      * Render the label interior as a filled rectangle.
      *
-     * @param dc Current draw context.
+     * @param dc   Current draw context.
+     * @param olbl The ordered label to draw.
      */
-    protected void drawInterior(DrawContext dc)
+    protected void drawInterior(DrawContext dc, OrderedLabel olbl)
     {
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         double width = this.bounds.getWidth();
         double height = this.bounds.getHeight();
 
-        int x = this.screenPoint.x;
-        int y = this.screenPoint.y;
+        int x = olbl.screenPoint.x;
+        int y = olbl.screenPoint.y;
 
         // Adjust x to account for text alignment
         int xAligned = x;
@@ -1151,15 +1206,16 @@ public class TacticalGraphicLabel implements OrderedRenderable
      * Draw the label's text. This method assumes that the text renderer context has already been set up.
      *
      * @param textRenderer renderer to use.
+     * @param olbl         The ordered label to draw.
      */
-    protected void doDrawText(TextRenderer textRenderer)
+    protected void doDrawText(TextRenderer textRenderer, OrderedLabel olbl)
     {
         Color color = this.material.getDiffuse();
         Color backgroundColor = this.computeBackgroundColor(color);
         float opacity = (float) this.getOpacity();
 
-        int x = this.screenPoint.x;
-        int y = this.screenPoint.y;
+        int x = olbl.screenPoint.x;
+        int y = olbl.screenPoint.y;
 
         float[] compArray = new float[3];
         if (AVKey.TEXT_EFFECT_SHADOW.equals(this.effect) && backgroundColor != null)
@@ -1167,15 +1223,15 @@ public class TacticalGraphicLabel implements OrderedRenderable
             backgroundColor.getRGBColorComponents(compArray);
 
             textRenderer.setColor(compArray[0], compArray[1], compArray[2], opacity);
-            this.drawMultiLineText(textRenderer, x + 1, y - 1);
+            this.drawMultiLineText(textRenderer, x + 1, y - 1, olbl);
         }
 
         color.getRGBColorComponents(compArray);
         textRenderer.setColor(compArray[0], compArray[1], compArray[2], opacity);
-        this.drawMultiLineText(textRenderer, x, y);
+        this.drawMultiLineText(textRenderer, x, y, olbl);
     }
 
-    protected void drawMultiLineText(TextRenderer textRenderer, int x, int y)
+    protected void drawMultiLineText(TextRenderer textRenderer, int x, int y, OrderedLabel olbl)
     {
         if (this.lines == null)
         {
@@ -1203,24 +1259,26 @@ public class TacticalGraphicLabel implements OrderedRenderable
 
     /**
      * Draws this ordered renderable and all subsequent Label ordered renderables in the ordered renderable list. This
-     * method differs from {@link #drawBatchedText(gov.nasa.worldwind.render.DrawContext, TextRenderer) drawBatchedText}
-     * in that this method re-initializes the text renderer to draw the next label, while {@code drawBatchedText}
-     * re-uses the active text renderer context. That is, {@code drawBatchedText} attempts to draw as many labels as
-     * possible that share same text renderer configuration as this label, and this method attempts to draw as many
-     * labels as possible regardless of the text renderer configuration of the subsequent labels.
+     * method differs from {@link #drawBatchedText(gov.nasa.worldwind.render.DrawContext, TextRenderer,
+     * gov.nasa.worldwind.symbology.TacticalGraphicLabel.OrderedLabel) drawBatchedText} in that this method
+     * re-initializes the text renderer to draw the next label, while {@code drawBatchedText} re-uses the active text
+     * renderer context. That is, {@code drawBatchedText} attempts to draw as many labels as possible that share same
+     * text renderer configuration as this label, and this method attempts to draw as many labels as possible regardless
+     * of the text renderer configuration of the subsequent labels.
      *
-     * @param dc the current draw context.
+     * @param dc         the current draw context.
+     * @param firstLabel the label drawn prior to calling this method.
      */
-    protected void drawBatched(DrawContext dc)
+    protected void drawBatched(DrawContext dc, OrderedLabel firstLabel)
     {
         // Draw as many as we can in a batch to save ogl state switching.
         Object nextItem = dc.peekOrderedRenderables();
 
         if (!dc.isPickingMode())
         {
-            while (nextItem != null && nextItem instanceof TacticalGraphicLabel)
+            while (nextItem != null && nextItem instanceof OrderedLabel)
             {
-                TacticalGraphicLabel nextLabel = (TacticalGraphicLabel) nextItem;
+                OrderedLabel nextLabel = (OrderedLabel) nextItem;
                 if (!nextLabel.isEnableBatchRendering())
                     break;
 
@@ -1232,13 +1290,13 @@ public class TacticalGraphicLabel implements OrderedRenderable
         }
         else if (this.isEnableBatchPicking())
         {
-            while (nextItem != null && nextItem instanceof TacticalGraphicLabel)
+            while (nextItem != null && nextItem instanceof OrderedLabel)
             {
-                TacticalGraphicLabel nextLabel = (TacticalGraphicLabel) nextItem;
+                OrderedLabel nextLabel = (OrderedLabel) nextItem;
                 if (!nextLabel.isEnableBatchRendering() || !nextLabel.isEnableBatchPicking())
                     break;
 
-                if (nextLabel.pickLayer != this.pickLayer) // batch pick only within a single layer
+                if (nextLabel.getPickLayer() != firstLabel.getPickLayer()) // batch pick only within a single layer
                     break;
 
                 dc.pollOrderedRenderables(); // take it off the queue
@@ -1253,28 +1311,30 @@ public class TacticalGraphicLabel implements OrderedRenderable
      * Draws text for subsequent Label ordered renderables in the ordered renderable list. This method is called after
      * the text renderer has been set up (after beginRendering has been called), so this method can only draw text for
      * subsequent labels that use the same font and rotation as this label. This method differs from {@link
-     * #drawBatched(gov.nasa.worldwind.render.DrawContext) drawBatched} in that this method reuses the active text
-     * renderer context to draw as many labels as possible without switching text renderer state.
+     * #drawBatched(gov.nasa.worldwind.render.DrawContext, gov.nasa.worldwind.symbology.TacticalGraphicLabel.OrderedLabel)
+     * drawBatched} in that this method reuses the active text renderer context to draw as many labels as possible
+     * without switching text renderer state.
      *
      * @param dc           the current draw context.
      * @param textRenderer Text renderer used to draw the label.
+     * @param firstLabel   The first ordered renderable in the batch.
      */
-    protected void drawBatchedText(DrawContext dc, TextRenderer textRenderer)
+    protected void drawBatchedText(DrawContext dc, TextRenderer textRenderer, OrderedLabel firstLabel)
     {
         // Draw as many as we can in a batch to save ogl state switching.
         Object nextItem = dc.peekOrderedRenderables();
 
         if (!dc.isPickingMode())
         {
-            while (nextItem != null && nextItem instanceof TacticalGraphicLabel)
+            while (nextItem != null && nextItem instanceof OrderedLabel)
             {
-                TacticalGraphicLabel nextLabel = (TacticalGraphicLabel) nextItem;
+                OrderedLabel nextLabel = (OrderedLabel) nextItem;
                 if (!nextLabel.isEnableBatchRendering())
                     break;
 
-                boolean sameFont = this.font.equals(nextLabel.getFont());
-                boolean sameRotation = (this.rotation == null && nextLabel.rotation == null)
-                    || (this.rotation != null && this.rotation.equals(nextLabel.rotation));
+                boolean sameFont = firstLabel.getFont().equals(nextLabel.getFont());
+                boolean sameRotation = (firstLabel.rotation == null && nextLabel.rotation == null)
+                    || (firstLabel.rotation != null && firstLabel.rotation.equals(nextLabel.rotation));
                 boolean drawInterior = nextLabel.isDrawInterior();
 
                 // We've already set up the text renderer state, so we can can't change the font or text rotation.
@@ -1308,13 +1368,13 @@ public class TacticalGraphicLabel implements OrderedRenderable
      * features on the surface then the extent will be the smallest screen rectangle that completely encloses the
      * rotated label.
      *
-     * @param x        X coordinate at which to draw the label.
-     * @param y        Y coordinate at which to draw the label.
-     * @param rotation Label rotation.
+     * @param x    X coordinate at which to draw the label.
+     * @param y    Y coordinate at which to draw the label.
+     * @param olbl The ordered label to compute extents for.
      *
      * @return The rectangle, in OGL screen coordinates (origin at bottom left corner), that is covered by the label.
      */
-    protected Rectangle computeTextExtent(int x, int y, Angle rotation)
+    protected Rectangle computeTextExtent(int x, int y, OrderedLabel olbl)
     {
         double width = this.bounds.getWidth();
         double height = this.bounds.getHeight();
@@ -1332,9 +1392,9 @@ public class TacticalGraphicLabel implements OrderedRenderable
         Rectangle screenRect = new Rectangle(xAligned, yAligned, (int) width, (int) height);
 
         // Compute bounds of the rotated rectangle, if there is a rotation angle.
-        if (rotation != null && rotation.degrees != 0)
+        if (olbl.rotation != null && olbl.rotation.degrees != 0)
         {
-            screenRect = this.computeRotatedScreenExtent(screenRect, x, y, rotation);
+            screenRect = this.computeRotatedScreenExtent(screenRect, x, y, olbl.rotation);
         }
 
         return screenRect;

@@ -8,7 +8,7 @@ package gov.nasa.worldwind.geom;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.cache.Cacheable;
 import gov.nasa.worldwind.geom.coords.UTMCoord;
-import gov.nasa.worldwind.globes.Globe;
+import gov.nasa.worldwind.globes.*;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.tracks.TrackPoint;
 import gov.nasa.worldwind.util.Logging;
@@ -25,7 +25,7 @@ import java.util.*;
  * specifying angles. <p/> <code>Sector</code> instances are immutable. </p>
  *
  * @author Tom Gaskins
- * @version $Id: Sector.java 1920 2014-04-10 17:40:56Z tgaskins $
+ * @version $Id: Sector.java 2397 2014-10-28 17:13:04Z dcollins $
  * @see Angle
  */
 public class Sector implements Cacheable, Comparable<Sector>, Iterable<LatLon>
@@ -811,7 +811,7 @@ public class Sector implements Cacheable, Comparable<Sector>, Iterable<LatLon>
      *
      * @throws IllegalArgumentException if either the globe or sector is null.
      */
-    static public Box computeBoundingBox(Globe globe, double verticalExaggeration, Sector sector)
+    public static Box computeBoundingBox(Globe globe, double verticalExaggeration, Sector sector)
     {
         if (globe == null)
         {
@@ -828,8 +828,7 @@ public class Sector implements Cacheable, Comparable<Sector>, Iterable<LatLon>
         }
 
         double[] minAndMaxElevations = globe.getMinAndMaxElevations(sector);
-        return computeBoundingBox(globe, verticalExaggeration, sector,
-            minAndMaxElevations[0], minAndMaxElevations[1]);
+        return computeBoundingBox(globe, verticalExaggeration, sector, minAndMaxElevations[0], minAndMaxElevations[1]);
     }
 
     /**
@@ -867,97 +866,32 @@ public class Sector implements Cacheable, Comparable<Sector>, Iterable<LatLon>
         }
 
         // Compute the exaggerated minimum and maximum heights.
-        double minHeight = minElevation * verticalExaggeration;
-        double maxHeight = maxElevation * verticalExaggeration;
+        double min = minElevation * verticalExaggeration;
+        double max = maxElevation * verticalExaggeration;
 
-        if (minHeight == maxHeight)
-            maxHeight = minHeight + 10; // Ensure the top and bottom heights are not equal.
-
-        List<Vec4> points = new ArrayList<Vec4>();
-        for (LatLon ll : sector)
+        // Ensure the top and bottom heights are not equal.
+        if (min == max)
         {
-            points.add(globe.computePointFromPosition(ll, minHeight));
-            points.add(globe.computePointFromPosition(ll, maxHeight));
+            max = min + 10;
         }
 
-        // A point at the centroid captures the maximum vertical dimension.
-        LatLon centroid = sector.getCentroid();
-        points.add(globe.computePointFromPosition(centroid, maxHeight));
+        // Create an array for a 3x5 grid of elevations. Use min height at the corners and max height everywhere else.
+        double[] elevations = {
+            min, max, max, max, min,
+            max, max, max, max, max,
+            min, max, max, max, min};
 
-        // If the sector spans the equator, then the curvature of all four edges need to be taken into account. The
-        // extreme points along the top and bottom edges are located at their mid-points, and the extreme points along
-        // the left and right edges are on the equator. Add points with the longitude of the sector's centroid but with
-        // the sector's min and max latitude, and add points with the sector's min and max longitude but with latitude
-        // at the equator. See WWJINT-225.
-        if (sector.getMinLatitude().degrees < 0 && sector.getMaxLatitude().degrees > 0)
-        {
-            points.add(globe.computePointFromPosition(new LatLon(sector.getMinLatitude(), centroid.getLongitude()),
-                maxHeight));
-            points.add(globe.computePointFromPosition(new LatLon(sector.getMaxLatitude(), centroid.getLongitude()),
-                maxHeight));
-            points.add(globe.computePointFromPosition(new LatLon(Angle.ZERO, sector.getMinLongitude()), maxHeight));
-            points.add(globe.computePointFromPosition(new LatLon(Angle.ZERO, sector.getMaxLongitude()), maxHeight));
-        }
-        // If the sector is located entirely in the southern hemisphere, then the curvature of its top edge needs to be
-        // taken into account. The extreme point along the top edge is located at its mid-point. Add a point with the
-        // longitude of the sector's centroid but with the sector's max latitude. See WWJINT-225.
-        else if (sector.getMinLatitude().degrees < 0)
-        {
-            points.add(globe.computePointFromPosition(new LatLon(sector.getMaxLatitude(), centroid.getLongitude()),
-                maxHeight));
-        }
-        // If the sector is located entirely in the northern hemisphere, then the curvature of its bottom edge needs to
-        // be taken into account. The extreme point along the bottom edge is located at its mid-point. Add a point with
-        // the longitude of the sector's centroid but with the sector's min latitude. See WWJINT-225.
-        else
-        {
-            points.add(globe.computePointFromPosition(new LatLon(sector.getMinLatitude(), centroid.getLongitude()),
-                maxHeight));
-        }
-
-        // If the sector spans 360 degrees of longitude then is a band around the entire globe. (If one edge is a pole
-        // then the sector looks like a circle around the pole.) Add points at the min and max latitudes and longitudes
-        // 0, 180, 90, and -90 to capture full extent of the band.
-        if (sector.getDeltaLonDegrees() >= 360)
-        {
-            Angle minLat = sector.getMinLatitude();
-            points.add(globe.computePointFromPosition(minLat, Angle.ZERO, maxHeight));
-            points.add(globe.computePointFromPosition(minLat, Angle.POS90, maxHeight));
-            points.add(globe.computePointFromPosition(minLat, Angle.NEG90, maxHeight));
-            points.add(globe.computePointFromPosition(minLat, Angle.POS180, maxHeight));
-
-            Angle maxLat = sector.getMaxLatitude();
-            points.add(globe.computePointFromPosition(maxLat, Angle.ZERO, maxHeight));
-            points.add(globe.computePointFromPosition(maxLat, Angle.POS90, maxHeight));
-            points.add(globe.computePointFromPosition(maxLat, Angle.NEG90, maxHeight));
-            points.add(globe.computePointFromPosition(maxLat, Angle.POS180, maxHeight));
-        }
-        else if (sector.getDeltaLonDegrees() > 180)
-        {
-            // Need to compute more points to ensure the box encompasses the full sector.
-            Angle cLon = sector.getCentroid().getLongitude();
-            Angle cLat = sector.getCentroid().getLatitude();
-
-            // centroid latitude, longitude midway between min longitude and centroid longitude
-            Angle lon = Angle.midAngle(sector.getMinLongitude(), cLon);
-            points.add(globe.computePointFromPosition(cLat, lon, maxHeight));
-
-            // centroid latitude, longitude midway between centroid longitude and max longitude
-            lon = Angle.midAngle(cLon, sector.getMaxLongitude());
-            points.add(globe.computePointFromPosition(cLat, lon, maxHeight));
-
-            // centroid latitude, longitude at min longitude and max longitude
-            points.add(globe.computePointFromPosition(cLat, sector.getMinLongitude(), maxHeight));
-            points.add(globe.computePointFromPosition(cLat, sector.getMaxLongitude(), maxHeight));
-        }
+        // Compute the cartesian points for a 3x5 geographic grid. This grid captures enough detail to bound the sector.
+        Vec4[] points = new Vec4[15];
+        globe.computePointsFromPositions(sector, 3, 5, elevations, points);
 
         try
         {
-            return Box.computeBoundingBox(points);
+            return Box.computeBoundingBox(Arrays.asList(points));
         }
         catch (Exception e)
         {
-            return new Box(points.get(0)); // unit box around point
+            return new Box(points[0]); // unit box around point
         }
     }
 
@@ -1155,7 +1089,7 @@ public class Sector implements Cacheable, Comparable<Sector>, Iterable<LatLon>
     }
 
     /**
-     * Determines whether another sectror is fully contained within this one. The sector's angles are assumed to be
+     * Determines whether another sector is fully contained within this one. The sector's angles are assumed to be
      * normalized to +/- 90 degrees latitude and +/- 180 degrees longitude. The result of the operation is undefined if
      * they are not.
      *
@@ -1301,6 +1235,34 @@ public class Sector implements Cacheable, Comparable<Sector>, Iterable<LatLon>
     }
 
     /**
+     * Determines whether this sector intersects any one of the sectors in the specified iterable. This returns true if
+     * at least one of the sectors is non-null and intersects this sector.
+     *
+     * @param sectors the sectors to test for intersection.
+     *
+     * @return true if at least one of the sectors is non-null and intersects this sector, otherwise false.
+     *
+     * @throws java.lang.IllegalArgumentException if the iterable is null.
+     */
+    public boolean intersectsAny(Iterable<? extends Sector> sectors)
+    {
+        if (sectors == null)
+        {
+            String msg = Logging.getMessage("nullValue.SectorListIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        for (Sector s : sectors)
+        {
+            if (s != null && s.intersects(this))
+                return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Returns a new sector whose angles are the extremes of the this sector and another. The new sector's minimum
      * latitude and longitude will be the minimum of the two sectors. The new sector's maximum latitude and longitude
      * will be the maximum of the two sectors. The sectors are assumed to be normalized to +/- 90 degrees latitude and
@@ -1431,6 +1393,44 @@ public class Sector implements Cacheable, Comparable<Sector>, Iterable<LatLon>
         if (!this.contains(latitude, longitude))
             return null;
         return new Sector(latitude, latitude, longitude, longitude);
+    }
+
+    /**
+     * Returns the intersection of all sectors in the specified iterable. This returns a non-null sector if the iterable
+     * contains at least one non-null entry and all non-null entries intersect. The returned sector represents the
+     * geographic region in which all sectors intersect. This returns null if at least one of the sectors does not
+     * intersect the others.
+     *
+     * @param sectors the sectors to intersect.
+     *
+     * @return the intersection of all sectors in the specified iterable, or null if at least one of the sectors does
+     * not intersect the others.
+     *
+     * @throws java.lang.IllegalArgumentException if the iterable is null.
+     */
+    public static Sector intersection(Iterable<? extends Sector> sectors)
+    {
+        if (sectors == null)
+        {
+            String msg = Logging.getMessage("nullValue.SectorListIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        Sector result = null;
+
+        for (Sector s : sectors)
+        {
+            if (s == null)
+                continue; // ignore null sectors
+
+            if (result == null)
+                result = s; // start with the first non-null sector
+            else if ((result = result.intersection(s)) == null)
+                break; // at least one of the sectors does not intersect the others
+        }
+
+        return result;
     }
 
     public Sector[] subdivide()

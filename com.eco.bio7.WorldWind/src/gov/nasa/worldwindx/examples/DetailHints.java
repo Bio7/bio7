@@ -22,7 +22,7 @@ import java.util.Hashtable;
  * elevation model and tiled image layers.
  *
  * @author Patrick Murris
- * @version $Id: DetailHints.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: DetailHints.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class DetailHints extends ApplicationTemplate
 {
@@ -127,7 +127,7 @@ public class DetailHints extends ApplicationTemplate
             panel.setBorder(new CompoundBorder(BorderFactory.createEmptyBorder(9, 9, 9, 9),
                 new TitledBorder("Scene Detail")));
             panel.add(vbox, BorderLayout.CENTER);
-            this.getLayerPanel().add(panel, BorderLayout.SOUTH);
+            this.getControlPanel().add(panel, BorderLayout.SOUTH);
         }
     }
 

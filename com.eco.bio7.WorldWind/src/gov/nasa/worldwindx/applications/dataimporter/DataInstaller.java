@@ -31,7 +31,7 @@ import java.util.*;
  * Handles all the work necessary to install tiled image layers and elevation models.
  *
  * @author tag
- * @version $Id: DataInstaller.java 1180 2013-02-15 18:40:47Z tgaskins $
+ * @version $Id: DataInstaller.java 2982 2015-04-06 19:52:46Z tgaskins $
  */
 public class DataInstaller extends AVListImpl
 {
@@ -62,11 +62,6 @@ public class DataInstaller extends AVListImpl
             // Install the file into the specified FileStore.
             progressMonitor.start();
             doc = createDataStore(fileSet, installLocation, datasetName, producer);
-
-            // Create a raster server configuration document if the installation was successful.
-            // The raster server document enables the layer or elevation model (created to display this data)
-            // to create tiles from the original sources at runtime.
-            createRasterServerConfigDoc(WorldWind.getDataFileStore(), producer);
 
             // The user clicked the ProgressMonitor's "Cancel" button. Revert any change made during production,
             // and
@@ -182,7 +177,7 @@ public class DataInstaller extends AVListImpl
         if (!enableFullPyramid)
         {
             params.setValue(AVKey.SERVICE_NAME, AVKey.SERVICE_NAME_LOCAL_RASTER_SERVER);
-            // retrieve the value of the AVKey.TILED_RASTER_PRODUCER_LIMIT_MAX_LEVEL, default to "Auto" if missing
+            // retrieve the value of the AVKey.TILED_RASTER_PRODUCER_LIMIT_MAX_LEVEL, default to 1 level if missing
             String maxLevel = Configuration.getStringValue(AVKey.TILED_RASTER_PRODUCER_LIMIT_MAX_LEVEL, "0");
             params.setValue(AVKey.TILED_RASTER_PRODUCER_LIMIT_MAX_LEVEL, maxLevel);
         }
@@ -339,193 +334,6 @@ public class DataInstaller extends AVListImpl
         }
     }
 
-    protected void createRasterServerConfigDoc(FileStore fileStore, DataStoreProducer producer)
-    {
-        AVList productionParams = (null != producer) ? producer.getProductionParameters() : new AVListImpl();
-        productionParams = (null == productionParams) ? new AVListImpl() : productionParams;
-
-        if (!AVKey.SERVICE_NAME_LOCAL_RASTER_SERVER.equals(productionParams.getValue(AVKey.SERVICE_NAME)))
-        {
-            // *.RasterServer.xml is not required
-            return;
-        }
-
-        File installLocation = this.getDefaultInstallLocation(fileStore);
-        if (installLocation == null)
-        {
-            String message = Logging.getMessage("generic.NoDefaultImportLocation");
-            Logging.logger().severe(message);
-            return;
-        }
-
-        Document doc = WWXML.createDocumentBuilder(true).newDocument();
-
-        Element root = WWXML.setDocumentElement(doc, "RasterServer");
-        WWXML.setTextAttribute(root, "version", "1.0");
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(installLocation.getAbsolutePath()).append(File.separator);
-
-        if (!productionParams.hasKey(AVKey.DATA_CACHE_NAME))
-        {
-            String message = Logging.getMessage("generic.MissingRequiredParameter", AVKey.DATA_CACHE_NAME);
-            Logging.logger().severe(message);
-            throw new WWRuntimeException(message);
-        }
-        sb.append(productionParams.getValue(AVKey.DATA_CACHE_NAME)).append(File.separator);
-
-        if (!productionParams.hasKey(AVKey.DATASET_NAME))
-        {
-            String message = Logging.getMessage("generic.MissingRequiredParameter", AVKey.DATASET_NAME);
-            Logging.logger().severe(message);
-            throw new WWRuntimeException(message);
-        }
-        sb.append(productionParams.getValue(AVKey.DATASET_NAME)).append(".RasterServer.xml");
-
-        Object o = productionParams.getValue(AVKey.DISPLAY_NAME);
-        if (WWUtil.isEmpty(o))
-        {
-            productionParams.setValue(AVKey.DISPLAY_NAME, productionParams.getValue(AVKey.DATASET_NAME));
-        }
-
-        String rasterServerConfigFilePath = sb.toString();
-
-        Sector extent = null;
-        if (productionParams.hasKey(AVKey.SECTOR))
-        {
-            o = productionParams.getValue(AVKey.SECTOR);
-            if (null != o && o instanceof Sector)
-            {
-                extent = (Sector) o;
-            }
-        }
-
-        if (null != extent)
-        {
-            WWXML.appendSector(root, "Sector", extent);
-        }
-        else
-        {
-            String message = Logging.getMessage("generic.MissingRequiredParameter", AVKey.SECTOR);
-            Logging.logger().severe(message);
-            throw new WWRuntimeException(message);
-        }
-
-        Element sources = doc.createElementNS(null, "Sources");
-        if (producer instanceof TiledRasterProducer)
-        {
-            for (DataRaster raster : ((TiledRasterProducer) producer).getDataRasters())
-            {
-                if (raster instanceof CachedDataRaster)
-                {
-                    try
-                    {
-                        appendSource(sources, (CachedDataRaster) raster);
-                    }
-                    catch (Throwable t)
-                    {
-                        String reason = WWUtil.extractExceptionReason(t);
-                        Logging.logger().warning(reason);
-//                        Logging.logger().severe(reason);
-//                        throw new WWRuntimeException(reason);
-                    }
-                }
-                else
-                {
-                    String message = Logging.getMessage("TiledRasterProducer.UnrecognizedRasterType",
-                        raster.getClass().getName(), raster.getStringValue(AVKey.DATASET_NAME));
-                    Logging.logger().severe(message);
-                    throw new WWRuntimeException(message);
-                }
-            }
-        }
-
-        AVList rasterServerProperties = new AVListImpl();
-
-        String[] keysToCopy = new String[]{AVKey.DATA_CACHE_NAME, AVKey.DATASET_NAME, AVKey.DISPLAY_NAME};
-        WWUtil.copyValues(productionParams, rasterServerProperties, keysToCopy, false);
-
-        appendProperties(root, rasterServerProperties);
-
-        // add sources
-        root.appendChild(sources);
-
-        WWXML.saveDocumentToFile(doc, rasterServerConfigFilePath);
-    }
-
-    protected void appendProperties(Element context, AVList properties)
-    {
-        if (null == context || properties == null)
-        {
-            return;
-        }
-
-        StringBuilder sb = new StringBuilder();
-
-        // add properties
-        for (Map.Entry<String, Object> entry : properties.getEntries())
-        {
-            sb.setLength(0);
-            String key = entry.getKey();
-            sb.append(properties.getValue(key));
-            String value = sb.toString();
-            if (WWUtil.isEmpty(key) || WWUtil.isEmpty(value))
-            {
-                continue;
-            }
-
-            Element property = WWXML.appendElement(context, "Property");
-            WWXML.setTextAttribute(property, "name", key);
-            WWXML.setTextAttribute(property, "value", value);
-        }
-    }
-
-    protected void appendSource(Element sources, CachedDataRaster raster) throws WWRuntimeException
-    {
-        Object o = raster.getDataSource();
-        if (WWUtil.isEmpty(o))
-        {
-            String message = Logging.getMessage("nullValue.DataSourceIsNull");
-            Logging.logger().fine(message);
-            throw new WWRuntimeException(message);
-        }
-
-        File f = WWIO.getFileForLocalAddress(o);
-        if (WWUtil.isEmpty(f))
-        {
-            String message = Logging.getMessage("TiledRasterProducer.UnrecognizedDataSource", o);
-            Logging.logger().fine(message);
-            throw new WWRuntimeException(message);
-        }
-
-        Element source = WWXML.appendElement(sources, "Source");
-        WWXML.setTextAttribute(source, "type", "file");
-        WWXML.setTextAttribute(source, "path", f.getAbsolutePath());
-
-        AVList params = raster.getParams();
-        if (null == params)
-        {
-            String message = Logging.getMessage("nullValue.ParamsIsNull");
-            Logging.logger().fine(message);
-            throw new WWRuntimeException(message);
-        }
-
-        Sector sector = raster.getSector();
-        if (null == sector && params.hasKey(AVKey.SECTOR))
-        {
-            o = params.getValue(AVKey.SECTOR);
-            if (o instanceof Sector)
-            {
-                sector = (Sector) o;
-            }
-        }
-
-        if (null != sector)
-        {
-            WWXML.appendSector(source, "Sector", sector);
-        }
-    }
-
     public boolean isDataRaster(Object source, AVList params)
     {
         if (source == null)
@@ -606,7 +414,7 @@ public class DataInstaller extends AVListImpl
         }
     }
 
-    public static void addLayerToWorldWindow(WorldWindow wwd, Element domElement, AVList dataSet, boolean goTo)
+    public static void addLayerToWorldWindow(final WorldWindow wwd, Element domElement, final AVList dataSet, final boolean goTo)
     {
         Layer layer = null;
         try
@@ -628,21 +436,29 @@ public class DataInstaller extends AVListImpl
         if (layer == null)
             return;
 
-        layer.setEnabled(true); // BasicLayerFactory creates layer which is initially disabled
-
-        Layer existingLayer = findLayer(wwd, dataSet.getStringValue(AVKey.DISPLAY_NAME));
-        if (existingLayer != null)
-            wwd.getModel().getLayers().remove(existingLayer);
-
-        removeLayerPreview(wwd, dataSet);
-
-        ApplicationTemplate.insertBeforePlacenames(wwd, layer);
-
-        final Sector sector = (Sector) layer.getValue(AVKey.SECTOR);
-        if (goTo && sector != null && !sector.equals(Sector.FULL_SPHERE))
+        final Layer finalLayer = layer;
+        SwingUtilities.invokeLater(new Runnable()
         {
-            ExampleUtil.goTo(wwd, sector);
-        }
+            @Override
+            public void run()
+            {
+                finalLayer.setEnabled(true); // BasicLayerFactory creates layer which is initially disabled
+
+                Layer existingLayer = findLayer(wwd, dataSet.getStringValue(AVKey.DISPLAY_NAME));
+                if (existingLayer != null)
+                    wwd.getModel().getLayers().remove(existingLayer);
+
+                removeLayerPreview(wwd, dataSet);
+
+                ApplicationTemplate.insertBeforePlacenames(wwd, finalLayer);
+
+                final Sector sector = (Sector) finalLayer.getValue(AVKey.SECTOR);
+                if (goTo && sector != null && !sector.equals(Sector.FULL_SPHERE))
+                {
+                    ExampleUtil.goTo(wwd, sector);
+                }
+            }
+        });
     }
 
     protected static void removeLayerPreview(WorldWindow wwd, AVList dataSet)
@@ -671,8 +487,8 @@ public class DataInstaller extends AVListImpl
 //        wwd.getModel().getLayers().remove(layer);
     }
 
-    public static void addElevationModelToWorldWindow(WorldWindow wwd, Element domElement, AVList dataSet,
-                                                      boolean goTo)
+    public static void addElevationModelToWorldWindow(final WorldWindow wwd, Element domElement, final AVList dataSet,
+                                                      final boolean goTo)
     {
         ElevationModel elevationModel = null;
         try
@@ -694,33 +510,41 @@ public class DataInstaller extends AVListImpl
         if (elevationModel == null)
             return;
 
-        ElevationModel existingElevationModel = findElevationModel(wwd, dataSet.getStringValue(AVKey.DISPLAY_NAME));
-        if (existingElevationModel != null)
-            removeElevationModel(wwd, existingElevationModel);
-
-        ElevationModel defaultElevationModel = wwd.getModel().getGlobe().getElevationModel();
-        if (defaultElevationModel instanceof CompoundElevationModel)
+        final ElevationModel em = elevationModel;
+        SwingUtilities.invokeLater(new Runnable()
         {
-            if (!((CompoundElevationModel) defaultElevationModel).containsElevationModel(elevationModel))
+            @Override
+            public void run()
             {
-                ((CompoundElevationModel) defaultElevationModel).addElevationModel(elevationModel);
+                ElevationModel existingElevationModel = findElevationModel(wwd, dataSet.getStringValue(AVKey.DISPLAY_NAME));
+                if (existingElevationModel != null)
+                    removeElevationModel(wwd, existingElevationModel);
+
+                ElevationModel defaultElevationModel = wwd.getModel().getGlobe().getElevationModel();
+                if (defaultElevationModel instanceof CompoundElevationModel)
+                {
+                    if (!((CompoundElevationModel) defaultElevationModel).containsElevationModel(em))
+                    {
+                        ((CompoundElevationModel) defaultElevationModel).addElevationModel(em);
+                    }
+                }
+                else
+                {
+                    CompoundElevationModel cm = new CompoundElevationModel();
+                    cm.addElevationModel(defaultElevationModel);
+                    cm.addElevationModel(em);
+                    wwd.getModel().getGlobe().setElevationModel(cm);
+                }
+
+                Sector sector = (Sector) em.getValue(AVKey.SECTOR);
+                if (goTo && sector != null && !sector.equals(Sector.FULL_SPHERE))
+                {
+                    ExampleUtil.goTo(wwd, sector);
+                }
+
+                wwd.firePropertyChange(new PropertyChangeEvent(wwd, AVKey.ELEVATION_MODEL, null, em));
             }
-        }
-        else
-        {
-            CompoundElevationModel cm = new CompoundElevationModel();
-            cm.addElevationModel(defaultElevationModel);
-            cm.addElevationModel(elevationModel);
-            wwd.getModel().getGlobe().setElevationModel(cm);
-        }
-
-        Sector sector = (Sector) elevationModel.getValue(AVKey.SECTOR);
-        if (goTo && sector != null && !sector.equals(Sector.FULL_SPHERE))
-        {
-            ExampleUtil.goTo(wwd, sector);
-        }
-
-        wwd.firePropertyChange(new PropertyChangeEvent(wwd, AVKey.ELEVATION_MODEL, null, elevationModel));
+        });
     }
 
     public static DataRasterReaderFactory getReaderFactory()

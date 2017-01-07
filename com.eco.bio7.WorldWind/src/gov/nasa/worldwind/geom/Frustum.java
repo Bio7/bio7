@@ -13,7 +13,7 @@ import gov.nasa.worldwind.util.Logging;
  * Frustum instances are immutable.
  *
  * @author Tom Gaskins
- * @version $Id: Frustum.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: Frustum.java 2178 2014-07-25 16:40:09Z dcollins $
  */
 public class Frustum
 {
@@ -207,15 +207,55 @@ public class Frustum
             throw new IllegalArgumentException(message);
         }
 
-        // Extract the six clipping planes from the projection-matrix.
-        Plane leftPlane = new Plane(m.m41 + m.m11, m.m42 + m.m12, m.m43 + m.m13, m.m44 + m.m14).normalize();
-        Plane rightPlane = new Plane(m.m41 - m.m11, m.m42 - m.m12, m.m43 - m.m13, m.m44 - m.m14).normalize();
-        Plane bottomPlane = new Plane(m.m41 + m.m21, m.m42 + m.m22, m.m43 + m.m23, m.m44 + m.m24).normalize();
-        Plane topPlane = new Plane(m.m41 - m.m21, m.m42 - m.m22, m.m43 - m.m23, m.m44 - m.m24).normalize();
-        Plane nearPlane = new Plane(m.m41 + m.m31, m.m42 + m.m32, m.m43 + m.m33, m.m44 + m.m34).normalize();
-        Plane farPlane = new Plane(m.m41 - m.m31, m.m42 - m.m32, m.m43 - m.m33, m.m44 - m.m34).normalize();
+        // Left Plane = row 4 + row 1:
+        double x = m.m41 + m.m11;
+        double y = m.m42 + m.m12;
+        double z = m.m43 + m.m13;
+        double w = m.m44 + m.m14;
+        double d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+        Plane left = new Plane(x / d, y / d, z / d, w / d);
 
-        return new Frustum(leftPlane, rightPlane, bottomPlane, topPlane, nearPlane, farPlane);
+        // Right Plane = row 4 - row 1:
+        x = m.m41 - m.m11;
+        y = m.m42 - m.m12;
+        z = m.m43 - m.m13;
+        w = m.m44 - m.m14;
+        d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+        Plane right = new Plane(x / d, y / d, z / d, w / d);
+
+        // Bottom Plane = row 4 + row 2:
+        x = m.m41 + m.m21;
+        y = m.m42 + m.m22;
+        z = m.m43 + m.m23;
+        w = m.m44 + m.m23;
+        d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+        Plane bottom = new Plane(x / d, y / d, z / d, w / d);
+
+        // Top Plane = row 4 - row 2:
+        x = m.m41 - m.m21;
+        y = m.m42 - m.m22;
+        z = m.m43 - m.m23;
+        w = m.m44 - m.m23;
+        d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+        Plane top = new Plane(x / d, y / d, z / d, w / d);
+
+        // Near Plane = row 4 + row 3:
+        x = m.m41 + m.m31;
+        y = m.m42 + m.m32;
+        z = m.m43 + m.m33;
+        w = m.m44 + m.m34;
+        d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+        Plane near = new Plane(x / d, y / d, z / d, w / d);
+
+        // Far Plane = row 4 - row 3:
+        x = m.m41 - m.m31;
+        y = m.m42 - m.m32;
+        z = m.m43 - m.m33;
+        w = m.m44 - m.m34;
+        d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+        Plane far = new Plane(x / d, y / d, z / d, w / d).normalize();
+
+        return new Frustum(left, right, bottom, top, near, far);
     }
 
     /**

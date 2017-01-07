@@ -21,7 +21,7 @@ import java.util.*;
 /**
  * Shows how to determine and display the intersection of a line with an {@link Polygon}.
  * @author tag
- * @version $Id: PolygonIntersection.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: PolygonIntersection.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class PolygonIntersection extends ApplicationTemplate
 {
@@ -116,8 +116,6 @@ public class PolygonIntersection extends ApplicationTemplate
             pathAttributes.setDrawInterior(false);
             path.setAttributes(pathAttributes);
             this.layer.addRenderable(path);
-
-            this.layerPanel.update(this.getWwd());
 
             this.getWwd().redraw();
         }

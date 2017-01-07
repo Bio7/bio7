@@ -6,6 +6,7 @@
 package gov.nasa.worldwind.render;
 
 import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.drag.*;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.util.*;
 
@@ -16,13 +17,15 @@ import java.awt.*;
  * Represent a text label attached to a Position on the globe and its rendering attributes.
  *
  * @author Patrick Murris
- * @version $Id: GlobeAnnotation.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: GlobeAnnotation.java 2297 2014-09-05 17:05:39Z tgaskins $
  * @see AbstractAnnotation
  * @see AnnotationAttributes
  */
-public class GlobeAnnotation extends AbstractAnnotation implements Locatable, Movable
+public class GlobeAnnotation extends AbstractAnnotation implements Locatable, Movable, Draggable
 {
     protected Position position;
+    protected boolean dragEnabled = true;
+    protected DraggableSupport draggableSupport = null;
     protected double heightInMeter = 0;
 
     protected Integer altitudeMode;
@@ -223,6 +226,52 @@ public class GlobeAnnotation extends AbstractAnnotation implements Locatable, Mo
         this.position = position;
     }
 
+    @Override
+    public boolean isDragEnabled()
+    {
+        return this.dragEnabled;
+    }
+
+    @Override
+    public void setDragEnabled(boolean enabled)
+    {
+        this.dragEnabled = enabled;
+    }
+
+    @Override
+    public void drag(DragContext dragContext)
+    {
+        if (!this.dragEnabled)
+            return;
+
+        if (this.draggableSupport == null)
+        {
+            // The following addresses the special case described in {@link GlobeAnnotation#getAltitudeMode}
+            if (this.getAltitudeMode() == null)
+            {
+                if (this.position.getElevation() > dragContext.getGlobe().getMaxElevation())
+                {
+                    this.draggableSupport = new DraggableSupport(this, WorldWind.ABSOLUTE);
+                }
+                else
+                {
+                    this.draggableSupport = new DraggableSupport(this, WorldWind.RELATIVE_TO_GROUND);
+                }
+            }
+            else
+            {
+                this.draggableSupport = new DraggableSupport(this, this.getAltitudeMode());
+            }
+        }
+
+        this.doDrag(dragContext);
+    }
+
+    protected void doDrag(DragContext dragContext)
+    {
+        this.draggableSupport.dragScreenSizeConstant(dragContext);
+    }
+
     public Position getReferencePosition()
     {
         return this.position;
@@ -394,7 +443,11 @@ public class GlobeAnnotation extends AbstractAnnotation implements Locatable, Mo
         Position pos = this.getPosition();
         Integer altitudeMode = this.getAltitudeMode();
 
-        if (altitudeMode == null)
+        if (dc.is2DGlobe())
+        {
+            drawPoint = dc.computeTerrainPoint(pos.getLatitude(), pos.getLongitude(), 0);
+        }
+        else if (altitudeMode == null)
         {
             drawPoint = getAnnotationDrawPointLegacy(dc);
         }

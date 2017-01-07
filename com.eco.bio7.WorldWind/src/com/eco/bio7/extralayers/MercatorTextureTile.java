@@ -1,19 +1,18 @@
 /*
-Copyright (C) 2001, 2009 United States Government
-as represented by the Administrator of the
-National Aeronautics and Space Administration.
-All Rights Reserved.
-*/
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
+ * National Aeronautics and Space Administration.
+ * All Rights Reserved.
+ */
 package com.eco.bio7.extralayers;
-
 
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.layers.TextureTile;
-import gov.nasa.worldwind.util.Level;
-import gov.nasa.worldwind.util.Logging;
-import gov.nasa.worldwind.util.TileKey;
+import gov.nasa.worldwind.util.*;
 
+/**
+ * @version $Id: MercatorTextureTile.java 1171 2013-02-11 21:45:02Z dcollins $
+ */
 public class MercatorTextureTile extends TextureTile
 {
 	private MercatorSector mercatorSector;

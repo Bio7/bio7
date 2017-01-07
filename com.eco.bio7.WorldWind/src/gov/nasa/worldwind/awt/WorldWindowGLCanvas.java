@@ -51,7 +51,7 @@ import java.util.*;
  * {@link GpuResourceCache#get(Object)} and {@link GpuResourceCache#getTexture(Object)}.
  *
  * @author Tom Gaskins
- * @version $Id: WorldWindowGLCanvas.java 1855 2014-02-28 23:01:02Z tgaskins $
+ * @version $Id: WorldWindowGLCanvas.java 2924 2015-03-26 01:32:02Z tgaskins $
  */
 public class WorldWindowGLCanvas extends GLCanvas implements WorldWindow, PropertyChangeListener
 {
@@ -64,9 +64,10 @@ public class WorldWindowGLCanvas extends GLCanvas implements WorldWindow, Proper
         super(Configuration.getRequiredGLCapabilities(), new BasicGLCapabilitiesChooser(), null);
 
         try
-        { 
+        {
             this.wwd = ((WorldWindowGLDrawable) WorldWind.createConfigurationComponent(AVKey.WORLD_WINDOW_CLASS_NAME));
             this.wwd.initDrawable(this);
+            this.wwd.addPropertyChangeListener(this);
             this.wwd.initGpuResourceCache(WorldWindowImpl.createGpuResourceCache());
             this.createView();
             this.createDefaultInputHandler();
@@ -101,6 +102,7 @@ public class WorldWindowGLCanvas extends GLCanvas implements WorldWindow, Proper
         {
             this.wwd = ((WorldWindowGLDrawable) WorldWind.createConfigurationComponent(AVKey.WORLD_WINDOW_CLASS_NAME));
             this.wwd.initDrawable(this);
+            this.wwd.addPropertyChangeListener(this);
             if (shareWith != null)
                 this.wwd.initGpuResourceCache(shareWith.getGpuResourceCache());
             else
@@ -140,6 +142,7 @@ public class WorldWindowGLCanvas extends GLCanvas implements WorldWindow, Proper
         {
             this.wwd = ((WorldWindowGLDrawable) WorldWind.createConfigurationComponent(AVKey.WORLD_WINDOW_CLASS_NAME));
             this.wwd.initDrawable(this);
+            this.wwd.addPropertyChangeListener(this);
             if (shareWith != null)
                 this.wwd.initGpuResourceCache(shareWith.getGpuResourceCache());
             else
@@ -203,6 +206,9 @@ public class WorldWindowGLCanvas extends GLCanvas implements WorldWindow, Proper
 
     public void propertyChange(PropertyChangeEvent evt)
     {
+        if(this.wwd == evt.getSource())
+            this.firePropertyChange(evt);
+
         //noinspection StringEquality
         if (evt.getPropertyName() == WorldWind.SHUTDOWN_EVENT)
             this.shutdown();
@@ -212,6 +218,18 @@ public class WorldWindowGLCanvas extends GLCanvas implements WorldWindow, Proper
     {
         WorldWind.removePropertyChangeListener(WorldWind.SHUTDOWN_EVENT, this);
         this.wwd.shutdown();
+    }
+
+    @Override
+    public boolean isEnableGpuCacheReinitialization()
+    {
+        return this.wwd.isEnableGpuCacheReinitialization();
+    }
+
+    @Override
+    public void setEnableGpuCacheReinitialization(boolean enableGpuCacheReinitialization)
+    {
+        this.wwd.setEnableGpuCacheReinitialization(enableGpuCacheReinitialization);
     }
 
     /** Constructs and attaches the {@link View} for this <code>WorldWindow</code>. */
@@ -396,28 +414,24 @@ public class WorldWindowGLCanvas extends GLCanvas implements WorldWindow, Proper
     public synchronized void addPropertyChangeListener(PropertyChangeListener listener)
     {
         super.addPropertyChangeListener(listener);
-        this.wwd.addPropertyChangeListener(listener);
     }
 
     @Override
     public synchronized void addPropertyChangeListener(String propertyName, PropertyChangeListener listener)
     {
         super.addPropertyChangeListener(propertyName, listener);
-        this.wwd.addPropertyChangeListener(propertyName, listener);
     }
 
     @Override
     public synchronized void removePropertyChangeListener(PropertyChangeListener listener)
     {
         super.removePropertyChangeListener(listener);
-        this.wwd.removePropertyChangeListener(listener);
     }
 
     @Override
     public synchronized void removePropertyChangeListener(String propertyName, PropertyChangeListener listener)
     {
-        super.removePropertyChangeListener(listener);
-        this.wwd.removePropertyChangeListener(listener);
+        super.removePropertyChangeListener(propertyName, listener);
     }
 
     @Override

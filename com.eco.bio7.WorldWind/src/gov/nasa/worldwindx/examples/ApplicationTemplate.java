@@ -7,7 +7,7 @@ package gov.nasa.worldwindx.examples;
 
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.awt.*;
+import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
 import gov.nasa.worldwind.event.*;
 import gov.nasa.worldwind.exception.WWAbsentRequirementException;
 import gov.nasa.worldwind.layers.*;
@@ -22,7 +22,7 @@ import java.awt.*;
  * Provides a base application framework for simple WorldWind examples. Examine other examples in this package to see
  * how it's used.
  *
- * @version $Id: ApplicationTemplate.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ApplicationTemplate.java 2115 2014-07-01 17:58:16Z tgaskins $
  */
 public class ApplicationTemplate
 {
@@ -78,9 +78,10 @@ public class ApplicationTemplate
 
     protected static class AppFrame extends JFrame
     {
-        private Dimension canvasSize = new Dimension(800, 600);
+        private Dimension canvasSize = new Dimension(1000, 800);
 
         protected AppPanel wwjPanel;
+        protected JPanel controlPanel;
         protected LayerPanel layerPanel;
         protected StatisticsPanel statsPanel;
 
@@ -110,8 +111,11 @@ public class ApplicationTemplate
             this.getContentPane().add(wwjPanel, BorderLayout.CENTER);
             if (includeLayerPanel)
             {
-                this.layerPanel = new LayerPanel(this.wwjPanel.getWwd(), null);
-                this.getContentPane().add(this.layerPanel, BorderLayout.WEST);
+                this.controlPanel = new JPanel(new BorderLayout(10, 10));
+                this.layerPanel = new LayerPanel(this.getWwd());
+                this.controlPanel.add(this.layerPanel, BorderLayout.CENTER);
+                this.controlPanel.add(new FlatWorldPanel(this.getWwd()), BorderLayout.NORTH);
+                this.getContentPane().add(this.controlPanel, BorderLayout.WEST);
             }
 
             if (includeStatsPanel || System.getProperty("gov.nasa.worldwind.showStatistics") != null)
@@ -186,9 +190,18 @@ public class ApplicationTemplate
             return this.wwjPanel.getStatusBar();
         }
 
+        /**
+         * @deprecated Use getControlPanel instead.
+         * @return This application's layer panel.
+         */
         public LayerPanel getLayerPanel()
         {
-            return layerPanel;
+            return this.layerPanel;
+        }
+
+        public JPanel getControlPanel()
+        {
+            return this.controlPanel;
         }
 
         public StatisticsPanel getStatsPanel()

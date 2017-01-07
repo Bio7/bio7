@@ -15,8 +15,8 @@
     </Layer>
     <Layer href="config/Earth/BMNGWMSLayer.xml" actuate="onLoad"/>
     <Layer href="config/Earth/LandsatI3WMSLayer.xml" actuate="onLoad"/>
-    <Layer href="config/Earth/USDANAIPWMSImageLayer.xml" actuate="onRequest"/>
-    <Layer href="config/Earth/USDANAIPUSGSWMSImageLayer.xml" actuate="onRequest"/>
+     <!--<Layer href="config/Earth/USDANAIPWMSImageLayer.xml" actuate="onRequest"/>-->
+    <Layer href="config/Earth/USGSNAIPPlusLayer.xml" actuate="onRequest"/>
     <Layer href="config/Earth/MSVirtualEarthAerialLayer.xml" actuate="onLoad"/>
     <Layer href="config/Earth/BingImagery.xml" actuate="onRequest"/>
     <Layer className="gov.nasa.worldwind.layers.Earth.OSMMapnikLayer" actuate="onRequest"/>

@@ -6,6 +6,7 @@
 package gov.nasa.worldwind.layers;
 
 import gov.nasa.worldwind.View;
+import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.render.*;
@@ -19,7 +20,7 @@ import java.util.ArrayList;
  * Displays the geographic latitude/longitude graticule.
  *
  * @author Patrick Murris
- * @version $Id: LatLonGraticuleLayer.java 1690 2013-10-24 19:42:53Z tgaskins $
+ * @version $Id: LatLonGraticuleLayer.java 2153 2014-07-17 17:33:13Z tgaskins $
  */
 public class LatLonGraticuleLayer extends AbstractGraticuleLayer
 {
@@ -163,7 +164,7 @@ public class LatLonGraticuleLayer extends AbstractGraticuleLayer
         for (String type : graticuleType)
         {
             getRenderingParams(type).setValue(
-                GraticuleRenderingParams.KEY_LINE_CONFORMANCE, this.polylineTerrainConformance);
+                GraticuleRenderingParams.KEY_LINE_CONFORMANCE, this.terrainConformance);
         }
     }
 
@@ -363,7 +364,8 @@ public class LatLonGraticuleLayer extends AbstractGraticuleLayer
         @SuppressWarnings({"RedundantIfStatement"})
         public boolean isInView(DrawContext dc)
         {
-            if (!viewFrustum.intersects(this.getExtent(dc.getGlobe(), dc.getVerticalExaggeration())))
+            if (!dc.getView().getFrustumInModelCoordinates().intersects(
+                this.getExtent(dc.getGlobe(), dc.getVerticalExaggeration())))
                 return false;
 
             // Check apparent size
@@ -397,10 +399,12 @@ public class LatLonGraticuleLayer extends AbstractGraticuleLayer
                     if (ge.isInView(dc))
                     {
                         // Add level zero bounding lines and labels
-                        if (ge.type.equals(GridElement.TYPE_LINE_SOUTH) || ge.type.equals(GridElement.TYPE_LINE_WEST))
+                        if (ge.type.equals(GridElement.TYPE_LINE_SOUTH) || ge.type.equals(GridElement.TYPE_LINE_NORTH)
+                            || ge.type.equals(GridElement.TYPE_LINE_WEST))
                         {
                             addRenderable(ge.renderable, graticuleType);
-                            String labelType = ge.type.equals(GridElement.TYPE_LINE_SOUTH) ?
+                            String labelType = ge.type.equals(GridElement.TYPE_LINE_SOUTH)
+                                || ge.type.equals(GridElement.TYPE_LINE_NORTH) ?
                                 GridElement.TYPE_LATITUDE_LABEL : GridElement.TYPE_LONGITUDE_LABEL;
                             addLabel(ge.value, labelType, graticuleType, this.sector.getDeltaLatDegrees(), labelOffset);
                         }
@@ -481,7 +485,6 @@ public class LatLonGraticuleLayer extends AbstractGraticuleLayer
         {
             this.gridElements = new ArrayList<GridElement>();
 
-            ArrayList<Position> positions = new ArrayList<Position>();
             double step = sector.getDeltaLatDegrees() / this.divisions;
 
             // Generate meridians with labels
@@ -490,16 +493,16 @@ public class LatLonGraticuleLayer extends AbstractGraticuleLayer
             {
                 Angle longitude = Angle.fromDegrees(lon);
                 // Meridian
-                positions.clear();
+                ArrayList<Position> positions = new ArrayList<Position>(2);
                 positions.add(new Position(this.sector.getMinLatitude(), longitude, 0));
                 positions.add(new Position(this.sector.getMaxLatitude(), longitude, 0));
 
-                Object polyline = createLineRenderable(positions, Polyline.LINEAR);
+                Object line = createLineRenderable(positions, AVKey.LINEAR);
                 Sector sector = Sector.fromDegrees(
                     this.sector.getMinLatitude().degrees, this.sector.getMaxLatitude().degrees, lon, lon);
                 String lineType = lon == this.sector.getMinLongitude().degrees ?
                     GridElement.TYPE_LINE_WEST : GridElement.TYPE_LINE;
-                GridElement ge = new GridElement(sector, polyline, lineType);
+                GridElement ge = new GridElement(sector, line, lineType);
                 ge.value = lon;
                 this.gridElements.add(ge);
 
@@ -512,21 +515,36 @@ public class LatLonGraticuleLayer extends AbstractGraticuleLayer
             while (lat < this.sector.getMaxLatitude().degrees - step / 2)
             {
                 Angle latitude = Angle.fromDegrees(lat);
-                positions.clear();
+                ArrayList<Position> positions = new ArrayList<Position>(2);
                 positions.add(new Position(latitude, this.sector.getMinLongitude(), 0));
                 positions.add(new Position(latitude, this.sector.getMaxLongitude(), 0));
 
-                Object polyline = createLineRenderable(positions, Polyline.LINEAR);
+                Object line = createLineRenderable(positions, AVKey.LINEAR);
                 Sector sector = Sector.fromDegrees(
                     lat, lat, this.sector.getMinLongitude().degrees, this.sector.getMaxLongitude().degrees);
                 String lineType = lat == this.sector.getMinLatitude().degrees ?
                     GridElement.TYPE_LINE_SOUTH : GridElement.TYPE_LINE;
-                GridElement ge = new GridElement(sector, polyline, lineType);
+                GridElement ge = new GridElement(sector, line, lineType);
                 ge.value = lat;
                 this.gridElements.add(ge);
 
                 // Increase latitude
                 lat += step;
+            }
+
+            // Draw and label a parallel at the top of the graticule. The line is apparent only on 2D globes.
+            if (this.sector.getMaxLatitude().equals(Angle.POS90))
+            {
+                ArrayList<Position> positions = new ArrayList<Position>(2);
+                positions.add(new Position(Angle.POS90, this.sector.getMinLongitude(), 0));
+                positions.add(new Position(Angle.POS90, this.sector.getMaxLongitude(), 0));
+
+                Object line = createLineRenderable(positions, AVKey.LINEAR);
+                Sector sector = Sector.fromDegrees(
+                    90, 90, this.sector.getMinLongitude().degrees, this.sector.getMaxLongitude().degrees);
+                GridElement ge = new GridElement(sector, line, GridElement.TYPE_LINE_NORTH);
+                ge.value = 90;
+                this.gridElements.add(ge);
             }
         }
     }

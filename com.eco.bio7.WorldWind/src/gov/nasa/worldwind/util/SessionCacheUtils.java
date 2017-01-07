@@ -16,7 +16,7 @@ import java.beans.PropertyChangeListener;
  * A collection of utility methods for retrieving and managing data in the {@link SessionCache}.
  *
  * @author dcollins
- * @version $Id: SessionCacheUtils.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: SessionCacheUtils.java 3086 2015-05-13 20:27:38Z dcollins $
  */
 public class SessionCacheUtils
 {
@@ -82,7 +82,7 @@ public class SessionCacheUtils
         catch (Exception e)
         {
             String message = Logging.getMessage("layers.TiledImageLayer.ExceptionRetrievingResources", url.toString());
-            Logging.logger().severe(message);
+            Logging.logger().log(java.util.logging.Level.SEVERE, message, e);
         }
     }
 
@@ -118,22 +118,7 @@ public class SessionCacheUtils
         }
 
         Object o = cache.get(cacheKey);
-        if (o == null)
-            return null;
-
-        // The cache entry exists, and is already a Capabilities document.
-        if (o instanceof WMSCapabilities)
-            return (WMSCapabilities) o;
-
-        // The cache entry exists, but is not a Capabilities document. Attempt to parse the Capabilities docuemnt,
-        // by treating the current cache entry as a source.
-        WMSCapabilities caps = parseCapabilities(o, name);
-        if (caps == null)
-            return null;
-
-        // If the parsing succeeded, then overwrite the existing cache entry with the newly created Capabilities.
-        cache.put(cacheKey, caps);
-        return caps;
+        return (o instanceof WMSCapabilities) ? (WMSCapabilities) o : null;
     }
 
     /**
@@ -185,38 +170,6 @@ public class SessionCacheUtils
         retrieveSessionData(url, cache, cacheKey, absentResourceList, resourceID, propertyListener, propertyName);
 
         // Try to get the caps after the retrieval attempt.
-        caps = getSessionCapabilities(cache, cacheKey, url.toString());
-        if (caps != null)
-            return caps;
-
-        return null;
-    }
-
-    protected static WMSCapabilities parseCapabilities(Object source, String name)
-    {
-        if (source == null)
-        {
-            String message = Logging.getMessage("nullValue.SourceIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        java.io.InputStream inputStream = null;
-        try
-        {
-            WMSCapabilities caps = new WMSCapabilities(source);
-            return caps.parse();
-        }
-        catch (Exception e)
-        {
-            String message = Logging.getMessage("generic.CannotParseCapabilities", name);
-            Logging.logger().log(java.util.logging.Level.SEVERE, message, e);
-        }
-        finally
-        {
-            WWIO.closeStream(inputStream, name);
-        }
-
-        return null;
+        return getSessionCapabilities(cache, cacheKey, url.toString());
     }
 }

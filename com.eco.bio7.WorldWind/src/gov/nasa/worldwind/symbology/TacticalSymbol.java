@@ -111,10 +111,43 @@ import gov.nasa.worldwind.util.UnitsFormat;
  * </pre>
  *
  * @author dcollins
- * @version $Id: TacticalSymbol.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: TacticalSymbol.java 2370 2014-10-06 22:37:50Z tgaskins $
  */
 public interface TacticalSymbol extends WWObject, Renderable, Highlightable
 {
+    /**
+     * An interface to enable application selection of tactical symbol level of detail.
+     */
+    public interface LODSelector
+    {
+        /**
+         * Modifies the symbol's attributes and properties to achieve a desired level of detail during rendering. This
+         * method is called during rendering in order to provide the application an opportunity to adjust the symbol's
+         * attributes and properties to achieve a level of detail based on the symbol's distance from the view's eye
+         * point or other criteria.
+         *
+         * @param dc          the current draw context.
+         * @param symbol      the symbol about to be rendered.
+         * @param eyeDistance the distance in meters from the view's eye point to the symbol's geographic position.
+         */
+        public void selectLOD(DrawContext dc, TacticalSymbol symbol, double eyeDistance);
+    }
+
+    /**
+     * Indicates this symbol's level of detail selector.
+     *
+     * @return this symbol's level of detail selector, or null if one has not been specified.
+     */
+    LODSelector getLODSelector();
+
+    /**
+     * Specifies this symbols level of detail selector.
+     *
+     * @param LODSelector the level of detail selector. May be null, the default, to indicate no level of detail
+     *                    selector.
+     */
+    void setLODSelector(LODSelector LODSelector);
+
     /**
      * Indicates whether this symbol is drawn when in view.
      *
@@ -212,7 +245,7 @@ public interface TacticalSymbol extends WWObject, Renderable, Highlightable
      * location modifier.
      *
      * @return true if the symbol will display the location modifier. Note that not some symbols may not support this
-     *         modifier.
+     * modifier.
      */
     boolean isShowLocation();
 
@@ -230,7 +263,7 @@ public interface TacticalSymbol extends WWObject, Renderable, Highlightable
      * {@link #setShowHostileIndicator(boolean) setShowHostileIndicator} for more information.
      *
      * @return true if an indicator will be drawn when this symbol represents a hostile entity, if supported by the
-     *         symbol specification.
+     * symbol specification.
      */
     boolean isShowHostileIndicator();
 
@@ -251,7 +284,7 @@ public interface TacticalSymbol extends WWObject, Renderable, Highlightable
      * @param modifier the modifier key.
      *
      * @return the modifier value. May be <code>null</code>, indicating that this symbol does not display the specified
-     *         modifier.
+     * modifier.
      *
      * @throws IllegalArgumentException if the modifier is <code>null</code>.
      */
@@ -278,7 +311,7 @@ public interface TacticalSymbol extends WWObject, Renderable, Highlightable
      * Returns this symbol's normal (as opposed to highlight) attributes.
      *
      * @return this symbol's normal attributes. May be <code>null</code>, indicating that the default highlight
-     *         attributes are used.
+     * attributes are used.
      */
     TacticalSymbolAttributes getAttributes();
 
@@ -293,7 +326,7 @@ public interface TacticalSymbol extends WWObject, Renderable, Highlightable
      * Returns this symbol's highlight attributes.
      *
      * @return this symbol's highlight attributes. May be <code>null</code>, indicating that the default attributes are
-     *         used.
+     * used.
      */
     TacticalSymbolAttributes getHighlightAttributes();
 
@@ -310,7 +343,7 @@ public interface TacticalSymbol extends WWObject, Renderable, Highlightable
      * object returned during picking. If null, the symbol itself is the pickable object returned during picking.
      *
      * @return the object used as the pickable object returned during picking, or null to indicate the the symbol is
-     *         returned during picking.
+     * returned during picking.
      */
     Object getDelegateOwner();
 

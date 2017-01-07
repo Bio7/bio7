@@ -9,7 +9,7 @@ package gov.nasa.worldwind.render.airspaces;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.geom.Box;
 import gov.nasa.worldwind.globes.Globe;
-import gov.nasa.worldwind.render.*;
+import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.*;
 
 import java.util.*;
@@ -20,7 +20,7 @@ import java.util.*;
  * segments are altitude-limited shapes and therefore have an associated minimum and maximum altitude.
  *
  * @author tag
- * @version $Id: Cake.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: Cake.java 2331 2014-09-19 19:45:55Z tgaskins $
  */
 public class Cake extends AbstractAirspace
 {
@@ -102,8 +102,9 @@ public class Cake extends AbstractAirspace
                 if (l != null)
                     this.layers.add(l);
             }
-            this.setExtentOutOfDate();
         }
+
+        this.invalidateAirspaceData();
     }
 
     public void setEnableCaps(boolean enable)
@@ -111,6 +112,14 @@ public class Cake extends AbstractAirspace
         for (Layer l : this.layers)
         {
             l.setEnableCaps(enable);
+        }
+    }
+
+    public void setEnableDepthOffset(boolean enable)
+    {
+        for (Layer l : this.layers)
+        {
+            l.setEnableDepthOffset(enable);
         }
     }
 
@@ -194,6 +203,31 @@ public class Cake extends AbstractAirspace
         return null; // Cake is a geometry container, and therefore has no geometry itself.
     }
 
+    protected void doMoveTo(Globe globe, Position oldRef, Position newRef)
+    {
+        if (oldRef == null)
+        {
+            String message = "nullValue.OldRefIsNull";
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+        if (newRef == null)
+        {
+            String message = "nullValue.NewRefIsNull";
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        super.doMoveTo(oldRef, newRef);
+
+        for (Layer l : this.layers)
+        {
+            l.doMoveTo(globe, oldRef, newRef);
+        }
+
+        this.invalidateAirspaceData();
+    }
+
     protected void doMoveTo(Position oldRef, Position newRef)
     {
         if (oldRef == null)
@@ -216,91 +250,64 @@ public class Cake extends AbstractAirspace
             l.doMoveTo(oldRef, newRef);
         }
 
-        this.setExtentOutOfDate();
+        this.invalidateAirspaceData();
     }
 
     //**************************************************************//
     //********************  Geometry Rendering  ********************//
     //**************************************************************//
 
-    public void makeOrderedRenderable(DrawContext dc, AirspaceRenderer renderer)
+    @Override
+    public void preRender(DrawContext dc)
     {
         if (dc == null)
         {
-            String message = Logging.getMessage("nullValue.DrawContextIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
+            String msg = Logging.getMessage("nullValue.DrawContextIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
         }
 
-        if (renderer == null)
-        {
-            String message = Logging.getMessage("nullValue.RendererIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
+        if (!this.isVisible())
+            return;
+
+        this.determineActiveAttributes(dc);
 
         for (Layer layer : this.layers)
         {
-            if (!layer.isVisible())
-                continue;
-
-            if (!layer.isAirspaceVisible(dc))
-                continue;
-
-            // The layer is responsible for applying its own attributes, so we override its attributes with our own just
-            // before rendering.
-            layer.setAttributes(this.getAttributes());
-
-            // Create an ordered renderable that draws each layer, but specifies this Cake as the picked object.
-            OrderedRenderable or = renderer.createOrderedRenderable(dc, layer, layer.computeEyeDistance(dc), this);
-            dc.addOrderedRenderable(or);
+            // Synchronize the layer's attributes with this cake's attributes, and setup this cake as the layer's pick
+            // delegate.
+            layer.setAttributes(this.getActiveAttributes());
+            layer.setDelegateOwner(this.getDelegateOwner() != null ? this.getDelegateOwner() : this);
+            layer.preRender(dc);
         }
     }
 
+    @Override
+    public void render(DrawContext dc)
+    {
+        if (dc == null)
+        {
+            String msg = Logging.getMessage("nullValue.DrawContextIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (!this.isVisible())
+            return;
+
+        if (!this.isAirspaceVisible(dc))
+            return;
+
+        for (Layer layer : this.layers)
+        {
+            layer.render(dc);
+        }
+    }
+
+    @Override
     protected void doRenderGeometry(DrawContext dc, String drawStyle)
     {
-        if (dc == null)
-        {
-            String message = Logging.getMessage("nullValue.DrawContextIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        // Called by AirspaceRenderer's drawNow and pickNow methods. These methods do not use the ordered renderable
-        // queue, so TrackAirspace must explicitly initiate drawing its legs. When airspace rendering is initiated via
-        // AirspaceRenderer drawOrdered or pickOrdered, TrackAirspace does not add an ordered renderable for itself, so
-        // this method is never initiated.
-
-        for (Layer l : this.layers)
-        {
-            if (!l.isVisible())
-                continue;
-
-            if (!l.isAirspaceVisible(dc))
-                continue;
-
-            l.renderGeometry(dc, drawStyle);
-        }
-    }
-
-    public void doRenderExtent(DrawContext dc)
-    {
-        if (dc == null)
-        {
-            String message = Logging.getMessage("nullValue.DrawContextIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        // Called by AirspaceRenderer's drawNow and pickNow methods. These methods do not use the ordered renderable
-        // queue, so TrackAirspace must explicitly initiate drawing its legs. When airspace rendering is initiated via
-        // AirspaceRenderer drawOrdered or pickOrdered, TrackAirspace does not add an ordered renderable for itself, so
-        // this method is never initiated.
-
-        for (Layer l : this.layers)
-        {
-            l.renderExtent(dc);
-        }
+        // Intentionally left blank.
     }
 
     //**************************************************************//

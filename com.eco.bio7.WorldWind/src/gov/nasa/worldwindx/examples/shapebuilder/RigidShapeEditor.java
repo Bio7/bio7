@@ -23,7 +23,7 @@ import java.util.ArrayList;
 
 /**
  * @author ccrick
- * @version $Id: RigidShapeEditor.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: RigidShapeEditor.java 2215 2014-08-09 20:05:40Z tgaskins $
  */
 public class RigidShapeEditor extends AbstractShapeEditor
 {
@@ -282,6 +282,7 @@ public class RigidShapeEditor extends AbstractShapeEditor
             controlPoint.setAttributes(this.translationControlAttributes);
             controlPoint.setAltitudeMode(this.getAltitudeMode());
             controlPoint.setValue(AVKey.ACTION, CHANGE_HEIGHT_ACTION);
+            controlPoint.setVisible(!dc.is2DGlobe());
             this.controlPoints.add(controlPoint);
 
             rod = new Path(refPos, vertexPosition);
@@ -347,6 +348,7 @@ public class RigidShapeEditor extends AbstractShapeEditor
             controlPoint.setAttributes(this.scaleControlAttributes);
             controlPoint.setAltitudeMode(this.getAltitudeMode());
             controlPoint.setValue(AVKey.ACTION, SCALE_VERTICAL_ACTION);
+            controlPoint.setVisible(!dc.is2DGlobe());
             this.controlPoints.add(controlPoint);
 
             rod = new Path(refPos, vertexPosition);
@@ -434,7 +436,7 @@ public class RigidShapeEditor extends AbstractShapeEditor
             rollGuide.setAttributes(this.rollGuideAttributes);
             rollGuide.setAltitudeMode(this.getAltitudeMode());
             rollGuide.setValue(AVKey.ACTION, CHANGE_ROLL_ACTION);
-            rollGuide.setVisible(true);
+            rollGuide.setVisible(!dc.is2DGlobe());
             this.controlPoints.add(rollGuide);
 
             Ellipsoid headingGuide = new Ellipsoid(this.shape.getReferencePosition(),
@@ -456,13 +458,16 @@ public class RigidShapeEditor extends AbstractShapeEditor
             tiltGuide.setAttributes(this.tiltGuideAttributes);
             tiltGuide.setAltitudeMode(this.getAltitudeMode());
             tiltGuide.setValue(AVKey.ACTION, CHANGE_TILT_ACTION);
-            tiltGuide.setVisible(true);
+            tiltGuide.setVisible(!dc.is2DGlobe());
             this.controlPoints.add(tiltGuide);
         }
     }
 
     protected void assembleSkewControlPoints(DrawContext dc)
     {
+        if (dc.is2DGlobe())
+            return;
+
         RigidShape shape = this.getShape();
 
         Matrix matrix = shape.computeRenderMatrix(dc);

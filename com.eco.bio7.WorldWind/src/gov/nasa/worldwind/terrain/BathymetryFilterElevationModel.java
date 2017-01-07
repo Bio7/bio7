@@ -19,7 +19,7 @@ import java.util.List;
  * extreme elevations.
  *
  * @author tag
- * @version $Id: BathymetryFilterElevationModel.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: BathymetryFilterElevationModel.java 2014 2014-05-20 19:46:55Z tgaskins $
  */
 public class BathymetryFilterElevationModel extends AbstractElevationModel
 {
@@ -178,5 +178,17 @@ public class BathymetryFilterElevationModel extends AbstractElevationModel
         Object o = super.getValue(key);
 
         return o != null ? o : this.sourceModel != null ? this.sourceModel.getValue(key) : null;
+    }
+
+    @Override
+    public void setExtremesCachingEnabled(boolean enabled)
+    {
+        this.sourceModel.setExtremesCachingEnabled(enabled);
+    }
+
+    @Override
+    public boolean isExtremesCachingEnabled()
+    {
+        return this.sourceModel.isExtremesCachingEnabled();
     }
 }

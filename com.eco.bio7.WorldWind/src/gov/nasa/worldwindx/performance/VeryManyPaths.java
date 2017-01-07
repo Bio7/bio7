@@ -17,7 +17,7 @@ import java.util.*;
 
 /**
  * @author tag
- * @version $Id: VeryManyPaths.java 968 2012-12-06 02:52:49Z dcollins $
+ * @version $Id: VeryManyPaths.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class VeryManyPaths extends ApplicationTemplate
 {
@@ -46,7 +46,6 @@ public class VeryManyPaths extends ApplicationTemplate
 
             // Update layer panel
             this.getWwd().getView().setEyePosition(new Position(START_LOCATION, 3e6));
-            this.getLayerPanel().update(this.getWwd());
         }
 
         protected void makePaths(RenderableLayer layer, Position origin, int numPaths, Angle length, int numPositions)

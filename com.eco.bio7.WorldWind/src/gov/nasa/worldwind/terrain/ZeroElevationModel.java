@@ -15,7 +15,7 @@ import java.util.List;
  * An elevation model that always returns zero elevations.
  *
  * @author tag
- * @version $Id: ZeroElevationModel.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ZeroElevationModel.java 2014 2014-05-20 19:46:55Z tgaskins $
  */
 public class ZeroElevationModel extends AbstractElevationModel
 {
@@ -77,5 +77,16 @@ public class ZeroElevationModel extends AbstractElevationModel
     public double getUnmappedElevation(Angle latitude, Angle longitude)
     {
         return 0;
+    }
+
+    @Override
+    public void setExtremesCachingEnabled(boolean enabled)
+    {
+    }
+
+    @Override
+    public boolean isExtremesCachingEnabled()
+    {
+        return false;
     }
 }

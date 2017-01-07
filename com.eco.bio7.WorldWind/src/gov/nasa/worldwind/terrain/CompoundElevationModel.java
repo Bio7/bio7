@@ -14,7 +14,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @author tag
- * @version $Id: CompoundElevationModel.java 1978 2014-04-30 17:37:11Z tgaskins $
+ * @version $Id: CompoundElevationModel.java 3417 2015-08-20 20:47:05Z tgaskins $
  */
 public class CompoundElevationModel extends AbstractElevationModel
 {
@@ -64,6 +64,43 @@ public class CompoundElevationModel extends AbstractElevationModel
         return false;
     }
 
+    protected void sortElevationModels()
+    {
+        if (this.elevationModels.size() == 1)
+            return;
+
+        List<ElevationModel> temp = new ArrayList<ElevationModel>(this.elevationModels.size());
+        for (ElevationModel em : this.elevationModels)
+        {
+            temp.add(em);
+        }
+
+        Collections.sort(temp, new Comparator<ElevationModel>()
+        {
+            @Override
+            public int compare(ElevationModel o1, ElevationModel o2)
+            {
+                double res1 = o1.getBestResolution(null);
+                double res2 = o2.getBestResolution(null);
+
+                // sort from lowest resolution to highest
+                return res1 > res2 ? -1 : res1 == res2 ? 0 : 1;
+            }
+        });
+
+        this.elevationModels.removeAll(temp);
+        this.elevationModels.addAll(temp);
+    }
+
+    /**
+     * Adds an elevation to this compound elevation model. The list of elevation models for this class is sorted from
+     * lowest resolution to highest. This method inserts the specified elevation model at the appropriate position in
+     * the list, and as a side effect resorts the entire list.
+     *
+     * @param em The elevation model to add.
+     *
+     * @throws IllegalArgumentException if the specified elevation model is null.
+     */
     public void addElevationModel(ElevationModel em)
     {
         if (em == null)
@@ -74,8 +111,24 @@ public class CompoundElevationModel extends AbstractElevationModel
         }
 
         this.elevationModels.add(em);
+        this.sortElevationModels();
     }
 
+    /**
+     * Adds a specified elevation model to a specified position in this compound elevation model's elevation model list.
+     * It's expected that this class' elevation model list is sorted from lowest resolution to highest. The method
+     * {@link #addElevationModel(gov.nasa.worldwind.globes.ElevationModel)} inserts added elevation models at the
+     * appropriate place in the list. This method, however, inserts the elevation model at the specified position in the
+     * list. For proper operation of this compound elevation model, the caller should ensure that the specified position
+     * is the appropriate one for the inserted elevation model's resolution.
+     *
+     * @param index The position at which to insert the specified model, zero origin. Existing models are shifted to the
+     *              right.
+     * @param em    The elevation model to insert.
+     *
+     * @throws IllegalArgumentException  if the specified elevation model is null.
+     * @throws IndexOutOfBoundsException if the specified index is invalid.
+     */
     public void addElevationModel(int index, ElevationModel em)
     {
         if (em == null)
@@ -168,7 +221,7 @@ public class CompoundElevationModel extends AbstractElevationModel
         {
             if (!em.isEnabled())
                 continue;
-            
+
             double m = em.getMaxElevation();
             if (m > max)
                 max = m;
@@ -282,6 +335,19 @@ public class CompoundElevationModel extends AbstractElevationModel
         }
 
         return res != 0 ? res : Double.MAX_VALUE;
+    }
+
+    @Override
+    public double[] getBestResolutions(Sector sector)
+    {
+        double[] res = new double[this.elevationModels.size()];
+
+        for (int i = 0; i < this.elevationModels.size(); i++)
+        {
+            res[i] = this.elevationModels.get(i).getBestResolution(sector);
+        }
+
+        return res;
     }
 
     public double getDetailHint(Sector sector)
@@ -413,11 +479,17 @@ public class CompoundElevationModel extends AbstractElevationModel
      *                         contain at least as many elements as the list of locations.
      *
      * @return the resolution achieved, in radians, or {@link Double#MAX_VALUE} if individual elevations cannot be
-     *         determined for all of the locations.
+     * determined for all of the locations.
      */
     public double getElevations(Sector sector, List<? extends LatLon> latlons, double targetResolution, double[] buffer)
     {
-        return this.doGetElevations(sector, latlons, targetResolution, buffer, false);
+        double[] targetResolutions = new double[this.elevationModels.size()];
+        for (int i = 0; i < targetResolutions.length; i++)
+        {
+            targetResolutions[i] = targetResolution;
+        }
+
+        return this.doGetElevations(sector, latlons, targetResolutions, buffer, false)[0];
     }
 
     /**
@@ -438,15 +510,35 @@ public class CompoundElevationModel extends AbstractElevationModel
      *                         contain at least as many elements as the list of locations.
      *
      * @return the resolution achieved, in radians, or {@link Double#MAX_VALUE} if individual elevations cannot be
-     *         determined for all of the locations.
+     * determined for all of the locations.
      */
     public double getUnmappedElevations(Sector sector, List<? extends LatLon> latlons, double targetResolution,
         double[] buffer)
     {
-        return this.doGetElevations(sector, latlons, targetResolution, buffer, false);
+        double[] targetResolutions = new double[this.elevationModels.size()];
+        for (int i = 0; i < targetResolutions.length; i++)
+        {
+            targetResolutions[i] = targetResolution;
+        }
+
+        return this.doGetElevations(sector, latlons, targetResolutions, buffer, false)[0];
     }
 
-    protected double doGetElevations(Sector sector, List<? extends LatLon> latlons, double targetResolution,
+    @Override
+    public double[] getElevations(Sector sector, List<? extends LatLon> latLons, double[] targetResolutions,
+        double[] elevations)
+    {
+        return this.doGetElevations(sector, latLons, targetResolutions, elevations, false);
+    }
+
+    @Override
+    public double[] getUnmappedElevations(Sector sector, List<? extends LatLon> latLons, double[] targetResolutions,
+        double[] elevations)
+    {
+        return this.doGetElevations(sector, latLons, targetResolutions, elevations, false);
+    }
+
+    protected double[] doGetElevations(Sector sector, List<? extends LatLon> latlons, double[] targetResolution,
         double[] buffer, boolean mapMissingData)
     {
         if (sector == null)
@@ -459,6 +551,13 @@ public class CompoundElevationModel extends AbstractElevationModel
         if (latlons == null)
         {
             String msg = Logging.getMessage("nullValue.LatLonListIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (targetResolution == null)
+        {
+            String msg = Logging.getMessage("nullValue.TargetElevationsArrayIsNull");
             Logging.logger().severe(msg);
             throw new IllegalArgumentException(msg);
         }
@@ -480,9 +579,12 @@ public class CompoundElevationModel extends AbstractElevationModel
         // Fill the buffer with ElevationModel contents from lowest resolution to highest, potentially overwriting
         // values at each step. ElevationModels are expected to leave the buffer untouched for locations outside their
         // coverage area.
-        double resolutionAchieved = 0;
-        for (ElevationModel em : this.elevationModels)
+        double[] resolutionAchieved = new double[this.elevationModels.size()];
+        for (int i = 0; i < this.elevationModels.size(); i++)
         {
+            ElevationModel em = this.elevationModels.get(i);
+            resolutionAchieved[i] = 0;
+
             if (!em.isEnabled())
                 continue;
 
@@ -492,12 +594,12 @@ public class CompoundElevationModel extends AbstractElevationModel
 
             double r;
             if (mapMissingData || this.elevationModels.size() == 1)
-                r = em.getElevations(sector, latlons, targetResolution, buffer);
+                r = em.getElevations(sector, latlons, targetResolution[i], buffer);
             else
-                r = em.getUnmappedElevations(sector, latlons, targetResolution, buffer);
+                r = em.getUnmappedElevations(sector, latlons, targetResolution[i], buffer);
 
-            if (r < resolutionAchieved || resolutionAchieved == 0)
-                resolutionAchieved = r;
+            if (r < resolutionAchieved[i] || resolutionAchieved[i] == 0)
+                resolutionAchieved[i] = r;
         }
 
         return resolutionAchieved;
@@ -578,5 +680,58 @@ public class CompoundElevationModel extends AbstractElevationModel
         }
 
         return models > 0 ? availability / models : 1d;
+    }
+
+    @Override
+    public void setExtremesCachingEnabled(boolean enabled)
+    {
+        for (ElevationModel em : this.elevationModels)
+        {
+            em.setExtremesCachingEnabled(enabled);
+        }
+    }
+
+    @Override
+    public boolean isExtremesCachingEnabled()
+    {
+        for (ElevationModel em : this.elevationModels)
+        {
+            if (em.isExtremesCachingEnabled())
+                return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns the elevation for this elevation model's highest level of detail at a specified location if the source
+     * file for that level and the specified location exists in the local elevation cache on disk.
+     * Note that this method consults only those elevation models whose type is {@link BasicElevationModel}.
+     * @param latitude The latitude of the location whose elevation is desired.
+     * @param longitude The longitude of the location whose elevation is desired.
+     * @return The elevation at the specified location, if that location is contained in this elevation model and the
+     * source file for the highest-resolution elevation at that location exists in the current disk cache. Otherwise
+     * this elevation model's missing data signal is returned (see {@link #getMissingDataSignal()}).
+     */
+    public double getUnmappedLocalSourceElevation(Angle latitude, Angle longitude)
+    {
+        double elevation = this.getMissingDataSignal();
+
+        // Traverse the elevation model list from highest resolution to lowest.
+        for (int i = this.elevationModels.size() - 1; i >= 0; i--)
+        {
+            ElevationModel em = this.elevationModels.get(i);
+            if (em instanceof BasicElevationModel && em.isEnabled())
+            {
+                double e = ((BasicElevationModel) em).getUnmappedLocalSourceElevation(latitude, longitude);
+                if (e != em.getMissingDataSignal())
+                {
+                    elevation = e;
+                    break;
+                }
+            }
+        }
+
+        return elevation;
     }
 }

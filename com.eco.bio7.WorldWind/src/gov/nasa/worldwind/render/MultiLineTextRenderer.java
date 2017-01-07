@@ -5,7 +5,6 @@
  */
 package gov.nasa.worldwind.render;
 
-import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.pick.*;
@@ -71,7 +70,7 @@ import java.util.regex.*;
  * <p/> <p> See {@link AbstractAnnotation}.drawAnnotation() for more usage details. </p>
  *
  * @author Patrick Murris
- * @version $Id: MultiLineTextRenderer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: MultiLineTextRenderer.java 2053 2014-06-10 20:16:57Z tgaskins $
  */
 public class MultiLineTextRenderer
 {

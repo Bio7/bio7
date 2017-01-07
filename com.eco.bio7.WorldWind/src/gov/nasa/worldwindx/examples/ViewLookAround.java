@@ -23,7 +23,7 @@ import java.beans.*;
  * view, in this case by using a simple set of sliders.
  *
  * @author Patrick Murris
- * @version $Id: ViewLookAround.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ViewLookAround.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class ViewLookAround extends ApplicationTemplate
 {
@@ -38,7 +38,7 @@ public class ViewLookAround extends ApplicationTemplate
             // Add view control panel to the layer panel
             this.vcp = new ViewControlPanel(getWwd());
             getWwd().setView(new BasicFlyView());
-            this.getLayerPanel().add(this.vcp, BorderLayout.SOUTH);
+            this.getControlPanel().add(this.vcp, BorderLayout.SOUTH);
             Position pos = new Position(new LatLon(Angle.fromDegrees(45), Angle.fromDegrees(-120)), 2000);
             getWwd().getView().setEyePosition(pos);
         }

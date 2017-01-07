@@ -23,7 +23,7 @@ import java.util.logging.Level;
  * only when it is actually needed.
  *
  * @author Lado Garakanidze
- * @version $Id: CachedDataRaster.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: CachedDataRaster.java 3037 2015-04-17 23:08:47Z tgaskins $
  */
 public class CachedDataRaster extends AVListImpl implements DataRaster
 {
@@ -41,7 +41,7 @@ public class CachedDataRaster extends AVListImpl implements DataRaster
     protected final Object rasterUsageLock = new Object();
     protected final Object rasterRetrievalLock = new Object();
 
-    protected String[] requiredKeys = new String[] {AVKey.WIDTH, AVKey.HEIGHT, AVKey.SECTOR, AVKey.PIXEL_FORMAT};
+    protected String[] requiredKeys = new String[] {AVKey.SECTOR, AVKey.PIXEL_FORMAT};
 
     /**
      * Create a cached data raster.

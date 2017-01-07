@@ -37,7 +37,7 @@ import java.util.ArrayList;
  * corners.
  *
  * @author tag
- * @version $Id: RubberSheetImage.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: RubberSheetImage.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class RubberSheetImage extends ApplicationTemplate
 {
@@ -95,7 +95,7 @@ public class RubberSheetImage extends ApplicationTemplate
 
                 controlBox.add(Box.createVerticalGlue());
             }
-            this.getLayerPanel().add(controlBox, BorderLayout.SOUTH);
+            this.getControlPanel().add(controlBox, BorderLayout.SOUTH);
         }
 
         public void actionPerformed(ActionEvent e)
@@ -223,8 +223,6 @@ public class RubberSheetImage extends ApplicationTemplate
             {
                 entry.getEditor().setArmed(false);
             }
-
-            this.appFrame.getLayerPanel().update(this.appFrame.getWwd());
         }
 
         protected SurfaceImageEntry getEntryFor(SurfaceImage surfaceImage)

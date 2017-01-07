@@ -6,8 +6,9 @@
 package gov.nasa.worldwind.render.airspaces;
 
 import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Cylinder;
 import gov.nasa.worldwind.globes.Globe;
-import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
 import javax.media.opengl.*;
@@ -21,7 +22,7 @@ import java.util.*;
  * geometry will not morph to the terrain beneath it.
  *
  * @author dcollins
- * @version $Id: SphereAirspace.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: SphereAirspace.java 2308 2014-09-16 19:27:22Z tgaskins $
  */
 public class SphereAirspace extends AbstractAirspace
 {
@@ -60,6 +61,17 @@ public class SphereAirspace extends AbstractAirspace
 
     public SphereAirspace()
     {
+        this.makeDefaultDetailLevels();
+    }
+
+    public SphereAirspace(SphereAirspace source)
+    {
+        super(source);
+
+        this.location = source.location;
+        this.radius = source.radius;
+        this.subdivisions = source.subdivisions;
+
         this.makeDefaultDetailLevels();
     }
 
@@ -134,7 +146,7 @@ public class SphereAirspace extends AbstractAirspace
         }
 
         this.location = location;
-        this.setExtentOutOfDate();
+        this.invalidateAirspaceData();
     }
 
     /**
@@ -165,7 +177,7 @@ public class SphereAirspace extends AbstractAirspace
         }
 
         this.radius = radius;
-        this.setExtentOutOfDate();
+        this.invalidateAirspaceData();
     }
 
     public Position getReferencePosition()
@@ -248,6 +260,29 @@ public class SphereAirspace extends AbstractAirspace
         return new Sphere(centerPoint, radius);
     }
 
+    protected void doMoveTo(Globe globe, Position oldRef, Position newRef)
+    {
+        if (oldRef == null)
+        {
+            String message = "nullValue.OldRefIsNull";
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+        if (newRef == null)
+        {
+            String message = "nullValue.NewRefIsNull";
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        List<LatLon> locations = new ArrayList<LatLon>(1);
+        locations.add(this.getLocation());
+        List<LatLon> newLocations = LatLon.computeShiftedLocations(globe, oldRef, newRef, locations);
+        this.setLocation(newLocations.get(0));
+
+        super.doMoveTo(oldRef, newRef);
+    }
+
     protected void doMoveTo(Position oldRef, Position newRef)
     {
         if (oldRef == null)
@@ -277,6 +312,27 @@ public class SphereAirspace extends AbstractAirspace
         // point is inside and outside of the sphere.
         double distance = sphere.getCenter().distanceTo3(eyePoint);
         return Math.abs(distance - sphere.getRadius());
+    }
+
+    @Override
+    protected SurfaceShape createSurfaceShape()
+    {
+        return new SurfaceCircle();
+    }
+
+    @Override
+    protected void updateSurfaceShape(DrawContext dc, SurfaceShape shape)
+    {
+        super.updateSurfaceShape(dc, shape);
+
+        shape.getAttributes().setDrawOutline(false); // suppress the surface shape's outline
+    }
+
+    @Override
+    protected void regenerateSurfaceShape(DrawContext dc, SurfaceShape shape)
+    {
+        ((SurfaceCircle) shape).setCenter(this.location);
+        ((SurfaceCircle) shape).setRadius(this.radius);
     }
 
     protected int getSubdivisions()
@@ -323,7 +379,7 @@ public class SphereAirspace extends AbstractAirspace
         }
         else if (Airspace.DRAW_STYLE_OUTLINE.equals(drawStyle))
         {
-            // TODO: sphere airspace outline
+            // Sphere airspaces do not display an outline.
         }
     }
 
@@ -401,7 +457,7 @@ public class SphereAirspace extends AbstractAirspace
             this.getGeometryCache().add(cacheKey, geom);
         }
 
-        this.getRenderer().drawGeometry(dc, geom);
+        this.drawGeometry(dc, geom, geom);
     }
 
     protected void makeSphere(double radius, int subdivisions, Geometry dest)

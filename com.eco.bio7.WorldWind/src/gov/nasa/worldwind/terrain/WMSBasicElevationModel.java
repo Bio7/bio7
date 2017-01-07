@@ -20,7 +20,7 @@ import java.util.List;
 
 /**
  * @author tag
- * @version $Id: WMSBasicElevationModel.java 1957 2014-04-23 23:32:39Z tgaskins $
+ * @version $Id: WMSBasicElevationModel.java 2050 2014-06-09 18:52:26Z tgaskins $
  */
 public class WMSBasicElevationModel extends BasicElevationModel
 {
@@ -376,7 +376,7 @@ public class WMSBasicElevationModel extends BasicElevationModel
     //********************  Composition  ***************************//
     //**************************************************************//
 
-    private static class ElevationCompositionTile extends ElevationTile
+    protected static class ElevationCompositionTile extends ElevationTile
     {
         private int width;
         private int height;

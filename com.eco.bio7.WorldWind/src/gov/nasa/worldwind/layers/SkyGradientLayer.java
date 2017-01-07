@@ -19,7 +19,7 @@ import java.awt.*;
  * Note : based on a spherical globe.<br /> Issue : Ellipsoidal globe doesnt match the spherical atmosphere everywhere.
  *
  * @author Patrick Murris
- * @version $Id: SkyGradientLayer.java 1892 2014-04-04 01:14:40Z tgaskins $
+ * @version $Id: SkyGradientLayer.java 2146 2014-07-11 17:37:04Z tgaskins $
  */
 public class SkyGradientLayer extends AbstractLayer
 {
@@ -119,6 +119,9 @@ public class SkyGradientLayer extends AbstractLayer
     @Override
     public void doRender(DrawContext dc)
     {
+        if (dc.is2DGlobe())
+            return; // Layer doesn't make sense in 2D
+
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         OGLStackHandler ogsh = new OGLStackHandler();
 

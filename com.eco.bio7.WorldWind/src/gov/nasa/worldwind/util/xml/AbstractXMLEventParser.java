@@ -31,13 +31,13 @@ import java.util.*;
  * event types.
  *
  * @author tag
- * @version $Id: AbstractXMLEventParser.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: AbstractXMLEventParser.java 1981 2014-05-08 03:59:04Z tgaskins $
  */
 abstract public class AbstractXMLEventParser implements XMLEventParser
 {
     protected static final String CHARACTERS_CONTENT = "CharactersContent";
 
-    protected final String namespaceURI;
+    protected String namespaceURI;
 
     protected AVList fields;
     protected XMLEventParser parent;
@@ -66,6 +66,11 @@ abstract public class AbstractXMLEventParser implements XMLEventParser
     public String getNamespaceURI()
     {
         return this.namespaceURI;
+    }
+
+    protected void setNamespaceURI(String namespaceURI)
+    {
+        this.namespaceURI = namespaceURI;
     }
 
     public XMLEventParser newInstance() throws Exception
@@ -302,7 +307,7 @@ abstract public class AbstractXMLEventParser implements XMLEventParser
         return null;
     }
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected void doAddCharacters(XMLEventParserContext ctx, XMLEvent event, Object... args)
     {
         String s = ctx.getCharacters(event);
@@ -398,7 +403,7 @@ abstract public class AbstractXMLEventParser implements XMLEventParser
         this.setField(attr.getName(), attr.getValue());
     }
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected String parseCharacterContent(XMLEventParserContext ctx, XMLEvent stringEvent, Object... args)
         throws XMLStreamException
     {

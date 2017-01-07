@@ -24,7 +24,7 @@ import java.util.*;
 
 /**
  * @author Lado Garakanidze
- * @version $Id: GDALDataRaster.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: GDALDataRaster.java 2678 2015-01-24 22:07:39Z tgaskins $
  */
 
 public class GDALDataRaster extends AbstractDataRaster implements Cacheable
@@ -1086,7 +1086,7 @@ public class GDALDataRaster extends AbstractDataRaster implements Cacheable
 //            SpatialReference t_srs = new SpatialReference(t_srs_wkt);
 
                 // check if image fully contains the ROI, in this case we do not need mask
-                if (null == this.area || null == this.srs || !this.area.contains(new GDAL.Area(this.srs, roiSector)))
+                // if (null == this.area || null == this.srs || !this.area.contains(new GDAL.Area(this.srs, roiSector)))
                 {
                     maskDS = this.createMaskDataset(roiWidth, roiHeight, roiSector);
                 }

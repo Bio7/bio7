@@ -19,7 +19,7 @@ import java.util.*;
  * Finds installable data sets, either imagery or elevations.
  *
  * @author tag
- * @version $Id: FileSetFinder.java 1180 2013-02-15 18:40:47Z tgaskins $
+ * @version $Id: FileSetFinder.java 2915 2015-03-20 16:48:43Z tgaskins $
  */
 public class FileSetFinder
 {
@@ -77,22 +77,21 @@ public class FileSetFinder
                     // Just means it's not RPF, so keep going
                 }
 
-//                // This code shows how to consolidate a collection of file sets, grouping them by suffix.
-//                // We don't do this, but the code's left here in case we want to later.
-//                String suffix = WWIO.getSuffix(file.getPath().toUpperCase());
-//                if (suffix != null)
-//                {
-//                    fileSet = this.fileSetMap.get(suffix);
-//                    if (fileSet == null)
-//                    {
-//                        this.fileSetMap.put(suffix, fileSet = new FileSet());
-//                        File parent = new File(file.getParent());
-//                        fileSet.setName(parent.getName());
-//                        fileSet.setDatasetType(suffix);
-//                    }
-//                    fileSet.addFile(file);
-//                    continue;
-//                }
+                // This code shows how to consolidate a collection of file sets, grouping them by suffix.
+                String suffix = WWIO.getSuffix(file.getPath().toUpperCase());
+                if (suffix != null)
+                {
+                    fileSet = this.fileSetMap.get(suffix);
+                    if (fileSet == null)
+                    {
+                        this.fileSetMap.put(suffix, fileSet = new FileSet());
+                        File parent = new File(file.getParent());
+                        fileSet.setName(parent.getName());
+                        fileSet.setDatasetType(suffix);
+                    }
+                    fileSet.addFile(file);
+                    continue;
+                }
 
                 // Just treat it as its own fileset.
                 fileSet = new FileSet();
@@ -112,8 +111,6 @@ public class FileSetFinder
         {
             this.attachMetadata(fileSet);
         }
-
-        return;
     }
 
     public void attachMetadata(FileSet fileSet)

@@ -19,7 +19,7 @@ import java.util.ArrayList;
 
 /**
  * @author Patrick Murris
- * @version $Id: MGRSGraticuleLayer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: MGRSGraticuleLayer.java 2153 2014-07-17 17:33:13Z tgaskins $
  */
 
 public class MGRSGraticuleLayer extends UTMBaseGraticuleLayer
@@ -802,7 +802,7 @@ public class MGRSGraticuleLayer extends UTMBaseGraticuleLayer
         for (String type : graticuleType)
         {
             getRenderingParams(type).setValue(
-                GraticuleRenderingParams.KEY_LINE_CONFORMANCE, this.polylineTerrainConformance);
+                GraticuleRenderingParams.KEY_LINE_CONFORMANCE, this.terrainConformance);
         }
     }
 
@@ -1054,7 +1054,8 @@ public class MGRSGraticuleLayer extends UTMBaseGraticuleLayer
 
         public boolean isInView(DrawContext dc)
         {
-            return viewFrustum.intersects(this.getExtent(dc.getGlobe(), dc.getVerticalExaggeration()));
+            return dc.getView().getFrustumInModelCoordinates().intersects(
+                this.getExtent(dc.getGlobe(), dc.getVerticalExaggeration()));
         }
 
         public void selectRenderables(DrawContext dc, Sector vs, MGRSGraticuleLayer layer)
@@ -1232,7 +1233,7 @@ public class MGRSGraticuleLayer extends UTMBaseGraticuleLayer
             positions.clear();
             positions.add(new Position(this.sector.getMinLatitude(), this.sector.getMinLongitude(), 10e3));
             positions.add(new Position(this.sector.getMaxLatitude(), this.sector.getMinLongitude(), 10e3));
-            Object polyline = createLineRenderable(positions, Polyline.LINEAR);
+            Object polyline = createLineRenderable(new ArrayList<Position>(positions), AVKey.LINEAR);
             Sector lineSector = new Sector(this.sector.getMinLatitude(), this.sector.getMaxLatitude(),
                 this.sector.getMinLongitude(), this.sector.getMinLongitude());
             this.gridElements.add(new GridElement(lineSector, polyline, GridElement.TYPE_LINE_WEST));
@@ -1243,7 +1244,7 @@ public class MGRSGraticuleLayer extends UTMBaseGraticuleLayer
                 positions.clear();
                 positions.add(new Position(this.sector.getMinLatitude(), this.sector.getMaxLongitude(), 10e3));
                 positions.add(new Position(this.sector.getMaxLatitude(), this.sector.getMaxLongitude(), 10e3));
-                polyline = createLineRenderable(positions, Polyline.LINEAR);
+                polyline = createLineRenderable(new ArrayList<Position>(positions), AVKey.LINEAR);
                 lineSector = new Sector(this.sector.getMinLatitude(), this.sector.getMaxLatitude(),
                     this.sector.getMaxLongitude(), this.sector.getMaxLongitude());
                 this.gridElements.add(new GridElement(lineSector, polyline, GridElement.TYPE_LINE_EAST));
@@ -1252,7 +1253,7 @@ public class MGRSGraticuleLayer extends UTMBaseGraticuleLayer
                 positions.clear();
                 positions.add(new Position(this.sector.getMinLatitude(), this.sector.getMinLongitude(), 10e3));
                 positions.add(new Position(this.sector.getMinLatitude(), this.sector.getMaxLongitude(), 10e3));
-                polyline = createLineRenderable(positions, Polyline.LINEAR);
+                polyline = createLineRenderable(new ArrayList<Position>(positions), AVKey.LINEAR);
                 lineSector = new Sector(this.sector.getMinLatitude(), this.sector.getMinLatitude(),
                     this.sector.getMinLongitude(), this.sector.getMaxLongitude());
                 this.gridElements.add(new GridElement(lineSector, polyline, GridElement.TYPE_LINE_SOUTH));
@@ -1261,7 +1262,7 @@ public class MGRSGraticuleLayer extends UTMBaseGraticuleLayer
                 positions.clear();
                 positions.add(new Position(this.sector.getMaxLatitude(), this.sector.getMinLongitude(), 10e3));
                 positions.add(new Position(this.sector.getMaxLatitude(), this.sector.getMaxLongitude(), 10e3));
-                polyline = createLineRenderable(positions, Polyline.LINEAR);
+                polyline = createLineRenderable(new ArrayList<Position>(positions), AVKey.LINEAR);
                 lineSector = new Sector(this.sector.getMaxLatitude(), this.sector.getMaxLatitude(),
                     this.sector.getMinLongitude(), this.sector.getMaxLongitude());
                 this.gridElements.add(new GridElement(lineSector, polyline, GridElement.TYPE_LINE_NORTH));

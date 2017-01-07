@@ -21,7 +21,7 @@ import java.util.*;
  * Polyline.
  *
  * @author tag
- * @version $Id: LineBackground.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: LineBackground.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class LineBackground extends ApplicationTemplate
 {
@@ -95,8 +95,6 @@ public class LineBackground extends ApplicationTemplate
                 layer.addRenderable(pl2);
 
                 insertBeforeCompass(this.getWwd(), layer);
-
-                this.getLayerPanel().update(this.getWwd());
 
                 // Move the view to the line locations.
                 View view = getWwd().getView();

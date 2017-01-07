@@ -6,9 +6,11 @@
 package gov.nasa.worldwind.util;
 
 import gov.nasa.worldwind.cache.SessionCache;
+import gov.nasa.worldwind.ogc.wms.WMSCapabilities;
 import gov.nasa.worldwind.retrieve.*;
 
 import java.beans.*;
+import java.nio.channels.ClosedByInterruptException;
 
 /**
  * SessionCache inspects the results of a retrieval for success or failure. If the retrieval succeeded, this places the
@@ -17,17 +19,17 @@ import java.beans.*;
  * change event signalling that the retrieval is complete.
  *
  * @author dcollins
- * @version $Id: SessionCacheRetrievalPostProcessor.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: SessionCacheRetrievalPostProcessor.java 3086 2015-05-13 20:27:38Z dcollins $
  */
 public class SessionCacheRetrievalPostProcessor implements RetrievalPostProcessor
 {
-    private String name;
-    private final SessionCache cache;
-    private final Object cacheKey;
-    private final AbsentResourceList absentResourceList;
-    private final long resourceID;
-    private final PropertyChangeListener propertyListener;
-    private final String propertyName;
+    protected String name;
+    protected final SessionCache cache;
+    protected final Object cacheKey;
+    protected final AbsentResourceList absentResourceList;
+    protected final long resourceID;
+    protected final PropertyChangeListener propertyListener;
+    protected final String propertyName;
 
     /**
      * Constructs a SessionCachePostProcessor with a specified cache and cache key, and an optional property listener
@@ -186,10 +188,17 @@ public class SessionCacheRetrievalPostProcessor implements RetrievalPostProcesso
 
     protected void onRetrievalSuceeded(Retriever retriever)
     {
-        // Put the retrieved data in the session cache, using the specified cache key.
-        if (this.absentResourceList != null)
-            this.absentResourceList.unmarkResourceAbsent(this.resourceID);
-        this.cache.put(this.cacheKey, retriever.getBuffer());
+        try
+        {
+            this.handleContent(retriever);
+
+            if (this.absentResourceList != null)
+                this.absentResourceList.unmarkResourceAbsent(this.resourceID);
+        }
+        catch (Exception e)
+        {
+            this.handleContentException(retriever, e);
+        }
     }
 
     @SuppressWarnings({"UnusedDeclaration"})
@@ -218,6 +227,46 @@ public class SessionCacheRetrievalPostProcessor implements RetrievalPostProcesso
         {
             this.propertyListener.propertyChange(
                 new PropertyChangeEvent(this, this.propertyName, null, this.propertyListener));
+        }
+    }
+
+    protected void handleContent(Retriever retriever) throws Exception
+    {
+        String uppercaseName = retriever.getName().toUpperCase();
+        if (uppercaseName.contains("SERVICE=WMS") && uppercaseName.contains("REQUEST=GETCAPABILITIES"))
+        {
+            this.handleWMSCapabilitiesContent(retriever);
+        }
+        else
+        {
+            this.handleUnknownContent(retriever);
+        }
+    }
+
+    protected void handleWMSCapabilitiesContent(Retriever retriever) throws Exception
+    {
+        WMSCapabilities caps = new WMSCapabilities(retriever.getBuffer());
+        this.cache.put(this.cacheKey, caps.parse());
+    }
+
+    protected void handleUnknownContent(Retriever retriever) throws Exception
+    {
+        this.cache.put(this.cacheKey, retriever.getBuffer());
+    }
+
+    protected void handleContentException(Retriever retriever, Exception e)
+    {
+        if (e instanceof ClosedByInterruptException)
+        {
+            Logging.logger().log(java.util.logging.Level.FINE,
+                Logging.getMessage("generic.OperationCancelled",
+                    "retrieval post-processing for " + retriever.getName()), e);
+        }
+        else
+        {
+            this.onRetrievalFailed(retriever);
+            Logging.logger().log(java.util.logging.Level.SEVERE,
+                Logging.getMessage("generic.ExceptionWhileSavingRetreivedData", retriever.getName()), e);
         }
     }
 

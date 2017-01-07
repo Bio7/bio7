@@ -22,7 +22,7 @@ import java.util.Hashtable;
  * oriented ellipsoid at a geographic position on the Globe.
  *
  * @author ccrick
- * @version $Id: Ellipsoids.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: Ellipsoids.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class Ellipsoids extends ApplicationTemplate
 {
@@ -31,7 +31,7 @@ public class Ellipsoids extends ApplicationTemplate
         public AppFrame()
         {
             // Add detail hint slider panel
-            this.getLayerPanel().add(makeDetailHintControlPanel(), BorderLayout.SOUTH);
+            this.getControlPanel().add(makeDetailHintControlPanel(), BorderLayout.SOUTH);
 
             RenderableLayer layer = new RenderableLayer();
 
@@ -136,8 +136,6 @@ public class Ellipsoids extends ApplicationTemplate
 
             // Add the layer to the model.
             insertBeforeCompass(getWwd(), layer);
-            // Update layer panel.
-            this.getLayerPanel().update(this.getWwd());
         }
 
         protected JPanel makeDetailHintControlPanel()

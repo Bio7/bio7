@@ -13,7 +13,7 @@ import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.Logging;
 
 import javax.media.opengl.GL2;
-import java.util.Collection;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * for rendering, picking, and disposal.
  *
  * @author tag
- * @version $Id: RenderableLayer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: RenderableLayer.java 3435 2015-10-13 10:32:43Z dcollins $
  * @see gov.nasa.worldwind.render.Renderable
  */
 public class RenderableLayer extends AbstractLayer
@@ -36,8 +36,9 @@ public class RenderableLayer extends AbstractLayer
     }
 
     /**
-     * Adds the specified <code>renderable</code> to this layer's internal collection. If this layer's internal
-     * collection has been overridden with a call to {@link #setRenderables(Iterable)}, this will throw an exception.
+     * Adds the specified <code>renderable</code> to the end of this layer's internal collection. If this layer's
+     * internal collection has been overridden with a call to {@link #setRenderables(Iterable)}, this will throw an
+     * exception.
      * <p/>
      * If the <code>renderable</code> implements {@link gov.nasa.worldwind.avlist.AVList}, the layer forwards its
      * property change events to the layer's property change listeners. Any property change listeners the layer attaches
@@ -66,6 +67,61 @@ public class RenderableLayer extends AbstractLayer
         }
 
         this.renderables.add(renderable);
+
+        // Attach the layer as a property change listener of the renderable. This forwards property change events from
+        // the renderable to the SceneController.
+        if (renderable instanceof AVList)
+            ((AVList) renderable).addPropertyChangeListener(this);
+    }
+
+    /**
+     * Inserts the specified <code>renderable</code> at the specified <code>index</code> in this layer's internal
+     * collection. If this layer's internal collection has been overridden with a call to {@link
+     * #setRenderables(Iterable)}, this will throw an exception.
+     * <p/>
+     * If the <code>renderable</code> implements {@link gov.nasa.worldwind.avlist.AVList}, the layer forwards its
+     * property change events to the layer's property change listeners. Any property change listeners the layer attaches
+     * to the <code>renderable</code> are removed in {@link #removeRenderable(gov.nasa.worldwind.render.Renderable)},
+     * {@link #removeAllRenderables()}, or {@link #dispose()}.
+     *
+     * @param index      the index at which to insert the specified renderable.
+     * @param renderable Renderable to insert.
+     *
+     * @throws IllegalArgumentException If <code>renderable</code> is null, if the <code>index</code> is less than zero,
+     *                                  or if the <code>index</code> is greater than the number of renderables in this
+     *                                  layer.
+     * @throws IllegalStateException    If a custom Iterable has been specified by a call to <code>setRenderables</code>.
+     */
+    public void addRenderable(int index, Renderable renderable)
+    {
+        if (renderable == null)
+        {
+            String msg = Logging.getMessage("nullValue.RenderableIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (this.renderablesOverride != null)
+        {
+            String msg = Logging.getMessage("generic.LayerIsUsingCustomIterable");
+            Logging.logger().severe(msg);
+            throw new IllegalStateException(msg);
+        }
+
+        if (index < 0 || index > this.renderables.size())
+        {
+            String msg = Logging.getMessage("generic.indexOutOfRange", index);
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        // The renderables are contained in a ConcurrentLinkedQueue, which does not support element insertion. Make a
+        // shallow copy of the queue, insert into the copy, then replace the queue contents with the copy. This process
+        // maintains the element order, with the new renderabable inserted in the specified index.
+        ArrayList<Renderable> copy = new ArrayList<Renderable>(this.renderables);
+        copy.add(index, renderable);
+        this.renderables.clear();
+        this.renderables.addAll(copy);
 
         // Attach the layer as a property change listener of the renderable. This forwards property change events from
         // the renderable to the SceneController.

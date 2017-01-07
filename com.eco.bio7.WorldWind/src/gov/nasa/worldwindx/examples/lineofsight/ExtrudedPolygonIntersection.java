@@ -21,7 +21,7 @@ import java.util.*;
  * Shows how to determine and display the intersection of a line with an {@link ExtrudedPolygon}.
  *
  * @author tag
- * @version $Id: ExtrudedPolygonIntersection.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ExtrudedPolygonIntersection.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class ExtrudedPolygonIntersection extends ApplicationTemplate
 {
@@ -128,8 +128,6 @@ public class ExtrudedPolygonIntersection extends ApplicationTemplate
             path.setAttributes(pathAttributes);
             this.resultsLayer.addRenderable(path);
 
-            this.layerPanel.update(this.getWwd());
-
             this.getWwd().redraw();
         }
 
@@ -144,8 +142,6 @@ public class ExtrudedPolygonIntersection extends ApplicationTemplate
             pointAttributes.setUsePointAsDefaultImage(true);
             iPoint.setAttributes(pointAttributes);
             this.resultsLayer.addRenderable(iPoint);
-
-            this.layerPanel.update(this.getWwd());
 
             this.getWwd().redraw();
         }

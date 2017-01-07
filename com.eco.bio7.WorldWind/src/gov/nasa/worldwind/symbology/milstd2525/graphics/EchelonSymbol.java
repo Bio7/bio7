@@ -22,7 +22,7 @@ import java.awt.geom.*;
  * Tactical symbol implementation to render the echelon modifier as part of a tactical graphic.
  *
  * @author pabercrombie
- * @version $Id: EchelonSymbol.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: EchelonSymbol.java 2196 2014-08-06 19:42:15Z tgaskins $
  */
 public class EchelonSymbol extends AbstractTacticalSymbol
 {
@@ -123,9 +123,9 @@ public class EchelonSymbol extends AbstractTacticalSymbol
     }
 
     @Override
-    protected void computeTransform(DrawContext dc)
+    protected void computeTransform(DrawContext dc, OrderedSymbol osym)
     {
-        super.computeTransform(dc);
+        super.computeTransform(dc, osym);
 
         boolean orientationReversed = false;
         if (this.orientationPosition != null)
@@ -136,9 +136,9 @@ public class EchelonSymbol extends AbstractTacticalSymbol
                 this.orientationPosition.getLongitude(), 0);
             Vec4 orientationScreenPoint = dc.getView().project(orientationPlacePoint);
 
-            this.rotation = this.computeRotation(this.screenPoint, orientationScreenPoint);
+            this.rotation = this.computeRotation(osym.screenPoint, orientationScreenPoint);
 
-            orientationReversed = (this.screenPoint.x <= orientationScreenPoint.x);
+            orientationReversed = (osym.screenPoint.x <= orientationScreenPoint.x);
         }
 
         if (this.getOffset() != null && this.iconRect != null)
@@ -170,13 +170,13 @@ public class EchelonSymbol extends AbstractTacticalSymbol
                 offsetPoint = new Point((int) pOffset.getX(), (int) pOffset.getY());
             }
 
-            this.dx = -this.iconRect.getX() - offsetPoint.getX();
-            this.dy = -(this.iconRect.getY() - offsetPoint.getY());
+            osym.dx = -this.iconRect.getX() - offsetPoint.getX();
+            osym.dy = -(this.iconRect.getY() - offsetPoint.getY());
         }
         else
         {
-            this.dx = 0;
-            this.dy = 0;
+            osym.dx = 0;
+            osym.dy = 0;
         }
     }
 

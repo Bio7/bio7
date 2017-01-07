@@ -5,10 +5,10 @@
  */
 package gov.nasa.worldwind.layers;
 
-import gov.nasa.worldwind.View;
+import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.globes.Globe;
+import gov.nasa.worldwind.globes.*;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 import gov.nasa.worldwind.view.orbit.OrbitView;
@@ -20,7 +20,7 @@ import java.util.*;
  * Displays a graticule.
  *
  * @author Patrick Murris
- * @version $Id: AbstractGraticuleLayer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: AbstractGraticuleLayer.java 2153 2014-07-17 17:33:13Z tgaskins $
  */
 public class AbstractGraticuleLayer extends AbstractLayer
 {
@@ -47,10 +47,8 @@ public class AbstractGraticuleLayer extends AbstractLayer
 
     protected ArrayList<GridElement> gridElements;
     protected GraticuleSupport graticuleSupport = new GraticuleSupport();
-    protected double polylineTerrainConformance = 50;
-    protected Frustum viewFrustum;
+    protected double terrainConformance = 50;
     protected Globe globe;
-    protected boolean useSurfaceShapes = false; // TODO: Set to true for Surface polyline test
 
     // Update reference states
     protected Vec4 lastEyePoint;
@@ -58,6 +56,8 @@ public class AbstractGraticuleLayer extends AbstractLayer
     protected double lastViewPitch = 0;
     protected double lastViewFOV = 0;
     protected double lastVerticalExaggeration = 1;
+    protected GeographicProjection lastProjection;
+    protected long frameTimeStamp; // used only for 2D continuous globes to determine whether render is in same frame
 
     public AbstractGraticuleLayer()
     {
@@ -547,16 +547,30 @@ public class AbstractGraticuleLayer extends AbstractLayer
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
         }
-        if (this.needsToUpdate(dc))
-        {
-            // Init frame
-            this.clear(dc);
 
-            // Select renderables
-            this.selectRenderables(dc);
+        if (dc.isContinuous2DGlobe())
+        {
+            if (this.needsToUpdate(dc))
+            {
+                this.clear(dc);
+                this.selectRenderables(dc);
+            }
+
+            // If the frame time stamp is the same, then this is the second or third pass of the same frame. We continue
+            // selecting renderables in these passes.
+            if (dc.getFrameTimeStamp() == this.frameTimeStamp)
+                this.selectRenderables(dc);
+
+            this.frameTimeStamp = dc.getFrameTimeStamp();
         }
-        // Pre render
-        this.preRenderGraticule(dc);
+        else
+        {
+            if (this.needsToUpdate(dc))
+            {
+                this.clear(dc);
+                this.selectRenderables(dc);
+            }
+        }
     }
 
     public void doRender(DrawContext dc)
@@ -570,18 +584,6 @@ public class AbstractGraticuleLayer extends AbstractLayer
 
         // Render
         this.renderGraticule(dc);
-    }
-
-    protected void preRenderGraticule(DrawContext dc)
-    {
-        if (dc == null)
-        {
-            String message = Logging.getMessage("nullValue.DrawContextIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        this.graticuleSupport.preRender(dc, this.getOpacity());
     }
 
     protected void renderGraticule(DrawContext dc)
@@ -645,20 +647,35 @@ public class AbstractGraticuleLayer extends AbstractLayer
         if (Math.abs(this.lastViewFOV - view.getFieldOfView().degrees) > 1)
             return true;
 
+        // We must test the globe and its projection to see if either changed. We can't simply use the globe state
+        // key for this because we don't want a 2D globe offset change to cause an update. Offset changes don't
+        // invalidate the current set of renderables.
+
+        if (dc.getGlobe() != this.globe)
+            return true;
+
+        if (dc.is2DGlobe())
+        {
+            if (((Globe2D) dc.getGlobe()).getProjection() != this.lastProjection)
+                return true;
+        }
+
         return false;
     }
 
     protected void clear(DrawContext dc)
     {
         this.removeAllRenderables();
-        this.polylineTerrainConformance = computeTerrainConformance(dc);
-        this.viewFrustum = dc.getView().getFrustumInModelCoordinates();
+        this.terrainConformance = computeTerrainConformance(dc);
         this.globe = dc.getGlobe();
         this.lastEyePoint = dc.getView().getEyePoint();
         this.lastViewFOV = dc.getView().getFieldOfView().degrees;
         this.lastViewHeading = dc.getView().getHeading().degrees;
         this.lastViewPitch = dc.getView().getPitch().degrees;
         this.lastVerticalExaggeration = dc.getVerticalExaggeration();
+
+        if (dc.is2DGlobe())
+            this.lastProjection = ((Globe2D) dc.getGlobe()).getProjection();
     }
 
     protected double computeTerrainConformance(DrawContext dc)
@@ -700,24 +717,14 @@ public class AbstractGraticuleLayer extends AbstractLayer
         return labelPos;
     }
 
-    protected Object createLineRenderable(Iterable<? extends LatLon> positions, int pathType)
+    protected Object createLineRenderable(Iterable<? extends Position> positions, String pathType)
     {
-        Object renderable;
-        if (this.useSurfaceShapes)
-        {
-            SurfacePolyline polyline = new SurfacePolyline(positions);
-            polyline.setPathType(pathType == Polyline.LINEAR ? AVKey.LINEAR : AVKey.GREAT_CIRCLE);
-            renderable = polyline;
-        }
-        else
-        {
-            Polyline polyline = new Polyline(positions, 0);
-            polyline.setPathType(pathType);
-            polyline.setFollowTerrain(true);
-            polyline.setTerrainConformance(50);
-            renderable = polyline;
-        }
-        return renderable;
+        Path path = new Path(positions);
+        path.setPathType(pathType);
+        path.setFollowTerrain(true);
+        path.setTerrainConformance(1);
+        path.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
+        return path;
     }
 
     protected class GridElement

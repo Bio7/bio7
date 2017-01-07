@@ -16,7 +16,7 @@ import java.awt.*;
  * using the system's native browser, and who's origin is located at a point on the screen.
  *
  * @author pabercrombie
- * @version $Id: ScreenBrowserBalloon.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ScreenBrowserBalloon.java 2148 2014-07-14 16:27:49Z tgaskins $
  * @see gov.nasa.worldwind.render.AbstractBrowserBalloon
  */
 public class ScreenBrowserBalloon extends AbstractBrowserBalloon implements ScreenBalloon
@@ -51,6 +51,12 @@ public class ScreenBrowserBalloon extends AbstractBrowserBalloon implements Scre
         this.screenLocation = point;
     }
 
+    @Override
+    protected OrderedBrowserBalloon createOrderedRenderable()
+    {
+        return new OrderedBrowserBalloon();
+    }
+
     /** {@inheritDoc} */
     public Point getScreenLocation()
     {
@@ -82,14 +88,14 @@ public class ScreenBrowserBalloon extends AbstractBrowserBalloon implements Scre
      *
      * @param dc the current draw context.
      */
-    protected void computeBalloonPoints(DrawContext dc)
+    protected void computeBalloonPoints(DrawContext dc, OrderedBrowserBalloon obb)
     {
         this.screenOffset = null;
-        this.screenRect = null;
-        this.screenExtent = null;
-        this.screenPickExtent = null;
-        this.webViewRect = null;
-        this.eyeDistance = 0;
+        obb.screenRect = null;
+        obb.screenExtent = null;
+        obb.screenPickExtent = null;
+        obb.webViewRect = null;
+        obb.eyeDistance = 0;
 
         BalloonAttributes activeAttrs = this.getActiveAttributes();
         Dimension size = this.computeSize(dc, activeAttrs);
@@ -102,23 +108,23 @@ public class ScreenBrowserBalloon extends AbstractBrowserBalloon implements Scre
         // For example, an offset of (-10, -10) in pixels places the reference point below and to the left of the frame.
         // Since the screen reference point is fixed, the frame appears to move relative to the reference point.
         int y = dc.getView().getViewport().height - this.screenLocation.y;
-        this.screenRect = new Rectangle(this.screenLocation.x - this.screenOffset.x, y - this.screenOffset.y,
+        obb.screenRect = new Rectangle(this.screenLocation.x - this.screenOffset.x, y - this.screenOffset.y,
             size.width, size.height);
         // Compute the screen extent as the rectangle containing the balloon's screen rectangle and its screen point.
-        this.screenExtent = new Rectangle(this.screenRect);
-        this.screenExtent.add(this.screenLocation.x, y);
+        obb.screenExtent = new Rectangle(obb.screenRect);
+        obb.screenExtent.add(this.screenLocation.x, y);
         // Compute the pickable screen extent as the screen extent, plus the width of the balloon's pickable outline.
         // This extent is used during picking to ensure that the balloon's outline is pickable when it exceeds the
         // balloon's screen extent.
-        this.screenPickExtent = this.computeFramePickRect(this.screenExtent);
+        obb.screenPickExtent = this.computeFramePickRect(obb.screenExtent);
         // Compute the WebView rectangle as an inset of the screen rectangle, given the current inset values.
-        this.webViewRect = this.computeWebViewRectForFrameRect(activeAttrs, this.screenRect);
+        obb.webViewRect = this.computeWebViewRectForFrameRect(activeAttrs, obb.screenRect);
         // The screen balloon has no eye distance; assign it to zero.
-        this.eyeDistance = 0;
+        obb.eyeDistance = 0;
     }
 
     /** {@inheritDoc} */
-    protected void setupDepthTest(DrawContext dc)
+    protected void setupDepthTest(DrawContext dc, OrderedBrowserBalloon obb)
     {
         dc.getGL().glDisable(GL.GL_DEPTH_TEST);
     }

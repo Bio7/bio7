@@ -25,7 +25,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * user interface.
  *
  * @author tag
- * @version $Id: LocalElevationModel.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: LocalElevationModel.java 2138 2014-07-10 17:31:58Z tgaskins $
  */
 public class LocalElevationModel extends AbstractElevationModel
 {
@@ -133,7 +133,7 @@ public class LocalElevationModel extends AbstractElevationModel
 
         for (LocalTile tile : tiles)
         {
-            if (!sector.intersects(tile.sector))
+            if (sector != null && !sector.intersects(tile.sector))
                 continue;
 
             double r = tile.sector.getDeltaLatRadians() / tile.tileHeight;
@@ -142,6 +142,17 @@ public class LocalElevationModel extends AbstractElevationModel
         }
 
         return res;
+    }
+
+    @Override
+    public void setExtremesCachingEnabled(boolean enabled)
+    {
+    }
+
+    @Override
+    public boolean isExtremesCachingEnabled()
+    {
+        return false;
     }
 
     public double getUnmappedElevation(Angle latitude, Angle longitude)

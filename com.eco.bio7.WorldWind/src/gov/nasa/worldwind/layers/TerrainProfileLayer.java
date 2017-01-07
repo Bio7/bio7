@@ -5,7 +5,6 @@
  */
 package gov.nasa.worldwind.layers;
 
-import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.event.*;
@@ -28,7 +27,7 @@ import java.util.List;
  * and end latlon... </p>
  *
  * @author Patrick Murris
- * @version $Id: TerrainProfileLayer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: TerrainProfileLayer.java 2053 2014-06-10 20:16:57Z tgaskins $
  */
 public class TerrainProfileLayer extends AbstractLayer implements PositionListener, SelectListener
 {

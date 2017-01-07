@@ -17,7 +17,7 @@ import java.awt.event.*;
  * Shows how to detach World Wind from the network and reattach it.
  *
  * @author tag
- * @version $Id: NetworkOfflineMode.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: NetworkOfflineMode.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class NetworkOfflineMode extends ApplicationTemplate
 {
@@ -27,7 +27,7 @@ public class NetworkOfflineMode extends ApplicationTemplate
         {
             super(true, true, false);
 
-            this.getLayerPanel().add(makeControlPanel(), BorderLayout.SOUTH);
+            this.getControlPanel().add(makeControlPanel(), BorderLayout.SOUTH);
         }
 
         protected JPanel makeControlPanel()

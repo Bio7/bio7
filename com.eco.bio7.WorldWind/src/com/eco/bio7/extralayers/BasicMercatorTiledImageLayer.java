@@ -1,26 +1,21 @@
 /*
-Copyright (C) 2001, 2009 United States Government
-as represented by the Administrator of the
-National Aeronautics and Space Administration.
-All Rights Reserved.
-*/
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
+ * National Aeronautics and Space Administration.
+ * All Rights Reserved.
+ */
+
 package com.eco.bio7.extralayers;
 
-
+import com.jogamp.opengl.util.texture.*;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.cache.*;
-import gov.nasa.worldwind.formats.dds.StandaloneDDSConverter;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.retrieve.*;
 import gov.nasa.worldwind.util.*;
+
 import javax.imageio.ImageIO;
-import javax.media.opengl.GLProfile;
-
-import com.jogamp.opengl.util.texture.TextureData;
-import com.jogamp.opengl.util.texture.TextureIO;
-
 import java.awt.image.*;
 import java.io.*;
 import java.net.*;
@@ -30,7 +25,7 @@ import java.nio.ByteBuffer;
  * BasicTiledImageLayer modified 2009-02-03 to add support for Mercator projections.
  *
  * @author tag
- * @version $Id: BasicMercatorTiledImageLayer.java 13201 2010-03-12 01:59:03Z tgaskins $
+ * @version $Id: BasicMercatorTiledImageLayer.java 1171 2013-02-11 21:45:02Z dcollins $
  */
 public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
 {
@@ -40,15 +35,13 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
     {
         super(levelSet);
 
-        if (!WorldWind.getMemoryCacheSet().containsCache(
-            MercatorTextureTile.class.getName()))
+        if (!WorldWind.getMemoryCacheSet().containsCache(MercatorTextureTile.class.getName()))
         {
             long size = Configuration.getLongValue(
                 AVKey.TEXTURE_IMAGE_CACHE_SIZE, 3000000L);
             MemoryCache cache = new BasicMemoryCache((long) (0.85 * size), size);
             cache.setName("Texture Tiles");
-            WorldWind.getMemoryCacheSet().addCache(
-                MercatorTextureTile.class.getName(), cache);
+            WorldWind.getMemoryCacheSet().addCache(MercatorTextureTile.class.getName(), cache);
         }
     }
 
@@ -204,7 +197,7 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
     {
         try
         {
-            return TextureIO.newTextureData(GLProfile.getDefault(),url, useMipMaps, null);
+            return OGLUtil.newTextureData(Configuration.getMaxCompatibleGLProfile(), url, useMipMaps);
         }
         catch (Exception e)
         {
@@ -249,15 +242,13 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
 
         if ("http".equalsIgnoreCase(url.getProtocol()))
         {
-            retriever = new HTTPRetriever(url, new DownloadPostProcessor(tile,
-                this));
+            retriever = new HTTPRetriever(url, new DownloadPostProcessor(tile, this));
+            retriever.setValue(URLRetriever.EXTRACT_ZIP_ENTRY, "true"); // supports legacy layers
         }
         else
         {
             Logging.logger().severe(
-                Logging.getMessage(
-                    "layers.TextureLayer.UnknownRetrievalProtocol", url
-                        .toString()));
+                Logging.getMessage("layers.TextureLayer.UnknownRetrievalProtocol", url.toString()));
             return;
         }
 
@@ -281,7 +272,7 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
     private void saveBuffer(java.nio.ByteBuffer buffer, java.io.File outFile)
         throws java.io.IOException
     {
-        synchronized (this.fileLock) // sychronized with read of file in RequestTask.run()
+        synchronized (this.fileLock) // synchronized with read of file in RequestTask.run()
         {
             WWIO.saveBuffer(buffer, outFile);
         }
@@ -379,14 +370,13 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
                         // Assume it's zipped DDS, which the retriever would have unzipped into the buffer.
                         this.layer.saveBuffer(buffer, outFile);
                     }
-                    else if (outFile.getName().endsWith(".dds"))
-                    {
-                        // Convert to DDS and save the result.
-                    	/*Changed for Bio7!*/
-                      /*  buffer = StandaloneDDSConverter.convertToDDS(buffer, contentType);
-                        if (buffer != null)
-                            this.layer.saveBuffer(buffer, outFile);*/
-                    }
+//                    else if (outFile.getName().endsWith(".dds"))
+//                    {
+//                        // Convert to DDS and save the result.
+//                        buffer = DDSConverter.convertToDDS(buffer, contentType);
+//                        if (buffer != null)
+//                            this.layer.saveBuffer(buffer, outFile);
+//                    }
                     else if (contentType.contains("image"))
                     {
                         BufferedImage image = this.layer.convertBufferToImage(buffer);
@@ -462,7 +452,7 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
             image = transform(image, sector);
             String extension = outFile.getName().substring(
                 outFile.getName().lastIndexOf('.') + 1);
-            synchronized (this.fileLock) // sychronized with read of file in RequestTask.run()
+            synchronized (this.fileLock) // synchronized with read of file in RequestTask.run()
             {
                 return ImageIO.write(image, extension, outFile);
             }
@@ -495,8 +485,8 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
             for (int x = 0; x < image.getWidth(); x++)
             {
                 trans.setRGB(x, y, image.getRGB(x, iy));
-			}
-		}
-		return trans;
-	}
+            }
+        }
+        return trans;
+    }
 }

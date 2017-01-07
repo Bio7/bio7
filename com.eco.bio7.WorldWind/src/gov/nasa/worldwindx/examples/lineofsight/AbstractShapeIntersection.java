@@ -25,7 +25,7 @@ import java.util.List;
  * perpendicular to the globe.
  *
  * @author ccrick
- * @version $Id: AbstractShapeIntersection.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: AbstractShapeIntersection.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class AbstractShapeIntersection extends ApplicationTemplate
 {
@@ -126,8 +126,6 @@ public class AbstractShapeIntersection extends ApplicationTemplate
             path.setAttributes(pathAttributes);
             this.resultsLayer.addRenderable(path);
 
-            this.layerPanel.update(this.getWwd());
-
             this.getWwd().redraw();
         }
 
@@ -142,8 +140,6 @@ public class AbstractShapeIntersection extends ApplicationTemplate
             pointAttributes.setUsePointAsDefaultImage(true);
             iPoint.setAttributes(pointAttributes);
             this.resultsLayer.addRenderable(iPoint);
-
-            this.layerPanel.update(this.getWwd());
 
             this.getWwd().redraw();
         }

@@ -25,7 +25,7 @@ import java.util.ArrayList;
  * scale factor by calling <code>{@link WWIcon#setBackgroundScale(double)}</code>.
  *
  * @author Tom Gaskins
- * @version $Id: AlarmIcons.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: AlarmIcons.java 2139 2014-07-10 18:52:17Z tgaskins $
  */
 public class AlarmIcons extends ApplicationTemplate
 {
@@ -36,7 +36,7 @@ public class AlarmIcons extends ApplicationTemplate
 
         public AppFrame()
         {
-            super(true, false, false);
+            super(true, true, false);
 
             IconLayer layer = new IconLayer();
             icon = new UserFacingIcon("src/images/32x32-icon-nasa.png",
@@ -65,7 +65,7 @@ public class AlarmIcons extends ApplicationTemplate
             alarmTypes.add(new FlashingAlarmAction("Flashing Red Square", squareRed, 200));
             alarmTypes.add(new FlashingAlarmAction("Flashing Yellow Triangle", triangleYellow, 200));
 
-            this.getContentPane().add(this.makeControlPanel(), BorderLayout.WEST);
+            this.getControlPanel().add(this.makeControlPanel(), BorderLayout.SOUTH);
         }
 
         private JPanel makeControlPanel()

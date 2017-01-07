@@ -8,20 +8,20 @@ package gov.nasa.worldwindx.examples;
 import javax.swing.*;
 import javax.swing.event.*;
 import java.awt.*;
-import java.beans.*;
 import java.net.URISyntaxException;
 
 /**
  * This example demonstrates the use of multiple WMS layers, as displayed in a WMSLayersPanel.
  *
  * @author tag
- * @version $Id: WMSLayerManager.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: WMSLayerManager.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class WMSLayerManager
 {
     protected static final String[] servers = new String[]
         {
-            "http://neowms.sci.gsfc.nasa.gov/wms/wms",
+            "https://neowms.sci.gsfc.nasa.gov/wms/wms",
+            "https://sedac.ciesin.columbia.edu/geoserver/wcs"
         };
 
     protected static class AppFrame extends ApplicationTemplate.AppFrame
@@ -86,15 +86,6 @@ public class WMSLayerManager
                 this.tabbedPane.add(layersPanel, BorderLayout.CENTER);
                 String title = layersPanel.getServerDisplayString();
                 this.tabbedPane.setTitleAt(position, title != null && title.length() > 0 ? title : server);
-
-                // Add a listener to notice wms layer selections and tell the layer panel to reflect the new state.
-                layersPanel.addPropertyChangeListener("LayersPanelUpdated", new PropertyChangeListener()
-                {
-                    public void propertyChange(PropertyChangeEvent propertyChangeEvent)
-                    {
-                        AppFrame.this.getLayerPanel().update(AppFrame.this.getWwd());
-                    }
-                });
 
                 return layersPanel;
             }

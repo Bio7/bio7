@@ -5,7 +5,6 @@
  */
 package gov.nasa.worldwind.render;
 
-import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.util.*;
 
 import javax.media.opengl.*;
@@ -15,7 +14,7 @@ import java.awt.*;
 
 /**
  * @author dcollins
- * @version $Id: ToolTipRenderer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ToolTipRenderer.java 2053 2014-06-10 20:16:57Z tgaskins $
  */
 public class ToolTipRenderer
 {

@@ -9,9 +9,10 @@ package gov.nasa.worldwindx.examples.util;
 import com.jogamp.common.nio.Buffers;
 import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Box;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.terrain.Terrain;
-import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.*;
 
 import javax.media.opengl.*;
 import java.nio.*;
@@ -21,10 +22,10 @@ import java.util.List;
  * A {@link Path} that draws arrowheads between the path positions to indicate direction. All arrowheads are drawn at a
  * constant geographic size (the arrows get smaller as the view moves away from the path, and larger as the view get
  * closer to the path). One arrowhead is drawn on each path segment, unless the path segment is smaller than the
- * arrowhead, in which the arrowhead is not drawn.
+ * arrowhead, in which case the arrowhead is not drawn.
  *
  * @author pabercrombie
- * @version $Id: DirectedPath.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: DirectedPath.java 3034 2015-04-17 18:04:14Z dcollins $
  */
 public class DirectedPath extends Path
 {
@@ -170,7 +171,7 @@ public class DirectedPath extends Path
     {
         if (arrowAngle == null)
         {
-            String message = Logging.getMessage("nullValue.AngleIsNull", arrowAngle);
+            String message = Logging.getMessage("nullValue.AngleIsNull");
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
         }
@@ -186,6 +187,21 @@ public class DirectedPath extends Path
     }
 
     protected static final String ARROWS_KEY = "DirectedPath.DirectionArrows";
+    protected static final String ARROWS_EXTENT = "DirectedPath.DirectionArrowsExtent";
+
+    protected boolean intersectsFrustum(DrawContext dc)
+    {
+        // Must override this method to account for the extent of the arrowheads.
+
+        boolean intersects = super.intersectsFrustum(dc);
+        if (intersects || !dc.isPickingMode())
+        {
+            return intersects;
+        }
+
+        Box box = (Box) this.currentData.getValue(ARROWS_EXTENT);
+        return box == null || dc.getPickFrustums().intersectsAny(box);
+    }
 
     /**
      * {@inheritDoc}
@@ -197,6 +213,35 @@ public class DirectedPath extends Path
     {
         super.computePath(dc, positions, pathData);
 //        this.computeDirectionArrows(dc, pathData);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * Overridden to return a {@link gov.nasa.worldwindx.examples.util.DirectedSurfacePolyline}.
+     */
+    @Override
+    protected SurfaceShape createSurfaceShape()
+    {
+        DirectedSurfacePolyline polyline = new DirectedSurfacePolyline();
+        polyline.setLocations(this.getPositions());
+
+        return polyline;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * Overridden to update the arrow properties of {@link gov.nasa.worldwindx.examples.util.DirectedSurfacePolyline}.
+     */
+    @Override
+    protected void updateSurfaceShape()
+    {
+        super.updateSurfaceShape();
+
+        ((DirectedSurfacePolyline) this.surfaceShape).setArrowLength(this.getArrowLength());
+        ((DirectedSurfacePolyline) this.surfaceShape).setMaxScreenSize(this.getMaxScreenSize());
+        ((DirectedSurfacePolyline) this.surfaceShape).setArrowAngle(this.getArrowAngle());
     }
 
     /**
@@ -214,19 +259,18 @@ public class DirectedPath extends Path
         final int FLOATS_PER_ARROWHEAD = 9; // 3 points * 3 coordinates per point
         FloatBuffer buffer = (FloatBuffer) pathData.getValue(ARROWS_KEY);
         if (buffer == null || buffer.capacity() < numPositions * FLOATS_PER_ARROWHEAD)
+        {
             buffer = Buffers.newDirectFloatBuffer(FLOATS_PER_ARROWHEAD * numPositions);
+        }
         pathData.setValue(ARROWS_KEY, buffer);
 
         buffer.clear();
 
         Terrain terrain = dc.getTerrain();
 
-        double arrowBase = this.getArrowLength() * this.getArrowAngle().tanHalfAngle();
-
         // Step through polePositions to find the original path locations.
-        int thisPole = polePositions.get(0) / 2;
-        Position poleA = tessellatedPositions.get(thisPole);
-        Vec4 polePtA = this.computePoint(terrain, poleA);
+        int poleA = polePositions.get(0) / 2;
+        Vec4 polePtA = this.computePoint(dc, terrain, tessellatedPositions.get(poleA));
 
         // Draw one arrowhead for each segment in the original position list. The path may be tessellated,
         // so we need to find the tessellated segment halfway between each pair of original positions.
@@ -236,61 +280,79 @@ public class DirectedPath extends Path
         {
             // Find the position of this pole and the next pole. Divide by 2 to convert an index in the
             // renderedPath buffer to a index in the tessellatedPositions list.
-            int nextPole = polePositions.get(i) / 2;
+            int poleB = polePositions.get(i) / 2;
+            Vec4 polePtB = this.computePoint(dc, terrain, tessellatedPositions.get(poleB));
 
-            Position poleB = tessellatedPositions.get(nextPole);
+            this.computeArrowheadGeometry(dc, poleA, poleB, polePtA, polePtB, buffer, pathData);
 
-            Vec4 polePtB = this.computePoint(terrain, poleB);
-
-            // Find the segment that is midway between the two poles.
-            int midPoint = (thisPole + nextPole) / 2;
-
-            Position posA = tessellatedPositions.get(midPoint);
-            Position posB = tessellatedPositions.get(midPoint + 1);
-
-            Vec4 ptA = this.computePoint(terrain, posA);
-            Vec4 ptB = this.computePoint(terrain, posB);
-
-            this.computeArrowheadGeometry(dc, polePtA, polePtB, ptA, ptB, this.getArrowLength(), arrowBase, buffer,
-                pathData);
-
-            thisPole = nextPole;
+            poleA = poleB;
             polePtA = polePtB;
+        }
+
+        buffer.flip();
+
+        // Create an extent for the arrowheads if we're picking.
+        if (dc.isPickingMode())
+        {
+            if (buffer.remaining() != 0)
+            {
+                Box box = Box.computeBoundingBox(new BufferWrapper.FloatBufferWrapper(buffer), 3);
+                box = box.translate(pathData.getReferencePoint());
+                pathData.setValue(ARROWS_EXTENT, box);
+            }
+            else
+            {
+                pathData.setValue(ARROWS_EXTENT, null);
+            }
         }
     }
 
     /**
      * Compute the geometry of a direction arrow between two points.
      *
-     * @param dc          current draw context
-     * @param polePtA     the first pole position. This is one of the application defined path positions.
-     * @param polePtB     second pole position
-     * @param ptA         first position of the tessellated path midway between the poles
-     * @param ptB         second position of the tessellated path midway between the poles
-     * @param arrowLength length of the arrowhead, in meters. The arrow head may not be rendered at full size, because
-     *                    is it may not exceed {@link #maxScreenSize} pixels in length.
-     * @param arrowBase   length of the arrowhead base
-     * @param buffer      buffer in which to place computed points
-     * @param pathData    the current globe-specific path data.
+     * @param dc       current draw context
+     * @param polePtA  the first pole position. This is one of the application defined path positions.
+     * @param polePtB  second pole position
+     * @param buffer   buffer in which to place computed points
+     * @param pathData the current globe-specific path data.
      */
-    protected void computeArrowheadGeometry(DrawContext dc, Vec4 polePtA, Vec4 polePtB, Vec4 ptA, Vec4 ptB,
-        double arrowLength, double arrowBase, FloatBuffer buffer, PathData pathData)
+    protected void computeArrowheadGeometry(DrawContext dc, int poleA, int poleB, Vec4 polePtA, Vec4 polePtB,
+        FloatBuffer buffer, PathData pathData)
     {
         // Build a triangle to represent the arrowhead. The triangle is built from two vectors, one parallel to the
         // segment, and one perpendicular to it. The plane of the arrowhead will be parallel to the surface.
 
+        double arrowLength = this.getArrowLength();
+        double arrowBase = arrowLength * this.getArrowAngle().tanHalfAngle();
         double poleDistance = polePtA.distanceTo3(polePtB);
+
+        // Find the segment that is midway between the two poles.
+        int midIndex = (poleA + poleB) / 2;
+        List<Position> tessellatedPositions = pathData.getTessellatedPositions();
+        Position posA = tessellatedPositions.get(midIndex);
+        Position posB = tessellatedPositions.get(midIndex + 1);
+        Terrain terrain = dc.getTerrain();
+        Vec4 ptA = this.computePoint(dc, terrain, posA);
+        Vec4 ptB = this.computePoint(dc, terrain, posB);
 
         // Compute parallel component
         Vec4 parallel = ptA.subtract3(ptB);
 
-        Vec4 surfaceNormal = dc.getGlobe().computeSurfaceNormalAtPoint(ptB);
-
         // Compute perpendicular component
+        Vec4 surfaceNormal = dc.getGlobe().computeSurfaceNormalAtPoint(ptB);
         Vec4 perpendicular = surfaceNormal.cross3(parallel);
 
-        // Compute midpoint of segment
-        Vec4 midPoint = ptA.add3(ptB).divide3(2.0);
+        // Compute midpoint of segment. When the number of segments is odd, the midpoint falls between two tessellated
+        // positions. When the number of segments is even, the midpoint falls on the middle tessellated position.
+        Vec4 midPoint;
+        if ((poleA - poleB) % 2 != 0)
+        {
+            midPoint = ptA.add3(ptB).divide3(2.0);
+        }
+        else
+        {
+            midPoint = ptA;
+        }
 
         if (!this.isArrowheadSmall(dc, midPoint, 1))
         {
@@ -307,17 +369,15 @@ public class DirectedPath extends Path
 
             // Don't draw an arrowhead if the path segment is smaller than the arrow
             if (poleDistance <= arrowLength)
+            {
                 return;
+            }
 
             perpendicular = perpendicular.normalize3().multiply3(arrowBase);
             parallel = parallel.normalize3().multiply3(arrowLength);
 
-            // If the distance between the poles is greater than the arrow length, center the arrow on the midpoint.
-            // Otherwise position the tip of the arrow at the midpoint. On short segments it looks weird if the
-            // tip of the arrow does not fall on the path, but on longer segments it looks better to center the
-            // arrow on the segment.
-            if (poleDistance > arrowLength)
-                midPoint = midPoint.subtract3(parallel.divide3(2.0));
+            // Center the arrow on the midpoint.
+            midPoint = midPoint.subtract3(parallel.divide3(2.0));
 
             // Compute geometry of direction arrow
             Vec4 vertex1 = midPoint.add3(parallel).add3(perpendicular);
@@ -397,12 +457,18 @@ public class DirectedPath extends Path
      */
     protected void drawDirectionArrows(DrawContext dc, PathData pathData)
     {
+        FloatBuffer points = (FloatBuffer) pathData.getValue(ARROWS_KEY);
+        if (points == null || points.remaining() == 0)
+        {
+            return;
+        }
+
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         boolean projectionOffsetPushed = false; // keep track for error recovery
 
         try
         {
-            if (this.isSurfacePath())
+            if (this.isSurfacePath(dc))
             {
                 // Pull the arrow triangles forward just a bit to ensure they show over the terrain.
                 dc.pushProjectionOffest(SURFACE_PATH_DEPTH_OFFSET);
@@ -410,9 +476,8 @@ public class DirectedPath extends Path
                 projectionOffsetPushed = true;
             }
 
-            FloatBuffer directionArrows = (FloatBuffer) pathData.getValue(ARROWS_KEY);
-            gl.glVertexPointer(3, GL.GL_FLOAT, 0, directionArrows.rewind());
-            gl.glDrawArrays(GL.GL_TRIANGLES, 0, directionArrows.limit() / 3);
+            gl.glVertexPointer(3, GL.GL_FLOAT, 0, points);
+            gl.glDrawArrays(GL.GL_TRIANGLES, 0, points.remaining() / 3);
         }
         finally
         {

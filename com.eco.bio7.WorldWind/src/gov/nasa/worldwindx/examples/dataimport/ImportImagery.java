@@ -24,7 +24,7 @@ import java.io.File;
  * <code>{@link SurfaceImage}</code>.
  *
  * @author tag
- * @version $Id: ImportImagery.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ImportImagery.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class ImportImagery extends ApplicationTemplate
 {
@@ -127,7 +127,6 @@ public class ImportImagery extends ApplicationTemplate
 
                         // Add the layer to the model and update the application's layer panel.
                         insertBeforeCompass(AppFrame.this.getWwd(), layer);
-                        AppFrame.this.getLayerPanel().update(AppFrame.this.getWwd());
 
                         // Set the view to look at the imported image.
                         ExampleUtil.goTo(getWwd(), sector);

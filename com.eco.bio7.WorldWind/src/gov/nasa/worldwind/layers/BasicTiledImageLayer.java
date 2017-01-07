@@ -5,7 +5,7 @@
  */
 package gov.nasa.worldwind.layers;
 
-import com.jogamp.opengl.util.texture.*;
+import com.jogamp.opengl.util.texture.TextureData;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.cache.FileStore;
@@ -28,7 +28,7 @@ import java.util.Map;
 
 /**
  * @author tag
- * @version $Id: BasicTiledImageLayer.java 1931 2014-04-14 21:31:43Z tgaskins $
+ * @version $Id: BasicTiledImageLayer.java 2684 2015-01-26 18:31:22Z tgaskins $
  */
 public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetrievable
 {
@@ -116,6 +116,10 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
 
         if (params.getValue(AVKey.TRANSPARENCY_COLORS) != null)
             this.setValue(AVKey.TRANSPARENCY_COLORS, params.getValue(AVKey.TRANSPARENCY_COLORS));
+
+        b = (Boolean) params.getValue(AVKey.DELETE_CACHE_ON_EXIT);
+        if (b != null)
+            this.setValue(AVKey.DELETE_CACHE_ON_EXIT, true);
 
         this.setValue(AVKey.CONSTRUCTION_PARAMETERS, params.copy());
 
@@ -409,7 +413,7 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
      * @param listener   an optional retrieval listener. May be null.
      *
      * @return the {@link BulkRetrievalThread} executing the retrieval or <code>null</code> if the specified sector does
-     *         not intersect the layer bounding sector.
+     * not intersect the layer bounding sector.
      *
      * @throws IllegalArgumentException if the sector is null or the resolution is less than zero.
      * @see BasicTiledImageLayerBulkDownloader
@@ -436,7 +440,7 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
      * @param listener   an optional retrieval listener. May be null.
      *
      * @return the {@link BulkRetrievalThread} executing the retrieval or <code>null</code> if the specified sector does
-     *         not intersect the layer bounding sector.
+     * not intersect the layer bounding sector.
      *
      * @throws IllegalArgumentException if the sector is null or the resolution is less than zero.
      * @see BasicTiledImageLayerBulkDownloader
@@ -681,8 +685,8 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
      * therefore should not be executed from the rendering thread.
      *
      * @return {@link gov.nasa.worldwind.avlist.AVKey#RETRIEVAL_STATE_SUCCESSFUL} if the retrieval succeeded, {@link
-     *         gov.nasa.worldwind.avlist.AVKey#RETRIEVAL_STATE_ERROR} if the retrieval failed with errors, and
-     *         <code>null</code> if the retrieval state is unknown.
+     * gov.nasa.worldwind.avlist.AVKey#RETRIEVAL_STATE_ERROR} if the retrieval failed with errors, and <code>null</code>
+     * if the retrieval state is unknown.
      */
     protected String retrieveResources()
     {
@@ -784,8 +788,7 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
      * Returns a boolean value indicating if this Layer should retrieve any non-tile resources, either online or in the
      * local filesystem, and initialize itself using those resources.
      *
-     * @return <code>true</code> if this Layer should retrieve any non-tile resources, and <code>false</code>
-     *         otherwise.
+     * @return <code>true</code> if this Layer should retrieve any non-tile resources, and <code>false</code> otherwise.
      */
     protected boolean isRetrieveResources()
     {
@@ -974,6 +977,9 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
         if (key.equals(AVKey.CONSTRUCTION_PARAMETERS))
             return;
 
+        if (key.equals(AVKey.FRAME_TIMESTAMP))
+            return; // frame timestamp is a runtime property and must not be saved/restored
+
         if (value instanceof LatLon)
         {
             rs.addStateValueAsLatLon(context, key, (LatLon) value);
@@ -1046,6 +1052,9 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
     {
         if (so == null)
             return;
+
+        if (so.getName().equals(AVKey.FRAME_TIMESTAMP))
+            return; // frame timestamp is a runtime property and must not be saved/restored
 
         this.setValue(so.getName(), so.getValue());
     }

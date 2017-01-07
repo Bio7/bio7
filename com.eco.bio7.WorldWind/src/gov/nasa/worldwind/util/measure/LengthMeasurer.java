@@ -7,30 +7,26 @@
 package gov.nasa.worldwind.util.measure;
 
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.globes.Globe;
+import gov.nasa.worldwind.globes.*;
 import gov.nasa.worldwind.util.Logging;
 import gov.nasa.worldwind.render.Polyline;
 
 import java.util.ArrayList;
 
 /**
- * Utility class to measure length along a path on a globe.
- *
- * <p>The measurer must be provided a list of at least two positions to be able to compute a distance.</p>
- *
- * <p>Segments which are longer then the current maxSegmentLength will be subdivided along lines following the current
- * pathType - Polyline.LINEAR, Polyline.RHUMB_LINE or Polyline.GREAT_CIRCLE.</p>
- *
- * <p>If the measurer is set to follow terrain, the computed length will account for terrain deformations as
- * if someone was walking along that path. Otherwise the length is the sum of the cartesian distance between
- * each positions.</p>
- *
+ * Utility class to measure length along a path on a globe. <p/> <p>The measurer must be provided a list of at least two
+ * positions to be able to compute a distance.</p> <p/> <p>Segments which are longer then the current maxSegmentLength
+ * will be subdivided along lines following the current pathType - Polyline.LINEAR, Polyline.RHUMB_LINE or
+ * Polyline.GREAT_CIRCLE.</p> <p/> <p>If the measurer is set to follow terrain, the computed length will account for
+ * terrain deformations as if someone was walking along that path. Otherwise the length is the sum of the cartesian
+ * distance between the positions.</p>
+ * <p/>
  * <p>When following terrain the measurer will sample terrain elevations at regular intervals along the path. The
- * minimum number of samples used for the whole length can be set with setLengthTerrainSamplingSteps(). However,
- * the sampling process will keep a minimum interval of 30 meters between samples.
+ * minimum number of samples used for the whole length can be set with setLengthTerrainSamplingSteps(). However, the
+ * minimum sampling interval is 30 meters.
  *
  * @author Patrick Murris
- * @version $Id: LengthMeasurer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: LengthMeasurer.java 2261 2014-08-23 00:31:54Z tgaskins $
  * @see MeasureTool
  */
 public class LengthMeasurer implements MeasurableLength
@@ -79,7 +75,9 @@ public class LengthMeasurer implements MeasurableLength
 
         ArrayList<Position> newPositions = new ArrayList<Position>();
         for (LatLon pos : positions)
+        {
             newPositions.add(new Position(pos, elevation));
+        }
 
         setPositions(newPositions);
     }
@@ -127,9 +125,9 @@ public class LengthMeasurer implements MeasurableLength
     }
 
     /**
-     * Sets the type of path used when subdividing long segments, one of Polyline.GREAT_CIRCLE, which draws segments
-     * as a great circle, Polyline.LINEAR, which determines the intermediate positions between segments by
-     * interpolating the segment endpoints, or Polyline.RHUMB_LINE, which draws segments as a line of constant heading.
+     * Sets the type of path used when subdividing long segments, one of Polyline.GREAT_CIRCLE, which draws segments as
+     * a great circle, Polyline.LINEAR, which determines the intermediate positions between segments by interpolating
+     * the segment endpoints, or Polyline.RHUMB_LINE, which draws segments as a line of constant heading.
      *
      * @param pathType the type of path to measure.
      */
@@ -182,16 +180,16 @@ public class LengthMeasurer implements MeasurableLength
     }
 
     /**
-     * Returns true if the current position list describe a closed path - one which last position is equal
-     * to the first.
+     * Returns true if the current position list describe a closed path - one which last position is equal to the
+     * first.
      *
      * @return true if the current position list describe a closed path.
      */
     public boolean isClosedShape()
     {
         return this.positions != null
-                && this.positions.size() > 1
-                && this.positions.get(0).equals(this.positions.get(this.positions.size() - 1));
+            && this.positions.size() > 1
+            && this.positions.get(0).equals(this.positions.get(this.positions.size() - 1));
     }
 
     /**
@@ -228,13 +226,12 @@ public class LengthMeasurer implements MeasurableLength
     }
 
     /**
-     * Get the path length in meter.
-     *
-     * <p>If the measurer is set to follow terrain, the computed length will account for terrain deformations as
-     * if someone was walking along that path. Otherwise the length is the sum of the cartesian distance between
-     * each positions.</p>
+     * Get the path length in meter. <p/> <p>If the measurer is set to follow terrain, the computed length will account
+     * for terrain deformations as if someone was walking along that path. Otherwise the length is the sum of the
+     * cartesian distance between each positions.</p>
      *
      * @param globe the globe to draw terrain information from.
+     *
      * @return the current path length or -1 if the position list is too short.
      */
     public double getLength(Globe globe)
@@ -246,8 +243,7 @@ public class LengthMeasurer implements MeasurableLength
             throw new IllegalArgumentException(message);
         }
 
-        if (this.length < 0)
-            this.length = this.computeLength(globe, this.followTerrain);
+        this.length = this.computeLength(globe, this.followTerrain);
 
         return this.length;
     }
@@ -261,31 +257,32 @@ public class LengthMeasurer implements MeasurableLength
 
         if (this.subdividedPositions == null)
         {
-            // Subdivide path so as to have at least segments smaller then maxSegmentLenth. If follow terrain,
+            // Subdivide path so as to have at least segments smaller then maxSegmentLength. If follow terrain,
             // subdivide so as to have at least lengthTerrainSamplingSteps segments, but no segments shorter then
             // DEFAULT_MIN_SEGMENT_LENGTH either.
             double maxLength = this.maxSegmentLength;
             if (followTerrain)
             {
                 // Recurse to compute overall path length not following terrain
-                double pathLength = computeLength(globe, !followTerrain);
+                double pathLength = computeLength(globe, false);
                 // Determine segment length to have enough sampling points
                 maxLength = pathLength / this.lengthTerrainSamplingSteps;
                 maxLength = Math.min(Math.max(maxLength, DEFAULT_MIN_SEGMENT_LENGTH), getMaxSegmentLength());
             }
             this.subdividedPositions = subdividePositions(globe, this.positions, maxLength,
-                    followTerrain, this.pathType);
+                followTerrain, this.pathType);
         }
 
         // Sum each segment length
         double length = 0;
-        Vec4 p1 = globe.computePointFromPosition(this.subdividedPositions.get(0));
+        Vec4 p1 = globe.computeEllipsoidalPointFromPosition(this.subdividedPositions.get(0));
         for (int i = 1; i < subdividedPositions.size(); i++)
         {
-            Vec4 p2 = globe.computePointFromPosition(this.subdividedPositions.get(i));
+            Vec4 p2 = globe.computeEllipsoidalPointFromPosition(this.subdividedPositions.get(i));
             length += p1.distanceTo3(p2);
             p1 = p2;
         }
+
         return length;
     }
 
@@ -305,45 +302,47 @@ public class LengthMeasurer implements MeasurableLength
 //    }
 
     /**
-     * Subdivide a list of positions so that no segment is longer then the provided maxLength.
+     * Subdivide a list of positions so that no segment is longer then the provided maxLength. <p/> <p>If needed, new
+     * intermediate positions will be created along lines that follow the given pathType - one of Polyline.LINEAR,
+     * Polyline.RHUMB_LINE or Polyline.GREAT_CIRCLE. All position elevations will be either at the terrain surface if
+     * followTerrain is true, or interpolated according to the original elevations.</p>
      *
-     * <p>If needed, new intermediate positions will be created along lines that follow the given pathType - one of
-     * Polyline.LINEAR, Polyline.RHUMB_LINE or Polyline.GREAT_CIRCLE. All position elevations will be either at the
-     * terrain surface if followTerrain is true, or interpolated according to the original elevations.</p>
-     *
-     * @param globe the globe to draw elevations and points from.
-     * @param positions the original position list
-     * @param maxLength the maximum length for one segment.
+     * @param globe         the globe to draw elevations and points from.
+     * @param positions     the original position list
+     * @param maxLength     the maximum length for one segment.
      * @param followTerrain true if the positions should be on the terrain surface.
-     * @param pathType the type of path to use in between two positions.
+     * @param pathType      the type of path to use in between two positions.
+     *
      * @return a list of positions with no segment longer then maxLength and elevations following terrain or not.
      */
-    protected static ArrayList<? extends Position> subdividePositions(Globe globe, ArrayList<? extends Position> positions,
-                                                            double maxLength, boolean followTerrain, int pathType)
+    protected static ArrayList<? extends Position> subdividePositions(Globe globe,
+        ArrayList<? extends Position> positions,
+        double maxLength, boolean followTerrain, int pathType)
     {
         return subdividePositions(globe, positions, maxLength, followTerrain, pathType, 0, positions.size());
     }
 
     /**
      * Subdivide a list of positions so that no segment is longer then the provided maxLength. Only the positions
-     * between start and start + count - 1 will be processed.
+     * between start and start + count - 1 will be processed. <p/> <p>If needed, new intermediate positions will be
+     * created along lines that follow the given pathType - one of Polyline.LINEAR, Polyline.RHUMB_LINE or
+     * Polyline.GREAT_CIRCLE. All position elevations will be either at the terrain surface if followTerrain is true, or
+     * interpolated according to the original elevations.</p>
      *
-     * <p>If needed, new intermediate positions will be created along lines that follow the given pathType - one of
-     * Polyline.LINEAR, Polyline.RHUMB_LINE or Polyline.GREAT_CIRCLE. All position elevations will be either at the
-     * terrain surface if followTerrain is true, or interpolated according to the original elevations.</p>
-     *
-     * @param globe the globe to draw elevations and points from.
-     * @param positions the original position list
-     * @param maxLength the maximum length for one segment.
+     * @param globe         the globe to draw elevations and points from.
+     * @param positions     the original position list
+     * @param maxLength     the maximum length for one segment.
      * @param followTerrain true if the positions should be on the terrain surface.
-     * @param pathType the type of path to use in between two positions.
-     * @param start the first position indice in the original list.
-     * @param count how many positions from the original list have to be processed and returned.
+     * @param pathType      the type of path to use in between two positions.
+     * @param start         the first position indice in the original list.
+     * @param count         how many positions from the original list have to be processed and returned.
+     *
      * @return a list of positions with no segment longer then maxLength and elevations following terrain or not.
      */
-    protected static ArrayList<? extends Position> subdividePositions(Globe globe, ArrayList<? extends Position> positions,
-                                                            double maxLength, boolean followTerrain, int pathType,
-                                                            int start, int count)
+    protected static ArrayList<? extends Position> subdividePositions(Globe globe,
+        ArrayList<? extends Position> positions,
+        double maxLength, boolean followTerrain, int pathType,
+        int start, int count)
     {
         if (positions == null || positions.size() < start + count)
             return positions;
@@ -355,7 +354,7 @@ public class LengthMeasurer implements MeasurableLength
             newPositions.add(new Position(pos1, globe.getElevation(pos1.getLatitude(), pos1.getLongitude())));
         else
             newPositions.add(pos1);
-        for(int i = 1; i < count; i++)
+        for (int i = 1; i < count; i++)
         {
             Position pos2 = positions.get(start + i);
             double arcLengthRadians = LatLon.greatCircleDistance(pos1, pos2).radians;
@@ -365,10 +364,10 @@ public class LengthMeasurer implements MeasurableLength
                 // if necessary subdivide segment at regular intervals smaller then maxLength
                 Angle segmentAzimuth = null;
                 Angle segmentDistance = null;
-                int steps = (int)Math.ceil(arcLength / maxLength);  // number of intervals - at least two
+                int steps = (int) Math.ceil(arcLength / maxLength);  // number of intervals - at least two
                 for (int j = 1; j < steps; j++)
                 {
-                    float s = (float)j / steps;
+                    float s = (float) j / steps;
                     LatLon destLatLon;
                     if (pathType == Polyline.LINEAR)
                     {
@@ -382,7 +381,7 @@ public class LengthMeasurer implements MeasurableLength
                             segmentDistance = LatLon.rhumbDistance(pos1, pos2);
                         }
                         destLatLon = LatLon.rhumbEndPosition(pos1, segmentAzimuth.radians,
-                                s * segmentDistance.radians);
+                            s * segmentDistance.radians);
                     }
                     else // GREAT_CIRCLE
                     {
@@ -392,7 +391,7 @@ public class LengthMeasurer implements MeasurableLength
                             segmentDistance = LatLon.greatCircleDistance(pos1, pos2);
                         }
                         destLatLon = LatLon.greatCircleEndPosition(pos1, segmentAzimuth.radians,
-                                s * segmentDistance.radians);
+                            s * segmentDistance.radians);
                     }
                     // Set elevation
                     double elevation;
@@ -414,5 +413,4 @@ public class LengthMeasurer implements MeasurableLength
         }
         return newPositions;
     }
-
 }

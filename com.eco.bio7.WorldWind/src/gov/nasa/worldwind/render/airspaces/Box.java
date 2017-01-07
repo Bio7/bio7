@@ -5,116 +5,97 @@
  */
 package gov.nasa.worldwind.render.airspaces;
 
+import gov.nasa.worldwind.cache.Cacheable;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.*;
-import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.*;
+import gov.nasa.worldwind.terrain.Terrain;
 import gov.nasa.worldwind.util.*;
 
 import javax.media.opengl.*;
+import java.nio.*;
 import java.util.*;
 
 /**
  * @author lado
- * @version $Id: Box.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: Box.java 2563 2014-12-12 19:29:38Z dcollins $
  */
 public class Box extends AbstractAirspace
 {
-    /**
-     * Holds a box's vertex data that's associated with a particular globe. The globeStateKey property indicates the
-     * globe state used to generate the vertex data.
-     */
-    protected static class BoxData
-    {
-        /** Indicates the globe state used to generate the vertex data. Initially <code>null</code>. */
-        public GlobeStateKey globeStateKey;
-        /** Indicates the Box's vertex data. Initially an array with length eight containing <code>null</code> entries. */
-        public Vec4[] vertices = new Vec4[8];
-
-        /**
-         * Constructs a new BoxData with its globeStateKey initialized to <code>null</code> and its vertices initialized
-         * to a new array with length eight.
-         */
-        public BoxData()
-        {
-        }
-    }
-
-    public static final int FACE_TOP = 0;
-    public static final int FACE_BOTTOM = 1;
-    public static final int FACE_LEFT = 2;
-    public static final int FACE_RIGHT = 3;
-    public static final int FACE_FRONT = 4;
-    public static final int FACE_BACK = 5;
-
-    protected static final int A_LOW_LEFT = 0;
-    protected static final int A_LOW_RIGHT = 1;
-    protected static final int A_UPR_LEFT = 2;
-    protected static final int A_UPR_RIGHT = 3;
-    protected static final int B_LOW_LEFT = 4;
-    protected static final int B_LOW_RIGHT = 5;
-    protected static final int B_UPR_LEFT = 6;
-    protected static final int B_UPR_RIGHT = 7;
-
-    protected static final int LOW_FACE = 0;
-    protected static final int UPR_FACE = 1;
-    protected static final int SIDE_FACE = 2;
-
     protected static final int DEFAULT_PILLARS = 8;
-    protected static final int DEFAULT_STACKS = 4;
-    protected static final int DEFAULT_HEIGHT_STACKS = 1;
-    protected static final int MINIMAL_GEOMETRY_PILLARS = 8;
-    protected static final int MINIMAL_GEOMETRY_STACKS = 4;
+    protected static final int DEFAULT_STACKS = 2;
 
-    private LatLon location1 = LatLon.ZERO;
-    private LatLon location2 = LatLon.ZERO;
+    protected static final int DEFAULT_CENTER_LINE_STIPPLE_FACTOR = 2;
+    protected static final short DEFAULT_CENTER_LINE_STIPPLE_PATTERN = (short) 0xEEEE;
+    protected static final double DEFAULT_CENTER_LINE_OFFSET = 0.999;
+
+    private LatLon beginLocation = LatLon.ZERO;
+    private LatLon endLocation = LatLon.ZERO;
     private double leftWidth = 1.0;
     private double rightWidth = 1.0;
+    private Angle beginLeftAzimuth = null;
+    private Angle beginRightAzimuth = null;
+    private Angle endLeftAzimuth = null;
+    private Angle endRightAzimuth = null;
     private boolean enableStartCap = true;
     private boolean enableEndCap = true;
+    private boolean enableCenterLine;
 
-    /**
-     * Map indicating the box's vertices associated with a particular globe. This enables a box to be used
-     * simultaneously in multiple models with different globes. This is initialized to a HashMap in order to support
-     * <code>null</code> keys. Null keys are used for backward compatibility with the Box accessor methods that do not
-     * specify a globe.
-     */
-    protected Map<Globe, BoxData> boxData = new HashMap<Globe, BoxData>(2); // Usually holds either one or two entries.
     private boolean forceCullFace = false;
     private int pillars = DEFAULT_PILLARS;
     private int stacks = DEFAULT_STACKS;
-    private int heightStacks = DEFAULT_HEIGHT_STACKS;
 
-    public Box(LatLon location1, LatLon location2, double leftWidth, double rightWidth)
+    private Object geometryCacheKey = new Object();
+
+    public Box(LatLon beginLocation, LatLon endLocation, double leftWidth, double rightWidth)
     {
-        if (location1 == null)
+        if (beginLocation == null || endLocation == null)
         {
-            String message = "nullValue.Location1IsNull";
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-        if (location2 == null)
-        {
-            String message = "nullValue.Location2IsNull";
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-        if (leftWidth < 0.0)
-        {
-            String message = Logging.getMessage("generic.ArgumentOutOfRange", "leftWidth=" + leftWidth);
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-        if (rightWidth < 0.0)
-        {
-            String message = Logging.getMessage("generic.ArgumentOutOfRange", "rightWidth=" + rightWidth);
+            String message = Logging.getMessage("nullValue.LocationIsNull");
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
         }
 
-        this.location1 = location1;
-        this.location2 = location2;
+        if (leftWidth < 0)
+        {
+            String message = Logging.getMessage("generic.ArgumentOutOfRange", "leftWidth < 0");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (rightWidth < 0)
+        {
+            String message = Logging.getMessage("generic.ArgumentOutOfRange", "rightWidth < 0");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        this.beginLocation = beginLocation;
+        this.endLocation = endLocation;
         this.leftWidth = leftWidth;
         this.rightWidth = rightWidth;
+        this.makeDefaultDetailLevels();
+    }
+
+    public Box(Box source)
+    {
+        super(source);
+
+        this.beginLocation = source.beginLocation;
+        this.endLocation = source.endLocation;
+        this.leftWidth = source.leftWidth;
+        this.rightWidth = source.rightWidth;
+        this.beginLeftAzimuth = source.beginLeftAzimuth;
+        this.beginRightAzimuth = source.beginRightAzimuth;
+        this.endLeftAzimuth = source.endLeftAzimuth;
+        this.endRightAzimuth = source.endRightAzimuth;
+        this.enableStartCap = source.enableStartCap;
+        this.enableEndCap = source.enableEndCap;
+        this.enableCenterLine = source.enableCenterLine;
+        this.forceCullFace = source.forceCullFace;
+        this.pillars = source.pillars;
+        this.stacks = source.stacks;
+
         this.makeDefaultDetailLevels();
     }
 
@@ -137,13 +118,13 @@ public class Box extends AbstractAirspace
         DetailLevel level;
         level = new ScreenSizeDetailLevel(ramp[0], "Detail-Level-0");
         level.setValue(PILLARS, 8);
-        level.setValue(STACKS, 4);
+        level.setValue(STACKS, 2);
         level.setValue(DISABLE_TERRAIN_CONFORMANCE, false);
         levels.add(level);
 
         level = new ScreenSizeDetailLevel(ramp[1], "Detail-Level-1");
         level.setValue(PILLARS, 6);
-        level.setValue(STACKS, 3);
+        level.setValue(STACKS, 2);
         level.setValue(DISABLE_TERRAIN_CONFORMANCE, false);
         levels.add(level);
 
@@ -170,38 +151,29 @@ public class Box extends AbstractAirspace
 
     public LatLon[] getLocations()
     {
-        LatLon[] array = new LatLon[2];
-        array[0] = this.location1;
-        array[1] = this.location2;
-        return array;
+        return new LatLon[] {this.beginLocation, this.endLocation};
     }
 
     /**
      * Sets the leg's locations, in geographic coordinates.
      *
-     * @param location1 geographic coordinates(latitude and longitude) specifying the center of the begining edge.
-     * @param location2 geographic coordinates(latitude and longitude) specifying the center of the ending edge.
+     * @param beginLocation geographic coordinates(latitude and longitude) specifying the center of the begining edge.
+     * @param endLocation geographic coordinates(latitude and longitude) specifying the center of the ending edge.
      *
      * @throws IllegalArgumentException if location1 or location2 is null
      */
-    public void setLocations(LatLon location1, LatLon location2)
+    public void setLocations(LatLon beginLocation, LatLon endLocation)
     {
-        if (location1 == null)
+        if (beginLocation == null || endLocation == null)
         {
-            String message = "nullValue.Location1IsNull";
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-        if (location2 == null)
-        {
-            String message = "nullValue.Location2IsNull";
+            String message = Logging.getMessage("nullValue.LocationIsNull");
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
         }
 
-        this.location1 = location1;
-        this.location2 = location2;
-        this.setExtentOutOfDate();
+        this.beginLocation = beginLocation;
+        this.endLocation = endLocation;
+        this.invalidateGeometry();
     }
 
     public double[] getWidths()
@@ -229,7 +201,33 @@ public class Box extends AbstractAirspace
 
         this.leftWidth = leftWidth;
         this.rightWidth = rightWidth;
-        this.setExtentOutOfDate();
+        this.invalidateGeometry();
+    }
+
+    /**
+     * Indicates the azimuth angles for this box's four corners, relative to geographic north. Angles are organized in
+     * the returned array as follows: begin left, begin right, end left, end right. Null elements in any index indicate
+     * that the default angle is used.
+     *
+     * @return an array of length four indicating this box's corner azimuths.
+     */
+    public Angle[] getCornerAzimuths()
+    {
+        return new Angle[] {this.beginLeftAzimuth, this.beginRightAzimuth, this.endLeftAzimuth, this.endRightAzimuth};
+    }
+
+    /**
+     * Specifies the azimuth angles for this box's four corners, relative to geographic north. Specifying a null
+     * argument indicates that the default angle should be used.
+     */
+    public void setCornerAzimuths(Angle beginLeftAzimuth, Angle beginRightAzimuth, Angle endLeftAzimuth,
+        Angle endRightAzimuth)
+    {
+        this.beginLeftAzimuth = beginLeftAzimuth;
+        this.beginRightAzimuth = beginRightAzimuth;
+        this.endLeftAzimuth = endLeftAzimuth;
+        this.endRightAzimuth = endRightAzimuth;
+        this.invalidateGeometry();
     }
 
     public boolean[] isEnableCaps()
@@ -244,6 +242,7 @@ public class Box extends AbstractAirspace
     {
         this.enableStartCap = enableStartCap;
         this.enableEndCap = enableEndCap;
+        this.invalidateGeometry();
     }
 
     public void setEnableCaps(boolean enable)
@@ -261,196 +260,27 @@ public class Box extends AbstractAirspace
         this.setEnableCaps(this.enableStartCap, enable);
     }
 
-    public Vec4[] getVertices()
+    public boolean isEnableCenterLine()
     {
-        return this.getVertices(null);
+        return this.enableCenterLine;
     }
 
-    public void setVertices(Vec4[] vertices)
+    public void setEnableCenterLine(boolean enable)
     {
-        this.setVertices(null, vertices);
-    }
-
-    /**
-     * Indicates whether the box's vertices associated with the specific globe are valid for the globe's current state.
-     * This returns <code>true</code> if this box has any vertex data associated with the globe and the globe state used
-     * to generate the data is equivalent to the globe's current state. This returns <code>false</code> if this box does
-     * not have any vertex data associated with the globe, or if the vertex data is out of date.
-     *
-     * @param globe the globe the vertices are associated with, or <code>null</code> to get the valid state of the
-     *              vertices that are not associated with any globe.
-     *
-     * @return <code>true</code> if this box has vertices associated with the globe which are valid for the globe's
-     *         current state, and <code>false</code> otherwise.
-     */
-    public boolean isVerticesValid(Globe globe)
-    {
-        BoxData data = this.boxData.get(globe);
-        return data != null && data.globeStateKey != null && data.globeStateKey.equals(globe.getGlobeStateKey());
-    }
-
-    /**
-     * Indicates this box's vertices that associated with the specified globe. This returns <code>null</code> if no
-     * vertices are currently associated with the specified globe. Specify <code>null</code> to get the vertices that
-     * are not associated with any globe.
-     *
-     * @param globe the globe the vertices are associated with, or <code>null</code> to get the vertices that are not
-     *              associated with any globe.
-     *
-     * @return an array of length 8 indicating this box's vertices in model coordinates, or <code>null</code> to
-     *         indicate that no vertices are associated with the globe.
-     */
-    public Vec4[] getVertices(Globe globe)
-    {
-        BoxData data = this.boxData.get(globe);
-        return data != null ? data.vertices : null;
-    }
-
-    /**
-     * Specifies this box's vertices that are associated with the specified globe. Specify a <code>null</code> globe to
-     * indicate that the vertices are not associated with any globe. Specify <code>null</code> vertices to remove
-     * vertices associated with the specified globe. This copies the elements of the specified vertices array; changes
-     * to the array after this method do not affect the data held by this box.
-     *
-     * @param globe    the globe the vertices are associated with, or <code>null</code> to indicate that the vertices
-     *                 are not associated with any globe.
-     * @param vertices an array of length 8 indicating this box's vertices in model coordinates, or <code>null</code> to
-     *                 remove vertices associated with the specified globe.
-     *
-     * @throws IllegalArgumentException if the vertices array is not <code>null</code> and has fewer than eight
-     *                                  elements.
-     */
-    public void setVertices(Globe globe, Vec4[] vertices)
-    {
-        if (vertices == null)
-        {
-            this.boxData.remove(globe);
-        }
-        else
-        {
-            if (vertices.length < 8)
-            {
-                String message = Logging.getMessage("generic.ArrayInvalidLength", "vertices.length=" + vertices.length);
-                Logging.logger().severe(message);
-                throw new IllegalArgumentException(message);
-            }
-
-            BoxData data = this.boxData.get(globe);
-
-            // Create a box data if one doesn't already exist and put it in the map.
-            if (data == null)
-            {
-                data = new BoxData();
-                this.boxData.put(globe, data);
-            }
-
-            // Copy the specified vertices into the data held by this box's map.
-            System.arraycopy(vertices, 0, data.vertices, 0, 8);
-            // Update the box data's globe state key.
-            data.globeStateKey = globe.getGlobeStateKey();
-        }
-
-        this.setExtentOutOfDate();
-    }
-
-    /** Removes all of this box's globe-associated vertex data. */
-    public void clearVertices()
-    {
-        this.boxData.clear();
-    }
-
-    public static Vec4[] computeStandardVertices(Globe globe, double verticalExaggeration, Box box)
-    {
-        if (globe == null)
-        {
-            String message = Logging.getMessage("nullValue.GlobeIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        if (box == null)
-        {
-            String message = Logging.getMessage("nullValue.BoxIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        double[] altitudes = box.getAltitudes(verticalExaggeration);
-
-        // Compute the Cartesian points of this Box's first and second locations at the upper and lower altitudes.
-        Vec4 al = globe.computePointFromPosition(box.location1, altitudes[0]);
-        Vec4 au = globe.computePointFromPosition(box.location1, altitudes[1]);
-        Vec4 bl = globe.computePointFromPosition(box.location2, altitudes[0]);
-        Vec4 bu = globe.computePointFromPosition(box.location2, altitudes[1]);
-
-        // Compute vectors at the first and second locations that are perpendicular to the vector connecting the two
-        // points and perpendicular to the Globe's normal at each point. These perpendicular vectors are used to
-        // determine this Box's points to the left and right of its Cartesian points.
-        Vec4 aNormal = globe.computeSurfaceNormalAtPoint(al);
-        Vec4 bNormal = globe.computeSurfaceNormalAtPoint(bl);
-        Vec4 ab = bl.subtract3(al).normalize3();
-        Vec4 aPerp = ab.cross3(aNormal).normalize3();
-        Vec4 bPerp = ab.cross3(bNormal).normalize3();
-
-        Vec4[] vertices = new Vec4[8];
-        vertices[Box.A_LOW_LEFT] = new Line(al, aPerp).getPointAt(-box.leftWidth);
-        vertices[Box.A_LOW_RIGHT] = new Line(al, aPerp).getPointAt(box.rightWidth);
-        vertices[Box.A_UPR_LEFT] = new Line(au, aPerp).getPointAt(-box.leftWidth);
-        vertices[Box.A_UPR_RIGHT] = new Line(au, aPerp).getPointAt(box.rightWidth);
-        vertices[Box.B_LOW_LEFT] = new Line(bl, bPerp).getPointAt(-box.leftWidth);
-        vertices[Box.B_LOW_RIGHT] = new Line(bl, bPerp).getPointAt(box.rightWidth);
-        vertices[Box.B_UPR_LEFT] = new Line(bu, bPerp).getPointAt(-box.leftWidth);
-        vertices[Box.B_UPR_RIGHT] = new Line(bu, bPerp).getPointAt(box.rightWidth);
-        return vertices;
-    }
-
-    /**
-     * Returns an array of six <code>Plane</code>s that define the plane for each face of the specified <code>box</code>
-     * on the specified <code>globe</code>. The each plane may be accessed using the <code>FACE</code> constants in
-     * <code>Box</code> as indices into the array: {@link #FACE_TOP}, {@link #FACE_BOTTOM}, {@link #FACE_LEFT}, {@link
-     * #FACE_RIGHT}, {@link #FACE_FRONT}, {@link #FACE_BACK}.
-     *
-     * @param globe                the <code>Globe</code> the box is related to.
-     * @param verticalExaggeration the vertical exaggeration of the scene.
-     * @param box                  the <code>Box</code> to compute the planes for.
-     *
-     * @return six <code>Plane</code>s for each face of the specified <code>box</code>, in the following order: top,
-     *         bottom, left, right, front, back.
-     */
-    public static Plane[] computeStandardPlanes(Globe globe, double verticalExaggeration, Box box)
-    {
-        if (globe == null)
-        {
-            String message = Logging.getMessage("nullValue.GlobeIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        if (box == null)
-        {
-            String message = Logging.getMessage("nullValue.BoxIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        Vec4[] vertices = computeStandardVertices(globe, verticalExaggeration, box);
-        if (vertices == null || vertices.length != 8) // This should never happen, but we check anyway.
-            return null;
-
-        Plane[] planes = new Plane[6];
-        planes[FACE_TOP] = Plane.fromPoints(vertices[A_UPR_RIGHT], vertices[B_UPR_RIGHT], vertices[A_UPR_LEFT]);
-        planes[FACE_BOTTOM] = Plane.fromPoints(vertices[A_LOW_RIGHT], vertices[A_LOW_LEFT], vertices[B_LOW_RIGHT]);
-        planes[FACE_LEFT] = Plane.fromPoints(vertices[A_LOW_LEFT], vertices[A_UPR_LEFT], vertices[B_LOW_LEFT]);
-        planes[FACE_RIGHT] = Plane.fromPoints(vertices[A_LOW_RIGHT], vertices[B_LOW_RIGHT], vertices[A_UPR_RIGHT]);
-        planes[FACE_FRONT] = Plane.fromPoints(vertices[A_LOW_RIGHT], vertices[A_UPR_RIGHT], vertices[A_LOW_LEFT]);
-        planes[FACE_BACK] = Plane.fromPoints(vertices[B_LOW_LEFT], vertices[B_UPR_LEFT], vertices[B_LOW_RIGHT]);
-        return planes;
+        this.enableCenterLine = enable;
+        this.invalidateGeometry();
     }
 
     public Position getReferencePosition()
     {
         double[] altitudes = this.getAltitudes();
-        return new Position(this.location1, altitudes[0]);
+        return new Position(this.beginLocation, altitudes[0]);
+    }
+
+    protected void invalidateGeometry()
+    {
+        this.invalidateAirspaceData();
+        this.geometryCacheKey = new Object();
     }
 
     protected gov.nasa.worldwind.geom.Box computeExtent(Globe globe, double verticalExaggeration)
@@ -465,33 +295,56 @@ public class Box extends AbstractAirspace
     @Override
     protected List<Vec4> computeMinimalGeometry(Globe globe, double verticalExaggeration)
     {
-        Vec4[] verts = this.getVertices(globe);
-        if (verts == null)
-            verts = computeStandardVertices(globe, verticalExaggeration, this);
-
-        float[] controlPoints = new float[12];
-        this.makeControlPoints(verts, A_UPR_RIGHT, B_UPR_RIGHT, B_UPR_LEFT, A_UPR_LEFT, Vec4.ZERO, controlPoints);
-
-        GeometryBuilder gb = this.getGeometryBuilder();
-        int count = gb.getBilinearSurfaceVertexCount(MINIMAL_GEOMETRY_PILLARS, MINIMAL_GEOMETRY_STACKS);
-        int numCoords = 3 * count;
-        float[] coords = new float[numCoords];
-        gb.makeBilinearSurfaceVertices(controlPoints, // Surface control points.
-            0, // Output starting index.
-            MINIMAL_GEOMETRY_PILLARS, MINIMAL_GEOMETRY_STACKS, // uStacks, vStacks.
-            coords);
-
-        LatLon[] locations = new LatLon[count];
-        for (int i = 0; i < count; i++)
-        {
-            Vec4 v = Vec4.fromFloatArray(coords, 3 * i, 3);
-            locations[i] = globe.computePositionFromPoint(v);
-        }
-
-        ArrayList<Vec4> points = new ArrayList<Vec4>();
-        this.makeExtremePoints(globe, verticalExaggeration, Arrays.asList(locations), points);
+        List<LatLon> locations = this.makeCapLocations(globe, DEFAULT_PILLARS, DEFAULT_STACKS);
+        List<Vec4> points = new ArrayList<Vec4>();
+        this.makeExtremePoints(globe, verticalExaggeration, locations, points);
 
         return points;
+    }
+
+    @Override
+    protected SurfaceShape createSurfaceShape()
+    {
+        return new SurfaceBox();
+    }
+
+    @Override
+    protected void regenerateSurfaceShape(DrawContext dc, SurfaceShape shape)
+    {
+        int lengthSegments = this.getPillars();
+        int widthSegments = this.getStacks();
+        List<LatLon> locations = this.makeSideLocations(dc.getGlobe(), lengthSegments, widthSegments);
+
+        ((SurfaceBox) shape).setLocations(locations);
+        ((SurfaceBox) shape).setLengthSegments(lengthSegments);
+        ((SurfaceBox) shape).setWidthSegments(widthSegments);
+        ((SurfaceBox) shape).setEnableCaps(this.isEnableCaps()[0], this.isEnableCaps()[1]);
+        ((SurfaceBox) shape).setEnableCenterLine(this.isEnableCenterLine());
+    }
+
+    protected void doMoveTo(Globe globe, Position oldRef, Position newRef)
+    {
+        if (oldRef == null)
+        {
+            String message = "nullValue.OldRefIsNull";
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+        if (newRef == null)
+        {
+            String message = "nullValue.NewRefIsNull";
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        List<LatLon> locations = new ArrayList<LatLon>(2);
+        locations.add(this.getLocations()[0]);
+        locations.add(this.getLocations()[1]);
+
+        List<LatLon> newLocations = LatLon.computeShiftedLocations(globe, oldRef, newRef, locations);
+        this.setLocations(newLocations.get(0), newLocations.get(1));
+
+        super.doMoveTo(oldRef, newRef);
     }
 
     protected void doMoveTo(Position oldRef, Position newRef)
@@ -568,7 +421,7 @@ public class Box extends AbstractAirspace
 
     protected int getHeightStacks()
     {
-        return this.heightStacks;
+        return 1;
     }
 
     //**************************************************************//
@@ -596,16 +449,10 @@ public class Box extends AbstractAirspace
             throw new IllegalArgumentException(message);
         }
 
-        Vec4[] verts = this.getVertices(dc.getGlobe());
-        if (verts == null)
-            verts = computeStandardVertices(dc.getGlobe(), dc.getVerticalExaggeration(), this);
-
         double[] altitudes = this.getAltitudes(dc.getVerticalExaggeration());
         boolean[] terrainConformant = this.isTerrainConforming();
-        boolean[] enableCaps = this.isEnableCaps();
-        int pillars = this.pillars;
-        int stacks = this.stacks;
-        int heightStacks = this.heightStacks;
+        int lengthSegments = this.getPillars();
+        int widthSegments = this.getStacks();
 
         if (this.isEnableLevelOfDetail())
         {
@@ -613,28 +460,25 @@ public class Box extends AbstractAirspace
 
             Object o = level.getValue(PILLARS);
             if (o != null && o instanceof Integer)
-                pillars = (Integer) o;
+                lengthSegments = (Integer) o;
 
             o = level.getValue(STACKS);
             if (o != null && o instanceof Integer)
-                stacks = (Integer) o;
+                widthSegments = (Integer) o;
 
             o = level.getValue(DISABLE_TERRAIN_CONFORMANCE);
             if (o != null && o instanceof Boolean && (Boolean) o)
                 terrainConformant[0] = terrainConformant[1] = false;
         }
 
-        Vec4 referenceCenter = this.computeReferenceCenter(dc);
-        this.setExpiryTime(this.nextExpiryTime(dc, terrainConformant));
+        this.setExpiryTime(this.nextExpiryTime(dc, this.isTerrainConforming()));
         this.clearElevationMap();
 
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         OGLStackHandler ogsh = new OGLStackHandler();
         try
         {
-            dc.getView().pushReferenceCenter(dc, referenceCenter);
-
-            if (this.forceCullFace || !enableCaps[0] || !enableCaps[1])
+            if (this.forceCullFace || !this.enableStartCap || !this.enableEndCap)
             {
                 ogsh.pushAttrib(gl, GL2.GL_POLYGON_BIT);
                 gl.glEnable(GL.GL_CULL_FACE);
@@ -643,19 +487,33 @@ public class Box extends AbstractAirspace
 
             if (Airspace.DRAW_STYLE_FILL.equals(drawStyle))
             {
-                this.drawBoxFill(dc, verts, altitudes, terrainConformant, enableCaps, pillars, stacks, heightStacks,
-                    referenceCenter);
+                this.drawBox(dc, altitudes, terrainConformant, lengthSegments, widthSegments);
             }
             else if (Airspace.DRAW_STYLE_OUTLINE.equals(drawStyle))
             {
-                this.drawBoxOutline(dc, verts, altitudes, terrainConformant, enableCaps,
-                    pillars, stacks, heightStacks, referenceCenter);
+                this.drawBoxOutline(dc, altitudes, terrainConformant, lengthSegments, widthSegments);
+
+                if (this.enableCenterLine)
+                {
+                    this.drawBoxCenterLine(dc, altitudes, terrainConformant, lengthSegments, widthSegments);
+                }
             }
         }
         finally
         {
-            dc.getView().popReferenceCenter(dc);
             ogsh.pop(gl);
+        }
+    }
+
+    protected void applyCenterLineState(DrawContext dc)
+    {
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        AirspaceAttributes attrs = this.getActiveAttributes();
+
+        if (attrs.getOutlineStippleFactor() <= 0) // override stipple in attributes
+        {
+            gl.glEnable(GL2.GL_LINE_STIPPLE);
+            gl.glLineStipple(Box.DEFAULT_CENTER_LINE_STIPPLE_FACTOR, Box.DEFAULT_CENTER_LINE_STIPPLE_PATTERN);
         }
     }
 
@@ -663,379 +521,432 @@ public class Box extends AbstractAirspace
     //********************  Box  ***********************************//
     //**************************************************************//
 
-    private void drawBoxFill(DrawContext dc, Vec4[] verts, double[] altitudes, boolean[] terrainConformant,
-        boolean[] enableCaps,
-        int pillars, int stacks, int heightStacks,
-        Vec4 referenceCenter)
+    private static class BoxGeometry implements Cacheable
     {
-        Geometry indexGeom = this.getBoxIndexFillGeometry(enableCaps, pillars, stacks, heightStacks);
-        Geometry vertexGeom = this.getBoxVertexGeometry(dc, verts, altitudes, terrainConformant, enableCaps,
-            pillars, stacks, heightStacks, referenceCenter);
+        public Geometry sideGeometry = new Geometry();
+        public Geometry capGeometry = new Geometry();
+        public Geometry outlineIndices = new Geometry();
+        public Geometry centerLineIndices = new Geometry();
+        public Vec4 referencePoint;
 
-        this.getRenderer().drawGeometry(dc, indexGeom, vertexGeom);
+        @Override
+        public long getSizeInBytes()
+        {
+            return this.sideGeometry.getSizeInBytes()
+                + this.capGeometry.getSizeInBytes()
+                + this.outlineIndices.getSizeInBytes()
+                + this.centerLineIndices.getSizeInBytes();
+        }
     }
 
-    private void drawBoxOutline(DrawContext dc, Vec4[] verts, double[] altitudes, boolean[] terrainConformant,
-        boolean[] enableCaps,
-        int pillars, int stacks, int heightStacks,
-        Vec4 referenceCenter)
+    private static class BoxCorners
     {
-        Geometry indexGeom = this.getBoxIndexOutlineGeometry(enableCaps, pillars, stacks, heightStacks);
-        Geometry vertexGeom = this.getBoxVertexGeometry(dc, verts, altitudes, terrainConformant, enableCaps,
-            pillars, stacks, heightStacks, referenceCenter);
+        public LatLon beginLeft;
+        public LatLon beginRight;
+        public LatLon endLeft;
+        public LatLon endRight;
 
-        this.getRenderer().drawGeometry(dc, indexGeom, vertexGeom);
+        public LatLon beginLeftProj;
+        public LatLon beginRightProj;
+        public LatLon endLeftProj;
+        public LatLon endRightProj;
+
+        public double leftArcLength;
+        public double rightArcLength;
     }
 
-    private Geometry getBoxIndexFillGeometry(boolean[] enableCaps, int pillars, int stacks, int heightStacks)
+    private void drawBox(DrawContext dc, double[] altitudes, boolean[] terrainConformant, int lengthSegments,
+        int widthSegments)
     {
-        Geometry.CacheKey cacheKey = new Geometry.CacheKey(this.getClass(), "Box.FillIndices",
-            enableCaps[0], enableCaps[1], pillars, stacks, heightStacks);
+        BoxGeometry geom = this.getBoxGeometry(dc, altitudes, terrainConformant, lengthSegments, widthSegments);
+        try
+        {
+            dc.getView().pushReferenceCenter(dc, geom.referencePoint);
+            this.drawGeometry(dc, geom.sideGeometry, geom.sideGeometry);
+            this.drawGeometry(dc, geom.capGeometry, geom.capGeometry);
+        }
+        finally
+        {
+            dc.getView().popReferenceCenter(dc);
+        }
+    }
 
-        Geometry geom = (Geometry) this.getGeometryCache().getObject(cacheKey);
+    private void drawBoxOutline(DrawContext dc, double[] altitudes, boolean[] terrainConformant, int lengthSegments,
+        int widthSegments)
+    {
+        BoxGeometry geom = this.getBoxGeometry(dc, altitudes, terrainConformant, lengthSegments, widthSegments);
+        try
+        {
+            dc.getView().pushReferenceCenter(dc, geom.referencePoint);
+            this.drawGeometry(dc, geom.outlineIndices, geom.sideGeometry);
+        }
+        finally
+        {
+            dc.getView().popReferenceCenter(dc);
+        }
+    }
+
+    private void drawBoxCenterLine(DrawContext dc, double[] altitudes, boolean[] terrainConformant, int lengthSegments,
+        int widthSegments)
+    {
+        BoxGeometry geom = this.getBoxGeometry(dc, altitudes, terrainConformant, lengthSegments, widthSegments);
+        try
+        {
+            dc.getView().pushReferenceCenter(dc, geom.referencePoint);
+            dc.pushProjectionOffest(DEFAULT_CENTER_LINE_OFFSET); // move center line depth slightly in front of fill
+            this.applyCenterLineState(dc);
+            this.drawGeometry(dc, geom.centerLineIndices, geom.capGeometry);
+        }
+        finally
+        {
+            dc.popProjectionOffest();
+            dc.getView().popReferenceCenter(dc);
+        }
+    }
+
+    private BoxGeometry getBoxGeometry(DrawContext dc, double[] altitudes, boolean[] terrainConformant,
+        int lengthSegments, int widthSegments)
+    {
+        Object cacheKey = new Geometry.CacheKey(dc.getGlobe(), this.getClass(), "Box.Geometry", this.geometryCacheKey,
+            altitudes, terrainConformant, lengthSegments, widthSegments);
+        BoxGeometry geom = (BoxGeometry) this.getGeometryCache().getObject(cacheKey);
+
+        if (geom != null && !this.isExpired(dc, geom.sideGeometry))
+            return geom;
+
         if (geom == null)
-        {
-            geom = new Geometry();
-            this.makeBoxFillIndices(enableCaps, pillars, stacks, heightStacks, geom);
-            this.getGeometryCache().add(cacheKey, geom);
-        }
+            geom = new BoxGeometry();
+
+        this.makeBoxGeometry(dc, altitudes, terrainConformant, lengthSegments, widthSegments, geom);
+        this.updateExpiryCriteria(dc, geom.sideGeometry);
+        this.getGeometryCache().add(cacheKey, geom);
 
         return geom;
     }
 
-    private Geometry getBoxIndexOutlineGeometry(boolean[] enableCaps,
-        int pillars, int stacks, int heightStacks)
+    private void makeBoxGeometry(DrawContext dc, double[] altitudes, boolean[] terrainConformant, int lengthSegments,
+        int widthSegments, BoxGeometry geom)
     {
-        Geometry.CacheKey cacheKey = new Geometry.CacheKey(this.getClass(), "Box.OutlineIndices",
-            enableCaps[0], enableCaps[1],
-            pillars, stacks, heightStacks);
-
-        Geometry geom = (Geometry) this.getGeometryCache().getObject(cacheKey);
-        if (geom == null)
-        {
-            geom = new Geometry();
-            this.makeBoxOutlineIndices(enableCaps, pillars, stacks, heightStacks, geom);
-            this.getGeometryCache().add(cacheKey, geom);
-        }
-
-        return geom;
+        geom.referencePoint = this.computeReferenceCenter(dc);
+        this.makeSideGeometry(dc.getTerrain(), altitudes, terrainConformant, lengthSegments, widthSegments, geom);
+        this.makeCapGeometry(dc.getTerrain(), altitudes, terrainConformant, lengthSegments, widthSegments, geom);
     }
 
-    private Geometry getBoxVertexGeometry(DrawContext dc, Vec4[] verts,
-        double[] altitudes, boolean[] terrainConformant,
-        boolean[] enableCaps,
-        int pillars, int stacks, int heightStacks,
-        Vec4 referenceCenter)
+    private void makeSideGeometry(Terrain terrain, double[] altitudes, boolean[] terrainConformant, int lengthSegments,
+        int widthSegments, BoxGeometry geom)
     {
-        Object cacheKey = new Geometry.CacheKey(dc.getGlobe(), this.getClass(), "Box.Vertices",
-            verts, altitudes[0], altitudes[1], terrainConformant[0], terrainConformant[1],
-            enableCaps[0], enableCaps[1], pillars, stacks, heightStacks, referenceCenter);
+        List<LatLon> locations = this.makeSideLocations(terrain.getGlobe(), lengthSegments, widthSegments);
 
-        Geometry geom = (Geometry) this.getGeometryCache().getObject(cacheKey);
-        if (geom == null || this.isExpired(dc, geom))
+        // Compute model coordinate vertex points.
+        int vertexCount = 2 * locations.size(); // upper altitude and lower altitude vertices
+        float[] pointArray = new float[3 * vertexCount];
+        FloatBuffer pointBuffer = FloatBuffer.wrap(pointArray);
+
+        for (LatLon ll : locations)
         {
-            if (geom == null)
-                geom = new Geometry();
-            this.makeBoxVertices(dc, verts, altitudes, terrainConformant, enableCaps, pillars, stacks, heightStacks,
-                referenceCenter, geom);
-            this.updateExpiryCriteria(dc, geom);
-            this.getGeometryCache().add(cacheKey, geom);
+            for (int i = 1; i >= 0; i--) // upper altitude then lower altitude
+            {
+                Vec4 p = terrainConformant[i] ?
+                    terrain.getSurfacePoint(ll.latitude, ll.longitude, altitudes[i]) :
+                    terrain.getGlobe().computePointFromPosition(ll.latitude, ll.longitude, altitudes[i]);
+                pointBuffer.put((float) (p.x - geom.referencePoint.x));
+                pointBuffer.put((float) (p.y - geom.referencePoint.y));
+                pointBuffer.put((float) (p.z - geom.referencePoint.z));
+            }
         }
 
-        return geom;
-    }
-
-    private static class FaceRenderInfo
-    {
-        int faceType;
-        int ll, lr, ul, ur;
-        int uStacks, vStacks;
-        int orientation;
-        int firstVertex, vertexCount;
-        int firstIndex, indexCount;
-
-        private FaceRenderInfo(int faceType, int ll, int lr, int ur, int ul, int uStacks, int vStacks, int orientation)
-        {
-            this.faceType = faceType;
-            this.ll = ll;
-            this.lr = lr;
-            this.ur = ur;
-            this.ul = ul;
-            this.uStacks = uStacks;
-            this.vStacks = vStacks;
-            this.orientation = orientation;
-        }
-    }
-
-    private void makeFaceInfo(boolean[] enableCaps, int pillars, int stacks, int heightStacks, FaceRenderInfo[] ri)
-    {
-        // Top face.
-        ri[FACE_TOP] = new FaceRenderInfo(UPR_FACE, A_UPR_RIGHT, B_UPR_RIGHT, B_UPR_LEFT, A_UPR_LEFT,
-            pillars, stacks, GeometryBuilder.OUTSIDE);
-        // Bottom face.
-        ri[FACE_BOTTOM] = new FaceRenderInfo(LOW_FACE, A_LOW_LEFT, B_LOW_LEFT, B_LOW_RIGHT, A_LOW_RIGHT,
-            pillars, stacks, GeometryBuilder.OUTSIDE);
-        // Left side face.
-        ri[FACE_LEFT] = new FaceRenderInfo(SIDE_FACE, B_LOW_LEFT, A_LOW_LEFT, A_UPR_LEFT, B_UPR_LEFT,
-            pillars, heightStacks, GeometryBuilder.OUTSIDE);
-        // Right side face.
-        ri[FACE_RIGHT] = new FaceRenderInfo(SIDE_FACE, A_LOW_RIGHT, B_LOW_RIGHT, B_UPR_RIGHT, A_UPR_RIGHT,
-            pillars, heightStacks, GeometryBuilder.OUTSIDE);
-        // Front side face.
-        if (enableCaps[0])
-        {
-            ri[FACE_FRONT] = new FaceRenderInfo(SIDE_FACE, A_LOW_LEFT, A_LOW_RIGHT, A_UPR_RIGHT, A_UPR_LEFT,
-                stacks, heightStacks, GeometryBuilder.OUTSIDE);
-        }
-        // Back side face.
-        if (enableCaps[1])
-        {
-            ri[FACE_BACK] = new FaceRenderInfo(SIDE_FACE, B_LOW_RIGHT, B_LOW_LEFT, B_UPR_LEFT, B_UPR_RIGHT,
-                stacks, heightStacks, GeometryBuilder.OUTSIDE);
-        }
-    }
-
-    private void makeBoxFillIndices(boolean[] enableCaps, int pillars, int stacks, int heightStacks, Geometry dest)
-    {
-        GeometryBuilder gb = this.getGeometryBuilder();
-        FaceRenderInfo[] ri = new FaceRenderInfo[6];
-        this.makeFaceInfo(enableCaps, pillars, stacks, heightStacks, ri);
-
-        int drawMode = gb.getBilinearSurfaceFillDrawMode();
-
+        // Compute triangle indices and line segment indices.
+        int[] sideSegments = {2 * widthSegments, lengthSegments, 2 * widthSegments, lengthSegments};
+        boolean[] sideFlag = {this.enableStartCap, true, this.enableEndCap, true};
         int indexCount = 0;
-        int vertexCount = 0;
+        int outlineCount = 8;
 
-        FaceRenderInfo last = null;
-        for (int i = 0; i < 6; i++)
+        // Count the number of triangle and line segment indices, depending on whether each end cap is enabled.
+        for (int i = 0; i < 4; i++)
         {
-            if (ri[i] != null)
+            if (sideFlag[i])
             {
-                if (last != null)
-                    indexCount += 2;
-                ri[i].firstIndex = indexCount;
-                ri[i].firstVertex = vertexCount;
-                ri[i].indexCount = gb.getBilinearSurfaceFillIndexCount(ri[i].uStacks, ri[i].vStacks);
-                ri[i].vertexCount = gb.getBilinearSurfaceVertexCount(ri[i].uStacks, ri[i].vStacks);
-                indexCount += ri[i].indexCount;
-                vertexCount += ri[i].vertexCount;
-                last = ri[i];
+                indexCount += 6 * sideSegments[i];
+                outlineCount += 4 * sideSegments[i];
             }
         }
 
-        int[] indices = new int[indexCount];
+        int index = 0;
+        int[] indexArray = new int[indexCount];
+        int[] outlineArray = new int[outlineCount];
+        IntBuffer indexBuffer = IntBuffer.wrap(indexArray);
+        IntBuffer outlineBuffer = IntBuffer.wrap(outlineArray);
 
-        last = null;
-        for (int i = 0; i < 6; i++)
+        for (int i = 0; i < 4; i++)
         {
-            if (ri[i] != null)
+            for (int j = 0; j < sideSegments[i]; j++)
             {
-                gb.makeBilinearSurfaceFillIndices(ri[i].firstVertex, ri[i].uStacks, ri[i].vStacks, ri[i].firstIndex,
-                    indices);
-                if (last != null)
+                if (sideFlag[i])
                 {
-                    int joinPos = last.firstIndex + last.indexCount;
-                    int lastIndex = last.firstIndex + last.indexCount - 1;
-                    int firstIndex = ri[i].firstIndex;
-                    indices[joinPos++] = indices[lastIndex];
-                    indices[joinPos] = indices[firstIndex];
+                    indexBuffer.put(index).put(index + 1).put(index + 2); // upper left triangle
+                    indexBuffer.put(index + 2).put(index + 1).put(index + 3); // lower right triangle
+                    outlineBuffer.put(index).put(index + 2); // upper altitude segment
+                    outlineBuffer.put(index + 1).put(index + 3); // lower altitude segment
                 }
-                last = ri[i];
+                index += 2;
             }
+
+            outlineBuffer.put(index).put(index + 1); // vertical segment
+            index += 2; // advance to the beginning of the next segment
         }
 
-        dest.setElementData(drawMode, indexCount, indices);
+        // Compute model coordinate vertex normals.
+        float[] normalArray = new float[3 * vertexCount];
+        GeometryBuilder gb = new GeometryBuilder();
+        gb.makeIndexedTriangleArrayNormals(0, indexCount, indexArray, 0, vertexCount, pointArray, normalArray);
+
+        geom.sideGeometry.setVertexData(vertexCount, pointArray);
+        geom.sideGeometry.setNormalData(vertexCount, normalArray);
+        geom.sideGeometry.setElementData(GL.GL_TRIANGLES, indexCount, indexArray);
+        geom.outlineIndices.setElementData(GL.GL_LINES, outlineCount, outlineArray);
     }
 
-    private void makeBoxOutlineIndices(boolean[] enableCaps,
-        int pillars, int stacks, int heightStacks, Geometry dest)
+    private void makeCapGeometry(Terrain terrain, double[] altitudes, boolean[] terrainConformant, int lengthSegments,
+        int widthSegments, BoxGeometry geom)
     {
-        GeometryBuilder gb = this.getGeometryBuilder();
-        FaceRenderInfo[] ri = new FaceRenderInfo[6];
-        this.makeFaceInfo(enableCaps, pillars, stacks, heightStacks, ri);
+        List<LatLon> locations = this.makeCapLocations(terrain.getGlobe(), lengthSegments, widthSegments);
 
-        int drawMode = gb.getBilinearSurfaceOutlineDrawMode();
+        // Compute model coordinate vertex points.
+        int vertexCount = 2 * locations.size(); // upper altitude and lower altitude vertices
+        float[] pointArray = new float[3 * vertexCount];
+        FloatBuffer pointBuffer = FloatBuffer.wrap(pointArray);
 
-        int indexCount = 0;
-        int vertexCount = 0;
-
-        for (int i = 0; i < 6; i++)
+        for (LatLon ll : locations)
         {
-            if (ri[i] != null)
+            for (int i = 1; i >= 0; i--) // upper altitude then lower altitude
             {
-                int mask = this.getOutlineMask(i, enableCaps);
-                ri[i].firstIndex = indexCount;
-                ri[i].firstVertex = vertexCount;
-                ri[i].indexCount = gb.getBilinearSurfaceOutlineIndexCount(ri[i].uStacks, ri[i].vStacks, mask);
-                ri[i].vertexCount = gb.getBilinearSurfaceVertexCount(ri[i].uStacks, ri[i].vStacks);
-                indexCount += ri[i].indexCount;
-                vertexCount += ri[i].vertexCount;
+                Vec4 p = terrainConformant[i] ?
+                    terrain.getSurfacePoint(ll.latitude, ll.longitude, altitudes[i]) :
+                    terrain.getGlobe().computePointFromPosition(ll.latitude, ll.longitude, altitudes[i]);
+                pointBuffer.put((float) (p.x - geom.referencePoint.x));
+                pointBuffer.put((float) (p.y - geom.referencePoint.y));
+                pointBuffer.put((float) (p.z - geom.referencePoint.z));
             }
         }
 
-        int[] indices = new int[indexCount];
+        // Compute triangle indices.
+        int cellCount = 4 * lengthSegments * widthSegments; // top/bottom cells for left and right sides
+        int indexCount = 6 * cellCount; // six indices per cell
+        int[] indexArray = new int[indexCount];
+        IntBuffer indexBuffer = IntBuffer.wrap(indexArray);
 
-        for (int i = 0; i < 6; i++)
+        int index = 0;
+        int rowStride = 4 * widthSegments + 2;
+
+        // left top and bottom
+        for (int i = 0; i < lengthSegments; i++)
         {
-            if (ri[i] != null)
+            for (int j = 0; j < 2 * widthSegments; j++)
             {
-                int mask = this.getOutlineMask(i, enableCaps);
-                gb.makeBilinearSurfaceOutlineIndices(ri[i].firstVertex, ri[i].uStacks, ri[i].vStacks, mask,
-                    ri[i].firstIndex, indices);
+                // upper altitude triangles
+                indexBuffer.put(index).put(index + 2).put(index + rowStride);
+                indexBuffer.put(index + rowStride).put(index + 2).put(index + rowStride + 2);
+                index++;
+                // lower altitude triangles
+                indexBuffer.put(index).put(index + rowStride).put(index + 2);
+                indexBuffer.put(index + 2).put(index + rowStride).put(index + rowStride + 2);
+                index++;
             }
+
+            index += 2; // skip the last row of side vertices
         }
 
-        dest.setElementData(drawMode, indexCount, indices);
+        // Compute center line indices.
+        int segmentCount = 2 * lengthSegments + (this.enableStartCap ? 1 : 0) + (this.enableEndCap ? 1 : 0);
+        int centerLineCount = 2 * segmentCount; // two indices per segment
+        int[] centerLineArray = new int[centerLineCount];
+        IntBuffer centerLineBuffer = IntBuffer.wrap(centerLineArray);
+
+        index = 2 * widthSegments; // start at the first center vertex
+
+        if (this.enableStartCap)
+        {
+            centerLineBuffer.put(index).put(index + 1); // begin vertical segment
+        }
+
+        for (int i = 0; i < lengthSegments; i++)
+        {
+            centerLineBuffer.put(index).put(index + rowStride); // upper altitude segment
+            centerLineBuffer.put(index + 1).put(index + rowStride + 1); // lower altitude segment
+            index += rowStride;
+        }
+
+        if (this.enableEndCap)
+        {
+            centerLineBuffer.put(index).put(index + 1); // end vertical segment
+        }
+
+        // Compute model coordinate vertex normals.
+        float[] normalArray = new float[3 * vertexCount];
+        GeometryBuilder gb = new GeometryBuilder();
+        gb.makeIndexedTriangleArrayNormals(0, indexCount, indexArray, 0, vertexCount, pointArray, normalArray);
+
+        geom.capGeometry.setVertexData(vertexCount, pointArray);
+        geom.capGeometry.setNormalData(vertexCount, normalArray);
+        geom.capGeometry.setElementData(GL.GL_TRIANGLES, indexCount, indexArray);
+        geom.centerLineIndices.setElementData(GL.GL_LINES, centerLineCount, centerLineArray);
     }
 
-    private int getOutlineMask(int face, boolean[] enableCaps)
+    private List<LatLon> makeSideLocations(Globe globe, int lengthSegments, int widthSegments)
     {
-        if (face == FACE_LEFT || face == FACE_RIGHT)
+        ArrayList<LatLon> locations = new ArrayList<LatLon>();
+        BoxCorners corners = this.computeBoxCorners(globe);
+
+        // begin side
+        this.appendLocations(corners.beginLeft, this.beginLocation, corners.beginRight, widthSegments, locations);
+
+        // right side
+        locations.add(corners.beginRight);
+        for (int i = 1; i < lengthSegments; i++)
         {
-            return GeometryBuilder.TOP | GeometryBuilder.BOTTOM | GeometryBuilder.LEFT | GeometryBuilder.RIGHT;
+            double amount = (double) i / (double) lengthSegments;
+            LatLon rightProj = LatLon.interpolateGreatCircle(amount, corners.beginRightProj, corners.endRightProj);
+            double rightAzimuth = LatLon.greatCircleAzimuth(rightProj, corners.endRightProj).radians + (Math.PI / 2);
+            LatLon right = LatLon.greatCircleEndPosition(rightProj, rightAzimuth, corners.rightArcLength);
+            locations.add(right);
         }
-        else if (face == FACE_FRONT || face == FACE_BACK)
+        locations.add(corners.endRight);
+
+        // end side
+        this.appendLocations(corners.endRight, this.endLocation, corners.endLeft, widthSegments, locations);
+
+        // left side
+        locations.add(corners.endLeft);
+        for (int i = 1; i < lengthSegments; i++)
         {
-            if ((face == FACE_FRONT && enableCaps[0]) || (face == FACE_BACK && enableCaps[1]))
+            double amount = (double) i / (double) lengthSegments;
+            LatLon leftProj = LatLon.interpolateGreatCircle(amount, corners.endLeftProj, corners.beginLeftProj);
+            double leftAzimuth = LatLon.greatCircleAzimuth(leftProj, corners.endLeftProj).radians - (Math.PI / 2);
+            LatLon left = LatLon.greatCircleEndPosition(leftProj, leftAzimuth, corners.leftArcLength);
+            locations.add(left);
+        }
+        locations.add(corners.beginLeft);
+
+        return locations;
+    }
+
+    private List<LatLon> makeCapLocations(Globe globe, int lengthSegments, int widthSegments)
+    {
+        ArrayList<LatLon> locations = new ArrayList<LatLon>();
+        BoxCorners corners = this.computeBoxCorners(globe);
+
+        // begin row
+        this.appendLocations(corners.beginLeft, this.beginLocation, corners.beginRight, widthSegments, locations);
+
+        // interior rows
+        for (int i = 1; i < lengthSegments; i++)
+        {
+            double amount = (double) i / (double) lengthSegments;
+            LatLon center = LatLon.interpolateGreatCircle(amount, this.beginLocation, this.endLocation);
+            LatLon leftProj = LatLon.interpolateGreatCircle(amount, corners.beginLeftProj, corners.endLeftProj);
+            LatLon rightProj = LatLon.interpolateGreatCircle(amount, corners.beginRightProj, corners.endRightProj);
+            double leftAzimuth = LatLon.greatCircleAzimuth(leftProj, corners.endLeftProj).radians - (Math.PI / 2);
+            double rightAzimuth = LatLon.greatCircleAzimuth(rightProj, corners.endRightProj).radians + (Math.PI / 2);
+            LatLon left = LatLon.greatCircleEndPosition(leftProj, leftAzimuth, corners.leftArcLength);
+            LatLon right = LatLon.greatCircleEndPosition(rightProj, rightAzimuth, corners.rightArcLength);
+
+            this.appendLocations(left, center, right, widthSegments, locations);
+        }
+
+        // end row
+        this.appendLocations(corners.endLeft, this.endLocation, corners.endRight, widthSegments, locations);
+
+        return locations;
+    }
+
+    private BoxCorners computeBoxCorners(Globe globe)
+    {
+        BoxCorners corners = new BoxCorners();
+        double beginAzimuth = LatLon.greatCircleAzimuth(this.beginLocation, this.endLocation).radians;
+        double endAzimuth = LatLon.greatCircleAzimuth(this.endLocation, this.beginLocation).radians;
+        double centerArcLength = LatLon.greatCircleDistance(this.beginLocation, this.endLocation).radians;
+        corners.leftArcLength = this.leftWidth / globe.getRadius();
+        corners.rightArcLength = this.rightWidth / globe.getRadius();
+
+        corners.beginLeft = LatLon.greatCircleEndPosition(this.beginLocation, beginAzimuth - (Math.PI / 2),
+            corners.leftArcLength);
+        corners.beginLeftProj = this.beginLocation;
+        if (this.beginLeftAzimuth != null)
+        {
+            double arcAngle = beginAzimuth - this.beginLeftAzimuth.radians;
+            double arcLength = Math.asin(Math.cos(arcAngle) * Math.sin(corners.leftArcLength) / Math.sin(arcAngle));
+            double sideLength = Math.asin(Math.sin(corners.leftArcLength) / Math.sin(arcAngle));
+            if (arcLength < centerArcLength)
             {
-                return GeometryBuilder.TOP | GeometryBuilder.BOTTOM;
+                corners.beginLeft = LatLon.greatCircleEndPosition(this.beginLocation, this.beginLeftAzimuth.radians,
+                    sideLength);
+                corners.beginLeftProj = LatLon.greatCircleEndPosition(this.beginLocation, beginAzimuth, arcLength);
             }
         }
 
-        return 0;
-    }
-
-    private void makeBoxVertices(DrawContext dc, Vec4[] verts, double[] altitudes, boolean[] terrainConformant,
-        boolean[] enableCaps, int pillars, int stacks, int heightStacks,
-        Vec4 referenceCenter,
-        Geometry dest)
-    {
-        GeometryBuilder gb = this.getGeometryBuilder();
-        FaceRenderInfo[] ri = new FaceRenderInfo[6];
-        this.makeFaceInfo(enableCaps, pillars, stacks, heightStacks, ri);
-
-        int vertexCount = 0;
-
-        for (int i = 0; i < 6; i++)
+        corners.beginRight = LatLon.greatCircleEndPosition(this.beginLocation, beginAzimuth + (Math.PI / 2),
+            corners.rightArcLength);
+        corners.beginRightProj = this.beginLocation;
+        if (this.beginRightAzimuth != null)
         {
-            if (ri[i] != null)
+            double arcAngle = this.beginRightAzimuth.radians - beginAzimuth;
+            double arcLength = Math.asin(Math.cos(arcAngle) * Math.sin(corners.rightArcLength) / Math.sin(arcAngle));
+            double sideLength = Math.asin(Math.sin(corners.rightArcLength) / Math.sin(arcAngle));
+            if (arcLength < centerArcLength)
             {
-                ri[i].firstVertex = vertexCount;
-                ri[i].vertexCount = gb.getBilinearSurfaceVertexCount(ri[i].uStacks, ri[i].vStacks);
-                vertexCount += ri[i].vertexCount;
+                corners.beginRight = LatLon.greatCircleEndPosition(this.beginLocation, this.beginRightAzimuth.radians,
+                    sideLength);
+                corners.beginRightProj = LatLon.greatCircleEndPosition(this.beginLocation, beginAzimuth, arcLength);
             }
         }
 
-        int numCoords = 3 * vertexCount;
-        float[] vertices = new float[numCoords];
-        float[] normals = new float[numCoords];
-
-        float[] controlPoints = new float[12];
-        for (int i = 0; i < 6; i++)
+        corners.endLeft = LatLon.greatCircleEndPosition(this.endLocation, endAzimuth + (Math.PI / 2),
+            corners.leftArcLength);
+        corners.endLeftProj = this.endLocation;
+        if (this.endLeftAzimuth != null)
         {
-            if (ri[i] != null)
+            double arcAngle = this.endLeftAzimuth.radians - endAzimuth;
+            double arcLength = Math.asin(Math.cos(arcAngle) * Math.sin(corners.leftArcLength) / Math.sin(arcAngle));
+            double sideLength = Math.asin(Math.sin(corners.leftArcLength) / Math.sin(arcAngle));
+            if (arcLength < centerArcLength)
             {
-                this.makeControlPoints(verts, ri[i].ll, ri[i].lr, ri[i].ur, ri[i].ul, referenceCenter, controlPoints);
-                gb.setOrientation(ri[i].orientation);
-
-                gb.makeBilinearSurfaceVertices(controlPoints, ri[i].firstVertex, ri[i].uStacks, ri[i].vStacks,
-                    vertices);
-                if (ri[i].faceType == LOW_FACE || ri[i].faceType == UPR_FACE)
-                {
-                    this.makeTerrainConformant(dc, ri[i].faceType, altitudes, terrainConformant,
-                        ri[i].firstVertex, ri[i].vertexCount, vertices, referenceCenter);
-                }
-                else if (ri[i].faceType == SIDE_FACE)
-                {
-                    this.makeSideFaceTerrainConformant(dc, altitudes, terrainConformant,
-                        ri[i].firstVertex, ri[i].uStacks, ri[i].vStacks, vertices, referenceCenter);
-                }
-
-                gb.makeBilinearSurfaceVertexNormals(ri[i].firstVertex, ri[i].uStacks, ri[i].vStacks, vertices,
-                    ri[i].firstVertex, normals);
+                corners.endLeft = LatLon.greatCircleEndPosition(this.endLocation, this.endLeftAzimuth.radians,
+                    sideLength);
+                corners.endLeftProj = LatLon.greatCircleEndPosition(this.endLocation, endAzimuth, arcLength);
             }
         }
 
-        dest.setVertexData(vertexCount, vertices);
-        dest.setNormalData(vertexCount, normals);
-    }
-
-    private void makeControlPoints(Vec4[] vertices, int ll, int lr, int ur, int ul, Vec4 referenceCenter, float[] dest)
-    {
-        // Lower left corner.
-        dest[0] = (float) (vertices[ll].x - referenceCenter.x);
-        dest[1] = (float) (vertices[ll].y - referenceCenter.y);
-        dest[2] = (float) (vertices[ll].z - referenceCenter.z);
-        // Lower right corner.
-        dest[3] = (float) (vertices[lr].x - referenceCenter.x);
-        dest[4] = (float) (vertices[lr].y - referenceCenter.y);
-        dest[5] = (float) (vertices[lr].z - referenceCenter.z);
-        // Upper right corner.
-        dest[6] = (float) (vertices[ur].x - referenceCenter.x);
-        dest[7] = (float) (vertices[ur].y - referenceCenter.y);
-        dest[8] = (float) (vertices[ur].z - referenceCenter.z);
-        // Upper left corner.
-        dest[9] = (float) (vertices[ul].x - referenceCenter.x);
-        dest[10] = (float) (vertices[ul].y - referenceCenter.y);
-        dest[11] = (float) (vertices[ul].z - referenceCenter.z);
-    }
-
-    private void makeTerrainConformant(DrawContext dc, int face, double[] altitudes, boolean[] terrainConforming,
-        int pos, int count, float[] verts, Vec4 referenceCenter)
-    {
-        Globe globe = dc.getGlobe();
-        double altitude = (face == LOW_FACE) ? altitudes[0] : altitudes[1];
-        boolean isTerrainConforming =
-            (face == LOW_FACE && terrainConforming[0]) || (face == UPR_FACE && terrainConforming[1]);
-
-        for (int i = 0; i < count; i++)
+        corners.endRight = LatLon.greatCircleEndPosition(this.endLocation, endAzimuth - (Math.PI / 2),
+            corners.rightArcLength);
+        corners.endRightProj = this.endLocation;
+        if (this.endRightAzimuth != null)
         {
-            int index = 3 * (pos + i);
-            Vec4 vec = new Vec4(
-                verts[index] + referenceCenter.x,
-                verts[index + 1] + referenceCenter.y,
-                verts[index + 2] + referenceCenter.z);
-            Position p = globe.computePositionFromPoint(vec);
-
-            double elevation = altitude;
-            if (isTerrainConforming)
-                elevation += this.computeElevationAt(dc, p.getLatitude(), p.getLongitude());
-
-            vec = globe.computePointFromPosition(p.getLatitude(), p.getLongitude(), elevation);
-            verts[index] = (float) (vec.x - referenceCenter.x);
-            verts[index + 1] = (float) (vec.y - referenceCenter.y);
-            verts[index + 2] = (float) (vec.z - referenceCenter.z);
-        }
-    }
-
-    private void makeSideFaceTerrainConformant(DrawContext dc, double[] altitudes, boolean[] terrainConforming,
-        int pos, int uStacks, int vStacks, float[] verts, Vec4 referenceCenter)
-    {
-        Globe globe = dc.getGlobe();
-        double altitude = altitudes[0];
-        double altDelta = (altitudes[1] - altitudes[0]) / vStacks;
-
-        for (int vi = 0; vi <= vStacks; vi++, altitude += altDelta)
-        {
-            for (int ui = 0; ui <= uStacks; ui++)
+            double arcAngle = endAzimuth - this.endRightAzimuth.radians;
+            double arcLength = Math.asin(Math.cos(arcAngle) * Math.sin(corners.rightArcLength) / Math.sin(arcAngle));
+            double sideLength = Math.asin(Math.sin(corners.rightArcLength) / Math.sin(arcAngle));
+            if (arcLength < centerArcLength)
             {
-                int index = ui + vi * (uStacks + 1);
-                index = 3 * (pos + index);
-                Vec4 vec = new Vec4(
-                    verts[index] + referenceCenter.x,
-                    verts[index + 1] + referenceCenter.y,
-                    verts[index + 2] + referenceCenter.z);
-                Position p = globe.computePositionFromPoint(vec);
-
-                double elev = altitude;
-                if ((vi == 0 && terrainConforming[0]) || (vi == vStacks && terrainConforming[1]))
-                    elev += this.computeElevationAt(dc, p.getLatitude(), p.getLongitude());
-
-                vec = globe.computePointFromPosition(p.getLatitude(), p.getLongitude(), elev);
-                verts[index] = (float) (vec.x - referenceCenter.x);
-                verts[index + 1] = (float) (vec.y - referenceCenter.y);
-                verts[index + 2] = (float) (vec.z - referenceCenter.z);
+                corners.endRight = LatLon.greatCircleEndPosition(this.endLocation, this.endRightAzimuth.radians,
+                    sideLength);
+                corners.endRightProj = LatLon.greatCircleEndPosition(this.endLocation, endAzimuth, arcLength);
             }
+        }
+
+        return corners;
+    }
+
+    private void appendLocations(LatLon begin, LatLon middle, LatLon end, int numSegments, List<LatLon> result)
+    {
+        for (int i = 0; i <= numSegments; i++)
+        {
+            double amount = (double) i / (double) numSegments;
+            result.add(LatLon.interpolateGreatCircle(amount, begin, middle));
+        }
+
+        for (int i = 1; i <= numSegments; i++) // skip the first segment, it's already covered in the above loop
+        {
+            double amount = (double) i / (double) numSegments;
+            result.add(LatLon.interpolateGreatCircle(amount, middle, end));
         }
     }
 
@@ -1048,8 +959,8 @@ public class Box extends AbstractAirspace
     {
         super.doGetRestorableState(rs, context);
 
-        rs.addStateValueAsLatLon(context, "location1", this.location1);
-        rs.addStateValueAsLatLon(context, "location2", this.location2);
+        rs.addStateValueAsLatLon(context, "location1", this.beginLocation);
+        rs.addStateValueAsLatLon(context, "location2", this.endLocation);
         rs.addStateValueAsDouble(context, "leftWidth", this.leftWidth);
         rs.addStateValueAsDouble(context, "rightWidth", this.rightWidth);
         rs.addStateValueAsBoolean(context, "enableStartCap", this.enableStartCap);

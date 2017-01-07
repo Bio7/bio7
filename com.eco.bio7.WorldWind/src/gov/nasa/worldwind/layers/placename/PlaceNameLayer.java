@@ -10,6 +10,7 @@ import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.cache.*;
 import gov.nasa.worldwind.event.BulkRetrievalListener;
 import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.globes.Globe2D;
 import gov.nasa.worldwind.layers.AbstractLayer;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.retrieve.*;
@@ -23,7 +24,7 @@ import java.util.logging.Level;
 
 /**
  * @author Paul Collins
- * @version $Id: PlaceNameLayer.java 1172 2013-02-12 00:03:19Z dcollins $
+ * @version $Id: PlaceNameLayer.java 2392 2014-10-20 20:02:44Z tgaskins $
  */
 public class PlaceNameLayer extends AbstractLayer implements BulkRetrievable
 {
@@ -33,7 +34,7 @@ public class PlaceNameLayer extends AbstractLayer implements BulkRetrievable
     protected final Object fileLock = new Object();
     protected boolean cullNames = true; // this flag is no longer used. placenames participate in global decluttering
 
-    public static final double LEVEL_A = 0x1 << 25; // 33,554 km
+    public static final double LEVEL_A = 0x1 << 26; // 67,108 km
     public static final double LEVEL_B = 0x1 << 24; // 16,777 km
     public static final double LEVEL_C = 0x1 << 23; // 8,388 km
     public static final double LEVEL_D = 0x1 << 22; // 4,194 km
@@ -197,6 +198,13 @@ public class PlaceNameLayer extends AbstractLayer implements BulkRetrievable
             if (!navSector.intersects(dc.getVisibleSector()))
                 return false;
 
+            if (dc.is2DGlobe())
+            {
+                Sector limits = ((Globe2D)dc.getGlobe()).getProjection().getProjectionLimits();
+                if (limits != null && !limits.intersectsInterior(navSector))
+                    return false;
+            }
+
             View view = dc.getView();
             Position eyePos = view.getEyePosition();
             if (eyePos == null)
@@ -206,12 +214,22 @@ public class PlaceNameLayer extends AbstractLayer implements BulkRetrievable
             if (Double.isNaN(eyePos.getLatitude().getDegrees()) || Double.isNaN(eyePos.getLongitude().getDegrees()))
                 return false;
 
-            Angle lat = clampAngle(eyePos.getLatitude(), navSector.getMinLatitude(),
-                navSector.getMaxLatitude());
-            Angle lon = clampAngle(eyePos.getLongitude(), navSector.getMinLongitude(),
-                navSector.getMaxLongitude());
-            Vec4 p = dc.getGlobe().computePointFromPosition(lat, lon, 0d);
-            double distSquared = dc.getView().getEyePoint().distanceToSquared3(p);
+            double distSquared;
+            if (dc.isContinuous2DGlobe())
+            {
+                // Just use the eye altitude since the majority of non-visible sectors are culled elsewhere.
+                distSquared = eyePos.getAltitude() * eyePos.getAltitude();
+            }
+            else
+            {
+                Angle lat = clampAngle(eyePos.getLatitude(), navSector.getMinLatitude(),
+                    navSector.getMaxLatitude());
+                Angle lon = clampAngle(eyePos.getLongitude(), navSector.getMinLongitude(),
+                    navSector.getMaxLongitude());
+                Vec4 p = dc.getGlobe().computePointFromPosition(lat, lon, 0d);
+                distSquared = dc.getView().getEyePoint().distanceToSquared3(p);
+            }
+
             //noinspection RedundantIfStatement
             if (minDistanceSquared > distSquared || maxDistanceSquared < distSquared)
                 return false;
@@ -651,10 +669,22 @@ public class PlaceNameLayer extends AbstractLayer implements BulkRetrievable
         if (eyePos == null)
             return false;
 
-        Angle lat = clampAngle(eyePos.getLatitude(), sector.getMinLatitude(), sector.getMaxLatitude());
-        Angle lon = clampAngle(eyePos.getLongitude(), sector.getMinLongitude(), sector.getMaxLongitude());
-        Vec4 p = dc.getGlobe().computePointFromPosition(lat, lon, 0d);
-        double distSquared = dc.getView().getEyePoint().distanceToSquared3(p);
+        double distSquared;
+        if (dc.isContinuous2DGlobe())
+        {
+            // Just use the eye altitude since the majority of non-visible sectors are culled elsewhere.
+            distSquared = eyePos.getAltitude() * eyePos.getAltitude();
+        }
+        else
+        {
+            Angle lat = clampAngle(eyePos.getLatitude(), sector.getMinLatitude(),
+                sector.getMaxLatitude());
+            Angle lon = clampAngle(eyePos.getLongitude(), sector.getMinLongitude(),
+                sector.getMaxLongitude());
+            Vec4 p = dc.getGlobe().computePointFromPosition(lat, lon, 0d);
+            distSquared = dc.getView().getEyePoint().distanceToSquared3(p);
+        }
+
         //noinspection RedundantIfStatement
         if (minDistanceSquared > distSquared || maxDistanceSquared < distSquared)
             return false;
@@ -673,12 +703,22 @@ public class PlaceNameLayer extends AbstractLayer implements BulkRetrievable
         if (eyePos == null)
             return false;
 
-        Angle lat = clampAngle(eyePos.getLatitude(), tile.getSector().getMinLatitude(),
-            tile.getSector().getMaxLatitude());
-        Angle lon = clampAngle(eyePos.getLongitude(), tile.getSector().getMinLongitude(),
-            tile.getSector().getMaxLongitude());
-        Vec4 p = dc.getGlobe().computePointFromPosition(lat, lon, 0d);
-        double distSquared = dc.getView().getEyePoint().distanceToSquared3(p);
+        double distSquared;
+        if (dc.isContinuous2DGlobe())
+        {
+            // Just use the eye altitude since the majority of non-visible sectors are culled elsewhere.
+            distSquared = eyePos.getAltitude() * eyePos.getAltitude();
+        }
+        else
+        {
+            Angle lat = clampAngle(eyePos.getLatitude(), tile.getSector().getMinLatitude(),
+                tile.getSector().getMaxLatitude());
+            Angle lon = clampAngle(eyePos.getLongitude(), tile.getSector().getMinLongitude(),
+                tile.getSector().getMaxLongitude());
+            Vec4 p = dc.getGlobe().computePointFromPosition(lat, lon, 0d);
+            distSquared = dc.getView().getEyePoint().distanceToSquared3(p);
+        }
+
         //noinspection RedundantIfStatement
         if (minDistanceSquared > distSquared || maxDistanceSquared < distSquared)
             return false;

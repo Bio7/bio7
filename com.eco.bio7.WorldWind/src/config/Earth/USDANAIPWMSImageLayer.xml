@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--$Id: USDANAIPWMSImageLayer.xml 1 2011-07-16 23:22:47Z dcollins $-->
+<!--
+  ~ Copyright (C) 2012 United States Government as represented by the Administrator of the
+  ~ National Aeronautics and Space Administration.
+  ~ All Rights Reserved.
+  -->
+
+<!--$Id: USDANAIPWMSImageLayer.xml 1171 2013-02-11 21:45:02Z dcollins $-->
+<!--DEPRECATED. The preferred NAIP layer is USGS NAIP Plus (USGSNAIPPlusLayer.xml) -->
 <Layer version="1" layerType="TiledImageLayer">
     <DisplayName>USDA NAIP</DisplayName>
     <Service serviceName="OGC:WMS" version="1.3">
-        <GetCapabilitiesURL>http://worldwind47.arc.nasa.gov/wms</GetCapabilitiesURL>
-        <GetMapURL>http://worldwind47.arc.nasa.gov/wms</GetMapURL>
+        <GetCapabilitiesURL>https://worldwind47.arc.nasa.gov/wms</GetCapabilitiesURL>
+        <GetMapURL>https://worldwind47.arc.nasa.gov/wms</GetMapURL>
         <LayerNames>NAIP</LayerNames>
     </Service>
     <LastUpdate>1240509300000</LastUpdate>

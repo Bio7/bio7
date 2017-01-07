@@ -33,9 +33,12 @@ import java.util.*;
  * In order to support simultaneous use of this shape with multiple globes (windows), this shape maintains a cache of
  * data computed relative to each globe. During rendering, the data for the currently active globe, as indicated in the
  * draw context, is made current. Subsequently called methods rely on the existence of this current data cache entry.
+ * <p/>
+ * When drawn on a 2D globe, this shape uses a {@link SurfacePolygon} to represent itself. The following features are
+ * not provided in this case: rotation and texture.
  *
  * @author tag
- * @version $Id: Polygon.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: Polygon.java 3431 2015-10-01 04:29:15Z dcollins $
  */
 public class Polygon extends AbstractShape
 {
@@ -191,8 +194,6 @@ public class Polygon extends AbstractShape
     /** The total number of positions in the entire polygon. */
     protected int numPositions;
 
-    /** The image source for this shape's texture, if any. */
-    protected Object imageSource; // image source for the optional texture
     /** If an image source was specified, this is the WWTexture form. */
     protected WWTexture texture; // an optional texture for the base polygon
     /** This shape's rotation, in degrees positive counterclockwise. */
@@ -321,7 +322,7 @@ public class Polygon extends AbstractShape
      *
      * @return this polygon's outer boundary. The list may be empty but will not be null.
      */
-    protected List<? extends Position> outerBoundary()
+    public List<? extends Position> outerBoundary()
     {
         return this.boundaries.get(0);
     }
@@ -349,6 +350,8 @@ public class Polygon extends AbstractShape
         }
 
         this.boundaries.set(0, this.fillBoundary(corners));
+        if (this.surfaceShape != null)
+            this.setSurfacePolygonBoundaries(this.surfaceShape);
 
         this.reset();
     }
@@ -406,6 +409,8 @@ public class Polygon extends AbstractShape
         }
 
         this.boundaries.add(this.fillBoundary(corners));
+        if (this.surfaceShape != null)
+            this.setSurfacePolygonBoundaries(this.surfaceShape);
 
         this.reset();
     }
@@ -427,7 +432,7 @@ public class Polygon extends AbstractShape
      */
     public Object getTextureImageSource()
     {
-        return this.imageSource;
+        return this.getTexture() != null ? this.getTexture().getImageSource() : null;
     }
 
     /**
@@ -453,6 +458,7 @@ public class Polygon extends AbstractShape
 
         float[] retCoords = new float[this.textureCoordsBuffer.limit()];
         this.textureCoordsBuffer.get(retCoords, 0, retCoords.length);
+        this.textureCoordsBuffer.rewind();
 
         return retCoords;
     }
@@ -476,6 +482,10 @@ public class Polygon extends AbstractShape
         {
             this.texture = null;
             this.textureCoordsBuffer = null;
+
+            if (this.surfaceShape != null)
+                this.setSurfacePolygonTexImageSource(this.surfaceShape);
+
             return;
         }
 
@@ -493,8 +503,7 @@ public class Polygon extends AbstractShape
             throw new IllegalArgumentException(message);
         }
 
-        this.imageSource = imageSource;
-        this.texture = this.makeTexture(this.imageSource);
+        this.texture = this.makeTexture(imageSource);
 
         // Determine whether the tex-coord list needs to be closed.
         boolean closeIt = texCoords[0] != texCoords[texCoordCount - 2] || texCoords[1] != texCoords[texCoordCount - 1];
@@ -520,6 +529,11 @@ public class Polygon extends AbstractShape
             this.textureCoordsBuffer.put(this.textureCoordsBuffer.get(0));
             this.textureCoordsBuffer.put(this.textureCoordsBuffer.get(1));
         }
+
+        this.textureCoordsBuffer.rewind();
+
+        if (this.surfaceShape != null)
+            this.setSurfacePolygonTexImageSource(this.surfaceShape);
     }
 
     public Position getReferencePosition()
@@ -552,6 +566,38 @@ public class Polygon extends AbstractShape
     {
         this.rotation = rotation;
         this.reset();
+    }
+
+    @Override
+    protected SurfaceShape createSurfaceShape()
+    {
+        SurfacePolygon polygon = new SurfacePolygon();
+        this.setSurfacePolygonBoundaries(polygon);
+        this.setSurfacePolygonTexImageSource(polygon);
+
+        return polygon;
+    }
+
+    protected void setSurfacePolygonBoundaries(SurfaceShape shape)
+    {
+        SurfacePolygon polygon = (SurfacePolygon) shape;
+
+        polygon.setLocations(this.getOuterBoundary());
+
+        List<List<? extends Position>> bounds = this.getBoundaries();
+        for (int i = 1; i < bounds.size(); i++)
+        {
+            polygon.addInnerBoundary(bounds.get(i));
+        }
+    }
+
+    protected void setSurfacePolygonTexImageSource(SurfaceShape shape)
+    {
+        SurfacePolygon polygon = (SurfacePolygon) shape;
+
+        float[] texCoords = this.getTextureCoords();
+        int texCoordCount = texCoords != null ? texCoords.length / 2 : 0;
+        polygon.setTextureImageSource(this.getTextureImageSource(), texCoords, texCoordCount);
     }
 
     public Extent getExtent(Globe globe, double verticalExaggeration)
@@ -798,18 +844,27 @@ public class Polygon extends AbstractShape
         if (this.getRotation() == null)
             return null;
 
-        Sector s = this.getSector();
-        if (s == null)
-            return null;
+        // Find the centroid of the polygon with all altitudes 0 and rotate around that using the surface normal at
+        // that point as the rotation axis.
 
-        // Using the four corners of the sector to compute the rotation axis avoids any problems with dateline
-        // spanning polygons.
-        Vec4[] verts = s.computeCornerPoints(globe, 1);
-        Vec4 center = s.computeCenterPoint(globe, 1);
+        double cx = 0;
+        double cy = 0;
+        double cz = 0;
+        double outerBoundarySize = outerBoundary().size();
+        for (int i = 0; i < this.outerBoundary().size(); i++)
+        {
+            Vec4 vert = globe.computePointFromPosition(this.outerBoundary().get(i), 0);
+
+            cx += vert.x / outerBoundarySize;
+            cy += vert.y / outerBoundarySize;
+            cz += vert.z / outerBoundarySize;
+        }
+
+        Vec4 center = new Vec4(cx, cy, cz);
+        Vec4 normalVec = globe.computeSurfaceNormalAtPoint(center);
 
         Matrix m1 = Matrix.fromTranslation(center.multiply3(-1));
         Matrix m3 = Matrix.fromTranslation(center);
-        Vec4 normalVec = verts[2].subtract3(verts[0]).cross3(verts[3].subtract3(verts[1])).normalize3();
         Matrix m2 = Matrix.fromAxisAngle(Angle.fromDegrees(this.getRotation()), normalVec);
         return m3.multiply(m2).multiply(m1);
     }
@@ -1057,7 +1112,7 @@ public class Polygon extends AbstractShape
      *                 normals.
      *
      * @return the buffer specified as input, with its limit incremented by the number of vertices copied, and its
-     *         position set to 0.
+     * position set to 0.
      */
     protected FloatBuffer computeBoundaryNormals(BoundaryInfo boundary, FloatBuffer nBuf)
     {
@@ -1268,7 +1323,7 @@ public class Polygon extends AbstractShape
      * @param terrain the {@link Terrain} to use when computing the polygon's geometry.
      *
      * @return a list of intersections identifying where the line intersects the polygon, or null if the line does not
-     *         intersect the polygon.
+     * intersect the polygon.
      *
      * @throws InterruptedException if the operation is interrupted.
      * @see Terrain
@@ -1367,6 +1422,8 @@ public class Polygon extends AbstractShape
      * specified boundary lists.
      *
      * @param position the new position of the shape's reference position.
+     *
+     * @throws java.lang.IllegalArgumentException if the position is null.
      */
     public void moveTo(Position position)
     {
@@ -1392,6 +1449,57 @@ public class Polygon extends AbstractShape
                 continue;
 
             List<Position> newList = Position.computeShiftedPositions(oldPosition, position, boundary);
+            if (newList != null)
+                newBoundaries.add(newList);
+        }
+
+        this.boundaries = newBoundaries;
+        this.setReferencePosition(position);
+        this.reset();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * Note that this method overwrites the boundary locations lists, and therefore no longer refer to the originally
+     * specified boundary lists.
+     *
+     * @param globe    the globe on which to move this shape.
+     * @param position the new position of the shape's reference position.
+     *
+     * @throws java.lang.IllegalArgumentException if the globe or position is null.
+     */
+    public void moveTo(Globe globe, Position position)
+    {
+        if (globe == null)
+        {
+            String msg = Logging.getMessage("nullValue.GlobeIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (position == null)
+        {
+            String msg = Logging.getMessage("nullValue.PositionIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (!this.isOuterBoundaryValid())
+            return;
+
+        Position oldPosition = this.getReferencePosition();
+        if (oldPosition == null)
+            return;
+
+        List<List<? extends Position>> newBoundaries = new ArrayList<List<? extends Position>>(this.boundaries.size());
+
+        for (List<? extends Position> boundary : this.boundaries)
+        {
+            if (boundary == null || boundary.size() == 0)
+                continue;
+
+            List<Position> newList = Position.computeShiftedPositions(globe, oldPosition, position, boundary);
             if (newList != null)
                 newBoundaries.add(newList);
         }

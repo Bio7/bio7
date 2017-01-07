@@ -63,9 +63,12 @@ import java.util.*;
  * In order to support simultaneous use of this shape with multiple globes (windows), this shape maintains a cache of
  * data computed relative to each globe. During rendering, the data for the currently active globe, as indicated in the
  * draw context, is made current. Subsequently called methods rely on the existence of this current data cache entry.
+ * <p/>
+ * When drawn on a 2D globe, this shape uses a {@link SurfacePolygon} to represent itself. Cap texture is not supported
+ * in this case.
  *
  * @author tag
- * @version $Id: ExtrudedPolygon.java 1857 2014-03-06 00:22:52Z tgaskins $
+ * @version $Id: ExtrudedPolygon.java 2111 2014-06-30 18:09:45Z tgaskins $
  */
 public class ExtrudedPolygon extends AbstractShape
 {
@@ -1251,6 +1254,28 @@ public class ExtrudedPolygon extends AbstractShape
                 this.activeSideAttributes.copy(this.getSideAttributes());
             else
                 this.activeSideAttributes.copy(defaultSideAttributes);
+        }
+    }
+
+    @Override
+    protected SurfaceShape createSurfaceShape()
+    {
+        SurfacePolygon polygon = new SurfacePolygon();
+        this.setSurfacePolygonBoundaries(polygon);
+
+        return polygon;
+    }
+
+    protected void setSurfacePolygonBoundaries(SurfaceShape shape)
+    {
+        SurfacePolygon polygon = (SurfacePolygon) shape;
+
+        polygon.setLocations(this.getOuterBoundary());
+
+        List<List<? extends LatLon>> bounds = this.getBoundaries();
+        for (int i = 1; i < bounds.size(); i++)
+        {
+            polygon.addInnerBoundary(bounds.get(i));
         }
     }
 

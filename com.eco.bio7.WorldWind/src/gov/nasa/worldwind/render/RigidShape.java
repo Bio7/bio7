@@ -28,7 +28,7 @@ import java.util.*;
  * B < C defines a vertically stretched shape.
  *
  * @author ccrick
- * @version $Id: RigidShape.java 1969 2014-04-29 00:29:30Z tgaskins $
+ * @version $Id: RigidShape.java 2990 2015-04-07 19:06:15Z tgaskins $
  */
 public abstract class RigidShape extends AbstractShape
 {
@@ -1104,8 +1104,7 @@ public abstract class RigidShape extends AbstractShape
         Matrix matrix = Matrix.IDENTITY;
 
         // translate and orient
-        Position refPosition = globe.computePositionFromPoint(this.computeReferencePoint(globe, verticalExaggeration));
-        matrix = matrix.multiply(globe.computeSurfaceOrientationAtPosition(refPosition));
+        matrix = matrix.multiply(globe.computeSurfaceOrientationAtPosition(this.getCenterPosition()));
 
         // now apply the user-specified heading/tilt/roll:
         // order corresponds to KML rotations (YXZ, positive clockwise)
@@ -1145,8 +1144,8 @@ public abstract class RigidShape extends AbstractShape
     {
         Matrix matrix = Matrix.IDENTITY;
 
-        // translate and orient
-        Position refPosition = dc.getGlobe().computePositionFromPoint(this.getCurrentShapeData().getReferencePoint());
+        // translate and orient, accounting for altitude mode
+        Position refPosition = dc.getGlobe().computePositionFromPoint(this.computeReferencePoint(dc));
         matrix = matrix.multiply(dc.getGlobe().computeSurfaceOrientationAtPosition(refPosition));
 
         // now apply the user-specified heading/tilt/roll

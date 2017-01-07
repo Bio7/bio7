@@ -14,7 +14,7 @@ import java.awt.*;
  * categories on or off.
  *
  * @author jparsons
- * @version $Id: PlaceNames.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: PlaceNames.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class PlaceNames extends ApplicationTemplate
 {
@@ -23,7 +23,7 @@ public class PlaceNames extends ApplicationTemplate
         public AppFrame()
         {
             super(true, true, false);
-            this.getLayerPanel().add(makeControlPanel(),  BorderLayout.SOUTH);
+            this.getControlPanel().add(makeControlPanel(),  BorderLayout.SOUTH);
         }
 
 

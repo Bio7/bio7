@@ -19,7 +19,7 @@ import gov.nasa.worldwind.util.*;
  * text are specified to the constructor.
  *
  * @author tag
- * @version $Id: ToolTipController.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ToolTipController.java 2365 2014-10-02 23:15:16Z tgaskins $
  */
 public class ToolTipController implements SelectListener, Disposable
 {
@@ -151,6 +151,7 @@ public class ToolTipController implements SelectListener, Disposable
         {
             layer = new AnnotationLayer();
             layer.setPickEnabled(false);
+            layer.setValue(AVKey.IGNORE, true);
         }
 
         layer.removeAllAnnotations();

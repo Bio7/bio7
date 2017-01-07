@@ -17,7 +17,7 @@ import gov.nasa.worldwind.util.*;
 
 /**
  * @author tag
- * @version $Id: KMLPolygonImpl.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: KMLPolygonImpl.java 2151 2014-07-15 17:12:46Z tgaskins $
  */
 public class KMLPolygonImpl extends Polygon implements KMLRenderable
 {
@@ -99,7 +99,7 @@ public class KMLPolygonImpl extends Polygon implements KMLRenderable
 
     public void preRender(KMLTraversalContext tc, DrawContext dc)
     {
-        // Intentionally left blank; KML polygon does nothing during the preRender phase.
+        super.preRender(dc);
     }
 
     public void render(KMLTraversalContext tc, DrawContext dc)

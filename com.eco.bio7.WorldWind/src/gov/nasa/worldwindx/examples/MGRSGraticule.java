@@ -17,7 +17,7 @@ import java.awt.*;
  * to customize the color and opacity of the grid.
  *
  * @author Patrick Murris
- * @version $Id: MGRSGraticule.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: MGRSGraticule.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class MGRSGraticule extends ApplicationTemplate
 {
@@ -40,11 +40,8 @@ public class MGRSGraticule extends ApplicationTemplate
             sb.setEventSource(this.getWwd());
             this.getWwjPanel().add(sb, BorderLayout.SOUTH);
 
-            // Update layer panel
-            this.getLayerPanel().update(this.getWwd());
-
             // Add go to coordinate input panel
-            this.getLayerPanel().add(new GoToCoordinatePanel(this.getWwd()),  BorderLayout.SOUTH);
+            this.getControlPanel().add(new GoToCoordinatePanel(this.getWwd()),  BorderLayout.SOUTH);
 
             // Add MGRS graticule properties frame
             JDialog dialog = MGRSAttributesPanel.showDialog(this, "MGRS Graticule Properties", layer);

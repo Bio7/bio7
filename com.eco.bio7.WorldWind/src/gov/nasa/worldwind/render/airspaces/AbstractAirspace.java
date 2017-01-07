@@ -6,20 +6,28 @@
 package gov.nasa.worldwind.render.airspaces;
 
 import gov.nasa.worldwind.*;
-import gov.nasa.worldwind.avlist.*;
+import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.cache.*;
+import gov.nasa.worldwind.drag.*;
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.globes.Globe;
+import gov.nasa.worldwind.globes.*;
+import gov.nasa.worldwind.layers.Layer;
+import gov.nasa.worldwind.pick.*;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
+import javax.media.opengl.*;
+import java.awt.*;
+import java.nio.Buffer;
 import java.util.*;
+import java.util.List;
 
 /**
  * @author dcollins
- * @version $Id: AbstractAirspace.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: AbstractAirspace.java 3138 2015-06-02 19:13:16Z tgaskins $
  */
-public abstract class AbstractAirspace extends AVListImpl implements Airspace, Movable
+public abstract class AbstractAirspace extends WWObjectImpl
+    implements Airspace, OrderedRenderable, PreRenderable, Movable, Movable2, Draggable
 {
     protected static final String ARC_SLICES = "ArcSlices";
     protected static final String DISABLE_TERRAIN_CONFORMANCE = "DisableTerrainConformance";
@@ -37,29 +45,105 @@ public abstract class AbstractAirspace extends AVListImpl implements Airspace, M
     protected static final String VERTICAL_EXAGGERATION = "VerticalExaggeration";
 
     private static final long DEFAULT_GEOMETRY_CACHE_SIZE = 16777216L; // 16 megabytes
+    /** The default outline pick width. */
+    protected static final int DEFAULT_OUTLINE_PICK_WIDTH = 10;
 
-    private boolean visible = true;
-    private AirspaceAttributes attributes;
-    private double lowerAltitude = 0.0;
-    private double upperAltitude = 1.0;
-    private boolean lowerTerrainConforming = false;
-    private boolean upperTerrainConforming = false;
-    private String lowerAltitudeDatum = AVKey.ABOVE_MEAN_SEA_LEVEL;
-    private String upperAltitudeDatum = AVKey.ABOVE_MEAN_SEA_LEVEL;
-    private LatLon groundReference;
-    private boolean enableLevelOfDetail = true;
-    private Collection<DetailLevel> detailLevels = new TreeSet<DetailLevel>();
+    /** The default interior color. */
+    protected static final Material DEFAULT_INTERIOR_MATERIAL = Material.LIGHT_GRAY;
+    /** The default outline color. */
+    protected static final Material DEFAULT_OUTLINE_MATERIAL = Material.DARK_GRAY;
+    /** The default highlight color. */
+    protected static final Material DEFAULT_HIGHLIGHT_MATERIAL = Material.WHITE;
+
+    /** The attributes used if attributes are not specified. */
+    protected static AirspaceAttributes defaultAttributes;
+
+    static
+    {
+        // Create and populate the default attributes.
+        defaultAttributes = new BasicAirspaceAttributes();
+        defaultAttributes.setInteriorMaterial(DEFAULT_INTERIOR_MATERIAL);
+        defaultAttributes.setOutlineMaterial(DEFAULT_OUTLINE_MATERIAL);
+    }
+
+    // Airspace properties.
+    protected boolean visible = true;
+    protected boolean highlighted;
+    protected boolean dragEnabled = true;
+    protected DraggableSupport draggableSupport = null;
+    protected AirspaceAttributes attributes;
+    protected AirspaceAttributes highlightAttributes;
+    protected AirspaceAttributes activeAttributes = new BasicAirspaceAttributes(); // re-determined each frame
+    protected double lowerAltitude = 0.0;
+    protected double upperAltitude = 1.0;
+    protected boolean lowerTerrainConforming = false;
+    protected boolean upperTerrainConforming = false;
+    protected String lowerAltitudeDatum = AVKey.ABOVE_MEAN_SEA_LEVEL;
+    protected String upperAltitudeDatum = AVKey.ABOVE_MEAN_SEA_LEVEL;
+    protected LatLon groundReference;
+    protected boolean enableLevelOfDetail = true;
+    protected Collection<DetailLevel> detailLevels = new TreeSet<DetailLevel>();
+    // Rendering properties.
+    protected boolean enableBatchRendering = true;
+    protected boolean enableBatchPicking = true;
+    protected boolean enableDepthOffset;
+    protected int outlinePickWidth = DEFAULT_OUTLINE_PICK_WIDTH;
+    protected Object delegateOwner;
+    protected SurfaceShape surfaceShape;
+    protected boolean mustRegenerateSurfaceShape;
+    protected boolean drawSurfaceShape;
+    protected long frameTimeStamp;
+    protected boolean alwaysOnTop = false;
     // Geometry computation and rendering support.
-    private AirspaceRenderer renderer = new AirspaceRenderer();
-    private GeometryBuilder geometryBuilder = new GeometryBuilder();
-    // Extent support.
+    protected AirspaceInfo currentInfo;
+    protected Layer pickLayer;
+    protected PickSupport pickSupport = new PickSupport();
+    protected GeometryBuilder geometryBuilder = new GeometryBuilder();
     // Geometry update support.
-    private long expiryTime = -1L;
-    private long minExpiryTime = 2000L;
-    private long maxExpiryTime = 6000L;
-    private static Random rand = new Random();
+    protected long expiryTime = -1L;
+    protected long minExpiryTime = 2000L;
+    protected long maxExpiryTime = 6000L;
+    protected static Random rand = new Random();
     // Elevation lookup map.
-    private Map<LatLon, Double> elevationMap = new HashMap<LatLon, Double>();
+    protected Map<LatLon, Double> elevationMap = new HashMap<LatLon, Double>();
+    // Implements the the interface used by the draw context's outlined-shape renderer.
+    protected OutlinedShape outlineShapeRenderer = new OutlinedShape()
+    {
+        public boolean isDrawOutline(DrawContext dc, Object shape)
+        {
+            return ((AbstractAirspace) shape).mustDrawOutline(dc);
+        }
+
+        public boolean isDrawInterior(DrawContext dc, Object shape)
+        {
+            return ((AbstractAirspace) shape).mustDrawInterior(dc);
+        }
+
+        public void drawOutline(DrawContext dc, Object shape)
+        {
+            ((AbstractAirspace) shape).drawOutline(dc);
+        }
+
+        public void drawInterior(DrawContext dc, Object shape)
+        {
+            ((AbstractAirspace) shape).drawInterior(dc);
+        }
+
+        public boolean isEnableDepthOffset(DrawContext dc, Object shape)
+        {
+            return ((AbstractAirspace) shape).isEnableDepthOffset();
+        }
+
+        public Double getDepthOffsetFactor(DrawContext dc, Object shape)
+        {
+            return null;
+        }
+
+        public Double getDepthOffsetUnits(DrawContext dc, Object shape)
+        {
+            return null;
+        }
+    };
 
     // Airspaces perform about 5% better if their extent is cached, so do that here.
 
@@ -67,6 +151,7 @@ public abstract class AbstractAirspace extends AVListImpl implements Airspace, M
     {
         // The extent depends on the state of the globe used to compute it, and the vertical exaggeration.
         protected Extent extent;
+        protected double eyeDistance;
         protected List<Vec4> minimalGeometry;
         protected double verticalExaggeration;
         protected Object globeStateKey;
@@ -79,7 +164,17 @@ public abstract class AbstractAirspace extends AVListImpl implements Airspace, M
             this.globeStateKey = dc.getGlobe().getStateKey(dc);
         }
 
-        protected boolean isValid(DrawContext dc)
+        public double getEyeDistance()
+        {
+            return this.eyeDistance;
+        }
+
+        public void setEyeDistance(double eyeDistance)
+        {
+            this.eyeDistance = eyeDistance;
+        }
+
+        public boolean isValid(DrawContext dc)
         {
             return this.verticalExaggeration == dc.getVerticalExaggeration()
                 && (this.globeStateKey != null && this.globeStateKey.equals(dc.getGlobe().getStateKey(dc)));
@@ -87,7 +182,7 @@ public abstract class AbstractAirspace extends AVListImpl implements Airspace, M
     }
 
     // usually only 1, but few at most
-    protected HashMap<Globe, AirspaceInfo> airspaceInfo = new HashMap<Globe, AirspaceInfo>(2);
+    protected HashMap<GlobeStateKey, AirspaceInfo> airspaceInfo = new HashMap<GlobeStateKey, AirspaceInfo>(2);
 
     public AbstractAirspace(AirspaceAttributes attributes)
     {
@@ -112,6 +207,29 @@ public abstract class AbstractAirspace extends AVListImpl implements Airspace, M
     protected abstract Extent computeExtent(Globe globe, double verticalExaggeration);
 
     protected abstract List<Vec4> computeMinimalGeometry(Globe globe, double verticalExaggeration);
+
+    public AbstractAirspace(AbstractAirspace source)
+    {
+        this(source.getAttributes());
+
+        this.visible = source.visible;
+        this.attributes = source.attributes;
+        this.highlightAttributes = source.highlightAttributes;
+        this.lowerAltitude = source.lowerAltitude;
+        this.upperAltitude = source.upperAltitude;
+        this.lowerAltitudeDatum = source.lowerAltitudeDatum;
+        this.upperAltitudeDatum = source.upperAltitudeDatum;
+        this.lowerTerrainConforming = source.lowerTerrainConforming;
+        this.upperTerrainConforming = source.upperTerrainConforming;
+        this.groundReference = source.groundReference;
+        this.enableLevelOfDetail = source.enableLevelOfDetail;
+        this.enableBatchPicking = source.enableBatchPicking;
+        this.enableBatchRendering = source.enableBatchRendering;
+        this.enableDepthOffset = source.enableDepthOffset;
+        this.outlinePickWidth = source.outlinePickWidth;
+        this.delegateOwner = source.delegateOwner;
+        this.drawSurfaceShape = source.drawSurfaceShape;
+    }
 
     public AbstractAirspace()
     {
@@ -145,6 +263,44 @@ public abstract class AbstractAirspace extends AVListImpl implements Airspace, M
         this.attributes = attributes;
     }
 
+    @Override
+    public void setAttributes(ShapeAttributes attributes)
+    {
+        this.setAttributes(new BasicAirspaceAttributes(attributes));
+    }
+
+    @Override
+    public void setHighlightAttributes(ShapeAttributes highlightAttributes)
+    {
+        this.setHighlightAttributes(
+            highlightAttributes != null ? new BasicAirspaceAttributes(highlightAttributes) : null);
+    }
+
+    @Override
+    public AirspaceAttributes getHighlightAttributes()
+    {
+        return highlightAttributes;
+    }
+
+    @Override
+    public void setHighlightAttributes(AirspaceAttributes highlightAttrs)
+    {
+        this.highlightAttributes = highlightAttrs;
+
+        if (this.surfaceShape != null)
+            this.surfaceShape.setHighlightAttributes(highlightAttrs);
+    }
+
+    public boolean isHighlighted()
+    {
+        return highlighted;
+    }
+
+    public void setHighlighted(boolean highlighted)
+    {
+        this.highlighted = highlighted;
+    }
+
     public double[] getAltitudes()
     {
         double[] array = new double[2];
@@ -165,7 +321,7 @@ public abstract class AbstractAirspace extends AVListImpl implements Airspace, M
     {
         this.lowerAltitude = lowerAltitude;
         this.upperAltitude = upperAltitude;
-        this.setExtentOutOfDate();
+        this.invalidateAirspaceData();
     }
 
     public void setAltitude(double altitude)
@@ -193,7 +349,7 @@ public abstract class AbstractAirspace extends AVListImpl implements Airspace, M
         this.lowerAltitudeDatum = this.lowerTerrainConforming ? AVKey.ABOVE_GROUND_LEVEL : AVKey.ABOVE_MEAN_SEA_LEVEL;
         this.upperAltitudeDatum = this.upperTerrainConforming ? AVKey.ABOVE_GROUND_LEVEL : AVKey.ABOVE_MEAN_SEA_LEVEL;
 
-        this.setExtentOutOfDate();
+        this.invalidateAirspaceData();
     }
 
     public String[] getAltitudeDatum()
@@ -223,7 +379,7 @@ public abstract class AbstractAirspace extends AVListImpl implements Airspace, M
             AVKey.ABOVE_GROUND_REFERENCE))
             this.upperTerrainConforming = true;
 
-        this.setExtentOutOfDate();
+        this.invalidateAirspaceData();
     }
 
     public LatLon getGroundReference()
@@ -234,6 +390,105 @@ public abstract class AbstractAirspace extends AVListImpl implements Airspace, M
     public void setGroundReference(LatLon groundReference)
     {
         this.groundReference = groundReference;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isEnableBatchRendering()
+    {
+        return this.enableBatchRendering;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setEnableBatchRendering(boolean enableBatchRendering)
+    {
+        this.enableBatchRendering = enableBatchRendering;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isEnableBatchPicking()
+    {
+        return this.enableBatchPicking;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setEnableBatchPicking(boolean enableBatchPicking)
+    {
+        this.enableBatchPicking = enableBatchPicking;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isEnableDepthOffset()
+    {
+        return this.enableDepthOffset;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setEnableDepthOffset(boolean enableDepthOffset)
+    {
+        this.enableDepthOffset = enableDepthOffset;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getOutlinePickWidth()
+    {
+        return this.outlinePickWidth;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setOutlinePickWidth(int outlinePickWidth)
+    {
+        if (outlinePickWidth < 0)
+        {
+            String message = Logging.getMessage("generic.ArgumentOutOfRange", "width < 0");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        this.outlinePickWidth = outlinePickWidth;
+    }
+
+    @Override
+    public Object getDelegateOwner()
+    {
+        return this.delegateOwner;
+    }
+
+    @Override
+    public void setDelegateOwner(Object delegateOwner)
+    {
+        this.delegateOwner = delegateOwner;
+    }
+
+    @Override
+    public boolean isAlwaysOnTop()
+    {
+        return alwaysOnTop;
+    }
+
+    @Override
+    public void setAlwaysOnTop(boolean alwaysOnTop)
+    {
+        this.alwaysOnTop = alwaysOnTop;
+    }
+
+    @Override
+    public boolean isDrawSurfaceShape()
+    {
+        return drawSurfaceShape;
+    }
+
+    @Override
+    public void setDrawSurfaceShape(boolean drawSurfaceShape)
+    {
+        this.drawSurfaceShape = drawSurfaceShape;
     }
 
     protected void adjustForGroundReference(DrawContext dc, boolean[] terrainConformant, double[] altitudes,
@@ -355,12 +610,12 @@ public abstract class AbstractAirspace extends AVListImpl implements Airspace, M
 
     protected AirspaceInfo getAirspaceInfo(DrawContext dc)
     {
-        AirspaceInfo info = this.airspaceInfo.get(dc.getGlobe());
+        AirspaceInfo info = this.airspaceInfo.get(dc.getGlobe().getGlobeStateKey());
 
         if (info == null || !info.isValid(dc))
         {
             info = new AirspaceInfo(dc, this.computeExtent(dc), this.computeMinimalGeometry(dc));
-            this.airspaceInfo.put(dc.getGlobe(), info);
+            this.airspaceInfo.put(dc.getGlobe().getGlobeStateKey(), info);
         }
 
         return info;
@@ -376,96 +631,294 @@ public abstract class AbstractAirspace extends AVListImpl implements Airspace, M
         return this.computeMinimalGeometry(dc.getGlobe(), dc.getVerticalExaggeration());
     }
 
-    protected void setExtentOutOfDate() // TODO: rename to clarify that the airspace data is out of date
+    protected void invalidateAirspaceData()
     {
         this.airspaceInfo.clear(); // Doesn't hurt to remove all cached extents because re-creation is cheap
+        this.mustRegenerateSurfaceShape = true;
     }
 
-    public AirspaceRenderer getRenderer()
+    @Override
+    public double getDistanceFromEye()
     {
-        return this.renderer;
+        return this.isAlwaysOnTop() ? 0 : this.currentInfo.getEyeDistance();
     }
 
-    protected void setRenderer(AirspaceRenderer renderer)
+    /**
+     * Determines which attributes -- normal, highlight or default -- to use each frame. Places the result in this
+     * shape's current active attributes.
+     *
+     * @see #getActiveAttributes()
+     */
+    protected void determineActiveAttributes(DrawContext dc)
     {
-        if (renderer == null)
+        if (this.frameTimeStamp == dc.getFrameTimeStamp())
+            return;
+
+        if (this.isHighlighted())
         {
-            String message = "nullValue.AirspaceRendererIsNull";
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
+            if (this.getHighlightAttributes() != null)
+                this.activeAttributes.copy(this.getHighlightAttributes());
+            else
+            {
+                // If no highlight attributes have been specified we need to use the normal attributes but adjust them
+                // to cause highlighting.
+                if (this.getAttributes() != null)
+                    this.activeAttributes.copy(this.getAttributes());
+                else
+                    this.activeAttributes.copy(defaultAttributes);
 
-        this.renderer = renderer;
+                this.activeAttributes.setOutlineMaterial(DEFAULT_HIGHLIGHT_MATERIAL);
+                this.activeAttributes.setInteriorMaterial(DEFAULT_HIGHLIGHT_MATERIAL);
+            }
+        }
+        else if (this.getAttributes() != null)
+        {
+            this.activeAttributes.copy(this.getAttributes());
+        }
+        else
+        {
+            this.activeAttributes.copy(defaultAttributes);
+        }
     }
 
-    public void render(DrawContext dc)
+    /**
+     * Returns this shape's currently active attributes, as determined during the most recent call to {@link
+     * #determineActiveAttributes(gov.nasa.worldwind.render.DrawContext)}. The active attributes are either the normal
+     * or highlight attributes, depending on this shape's highlight flag, and incorporates default attributes for those
+     * not specified in the applicable attribute set.
+     *
+     * @return this shape's currently active attributes.
+     */
+    public AirspaceAttributes getActiveAttributes()
+    {
+        return this.activeAttributes;
+    }
+
+    @Override
+    public void preRender(DrawContext dc)
     {
         if (dc == null)
         {
-            String message = Logging.getMessage("nullValue.DrawContextIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
+            String msg = Logging.getMessage("nullValue.DrawContextIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
         }
 
         if (!this.isVisible())
             return;
 
+        if (dc.is2DGlobe() || this.isDrawSurfaceShape())
+        {
+            if (this.surfaceShape == null)
+            {
+                this.surfaceShape = this.createSurfaceShape();
+                this.mustRegenerateSurfaceShape = true;
+                if (this.surfaceShape == null)
+                    return;
+            }
+
+            if (this.mustRegenerateSurfaceShape)
+            {
+                this.regenerateSurfaceShape(dc, this.surfaceShape);
+                this.mustRegenerateSurfaceShape = false;
+            }
+
+            this.updateSurfaceShape(dc, this.surfaceShape);
+            this.surfaceShape.preRender(dc);
+        }
+    }
+
+    /**
+     * Returns a {@link SurfaceShape} that corresponds to this Airspace and is used for drawing on 2D globes.
+     *
+     * @return The surface shape to represent this Airspace on a 2D globe.
+     */
+    protected SurfaceShape createSurfaceShape()
+    {
+        return null;
+    }
+
+    /**
+     * Sets surface shape parameters prior to picking and rendering the 2D shape used to represent this Airspace on 2D
+     * globes. Subclasses should override this method if they need to update more than the attributes and the delegate
+     * owner.
+     *
+     * @param dc    the current drawing context.
+     * @param shape the surface shape to update.
+     */
+    protected void updateSurfaceShape(DrawContext dc, SurfaceShape shape)
+    {
+        this.determineActiveAttributes(dc);
+        ShapeAttributes attrs = this.getActiveAttributes();
+        if (shape.getAttributes() == null)
+            shape.setAttributes(new BasicShapeAttributes(attrs));
+        else
+            shape.getAttributes().copy(attrs);
+
+        Object o = this.getDelegateOwner();
+        shape.setDelegateOwner(o != null ? o : this);
+
+        boolean b = this.isEnableBatchPicking();
+        shape.setEnableBatchPicking(b);
+    }
+
+    /**
+     * Regenerates surface shape geometry prior to picking and rendering the 2D shape used to represent this Airspace on
+     * 2D globes.
+     *
+     * @param dc    the current drawing context.
+     * @param shape the surface shape to regenerate.
+     */
+    protected void regenerateSurfaceShape(DrawContext dc, SurfaceShape shape)
+    {
+        // Intentionally left blank.
+    }
+
+    @Override
+    public void pick(DrawContext dc, Point pickPoint)
+    {
+        // This method is called only when ordered renderables are being drawn.
+
+        if (dc == null)
+        {
+            String msg = Logging.getMessage("nullValue.DrawContextIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        this.pickSupport.clearPickList();
+        try
+        {
+            this.pickSupport.beginPicking(dc);
+            this.render(dc);
+        }
+        finally
+        {
+            this.pickSupport.endPicking(dc);
+            this.pickSupport.resolvePick(dc, pickPoint, this.pickLayer);
+        }
+    }
+
+    public void render(DrawContext dc)
+    {
+        // This render method is called three times during frame generation. It's first called as a {@link Renderable}
+        // during <code>Renderable</code> picking. It's called again during normal rendering. And it's called a third
+        // time as an OrderedRenderable. The first two calls determine whether to add the shape to the ordered renderable
+        // list during pick and render. The third call just draws the ordered renderable.
+
+        if (dc == null)
+        {
+            String msg = Logging.getMessage("nullValue.DrawContextIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (!this.isVisible())
+            return;
+
+        if ((dc.is2DGlobe() || this.isDrawSurfaceShape()) && this.surfaceShape != null)
+        {
+            this.surfaceShape.render(dc);
+            return;
+        }
+
+        this.currentInfo = this.getAirspaceInfo(dc);
+
         if (!this.isAirspaceVisible(dc))
             return;
 
-        this.doRender(dc);
+        if (dc.isOrderedRenderingMode())
+            this.drawOrderedRenderable(dc);
+        else
+            this.makeOrderedRenderable(dc);
+
+        this.frameTimeStamp = dc.getFrameTimeStamp();
     }
 
-    public void makeOrderedRenderable(DrawContext dc, AirspaceRenderer renderer)
+    protected void makeOrderedRenderable(DrawContext dc)
     {
-        if (dc == null)
-        {
-            String message = Logging.getMessage("nullValue.DrawContextIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
+        this.determineActiveAttributes(dc);
 
-        if (renderer == null)
-        {
-            String message = Logging.getMessage("nullValue.RendererIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
+        double eyeDistance = this.computeEyeDistance(dc);
+        this.currentInfo.setEyeDistance(eyeDistance);
 
-        // Create an ordered renderable that draws this airspace, and uses this airspace as the picked object.
-        OrderedRenderable or = renderer.createOrderedRenderable(dc, this, this.computeEyeDistance(dc), this);
-        dc.addOrderedRenderable(or);
+        if (dc.isPickingMode())
+            this.pickLayer = dc.getCurrentLayer();
+
+        dc.addOrderedRenderable(this);
     }
 
-    public void renderGeometry(DrawContext dc, String drawStyle)
+    protected void drawOrderedRenderable(DrawContext dc)
     {
-        if (dc == null)
+        this.beginRendering(dc);
+        try
         {
-            String message = Logging.getMessage("nullValue.DrawContextIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
+            this.doDrawOrderedRenderable(dc, this.pickSupport);
+            if (this.isEnableBatchRendering())
+            {
+                this.drawBatched(dc);
+            }
         }
-
-        if (drawStyle == null)
+        finally
         {
-            String message = Logging.getMessage("nullValue.StringIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
+            this.endRendering(dc);
         }
-
-        this.doRenderGeometry(dc, drawStyle);
     }
 
-    public void renderExtent(DrawContext dc)
+    protected void drawBatched(DrawContext dc)
     {
-        if (dc == null)
+        // Draw as many as we can in a batch to save ogl state switching.
+        Object nextItem = dc.peekOrderedRenderables();
+
+        if (!dc.isPickingMode())
         {
-            String message = Logging.getMessage("nullValue.DrawContextIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalStateException(message);
+            while (nextItem instanceof AbstractAirspace)
+            {
+                AbstractAirspace airspace = (AbstractAirspace) nextItem;
+                if (!airspace.isEnableBatchRendering())
+                    break;
+
+                dc.pollOrderedRenderables(); // take it off the queue
+                airspace.doDrawOrderedRenderable(dc, this.pickSupport);
+
+                nextItem = dc.peekOrderedRenderables();
+            }
+        }
+        else if (this.isEnableBatchPicking())
+        {
+            while (nextItem instanceof AbstractAirspace)
+            {
+                AbstractAirspace airspace = (AbstractAirspace) nextItem;
+                if (!airspace.isEnableBatchRendering() || !airspace.isEnableBatchPicking())
+                    break;
+
+                if (airspace.pickLayer != this.pickLayer) // batch pick only within a single layer
+                    break;
+
+                dc.pollOrderedRenderables(); // take it off the queue
+                airspace.doDrawOrderedRenderable(dc, this.pickSupport);
+
+                nextItem = dc.peekOrderedRenderables();
+            }
+        }
+    }
+
+    protected void doDrawOrderedRenderable(DrawContext dc, PickSupport pickCandidates)
+    {
+        if (dc.isPickingMode())
+        {
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+            Color pickColor = dc.getUniquePickColor();
+            pickCandidates.addPickableObject(this.createPickedObject(pickColor.getRGB()));
+            gl.glColor3ub((byte) pickColor.getRed(), (byte) pickColor.getGreen(), (byte) pickColor.getBlue());
         }
 
-        this.doRenderExtent(dc);
+        dc.drawOutlinedShape(this.outlineShapeRenderer, this);
+    }
+
+    protected PickedObject createPickedObject(int colorCode)
+    {
+        return new PickedObject(colorCode, this.getDelegateOwner() != null ? this.getDelegateOwner() : this);
     }
 
     public void move(Position position)
@@ -482,6 +935,60 @@ public abstract class AbstractAirspace extends AVListImpl implements Airspace, M
             return;
 
         this.moveTo(referencePos.add(position));
+    }
+
+    @Override
+    public void moveTo(Globe globe, Position position)
+    {
+        if (position == null)
+        {
+            String message = Logging.getMessage("nullValue.PositionIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        Position oldRef = this.getReferencePosition();
+        if (oldRef == null)
+            return;
+
+        //noinspection UnnecessaryLocalVariable
+        Position newRef = position;
+        this.doMoveTo(globe, oldRef, newRef);
+    }
+
+    @Override
+    public boolean isDragEnabled()
+    {
+        return this.dragEnabled;
+    }
+
+    @Override
+    public void setDragEnabled(boolean enabled)
+    {
+        this.dragEnabled = true;
+    }
+
+    @Override
+    public void drag(DragContext dragContext)
+    {
+        if (!this.dragEnabled)
+            return;
+
+        if (this.draggableSupport == null)
+            this.draggableSupport = new DraggableSupport(this, this.isTerrainConforming()[0]
+                ? WorldWind.RELATIVE_TO_GROUND : WorldWind.ABSOLUTE);
+
+        this.doDrag(dragContext);
+    }
+
+    protected void doDrag(DragContext dragContext)
+    {
+        this.draggableSupport.dragGlobeSizeConstant(dragContext);
+    }
+
+    protected void doMoveTo(Globe globe, Position oldRef, Position newRef)
+    {
+        this.doMoveTo(oldRef, newRef);
     }
 
     public void moveTo(Position position)
@@ -552,7 +1059,7 @@ public abstract class AbstractAirspace extends AVListImpl implements Airspace, M
 
     protected double computeEyeDistance(DrawContext dc)
     {
-        AirspaceInfo info = this.getAirspaceInfo(dc);
+        AirspaceInfo info = this.currentInfo;
         if (info == null || info.minimalGeometry == null || info.minimalGeometry.isEmpty())
             return 0.0;
 
@@ -574,14 +1081,165 @@ public abstract class AbstractAirspace extends AVListImpl implements Airspace, M
     //********************  Geometry Rendering  ********************//
     //**************************************************************//
 
-    // TODO: utility method for transforming list of LatLons into equivalent list comparable of crossing the dateline
-    // (a) for computing a bounding sector, then bounding cylinder
-    // (b) for computing tessellations of the list as 2D points
-    // These lists of LatLons (Polygon) need to be capable of passing over
-    // (a) the dateline
-    // (b) either pole
-
     protected abstract void doRenderGeometry(DrawContext dc, String drawStyle);
+
+    protected void beginRendering(DrawContext dc)
+    {
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+
+        gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
+
+        if (!dc.isPickingMode())
+        {
+            int attribMask = GL2.GL_COLOR_BUFFER_BIT  // For color write mask, blending src and func, alpha func.
+                | GL2.GL_CURRENT_BIT // For current color.
+                | GL2.GL_LINE_BIT // For line width, line smoothing, line stipple.
+                | GL2.GL_POLYGON_BIT // For polygon offset.
+                | GL2.GL_TRANSFORM_BIT; // For matrix mode.
+            gl.glPushAttrib(attribMask);
+
+            // Setup blending for non-premultiplied colors.
+            gl.glEnable(GL.GL_BLEND);
+            OGLUtil.applyBlending(gl, false);
+
+            // Setup standard lighting by default. This must be disabled by airspaces that don't enable lighting.
+            dc.beginStandardLighting();
+        }
+        else
+        {
+            int attribMask = GL2.GL_CURRENT_BIT // For current color.
+                | GL2.GL_LINE_BIT; // For line width.
+            gl.glPushAttrib(attribMask);
+        }
+    }
+
+    protected void endRendering(DrawContext dc)
+    {
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+
+        gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
+
+        if (!dc.isPickingMode())
+        {
+            dc.endStandardLighting();
+            gl.glDisableClientState(GL2.GL_NORMAL_ARRAY); // may have been enabled during rendering
+        }
+
+        gl.glPopAttrib();
+    }
+
+    @SuppressWarnings("UnusedParameters")
+    protected boolean mustDrawInterior(DrawContext dc)
+    {
+        return this.getActiveAttributes().isDrawInterior();
+    }
+
+    protected void drawInterior(DrawContext dc)
+    {
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        AirspaceAttributes attrs = this.getActiveAttributes();
+
+        if (!dc.isPickingMode())
+        {
+            if (attrs.isEnableLighting()) // Enable GL lighting state and set the current GL material state.
+            {
+                gl.glEnable(GL2.GL_LIGHTING);
+                gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
+                attrs.getInteriorMaterial().apply(gl, GL2.GL_FRONT_AND_BACK, (float) attrs.getInteriorOpacity());
+            }
+            else // Disable GL lighting state and set the current GL color state.
+            {
+                gl.glDisable(GL2.GL_LIGHTING);
+                gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
+                Color sc = attrs.getInteriorMaterial().getDiffuse();
+                double opacity = attrs.getInteriorOpacity();
+                gl.glColor4ub((byte) sc.getRed(), (byte) sc.getGreen(), (byte) sc.getBlue(),
+                    (byte) (opacity < 1 ? (int) (opacity * 255 + 0.5) : 255));
+            }
+        }
+
+        this.doRenderGeometry(dc, Airspace.DRAW_STYLE_FILL);
+    }
+
+    @SuppressWarnings("UnusedParameters")
+    protected boolean mustDrawOutline(DrawContext dc)
+    {
+        return this.getActiveAttributes().isDrawOutline();
+    }
+
+    protected void drawOutline(DrawContext dc)
+    {
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        AirspaceAttributes attrs = this.getActiveAttributes();
+
+        if (!dc.isPickingMode())
+        {
+            // Airspace outlines do not apply lighting.
+            gl.glDisable(GL2.GL_LIGHTING);
+            gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
+            Color sc = attrs.getOutlineMaterial().getDiffuse();
+            double opacity = attrs.getOutlineOpacity();
+            gl.glColor4ub((byte) sc.getRed(), (byte) sc.getGreen(), (byte) sc.getBlue(),
+                (byte) (opacity < 1 ? (int) (opacity * 255 + 0.5) : 255));
+
+            if (attrs.isEnableAntialiasing())
+            {
+                gl.glEnable(GL.GL_LINE_SMOOTH);
+            }
+            else
+            {
+                gl.glDisable(GL.GL_LINE_SMOOTH);
+            }
+        }
+
+        if (dc.isPickingMode() && attrs.getOutlineWidth() < this.getOutlinePickWidth())
+            gl.glLineWidth(this.getOutlinePickWidth());
+        else
+            gl.glLineWidth((float) attrs.getOutlineWidth());
+
+        if (attrs.getOutlineStippleFactor() > 0)
+        {
+            gl.glEnable(GL2.GL_LINE_STIPPLE);
+            gl.glLineStipple(attrs.getOutlineStippleFactor(), attrs.getOutlineStipplePattern());
+        }
+        else
+        {
+            gl.glDisable(GL2.GL_LINE_STIPPLE);
+        }
+
+        this.doRenderGeometry(dc, Airspace.DRAW_STYLE_OUTLINE);
+    }
+
+    protected void drawGeometry(DrawContext dc, Geometry indices, Geometry vertices)
+    {
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        AirspaceAttributes attrs = this.getActiveAttributes();
+
+        int size = vertices.getSize(Geometry.VERTEX);
+        int type = vertices.getGLType(Geometry.VERTEX);
+        int stride = vertices.getStride(Geometry.VERTEX);
+        Buffer buffer = vertices.getBuffer(Geometry.VERTEX);
+        gl.glVertexPointer(size, type, stride, buffer);
+
+        if (!dc.isPickingMode() && attrs.isEnableLighting())
+        {
+            type = vertices.getGLType(Geometry.NORMAL);
+            stride = vertices.getStride(Geometry.NORMAL);
+            buffer = vertices.getBuffer(Geometry.NORMAL);
+            gl.glNormalPointer(type, stride, buffer);
+        }
+
+        // On some hardware, using glDrawRangeElements allows vertex data to be prefetched. We know the minimum and
+        // maximum index values that are valid in elementBuffer (they are 0 and vertexCount-1), so it's harmless
+        // to use this approach and allow the hardware to optimize.
+        int mode = indices.getMode(Geometry.ELEMENT);
+        int count = indices.getCount(Geometry.ELEMENT);
+        type = indices.getGLType(Geometry.ELEMENT);
+        int minElementIndex = 0;
+        int maxElementIndex = vertices.getCount(Geometry.VERTEX) - 1;
+        buffer = indices.getBuffer(Geometry.ELEMENT);
+        gl.glDrawRangeElements(mode, minElementIndex, maxElementIndex, count, type, buffer);
+    }
 
     protected GeometryBuilder getGeometryBuilder()
     {
@@ -598,33 +1256,6 @@ public abstract class AbstractAirspace extends AVListImpl implements Airspace, M
         }
 
         this.geometryBuilder = gb;
-    }
-
-    protected void doRender(DrawContext dc)
-    {
-        if (dc == null)
-        {
-            String message = Logging.getMessage("nullValue.DrawContextIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        AirspaceRenderer renderer = this.getRenderer();
-        renderer.renderOrdered(dc, Arrays.asList(this));
-    }
-
-    protected void doRenderExtent(DrawContext dc)
-    {
-        if (dc == null)
-        {
-            String message = Logging.getMessage("nullValue.DrawContextIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        Extent extent = this.getExtent(dc);
-        if (extent != null && extent instanceof Renderable)
-            ((Renderable) extent).render(dc);
     }
 
     protected DetailLevel computeDetailLevel(DrawContext dc)
@@ -935,6 +1566,7 @@ public abstract class AbstractAirspace extends AVListImpl implements Airspace, M
     private void doMyGetRestorableState(RestorableSupport rs, RestorableSupport.StateObject context)
     {
         rs.addStateValueAsBoolean(context, "visible", this.isVisible());
+        rs.addStateValueAsBoolean(context, "highlighted", this.isHighlighted());
         rs.addStateValueAsDouble(context, "lowerAltitude", this.getAltitudes()[0]);
         rs.addStateValueAsDouble(context, "upperAltitude", this.getAltitudes()[1]);
         rs.addStateValueAsBoolean(context, "lowerTerrainConforming", this.isTerrainConforming()[0]);
@@ -943,8 +1575,19 @@ public abstract class AbstractAirspace extends AVListImpl implements Airspace, M
         rs.addStateValueAsString(context, "upperAltitudeDatum", this.getAltitudeDatum()[1]);
         if (this.getGroundReference() != null)
             rs.addStateValueAsLatLon(context, "groundReference", this.getGroundReference());
+        rs.addStateValueAsBoolean(context, "enableBatchRendering", this.isEnableBatchRendering());
+        rs.addStateValueAsBoolean(context, "enableBatchPicking", this.isEnableBatchPicking());
+        rs.addStateValueAsBoolean(context, "enableDepthOffset", this.isEnableDepthOffset());
+        rs.addStateValueAsInteger(context, "outlinePickWidth", this.getOutlinePickWidth());
+        rs.addStateValueAsBoolean(context, "alwaysOnTop", this.isAlwaysOnTop());
+        rs.addStateValueAsBoolean(context, "drawSurfaceShape", this.isDrawSurfaceShape());
+        rs.addStateValueAsBoolean(context, "enableLevelOfDetail", this.isEnableLevelOfDetail());
 
-        this.attributes.getRestorableState(rs, rs.addStateObject(context, "attributes"));
+        if (this.attributes != null)
+            this.attributes.getRestorableState(rs, rs.addStateObject(context, "attributes"));
+
+        if (this.highlightAttributes != null)
+            this.highlightAttributes.getRestorableState(rs, rs.addStateObject(context, "highlightAttributes"));
     }
 
     public void restoreState(String stateInXml)
@@ -984,6 +1627,10 @@ public abstract class AbstractAirspace extends AVListImpl implements Airspace, M
         if (booleanState != null)
             this.setVisible(booleanState);
 
+        booleanState = rs.getStateValueAsBoolean(context, "highlighted");
+        if (booleanState != null)
+            this.setHighlighted(booleanState);
+
         Double lo = rs.getStateValueAsDouble(context, "lowerAltitude");
         if (lo == null)
             lo = this.getAltitudes()[0];
@@ -1018,8 +1665,40 @@ public abstract class AbstractAirspace extends AVListImpl implements Airspace, M
         if (groundRef != null)
             this.setGroundReference(groundRef);
 
+        booleanState = rs.getStateValueAsBoolean(context, "enableBatchRendering");
+        if (booleanState != null)
+            this.setEnableBatchRendering(booleanState);
+
+        booleanState = rs.getStateValueAsBoolean(context, "enableBatchPicking");
+        if (booleanState != null)
+            this.setEnableBatchPicking(booleanState);
+
+        booleanState = rs.getStateValueAsBoolean(context, "enableDepthOffset");
+        if (booleanState != null)
+            this.setEnableDepthOffset(booleanState);
+
+        Integer intState = rs.getStateValueAsInteger(context, "outlinePickWidth");
+        if (intState != null)
+            this.setOutlinePickWidth(intState);
+
+        booleanState = rs.getStateValueAsBoolean(context, "alwaysOnTop");
+        if (booleanState != null)
+            this.setAlwaysOnTop(booleanState);
+
+        booleanState = rs.getStateValueAsBoolean(context, "drawSurfaceShape");
+        if (booleanState != null)
+            this.setDrawSurfaceShape(booleanState);
+
+        booleanState = rs.getStateValueAsBoolean(context, "enableLevelOfDetail");
+        if (booleanState != null)
+            this.setEnableLevelOfDetail(booleanState);
+
         RestorableSupport.StateObject so = rs.getStateObject(context, "attributes");
         if (so != null)
             this.getAttributes().restoreState(rs, so);
+
+        so = rs.getStateObject(context, "highlightAttributes");
+        if (so != null)
+            this.getHighlightAttributes().restoreState(rs, so);
     }
 }

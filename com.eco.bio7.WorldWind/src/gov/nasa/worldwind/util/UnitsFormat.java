@@ -16,7 +16,7 @@ import gov.nasa.worldwind.geom.*;
  * performs the necessary conversions to the selected display units.
  *
  * @author tag
- * @version $Id: UnitsFormat.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: UnitsFormat.java 2301 2014-09-06 00:34:45Z tgaskins $
  */
 public class UnitsFormat extends AVListImpl
 {
@@ -842,6 +842,55 @@ public class UnitsFormat extends AVListImpl
 
         return String.format("%s %s", this.angle(this.getLabel(LABEL_LATLON_LAT), latlon.getLatitude()),
             this.angle(this.getLabel(LABEL_LATLON_LON), latlon.getLongitude())).trim();
+    }
+
+    /**
+     * Format angles with {@link #latLon2(gov.nasa.worldwind.geom.LatLon)} and append a new-line character.
+     *
+     * @param latlon the angles to format.
+     *
+     * @return a string containing the formatted angles and ending with the new-line character.
+     *
+     * @throws IllegalArgumentException if <code>latlon</code> is null.
+     */
+    public String latLon2NL(LatLon latlon)
+    {
+        if (latlon == null)
+        {
+            String msg = Logging.getMessage("nullValue.LatLonIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        return this.latLon2(latlon) + NL;
+    }
+
+    /**
+     * Format angles of latitude and longitude according to the current angle format and in the form "20\u00B0N
+     * 85\u00B0S".
+     *
+     * @param latlon the angles to format.
+     *
+     * @return a string containing the formatted angles.
+     *
+     * @throws IllegalArgumentException if <code>latlon</code> is null.
+     */
+    public String latLon2(LatLon latlon)
+    {
+        if (latlon == null)
+        {
+            String msg = Logging.getMessage("nullValue.LatLonIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        String latAngle = this.angle("", Angle.fromDegrees(Math.abs(latlon.getLatitude().degrees)));
+        String latString = String.format("%s%s", latAngle, latlon.getLatitude().degrees >= 0 ? "N" : "S");
+
+        String lonAngle = this.angle("", Angle.fromDegrees(Math.abs(latlon.getLongitude().degrees)));
+        String lonString = String.format("%s%s", lonAngle, latlon.getLongitude().degrees >= 0 ? "E" : "W");
+
+        return String.format("%s %s", latString, lonString);
     }
 
     /**

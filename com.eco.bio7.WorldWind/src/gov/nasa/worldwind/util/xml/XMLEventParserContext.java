@@ -17,7 +17,7 @@ import java.util.Map;
  * Provides services and resources used by XML event parsers during event reading and parsing.
  *
  * @author tag
- * @version $Id: XMLEventParserContext.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: XMLEventParserContext.java 1981 2014-05-08 03:59:04Z tgaskins $
  */
 public interface XMLEventParserContext extends AVList
 {
@@ -61,6 +61,16 @@ public interface XMLEventParserContext extends AVList
      * @return true if the event is a start event for the named event type.
      */
     boolean isStartElement(XMLEvent event, QName elementName);
+
+    /**
+     * Determines whether an event is a start event for a specific event type indicated by its local name.
+     *
+     * @param event       an event identifying the event type of interest.
+     * @param elementName the local part of the event name to match.
+     *
+     * @return true if the event is a start event for the named event type.
+     */
+    boolean isStartElement(XMLEvent event, String elementName);
 
     /**
      * Determines whether an event is the corresponding end element for a specified start event.
@@ -269,4 +279,44 @@ public interface XMLEventParserContext extends AVList
      * @return a parser to handle unrecognized elements.
      */
     XMLEventParser getUnrecognizedElementParser();
+
+    /**
+     * Add string list parsers for a list of element types and qualified for a specified namespace.
+     *
+     * @param namespace    the namespace URI.
+     * @param stringFields the string list parser names.
+     */
+    void addStringParsers(String namespace, String[] stringFields);
+
+    /**
+     * Add double parsers for a list of element types and qualified for a specified namespace.
+     *
+     * @param namespace    the namespace URI.
+     * @param doubleFields the string parsers.
+     */
+    void addDoubleParsers(String namespace, String[] doubleFields);
+
+    /**
+     * Add integer parsers for a list of element types and qualified for a specified namespace.
+     *
+     * @param namespace     the namespace URI.
+     * @param integerFields the string parsers.
+     */
+    void addIntegerParsers(String namespace, String[] integerFields);
+
+    /**
+     * Add boolean parsers for a list of element types and qualified for a specified namespace.
+     *
+     * @param namespace     the namespace URI.
+     * @param booleanFields the string parsers.
+     */
+    void addBooleanParsers(String namespace, String[] booleanFields);
+
+    /**
+     * Add boolean integer parsers for a list of element types and qualified for a specified namespace.
+     *
+     * @param namespace            the namespace URI.
+     * @param booleanIntegerFields the string parser.
+     */
+    void addBooleanIntegerParsers(String namespace, String[] booleanIntegerFields);
 }

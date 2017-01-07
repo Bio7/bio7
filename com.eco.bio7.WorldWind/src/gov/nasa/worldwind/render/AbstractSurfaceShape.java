@@ -8,11 +8,13 @@ package gov.nasa.worldwind.render;
 import com.jogamp.common.nio.Buffers;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.drag.*;
 import gov.nasa.worldwind.exception.WWRuntimeException;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.ogc.kml.KMLConstants;
 import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.combine.*;
 import gov.nasa.worldwind.util.measure.AreaMeasurer;
 
 import javax.media.opengl.*;
@@ -37,14 +39,15 @@ import java.util.List;
  * AbstractSurfaceObject's batch rendering capabilities.
  *
  * @author dcollins
- * @version $Id: AbstractSurfaceShape.java 1869 2014-03-14 23:03:14Z dcollins $
+ * @version $Id: AbstractSurfaceShape.java 3240 2015-06-22 23:38:49Z tgaskins $
  */
-public abstract class AbstractSurfaceShape extends AbstractSurfaceObject implements SurfaceShape, Movable
+public abstract class AbstractSurfaceShape extends AbstractSurfaceObject implements SurfaceShape, Movable, Movable2,
+    Combinable, Draggable
 {
     /** The default interior color. */
-    protected static final Material DEFAULT_INTERIOR_MATERIAL = Material.PINK;
+    protected static final Material DEFAULT_INTERIOR_MATERIAL = Material.LIGHT_GRAY;
     /** The default outline color. */
-    protected static final Material DEFAULT_OUTLINE_MATERIAL = Material.RED;
+    protected static final Material DEFAULT_OUTLINE_MATERIAL = Material.DARK_GRAY;
     /** The default highlight color. */
     protected static final Material DEFAULT_HIGHLIGHT_MATERIAL = Material.WHITE;
     /** The default path type. */
@@ -67,6 +70,8 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
 
     // Public interface properties.
     protected boolean highlighted;
+    protected boolean dragEnabled = true;
+    protected DraggableSupport draggableSupport = null;
     protected ShapeAttributes normalAttrs;
     protected ShapeAttributes highlightAttrs;
     protected ShapeAttributes activeAttrs = this.createActiveAttributes(); // re-determined each frame
@@ -100,6 +105,24 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
     public AbstractSurfaceShape(ShapeAttributes normalAttrs)
     {
         this.setAttributes(normalAttrs);
+    }
+
+    /**
+     * Creates a shallow copy of the specified source shape.
+     *
+     * @param source the shape to copy.
+     */
+    public AbstractSurfaceShape(AbstractSurfaceShape source)
+    {
+        super(source);
+
+        this.highlighted = source.highlighted;
+        this.normalAttrs = source.normalAttrs;
+        this.highlightAttrs = source.highlightAttrs;
+        this.pathType = source.pathType;
+        this.texelsPerEdgeInterval = source.texelsPerEdgeInterval;
+        this.minEdgeIntervals = source.minEdgeIntervals;
+        this.maxEdgeIntervals = source.maxEdgeIntervals;
     }
 
     /** {@inheritDoc} */
@@ -229,15 +252,15 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
             throw new IllegalArgumentException(message);
         }
 
-        CacheEntry entry = this.sectorCache.get(dc.getGlobe());
-        if (entry != null && entry.isValid(dc))
+        CacheEntry entry = this.sectorCache.get(dc.getGlobe().getGlobeStateKey());
+        if (entry != null)
         {
             return (List<Sector>) entry.object;
         }
         else
         {
             entry = new CacheEntry(this.computeSectors(dc), dc);
-            this.sectorCache.put(dc.getGlobe(), entry);
+            this.sectorCache.put(dc.getGlobe().getGlobeStateKey(), entry);
             return (List<Sector>) entry.object;
         }
     }
@@ -513,9 +536,72 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
         this.doMoveTo(oldReferencePosition, position);
     }
 
+    public void moveTo(Globe globe, Position position)
+    {
+        if (position == null)
+        {
+            String message = Logging.getMessage("nullValue.PositionIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        Position oldReferencePosition = this.getReferencePosition();
+        if (oldReferencePosition == null)
+            return;
+
+        this.doMoveTo(globe, oldReferencePosition, position);
+    }
+
+    @Override
+    public boolean isDragEnabled()
+    {
+        return this.dragEnabled;
+    }
+
+    @Override
+    public void setDragEnabled(boolean enabled)
+    {
+        this.dragEnabled = enabled;
+    }
+
+    @Override
+    public void drag(DragContext dragContext)
+    {
+        if (!this.dragEnabled)
+            return;
+
+        if (this.draggableSupport == null)
+            this.draggableSupport = new DraggableSupport(this, WorldWind.CLAMP_TO_GROUND);
+
+        this.doDrag(dragContext);
+    }
+
+    protected void doDrag(DragContext dragContext)
+    {
+        this.draggableSupport.dragGlobeSizeConstant(dragContext);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void combine(CombineContext cc)
+    {
+        if (cc == null)
+        {
+            String msg = Logging.getMessage("nullValue.CombineContextIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (cc.isBoundingSectorMode())
+            this.combineBounds(cc);
+        else
+            this.combineContours(cc);
+    }
+
     public abstract Position getReferencePosition();
 
     protected abstract void doMoveTo(Position oldReferencePosition, Position newReferencePosition);
+    protected abstract void doMoveTo(Globe globe, Position oldReferencePosition, Position newReferencePosition);
 
     protected void onShapeChanged()
     {
@@ -774,50 +860,7 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
         if (!this.canContainPole())
             return null;
 
-        // Determine how many times the path crosses the date line. Shapes that include a pole will cross an odd number of times.
-        boolean containsPole = false;
-
-        double minLatitude = 90.0;
-        double maxLatitude = -90.0;
-
-        LatLon first = null;
-        LatLon prev = null;
-        for (LatLon ll : locations)
-        {
-            if (first == null)
-                first = ll;
-
-            if (prev != null && LatLon.locationsCrossDateline(prev, ll))
-                containsPole = !containsPole;
-
-            if (ll.latitude.degrees < minLatitude)
-                minLatitude = ll.latitude.degrees;
-
-            if (ll.latitude.degrees > maxLatitude)
-                maxLatitude = ll.latitude.degrees;
-
-            prev = ll;
-        }
-
-        // Close the loop by connecting the last position to the first. If the loop is already closed then the following
-        // test will always fail, and will not affect the result.
-        if (first != null && LatLon.locationsCrossDateline(first, prev))
-            containsPole = !containsPole;
-
-        if (!containsPole)
-            return null;
-
-        // Determine which pole is enclosed. If the shape is entirely in one hemisphere, then assume that it encloses
-        // the pole in that hemisphere. Otherwise, assume that it encloses the pole that is closest to the shape's
-        // extreme latitude.
-        if (minLatitude > 0)
-            return AVKey.NORTH; // Entirely in Northern Hemisphere
-        else if (maxLatitude < 0)
-            return AVKey.SOUTH; // Entirely in Southern Hemisphere
-        else if (Math.abs(maxLatitude) >= Math.abs(minLatitude))
-            return AVKey.NORTH; // Spans equator, but more north than south
-        else
-            return AVKey.SOUTH;
+        return LatLon.locationsContainPole(locations);
     }
 
     /**
@@ -837,44 +880,7 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
         if (pole == null)
             return locations;
 
-        List<LatLon> newLocations = new ArrayList<LatLon>(locations.size());
-
-        Angle poleLat = AVKey.NORTH.equals(pole) ? Angle.POS90 : Angle.NEG90;
-
-        LatLon pos = null;
-        for (LatLon posNext : locations)
-        {
-            if (pos != null)
-            {
-                newLocations.add(pos);
-                if (LatLon.locationsCrossDateline(pos, posNext))
-                {
-                    // Determine where the segment crosses the date line.
-                    LatLon separation = this.intersectionWithMeridian(pos, posNext, Angle.POS180, globe);
-                    double sign = Math.signum(pos.getLongitude().degrees);
-
-                    Angle lat = separation.getLatitude();
-                    Angle thisSideLon = Angle.POS180.multiply(sign);
-                    Angle otherSideLon = thisSideLon.multiply(-1);
-
-                    // Add locations that run from the intersection to the pole, then back to the intersection. Note
-                    // that the longitude changes sign when the path returns from the pole.
-                    //         . Pole
-                    //      2 ^ | 3
-                    //        | |
-                    //      1 | v 4
-                    // --->---- ------>
-                    newLocations.add(new LatLon(lat, thisSideLon));
-                    newLocations.add(new LatLon(poleLat, thisSideLon));
-                    newLocations.add(new LatLon(poleLat, otherSideLon));
-                    newLocations.add(new LatLon(lat, otherSideLon));
-                }
-            }
-            pos = posNext;
-        }
-        newLocations.add(pos);
-
-        return newLocations;
+        return LatLon.cutLocationsAlongDateLine(locations, pole, globe);
     }
 
     /**
@@ -888,82 +894,7 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
      */
     protected List<List<LatLon>> repeatAroundDateline(List<LatLon> locations)
     {
-        List<List<LatLon>> list = new ArrayList<List<LatLon>>();
-
-        LatLon prev = null;
-        double lonOffset = 0;
-        boolean applyLonOffset = false;
-
-        List<LatLon> locationsA = new ArrayList<LatLon>(locations.size());
-        list.add(locationsA);
-
-        for (LatLon cur : locations)
-        {
-            if (prev != null && LatLon.locationsCrossDateline(prev, cur))
-            {
-                if (lonOffset == 0)
-                    lonOffset = (prev.longitude.degrees < 0 ? -360 : 360);
-
-                applyLonOffset = !applyLonOffset;
-            }
-
-            if (applyLonOffset)
-            {
-                locationsA.add(LatLon.fromDegrees(cur.latitude.degrees, cur.longitude.degrees + lonOffset));
-            }
-            else
-            {
-                locationsA.add(cur);
-            }
-
-            prev = cur;
-        }
-
-        if (lonOffset != 0) // longitude offset is non-zero when the locations cross the dateline
-        {
-            List<LatLon> locationsB = new ArrayList<LatLon>(locations.size());
-            list.add(locationsB);
-
-            for (LatLon cur : locationsA)
-            {
-                locationsB.add(LatLon.fromDegrees(cur.latitude.degrees, cur.longitude.degrees - lonOffset));
-            }
-        }
-
-        return list;
-    }
-
-    /**
-     * Determine where a line between two positions crosses a given meridian. The intersection test is performed by
-     * intersecting a line in Cartesian space between the two positions with a plane through the meridian. Thus, it is
-     * most suitable for working with positions that are fairly close together as the calculation does not take into
-     * account great circle or rhumb paths.
-     *
-     * @param p1       First position.
-     * @param p2       Second position.
-     * @param meridian Longitude line to intersect with.
-     * @param globe    Globe used to compute intersection.
-     *
-     * @return The intersection location along the meridian
-     */
-    protected LatLon intersectionWithMeridian(LatLon p1, LatLon p2, Angle meridian, Globe globe)
-    {
-        Vec4 pt1 = globe.computePointFromLocation(p1);
-        Vec4 pt2 = globe.computePointFromLocation(p2);
-
-        // Compute a plane through the origin, North Pole, and the desired meridian.
-        Vec4 northPole = globe.computePointFromLocation(new LatLon(Angle.POS90, meridian));
-        Vec4 pointOnEquator = globe.computePointFromLocation(new LatLon(Angle.ZERO, meridian));
-
-        Plane plane = Plane.fromPoints(northPole, pointOnEquator, Vec4.ZERO);
-
-        Vec4 intersectionPoint = plane.intersect(Line.fromSegment(pt1, pt2));
-        if (intersectionPoint == null)
-            return null;
-
-        Position intersectionPos = globe.computePositionFromPoint(intersectionPoint);
-
-        return new LatLon(intersectionPos.getLatitude(), meridian);
+        return LatLon.repeatLocationsAroundDateline(locations);
     }
 
     protected List<List<LatLon>> getActiveGeometry()
@@ -988,33 +919,37 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
 
     protected void drawOutline(DrawContext dc, SurfaceTileDrawContext sdc)
     {
-        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
-
         if (this.activeOutlineGeometry.isEmpty())
-            return;
-
-        Position refPos = this.getReferencePosition();
-        if (refPos == null)
             return;
 
         this.applyOutlineState(dc, this.getActiveAttributes());
 
         for (List<LatLon> drawLocations : this.activeOutlineGeometry)
         {
-            if (vertexBuffer == null || vertexBuffer.capacity() < 2 * drawLocations.size())
-                vertexBuffer = Buffers.newDirectFloatBuffer(2 * drawLocations.size());
-            vertexBuffer.clear();
-
-            for (LatLon ll : drawLocations)
-            {
-                vertexBuffer.put((float) (ll.getLongitude().degrees - refPos.getLongitude().degrees));
-                vertexBuffer.put((float) (ll.getLatitude().degrees - refPos.getLatitude().degrees));
-            }
-            vertexBuffer.flip();
-
-            gl.glVertexPointer(2, GL.GL_FLOAT, 0, vertexBuffer);
-            gl.glDrawArrays(GL.GL_LINE_STRIP, 0, drawLocations.size());
+            this.drawLineStrip(dc, drawLocations);
         }
+    }
+
+    protected void drawLineStrip(DrawContext dc, List<LatLon> locations)
+    {
+        Position refPos = this.getReferencePosition();
+        if (refPos == null)
+            return;
+
+        if (vertexBuffer == null || vertexBuffer.capacity() < 2 * locations.size())
+            vertexBuffer = Buffers.newDirectFloatBuffer(2 * locations.size());
+        vertexBuffer.clear();
+
+        for (LatLon ll : locations)
+        {
+            vertexBuffer.put((float) (ll.getLongitude().degrees - refPos.getLongitude().degrees));
+            vertexBuffer.put((float) (ll.getLatitude().degrees - refPos.getLatitude().degrees));
+        }
+        vertexBuffer.flip();
+
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glVertexPointer(2, GL.GL_FLOAT, 0, vertexBuffer);
+        gl.glDrawArrays(GL.GL_LINE_STRIP, 0, locations.size());
     }
 
     protected WWTexture getInteriorTexture()
@@ -1044,7 +979,7 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
 
         Object key = this.createGeometryKey(dc, sdc);
         CacheEntry entry = this.geometryCache.get(key);
-        if (entry != null && entry.isValid(dc))
+        if (entry != null)
         {
             return (List<List<LatLon>>) entry.object;
         }
@@ -1056,7 +991,13 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
         }
     }
 
-    protected abstract List<List<LatLon>> createGeometry(Globe globe, SurfaceTileDrawContext sdc);
+    protected List<List<LatLon>> createGeometry(Globe globe, SurfaceTileDrawContext sdc)
+    {
+        double edgeIntervalsPerDegree = this.computeEdgeIntervalsPerDegree(sdc);
+        return this.createGeometry(globe, edgeIntervalsPerDegree);
+    }
+
+    protected abstract List<List<LatLon>> createGeometry(Globe globe, double edgeIntervalsPerDegree);
 
     protected Object createGeometryKey(DrawContext dc, SurfaceTileDrawContext sdc)
     {
@@ -1071,6 +1012,88 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
         double intervalsPerTexel = 1.0 / this.getTexelsPerEdgeInterval();
 
         return intervalsPerTexel * texelsPerDegree;
+    }
+
+    @SuppressWarnings("UnnecessaryLocalVariable")
+    protected double computeEdgeIntervalsPerDegree(double resolution)
+    {
+        double degreesPerInterval = resolution * 180.0 / Math.PI;
+        double intervalsPerDegree = 1.0 / degreesPerInterval;
+
+        return intervalsPerDegree;
+    }
+
+    //**************************************************************//
+    //********************  Combinable  ****************************//
+    //**************************************************************//
+
+    protected void combineBounds(CombineContext cc)
+    {
+        List<Sector> sectorList = this.computeSectors(cc.getGlobe());
+        if (sectorList == null)
+            return; // no caller specified locations to bound
+
+        cc.addBoundingSector(Sector.union(sectorList));
+    }
+
+    protected void combineContours(CombineContext cc)
+    {
+        List<Sector> sectorList = this.computeSectors(cc.getGlobe());
+        if (sectorList == null)
+            return; // no caller specified locations to draw
+
+        if (!cc.getSector().intersectsAny(sectorList))
+            return; // this shape does not intersect the region of interest
+
+        this.doCombineContours(cc);
+    }
+
+    protected void doCombineContours(CombineContext cc)
+    {
+        double edgeIntervalsPerDegree = this.computeEdgeIntervalsPerDegree(cc.getResolution());
+        List<List<LatLon>> contours = this.createGeometry(cc.getGlobe(), edgeIntervalsPerDegree);
+        if (contours == null)
+            return; // shape has no caller specified data
+
+        for (List<LatLon> contour : contours)
+        {
+            String pole = this.containsPole(contour);
+            if (pole != null) // Wrap the contour around the pole and along the anti-meridian. See WWJ-284.
+            {
+                List<LatLon> poleContour = this.cutAlongDateLine(contour, pole, cc.getGlobe());
+                this.doCombineContour(cc, poleContour);
+            }
+            else if (LatLon.locationsCrossDateLine(contour)) // Split the contour along the anti-meridian.
+            {
+                List<List<LatLon>> datelineContours = this.repeatAroundDateline(contour);
+                this.doCombineContour(cc, datelineContours.get(0));
+                this.doCombineContour(cc, datelineContours.get(1));
+            }
+            else
+            {
+                this.doCombineContour(cc, contour);
+            }
+        }
+    }
+
+    protected void doCombineContour(CombineContext cc, Iterable<? extends LatLon> contour)
+    {
+        GLUtessellator tess = cc.getTessellator();
+
+        try
+        {
+            GLU.gluTessBeginContour(tess);
+
+            for (LatLon location : contour)
+            {
+                double[] vertex = {location.longitude.degrees, location.latitude.degrees, 0};
+                GLU.gluTessVertex(tess, vertex, 0, vertex);
+            }
+        }
+        finally
+        {
+            GLU.gluTessEndContour(tess);
+        }
     }
 
     //**************************************************************//

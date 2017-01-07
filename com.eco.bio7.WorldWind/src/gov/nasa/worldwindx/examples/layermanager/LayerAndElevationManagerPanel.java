@@ -15,7 +15,7 @@ import java.awt.*;
  * Combines the layer manager and elevation model manager in a single frame.
  *
  * @author tag
- * @version $Id: LayerAndElevationManagerPanel.java 1179 2013-02-15 17:47:37Z tgaskins $
+ * @version $Id: LayerAndElevationManagerPanel.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class LayerAndElevationManagerPanel extends JPanel
 {
@@ -39,5 +39,11 @@ public class LayerAndElevationManagerPanel extends JPanel
     public void updateElevations(WorldWindow wwd)
     {
         this.elevationModelManagerPanel.update(wwd);
+    }
+
+    public void update(WorldWindow wwd)
+    {
+        this.updateLayers(wwd);
+        this.updateElevations(wwd);
     }
 }

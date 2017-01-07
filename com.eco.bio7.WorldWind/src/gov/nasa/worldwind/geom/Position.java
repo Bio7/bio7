@@ -5,13 +5,14 @@
  */
 package gov.nasa.worldwind.geom;
 
+import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.util.*;
 
 import java.util.*;
 
 /**
  * @author tag
- * @version $Id: Position.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: Position.java 2291 2014-08-30 21:38:47Z tgaskins $
  */
 public class Position extends LatLon
 {
@@ -267,6 +268,50 @@ public class Position extends LatLon
             double newElev = pos.getElevation() + elevDelta;
 
             newPositions.add(new Position(newLocation, newElev));
+        }
+
+        return newPositions;
+    }
+
+    public static List<Position> computeShiftedPositions(Globe globe, Position oldPosition, Position newPosition,
+        Iterable<? extends Position> positions)
+    {
+        if (globe == null)
+        {
+            String msg = Logging.getMessage("nullValue.GlobeIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (oldPosition == null || newPosition == null)
+        {
+            String msg = Logging.getMessage("nullValue.PositionIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (positions == null)
+        {
+            String msg = Logging.getMessage("nullValue.PositionsListIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        ArrayList<Position> newPositions = new ArrayList<Position>();
+
+        double elevDelta = newPosition.getElevation() - oldPosition.getElevation();
+        Vec4 oldPoint = globe.computePointFromPosition(oldPosition);
+        Vec4 newPoint = globe.computePointFromPosition(newPosition);
+        Vec4 delta = newPoint.subtract3(oldPoint);
+
+        for (Position pos : positions)
+        {
+            Vec4 point = globe.computePointFromPosition(pos);
+            point = point.add3(delta);
+            Position newPos = globe.computePositionFromPoint(point);
+            double newElev = pos.getElevation() + elevDelta;
+
+            newPositions.add(new Position(newPos, newElev));
         }
 
         return newPositions;

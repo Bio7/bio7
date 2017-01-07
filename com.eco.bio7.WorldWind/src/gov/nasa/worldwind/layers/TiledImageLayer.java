@@ -5,7 +5,6 @@
  */
 package gov.nasa.worldwind.layers;
 
-import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.geom.*;
@@ -27,7 +26,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 
 /**
  * @author tag
- * @version $Id: TiledImageLayer.java 1824 2014-01-22 22:41:10Z dcollins $
+ * @version $Id: TiledImageLayer.java 2922 2015-03-24 23:56:58Z tgaskins $
  */
 public abstract class TiledImageLayer extends AbstractLayer
 {
@@ -499,7 +498,11 @@ public abstract class TiledImageLayer extends AbstractLayer
         // than one thousandth of the eye distance. The field of view scale is specified as a ratio between the current
         // field of view and a the default field of view. In a perspective projection, decreasing the field of view by
         // 50% has the same effect on object size as decreasing the distance between the eye and the object by 50%.
-        double detailScale = Math.pow(10, -this.getDetailFactor());
+        // The detail hint is reduced for tiles above 75 degrees north and below 75 degrees south.
+        double s = this.getDetailFactor();
+        if (sector.getMinLatitude().degrees >= 75 || sector.getMaxLatitude().degrees <= -75)
+            s *= 0.9;
+        double detailScale = Math.pow(10, -s);
         double fieldOfViewScale = dc.getView().getFieldOfView().tanHalfAngle() / Angle.fromDegrees(45).tanHalfAngle();
         fieldOfViewScale = WWMath.clamp(fieldOfViewScale, 0, 1);
 
@@ -1261,14 +1264,14 @@ public abstract class TiledImageLayer extends AbstractLayer
      * @param timeout      The amount of time to allow for reading the image from the server.
      *
      * @return image        the assembled image, of size indicated by the <code>canvasWidth</code> and
-     *         <code>canvasHeight</code>. If the specified aspect ratio is one, all pixels contain values. If the aspect
-     *         ratio is greater than one, a full-width segment along the top of the canvas is blank. If the aspect ratio
-     *         is less than one, a full-height segment along the right side of the canvase is blank. If the
-     *         <code>image</code> argument was non-null, that buffered image is returned.
+     * <code>canvasHeight</code>. If the specified aspect ratio is one, all pixels contain values. If the aspect ratio
+     * is greater than one, a full-width segment along the top of the canvas is blank. If the aspect ratio is less than
+     * one, a full-height segment along the right side of the canvase is blank. If the <code>image</code> argument was
+     * non-null, that buffered image is returned.
      *
      * @throws IllegalArgumentException if <code>sector</code> is null.
      * @see ImageUtil#mergeImage(gov.nasa.worldwind.geom.Sector, gov.nasa.worldwind.geom.Sector, double,
-     *      java.awt.image.BufferedImage, java.awt.image.BufferedImage)  ;
+     * java.awt.image.BufferedImage, java.awt.image.BufferedImage)  ;
      */
     public BufferedImage composeImageForSector(Sector sector, int canvasWidth, int canvasHeight, double aspectRatio,
         int levelNumber, String mimeType, boolean abortOnError, BufferedImage image, int timeout) throws Exception

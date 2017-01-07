@@ -21,7 +21,7 @@ import static gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil.kmlBoolean;
 
 /**
  * @author dcollins
- * @version $Id: SurfacePolyline.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: SurfacePolyline.java 2406 2014-10-29 23:39:29Z dcollins $
  */
 public class SurfacePolyline extends AbstractSurfaceShape implements Exportable
 {
@@ -31,6 +31,19 @@ public class SurfacePolyline extends AbstractSurfaceShape implements Exportable
     /** Constructs a new surface polyline with the default attributes and no locations. */
     public SurfacePolyline()
     {
+    }
+
+    /**
+     * Creates a shallow copy of the specified source shape.
+     *
+     * @param source the shape to copy.
+     */
+    public SurfacePolyline(SurfacePolyline source)
+    {
+        super(source);
+
+        this.closed = source.closed;
+        this.locations = source.locations;
     }
 
     /**
@@ -138,13 +151,12 @@ public class SurfacePolyline extends AbstractSurfaceShape implements Exportable
         return new Position(iterator.next(), 0);
     }
 
-    protected List<List<LatLon>> createGeometry(Globe globe, SurfaceTileDrawContext sdc)
+    protected List<List<LatLon>> createGeometry(Globe globe, double edgeIntervalsPerDegree)
     {
         if (this.locations == null)
             return null;
 
         ArrayList<LatLon> drawLocations = new ArrayList<LatLon>();
-        double edgeIntervalsPerDegree = this.computeEdgeIntervalsPerDegree(sdc);
         this.generateIntermediateLocations(this.locations, edgeIntervalsPerDegree, this.isClosed(), drawLocations);
 
         if (drawLocations.size() < 2)
@@ -169,6 +181,17 @@ public class SurfacePolyline extends AbstractSurfaceShape implements Exportable
             Angle pathLength = LatLon.greatCircleDistance(oldReferencePosition, ll);
             newLocations.add(LatLon.greatCircleEndPosition(newReferencePosition, heading, pathLength));
         }
+
+        this.setLocations(newLocations);
+    }
+
+    protected void doMoveTo(Globe globe, Position oldReferencePosition, Position newReferencePosition)
+    {
+        if (this.locations == null)
+            return;
+
+        List<LatLon> newLocations = LatLon.computeShiftedLocations(globe, oldReferencePosition, newReferencePosition,
+            this.getLocations());
 
         this.setLocations(newLocations);
     }
@@ -265,7 +288,7 @@ public class SurfacePolyline extends AbstractSurfaceShape implements Exportable
 
         xmlWriter.writeStartElement("Placemark");
 
-        String property = (String) getValue(AVKey.DISPLAY_NAME);
+        String property = getStringValue(AVKey.DISPLAY_NAME);
         if (property != null)
         {
             xmlWriter.writeStartElement("name");

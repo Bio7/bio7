@@ -28,7 +28,7 @@ import java.io.InputStream;
  * with an instance of <code>{@link BalloonAttributes}</code>.
  *
  * @author dcollins
- * @version $Id: WebBrowserBalloons.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: WebBrowserBalloons.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class WebBrowserBalloons extends ApplicationTemplate
 {
@@ -104,7 +104,6 @@ public class WebBrowserBalloons extends ApplicationTemplate
             layer.addRenderable(placemark);
             // Add the layer to the ApplicationTemplate's layer panel.
             insertBeforePlacenames(getWwd(), layer);
-            this.getLayerPanel().update(this.getWwd());
         }
     }
 

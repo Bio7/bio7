@@ -7,16 +7,16 @@
 package gov.nasa.worldwindx.performance;
 
 import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwindx.examples.ApplicationTemplate;
 import gov.nasa.worldwind.geom.LatLon;
-import gov.nasa.worldwind.layers.AirspaceLayer;
 import gov.nasa.worldwind.render.airspaces.Polygon;
 
 import java.util.ArrayList;
 
 /**
  * @author tag
- * @version $Id: AirspacesEverywhere.java 968 2012-12-06 02:52:49Z dcollins $
+ * @version $Id: AirspacesEverywhere.java 2231 2014-08-15 19:03:12Z dcollins $
  */
 public class AirspacesEverywhere extends ApplicationTemplate
 {
@@ -39,7 +39,7 @@ public class AirspacesEverywhere extends ApplicationTemplate
 
             ArrayList<LatLon> positions = new ArrayList<LatLon>();
 
-            AirspaceLayer layer = new AirspaceLayer();
+            RenderableLayer layer = new RenderableLayer();
 
             int count = 0;
             for (double lat = minLat; lat <= maxLat; lat += delta)
@@ -77,14 +77,13 @@ public class AirspacesEverywhere extends ApplicationTemplate
                     Polygon pgon = new Polygon(positions);
                     pgon.setAltitudes(1e3, 1e4);
                     pgon.setAltitudeDatum(AVKey.ABOVE_MEAN_SEA_LEVEL, AVKey.ABOVE_MEAN_SEA_LEVEL);
-                    layer.addAirspace(pgon);
+                    layer.addRenderable(pgon);
                     ++count;
                 }
             }
             System.out.printf("%d Polygons, %d positions\n", count, positions.size());
 
             insertBeforeCompass(getWwd(), layer);
-            this.getLayerPanel().update(this.getWwd());
         }
     }
 

@@ -17,7 +17,7 @@ import gov.nasa.worldwind.globes.Globe;
  * time allowed for retrieving data. Operations fail if the timeout is exceeded.
  *
  * @author tag
- * @version $Id: Terrain.java 1400 2013-06-03 23:55:11Z tgaskins $
+ * @version $Id: Terrain.java 2056 2014-06-13 00:55:07Z tgaskins $
  */
 public interface Terrain
 {
@@ -86,10 +86,9 @@ public interface Terrain
      *
      * @throws IllegalArgumentException if either position is null.
      * @throws gov.nasa.worldwind.exception.WWTimeoutException
-     *
+     *                                  if the current timeout is exceeded while retrieving terrain data.
      * @throws gov.nasa.worldwind.exception.WWRuntimeException
-     *                                  if the operation is interrupted. if the current timeout is exceeded while
-     *                                  retrieving terrain data.
+     *                                  if the operation is interrupted.
      */
     Intersection[] intersect(Position pA, Position pB);
 
@@ -100,8 +99,8 @@ public interface Terrain
      * This operation fails with a {@link gov.nasa.worldwind.exception.WWTimeoutException} if a timeout has been
      * specified and it is exceeded during the operation.
      *
-     * @param pA the line's first position.
-     * @param pB the line's second position.
+     * @param pA           the line's first position.
+     * @param pB           the line's second position.
      * @param altitudeMode the altitude mode indicating the reference for the altitudes in the specified positions.
      *
      * @return an array of Cartesian model-coordinate intersection points, or null if no intersections occur or the
@@ -109,10 +108,9 @@ public interface Terrain
      *
      * @throws IllegalArgumentException if either position is null.
      * @throws gov.nasa.worldwind.exception.WWTimeoutException
-     *
+     *                                  if the current timeout is exceeded while retrieving terrain data.
      * @throws gov.nasa.worldwind.exception.WWRuntimeException
-     *                                  if the operation is interrupted. if the current timeout is exceeded while
-     *                                  retrieving terrain data.
+     *                                  if the operation is interrupted.
      */
     Intersection[] intersect(Position pA, Position pB, int altitudeMode);
 

@@ -10,7 +10,9 @@ import java.util.*;
 public class PerformanceStatistic implements Comparable<PerformanceStatistic>
 {
     public static final String ALL = "gov.nasa.worldwind.perfstat.All";
+    /** @deprecated Airspace geometry count is no longer logged during airspace rendering. */
     public static final String AIRSPACE_GEOMETRY_COUNT = "gov.nasa.worldwind.perfstat.AirspaceGeometryCount";
+    /** @deprecated Airspace vertex count is no longer logged during airspace rendering. */
     public static final String AIRSPACE_VERTEX_COUNT = "gov.nasa.worldwind.perfstat.AirspaceVertexCount";
     public static final String FRAME_RATE = "gov.nasa.worldwind.perfstat.FrameRate";
     public static final String FRAME_TIME = "gov.nasa.worldwind.perfstat.FrameTime";

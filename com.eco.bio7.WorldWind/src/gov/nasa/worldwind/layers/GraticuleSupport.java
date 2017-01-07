@@ -14,7 +14,7 @@ import java.util.*;
 
 /**
  * @author dcollins
- * @version $Id: GraticuleSupport.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: GraticuleSupport.java 2372 2014-10-10 18:32:15Z tgaskins $
  */
 public class GraticuleSupport
 {
@@ -28,11 +28,35 @@ public class GraticuleSupport
             this.a = a;
             this.b = b;
         }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+
+            Pair pair = (Pair) o;
+
+            if (a != null ? !a.equals(pair.a) : pair.a != null)
+                return false;
+            if (b != null ? !b.equals(pair.b) : pair.b != null)
+                return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            int result = a != null ? a.hashCode() : 0;
+            result = 31 * result + (b != null ? b.hashCode() : 0);
+            return result;
+        }
     }
 
-    private Collection<Pair> renderables = new ArrayList<Pair>();
-    private Collection<Pair> surfaceRenderables = new ArrayList<Pair>();
-    private Collection<SurfaceObject> surfaceObjects = new ArrayList<SurfaceObject>();
+    private Collection<Pair> renderables = new HashSet<Pair>(); // a set to avoid duplicates in multi-pass (2D globes)
     private Map<String, GraticuleRenderingParams> namedParams = new HashMap<String, GraticuleRenderingParams>();
     private Map<String, ShapeAttributes> namedShapeAttributes = new HashMap<String, ShapeAttributes>();
     private AVList defaultParams;
@@ -58,46 +82,12 @@ public class GraticuleSupport
             throw new IllegalArgumentException(message);
         }
 
-        if (renderable instanceof SurfaceObject)
-            this.surfaceRenderables.add(new Pair(renderable, paramsKey));
-        else
-            this.renderables.add(new Pair(renderable, paramsKey));
+        this.renderables.add(new Pair(renderable, paramsKey));
     }
 
     public void removeAllRenderables()
     {
         this.renderables.clear();
-        this.surfaceRenderables.clear();
-    }
-
-    public void preRender(DrawContext dc, double opacity)
-    {
-        if (this.surfaceRenderables.size() == 0)
-            return;
-
-        // Pre render surface polylines
-        this.namedShapeAttributes.clear();
-
-        for (Pair pair : this.surfaceRenderables)
-        {
-            Object renderable = pair.a;
-            String paramsKey = (pair.b != null && pair.b instanceof String) ? (String) pair.b : null;
-            GraticuleRenderingParams renderingParams = paramsKey != null ? this.namedParams.get(paramsKey) : null;
-
-            if (renderable != null && renderable instanceof SurfacePolyline)
-            {
-                if (renderingParams == null || renderingParams.isDrawLines())
-                {
-                    applyRenderingParams(paramsKey, renderingParams, (SurfacePolyline) renderable, opacity);
-                    this.surfaceObjects.add((SurfacePolyline) renderable);
-                }
-            }
-        }
-
-        for (SurfaceObject so : this.surfaceObjects)
-        {
-            so.preRender(dc);
-        }
     }
 
     public void render(DrawContext dc)
@@ -114,16 +104,9 @@ public class GraticuleSupport
             throw new IllegalArgumentException(message);
         }
 
-        // Render surface objects if any
-        if (this.surfaceRenderables.size() > 0)
-        {
-            for (SurfaceObject so : this.surfaceObjects)
-            {
-                so.render(dc);
-            }
-        }
+        this.namedShapeAttributes.clear();
 
-        // Render polylines and collect text labels
+        // Render lines and collect text labels
         Collection<GeographicText> text = new ArrayList<GeographicText>();
         for (Pair pair : this.renderables)
         {
@@ -131,12 +114,12 @@ public class GraticuleSupport
             String paramsKey = (pair.b != null && pair.b instanceof String) ? (String) pair.b : null;
             GraticuleRenderingParams renderingParams = paramsKey != null ? this.namedParams.get(paramsKey) : null;
 
-            if (renderable != null && renderable instanceof Polyline)
+            if (renderable != null && renderable instanceof Path)
             {
                 if (renderingParams == null || renderingParams.isDrawLines())
                 {
-                    applyRenderingParams(renderingParams, (Polyline) renderable, opacity);
-                    ((Polyline) renderable).render(dc);
+                    applyRenderingParams(paramsKey, renderingParams, (Path) renderable, opacity);
+                    ((Path) renderable).render(dc);
                 }
             }
             else if (renderable != null && renderable instanceof GeographicText)
@@ -238,53 +221,6 @@ public class GraticuleSupport
         return params;
     }
 
-    private void applyRenderingParams(AVList params, Polyline polyline, double opacity)
-    {
-        if (params != null && polyline != null)
-        {
-            // Apply "line" properties to the Polyline.
-            Object o = params.getValue(GraticuleRenderingParams.KEY_LINE_COLOR);
-            if (o != null && o instanceof Color)
-            {
-                polyline.setColor(applyOpacity((Color) o, opacity));
-            }
-
-            Double lineWidth = AVListImpl.getDoubleValue(params, GraticuleRenderingParams.KEY_LINE_WIDTH);
-            if (lineWidth != null)
-            {
-                polyline.setLineWidth(lineWidth);
-            }
-
-            String s = params.getStringValue(GraticuleRenderingParams.KEY_LINE_STYLE);
-            // Draw a solid line.
-            if (GraticuleRenderingParams.VALUE_LINE_STYLE_SOLID.equalsIgnoreCase(s))
-            {
-                polyline.setStipplePattern((short) 0xAAAA);
-                polyline.setStippleFactor(0);
-            }
-            // Draw the line as longer strokes with space in between.
-            else if (GraticuleRenderingParams.VALUE_LINE_STYLE_DASHED.equalsIgnoreCase(s))
-            {
-                int baseFactor = (int) (lineWidth != null ? Math.round(lineWidth) : 1.0);
-                polyline.setStipplePattern((short) 0xAAAA);
-                polyline.setStippleFactor(3 * baseFactor);
-            }
-            // Draw the line as a evenly spaced "square" dots.
-            else if (GraticuleRenderingParams.VALUE_LINE_STYLE_DOTTED.equalsIgnoreCase(s))
-            {
-                int baseFactor = (int) (lineWidth != null ? Math.round(lineWidth) : 1.0);
-                polyline.setStipplePattern((short) 0xAAAA);
-                polyline.setStippleFactor(baseFactor);
-            }
-            // Set the line terrain conformance.
-            Double d = AVListImpl.getDoubleValue(params, GraticuleRenderingParams.KEY_LINE_CONFORMANCE);
-            if (d != null)
-            {
-                polyline.setTerrainConformance(d);
-            }
-        }
-    }
-
     private void applyRenderingParams(AVList params, GeographicText text, double opacity)
     {
         if (params != null && text != null)
@@ -309,11 +245,11 @@ public class GraticuleSupport
         }
     }
 
-    private void applyRenderingParams(String key, AVList params, SurfacePolyline polyline, double opacity)
+    private void applyRenderingParams(String key, AVList params, Path path, double opacity)
     {
-        if (key != null && params != null && polyline != null)
+        if (key != null && params != null && path != null)
         {
-            polyline.setAttributes(this.getLineShapeAttributes(key, params, opacity));
+            path.setAttributes(this.getLineShapeAttributes(key, params, opacity));
         }
     }
 
@@ -340,6 +276,7 @@ public class GraticuleSupport
             if (o != null && o instanceof Color)
             {
                 attrs.setOutlineMaterial(new Material(applyOpacity((Color) o, opacity)));
+                attrs.setOutlineOpacity(opacity);
             }
 
             Double lineWidth = AVListImpl.getDoubleValue(params, GraticuleRenderingParams.KEY_LINE_WIDTH);

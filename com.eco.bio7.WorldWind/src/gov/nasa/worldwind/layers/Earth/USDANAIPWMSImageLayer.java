@@ -12,7 +12,7 @@ import org.w3c.dom.Document;
 
 /**
  * @author garakl
- * @version $Id: USDANAIPWMSImageLayer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: USDANAIPWMSImageLayer.java 2257 2014-08-22 18:02:19Z tgaskins $
  */
 
 public class USDANAIPWMSImageLayer extends WMSTiledImageLayer
@@ -29,7 +29,7 @@ public class USDANAIPWMSImageLayer extends WMSTiledImageLayer
 
     public String toString()
     {
-        Object o = this.getValue(AVKey.DISPLAY_NAME);
+        Object o = this.getStringValue(AVKey.DISPLAY_NAME);
         return o != null ? (String) o : "USDA FSA Imagery";
     }
 }

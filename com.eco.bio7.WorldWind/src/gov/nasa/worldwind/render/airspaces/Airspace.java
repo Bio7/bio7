@@ -15,9 +15,9 @@ import java.util.Collection;
 
 /**
  * @author dcollins
- * @version $Id: Airspace.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: Airspace.java 2394 2014-10-22 01:16:43Z tgaskins $
  */
-public interface Airspace extends Renderable, Restorable, AVList, ExtentHolder
+public interface Airspace extends Renderable, Restorable, AVList, ExtentHolder, Highlightable, Attributable
 {
     public static final String DRAW_STYLE_FILL = "Airspace.DrawStyleFill";
     public static final String DRAW_STYLE_OUTLINE = "Airspace.DrawStyleOutline";
@@ -31,10 +31,24 @@ public interface Airspace extends Renderable, Restorable, AVList, ExtentHolder
     void setAttributes(AirspaceAttributes attributes);
 
     /**
+     * Returns this shape's highlight attributes.
+     *
+     * @return this shape's highlight attributes. May be null.
+     */
+    AirspaceAttributes getHighlightAttributes();
+
+    /**
+     * Specifies this shape's highlight attributes.
+     *
+     * @param highlightAttrs the highlight attributes. May be null, in which case default attributes are used.
+     */
+    void setHighlightAttributes(AirspaceAttributes highlightAttrs);
+
+    /**
      * Returns the current airspace surface altitudes.
      *
      * @return a two-element array of <code>double</code> with element 0 containing the lower surface altitude, and
-     *         element 1 containing the upper surface altitude.
+     * element 1 containing the upper surface altitude.
      *
      * @see #setAltitudes(double, double)
      * @see #setAltitudeDatum
@@ -97,6 +111,41 @@ public interface Airspace extends Renderable, Restorable, AVList, ExtentHolder
     void setTerrainConforming(boolean lowerTerrainConformant, boolean upperTerrainConformant);
 
     /**
+     * Indicates the state of this airspace's always-on-top flag.
+     *
+     * @return the state of this airspace's always-on-top flag.
+     *
+     * @see #isAlwaysOnTop()
+     */
+    boolean isAlwaysOnTop();
+
+    /**
+     * Specifies whether this airspace should have visual priority over other displayed shapes in 3D mode. If
+     * <code>true</code>, this shape is drawn after all others. This property is ignored by {@link
+     * gov.nasa.worldwind.render.airspaces.Cake} airspaces.
+     *
+     * @param alwaysOnTop if <code>true</code>, this airspace is drawn after all others. Otherwise this airspace is
+     *                    drawn with its normal priority, which is its relative distance to the eye point.
+     */
+    void setAlwaysOnTop(boolean alwaysOnTop);
+
+    /**
+     * Indicates whether this surface shape is always drawn flat and on the surface.
+     *
+     * @return <code>true</code> if this shape is drawn flat and on the surface, otherwise <code>false</code>.
+     */
+    boolean isDrawSurfaceShape();
+
+    /**
+     * Specifies whether this airspace should be drawn flat and on the surface, ignoring any altitude information
+     * specified in the shape.
+     *
+     * @param drawSurfaceShape <code>true</code> if this shape is drawn flat and on the surface, otherwise
+     *                         <code>false</code>.
+     */
+    void setDrawSurfaceShape(boolean drawSurfaceShape);
+
+    /**
      * Sets the altitude datum for both the lower and upper airspace surface to the same specified value. The datum is
      * normally set via {@link #setAltitudeDatum(String, String)}, but this method is provided for backwards
      * compatibility with the means of originally setting the datum. See the argument descriptions for the mapping of
@@ -155,12 +204,6 @@ public interface Airspace extends Renderable, Restorable, AVList, ExtentHolder
      */
     Extent getExtent(DrawContext dc);
 
-    void makeOrderedRenderable(DrawContext dc, AirspaceRenderer renderer);
-
-    void renderGeometry(DrawContext dc, String drawStyle);
-
-    void renderExtent(DrawContext dc);
-
     /**
      * Sets the altitude datum, which indicates whether airspace altitudes are relative to mean sea level, ground level
      * or a single ground reference location.
@@ -198,7 +241,7 @@ public interface Airspace extends Renderable, Restorable, AVList, ExtentHolder
      * Returns the current altitude datum of the airspace's lower and upper surfaces.
      *
      * @return a two-element array containing at position 0 the lower altitude datum, and at position 1 the upper
-     *         altitude datum.
+     * altitude datum.
      *
      * @see #setAltitudeDatum(String, String)
      */
@@ -224,4 +267,83 @@ public interface Airspace extends Renderable, Restorable, AVList, ExtentHolder
      * @return the current ground reference location.
      */
     LatLon getGroundReference();
+
+    /**
+     * Indicates whether batch rendering is enabled for the concrete shape type of this shape.
+     *
+     * @return true if batch rendering is enabled, otherwise false.
+     *
+     * @see #setEnableBatchRendering(boolean).
+     */
+    boolean isEnableBatchRendering();
+
+    /**
+     * Specifies whether adjacent shapes of this shape's concrete type in the ordered renderable list may be rendered
+     * together if they are contained in the same layer. This increases performance. There is seldom a reason to disable
+     * it.
+     *
+     * @param enableBatchRendering true to enable batch rendering, otherwise false.
+     */
+    void setEnableBatchRendering(boolean enableBatchRendering);
+
+    /**
+     * Indicates whether batch picking is enabled.
+     *
+     * @return true if batch rendering is enabled, otherwise false.
+     *
+     * @see #setEnableBatchPicking(boolean).
+     */
+    boolean isEnableBatchPicking();
+
+    /**
+     * Specifies whether adjacent shapes of this shape's concrete type in the ordered renderable list may be pick-tested
+     * together if they are contained in the same layer. This increases performance but allows only the top-most of the
+     * polygons to be reported in a {@link gov.nasa.worldwind.event.SelectEvent} even if several of the polygons are at
+     * the pick position.
+     * <p/>
+     * Batch rendering ({@link #setEnableBatchRendering(boolean)}) must be enabled in order for batch picking to occur.
+     *
+     * @param enableBatchPicking true to enable batch rendering, otherwise false.
+     */
+    void setEnableBatchPicking(boolean enableBatchPicking);
+
+    /**
+     * Indicates whether the filled sides of this shape should be offset towards the viewer to help eliminate artifacts
+     * when two or more faces of this or other filled shapes are coincident.
+     *
+     * @return true if depth offset is applied, otherwise false.
+     */
+    boolean isEnableDepthOffset();
+
+    /**
+     * Specifies whether the filled sides of this shape should be offset towards the viewer to help eliminate artifacts
+     * when two or more faces of this or other filled shapes are coincident.
+     *
+     * @param enableDepthOffset true if depth offset is applied, otherwise false.
+     */
+    void setEnableDepthOffset(boolean enableDepthOffset);
+
+    /**
+     * Indicates the outline line width to use during picking. A larger width than normal typically makes the outline
+     * easier to pick.
+     *
+     * @return the outline line width used during picking.
+     */
+    int getOutlinePickWidth();
+
+    /**
+     * Specifies the outline line width to use during picking. A larger width than normal typically makes the outline
+     * easier to pick.
+     * <p/>
+     * Note that the size of the pick aperture also affects the precision necessary to pick.
+     *
+     * @param outlinePickWidth the outline pick width. The default is 10.
+     *
+     * @throws IllegalArgumentException if the width is less than 0.
+     */
+    void setOutlinePickWidth(int outlinePickWidth);
+
+    Object getDelegateOwner();
+
+    void setDelegateOwner(Object delegateOwner);
 }

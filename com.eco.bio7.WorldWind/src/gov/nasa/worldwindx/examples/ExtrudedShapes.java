@@ -26,7 +26,7 @@ import java.util.zip.*;
  * from a World Wind data site, as is the image applied to the extruded polygon's sides.
  *
  * @author tag
- * @version $Id: ExtrudedShapes.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ExtrudedShapes.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class ExtrudedShapes extends ApplicationTemplate
 {
@@ -101,9 +101,6 @@ public class ExtrudedShapes extends ApplicationTemplate
 
                 // Add the layer to the model.
                 insertBeforePlacenames(this.getWwd(), layer);
-
-                // Make sure the new layer is shown in the layer manager.
-                this.getLayerPanel().update(this.getWwd());
 
                 // Adjust the view so that it looks at the buildings.
                 View view = getWwd().getView();

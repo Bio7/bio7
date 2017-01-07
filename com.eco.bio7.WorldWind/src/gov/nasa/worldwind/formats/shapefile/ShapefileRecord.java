@@ -18,7 +18,7 @@ import java.util.*;
  * Represents a single record of a shapefile.
  *
  * @author Patrick Murris
- * @version $Id: ShapefileRecord.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ShapefileRecord.java 2303 2014-09-14 22:33:36Z dcollins $
  */
 public abstract class ShapefileRecord
 {
@@ -227,6 +227,19 @@ public abstract class ShapefileRecord
     }
 
     /**
+     * Returns a four-element array containing this record's bounding rectangle, or null if this record has no bounding
+     * rectangle.
+     * <p/>
+     * The returned array is ordered as follows: minimum Y, maximum Y, minimum X, and maximum X. If the Shapefile's
+     * coordinate system is geographic, the elements can be interpreted as angular degrees in the order minimum
+     * latitude, maximum latitude, minimum longitude, and maximum longitude.
+     *
+     * @return the record's bounding rectangle, or null to indicate that this record does not have a bounding
+     *         rectangle.
+     */
+    public abstract double[] getBoundingRectangle();
+
+    /**
      * Reads and parses subclass-specific contents of a shapefile record from a specified buffer. The buffer's current
      * position must be the start of the subclass' unique contents and will be the start of the next record when the
      * constructor returns.
@@ -313,6 +326,116 @@ public abstract class ShapefileRecord
     protected boolean isZType()
     {
         return Shapefile.isZType(this.getShapeType());
+    }
+
+    /**
+     * Indicates whether this is a null record. When true, this record may be cast to a ShapefileRecordNull by calling
+     * {@link #asNullRecord()}.
+     *
+     * @return true if this is a null record, otherwise false.
+     */
+    public boolean isNullRecord()
+    {
+        return false;
+    }
+
+    /**
+     * Indicates whether this is a point record. When true, this record may be cast to a ShapefileRecordPoint by calling
+     * {@link #asPointRecord()}.
+     *
+     * @return true if this is a point record, otherwise false.
+     */
+    public boolean isPointRecord()
+    {
+        return false;
+    }
+
+    /**
+     * Indicates whether this is a multi point record. When true, this record may be cast to a ShapefileRecordMultiPoint
+     * by calling {@link #asPointRecord()}.
+     *
+     * @return true if this is a multi point record, otherwise false.
+     */
+    public boolean isMultiPointRecord()
+    {
+        return false;
+    }
+
+    /**
+     * Indicates whether this is a polyline record. When true, this record may be cast to a ShapefileRecordPolyline by
+     * calling {@link #asPolylineRecord()}.
+     *
+     * @return true if this is a polyline record, otherwise false.
+     */
+    public boolean isPolylineRecord()
+    {
+        return false;
+    }
+
+    /**
+     * Indicates whether this is a polygon record. When true, this record may be cast to a ShapefileRecordPolygon by
+     * calling {@link #asPolygonRecord()}.
+     *
+     * @return true if this is a polygon record, otherwise false.
+     */
+    public boolean isPolygonRecord()
+    {
+        return false;
+    }
+
+    /**
+     * Returns this record as a ShapefileRecordNull. This results in a class cast exception if this is not a null
+     * record. Check this record's type using {@link #isNullRecord()} prior to calling this method.
+     *
+     * @return this record cast as a ShapefileRecordNull.
+     */
+    public ShapefileRecordNull asNullRecord()
+    {
+        return (ShapefileRecordNull) this;
+    }
+
+    /**
+     * Returns this record as a ShapefileRecordPoint. This results in a class cast exception if this is not a point
+     * record. Check this record's type using {@link #isPointRecord()} prior to calling this method.
+     *
+     * @return this record cast as a ShapefileRecordPoint.
+     */
+    public ShapefileRecordPoint asPointRecord()
+    {
+        return (ShapefileRecordPoint) this;
+    }
+
+    /**
+     * Returns this record as a ShapefileRecordMultiPoint. This results in a class cast exception if this is not a multi
+     * point record. Check this record's type using {@link #isMultiPointRecord()} prior to calling this method.
+     *
+     * @return this record cast as a ShapefileRecordMultiPoint.
+     */
+    public ShapefileRecordMultiPoint asMultiPointRecord()
+    {
+        return (ShapefileRecordMultiPoint) this;
+    }
+
+    /**
+     * Returns this record as a ShapefileRecordPolyline. This results in a class cast exception if this is not a
+     * polyline record. Check this record's type using {@link #isPolylineRecord()} prior to calling this method.
+     *
+     * @return this record cast as a ShapefileRecordPolyline.
+     */
+    public ShapefileRecordPolyline asPolylineRecord()
+    {
+        return (ShapefileRecordPolyline) this;
+    }
+
+    /**
+     * Returns this record as a ShapefileRecordPolygon. This results in a class cast exception if this is not a polygon
+     * record. Check this record's type using {@link #isPolygonRecord()} prior to calling this method.
+     *
+     * @return this record cast as a ShapefileRecordPolygon.
+     */
+    public ShapefileRecordPolygon asPolygonRecord()
+    {
+        return (ShapefileRecordPolygon) this;
     }
 
     /**

@@ -12,7 +12,7 @@ import gov.nasa.worldwind.event.Message;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.ogc.kml.impl.*;
 import gov.nasa.worldwind.render.DrawContext;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.Logging;
 
 import java.util.*;
 
@@ -71,7 +71,7 @@ import java.util.*;
  * 180 degrees longitude. Regions that span the date line are currently not supported.
  *
  * @author tag
- * @version $Id: KMLRegion.java 1838 2014-02-05 20:48:12Z dcollins $
+ * @version $Id: KMLRegion.java 2029 2014-05-23 21:22:23Z pabercrombie $
  */
 public class KMLRegion extends KMLAbstractObject
 {
@@ -400,15 +400,11 @@ public class KMLRegion extends KMLAbstractObject
 
         this.makeRegionData(dc);
 
-        // We cannot use the cached isActive value during picking because the pick frustums are used to determine
-        // visibility, so the result of isActive is different. Since picking occurs at most once per frame, we omit any
-        // caching and compute isActive during each pick pass.
-        if (dc.isPickingMode())
-            return this.isRegionActive(tc, dc);
-
         // Attempt to re-use the result of isActive during the preRender and render passes for the same Globe. These
         // calls use the same frustum to determine visibility and can therefore share the result of isActive. We
         // recompute isActive when the frame changes or when Globe changes, and return the computed value below.
+        // Note that we use the same frustum intersection for both picking and rendering. We cannot cull against
+        // the pick frustums because content (e.g. an open balloon) may extend beyond the region's bounding box.
         if (dc.getFrameTimeStamp() != this.getCurrentData().getActiveFrameNumber())
         {
             this.getCurrentData().setActive(this.isRegionActive(tc, dc));
@@ -705,11 +701,8 @@ public class KMLRegion extends KMLAbstractObject
     }
 
     /**
-     * Indicates whether this Region intersects viewing frustum for the specified <code>DrawContext</code>. If the
-     * <code>DrawContext</code> is in picking mode, this indicates whether this Region's bounding box intersects any of
-     * the pick frustums. Otherwise, this this indicates whether this Region's bounding box intersects the viewing
-     * frustum. A <code>{@link gov.nasa.worldwind.ogc.kml.KMLRegion.RegionData}</code> must be current when this method
-     * is called.
+     * Indicates whether this Region intersects the viewing frustum for the specified <code>DrawContext</code>. A
+     * <code>{@link gov.nasa.worldwind.ogc.kml.KMLRegion.RegionData}</code> must be current when this method is called.
      * <p/>
      * This returns <code>true</code> if this Region has no bounding box, or if its bounding box cannot be computed for
      * any reason.
@@ -722,12 +715,12 @@ public class KMLRegion extends KMLAbstractObject
     protected boolean intersectsFrustum(DrawContext dc)
     {
         Extent extent = this.getCurrentData().getExtent();
+        //noinspection SimplifiableIfStatement
         if (extent == null)
             return true; // We do not know the visibility; assume it intersects the frustum.
 
-        if (dc.isPickingMode())
-            return dc.getPickFrustums().intersectsAny(extent);
-
+        // Test against the view frustum even in picking mode. We cannot cull against the pick frustums because visible
+        // content (e.g. an open balloon) may extend beyond the region's bounding box.
         return dc.getView().getFrustumInModelCoordinates().intersects(extent);
     }
 
@@ -973,7 +966,7 @@ public class KMLRegion extends KMLAbstractObject
     {
         if (KMLAbstractObject.MSG_BOX_CHANGED.equals(msg.getName()))
             this.reset();
-        
+
         super.onChange(msg);
     }
 

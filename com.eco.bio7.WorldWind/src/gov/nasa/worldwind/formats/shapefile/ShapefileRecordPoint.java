@@ -19,7 +19,7 @@ import java.nio.ByteBuffer;
  * m-coordinate, then <code>{@link #getM()}</code> returns a non-<code>null</code> value.
  *
  * @author Patrick Murris
- * @version $Id: ShapefileRecordPoint.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ShapefileRecordPoint.java 2303 2014-09-14 22:33:36Z dcollins $
  */
 public class ShapefileRecordPoint extends ShapefileRecord
 {
@@ -30,6 +30,13 @@ public class ShapefileRecordPoint extends ShapefileRecord
     public ShapefileRecordPoint(Shapefile shapeFile, ByteBuffer buffer)
     {
         super(shapeFile, buffer);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isPointRecord()
+    {
+        return true;
     }
 
     /**
@@ -63,6 +70,15 @@ public class ShapefileRecordPoint extends ShapefileRecord
         return this.m;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public double[] getBoundingRectangle()
+    {
+        return null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected void doReadFromBuffer(Shapefile shapefile, ByteBuffer buffer)
     {
         // Specify that the record's points should be normalized if the shapefile itself is marked as needing

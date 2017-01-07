@@ -9,18 +9,19 @@ package gov.nasa.worldwindx.examples;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.Position;
-import gov.nasa.worldwind.layers.RenderableLayer;
+import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.render.*;
+import gov.nasa.worldwind.render.markers.*;
 import gov.nasa.worldwind.util.BasicDragger;
 
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Example of {@link Polygon} usage. Sets material, opacity and other attributes. Sets rotation and other properties.
  * Adds an image for texturing. Shows a dateline-spanning Polygon.
  *
  * @author tag
- * @version $Id: Polygons.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: Polygons.java 2291 2014-08-30 21:38:47Z tgaskins $
  */
 public class Polygons extends ApplicationTemplate
 {
@@ -34,6 +35,7 @@ public class Polygons extends ApplicationTemplate
             this.getWwd().addSelectListener(new BasicDragger(this.getWwd()));
 
             RenderableLayer layer = new RenderableLayer();
+            layer.setName("Polygons");
 
             // Create and set an attribute bundle.
             ShapeAttributes normalAttributes = new BasicShapeAttributes();
@@ -106,16 +108,36 @@ public class Polygons extends ApplicationTemplate
             pgon.setRotation(-45d);
             layer.addRenderable(pgon);
 
+            // Polygon over the north pole
+            pathLocations.clear();
+            pathLocations.add(Position.fromDegrees(80, 0, 100e3));
+            pathLocations.add(Position.fromDegrees(80, 90, 100e3));
+            pathLocations.add(Position.fromDegrees(80, 180, 100e3));
+            pathLocations.add(Position.fromDegrees(80, -90, 100e3));
+            pathLocations.add(Position.fromDegrees(80, 0, 100e3));
+            pgon = new Polygon(pathLocations);
+            pgon.setValue(AVKey.DISPLAY_NAME, "Surrounds the north pole");
+            normalAttributes = new BasicShapeAttributes(normalAttributes);
+            normalAttributes.setDrawInterior(true);
+            normalAttributes.setInteriorMaterial(Material.RED);
+            pgon.setAttributes(normalAttributes);
+            pgon.setHighlightAttributes(highlightAttributes);
+            pgon.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
+            layer.addRenderable(pgon);
+
+            List<Marker> markers = new ArrayList<Marker>(1);
+            markers.add(new BasicMarker(Position.fromDegrees(90, 0), new BasicMarkerAttributes()));
+            MarkerLayer markerLayer = new MarkerLayer();
+            markerLayer.setMarkers(markers);
+            insertBeforeCompass(getWwd(), markerLayer);
+
             // Add the layer to the model.
             insertBeforeCompass(getWwd(), layer);
-
-            // Update layer panel
-            this.getLayerPanel().update(this.getWwd());
         }
     }
 
     public static void main(String[] args)
     {
-        ApplicationTemplate.start("World Wind Extruded Polygons", AppFrame.class);
+        ApplicationTemplate.start("World Wind Polygons", AppFrame.class);
     }
 }

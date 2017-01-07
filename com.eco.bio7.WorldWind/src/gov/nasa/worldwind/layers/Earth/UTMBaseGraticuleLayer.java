@@ -22,7 +22,7 @@ import java.util.*;
  * Displays the UTM graticule.
  *
  * @author Patrick Murris
- * @version $Id: UTMBaseGraticuleLayer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: UTMBaseGraticuleLayer.java 2153 2014-07-17 17:33:13Z tgaskins $
  */
 public class UTMBaseGraticuleLayer extends AbstractGraticuleLayer
 {
@@ -347,7 +347,7 @@ public class UTMBaseGraticuleLayer extends AbstractGraticuleLayer
                     positions.add(new Position(Angle.fromDegrees(maxLat), longitude, 10e3));
                 }
             }
-            Object polyline = createLineRenderable(positions, Polyline.GREAT_CIRCLE);
+            Object polyline = createLineRenderable(new ArrayList<Position>(positions), AVKey.GREAT_CIRCLE);
             Sector sector = Sector.fromDegrees(-80, maxLat, lon, lon);
             this.gridElements.add(new GridElement(sector, polyline, GridElement.TYPE_LINE));
 
@@ -369,7 +369,7 @@ public class UTMBaseGraticuleLayer extends AbstractGraticuleLayer
             lon = specialMeridians[i][0];
             positions.add(new Position(Angle.fromDegrees(specialMeridians[i][1]), Angle.fromDegrees(lon), 10e3));
             positions.add(new Position(Angle.fromDegrees(specialMeridians[i][2]), Angle.fromDegrees(lon), 10e3));
-            Object polyline = createLineRenderable(positions, Polyline.GREAT_CIRCLE);
+            Object polyline = createLineRenderable(new ArrayList<Position>(positions), AVKey.GREAT_CIRCLE);
             Sector sector = Sector.fromDegrees(specialMeridians[i][1], specialMeridians[i][2], lon, lon);
             this.gridElements.add(new GridElement(sector, polyline, GridElement.TYPE_LINE));
         }
@@ -388,7 +388,7 @@ public class UTMBaseGraticuleLayer extends AbstractGraticuleLayer
                 positions.add(new Position(latitude, Angle.fromDegrees(lon + 30), 10e3));
                 positions.add(new Position(latitude, Angle.fromDegrees(lon + 60), 10e3));
                 positions.add(new Position(latitude, Angle.fromDegrees(lon + 90), 10e3));
-                Object polyline = createLineRenderable(positions, Polyline.LINEAR);
+                Object polyline = createLineRenderable(new ArrayList<Position>(positions), AVKey.LINEAR);
                 Sector sector = Sector.fromDegrees(lat, lat, lon, lon + 90);
                 this.gridElements.add(new GridElement(sector, polyline, GridElement.TYPE_LINE));
             }
@@ -602,6 +602,8 @@ public class UTMBaseGraticuleLayer extends AbstractGraticuleLayer
                     labelNorthing = UPS.getNorthing() + northingOffset;
                     labelHemisphere = UPS.getHemisphere();
                 }
+
+                Frustum viewFrustum = dc.getView().getFrustumInModelCoordinates();
 
                 Position labelPos;
                 for (int i = 0; i < this.extremes.length; i++)
@@ -857,7 +859,8 @@ public class UTMBaseGraticuleLayer extends AbstractGraticuleLayer
         @SuppressWarnings({"RedundantIfStatement"})
         public boolean isInView(DrawContext dc)
         {
-            if (!viewFrustum.intersects(this.getExtent(dc.getGlobe(), dc.getVerticalExaggeration())))
+            if (!dc.getView().getFrustumInModelCoordinates().intersects(
+                this.getExtent(dc.getGlobe(), dc.getVerticalExaggeration())))
                 return false;
 
             // Check apparent size
@@ -1036,7 +1039,7 @@ public class UTMBaseGraticuleLayer extends AbstractGraticuleLayer
             {
                 p1 = positions.get(0);
                 p2 = positions.get(1);
-                polyline = createLineRenderable(positions, Polyline.GREAT_CIRCLE);
+                polyline = createLineRenderable(new ArrayList<Position>(positions), AVKey.GREAT_CIRCLE);
                 lineSector = Sector.boundingSector(p1, p2);
                 GridElement ge = new GridElement(lineSector, polyline, GridElement.TYPE_LINE_WEST);
                 ge.setValue(this.SWEasting);
@@ -1058,7 +1061,7 @@ public class UTMBaseGraticuleLayer extends AbstractGraticuleLayer
             {
                 p1 = positions.get(0);
                 p2 = positions.get(1);
-                polyline = createLineRenderable(positions, Polyline.GREAT_CIRCLE);
+                polyline = createLineRenderable(new ArrayList<Position>(positions), AVKey.GREAT_CIRCLE);
                 lineSector = Sector.boundingSector(p1, p2);
                 GridElement ge = new GridElement(lineSector, polyline, GridElement.TYPE_LINE_EAST);
                 ge.setValue(this.SWEasting + this.size);
@@ -1080,7 +1083,7 @@ public class UTMBaseGraticuleLayer extends AbstractGraticuleLayer
             {
                 p1 = positions.get(0);
                 p2 = positions.get(1);
-                polyline = createLineRenderable(positions, Polyline.GREAT_CIRCLE);
+                polyline = createLineRenderable(new ArrayList<Position>(positions), AVKey.GREAT_CIRCLE);
                 lineSector = Sector.boundingSector(p1, p2);
                 GridElement ge = new GridElement(lineSector, polyline, GridElement.TYPE_LINE_SOUTH);
                 ge.setValue(this.SWNorthing);
@@ -1102,7 +1105,7 @@ public class UTMBaseGraticuleLayer extends AbstractGraticuleLayer
             {
                 p1 = positions.get(0);
                 p2 = positions.get(1);
-                polyline = createLineRenderable(positions, Polyline.GREAT_CIRCLE);
+                polyline = createLineRenderable(new ArrayList<Position>(positions), AVKey.GREAT_CIRCLE);
                 lineSector = Sector.boundingSector(p1, p2);
                 GridElement ge = new GridElement(lineSector, polyline, GridElement.TYPE_LINE_NORTH);
                 ge.setValue(this.SWNorthing + this.size);
@@ -1157,7 +1160,8 @@ public class UTMBaseGraticuleLayer extends AbstractGraticuleLayer
         @SuppressWarnings({"RedundantIfStatement"})
         public boolean isInView(DrawContext dc)
         {
-            if (!viewFrustum.intersects(this.getExtent(dc.getGlobe(), dc.getVerticalExaggeration())))
+            if (!dc.getView().getFrustumInModelCoordinates().intersects(
+                this.getExtent(dc.getGlobe(), dc.getVerticalExaggeration())))
                 return false;
 
             // Check apparent size
@@ -1268,7 +1272,7 @@ public class UTMBaseGraticuleLayer extends AbstractGraticuleLayer
                 {
                     p1 = positions.get(0);
                     p2 = positions.get(1);
-                    Object polyline = createLineRenderable(positions, Polyline.GREAT_CIRCLE);
+                    Object polyline = createLineRenderable(new ArrayList<Position>(positions), AVKey.GREAT_CIRCLE);
                     Sector lineSector = Sector.boundingSector(p1, p2);
                     GridElement ge = new GridElement(lineSector, polyline, GridElement.TYPE_LINE_EASTING);
                     ge.setValue(easting);
@@ -1295,7 +1299,7 @@ public class UTMBaseGraticuleLayer extends AbstractGraticuleLayer
                 {
                     p1 = positions.get(0);
                     p2 = positions.get(1);
-                    Object polyline = createLineRenderable(positions, Polyline.GREAT_CIRCLE);
+                    Object polyline = createLineRenderable(new ArrayList<Position>(positions), AVKey.GREAT_CIRCLE);
                     Sector lineSector = Sector.boundingSector(p1, p2);
                     GridElement ge = new GridElement(lineSector, polyline, GridElement.TYPE_LINE_NORTHING);
                     ge.setValue(northing);

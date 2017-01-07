@@ -7,14 +7,12 @@ package gov.nasa.worldwindx.examples;
 
 import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.layers.TerrainProfileLayer;
-import gov.nasa.worldwind.util.measure.MeasureTool;
-import gov.nasa.worldwind.util.measure.MeasureToolController;
+import gov.nasa.worldwind.util.measure.*;
 
 import javax.swing.*;
 import javax.swing.event.*;
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.beans.*;
 import java.util.ArrayList;
 
 /**
@@ -22,7 +20,7 @@ import java.util.ArrayList;
  * then click and drag on the globe to define a shape. The panel on the left shows the shape's measurement.
  *
  * @author Patrick Murris
- * @version $Id: MeasureToolUsage.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: MeasureToolUsage.java 2117 2014-07-01 20:36:49Z tgaskins $
  * @see gov.nasa.worldwind.util.measure.MeasureTool
  * @see gov.nasa.worldwind.util.measure.MeasureToolController
  * @see MeasureToolPanel
@@ -38,7 +36,7 @@ public class MeasureToolUsage extends ApplicationTemplate
 
         public AppFrame()
         {
-            super(true, false, true); // no layer panel
+            super(true, true, false); // no layer or statistics panel
 
             // Add terrain profile layer
             profile.setEventSource(getWwd());
@@ -78,7 +76,8 @@ public class MeasureToolUsage extends ApplicationTemplate
             tabbedPane.setSelectedIndex(1);
             switchMeasureTool();
 
-            this.getContentPane().add(tabbedPane, BorderLayout.WEST);
+            this.getControlPanel().add(tabbedPane, BorderLayout.EAST);
+            this.pack();
         }
 
         private class MeasureToolListener implements PropertyChangeListener

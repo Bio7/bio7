@@ -19,7 +19,7 @@ import java.util.*;
  * surface of the globe.
  *
  * @author tag
- * @version $Id: SurfaceImages.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: SurfaceImages.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class SurfaceImages extends ApplicationTemplate
 {
@@ -73,8 +73,6 @@ public class SurfaceImages extends ApplicationTemplate
                 layer.addRenderable(boundary2);
 
                 insertBeforeCompass(this.getWwd(), layer);
-
-                this.getLayerPanel().update(this.getWwd());
             }
             catch (Exception e)
             {

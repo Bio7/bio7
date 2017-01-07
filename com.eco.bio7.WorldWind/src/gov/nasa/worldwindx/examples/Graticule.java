@@ -13,7 +13,7 @@ import gov.nasa.worldwind.layers.LatLonGraticuleLayer;
  * display a finer grid.
  *
  * @author Patrick Murris
- * @version $Id: Graticule.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: Graticule.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class Graticule extends ApplicationTemplate
 {
@@ -25,9 +25,6 @@ public class Graticule extends ApplicationTemplate
 
             // Add the graticule layer
             insertBeforePlacenames(getWwd(), new LatLonGraticuleLayer());
-
-            // Update layer panel
-            this.getLayerPanel().update(this.getWwd());
         }
     }
 

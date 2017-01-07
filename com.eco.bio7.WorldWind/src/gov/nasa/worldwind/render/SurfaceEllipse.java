@@ -13,7 +13,7 @@ import java.util.*;
 
 /**
  * @author dcollins
- * @version $Id: SurfaceEllipse.java 1634 2013-09-27 18:40:01Z dcollins $
+ * @version $Id: SurfaceEllipse.java 2406 2014-10-29 23:39:29Z dcollins $
  */
 public class SurfaceEllipse extends AbstractSurfaceShape
 {
@@ -32,6 +32,22 @@ public class SurfaceEllipse extends AbstractSurfaceShape
      */
     public SurfaceEllipse()
     {
+    }
+
+    /**
+     * Creates a shallow copy of the specified source shape.
+     *
+     * @param source the shape to copy.
+     */
+    public SurfaceEllipse(SurfaceEllipse source)
+    {
+        super(source);
+
+        this.center = source.center;
+        this.majorRadius = source.majorRadius;
+        this.minorRadius = source.minorRadius;
+        this.heading = source.heading;
+        this.intervals = source.intervals;
     }
 
     /**
@@ -372,6 +388,15 @@ public class SurfaceEllipse extends AbstractSurfaceShape
         this.setCenter(LatLon.greatCircleEndPosition(newReferencePosition, heading, pathLength));
     }
 
+    protected void doMoveTo(Globe globe, Position oldReferencePosition, Position newReferencePosition)
+    {
+        List<LatLon> locations = new ArrayList<LatLon>(1);
+        locations.add(this.getCenter());
+        List<LatLon> newLocations = LatLon.computeShiftedLocations(globe, oldReferencePosition, newReferencePosition,
+            locations);
+        this.setCenter(newLocations.get(0));
+    }
+
     protected List<LatLon> computeLocations(Globe globe, int intervals)
     {
         if (globe == null)
@@ -406,16 +431,8 @@ public class SurfaceEllipse extends AbstractSurfaceShape
         return Arrays.asList(locations);
     }
 
-    protected List<List<LatLon>> createGeometry(Globe globe, SurfaceTileDrawContext sdc)
+    protected List<List<LatLon>> createGeometry(Globe globe, double edgeIntervalsPerDegree)
     {
-        if (globe == null)
-        {
-            String message = Logging.getMessage("nullValue.GlobeIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        double edgeIntervalsPerDegree = this.computeEdgeIntervalsPerDegree(sdc);
         int intervals = this.computeNumIntervals(globe, edgeIntervalsPerDegree);
 
         List<LatLon> drawLocations = this.computeLocations(globe, intervals);

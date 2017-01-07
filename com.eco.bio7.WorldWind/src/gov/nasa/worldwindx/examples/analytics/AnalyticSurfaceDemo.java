@@ -34,7 +34,7 @@ import java.util.ArrayList;
  * altitude.</li> </ul>
  *
  * @author dcollins
- * @version $Id: AnalyticSurfaceDemo.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: AnalyticSurfaceDemo.java 2425 2014-11-13 19:44:19Z dcollins $
  */
 public class AnalyticSurfaceDemo extends ApplicationTemplate
 {
@@ -57,7 +57,6 @@ public class AnalyticSurfaceDemo extends ApplicationTemplate
             this.analyticSurfaceLayer.setPickEnabled(false);
             this.analyticSurfaceLayer.setName("Analytic Surfaces");
             insertBeforePlacenames(this.getWwd(), this.analyticSurfaceLayer);
-            this.getLayerPanel().update(this.getWwd());
 
             createRandomAltitudeSurface(HUE_BLUE, HUE_RED, 40, 40, this.analyticSurfaceLayer);
             createRandomColorSurface(HUE_BLUE, HUE_RED, 40, 40, this.analyticSurfaceLayer);
@@ -341,106 +340,17 @@ public class AnalyticSurfaceDemo extends ApplicationTemplate
     public static BufferWrapper randomGridValues(int width, int height, double min, double max, int numIterations,
         double smoothness, BufferFactory factory)
     {
-        int numValues = width * height;
-        double[] values = new double[numValues];
+        double[] values = ExampleUtil.createRandomGridValues(width, height, min, max, numIterations, smoothness);
+        BufferWrapper wrapper = factory.newBuffer(values.length);
+        wrapper.putDouble(0, values, 0, values.length);
 
-        for (int i = 0; i < numIterations; i++)
-        {
-            double offset = 1d - (i / (double) numIterations);
-
-            int x1 = (int) Math.round(Math.random() * (width - 1));
-            int x2 = (int) Math.round(Math.random() * (width - 1));
-            int y1 = (int) Math.round(Math.random() * (height - 1));
-            int y2 = (int) Math.round(Math.random() * (height - 1));
-            int dx1 = x2 - x1;
-            int dy1 = y2 - y1;
-
-            for (int y = 0; y < height; y++)
-            {
-                int dy2 = y - y1;
-                for (int x = 0; x < width; x++)
-                {
-                    int dx2 = x - x1;
-
-                    if ((dx2 * dy1 - dx1 * dy2) >= 0)
-                        values[x + y * width] += offset;
-                }
-            }
-        }
-
-        smoothValues(width, height, values, smoothness);
-        scaleValues(values, numValues, min, max);
-        BufferWrapper buffer = factory.newBuffer(numValues);
-        buffer.putDouble(0, values, 0, numValues);
-
-        return buffer;
+        return wrapper;
     }
 
     public static BufferWrapper randomGridValues(int width, int height, double min, double max)
     {
         return randomGridValues(width, height, min, max, DEFAULT_RANDOM_ITERATIONS, DEFAULT_RANDOM_SMOOTHING,
             new BufferFactory.DoubleBufferFactory());
-    }
-
-    protected static void scaleValues(double[] values, int count, double minValue, double maxValue)
-    {
-        double min = Double.MAX_VALUE;
-        double max = -Double.MAX_VALUE;
-        for (int i = 0; i < count; i++)
-        {
-            if (min > values[i])
-                min = values[i];
-            if (max < values[i])
-                max = values[i];
-        }
-
-        for (int i = 0; i < count; i++)
-        {
-            values[i] = (values[i] - min) / (max - min);
-            values[i] = minValue + values[i] * (maxValue - minValue);
-        }
-    }
-
-    protected static void smoothValues(int width, int height, double[] values, double smoothness)
-    {
-        // top to bottom
-        for (int x = 0; x < width; x++)
-        {
-            smoothBand(values, x, width, height, smoothness);
-        }
-
-        // bottom to top
-        int lastRowOffset = (height - 1) * width;
-        for (int x = 0; x < width; x++)
-        {
-            smoothBand(values, x + lastRowOffset, -width, height, smoothness);
-        }
-
-        // left to right
-        for (int y = 0; y < height; y++)
-        {
-            smoothBand(values, y * width, 1, width, smoothness);
-        }
-
-        // right to left
-        int lastColOffset = width - 1;
-        for (int y = 0; y < height; y++)
-        {
-            smoothBand(values, lastColOffset + y * width, -1, width, smoothness);
-        }
-    }
-
-    protected static void smoothBand(double[] values, int start, int stride, int count, double smoothness)
-    {
-        double prevValue = values[start];
-        int j = start + stride;
-
-        for (int i = 0; i < count - 1; i++)
-        {
-            values[j] = smoothness * prevValue + (1 - smoothness) * values[j];
-            prevValue = values[j];
-            j += stride;
-        }
     }
 
     public static void main(String[] args)

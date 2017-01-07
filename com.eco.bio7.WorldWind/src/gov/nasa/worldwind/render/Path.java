@@ -73,9 +73,13 @@ import static gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil.kmlBoolean;
  * dot under the cursor is returned as an Integer object in the PickedObject's AVList under they key AVKey.ORDINAL.
  * Position dots intersecting the pick rectangle are returned as a List of Integer objects in the PickedObject's AVList
  * under the key AVKey.ORDINAL_LIST.
+ * <p/>
+ * When drawn on a 2D globe, this shape uses a {@link SurfacePolyline} to represent itself. The following features are
+ * not provided in this case: display of path positions, extrusion, outline pick width, and identification of path
+ * position picked.
  *
  * @author tag
- * @version $Id: Path.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: Path.java 3032 2015-04-17 17:53:35Z dcollins $
  */
 public class Path extends AbstractShape
 {
@@ -119,7 +123,7 @@ public class Path extends AbstractShape
          * @param ordinal  the ordinal number of the specified position.
          *
          * @return an RGBA color corresponding to the position and ordinal, or <code>null</code> if a color cannot be
-         *         determined.
+         * determined.
          */
         Color getColor(Position position, int ordinal);
     }
@@ -154,6 +158,15 @@ public class Path extends AbstractShape
          * positions. (Not their terrain points as well, as <code>polePositions</code> does.)
          */
         protected IntBuffer positionPoints; // identifies the original positions in the rendered path.
+        /**
+         * Indices of tessellated path lines when using 2D globe and the path crosses the dateline.
+         */
+        protected IntBuffer path2DIndices;
+        /**
+         * Indices of the tessellated positions at which new lines must be formed rather than continuing the previous
+         * line. Used only when the path's positions span the dateline and a 2D globe is being used.
+         */
+        protected ArrayList<Integer> splitPositions;
         /** Indicates whether the rendered path has extrusion points in addition to path points. */
         protected boolean hasExtrusionPoints; // true when the rendered path contains extrusion points
         /**
@@ -195,7 +208,7 @@ public class Path extends AbstractShape
          * <code>null</code> if the path does not have per-position colors.
          *
          * @return the colors corresponding to each path position, or <code>null</code> if the path does not have
-         *         per-position colors.
+         * per-position colors.
          */
         public List<Color> getTessellatedColors()
         {
@@ -337,12 +350,30 @@ public class Path extends AbstractShape
          * Specifies the number of vertices in <code>renderedPath</code>. Specify 0 if <code>renderedPath</code>
          * contains no vertices.
          *
-         * @param count the the number of verices in <code>renderedPath</code>.
+         * @param count the the number of vertices in <code>renderedPath</code>.
          */
         public void setVertexCount(int count)
         {
             this.vertexCount = count;
         }
+    }
+
+    @Override
+    protected SurfaceShape createSurfaceShape()
+    {
+        SurfacePolyline polyline = new SurfacePolyline();
+        if (this.getPositions() != null)
+            polyline.setLocations(this.getPositions());
+
+        return polyline;
+    }
+
+    @Override
+    protected void updateSurfaceShape()
+    {
+        super.updateSurfaceShape();
+
+        this.surfaceShape.setPathType(this.getPathType());
     }
 
     /**
@@ -352,6 +383,8 @@ public class Path extends AbstractShape
      */
     protected static class PickablePositions
     {
+        // TODO: Replace this class with usage of PickSupport.addPickableObjectRange.
+
         /** The minimum color code, inclusive. */
         public final int minColorCode;
         /** The maximum color code, inclusive. */
@@ -387,6 +420,9 @@ public class Path extends AbstractShape
      */
     protected static class PathPickSupport extends PickSupport
     {
+        // TODO: Replace this subclass with usage of PickSupport.addPickableObjectRange.
+        // TODO: Take care to retain the behavior in doResolvePick below that merges multiple picks from a single path.
+
         /**
          * The list of Path pickable positions that this PathPickSupport is currently tracking. This list maps a range
          * of color codes to a Path, where the color codes represent the range of pick colors that the Path's position
@@ -465,7 +501,7 @@ public class Path extends AbstractShape
          * @param pickPoint the screen-coordinate point in question.
          *
          * @return a new picked object instances indicating the Path or Path position point at the specified pick point,
-         *         or null if no Path is at the specified pick point.
+         * or null if no Path is at the specified pick point.
          *
          * @throws IllegalArgumentException if the draw context is null.
          */
@@ -631,10 +667,33 @@ public class Path extends AbstractShape
     protected boolean showPositions = false;
     protected double showPositionsThreshold = DEFAULT_DRAW_POSITIONS_THRESHOLD;
     protected double showPositionsScale = DEFAULT_DRAW_POSITIONS_SCALE;
+    protected boolean positionsSpanDateline;
 
     /** Creates a path with no positions. */
     public Path()
     {
+    }
+
+    public Path(Path source)
+    {
+        super(source);
+
+        List<Position> copiedPositions = new ArrayList<Position>();
+        for (Position position : source.positions)
+        {
+            copiedPositions.add(position);
+        }
+        this.setPositions(copiedPositions);
+        this.positionColors = source.positionColors;
+        this.pathType = source.pathType;
+        this.followTerrain = source.followTerrain;
+        this.extrude = source.extrude;
+        this.terrainConformance = source.terrainConformance;
+        this.numSubsegments = source.numSubsegments;
+        this.drawVerticals = source.drawVerticals;
+        this.showPositions = source.showPositions;
+        this.showPositionsThreshold = source.showPositionsThreshold;
+        this.showPositionsScale = source.showPositionsScale;
     }
 
     /**
@@ -752,6 +811,8 @@ public class Path extends AbstractShape
 
         this.positions = positions;
         this.computePositionCount();
+        this.positionsSpanDateline = LatLon.locationsCrossDateLine(this.positions);
+
         this.reset();
     }
 
@@ -761,7 +822,7 @@ public class Path extends AbstractShape
      * ShapeAttributes.
      *
      * @return this Path's PositionColors, or <code>null</code> if this path is colored according to its
-     *         ShapeAttributes.
+     * ShapeAttributes.
      *
      * @see #setPositionColors(gov.nasa.worldwind.render.Path.PositionColors)
      */
@@ -1005,7 +1066,7 @@ public class Path extends AbstractShape
      * Indicates the eye distance from this shape's center beyond which position dots are not drawn.
      *
      * @return the eye distance at which to enable or disable position dot drawing. The default is 1e6 meters, which
-     *         typically causes the dots to always be drawn.
+     * typically causes the dots to always be drawn.
      */
     public double getShowPositionsThreshold()
     {
@@ -1079,18 +1140,18 @@ public class Path extends AbstractShape
      * and the follow-terrain property is <code>true</code>. Otherwise this returns <code>false</code>.
      *
      * @return <code>true</code> if this Path's positions and the positions in between are located on the underlying
-     *         terrain, and <code>false</code> otherwise.
+     * terrain, and <code>false</code> otherwise.
      */
-    protected boolean isSurfacePath()
+    protected boolean isSurfacePath(DrawContext dc)
     {
-        return this.getAltitudeMode() == WorldWind.CLAMP_TO_GROUND && this.isFollowTerrain();
+        return (this.getAltitudeMode() == WorldWind.CLAMP_TO_GROUND && this.isFollowTerrain()) || dc.is2DGlobe();
     }
 
     @Override
     protected void determineActiveAttributes()
     {
         // When the interior is drawn the vertex buffer has a different layout, so it may need to be rebuilt.
-        boolean isDrawInterior = this.activeAttributes.isDrawInterior();
+        boolean isDrawInterior = this.activeAttributes != null && this.activeAttributes.isDrawInterior();
 
         super.determineActiveAttributes();
 
@@ -1183,9 +1244,9 @@ public class Path extends AbstractShape
     @Override
     protected void addOrderedRenderable(DrawContext dc)
     {
-        if (this.isSurfacePath())
+        if (this.isSurfacePath(dc))
         {
-            dc.addOrderedRenderable(this, true); // Specify that this Path is behind before other renderables.
+            dc.addOrderedRenderable(this, true); // Specify that this Path is behind other renderables.
         }
         else
         {
@@ -1216,7 +1277,7 @@ public class Path extends AbstractShape
 
         try
         {
-            if (this.isSurfacePath())
+            if (this.isSurfacePath(dc))
             {
                 // Pull the line forward just a bit to ensure it shows over the terrain.
                 dc.pushProjectionOffest(SURFACE_PATH_DEPTH_OFFSET);
@@ -1269,7 +1330,15 @@ public class Path extends AbstractShape
                 gl.glColorPointer(4, GL.GL_FLOAT, 4 * stride, 4 * pathData.colorOffset);
             }
 
-            gl.glDrawArrays(GL.GL_LINE_STRIP, 0, count);
+            if (this.positionsSpanDateline && dc.is2DGlobe())
+            {
+                gl.glDrawElements(GL.GL_LINES, pathData.path2DIndices.limit(), GL.GL_UNSIGNED_INT,
+                    pathData.path2DIndices.rewind());
+            }
+            else
+            {
+                gl.glDrawArrays(GL.GL_LINE_STRIP, 0, count);
+            }
 
             if (useVertexColors)
                 gl.glDisableClientState(GL2.GL_COLOR_ARRAY);
@@ -1308,7 +1377,15 @@ public class Path extends AbstractShape
             pathData.renderedPath.rewind();
         }
 
-        gl.glDrawArrays(GL.GL_LINE_STRIP, 0, count);
+        if (this.positionsSpanDateline && dc.is2DGlobe())
+        {
+            gl.glDrawElements(GL.GL_LINES, pathData.path2DIndices.limit(), GL.GL_UNSIGNED_INT,
+                pathData.path2DIndices.rewind());
+        }
+        else
+        {
+            gl.glDrawArrays(GL.GL_LINE_STRIP, 0, count);
+        }
 
         if (useVertexColors)
             gl.glDisableClientState(GL2.GL_COLOR_ARRAY);
@@ -1548,7 +1625,7 @@ public class Path extends AbstractShape
 
         FloatBuffer path = pathData.renderedPath;
 
-        if (this.getAltitudeMode() == WorldWind.CLAMP_TO_GROUND)
+        if (this.getAltitudeMode() == WorldWind.CLAMP_TO_GROUND || dc.is2DGlobe())
             path = this.computePointsRelativeToTerrain(dc, positions, 0d, path, pathData);
         else if (this.getAltitudeMode() == WorldWind.RELATIVE_TO_GROUND)
             path = this.computePointsRelativeToTerrain(dc, positions, null, path, pathData);
@@ -1848,7 +1925,7 @@ public class Path extends AbstractShape
      * @param pathData this path's current shape data.
      *
      * @return the distance of the shape from the eye point. If the eye distance cannot be computed, the eye position's
-     *         elevation is returned instead.
+     * elevation is returned instead.
      */
     protected double getDistanceMetric(DrawContext dc, PathData pathData)
     {
@@ -1859,6 +1936,9 @@ public class Path extends AbstractShape
 
     protected void makePositions(DrawContext dc, PathData pathData)
     {
+        if (pathData.splitPositions != null)
+            pathData.splitPositions.clear();
+
         Iterator<? extends Position> iter = this.positions.iterator();
         Position posA = iter.next();
         int ordinalA = 0;
@@ -1876,17 +1956,66 @@ public class Path extends AbstractShape
             Color colorB = this.getColor(posB, ordinalB);
             Vec4 ptB = this.computePoint(dc.getTerrain(), posB);
 
-            // If the segment is very small or not visible, don't tessellate, just add the segment's end position.
-            if (this.isSmall(dc, ptA, ptB, 8) || !this.isSegmentVisible(dc, posA, posB, ptA, ptB))
+            if (this.positionsSpanDateline && dc.is2DGlobe()
+                && posA.getLongitude().degrees != posB.getLongitude().degrees
+                && LatLon.locationsCrossDateline(posA, posB))
+            {
+                // Introduce two points at the dateline that cause the rendered path to break, with one side positive
+                // longitude and the other side negative longitude. This break causes the rendered path to break into
+                // separate lines during rendering.
+
+                // Compute the split position on the dateline.
+                LatLon splitLocation = LatLon.intersectionWithMeridian(posA, posB, Angle.POS180, dc.getGlobe());
+                Position splitPosition = Position.fromDegrees(splitLocation.getLatitude().degrees,
+                    180 * Math.signum(posA.getLongitude().degrees), posA.getAltitude());
+                Vec4 splitPoint = this.computePoint(dc.getTerrain(), splitPosition);
+
+                // Compute the color at the split position.
+                Color splitColor = null;
+                if (colorA != null && colorB != null)
+                {
+                    double originalSegmentLength = this.computeSegmentLength(dc, posA, posB);
+                    double truncatedSegmentLength = this.computeSegmentLength(dc, posA, splitPosition);
+                    double s = truncatedSegmentLength / originalSegmentLength;
+                    splitColor = s > 0 ? WWUtil.interpolateColor(s, colorA, colorB) : colorA;
+                }
+
+                // Create the tessellated-positions segment from the beginning position to the split position.
+                this.makeSegment(dc, posA, splitPosition, ptA, splitPoint, colorA, splitColor, ordinalA, -1, pathData);
+
+                // Mark where the split position is so a new line is started there during rendering.
+                if (pathData.splitPositions == null)
+                    pathData.splitPositions = new ArrayList<Integer>(1);
+                pathData.splitPositions.add(pathData.tessellatedPositions.size());
+
+                // Make the corresponding split position on the dateline side with opposite sign of the first split
+                // position.
+                splitPosition = Position.fromDegrees(splitPosition.getLatitude().degrees,
+                    -1 * splitPosition.getLongitude().degrees, splitPosition.getAltitude());
+                splitPoint = this.computePoint(dc.getTerrain(), splitPosition);
+
+                // Create the tessellated-positions segment from the split position to the end position.
+                this.addTessellatedPosition(splitPosition, splitColor, -1, pathData);
+                this.makeSegment(dc, splitPosition, posB, splitPoint, ptB, splitColor, colorB, -1, ordinalB, pathData);
+            }
+            else if (this.isSmall(dc, ptA, ptB, 8) || !this.isSegmentVisible(dc, posA, posB, ptA, ptB))
+            {
+                // If the segment is very small or not visible, don't tessellate, just add the segment's end position.
                 this.addTessellatedPosition(posB, colorB, ordinalB, pathData);
+            }
             else
+            {
                 this.makeSegment(dc, posA, posB, ptA, ptB, colorA, colorB, ordinalA, ordinalB, pathData);
+            }
 
             posA = posB;
             ptA = ptB;
             ordinalA = ordinalB;
             colorA = colorB;
         }
+
+        if (this.positionsSpanDateline && dc.is2DGlobe())
+            this.makePath2DIndices(pathData);
     }
 
     /**
@@ -1905,7 +2034,7 @@ public class Path extends AbstractShape
      */
     protected void addTessellatedPosition(Position pos, Color color, Integer ordinal, PathData pathData)
     {
-        if (ordinal != null)
+        if (ordinal != null && ordinal >= 0)
         {
             // NOTE: Assign these indices before adding the new position to the tessellatedPositions list.
             int index = pathData.tessellatedPositions.size() * 2;
@@ -1921,6 +2050,34 @@ public class Path extends AbstractShape
 
         if (color != null)
             pathData.tessellatedColors.add(color);
+    }
+
+    protected void makePath2DIndices(PathData pathData)
+    {
+        int size = pathData.tessellatedPositions.size() * 2 - 2;
+        if (pathData.path2DIndices == null || pathData.path2DIndices.capacity() != size)
+            pathData.path2DIndices = Buffers.newDirectIntBuffer(size);
+
+        int currentIndex = 0;
+        if (pathData.splitPositions != null)
+        {
+            for (Integer splitIndex : pathData.splitPositions)
+            {
+                for (int i = currentIndex; i < splitIndex - 1; i++)
+                {
+                    pathData.path2DIndices.put(i).put(i + 1);
+                }
+                pathData.path2DIndices.put(splitIndex).put(splitIndex + 1);
+                currentIndex = splitIndex + 1;
+            }
+        }
+
+        for (int i = currentIndex; i < pathData.tessellatedPositions.size() - 1; i++)
+        {
+            pathData.path2DIndices.put(i).put(i + 1);
+        }
+
+        pathData.path2DIndices.flip();
     }
 
     /**
@@ -1964,7 +2121,7 @@ public class Path extends AbstractShape
      * @param ordinal the ordinal number of the specified position.
      *
      * @return an RGBA color corresponding to the position and ordinal, or <code>null</code> if this path's
-     *         positionColors property is <code>null</code>.
+     * positionColors property is <code>null</code>.
      */
     protected Color getColor(Position pos, Integer ordinal)
     {
@@ -2032,7 +2189,7 @@ public class Path extends AbstractShape
         // This method does not add the first position of the segment to the position list. It adds only the
         // subsequent positions, including the segment's last position.
 
-        boolean straightLine = this.getPathType() == AVKey.LINEAR && !this.isFollowTerrain();
+        boolean straightLine = this.getPathType() == AVKey.LINEAR && !this.isSurfacePath(dc);
 
         double arcLength;
         if (straightLine)
@@ -2042,7 +2199,7 @@ public class Path extends AbstractShape
 
         if (arcLength <= 0 || straightLine)
         {
-            if (!ptA.equals(ptB))
+            if (!ptA.equals(ptB) || (this.positionsSpanDateline && dc.is2DGlobe()))
                 this.addTessellatedPosition(posB, colorB, ordinalB, pathData);
             return;
         }
@@ -2053,22 +2210,20 @@ public class Path extends AbstractShape
 
         for (double s = 0, p = 0; s < 1; )
         {
-            if (this.isFollowTerrain())
+            if (this.isFollowTerrain() || dc.is2DGlobe())
                 p += this.terrainConformance * dc.getView().computePixelSizeAtDistance(
                     ptA.distanceTo3(dc.getView().getEyePoint()));
             else
                 p += arcLength / this.numSubsegments;
 
+            if (arcLength < p || arcLength - p < 1e-9)
+                break; // position is either beyond the arc length or the remaining distance is in millimeters on Earth
+
             Position pos;
             Color color;
-
             s = p / arcLength;
-            if (s >= 1)
-            {
-                pos = posB;
-                color = colorB;
-            }
-            else if (this.pathType == AVKey.LINEAR)
+
+            if (this.pathType == AVKey.LINEAR)
             {
                 if (segmentAzimuth == null)
                 {
@@ -2105,10 +2260,12 @@ public class Path extends AbstractShape
                 color = (colorA != null && colorB != null) ? WWUtil.interpolateColor(s, colorA, colorB) : null;
             }
 
-            this.addTessellatedPosition(pos, color, s >= 1 ? ordinalB : null, pathData);
+            this.addTessellatedPosition(pos, color, null, pathData);
 
             ptA = ptB;
         }
+
+        this.addTessellatedPosition(posB, colorB, ordinalB, pathData);
     }
 
     /**
@@ -2357,6 +2514,35 @@ public class Path extends AbstractShape
 
         if (newPositions != null)
             this.setPositions(newPositions);
+    }
+
+    @Override
+    public void moveTo(Globe globe, Position position)
+    {
+        if (position == null)
+        {
+            String msg = Logging.getMessage("nullValue.PositionIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (this.numPositions == 0)
+            return;
+
+        Position oldPosition = this.getReferencePosition();
+
+        // The reference position is null if this Path has no positions. In this case moving the Path to a new
+        // reference position is meaningless because the Path has no geographic location. Therefore we fail softly
+        // by exiting and doing nothing.
+        if (oldPosition == null)
+            return;
+
+        List<Position> newPositions = Position.computeShiftedPositions(globe, oldPosition, position, this.positions);
+
+        if (newPositions != null)
+        {
+            this.setPositions(newPositions);
+        }
     }
 
     protected boolean isSmall(DrawContext dc, Vec4 ptA, Vec4 ptB, int numPixels)

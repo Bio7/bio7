@@ -14,7 +14,7 @@ import java.util.*;
 
 /**
  * @author tag
- * @version $Id: LevelSet.java 1862 2014-03-12 15:40:18Z tgaskins $
+ * @version $Id: LevelSet.java 2060 2014-06-18 03:19:17Z tgaskins $
  */
 public class LevelSet extends WWObjectImpl
 {

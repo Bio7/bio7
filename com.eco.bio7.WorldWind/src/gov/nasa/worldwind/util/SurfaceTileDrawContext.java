@@ -6,90 +6,63 @@
 package gov.nasa.worldwind.util;
 
 import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.pick.PickedObject;
 
 import java.awt.*;
+import java.util.Collection;
 
 /**
- * SurfaceTileDrawContext contains the context needed to render to an off-screen surface tile. SurfaceTileDrawContext is
- * defined by a geographic Sector and a corresponding tile viewport. The Sector maps geographic coordinates to pixels in
- * an abstract off-screen tile.
+ * SurfaceTileDrawContext defines a context for rendering into off-screen surface tiles. SurfaceTileDrawContext is
+ * defined by a geographic sector, a screen viewport, and a collection of pick candidates. The sector maps geographic
+ * coordinates to pixels in an abstract off-screen tile. The pick candidates provide registration of picked objects
+ * drawn into the surface tile.
  *
  * @author dcollins
- * @version $Id: SurfaceTileDrawContext.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: SurfaceTileDrawContext.java 2320 2014-09-17 19:29:24Z dcollins $
  */
 public class SurfaceTileDrawContext
 {
     protected Sector sector;
     protected Rectangle viewport;
     protected Matrix modelview;
+    protected Collection<PickedObject> pickCandidates;
 
     /**
-     * Constructs a SurfaceTileDrawContext with a specified surface Sector and viewport. The Sector defines the
-     * context's geographic extent, and the viewport defines the context's corresponding viewport in pixels.
+     * Creates a new SurfaceTileDrawContext from the specified tile and collection of pick candidates. The tile defines
+     * this context's geographic extent and screen viewport. The pick candidate collection is used to register picked
+     * objects drawn into the surface tile.
      *
-     * @param sector   the context's Sector.
-     * @param viewport the context's viewport in pixels.
+     * @param tile           the context's tile.
+     * @param pickCandidates the context's list of pick candidates.
      *
-     * @throws IllegalArgumentException if either the sector or viewport are null, or if the viewport width or height is
-     *                                  less than or equal to zero.
+     * @throws IllegalArgumentException if any argument is null.
      */
-    public SurfaceTileDrawContext(Sector sector, Rectangle viewport)
+    public SurfaceTileDrawContext(Tile tile, Collection<PickedObject> pickCandidates)
     {
-        if (sector == null)
+        if (tile == null)
         {
-            String message = Logging.getMessage("nullValue.SectorIsNull");
+            String message = Logging.getMessage("nullValue.TileIsNull");
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
         }
 
-        if (viewport == null)
+        if (pickCandidates == null)
         {
-            String message = Logging.getMessage("nullValue.ViewportIsNull");
+            String message = Logging.getMessage("nullValue.PickedObjectList");
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
         }
 
-        if (viewport.width <= 0)
-        {
-            String message = Logging.getMessage("Geom.WidthInvalid");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        if (viewport.height <= 0)
-        {
-            String message = Logging.getMessage("Geom.HeightInvalid");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        this.sector = sector;
-        this.viewport = viewport;
-        this.modelview = Matrix.fromGeographicToViewport(sector, viewport.x, viewport.y,
-            viewport.width, viewport.height);
+        this.sector = tile.getSector();
+        this.viewport = new Rectangle(0, 0, tile.getWidth(), tile.getHeight());
+        this.modelview = Matrix.fromGeographicToViewport(tile.getSector(), 0, 0, tile.getWidth(), tile.getHeight());
+        this.pickCandidates = pickCandidates;
     }
 
     /**
-     * Constructs a SurfaceTileDrawContext with a specified surface Sector and viewport dimension. The Sector defines
-     * the context's geographic extent, and the viewport defines the context's corresponding viewport's dimension in
-     * pixels.
+     * Returns this context's sector.
      *
-     * @param sector         the context's Sector.
-     * @param viewportWidth  the context's viewport width in pixels.
-     * @param viewportHeight the context's viewport height in pixels.
-     *
-     * @throws IllegalArgumentException if the sector is null, or if the viewport width or height is less than or equal
-     *                                  to zero.
-     */
-    public SurfaceTileDrawContext(Sector sector, int viewportWidth, int viewportHeight)
-    {
-        this(sector, new Rectangle(viewportWidth, viewportHeight));
-    }
-
-    /**
-     * Returns the context's Sector.
-     *
-     * @return the context's Sector.
+     * @return this's sector.
      */
     public Sector getSector()
     {
@@ -97,9 +70,9 @@ public class SurfaceTileDrawContext
     }
 
     /**
-     * Returns the context's viewport.
+     * Returns this context's viewport.
      *
-     * @return the context's viewport.
+     * @return this context's viewport.
      */
     public Rectangle getViewport()
     {
@@ -138,5 +111,36 @@ public class SurfaceTileDrawContext
         return this.modelview.multiply(
             Matrix.fromTranslation(referenceLocation.getLongitude().degrees, referenceLocation.getLatitude().degrees,
                 0));
+    }
+
+    /**
+     * Returns the collection of pick candidates associated with this context. This collection provides a registration
+     * of picked objects drawn into the surface tile.
+     *
+     * @return this context's pick candidates.
+     */
+    public Collection<PickedObject> getPickCandidates()
+    {
+        return this.pickCandidates;
+    }
+
+    /**
+     * Adds the specified picked object to this context's the collection of pick candidates. This collection can be
+     * accessed by calling {@link #getPickCandidates()}.
+     *
+     * @param pickedObject the object to add.
+     *
+     * @throws IllegalArgumentException if the object is null.
+     */
+    public void addPickCandidate(PickedObject pickedObject)
+    {
+        if (null == pickedObject)
+        {
+            String msg = Logging.getMessage("nullValue.PickedObject");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        this.pickCandidates.add(pickedObject);
     }
 }

@@ -9,11 +9,10 @@ import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.cache.FileStore;
 import gov.nasa.worldwind.data.*;
-import gov.nasa.worldwindx.examples.ApplicationTemplate;
 import gov.nasa.worldwind.exception.WWRuntimeException;
-import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globes.Earth;
 import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwindx.examples.ApplicationTemplate;
 import org.w3c.dom.*;
 
 import javax.swing.*;
@@ -36,7 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * InstallImagery}</code> and <code>{@link InstallElevations}</code>.
  *
  * @author dcollins
- * @version $Id: InstallImageryAndElevationsDemo.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: InstallImageryAndElevationsDemo.java 2915 2015-03-20 16:48:43Z tgaskins $
  */
 public class InstallImageryAndElevationsDemo extends ApplicationTemplate
 {
@@ -49,18 +48,6 @@ public class InstallImageryAndElevationsDemo extends ApplicationTemplate
             this.installedDataFrame = new InstalledDataFrame(WorldWind.getDataFileStore(), this.getWwd());
             WWUtil.alignComponent(this, this.installedDataFrame, AVKey.RIGHT);
             this.installedDataFrame.setVisible(true);
-
-            // Setup AVKey.LAYERS property change events to refresh the LayerPanel.
-            this.getWwd().getModel().addPropertyChangeListener(new PropertyChangeListener()
-            {
-                public void propertyChange(PropertyChangeEvent event)
-                {
-                    if (event.getPropertyName().equals(AVKey.LAYERS))
-                    {
-                        getLayerPanel().update(getWwd());
-                    }
-                }
-            });
 
             this.layoutComponents();
         }
@@ -85,7 +72,7 @@ public class InstallImageryAndElevationsDemo extends ApplicationTemplate
             Box box = Box.createVerticalBox();
             box.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // top, left, bottom, right
             box.add(button);
-            this.getLayerPanel().add(box, BorderLayout.SOUTH);
+            this.getControlPanel().add(box, BorderLayout.SOUTH);
             this.validate();
             this.pack();
         }
@@ -416,13 +403,6 @@ public class InstallImageryAndElevationsDemo extends ApplicationTemplate
             // Install the file into the specified FileStore.
             doc = createDataStore(files, fileStore, producer);
 
-            // Create a raster server configuration document if the installation was successful
-            // and we're not converting a WW.NET tile set to a WW Java tile set.
-            // The raster server document enables the layer or elevation model (created to display this data)
-            // to create tiles from the original sources at runtime.
-            if (doc != null && !(producer instanceof WWDotNetLayerSetConverter))
-                createRasterServerConfigDoc(fileStore, producer);
-
             // The user clicked the ProgressMonitor's "Cancel" button. Revert any change made during production, and
             // discard the returned DataConfiguration reference.
             if (progressMonitor.isCanceled())
@@ -650,193 +630,6 @@ public class InstallImageryAndElevationsDemo extends ApplicationTemplate
         }
         else
             return (WWUtil.isEmpty(name)) ? "change me" : name;
-    }
-
-    protected static void createRasterServerConfigDoc(FileStore fileStore, DataStoreProducer producer)
-    {
-        AVList productionParams = (null != producer) ? producer.getProductionParameters() : new AVListImpl();
-        productionParams = (null == productionParams) ? new AVListImpl() : productionParams;
-
-        if (!AVKey.SERVICE_NAME_LOCAL_RASTER_SERVER.equals(productionParams.getValue(AVKey.SERVICE_NAME)))
-        {
-            // *.RasterServer.xml is not required
-            return;
-        }
-
-        File installLocation = DataInstallUtil.getDefaultInstallLocation(fileStore);
-        if (installLocation == null)
-        {
-            String message = Logging.getMessage("generic.NoDefaultImportLocation");
-            Logging.logger().severe(message);
-            return;
-        }
-
-        Document doc = WWXML.createDocumentBuilder(true).newDocument();
-
-        Element root = WWXML.setDocumentElement(doc, "RasterServer");
-        WWXML.setTextAttribute(root, "version", "1.0");
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(installLocation.getAbsolutePath()).append(File.separator);
-
-        if (!productionParams.hasKey(AVKey.DATA_CACHE_NAME))
-        {
-            String message = Logging.getMessage("generic.MissingRequiredParameter", AVKey.DATA_CACHE_NAME);
-            Logging.logger().severe(message);
-            throw new WWRuntimeException(message);
-        }
-        sb.append(productionParams.getValue(AVKey.DATA_CACHE_NAME)).append(File.separator);
-
-        if (!productionParams.hasKey(AVKey.DATASET_NAME))
-        {
-            String message = Logging.getMessage("generic.MissingRequiredParameter", AVKey.DATASET_NAME);
-            Logging.logger().severe(message);
-            throw new WWRuntimeException(message);
-        }
-        sb.append(productionParams.getValue(AVKey.DATASET_NAME)).append(".RasterServer.xml");
-
-        Object o = productionParams.getValue(AVKey.DISPLAY_NAME);
-        if (WWUtil.isEmpty(o))
-            productionParams.setValue(AVKey.DISPLAY_NAME, productionParams.getValue(AVKey.DATASET_NAME));
-
-        String rasterServerConfigFilePath = sb.toString();
-
-        Sector extent = null;
-        if (productionParams.hasKey(AVKey.SECTOR))
-        {
-            o = productionParams.getValue(AVKey.SECTOR);
-            if (null != o && o instanceof Sector)
-                extent = (Sector) o;
-        }
-
-        if (null != extent)
-            WWXML.appendSector(root, "Sector", extent);
-        else
-        {
-            String message = Logging.getMessage("generic.MissingRequiredParameter", AVKey.SECTOR);
-            Logging.logger().severe(message);
-            throw new WWRuntimeException(message);
-        }
-
-        Element sources = doc.createElementNS(null, "Sources");
-        if (producer instanceof TiledRasterProducer)
-        {
-            for (DataRaster raster : ((TiledRasterProducer)producer).getDataRasters())
-            {
-                if (raster instanceof CachedDataRaster)
-                {
-                    try
-                    {
-                        appendSource( sources, (CachedDataRaster)raster);
-                    }
-                    catch(Throwable t)
-                    {
-                        String reason = WWUtil.extractExceptionReason(t);
-                        Logging.logger().warning(reason);
-//                        Logging.logger().severe(reason);
-//                        throw new WWRuntimeException(reason);
-                    }
-                }
-                else
-                {
-                    String message = Logging.getMessage("TiledRasterProducer.UnrecognizedRasterType",
-                        raster.getClass().getName(), raster.getStringValue(AVKey.DATASET_NAME));
-                    Logging.logger().severe(message);
-                    throw new WWRuntimeException(message);
-                }
-            }
-        }
-
-        AVList rasterServerProperties = new AVListImpl();
-
-        String[] keysToCopy = new String[] {AVKey.DATA_CACHE_NAME, AVKey.DATASET_NAME, AVKey.DISPLAY_NAME};
-        WWUtil.copyValues(productionParams, rasterServerProperties, keysToCopy, false);
-
-        appendProperties(root, rasterServerProperties);
-
-        // add sources
-        root.appendChild(sources);
-
-        WWXML.saveDocumentToFile(doc, rasterServerConfigFilePath);
-    }
-
-    /**
-     * Append Property elements to a context element.
-     *
-     * @param context    the context on which to append new element(s)
-     * @param properties AVList with properties to append.
-     */
-    protected static void appendProperties(Element context, AVList properties)
-    {
-        if (null == context || properties == null)
-            return;
-
-        StringBuilder sb = new StringBuilder();
-
-        // add properties
-        for (Map.Entry<String, Object> entry : properties.getEntries())
-        {
-            sb.setLength(0);
-            String key = entry.getKey();
-            sb.append(properties.getValue(key));
-            String value = sb.toString();
-            if (WWUtil.isEmpty(key) || WWUtil.isEmpty(value))
-                continue;
-
-            Element property = WWXML.appendElement(context, "Property");
-            WWXML.setTextAttribute(property, "name", key);
-            WWXML.setTextAttribute(property, "value", value);
-        }
-    }
-
-    /**
-     * Append Source element to a Sources element.
-     *
-     * @param sources the Sources element on which to append the new Source element
-     * @param raster  instance of the CachedDataRaster
-     * @throws WWRuntimeException if cannot retrieve or understand the data source
-     *
-     */
-    protected static void appendSource(Element sources, CachedDataRaster raster) throws WWRuntimeException
-    {
-        Object o = raster.getDataSource();
-        if (WWUtil.isEmpty(o))
-        {
-            String message = Logging.getMessage("nullValue.DataSourceIsNull");
-            Logging.logger().fine(message);
-            throw new WWRuntimeException(message);
-        }
-
-        File f = WWIO.getFileForLocalAddress(o);
-        if (WWUtil.isEmpty(f))
-        {
-            String message = Logging.getMessage("TiledRasterProducer.UnrecognizedDataSource", o);
-            Logging.logger().fine(message);
-            throw new WWRuntimeException(message);
-        }
-
-        Element source = WWXML.appendElement(sources, "Source");
-        WWXML.setTextAttribute(source, "type", "file");
-        WWXML.setTextAttribute(source, "path", f.getAbsolutePath());
-
-        AVList params = raster.getParams();
-        if (null == params)
-        {
-            String message = Logging.getMessage("nullValue.ParamsIsNull");
-            Logging.logger().fine(message);
-            throw new WWRuntimeException(message);
-        }
-
-        Sector sector = raster.getSector();
-        if (null == sector && params.hasKey(AVKey.SECTOR))
-        {
-            o = params.getValue(AVKey.SECTOR);
-            if (o instanceof Sector)
-                sector = (Sector) o;
-        }
-
-        if (null != sector)
-            WWXML.appendSector(source, "Sector", sector);
     }
 
     //**************************************************************//

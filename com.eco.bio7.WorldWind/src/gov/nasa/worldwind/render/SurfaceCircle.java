@@ -10,13 +10,23 @@ import gov.nasa.worldwind.util.Logging;
 
 /**
  * @author dcollins
- * @version $Id: SurfaceCircle.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: SurfaceCircle.java 2302 2014-09-08 20:40:47Z tgaskins $
  */
 public class SurfaceCircle extends SurfaceEllipse
 {
     /** Constructs a new surface circle with the default attributes, default center location and default radius. */
     public SurfaceCircle()
     {
+    }
+
+    /**
+     * Creates a shallow copy of the specified source shape.
+     *
+     * @param source the shape to copy.
+     */
+    public SurfaceCircle(SurfaceCircle source)
+    {
+        super(source);
     }
 
     /**

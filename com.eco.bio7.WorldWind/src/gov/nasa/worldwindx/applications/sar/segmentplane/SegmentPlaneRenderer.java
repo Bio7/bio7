@@ -6,7 +6,6 @@
 package gov.nasa.worldwindx.applications.sar.segmentplane;
 
 import com.jogamp.common.nio.Buffers;
-import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.geom.*;
@@ -25,7 +24,7 @@ import java.util.*;
 
 /**
  * @author dcollins
- * @version $Id: SegmentPlaneRenderer.java 1847 2014-02-18 00:32:16Z dcollins $
+ * @version $Id: SegmentPlaneRenderer.java 2053 2014-06-10 20:16:57Z tgaskins $
  */
 public class SegmentPlaneRenderer
 {

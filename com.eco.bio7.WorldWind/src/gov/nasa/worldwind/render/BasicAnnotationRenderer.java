@@ -15,14 +15,14 @@ import gov.nasa.worldwind.util.*;
 
 import javax.media.opengl.*;
 import java.awt.*;
-import java.util.Iterator;
+import java.util.*;
 import java.util.logging.Level;
 
 /**
  * Basic implementation of AnnotationRenderer. Process Annotation rendering as OrderedRenderable objects batch.
  *
  * @author Patrick Murris
- * @version $Id: BasicAnnotationRenderer.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: BasicAnnotationRenderer.java 2223 2014-08-13 23:56:06Z tgaskins $
  * @see AbstractAnnotation
  * @see AnnotationAttributes
  * @see AnnotationLayer
@@ -30,6 +30,9 @@ import java.util.logging.Level;
 public class BasicAnnotationRenderer implements AnnotationRenderer
 {
     protected PickSupport pickSupport = new PickSupport();
+    protected long currentFrameTime;
+    protected HashSet<Annotation> currentPickAnnotations = new HashSet<Annotation>();
+    protected HashSet<Annotation> currentDrawAnnotations = new HashSet<Annotation>();
 
     protected static boolean isAnnotationValid(Annotation annotation, boolean checkPosition)
     {
@@ -93,6 +96,15 @@ public class BasicAnnotationRenderer implements AnnotationRenderer
             throw new IllegalArgumentException(msg);
         }
 
+        if (dc.isContinuous2DGlobe() && this.currentFrameTime != dc.getFrameTimeStamp())
+        {
+            // Keep track of which annotations are added to the ordered renderable list so that they are not added
+            // to that list more than once per frame.
+            this.currentPickAnnotations.clear();
+            this.currentDrawAnnotations.clear();
+            this.currentFrameTime = dc.getFrameTimeStamp();
+        }
+
         Iterator<Annotation> iterator = annotations.iterator();
 
         if (!iterator.hasNext())
@@ -116,7 +128,16 @@ public class BasicAnnotationRenderer implements AnnotationRenderer
             if (altitude < annotation.getMinActiveAltitude() || altitude > annotation.getMaxActiveAltitude())
                 continue;
 
-            // TODO: cull annotations that are beyound the horizon or outside the view frustrum
+            if (dc.isContinuous2DGlobe() && annotation instanceof ScreenAnnotation)
+            {
+                if (dc.isPickingMode() && this.currentPickAnnotations.contains(annotation))
+                    continue;
+
+                if (currentDrawAnnotations.contains(annotation))
+                    continue;
+            }
+
+            // TODO: cull annotations that are beyond the horizon
             double eyeDistance = 1;
             if (annotation instanceof Locatable)
             {
@@ -127,8 +148,24 @@ public class BasicAnnotationRenderer implements AnnotationRenderer
                     continue;
                 eyeDistance = annotation.isAlwaysOnTop() ? 0 : dc.getView().getEyePoint().distanceTo3(annotationPoint);
             }
+
+            if (annotation instanceof ScreenAnnotation)
+            {
+                Rectangle screenBounds = annotation.getBounds(dc);
+                if (screenBounds != null && !dc.getView().getViewport().intersects(screenBounds))
+                    return;
+            }
+
             // The annotations aren't drawn here, but added to the ordered queue to be drawn back-to-front.
             dc.addOrderedRenderable(new OrderedAnnotation(annotation, layer, eyeDistance));
+
+            if (dc.isContinuous2DGlobe() && annotation instanceof ScreenAnnotation)
+            {
+                if (dc.isPickingMode())
+                    this.currentPickAnnotations.add(annotation);
+                else
+                    this.currentDrawAnnotations.add(annotation);
+            }
         }
     }
 
@@ -139,6 +176,16 @@ public class BasicAnnotationRenderer implements AnnotationRenderer
             String msg = Logging.getMessage("nullValue.DrawContextIsNull");
             Logging.logger().severe(msg);
             throw new IllegalArgumentException(msg);
+        }
+
+        if (dc.isContinuous2DGlobe() && annotation instanceof ScreenAnnotation
+            && this.currentFrameTime != dc.getFrameTimeStamp())
+        {
+            // Keep track of which screen annotations are added to the ordered renderable list so that they are not added
+            // to that list more than once per frame.
+            this.currentPickAnnotations.clear();
+            this.currentDrawAnnotations.clear();
+            this.currentFrameTime = dc.getFrameTimeStamp();
         }
 
         if (dc.getVisibleSector() == null)
@@ -155,6 +202,15 @@ public class BasicAnnotationRenderer implements AnnotationRenderer
         // Do not draw the pick pass if not at pick point range;
         if (dc.isPickingMode() && !this.isAtPickRange(dc, annotation))
             return;
+
+        if (dc.isContinuous2DGlobe() && annotation instanceof ScreenAnnotation)
+        {
+            if (dc.isPickingMode() && this.currentPickAnnotations.contains(annotation))
+                return;
+
+            if (currentDrawAnnotations.contains(annotation))
+                return;
+        }
 
         double altitude = dc.getView().getEyePosition().getElevation();
         if (altitude < annotation.getMinActiveAltitude() || altitude > annotation.getMaxActiveAltitude())
@@ -180,13 +236,32 @@ public class BasicAnnotationRenderer implements AnnotationRenderer
             if (!dc.getView().getFrustumInModelCoordinates().contains(annotationPoint))
                 return;
 
-            double horizon = dc.getView().getHorizonDistance();
-            eyeDistance = annotation.isAlwaysOnTop() ? 0 : dc.getView().getEyePoint().distanceTo3(annotationPoint);
-            if (eyeDistance > horizon)
+            if (!dc.isContinuous2DGlobe())
+            {
+                double horizon = dc.getView().getHorizonDistance();
+                eyeDistance = annotation.isAlwaysOnTop() ? 0 : dc.getView().getEyePoint().distanceTo3(annotationPoint);
+                if (eyeDistance > horizon)
+                    return;
+            }
+        }
+
+        if (annotation instanceof ScreenAnnotation)
+        {
+            Rectangle screenBounds = annotation.getBounds(dc);
+            if (screenBounds != null && !dc.getView().getViewport().intersects(screenBounds))
                 return;
         }
+
         // The annotation isn't drawn here, but added to the ordered queue to be drawn back-to-front.
         dc.addOrderedRenderable(new OrderedAnnotation(annotation, layer, eyeDistance));
+
+        if (dc.isContinuous2DGlobe() && annotation instanceof ScreenAnnotation)
+        {
+            if (dc.isPickingMode())
+                this.currentPickAnnotations.add(annotation);
+            else
+                this.currentDrawAnnotations.add(annotation);
+        }
     }
 
     protected boolean isAtPickRange(DrawContext dc, Annotation annotation)

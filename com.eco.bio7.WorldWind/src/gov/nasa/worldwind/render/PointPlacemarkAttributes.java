@@ -15,12 +15,15 @@ import gov.nasa.worldwind.util.*;
 import javax.media.opengl.GL;
 import javax.xml.stream.*;
 import java.awt.*;
+import java.awt.image.*;
 import java.io.*;
+import java.util.UUID;
 
 /** Holds attributes for {@link gov.nasa.worldwind.render.PointPlacemark}s. */
 public class PointPlacemarkAttributes implements Exportable
 {
     protected String imageAddress;
+    protected BufferedImage image;
     protected Double scale;
     protected Double heading;
     protected String headingReference; // RELATIVE_TO_GLOBE, RELATIVE_TO_SCREEN
@@ -40,6 +43,8 @@ public class PointPlacemarkAttributes implements Exportable
     protected Double labelScale;
     protected boolean usePointAsDefaultImage = false;
     protected boolean unresolved;
+    protected boolean drawImage = true;
+    protected boolean drawLabel = true;
 
     /** The image file to use for the placemark's icon if no image file is specified in the placemark attributes. */
     public static final String DEFAULT_IMAGE_PATH =
@@ -57,8 +62,8 @@ public class PointPlacemarkAttributes implements Exportable
     public static final Offset DEFAULT_LABEL_OFFSET = new Offset(0.9d, 0.6d, AVKey.FRACTION, AVKey.FRACTION);
     /** The default font to use for the placemark's label. */
     public static final Font DEFAULT_LABEL_FONT = Font.decode(
-    Configuration.getStringValue("gov.nasa.worldwind.render.PointPlacemarkAttributes.DefaultLabelFont",
-        "Arial-BOLD-14"));
+        Configuration.getStringValue("gov.nasa.worldwind.render.PointPlacemarkAttributes.DefaultLabelFont",
+            "Arial-BOLD-14"));
     /** The default label color. */
     protected static final Color DEFAULT_LABEL_COLOR = Color.WHITE;
     /** The default line color. */
@@ -106,6 +111,11 @@ public class PointPlacemarkAttributes implements Exportable
             this.setLabelMaterial(attrs.getLabelMaterial());
             this.setLabelScale(attrs.getLabelScale());
             this.setUsePointAsDefaultImage(attrs.isUsePointAsDefaultImage());
+            this.setDrawImage(attrs.isDrawImage());
+            this.setDrawLabel(attrs.isDrawLabel());
+
+            // Calling setImage has side effects, so just assign the current value without calling setImage.
+            this.image = attrs.image;
         }
     }
 
@@ -234,6 +244,32 @@ public class PointPlacemarkAttributes implements Exportable
     public void setImageAddress(String address)
     {
         this.imageAddress = address;
+    }
+
+    /**
+     * Returns the {@link java.awt.image.BufferedImage} previously specified to {@link
+     * #setImage(java.awt.image.BufferedImage)}.
+     *
+     * @return The image previously specified for this attribute bundle.
+     */
+    public BufferedImage getImage()
+    {
+        return image;
+    }
+
+    /**
+     * Specifies a {@link java.awt.image.BufferedImage} for {@link gov.nasa.worldwind.render.PointPlacemark}s associated
+     * with this attribute bundle. When this method is called, this attribute bundle's image address is automatically
+     * set to a unique identifier for the image.
+     *
+     * @param image the buffered image to use for the associated point placemarks. May be null, in which case this
+     *              attribute bundle's image address is set to null by this method.
+     */
+    public void setImage(BufferedImage image)
+    {
+        this.image = image;
+
+        this.setImageAddress(this.image != null ? UUID.randomUUID().toString() : null);
     }
 
     /**
@@ -505,6 +541,47 @@ public class PointPlacemarkAttributes implements Exportable
     }
 
     /**
+     * Indicates whether the placemark's image is drawn.
+     *
+     * @return <code>true</code> if the image is drawn, otherwise <code>false</code>.
+     */
+    public boolean isDrawImage()
+    {
+        return drawImage;
+    }
+
+    /**
+     * Specifies whether to draw the placemark's image. When the image is not drawn, the placemark's label, if any, is
+     * drawn relative to the placemark's position.
+     *
+     * @param drawImage <code>true</code> to draw the image, otherwise <code>false</code>.
+     */
+    public void setDrawImage(boolean drawImage)
+    {
+        this.drawImage = drawImage;
+    }
+
+    /**
+     * Indicates whether the placemark's label is drawn.
+     *
+     * @return <code>true</code> if the label is drawn, otherwise <code>false</code>.
+     */
+    public boolean isDrawLabel()
+    {
+        return drawLabel;
+    }
+
+    /**
+     * Specifies whether to draw the placemark's label.
+     *
+     * @param drawLabel <code>true</code> to draw the label, otherwise <code>false</code>.
+     */
+    public void setDrawLabel(boolean drawLabel)
+    {
+        this.drawLabel = drawLabel;
+    }
+
+    /**
      * Export the Placemark. The {@code output} object will receive the exported data. The type of this object depends
      * on the export format. The formats and object types supported by this class are:
      * <p/>
@@ -636,7 +713,7 @@ public class PointPlacemarkAttributes implements Exportable
         Offset offset = this.getImageOffset();
         if (offset != null)
         {
-            KMLExportUtil.exportOffset(xmlWriter,offset,"hotSpot");
+            KMLExportUtil.exportOffset(xmlWriter, offset, "hotSpot");
         }
 
         xmlWriter.writeEndElement(); // IconStyle

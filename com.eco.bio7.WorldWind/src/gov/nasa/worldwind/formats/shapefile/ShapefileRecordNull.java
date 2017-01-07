@@ -13,7 +13,7 @@ import java.nio.ByteBuffer;
  * have no geometric data, and are therefore typically used as placeholders.
  *
  * @author tag
- * @version $Id: ShapefileRecordNull.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @version $Id: ShapefileRecordNull.java 2303 2014-09-14 22:33:36Z dcollins $
  */
 public class ShapefileRecordNull extends ShapefileRecord
 {
@@ -23,6 +23,21 @@ public class ShapefileRecordNull extends ShapefileRecord
         super(shapeFile, buffer);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean isNullRecord()
+    {
+        return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double[] getBoundingRectangle()
+    {
+        return null;
+    }
+
+    /** {@inheritDoc} */
     @Override
     protected void doReadFromBuffer(Shapefile shapefile, ByteBuffer buffer)
     {

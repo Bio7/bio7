@@ -31,7 +31,7 @@ import java.util.*;
  * data for the selected region to a GeoTIFF, or "Save image..." to export imagery.
  *
  * @author Lado Garakanidze
- * @version $Id: ExportImageOrElevations.java 1973 2014-04-30 02:02:31Z tgaskins $
+ * @version $Id: ExportImageOrElevations.java 2109 2014-06-30 16:52:38Z tgaskins $
  */
 public class ExportImageOrElevations extends ApplicationTemplate
 {
@@ -72,7 +72,7 @@ public class ExportImageOrElevations extends ApplicationTemplate
                 btnSaveImage.setToolTipText("Click the button to save image of the selected area");
                 btnPanel.add(btnSaveImage);
             }
-            this.getLayerPanel().add(btnPanel, BorderLayout.SOUTH);
+            this.getControlPanel().add(btnPanel, BorderLayout.SOUTH);
 
             // Listen for changes to the sector selector's region. Could also just wait until the user finishes
             // and query the result using selector.getSector().
@@ -91,7 +91,6 @@ public class ExportImageOrElevations extends ApplicationTemplate
             });
 
             this.enableNAIPLayer();
-            this.getLayerPanel().update(this.getWwd());
         }
 
         private class SaveElevationsAction extends AbstractAction
