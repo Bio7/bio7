@@ -31,13 +31,13 @@
          point="org.eclipse.ui.preferencePages">
       <page
             category="prefbeanshell"
-            class="com.eco.bio7.reditor.preferences.TemplatesPreferencePage"
+            class="com.eco.bio7.beanshell.editor.preferences.TemplatesPreferencePage"
             id="org.eclipse.ui.examples.templateeditor.preferencepage"
             name="%xml.editor.preferencePage.label">
       </page>
       <page
             category="com.eco.bio7.preferences.Bio7PreferencePage"
-            class="com.eco.bio7.reditor.preferences.WorkbenchPreferencebsh"
+            class="com.eco.bio7.beanshell.editor.preferences.WorkbenchPreferencebsh"
             id="prefbeanshell"
             name="Preferences BeanShell/Groovy"/>
    </extension>
@@ -58,9 +58,79 @@
    <extension
         point="org.eclipse.core.runtime.preferences">
      <initializer
-           class="com.eco.bio7.reditor.preferences.PreferenceInitializer">
+           class="com.eco.bio7.beanshell.editor.preferences.PreferenceInitializer">
      </initializer>
   </extension>
+  <extension
+     point="org.eclipse.ui.themes">
+  <fontDefinition
+        label="BeanShell/Groovy Editor Font"
+        defaultsTo="org.eclipse.jface.textfont"
+        categoryId="com.eco.bio7.beanshelleditor.theme"
+        id="com.eco.bio7.beanshelleditor.textfont">
+     
+  </fontDefinition>
+  <themeElementCategory
+        id="com.eco.bio7.beanshelleditor.theme"
+        label="BeanShell/Groovy editor">
+  </themeElementCategory>
+ </extension>
+ <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="com.eco.bio7.beanshelleditor.actions.TextZoomInHandler"
+            commandId="com.eco.bio7.beanshelleditor.actions.text.zoomIn">
+           
+      </handler>
+      <handler
+            class="com.eco.bio7.beanshelleditor.actions.TextZoomOutHandler"
+            commandId="com.eco.bio7.beanshelleditor.actions.text.zoomOut">
+           
+      </handler>
+     
+   </extension>
+   <extension
+       id="com.eco.bio7.beanshelleditor.refactor.rename"
+       point="org.eclipse.ui.bindings">
+        <sequenceModifier
+  			find="CTRL"
+  			replace="COMMAND"
+  			platforms="cocoa,carbon" />
+     
    
-
+    <key
+          commandId="com.eco.bio7.beanshelleditor.actions.text.zoomIn"
+          contextId="com.eco.bio7.beanshell.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL++">
+    </key>
+    <key
+          commandId="com.eco.bio7.beanshelleditor.actions.text.zoomOut"
+          contextId="com.eco.bio7.beanshell.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+-">
+    </key>
+    </extension>
+   <extension 
+   point="org.eclipse.ui.commands">
+       <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Zoom in text, increase default font size for text editors"
+          id="com.eco.bio7.beanshelleditor.actions.text.zoomIn"
+          name="Zoom In">
+    </command>
+    <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Zoom out text, decrease default font size for text editors"
+          id="com.eco.bio7.beanshelleditor.actions.text.zoomOut"
+          name="Zoom Out">
+    </command>
+     
+   </extension>
+   <extension point="org.eclipse.ui.contexts">
+          <context name="Beanshell Editor Context"
+           description="Beanshell Editor Context"
+           parentId="org.eclipse.ui.textEditorScope"
+           id="com.eco.bio7.beanshell.editor.scope" />
+   </extension>
 </plugin>
