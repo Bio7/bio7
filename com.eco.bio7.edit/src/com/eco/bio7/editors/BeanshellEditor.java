@@ -49,7 +49,6 @@ import com.eco.bio7.beanshelleditor.actions.SetComment;
 import com.eco.bio7.beanshelleditor.actions.UnsetComment;
 import com.eco.bio7.editor.BeanshellEditorPlugin;
 
-
 /**
  * 
  */
@@ -76,7 +75,7 @@ public class BeanshellEditor extends TextEditor implements IPropertyChangeListen
 	public final static String EDITOR_MATCHING_BRACKETS = "matchingBrackets";
 
 	public final static String EDITOR_MATCHING_BRACKETS_COLOR = "matchingBracketsColor";
-	
+
 	final private ScopedPreferenceStore storeWorkbench = new ScopedPreferenceStore(new InstanceScope(), "org.eclipse.ui.workbench");
 
 	public void createPartControl(Composite parent) {
@@ -89,51 +88,17 @@ public class BeanshellEditor extends TextEditor implements IPropertyChangeListen
 	 */
 	public BeanshellEditor() {
 		super();
-		//setKeyBindingScopes(new String[] { "com.eco.bio7.beanshell.editor.scope" });
+
 		colorManager = new ColorManager();
 		setSourceViewerConfiguration(new BeanshellConfiguration(colorManager));
-		
-		/*IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		if (editor != null) {
-			IEditorSite site = editor.getEditorSite();
-			IWorkbenchPage page = site.getPage();
-			// setPreferenceStore(BeanshellEditorPlugin.getDefault().getPreferenceStore());
 
-			partListener = new IPartListener() {
-
-				public void partActivated(IWorkbenchPart part) {
-
-				}
-
-				public void partBroughtToTop(IWorkbenchPart part) {
-
-				}
-
-				public void partClosed(IWorkbenchPart part) {
-
-				}
-
-				public void partDeactivated(IWorkbenchPart part) {
-
-				}
-
-				public void partOpened(IWorkbenchPart part) {
-
-				}
-
-			};
-			page.addPartListener(partListener);
-		}*/
-		
 	}
-	
-	
-	
+
 	@Override
 	protected void handlePreferenceStoreChanged(PropertyChangeEvent event) {
 
 		super.handlePreferenceStoreChanged(event);
-		// invalidateText();
+
 	}
 
 	public void invalidateText() {
@@ -175,7 +140,8 @@ public class BeanshellEditor extends TextEditor implements IPropertyChangeListen
 		FontData f5 = PreferenceConverter.getFontData(store, "colourkeyfont5");
 		FontData f6 = PreferenceConverter.getFontData(store, "colourkeyfont6");
 		FontData f7 = PreferenceConverter.getFontData(store, "colourkeyfont7");
-		//FontData f8 = PreferenceConverter.getFontData(store, "colourkeyfont8");
+		// FontData f8 = PreferenceConverter.getFontData(store,
+		// "colourkeyfont8");
 
 		/* Restrict the size! */
 		if (f.getHeight() + Math.round(fontSize) < 2) {
@@ -194,9 +160,9 @@ public class BeanshellEditor extends TextEditor implements IPropertyChangeListen
 			return;
 		} else if (f7.getHeight() + Math.round(fontSize) < 2) {
 			return;
-		} /*else if (f8.getHeight() + Math.round(fontSize) < 2) {
-			return;
-		}*/
+		} /*
+			 * else if (f8.getHeight() + Math.round(fontSize) < 2) { return; }
+			 */
 
 		f.setHeight(f.getHeight() + Math.round(fontSize));
 		f1.setHeight(f1.getHeight() + Math.round(fontSize));
@@ -206,8 +172,7 @@ public class BeanshellEditor extends TextEditor implements IPropertyChangeListen
 		f5.setHeight(f5.getHeight() + Math.round(fontSize));
 		f6.setHeight(f6.getHeight() + Math.round(fontSize));
 		f7.setHeight(f7.getHeight() + Math.round(fontSize));
-		//f8.setHeight(f8.getHeight() + Math.round(fontSize));
-		
+		// f8.setHeight(f8.getHeight() + Math.round(fontSize));
 
 		// Method from:
 		// https://github.com/gkorland/Eclipse-Fonts/blob/master/Fonts/src/main/java/fonts/FontsControler.java
@@ -230,7 +195,6 @@ public class BeanshellEditor extends TextEditor implements IPropertyChangeListen
 		PreferenceConverter.setValue(store, "colourkeyfont5", f5);
 		PreferenceConverter.setValue(store, "colourkeyfont6", f6);
 		PreferenceConverter.setValue(store, "colourkeyfont7", f7);
-		
 
 		invalidateText();
 
@@ -256,9 +220,9 @@ public class BeanshellEditor extends TextEditor implements IPropertyChangeListen
 		menu.add(new Separator());
 		addAction(menu, "Editor Preferences");
 	}
-	
+
 	protected void initializeKeyBindingScopes() {
-		setKeyBindingScopes(new String[] { "com.eco.bio7.beanshell.editor.scope" });  
+		setKeyBindingScopes(new String[] { "com.eco.bio7.beanshell.editor.scope" });
 	}
 
 	protected void createActions() {
@@ -298,7 +262,8 @@ public class BeanshellEditor extends TextEditor implements IPropertyChangeListen
 	protected void configureSourceViewerDecorationSupport(SourceViewerDecorationSupport support) {
 		super.configureSourceViewerDecorationSupport(support);
 
-		char[] matchChars = { '{', '}', '(', ')', '[', ']' }; // which brackets to match
+		char[] matchChars = { '{', '}', '(', ')', '[', ']' }; // which brackets
+																// to match
 		ICharacterPairMatcher matcher = new DefaultCharacterPairMatcher(matchChars, IDocumentExtension3.DEFAULT_PARTITIONING);
 		support.setCharacterPairMatcher(matcher);
 		support.setMatchingCharacterPainterPreferenceKeys(EDITOR_MATCHING_BRACKETS, EDITOR_MATCHING_BRACKETS_COLOR);

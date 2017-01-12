@@ -10,7 +10,7 @@ package com.eco.bio7.pythoneditors;
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *     
- *      M.Austenfeld - Minor changes for the Bio7 application
+ *      M.Austenfeld - Changes for the Bio7 application
  *******************************************************************************/
 
 import java.util.ArrayList;

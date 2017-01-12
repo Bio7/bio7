@@ -1,10 +1,9 @@
 package com.eco.bio7.reditor.preferences;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.ColorFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
-import org.eclipse.jface.preference.FontFieldEditor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.resource.JFaceResources;
@@ -28,9 +27,6 @@ import com.eco.bio7.editors.python.PythonScriptColorProvider;
 import com.eco.bio7.pythonedit.PythonEditorPlugin;
 import com.eco.bio7.pythoneditors.ScriptCodeScanner;
 
-import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.jface.preference.BooleanFieldEditor;
-
 public class WorkbenchPreferencePython extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
 	private IPreferenceStore store;
@@ -50,7 +46,7 @@ public class WorkbenchPreferencePython extends FieldEditorPreferencePage impleme
 		link.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(final SelectionEvent e) {
-				// create an instance of the custom MyPreference class
+
 				PreferencesUtil.createPreferenceDialogOn(new Shell(Display.getDefault()), "org.eclipse.ui.preferencePages.ColorsAndFonts", null, "selectFont:com.eco.bio7.pythoneditor.textfont");
 
 			}
@@ -75,13 +71,6 @@ public class WorkbenchPreferencePython extends FieldEditorPreferencePage impleme
 		addField(new ColorFieldEditor("colourkey5", "Operators:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("BOLD_COLOURKEY5", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		/*
-		 * addField(new ColorFieldEditor("colourkey6", "Braces:",
-		 * getFieldEditorParent())); addField(new
-		 * BooleanFieldEditor("BOLD_COLOURKEY6", "Bold",
-		 * BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
-		 */
-
 		addField(new ColorFieldEditor("colourkey7", "Numbers:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("BOLD_COLOURKEY7", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
@@ -94,57 +83,8 @@ public class WorkbenchPreferencePython extends FieldEditorPreferencePage impleme
 		addField(new ColorFieldEditor("colourkey10", "Function Name", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("BOLD_COLOURKEY10", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		/*
-		 * addField(new ColorFieldEditor("colourkey11", "Self:",
-		 * getFieldEditorParent())); addField(new
-		 * BooleanFieldEditor("BOLD_COLOURKEY11", "Bold",
-		 * BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
-		 */
-
 		addField(new ColorFieldEditor("colourkey12", "Parenthesis:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("BOLD_COLOURKEY12", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
-
-		/*
-		 * addField(new ColorFieldEditor("colourkey", "Colour Keywords:",
-		 * getFieldEditorParent())); addField(new
-		 * FontFieldEditor("colourkeyfont", "Font:", getFieldEditorParent()));
-		 * addField(new ColorFieldEditor("colourkey1", "Colour Type:",
-		 * getFieldEditorParent())); addField(new
-		 * FontFieldEditor("colourkeyfont1", "Font:", getFieldEditorParent()));
-		 * addField(new ColorFieldEditor("colourkey2", "Colour String:",
-		 * getFieldEditorParent())); addField(new
-		 * FontFieldEditor("colourkeyfont2", "Font:", getFieldEditorParent()));
-		 * addField(new ColorFieldEditor("colourkey3", "Colour Single Comment:",
-		 * getFieldEditorParent())); addField(new
-		 * FontFieldEditor("colourkeyfont3", "Font:", getFieldEditorParent()));
-		 * addField(new ColorFieldEditor("colourkey4", "Colour Default:",
-		 * getFieldEditorParent())); addField(new
-		 * FontFieldEditor("colourkeyfont4", "Font:", getFieldEditorParent()));
-		 * addField(new ColorFieldEditor("colourkey5", "Operators:",
-		 * getFieldEditorParent())); addField(new
-		 * FontFieldEditor("colourkeyfont5", "Font:", getFieldEditorParent()));
-		 * //addField(new ColorFieldEditor("colourkey6", "Braces:",
-		 * getFieldEditorParent())); //addField(new
-		 * FontFieldEditor("colourkeyfont6", "Font:", getFieldEditorParent()));
-		 * addField(new ColorFieldEditor("colourkey7", "Numbers:",
-		 * getFieldEditorParent())); addField(new
-		 * FontFieldEditor("colourkeyfont7", "Font:", getFieldEditorParent()));
-		 * addField(new ColorFieldEditor("colourkey8", "Decorators:",
-		 * getFieldEditorParent())); addField(new
-		 * FontFieldEditor("colourkeyfont8", "Font:", getFieldEditorParent()));
-		 * addField(new ColorFieldEditor("colourkey9", "Class Name:",
-		 * getFieldEditorParent())); addField(new
-		 * FontFieldEditor("colourkeyfont9", "Font:", getFieldEditorParent()));
-		 * addField(new ColorFieldEditor("colourkey10", "Function Name:",
-		 * getFieldEditorParent())); addField(new
-		 * FontFieldEditor("colourkeyfont10", "Font:", getFieldEditorParent()));
-		 * //addField(new ColorFieldEditor("colourkey11", "Self:",
-		 * getFieldEditorParent())); //addField(new
-		 * FontFieldEditor("colourkeyfont11", "Font:", getFieldEditorParent()));
-		 * addField(new ColorFieldEditor("colourkey12", "Parenthesis:",
-		 * getFieldEditorParent())); addField(new
-		 * FontFieldEditor("colourkeyfont12", "Font:", getFieldEditorParent()));
-		 */
 
 	}
 
@@ -157,14 +97,12 @@ public class WorkbenchPreferencePython extends FieldEditorPreferencePage impleme
 		PreferenceConverter.setDefault(store, "colourkey3", new RGB(63, 127, 95));
 		PreferenceConverter.setDefault(store, "colourkey4", new RGB(0, 0, 0));
 		PreferenceConverter.setDefault(store, "colourkey5", new RGB(0, 0, 0));
-		// PreferenceConverter.setDefault(store, "colourkey6", new RGB(0, 0,
-		// 0));
+
 		PreferenceConverter.setDefault(store, "colourkey7", new RGB(0, 0, 0));
 		PreferenceConverter.setDefault(store, "colourkey8", new RGB(0, 0, 0));
 		PreferenceConverter.setDefault(store, "colourkey9", new RGB(0, 0, 0));
 		PreferenceConverter.setDefault(store, "colourkey10", new RGB(0, 0, 0));
-		// PreferenceConverter.setDefault(store, "colourkey11", new RGB(0, 0,
-		// 0));
+
 		PreferenceConverter.setDefault(store, "colourkey12", new RGB(0, 0, 0));
 
 	}
@@ -179,35 +117,18 @@ public class WorkbenchPreferencePython extends FieldEditorPreferencePage impleme
 		PythonEditorPlugin fginstance = PythonEditorPlugin.getDefault();
 		ScriptCodeScanner scanner = (ScriptCodeScanner) fginstance.getScriptCodeScanner();
 		PythonScriptColorProvider provider = PythonEditorPlugin.getDefault().getScriptColorProvider();
-
-		// JFaceResources.getFontRegistry().get("com.eco.bio7.reditor.reditor.textfont").getFontData()
-
 		storeWorkbench.setValue("com.eco.bio7.pythoneditor.textfont", storeWorkbench.getDefaultString("com.eco.bio7.pythoneditor.textfont"));
 		PreferenceConverter.setValue(store, "colourkeyfont", JFaceResources.getFontRegistry().get("com.eco.bio7.pythoneditor.textfont").getFontData());
-		// rEditor.fontRegistry.put("colourkeyfont",
-		// JFaceResources.getFontRegistry().get("com.eco.bio7.reditor.reditor.textfont").getFontData());
 		scanner.keyword.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey")), null, 1));
 		scanner.type.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey1")), null, 1));
-		// rEditor.getRconf().single.att.setData(new
-		// TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store,
-		// "colourkey2")), null, 0));
-		// rEditor.getRconf().comment.att.setData(new
-		// TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store,
-		// "colourkey3")), null, 0));
 		scanner.string.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey2")), null, 0));
 		scanner.comment.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey3")), null, 0));
 		scanner.defaultOther.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey4")), null, 0));
 		scanner.operators.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey5")), null, 0));
-		// scanner.braces.setData(new
-		// TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store,
-		// "colourkey6")), null, 0));
 		scanner.numbers.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey7")), null, 0));
 		scanner.decorator.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey8")), null, 0));
 		scanner.className.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey9")), null, 0));
 		scanner.funcName.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey10")), null, 0));
-		// scanner.self.setData(new
-		// TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store,
-		// "colourkey11")), null, 0));
 		scanner.parenthesis.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey12")), null, 0));
 		pythonEditor.invalidateText();
 		super.performOk();
@@ -234,14 +155,7 @@ public class WorkbenchPreferencePython extends FieldEditorPreferencePage impleme
 			case "colourkey1":
 				scanner.type.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY1")));
 				break;
-			/*
-			 * case "colourkey2": rEditor.getRconf().single.att.setData(new
-			 * TextAttribute(provider.getColor(rgb), null,
-			 * isBold("BOLD_COLOURKEY2"))); break; case "colourkey3":
-			 * rEditor.getRconf().comment.att.setData(new
-			 * TextAttribute(provider.getColor(rgb), null,
-			 * isBold("BOLD_COLOURKEY3"))); break;
-			 */
+
 			case "colourkey2":
 				scanner.string.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY2")));
 				break;
@@ -254,11 +168,7 @@ public class WorkbenchPreferencePython extends FieldEditorPreferencePage impleme
 			case "colourkey5":
 				scanner.operators.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY5")));
 				break;
-			/*
-			 * case "colourkey6": scanner.braces.setData(new
-			 * TextAttribute(provider.getColor(rgb), null,
-			 * isBold("BOLD_COLOURKEY6"))); break;
-			 */
+
 			case "colourkey7":
 				scanner.numbers.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY7")));
 				break;
@@ -271,11 +181,7 @@ public class WorkbenchPreferencePython extends FieldEditorPreferencePage impleme
 			case "colourkey10":
 				scanner.funcName.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY10")));
 				break;
-			/*
-			 * case "colourkey11": scanner.self.setData(new
-			 * TextAttribute(provider.getColor(rgb), null,
-			 * isBold("BOLD_COLOURKEY11"))); break;
-			 */
+
 			case "colourkey12":
 				scanner.parenthesis.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY12")));
 				break;
@@ -314,22 +220,7 @@ public class WorkbenchPreferencePython extends FieldEditorPreferencePage impleme
 				}
 
 				break;
-			/*
-			 * case "BOLD_COLOURKEY2": if (fontData) {
-			 * rEditor.getRconf().single.att.setData(new
-			 * TextAttribute(provider.getColor(PreferenceConverter.getColor(
-			 * store, "colourkey2")), null, SWT.BOLD)); } else {
-			 * rEditor.getRconf().single.att.setData(new
-			 * TextAttribute(provider.getColor(PreferenceConverter.getColor(
-			 * store, "colourkey2")), null, SWT.NORMAL)); } break; case
-			 * "BOLD_COLOURKEY3": if (fontData) {
-			 * rEditor.getRconf().comment.att.setData(new
-			 * TextAttribute(provider.getColor(PreferenceConverter.getColor(
-			 * store, "colourkey3")), null, SWT.BOLD)); } else {
-			 * rEditor.getRconf().comment.att.setData(new
-			 * TextAttribute(provider.getColor(PreferenceConverter.getColor(
-			 * store, "colourkey3")), null, SWT.NORMAL)); } break;
-			 */
+
 			case "BOLD_COLOURKEY2":
 				if (fontData) {
 					scanner.string.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey2")), null, SWT.BOLD));
@@ -358,15 +249,7 @@ public class WorkbenchPreferencePython extends FieldEditorPreferencePage impleme
 					scanner.operators.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey5")), null, SWT.NORMAL));
 				}
 				break;
-			/*
-			 * case "BOLD_COLOURKEY6": if (fontData) {
-			 * scanner.braces.setData(new
-			 * TextAttribute(provider.getColor(PreferenceConverter.getColor(
-			 * store, "colourkey6")), null, SWT.BOLD)); } else {
-			 * scanner.braces.setData(new
-			 * TextAttribute(provider.getColor(PreferenceConverter.getColor(
-			 * store, "colourkey6")), null, SWT.NORMAL)); } break;
-			 */
+
 			case "BOLD_COLOURKEY7":
 				if (fontData) {
 					scanner.numbers.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey7")), null, SWT.BOLD));
@@ -395,14 +278,7 @@ public class WorkbenchPreferencePython extends FieldEditorPreferencePage impleme
 					scanner.funcName.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey10")), null, SWT.NORMAL));
 				}
 				break;
-			/*
-			 * case "BOLD_COLOURKEY11": if (fontData) { scanner.self.setData(new
-			 * TextAttribute(provider.getColor(PreferenceConverter.getColor(
-			 * store, "colourkey11")), null, SWT.BOLD)); } else {
-			 * scanner.self.setData(new
-			 * TextAttribute(provider.getColor(PreferenceConverter.getColor(
-			 * store, "colourkey11")), null, SWT.NORMAL)); } break;
-			 */
+
 			case "BOLD_COLOURKEY12":
 				if (fontData) {
 					scanner.parenthesis.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey12")), null, SWT.BOLD));
