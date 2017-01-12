@@ -127,9 +127,7 @@ public class BeanshellEditor extends TextEditor implements IPropertyChangeListen
 		
 	}
 	
-	/*protected void initializeKeyBindingScopes() {
-		setKeyBindingScopes(new String[] { "org.eclipse.ui.textEditorScope" });  
-	}*/
+	
 	
 	@Override
 	protected void handlePreferenceStoreChanged(PropertyChangeEvent event) {
@@ -257,6 +255,10 @@ public class BeanshellEditor extends TextEditor implements IPropertyChangeListen
 		addAction(menu, "Convert R Code");
 		menu.add(new Separator());
 		addAction(menu, "Editor Preferences");
+	}
+	
+	protected void initializeKeyBindingScopes() {
+		setKeyBindingScopes(new String[] { "com.eco.bio7.beanshell.editor.scope" });  
 	}
 
 	protected void createActions() {

@@ -18,38 +18,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 	@Override
 	public void initializeDefaultPreferences() {
 
-		String osname = System.getProperty("os.name");
-		String OS = "Windows";
-		if (osname.startsWith("Windows")) {
-			OS = "Windows";
-		} else if (osname.equals("Linux")) {
-			OS = "Linux";
-		} else if (osname.startsWith("Mac")) {
-			OS = "Mac";
-		}
-
-		// TODO Auto-generated method stub
-
-		IPreferenceStore storeBsh = BeanshellEditorPlugin.getDefault().getPreferenceStore();
-		/*String font = null;
-		int fsize = 10;
-
-		if (OS.equals("Windows")) {
-
-			font = "Courier New";
-			fsize = 10;
-		} else if (OS.equals("Linux")) {
-
-			font = "Courier New";
-			fsize = 10;
-
-		} else if (OS.equals("Mac")) {
-
-			font = "Helvetica Neue";
-			fsize = 14;
-
-		}*/
-		IPreferenceStore storeR = BeanshellEditorPlugin.getDefault().getPreferenceStore();
+		IPreferenceStore storeBsh = BeanshellEditorPlugin.getDefault().getPreferenceStore();		
 		FontData []f=JFaceResources.getFontRegistry().get("com.eco.bio7.beanshelleditor.textfont").getFontData();
 		
 		PreferenceConverter.setDefault(storeBsh, "colourkey", new RGB(127, 0, 85));

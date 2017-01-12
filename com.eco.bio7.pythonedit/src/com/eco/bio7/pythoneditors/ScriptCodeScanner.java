@@ -14,10 +14,7 @@ package com.eco.bio7.pythoneditors;
  *******************************************************************************/
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.text.TextAttribute;
@@ -27,17 +24,12 @@ import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.IWhitespaceDetector;
 import org.eclipse.jface.text.rules.IWordDetector;
 import org.eclipse.jface.text.rules.MultiLineRule;
-import org.eclipse.jface.text.rules.NumberRule;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.SingleLineRule;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.rules.WhitespaceRule;
 import org.eclipse.jface.text.rules.WordRule;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.widgets.Display;
-
 import com.eco.bio7.editors.python.PythonScriptColorProvider;
 import com.eco.bio7.pythonedit.PythonEditorPlugin;
 
@@ -57,9 +49,9 @@ public class ScriptCodeScanner extends RuleBasedScanner {
 
 	    };
 
-	private static String[] fgTypes = { "void", "boolean", "char", "byte", "short", "int", "long", "float", "double" };
+	//private static String[] fgTypes = { "void", "boolean", "char", "byte", "short", "int", "long", "float", "double" };
 
-	private static String[] fgConstants = { "false", "null", "true" };
+	//private static String[] fgConstants = { "false", "null", "true" };
 
 	public Token keyword;
 	public Token type;
@@ -98,35 +90,20 @@ public class ScriptCodeScanner extends RuleBasedScanner {
 		//RGB rgbkey11 = PreferenceConverter.getColor(store, "colourkey11");
 		RGB rgbkey12 = PreferenceConverter.getColor(store, "colourkey12");
 		
-		
-		FontData f=PreferenceConverter.getFontData(store, "colourkeyfont");
-		FontData f1=PreferenceConverter.getFontData(store, "colourkeyfont1");
-		FontData f2=PreferenceConverter.getFontData(store, "colourkeyfont2");
-		FontData f3=PreferenceConverter.getFontData(store, "colourkeyfont3");
-		FontData f4=PreferenceConverter.getFontData(store, "colourkeyfont4");
-		FontData f5=PreferenceConverter.getFontData(store, "colourkeyfont5");
-		//FontData f6=PreferenceConverter.getFontData(store, "colourkeyfont6");
-		FontData f7=PreferenceConverter.getFontData(store, "colourkeyfont7");
-		FontData f8=PreferenceConverter.getFontData(store, "colourkeyfont8");
-		FontData f9=PreferenceConverter.getFontData(store, "colourkeyfont9");
-		FontData f10=PreferenceConverter.getFontData(store, "colourkeyfont10");
-		//FontData f11=PreferenceConverter.getFontData(store, "colourkeyfont11");
-		FontData f12=PreferenceConverter.getFontData(store, "colourkeyfont12");
-		
 
-		keyword = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey), null, 1,new Font(Display.getCurrent(),f)));	
-		type = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey1), null, 1,new Font(Display.getCurrent(),f1)));
-		string = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey2), null, 1,new Font(Display.getCurrent(),f2)));
-		comment = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey3), null, 1,new Font(Display.getCurrent(),f3)));
-		defaultOther = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey4), null, 1,new Font(Display.getCurrent(),f4)));
-		operators = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey5), null, 1,new Font(Display.getCurrent(),f5)));
-		//braces = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey6), null, 1,new Font(Display.getCurrent(),f6)));
-		numbers = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey7), null, 1,new Font(Display.getCurrent(),f7)));
-		decorator = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey8), null, 1,new Font(Display.getCurrent(),f8)));
-		className = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey9), null, 1,new Font(Display.getCurrent(),f9)));
-		funcName = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey10), null, 1,new Font(Display.getCurrent(),f10)));
-		//self = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey11), null, 1,new Font(Display.getCurrent(),f11)));
-		parenthesis = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey12), null, 1,new Font(Display.getCurrent(),f12)));
+		keyword=new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey), null, isBold("BOLD_COLOURKEY")));	
+		type = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey1), null, isBold("BOLD_COLOURKEY1")));
+		string = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey2), null, isBold("BOLD_COLOURKEY2")));
+		comment = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey3), null, isBold("BOLD_COLOURKEY3")));
+		defaultOther = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey4), null, isBold("BOLD_COLOURKEY4")));
+		operators = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey5), null, isBold("BOLD_COLOURKEY5")));
+		//braces = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey6), null, isBold("BOLD_COLOURKEY6")));
+		numbers = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey7), null, isBold("BOLD_COLOURKEY7")));
+		decorator = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey8), null, isBold("BOLD_COLOURKEY8")));
+		className = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey9), null, isBold("BOLD_COLOURKEY9")));
+		funcName = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey10), null, isBold("BOLD_COLOURKEY10")));
+		//self = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey11), null, isBold("BOLD_COLOURKEY11")));
+		parenthesis = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey12), null, isBold("BOLD_COLOURKEY12")));
 		
 		List<IRule> rules = new ArrayList<IRule>();
 		rules.add(new MultiLineRule("\"\"\"", "\"\"\"", string,'\\'));
@@ -163,6 +140,15 @@ public class ScriptCodeScanner extends RuleBasedScanner {
 		IRule[] result = new IRule[rules.size()];
 		rules.toArray(result);
 		setRules(result);
+	}
+	private int isBold(String string2) {
+		int style = 0;
+		IPreferenceStore store = PythonEditorPlugin.getDefault().getPreferenceStore();
+		if (store.getBoolean(string2)) {
+			style = 1;
+		}
+
+		return style;
 	}
 
 	public IToken getComment() {

@@ -14,7 +14,8 @@
             extensions="bsh,groovy,js"
             icon="icons/groovy.png"
             id="com.eco.bio7.editors.TemplateEditor"
-            name="Bio7 Editor">
+            name="Bio7 Editor"
+            symbolicFontName="com.eco.bio7.beanshelleditor.textfont">
       </editor>
    </extension>
    <extension

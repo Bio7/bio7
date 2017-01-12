@@ -1,7 +1,5 @@
 package com.eco.bio7.beanshell.editor.preferences;
 
-
-
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.ColorFieldEditor;
@@ -29,10 +27,9 @@ import com.eco.bio7.editors.BeanshellEditor;
 import com.eco.bio7.editors.ScriptCodeScanner;
 import com.eco.bio7.editors.ScriptColorProvider;
 
-
-
-public class WorkbenchPreferencebsh  extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
+public class WorkbenchPreferencebsh extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 	private IPreferenceStore store;
+
 	public WorkbenchPreferencebsh() {
 		super(GRID);
 		store = BeanshellEditorPlugin.getDefault().getPreferenceStore();
@@ -40,10 +37,8 @@ public class WorkbenchPreferencebsh  extends FieldEditorPreferencePage implement
 		setDescription("Bio7 BeanShell/Grovvy Editor");
 	}
 
-	
+	public void createFieldEditors() {
 
-public void createFieldEditors() {
-		
 		final Link link = new Link(getFieldEditorParent(), SWT.NONE);
 		link.setText("See <a href=\"org.eclipse.ui.preferencePages.ColorsAndFonts\">'Colors and Fonts'</a> to configure the font.");
 		link.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 3, 1));
@@ -51,14 +46,13 @@ public void createFieldEditors() {
 		link.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(final SelectionEvent e) {
-				//create an instance of the custom MyPreference class
-				PreferencesUtil.createPreferenceDialogOn(new Shell(Display.getDefault()),"org.eclipse.ui.preferencePages.ColorsAndFonts", null, "selectFont:com.eco.bio7.beanshelleditor.textfont");
+				// create an instance of the custom MyPreference class
+				PreferencesUtil.createPreferenceDialogOn(new Shell(Display.getDefault()), "org.eclipse.ui.preferencePages.ColorsAndFonts", null, "selectFont:com.eco.bio7.beanshelleditor.textfont");
 
-				
 			}
 		});
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
-		
+
 		addField(new ColorFieldEditor("colourkey", "Colour Keywords:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("BOLD_COLOURKEY", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
@@ -83,8 +77,12 @@ public void createFieldEditors() {
 		addField(new ColorFieldEditor("colourkey7", "Numbers:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("BOLD_COLOURKEY7", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		/*addField(new ColorFieldEditor("colourkey8", "Assignment:", getFieldEditorParent()));
-		addField(new BooleanFieldEditor("BOLD_COLOURKEY8", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));*/
+		/*
+		 * addField(new ColorFieldEditor("colourkey8", "Assignment:",
+		 * getFieldEditorParent())); addField(new
+		 * BooleanFieldEditor("BOLD_COLOURKEY8", "Bold",
+		 * BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		 */
 
 	}
 
@@ -99,7 +97,10 @@ public void createFieldEditors() {
 		PreferenceConverter.setDefault(store, "colourkey5", new RGB(0, 0, 0));
 		PreferenceConverter.setDefault(store, "colourkey6", new RGB(0, 0, 0));
 		PreferenceConverter.setDefault(store, "colourkey7", new RGB(0, 0, 0));
-		/*PreferenceConverter.setDefault(store, "colourkey8", new RGB(0, 0, 0));*/
+		/*
+		 * PreferenceConverter.setDefault(store, "colourkey8", new RGB(0, 0,
+		 * 0));
+		 */
 
 	}
 
@@ -122,8 +123,12 @@ public void createFieldEditors() {
 		// JFaceResources.getFontRegistry().get("com.eco.bio7.reditor.reditor.textfont").getFontData());
 		scanner.keyword.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey")), null, 1));
 		scanner.type.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey1")), null, 1));
-		//rEditor.getRconf().single.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey2")), null, 0));
-		//rEditor.getRconf().comment.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey3")), null, 0));
+		// rEditor.getRconf().single.att.setData(new
+		// TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store,
+		// "colourkey2")), null, 0));
+		// rEditor.getRconf().comment.att.setData(new
+		// TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store,
+		// "colourkey3")), null, 0));
 		scanner.string.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey2")), null, 0));
 		scanner.comment.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey3")), null, 0));
 		scanner.other.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey4")), null, 0));
@@ -155,12 +160,14 @@ public void createFieldEditors() {
 			case "colourkey1":
 				scanner.type.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY1")));
 				break;
-			/*case "colourkey2":
-				rEditor.getRconf().single.att.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY2")));
-				break;
-			case "colourkey3":
-				rEditor.getRconf().comment.att.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY3")));
-				break;*/
+			/*
+			 * case "colourkey2": rEditor.getRconf().single.att.setData(new
+			 * TextAttribute(provider.getColor(rgb), null,
+			 * isBold("BOLD_COLOURKEY2"))); break; case "colourkey3":
+			 * rEditor.getRconf().comment.att.setData(new
+			 * TextAttribute(provider.getColor(rgb), null,
+			 * isBold("BOLD_COLOURKEY3"))); break;
+			 */
 			case "colourkey2":
 				scanner.string.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY2")));
 				break;
@@ -194,9 +201,9 @@ public void createFieldEditors() {
 			BeanshellEditorPlugin fginstance = BeanshellEditorPlugin.getDefault();
 			ScriptCodeScanner scanner = (ScriptCodeScanner) fginstance.getScriptCodeScanner();
 			ScriptColorProvider provider = BeanshellEditorPlugin.getDefault().getScriptColorProvider();
-			System.out.println(name);
+
 			switch (name) {
-			
+
 			case "BOLD_COLOURKEY":
 
 				if (fontData) {
@@ -214,20 +221,22 @@ public void createFieldEditors() {
 				}
 
 				break;
-			/*case "BOLD_COLOURKEY2":
-				if (fontData) {
-					rEditor.getRconf().single.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey2")), null, SWT.BOLD));
-				} else {
-					rEditor.getRconf().single.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey2")), null, SWT.NORMAL));
-				}
-				break;
-			case "BOLD_COLOURKEY3":
-				if (fontData) {
-					rEditor.getRconf().comment.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey3")), null, SWT.BOLD));
-				} else {
-					rEditor.getRconf().comment.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey3")), null, SWT.NORMAL));
-				}
-				break;*/
+			/*
+			 * case "BOLD_COLOURKEY2": if (fontData) {
+			 * rEditor.getRconf().single.att.setData(new
+			 * TextAttribute(provider.getColor(PreferenceConverter.getColor(
+			 * store, "colourkey2")), null, SWT.BOLD)); } else {
+			 * rEditor.getRconf().single.att.setData(new
+			 * TextAttribute(provider.getColor(PreferenceConverter.getColor(
+			 * store, "colourkey2")), null, SWT.NORMAL)); } break; case
+			 * "BOLD_COLOURKEY3": if (fontData) {
+			 * rEditor.getRconf().comment.att.setData(new
+			 * TextAttribute(provider.getColor(PreferenceConverter.getColor(
+			 * store, "colourkey3")), null, SWT.BOLD)); } else {
+			 * rEditor.getRconf().comment.att.setData(new
+			 * TextAttribute(provider.getColor(PreferenceConverter.getColor(
+			 * store, "colourkey3")), null, SWT.NORMAL)); } break;
+			 */
 			case "BOLD_COLOURKEY2":
 				if (fontData) {
 					scanner.string.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey2")), null, SWT.BOLD));

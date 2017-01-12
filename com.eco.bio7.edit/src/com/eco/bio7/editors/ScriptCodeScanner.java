@@ -113,7 +113,7 @@ public class ScriptCodeScanner extends RuleBasedScanner {
 		numbers = new Token(new TextAttribute(provider.getColor(rgbkey7), null, 1,new Font(Display.getCurrent(),f7)));*/
 		//multiLineComment = new Token(new TextAttribute(provider.getColor(rgbkey8), null, 1,new Font(Display.getCurrent(),f8)));
 
-		List rules = new ArrayList();
+		List<IRule> rules = new ArrayList<IRule>();
 
 		// Add rule for single line comments.
 		rules.add(new EndOfLineRule("//", comment));
