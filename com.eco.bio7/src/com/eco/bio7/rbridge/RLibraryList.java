@@ -166,7 +166,7 @@ public class RLibraryList extends Shell {
 				e2.printStackTrace();
 			}
 
-			for (int i = 1; i < b; i++) {
+			for (int i = 1; i <= b; i++) {
 
 				String st = null;
 

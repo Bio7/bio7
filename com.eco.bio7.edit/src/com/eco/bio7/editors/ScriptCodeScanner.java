@@ -72,19 +72,8 @@ public class ScriptCodeScanner extends RuleBasedScanner {
 		RGB rgbkey5 = PreferenceConverter.getColor(store, "colourkey5");
 		RGB rgbkey6 = PreferenceConverter.getColor(store, "colourkey6");
 		RGB rgbkey7 = PreferenceConverter.getColor(store, "colourkey7");
-		//RGB rgbkey8 = PreferenceConverter.getColor(store, "colourkey8");
 		
-		
-		/*FontData f=PreferenceConverter.getFontData(store, "colourkeyfont");
-		FontData f1=PreferenceConverter.getFontData(store, "colourkeyfont1");
-		FontData f2=PreferenceConverter.getFontData(store, "colourkeyfont2");
-		FontData f3=PreferenceConverter.getFontData(store, "colourkeyfont3");
-		FontData f4=PreferenceConverter.getFontData(store, "colourkeyfont4");
-		FontData f5=PreferenceConverter.getFontData(store, "colourkeyfont5");
-		FontData f6=PreferenceConverter.getFontData(store, "colourkeyfont6");
-		FontData f7=PreferenceConverter.getFontData(store, "colourkeyfont7");
-		//FontData f8=PreferenceConverter.getFontData(store, "colourkeyfont8");
-*/		
+	
 		
 
 		keyword = new Token(new TextAttribute(provider.getColor(rgbkey), null, isBold("BOLD_COLOURKEY")));
