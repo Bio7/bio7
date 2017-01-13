@@ -492,6 +492,11 @@
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
             keySequence="CTRL+ALT+P">
       </keyBinding>
+      <command
+            description="Interpret JavaScript"
+            id="com.eco.bio7.interpretjavascriptaction"
+            name="Interpret JavaScript Action">
+      </command>
    </extension>
    <extension
          id="product"
@@ -1594,6 +1599,27 @@
                     </equals>
                     <equals
                           value="winterwell.markdown.editors.MarkdownEditor">
+                    </equals>
+                 </or>
+              </with>
+           </visibleWhen>
+        </command>
+        <command
+              commandId="com.eco.bio7.interpretjavascriptaction"
+              disabledIcon="icons/editor/javascriptinterpret.png"
+              icon="icons/editor/javascriptinterpret.png"
+              id="bio7toolbar.interpretjavascript"
+              label="Interpret JavaScript"
+              style="push">
+           <visibleWhen>
+              <with
+                    variable="activePartId">
+                 <or>
+                    <equals
+                          value="org.eclipse.ui.DefaultTextEditor">
+                    </equals>
+                    <equals
+                          value="org.python.pydev.editor.PythonEditor">
                     </equals>
                  </or>
               </with>

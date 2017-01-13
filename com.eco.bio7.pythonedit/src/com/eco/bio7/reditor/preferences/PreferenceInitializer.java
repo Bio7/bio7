@@ -4,8 +4,6 @@ import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
 import com.eco.bio7.pythonedit.PythonEditorPlugin;
@@ -19,39 +17,11 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 	@Override
 	public void initializeDefaultPreferences() {
 
-		String osname = System.getProperty("os.name");
-		String OS = "Windows";
-		if (osname.startsWith("Windows")) {
-			OS = "Windows";
-		} else if (osname.equals("Linux")) {
-			OS = "Linux";
-		} else if (osname.startsWith("Mac")) {
-			OS = "Mac";
-		}
+		
 
-		// TODO Auto-generated method stub
-
-		IPreferenceStore store = PythonEditorPlugin.getDefault().getPreferenceStore();
-		/*String font = null;
-		int fsize = 10;
-
-		if (OS.equals("Windows")) {
-
-			font = "Courier New";
-			fsize = 10;
-		} else if (OS.equals("Linux")) {
-
-			font = "Courier New";
-			fsize = 10;
-
-		} else if (OS.equals("Mac")) {
-
-			font = "Helvetica Neue";
-			fsize = 14;
-
-		}*/
-		Font f= JFaceResources.getFont(JFaceResources.TEXT_FONT);
 		IPreferenceStore storePython = PythonEditorPlugin.getDefault().getPreferenceStore();
+		FontData []f=JFaceResources.getFontRegistry().get("com.eco.bio7.pythoneditor.textfont").getFontData();
+		
 		PreferenceConverter.setDefault(storePython, "colourkey", new RGB(127, 0, 85));
 		PreferenceConverter.setDefault(storePython, "colourkey1", new RGB(127, 0, 85));
 		PreferenceConverter.setDefault(storePython, "colourkey2", new RGB(42, 0, 255));
@@ -68,21 +38,21 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		// 0, 0));
 		PreferenceConverter.setDefault(storePython, "colourkey12", new RGB(0, 0, 0));
 
-		PreferenceConverter.setDefault(storePython, "colourkeyfont", f.getFontData());
-		PreferenceConverter.setDefault(storePython, "colourkeyfont1", f.getFontData());
-		PreferenceConverter.setDefault(storePython, "colourkeyfont2", f.getFontData());
-		PreferenceConverter.setDefault(storePython, "colourkeyfont3", f.getFontData());
-		PreferenceConverter.setDefault(storePython, "colourkeyfont4", f.getFontData());
-		PreferenceConverter.setDefault(storePython, "colourkeyfont5", f.getFontData());
+		PreferenceConverter.setDefault(storePython, "colourkeyfont", f);
+		PreferenceConverter.setDefault(storePython, "colourkeyfont1", f);
+		PreferenceConverter.setDefault(storePython, "colourkeyfont2", f);
+		PreferenceConverter.setDefault(storePython, "colourkeyfont3", f);
+		PreferenceConverter.setDefault(storePython, "colourkeyfont4", f);
+		PreferenceConverter.setDefault(storePython, "colourkeyfont5", f);
 		// PreferenceConverter.setDefault(storePython, "colourkeyfont6", new
 		// FontData("Courier New", 10, 0));
-		PreferenceConverter.setDefault(storePython, "colourkeyfont7", f.getFontData());
-		PreferenceConverter.setDefault(storePython, "colourkeyfont8", f.getFontData());
-		PreferenceConverter.setDefault(storePython, "colourkeyfont9", f.getFontData());
-		PreferenceConverter.setDefault(storePython, "colourkeyfont10", f.getFontData());
+		PreferenceConverter.setDefault(storePython, "colourkeyfont7", f);
+		PreferenceConverter.setDefault(storePython, "colourkeyfont8", f);
+		PreferenceConverter.setDefault(storePython, "colourkeyfont9", f);
+		PreferenceConverter.setDefault(storePython, "colourkeyfont10", f);
 		// PreferenceConverter.setDefault(storePython, "colourkeyfon11", new
 		// FontData("Courier New", 10, 0));
-		PreferenceConverter.setDefault(storePython, "colourkeyfont12", f.getFontData());
+		PreferenceConverter.setDefault(storePython, "colourkeyfont12", f);
 
 	}
 

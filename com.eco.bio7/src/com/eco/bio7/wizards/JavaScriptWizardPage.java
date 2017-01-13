@@ -97,7 +97,7 @@ public class JavaScriptWizardPage extends WizardPage {
 				containerText.setText(container.getFullPath().toString());
 			}
 		}
-		fileText.setText("template.js");
+		fileText.setText("file.js");
 	}
 
 	
