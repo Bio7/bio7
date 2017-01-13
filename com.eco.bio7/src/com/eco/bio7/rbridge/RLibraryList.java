@@ -9,8 +9,12 @@
  *     M. Austenfeld
  *******************************************************************************/
 
-
 package com.eco.bio7.rbridge;
+
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -39,6 +43,8 @@ import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.reditors.REditor;
+import com.eco.bio7.util.Util;
+
 import org.eclipse.swt.widgets.Label;
 
 public class RLibraryList extends Shell {
@@ -47,83 +53,84 @@ public class RLibraryList extends Shell {
 
 	public RLibraryList(Display display, int style) {
 		super(display, style);
-		
-		//setImage(SWTResourceManager.getImage(RLibraryList.class, "/pics/logo.gif"));
+
+		// setImage(SWTResourceManager.getImage(RLibraryList.class,
+		// "/pics/logo.gif"));
 		/* Reparse the document! */
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		
-						allPackagesList = new List(this, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
-						allPackagesList.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 4));
-						
-								allPackagesList.addMouseListener(new MouseAdapter() {
-									public void mouseDoubleClick(final MouseEvent e) {
-										if (RServe.isAlive()) {
-											if (RState.isBusy() == false) {
-												RState.setBusy(true);
-												LoadRLibrarysJob Do = new LoadRLibrarysJob(editor);
-												Do.addJobChangeListener(new JobChangeAdapter() {
-													public void done(IJobChangeEvent event) {
-														if (event.getResult().isOK()) {
-															RState.setBusy(false);
-														} else {
-															RState.setBusy(false);
-														}
-													}
-												});
-												Do.setUser(true);
-												Do.schedule();
-											} else {
-						
-												Bio7Dialog.message("Rserve is busy!");
-						
-											}
-										} else {
-											System.out.println("No Rserve connection available !");
-										}
-						
-									}
-								});
-								allPackagesList.addSelectionListener(new SelectionAdapter() {
-									public void widgetSelected(final SelectionEvent e) {
 
-									}
-								});
-		
-				final Button uninstallButton = new Button(this, SWT.NONE);
-				uninstallButton.setToolTipText("Removes installed packages/bundles and updates index information as necessary. ");
-				GridData gd_uninstallButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
-				gd_uninstallButton.heightHint = 40;
-				uninstallButton.setLayoutData(gd_uninstallButton);
-				uninstallButton.addSelectionListener(new SelectionAdapter() {
-					public void widgetSelected(final SelectionEvent e) {
-						if (RServe.isAlive()) {
-							if (RState.isBusy() == false) {
-								RState.setBusy(true);
-								RemoveRLibrarysJob Do = new RemoveRLibrarysJob();
-								Do.addJobChangeListener(new JobChangeAdapter() {
-									public void done(IJobChangeEvent event) {
-										if (event.getResult().isOK()) {
-											RState.setBusy(false);
-										} else {
-											RState.setBusy(false);
-										}
-									}
-								});
-								Do.setUser(true);
-								Do.schedule();
-							} else {
+		allPackagesList = new List(this, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
+		allPackagesList.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 4));
 
-								Bio7Dialog.message("Rserve is busy!");
-
+		allPackagesList.addMouseListener(new MouseAdapter() {
+			public void mouseDoubleClick(final MouseEvent e) {
+				if (RServe.isAlive()) {
+					if (RState.isBusy() == false) {
+						RState.setBusy(true);
+						LoadRLibrarysJob Do = new LoadRLibrarysJob(editor);
+						Do.addJobChangeListener(new JobChangeAdapter() {
+							public void done(IJobChangeEvent event) {
+								if (event.getResult().isOK()) {
+									RState.setBusy(false);
+								} else {
+									RState.setBusy(false);
+								}
 							}
-						} else {
-							System.out.println("No Rserve connection available !");
-						}
+						});
+						Do.setUser(true);
+						Do.schedule();
+					} else {
+
+						Bio7Dialog.message("Rserve is busy!");
 
 					}
-				});
-				uninstallButton.setText("Remove");
-				createContents();
+				} else {
+					System.out.println("No Rserve connection available !");
+				}
+
+			}
+		});
+		allPackagesList.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+
+			}
+		});
+
+		final Button uninstallButton = new Button(this, SWT.NONE);
+		uninstallButton.setToolTipText("Removes installed packages/bundles and updates index information as necessary. ");
+		GridData gd_uninstallButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
+		gd_uninstallButton.heightHint = 40;
+		uninstallButton.setLayoutData(gd_uninstallButton);
+		uninstallButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				if (RServe.isAlive()) {
+					if (RState.isBusy() == false) {
+						RState.setBusy(true);
+						RemoveRLibrarysJob Do = new RemoveRLibrarysJob();
+						Do.addJobChangeListener(new JobChangeAdapter() {
+							public void done(IJobChangeEvent event) {
+								if (event.getResult().isOK()) {
+									RState.setBusy(false);
+								} else {
+									RState.setBusy(false);
+								}
+							}
+						});
+						Do.setUser(true);
+						Do.schedule();
+					} else {
+
+						Bio7Dialog.message("Rserve is busy!");
+
+					}
+				} else {
+					System.out.println("No Rserve connection available !");
+				}
+
+			}
+		});
+		uninstallButton.setText("Remove");
+		createContents();
 	}
 
 	/**
@@ -133,10 +140,10 @@ public class RLibraryList extends Shell {
 		setText("Libraries");
 		setSize(323, 743);
 		setLayout(new GridLayout(2, true));
-		
+
 		Button btnAddLibraryDeclaration = new Button(this, SWT.NONE);
 		btnAddLibraryDeclaration.addSelectionListener(new SelectionAdapter() {
-			
+
 			public void widgetSelected(SelectionEvent e) {
 				setInDocument(allPackagesList);
 			}
@@ -147,45 +154,60 @@ public class RLibraryList extends Shell {
 		gd_btnAddLibraryDeclaration.heightHint = 40;
 		btnAddLibraryDeclaration.setLayoutData(gd_btnAddLibraryDeclaration);
 		btnAddLibraryDeclaration.setText("Add selected to R editor");
-		RConnection c = RServe.getConnection();
-		int b = 0;
+
+		RConnection c = REditor.getRserveConnection();
 		if (c != null) {
+			if (RState.isBusy() == false) {
+				RState.setBusy(true);
+				Display display = Util.getDisplay();
+				display.syncExec(() -> {
+					int b = 0;
+					if (c != null) {
 
-			try {
-				c.eval("try(.bio7ListOfWebPackages <- list(sort(.packages(all.available = TRUE))))");
+						try {
+							c.eval("try(.bio7ListOfWebPackages <- list(sort(.packages(all.available = TRUE))))");
 
-				c.eval(".bio7ListOfWebPackagesNames<-.bio7ListOfWebPackages[[1]]");
-				try {
-					b = (int) c.eval("length(.bio7ListOfWebPackagesNames)").asInteger();
-				} catch (REXPMismatchException e1) {
+							c.eval(".bio7ListOfWebPackagesNames<-.bio7ListOfWebPackages[[1]]");
+							try {
+								b = (int) c.eval("length(.bio7ListOfWebPackagesNames)").asInteger();
+							} catch (REXPMismatchException e11) {
 
-					e1.printStackTrace();
-				}
-			} catch (RserveException e2) {
+								e11.printStackTrace();
+							}
+						} catch (RserveException e2) {
 
-				e2.printStackTrace();
+							e2.printStackTrace();
+						}
+
+						for (int i = 1; i <= b; i++) {
+
+							String st = null;
+
+							try {
+								st = (String) c.eval(".bio7ListOfWebPackagesNames[" + i + "]").asString();
+							} catch (REXPMismatchException e12) {
+
+								e12.printStackTrace();
+							} catch (RserveException e13) {
+
+								e13.printStackTrace();
+							}
+
+							allPackagesList.add(st);
+
+						}
+
+					}
+
+				});
+				RState.setBusy(false);
+			} else {
+				System.out.println("Rserve is busy!");
 			}
+		}
 
-			for (int i = 1; i <= b; i++) {
-
-				String st = null;
-
-				try {
-					st = (String) c.eval(".bio7ListOfWebPackagesNames[" + i + "]").asString();
-				} catch (REXPMismatchException e1) {
-
-					e1.printStackTrace();
-				} catch (RserveException e1) {
-
-					e1.printStackTrace();
-				}
-
-				allPackagesList.add(st);
-
-			}
-
-		} else {
-			System.out.println("No Rserve connection available !");
+		else {
+			System.out.println("No Rserve connection available!");
 		}
 
 		//
@@ -203,12 +225,13 @@ public class RLibraryList extends Shell {
 	public static List getAllPackagesList() {
 		return allPackagesList;
 	}
+
 	private void setInDocument(List aList) {
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		if (editor != null && editor instanceof REditor) {
 
 			String[] items = aList.getSelection();
-			StringBuffer buff=new StringBuffer();
+			StringBuffer buff = new StringBuffer();
 			for (int i = 0; i < items.length; i++) {
 				buff.append("library(");
 				buff.append(items[i]);

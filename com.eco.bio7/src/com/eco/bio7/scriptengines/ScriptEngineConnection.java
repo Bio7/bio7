@@ -21,6 +21,7 @@ public class ScriptEngineConnection {
 	private static ScriptEngine groovyShell = new ScriptEngineManager().getEngineByName("groovy");
 	private static ScriptEngine scriptingEnginePython = new ScriptEngineManager().getEngineByName("python");
 	private static ScriptEngine scriptingEngineBeanShell = new ScriptEngineManager().getEngineByName("beanshell");
+	private static ScriptEngine scriptingEngineJavaScript = new ScriptEngineManager().getEngineByName("JavaScript");
 
 	/**
 	 * Get the current Bio7 Groovy connection.
@@ -49,6 +50,15 @@ public class ScriptEngineConnection {
 	public static ScriptEngine getScriptingEngineBeanShell() {
 		return scriptingEngineBeanShell;
 	}
+	
+	/**
+	 * Get the current Bio7 BeanShell connection.
+	 * 
+	 * @return the BeanShell connection
+	 */
+	public static ScriptEngine getScriptingEngineJavaScript() {
+		return scriptingEngineJavaScript;
+	}
 
 	/**
 	 * Reinitializes the BeanShell interpreter.
@@ -69,6 +79,13 @@ public class ScriptEngineConnection {
 	 */
 	public static void reinitializeJython() {
 		scriptingEnginePython = new ScriptEngineManager().getEngineByName("python");
+	}
+	
+	/**
+	 * Reinitializes the Jython interpreter.
+	 */
+	public static void reinitializeJavaScript() {
+		scriptingEnginePython = new ScriptEngineManager().getEngineByName("JavaScript");
 	}
 
 }

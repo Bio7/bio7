@@ -11,7 +11,7 @@
             class="com.eco.bio7.editors.BeanshellEditor"
             contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
             default="true"
-            extensions="bsh,groovy,js"
+            extensions="bsh,groovy"
             icon="icons/groovy.png"
             id="com.eco.bio7.editors.TemplateEditor"
             name="Bio7 Editor"
@@ -23,7 +23,7 @@
          name="%documentSetupParticipantName"
          point="org.eclipse.core.filebuffers.documentSetup">
       <participant
-            extensions="bsh,groovy,js"
+            extensions="bsh,groovy"
             class="com.eco.bio7.editors.ScriptDocumentSetupParticipant">
       </participant>
    </extension>

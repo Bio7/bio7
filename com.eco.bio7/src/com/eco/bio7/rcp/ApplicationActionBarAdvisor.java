@@ -56,6 +56,7 @@ import com.eco.bio7.actions.FlowExternalStartAction;
 import com.eco.bio7.actions.FlowStopAction;
 import com.eco.bio7.actions.Interpret;
 import com.eco.bio7.actions.InterpretPython;
+import com.eco.bio7.actions.JavaScriptInterpret;
 import com.eco.bio7.actions.LibreOfficeConnection;
 import com.eco.bio7.actions.OfficeOpenAction;
 import com.eco.bio7.actions.OfficeSendValueAction;
@@ -237,6 +238,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	//private IWorkbenchAction switchWorkspaceAction;
 
 	private IWorkbenchAction refreshAction;
+
+	private JavaScriptInterpret javaScriptInterpret;
 
 	//private FastOpenScriptAction fastOpenScriptAction;
 
@@ -427,6 +430,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		interpretPython = new InterpretPython("Interpret Python");
 		register(interpretPython);
+		
+		javaScriptInterpret = new JavaScriptInterpret("Interpret JavaScript");
+		register(javaScriptInterpret);
 
 		knitrAction = new KnitrAction();
 		register(knitrAction);
