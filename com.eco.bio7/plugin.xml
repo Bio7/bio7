@@ -1619,7 +1619,7 @@
                           value="org.eclipse.ui.DefaultTextEditor">
                     </equals>
                     <equals
-                          value="org.python.pydev.editor.PythonEditor">
+                          value="org.eclipse.wst.jsdt.ui.CompilationUnitEditor">
                     </equals>
                  </or>
               </with>
