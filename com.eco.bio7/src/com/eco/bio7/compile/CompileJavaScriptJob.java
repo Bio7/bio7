@@ -32,7 +32,7 @@ class CompileJavaScriptJob extends WorkspaceJob implements IJobChangeListener {
 
 	private String script;
 
-	//public static String COMPILE_IMPORTS = InterpreterMessages.getString("Import.jython");
+	public static String COMPILE_IMPORTS = InterpreterMessages.getString("Import.javascript");
 
 	public CompileJavaScriptJob(String aScript, String source) {
 		super("Interpret Source");
@@ -43,15 +43,15 @@ class CompileJavaScriptJob extends WorkspaceJob implements IJobChangeListener {
 
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
 		monitor.beginTask("Interpret the source...", IProgressMonitor.UNKNOWN);
-		//String head = COMPILE_IMPORTS;
-		ScriptEngine enginePython = ScriptEngineConnection.getScriptingEngineJavaScript();
+		String head = COMPILE_IMPORTS;
+		ScriptEngine engineJavaScript = ScriptEngineConnection.getScriptingEngineJavaScript();
 		if (source == null) {
 			StringBuffer buffer = new StringBuffer();
-			//buffer.append(head);
+			buffer.append(head);
 			buffer.append(aScript);
 			script = buffer.toString();
 
-			ScriptEngine gs = enginePython;
+			ScriptEngine gs = engineJavaScript;
 			try {
 				gs.eval(script);
 			} catch (ScriptException e) {
@@ -64,10 +64,10 @@ class CompileJavaScriptJob extends WorkspaceJob implements IJobChangeListener {
 			
 		} else if (aScript == null) {
 			/*
-			 * Interprets the python code. 
+			 * Interprets the JavaScript code. 
 			 * 
 			 * */
-			ScriptEngine gs = enginePython;
+			ScriptEngine gs = engineJavaScript;
 			
 			FileReader reader = null;
 			try {
@@ -77,7 +77,7 @@ class CompileJavaScriptJob extends WorkspaceJob implements IJobChangeListener {
 				e1.printStackTrace();
 			}
 			try {
-				//gs.eval(head);
+				gs.eval(head);
 				gs.eval(reader);
 			} catch (ScriptException e) {
 				// TODO Auto-generated catch block

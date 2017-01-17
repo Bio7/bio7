@@ -1024,6 +1024,39 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 				}
 				break;
+			case "javascript":
+
+				try {
+					if (in != null) {
+						System.out.print("javascript>");
+						input = in.readLine();
+					}
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				if (input == null)
+					break;
+				else {
+					if (ignore == false) {
+						if (input != null && input.equals("") == false) {
+							list.add(input);
+						}
+					}
+					ScriptEngine gs = ScriptEngineConnection.getScriptingEngineJavaScript();
+
+					try {
+						gs.eval(input);
+					} catch (ScriptException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					ignore = false;
+					// System.out.println();
+					System.out.flush();
+
+				}
+				break;
 			/*
 			 * case "r": System.out.print("System>");
 			 * 
