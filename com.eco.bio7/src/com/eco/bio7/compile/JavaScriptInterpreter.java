@@ -35,7 +35,7 @@ public class JavaScriptInterpreter {
 
 	private static CompileJavaScriptJob ab;
 
-	//private static String COMPILE_IMPORTS = InterpreterMessages.getString("Import.jython");
+	private static String COMPILE_IMPORTS = InterpreterMessages.getString("Import.javascript");
 
 	/**
 	 * Interprets the source or a String expression with a progress monitor. One argument has to be chosen (null reference for the other argument !).
@@ -59,7 +59,7 @@ public class JavaScriptInterpreter {
 					pm.worked(1);
 
 					StringBuffer buffer = new StringBuffer();
-					//buffer.append(COMPILE_IMPORTS);
+					buffer.append(COMPILE_IMPORTS);
 					buffer.append(aScript);
 					String script = buffer.toString();
 					javaScriptInterpret(script, source);
@@ -99,7 +99,7 @@ public class JavaScriptInterpreter {
 	 */
 	public static void doInterpret(final String aScript, final String source) {
 		StringBuffer buffer = new StringBuffer();
-		//buffer.append(COMPILE_IMPORTS);
+		buffer.append(COMPILE_IMPORTS);
 		buffer.append(aScript);
 
 		try {
@@ -116,7 +116,7 @@ public class JavaScriptInterpreter {
 	}
 
 	/*
-	 * Interprets the Jython code. File content is converted to a string
+	 * Interprets the JavaScript code. File content is converted to a string
 	 */
 	private static void javaScriptInterpret(final String aScript, final String source) {
 		if (source == null) {

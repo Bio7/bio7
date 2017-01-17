@@ -201,6 +201,24 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 			}
 		});
+		
+		MenuItem menuItem31 = new MenuItem(fMenu, SWT.PUSH);
+		menuItem31.setText("Reinitialize JavaScript");
+
+		menuItem31.addSelectionListener(new SelectionListener() {
+
+			public void selectionChanged(SelectionChangedEvent event) {
+
+			}
+
+			public void widgetSelected(SelectionEvent e) {
+				ScriptEngineConnection.reinitializeJavaScript();
+			}
+
+			public void widgetDefaultSelected(SelectionEvent e) {
+
+			}
+		});
 		new MenuItem(fMenu, SWT.SEPARATOR);
 
 		MenuItem menuItem4 = new MenuItem(fMenu, SWT.PUSH);

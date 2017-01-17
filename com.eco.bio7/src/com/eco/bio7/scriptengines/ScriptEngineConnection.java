@@ -21,7 +21,8 @@ public class ScriptEngineConnection {
 	private static ScriptEngine groovyShell = new ScriptEngineManager().getEngineByName("groovy");
 	private static ScriptEngine scriptingEnginePython = new ScriptEngineManager().getEngineByName("python");
 	private static ScriptEngine scriptingEngineBeanShell = new ScriptEngineManager().getEngineByName("beanshell");
-	private static ScriptEngine scriptingEngineJavaScript = new ScriptEngineManager().getEngineByName("JavaScript");
+	private static ScriptEngine scriptingEngineJavaScript = new ScriptEngineManager().getEngineByName("Nashorn");
+	
 
 	/**
 	 * Get the current Bio7 Groovy connection.
