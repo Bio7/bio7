@@ -34,8 +34,10 @@ public class REvaluateExpressionsJob extends WorkspaceJob {
 		monitor.beginTask("Evaluate Expression", IProgressMonitor.UNKNOWN);
 
 		for (int i = 0; i < expressionArray.length; i++) {
-			evaluate(i);
-			System.out.println();
+			if (expressionArray[i].isEmpty() == false) {
+				evaluate(i);
+				System.out.println();
+			}
 		}
 
 		return Status.OK_STATUS;

@@ -41,6 +41,7 @@ import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
@@ -126,6 +127,8 @@ import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.completion.ShellCompletion;
 import com.eco.bio7.rbridge.plot.RPlot;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
+import com.eco.bio7.reditor.actions.OpenFileCreateSourceTemplate;
+import com.eco.bio7.reditor.actions.SaveFileCreateSourceTemplate;
 import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.util.Util;
@@ -270,8 +273,7 @@ public class RShellView extends ViewPart {
 		gd_text.widthHint = 570;
 		text.setLayoutData(gd_text);
 		final ControlDecoration txtIndication = new ControlDecoration(text, SWT.TOP | SWT.LEFT);
-		FieldDecoration textDecoration = FieldDecorationRegistry.getDefault()
-				.getFieldDecoration(FieldDecorationRegistry.DEC_ERROR);
+		FieldDecoration textDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_ERROR);
 		Image img = textDecoration.getImage();
 		txtIndication.setImage(img);
 		txtIndication.setDescriptionText("Parse error! Please enter valid R commands!");
@@ -311,8 +313,7 @@ public class RShellView extends ViewPart {
 
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if (((e.stateMask & SWT.CTRL) == SWT.CTRL) && (e.stateMask & SWT.ALT) == SWT.ALT
-						&& (e.keyCode == 'r')) {
+				if (((e.stateMask & SWT.CTRL) == SWT.CTRL) && (e.stateMask & SWT.ALT) == SWT.ALT && (e.keyCode == 'r')) {
 
 					/*
 					 * Add code completion to textfield! At startup load the
@@ -325,6 +326,25 @@ public class RShellView extends ViewPart {
 
 					}
 
+				} else if (((e.stateMask & SWT.CTRL) == SWT.CTRL) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.stateMask & SWT.ALT) == SWT.ALT && (e.keyCode == 'o')) {
+
+					/*
+					 * We us the dialog also for the R editor so we wrap the
+					 * text in an IDocument!
+					 */
+					IDocument doc = new Document();
+					new OpenFileCreateSourceTemplate(doc, 0, doc.getLength());
+					String t = text.getText();
+					String a = t.substring(0, text.getCaretPosition());
+					String b = t.substring(text.getCaretPosition(), t.length());
+					text.setText(a + doc.get() + b);
+
+				}
+
+				else if (((e.stateMask & SWT.CTRL) == SWT.CTRL) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.stateMask & SWT.ALT) == SWT.ALT && (e.keyCode == 's')) {
+					IDocument doc = new Document();
+					new SaveFileCreateSourceTemplate(doc, 0, doc.getLength());
+					text.setText(doc.get());
 				}
 
 			}
@@ -434,8 +454,7 @@ public class RShellView extends ViewPart {
 								monitor.beginTask("Help ...", IProgressMonitor.UNKNOWN);
 
 								try {
-									RServe.getConnection()
-											.eval("try(help.start(remote=paste(\"file://\", R.home(), sep=\"\")))");
+									RServe.getConnection().eval("try(help.start(remote=paste(\"file://\", R.home(), sep=\"\")))");
 
 								} catch (RserveException e1) {
 
@@ -505,8 +524,7 @@ public class RShellView extends ViewPart {
 
 										}
 									});
-									c.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".html\", sep=\"\"))")
-											.toString();
+									c.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".html\", sep=\"\"))").toString();
 									c.eval("tryCatch(tools::Rd2HTML(utils:::.getHelpFile(?" + htmlHelpText
 											+ "),.bio7TempHtmlHelpFile,package=\"tools\", stages=c(\"install\", \"render\")),warning = function(w) {print(paste(\"negative argument\", x))})");
 									String out = null;
@@ -592,8 +610,7 @@ public class RShellView extends ViewPart {
 					}
 					if (interpreterSelection.equals("R")) {
 						try {
-							Process p = Runtime.getRuntime()
-									.exec(pathBundle + "/SendSignalCtrlC.exe " + rPid.getPidWindows(RProcess));
+							Process p = Runtime.getRuntime().exec(pathBundle + "/SendSignalCtrlC.exe " + rPid.getPidWindows(RProcess));
 
 						} catch (IOException ex) {
 							ex.printStackTrace();
@@ -615,7 +632,7 @@ public class RShellView extends ViewPart {
 
 			}
 		});
-		
+
 		btnNewButton.setToolTipText("Interrupt R execution");
 		btnNewButton.setImage(Bio7Plugin.getImageDescriptor("/icons/views/deleteaction.png").createImage());
 		tab = new CTabFolder(parent, SWT.NONE);
@@ -1137,8 +1154,7 @@ public class RShellView extends ViewPart {
 				ToolTip infoTip = new ToolTip(new Shell(), SWT.BALLOON | SWT.ICON_INFORMATION);
 				infoTip.setText("Info!");
 
-				infoTip.setMessage("Click = Object properties\n" + "Right-Click = Menu\n"
-						+ "Select variable(s) = To show, summarize, plot, transfer and convert data!\n"
+				infoTip.setMessage("Click = Object properties\n" + "Right-Click = Menu\n" + "Select variable(s) = To show, summarize, plot, transfer and convert data!\n"
 						+ "\nPress the \"UP ARROW\" key to get the History in the expression textfield!\n"
 						+ "\nIf you plot a PDF please close the Window of an opened reader (old plot)\nto get the new plot!\n"
 						+ "\nRight-Click on \"Plot Data\" textfield detour = Menu to inject text commands (a help to customize plots!)");
@@ -1290,17 +1306,14 @@ public class RShellView extends ViewPart {
 									e1.printStackTrace();
 								}
 								if (bolRaw[0]) {
-									textConsole.setText("Object description:\n\n" + "type    = " + type + "\n"
-											+ "class   = " + cl + "\n" + "size     = " + sizeList);
+									textConsole.setText("Object description:\n\n" + "type    = " + type + "\n" + "class   = " + cl + "\n" + "size     = " + sizeList);
 								} else {
-									textConsole.setText("Object description:\n\n" + "type    = " + type + "\n"
-											+ "class   = " + cl + "\n" + "dim     = " + buf.toString());
+									textConsole.setText("Object description:\n\n" + "type    = " + type + "\n" + "class   = " + cl + "\n" + "dim     = " + buf.toString());
 
 								}
 								buf = null;
 							} else {
-								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n"
-										+ "Please refresh the list!");
+								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
 							}
 						}
 					}
@@ -1365,8 +1378,7 @@ public class RShellView extends ViewPart {
 								RServe.printJob("" + selected + "");
 								System.out.println();
 							} else {
-								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n"
-										+ "Please refresh the list!");
+								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
 							}
 						}
 					}
@@ -1403,8 +1415,7 @@ public class RShellView extends ViewPart {
 								RServe.printJob("summary(" + selected + ")");
 								System.out.println();
 							} else {
-								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n"
-										+ "Please refresh the list!");
+								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
 							}
 						}
 					}
@@ -1698,8 +1709,7 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(Util.getShell(), "To dataframe",
-										"Create a name for the dataframe!", selected[0], null);
+								InputDialog inp = new InputDialog(Util.getShell(), "To dataframe", "Create a name for the dataframe!", selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
@@ -1707,8 +1717,7 @@ public class RShellView extends ViewPart {
 								}
 
 							} else {
-								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n"
-										+ "Please refresh the list!");
+								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
 							}
 						} else if (selected.length > 1) {
 							try {
@@ -1721,8 +1730,7 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(Util.getShell(), "To dataframe",
-										"Create a name for the dataframe!", selected[0], null);
+								InputDialog inp = new InputDialog(Util.getShell(), "To dataframe", "Create a name for the dataframe!", selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
@@ -1744,8 +1752,7 @@ public class RShellView extends ViewPart {
 								}
 
 							} else {
-								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n"
-										+ "Please refresh the list!");
+								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
 							}
 
 						}
@@ -1780,8 +1787,7 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(Util.getShell(), "To Matrix",
-										"Create a name for the matrix!", selected[0], null);
+								InputDialog inp = new InputDialog(Util.getShell(), "To Matrix", "Create a name for the matrix!", selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
@@ -1789,8 +1795,7 @@ public class RShellView extends ViewPart {
 								}
 
 							} else {
-								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n"
-										+ "Please refresh the list!");
+								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
 							}
 						} else if (selected.length > 1) {
 							try {
@@ -1803,8 +1808,7 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(Util.getShell(), "To Matrix",
-										"Create a name for the matrix!", selected[0], null);
+								InputDialog inp = new InputDialog(Util.getShell(), "To Matrix", "Create a name for the matrix!", selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
@@ -1827,8 +1831,7 @@ public class RShellView extends ViewPart {
 								}
 
 							} else {
-								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n"
-										+ "Please refresh the list!");
+								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
 							}
 
 						}
@@ -1865,8 +1868,7 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(Util.getShell(), "To list of objects",
-										"Create a name for the List!", selected[0], null);
+								InputDialog inp = new InputDialog(Util.getShell(), "To list of objects", "Create a name for the List!", selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
@@ -1882,8 +1884,7 @@ public class RShellView extends ViewPart {
 								}
 
 							} else {
-								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n"
-										+ "Please refresh the list!");
+								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
 							}
 						} else if (selected.length > 1) {
 							try {
@@ -1896,8 +1897,7 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(Util.getShell(), "To list",
-										"Create a name for the list!", selected[0], null);
+								InputDialog inp = new InputDialog(Util.getShell(), "To list", "Create a name for the list!", selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
@@ -1919,8 +1919,7 @@ public class RShellView extends ViewPart {
 								}
 
 							} else {
-								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n"
-										+ "Please refresh the list!");
+								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
 							}
 
 						}
@@ -1956,8 +1955,7 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(Util.getShell(), "To Vector",
-										"Create a name for the vector!", selected[0], null);
+								InputDialog inp = new InputDialog(Util.getShell(), "To Vector", "Create a name for the vector!", selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
@@ -1965,8 +1963,7 @@ public class RShellView extends ViewPart {
 								}
 
 							} else {
-								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n"
-										+ "Please refresh the list!");
+								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
 							}
 						} else {
 							Bio7Dialog.message("Please select only one Variable!");
@@ -2002,8 +1999,7 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(Util.getShell(), "To Vector",
-										"Create a name for the vector!", selected[0], null);
+								InputDialog inp = new InputDialog(Util.getShell(), "To Vector", "Create a name for the vector!", selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
@@ -2011,8 +2007,7 @@ public class RShellView extends ViewPart {
 								}
 
 							} else {
-								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n"
-										+ "Please refresh the list!");
+								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
 							}
 						} else {
 
@@ -2049,8 +2044,7 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(Util.getShell(), "To Factor",
-										"Create a name for the factor!", selected[0], null);
+								InputDialog inp = new InputDialog(Util.getShell(), "To Factor", "Create a name for the factor!", selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
@@ -2058,8 +2052,7 @@ public class RShellView extends ViewPart {
 								}
 
 							} else {
-								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n"
-										+ "Please refresh the list!");
+								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
 							}
 						} else {
 
@@ -2096,8 +2089,7 @@ public class RShellView extends ViewPart {
 
 							if (bolExists[0]) {
 
-								InputDialog inp = new InputDialog(Util.getShell(), "To Character",
-										"Create a name for the character!", selected[0], null);
+								InputDialog inp = new InputDialog(Util.getShell(), "To Character", "Create a name for the character!", selected[0], null);
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
@@ -2105,8 +2097,7 @@ public class RShellView extends ViewPart {
 								}
 
 							} else {
-								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n"
-										+ "Please refresh the list!");
+								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
 							}
 						} else {
 
@@ -2138,8 +2129,7 @@ public class RShellView extends ViewPart {
 
 						if (name.length >= 1) {
 							try {
-								isDataframe = (REXPLogical) RServe.getConnection()
-										.eval("try(is.data.frame(" + name[0] + "))");
+								isDataframe = (REXPLogical) RServe.getConnection().eval("try(is.data.frame(" + name[0] + "))");
 
 							} catch (RserveException e1) {
 
@@ -2171,8 +2161,7 @@ public class RShellView extends ViewPart {
 								}
 
 							} else {
-								Bio7Dialog.message(
-										"Selected variable can't be transferred.\nVariable must be a dataframe with head!");
+								Bio7Dialog.message("Selected variable can't be transferred.\nVariable must be a dataframe with head!");
 							}
 
 						}
@@ -2194,8 +2183,7 @@ public class RShellView extends ViewPart {
 						// for (int i = 0; i < name.length; i++) {
 						if (name.length >= 1) {
 							try {
-								isDataframe = (REXPLogical) RServe.getConnection()
-										.eval("try(is.data.frame(" + name[0] + "))");
+								isDataframe = (REXPLogical) RServe.getConnection().eval("try(is.data.frame(" + name[0] + "))");
 
 							} catch (RserveException e1) {
 
@@ -2226,8 +2214,7 @@ public class RShellView extends ViewPart {
 								}
 
 							} else {
-								Bio7Dialog.message(
-										"Selected variable can't be transferred.\nVariable must be a dataframe!");
+								Bio7Dialog.message("Selected variable can't be transferred.\nVariable must be a dataframe!");
 
 							}
 							// }
@@ -2283,8 +2270,7 @@ public class RShellView extends ViewPart {
 								}
 
 							} else {
-								Bio7Dialog.message(
-										"Selected variable can't be transferred.\nVariable must be a numeric matrix!");
+								Bio7Dialog.message("Selected variable can't be transferred.\nVariable must be a numeric matrix!");
 							}
 						}
 					}
@@ -2339,8 +2325,7 @@ public class RShellView extends ViewPart {
 								}
 
 							} else {
-								Bio7Dialog.message(
-										"Selected variable can't be transferred.\nVariable must be of type character or numeric!");
+								Bio7Dialog.message("Selected variable can't be transferred.\nVariable must be of type character or numeric!");
 							}
 						}
 					}
@@ -2394,8 +2379,7 @@ public class RShellView extends ViewPart {
 								}
 
 							} else {
-								Bio7Dialog.message(
-										"Selected variable can't be transferred.\nVariable must be of type character or numeric!");
+								Bio7Dialog.message("Selected variable can't be transferred.\nVariable must be of type character or numeric!");
 							}
 						}
 					}
@@ -2434,8 +2418,7 @@ public class RShellView extends ViewPart {
 				// Bio7Plugin.getDefault().getPreferenceStore();
 
 				File files = new File(store.getString(PreferenceConstants.D_RSHELL_SCRIPTS));
-				final File[] fil = new Util().ListFilesDirectory(files,
-						new String[] { ".java", ".r", ".R", ".bsh", ".groovy", ".py" });
+				final File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".r", ".R", ".bsh", ".groovy", ".py" });
 
 				for (int i = 0; i < fil.length; i++) {
 
@@ -2453,13 +2436,11 @@ public class RShellView extends ViewPart {
 								System.out.println("No script available!");
 							}
 
-							else if (fil[scriptCount].getName().endsWith(".R")
-									|| fil[scriptCount].getName().endsWith(".r")) {
+							else if (fil[scriptCount].getName().endsWith(".R") || fil[scriptCount].getName().endsWith(".r")) {
 								if (RServe.isAliveDialog()) {
 									if (RState.isBusy() == false) {
 										RState.setBusy(true);
-										final RInterpreterJob Do = new RInterpreterJob(null, true,
-												fil[scriptCount].toString());
+										final RInterpreterJob Do = new RInterpreterJob(null, true, fil[scriptCount].toString());
 										Do.addJobChangeListener(new JobChangeAdapter() {
 											public void done(IJobChangeEvent event) {
 												if (event.getResult().isOK()) {
@@ -2508,8 +2489,7 @@ public class RShellView extends ViewPart {
 										// workspace.getRoot().getFileForLocation(location);
 										CompileClassAndMultipleClasses cp = new CompileClassAndMultipleClasses();
 										try {
-											cp.compileAndLoad(new File(location.toOSString()),
-													new File(location.toOSString()).getParent(), name, null, true);
+											cp.compileAndLoad(new File(location.toOSString()), new File(location.toOSString()).getParent(), name, null, true);
 										} catch (Exception e) {
 											// TODO Auto-generated catch block
 											// Bio7Dialog.message(e.getMessage());
@@ -2678,8 +2658,7 @@ public class RShellView extends ViewPart {
 	}
 
 	private void setInDocument(List aList) {
-		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-				.getActiveEditor();
+		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		if (editor != null && editor instanceof REditor) {
 
 			String[] items = aList.getSelection();
@@ -2717,10 +2696,7 @@ public class RShellView extends ViewPart {
 				 */
 				// System.out.println(tex);
 
-				if (!tex.contains(";")) {
-					com.eco.bio7.rbridge.RServe.printJob(tex);
-					System.out.println();
-				} else {
+				if (tex.contains(";")) {
 
 					// See:
 					// http://stackoverflow.com/questions/1757065/java-splitting-a-comma-separated-string-but-ignoring-commas-in-quotes
@@ -2729,6 +2705,15 @@ public class RShellView extends ViewPart {
 					/* Send multiple expressions and evaluate them! */
 					com.eco.bio7.rbridge.RServe.printJobs(t);
 					/* Linebreak in the job for multiple expressions! */
+
+				} else if (tex.contains("#")) {
+					
+					Bio7Dialog.message("Please remove all R comments(#)!");
+
+				} else {
+
+					com.eco.bio7.rbridge.RServe.printJob(tex);
+					System.out.println();
 
 				}
 
@@ -2899,8 +2884,7 @@ public class RShellView extends ViewPart {
 							if (data[i].equals(".bio7Device") == false) {
 								RServe.getConnection().eval("try(remove(" + data[i] + "))");
 							} else {
-								System.out.println(
-										"Variable .bio7Device wasn't deleted\nNecessary function definition (defined in the Rserve preferences) for the default plot device in Bio7!");
+								System.out.println("Variable .bio7Device wasn't deleted\nNecessary function definition (defined in the Rserve preferences) for the default plot device in Bio7!");
 							}
 						}
 
