@@ -9,7 +9,7 @@ public class MarkdownEditor extends TextEditor {
 	public MarkdownEditor() {
 		super();
 		colorManager = new ColorManager();
-		setSourceViewerConfiguration(new MarkdownConfiguration(colorManager));
+		setSourceViewerConfiguration(new MarkdownConfiguration(colorManager,this));
 		setDocumentProvider(new MarkdownDocumentProvider());
 	}
 	public void dispose() {
