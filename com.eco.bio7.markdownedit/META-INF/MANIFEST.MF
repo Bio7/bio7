@@ -8,6 +8,11 @@ Bundle-Vendor: ECO
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.jface.text,
- org.eclipse.ui.editors
+ org.eclipse.ui.editors,
+ org.eclipse.text
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
+Bundle-ClassPath: libs/commonmark-ext-yaml-front-matter-0.8.0.jar,
+ libs/commonmark-0.8.0.jar,
+ .
+Import-Package: org.eclipse.ui.views.contentoutline

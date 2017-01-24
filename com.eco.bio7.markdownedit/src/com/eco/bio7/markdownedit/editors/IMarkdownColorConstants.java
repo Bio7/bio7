@@ -8,4 +8,5 @@ public interface IMarkdownColorConstants {
 	RGB STRING = new RGB(0, 128, 0);
 	RGB DEFAULT = new RGB(0, 0, 0);
 	RGB TAG = new RGB(0, 0, 128);
+	RGB YAML_HEADER = new RGB(150,150, 150);
 }

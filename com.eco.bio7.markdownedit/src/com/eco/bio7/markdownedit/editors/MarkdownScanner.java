@@ -19,4 +19,8 @@ public class MarkdownScanner extends RuleBasedScanner {
 
 		setRules(rules);
 	}
+
+	public MarkdownScanner(MarkdownColorProvider rColorProvider) {
+		// TODO Auto-generated constructor stub
+	}
 }
