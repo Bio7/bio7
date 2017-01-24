@@ -15,3 +15,4 @@ Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: libs/commonmark-ext-yaml-front-matter-0.8.0.jar,
  libs/commonmark-0.8.0.jar,
  .
+Import-Package: org.eclipse.ui.views.contentoutline

@@ -13,5 +13,33 @@
             id="com.eco.bio7.markdownedit">
       </editor>
    </extension>
+   <extension
+         point="org.eclipse.ui.themes">
+      <fontDefinition
+            categoryId="com.eco.bio7.markdown.rtheme"
+            defaultsTo="org.eclipse.jface.textfont"
+            id="com.eco.bio7.reditor.markdown.textfont"
+            label="Markdown Editor Font">
+      </fontDefinition>
+      <themeElementCategory
+            id="com.eco.bio7.markdown.rtheme"
+            label="Markdown editor">
+      </themeElementCategory>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="com.eco.bio7.markdownedit.preferences.PreferenceInitializer">
+      </initializer>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="com.eco.bio7.preferences.Bio7PreferencePage"
+            class="com.eco.bio7.markdownedit.preferences.WorkbenchPreferenceMarkdown"
+            id="com.eco.bio7.markdownedit.preferences.editor"
+            name="Preferences Markdown Editor">
+      </page>
+   </extension>
 
 </plugin>

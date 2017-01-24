@@ -1,5 +1,7 @@
 package com.eco.bio7.markdownedit.parser;
 
+import java.util.Stack;
+
 import org.commonmark.node.AbstractVisitor;
 import org.commonmark.node.BlockQuote;
 import org.commonmark.node.BulletList;
@@ -24,8 +26,16 @@ import org.commonmark.node.Text;
 import org.commonmark.node.ThematicBreak;
 import org.commonmark.parser.Parser;
 
+import com.eco.bio7.markdownedit.editors.MarkdownEditor;
+import com.eco.bio7.markdownedit.outline.MarkdownEditorOutlineNode;
+
 public class CustomVisitor extends AbstractVisitor {
 	int wordCount = 0;
+	private Stack<MarkdownEditorOutlineNode> methods;
+
+	public CustomVisitor(Stack<MarkdownEditorOutlineNode> methods,MarkdownEditor editor) {
+		this.methods = methods;
+	}
 
 	@Override
 	public void visit(Text text) {
@@ -35,7 +45,7 @@ public class CustomVisitor extends AbstractVisitor {
 
 	@Override
 	public void visit(BlockQuote blockQuote) {
-
+		//methods.push(new MarkdownEditorOutlineNode("R Markdown Section", 0, "RMarkdown",editor.baseNode));
 		visitChildren(blockQuote);
 	}
 
