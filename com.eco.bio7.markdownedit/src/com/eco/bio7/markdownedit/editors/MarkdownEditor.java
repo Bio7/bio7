@@ -65,6 +65,7 @@ public class MarkdownEditor extends TextEditor implements IPropertyChangeListene
 	
 	public MarkdownEditor() {
 		super();
+		
 		colorManager = new ColorManager();
 		markConf=new MarkdownConfiguration(colorManager,this);
 		setSourceViewerConfiguration(markConf);
@@ -73,6 +74,13 @@ public class MarkdownEditor extends TextEditor implements IPropertyChangeListene
 		
 		
 	}
+	/* Add a new key binding scope for this editor! */
+	
+	protected void initializeKeyBindingScopes() {
+		setKeyBindingScopes(new String[] { "com.eco.bio7.markdownedit.MarkdownEditorScope" });
+	}
+	
+	
 	
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
@@ -132,6 +140,7 @@ public class MarkdownEditor extends TextEditor implements IPropertyChangeListene
 	public void propertyChange(PropertyChangeEvent event) {
 
 		handlePreferenceStoreChanged(event);
+		
 	}
 
 	// Method from:
@@ -147,6 +156,7 @@ public class MarkdownEditor extends TextEditor implements IPropertyChangeListene
 	}
 
 	public void updateIncreasedFont(float fontSize) {
+		
 		Activator fginstance = Activator.getDefault();
 		MarkdownScanner scanner = (MarkdownScanner) fginstance.getMarkdownScanner();
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();

@@ -102,7 +102,7 @@ public class RMarkdownReconcilingStrategy implements IReconcilingStrategy, IReco
 				e.printStackTrace();
 			}
 			if (selSource.contains("```{r") || selSource.contains("```{R")) {
-				methods.push(new MarkdownEditorOutlineNode("```{R}```", i + 1, "RMarkdown", markdownEditor.baseNode));
+				methods.push(new MarkdownEditorOutlineNode("{R Chunk}", i + 1, "RMarkdown", markdownEditor.baseNode));
 			}
 		}
 		/*
