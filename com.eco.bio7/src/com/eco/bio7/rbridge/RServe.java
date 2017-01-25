@@ -17,10 +17,19 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Arrays;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.comparator.NameFileComparator;
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
@@ -32,6 +41,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
+import org.osgi.framework.Bundle;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.Rserve.RConnection;
@@ -41,12 +51,16 @@ import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.batch.FileRoot;
+import com.eco.bio7.browser.BrowserView;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.console.Console;
 import com.eco.bio7.console.ConsolePageParticipant;
+import com.eco.bio7.popup.actions.JavaFXWebBrowser;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
+import com.eco.bio7.util.Util;
+import com.sun.jndi.toolkit.url.Uri;
 
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -139,14 +153,16 @@ public class RServe {
 			job.schedule();
 		} else {
 			Process p;
-			//IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-			//if (store.getBoolean("RSERVE_NATIVE_START")) {
-				ConsolePageParticipant consol = ConsolePageParticipant.getConsolePageParticipantInstance();
-				p = consol.getRProcess();
-			/*} else {
-
-				p = RConnectionJob.getProc();
-			}*/
+			// IPreferenceStore store =
+			// Bio7Plugin.getDefault().getPreferenceStore();
+			// if (store.getBoolean("RSERVE_NATIVE_START")) {
+			ConsolePageParticipant consol = ConsolePageParticipant.getConsolePageParticipantInstance();
+			p = consol.getRProcess();
+			/*
+			 * } else {
+			 * 
+			 * p = RConnectionJob.getProc(); }
+			 */
 
 			// Write to the output!
 			if (p != null) {
@@ -266,7 +282,7 @@ public class RServe {
 
 					MessageBox messageBox = new MessageBox(new Shell(),
 
-					SWT.ICON_WARNING);
+							SWT.ICON_WARNING);
 					messageBox.setMessage("Rserve connection failed\nServer is not running!");
 					messageBox.open();
 				}
@@ -529,14 +545,75 @@ public class RServe {
 	private static void finalCloseAndDisplay() {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		boolean customDevice = store.getBoolean("USE_CUSTOM_DEVICE");
+		System.out.println(customDevice);
 		if (customDevice) {
 
 			String plotPathR = store.getString(PreferenceConstants.P_TEMP_R);
 			String fileName = store.getString("DEVICE_FILENAME");
+			boolean useBrowser = store.getBoolean("PDF_USE_BROWSER");
 
 			if (fileName.endsWith("pdf") || fileName.endsWith("eps") || fileName.endsWith("xfig") || fileName.endsWith("bitmap") || fileName.endsWith("pictex")) {
 				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows") || ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
-					Program.launch(plotPathR + fileName);
+					if (useBrowser) {
+						File tempFile = createTempFileFromPlot(plotPathR, fileName);
+						Program.launch(tempFile.getAbsolutePath());
+					} else {
+						
+						Display display = Util.getDisplay();
+						display.asyncExec(new Runnable() {
+
+							public void run() {
+								// FilenameUtils.removeExtension(fileName);
+								IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+								boolean openInJavaFXBrowser = store.getBoolean("javafxbrowser");
+								String temp = "file:////" + plotPathR + fileName;
+								
+								//String temp = plotPathR + fileName;
+								String url = temp.replace("\\", "/");
+								
+								if (openInJavaFXBrowser == false) {
+									
+									File tempFile = createTempFileFromPlot(plotPathR, fileName);
+									
+									temp = "file:////" + tempFile;
+									url = temp.replace("\\", "/");
+									Work.openView("com.eco.bio7.browser.Browser");
+									BrowserView b = BrowserView.getBrowserInstance();
+									b.browser.setJavascriptEnabled(true);
+									b.setLocation(url);
+								} else {
+
+									/*Bundle bundle = Platform.getBundle("com.eco.bio7.libs");
+									Path path = new Path("web/viewer.html");
+									URL locationURL = FileLocator.find(bundle, path, null);
+									
+									URL fileUrl = null;
+									try {
+										fileUrl = FileLocator.toFileURL(locationURL);
+									} catch (IOException e2) {
+										// TODO Auto-generated catch block
+										e2.printStackTrace();
+									}
+									String pathBundle = fileUrl.getFile();
+									
+									URI uri = null;
+									try {
+										 uri=new URI(url);
+									} catch (URISyntaxException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+									
+									System.out.println("file:///"+pathBundle+"?file=%2FtempDevicePlot.pdf");*/
+									//new JavaFXWebBrowser().createBrowser("file:///"+pathBundle+"?file=%2FtempDevicePlot.pdf");
+									new JavaFXWebBrowser().createBrowser(url);
+								}
+							}
+
+							
+						});
+
+					}
 				} else {
 					plotLinux(plotPathR + fileName);
 				}
@@ -573,6 +650,27 @@ public class RServe {
 			}
 
 		}
+	}
+	private static File createTempFileFromPlot(String plotPathR, String fileName) {
+		File dirFrom = new File(plotPathR + fileName);
+		File tempFile = null;
+		try {
+			 tempFile = File.createTempFile("tempRPlotPdf", ".pdf");
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+		
+		
+		//File dirTo = new File(plotPathR + "browserTemp"+fileName);
+		try {
+			FileUtils.copyFile(dirFrom, tempFile);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return tempFile;
 	}
 
 	public static int getDisplayNumber() {
@@ -623,7 +721,8 @@ public class RServe {
 		// Filter the extension of the file.
 		FilenameFilter filter = new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2]) || name.endsWith(extensions[3]) || name.endsWith(extensions[4]) || name.endsWith(extensions[5]));
+				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2]) || name.endsWith(extensions[3]) || name.endsWith(extensions[4])
+						|| name.endsWith(extensions[5]));
 			}
 		};
 

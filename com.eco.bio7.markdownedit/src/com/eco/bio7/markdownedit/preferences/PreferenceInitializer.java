@@ -51,7 +51,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		}*/
 		IPreferenceStore storeR = Activator.getDefault().getPreferenceStore();
 		FontData []f=JFaceResources.getFontRegistry().get("com.eco.bio7.reditor.markdown.textfont").getFontData();
-		
+		//Font f= JFaceResources.getFont(JFaceResources.TEXT_FONT);
 		PreferenceConverter.setDefault(storeR, "colourkey", new RGB(127, 0, 85));
 		PreferenceConverter.setDefault(storeR, "colourkey1", new RGB(127, 0, 85));
 		PreferenceConverter.setDefault(storeR, "colourkey2", new RGB(42, 0, 255));

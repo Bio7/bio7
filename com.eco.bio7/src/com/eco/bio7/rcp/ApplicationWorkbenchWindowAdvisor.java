@@ -603,6 +603,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("LINUX_SHELL", "GNOME");
 
 		store.setDefault("USE_CUSTOM_DEVICE", true);
+		
+		store.setDefault("PDF_USE_BROWSER",false);
 
 		store.setDefault("CLOSE_DEVICE", "if(length(dev.list())>0) dev.off()");
 

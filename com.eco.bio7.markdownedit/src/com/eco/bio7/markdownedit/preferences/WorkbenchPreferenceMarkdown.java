@@ -112,6 +112,7 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 	public void propertyChange(PropertyChangeEvent event) {
 		super.propertyChange(event);
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		
 		MarkdownEditor rEditor = (MarkdownEditor) editor;
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
