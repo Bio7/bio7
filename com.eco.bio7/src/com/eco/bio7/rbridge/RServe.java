@@ -744,9 +744,8 @@ public class RServe {
 	public static void plotLinux(String finalpath) {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		String pdfReader = store.getString("PDF_READER");
-		boolean useBrowser = store.getBoolean("PDF_USE_BROWSER");
+
 		if (pdfReader.equals("ACROBAT")) {
-			
 			try {
 
 				Runtime.getRuntime().exec("acroread " + finalpath);
