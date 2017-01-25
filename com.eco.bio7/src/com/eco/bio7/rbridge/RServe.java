@@ -555,7 +555,8 @@ public class RServe {
 			if (fileName.endsWith("pdf") || fileName.endsWith("eps") || fileName.endsWith("xfig") || fileName.endsWith("bitmap") || fileName.endsWith("pictex")) {
 				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows") || ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 					if (useBrowser) {
-						Program.launch(plotPathR + fileName);
+						File tempFile = createTempFileFromPlot(plotPathR, fileName);
+						Program.launch(tempFile.getAbsolutePath());
 					} else {
 						
 						Display display = Util.getDisplay();
@@ -572,24 +573,7 @@ public class RServe {
 								
 								if (openInJavaFXBrowser == false) {
 									
-									File dirFrom = new File(plotPathR + fileName);
-									File tempFile = null;
-									try {
-										 tempFile = File.createTempFile("tempRPlotPdf", ".pdf");
-									} catch (IOException e1) {
-										// TODO Auto-generated catch block
-										e1.printStackTrace();
-									}
-
-							    	
-									
-									//File dirTo = new File(plotPathR + "browserTemp"+fileName);
-									try {
-										FileUtils.copyFile(dirFrom, tempFile);
-									} catch (IOException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									}
+									File tempFile = createTempFileFromPlot(plotPathR, fileName);
 									
 									temp = "file:////" + tempFile;
 									url = temp.replace("\\", "/");
@@ -625,6 +609,8 @@ public class RServe {
 									new JavaFXWebBrowser().createBrowser(url);
 								}
 							}
+
+							
 						});
 
 					}
@@ -664,6 +650,27 @@ public class RServe {
 			}
 
 		}
+	}
+	private static File createTempFileFromPlot(String plotPathR, String fileName) {
+		File dirFrom = new File(plotPathR + fileName);
+		File tempFile = null;
+		try {
+			 tempFile = File.createTempFile("tempRPlotPdf", ".pdf");
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+		
+		
+		//File dirTo = new File(plotPathR + "browserTemp"+fileName);
+		try {
+			FileUtils.copyFile(dirFrom, tempFile);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return tempFile;
 	}
 
 	public static int getDisplayNumber() {
@@ -737,8 +744,9 @@ public class RServe {
 	public static void plotLinux(String finalpath) {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		String pdfReader = store.getString("PDF_READER");
-
+		boolean useBrowser = store.getBoolean("PDF_USE_BROWSER");
 		if (pdfReader.equals("ACROBAT")) {
+			
 			try {
 
 				Runtime.getRuntime().exec("acroread " + finalpath);
