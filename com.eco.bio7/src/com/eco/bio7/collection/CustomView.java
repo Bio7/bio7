@@ -2,12 +2,9 @@ package com.eco.bio7.collection;
 
 import java.awt.Panel;
 import java.util.Vector;
-
 import javafx.embed.swt.FXCanvas;
 import javafx.scene.Scene;
-
 import javax.swing.JPanel;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.draw2d.LightweightSystem;
 import org.eclipse.swt.SWT;
@@ -22,9 +19,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.jfree.chart.ChartPanel;
-
 import processing.core.PApplet;
-
 import com.eco.bio7.compile.Model;
 import com.eco.bio7.methods.Compiled;
 import com.jogamp.opengl.util.Animator;
@@ -84,7 +79,7 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	 * @param jpanel
 	 *            a JPanel
 	 * @param id
-	 *            the id of the tab.
+	 *            the id and name of the tab.
 	 */
 	public void setPanel(final JPanel jpanel, final String id) {
 		secId = id;
@@ -108,6 +103,8 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 				}
 				if (activated instanceof CustomView) {
 					CustomView view = (CustomView) activated;
+					view.setPartName(id);
+					display.update();
 					Control c[] = view.getCustomViewParent().getChildren();
 					for (int i = 0; i < c.length; i++) {
 						c[i].dispose();
@@ -127,7 +124,7 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	 * @param jpanel
 	 *            a JPanel
 	 * @param id
-	 *            the id of the tab.
+	 *            the id and name of the tab.
 	 */
 	public void setPanelFX(final JPanel jpanel, final String id) {
 		secId = id;
@@ -151,6 +148,8 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 				}
 				if (activated instanceof CustomView) {
 					CustomView view = (CustomView) activated;
+					view.setPartName(id);
+					display.update();
 					Control c[] = view.getCustomViewParent().getChildren();
 					for (int i = 0; i < c.length; i++) {
 						c[i].dispose();
@@ -168,7 +167,7 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	 * Creates a JavaFX Scene tab inside a custom view from a *.fxml file.
 	 * 
 	 * @param id
-	 *            the id of the tab.
+	 *            the id and name of the tab.
 	 * @param path
 	 *            the path to the *.fxml file.
 	 * @param model
@@ -198,6 +197,8 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 				}
 				if (activated instanceof CustomView) {
 					CustomView view = (CustomView) activated;
+					view.setPartName(id);
+					display.update();
 					Control c[] = view.getCustomViewParent().getChildren();
 					for (int i = 0; i < c.length; i++) {
 						c[i].dispose();
@@ -217,7 +218,7 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	 * scene.
 	 * 
 	 * @param id
-	 *            the id of the tab.
+	 *            the id and name of the tab.
 	 */
 	public void setSceneCanvas(String id) {
 		secId = id;
@@ -239,6 +240,8 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 				}
 				if (activated instanceof CustomView) {
 					CustomView view = (CustomView) activated;
+					view.setPartName(id);
+					display.update();
 					Control c[] = view.getCustomViewParent().getChildren();
 					for (int i = 0; i < c.length; i++) {
 						c[i].dispose();
@@ -266,7 +269,7 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	 * @param panel
 	 *            a Panel
 	 * @param id
-	 *            the id of the tab.
+	 *            the id and name of the tab.
 	 */
 	public void setPanel(final Panel panel, final String id) {
 		secId = id;
@@ -289,6 +292,8 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 				}
 				if (activated instanceof CustomView) {
 					CustomView view = (CustomView) activated;
+					view.setPartName(id);
+					display.update();
 					Control c[] = view.getCustomViewParent().getChildren();
 					Vector<?> ve = (Vector<?>) view.getCustomViewParent().getData();
 					if (ve != null && ve.size() > 0) {
@@ -311,7 +316,7 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	 * Returns a SWT composite and creates a custom view with a tab.
 	 * 
 	 * @param id
-	 *            the id of the tab.
+	 *            the id and name of the tab.
 	 * @return a swt composite.
 	 */
 	public Composite getComposite(String id) {
@@ -340,6 +345,8 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 		CustomView viewReturn = null;
 		if (activated instanceof CustomView) {
 			final CustomView view = (CustomView) activated;
+			view.setPartName(id);
+			display.update();
 			display = PlatformUI.getWorkbench().getDisplay();
 			display.syncExec(new Runnable() {
 				public void run() {
@@ -359,7 +366,7 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 	 * Returns a Draw2d LightweightSystem and creates a custom view with a tab.
 	 * 
 	 * @param id
-	 *            the id of the tab.
+	 *            the id and name of the tab.
 	 * @return a LightweightSystem component.
 	 */
 	public LightweightSystem getDraw2d(String id) {
@@ -387,6 +394,8 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 		LightweightSystem light = null;
 		if (activated instanceof CustomView) {
 			final CustomView view = (CustomView) activated;
+			view.setPartName(id);
+			display.update();
 			display = PlatformUI.getWorkbench().getDisplay();
 			display.syncExec(new Runnable() {
 				public void run() {

@@ -593,6 +593,12 @@
             id="com.eco.bio7.debug"
             name="Preferences R Debug">
       </page>
+      <page
+            category="com.eco.bio7.R"
+            class="com.eco.bio7.preferences.BrowserPreferences"
+            id="com.eco.bio7.browser.preferences"
+            name="Preferences Browser">
+      </page>
    </extension>
    <extension
          point="org.eclipse.ui.viewActions">
@@ -833,7 +839,7 @@
             project="false">
       </wizard>
       <wizard
-            category="com.eco.bio7.web"
+            category="com.eco.bio7.javascript"
             class="com.eco.bio7.wizards.JavaScriptPluginWizard"
             icon="icons/editor/javascriptfile.png"
             id="com.eco.bio7.javascript"
@@ -956,6 +962,10 @@
             name="R Markdown"
             project="false">
       </wizard>
+      <category
+            id="com.eco.bio7.javascript"
+            name="JavaScript">
+      </category>
       
    </extension>
    <extension

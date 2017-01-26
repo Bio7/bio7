@@ -43,10 +43,10 @@ import com.eco.bio7.rcp.StartBio7Utils;
 
 public class RMarkdownAction extends Action implements IObjectActionDelegate {
 
-	//private BufferedReader input;
-	//private OutputStream stdin;
+	// private BufferedReader input;
+	// private OutputStream stdin;
 	private String fi;
-	//private String name;
+	// private String name;
 	private String docType;
 
 	public RMarkdownAction() {
@@ -65,16 +65,15 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 			utils.cons.activate();
 			utils.cons.clear();
 		}
-		//String project = null;
-		ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService()
-				.getSelection();
+		// String project = null;
+		ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().getSelection();
 		IStructuredSelection strucSelection = null;
 		if (selection instanceof IStructuredSelection) {
 			strucSelection = (IStructuredSelection) selection;
 			if (strucSelection.size() == 0) {
 
 			} else if (strucSelection.size() == 1) {
-				//final String nameofiofile;
+				// final String nameofiofile;
 				Object selectedObj = strucSelection.getFirstElement();
 
 				IResource resource = (IResource) strucSelection.getFirstElement();
@@ -95,8 +94,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 			utils.cons.activate();
 			utils.cons.clear();
 		}
-		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-				.getActiveEditor();
+		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		if (editor.isDirty()) {
 			editor.doSave(new NullProgressMonitor());
 		}
@@ -109,14 +107,12 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 		}
 		IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
 		/*
-		 * Extract the header information for the doctype and open a registered
-		 * viewer in Bio7!
+		 * Extract the header information for the doctype and open a registered viewer in Bio7!
 		 */
 		String title = StringUtils.substringBetween(doc.get(), "---", "---");
 		String sub = title.substring(title.lastIndexOf("output:") + 7);
 
-		if (sub.contains("html_document") || sub.contains("ioslides_presentation")
-				|| sub.contains("slidy_presentation")) {
+		if (sub.contains("html_document") || sub.contains("ioslides_presentation") || sub.contains("slidy_presentation")) {
 
 			docType = "Html";
 
@@ -136,13 +132,13 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 
 	private void markdownFile(Object selectedObj, final IProject activeProject) {
 		String project;
-		
+
 		if (selectedObj instanceof IFile) {
 			IFile selectedFile = (IFile) selectedObj;
 			final String selFile = selectedFile.getName();
 
 			final String theName = selFile.replaceFirst("[.][^.]+$", "");
-			
+
 			project = selectedFile.getLocation().toString();
 			project = project.replace("\\", "/");
 			fi = selectedFile.getRawLocation().toString();
@@ -170,7 +166,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 
 								c.eval("try(library(rmarkdown))");
 								c.eval("setwd('" + dirPath + "')");
-								
+
 								System.out.println(selFile);
 								RServe.print("try(render(\"" + selFile + "\"))");
 
@@ -184,14 +180,14 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 							try {
 								proj.refreshLocal(IResource.DEPTH_INFINITE, null);
 							} catch (CoreException e) {
-								
+
 								e.printStackTrace();
 							}
 							if (docType.equals("Html")) {
-								//boolean dec = Bio7Dialog.decision("Open JavaFX browser?");
-								//if (dec == false) {
-									
-								//}
+								// boolean dec = Bio7Dialog.decision("Open JavaFX browser?");
+								// if (dec == false) {
+
+								// }
 								Display display = PlatformUI.getWorkbench().getDisplay();
 								display.asyncExec(new Runnable() {
 
@@ -199,12 +195,11 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 										String temp = "file:///" + dirPath + "/" + theName + ".html";
 										String url = temp.replace("\\", "/");
 										System.out.println(url);
-										
+
 										IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-										boolean openInJavaFXBrowser=store.getBoolean("javafxbrowser");
-										
-										
-										if (openInJavaFXBrowser==false) {
+										String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
+
+										if (openInJavaFXBrowser.equals("JAVAFX_BROWSER") == false) {
 											Work.openView("com.eco.bio7.browser.Browser");
 											BrowserView b = BrowserView.getBrowserInstance();
 											b.browser.setJavascriptEnabled(true);
@@ -212,8 +207,6 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 										}
 
 										else {
-
-											
 
 											new JavaFXWebBrowser().createBrowser(url);
 										}
@@ -224,18 +217,23 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 
 							else if (docType.equals("Pdf")) {
 
+								IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+								boolean useBrowser = store.getBoolean("PDF_USE_BROWSER");
+								String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
+
 								new Thread() {
 
 									public void run() {
 										setPriority(Thread.MAX_PRIORITY);
-										//String line;
 
 										File fil = new File(dirPath + "/" + theName + ".pdf");
 										if (fil.exists()) {
-											Program.launch(dirPath + "/" + theName + ".pdf");
+
+											RServe.openPDF(dirPath + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser);
+
+											// Program.launch(dirPath + "/" + theName + ".pdf");
 										} else {
-											Bio7Dialog.message(
-													"*.pdf file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
+											Bio7Dialog.message("*.pdf file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
 										}
 
 										IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
@@ -257,14 +255,13 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 
 									public void run() {
 										setPriority(Thread.MAX_PRIORITY);
-										//String line;
+										// String line;
 
 										File fil = new File(dirPath + "/" + theName + ".docx");
 										if (fil.exists()) {
 											Program.launch(dirPath + "/" + theName + ".docx");
 										} else {
-											Bio7Dialog.message(
-													"*.docx file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
+											Bio7Dialog.message("*.docx file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
 										}
 
 										IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();

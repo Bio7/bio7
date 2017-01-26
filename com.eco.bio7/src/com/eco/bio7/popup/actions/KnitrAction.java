@@ -54,8 +54,6 @@ import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
 
-
-
 public class KnitrAction extends Action implements IObjectActionDelegate {
 
 	private BufferedReader input;
@@ -186,24 +184,20 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 																						// href
 									for (int i = 0; i < contents.size(); i++) {
 										/*
-										 * Replace in the div the linebreak and
-										 * page tags with text linebreak(s)!
+										 * Replace in the div the linebreak and page tags with text linebreak(s)!
 										 */
 										contents.get(i).select("br").append("\\n");
 										contents.get(i).select("p").prepend("\\n\\n");
 
 										String cleaned = contents.get(i).text().replaceAll("\\\\n", "\n");
 										/*
-										 * Wrap the parsed div text in a knitr
-										 * section!
+										 * Wrap the parsed div text in a knitr section!
 										 */
 										contents.get(i).after("<!--begin.rcode\n " + cleaned + " \nend.rcode-->");
 										contents.get(i).remove();
 									}
 									/*
-									 * Create a temp file for the parsed and
-									 * edited *.html file for processing with
-									 * knitr!
+									 * Create a temp file for the parsed and edited *.html file for processing with knitr!
 									 */
 									File temp = null;
 									try {
@@ -214,8 +208,7 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 									}
 
 									/*
-									 * Write the changes to the file with the
-									 * help of the ApacheIO lib!
+									 * Write the changes to the file with the help of the ApacheIO lib!
 									 */
 									try {
 										FileUtils.writeStringToFile(temp, docHtml.html());
@@ -256,12 +249,12 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 									public void run() {
 
 										IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-										boolean openInJavaFXBrowser = store.getBoolean("javafxbrowser");
+										String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
 
 										String temp = "file:///" + dirPath + "/" + theName + ".html";
 										String url = temp.replace("\\", "/");
 										System.out.println(url);
-										if (openInJavaFXBrowser == false) {
+										if (openInJavaFXBrowser.equals("JAVAFX_BROWSER") == false) {
 											Work.openView("com.eco.bio7.browser.Browser");
 											BrowserView b = BrowserView.getBrowserInstance();
 											b.browser.setJavascriptEnabled(true);
@@ -275,6 +268,9 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 							} else if (fileext.equals("tex")) {
 								IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 								String pdfLatexPath = store.getString("pdfLatex");
+								boolean useBrowser = store.getBoolean("PDF_USE_BROWSER");
+								String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
+
 								List<String> args = new ArrayList<String>();
 
 								if (pdfLatexPath.isEmpty() == false) {
@@ -293,8 +289,7 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 									// " " + dirPath + "/" + theName +
 									// ".tex");
 									/*
-									 * Eventually take care of whitespaces in
-									 * path!
+									 * Eventually take care of whitespaces in path!
 									 */
 
 									if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
@@ -325,13 +320,11 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 								ProcessBuilder pb = new ProcessBuilder(args);
 								// set environment variable u
 								/*
-								 * String otexinputs =env.get("TEXINPUTS");
-								 * env.put("TEXINPUTS", otexinputs+"/"+dirPath);
+								 * String otexinputs =env.get("TEXINPUTS"); env.put("TEXINPUTS", otexinputs+"/"+dirPath);
 								 */
 
 								/*
-								 * Set the working directory for the process
-								 * from Java!
+								 * Set the working directory for the process from Java!
 								 */
 								pb.directory(new File(dirPath));
 
@@ -343,9 +336,7 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 
 									e.printStackTrace();
 									/*
-									 * Bio7Dialog.message(
-									 * "Rserve executable not available !" );
-									 * RServe.setConnection(null);
+									 * Bio7Dialog.message( "Rserve executable not available !" ); RServe.setConnection(null);
 									 */
 								}
 
@@ -365,14 +356,15 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 											File fil = new File(dirPath + "/" + theName + ".pdf");
 											if (fil.exists()) {
 
-												if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
-													RServe.plotLinux(dirPath + "/" + theName + ".pdf");
-												}
+												/*
+												 * if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) { RServe.plotLinux(dirPath + "/" + theName + ".pdf"); }
+												 */
 
-												else {
+												// else {
 
-													Program.launch(dirPath + "/" + theName + ".pdf");
-												}
+												Program.launch(dirPath + "/" + theName + ".pdf");
+												RServe.openPDF(dirPath + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser);
+												// }
 											} else {
 												Bio7Dialog.message("*.pdf file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
 											}

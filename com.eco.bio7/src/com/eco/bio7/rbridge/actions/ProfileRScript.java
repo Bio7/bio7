@@ -97,12 +97,12 @@ public class ProfileRScript {
 			public void run() {
 
 				IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-				boolean openInJavaFXBrowser = store.getBoolean("javafxbrowser");
+				String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
 
 				String temp = "file:///" + path;
 				String url = temp.replace("\\", "/");
 				System.out.println(url);
-				if (openInJavaFXBrowser == false) {
+				if (openInJavaFXBrowser.equals("JAVAFX_BROWSER")==false) {
 					Work.openView("com.eco.bio7.browser.Browser");
 					BrowserView b = BrowserView.getBrowserInstance();
 					b.browser.setJavascriptEnabled(true);

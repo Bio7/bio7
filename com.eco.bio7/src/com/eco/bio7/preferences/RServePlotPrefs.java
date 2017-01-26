@@ -18,9 +18,18 @@ import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.eclipse.ui.dialogs.PreferencesUtil;
+
 import com.eco.bio7.Bio7Plugin;
 
 public class RServePlotPrefs extends FieldEditorPreferencePage implements IWorkbenchPreferencePage, PropertyChangeListener {
@@ -56,9 +65,7 @@ public class RServePlotPrefs extends FieldEditorPreferencePage implements IWorkb
 		addField(new BooleanFieldEditor("USE_CUSTOM_DEVICE", "Use Custom Device", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		selectionDevice=new RadioGroupFieldEditor("PLOT_DEVICE_SELECTION", "Select Device:\nPlease use action \"Apply \" to see changes and after using action \"Restore Defaults\".\nValues in the Device Definition can be changed and will be stored!", 3, new String[][] { { "Image Default", "PLOT_IMAGE" },{ "Image Cairo", "PLOT_CAIRO" },{ "Image Print", "PLOT_PRINT" }, { "PDF", "PLOT_PDF" },{ "SVG", "PLOT_SVG" },{ "PostScript", "PLOT_POSTSCRIPT" },{ "ImageJ View Display Size", "PLOT_IMAGEJ_DISPLAYSIZE" },{ "ImageJ View Display Size Cairo", "PLOT_IMAGEJ_DISPLAYSIZE_CAIRO" },{ "ImageJ Image", "PLOT_IMAGEJ_IMAGESIZE" },{"ImageJ Image Cairo", "PLOT_IMAGEJ_IMAGESIZE_CAIRO"}   }, getFieldEditorParent(), false);
 		addField(selectionDevice);
-		
-		addField(new BooleanFieldEditor("PDF_USE_BROWSER", "Pdf: Use System Browser", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
-		
+				
 		//addField(new StringFieldEditor("DEVICE_DEFINITION", "Device Definiton", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
 		mult=new MultiLineTextFieldEditor("DEVICE_DEFINITION", "Device Definiton", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent());
 		addField(mult);
@@ -67,6 +74,21 @@ public class RServePlotPrefs extends FieldEditorPreferencePage implements IWorkb
 		deviceFilename.setEnabled(false, getFieldEditorParent());
 		selectPDFReader=new RadioGroupFieldEditor("PDF_READER", "PDF Reader (Linux):", 4, new String[][] { { "Acrobat", "ACROBAT" },{ "Evince", "EVINCE" },{ "Kpdf", "KPDF" },{ "Xpdf", "XPDF" } }, getFieldEditorParent(), false);
 		addField(selectPDFReader);
+		SpacerFieldEditor spacer1 = new SpacerFieldEditor(getFieldEditorParent());
+		addField(spacer1);
+		final Link link = new Link(getFieldEditorParent(), SWT.NONE);
+		link.setText("See <a href=\"com.eco.bio7.browser.preferences\">'Browser Preferences'</a> to select or configure the Browser.");
+		link.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 3, 1));
+
+		link.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(final SelectionEvent e) {
+				//create an instance of the custom MyPreference class
+				PreferencesUtil.createPreferenceDialogOn(new Shell(Display.getDefault()),"com.eco.bio7.browser.preferences", null, null);
+
+				
+			}
+		});
 		
 		
 	}
