@@ -64,10 +64,10 @@ import com.sun.jndi.toolkit.url.Uri;
 
 import ij.ImagePlus;
 import ij.ImageStack;
+import javafx.scene.web.WebEngine;
 
 /**
- * This class provides methods for the communication with the Rserve
- * application.
+ * This class provides methods for the communication with the Rserve application.
  * 
  * @author Bio7
  * 
@@ -87,9 +87,7 @@ public class RServe {
 	private static RSession rSession;
 
 	/**
-	 * Evaluates an R expression without running in a job. This method can be
-	 * used to evaluate R scripts from e.g. Groovy (running already in a job). R
-	 * plots a possible, too.
+	 * Evaluates an R expression without running in a job. This method can be used to evaluate R scripts from e.g. Groovy (running already in a job). R plots a possible, too.
 	 * 
 	 * @param expression
 	 *            a R expression.
@@ -191,8 +189,7 @@ public class RServe {
 	}
 
 	/**
-	 * Evaluates and prints an array of expressions to the Bio7 console executed
-	 * in a job.
+	 * Evaluates and prints an array of expressions to the Bio7 console executed in a job.
 	 * 
 	 * @param expressions
 	 *            a R expression as a string.
@@ -269,8 +266,7 @@ public class RServe {
 	}
 
 	/**
-	 * Returns if the connection to Rserve is alive visible by means of a
-	 * dialog.
+	 * Returns if the connection to Rserve is alive visible by means of a dialog.
 	 * 
 	 * @return a boolean value.
 	 */
@@ -493,8 +489,7 @@ public class RServe {
 	}
 
 	/**
-	 * A method to get the selected variable names in the left Objects tab in
-	 * the R-Shell view (variables in the R workspace!).
+	 * A method to get the selected variable names in the left Objects tab in the R-Shell view (variables in the R workspace!).
 	 * 
 	 * @return the selected workspace variables.
 	 */
@@ -546,79 +541,19 @@ public class RServe {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		boolean customDevice = store.getBoolean("USE_CUSTOM_DEVICE");
 		System.out.println(customDevice);
-		if (customDevice) {
+		if (customDevice == true) {
 
 			String plotPathR = store.getString(PreferenceConstants.P_TEMP_R);
 			String fileName = store.getString("DEVICE_FILENAME");
 			boolean useBrowser = store.getBoolean("PDF_USE_BROWSER");
+			String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
 
 			if (fileName.endsWith("pdf") || fileName.endsWith("eps") || fileName.endsWith("xfig") || fileName.endsWith("bitmap") || fileName.endsWith("pictex")) {
-				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows") || ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
-					if (useBrowser) {
-						File tempFile = createTempFileFromPlot(plotPathR, fileName);
-						Program.launch(tempFile.getAbsolutePath());
-					} else {
-						
-						Display display = Util.getDisplay();
-						display.asyncExec(new Runnable() {
 
-							public void run() {
-								// FilenameUtils.removeExtension(fileName);
-								IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-								boolean openInJavaFXBrowser = store.getBoolean("javafxbrowser");
-								String temp = "file:////" + plotPathR + fileName;
-								
-								//String temp = plotPathR + fileName;
-								String url = temp.replace("\\", "/");
-								
-								if (openInJavaFXBrowser == false) {
-									
-									File tempFile = createTempFileFromPlot(plotPathR, fileName);
-									
-									temp = "file:////" + tempFile;
-									url = temp.replace("\\", "/");
-									Work.openView("com.eco.bio7.browser.Browser");
-									BrowserView b = BrowserView.getBrowserInstance();
-									b.browser.setJavascriptEnabled(true);
-									b.setLocation(url);
-								} else {
+				openPDF(plotPathR, fileName, useBrowser, openInJavaFXBrowser);
+			}
 
-									/*Bundle bundle = Platform.getBundle("com.eco.bio7.libs");
-									Path path = new Path("web/viewer.html");
-									URL locationURL = FileLocator.find(bundle, path, null);
-									
-									URL fileUrl = null;
-									try {
-										fileUrl = FileLocator.toFileURL(locationURL);
-									} catch (IOException e2) {
-										// TODO Auto-generated catch block
-										e2.printStackTrace();
-									}
-									String pathBundle = fileUrl.getFile();
-									
-									URI uri = null;
-									try {
-										 uri=new URI(url);
-									} catch (URISyntaxException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									}
-									
-									System.out.println("file:///"+pathBundle+"?file=%2FtempDevicePlot.pdf");*/
-									//new JavaFXWebBrowser().createBrowser("file:///"+pathBundle+"?file=%2FtempDevicePlot.pdf");
-									new JavaFXWebBrowser().createBrowser(url);
-								}
-							}
-
-							
-						});
-
-					}
-				} else {
-					plotLinux(plotPathR + fileName);
-				}
-
-			} else if (fileName.endsWith("svg")) {
+			else if (fileName.endsWith("svg")) {
 				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows") || ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 					Program.launch(plotPathR + fileName);
 				} else {
@@ -651,19 +586,94 @@ public class RServe {
 
 		}
 	}
+
+	public static void openPDF(String plotPathR, String fileName, boolean useBrowser, String openInJavaFXBrowser) {
+		if (openInJavaFXBrowser.equals("SWT_BROWSER")) {
+			File tempFile = createTempFileFromPlot(plotPathR, fileName);
+
+			String temp = "file:////" + tempFile;
+			String url = temp.replace("\\", "/");
+			/* Embedded in browser! */
+			if (useBrowser) {
+
+				// String pathBundle = getPdfjsPath();
+				Display display = Util.getDisplay();
+				display.asyncExec(new Runnable() {
+
+					public void run() {
+						Work.openView("com.eco.bio7.browser.Browser");
+
+						BrowserView b = BrowserView.getBrowserInstance();
+						b.browser.setJavascriptEnabled(true);
+						/*
+						 * System.out.println(url); boolean result = b.browser.execute("var DEFAULT_URL ='" + url + "'");
+						 * 
+						 * System.out.println(result); b.browser.setUrl("file:///" + pathBundle + "");
+						 */
+						b.setLocation(url);
+					}
+				});
+
+			} else {
+				/* We use an exteranl pdf device with special rules for Linux! */
+				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows") || ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
+					Display display = Util.getDisplay();
+					display.asyncExec(new Runnable() {
+
+						public void run() {
+							Program.launch(tempFile.getAbsolutePath());
+						}
+					});
+				} else {
+					plotLinux(plotPathR + fileName);
+				}
+			}
+		} else {
+
+			// FilenameUtils.removeExtension(fileName);
+
+			// boolean openInJavaFXBrowser =
+			// store.getBoolean("javafxbrowser");
+			// String temp = plotPathR + fileName;
+			// System.out.println(openInJavaFXBrowser);
+
+			File tempFile = createTempFileFromPlot(plotPathR, fileName);
+
+			String temp = "file:////" + tempFile;
+			String url = temp.replace("\\", "/");
+			String pathBundle = getPdfjsPath();
+
+			Display display = Util.getDisplay();
+			display.asyncExec(new Runnable() {
+
+				public void run() {
+					JavaFXWebBrowser br = new JavaFXWebBrowser();
+					WebEngine webEngine = br.getWebEngine();
+					System.out.println(url);
+					/*
+					 * Here we use a simple but effective trick. We define the default variable 'DEFAULT_URL' in JavaScript for the viewer.js (we comment the variable out there) to load and reload
+					 * local documents which won't be possible if using the path as an argument, see: https://github.com/mozilla/pdf.js/issues/5057
+					 */
+					webEngine.executeScript("var DEFAULT_URL ='" + url + "'");
+					br.createBrowser("file:///" + pathBundle + "");
+				}
+			});
+
+		}
+	}
+
 	private static File createTempFileFromPlot(String plotPathR, String fileName) {
 		File dirFrom = new File(plotPathR + fileName);
 		File tempFile = null;
 		try {
-			 tempFile = File.createTempFile("tempRPlotPdf", ".pdf");
+			tempFile = File.createTempFile("tempRPlotPdf", ".pdf");
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-
-		
-		
-		//File dirTo = new File(plotPathR + "browserTemp"+fileName);
+		/* Delete files when finishes! */
+		tempFile.deleteOnExit();
+		// File dirTo = new File(plotPathR + "browserTemp"+fileName);
 		try {
 			FileUtils.copyFile(dirFrom, tempFile);
 		} catch (IOException e) {
@@ -721,8 +731,7 @@ public class RServe {
 		// Filter the extension of the file.
 		FilenameFilter filter = new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2]) || name.endsWith(extensions[3]) || name.endsWith(extensions[4])
-						|| name.endsWith(extensions[5]));
+				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2]) || name.endsWith(extensions[3]) || name.endsWith(extensions[4]) || name.endsWith(extensions[5]));
 			}
 		};
 
@@ -796,6 +805,22 @@ public class RServe {
 	public static RSession getRsession() {
 
 		return rSession;
+	}
+
+	private static String getPdfjsPath() {
+		Bundle bundle = Platform.getBundle("com.eco.bio7.libs");
+		Path path = new Path("pdfjs/web/viewer.html");
+		URL locationURL = FileLocator.find(bundle, path, null);
+
+		URL fileUrl = null;
+		try {
+			fileUrl = FileLocator.toFileURL(locationURL);
+		} catch (IOException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+		String pathBundle = fileUrl.getFile();
+		return pathBundle;
 	}
 
 }
