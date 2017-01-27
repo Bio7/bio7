@@ -64,7 +64,7 @@ public class RMarkdownCompletionProcessor implements IContentAssistProcessor {
 						"Cell 2.1 | Cell 2.2",
 						"```"+System.lineSeparator()+"Code section"+System.lineSeparator()+"```",
 						"This is `inline code`",
-						"\newpage"};
+						"\\newpage"};
 		
 		
 		String[] text = { "R markdown section",
