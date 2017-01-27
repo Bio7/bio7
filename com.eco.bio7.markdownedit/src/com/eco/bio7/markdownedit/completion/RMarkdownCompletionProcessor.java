@@ -22,8 +22,8 @@ public class RMarkdownCompletionProcessor implements IContentAssistProcessor {
 
 		// IDocument document = viewer.getDocument();
 
-		ICompletionProposal[] result = new ICompletionProposal[32];
-		IContextInformation[] resContext=new IContextInformation[32];
+		ICompletionProposal[] result = new ICompletionProposal[33];
+		IContextInformation[] resContext=new IContextInformation[33];
 
 		String[] textContext = {"```{r}"+System.lineSeparator()+System.lineSeparator()+"```",
 				"```{r echo=FALSE}"+System.lineSeparator()+System.lineSeparator()+"```" ,
@@ -63,7 +63,8 @@ public class RMarkdownCompletionProcessor implements IContentAssistProcessor {
 						System.lineSeparator()+
 						"Cell 2.1 | Cell 2.2",
 						"```"+System.lineSeparator()+"Code section"+System.lineSeparator()+"```",
-						"This is `inline code`"};
+						"This is `inline code`",
+						"\newpage"};
 		
 		
 		String[] text = { "R markdown section",
@@ -97,7 +98,8 @@ public class RMarkdownCompletionProcessor implements IContentAssistProcessor {
 				"Ordered list"
 				,"A table",
 				"Code block",
-				"Inline code"};
+				"Inline code",
+				"Page break"};
 		for (int i = 0; i < text.length; i++) {
 			resContext[i]=new ContextInformation(textContext[i],textContext[i]);
 			result[i] = new CompletionProposal(textContext[i], offset, 0, text[i].length()+1,null,text[i],resContext[i], textContext[i]);
