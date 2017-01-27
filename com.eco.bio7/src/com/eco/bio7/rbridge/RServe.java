@@ -21,6 +21,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -649,13 +650,24 @@ public class RServe {
 				public void run() {
 					JavaFXWebBrowser br = new JavaFXWebBrowser();
 					WebEngine webEngine = br.getWebEngine();
-					System.out.println(url);
+					/* We print the file for the display only without the line seperator replacements! */
+					System.out.println("Path to PDF file: "+tempFile);
 					/*
 					 * Here we use a simple but effective trick. We define the default variable 'DEFAULT_URL' in JavaScript for the viewer.js (we comment the variable out there) to load and reload
 					 * local documents which won't be possible if using the path as an argument, see: https://github.com/mozilla/pdf.js/issues/5057
 					 */
 					webEngine.executeScript("var DEFAULT_URL ='" + url + "'");
-					br.createBrowser("file:///" + pathBundle + "");
+
+					IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+					boolean openInBrowserInExtraView = store.getBoolean("OPEN_BOWSER_IN_EXTRA_VIEW");
+					if (openInBrowserInExtraView) {
+						String id = UUID.randomUUID().toString();
+						br.createBrowser("file:///" + pathBundle + "", id);
+					}
+
+					else {
+						br.createBrowser("file:///" + pathBundle + "", "R_Display");
+					}
 				}
 			});
 

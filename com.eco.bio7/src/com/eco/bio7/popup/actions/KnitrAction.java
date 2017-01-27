@@ -260,7 +260,14 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 											b.browser.setJavascriptEnabled(true);
 											b.setLocation(url);
 										} else {
-											new JavaFXWebBrowser().createBrowser(url);
+											boolean openInBrowserInExtraView = store.getBoolean("OPEN_BOWSER_IN_EXTRA_VIEW");
+											if (openInBrowserInExtraView) {
+												new JavaFXWebBrowser().createBrowser(url,theName + ".html");
+											}
+											else{
+												new JavaFXWebBrowser().createBrowser(url,"R_Display");
+											}
+											
 										}
 									}
 								});
@@ -362,7 +369,7 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 
 												// else {
 
-												Program.launch(dirPath + "/" + theName + ".pdf");
+												//Program.launch(dirPath + "/" + theName + ".pdf");
 												RServe.openPDF(dirPath + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser);
 												// }
 											} else {
