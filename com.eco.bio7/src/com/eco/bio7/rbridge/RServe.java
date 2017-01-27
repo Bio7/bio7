@@ -657,8 +657,6 @@ public class RServe {
 					 * local documents which won't be possible if using the path as an argument, see: https://github.com/mozilla/pdf.js/issues/5057
 					 */
 					webEngine.executeScript("var DEFAULT_URL ='" + url + "'");
-					
-					
 
 					IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 					boolean openInBrowserInExtraView = store.getBoolean("OPEN_BOWSER_IN_EXTRA_VIEW");
@@ -669,7 +667,6 @@ public class RServe {
 
 					else {
 						br.createBrowser("file:///" + pathBundle + "", "R_Display");
-						webEngine.executeScript("PDFView.page = 2;");
 					}
 				}
 			});
