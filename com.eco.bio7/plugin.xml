@@ -66,6 +66,12 @@
             id="com.eco.bio7.rbridge.RDebugPerspective"
             name="R Debug">
       </perspective>
+      <perspective
+            class="com.eco.bio7.document.DocumentPerspective"
+            icon="icons/perspective/documentpersp.png"
+            id="com.eco.bio7.document.DocumentPerspective"
+            name="Document">
+      </perspective>
    </extension>
    <extension
          point="org.eclipse.ui.views">

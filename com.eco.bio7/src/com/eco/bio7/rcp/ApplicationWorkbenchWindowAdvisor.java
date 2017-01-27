@@ -596,7 +596,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 			store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "Ä, ,ä,Ö,ö,Ü,ü,+,!,ü,§,$,%,&,/,(,),=,?,[,],°,^,;,:,>,<,|,*,µ,\\,”,@,\",“,”,´,`,~,#,},{,²,³,_,-");
 		}
-		store.setDefault("BROWSER_SELECTION", "SWT_BROWSER");
+		store.setDefault("BROWSER_SELECTION", "JAVAFX_BROWSER");
+		store.setDefault("OPEN_BOWSER_IN_EXTRA_VIEW",false);
 		store.setDefault("DETECT_R_PROCESS", true);
 		store.setDefault("R_DEBUG_PORT", 21555);
 
@@ -1166,6 +1167,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.rbridge.RPerspective", configurer.getWindow());
 
 			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.browser.SceneBuilderPerspective", configurer.getWindow());
+			
+			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.document.DocumentPerspective", configurer.getWindow());
 
 			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.bio7resource", configurer.getWindow());
 

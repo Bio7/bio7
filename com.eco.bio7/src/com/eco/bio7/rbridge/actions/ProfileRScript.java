@@ -108,7 +108,7 @@ public class ProfileRScript {
 					b.browser.setJavascriptEnabled(true);
 					b.setLocation(url);
 				} else {
-					new JavaFXWebBrowser().createBrowser(url);
+					new JavaFXWebBrowser().createBrowser(url,"R_Display");
 				}
 			}
 		});

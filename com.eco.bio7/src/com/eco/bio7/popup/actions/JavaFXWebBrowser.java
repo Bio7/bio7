@@ -33,7 +33,7 @@ public class JavaFXWebBrowser {
 		webEng.setJavaScriptEnabled(true);
 	}
 
-	public void createBrowser(String url) {
+	public void createBrowser(String url, String name) {
 
 		AnchorPane anchorPane = new AnchorPane();
 
@@ -52,11 +52,8 @@ public class JavaFXWebBrowser {
 		 * 
 		 * 
 		 * 
-		 * @Override public void handle(MouseEvent mouse) { if
-		 * (mouse.getButton() == MouseButton.SECONDARY) { menu = new
-		 * ContextMenu(); //add some menu items here menu.show(brow,
-		 * mouse.getScreenX(), mouse.getScreenY()); } else { if (menu != null) {
-		 * menu.hide(); } } } });
+		 * @Override public void handle(MouseEvent mouse) { if (mouse.getButton() == MouseButton.SECONDARY) { menu = new ContextMenu(); //add some menu items here menu.show(brow, mouse.getScreenX(),
+		 * mouse.getScreenY()); } else { if (menu != null) { menu.hide(); } } } });
 		 */
 
 		// brow.setTop(scrollWheelStatus);
@@ -78,8 +75,7 @@ public class JavaFXWebBrowser {
 		});
 
 		/*
-		 * public void handle(KeyEvent event) { if (event.getCode() ==
-		 * KeyCode.TAB && event.isControlDown()) { } }
+		 * public void handle(KeyEvent event) { if (event.getCode() == KeyCode.TAB && event.isControlDown()) { } }
 		 */
 
 		brow.setOnKeyTyped(new EventHandler<KeyEvent>() {
@@ -121,15 +117,11 @@ public class JavaFXWebBrowser {
 		anchorPane.getChildren().add(brow);
 
 		webEng.load(url);
-		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		boolean openInBrowserInExtraView = store.getBoolean("OPEN_BOWSER_IN_EXTRA_VIEW");
+		
+		
 		CustomView view = new CustomView();
-		if (openInBrowserInExtraView) {
-			String id = UUID.randomUUID().toString();
-			view.setSceneCanvas("File_" + id);
-		} else {
-			view.setSceneCanvas(FilenameUtils.getName(url));
-		}
+
+		view.setSceneCanvas(name);
 
 		Scene scene = new Scene(anchorPane);
 

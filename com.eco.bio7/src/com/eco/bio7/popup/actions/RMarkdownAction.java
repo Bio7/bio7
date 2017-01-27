@@ -39,6 +39,7 @@ import com.eco.bio7.browser.BrowserView;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
 
 public class RMarkdownAction extends Action implements IObjectActionDelegate {
@@ -208,7 +209,13 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 
 										else {
 
-											new JavaFXWebBrowser().createBrowser(url);
+											boolean openInBrowserInExtraView = store.getBoolean("OPEN_BOWSER_IN_EXTRA_VIEW");
+											if (openInBrowserInExtraView) {
+
+												new JavaFXWebBrowser().createBrowser(url, theName + ".html");
+											} else {
+												new JavaFXWebBrowser().createBrowser(url, "R_Display");
+											}
 										}
 									}
 								});
@@ -250,32 +257,34 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 								}.start();
 
 							} else if (docType.equals("Word")) {
+								if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows") == false) {
+									new Thread() {
 
-								new Thread() {
+										public void run() {
+											setPriority(Thread.MAX_PRIORITY);
+											// String line;
 
-									public void run() {
-										setPriority(Thread.MAX_PRIORITY);
-										// String line;
+											File fil = new File(dirPath + "/" + theName + ".docx");
+											if (fil.exists()) {
+												Program.launch(dirPath + "/" + theName + ".docx");
+											} else {
+												Bio7Dialog.message("*.docx file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
+											}
 
-										File fil = new File(dirPath + "/" + theName + ".docx");
-										if (fil.exists()) {
-											Program.launch(dirPath + "/" + theName + ".docx");
-										} else {
-											Bio7Dialog.message("*.docx file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
+											IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+											IProject proj = root.getProject(activeProject.getName());
+											try {
+												proj.refreshLocal(IResource.DEPTH_INFINITE, null);
+											} catch (CoreException e) {
+												// TODO Auto-generated catch
+												// block
+												e.printStackTrace();
+											}
+
 										}
+									}.start();
 
-										IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-										IProject proj = root.getProject(activeProject.getName());
-										try {
-											proj.refreshLocal(IResource.DEPTH_INFINITE, null);
-										} catch (CoreException e) {
-											// TODO Auto-generated catch
-											// block
-											e.printStackTrace();
-										}
-
-									}
-								}.start();
+								}
 
 							}
 						}
@@ -297,6 +306,15 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 			});
 			// job.setSystem(true);
 			job.schedule();
+
+			if (docType.equals("Word")) {
+				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+					File fil = new File(dirPath + "/" + theName + ".docx");
+					if (fil.exists()) {
+						new WordOleView(dirPath + "/" + theName + ".docx");
+					}
+				}
+			}
 
 		}
 	}
