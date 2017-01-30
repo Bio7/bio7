@@ -37,6 +37,7 @@ import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.browser.BrowserView;
 import com.eco.bio7.collection.Work;
+import com.eco.bio7.markdownedit.Activator;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
@@ -49,6 +50,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 	private String fi;
 	// private String name;
 	private String docType;
+	protected boolean canOperate = true;
 
 	public RMarkdownAction() {
 		super();
@@ -60,6 +62,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 	}
 
 	public void run(IAction action) {
+
 		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
 		if (utils != null) {
 			/* Bring the console to the front and clear it! */
@@ -79,8 +82,9 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 
 				IResource resource = (IResource) strucSelection.getFirstElement();
 				final IProject activeProject = resource.getProject();
-
-				markdownFile(selectedObj, activeProject);
+				if (canOperate) {
+					markdownFile(selectedObj, activeProject);
+				}
 
 			}
 
@@ -89,6 +93,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 	}
 
 	public void run() {
+
 		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
 		if (utils != null) {
 			/* Bring the console to the front and clear it! */
@@ -126,9 +131,11 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 		} else {
 			docType = "";
 		}
-		// System.out.println("title:" + title); // good
-
-		markdownFile(aFile, aFile.getProject());
+		/*Can execute when the last job has been finished!*/
+		if (canOperate) {
+			markdownFile(aFile, aFile.getProject());
+		}
+		editor.setFocus();
 	}
 
 	private void markdownFile(Object selectedObj, final IProject activeProject) {
@@ -152,6 +159,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 				@Override
 				protected IStatus run(IProgressMonitor monitor) {
 					monitor.beginTask("Markdown file...", IProgressMonitor.UNKNOWN);
+					canOperate = false;
 
 					if (RServe.isAliveDialog()) {
 						if (RState.isBusy() == false) {
@@ -257,7 +265,9 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 								}.start();
 
 							} else if (docType.equals("Word")) {
-								if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows") == false) {
+								IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+								boolean openWordInView = store.getBoolean("OPEN_WORD_IN_VIEW");
+								if (openWordInView == false) {
 									new Thread() {
 
 										public void run() {
@@ -298,7 +308,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 			job.addJobChangeListener(new JobChangeAdapter() {
 				public void done(IJobChangeEvent event) {
 					if (event.getResult().isOK()) {
-
+						canOperate = true;
 					} else {
 
 					}
@@ -306,12 +316,15 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 			});
 			// job.setSystem(true);
 			job.schedule();
-
-			if (docType.equals("Word")) {
-				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
-					File fil = new File(dirPath + "/" + theName + ".docx");
-					if (fil.exists()) {
-						new WordOleView(dirPath + "/" + theName + ".docx");
+			IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+			boolean openWordInView = store.getBoolean("OPEN_WORD_IN_VIEW");
+			if (openWordInView) {
+				if (docType.equals("Word")) {
+					if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+						File fil = new File(dirPath + "/" + theName + ".docx");
+						if (fil.exists()) {
+							new WordOleView(dirPath + "/" + theName + ".docx");
+						}
 					}
 				}
 			}

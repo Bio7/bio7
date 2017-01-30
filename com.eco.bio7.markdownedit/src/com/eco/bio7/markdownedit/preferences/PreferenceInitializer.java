@@ -63,6 +63,9 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         PreferenceConverter.setDefault(storeR, "colourkeyfont1", f);
         PreferenceConverter.setDefault(storeR, "colourkeyfont2", f);
         PreferenceConverter.setDefault(storeR, "colourkeyfont3", f);
+        storeR.setDefault("OPEN_WORD_IN_VIEW",false);
+        storeR.setDefault("RECONCILE_MARKDOWN",false);
+        storeR.setDefault("RECONCILE_MARKDOWN_TIME", 1000);
        
 
 

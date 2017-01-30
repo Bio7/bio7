@@ -5,6 +5,7 @@ import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.ColorFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.TextAttribute;
@@ -28,7 +29,6 @@ import com.eco.bio7.markdownedit.editors.MarkdownColorProvider;
 import com.eco.bio7.markdownedit.editors.MarkdownEditor;
 import com.eco.bio7.markdownedit.editors.MarkdownScanner;
 
-
 public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
 	private IPreferenceStore store;
@@ -41,7 +41,7 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 	}
 
 	public void createFieldEditors() {
-		
+
 		final Link link = new Link(getFieldEditorParent(), SWT.NONE);
 		link.setText("See <a href=\"org.eclipse.ui.preferencePages.ColorsAndFonts\">'Colors and Fonts'</a> to configure the font.");
 		link.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 3, 1));
@@ -49,14 +49,13 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 		link.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(final SelectionEvent e) {
-				//create an instance of the custom MyPreference class
-				PreferencesUtil.createPreferenceDialogOn(new Shell(Display.getDefault()),"org.eclipse.ui.preferencePages.ColorsAndFonts", null, "selectFont:com.eco.bio7.reditor.markdown.textfont");
+				// create an instance of the custom MyPreference class
+				PreferencesUtil.createPreferenceDialogOn(new Shell(Display.getDefault()), "org.eclipse.ui.preferencePages.ColorsAndFonts", null, "selectFont:com.eco.bio7.reditor.markdown.textfont");
 
-				
 			}
 		});
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
-		
+
 		addField(new ColorFieldEditor("colourkey", "Colour Keywords:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("BOLD_COLOURKEY", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
@@ -69,7 +68,27 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 		addField(new ColorFieldEditor("colourkey3", "Colour Single Comment:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("BOLD_COLOURKEY3", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
+		addField(new LabelFieldEditor("Other:", getFieldEditorParent()));
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
+		addField(new BooleanFieldEditor("OPEN_WORD_IN_VIEW", "Open Word in Bio7 View", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
+		addField(new BooleanFieldEditor("RECONCILE_MARKDOWN", "Automatically Compile Markdown after editor changes", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
+		addField(new IntegerFieldEditor("RECONCILE_MARKDOWN_TIME", "Compile Markdown interval (in ms after last keystroke - restart necessary!)", getFieldEditorParent()));
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
+		final Link link2 = new Link(getFieldEditorParent(), SWT.NONE);
+		link2.setText("See <a href=\"com.eco.bio7.browser.preferences\">'Browser Preferences'</a> to select or configure the Browser.");
+		link2.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 3, 1));
+
+		link2.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(final SelectionEvent e) {
+				// create an instance of the custom MyPreference class
+				PreferencesUtil.createPreferenceDialogOn(new Shell(Display.getDefault()), "com.eco.bio7.browser.preferences", null, null);
+
+			}
+		});
 
 	}
 
@@ -80,7 +99,7 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 		PreferenceConverter.setDefault(store, "colourkey1", new RGB(127, 0, 85));
 		PreferenceConverter.setDefault(store, "colourkey2", new RGB(42, 0, 255));
 		PreferenceConverter.setDefault(store, "colourkey3", new RGB(128, 128, 128));
-		
+
 	}
 
 	@Override
@@ -89,112 +108,112 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 		super.performDefaults();
 		ScopedPreferenceStore storeWorkbench = new ScopedPreferenceStore(new InstanceScope(), "org.eclipse.ui.workbench");
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		MarkdownEditor rEditor = (MarkdownEditor) editor;
-		Activator fginstance = Activator.getDefault();
-		MarkdownScanner scanner = (MarkdownScanner) fginstance.getMarkdownScanner();
-		MarkdownColorProvider provider = Activator.getDefault().getRColorProvider();
+		if (editor!=null&&editor instanceof MarkdownEditor) {
+			MarkdownEditor rEditor = (MarkdownEditor) editor;
+			MarkdownColorProvider provider = Activator.getDefault().getRColorProvider();
 
-		// JFaceResources.getFontRegistry().get("com.eco.bio7.reditor.reditor.textfont").getFontData()
+			// JFaceResources.getFontRegistry().get("com.eco.bio7.reditor.reditor.textfont").getFontData()
 
-		storeWorkbench.setValue("com.eco.bio7.reditor.markdown.textfont", storeWorkbench.getDefaultString("com.eco.bio7.reditor.markdown.textfont"));
-		PreferenceConverter.setValue(store, "colourkeyfont", JFaceResources.getFontRegistry().get("com.eco.bio7.reditor.markdown.textfont").getFontData());
-		// rEditor.fontRegistry.put("colourkeyfont",
-		// JFaceResources.getFontRegistry().get("com.eco.bio7.reditor.reditor.textfont").getFontData());
-		/*scanner.keyword.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey")), null, 1));
-		scanner.type.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey1")), null, 1));*/
-		rEditor.getMarkConf().comment.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey2")), null, 0));
-		rEditor.getMarkConf().yaml.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey3")), null, 0));
-		
-		rEditor.invalidateText();
+			storeWorkbench.setValue("com.eco.bio7.reditor.markdown.textfont", storeWorkbench.getDefaultString("com.eco.bio7.reditor.markdown.textfont"));
+			PreferenceConverter.setValue(store, "colourkeyfont", JFaceResources.getFontRegistry().get("com.eco.bio7.reditor.markdown.textfont").getFontData());
+			// rEditor.fontRegistry.put("colourkeyfont",
+			// JFaceResources.getFontRegistry().get("com.eco.bio7.reditor.reditor.textfont").getFontData());
+			/*
+			 * scanner.keyword.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey")), null, 1)); scanner.type.setData(new
+			 * TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey1")), null, 1));
+			 */
+			rEditor.getMarkConf().comment.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey2")), null, 0));
+			rEditor.getMarkConf().yaml.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey3")), null, 0));
+
+			rEditor.invalidateText();
+		}
 		super.performOk();
 	}
 
 	public void propertyChange(PropertyChangeEvent event) {
 		super.propertyChange(event);
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		
-		MarkdownEditor rEditor = (MarkdownEditor) editor;
-		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+		if (editor!=null&&editor instanceof MarkdownEditor) {
+			MarkdownEditor rEditor = (MarkdownEditor) editor;
+			IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
-		if (event.getSource() instanceof ColorFieldEditor) {
-			ColorFieldEditor col = (ColorFieldEditor) event.getSource();
-			String name = col.getPreferenceName();
-			RGB rgb = (RGB) event.getNewValue();
-			Activator fginstance = Activator.getDefault();
-			MarkdownScanner scanner = (MarkdownScanner) fginstance.getMarkdownScanner();
-			MarkdownColorProvider provider = Activator.getDefault().getRColorProvider();
+			if (event.getSource() instanceof ColorFieldEditor) {
+				ColorFieldEditor col = (ColorFieldEditor) event.getSource();
+				String name = col.getPreferenceName();
+				RGB rgb = (RGB) event.getNewValue();
+				Activator fginstance = Activator.getDefault();
+				MarkdownScanner scanner = (MarkdownScanner) fginstance.getMarkdownScanner();
+				MarkdownColorProvider provider = Activator.getDefault().getRColorProvider();
 
-			switch (name) {
-			/*case "colourkey":
-				scanner.keyword.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY")));
-				break;
-			case "colourkey1":
-				scanner.type.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY1")));
-				break;*/
-			case "colourkey2":
-				rEditor.getMarkConf().comment.att.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY2")));
-				break;
-			case "colourkey3":
-				rEditor.getMarkConf().yaml.att.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY3")));
-				break;
-			
-			default:
-				break;
+				switch (name) {
+				/*
+				 * case "colourkey": scanner.keyword.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY"))); break; case "colourkey1": scanner.type.setData(new
+				 * TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY1"))); break;
+				 */
+				case "colourkey2":
+					rEditor.getMarkConf().comment.att.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY2")));
+					break;
+				case "colourkey3":
+					rEditor.getMarkConf().yaml.att.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY3")));
+					break;
+
+				default:
+					break;
+				}
+
 			}
 
+			else if (event.getSource() instanceof BooleanFieldEditor) {
+				BooleanFieldEditor col = (BooleanFieldEditor) event.getSource();
+				String name = col.getPreferenceName();
+
+				boolean fontData = (boolean) event.getNewValue();
+
+				Activator fginstance = Activator.getDefault();
+				MarkdownScanner scanner = (MarkdownScanner) fginstance.getMarkdownScanner();
+				MarkdownColorProvider provider = Activator.getDefault().getRColorProvider();
+
+				switch (name) {
+				/*
+				 * case "BOLD_COLOURKEY":
+				 * 
+				 * if (fontData) { scanner.keyword.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey")), null, SWT.BOLD)); } else { scanner.keyword.setData(new
+				 * TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey")), null, SWT.NORMAL)); }
+				 * 
+				 * break; case "BOLD_COLOURKEY1": if (fontData) { scanner.type.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey1")), null, SWT.BOLD)); } else
+				 * { scanner.type.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey1")), null, SWT.NORMAL)); }
+				 * 
+				 * break;
+				 */
+				case "BOLD_COLOURKEY2":
+					if (fontData) {
+						rEditor.getMarkConf().comment.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey2")), null, SWT.BOLD));
+					} else {
+						rEditor.getMarkConf().comment.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey2")), null, SWT.NORMAL));
+					}
+					break;
+				case "BOLD_COLOURKEY3":
+					if (fontData) {
+						rEditor.getMarkConf().yaml.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey3")), null, SWT.BOLD));
+					} else {
+						rEditor.getMarkConf().yaml.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey3")), null, SWT.NORMAL));
+					}
+					break;
+
+				default:
+					break;
+				}
+
+			} /*
+				 * else if (event.getSource() instanceof IntegerFieldEditor) { IntegerFieldEditor col = (IntegerFieldEditor) event.getSource(); String name = col.getPreferenceName();
+				 * System.out.println(name); System.out.println(event.getNewValue()); int reconcileTime = Integer.parseInt((String)event.getNewValue());
+				 * rEditor.getMarkConf().getReconciler().setDelay(reconcileTime);
+				 * 
+				 * }
+				 */
+
+			rEditor.invalidateText();
 		}
-
-		else if (event.getSource() instanceof BooleanFieldEditor) {
-			BooleanFieldEditor col = (BooleanFieldEditor) event.getSource();
-			String name = col.getPreferenceName();
-
-			boolean fontData = (boolean) event.getNewValue();
-
-			Activator fginstance = Activator.getDefault();
-			MarkdownScanner scanner = (MarkdownScanner) fginstance.getMarkdownScanner();
-			MarkdownColorProvider provider = Activator.getDefault().getRColorProvider();
-
-			switch (name) {
-			/*case "BOLD_COLOURKEY":
-
-				if (fontData) {
-					scanner.keyword.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey")), null, SWT.BOLD));
-				} else {
-					scanner.keyword.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey")), null, SWT.NORMAL));
-				}
-
-				break;
-			case "BOLD_COLOURKEY1":
-				if (fontData) {
-					scanner.type.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey1")), null, SWT.BOLD));
-				} else {
-					scanner.type.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey1")), null, SWT.NORMAL));
-				}
-
-				break;*/
-			case "BOLD_COLOURKEY2":
-				if (fontData) {
-					rEditor.getMarkConf().comment.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey2")), null, SWT.BOLD));
-				} else {
-					rEditor.getMarkConf().comment.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey2")), null, SWT.NORMAL));
-				}
-				break;
-			case "BOLD_COLOURKEY3":
-				if (fontData) {
-					rEditor.getMarkConf().yaml.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey3")), null, SWT.BOLD));
-				} else {
-					rEditor.getMarkConf().yaml.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey3")), null, SWT.NORMAL));
-				}
-				break;
-			
-
-			default:
-				break;
-			}
-
-		}
-
-		rEditor.invalidateText();
 		super.performOk();
 
 	}

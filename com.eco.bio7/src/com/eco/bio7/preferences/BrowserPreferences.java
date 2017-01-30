@@ -5,10 +5,10 @@ import java.beans.PropertyChangeListener;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
-import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+
 import com.eco.bio7.Bio7Plugin;
 
 public class BrowserPreferences extends FieldEditorPreferencePage implements IWorkbenchPreferencePage, PropertyChangeListener {
@@ -48,8 +48,7 @@ public class BrowserPreferences extends FieldEditorPreferencePage implements IWo
 		SpacerFieldEditor spacer1 = new SpacerFieldEditor(getFieldEditorParent());
 		addField(spacer1);
 		addField(new LabelFieldEditor("JavaFX Browser:", getFieldEditorParent()));
-		//addField(new BooleanFieldEditor("javafxbrowser","Open HTML or PDF as Browser view with JavaFX browser", StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
-		addField(new BooleanFieldEditor("OPEN_BOWSER_IN_EXTRA_VIEW","Create a new View for each file",getFieldEditorParentControl()));
+		addField(new BooleanFieldEditor("OPEN_BOWSER_IN_EXTRA_VIEW","Create a new View for each PDF file",getFieldEditorParentControl()));
 		
 	}
 
