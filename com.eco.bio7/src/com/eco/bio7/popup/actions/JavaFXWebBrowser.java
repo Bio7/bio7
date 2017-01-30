@@ -3,14 +3,16 @@ package com.eco.bio7.popup.actions;
 import java.io.File;
 import java.util.Set;
 import java.util.UUID;
-
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.w3c.dom.Element;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.collection.CustomView;
-
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
+import javafx.concurrent.Worker;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -26,11 +28,34 @@ public class JavaFXWebBrowser {
 	private ContextMenu menu;
 	private WebEngine webEng;
 	private WebView brow;
+	private static String pageNumber="page=1";
 
 	public JavaFXWebBrowser() {
 		brow = new WebView();
 		webEng = brow.getEngine();
 		webEng.setJavaScriptEnabled(true);
+		webEng.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
+		
+
+			@Override
+			public void changed(ObservableValue<? extends Worker.State> observable, Worker.State oldValue, Worker.State newValue) {
+                
+				if (newValue != Worker.State.SUCCEEDED) {
+					
+					
+					return;
+				}
+				/*org.w3c.dom.Document  doc = webEng.getDocument();
+				Element el = doc.getElementById("");*/
+				//webEng.executeScript("PDFViewerApplication.findBar.open();PDFViewerApplication.initialBookmark = \"page=2\";");
+				/*webEng.executeScript("PDFViewerApplication.initialBookmark = \""+pageNumber+"\";");
+				pageNumber = (String) (webEng.executeScript("PDFViewerApplication.initialBookmark;"));
+				
+				System.out.println("Page Number is: "+pageNumber);
+				System.out.println("changed");*/
+			}
+
+		});
 	}
 
 	public void createBrowser(String url, String name) {
@@ -117,8 +142,7 @@ public class JavaFXWebBrowser {
 		anchorPane.getChildren().add(brow);
 
 		webEng.load(url);
-		
-		
+
 		CustomView view = new CustomView();
 
 		view.setSceneCanvas(name);

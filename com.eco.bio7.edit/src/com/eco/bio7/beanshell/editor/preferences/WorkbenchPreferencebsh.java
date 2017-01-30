@@ -99,151 +99,155 @@ public class WorkbenchPreferencebsh extends FieldEditorPreferencePage implements
 		super.performDefaults();
 		ScopedPreferenceStore storeWorkbench = new ScopedPreferenceStore(new InstanceScope(), "org.eclipse.ui.workbench");
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		BeanshellEditor beanShellEditor = (BeanshellEditor) editor;
-		BeanshellEditorPlugin fginstance = BeanshellEditorPlugin.getDefault();
-		ScriptCodeScanner scanner = (ScriptCodeScanner) fginstance.getScriptCodeScanner();
-		ScriptColorProvider provider = BeanshellEditorPlugin.getDefault().getScriptColorProvider();
+		if (editor != null && editor instanceof BeanshellEditor) {
+			BeanshellEditor beanShellEditor = (BeanshellEditor) editor;
+			BeanshellEditorPlugin fginstance = BeanshellEditorPlugin.getDefault();
+			ScriptCodeScanner scanner = (ScriptCodeScanner) fginstance.getScriptCodeScanner();
+			ScriptColorProvider provider = BeanshellEditorPlugin.getDefault().getScriptColorProvider();
 
-		storeWorkbench.setValue("com.eco.bio7.beanshelleditor.textfont", storeWorkbench.getDefaultString("com.eco.bio7.beanshelleditor.textfont"));
-		PreferenceConverter.setValue(store, "colourkeyfont", JFaceResources.getFontRegistry().get("com.eco.bio7.beanshelleditor.textfont").getFontData());
+			storeWorkbench.setValue("com.eco.bio7.beanshelleditor.textfont", storeWorkbench.getDefaultString("com.eco.bio7.beanshelleditor.textfont"));
+			PreferenceConverter.setValue(store, "colourkeyfont", JFaceResources.getFontRegistry().get("com.eco.bio7.beanshelleditor.textfont").getFontData());
 
-		scanner.keyword.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey")), null, 1));
-		scanner.type.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey1")), null, 1));
-		scanner.string.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey2")), null, 0));
-		scanner.comment.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey3")), null, 0));
-		scanner.other.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey4")), null, 0));
-		scanner.operators.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey5")), null, 0));
-		scanner.braces.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey6")), null, 0));
-		scanner.numbers.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey7")), null, 0));
-		beanShellEditor.invalidateText();
+			scanner.keyword.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey")), null, 1));
+			scanner.type.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey1")), null, 1));
+			scanner.string.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey2")), null, 0));
+			scanner.comment.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey3")), null, 0));
+			scanner.other.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey4")), null, 0));
+			scanner.operators.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey5")), null, 0));
+			scanner.braces.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey6")), null, 0));
+			scanner.numbers.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey7")), null, 0));
+			beanShellEditor.invalidateText();
+		}
 		super.performOk();
 	}
 
 	public void propertyChange(org.eclipse.jface.util.PropertyChangeEvent event) {
 		super.propertyChange(event);
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		BeanshellEditor beanshellEditor = (BeanshellEditor) editor;
-		IPreferenceStore store = BeanshellEditorPlugin.getDefault().getPreferenceStore();
+		if (editor != null && editor instanceof BeanshellEditor) {
+			BeanshellEditor beanshellEditor = (BeanshellEditor) editor;
+			IPreferenceStore store = BeanshellEditorPlugin.getDefault().getPreferenceStore();
 
-		if (event.getSource() instanceof ColorFieldEditor) {
-			ColorFieldEditor col = (ColorFieldEditor) event.getSource();
-			String name = col.getPreferenceName();
-			RGB rgb = (RGB) event.getNewValue();
-			BeanshellEditorPlugin fginstance = BeanshellEditorPlugin.getDefault();
-			ScriptCodeScanner scanner = (ScriptCodeScanner) fginstance.getScriptCodeScanner();
-			ScriptColorProvider provider = BeanshellEditorPlugin.getDefault().getScriptColorProvider();
+			if (event.getSource() instanceof ColorFieldEditor) {
+				ColorFieldEditor col = (ColorFieldEditor) event.getSource();
+				String name = col.getPreferenceName();
+				RGB rgb = (RGB) event.getNewValue();
+				BeanshellEditorPlugin fginstance = BeanshellEditorPlugin.getDefault();
+				ScriptCodeScanner scanner = (ScriptCodeScanner) fginstance.getScriptCodeScanner();
+				ScriptColorProvider provider = BeanshellEditorPlugin.getDefault().getScriptColorProvider();
 
-			switch (name) {
-			case "colourkey":
-				scanner.keyword.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY")));
-				break;
-			case "colourkey1":
-				scanner.type.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY1")));
-				break;
-			case "colourkey2":
-				scanner.string.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY2")));
-				break;
-			case "colourkey3":
-				scanner.comment.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY3")));
-				break;
-			case "colourkey4":
-				scanner.other.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY4")));
-				break;
-			case "colourkey5":
-				scanner.operators.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY5")));
-				break;
-			case "colourkey6":
-				scanner.braces.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY6")));
-				break;
-			case "colourkey7":
-				scanner.numbers.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY7")));
-				break;
-			default:
-				break;
+				switch (name) {
+				case "colourkey":
+					scanner.keyword.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY")));
+					break;
+				case "colourkey1":
+					scanner.type.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY1")));
+					break;
+				case "colourkey2":
+					scanner.string.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY2")));
+					break;
+				case "colourkey3":
+					scanner.comment.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY3")));
+					break;
+				case "colourkey4":
+					scanner.other.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY4")));
+					break;
+				case "colourkey5":
+					scanner.operators.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY5")));
+					break;
+				case "colourkey6":
+					scanner.braces.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY6")));
+					break;
+				case "colourkey7":
+					scanner.numbers.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY7")));
+					break;
+				default:
+					break;
+				}
+
 			}
 
-		}
+			else if (event.getSource() instanceof BooleanFieldEditor) {
+				BooleanFieldEditor col = (BooleanFieldEditor) event.getSource();
+				String name = col.getPreferenceName();
 
-		else if (event.getSource() instanceof BooleanFieldEditor) {
-			BooleanFieldEditor col = (BooleanFieldEditor) event.getSource();
-			String name = col.getPreferenceName();
+				boolean fontData = (boolean) event.getNewValue();
 
-			boolean fontData = (boolean) event.getNewValue();
+				BeanshellEditorPlugin fginstance = BeanshellEditorPlugin.getDefault();
+				ScriptCodeScanner scanner = (ScriptCodeScanner) fginstance.getScriptCodeScanner();
+				ScriptColorProvider provider = BeanshellEditorPlugin.getDefault().getScriptColorProvider();
 
-			BeanshellEditorPlugin fginstance = BeanshellEditorPlugin.getDefault();
-			ScriptCodeScanner scanner = (ScriptCodeScanner) fginstance.getScriptCodeScanner();
-			ScriptColorProvider provider = BeanshellEditorPlugin.getDefault().getScriptColorProvider();
+				switch (name) {
 
-			switch (name) {
+				case "BOLD_COLOURKEY":
 
-			case "BOLD_COLOURKEY":
+					if (fontData) {
+						scanner.keyword.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey")), null, SWT.BOLD));
+					} else {
+						scanner.keyword.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey")), null, SWT.NORMAL));
+					}
 
-				if (fontData) {
-					scanner.keyword.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey")), null, SWT.BOLD));
-				} else {
-					scanner.keyword.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey")), null, SWT.NORMAL));
+					break;
+				case "BOLD_COLOURKEY1":
+					if (fontData) {
+						scanner.type.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey1")), null, SWT.BOLD));
+					} else {
+						scanner.type.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey1")), null, SWT.NORMAL));
+					}
+
+					break;
+
+				case "BOLD_COLOURKEY2":
+					if (fontData) {
+						scanner.string.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey2")), null, SWT.BOLD));
+					} else {
+						scanner.string.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey2")), null, SWT.NORMAL));
+					}
+					break;
+				case "BOLD_COLOURKEY3":
+					if (fontData) {
+						scanner.comment.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey3")), null, SWT.BOLD));
+					} else {
+						scanner.comment.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey3")), null, SWT.NORMAL));
+					}
+					break;
+				case "BOLD_COLOURKEY4":
+					if (fontData) {
+						scanner.other.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey4")), null, SWT.BOLD));
+					} else {
+						scanner.other.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey4")), null, SWT.NORMAL));
+					}
+					break;
+				case "BOLD_COLOURKEY5":
+					if (fontData) {
+						scanner.operators.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey5")), null, SWT.BOLD));
+					} else {
+						scanner.operators.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey5")), null, SWT.NORMAL));
+					}
+					break;
+				case "BOLD_COLOURKEY6":
+					if (fontData) {
+						scanner.braces.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey6")), null, SWT.BOLD));
+					} else {
+						scanner.braces.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey6")), null, SWT.NORMAL));
+					}
+					break;
+				case "BOLD_COLOURKEY7":
+					if (fontData) {
+						scanner.numbers.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey7")), null, SWT.BOLD));
+					} else {
+						scanner.numbers.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey7")), null, SWT.NORMAL));
+					}
+					break;
+
+				default:
+					break;
 				}
 
-				break;
-			case "BOLD_COLOURKEY1":
-				if (fontData) {
-					scanner.type.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey1")), null, SWT.BOLD));
-				} else {
-					scanner.type.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey1")), null, SWT.NORMAL));
-				}
-
-				break;
-
-			case "BOLD_COLOURKEY2":
-				if (fontData) {
-					scanner.string.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey2")), null, SWT.BOLD));
-				} else {
-					scanner.string.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey2")), null, SWT.NORMAL));
-				}
-				break;
-			case "BOLD_COLOURKEY3":
-				if (fontData) {
-					scanner.comment.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey3")), null, SWT.BOLD));
-				} else {
-					scanner.comment.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey3")), null, SWT.NORMAL));
-				}
-				break;
-			case "BOLD_COLOURKEY4":
-				if (fontData) {
-					scanner.other.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey4")), null, SWT.BOLD));
-				} else {
-					scanner.other.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey4")), null, SWT.NORMAL));
-				}
-				break;
-			case "BOLD_COLOURKEY5":
-				if (fontData) {
-					scanner.operators.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey5")), null, SWT.BOLD));
-				} else {
-					scanner.operators.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey5")), null, SWT.NORMAL));
-				}
-				break;
-			case "BOLD_COLOURKEY6":
-				if (fontData) {
-					scanner.braces.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey6")), null, SWT.BOLD));
-				} else {
-					scanner.braces.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey6")), null, SWT.NORMAL));
-				}
-				break;
-			case "BOLD_COLOURKEY7":
-				if (fontData) {
-					scanner.numbers.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey7")), null, SWT.BOLD));
-				} else {
-					scanner.numbers.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey7")), null, SWT.NORMAL));
-				}
-				break;
-
-			default:
-				break;
 			}
 
+			beanshellEditor.invalidateText();
 		}
-
-		beanshellEditor.invalidateText();
 		super.performOk();
 
 	}

@@ -10,7 +10,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.collection.CustomView;
-import com.eco.bio7.util.Util;
 
 public class WordOleView extends com.eco.bio7.compile.Model {
 
@@ -19,7 +18,6 @@ public class WordOleView extends com.eco.bio7.compile.Model {
 	private static OleFrame frame;
 	protected static OleClientSite clientSite;
 	private static Composite parent;
-	private static Object menuBar;
 	private CustomView view; 
 
 	public WordOleView(String file) {
@@ -75,8 +73,6 @@ public class WordOleView extends com.eco.bio7.compile.Model {
 	}
 
 	public static void fileOpen(String file) {
-		//String load = Bio7Dialog.openFile();
-		//System.out.println(file);
 		if (file != null) {
 			clientSite.dispose();
 			clientSite = new OleClientSite(frame, SWT.NONE, "Word.Document", new File(file));

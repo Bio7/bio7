@@ -71,13 +71,15 @@ public class MarkdownConfiguration extends SourceViewerConfiguration {
 		strategy.setEditor(markdownEditor);
 
 		MonoReconciler reconciler = new MonoReconciler(strategy, false);
-		reconciler.setDelay(200);
+		/*Set the reconcile time from the preferences!*/
+		int timeReconcile = store.getInt("RECONCILE_MARKDOWN_TIME");
+		reconciler.setDelay(timeReconcile);
 		return reconciler;
 	}
 
 	public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
-		
-		RGB rgbkey2 = PreferenceConverter.getColor(store, "colourkey2");	
+
+		RGB rgbkey2 = PreferenceConverter.getColor(store, "colourkey2");
 		RGB rgbkey3 = PreferenceConverter.getColor(store, "colourkey3");
 		PresentationReconciler reconciler = new PresentationReconciler();
 
@@ -88,32 +90,35 @@ public class MarkdownConfiguration extends SourceViewerConfiguration {
 		DefaultDamagerRepairer dr2 = new DefaultDamagerRepairer(getMarkdownScanner());
 		reconciler.setDamager(dr2, IDocument.DEFAULT_CONTENT_TYPE);
 		reconciler.setRepairer(dr2, IDocument.DEFAULT_CONTENT_TYPE);
-		
-		/*We create the special token with a default style from the preferences!*/
+
+		/* We create the special token with a default style from the preferences! */
 		comment = new SingleTokenScanner(new TextAttribute(new Color(Display.getDefault(), rgbkey2), null, isBold("BOLD_COLOURKEY2")));
 		DefaultDamagerRepairer ndr = new DefaultDamagerRepairer(comment);
 		reconciler.setDamager(ndr, MarkdownPartitionScanner.MARKDOWN_COMMENT);
-		reconciler.setRepairer(ndr,MarkdownPartitionScanner.MARKDOWN_COMMENT);
+		reconciler.setRepairer(ndr, MarkdownPartitionScanner.MARKDOWN_COMMENT);
 
-		/*NonRuleBasedDamagerRepairer ndr = new NonRuleBasedDamagerRepairer(new TextAttribute(new Color(Display.getDefault(), rgbkey2), null, isBold("BOLD_COLOURKEY2")));
-		reconciler.setDamager(ndr, MarkdownPartitionScanner.MARKDOWN_COMMENT);
-		reconciler.setRepairer(ndr, MarkdownPartitionScanner.MARKDOWN_COMMENT);*/
-		
-		/*We create the special token with a default style from the preferences!*/
+		/*
+		 * NonRuleBasedDamagerRepairer ndr = new NonRuleBasedDamagerRepairer(new TextAttribute(new Color(Display.getDefault(), rgbkey2), null, isBold("BOLD_COLOURKEY2"))); reconciler.setDamager(ndr,
+		 * MarkdownPartitionScanner.MARKDOWN_COMMENT); reconciler.setRepairer(ndr, MarkdownPartitionScanner.MARKDOWN_COMMENT);
+		 */
+
+		/* We create the special token with a default style from the preferences! */
 		yaml = new SingleTokenScanner(new TextAttribute(new Color(Display.getDefault(), rgbkey3), null, isBold("BOLD_COLOURKEY3")));
 		DefaultDamagerRepairer ndrcomment = new DefaultDamagerRepairer(yaml);
 		reconciler.setDamager(ndrcomment, MarkdownPartitionScanner.YAML_HEADER);
 		reconciler.setRepairer(ndrcomment, MarkdownPartitionScanner.YAML_HEADER);
 
-		/*NonRuleBasedDamagerRepairer ndr2 = new NonRuleBasedDamagerRepairer(new TextAttribute(new Color(Display.getDefault(), rgbkey2), null, isBold("BOLD_COLOURKEY2")));
-		reconciler.setDamager(ndr2, MarkdownPartitionScanner.YAML_HEADER);
-		reconciler.setRepairer(ndr2, MarkdownPartitionScanner.YAML_HEADER);*/
+		/*
+		 * NonRuleBasedDamagerRepairer ndr2 = new NonRuleBasedDamagerRepairer(new TextAttribute(new Color(Display.getDefault(), rgbkey2), null, isBold("BOLD_COLOURKEY2"))); reconciler.setDamager(ndr2,
+		 * MarkdownPartitionScanner.YAML_HEADER); reconciler.setRepairer(ndr2, MarkdownPartitionScanner.YAML_HEADER);
+		 */
 
 		return reconciler;
 	}
+
 	private int isBold(String string2) {
 		int style = 0;
-		
+
 		if (store.getBoolean(string2)) {
 			style = 1;
 		}
@@ -136,7 +141,8 @@ public class MarkdownConfiguration extends SourceViewerConfiguration {
 
 		return assistant;
 	}
-	public  class SingleTokenScanner extends BufferedRuleBasedScanner {
+
+	public class SingleTokenScanner extends BufferedRuleBasedScanner {
 		public Token att;
 
 		public SingleTokenScanner(TextAttribute attribute) {

@@ -36,7 +36,7 @@
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
-            category="com.eco.bio7.preferences.Bio7PreferencePage"
+            category="com.eco.bio7.R"
             class="com.eco.bio7.markdownedit.preferences.WorkbenchPreferenceMarkdown"
             id="com.eco.bio7.markdownedit.preferences.editor"
             name="Preferences Markdown Editor">
