@@ -1461,7 +1461,7 @@ exports.PDFRenderingQueue = PDFRenderingQueue;
 //Changed for Bio7!
 var DEFAULT_PREFERENCES = {
   showPreviousViewOnLoad: true,
-  defaultZoomValue: 'page-fit',
+  defaultZoomValue: 'auto',
   sidebarViewOnLoad: 0,
   enableHandToolOnLoad: false,
   enableWebGL: false,
@@ -2835,9 +2835,9 @@ exports.DefaultTextLayerFactory = DefaultTextLayerFactory;
     factory((root.pdfjsWebUIUtils = {}), root.pdfjsWebPDFJS);
   }
 }(this, function (exports, pdfjsLib) {
-
+/*Changed for Bio7!*/
 var CSS_UNITS = 96.0 / 72.0;
-var DEFAULT_SCALE_VALUE = 'auto';
+var DEFAULT_SCALE_VALUE = 'page-fit';
 var DEFAULT_SCALE = 1.0;
 var UNKNOWN_SCALE = 0;
 var MAX_AUTO_SCALE = 1.25;

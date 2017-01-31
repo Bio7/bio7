@@ -1,5 +1,11 @@
 package com.eco.bio7.rbridge.actions;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.IAction;
@@ -9,6 +15,7 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorActionDelegate;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
@@ -36,7 +43,6 @@ public class ProfileSelectionAction implements IObjectActionDelegate, IEditorAct
 		if (canEvaluate) {
 
 			IEditorPart rEditor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-			
 
 			// IPreferenceStore store =
 			// Bio7Plugin.getDefault().getPreferenceStore();
@@ -63,7 +69,7 @@ public class ProfileSelectionAction implements IObjectActionDelegate, IEditorAct
 					if (RServe.isAliveDialog()) {
 						if (RState.isBusy() == false) {
 							RState.setBusy(true);
-							ProfileRScript prof=new ProfileRScript();
+							ProfileRScript prof = new ProfileRScript();
 							String editorScript = prof.profileSourceRserve(rEditor, true);
 							final RInterpreterJob Do = new RInterpreterJob(editorScript, true, null);
 							Do.addJobChangeListener(new JobChangeAdapter() {
@@ -74,6 +80,7 @@ public class ProfileSelectionAction implements IObjectActionDelegate, IEditorAct
 										if (countDev > 0) {
 											RServe.closeAndDisplay();
 										}
+
 										prof.openWebBrowser();
 
 									}
@@ -98,7 +105,6 @@ public class ProfileSelectionAction implements IObjectActionDelegate, IEditorAct
 
 				}
 
-				
 			}
 		}
 	}
@@ -114,5 +120,5 @@ public class ProfileSelectionAction implements IObjectActionDelegate, IEditorAct
 		// TODO Auto-generated method stub
 
 	}
-	
+
 }

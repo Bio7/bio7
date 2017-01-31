@@ -262,10 +262,10 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 										} else {
 											boolean openInBrowserInExtraView = store.getBoolean("OPEN_BOWSER_IN_EXTRA_VIEW");
 											if (openInBrowserInExtraView) {
-												new JavaFXWebBrowser().createBrowser(url,theName + ".html");
+												new JavaFXWebBrowser(true).createBrowser(url,theName + ".html");
 											}
 											else{
-												new JavaFXWebBrowser().createBrowser(url,"R_Display");
+												new JavaFXWebBrowser(true).createBrowser(url,"R_Display");
 											}
 											
 										}
