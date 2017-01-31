@@ -5,8 +5,12 @@ import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
+import org.w3c.dom.NodeList;
+import org.w3c.dom.events.Event;
+import org.w3c.dom.events.EventListener;
+import org.w3c.dom.events.EventTarget;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.collection.CustomView;
 import javafx.beans.value.ChangeListener;
@@ -28,34 +32,64 @@ public class JavaFXWebBrowser {
 	private ContextMenu menu;
 	private WebEngine webEng;
 	private WebView brow;
-	private static String pageNumber="page=1";
+	private boolean html;
 
-	public JavaFXWebBrowser() {
+	public JavaFXWebBrowser(boolean html) {
+		this.html = html;
 		brow = new WebView();
 		webEng = brow.getEngine();
 		webEng.setJavaScriptEnabled(true);
 		webEng.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
-		
 
 			@Override
 			public void changed(ObservableValue<? extends Worker.State> observable, Worker.State oldValue, Worker.State newValue) {
-                
+
 				if (newValue != Worker.State.SUCCEEDED) {
-					
-					
+
 					return;
 				}
-				/*org.w3c.dom.Document  doc = webEng.getDocument();
-				Element el = doc.getElementById("");*/
-				//webEng.executeScript("PDFViewerApplication.findBar.open();PDFViewerApplication.initialBookmark = \"page=2\";");
-				/*webEng.executeScript("PDFViewerApplication.initialBookmark = \""+pageNumber+"\";");
-				pageNumber = (String) (webEng.executeScript("PDFViewerApplication.initialBookmark;"));
-				
-				System.out.println("Page Number is: "+pageNumber);
-				System.out.println("changed");*/
+				/*
+				 * org.w3c.dom.Document doc = webEng.getDocument(); Element el = doc.getElementById("");
+				 */
+				/* Store the last selected page for a new instance, reload of the PDF.js viewer! */
+				// webEng.executeScript("PDFViewerApplication.pdfViewer.sidebarViewOnLoad= 1;");
+				/*If we load a PDF with 'pdf.js'!*/
+				if (html == false) {
+					webEng.executeScript("PDFViewerApplication.pdfViewer.currentPageNumber=" + JavaFXBrowserHelper.pageNumber + "");
+					/* Set the bookmark to select the page! */
+					webEng.executeScript("PDFViewerApplication.initialBookmark = \"" + JavaFXBrowserHelper.pageNumber + "\";");
+
+					Document doc = webEng.getDocument();
+
+					Element el = doc.getDocumentElement();
+
+					((EventTarget) el).addEventListener("click", new EventListener() {
+
+						@Override
+						public void handleEvent(Event evt) {
+							JavaFXBrowserHelper.pageNumber = (int) (webEng.executeScript("PDFViewerApplication.pdfViewer.currentPageNumber;"));
+
+						}
+					}, false);
+
+					((EventTarget) el).addEventListener("keyup", new EventListener() {
+
+						@Override
+						public void handleEvent(Event evt) {
+							JavaFXBrowserHelper.pageNumber = (int) (webEng.executeScript("PDFViewerApplication.pdfViewer.currentPageNumber;"));
+							/*
+							 * System.out.println(String.valueOf(((com.sun.webkit.dom.KeyboardEventImpl) evt).getKeyCode())); com.sun.webkit.dom.KeyboardEventImpl event =
+							 * (com.sun.webkit.dom.KeyboardEventImpl) evt; System.out.println(event.getKeyIdentifier());
+							 */
+
+						}
+					}, false);
+				}
+
 			}
 
 		});
+
 	}
 
 	public void createBrowser(String url, String name) {

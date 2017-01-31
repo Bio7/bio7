@@ -648,7 +648,7 @@ public class RServe {
 			display.asyncExec(new Runnable() {
 
 				public void run() {
-					JavaFXWebBrowser br = new JavaFXWebBrowser();
+					JavaFXWebBrowser br = new JavaFXWebBrowser(false);
 					WebEngine webEngine = br.getWebEngine();
 					/* We print the file for the display only without the line seperator replacements! */
 					System.out.println("Path to PDF file: "+tempFile);

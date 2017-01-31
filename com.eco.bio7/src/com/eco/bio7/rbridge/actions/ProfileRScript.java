@@ -1,6 +1,7 @@
 package com.eco.bio7.rbridge.actions;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -43,16 +44,27 @@ public class ProfileRScript {
 	}
 
 	public String profileSourceRserve(IEditorPart rEditor, boolean selection) {
-		IWorkbenchPart workbenchPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActivePart();
-		IFile file = (IFile) workbenchPart.getSite().getPage().getActiveEditor().getEditorInput().getAdapter(IFile.class);
+		//IWorkbenchPart workbenchPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActivePart();
+		//IFile file = (IFile) workbenchPart.getSite().getPage().getActiveEditor().getEditorInput().getAdapter(IFile.class);
 
-		String pathParent = new File(file.getRawLocation().toOSString()).getParent();
-		String dir = pathParent.replace("\\", "/");
-		dir = dir + "/";
-		path = dir + "profile.html";
-		System.out.println("path: " + path);
-
-		StringBuffer buff = new StringBuffer();
+		/*String pathParent = new File(file.getRawLocation().toOSString()).getParent();
+		String dirTemp = pathParent.replace("\\", "/");
+		String dir = dirTemp + "/";*/
+		
+		
+		File tempFile = null;
+		try {
+			tempFile = File.createTempFile("profile", ".html");
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		/* Delete files when finishes! */
+		tempFile.deleteOnExit();
+		
+		String dirTemp = tempFile.toString().replace("\\", "/");
+		path = dirTemp;
+		StringBuffer buff = new StringBuffer();		
 		buff.append("library(profvis)");
 		buff.append(System.lineSeparator());
 		buff.append("p<-profvis(expr={");
@@ -63,9 +75,11 @@ public class ProfileRScript {
 			buff.append(getText(rEditor));
 		}
 		buff.append(System.lineSeparator());
+		
 		buff.append("})");
 		buff.append(System.lineSeparator());
-		buff.append("htmlwidgets::saveWidget(p,\"" + path + "\")");
+		buff.append("htmlwidgets::saveWidget(p,\"" + path + "\",selfcontained = TRUE)");
+		System.out.println(path.replace("/", "\\"));
 		String editorScript = buff.toString();
 		return editorScript;
 	}
@@ -108,7 +122,8 @@ public class ProfileRScript {
 					b.browser.setJavascriptEnabled(true);
 					b.setLocation(url);
 				} else {
-					new JavaFXWebBrowser().createBrowser(url,"R_Display");
+					
+					new JavaFXWebBrowser(true).createBrowser(url,"R_Profile");
 				}
 			}
 		});

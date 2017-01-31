@@ -56,7 +56,7 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 		});
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 
-		addField(new ColorFieldEditor("colourkey", "Colour Keywords:", getFieldEditorParent()));
+		addField(new ColorFieldEditor("colourkey", "Colour Default:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("BOLD_COLOURKEY", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
 		addField(new ColorFieldEditor("colourkey1", "Colour Type:", getFieldEditorParent()));
@@ -108,9 +108,9 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 		super.performDefaults();
 		ScopedPreferenceStore storeWorkbench = new ScopedPreferenceStore(new InstanceScope(), "org.eclipse.ui.workbench");
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		if (editor!=null&&editor instanceof MarkdownEditor) {
+		if (editor != null && editor instanceof MarkdownEditor) {
 			MarkdownEditor rEditor = (MarkdownEditor) editor;
-			MarkdownColorProvider provider = Activator.getDefault().getRColorProvider();
+			MarkdownColorProvider provider = Activator.getDefault().getMarkdownColorProvider();
 
 			// JFaceResources.getFontRegistry().get("com.eco.bio7.reditor.reditor.textfont").getFontData()
 
@@ -133,7 +133,7 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 	public void propertyChange(PropertyChangeEvent event) {
 		super.propertyChange(event);
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		if (editor!=null&&editor instanceof MarkdownEditor) {
+		if (editor != null && editor instanceof MarkdownEditor) {
 			MarkdownEditor rEditor = (MarkdownEditor) editor;
 			IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
@@ -143,13 +143,20 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 				RGB rgb = (RGB) event.getNewValue();
 				Activator fginstance = Activator.getDefault();
 				MarkdownScanner scanner = (MarkdownScanner) fginstance.getMarkdownScanner();
-				MarkdownColorProvider provider = Activator.getDefault().getRColorProvider();
+				MarkdownColorProvider provider = Activator.getDefault().getMarkdownColorProvider();
 
 				switch (name) {
-				/*
-				 * case "colourkey": scanner.keyword.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY"))); break; case "colourkey1": scanner.type.setData(new
-				 * TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY1"))); break;
-				 */
+
+				case "colourkey":
+					if(scanner.other==null){
+						return;
+					}
+					scanner.other.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY")));
+					break;
+				/*case "colourkey1":
+					scanner.other.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY1")));
+					break;*/
+
 				case "colourkey2":
 					rEditor.getMarkConf().comment.att.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY2")));
 					break;
@@ -171,7 +178,7 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 
 				Activator fginstance = Activator.getDefault();
 				MarkdownScanner scanner = (MarkdownScanner) fginstance.getMarkdownScanner();
-				MarkdownColorProvider provider = Activator.getDefault().getRColorProvider();
+				MarkdownColorProvider provider = Activator.getDefault().getMarkdownColorProvider();
 
 				switch (name) {
 				/*

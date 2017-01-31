@@ -56,7 +56,7 @@ public class Activator extends AbstractUIPlugin {
 	}
 	public RuleBasedScanner getMarkdownScanner() {
 		if (fCodeScanner == null)
-			fCodeScanner = new MarkdownScanner(getRColorProvider());
+			fCodeScanner = new MarkdownScanner(getMarkdownColorProvider());
 		return fCodeScanner;
 	}
 
@@ -70,7 +70,7 @@ public class Activator extends AbstractUIPlugin {
 	public static ImageDescriptor getImageDescriptor(String path) {
 		return imageDescriptorFromPlugin(PLUGIN_ID, path);
 	}
-	public MarkdownColorProvider getRColorProvider() {
+	public MarkdownColorProvider getMarkdownColorProvider() {
 		if (fColorProvider == null)
 			fColorProvider = new MarkdownColorProvider();
 		return fColorProvider;
