@@ -40,7 +40,7 @@ public class MarkdownConfiguration extends SourceViewerConfiguration {
 	}
 
 	public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
-		return new String[] { IDocument.DEFAULT_CONTENT_TYPE, MarkdownPartitionScanner.MARKDOWN_COMMENT, MarkdownPartitionScanner.MARKDOWN_TAG, MarkdownPartitionScanner.YAML_HEADER };
+		return new String[] { IDocument.DEFAULT_CONTENT_TYPE, MarkdownPartitionScanner.MARKDOWN_R_CHUNK, MarkdownPartitionScanner.MARKDOWN_TAG, MarkdownPartitionScanner.YAML_HEADER };
 	}
 
 	public ITextDoubleClickStrategy getDoubleClickStrategy(ISourceViewer sourceViewer, String contentType) {
@@ -49,10 +49,10 @@ public class MarkdownConfiguration extends SourceViewerConfiguration {
 		return doubleClickStrategy;
 	}
 
-	protected MarkdownScanner getMarkdownScanner() {
+	public MarkdownScanner getMarkdownScanner() {
 		if (scanner == null) {
 			scanner = new MarkdownScanner(colorManager);
-			scanner.setDefaultReturnToken(new Token(new TextAttribute(colorManager.getColor(IMarkdownColorConstants.DEFAULT))));
+			//scanner.setDefaultReturnToken(new Token(new TextAttribute(colorManager.getColor(IMarkdownColorConstants.DEFAULT))));
 		}
 		return scanner;
 	}
@@ -94,8 +94,8 @@ public class MarkdownConfiguration extends SourceViewerConfiguration {
 		/* We create the special token with a default style from the preferences! */
 		comment = new SingleTokenScanner(new TextAttribute(new Color(Display.getDefault(), rgbkey2), null, isBold("BOLD_COLOURKEY2")));
 		DefaultDamagerRepairer ndr = new DefaultDamagerRepairer(comment);
-		reconciler.setDamager(ndr, MarkdownPartitionScanner.MARKDOWN_COMMENT);
-		reconciler.setRepairer(ndr, MarkdownPartitionScanner.MARKDOWN_COMMENT);
+		reconciler.setDamager(ndr, MarkdownPartitionScanner.MARKDOWN_R_CHUNK);
+		reconciler.setRepairer(ndr, MarkdownPartitionScanner.MARKDOWN_R_CHUNK);
 
 		/*
 		 * NonRuleBasedDamagerRepairer ndr = new NonRuleBasedDamagerRepairer(new TextAttribute(new Color(Display.getDefault(), rgbkey2), null, isBold("BOLD_COLOURKEY2"))); reconciler.setDamager(ndr,

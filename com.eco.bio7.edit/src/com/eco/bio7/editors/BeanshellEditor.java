@@ -128,8 +128,7 @@ public class BeanshellEditor extends TextEditor implements IPropertyChangeListen
 	}
 
 	public void updateIncreasedFont(float fontSize) {
-		BeanshellEditorPlugin fginstance = BeanshellEditorPlugin.getDefault();
-		ScriptCodeScanner scanner = (ScriptCodeScanner) fginstance.getScriptCodeScanner();
+		
 		IPreferenceStore store = BeanshellEditorPlugin.getDefault().getPreferenceStore();
 
 		FontData f = PreferenceConverter.getFontData(store, "colourkeyfont");

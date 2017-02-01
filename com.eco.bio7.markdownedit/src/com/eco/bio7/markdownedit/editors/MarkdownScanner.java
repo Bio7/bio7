@@ -15,21 +15,27 @@ import org.eclipse.jface.text.*;
 public class MarkdownScanner extends RuleBasedScanner {
 
 	public Token other;
+	public Token head;
 
 	public MarkdownScanner(ColorManager manager) {
+		
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 		RGB rgbkey = PreferenceConverter.getColor(store, "colourkey");
+		RGB rgbkey1 = PreferenceConverter.getColor(store, "colourkey1");
+		other = new Token(new TextAttribute(manager.getColor(rgbkey), null, isBold("BOLD_COLOURKEY")));
+		head = new Token(new TextAttribute(manager.getColor(rgbkey1), null, isBold("BOLD_COLOURKEY1")));
 		//IToken string = new Token(new TextAttribute(manager.getColor(IMarkdownColorConstants.STRING)));
 
 		List<IRule> rules = new ArrayList<IRule>();
 
-		other = new Token(new TextAttribute(manager.getColor(rgbkey), null, isBold("BOLD_COLOURKEY")));
-
+		
+       
 		/*IToken procInstr = new Token(new TextAttribute(manager.getColor(IMarkdownColorConstants.PROC_INSTR)));
 
 		// Add rule for processing instructions
 		rules.add(new SingleLineRule("<?", "?>", procInstr));*/
 		// Add generic whitespace rule.
+        rules.add(new EndOfLineRule("#", head));
 		rules.add(new WhitespaceRule(new MarkdownWhitespaceDetector()));
 
 		MarkdownWordDetector wd = new MarkdownWordDetector();

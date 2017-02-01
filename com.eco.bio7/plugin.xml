@@ -1268,7 +1268,7 @@
     </objectContribution>
     <objectContribution
             objectClass="org.eclipse.ui.IEditorInput"
-            nameFilter="*.R*"
+            nameFilter="*.R"
             id="RContextMenu.contribution">
          <menu
                label="Format Source (formatR)"
@@ -1288,7 +1288,7 @@
       </objectContribution>
       <objectContribution
             objectClass="org.eclipse.ui.IEditorInput"
-            nameFilter="*.R*"
+            nameFilter="*.R"
             id="RContextMenu.contribution">
          <menu
                label="Profile Script Selection (profvis)"
@@ -1308,7 +1308,7 @@
       </objectContribution>
       <objectContribution
             objectClass="org.eclipse.ui.IEditorInput"
-            nameFilter="*.R*"
+            nameFilter="*.R"
             id="RContextMenu.contribution">
          <menu
                label="Profile Script (profvis)"

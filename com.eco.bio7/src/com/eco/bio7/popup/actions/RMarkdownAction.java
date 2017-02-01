@@ -51,6 +51,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 	// private String name;
 	private String docType;
 	protected boolean canOperate = true;
+	private IEditorPart editor;
 
 	public RMarkdownAction() {
 		super();
@@ -100,7 +101,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 			utils.cons.activate();
 			utils.cons.clear();
 		}
-		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		if (editor.isDirty()) {
 			editor.doSave(new NullProgressMonitor());
 		}
@@ -131,10 +132,11 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 		} else {
 			docType = "";
 		}
-		/*Can execute when the last job has been finished!*/
+		/* Can execute when the last job has been finished! */
 		if (canOperate) {
 			markdownFile(aFile, aFile.getProject());
 		}
+		editor.getEditorSite().getPart().setFocus();
 		editor.setFocus();
 	}
 
@@ -236,7 +238,8 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 								boolean useBrowser = store.getBoolean("PDF_USE_BROWSER");
 								String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
 
-								new Thread() {
+								Display display = PlatformUI.getWorkbench().getDisplay();
+								display.asyncExec(new Runnable() {
 
 									public void run() {
 										setPriority(Thread.MAX_PRIORITY);
@@ -262,13 +265,14 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 										}
 
 									}
-								}.start();
+								});
 
 							} else if (docType.equals("Word")) {
 								IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 								boolean openWordInView = store.getBoolean("OPEN_WORD_IN_VIEW");
 								if (openWordInView == false) {
-									new Thread() {
+									Display display = PlatformUI.getWorkbench().getDisplay();
+									display.asyncExec(new Runnable() {
 
 										public void run() {
 											setPriority(Thread.MAX_PRIORITY);
@@ -292,8 +296,23 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 											}
 
 										}
-									}.start();
+									});
+									/* Open Word in view if possible! */
+								} else if (openWordInView) {
+									Display display = PlatformUI.getWorkbench().getDisplay();
+									display.asyncExec(new Runnable() {
 
+										public void run() {
+											if (docType.equals("Word")) {
+												if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+													File fil = new File(dirPath + "/" + theName + ".docx");
+													if (fil.exists()) {
+														new WordOleView(dirPath + "/" + theName + ".docx");
+													}
+												}
+											}
+										}
+									});
 								}
 
 							}
@@ -308,7 +327,16 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 			job.addJobChangeListener(new JobChangeAdapter() {
 				public void done(IJobChangeEvent event) {
 					if (event.getResult().isOK()) {
+						/* Set the flag that a new compilation is possible after the last job has been finished! */
 						canOperate = true;
+						Display display = PlatformUI.getWorkbench().getDisplay();
+						display.asyncExec(new Runnable() {
+
+							public void run() {
+
+								editor.setFocus();
+							}
+						});
 					} else {
 
 					}
@@ -316,18 +344,6 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 			});
 			// job.setSystem(true);
 			job.schedule();
-			IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-			boolean openWordInView = store.getBoolean("OPEN_WORD_IN_VIEW");
-			if (openWordInView) {
-				if (docType.equals("Word")) {
-					if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
-						File fil = new File(dirPath + "/" + theName + ".docx");
-						if (fil.exists()) {
-							new WordOleView(dirPath + "/" + theName + ".docx");
-						}
-					}
-				}
-			}
 
 		}
 	}
