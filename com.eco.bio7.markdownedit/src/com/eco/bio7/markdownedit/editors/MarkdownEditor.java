@@ -2,7 +2,6 @@ package com.eco.bio7.markdownedit.editors;
 
 import java.util.ArrayList;
 import java.util.Vector;
-
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
@@ -55,6 +54,7 @@ public class MarkdownEditor extends TextEditor implements IPropertyChangeListene
 	protected ArrayList<TreeItem> selectedItems;
 	private MarkdownConfiguration markConf;
 	final private ScopedPreferenceStore storeWorkbench = new ScopedPreferenceStore(new InstanceScope(), "org.eclipse.ui.workbench");
+	
 	public MarkdownConfiguration getMarkConf() {
 		return markConf;
 	}
@@ -84,7 +84,7 @@ public class MarkdownEditor extends TextEditor implements IPropertyChangeListene
 	
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
-		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.reditor");
+		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.markdowneditor");
 		getSite().getWorkbenchWindow().getSelectionService().addSelectionListener(listener);
 	}
 	private ISelectionListener listener = new ISelectionListener() {
@@ -157,8 +157,7 @@ public class MarkdownEditor extends TextEditor implements IPropertyChangeListene
 
 	public void updateIncreasedFont(float fontSize) {
 		
-		Activator fginstance = Activator.getDefault();
-		MarkdownScanner scanner = (MarkdownScanner) fginstance.getMarkdownScanner();
+		
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
 		FontData f = PreferenceConverter.getFontData(store, "colourkeyfont");

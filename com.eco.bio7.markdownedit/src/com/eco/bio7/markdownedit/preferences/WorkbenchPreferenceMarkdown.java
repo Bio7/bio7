@@ -59,13 +59,13 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 		addField(new ColorFieldEditor("colourkey", "Colour Default:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("BOLD_COLOURKEY", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		addField(new ColorFieldEditor("colourkey1", "Colour Type:", getFieldEditorParent()));
+		addField(new ColorFieldEditor("colourkey1", "Colour Header:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("BOLD_COLOURKEY1", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		addField(new ColorFieldEditor("colourkey2", "Colour String:", getFieldEditorParent()));
+		addField(new ColorFieldEditor("colourkey2", "Colour R Chunk:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("BOLD_COLOURKEY2", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		addField(new ColorFieldEditor("colourkey3", "Colour Single Comment:", getFieldEditorParent()));
+		addField(new ColorFieldEditor("colourkey3", "Colour YAML Header:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("BOLD_COLOURKEY3", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
@@ -95,7 +95,7 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 	public void init(IWorkbench workbench) {
 
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-		PreferenceConverter.setDefault(store, "colourkey", new RGB(127, 0, 85));
+		PreferenceConverter.setDefault(store, "colourkey", new RGB(0, 0, 0));
 		PreferenceConverter.setDefault(store, "colourkey1", new RGB(127, 0, 85));
 		PreferenceConverter.setDefault(store, "colourkey2", new RGB(42, 0, 255));
 		PreferenceConverter.setDefault(store, "colourkey3", new RGB(128, 128, 128));
@@ -109,7 +109,7 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 		ScopedPreferenceStore storeWorkbench = new ScopedPreferenceStore(new InstanceScope(), "org.eclipse.ui.workbench");
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		if (editor != null && editor instanceof MarkdownEditor) {
-			MarkdownEditor rEditor = (MarkdownEditor) editor;
+			MarkdownEditor markdownEditor = (MarkdownEditor) editor;
 			MarkdownColorProvider provider = Activator.getDefault().getMarkdownColorProvider();
 
 			// JFaceResources.getFontRegistry().get("com.eco.bio7.reditor.reditor.textfont").getFontData()
@@ -122,10 +122,13 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 			 * scanner.keyword.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey")), null, 1)); scanner.type.setData(new
 			 * TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey1")), null, 1));
 			 */
-			rEditor.getMarkConf().comment.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey2")), null, 0));
-			rEditor.getMarkConf().yaml.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey3")), null, 0));
+			MarkdownScanner scanner = markdownEditor.getMarkConf().getMarkdownScanner();
+			scanner.other.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey")), null, 0));
+			scanner.head.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey1")), null, 0));
+			markdownEditor.getMarkConf().comment.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey2")), null, 0));
+			markdownEditor.getMarkConf().yaml.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey3")), null, 0));
 
-			rEditor.invalidateText();
+			markdownEditor.invalidateText();
 		}
 		super.performOk();
 	}
@@ -134,34 +137,35 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 		super.propertyChange(event);
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		if (editor != null && editor instanceof MarkdownEditor) {
-			MarkdownEditor rEditor = (MarkdownEditor) editor;
+			MarkdownEditor markdownEditor = (MarkdownEditor) editor;
 			IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
 			if (event.getSource() instanceof ColorFieldEditor) {
 				ColorFieldEditor col = (ColorFieldEditor) event.getSource();
 				String name = col.getPreferenceName();
 				RGB rgb = (RGB) event.getNewValue();
-				Activator fginstance = Activator.getDefault();
-				MarkdownScanner scanner = (MarkdownScanner) fginstance.getMarkdownScanner();
+				// Activator fginstance = Activator.getDefault();
+
+				MarkdownScanner scanner = markdownEditor.getMarkConf().getMarkdownScanner();
+
 				MarkdownColorProvider provider = Activator.getDefault().getMarkdownColorProvider();
 
 				switch (name) {
 
 				case "colourkey":
-					if(scanner.other==null){
-						return;
-					}
+
 					scanner.other.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY")));
 					break;
-				/*case "colourkey1":
-					scanner.other.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY1")));
-					break;*/
+
+				case "colourkey1":
+					scanner.head.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY1")));
+					break;
 
 				case "colourkey2":
-					rEditor.getMarkConf().comment.att.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY2")));
+					markdownEditor.getMarkConf().comment.att.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY2")));
 					break;
 				case "colourkey3":
-					rEditor.getMarkConf().yaml.att.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY3")));
+					markdownEditor.getMarkConf().yaml.att.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY3")));
 					break;
 
 				default:
@@ -176,34 +180,43 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 
 				boolean fontData = (boolean) event.getNewValue();
 
-				Activator fginstance = Activator.getDefault();
-				MarkdownScanner scanner = (MarkdownScanner) fginstance.getMarkdownScanner();
+				MarkdownScanner scanner = markdownEditor.getMarkConf().getMarkdownScanner();
+
 				MarkdownColorProvider provider = Activator.getDefault().getMarkdownColorProvider();
 
 				switch (name) {
-				/*
-				 * case "BOLD_COLOURKEY":
-				 * 
-				 * if (fontData) { scanner.keyword.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey")), null, SWT.BOLD)); } else { scanner.keyword.setData(new
-				 * TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey")), null, SWT.NORMAL)); }
-				 * 
-				 * break; case "BOLD_COLOURKEY1": if (fontData) { scanner.type.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey1")), null, SWT.BOLD)); } else
-				 * { scanner.type.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey1")), null, SWT.NORMAL)); }
-				 * 
-				 * break;
-				 */
+
+				case "BOLD_COLOURKEY":
+
+					if (fontData) {
+						scanner.other.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey")), null, SWT.BOLD));
+					} else {
+						scanner.other.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey")), null, SWT.NORMAL));
+					}
+
+					break;
+
+				case "BOLD_COLOURKEY1":
+					if (fontData) {
+						scanner.head.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey1")), null, SWT.BOLD));
+					} else {
+						scanner.head.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey1")), null, SWT.NORMAL));
+					}
+
+					break;
+
 				case "BOLD_COLOURKEY2":
 					if (fontData) {
-						rEditor.getMarkConf().comment.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey2")), null, SWT.BOLD));
+						markdownEditor.getMarkConf().comment.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey2")), null, SWT.BOLD));
 					} else {
-						rEditor.getMarkConf().comment.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey2")), null, SWT.NORMAL));
+						markdownEditor.getMarkConf().comment.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey2")), null, SWT.NORMAL));
 					}
 					break;
 				case "BOLD_COLOURKEY3":
 					if (fontData) {
-						rEditor.getMarkConf().yaml.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey3")), null, SWT.BOLD));
+						markdownEditor.getMarkConf().yaml.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey3")), null, SWT.BOLD));
 					} else {
-						rEditor.getMarkConf().yaml.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey3")), null, SWT.NORMAL));
+						markdownEditor.getMarkConf().yaml.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey3")), null, SWT.NORMAL));
 					}
 					break;
 
@@ -219,7 +232,7 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 				 * }
 				 */
 
-			rEditor.invalidateText();
+			markdownEditor.invalidateText();
 		}
 		super.performOk();
 

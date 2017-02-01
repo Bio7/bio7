@@ -7,7 +7,8 @@
       <editor
             class="com.eco.bio7.markdownedit.editors.MarkdownEditor"
             contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
-            extensions="Rmd"
+            default="true"
+            extensions="Rmd,rmd"
             icon="icons/rmarkdownfile.png"
             id="com.eco.bio7.markdownedit"
             name="R Markdown Editor"
