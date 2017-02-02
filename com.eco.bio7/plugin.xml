@@ -1067,7 +1067,7 @@
              tooltip="Compiles and executes dynamically one or multiple Java files">
        </action>
     </objectContribution>
-    <objectContribution
+    <!--<objectContribution
           adaptable="false"
           id="Knitrtex"
           nameFilter="*.Rtex"
@@ -1105,7 +1105,7 @@
              label="Knitr"
              menubarPath="additions.knitr">
        </action>
-    </objectContribution>
+    </objectContribution>-->
     <objectContribution
           adaptable="false"
           id="Knitrrrst"
@@ -1372,7 +1372,7 @@
              menubarPath="additions.path">
        </action>
     </objectContribution>
-    <objectContribution
+    <!--<objectContribution
           adaptable="false"
           id="RMarkdown"
           nameFilter="*.Rmd"
@@ -1397,7 +1397,7 @@
              label="R Markdown"
              menubarPath="additions.rmarkdown">
        </action>
-    </objectContribution>
+    </objectContribution>-->
     <objectContribution
           adaptable="false"
           id="SetRWorkingDirFolder"
