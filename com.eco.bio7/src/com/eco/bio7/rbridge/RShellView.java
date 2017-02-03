@@ -2674,11 +2674,20 @@ public class RShellView extends ViewPart {
 			int off = selection.getOffset();
 
 			try {
-				doc.replace(off, 0, items[0]);
+				doc.replace(off, 0, items[0]+System.lineSeparator());
 			} catch (BadLocationException e1) {
 				e1.printStackTrace();
 			}
-
+			
+			int er=0;
+			try {
+				er = doc.getLineOffset(selection.getStartLine()+1);
+			} catch (BadLocationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			ITextEditor textEditor = (ITextEditor) editor;
+			textEditor.selectAndReveal(er, 0);
 		}
 	}
 
