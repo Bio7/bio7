@@ -1,10 +1,6 @@
 package com.eco.bio7.popup.actions;
 
 import java.io.File;
-import java.util.Iterator;
-import java.util.Vector;
-
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -20,14 +16,12 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
-import org.rosuda.REngine.REngineException;
+import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
-
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
@@ -35,8 +29,6 @@ import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 
 public class RoxygenAction implements IObjectActionDelegate {
 
-	private String filePath;
-	private String dirPath;
 	public String packageName;
 	public String[] includeRVariables;
 	public boolean builtFromVariables;
@@ -62,7 +54,7 @@ public class RoxygenAction implements IObjectActionDelegate {
 			final IProject activeProject = resource.getParent().getProject();
 			if (selectedObj instanceof IFolder || selectedObj instanceof IProject) {
 				IFolder selectedFolder = null;
-				
+
 				if (selectedObj instanceof IProject) {
 					IProject proj = (IProject) selectedObj;
 					loc = proj.getLocation().toOSString();
@@ -72,7 +64,7 @@ public class RoxygenAction implements IObjectActionDelegate {
 					loc = selectedFolder.getLocation().toString();
 				}
 				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
-					 loc = loc.replace("\\", "/");
+					loc = loc.replace("\\", "/");
 				}
 				System.out.println(loc);
 				if (RServe.isAliveDialog()) {
@@ -81,12 +73,26 @@ public class RoxygenAction implements IObjectActionDelegate {
 
 						if (RState.isBusy() == false) {
 							RState.setBusy(true);
+
 							Job job = new Job("Roxygen") {
+								REXPLogical bol = null;
+
 								@Override
 								protected IStatus run(IProgressMonitor monitor) {
 									monitor.beginTask("Create Roxygen ...", IProgressMonitor.UNKNOWN);
 
 									RConnection c = RServe.getConnection();
+
+									try {
+										bol = (REXPLogical) c.eval("require(devtools)");
+									} catch (RserveException e1) {
+										// TODO Auto-generated catch block
+										e1.printStackTrace();
+									}
+									if (bol.isTRUE()[0] == false) {
+										Bio7Dialog.message("Library 'devtools' required!\nPlease install the 'devtools' package!");
+										return Status.OK_STATUS;
+									}
 
 									try {
 
