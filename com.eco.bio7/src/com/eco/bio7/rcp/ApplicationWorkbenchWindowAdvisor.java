@@ -62,6 +62,7 @@ import org.eclipse.jdt.launching.VMStandin;
 import org.eclipse.jdt.ui.ISharedImages;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -126,6 +127,7 @@ import com.eco.bio7.discrete.Quad2d;
 import com.eco.bio7.image.CanvasView;
 import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 import com.eco.bio7.jobs.LoadData;
+import com.eco.bio7.preferences.MultiLineTextFieldEditor;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.preferences.RServePlotPrefs;
 import com.eco.bio7.preferences.Reg;
@@ -606,6 +608,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("USE_CUSTOM_DEVICE", true);
 		
 		store.setDefault("PDF_USE_BROWSER",false);
+		
+		store.setDefault("IMAGEJ_CREATE_SINGLE_PLOTS",false);		
 
 		store.setDefault("CLOSE_DEVICE", "if(length(dev.list())>0) dev.off()");
 
@@ -733,6 +737,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 					IPreferenceStore store2 = Bio7Plugin.getDefault().getPreferenceStore();
 
 					String sel = store2.getString("PLOT_DEVICE_SELECTION");
+					
+					
 
 					RServePlotPrefs prefsPlotRserve = RServePlotPrefs.getInstance();
 
