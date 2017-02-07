@@ -35,6 +35,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.program.Program;
@@ -56,13 +57,19 @@ import com.eco.bio7.browser.BrowserView;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.console.Console;
 import com.eco.bio7.console.ConsolePageParticipant;
+import com.eco.bio7.image.CanvasView;
+import com.eco.bio7.image.CustomDetachedImageJView;
+import com.eco.bio7.image.IJTabs;
+import com.eco.bio7.image.ImageMethods;
 import com.eco.bio7.popup.actions.JavaFXWebBrowser;
+import com.eco.bio7.preferences.MultiLineTextFieldEditor;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
 import com.eco.bio7.util.Util;
 import com.sun.jndi.toolkit.url.Uri;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import javafx.scene.web.WebEngine;
@@ -514,7 +521,7 @@ public class RServe {
 		Job job = new Job("Add To ImageStack") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				monitor.beginTask("Add Plots To ImageStack ...", IProgressMonitor.UNKNOWN);
+				monitor.beginTask("Create Plots ...", IProgressMonitor.UNKNOWN);
 
 				finalCloseAndDisplay();
 
@@ -566,21 +573,47 @@ public class RServe {
 			else {
 				Work.openView("com.eco.bio7.imagej");
 
+				boolean ijCreateSingle = store.getBoolean("IMAGEJ_CREATE_SINGLE_PLOTS");
+				boolean enableIjMacro = store.getBoolean("IJMACRO_EXECUTE_AFTER_PLOT_ENABLE");
+				String ijmacro = store.getString("IJMACRO_EXECUTE_AFTER_PLOT");
+
 				// System.out.println(plotPathR);
 
 				File[] files = ListFilesDirectory(new File(plotPathR), new String[] { ".tiff", ".tif", ".jpg", ".jpeg", ".png", ".bmp" });
 				if (files.length > 0) {
-					ImagePlus plu = new ImagePlus(files[0].toString());
-					ImageStack stack = new ImageStack(plu.getWidth(), plu.getHeight());
-					// System.out.println(files.length);
-					for (int i = 0; i < files.length; i++) {
-						// System.out.println(files[i].toString());
-						ImagePlus plus = new ImagePlus(files[i].toString());
-						stack.addSlice(plus.getProcessor());
-						files[i].delete();
+					if (ijCreateSingle) {
+
+						for (int i = 0; i < files.length; i++) {
+							// System.out.println(files[i].toString());
+							ImagePlus plus = new ImagePlus(files[i].toString());
+							plus.show();
+							if (enableIjMacro) {
+								IJ.runMacro(ijmacro);
+							}
+							files[i].delete();
+
+						}
+
+					} else {
+						ImagePlus plu = new ImagePlus(files[0].toString());
+						ImageStack stack = new ImageStack(plu.getWidth(), plu.getHeight());
+						// System.out.println(files.length);
+						for (int i = 0; i < files.length; i++) {
+							// System.out.println(files[i].toString());
+							ImagePlus plus = new ImagePlus(files[i].toString());
+							stack.addSlice(plus.getProcessor());
+							files[i].delete();
+						}
+
+						new ImagePlus("Plot", stack).show();
+
+						if (enableIjMacro) {
+							IJ.runMacro(ijmacro);
+						}
+
+						// ImageMethods.imageToR(plu.getShortTitle(), false, 1, plu);
 					}
 
-					new ImagePlus("Plot", stack).show();
 				}
 
 			}
@@ -651,14 +684,12 @@ public class RServe {
 					JavaFXWebBrowser br = new JavaFXWebBrowser(false);
 					WebEngine webEngine = br.getWebEngine();
 					/* We print the file for the display only without the line seperator replacements! */
-					System.out.println("Path to PDF file: "+tempFile);
+					System.out.println("Path to PDF file: " + tempFile);
 					/*
 					 * Here we use a simple but effective trick. We define the default variable 'DEFAULT_URL' in JavaScript for the viewer.js (we comment the variable out there) to load and reload
 					 * local documents which won't be possible if using the path as an argument, see: https://github.com/mozilla/pdf.js/issues/5057
 					 */
 					webEngine.executeScript("var DEFAULT_URL ='" + url + "'");
-					
-					
 
 					IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 					boolean openInBrowserInExtraView = store.getBoolean("OPEN_BOWSER_IN_EXTRA_VIEW");
@@ -669,9 +700,10 @@ public class RServe {
 
 					else {
 						br.createBrowser("file:///" + pathBundle + "", "R_Display");
-						/*webEngine.executeScript(
-								"alert(pdfjsVersion);");*/
-						
+						/*
+						 * webEngine.executeScript( "alert(pdfjsVersion);");
+						 */
+
 					}
 				}
 			});

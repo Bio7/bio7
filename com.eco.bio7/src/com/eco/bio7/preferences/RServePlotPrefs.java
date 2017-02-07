@@ -37,6 +37,7 @@ public class RServePlotPrefs extends FieldEditorPreferencePage implements IWorkb
 	
 	
 	public MultiLineTextFieldEditor mult;
+	private MultiLineTextFieldEditor mult_1;
 	public StringFieldEditor deviceFilename;
 	public RadioGroupFieldEditor selectionDevice;
 	public RadioGroupFieldEditor selectLinuxShell;
@@ -77,7 +78,7 @@ public class RServePlotPrefs extends FieldEditorPreferencePage implements IWorkb
 		SpacerFieldEditor spacer1 = new SpacerFieldEditor(getFieldEditorParent());
 		addField(spacer1);
 		final Link link = new Link(getFieldEditorParent(), SWT.NONE);
-		link.setText("See <a href=\"com.eco.bio7.browser.preferences\">'Browser Preferences'</a> to select or configure the Browser.");
+		link.setText("See <a href=\"com.eco.bio7.browser.preferences\">'Browser Preferences'</a> to select or configure the Browser for the *.pdf files.");
 		link.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 3, 1));
 
 		link.addSelectionListener(new SelectionAdapter() {
@@ -89,6 +90,14 @@ public class RServePlotPrefs extends FieldEditorPreferencePage implements IWorkb
 				
 			}
 		});
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
+		addField(new LabelFieldEditor("Special image plot options:", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("IMAGEJ_CREATE_SINGLE_PLOTS", "Open plots in individual tab", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addField(new BooleanFieldEditor("IJMACRO_EXECUTE_AFTER_PLOT_ENABLE", "Execute ImageJ macro after creation", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		mult_1=new MultiLineTextFieldEditor("IJMACRO_EXECUTE_AFTER_PLOT", "Execute ImageJ macro after plot creation", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent());
+		mult_1.setLabelText("ImageJ Macro");
+		addField(mult_1);
+		
 		
 		
 	}

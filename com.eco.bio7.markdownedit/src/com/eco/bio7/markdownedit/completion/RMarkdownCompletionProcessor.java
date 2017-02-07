@@ -29,7 +29,7 @@ public class RMarkdownCompletionProcessor implements IContentAssistProcessor {
 				"```{r echo=FALSE}"+System.lineSeparator()+System.lineSeparator()+"```" ,
 				"```{r eval=FALSE}"+System.lineSeparator()+System.lineSeparator()+"```" ,
 				"```{r}"+System.lineSeparator()+"source('myFile.R')"+System.lineSeparator()+"```",
-				"```{r}"+System.lineSeparator()+"source(paste(getwd(),'myFile.R'))"+System.lineSeparator()+"```",
+				"```{r}"+System.lineSeparator()+"source(paste(getwd(),'myFile.R',sep=\"/\"))"+System.lineSeparator()+"```",
 				"#",
 				"##",
 				"###",
