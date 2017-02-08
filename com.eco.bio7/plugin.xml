@@ -1183,7 +1183,7 @@
              class="com.eco.bio7.popup.actions.RoxygenAction"
              id="com.eco.bio7.roxygen"
              label="Build Roxygen Doc"
-             menubarPath="com.eco.bio7.RPackages.subMenu/groupRoxygen"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
              tooltip="Builds *.Rd files from roxygen">
        </action>
        <menu
@@ -1205,10 +1205,20 @@
           <groupMarker
                 name="groupPdf">
           </groupMarker>
+          <separator
+                name="groupDevtoolsSkeleton">
+          </separator>
           <groupMarker
-                name="groupRoxygen">
+                name="groupDevtools">
           </groupMarker>
        </menu>
+       <action
+             class="com.eco.bio7.popup.actions.LoadAllPackageAction"
+             id="com.eco.bio7.devtools.loadall"
+             label="Load All"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Simulates installing and reloading of the package">
+       </action>
        <!--Here we set the same actions again for a Project popup selection-->  
     </objectContribution>
     <objectContribution
@@ -1247,7 +1257,7 @@
              class="com.eco.bio7.popup.actions.RoxygenAction"
              id="com.eco.bio7.roxygen"
              label="Build Roxygen Doc"
-             menubarPath="com.eco.bio7.RPackages.subMenu/groupRoxygen"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
              tooltip="Builds *.Rd files from roxygen">
        </action>
        <menu
@@ -1269,11 +1279,21 @@
           <groupMarker
                 name="groupPdf">
           </groupMarker>
+          <separator
+                name="groupDevtoolsSkeleton">
+          </separator>
           <groupMarker
-                name="groupRoxygen">
+                name="groupDevtools">
           </groupMarker>
           
        </menu>
+       <action
+             class="com.eco.bio7.popup.actions.LoadAllPackageAction"
+             id="com.eco.bio7.devtools.loadall"
+             label="Load All"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Simulates installing and reloading of the package">
+       </action>
     </objectContribution>
     <objectContribution
           adaptable="false"
