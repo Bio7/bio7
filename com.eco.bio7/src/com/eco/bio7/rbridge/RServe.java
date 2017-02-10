@@ -188,6 +188,8 @@ public class RServe {
 				} catch (IOException e) {
 					System.err.println("");
 				}
+				
+				
 			}
 
 			// Bio7Dialog.message("Rserve is busy!");

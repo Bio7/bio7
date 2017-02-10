@@ -3,6 +3,7 @@ package com.eco.bio7.markdownedit.editors;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
@@ -11,6 +12,7 @@ import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.reconciler.MonoReconciler;
+import org.eclipse.jface.text.reconciler.Reconciler;
 import org.eclipse.jface.text.rules.BufferedRuleBasedScanner;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.Token;
@@ -19,10 +21,13 @@ import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.editors.text.EditorsUI;
+import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
+
 import com.eco.bio7.markdownedit.Activator;
 import com.eco.bio7.markdownedit.completion.RMarkdownCompletionProcessor;
 
-public class MarkdownConfiguration extends SourceViewerConfiguration {
+public class MarkdownConfiguration extends TextSourceViewerConfiguration {
 	private MarkdownDoubleClickStrategy doubleClickStrategy;
 	private MarkdownTagScanner tagScanner;
 	private MarkdownScanner scanner;
@@ -33,7 +38,8 @@ public class MarkdownConfiguration extends SourceViewerConfiguration {
 	public SingleTokenScanner comment;
 	public SingleTokenScanner yaml;
 
-	public MarkdownConfiguration(ColorManager colorManager, MarkdownEditor markdownEditor) {
+	public MarkdownConfiguration(ColorManager colorManager, MarkdownEditor markdownEditor, IPreferenceStore preferenceStore) {
+		super(preferenceStore);
 		this.colorManager = colorManager;
 		this.markdownEditor = markdownEditor;
 		store = Activator.getDefault().getPreferenceStore();
@@ -67,13 +73,21 @@ public class MarkdownConfiguration extends SourceViewerConfiguration {
 
 	public IReconciler getReconciler(ISourceViewer sourceViewer) {
 		RMarkdownReconcilingStrategy strategy = new RMarkdownReconcilingStrategy();
-
+		//MarkdownSpellingReconcileStrategy strategySpelling= new MarkdownSpellingReconcileStrategy(sourceViewer,EditorsUI.getSpellingService());
 		strategy.setEditor(markdownEditor);
-
-		MonoReconciler reconciler = new MonoReconciler(strategy, false);
+		
+	    MonoReconciler reconciler = new MonoReconciler(strategy, false);
+		//Reconciler reconciler2 = new Reconciler();
+		//reconciler2.setDocumentPartitioning(IDocumentExtension3.DEFAULT_PARTITIONING);
+		//reconciler2.setReconcilingStrategy(strategy,IDocument.DEFAULT_CONTENT_TYPE);
+		//reconciler2.setReconcilingStrategy(strategy,MarkdownPartitionScanner.MARKDOWN_TAG);
+		//reconciler2.setReconcilingStrategy(strategySpelling,MarkdownPartitionScanner.MARKDOWN_TAG);
+		//reconciler2.setIsAllowedToModifyDocument(true);
+		//reconciler2.setIsIncrementalReconciler(true);
 		/*Set the reconcile time from the preferences!*/
 		int timeReconcile = store.getInt("RECONCILE_MARKDOWN_TIME");
 		reconciler.setDelay(timeReconcile);
+		//strategy.initialReconcile();
 		return reconciler;
 	}
 

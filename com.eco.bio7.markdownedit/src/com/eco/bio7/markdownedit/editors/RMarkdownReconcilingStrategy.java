@@ -148,10 +148,13 @@ public class RMarkdownReconcilingStrategy implements IReconcilingStrategy, IReco
 	 * @see org.eclipse.jface.text.reconciler.IReconcilingStrategy#reconcile(org. eclipse.jface.text.reconciler.DirtyRegion, org.eclipse.jface.text.IRegion)
 	 */
 	public void reconcile(DirtyRegion dirtyRegion, IRegion subRegion) {
+		System.out.println("Alpha");
 		// System.out.println("parsed!");
 		/*
 		 * Parse parse=editor.getParser(); parse.parse();
 		 */
+		doReconcile();
+		triggerRMarkdownAction();
 	}
 
 	/*
@@ -165,6 +168,10 @@ public class RMarkdownReconcilingStrategy implements IReconcilingStrategy, IReco
 
 		initialReconcile();
 
+		triggerRMarkdownAction();
+	}
+
+	private void triggerRMarkdownAction() {
 		boolean markdownReconcile = store.getBoolean("RECONCILE_MARKDOWN");
 		if (markdownReconcile) {
 			String commandId = "com.eco.bio7.RMarkdownAction";
@@ -199,6 +206,7 @@ public class RMarkdownReconcilingStrategy implements IReconcilingStrategy, IReco
 	 * @see org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension# initialReconcile()
 	 */
 	public void initialReconcile() {
+		// System.out.println("initial");
 		doReconcile();
 		/*
 		 * Parse parse=editor.getParser(); parse.parse();

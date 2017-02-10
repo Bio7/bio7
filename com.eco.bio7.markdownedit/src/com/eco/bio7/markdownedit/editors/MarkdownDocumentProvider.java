@@ -20,6 +20,11 @@ public class MarkdownDocumentProvider extends FileDocumentProvider {
 						MarkdownPartitionScanner.YAML_HEADER});
 			partitioner.connect(document);
 			document.setDocumentPartitioner(partitioner);
+			
+			
+			
+			
+			
 		}
 		return document;
 	}
