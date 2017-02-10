@@ -67,7 +67,7 @@ public class MarkdownEditor extends TextEditor implements IPropertyChangeListene
 		super();
 		
 		colorManager = new ColorManager();
-		markConf=new MarkdownConfiguration(colorManager,this);
+		markConf=new MarkdownConfiguration(colorManager,this,getPreferenceStore());
 		setSourceViewerConfiguration(markConf);
 		setDocumentProvider(new MarkdownDocumentProvider());
 		selectedItems = new ArrayList<TreeItem>();
