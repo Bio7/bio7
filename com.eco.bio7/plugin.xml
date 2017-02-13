@@ -1693,9 +1693,7 @@
                     <equals
                           value="com.eco.bio7.browser.guieditor">
                     </equals>
-                    <equals
-                          value="net.sourceforge.texlipse.TexEditor">
-                    </equals>
+                    
                  </or>
               </with>
            </visibleWhen>
@@ -1737,6 +1735,25 @@
                     </equals>
                     <equals
                           value="org.eclipse.wst.jsdt.ui.CompilationUnitEditor">
+                    </equals>
+                 </or>
+              </with>
+           </visibleWhen>
+        </command>
+        <command
+              commandId="com.eco.bio7.browser.knitrAction"
+              disabledIcon="icons/editor/texfile.png"
+              icon="icons/editor/texfile.png"
+              id="bio7toolbar.executer"
+              label="LaTeX"
+              style="push">
+           <visibleWhen>
+              <with
+                    variable="activePartId">
+                 <or>
+                    
+                    <equals
+                          value="net.sourceforge.texlipse.TexEditor">
                     </equals>
                  </or>
               </with>

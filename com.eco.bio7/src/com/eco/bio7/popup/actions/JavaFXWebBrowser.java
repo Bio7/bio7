@@ -1,10 +1,25 @@
 package com.eco.bio7.popup.actions;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Set;
 import java.util.UUID;
+
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
 import org.apache.commons.io.FilenameUtils;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.osgi.framework.Bundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -12,19 +27,30 @@ import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
 import com.eco.bio7.Bio7Plugin;
+import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.collection.CustomView;
+import com.eco.bio7.markdownedit.editors.MarkdownEditor;
+
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.ScrollEvent;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebHistory;
 import javafx.scene.web.WebView;
 
 /*A browser for rmarkdown and knitr documents!*/
@@ -39,6 +65,7 @@ public class JavaFXWebBrowser {
 		brow = new WebView();
 		webEng = brow.getEngine();
 		webEng.setJavaScriptEnabled(true);
+
 		webEng.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
 
 			@Override
@@ -53,7 +80,7 @@ public class JavaFXWebBrowser {
 				 */
 				/* Store the last selected page for a new instance, reload of the PDF.js viewer! */
 				// webEng.executeScript("PDFViewerApplication.pdfViewer.sidebarViewOnLoad= 1;");
-				/*If we load a PDF with 'pdf.js'!*/
+				/* If we load a PDF with 'pdf.js'! */
 				if (html == false) {
 					webEng.executeScript("PDFViewerApplication.pdfViewer.currentPageNumber=" + JavaFXBrowserHelper.pageNumber + "");
 					/* Set the bookmark to select the page! */
@@ -84,6 +111,18 @@ public class JavaFXWebBrowser {
 
 						}
 					}, false);
+				} else {
+					/*
+					 * String markdownContent=MarkdownEditor.getSelectedContent(); Document doc = webEng.getDocument(); Element el = doc.getDocumentElement();
+					 * 
+					 * try { Transformer transformer = TransformerFactory.newInstance().newTransformer(); transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+					 * transformer.setOutputProperty(OutputKeys.METHOD, "xml"); transformer.setOutputProperty(OutputKeys.INDENT, "yes"); transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+					 * transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+					 * 
+					 * transformer.transform(new DOMSource(doc), new StreamResult(new OutputStreamWriter(System.out, "UTF-8"))); } catch (Exception ex) { ex.printStackTrace(); }
+					 * webEng.executeScript("");
+					 */
+
 				}
 
 			}
@@ -133,10 +172,6 @@ public class JavaFXWebBrowser {
 			}
 		});
 
-		/*
-		 * public void handle(KeyEvent event) { if (event.getCode() == KeyCode.TAB && event.isControlDown()) { } }
-		 */
-
 		brow.setOnKeyTyped(new EventHandler<KeyEvent>() {
 			public void handle(KeyEvent ke) {
 				// String text = "Key Typed: " + ke.getCharacter();
@@ -168,6 +203,68 @@ public class JavaFXWebBrowser {
 			}
 		});
 
+		brow.setOnDragOver(new EventHandler<DragEvent>() {
+			@Override
+			public void handle(DragEvent event) {
+				Dragboard db = event.getDragboard();
+				if (db.hasFiles()) {
+					event.acceptTransferModes(TransferMode.COPY);
+				} else {
+					event.consume();
+				}
+			}
+		});
+
+		brow.setOnDragDropped(new EventHandler<DragEvent>() {
+			@Override
+			public void handle(DragEvent event) {
+				Dragboard db = event.getDragboard();
+				boolean success = false;
+				if (db.hasFiles()) {
+					success = true;
+					String filePath = null;
+					for (File file : db.getFiles()) {
+						filePath = file.getAbsolutePath();
+						System.out.println(filePath);
+
+						String path = null;
+						try {
+							path = file.toURI().toURL().toString();
+						} catch (MalformedURLException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+
+						if (FilenameUtils.isExtension(file.getName(), "html") || FilenameUtils.isExtension(file.getName(), "htm")) {
+							JavaFXWebBrowser br = new JavaFXWebBrowser(true);
+							// WebEngine webEngine = br.getWebEngine();
+							// webEngine.load(path);
+							br.createBrowser(path, "R_Display");
+						}
+
+						else if (FilenameUtils.isExtension(file.getName(), "pdf")) {
+							String pathBundle = getPdfjsPath();
+							System.out.println("Path: " + path);
+
+							// webEng.load("file:///" + pathBundle + "");
+							/* We have to create a new browser instance to inject the path as variable! */
+							JavaFXWebBrowser br = new JavaFXWebBrowser(false);
+							WebEngine webEngine = br.getWebEngine();
+							webEngine.executeScript("var DEFAULT_URL ='" + path + "'");
+							br.createBrowser("file:///" + pathBundle + "", "R_Display");
+						}
+
+						else {
+							Bio7Dialog.message("Filetype is not supported!\n Drag and Drop PDF or HTML files only!");
+						}
+
+					}
+				}
+				event.setDropCompleted(success);
+				event.consume();
+			}
+		});
+
 		AnchorPane.setTopAnchor(brow, 0.0);
 		AnchorPane.setBottomAnchor(brow, 0.0);
 		AnchorPane.setLeftAnchor(brow, 0.0);
@@ -182,6 +279,20 @@ public class JavaFXWebBrowser {
 		view.setSceneCanvas(name);
 
 		Scene scene = new Scene(anchorPane);
+		scene.getAccelerators().put(new KeyCodeCombination(KeyCode.B, KeyCombination.CONTROL_DOWN, KeyCombination.ALT_DOWN), new Runnable() {
+			@Override
+			public void run() {
+
+				goBack();
+			}
+		});
+
+		scene.getAccelerators().put(new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN, KeyCombination.ALT_DOWN), new Runnable() {
+			@Override
+			public void run() {
+				goBack();
+			}
+		});
 
 		view.addScene(scene);
 		
@@ -190,6 +301,30 @@ public class JavaFXWebBrowser {
 
 	public WebEngine getWebEngine() {
 		return webEng;
+	}
+
+	private static String getPdfjsPath() {
+		Bundle bundle = Platform.getBundle("com.eco.bio7.libs");
+		Path path = new Path("pdfjs/web/viewer.html");
+		URL locationURL = FileLocator.find(bundle, path, null);
+
+		URL fileUrl = null;
+		try {
+			fileUrl = FileLocator.toFileURL(locationURL);
+		} catch (IOException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+		String pathBundle = fileUrl.getFile();
+		return pathBundle;
+	}
+
+	public void goBack() {
+		webEng.executeScript("history.back()");
+	}
+
+	public void goForward() {
+		webEng.executeScript("history.back()");
 	}
 
 }

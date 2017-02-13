@@ -10,7 +10,6 @@ import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Plugin;
 import org.eclipse.jface.action.Action;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.osgi.framework.Bundle;
@@ -38,7 +37,7 @@ public class Start extends Action {
 
 		setId("com.eco.bio7.start");
 		this.setToolTipText("Start/Stop the repeated time based invocation\n of the Java run method if available!");
-		setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/maintoolbar/counter_reset.png"));
+		setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/maintoolbar/play_pause.png"));
 		this.quad2d = Quad2d.getQuad2dInstance();
 		this.hex = Hexagon.getHexagonInstance();
 

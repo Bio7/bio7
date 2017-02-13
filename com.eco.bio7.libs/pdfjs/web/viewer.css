@@ -446,7 +446,7 @@ html[dir='ltr'] #viewerContainer {
 html[dir='rtl'] #viewerContainer {
   box-shadow: inset -1px 0 0 hsla(0,0%,100%,.05);
 }
-/*eventually change for Bio7 to disable (disable: none;) the toolbar!*/
+/*Eventually change for Bio7 to disable (disable: none;) the toolbar!*/
 .toolbar {
  /* display: none;*/
   position: relative;
