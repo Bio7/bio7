@@ -16,6 +16,7 @@
 
 'use strict';
 //Changed for Bio7: The following variable will be defined within the Java Browser (temporary path)!
+//Disable toolbar in CSS - viewer.css -  if necessary (search for Bio7)!
 //var DEFAULT_URL = 'compressed.tracemonkey-pldi-09.pdf';
 
   var pdfjsWebLibs = {
