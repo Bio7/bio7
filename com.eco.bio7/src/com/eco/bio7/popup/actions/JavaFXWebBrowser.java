@@ -184,6 +184,8 @@ public class JavaFXWebBrowser {
 		Scene scene = new Scene(anchorPane);
 
 		view.addScene(scene);
+		
+		view.getDisplay().getActiveShell().setFocus();
 	}
 
 	public WebEngine getWebEngine() {
