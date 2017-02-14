@@ -14,6 +14,10 @@ public class Pie {
 
 	private static PiePlot plot;
 
+	public static PiePlot getPlot() {
+		return plot;
+	}
+
 	private static DefaultPieDataset data = new DefaultPieDataset();
 
 	private double zaehlp = 0;
@@ -37,7 +41,6 @@ public class Pie {
 		chart = ChartFactory.createPieChart("States", data, true, true, false
 
 		);
-		chart.setBackgroundPaint(Color.white);
 
 		plotter();
 

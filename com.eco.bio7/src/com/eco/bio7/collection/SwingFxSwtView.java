@@ -12,6 +12,8 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
+import com.eco.bio7.util.Util;
+
 import javafx.embed.swing.SwingNode;
 import javafx.embed.swt.FXCanvas;
 import javafx.event.EventHandler;
@@ -52,6 +54,7 @@ public class SwingFxSwtView {
 				return new Point(width, height);
 			}
 		};
+		canvas.setBackground(Util.getSWTBackgroundColor());
 		canvas.setData("false");
 		canvas.addPaintListener(new PaintListener() {
 
@@ -81,7 +84,7 @@ public class SwingFxSwtView {
 
 		pane = new StackPane();
 		pane.getChildren().add(swingNode);
-
+       
 		scene = new Scene(pane);
 		scene.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
 
