@@ -201,5 +201,8 @@ public class LineChart  {
 	public static ChartPanel getChartPanel() {
 		return chartPanel;
 	}
+	public static JFreeChart getChart() {
+		return chart;
+	}
 
 }

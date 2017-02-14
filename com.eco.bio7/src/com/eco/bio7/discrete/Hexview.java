@@ -1,5 +1,6 @@
 package com.eco.bio7.discrete;
 
+import java.awt.Color;
 import java.awt.Frame;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -41,7 +42,6 @@ public class Hexview extends ViewPart {
 	private static Hexview hexview;
 
 	protected String[] fileList;
-
 
 	public Hexview() {
 
@@ -96,19 +96,14 @@ public class Hexview extends ViewPart {
 				FileTransfer ft = FileTransfer.getInstance();
 				if (ft.isSupportedType(event.currentDataType)) {
 					fileList = (String[]) event.data;
-					/*if (fileList[0].endsWith("yap")) {
-						int size = get_size(fileList[0].toString());
-						ab = new LoadWorkspaceJob(fileList[0].toString(), size);
-						ab.setUser(true);
-						ab.schedule();
-					} else {
-						MessageBox messageBox = new MessageBox(new Shell(),
-
-						SWT.ICON_WARNING);
-						messageBox.setMessage("File is not an *.yap file!");
-						messageBox.open();
-
-					}*/
+					/*
+					 * if (fileList[0].endsWith("yap")) { int size = get_size(fileList[0].toString()); ab = new LoadWorkspaceJob(fileList[0].toString(), size); ab.setUser(true); ab.schedule(); } else
+					 * { MessageBox messageBox = new MessageBox(new Shell(),
+					 * 
+					 * SWT.ICON_WARNING); messageBox.setMessage("File is not an *.yap file!"); messageBox.open();
+					 * 
+					 * }
+					 */
 
 				}
 
@@ -117,24 +112,35 @@ public class Hexview extends ViewPart {
 		java.awt.Frame frame = SWT_AWT.new_Frame(top);
 		SwtAwt.setSwtAwtFocus(frame, top);
 		JApplet panel = new JApplet() {
-		      public void update(java.awt.Graphics g) {
-		        /* Do not erase the background */
-		        paint(g);
-		      }
-		    };
+			public void update(java.awt.Graphics g) {
+				/* Do not erase the background */
+				paint(g);
+			}
+		};
 
 		frame.add(panel);
 		JRootPane root = new JRootPane();
 		panel.add(root);
 		java.awt.Container contentPane = root.getContentPane();
-
-		contentPane.add(Hexagon.getHexagonInstance().jScrollPanehex);
+		Hexagon hex = Hexagon.getHexagonInstance();
+		hex.setBackground(getSystemColour(parent));
+		contentPane.add(hex.jScrollPanehex);
 
 	}
-	
 
 	public void setContentDescription() {
 
+	}
+
+	public java.awt.Color getSystemColour(Composite parent) {
+		Color col = null;
+		org.eclipse.swt.graphics.Color colswt = parent.getBackground();
+		int r = colswt.getRed();
+		int g = colswt.getGreen();
+		int b = colswt.getBlue();
+		col = new Color(r, g, b);
+
+		return col;
 	}
 
 	public void setstatusline(String message) {

@@ -34,10 +34,6 @@ public class InfoView extends ViewPart {
 
 	public static final String ID = "com.eco.bio7.control";
 
-	private static ExpandItem item3;
-
-	private ExpandBar bar;
-
 	private Scale scale;
 
 	private static Scale scale_1;
@@ -105,221 +101,208 @@ public class InfoView extends ViewPart {
 	}
 
 	public void createPartControl(Composite parent) {
-		parent.setBackgroundMode(SWT.INHERIT_FORCE);
+		//parent.setBackgroundMode(SWT.INHERIT_FORCE);
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.controll");
-		bar = new ExpandBar(parent, SWT.V_SCROLL);
-		bar.setForeground(org.eclipse.wb.swt.SWTResourceManager.getColor(SWT.COLOR_BLACK));
-
-		bar.setBackground(new Color(parent.getDisplay(), 255, 255, 255));
-
-		item3 = new ExpandItem(bar, SWT.NONE, 0);
-
-		item3.setText("Time and Space");
-		item3.setHeight(500);
-
-		item3.setExpanded(true);
-
-		Composite composite = new Composite(bar, SWT.NONE);
-		composite.setBackground(org.eclipse.wb.swt.SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		//composite.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		item3.setControl(composite);
-		 composite.setLayout(new GridLayout(1, true));
-
-		 lblTimesteps = new Label(composite, SWT.NONE);
-		 GridData gd_lblTimesteps = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		 gd_lblTimesteps.heightHint = 35;
-		 lblTimesteps.setLayoutData(gd_lblTimesteps);
-		 lblTimesteps.setBackground(org.eclipse.wb.swt.SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		lblTimesteps.setText(timeSteps + Time.getTime());
-
-		lblMonth = new Label(composite, SWT.NONE);
-		GridData gd_lblMonth = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_lblMonth.heightHint = 35;
-		lblMonth.setLayoutData(gd_lblMonth);
-		lblMonth.setBackground(org.eclipse.wb.swt.SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		lblMonth.setText(month+Time.getMonth());
-
-		lblYear = new Label(composite, SWT.NONE);
-		GridData gd_lblYear = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_lblYear.heightHint = 35;
-		lblYear.setLayoutData(gd_lblYear);
-		lblYear.setBackground(org.eclipse.wb.swt.SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		lblYear.setText(year+Time.getYear());
-
-		scale = new Scale(composite, SWT.NONE);
-		scale.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-		scale.setBackground(org.eclipse.wb.swt.SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		//scale.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		scale.setMaximum(1000);
-		scale.setMinimum(1);
-		scale.setSelection(500);
-		scale.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				Time.setInterval(scale.getSelection());
-			}
-		});
 		
-				Label lblSpeed = new Label(composite, SWT.NONE);
-				GridData gd_lblSpeed = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-				gd_lblSpeed.heightHint = 35;
-				lblSpeed.setLayoutData(gd_lblSpeed);
-				lblSpeed.setBackground(org.eclipse.wb.swt.SWTResourceManager.getColor(SWT.COLOR_WHITE));
-				lblSpeed.setText("Speed");
+				Composite composite = new Composite(parent, SWT.NONE);
+				composite.setBackground(parent.getBackground());
+				composite.setLayout(new GridLayout(1, true));
+				
+						 lblTimesteps = new Label(composite, SWT.NONE);
+						 GridData gd_lblTimesteps = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+						 gd_lblTimesteps.heightHint = 35;
+						 lblTimesteps.setLayoutData(gd_lblTimesteps);
+						 lblTimesteps.setBackground(parent.getBackground());
+						 lblTimesteps.setText(timeSteps + Time.getTime());
+						 
+						 		lblMonth = new Label(composite, SWT.NONE);
+						 		GridData gd_lblMonth = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+						 		gd_lblMonth.heightHint = 35;
+						 		lblMonth.setLayoutData(gd_lblMonth);
+						 		lblMonth.setBackground(parent.getBackground());
+						 		lblMonth.setText(month+Time.getMonth());
+						 		
+						 				lblYear = new Label(composite, SWT.NONE);
+						 				GridData gd_lblYear = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+						 				gd_lblYear.heightHint = 35;
+						 				lblYear.setLayoutData(gd_lblYear);
+						 				lblYear.setBackground(parent.getBackground());
+						 				lblYear.setText(year+Time.getYear());
+						 				
+						 						scale = new Scale(composite, SWT.NONE);
+						 						scale.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+						 						scale.setBackground(parent.getBackground());
+						 						//scale.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
+						 						scale.setMaximum(1000);
+						 						scale.setMinimum(1);
+						 						scale.setSelection(500);
+						 						scale.addSelectionListener(new SelectionAdapter() {
+						 							@Override
+						 							public void widgetSelected(SelectionEvent e) {
+						 								Time.setInterval(scale.getSelection());
+						 							}
+						 						});
+						 						
+						 								Label lblSpeed = new Label(composite, SWT.NONE);
+						 								GridData gd_lblSpeed = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+						 								gd_lblSpeed.heightHint = 35;
+						 								lblSpeed.setLayoutData(gd_lblSpeed);
+						 								lblSpeed.setBackground(parent.getBackground());
+						 								lblSpeed.setText("Speed");
+						 								
+						 										scale_1 = new Scale(composite, SWT.NONE);
+						 										scale_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+						 										scale_1.setBackground(parent.getBackground());
+						 										//scale_1.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
+						 										
+						 										scale_1.addSelectionListener(new SelectionAdapter() {
+						 											private int sc1;
+						 											private int sc2;
 
-		scale_1 = new Scale(composite, SWT.NONE);
-		scale_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-		scale_1.setBackground(org.eclipse.wb.swt.SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		//scale_1.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		
-		scale_1.addSelectionListener(new SelectionAdapter() {
-			private int sc1;
-			private int sc2;
+						 											@Override
+						 											public void widgetSelected(SelectionEvent e) {
+						 												sc1 = scale_1.getSelection();
+						 												sc2 = scale_2.getSelection();
 
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				sc1 = scale_1.getSelection();
-				sc2 = scale_2.getSelection();
+						 												if (resizable) {
+						 													try {
+						 														SwingUtilities.invokeAndWait(new Runnable() {
+						 															// !!
+						 															public void run() {
+						 																ResizeArray.update(sc1, sc2);
 
-				if (resizable) {
-					try {
-						SwingUtilities.invokeAndWait(new Runnable() {
-							// !!
-							public void run() {
-								ResizeArray.update(sc1, sc2);
+						 																Quad2d.getQuad2dInstance().repaint();
+						 																// repaint_soilpanel();
 
-								Quad2d.getQuad2dInstance().repaint();
-								// repaint_soilpanel();
+						 																if (Hexagon.getHexagonInstance() != null) {
+						 																	Hexagon.getHexagonInstance().repaint();
+						 																}
+						 															}
+						 														});
+						 													} catch (InterruptedException e1) {
+						 														// TODO Auto-generated catch block
+						 														e1.printStackTrace();
+						 													} catch (InvocationTargetException e1) {
+						 														// TODO Auto-generated catch block
+						 														e1.printStackTrace();
+						 													}
 
-								if (Hexagon.getHexagonInstance() != null) {
-									Hexagon.getHexagonInstance().repaint();
-								}
-							}
-						});
-					} catch (InterruptedException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					} catch (InvocationTargetException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
+						 												}
+						 												lblFieldsizeY.setText("Fieldsize Y -> " + scale_1.getSelection());
+						 											}
+						 										});
+						 										scale_1.setMaximum(2000);
+						 										scale_1.setMinimum(1);
+						 										scale_1.setSelection(50);
+						 										
+						 												lblFieldsizeY = new Label(composite, SWT.NONE);
+						 												GridData gd_lblFieldsizeY = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+						 												gd_lblFieldsizeY.heightHint = 35;
+						 												lblFieldsizeY.setLayoutData(gd_lblFieldsizeY);
+						 												lblFieldsizeY.setBackground(parent.getBackground());
+						 												lblFieldsizeY.setText("Fieldsize Y -> " + Field.getHeight());
+						 												
+						 														scale_2 = new Scale(composite, SWT.NONE);
+						 														scale_2.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+						 														scale_2.setBackground(parent.getBackground());
+						 														//scale_2.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
+						 														scale_2.addSelectionListener(new SelectionAdapter() {
+						 															private int sc1;
+						 															private int sc2;
 
-				}
-				lblFieldsizeY.setText("Fieldsize Y -> " + scale_1.getSelection());
-			}
-		});
-		scale_1.setMaximum(2000);
-		scale_1.setMinimum(1);
-		scale_1.setSelection(50);
-		
-				lblFieldsizeY = new Label(composite, SWT.NONE);
-				GridData gd_lblFieldsizeY = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-				gd_lblFieldsizeY.heightHint = 35;
-				lblFieldsizeY.setLayoutData(gd_lblFieldsizeY);
-				lblFieldsizeY.setBackground(org.eclipse.wb.swt.SWTResourceManager.getColor(SWT.COLOR_WHITE));
-				lblFieldsizeY.setText("Fieldsize Y -> " + Field.getHeight());
+						 															@Override
+						 															public void widgetSelected(SelectionEvent e) {
+						 																sc1 = scale_1.getSelection();
+						 																sc2 = scale_2.getSelection();
+						 																if (resizable) {
+						 																	try {
+						 																		SwingUtilities.invokeAndWait(new Runnable() {
+						 																			// !!
+						 																			public void run() {
+						 																				ResizeArray.update(sc1, sc2);
 
-		scale_2 = new Scale(composite, SWT.NONE);
-		scale_2.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-		scale_2.setBackground(org.eclipse.wb.swt.SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		//scale_2.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		scale_2.addSelectionListener(new SelectionAdapter() {
-			private int sc1;
-			private int sc2;
+						 																				Quad2d.getQuad2dInstance().repaint();
 
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				sc1 = scale_1.getSelection();
-				sc2 = scale_2.getSelection();
-				if (resizable) {
-					try {
-						SwingUtilities.invokeAndWait(new Runnable() {
-							// !!
-							public void run() {
-								ResizeArray.update(sc1, sc2);
+						 																				if (Hexagon.getHexagonInstance() != null) {
+						 																					Hexagon.getHexagonInstance().repaint();
+						 																				}
+						 																			}
+						 																		});
+						 																	} catch (InterruptedException e1) {
+						 																		// TODO Auto-generated catch block
+						 																		e1.printStackTrace();
+						 																	} catch (InvocationTargetException e1) {
+						 																		// TODO Auto-generated catch block
+						 																		e1.printStackTrace();
+						 																	}
 
-								Quad2d.getQuad2dInstance().repaint();
+						 																}
+						 																lblFieldsizeX.setText("Fieldsize X -> " + scale_2.getSelection());
+						 															}
+						 														});
+						 														scale_2.setMaximum(2000);
+						 														scale_2.setMinimum(1);
+						 														scale_2.setSelection(50);
+						 														
+						 																lblFieldsizeX = new Label(composite, SWT.NONE);
+						 																GridData gd_lblFieldsizeX = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+						 																gd_lblFieldsizeX.heightHint = 35;
+						 																lblFieldsizeX.setLayoutData(gd_lblFieldsizeX);
+						 																lblFieldsizeX.setBackground(parent.getBackground());
+						 																lblFieldsizeX.setText("Fieldsize X -> " + Field.getWidth());
+						 																
+						 																		 btnResizeAfterAdjust = new Button(composite, SWT.CHECK);
+						 																		 GridData gd_btnResizeAfterAdjust = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+						 																		 gd_btnResizeAfterAdjust.heightHint = 35;
+						 																		 btnResizeAfterAdjust.setLayoutData(gd_btnResizeAfterAdjust);
+						 																		 
+						 																		 btnResizeAfterAdjust.setBackground(parent.getBackground());
+						 																		 
+						 																		 btnResizeAfterAdjust.addSelectionListener(new SelectionAdapter() {
+						 																		 	@Override
+						 																		 	public void widgetSelected(SelectionEvent e) {
+						 																		 		resizable = !resizable;
+						 																		 	}
+						 																		 });
+						 																		 btnResizeAfterAdjust.setText("Resize after adjust");
+						 																		 
+						 																		 		Button btnResize = new Button(composite, SWT.NONE);
+						 																		 		GridData gd_btnResize = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+						 																		 		gd_btnResize.heightHint = 35;
+						 																		 		btnResize.setLayoutData(gd_btnResize);
+						 																		 		btnResize.addSelectionListener(new SelectionAdapter() {
+						 																		 			private int sc1;
+						 																		 			private int sc2;
+						 																		 			@Override
+						 																		 			public void widgetSelected(SelectionEvent e) {
+						 																		 				sc1 = scale_1.getSelection();
+						 																		 				sc2 = scale_2.getSelection();
 
-								if (Hexagon.getHexagonInstance() != null) {
-									Hexagon.getHexagonInstance().repaint();
-								}
-							}
-						});
-					} catch (InterruptedException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					} catch (InvocationTargetException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
+						 																		 				try {
+						 																		 					SwingUtilities.invokeAndWait(new Runnable() {
+						 																		 						// !!
+						 																		 						public void run() {
+						 																		 							ResizeArray.update(sc1, sc2);
 
-				}
-				lblFieldsizeX.setText("Fieldsize X -> " + scale_2.getSelection());
-			}
-		});
-		scale_2.setMaximum(2000);
-		scale_2.setMinimum(1);
-		scale_2.setSelection(50);
-		 
-		 		lblFieldsizeX = new Label(composite, SWT.NONE);
-		 		GridData gd_lblFieldsizeX = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		 		gd_lblFieldsizeX.heightHint = 35;
-		 		lblFieldsizeX.setLayoutData(gd_lblFieldsizeX);
-		 		lblFieldsizeX.setBackground(org.eclipse.wb.swt.SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		 		lblFieldsizeX.setText("Fieldsize X -> " + Field.getWidth());
+						 																		 							Quad2d.getQuad2dInstance().repaint();
+						 																		 							// repaint_soilpanel();
 
-		 btnResizeAfterAdjust = new Button(composite, SWT.CHECK);
-		 GridData gd_btnResizeAfterAdjust = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		 gd_btnResizeAfterAdjust.heightHint = 35;
-		 btnResizeAfterAdjust.setLayoutData(gd_btnResizeAfterAdjust);
-		
-		btnResizeAfterAdjust.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		
-		btnResizeAfterAdjust.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				resizable = !resizable;
-			}
-		});
-		btnResizeAfterAdjust.setText("Resize after adjust");
+						 																		 							if (Hexagon.getHexagonInstance() != null) {
+						 																		 								Hexagon.getHexagonInstance().repaint();
+						 																		 							}
+						 																		 						}
+						 																		 					});
+						 																		 				} catch (InterruptedException e1) {
+						 																		 					// TODO Auto-generated catch block
+						 																		 					e1.printStackTrace();
+						 																		 				} catch (InvocationTargetException e1) {
+						 																		 					// TODO Auto-generated catch block
+						 																		 					e1.printStackTrace();
+						 																		 				}
 
-		Button btnResize = new Button(composite, SWT.NONE);
-		GridData gd_btnResize = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_btnResize.heightHint = 35;
-		btnResize.setLayoutData(gd_btnResize);
-		btnResize.addSelectionListener(new SelectionAdapter() {
-			private int sc1;
-			private int sc2;
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				sc1 = scale_1.getSelection();
-				sc2 = scale_2.getSelection();
-
-				try {
-					SwingUtilities.invokeAndWait(new Runnable() {
-						// !!
-						public void run() {
-							ResizeArray.update(sc1, sc2);
-
-							Quad2d.getQuad2dInstance().repaint();
-							// repaint_soilpanel();
-
-							if (Hexagon.getHexagonInstance() != null) {
-								Hexagon.getHexagonInstance().repaint();
-							}
-						}
-					});
-				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (InvocationTargetException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-
-			}
-		});
-		btnResize.setText("Resize");
+						 																		 			}
+						 																		 		});
+						 																		 		btnResize.setText("Resize");
 
 		/*Composite top = new Composite(bar, SWT.NO_BACKGROUND | SWT.EMBEDDED);
 		try {

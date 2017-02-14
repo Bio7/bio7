@@ -78,7 +78,7 @@ public class StateButtonView extends ViewPart {
 				| SWT.BORDER);
 		top = new Composite(sc, SWT.NONE);
 
-		top.setBackground(new Color(Display.getCurrent(), 255, 255, 255));
+		top.setBackground(parent.getBackground());
 		top.setLayout(new RowLayout());
 
 		butt = new ButtonContainer(top);

@@ -1,5 +1,6 @@
 package com.eco.bio7.discrete;
 
+import java.awt.Color;
 import java.awt.Frame;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -199,9 +200,22 @@ public class Quadview extends ViewPart {
 		
 		Time.setPause(true);
 		SwingFxSwtView view=new SwingFxSwtView();
-		view.embedd(top,Quad2d.getQuad2dInstance().jScrollPane);
+		Quad2d quad=Quad2d.getQuad2dInstance();
+		quad.setBackground(getSystemColour(parent));
+		view.embedd(top,quad.jScrollPane);
 
 		
+	}
+	
+	public java.awt.Color getSystemColour(Composite parent) {
+		Color col = null;
+		org.eclipse.swt.graphics.Color colswt = parent.getBackground();
+		int r = colswt.getRed();
+		int g = colswt.getGreen();
+		int b = colswt.getBlue();
+		col = new Color(r, g, b);
+
+		return col;
 	}
 
 	public void setFocus() {

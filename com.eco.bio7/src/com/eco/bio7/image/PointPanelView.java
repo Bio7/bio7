@@ -1,5 +1,6 @@
 package com.eco.bio7.image;
 
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
@@ -34,6 +35,7 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.collection.SwingFxSwtView;
 import com.eco.bio7.discrete.Quad2d;
 import com.eco.bio7.swt.SwtAwt;
+import com.eco.bio7.util.Util;
 
 public class PointPanelView extends ViewPart {
 	private static PointPanel jp;
@@ -120,7 +122,7 @@ public class PointPanelView extends ViewPart {
 		jp = new PointPanel();
 		jp.getHeight();
 		jp.setPreferredSize(new Dimension(jp.getScaledx(), jp.getScaledy()));
-
+        jp.setBackground(getSystemColour(parent));
 		scroll.setViewportView(jp);
 		
 		SwingFxSwtView view=new SwingFxSwtView();
@@ -132,6 +134,16 @@ public class PointPanelView extends ViewPart {
 
 	}
 	
+	public java.awt.Color getSystemColour(Composite parent) {
+		Color col = null;
+		org.eclipse.swt.graphics.Color colswt = parent.getBackground();
+		int r = colswt.getRed();
+		int g = colswt.getGreen();
+		int b = colswt.getBlue();
+		col = new Color(r, g, b);
+
+		return col;
+	}
 
 	public void setFocus() {
 		// panel.requestFocus();

@@ -14,6 +14,7 @@ import org.eclipse.ui.PlatformUI;
 
 public class Util {
 	private static Color col;
+	private static org.eclipse.swt.graphics.Color colSwt;
 
 	/**
 	 * A method to detetct the Operating System.
@@ -52,6 +53,8 @@ public class Util {
 		String realArch = arch.endsWith("64") || wow64Arch != null && wow64Arch.endsWith("64") ? "64" : "32";
 		return realArch;
 	}
+
+	
 
 	public File[] ListFilesDirectory(File filedirectory, final String[] extensions) {
 		File dir = filedirectory;
@@ -171,7 +174,7 @@ public class Util {
 	/**
 	 * A method to return the default color as an AWT color.
 	 * 
-	 * @return a color
+	 * @return a AWT color object
 	 */
 	public static Color getSWTBackgroundToAWT() {
 
@@ -189,6 +192,28 @@ public class Util {
 			}
 		});
 		return col;
+
+	}
+	
+	/**
+	 * A method to return the default color as an SWT color.
+	 * @return 
+	 * 
+	 * @return a SWT color object
+	 */
+	public static org.eclipse.swt.graphics.Color getSWTBackgroundColor() {
+
+		Display display = PlatformUI.getWorkbench().getDisplay();
+		display.syncExec(new Runnable() {
+
+			public void run() {
+
+				 colSwt = getShell().getBackground();
+				
+
+			}
+		});
+		return colSwt;
 
 	}
 
