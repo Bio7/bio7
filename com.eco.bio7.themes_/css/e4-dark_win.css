@@ -303,3 +303,17 @@ Grid {
   flat-scroll-bar-page-increment: #f0f0f0;
 }
 
+
+
+Scale {
+    background-color: #383C3E;
+    color: #383C3E;
+}
+
+ExpandBar {
+    background-color: #383C3E;
+    color: #dddddd;
+}
+
+
+

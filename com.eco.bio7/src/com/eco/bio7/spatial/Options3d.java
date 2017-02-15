@@ -50,9 +50,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.GridData;
 
 public class Options3d extends ViewPart {
-	public Options3d() {
-	}
-
+	public static final String ID = "com.eco.bio7.discrete3d.Options3d"; //$NON-NLS-1$
+	
+	
 	private ExpandItem newItemExpandItem;
 	private Text worldExtent;
 	private Text text_11;
@@ -74,7 +74,6 @@ public class Options3d extends ViewPart {
 	private IPreferenceStore store;
 	private static String objectPath;
 	private static String objectName;
-	public static final String ID = "com.eco.bio7.discrete3d.Options3d"; //$NON-NLS-1$
 	private Label sizeXLabel;
 	private Label sizeYLabel;
 	private Label sizeZLabel;
@@ -103,6 +102,11 @@ public class Options3d extends ViewPart {
 	private static boolean renderImageJFrames = true;
 	private static Integer stackSizeCount;
 	private int fixedFps;
+	
+	public Options3d() {
+		
+	}
+
 
 	/**
 	 * Create contents of the view part
@@ -131,7 +135,7 @@ public class Options3d extends ViewPart {
 
 		ExpandBar expandBar;
 		expandBar = new ExpandBar(container, SWT.V_SCROLL);
-		expandBar.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
+		//expandBar.setBackground(parent.getBackground());
 
 		newItemExpandItem = new ExpandItem(expandBar, SWT.NONE);
 		newItemExpandItem.setHeight(700);

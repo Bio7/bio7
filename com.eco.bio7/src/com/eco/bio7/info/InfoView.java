@@ -131,7 +131,7 @@ public class InfoView extends ViewPart {
 						 				
 						 						scale = new Scale(composite, SWT.NONE);
 						 						scale.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-						 						scale.setBackground(parent.getBackground());
+						 						//scale.setBackground(parent.getBackground());
 						 						//scale.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 						 						scale.setMaximum(1000);
 						 						scale.setMinimum(1);
@@ -152,7 +152,7 @@ public class InfoView extends ViewPart {
 						 								
 						 										scale_1 = new Scale(composite, SWT.NONE);
 						 										scale_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-						 										scale_1.setBackground(parent.getBackground());
+						 										//scale_1.setBackground(parent.getBackground());
 						 										//scale_1.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 						 										
 						 										scale_1.addSelectionListener(new SelectionAdapter() {
@@ -204,7 +204,7 @@ public class InfoView extends ViewPart {
 						 												
 						 														scale_2 = new Scale(composite, SWT.NONE);
 						 														scale_2.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-						 														scale_2.setBackground(parent.getBackground());
+						 														//scale_2.setBackground(parent.getBackground());
 						 														//scale_2.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 						 														scale_2.addSelectionListener(new SelectionAdapter() {
 						 															private int sc1;
