@@ -16,6 +16,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
@@ -24,10 +25,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.console.IConsoleManager;
-import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.texteditor.ITextEditor;
-
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
 import com.eco.bio7.compile.CompilerMessages;
 import com.eco.bio7.compile.JavaCompileWorkspaceJob;
@@ -60,11 +58,16 @@ public class Compile extends Action {
 		IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
 		classbody = store.getBoolean("classbody");
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		if(editor==null||editor instanceof CompilationUnitEditor==false){
+			return;
+		}
 		pag = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 		IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
 		resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
 
 		IEditorInput editorInput = editor.getEditorInput();
+		
+		
 
 		if (editorInput instanceof IFileEditorInput) {
 			ifile = ((IFileEditorInput) editorInput).getFile();

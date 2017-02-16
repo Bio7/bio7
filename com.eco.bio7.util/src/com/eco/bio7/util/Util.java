@@ -113,7 +113,7 @@ public class Util {
 	 * @param path
 	 * @return
 	 */
-	public String fileToString(String path) {// this function returns the
+	public static String fileToString(String path) {// this function returns the
 		// File as a String
 		FileInputStream fileinput = null;
 		try {

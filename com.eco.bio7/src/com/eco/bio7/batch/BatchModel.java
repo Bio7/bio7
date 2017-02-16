@@ -9,7 +9,6 @@
  *     M. Austenfeld
  *******************************************************************************/
 
-
 package com.eco.bio7.batch;
 
 import java.io.FileInputStream;
@@ -33,6 +32,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import com.eco.bio7.actions.Bio7Action;
 import com.eco.bio7.compile.BeanShellInterpreter;
+import com.eco.bio7.editors.BeanshellEditor;
 import com.eco.bio7.floweditor.model.Connection;
 import com.eco.bio7.floweditor.model.EllipticalShape;
 import com.eco.bio7.floweditor.model.FlowDecisionShape;
@@ -70,9 +70,9 @@ public class BatchModel {
 
 	private static boolean pause;
 
-	private static boolean debug;//The variable switch for the visualization mode!
+	private static boolean debug;// The variable switch for the visualization mode!
 
-	private static boolean test = false;//The variable switch for the test mode!
+	private static boolean test = false;// The variable switch for the test mode!
 
 	private static Stack<IFile> s = new Stack<IFile>();
 
@@ -102,23 +102,22 @@ public class BatchModel {
 
 					shapestop = a;
 
-				}
-				else if (a instanceof EllipticalShape){
-					/*Control if the values are numeric!*/
+				} else if (a instanceof EllipticalShape) {
+					/* Control if the values are numeric! */
 					try {
 						Integer.parseInt((String) a.getPropertyValue(a.LOOP_COUNT));
 					} catch (NumberFormatException e) {
 						a.setColor();
 						warning("No number defined or value is not an integer value!");
-						
+
 					}
-					
-					/*Reset all loops to the default value!*/
+
+					/* Reset all loops to the default value! */
 					a.setPropertyValue(a.LOOP_COUNT, a.getPropertyValue(a.INIT_LOOP));
 					List sourceconnectionlist = a.getSourceConnections();
 					List targetconnectionlist = a.getTargetConnections();
-			 
-			        /*Control if loop is connected correctly!*/
+
+					/* Control if loop is connected correctly! */
 					if (targetconnectionlist.size() != 1 || sourceconnectionlist.size() != 1) {
 						a.setColor();
 						warning("A loop has to have only one incoming connection and one outgoing connection!");
@@ -172,8 +171,12 @@ public class BatchModel {
 
 	private static ShapesEditor geteditor() {
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		ShapesEditor shapeeditor = (ShapesEditor) editor;
-		return shapeeditor;
+		if (editor != null || editor instanceof ShapesEditor) {
+			ShapesEditor shapeeditor = (ShapesEditor) editor;
+			return shapeeditor;
+		} else {
+			return null;
+		}
 
 	}
 
@@ -199,7 +202,7 @@ public class BatchModel {
 				if (test) {
 					MessageBox messageBox = new MessageBox(new Shell(),
 
-					SWT.ICON_WARNING);
+							SWT.ICON_WARNING);
 					messageBox.setMessage("No errors detected!");
 					messageBox.open();
 				}
@@ -249,10 +252,10 @@ public class BatchModel {
 
 			if (target instanceof EllipticalShape) { // If it is a loop!
 
-				//twoConnectHandleLoop(target);// Call method for the
+				// twoConnectHandleLoop(target);// Call method for the
 				// ellipse connection!
 				target.setColor();
-                warning("a figure must follow a loop with a connection!");
+				warning("a figure must follow a loop with a connection!");
 			}
 
 			else {// If it is a file!
@@ -321,7 +324,6 @@ public class BatchModel {
 					if ((con1.getTarget() instanceof EllipticalShape) == false) {
 						Shape targetcon1 = con1.getTarget();
 						shapenext = targetcon1;
-						
 
 					} else {// If connected with a Loop!
 						target.setColor();
@@ -334,7 +336,6 @@ public class BatchModel {
 					if ((con2.getTarget() instanceof EllipticalShape) == false) {
 						Shape targetcon2 = con2.getTarget();
 						shapenext = targetcon2;
-						
 
 					} else {// If connected with a Loop !
 						target.setColor();
@@ -354,28 +355,27 @@ public class BatchModel {
 	}
 
 	private static void twoConnectHandleLoop(Shape target) {
-		
+
 		Shape eshape = (Shape) target;
 		if (debug) {
 			target.setColor();
 		}
 		List sourceconnectionlist = eshape.getSourceConnections();
 		List targetconnectionlist = eshape.getTargetConnections();
-       
-        /*Not a real condition if connection to the loop is missing then the loop will never be evaluated!*/
+
+		/* Not a real condition if connection to the loop is missing then the loop will never be evaluated! */
 		if (targetconnectionlist.size() == 1 && sourceconnectionlist.size() == 1) {
 
-			int count=-1;
+			int count = -1;
 			try {
 				count = Integer.parseInt((String) eshape.getPropertyValue(eshape.LOOP_COUNT));
 			} catch (NumberFormatException e) {
-				count=-1;
-				
+				count = -1;
+
 			}
 
 			if (count > 0) {
 
-				
 				Connection eshapetargetlist = (Connection) sourceconnectionlist.get(0);
 				Shape eshapetarget = (Shape) eshapetargetlist.getTarget();
 				count--;
@@ -390,11 +390,9 @@ public class BatchModel {
 			}
 
 			else if (count == 0) {
-				/*if (debug) {
-					if (test == false) {
-						target.setDefaultColor();
-					}
-				}*/
+				/*
+				 * if (debug) { if (test == false) { target.setDefaultColor(); } }
+				 */
 				// If the loop has finished!
 				Shape temp = shapetemp;
 				shapetemp = null;
@@ -405,11 +403,10 @@ public class BatchModel {
 				// loops!
 				shapenext = temp;
 
-			}
-			else if (count<0){
+			} else if (count < 0) {
 				eshape.setColor();
 				warning("No number defined or value is not an integer value!");
-				
+
 			}
 		} else {
 			target.setColor();
@@ -422,7 +419,7 @@ public class BatchModel {
 		Bio7Action.stopFlow();
 		MessageBox messageBox = new MessageBox(new Shell(),
 
-		SWT.ICON_WARNING);
+				SWT.ICON_WARNING);
 		messageBox.setMessage(message);
 		messageBox.open();
 		if (shapenext != null) {

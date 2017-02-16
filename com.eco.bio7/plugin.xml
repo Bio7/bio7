@@ -408,11 +408,22 @@
             id="com.eco.bio7.compilejavaaction"
             name="Compile Java">
       </command>
+      <keyBinding
+            commandId="com.eco.bio7.compilejavaaction"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+ALT+SHIFT+J">
+      </keyBinding>
+      
       <command
             description="Execute a Bio7 Flow"
             id="com.eco.bio7.executeflowaction"
             name="Flow Action">
       </command>
+      <keyBinding
+            commandId="com.eco.bio7.executeflowaction"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+ALT+SHIFT+F">
+      </keyBinding>
       <command
             description="Debug a Bio7 Flow"
             id="com.eco.bio7.debugflowaction"
@@ -423,21 +434,42 @@
             id="com.eco.bio7.interpretgroovybeanshellaction"
             name="Interpret Groovy/BeanShell Action">
       </command>
+      <keyBinding
+            commandId="com.eco.bio7.interpretgroovybeanshellaction"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+ALT+SHIFT+G">
+      </keyBinding>
       <command
             description="Interpret Python"
             id="com.eco.bio7.interpretpythonaction"
             name="Interpret Python Action">
       </command>
+      
+      <keyBinding
+            commandId="com.eco.bio7.interpretpythonaction"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+ALT+SHIFT+P">
+      </keyBinding>
       <command
             description="Interpret Knitr"
             id="com.eco.bio7.browser.knitrAction"
             name="Knitr Action">
       </command>
+      <keyBinding
+            commandId="com.eco.bio7.browser.knitrAction"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+ALT+SHIFT+K">
+      </keyBinding>
       <command
             description="Interpret Markdown"
             id="com.eco.bio7.RMarkdownAction"
             name="Markdown Action">
       </command>
+      <keyBinding
+            commandId="com.eco.bio7.RMarkdownAction"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+ALT+SHIFT+M">
+      </keyBinding>
       <command
             description="Clear the R workspace"
             id="com.eco.bio7.clear_r_workspace"
@@ -503,6 +535,11 @@
             id="com.eco.bio7.interpretjavascriptaction"
             name="Interpret JavaScript Action">
       </command>
+      <keyBinding
+            commandId="com.eco.bio7.interpretjavascriptaction"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+ALT+SHIFT+S">
+      </keyBinding>
    </extension>
    <extension
          id="product"

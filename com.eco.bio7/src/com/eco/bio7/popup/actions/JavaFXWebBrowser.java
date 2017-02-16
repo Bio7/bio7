@@ -1,7 +1,12 @@
 package com.eco.bio7.popup.actions;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -30,6 +35,7 @@ import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.collection.CustomView;
 import com.eco.bio7.markdownedit.editors.MarkdownEditor;
+import com.eco.bio7.util.Util;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -50,6 +56,7 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebEvent;
 import javafx.scene.web.WebHistory;
 import javafx.scene.web.WebView;
 
@@ -65,7 +72,8 @@ public class JavaFXWebBrowser {
 		brow = new WebView();
 		webEng = brow.getEngine();
 		webEng.setJavaScriptEnabled(true);
-
+		java.net.CookieHandler.setDefault(new java.net.CookieManager());
+		
 		webEng.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
 
 			@Override
@@ -75,6 +83,8 @@ public class JavaFXWebBrowser {
 
 					return;
 				}
+
+				//webEng.executeScript(getFirebugScript());
 				/*
 				 * org.w3c.dom.Document doc = webEng.getDocument(); Element el = doc.getElementById("");
 				 */
@@ -127,6 +137,12 @@ public class JavaFXWebBrowser {
 
 			}
 
+		});
+		webEng.setOnAlert(new EventHandler<WebEvent<String>>() {
+			@Override
+			public void handle(WebEvent<String> event) {
+				System.out.println(event.getData());
+			}
 		});
 
 	}
@@ -316,6 +332,42 @@ public class JavaFXWebBrowser {
 		String pathBundle = fileUrl.getFile();
 		return pathBundle;
 	}
+
+	/*private static String getFirebugScript() {
+		Bundle bundle = Platform.getBundle("com.eco.bio7.libs");
+		Path path = new Path("pdfjs/firebug-lite-132.js");
+		URL locationURL = FileLocator.find(bundle, path, null);
+
+		URL fileUrl = null;
+		try {
+			fileUrl = FileLocator.toFileURL(locationURL);
+		} catch (IOException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+		String pathBundle = fileUrl.getFile();
+		StringBuilder libraryContents = new StringBuilder();
+
+		File initialFile = new File(pathBundle);
+		InputStream inputStream = null;
+		try {
+			inputStream = new FileInputStream(initialFile);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF8"));
+			String line = reader.readLine();
+			while (line != null) {
+				libraryContents.append(line);
+				line = reader.readLine();
+			}
+		} catch (IOException exception) {
+			return null;
+		}
+		return libraryContents.toString();
+	}*/
 
 	public void goBack() {
 		webEng.executeScript("history.back()");
