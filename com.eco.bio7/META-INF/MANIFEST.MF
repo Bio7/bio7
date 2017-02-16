@@ -222,7 +222,8 @@ Require-Bundle: org.eclipse.ui,
  com.eco.bio7.imagej2;bundle-version="1.0.0",
  org.eclipse.nebula.widgets.grid;bundle-version="1.0.0",
  com.eco.bio7.markdownedit;bundle-version="1.0.0",
- org.eclipse.jface
+ org.eclipse.jface,
+ net.sourceforge.texlipse
 Eclipse-LazyStart: true
 Bundle-ClassPath: 
  bin/,

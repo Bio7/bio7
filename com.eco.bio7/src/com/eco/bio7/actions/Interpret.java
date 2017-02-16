@@ -15,34 +15,34 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.ui.IEditorActionDelegate;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
-
 import com.eco.bio7.discrete.Quad2d;
+import com.eco.bio7.editors.BeanshellEditor;
 import com.eco.bio7.rcp.StartBio7Utils;
 
 public class Interpret extends Action {
 
 	private IFile file;
-	
-	public  Interpret(String text){
+
+	public Interpret(String text) {
 		super(text);
 		setId("com.eco.bio7.interpretgroovybeanshell");
 		setActionDefinitionId("com.eco.bio7.interpretgroovybeanshellaction");
-		
+
 	}
 
-	
 	public void run() {
 		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
 		if (utils != null) {
 			utils.cons.clear();
 		}
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		if (editor == null || editor instanceof BeanshellEditor == false) {
+			return;
+		}
 		IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
 		if (editor.getEditorInput() instanceof IFileEditorInput) {
 
@@ -62,7 +62,6 @@ public class Interpret extends Action {
 		} else if (file.getFileExtension().equals("js")) {
 
 			String a = doc.get();
-			
 
 		}
 

@@ -44,6 +44,9 @@ public class JavaScriptInterpret extends Action {
 			utils.cons.clear();
 		}
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		if (editor == null) {
+			return;
+		}
 		IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
 		if (editor.getEditorInput() instanceof IFileEditorInput) {
 

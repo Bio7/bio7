@@ -36,8 +36,10 @@ import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.browser.BrowserView;
+import com.eco.bio7.browser.MultiPageEditor;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.markdownedit.Activator;
+import com.eco.bio7.markdownedit.editors.MarkdownEditor;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
@@ -102,6 +104,9 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 			utils.cons.clear();
 		}
 		editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		if (editor == null || editor instanceof MarkdownEditor == false) {
+			return;
+		}
 		if (editor.isDirty()) {
 			editor.doSave(new NullProgressMonitor());
 		}
