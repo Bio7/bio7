@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2013 M. Austenfeld
+ * Copyright (c) 2005-2017 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,9 +20,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
-
 import com.eco.bio7.compile.JavaScriptInterpreter;
-import com.eco.bio7.compile.PythonInterpreter;
 import com.eco.bio7.rcp.StartBio7Utils;
 
 import ij.IJ;

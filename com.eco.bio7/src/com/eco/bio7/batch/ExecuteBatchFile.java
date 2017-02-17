@@ -19,7 +19,6 @@ import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IWorkspace;
@@ -30,12 +29,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbench;
@@ -47,7 +44,6 @@ import org.jsoup.select.Elements;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
-
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.browser.BrowserView;
 import com.eco.bio7.collection.Work;
@@ -55,12 +51,14 @@ import com.eco.bio7.compile.BeanShellInterpreter;
 import com.eco.bio7.compile.Compile;
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
 import com.eco.bio7.compile.GroovyInterpreter;
+import com.eco.bio7.compile.JavaScriptInterpreter;
 import com.eco.bio7.compile.PythonInterpreter;
 import com.eco.bio7.compile.RScript;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.floweditor.shapes.ShapesPlugin;
 import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 import com.eco.bio7.jobs.ImageFlowMacroWorkspaceJob;
+import com.eco.bio7.popup.actions.JavaFXWebBrowser;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
@@ -105,6 +103,17 @@ public class ExecuteBatchFile {
 
 		}
 
+		/* Interprets a JavaScript script! */
+		else if (fileextension.equals("js")) {
+			BatchModel.pause();
+			fileprop = fileroot + fileprop;
+
+			String fileproper = fileprop.replace("//", "////");// Conversion
+
+			JavaScriptInterpreter.interpretJob(null, fileproper);
+
+		}
+
 		/* Interprets a jython script! */
 		else if (fileextension.equals("py")) {
 			BatchModel.pause();
@@ -122,7 +131,7 @@ public class ExecuteBatchFile {
 				if (sel.equals("Python")) {
 
 					if (selectionConsole.equals("Python")) {
-						ConsolePageParticipant.pipeInputToConsole("execfile('" + fileproper + "')",true,true);
+						ConsolePageParticipant.pipeInputToConsole("execfile('" + fileproper + "')", true, true);
 					} else {
 						System.out.println("Please start the \"Native Python\" Shell in the Bio7 console!");
 					}
@@ -134,15 +143,15 @@ public class ExecuteBatchFile {
 						String blenderArgs = store.getString("blender_args");
 						if (blenderSel.equals("pscript")) {
 
-							ConsolePageParticipant.pipeInputToConsole("\"" + path + "/blender\"" + " " + blenderArgs + " -P " + fileproper,true,true);
+							ConsolePageParticipant.pipeInputToConsole("\"" + path + "/blender\"" + " " + blenderArgs + " -P " + fileproper, true, true);
 						} else if (blenderSel.equals("interactive")) {
 
-							ConsolePageParticipant.pipeInputToConsole("\"" + path + "/blender\"" + " " + blenderArgs + " --python-console",true,true);
-							ConsolePageParticipant.pipeInputToConsole(store.getString("before_script_blender"),true,true);
-							ConsolePageParticipant.pipeInputToConsole("exec(compile(open('" + fileproper + "').read(),'" + fileproper + "', 'exec'))",true,true);
-							ConsolePageParticipant.pipeInputToConsole(store.getString("after_script_blender"),true,true);
+							ConsolePageParticipant.pipeInputToConsole("\"" + path + "/blender\"" + " " + blenderArgs + " --python-console", true, true);
+							ConsolePageParticipant.pipeInputToConsole(store.getString("before_script_blender"), true, true);
+							ConsolePageParticipant.pipeInputToConsole("exec(compile(open('" + fileproper + "').read(),'" + fileproper + "', 'exec'))", true, true);
+							ConsolePageParticipant.pipeInputToConsole(store.getString("after_script_blender"), true, true);
 						} else {
-							ConsolePageParticipant.pipeInputToConsole("\"" + path + "/blender\"" + " " + blenderArgs,true,true);
+							ConsolePageParticipant.pipeInputToConsole("\"" + path + "/blender\"" + " " + blenderArgs, true, true);
 						}
 					} else {
 						System.out.println("Please start the Shell in the Bio7 Console\n" + "to interpret the Python script in Blender!");
@@ -165,7 +174,7 @@ public class ExecuteBatchFile {
 			boolean rPipe = store.getBoolean("r_pipe");
 
 			if (rPipe == true) {
-				ConsolePageParticipant.pipeInputToConsole("source('" + fileprop + "')",true,true);
+				ConsolePageParticipant.pipeInputToConsole("source('" + fileprop + "')", true, true);
 			} else {
 				/* If the OS is Linux! */
 				if (Bio7Dialog.getOS().equals("Linux")) {
@@ -225,7 +234,7 @@ public class ExecuteBatchFile {
 
 		}
 		/* Executes an ImageJ macro! */
-		else if (fileextension.equals("txt")) {
+		else if (fileextension.equals("txt") || fileextension.equals("ijm")) {
 			// final Shape shape = a;
 			BatchModel.pause();
 			fileprop = fileroot + fileprop;
@@ -247,9 +256,6 @@ public class ExecuteBatchFile {
 		else if (fileextension.equals("exe")) {
 
 			final File file = new File(fileprop);
-			// final Runtime rt;
-
-			// rt = Runtime.getRuntime();
 
 			IWorkbench wb = PlatformUI.getWorkbench();
 			IProgressService ps = wb.getProgressService();
@@ -258,11 +264,6 @@ public class ExecuteBatchFile {
 				ps.busyCursorWhile(new IRunnableWithProgress() {
 					public void run(IProgressMonitor pm) {
 
-						/*
-						 * try { process = rt.exec(file.getAbsolutePath() + " " + BatchModel.getArgument()); } catch (IOException e) {
-						 * 
-						 * e.printStackTrace(); }
-						 */
 						List<String> args = new ArrayList<String>();
 						args.add(file.getAbsolutePath());
 						args.add(BatchModel.getArgument());
@@ -291,14 +292,8 @@ public class ExecuteBatchFile {
 		}
 		/* Executes a batch file(Windows)! */
 		else if (fileextension.equals("bat")) {
-			/*
-			 * if (BatchModel.isDebug()) { a.setDefaultColor(); }
-			 */
 
 			final File file = new File(fileprop);
-			// final Runtime rt;
-
-			// rt = Runtime.getRuntime();
 
 			IWorkbench wb = PlatformUI.getWorkbench();
 			IProgressService ps = wb.getProgressService();
@@ -307,11 +302,6 @@ public class ExecuteBatchFile {
 				ps.busyCursorWhile(new IRunnableWithProgress() {
 					public void run(IProgressMonitor pm) {
 
-						/*
-						 * try { process = rt.exec(file.getAbsolutePath()); } catch (IOException e) {
-						 * 
-						 * e.printStackTrace(); }
-						 */
 						List<String> args = new ArrayList<String>();
 						args.add(file.getAbsolutePath());
 						ProcessBuilder pb = new ProcessBuilder(args);
@@ -461,8 +451,7 @@ public class ExecuteBatchFile {
 
 		}
 
-		else if (fileextension.equals("rhtml") || fileextension.equals("Rhtml") || fileextension.equals("Rtex") || fileextension.equals("rtex") || fileextension.equals("Rmw")
-				|| fileextension.equals("rmw") || fileextension.equals("Rmd") || fileextension.equals("rmd") || fileextension.equals("Rst") || fileextension.equals("rst")) {
+		else if (fileextension.equals("rhtml") || fileextension.equals("Rhtml") || fileextension.equals("Rmw") || fileextension.equals("rmw") || fileextension.equals("Rmd") || fileextension.equals("rmd") || fileextension.equals("Rst") || fileextension.equals("rst")) {
 			fileprop = fileroot + fileprop;
 
 			String fileext = fileextension.replace("R", "");
@@ -496,8 +485,7 @@ public class ExecuteBatchFile {
 							c.eval("try(" + knitrOptions + ")");
 						}
 
-						
-						//File file = selectedFile.getLocation().toFile();
+						// File file = selectedFile.getLocation().toFile();
 						String docTemp = null;
 						try {
 							docTemp = BatchModel.fileToString(fi.getCanonicalPath());
@@ -508,42 +496,42 @@ public class ExecuteBatchFile {
 
 						// String docTemp=doc.get();
 						Document docHtml = Jsoup.parse(docTemp);
-                       /*Search for divs with the selected id!*/
+						/* Search for divs with the selected id! */
 						Elements contents = docHtml.select("#knitrcode"); // a
 																			// with
 																			// href
 						for (int i = 0; i < contents.size(); i++) {
-							/*Replace in the div the linebreak and page tags with text linebreak(s)!*/
+							/* Replace in the div the linebreak and page tags with text linebreak(s)! */
 							contents.get(i).select("br").append("\\n");
 							contents.get(i).select("p").prepend("\\n\\n");
-							
-							String cleaned=contents.get(i).text().replaceAll("\\\\n", "\n");
-							/*Wrap the parsed div text in a knitr section!*/
-							contents.get(i).after("<!--begin.rcode\n " +cleaned  + " \nend.rcode-->");
+
+							String cleaned = contents.get(i).text().replaceAll("\\\\n", "\n");
+							/* Wrap the parsed div text in a knitr section! */
+							contents.get(i).after("<!--begin.rcode\n " + cleaned + " \nend.rcode-->");
 							contents.get(i).remove();
 						}
-						/*Create a temp file for the parsed and edited *.html file for processing with knitr!*/
+						/* Create a temp file for the parsed and edited *.html file for processing with knitr! */
 						File temp = null;
 						try {
-							 temp = File.createTempFile(theName, ".tmp");
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} 
-						
-						/*Write the changes to the file with the help of the ApacheIO lib!*/
-						try {
-							FileUtils.writeStringToFile(temp,docHtml.html());
+							temp = File.createTempFile(theName, ".tmp");
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-						/*Clean the path for R and knitr!*/
-						String cleanedPath=temp.getPath().replace("\\","/");
-                         
+
+						/* Write the changes to the file with the help of the ApacheIO lib! */
+						try {
+							FileUtils.writeStringToFile(temp, docHtml.html());
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						/* Clean the path for R and knitr! */
+						String cleanedPath = temp.getPath().replace("\\", "/");
+
 						RServe.print("try(knit('" + cleanedPath + "','" + theName + "." + fileext + "'))");
 
-						//RServe.print("try(knit('" + name + "','" + theName + "." + fileext + "'))");
+						// RServe.print("try(knit('" + name + "','" + theName + "." + fileext + "'))");
 
 					} catch (RserveException e1) {
 
@@ -551,85 +539,163 @@ public class ExecuteBatchFile {
 					}
 
 					if (fileext.equals("html")) {
-						Work.openView("com.eco.bio7.browser.Browser");
+
+						IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+						String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
 						final String dir2 = dir;
+						String temp = "file:///" + dir2 + "/" + theName + ".html";
+						String url = temp.replace("\\", "/");
+						System.out.println(url);
 
-						Display display = PlatformUI.getWorkbench().getDisplay();
-						display.asyncExec(new Runnable() {
+						if (openInJavaFXBrowser.equals("JAVAFX_BROWSER") == false) {
+							Work.openView("com.eco.bio7.browser.Browser");
+							BrowserView b = BrowserView.getBrowserInstance();
+							b.browser.setJavascriptEnabled(true);
+							b.setLocation(url);
+						}
 
-							public void run() {
-								String temp = "file:///" + dir2 + "/" + theName + ".html";
-								String url = temp.replace("\\", "/");
-								System.out.println(url);
-								BrowserView b = BrowserView.getBrowserInstance();
-								b.setLocation(url);
+						else {
+
+							boolean openInBrowserInExtraView = store.getBoolean("OPEN_BOWSER_IN_EXTRA_VIEW");
+							if (openInBrowserInExtraView) {
+
+								new JavaFXWebBrowser(true).createBrowser(url, theName + ".html");
+							} else {
+								new JavaFXWebBrowser(true).createBrowser(url, "R_Display");
 							}
-						});
+						}
+						/*
+						 * Work.openView("com.eco.bio7.browser.Browser"); final String dir2 = dir;
+						 * 
+						 * Display display = PlatformUI.getWorkbench().getDisplay(); display.asyncExec(new Runnable() {
+						 * 
+						 * public void run() { String temp = "file:///" + dir2 + "/" + theName + ".html"; String url = temp.replace("\\", "/"); System.out.println(url); BrowserView b =
+						 * BrowserView.getBrowserInstance(); b.setLocation(url); } });
+						 */
 
 					} else if (fileext.equals("tex")) {
-						IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-						String pdfLatexPath = store.getString("pdfLatex");
-						final BufferedReader input;
-						OutputStream stdin;
-						pdfLatexPath = pdfLatexPath.replace("\\", "/");
-						final String tempDirLoc = dir;
-
-						// Process proc = Runtime.getRuntime().exec(
-						// pdfLatexPath+"/pdflatex -interaction=nonstopmode " + "-output-directory=" + tempDirLoc + " " + tempDirLoc + "/" + theName + ".tex");
-
-						List<String> args = new ArrayList<String>();
-						args.add(pdfLatexPath + "/pdflatex");
-						args.add("-interaction=nonstopmode");
-						args.add("-output-directory=" + tempDirLoc);
-						args.add(tempDirLoc + "/" + theName + ".tex");
-
-						Process proc = null;
-						ProcessBuilder pb = new ProcessBuilder(args);
-						pb.redirectErrorStream();
-						try {
-							proc = pb.start();
-
-						} catch (IOException e) {
-
-							e.printStackTrace();
-						}
-						input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-						stdin = proc.getOutputStream();
-
-						new Thread() {
-
-							public void run() {
-								setPriority(Thread.MAX_PRIORITY);
-								String line;
-								try {
-
-									while ((line = input.readLine()) != null) {
-										System.out.println(line);
-									}
-									File fil = new File(tempDirLoc + "/" + theName + ".pdf");
-									if (fil.exists()) {
-										Program.launch(tempDirLoc + "/" + theName + ".pdf");
-									} else {
-										Bio7Dialog.message("*.pdf file was not created.\nPlease check the error messages!");
-									}
-
-								} catch (IOException e) {
-
-									e.printStackTrace();
-								}
-								/*
-								 * IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot(); IProject proj = root.getProject(activeProject.getName()); try { proj.refreshLocal(IResource.DEPTH_INFINITE, null); } catch (CoreException e) { // TODO Auto-generated catch block e.printStackTrace(); }
-								 */
-
-							}
-						}.start();
-
 					}
 				}
 
 			}
 
 			Work.refreshAllWorkspaces();
+		}
+
+		else if (fileextension.equals("Rtex") || fileextension.equals("rtex")) {
+
+			fileprop = fileroot + fileprop;
+
+			String fileext = fileextension.replace("R", "");
+			fileext = fileext.replace("r", "");
+
+			fileroot = fileprop.replace("//", "////");// Conversion
+
+			/* Get the parent directory! */
+			File fi = new File(fileroot);
+			String dir = fi.getParentFile().getPath().replace("\\", "/");
+			String name = fi.getName();
+			final String theName = name.replaceFirst("[.][^.]+$", "");
+
+			if (RServe.isAlive()) {
+				if (RState.isBusy() == false) {
+
+					RConnection c = RServe.getConnection();
+
+					try {
+						REXPLogical rl = (REXPLogical) c.eval("require(knitr)");
+						if (!(rl.isTRUE()[0])) {
+
+							Bio7Dialog.message("Cannot load 'knitr' package!");
+						}
+
+						c.eval("try(library(knitr))");
+						c.eval("setwd('" + dir + "')");
+						
+						/*
+						 * if (fileext.equals("html")) { c.eval("try(" + knitrOptions + ")"); }
+						 */
+                        System.out.println("try(knit('" + dir + "','" + theName + "." + fileext + "'))");
+						RServe.print("try(knit('" + dir + "','" + theName + "." + fileext + "'))");
+                       
+						// RServe.print("try(knit('" + name + "','" + theName + "." + fileext + "'))");
+
+					} catch (RserveException e1) {
+
+						e1.printStackTrace();
+					}
+
+				}
+
+			}
+
+			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+			String pdfLatexPath = store.getString("pdfLatex");
+			final BufferedReader input;
+			OutputStream stdin;
+			pdfLatexPath = pdfLatexPath.replace("\\", "/");
+			final String tempDirLoc = dir;
+
+			// Process proc = Runtime.getRuntime().exec(
+			// pdfLatexPath+"/pdflatex -interaction=nonstopmode " + "-output-directory=" + tempDirLoc + " " + tempDirLoc + "/" + theName + ".tex");
+            System.out.println(tempDirLoc + "/" + theName + ".tex");
+			List<String> args = new ArrayList<String>();
+			args.add(pdfLatexPath + "/pdflatex");
+			args.add("-interaction=nonstopmode");
+			args.add("-output-directory=" + tempDirLoc);
+			args.add(tempDirLoc + "/" + theName + ".tex");
+
+			Process proc = null;
+			ProcessBuilder pb = new ProcessBuilder(args);
+			pb.redirectErrorStream();
+			try {
+				proc = pb.start();
+
+			} catch (IOException e) {
+
+				e.printStackTrace();
+			}
+			input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+			stdin = proc.getOutputStream();
+
+			new Thread() {
+
+				public void run() {
+					setPriority(Thread.MAX_PRIORITY);
+					String line;
+					try {
+
+						while ((line = input.readLine()) != null) {
+							System.out.println(line);
+						}
+						File fil = new File(tempDirLoc + "/" + theName + ".pdf");
+						if (fil.exists()) {
+
+							IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+							boolean useBrowser = store.getBoolean("PDF_USE_BROWSER");
+							String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
+
+							RServe.openPDF(tempDirLoc + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser);
+
+							// Program.launch(tempDirLoc + "/" + theName + ".pdf");
+						} else {
+							Bio7Dialog.message("*.pdf file was not created.\nPlease check the error messages!");
+						}
+
+					} catch (IOException e) {
+
+						e.printStackTrace();
+					}
+					/*
+					 * IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot(); IProject proj = root.getProject(activeProject.getName()); try { proj.refreshLocal(IResource.DEPTH_INFINITE,
+					 * null); } catch (CoreException e) { // TODO Auto-generated catch block e.printStackTrace(); }
+					 */
+
+				}
+			}.start();
+
+			Work.refreshAllWorkspaces();
+
 		}
 
 		else {

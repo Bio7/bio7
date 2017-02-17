@@ -521,7 +521,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		IMenuListener listener = new IMenuListener() {
 			public void menuAboutToShow(IMenuManager m) {
 				File files = new File(store.getString(PreferenceConstants.D_SCRIPT_GENERAL));
-				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".bsh", ".groovy", ".py" });
+				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".bsh", ".groovy", ".py",".js" });
 
 				if (fil.length > 0) {
 					int a;
@@ -552,7 +552,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		IMenuListener listener4 = new IMenuListener() {
 			public void menuAboutToShow(IMenuManager m) {
 				File files = new File(store.getString(PreferenceConstants.D_SCRIPT_SPATIAL));
-				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".bsh", ".groovy", ".py" });
+				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".bsh", ".groovy", ".py",".js" });
 
 				if (fil.length > 0) {
 					int a;
@@ -647,7 +647,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		IMenuListener listener2 = new IMenuListener() {
 			public void menuAboutToShow(IMenuManager m) {
 				File files = new File(store.getString(PreferenceConstants.D_IMPORT));
-				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".bsh", ".groovy", ".py" });
+				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".bsh", ".groovy", ".py",".js" });
 
 				if (fil.length > 0) {
 					int a;
@@ -678,7 +678,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		IMenuListener listener3 = new IMenuListener() {
 			public void menuAboutToShow(IMenuManager m) {
 				File files = new File(store.getString(PreferenceConstants.D_EXPORT));
-				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".bsh", ".groovy", ".py" });
+				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".bsh", ".groovy", ".py",".js" });
 
 				if (fil.length > 0) {
 					int a;

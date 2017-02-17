@@ -1,4 +1,4 @@
-package com.eco.bio7.popup.actions;
+/*package com.eco.bio7.popup.actions;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -85,7 +85,7 @@ public class LateXAction implements IObjectActionDelegate {
 					if (pdfLatexPath.isEmpty() == false) {
 						args.add(pdfLatexPath + "/pdflatex");
 					}
-					/* Try to start from the PATH environment! */
+					 Try to start from the PATH environment! 
 					else {
 
 						args.add("pdflatex");
@@ -98,13 +98,13 @@ public class LateXAction implements IObjectActionDelegate {
 					Process proc = null;
 					ProcessBuilder pb = new ProcessBuilder(args);
 					// set environment variable u
-					/*
+					
 					 * String otexinputs =env.get("TEXINPUTS");
 					 * System.out.println(otexinputs); env.put("TEXINPUTS",
 					 * otexinputs+"/"+dirPath);
-					 */
+					 
 					// System.out.println(pb.directory());
-					/* Set the working directory for the process from Java! */
+					 Set the working directory for the process from Java! 
 					pb.directory(new File(dirPath));
 					pb.redirectErrorStream();
 					try {
@@ -184,3 +184,4 @@ public class LateXAction implements IObjectActionDelegate {
 	}
 
 }
+*/

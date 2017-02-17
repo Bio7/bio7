@@ -7,8 +7,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -28,7 +26,6 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -42,15 +39,12 @@ import org.jsoup.select.Elements;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
-
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.BatchModel;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.browser.BrowserView;
 import com.eco.bio7.browser.MultiPageEditor;
-import com.eco.bio7.collection.CustomView;
 import com.eco.bio7.collection.Work;
-import com.eco.bio7.editors.python.PythonEditor;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
@@ -111,22 +105,26 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 			utils.cons.clear();
 		}
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		// if (editor == null || editor instanceof MultiPageEditor == false|| editor instanceof TexEditor == false) {
+
 		if (editor == null) {
+
 			return;
 		}
-		if (editor.isDirty()) {
-			editor.doSave(new NullProgressMonitor());
+		if (editor instanceof TexEditor || editor instanceof MultiPageEditor) {
+
+			if (editor.isDirty()) {
+				editor.doSave(new NullProgressMonitor());
+			}
+
+			IEditorInput editorInput = editor.getEditorInput();
+			IFile aFile = null;
+
+			if (editorInput instanceof IFileEditorInput) {
+				aFile = ((IFileEditorInput) editorInput).getFile();
+			}
+
+			knitrFile(aFile, aFile.getProject());
 		}
-
-		IEditorInput editorInput = editor.getEditorInput();
-		IFile aFile = null;
-
-		if (editorInput instanceof IFileEditorInput) {
-			aFile = ((IFileEditorInput) editorInput).getFile();
-		}
-
-		knitrFile(aFile, aFile.getProject());
 	}
 
 	private void knitrFile(Object selectedObj, final IProject activeProject) {
