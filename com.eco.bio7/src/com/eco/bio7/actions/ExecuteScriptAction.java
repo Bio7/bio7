@@ -12,9 +12,9 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.ui.IWorkbenchWindow;
-
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
 import com.eco.bio7.compile.GroovyInterpreter;
+import com.eco.bio7.compile.JavaScriptInterpreter;
 import com.eco.bio7.compile.BeanShellInterpreter;
 import com.eco.bio7.compile.PythonInterpreter;
 
@@ -36,7 +36,7 @@ public class ExecuteScriptAction extends Action {
 			System.out.println("No script available!");
 		}
 
-		else if (text.equals(".txt")||text.equals(".ijm")) {
+		else if (text.equals(".txt") || text.equals(".ijm")) {
 
 			ij.IJ.runMacroFile(file.getAbsolutePath());
 
@@ -49,33 +49,32 @@ public class ExecuteScriptAction extends Action {
 
 				GroovyInterpreter.interpretJob(null, file.toString());
 
-			}
-			else if (file.getName().endsWith(".py")) {
+			} else if (file.getName().endsWith(".py")) {
 
 				PythonInterpreter.interpretJob(null, file.toString());
 
-			}
-			else if (file.getName().endsWith(".java")) {
-				
-				
-				
+			} else if (file.getName().endsWith(".js")) {
+
+				JavaScriptInterpreter.interpretJob(null, file.toString());
+
+			} else if (file.getName().endsWith(".java")) {
+
 				Job job = new Job("Compile Java") {
 					@Override
 					protected IStatus run(IProgressMonitor monitor) {
 						monitor.beginTask("Compile Java...", IProgressMonitor.UNKNOWN);
 						String name = file.getName().replaceFirst("[.][^.]+$", "");
-						//IWorkspace workspace = ResourcesPlugin.getWorkspace();
+						// IWorkspace workspace = ResourcesPlugin.getWorkspace();
 						IPath location = Path.fromOSString(file.getAbsolutePath());
-						
-						//IFile ifile = workspace.getRoot().getFileForLocation(location);
+
+						// IFile ifile = workspace.getRoot().getFileForLocation(location);
 						CompileClassAndMultipleClasses cp = new CompileClassAndMultipleClasses();
 						try {
-							cp.compileAndLoad(new File(location.toOSString()),new File(location.toOSString()).getParent(),name ,null,true);
+							cp.compileAndLoad(new File(location.toOSString()), new File(location.toOSString()).getParent(), name, null, true);
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
-							//Bio7Dialog.message(e.getMessage());
+							// Bio7Dialog.message(e.getMessage());
 						}
-						
 
 						monitor.done();
 						return Status.OK_STATUS;
@@ -86,20 +85,15 @@ public class ExecuteScriptAction extends Action {
 					public void done(IJobChangeEvent event) {
 						if (event.getResult().isOK()) {
 
-							
 						} else {
 
-							
 						}
 					}
 				});
 				// job.setSystem(true);
 				job.schedule();
-				
-				
 
 			}
-			
 
 		}
 
