@@ -453,7 +453,7 @@
       <command
             description="Interpret Knitr"
             id="com.eco.bio7.browser.knitrAction"
-            name="Knitr Action">
+            name="LaTeX Action">
       </command>
       <keyBinding
             commandId="com.eco.bio7.browser.knitrAction"

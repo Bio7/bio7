@@ -361,3 +361,25 @@ Composite #com.eco.bio7.thumbnails {
 	background-color: #252525;
 	color: #dddddd; /* see property startupForegroundColor in the product */
 }
+
+#com-eco-bio7-rbridge-RTable.MToolBar Label {
+     background-color: #252525;
+     color: #dddddd; /* see property startupForegroundColor in the product */ }
+
+Composite #com-eco-bio7-rbridge-RTable.MToolBar {
+     background-color: #252525;
+     color: #dddddd; /* see property startupForegroundColor in the product */ }
+
+
+#com-eco-bio7-thumbnails.MToolBar Label {
+     background-color: #252525;
+     color: #dddddd; /* see property startupForegroundColor in the 
+product */
+}
+
+Composite #com-eco-bio7-thumbnails.MToolBar {
+     background-color: #252525;
+     color: #dddddd; /* see property startupForegroundColor in the 
+product */
+}
+

@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.util.Util;
 
 public class PackagesList extends Shell {
 
@@ -191,7 +192,7 @@ public class PackagesList extends Shell {
 		setText("Packages");
 		setSize(306, 730);
 		setLayout(new GridLayout(2, true));
-
+        this.setBackground(Util.getSWTBackgroundColor());
 		//
 	}
 

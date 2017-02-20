@@ -19,7 +19,7 @@
          point="org.eclipse.core.runtime.contentTypes">
       <content-type
             base-type="org.eclipse.core.runtime.text"
-            file-extensions="Rtex,tex,ltx,sty,cls"
+            file-extensions="rtex,Rnw,rnw,Rtex,tex,ltx,sty,cls"
             id="net.sourceforge.texlipse.contentTypes.Latex"
             name="LaTeX File"
             priority="normal">

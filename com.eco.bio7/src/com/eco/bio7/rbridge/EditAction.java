@@ -9,7 +9,6 @@
  *     M. Austenfeld
  *******************************************************************************/
 
-
 package com.eco.bio7.rbridge;
 
 import org.eclipse.jface.action.Action;
@@ -253,16 +252,15 @@ public class EditAction extends Action implements IMenuCreator {
 				RGB color = dialog.open();
 
 				/*
-				 * HSSFColor cf=getColor(new
-				 * java.awt.Color(color.red,color.green,color.blue)); short[] s=
-				 * cf.getTriplet();
-				 * System.out.println(" "+s[0]+" "+s[1]+" "+s[2]);
+				 * HSSFColor cf=getColor(new java.awt.Color(color.red,color.green,color.blue)); short[] s= cf.getTriplet(); System.out.println(" "+s[0]+" "+s[1]+" "+s[2]);
 				 */
-				
+				if (color == null) {
+					return;
+				}
 				ColorRegistry colorRegistry = JFaceResources.getColorRegistry();
-				String colorAsString=color.toString();
-				Color col=colorRegistry.get(colorAsString);
-				if(col==null){
+				String colorAsString = color.toString();
+				Color col = colorRegistry.get(colorAsString);
+				if (col == null) {
 					colorRegistry.put(colorAsString, color);
 				}
 
@@ -276,7 +274,7 @@ public class EditAction extends Action implements IMenuCreator {
 					for (Point selection : sel) {
 
 						if (color != null) {
-                            
+
 							grid.getItem(selection.y).setBackground(selection.x, colorRegistry.get(colorAsString));
 
 						}
@@ -298,10 +296,13 @@ public class EditAction extends Action implements IMenuCreator {
 				ColorDialog dialog = new ColorDialog(new Shell(), SWT.APPLICATION_MODAL);
 
 				RGB color = dialog.open();
+				if (color == null) {
+					return;
+				}
 				ColorRegistry colorRegistry = JFaceResources.getColorRegistry();
-				String colorAsString=color.toString();
-				Color col=colorRegistry.get(colorAsString);
-				if(col==null){
+				String colorAsString = color.toString();
+				Color col = colorRegistry.get(colorAsString);
+				if (col == null) {
 					colorRegistry.put(colorAsString, color);
 				}
 
@@ -351,12 +352,9 @@ public class EditAction extends Action implements IMenuCreator {
 	/*
 	 * private HSSFPalette palette = new HSSFPalette(new PaletteRecord()) { };
 	 * 
-	 * protected final HSSFColor getColor(final java.awt.Color col) { HSSFColor
-	 * c; c = palette.findColor((byte) col.getRed(), (byte) col.getGreen(),
-	 * (byte) col.getBlue()); if (c == null) { try { c = palette.addColor((byte)
-	 * col.getRed(), (byte) col.getGreen(), (byte) col.getBlue()); } catch
-	 * (RuntimeException re) { c = palette.findSimilarColor((byte) col.getRed(),
-	 * (byte) col.getGreen(), (byte) col.getBlue()); } } return c; }
+	 * protected final HSSFColor getColor(final java.awt.Color col) { HSSFColor c; c = palette.findColor((byte) col.getRed(), (byte) col.getGreen(), (byte) col.getBlue()); if (c == null) { try { c =
+	 * palette.addColor((byte) col.getRed(), (byte) col.getGreen(), (byte) col.getBlue()); } catch (RuntimeException re) { c = palette.findSimilarColor((byte) col.getRed(), (byte) col.getGreen(),
+	 * (byte) col.getBlue()); } } return c; }
 	 */
 
 }

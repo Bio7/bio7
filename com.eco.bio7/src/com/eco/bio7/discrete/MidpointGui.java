@@ -28,6 +28,7 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.discrete3d.Quad3dview;
 import com.eco.bio7.methods.CurrentStates;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
+import com.eco.bio7.util.Util;
 import com.jogamp.opengl.util.FPSAnimator;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.GridData;
@@ -91,6 +92,7 @@ public class MidpointGui extends Shell {
 	 * Create contents of the window
 	 */
 	protected void createContents() {
+		this.setBackground(Util.getSWTBackgroundColor());
 		setText("Midpoint 2D");
 		setSize(417, 493);
 		setLayout(new GridLayout(3, true));

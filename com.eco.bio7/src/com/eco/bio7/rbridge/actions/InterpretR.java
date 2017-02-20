@@ -29,9 +29,11 @@ import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
+import com.eco.bio7.editors.python.PythonEditor;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.StartBio7Utils;
+import com.eco.bio7.reditors.REditor;
 
 public class InterpretR extends Action {
 
@@ -50,6 +52,11 @@ public class InterpretR extends Action {
 			utils.cons.clear();
 		}
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+
+		if (editor == null || editor instanceof REditor == false) {
+			return;
+		}
+
 		if (editor.isDirty()) {
 			editor.doSave(new NullProgressMonitor());
 		}
@@ -120,9 +127,7 @@ public class InterpretR extends Action {
 			 * 
 			 * MessageBox messageBox = new MessageBox(new Shell(),
 			 * 
-			 * SWT.ICON_WARNING); messageBox.setMessage(
-			 * "RServer connection failed - Server is not running!");
-			 * messageBox.open();
+			 * SWT.ICON_WARNING); messageBox.setMessage( "RServer connection failed - Server is not running!"); messageBox.open();
 			 * 
 			 * }
 			 */
