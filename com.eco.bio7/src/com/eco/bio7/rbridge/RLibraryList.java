@@ -11,11 +11,6 @@
 
 package com.eco.bio7.rbridge;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.text.BadLocationException;
@@ -41,11 +36,10 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
+
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.util.Util;
-
-import org.eclipse.swt.widgets.Label;
 
 public class RLibraryList extends Shell {
 
@@ -53,7 +47,7 @@ public class RLibraryList extends Shell {
 
 	public RLibraryList(Display display, int style) {
 		super(display, style);
-
+      
 		// setImage(SWTResourceManager.getImage(RLibraryList.class,
 		// "/pics/logo.gif"));
 		/* Reparse the document! */

@@ -73,7 +73,7 @@ public class JavaFXWebBrowser {
 		webEng = brow.getEngine();
 		webEng.setJavaScriptEnabled(true);
 		java.net.CookieHandler.setDefault(new java.net.CookieManager());
-		
+
 		webEng.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
 
 			@Override
@@ -84,7 +84,7 @@ public class JavaFXWebBrowser {
 					return;
 				}
 
-				//webEng.executeScript(getFirebugScript());
+				// webEng.executeScript(getFirebugScript());
 				/*
 				 * org.w3c.dom.Document doc = webEng.getDocument(); Element el = doc.getElementById("");
 				 */
@@ -209,11 +209,10 @@ public class JavaFXWebBrowser {
 					ke.consume();
 
 				}
-				if (ke.isMetaDown()) {
-
-				}
-				if (ke.isShiftDown()) {
-
+				if (ke.getCharacter().equals("t")) {
+					if (html == false) {
+						webEng.executeScript("if (document.getElementById('toolbarContainer').style.display == 'block')" + "{ " + "document.getElementById('toolbarContainer').style.display='none';}" + "else{" + "document.getElementById('toolbarContainer').style.display='block';" + "}");
+					}
 				}
 
 			}
@@ -335,41 +334,17 @@ public class JavaFXWebBrowser {
 		return pathBundle;
 	}
 
-	/*private static String getFirebugScript() {
-		Bundle bundle = Platform.getBundle("com.eco.bio7.libs");
-		Path path = new Path("pdfjs/firebug-lite-132.js");
-		URL locationURL = FileLocator.find(bundle, path, null);
-
-		URL fileUrl = null;
-		try {
-			fileUrl = FileLocator.toFileURL(locationURL);
-		} catch (IOException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		}
-		String pathBundle = fileUrl.getFile();
-		StringBuilder libraryContents = new StringBuilder();
-
-		File initialFile = new File(pathBundle);
-		InputStream inputStream = null;
-		try {
-			inputStream = new FileInputStream(initialFile);
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF8"));
-			String line = reader.readLine();
-			while (line != null) {
-				libraryContents.append(line);
-				line = reader.readLine();
-			}
-		} catch (IOException exception) {
-			return null;
-		}
-		return libraryContents.toString();
-	}*/
+	/*
+	 * private static String getFirebugScript() { Bundle bundle = Platform.getBundle("com.eco.bio7.libs"); Path path = new Path("pdfjs/firebug-lite-132.js"); URL locationURL = FileLocator.find(bundle,
+	 * path, null);
+	 * 
+	 * URL fileUrl = null; try { fileUrl = FileLocator.toFileURL(locationURL); } catch (IOException e2) { // TODO Auto-generated catch block e2.printStackTrace(); } String pathBundle =
+	 * fileUrl.getFile(); StringBuilder libraryContents = new StringBuilder();
+	 * 
+	 * File initialFile = new File(pathBundle); InputStream inputStream = null; try { inputStream = new FileInputStream(initialFile); } catch (FileNotFoundException e) { // TODO Auto-generated catch
+	 * block e.printStackTrace(); } try { BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF8")); String line = reader.readLine(); while (line != null) {
+	 * libraryContents.append(line); line = reader.readLine(); } } catch (IOException exception) { return null; } return libraryContents.toString(); }
+	 */
 
 	public void goBack() {
 		webEng.executeScript("history.back()");

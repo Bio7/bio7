@@ -33,7 +33,7 @@ public class SweaveWizardPage extends WizardPage {
 	public SweaveWizardPage(ISelection selection) {
 		super("wizardPage");
 		setTitle("Sweave File");
-		setDescription("This wizard creates a new file with *.Rnw extension that can be opened by the default Sweave editor.");
+		setDescription("This wizard creates a new file with *.Rnw extension that can be opened by the default LaTeX editor.");
 		this.selection = selection;
 	}
 

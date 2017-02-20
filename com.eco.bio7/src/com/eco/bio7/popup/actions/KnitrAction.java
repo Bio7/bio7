@@ -58,6 +58,7 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 	private OutputStream stdin;
 	private String fi;
 	private String name;
+	private String project;
 
 	public KnitrAction() {
 		super();
@@ -128,7 +129,7 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 	}
 
 	private void knitrFile(Object selectedObj, final IProject activeProject) {
-		String project;
+		
 		final String nameofiofile;
 		if (selectedObj instanceof IFile) {
 			IFile selectedFile = (IFile) selectedObj;
@@ -164,8 +165,28 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 						compileLatex(activeProject, theName, dirPath);
 					}
 
+					else if (extension.equals("rnw") || extension.equals("Rnw")) {
+						
+						if (RServe.isAliveDialog()) {
+							RConnection c = RServe.getConnection();
+
+							try {
+								c.eval("try(setwd('" + dirPath + "'));");
+								c.eval("try(Sweave(\"" + project + "\"))");
+								//c.eval("try(dev.off());");//not needed with Rserve?
+
+							} catch (RserveException e) {
+
+								System.out.println(e.getMessage());
+							}
+						}
+
+						compileSweave(activeProject, theName, dirPath);
+
+					}
+
 					else {
-						monitor.beginTask("Knitr file...", IProgressMonitor.UNKNOWN);
+						monitor.beginTask("LaTeX file...", IProgressMonitor.UNKNOWN);
 						if (RServe.isAliveDialog()) {
 							if (RState.isBusy() == false) {
 
@@ -392,6 +413,132 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 		 * Set the working directory for the process from Java!
 		 */
 		pb.directory(new File(dirPath));
+
+		pb.redirectErrorStream();
+		try {
+			proc = pb.start();
+
+		} catch (IOException e) {
+
+			e.printStackTrace();
+			/*
+			 * Bio7Dialog.message( "Rserve executable not available !" ); RServe.setConnection(null);
+			 */
+		}
+
+		input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+		stdin = proc.getOutputStream();
+
+		new Thread() {
+
+			public void run() {
+				setPriority(Thread.MAX_PRIORITY);
+				String line;
+				try {
+
+					while ((line = input.readLine()) != null) {
+						System.out.println(line);
+					}
+					File fil = new File(dirPath + "/" + theName + ".pdf");
+					if (fil.exists()) {
+
+						/*
+						 * if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) { RServe.plotLinux(dirPath + "/" + theName + ".pdf"); }
+						 */
+
+						// else {
+
+						// Program.launch(dirPath + "/" + theName + ".pdf");
+						RServe.openPDF(dirPath + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser);
+						// }
+					} else {
+						Bio7Dialog.message("*.pdf file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
+					}
+
+				} catch (IOException e) {
+
+					e.printStackTrace();
+				}
+				IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+				IProject proj = root.getProject(activeProject.getName());
+				try {
+					proj.refreshLocal(IResource.DEPTH_INFINITE, null);
+				} catch (CoreException e) {
+					// TODO Auto-generated catch
+					// block
+					e.printStackTrace();
+				}
+
+			}
+		}.start();
+	}
+
+	private void compileSweave(final IProject activeProject, final String theName, String dirPath) {
+		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		String pdfLatexPath = store.getString("pdfLatex");
+		boolean useBrowser = store.getBoolean("PDF_USE_BROWSER");
+		String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
+		String sweaveScriptLocation = store.getString("SweaveScriptLocation");
+		sweaveScriptLocation = sweaveScriptLocation.replace("\\", "/");
+
+		List<String> args = new ArrayList<String>();
+
+		if (pdfLatexPath.isEmpty() == false) {
+
+			pdfLatexPath = pdfLatexPath.replace("\\", "/");
+
+			// String temp=dirPath+"/" +
+			// theName+".tex";
+			// String url = temp.replace("\\", "/");
+
+			// Process proc =
+			// Runtime.getRuntime().exec(
+			// pdfLatexPath+"/pdflatex
+			// -interaction=nonstopmode "
+			// + "-output-directory=" + dirPath +
+			// " " + dirPath + "/" + theName +
+			// ".tex");
+			/*
+			 * Eventually take care of whitespaces in path!
+			 */
+
+			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+				args.add("\"" + pdfLatexPath + "/pdflatex" + "\"");
+			}
+
+			else {
+				args.add(pdfLatexPath + "/pdflatex");
+			}
+		}
+		/* Try to start from the PATH environment! */
+		else {
+
+			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+				args.add("pdflatex");
+			}
+
+			else {
+				args.add("pdflatex");
+			}
+
+		}
+
+		args.add("-interaction=nonstopmode");
+		args.add("-include-directory=" + sweaveScriptLocation);
+		args.add("-output-directory=" + dirPath);
+		args.add(dirPath + "/" + theName + ".tex");
+
+		Process proc = null;
+		ProcessBuilder pb = new ProcessBuilder(args);
+		// set environment variable u
+		/*
+		 * String otexinputs =env.get("TEXINPUTS"); env.put("TEXINPUTS", otexinputs+"/"+dirPath);
+		 */
+
+		/*
+		 * Set the working directory for the process from Java!
+		 */
+		// pb.directory(new File(dirPath));
 
 		pb.redirectErrorStream();
 		try {
