@@ -87,6 +87,7 @@ public class RServePrefs extends FieldEditorPreferencePage implements IWorkbench
 		addField(new BooleanFieldEditor("DETECT_R_PROCESS", "Check at startup for running R process(es)", getFieldEditorParent()));
 		addField(new StringFieldEditor("RSERVE_ARGS", "Rserve startup arguments", getFieldEditorParent()));
 		addField(new MultiLineTextFieldEditor("R_STARTUP_ARGS", "R startup commands", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
+		addField(new IntegerFieldEditor("RSERVE_CLIENT_CONNECTION_PORT", "TCP Port", getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		/*addField(new LabelFieldEditor("Plot:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("USE_CUSTOM_DEVICE", "Use Custom Device", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
@@ -158,14 +159,7 @@ public class RServePrefs extends FieldEditorPreferencePage implements IWorkbench
 			addField(integerFieldEditor);
 
 		}
-		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		
-		{
-			addField(new LabelFieldEditor("Sweave/TeX options:", getFieldEditorParent()));
-			addField(new DirectoryFieldEditor("SweaveScriptLocation", "Sweave File Location", getFieldEditorParent()));
-			addField(new DirectoryFieldEditor("pdfLatex", "pdflatex Path", getFieldEditorParent()));
-		}
-		addField(new SpacerFieldEditor(getFieldEditorParent()));
 
 	}
 

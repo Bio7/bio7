@@ -64,9 +64,4 @@ CTabFolder.MArea .MPartStack, CTabFolder.MArea .MPartStack.active {
 CTabFolder Canvas {
 	background-color: #F8F8F8;
 }
-/*Important to set height for the view menus!*/
-CTabFolder { 
-swt-tab-height: 31px; 
- swt-corner-radius: 15;
-  
 

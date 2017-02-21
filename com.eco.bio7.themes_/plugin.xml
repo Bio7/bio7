@@ -97,6 +97,13 @@
       <themeid
             refid="org.eclipse.e4.ui.css.theme.e4_dark"></themeid>
    </stylesheet>
+   <theme
+         basestylesheeturi="css/e4_eclipse_default_win7.css"
+         id="org.eclipse.e4.ui.css.theme.e4_eclipse_default"
+         label="Windows 7 Eclipse"
+         os="win32"
+         os_version="6.0,6.1,6.2,6.3,10.0">
+   </theme>
 
    </extension>
 

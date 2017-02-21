@@ -63,9 +63,9 @@ CTabItem:selected {
 	frame-cuts: 5px 1px 5px 16px;
 }
 
-/* .MToolBar.Draggable {
+.MToolBar.Draggable {
 	handle-image:  url(./dragHandle.png);
-}*/
+}
 
 .MToolControl.Draggable {
 	handle-image:  url(./dragHandle.png);

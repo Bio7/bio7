@@ -602,6 +602,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("OPEN_BOWSER_IN_EXTRA_VIEW",false);
 		store.setDefault("DETECT_R_PROCESS", true);
 		store.setDefault("R_DEBUG_PORT", 21555);
+		store.setDefault("RSERVE_CLIENT_CONNECTION_PORT", 6311);
+		
+		store.setDefault("LATEX_ENGINE", "pdflatex");
+		
+		store.setDefault("LATEX_CLEAN_FILES", false);
+		
+		store.setDefault("LATEX_FILES_EXT_DELETE", "out,log,nav,aux,bbl,blg,dvi,toc,.synctex.gz,snm");
 
 		store.setDefault("LINUX_SHELL", "GNOME");
 
