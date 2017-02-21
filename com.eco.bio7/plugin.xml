@@ -642,6 +642,12 @@
             id="com.eco.bio7.browser.preferences"
             name="Preferences Browser">
       </page>
+      <page
+            category="com.eco.bio7.R"
+            class="com.eco.bio7.preferences.LatexPreferences"
+            id="com.eco.bio7.latex.preferences"
+            name="Preferences LaTeX">
+      </page>
    </extension>
    <extension
          point="org.eclipse.ui.viewActions">

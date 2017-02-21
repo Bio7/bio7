@@ -143,7 +143,7 @@ CTabFolder Tree, CTabFolder Canvas {
     background-color: #2F2F2F;
     color: #CCC;
 }
-.MPartStack.active Tree,
+
 .MPartStack.active CTabFolder Canvas {
     background-color: #262626;
     color: #CCC;
@@ -339,3 +339,49 @@ Form > LayoutComposite > LayoutComposite > Text[style~='SWT.SEARCH'],
     background-color: #949da5; /* background-color is hard-coded */
     color: #333;
 }
+/* Label #com-eco-bio7-imagej {
+	background-color: #9c9696;
+	color: #000000; see property startupForegroundColor in the product
+} */
+
+Composite #com-eco-bio7-imagej {
+	background-color: #252525;
+	color: #dddddd; /* see property startupForegroundColor in the product */
+}
+
+#com-eco-bio7-imagej Label  {
+	background-color: #252525;
+	color: #dddddd; /* see property startupForegroundColor in the product */
+}
+
+Composite #org-eclipse-ui-console-ConsoleView.MToolBar {
+	background-color: #252525;
+	color: #dddddd; /* see property startupForegroundColor in the product */
+}
+
+#org-eclipse-ui-console-ConsoleView.MToolBar Label {
+    background-color:  #252525;
+    color: #dddddd; /* see property startupForegroundColor in the product */
+}
+
+Composite #com.eco.bio7.rbridge.RTable {
+	background-color: #252525;
+	color: #dddddd; /* see property startupForegroundColor in the product */
+}
+
+#com.eco.bio7.rbridge.RTable Label  {
+	background-color: #252525;
+	color: #dddddd; /* see property startupForegroundColor in the product */
+}
+
+
+Composite #com.eco.bio7.thumbnails {
+	background-color: #252525;
+	color: #dddddd; /* see property startupForegroundColor in the product */
+}
+
+#com.eco.bio7.thumbnails Label  {
+	background-color: #252525;
+	color: #dddddd; /* see property startupForegroundColor in the product */
+}
+

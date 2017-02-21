@@ -48,6 +48,7 @@ public class RConnectionJob extends WorkspaceJob {
 
 	public RConnectionJob() {
 		super("Connecting To RServer");
+		store = Bio7Plugin.getDefault().getPreferenceStore();
 
 	}
 
@@ -170,7 +171,7 @@ public class RConnectionJob extends WorkspaceJob {
 		 * situations!
 		 */
 		try {
-			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+			
 			String tempPath = store.getString(PreferenceConstants.P_TEMP_R);
 			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 
@@ -290,11 +291,11 @@ public class RConnectionJob extends WorkspaceJob {
 	}
 
 	private void doConnectLocal() {
-
+       int port=store.getInt("RSERVE_CLIENT_CONNECTION_PORT");
 		RConnection c;
 
 		try {
-			c = new RConnection("127.0.0.1", 6311);
+			c = new RConnection("127.0.0.1", port);
 
 			RServe.setConnection(c);
 			WorldWindView.setRConnection(c);
