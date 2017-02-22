@@ -1068,36 +1068,6 @@
     </objectContribution>
     <objectContribution
           adaptable="false"
-          id="compileSweave"
-          nameFilter="*.Rnw"
-          objectClass="org.eclipse.core.resources.IFile">
-       <action
-             class="com.eco.bio7.popup.actions.SweaveAction"
-             icon="icons/editor/sweavefile.png"
-             id="com.eco.bio7.SweaveAction"
-             label="Sweave"
-             menubarPath="additions.sweave">
-       </action>
-       <menu
-             id="com.eco.bio7.menu5"
-             label="sweave"
-             path="additions.sweave">
-       </menu>
-    </objectContribution>
-    <objectContribution
-          adaptable="false"
-          id="createPdf"
-          nameFilter="*.tex"
-          objectClass="org.eclipse.core.resources.IFile">
-       <action
-             class="com.eco.bio7.popup.actions.LateXAction"
-             id="com.eco.bio7.LateXAction"
-             label="Compile LateX And Create *.pdf"
-             menubarPath="additions.sweave">
-       </action>
-    </objectContribution>
-    <objectContribution
-          adaptable="false"
           id="CompileDirectory"
           nameFilter="*.java"
           objectClass="org.eclipse.core.resources.IFile">
@@ -1149,19 +1119,7 @@
              menubarPath="additions.knitr">
        </action>
     </objectContribution>-->
-    <objectContribution
-          adaptable="false"
-          id="Knitrrrst"
-          nameFilter="*.Rrst"
-          objectClass="org.eclipse.core.resources.IFile">
-       <action
-             class="com.eco.bio7.popup.actions.KnitrAction"
-             icon="icons/editor/knitr.png"
-             id="com.eco.bio7.knitrrrst"
-             label="Knitr"
-             menubarPath="additions.knitr">
-       </action>
-    </objectContribution>
+   
     <objectContribution
           adaptable="false"
           id="CreateRPackageSkeleton"

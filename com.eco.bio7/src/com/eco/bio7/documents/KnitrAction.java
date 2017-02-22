@@ -1,4 +1,4 @@
-package com.eco.bio7.popup.actions;
+package com.eco.bio7.documents;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -25,12 +25,10 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.jsoup.Jsoup;
@@ -52,7 +50,7 @@ import com.eco.bio7.rcp.StartBio7Utils;
 
 import net.sourceforge.texlipse.editor.TexEditor;
 
-public class KnitrAction extends Action implements IObjectActionDelegate {
+public class KnitrAction extends Action  {
 
 	private BufferedReader input;
 	private OutputStream stdin;
@@ -70,10 +68,10 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
 	}
 
-	public void run(IAction action) {
+	/*public void run(IAction action) {
 		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
 		if (utils != null) {
-			/* Bring the console to the front and clear it! */
+			 Bring the console to the front and clear it! 
 			utils.cons.activate();
 			utils.cons.clear();
 		}
@@ -97,7 +95,7 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 
 		}
 
-	}
+	}*/
 
 	public void run() {
 		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
@@ -153,9 +151,8 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 
 			dirPath = new File(fi).getParentFile().getPath().replace("\\", "/");
 
-			String extens = selectedFile.getFileExtension();
+			
 
-			System.out.println(dirPath);
 
 			Job job = new Job("Knitr file") {
 				@Override
@@ -287,7 +284,7 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 
 											String temp = "file:///" + dirPath + "/" + theName + ".html";
 											String url = temp.replace("\\", "/");
-											System.out.println(url);
+											// System.out.println(url);
 											if (openInJavaFXBrowser.equals("JAVAFX_BROWSER") == false) {
 												Work.openView("com.eco.bio7.browser.Browser");
 												BrowserView b = BrowserView.getBrowserInstance();
@@ -360,8 +357,7 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 		String latexEngine = store.getString("LATEX_ENGINE");
 		String sweaveScriptLocation = store.getString("SweaveScriptLocation");
 		boolean cleanFiles = store.getBoolean("LATEX_CLEAN_FILES");
-        String fileTypes=store.getString("LATEX_FILES_EXT_DELETE");
-		System.out.println("Selected: " + latexEngine);
+		String fileTypes = store.getString("LATEX_FILES_EXT_DELETE");
 
 		List<String> args = new ArrayList<String>();
 
@@ -473,7 +469,7 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 					e.printStackTrace();
 				}
 				if (cleanFiles) {
-					deleteAuxiliaryFiles(dirPath,fileTypes);
+					deleteAuxiliaryFiles(dirPath, fileTypes);
 				}
 				IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 				IProject proj = root.getProject(activeProject.getName());
@@ -492,10 +488,9 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 	}
 
 	private void deleteAuxiliaryFiles(String dirPath, String fileTypes) {
-		
-		
+
 		File dir = new File(dirPath);
-        
+
 		String[] extensions = fileTypes.split(",");
 		// System.out.println("Getting all .txt and .jsp files in " + dir.getCanonicalPath()
 		// + " including those in subdirectories");
@@ -506,7 +501,6 @@ public class KnitrAction extends Action implements IObjectActionDelegate {
 			if (getFileName(file.getName()).equals(name)) {
 				file.delete();
 			}
-			System.out.println("filename: " + getFileName(file.getName()) + "name:  " + name);
 
 		}
 	}
