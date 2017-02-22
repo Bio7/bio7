@@ -69,7 +69,7 @@ import com.eco.bio7.actions.SetupDiscrete;
 import com.eco.bio7.actions.ShowEditorAreaAction;
 import com.eco.bio7.actions.Start;
 import com.eco.bio7.actions.Start3d;
-import com.eco.bio7.documents.KnitrAction;
+import com.eco.bio7.documents.LatexSweaveKnitrAction;
 import com.eco.bio7.documents.RMarkdownAction;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.actions.ActivateRPlots;
@@ -225,7 +225,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 	private InterpretPython interpretPython;
 
-	private KnitrAction knitrAction;
+	private LatexSweaveKnitrAction knitrAction;
 
 	private RMarkdownAction markdownAction;
 
@@ -434,7 +434,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		javaScriptInterpret = new JavaScriptInterpret("Interpret JavaScript");
 		register(javaScriptInterpret);
 
-		knitrAction = new KnitrAction();
+		knitrAction = new LatexSweaveKnitrAction();
 		register(knitrAction);
 
 		markdownAction = new RMarkdownAction();

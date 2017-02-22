@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.nio.charset.Charset;
 import java.util.Timer;
-
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -28,7 +27,6 @@ import javafx.scene.web.HTMLEditor;
 import javafx.scene.web.WebView;
 import net.htmlparser.jericho.Source;
 import net.htmlparser.jericho.SourceFormatter;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -68,7 +66,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
 import com.eco.bio7.browser.editor.XMLEditor;
 import com.eco.bio7.util.Util;
 

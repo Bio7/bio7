@@ -50,7 +50,7 @@ import com.eco.bio7.rcp.StartBio7Utils;
 
 import net.sourceforge.texlipse.editor.TexEditor;
 
-public class KnitrAction extends Action  {
+public class LatexSweaveKnitrAction extends Action {
 
 	private BufferedReader input;
 	private OutputStream stdin;
@@ -59,7 +59,7 @@ public class KnitrAction extends Action  {
 	private String project;
 	private String dirPath;
 
-	public KnitrAction() {
+	public LatexSweaveKnitrAction() {
 		super();
 		setId("com.eco.bio7.browser.knitr");
 		setActionDefinitionId("com.eco.bio7.browser.knitrAction");
@@ -68,34 +68,23 @@ public class KnitrAction extends Action  {
 	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
 	}
 
-	/*public void run(IAction action) {
-		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
-		if (utils != null) {
-			 Bring the console to the front and clear it! 
-			utils.cons.activate();
-			utils.cons.clear();
-		}
-		String project = null;
-		ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().getSelection();
-		IStructuredSelection strucSelection = null;
-		if (selection instanceof IStructuredSelection) {
-			strucSelection = (IStructuredSelection) selection;
-			if (strucSelection.size() == 0) {
-
-			} else if (strucSelection.size() == 1) {
-				final String nameofiofile;
-				Object selectedObj = strucSelection.getFirstElement();
-
-				IResource resource = (IResource) strucSelection.getFirstElement();
-				final IProject activeProject = resource.getProject();
-
-				knitrFile(selectedObj, activeProject);
-
-			}
-
-		}
-
-	}*/
+	/*
+	 * public void run(IAction action) { StartBio7Utils utils = StartBio7Utils.getConsoleInstance(); if (utils != null) { Bring the console to the front and clear it! utils.cons.activate();
+	 * utils.cons.clear(); } String project = null; ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().getSelection(); IStructuredSelection
+	 * strucSelection = null; if (selection instanceof IStructuredSelection) { strucSelection = (IStructuredSelection) selection; if (strucSelection.size() == 0) {
+	 * 
+	 * } else if (strucSelection.size() == 1) { final String nameofiofile; Object selectedObj = strucSelection.getFirstElement();
+	 * 
+	 * IResource resource = (IResource) strucSelection.getFirstElement(); final IProject activeProject = resource.getProject();
+	 * 
+	 * knitrFile(selectedObj, activeProject);
+	 * 
+	 * }
+	 * 
+	 * }
+	 * 
+	 * }
+	 */
 
 	public void run() {
 		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
@@ -124,6 +113,7 @@ public class KnitrAction extends Action  {
 			}
 
 			knitrFile(aFile, aFile.getProject());
+			
 		}
 	}
 
@@ -150,9 +140,6 @@ public class KnitrAction extends Action  {
 			// dirPath = null;
 
 			dirPath = new File(fi).getParentFile().getPath().replace("\\", "/");
-
-			
-
 
 			Job job = new Job("Knitr file") {
 				@Override
@@ -290,6 +277,7 @@ public class KnitrAction extends Action  {
 												BrowserView b = BrowserView.getBrowserInstance();
 												b.browser.setJavascriptEnabled(true);
 												b.setLocation(url);
+
 											} else {
 												boolean openInBrowserInExtraView = store.getBoolean("OPEN_BOWSER_IN_EXTRA_VIEW");
 												if (openInBrowserInExtraView) {
@@ -492,8 +480,6 @@ public class KnitrAction extends Action  {
 		File dir = new File(dirPath);
 
 		String[] extensions = fileTypes.split(",");
-		// System.out.println("Getting all .txt and .jsp files in " + dir.getCanonicalPath()
-		// + " including those in subdirectories");
 
 		List<File> files = (List<File>) FileUtils.listFiles(dir, extensions, true);
 		for (File file : files) {
