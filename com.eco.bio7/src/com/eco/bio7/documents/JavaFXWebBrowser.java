@@ -1,47 +1,25 @@
-package com.eco.bio7.popup.actions;
+package com.eco.bio7.documents;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Set;
-import java.util.UUID;
-
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.osgi.framework.Bundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
-import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.collection.CustomView;
-import com.eco.bio7.documents.JavaFXBrowserHelper;
-import com.eco.bio7.markdownedit.editors.MarkdownEditor;
-import com.eco.bio7.util.Util;
-
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
@@ -57,11 +35,11 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebErrorEvent;
 import javafx.scene.web.WebEvent;
-import javafx.scene.web.WebHistory;
 import javafx.scene.web.WebView;
 
-/*A browser for rmarkdown and knitr documents!*/
+/*A JavaFX browser implementation!*/
 public class JavaFXWebBrowser {
 	private ContextMenu menu;
 	private WebEngine webEng;
@@ -142,7 +120,14 @@ public class JavaFXWebBrowser {
 		webEng.setOnAlert(new EventHandler<WebEvent<String>>() {
 			@Override
 			public void handle(WebEvent<String> event) {
-				System.out.println(event.getData());
+				System.out.println("Browser alert:\n\n"+event.getData());
+			}
+		});
+
+		webEng.setOnError(new EventHandler<WebErrorEvent>() {
+			@Override
+			public void handle(WebErrorEvent event) {
+				System.out.println("Browser error:\n\n"+event.getMessage());
 			}
 		});
 
@@ -212,7 +197,9 @@ public class JavaFXWebBrowser {
 				}
 				if (ke.getCharacter().equals("t")) {
 					if (html == false) {
-						webEng.executeScript("if (document.getElementById('toolbarContainer').style.display == 'block')" + "{ " + "document.getElementById('toolbarContainer').style.display='none';document.getElementById('viewerContainer').style.top=0;}" + "else{" + "document.getElementById('toolbarContainer').style.display='block';document.getElementById('viewerContainer').style.top=32;" + "}");
+						webEng.executeScript("if (document.getElementById('toolbarContainer').style.display == '')" + "{ " + "document.getElementById('toolbarContainer').style.display='none';document.getElementById('viewerContainer').style.top=0;}"
+
+								+ "else{" + "document.getElementById('toolbarContainer').style.display='';document.getElementById('viewerContainer').style.top=32;" + "}");
 					}
 				}
 
@@ -271,7 +258,7 @@ public class JavaFXWebBrowser {
 						}
 
 						else {
-							Bio7Dialog.message("Filetype is not supported!\n Drag and Drop PDF or HTML files only!");
+							Bio7Dialog.message("Filetype is not supported!\nDrag and Drop PDF or HTML files only!");
 						}
 
 					}
@@ -311,8 +298,6 @@ public class JavaFXWebBrowser {
 		});
 
 		view.addScene(scene);
-		
-		view.getDisplay().getActiveShell().setFocus();
 	}
 
 	public WebEngine getWebEngine() {

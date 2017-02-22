@@ -18,7 +18,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.browser.BrowserView;
 import com.eco.bio7.collection.Work;
-import com.eco.bio7.popup.actions.JavaFXWebBrowser;
+import com.eco.bio7.documents.JavaFXWebBrowser;
 
 public class ProfileRScript {
 
