@@ -16,8 +16,8 @@ public class MarkdownDocumentProvider extends FileDocumentProvider {
 					new MarkdownPartitionScanner(),
 					new String[] {
 						MarkdownPartitionScanner.MARKDOWN_TAG,
-						MarkdownPartitionScanner.MARKDOWN_R_CHUNK,
-						MarkdownPartitionScanner.YAML_HEADER});
+						MarkdownPartitionScanner.MARKDOWN_R_CHUNK
+						});
 			partitioner.connect(document);
 			document.setDocumentPartitioner(partitioner);
 			

@@ -32,7 +32,7 @@ public class LatexPreferences extends FieldEditorPreferencePage implements IWork
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 
 		
-		addField(new DirectoryFieldEditor("pdfLatex", "pdflatex/xelatex/luatex Dir", getFieldEditorParent()));
+		addField(new DirectoryFieldEditor("pdfLatex", "pdflatex/xelatex Dir", getFieldEditorParent()));
 
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new ComboFieldEditor("LATEX_ENGINE", "TeX Engine", new String[][] { { "pdflatex", "pdflatex" }, { "xelatex", "xelatex" }}, getFieldEditorParent()));
