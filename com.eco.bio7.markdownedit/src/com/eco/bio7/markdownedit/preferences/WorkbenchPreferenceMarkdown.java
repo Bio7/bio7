@@ -65,8 +65,8 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 		addField(new ColorFieldEditor("colourkey2", "Colour R Chunk:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("BOLD_COLOURKEY2", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		addField(new ColorFieldEditor("colourkey3", "Colour YAML Header:", getFieldEditorParent()));
-		addField(new BooleanFieldEditor("BOLD_COLOURKEY3", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		//addField(new ColorFieldEditor("colourkey3", "Colour YAML Header:", getFieldEditorParent()));
+		//addField(new BooleanFieldEditor("BOLD_COLOURKEY3", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new LabelFieldEditor("Other:", getFieldEditorParent()));
@@ -98,7 +98,7 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 		PreferenceConverter.setDefault(store, "colourkey", new RGB(0, 0, 0));
 		PreferenceConverter.setDefault(store, "colourkey1", new RGB(127, 0, 85));
 		PreferenceConverter.setDefault(store, "colourkey2", new RGB(42, 0, 255));
-		PreferenceConverter.setDefault(store, "colourkey3", new RGB(128, 128, 128));
+		//PreferenceConverter.setDefault(store, "colourkey3", new RGB(128, 128, 128));
 
 	}
 
@@ -164,9 +164,9 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 				case "colourkey2":
 					markdownEditor.getMarkConf().comment.att.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY2")));
 					break;
-				case "colourkey3":
+				/*case "colourkey3":
 					markdownEditor.getMarkConf().yaml.att.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY3")));
-					break;
+					break;*/
 
 				default:
 					break;
@@ -212,13 +212,13 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 						markdownEditor.getMarkConf().comment.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey2")), null, SWT.NORMAL));
 					}
 					break;
-				case "BOLD_COLOURKEY3":
+				/*case "BOLD_COLOURKEY3":
 					if (fontData) {
 						markdownEditor.getMarkConf().yaml.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey3")), null, SWT.BOLD));
 					} else {
 						markdownEditor.getMarkConf().yaml.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey3")), null, SWT.NORMAL));
 					}
-					break;
+					break;*/
 
 				default:
 					break;

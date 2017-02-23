@@ -25,14 +25,14 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		PreferenceConverter.setDefault(storeR, "colourkey", new RGB(0,0,0));
 		PreferenceConverter.setDefault(storeR, "colourkey1", new RGB(127, 0, 85));
 		PreferenceConverter.setDefault(storeR, "colourkey2", new RGB(42, 0, 255));
-		PreferenceConverter.setDefault(storeR, "colourkey3", new RGB(128, 128, 128));
+		//PreferenceConverter.setDefault(storeR, "colourkey3", new RGB(128, 128, 128));
 		
 		
 
         PreferenceConverter.setDefault(storeR, "colourkeyfont", f);
         PreferenceConverter.setDefault(storeR, "colourkeyfont1", f);
         PreferenceConverter.setDefault(storeR, "colourkeyfont2", f);
-        PreferenceConverter.setDefault(storeR, "colourkeyfont3", f);
+        //PreferenceConverter.setDefault(storeR, "colourkeyfont3", f);
         storeR.setDefault("OPEN_WORD_IN_VIEW",false);
         storeR.setDefault("RECONCILE_MARKDOWN",false);
         storeR.setDefault("RECONCILE_MARKDOWN_TIME", 1000);

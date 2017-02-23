@@ -1,4 +1,4 @@
-package com.eco.bio7.markdownedit.editors;
+/*package com.eco.bio7.markdownedit.editors;
 
 import org.eclipse.jface.text.rules.*;
 
@@ -29,3 +29,4 @@ public class TagRule extends MultiLineRule {
 		return super.sequenceDetected(scanner, sequence, eofAllowed);
 	}
 }
+*/

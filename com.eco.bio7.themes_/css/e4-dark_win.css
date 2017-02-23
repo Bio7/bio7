@@ -295,6 +295,7 @@ StatusLine, ImageBasedFrame{
     background-color: #415062;
     color: #9ac9d8;
 }
+<<<<<<< HEAD
 
 Grid {
   background-color: #2F2F2F ;
@@ -362,3 +363,5 @@ Composite #com-eco-bio7-thumbnails.MToolBar {
 	color: #dddddd; /* see property startupForegroundColor in the product */
 }
 
+=======
+>>>>>>> branch 'master' of https://github.com/Bio7/bio7.git

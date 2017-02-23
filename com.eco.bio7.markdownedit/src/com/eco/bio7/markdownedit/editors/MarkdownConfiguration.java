@@ -60,7 +60,7 @@ public class MarkdownConfiguration extends TextSourceViewerConfiguration {
 
 	public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
 		return new String[] { IDocument.DEFAULT_CONTENT_TYPE, MarkdownPartitionScanner.MARKDOWN_R_CHUNK,
-				MarkdownPartitionScanner.MARKDOWN_TAG, MarkdownPartitionScanner.YAML_HEADER };
+				MarkdownPartitionScanner.MARKDOWN_TAG };
 	}
 
 	public ITextDoubleClickStrategy getDoubleClickStrategy(ISourceViewer sourceViewer, String contentType) {
@@ -184,8 +184,8 @@ public class MarkdownConfiguration extends TextSourceViewerConfiguration {
 		yaml = new SingleTokenScanner(
 				new TextAttribute(new Color(Display.getDefault(), rgbkey3), null, isBold("BOLD_COLOURKEY3")));
 		DefaultDamagerRepairer ndrcomment = new DefaultDamagerRepairer(yaml);
-		reconciler.setDamager(ndrcomment, MarkdownPartitionScanner.YAML_HEADER);
-		reconciler.setRepairer(ndrcomment, MarkdownPartitionScanner.YAML_HEADER);
+		//reconciler.setDamager(ndrcomment, MarkdownPartitionScanner.YAML_HEADER);
+		//reconciler.setRepairer(ndrcomment, MarkdownPartitionScanner.YAML_HEADER);
 
 		/*
 		 * NonRuleBasedDamagerRepairer ndr2 = new
