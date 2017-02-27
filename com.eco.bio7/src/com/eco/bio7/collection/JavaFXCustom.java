@@ -226,7 +226,7 @@ public class JavaFXCustom {
 		}
 
 		else if (ke.getCode() == KeyCode.F1) {
-			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+			//if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 				if (canvas.isDisposed() == false) {
 					canvas.setData("true");
 					canvas.redraw();
@@ -247,9 +247,9 @@ public class JavaFXCustom {
 				primaryStage.setY(primaryScreen.getVisualBounds().getMinY());
 				primaryStage.setFullScreen(true);
 				primaryStage.show();
-			} else {
+			/*} else {
 				System.out.println("True fullscreen for Linux disabled!");
-			}
+			}*/
 		} else if (ke.getCode() == KeyCode.ESCAPE) {
 
 			if (canvas.isDisposed() == false) {
