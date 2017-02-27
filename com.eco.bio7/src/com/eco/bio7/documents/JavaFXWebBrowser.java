@@ -9,12 +9,16 @@ import org.apache.commons.io.FilenameUtils;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.preference.BooleanFieldEditor;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.osgi.framework.Bundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
+
+import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.collection.CustomView;
 import javafx.beans.value.ChangeListener;
@@ -38,6 +42,7 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebErrorEvent;
 import javafx.scene.web.WebEvent;
 import javafx.scene.web.WebView;
+import netscape.javascript.JSObject;
 
 /*A JavaFX browser implementation!*/
 public class JavaFXWebBrowser {
@@ -45,13 +50,23 @@ public class JavaFXWebBrowser {
 	private WebEngine webEng;
 	private WebView brow;
 	private boolean html;
+	private IPreferenceStore store;
+
+	public class JSLogListener {
+
+		public void log(String text) {
+			System.out.println(text);
+		}
+	}
 
 	public JavaFXWebBrowser(boolean html) {
 		this.html = html;
 		brow = new WebView();
 		webEng = brow.getEngine();
 		webEng.setJavaScriptEnabled(true);
+		store = Bio7Plugin.getDefault().getPreferenceStore();
 		java.net.CookieHandler.setDefault(new java.net.CookieManager());
+		
 
 		webEng.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
 
@@ -61,6 +76,19 @@ public class JavaFXWebBrowser {
 				if (newValue != Worker.State.SUCCEEDED) {
 
 					return;
+				}
+				if (store.getBoolean("ENABLE_BROWSER_SCROLLBARS") == false) {
+					webEng.executeScript(" document.documentElement.style.overflow = 'hidden'; ");
+				}
+
+				if (store.getBoolean("SCROLL_TO_DOCUMENT_END")) {
+					webEng.executeScript("window.scrollTo(0,document.body.scrollHeight)");
+				}
+
+				if (store.getBoolean("ENABLE_BROWSER_LOG")) {
+					JSObject window = (JSObject) webEng.executeScript("window");
+					window.setMember("java", new JSLogListener());
+					webEng.executeScript("console.log = function(message){ java.log(message); };");
 				}
 
 				// webEng.executeScript(getFirebugScript());
@@ -120,14 +148,14 @@ public class JavaFXWebBrowser {
 		webEng.setOnAlert(new EventHandler<WebEvent<String>>() {
 			@Override
 			public void handle(WebEvent<String> event) {
-				System.out.println("Browser alert:\n\n"+event.getData());
+				System.out.println("Browser alert:\n\n" + event.getData());
 			}
 		});
 
 		webEng.setOnError(new EventHandler<WebErrorEvent>() {
 			@Override
 			public void handle(WebErrorEvent event) {
-				System.out.println("Browser error:\n\n"+event.getMessage());
+				System.out.println("Browser error:\n\n" + event.getMessage());
 			}
 		});
 
@@ -136,16 +164,17 @@ public class JavaFXWebBrowser {
 	public void createBrowser(String url, String name) {
 
 		AnchorPane anchorPane = new AnchorPane();
-
-		brow.getChildrenUnmodifiable().addListener(new ListChangeListener<Node>() {
-			@Override
-			public void onChanged(Change<? extends Node> change) {
-				Set<Node> scrolls = brow.lookupAll(".scroll-bar");
-				for (Node scroll : scrolls) {
-					scroll.setVisible(false);
+		if (store.getBoolean("ENABLE_JAVAFXWEBKIT_SCROLLBARS") == false) {
+			brow.getChildrenUnmodifiable().addListener(new ListChangeListener<Node>() {
+				@Override
+				public void onChanged(Change<? extends Node> change) {
+					Set<Node> scrolls = brow.lookupAll(".scroll-bar");
+					for (Node scroll : scrolls) {
+						scroll.setVisible(false);
+					}
 				}
-			}
-		});
+			});
+		}
 
 		/*
 		 * brow.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -157,6 +186,7 @@ public class JavaFXWebBrowser {
 		 */
 
 		// brow.setTop(scrollWheelStatus);
+
 		brow.setOnScroll(new EventHandler<ScrollEvent>() {
 			@Override
 			public void handle(ScrollEvent event) {

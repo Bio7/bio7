@@ -616,7 +616,12 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		
 		store.setDefault("PDF_USE_BROWSER",false);
 		
-		store.setDefault("IMAGEJ_CREATE_SINGLE_PLOTS",false);		
+		store.setDefault("IMAGEJ_CREATE_SINGLE_PLOTS",false);
+		
+		store.setDefault("ENABLE_JAVAFXWEBKIT_SCROLLBAR", false);
+		store.setDefault("SCROLL_TO_DOCUMENT_END", false);
+		store.setDefault("ENABLE_BROWSER_LOG", false);
+		store.setDefault("ENABLE_BROWSER_SCROLLBARS", true);
 
 		store.setDefault("CLOSE_DEVICE", "if(length(dev.list())>0) dev.off()");
 

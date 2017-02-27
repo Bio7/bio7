@@ -49,6 +49,10 @@ public class BrowserPreferences extends FieldEditorPreferencePage implements IWo
 		addField(spacer1);
 		addField(new LabelFieldEditor("JavaFX Browser:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("OPEN_BOWSER_IN_EXTRA_VIEW","Create a new View for each PDF file",getFieldEditorParentControl()));
+		addField(new BooleanFieldEditor("ENABLE_JAVAFXWEBKIT_SCROLLBARS","Enable JavaFX Scrollbars",getFieldEditorParentControl()));
+		addField(new BooleanFieldEditor("ENABLE_BROWSER_SCROLLBARS","Enable Browser Scrollbars",getFieldEditorParentControl()));
+		addField(new BooleanFieldEditor("SCROLL_TO_DOCUMENT_END","Scroll to HTML document end",getFieldEditorParentControl()));
+		addField(new BooleanFieldEditor("ENABLE_BROWSER_LOG","Print Browser messages",getFieldEditorParentControl()));
 		
 	}
 
