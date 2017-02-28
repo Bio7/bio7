@@ -99,6 +99,7 @@ public class JavaFXWebBrowser {
 				// webEng.executeScript("PDFViewerApplication.pdfViewer.sidebarViewOnLoad= 1;");
 				/* If we load a PDF with 'pdf.js'! */
 				if (html == false) {
+					//webEng.executeScript("document.getElementById('viewerContainer').style.overflow = 'hidden';");
 					webEng.executeScript("PDFViewerApplication.pdfViewer.currentPageNumber=" + JavaFXBrowserHelper.pageNumber + "");
 					/* Set the bookmark to select the page! */
 					webEng.executeScript("PDFViewerApplication.initialBookmark = \"" + JavaFXBrowserHelper.pageNumber + "\";");
@@ -227,9 +228,9 @@ public class JavaFXWebBrowser {
 				}
 				if (ke.getCharacter().equals("t")) {
 					if (html == false) {
-						webEng.executeScript("if (document.getElementById('toolbarContainer').style.display == '')" + "{ " + "document.getElementById('toolbarContainer').style.display='none';document.getElementById('viewerContainer').style.top=0;}"
+						webEng.executeScript("if (document.getElementById('toolbarContainer').style.display == '')" + "{ " + "document.getElementById('viewerContainer').style.overflow = 'hidden';document.getElementById('toolbarContainer').style.display='none';document.getElementById('viewerContainer').style.top=0;}"
 
-								+ "else{" + "document.getElementById('toolbarContainer').style.display='';document.getElementById('viewerContainer').style.top=32;" + "}");
+								+ "else{" + "document.getElementById('viewerContainer').style.overflow = 'visible';document.getElementById('toolbarContainer').style.display='';document.getElementById('viewerContainer').style.top=32;" + "}");
 					}
 				}
 

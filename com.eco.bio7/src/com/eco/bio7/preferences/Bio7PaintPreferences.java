@@ -36,6 +36,9 @@ public class Bio7PaintPreferences extends FieldEditorPreferencePage
 		addField(new BooleanFieldEditor("REPAINT_QUAD", "Repaint the Quadgrid after each iteration step", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("REPAINT_HEX", "Repaint the Hexgrid after each iteration step", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("RECORD_VALUES", "Record at each iteration step the amount of states (Quadgrid, Hexgrid)", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("QUAD_PANEL_SCROLLBAR", "Show the scrollbar in the Quadgrid (Hexgrid) panel", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("POINTS_PANEL_SCROLLBAR", "Show the scrollbar in the Points panel", getFieldEditorParent()));
+		
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new BooleanFieldEditor("STARTUP_SCRIPTS", "Enable startup scripts", getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));

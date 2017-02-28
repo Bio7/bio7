@@ -16,6 +16,7 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.dnd.DND;
@@ -30,6 +31,7 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
+import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.actions.PlaceholderAction;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.collection.SwingFxSwtView;
@@ -44,6 +46,7 @@ public class PointPanelView extends ViewPart {
 	protected String[] fileList;
 	private BufferedImage image;
 	private Container contentPane;
+	private IPreferenceStore store;
 	private static JScrollPane scroll;
 	private static PointPanelView imj;
 
@@ -55,7 +58,7 @@ public class PointPanelView extends ViewPart {
 	public void createPartControl(Composite parent) {
 
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.bio7image");
-
+		store = Bio7Plugin.getDefault().getPreferenceStore();
 		top = new Composite(parent, SWT.NONE);
 		top.setLayout(new FillLayout());
 		DropTarget dt = new DropTarget(top, DND.DROP_DEFAULT | DND.DROP_MOVE);
@@ -78,62 +81,39 @@ public class PointPanelView extends ViewPart {
 				}
 			}
 		});
-		/*try {
-			System.setProperty("sun.awt.noerasebackground", "true");
-		} catch (NoSuchMethodError error) {
+		/*
+		 * try { System.setProperty("sun.awt.noerasebackground", "true"); } catch (NoSuchMethodError error) { }
+		 * 
+		 * java.awt.Frame frame = SWT_AWT.new_Frame(top); SwtAwt.setSwtAwtFocus(frame, top); final sun.awt.EmbeddedFrame ef = (sun.awt.EmbeddedFrame) frame;
+		 * 
+		 * ef.addWindowListener(new WindowAdapter() { public void windowActivated(WindowEvent e) { ef.synthesizeWindowActivation(true);
+		 * 
+		 * } }); JApplet panel = new JApplet() { public void update(java.awt.Graphics g) { Do not erase the background paint(g); } };
+		 * 
+		 * frame.add(panel); JRootPane root = new JRootPane(); panel.add(root); contentPane = root.getContentPane(); scroll = new JScrollPane();
+		 * 
+		 * jp = new PointPanel(); jp.getHeight(); jp.setPreferredSize(new Dimension(jp.getScaledx(), jp.getScaledy()));
+		 * 
+		 * scroll.setViewportView(jp); For MacOSX necessary! SwingUtilities.invokeLater(new Runnable() { // !! public void run() { contentPane.add(scroll); } });
+		 */
+		scroll = new JScrollPane();
+		jp = new PointPanel();
+		jp.getHeight();
+		jp.setPreferredSize(new Dimension(jp.getScaledx(), jp.getScaledy()));
+		jp.setBackground(getSystemColour(parent));
+		scroll.setViewportView(jp);
+		if (store.getBoolean("POINTS_PANEL_SCROLLBAR") == false) {
+			scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+			scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		}
 
-		java.awt.Frame frame = SWT_AWT.new_Frame(top);
-		SwtAwt.setSwtAwtFocus(frame, top);
-		final sun.awt.EmbeddedFrame ef = (sun.awt.EmbeddedFrame) frame;
+		SwingFxSwtView view = new SwingFxSwtView();
+		view.embedd(top, scroll);
 
-		ef.addWindowListener(new WindowAdapter() {
-			public void windowActivated(WindowEvent e) {
-				ef.synthesizeWindowActivation(true);
-
-			}
-		});
-		JApplet panel = new JApplet() {
-			public void update(java.awt.Graphics g) {
-				 Do not erase the background 
-				paint(g);
-			}
-		};
-
-		frame.add(panel);
-		JRootPane root = new JRootPane();
-		panel.add(root);
-		contentPane = root.getContentPane();
-		scroll = new JScrollPane();
-
-		jp = new PointPanel();
-		jp.getHeight();
-		jp.setPreferredSize(new Dimension(jp.getScaledx(), jp.getScaledy()));
-
-		scroll.setViewportView(jp);
-		For MacOSX necessary!
-		SwingUtilities.invokeLater(new Runnable() {
-			// !!
-			public void run() {
-				contentPane.add(scroll);
-			}
-		});*/
-		scroll = new JScrollPane();
-		jp = new PointPanel();
-		jp.getHeight();
-		jp.setPreferredSize(new Dimension(jp.getScaledx(), jp.getScaledy()));
-        jp.setBackground(getSystemColour(parent));
-		scroll.setViewportView(jp);
-		
-		SwingFxSwtView view=new SwingFxSwtView();
-		view.embedd(top,scroll);
-		
-		
-		
 		initializeToolBar();
 
 	}
-	
+
 	public java.awt.Color getSystemColour(Composite parent) {
 		Color col = null;
 		org.eclipse.swt.graphics.Color colswt = parent.getBackground();
@@ -153,7 +133,6 @@ public class PointPanelView extends ViewPart {
 	public void setstatusline(String message) {
 		IActionBars bars = getViewSite().getActionBars();
 		bars.getStatusLineManager().setMessage(message);
-		
 
 	}
 
@@ -171,9 +150,9 @@ public class PointPanelView extends ViewPart {
 
 	private void initializeToolBar() {
 		IToolBarManager toolBarManager = getViewSite().getActionBars().getToolBarManager();
-		/*PlaceholderAction placeholder=new PlaceholderAction();
-		placeholder.setEnabled(false);
-		toolBarManager.add(new PlaceholderAction());*/
+		/*
+		 * PlaceholderAction placeholder=new PlaceholderAction(); placeholder.setEnabled(false); toolBarManager.add(new PlaceholderAction());
+		 */
 	}
 
 	public void loadImage(String path) {
