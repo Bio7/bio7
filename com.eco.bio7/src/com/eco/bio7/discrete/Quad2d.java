@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2012 M. Austenfeld
+ * Copyright (c) 2007-2017 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -31,11 +31,15 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
+
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
+
+import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.methods.CurrentStates;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.time.Time;
@@ -98,11 +102,17 @@ public class Quad2d extends JPanel implements KeyListener, MouseListener, MouseM
 
 	private boolean popup_trigger = false;// For Linux !
 
+	private IPreferenceStore store;
+
 	JScrollPane getJScrollPane() {
 		if (jScrollPane == null) {
 			jScrollPane = new JScrollPane();
 			jScrollPane.setComponentOrientation(java.awt.ComponentOrientation.UNKNOWN);
 			jScrollPane.setWheelScrollingEnabled(true);
+			if (store.getBoolean("QUAD_PANEL_SCROLLBAR") == false) {
+				jScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+				jScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			}
 
 		}
 		return jScrollPane;
@@ -157,6 +167,7 @@ public class Quad2d extends JPanel implements KeyListener, MouseListener, MouseM
 
 		super();
 		quad2d_instance = this;
+		store = Bio7Plugin.getDefault().getPreferenceStore();
 		drawQuad();
 		getJScrollPane();
 		/* We use the random function to assign objects at startup ! */
@@ -468,7 +479,7 @@ public class Quad2d extends JPanel implements KeyListener, MouseListener, MouseM
 
 								MessageBox messageBox = new MessageBox(new Shell(),
 
-								SWT.ICON_WARNING);
+										SWT.ICON_WARNING);
 								if (activeRendering) {
 									messageBox.setMessage("Switched rendering mode to active rendering !");
 								} else {

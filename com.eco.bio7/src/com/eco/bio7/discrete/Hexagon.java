@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2012 M. Austenfeld
+ * Copyright (c) 2005-2017 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -33,11 +33,15 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
+
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
+
+import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.methods.CurrentStates;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.time.Time;
@@ -94,12 +98,17 @@ public class Hexagon extends JPanel implements KeyListener, MouseListener, Mouse
 
 	private boolean popup_trigger = false;// For Linux !
 
+	private IPreferenceStore store;
+
 	JScrollPane getJScrollPane() {
 		if (jScrollPanehex == null) {
 			jScrollPanehex = new JScrollPane();
-			// jScrollPanehex.setBackground(java.awt.Color.white);
 			jScrollPanehex.setComponentOrientation(java.awt.ComponentOrientation.UNKNOWN);
 			jScrollPanehex.setWheelScrollingEnabled(true);
+			if (store.getBoolean("QUAD_PANEL_SCROLLBAR") == false) {
+				jScrollPanehex.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+				jScrollPanehex.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			}
 
 		}
 		return jScrollPanehex;
@@ -109,6 +118,7 @@ public class Hexagon extends JPanel implements KeyListener, MouseListener, Mouse
 
 		super();
 		hexagon_instance = this;
+		store = Bio7Plugin.getDefault().getPreferenceStore();
 		drawHex();
 		setFocusable(true);
 		requestFocus();
@@ -357,7 +367,7 @@ public class Hexagon extends JPanel implements KeyListener, MouseListener, Mouse
 
 								MessageBox messageBox = new MessageBox(new Shell(),
 
-								SWT.ICON_WARNING);
+										SWT.ICON_WARNING);
 								if (active_rendering) {
 									messageBox.setMessage("Switched rendering mode to unsafe rendering !");
 								} else {

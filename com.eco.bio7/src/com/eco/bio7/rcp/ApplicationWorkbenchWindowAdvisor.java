@@ -639,6 +639,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("REPAINT_QUAD", true);
 		store.setDefault("REPAINT_HEX", true);
 		store.setDefault("RECORD_VALUES", true);
+		store.setDefault("QUAD_PANEL_SCROLLBAR",false);
+		store.setDefault("POINTS_PANEL_SCROLLBAR",false);
 		store.setDefault("STARTUP_SCRIPTS", false);
 		store.setDefault("python_3x", false);
 		store.setDefault("blender_options", "interactive");
