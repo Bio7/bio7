@@ -273,7 +273,7 @@ public class JavaFXWebBrowser {
 							JavaFXWebBrowser br = new JavaFXWebBrowser(true);
 							// WebEngine webEngine = br.getWebEngine();
 							// webEngine.load(path);
-							br.createBrowser(path, "R_Display");
+							br.createBrowser(path, "Display");
 						}
 
 						else if (FilenameUtils.isExtension(file.getName(), "pdf")) {
@@ -285,7 +285,7 @@ public class JavaFXWebBrowser {
 							JavaFXWebBrowser br = new JavaFXWebBrowser(false);
 							WebEngine webEngine = br.getWebEngine();
 							webEngine.executeScript("var DEFAULT_URL ='" + path + "'");
-							br.createBrowser("file:///" + pathBundle + "", "R_Display");
+							br.createBrowser("file:///" + pathBundle + "", "Display");
 						}
 
 						else {

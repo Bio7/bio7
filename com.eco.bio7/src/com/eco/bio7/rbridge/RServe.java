@@ -703,7 +703,7 @@ public class RServe {
 					}
 
 					else {
-						br.createBrowser("file:///" + pathBundle + "", "R_Display");
+						br.createBrowser("file:///" + pathBundle + "", "Display");
 						/*
 						 * webEngine.executeScript( "alert(pdfjsVersion);");
 						 */

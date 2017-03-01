@@ -23,7 +23,7 @@ public class WordOleView extends com.eco.bio7.compile.Model {
 	public WordOleView(String file) {
 		try {
 			view = new CustomView();
-			parent = view.getComposite("R_Display");
+			parent = view.getComposite("Display");
 			Display dis = parent.getDisplay();
 
 			dis.asyncExec(new Runnable() {

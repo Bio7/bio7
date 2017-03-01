@@ -283,7 +283,7 @@ public class LatexSweaveKnitrAction extends Action {
 												if (openInBrowserInExtraView) {
 													new JavaFXWebBrowser(true).createBrowser(url, theName + ".html");
 												} else {
-													new JavaFXWebBrowser(true).createBrowser(url, "R_Display");
+													new JavaFXWebBrowser(true).createBrowser(url, "Display");
 												}
 
 											}

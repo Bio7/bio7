@@ -229,7 +229,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 
 												new JavaFXWebBrowser(true).createBrowser(url, theName + ".html");
 											} else {
-												new JavaFXWebBrowser(true).createBrowser(url, "R_Display");
+												new JavaFXWebBrowser(true).createBrowser(url, "Display");
 											}
 										}
 									}
