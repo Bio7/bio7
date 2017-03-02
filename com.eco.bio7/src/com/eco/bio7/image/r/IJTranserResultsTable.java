@@ -68,7 +68,11 @@ public class IJTranserResultsTable {
 						String columnName = rt.getColumnHeading(i);
 						if (columnName.equals("%Area")) {
 							columnName = columnName.replace("%Area", "Area_Prozent");
-						}
+						}	
+						
+						/*Replace all special characters except '_' and '.'!
+						 *This is necessary for customized Results table columns!*/
+						columnName =columnName.replaceAll("[^a-zA-Z0-9_.]+","_");
 						try {
 							con.assign(columnName, col);
 						} catch (REngineException e1) {
