@@ -11,19 +11,19 @@
 package com.eco.bio7.actions;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 import com.eco.bio7.compile.JavaScriptInterpreter;
+import com.eco.bio7.jobs.ImageJMacroWorkspaceJob;
 import com.eco.bio7.rcp.StartBio7Utils;
-
-import ij.IJ;
 
 public class JavaScriptInterpret extends Action {
 
@@ -53,22 +53,25 @@ public class JavaScriptInterpret extends Action {
 
 		if (file.getFileExtension().equals("js")) {
 
-			String a = doc.get();
-			JavaScriptInterpreter.interpretJob(a, null);
+			String content = doc.get();
+			JavaScriptInterpreter.interpretJob(content, null);
 
 		}
 
 		else if (file.getFileExtension().equals("ijm") || file.getFileExtension().equals("txt")) {
-			String a = doc.get();
+			String content = doc.get();
 
-			Display display = PlatformUI.getWorkbench().getDisplay();
-			display.asyncExec(new Runnable() {
+			ImageJMacroWorkspaceJob job = new ImageJMacroWorkspaceJob(content);
 
-				public void run() {
+			job.addJobChangeListener(new JobChangeAdapter() {
+				public void done(IJobChangeEvent event) {
+					if (event.getResult().isOK()) {
 
-					IJ.runMacro(a);
+					}
 				}
 			});
+
+			job.schedule();
 		}
 
 	}
