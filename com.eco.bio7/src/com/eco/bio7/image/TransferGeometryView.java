@@ -41,8 +41,6 @@ public class TransferGeometryView extends ViewPart {
 	private Button btnTransferAsCentroid;
 	protected boolean transferCentroid;
 
-	
-
 	public TransferGeometryView() {
 	}
 
@@ -150,7 +148,8 @@ public class TransferGeometryView extends ViewPart {
 						// List all variables in the R workspace!
 
 						try {
-							RServe.getConnection().eval("varWorkspaceType<-NULL;for(i in 1:length(ls())){if(is.data.frame(get(ls()[i]))==TRUE){varWorkspaceType<-append(varWorkspaceType,ls()[i])}}");
+							RServe.getConnection().eval(
+									"varWorkspaceType<-NULL;for(i in 1:length(ls())){if(is.data.frame(get(ls()[i]))==TRUE){varWorkspaceType<-append(varWorkspaceType,ls()[i])}}");
 							x = RServe.getConnection().eval("varWorkspaceType");
 							if (x.isNull() == false) {
 								try {
@@ -257,7 +256,9 @@ public class TransferGeometryView extends ViewPart {
 			public void widgetSelected(SelectionEvent e) {
 
 				crsText = Bio7Dialog.openFile();
-				text.setText(crsText);
+				if (crsText != null) {
+					text.setText(crsText);
+				}
 			}
 		});
 		btnNewButton.setText("Load File");
@@ -278,9 +279,10 @@ public class TransferGeometryView extends ViewPart {
 				boolean doSetDf = isDoSetDataframe();
 				String crs = getCrsText();
 				String selectedDf = getSelDataframe();
-				boolean asCentroid=isTransferCentroid();
+				boolean asCentroid = isTransferCentroid();
 
-				TransferSelectionCoordsJob job = new TransferSelectionCoordsJob(transferAsList, selection, doSetCRS, doSetDf, crs, selectedDf,asCentroid);
+				TransferSelectionCoordsJob job = new TransferSelectionCoordsJob(transferAsList, selection, doSetCRS,
+						doSetDf, crs, selectedDf, asCentroid);
 				// job.setSystem(true);
 				job.schedule();
 				/*
@@ -333,7 +335,7 @@ public class TransferGeometryView extends ViewPart {
 	public void setDoSetDataframe(boolean doSetDataframe) {
 		this.doSetDataframe = doSetDataframe;
 	}
-	
+
 	public boolean isTransferCentroid() {
 		return transferCentroid;
 	}
