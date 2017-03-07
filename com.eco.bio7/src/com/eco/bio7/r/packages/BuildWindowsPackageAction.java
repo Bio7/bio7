@@ -5,14 +5,9 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 
-public class RoxygenAction implements IObjectActionDelegate {
+public class BuildWindowsPackageAction implements IObjectActionDelegate {
 
-	public String packageName;
-	public String[] includeRVariables;
-	public boolean builtFromVariables;
-	public boolean cancelCreation = false;
-
-	public RoxygenAction() {
+	public BuildWindowsPackageAction() {
 		super();
 	}
 
@@ -21,7 +16,7 @@ public class RoxygenAction implements IObjectActionDelegate {
 
 	public void run(IAction action) {
 
-		new ExecuteDevtoolsCommand("document()");
+		new ExecuteDevtoolsCommand("build_win()");
 	}
 
 	public void selectionChanged(IAction action, ISelection selection) {

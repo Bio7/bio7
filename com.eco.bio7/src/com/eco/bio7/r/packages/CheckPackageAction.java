@@ -5,9 +5,9 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 
-public class BuiltPackageAction implements IObjectActionDelegate {
+public class CheckPackageAction implements IObjectActionDelegate {
 
-	public BuiltPackageAction() {
+	public CheckPackageAction() {
 		super();
 	}
 
@@ -16,8 +16,7 @@ public class BuiltPackageAction implements IObjectActionDelegate {
 
 	public void run(IAction action) {
 
-		new ExecuteDevtoolsCommand("build(path=getwd())");
-
+		new ExecuteDevtoolsCommand("check()");
 	}
 
 	public void selectionChanged(IAction action, ISelection selection) {

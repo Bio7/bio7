@@ -66,7 +66,6 @@ public class JavaFXWebBrowser {
 		webEng.setJavaScriptEnabled(true);
 		store = Bio7Plugin.getDefault().getPreferenceStore();
 		java.net.CookieHandler.setDefault(new java.net.CookieManager());
-		
 
 		webEng.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
 
@@ -99,7 +98,7 @@ public class JavaFXWebBrowser {
 				// webEng.executeScript("PDFViewerApplication.pdfViewer.sidebarViewOnLoad= 1;");
 				/* If we load a PDF with 'pdf.js'! */
 				if (html == false) {
-					//webEng.executeScript("document.getElementById('viewerContainer').style.overflow = 'hidden';");
+					// webEng.executeScript("document.getElementById('viewerContainer').style.overflow = 'hidden';");
 					webEng.executeScript("PDFViewerApplication.pdfViewer.currentPageNumber=" + JavaFXBrowserHelper.pageNumber + "");
 					/* Set the bookmark to select the page! */
 					webEng.executeScript("PDFViewerApplication.initialBookmark = \"" + JavaFXBrowserHelper.pageNumber + "\";");
@@ -213,24 +212,27 @@ public class JavaFXWebBrowser {
 
 				}
 				if (ke.getCharacter().equals("+")) {
+					if (html) {
+						brow.setZoom(brow.getZoom() * 1.1);
 
-					brow.setZoom(brow.getZoom() * 1.1);
-
-					ke.consume();
+						ke.consume();
+					}
 
 				}
 				if (ke.getCharacter().equals("-")) {
+					if (html) {
+						brow.setZoom(brow.getZoom() / 1.1);
 
-					brow.setZoom(brow.getZoom() / 1.1);
-
-					ke.consume();
+						ke.consume();
+					}
 
 				}
 				if (ke.getCharacter().equals("t")) {
 					if (html == false) {
-						webEng.executeScript("if (document.getElementById('toolbarContainer').style.display == '')" + "{ " + "document.getElementById('viewerContainer').style.overflow = 'hidden';document.getElementById('toolbarContainer').style.display='none';document.getElementById('viewerContainer').style.top=0;}"
+						webEng.executeScript("if (document.getElementById('toolbarContainer').style.display == '')" + "{ "
+								+ "document.getElementById('viewerContainer').style.overflow = 'hidden';document.getElementById('toolbarContainer').style.display='none';document.getElementById('viewerContainer').style.top=0;}"
 
-								+ "else{" + "document.getElementById('viewerContainer').style.overflow = 'visible';document.getElementById('toolbarContainer').style.display='';document.getElementById('viewerContainer').style.top=32;" + "}");
+								+ "else{" + "document.getElementById('viewerContainer').style.overflow = 'scroll';document.getElementById('toolbarContainer').style.display='';document.getElementById('viewerContainer').style.top=32;" + "}");
 					}
 				}
 

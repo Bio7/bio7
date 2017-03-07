@@ -5,9 +5,9 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 
-public class TestAllPackagesAction implements IObjectActionDelegate {
+public class BuildPackageAction implements IObjectActionDelegate {
 
-	public TestAllPackagesAction() {
+	public BuildPackageAction() {
 		super();
 	}
 
@@ -16,7 +16,7 @@ public class TestAllPackagesAction implements IObjectActionDelegate {
 
 	public void run(IAction action) {
 
-		new ExecuteDevtoolsCommand("test()");
+		new ExecuteDevtoolsCommand("build(path=getwd())");
 
 	}
 

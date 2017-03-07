@@ -1,4 +1,4 @@
-package com.eco.bio7.popup.actions;
+/*package com.eco.bio7.popup.actions;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -61,7 +61,7 @@ import javafx.scene.web.WebEvent;
 import javafx.scene.web.WebHistory;
 import javafx.scene.web.WebView;
 
-/*A browser for rmarkdown and knitr documents!*/
+A browser for rmarkdown and knitr documents!
 public class JavaFXWebBrowser {
 	private ContextMenu menu;
 	private WebEngine webEng;
@@ -86,15 +86,15 @@ public class JavaFXWebBrowser {
 				}
 
 				// webEng.executeScript(getFirebugScript());
-				/*
+				
 				 * org.w3c.dom.Document doc = webEng.getDocument(); Element el = doc.getElementById("");
-				 */
-				/* Store the last selected page for a new instance, reload of the PDF.js viewer! */
+				 
+				 Store the last selected page for a new instance, reload of the PDF.js viewer! 
 				// webEng.executeScript("PDFViewerApplication.pdfViewer.sidebarViewOnLoad= 1;");
-				/* If we load a PDF with 'pdf.js'! */
+				 If we load a PDF with 'pdf.js'! 
 				if (html == false) {
 					webEng.executeScript("PDFViewerApplication.pdfViewer.currentPageNumber=" + JavaFXBrowserHelper.pageNumber + "");
-					/* Set the bookmark to select the page! */
+					 Set the bookmark to select the page! 
 					webEng.executeScript("PDFViewerApplication.initialBookmark = \"" + JavaFXBrowserHelper.pageNumber + "\";");
 
 					Document doc = webEng.getDocument();
@@ -115,15 +115,15 @@ public class JavaFXWebBrowser {
 						@Override
 						public void handleEvent(Event evt) {
 							JavaFXBrowserHelper.pageNumber = (int) (webEng.executeScript("PDFViewerApplication.pdfViewer.currentPageNumber;"));
-							/*
+							
 							 * System.out.println(String.valueOf(((com.sun.webkit.dom.KeyboardEventImpl) evt).getKeyCode())); com.sun.webkit.dom.KeyboardEventImpl event =
 							 * (com.sun.webkit.dom.KeyboardEventImpl) evt; System.out.println(event.getKeyIdentifier());
-							 */
+							 
 
 						}
 					}, false);
 				} else {
-					/*
+					
 					 * String markdownContent=MarkdownEditor.getSelectedContent(); Document doc = webEng.getDocument(); Element el = doc.getDocumentElement();
 					 * 
 					 * try { Transformer transformer = TransformerFactory.newInstance().newTransformer(); transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
@@ -132,7 +132,7 @@ public class JavaFXWebBrowser {
 					 * 
 					 * transformer.transform(new DOMSource(doc), new StreamResult(new OutputStreamWriter(System.out, "UTF-8"))); } catch (Exception ex) { ex.printStackTrace(); }
 					 * webEng.executeScript("");
-					 */
+					 
 
 				}
 
@@ -162,14 +162,14 @@ public class JavaFXWebBrowser {
 			}
 		});
 
-		/*
+		
 		 * brow.setOnMouseClicked(new EventHandler<MouseEvent>() {
 		 * 
 		 * 
 		 * 
 		 * @Override public void handle(MouseEvent mouse) { if (mouse.getButton() == MouseButton.SECONDARY) { menu = new ContextMenu(); //add some menu items here menu.show(brow, mouse.getScreenX(),
 		 * mouse.getScreenY()); } else { if (menu != null) { menu.hide(); } } } });
-		 */
+		 
 
 		// brow.setTop(scrollWheelStatus);
 		brow.setOnScroll(new EventHandler<ScrollEvent>() {
@@ -263,7 +263,7 @@ public class JavaFXWebBrowser {
 							System.out.println("Path: " + path);
 
 							// webEng.load("file:///" + pathBundle + "");
-							/* We have to create a new browser instance to inject the path as variable! */
+							 We have to create a new browser instance to inject the path as variable! 
 							JavaFXWebBrowser br = new JavaFXWebBrowser(false);
 							WebEngine webEngine = br.getWebEngine();
 							webEngine.executeScript("var DEFAULT_URL ='" + path + "'");
@@ -335,7 +335,7 @@ public class JavaFXWebBrowser {
 		return pathBundle;
 	}
 
-	/*
+	
 	 * private static String getFirebugScript() { Bundle bundle = Platform.getBundle("com.eco.bio7.libs"); Path path = new Path("pdfjs/firebug-lite-132.js"); URL locationURL = FileLocator.find(bundle,
 	 * path, null);
 	 * 
@@ -345,7 +345,7 @@ public class JavaFXWebBrowser {
 	 * File initialFile = new File(pathBundle); InputStream inputStream = null; try { inputStream = new FileInputStream(initialFile); } catch (FileNotFoundException e) { // TODO Auto-generated catch
 	 * block e.printStackTrace(); } try { BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF8")); String line = reader.readLine(); while (line != null) {
 	 * libraryContents.append(line); line = reader.readLine(); } } catch (IOException exception) { return null; } return libraryContents.toString(); }
-	 */
+	 
 
 	public void goBack() {
 		webEng.executeScript("history.back()");
@@ -356,3 +356,4 @@ public class JavaFXWebBrowser {
 	}
 
 }
+*/

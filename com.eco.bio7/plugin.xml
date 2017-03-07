@@ -1188,23 +1188,11 @@
              menubarPath="com.eco.bio7.RPackages.subMenu/groupR"
              tooltip="Builds *.pdf files from *.Rd files">
        </action>
-       <action
-             class="com.eco.bio7.r.packages.RoxygenAction"
-             id="com.eco.bio7.roxygen"
-             label="Document (devtools)"
-             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
-             tooltip="Builds *.Rd files from roxygen">
-       </action>
+      
+       
        
        <action
-             class="com.eco.bio7.r.packages.LoadAllPackageAction"
-             id="com.eco.bio7.devtools.loadall"
-             label="Load All (devtools)"
-             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
-             tooltip="Simulates installing and reloading of the package">
-       </action>
-       <action
-             class="com.eco.bio7.r.packages.TestAllPackagesAction"
+             class="com.eco.bio7.r.packages.TestPackagesAction"
              id="com.eco.bio7.devtools.ltestall"
              label="Test (devtools)"
              menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
@@ -1218,7 +1206,7 @@
              tooltip="Install the packages">
        </action>
        <action
-             class="com.eco.bio7.r.packages.BuiltPackageAction"
+             class="com.eco.bio7.r.packages.BuildPackageAction"
              id="com.eco.bio7.devtools.built"
              label="Built (devtools)"
              menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
@@ -1230,6 +1218,20 @@
              label="Setup (devtools)"
              menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
              tooltip="Setup a package">
+       </action>
+        <action
+             class="com.eco.bio7.r.packages.DocumentPackageAction"
+             id="com.eco.bio7.roxygen"
+             label="Document (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Builds *.Rd files from roxygen">
+       </action>
+       <action
+             class="com.eco.bio7.r.packages.LoadAllPackageAction"
+             id="com.eco.bio7.devtools.loadall"
+             label="Load All (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Simulates installing and reloading of the package">
        </action>
        <menu
              id="com.eco.bio7.RPackages.subMenu"
@@ -1293,9 +1295,67 @@
              tooltip="Builds *.pdf files from *.Rd files">
        </action>
        <action
-             class="com.eco.bio7.r.packages.RoxygenAction"
-             id="com.eco.bio7.roxygen"
-             label="Build Roxygen Doc (devtools)"
+             class="com.eco.bio7.r.packages.ReleasePackageAction"
+             id="com.eco.bio7.devtools.release"
+             label="Release (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Release package">
+       </action>
+       <action
+             class="com.eco.bio7.r.packages.CheckManualPackageAction"
+             id="com.eco.bio7.devtools.check.manual"
+             label="Check Manuals (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Check all manuals">
+       </action>
+       <action
+             class="com.eco.bio7.r.packages.RunExamplesPackagesAction"
+             id="com.eco.bio7.devtools.run.examples"
+             label="Run Examples (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Run all examples">
+       </action>
+       <action
+             class="com.eco.bio7.r.packages.BuildWindowsPackageAction"
+             id="com.eco.bio7.devtools.check.windows"
+             label="Build Windows (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Build the package on Windows">
+       </action>
+     
+       <action
+             class="com.eco.bio7.r.packages.CheckPackageAction"
+             id="com.eco.bio7.devtools.check"
+             label="Check (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Check the packages">
+       </action>
+       <action
+             class="com.eco.bio7.r.packages.BuildPackageAction"
+             id="com.eco.bio7.devtools.build"
+             label="Build (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Build the packages">
+       </action>
+       <action
+             class="com.eco.bio7.r.packages.InstallPackageAction"
+             id="com.eco.bio7.devtools.install"
+             label="Install (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Install the packages">
+       </action>
+       
+       <action
+             class="com.eco.bio7.r.packages.TestPackagesAction"
+             id="com.eco.bio7.devtools.testall"
+             label="Test (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Test the packages">
+       </action>
+       <action
+             class="com.eco.bio7.r.packages.DocumentPackageAction"
+             id="com.eco.bio7.devtools.document"
+             label="Document - Build Roxygen Doc (devtools)"
              menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
              tooltip="Builds *.Rd files from roxygen">
        </action>
@@ -1307,30 +1367,9 @@
              tooltip="Simulates installing and reloading of the package">
        </action>
        <action
-             class="com.eco.bio7.r.packages.TestAllPackagesAction"
-             id="com.eco.bio7.devtools.testall"
-             label="Test (devtools)"
-             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
-             tooltip="Test the packages">
-       </action>
-       <action
-             class="com.eco.bio7.r.packages.InstallPackageAction"
-             id="com.eco.bio7.devtools.install"
-             label="Install (devtools)"
-             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
-             tooltip="Install the packages">
-       </action>
-       <action
-             class="com.eco.bio7.r.packages.BuiltPackageAction"
-             id="com.eco.bio7.devtools.built"
-             label="Built (devtools)"
-             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
-             tooltip="Built the packages">
-       </action>
-        <action
              class="com.eco.bio7.r.packages.SetupPackageAction"
              id="com.eco.bio7.devtools.setup"
-             label="Setup (devtools)"
+             label="Setup - Project folder as R package folder(devtools)"
              menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
              tooltip="Setup a package">
        </action>
