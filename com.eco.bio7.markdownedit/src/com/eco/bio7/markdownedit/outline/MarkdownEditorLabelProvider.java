@@ -8,7 +8,9 @@ import com.eco.bio7.markdownedit.Activator;
 
 public class MarkdownEditorLabelProvider implements ILabelProvider {
 
-	private Image rMarkdownIcon = Activator.getImageDescriptor("/icons/template_obj.png").createImage();
+	private Image MarkdownHeaderIcon = Activator.getImageDescriptor("/icons/template_obj.png").createImage();
+	private Image rMarkdownIcon = Activator.getImageDescriptor("/icons/source_attach_attrib.png").createImage();
+	
 
 	public String getText(Object element) {
 		return ((MarkdownEditorOutlineNode) element).getName();
@@ -22,6 +24,11 @@ public class MarkdownEditorLabelProvider implements ILabelProvider {
 
 			if (cm.getType().equals("RMarkdown")) {
 				im = rMarkdownIcon;
+
+			}
+			
+			else if (cm.getType().equals("MarkdownHeader")) {
+				im = MarkdownHeaderIcon;
 
 			}
 

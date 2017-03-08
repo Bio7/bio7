@@ -1,4 +1,4 @@
-package com.eco.bio7.markdownedit.editors;
+/*package com.eco.bio7.markdownedit.editors;
 
 import java.util.Collections;
 import java.util.Set;
@@ -39,10 +39,10 @@ public class RMarkdownReconcilingStrategy implements IReconcilingStrategy, IReco
 	private static final Set<Extension> EXTENSIONS = Collections.singleton(YamlFrontMatterExtension.create());
 	private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
 
-	/** The offset of the next character to be read */
+	*//** The offset of the next character to be read *//*
 	protected int fOffset;
 
-	/** The end offset of the range to be scanned */
+	*//** The end offset of the range to be scanned *//*
 	protected int fRangeEnd;
 
 	private MarkdownEditor markdownEditor;
@@ -54,21 +54,21 @@ public class RMarkdownReconcilingStrategy implements IReconcilingStrategy, IReco
 		store = Activator.getDefault().getPreferenceStore();
 	}
 
-	/**
+	*//**
 	 * @return Returns the editor.
-	 */
+	 *//*
 
-	/*
+	
 	 * (non-Javadoc)
 	 * 
 	 * @see org.eclipse.jface.text.reconciler.IReconcilingStrategy#setDocument(org. eclipse.jface.text.IDocument)
-	 */
+	 
 	public void setDocument(IDocument document) {
 		this.fDocument = document;
 
 	}
 
-	/*
+	
 	 * private int getLineNumber(Element element, int line) { IDocumentProvider prov = markdownEditor.getDocumentProvider(); IEditorInput inp = markdownEditor.getEditorInput(); if (prov != null) {
 	 * IDocument document = prov.getDocument(inp); if (document != null) {
 	 * 
@@ -81,12 +81,12 @@ public class RMarkdownReconcilingStrategy implements IReconcilingStrategy, IReco
 	 * }
 	 * 
 	 * } } return line; }
-	 */
+	 
 
-	/* Update the HTML Editor view! */
+	 Update the HTML Editor view! 
 	private void doReconcile() {
 		editorOldNodes = markdownEditor.nodes;
-		/* Create the category base node for the outline! */
+		 Create the category base node for the outline! 
 		markdownEditor.createNodes();
 
 		Parser parser = Parser.builder().build();
@@ -110,25 +110,28 @@ public class RMarkdownReconcilingStrategy implements IReconcilingStrategy, IReco
 				e.printStackTrace();
 			}
 			if (selSource.contains("```{r") || selSource.contains("```{R")) {
-				methods.push(new MarkdownEditorOutlineNode("{R Chunk}", i + 1, "RMarkdown", markdownEditor.baseNode));
+				methods.push(new MarkdownEditorOutlineNode("{R Chunk} L"+(i + 1), i + 1, "RMarkdown", markdownEditor.baseNode));
+			}
+			else if(selSource.contains("#")){
+				methods.push(new MarkdownEditorOutlineNode("Paragraph L+(i + 1)", i + 1, "RMarkdown", markdownEditor.baseNode));
 			}
 		}
-		/*
+		
 		 * org.commonmark.node.Node document = parser.parse(source); HtmlRenderer renderer = HtmlRenderer.builder().build(); renderer.render(document); //
-		 */
+		 
 
-		/*
+		
 		 * Yamlheader yamlVisitor = new Yamlheader(methods, markdownEditor); org.commonmark.node.Node nodey = PARSER.parse(source);
 		 * 
 		 * nodey.accept(yamlVisitor);
-		 */
+		 
 
-		/*
+		
 		 * org.commonmark.node.Node node = parser.parse(source); CustomVisitor visitor = new CustomVisitor(methods, markdownEditor); node.accept(visitor);
-		 */
+		 
 
 		//
-		/* Update the outline! */
+		 Update the outline! 
 
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
@@ -142,26 +145,26 @@ public class RMarkdownReconcilingStrategy implements IReconcilingStrategy, IReco
 
 	}
 
-	/*
+	
 	 * (non-Javadoc)
 	 * 
 	 * @see org.eclipse.jface.text.reconciler.IReconcilingStrategy#reconcile(org. eclipse.jface.text.reconciler.DirtyRegion, org.eclipse.jface.text.IRegion)
-	 */
+	 
 	public void reconcile(DirtyRegion dirtyRegion, IRegion subRegion) {
-		System.out.println("Alpha");
+		
 		// System.out.println("parsed!");
-		/*
+		
 		 * Parse parse=editor.getParser(); parse.parse();
-		 */
+		 
 		doReconcile();
 		triggerRMarkdownAction();
 	}
 
-	/*
+	
 	 * (non-Javadoc)
 	 * 
 	 * @see org.eclipse.jface.text.reconciler.IReconcilingStrategy#reconcile(org. eclipse.jface.text.IRegion)
-	 */
+	 
 	public void reconcile(IRegion partition) {
 
 		doReconcile();
@@ -190,27 +193,27 @@ public class RMarkdownReconcilingStrategy implements IReconcilingStrategy, IReco
 		}
 	}
 
-	/*
+	
 	 * (non-Javadoc)
 	 * 
 	 * @see org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension# setProgressMonitor(org.eclipse.core.runtime.IProgressMonitor)
-	 */
+	 
 	public void setProgressMonitor(IProgressMonitor monitor) {
 		// TODO Auto-generated method stub
 
 	}
 
-	/*
+	
 	 * (non-Javadoc)
 	 * 
 	 * @see org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension# initialReconcile()
-	 */
+	 
 	public void initialReconcile() {
 		// System.out.println("initial");
 		doReconcile();
-		/*
+		
 		 * Parse parse=editor.getParser(); parse.parse();
-		 */
+		 
 
 	}
 
@@ -218,8 +221,9 @@ public class RMarkdownReconcilingStrategy implements IReconcilingStrategy, IReco
 		this.markdownEditor = markdownEditor;
 	}
 
-	/**
+	*//**
 	 * next character position - used locally and only valid while {@link #calculatePositions()} is in progress.
-	 */
+	 *//*
 
 }
+*/

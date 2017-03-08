@@ -785,8 +785,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 						/*
 						 * Under Linux and MacOSX commands are echoed in ASCII
 						 * and evtl. ANSI control characters.We cannot avoid the
-						 * echo but can delete some ASCII characters for a
-						 * better output!
+						 * echo but can delete some ASCII characters for an
+						 * improved output!
 						 */
 						else {
 							if (ch != 8 && ch != 12 && ch != 13) {

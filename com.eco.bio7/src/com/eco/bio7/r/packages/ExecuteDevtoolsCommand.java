@@ -20,6 +20,7 @@ import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
@@ -56,8 +57,9 @@ public class ExecuteDevtoolsCommand {
 				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 					loc = loc.replace("\\", "/");
 				}
-				System.out.println(loc);
-				if (RServe.isAliveDialog()) {
+				// System.out.println(loc);
+				String rCommand = "library(devtools);setwd(\"" + loc + "\");" + command + "";
+				if (RServe.isAlive()) {
 
 					if (cancelCreation == false) {
 
@@ -87,7 +89,7 @@ public class ExecuteDevtoolsCommand {
 									try {
 
 										/* Remove the temporary variable! */
-										c.eval("library(devtools);setwd(\"" + loc + "\");"+command+"");
+										c.eval(rCommand);
 
 									} catch (RserveException e) {
 										// TODO Auto-generated catch block
@@ -136,6 +138,16 @@ public class ExecuteDevtoolsCommand {
 							Bio7Dialog.message("Rserve is busy!");
 						}
 					}
+				} else if (RServe.isAlive() == false) {
+					String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
+					if (selectionConsole.equals("R")) {
+
+						ConsolePageParticipant.pipeInputToConsole(rCommand, true, true);
+						System.out.println(rCommand);
+					}
+
+				} else {
+					Bio7Dialog.message("Please start Rserve or the R console.");
 				}
 
 			}
