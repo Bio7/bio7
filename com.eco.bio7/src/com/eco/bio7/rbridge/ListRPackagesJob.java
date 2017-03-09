@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2012 M. Austenfeld
+ * Copyright (c) 2007-2017 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -26,7 +26,7 @@ import com.eco.bio7.preferences.PreferenceConstants;
 
 public class ListRPackagesJob extends WorkspaceJob {
 
-	private String st;
+	private String[] packageList;
 
 	public ListRPackagesJob() {
 		super("Job");
@@ -48,37 +48,26 @@ public class ListRPackagesJob extends WorkspaceJob {
 			RConnection c = RServe.getConnection();
 
 			try {
-				c.eval(".bio7ListOfWebPackages<-available.packages(contriburl=contrib.url(\"" + server + "\"))");
+				c.eval("try(.bio7ListOfWebPackages<-available.packages(contriburl=contrib.url(\"" + server + "\")))");
 
-				c.eval(".bio7ListOfWebPackagesNames<-.bio7ListOfWebPackages[,1]");
-				int b = 0;
 				try {
-					b = (int) c.eval("length(.bio7ListOfWebPackagesNames)").asInteger();
+					packageList = c.eval("try(.bio7ListOfWebPackages[,1])").asStrings();
 				} catch (REXPMismatchException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 
-				for (int i = 1; i < b; i++) {
-
-					st = null;
-					try {
-						st = (String) c.eval(".bio7ListOfWebPackagesNames[" + i + "]").asString();
-					} catch (REXPMismatchException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-
+				
 					display.syncExec(new Runnable() {
 
 						public void run() {
 							if (PackagesList.getAllList().isDisposed() == false) {
-								PackagesList.getAllList().add(st);
+								PackagesList.getAllList().setItems(packageList);
 							}
 						}
 					});
 
-				}
+				
 			} catch (RserveException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

@@ -7,6 +7,7 @@ import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.preference.PreferenceConverter;
+import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -75,7 +76,8 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new BooleanFieldEditor("RECONCILE_MARKDOWN", "Automatically Compile Markdown after editor changes", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
-		addField(new IntegerFieldEditor("RECONCILE_MARKDOWN_TIME", "Compile Markdown interval (in ms after last keystroke - restart necessary!)", getFieldEditorParent()));
+		/*Here we use a string field editor because a integer field editor throws exceptions each time the value is empty!*/
+		addField(new StringFieldEditor("RECONCILE_MARKDOWN_TIME", "Compile Markdown interval (in ms after last keystroke - restart necessary!)", getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		final Link link2 = new Link(getFieldEditorParent(), SWT.NONE);
 		link2.setText("See <a href=\"com.eco.bio7.browser.preferences\">'Browser Preferences'</a> to select or configure the Browser.");

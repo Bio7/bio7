@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005-2016 M. Austenfeld
+ * Copyright (c) 2005-2017 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -47,7 +47,7 @@ public class RLibraryList extends Shell {
 
 	public RLibraryList(Display display, int style) {
 		super(display, style);
-      
+
 		// setImage(SWTResourceManager.getImage(RLibraryList.class,
 		// "/pics/logo.gif"));
 		/* Reparse the document! */
@@ -155,41 +155,25 @@ public class RLibraryList extends Shell {
 				RState.setBusy(true);
 				Display display = Util.getDisplay();
 				display.syncExec(() -> {
-					int b = 0;
-					if (c != null) {
 
+					if (c != null) {
+						String[] listPackages = null;
 						try {
 							c.eval("try(.bio7ListOfWebPackages <- list(sort(.packages(all.available = TRUE))))");
 
-							c.eval(".bio7ListOfWebPackagesNames<-.bio7ListOfWebPackages[[1]]");
 							try {
-								b = (int) c.eval("length(.bio7ListOfWebPackagesNames)").asInteger();
-							} catch (REXPMismatchException e11) {
-
-								e11.printStackTrace();
+								listPackages = c.eval(".bio7ListOfWebPackages[[1]]").asStrings();
+							} catch (REXPMismatchException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
 							}
+
 						} catch (RserveException e2) {
 
 							e2.printStackTrace();
 						}
 
-						for (int i = 1; i <= b; i++) {
-
-							String st = null;
-
-							try {
-								st = (String) c.eval(".bio7ListOfWebPackagesNames[" + i + "]").asString();
-							} catch (REXPMismatchException e12) {
-
-								e12.printStackTrace();
-							} catch (RserveException e13) {
-
-								e13.printStackTrace();
-							}
-
-							allPackagesList.add(st);
-
-						}
+						allPackagesList.setItems(listPackages);
 
 					}
 

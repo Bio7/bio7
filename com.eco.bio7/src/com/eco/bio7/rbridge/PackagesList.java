@@ -192,7 +192,7 @@ public class PackagesList extends Shell {
 		setText("Packages");
 		setSize(306, 730);
 		setLayout(new GridLayout(2, true));
-        this.setBackground(Util.getSWTBackgroundColor());
+       // this.setBackground(Util.getSWTBackgroundColor());
 		//
 	}
 

@@ -271,10 +271,11 @@ public class RMarkdownSpellingReconcileStrategy implements IReconcilingStrategy,
 				e.printStackTrace();
 			}
 			if (selSource.contains("```{r") || selSource.contains("```{R")) {
-				methods.push(new MarkdownEditorOutlineNode("{R Chunk} L."+(i + 1), i + 1, "RMarkdown", markdownEditor.baseNode));
+				methods.push(new MarkdownEditorOutlineNode("{R Chunk} (L."+(i+1)+")", i + 1, "RMarkdown", markdownEditor.baseNode));
 			}
 			else if(selSource.contains("#")){
-				methods.push(new MarkdownEditorOutlineNode("Header L."+(i + 1), i + 1, "MarkdownHeader", markdownEditor.baseNode));
+				String sub=selSource.substring(selSource.lastIndexOf("#") + 1).trim();
+				methods.push(new MarkdownEditorOutlineNode(sub+" (L." +(i + 1)+")", i + 1, "MarkdownHeader", markdownEditor.baseNode));
 			}
 		}
 		/*
