@@ -44,6 +44,7 @@ import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
+import com.eco.bio7.util.Util;
 
 public class RMarkdownAction extends Action implements IObjectActionDelegate {
 
@@ -141,8 +142,9 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 		if (canOperate) {
 			markdownFile(aFile, aFile.getProject());
 		}
-		editor.getEditorSite().getPart().setFocus();
-		editor.setFocus();
+		//editor.getEditorSite().getPart().setFocus();
+		//editor.setFocus();
+		
 	}
 
 	private void markdownFile(Object selectedObj, final IProject activeProject) {
@@ -334,14 +336,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 					if (event.getResult().isOK()) {
 						/* Set the flag that a new compilation is possible after the last job has been finished! */
 						canOperate = true;
-						Display display = PlatformUI.getWorkbench().getDisplay();
-						display.asyncExec(new Runnable() {
-
-							public void run() {
-
-								editor.setFocus();
-							}
-						});
+						
 					} else {
 
 					}

@@ -1,4 +1,4 @@
-package com.eco.bio7.rbridge.actions;
+/*package com.eco.bio7.rbridge.actions;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
@@ -58,4 +58,4 @@ public class InstallRPackage extends Action {
 		}
 	}
 
-}
+}*/

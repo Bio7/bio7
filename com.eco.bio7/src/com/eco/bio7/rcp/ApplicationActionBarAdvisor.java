@@ -78,7 +78,7 @@ import com.eco.bio7.rbridge.actions.ClipboardRScipt;
 import com.eco.bio7.rbridge.actions.ClipboardRValues;
 import com.eco.bio7.rbridge.actions.ExecuteRScriptAction;
 import com.eco.bio7.rbridge.actions.ExecuteRTextSelection;
-import com.eco.bio7.rbridge.actions.InstallRPackage;
+//import com.eco.bio7.rbridge.actions.InstallRPackage;
 import com.eco.bio7.rbridge.actions.InterpretR;
 import com.eco.bio7.rbridge.actions.LoadRLibrary;
 import com.eco.bio7.rbridge.actions.LoadRWorkspace;
@@ -197,7 +197,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 	private ClipboardRValues clipboardRValues;
 
-	private InstallRPackage installRPackage;
+	//private InstallRPackage installRPackage;
 
 	private LoadRLibrary loadRLibrary;
 
@@ -392,8 +392,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		enableRPlots = new ActivateRPlots("Activate R Plots", window);
 		register(enableRPlots);
 
-		installRPackage = new InstallRPackage("Install package(s)", window);
-		register(installRPackage);
+		/*installRPackage = new InstallRPackage("Install package(s)", window);
+		register(installRPackage);*/
 
 		loadRLibrary = new LoadRLibrary("Load/Remove package(s)", window);
 		register(loadRLibrary);
@@ -834,7 +834,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		rMenu.add(new Separator());
 		rMenu.add(clearWorkspace);
 		rMenu.add(new Separator());
-		rMenu.add(installRPackage);
+		//rMenu.add(installRPackage);
 		rMenu.add(loadRLibrary);
 		rMenu.add(new Separator());
 		if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {

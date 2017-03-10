@@ -1,13 +1,15 @@
-/*package com.eco.bio7.rbridge.plot;
+package com.eco.bio7.rbridge;
 
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
-import org.eclipse.swt.layout.FormLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
@@ -15,20 +17,16 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.part.ViewPart;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RScript;
-import com.eco.bio7.rbridge.RServe;
-import com.eco.bio7.rbridge.RShellView;
-import com.eco.bio7.rbridge.RState;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.GridData;
 
-public class RPlot extends Composite {
+public class RPlotView extends ViewPart {
 
-	private CTabItem plotTabItem;
+	public static final String ID = "com.eco.bio7.rbridge.RPlotView"; //$NON-NLS-1$
 	private Composite composite_1;
 	private Button plotButton;
 	private CTabFolder tab;
@@ -58,19 +56,30 @@ public class RPlot extends Composite {
 	private Button voronoiButton;
 	private FormData fd_pdfCheckBox;
 	private Button imageButton;
+	public RPlotView() {
+	}
 
-	// private RShellView rShellView;
-	// private List listShell;
+	/**
+	 * Create contents of the view part.
+	 * @param parent
+	 */
+	@Override
+	public void createPartControl(Composite parent) {
+		 composite_1 = new Composite(parent, SWT.NONE);
 
-	public RPlot(Composite parent, int style, CTabItem plotTabItem_) {
-		super(parent, style);
+		createActions();
+		initializeToolBar();
+		initializeMenu();
+		
+
+		
 		// tab=folderTab;
 		// listShell = listShell_;
-		plotTabItem = plotTabItem_;
+		
 
-		composite_1 = this;
-		plotTabItem.setControl(this);
-		setLayout(new GridLayout(4, true));
+		
+		
+		composite_1.setLayout(new GridLayout(4, true));
 
 		plotButton = new Button(composite_1, SWT.NONE);
 		GridData gd_plotButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
@@ -87,7 +96,7 @@ public class RPlot extends Composite {
 						List listShell = RShellView.getListShell();
 						String[] data = listShell.getSelection();
 						if (data.length > 0) {
-							
+							/*
 							 * if (pdfCheckBox.getSelection() == false) {
 							 * 
 							 * PlotJob.setPdf(true);
@@ -96,7 +105,7 @@ public class RPlot extends Composite {
 							 * PlotJob.setPdf(false);
 							 * PlotJob.setPlotPixel(spinnerX.getSelection(),
 							 * spinnerY.getSelection()); }
-							 
+							 */
 
 							if (text_1.isEnabled() == false) {
 								RServe.printJob("boxplot(" + data[0] + ",main=\"" + titleText.getText() + "\",xlab=\""
@@ -116,23 +125,23 @@ public class RPlot extends Composite {
 			}
 		});
 
-		
+		/*
 		 * pdfCheckBox = new Button(composite_1, SWT.CHECK);
 		 * pdfCheckBox.addSelectionListener(new SelectionAdapter() {
 		 * 
 		 * public void widgetSelected(SelectionEvent e) { if
 		 * (pdfCheckBox.getSelection() == false) { PlotJob.setPdf(true); } else
 		 * { PlotJob.setPdf(false); } } });
-		 
+		 */
 		fd_pdfCheckBox = new FormData();
-		
+		/*
 		 * fd_pdfCheckBox.bottom = new FormAttachment(0, 21); fd_pdfCheckBox.top
 		 * = new FormAttachment(0, 5);
 		 * pdfCheckBox.setLayoutData(fd_pdfCheckBox);
 		 * pdfCheckBox.setToolTipText(
 		 * "If selected plot is displayed\n in the ImageJ view.");
 		 * pdfCheckBox.setText("IJ");
-		 
+		 */
 
 		xyButton = new Button(composite_1, SWT.NONE);
 		GridData gd_xyButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
@@ -148,7 +157,7 @@ public class RPlot extends Composite {
 
 						String[] selections = listShell.getSelection();
 						if (selections.length > 0) {
-							
+							/*
 							 * if (pdfCheckBox.getSelection() == false) {
 							 * 
 							 * PlotJob.setPdf(true);
@@ -157,7 +166,7 @@ public class RPlot extends Composite {
 							 * PlotJob.setPdf(false);
 							 * PlotJob.setPlotPixel(spinnerX.getSelection(),
 							 * spinnerY.getSelection()); }
-							 
+							 */
 							if (selections.length == 2) {
 								if (text_1.isEnabled() == false) {
 
@@ -206,7 +215,7 @@ public class RPlot extends Composite {
 						List listShell = RShellView.getListShell();
 						String[] data = listShell.getSelection();
 						if (data.length > 0) {
-							
+							/*
 							 * if (pdfCheckBox.getSelection() == false) {
 							 * 
 							 * PlotJob.setPdf(true);
@@ -215,7 +224,7 @@ public class RPlot extends Composite {
 							 * PlotJob.setPdf(false);
 							 * PlotJob.setPlotPixel(spinnerX.getSelection(),
 							 * spinnerY.getSelection()); }
-							 
+							 */
 
 							if (text_1.isEnabled() == false) {
 								RServe.printJob("persp(" + data[0] + ",main=\"" + titleText.getText()
@@ -257,7 +266,7 @@ public class RPlot extends Composite {
 						}
 						List listShell = RShellView.getListShell();
 						String[] selections = listShell.getSelection();
-						
+						/*
 						 * if (pdfCheckBox.getSelection() == false) {
 						 * 
 						 * PlotJob.setPdf(true);
@@ -266,7 +275,7 @@ public class RPlot extends Composite {
 						 * PlotJob.setPdf(false);
 						 * PlotJob.setPlotPixel(spinnerX.getSelection(),
 						 * spinnerY.getSelection()); }
-						 
+						 */
 						if (selections.length == 2) {
 
 							try {
@@ -314,7 +323,7 @@ public class RPlot extends Composite {
 						List listShell = RShellView.getListShell();
 						String[] data = listShell.getSelection();
 						if (data.length > 0) {
-							
+							/*
 							 * if (pdfCheckBox.getSelection() == false) {
 							 * 
 							 * PlotJob.setPdf(true);
@@ -323,7 +332,7 @@ public class RPlot extends Composite {
 							 * PlotJob.setPdf(false);
 							 * PlotJob.setPlotPixel(spinnerX.getSelection(),
 							 * spinnerY.getSelection()); }
-							 
+							 */
 							if (text_1.isEnabled() == false) {
 								RServe.printJob("hist(" + data[0] + ",main=\"" + titleText.getText() + "\",xlab=\""
 										+ xText.getText() + "\",ylab=\"" + yText.getText() + "\")");
@@ -354,7 +363,7 @@ public class RPlot extends Composite {
 						List listShell = RShellView.getListShell();
 						String[] data = listShell.getSelection();
 						if (data.length > 0) {
-							
+							/*
 							 * if (pdfCheckBox.getSelection() == false) {
 							 * 
 							 * PlotJob.setPdf(true);
@@ -363,7 +372,7 @@ public class RPlot extends Composite {
 							 * PlotJob.setPdf(false);
 							 * PlotJob.setPlotPixel(spinnerX.getSelection(),
 							 * spinnerY.getSelection()); }
-							 
+							 */
 							if (text_1.isEnabled() == false) {
 								RServe.printJob("pie(" + data[0] + ",main=\"" + titleText.getText() + "\")");
 							} else {
@@ -393,7 +402,7 @@ public class RPlot extends Composite {
 						List listShell = RShellView.getListShell();
 						String[] data = listShell.getSelection();
 						if (data.length > 0) {
-							
+							/*
 							 * if (pdfCheckBox.getSelection() == false) {
 							 * 
 							 * PlotJob.setPdf(true);
@@ -402,7 +411,7 @@ public class RPlot extends Composite {
 							 * PlotJob.setPdf(false);
 							 * PlotJob.setPlotPixel(spinnerX.getSelection(),
 							 * spinnerY.getSelection()); }
-							 
+							 */
 
 							if (text_1.isEnabled() == false) {
 								RServe.printJob("contour(" + data[0] + ",main=\"" + titleText.getText() + "\")");
@@ -432,7 +441,7 @@ public class RPlot extends Composite {
 						List listShell = RShellView.getListShell();
 						String[] data = listShell.getSelection();
 						if (data.length > 0) {
-							
+							/*
 							 * if (pdfCheckBox.getSelection() == false) {
 							 * 
 							 * PlotJob.setPdf(true);
@@ -441,7 +450,7 @@ public class RPlot extends Composite {
 							 * PlotJob.setPdf(false);
 							 * PlotJob.setPlotPixel(spinnerX.getSelection(),
 							 * spinnerY.getSelection()); }
-							 
+							 */
 
 							if (text_1.isEnabled() == false) {
 								RServe.printJob(
@@ -475,8 +484,8 @@ public class RPlot extends Composite {
 		gd_xText.heightHint = 30;
 		xText.setLayoutData(gd_xText);
 		xText.setText("x");
-		new Label(this, SWT.NONE);
-		new Label(this, SWT.NONE);
+		new Label(composite_1, SWT.NONE);
+		new Label(composite_1, SWT.NONE);
 
 		label = new Label(composite_1, SWT.NONE);
 		label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
@@ -487,8 +496,8 @@ public class RPlot extends Composite {
 		gd_yText.heightHint = 30;
 		yText.setLayoutData(gd_yText);
 		yText.setText("y");
-		new Label(this, SWT.NONE);
-		new Label(this, SWT.NONE);
+		new Label(composite_1, SWT.NONE);
+		new Label(composite_1, SWT.NONE);
 
 		label_1 = new Label(composite_1, SWT.NONE);
 		label_1.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
@@ -502,7 +511,7 @@ public class RPlot extends Composite {
 			public void widgetSelected(final SelectionEvent e) {
 				if (RServe.isAliveDialog()) {
 					if (RState.isBusy() == false) {
-						
+						/*
 						 * if (pdfCheckBox.getSelection() == false) {
 						 * 
 						 * PlotJob.setPdf(true);
@@ -511,7 +520,7 @@ public class RPlot extends Composite {
 						 * PlotJob.setPdf(false);
 						 * PlotJob.setPlotPixel(spinnerX.getSelection(),
 						 * spinnerY.getSelection()); }
-						 
+						 */
 						RScript.rScriptJob(text_1.getText(), null);
 
 					}
@@ -521,8 +530,8 @@ public class RPlot extends Composite {
 			}
 		});
 		plotButton_1.setText("Draw Plot");
-		new Label(this, SWT.NONE);
-		new Label(this, SWT.NONE);
+		new Label(composite_1, SWT.NONE);
+		new Label(composite_1, SWT.NONE);
 
 		sendButton = new Button(composite_1, SWT.CHECK);
 		sendButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
@@ -622,7 +631,7 @@ public class RPlot extends Composite {
 		});
 		menuItem_2.setText("Curve");
 
-		
+		/*
 		 * spinnerX = new Spinner(composite_1, SWT.BORDER);
 		 * spinnerX.addSelectionListener(new SelectionAdapter() {
 		 * 
@@ -645,9 +654,9 @@ public class RPlot extends Composite {
 		 * 
 		 * spinnerX.setMinimum(100); spinnerX.setMaximum(3000);
 		 * spinnerX.setSelection(500);
-		 
+		 */
 
-		
+		/*
 		 * spinnerY = new Spinner(composite_1, SWT.BORDER);
 		 * spinnerY.addSelectionListener(new SelectionAdapter() {
 		 * 
@@ -666,9 +675,9 @@ public class RPlot extends Composite {
 		 * 
 		 * spinnerY.setMinimum(100); spinnerY.setMaximum(3000);
 		 * spinnerY.setSelection(500);
-		 
+		 */
 
-		
+		/*
 		 * spinnerInchX = new Spinner(composite_1, SWT.BORDER);
 		 * spinnerInchX.addSelectionListener(new SelectionAdapter() {
 		 * 
@@ -697,9 +706,9 @@ public class RPlot extends Composite {
 		 * spinnerInchY.setLayoutData(fd_spinnerInchY);
 		 * spinnerInchY.setSelection(5); spinnerInchY.setMinimum(1);
 		 * spinnerInchY.setMaximum(40);
-		 
+		 */
 
-		
+		/*
 		 * final Label pixelLabel = new Label(composite_1, SWT.NONE); final
 		 * FormData fd_pixelLabel = new FormData(); fd_pixelLabel.right = new
 		 * FormAttachment(0, 360); fd_pixelLabel.bottom = new FormAttachment(0,
@@ -714,8 +723,35 @@ public class RPlot extends Composite {
 		 * FormAttachment(0, 110); fd_inchLabel.top = new FormAttachment(0, 95);
 		 * fd_inchLabel.left = new FormAttachment(0, 277);
 		 * inchLabel.setLayoutData(fd_inchLabel); inchLabel.setText("Pdf Inch");
-		 
+		 */
+	
+		
+	}
+
+	/**
+	 * Create the actions.
+	 */
+	private void createActions() {
+		// Create the actions
+	}
+
+	/**
+	 * Initialize the toolbar.
+	 */
+	private void initializeToolBar() {
+		IToolBarManager toolbarManager = getViewSite().getActionBars().getToolBarManager();
+	}
+
+	/**
+	 * Initialize the menu.
+	 */
+	private void initializeMenu() {
+		IMenuManager menuManager = getViewSite().getActionBars().getMenuManager();
+	}
+
+	@Override
+	public void setFocus() {
+		// Set the focus
 	}
 
 }
-*/

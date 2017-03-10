@@ -124,7 +124,7 @@ import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.os.pid.Pid;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.completion.ShellCompletion;
-import com.eco.bio7.rbridge.plot.RPlot;
+//import com.eco.bio7.rbridge.plot.RPlot;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.reditor.actions.OpenFileCreateSourceTemplate;
 import com.eco.bio7.reditor.actions.SaveFileCreateSourceTemplate;
@@ -171,7 +171,7 @@ public class RShellView extends ViewPart {
 	// private IPreferenceStore store;
 
 	private CTabFolder tab;
-	private CTabItem plotTabItem;
+	//private CTabItem plotTabItem;
 	private Button loadButton_1;
 	private Button fontButton;
 	protected boolean cmdError;
@@ -721,9 +721,9 @@ public class RShellView extends ViewPart {
 			}
 		});
 		gcButton.setText("Gc");
-		plotTabItem = new CTabItem(tab, SWT.NONE);
-		plotTabItem.setText("Plot Data");
-		new RPlot(tab, SWT.NONE, plotTabItem);
+		/*plotTabItem = new CTabItem(tab, SWT.NONE);
+		plotTabItem.setText("Plot Data");*/
+		//new RPlot(tab, SWT.NONE, plotTabItem);
 
 		CTabItem packagesTabItem = new CTabItem(tab, SWT.NONE);
 		packagesTabItem.setText("Packages");
@@ -1258,21 +1258,24 @@ public class RShellView extends ViewPart {
 										}
 									}
 									buf.append(")");
+									if (bolRaw != null && bolRaw[0] == true) {
+										textConsole.setText("Object description:\n\n" + "type    = " + type + "\n" + "class   = " + cl + "\n" + "size     = " + sizeList);
+									} else {
+										textConsole.setText("Object description:\n\n" + "type    = " + type + "\n" + "class   = " + cl + "\n" + "dim     = " + buf.toString());
+
+									}
 									// "{length("+selected+")}else
 									// {dim("+selected+")}").asStrings();
 								} catch (REXPMismatchException e1) {
 									// TODO Auto-generated catch block
-									e1.printStackTrace();
+									textConsole.setText("Data class and type can't be displayed!");
+									// e1.printStackTrace();
 								} catch (RserveException e1) {
 									// TODO Auto-generated catch block
-									e1.printStackTrace();
+									textConsole.setText("Data class and type can't be displayed!");
+									// e1.printStackTrace();
 								}
-								if (bolRaw[0]) {
-									textConsole.setText("Object description:\n\n" + "type    = " + type + "\n" + "class   = " + cl + "\n" + "size     = " + sizeList);
-								} else {
-									textConsole.setText("Object description:\n\n" + "type    = " + type + "\n" + "class   = " + cl + "\n" + "dim     = " + buf.toString());
 
-								}
 								buf = null;
 							} else {
 								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");

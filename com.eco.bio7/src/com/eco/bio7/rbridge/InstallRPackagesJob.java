@@ -47,8 +47,8 @@ public class InstallRPackagesJob extends WorkspaceJob {
 			display.syncExec(new Runnable() {
 
 				public void run() {
-					items = PackagesList.getAllList().getSelection();
-					//itemsSpatial = PackagesList.getSpatialList().getSelection();
+					items = PackageInstallView.getAllList().getSelection();
+					//itemsSpatial = PackageInstallView.getSpatialList().getSelection();
 				}
 			});
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();

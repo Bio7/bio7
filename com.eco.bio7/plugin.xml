@@ -294,6 +294,20 @@
             id="com.eco.bio7.image.TransferGeometryView"
             name="Geometry Selections">
       </view>
+      <view
+            category="com.eco.bio7.rapplication"
+            class="com.eco.bio7.rbridge.PackageInstallView"
+            icon="icons/views/rview.png"
+            id="com.eco.bio7.rbridge.PackageInstallView"
+            name="Install Packages">
+      </view>
+      <view
+            category="com.eco.bio7.rapplication"
+            class="com.eco.bio7.rbridge.RPlotView"
+            icon="icons/views/rview.png"
+            id="com.eco.bio7.rbridge.RPlotView"
+            name="Plot">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
@@ -340,7 +354,7 @@
       <keyBinding
             commandId="com.eco.bio7.flowstop"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            keySequence="CTRL+X"/>
+            keySequence="CTRL+ALT+X"/>
      
       <keyBinding
             commandId="com.eco.bio7.print_expression"
@@ -499,16 +513,6 @@
             commandId="com.eco.bio7.save_r_workspace2"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
             keySequence="CTRL+ALT+S">
-      </keyBinding>
-      <command
-            description="Install R packages"
-            id="com.eco.bio7.rserve_installRPackage"
-            name="Install R packages">
-      </command>
-      <keyBinding
-            commandId="com.eco.bio7.rserve_installRPackage"
-            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            keySequence="CTRL+ALT+I">
       </keyBinding>
       <command
             description="Load R packages"

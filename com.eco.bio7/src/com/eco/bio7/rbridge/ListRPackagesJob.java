@@ -42,7 +42,7 @@ public class ListRPackagesJob extends WorkspaceJob {
 			display.syncExec(new Runnable() {
 
 				public void run() {
-					PackagesList.getAllList().removeAll();
+					PackageInstallView.getAllList().removeAll();
 				}
 			});
 			RConnection c = RServe.getConnection();
@@ -61,8 +61,8 @@ public class ListRPackagesJob extends WorkspaceJob {
 					display.syncExec(new Runnable() {
 
 						public void run() {
-							if (PackagesList.getAllList().isDisposed() == false) {
-								PackagesList.getAllList().setItems(packageList);
+							if (PackageInstallView.getAllList().isDisposed() == false) {
+								PackageInstallView.getAllList().setItems(packageList);
 							}
 						}
 					});

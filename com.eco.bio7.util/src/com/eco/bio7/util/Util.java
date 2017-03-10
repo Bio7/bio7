@@ -9,6 +9,9 @@ import java.io.IOException;
 
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
@@ -35,14 +38,10 @@ public class Util {
 	}
 
 	/*
-	 * From:
-	 * http://stackoverflow.com/questions/4748673/how-can-i-check-the-bitness-of
-	 * -my-os-using-java-j2se-not-os-arch/5940770#5940770 Author: ChrisH:
-	 * http://stackoverflow.com/users/71109/chrish
+	 * From: http://stackoverflow.com/questions/4748673/how-can-i-check-the-bitness-of -my-os-using-java-j2se-not-os-arch/5940770#5940770 Author: ChrisH: http://stackoverflow.com/users/71109/chrish
 	 */
 	/**
-	 * A method to detect the architecture of the Operating System (32-bit,
-	 * 64-bit).
+	 * A method to detect the architecture of the Operating System (32-bit, 64-bit).
 	 * 
 	 * @return the architecture (32, 64)
 	 */
@@ -53,8 +52,6 @@ public class Util {
 		String realArch = arch.endsWith("64") || wow64Arch != null && wow64Arch.endsWith("64") ? "64" : "32";
 		return realArch;
 	}
-
-	
 
 	public File[] ListFilesDirectory(File filedirectory, final String[] extensions) {
 		File dir = filedirectory;
@@ -72,8 +69,7 @@ public class Util {
 		// Filter the extension of the file.
 		FilenameFilter filter = new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2]) || name.endsWith(extensions[3]) || name.endsWith(extensions[4])
-						|| name.endsWith(extensions[5]));
+				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2]) || name.endsWith(extensions[3]) || name.endsWith(extensions[4]) || name.endsWith(extensions[5]));
 			}
 		};
 
@@ -194,10 +190,11 @@ public class Util {
 		return col;
 
 	}
-	
+
 	/**
 	 * A method to return the default color as an SWT color.
-	 * @return 
+	 * 
+	 * @return
 	 * 
 	 * @return a SWT color object
 	 */
@@ -208,13 +205,30 @@ public class Util {
 
 			public void run() {
 
-				 colSwt = getShell().getBackground();
-				
+				colSwt = getShell().getBackground();
 
 			}
 		});
 		return colSwt;
 
+	}
+
+	/**
+	 * A method to activate the current editor.
+	 * 
+	 * @param editor
+	 */
+	public static void activateEditorPage(final IEditorPart editor) {
+		IEditorSite site = editor.getEditorSite();
+		final IWorkbenchPage page = site.getPage();
+		Display display = site.getShell().getDisplay();
+		display.syncExec(new Runnable() {
+			public void run() {
+				page.activate(editor);
+			}
+		});
+		if (editor != page.getActiveEditor())
+			throw new RuntimeException("Editor couldn't activated");
 	}
 
 }

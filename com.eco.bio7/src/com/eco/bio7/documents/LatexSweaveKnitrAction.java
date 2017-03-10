@@ -47,6 +47,7 @@ import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
+import com.eco.bio7.util.Util;
 
 import net.sourceforge.texlipse.editor.TexEditor;
 
@@ -58,6 +59,7 @@ public class LatexSweaveKnitrAction extends Action {
 	private String name;
 	private String project;
 	private String dirPath;
+	private IEditorPart editor;
 
 	public LatexSweaveKnitrAction() {
 		super();
@@ -93,7 +95,7 @@ public class LatexSweaveKnitrAction extends Action {
 			utils.cons.activate();
 			utils.cons.clear();
 		}
-		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		 editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 
 		if (editor == null) {
 
@@ -306,7 +308,8 @@ public class LatexSweaveKnitrAction extends Action {
 			job.addJobChangeListener(new JobChangeAdapter() {
 				public void done(IJobChangeEvent event) {
 					if (event.getResult().isOK()) {
-
+						/*Activate the editor again after the job!*/
+						Util.activateEditorPage(editor);
 					} else {
 
 					}

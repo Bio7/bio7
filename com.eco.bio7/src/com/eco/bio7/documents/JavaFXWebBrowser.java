@@ -9,18 +9,21 @@ import org.apache.commons.io.FilenameUtils;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.PlatformUI;
 import org.osgi.framework.Bundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
-
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.collection.CustomView;
+import com.eco.bio7.markdownedit.editors.MarkdownEditor;
+import com.eco.bio7.util.Util;
+
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
@@ -28,7 +31,6 @@ import javafx.concurrent.Worker;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
@@ -46,7 +48,7 @@ import netscape.javascript.JSObject;
 
 /*A JavaFX browser implementation!*/
 public class JavaFXWebBrowser {
-	private ContextMenu menu;
+
 	private WebEngine webEng;
 	private WebView brow;
 	private boolean html;
@@ -128,7 +130,10 @@ public class JavaFXWebBrowser {
 
 						}
 					}, false);
+					
 				} else {
+					
+					webEng.executeScript("window.find('runif')");
 					/*
 					 * String markdownContent=MarkdownEditor.getSelectedContent(); Document doc = webEng.getDocument(); Element el = doc.getDocumentElement();
 					 * 
@@ -140,6 +145,13 @@ public class JavaFXWebBrowser {
 					 * webEng.executeScript("");
 					 */
 
+				}
+				/* We have to activate the editor again to enable all keyboard actions, etc.! */
+				IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+				if (editor == null || editor instanceof MarkdownEditor == false) {
+					return;
+				} else {
+					Util.activateEditorPage(editor);
 				}
 
 			}
@@ -335,6 +347,10 @@ public class JavaFXWebBrowser {
 
 	public WebEngine getWebEngine() {
 		return webEng;
+	}
+
+	public WebView getBrowser() {
+		return brow;
 	}
 
 	private static String getPdfjsPath() {
