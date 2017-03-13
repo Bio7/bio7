@@ -7,6 +7,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -95,7 +97,7 @@ public class LatexSweaveKnitrAction extends Action {
 			utils.cons.activate();
 			utils.cons.clear();
 		}
-		 editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 
 		if (editor == null) {
 
@@ -115,7 +117,7 @@ public class LatexSweaveKnitrAction extends Action {
 			}
 
 			knitrFile(aFile, aFile.getProject());
-			
+
 		}
 	}
 
@@ -148,8 +150,10 @@ public class LatexSweaveKnitrAction extends Action {
 				protected IStatus run(IProgressMonitor monitor) {
 					if (extension.equals("tex")) {
 						monitor.beginTask("LaTeX file...", IProgressMonitor.UNKNOWN);
+					
 
 						compileLatex(activeProject, theName, dirPath, true);
+
 					}
 
 					else if (extension.equals("rnw") || extension.equals("Rnw")) {
@@ -308,8 +312,8 @@ public class LatexSweaveKnitrAction extends Action {
 			job.addJobChangeListener(new JobChangeAdapter() {
 				public void done(IJobChangeEvent event) {
 					if (event.getResult().isOK()) {
-						/*Activate the editor again after the job!*/
-						Util.activateEditorPage(editor);
+						/* Activate the editor again after the job! */
+						// Util.activateEditorPage(editor);
 					} else {
 
 					}
@@ -342,6 +346,62 @@ public class LatexSweaveKnitrAction extends Action {
 
 	private void compileLatex(final IProject activeProject, final String theName, String dirPath, boolean pureLatex) {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		boolean includeBibTex = store.getBoolean("INCLUDE_BIBTEX");
+		boolean includeMakeIndex = store.getBoolean("INCLUDE_BIBTEX");
+		String bibtexEngine = store.getString("BIBTEX_ENGINE");
+		/*With bibtex (optional biber) and make index!*/
+		if(includeBibTex&&includeMakeIndex){
+			compileLatexWithBibtexAndIndex(activeProject,theName,dirPath,pureLatex,bibtexEngine);
+		}
+		/*With bibtex (optional biber) only!*/
+		else if(includeBibTex){
+			compileLatexWithBibtex(activeProject,theName,dirPath,pureLatex,bibtexEngine);
+		}
+		/*With makeindex only!*/
+		else if (includeMakeIndex){
+			compileLatexWithMakeIndex(activeProject,theName,dirPath,pureLatex);
+		}
+		/*LaTeX file only*/
+		else{
+		compileLatexFinal(activeProject, theName, dirPath, pureLatex);
+		}
+	}
+	
+	private void compileLatexWithBibtex(final IProject activeProject, final String theName, String dirPath, boolean pureLatex,String bibtexEngine) {
+		compileLatexPre(activeProject, theName, dirPath, pureLatex);
+
+		compileBibtex(theName, dirPath,bibtexEngine);
+
+		compileLatexPre(activeProject, theName, dirPath, pureLatex);
+
+		compileLatexFinal(activeProject, theName, dirPath, pureLatex);
+	}
+	
+	private void compileLatexWithMakeIndex(final IProject activeProject, final String theName, String dirPath, boolean pureLatex) {
+		compileLatexPre(activeProject, theName, dirPath, pureLatex);
+
+		compileMakeIndex(theName, dirPath);
+
+		//compileLatexPre(activeProject, theName, dirPath, true);
+
+		compileLatexFinal(activeProject, theName, dirPath, pureLatex);
+	}
+	
+	private void compileLatexWithBibtexAndIndex(final IProject activeProject, final String theName, String dirPath, boolean pureLatex,String bibtexEngine) {
+		
+		compileLatexPre(activeProject, theName, dirPath, pureLatex);
+		compileBibtex(theName, dirPath,bibtexEngine);
+        
+		compileLatexPre(activeProject, theName, dirPath, pureLatex);
+		compileLatexPre(activeProject, theName, dirPath, pureLatex);
+		compileMakeIndex(theName, dirPath);
+
+		compileLatexFinal(activeProject, theName, dirPath, pureLatex);
+	}
+	
+
+	private void compileLatexFinal(final IProject activeProject, final String theName, String dirPath, boolean pureLatex) {
+		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		String pdfLatexPath = store.getString("pdfLatex");
 		boolean useBrowser = store.getBoolean("PDF_USE_BROWSER");
 		String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
@@ -349,6 +409,7 @@ public class LatexSweaveKnitrAction extends Action {
 		String sweaveScriptLocation = store.getString("SweaveScriptLocation");
 		boolean cleanFiles = store.getBoolean("LATEX_CLEAN_FILES");
 		String fileTypes = store.getString("LATEX_FILES_EXT_DELETE");
+		String commandLineFlags = store.getString("LATEX_COMMANDLINE_OTIONS");
 
 		List<String> args = new ArrayList<String>();
 
@@ -393,10 +454,23 @@ public class LatexSweaveKnitrAction extends Action {
 		}
 		if (pureLatex) {
 			args.add("-interaction=nonstopmode");
+			if (commandLineFlags.isEmpty() == false) {
+				String flags[] = commandLineFlags.split(" ");
+				for (int i = 0; i < flags.length; i++) {
+					args.add(flags[i]);
+				}
+			}
 			args.add("-output-directory=" + dirPath);
 			args.add(dirPath + "/" + theName + ".tex");
 		} else {
 			args.add("-interaction=nonstopmode");
+			if (commandLineFlags.isEmpty() == false) {
+				String flags[] = commandLineFlags.split(" ");
+				for (int i = 0; i < flags.length; i++) {
+					args.add(flags[i]);
+				}
+
+			}
 			args.add("-include-directory=" + sweaveScriptLocation);
 			args.add("-output-directory=" + dirPath);
 			args.add(dirPath + "/" + theName + ".tex");
@@ -475,6 +549,308 @@ public class LatexSweaveKnitrAction extends Action {
 			}
 
 		}.start();
+
+	}
+
+	/* We don't need a special path for bibtex. Should be the same as pdflatex! */
+	private void compileMakeIndex(final String theName, String dirPath) {
+		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		String pdfLatexPath = store.getString("pdfLatex");
+
+		String latexEngine = "makeindex";
+
+		List<String> args = new ArrayList<String>();
+
+		if (pdfLatexPath.isEmpty() == false) {
+
+			pdfLatexPath = pdfLatexPath.replace("\\", "/");
+
+			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+				args.add("\"" + pdfLatexPath + "/" + latexEngine + "\"");
+			}
+
+			else {
+				args.add(pdfLatexPath + "/" + latexEngine);
+			}
+		}
+		/* Try to start from the PATH environment! */
+		else {
+
+			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+				args.add(latexEngine);
+			}
+
+			else {
+				args.add(latexEngine);
+			}
+
+		}
+
+		args.add(dirPath + "/" + theName);
+
+		ProcessBuilder pb = new ProcessBuilder(args);
+		// set environment variable u
+		/*
+		 * String otexinputs =env.get("TEXINPUTS"); env.put("TEXINPUTS", otexinputs+"/"+dirPath);
+		 */
+
+		/*
+		 * Set the working directory for the process from Java!
+		 */
+		pb.directory(new File(dirPath));
+
+		pb.redirectErrorStream();
+
+		Process p = null;
+		try {
+			p = pb.start();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		try {
+			p.waitFor(5,TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		stdin = p.getOutputStream();
+
+		new Thread() {
+
+			public void run() {
+				setPriority(Thread.MAX_PRIORITY);
+				String line;
+				try {
+
+					while ((line = input.readLine()) != null) {
+						System.out.println(line);
+					}
+
+				} catch (IOException e) {
+
+					e.printStackTrace();
+				}
+
+			}
+
+		}.start();
+
+	}
+
+	/* We don't need a special path for bibtex. Should be the same as pdflatex! */
+	private void compileBibtex(final String theName, String dirPath,String bibtexEngine) {
+		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		String pdfLatexPath = store.getString("pdfLatex");
+
+		String latexEngine = bibtexEngine;
+
+		List<String> args = new ArrayList<String>();
+
+		if (pdfLatexPath.isEmpty() == false) {
+
+			pdfLatexPath = pdfLatexPath.replace("\\", "/");
+
+			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+				args.add("\"" + pdfLatexPath + "/" + latexEngine + "\"");
+			}
+
+			else {
+				args.add(pdfLatexPath + "/" + latexEngine);
+			}
+		}
+		/* Try to start from the PATH environment! */
+		else {
+
+			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+				args.add(latexEngine);
+			}
+
+			else {
+				args.add(latexEngine);
+			}
+
+		}
+
+		args.add(dirPath + "/" + theName);
+
+		ProcessBuilder pb = new ProcessBuilder(args);
+		// set environment variable u
+		/*
+		 * String otexinputs =env.get("TEXINPUTS"); env.put("TEXINPUTS", otexinputs+"/"+dirPath);
+		 */
+
+		/*
+		 * Set the working directory for the process from Java!
+		 */
+		pb.directory(new File(dirPath));
+
+		pb.redirectErrorStream();
+
+		Process p = null;
+		try {
+			p = pb.start();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		try {
+			p.waitFor(5,TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		stdin = p.getOutputStream();
+
+		new Thread() {
+
+			public void run() {
+				setPriority(Thread.MAX_PRIORITY);
+				String line;
+				try {
+
+					while ((line = input.readLine()) != null) {
+						System.out.println(line);
+					}
+
+				} catch (IOException e) {
+
+					e.printStackTrace();
+				}
+
+			}
+
+		}.start();
+
+	}
+
+	private void compileLatexPre(final IProject activeProject, final String theName, String dirPath, boolean pureLatex) {
+		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		String pdfLatexPath = store.getString("pdfLatex");
+
+		String latexEngine = store.getString("LATEX_ENGINE");
+		String sweaveScriptLocation = store.getString("SweaveScriptLocation");
+
+		String commandLineFlags = store.getString("LATEX_COMMANDLINE_OTIONS");
+
+		List<String> args = new ArrayList<String>();
+
+		if (pdfLatexPath.isEmpty() == false) {
+
+			pdfLatexPath = pdfLatexPath.replace("\\", "/");
+
+			// String temp=dirPath+"/" +
+			// theName+".tex";
+			// String url = temp.replace("\\", "/");
+
+			// Process proc =
+			// Runtime.getRuntime().exec(
+			// pdfLatexPath+"/pdflatex
+			// -interaction=nonstopmode "
+			// + "-output-directory=" + dirPath +
+			// " " + dirPath + "/" + theName +
+			// ".tex");
+			/*
+			 * Eventually take care of whitespaces in path!
+			 */
+
+			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+				args.add("\"" + pdfLatexPath + "/" + latexEngine + "\"");
+			}
+
+			else {
+				args.add(pdfLatexPath + "/" + latexEngine);
+			}
+		}
+		/* Try to start from the PATH environment! */
+		else {
+
+			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+				args.add(latexEngine);
+			}
+
+			else {
+				args.add(latexEngine);
+			}
+
+		}
+		if (pureLatex) {
+			args.add("-interaction=nonstopmode");
+			if (commandLineFlags.isEmpty() == false) {
+				String flags[] = commandLineFlags.split(" ");
+				for (int i = 0; i < flags.length; i++) {
+					args.add(flags[i]);
+				}
+			}
+			args.add("-output-directory=" + dirPath);
+			args.add(dirPath + "/" + theName + ".tex");
+		} else {
+			args.add("-interaction=nonstopmode");
+			if (commandLineFlags.isEmpty() == false) {
+				String flags[] = commandLineFlags.split(" ");
+				for (int i = 0; i < flags.length; i++) {
+					args.add(flags[i]);
+				}
+
+			}
+			args.add("-include-directory=" + sweaveScriptLocation);
+			args.add("-output-directory=" + dirPath);
+			args.add(dirPath + "/" + theName + ".tex");
+		}
+
+		ProcessBuilder pb = new ProcessBuilder(args);
+		// set environment variable u
+		/*
+		 * String otexinputs =env.get("TEXINPUTS"); env.put("TEXINPUTS", otexinputs+"/"+dirPath);
+		 */
+
+		/*
+		 * Set the working directory for the process from Java!
+		 */
+		pb.directory(new File(dirPath));
+
+		pb.redirectErrorStream();
+		Process p = null;
+
+		try {
+			p = pb.start();
+
+		} catch (IOException e) {
+
+			e.printStackTrace();
+			/*
+			 * Bio7Dialog.message( "Rserve executable not available !" ); RServe.setConnection(null);
+			 */
+		}
+		try {
+			p.waitFor(5,TimeUnit.SECONDS);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		/*input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		stdin = p.getOutputStream();
+		new Thread() {
+
+			public void run() {
+				setPriority(Thread.MAX_PRIORITY);
+				String line;
+				try {
+
+					while ((line = input.readLine()) != null) {
+						System.out.println(line);
+					}
+
+				} catch (IOException e) {
+
+					e.printStackTrace();
+				}
+
+			}
+
+		}.start();*/
 
 	}
 

@@ -605,6 +605,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("RSERVE_CLIENT_CONNECTION_PORT", 6311);
 		
 		store.setDefault("LATEX_ENGINE", "pdflatex");
+		store.setDefault("BIBTEX_ENGINE", "bibtex");
+		
 		
 		store.setDefault("LATEX_CLEAN_FILES", false);
 		

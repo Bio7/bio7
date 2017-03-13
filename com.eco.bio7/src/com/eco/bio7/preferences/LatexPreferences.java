@@ -32,13 +32,24 @@ public class LatexPreferences extends FieldEditorPreferencePage implements IWork
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 
 		
-		addField(new DirectoryFieldEditor("pdfLatex", "pdflatex/xelatex Dir", getFieldEditorParent()));
+		addField(new DirectoryFieldEditor("pdfLatex", "pdflatex/xelatex/bibtex Dir", getFieldEditorParent()));
 
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new ComboFieldEditor("LATEX_ENGINE", "TeX Engine", new String[][] { { "pdflatex", "pdflatex" }, { "xelatex", "xelatex" }}, getFieldEditorParent()));
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
+		addField(new BooleanFieldEditor("INCLUDE_BIBTEX", "Include BibTeX", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addField(new StringFieldEditor("BIBTEX_ENGINE", "BibTeX engine", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
+		addField(new BooleanFieldEditor("MAKE_LATEX_INDEX", "Make Index", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		
 		addField(new BooleanFieldEditor("LATEX_CLEAN_FILES", "Clean Auxiliary Files", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		{
 			StringFieldEditor stringFieldEditor = new StringFieldEditor("LATEX_FILES_EXT_DELETE", "File Extensions", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent());
+			
+			addField(stringFieldEditor);
+		}
+		{
+			StringFieldEditor stringFieldEditor = new StringFieldEditor("LATEX_COMMANDLINE_OTIONS", "LaTeX compile flags (e.g.: -shell-escape)", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent());
 			
 			addField(stringFieldEditor);
 		}

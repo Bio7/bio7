@@ -95,11 +95,11 @@ public class RScriptNewWizard extends Wizard implements INewWizard {
 	}
 
 	private InputStream openContentStream() {
-		String head = "#RScript - please enter your code here !";
-		String linefeed = "\r\n";
-		String comment = "Please enter your code here";
+		//String head = "#RScript - please enter your code here !";
+		//String linefeed = "\r\n";
+		//String comment = "Please enter your code here";
 
-		String contents = head;
+		String contents = "";//;head;
 
 		return new ByteArrayInputStream(contents.getBytes());
 	}
