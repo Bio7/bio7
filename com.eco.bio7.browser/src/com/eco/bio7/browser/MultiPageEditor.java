@@ -157,7 +157,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 		}
 		htmlEditor.addEventFilter(KeyEvent.KEY_PRESSED, (KeyEvent evt) -> {
 
-			System.out.println(evt.getEventType());
+			
 
 			final KeyCombination combo = new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN);
 			final KeyCombination combo2 = new KeyCodeCombination(KeyCode.Y, KeyCombination.CONTROL_DOWN);

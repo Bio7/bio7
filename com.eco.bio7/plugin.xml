@@ -1911,7 +1911,7 @@
             contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
             default="true"
             extensions="pdf"
-            icon="icons/editor/htmlfile.png"
+            icon="icons/editor/pdf.png"
             id="com.eco.bio7.editors.pdf.editor"
             name="Pdf Editor"
             symbolicFontName="com.eco.bio7.pdf.editor">
