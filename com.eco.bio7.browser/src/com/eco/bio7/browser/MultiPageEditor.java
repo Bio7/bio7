@@ -1,6 +1,7 @@
 package com.eco.bio7.browser;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
@@ -27,6 +28,8 @@ import javafx.scene.web.HTMLEditor;
 import javafx.scene.web.WebView;
 import net.htmlparser.jericho.Source;
 import net.htmlparser.jericho.SourceFormatter;
+
+import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -70,8 +73,7 @@ import com.eco.bio7.browser.editor.XMLEditor;
 import com.eco.bio7.util.Util;
 
 /**
- * An example showing how to create a multi-page editor. This example has 3
- * pages:
+ * An example showing how to create a multi-page editor. This example has 3 pages:
  * <ul>
  * <li>page 0 contains a nested text editor.
  * <li>page 1 allows you to change the font used in page 2
@@ -153,94 +155,86 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 		for (Node node : htmlEditor.lookupAll("ToolBar")) {
 			node.setOnMouseExited(onMouseExitedHandler);
 		}
+		htmlEditor.addEventFilter(KeyEvent.KEY_PRESSED, (KeyEvent evt) -> {
 
-		htmlEditor.setOnKeyPressed(new EventHandler<KeyEvent>() {
+			System.out.println(evt.getEventType());
 
-			@Override
-			public void handle(KeyEvent evt) {
+			final KeyCombination combo = new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN);
+			final KeyCombination combo2 = new KeyCodeCombination(KeyCode.Y, KeyCombination.CONTROL_DOWN);
+			final KeyCombination combo3 = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN);
 
-				final KeyCombination combo = new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN);
-				final KeyCombination combo2 = new KeyCodeCombination(KeyCode.Y, KeyCombination.CONTROL_DOWN);
-				final KeyCombination combo3 = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN);
+			if (combo.match(evt)) {
 
-				if (combo.match(evt)) {
+				IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
 
-					IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
+				htmlEditor.setHtmlText(doc.get());
+			}
 
-					htmlEditor.setHtmlText(doc.get());
-				}
+			else if (combo2.match(evt)) {
+				IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
 
-				else if (combo2.match(evt)) {
-					IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
-
-					htmlEditor.setHtmlText(doc.get());
-				}
-				/* Save! */
-				else if(evt.isControlDown()){
-				 if(combo3.match(evt)){
-					
-				}
-				 return;
-				}
-				/* Select All! */
-				else if (evt.isShortcutDown() && evt.getCode() == KeyCode.A) {
+				htmlEditor.setHtmlText(doc.get());
+			}
+			/* Save! */
+			else if (evt.isControlDown()) {
+				if (combo3.match(evt)) {
 
 				}
-				/* Paste Event! */
-				else if (evt.isShortcutDown() && evt.getCode() == KeyCode.V) {
+				return;
+			}
+			/* Select All! */
+			else if (evt.isShortcutDown() && evt.getCode() == KeyCode.A) {
 
-				} 
+			}
+			/* Paste Event! */
+			else if (evt.isShortcutDown() && evt.getCode() == KeyCode.V) {
 
-				else {
-					/*
-					 * A transfer to the source editor is triggered after the
-					 * last text change event occurs to avoid time intensive
-					 * transfers for longer documents!
-					 */
-					if (job != null) {
-						job.cancel();
+			}
+
+			else {
+				/*
+				 * A transfer to the source editor is triggered after the last text change event occurs to avoid time intensive transfers for longer documents!
+				 */
+				if (job != null) {
+					job.cancel();
+				}
+
+				job = new Job("Update Text") {
+					@Override
+					protected IStatus run(IProgressMonitor monitor) {
+						monitor.beginTask("Update Text...", IProgressMonitor.UNKNOWN);
+
+						Display display = PlatformUI.getWorkbench().getDisplay();
+						display.syncExec(new Runnable() {
+
+							public void run() {
+
+								String sf = formatHtml();
+
+								try {
+									IEditorInput ed = getEditor(1).getEditorInput();
+
+									IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(ed);
+
+									doc.set(sf);
+								} catch (Exception e) {
+									/*
+									 * Listener won't work (if two editors are open and one is disposed)so we simply catch the error (without a message) if the editor is disposed!
+									 */
+								}
+
+							}
+						});
+
+						monitor.done();
+						return Status.OK_STATUS;
 					}
 
-					job = new Job("Update Text") {
-						@Override
-						protected IStatus run(IProgressMonitor monitor) {
-							monitor.beginTask("Update Text...", IProgressMonitor.UNKNOWN);
+				};
 
-							Display display = PlatformUI.getWorkbench().getDisplay();
-							display.syncExec(new Runnable() {
+				job.schedule(500);
 
-								public void run() {
-
-									String sf = formatHtml();
-
-									try {
-										IEditorInput ed = getEditor(1).getEditorInput();
-
-										IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(ed);
-
-										doc.set(sf);
-									} catch (Exception e) {
-										/*
-										 * Listener won't work (if two editors
-										 * are open and one is disposed)so we
-										 * simply catch the error (without a
-										 * message) if the editor is disposed!
-										 */
-									}
-
-								}
-							});
-
-							monitor.done();
-							return Status.OK_STATUS;
-						}
-
-					};
-
-					job.schedule(500);
-
-				}
-
+				firePropertyChange(IEditorPart.PROP_DIRTY);
 			}
 
 		});
@@ -309,9 +303,9 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 			Button browserButton = new Button("Open In Browser");
 
 			Button linkButton = new Button("Link");
-			
+
 			Button imageButton = new Button("Image");
-			
+
 			Button knitrButton = new Button("Knitr");
 
 			bar.getItems().add(browserButton);
@@ -323,7 +317,31 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 				@Override
 				public void handle(ActionEvent arg0) {
+					String docTemp = htmlEditor.getHtmlText();
+					Document docHtml = Jsoup.parse(docTemp);
+					/* Remove the content editable attribute! */
+					Elements elements = docHtml.select("body");
+					elements.removeAttr("contenteditable");
+					/*
+					 * Write the changes to the file with the help of the ApacheIO lib!
+					 */
+					String fileLocation = null;
+					try {
 
+						fileLocation = ifile.getLocationURI().toURL().toString();
+					} catch (MalformedURLException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					try {
+						/* Convert IFile location to file! */
+						File fi = ifile.getRawLocation().makeAbsolute().toFile();
+						FileUtils.writeStringToFile(fi, docHtml.html());
+
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					Display display = PlatformUI.getWorkbench().getDisplay();
 					display.syncExec(new Runnable() {
 						public void run() {
@@ -340,13 +358,8 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 					BrowserView bv = BrowserView.getBrowserInstance();
 
-					try {
-						bv.browser.setUrl(ifile.getLocationURI().toURL().toString());
-						bv.txt.setText(ifile.getLocationURI().toURL().toString());
-					} catch (MalformedURLException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+					bv.browser.setUrl(fileLocation);
+					bv.txt.setText(fileLocation);
 
 				}
 			});
@@ -372,12 +385,11 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 									webView.getEngine().executeScript(getInsertHtmlAtCurstorJS(hyperlinkHtml));
 								} catch (Exception e) {
 									// TODO Auto-generated catch block
-									//e.printStackTrace();
+									// e.printStackTrace();
 								}
 
 							}
 
-							
 						}
 					});
 
@@ -398,24 +410,22 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 								imageLocation = inp.getValue();
 								WebView webView = (WebView) htmlEditor.lookup("WebView");
-								
+
 								try {
-									webView.getEngine().executeScript(getInsertHtmlAtCurstorJS("<img alt=\"Image\" src=\""+imageLocation+"\"/>"));
+									webView.getEngine().executeScript(getInsertHtmlAtCurstorJS("<img alt=\"Image\" src=\"" + imageLocation + "\"/>"));
 								} catch (Exception e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
 
 							}
-							
-							
-							
+
 						}
 					});
 
 				}
 			});
-			
+
 			knitrButton.setOnAction(new EventHandler<ActionEvent>() {
 
 				@Override
@@ -424,40 +434,35 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 					Display display = PlatformUI.getWorkbench().getDisplay();
 					display.syncExec(new Runnable() {
 						public void run() {
-							
-							/*Insert HTML layer with JavaScript at selected cursor location!*/
+
+							/* Insert HTML layer with JavaScript at selected cursor location! */
 							String knitrCode = "<p>";
-							
+
 							WebView webView = (WebView) htmlEditor.lookup("WebView");
 							try {
-								//webView.getEngine().executeScript(getInsertHtmlAtCurstorJS("<!--begin.rcode "+knitrCode+" end.rcode-->"));
-								webView.getEngine().executeScript(getInsertHtmlAtCurstorJS("<br><div id=\"knitrcode\" style=\"color: black; background-color: lightgrey; border: 1px solid grey;\">"
-										+ knitrCode+"<br></div></br>"));
-								
+								// webView.getEngine().executeScript(getInsertHtmlAtCurstorJS("<!--begin.rcode "+knitrCode+" end.rcode-->"));
+								webView.getEngine().executeScript(getInsertHtmlAtCurstorJS("<br><div id=\"knitrcode\" style=\"color: black; background-color: lightgrey; border: 1px solid grey;\">" + knitrCode + "<br></div></br>"));
+
 							} catch (Exception e) {
 								// TODO Auto-generated catch block
-								//e.printStackTrace();
+								// e.printStackTrace();
 							}
-							
-							
+
 						}
 					});
 
 				}
 			});
-			
+
 		}
 	}
 
 	/*
-	 * Source from:
-	 * http://rajeshkumarsahanee.wordpress.com/author/rajeshsahanee/
+	 * Source from: http://rajeshkumarsahanee.wordpress.com/author/rajeshsahanee/
 	 */
 	private String getInsertHtmlAtCurstorJS(String html) {
-		return "insertHtmlAtCursor('" + html + "');" + "function insertHtmlAtCursor(html) {\n" + " var range, node;\n" + " if (window.getSelection && window.getSelection().getRangeAt) {\n"
-				+ " window.getSelection().deleteFromDocument();\n" + " range = window.getSelection().getRangeAt(0);\n" + " node = range.createContextualFragment(html);\n"
-				+ " range.insertNode(node);\n" + " } else if (document.selection && document.selection.createRange) {\n" + " document.selection.createRange().pasteHTML(html);\n"
-				+ " document.selection.clear();" + " }\n" + "}";
+		return "insertHtmlAtCursor('" + html + "');" + "function insertHtmlAtCursor(html) {\n" + " var range, node;\n" + " if (window.getSelection && window.getSelection().getRangeAt) {\n" + " window.getSelection().deleteFromDocument();\n" + " range = window.getSelection().getRangeAt(0);\n"
+				+ " node = range.createContextualFragment(html);\n" + " range.insertNode(node);\n" + " } else if (document.selection && document.selection.createRange) {\n" + " document.selection.createRange().pasteHTML(html);\n" + " document.selection.clear();" + " }\n" + "}";
 	}
 
 	/**
@@ -466,15 +471,13 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	protected void createPages() {
 		createPage0();
 		createPage1();
-		
+
 		setActivePage(1);
 
 	}
 
 	/**
-	 * The <code>MultiPageEditorPart</code> implementation of this
-	 * <code>IWorkbenchPart</code> method disposes all nested editors.
-	 * Subclasses may extend.
+	 * The <code>MultiPageEditorPart</code> implementation of this <code>IWorkbenchPart</code> method disposes all nested editors. Subclasses may extend.
 	 */
 	public void dispose() {
 		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
@@ -487,17 +490,15 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	public void doSave(IProgressMonitor monitor) {
 		IEditorInput ed = getEditor(1).getEditorInput();
 
-		/*IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(ed);
-		SourceFormatter sf = formatHtml();
-        String docc=sf.toString().replace("<body contenteditable=\"true\">","<body>");
-		doc.set(docc);*/
+		/*
+		 * IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(ed); SourceFormatter sf = formatHtml(); String
+		 * docc=sf.toString().replace("<body contenteditable=\"true\">","<body>"); doc.set(docc);
+		 */
 		getEditor(1).doSave(monitor);
 	}
 
 	/**
-	 * Saves the multi-page editor's document as another file. Also updates the
-	 * text for page 0's tab, and updates this multi-page editor's input to
-	 * correspond to the nested editor's.
+	 * Saves the multi-page editor's document as another file. Also updates the text for page 0's tab, and updates this multi-page editor's input to correspond to the nested editor's.
 	 */
 	public void doSaveAs() {
 		IEditorPart editor = getEditor(1);
@@ -515,8 +516,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	}
 
 	/**
-	 * The <code>MultiPageEditorExample</code> implementation of this method
-	 * checks that the input is an instance of <code>IFileEditorInput</code>.
+	 * The <code>MultiPageEditorExample</code> implementation of this method checks that the input is an instance of <code>IFileEditorInput</code>.
 	 */
 	public void init(IEditorSite site, IEditorInput editorInput) throws PartInitException {
 		if (!(editorInput instanceof IFileEditorInput))
@@ -530,27 +530,28 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	public boolean isSaveAsAllowed() {
 		return false;
 	}
-	
-	/*Workaround to close and reopen Outline for multipage editor is cited here: 
-	 http://stackoverflow.com/questions/24694269/how-to-keep-off-multipageeditor-with-structuredtexteditor-to-show-outline-view-f
-	 I added setActivePage() method so that the Outline is available if the multipage editor has been opened.
-	 */
-	
-	public void refreshOutlineView() {
-	    //get the activePage
-	    IWorkbenchPage wp =  PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-	    //Find desired view by its visual ID
-	    IViewPart myView=wp.findView("org.eclipse.ui.views.ContentOutline");
 
-	    //Hide the view :
-	    wp.hideView(myView);
-	    try {
-	      //show the view again     
-	      PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("org.eclipse.ui.views.ContentOutline");
-	    } catch (PartInitException e) {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
-	    } 
+	/*
+	 * Workaround to close and reopen Outline for multipage editor is cited here:
+	 * http://stackoverflow.com/questions/24694269/how-to-keep-off-multipageeditor-with-structuredtexteditor-to-show-outline-view-f I added setActivePage() method so that the Outline is available if
+	 * the multipage editor has been opened.
+	 */
+
+	public void refreshOutlineView() {
+		// get the activePage
+		IWorkbenchPage wp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+		// Find desired view by its visual ID
+		IViewPart myView = wp.findView("org.eclipse.ui.views.ContentOutline");
+
+		// Hide the view :
+		wp.hideView(myView);
+		try {
+			// show the view again
+			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("org.eclipse.ui.views.ContentOutline");
+		} catch (PartInitException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -563,13 +564,13 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 			htmlEditor.setHtmlText(doc.get());
 		} else if (newPageIndex == 1) {
-			
+
 			String parsed = formatHtml();
 
 			IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
 
 			doc.set(parsed);
-			
+
 		}
 		refreshOutlineView();
 	}
@@ -578,7 +579,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 		String t = htmlEditor.getHtmlText();
 		Document sf = Jsoup.parse(t);
 		Source s = new Source(t);
-		//SourceFormatter sf = new SourceFormatter(s);
+		// SourceFormatter sf = new SourceFormatter(s);
 		return sf.html();
 	}
 

@@ -212,7 +212,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 									public void run() {
 										String temp = "file:///" + dirPath + "/" + theName + ".html";
 										String url = temp.replace("\\", "/");
-										System.out.println(url);
+										//System.out.println(url);
 
 										IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 										String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");

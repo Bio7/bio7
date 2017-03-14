@@ -202,6 +202,10 @@ public class LatexSweaveKnitrAction extends Action {
 
 										// String docTemp=doc.get();
 										Document docHtml = Jsoup.parse(docTemp);
+										/*Remove the content editable attribute!*/
+										Elements elements = docHtml.select("body");
+										elements.removeAttr("contenteditable");
+										//System.out.println(docHtml.getElementsByTag("body"));
 										/* Search for divs with the selected id! */
 										Elements contents = docHtml.select("#knitrcode"); // a
 																							// with

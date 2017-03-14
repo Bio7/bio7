@@ -693,7 +693,7 @@ public class RServe {
 					 */
 					webEngine.executeScript("var DEFAULT_URL ='" + url + "'");
 					
-					System.out.println("Path to URL file: " + url);
+					//System.out.println("Path to URL file: " + url);
 
 					IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 					boolean openInBrowserInExtraView = store.getBoolean("OPEN_BOWSER_IN_EXTRA_VIEW");

@@ -53,6 +53,7 @@ public class JavaFXWebBrowser {
 	private WebView brow;
 	private boolean html;
 	private IPreferenceStore store;
+	private boolean reload;
 
 	public class JSLogListener {
 
@@ -63,6 +64,7 @@ public class JavaFXWebBrowser {
 
 	public JavaFXWebBrowser(boolean html) {
 		this.html = html;
+		reload = true;
 		brow = new WebView();
 		webEng = brow.getEngine();
 		webEng.setJavaScriptEnabled(true);
@@ -77,6 +79,11 @@ public class JavaFXWebBrowser {
 				if (newValue != Worker.State.SUCCEEDED) {
 
 					return;
+				}
+				/*We reload the html side once to avoid cached images!*/
+				if (reload&&html) {
+					reload = false;
+					webEng.reload();
 				}
 				if (store.getBoolean("ENABLE_BROWSER_SCROLLBARS") == false) {
 					webEng.executeScript(" document.documentElement.style.overflow = 'hidden'; ");
@@ -130,10 +137,11 @@ public class JavaFXWebBrowser {
 
 						}
 					}, false);
-					
+
 				} else {
-					
-					webEng.executeScript("window.find('runif')");
+
+					// webEng.executeScript("window.find('runif')");
+
 					/*
 					 * String markdownContent=MarkdownEditor.getSelectedContent(); Document doc = webEng.getDocument(); Element el = doc.getDocumentElement();
 					 * 
@@ -222,24 +230,49 @@ public class JavaFXWebBrowser {
 				// System.out.println(text);
 				if (ke.isAltDown()) {
 
-				}
-				if (ke.getCharacter().equals("+")) {
+				} else if (ke.getCharacter().equals("+")) {
 					if (html) {
 						brow.setZoom(brow.getZoom() * 1.1);
 
 						ke.consume();
 					}
 
-				}
-				if (ke.getCharacter().equals("-")) {
+				} else if (ke.getCharacter().equals("-")) {
 					if (html) {
 						brow.setZoom(brow.getZoom() / 1.1);
 
 						ke.consume();
 					}
 
-				}
-				if (ke.getCharacter().equals("t")) {
+				} else if (ke.getCharacter().equals("r")) {
+					if (html) {
+						webEng.executeScript("window.location.reload(true);");
+
+						ke.consume();
+					}
+
+				} else if (ke.getCharacter().equals("s")) {
+					if (html) {
+						stop();
+
+						ke.consume();
+					}
+
+				} else if (ke.getCharacter().equals("b")) {
+					if (html) {
+						goBack();
+
+						ke.consume();
+					}
+
+				} else if (ke.getCharacter().equals("f")) {
+					if (html) {
+						goForward();
+
+						ke.consume();
+					}
+
+				} else if (ke.getCharacter().equals("t")) {
 					if (html == false) {
 						webEng.executeScript("if (document.getElementById('toolbarContainer').style.display == '')" + "{ "
 								+ "document.getElementById('viewerContainer').style.overflow = 'hidden';document.getElementById('toolbarContainer').style.display='none';document.getElementById('viewerContainer').style.top=0;}"
@@ -327,20 +360,17 @@ public class JavaFXWebBrowser {
 		view.setSceneCanvas(name);
 
 		Scene scene = new Scene(anchorPane);
-		scene.getAccelerators().put(new KeyCodeCombination(KeyCode.B, KeyCombination.CONTROL_DOWN, KeyCombination.ALT_DOWN), new Runnable() {
-			@Override
-			public void run() {
-
-				goBack();
-			}
-		});
-
-		scene.getAccelerators().put(new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN, KeyCombination.ALT_DOWN), new Runnable() {
-			@Override
-			public void run() {
-				goBack();
-			}
-		});
+		/*
+		 * scene.getAccelerators().put(new KeyCodeCombination(KeyCode.B, KeyCombination.ALT_DOWN), new Runnable() {
+		 * 
+		 * @Override public void run() {
+		 * 
+		 * goBack(); } });
+		 * 
+		 * scene.getAccelerators().put(new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN, KeyCombination.ALT_DOWN), new Runnable() {
+		 * 
+		 * @Override public void run() { goForward(); } });
+		 */
 
 		view.addScene(scene);
 	}
@@ -387,6 +417,12 @@ public class JavaFXWebBrowser {
 
 	public void goForward() {
 		webEng.executeScript("history.back()");
+	}
+
+	public void stop() {
+		if (brow != null) {
+			brow.getEngine().getLoadWorker().cancel();
+		}
 	}
 
 }
