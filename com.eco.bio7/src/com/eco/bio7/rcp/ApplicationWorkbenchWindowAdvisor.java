@@ -16,6 +16,7 @@ import java.awt.Toolkit;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -135,6 +136,7 @@ import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.actions.StartRServe;
 import com.eco.bio7.rbridge.debug.REditorListener;
+import com.eco.bio7.scenebuilder.editor.ThemeHelper;
 import com.eco.bio7.time.CalculationThread;
 import com.eco.bio7.util.Util;
 
@@ -210,8 +212,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 													public void run() {
 
 														MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
-														message.setMessage(
-																"Recalculate the classpath?\n\n" + "Info: This will set the imported Bio7 Java project classpath\n" + "to your local installation.");
+														message.setMessage("Recalculate the classpath?\n\n" + "Info: This will set the imported Bio7 Java project classpath\n" + "to your local installation.");
 														message.setText("Bio7");
 														int response = message.open();
 														if (response == SWT.YES) {
@@ -230,11 +231,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 															String path = Platform.getInstallLocation().getURL().getPath();
 															/*
-															 * Extra path for
-															 * the different
-															 * MacOSX
-															 * installation
-															 * paths!
+															 * Extra path for the different MacOSX installation paths!
 															 */
 															if (OS.equals("Mac")) {
 																vmStandin.setInstallLocation(new File(path + "../MacOS/jre"));
@@ -335,10 +332,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		// Remove unused preference pages by ID:
 		/*
-		 * preferenceManager.remove(
-		 * "org.eclipse.help.ui.browsersPreferencePage")
-		 * ;preferenceManager.remove(
-		 * "org.eclipse.update.internal.ui.preferences.MainPreferencePage");
+		 * preferenceManager.remove( "org.eclipse.help.ui.browsersPreferencePage") ;preferenceManager.remove( "org.eclipse.update.internal.ui.preferences.MainPreferencePage");
 		 */
 
 		// Listen to changed perspective !!!!
@@ -401,8 +395,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		});
 
 		/*
-		 * Listen to the R editor if debugging actions should be added to the
-		 * console toolbar!
+		 * Listen to the R editor if debugging actions should be added to the console toolbar!
 		 */
 
 		configurer.getWindow().getPartService().addPartListener(new REditorListener().listen());
@@ -468,9 +461,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				store.setDefault("RSERVE_ARGS", "");
 
 				/*
-				 * if (is64BitVM()) { store.setDefault("r_pipe_path", reg1 +
-				 * "\\bin\\x64"); } else { store.setDefault("r_pipe_path", reg1
-				 * + "\\bin\\i386"); }
+				 * if (is64BitVM()) { store.setDefault("r_pipe_path", reg1 + "\\bin\\x64"); } else { store.setDefault("r_pipe_path", reg1 + "\\bin\\i386"); }
 				 */
 
 			}
@@ -478,8 +469,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, reg2);
 			} else {
 				/*
-				 * If the path cannot be found in the reg. it will be set to C:\
-				 * -> see com.eco.bio7.preferences.Reg.java!
+				 * If the path cannot be found in the reg. it will be set to C:\ -> see com.eco.bio7.preferences.Reg.java!
 				 */
 				store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, "C:\\");
 			}
@@ -493,8 +483,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault(PreferenceConstants.PATH_R, "");
 			store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, "");
 			/*
-			 * For the packages on Linux we try the default path if no custom
-			 * path is given!
+			 * For the packages on Linux we try the default path if no custom path is given!
 			 */
 			store.setDefault("InstallLocation", "");
 			store.setDefault("SweaveScriptLocation", "");
@@ -502,23 +491,18 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault("RSERVE_ARGS", "");
 
 			/*
-			 * if (is64BitVM()) { store.setDefault("r_pipe_path", reg1 +
-			 * "/bin"); } else { store.setDefault("r_pipe_path", reg1 + "/bin");
-			 * }
+			 * if (is64BitVM()) { store.setDefault("r_pipe_path", reg1 + "/bin"); } else { store.setDefault("r_pipe_path", reg1 + "/bin"); }
 			 */
 
 		} else if (getOS().equals("Mac")) {
 			/*
 			 * Bundle bundlenew = Platform.getBundle("Bundled_R");
 			 * 
-			 * URL locationUrlMac = FileLocator.find(bundlenew, new Path("/R"),
-			 * null); URL fileUrlMac = null; try { fileUrlMac =
-			 * FileLocator.toFileURL(locationUrlMac); } catch (IOException e2) {
+			 * URL locationUrlMac = FileLocator.find(bundlenew, new Path("/R"), null); URL fileUrlMac = null; try { fileUrlMac = FileLocator.toFileURL(locationUrlMac); } catch (IOException e2) {
 			 * 
 			 * e2.printStackTrace(); }
 			 * 
-			 * File file = new File(fileUrlMac.getFile()); path =
-			 * file.getAbsolutePath();
+			 * File file = new File(fileUrlMac.getFile()); path = file.getAbsolutePath();
 			 */
 			/*
 			 * We adjust the R default path for MacOSX!
@@ -526,8 +510,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault(PreferenceConstants.PATH_R, "/Library/Frameworks/R.framework/Resources");
 			store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, "");
 			/*
-			 * For the packages on Linux we try the default path if no custom
-			 * path is given!
+			 * For the packages on Linux we try the default path if no custom path is given!
 			 */
 			store.setDefault("InstallLocation", "");
 			store.setDefault("SweaveScriptLocation", "");
@@ -557,8 +540,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			// String pathTempR3 = pathTempR2.replace("\\", "\\\\");
 			store.setDefault(PreferenceConstants.P_TEMP_R, pathTempR2);
 			store.setDefault("Console_Encoding", "CP850");
-			store.setDefault("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTempR2 + "tempDevicePlot%05d.tiff"
-					+ "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")");
+			store.setDefault("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTempR2 + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")");
 			store.setDefault("DEVICE_FILENAME", "");
 			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
 			store.setDefault("PDF_READER", "ACROBAT");
@@ -567,8 +549,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault(PreferenceConstants.P_TEMP_R, pathTempR);
 			store.setDefault("Console_Encoding", "UTF-8");
 			store.setDefault("shell_arguments", "");
-			store.setDefault("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTempR + "tempDevicePlot%05d.tiff"
-					+ "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")");
+			store.setDefault("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTempR + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")");
 			store.setDefault("DEVICE_FILENAME", "");
 			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
 			store.setDefault("PDF_READER", "EVINCE");
@@ -577,8 +558,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault(PreferenceConstants.P_TEMP_R, pathTempR);
 			store.setDefault("Console_Encoding", "UTF-8");
 			store.setDefault("shell_arguments", "export TERM=xterm");
-			store.setDefault("DEVICE_DEFINITION",
-					".bio7Device <- function(filename = \"" + pathTempR + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 480, height = 480)}; options(device=\".bio7Device\")");
+			store.setDefault("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTempR + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 480, height = 480)}; options(device=\".bio7Device\")");
 			store.setDefault("DEVICE_FILENAME", "");
 			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
 			store.setDefault("PDF_READER", "ACROBAT");
@@ -599,27 +579,26 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "Ä, ,ä,Ö,ö,Ü,ü,+,!,ü,§,$,%,&,/,(,),=,?,[,],°,^,;,:,>,<,|,*,µ,\\,”,@,\",“,”,´,`,~,#,},{,²,³,_,-");
 		}
 		store.setDefault("BROWSER_SELECTION", "JAVAFX_BROWSER");
-		store.setDefault("OPEN_BOWSER_IN_EXTRA_VIEW",false);
+		store.setDefault("OPEN_BOWSER_IN_EXTRA_VIEW", false);
 		store.setDefault("DETECT_R_PROCESS", true);
 		store.setDefault("R_DEBUG_PORT", 21555);
 		store.setDefault("RSERVE_CLIENT_CONNECTION_PORT", 6311);
-		
+
 		store.setDefault("LATEX_ENGINE", "pdflatex");
 		store.setDefault("BIBTEX_ENGINE", "bibtex");
-		
-		
+
 		store.setDefault("LATEX_CLEAN_FILES", false);
-		
+
 		store.setDefault("LATEX_FILES_EXT_DELETE", "out,log,nav,aux,bbl,blg,dvi,toc,.synctex.gz,snm");
 
 		store.setDefault("LINUX_SHELL", "GNOME");
 
 		store.setDefault("USE_CUSTOM_DEVICE", true);
-		
-		store.setDefault("PDF_USE_BROWSER",false);
-		
-		store.setDefault("IMAGEJ_CREATE_SINGLE_PLOTS",false);
-		
+
+		store.setDefault("PDF_USE_BROWSER", false);
+
+		store.setDefault("IMAGEJ_CREATE_SINGLE_PLOTS", false);
+
 		store.setDefault("ENABLE_JAVAFXWEBKIT_SCROLLBAR", false);
 		store.setDefault("SCROLL_TO_DOCUMENT_END", false);
 		store.setDefault("ENABLE_BROWSER_LOG", false);
@@ -641,8 +620,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("REPAINT_QUAD", true);
 		store.setDefault("REPAINT_HEX", true);
 		store.setDefault("RECORD_VALUES", true);
-		store.setDefault("QUAD_PANEL_SCROLLBAR",false);
-		store.setDefault("POINTS_PANEL_SCROLLBAR",false);
+		store.setDefault("QUAD_PANEL_SCROLLBAR", false);
+		store.setDefault("POINTS_PANEL_SCROLLBAR", false);
 		store.setDefault("STARTUP_SCRIPTS", false);
 		store.setDefault("python_3x", false);
 		store.setDefault("blender_options", "interactive");
@@ -655,21 +634,19 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		/*
 		 * Default Colours for the Bio7 editors!
 		 */
-		
-		Font terminalFont=JFaceResources.getFont(JFaceResources.TEXT_FONT);
+
+		Font terminalFont = JFaceResources.getFont(JFaceResources.TEXT_FONT);
 		if (getOS().equals("Windows")) {
 			PreferenceConverter.setDefault(store, "RShellFonts", terminalFont.getFontData());
 			PreferenceConverter.setDefault(store, "Bio7ShellFonts", terminalFont.getFontData());
-			
+
 		} else if (getOS().equals("Linux")) {
 			PreferenceConverter.setDefault(store, "RShellFonts", terminalFont.getFontData());
 			PreferenceConverter.setDefault(store, "Bio7ShellFonts", terminalFont.getFontData());
-			
 
 		} else if (getOS().equals("Mac")) {
 			PreferenceConverter.setDefault(store, "RShellFonts", terminalFont.getFontData());
 			PreferenceConverter.setDefault(store, "Bio7ShellFonts", terminalFont.getFontData());
-			
 
 		}
 		// Monitor []mon = Display.getDefault().getMonitors(); // returns an
@@ -680,11 +657,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		/*
 		 * Device device = Display.getDefault();
 		 * 
-		 * System.out.println("getBounds(): " + device.getBounds());
-		 * System.out.println("getClientArea(): " + device.getClientArea());
-		 * System.out.println("getDepth(): " + device.getDepth());
+		 * System.out.println("getBounds(): " + device.getBounds()); System.out.println("getClientArea(): " + device.getClientArea()); System.out.println("getDepth(): " + device.getDepth());
 		 * System.out.println("getDPI(): " + device.getDPI());
-		 */	
+		 */
 		IPreferenceStore storeJava = Bio7EditorPlugin.getDefault().getPreferenceStore();
 
 		storeJava.setDefault("classbody", false);
@@ -753,15 +728,12 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 					IPreferenceStore store2 = Bio7Plugin.getDefault().getPreferenceStore();
 
 					String sel = store2.getString("PLOT_DEVICE_SELECTION");
-					
-					
 
 					RServePlotPrefs prefsPlotRserve = RServePlotPrefs.getInstance();
 
 					if (sel.equals("PLOT_IMAGE")) {
 
-						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff"
-								+ "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")");
+						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")");
 						prefsPlotRserve.deviceFilename.setStringValue("");
 						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 					} else if (sel.equals("PLOT_CAIRO")) {
@@ -771,8 +743,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 							Bio7Dialog.message("Cairo not supported on MacOSX!");
 
 						} else {
-							prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff"
-									+ "\") { tiff(filename,width = 480, height = 480, type=\"cairo\")}; options(device=\".bio7Device\")");
+							prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 480, height = 480, type=\"cairo\")}; options(device=\".bio7Device\")");
 							prefsPlotRserve.deviceFilename.setStringValue("");
 							prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 						}
@@ -780,8 +751,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 					else if (sel.equals("PLOT_PRINT")) {
 
-						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff"
-								+ "\") { tiff(filename,width = 6, height = 6, units=\"in\",res=600)}; options(device=\".bio7Device\")");
+						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 6, height = 6, units=\"in\",res=600)}; options(device=\".bio7Device\")");
 						prefsPlotRserve.deviceFilename.setStringValue("");
 						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 					} else if (sel.equals("PLOT_PDF")) {
@@ -841,11 +811,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 							if (view != null) {
 								Rectangle rec = view.getParent2().getClientArea();
 								if (rec.width > 0 && rec.height > correction) {
-									prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = " + rec.width
-											+ ", height = " + (rec.height - 100) + ", type=\"cairo\")}; options(device=\".bio7Device\")");
+									prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = " + rec.width + ", height = " + (rec.height - 100) + ", type=\"cairo\")}; options(device=\".bio7Device\")");
 								} else {
-									prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = " + 512
-											+ ", height = " + 512 + ", type=\"cairo\")}; options(device=\".bio7Device\")");
+									prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = " + 512 + ", height = " + 512 + ", type=\"cairo\")}; options(device=\".bio7Device\")");
 
 								}
 								prefsPlotRserve.deviceFilename.setStringValue("");
@@ -864,11 +832,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 						if (view != null) {
 							Rectangle rec = view.getParent2().getClientArea();
 							if (rec.width > 0 && rec.height > correction) {
-								prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width =  " + rec.width
-										+ ", height = " + (rec.height - correction) + ", units = \"px\")}; options(device=\".bio7Device\")");
+								prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width =  " + rec.width + ", height = " + (rec.height - correction) + ", units = \"px\")}; options(device=\".bio7Device\")");
 							} else {
-								prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width =  " + 512 + ", height = "
-										+ 512 + ", units = \"px\")}; options(device=\".bio7Device\")");
+								prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width =  " + 512 + ", height = " + 512 + ", units = \"px\")}; options(device=\".bio7Device\")");
 
 							}
 							prefsPlotRserve.deviceFilename.setStringValue("");
@@ -1027,8 +993,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		CalculationThread m = new CalculationThread();
 		m.start();
 		/*
-		 * Important to set, see:
-		 * https://bugs.eclipse.org/bugs/show_bug.cgi?id=422258
+		 * Important to set, see: https://bugs.eclipse.org/bugs/show_bug.cgi?id=422258
 		 */
 		javafx.application.Platform.setImplicitExit(false);
 
@@ -1181,6 +1146,23 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		super.postWindowOpen();
 
+		// IPreferenceStore workbenchStore = IDEWorkbenchPlugin.getDefault().getPreferenceStore();
+		// System.out.print(ThemeHelper.getEngine().getActiveTheme().getId());
+		String activeTheme = ThemeHelper.getEngine().getActiveTheme().getId();
+		/* We use a black style if the CSS is the dark theme! */
+		if (activeTheme.equals("org.eclipse.e4.ui.css.theme.e4_dark")) {
+
+			Bundle bundle = Platform.getBundle("com.eco.bio7.themes");
+			URL fileURL = bundle.getEntry("javafx/ModenaBlack.css");
+
+			String path = fileURL.toExternalForm();
+
+			// System.out.println(path);
+			// javafx.application.Application.setUserAgentStylesheet(null);
+
+			javafx.application.Application.setUserAgentStylesheet(path);
+		}
+
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
 		try {
 
@@ -1189,7 +1171,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.rbridge.RPerspective", configurer.getWindow());
 
 			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.browser.SceneBuilderPerspective", configurer.getWindow());
-			
+
 			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.document.DocumentPerspective", configurer.getWindow());
 
 			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.bio7resource", configurer.getWindow());
@@ -1200,8 +1182,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			StartBio7Utils.getConsoleInstance().startutils();
 			// *************************************************
 			/*
-			 * If Bio7 should be customized at startup the startup scripts have
-			 * to be enabled! The startup is faster without!
+			 * If Bio7 should be customized at startup the startup scripts have to be enabled! The startup is faster without!
 			 */
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 			if (store.getBoolean("STARTUP_SCRIPTS")) {
@@ -1209,8 +1190,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			}
 
 			/*
-			 * if (store.getBoolean("RSERVE_AUTOSTART")) {
-			 * Bio7Action.callRserve(); }
+			 * if (store.getBoolean("RSERVE_AUTOSTART")) { Bio7Action.callRserve(); }
 			 */
 
 		} catch (WorkbenchException e) {
@@ -1219,8 +1199,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		addExecutionListener();
 		/*
-		 * Start Bio7 maximized. Works for Windows and Mac. However will cause
-		 * coolbar repaint problems on Linux!
+		 * Start Bio7 maximized. Works for Windows and Mac. However will cause coolbar repaint problems on Linux!
 		 */
 		if (getOS().equals("Windows") || getOS().equals("Mac")) {
 			configurer.getWindow().getShell().setMaximized(true);
@@ -1299,9 +1278,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 								StartRServe.setFileList(fileListR);
 								StartRServe.setFromDragDrop(true);
 								/*
-								 * Now we can start the server. Variable
-								 * setFromDragDrop will be set to false in the
-								 * StartRserve class after job has finished!
+								 * Now we can start the server. Variable setFromDragDrop will be set to false in the StartRserve class after job has finished!
 								 */
 								Bio7Action.callRserve();
 
@@ -1313,8 +1290,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 						}
 					}
 					/*
-					 * Load an xml file for the discrete grid and quick
-					 * compilation!
+					 * Load an xml file for the discrete grid and quick compilation!
 					 */
 					else if (fileListR[0].endsWith("exml")) {
 						LoadData.load(fileListR[0].toString());
@@ -1399,14 +1375,14 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		// Bio7 custom icons!
 
 		Bundle bio7 = Platform.getBundle("com.eco.bio7");
-		
-		/*ISharedImages images = JavaUI.getSharedImages();
-		Image image = images.getImage(ISharedImages.);*/
-		
-		
+
+		/*
+		 * ISharedImages images = JavaUI.getSharedImages(); Image image = images.getImage(ISharedImages.);
+		 */
+
 		/* Image for the projects! */
 		declareWorkbenchImage(bio7, IDE.SharedImages.IMG_OBJ_PROJECT, BIO7_PATH + "folderopened.png", false);
-      
+
 		declareWorkbenchImage(bio7, IDE.SharedImages.IMG_OBJ_PROJECT_CLOSED, BIO7_PATH + "folderclosed.png", false);
 
 		declareWorkbenchImage(bio7, IDEInternalWorkbenchImages.IMG_WIZBAN_NEWFOLDER_WIZ, BIO7_PATH + "resourcepersp.png", false);
@@ -1423,8 +1399,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		// "cprj_obj.gif", true);
 
 		/* Here we set a Bio7 fieldassist image! */
-		FieldDecorationRegistry.getDefault().registerFieldDecoration("DEC_ERROR", JFaceResources.getString("FieldDecorationRegistry.errorMessage"),
-				Bio7Plugin.getImageDescriptor("/icons/workbench/error_ovr.png").createImage());
+		FieldDecorationRegistry.getDefault().registerFieldDecoration("DEC_ERROR", JFaceResources.getString("FieldDecorationRegistry.errorMessage"), Bio7Plugin.getImageDescriptor("/icons/workbench/error_ovr.png").createImage());
 
 		declareWorkbenchImage(ideBundle, IDE.SharedImages.IMG_OPEN_MARKER, PATH_ELOCALTOOL + "gotoobj_tsk.png", true);
 

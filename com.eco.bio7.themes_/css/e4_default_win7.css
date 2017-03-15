@@ -285,6 +285,10 @@ Menu {
 background-color: #ffffff;
 }
 
+ExpandBar {
+background-color: #cccccc;
+}
+
 
 .MPart.busy {
 	font-style: italic;

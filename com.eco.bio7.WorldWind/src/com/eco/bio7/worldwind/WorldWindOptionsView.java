@@ -317,7 +317,7 @@ public class WorldWindOptionsView extends ViewPart {
 		container.setLayout(new FillLayout());
 
 		expandBar = new ExpandBar(container, SWT.V_SCROLL);
-		//expandBar.setBackground(SWTResourceManager.getColor(255, 255, 255));
+		//expandBar.setBackground(parent.getBackground());
 
 		final ExpandItem newItemExpandItem_3 = new ExpandItem(expandBar, SWT.NONE);
 		newItemExpandItem_3.setHeight(330);

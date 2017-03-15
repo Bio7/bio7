@@ -465,6 +465,11 @@ CLabel{
     background-color: #252525;
     color: #dddddd;
 }
+ExpandBar {
+	background-color: #252525;
+	foreground-color: #252525;
+	color: #252525;
+}
 
 /* Label #com-eco-bio7-imagej {
 	background-color: #9c9696;

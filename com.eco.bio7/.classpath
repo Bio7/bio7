@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="libs/jython-standalone-2.5.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy-all-2.4.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/py4j0.10.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/groovy-all-2.4.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="bin/"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
@@ -14,6 +15,5 @@
 	<classpathentry exported="true" kind="lib" path="libs/swt-grouplayout.jar"/>
 	<classpathentry kind="lib" path="/com.eco.bio7.libs/libs/jogl-all.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="libs/jython-standalone-2.5.3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

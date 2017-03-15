@@ -235,8 +235,9 @@ Bundle-ClassPath:
  libs/swing-layout-1.0.jar,
  baseline.jar,
  libs/swt-grouplayout.jar,
- libs/groovy-all-2.4.3.jar,
- libs/jython-standalone-2.5.3.jar,
+ libs/groovy-all-2.4.9.jar,
  external:$java.home$/lib/jfxswt.jar,
- libs/py4j0.10.1.jar
+ libs/py4j0.10.1.jar,
+ libs/jython-standalone-2.5.3.jar
+Import-Package: org.eclipse.e4.ui.css.swt.theme
 

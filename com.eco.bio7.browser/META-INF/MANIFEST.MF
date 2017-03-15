@@ -26,4 +26,5 @@ Export-Package: com.eco.bio7.browser,
  org.eclipse.swt.widgets.baseline
 Bundle-ClassPath: bin/,
  external:$java.home$/lib/jfxswt.jar
+Import-Package: org.eclipse.e4.ui.css.swt.theme
 
