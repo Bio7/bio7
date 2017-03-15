@@ -20,6 +20,7 @@ import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.browser.MultiPageEditor;
 import com.eco.bio7.collection.CustomView;
 import com.eco.bio7.markdownedit.editors.MarkdownEditor;
 import com.eco.bio7.util.Util;
@@ -44,6 +45,7 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebErrorEvent;
 import javafx.scene.web.WebEvent;
 import javafx.scene.web.WebView;
+import net.sourceforge.texlipse.editor.TexEditor;
 import netscape.javascript.JSObject;
 
 /*A JavaFX browser implementation!*/
@@ -80,8 +82,8 @@ public class JavaFXWebBrowser {
 
 					return;
 				}
-				/*We reload the html side once to avoid cached images!*/
-				if (reload&&html) {
+				/* We reload the html side once to avoid cached images! */
+				if (reload && html) {
 					reload = false;
 					webEng.reload();
 				}
@@ -156,9 +158,11 @@ public class JavaFXWebBrowser {
 				}
 				/* We have to activate the editor again to enable all keyboard actions, etc.! */
 				IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-				if (editor == null || editor instanceof MarkdownEditor == false) {
+				if (editor == null) {
 					return;
-				} else {
+				}
+
+				if (editor instanceof MarkdownEditor || editor instanceof MultiPageEditor || editor instanceof TexEditor) {
 					Util.activateEditorPage(editor);
 				}
 
