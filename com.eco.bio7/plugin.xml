@@ -322,6 +322,10 @@
             id="com.eco.bio7.Start_RServe_Action"
             name="Start RServe">
       </command>
+      <sequenceModifier
+  			find="CTRL"
+  			replace="COMMAND"
+  			platforms="cocoa,carbon" />
       <keyBinding
             commandId="com.eco.bio7.Start_RServe_Action"
             keySequence="CTRL+R"
