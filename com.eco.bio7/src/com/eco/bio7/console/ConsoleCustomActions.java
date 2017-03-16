@@ -11,11 +11,17 @@
 
 package com.eco.bio7.console;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.Charset;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.dialogs.InputDialog;
@@ -38,6 +44,7 @@ import org.eclipse.swt.widgets.FontDialog;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
+import org.osgi.framework.Bundle;
 import org.rosuda.REngine.Rserve.RConnection;
 
 import com.eco.bio7.Bio7Plugin;
@@ -54,8 +61,7 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 	private Menu fMenu;
 	private ConsolePageParticipant participant;
-	private String[] encoding = { "UTF-8", "UTF-16", "CP850", "Big5", "Windows-1252", "Windows-1250", "Windows-1251", "Windows-1252", "Windows-1253", "Windows-1254", "Windows-1255", "Windows-1256",
-			"Windows-1257", "Windows-1258" };
+	private String[] encoding = { "UTF-8", "UTF-16", "CP850", "Big5", "Windows-1252", "Windows-1250", "Windows-1251", "Windows-1252", "Windows-1253", "Windows-1254", "Windows-1255", "Windows-1256", "Windows-1257", "Windows-1258" };
 
 	public ConsoleCustomActions(ConsolePageParticipant participant) {
 		setId("Interpreter_Console_Custom_Actions");
@@ -201,7 +207,7 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 			}
 		});
-		
+
 		MenuItem menuItem31 = new MenuItem(fMenu, SWT.PUSH);
 		menuItem31.setText("Reinitialize JavaScript");
 
@@ -280,7 +286,7 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 						}
 					}
 				}.start();
-				
+
 				Bio7Dialog.message("Process terminated!");
 
 			}
@@ -301,9 +307,7 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 			public void widgetSelected(SelectionEvent e) {
 
-				boolean destroy = Bio7Dialog.decision("Should all running Rterm (Windows) or R (Linux, Mac) processes be destroyed?\n" 
-				+ "If you you confirm all Rterm, R processes on the OS will be terminated!\n"
-				+ "Use only if no other Rterm, R instances are running!");
+				boolean destroy = Bio7Dialog.decision("Should all running Rterm (Windows) or R (Linux, Mac) processes be destroyed?\n" + "If you you confirm all Rterm, R processes on the OS will be terminated!\n" + "Use only if no other Rterm, R instances are running!");
 
 				if (destroy) {
 
@@ -319,10 +323,10 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 					else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 						TerminateRserve.killProcessRtermMac();
 					}
-					
+
 					ConsolePageParticipant cpp = ConsolePageParticipant.getConsolePageParticipantInstance();
 					String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
-					
+
 					if (selectionConsole.equals("R")) {
 
 						if (cpp.getRProcess() != null) {
@@ -342,11 +346,58 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 							cpp.setRProcess(null);
 						}
 						Bio7Dialog.message("Terminated R process!");
-					}
-					else {
+					} else {
 						Bio7Dialog.message("Please select the R console to terminate the process");
 					}
 
+				}
+
+			}
+
+			public void widgetDefaultSelected(SelectionEvent e) {
+
+			}
+		});
+		new MenuItem(fMenu, SWT.SEPARATOR);
+		MenuItem installRserveMenuItem = new MenuItem(fMenu, SWT.CASCADE);
+		installRserveMenuItem.setText("Install Rserve for MacOSX or Linux");
+
+		installRserveMenuItem.setText("Install Rserve for MacOSX or Linux");
+
+		installRserveMenuItem.addSelectionListener(new SelectionListener() {
+
+			public void widgetSelected(SelectionEvent e) {
+
+				Bundle bundle = Platform.getBundle("Bundled_R");
+				String OS = ApplicationWorkbenchWindowAdvisor.getOS();
+
+				URL fileURL = null;
+				if (OS.equals("Mac")) {
+					fileURL = bundle.getEntry("RserveLinMac/Rserve_1.8-4_Mac_cooperative.tgz");
+				} else if (OS.equals("Linux")) {
+					fileURL = bundle.getEntry("RserveLinMac/Rserve_1.8-4_Linux_cooperative.tar.gz");
+				} else {
+					return;
+
+				}
+				File file = null;
+				try {
+					file = new File(FileLocator.resolve(fileURL).toURI());
+				} catch (URISyntaxException e1) {
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				String path = file.getAbsolutePath();
+
+				String install = "install.packages(\"" + path + "\", repos=NULL)";
+				String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
+				if (selectionConsole.equals("R")) {
+
+					ConsolePageParticipant.pipeInputToConsole(install, true, true);
+					System.out.println(install);
+				} else {
+					Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
 				}
 
 			}

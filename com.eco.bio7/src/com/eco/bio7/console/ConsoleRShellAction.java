@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2012 M. Austenfeld
+ * Copyright (c) 2007-2017 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,8 +13,7 @@ package com.eco.bio7.console;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Display;
+
 
 import com.eco.bio7.Bio7Plugin;
 
