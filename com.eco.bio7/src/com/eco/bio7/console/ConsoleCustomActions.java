@@ -362,37 +362,37 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 		MenuItem installRserveMenuItem = new MenuItem(fMenu, SWT.CASCADE);
 		installRserveMenuItem.setText("Install Rserve for MacOSX or Linux");
 
-		installRserveMenuItem.setText("Install Rserve for MacOSX or Linux");
+		installRserveMenuItem.setText("Install Rserve (coop. mode)");
 
 		installRserveMenuItem.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
-
-				Bundle bundle = Platform.getBundle("Bundled_R");
-				String OS = ApplicationWorkbenchWindowAdvisor.getOS();
-
-				URL fileURL = null;
-				if (OS.equals("Mac")) {
-					fileURL = bundle.getEntry("RserveLinMac/Rserve_1.8-4_Mac_cooperative.tgz");
-				} else if (OS.equals("Linux")) {
-					fileURL = bundle.getEntry("RserveLinMac/Rserve_1.8-4_Linux_cooperative.tar.gz");
-				} else {
-					return;
-
-				}
-				File file = null;
-				try {
-					file = new File(FileLocator.resolve(fileURL).toURI());
-				} catch (URISyntaxException e1) {
-					e1.printStackTrace();
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
-				String path = file.getAbsolutePath();
-
-				String install = "install.packages(\"" + path + "\", repos=NULL)";
 				String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 				if (selectionConsole.equals("R")) {
+					Bundle bundle = Platform.getBundle("Bundled_R");
+					String OS = ApplicationWorkbenchWindowAdvisor.getOS();
+
+					URL fileURL = null;
+					if (OS.equals("Mac")) {
+						fileURL = bundle.getEntry("RserveLinMac/Rserve_1.8-4_Mac_cooperative.tgz");
+					} else if (OS.equals("Linux")) {
+						fileURL = bundle.getEntry("RserveLinMac/Rserve_1.8-4_Linux_cooperative.tar.gz");
+					} else {
+						Bio7Dialog.message("Only for Linux and MacOSX necessary!");
+						return;
+
+					}
+					File file = null;
+					try {
+						file = new File(FileLocator.resolve(fileURL).toURI());
+					} catch (URISyntaxException e1) {
+						e1.printStackTrace();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+					String path = file.getAbsolutePath();
+
+					String install = "install.packages(\"" + path + "\", repos=NULL)";
 
 					ConsolePageParticipant.pipeInputToConsole(install, true, true);
 					System.out.println(install);
