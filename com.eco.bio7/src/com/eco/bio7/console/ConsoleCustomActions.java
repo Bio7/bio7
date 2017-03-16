@@ -392,7 +392,7 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 					}
 					String path = file.getAbsolutePath();
 
-					String install = "install.packages(\"" + path + "\", repos=NULL)";
+					String install = "install.packages(\"" + path + "\",dependencies=TRUE,INSTALL_opts = c('--no-lock'),repos=NULL)";
 
 					ConsolePageParticipant.pipeInputToConsole(install, true, true);
 					System.out.println(install);
