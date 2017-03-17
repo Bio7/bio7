@@ -371,11 +371,7 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 			public void widgetSelected(SelectionEvent e) {
 				String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 				if (selectionConsole.equals("R")) {
-
-					Bundle bundle = Platform.getBundle("Bundled_R");
 					String OS = ApplicationWorkbenchWindowAdvisor.getOS();
-
-					URL fileURL = null;
 					String outputPath;
 					if (OS.equals("Mac")) {
 						String tempDir = System.getProperty("java.io.tmpdir");
@@ -385,14 +381,12 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 						try {
 							FileUtils.copyURLToFile(new URL("https://raw.github.com/Bio7/Rserve_Cooperative/master/Rserve_Mac_cooperative.tgz"), new File(outputPath));
 						} catch (MalformedURLException e2) {
-							// TODO Auto-generated catch block
+
 							e2.printStackTrace();
 						} catch (IOException e2) {
-							// TODO Auto-generated catch block
+
 							e2.printStackTrace();
 						}
-
-						// fileURL = bundle.getEntry("RserveLinMac/Rserve_1.8-4_Mac_cooperative.tgz");
 					} else if (OS.equals("Linux")) {
 						String tempDir = System.getProperty("java.io.tmpdir");
 						outputPath = tempDir + "/" + "Rserve_Linux_cooperative.tar.gz";
@@ -401,10 +395,10 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 						try {
 							FileUtils.copyURLToFile(new URL("https://raw.github.com/Bio7/Rserve_Cooperative/master/Rserve_Linux_cooperative.tar.gz"), new File(outputPath));
 						} catch (MalformedURLException e2) {
-							// TODO Auto-generated catch block
+
 							e2.printStackTrace();
 						} catch (IOException e2) {
-							// TODO Auto-generated catch block
+
 							e2.printStackTrace();
 						}
 						// fileURL = bundle.getEntry("RserveLinMac/Rserve_1.8-4_Linux_cooperative.tar.gz");
