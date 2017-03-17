@@ -381,8 +381,8 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 					String outputPath;
 					if (OS.equals("Mac")) {
 						String tempDir = System.getProperty("java.io.tmpdir");
-					      outputPath = tempDir + "/" + "Rserve_1.8-4_Linux_cooperative.tar.gz";
-					    
+					      outputPath = tempDir + "/" + "Rserve_1.8-4_Mac_cooperative.tgz";
+					    System.out.println("Download file to: "+outputPath);
 						 try {
 							FileUtils.copyURLToFile(new URL("https://raw.github.com/Bio7/Rserve_Cooperative/master/Rserve_1.8-4_Linux_cooperative.tar.gz"),  new File(outputPath));
 						} catch (MalformedURLException e2) {
@@ -397,7 +397,7 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 					} else if (OS.equals("Linux")) {
 						String tempDir = System.getProperty("java.io.tmpdir");
 					      outputPath = tempDir + "/" + "Rserve_1.8-4_Linux_cooperative.tar.gz";
-					    
+					      System.out.println("Download file to: "+outputPath);
 						 try {
 							FileUtils.copyURLToFile(new URL("https://raw.github.com/Bio7/Rserve_Cooperative/master/Rserve_1.8-4_Linux_cooperative.tar.gz"),  new File(outputPath));
 						} catch (MalformedURLException e2) {
@@ -421,6 +421,7 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}*/
+					 System.out.println("Download succesful! Installation of package started!");
 					String path = outputPath;//file.getAbsolutePath();
 
 					String install = "install.packages(\"" + path + "\",dependencies=TRUE,INSTALL_opts = c('--no-lock'),repos=NULL)";
