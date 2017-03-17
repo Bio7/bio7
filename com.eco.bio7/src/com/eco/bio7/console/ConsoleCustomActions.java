@@ -13,6 +13,7 @@ package com.eco.bio7.console;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -20,6 +21,7 @@ import java.nio.charset.Charset;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
+import org.apache.commons.io.FileUtils;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.Action;
@@ -369,28 +371,57 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 			public void widgetSelected(SelectionEvent e) {
 				String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 				if (selectionConsole.equals("R")) {
+					 
+					
+					
 					Bundle bundle = Platform.getBundle("Bundled_R");
 					String OS = ApplicationWorkbenchWindowAdvisor.getOS();
 
 					URL fileURL = null;
+					String outputPath;
 					if (OS.equals("Mac")) {
-						fileURL = bundle.getEntry("RserveLinMac/Rserve_1.8-4_Mac_cooperative.tgz");
+						String tempDir = System.getProperty("java.io.tmpdir");
+					      outputPath = tempDir + "/" + "Rserve_1.8-4_Linux_cooperative.tar.gz";
+					    
+						 try {
+							FileUtils.copyURLToFile(new URL("https://raw.github.com/Bio7/Rserve_Cooperative/master/Rserve_1.8-4_Linux_cooperative.tar.gz"),  new File(outputPath));
+						} catch (MalformedURLException e2) {
+							// TODO Auto-generated catch block
+							e2.printStackTrace();
+						} catch (IOException e2) {
+							// TODO Auto-generated catch block
+							e2.printStackTrace();
+						}
+						
+						//fileURL = bundle.getEntry("RserveLinMac/Rserve_1.8-4_Mac_cooperative.tgz");
 					} else if (OS.equals("Linux")) {
-						fileURL = bundle.getEntry("RserveLinMac/Rserve_1.8-4_Linux_cooperative.tar.gz");
+						String tempDir = System.getProperty("java.io.tmpdir");
+					      outputPath = tempDir + "/" + "Rserve_1.8-4_Linux_cooperative.tar.gz";
+					    
+						 try {
+							FileUtils.copyURLToFile(new URL("https://raw.github.com/Bio7/Rserve_Cooperative/master/Rserve_1.8-4_Linux_cooperative.tar.gz"),  new File(outputPath));
+						} catch (MalformedURLException e2) {
+							// TODO Auto-generated catch block
+							e2.printStackTrace();
+						} catch (IOException e2) {
+							// TODO Auto-generated catch block
+							e2.printStackTrace();
+						}
+						//fileURL = bundle.getEntry("RserveLinMac/Rserve_1.8-4_Linux_cooperative.tar.gz");
 					} else {
 						Bio7Dialog.message("Only for Linux and MacOSX necessary!");
 						return;
 
 					}
-					File file = null;
+					/*File file = null;
 					try {
 						file = new File(FileLocator.resolve(fileURL).toURI());
 					} catch (URISyntaxException e1) {
 						e1.printStackTrace();
 					} catch (IOException e1) {
 						e1.printStackTrace();
-					}
-					String path = file.getAbsolutePath();
+					}*/
+					String path = outputPath;//file.getAbsolutePath();
 
 					String install = "install.packages(\"" + path + "\",dependencies=TRUE,INSTALL_opts = c('--no-lock'),repos=NULL)";
 
