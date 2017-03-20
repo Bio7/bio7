@@ -47,7 +47,6 @@ import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.util.Util;
 
-
 public class FromSpreadAction extends Action implements IMenuCreator {
 
 	private Menu fMenu;
@@ -402,34 +401,18 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 
 					colnames[c] = data[0][c];
 
-					IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-					boolean correctChars = store.getBoolean(PreferenceConstants.D_ENABLE_HEAD_REPLACE);
-
-					if (correctChars) {
-
-						String st = store.getString(PreferenceConstants.D_OPENOFFICE_HEAD);
-						String[] a = st.split(",");
-
-						/*
-						 * Replace the comma since it is the split argument!
-						 */
-						colnames[c] = colnames[c].replace(",", ".");
-						for (int i = 0; i < a.length; i++) {
-
-							colnames[c] = colnames[c].replace(a[i], ".");
-							/*
-							 * Replace 'numbers and .' if they are the first
-							 * character (numbers replaced by X+number)!
-							 */
-							for (int j = 0; j < firstChar.length; j++) {
-
-								if (colnames[c].startsWith(firstChar[j])) {
-									colnames[c] = colnames[c].replaceFirst(firstChar[j], "X" + firstChar[j]);
-								}
-							}
-
-						}
+					/* Replace wrong header chars! */
+					String regEx = "[^a-zA-Z0-9_.]";
+					if (colnames[c].substring(0, 1).matches("[0-9]")) {
+						colnames[c] = colnames[c].replaceFirst("[0-9]", "X" + colnames[c].charAt(0));
 					}
+
+					else if (colnames[c].substring(0, 1).matches(regEx)) {
+
+						colnames[c] = colnames[c].replaceFirst(regEx, "X.");
+					}
+					colnames[c] = colnames[c].replaceAll(regEx, ".");
+
 				}
 			}
 
@@ -465,25 +448,19 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 					// first
 					// col.
 
-					String stringBuild = "."+generateRandomString();
-					String stringRowNames = "."+generateRandomString();
-					//System.out.println(stringBuild);
+					String stringBuild = "." + generateRandomString();
+					String stringRowNames = "." + generateRandomString();
+					// System.out.println(stringBuild);
 
 					for (int i = 0; i < sheetdata.length; i++) {
 						/*
-						 * We do not use a matrix in this case because Strings
-						 * and numbers are converted for the whole matrix. We
-						 * use a dataframe because a dataframe can have numeric
-						 * and character columns. We therefore have to create a
-						 * dataframe with one col (for the row dimension) and
-						 * then add different cols (numeric or character) to the
-						 * dataframe.
+						 * We do not use a matrix in this case because Strings and numbers are converted for the whole matrix. We use a dataframe because a dataframe can have numeric and character
+						 * columns. We therefore have to create a dataframe with one col (for the row dimension) and then add different cols (numeric or character) to the dataframe.
 						 * 
-						 * Random temporary col name will be used to avoid a
-						 * deletion of existing variables!!
+						 * Random temporary col name will be used to avoid a deletion of existing variables!!
 						 */
 						String num = stringBuild + (i + 1);
-						//System.out.println(num);
+						// System.out.println(num);
 
 						try {
 							connection.assign(num, sheetdata[i]);
@@ -495,24 +472,23 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 						connection.eval("try(" + text + "<-data.frame(" + text + "," + num + "))");
 						connection.eval("try(remove(" + num + "))");
 					}
-					
+
 					try {
 						/* Transfer the edited col names! */
-						
+
 						connection.assign(stringRowNames, colnames);
 					} catch (REngineException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 					/*
-					 * Delete the first col which was only created to use the
-					 * dataframe!
+					 * Delete the first col which was only created to use the dataframe!
 					 */
 					connection.eval("try(" + text + "[1]<-NULL)");
 					/* We rename the cols here! */
-					connection.eval("try(colnames(" + text + ") <-"+stringRowNames+")");
+					connection.eval("try(colnames(" + text + ") <-" + stringRowNames + ")");
 					/* Remove the vector with the colnames! */
-					connection.eval("try(remove("+stringRowNames+"))");
+					connection.eval("try(remove(" + stringRowNames + "))");
 				} catch (RserveException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -531,10 +507,10 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 		Random rnd = new Random();
 
 		StringBuilder stringBuild = new StringBuilder(30);
-		for (int i = 0; i < 30; i++){
+		for (int i = 0; i < 30; i++) {
 			stringBuild.append(choose.charAt(rnd.nextInt(choose.length())));
 		}
-		
+
 		return stringBuild.toString();
 	}
 
@@ -579,9 +555,9 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 			});
 
 			if (RServe.isAliveDialog()) {
-				
-				String stringBuild = "."+generateRandomString();
-				String stringRowNames = "."+generateRandomString();
+
+				String stringBuild = "." + generateRandomString();
+				String stringRowNames = "." + generateRandomString();
 
 				RConnection connection = RServe.getConnection();
 				try {
@@ -603,8 +579,7 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 						}
 
 						/*
-						 * If no String is present convert to integer ->NA
-						 * values will also be converted!
+						 * If no String is present convert to integer ->NA values will also be converted!
 						 */
 						connection.eval("try(if(sum(is.na(as.numeric(" + name + "[" + name + "!=\"NA\"])))==0){" + name + "<-as.numeric(" + name + ")}else{" + name + "<-as.character(" + name + ")})");
 
@@ -624,14 +599,13 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 						e.printStackTrace();
 					}
 					/*
-					 * Delete the first col which was only created to use the
-					 * dataframe!
+					 * Delete the first col which was only created to use the dataframe!
 					 */
 					connection.eval("try(" + text + "[1]<-NULL)");
 					/* We rename the cols here! */
-					connection.eval("colnames(" + text + ") <-"+stringRowNames+"");
+					connection.eval("colnames(" + text + ") <-" + stringRowNames + "");
 					/* Remove the vector with the colnames! */
-					connection.eval("remove("+stringRowNames+")");
+					connection.eval("remove(" + stringRowNames + ")");
 
 					str = null;
 
@@ -812,37 +786,15 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 
 	public String replaceWrongWord(String namesInput) {
 		String names;
-
-		if (namesInput.equals("") || namesInput == null) {
-			names = "X";
-
-		} else {
-
-			names = namesInput;
-			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-			String st = store.getString(PreferenceConstants.D_OPENOFFICE_HEAD);
-			String[] a = st.split(",");
-
-			/*
-			 * Replace the comma since it is the split argument!
-			 */
-			names = names.replace(",", ".");
-			for (int i = 0; i < a.length; i++) {
-
-				names = names.replace(a[i], ".");
-				/*
-				 * Replace 'numbers and .' if they are the first character
-				 * (numbers replaced by X+number)!
-				 */
-				for (int j = 0; j < firstChar.length; j++) {
-
-					if (names.startsWith(firstChar[j])) {
-						names = names.replaceFirst(firstChar[j], "X" + firstChar[j]);
-					}
-				}
-
-			}
+		/* Replace wrong header chars! */
+		String regEx = "[^a-zA-Z0-9_.]";
+		if (namesInput.substring(0, 1).matches("[0-9]")) {
+			namesInput = namesInput.replaceFirst("[0-9]", "X" + namesInput.charAt(0));
+		} else if (namesInput.substring(0, 1).matches(regEx)) {
+			namesInput = namesInput.replaceFirst(regEx, "X.");
 		}
+
+		names = namesInput.replaceAll(regEx, ".");
 
 		return names;
 	}

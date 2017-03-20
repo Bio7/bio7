@@ -387,9 +387,9 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 	}
 
 	public String correctChars(String name) {
-		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		/*IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		String st = store.getString(PreferenceConstants.D_OPENOFFICE_HEAD);
-		String[] a = st.split(",");
+		String[] a = st.split(",");*/
 
 		/*
 		 * Replace the comma since it is the split argument!
