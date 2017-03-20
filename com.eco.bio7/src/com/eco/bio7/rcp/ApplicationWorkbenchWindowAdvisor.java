@@ -563,6 +563,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
 			store.setDefault("PDF_READER", "ACROBAT");
 		}
+		
 		// store.setDefault("RSERVE_AUTOSTART", false);
 		store.setDefault(PreferenceConstants.PACKAGE_R_SERVER, "http://cran.r-project.org");
 		if (getOS().equals("Linux")) {
