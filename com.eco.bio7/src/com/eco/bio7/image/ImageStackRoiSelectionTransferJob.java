@@ -433,9 +433,9 @@ public class ImageStackRoiSelectionTransferJob extends WorkspaceJob implements I
 	}
 
 	public String correctChars(String name) {
-		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		String st = store.getString(PreferenceConstants.D_OPENOFFICE_HEAD);
-		String[] a = st.split(",");
+		//IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		//String st = store.getString(PreferenceConstants.D_OPENOFFICE_HEAD);
+		//String[] a = st.split(",");
 
 		/*
 		 * Replace the comma since it is the split argument!

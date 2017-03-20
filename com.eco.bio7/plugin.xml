@@ -611,12 +611,6 @@
             name="Preferences R"/>
       <page
             category="com.eco.bio7.preferences.Bio7PreferencePage"
-            class="com.eco.bio7.preferences.OpenOfficePreferencePage"
-            id="com.eco.bio7.OpenOfficePreferences"
-            name="Preferences Table">
-      </page>
-      <page
-            category="com.eco.bio7.preferences.Bio7PreferencePage"
             class="com.eco.bio7.preferences.Bio7PaintPreferences"
             id="com.eco.bio7.PreferencesPanels"
             name="Preferences Custom">

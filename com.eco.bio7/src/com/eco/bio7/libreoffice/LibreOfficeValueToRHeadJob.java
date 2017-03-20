@@ -133,34 +133,41 @@ public class LibreOfficeValueToRHeadJob extends WorkspaceJob {
 								colnames[c] = "X" + String.valueOf(data[0][c].toString());
 							} else {
 								colnames[c] = data[0][c].toString();
-								IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-								boolean correctChars = store.getBoolean(PreferenceConstants.D_ENABLE_HEAD_REPLACE);
+								/*Replace wrong header chars!*/
+								
+								String regEx = "[^a-zA-Z0-9_.]";
+								if (colnames[c].substring(0, 1).matches("[0-9]")) {
+									colnames[c] = colnames[c].replaceFirst("[0-9]", "X" + colnames[c].charAt(0));
+								}
 
-								if (correctChars) {
-									String st = store.getString(PreferenceConstants.D_OPENOFFICE_HEAD);
-									String[] a = st.split(",");
+								else if (colnames[c].substring(0, 1).matches(regEx)) {
 
-									/*
+									colnames[c] = colnames[c].replaceFirst(regEx, "X.");
+								}
+								colnames[c] = colnames[c].replaceAll(regEx, ".");
+									/*String[] a = st.split(",");
+
+									
 									 * Replace the comma since it is the split
 									 * argument!
-									 */
+									 
 									colnames[c] = colnames[c].replace(",", ".");
 									for (int i = 0; i < a.length; i++) {
 
 										colnames[c] = colnames[c].replace(a[i], ".");
-										/*
+										
 										 * Replace 'numbers and .' if they are
 										 * the first character (numbers replaced
 										 * by X+number)!
-										 */
+										 
 										for (int j = 0; j < firstChar.length; j++) {
 
 											if (colnames[c].startsWith(firstChar[j])) {
 												colnames[c] = colnames[c].replaceFirst(firstChar[j], "X" + firstChar[j]);
 											}
 										}
-									}
-								}
+									}*/
+								//}
 							}
 						}
 					}

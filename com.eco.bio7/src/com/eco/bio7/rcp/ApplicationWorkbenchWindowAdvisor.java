@@ -563,20 +563,21 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
 			store.setDefault("PDF_READER", "ACROBAT");
 		}
+		
 		// store.setDefault("RSERVE_AUTOSTART", false);
 		store.setDefault(PreferenceConstants.PACKAGE_R_SERVER, "http://cran.r-project.org");
 		if (getOS().equals("Linux")) {
 			store.setDefault("knitroptions", "opts_chunk$set(dev=\"png\",echo=TRUE, dev.args=list(type=\"cairo\"),dpi=96)");
 
-			store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "Ã„, ,Ã¤,Ã–,Ã¶,Ãœ,Ã¼,+,!,Â§,$,%,&,/,(,),=,?,[,],Â°,^,;,:,>,<,|,*,Âµ,\\,@,\",â€œ,Â¸,`,~,#,},{,Â¹,Â²,Â³,_,-");
+			//store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "[^a-zA-Z0-9_.]");
 		} else if (getOS().equals("Mac")) {
 			store.setDefault("knitroptions", "opts_chunk$set(dev=\"png\",echo=TRUE, dev.args=list(type=\"quartz\"),dpi=96)");
 
-			store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "Ã„, ,Ã¤,Ã–,Ã¶,Ãœ,Ã¼,+,!,Â§,$,%,&,/,(,),=,?,[,],Â°,^,;,:,>,<,|,*,Âµ,\\,@,\",â€œ,Â¸,`,~,#,},{,Â¹,Â²,Â³,_,-");
+			//store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "[^a-zA-Z0-9_.]");
 		} else {
 			store.setDefault("knitroptions", "opts_chunk$set(dev=\"png\",echo=TRUE, dev.args=list(type=\"cairo\"),dpi=96)");
 
-			store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "Ä, ,ä,Ö,ö,Ü,ü,+,!,ü,§,$,%,&,/,(,),=,?,[,],°,^,;,:,>,<,|,*,µ,\\,”,@,\",“,”,´,`,~,#,},{,²,³,_,-");
+			//store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "[^a-zA-Z0-9_.]");
 		}
 		store.setDefault("BROWSER_SELECTION", "JAVAFX_BROWSER");
 		store.setDefault("OPEN_BOWSER_IN_EXTRA_VIEW", false);

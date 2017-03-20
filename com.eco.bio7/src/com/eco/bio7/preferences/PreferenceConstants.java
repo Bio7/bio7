@@ -34,13 +34,13 @@ public class PreferenceConstants {
 
 	public static final String PACKAGE_R_SERVER = "http://cran.r-project.org";
 
-	public static final String D_OPENOFFICE_HEAD = "head";
+	//public static final String D_OPENOFFICE_HEAD = "head";
 	
 	public static final String D_GRID_SCRIPTS = "grid_scripts";
 
 	public static final String D_RSHELL_SCRIPTS = "r_shell_scripts";
 
-	public static String D_ENABLE_HEAD_REPLACE="enableHeadReplace";
+	//public static String D_ENABLE_HEAD_REPLACE="enableHeadReplace";
 	
 	
 	
