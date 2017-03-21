@@ -11,59 +11,59 @@
 }
 .html-editor-foreground {
   
-    -fx-graphic: derive( -fx-graphic);
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Text-Color.png);
 }
 .html-editor-background {
    
-    -fx-graphic: derive( -fx-graphic);
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Background-Color.png);
 }
 
 .html-editor-cut {
-	/*-fx-graphic: url("com/sun/javafx/scene/control/skin/modena/HTMLEditor-Cut.png");*/
-    -fx-graphic: derive( -fx-graphic);
+	
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Cut.png);
 }
 .html-editor-copy {
-    -fx-graphic: derive( -fx-graphic);
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Copy.png);
 }
 .html-editor-paste {
-    -fx-graphic: derive( -fx-graphic);
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Paste.png);
 }
 .html-editor-align-left {
-    -fx-graphic: derive( -fx-graphic);
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Left.png);
 }
 .html-editor-align-center {
-    -fx-graphic: derive( -fx-graphic);
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Center.png);
 }
 .html-editor-align-right {
-    -fx-graphic: derive( -fx-graphic);
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Right.png);
 }
 .html-editor-align-justify {
-    -fx-graphic: derive( -fx-graphic);
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Justify.png);
 }
 .html-editor-outdent {
-    -fx-graphic: derive( -fx-graphic);
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Outdent.png);
 }
 .html-editor-indent {
-    -fx-graphic: derive( -fx-graphic);
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Indent.png);
 }
 .html-editor-bullets {
-    -fx-graphic: derive( -fx-graphic);
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Bullets.png);
 }
 .html-editor-numbers {
-    -fx-graphic: derive( -fx-graphic);
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Numbered.png);
 }
 .html-editor-bold {
-    -fx-graphic: derive( -fx-graphic);
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Bold.png);
 }
 .html-editor-italic {
-    -fx-graphic: derive( -fx-graphic);
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Italic.png);
 }
 .html-editor-underline {
-    -fx-graphic: derive( -fx-graphic);
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Underline.png);
 }
 .html-editor-strike {
-    -fx-graphic: derive( -fx-graphic);
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Strikethrough.png);
 }
 .html-editor-hr {
-    -fx-graphic: derive( -fx-graphic);
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Break.png);
 } 
