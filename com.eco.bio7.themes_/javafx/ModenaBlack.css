@@ -19,6 +19,7 @@
 }
 
 .html-editor-cut {
+	/*-fx-graphic: url("com/sun/javafx/scene/control/skin/modena/HTMLEditor-Cut.png");*/
     -fx-graphic: derive( -fx-graphic);
 }
 .html-editor-copy {
