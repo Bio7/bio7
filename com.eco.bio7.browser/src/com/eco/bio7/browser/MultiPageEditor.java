@@ -26,9 +26,9 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.web.HTMLEditor;
 import javafx.scene.web.WebView;
+import net.htmlparser.jericho.Config;
+import net.htmlparser.jericho.LoggerProvider;
 import net.htmlparser.jericho.Source;
-import net.htmlparser.jericho.SourceFormatter;
-
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -109,7 +109,8 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	public MultiPageEditor() {
 		super();
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
-
+		/*Disable logging in Jericho parser!*/
+		Config.LoggerProvider=LoggerProvider.DISABLED;
 	}
 
 	void createPage1() {
