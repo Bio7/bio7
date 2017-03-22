@@ -1091,6 +1091,7 @@
              tooltip="Compiles and executes dynamically one or multiple Java files">
        </action>
     </objectContribution>
+    
     <!--<objectContribution
           adaptable="false"
           id="Knitrtex"
@@ -1303,6 +1304,13 @@
           adaptable="false"
           id="CheckBuildRPackage2"
           objectClass="org.eclipse.core.resources.IProject">
+      <action
+             class="com.eco.bio7.popup.actions.StartShinyApp"
+             id="com.eco.bio7.startshinyapp"
+             label="Start Shiny App"
+             menubarPath="additions.shiny"
+             tooltip="Starts a Shiny App">
+       </action>
        
        <action
              class="com.eco.bio7.popup.actions.CheckRPackage"
