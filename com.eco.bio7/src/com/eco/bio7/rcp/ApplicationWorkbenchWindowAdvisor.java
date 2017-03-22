@@ -1149,6 +1149,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		// IPreferenceStore workbenchStore = IDEWorkbenchPlugin.getDefault().getPreferenceStore();
 		// System.out.print(ThemeHelper.getEngine().getActiveTheme().getId());
+		if(ThemeHelper.getEngine().getActiveTheme()!=null){
 		String activeTheme = ThemeHelper.getEngine().getActiveTheme().getId();
 		/* We use a black style if the CSS is the dark theme! */
 		if (activeTheme.equals("org.eclipse.e4.ui.css.theme.e4_dark")) {
@@ -1162,6 +1163,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			// javafx.application.Application.setUserAgentStylesheet(null);
 
 			javafx.application.Application.setUserAgentStylesheet(path);
+		}
 		}
 
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
