@@ -3,6 +3,7 @@ package com.eco.bio7.preferences;
 
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -41,6 +42,9 @@ public class RPackagesPreferencePage extends FieldEditorPreferencePage implement
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new LabelFieldEditor("Knitr Options HTML:", getFieldEditorParent()));
 		addField(new StringFieldEditor("knitroptions", "Knitr Options", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
+		addField(new LabelFieldEditor("Shiny:", getFieldEditorParent()));
+		addField(new IntegerFieldEditor("SHINY_PORT", "Shiny Port", getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		final Link link = new Link(getFieldEditorParent(), SWT.NONE);
 		link.setText("See <a href=\"com.eco.bio7.browser.preferences\">'Browser Preferences'</a> to select or configure the Browser.");

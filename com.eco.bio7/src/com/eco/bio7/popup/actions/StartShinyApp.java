@@ -33,10 +33,13 @@ import com.eco.bio7.rbridge.actions.ProfileRScript;
 
 public class StartShinyApp extends Action implements IObjectActionDelegate {
 
+	private IPreferenceStore store;
+
 	public StartShinyApp() {
 		super();
 		setId("com.eco.bio7.startshinyapp");
 		setActionDefinitionId("com.eco.bio7.startshinyapp");
+		 store = Bio7Plugin.getDefault().getPreferenceStore();
 	}
 
 	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
@@ -44,6 +47,7 @@ public class StartShinyApp extends Action implements IObjectActionDelegate {
 
 	public void run(IAction action) {
 		PlatformUI.getWorkbench().saveAllEditors(true);
+		
 
 		ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().getSelection();
 		IStructuredSelection strucSelection = null;
@@ -70,6 +74,7 @@ public class StartShinyApp extends Action implements IObjectActionDelegate {
 				if (RServe.isAlive()) {
 					Bio7Action.callRserve();
 				}
+				int shinyPort = store.getInt("SHINY_PORT");
 				String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 				if (selectionConsole.equals("R")) {
 
@@ -87,8 +92,8 @@ public class StartShinyApp extends Action implements IObjectActionDelegate {
 							// con.eval("try(setwd(\"" + cleanedPath + "\"))");
 							// con.eval("try(library(shiny))");
 
-							ConsolePageParticipant.pipeInputToConsole("setwd(\"" + cleanedPath + "\");library(shiny);runApp(port=5099,launch.browser =FALSE)", true, true);
-							System.out.println("runApp(port=5099,launch.browser =FALSE)");
+							ConsolePageParticipant.pipeInputToConsole("setwd(\"" + cleanedPath + "\");library(shiny);runApp(port="+shinyPort+",launch.browser =FALSE)", true, true);
+							System.out.println("runApp(port="+shinyPort+",launch.browser =FALSE)");
 
 							// con.eval("try(runApp(port=5099,launch.browser =FALSE))");
 							/*
@@ -119,21 +124,21 @@ public class StartShinyApp extends Action implements IObjectActionDelegate {
 
 						public void run() {
 
-							IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+							
 							String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
 
 							if (openInJavaFXBrowser.equals("SWT_BROWSER")) {
 								Work.openView("com.eco.bio7.browser.Browser");
 								BrowserView b = BrowserView.getBrowserInstance();
 								b.browser.setJavascriptEnabled(true);
-								b.setLocation("http://127.0.0.1:5099");
+								b.setLocation("http://127.0.0.1:"+shinyPort+"");
 							} else {
 								boolean openInBrowserInExtraView = store.getBoolean("OPEN_BOWSER_IN_EXTRA_VIEW");
 								if (openInBrowserInExtraView) {
 									String id = UUID.randomUUID().toString();
-									new JavaFXWebBrowser(true).createBrowser("http://127.0.0.1:5099", id);
+									new JavaFXWebBrowser(true).createBrowser("http://127.0.0.1:"+shinyPort+"", id);
 								} else {
-									new JavaFXWebBrowser(true).createBrowser("http://127.0.0.1:5099", "Display");
+									new JavaFXWebBrowser(true).createBrowser("http://127.0.0.1:"+shinyPort+"", "Display");
 								}
 
 							}

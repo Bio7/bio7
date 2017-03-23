@@ -584,7 +584,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("DETECT_R_PROCESS", true);
 		store.setDefault("R_DEBUG_PORT", 21555);
 		store.setDefault("RSERVE_CLIENT_CONNECTION_PORT", 6311);
-
+		store.setDefault("SHINY_PORT", 5559);
 		store.setDefault("LATEX_ENGINE", "pdflatex");
 		store.setDefault("BIBTEX_ENGINE", "bibtex");
 
