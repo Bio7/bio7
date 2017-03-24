@@ -359,7 +359,7 @@
       <keyBinding
             commandId="com.eco.bio7.flowstop"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            keySequence="CTRL+ALT+X"/>
+            keySequence="CTRL+ALT+SHIFT+X"/>
      
       <keyBinding
             commandId="com.eco.bio7.print_expression"
@@ -547,7 +547,7 @@
       <keyBinding
             commandId="com.eco.bio7.interpretjavascriptaction"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            keySequence="CTRL+ALT+SHIFT+S">
+            keySequence="CTRL+ALT+SHIFT+T">
       </keyBinding>
    </extension>
    <extension

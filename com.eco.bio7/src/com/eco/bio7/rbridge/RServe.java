@@ -691,7 +691,7 @@ public class RServe {
 					 * Here we use a simple but effective trick. We define the default variable 'DEFAULT_URL' in JavaScript for the viewer.js (we comment the variable out there) to load and reload
 					 * local documents which won't be possible if using the path as an argument, see: https://github.com/mozilla/pdf.js/issues/5057
 					 */
-					webEngine.executeScript("var DEFAULT_URL ='" + url + "'");
+					webEngine.executeScript("var DEFAULT_URL =\"" + url + "\"");
 					
 					//System.out.println("Path to URL file: " + url);
 
