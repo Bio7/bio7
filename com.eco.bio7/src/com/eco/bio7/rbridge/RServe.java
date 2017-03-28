@@ -674,7 +674,7 @@ public class RServe {
 			// System.out.println(openInJavaFXBrowser);
 
 			File tempFile = createTempFileFromPlot(plotPathR, fileName);
-
+            //String temp = "../../../com.eco.bio7/bio7temp/tempDevicePlot.pdf";
 			String temp = "file:////" + tempFile;
 			String url = temp.replace("\\", "/");
 			String pathBundle = getPdfjsPath();

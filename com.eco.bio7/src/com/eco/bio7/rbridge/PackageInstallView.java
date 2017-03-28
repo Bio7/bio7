@@ -1,27 +1,36 @@
 package com.eco.bio7.rbridge;
 
 import java.util.HashMap;
-
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-
+import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
-
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
+import com.eco.bio7.browser.BrowserView;
+import com.eco.bio7.collection.Work;
+import com.eco.bio7.documents.JavaFXWebBrowser;
+import com.eco.bio7.util.Util;
 
 public class PackageInstallView extends ViewPart {
 
@@ -31,6 +40,8 @@ public class PackageInstallView extends ViewPart {
 	private HashMap<String, String[]> map = new HashMap<String, String[]>();
 	private Button btnContextSensitive;
 	private Label lblSearch;
+	private Button btnCheckButton;
+	protected Job job;
 
 	public PackageInstallView() {
 	}
@@ -49,16 +60,48 @@ public class PackageInstallView extends ViewPart {
 		initializeToolBar();
 		initializeMenu();
 
-		// setImage(SWTResourceManager.getImage(PackagesList.class,
-		// "/pics/logo.gif"));
-
 		allPackagesList = new List(container, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
 		allPackagesList.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 6));
 
 		allPackagesList.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				String[] items = allPackagesList.getSelection();
+				if (btnCheckButton.getSelection()) {
+					int[] selection = allPackagesList.getSelectionIndices();
+					String text = allPackagesList.getItem(selection[0]);
+					if (text.isEmpty() == false) {
+						IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+						String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
+						String installPackagesDescritpionUrl = store.getString("INSTALL_R_PACKAGES_DESCRPTION_URL");
+						String packageInfoSite = installPackagesDescritpionUrl + text + "/index.html";
+						if (openInJavaFXBrowser.equals("SWT_BROWSER")) {
+							Display display = Util.getDisplay();
+							display.asyncExec(new Runnable() {
 
+								public void run() {
+									Work.openView("com.eco.bio7.browser.Browser");
+
+									BrowserView b = BrowserView.getBrowserInstance();
+									b.browser.setJavascriptEnabled(true);
+
+									b.setLocation(packageInfoSite);
+								}
+							});
+						}
+
+						else {
+							Display display = Util.getDisplay();
+							display.asyncExec(new Runnable() {
+
+								public void run() {
+									JavaFXWebBrowser br = new JavaFXWebBrowser(true);
+									br.createBrowser(packageInfoSite, "R Package Description");
+
+								}
+							});
+						}
+					}
+
+				}
 			}
 		});
 
@@ -78,9 +121,9 @@ public class PackageInstallView extends ViewPart {
 						String it = allPackagesList.getItem(i);
 
 						if (it.startsWith(text.getText())) {
-
-							allPackagesList.select(i);
-							allPackagesList.showSelection();
+							/* We don't want a flickery search results each time we type a character. 
+							 * So we update the info after a certain time interval with a job! */
+							loadPackageDescriptionHtml(event, i);
 							return;
 						}
 					}
@@ -94,9 +137,10 @@ public class PackageInstallView extends ViewPart {
 
 						String it = allPackagesList.getItem(i).toLowerCase();
 						if (it.startsWith(text.getText().toLowerCase())) {
+							/* We don't want a flickery search results each time we type a character. 
+							 * So we update the info after a certain time interval with a job! */
+							loadPackageDescriptionHtml(event, i);
 
-							allPackagesList.select(i);
-							allPackagesList.showSelection();
 							return;
 						}
 					}
@@ -104,10 +148,15 @@ public class PackageInstallView extends ViewPart {
 				}
 
 			}
+
 		});
-		
-				btnContextSensitive = new Button(container, SWT.CHECK);
-				btnContextSensitive.setText("Context Sensitive");
+
+		btnContextSensitive = new Button(container, SWT.CHECK);
+		btnContextSensitive.setText("Context Sensitive");
+		new Label(container, SWT.NONE);
+
+		btnCheckButton = new Button(container, SWT.CHECK);
+		btnCheckButton.setText("Open Package Description");
 		new Label(container, SWT.NONE);
 		new Label(container, SWT.NONE);
 		new Label(container, SWT.NONE);
@@ -196,6 +245,38 @@ public class PackageInstallView extends ViewPart {
 						"This packages provides a set of tools for post processing the outcomes\nof species distribution modeling exercises. It includes novel methods for comparing models\nand tracking changes in distributions through time.\nIt further includes methods for visualizing outcomes, selecting thresholds, calculating measures\nof accuracy and landscape fragmentation statistics, etc.",
 						"http://cran.r-project.org/web/packages/SDMTools/" });
 
+	}
+
+	/* We don't want a flickery search results each time we type a character. So we update the info after a certain time interval with a job! */
+	private void loadPackageDescriptionHtml(Event event, int i) {
+		final int count = i;
+		if (job != null) {
+			job.cancel();
+		}
+
+		job = new Job("Load") {
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				monitor.beginTask("Load...", IProgressMonitor.UNKNOWN);
+
+				Display display = PlatformUI.getWorkbench().getDisplay();
+				display.syncExec(new Runnable() {
+
+					public void run() {
+						allPackagesList.select(count);
+						allPackagesList.showSelection();
+						allPackagesList.notifyListeners(SWT.Selection, event);
+
+					}
+				});
+
+				monitor.done();
+				return Status.OK_STATUS;
+			}
+
+		};
+
+		job.schedule(500);
 	}
 
 	/**

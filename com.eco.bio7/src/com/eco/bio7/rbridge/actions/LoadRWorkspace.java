@@ -18,6 +18,7 @@ import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
+import com.eco.bio7.rbridge.RConfig;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
@@ -83,13 +84,14 @@ public class LoadRWorkspace extends Action {
 		} else {
 
 				load(con);
+				
 
 			
 		}
 
 	}
 
-	public void load(RConnection d) {
+	public void load(RConnection con) {
 		String selected;
 
 		Shell s = new Shell();
@@ -125,7 +127,7 @@ public class LoadRWorkspace extends Action {
 				RState.setBusy(true);
 
 				try {
-					d.assign(".bio7TempRScriptFile", selected);
+					con.assign(".bio7TempRScriptFile", selected);
 				} catch (RserveException e) {
 
 					e.printStackTrace();
@@ -134,7 +136,10 @@ public class LoadRWorkspace extends Action {
 				Do.addJobChangeListener(new JobChangeAdapter() {
 					public void done(IJobChangeEvent event) {
 						if (event.getResult().isOK()) {
+							/*Reload the configuration for R to reload local temp path and display definition!*/
+							RConfig.config(con);
 							RState.setBusy(false);
+							
 							System.out.print("try(load(file = " + filePath + "))");
 							System.out.println();
 						} else {

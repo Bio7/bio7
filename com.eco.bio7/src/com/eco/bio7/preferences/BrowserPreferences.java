@@ -10,6 +10,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import com.eco.bio7.Bio7Plugin;
+import org.eclipse.jface.preference.StringFieldEditor;
 
 public class BrowserPreferences extends FieldEditorPreferencePage implements IWorkbenchPreferencePage, PropertyChangeListener {
 
@@ -53,7 +54,9 @@ public class BrowserPreferences extends FieldEditorPreferencePage implements IWo
 		addField(new BooleanFieldEditor("ENABLE_BROWSER_SCROLLBARS","Enable Browser Scrollbars",getFieldEditorParentControl()));
 		addField(new BooleanFieldEditor("SCROLL_TO_DOCUMENT_END","Scroll to HTML document end",getFieldEditorParentControl()));
 		addField(new BooleanFieldEditor("ENABLE_BROWSER_LOG","Print Browser messages",getFieldEditorParentControl()));
-		
+		addField(spacer1);
+		addField(new LabelFieldEditor("R Install Package Help:", getFieldEditorParent()));
+		addField(new StringFieldEditor("INSTALL_R_PACKAGES_DESCRPTION_URL", "URL: Install R packages help descr. ", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
 	}
 
 }
