@@ -11,12 +11,10 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
-import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.Rserve.RConnection;
@@ -27,6 +25,7 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsoleInterpreterAction;
 import com.eco.bio7.console.ConsolePageParticipant;
+import com.eco.bio7.rbridge.RConfig;
 import com.eco.bio7.rbridge.RConnectionJob;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
@@ -74,8 +73,7 @@ public class StartRServe extends Action implements IMenuCreator {
 		boolean remote = store.getBoolean("REMOTE");
 		RConnection c = RServe.getConnection();
 		/*
-		 * Check if a running R process is available which maybe is orphaned and
-		 * leads to undesired Rserve behaviour!
+		 * Check if a running R process is available which maybe is orphaned and leads to undesired Rserve behaviour!
 		 */
 		ConsolePageParticipant consInst = ConsolePageParticipant.getConsolePageParticipantInstance();
 		if (consInst.getRProcess() == null) {
@@ -88,7 +86,7 @@ public class StartRServe extends Action implements IMenuCreator {
 
 		if (remote == false) {
 
-			/*			
+			/*
 			 * This actions starts Rserve by default in the native shell! else {
 			 */
 
@@ -96,7 +94,7 @@ public class StartRServe extends Action implements IMenuCreator {
 			/* Start the native R process! */
 			inst.startR();
 
-			//RConnection con = c;
+			// RConnection con = c;
 
 			/* Close an existing Rserve connection! */
 			if (c != null) {
@@ -109,7 +107,7 @@ public class StartRServe extends Action implements IMenuCreator {
 				RConnectionJob.setCanceled(true);
 				c.close();
 				RServe.setConnection(null);
-                REditor.setConnection(null);
+				REditor.setConnection(null);
 				WorldWindView.setRConnection(null);
 			}
 			/* Start a new Rserve connection! */
@@ -143,7 +141,7 @@ public class StartRServe extends Action implements IMenuCreator {
 				RServe.setConnection(null);
 
 				WorldWindView.setRConnection(null);
-				
+
 				REditor.setConnection(null);
 
 			}
@@ -229,13 +227,12 @@ public class StartRServe extends Action implements IMenuCreator {
 				RServe.setRrunning(false);
 
 				RServe.setConnection(null);
-				
+
 				REditor.setConnection(null);
 
 				WorldWindView.setRConnection(null);
 				/*
-				 * if (RCompletionShell.getShellInstance() != null) {
-				 * RCompletionShell.getShellInstance().dispose(); }
+				 * if (RCompletionShell.getShellInstance() != null) { RCompletionShell.getShellInstance().dispose(); }
 				 */
 
 				// the following wrapped for BeanShell !
@@ -271,10 +268,28 @@ public class StartRServe extends Action implements IMenuCreator {
 			}
 
 		}
-		String load = "try(load(file=.bio7TempRScriptFile))";
-		RInterpreterJob Do = new RInterpreterJob(load, false, null);
-		Do.setUser(true);
-		Do.schedule();
+		if (RState.isBusy() == false) {
+			RState.setBusy(true);
+			String load = "try(load(file=.bio7TempRScriptFile))";
+			RInterpreterJob Do = new RInterpreterJob(load, false, null);
+			Do.addJobChangeListener(new JobChangeAdapter() {
+				public void done(IJobChangeEvent event) {
+					if (event.getResult().isOK()) {
+						/* Reload the configuration for R to reload local temp path and display definition! */
+						RConfig.config(con);
+						RState.setBusy(false);
+					} else {
+						RState.setBusy(false);
+					}
+				}
+			});
+			Do.setUser(true);
+			Do.schedule();
+		} else {
+
+			Bio7Dialog.message("Rserve is busy!");
+
+		}
 
 	}
 
@@ -327,7 +342,7 @@ public class StartRServe extends Action implements IMenuCreator {
 
 		MenuItem terminateRProcessMenuItem = new MenuItem(fMenu, SWT.PUSH);
 		terminateRProcessMenuItem.setText("Terminate R");
-		//terminateRProcessMenuItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
+		// terminateRProcessMenuItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
 		terminateRProcessMenuItem.setImage(Bio7Plugin.getImageDescriptor("/icons/views/stopraction.png").createImage());
 		terminateRProcessMenuItem.addSelectionListener(new SelectionListener() {
 
@@ -373,7 +388,7 @@ public class StartRServe extends Action implements IMenuCreator {
 		});
 		MenuItem menuItemFractal = new MenuItem(fMenu, SWT.PUSH);
 		menuItemFractal.setText("Kill All R Processes");
-		//menuItemFractal.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
+		// menuItemFractal.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
 		menuItemFractal.setImage(Bio7Plugin.getImageDescriptor("/icons/views/stopraction.png").createImage());
 		menuItemFractal.addSelectionListener(new SelectionListener() {
 
@@ -468,13 +483,13 @@ public class StartRServe extends Action implements IMenuCreator {
 
 	private boolean orphanedRRunningMessage() {
 		boolean killOrphanedRProcess;
-		killOrphanedRProcess = Bio7Dialog.decision("" + "Detected one or more running R process(es) on this Operating System!\n\n" + "Please kill all R processes by pressing 'Yes' if the R process(es) probably originate(s) from a killed or unexpected terminated Bio7 session.\n\n" + "Press 'No' if you don't want to kill all running R process(es) before starting a new R process for Bio7!");
+		killOrphanedRProcess = Bio7Dialog.decision("" + "Detected one or more running R process(es) on this Operating System!\n\n" + "Please kill all R processes by pressing 'Yes' if the R process(es) probably originate(s) from a killed or unexpected terminated Bio7 session.\n\n"
+				+ "Press 'No' if you don't want to kill all running R process(es) before starting a new R process for Bio7!");
 		return killOrphanedRProcess;
 	}
 
 	/*
-	 * Function with boolean argument to indicate that a running R process was
-	 * detected or a normal startup!
+	 * Function with boolean argument to indicate that a running R process was detected or a normal startup!
 	 */
 	private void killAllRProcesses(boolean checkConsoleSelected) {
 		if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {

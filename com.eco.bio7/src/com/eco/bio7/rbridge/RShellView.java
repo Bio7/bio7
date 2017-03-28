@@ -174,7 +174,7 @@ public class RShellView extends ViewPart {
 	//private CTabItem plotTabItem;
 	private Button loadButton_1;
 	private Button fontButton;
-	protected boolean cmdError;
+	public boolean cmdError;
 	protected Parse parse;
 	private static RShellView instance;
 	/* Create the plot tab! */
@@ -182,6 +182,7 @@ public class RShellView extends ViewPart {
 	private Button saveButton;
 	private SashForm sashForm;
 	private ShellCompletion shellCompletion;
+	public ControlDecoration txtIndication;
 
 	public RShellView() {
 		instance = this;
@@ -268,7 +269,7 @@ public class RShellView extends ViewPart {
 		gd_text.heightHint = 49;
 		gd_text.widthHint = 570;
 		text.setLayoutData(gd_text);
-		final ControlDecoration txtIndication = new ControlDecoration(text, SWT.TOP | SWT.LEFT);
+		txtIndication = new ControlDecoration(text, SWT.TOP | SWT.LEFT);
 		FieldDecoration textDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_ERROR);
 		Image img = textDecoration.getImage();
 		txtIndication.setImage(img);
@@ -366,7 +367,7 @@ public class RShellView extends ViewPart {
 		prov = new SimpleContentProposalProvider(history);
 		adapter = new ContentProposalAdapter(text, new TextContentAdapter(), prov, stroke, null);
 		/* Add code completion to textfield! */
-		shellCompletion = new ShellCompletion(text, new TextContentAdapter());
+		shellCompletion = new ShellCompletion(this,text, new TextContentAdapter());
 
 		DropTarget target = new DropTarget(text, operations);
 		target.setTransfer(types);

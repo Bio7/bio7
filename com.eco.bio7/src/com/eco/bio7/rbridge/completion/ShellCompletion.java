@@ -38,17 +38,26 @@ import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalListener;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.fieldassist.IControlContentAdapter;
+import org.eclipse.jface.text.contentassist.CompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Text;
+import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
+import com.eco.bio7.rbridge.RShellView;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.reditor.Bio7REditorPlugin;
+import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.rpreferences.template.CalculateRProposals;
+import com.eco.bio7.util.Util;
 import com.swtdesigner.ResourceManager;
 
 public class ShellCompletion {
@@ -59,15 +68,19 @@ public class ShellCompletion {
 	private static final String UCL = LCL.toUpperCase();
 	private static final String NUMS = "0123456789";
 	private Image image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/template_obj.png");
+	private Image s4Image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/s4.png");
+	private Image s3Image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/s3.png");
 	private Text control;
 	private String[] statistics;
 	private String[] statisticsContext;
 	private String[] statisticsSet;
+	private ImageContentProposal[] propo;
+	public boolean s4;
+	public boolean s3;
+	private RShellView view;
 
 	/*
-	 * Next two methods adapted from:
-	 * https://krishnanmohan.wordpress.com/2011/12/12/eclipse-rcp-
-	 * autocompletecombotext-control/
+	 * Next two methods adapted from: https://krishnanmohan.wordpress.com/2011/12/12/eclipse-rcp- autocompletecombotext-control/
 	 */
 	static char[] getAutoactivationChars() {
 
@@ -83,7 +96,8 @@ public class ShellCompletion {
 		return instance;
 	}
 
-	public ShellCompletion(Text control, final IControlContentAdapter controlContentAdapter) {
+	public ShellCompletion(RShellView view,Text control, final IControlContentAdapter controlContentAdapter) {
+		this.view=view;
 		this.control = control;
 		contentProposalProvider = new ContentProposalProvider();
 		contentProposalProvider.setFiltering(true);
@@ -99,23 +113,38 @@ public class ShellCompletion {
 																									// here!
 		contentProposalAdapter.addContentProposalListener(new IContentProposalListener() {
 
+			private Parse parse;
+			private boolean cmdError;
+
 			@Override
 			public void proposalAccepted(IContentProposal proposal) {
 				/* We have to care about the custom replacements! */
 
 				String content = control.getText();
-				control.setSelection(contentProposalProvider.lastIndex + 1, control.getCaretPosition());
+				control.setSelection(contentProposalProvider.lastIndex, control.getCaretPosition());
 				Point selection = control.getSelection();
 
 				/*
-				 * Insert the completion proposal in between selection start and
-				 * selection end!
+				 * Insert the completion proposal in between selection start and selection end!
 				 */
-				content = content.substring(0, selection.x) + proposal.getContent() + "()" + content.substring(selection.y, content.length());
-				/* Calculate the cursor position after inserting parentheses! */
-				int cursorPosition = (content.substring(0, selection.x) + proposal.getContent() + "()").length() - 1;
-				control.setText(content);
-				control.setSelection(cursorPosition);
+				if (s3 == true || s4 == true) {
+					s3 = false;
+					s4 = false;
+					String textSel=control.getText(0, control.getCaretPosition()-1);
+					String after=control.getText(control.getCaretPosition(),control.getText().length());
+					content = textSel + proposal.getContent()+after;
+					int cursorPosition = content.length()+1;
+					control.setText(content);
+					control.setSelection(cursorPosition);
+				} else {
+					content = content.substring(0, selection.x) + proposal.getContent() + "()" + content.substring(selection.y, content.length());
+					/* Calculate the cursor position after inserting parentheses! */
+					int cursorPosition = (content.substring(0, selection.x) + proposal.getContent() + "()").length() - 1;
+					control.setText(content);
+					control.setSelection(cursorPosition);
+				}
+				 Event e = new Event();
+				 control.notifyListeners(SWT.KeyUp, e);
 
 			}
 
@@ -140,8 +169,7 @@ public class ShellCompletion {
 							try {
 
 								/*
-								 * Function loaded at Rserve startup. Writes the
-								 * available functions to a file!
+								 * Function loaded at Rserve startup. Writes the available functions to a file!
 								 */
 								c.eval(".bio7WriteFunctionDef();");
 							} catch (RserveException e) {
@@ -150,8 +178,7 @@ public class ShellCompletion {
 							}
 
 							/*
-							 * Reload the code proposals (not the templates) for
-							 * the R editor!
+							 * Reload the code proposals (not the templates) for the R editor!
 							 */
 							CalculateRProposals.setStartupTemplate(false);
 							CalculateRProposals.loadRCodePackageTemplates();
@@ -213,8 +240,7 @@ public class ShellCompletion {
 		public ContentProposalProvider() {
 			super();
 			/*
-			 * At startup load the default R proposals and add them to the
-			 * templates!
+			 * At startup load the default R proposals and add them to the templates!
 			 */
 
 			CalculateRProposals.loadRCodePackageTemplates();
@@ -226,6 +252,8 @@ public class ShellCompletion {
 		}
 
 		public IContentProposal[] getProposals(String contents, int position) {
+
+			
 
 			if (filterProposals) {
 				ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
@@ -245,6 +273,14 @@ public class ShellCompletion {
 				} else {
 					textLength = control.getText().length();
 					contentLast = control.getText();
+				}
+				
+				if (contentLast.endsWith("@")) {
+					s4 = true;
+					return s4Activation(position, contentLast);
+				} else if (contentLast.endsWith("$")) {
+					s3 = true;
+					return s3Activation(position, contentLast);
 				}
 
 				/* If text length after parenheses is at least 0! */
@@ -353,6 +389,101 @@ public class ShellCompletion {
 		public Image getImage() {
 			return this.image;
 		}
+	}
+
+	private IContentProposal[] s4Activation(int offset, String prefix) {
+		propo = null;
+		String res = prefix.replace("@", "");
+		final int offSet = offset;
+		RConnection c = REditor.getRserveConnection();
+		if (c != null) {
+			if (RState.isBusy() == false) {
+				RState.setBusy(true);
+				Display display = Util.getDisplay();
+				display.syncExec(() -> {
+
+					if (c != null) {
+						try {
+							String[] result = (String[]) c.eval("try(slotNames(" + res + "),silent=TRUE)").asStrings();
+							if (result != null && result.length > 0) {
+								if (result[0].startsWith("Error") == false) {
+
+									// creatPopupS3Table(viewer, offSet, result);
+									propo = new ImageContentProposal[result.length];
+
+									for (int j = 0; j < result.length; j++) {
+										// String content, String label, String description, int cursorPosition, Image image
+										propo[j] = new ImageContentProposal(result[j], result[j], null, result[j].length(), s4Image);
+
+									}
+								}
+
+							}
+						} catch (RserveException | REXPMismatchException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+
+				});
+				RState.setBusy(false);
+			} else {
+				System.out.println("Rserve is busy!");
+			}
+		}
+
+		else {
+			System.out.println("No Rserve connection available!");
+		}
+
+		return propo;
+	}
+
+	private IContentProposal[] s3Activation(int offset, String prefix) {
+		propo = null;
+		String res = prefix.replace("$", "");
+		final int offSet = offset;
+		RConnection c = REditor.getRserveConnection();
+		if (c != null) {
+			if (RState.isBusy() == false) {
+				RState.setBusy(true);
+				Display display = Util.getDisplay();
+				display.syncExec(() -> {
+
+					if (c != null) {
+						try {
+							String[] result = (String[]) c.eval("try(ls(" + res + "),silent=TRUE)").asStrings();
+							if (result != null) {
+								if (result[0].startsWith("Error") == false) {
+									// creatPopupS3Table(viewer, offSet, result);
+									propo = new ImageContentProposal[result.length];
+
+									for (int j = 0; j < result.length; j++) {
+
+										propo[j] = new ImageContentProposal(result[j], result[j], null, result[j].length(), s3Image);
+
+									}
+								}
+
+							}
+						} catch (RserveException | REXPMismatchException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+
+				});
+				RState.setBusy(false);
+			} else {
+				System.out.println("Rserve is busy!");
+			}
+		}
+
+		else {
+			System.out.println("No Rserve connection available!");
+		}
+
+		return propo;
 	}
 
 }

@@ -132,6 +132,7 @@ import com.eco.bio7.preferences.MultiLineTextFieldEditor;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.preferences.RServePlotPrefs;
 import com.eco.bio7.preferences.Reg;
+import com.eco.bio7.rbridge.RConfig;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.actions.StartRServe;
@@ -581,6 +582,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		}
 		store.setDefault("BROWSER_SELECTION", "JAVAFX_BROWSER");
 		store.setDefault("OPEN_BOWSER_IN_EXTRA_VIEW", false);
+		store.setDefault("INSTALL_R_PACKAGES_DESCRPTION_URL","https://cran.r-project.org/web/packages/");
 		store.setDefault("DETECT_R_PROCESS", true);
 		store.setDefault("R_DEBUG_PORT", 21555);
 		store.setDefault("RSERVE_CLIENT_CONNECTION_PORT", 6311);
@@ -1286,8 +1288,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 								Bio7Action.callRserve();
 
 							} else {
-
-								loadFile(fileListR);
+								RConnection con=RServe.getConnection();
+								loadFile(fileListR,con);
+								
 							}
 
 						}
@@ -1314,7 +1317,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 	}
 
-	private void loadFile(String[] fileList) {
+	private void loadFile(String[] fileList,RConnection con) {
 		String file;
 
 		if (Bio7Dialog.getOS().equals("Windows")) {
@@ -1327,7 +1330,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		if (RState.isBusy() == false) {
 			RState.setBusy(true);
 			try {
-				RServe.getConnection().assign(".bio7TempRScriptFile", file);
+				con.assign(".bio7TempRScriptFile", file);
 			} catch (RserveException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -1336,6 +1339,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			Do.addJobChangeListener(new JobChangeAdapter() {
 				public void done(IJobChangeEvent event) {
 					if (event.getResult().isOK()) {
+						/*Reload the configuration for R to reload local temp path and display definition!*/
+						RConfig.config(con);
 						RState.setBusy(false);
 					} else {
 						RState.setBusy(false);
