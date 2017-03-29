@@ -1166,6 +1166,19 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 			javafx.application.Application.setUserAgentStylesheet(path);
 		}
+		else{
+			
+			Bundle bundle = Platform.getBundle("com.eco.bio7.themes");
+			URL fileURL = bundle.getEntry("javafx/Bio7Default.css");
+
+			String path = fileURL.toExternalForm();
+
+			// System.out.println(path);
+			// javafx.application.Application.setUserAgentStylesheet(null);
+
+			javafx.application.Application.setUserAgentStylesheet(path);
+			
+		}
 		}
 
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();

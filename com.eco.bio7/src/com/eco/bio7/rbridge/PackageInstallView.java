@@ -250,6 +250,8 @@ public class PackageInstallView extends ViewPart {
 	/* We don't want a flickery search results each time we type a character. So we update the info after a certain time interval with a job! */
 	private void loadPackageDescriptionHtml(Event event, int i) {
 		final int count = i;
+		allPackagesList.select(count);
+		allPackagesList.showSelection();
 		if (job != null) {
 			job.cancel();
 		}
@@ -263,8 +265,7 @@ public class PackageInstallView extends ViewPart {
 				display.syncExec(new Runnable() {
 
 					public void run() {
-						allPackagesList.select(count);
-						allPackagesList.showSelection();
+						
 						allPackagesList.notifyListeners(SWT.Selection, event);
 
 					}

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.Set;
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.core.runtime.FileLocator;
@@ -15,9 +16,12 @@ import org.eclipse.ui.PlatformUI;
 import org.osgi.framework.Bundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
+import org.w3c.dom.html.HTMLAnchorElement;
+
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.browser.MultiPageEditor;
@@ -139,8 +143,53 @@ public class JavaFXWebBrowser {
 
 						}
 					}, false);
-
+                /*Html*/
 				} else {
+					/*
+					 * Load an embedded pdf document in a website with pdf.js! Adapted source from
+					 * http://stackoverflow.com/questions/15555510/javafx-stop-opening-url-in-webview-open-in-browser-instead Author: http://stackoverflow.com/users/8840/avrom
+					 */
+					if (webEng.getDocument() != null) {
+						NodeList nodeList = webEng.getDocument().getElementsByTagName("a");
+						for (int i = 0; i < nodeList.getLength(); i++) {
+							org.w3c.dom.Node node = nodeList.item(i);
+							EventTarget eventTarget = (EventTarget) node;
+							eventTarget.addEventListener("click", new EventListener() {
+								@Override
+								public void handleEvent(Event evt) {
+									EventTarget target = evt.getCurrentTarget();
+									HTMLAnchorElement anchorElement = (HTMLAnchorElement) target;
+									String href = anchorElement.getHref();
+									URL url1 = null;
+									URLConnection urlConn = null;
+									try {
+										url1 = new URL(href);
+									} catch (MalformedURLException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+
+									try {
+										urlConn = url1.openConnection();
+									} catch (IOException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+
+									// Checking whether the URL contains a PDF
+									if (urlConn.getContentType().equalsIgnoreCase("application/pdf")) {
+										//JavaFXWebBrowser.this.html=false;
+										String pathBundle = getPdfjsPath();
+
+										webEng.load("file:///" + pathBundle + "?file=" + href);
+
+										evt.preventDefault();
+									} 
+								}
+							}, false);
+						}
+
+					}
 
 					// webEng.executeScript("window.find('runif')");
 
@@ -277,12 +326,12 @@ public class JavaFXWebBrowser {
 					}
 
 				} else if (ke.getCharacter().equals("t")) {
-					if (html == false) {
+					//if (html == false) {
 						webEng.executeScript("if (document.getElementById('toolbarContainer').style.display == '')" + "{ "
 								+ "document.getElementById('viewerContainer').style.overflow = 'hidden';document.getElementById('toolbarContainer').style.display='none';document.getElementById('viewerContainer').style.top=0;}"
 
 								+ "else{" + "document.getElementById('viewerContainer').style.overflow = 'scroll';document.getElementById('toolbarContainer').style.display='';document.getElementById('viewerContainer').style.top=32;" + "}");
-					}
+					//}
 				}
 
 			}

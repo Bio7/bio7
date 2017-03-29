@@ -38,12 +38,9 @@ import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalListener;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.fieldassist.IControlContentAdapter;
-import org.eclipse.jface.text.contentassist.CompletionProposal;
-import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Text;
@@ -53,7 +50,6 @@ import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.rbridge.RShellView;
 import com.eco.bio7.rbridge.RState;
-import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.rpreferences.template.CalculateRProposals;
@@ -96,8 +92,8 @@ public class ShellCompletion {
 		return instance;
 	}
 
-	public ShellCompletion(RShellView view,Text control, final IControlContentAdapter controlContentAdapter) {
-		this.view=view;
+	public ShellCompletion(RShellView view, Text control, final IControlContentAdapter controlContentAdapter) {
+		this.view = view;
 		this.control = control;
 		contentProposalProvider = new ContentProposalProvider();
 		contentProposalProvider.setFiltering(true);
@@ -113,16 +109,13 @@ public class ShellCompletion {
 																									// here!
 		contentProposalAdapter.addContentProposalListener(new IContentProposalListener() {
 
-			private Parse parse;
-			private boolean cmdError;
-
 			@Override
 			public void proposalAccepted(IContentProposal proposal) {
 				/* We have to care about the custom replacements! */
 
 				String content = control.getText();
 				control.setSelection(contentProposalProvider.lastIndex, control.getCaretPosition());
-				Point selection = control.getSelection();
+				// Point selection = control.getSelection();
 
 				/*
 				 * Insert the completion proposal in between selection start and selection end!
@@ -130,21 +123,24 @@ public class ShellCompletion {
 				if (s3 == true || s4 == true) {
 					s3 = false;
 					s4 = false;
-					String textSel=control.getText(0, control.getCaretPosition()-1);
-					String after=control.getText(control.getCaretPosition(),control.getText().length());
-					content = textSel + proposal.getContent()+after;
-					int cursorPosition = content.length()+1;
+					String textSel = control.getText(0, control.getCaretPosition() - 1);
+					String after = control.getText(control.getCaretPosition(), control.getText().length());
+					content = textSel + proposal.getContent() + after;
+					int cursorPosition = (textSel + proposal.getContent()).length();
 					control.setText(content);
 					control.setSelection(cursorPosition);
 				} else {
-					content = content.substring(0, selection.x) + proposal.getContent() + "()" + content.substring(selection.y, content.length());
-					/* Calculate the cursor position after inserting parentheses! */
-					int cursorPosition = (content.substring(0, selection.x) + proposal.getContent() + "()").length() - 1;
+					int pos = extractPrefix(control, control.getCaretPosition());
+					String textSel = control.getText(0, pos - 1);
+					String after = control.getText(control.getCaretPosition(), content.length());
+					content = textSel + proposal.getContent() + "()" + after;
+					int cursorPosition = (textSel + proposal.getContent() + "()").length() - 1;
 					control.setText(content);
 					control.setSelection(cursorPosition);
 				}
-				 Event e = new Event();
-				 control.notifyListeners(SWT.KeyUp, e);
+				/*Notify a change for the parser of the R-Shell view!*/
+				Event e = new Event();
+				control.notifyListeners(SWT.KeyUp, e);
 
 			}
 
@@ -187,11 +183,6 @@ public class ShellCompletion {
 							statisticsContext = CalculateRProposals.getStatisticsContext();
 							statisticsSet = CalculateRProposals.getStatisticsSet();
 
-							/**/
-							// contentProposalProvider = new
-							// ContentProposalProvider();
-							// contentProposalAdapter.setContentProposalProvider(contentProposalProvider);
-
 						}
 
 					}
@@ -231,6 +222,29 @@ public class ShellCompletion {
 		return contentProposalAdapter;
 	}
 
+	/* Extend prefixes for R functions with a dot, e.g. t.test() */
+	protected int extractPrefix(Text control, int offset) {
+		int i = offset;
+
+		String tex = control.getText();
+		if (i > tex.length())
+			return 0;
+
+		while (i > 0) {
+
+			char ch = tex.charAt(i - 1);
+			/*
+			 * We need to extra include the '@' character for S4 class vars!
+			 */
+			if ((ch == ';') || (ch == '(') || (ch == ',') || (ch == '['))
+				break;
+			i--;
+		}
+
+		return i;
+
+	}
+
 	public class ContentProposalProvider implements IContentProposalProvider {
 
 		private IContentProposal[] contentProposals;
@@ -253,41 +267,37 @@ public class ShellCompletion {
 
 		public IContentProposal[] getProposals(String contents, int position) {
 
-			
-
 			if (filterProposals) {
 				ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
 				int offset = control.getCaretPosition();
-				int textLength = 0;// control.getText().length();
-				String tex = control.getText(0, offset);
-				lastIndex = tex.lastIndexOf('(');
+				int lastIndex = extractPrefix(control, offset);
+				int textLength = 0;
 
 				String contentLast;
 				if (lastIndex > 0) {
-					textLength = offset - lastIndex - 1;
-					contentLast = control.getText(lastIndex + 1, offset - 1);
-					// System.out.println("last Index:"+ lastIndex+"
-					// "+contentLast+" tex length: "+textLength);
-					// contentLast=contentLastTemp.replace("(", "");
+					textLength = offset - lastIndex;
+					contentLast = control.getText(lastIndex, offset);
 
 				} else {
 					textLength = control.getText().length();
 					contentLast = control.getText();
 				}
-				
-				if (contentLast.endsWith("@")) {
+
+				/* We need the substring here without a trailing char like ')'! */
+				String contentLastCorr = control.getText(lastIndex, offset - 1);
+
+				if (contentLastCorr.endsWith("@")) {
 					s4 = true;
-					return s4Activation(position, contentLast);
-				} else if (contentLast.endsWith("$")) {
+					return s4Activation(position, contentLastCorr);
+				} else if (contentLastCorr.endsWith("$")) {
 					s3 = true;
-					return s3Activation(position, contentLast);
+					return s3Activation(position, contentLastCorr);
 				}
 
 				/* If text length after parenheses is at least 0! */
 				if (textLength >= 0) {
 					for (int i = 0; i < statistics.length; i++) {
-
-						if (statistics[i].length() >= textLength && statistics[i].substring(0, textLength).equalsIgnoreCase(contentLast)) {
+						if (statistics[i].length() >= textLength && statistics[i].substring(0, textLength).equalsIgnoreCase(contentLastCorr)) {
 							list.add(makeContentProposal(statistics[i], statisticsContext[i], statisticsSet[i]));
 						}
 					}
@@ -394,7 +404,7 @@ public class ShellCompletion {
 	private IContentProposal[] s4Activation(int offset, String prefix) {
 		propo = null;
 		String res = prefix.replace("@", "");
-		final int offSet = offset;
+		
 		RConnection c = REditor.getRserveConnection();
 		if (c != null) {
 			if (RState.isBusy() == false) {
@@ -412,7 +422,7 @@ public class ShellCompletion {
 									propo = new ImageContentProposal[result.length];
 
 									for (int j = 0; j < result.length; j++) {
-										// String content, String label, String description, int cursorPosition, Image image
+
 										propo[j] = new ImageContentProposal(result[j], result[j], null, result[j].length(), s4Image);
 
 									}
@@ -442,7 +452,6 @@ public class ShellCompletion {
 	private IContentProposal[] s3Activation(int offset, String prefix) {
 		propo = null;
 		String res = prefix.replace("$", "");
-		final int offSet = offset;
 		RConnection c = REditor.getRserveConnection();
 		if (c != null) {
 			if (RState.isBusy() == false) {
@@ -455,7 +464,7 @@ public class ShellCompletion {
 							String[] result = (String[]) c.eval("try(ls(" + res + "),silent=TRUE)").asStrings();
 							if (result != null) {
 								if (result[0].startsWith("Error") == false) {
-									// creatPopupS3Table(viewer, offSet, result);
+
 									propo = new ImageContentProposal[result.length];
 
 									for (int j = 0; j < result.length; j++) {
