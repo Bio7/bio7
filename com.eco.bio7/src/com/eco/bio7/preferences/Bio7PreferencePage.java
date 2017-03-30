@@ -26,9 +26,7 @@ public class Bio7PreferencePage extends FieldEditorPreferencePage implements IWo
 	}
 
 	public void createFieldEditors() {
-
-		addField(new DirectoryFieldEditor(PreferenceConstants.PATH_R, "&Path to R:", getFieldEditorParent()));
-
+		
 		addField(new DirectoryFieldEditor(PreferenceConstants.PATH_LIBREOFFICE, "&Path to LibreOffice:", getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new LabelFieldEditor("Script location", getFieldEditorParent()));

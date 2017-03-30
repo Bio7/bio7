@@ -629,6 +629,12 @@
       </page>
       <page
             category="com.eco.bio7.R"
+            class="com.eco.bio7.preferences.RServeRemotePreferences"
+            id="com.eco.bio7.rserve.remote"
+            name="Preferences Rserve Remote">
+      </page>
+      <page
+            category="com.eco.bio7.R"
             class="com.eco.bio7.preferences.RServePlotPrefs"
             id="com.eco.bio7.RServePlot"
             name="Preferences RServe Plots">
