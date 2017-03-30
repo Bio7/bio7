@@ -14,18 +14,15 @@ See license info below
  *   Roded Bahat - [376198] Vertically align actions for @LongString property editors
  ******************************************************************************
  *
- *
- *
- *
- *
- *
- *
+ * Changed for Bio7
+ * Author: M. Austenfeld
  */
 
 package com.eco.bio7.rbridge.completion;
 
 import java.util.ArrayList;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -38,6 +35,7 @@ import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalListener;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.fieldassist.IControlContentAdapter;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
@@ -48,9 +46,9 @@ import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
+import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RShellView;
 import com.eco.bio7.rbridge.RState;
-import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.rpreferences.template.CalculateRProposals;
 import com.eco.bio7.util.Util;
@@ -60,10 +58,11 @@ public class ShellCompletion {
 	private ContentProposalProvider contentProposalProvider;
 	private ContentProposalAdapter contentProposalAdapter;
 	private KeyStroke stroke;
-	private static final String LCL = "abcdefghijklmnopqrstuvwxyz";
+	private static final String LCL = "abcdefghijklmnopqrstuvwxyz@$";
 	private static final String UCL = LCL.toUpperCase();
 	private static final String NUMS = "0123456789";
 	private Image image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/template_obj.png");
+	private Image varImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/field_public_obj.png");
 	private Image s4Image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/s4.png");
 	private Image s3Image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/s3.png");
 	private Text control;
@@ -99,8 +98,13 @@ public class ShellCompletion {
 		contentProposalProvider.setFiltering(true);
 
 		stroke = getActivationKeystroke();
-
-		contentProposalAdapter = new ContentProposalAdapter(control, controlContentAdapter, contentProposalProvider, stroke, null);
+		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		boolean typedCodeCompletion = store.getBoolean("RSHELL_TYPED_CODE_COMPLETION");
+		if (typedCodeCompletion) {
+			contentProposalAdapter = new ContentProposalAdapter(control, controlContentAdapter, contentProposalProvider, stroke, getAutoactivationChars());
+		} else {
+			contentProposalAdapter = new ContentProposalAdapter(control, controlContentAdapter, contentProposalProvider, stroke, null);
+		}
 		contentProposalAdapter.setPropagateKeys(true);
 		contentProposalAdapter.setLabelProvider(new ContentProposalLabelProvider());
 		contentProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_IGNORE);// Use
@@ -130,15 +134,17 @@ public class ShellCompletion {
 					control.setText(content);
 					control.setSelection(cursorPosition);
 				} else {
-					int pos = extractPrefix(control, control.getCaretPosition());
+					int pos = calculateFirstOccurrenceOfChar(control, control.getCaretPosition());
 					String textSel = control.getText(0, pos - 1);
 					String after = control.getText(control.getCaretPosition(), content.length());
-					content = textSel + proposal.getContent() + "()" + after;
-					int cursorPosition = (textSel + proposal.getContent() + "()").length() - 1;
+					// content = textSel + proposal.getContent() + "()" + after;
+					content = textSel + proposal.getContent() + after;
+					// int cursorPosition = (textSel + proposal.getContent() + "()").length() - 1;
+					int cursorPosition = (textSel + proposal.getContent()).length();
 					control.setText(content);
 					control.setSelection(cursorPosition);
 				}
-				/*Notify a change for the parser of the R-Shell view!*/
+				/* Notify a change for the parser of the R-Shell view! */
 				Event e = new Event();
 				control.notifyListeners(SWT.KeyUp, e);
 
@@ -148,6 +154,7 @@ public class ShellCompletion {
 
 	}
 
+	/* Here we update the code templates by calling the R function! */
 	public void update() {
 
 		RConnection con = REditor.getRserveConnection();
@@ -222,8 +229,8 @@ public class ShellCompletion {
 		return contentProposalAdapter;
 	}
 
-	/* Extend prefixes for R functions with a dot, e.g. t.test() */
-	protected int extractPrefix(Text control, int offset) {
+	/* Here we calculate the first occurrence of the below chars to the left to enable nested commands! */
+	protected int calculateFirstOccurrenceOfChar(Text control, int offset) {
 		int i = offset;
 
 		String tex = control.getText();
@@ -267,64 +274,87 @@ public class ShellCompletion {
 
 		public IContentProposal[] getProposals(String contents, int position) {
 
-			if (filterProposals) {
-				ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
-				int offset = control.getCaretPosition();
-				int lastIndex = extractPrefix(control, offset);
-				int textLength = 0;
+			// if (filterProposals) {
+			ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
+			ArrayList<IContentProposal> varWorkspace = new ArrayList<IContentProposal>();
+			int offset = control.getCaretPosition();
+			int lastIndex = calculateFirstOccurrenceOfChar(control, offset);
+			int textLength = 0;
 
-				String contentLast;
-				if (lastIndex > 0) {
-					textLength = offset - lastIndex;
-					contentLast = control.getText(lastIndex, offset);
+			String contentLast;
+			if (lastIndex > 0) {
+				textLength = offset - lastIndex;
+				contentLast = control.getText(lastIndex, offset);
 
-				} else {
-					textLength = control.getText().length();
-					contentLast = control.getText();
-				}
+			} else {
+				textLength = control.getText().length();
+				contentLast = control.getText();
+			}
 
-				/* We need the substring here without a trailing char like ')'! */
-				String contentLastCorr = control.getText(lastIndex, offset - 1);
+			/* We need the substring here without a trailing char like ')'! */
+			String contentLastCorr = control.getText(lastIndex, offset - 1);
 
-				if (contentLastCorr.endsWith("@")) {
-					s4 = true;
-					return s4Activation(position, contentLastCorr);
-				} else if (contentLastCorr.endsWith("$")) {
-					s3 = true;
-					return s3Activation(position, contentLastCorr);
-				}
+			if (contentLastCorr.endsWith("@")) {
+				s4 = true;
+				return s4Activation(position, contentLastCorr);
+			} else if (contentLastCorr.endsWith("$")) {
+				s3 = true;
+				return s3Activation(position, contentLastCorr);
+			}
 
-				/* If text length after parenheses is at least 0! */
-				if (textLength >= 0) {
-					for (int i = 0; i < statistics.length; i++) {
-						if (statistics[i].length() >= textLength && statistics[i].substring(0, textLength).equalsIgnoreCase(contentLastCorr)) {
-							list.add(makeContentProposal(statistics[i], statisticsContext[i], statisticsSet[i]));
+			if (RServe.isAlive()) {
+				/* Here we get the R workspace vars! */
+				ImageContentProposal[] workspaceVars = getWorkSpaceVars(position);
+				if (workspaceVars != null) {
+					for (int i = 0; i < workspaceVars.length; i++) {
+						/* Here we filter out the vars by comparing the typed letters with the available workspace vars! */
+						if (workspaceVars[i].getLabel().length() >= textLength && workspaceVars[i].getLabel().substring(0, textLength).equalsIgnoreCase(contentLastCorr)) {
+							varWorkspace.add(workspaceVars[i]);
 						}
 					}
 				}
-				/* If text length after parenheses is -1! */
-				else {
-					for (int i = 0; i < statistics.length; i++) {
+			}
 
+			/* If text length after parenheses is at least 0! */
+			if (textLength >= 0) {
+				for (int i = 0; i < statistics.length; i++) {
+					/* Here we filter out the templates by comparing the typed letters with the available templates! */
+					if (statistics[i].length() >= textLength && statistics[i].substring(0, textLength).equalsIgnoreCase(contentLastCorr)) {
 						list.add(makeContentProposal(statistics[i], statisticsContext[i], statisticsSet[i]));
-
 					}
 				}
-				return makeProposalArray((IContentProposal[]) list.toArray(new IContentProposal[list.size()]));
-			}
-			/* If filtering is true! */
-			if (contentProposals == null) {
-				contentProposals = new IContentProposal[statistics.length];
 
+			}
+			/* If text length after parenheses is -1! */
+			else {
 				for (int i = 0; i < statistics.length; i++) {
-					contentProposals[i] = makeContentProposal(statistics[i], statisticsContext[i], statisticsSet[i]);
+
+					list.add(makeContentProposal(statistics[i], statisticsContext[i], statisticsSet[i]));
 
 				}
 			}
-			/* Create an image proposal from it! */
-			return makeProposalArray(contentProposals);
-			// return contentProposals;
-		}
+
+			IContentProposal[] array = list.toArray(new IContentProposal[list.size()]);
+			/* We have to convert the proposals to an ImageContentProposal! */
+			IContentProposal[] arrayTemp = makeProposalArray(array);
+			/* The var Workspace arrays are already an ImageContentProposal! */
+			IContentProposal[] varWorkspaceArray = varWorkspace.toArray(new IContentProposal[varWorkspace.size()]);
+			/* Concatenate both whith the Apache commons library! */
+			IContentProposal[] allProposals = (IContentProposal[]) ArrayUtils.addAll(varWorkspaceArray, arrayTemp);
+			return allProposals;
+			// }
+			/* If filtering is true! */
+			/*
+			 * if (contentProposals == null) { contentProposals = new IContentProposal[statistics.length];
+			 * 
+			 * for (int i = 0; i < statistics.length; i++) { contentProposals[i] = makeContentProposal(statistics[i], statisticsContext[i], statisticsSet[i]);
+			 * 
+			 * } }
+			 */
+			/*
+			 * IContentProposal[] arrayFinal =makeProposalArray(contentProposals); IContentProposal[] both = (IContentProposal[])ArrayUtils.addAll(first, arrayFinal); Create an image proposal from it!
+			 * return makeProposalArray(arrayFinal); // return contentProposals;
+			 */ }
 
 		private IContentProposal[] makeProposalArray(IContentProposal[] proposals) {
 			if (proposals != null) {
@@ -401,11 +431,55 @@ public class ShellCompletion {
 		}
 	}
 
-	private IContentProposal[] s4Activation(int offset, String prefix) {
+	/* Here we calculate the workspace variables and create ImageContentProposals! */
+	private ImageContentProposal[] getWorkSpaceVars(int offset) {
+		propo = null;
+
+		RConnection c = RServe.getConnection();
+		if (c != null) {
+			if (RState.isBusy() == false) {
+				RState.setBusy(true);
+				Display display = Util.getDisplay();
+				display.syncExec(() -> {
+
+					if (c != null) {
+						try {
+							String[] result = (String[]) c.eval("try(ls(),silent=TRUE)").asStrings();
+							if (result != null && result.length > 0) {
+								if (result[0].startsWith("Error") == false) {
+
+									propo = new ImageContentProposal[result.length];
+
+									for (int j = 0; j < result.length; j++) {
+
+										propo[j] = new ImageContentProposal(result[j], result[j], null, result[j].length(), varImage);
+
+									}
+								}
+
+							}
+						} catch (RserveException | REXPMismatchException e) {
+							// TODO Auto-generated catch block
+							// e.printStackTrace();
+							System.out.println("Error in R-Shell view code completion!\nR Message: " + e.getMessage());
+						}
+					}
+
+				});
+				RState.setBusy(false);
+			} else {
+				System.out.println("Rserve is busy!");
+			}
+		}
+		return propo;
+	}
+
+	/* Here we calculate the s4 variables and create ImageContentProposals! */
+	private ImageContentProposal[] s4Activation(int offset, String prefix) {
 		propo = null;
 		String res = prefix.replace("@", "");
-		
-		RConnection c = REditor.getRserveConnection();
+
+		RConnection c = RServe.getConnection();
 		if (c != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
@@ -431,7 +505,8 @@ public class ShellCompletion {
 							}
 						} catch (RserveException | REXPMismatchException e) {
 							// TODO Auto-generated catch block
-							e.printStackTrace();
+							// e.printStackTrace();
+							System.out.println("Error in R-Shell view code completion!\nR Message: " + e.getMessage());
 						}
 					}
 
@@ -449,10 +524,11 @@ public class ShellCompletion {
 		return propo;
 	}
 
-	private IContentProposal[] s3Activation(int offset, String prefix) {
+	/* Here we calculate the s3 variables and create ImageContentProposals! */
+	private ImageContentProposal[] s3Activation(int offset, String prefix) {
 		propo = null;
 		String res = prefix.replace("$", "");
-		RConnection c = REditor.getRserveConnection();
+		RConnection c = RServe.getConnection();
 		if (c != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
@@ -462,7 +538,7 @@ public class ShellCompletion {
 					if (c != null) {
 						try {
 							String[] result = (String[]) c.eval("try(ls(" + res + "),silent=TRUE)").asStrings();
-							if (result != null) {
+							if (result != null && result.length > 0) {
 								if (result[0].startsWith("Error") == false) {
 
 									propo = new ImageContentProposal[result.length];
@@ -477,7 +553,8 @@ public class ShellCompletion {
 							}
 						} catch (RserveException | REXPMismatchException e) {
 							// TODO Auto-generated catch block
-							e.printStackTrace();
+							// e.printStackTrace();
+							System.out.println("Error in R-Shell view code completion!\nR Message: " + e.getMessage());
 						}
 					}
 

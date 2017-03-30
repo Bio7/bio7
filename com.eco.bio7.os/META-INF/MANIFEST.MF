@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Os
 Bundle-SymbolicName: com.eco.bio7.os
-Bundle-Version: 2.0.0.qualifier
+Bundle-Version: 2.5.0.qualifier
 Bundle-Vendor: ECO
 Bundle-ClassPath: lib/jna-4.1.0.jar,
  lib/jna-platform-4.1.0.jar,
@@ -75,4 +75,4 @@ Export-Package: com.eco.bio7.os.pid,
  purejavacomm.example,
  purejavacomm.testsuite
 Import-Package: org.eclipse.swt.widgets
-Require-Bundle: com.eco.bio7.libs;bundle-version="2.0.0"
+Require-Bundle: com.eco.bio7.libs;bundle-version="2.5.0"

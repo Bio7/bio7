@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Markdownedit
 Bundle-SymbolicName: com.eco.bio7.markdownedit;singleton:=true
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 2.5.0.qualifier
 Bundle-Activator: com.eco.bio7.markdownedit.Activator
 Bundle-Vendor: ECO
 Require-Bundle: org.eclipse.ui,
