@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Util
 Bundle-SymbolicName: com.eco.bio7.util
-Bundle-Version: 2.0.0.qualifier
+Bundle-Version: 2.5.0.qualifier
 Bundle-Activator: com.eco.bio7.util.Activator
 Bundle-Vendor: ECO
 Require-Bundle: org.eclipse.ui,
