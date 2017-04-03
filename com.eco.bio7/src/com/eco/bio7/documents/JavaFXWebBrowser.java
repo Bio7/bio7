@@ -60,6 +60,11 @@ public class JavaFXWebBrowser {
 	private boolean html;
 	private IPreferenceStore store;
 	private boolean reload;
+	private static JavaFXWebBrowser javaFXWebBrowserInstance;
+
+	public static JavaFXWebBrowser getJavaFXWebBrowserInstance() {
+		return javaFXWebBrowserInstance;
+	}
 
 	public class JSLogListener {
 
@@ -69,6 +74,7 @@ public class JavaFXWebBrowser {
 	}
 
 	public JavaFXWebBrowser(boolean html) {
+		javaFXWebBrowserInstance=this;
 		this.html = html;
 		reload = true;
 		brow = new WebView();
@@ -469,7 +475,7 @@ public class JavaFXWebBrowser {
 	}
 
 	public void goForward() {
-		webEng.executeScript("history.back()");
+		webEng.executeScript("history.forward()");
 	}
 
 	public void stop() {

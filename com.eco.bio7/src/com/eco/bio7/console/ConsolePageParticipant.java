@@ -787,6 +787,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 						 * and evtl. ANSI control characters.We cannot avoid the
 						 * echo but can delete some ASCII characters for an
 						 * improved output!
+						 * See: https://en.wikipedia.org/wiki/ANSI_escape_code
+						 * See also: http://misc.flogisoft.com/bash/tip_colors_and_formatting
 						 */
 						else {
 							if (ch != 8 && ch != 12 && ch != 13) {

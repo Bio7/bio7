@@ -69,7 +69,7 @@ public class RServePrefs extends FieldEditorPreferencePage implements IWorkbench
 		addField(new LabelFieldEditor("General:", getFieldEditorParent()));
 		addField(new DirectoryFieldEditor(PreferenceConstants.PATH_R, "&Path to R:", getFieldEditorParent()));
 		addField(new DirectoryFieldEditor("InstallLocation", "Package install location", getFieldEditorParent()));
-		addField(new DirectoryFieldEditor(PreferenceConstants.P_TEMP_R, "Path to temporary R Folder", getFieldEditorParent()));
+		addField(new DirectoryFieldEditor(PreferenceConstants.P_TEMP_R, "Path to temporary R folder", getFieldEditorParent()));
 
 		addField(new BooleanFieldEditor(PreferenceConstants.P_BOOLEAN, "Install path at startup", getFieldEditorParent()));
 		selectLinuxShell = new RadioGroupFieldEditor("LINUX_SHELL", "Select Shell (Linux, Mac):", 2, new String[][] { { "xterm (Linux, Mac)", "XTERM" }, { "Gnome (Linux)", "GNOME" } }, getFieldEditorParent(), false);
@@ -109,7 +109,7 @@ public class RServePrefs extends FieldEditorPreferencePage implements IWorkbench
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 
 		addField(new LabelFieldEditor("Transfer to Table options:", getFieldEditorParent()));
-		addField(new BooleanFieldEditor("TRANSFER_METHOD", "Transfer with \"format\" to Table (default is method \"as.character\")", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("TRANSFER_METHOD", "Transfer with \"format\" to table (default is method \"as.character\")", getFieldEditorParent()));
 
 		final IntegerFieldEditor integerFieldEditor = new IntegerFieldEditor("DEFAULT_DIGITS", "Digits", getFieldEditorParent());
 		integerFieldEditor.setErrorMessage("Please select an integer value!");
@@ -117,7 +117,7 @@ public class RServePrefs extends FieldEditorPreferencePage implements IWorkbench
 		integerFieldEditor.setValidRange(1, 100);
 		addField(integerFieldEditor);
 		
-		addField(new BooleanFieldEditor("RSHELL_TYPED_CODE_COMPLETION", "RShell open code completion/templates when typing", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("RSHELL_TYPED_CODE_COMPLETION", "R-Shell: Open code completion/templates when typing", getFieldEditorParent()));
 
 	}
 

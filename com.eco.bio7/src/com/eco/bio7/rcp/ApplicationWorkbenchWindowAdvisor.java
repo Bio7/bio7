@@ -582,6 +582,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		}
 		store.setDefault("BROWSER_SELECTION", "JAVAFX_BROWSER");
 		store.setDefault("OPEN_BOWSER_IN_EXTRA_VIEW", false);
+		store.setDefault("INTERPRET_JAVASCRIPT_IN_BROWSER", false);	
 		store.setDefault("INSTALL_R_PACKAGES_DESCRPTION_URL","https://cran.r-project.org/web/packages/");
 		store.setDefault("DETECT_R_PROCESS", true);
 		store.setDefault("R_DEBUG_PORT", 21555);

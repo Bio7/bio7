@@ -67,37 +67,39 @@ public class PackageInstallView extends ViewPart {
 			public void widgetSelected(final SelectionEvent e) {
 				if (btnCheckButton.getSelection()) {
 					int[] selection = allPackagesList.getSelectionIndices();
-					String text = allPackagesList.getItem(selection[0]);
-					if (text.isEmpty() == false) {
-						IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-						String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
-						String installPackagesDescritpionUrl = store.getString("INSTALL_R_PACKAGES_DESCRPTION_URL");
-						String packageInfoSite = installPackagesDescritpionUrl + text + "/index.html";
-						if (openInJavaFXBrowser.equals("SWT_BROWSER")) {
-							Display display = Util.getDisplay();
-							display.asyncExec(new Runnable() {
+					if (selection.length > 0) {
+						String text = allPackagesList.getItem(selection[0]);
+						if (text.isEmpty() == false) {
+							IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+							String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
+							String installPackagesDescritpionUrl = store.getString("INSTALL_R_PACKAGES_DESCRPTION_URL");
+							String packageInfoSite = installPackagesDescritpionUrl + text + "/index.html";
+							if (openInJavaFXBrowser.equals("SWT_BROWSER")) {
+								Display display = Util.getDisplay();
+								display.asyncExec(new Runnable() {
 
-								public void run() {
-									Work.openView("com.eco.bio7.browser.Browser");
+									public void run() {
+										Work.openView("com.eco.bio7.browser.Browser");
 
-									BrowserView b = BrowserView.getBrowserInstance();
-									b.browser.setJavascriptEnabled(true);
+										BrowserView b = BrowserView.getBrowserInstance();
+										b.browser.setJavascriptEnabled(true);
 
-									b.setLocation(packageInfoSite);
-								}
-							});
-						}
+										b.setLocation(packageInfoSite);
+									}
+								});
+							}
 
-						else {
-							Display display = Util.getDisplay();
-							display.asyncExec(new Runnable() {
+							else {
+								Display display = Util.getDisplay();
+								display.asyncExec(new Runnable() {
 
-								public void run() {
-									JavaFXWebBrowser br = new JavaFXWebBrowser(true);
-									br.createBrowser(packageInfoSite, "R Package Description");
+									public void run() {
+										JavaFXWebBrowser br = new JavaFXWebBrowser(true);
+										br.createBrowser(packageInfoSite, "R Package Description");
 
-								}
-							});
+									}
+								});
+							}
 						}
 					}
 
@@ -121,8 +123,9 @@ public class PackageInstallView extends ViewPart {
 						String it = allPackagesList.getItem(i);
 
 						if (it.startsWith(text.getText())) {
-							/* We don't want a flickery search results each time we type a character. 
-							 * So we update the info after a certain time interval with a job! */
+							/*
+							 * We don't want a flickery search results each time we type a character. So we update the info after a certain time interval with a job!
+							 */
 							loadPackageDescriptionHtml(event, i);
 							return;
 						}
@@ -137,8 +140,9 @@ public class PackageInstallView extends ViewPart {
 
 						String it = allPackagesList.getItem(i).toLowerCase();
 						if (it.startsWith(text.getText().toLowerCase())) {
-							/* We don't want a flickery search results each time we type a character. 
-							 * So we update the info after a certain time interval with a job! */
+							/*
+							 * We don't want a flickery search results each time we type a character. So we update the info after a certain time interval with a job!
+							 */
 							loadPackageDescriptionHtml(event, i);
 
 							return;
@@ -265,7 +269,7 @@ public class PackageInstallView extends ViewPart {
 				display.syncExec(new Runnable() {
 
 					public void run() {
-						
+
 						allPackagesList.notifyListeners(SWT.Selection, event);
 
 					}

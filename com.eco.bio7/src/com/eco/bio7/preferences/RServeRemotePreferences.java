@@ -28,7 +28,7 @@ public class RServeRemotePreferences extends FieldEditorPreferencePage implement
 	@Override
 	protected void createFieldEditors() {
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
-		addField(new LabelFieldEditor("Rserve Remote:", getFieldEditorParent()));
+		addField(new LabelFieldEditor("Rserve remote:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("REMOTE", "Remote enabled", getFieldEditorParent()));
 		addField(new StringFieldEditor("HOST", "Host name/IP", getFieldEditorParent()));
 		addField(new IntegerFieldEditor("TCP", "TCP port", getFieldEditorParent()));
