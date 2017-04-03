@@ -72,12 +72,12 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new LabelFieldEditor("Other:", getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
-		addField(new BooleanFieldEditor("OPEN_WORD_IN_VIEW", "Open Word in Bio7 View", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addField(new BooleanFieldEditor("OPEN_WORD_IN_VIEW", "Open Word in Bio7 view", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
-		addField(new BooleanFieldEditor("RECONCILE_MARKDOWN", "Automatically Compile Markdown after editor changes", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addField(new BooleanFieldEditor("RECONCILE_MARKDOWN", "Automatically compile markdown after editor changes", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		/*Here we use a string field editor because a integer field editor throws exceptions each time the value is empty!*/
-		addField(new StringFieldEditor("RECONCILE_MARKDOWN_TIME", "Compile Markdown interval (in ms after last keystroke - restart necessary!)", getFieldEditorParent()));
+		addField(new StringFieldEditor("RECONCILE_MARKDOWN_TIME", "Compile markdown interval (in ms after last keystroke - restart necessary!)", getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		final Link link2 = new Link(getFieldEditorParent(), SWT.NONE);
 		link2.setText("See <a href=\"com.eco.bio7.browser.preferences\">'Browser Preferences'</a> to select or configure the Browser.");

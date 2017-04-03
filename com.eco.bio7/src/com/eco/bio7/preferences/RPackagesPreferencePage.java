@@ -35,7 +35,7 @@ public class RPackagesPreferencePage extends FieldEditorPreferencePage implement
 	@Override
 	protected void createFieldEditors() {
 		
-		addField(new LabelFieldEditor("Built Package Options:", getFieldEditorParent()));
+		addField(new LabelFieldEditor("Built package options:", getFieldEditorParent()));
 		addField(new StringFieldEditor("rcmdcheck", "R CMD check", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
 		addField(new StringFieldEditor("rcmdinstall", "R CMD INSTALL", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
 		addField(new StringFieldEditor("rcmdbuild", "R CMD build", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
