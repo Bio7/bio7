@@ -15,15 +15,26 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
+
+import com.eco.bio7.Bio7Plugin;
+import com.eco.bio7.browser.BrowserView;
+import com.eco.bio7.collection.Work;
 import com.eco.bio7.compile.JavaScriptInterpreter;
+import com.eco.bio7.documents.JavaFXWebBrowser;
+import com.eco.bio7.image.Util;
 import com.eco.bio7.jobs.ImageJMacroWorkspaceJob;
 import com.eco.bio7.rcp.StartBio7Utils;
+
+import javafx.scene.web.WebEngine;
 
 public class JavaScriptInterpret extends Action {
 
@@ -52,9 +63,32 @@ public class JavaScriptInterpret extends Action {
 		}
 
 		if (file.getFileExtension().equals("js")) {
-
+			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+			boolean interpretJavascriptInBrowser = store.getBoolean("INTERPRET_JAVASCRIPT_IN_BROWSER");
 			String content = doc.get();
-			JavaScriptInterpreter.interpretJob(content, null);
+			if (interpretJavascriptInBrowser) {
+				String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
+				if (openInJavaFXBrowser.equals("SWT_BROWSER")) {
+					// Work.openView("com.eco.bio7.browser.Browser");
+					Display display = Util.getDisplay();
+					display.syncExec(new Runnable() {
+
+						public void run() {
+							BrowserView b = BrowserView.getBrowserInstance();
+							Browser browser = b.getBrowser();
+							browser.execute(content);
+						}
+					});
+				}
+				JavaFXWebBrowser browser = JavaFXWebBrowser.getJavaFXWebBrowserInstance();
+				if (browser != null) {
+					WebEngine webEngine = browser.getWebEngine();
+					webEngine.executeScript(content);
+				}
+
+			} else {
+				JavaScriptInterpreter.interpretJob(content, null);
+			}
 
 		}
 

@@ -121,6 +121,7 @@ import com.eco.bio7.compile.GroovyInterpreter;
 import com.eco.bio7.compile.PythonInterpreter;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
+import com.eco.bio7.documents.JavaFXWebBrowser;
 import com.eco.bio7.os.pid.Pid;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.completion.ShellCompletion;
@@ -171,7 +172,7 @@ public class RShellView extends ViewPart {
 	// private IPreferenceStore store;
 
 	private CTabFolder tab;
-	//private CTabItem plotTabItem;
+	// private CTabItem plotTabItem;
 	private Button loadButton_1;
 	private Button fontButton;
 	public boolean cmdError;
@@ -367,7 +368,7 @@ public class RShellView extends ViewPart {
 		prov = new SimpleContentProposalProvider(history);
 		adapter = new ContentProposalAdapter(text, new TextContentAdapter(), prov, stroke, null);
 		/* Add code completion to textfield! */
-		shellCompletion = new ShellCompletion(this,text, new TextContentAdapter());
+		shellCompletion = new ShellCompletion(this, text, new TextContentAdapter());
 
 		DropTarget target = new DropTarget(text, operations);
 		target.setTransfer(types);
@@ -488,8 +489,8 @@ public class RShellView extends ViewPart {
 		helpButton.addSelectionListener(new SelectionAdapter() {
 
 			public void widgetSelected(SelectionEvent e) {
-				Work.openView("com.eco.bio7.browser.Browser");
 
+				String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
 				htmlHelpText = null;
 				if (RServe.isAliveDialog()) {
 					if (RState.isBusy() == false) {
@@ -528,14 +529,26 @@ public class RShellView extends ViewPart {
 
 									String pattern = "file:///" + out;
 									url = pattern.replace("\\", "/");
+									if (openInJavaFXBrowser.equals("SWT_BROWSER")) {
+										Work.openView("com.eco.bio7.browser.Browser");
+										display.syncExec(new Runnable() {
 
-									display.syncExec(new Runnable() {
+											public void run() {
+												BrowserView b = BrowserView.getBrowserInstance();
+												b.setLocation(url);
+											}
+										});
+									} else {
 
-										public void run() {
-											BrowserView b = BrowserView.getBrowserInstance();
-											b.setLocation(url);
-										}
-									});
+										display.asyncExec(new Runnable() {
+
+											public void run() {
+												JavaFXWebBrowser br = new JavaFXWebBrowser(true);
+												br.createBrowser(url, "R Help");
+
+											}
+										});
+									}
 
 								} catch (RserveException e1) {
 
@@ -722,9 +735,10 @@ public class RShellView extends ViewPart {
 			}
 		});
 		gcButton.setText("Gc");
-		/*plotTabItem = new CTabItem(tab, SWT.NONE);
-		plotTabItem.setText("Plot Data");*/
-		//new RPlot(tab, SWT.NONE, plotTabItem);
+		/*
+		 * plotTabItem = new CTabItem(tab, SWT.NONE); plotTabItem.setText("Plot Data");
+		 */
+		// new RPlot(tab, SWT.NONE, plotTabItem);
 
 		CTabItem packagesTabItem = new CTabItem(tab, SWT.NONE);
 		packagesTabItem.setText("Packages");

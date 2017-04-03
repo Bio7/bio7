@@ -57,6 +57,10 @@ public class BrowserPreferences extends FieldEditorPreferencePage implements IWo
 		addField(spacer1);
 		addField(new LabelFieldEditor("R Install Package Help:", getFieldEditorParent()));
 		addField(new StringFieldEditor("INSTALL_R_PACKAGES_DESCRPTION_URL", "URL: Install R packages help descr. ", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
+		addField(spacer1);
+		addField(new LabelFieldEditor("R Install Package Help:", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("INTERPRET_JAVASCRIPT_IN_BROWSER","Execute JavaScript editor script in current Browser",getFieldEditorParentControl()));
+		
 	}
 
 }
