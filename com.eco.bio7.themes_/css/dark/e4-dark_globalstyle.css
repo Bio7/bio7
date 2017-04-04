@@ -52,6 +52,7 @@ Shell[style~='SWT.RADIO'][style~='SWT.CASCADE'][style~='SWT.SHADOW_ETCHED_IN'][s
     color:#eeeeee;
 }
 
+
 Combo, List,
 /* It might be useless but currently it's needed due to a strange priority
    policy used by the E4 platform to apply CSS rules to SWT widgets (see <1>): */
@@ -538,7 +539,19 @@ Composite #com-eco-bio7-thumbnails.MToolBar {
 product */
 }
 
+/*The progress bar on the status line!*/
+#org-eclipse-ui-ProgressBar Composite {
+	background-color:#252525;
+    color:#eeeeee;
+}
 
+/* To hide the status line!
+#org-eclipse-ui-trim-status,
+#org-eclipse-ui-trim-vertical1,
+#org-eclipse-ui-trim-vertical2 {
+	background-color: #252525;
+   visibility: hidden;
+}*/
 
 
 

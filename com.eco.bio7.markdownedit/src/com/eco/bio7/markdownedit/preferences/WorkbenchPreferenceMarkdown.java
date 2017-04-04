@@ -80,7 +80,7 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 		addField(new StringFieldEditor("RECONCILE_MARKDOWN_TIME", "Compile markdown interval (in ms after last keystroke - restart necessary!)", getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		final Link link2 = new Link(getFieldEditorParent(), SWT.NONE);
-		link2.setText("See <a href=\"com.eco.bio7.browser.preferences\">'Browser Preferences'</a> to select or configure the Browser.");
+		link2.setText("See <a href=\"com.eco.bio7.browser.preferences\">'Browser Preferences'</a> to select or configure the browser.");
 		link2.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 3, 1));
 
 		link2.addSelectionListener(new SelectionAdapter() {
