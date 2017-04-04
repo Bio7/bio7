@@ -78,7 +78,7 @@ public class RServePlotPrefs extends FieldEditorPreferencePage implements IWorkb
 		SpacerFieldEditor spacer1 = new SpacerFieldEditor(getFieldEditorParent());
 		addField(spacer1);
 		final Link link = new Link(getFieldEditorParent(), SWT.NONE);
-		link.setText("See <a href=\"com.eco.bio7.browser.preferences\">'Browser Preferences'</a> to select or configure the Browser for the *.pdf files.");
+		link.setText("See <a href=\"com.eco.bio7.browser.preferences\">'Browser Preferences'</a> to select or configure the browser for the *.pdf files.");
 		link.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 3, 1));
 
 		link.addSelectionListener(new SelectionAdapter() {

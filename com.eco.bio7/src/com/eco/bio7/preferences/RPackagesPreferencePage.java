@@ -44,10 +44,10 @@ public class RPackagesPreferencePage extends FieldEditorPreferencePage implement
 		addField(new StringFieldEditor("knitroptions", "Knitr Options", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new LabelFieldEditor("Shiny:", getFieldEditorParent()));
-		addField(new IntegerFieldEditor("SHINY_PORT", "Shiny Port", getFieldEditorParent()));
+		addField(new IntegerFieldEditor("SHINY_PORT", "Shiny port", getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		final Link link = new Link(getFieldEditorParent(), SWT.NONE);
-		link.setText("See <a href=\"com.eco.bio7.browser.preferences\">'Browser Preferences'</a> to select or configure the Browser.");
+		link.setText("See <a href=\"com.eco.bio7.browser.preferences\">'Browser Preferences'</a> to select or configure the browser.");
 		link.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 3, 1));
 
 		link.addSelectionListener(new SelectionAdapter() {

@@ -700,9 +700,14 @@ public class RServe {
 					if (openInBrowserInExtraView) {
 						String id = UUID.randomUUID().toString();
 						br.createBrowser("file:///" + pathBundle + "", id);
+						//br.createBrowser("file:///" + pathBundle + "?file=" + url,id);
 					}
 
 					else {
+						
+						//br.createBrowser("file:///" + pathBundle + "?file=" + url,"Display");
+						
+						
 						br.createBrowser("file:///" + pathBundle + "", "Display");
 						/*
 						 * webEngine.executeScript( "alert(pdfjsVersion);");
