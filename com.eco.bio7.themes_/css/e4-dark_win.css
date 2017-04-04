@@ -126,11 +126,11 @@ CTabItem.busy {
 }
 
 .MTrimmedWindow {
-    background-color: #515658;
+    background-color: #252525;
 }
 
 .MTrimBar {
-    background-color: #515658;
+    background-color: #252525;
 }
 
 CTabFolder.MArea .MPartStack,CTabFolder.MArea .MPartStack.active {
@@ -139,17 +139,17 @@ CTabFolder.MArea .MPartStack,CTabFolder.MArea .MPartStack.active {
 
 
 CTabFolder Tree, CTabFolder Canvas {
-    background-color: #2F2F2F;
+    background-color: #252525;
     color: #CCC;
 }
 .MPartStack.active Tree,
 .MPartStack.active CTabFolder Canvas {
-    background-color: #262626;
+    background-color: #252525;
     color: #CCC;
 }
 
 .MPartStack.active Table {
-    background-color: #2F2F2F;
+    background-color: #252525;
     color: #CCC;
 }
 
@@ -229,7 +229,7 @@ StatusLine, ImageBasedFrame{
 .MPartStack.active .MPart Form > LayoutComposite > LayoutComposite > ToolBar,
 .MPartStack.active .MPart Form DependenciesComposite > SashForm > Section > *, /* Section > DependenciesComposite$... */
 .MPartStack.active .MPart LayoutComposite > * > LayoutComposite > Section > LayoutComposite > * /*LayoutComposite > MasterDetailBlock$... > LayoutComposite > Section > LayoutComposite > ExtensionsSection$...*/ {
-    background-color: #4f5355;
+    background-color: #252525;
     color: #f4f7f7;
 }
 #org-eclipse-help-ui-HelpView Form,
@@ -243,7 +243,7 @@ StatusLine, ImageBasedFrame{
 #org-eclipse-help-ui-HelpView Form LayoutComposite,
 #org-eclipse-help-ui-HelpView Form ScrolledPageBook,
 #org-eclipse-help-ui-HelpView Form Text[style~='SWT.READ_ONLY'] {
-    background-color: #2F2F2F;
+    background-color: #252525;
     color: #CCCCCC;
 }
 .MPartStack.active #org-eclipse-help-ui-HelpView Form,
@@ -264,7 +264,7 @@ StatusLine, ImageBasedFrame{
 .MPart LayoutComposite > * > LayoutComposite > Section > LayoutComposite > Tree,
 .MPartStack.active .MPart Form Section Tree,
 .MPartStack.active .MPart LayoutComposite > * > LayoutComposite > Section > LayoutComposite > Tree {
-    background-color: #313538;
+    background-color: ##252525;
     color: #DDDDDD;
 }
 .MPart Form DatePicker > ImageHyperlink,
@@ -278,7 +278,7 @@ StatusLine, ImageBasedFrame{
     color: #AAAAAA;
 }
 .MPart PageBook > Form > LayoutComposite {
-    background-color: #2F2F2F;
+    background-color: #252525;
     color: #CCC;
 }
 .MPartStack.active .MPart PageBook > Form > LayoutComposite {

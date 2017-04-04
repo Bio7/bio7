@@ -377,5 +377,13 @@ Composite #com-eco-bio7-control {
 Bounds: x=1082 y=186 h=31 w=31;
 }*/
 
+/*#org-eclipse-ui-console-ConsoleView{
+    background-color: #3f4447;
+    color: #EEEEEE;
+}*/
 
-
+#org-eclipse-ui-trim-status,
+#org-eclipse-ui-trim-vertical1,
+#org-eclipse-ui-trim-vertical2 {
+   visibility: hidden;
+}

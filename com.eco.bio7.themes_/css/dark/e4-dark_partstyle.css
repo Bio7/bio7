@@ -14,7 +14,7 @@
 /* ################################ CSS for .MParts ########################## */
 
 .MPart {
-    background-color: #323435;
+    background-color: #252525;
     color: #DDDDDD;
 }
 .MPartStack.active .MPart {
@@ -50,7 +50,7 @@
 .MPart Form > LayoutComposite > LayoutComposite > ToolBar,
 .MPart DependenciesComposite > SashForm > Section > * /* Section > DependenciesComposite$... */,
 .MPart LayoutComposite > * > LayoutComposite > Section > LayoutComposite > * /*LayoutComposite > MasterDetailBlock$... > LayoutComposite > Section > LayoutComposite > ExtensionsSection$...*/ {
-    background-color: #2F2F2F;
+    background-color: #252525;
     color: #AAAAAA;
 }
 .MPartStack.active .MPart Composite,
@@ -86,7 +86,7 @@
 }
 
 .MPart Section > Label {
-    background-color: #2F2F2F;
+    background-color: #252525;
     color: #ABCEDA;
 }
 .MPartStack.active .MPart Section > Label {
@@ -236,7 +236,7 @@
 #org-eclipse-ui-console-ConsoleView .MPart StyledText,
 #org-eclipse-ui-console-ConsoleView .MPart PageBook Label,
 #org-eclipse-dltk-debug-ui-ScriptDisplayView SashForm > * {
-    background-color: #2F2F2F;
+    background-color: #252525;
     color: #CCCCCC;
 }
 .MPartStack.active #org-eclipse-ui-console-ConsoleView .MPart > Composite,
@@ -257,7 +257,7 @@
 /* ------------------------------------------------------------- */
 
 #org-eclipse-pde-ui-TargetPlatformState PageBook > Composite > * {
-    background-color: #2F2F2F;
+    background-color: #252525;
     color: #CCC;
 }
 
@@ -281,7 +281,7 @@
     color: #EEEEEE;
 }
 #org-eclipse-e4-ui-compatibility-editor PaletteControl ScrolledComposite > Composite > * {
-    background-color: #2F2F2F;
+    background-color: #252525;
     color: #BBBBBB;
 }
 .MPartStack.active #org-eclipse-e4-ui-compatibility-editor PaletteControl ScrolledComposite > Composite > * {
