@@ -57,9 +57,9 @@
          os="solaris">
    </theme>
       <theme
-            basestylesheeturi="css/e4_default_win7.css"
+            basestylesheeturi="css/e4_default_bio7.css"
             id="org.eclipse.e4.ui.css.theme.e4_default"
-            label="Windows 7"
+            label="Bio7 Windows"
             os="win32"
             os_version="6.0,6.1,6.2,6.3,10.0">
       </theme>
@@ -103,6 +103,12 @@
          label="Windows 7 Eclipse"
          os="win32"
          os_version="6.0,6.1,6.2,6.3,10.0">
+   </theme>
+   <theme
+         basestylesheeturi="css/e4_default_bio7.css"
+         id="org.eclipse.e4.ui.css.theme.e4_default"
+         label="Bio7 Linux"
+         os="linux">
    </theme>
 
    </extension>
