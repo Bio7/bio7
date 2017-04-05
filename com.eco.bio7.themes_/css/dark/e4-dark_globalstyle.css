@@ -544,6 +544,11 @@ product */
 	background-color:#252525;
     color:#eeeeee;
 }
+/*Important for MacOSX!*/
+#org-eclipse-ui-ProgressBar Canvas {
+	background-color:#252525;
+    color:#eeeeee;
+}
 
 /* To hide the status line!
 #org-eclipse-ui-trim-status,
