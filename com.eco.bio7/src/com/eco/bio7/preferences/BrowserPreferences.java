@@ -53,6 +53,7 @@ public class BrowserPreferences extends FieldEditorPreferencePage implements IWo
 		addField(new BooleanFieldEditor("ENABLE_JAVAFXWEBKIT_SCROLLBARS","Enable JavaFX scrollbars",getFieldEditorParentControl()));
 		addField(new BooleanFieldEditor("ENABLE_BROWSER_SCROLLBARS","Enable browser scrollbars",getFieldEditorParentControl()));
 		addField(new BooleanFieldEditor("SCROLL_TO_DOCUMENT_END","Scroll to HTML document end",getFieldEditorParentControl()));
+		addField(new BooleanFieldEditor("REQUEST_EDITOR_FOCUS","Request editor focus (Markdown, HTML, Text editor)",getFieldEditorParentControl()));
 		addField(new BooleanFieldEditor("ENABLE_BROWSER_LOG","Print browser messages",getFieldEditorParentControl()));
 		addField(spacer1);
 		addField(new LabelFieldEditor("R install package Help:", getFieldEditorParent()));

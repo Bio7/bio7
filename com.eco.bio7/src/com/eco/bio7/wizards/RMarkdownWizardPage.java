@@ -49,7 +49,7 @@ public class RMarkdownWizardPage extends WizardPage {
 		super("wizardPage");
 		setTitle("Markdown File");
 		setDescription(
-				"This wizard creates a new file with *.Rmarkdown extension that can be opened by the default editor.");
+				"This wizard creates a new file with *.rmd extension that can be opened by the default editor.");
 		this.selection = selection;
 	}
 
