@@ -160,7 +160,7 @@ public class RMarkdownPluginWizard extends Wizard implements INewWizard {
 
 		String contents = "---" + linefeed + "title: " + title + linefeed + "author: " + author + linefeed + "date: "
 				+ today + linefeed + "output: " + format + linefeed + "---" + linefeed + linefeed + "## R Markdown"
-				+ linefeed + linefeed +"Examle R code:" + linefeed+ linefeed + "```{R}" + linefeed + "plot(runif(100))" + linefeed + "```"
+				+ linefeed + linefeed +"Example R code:" + linefeed+ linefeed + "```{R}" + linefeed + "plot(runif(100))" + linefeed + "```"
 				+ linefeed;
 
 		return new ByteArrayInputStream(contents.getBytes());

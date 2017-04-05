@@ -1,0 +1,389 @@
+/*******************************************************************************
+ * Copyright (c) 2010, 2014 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     IBM Corporation - initial API and implementation
+ *     Lars Vogel <Lars.Vogel@gmail.com> - Bug 420836
+ *******************************************************************************/
+ 
+ 
+/*@import url("platform:/plugin/com.eco.bio7.themes/css/e4_basestyle.css");*/
+/* New ColorDefinitions for the E4 default theme */ 
+ThemesExtension { color-definition: 
+	'#org-eclipse-ui-workbench-INACTIVE_UNSELECTED_TABS_COLOR_START', 
+	'#org-eclipse-ui-workbench-INACTIVE_UNSELECTED_TABS_COLOR_END',
+	'#org-eclipse-ui-workbench-INACTIVE_TAB_OUTER_KEYLINE_COLOR',
+	'#org-eclipse-ui-workbench-INACTIVE_TAB_INNER_KEYLINE_COLOR',
+	'#org-eclipse-ui-workbench-INACTIVE_TAB_OUTLINE_COLOR',
+	'#org-eclipse-ui-workbench-ACTIVE_UNSELECTED_TABS_COLOR_START',
+	'#org-eclipse-ui-workbench-ACTIVE_UNSELECTED_TABS_COLOR_END',
+	'#org-eclipse-ui-workbench-ACTIVE_TAB_OUTER_KEYLINE_COLOR',
+	'#org-eclipse-ui-workbench-ACTIVE_TAB_INNER_KEYLINE_COLOR',
+	'#org-eclipse-ui-workbench-ACTIVE_TAB_OUTLINE_COLOR';
+}
+
+ColorDefinition#org-eclipse-ui-workbench-INACTIVE_UNSELECTED_TABS_COLOR_START {
+	color: #eeeeee;
+	category: '#org-eclipse-ui-presentation-default';
+	label: 'Inactive, unselected part color start';
+}
+
+ColorDefinition#org-eclipse-ui-workbench-INACTIVE_UNSELECTED_TABS_COLOR_END {
+	color: #eeeeee;
+	category: '#org-eclipse-ui-presentation-default';
+	label: 'Inactive, unselected part color end';
+}
+
+ColorDefinition#org-eclipse-ui-workbench-INACTIVE_TAB_OUTER_KEYLINE_COLOR {
+	color: #eeeeee;
+	category: '#org-eclipse-ui-presentation-default';
+	label: 'Inactive part outer keyline color';
+}
+
+ColorDefinition#org-eclipse-ui-workbench-INACTIVE_TAB_INNER_KEYLINE_COLOR {
+	color: #eeeeee;
+	category: '#org-eclipse-ui-presentation-default';
+	label: 'Inactive part inner keyline color';
+}
+
+ColorDefinition#org-eclipse-ui-workbench-INACTIVE_TAB_OUTLINE_COLOR {
+	color: #B6BCCC;
+	category: '#org-eclipse-ui-presentation-default';
+	label: 'Inactive part outline color';
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_UNSELECTED_TABS_COLOR_START {
+	color: #eeeeee;
+	category: '#org-eclipse-ui-presentation-default';
+	label: 'Active, unselected part color begin';
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_UNSELECTED_TABS_COLOR_END {
+	color: #eeeeee;
+	category: '#org-eclipse-ui-presentation-default';
+	label: 'Active, unselected part color end';
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_OUTER_KEYLINE_COLOR {
+	color: #eeeeee;
+	category: '#org-eclipse-ui-presentation-default';
+	label: 'Active part outer keyline color';
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_INNER_KEYLINE_COLOR {
+	color: #eeeeee;
+	category: '#org-eclipse-ui-presentation-default';
+	label: 'Active part inner keyline color';
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_OUTLINE_COLOR {
+	color: #B6BCCC;
+	category: '#org-eclipse-ui-presentation-default';
+	label: 'Active part outline color';
+}
+
+/* Already existing ColorDefinitions overridden for the E4 default theme */
+ColorDefinition#org-eclipse-ui-workbench-INACTIVE_TAB_BG_START {
+	color: #dddfe5;
+}
+
+ColorDefinition#org-eclipse-ui-workbench-INACTIVE_TAB_BG_END {
+	color: #eeeeee;
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_BG_START{
+	color: #eeeeee;
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_BG_END {
+	color: #eeeeee;
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_BG_START {
+	color: #eeeeee;
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_BG_END {
+	color: #eeeeee;
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_TEXT_COLOR {
+	color: #000000;
+}
+
+
+
+.MPart.busy {
+	font-style: italic;
+}
+
+.MPart.highlighted {
+	font-weight: bold;
+}
+
+.MPartStack, .MPart {
+	font-family: '#org-eclipse-ui-workbench-TAB_TEXT_FONT';
+}
+
+CTabItem:selected {
+	color: '#org-eclipse-ui-workbench-ACTIVE_TAB_TEXT_COLOR';
+}
+
+.MPartStack {
+	swt-tab-renderer: url('bundleclass://org.eclipse.e4.ui.workbench.renderers.swt/org.eclipse.e4.ui.workbench.renderers.swt.CTabRendering');
+	swt-selected-tab-fill: '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_END' 100.0% 100.0%;
+	swt-unselected-tabs-color:  white #eeeeee #dddddd 25.0% 25.0% 50.0%;
+	swt-outer-keyline-color: '#org-eclipse-ui-workbench-INACTIVE_TAB_OUTER_KEYLINE_COLOR';
+	swt-inner-keyline-color: '#org-eclipse-ui-workbench-INACTIVE_TAB_INNER_KEYLINE_COLOR';
+	swt-tab-outline: '#org-eclipse-ui-workbench-INACTIVE_TAB_OUTLINE_COLOR';
+	padding: 1.0px 2.0px 2.0px;
+	swt-shadow-visible: false;
+	swt-mru-visible: false;
+	color: '#org-eclipse-ui-workbench-INACTIVE_TAB_TEXT_COLOR';
+	swt-tab-height: 22.0px; 
+	
+}
+
+.MPartStack.active {
+	swt-selected-tab-fill: '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_END' 100.0% 100.0%;
+	swt-unselected-tabs-color: white #eeeeee #dddddd 25.0% 25.0% 50.0%;
+	swt-outer-keyline-color: '#org-eclipse-ui-workbench-ACTIVE_TAB_OUTER_KEYLINE_COLOR';
+	swt-inner-keyline-color: '#org-eclipse-ui-workbench-ACTIVE_TAB_INNER_KEYLINE_COLOR';
+	swt-tab-outline: '#org-eclipse-ui-workbench-ACTIVE_TAB_OUTLINE_COLOR';
+	swt-shadow-visible: false;
+	swt-tab-height: 22.0px; 
+}
+
+.MPartStack.active.noFocus {
+	swt-selected-tab-fill: '#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_BG_START' '#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_BG_END' 100.0% 100.0%;
+}
+
+.MPartStack.active.noFocus > CTabItem:selected {
+	color: '#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_TEXT_COLOR';
+}
+
+#PerspectiveSwitcher {
+	eclipse-perspective-keyline-color: #AAB0BF #AAB0BF;
+}
+
+.MToolControl.TrimStack {
+	frame-image:  url('./win7TSFrame.png');
+	handle-image:  url('./win7Handle.png');
+	frame-cuts: 5px 1px 5px 16px;
+}
+
+.DragFeedback {
+	background-color: COLOR-WIDGET-NORMAL-SHADOW;
+}
+
+.ModifiedDragFeedback {
+	background-color: #A0A000;
+}
+
+
+
+.MPartStack#left Composite, .MPartStack#right Composite, .MPartStack#bottom Composite {
+	background-color: '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_END';
+}
+
+.MPartStack#left.active Composite, .MPartStack#right.active Composite, .MPartStack#bottom.active Composite {
+	background-color: '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_END';
+}
+
+.MPartStack#left.active.noFocus Composite, .MPartStack#right.active.noFocus Composite, .MPartStack#bottom.active.noFocus Composite {
+	background-color: '#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_BG_END';
+}
+
+.MToolBar.Draggable {
+  handle-image: url(./dragHandle.png);
+}
+
+.MToolControl.TrimStack {
+  handle-image: url(./dragHandle.png);
+}
+
+.MToolControl.Draggable {
+  handle-image: url(./dragHandle.png);
+}
+
+.DragFeedback {
+  background-color: #e0e0e0;
+}
+
+
+
+.MTrimBar {
+background-color: #eeeeee;
+
+
+}
+/*Background of e.g. ImageJ view tab and outline!*/
+.View {
+background-color: #eeeeee;
+}
+.MPlaceholder {
+background-color: #ffffff;
+
+}
+.MPart{
+
+
+}
+
+#org-eclipse-ui-editorss {
+	swt-tab-height: 8.0px;
+	padding: 0.0px 5.0px 7.0px;
+}
+
+/*The colour for the toolbar of the views*/
+.MToolBar {
+
+
+
+}
+#org-eclipse-ui-main-toolbar {
+    eclipse-perspective-keyline-color: #585858;
+    background-color: #eeeeee;
+   background-image: url('./bio7.png');
+    color: #EBE8E4;
+}
+
+
+Label {
+
+color: black;
+}
+Composite Label {
+color: black;
+}
+
+
+ETabFolder {
+simple: true;
+
+}
+
+CTabItem:selected {
+background-color: #cccccc #e8e8e8 60.0%;
+font-weight: normal;
+
+}
+
+
+MenuItem {
+background-color: #dddddd;
+}
+/**/
+Shell {
+background-color: #eeeeee;
+}
+Menu {
+background-color: #ffffff;
+}
+
+ExpandBar {
+background-color: #cccccc;
+}
+
+
+.MPart.busy {
+	font-style: italic;
+}
+
+.MPart.highlighted {
+	font-weight: bold;
+}
+
+.MPartStack, .MPart {
+	font-family: '#org-eclipse-ui-workbench-TAB_TEXT_FONT';
+	
+	
+}
+
+
+/*The colour of the Tab font!*/
+CTabItem:selected {
+	color: '#org-eclipse-ui-workbench-ACTIVE_TAB_TEXT_COLOR';
+}
+
+/*Perspective Switch!*/
+#org-eclipse-ui-main-toolbar #PerspectiveSwitcher {
+	eclipse-perspective-keyline-color: #dddddd;
+	background-image: url('./bio7.png');
+	background-color: #ffffff;
+		
+}
+/*Colour around views (evtl shadows?!*/
+.MPartSashContainer {
+
+ background-color: 	#ffffff;
+ margin-top: 4.0px;
+	margin-bottom: 4.0px;
+	margin-left: 4.0px;
+	margin-right: 4.0px;
+ 
+}
+
+/*Colour around views!*/
+.MTrimmedWindow {
+    background-color: #ffffff;
+    margin-top: 4.0px;
+	margin-bottom: 4.0px;
+	margin-left: 4.0px;
+	margin-right: 4.0px;
+	
+    /*  */
+}
+
+/*Important to set height for the view menus!*/
+CTabFolder { 
+
+ swt-corner-radius: 15.0;
+  
+}
+
+/*#com-eco-bio7-imagej.MToolBar {
+    background-color:  #eeeeee;
+}*/
+
+#org-eclipse-ui-console-ConsoleView.MToolBar {
+    background-color:  #eeeeee;
+}
+
+/*Composite #com-eco-bio7-piechart {
+   background-color:  #ffffff;
+}
+Composite #com-eco-bio7-linechart {
+   background-color:  #ffffff;
+}
+Composite #com-eco-bio7-states {
+   background-color:  #ffffff;
+}
+Composite #com-eco-bio7-control {
+   background-color:  #ffffff;
+}*/
+
+/*.ToolItemElement{
+    image: url('./win7.png');
+    background-color: white #eeeeee #dddddd 25% 25% 50%;
+    #Bounds: x=1082 y=186 h=31 w=31;
+}*/
+
+/*.CompositeElement{
+Bounds: x=1082 y=186 h=31 w=31;
+}*/
+
+/*#org-eclipse-ui-console-ConsoleView{
+    background-color: #3f4447;
+    color: #EEEEEE;
+}*/
+
+/*#org-eclipse-ui-trim-status,
+#org-eclipse-ui-trim-vertical1,
+#org-eclipse-ui-trim-vertical2 {
+   visibility: hidden;
+}*/

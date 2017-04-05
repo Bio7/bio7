@@ -74,7 +74,7 @@ public class JavaFXWebBrowser {
 	}
 
 	public JavaFXWebBrowser(boolean html) {
-		javaFXWebBrowserInstance=this;
+		javaFXWebBrowserInstance = this;
 		this.html = html;
 		reload = true;
 		brow = new WebView();
@@ -149,7 +149,7 @@ public class JavaFXWebBrowser {
 
 						}
 					}, false);
-                /*Html*/
+					/* Html */
 				} else {
 					/*
 					 * Load an embedded pdf document in a website with pdf.js! Adapted source from
@@ -184,13 +184,13 @@ public class JavaFXWebBrowser {
 
 									// Checking whether the URL contains a PDF
 									if (urlConn.getContentType().equalsIgnoreCase("application/pdf")) {
-										//JavaFXWebBrowser.this.html=false;
+										// JavaFXWebBrowser.this.html=false;
 										String pathBundle = getPdfjsPath();
 
 										webEng.load("file:///" + pathBundle + "?file=" + href);
 
 										evt.preventDefault();
-									} 
+									}
 								}
 							}, false);
 						}
@@ -211,14 +211,17 @@ public class JavaFXWebBrowser {
 					 */
 
 				}
-				/* We have to activate the editor again to enable all keyboard actions, etc.! */
-				IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-				if (editor == null) {
-					return;
-				}
+				boolean requestEditorFocus = store.getBoolean("REQUEST_EDITOR_FOCUS");
+				if (requestEditorFocus) {
+					/* We have to activate the editor again to enable all keyboard actions, etc.! */
+					IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+					if (editor == null) {
+						return;
+					}
 
-				if (editor instanceof MarkdownEditor || editor instanceof MultiPageEditor || editor instanceof TexEditor) {
-					Util.activateEditorPage(editor);
+					if (editor instanceof MarkdownEditor || editor instanceof MultiPageEditor || editor instanceof TexEditor) {
+						Util.activateEditorPage(editor);
+					}
 				}
 
 			}
@@ -243,7 +246,8 @@ public class JavaFXWebBrowser {
 	public void createBrowser(String url, String name) {
 
 		AnchorPane anchorPane = new AnchorPane();
-		if (store.getBoolean("ENABLE_JAVAFXWEBKIT_SCROLLBARS") == false) {
+		boolean fxWebkitScrollbars = store.getBoolean("ENABLE_JAVAFXWEBKIT_SCROLLBARS");
+		if (fxWebkitScrollbars == false) {
 			brow.getChildrenUnmodifiable().addListener(new ListChangeListener<Node>() {
 				@Override
 				public void onChanged(Change<? extends Node> change) {
@@ -332,12 +336,12 @@ public class JavaFXWebBrowser {
 					}
 
 				} else if (ke.getCharacter().equals("t")) {
-					//if (html == false) {
-						webEng.executeScript("if (document.getElementById('toolbarContainer').style.display == '')" + "{ "
-								+ "document.getElementById('viewerContainer').style.overflow = 'hidden';document.getElementById('toolbarContainer').style.display='none';document.getElementById('viewerContainer').style.top=0;}"
+					// if (html == false) {
+					webEng.executeScript(
+							"if (document.getElementById('toolbarContainer').style.display == '')" + "{ " + "document.getElementById('viewerContainer').style.overflow = 'hidden';document.getElementById('toolbarContainer').style.display='none';document.getElementById('viewerContainer').style.top=0;}"
 
-								+ "else{" + "document.getElementById('viewerContainer').style.overflow = 'scroll';document.getElementById('toolbarContainer').style.display='';document.getElementById('viewerContainer').style.top=32;" + "}");
-					//}
+									+ "else{" + "document.getElementById('viewerContainer').style.overflow = 'scroll';document.getElementById('toolbarContainer').style.display='';document.getElementById('viewerContainer').style.top=32;" + "}");
+					// }
 				}
 
 			}
