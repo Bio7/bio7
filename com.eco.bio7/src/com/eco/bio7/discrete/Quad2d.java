@@ -244,28 +244,30 @@ public class Quad2d extends JPanel implements KeyListener, MouseListener, MouseM
 	}
 
 	public void groesser(MouseWheelEvent e) {
-		double r = Field.getQuadSize() + e.getPreciseWheelRotation();
-		System.out.println(r);
+		double r = e.getPreciseWheelRotation();
+		Time.setPause(true);
 		if (r >= 1) {
-
-			Time.setPause(true);
-			Field.setQuadSize(Field.getQuadSize() + (int) e.getPreciseWheelRotation());
-			;
-			Field.setQuadSize(Field.getQuadSize());
-			rwidth = Field.getQuadSize();
-			rheight = Field.getQuadSize();
-			drawQuad();
-			zeichenflaechex = ((Field.getHeight() * Field.getQuadSize()));
-			zeichenflaechey = ((Field.getWidth() * Field.getQuadSize()));
-
-			setPreferredSize(new Dimension(zeichenflaechey, zeichenflaechex));
-			SwingUtilities.invokeLater(new Runnable() {
-				// !!
-				public void run() {
-					jScrollPane.setViewportView(quad2d_instance);
-				}
-			});
+			Field.setQuadSize(Field.getQuadSize() + 1);
+		} else {
+			if (Field.getQuadSize() > 1) {
+				Field.setQuadSize(Field.getQuadSize() - 1);
+			}
 		}
+
+		Field.setQuadSize(Field.getQuadSize());
+		rwidth = Field.getQuadSize();
+		rheight = Field.getQuadSize();
+		drawQuad();
+		zeichenflaechex = ((Field.getHeight() * Field.getQuadSize()));
+		zeichenflaechey = ((Field.getWidth() * Field.getQuadSize()));
+
+		setPreferredSize(new Dimension(zeichenflaechey, zeichenflaechex));
+		SwingUtilities.invokeLater(new Runnable() {
+			// !!
+			public void run() {
+				jScrollPane.setViewportView(quad2d_instance);
+			}
+		});
 
 	}
 
