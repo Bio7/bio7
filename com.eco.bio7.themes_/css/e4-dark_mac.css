@@ -204,7 +204,7 @@ Shell[style~='SWT.RADIO'][style~='SWT.CASCADE'][style~='SWT.SHADOW_ETCHED_IN'][s
 Shell[style~='SWT.RADIO'][style~='SWT.CASCADE'][style~='SWT.SHADOW_ETCHED_IN'][style~='SWT.SHADOW_ETCHED_OUT'][style~='SWT.RESIZE'][style~='SWT.MENU'][style~='SWT.FULL_SELECTION'][style~='SWT.DATE'] > Composite > * > TabFolder {
     /* background-color is not applied to the whole button,
        but text color is changed, so it appear light on light */
-    background-color: #515658;
+    background-color: #252525;
     color: #222;
 }
 
@@ -229,7 +229,7 @@ Form > LayoutComposite > LayoutComposite > Button,
 .MPartStack.active .MPart LayoutComposite > * > LayoutComposite > Section > LayoutComposite > Button {
     /* background-color is not applied to the whole button,
        but text color is changed, so it appear light on light */
-    background-color: #515658;
+    background-color: #252525;
     color: #222;
 }
 Button[style~='SWT.CHECK'],
