@@ -41,6 +41,7 @@ public class LayerComposite extends Composite {
 	 */
 	public LayerComposite(Composite parent, int style, final SurfaceImage si, final RenderableLayer layerImages, final Sector sector) {
 		super(parent, style);
+		this.setBackground(parent.getBackground());
 		this.sector = sector;
 		setLayout(new GridLayout(5, true));
 		/*Important to set the layout data for this composite to scale relative to the parent!*/

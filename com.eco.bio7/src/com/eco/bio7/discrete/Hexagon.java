@@ -214,7 +214,8 @@ public class Hexagon extends JPanel implements KeyListener, MouseListener, Mouse
 
 	private void groesser(MouseWheelEvent e) {
 		if (Time.isPause()) {
-			r = r + (int)e.getPreciseWheelRotation();
+			r = r + (int) e.getPreciseWheelRotation();
+			System.out.println(r);
 			if (r < 1) {
 				r = 1;
 

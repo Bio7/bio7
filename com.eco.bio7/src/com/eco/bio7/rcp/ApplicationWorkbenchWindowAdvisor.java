@@ -582,6 +582,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		}
 		store.setDefault("BROWSER_SELECTION", "JAVAFX_BROWSER");
 		store.setDefault("OPEN_BOWSER_IN_EXTRA_VIEW", false);
+		store.setDefault("COPY_PDF_PATH_TO_CLIP", true);
 		store.setDefault("REQUEST_EDITOR_FOCUS", true);
 		store.setDefault("INTERPRET_JAVASCRIPT_IN_BROWSER", false);	
 		store.setDefault("INSTALL_R_PACKAGES_DESCRPTION_URL","https://cran.r-project.org/web/packages/");

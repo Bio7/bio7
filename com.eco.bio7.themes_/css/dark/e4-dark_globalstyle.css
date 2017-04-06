@@ -477,6 +477,7 @@ ExpandBar {
 	color: #000000; see property startupForegroundColor in the product
 } */
 
+/*View id's are improtant to color the toolbar, etc.!*/
 Composite #com-eco-bio7-imagej {
 	background-color: #252525;
 	color: #dddddd; /* see property startupForegroundColor in the product */
@@ -524,20 +525,29 @@ Composite #com.eco.bio7.thumbnails {
 
 Composite #com-eco-bio7-rbridge-RTable.MToolBar {
      background-color: #252525;
-     color: #dddddd; /* see property startupForegroundColor in the product */ }
+     color: #dddddd; 
+}
 
 
 #com-eco-bio7-thumbnails.MToolBar Label {
      background-color: #252525;
-     color: #dddddd; /* see property startupForegroundColor in the 
-product */
+     color: #dddddd; 
 }
 
 Composite #com-eco-bio7-thumbnails.MToolBar {
      background-color: #252525;
-     color: #dddddd; /* see property startupForegroundColor in the 
-product */
+     color: #dddddd; 
 }
+
+Composite #com-eco-bio7-browser-Browser.MToolBar {
+	 background-color: #252525;
+     color: #dddddd; 
+}
+
+#com-eco-bio7-browser-Browser.MToolBar Label{
+	 background-color: #252525;;
+     color: #dddddd; 
+} 
 
 /*The progress bar on the status line!*/
 #org-eclipse-ui-ProgressBar Composite {

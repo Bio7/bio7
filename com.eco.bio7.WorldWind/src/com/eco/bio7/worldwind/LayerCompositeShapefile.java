@@ -42,6 +42,7 @@ public class LayerCompositeShapefile extends Composite {
 	 */
 	public LayerCompositeShapefile(Composite parent, int style,final Layer layer, final Sector sect) {
 		super(parent, style);
+		this.setBackground(parent.getBackground());
 		this.secto=sect;
 		this.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 		setLayout(new GridLayout(5, true));

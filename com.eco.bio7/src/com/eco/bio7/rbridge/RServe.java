@@ -38,6 +38,9 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
@@ -188,8 +191,7 @@ public class RServe {
 				} catch (IOException e) {
 					System.err.println("");
 				}
-				
-				
+
 			}
 
 			// Bio7Dialog.message("Rserve is busy!");
@@ -624,6 +626,7 @@ public class RServe {
 	}
 
 	public static void openPDF(String plotPathR, String fileName, boolean useBrowser, String openInJavaFXBrowser) {
+		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		if (openInJavaFXBrowser.equals("SWT_BROWSER")) {
 			File tempFile = createTempFileFromPlot(plotPathR, fileName);
 
@@ -674,7 +677,7 @@ public class RServe {
 			// System.out.println(openInJavaFXBrowser);
 
 			File tempFile = createTempFileFromPlot(plotPathR, fileName);
-            //String temp = "../../../com.eco.bio7/bio7temp/tempDevicePlot.pdf";
+			// String temp = "../../../com.eco.bio7/bio7temp/tempDevicePlot.pdf";
 			String temp = "file:////" + tempFile;
 			String url = temp.replace("\\", "/");
 			String pathBundle = getPdfjsPath();
@@ -684,30 +687,38 @@ public class RServe {
 
 				public void run() {
 					JavaFXWebBrowser br = new JavaFXWebBrowser(false);
-					WebEngine webEngine = br.getWebEngine();
-					/* We print the file for the display only without the line seperator replacements! */
-					System.out.println("Path to PDF file: " + tempFile);
+					WebEngine webEngine = br.getWebEngine();					
+					// System.out.println("Path to PDF file: " + tempFile);
+					/* Copy path to clipboard! */
+					if (store.getBoolean("COPY_PDF_PATH_TO_CLIP")) {
+						String pathClip = tempFile.toString();
+						if (pathClip.length() > 0) {
+							Clipboard cb = new Clipboard(display);
+							TextTransfer textTransfer = TextTransfer.getInstance();
+							cb.setContents(new Object[] { pathClip }, new Transfer[] { textTransfer });
+						}
+					}
+
 					/*
 					 * Here we use a simple but effective trick. We define the default variable 'DEFAULT_URL' in JavaScript for the viewer.js (we comment the variable out there) to load and reload
 					 * local documents which won't be possible if using the path as an argument, see: https://github.com/mozilla/pdf.js/issues/5057
 					 */
 					webEngine.executeScript("var DEFAULT_URL =\"" + url + "\"");
-					
-					//System.out.println("Path to URL file: " + url);
+
+					// System.out.println("Path to URL file: " + url);
 
 					IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 					boolean openInBrowserInExtraView = store.getBoolean("OPEN_BOWSER_IN_EXTRA_VIEW");
 					if (openInBrowserInExtraView) {
 						String id = UUID.randomUUID().toString();
 						br.createBrowser("file:///" + pathBundle + "", id);
-						//br.createBrowser("file:///" + pathBundle + "?file=" + url,id);
+						// br.createBrowser("file:///" + pathBundle + "?file=" + url,id);
 					}
 
 					else {
-						
-						//br.createBrowser("file:///" + pathBundle + "?file=" + url,"Display");
-						
-						
+
+						// br.createBrowser("file:///" + pathBundle + "?file=" + url,"Display");
+
 						br.createBrowser("file:///" + pathBundle + "", "Display");
 						/*
 						 * webEngine.executeScript( "alert(pdfjsVersion);");
