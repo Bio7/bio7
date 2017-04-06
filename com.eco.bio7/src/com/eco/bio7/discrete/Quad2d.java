@@ -254,7 +254,7 @@ public class Quad2d extends JPanel implements KeyListener, MouseListener, MouseM
 			}
 		}
 
-		Field.setQuadSize(Field.getQuadSize());
+		//Field.setQuadSize(Field.getQuadSize());
 		rwidth = Field.getQuadSize();
 		rheight = Field.getQuadSize();
 		drawQuad();
