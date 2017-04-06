@@ -424,9 +424,9 @@ Label#org-eclipse-ui-splash-progressText {
 	background-color: #f7f7f7;
 	color: #9c9696; /* see property startupForegroundColor in the product */
 }
-
+/*For MacOSX!*/
 ProgressIndicator#org-eclipse-ui-splash-progressIndicator {
-	background-color: #e1e1e1;
+	background-color: #ffffff;
 }
 
 Grid {

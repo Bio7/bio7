@@ -344,47 +344,7 @@ Form > LayoutComposite > LayoutComposite > Text[style~='SWT.SEARCH'],
 	color: #000000; see property startupForegroundColor in the product
 } */
 
-Composite #com-eco-bio7-imagej {
-	background-color: #252525;
-	color: #dddddd; /* see property startupForegroundColor in the product */
-}
-
-#com-eco-bio7-imagej Label  {
-	background-color: #252525;
-	color: #dddddd; /* see property startupForegroundColor in the product */
-}
-
-Composite #org-eclipse-ui-console-ConsoleView.MToolBar {
-	background-color: #252525;
-	color: #dddddd; /* see property startupForegroundColor in the product */
-}
-
-#org-eclipse-ui-console-ConsoleView.MToolBar Label {
-    background-color:  #252525;
-    color: #dddddd; /* see property startupForegroundColor in the product */
-}
-
-Composite #com.eco.bio7.rbridge.RTable {
-	background-color: #252525;
-	color: #dddddd; /* see property startupForegroundColor in the product */
-}
-
-#com.eco.bio7.rbridge.RTable Label  {
-	background-color: #252525;
-	color: #dddddd; /* see property startupForegroundColor in the product */
-}
-
-
-Composite #com.eco.bio7.thumbnails {
-	background-color: #252525;
-	color: #dddddd; /* see property startupForegroundColor in the product */
-}
-
-#com.eco.bio7.thumbnails Label  {
-	background-color: #252525;
-	color: #dddddd; /* see property startupForegroundColor in the product */
-}
-
+/*Some font size correction for Mac menus!*/
 #com-eco-bio7-rbridge-RTable.MToolBar {
    
     font-size: 14px;
@@ -425,6 +385,11 @@ Bounds: x=1082 y=186 h=31 w=31;
 #org-eclipse-jdt-ui-PackageExplorer {
       font-size:20;
       background:black;
+}
+
+Button[style~='SWT.CHECK'] { 
+   background-color: #252525;
+	color: #dddddd;
 }
 
 /*
