@@ -507,7 +507,7 @@
       <keyBinding
             commandId="com.eco.bio7.load_r_workspace"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            keySequence="CTRL+ALT+L">
+            keySequence="SHIFT+O">
       </keyBinding>
       <command
             description="Save a R workspace"
@@ -517,7 +517,7 @@
       <keyBinding
             commandId="com.eco.bio7.save_r_workspace2"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            keySequence="CTRL+ALT+S">
+            keySequence="SHIFT+S">
       </keyBinding>
       <command
             description="Load R packages"
