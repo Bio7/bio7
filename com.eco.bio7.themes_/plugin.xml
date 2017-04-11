@@ -47,7 +47,7 @@
       <theme
             basestylesheeturi="css/e4_default_bio7_mac.css"
             id="org.eclipse.e4.ui.css.theme.e4_default"
-            label="%theme.mac"
+            label="Bio7 Mac"
             os="macosx">
       </theme>
    <theme
