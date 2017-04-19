@@ -48,7 +48,7 @@ public class InterpretPython extends Action {
 		}
 
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		if (editor == null || editor instanceof PythonEditor == false) {
+		if (editor == null) {
 			return;
 		}
 		IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());

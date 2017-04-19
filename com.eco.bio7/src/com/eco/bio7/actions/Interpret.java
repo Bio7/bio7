@@ -40,7 +40,7 @@ public class Interpret extends Action {
 			utils.cons.clear();
 		}
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		if (editor == null || editor instanceof BeanshellEditor == false) {
+		if (editor == null) {
 			return;
 		}
 		IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
