@@ -1170,6 +1170,13 @@
           adaptable="false"
           id="CheckBuildRPackage"
           objectClass="org.eclipse.core.resources.IFolder">
+          <action
+             class="com.eco.bio7.popup.actions.StartShinyApp"
+             id="com.eco.bio7.startshinyapp"
+             label="Start Shiny App"
+             menubarPath="additions.shiny"
+             tooltip="Starts a Shiny App">
+       </action>
        <action
              class="com.eco.bio7.popup.actions.CheckRPackage"
              id="com.eco.bio7.checkrpackage"
