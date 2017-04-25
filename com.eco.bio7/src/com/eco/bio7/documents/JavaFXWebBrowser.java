@@ -5,7 +5,10 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Base64;
 import java.util.Set;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
@@ -60,6 +63,7 @@ public class JavaFXWebBrowser {
 	private boolean html;
 	private IPreferenceStore store;
 	private boolean reload;
+	private String fileUrl;
 	private static JavaFXWebBrowser javaFXWebBrowserInstance;
 
 	public static JavaFXWebBrowser getJavaFXWebBrowserInstance() {
@@ -92,6 +96,7 @@ public class JavaFXWebBrowser {
 
 					return;
 				}
+				
 				/* We reload the html side once to avoid cached images! */
 				if (reload && html) {
 					reload = false;
@@ -244,7 +249,6 @@ public class JavaFXWebBrowser {
 	}
 
 	public void createBrowser(String url, String name) {
-
 		AnchorPane anchorPane = new AnchorPane();
 		boolean fxWebkitScrollbars = store.getBoolean("ENABLE_JAVAFXWEBKIT_SCROLLBARS");
 		if (fxWebkitScrollbars == false) {
@@ -394,8 +398,8 @@ public class JavaFXWebBrowser {
 							/* We have to create a new browser instance to inject the path as variable! */
 							JavaFXWebBrowser br = new JavaFXWebBrowser(false);
 							WebEngine webEngine = br.getWebEngine();
-							webEngine.executeScript("var DEFAULT_URL ='" + path + "'");
-							br.createBrowser("file:///" + pathBundle + "", "Display");
+							//webEngine.executeScript("var DEFAULT_URL ='" + path + "'");
+							br.createBrowser("file:///" + pathBundle + "","Display");
 						}
 
 						else {
@@ -417,6 +421,8 @@ public class JavaFXWebBrowser {
 		anchorPane.getChildren().add(brow);
 
 		webEng.load(url);
+		
+		
 
 		CustomView view = new CustomView();
 
