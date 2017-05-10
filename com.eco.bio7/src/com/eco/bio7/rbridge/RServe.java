@@ -584,7 +584,7 @@ public class RServe {
 				// System.out.println(plotPathR);
 
 				File[] files = ListFilesDirectory(new File(plotPathR), new String[] { ".tiff", ".tif", ".jpg", ".jpeg", ".png", ".bmp" });
-				if (files.length > 0) {
+				if (files!=null&&files.length > 0) {
 					if (ijCreateSingle) {
 
 						for (int i = 0; i < files.length; i++) {
@@ -786,16 +786,6 @@ public class RServe {
 
 	public static File[] ListFilesDirectory(File filedirectory, final String[] extensions) {
 		File dir = filedirectory;
-
-		String[] children = dir.list();
-		if (children == null) {
-
-		} else {
-			for (int i = 0; i < children.length; i++) {
-				// Get filename of the file or directory inside Bio7.
-				String filename = children[i];
-			}
-		}
 
 		// Filter the extension of the file.
 		FilenameFilter filter = new FilenameFilter() {
