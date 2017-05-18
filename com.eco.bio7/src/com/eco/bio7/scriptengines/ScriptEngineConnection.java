@@ -23,7 +23,6 @@ public class ScriptEngineConnection {
 	private static ScriptEngine scriptingEngineBeanShell = new ScriptEngineManager().getEngineByName("beanshell");
 	private static ScriptEngine scriptingEngineJavaScript = new ScriptEngineManager().getEngineByName("Nashorn");
 	
-
 	/**
 	 * Get the current Bio7 Groovy connection.
 	 * 
