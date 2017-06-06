@@ -13,6 +13,8 @@ package com.eco.bio7.scriptengines;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
+import org.python.util.PythonInterpreter;
+
 /**
  * @author Bio7 A class to return the Java Scripting connections of Bio7.
  */
@@ -85,7 +87,7 @@ public class ScriptEngineConnection {
 	 * Reinitializes the Jython interpreter.
 	 */
 	public static void reinitializeJavaScript() {
-		scriptingEnginePython = new ScriptEngineManager().getEngineByName("JavaScript");
+		scriptingEngineJavaScript = new ScriptEngineManager().getEngineByName("JavaScript");
 	}
 
 }
