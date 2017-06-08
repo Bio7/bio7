@@ -170,14 +170,14 @@ jre/lib/jli/libjli.dylib
    </plugins>
 
    <features>
-      <feature id="com.eco.bio7.albireo.feature"/>
+      <feature id="com.eco.bio7.albireo.feature" installMode="root"/>
       <feature id="com.eco.bio7.browser.feature"/>
       <feature id="com.eco.bio7.core.feature"/>
       <feature id="com.eco.bio7.edit.feature"/>
       <feature id="com.eco.bio7.floweditor.feature"/>
       <feature id="com.eco.bio7.javaedit.feature"/>
-      <feature id="com.eco.bio7.r.feature"/>
-      <feature id="com.eco.bio7.image.feature"/>
+      <feature id="com.eco.bio7.r.feature" installMode="root"/>
+      <feature id="com.eco.bio7.image.feature" installMode="root"/>
       <feature id="com.eco.bio7.libs.feature"/>
       <feature id="com.eco.bio7.redit.feature"/>
       <feature id="com.eco.bio7.util.feature"/>
@@ -200,7 +200,7 @@ jre/lib/jli/libjli.dylib
       <feature id="org.eclipse.emf.ecore"/>
       <feature id="org.eclipse.emf.common"/>
       <feature id="org.eclipse.nebula.widgets.grid.feature"/>
-      <feature id="com.eco.bio7.imagej2.feature"/>
+      <feature id="com.eco.bio7.imagej2.feature" installMode="root"/>
       <feature id="org.eclipse.rcp"/>
       <feature id="org.eclipse.jdt"/>
    </features>
