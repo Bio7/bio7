@@ -91,7 +91,7 @@ public class SwingFxSwtView {
 
 		scene = new Scene(pane);
 		scene.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
-
+           /*Key combination for the Play/Pause Action!*/
 			public void handle(KeyEvent ke) {
 				final KeyCombination kb = new KeyCodeCombination(KeyCode.P, KeyCombination.ALT_DOWN);
 				if (kb.match(ke)) {
