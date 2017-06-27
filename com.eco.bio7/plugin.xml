@@ -340,6 +340,14 @@
             commandId="com.eco.bio7.Enable_Selection"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
             keySequence="ALT+S"/>
+       <keyBinding
+            commandId="com.eco.bio7.start"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="ALT+P"/>
+      <command
+            description="Start/Stop Action"
+            id="com.eco.bio7.start"
+            name="Start/Stop Action"/>
       <command
             description="Stop-Action"
             id="com.eco.bio7.StopAction"
