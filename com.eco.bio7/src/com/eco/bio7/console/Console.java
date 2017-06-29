@@ -32,9 +32,9 @@ public class Console extends IOConsole{
 		return this;
 	}
 
-	public int hashCode() {
+	/*public int hashCode() {
 		return stream.hashCode();
-	}
+	}*/
 
 	public void print(String message) {
 		try {

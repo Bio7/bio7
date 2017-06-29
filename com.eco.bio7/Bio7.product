@@ -30,7 +30,7 @@ http://bio7.org
       <programArgsMac>-vm
 jre/lib/jli/libjli.dylib
       </programArgsMac>
-      <vmArgs>-Xms1024m -Xmx4096m -Dosgi.framework.extensions=org.eclipse.wst.jsdt.nashorn.extension -Dprism.lcdtext=false
+      <vmArgs>-Xms1024m -Xmx4096m -Dprism.lcdtext=false -Dosgi.framework.extensions=org.eclipse.wst.jsdt.nashorn.extension -Dswt.enable.themedScrollBar=true
       </vmArgs>
       <vmArgsMac>-XstartOnFirstThread
 -Dprism.order=sw
@@ -45,7 +45,6 @@ jre/lib/jli/libjli.dylib
       startupMessageRect="0,0,0,0"
       startupForegroundColor="000000" />
    <launcher name="Bio7">
-      <solaris/>
       <win useIco="false">
          <ico path="/com.eco.bio7/icons/bio7.ico"/>
          <bmp
@@ -199,10 +198,10 @@ jre/lib/jli/libjli.dylib
       <feature id="org.eclipse.equinox.p2.rcp.feature"/>
       <feature id="org.eclipse.emf.ecore"/>
       <feature id="org.eclipse.emf.common"/>
-      <feature id="org.eclipse.nebula.widgets.grid.feature"/>
       <feature id="com.eco.bio7.imagej2.feature" installMode="root"/>
       <feature id="org.eclipse.rcp"/>
       <feature id="org.eclipse.jdt"/>
+      <feature id="org.eclipse.nebula.widgets.grid.feature" version="1.0.0.qualifier"/>
    </features>
 
 

@@ -212,6 +212,27 @@ public class Util {
 		return colSwt;
 
 	}
+	/**
+	 * A method to return the default color as an SWT color.
+	 * 
+	 * @return
+	 * 
+	 * @return a SWT color object
+	 */
+	public static org.eclipse.swt.graphics.Color getSWTForegroundColor() {
+
+		Display display = PlatformUI.getWorkbench().getDisplay();
+		display.syncExec(new Runnable() {
+
+			public void run() {
+
+				colSwt = getShell().getForeground();
+
+			}
+		});
+		return colSwt;
+
+	}
 
 	/**
 	 * A method to activate the current editor.

@@ -315,6 +315,7 @@ CTabFolder {
     swt-selected-tab-fill: '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_END'; /* title background for selected tab */
     swt-shadow-visible: false;
     swt-corner-radius: 16px;
+    swt-unselected-hot-tab-color-background: #161616; /* Bug 465711 */
 }
 CTabFolder[style~='SWT.DOWN'][style~='SWT.BOTTOM'] {
     /* Set the styles for the bottom inner tabs (Bug 430051): */
@@ -327,6 +328,23 @@ FormHeading {
     background-color: #505F70;
     background-image: #505f70;
     color: #9AC9D8;
+}
+
+Form {
+	/* Bug 465148: Additional styling for the Form */
+    text-background-color: #505F70;
+
+	tb-toggle-hover-color: #313538;
+	tb-toggle-color: #313538;
+	h-hover-full-color: #313538;
+	h-hover-light-color: #313538;
+	h-bottom-keyline-2-color: #313538;
+	h-bottom-keyline-1-color: #313538;
+
+	/* We also have to force the background mode (the
+	 * Label/ToolBar in the heading should inherit it).
+	 */
+    swt-background-mode: 'force';
 }
 
 Section {
@@ -560,6 +578,8 @@ Composite #com-eco-bio7-browser-Browser.MToolBar {
     color:#eeeeee;
 }
 
+
+
 /* To hide the status line!
 #org-eclipse-ui-trim-status,
 #org-eclipse-ui-trim-vertical1,
@@ -568,8 +588,37 @@ Composite #com-eco-bio7-browser-Browser.MToolBar {
    visibility: hidden;
 }*/
 
+Table, Tree {
+    swt-header-color: #252525;
+    swt-header-background-color: #383D3F;
+}
 
+HeapStatus {
+	background-color: #4F5355;
+	color: #EEEEEE;
+}
 
+StyledText {
 
+	swt-scrollbar-themed: false;
+
+	swt-scrollbar-background-color: #383838;
+	swt-scrollbar-foreground-color: #494949;
+	swt-scrollbar-width: 4px;
+	swt-scrollbar-border-radius: 4px;
+	swt-scrollbar-mouse-near-scroll-width: 15px;
+}
+
+Link {
+	swt-link-foreground-color: '#org-eclipse-ui-workbench-LINK_COLOR'
+}
+
+ExpandableComposite {
+    swt-titlebar-color: #cccccc;
+}
+
+TabbedPropertyTitle > CLabel{
+	color: #9AC9D8;
+}
 
 

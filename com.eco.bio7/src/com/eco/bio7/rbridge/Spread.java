@@ -34,6 +34,10 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Text;
 
+import com.eco.bio7.grid.CustomColumnHeaderRenderer;
+import com.eco.bio7.grid.CustomRowHeaderRenderer;
+import com.eco.bio7.util.Util;
+
 class Spread {
 	private Grid grid;
 	protected boolean down = false;
@@ -82,6 +86,8 @@ class Spread {
 		tab1TabItem.setControl(composite);
 
 		grid = new Grid(composite, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL | SWT.VIRTUAL);
+		grid.setBackground(Util.getSWTBackgroundColor());
+		grid.setRowHeaderRenderer(new CustomRowHeaderRenderer());
 		final Menu menu = new Menu(grid);
 		grid.setMenu(menu);
 		Listener sortListener = new Listener() {
@@ -91,6 +97,7 @@ class Spread {
 		};
 		for (int i = 0; i < initialColumns; i++) {
 			GridColumn column = new GridColumn(grid, SWT.NONE);
+			column.setHeaderRenderer(new CustomColumnHeaderRenderer());
 			column.addListener(SWT.Selection, sortListener);
 			column.setText("C " + (i + 1));
 			column.setWidth(50);
@@ -98,7 +105,7 @@ class Spread {
 		}
 		for (int i = 0; i < initialRows; i++) {
 			new GridItem(grid, SWT.NONE);
-
+			
 		}
 		grid.addKeyListener(new KeyListener() {
 			String selectedItem = "";
