@@ -9,6 +9,7 @@
  *     IBM Corporation - initial API and implementation
  *     Lars Vogel <Lars.Vogel@gmail.com> - Bug 420836
  *     Frank Appel <fappel@codeaffine.com> - Bug 325937
+ *     Patrik Suzzi <psuzzi@gmail.com> - Bug 501250
  *******************************************************************************/
 
 @import url("platform:/plugin/com.eco.bio7.themes/css/e4_basestyle.css");
@@ -87,4 +88,33 @@ CTabFolder.MArea .MPartStack, CTabFolder.MArea .MPartStack.active {
 
 CTabFolder Canvas {
 	background-color: #F8F8F8;
+}
+
+Form, FormHeading {
+	background-color: #ffffff;
+	background: #ffffff;
+	background-image: #ffffff;
+	color: #505050;
+}
+
+Form {
+	/* Bug 465148: Additional styling for the Form */
+	text-background-color: #ffffff;
+
+	tb-toggle-hover-color: #505050;
+	tb-toggle-color: #505050;
+	h-hover-full-color: #505050;
+	h-hover-light-color: #505050;
+	h-bottom-keyline-2-color: #eaeaea;
+	h-bottom-keyline-1-color: #eaeaea;
+}
+
+
+
+Section {
+	background-color: #ffffff;
+  	color: #505050;
+  	background-color-titlebar: #eaeaea;
+  	background-color-gradient-titlebar: #eaeaea;
+  	border-color-titlebar: #ffffff;
 }

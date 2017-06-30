@@ -39,7 +39,7 @@ public class BrowserView extends ViewPart {
 	public Text txt;
 
 	private Object realUrl;
-	private IContributionItem placeholderlabel;
+	//private IContributionItem placeholderlabel;
 	
 	private static BrowserView browserInstance;
 	public static final String ID = "com.eco.bio7.browser.BrowserView"; //$NON-NLS-1$
@@ -388,8 +388,8 @@ public class BrowserView extends ViewPart {
 		
 		toolbarManager.add(manualAction);
 		
-		placeholderlabel = new PlaceholderLabel().getPlaceholderLabel();
-		toolbarManager.add(placeholderlabel);
+		/*placeholderlabel = new PlaceholderLabel().getPlaceholderLabel();
+		toolbarManager.add(placeholderlabel);*/
 
 	}
 
