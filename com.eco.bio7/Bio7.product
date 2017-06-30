@@ -30,7 +30,7 @@ http://bio7.org
       <programArgsMac>-vm
 jre/lib/jli/libjli.dylib
       </programArgsMac>
-      <vmArgs>-Xms1024m -Xmx4096m -Dprism.lcdtext=false -Dosgi.framework.extensions=org.eclipse.wst.jsdt.nashorn.extension -Dswt.enable.themedScrollBar=true
+      <vmArgs>-Xms1024m -Xmx4096m -Dprism.lcdtext=false -Dosgi.framework.extensions=org.eclipse.wst.jsdt.nashorn.extension -Dpython.console.encoding=UTF-8 -Dswt.enable.themedScrollBar=true
       </vmArgs>
       <vmArgsMac>-XstartOnFirstThread
 -Dprism.order=sw

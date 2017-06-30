@@ -245,12 +245,12 @@ DrillDownComposite > ToolBar {
 ProgressInfoItem,
 CompareViewerPane,
 CompareViewerPane > * {
-    background-color: #333;
+    background-color: #252525;
     color: #eeeeee;
 }
 
 ProgressIndicator {
-    background-color: #777;
+    background-color: #252525;
     color: #eeeeee;
 }
 
@@ -527,10 +527,10 @@ Composite #com.eco.bio7.rbridge.RTable {
 }
 
 
-Composite #com.eco.bio7.thumbnails {
+/*Composite #com.eco.bio7.thumbnails {
 	background-color: #252525;
 	color: #dddddd; /* see property startupForegroundColor in the product */
-}
+}*/
 
 #com.eco.bio7.thumbnails Label  {
 	background-color: #252525;
@@ -598,6 +598,22 @@ HeapStatus {
 	color: #EEEEEE;
 }
 
+/* See Bug 430848: We need to override the theme of the Eclipse splash screen, because
+ * otherwise the splash screen would be partly switched to the dark theme during startup,
+ * which does not look very nice.
+ */
+Label#org-eclipse-ui-splash-progressText {
+	background-color: inherit; /* transparent */
+	color: #9c9696; /* see property startupForegroundColor in the product */
+}
+
+Label#org-eclipse-ui-buildid-text {
+	background-color: inherit; /* transparent */
+}
+
+ProgressIndicator#org-eclipse-ui-splash-progressIndicator {
+	background-color: #e1e1e1;
+}
 StyledText {
 
 	swt-scrollbar-themed: false;
