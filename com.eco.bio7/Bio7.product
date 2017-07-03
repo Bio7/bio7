@@ -28,10 +28,17 @@ http://bio7.org
 2
       </programArgsLin>
       <programArgsMac>-vm
+<<<<<<< HEAD
 jre/lib/jli/libjli.dylib
       </programArgsMac>
       <vmArgs>-Xms1024m -Xmx4096m -Dprism.lcdtext=false -Dosgi.framework.extensions=org.eclipse.wst.jsdt.nashorn.extension -Dswt.enable.themedScrollBar=true
       </vmArgs>
+=======
+jre/lib/jli/libjli.dylib
+      </programArgsMac>
+      <vmArgs>-Xms1024m -Xmx4096m -Dprism.lcdtext=false -Dosgi.framework.extensions=org.eclipse.wst.jsdt.nashorn.extension -Dpython.console.encoding=UTF-8 -Dswt.enable.themedScrollBar=true
+      </vmArgs>
+>>>>>>> branch 'master' of https://github.com/Bio7/Bio7
       <vmArgsMac>-XstartOnFirstThread
 -Dprism.order=sw
       </vmArgsMac>
