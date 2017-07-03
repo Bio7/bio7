@@ -172,6 +172,11 @@ CTabFolder Tree, CTabFolder Canvas {
 #org-eclipse-ui-StatusLine CLabel {
     color: #BDBAB7;
 }
+/*The progress bar on the status line!*/
+#org-eclipse-ui-ProgressBar Composite {
+	background-color:#252525;
+    color:#eeeeee;
+}
 
 StatusLine, ImageBasedFrame{
     color: #BDBAB7;

@@ -191,6 +191,12 @@ StatusLine, ImageBasedFrame{
     color:#eeeeee;
 }
 
+/*The progress bar on the status line!*/
+#org-eclipse-ui-ProgressBar Composite {
+	background-color:#252525;
+    color:#eeeeee;
+}
+
 
 
 
