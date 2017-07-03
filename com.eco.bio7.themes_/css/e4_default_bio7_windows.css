@@ -317,6 +317,14 @@ CTabItem:selected {
 	background-color: #ffffff;
 		
 }
+
+
+/*Navigator!*/
+#org-eclipse-ui-navigator-CommonNavigator  {
+	
+	background-color: #ffffff;
+		
+}
 /*Colour around views (evtl shadows?!*/
 .MPartSashContainer {
 
@@ -345,6 +353,16 @@ CTabFolder {
  swt-corner-radius: 15.0;
   
 }
+
+#com-eco-bio7-rbridge-RTable.MToolBar Label {
+     background-color: #eeeeee;
+     color: #dddddd; /* see property startupForegroundColor in the product */ }
+
+Composite #com-eco-bio7-rbridge-RTable.MToolBar {
+     background-color: #eeeeee;
+     color: #dddddd; 
+}
+
 
 #com-eco-bio7-imagej.MToolBar {
     background-color:  #eeeeee;

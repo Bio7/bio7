@@ -185,6 +185,13 @@ StatusLine, ImageBasedFrame{
     color: #BDBAB7;
 }
 
+/*Important for MacOSX!*/
+#org-eclipse-ui-ProgressBar Canvas {
+	background-color:#252525;
+    color:#eeeeee;
+}
+
+
 
 
 /* ###################### Global Styles ########################## */
