@@ -27,13 +27,13 @@ ThemesExtension { color-definition:
 }
 
 ColorDefinition#org-eclipse-ui-workbench-INACTIVE_UNSELECTED_TABS_COLOR_START {
-	color: #eeeeee;
+	color: #ffffff;
 	category: '#org-eclipse-ui-presentation-default';
 	label: 'Inactive, unselected part color start';
 }
 
 ColorDefinition#org-eclipse-ui-workbench-INACTIVE_UNSELECTED_TABS_COLOR_END {
-	color: #eeeeee;
+	color: #dddddd;
 	category: '#org-eclipse-ui-presentation-default';
 	label: 'Inactive, unselected part color end';
 }
@@ -115,7 +115,12 @@ ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_TEXT_COLOR {
 	color: #000000;
 }
 
-
+.MTrimmedWindow.topLevel {
+	margin-top: 0px;
+	margin-bottom: 0px;
+	margin-left: 1px;
+	margin-right: 1px;
+}
 
 .MPart.busy {
 	font-style: italic;
@@ -176,6 +181,22 @@ CTabItem:selected {
 	frame-cuts: 5px 1px 5px 16px;
 }
 
+.MToolBar.Draggable {
+  handle-image: url(./dragHandle.png);
+}
+
+.MToolControl.TrimStack {
+  handle-image: url(./dragHandle.png);
+}
+
+.MToolControl.Draggable {
+  handle-image: url(./dragHandle.png);
+}
+
+.DragFeedback {
+  background-color: #e0e0e0;
+}
+
 .DragFeedback {
 	background-color: COLOR-WIDGET-NORMAL-SHADOW;
 }
@@ -198,23 +219,9 @@ CTabItem:selected {
 	background-color: '#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_BG_END';
 }
 
-.MToolBar.Draggable {
-  handle-image: url(./dragHandle.png);
-}
-
-.MToolControl.TrimStack {
-  handle-image: url(./dragHandle.png);
-}
-
-.MToolControl.Draggable {
-  handle-image: url(./dragHandle.png);
-}
-
-.DragFeedback {
-  background-color: #e0e0e0;
-}
 
 
+/*Here we start the Bio7 customizations!*/
 
 .MTrimBar {
 background-color: #eeeeee;
