@@ -20,7 +20,6 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 import com.eco.bio7.discrete.Quad2d;
-import com.eco.bio7.editors.BeanshellEditor;
 import com.eco.bio7.rcp.StartBio7Utils;
 
 public class Interpret extends Action {

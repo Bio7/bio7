@@ -202,6 +202,7 @@ jre/lib/jli/libjli.dylib
       <feature id="org.eclipse.rcp"/>
       <feature id="org.eclipse.jdt"/>
       <feature id="org.eclipse.nebula.widgets.grid.feature" version="1.0.0.qualifier"/>
+      <feature id="com.eco.bio7.ijmacroedit.feature" version="1.0.0.qualifier"/>
    </features>
 
 

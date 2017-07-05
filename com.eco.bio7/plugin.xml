@@ -860,14 +860,6 @@
             name="ImageJ Configuration File"
             project="false">
       </wizard>
-      <wizard
-            category="com.eco.bio7.ImageJ"
-            class="com.eco.bio7.wizards.ImageJMacroWizard"
-            icon="icons/editor/imagejmacrofile.png"
-            id="com.eco.bio7.ijmacro"
-            name="ImageJ Macro File"
-            project="false">
-      </wizard>
       <category
             id="com.eco.bio7.web"
             name="Web">
