@@ -245,12 +245,12 @@ DrillDownComposite > ToolBar {
 ProgressInfoItem,
 CompareViewerPane,
 CompareViewerPane > * {
-    background-color: #333;
+    background-color: #252525;
     color: #eeeeee;
 }
 
 ProgressIndicator {
-    background-color: #777;
+    background-color: #252525;
     color: #eeeeee;
 }
 
@@ -315,6 +315,7 @@ CTabFolder {
     swt-selected-tab-fill: '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_END'; /* title background for selected tab */
     swt-shadow-visible: false;
     swt-corner-radius: 16px;
+    swt-unselected-hot-tab-color-background: #161616; /* Bug 465711 */
 }
 CTabFolder[style~='SWT.DOWN'][style~='SWT.BOTTOM'] {
     /* Set the styles for the bottom inner tabs (Bug 430051): */
@@ -327,6 +328,23 @@ FormHeading {
     background-color: #505F70;
     background-image: #505f70;
     color: #9AC9D8;
+}
+
+Form {
+	/* Bug 465148: Additional styling for the Form */
+    text-background-color: #505F70;
+
+	tb-toggle-hover-color: #313538;
+	tb-toggle-color: #313538;
+	h-hover-full-color: #313538;
+	h-hover-light-color: #313538;
+	h-bottom-keyline-2-color: #313538;
+	h-bottom-keyline-1-color: #313538;
+
+	/* We also have to force the background mode (the
+	 * Label/ToolBar in the heading should inherit it).
+	 */
+    swt-background-mode: 'force';
 }
 
 Section {
@@ -424,9 +442,9 @@ Label#org-eclipse-ui-splash-progressText {
 	background-color: #f7f7f7;
 	color: #9c9696; /* see property startupForegroundColor in the product */
 }
-
+/*For MacOSX!*/
 ProgressIndicator#org-eclipse-ui-splash-progressIndicator {
-	background-color: #e1e1e1;
+	background-color: #ffffff;
 }
 
 Grid {
@@ -477,6 +495,7 @@ ExpandBar {
 	color: #000000; see property startupForegroundColor in the product
 } */
 
+/*View id's are improtant to color the toolbar, etc.!*/
 Composite #com-eco-bio7-imagej {
 	background-color: #252525;
 	color: #dddddd; /* see property startupForegroundColor in the product */
@@ -508,10 +527,10 @@ Composite #com.eco.bio7.rbridge.RTable {
 }
 
 
-Composite #com.eco.bio7.thumbnails {
+/*Composite #com.eco.bio7.thumbnails {
 	background-color: #252525;
 	color: #dddddd; /* see property startupForegroundColor in the product */
-}
+}*/
 
 #com.eco.bio7.thumbnails Label  {
 	background-color: #252525;
@@ -524,20 +543,29 @@ Composite #com.eco.bio7.thumbnails {
 
 Composite #com-eco-bio7-rbridge-RTable.MToolBar {
      background-color: #252525;
-     color: #dddddd; /* see property startupForegroundColor in the product */ }
+     color: #dddddd; 
+}
 
 
 #com-eco-bio7-thumbnails.MToolBar Label {
      background-color: #252525;
-     color: #dddddd; /* see property startupForegroundColor in the 
-product */
+     color: #dddddd; 
 }
 
 Composite #com-eco-bio7-thumbnails.MToolBar {
      background-color: #252525;
-     color: #dddddd; /* see property startupForegroundColor in the 
-product */
+     color: #dddddd; 
 }
+
+Composite #com-eco-bio7-browser-Browser.MToolBar {
+	 background-color: #252525;
+     color: #dddddd; 
+}
+
+#com-eco-bio7-browser-Browser.MToolBar Label{
+	 background-color: #252525;;
+     color: #dddddd; 
+} 
 
 /*The progress bar on the status line!*/
 #org-eclipse-ui-ProgressBar Composite {
@@ -550,6 +578,8 @@ product */
     color:#eeeeee;
 }
 
+
+
 /* To hide the status line!
 #org-eclipse-ui-trim-status,
 #org-eclipse-ui-trim-vertical1,
@@ -558,8 +588,53 @@ product */
    visibility: hidden;
 }*/
 
+Table, Tree {
+    swt-header-color: #252525;
+    swt-header-background-color: #383D3F;
+}
 
+HeapStatus {
+	background-color: #4F5355;
+	color: #EEEEEE;
+}
 
+/* See Bug 430848: We need to override the theme of the Eclipse splash screen, because
+ * otherwise the splash screen would be partly switched to the dark theme during startup,
+ * which does not look very nice.
+ */
+Label#org-eclipse-ui-splash-progressText {
+	background-color: inherit; /* transparent */
+	color: #9c9696; /* see property startupForegroundColor in the product */
+}
 
+Label#org-eclipse-ui-buildid-text {
+	background-color: inherit; /* transparent */
+}
+
+ProgressIndicator#org-eclipse-ui-splash-progressIndicator {
+	background-color: #e1e1e1;
+}
+StyledText {
+
+	swt-scrollbar-themed: false;
+
+	swt-scrollbar-background-color: #383838;
+	swt-scrollbar-foreground-color: #494949;
+	swt-scrollbar-width: 4px;
+	swt-scrollbar-border-radius: 4px;
+	swt-scrollbar-mouse-near-scroll-width: 15px;
+}
+
+Link {
+	swt-link-foreground-color: '#org-eclipse-ui-workbench-LINK_COLOR'
+}
+
+ExpandableComposite {
+    swt-titlebar-color: #cccccc;
+}
+
+TabbedPropertyTitle > CLabel{
+	color: #9AC9D8;
+}
 
 

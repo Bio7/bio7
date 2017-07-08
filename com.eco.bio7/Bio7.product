@@ -30,7 +30,7 @@ http://bio7.org
       <programArgsMac>-vm
 jre/lib/jli/libjli.dylib
       </programArgsMac>
-      <vmArgs>-Xms1024m -Xmx4096m -Dosgi.framework.extensions=org.eclipse.wst.jsdt.nashorn.extension -Dprism.lcdtext=false
+      <vmArgs>-Xms1024m -Xmx4096m -Dprism.lcdtext=false -Dosgi.framework.extensions=org.eclipse.wst.jsdt.nashorn.extension -Dpython.console.encoding=UTF-8 -Dswt.enable.themedScrollBar=true
       </vmArgs>
       <vmArgsMac>-XstartOnFirstThread
 -Dprism.order=sw
@@ -45,7 +45,6 @@ jre/lib/jli/libjli.dylib
       startupMessageRect="0,0,0,0"
       startupForegroundColor="000000" />
    <launcher name="Bio7">
-      <solaris/>
       <win useIco="false">
          <ico path="/com.eco.bio7/icons/bio7.ico"/>
          <bmp
@@ -170,14 +169,14 @@ jre/lib/jli/libjli.dylib
    </plugins>
 
    <features>
-      <feature id="com.eco.bio7.albireo.feature"/>
+      <feature id="com.eco.bio7.albireo.feature" installMode="root"/>
       <feature id="com.eco.bio7.browser.feature"/>
       <feature id="com.eco.bio7.core.feature"/>
       <feature id="com.eco.bio7.edit.feature"/>
       <feature id="com.eco.bio7.floweditor.feature"/>
       <feature id="com.eco.bio7.javaedit.feature"/>
-      <feature id="com.eco.bio7.r.feature"/>
-      <feature id="com.eco.bio7.image.feature"/>
+      <feature id="com.eco.bio7.r.feature" installMode="root"/>
+      <feature id="com.eco.bio7.image.feature" installMode="root"/>
       <feature id="com.eco.bio7.libs.feature"/>
       <feature id="com.eco.bio7.redit.feature"/>
       <feature id="com.eco.bio7.util.feature"/>
@@ -199,10 +198,11 @@ jre/lib/jli/libjli.dylib
       <feature id="org.eclipse.equinox.p2.rcp.feature"/>
       <feature id="org.eclipse.emf.ecore"/>
       <feature id="org.eclipse.emf.common"/>
-      <feature id="org.eclipse.nebula.widgets.grid.feature"/>
-      <feature id="com.eco.bio7.imagej2.feature"/>
+      <feature id="com.eco.bio7.imagej2.feature" installMode="root"/>
       <feature id="org.eclipse.rcp"/>
       <feature id="org.eclipse.jdt"/>
+      <feature id="org.eclipse.nebula.widgets.grid.feature" version="1.0.0.qualifier"/>
+      <feature id="com.eco.bio7.ijmacroedit.feature" version="1.0.0.qualifier"/>
    </features>
 
 

@@ -10,9 +10,9 @@
  *     Lars Vogel - initial API and implementation
  *******************************************************************************/
 
-@import url("platform:/plugin/com.eco.bio7.themes/css/dark/e4-dark_basestyle.css");
-@import url("platform:/plugin/com.eco.bio7.themes/css/dark/e4-dark_globalstyle.css"); /* Remove this to have ONLY the main IDE shell dark */
-@import url("platform:/plugin/com.eco.bio7.themes/css/dark/e4-dark_partstyle.css");
+@import url("platform:/plugin/org.eclipse.ui.themes/css/dark/e4-dark_basestyle.css");
+@import url("platform:/plugin/org.eclipse.ui.themes/css/dark/e4-dark_globalstyle.css"); /* Remove this to have ONLY the main IDE shell dark */
+@import url("platform:/plugin/org.eclipse.ui.themes/css/dark/e4-dark_partstyle.css");
 
 
 .MTrimmedWindow.topLevel {
@@ -103,9 +103,9 @@ CTabItem.busy {
     frame-cuts: 5px 1px 5px 16px;
 }
 
-/* .MToolBar.Draggable {
+.MToolBar.Draggable {
     handle-image:  url(./dragHandle.png);
-}*/
+}
 
 .MToolControl.Draggable {
     handle-image:  url(./dragHandle.png);
@@ -131,12 +131,11 @@ CTabFolder.MArea .MPartStack,CTabFolder.MArea .MPartStack.active {
     swt-shadow-visible: false;
 }
 
-
 CTabFolder Tree, CTabFolder Canvas {
     background-color: #2F2F2F;
     color: #CCC;
 }
-.MPartStack.active Tree,
+
 .MPartStack.active CTabFolder Canvas {
     background-color: #262626;
     color: #CCC;
@@ -172,6 +171,11 @@ CTabFolder Tree, CTabFolder Canvas {
 }
 #org-eclipse-ui-StatusLine CLabel {
     color: #BDBAB7;
+}
+/*The progress bar on the status line!*/
+#org-eclipse-ui-ProgressBar Composite {
+	background-color:#252525;
+    color:#eeeeee;
 }
 
 StatusLine, ImageBasedFrame{

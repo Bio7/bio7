@@ -118,7 +118,9 @@ public class ShellCompletion {
 				/* We have to care about the custom replacements! */
 
 				String content = control.getText();
-				control.setSelection(contentProposalProvider.lastIndex, control.getCaretPosition());
+				/*Weird behavior of text.getCaretPosition() position on MacOSX. Solved by extracting the a local var here!*/
+				int caretPosition = control.getCaretPosition();
+				control.setSelection(contentProposalProvider.lastIndex, caretPosition);
 				// Point selection = control.getSelection();
 
 				/*
@@ -127,16 +129,16 @@ public class ShellCompletion {
 				if (s3 == true || s4 == true) {
 					s3 = false;
 					s4 = false;
-					String textSel = control.getText(0, control.getCaretPosition() - 1);
-					String after = control.getText(control.getCaretPosition(), control.getText().length());
+					String textSel = control.getText(0, caretPosition - 1);
+					String after = control.getText(caretPosition, control.getText().length());
 					content = textSel + proposal.getContent() + after;
 					int cursorPosition = (textSel + proposal.getContent()).length();
 					control.setText(content);
 					control.setSelection(cursorPosition);
 				} else {
-					int pos = calculateFirstOccurrenceOfChar(control, control.getCaretPosition());
+					int pos = calculateFirstOccurrenceOfChar(control, caretPosition);
 					String textSel = control.getText(0, pos - 1);
-					String after = control.getText(control.getCaretPosition(), content.length());
+					String after = control.getText(caretPosition, content.length());
 					// content = textSel + proposal.getContent() + "()" + after;
 					content = textSel + proposal.getContent() + after;
 					// int cursorPosition = (textSel + proposal.getContent() + "()").length() - 1;
@@ -277,7 +279,7 @@ public class ShellCompletion {
 			// if (filterProposals) {
 			ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
 			ArrayList<IContentProposal> varWorkspace = new ArrayList<IContentProposal>();
-			int offset = control.getCaretPosition();
+			int offset = position;
 			int lastIndex = calculateFirstOccurrenceOfChar(control, offset);
 			int textLength = 0;
 

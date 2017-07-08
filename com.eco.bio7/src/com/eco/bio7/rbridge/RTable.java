@@ -309,7 +309,7 @@ public class RTable extends ViewPart {
 		toolbarManager.add(addColumn);
 		toolbarManager.add(addRow);
 
-		toolbarManager.add(new PlaceholderLabel().getPlaceholderLabel());
+		//toolbarManager.add(new PlaceholderLabel().getPlaceholderLabel());
 
 	}
 

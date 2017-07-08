@@ -244,19 +244,17 @@ public class Quad2d extends JPanel implements KeyListener, MouseListener, MouseM
 	}
 
 	public void groesser(MouseWheelEvent e) {
-		double r = Field.getQuadSize() + e.getPreciseWheelRotation();
-		
-		if (r <= 1) {
-			return;
-
+		double r = e.getPreciseWheelRotation();
+		Time.setPause(true);
+		if (r >= 1) {
+			Field.setQuadSize(Field.getQuadSize() + 1);
 		} else {
-			Field.setQuadSize((int)r);
+			if (Field.getQuadSize() > 1) {
+				Field.setQuadSize(Field.getQuadSize() - 1);
+			}
 		}
 
-		Time.setPause(true);
-		Field.setQuadSize(Field.getQuadSize() + (int)e.getPreciseWheelRotation());
-		;
-		Field.setQuadSize(Field.getQuadSize());
+		//Field.setQuadSize(Field.getQuadSize());
 		rwidth = Field.getQuadSize();
 		rheight = Field.getQuadSize();
 		drawQuad();

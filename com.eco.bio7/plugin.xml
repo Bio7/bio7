@@ -340,6 +340,14 @@
             commandId="com.eco.bio7.Enable_Selection"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
             keySequence="ALT+S"/>
+       <keyBinding
+            commandId="com.eco.bio7.start"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="ALT+P"/>
+      <command
+            description="Start/Stop Action"
+            id="com.eco.bio7.start"
+            name="Start/Stop Action"/>
       <command
             description="Stop-Action"
             id="com.eco.bio7.StopAction"
@@ -507,7 +515,7 @@
       <keyBinding
             commandId="com.eco.bio7.load_r_workspace"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            keySequence="CTRL+ALT+L">
+            keySequence="SHIFT+O">
       </keyBinding>
       <command
             description="Save a R workspace"
@@ -517,7 +525,7 @@
       <keyBinding
             commandId="com.eco.bio7.save_r_workspace2"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            keySequence="CTRL+ALT+S">
+            keySequence="SHIFT+S">
       </keyBinding>
       <command
             description="Load R packages"
@@ -852,14 +860,6 @@
             name="ImageJ Configuration File"
             project="false">
       </wizard>
-      <wizard
-            category="com.eco.bio7.ImageJ"
-            class="com.eco.bio7.wizards.ImageJMacroWizard"
-            icon="icons/editor/imagejmacrofile.png"
-            id="com.eco.bio7.ijmacro"
-            name="ImageJ Macro File"
-            project="false">
-      </wizard>
       <category
             id="com.eco.bio7.web"
             name="Web">
@@ -1170,6 +1170,13 @@
           adaptable="false"
           id="CheckBuildRPackage"
           objectClass="org.eclipse.core.resources.IFolder">
+          <action
+             class="com.eco.bio7.popup.actions.StartShinyApp"
+             id="com.eco.bio7.startshinyapp"
+             label="Start Shiny App"
+             menubarPath="additions.shiny"
+             tooltip="Starts a Shiny App">
+       </action>
        <action
              class="com.eco.bio7.popup.actions.CheckRPackage"
              id="com.eco.bio7.checkrpackage"

@@ -20,7 +20,6 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 import com.eco.bio7.discrete.Quad2d;
-import com.eco.bio7.editors.BeanshellEditor;
 import com.eco.bio7.rcp.StartBio7Utils;
 
 public class Interpret extends Action {
@@ -40,7 +39,7 @@ public class Interpret extends Action {
 			utils.cons.clear();
 		}
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		if (editor == null || editor instanceof BeanshellEditor == false) {
+		if (editor == null) {
 			return;
 		}
 		IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());

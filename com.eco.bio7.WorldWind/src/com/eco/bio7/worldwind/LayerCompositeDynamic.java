@@ -35,6 +35,7 @@ public class LayerCompositeDynamic extends Composite {
 	public LayerCompositeDynamic(Composite parent, int style,final RenderableLayer layer) {
 		super(parent, style);
 		/*Important to set the layout data for this composite to scale relative to the parent!*/
+		this.setBackground(parent.getBackground());
 		this.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 		setLayout(new GridLayout(5, true));
 		final Button b = new Button(this, SWT.CHECK);

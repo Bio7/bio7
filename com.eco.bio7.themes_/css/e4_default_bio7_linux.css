@@ -144,7 +144,7 @@ CTabItem:selected {
 	swt-shadow-visible: false;
 	swt-mru-visible: false;
 	color: '#org-eclipse-ui-workbench-INACTIVE_TAB_TEXT_COLOR';
-	swt-tab-height: 25.0px; 
+	/*swt-tab-height: 30.0px; */
 	
 }
 
@@ -155,7 +155,7 @@ CTabItem:selected {
 	swt-inner-keyline-color: '#org-eclipse-ui-workbench-ACTIVE_TAB_INNER_KEYLINE_COLOR';
 	swt-tab-outline: '#org-eclipse-ui-workbench-ACTIVE_TAB_OUTLINE_COLOR';
 	swt-shadow-visible: false;
-	swt-tab-height: 25.0px; 
+	/*swt-tab-height: 30.0px;*/ 
 }
 
 .MPartStack.active.noFocus {
@@ -343,7 +343,7 @@ CTabItem:selected {
 CTabFolder { 
 
  swt-corner-radius: 15.0;
-  
+ /*swt-tab-height: 30px;*/
 }
 
 /*#com-eco-bio7-imagej.MToolBar {

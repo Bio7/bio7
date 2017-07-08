@@ -11,6 +11,8 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+
+import com.eco.bio7.actions.Bio7Action;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.util.Util;
 
@@ -19,6 +21,8 @@ import javafx.embed.swt.FXCanvas;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Screen;
@@ -84,12 +88,17 @@ public class SwingFxSwtView {
 
 		pane = new StackPane();
 		pane.getChildren().add(swingNode);
-       
+
 		scene = new Scene(pane);
 		scene.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
-
+           /*Key combination for the Play/Pause Action!*/
 			public void handle(KeyEvent ke) {
-				fullscreen(ke, scene, top);
+				final KeyCombination kb = new KeyCodeCombination(KeyCode.P, KeyCombination.ALT_DOWN);
+				if (kb.match(ke)) {
+                   Bio7Action.startCalculation();
+				} else {
+					fullscreen(ke, scene, top);
+				}
 
 			}
 		});
@@ -179,30 +188,30 @@ public class SwingFxSwtView {
 		}
 
 		else if (ke.getCode() == KeyCode.F1) {
-			//if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
-				if (canvas.isDisposed() == false) {
-					canvas.setData("true");
-					canvas.redraw();
-				}
-				int mainMonitor = 0;
-				Screen primaryMonitor = Screen.getPrimary();
-				for (int i = 0; i < Screen.getScreens().size(); i++) {
-					if (Screen.getScreens().get(i).equals(primaryMonitor)) {
-						mainMonitor = i;
+			// if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+			if (canvas.isDisposed() == false) {
+				canvas.setData("true");
+				canvas.redraw();
+			}
+			int mainMonitor = 0;
+			Screen primaryMonitor = Screen.getPrimary();
+			for (int i = 0; i < Screen.getScreens().size(); i++) {
+				if (Screen.getScreens().get(i).equals(primaryMonitor)) {
+					mainMonitor = i;
 
-						break;
-					}
+					break;
 				}
-				Screen primaryScreen = Screen.getScreens().get(mainMonitor);
-				primaryStage = new Stage();
-				primaryStage.setScene(scene);
-				primaryStage.setX(primaryScreen.getVisualBounds().getMinX());
-				primaryStage.setY(primaryScreen.getVisualBounds().getMinY());
-				primaryStage.setFullScreen(true);
-				primaryStage.show();
-			/*} else {
-				System.out.println("True fullscreen for Linux disabled!");
-			}*/
+			}
+			Screen primaryScreen = Screen.getScreens().get(mainMonitor);
+			primaryStage = new Stage();
+			primaryStage.setScene(scene);
+			primaryStage.setX(primaryScreen.getVisualBounds().getMinX());
+			primaryStage.setY(primaryScreen.getVisualBounds().getMinY());
+			primaryStage.setFullScreen(true);
+			primaryStage.show();
+			/*
+			 * } else { System.out.println("True fullscreen for Linux disabled!"); }
+			 */
 		} else if (ke.getCode() == KeyCode.ESCAPE) {
 
 			if (canvas.isDisposed() == false) {

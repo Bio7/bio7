@@ -155,7 +155,7 @@ CTabFolder Tree, CTabFolder Canvas {
 }
 
 .View {
-    background-color: #313538;
+    background-color: #252525;
     color: #F5F5F5;
 }
 
@@ -185,6 +185,19 @@ StatusLine, ImageBasedFrame{
     color: #BDBAB7;
 }
 
+/*Important for MacOSX!*/
+#org-eclipse-ui-ProgressBar Canvas {
+	background-color:#252525;
+    color:#eeeeee;
+}
+
+/*The progress bar on the status line!*/
+#org-eclipse-ui-ProgressBar Composite {
+	background-color:#252525;
+    color:#eeeeee;
+}
+
+
 
 
 /* ###################### Global Styles ########################## */
@@ -204,7 +217,7 @@ Shell[style~='SWT.RADIO'][style~='SWT.CASCADE'][style~='SWT.SHADOW_ETCHED_IN'][s
 Shell[style~='SWT.RADIO'][style~='SWT.CASCADE'][style~='SWT.SHADOW_ETCHED_IN'][style~='SWT.SHADOW_ETCHED_OUT'][style~='SWT.RESIZE'][style~='SWT.MENU'][style~='SWT.FULL_SELECTION'][style~='SWT.DATE'] > Composite > * > TabFolder {
     /* background-color is not applied to the whole button,
        but text color is changed, so it appear light on light */
-    background-color: #515658;
+    background-color: #252525;
     color: #222;
 }
 
@@ -229,7 +242,7 @@ Form > LayoutComposite > LayoutComposite > Button,
 .MPartStack.active .MPart LayoutComposite > * > LayoutComposite > Section > LayoutComposite > Button {
     /* background-color is not applied to the whole button,
        but text color is changed, so it appear light on light */
-    background-color: #515658;
+    background-color: #252525;
     color: #222;
 }
 Button[style~='SWT.CHECK'],
@@ -344,47 +357,7 @@ Form > LayoutComposite > LayoutComposite > Text[style~='SWT.SEARCH'],
 	color: #000000; see property startupForegroundColor in the product
 } */
 
-Composite #com-eco-bio7-imagej {
-	background-color: #252525;
-	color: #dddddd; /* see property startupForegroundColor in the product */
-}
-
-#com-eco-bio7-imagej Label  {
-	background-color: #252525;
-	color: #dddddd; /* see property startupForegroundColor in the product */
-}
-
-Composite #org-eclipse-ui-console-ConsoleView.MToolBar {
-	background-color: #252525;
-	color: #dddddd; /* see property startupForegroundColor in the product */
-}
-
-#org-eclipse-ui-console-ConsoleView.MToolBar Label {
-    background-color:  #252525;
-    color: #dddddd; /* see property startupForegroundColor in the product */
-}
-
-Composite #com.eco.bio7.rbridge.RTable {
-	background-color: #252525;
-	color: #dddddd; /* see property startupForegroundColor in the product */
-}
-
-#com.eco.bio7.rbridge.RTable Label  {
-	background-color: #252525;
-	color: #dddddd; /* see property startupForegroundColor in the product */
-}
-
-
-Composite #com.eco.bio7.thumbnails {
-	background-color: #252525;
-	color: #dddddd; /* see property startupForegroundColor in the product */
-}
-
-#com.eco.bio7.thumbnails Label  {
-	background-color: #252525;
-	color: #dddddd; /* see property startupForegroundColor in the product */
-}
-
+/*Some font size correction for Mac menus!*/
 #com-eco-bio7-rbridge-RTable.MToolBar {
    
     font-size: 14px;
@@ -425,6 +398,11 @@ Bounds: x=1082 y=186 h=31 w=31;
 #org-eclipse-jdt-ui-PackageExplorer {
       font-size:20;
       background:black;
+}
+
+Button[style~='SWT.CHECK'] { 
+   background-color: #252525;
+	color: #dddddd;
 }
 
 /*

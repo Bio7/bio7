@@ -55,11 +55,12 @@ public class BrowserPreferences extends FieldEditorPreferencePage implements IWo
 		addField(new BooleanFieldEditor("SCROLL_TO_DOCUMENT_END","Scroll to HTML document end",getFieldEditorParentControl()));
 		addField(new BooleanFieldEditor("REQUEST_EDITOR_FOCUS","Request editor focus (Markdown, HTML, Text editor)",getFieldEditorParentControl()));
 		addField(new BooleanFieldEditor("ENABLE_BROWSER_LOG","Print browser messages",getFieldEditorParentControl()));
+		addField(new BooleanFieldEditor("COPY_PDF_PATH_TO_CLIP","Copy PDF file path to clipboard",getFieldEditorParentControl()));
 		addField(spacer1);
 		addField(new LabelFieldEditor("R install package Help:", getFieldEditorParent()));
 		addField(new StringFieldEditor("INSTALL_R_PACKAGES_DESCRPTION_URL", "URL: Install R packages help descr. ", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
 		addField(spacer1);
-		addField(new LabelFieldEditor("R install package Help:", getFieldEditorParent()));
+		addField(new LabelFieldEditor("JavaScript:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("INTERPRET_JAVASCRIPT_IN_BROWSER","Execute JavaScript editor script in current browser",getFieldEditorParentControl()));
 		
 	}
