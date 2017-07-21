@@ -1173,6 +1173,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			// javafx.application.Application.setUserAgentStylesheet(null);
 
 			javafx.application.Application.setUserAgentStylesheet(path);
+			
 		}
 		else{
 			
