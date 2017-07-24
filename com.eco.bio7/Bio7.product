@@ -28,17 +28,10 @@ http://bio7.org
 2
       </programArgsLin>
       <programArgsMac>-vm
-<<<<<<< HEAD
-jre/lib/jli/libjli.dylib
-      </programArgsMac>
-      <vmArgs>-Xms1024m -Xmx4096m -Dprism.lcdtext=false -Dosgi.framework.extensions=org.eclipse.wst.jsdt.nashorn.extension -Dswt.enable.themedScrollBar=true
-      </vmArgs>
-=======
 jre/lib/jli/libjli.dylib
       </programArgsMac>
       <vmArgs>-Xms1024m -Xmx4096m -Dprism.lcdtext=false -Dosgi.framework.extensions=org.eclipse.wst.jsdt.nashorn.extension -Dpython.console.encoding=UTF-8 -Dswt.enable.themedScrollBar=true
       </vmArgs>
->>>>>>> branch 'master' of https://github.com/Bio7/Bio7
       <vmArgsMac>-XstartOnFirstThread
 -Dprism.order=sw
       </vmArgsMac>
@@ -52,6 +45,7 @@ jre/lib/jli/libjli.dylib
       startupMessageRect="0,0,0,0"
       startupForegroundColor="000000" />
    <launcher name="Bio7">
+      <linux icon="/com.eco.bio7/bin/pics/bio7.xpm"/>
       <win useIco="false">
          <ico path="/com.eco.bio7/icons/bio7.ico"/>
          <bmp
