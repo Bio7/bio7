@@ -515,7 +515,7 @@
       <keyBinding
             commandId="com.eco.bio7.load_r_workspace"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            keySequence="SHIFT+O">
+            keySequence="CTRL+ALT+O">
       </keyBinding>
       <command
             description="Save a R workspace"
@@ -525,7 +525,7 @@
       <keyBinding
             commandId="com.eco.bio7.save_r_workspace2"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            keySequence="SHIFT+S">
+            keySequence="CTRL+ALT+S">
       </keyBinding>
       <command
             description="Load R packages"
@@ -858,14 +858,6 @@
             icon="icons/editor/java.png"
             id="com.eco.bio7.wizardImageJPluginConfig"
             name="ImageJ Configuration File"
-            project="false">
-      </wizard>
-      <wizard
-            category="com.eco.bio7.ImageJ"
-            class="com.eco.bio7.wizards.ImageJMacroWizard"
-            icon="icons/editor/imagejmacrofile.png"
-            id="com.eco.bio7.ijmacro"
-            name="ImageJ Macro File"
             project="false">
       </wizard>
       <category

@@ -32,7 +32,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import com.eco.bio7.actions.Bio7Action;
 import com.eco.bio7.compile.BeanShellInterpreter;
-import com.eco.bio7.editors.BeanshellEditor;
 import com.eco.bio7.floweditor.model.Connection;
 import com.eco.bio7.floweditor.model.EllipticalShape;
 import com.eco.bio7.floweditor.model.FlowDecisionShape;

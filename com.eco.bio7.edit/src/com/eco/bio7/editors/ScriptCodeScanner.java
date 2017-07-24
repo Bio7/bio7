@@ -85,12 +85,12 @@ public class ScriptCodeScanner extends RuleBasedScanner {
 		//string = new Token(new TextAttribute(provider.getColor(rgbkey2), null, isBold("BOLD_COLOURKEY2")));
 		//comment = new Token(new TextAttribute(provider.getColor(rgbkey3), null, isBold("BOLD_COLOURKEY3")));
 
-		string = new Token(new TextAttribute(provider.getColor(rgbkey2), null, isBold("BOLD_COLOURKEY4")));
-		comment = new Token(new TextAttribute(provider.getColor(rgbkey3), null, isBold("BOLD_COLOURKEY5")));
-		other = new Token(new TextAttribute(provider.getColor(rgbkey4), null, isBold("BOLD_COLOURKEY6")));
-		operators = new Token(new TextAttribute(provider.getColor(rgbkey5), null, isBold("BOLD_COLOURKEY7")));
-		braces = new Token(new TextAttribute(provider.getColor(rgbkey6), null, isBold("BOLD_COLOURKEY8")));
-		numbers = new Token(new TextAttribute(provider.getColor(rgbkey7), null, isBold("BOLD_COLOURKEY8")));
+		string = new Token(new TextAttribute(provider.getColor(rgbkey2), null, isBold("BOLD_COLOURKEY2")));
+		comment = new Token(new TextAttribute(provider.getColor(rgbkey3), null, isBold("BOLD_COLOURKEY3")));
+		other = new Token(new TextAttribute(provider.getColor(rgbkey4), null, isBold("BOLD_COLOURKEY4")));
+		operators = new Token(new TextAttribute(provider.getColor(rgbkey5), null, isBold("BOLD_COLOURKEY5")));
+		braces = new Token(new TextAttribute(provider.getColor(rgbkey6), null, isBold("BOLD_COLOURKEY6")));
+		numbers = new Token(new TextAttribute(provider.getColor(rgbkey7), null, isBold("BOLD_COLOURKEY7")));
 
 		/*keyword = new Token(new TextAttribute(provider.getColor(rgbkey), null, 1,new Font(Display.getCurrent(),f)));
 		type = new Token(new TextAttribute(provider.getColor(rgbkey1), null, 1,new Font(Display.getCurrent(),f1)));
