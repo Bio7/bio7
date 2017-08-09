@@ -114,7 +114,6 @@ public class ImageJMacroWizardPage extends WizardPage {
 		}
 	}
 
-
 	private void dialogChanged() {
 		IResource container = ResourcesPlugin.getWorkspace().getRoot()
 				.findMember(new Path(getContainerName()));
