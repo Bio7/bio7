@@ -20,8 +20,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.ContainerSelectionDialog;
 
-
-
 public class ImageJMacroWizardPage extends WizardPage {
 	private Text containerText;
 
@@ -29,15 +27,14 @@ public class ImageJMacroWizardPage extends WizardPage {
 
 	private ISelection selection;
 
-	
 	public ImageJMacroWizardPage(ISelection selection) {
 		super("wizardPage");
 		setTitle("ImageJ Macro");
-		setDescription("This wizard creates a new file with *.ijm extension that can be opened by the default Text editor or JavaScript editor.");
+		setDescription(
+				"This wizard creates a new file with *.ijm extension that can be opened by the default Text editor or JavaScript editor.");
 		this.selection = selection;
 	}
 
-	
 	public void createControl(Composite parent) {
 		Composite container = new Composite(parent, SWT.NULL);
 		GridLayout layout = new GridLayout();
@@ -79,11 +76,8 @@ public class ImageJMacroWizardPage extends WizardPage {
 		setControl(container);
 	}
 
-	
-
 	private void initialize() {
-		if (selection != null && selection.isEmpty() == false
-				&& selection instanceof IStructuredSelection) {
+		if (selection != null && selection.isEmpty() == false && selection instanceof IStructuredSelection) {
 			IStructuredSelection ssel = (IStructuredSelection) selection;
 			if (ssel.size() > 1)
 				return;
@@ -100,12 +94,9 @@ public class ImageJMacroWizardPage extends WizardPage {
 		fileText.setText("file.ijm");
 	}
 
-	
-
 	private void handleBrowse() {
-		ContainerSelectionDialog dialog = new ContainerSelectionDialog(
-				getShell(), ResourcesPlugin.getWorkspace().getRoot(), false,
-				"Select new file container");
+		ContainerSelectionDialog dialog = new ContainerSelectionDialog(getShell(),
+				ResourcesPlugin.getWorkspace().getRoot(), false, "Select new file container");
 		if (dialog.open() == ContainerSelectionDialog.OK) {
 			Object[] result = dialog.getResult();
 			if (result.length == 1) {
@@ -115,16 +106,14 @@ public class ImageJMacroWizardPage extends WizardPage {
 	}
 
 	private void dialogChanged() {
-		IResource container = ResourcesPlugin.getWorkspace().getRoot()
-				.findMember(new Path(getContainerName()));
+		IResource container = ResourcesPlugin.getWorkspace().getRoot().findMember(new Path(getContainerName()));
 		String fileName = getFileName();
 
 		if (getContainerName().length() == 0) {
 			updateStatus("File container must be specified");
 			return;
 		}
-		if (container == null
-				|| (container.getType() & (IResource.PROJECT | IResource.FOLDER)) == 0) {
+		if (container == null || (container.getType() & (IResource.PROJECT | IResource.FOLDER)) == 0) {
 			updateStatus("File container must exist");
 			return;
 		}
