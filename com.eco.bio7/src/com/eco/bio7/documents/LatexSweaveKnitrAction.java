@@ -433,7 +433,7 @@ public class LatexSweaveKnitrAction extends Action {
 			// " " + dirPath + "/" + theName +
 			// ".tex");
 			/*
-			 * Eventually take care of whitespaces in path!
+			 * Probably take care of whitespaces in path!
 			 */
 
 			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
@@ -757,7 +757,7 @@ public class LatexSweaveKnitrAction extends Action {
 			// " " + dirPath + "/" + theName +
 			// ".tex");
 			/*
-			 * Eventually take care of whitespaces in path!
+			 * Probably take care of whitespaces in path!
 			 */
 
 			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {

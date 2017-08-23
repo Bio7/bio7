@@ -139,7 +139,7 @@ public class SweaveAction extends Action {
 			// " " + dirPath + "/" + theName +
 			// ".tex");
 			
-			 * Eventually take care of whitespaces in path!
+			 * Probably take care of whitespaces in path!
 			 
 
 			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
