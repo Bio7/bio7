@@ -31,6 +31,8 @@ public class RConfig {
 			con.eval("try(assign(\"pathTemp\", \"" + tempPath + "\", env=.bio7TempEnvPath))");
 			/* Make the default completion function in R available! */
 			con.eval("try(source(paste(.bio7TempEnvPath$pathTemp,'calculateRCompletion.R',sep='')))");
+			/* Make encryption for database functions in R available! */
+			con.eval("try(source(paste(.bio7TempEnvPath$pathTemp,'ReadWriteEncryptedFiles.R',sep='')))");
 			// con.eval("try(setHook(packageEvent(\"spatstat\",\"onLoad\"),\"writeFunctionDef\"))");
 			/*
 			 * Set the default install location for the add on packages!

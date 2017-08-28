@@ -1032,6 +1032,22 @@
             id="com.eco.bio7.javascript"
             name="JavaScript">
       </category>
+      <wizard
+            category="com.eco.bio7.RCategory"
+            class="com.eco.bio7.wizards.RShinyScriptWizard"
+            icon="icons/editor/rfile.png"
+            id="com.eco.bio7.shiny.wizard"
+            name="Shiny Multiple Files Web App"
+            project="false">
+      </wizard>
+      <wizard
+            category="com.eco.bio7.RCategory"
+            class="com.eco.bio7.wizards.RShinySingleScriptWizard"
+            icon="icons/editor/rfile.png"
+            id="com.eco.bio7.shiny.single.wizard"
+            name="Shiny Single File Web App"
+            project="false">
+      </wizard>
       
    </extension>
    <extension

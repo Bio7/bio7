@@ -7,7 +7,7 @@
  *
  * Contributors:
  *     M. Austenfeld
- *******************************************************************************/
+ *******************************************************************************//*
 
 package com.eco.bio7.compile.utils;
 
@@ -43,10 +43,10 @@ public class ScanClassPathMac {
 	
 
 	public String scan() {
-		/*
+		
 		 * Scan all necessary plugins for libs and calculate the paths to the
 		 * libs decoupled from JDT because we still need this for the custom Java compiler, Flow editor and Bio7 model import!
-		 */
+		 
 		IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
 		
 		ArrayList<String> bundlePaths = new ArrayList<String>();
@@ -74,10 +74,10 @@ public class ScanClassPathMac {
 			// requireBundles=(String)bundle.getHeaders().get(Constants.REQUIRE_BUNDLE);
 			// System.out.println(requires);
 
-			/*
+			
 			 * Get the *.jar list from the Bio7 Java preferences and add them to
 			 * the classpath!
-			 */
+			 
 			String libs = store.getString("javaLibs");
 			String[] conv = convert(libs);
 			for (int j = 0; j < conv.length; j++) {
@@ -104,20 +104,20 @@ public class ScanClassPathMac {
 
 		}
 		
-		/* Here we add the required Eclipse *.jars! */
+		 Here we add the required Eclipse *.jars! 
 		for (int i = 0; i < bundlesEclipse.length; i++) {
 			Bundle bundle = Platform.getBundle(bundlesEclipse[i]);
 			//String loc = bundle.getLocation().substring(15);
 			//System.out.println("loc: " + loc);
-			/*Eclipse PDE and exported RCP paths are different (absolute vs. relative)!*/
+			Eclipse PDE and exported RCP paths are different (absolute vs. relative)!
 			
-			/*if (loc.startsWith("/")) {
+			if (loc.startsWith("/")) {
 				loc = loc.substring(1);
-			}*/
+			}
 		//	 loc = loc.replace("::", "");
 			//loc = loc.replace(":", "/");
 			
-            /*Calculate an absolute path to the resource. Exported RCP has a relative path!*/
+            Calculate an absolute path to the resource. Exported RCP has a relative path!
 			
 			
 			//path = Paths.get(loc);
@@ -155,7 +155,7 @@ public class ScanClassPathMac {
 		return classpaths;
 	}
 
-	/* Convert the string from the preferences! */
+	 Convert the string from the preferences! 
 	private String[] convert(String preferenceValue) {
 		StringTokenizer tokenizer = new StringTokenizer(preferenceValue, ";");
 		int tokenCount = tokenizer.countTokens();
@@ -169,10 +169,10 @@ public class ScanClassPathMac {
 	}
 
 	public IClasspathEntry[] scanForJDT() {
-		/*
+		
 		 * Scan all necessary plugins for libs and calculate the paths to the
 		 * libs!
-		 */
+		 
 		IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
 		
 
@@ -200,10 +200,10 @@ public class ScanClassPathMac {
 			// requireBundles=(String)bundle.getHeaders().get(Constants.REQUIRE_BUNDLE);
 			// System.out.println(requires);
 
-			/*
+			
 			 * Get the *.jar list from the Bio7 Java preferences and add them to
 			 * the classpath!
-			 */
+			 
 			String libs = store.getString("javaLibs");
 			String[] conv = convert(libs);
 			for (int j = 0; j < conv.length; j++) {
@@ -225,12 +225,12 @@ public class ScanClassPathMac {
 				e.printStackTrace();
 			}
 			if (elements != null) {
-				/* We only parse the *. jar libs! */
+				 We only parse the *. jar libs! 
 				if (i == 0 | i == 1 || i == 6|| i == 8) {
 					for (int u = 0; u < elements.length; u++) {
 
 						
-						/* We do not need the external referenced jfxswt.jar listed here (browser plugin with external reference is not listed!)! */
+						 We do not need the external referenced jfxswt.jar listed here (browser plugin with external reference is not listed!)! 
 						 if (i == 0 ||i == 6) {
 
 							String lib = File.pathSeparator + bundlePaths.get(i) + elements[u].getValue();
@@ -253,21 +253,21 @@ public class ScanClassPathMac {
 
 		}
 
-		/* Here we add the required Eclipse *.jars! */
+		 Here we add the required Eclipse *.jars! 
 		for (int i = 0; i < bundlesEclipse.length; i++) {
 			Bundle bundle = Platform.getBundle(bundlesEclipse[i]);
 			//System.out.println(bundle.getLocation());
 			//String loc = bundle.getLocation().substring(15);
 			//System.out.println("loc: " + loc);
-			/*Eclipse PDE and exported RCP paths are different (absolute vs. relative)!*/
+			Eclipse PDE and exported RCP paths are different (absolute vs. relative)!
 			
-			/*if (loc.startsWith("/")) {
+			if (loc.startsWith("/")) {
 				loc = loc.substring(1);
-			}*/
+			}
 			 //loc = loc.replace("::", "");
 			//loc = loc.replace(":", " ");
 			
-            /*Calculate an absolute path to the resource. Exported RCP has a relative path!*/
+            Calculate an absolute path to the resource. Exported RCP has a relative path!
 			String loc=Platform.getInstallLocation().getURL()+"/plugins/";
 			String []bundleName=bundle.toString().split(" ");
 			String locat=(loc+bundleName[0]+".jar");
@@ -281,7 +281,7 @@ public class ScanClassPathMac {
 			// System.out.println(File.pathSeparator +loc);
 
 		}
-		/* We don't need the *.jar libs for this plugins! */
+		 We don't need the *.jar libs for this plugins! 
 		buf.add(File.pathSeparator + bundlePaths.get(0) + "/bin");
 		int temp = buf.size() - 1;// We need to store the location in the list!
 		buf.add(File.pathSeparator + bundlePaths.get(2) + "/bin");
@@ -289,30 +289,30 @@ public class ScanClassPathMac {
 		buf.add(File.pathSeparator + bundlePaths.get(4) + "/bin");
 		buf.add(File.pathSeparator + bundlePaths.get(7) + "/bin");
 
-		/*
+		
 		 * Here we add the results to the classpath. Src entries are created,
 		 * too for necessary plugins!
-		 */
+		 
 		IClasspathEntry[] entries = new IClasspathEntry[buf.size()];
 		for (int k = 0; k < buf.size(); k++) {
 			String rep = buf.get(k).replace("::", "");
 			rep = rep.replace(":", "/");
 			
-			/* We add the source! */
+			 We add the source! 
 			if (k == temp) {
 
 				String pathSr = File.pathSeparator + bundlePaths.get(0) + "/src";
 				String pathSrc = pathSr.replace("::", "");
 
 				entries[k] = JavaCore.newLibraryEntry(new Path(rep), new Path(pathSrc), null, false);
-				/* With ImageJ plugin source! */
+				 With ImageJ plugin source! 
 			} else if (k == (temp + 2)) {
 
 				String pathSr = File.pathSeparator + bundlePaths.get(2) + "/src";
 				String pathSrc = pathSr.replace("::", "");
 
 				entries[k] = JavaCore.newLibraryEntry(new Path(rep), new Path(pathSrc), null, false);
-				/* With ImageJ plugin source! */
+				 With ImageJ plugin source! 
 			}
 
 			else if (k == (temp + 3)) {
@@ -322,7 +322,7 @@ public class ScanClassPathMac {
 				entries[k] = JavaCore.newLibraryEntry(new Path(rep), new Path(pathSrc), null, false);
 
 			}
-			/* With WorldWind plugin source! */
+			 With WorldWind plugin source! 
 			else if (k == (temp + 4)) {
 				String pathSr = File.pathSeparator + bundlePaths.get(4) + "/src";
 				String pathSrc = pathSr.replace("::", "");
@@ -344,3 +344,4 @@ public class ScanClassPathMac {
 	}
 
 }
+*/

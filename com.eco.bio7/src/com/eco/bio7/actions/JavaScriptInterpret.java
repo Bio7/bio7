@@ -92,7 +92,7 @@ public class JavaScriptInterpret extends Action {
 
 		}
 
-		else if (file.getFileExtension().equals("ijm") || file.getFileExtension().equals("txt")) {
+		/*else if (file.getFileExtension().equals("ijm") || file.getFileExtension().equals("txt")) {
 			String content = doc.get();
 
 			ImageJMacroWorkspaceJob job = new ImageJMacroWorkspaceJob(content);
@@ -106,7 +106,7 @@ public class JavaScriptInterpret extends Action {
 			});
 
 			job.schedule();
-		}
+		}*/
 
 	}
 
