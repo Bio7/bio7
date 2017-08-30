@@ -24,12 +24,10 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.rosuda.REngine.Rserve.RConnection;
-
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
-import com.eco.bio7.editors.python.PythonEditor;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.StartBio7Utils;
@@ -62,7 +60,7 @@ public class InterpretR extends Action {
 		}
 
 		IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
-		RConnection d = RServe.getConnection();
+		RConnection con = RServe.getConnection();
 		IEditorInput editorInput = editor.getEditorInput();
 		IFile aFile = null;
 
@@ -75,7 +73,7 @@ public class InterpretR extends Action {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		// boolean rPipe = store.getBoolean("r_pipe");
 
-		if (d == null) {
+		if (con == null) {
 			String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 
 			if (selectionConsole.equals("R")) {
@@ -89,16 +87,16 @@ public class InterpretR extends Action {
 
 		} else {
 
-			String a = doc.get();
+			String rCode = doc.get();
 
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
 				final RInterpreterJob Do;
 				if (remote == false) {
-					Do = new RInterpreterJob(a, true, loc);
+					Do = new RInterpreterJob(rCode, true, loc);
 
 				} else {
-					Do = new RInterpreterJob(a, true, null);
+					Do = new RInterpreterJob(rCode, true, null);
 				}
 				Do.addJobChangeListener(new JobChangeAdapter() {
 					public void done(IJobChangeEvent event) {

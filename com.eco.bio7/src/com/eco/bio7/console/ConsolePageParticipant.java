@@ -140,7 +140,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	private Pid rPid;
 	private Pid shellPid;
 	private Pid pythonPid;
-	private IContributionItem item;
+	
 	private static final char IAC = (char) 5;
 	private static final char BRK = (char) 3;
 
@@ -1480,7 +1480,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			if (its[i].getId() != null) {
 				/* Control if the items exists already! */
 				if (its[i].getId().equals("Stop")) {
-					tm.add(item);
+					//tm.add(item);
 					exist = true;
 				}
 
@@ -1496,7 +1496,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			tm.add(new DebugStepFinishAction());
 			tm.add(new DebugInfoAction());
 			/* Add the distance label again! */
-			tm.add(item);
+			//tm.add(item);
 			actionBars.updateActionBars();
 		}
 		/* Remove all toolbar actions from the console view! */
