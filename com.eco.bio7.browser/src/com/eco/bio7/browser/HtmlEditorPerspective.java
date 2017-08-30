@@ -14,8 +14,7 @@ public class HtmlEditorPerspective implements IPerspectiveFactory {
 		IFolderLayout topLeft = layout.createFolder("topLeft", IPageLayout.LEFT, (float) 0.25, editorArea);
 
 		IFolderLayout viewRight = layout.createFolder("viewRight", IPageLayout.BOTTOM, (float) 0.40, editorArea);
-
-		topLeft.addView("org.eclipse.ui.views.ResourceNavigator");
+		topLeft.addView("org.eclipse.ui.navigator.ProjectExplorer");
 		viewRight.addView("com.eco.bio7.browser.Browser");
 
 	}

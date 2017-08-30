@@ -33,8 +33,7 @@ public class RImagePerspective implements IPerspectiveFactory {
 		IFolderLayout bottomLeft = layout.createFolder("viewBottomLeft", IPageLayout.BOTTOM, (float) 0.55, "topLeft");
 
 		IFolderLayout viewRight = layout.createFolder("viewBottomRight", IPageLayout.BOTTOM, (float) 0.55, editorArea);
-
-		topLeft.addView("org.eclipse.ui.views.ResourceNavigator");
+		topLeft.addView("org.eclipse.ui.navigator.ProjectExplorer");
 		topLeft.addView("com.eco.bio7.RShell");
 		topLeft.addView("com.eco.bio7.rbridge.PackageInstallView");
 		topLeft.addView("com.eco.bio7.reditor.database.view.DatabaseView");
