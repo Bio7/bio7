@@ -285,6 +285,16 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					}
 
 				}
+				/*
+				 * For Windows sometimes a CTRL+Break command is required (e.g. using windows
+				 * ssh!)
+				 */
+				else if (event.stateMask == SWT.CTRL && event.keyCode == SWT.BREAK) {
+
+					if (Bio7Dialog.getOS().equals("Windows")) {
+						sendWindowBreakHandler(true);
+					}
+				}
 				/* CTRL+c key event! */
 				else if (event.stateMask == SWT.CTRL && event.keyCode == 'c') {
 
@@ -320,15 +330,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 							// "/SendSignalCtrlC.exe " +
 							// rPid.getPidWindows(RProcess));
 						} else if (interpreterSelection.equals("shell")) {
-							// sendCtrlBreakThroughStream(nativeShellProcess);
-							try {
-								Process p = Runtime.getRuntime().exec(pathBundle + "/SendSignalCtrlC.exe "
-										+ shellPid.getPidWindows(nativeShellProcess));
-
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
-
+							/* Send Ctrl+C to Windows! */
+							sendWindowBreakHandler(false);
 						}
 
 						else if (interpreterSelection.equals("python")) {
@@ -430,6 +433,64 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		in = new BufferedReader(isr);
 
 		ioc.clearConsole();
+
+	}
+
+	public void sendWindowBreakHandler(boolean ctrlBreak) {
+		Bundle bundleMain = Platform.getBundle("com.eco.bio7");
+		Bundle bundleOs = Platform.getBundle("com.eco.bio7.os");
+		URL locationUrlMain = FileLocator.find(bundleMain, new Path("/bin"), null);
+
+		URL fileUrlMain = null;
+		try {
+			fileUrlMain = FileLocator.toFileURL(locationUrlMain);
+		} catch (IOException e2) {
+
+			e2.printStackTrace();
+		}
+		File fiMain = new File(fileUrlMain.getPath());
+		String pathMain = fiMain.toString();
+
+		URL locationUrlJna = FileLocator.find(bundleOs, new Path("/lib"), null);
+
+		URL fileUrl2 = null;
+		try {
+			fileUrl2 = FileLocator.toFileURL(locationUrlJna);
+		} catch (IOException e2) {
+
+			e2.printStackTrace();
+		}
+		File fiJna = new File(fileUrl2.getPath());
+		String pathJna = fiJna.toString();
+		ProcessBuilder pb = new ProcessBuilder();
+		/* Send a CTRL+Break to Windows! */
+		if (ctrlBreak) {
+			pb.command(System.getProperty("java.home") + "/bin/javaw", "-cp",
+					pathJna + "/jna-4.5.0.jar;" + pathJna + "/jna-platform-4.5.0.jar;" + pathMain,
+					CtrlBreakSender.class.getName(), "" + shellPid.getPidWindows(nativeShellProcess));
+		}
+		/* Send a CTRL+C to Windows! */
+		else {
+			pb.command(System.getProperty("java.home") + "/bin/javaw", "-cp",
+					pathJna + "/jna-4.5.0.jar;" + pathJna + "/jna-platform-4.5.0.jar;" + pathMain,
+					CtrlCSender.class.getName(), "" + shellPid.getPidWindows(nativeShellProcess));
+		}
+		pb.redirectErrorStream();
+		pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+		pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+		Process ctrlCProcess = null;
+		try {
+			ctrlCProcess = pb.start();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			ctrlCProcess.waitFor();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 
@@ -1594,17 +1655,10 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	 * the License.
 	 */
 
-	private static void sendCtrlBreakThroughStream(Process process) {
-		if (process != null) {
-			OutputStream os = process.getOutputStream();
-			PrintWriter pw = new PrintWriter(os);
-			try {
-				pw.print(IAC);
-				pw.print(BRK);
-				pw.flush();
-			} finally {
-				pw.close();
-			}
-		}
-	}
+	/*
+	 * private static void sendCtrlBreakThroughStream(Process process) { if (process
+	 * != null) { OutputStream os = process.getOutputStream(); PrintWriter pw = new
+	 * PrintWriter(os); try { pw.print(IAC); pw.print(BRK); pw.flush(); } finally {
+	 * pw.close(); } } }
+	 */
 }

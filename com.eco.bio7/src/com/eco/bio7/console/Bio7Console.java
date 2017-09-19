@@ -69,5 +69,15 @@ public class Bio7Console {
 
 		ConsolePageParticipant.setNativeInterpreterSelection(selection);
 	}
+	
+	public static void sendWinCtrlC() {
+		ConsolePageParticipant console=ConsolePageParticipant.getConsolePageParticipantInstance();
+		console.sendWindowBreakHandler(false);
+	}
+	
+	public static void sendWinCtrlBreak() {
+		ConsolePageParticipant console=ConsolePageParticipant.getConsolePageParticipantInstance();
+		console.sendWindowBreakHandler(true);
+	}
 
 }
