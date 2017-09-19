@@ -436,7 +436,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 	}
 
-	protected void sendWindowBreakHandler(boolean ctrlBreak) {
+	public void sendWindowBreakHandler(boolean ctrlBreak) {
 		Bundle bundleMain = Platform.getBundle("com.eco.bio7");
 		Bundle bundleOs = Platform.getBundle("com.eco.bio7.os");
 		URL locationUrlMain = FileLocator.find(bundleMain, new Path("/bin"), null);
