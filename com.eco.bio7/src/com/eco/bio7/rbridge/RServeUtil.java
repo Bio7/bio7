@@ -57,7 +57,6 @@ public class RServeUtil {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				System.out.println("finisdhed!");
 			} else {
 				System.out.println("Rserve is busy. Can't execute the R script!");
 			}
