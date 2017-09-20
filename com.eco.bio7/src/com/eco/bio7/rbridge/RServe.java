@@ -547,6 +547,13 @@ public class RServe {
 		});
 		// job.setSystem(true);
 		job.schedule();
+		/*Wait until finished!*/
+		try {
+			job.join();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private static void finalCloseAndDisplay() {
