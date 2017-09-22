@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2013 M. Austenfeld
+ * Copyright (c) 2005-2017 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,7 +15,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -35,7 +34,7 @@ import com.eco.bio7.reditors.REditor;
 
 public class InterpretR extends Action {
 
-	/* The toolbar action to intepret the current R script! */
+	/* The toolbar action to interpret the current R script! */
 
 	public InterpretR(String text, IWorkbenchWindow window) {
 		super(text);
@@ -70,7 +69,7 @@ public class InterpretR extends Action {
 		String loc = aFile.getLocation().toString();
 
 		boolean remote = Bio7Plugin.getDefault().getPreferenceStore().getBoolean("REMOTE");
-		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		//IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		// boolean rPipe = store.getBoolean("r_pipe");
 
 		if (con == null) {
