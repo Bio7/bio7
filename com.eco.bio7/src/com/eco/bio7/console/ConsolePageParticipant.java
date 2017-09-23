@@ -140,10 +140,6 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	private Pid rPid;
 	private Pid shellPid;
 	private Pid pythonPid;
-
-	private static final char IAC = (char) 5;
-	private static final char BRK = (char) 3;
-
 	private static ConsolePageParticipant ConsolePageParticipantInstance;
 	static boolean lineSeperatorConsole = true;
 	static boolean addToHistoryConsole = true;
@@ -381,6 +377,9 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					}
 
 				}
+				/*else if (event.stateMask == SWT.CTRL && event.keyCode == 'q') {
+					Bio7Console.sendCtrlBreakThroughStream();
+				}*/
 				/* CTRL+x key event! */
 				else if (event.stateMask == SWT.CTRL && event.keyCode == 'x') {
 					if (interpreterSelection.equals("shell")) {
@@ -1635,30 +1634,4 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		}
 	}
 
-	/**
-	 * Sends sequence of two chars(codes 5 and 3) to a process output stream Source
-	 * from: https://github.com/joewalnes/idea-community/blob/master/platform
-	 * /platform-impl/src/com/intellij/execution/process/RunnerMediator.java
-	 * 
-	 * Copyright 2000-2010 JetBrains s.r.o.
-	 *
-	 * Licensed under the Apache License, Version 2.0 (the "License"); you may not
-	 * use this file except in compliance with the License. You may obtain a copy of
-	 * the License at
-	 *
-	 * http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-	 * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-	 * License for the specific language governing permissions and limitations under
-	 * the License.
-	 */
-
-	/*
-	 * private static void sendCtrlBreakThroughStream(Process process) { if (process
-	 * != null) { OutputStream os = process.getOutputStream(); PrintWriter pw = new
-	 * PrintWriter(os); try { pw.print(IAC); pw.print(BRK); pw.flush(); } finally {
-	 * pw.close(); } } }
-	 */
 }
