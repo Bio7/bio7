@@ -34,10 +34,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.wb.swt.SWTResourceManager;
-
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.grid.CustomColumnHeaderRenderer;
-import com.eco.bio7.grid.CustomRowHeaderRenderer;
 import com.eco.bio7.util.Util;
 import com.opencsv.CSVReader;
 
@@ -164,11 +161,9 @@ public class CSVImport {
 		table.setLayoutData(gd_table);
 		table.setHeaderVisible(true);
 		table.setRowHeaderVisible(true);
-		table.setRowHeaderRenderer(new CustomRowHeaderRenderer());
 		table.setLinesVisible(true);
 		for (int i = 0; i < 20; i++) {
 			GridColumn column = new GridColumn(table, SWT.NONE);
-			column.setHeaderRenderer(new CustomColumnHeaderRenderer());
 			column.setText("C " + (i + 1));
 			column.setWidth(50);
 

@@ -31,7 +31,6 @@ import org.eclipse.nebula.widgets.grid.GridItem;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
-
 import com.eco.bio7.batch.Bio7Dialog;
 
 public class LoadExcelJob extends WorkspaceJob {

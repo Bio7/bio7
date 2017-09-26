@@ -1,4 +1,4 @@
-package com.eco.bio7.grid;
+/*package com.eco.bio7.grid;
 
 import org.eclipse.nebula.widgets.grid.AbstractRenderer;
 import org.eclipse.nebula.widgets.grid.GridColumn;
@@ -15,12 +15,12 @@ import org.eclipse.swt.graphics.TextLayout;
 
 import com.eco.bio7.util.Util;
 
-/**
+*//**
  * The row header renderer.
  *
  * @author chris.gross@us.ibm.com
  * @since 2.0.0
- */
+ *//*
 public class CustomRowHeaderRenderer extends AbstractRenderer
 {
 
@@ -34,9 +34,9 @@ public class CustomRowHeaderRenderer extends AbstractRenderer
 
     private TextLayout textLayout;
     
-    /**
+    *//**
      * {@inheritDoc}
-     */
+     *//*
     @Override
 	public void paint(GC gc, Object value)
     {
@@ -194,9 +194,9 @@ public class CustomRowHeaderRenderer extends AbstractRenderer
 
     }
 
-    /**
+    *//**
      * {@inheritDoc}
-     */
+     *//*
     @Override
 	public Point computeSize(GC gc, int wHint, int hHint, Object value)
     {
@@ -270,3 +270,4 @@ public class CustomRowHeaderRenderer extends AbstractRenderer
         }
     }
 }
+*/
