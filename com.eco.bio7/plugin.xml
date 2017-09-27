@@ -535,7 +535,7 @@
       <keyBinding
             commandId="com.eco.bio7.rserve_loadRLibrary"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            keySequence="CTRL+ALT+U">
+            keySequence="CTRL+ALT+SHIFT+U">
       </keyBinding>
       <command
             description="Open the R preferences"
