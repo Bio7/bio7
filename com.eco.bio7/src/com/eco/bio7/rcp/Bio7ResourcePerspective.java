@@ -18,9 +18,7 @@ public class Bio7ResourcePerspective implements IPerspectiveFactory {
 		IFolderLayout viewRight = layout.createFolder(
 				"viewRight", IPageLayout.BOTTOM, (float) 0.60,
 				"topLeft");
-		
-		
-
+		topLeft.addView("org.eclipse.ui.navigator.ProjectExplorer");
 		topLeft.addView("org.eclipse.ui.views.ResourceNavigator");
 		viewRight.addView("org.eclipse.ui.views.ContentOutline");
 		viewRight.addPlaceholder("com.eco.bio7.rbridge.debug.DebugVariablesView"); //Dynamic. Not Shown at startup!

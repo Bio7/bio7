@@ -4,9 +4,9 @@ Bundle-Name: Os
 Bundle-SymbolicName: com.eco.bio7.os
 Bundle-Version: 2.5.0.qualifier
 Bundle-Vendor: ECO
-Bundle-ClassPath: lib/jna-4.1.0.jar,
- lib/jna-platform-4.1.0.jar,
- lib/pty4j-0.5.jar,
+Bundle-ClassPath: lib/pty4j-0.5.jar,
+ lib/jna-4.5.0.jar,
+ lib/jna-platform-4.5.0.jar,
  lib/purejavacomm-0.0.17.jar,
  lib/guava-14.0.1.jar,
  lib/log4j-1.2.14.jar,

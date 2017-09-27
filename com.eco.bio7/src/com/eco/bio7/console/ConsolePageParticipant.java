@@ -140,10 +140,6 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	private Pid rPid;
 	private Pid shellPid;
 	private Pid pythonPid;
-	private IContributionItem item;
-	private static final char IAC = (char) 5;
-	private static final char BRK = (char) 3;
-
 	private static ConsolePageParticipant ConsolePageParticipantInstance;
 	static boolean lineSeperatorConsole = true;
 	static boolean addToHistoryConsole = true;
@@ -285,6 +281,16 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					}
 
 				}
+				/*
+				 * For Windows sometimes a CTRL+Break command is required (e.g. using windows
+				 * ssh!)
+				 */
+				else if (event.stateMask == SWT.CTRL && event.keyCode == SWT.BREAK) {
+
+					if (Bio7Dialog.getOS().equals("Windows")) {
+						sendWindowBreakHandler(true);
+					}
+				}
 				/* CTRL+c key event! */
 				else if (event.stateMask == SWT.CTRL && event.keyCode == 'c') {
 
@@ -310,7 +316,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 						if (interpreterSelection.equals("R")) {
 							try {
-								Process p = Runtime.getRuntime().exec(pathBundle + "/SendSignalCtrlC.exe " + rPid.getPidWindows(RProcess));
+								Process p = Runtime.getRuntime()
+										.exec(pathBundle + "/SendSignalCtrlC.exe " + rPid.getPidWindows(RProcess));
 
 							} catch (IOException e) {
 								e.printStackTrace();
@@ -319,19 +326,14 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 							// "/SendSignalCtrlC.exe " +
 							// rPid.getPidWindows(RProcess));
 						} else if (interpreterSelection.equals("shell")) {
-							// sendCtrlBreakThroughStream(nativeShellProcess);
-							try {
-								Process p = Runtime.getRuntime().exec(pathBundle + "/SendSignalCtrlC.exe " + shellPid.getPidWindows(nativeShellProcess));
-
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
-
+							/* Send Ctrl+C to Windows! */
+							sendWindowBreakHandler(false);
 						}
 
 						else if (interpreterSelection.equals("python")) {
 							try {
-								Process p = Runtime.getRuntime().exec(pathBundle + "/SendSignalCtrlC.exe " + pythonPid.getPidWindows(pythonProcess));
+								Process p = Runtime.getRuntime().exec(
+										pathBundle + "/SendSignalCtrlC.exe " + pythonPid.getPidWindows(pythonProcess));
 
 							} catch (IOException e) {
 								e.printStackTrace();
@@ -348,7 +350,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 							if (RServe.getConnection() == null) {
 								UnixProcessManager.sendSigIntToProcessTree(RProcess);
 							} else {
-								System.out.print("Please change to the native connection to interrupt a running R script!");
+								System.out.print(
+										"Please change to the native connection to interrupt a running R script!");
 							}
 
 							// System.out.println(rPid.getPidWindows(RProcess));
@@ -374,6 +377,9 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					}
 
 				}
+				/*else if (event.stateMask == SWT.CTRL && event.keyCode == 'q') {
+					Bio7Console.sendCtrlBreakThroughStream();
+				}*/
 				/* CTRL+x key event! */
 				else if (event.stateMask == SWT.CTRL && event.keyCode == 'x') {
 					if (interpreterSelection.equals("shell")) {
@@ -418,14 +424,72 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		toolBarManager.add(new ConsoleNativeShellAction());
 		toolBarManager.add(new ConsolePythonShellAction());
 		toolBarManager.add(new ConsoleCustomActions(this));
-		//item = new PlaceholderLabel().getPlaceholderLabel();
+		// item = new PlaceholderLabel().getPlaceholderLabel();
 		ia = new ConsoleInterpreterAction(this);
 		toolBarManager.add(ia);
-		//toolBarManager.add(item);
+		// toolBarManager.add(item);
 
 		in = new BufferedReader(isr);
 
 		ioc.clearConsole();
+
+	}
+
+	public void sendWindowBreakHandler(boolean ctrlBreak) {
+		Bundle bundleMain = Platform.getBundle("com.eco.bio7");
+		Bundle bundleOs = Platform.getBundle("com.eco.bio7.os");
+		URL locationUrlMain = FileLocator.find(bundleMain, new Path("/bin"), null);
+
+		URL fileUrlMain = null;
+		try {
+			fileUrlMain = FileLocator.toFileURL(locationUrlMain);
+		} catch (IOException e2) {
+
+			e2.printStackTrace();
+		}
+		File fiMain = new File(fileUrlMain.getPath());
+		String pathMain = fiMain.toString();
+
+		URL locationUrlJna = FileLocator.find(bundleOs, new Path("/lib"), null);
+
+		URL fileUrl2 = null;
+		try {
+			fileUrl2 = FileLocator.toFileURL(locationUrlJna);
+		} catch (IOException e2) {
+
+			e2.printStackTrace();
+		}
+		File fiJna = new File(fileUrl2.getPath());
+		String pathJna = fiJna.toString();
+		ProcessBuilder pb = new ProcessBuilder();
+		/* Send a CTRL+Break to Windows! */
+		if (ctrlBreak) {
+			pb.command(System.getProperty("java.home") + "/bin/javaw", "-cp",
+					pathJna + "/jna-4.5.0.jar;" + pathJna + "/jna-platform-4.5.0.jar;" + pathMain,
+					CtrlBreakSender.class.getName(), "" + shellPid.getPidWindows(nativeShellProcess));
+		}
+		/* Send a CTRL+C to Windows! */
+		else {
+			pb.command(System.getProperty("java.home") + "/bin/javaw", "-cp",
+					pathJna + "/jna-4.5.0.jar;" + pathJna + "/jna-platform-4.5.0.jar;" + pathMain,
+					CtrlCSender.class.getName(), "" + shellPid.getPidWindows(nativeShellProcess));
+		}
+		pb.redirectErrorStream();
+		pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+		pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+		Process ctrlCProcess = null;
+		try {
+			ctrlCProcess = pb.start();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			ctrlCProcess.waitFor();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 
@@ -438,8 +502,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 				// process = Runtime.getRuntime().exec("cmd");
 				/*
-				 * ProcessBuilder can redirect the error stream! No second
-				 * thread needed!
+				 * ProcessBuilder can redirect the error stream! No second thread needed!
 				 */
 				ProcessBuilder builder = new ProcessBuilder("cmd");
 				// System.out.println(builder.environment());
@@ -456,12 +519,10 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
 				// Some Useful commands: export TERM=xterm; top -b; ssh -tt
 				// gksudo 'apt-get --yes install abiword'
-				
-				
+
 				String[] env = { "TERM=xterm" };
-				nativeShellProcess = PtyProcess.exec(new String[]{"/bin/sh","-i"});
-				
-				
+				nativeShellProcess = PtyProcess.exec(new String[] { "/bin/sh", "-i" });
+
 				List<String> args = new ArrayList<String>();
 				args.add("/bin/sh");
 				args.add("-i");
@@ -507,8 +568,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 				// process = Runtime.getRuntime().exec("cmd");
 				/*
-				 * ProcessBuilder can redirect the error stream! No second
-				 * thread needed!
+				 * ProcessBuilder can redirect the error stream! No second thread needed!
 				 */
 
 				String cPython = store.getString("python_pipe_path");
@@ -576,14 +636,15 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
-			Bio7Dialog.message("Interpreter not available!\n\nPlease adjust the path to the interpreter in the Bio7 preferences!");
+			Bio7Dialog.message(
+					"Interpreter not available!\n\nPlease adjust the path to the interpreter in the Bio7 preferences!");
 		}
 
 	}
 
 	/*
-	 * If R native is started first we have to make some default settings from
-	 * the preferences!
+	 * If R native is started first we have to make some default settings from the
+	 * preferences!
 	 */
 	public void rOptions() {
 		pipeInputToConsole("options(max.print=5000)");
@@ -599,13 +660,13 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			rPackages = rPackages.replace("\\", "/");
 			pipeInputToConsole(".libPaths(\"" + rPackages + "\")");
 		}
-		/*For Linux and Mac if there is no path we will take the default defined!*/
-		else{
+		/* For Linux and Mac if there is no path we will take the default defined! */
+		else {
 			if (rPackages.isEmpty() == false) {
-			pipeInputToConsole(".libPaths(\"" + rPackages + "\")");
+				pipeInputToConsole(".libPaths(\"" + rPackages + "\")");
 			}
 		}
-		
+
 	}
 
 	public void processRCommand() {
@@ -616,8 +677,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 				// process = Runtime.getRuntime().exec("cmd");
 				/*
-				 * ProcessBuilder can redirect the error stream! No second
-				 * thread needed!
+				 * ProcessBuilder can redirect the error stream! No second thread needed!
 				 */
 
 				String rPath = store.getString(PreferenceConstants.PATH_R);
@@ -646,13 +706,13 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				List<String> args = new ArrayList<String>();
 				if (rPath.isEmpty() == false) {
 					args.add(rPath + "/bin/R");
-					
+
 				}
-				
-				else{
+
+				else {
 					args.add("R");
 				}
-				
+
 				args.add("--interactive");
 
 				ProcessBuilder builder = new ProcessBuilder(args);
@@ -671,9 +731,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 				List<String> args = new ArrayList<String>();
 				if (rPath.isEmpty() == false) {
-				args.add(rPath + "/bin/R");
-				}
-				else{
+					args.add(rPath + "/bin/R");
+				} else {
 					args.add("R");
 				}
 				args.add("--interactive");
@@ -783,12 +842,10 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 							System.out.print((char) ch);
 						}
 						/*
-						 * Under Linux and MacOSX commands are echoed in ASCII
-						 * and evtl. ANSI control characters.We cannot avoid the
-						 * echo but can delete some ASCII characters for an
-						 * improved output!
-						 * See: https://en.wikipedia.org/wiki/ANSI_escape_code
-						 * See also: http://misc.flogisoft.com/bash/tip_colors_and_formatting
+						 * Under Linux and MacOSX commands are echoed in ASCII and evtl. ANSI control
+						 * characters.We cannot avoid the echo but can delete some ASCII characters for
+						 * an improved output! See: https://en.wikipedia.org/wiki/ANSI_escape_code See
+						 * also: http://misc.flogisoft.com/bash/tip_colors_and_formatting
 						 */
 						else {
 							if (ch != 8 && ch != 12 && ch != 13) {
@@ -854,8 +911,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		ioc.getInputStream().appendData(System.getProperty("line.separator"));
 		interpreterSelection = "-";
 		/*
-		 * Use a thread to ensure that the other threads will be destroyed -
-		 * maybee not necessary!
+		 * Use a thread to ensure that the other threads will be destroyed - maybee not
+		 * necessary!
 		 */
 		// new Thread() {
 		// @Override
@@ -899,7 +956,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		// }
 		// }.start();
 		/* Destroy the IOConsole! */
-		
+
 		ioc.partitionerFinished();
 		ioc.destroy();
 	}
@@ -1062,8 +1119,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			/*
 			 * case "r": System.out.print("System>");
 			 * 
-			 * input = in.readLine(); if (input == null||input.equals(""))
-			 * break; else { if(RServe.isAliveDialog()){ RServe.printJob(input);
+			 * input = in.readLine(); if (input == null||input.equals("")) break; else {
+			 * if(RServe.isAliveDialog()){ RServe.printJob(input);
 			 * 
 			 * }
 			 * 
@@ -1102,8 +1159,12 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 						try {
 							bw.write(input);
-
-							bw.newLine();
+							if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+								/* To enable pseudo terminal ssh (ssh -t ) on Windows! */
+								bw.write("\n");
+							} else {
+								bw.newLine();
+							}
 							// If necessary: bw.write("\r\n");
 							os.flush();
 							bw.flush();
@@ -1116,8 +1177,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					}
 
 					/*
-					 * Process p = RConnectionJob.getProc(); // Write to the
-					 * output!
+					 * Process p = RConnectionJob.getProc(); // Write to the output!
 					 */
 
 					ignore = false;
@@ -1172,8 +1232,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					}
 
 					/*
-					 * Process p = RConnectionJob.getProc(); // Write to the
-					 * output!
+					 * Process p = RConnectionJob.getProc(); // Write to the output!
 					 */
 
 					ignore = false;
@@ -1222,8 +1281,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					}
 
 					/*
-					 * Process p = RConnectionJob.getProc(); // Write to the
-					 * output!
+					 * Process p = RConnectionJob.getProc(); // Write to the output!
 					 */
 
 					ignore = false;
@@ -1278,8 +1336,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					}
 
 					/*
-					 * Process p = RConnectionJob.getProc(); // Write to the
-					 * output!
+					 * Process p = RConnectionJob.getProc(); // Write to the output!
 					 */
 
 					ignore = false;
@@ -1311,12 +1368,12 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		}
 
 		/**
-		 * Ensure that caret moves to End of Buffer when the REPL prints it
-		 * prompt
+		 * Ensure that caret moves to End of Buffer when the REPL prints it prompt
 		 */
 		public void documentChanged(DocumentEvent event) {
 			IDocument doc = event.getDocument();
-			TextConsoleViewer viewer = ((page instanceof TextConsolePage) ? ((TextConsolePage) page).getViewer() : null);
+			TextConsoleViewer viewer = ((page instanceof TextConsolePage) ? ((TextConsolePage) page).getViewer()
+					: null);
 			if (doc != null) {
 				try {
 					int textLen = (event.getText() != null ? event.getText().length() : 0);
@@ -1329,18 +1386,15 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 						viewer.getTextWidget().setCaretOffset(reg.getOffset() + reg.getLength());
 
 						/*
-						 * IRegion reg = doc.getLineInformationOfOffset(doclen);
-						 * String selectionConsole =
-						 * ConsolePageParticipant.getInterpreterSelection();
+						 * IRegion reg = doc.getLineInformationOfOffset(doclen); String selectionConsole
+						 * = ConsolePageParticipant.getInterpreterSelection();
 						 * 
-						 * if (selectionConsole.equals("R")) { String line =
-						 * doc.get(reg.getOffset(), reg.getLength());
+						 * if (selectionConsole.equals("R")) { String line = doc.get(reg.getOffset(),
+						 * reg.getLength());
 						 * 
-						 * if(line.contains("R#")){ int lineNumber
-						 * =line.indexOf("#");
+						 * if(line.contains("R#")){ int lineNumber =line.indexOf("#");
 						 * 
-						 * int
-						 * number=Integer.parseInt(line.replaceAll("\\D+",""));
+						 * int number=Integer.parseInt(line.replaceAll("\\D+",""));
 						 * System.out.println("Line Number: "+number);
 						 * 
 						 * }
@@ -1408,7 +1462,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 			if (selected != null) {
 
-				final String save = "try(save.image(file =\"" + selected + ".RData" + "\", version = NULL, ascii = FALSE))";
+				final String save = "try(save.image(file =\"" + selected + ".RData"
+						+ "\", version = NULL, ascii = FALSE))";
 				if (RState.isBusy() == false) {
 					RState.setBusy(true);
 
@@ -1480,7 +1535,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			if (its[i].getId() != null) {
 				/* Control if the items exists already! */
 				if (its[i].getId().equals("Stop")) {
-					tm.add(item);
+					// tm.add(item);
 					exist = true;
 				}
 
@@ -1496,7 +1551,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			tm.add(new DebugStepFinishAction());
 			tm.add(new DebugInfoAction());
 			/* Add the distance label again! */
-			tm.add(item);
+			// tm.add(item);
 			actionBars.updateActionBars();
 		}
 		/* Remove all toolbar actions from the console view! */
@@ -1579,38 +1634,4 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		}
 	}
 
-	/**
-	 * Sends sequence of two chars(codes 5 and 3) to a process output stream
-	 * Source from:
-	 * https://github.com/joewalnes/idea-community/blob/master/platform
-	 * /platform-impl/src/com/intellij/execution/process/RunnerMediator.java
-	 * 
-	 * Copyright 2000-2010 JetBrains s.r.o.
-	 *
-	 * Licensed under the Apache License, Version 2.0 (the "License"); you may
-	 * not use this file except in compliance with the License. You may obtain a
-	 * copy of the License at
-	 *
-	 * http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-	 * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-	 * License for the specific language governing permissions and limitations
-	 * under the License.
-	 */
-
-	private static void sendCtrlBreakThroughStream(Process process) {
-		if (process != null) {
-			OutputStream os = process.getOutputStream();
-			PrintWriter pw = new PrintWriter(os);
-			try {
-				pw.print(IAC);
-				pw.print(BRK);
-				pw.flush();
-			} finally {
-				pw.close();
-			}
-		}
-	}
 }

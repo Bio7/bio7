@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
 import com.eco.bio7.console.ConsolePageParticipant;
+import com.eco.bio7.util.Util;
 
 public class DebugVariablesView extends ViewPart {
 
@@ -56,6 +57,7 @@ public class DebugVariablesView extends ViewPart {
 		container.setLayout(new FillLayout(SWT.HORIZONTAL));
 
 		grid = new Grid(container, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL | SWT.VIRTUAL);
+		grid.setBackground(Util.getSWTBackgroundColor());
 
 		{
 			GridColumn gridColumn = new GridColumn(grid, SWT.NONE);

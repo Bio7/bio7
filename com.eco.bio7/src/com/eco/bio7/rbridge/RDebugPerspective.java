@@ -33,18 +33,13 @@ public class RDebugPerspective implements IPerspectiveFactory {
 		IFolderLayout bottomLeft = layout.createFolder("viewBottomLeft", IPageLayout.BOTTOM, (float) 0.55, "topLeft");
 
 		IFolderLayout viewRight = layout.createFolder("viewBottomRight", IPageLayout.BOTTOM, (float) 0.55, editorArea);
-
-		
-		
-		topLeft.addView("org.eclipse.ui.views.ResourceNavigator");
-		
-		
-		topLeft.addView("com.eco.bio7.rbridge.debug.DebugTextView");
+		topLeft.addView("org.eclipse.ui.navigator.ProjectExplorer");
 		
 		bottomLeft.addView("com.eco.bio7.rbridge.debug.DebugVariablesView");
 		
 
 		viewRight.addView("org.eclipse.ui.console.ConsoleView");
+		layout.addView("com.eco.bio7.rbridge.debug.DebugTextView", IPageLayout.RIGHT, 0.64f, IPageLayout.ID_EDITOR_AREA);
 		
 		
 

@@ -10,7 +10,7 @@
  *    Chuck.Mastrandrea@sas.com - wordwrapping in bug 222280
  *    smcduff@hotmail.com       - wordwrapping in bug 222280
  *    Marty Jones<martybjones@gmail.com> - custom header/footer font in bug 293743
- *******************************************************************************/
+ *******************************************************************************//*
 package com.eco.bio7.grid;
 
 import org.eclipse.nebula.widgets.grid.GridColumn;
@@ -28,12 +28,12 @@ import org.eclipse.swt.widgets.Display;
 
 import com.eco.bio7.util.Util;
 
-/**
+*//**
  * The column header renderer.
  *
  * @author chris.gross@us.ibm.com
  * @since 2.0.0
- */
+ *//*
 public class CustomColumnHeaderRenderer extends GridHeaderRenderer
 {
 
@@ -53,9 +53,9 @@ public class CustomColumnHeaderRenderer extends GridHeaderRenderer
 
     private TextLayout textLayout;
 
-    /**
+    *//**
      * {@inheritDoc}
-     */
+     *//*
     public Point computeSize(GC gc, int wHint, int hHint, Object value)
     {
         GridColumn column = (GridColumn)value;
@@ -103,9 +103,9 @@ public class CustomColumnHeaderRenderer extends GridHeaderRenderer
 		return new Point(x, y);
 	}
 
-    /**
+    *//**
      * {@inheritDoc}
-     */
+     *//*
     public void paint(GC gc, Object value)
     {
         GridColumn column = (GridColumn)value;
@@ -323,26 +323,26 @@ public class CustomColumnHeaderRenderer extends GridHeaderRenderer
 
     }
 
-    /**
+    *//**
      * {@inheritDoc}
-     */
+     *//*
     public void setDisplay(Display display)
     {
         super.setDisplay(display);
         arrowRenderer.setDisplay(display);
     }
 
-    /**
+    *//**
      * {@inheritDoc}
-     */
+     *//*
     public boolean notify(int event, Point point, Object value)
     {
         return false;
     }
 
-    /**
+    *//**
      * {@inheritDoc}
-     */
+     *//*
     public Rectangle getTextBounds(Object value, boolean preferred)
     {
         GridColumn column = (GridColumn)value;
@@ -390,9 +390,9 @@ public class CustomColumnHeaderRenderer extends GridHeaderRenderer
         return bounds;
     }
 
-	/**
+	*//**
 	 * @return the bounds reserved for the control
-	 */
+	 *//*
 	protected Rectangle getControlBounds(Object value, boolean preferred) {
 		Rectangle bounds = getBounds();
 		GridColumn column = (GridColumn) value;
@@ -427,3 +427,4 @@ public class CustomColumnHeaderRenderer extends GridHeaderRenderer
        textLayout.setAlignment(column.getAlignment());
    }
 }
+*/

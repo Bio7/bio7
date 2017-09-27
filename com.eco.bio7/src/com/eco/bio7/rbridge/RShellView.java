@@ -51,6 +51,7 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabFolderEvent;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DragSource;
 import org.eclipse.swt.dnd.DragSourceEvent;
@@ -197,9 +198,9 @@ public class RShellView extends ViewPart {
 		RShellView.listShell = list_8;
 	}
 
-	private static Text textConsole;
+	private static StyledText textConsole;
 
-	public static Text getTextConsole() {
+	public static StyledText getTextConsole() {
 		return textConsole;
 	}
 
@@ -2504,7 +2505,7 @@ public class RShellView extends ViewPart {
 
 		sashForm_1.setWeights(new int[] { 1 });
 
-		textConsole = new Text(sashForm, SWT.WRAP | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
+		textConsole = new StyledText(sashForm, SWT.WRAP | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
 
 		textConsole.setFont(new Font(Util.getDisplay(), currentFont));
 		sashForm.setWeights(new int[] { 233, 319 });

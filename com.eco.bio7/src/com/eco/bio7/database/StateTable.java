@@ -22,8 +22,6 @@ import org.eclipse.ui.PlatformUI;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.discrete.Hexagon;
 import com.eco.bio7.discrete.Quad2d;
-import com.eco.bio7.grid.CustomColumnHeaderRenderer;
-import com.eco.bio7.grid.CustomRowHeaderRenderer;
 import com.eco.bio7.image.ImageMethods;
 import com.eco.bio7.image.PointPanel;
 import com.eco.bio7.init.ButtonContainer;
@@ -72,7 +70,6 @@ public class StateTable {
 
 	private void createTable(final Composite parent) {
 		grid = new Grid(parent, SWT.BORDER | SWT.V_SCROLL | SWT.SCROLL_LINE | SWT.MULTI | SWT.FULL_SELECTION | SWT.VIRTUAL);
-		grid.setRowHeaderRenderer(new CustomRowHeaderRenderer());
 		grid.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event event) {
 				checkedEvent = event.detail == SWT.CHECK ? true : false;
@@ -231,22 +228,18 @@ public class StateTable {
 			}
 		});
 		column = new GridColumn(grid, SWT.CENTER);
-		column.setHeaderRenderer(new CustomColumnHeaderRenderer());
 		column.setText("Name");
 		column.setWidth(100);
 		column.setResizeable(true);
 		column1 = new GridColumn(grid, SWT.CENTER);
-		column1.setHeaderRenderer(new CustomColumnHeaderRenderer());
 		column1.setText("Description");
 		column1.setWidth(100);
 		column1.setResizeable(true);
 		column2 = new GridColumn(grid, SWT.CHECK | SWT.CENTER);
-		column2.setHeaderRenderer(new CustomColumnHeaderRenderer());
 		column2.setText("Select");
 		column2.setWidth(100);
 		column2.setResizeable(true);
 		column3 = new GridColumn(grid, SWT.CHECK | SWT.CENTER);
-		column3.setHeaderRenderer(new CustomColumnHeaderRenderer());
 		column3.setText("Delete");
 		column3.setWidth(100);
 		column3.setResizeable(true);

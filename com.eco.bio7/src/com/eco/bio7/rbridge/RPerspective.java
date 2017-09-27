@@ -40,7 +40,7 @@ public class RPerspective implements IPerspectiveFactory {
 		topLeft.addView("com.eco.bio7.RShell");
 		topLeft.addView("com.eco.bio7.rbridge.PackageInstallView");
 		topLeft.addView("com.eco.bio7.reditor.database.view.DatabaseView");
-		topLeft.addView("org.eclipse.ui.views.ResourceNavigator");
+		topLeft.addView("org.eclipse.ui.navigator.ProjectExplorer");
 		
 		
 		bottomLeft.addView("org.eclipse.ui.console.ConsoleView");
