@@ -2164,8 +2164,8 @@ public class Options3d extends ViewPart {
 										numberLabel.setText("Number input incorrect!");
 									}
 								}
-							}
-						});
+			}
+		});
 
 		//
 		createActions();

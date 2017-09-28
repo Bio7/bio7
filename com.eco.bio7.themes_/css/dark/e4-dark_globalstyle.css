@@ -526,11 +526,11 @@ Composite #com.eco.bio7.rbridge.RTable {
 	color: #dddddd; /* see property startupForegroundColor in the product */
 }
 
-
-/*Composite #com.eco.bio7.thumbnails {
+/*Needed for Linux*/
+Composite #com.eco.bio7.thumbnails {
 	background-color: #252525;
 	color: #dddddd; /* see property startupForegroundColor in the product */
-}*/
+}
 
 #com.eco.bio7.thumbnails Label  {
 	background-color: #252525;
