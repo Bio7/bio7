@@ -1,5 +1,8 @@
 package com.eco.bio7.rbridge;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.Callable;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -8,17 +11,20 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REngineException;
+import org.rosuda.REngine.RList;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.batch.BatchModel;
 import com.eco.bio7.compile.RInterpreterJob;
 
 /**
- * @author Bio7
- * A Rserve utility class to evaluate R scripts and code in an Eclipse job!
+ * @author Bio7 A Rserve utility class to evaluate R scripts and code in an
+ *         Eclipse job!
  */
 public class RServeUtil {
 
 	protected static REXP rexp;
+	protected static Boolean val;
+	private static boolean result;
 
 	/**
 	 * Evaluates a script in R running in a job.
@@ -84,7 +90,7 @@ public class RServeUtil {
 						monitor.beginTask("Transfer Data ...", IProgressMonitor.UNKNOWN);
 						try {
 							rexp = RServe.getConnection().eval(eval);
-							
+
 						} catch (RserveException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -181,6 +187,7 @@ public class RServeUtil {
 									e.printStackTrace();
 								}
 							}
+
 						} catch (RserveException e) {
 							// TODO Auto-generated catch block
 							RState.setBusy(false);
@@ -220,5 +227,191 @@ public class RServeUtil {
 		}
 
 	}
+
+	public static boolean isTrue(String cmd,String funcName) {
+
+		if (RServe.isAliveDialog()) {
+			if (RState.isBusy() == false) {
+				RState.setBusy(true);
+				Job job = new Job("Boolean from R") {
+
+					@Override
+					protected IStatus run(IProgressMonitor monitor) {
+						monitor.beginTask("Transfer Data ...", IProgressMonitor.UNKNOWN);
+						
+						REXP rexpFrom = null;
+							try {
+							rexpFrom = RServe.getConnection().eval(cmd);
+							} catch (RserveException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+						
+						// Ignoring any possible result
+						
+						 try {
+							result = (boolean) rexp.getClass().getDeclaredMethod(funcName).invoke(rexpFrom);
+						} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
+								| NoSuchMethodException | SecurityException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						
+
+						monitor.done();
+						return Status.OK_STATUS;
+					}
+
+				};
+				job.addJobChangeListener(new JobChangeAdapter() {
+					public void done(IJobChangeEvent event) {
+						if (event.getResult().isOK()) {
+
+							RState.setBusy(false);
+						} else {
+
+							RState.setBusy(false);
+						}
+					}
+				});
+				// job.setSystem(true);
+				job.schedule();
+				try {
+					job.join();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				RState.setBusy(false);
+			} else {
+				System.out.println("Rserve is busy. Can't execute the R script!");
+			}
+
+		}
+		return result;
+
+	}
+
+	/**
+	 * @param name
+	 * @param arg
+	 * @return
+	 */
+	public static boolean createDoubleMatrix(String name, double[][] arg) {
+
+		if (RServe.isAliveDialog()) {
+			if (RState.isBusy() == false) {
+				RState.setBusy(true);
+				Job job = new Job("Boolean from R") {
+
+					@Override
+					protected IStatus run(IProgressMonitor monitor) {
+						monitor.beginTask("Transfer Data ...", IProgressMonitor.UNKNOWN);
+
+						try {
+							REXP mat = REXP.createDoubleMatrix(arg);
+							RServe.getConnection().assign(name, mat);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+
+						monitor.done();
+						return Status.OK_STATUS;
+					}
+
+				};
+				job.addJobChangeListener(new JobChangeAdapter() {
+					public void done(IJobChangeEvent event) {
+						if (event.getResult().isOK()) {
+
+							RState.setBusy(false);
+						} else {
+
+							RState.setBusy(false);
+						}
+					}
+				});
+				// job.setSystem(true);
+				job.schedule();
+				try {
+					job.join();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				RState.setBusy(false);
+			} else {
+				System.out.println("Rserve is busy. Can't execute the R script!");
+			}
+
+		}
+		return val;
+
+	}
+
+	/**
+	 * @param name
+	 * @param list
+	 * @return
+	 */
+	public static boolean createDataframe(String name, RList list) {
+
+		if (RServe.isAliveDialog()) {
+			if (RState.isBusy() == false) {
+				RState.setBusy(true);
+				Job job = new Job("Boolean from R") {
+
+					@Override
+					protected IStatus run(IProgressMonitor monitor) {
+						monitor.beginTask("Transfer Data ...", IProgressMonitor.UNKNOWN);
+
+						try {
+							REXP theDataframe = REXP.createDataFrame(list);
+							RServe.getConnection().assign(name, theDataframe);
+
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+
+						monitor.done();
+						return Status.OK_STATUS;
+					}
+
+				};
+				job.addJobChangeListener(new JobChangeAdapter() {
+					public void done(IJobChangeEvent event) {
+						if (event.getResult().isOK()) {
+
+							RState.setBusy(false);
+						} else {
+
+							RState.setBusy(false);
+						}
+					}
+				});
+				// job.setSystem(true);
+				job.schedule();
+				try {
+					job.join();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				RState.setBusy(false);
+			} else {
+				System.out.println("Rserve is busy. Can't execute the R script!");
+			}
+
+		}
+		return val;
+
+	}
+
+	// REXP.createDoubleMatrix(double[][] arg);
 
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry exported="true" kind="lib" path="libs/groovy-all-2.4.9.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy-all-2.4.12.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/py4j0.10.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="bin/"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>

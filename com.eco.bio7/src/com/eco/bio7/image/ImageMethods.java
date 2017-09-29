@@ -491,7 +491,7 @@ public class ImageMethods extends ViewPart {
 
 			}
 		});
-		final GridData gd_delauneyButton = new GridData(SWT.FILL, SWT.CENTER, true, true);
+		final GridData gd_delauneyButton = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gd_delauneyButton.heightHint = 35;
 		delauneyButton.setLayoutData(gd_delauneyButton);
 		delauneyButton.setText("Delauney");

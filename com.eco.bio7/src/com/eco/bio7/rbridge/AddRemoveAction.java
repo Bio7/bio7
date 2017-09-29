@@ -29,7 +29,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
-
 import com.eco.bio7.util.Util;
 
 public class AddRemoveAction extends Action implements IMenuCreator {

@@ -139,6 +139,7 @@ import com.eco.bio7.preferences.RServePlotPrefs;
 import com.eco.bio7.preferences.Reg;
 import com.eco.bio7.rbridge.RConfig;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.actions.StartRServe;
 import com.eco.bio7.rbridge.debug.REditorListener;
@@ -1036,29 +1037,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				for (int i = 0; i < files.length; i++) {
 					// System.out.println(files[i].getName());
 					if (files[i].getName().endsWith(".R") || files[i].getName().endsWith(".r")) {
-						if (RServe.isAliveDialog()) {
-							if (RState.isBusy() == false) {
-								RState.setBusy(true);
-								final RInterpreterJob Do = new RInterpreterJob(null, true, files[i].toString());
-								Do.addJobChangeListener(new JobChangeAdapter() {
-									public void done(IJobChangeEvent event) {
-										if (event.getResult().isOK()) {
-											int countDev = RServe.getDisplayNumber();
-											RState.setBusy(false);
-											if (countDev > 0) {
-												RServe.closeAndDisplay();
-											}
-										}
-									}
-								});
-								Do.setUser(true);
-								Do.schedule();
-							} else {
-
-								Bio7Dialog.message("Rserve is busy!");
-							}
-
-						}
+						
+						RServeUtil.evalR(null,files[i].toString());
 					}
 
 					else if (files[i].getName().endsWith(".bsh")) {
