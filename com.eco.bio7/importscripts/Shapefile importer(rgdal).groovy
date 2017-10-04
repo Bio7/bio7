@@ -1,13 +1,13 @@
 /*
-Gridfile importer script. Using the 'rgdal' package of R.
+Shapefile importer script. Using the 'rgdal' package of R.
 Author: M. Austenfeld 
-Year:   2005-2017
+Year:   2008
 */
+
 import com.eco.bio7.worldwind.WorldWindOptionsView;
 import static com.eco.bio7.rbridge.RServeUtil.*;
 import org.rosuda.REngine.REXP;
 import org.apache.commons.io.FilenameUtils;
-import static com.eco.bio7.image.ImageMethods.*;
 
 /*Test if Rserve is alive!*/
 if(RServe.isAliveDialog()==false){
@@ -35,17 +35,10 @@ f = new File(file);
 name = FilenameUtils.removeExtension(f.getName());
 
 /*Read the shape file with the filename as the layer!*/
-//evalR("library(rgdal);",null);
-evalR("try(" + name + " <- readGDAL(\"" + file + "\"));",null);
-
-println("Loaded Grid: " + name + "\n");
+evalR("try(" + name + " <- readOGR(\"" + file + "\", \"" + name + "\"));",null);
+println("Loaded Shape: " + name + "\n");
 evalR("print(summary(" + name + "))",null);
-/*We need to access the cell size by means of the slots!*/
-evalR("try(.cellSize<-slot(" + name + ",\"grid\"))",null);
-evalR("try(.imageDimension<-slot(.cellSize,\"cells.dim\"))",null);
-evalR("imageSizeY<-.imageDimension[2]",null);
-evalR("imageSizeX<-.imageDimension[1]",null);
-
+/*Access bounding box for WorldWind!*/
 /*Access bounding box for WorldWind!*/
 evalR("try(.bboxImage<-slot(" + name + ",\"bbox\"))",null);
 minLat =  fromR(".bboxImage[2]").asDouble();
@@ -59,14 +52,6 @@ if (WorldWindOptionsView.getOptionsInstance() != null) {
 	WorldWindOptionsView.setMinLon(Double.toString(minLon));
 	WorldWindOptionsView.setMaxLon(Double.toString(maxLon));
 }
-/*Create an image vector for the first band of the srtm-hgt file!*/
-evalR(".datadf<-slot(" + name + ",\"data\")",null);
-/*Groovy specific we have to escape the $ char!*/
-evalR("eval("+name+"<-.datadf\$band1)",null);
-
-
-/*Create an float image from the data transfered to ImageJ as integers!*/
-imageFromR(2, name, 0);
-
-/*Cleanup and remove temporary variables!*/
-evalR("try(remove(list = c('.isInstalled','.cellSize','.imageDimension','.datadf','.bboxImage')));", null);
+evalR("try(remove(list = c('.bboxImage','.isInstalled')));", null);
+       
+	

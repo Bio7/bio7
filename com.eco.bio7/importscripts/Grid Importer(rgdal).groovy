@@ -5,9 +5,12 @@ import org.apache.commons.io.FilenameUtils;
 Gridfile importer script. Using the 'rgdal' package of R.
 Author: M. Austenfeld 
 Year:   2005-2017
+*/
 
- */
-
+/*Test if Rserve is alive!*/
+if(RServe.isAliveDialog()==false){
+	return;
+}
 evalR(".isInstalled<-as.character(require('rgdal'))", null);
 rexpr = fromR(".isInstalled");
 isAvail = rexpr.asString();
@@ -30,7 +33,7 @@ if (files != null) {
 	toR(".fileGdalBio7", f.toString());
 	/*Read the gridfile with the filename as the layer!*/
 	evalR("try(" + name + " <- readGDAL(.fileGdalBio7));", null);
-	System.out.println("Loaded Grid: " + name + "\n");
+	println("Loaded Grid: " + name + "\n");
 	evalR("try(print(summary(" + name + ")));try(remove(list = c('.fileGdalBio7','.isInstalled')));", null);
 
 }
