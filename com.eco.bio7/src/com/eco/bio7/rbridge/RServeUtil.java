@@ -1,8 +1,5 @@
 package com.eco.bio7.rbridge;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.Callable;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -11,7 +8,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REngineException;
-import org.rosuda.REngine.RList;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.batch.BatchModel;
 import com.eco.bio7.compile.RInterpreterJob;
@@ -24,7 +20,6 @@ public class RServeUtil {
 
 	protected static REXP rexp;
 	protected static Boolean val;
-	private static boolean result;
 
 	/**
 	 * Evaluates a script in R running in a job.
