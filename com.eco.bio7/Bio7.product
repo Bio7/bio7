@@ -63,6 +63,7 @@ jre/lib/jli/libjli.dylib
    <vm>
    </vm>
 
+
    <plugins>
       <plugin id="Bundled_R"/>
       <plugin id="com.eco.bio7"/>
@@ -207,8 +208,8 @@ jre/lib/jli/libjli.dylib
 
 
    <repositories>
-      <repository location="http://download.eclipse.org/releases/neon" enabled="true" />
-      <repository location="http://download.eclipse.org/eclipse/updates/4.6" enabled="true" />
+      <repository location="http://download.eclipse.org/eclipse/updates/4.7" enabled="true" />
+      <repository location="http://download.eclipse.org/releases/oxygen" enabled="true" />
    </repositories>
 
    <preferencesInfo>
