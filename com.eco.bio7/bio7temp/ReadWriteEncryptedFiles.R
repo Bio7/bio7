@@ -3,7 +3,7 @@
 ####Encryption functions
 library("digest")
 # write encrypted data frame to file
-write.aes <- function(df,filename, key) {
+.write.aes <- function(df,filename, key) {
   require(digest)
   zz <- textConnection("out","w")
   write.csv(df,zz, row.names=F)
@@ -16,7 +16,7 @@ write.aes <- function(df,filename, key) {
   writeBin(aes$encrypt(raw),filename)  
 }
 # read encypted data frame from file
-read.aes <- function(filename,key) {
+.read.aes <- function(filename,key) {
   require(digest)
   dat <- readBin(filename,"raw",n=1000)
   aes <- AES(key,mode="ECB")

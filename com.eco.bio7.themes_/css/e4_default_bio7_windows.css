@@ -236,10 +236,6 @@ background-color: #eeeeee;
 background-color: #ffffff;
 
 }
-.MPart{
-
-
-}
 
 #org-eclipse-ui-editorss {
 	swt-tab-height: 8.0px;
@@ -255,7 +251,7 @@ background-color: #ffffff;
 #org-eclipse-ui-main-toolbar {
     eclipse-perspective-keyline-color: #585858;
     background-color: #eeeeee;
-   background-image: url('./bio7.png');
+    background-image: url('./bio7.png');
     color: #EBE8E4;
 }
 
@@ -359,6 +355,17 @@ CTabFolder {
 
  swt-corner-radius: 15.0;
   
+}
+
+
+/*Composite #com-eco-bio7-thumbnails.MToolBar {
+     background-color: #eeeeee;
+     
+}*/
+
+Composite #com-eco-bio7-rbridge-RTable.MToolBar {
+     background-color: #eeeeee;
+     
 }
 
 #com-eco-bio7-rbridge-RTable.MToolBar Label {
