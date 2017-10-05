@@ -4,7 +4,7 @@ Created-By: 1.6.0_02-b05 (Sun Microsystems Inc.)
 Bundle-ManifestVersion: 2
 Bundle-Name: Bio7 Plug-in
 Bundle-SymbolicName: com.eco.bio7;singleton:=true
-Bundle-Version: 2.5.0
+Bundle-Version: 2.6.0
 Bundle-Activator: com.eco.bio7.Bio7Plugin
 Bundle-Vendor: ECO
 Bundle-Localization: plugin
@@ -198,7 +198,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.filesystem;bundle-version="1.6.1",
  com.eco.bio7.pythonedit;bundle-version="2.5.0",
  Bundled_R;bundle-version="3.3.3",
- com.eco.bio7.image;bundle-version="1.51.162",
+ com.eco.bio7.image;bundle-version="1.51.17",
  com.eco.bio7.WorldWind;bundle-version="2.1.0",
  com.eco.bio7.albireo;bundle-version="2.1.1",
  com.eco.bio7.browser;bundle-version="2.0.0",

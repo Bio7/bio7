@@ -13,12 +13,13 @@ import com.eco.bio7.batch.BatchModel;
 import com.eco.bio7.compile.RInterpreterJob;
 
 /**
- * @author Bio7
- * A Rserve utility class to evaluate R scripts and code in an Eclipse job!
+ * @author Bio7 A Rserve utility class to evaluate R scripts and code in an
+ *         Eclipse job!
  */
 public class RServeUtil {
 
 	protected static REXP rexp;
+	protected static Boolean val;
 
 	/**
 	 * Evaluates a script in R running in a job.
@@ -84,7 +85,7 @@ public class RServeUtil {
 						monitor.beginTask("Transfer Data ...", IProgressMonitor.UNKNOWN);
 						try {
 							rexp = RServe.getConnection().eval(eval);
-							
+
 						} catch (RserveException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -181,6 +182,7 @@ public class RServeUtil {
 									e.printStackTrace();
 								}
 							}
+
 						} catch (RserveException e) {
 							// TODO Auto-generated catch block
 							RState.setBusy(false);
