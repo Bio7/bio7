@@ -117,7 +117,7 @@ ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_TEXT_COLOR {
 
 .MTrimmedWindow.topLevel {
 	background-color: #ffffff;
-	margin-top: 0px;
+	margin-top: 4px;
 	margin-bottom: 4px;
 	margin-left: 2px;
 	margin-right: 2px;

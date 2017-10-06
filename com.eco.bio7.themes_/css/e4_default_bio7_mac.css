@@ -26,6 +26,14 @@ ThemesExtension { color-definition:
 	'#org-eclipse-ui-workbench-ACTIVE_TAB_OUTLINE_COLOR';
 }
 
+.MTrimmedWindow.topLevel {
+	background-color: #ffffff;
+	margin-top: 4px;
+	margin-bottom: 4px;
+	margin-left: 2px;
+	margin-right: 2px;
+}
+
 ColorDefinition#org-eclipse-ui-workbench-INACTIVE_UNSELECTED_TABS_COLOR_START {
 	color: #eeeeee;
 	category: '#org-eclipse-ui-presentation-default';
@@ -136,7 +144,7 @@ CTabItem:selected {
 .MPartStack {
 	swt-tab-renderer: url('bundleclass://org.eclipse.e4.ui.workbench.renderers.swt/org.eclipse.e4.ui.workbench.renderers.swt.CTabRendering');
 	swt-selected-tab-fill: '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_END' 100.0% 100.0%;
-	swt-unselected-tabs-color:  white #eeeeee #dddddd 25.0% 25.0% 50.0%;
+	swt-unselected-tabs-color:  #eeeeee;
 	swt-outer-keyline-color: '#org-eclipse-ui-workbench-INACTIVE_TAB_OUTER_KEYLINE_COLOR';
 	swt-inner-keyline-color: '#org-eclipse-ui-workbench-INACTIVE_TAB_INNER_KEYLINE_COLOR';
 	swt-tab-outline: '#org-eclipse-ui-workbench-INACTIVE_TAB_OUTLINE_COLOR';
@@ -144,18 +152,18 @@ CTabItem:selected {
 	swt-shadow-visible: false;
 	swt-mru-visible: false;
 	color: '#org-eclipse-ui-workbench-INACTIVE_TAB_TEXT_COLOR';
-	swt-tab-height: 22.0px; 
+	/*swt-tab-height: 22.0px;*/
 	
 }
 
 .MPartStack.active {
 	swt-selected-tab-fill: '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_END' 100.0% 100.0%;
-	swt-unselected-tabs-color: white #eeeeee #dddddd 25.0% 25.0% 50.0%;
+	swt-unselected-tabs-color: #eeeeee;
 	swt-outer-keyline-color: '#org-eclipse-ui-workbench-ACTIVE_TAB_OUTER_KEYLINE_COLOR';
 	swt-inner-keyline-color: '#org-eclipse-ui-workbench-ACTIVE_TAB_INNER_KEYLINE_COLOR';
 	swt-tab-outline: '#org-eclipse-ui-workbench-ACTIVE_TAB_OUTLINE_COLOR';
 	swt-shadow-visible: false;
-	swt-tab-height: 22.0px; 
+	/*swt-tab-height: 22.0px; */
 }
 
 .MPartStack.active.noFocus {
@@ -247,8 +255,8 @@ background-color: #ffffff;
 }
 #org-eclipse-ui-main-toolbar {
     eclipse-perspective-keyline-color: #585858;
-    background-color: #eeeeee;
-   background-image: url('./bio7.png');
+    background-color: white #eeeeee #dddddd 25.0% 25.0% 50.0%;
+   /*background-image: url('./bio7.png');*/
     color: #EBE8E4;
 }
 
@@ -309,8 +317,8 @@ CTabItem:selected {
 /*Perspective Switch!*/
 #org-eclipse-ui-main-toolbar #PerspectiveSwitcher {
 	eclipse-perspective-keyline-color: #dddddd;
-	background-image: url('./bio7.png');
-	background-color: #ffffff;
+	/*background-image: url('./bio7.png');*/
+	background-color: white #eeeeee #dddddd 25.0% 25.0% 50.0%;
 	#handle-image: none;
 		
 }
@@ -416,9 +424,3 @@ Bounds: x=1082 y=186 h=31 w=31;
   /*font-family: "Terminal";*/
 } 
 */
-
-
-
-
-
-
