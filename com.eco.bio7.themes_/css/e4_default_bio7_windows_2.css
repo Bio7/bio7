@@ -116,10 +116,11 @@ ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_TEXT_COLOR {
 }
 
 .MTrimmedWindow.topLevel {
-	margin-top: 2px;
-	margin-bottom: 0px;
-	margin-left: 0px;
-	margin-right: 0px;
+	background-color: #ffffff;
+	margin-top: 0px;
+	margin-bottom: 4px;
+	margin-left: 2px;
+	margin-right: 2px;
 }
 
 .MPart.busy {
@@ -145,11 +146,11 @@ CTabItem:selected {
 	swt-outer-keyline-color: '#org-eclipse-ui-workbench-INACTIVE_TAB_OUTER_KEYLINE_COLOR';
 	swt-inner-keyline-color: '#org-eclipse-ui-workbench-INACTIVE_TAB_INNER_KEYLINE_COLOR';
 	swt-tab-outline: '#org-eclipse-ui-workbench-INACTIVE_TAB_OUTLINE_COLOR';
-	padding: 1.0px 2.0px 2.0px;
+	padding: 1.0px 1.0px 1.0px;
 	swt-shadow-visible: false;
 	swt-mru-visible: false;
 	color: '#org-eclipse-ui-workbench-INACTIVE_TAB_TEXT_COLOR';
-	/*swt-tab-height: 33.0px;*/ 
+	swt-tab-height: 33.0px;
 	
 }
 
@@ -160,7 +161,7 @@ CTabItem:selected {
 	swt-inner-keyline-color: '#org-eclipse-ui-workbench-ACTIVE_TAB_INNER_KEYLINE_COLOR';
 	swt-tab-outline: '#org-eclipse-ui-workbench-ACTIVE_TAB_OUTLINE_COLOR';
 	swt-shadow-visible: false;
-	/*swt-tab-height: 33.0px; */
+	swt-tab-height: 33.0px;
 }
 
 .MPartStack.active.noFocus {
@@ -236,27 +237,22 @@ background-color: #eeeeee;
 background-color: #ffffff;
 
 }
-.MPart{
-
-
-}
 
 #org-eclipse-ui-editorss {
 	swt-tab-height: 8.0px;
 	padding: 0.0px 5.0px 7.0px;
 }
 
-/*The colour for the toolbar of the views*/
+/*The colour for all view toolbars. Not set!*/
 .MToolBar {
 
 
 
 }
 #org-eclipse-ui-main-toolbar {
-    eclipse-perspective-keyline-color: #585858;
-    background-color: #eeeeee;
-   background-image: url('./bio7.png');
-    color: #EBE8E4;
+    eclipse-perspective-keyline-color: #ffffff;
+    background-color: white #eeeeee #dddddd 25.0% 25.0% 50.0%;   
+    
 }
 
 
@@ -320,8 +316,8 @@ CTabItem:selected {
 /*Perspective Switch!*/
 #org-eclipse-ui-main-toolbar #PerspectiveSwitcher {
 	eclipse-perspective-keyline-color: #dddddd;
-	background-image: url('./bio7.png');
-	background-color: #ffffff;
+	/*background-image: url('./bio7.png');*/
+	background-color: white #eeeeee #dddddd 25.0% 25.0% 50.0%;
 		
 }
 
@@ -336,12 +332,13 @@ CTabItem:selected {
 .MPartSashContainer {
 
  background-color: 	#ffffff;
- margin-top: 4.0px;
-	margin-bottom: 4.0px;
-	margin-left: 4.0px;
-	margin-right: 4.0px;
+    margin-top: 2px;
+	margin-bottom: 2px;
+	margin-left: 2px;
+	margin-right: 2px;
  
 }
+
 
 /*Colour around views!*/
 .MTrimmedWindow {
@@ -350,8 +347,6 @@ CTabItem:selected {
 	margin-bottom: 4.0px;
 	margin-left: 4.0px;
 	margin-right: 4.0px;
-	
-    /*  */
 }
 
 /*Important to set height for the view menus!*/
@@ -359,6 +354,17 @@ CTabFolder {
 
  swt-corner-radius: 15.0;
   
+}
+
+
+/*Composite #com-eco-bio7-thumbnails.MToolBar {
+     background-color: #eeeeee;
+     
+}*/
+
+Composite #com-eco-bio7-rbridge-RTable.MToolBar {
+     background-color: #eeeeee;
+     
 }
 
 #com-eco-bio7-rbridge-RTable.MToolBar Label {
@@ -378,14 +384,6 @@ Composite #com-eco-bio7-rbridge-RTable.MToolBar {
 #org-eclipse-ui-console-ConsoleView.MToolBar {
     background-color:  #eeeeee;
 }
-
-/*Important to set height for the view menus!*/
-CTabFolder { 
-
- swt-corner-radius: 15.0;
- swt-tab-height: 34px;
-}
-
 
 /*Composite #com-eco-bio7-piechart {
    background-color:  #ffffff;
