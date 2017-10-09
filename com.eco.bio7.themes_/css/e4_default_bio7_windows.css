@@ -89,30 +89,37 @@ ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_OUTLINE_COLOR {
 /* Already existing ColorDefinitions overridden for the E4 default theme */
 ColorDefinition#org-eclipse-ui-workbench-INACTIVE_TAB_BG_START {
 	color: #dddfe5;
+	category: '#org-eclipse-ui-presentation-default';
 }
 
 ColorDefinition#org-eclipse-ui-workbench-INACTIVE_TAB_BG_END {
 	color: #eeeeee;
+	category: '#org-eclipse-ui-presentation-default';
 }
 
 ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_BG_START{
 	color: #eeeeee;
+	category: '#org-eclipse-ui-presentation-default';
 }
 
 ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_BG_END {
 	color: #eeeeee;
+	category: '#org-eclipse-ui-presentation-default';
 }
 
 ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_BG_START {
 	color: #eeeeee;
+	category: '#org-eclipse-ui-presentation-default';
 }
 
 ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_BG_END {
 	color: #eeeeee;
+	category: '#org-eclipse-ui-presentation-default';
 }
 
 ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_TEXT_COLOR {
-	color: #000000;
+	color: #eeeeee;
+	category: '#org-eclipse-ui-presentation-default';
 }
 
 .MTrimmedWindow.topLevel {

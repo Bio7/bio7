@@ -54,6 +54,7 @@ import com.eco.bio7.actions.FlowEditorAction;
 import com.eco.bio7.actions.FlowEditorTestAction;
 import com.eco.bio7.actions.FlowExternalStartAction;
 import com.eco.bio7.actions.FlowStopAction;
+import com.eco.bio7.actions.HideMainMenus;
 import com.eco.bio7.actions.Interpret;
 import com.eco.bio7.actions.InterpretPython;
 import com.eco.bio7.actions.JavaScriptInterpret;
@@ -67,6 +68,7 @@ import com.eco.bio7.actions.Random;
 import com.eco.bio7.actions.ResetField;
 import com.eco.bio7.actions.SetupDiscrete;
 import com.eco.bio7.actions.ShowEditorAreaAction;
+import com.eco.bio7.actions.ShowMainMenus;
 import com.eco.bio7.actions.Start;
 import com.eco.bio7.actions.Start3d;
 import com.eco.bio7.documents.LatexSweaveKnitrAction;
@@ -87,7 +89,7 @@ import com.eco.bio7.rbridge.actions.OfficeValueToRHeadAction;
 import com.eco.bio7.rbridge.actions.OpenRservePreferencesAction;
 import com.eco.bio7.rbridge.actions.PrintExpression;
 import com.eco.bio7.rbridge.actions.SaveRWorkspace;
-import com.eco.bio7.rbridge.actions.SaveRWorkspaceand_Start;
+import com.eco.bio7.rbridge.actions.SaveRWorkspaceAndStart;
 import com.eco.bio7.rbridge.actions.StartRServe;
 import com.eco.bio7.scenebuilder.GenerateControllerAction;
 import com.eco.bio7.time.Time;
@@ -241,6 +243,12 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 	private JavaScriptInterpret javaScriptInterpret;
 
+	private ShowMainMenus showMainMenu;
+
+	private HideMainMenus hideMainMenu;
+
+	private IWorkbenchAction toggleCoolBar;
+
 	//private FastOpenScriptAction fastOpenScriptAction;
 
 	public ApplicationActionBarAdvisor(IActionBarConfigurer configurer) {
@@ -254,6 +262,15 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		New = ActionFactory.NEW.create(window);
 		New.setText("New");
 		register(New);
+		
+		toggleCoolBar = ActionFactory.TOGGLE_COOLBAR.create(window);
+		register(toggleCoolBar);
+		
+		showMainMenu=new ShowMainMenus("Show all menus",window2);
+		register(showMainMenu);
+		
+		hideMainMenu=new HideMainMenus("Hide all Menus",window2);
+		register(hideMainMenu);
 
 		officeopenspread = new OfficeOpenAction("Open Spreadsheet", window2);
 
@@ -838,7 +855,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		rMenu.add(loadRLibrary);
 		rMenu.add(new Separator());
 		if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
-			rMenu.add(new SaveRWorkspaceand_Start("Start RGui with Workspace", window2));
+			rMenu.add(new SaveRWorkspaceAndStart("Start RGui with Workspace", window2));
 		} else {
 			//No R shell for Bio7 Linux and Mac.
 			//rMenu.add(new SaveRWorkspaceand_Start("Start R Shell", window2));
@@ -867,6 +884,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		WindowMenu.add(openPerspectiveMenu);
 		WindowMenu.add(new Separator());
 		WindowMenu.add(new ShowEditorAreaAction("Show/Hide Editor", window2));
+		WindowMenu.add(new Separator());
+		WindowMenu.add(hideMainMenu);
+		WindowMenu.add(showMainMenu);
+		WindowMenu.add(toggleCoolBar);
 		WindowMenu.add(new Separator());
 		WindowMenu.add(saveperspectiveas);
 		helpMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));

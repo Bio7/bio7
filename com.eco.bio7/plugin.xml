@@ -344,6 +344,22 @@
             commandId="com.eco.bio7.start"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
             keySequence="ALT+P"/>
+     <keyBinding
+            commandId="com.eco.bio7.show.main.menus"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+SHIFT+3"/>
+     <keyBinding
+            commandId="com.eco.bio7.hide.main.menus"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+SHIFT+4"/>              
+     <command
+            description="Show Main Menus"
+            id="com.eco.bio7.show.main.menus"
+            name="Show Main Menus"/>
+     <command
+            description="Hide Main Menus"
+            id="com.eco.bio7.hide.main.menus"
+            name="Hide Main Menus"/>
       <command
             description="Start/Stop Action"
             id="com.eco.bio7.start"
