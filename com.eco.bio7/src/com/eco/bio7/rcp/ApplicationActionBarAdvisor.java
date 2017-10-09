@@ -885,9 +885,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		WindowMenu.add(new Separator());
 		WindowMenu.add(new ShowEditorAreaAction("Show/Hide Editor", window2));
 		WindowMenu.add(new Separator());
-		WindowMenu.add(hideMainMenu);
-		WindowMenu.add(showMainMenu);
-		WindowMenu.add(toggleCoolBar);
+		//WindowMenu.add(hideMainMenu);
+		//WindowMenu.add(showMainMenu);
+		//WindowMenu.add(toggleCoolBar);
 		WindowMenu.add(new Separator());
 		WindowMenu.add(saveperspectiveas);
 		helpMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
