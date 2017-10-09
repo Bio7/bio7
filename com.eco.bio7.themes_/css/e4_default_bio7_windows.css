@@ -118,7 +118,7 @@ ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_BG_END {
 }
 
 ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_TEXT_COLOR {
-	color: #eeeeee;
+	color: #000000;
 	category: '#org-eclipse-ui-presentation-default';
 }
 

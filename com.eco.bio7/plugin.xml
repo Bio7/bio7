@@ -347,11 +347,11 @@
      <keyBinding
             commandId="com.eco.bio7.show.main.menus"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            keySequence="CTRL+SHIFT+3"/>
+            keySequence="CTRL+SHIFT+2"/>
      <keyBinding
             commandId="com.eco.bio7.hide.main.menus"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            keySequence="CTRL+SHIFT+4"/>              
+            keySequence="CTRL+SHIFT+3"/>              
      <command
             description="Show Main Menus"
             id="com.eco.bio7.show.main.menus"
