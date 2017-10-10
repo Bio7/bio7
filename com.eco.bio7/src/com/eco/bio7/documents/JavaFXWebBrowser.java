@@ -31,7 +31,6 @@ import com.eco.bio7.browser.MultiPageEditor;
 import com.eco.bio7.collection.CustomView;
 import com.eco.bio7.markdownedit.editors.MarkdownEditor;
 import com.eco.bio7.util.Util;
-
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
@@ -41,9 +40,6 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.input.TransferMode;
