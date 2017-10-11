@@ -130,7 +130,7 @@ public class Start extends Action {
 	}
 
 	private void setcursor_quad() {
-		Cursor c = quad2d.getToolkit().createCustomCursor(new ImageIcon(file.getPath()).getImage(), new Point(5, 5), "Cursor");
+		//Cursor c = quad2d.getToolkit().createCustomCursor(new ImageIcon(file.getPath()).getImage(), new Point(5, 5), "Cursor");
 		quad2d.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 	}
 
