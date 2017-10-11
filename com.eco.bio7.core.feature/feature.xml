@@ -49,6 +49,7 @@
       <import plugin="org.eclipse.core.filesystem" version="1.6.1" match="greaterOrEqual"/>
       <import plugin="com.eco.bio7.pythonedit" version="2.5.0" match="greaterOrEqual"/>
       <import plugin="Bundled_R" version="3.3.3" match="greaterOrEqual"/>
+      <import plugin="com.eco.bio7.image" version="1.51.17" match="greaterOrEqual"/>
       <import plugin="com.eco.bio7.WorldWind" version="2.1.0" match="greaterOrEqual"/>
       <import plugin="com.eco.bio7.albireo" version="2.1.1" match="greaterOrEqual"/>
       <import plugin="com.eco.bio7.browser" version="2.0.0" match="greaterOrEqual"/>
@@ -60,6 +61,7 @@
       <import plugin="com.eco.bio7.edit" version="2.0.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.e4.core.contexts" version="1.3.100" match="greaterOrEqual"/>
       <import plugin="com.eco.bio7.scenebuilder" version="2.2.0" match="greaterOrEqual"/>
+      <import plugin="com.eco.bio7.ijmacro.editor" version="2.0.1" match="greaterOrEqual"/>
       <import plugin="com.eco.bio7.os" version="2.0.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.jdt.launching" version="3.8.101" match="greaterOrEqual"/>
       <import plugin="org.eclipse.jdt.ui" version="3.9.100" match="greaterOrEqual"/>
@@ -74,8 +76,6 @@
       <import plugin="org.eclipse.jface"/>
       <import plugin="net.sourceforge.texlipse"/>
       <import plugin="org.eclipse.e4.ui.css.swt.theme"/>
-      <import plugin="com.eco.bio7.image" version="1.51.162" match="greaterOrEqual"/>
-      <import plugin="com.eco.bio7.ijmacro.editor" version="2.0.1" match="greaterOrEqual"/>
    </requires>
 
    <plugin

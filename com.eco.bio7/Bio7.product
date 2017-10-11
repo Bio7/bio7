@@ -63,7 +63,6 @@ jre/lib/jli/libjli.dylib
    <vm>
    </vm>
 
-
    <plugins>
       <plugin id="Bundled_R"/>
       <plugin id="com.eco.bio7"/>
@@ -175,9 +174,9 @@ jre/lib/jli/libjli.dylib
       <feature id="com.eco.bio7.core.feature"/>
       <feature id="com.eco.bio7.edit.feature"/>
       <feature id="com.eco.bio7.floweditor.feature"/>
+      <feature id="com.eco.bio7.image.feature"/>
       <feature id="com.eco.bio7.javaedit.feature"/>
       <feature id="com.eco.bio7.r.feature" installMode="root"/>
-      <feature id="com.eco.bio7.image.feature" installMode="root"/>
       <feature id="com.eco.bio7.libs.feature"/>
       <feature id="com.eco.bio7.redit.feature"/>
       <feature id="com.eco.bio7.util.feature"/>
