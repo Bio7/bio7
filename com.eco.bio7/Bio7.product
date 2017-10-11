@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Bio7" uid="2.5.0" id="com.eco.bio7.product" application="com.eco.bio7.application" version="2.5.0.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="Bio7" uid="2.6.0" id="com.eco.bio7.product" application="com.eco.bio7.application" version="2.6.0.qualifier" useFeatures="true" includeLaunchers="true">
 
    <aboutInfo>
       <image path="/com.eco.bio7/icons/bio7app/bio7_48.png"/>
@@ -174,9 +174,9 @@ jre/lib/jli/libjli.dylib
       <feature id="com.eco.bio7.core.feature"/>
       <feature id="com.eco.bio7.edit.feature"/>
       <feature id="com.eco.bio7.floweditor.feature"/>
+      <feature id="com.eco.bio7.image.feature"/>
       <feature id="com.eco.bio7.javaedit.feature"/>
       <feature id="com.eco.bio7.r.feature" installMode="root"/>
-      <feature id="com.eco.bio7.image.feature" installMode="root"/>
       <feature id="com.eco.bio7.libs.feature"/>
       <feature id="com.eco.bio7.redit.feature"/>
       <feature id="com.eco.bio7.util.feature"/>
@@ -207,8 +207,8 @@ jre/lib/jli/libjli.dylib
 
 
    <repositories>
-      <repository location="http://download.eclipse.org/releases/neon" enabled="true" />
-      <repository location="http://download.eclipse.org/eclipse/updates/4.6" enabled="true" />
+      <repository location="http://download.eclipse.org/eclipse/updates/4.7" enabled="true" />
+      <repository location="http://download.eclipse.org/releases/oxygen" enabled="true" />
    </repositories>
 
    <preferencesInfo>

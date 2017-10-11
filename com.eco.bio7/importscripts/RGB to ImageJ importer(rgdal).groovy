@@ -1,12 +1,15 @@
 /*
 Gridfile importer script. Using the 'rgdal' package of R.
+Transfers the RGB data to ImageJ.
+
 Author: M. Austenfeld 
 Year:   2005-2017
 */
+
 import com.eco.bio7.worldwind.WorldWindOptionsView;
-import static com.eco.bio7.rbridge.RServeUtil.*;
 import org.rosuda.REngine.REXP;
 import org.apache.commons.io.FilenameUtils;
+import static com.eco.bio7.rbridge.RServeUtil.*;
 import static com.eco.bio7.image.ImageMethods.*;
 
 /*Test if Rserve is alive!*/
@@ -62,11 +65,24 @@ if (WorldWindOptionsView.getOptionsInstance() != null) {
 /*Create an image vector for the first band of the srtm-hgt file!*/
 evalR(".datadf<-slot(" + name + ",\"data\")",null);
 /*Groovy specific we have to escape the $ char!*/
-evalR("eval("+name+"<-.datadf\$band1)",null);
+//evalR("eval("+name+"<-.datadf\$band1)",null);
+evalR("try(imageMatrixR<-as.raw(.datadf\$band1))",null);
+evalR("try(imageMatrixG<-as.raw(.datadf\$band2))",null);
+evalR("try(imageMatrixB<-as.raw(.datadf\$band3))",null);
+/*Create images from the band data transfered to ImageJ*/
+imageFromR(1, "imageMatrixR",2);
+imageFromR(1, "imageMatrixG",2);
+imageFromR(1, "imageMatrixB",2);
 
 
 /*Create an float image from the data transfered to ImageJ as integers!*/
-imageFromR(2, name, 0);
+//ImageMethods.imageFromR(2, name, 0);
 
 /*Cleanup and remove temporary variables!*/
-evalR("try(remove(list = c('.isInstalled','.cellSize','.imageDimension','.datadf','.bboxImage')));", null);
+evalR("try(remove(list = c('.isInstalled','.cellSize','.imageDimension','.datadf','.bboxImage','imageMatrixR','imageMatrixG','imageMatrixB')));", null);
+
+ij.IJ.run("Merge Channels...", "red=imageMatrixR green=imageMatrixG blue=imageMatrixB gray=*None*");
+
+		
+
+			

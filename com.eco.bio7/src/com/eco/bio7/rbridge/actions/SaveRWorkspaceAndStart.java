@@ -25,11 +25,11 @@ import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 
-public class SaveRWorkspaceand_Start extends Action {
+public class SaveRWorkspaceAndStart extends Action {
 
 	private final IWorkbenchWindow window;
 
-	public SaveRWorkspaceand_Start(String text, IWorkbenchWindow window) {
+	public SaveRWorkspaceAndStart(String text, IWorkbenchWindow window) {
 		super(text);
 		this.window = window;
 		setId("com.eco.bio7.save_r_start_workspace");
