@@ -1142,8 +1142,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		if(ThemeHelper.getEngine().getActiveTheme()!=null){
 		String activeTheme = ThemeHelper.getEngine().getActiveTheme().getId();
 		/* We use a black style if the CSS is the dark theme or the darkest dark theme! */
-		if (activeTheme.equals("org.eclipse.e4.ui.css.theme.e4_dark")||activeTheme.startsWith("com.genuitec.eclipse.theming.base")) {
-
+		if (activeTheme.equals("org.eclipse.e4.ui.css.theme.e4_dark")||activeTheme.equals("com.genuitec.eclipse.themes.dark")) {
+           
 			Bundle bundle = Platform.getBundle("com.eco.bio7.themes");
 			URL fileURL = bundle.getEntry("javafx/ModenaBlack.css");
 

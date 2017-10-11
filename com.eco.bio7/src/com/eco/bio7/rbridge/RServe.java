@@ -559,7 +559,6 @@ public class RServe {
 	private static void finalCloseAndDisplay() {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		boolean customDevice = store.getBoolean("USE_CUSTOM_DEVICE");
-		System.out.println(customDevice);
 		if (customDevice == true) {
 
 			String plotPathR = store.getString(PreferenceConstants.P_TEMP_R);

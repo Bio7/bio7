@@ -46,8 +46,8 @@
 }
 
 .MPartStack.active {
-    swt-selected-tab-fill: '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_END' 100%; /* title background for selected tab */
-    swt-unselected-tabs-color: '#org-eclipse-ui-workbench-ACTIVE_UNSELECTED_TABS_COLOR_START' '#org-eclipse-ui-workbench-ACTIVE_UNSELECTED_TABS_COLOR_END' 100% 100%; /* title background for unselected tab */
+    /*swt-selected-tab-fill: '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_END' 100%;  title background for selected tab */
+    swt-unselected-tabs-color: '#org-eclipse-ui-workbench-INACTIVE_UNSELECTED_TABS_COLOR_START' '#org-eclipse-ui-workbench-INACTIVE_UNSELECTED_TABS_COLOR_END' 100% 100%; /* title background for unselected tab */
     swt-outer-keyline-color: '#org-eclipse-ui-workbench-ACTIVE_TAB_OUTER_KEYLINE_COLOR'; /* border color for whole tabs container */
     swt-inner-keyline-color: '#org-eclipse-ui-workbench-ACTIVE_TAB_INNER_KEYLINE_COLOR';
     swt-tab-outline: '#org-eclipse-ui-workbench-ACTIVE_TAB_OUTLINE_COLOR'; /* border color for selected tab */
@@ -163,7 +163,7 @@ CTabFolder Tree, CTabFolder Canvas {
 
 #org-eclipse-ui-main-toolbar, #PerspectiveSwitcher {
     eclipse-perspective-keyline-color: #585858;
-    background-color: #515658 #515658 100%;
+    background-color:  #41464A #252525 #252525  10.0% 90.0% 5.0%;
     handle-image: none;
     color: #EBE8E4;
 }
