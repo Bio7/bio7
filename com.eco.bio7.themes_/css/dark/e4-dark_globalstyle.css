@@ -578,10 +578,6 @@ Composite #com-eco-bio7-browser-Browser.MToolBar {
    visibility: hidden;
 }*/
 
-Table, Tree, Grid {
-    swt-header-color: #252525;
-    swt-header-background-color: #383D3F;
-}
 
 HeapStatus {
 	background-color: #4F5355;
@@ -617,6 +613,20 @@ ExpandableComposite {
 TabbedPropertyTitle > CLabel{
 	color: #9AC9D8;
 }
+/*Apply the flat scrollbar overlay!*/
+Table, Tree, Grid {
+    flat-scroll-bar: true;
+    swt-header-color: #252525;
+    swt-header-background-color: #383D3F;
+}
 
+Tree {
+  flat-scroll-bar: true;
+  
+}
 
+StyledText {
+  flat-scroll-bar: true;
+  
+}
 
