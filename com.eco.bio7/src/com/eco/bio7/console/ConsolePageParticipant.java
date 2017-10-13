@@ -42,6 +42,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
@@ -520,14 +521,16 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				// Some Useful commands: export TERM=xterm; top -b; ssh -tt
 				// gksudo 'apt-get --yes install abiword'
 
-				String[] env = { "TERM=xterm" };
-				nativeShellProcess = PtyProcess.exec(new String[] { "/bin/sh", "-i" });
-
+				//String[] env = { "TERM=xterm" };
+				//nativeShellProcess = PtyProcess.exec(new String[] { "/bin/sh", "-i" });
+                
 				List<String> args = new ArrayList<String>();
 				args.add("/bin/sh");
 				args.add("-i");
 				ProcessBuilder builder = new ProcessBuilder(args);
-				builder.redirectErrorStream(true);
+				 Map<String, String> env2 = builder.environment();
+			    env2.put("TERM", "xterm");
+			    builder.redirectErrorStream(true);
 				nativeShellProcess = builder.start();
 				nativeShellprocessThread = new Thread(new NativeProcessGrabber());
 				nativeShellprocessThread.start();
