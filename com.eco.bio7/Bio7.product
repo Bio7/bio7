@@ -203,8 +203,6 @@ jre/lib/jli/libjli.dylib
       <feature id="org.eclipse.jdt"/>
       <feature id="org.eclipse.nebula.widgets.grid.feature"/>
       <feature id="com.eco.bio7.ijmacroedit.feature"/>
-      <feature id="com.codeaffine.eclipse.swt.feature" version="0.5.0.20170519-1200"/>
-      <feature id="com.codeaffine.eclipse.ui.swt.theme.feature" version="0.5.0.20170519-1200"/>
    </features>
 
 

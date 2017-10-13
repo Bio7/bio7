@@ -64,7 +64,7 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 
 			public void widgetSelected(SelectionEvent e) {
 				exitShellProcess();
-				setConsoleColor();
+				//setConsoleColor();
 				IOConsole ioConsole = participant.getIoc();
 				participant.interpreterSelection = "jython";
 				ioConsole.clearConsole();
@@ -85,7 +85,7 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 
 			public void widgetSelected(SelectionEvent e) {
 				exitShellProcess();
-				setConsoleColor();
+				//setConsoleColor();
 				IOConsole ioConsole = participant.getIoc();
 				participant.interpreterSelection = "groovy";
 				ioConsole.clearConsole();
@@ -105,7 +105,7 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 
 			public void widgetSelected(SelectionEvent e) {
 				exitShellProcess();
-				setConsoleColor();
+				//setConsoleColor();
 				IOConsole ioConsole = participant.getIoc();
 				participant.interpreterSelection = "beanshell";
 
@@ -128,7 +128,7 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 
 			public void widgetSelected(SelectionEvent e) {
 				exitShellProcess();
-				setConsoleColor();
+				//setConsoleColor();
 				IOConsole ioConsole = participant.getIoc();
 				participant.interpreterSelection = "javascript";
 
@@ -198,7 +198,7 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 
 			public void widgetSelected(SelectionEvent e) {
 				exitShellProcess();
-				setConsoleColor();
+				//setConsoleColor();
 				IOConsole ioConsole = participant.getIoc();
 				participant.interpreterSelection = "-";
 				ioConsole.clearConsole();
@@ -225,13 +225,13 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 		return null;
 	}
 
-	private void setConsoleColor() {
+	/*private void setConsoleColor() {
 		StyledText styledText = (StyledText) participant.page.getControl();
 		Color colb = new Color(Display.getCurrent(), 255, 255, 255);
 		Color colf = new Color(Display.getCurrent(), 0, 0, 0);
 		styledText.setBackground(colb);
 		styledText.setForeground(colf);
-	}
+	}*/
 
 	private void exitShellProcess() {
 		if (participant.getShellProcess() != null) {
@@ -249,7 +249,7 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 
 	public void javaProcess() {
 		exitShellProcess();
-		setConsoleColor();
+		//setConsoleColor();
 		IOConsole ioConsole = participant.getIoc();
 		participant.interpreterSelection = "java";
 		ioConsole.clearConsole();
@@ -288,12 +288,12 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 		});
 	}*/
 	public void startR() {
-		StyledText styledText = (StyledText) participant.page.getControl();
-		Color colb = new Color(Display.getCurrent(), 0, 0, 0);
-		Color colf = new Color(Display.getCurrent(), 255, 255, 255);
+		//StyledText styledText = (StyledText) participant.page.getControl();
+		//Color colb = new Color(Display.getCurrent(), 0, 0, 0);
+		//Color colf = new Color(Display.getCurrent(), 255, 255, 255);
 		IOConsole ioConsole = participant.getIoc();
-		styledText.setBackground(colb);
-		styledText.setForeground(colf);
+		//styledText.setBackground(colb);
+		//styledText.setForeground(colf);
 
 		participant.interpreterSelection = "R";
 		ioConsole.clearConsole();
@@ -324,12 +324,12 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 		participant.pipeToRConsole("cat(\"\r\")");
 	}
 	public void startPython() {
-		StyledText styledText = (StyledText) participant.page.getControl();
-		Color colb = new Color(Display.getCurrent(), 0, 0, 0);
-		Color colf = new Color(Display.getCurrent(), 255, 255, 255);
+		//StyledText styledText = (StyledText) participant.page.getControl();
+		//Color colb = new Color(Display.getCurrent(), 0, 0, 0);
+		//Color colf = new Color(Display.getCurrent(), 255, 255, 255);
 		IOConsole ioConsole = participant.getIoc();
-		styledText.setBackground(colb);
-		styledText.setForeground(colf);
+		//styledText.setBackground(colb);
+		//styledText.setForeground(colf);
 
 		participant.interpreterSelection = "Python";
 		ioConsole.clearConsole();
@@ -350,8 +350,8 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 		Color colb = new Color(Display.getCurrent(), 0, 0, 0);
 		Color colf = new Color(Display.getCurrent(), 255, 255, 255);
 		IOConsole ioConsole = participant.getIoc();
-		styledText.setBackground(colb);
-		styledText.setForeground(colf);
+		//styledText.setBackground(colb);
+		//styledText.setForeground(colf);
 
 		participant.interpreterSelection = "shell";
 		ioConsole.clearConsole();

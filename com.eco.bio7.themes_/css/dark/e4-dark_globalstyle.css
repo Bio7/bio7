@@ -620,13 +620,4 @@ Table, Tree, Grid {
     swt-header-background-color: #383D3F;
 }
 
-Tree {
-  flat-scroll-bar: true;
-  
-}
-
-StyledText {
-  flat-scroll-bar: true;
-  
-}
 
