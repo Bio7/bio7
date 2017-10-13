@@ -88,43 +88,37 @@ ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_OUTLINE_COLOR {
 
 /* Already existing ColorDefinitions overridden for the E4 default theme */
 ColorDefinition#org-eclipse-ui-workbench-INACTIVE_TAB_BG_START {
-	color: #dddfe5;
-}
-
-* Already existing ColorDefinitions overridden for the E4 default theme */
-ColorDefinition#org-eclipse-ui-workbench-INACTIVE_TAB_BG_START {
-	color: #dddfe5;
-	category: '#org-eclipse-ui-presentation-default';
+category: '#org-eclipse-ui-presentation-default';
+	color: #eeeeee;
 }
 
 ColorDefinition#org-eclipse-ui-workbench-INACTIVE_TAB_BG_END {
+category: '#org-eclipse-ui-presentation-default';
 	color: #eeeeee;
-	category: '#org-eclipse-ui-presentation-default';
 }
 
 ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_BG_START{
 	color: #eeeeee;
-	category: '#org-eclipse-ui-presentation-default';
 }
 
 ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_BG_END {
+category: '#org-eclipse-ui-presentation-default';
 	color: #eeeeee;
-	category: '#org-eclipse-ui-presentation-default';
 }
 
 ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_BG_START {
+category: '#org-eclipse-ui-presentation-default';
 	color: #eeeeee;
-	category: '#org-eclipse-ui-presentation-default';
 }
 
 ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_BG_END {
+category: '#org-eclipse-ui-presentation-default';
 	color: #eeeeee;
-	category: '#org-eclipse-ui-presentation-default';
 }
 
 ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_TEXT_COLOR {
+category: '#org-eclipse-ui-presentation-default';
 	color: #000000;
-	category: '#org-eclipse-ui-presentation-default';
 }
 
 
@@ -148,7 +142,7 @@ CTabItem:selected {
 .MPartStack {
 	swt-tab-renderer: url('bundleclass://org.eclipse.e4.ui.workbench.renderers.swt/org.eclipse.e4.ui.workbench.renderers.swt.CTabRendering');
 	swt-selected-tab-fill: '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_END' 100.0% 100.0%;
-	swt-unselected-tabs-color:  white #eeeeee #dddddd 25.0% 25.0% 50.0%;
+	swt-unselected-tabs-color:  #eeeeee;
 	swt-outer-keyline-color: '#org-eclipse-ui-workbench-INACTIVE_TAB_OUTER_KEYLINE_COLOR';
 	swt-inner-keyline-color: '#org-eclipse-ui-workbench-INACTIVE_TAB_INNER_KEYLINE_COLOR';
 	swt-tab-outline: '#org-eclipse-ui-workbench-INACTIVE_TAB_OUTLINE_COLOR';
@@ -162,7 +156,7 @@ CTabItem:selected {
 
 .MPartStack.active {
 	swt-selected-tab-fill: '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_END' 100.0% 100.0%;
-	swt-unselected-tabs-color: white #eeeeee #dddddd 25.0% 25.0% 50.0%;
+	swt-unselected-tabs-color: #eeeeee;
 	swt-outer-keyline-color: '#org-eclipse-ui-workbench-ACTIVE_TAB_OUTER_KEYLINE_COLOR';
 	swt-inner-keyline-color: '#org-eclipse-ui-workbench-ACTIVE_TAB_INNER_KEYLINE_COLOR';
 	swt-tab-outline: '#org-eclipse-ui-workbench-ACTIVE_TAB_OUTLINE_COLOR';

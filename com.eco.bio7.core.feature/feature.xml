@@ -76,6 +76,8 @@
       <import plugin="org.eclipse.jface"/>
       <import plugin="net.sourceforge.texlipse"/>
       <import plugin="org.eclipse.e4.ui.css.swt.theme"/>
+      <import plugin="com.codeaffine.eclipse.swt" version="0.5.0" match="greaterOrEqual"/>
+      <import plugin="com.codeaffine.eclipse.ui.swt.theme" version="0.6.0" match="greaterOrEqual"/>
    </requires>
 
    <plugin
