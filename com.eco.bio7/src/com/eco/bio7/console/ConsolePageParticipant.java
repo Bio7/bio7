@@ -106,6 +106,7 @@ import com.eco.bio7.rbridge.debug.DebugStepIntoAction;
 import com.eco.bio7.rbridge.debug.DebugStopAction;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
+import com.eco.bio7.reditor.database.view.DatabaseView;
 import com.eco.bio7.scriptengines.ScriptEngineConnection;
 import com.eco.bio7.util.PlaceholderLabel;
 import com.pty4j.PtyProcess;
@@ -378,9 +379,10 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					}
 
 				}
-				/*else if (event.stateMask == SWT.CTRL && event.keyCode == 'q') {
-					Bio7Console.sendCtrlBreakThroughStream();
-				}*/
+				/*
+				 * else if (event.stateMask == SWT.CTRL && event.keyCode == 'q') {
+				 * Bio7Console.sendCtrlBreakThroughStream(); }
+				 */
 				/* CTRL+x key event! */
 				else if (event.stateMask == SWT.CTRL && event.keyCode == 'x') {
 					if (interpreterSelection.equals("shell")) {
@@ -506,8 +508,14 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				 * ProcessBuilder can redirect the error stream! No second thread needed!
 				 */
 				ProcessBuilder builder = new ProcessBuilder("cmd");
-				// System.out.println(builder.environment());
 				builder.redirectErrorStream(true);
+				/*Add SSH path to local shell environment!*/
+				Map<String, String> envs = builder.environment();
+				String addPath = DatabaseView.getSshWindowsPath();
+				addPath = new File(addPath).getParent();
+				if (addPath != null) {
+					envs.put("Path", envs.get("Path") + addPath.replace("/", "\\"));
+				}
 				nativeShellProcess = builder.start();
 				nativeShellprocessThread = new Thread(new NativeProcessGrabber());
 				nativeShellprocessThread.start();
@@ -521,16 +529,16 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				// Some Useful commands: export TERM=xterm; top -b; ssh -tt
 				// gksudo 'apt-get --yes install abiword'
 
-				//String[] env = { "TERM=xterm" };
-				//nativeShellProcess = PtyProcess.exec(new String[] { "/bin/sh", "-i" });
-                
+				// String[] env = { "TERM=xterm" };
+				// nativeShellProcess = PtyProcess.exec(new String[] { "/bin/sh", "-i" });
+
 				List<String> args = new ArrayList<String>();
 				args.add("/bin/sh");
 				args.add("-i");
 				ProcessBuilder builder = new ProcessBuilder(args);
-				 Map<String, String> env2 = builder.environment();
-			    env2.put("TERM", "xterm");
-			    builder.redirectErrorStream(true);
+				Map<String, String> env2 = builder.environment();
+				env2.put("TERM", "xterm");
+				builder.redirectErrorStream(true);
 				nativeShellProcess = builder.start();
 				nativeShellprocessThread = new Thread(new NativeProcessGrabber());
 				nativeShellprocessThread.start();
@@ -1530,7 +1538,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		/* Add the debug actions dynamically! */
 		IToolBarManager tm = toolBarManager;
 		/* Remove the distance label! */
-		tm.remove("PlaceholderLabel");
+		//tm.remove("PlaceholderLabel");
 		IContributionItem[] its = toolBarManager.getItems();
 		boolean exist = false;
 		for (int i = 0; i < its.length; i++) {

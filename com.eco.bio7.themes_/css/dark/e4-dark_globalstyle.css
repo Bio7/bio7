@@ -615,7 +615,7 @@ ProgressIndicator#org-eclipse-ui-splash-progressIndicator {
 Link {
 	swt-link-foreground-color: '#org-eclipse-ui-workbench-LINK_COLOR'
 }
-
+ 
 ExpandableComposite {
     swt-titlebar-color: #cccccc;
 }
