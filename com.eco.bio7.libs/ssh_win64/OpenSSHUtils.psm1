@@ -112,7 +112,7 @@ function Repair-SshdConfigPermission
         [ValidateNotNullOrEmpty()]        
         [string]$FilePath)
 
-        Repair-FilePermission -Owners $systemSid,$adminsSid -ReadAccessNeeded $sshdSid @psBoundParameters
+        Repair-FilePermission -Owners $systemSid,$adminsSid -FullAccessNeeded $systemSid -ReadAccessNeeded $sshdSid @psBoundParameters
 }
 
 <#
@@ -168,12 +168,14 @@ function Repair-AuthorizedKeyPermission
                 $userProfilePath =  $properties.ProfileImagePath
             }
             $userProfilePath = $userProfilePath.Replace("\", "\\")
-            $fullPath -match "^$userProfilePath[\\|\W|\w]+authorized_keys$"
+            if ( $properties.PSChildName -notmatch '\.bak$') {
+                $fullPath -match "^$userProfilePath\\[\\|\W|\w]+authorized_keys$"
+            }
         }
         if($profileItem)
         {
             $userSid = $profileItem.PSChildName            
-            Repair-FilePermission -Owners $userSid,$adminsSid,$systemSid -AnyAccessOK $userSid -ReadAccessNeeded $sshdSid @psBoundParameters
+            Repair-FilePermission -Owners $userSid,$adminsSid,$systemSid -AnyAccessOK $userSid -FullAccessNeeded $systemSid -ReadAccessNeeded $sshdSid @psBoundParameters
             
         }
         else
@@ -330,7 +332,7 @@ function Repair-FilePermissionInternal {
     {
         $realReadAccessNeeded = @($everyoneSid)
     }
-    #this is orginal list requested by the user, the account will be removed from the list if they already part of the dacl
+    #this is original list requested by the user, the account will be removed from the list if they already part of the dacl
     if($realReadAccessNeeded)
     {
         $realReadAccessNeeded = $realReadAccessNeeded | ? { ($_ -ne $null) -and ($realFullAccessNeeded -notcontains $_) }

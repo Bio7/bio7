@@ -134,6 +134,7 @@ CTabItem.busy {
 }
 
 CTabFolder.MArea .MPartStack,CTabFolder.MArea .MPartStack.active {
+    background-color: #252525;
     swt-shadow-visible: false;
 }
 

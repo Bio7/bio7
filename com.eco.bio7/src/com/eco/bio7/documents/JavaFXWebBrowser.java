@@ -20,6 +20,7 @@ import org.osgi.framework.Bundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
@@ -30,6 +31,7 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.browser.MultiPageEditor;
 import com.eco.bio7.collection.CustomView;
 import com.eco.bio7.markdownedit.editors.MarkdownEditor;
+import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.util.Util;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -61,6 +63,97 @@ public class JavaFXWebBrowser {
 	private boolean reload;
 	private String fileUrl;
 	private static JavaFXWebBrowser javaFXWebBrowserInstance;
+	private static final String CSS = "body {\n" + 
+			"    background: #252525;\n" + 
+			"    color: #CCCCCC;\n" + 
+			" }\n" + 
+			"\n" + 
+			"h1 {\n" + 
+			"    background: #252525;\n" + 
+			"    color: #CCCCCC;\n" + 
+			"    font-family: monospace;\n" + 
+			"    font-size: x-large;\n" + 
+			"    text-align: center;\n" + 
+			"}\n" + 
+			"\n" + 
+			"h2 {\n" + 
+			"    background: #252525;\n" + 
+			"    color: #CCCCCC;\n" + 
+			"    font-family: monospace;\n" + 
+			"    font-size: large;\n" + 
+			"}\n" + 
+			"\n" + 
+			"h3, h4, h5 {\n" + 
+			"    background: #252525;\n" + 
+			"    color: #CCCCCC;\n" + 
+			"    font-family: monospace;\n" + 
+			"}\n" + 
+			"\n" + 
+			"a {\n" + 
+			"    background: #252525;\n" + 
+			"    color: grey;\n" + 
+			"}\n" + 
+			"\n" + 
+			"em.navigation {\n" + 
+			"    font-weight: bold;\n" + 
+			"    font-style: normal;\n" + 
+			"    background: #252525;\n" + 
+			"    color: rgb(40%, 40%, 40%);\n" + 
+			"    font-family: monospace;\n" + 
+			"}\n" + 
+			"\n" + 
+			"img.toplogo {\n" + 
+			"    vertical-align: middle;\n" + 
+			"}\n" + 
+			"\n" + 
+			"span.check_ok {\n" + 
+			"    color: black;\n" + 
+			"}\n" + 
+			"\n" + 
+			"span.check_ko {\n" + 
+			"    color: red;\n" + 
+			"}\n" + 
+			"\n" + 
+			"span.BioC {\n" + 
+			"    color: #2C92A1;\n" + 
+			"}\n" + 
+			"\n" + 
+			"span.Ohat {\n" + 
+			"    color: #8A4513;\n" + 
+			"}\n" + 
+			"\n" + 
+			"span.Gcode {\n" + 
+			"    color: #5B8A00;\n" + 
+			"}\n" + 
+			"\n" + 
+			"span.Rforge {\n" + 
+			"    color: #8009AA;\n" + 
+			"}\n" + 
+			"\n" + 
+			"span.acronym {\n" + 
+			"    font-size: small;\n" + 
+			"}\n" + 
+			"\n" + 
+			"span.env {\n" + 
+			"    font-family: monospace;\n" + 
+			"}\n" + 
+			"\n" + 
+			"span.file {\n" + 
+			"    font-family: monospace;\n" + 
+			"}\n" + 
+			"\n" + 
+			"span.option {\n" + 
+			"    font-family: monospace;\n" + 
+			"}\n" + 
+			"\n" + 
+			"span.pkg {\n" + 
+			"    font-weight: bold;\n" + 
+			"}\n" + 
+			"\n" + 
+			"span.samp {\n" + 
+			"    font-family: monospace;\n" + 
+			"}\n" + 
+			"";
 
 	public static JavaFXWebBrowser getJavaFXWebBrowserInstance() {
 		return javaFXWebBrowserInstance;
@@ -86,13 +179,14 @@ public class JavaFXWebBrowser {
 		webEng.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
 
 			@Override
-			public void changed(ObservableValue<? extends Worker.State> observable, Worker.State oldValue, Worker.State newValue) {
+			public void changed(ObservableValue<? extends Worker.State> observable, Worker.State oldValue,
+					Worker.State newValue) {
 
 				if (newValue != Worker.State.SUCCEEDED) {
 
 					return;
 				}
-				
+
 				/* We reload the html side once to avoid cached images! */
 				if (reload && html) {
 					reload = false;
@@ -114,16 +208,22 @@ public class JavaFXWebBrowser {
 
 				// webEng.executeScript(getFirebugScript());
 				/*
-				 * org.w3c.dom.Document doc = webEng.getDocument(); Element el = doc.getElementById("");
+				 * org.w3c.dom.Document doc = webEng.getDocument(); Element el =
+				 * doc.getElementById("");
 				 */
-				/* Store the last selected page for a new instance, reload of the PDF.js viewer! */
+				/*
+				 * Store the last selected page for a new instance, reload of the PDF.js viewer!
+				 */
 				// webEng.executeScript("PDFViewerApplication.pdfViewer.sidebarViewOnLoad= 1;");
 				/* If we load a PDF with 'pdf.js'! */
 				if (html == false) {
-					// webEng.executeScript("document.getElementById('viewerContainer').style.overflow = 'hidden';");
-					webEng.executeScript("PDFViewerApplication.pdfViewer.currentPageNumber=" + JavaFXBrowserHelper.pageNumber + "");
+					// webEng.executeScript("document.getElementById('viewerContainer').style.overflow
+					// = 'hidden';");
+					webEng.executeScript(
+							"PDFViewerApplication.pdfViewer.currentPageNumber=" + JavaFXBrowserHelper.pageNumber + "");
 					/* Set the bookmark to select the page! */
-					webEng.executeScript("PDFViewerApplication.initialBookmark = \"" + JavaFXBrowserHelper.pageNumber + "\";");
+					webEng.executeScript(
+							"PDFViewerApplication.initialBookmark = \"" + JavaFXBrowserHelper.pageNumber + "\";");
 
 					Document doc = webEng.getDocument();
 
@@ -133,7 +233,8 @@ public class JavaFXWebBrowser {
 
 						@Override
 						public void handleEvent(Event evt) {
-							JavaFXBrowserHelper.pageNumber = (int) (webEng.executeScript("PDFViewerApplication.pdfViewer.currentPageNumber;"));
+							JavaFXBrowserHelper.pageNumber = (int) (webEng
+									.executeScript("PDFViewerApplication.pdfViewer.currentPageNumber;"));
 
 						}
 					}, false);
@@ -142,10 +243,13 @@ public class JavaFXWebBrowser {
 
 						@Override
 						public void handleEvent(Event evt) {
-							JavaFXBrowserHelper.pageNumber = (int) (webEng.executeScript("PDFViewerApplication.pdfViewer.currentPageNumber;"));
+							JavaFXBrowserHelper.pageNumber = (int) (webEng
+									.executeScript("PDFViewerApplication.pdfViewer.currentPageNumber;"));
 							/*
-							 * System.out.println(String.valueOf(((com.sun.webkit.dom.KeyboardEventImpl) evt).getKeyCode())); com.sun.webkit.dom.KeyboardEventImpl event =
-							 * (com.sun.webkit.dom.KeyboardEventImpl) evt; System.out.println(event.getKeyIdentifier());
+							 * System.out.println(String.valueOf(((com.sun.webkit.dom.KeyboardEventImpl)
+							 * evt).getKeyCode())); com.sun.webkit.dom.KeyboardEventImpl event =
+							 * (com.sun.webkit.dom.KeyboardEventImpl) evt;
+							 * System.out.println(event.getKeyIdentifier());
 							 */
 
 						}
@@ -154,7 +258,9 @@ public class JavaFXWebBrowser {
 				} else {
 					/*
 					 * Load an embedded pdf document in a website with pdf.js! Adapted source from
-					 * http://stackoverflow.com/questions/15555510/javafx-stop-opening-url-in-webview-open-in-browser-instead Author: http://stackoverflow.com/users/8840/avrom
+					 * http://stackoverflow.com/questions/15555510/javafx-stop-opening-url-in-
+					 * webview-open-in-browser-instead Author:
+					 * http://stackoverflow.com/users/8840/avrom
 					 */
 					if (webEng.getDocument() != null) {
 						NodeList nodeList = webEng.getDocument().getElementsByTagName("a");
@@ -184,6 +290,7 @@ public class JavaFXWebBrowser {
 									}
 
 									// Checking whether the URL contains a PDF
+									if(urlConn.getContentType()!=null) {
 									if (urlConn.getContentType().equalsIgnoreCase("application/pdf")) {
 										// JavaFXWebBrowser.this.html=false;
 										String pathBundle = getPdfjsPath();
@@ -192,8 +299,22 @@ public class JavaFXWebBrowser {
 
 										evt.preventDefault();
 									}
+									}
 								}
 							}, false);
+						}
+						if (ApplicationWorkbenchWindowAdvisor.isThemeBlack()) {
+							IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+							
+							String installPackagesDescritpionUrl = store.getString("INSTALL_R_PACKAGES_DESCRPTION_URL");
+							//System.out.println(brow.getEngine().getLocation());
+							if (brow.getEngine().getLocation().startsWith(installPackagesDescritpionUrl)) {
+								Document doc = webEng.getDocument();
+								Element styleNode = doc.createElement("style");
+								Text styleContent = doc.createTextNode(CSS);
+								styleNode.appendChild(styleContent);
+								doc.getDocumentElement().getElementsByTagName("head").item(0).appendChild(styleNode);
+							}
 						}
 
 					}
@@ -201,26 +322,35 @@ public class JavaFXWebBrowser {
 					// webEng.executeScript("window.find('runif')");
 
 					/*
-					 * String markdownContent=MarkdownEditor.getSelectedContent(); Document doc = webEng.getDocument(); Element el = doc.getDocumentElement();
+					 * String markdownContent=MarkdownEditor.getSelectedContent(); Document doc =
+					 * webEng.getDocument(); Element el = doc.getDocumentElement();
 					 * 
-					 * try { Transformer transformer = TransformerFactory.newInstance().newTransformer(); transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-					 * transformer.setOutputProperty(OutputKeys.METHOD, "xml"); transformer.setOutputProperty(OutputKeys.INDENT, "yes"); transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-					 * transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+					 * try { Transformer transformer =
+					 * TransformerFactory.newInstance().newTransformer();
+					 * transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+					 * transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+					 * transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+					 * transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+					 * transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount",
+					 * "4");
 					 * 
-					 * transformer.transform(new DOMSource(doc), new StreamResult(new OutputStreamWriter(System.out, "UTF-8"))); } catch (Exception ex) { ex.printStackTrace(); }
-					 * webEng.executeScript("");
+					 * transformer.transform(new DOMSource(doc), new StreamResult(new
+					 * OutputStreamWriter(System.out, "UTF-8"))); } catch (Exception ex) {
+					 * ex.printStackTrace(); } webEng.executeScript("");
 					 */
 
 				}
 				boolean requestEditorFocus = store.getBoolean("REQUEST_EDITOR_FOCUS");
 				if (requestEditorFocus) {
 					/* We have to activate the editor again to enable all keyboard actions, etc.! */
-					IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+					IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+							.getActivePage().getActiveEditor();
 					if (editor == null) {
 						return;
 					}
 
-					if (editor instanceof MarkdownEditor || editor instanceof MultiPageEditor || editor instanceof TexEditor) {
+					if (editor instanceof MarkdownEditor || editor instanceof MultiPageEditor
+							|| editor instanceof TexEditor) {
 						Util.activateEditorPage(editor);
 					}
 				}
@@ -264,8 +394,10 @@ public class JavaFXWebBrowser {
 		 * 
 		 * 
 		 * 
-		 * @Override public void handle(MouseEvent mouse) { if (mouse.getButton() == MouseButton.SECONDARY) { menu = new ContextMenu(); //add some menu items here menu.show(brow, mouse.getScreenX(),
-		 * mouse.getScreenY()); } else { if (menu != null) { menu.hide(); } } } });
+		 * @Override public void handle(MouseEvent mouse) { if (mouse.getButton() ==
+		 * MouseButton.SECONDARY) { menu = new ContextMenu(); //add some menu items here
+		 * menu.show(brow, mouse.getScreenX(), mouse.getScreenY()); } else { if (menu !=
+		 * null) { menu.hide(); } } } });
 		 */
 
 		// brow.setTop(scrollWheelStatus);
@@ -337,10 +469,12 @@ public class JavaFXWebBrowser {
 
 				} else if (ke.getCharacter().equals("t")) {
 					// if (html == false) {
-					webEng.executeScript(
-							"if (document.getElementById('toolbarContainer').style.display == '')" + "{ " + "document.getElementById('viewerContainer').style.overflow = 'hidden';document.getElementById('toolbarContainer').style.display='none';document.getElementById('viewerContainer').style.top=0;}"
+					webEng.executeScript("if (document.getElementById('toolbarContainer').style.display == '')" + "{ "
+							+ "document.getElementById('viewerContainer').style.overflow = 'hidden';document.getElementById('toolbarContainer').style.display='none';document.getElementById('viewerContainer').style.top=0;}"
 
-									+ "else{" + "document.getElementById('viewerContainer').style.overflow = 'scroll';document.getElementById('toolbarContainer').style.display='';document.getElementById('viewerContainer').style.top=32;" + "}");
+							+ "else{"
+							+ "document.getElementById('viewerContainer').style.overflow = 'scroll';document.getElementById('toolbarContainer').style.display='';document.getElementById('viewerContainer').style.top=32;"
+							+ "}");
 					// }
 				}
 
@@ -379,7 +513,8 @@ public class JavaFXWebBrowser {
 							e1.printStackTrace();
 						}
 
-						if (FilenameUtils.isExtension(file.getName(), "html") || FilenameUtils.isExtension(file.getName(), "htm")) {
+						if (FilenameUtils.isExtension(file.getName(), "html")
+								|| FilenameUtils.isExtension(file.getName(), "htm")) {
 							JavaFXWebBrowser br = new JavaFXWebBrowser(true);
 							// WebEngine webEngine = br.getWebEngine();
 							// webEngine.load(path);
@@ -394,8 +529,8 @@ public class JavaFXWebBrowser {
 							/* We have to create a new browser instance to inject the path as variable! */
 							JavaFXWebBrowser br = new JavaFXWebBrowser(false);
 							WebEngine webEngine = br.getWebEngine();
-							//webEngine.executeScript("var DEFAULT_URL ='" + path + "'");
-							br.createBrowser("file:///" + pathBundle + "","Display");
+							// webEngine.executeScript("var DEFAULT_URL ='" + path + "'");
+							br.createBrowser("file:///" + pathBundle + "", "Display");
 						}
 
 						else {
@@ -417,8 +552,6 @@ public class JavaFXWebBrowser {
 		anchorPane.getChildren().add(brow);
 
 		webEng.load(url);
-		
-		
 
 		CustomView view = new CustomView();
 
@@ -426,13 +559,15 @@ public class JavaFXWebBrowser {
 
 		Scene scene = new Scene(anchorPane);
 		/*
-		 * scene.getAccelerators().put(new KeyCodeCombination(KeyCode.B, KeyCombination.ALT_DOWN), new Runnable() {
+		 * scene.getAccelerators().put(new KeyCodeCombination(KeyCode.B,
+		 * KeyCombination.ALT_DOWN), new Runnable() {
 		 * 
 		 * @Override public void run() {
 		 * 
 		 * goBack(); } });
 		 * 
-		 * scene.getAccelerators().put(new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN, KeyCombination.ALT_DOWN), new Runnable() {
+		 * scene.getAccelerators().put(new KeyCodeCombination(KeyCode.F,
+		 * KeyCombination.CONTROL_DOWN, KeyCombination.ALT_DOWN), new Runnable() {
 		 * 
 		 * @Override public void run() { goForward(); } });
 		 */
@@ -465,15 +600,24 @@ public class JavaFXWebBrowser {
 	}
 
 	/*
-	 * private static String getFirebugScript() { Bundle bundle = Platform.getBundle("com.eco.bio7.libs"); Path path = new Path("pdfjs/firebug-lite-132.js"); URL locationURL = FileLocator.find(bundle,
+	 * private static String getFirebugScript() { Bundle bundle =
+	 * Platform.getBundle("com.eco.bio7.libs"); Path path = new
+	 * Path("pdfjs/firebug-lite-132.js"); URL locationURL = FileLocator.find(bundle,
 	 * path, null);
 	 * 
-	 * URL fileUrl = null; try { fileUrl = FileLocator.toFileURL(locationURL); } catch (IOException e2) { // TODO Auto-generated catch block e2.printStackTrace(); } String pathBundle =
-	 * fileUrl.getFile(); StringBuilder libraryContents = new StringBuilder();
+	 * URL fileUrl = null; try { fileUrl = FileLocator.toFileURL(locationURL); }
+	 * catch (IOException e2) { // TODO Auto-generated catch block
+	 * e2.printStackTrace(); } String pathBundle = fileUrl.getFile(); StringBuilder
+	 * libraryContents = new StringBuilder();
 	 * 
-	 * File initialFile = new File(pathBundle); InputStream inputStream = null; try { inputStream = new FileInputStream(initialFile); } catch (FileNotFoundException e) { // TODO Auto-generated catch
-	 * block e.printStackTrace(); } try { BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF8")); String line = reader.readLine(); while (line != null) {
-	 * libraryContents.append(line); line = reader.readLine(); } } catch (IOException exception) { return null; } return libraryContents.toString(); }
+	 * File initialFile = new File(pathBundle); InputStream inputStream = null; try
+	 * { inputStream = new FileInputStream(initialFile); } catch
+	 * (FileNotFoundException e) { // TODO Auto-generated catch block
+	 * e.printStackTrace(); } try { BufferedReader reader = new BufferedReader(new
+	 * InputStreamReader(inputStream, "UTF8")); String line = reader.readLine();
+	 * while (line != null) { libraryContents.append(line); line =
+	 * reader.readLine(); } } catch (IOException exception) { return null; } return
+	 * libraryContents.toString(); }
 	 */
 
 	public void goBack() {
