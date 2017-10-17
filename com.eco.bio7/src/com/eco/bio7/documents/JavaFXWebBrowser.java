@@ -307,7 +307,7 @@ public class JavaFXWebBrowser {
 							IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 							
 							String installPackagesDescritpionUrl = store.getString("INSTALL_R_PACKAGES_DESCRPTION_URL");
-							System.out.println(brow.getEngine().getLocation());
+							//System.out.println(brow.getEngine().getLocation());
 							if (brow.getEngine().getLocation().startsWith(installPackagesDescritpionUrl)) {
 								Document doc = webEng.getDocument();
 								Element styleNode = doc.createElement("style");

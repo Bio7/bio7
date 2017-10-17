@@ -11,8 +11,6 @@
 package com.eco.bio7.actions;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -24,16 +22,12 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
-
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.browser.BrowserView;
-import com.eco.bio7.collection.Work;
 import com.eco.bio7.compile.JavaScriptInterpreter;
 import com.eco.bio7.documents.JavaFXWebBrowser;
 import com.eco.bio7.image.Util;
-import com.eco.bio7.jobs.ImageJMacroWorkspaceJob;
 import com.eco.bio7.rcp.StartBio7Utils;
-
 import javafx.scene.web.WebEngine;
 
 public class JavaScriptInterpret extends Action {

@@ -15,15 +15,17 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.swt.widgets.Display;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.os.pid.UnixProcessManager;
+import com.eco.bio7.util.Util;
 
 /**
  * @author Bio7 A class to write commands to the Bio7 console!
  */
 public class Bio7Console {
-	
+
 	private static final char IAC = (char) 5;
 	private static final char BRK = (char) 3;
 
@@ -72,8 +74,16 @@ public class Bio7Console {
 	 *            the selected shell or native interpreter.
 	 */
 	public static void setConsoleSelection(String selection) {
+		Display dis = Util.getDisplay();
+		dis.syncExec(new Runnable() {
 
-		ConsolePageParticipant.setNativeInterpreterSelection(selection);
+			public void run() {
+				ConsolePageParticipant.setNativeInterpreterSelection(selection);
+
+			}
+
+		});
+
 	}
 
 	/**
@@ -99,7 +109,7 @@ public class Bio7Console {
 		ConsolePageParticipant console = ConsolePageParticipant.getConsolePageParticipantInstance();
 		UnixProcessManager.sendSigIntToProcessTree(console.getNativeShellProcess());
 	}
-	
+
 	/**
 	 * Sends sequence of two chars(codes 5 and 3) to a process output stream Source
 	 * from: https://github.com/joewalnes/idea-community/blob/master/platform
@@ -127,7 +137,7 @@ public class Bio7Console {
 			OutputStream os = process.getOutputStream();
 			PrintWriter pw = new PrintWriter(os);
 			try {
-				//pw.print(IAC);
+				// pw.print(IAC);
 				pw.print(BRK);
 				pw.flush();
 			} finally {
