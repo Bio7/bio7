@@ -1,4 +1,4 @@
-package com.eco.bio7.documents;
+/*package com.eco.bio7.documents;
 import java.io.File;
 
 import org.eclipse.swt.SWT;
@@ -81,4 +81,4 @@ public class WordOleView extends com.eco.bio7.compile.Model {
 
 	}
 
-}
+}*/

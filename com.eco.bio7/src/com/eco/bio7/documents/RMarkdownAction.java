@@ -314,7 +314,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 												if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 													File fil = new File(dirPath + "/" + theName + ".docx");
 													if (fil.exists()) {
-														new WordOleView(dirPath + "/" + theName + ".docx");
+														//new WordOleView(dirPath + "/" + theName + ".docx");
 													}
 												}
 											}
