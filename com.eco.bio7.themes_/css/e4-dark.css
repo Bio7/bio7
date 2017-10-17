@@ -47,7 +47,7 @@
 
 .MPartStack.active {
     /*swt-selected-tab-fill: '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_END' 100%;  title background for selected tab */
-    swt-unselected-tabs-color: '#org-eclipse-ui-workbench-ACTIVE_UNSELECTED_TABS_COLOR_START' '#org-eclipse-ui-workbench-ACTIVE_UNSELECTED_TABS_COLOR_END' 100% 100%; /* title background for unselected tab */
+    swt-unselected-tabs-color: '#org-eclipse-ui-workbench-INACTIVE_UNSELECTED_TABS_COLOR_START' '#org-eclipse-ui-workbench-INACTIVE_UNSELECTED_TABS_COLOR_END' 100% 100%; /* title background for unselected tab */
     swt-outer-keyline-color: '#org-eclipse-ui-workbench-ACTIVE_TAB_OUTER_KEYLINE_COLOR'; /* border color for whole tabs container */
     swt-inner-keyline-color: '#org-eclipse-ui-workbench-ACTIVE_TAB_INNER_KEYLINE_COLOR';
     swt-tab-outline: '#org-eclipse-ui-workbench-ACTIVE_TAB_OUTLINE_COLOR'; /* border color for selected tab */
@@ -134,6 +134,7 @@ CTabItem.busy {
 }
 
 CTabFolder.MArea .MPartStack,CTabFolder.MArea .MPartStack.active {
+    background-color: #252525;
     swt-shadow-visible: false;
 }
 
@@ -270,7 +271,7 @@ StatusLine, ImageBasedFrame{
 .MPart LayoutComposite > * > LayoutComposite > Section > LayoutComposite > Tree,
 .MPartStack.active .MPart Form Section Tree,
 .MPartStack.active .MPart LayoutComposite > * > LayoutComposite > Section > LayoutComposite > Tree {
-    background-color: ##252525;
+    background-color: #252525;
     color: #DDDDDD;
 }
 .MPart Form DatePicker > ImageHyperlink,
@@ -304,23 +305,13 @@ StatusLine, ImageBasedFrame{
 StyledText {
 	swt-scrollbar-themed: true;
 
-	swt-scrollbar-background-color: #383838;
+	swt-scrollbar-background-color: #252525;
 	swt-scrollbar-foreground-color: #494949;
 	swt-scrollbar-width: 4px;
 	swt-scrollbar-border-radius: 4px;
 	swt-scrollbar-mouse-near-scroll-width: 15px;
 }
 StyledText {
-    background-color: #383C3E;
+    background-color: #252525;
     color: #dddddd;
-}
-Tree {
-  flat-scroll-bar: true;
-  flat-scroll-bar-background : #ababab;
-  flat-scroll-bar-thumb: #cdcdcd;
-  flat-scroll-bar-page-increment: #f8f8f8;
-  flat-scroll-bar-thumb-top-level: #454545;
-  flat-scroll-bar-page-increment-top-level: #f8f8f8;
-  flat-scroll-bar-increment-length: 7;
-  adapter-demeanor: expand-on-mouse-over; /* fixed-width */
 }
