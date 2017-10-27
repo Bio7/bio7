@@ -18,7 +18,7 @@
     color: #DDDDDD;
 }
 .MPartStack.active .MPart {
-    background-color: #292929;
+    background-color: #252525;
     color: #DDDDDD;
 }
 
@@ -307,14 +307,14 @@
 }
 
 .MPartStack > Composite {
-	background-color: #323435;
+	background-color: #252525;
 }
 
 .MPartStack.active > Composite {
-	background-color: #292929;
+	background-color: #252525;
 }
 
 .MPartStack.active.noFocus > Composite {
-	background-color: #323435;
+	background-color: #252525;
 }
 
