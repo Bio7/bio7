@@ -32,8 +32,6 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 
-import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
-
 public class JavaFXCustom {
 
 	// private Vector ve = null;

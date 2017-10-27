@@ -63,6 +63,7 @@ jre/lib/jli/libjli.dylib
    <vm>
    </vm>
 
+
    <plugins>
       <plugin id="Bundled_R"/>
       <plugin id="com.eco.bio7"/>
