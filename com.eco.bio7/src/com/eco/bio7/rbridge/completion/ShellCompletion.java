@@ -30,7 +30,6 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.bindings.keys.KeyStroke;
-import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalListener;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
@@ -54,7 +53,7 @@ import com.eco.bio7.rpreferences.template.CalculateRProposals;
 import com.eco.bio7.util.Util;
 import com.swtdesigner.ResourceManager;
 
-public class ShellCompletion {
+public class ShellCompletion  {
 	private ContentProposalProvider contentProposalProvider;
 	private ContentProposalAdapter contentProposalAdapter;
 	private KeyStroke stroke;
@@ -403,6 +402,7 @@ public class ShellCompletion {
 				}
 			};
 		}
+	   
 
 	}
 
@@ -454,7 +454,7 @@ public class ShellCompletion {
 
 									for (int j = 0; j < result.length; j++) {
 
-										propo[j] = new ImageContentProposal(result[j], result[j], null, result[j].length(), varImage);
+										propo[j] = new ImageContentProposal(result[j], result[j], result[j], result[j].length(), varImage);
 
 									}
 								}
@@ -573,5 +573,5 @@ public class ShellCompletion {
 
 		return propo;
 	}
-
+    
 }
