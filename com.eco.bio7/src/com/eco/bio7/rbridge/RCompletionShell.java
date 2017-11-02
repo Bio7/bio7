@@ -19,7 +19,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import org.eclipse.jface.bindings.keys.KeyStroke;
-import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
@@ -56,6 +55,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.rbridge.completion.ContentProposalAdapter;
 import com.eco.bio7.reditors.REditor;
 
 public class RCompletionShell extends Shell {
