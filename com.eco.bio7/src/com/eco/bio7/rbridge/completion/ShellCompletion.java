@@ -57,7 +57,7 @@ public class ShellCompletion  {
 	private ContentProposalProvider contentProposalProvider;
 	private ContentProposalAdapter contentProposalAdapter;
 	private KeyStroke stroke;
-	private static final String LCL = "abcdefghijklmnopqrstuvwxyz@$";
+	private static final String LCL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.@$+-.:";
 	private static final String UCL = LCL.toUpperCase();
 	private static final String NUMS = "0123456789";
 	private Image image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/template_obj.png");
@@ -244,7 +244,7 @@ public class ShellCompletion  {
 			/*
 			 * We need to extra include the '@' character for S4 class vars!
 			 */
-			if ((ch == ';') || (ch == '(') || (ch == ',') || (ch == '['))
+			if ((ch == ';') || (ch == '(') || (ch == ',') || (ch == '[')|| (ch == '=')|| (ch == '-')|| (ch == '+'))
 				break;
 			i--;
 		}
