@@ -28,13 +28,13 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
 import com.eco.bio7.compile.CompilerMessages;
-import com.eco.bio7.compile.JavaCompileWorkspaceJob;
+//import com.eco.bio7.compile.JavaCompileWorkspaceJob;
 import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 import com.eco.bio7.rcp.StartBio7Utils;
 
 public class Compile extends Action {
 	public static String COMPILE_IMPORTS = CompilerMessages.getString("Import.bio7");
-	private boolean classbody = true;
+	//private boolean classbody = true;
 	public static IResource resource;
 	public IWorkbenchPage pag;
 	protected IFile ifile;
@@ -56,7 +56,7 @@ public class Compile extends Action {
 		
 		
 		IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
-		classbody = store.getBoolean("classbody");
+		//classbody = store.getBoolean("classbody");
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		if(editor==null||editor instanceof CompilationUnitEditor==false){
 			return;

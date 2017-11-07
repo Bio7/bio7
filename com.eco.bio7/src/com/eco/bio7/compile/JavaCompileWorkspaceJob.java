@@ -7,7 +7,7 @@
  *
  * Contributors:
  *     M. Austenfeld
- *******************************************************************************/
+ *******************************************************************************//*
 
 package com.eco.bio7.compile;
 
@@ -77,7 +77,7 @@ public class JavaCompileWorkspaceJob extends WorkspaceJob implements IJobChangeL
 			e1.printStackTrace();
 		}
 	
-		/* For Java WorldWind! */
+		 For Java WorldWind! 
 		Compiled.setModel(model);
 		DynamicLayer.setEcoclass(model);
 
@@ -122,3 +122,4 @@ public class JavaCompileWorkspaceJob extends WorkspaceJob implements IJobChangeL
 	}
 
 }
+*/

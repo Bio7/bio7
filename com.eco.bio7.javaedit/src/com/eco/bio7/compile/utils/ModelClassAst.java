@@ -11,17 +11,11 @@
 
 package com.eco.bio7.compile.utils;
 
-import java.io.IOException;
-import java.io.StringReader;
-import org.codehaus.commons.compiler.CompileException;
-import org.codehaus.commons.compiler.CompilerFactoryFactory;
-import org.codehaus.commons.compiler.jdk.ClassBodyEvaluator;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
-import com.eco.bio7.compile.Model;
 import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 import com.eco.bio7.javaeditor.ast.CompilerAst;
 import com.eco.bio7.javaeditors.ClassModel;
@@ -34,13 +28,13 @@ public class ModelClassAst {
 
 	public void parseAST(IEditorPart JEditor) {
 		IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
-		classBody = store.getBoolean("classbody");
+		//classBody = store.getBoolean("classbody");
 		ITextEditor editor = (ITextEditor) JEditor;
 		IDocumentProvider dp = editor.getDocumentProvider();
 		IDocument doc = dp.getDocument(editor.getEditorInput());
 
-		if (classBody) {
-			/*Get the source of a classbody with the help of the Janino API!*/
+		/*if (classBody) {
+			Get the source of a classbody with the help of the Janino API!
 			ClassBodyEvaluator cbe = null;
 			try {
 				cbe = (ClassBodyEvaluator) CompilerFactoryFactory.getDefaultCompilerFactory().newClassBodyEvaluator();
@@ -63,10 +57,10 @@ public class ModelClassAst {
 
 				e.printStackTrace();
 			}
-		} else {
+		} else {*/
 			/* Get the source of a regular class! */
 			source = doc.get();
-		}
+		//}
 		CompilerAst compilerAst = new CompilerAst(source);
 		
 		
