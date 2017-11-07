@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.eco.bio7.actions;
 
-import org.codehaus.commons.compiler.jdk.SimpleCompiler;
+//import org.codehaus.commons.compiler.jdk.SimpleCompiler;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -73,9 +73,9 @@ public class Compile extends Action {
 			ifile = ((IFileEditorInput) editorInput).getFile();
 		}
 
-		SimpleCompiler.resource = resource;
+		//SimpleCompiler.resource = resource;
 		/* Compile a class from a classbody! */
-		if (classbody == true) {
+		/*if (classbody == true) {
 
 			String a = doc.get();
 			String script = (a);
@@ -93,8 +93,8 @@ public class Compile extends Action {
 			job.setUser(true);
 
 			job.schedule();
-			/* Compile a project with one or several Classes! */
-		} else {
+			 Compile a project with one or several Classes! 
+		} else {*/
 
 			NullProgressMonitor monitor = new NullProgressMonitor();
 			IEditorPart[] dirtyEditors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getDirtyEditors();
@@ -108,7 +108,7 @@ public class Compile extends Action {
 		}
 
 		// Quad2d.getQuad2dInstance().repaint();
-	}
+	//}
 
 	
 
