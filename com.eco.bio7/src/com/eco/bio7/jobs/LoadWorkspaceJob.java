@@ -173,7 +173,7 @@ public class LoadWorkspaceJob extends WorkspaceJob {
 
 	// We adjust the slider value!
 	private void updateSlider(final DataDescriptorGrids grid) {
-
+ 
 		Display display = PlatformUI.getWorkbench().getDisplay();
 		display.syncExec(new Runnable() {
 
