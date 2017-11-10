@@ -48,7 +48,7 @@ import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.browser.BrowserView;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.compile.BeanShellInterpreter;
-import com.eco.bio7.compile.Compile;
+//import com.eco.bio7.compile.Compile;
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
 import com.eco.bio7.compile.GroovyInterpreter;
 import com.eco.bio7.compile.JavaScriptInterpreter;
