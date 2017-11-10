@@ -70,4 +70,10 @@ public class CompilerFactory extends AbstractCompilerFactory {
             }
         });
     }
+
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

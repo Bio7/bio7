@@ -48,7 +48,7 @@ import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.browser.BrowserView;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.compile.BeanShellInterpreter;
-import com.eco.bio7.compile.Compile;
+//import com.eco.bio7.compile.Compile;
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
 import com.eco.bio7.compile.GroovyInterpreter;
 import com.eco.bio7.compile.JavaScriptInterpreter;
@@ -201,25 +201,25 @@ public class ExecuteBatchFile {
 		/* Compiles a Java file! */
 		else if (fileextension.equals("java")) {
 			IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
-			classbody = store.getBoolean("classbody");
+			//classbody = store.getBoolean("classbody");
 			BatchModel.pause();
 			fileprop = fileroot + fileprop;
 			/* Compile a classbody! */
-			if (classbody) {
+			/*if (classbody) {
 				String result = BatchModel.fileToString(fileprop);
 
 				Compile.compileJob(result);
 
-			}
+			}*/
 			/* Compile a main class and multiple classes! */
-			else {
+			//else {
 				IWorkspace workspace = ResourcesPlugin.getWorkspace();
 				IPath location = Path.fromOSString(new File(fileprop).getAbsolutePath());
 				IFile ifile = workspace.getRoot().getFileForLocation(location);
 				CompileClassAndMultipleClasses cp = new CompileClassAndMultipleClasses();
 				cp.compileClasses(ifile, ifile, null);
 
-			}
+			//}
 
 		}
 

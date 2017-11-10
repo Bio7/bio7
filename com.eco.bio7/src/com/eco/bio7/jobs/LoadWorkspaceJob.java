@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2012 M. Austenfeld
+ * Copyright (c) 2005-2017 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,7 +11,14 @@
 
 package com.eco.bio7.jobs;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 import org.eclipse.core.resources.WorkspaceJob;
@@ -25,7 +32,8 @@ import org.eclipse.ui.PlatformUI;
 
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.collection.ResizeArray;
-import com.eco.bio7.compile.Compile;
+//import com.eco.bio7.compile.Compile;
+import com.eco.bio7.compile.CompileClassAndMultipleClasses;
 import com.eco.bio7.database.Bio7State;
 import com.eco.bio7.database.StateTable;
 import com.eco.bio7.discrete.Field;
@@ -46,7 +54,7 @@ public class LoadWorkspaceJob extends WorkspaceJob {
 
 	private String source;
 
-	//private ArrayList<String> li;
+	// private ArrayList<String> li;
 
 	DataDescriptorGrids grid = null;
 
@@ -112,18 +120,38 @@ public class LoadWorkspaceJob extends WorkspaceJob {
 		repaintFields();
 		grid.setStates(null);
 		/*
-		 * Load and compile a class or classbody dependent on the stored boolean
-		 * value form the Java preferences of Bio7 !
+		 * Load and compile a class or classbody dependent on the stored boolean value
+		 * form the Java preferences of Bio7 !
 		 */
 		if (grid.getSource() != null) {
 
-			if (grid.isClassBody() == false) {
-				Compile.compileClassWithoutJob(grid.getSource(), grid.getFileName());
-				callSetup();
-			} else {
-				Compile.compileClassbodyWithoutJob(grid.getSource());
-				callSetup();
+			// if (grid.isClassBody() == false) {
+			// Compile.compileClassWithoutJob(grid.getSource(), grid.getFileName());
+			String tempDir = System.getProperty("java.io.tmpdir");
+			File file = null;
+			try {
+
+				file = new File(tempDir + grid.getFileName() + ".java");
+				FileOutputStream fos = new FileOutputStream(file);
+				fos.write(grid.getSource().getBytes());
+				fos.close();
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
+
+			CompileClassAndMultipleClasses cp = new CompileClassAndMultipleClasses();
+			try {
+				cp.compileAndLoad(file, file.getParent(), grid.getFileName(), null, true);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				// Bio7Dialog.message(e.getMessage());
+			}
+
+			callSetup();
+			// } else {
+			// Compile.compileClassbodyWithoutJob(grid.getSource());
+			// callSetup();
+			// }
 
 		}
 
@@ -145,7 +173,7 @@ public class LoadWorkspaceJob extends WorkspaceJob {
 
 	// We adjust the slider value!
 	private void updateSlider(final DataDescriptorGrids grid) {
-
+ 
 		Display display = PlatformUI.getWorkbench().getDisplay();
 		display.syncExec(new Runnable() {
 
@@ -180,7 +208,7 @@ public class LoadWorkspaceJob extends WorkspaceJob {
 
 	private void unsetAllStates() {
 
-		//li = CurrentStates.getStateList();
+		// li = CurrentStates.getStateList();
 
 		Display display = PlatformUI.getWorkbench().getDisplay();
 		display.syncExec(new Runnable() {
@@ -188,9 +216,8 @@ public class LoadWorkspaceJob extends WorkspaceJob {
 			public void run() {
 				Grid grid = StateTable.grid;
 				/*
-				 * We don't use the list directly but the grid entrys. Since we
-				 * remove it iterately (At each iteration step a state will be
-				 * removed)!
+				 * We don't use the list directly but the grid entrys. Since we remove it
+				 * iterately (At each iteration step a state will be removed)!
 				 */
 
 				for (int i = 0; i < grid.getItemCount(); i++) {

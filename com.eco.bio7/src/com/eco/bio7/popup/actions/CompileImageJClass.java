@@ -1,14 +1,5 @@
 package com.eco.bio7.popup.actions;
 
-import java.io.IOException;
-import java.io.StringReader;
-
-import ij.IJ;
-import ij.plugin.PlugIn;
-import ij.plugin.filter.PlugInFilter;
-
-import org.codehaus.commons.compiler.CompileException;
-import org.codehaus.commons.compiler.jdk.SimpleCompiler;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -23,9 +14,7 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 
-import com.eco.bio7.Bio7Plugin;
-import com.eco.bio7.compile.Model;
-import com.eco.bio7.methods.Compiled;
+import ij.IJ;
 
 public class CompileImageJClass implements IObjectActionDelegate {
 

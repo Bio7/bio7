@@ -7,7 +7,7 @@
  *
  * Contributors:
  *     M. Austenfeld
- *******************************************************************************/
+ *******************************************************************************//*
 
 package com.eco.bio7.compile;
 
@@ -38,9 +38,9 @@ import com.eco.bio7.worldwind.DynamicLayer;
 
 public class Compile {
 
-	private static String script;
+	//private static String script;
 
-	private static String COMPILE_IMPORTS = CompilerMessages.getString("Import.bio7");
+	//private static String COMPILE_IMPORTS = CompilerMessages.getString("Import.bio7");
 
 	public static void compile(String cu) throws InstantiationException {
 
@@ -83,7 +83,7 @@ public class Compile {
 						}
 
 						Compiled.setModel(eco);
-						/* For Java WorldWind! */
+						 For Java WorldWind! 
 						DynamicLayer.setEcoclass(eco);
 
 						if (pm.isCanceled()) {
@@ -153,7 +153,7 @@ public class Compile {
 
 	}
 
-	/* A helper method to compile classbody for the drag and drop functionality! */
+	 A helper method to compile classbody for the drag and drop functionality! 
 	public static void compileClassbodyWithoutJob(String source) {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append(COMPILE_IMPORTS);
@@ -183,14 +183,14 @@ public class Compile {
 		}
 
 		Compiled.setModel(eco);
-		/* For Java WorldWind! */
+		 For Java WorldWind! 
 		DynamicLayer.setEcoclass(eco);
 	}
 
-	/*
+	
 	 * A helper method to compile a full class for the drag and drop
 	 * functionality!
-	 */
+	 
 	public static void compileClassWithoutJob(String source, String fileName) {
 
 		Model eco = null;
@@ -230,8 +230,9 @@ public class Compile {
 		}
 
 		Compiled.setModel(eco);
-		/* For Java WorldWind! */
+		 For Java WorldWind! 
 		DynamicLayer.setEcoclass(eco);
 	}
 
 }
+*/
