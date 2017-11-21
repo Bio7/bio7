@@ -3,14 +3,12 @@ package com.eco.bio7.markdownedit.editors;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.text.DefaultInformationControl;
-import org.eclipse.jface.text.DefaultTextHover;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.ITextHover;
-import org.eclipse.jface.text.ITextHoverExtension;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
@@ -25,6 +23,7 @@ import org.eclipse.jface.text.reconciler.Reconciler;
 import org.eclipse.jface.text.rules.BufferedRuleBasedScanner;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.Token;
+import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
@@ -33,11 +32,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 import org.eclipse.ui.internal.editors.text.EditorsPlugin;
-import org.eclipse.ui.texteditor.spelling.SpellingCorrectionProcessor;
 import org.eclipse.ui.texteditor.spelling.SpellingService;
-
 import com.eco.bio7.markdownedit.Activator;
+import com.eco.bio7.markdownedit.completion.MardownEditorQuickFixProcessor;
 import com.eco.bio7.markdownedit.completion.RMarkdownCompletionProcessor;
+import com.eco.bio7.markdownedit.hoover.RMarkdownEditorTextHover;
 
 public class MarkdownConfiguration extends TextSourceViewerConfiguration {
 	private MarkdownDoubleClickStrategy doubleClickStrategy;
@@ -49,6 +48,7 @@ public class MarkdownConfiguration extends TextSourceViewerConfiguration {
 	private IPreferenceStore store;
 	public SingleTokenScanner comment;
 	public SingleTokenScanner yaml;
+	private MardownEditorQuickFixProcessor assist;
 
 	public MarkdownConfiguration(ColorManager colorManager, MarkdownEditor markdownEditor, IPreferenceStore preferenceStore) {
 		super(preferenceStore);
@@ -85,17 +85,17 @@ public class MarkdownConfiguration extends TextSourceViewerConfiguration {
 	}
 
 	public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
-		return new TextHover(sourceViewer);
+		return new RMarkdownEditorTextHover(markdownEditor,assist);
 	}
 
-	private final class TextHover extends DefaultTextHover implements ITextHoverExtension {
+	/*private final class TextHover extends DefaultTextHover implements ITextHoverExtension {
 		public TextHover(ISourceViewer sourceViewer) {
 			super(sourceViewer);
 		}
 
-		/*
+		
 		 * @see org.eclipse.jface.text.ITextHoverExtension#getHoverControlCreator()
-		 */
+		 
 		public IInformationControlCreator getHoverControlCreator() {
 			return new IInformationControlCreator() {
 				public IInformationControl createInformationControl(Shell parent) {
@@ -103,7 +103,7 @@ public class MarkdownConfiguration extends TextSourceViewerConfiguration {
 				}
 			};
 		}
-	}
+	}*/
 
 	public IReconciler getReconciler(ISourceViewer sourceViewer) {
 
@@ -231,6 +231,14 @@ public class MarkdownConfiguration extends TextSourceViewerConfiguration {
 		}
 
 	}
+	
+	@Override
+	public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
+		// TODO Auto-generated method stub
+		return super.getAnnotationHover(sourceViewer);
+		// return new AnnotationHover();
+	}
+	
 
 	public IQuickAssistAssistant getQuickAssistAssistant(ISourceViewer sourceViewer) {
 		/*
@@ -238,7 +246,8 @@ public class MarkdownConfiguration extends TextSourceViewerConfiguration {
 		 */
 
 		QuickAssistAssistant assistant = new QuickAssistAssistant();
-		assistant.setQuickAssistProcessor(new SpellingCorrectionProcessor());
+		assist=new MardownEditorQuickFixProcessor(markdownEditor);
+		assistant.setQuickAssistProcessor(assist);
 		assistant.setRestoreCompletionProposalSize(EditorsPlugin.getDefault().getDialogSettingsSection("quick_assist_proposal_size")); //$NON-NLS-1$
 		assistant.setInformationControlCreator(getQuickAssistAssistantInformationControlCreator());
 
@@ -248,6 +257,8 @@ public class MarkdownConfiguration extends TextSourceViewerConfiguration {
 	private IInformationControlCreator getQuickAssistAssistantInformationControlCreator() {
 		return new IInformationControlCreator() {
 			public IInformationControl createInformationControl(Shell parent) {
+				
+				//return new RMarkdownSimpleDefaultInformationControl(parent);
 				return new DefaultInformationControl(parent, EditorsPlugin.getAdditionalInfoAffordanceString());
 			}
 
