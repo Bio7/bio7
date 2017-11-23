@@ -114,5 +114,18 @@
           sequence="CTRL+SHIFT+F">
     </key>
    </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="true"
+            locationURI="popup:#RMarkdownEditorContext?after=additions">
+         <command
+               commandId="com.eco.bio7.reditor.rmarkdown.format"
+               label="Format Selection"
+               style="push"
+               tooltip="Formats the selected markdown editor source">
+         </command>
+      </menuContribution>
+   </extension>
 
 </plugin>
