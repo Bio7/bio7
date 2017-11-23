@@ -92,7 +92,11 @@ public class MarkdownEditor extends TextEditor implements IPropertyChangeListene
 		setSourceViewerConfiguration(markConf);
 		setDocumentProvider(new MarkdownDocumentProvider());
 		selectedItems = new ArrayList<TreeItem>();
-		
+		/*
+		 * Set the context to avoid that menus appear in a different editor. E.g.,
+		 * refactor dialogs!
+		 */
+		setEditorContextMenuId("#RMarkdownEditorContext");
 
 	}
 

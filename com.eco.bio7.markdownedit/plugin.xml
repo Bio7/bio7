@@ -55,6 +55,11 @@
             commandId="com.eco.bio7.markdownedit.actions.zoomOut">
            
       </handler>
+      <handler
+            class="com.eco.bio7.markdownedit.actions.RMarkdownFormatAction"
+            commandId="com.eco.bio7.reditor.rmarkdown.format">
+           
+      </handler>
    </extension>
    <extension point="org.eclipse.ui.contexts">
           <context name="Markdown Editor Context"
@@ -76,6 +81,12 @@
           id="com.eco.bio7.markdownedit.actions.zoomOut"
           name="Zoom Out">
     </command>
+     <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Format RMarkdown source"
+          id="com.eco.bio7.reditor.rmarkdown.format"
+          name="Format">
+    </command>
    </extension>
    <extension
         id="com.eco.bio7.markdownedit.binding"
@@ -96,6 +107,25 @@
           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
           sequence="CTRL+-">
     </key>
+    <key
+          commandId="com.eco.bio7.reditor.rmarkdown.format"
+          contextId="com.eco.bio7.markdownedit.MarkdownEditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+SHIFT+F">
+    </key>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="true"
+            locationURI="popup:#RMarkdownEditorContext?after=additions">
+         <command
+               commandId="com.eco.bio7.reditor.rmarkdown.format"
+               label="Format Selection"
+               style="push"
+               tooltip="Formats the selected markdown editor source">
+         </command>
+      </menuContribution>
    </extension>
 
 </plugin>

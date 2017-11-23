@@ -36,8 +36,8 @@ public class RMarkdownEditorTextHover implements ITextHover, ITextHoverExtension
 	private MardownEditorQuickFixProcessor rAssist;
 	private ICompletionProposal[] proposals;
 	private static String htmlHelpText = "";
-	String message = "";
-	private IPreferenceStore store;
+	private String message = "";
+	private boolean hoverMarker;
 
 	public static String getHtmlHelpText() {
 		return htmlHelpText;
@@ -58,7 +58,8 @@ public class RMarkdownEditorTextHover implements ITextHover, ITextHoverExtension
 	// region
 	@Override
 	public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
-
+		hoverMarker = false;
+		informationControlText = "";
 		int offset = hoverRegion.getOffset();
 
 		/*
@@ -66,7 +67,10 @@ public class RMarkdownEditorTextHover implements ITextHover, ITextHoverExtension
 		 * calculates the hover popup for markers!
 		 */
 		informationControlText = openPopupHoverTable(textViewer, offset);
-
+		/* Show no popup if this is not the selected Spelling annotation! */
+		if (hoverMarker == false) {
+			return null;
+		}
 		return informationControlText;
 
 	}
@@ -87,23 +91,25 @@ public class RMarkdownEditorTextHover implements ITextHover, ITextHoverExtension
 				continue;
 
 			if (annotation instanceof SpellingAnnotation) {
+
 				Position pos = model.getPosition(annotation);
 				int offsetStart = pos.getOffset();
 				int length = pos.getLength();
 				int offsetEnd = offsetStart + length;
 				if (offset >= offsetStart && offset <= offsetEnd) {
-
+					hoverMarker = true;
 					proposals = rAssist.computeQuickAssistProposals(
 							new InvocationContext(offsetStart, length, (SourceViewer) textViewer));
 
 					message = annotation.getText();
 
 				}
+
 			}
+
 		}
 		return message;
 	}
-
 
 	String readFile(String path, Charset encoding) throws IOException {
 		byte[] encoded = Files.readAllBytes(Paths.get(path));
@@ -134,7 +140,9 @@ public class RMarkdownEditorTextHover implements ITextHover, ITextHoverExtension
 	public IInformationControlCreator getHoverControlCreator() {
 		return new IInformationControlCreator() {
 			public IInformationControl createInformationControl(Shell parent) {
+
 				return new MarkdownEditorHoverTextmarkerInformationControl(parent, proposals, message, rEditor);
+
 			}
 		};
 	}
