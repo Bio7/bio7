@@ -320,6 +320,16 @@ public class MarkdownEditorHoverTextmarkerInformationControl extends AbstractInf
 	 * @since 3.0
 	 * @deprecated As of 3.4, replaced by simpler constructors
 	 */
+	/**
+	 * Creates a default information control with the given shell as parent. No
+	 * information presenter is used to process the information to be displayed.
+	 *
+	 * @param parent
+	 *            the parent shell
+	 */
+	public MarkdownEditorHoverTextmarkerInformationControl(Shell parent) {
+		this(parent, (String) null, null);
+	}
 
 	/*
 	 * @see org.eclipse.jface.text.AbstractInformationControl#createContent(org.
