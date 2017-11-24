@@ -239,21 +239,19 @@ public class RMarkdownSpellingReconcileStrategy implements IReconcilingStrategy,
 		RMarkdownVisitor sa = new RMarkdownVisitor(this);
 		sa.visitor.visit(document);
 
-		/*AbstractYamlFrontMatterVisitor visitor = new AbstractYamlFrontMatterVisitor();
-		Node docu = PARSER.parse(source);
-		visitor.visit(docu);
+		/*
+		 * AbstractYamlFrontMatterVisitor visitor = new
+		 * AbstractYamlFrontMatterVisitor(); Node docu = PARSER.parse(source);
+		 * visitor.visit(docu);
+		 * 
+		 * Map<String, List<String>> data = visitor.getData();
+		 * 
+		 * if (data.containsKey("output")) {
+		 * 
+		 * List dat = data.get("output"); for (int i = 0; i < dat.size(); i++) {
+		 * System.out.println(dat.get(i)); } }
+		 */
 
-		Map<String, List<String>> data = visitor.getData();
-
-		if (data.containsKey("output")) {
-
-			List dat = data.get("output");
-			for (int i = 0; i < dat.size(); i++) {
-				System.out.println(dat.get(i));
-			}
-		}*/
-
-		
 		/* Update the outline! */
 
 		Display.getDefault().asyncExec(new Runnable() {
@@ -315,10 +313,12 @@ public class RMarkdownSpellingReconcileStrategy implements IReconcilingStrategy,
 	public void reconcile(IRegion region) {
 		if (getAnnotationModel() == null || fSpellingProblemCollector == null)
 			return;
-
-		fRegions[0] = region;
-		fSpellingService.check(fDocument, fRegions, fSpellingContext, fSpellingProblemCollector, fProgressMonitor);
-
+		
+		boolean checkSpelling = store.getBoolean("CHECK_SPELLING");
+		if (checkSpelling) {
+			fRegions[0] = region;
+			fSpellingService.check(fDocument, fRegions, fSpellingContext, fSpellingProblemCollector, fProgressMonitor);
+		}
 		doReconcile();
 		triggerRMarkdownAction();
 

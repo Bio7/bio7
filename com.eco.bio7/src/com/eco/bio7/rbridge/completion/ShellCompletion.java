@@ -53,14 +53,14 @@ import com.eco.bio7.rpreferences.template.CalculateRProposals;
 import com.eco.bio7.util.Util;
 import com.swtdesigner.ResourceManager;
 
-public class ShellCompletion  {
+public class ShellCompletion {
 	private ContentProposalProvider contentProposalProvider;
 	private ContentProposalAdapter contentProposalAdapter;
 	private KeyStroke stroke;
 	private static final String LCL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.@$+-.:";
 	private static final String UCL = LCL.toUpperCase();
 	private static final String NUMS = "0123456789";
-	private Image image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/template_obj.png");
+	private Image image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/brkp_obj.png");
 	private Image varImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/field_public_obj.png");
 	private Image s4Image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/s4.png");
 	private Image s3Image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/s3.png");
@@ -74,7 +74,9 @@ public class ShellCompletion  {
 	private RShellView view;
 
 	/*
-	 * Next two methods adapted from: https://krishnanmohan.wordpress.com/2011/12/12/eclipse-rcp- autocompletecombotext-control/
+	 * Next two methods adapted from:
+	 * https://krishnanmohan.wordpress.com/2011/12/12/eclipse-rcp-
+	 * autocompletecombotext-control/
 	 */
 	static char[] getAutoactivationChars() {
 
@@ -100,9 +102,11 @@ public class ShellCompletion  {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		boolean typedCodeCompletion = store.getBoolean("RSHELL_TYPED_CODE_COMPLETION");
 		if (typedCodeCompletion) {
-			contentProposalAdapter = new ContentProposalAdapter(control, controlContentAdapter, contentProposalProvider, stroke, getAutoactivationChars());
+			contentProposalAdapter = new ContentProposalAdapter(control, controlContentAdapter, contentProposalProvider,
+					stroke, getAutoactivationChars());
 		} else {
-			contentProposalAdapter = new ContentProposalAdapter(control, controlContentAdapter, contentProposalProvider, stroke, null);
+			contentProposalAdapter = new ContentProposalAdapter(control, controlContentAdapter, contentProposalProvider,
+					stroke, null);
 		}
 		contentProposalAdapter.setPropagateKeys(true);
 		contentProposalAdapter.setLabelProvider(new ContentProposalLabelProvider());
@@ -117,7 +121,10 @@ public class ShellCompletion  {
 				/* We have to care about the custom replacements! */
 
 				String content = control.getText();
-				/*Weird behavior of text.getCaretPosition() position on MacOSX. Solved by extracting the a local var here!*/
+				/*
+				 * Weird behavior of text.getCaretPosition() position on MacOSX. Solved by
+				 * extracting the a local var here!
+				 */
 				int caretPosition = control.getCaretPosition();
 				control.setSelection(contentProposalProvider.lastIndex, caretPosition);
 				// Point selection = control.getSelection();
@@ -143,7 +150,11 @@ public class ShellCompletion  {
 					// int cursorPosition = (textSel + proposal.getContent() + "()").length() - 1;
 					int cursorPosition = (textSel + proposal.getContent()).length();
 					control.setText(content);
-					control.setSelection(cursorPosition);
+					if (proposal.getContent().endsWith("()")) {
+						control.setSelection(cursorPosition - 1);
+					} else {
+						control.setSelection(cursorPosition);
+					}
 				}
 				/* Notify a change for the parser of the R-Shell view! */
 				Event e = new Event();
@@ -230,7 +241,10 @@ public class ShellCompletion  {
 		return contentProposalAdapter;
 	}
 
-	/* Here we calculate the first occurrence of the below chars to the left to enable nested commands! */
+	/*
+	 * Here we calculate the first occurrence of the below chars to the left to
+	 * enable nested commands!
+	 */
 	protected int calculateFirstOccurrenceOfChar(Text control, int offset) {
 		int i = offset;
 
@@ -244,7 +258,8 @@ public class ShellCompletion  {
 			/*
 			 * We need to extra include the '@' character for S4 class vars!
 			 */
-			if ((ch == ';') || (ch == '(') || (ch == ',') || (ch == '[')|| (ch == '=')|| (ch == '-')|| (ch == '+'))
+			if ((ch == ';') || (ch == '(') || (ch == ',') || (ch == '[') || (ch == '=') || (ch == '-') || (ch == '+')
+					|| Character.isSpaceChar(ch))
 				break;
 			i--;
 		}
@@ -308,8 +323,12 @@ public class ShellCompletion  {
 				ImageContentProposal[] workspaceVars = getWorkSpaceVars(position);
 				if (workspaceVars != null) {
 					for (int i = 0; i < workspaceVars.length; i++) {
-						/* Here we filter out the vars by comparing the typed letters with the available workspace vars! */
-						if (workspaceVars[i].getLabel().length() >= textLength && workspaceVars[i].getLabel().substring(0, textLength).equalsIgnoreCase(contentLastCorr)) {
+						/*
+						 * Here we filter out the vars by comparing the typed letters with the available
+						 * workspace vars!
+						 */
+						if (workspaceVars[i].getLabel().length() >= textLength && workspaceVars[i].getLabel()
+								.substring(0, textLength).equalsIgnoreCase(contentLastCorr)) {
 							varWorkspace.add(workspaceVars[i]);
 						}
 					}
@@ -319,9 +338,13 @@ public class ShellCompletion  {
 			/* If text length after parenheses is at least 0! */
 			if (textLength >= 0) {
 				for (int i = 0; i < statistics.length; i++) {
-					/* Here we filter out the templates by comparing the typed letters with the available templates! */
-					if (statistics[i].length() >= textLength && statistics[i].substring(0, textLength).equalsIgnoreCase(contentLastCorr)) {
-						list.add(makeContentProposal(statistics[i], statisticsContext[i], statisticsSet[i]));
+					/*
+					 * Here we filter out the templates by comparing the typed letters with the
+					 * available templates!
+					 */
+					if (statistics[i].length() >= textLength
+							&& statistics[i].substring(0, textLength).equalsIgnoreCase(contentLastCorr)) {
+						list.add(makeContentProposal(statistics[i] + "()", statisticsContext[i], statisticsSet[i]));
 					}
 				}
 
@@ -346,15 +369,19 @@ public class ShellCompletion  {
 			// }
 			/* If filtering is true! */
 			/*
-			 * if (contentProposals == null) { contentProposals = new IContentProposal[statistics.length];
+			 * if (contentProposals == null) { contentProposals = new
+			 * IContentProposal[statistics.length];
 			 * 
-			 * for (int i = 0; i < statistics.length; i++) { contentProposals[i] = makeContentProposal(statistics[i], statisticsContext[i], statisticsSet[i]);
+			 * for (int i = 0; i < statistics.length; i++) { contentProposals[i] =
+			 * makeContentProposal(statistics[i], statisticsContext[i], statisticsSet[i]);
 			 * 
 			 * } }
 			 */
 			/*
-			 * IContentProposal[] arrayFinal =makeProposalArray(contentProposals); IContentProposal[] both = (IContentProposal[])ArrayUtils.addAll(first, arrayFinal); Create an image proposal from it!
-			 * return makeProposalArray(arrayFinal); // return contentProposals;
+			 * IContentProposal[] arrayFinal =makeProposalArray(contentProposals);
+			 * IContentProposal[] both = (IContentProposal[])ArrayUtils.addAll(first,
+			 * arrayFinal); Create an image proposal from it! return
+			 * makeProposalArray(arrayFinal); // return contentProposals;
 			 */ }
 
 		private IContentProposal[] makeProposalArray(IContentProposal[] proposals) {
@@ -362,7 +389,9 @@ public class ShellCompletion  {
 				IContentProposal[] arrContentProposals = new IContentProposal[proposals.length];
 				for (int i = 0; i < proposals.length; i++) {
 
-					ImageContentProposal contentProposal = new ImageContentProposal(proposals[i].getContent(), proposals[i].getLabel(), proposals[i].getDescription(), proposals[i].getContent().length(), image);
+					ImageContentProposal contentProposal = new ImageContentProposal(proposals[i].getContent(),
+							proposals[i].getLabel(), proposals[i].getDescription(), proposals[i].getContent().length(),
+							image);
 					arrContentProposals[i] = contentProposal;
 				}
 				return arrContentProposals;
@@ -381,7 +410,8 @@ public class ShellCompletion  {
 			contentProposals = null;
 		}
 
-		private IContentProposal makeContentProposal(final String proposal, final String label, final String description) {
+		private IContentProposal makeContentProposal(final String proposal, final String label,
+				final String description) {
 			return new IContentProposal() {
 
 				public String getContent() {
@@ -402,7 +432,6 @@ public class ShellCompletion  {
 				}
 			};
 		}
-	   
 
 	}
 
@@ -433,7 +462,9 @@ public class ShellCompletion  {
 		}
 	}
 
-	/* Here we calculate the workspace variables and create ImageContentProposals! */
+	/*
+	 * Here we calculate the workspace variables and create ImageContentProposals!
+	 */
 	private ImageContentProposal[] getWorkSpaceVars(int offset) {
 		propo = null;
 
@@ -454,7 +485,8 @@ public class ShellCompletion  {
 
 									for (int j = 0; j < result.length; j++) {
 
-										propo[j] = new ImageContentProposal(result[j], result[j], result[j], result[j].length(), varImage);
+										propo[j] = new ImageContentProposal(result[j], result[j], result[j],
+												result[j].length(), varImage);
 
 									}
 								}
@@ -499,7 +531,8 @@ public class ShellCompletion  {
 
 									for (int j = 0; j < result.length; j++) {
 
-										propo[j] = new ImageContentProposal(result[j], result[j], null, result[j].length(), s4Image);
+										propo[j] = new ImageContentProposal(result[j], result[j], null,
+												result[j].length(), s4Image);
 
 									}
 								}
@@ -547,7 +580,8 @@ public class ShellCompletion  {
 
 									for (int j = 0; j < result.length; j++) {
 
-										propo[j] = new ImageContentProposal(result[j], result[j], null, result[j].length(), s3Image);
+										propo[j] = new ImageContentProposal(result[j], result[j], null,
+												result[j].length(), s3Image);
 
 									}
 								}
@@ -573,5 +607,5 @@ public class ShellCompletion  {
 
 		return propo;
 	}
-    
+
 }

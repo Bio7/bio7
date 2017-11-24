@@ -36,6 +36,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         storeR.setDefault("OPEN_WORD_IN_VIEW",false);
         storeR.setDefault("RECONCILE_MARKDOWN",false);
         storeR.setDefault("RECONCILE_MARKDOWN_TIME", "500");
+        storeR.setDefault("CHECK_SPELLING", true);
        
 
 
