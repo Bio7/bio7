@@ -308,7 +308,7 @@ public class JavaFXWebBrowser {
 							
 							String installPackagesDescritpionUrl = store.getString("INSTALL_R_PACKAGES_DESCRPTION_URL");
 							//System.out.println(brow.getEngine().getLocation());
-							if (brow.getEngine().getLocation().startsWith(installPackagesDescritpionUrl)) {
+							if (brow.getEngine().getLocation().startsWith(installPackagesDescritpionUrl)||brow.getEngine().getLocation().startsWith("file:")) {
 								Document doc = webEng.getDocument();
 								Element styleNode = doc.createElement("style");
 								Text styleContent = doc.createTextNode(CSS);
