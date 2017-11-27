@@ -220,7 +220,7 @@ public class JavaFXWebBrowser {
 							// System.out.println(brow.getEngine().getLocation());
 							if (brow.getEngine().getLocation().startsWith(installPackagesDescritpionUrl)
 									|| brow.getEngine().getLocation().startsWith("file:")) {
-
+                                /*Load a CSS applied to the R HTML helpfile!*/
 								Bundle bundle = Platform.getBundle("com.eco.bio7.themes");
 								URL fileURL = bundle.getEntry("javafx/Bio7BrowserDarkHTML.css");
 								File file = null;
