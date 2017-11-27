@@ -3,6 +3,7 @@ package com.eco.bio7.documents;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Base64;
@@ -63,98 +64,7 @@ public class JavaFXWebBrowser {
 	private boolean reload;
 	private String fileUrl;
 	private static JavaFXWebBrowser javaFXWebBrowserInstance;
-	private static final String CSS = "body {\n" + 
-			"    background: #252525;\n" + 
-			"    color: #CCCCCC;\n" + 
-			" }\n" + 
-			"\n" + 
-			"h1 {\n" + 
-			"    background: #252525;\n" + 
-			"    color: #CCCCCC;\n" + 
-			"    font-family: monospace;\n" + 
-			"    font-size: x-large;\n" + 
-			"    text-align: center;\n" + 
-			"}\n" + 
-			"\n" + 
-			"h2 {\n" + 
-			"    background: #252525;\n" + 
-			"    color: #CCCCCC;\n" + 
-			"    font-family: monospace;\n" + 
-			"    font-size: large;\n" + 
-			"}\n" + 
-			"\n" + 
-			"h3, h4, h5 {\n" + 
-			"    background: #252525;\n" + 
-			"    color: #CCCCCC;\n" + 
-			"    font-family: monospace;\n" + 
-			"}\n" + 
-			"\n" + 
-			"a {\n" + 
-			"    background: #252525;\n" + 
-			"    color: grey;\n" + 
-			"}\n" + 
-			"\n" + 
-			"em.navigation {\n" + 
-			"    font-weight: bold;\n" + 
-			"    font-style: normal;\n" + 
-			"    background: #252525;\n" + 
-			"    color: rgb(40%, 40%, 40%);\n" + 
-			"    font-family: monospace;\n" + 
-			"}\n" + 
-			"\n" + 
-			"img.toplogo {\n" + 
-			"    vertical-align: middle;\n" + 
-			"}\n" + 
-			"\n" + 
-			"span.check_ok {\n" + 
-			"    color: black;\n" + 
-			"}\n" + 
-			"\n" + 
-			"span.check_ko {\n" + 
-			"    color: red;\n" + 
-			"}\n" + 
-			"\n" + 
-			"span.BioC {\n" + 
-			"    color: #2C92A1;\n" + 
-			"}\n" + 
-			"\n" + 
-			"span.Ohat {\n" + 
-			"    color: #8A4513;\n" + 
-			"}\n" + 
-			"\n" + 
-			"span.Gcode {\n" + 
-			"    color: #5B8A00;\n" + 
-			"}\n" + 
-			"\n" + 
-			"span.Rforge {\n" + 
-			"    color: #8009AA;\n" + 
-			"}\n" + 
-			"\n" + 
-			"span.acronym {\n" + 
-			"    font-size: small;\n" + 
-			"}\n" + 
-			"\n" + 
-			"span.env {\n" + 
-			"    font-family: monospace;\n" + 
-			"}\n" + 
-			"\n" + 
-			"span.file {\n" + 
-			"    font-family: monospace;\n" + 
-			"}\n" + 
-			"\n" + 
-			"span.option {\n" + 
-			"    font-family: monospace;\n" + 
-			"}\n" + 
-			"\n" + 
-			"span.pkg {\n" + 
-			"    font-weight: bold;\n" + 
-			"}\n" + 
-			"\n" + 
-			"span.samp {\n" + 
-			"    font-family: monospace;\n" + 
-			"}\n" + 
-			"";
-
+	
 	public static JavaFXWebBrowser getJavaFXWebBrowserInstance() {
 		return javaFXWebBrowserInstance;
 	}
@@ -290,28 +200,42 @@ public class JavaFXWebBrowser {
 									}
 
 									// Checking whether the URL contains a PDF
-									if(urlConn.getContentType()!=null) {
-									if (urlConn.getContentType().equalsIgnoreCase("application/pdf")) {
-										// JavaFXWebBrowser.this.html=false;
-										String pathBundle = getPdfjsPath();
+									if (urlConn.getContentType() != null) {
+										if (urlConn.getContentType().equalsIgnoreCase("application/pdf")) {
+											// JavaFXWebBrowser.this.html=false;
+											String pathBundle = getPdfjsPath();
 
-										webEng.load("file:///" + pathBundle + "?file=" + href);
+											webEng.load("file:///" + pathBundle + "?file=" + href);
 
-										evt.preventDefault();
-									}
+											evt.preventDefault();
+										}
 									}
 								}
 							}, false);
 						}
 						if (ApplicationWorkbenchWindowAdvisor.isThemeBlack()) {
 							IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-							
+
 							String installPackagesDescritpionUrl = store.getString("INSTALL_R_PACKAGES_DESCRPTION_URL");
-							//System.out.println(brow.getEngine().getLocation());
-							if (brow.getEngine().getLocation().startsWith(installPackagesDescritpionUrl)||brow.getEngine().getLocation().startsWith("file:")) {
+							// System.out.println(brow.getEngine().getLocation());
+							if (brow.getEngine().getLocation().startsWith(installPackagesDescritpionUrl)
+									|| brow.getEngine().getLocation().startsWith("file:")) {
+
+								Bundle bundle = Platform.getBundle("com.eco.bio7.themes");
+								URL fileURL = bundle.getEntry("javafx/Bio7BrowserDarkHTML.css");
+								File file = null;
+								try {
+									file = new File(FileLocator.resolve(fileURL).toURI());
+								} catch (URISyntaxException e1) {
+									e1.printStackTrace();
+								} catch (IOException e1) {
+									e1.printStackTrace();
+								}							
+								String path = file.getPath();							
+								String css = Util.fileToString(path);							
 								Document doc = webEng.getDocument();
 								Element styleNode = doc.createElement("style");
-								Text styleContent = doc.createTextNode(CSS);
+								Text styleContent = doc.createTextNode(css);
 								styleNode.appendChild(styleContent);
 								doc.getDocumentElement().getElementsByTagName("head").item(0).appendChild(styleNode);
 							}
