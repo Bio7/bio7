@@ -35,6 +35,7 @@ import org.eclipse.jface.fieldassist.IContentProposalListener;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.fieldassist.IControlContentAdapter;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.contentassist.CompletionProposal;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
@@ -46,8 +47,10 @@ import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RShellView;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.rpreferences.template.CalculateRProposals;
 import com.eco.bio7.util.Util;
@@ -64,6 +67,8 @@ public class ShellCompletion {
 	private Image varImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/field_public_obj.png");
 	private Image s4Image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/s4.png");
 	private Image s3Image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/s3.png");
+	private Image dataImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/settings_obj.png");
+	private Image libImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/package_obj.png");
 	private Text control;
 	private String[] statistics;
 	private String[] statisticsContext;
@@ -72,6 +77,8 @@ public class ShellCompletion {
 	public boolean s4;
 	public boolean s3;
 	private RShellView view;
+	public boolean data;
+	public boolean library;
 
 	/*
 	 * Next two methods adapted from:
@@ -142,6 +149,8 @@ public class ShellCompletion {
 					control.setText(content);
 					control.setSelection(cursorPosition);
 				} else {
+					data = false;
+					library = false;
 					int pos = calculateFirstOccurrenceOfChar(control, caretPosition);
 					String textSel = control.getText(0, pos - 1);
 					String after = control.getText(caretPosition, content.length());
@@ -316,6 +325,15 @@ public class ShellCompletion {
 			} else if (contentLastCorr.endsWith("$")) {
 				s3 = true;
 				return s3Activation(position, contentLastCorr);
+			}
+			String textToOffset = control.getText(0, offset - 1);
+
+			if (textToOffset.endsWith("data(")) {
+				data = true;
+				return dataActivation(position);
+			} else if (textToOffset.endsWith("library(") || textToOffset.endsWith("require(")) {
+				library = true;
+				return libraryActivation(position);
 			}
 
 			if (RServe.isAlive()) {
@@ -605,6 +623,80 @@ public class ShellCompletion {
 			System.out.println("No Rserve connection available!");
 		}
 
+		return propo;
+	}
+
+	/* Here we calculate available dataset examples and create ImageContentProposals! */
+	private ImageContentProposal[] dataActivation(int offset) {
+		RConnection c = RServe.getConnection();
+		if (c != null) {
+			propo = null;
+
+			String[] item = null;
+			String[] packages = null;
+			String[] title = null;
+			/* Get all installed dataset names, their package and description! */
+			try {
+				RServeUtil.evalR("try(.bio7Pkgs <- setdiff(.packages(TRUE), c(\"base\", \"stats\")));"
+						+ "try(.bio7PkgsTemp<-data(package = .bio7Pkgs)$result);"
+						+ "try(.bio7PkgsTemp<-.bio7PkgsTemp[order(.bio7PkgsTemp[,3]), ])", null);
+				item = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Item\"])").asStrings();
+				packages = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Package\"])").asStrings();
+				title = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Title\"])").asStrings();
+			} catch (REXPMismatchException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			propo = new ImageContentProposal[item.length];
+
+			for (int j = 0; j < item.length; j++) {
+
+				propo[j] = new ImageContentProposal(item[j], item[j] + " (package: " + packages[j] + ")", title[j],
+						item[j].length(), dataImage);
+
+			}
+
+		} else {
+			System.out.println("No Rserve connection available!");
+		}
+		return propo;
+	}
+
+	/* Here we calculate available libraries and create ImageContentProposals! */
+	private ImageContentProposal[] libraryActivation(int offset) {
+		RConnection c = RServe.getConnection();
+		if (c != null) {
+			propo = null;
+
+			String[] dirPackageFiles = null;
+			String[] packageTitle = null;
+			try {
+				RServeUtil.evalR("try(.bio7ListOfWebPackages <- list(sort(.packages(all.available = TRUE))));"
+						+ "try(.bio7ListOfWebPackagesNames<-.bio7ListOfWebPackages[[1]]);"
+						+ "try(.bio7TitleResult<-lapply(.bio7ListOfWebPackagesNames,packageDescription,fields = c(\"Title\")))", null);
+
+				packageTitle = RServeUtil.fromR("try(as.character(.bio7TitleResult))").asStrings();
+				dirPackageFiles = RServeUtil.fromR("try(.bio7ListOfWebPackagesNames)").asStrings();
+				
+			} catch (REXPMismatchException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			propo = new ImageContentProposal[dirPackageFiles.length];
+
+			for (int j = 0; j < dirPackageFiles.length; j++) {
+
+				propo[j] = new ImageContentProposal(dirPackageFiles[j],
+						dirPackageFiles[j], packageTitle[j], dirPackageFiles[j].length(),
+						libImage);
+
+			}
+
+		} else {
+			System.out.println("No Rserve connection available!");
+		}
 		return propo;
 	}
 

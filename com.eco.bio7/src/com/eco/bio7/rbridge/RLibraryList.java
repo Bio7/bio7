@@ -66,6 +66,11 @@ public class RLibraryList extends Shell {
 							public void done(IJobChangeEvent event) {
 								if (event.getResult().isOK()) {
 									RState.setBusy(false);
+									/*Also reload the R-Shell code completion in an extra job!*/
+									RShellView rShellView = RShellView.getInstance();
+									if (rShellView != null) {
+										rShellView.getShellCompletion().update();
+									}
 								} else {
 									RState.setBusy(false);
 								}
