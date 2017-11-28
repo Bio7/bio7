@@ -189,6 +189,10 @@ public class RShellView extends ViewPart {
 	public RShellView() {
 		instance = this;
 	}
+	
+	public ShellCompletion getShellCompletion() {
+		return shellCompletion;
+	}
 
 	public static List getList_8() {
 		return listShell;
@@ -342,7 +346,7 @@ public class RShellView extends ViewPart {
 						String t = text.getText();
 						String a = t.substring(0, text.getCaretPosition());
 						String b = t.substring(text.getCaretPosition(), t.length());
-						text.setText(a + doc.get() + b);
+						text.insert(doc.get());
 
 					}
 
@@ -350,7 +354,23 @@ public class RShellView extends ViewPart {
 							&& (e.stateMask & SWT.ALT) == SWT.ALT && (e.keyCode == 's')) {
 						IDocument doc = new Document();
 						new SaveFileCreateSourceTemplate(doc, 0, doc.getLength());
-						text.setText(doc.get());
+						text.insert(doc.get());
+					}
+					else if (((e.stateMask & SWT.COMMAND) == SWT.COMMAND) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT
+							 && (e.keyCode == '-')) {
+						String t = text.getText();
+						String a = t.substring(0, text.getCaretPosition());
+						String b = t.substring(text.getCaretPosition(), t.length());
+						//text.setText(a + "<-" + b);
+						text.insert(" <- ");
+					}
+					else if (((e.stateMask & SWT.COMMAND) == SWT.COMMAND) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT
+							 && (e.keyCode == 'm')) {
+						String t = text.getText();
+						String a = t.substring(0, text.getCaretPosition());
+						String b = t.substring(text.getCaretPosition(), t.length());
+						//text.setText(a + "<-" + b);
+						text.insert(" %>% ");
 					}
 
 				} else {
@@ -379,7 +399,7 @@ public class RShellView extends ViewPart {
 						String t = text.getText();
 						String a = t.substring(0, text.getCaretPosition());
 						String b = t.substring(text.getCaretPosition(), t.length());
-						text.setText(a + doc.get() + b);
+						text.insert(doc.get());
 
 					}
 
@@ -387,7 +407,23 @@ public class RShellView extends ViewPart {
 							&& (e.stateMask & SWT.ALT) == SWT.ALT && (e.keyCode == 's')) {
 						IDocument doc = new Document();
 						new SaveFileCreateSourceTemplate(doc, 0, doc.getLength());
-						text.setText(doc.get());
+						text.insert(doc.get());
+					}
+					else if (((e.stateMask & SWT.CTRL) == SWT.CTRL) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT
+							 && (e.keyCode == '-')) {
+						String t = text.getText();
+						String a = t.substring(0, text.getCaretPosition());
+						String b = t.substring(text.getCaretPosition(), t.length());
+						//text.setText(a + "<-" + b);
+						text.insert(" <- ");
+					}
+					else if (((e.stateMask & SWT.CTRL) == SWT.CTRL) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT
+							 && (e.keyCode == 'n')) {
+						String t = text.getText();
+						String a = t.substring(0, text.getCaretPosition());
+						String b = t.substring(text.getCaretPosition(), t.length());
+						//text.setText(a + "<-" + b);
+						text.insert(" %>% ");
 					}
 				}
 

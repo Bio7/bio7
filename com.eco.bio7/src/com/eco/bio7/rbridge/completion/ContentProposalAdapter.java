@@ -619,7 +619,7 @@ public class ContentProposalAdapter {
 					}
 				}
 				if(informationControlText==null) {
-					informationControlText=finalContent;
+					informationControlText="";
 				}
 				return informationControlText;
 			}
@@ -629,12 +629,15 @@ public class ContentProposalAdapter {
 			 */
 			void setContents(String newContents) {
 				
+				String defaultContent=newContents;
 				newContents=getRApiInformation(newContents);
-				
-				
-				if (newContents == null) {
-					newContents = EMPTY;
+				if(newContents.isEmpty()) {
+					newContents=defaultContent;
 				}
+				
+				/*if (newContents == null) {
+					newContents = EMPTY;
+				}*/
 				this.contents = newContents;
 				if (text != null && !text.isDisposed()) {
 					text.setText(contents);
