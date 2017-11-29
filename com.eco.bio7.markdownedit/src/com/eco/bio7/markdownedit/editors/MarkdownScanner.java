@@ -35,7 +35,7 @@ public class MarkdownScanner extends RuleBasedScanner {
 		// Add rule for processing instructions
 		rules.add(new SingleLineRule("<?", "?>", procInstr));*/
 		// Add generic whitespace rule.
-        rules.add(new EndOfLineRule("# ", head));
+        rules.add(new EndOfLineRule("#", head));
 		rules.add(new WhitespaceRule(new MarkdownWhitespaceDetector()));
 
 		MarkdownWordDetector wd = new MarkdownWordDetector();
