@@ -54,7 +54,7 @@ public class LoadRLibrarysJob extends WorkspaceJob {
 			display.syncExec(new Runnable() {
 
 				public void run() {
-					items = RLibraryList.getAllPackagesList().getSelection();
+					items = PackageInstallView.getAllInstalledPackagesList().getSelection();
 				}
 			});
 

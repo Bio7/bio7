@@ -54,6 +54,7 @@ public class PackageInstallView extends ViewPart {
 	public static final String ID = "com.eco.bio7.rbridge.PackageInstallView"; //$NON-NLS-1$
 	private Text text;
 	private static List allPackagesList;
+	private static List allInstalledPackagesList;
 	private HashMap<String, String[]> map = new HashMap<String, String[]>();
 	private Button btnContextSensitive;
 	private Label lblSearch;
@@ -65,6 +66,7 @@ public class PackageInstallView extends ViewPart {
 	private CTabItem tbtmInstalledPackages;
 	private Composite composite;
 	private IEditorPart editor;
+	private Button btnUpdate;
 
 	public PackageInstallView() {
 		 editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
@@ -309,12 +311,13 @@ public class PackageInstallView extends ViewPart {
 		gd_composite.widthHint = 278;
 		composite.setLayoutData(gd_composite);
 
-		allPackagesList = new List(composite, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
-		allPackagesList.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		allInstalledPackagesList = new List(composite, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
+		allInstalledPackagesList.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		
 				final Button uninstallButton = new Button(composite, SWT.NONE);
 				uninstallButton.setSize(269, 27);
 				GridData gd_uninstallButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+				gd_uninstallButton.heightHint = 40;
 				gd_uninstallButton.widthHint = 133;
 				uninstallButton.setLayoutData(gd_uninstallButton);
 				uninstallButton.setToolTipText("Removes installed packages/bundles and updates index information as necessary. ");
@@ -350,7 +353,9 @@ public class PackageInstallView extends ViewPart {
 				
 						Button btnAddLibraryDeclaration = new Button(composite, SWT.NONE);
 						btnAddLibraryDeclaration.setSize(269, 27);
-						btnAddLibraryDeclaration.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+						GridData gd_btnAddLibraryDeclaration = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+						gd_btnAddLibraryDeclaration.heightHint = 40;
+						btnAddLibraryDeclaration.setLayoutData(gd_btnAddLibraryDeclaration);
 						btnAddLibraryDeclaration.addSelectionListener(new SelectionAdapter() {
 
 							public void widgetSelected(SelectionEvent e) {
@@ -360,7 +365,7 @@ public class PackageInstallView extends ViewPart {
 						btnAddLibraryDeclaration.setToolTipText("Add selected package items as library declaration to R editor source");
 						btnAddLibraryDeclaration.setText("Add selected to R editor");
 
-		allPackagesList.addMouseListener(new MouseAdapter() {
+		allInstalledPackagesList.addMouseListener(new MouseAdapter() {
 			public void mouseDoubleClick(final MouseEvent e) {
 				if (RServe.isAlive()) {
 					if (RState.isBusy() == false) {
@@ -393,7 +398,7 @@ public class PackageInstallView extends ViewPart {
 
 			}
 		});
-		allPackagesList.addSelectionListener(new SelectionAdapter() {
+		allInstalledPackagesList.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 
 			}
@@ -405,6 +410,20 @@ public class PackageInstallView extends ViewPart {
 		
 		
 		tbtmInstalledPackages.setControl(composite);
+		
+		btnUpdate = new Button(composite, SWT.NONE);
+		btnUpdate.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				
+				packageInstall();
+			}
+			
+		});
+		GridData gd_btnUpdate = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+		gd_btnUpdate.heightHint = 40;
+		btnUpdate.setLayoutData(gd_btnUpdate);
+		btnUpdate.setText("Reload Packages List");
 		map.clear();
 		map.put("spatstat",
 				new String[] {
@@ -451,8 +470,8 @@ public class PackageInstallView extends ViewPart {
 	 */
 	private void loadPackageDescriptionHtml(Event event, int i) {
 		final int count = i;
-		allPackagesList.select(count);
-		allPackagesList.showSelection();
+		allInstalledPackagesList.select(count);
+		allInstalledPackagesList.showSelection();
 		if (job != null) {
 			job.cancel();
 		}
@@ -536,7 +555,7 @@ public class PackageInstallView extends ViewPart {
 							e2.printStackTrace();
 						}
 
-						allPackagesList.setItems(listPackages);
+						allInstalledPackagesList.setItems(listPackages);
 
 					}
 
@@ -577,6 +596,14 @@ public class PackageInstallView extends ViewPart {
 			}
 
 		}
+	}
+	
+
+	public static List getAllPackagesList() {
+		return allPackagesList;
+	}
+	public static List getAllInstalledPackagesList() {
+		return allInstalledPackagesList;
 	}
 
 }
