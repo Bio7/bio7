@@ -641,8 +641,12 @@ public class ContentProposalAdapter {
 				this.contents = newContents;
 				if (text != null && !text.isDisposed()) {
 					text.setText(contents);
+					
+					//contents.indexOf("Arguments:");
+					//text.setTopIndex(5);
 				}
 			}
+			
 
 			/*
 			 * Return whether the popup has focus.
