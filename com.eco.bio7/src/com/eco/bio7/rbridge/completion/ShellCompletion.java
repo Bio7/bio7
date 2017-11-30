@@ -21,6 +21,7 @@ See license info below
 package com.eco.bio7.rbridge.completion;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -65,6 +66,7 @@ public class ShellCompletion {
 	private static final String NUMS = "0123456789";
 	private Image image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/brkp_obj.png");
 	private Image varImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/field_public_obj.png");
+	private Image varFuncCallImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/varfunccall.png");
 	private Image s4Image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/s4.png");
 	private Image s3Image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/s3.png");
 	private Image dataImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/settings_obj.png");
@@ -77,8 +79,8 @@ public class ShellCompletion {
 	public boolean s4;
 	public boolean s3;
 	private RShellView view;
-	public boolean data;
-	public boolean library;
+	//public boolean data;
+	//public boolean library;
 
 	/*
 	 * Next two methods adapted from:
@@ -149,8 +151,8 @@ public class ShellCompletion {
 					control.setText(content);
 					control.setSelection(cursorPosition);
 				} else {
-					data = false;
-					library = false;
+					//data = false;
+					//library = false;
 					int pos = calculateFirstOccurrenceOfChar(control, caretPosition);
 					String textSel = control.getText(0, pos - 1);
 					String after = control.getText(caretPosition, content.length());
@@ -264,9 +266,7 @@ public class ShellCompletion {
 		while (i > 0) {
 
 			char ch = tex.charAt(i - 1);
-			/*
-			 * We need to extra include the '@' character for S4 class vars!
-			 */
+			
 			if ((ch == ';') || (ch == '(') || (ch == ',') || (ch == '[') || (ch == '=') || (ch == '-') || (ch == '+')
 					|| Character.isSpaceChar(ch))
 				break;
@@ -329,11 +329,17 @@ public class ShellCompletion {
 			String textToOffset = control.getText(0, offset - 1);
 
 			if (textToOffset.endsWith("data(")) {
-				data = true;
+				//data = true;
 				return dataActivation(position);
 			} else if (textToOffset.endsWith("library(") || textToOffset.endsWith("require(")) {
-				library = true;
+				//library = true;
 				return libraryActivation(position);
+			} else if (textToOffset.endsWith("(")) {
+
+				int pos = calculateFirstOccurrenceOfChar(control, offset - 1);
+				String func = control.getText(pos, offset - 2);
+				//System.out.println(control.getText(pos, offset - 2));
+				return functionArgumentsActivation(position, func);
 			}
 
 			if (RServe.isAlive()) {
@@ -626,7 +632,10 @@ public class ShellCompletion {
 		return propo;
 	}
 
-	/* Here we calculate available dataset examples and create ImageContentProposals! */
+	/*
+	 * Here we calculate available dataset examples and create
+	 * ImageContentProposals!
+	 */
 	private ImageContentProposal[] dataActivation(int offset) {
 		RConnection c = RServe.getConnection();
 		if (c != null) {
@@ -674,11 +683,12 @@ public class ShellCompletion {
 			try {
 				RServeUtil.evalR("try(.bio7ListOfWebPackages <- list(sort(.packages(all.available = TRUE))));"
 						+ "try(.bio7ListOfWebPackagesNames<-.bio7ListOfWebPackages[[1]]);"
-						+ "try(.bio7TitleResult<-lapply(.bio7ListOfWebPackagesNames,packageDescription,fields = c(\"Title\")))", null);
+						+ "try(.bio7TitleResult<-lapply(.bio7ListOfWebPackagesNames,packageDescription,fields = c(\"Title\")))",
+						null);
 
 				packageTitle = RServeUtil.fromR("try(as.character(.bio7TitleResult))").asStrings();
 				dirPackageFiles = RServeUtil.fromR("try(.bio7ListOfWebPackagesNames)").asStrings();
-				
+
 			} catch (REXPMismatchException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -688,9 +698,8 @@ public class ShellCompletion {
 
 			for (int j = 0; j < dirPackageFiles.length; j++) {
 
-				propo[j] = new ImageContentProposal(dirPackageFiles[j],
-						dirPackageFiles[j], packageTitle[j], dirPackageFiles[j].length(),
-						libImage);
+				propo[j] = new ImageContentProposal(dirPackageFiles[j], dirPackageFiles[j], packageTitle[j],
+						dirPackageFiles[j].length(), libImage);
 
 			}
 
@@ -698,6 +707,89 @@ public class ShellCompletion {
 			System.out.println("No Rserve connection available!");
 		}
 		return propo;
+	}
+   /*Here we display the function arguments from the default package functions!*/
+	private ImageContentProposal[] functionArgumentsActivation(int position, String func) {
+		ImageContentProposal[] propo = null;
+		for (int i = 0; i < statisticsSet.length; i++) {
+			/* Do we have the method in the proposals? */
+
+			if (func.equals(statistics[i])) {
+
+				String calc = statisticsSet[i];
+
+				/* Find the arguments in the template proposals! */
+				int parOpen = calc.indexOf("(");
+				int parClose = calc.lastIndexOf(")");
+
+				/* Here we control the length. Must be greater -1! */
+				if (parOpen + 1 + parClose >= 0) {
+					calc = calc.substring(parOpen + 1, parClose);
+
+					String[] proposalMethods = split(calc).toArray(new String[0]);
+
+					propo = new ImageContentProposal[proposalMethods.length];
+
+					for (int j = 0; j < proposalMethods.length; j++) {
+
+						propo[j] = new ImageContentProposal(proposalMethods[j], proposalMethods[j], func,
+								proposalMethods[j].length(), varFuncCallImage);
+
+					}
+
+					ImageContentProposal[] prop = getWorkSpaceVars(position);
+					if (prop != null) {
+						propo = (ImageContentProposal[]) ArrayUtils.addAll(propo, prop);
+					}
+
+				}
+			}
+		}
+
+		return propo;
+
+	}
+
+	/*
+	 * Answer and source from StackOverflow:
+	 * http://stackoverflow.com/questions/34388828/java-splitting-a-comma-
+	 * separated-string-but-ignoring-commas-in-parentheses/34389323#34389323 Author:
+	 * Tagir Valeev Profile: http://stackoverflow.com/users/4856258/tagir-valeev
+	 * 
+	 * Adaptions to ignore comma n quotes!
+	 */
+	public List<String> split(String input2) {
+		int nParens = 0;
+		int start = 0;
+		/*
+		 * Temporary replace comma in quotes else the argument "," will be splitted!
+		 */
+		String tempReplacement = "$$null$$";
+		String input = input2.replace("\",\"", tempReplacement);
+		List<String> result = new ArrayList<>();
+		for (int i = 0; i < input.length(); i++) {
+			switch (input.charAt(i)) {
+			case ',':
+				if (nParens == 0) {
+					/* Replace the temporary comma in quote replacement! */
+					result.add(input.substring(start, i).replace(tempReplacement, "\",\""));
+					start = i + 1;
+				}
+				break;
+			case '(':
+				nParens++;
+				break;
+			case ')':
+				nParens--;
+				if (nParens < 0)
+					throw new IllegalArgumentException("Unbalanced parenthesis at offset #" + i);
+				break;
+			}
+		}
+		if (nParens > 0)
+			throw new IllegalArgumentException("Missing closing parenthesis");
+		result.add(input.substring(start).replace(tempReplacement, "\",\""));
+		return result;
 	}
 
 }

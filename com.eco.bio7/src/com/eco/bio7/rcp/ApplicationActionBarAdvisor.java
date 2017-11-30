@@ -74,15 +74,12 @@ import com.eco.bio7.actions.Start3d;
 import com.eco.bio7.documents.LatexSweaveKnitrAction;
 import com.eco.bio7.documents.RMarkdownAction;
 import com.eco.bio7.preferences.PreferenceConstants;
-import com.eco.bio7.rbridge.actions.ActivateRPlots;
 import com.eco.bio7.rbridge.actions.ClearRWorkspace;
 import com.eco.bio7.rbridge.actions.ClipboardRScipt;
 import com.eco.bio7.rbridge.actions.ClipboardRValues;
 import com.eco.bio7.rbridge.actions.ExecuteRScriptAction;
 import com.eco.bio7.rbridge.actions.ExecuteRTextSelection;
-//import com.eco.bio7.rbridge.actions.InstallRPackage;
 import com.eco.bio7.rbridge.actions.InterpretR;
-import com.eco.bio7.rbridge.actions.LoadRLibrary;
 import com.eco.bio7.rbridge.actions.LoadRWorkspace;
 import com.eco.bio7.rbridge.actions.OfficeValueToRAction;
 import com.eco.bio7.rbridge.actions.OfficeValueToRHeadAction;
@@ -199,10 +196,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 	private ClipboardRValues clipboardRValues;
 
-	//private InstallRPackage installRPackage;
-
-	private LoadRLibrary loadRLibrary;
-
 	private OpenRservePreferencesAction openRservePref;
 
 	private LoadRWorkspace loadR;
@@ -212,8 +205,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	private OpenBio7BrowserAction openBrowser;
 
 	private MenuManager helpMenu;
-
-	private ActivateRPlots enableRPlots;
 
 	private InterpretR interpretR;
 
@@ -405,15 +396,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		clipboardRValues = new ClipboardRValues("Get Clipboard Data", window);
 		register(clipboardRValues);
-
-		enableRPlots = new ActivateRPlots("Activate R Plots", window);
-		register(enableRPlots);
-
-		/*installRPackage = new InstallRPackage("Install package(s)", window);
-		register(installRPackage);*/
-
-		loadRLibrary = new LoadRLibrary("Load/Remove package(s)", window);
-		register(loadRLibrary);
 
 		openRservePref = new OpenRservePreferencesAction();
 		register(openRservePref);
@@ -851,8 +833,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		rMenu.add(new Separator());
 		rMenu.add(clearWorkspace);
 		rMenu.add(new Separator());
-		//rMenu.add(installRPackage);
-		rMenu.add(loadRLibrary);
 		rMenu.add(new Separator());
 		if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 			rMenu.add(new SaveRWorkspaceAndStart("Start RGui with Workspace", window2));

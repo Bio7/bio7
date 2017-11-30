@@ -69,7 +69,7 @@ public class PackageInstallView extends ViewPart {
 	private Button btnUpdate;
 
 	public PackageInstallView() {
-		 editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 
 	}
 
@@ -86,6 +86,14 @@ public class PackageInstallView extends ViewPart {
 		initializeMenu();
 
 		tabFolder = new CTabFolder(parent, SWT.BORDER);
+		tabFolder.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(org.eclipse.swt.events.SelectionEvent event) {
+				if (tabFolder.getSelectionIndex() == 1) {
+					packageInstall();
+				}
+				;
+			}
+		});
 		tabFolder.setSelectionBackground(
 				Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT));
 		tbtmUpdatePackages = new CTabItem(tabFolder, SWT.NONE);
@@ -203,7 +211,7 @@ public class PackageInstallView extends ViewPart {
 		new Label(container, SWT.NONE);
 
 		final Button updateButton = new Button(container, SWT.NONE);
-		GridData gd_updateButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+		GridData gd_updateButton = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
 		gd_updateButton.heightHint = 40;
 		updateButton.setLayoutData(gd_updateButton);
 		updateButton.addSelectionListener(new SelectionAdapter() {
@@ -295,75 +303,90 @@ public class PackageInstallView extends ViewPart {
 
 			}
 		});
-		GridData gd_updatePackagesButton = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
+		GridData gd_updatePackagesButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_updatePackagesButton.heightHint = 40;
 		updatePackagesButton.setLayoutData(gd_updatePackagesButton);
 		updatePackagesButton.setText("Update Installed Packages");
 
 		tbtmInstalledPackages = new CTabItem(tabFolder, SWT.NONE);
-		tbtmInstalledPackages.setText("Installed Packages");
-		
+		tbtmInstalledPackages.setText("Load Packages");
+
 		composite = new Composite(tabFolder, SWT.NONE);
-		
-		composite.setLayout(new GridLayout(1, false));
+
+		composite.setLayout(new GridLayout(2, false));
 		GridData gd_composite = new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1);
 		gd_composite.heightHint = 376;
 		gd_composite.widthHint = 278;
 		composite.setLayoutData(gd_composite);
 
 		allInstalledPackagesList = new List(composite, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
-		allInstalledPackagesList.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-		
-				final Button uninstallButton = new Button(composite, SWT.NONE);
-				uninstallButton.setSize(269, 27);
-				GridData gd_uninstallButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-				gd_uninstallButton.heightHint = 40;
-				gd_uninstallButton.widthHint = 133;
-				uninstallButton.setLayoutData(gd_uninstallButton);
-				uninstallButton.setToolTipText("Removes installed packages/bundles and updates index information as necessary. ");
-				uninstallButton.addSelectionListener(new SelectionAdapter() {
-					public void widgetSelected(final SelectionEvent e) {
-						if (RServe.isAlive()) {
-							if (RState.isBusy() == false) {
-								RState.setBusy(true);
-								RemoveRLibrarysJob Do = new RemoveRLibrarysJob();
-								Do.addJobChangeListener(new JobChangeAdapter() {
-									public void done(IJobChangeEvent event) {
-										if (event.getResult().isOK()) {
-											RState.setBusy(false);
-										} else {
-											RState.setBusy(false);
-										}
-									}
-								});
-								Do.setUser(true);
-								Do.schedule();
-							} else {
+		allInstalledPackagesList.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 
-								Bio7Dialog.message("Rserve is busy!");
+		btnUpdate = new Button(composite, SWT.NONE);
+		btnUpdate.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
 
-							}
-						} else {
-							System.out.println("No Rserve connection available !");
-						}
+				packageInstall();
+			}
 
-					}
-				});
-				uninstallButton.setText("Remove");
-				
-						Button btnAddLibraryDeclaration = new Button(composite, SWT.NONE);
-						btnAddLibraryDeclaration.setSize(269, 27);
-						GridData gd_btnAddLibraryDeclaration = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-						gd_btnAddLibraryDeclaration.heightHint = 40;
-						btnAddLibraryDeclaration.setLayoutData(gd_btnAddLibraryDeclaration);
-						btnAddLibraryDeclaration.addSelectionListener(new SelectionAdapter() {
+		});
+		GridData gd_btnUpdate = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+		gd_btnUpdate.heightHint = 40;
+		btnUpdate.setLayoutData(gd_btnUpdate);
+		btnUpdate.setText("Show Installed Packages");
 
-							public void widgetSelected(SelectionEvent e) {
-								setInDocument(allPackagesList);
+		final Button uninstallButton = new Button(composite, SWT.NONE);
+		uninstallButton.setSize(269, 27);
+		GridData gd_uninstallButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_uninstallButton.heightHint = 40;
+		gd_uninstallButton.widthHint = 133;
+		uninstallButton.setLayoutData(gd_uninstallButton);
+		uninstallButton
+				.setToolTipText("Removes installed packages/bundles and updates index information as necessary. ");
+		uninstallButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				if (RServe.isAlive()) {
+					if (RState.isBusy() == false) {
+						RState.setBusy(true);
+						RemoveRLibrarysJob Do = new RemoveRLibrarysJob();
+						Do.addJobChangeListener(new JobChangeAdapter() {
+							public void done(IJobChangeEvent event) {
+								if (event.getResult().isOK()) {
+									RState.setBusy(false);
+								} else {
+									RState.setBusy(false);
+								}
 							}
 						});
-						btnAddLibraryDeclaration.setToolTipText("Add selected package items as library declaration to R editor source");
-						btnAddLibraryDeclaration.setText("Add selected to R editor");
+						Do.setUser(true);
+						Do.schedule();
+					} else {
+
+						Bio7Dialog.message("Rserve is busy!");
+
+					}
+				} else {
+					System.out.println("No Rserve connection available !");
+				}
+
+			}
+		});
+		uninstallButton.setText("Remove Selected Package");
+
+		Button btnAddLibraryDeclaration = new Button(composite, SWT.NONE);
+		btnAddLibraryDeclaration.setSize(269, 27);
+		GridData gd_btnAddLibraryDeclaration = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_btnAddLibraryDeclaration.heightHint = 40;
+		btnAddLibraryDeclaration.setLayoutData(gd_btnAddLibraryDeclaration);
+		btnAddLibraryDeclaration.addSelectionListener(new SelectionAdapter() {
+
+			public void widgetSelected(SelectionEvent e) {
+				setInDocument(allInstalledPackagesList);
+			}
+		});
+		btnAddLibraryDeclaration.setToolTipText("Add selected package items as library declaration to R editor source");
+		btnAddLibraryDeclaration.setText("Add selected to R editor");
 
 		allInstalledPackagesList.addMouseListener(new MouseAdapter() {
 			public void mouseDoubleClick(final MouseEvent e) {
@@ -375,7 +398,7 @@ public class PackageInstallView extends ViewPart {
 							public void done(IJobChangeEvent event) {
 								if (event.getResult().isOK()) {
 									RState.setBusy(false);
-									/*Also reload the R-Shell code completion in an extra job!*/
+									/* Also reload the R-Shell code completion in an extra job! */
 									RShellView rShellView = RShellView.getInstance();
 									if (rShellView != null) {
 										rShellView.getShellCompletion().update();
@@ -403,27 +426,8 @@ public class PackageInstallView extends ViewPart {
 
 			}
 		});
-		
-		
-		
-		
-		
-		
+
 		tbtmInstalledPackages.setControl(composite);
-		
-		btnUpdate = new Button(composite, SWT.NONE);
-		btnUpdate.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				
-				packageInstall();
-			}
-			
-		});
-		GridData gd_btnUpdate = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-		gd_btnUpdate.heightHint = 40;
-		btnUpdate.setLayoutData(gd_btnUpdate);
-		btnUpdate.setText("Reload Packages List");
 		map.clear();
 		map.put("spatstat",
 				new String[] {
@@ -470,8 +474,8 @@ public class PackageInstallView extends ViewPart {
 	 */
 	private void loadPackageDescriptionHtml(Event event, int i) {
 		final int count = i;
-		allInstalledPackagesList.select(count);
-		allInstalledPackagesList.showSelection();
+		allPackagesList.select(count);
+		allPackagesList.showSelection();
 		if (job != null) {
 			job.cancel();
 		}
@@ -529,45 +533,33 @@ public class PackageInstallView extends ViewPart {
 	public static List getAllList() {
 		return allPackagesList;
 	}
-	
+
 	public void packageInstall() {
 		RConnection c = REditor.getRserveConnection();
 		if (c != null) {
-			if (RState.isBusy() == false) {
-				RState.setBusy(true);
-				Display display = Util.getDisplay();
-				display.syncExec(() -> {
 
-					if (c != null) {
-						String[] listPackages = null;
-						try {
-							c.eval("try(.bio7ListOfWebPackages <- list(sort(.packages(all.available = TRUE))))");
+			String[] listPackages = null;
 
-							try {
-								listPackages = c.eval(".bio7ListOfWebPackages[[1]]").asStrings();
-							} catch (REXPMismatchException e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
+			RServeUtil.evalR("try(.bio7ListOfWebPackages <- list(sort(.packages(all.available = TRUE))))", null);
 
-						} catch (RserveException e2) {
-
-							e2.printStackTrace();
-						}
-
-						allInstalledPackagesList.setItems(listPackages);
-
-					}
-
-				});
-				RState.setBusy(false);
-			} else {
-				System.out.println("Rserve is busy!");
+			try {
+				listPackages = RServeUtil.fromR(".bio7ListOfWebPackages[[1]]").asStrings();
+			} catch (REXPMismatchException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
 			}
+
+			allInstalledPackagesList.setItems(listPackages);
+
+		} else {
+			System.out.println("Rserve is busy!");
 		}
+
 	}
+
 	private void setInDocument(List aList) {
-		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+				.getActiveEditor();
 		if (editor != null && editor instanceof REditor) {
 
 			String[] items = aList.getSelection();
@@ -597,11 +589,11 @@ public class PackageInstallView extends ViewPart {
 
 		}
 	}
-	
 
 	public static List getAllPackagesList() {
 		return allPackagesList;
 	}
+
 	public static List getAllInstalledPackagesList() {
 		return allInstalledPackagesList;
 	}
