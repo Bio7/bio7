@@ -52,6 +52,7 @@ import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RShellView;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
+import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.rpreferences.template.CalculateRProposals;
 import com.eco.bio7.util.Util;
@@ -79,8 +80,8 @@ public class ShellCompletion {
 	public boolean s4;
 	public boolean s3;
 	private RShellView view;
-	//public boolean data;
-	//public boolean library;
+	// public boolean data;
+	// public boolean library;
 
 	/*
 	 * Next two methods adapted from:
@@ -151,8 +152,8 @@ public class ShellCompletion {
 					control.setText(content);
 					control.setSelection(cursorPosition);
 				} else {
-					//data = false;
-					//library = false;
+					// data = false;
+					// library = false;
 					int pos = calculateFirstOccurrenceOfChar(control, caretPosition);
 					String textSel = control.getText(0, pos - 1);
 					String after = control.getText(caretPosition, content.length());
@@ -266,7 +267,7 @@ public class ShellCompletion {
 		while (i > 0) {
 
 			char ch = tex.charAt(i - 1);
-			
+
 			if ((ch == ';') || (ch == '(') || (ch == ',') || (ch == '[') || (ch == '=') || (ch == '-') || (ch == '+')
 					|| Character.isSpaceChar(ch))
 				break;
@@ -326,21 +327,26 @@ public class ShellCompletion {
 				s3 = true;
 				return s3Activation(position, contentLastCorr);
 			}
-			String textToOffset = control.getText(0, offset - 1);
-
-			if (textToOffset.endsWith("data(")) {
-				//data = true;
+			//String textToOffset = control.getText(0, offset - 1);
+			Parse parse=view.getParser();
+			//System.out.println("Is: "+parse.isInFunctionCall());
+           if(parse!=null&&parse.isInFunctionCall()) {
+        	   String funcName=parse.getFuncName();
+        	  // System.out.println(funcName);
+			if (funcName.equals("data")) {
+				// data = true;
 				return dataActivation(position);
-			} else if (textToOffset.endsWith("library(") || textToOffset.endsWith("require(")) {
-				//library = true;
+			} else if (funcName.equals("library") || parse.getFuncName().equals("require")) {
+				// library = true;
 				return libraryActivation(position);
-			} else if (textToOffset.endsWith("(")) {
+			} else  {
 
-				int pos = calculateFirstOccurrenceOfChar(control, offset - 1);
-				String func = control.getText(pos, offset - 2);
-				//System.out.println(control.getText(pos, offset - 2));
-				return functionArgumentsActivation(position, func);
+				//int pos = calculateFirstOccurrenceOfChar(control, offset - 1);
+				//String func = control.getText(pos, offset - 2);
+				// System.out.println(control.getText(pos, offset - 2));
+				return functionArgumentsActivation(position, funcName);
 			}
+           }
 
 			if (RServe.isAlive()) {
 				/* Here we get the R workspace vars! */
@@ -708,7 +714,8 @@ public class ShellCompletion {
 		}
 		return propo;
 	}
-   /*Here we display the function arguments from the default package functions!*/
+
+	/* Here we display the function arguments from the default package functions! */
 	private ImageContentProposal[] functionArgumentsActivation(int position, String func) {
 		ImageContentProposal[] propo = null;
 		for (int i = 0; i < statisticsSet.length; i++) {
@@ -731,9 +738,12 @@ public class ShellCompletion {
 					propo = new ImageContentProposal[proposalMethods.length];
 
 					for (int j = 0; j < proposalMethods.length; j++) {
-
-						propo[j] = new ImageContentProposal(proposalMethods[j], proposalMethods[j], func,
-								proposalMethods[j].length(), varFuncCallImage);
+						/*
+						 * We add a suffix to mark this proposal for a scrolling to the arguments
+						 * section in the description!
+						 */
+						propo[j] = new ImageContentProposal(proposalMethods[j], proposalMethods[j],
+								func + "::::args::::", proposalMethods[j].length(), varFuncCallImage);
 
 					}
 

@@ -178,6 +178,7 @@ public class RShellView extends ViewPart {
 	private Button fontButton;
 	public boolean cmdError;
 	protected Parse parse;
+	
 	private static RShellView instance;
 	/* Create the plot tab! */
 	private Button loadButton;
@@ -207,6 +208,10 @@ public class RShellView extends ViewPart {
 	public static StyledText getTextConsole() {
 		return textConsole;
 	}
+	public Parse getParser() {
+		return parse;
+	}
+
 
 	@Override
 	public void createPartControl(final Composite parent) {
@@ -426,6 +431,25 @@ public class RShellView extends ViewPart {
 						text.insert(" %>% ");
 					}
 				}
+				Text text = (Text) e.getSource();
+				String command = text.getText();
+				/*
+				 * Here we parse the command(s) which comes from the textfield! Parsing is very
+				 * fast so we don't need a text listener delay here. Each key stroke is
+				 * evaluated!
+				 */
+				if (parse == null) {
+					parse = new Parse(null);
+					cmdError = parse.parseShellSource(command,text.getCaretPosition());
+					
+				} else {
+					cmdError = parse.parseShellSource(command,text.getCaretPosition());
+				}
+				if (cmdError) {
+					txtIndication.show();
+				} else {
+					txtIndication.hide();
+				}
 
 			}
 
@@ -440,9 +464,10 @@ public class RShellView extends ViewPart {
 				 */
 				if (parse == null) {
 					parse = new Parse(null);
-					cmdError = parse.parseShellSource(command);
+					cmdError = parse.parseShellSource(command,text.getCaretPosition());
+					
 				} else {
-					cmdError = parse.parseShellSource(command);
+					cmdError = parse.parseShellSource(command,text.getCaretPosition());
 				}
 				if (cmdError) {
 					txtIndication.show();
