@@ -728,23 +728,22 @@ public class ShellCompletion {
 					calc = calc.substring(parOpen + 1, parClose);
 
 					String[] proposalMethods = split(calc).toArray(new String[0]);
-					if (proposalMethods.length > 0) {
-						if (proposalMethods[0].isEmpty()) {
-							return null;
-						}
-						propo = new ImageContentProposal[proposalMethods.length];
 
-						for (int j = 0; j < proposalMethods.length; j++) {
-                            /*We add a suffix to mark this proposal for a scrolling to the arguments section in the description!*/
-							propo[j] = new ImageContentProposal(proposalMethods[j], proposalMethods[j], func + "::::args::::",
-									proposalMethods[j].length(), varFuncCallImage);
+					propo = new ImageContentProposal[proposalMethods.length];
 
-						}
+					for (int j = 0; j < proposalMethods.length; j++) {
+						/*
+						 * We add a suffix to mark this proposal for a scrolling to the arguments
+						 * section in the description!
+						 */
+						propo[j] = new ImageContentProposal(proposalMethods[j], proposalMethods[j],
+								func + "::::args::::", proposalMethods[j].length(), varFuncCallImage);
 
-						ImageContentProposal[] prop = getWorkSpaceVars(position);
-						if (prop != null) {
-							propo = (ImageContentProposal[]) ArrayUtils.addAll(propo, prop);
-						}
+					}
+
+					ImageContentProposal[] prop = getWorkSpaceVars(position);
+					if (prop != null) {
+						propo = (ImageContentProposal[]) ArrayUtils.addAll(propo, prop);
 					}
 
 				}
