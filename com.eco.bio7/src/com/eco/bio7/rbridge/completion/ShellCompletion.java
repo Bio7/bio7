@@ -52,6 +52,7 @@ import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RShellView;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
+import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.rpreferences.template.CalculateRProposals;
 import com.eco.bio7.util.Util;
@@ -326,21 +327,26 @@ public class ShellCompletion {
 				s3 = true;
 				return s3Activation(position, contentLastCorr);
 			}
-			String textToOffset = control.getText(0, offset - 1);
-
-			if (textToOffset.endsWith("data(")) {
+			//String textToOffset = control.getText(0, offset - 1);
+			Parse parse=view.getParser();
+			//System.out.println("Is: "+parse.isInFunctionCall());
+           if(parse!=null&&parse.isInFunctionCall()) {
+        	   String funcName=parse.getFuncName();
+        	  // System.out.println(funcName);
+			if (funcName.equals("data")) {
 				// data = true;
 				return dataActivation(position);
-			} else if (textToOffset.endsWith("library(") || textToOffset.endsWith("require(")) {
+			} else if (funcName.equals("library") || parse.getFuncName().equals("require")) {
 				// library = true;
 				return libraryActivation(position);
-			} else if (textToOffset.endsWith("(")) {
+			} else  {
 
-				int pos = calculateFirstOccurrenceOfChar(control, offset - 1);
-				String func = control.getText(pos, offset - 2);
+				//int pos = calculateFirstOccurrenceOfChar(control, offset - 1);
+				//String func = control.getText(pos, offset - 2);
 				// System.out.println(control.getText(pos, offset - 2));
-				return functionArgumentsActivation(position, func);
+				return functionArgumentsActivation(position, funcName);
 			}
+           }
 
 			if (RServe.isAlive()) {
 				/* Here we get the R workspace vars! */
