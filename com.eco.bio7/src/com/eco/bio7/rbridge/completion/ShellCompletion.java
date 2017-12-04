@@ -22,7 +22,6 @@ package com.eco.bio7.rbridge.completion;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -36,7 +35,6 @@ import org.eclipse.jface.fieldassist.IContentProposalListener;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.fieldassist.IControlContentAdapter;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.contentassist.CompletionProposal;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
@@ -51,7 +49,6 @@ import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RShellView;
 import com.eco.bio7.rbridge.RState;
-import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.rpreferences.template.CalculateRProposals;
@@ -300,7 +297,6 @@ public class ShellCompletion {
 
 		public IContentProposal[] getProposals(String contents, int position) {
 
-			// if (filterProposals) {
 			ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
 			ArrayList<IContentProposal> varWorkspace = new ArrayList<IContentProposal>();
 			int offset = position;
@@ -327,27 +323,32 @@ public class ShellCompletion {
 				s3 = true;
 				return s3Activation(position, contentLastCorr);
 			}
-			//String textToOffset = control.getText(0, offset - 1);
-			Parse parse=view.getParser();
-			//System.out.println("Is: "+parse.isInFunctionCall());
-           if(parse!=null&&parse.isInFunctionCall()) {
-        	   String funcName=parse.getFuncName();
-        	  // System.out.println(funcName);
-			if (funcName.equals("data")) {
-				// data = true;
-				return dataActivation(position);
-			} else if (funcName.equals("library") || parse.getFuncName().equals("require")) {
-				// library = true;
-				return libraryActivation(position);
-			} else  {
+			Parse parse = view.getParser();
+			/* Control if we are in a function call! */
+			if (parse != null && parse.isInFunctionCall()) {
+				String funcName = parse.getFuncName();
 
-				//int pos = calculateFirstOccurrenceOfChar(control, offset - 1);
-				//String func = control.getText(pos, offset - 2);
-				// System.out.println(control.getText(pos, offset - 2));
-				return functionArgumentsActivation(position, funcName);
+				if (funcName.equals("data")) {
+
+					return dataActivation(position);
+				} else if (funcName.equals("library") || parse.getFuncName().equals("require")) {
+
+					return libraryActivation(position);
+				} else {
+					/*
+					 * If length is null show function arguments else all functions and variables!
+					 */
+					if (contentLastCorr.length() == 0) {
+
+						return functionArgumentsActivation(position, funcName);
+					}
+
+				}
 			}
-           }
-
+			/*
+			 * This section loads the general code completion if no other method returned a
+			 * special case!
+			 */
 			if (RServe.isAlive()) {
 				/* Here we get the R workspace vars! */
 				ImageContentProposal[] workspaceVars = getWorkSpaceVars(position);
@@ -379,7 +380,7 @@ public class ShellCompletion {
 				}
 
 			}
-			/* If text length after parenheses is -1! */
+			/* If text length after parentheses is -1! */
 			else {
 				for (int i = 0; i < statistics.length; i++) {
 
@@ -396,23 +397,7 @@ public class ShellCompletion {
 			/* Concatenate both whith the Apache commons library! */
 			IContentProposal[] allProposals = (IContentProposal[]) ArrayUtils.addAll(varWorkspaceArray, arrayTemp);
 			return allProposals;
-			// }
-			/* If filtering is true! */
-			/*
-			 * if (contentProposals == null) { contentProposals = new
-			 * IContentProposal[statistics.length];
-			 * 
-			 * for (int i = 0; i < statistics.length; i++) { contentProposals[i] =
-			 * makeContentProposal(statistics[i], statisticsContext[i], statisticsSet[i]);
-			 * 
-			 * } }
-			 */
-			/*
-			 * IContentProposal[] arrayFinal =makeProposalArray(contentProposals);
-			 * IContentProposal[] both = (IContentProposal[])ArrayUtils.addAll(first,
-			 * arrayFinal); Create an image proposal from it! return
-			 * makeProposalArray(arrayFinal); // return contentProposals;
-			 */ }
+		}
 
 		private IContentProposal[] makeProposalArray(IContentProposal[] proposals) {
 			if (proposals != null) {
@@ -541,8 +526,6 @@ public class ShellCompletion {
 	/* Here we calculate the s4 variables and create ImageContentProposals! */
 	private ImageContentProposal[] s4Activation(int offset, String prefix) {
 		propo = null;
-		String res = prefix.replace("@", "");
-
 		RConnection c = RServe.getConnection();
 		if (c != null) {
 			if (RState.isBusy() == false) {
@@ -551,6 +534,7 @@ public class ShellCompletion {
 				display.syncExec(() -> {
 
 					if (c != null) {
+						String res = prefix.substring(0, prefix.lastIndexOf("@"));
 						try {
 							String[] result = (String[]) c.eval("try(slotNames(" + res + "),silent=TRUE)").asStrings();
 							if (result != null && result.length > 0) {
@@ -592,7 +576,6 @@ public class ShellCompletion {
 	/* Here we calculate the s3 variables and create ImageContentProposals! */
 	private ImageContentProposal[] s3Activation(int offset, String prefix) {
 		propo = null;
-		String res = prefix.replace("$", "");
 		RConnection c = RServe.getConnection();
 		if (c != null) {
 			if (RState.isBusy() == false) {
@@ -602,6 +585,7 @@ public class ShellCompletion {
 
 					if (c != null) {
 						try {
+							String res = prefix.substring(0, prefix.lastIndexOf("$"));
 							String[] result = (String[]) c.eval("try(ls(" + res + "),silent=TRUE)").asStrings();
 							if (result != null && result.length > 0) {
 								if (result[0].startsWith("Error") == false) {

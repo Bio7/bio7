@@ -16,10 +16,15 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MenuAdapter;
+import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -29,12 +34,17 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
@@ -67,6 +77,8 @@ public class PackageInstallView extends ViewPart {
 	private Composite composite;
 	private IEditorPart editor;
 	private Button btnUpdate;
+	private Tree tree;
+	private Button btnNewButton;
 
 	public PackageInstallView() {
 		editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
@@ -90,8 +102,18 @@ public class PackageInstallView extends ViewPart {
 			public void widgetSelected(org.eclipse.swt.events.SelectionEvent event) {
 				if (tabFolder.getSelectionIndex() == 1) {
 					packageInstall();
+				} else if (tabFolder.getSelectionIndex() == 2) {
+					if (RServe.isAliveDialog()) {
+						if (RState.isBusy() == false) {
+
+							createAttachedPackageTree();
+
+						} else {
+							Bio7Dialog.message("Rserve is busy!");
+						}
+					}
 				}
-				;
+
 			}
 		});
 		tabFolder.setSelectionBackground(
@@ -243,7 +265,7 @@ public class PackageInstallView extends ViewPart {
 			}
 
 		});
-		updateButton.setText("Get List");
+		updateButton.setText("Refresh Packages List");
 
 		final Button installButton = new Button(container, SWT.NONE);
 		GridData gd_installButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
@@ -334,7 +356,7 @@ public class PackageInstallView extends ViewPart {
 		GridData gd_btnUpdate = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
 		gd_btnUpdate.heightHint = 40;
 		btnUpdate.setLayoutData(gd_btnUpdate);
-		btnUpdate.setText("Show Installed Packages");
+		btnUpdate.setText("Refresh Packages List");
 
 		final Button uninstallButton = new Button(composite, SWT.NONE);
 		uninstallButton.setSize(269, 27);
@@ -428,6 +450,122 @@ public class PackageInstallView extends ViewPart {
 		});
 
 		tbtmInstalledPackages.setControl(composite);
+
+		/*
+		 * Composite container2 = new Composite(tabFolder, SWT.NONE);
+		 * tbtmUpdatePackages.setControl(container2); container2.setLayout(new
+		 * GridLayout(2, true));
+		 */
+
+		CTabItem packagesTabItem = new CTabItem(tabFolder, SWT.NONE);
+		packagesTabItem.setText("Attached Packages");
+
+		Composite composite_2 = new Composite(tabFolder, SWT.NONE);
+		packagesTabItem.setControl(composite_2);
+		composite_2.setLayout(new GridLayout(2, true));
+
+		tree = new Tree(composite_2, SWT.BORDER);
+		GridData gd_tree = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
+		gd_tree.heightHint = 277;
+		gd_tree.widthHint = 107;
+		tree.setLayoutData(gd_tree);
+		final Menu menuList = new Menu(tree);
+		tree.setMenu(menuList);
+		menuList.addMenuListener(new MenuAdapter() {
+			public void menuShown(MenuEvent e) {
+				// Get rid of existing menu items
+				MenuItem[] items = menuList.getItems();
+				for (int i = 0; i < items.length; i++) {
+					((MenuItem) items[i]).dispose();
+				}
+				MenuItem refreshItem = new MenuItem(menuList, SWT.NONE);
+
+				refreshItem.setText("Refresh");
+				refreshItem.addSelectionListener(new SelectionListener() {
+
+					public void widgetSelected(SelectionEvent e) {
+						if (RServe.isAliveDialog()) {
+							if (RState.isBusy() == false) {
+
+								createAttachedPackageTree();
+
+							} else {
+								Bio7Dialog.message("Rserve is busy!");
+							}
+						}
+
+					}
+
+					public void widgetDefaultSelected(SelectionEvent e) {
+
+					}
+				});
+				// Add menu items for current selection
+				MenuItem detachItem = new MenuItem(menuList, SWT.NONE);
+
+				detachItem.setText("Detach");
+				detachItem.addSelectionListener(new SelectionListener() {
+
+					public void widgetSelected(SelectionEvent e) {
+						if (RServe.isAliveDialog()) {
+							if (RState.isBusy() == false) {
+
+								RConnection c = RServe.getConnection();
+								if (tree.getSelection().length > 0) {
+									String selectedPackage = tree.getSelection()[0].getText();
+
+									RServeUtil.evalR("try(detach(package:" + selectedPackage + ", unload=TRUE))", null);
+									createAttachedPackageTree();
+
+								}
+
+							} else {
+								Bio7Dialog.message("Rserve is busy!");
+							}
+						}
+
+					}
+
+					public void widgetDefaultSelected(SelectionEvent e) {
+
+					}
+				});
+
+			}
+		});
+
+		tree.addListener(SWT.MouseDown, new Listener() {
+			public void handleEvent(Event event) {
+				Point point = new Point(event.x, event.y);
+				TreeItem item = tree.getItem(point);
+				if (item != null) {
+
+
+				}
+			}
+		});
+		packagesTabItem.setControl(composite_2);
+
+		btnNewButton = new Button(composite_2, SWT.NONE);
+		btnNewButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if (RServe.isAliveDialog()) {
+					if (RState.isBusy() == false) {
+
+						createAttachedPackageTree();
+
+					} else {
+						Bio7Dialog.message("Rserve is busy!");
+					}
+				}
+			}
+		});
+		GridData gd_btnNewButton = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
+		gd_btnNewButton.heightHint = 40;
+		btnNewButton.setLayoutData(gd_btnNewButton);
+		btnNewButton.setText("Refresh Packages List");
+
 		map.clear();
 		map.put("spatstat",
 				new String[] {
@@ -596,6 +734,48 @@ public class PackageInstallView extends ViewPart {
 
 	public static List getAllInstalledPackagesList() {
 		return allInstalledPackagesList;
+	}
+
+	public void createAttachedPackageTree() {
+		REXP pack = null;
+		REXP functions = null;
+		tree.removeAll();
+
+		if (RServe.isAliveDialog()) {
+			if (RState.isBusy() == false) {
+				String[] v = null;
+				// List all variables in the R workspace!
+
+				RServeUtil.evalR(
+						".bio7TempVarEnvironment <- new.env();try(.bio7TempVarEnvironment$workspaceRPackages<-.packages())",
+						null);
+				pack = RServeUtil.fromR("try(.bio7TempVarEnvironment$workspaceRPackages)");
+				try {
+					v = pack.asStrings();
+				} catch (REXPMismatchException e1) {
+
+					e1.printStackTrace();
+				}
+				RServeUtil.evalR("try(rm(workspaceRPackages,envir=.bio7TempVarEnvironment))", null);
+
+				TreeItem packages = new TreeItem(tree, 0);
+				packages.setText("Attached Packages:");
+				// packages.removeAll();
+				for (int i = 0; i < v.length; i++) {
+
+					// lsf.str("package:MASS")
+					TreeItem treeItem = new TreeItem(packages, 0);
+					treeItem.setText(v[i]);
+
+				}
+				packages.setExpanded(true);
+			} else {
+				Bio7Dialog.message("Rserve is busy!");
+
+			}
+
+		}
+
 	}
 
 }
