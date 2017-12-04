@@ -327,26 +327,28 @@ public class ShellCompletion {
 				s3 = true;
 				return s3Activation(position, contentLastCorr);
 			}
-			//String textToOffset = control.getText(0, offset - 1);
-			Parse parse=view.getParser();
-			//System.out.println("Is: "+parse.isInFunctionCall());
-           if(parse!=null&&parse.isInFunctionCall()) {
-        	   String funcName=parse.getFuncName();
-        	  // System.out.println(funcName);
-			if (funcName.equals("data")) {
-				// data = true;
-				return dataActivation(position);
-			} else if (funcName.equals("library") || parse.getFuncName().equals("require")) {
-				// library = true;
-				return libraryActivation(position);
-			} else  {
+			// String textToOffset = control.getText(0, offset - 1);
+			Parse parse = view.getParser();
+			/* Control if we are in a function call! */
+			if (parse != null && parse.isInFunctionCall()) {
+				String funcName = parse.getFuncName();
 
-				//int pos = calculateFirstOccurrenceOfChar(control, offset - 1);
-				//String func = control.getText(pos, offset - 2);
-				// System.out.println(control.getText(pos, offset - 2));
-				return functionArgumentsActivation(position, funcName);
+				if (funcName.equals("data")) {
+
+					return dataActivation(position);
+				} else if (funcName.equals("library") || parse.getFuncName().equals("require")) {
+
+					return libraryActivation(position);
+				} else {
+					if (contentLastCorr.length() == 0) {
+						// int pos = calculateFirstOccurrenceOfChar(control, offset - 1);
+						// String func = control.getText(pos, offset - 2);
+						// System.out.println(control.getText(pos, offset - 2));
+						return functionArgumentsActivation(position, funcName);
+					}
+
+				}
 			}
-           }
 
 			if (RServe.isAlive()) {
 				/* Here we get the R workspace vars! */
@@ -541,8 +543,6 @@ public class ShellCompletion {
 	/* Here we calculate the s4 variables and create ImageContentProposals! */
 	private ImageContentProposal[] s4Activation(int offset, String prefix) {
 		propo = null;
-		String res = prefix.replace("@", "");
-
 		RConnection c = RServe.getConnection();
 		if (c != null) {
 			if (RState.isBusy() == false) {
@@ -551,6 +551,7 @@ public class ShellCompletion {
 				display.syncExec(() -> {
 
 					if (c != null) {
+						String res = prefix.substring(0, prefix.lastIndexOf("@"));
 						try {
 							String[] result = (String[]) c.eval("try(slotNames(" + res + "),silent=TRUE)").asStrings();
 							if (result != null && result.length > 0) {
@@ -592,7 +593,6 @@ public class ShellCompletion {
 	/* Here we calculate the s3 variables and create ImageContentProposals! */
 	private ImageContentProposal[] s3Activation(int offset, String prefix) {
 		propo = null;
-		String res = prefix.replace("$", "");
 		RConnection c = RServe.getConnection();
 		if (c != null) {
 			if (RState.isBusy() == false) {
@@ -602,6 +602,7 @@ public class ShellCompletion {
 
 					if (c != null) {
 						try {
+							String res = prefix.substring(0, prefix.lastIndexOf("$"));
 							String[] result = (String[]) c.eval("try(ls(" + res + "),silent=TRUE)").asStrings();
 							if (result != null && result.length > 0) {
 								if (result[0].startsWith("Error") == false) {
