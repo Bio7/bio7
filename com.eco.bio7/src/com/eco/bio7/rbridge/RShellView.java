@@ -798,7 +798,7 @@ public class RShellView extends ViewPart {
 				if (RServe.isAliveDialog()) {
 					displayRObjects();
 
-					createAttachedPackageTree();
+					//createAttachedPackageTree();
 				}
 
 			}
@@ -856,146 +856,7 @@ public class RShellView extends ViewPart {
 		 */
 		// new RPlot(tab, SWT.NONE, plotTabItem);
 
-		CTabItem packagesTabItem = new CTabItem(tab, SWT.NONE);
-		packagesTabItem.setText("Packages");
-
-		Composite composite_2 = new Composite(tab, SWT.NONE);
-		packagesTabItem.setControl(composite_2);
-		composite_2.setLayout(new FillLayout(SWT.HORIZONTAL));
-
-		tree = new Tree(composite_2, SWT.BORDER);
-		final Menu menuList = new Menu(tree);
-		tree.setMenu(menuList);
-		menuList.addMenuListener(new MenuAdapter() {
-			public void menuShown(MenuEvent e) {
-				// Get rid of existing menu items
-				MenuItem[] items = menuList.getItems();
-				for (int i = 0; i < items.length; i++) {
-					((MenuItem) items[i]).dispose();
-				}
-				MenuItem refreshItem = new MenuItem(menuList, SWT.NONE);
-
-				refreshItem.setText("Refresh");
-				refreshItem.addSelectionListener(new SelectionListener() {
-
-					public void widgetSelected(SelectionEvent e) {
-						if (RServe.isAliveDialog()) {
-							if (RState.isBusy() == false) {
-
-								createAttachedPackageTree();
-
-							} else {
-								Bio7Dialog.message("Rserve is busy!");
-							}
-						}
-
-					}
-
-					public void widgetDefaultSelected(SelectionEvent e) {
-
-					}
-				});
-				// Add menu items for current selection
-				MenuItem detachItem = new MenuItem(menuList, SWT.NONE);
-
-				detachItem.setText("Detach");
-				detachItem.addSelectionListener(new SelectionListener() {
-
-					public void widgetSelected(SelectionEvent e) {
-						if (RServe.isAliveDialog()) {
-							if (RState.isBusy() == false) {
-
-								RConnection c = RServe.getConnection();
-								if (tree.getSelection().length > 0) {
-									String selectedPackage = tree.getSelection()[0].getText();
-
-									try {
-										c.eval("try(detach(package:" + selectedPackage + ", unload=TRUE))");
-										createAttachedPackageTree();
-									} catch (RserveException e1) {
-
-										e1.printStackTrace();
-									}
-								}
-
-							} else {
-								Bio7Dialog.message("Rserve is busy!");
-							}
-						}
-
-					}
-
-					public void widgetDefaultSelected(SelectionEvent e) {
-
-					}
-				});
-
-				/*
-				 * MenuItem updateItem = new MenuItem(menuList, SWT.NONE); //update.packages()
-				 * updateItem.setText("Update All"); updateItem.addSelectionListener(new
-				 * SelectionListener() {
-				 * 
-				 * public void widgetSelected(SelectionEvent e) { if (RServe.isAliveDialog()) {
-				 * if (RState.isBusy() == false) { IPreferenceStore store =
-				 * Bio7Plugin.getDefault().getPreferenceStore(); String destdir =
-				 * store.getString("InstallLocation"); String server =
-				 * store.getString(PreferenceConstants.PACKAGE_R_SERVER);
-				 * 
-				 * RConnection c = RServe.getConnection(); try { c.eval(
-				 * "try(update.packages(repos =\"" + server + "\",ask=FALSE));"); } catch
-				 * (RserveException e1) {
-				 * 
-				 * e1.printStackTrace(); }
-				 * 
-				 * } else { Bio7Dialog.message("Rserve is busy!"); } }
-				 * 
-				 * }
-				 * 
-				 * public void widgetDefaultSelected(SelectionEvent e) {
-				 * 
-				 * } });
-				 */
-				/*
-				 * MenuItem removeItem = new MenuItem(menuList, SWT.NONE); //update.packages()
-				 * removeItem.setText("Remove"); removeItem.addSelectionListener(new
-				 * SelectionListener() {
-				 * 
-				 * public void widgetSelected(SelectionEvent e) { String
-				 * selectedPackage=tree.getSelection()[0].getText(); if (RServe.isAliveDialog())
-				 * { if (RState.isBusy() == false) {
-				 * 
-				 * 
-				 * RConnection c = RServe.getConnection(); try { c.eval("try(remove.packages(\""
-				 * + selectedPackage + "\"))"); } catch (RserveException ex) {
-				 * 
-				 * ex.printStackTrace(); } System.out.println("Removed library "
-				 * +selectedPackage);
-				 * 
-				 * } else { Bio7Dialog.message("Rserve is busy!"); } }
-				 * 
-				 * }
-				 * 
-				 * public void widgetDefaultSelected(SelectionEvent e) {
-				 * 
-				 * } });
-				 */
-
-			}
-		});
-
-		tree.addListener(SWT.MouseDown, new Listener() {
-			public void handleEvent(Event event) {
-				Point point = new Point(event.x, event.y);
-				TreeItem item = tree.getItem(point);
-				if (item != null) {
-
-					// System.out.println("Mouse down: " + item.getText());
-					// item.setImage(new Image(Display.getCurrent(),
-					// getClass().getResourceAsStream("/pics/regelmaessig.gif")));
-
-				}
-			}
-		});
+		
 
 		final CTabItem variablesTabItem = new CTabItem(tab, SWT.NONE);
 		variablesTabItem.setText("Variables");
@@ -3092,73 +2953,7 @@ public class RShellView extends ViewPart {
 		}
 	}
 
-	public void createAttachedPackageTree() {
-		REXP pack = null;
-		REXP functions = null;
-		tree.removeAll();
-
-		if (RServe.isAliveDialog()) {
-			if (RState.isBusy() == false) {
-				String[] v = null;
-				// List all variables in the R workspace!
-
-				try {
-					RConnection con = RServe.getConnection();
-
-					con.eval(".bio7TempVarEnvironment <- new.env()");
-					con.eval("try(.bio7TempVarEnvironment$workspaceRPackages<-.packages())");
-					pack = RServe.getConnection().eval("try(.bio7TempVarEnvironment$workspaceRPackages)");
-					try {
-						v = pack.asStrings();
-					} catch (REXPMismatchException e1) {
-
-						e1.printStackTrace();
-					}
-					con.eval("try(rm(workspaceRPackages,envir=.bio7TempVarEnvironment))");
-
-				} catch (RserveException e1) {
-
-					e1.printStackTrace();
-				}
-				TreeItem packages = new TreeItem(tree, 0);
-				packages.setText("Attached Packages:");
-				// packages.removeAll();
-				for (int i = 0; i < v.length; i++) {
-
-					// lsf.str("package:MASS")
-					TreeItem treeItem = new TreeItem(packages, 0);
-					treeItem.setText(v[i]);
-
-					/*
-					 * String[] func = null;
-					 * 
-					 * try { RServe.getConnection().eval("listfunc<-ls.str(\"package:" +v[i]+"\")");
-					 * 
-					 * try { func = RServe.getConnection().eval("as.vector(listfunc)" ).asStrings();
-					 * } catch (REXPMismatchException e) { // TODO Auto-generated catch block
-					 * e.printStackTrace(); } } catch (RserveException e) { // TODO Auto-generated
-					 * catch block e.printStackTrace(); }
-					 * 
-					 * 
-					 * 
-					 * for (int j = 0; j < func.length; j++) {
-					 * 
-					 * TreeItem treeItemSub= new TreeItem(treeItem, 0); treeItemSub.setText(func[i])
-					 * ;
-					 * 
-					 * }
-					 */
-
-				}
-				packages.setExpanded(true);
-			} else {
-				Bio7Dialog.message("Rserve is busy!");
-
-			}
-
-		}
-
-	}
+	
 
 	public static RShellView getInstance() {
 		return instance;
