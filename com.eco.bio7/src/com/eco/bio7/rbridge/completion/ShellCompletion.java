@@ -300,18 +300,18 @@ public class ShellCompletion {
 			ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
 			ArrayList<IContentProposal> varWorkspace = new ArrayList<IContentProposal>();
 			int offset = position;
-			int lastIndex = calculateFirstOccurrenceOfChar(control, offset);
+			int lastIndex=0;
+			lastIndex = calculateFirstOccurrenceOfChar(control, offset);
 			int textLength = 0;
-
 			String contentLast;
-			if (lastIndex > 0) {
+			if (lastIndex >= 0) {
 				textLength = offset - lastIndex;
 				contentLast = control.getText(lastIndex, offset);
 
-			} else {
+			} /*else {
 				textLength = control.getText().length();
 				contentLast = control.getText();
-			}
+			}*/
 
 			/* We need the substring here without a trailing char like ')'! */
 			String contentLastCorr = control.getText(lastIndex, offset - 1);
@@ -327,13 +327,15 @@ public class ShellCompletion {
 			/* Control if we are in a function call! */
 			if (parse != null && parse.isInFunctionCall()) {
 				String funcName = parse.getFuncName();
-
+               /*Activate data completion!*/
 				if (funcName.equals("data")) {
-
+					
 					return dataActivation(position);
+					/*Activate library completion!*/
 				} else if (funcName.equals("library") || parse.getFuncName().equals("require")) {
-
+					
 					return libraryActivation(position);
+					
 				} else {
 					/*
 					 * If length is null show function arguments else all functions and variables!
