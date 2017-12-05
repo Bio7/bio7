@@ -103,15 +103,10 @@ public class PackageInstallView extends ViewPart {
 				if (tabFolder.getSelectionIndex() == 1) {
 					packageInstall();
 				} else if (tabFolder.getSelectionIndex() == 2) {
-					if (RServe.isAliveDialog()) {
-						if (RState.isBusy() == false) {
-
-							createAttachedPackageTree();
-
-						} else {
-							Bio7Dialog.message("Rserve is busy!");
-						}
+					if (RServe.isAlive()) {
+						createAttachedPackageTree();
 					}
+
 				}
 
 			}
@@ -348,8 +343,10 @@ public class PackageInstallView extends ViewPart {
 		btnUpdate.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				if (RServe.isAliveDialog()) {
 
-				packageInstall();
+					packageInstall();
+				}
 			}
 
 		});
@@ -484,15 +481,8 @@ public class PackageInstallView extends ViewPart {
 				refreshItem.addSelectionListener(new SelectionListener() {
 
 					public void widgetSelected(SelectionEvent e) {
-						if (RServe.isAliveDialog()) {
-							if (RState.isBusy() == false) {
 
-								createAttachedPackageTree();
-
-							} else {
-								Bio7Dialog.message("Rserve is busy!");
-							}
-						}
+						createAttachedPackageTree();
 
 					}
 
@@ -507,21 +497,12 @@ public class PackageInstallView extends ViewPart {
 				detachItem.addSelectionListener(new SelectionListener() {
 
 					public void widgetSelected(SelectionEvent e) {
-						if (RServe.isAliveDialog()) {
-							if (RState.isBusy() == false) {
 
-								RConnection c = RServe.getConnection();
-								if (tree.getSelection().length > 0) {
-									String selectedPackage = tree.getSelection()[0].getText();
+						if (tree.getSelection().length > 0) {
+							String selectedPackage = tree.getSelection()[0].getText();
+							RServeUtil.evalR("try(detach(package:" + selectedPackage + ", unload=TRUE))", null);
+							createAttachedPackageTree();
 
-									RServeUtil.evalR("try(detach(package:" + selectedPackage + ", unload=TRUE))", null);
-									createAttachedPackageTree();
-
-								}
-
-							} else {
-								Bio7Dialog.message("Rserve is busy!");
-							}
 						}
 
 					}
@@ -540,7 +521,6 @@ public class PackageInstallView extends ViewPart {
 				TreeItem item = tree.getItem(point);
 				if (item != null) {
 
-
 				}
 			}
 		});
@@ -550,15 +530,8 @@ public class PackageInstallView extends ViewPart {
 		btnNewButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if (RServe.isAliveDialog()) {
-					if (RState.isBusy() == false) {
 
-						createAttachedPackageTree();
-
-					} else {
-						Bio7Dialog.message("Rserve is busy!");
-					}
-				}
+				createAttachedPackageTree();
 			}
 		});
 		GridData gd_btnNewButton = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
@@ -689,8 +662,6 @@ public class PackageInstallView extends ViewPart {
 
 			allInstalledPackagesList.setItems(listPackages);
 
-		} else {
-			System.out.println("Rserve is busy!");
 		}
 
 	}
@@ -737,44 +708,39 @@ public class PackageInstallView extends ViewPart {
 	}
 
 	public void createAttachedPackageTree() {
+		if (RServe.isAliveDialog() == false) {
+			return;
+		}
 		REXP pack = null;
-		REXP functions = null;
 		tree.removeAll();
+		/* Just to avoid the dialog from RServeUtil! */
 
-		if (RServe.isAliveDialog()) {
-			if (RState.isBusy() == false) {
-				String[] v = null;
-				// List all variables in the R workspace!
+		String[] v = null;
+		// List all variables in the R workspace!
 
-				RServeUtil.evalR(
-						".bio7TempVarEnvironment <- new.env();try(.bio7TempVarEnvironment$workspaceRPackages<-.packages())",
-						null);
-				pack = RServeUtil.fromR("try(.bio7TempVarEnvironment$workspaceRPackages)");
-				try {
-					v = pack.asStrings();
-				} catch (REXPMismatchException e1) {
+		RServeUtil.evalR(
+				".bio7TempVarEnvironment <- new.env();try(.bio7TempVarEnvironment$workspaceRPackages<-.packages())",
+				null);
+		pack = RServeUtil.fromR("try(.bio7TempVarEnvironment$workspaceRPackages)");
+		try {
+			v = pack.asStrings();
+		} catch (REXPMismatchException e1) {
 
-					e1.printStackTrace();
-				}
-				RServeUtil.evalR("try(rm(workspaceRPackages,envir=.bio7TempVarEnvironment))", null);
+			e1.printStackTrace();
+		}
+		RServeUtil.evalR("try(rm(workspaceRPackages,envir=.bio7TempVarEnvironment))", null);
 
-				TreeItem packages = new TreeItem(tree, 0);
-				packages.setText("Attached Packages:");
-				// packages.removeAll();
-				for (int i = 0; i < v.length; i++) {
+		TreeItem packages = new TreeItem(tree, 0);
+		packages.setText("Attached Packages:");
+		// packages.removeAll();
+		for (int i = 0; i < v.length; i++) {
 
-					// lsf.str("package:MASS")
-					TreeItem treeItem = new TreeItem(packages, 0);
-					treeItem.setText(v[i]);
-
-				}
-				packages.setExpanded(true);
-			} else {
-				Bio7Dialog.message("Rserve is busy!");
-
-			}
+			// lsf.str("package:MASS")
+			TreeItem treeItem = new TreeItem(packages, 0);
+			treeItem.setText(v[i]);
 
 		}
+		packages.setExpanded(true);
 
 	}
 

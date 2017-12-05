@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2017 M. Austenfeld
+ * Copyright (c) 2005-2017 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -70,6 +70,7 @@ import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MenuListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -178,7 +179,7 @@ public class RShellView extends ViewPart {
 	private Button fontButton;
 	public boolean cmdError;
 	protected Parse parse;
-	
+
 	private static RShellView instance;
 	/* Create the plot tab! */
 	private Button loadButton;
@@ -186,11 +187,12 @@ public class RShellView extends ViewPart {
 	private SashForm sashForm;
 	private ShellCompletion shellCompletion;
 	public ControlDecoration txtIndication;
+	protected boolean keyPressed;
 
 	public RShellView() {
 		instance = this;
 	}
-	
+
 	public ShellCompletion getShellCompletion() {
 		return shellCompletion;
 	}
@@ -208,10 +210,10 @@ public class RShellView extends ViewPart {
 	public static StyledText getTextConsole() {
 		return textConsole;
 	}
+
 	public Parse getParser() {
 		return parse;
 	}
-
 
 	@Override
 	public void createPartControl(final Composite parent) {
@@ -278,6 +280,8 @@ public class RShellView extends ViewPart {
 		// "a", "b", "c" });
 
 		text = new Text(composite_1, SWT.SINGLE | SWT.BORDER);
+		Font font = new Font(Util.getDisplay(), currentFont);
+		text.setFont(font);
 		GridData gd_text = new GridData(SWT.FILL, SWT.FILL, true, true, 6, 1);
 		gd_text.heightHint = 49;
 		gd_text.widthHint = 570;
@@ -320,10 +324,104 @@ public class RShellView extends ViewPart {
 				}
 			}
 		});
+
+		text.addMouseListener(new MouseListener() {
+
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+
+			}
+
+			@Override
+			public void mouseDown(MouseEvent e) {
+				if (keyPressed) {
+					int caretPosition = ((Text) (e.widget)).getCaretPosition();
+					String textBeforeCaret = text.getText(caretPosition - 1, caretPosition - 1);
+					String textBehingClosingCaret = text.getText(caretPosition, caretPosition);
+					char xch = '(';
+					char ych = '(';
+					if (textBeforeCaret.equals("(") || textBeforeCaret.equals("[") || textBeforeCaret.equals("{")) {
+						Document doc = new Document();
+						switch (textBeforeCaret) {
+						case "(":
+							xch = '(';
+							ych = ')';
+							break;
+						case "[":
+							xch = '[';
+							ych = ']';
+							break;
+						case "{":
+							xch = '{';
+							ych = '}';
+							break;
+
+						default:
+							break;
+						}
+						
+						doc.set(text.getText());
+						try {
+							int closingBracket = searchForClosingBracket(caretPosition , xch, ych, doc);
+							if (closingBracket >= 0) {
+								text.setSelection(caretPosition, closingBracket);
+							}
+
+						} catch (BadLocationException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
+					if (textBehingClosingCaret.equals(")") || textBehingClosingCaret.equals("]") || textBehingClosingCaret.equals("}")) {
+						Document doc = new Document();
+						switch (textBeforeCaret) {
+						case ")":
+							xch = '(';
+							ych = ')';
+							break;
+						case "]":
+							xch = '[';
+							ych = ']';
+							break;
+						case "}":
+							xch = '{';
+							ych = '}';
+							break;
+
+						default:
+							break;
+						}
+
+						doc.set(text.getText());
+						try {
+							int openingBracket = searchForOpenBracket(caretPosition, xch, ych, doc);
+							if (openingBracket >= 0) {
+								text.setSelection(openingBracket+1,caretPosition);
+							}
+
+						} catch (BadLocationException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
+				}
+
+			}
+
+			@Override
+			public void mouseUp(MouseEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+		});
+
 		text.addKeyListener(new KeyListener() {
 
 			@Override
 			public void keyPressed(KeyEvent e) {
+				/*For the mouse bracket selection press any key!*/
+				keyPressed = true;
+				
 				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 
 					if (((e.stateMask & SWT.COMMAND) == SWT.COMMAND) && (e.stateMask & SWT.ALT) == SWT.ALT
@@ -349,8 +447,8 @@ public class RShellView extends ViewPart {
 						IDocument doc = new Document();
 						new OpenFileCreateSourceTemplate(doc, 0, doc.getLength());
 						String t = text.getText();
-						String a = t.substring(0, text.getCaretPosition());
-						String b = t.substring(text.getCaretPosition(), t.length());
+						// String a = t.substring(0, text.getCaretPosition());
+						// String b = t.substring(text.getCaretPosition(), t.length());
 						text.insert(doc.get());
 
 					}
@@ -360,21 +458,19 @@ public class RShellView extends ViewPart {
 						IDocument doc = new Document();
 						new SaveFileCreateSourceTemplate(doc, 0, doc.getLength());
 						text.insert(doc.get());
-					}
-					else if (((e.stateMask & SWT.COMMAND) == SWT.COMMAND) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT
-							 && (e.keyCode == '-')) {
+					} else if (((e.stateMask & SWT.COMMAND) == SWT.COMMAND) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT
+							&& (e.keyCode == '-')) {
 						String t = text.getText();
-						String a = t.substring(0, text.getCaretPosition());
-						String b = t.substring(text.getCaretPosition(), t.length());
-						//text.setText(a + "<-" + b);
+						// String a = t.substring(0, text.getCaretPosition());
+						// String b = t.substring(text.getCaretPosition(), t.length());
+						// text.setText(a + "<-" + b);
 						text.insert(" <- ");
-					}
-					else if (((e.stateMask & SWT.COMMAND) == SWT.COMMAND) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT
-							 && (e.keyCode == 'm')) {
+					} else if (((e.stateMask & SWT.COMMAND) == SWT.COMMAND) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT
+							&& (e.keyCode == 'm')) {
 						String t = text.getText();
-						String a = t.substring(0, text.getCaretPosition());
-						String b = t.substring(text.getCaretPosition(), t.length());
-						//text.setText(a + "<-" + b);
+						// String a = t.substring(0, text.getCaretPosition());
+						// String b = t.substring(text.getCaretPosition(), t.length());
+						// text.setText(a + "<-" + b);
 						text.insert(" %>% ");
 					}
 
@@ -402,8 +498,8 @@ public class RShellView extends ViewPart {
 						IDocument doc = new Document();
 						new OpenFileCreateSourceTemplate(doc, 0, doc.getLength());
 						String t = text.getText();
-						String a = t.substring(0, text.getCaretPosition());
-						String b = t.substring(text.getCaretPosition(), t.length());
+						// a = t.substring(0, text.getCaretPosition());
+						// String b = t.substring(text.getCaretPosition(), t.length());
 						text.insert(doc.get());
 
 					}
@@ -413,21 +509,19 @@ public class RShellView extends ViewPart {
 						IDocument doc = new Document();
 						new SaveFileCreateSourceTemplate(doc, 0, doc.getLength());
 						text.insert(doc.get());
-					}
-					else if (((e.stateMask & SWT.CTRL) == SWT.CTRL) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT
-							 && (e.keyCode == '-')) {
+					} else if (((e.stateMask & SWT.CTRL) == SWT.CTRL) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT
+							&& (e.keyCode == '-')) {
 						String t = text.getText();
-						String a = t.substring(0, text.getCaretPosition());
-						String b = t.substring(text.getCaretPosition(), t.length());
-						//text.setText(a + "<-" + b);
+						// String a = t.substring(0, text.getCaretPosition());
+						// String b = t.substring(text.getCaretPosition(), t.length());
+						// text.setText(a + "<-" + b);
 						text.insert(" <- ");
-					}
-					else if (((e.stateMask & SWT.CTRL) == SWT.CTRL) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT
-							 && (e.keyCode == 'n')) {
+					} else if (((e.stateMask & SWT.CTRL) == SWT.CTRL) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT
+							&& (e.keyCode == 'n')) {
 						String t = text.getText();
-						String a = t.substring(0, text.getCaretPosition());
-						String b = t.substring(text.getCaretPosition(), t.length());
-						//text.setText(a + "<-" + b);
+						// String a = t.substring(0, text.getCaretPosition());
+						// String b = t.substring(text.getCaretPosition(), t.length());
+						// text.setText(a + "<-" + b);
 						text.insert(" %>% ");
 					}
 				}
@@ -440,10 +534,10 @@ public class RShellView extends ViewPart {
 				 */
 				if (parse == null) {
 					parse = new Parse(null);
-					cmdError = parse.parseShellSource(command,text.getCaretPosition());
-					
+					cmdError = parse.parseShellSource(command, text.getCaretPosition());
+
 				} else {
-					cmdError = parse.parseShellSource(command,text.getCaretPosition());
+					cmdError = parse.parseShellSource(command, text.getCaretPosition());
 				}
 				if (cmdError) {
 					txtIndication.show();
@@ -455,6 +549,9 @@ public class RShellView extends ViewPart {
 
 			@Override
 			public void keyReleased(KeyEvent e) {
+				/*For the mouse bracket selection release the key!*/
+				keyPressed = false;
+				
 				Text text = (Text) e.getSource();
 				String command = text.getText();
 				/*
@@ -464,10 +561,10 @@ public class RShellView extends ViewPart {
 				 */
 				if (parse == null) {
 					parse = new Parse(null);
-					cmdError = parse.parseShellSource(command,text.getCaretPosition());
-					
+					cmdError = parse.parseShellSource(command, text.getCaretPosition());
+
 				} else {
-					cmdError = parse.parseShellSource(command,text.getCaretPosition());
+					cmdError = parse.parseShellSource(command, text.getCaretPosition());
 				}
 				if (cmdError) {
 					txtIndication.show();
@@ -798,7 +895,7 @@ public class RShellView extends ViewPart {
 				if (RServe.isAliveDialog()) {
 					displayRObjects();
 
-					//createAttachedPackageTree();
+					// createAttachedPackageTree();
 				}
 
 			}
@@ -855,8 +952,6 @@ public class RShellView extends ViewPart {
 		 * plotTabItem = new CTabItem(tab, SWT.NONE); plotTabItem.setText("Plot Data");
 		 */
 		// new RPlot(tab, SWT.NONE, plotTabItem);
-
-		
 
 		final CTabItem variablesTabItem = new CTabItem(tab, SWT.NONE);
 		variablesTabItem.setText("Variables");
@@ -1114,10 +1209,13 @@ public class RShellView extends ViewPart {
 				FontData newFont = fd.open();
 				if (newFont == null)
 					return;
-				textConsole.setFont(new Font(Util.getDisplay(), newFont));
-				listShell.setFont(new Font(Util.getDisplay(), newFont));
-				textConsole.setForeground(new Color(Util.getDisplay(), fd.getRGB()));
-				listShell.setForeground(new Color(Util.getDisplay(), fd.getRGB()));
+				Font font=new Font(Util.getDisplay(), newFont);
+				text.setFont(font);
+				textConsole.setFont(font);
+				listShell.setFont(font);
+				Color color = new Color(Util.getDisplay(), fd.getRGB());
+				textConsole.setForeground(color);
+				listShell.setForeground(color);
 				PreferenceConverter.setValue(store, "RShellFonts", newFont);
 
 			}
@@ -2542,13 +2640,14 @@ public class RShellView extends ViewPart {
 
 			}
 		});
-		listShell.setFont(new Font(Util.getDisplay(), currentFont));
+		listShell.setFont(font);
 
 		sashForm_1.setWeights(new int[] { 1 });
 
 		textConsole = new StyledText(sashForm, SWT.WRAP | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
 
-		textConsole.setFont(new Font(Util.getDisplay(), currentFont));
+		textConsole.setFont(font);
+		
 		sashForm.setWeights(new int[] { 233, 319 });
 		target.addDropListener(new DropTargetAdapter() {
 			public void drop(DropTargetEvent event) {
@@ -2953,13 +3052,83 @@ public class RShellView extends ViewPart {
 		}
 	}
 
-	
-
 	public static RShellView getInstance() {
 		return instance;
 	}
 
 	public static List getListShell() {
 		return listShell;
+	}
+
+	/**
+	 * Returns the position of the closing bracket after <code>startPosition</code>.
+	 * 
+	 * @param startPosition
+	 *            - the beginning position
+	 * @param openBracket
+	 *            - the character that represents the open bracket
+	 * @param closeBracket
+	 *            - the character that represents the close bracket
+	 * @param document
+	 *            - the document being searched
+	 * @return the location of the closing bracket.
+	 * @throws BadLocationException
+	 *             in case <code>startPosition</code> is invalid in the document
+	 */
+	protected int searchForClosingBracket(int startPosition, char openBracket, char closeBracket, IDocument document)
+			throws BadLocationException {
+		int stack = 1;
+		int closePosition = startPosition + 1;
+		int length = document.getLength();
+		char nextChar;
+
+		while (closePosition < length && stack > 0) {
+			nextChar = document.getChar(closePosition);
+			if (nextChar == openBracket && nextChar != closeBracket)
+				stack++;
+			else if (nextChar == closeBracket)
+				stack--;
+			closePosition++;
+		}
+
+		if (stack == 0)
+			return closePosition - 1;
+		return -1;
+
+	}
+
+	/**
+	 * Returns the position of the open bracket before <code>startPosition</code>.
+	 * 
+	 * @param startPosition
+	 *            - the beginning position
+	 * @param openBracket
+	 *            - the character that represents the open bracket
+	 * @param closeBracket
+	 *            - the character that represents the close bracket
+	 * @param document
+	 *            - the document being searched
+	 * @return the location of the starting bracket.
+	 * @throws BadLocationException
+	 *             in case <code>startPosition</code> is invalid in the document
+	 */
+	protected int searchForOpenBracket(int startPosition, char openBracket, char closeBracket, IDocument document)
+			throws BadLocationException {
+		int stack = 1;
+		int openPos = startPosition - 1;
+		char nextChar;
+
+		while (openPos >= 0 && stack > 0) {
+			nextChar = document.getChar(openPos);
+			if (nextChar == closeBracket && nextChar != openBracket)
+				stack++;
+			else if (nextChar == openBracket)
+				stack--;
+			openPos--;
+		}
+
+		if (stack == 0)
+			return openPos + 1;
+		return -1;
 	}
 }

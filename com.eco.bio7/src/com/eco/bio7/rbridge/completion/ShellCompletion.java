@@ -38,6 +38,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Text;
@@ -111,9 +112,11 @@ public class ShellCompletion {
 		if (typedCodeCompletion) {
 			contentProposalAdapter = new ContentProposalAdapter(control, controlContentAdapter, contentProposalProvider,
 					stroke, getAutoactivationChars());
+			contentProposalAdapter.setPopupSize(new Point(600,400));
 		} else {
 			contentProposalAdapter = new ContentProposalAdapter(control, controlContentAdapter, contentProposalProvider,
 					stroke, null);
+			contentProposalAdapter.setPopupSize(new Point(500,500));
 		}
 		contentProposalAdapter.setPropagateKeys(true);
 		contentProposalAdapter.setLabelProvider(new ContentProposalLabelProvider());
@@ -300,18 +303,18 @@ public class ShellCompletion {
 			ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
 			ArrayList<IContentProposal> varWorkspace = new ArrayList<IContentProposal>();
 			int offset = position;
-			int lastIndex = calculateFirstOccurrenceOfChar(control, offset);
+			int lastIndex=0;
+			lastIndex = calculateFirstOccurrenceOfChar(control, offset);
 			int textLength = 0;
-
 			String contentLast;
-			if (lastIndex > 0) {
+			if (lastIndex >= 0) {
 				textLength = offset - lastIndex;
 				contentLast = control.getText(lastIndex, offset);
 
-			} else {
+			} /*else {
 				textLength = control.getText().length();
 				contentLast = control.getText();
-			}
+			}*/
 
 			/* We need the substring here without a trailing char like ')'! */
 			String contentLastCorr = control.getText(lastIndex, offset - 1);
@@ -327,13 +330,15 @@ public class ShellCompletion {
 			/* Control if we are in a function call! */
 			if (parse != null && parse.isInFunctionCall()) {
 				String funcName = parse.getFuncName();
-
+               /*Activate data completion!*/
 				if (funcName.equals("data")) {
-
+					
 					return dataActivation(position);
+					/*Activate library completion!*/
 				} else if (funcName.equals("library") || parse.getFuncName().equals("require")) {
-
+					
 					return libraryActivation(position);
+					
 				} else {
 					/*
 					 * If length is null show function arguments else all functions and variables!
