@@ -38,6 +38,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Text;
@@ -111,9 +112,11 @@ public class ShellCompletion {
 		if (typedCodeCompletion) {
 			contentProposalAdapter = new ContentProposalAdapter(control, controlContentAdapter, contentProposalProvider,
 					stroke, getAutoactivationChars());
+			contentProposalAdapter.setPopupSize(new Point(600,400));
 		} else {
 			contentProposalAdapter = new ContentProposalAdapter(control, controlContentAdapter, contentProposalProvider,
 					stroke, null);
+			contentProposalAdapter.setPopupSize(new Point(500,500));
 		}
 		contentProposalAdapter.setPropagateKeys(true);
 		contentProposalAdapter.setLabelProvider(new ContentProposalLabelProvider());

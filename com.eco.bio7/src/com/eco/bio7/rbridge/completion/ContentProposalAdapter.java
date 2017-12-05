@@ -445,7 +445,7 @@ public class ContentProposalAdapter {
 			protected Control createDialogArea(Composite parent) {
 				text = new StyledText(parent,
 						SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY | SWT.WRAP | SWT.NO_FOCUS);
-
+                text.setFont(control.getFont());
 				// Use the compact margins employed by PopupDialog.
 				GridData gd = new GridData(GridData.BEGINNING | GridData.FILL_BOTH);
 				gd.horizontalIndent = PopupDialog.POPUP_HORIZONTALSPACING;
@@ -728,7 +728,7 @@ public class ContentProposalAdapter {
 			// Use virtual where appropriate (see flag definition).
 			if (USE_VIRTUAL) {
 				proposalTable = new Table(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.VIRTUAL);
-
+				proposalTable.setFont(control.getFont());
 				Listener listener = event -> handleSetData(event);
 				proposalTable.addListener(SWT.SetData, listener);
 			} else {
@@ -1181,7 +1181,7 @@ public class ContentProposalAdapter {
 	/*
 	 * The delay before showing a secondary popup.
 	 */
-	private static final int POPUP_DELAY = 750;
+	private static final int POPUP_DELAY = 500;
 
 	/*
 	 * The character height hint for the popup. May be overridden by using
