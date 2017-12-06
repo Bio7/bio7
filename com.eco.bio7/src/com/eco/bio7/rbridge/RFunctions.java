@@ -165,8 +165,8 @@ public class RFunctions {
 
 	private void initHistory() {
 		for (int i = 0; i < history.length; i++) {
-			history[i] = " ";
-			temphistory[i] = " ";
+			history[i] = "";
+			temphistory[i] = "";
 		}
 	}
 
