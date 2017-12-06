@@ -1224,10 +1224,23 @@ public class RShellView extends ViewPart {
 				ToolTip infoTip = new ToolTip(new Shell(), SWT.BALLOON | SWT.ICON_INFORMATION);
 				infoTip.setText("Info!");
 
-				infoTip.setMessage("Click = Object properties\n" + "Right-Click = Menu\n" + "Select variable(s) = To show, summarize, plot, transfer and convert data!\n"
-						+ "\nPress the \"UP ARROW\" key to get the History in the expression textfield!\n"
-						+ "\nIf you plot a PDF please close the Window of an opened reader (old plot)\nto get the new plot!\n"
-						+ "\nRight-Click on \"Plot Data\" textfield detour = Menu to inject text commands (a help to customize plots!)");
+				infoTip.setMessage("Expression textfield:"
+						+ "_________________________________\n"
+						+ "STRG+SPACE = Open code completion!\n"
+						+ "UP ARROW =  Open history!\n"
+						+ "STRG(CMD)+I = Transfer history to opened R editor!\n"
+						+ "STRG(CMD)+ALT+R = Refresh code completion!\n"
+						+ "STRG(CMD)+SHIFT+ALT+O = Open file and create load file template!\n"
+						+ "STRG(CMD)+SHIFT+ALT+S = Save file and create save file template!\n"
+						+ "STRG(CMD)+SHIFT+- = Create assign operator ('<-')!\n"
+						+ "STRG(CMD)+SHIFT+M = Create pipe operator ('%>%')!\n"
+						+ "Key + Mouse click (before bracket) - select matching brackets!\n\n"
+						+ "Objects panel (left):"
+						+ "_________________________________\n"
+						+ "Selection + 'C' key = Concatenate selected variables in Expression textfield!\n"
+						+ "Selection + 'A' key = Comma seperate selected variables in Expression textfield!\n"
+						+ "Right-Click = Menu\n" + "Select variable(s) = To show, summarize, plot, transfer and convert data!\n"
+						);
 				infoTip.setVisible(true);
 
 			}
