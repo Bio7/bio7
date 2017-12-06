@@ -112,11 +112,11 @@ public class ShellCompletion {
 		if (typedCodeCompletion) {
 			contentProposalAdapter = new ContentProposalAdapter(control, controlContentAdapter, contentProposalProvider,
 					stroke, getAutoactivationChars());
-			contentProposalAdapter.setPopupSize(new Point(600,400));
+			contentProposalAdapter.setPopupSize(new Point(700, 400));
 		} else {
 			contentProposalAdapter = new ContentProposalAdapter(control, controlContentAdapter, contentProposalProvider,
 					stroke, null);
-			contentProposalAdapter.setPopupSize(new Point(500,500));
+			contentProposalAdapter.setPopupSize(new Point(700, 400));
 		}
 		contentProposalAdapter.setPropagateKeys(true);
 		contentProposalAdapter.setLabelProvider(new ContentProposalLabelProvider());
@@ -303,7 +303,7 @@ public class ShellCompletion {
 			ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
 			ArrayList<IContentProposal> varWorkspace = new ArrayList<IContentProposal>();
 			int offset = position;
-			int lastIndex=0;
+			int lastIndex = 0;
 			lastIndex = calculateFirstOccurrenceOfChar(control, offset);
 			int textLength = 0;
 			String contentLast;
@@ -311,34 +311,40 @@ public class ShellCompletion {
 				textLength = offset - lastIndex;
 				contentLast = control.getText(lastIndex, offset);
 
-			} /*else {
-				textLength = control.getText().length();
-				contentLast = control.getText();
-			}*/
+			} /*
+				 * else { textLength = control.getText().length(); contentLast =
+				 * control.getText(); }
+				 */
 
 			/* We need the substring here without a trailing char like ')'! */
 			String contentLastCorr = control.getText(lastIndex, offset - 1);
 
 			if (contentLastCorr.endsWith("@")) {
+
 				s4 = true;
 				return s4Activation(position, contentLastCorr);
+
 			} else if (contentLastCorr.endsWith("$")) {
+
 				s3 = true;
 				return s3Activation(position, contentLastCorr);
+
 			}
 			Parse parse = view.getParser();
 			/* Control if we are in a function call! */
 			if (parse != null && parse.isInFunctionCall()) {
 				String funcName = parse.getFuncName();
-               /*Activate data completion!*/
+				/* Activate data completion! */
 				if (funcName.equals("data")) {
-					
-					return dataActivation(position);
-					/*Activate library completion!*/
+					// if (contentLastCorr.length() == 0) {
+					return dataActivation(position, contentLastCorr);
+					// }
+					/* Activate library completion! */
 				} else if (funcName.equals("library") || parse.getFuncName().equals("require")) {
-					
-					return libraryActivation(position);
-					
+					// if (contentLastCorr.length() == 0) {
+					return libraryActivation(position, contentLastCorr);
+					// }
+
 				} else {
 					/*
 					 * If length is null show function arguments else all functions and variables!
@@ -631,10 +637,13 @@ public class ShellCompletion {
 	 * Here we calculate available dataset examples and create
 	 * ImageContentProposals!
 	 */
-	private ImageContentProposal[] dataActivation(int offset) {
+	private ImageContentProposal[] dataActivation(int offset, String contentLastCorr) {
+		IContentProposal[] array = null;
+		int length = contentLastCorr.length();
 		RConnection c = RServe.getConnection();
 		if (c != null) {
 			propo = null;
+			ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
 
 			String[] item = null;
 			String[] packages = null;
@@ -652,14 +661,36 @@ public class ShellCompletion {
 				e.printStackTrace();
 			}
 
-			propo = new ImageContentProposal[item.length];
+			/* If text length after parenheses is at least 0! */
+			if (length >= 0) {
+				for (int i = 0; i < item.length; i++) {
+					/*
+					 * Here we filter out the templates by comparing the typed letters with the
+					 * available templates!
+					 */
+					if (item[i].length() >= length && item[i].substring(0, length).equalsIgnoreCase(contentLastCorr)) {
 
-			for (int j = 0; j < item.length; j++) {
-
-				propo[j] = new ImageContentProposal(item[j], item[j] + " (package: " + packages[j] + ")", title[j],
-						item[j].length(), dataImage);
+						list.add(new ImageContentProposal(item[i], item[i] + " (package: " + packages[i] + ")",
+								title[i], item[i].length(), dataImage));
+					}
+				}
 
 			}
+
+			else {
+
+				for (int j = 0; j < item.length; j++) {
+
+					list.add(new ImageContentProposal(item[j], item[j] + " (package: " + packages[j] + ")", title[j],
+							item[j].length(), dataImage));
+
+				}
+			}
+
+			propo = list.toArray(new ImageContentProposal[list.size()]);
+
+			/* We have to convert the proposals to an ImageContentProposal! */
+			// IContentProposal[] arrayTemp = makeProposalArray(array);
 
 		} else {
 			System.out.println("No Rserve connection available!");
@@ -668,11 +699,12 @@ public class ShellCompletion {
 	}
 
 	/* Here we calculate available libraries and create ImageContentProposals! */
-	private ImageContentProposal[] libraryActivation(int offset) {
+	private ImageContentProposal[] libraryActivation(int offset, String contentLastCorr) {
 		RConnection c = RServe.getConnection();
+		int length = contentLastCorr.length();
 		if (c != null) {
 			propo = null;
-
+			ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
 			String[] dirPackageFiles = null;
 			String[] packageTitle = null;
 			try {
@@ -688,20 +720,56 @@ public class ShellCompletion {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			/* If text length after parenheses is at least 0! */
+			if (length >= 0) {
+				for (int i = 0; i < dirPackageFiles.length; i++) {
+					/*
+					 * Here we filter out the templates by comparing the typed letters with the
+					 * available templates!
+					 */
+					if (dirPackageFiles[i].length() >= length
+							&& dirPackageFiles[i].substring(0, length).equalsIgnoreCase(contentLastCorr)) {
 
-			propo = new ImageContentProposal[dirPackageFiles.length];
-
-			for (int j = 0; j < dirPackageFiles.length; j++) {
-
-				propo[j] = new ImageContentProposal(dirPackageFiles[j], dirPackageFiles[j], packageTitle[j],
-						dirPackageFiles[j].length(), libImage);
+						list.add(new ImageContentProposal(dirPackageFiles[i], dirPackageFiles[i], packageTitle[i],
+								dirPackageFiles[i].length(), libImage));
+					}
+				}
 
 			}
+
+			else {
+
+				for (int j = 0; j < dirPackageFiles.length; j++) {
+
+					list.add(new ImageContentProposal(dirPackageFiles[j], dirPackageFiles[j], packageTitle[j],
+							dirPackageFiles[j].length(), libImage));
+
+				}
+			}
+
+			propo = list.toArray(new ImageContentProposal[list.size()]);
+
+			/* We have to convert the proposals to an ImageContentProposal! */
+			// IContentProposal[] arrayTemp = makeProposalArray(array);
 
 		} else {
 			System.out.println("No Rserve connection available!");
 		}
 		return propo;
+
+		/*
+		 * propo = new ImageContentProposal[dirPackageFiles.length];
+		 * 
+		 * for (int j = 0; j < dirPackageFiles.length; j++) {
+		 * 
+		 * propo[j] = new ImageContentProposal(dirPackageFiles[j], dirPackageFiles[j],
+		 * packageTitle[j], dirPackageFiles[j].length(), libImage);
+		 * 
+		 * }
+		 * 
+		 * } else { System.out.println("No Rserve connection available!"); } return
+		 * propo;
+		 */
 	}
 
 	/* Here we display the function arguments from the default package functions! */

@@ -260,7 +260,7 @@ public class PackageInstallView extends ViewPart {
 			}
 
 		});
-		updateButton.setText("Refresh Packages List");
+		updateButton.setText("Load Packages List");
 
 		final Button installButton = new Button(container, SWT.NONE);
 		GridData gd_installButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
