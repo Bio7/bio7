@@ -115,7 +115,7 @@ public class RFunctions {
 	
 	public String[] spatialStats={"library(spatstat)", "library(spatial)","nndist(x,y)",
 			"pairdist(x,y)","exactdt(x,y)","rpoint(100)",
-			"X<- ppp(x, y, c(0,100), c(0,100))","X<- ppp(rpoint(100)*100, rpoint(100)*100, c(0,100), c(0,100))","summary(X)","pp <- runifpoint(50)","K <- Kest(pp)","nearest.raster.point(0.5,0.3,owin(c(0,1),c(0,1),mask=matrix(TRUE, 100,100)))","p$x","p$y","readOGR(name)",
+			"X<- ppp(x, y, c(0,100), c(0,100))","X<-ppp(runif(100),runif(100),window=owin(xrange=c(0,100),yrange=c(0,100)))","X<-ppp(Particles$X,Particles$Y,window=owin(xrange=c(0,imageSizeX),yrange=c(0,imageSizeY)))","summary(X)","pp <- runifpoint(50)","K <- Kest(pp)","nearest.raster.point(0.5,0.3,owin(c(0,1),c(0,1),mask=matrix(TRUE, 100,100)))","p$x","p$y","readOGR(name)",
 			"readGDAL(name)","name$band1","writeOGR(obj)"};
 	
 	public String[] spatialStatsContext={"Loads the spatstat library!", "Loads the spatial library!","Returns the nearest neighbour distances!\n(required: loaded spatstat library)!",
