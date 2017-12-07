@@ -17,6 +17,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.ContainerSelectionDialog;
+import org.eclipse.swt.widgets.Link;
 
 public class Bio7ReproducibleRProjectWizardPage extends WizardPage {
 
@@ -85,7 +86,7 @@ public class Bio7ReproducibleRProjectWizardPage extends WizardPage {
 
 		btnCreateRFile = new Button(container, SWT.CHECK);
 		btnCreateRFile.setSelection(true);
-		btnCreateRFile.setText("Create R file");
+		btnCreateRFile.setText("Create R file template");
 		new Label(container, SWT.NONE);
 		new Label(container, SWT.NONE);
 

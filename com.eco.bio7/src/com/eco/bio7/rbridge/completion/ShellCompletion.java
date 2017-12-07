@@ -78,6 +78,8 @@ public class ShellCompletion {
 	public boolean s4;
 	public boolean s3;
 	private RShellView view;
+	private boolean packageAll;
+	private boolean packageExport;
 	// public boolean data;
 	// public boolean library;
 
@@ -110,12 +112,10 @@ public class ShellCompletion {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		boolean typedCodeCompletion = store.getBoolean("RSHELL_TYPED_CODE_COMPLETION");
 		if (typedCodeCompletion) {
-			contentProposalAdapter = new ContentProposalAdapter(control, controlContentAdapter, contentProposalProvider,
-					stroke, getAutoactivationChars());
+			contentProposalAdapter = new ContentProposalAdapter(control, controlContentAdapter, contentProposalProvider, stroke, getAutoactivationChars());
 			contentProposalAdapter.setPopupSize(new Point(700, 400));
 		} else {
-			contentProposalAdapter = new ContentProposalAdapter(control, controlContentAdapter, contentProposalProvider,
-					stroke, null);
+			contentProposalAdapter = new ContentProposalAdapter(control, controlContentAdapter, contentProposalProvider, stroke, null);
 			contentProposalAdapter.setPopupSize(new Point(700, 400));
 		}
 		contentProposalAdapter.setPropagateKeys(true);
@@ -142,9 +142,11 @@ public class ShellCompletion {
 				/*
 				 * Insert the completion proposal in between selection start and selection end!
 				 */
-				if (s3 == true || s4 == true) {
+				if (s3 == true || s4 == true||packageAll==true||packageExport==true) {
 					s3 = false;
 					s4 = false;
+					packageAll=false;
+					packageExport=false;
 					String textSel = control.getText(0, caretPosition - 1);
 					String after = control.getText(caretPosition, control.getText().length());
 					content = textSel + proposal.getContent() + after;
@@ -268,8 +270,7 @@ public class ShellCompletion {
 
 			char ch = tex.charAt(i - 1);
 
-			if ((ch == ';') || (ch == '(') || (ch == ',') || (ch == '[') || (ch == '=') || (ch == '-') || (ch == '+')
-					|| Character.isSpaceChar(ch))
+			if ((ch == ';') || (ch == '(') || (ch == ',') || (ch == '[') || (ch == '=') || (ch == '-') || (ch == '+') || Character.isSpaceChar(ch))
 				break;
 			i--;
 		}
@@ -329,7 +330,17 @@ public class ShellCompletion {
 				s3 = true;
 				return s3Activation(position, contentLastCorr);
 
+			} 
+			else if (contentLastCorr.endsWith(":::")) {
+				return namesPackageAllActivation(position, contentLastCorr);
 			}
+			
+			else if (contentLastCorr.endsWith("::")) {
+				return namesPackageExportActivation(position, contentLastCorr);
+			}
+			
+			
+			
 			Parse parse = view.getParser();
 			/* Control if we are in a function call! */
 			if (parse != null && parse.isInFunctionCall()) {
@@ -369,8 +380,7 @@ public class ShellCompletion {
 						 * Here we filter out the vars by comparing the typed letters with the available
 						 * workspace vars!
 						 */
-						if (workspaceVars[i].getLabel().length() >= textLength && workspaceVars[i].getLabel()
-								.substring(0, textLength).equalsIgnoreCase(contentLastCorr)) {
+						if (workspaceVars[i].getLabel().length() >= textLength && workspaceVars[i].getLabel().substring(0, textLength).equalsIgnoreCase(contentLastCorr)) {
 							varWorkspace.add(workspaceVars[i]);
 						}
 					}
@@ -384,8 +394,7 @@ public class ShellCompletion {
 					 * Here we filter out the templates by comparing the typed letters with the
 					 * available templates!
 					 */
-					if (statistics[i].length() >= textLength
-							&& statistics[i].substring(0, textLength).equalsIgnoreCase(contentLastCorr)) {
+					if (statistics[i].length() >= textLength && statistics[i].substring(0, textLength).equalsIgnoreCase(contentLastCorr)) {
 						list.add(makeContentProposal(statistics[i] + "()", statisticsContext[i], statisticsSet[i]));
 					}
 				}
@@ -415,9 +424,8 @@ public class ShellCompletion {
 				IContentProposal[] arrContentProposals = new IContentProposal[proposals.length];
 				for (int i = 0; i < proposals.length; i++) {
 
-					ImageContentProposal contentProposal = new ImageContentProposal(proposals[i].getContent(),
-							proposals[i].getLabel(), proposals[i].getDescription(), proposals[i].getContent().length(),
-							image);
+					ImageContentProposal contentProposal = new ImageContentProposal(proposals[i].getContent(), proposals[i].getLabel(), proposals[i].getDescription(),
+							proposals[i].getContent().length(), image);
 					arrContentProposals[i] = contentProposal;
 				}
 				return arrContentProposals;
@@ -436,8 +444,7 @@ public class ShellCompletion {
 			contentProposals = null;
 		}
 
-		private IContentProposal makeContentProposal(final String proposal, final String label,
-				final String description) {
+		private IContentProposal makeContentProposal(final String proposal, final String label, final String description) {
 			return new IContentProposal() {
 
 				public String getContent() {
@@ -511,10 +518,102 @@ public class ShellCompletion {
 
 									for (int j = 0; j < result.length; j++) {
 
-										propo[j] = new ImageContentProposal(result[j], result[j], result[j],
-												result[j].length(), varImage);
+										propo[j] = new ImageContentProposal(result[j], result[j], result[j], result[j].length(), varImage);
 
 									}
+								}
+
+							}
+						} catch (RserveException | REXPMismatchException e) {
+							// TODO Auto-generated catch block
+							// e.printStackTrace();
+							System.out.println("Error in R-Shell view code completion!\nR Message: " + e.getMessage());
+						}
+					}
+
+				});
+				RState.setBusy(false);
+			} else {
+				System.out.println("Rserve is busy!");
+			}
+		}
+		return propo;
+	}
+	/*
+	 * Here we calculate the :: package function and create ImageContentProposals!
+	 */
+	private ImageContentProposal[] namesPackageExportActivation(int offset, String prefix) {
+		packageExport=true;
+		propo = null;
+		RConnection c = RServe.getConnection();
+		if (c != null) {
+			if (RState.isBusy() == false) {
+				RState.setBusy(true);
+				Display display = Util.getDisplay();
+				display.syncExec(() -> {
+
+					if (c != null) {
+						String res = prefix.substring(0, prefix.lastIndexOf("::"));
+						try {
+							String[] result = (String[]) c.eval("try(grep(\"^[a-zA-Z]\",sort(getNamespaceExports(\""+res+"\")),all,value=TRUE))").asStrings();
+							if (result != null && result.length > 0) {
+								if (result[0].startsWith("Error") == false) {
+
+									// creatPopupS3Table(viewer, offSet, result);
+									propo = new ImageContentProposal[result.length];
+
+									for (int j = 0; j < result.length; j++) {
+
+										propo[j] = new ImageContentProposal(result[j], result[j], null, result[j].length(), image);
+									}
+
+								}
+
+							}
+						} catch (RserveException | REXPMismatchException e) {
+							// TODO Auto-generated catch block
+							// e.printStackTrace();
+							System.out.println("Error in R-Shell view code completion!\nR Message: " + e.getMessage());
+						}
+					}
+
+				});
+				RState.setBusy(false);
+			} else {
+				System.out.println("Rserve is busy!");
+			}
+		}
+		return propo;
+	}
+
+	/*
+	 * Here we calculate the ::: package function and create ImageContentProposals!
+	 */
+	private ImageContentProposal[] namesPackageAllActivation(int offset, String prefix) {
+		packageAll=true;
+		propo = null;
+		RConnection c = RServe.getConnection();
+		if (c != null) {
+			if (RState.isBusy() == false) {
+				RState.setBusy(true);
+				Display display = Util.getDisplay();
+				display.syncExec(() -> {
+
+					if (c != null) {
+						String res = prefix.substring(0, prefix.lastIndexOf(":::"));
+						try {
+							String[] result = (String[]) c.eval("try(grep(\"^[a-zA-Z]\",ls(getNamespace(\""+res+"\"), all.names=TRUE),value=TRUE))").asStrings();
+							if (result != null && result.length > 0) {
+								if (result[0].startsWith("Error") == false) {
+
+									// creatPopupS3Table(viewer, offSet, result);
+									propo = new ImageContentProposal[result.length];
+
+									for (int j = 0; j < result.length; j++) {
+
+										propo[j] = new ImageContentProposal(result[j], result[j], null, result[j].length(), image);
+									}
+
 								}
 
 							}
@@ -555,10 +654,12 @@ public class ShellCompletion {
 									propo = new ImageContentProposal[result.length];
 
 									for (int j = 0; j < result.length; j++) {
-
-										propo[j] = new ImageContentProposal(result[j], result[j], null,
-												result[j].length(), s4Image);
-
+										String resultStr = (String) c.eval("try(capture.output(str(" + res + "@" + result[j] + ")))").asString();
+										if (resultStr != null) {
+											propo[j] = new ImageContentProposal(result[j], result[j], resultStr, result[j].length(), s4Image);
+										} else {
+											propo[j] = new ImageContentProposal(result[j], result[j], null, result[j].length(), s4Image);
+										}
 									}
 								}
 
@@ -597,16 +698,21 @@ public class ShellCompletion {
 					if (c != null) {
 						try {
 							String res = prefix.substring(0, prefix.lastIndexOf("$"));
+
 							String[] result = (String[]) c.eval("try(ls(" + res + "),silent=TRUE)").asStrings();
+
 							if (result != null && result.length > 0) {
 								if (result[0].startsWith("Error") == false) {
 
 									propo = new ImageContentProposal[result.length];
 
 									for (int j = 0; j < result.length; j++) {
-
-										propo[j] = new ImageContentProposal(result[j], result[j], null,
-												result[j].length(), s3Image);
+										String resultStr = (String) c.eval("try(capture.output(str(" + res + "$" + result[j] + ")))").asString();
+										if (resultStr != null) {
+											propo[j] = new ImageContentProposal(result[j], result[j], resultStr, result[j].length(), s3Image);
+										} else {
+											propo[j] = new ImageContentProposal(result[j], result[j], null, result[j].length(), s3Image);
+										}
 
 									}
 								}
@@ -650,8 +756,7 @@ public class ShellCompletion {
 			String[] title = null;
 			/* Get all installed dataset names, their package and description! */
 			try {
-				RServeUtil.evalR("try(.bio7Pkgs <- setdiff(.packages(TRUE), c(\"base\", \"stats\")));"
-						+ "try(.bio7PkgsTemp<-data(package = .bio7Pkgs)$result);"
+				RServeUtil.evalR("try(.bio7Pkgs <- setdiff(.packages(TRUE), c(\"base\", \"stats\")));" + "try(.bio7PkgsTemp<-data(package = .bio7Pkgs)$result);"
 						+ "try(.bio7PkgsTemp<-.bio7PkgsTemp[order(.bio7PkgsTemp[,3]), ])", null);
 				item = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Item\"])").asStrings();
 				packages = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Package\"])").asStrings();
@@ -670,8 +775,7 @@ public class ShellCompletion {
 					 */
 					if (item[i].length() >= length && item[i].substring(0, length).equalsIgnoreCase(contentLastCorr)) {
 
-						list.add(new ImageContentProposal(item[i], item[i] + " (package: " + packages[i] + ")",
-								title[i], item[i].length(), dataImage));
+						list.add(new ImageContentProposal(item[i], item[i] + " (package: " + packages[i] + ")", title[i], item[i].length(), dataImage));
 					}
 				}
 
@@ -681,8 +785,7 @@ public class ShellCompletion {
 
 				for (int j = 0; j < item.length; j++) {
 
-					list.add(new ImageContentProposal(item[j], item[j] + " (package: " + packages[j] + ")", title[j],
-							item[j].length(), dataImage));
+					list.add(new ImageContentProposal(item[j], item[j] + " (package: " + packages[j] + ")", title[j], item[j].length(), dataImage));
 
 				}
 			}
@@ -708,10 +811,8 @@ public class ShellCompletion {
 			String[] dirPackageFiles = null;
 			String[] packageTitle = null;
 			try {
-				RServeUtil.evalR("try(.bio7ListOfWebPackages <- list(sort(.packages(all.available = TRUE))));"
-						+ "try(.bio7ListOfWebPackagesNames<-.bio7ListOfWebPackages[[1]]);"
-						+ "try(.bio7TitleResult<-lapply(.bio7ListOfWebPackagesNames,packageDescription,fields = c(\"Title\")))",
-						null);
+				RServeUtil.evalR("try(.bio7ListOfWebPackages <- list(sort(.packages(all.available = TRUE))));" + "try(.bio7ListOfWebPackagesNames<-.bio7ListOfWebPackages[[1]]);"
+						+ "try(.bio7TitleResult<-lapply(.bio7ListOfWebPackagesNames,packageDescription,fields = c(\"Title\")))", null);
 
 				packageTitle = RServeUtil.fromR("try(as.character(.bio7TitleResult))").asStrings();
 				dirPackageFiles = RServeUtil.fromR("try(.bio7ListOfWebPackagesNames)").asStrings();
@@ -727,11 +828,9 @@ public class ShellCompletion {
 					 * Here we filter out the templates by comparing the typed letters with the
 					 * available templates!
 					 */
-					if (dirPackageFiles[i].length() >= length
-							&& dirPackageFiles[i].substring(0, length).equalsIgnoreCase(contentLastCorr)) {
+					if (dirPackageFiles[i].length() >= length && dirPackageFiles[i].substring(0, length).equalsIgnoreCase(contentLastCorr)) {
 
-						list.add(new ImageContentProposal(dirPackageFiles[i], dirPackageFiles[i], packageTitle[i],
-								dirPackageFiles[i].length(), libImage));
+						list.add(new ImageContentProposal(dirPackageFiles[i], dirPackageFiles[i], packageTitle[i], dirPackageFiles[i].length(), libImage));
 					}
 				}
 
@@ -741,8 +840,7 @@ public class ShellCompletion {
 
 				for (int j = 0; j < dirPackageFiles.length; j++) {
 
-					list.add(new ImageContentProposal(dirPackageFiles[j], dirPackageFiles[j], packageTitle[j],
-							dirPackageFiles[j].length(), libImage));
+					list.add(new ImageContentProposal(dirPackageFiles[j], dirPackageFiles[j], packageTitle[j], dirPackageFiles[j].length(), libImage));
 
 				}
 			}
@@ -799,8 +897,7 @@ public class ShellCompletion {
 						 * We add a suffix to mark this proposal for a scrolling to the arguments
 						 * section in the description!
 						 */
-						propo[j] = new ImageContentProposal(proposalMethods[j], proposalMethods[j],
-								func + "::::args::::", proposalMethods[j].length(), varFuncCallImage);
+						propo[j] = new ImageContentProposal(proposalMethods[j], proposalMethods[j], func + "::::args::::", proposalMethods[j].length(), varFuncCallImage);
 
 					}
 
