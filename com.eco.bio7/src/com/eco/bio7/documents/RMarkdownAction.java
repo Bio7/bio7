@@ -1,6 +1,7 @@
 package com.eco.bio7.documents;
 
 import java.io.File;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -36,7 +37,6 @@ import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.browser.BrowserView;
-import com.eco.bio7.browser.MultiPageEditor;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.markdownedit.Activator;
 import com.eco.bio7.markdownedit.editors.MarkdownEditor;
@@ -44,7 +44,6 @@ import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
-import com.eco.bio7.util.Util;
 
 public class RMarkdownAction extends Action implements IObjectActionDelegate {
 
@@ -120,31 +119,41 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 		}
 		IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
 		/*
-		 * Extract the header information for the doctype and open a registered viewer in Bio7!
+		 * Extract the header information for the doctype and open a registered viewer
+		 * in Bio7!
 		 */
-		String title = StringUtils.substringBetween(doc.get(), "---", "---");
-		String sub = title.substring(title.lastIndexOf("output:") + 7);
-
-		if (sub.contains("html_document") || sub.contains("ioslides_presentation") || sub.contains("slidy_presentation")) {
-
+		String ext = aFile.getFileExtension();
+		if (ext.equals("md")) {
 			docType = "Html";
-
-		} else if (sub.contains("pdf_document") || sub.contains("beamer_presentation")) {
-			docType = "Pdf";
-		}
-
-		else if (sub.contains("word_document")) {
-			docType = "Word";
+			/* Can execute when the last job has been finished! */
+			if (canOperate) {
+				markdownFile(aFile, aFile.getProject());
+			}
 		} else {
-			docType = "";
+			String title = StringUtils.substringBetween(doc.get(), "---", "---");
+			String sub = title.substring(title.lastIndexOf("output:") + 7);
+
+			if (sub.contains("html_document") || sub.contains("ioslides_presentation") || sub.contains("slidy_presentation")) {
+
+				docType = "Html";
+
+			} else if (sub.contains("pdf_document") || sub.contains("beamer_presentation")) {
+				docType = "Pdf";
+			}
+
+			else if (sub.contains("word_document")) {
+				docType = "Word";
+			} else {
+				docType = "";
+			}
+			/* Can execute when the last job has been finished! */
+			if (canOperate) {
+				markdownFile(aFile, aFile.getProject());
+			}
 		}
-		/* Can execute when the last job has been finished! */
-		if (canOperate) {
-			markdownFile(aFile, aFile.getProject());
-		}
-		//editor.getEditorSite().getPart().setFocus();
-		//editor.setFocus();
-		
+		// editor.getEditorSite().getPart().setFocus();
+		// editor.setFocus();
+
 	}
 
 	private void markdownFile(Object selectedObj, final IProject activeProject) {
@@ -212,7 +221,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 									public void run() {
 										String temp = "file:///" + dirPath + "/" + theName + ".html";
 										String url = temp.replace("\\", "/");
-										//System.out.println(url);
+										// System.out.println(url);
 
 										IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 										String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
@@ -334,9 +343,12 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 			job.addJobChangeListener(new JobChangeAdapter() {
 				public void done(IJobChangeEvent event) {
 					if (event.getResult().isOK()) {
-						/* Set the flag that a new compilation is possible after the last job has been finished! */
+						/*
+						 * Set the flag that a new compilation is possible after the last job has been
+						 * finished!
+						 */
 						canOperate = true;
-						
+
 					} else {
 
 					}
