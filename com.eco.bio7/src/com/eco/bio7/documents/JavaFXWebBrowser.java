@@ -63,10 +63,16 @@ public class JavaFXWebBrowser {
 	private IPreferenceStore store;
 	private boolean reload;
 	private String fileUrl;
+	protected boolean darkCss = false;
+
 	private static JavaFXWebBrowser javaFXWebBrowserInstance;
-	
+
 	public static JavaFXWebBrowser getJavaFXWebBrowserInstance() {
 		return javaFXWebBrowserInstance;
+	}
+
+	public void setDarkCssIfDarkTheme(boolean darkCss) {
+		this.darkCss = darkCss;
 	}
 
 	public class JSLogListener {
@@ -89,8 +95,7 @@ public class JavaFXWebBrowser {
 		webEng.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
 
 			@Override
-			public void changed(ObservableValue<? extends Worker.State> observable, Worker.State oldValue,
-					Worker.State newValue) {
+			public void changed(ObservableValue<? extends Worker.State> observable, Worker.State oldValue, Worker.State newValue) {
 
 				if (newValue != Worker.State.SUCCEEDED) {
 
@@ -129,11 +134,9 @@ public class JavaFXWebBrowser {
 				if (html == false) {
 					// webEng.executeScript("document.getElementById('viewerContainer').style.overflow
 					// = 'hidden';");
-					webEng.executeScript(
-							"PDFViewerApplication.pdfViewer.currentPageNumber=" + JavaFXBrowserHelper.pageNumber + "");
+					webEng.executeScript("PDFViewerApplication.pdfViewer.currentPageNumber=" + JavaFXBrowserHelper.pageNumber + "");
 					/* Set the bookmark to select the page! */
-					webEng.executeScript(
-							"PDFViewerApplication.initialBookmark = \"" + JavaFXBrowserHelper.pageNumber + "\";");
+					webEng.executeScript("PDFViewerApplication.initialBookmark = \"" + JavaFXBrowserHelper.pageNumber + "\";");
 
 					Document doc = webEng.getDocument();
 
@@ -143,8 +146,7 @@ public class JavaFXWebBrowser {
 
 						@Override
 						public void handleEvent(Event evt) {
-							JavaFXBrowserHelper.pageNumber = (int) (webEng
-									.executeScript("PDFViewerApplication.pdfViewer.currentPageNumber;"));
+							JavaFXBrowserHelper.pageNumber = (int) (webEng.executeScript("PDFViewerApplication.pdfViewer.currentPageNumber;"));
 
 						}
 					}, false);
@@ -153,8 +155,7 @@ public class JavaFXWebBrowser {
 
 						@Override
 						public void handleEvent(Event evt) {
-							JavaFXBrowserHelper.pageNumber = (int) (webEng
-									.executeScript("PDFViewerApplication.pdfViewer.currentPageNumber;"));
+							JavaFXBrowserHelper.pageNumber = (int) (webEng.executeScript("PDFViewerApplication.pdfViewer.currentPageNumber;"));
 							/*
 							 * System.out.println(String.valueOf(((com.sun.webkit.dom.KeyboardEventImpl)
 							 * evt).getKeyCode())); com.sun.webkit.dom.KeyboardEventImpl event =
@@ -213,14 +214,11 @@ public class JavaFXWebBrowser {
 								}
 							}, false);
 						}
+						/* Do we have a black theme? */
 						if (ApplicationWorkbenchWindowAdvisor.isThemeBlack()) {
-							IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-
-							String installPackagesDescritpionUrl = store.getString("INSTALL_R_PACKAGES_DESCRPTION_URL");
 							// System.out.println(brow.getEngine().getLocation());
-							if (brow.getEngine().getLocation().startsWith(installPackagesDescritpionUrl)
-									|| brow.getEngine().getLocation().startsWith("file:")) {
-                                /*Load a CSS applied to the R HTML helpfile!*/
+							if (darkCss == true) {
+								/* Load a CSS applied to the R HTML helpfile! */
 								Bundle bundle = Platform.getBundle("com.eco.bio7.themes");
 								URL fileURL = bundle.getEntry("javafx/Bio7BrowserDarkHTML.css");
 								File file = null;
@@ -230,14 +228,15 @@ public class JavaFXWebBrowser {
 									e1.printStackTrace();
 								} catch (IOException e1) {
 									e1.printStackTrace();
-								}							
-								String path = file.getPath();							
-								String css = Util.fileToString(path);							
+								}
+								String path = file.getPath();
+								String css = Util.fileToString(path);
 								Document doc = webEng.getDocument();
 								Element styleNode = doc.createElement("style");
 								Text styleContent = doc.createTextNode(css);
 								styleNode.appendChild(styleContent);
 								doc.getDocumentElement().getElementsByTagName("head").item(0).appendChild(styleNode);
+								darkCss = false;
 							}
 						}
 
@@ -267,14 +266,12 @@ public class JavaFXWebBrowser {
 				boolean requestEditorFocus = store.getBoolean("REQUEST_EDITOR_FOCUS");
 				if (requestEditorFocus) {
 					/* We have to activate the editor again to enable all keyboard actions, etc.! */
-					IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-							.getActivePage().getActiveEditor();
+					IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 					if (editor == null) {
 						return;
 					}
 
-					if (editor instanceof MarkdownEditor || editor instanceof MultiPageEditor
-							|| editor instanceof TexEditor) {
+					if (editor instanceof MarkdownEditor || editor instanceof MultiPageEditor || editor instanceof TexEditor) {
 						Util.activateEditorPage(editor);
 					}
 				}
@@ -437,8 +434,7 @@ public class JavaFXWebBrowser {
 							e1.printStackTrace();
 						}
 
-						if (FilenameUtils.isExtension(file.getName(), "html")
-								|| FilenameUtils.isExtension(file.getName(), "htm")) {
+						if (FilenameUtils.isExtension(file.getName(), "html") || FilenameUtils.isExtension(file.getName(), "htm")) {
 							JavaFXWebBrowser br = new JavaFXWebBrowser(true);
 							// WebEngine webEngine = br.getWebEngine();
 							// webEngine.load(path);
