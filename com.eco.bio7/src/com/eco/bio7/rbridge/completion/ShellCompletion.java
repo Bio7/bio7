@@ -14,7 +14,7 @@ See license info below
  *   Roded Bahat - [376198] Vertically align actions for @LongString property editors
  ******************************************************************************
  *
- * Changed for Bio7
+ * Implementation of textfield proposals
  * Author: M. Austenfeld
  */
 
@@ -129,7 +129,7 @@ public class ShellCompletion {
 			@Override
 			public void proposalAccepted(IContentProposal proposal) {
 				/* We have to care about the custom replacements! */
-
+				control.setFocus();
 				String content = control.getText();
 				/*
 				 * Weird behavior of text.getCaretPosition() position on MacOSX. Solved by
@@ -142,18 +142,31 @@ public class ShellCompletion {
 				/*
 				 * Insert the completion proposal in between selection start and selection end!
 				 */
-				if (s3 == true || s4 == true||packageAll==true||packageExport==true) {
+				if (s3 == true || s4 == true) {
 					s3 = false;
 					s4 = false;
-					packageAll=false;
-					packageExport=false;
 					String textSel = control.getText(0, caretPosition - 1);
 					String after = control.getText(caretPosition, control.getText().length());
 					content = textSel + proposal.getContent() + after;
 					int cursorPosition = (textSel + proposal.getContent()).length();
 					control.setText(content);
 					control.setSelection(cursorPosition);
-				} else {
+				}
+
+				else if (packageAll == true || packageExport == true) {
+					packageAll = false;
+					packageExport = false;
+					String textSel = control.getText(0, caretPosition - 1);
+					int lastIndex = textSel.lastIndexOf(":");
+					String textLastIndex = control.getText(0, lastIndex);
+					String after = control.getText(caretPosition, control.getText().length());
+					content = textLastIndex + proposal.getContent() + after;
+					int cursorPosition = (textSel + proposal.getContent()).length();
+					control.setText(content);
+					control.setSelection(cursorPosition);
+				}
+
+				else {
 					// data = false;
 					// library = false;
 					int pos = calculateFirstOccurrenceOfChar(control, caretPosition);
@@ -330,17 +343,14 @@ public class ShellCompletion {
 				s3 = true;
 				return s3Activation(position, contentLastCorr);
 
-			} 
-			else if (contentLastCorr.endsWith(":::")) {
+			} else if (contentLastCorr.contains(":::")) {
 				return namesPackageAllActivation(position, contentLastCorr);
 			}
-			
-			else if (contentLastCorr.endsWith("::")) {
+
+			else if (contentLastCorr.contains("::")) {
 				return namesPackageExportActivation(position, contentLastCorr);
 			}
-			
-			
-			
+
 			Parse parse = view.getParser();
 			/* Control if we are in a function call! */
 			if (parse != null && parse.isInFunctionCall()) {
@@ -539,12 +549,18 @@ public class ShellCompletion {
 		}
 		return propo;
 	}
+
 	/*
 	 * Here we calculate the :: package function and create ImageContentProposals!
 	 */
 	private ImageContentProposal[] namesPackageExportActivation(int offset, String prefix) {
-		packageExport=true;
+
+		packageExport = true;
 		propo = null;
+		// int length=prefix.length();
+		// String lastIndex = prefix.substring(0, prefix.lastIndexOf(":"));
+		String afterLastIndex = prefix.substring(prefix.lastIndexOf(":") + 1, prefix.length());
+		int length = afterLastIndex.length();
 		RConnection c = RServe.getConnection();
 		if (c != null) {
 			if (RState.isBusy() == false) {
@@ -553,9 +569,10 @@ public class ShellCompletion {
 				display.syncExec(() -> {
 
 					if (c != null) {
+						ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
 						String res = prefix.substring(0, prefix.lastIndexOf("::"));
 						try {
-							String[] result = (String[]) c.eval("try(grep(\"^[a-zA-Z]\",sort(getNamespaceExports(\""+res+"\")),all,value=TRUE))").asStrings();
+							String[] result = (String[]) c.eval("try(grep(\"^[a-zA-Z]\",sort(getNamespaceExports(\"" + res + "\")),all,value=TRUE))").asStrings();
 							if (result != null && result.length > 0) {
 								if (result[0].startsWith("Error") == false) {
 
@@ -564,8 +581,13 @@ public class ShellCompletion {
 
 									for (int j = 0; j < result.length; j++) {
 
-										propo[j] = new ImageContentProposal(result[j], result[j], null, result[j].length(), image);
+										if (result[j].length() >= length && result[j].substring(0, length).equalsIgnoreCase(afterLastIndex)) {
+
+											list.add(new ImageContentProposal(result[j], result[j], result[j], result[j].length(), image));
+										}
+
 									}
+									propo = list.toArray(new ImageContentProposal[list.size()]);
 
 								}
 
@@ -575,10 +597,12 @@ public class ShellCompletion {
 							// e.printStackTrace();
 							System.out.println("Error in R-Shell view code completion!\nR Message: " + e.getMessage());
 						}
+						list.clear();
 					}
 
 				});
 				RState.setBusy(false);
+
 			} else {
 				System.out.println("Rserve is busy!");
 			}
@@ -590,10 +614,13 @@ public class ShellCompletion {
 	 * Here we calculate the ::: package function and create ImageContentProposals!
 	 */
 	private ImageContentProposal[] namesPackageAllActivation(int offset, String prefix) {
-		packageAll=true;
+		packageAll = true;
 		propo = null;
+		String afterLastIndex = prefix.substring(prefix.lastIndexOf(":") + 1, prefix.length());
+		int length = afterLastIndex.length();
 		RConnection c = RServe.getConnection();
 		if (c != null) {
+			ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
 				Display display = Util.getDisplay();
@@ -602,17 +629,33 @@ public class ShellCompletion {
 					if (c != null) {
 						String res = prefix.substring(0, prefix.lastIndexOf(":::"));
 						try {
-							String[] result = (String[]) c.eval("try(grep(\"^[a-zA-Z]\",ls(getNamespace(\""+res+"\"), all.names=TRUE),value=TRUE))").asStrings();
+							String[] result = (String[]) c.eval("try(grep(\"^[a-zA-Z]\",ls(getNamespace(\"" + res + "\"), all.names=TRUE),value=TRUE))").asStrings();
 							if (result != null && result.length > 0) {
 								if (result[0].startsWith("Error") == false) {
 
-									// creatPopupS3Table(viewer, offSet, result);
 									propo = new ImageContentProposal[result.length];
 
 									for (int j = 0; j < result.length; j++) {
 
-										propo[j] = new ImageContentProposal(result[j], result[j], null, result[j].length(), image);
+										/*
+										 * String anyArg = (String)
+										 * c.eval("try(capture.output(args("+prefix+result[j]+"),append = T))").asString
+										 * (); if (anyArg != null) {
+										 * 
+										 * propo[j] = new ImageContentProposal(result[j], result[j], anyArg,
+										 * result[j].length(), image); } else {
+										 */
+
+										if (result[j].length() >= length && result[j].substring(0, length).equalsIgnoreCase(afterLastIndex)) {
+
+											list.add(new ImageContentProposal(result[j], result[j], result[j], result[j].length(), image));
+										}
+
+										// propo[j] = new ImageContentProposal(result[j], result[j], null,
+										// result[j].length(), image);
+										// }
 									}
+									propo = list.toArray(new ImageContentProposal[list.size()]);
 
 								}
 
@@ -629,6 +672,7 @@ public class ShellCompletion {
 			} else {
 				System.out.println("Rserve is busy!");
 			}
+			list.clear();
 		}
 		return propo;
 	}
@@ -794,7 +838,7 @@ public class ShellCompletion {
 
 			/* We have to convert the proposals to an ImageContentProposal! */
 			// IContentProposal[] arrayTemp = makeProposalArray(array);
-
+			list.clear();
 		} else {
 			System.out.println("No Rserve connection available!");
 		}
@@ -849,7 +893,7 @@ public class ShellCompletion {
 
 			/* We have to convert the proposals to an ImageContentProposal! */
 			// IContentProposal[] arrayTemp = makeProposalArray(array);
-
+			list.clear();
 		} else {
 			System.out.println("No Rserve connection available!");
 		}
