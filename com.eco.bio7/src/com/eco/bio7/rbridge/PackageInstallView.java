@@ -155,6 +155,7 @@ public class PackageInstallView extends ViewPart {
 
 									public void run() {
 										JavaFXWebBrowser br = new JavaFXWebBrowser(true);
+										br.setDarkCssIfDarkTheme(true);
 										br.createBrowser(packageInfoSite, "R Package Description");
 
 									}
