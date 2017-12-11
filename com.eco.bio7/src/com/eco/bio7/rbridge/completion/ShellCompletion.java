@@ -93,7 +93,7 @@ public class ShellCompletion {
 		// To enable content proposal on deleting a char
 
 		String delete = new String(new char[] { 8 });
-		String allChars = LCL + UCL + NUMS + delete;
+		String allChars = LCL + UCL + NUMS ;
 		return allChars.toCharArray();
 	}
 
@@ -130,7 +130,7 @@ public class ShellCompletion {
 			public void proposalAccepted(IContentProposal proposal) {
 				/* We have to care about the custom replacements! */
 				control.setFocus();
-				String content = control.getText();
+				//String content = control.getText();
 				/*
 				 * Weird behavior of text.getCaretPosition() position on MacOSX. Solved by
 				 * extracting the a local var here!
@@ -143,11 +143,20 @@ public class ShellCompletion {
 				 * Insert the completion proposal in between selection start and selection end!
 				 */
 				if (s3 == true || s4 == true) {
-					s3 = false;
-					s4 = false;
+
 					String textSel = control.getText(0, caretPosition - 1);
+					int lastIndex;
+					if (s3) {
+						lastIndex = textSel.lastIndexOf("$");
+						s3 = false;
+					} else {
+						lastIndex = textSel.lastIndexOf("@");
+						s4 = false;
+					}
+
+					String textLastIndex = control.getText(0, lastIndex);
 					String after = control.getText(caretPosition, control.getText().length());
-					content = textSel + proposal.getContent() + after;
+					String content = textLastIndex + proposal.getContent() + after;
 					int cursorPosition = (textSel + proposal.getContent()).length();
 					control.setText(content);
 					control.setSelection(cursorPosition);
@@ -160,7 +169,7 @@ public class ShellCompletion {
 					int lastIndex = textSel.lastIndexOf(":");
 					String textLastIndex = control.getText(0, lastIndex);
 					String after = control.getText(caretPosition, control.getText().length());
-					content = textLastIndex + proposal.getContent() + after;
+					String content = textLastIndex + proposal.getContent() + after;
 					int cursorPosition = (textSel + proposal.getContent()).length();
 					control.setText(content);
 					control.setSelection(cursorPosition);
@@ -171,6 +180,7 @@ public class ShellCompletion {
 					// library = false;
 					int pos = calculateFirstOccurrenceOfChar(control, caretPosition);
 					String textSel = control.getText(0, pos - 1);
+					String content = control.getText();
 					String after = control.getText(caretPosition, content.length());
 					// content = textSel + proposal.getContent() + "()" + after;
 					content = textSel + proposal.getContent() + after;
@@ -333,21 +343,23 @@ public class ShellCompletion {
 			/* We need the substring here without a trailing char like ')'! */
 			String contentLastCorr = control.getText(lastIndex, offset - 1);
 
-			if (contentLastCorr.endsWith("@")) {
+			if (contentLastCorr.contains("@")) {
 
 				s4 = true;
 				return s4Activation(position, contentLastCorr);
 
-			} else if (contentLastCorr.endsWith("$")) {
+			} else if (contentLastCorr.contains("$")) {
 
 				s3 = true;
 				return s3Activation(position, contentLastCorr);
 
 			} else if (contentLastCorr.contains(":::")) {
+				packageAll = true;
 				return namesPackageAllActivation(position, contentLastCorr);
 			}
 
 			else if (contentLastCorr.contains("::")) {
+				packageExport = true;
 				return namesPackageExportActivation(position, contentLastCorr);
 			}
 
@@ -555,7 +567,7 @@ public class ShellCompletion {
 	 */
 	private ImageContentProposal[] namesPackageExportActivation(int offset, String prefix) {
 
-		packageExport = true;
+		
 		propo = null;
 		// int length=prefix.length();
 		// String lastIndex = prefix.substring(0, prefix.lastIndexOf(":"));
@@ -614,7 +626,7 @@ public class ShellCompletion {
 	 * Here we calculate the ::: package function and create ImageContentProposals!
 	 */
 	private ImageContentProposal[] namesPackageAllActivation(int offset, String prefix) {
-		packageAll = true;
+		
 		propo = null;
 		String afterLastIndex = prefix.substring(prefix.lastIndexOf(":") + 1, prefix.length());
 		int length = afterLastIndex.length();
@@ -680,6 +692,10 @@ public class ShellCompletion {
 	/* Here we calculate the s4 variables and create ImageContentProposals! */
 	private ImageContentProposal[] s4Activation(int offset, String prefix) {
 		propo = null;
+		propo = null;
+		String afterLastIndex = prefix.substring(prefix.lastIndexOf("@") + 1, prefix.length());
+		int length = afterLastIndex.length();
+		ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
 		RConnection c = RServe.getConnection();
 		if (c != null) {
 			if (RState.isBusy() == false) {
@@ -697,14 +713,29 @@ public class ShellCompletion {
 									// creatPopupS3Table(viewer, offSet, result);
 									propo = new ImageContentProposal[result.length];
 
+									/*
+									 * for (int j = 0; j < result.length; j++) { String resultStr = (String)
+									 * c.eval("try(capture.output(str(" + res + "@" + result[j] + ")))").asString();
+									 * if (resultStr != null) { propo[j] = new ImageContentProposal(result[j],
+									 * result[j], resultStr, result[j].length(), s4Image); } else { propo[j] = new
+									 * ImageContentProposal(result[j], result[j], null, result[j].length(),
+									 * s4Image); } }
+									 */
 									for (int j = 0; j < result.length; j++) {
-										String resultStr = (String) c.eval("try(capture.output(str(" + res + "@" + result[j] + ")))").asString();
-										if (resultStr != null) {
-											propo[j] = new ImageContentProposal(result[j], result[j], resultStr, result[j].length(), s4Image);
-										} else {
-											propo[j] = new ImageContentProposal(result[j], result[j], null, result[j].length(), s4Image);
+
+										if (result[j].length() >= length && result[j].substring(0, length).equalsIgnoreCase(afterLastIndex)) {
+
+											String resultStr = (String) c.eval("try(capture.output(str(" + res + "@" + result[j] + ")))").asString();
+											if (resultStr != null) {
+												list.add(new ImageContentProposal(result[j], result[j], resultStr, result[j].length(), s4Image));
+											} else {
+												list.add(new ImageContentProposal(result[j], result[j], null, result[j].length(), s4Image));
+											}
+
 										}
+
 									}
+									propo = list.toArray(new ImageContentProposal[list.size()]);
 								}
 
 							}
@@ -732,6 +763,9 @@ public class ShellCompletion {
 	/* Here we calculate the s3 variables and create ImageContentProposals! */
 	private ImageContentProposal[] s3Activation(int offset, String prefix) {
 		propo = null;
+		String afterLastIndex = prefix.substring(prefix.lastIndexOf("$") + 1, prefix.length());
+		int length = afterLastIndex.length();
+		ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
 		RConnection c = RServe.getConnection();
 		if (c != null) {
 			if (RState.isBusy() == false) {
@@ -749,16 +783,21 @@ public class ShellCompletion {
 								if (result[0].startsWith("Error") == false) {
 
 									propo = new ImageContentProposal[result.length];
-
 									for (int j = 0; j < result.length; j++) {
-										String resultStr = (String) c.eval("try(capture.output(str(" + res + "$" + result[j] + ")))").asString();
-										if (resultStr != null) {
-											propo[j] = new ImageContentProposal(result[j], result[j], resultStr, result[j].length(), s3Image);
-										} else {
-											propo[j] = new ImageContentProposal(result[j], result[j], null, result[j].length(), s3Image);
+
+										if (result[j].length() >= length && result[j].substring(0, length).equalsIgnoreCase(afterLastIndex)) {
+
+											String resultStr = (String) c.eval("try(capture.output(str(" + res + "$" + result[j] + ")))").asString();
+											if (resultStr != null) {
+												list.add(new ImageContentProposal(result[j], result[j], resultStr, result[j].length(), s3Image));
+											} else {
+												list.add(new ImageContentProposal(result[j], result[j], null, result[j].length(), s3Image));
+											}
+
 										}
 
 									}
+									propo = list.toArray(new ImageContentProposal[list.size()]);
 								}
 
 							}

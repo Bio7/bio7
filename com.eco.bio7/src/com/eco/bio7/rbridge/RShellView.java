@@ -2612,9 +2612,9 @@ public class RShellView extends ViewPart {
 		listShell.setFont(font);
 
 		sashForm_1.setWeights(new int[] { 1 });
-
-		textConsole = new StyledText(sashForm, SWT.WRAP | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
-
+		textConsole = new StyledText(sashForm,  SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
+		//textConsole = new StyledText(sashForm, SWT.WRAP | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
+       // textConsole.setTextLimit(5000);    
 		textConsole.setFont(font);
 
 		sashForm.setWeights(new int[] { 233, 319 });
