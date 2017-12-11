@@ -460,7 +460,8 @@ public class RShellView extends ViewPart {
 						// String a = t.substring(0, text.getCaretPosition());
 						// String b = t.substring(text.getCaretPosition(), t.length());
 						// text.setText(a + "<-" + b);
-						text.insert(" <- ");
+						text.insert("<");
+						text.insert("-");
 					} else if (((e.stateMask & SWT.COMMAND) == SWT.COMMAND) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.keyCode == 'm')) {
 						String t = text.getText();
 						// String a = t.substring(0, text.getCaretPosition());
@@ -508,7 +509,8 @@ public class RShellView extends ViewPart {
 						// String a = t.substring(0, text.getCaretPosition());
 						// String b = t.substring(text.getCaretPosition(), t.length());
 						// text.setText(a + "<-" + b);
-						text.insert(" <- ");
+						text.insert("<--");
+						
 					} else if (((e.stateMask & SWT.CTRL) == SWT.CTRL) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.keyCode == 'n')) {
 						String t = text.getText();
 						// String a = t.substring(0, text.getCaretPosition());

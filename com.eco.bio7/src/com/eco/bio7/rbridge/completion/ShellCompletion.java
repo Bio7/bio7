@@ -157,7 +157,7 @@ public class ShellCompletion {
 					String textLastIndex = control.getText(0, lastIndex);
 					String after = control.getText(caretPosition, control.getText().length());
 					String content = textLastIndex + proposal.getContent() + after;
-					int cursorPosition = (textSel + proposal.getContent()).length();
+					int cursorPosition = (textLastIndex + proposal.getContent()).length();
 					control.setText(content);
 					control.setSelection(cursorPosition);
 				}
@@ -170,7 +170,7 @@ public class ShellCompletion {
 					String textLastIndex = control.getText(0, lastIndex);
 					String after = control.getText(caretPosition, control.getText().length());
 					String content = textLastIndex + proposal.getContent() + after;
-					int cursorPosition = (textSel + proposal.getContent()).length();
+					int cursorPosition = lastIndex+proposal.getContent().length()+1;
 					control.setText(content);
 					control.setSelection(cursorPosition);
 				}
