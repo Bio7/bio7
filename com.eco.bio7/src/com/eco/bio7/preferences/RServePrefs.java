@@ -118,7 +118,9 @@ public class RServePrefs extends FieldEditorPreferencePage implements IWorkbench
 		addField(integerFieldEditor);
 		
 		addField(new BooleanFieldEditor("RSHELL_TYPED_CODE_COMPLETION", "R-Shell: Open code completion/templates when typing", getFieldEditorParent()));
-
+        
+		addField(new StringFieldEditor("RSHELL_ACTIVATION_CHARS", "Activation chars", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
+		addField(new StringFieldEditor("RSHELL_SEPERATOR_CHARS", "Seperator chars", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
 	}
 
 	public void init(IWorkbench workbench) {

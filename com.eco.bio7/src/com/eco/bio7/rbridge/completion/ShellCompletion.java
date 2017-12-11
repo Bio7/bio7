@@ -60,9 +60,7 @@ public class ShellCompletion {
 	private ContentProposalProvider contentProposalProvider;
 	private ContentProposalAdapter contentProposalAdapter;
 	private KeyStroke stroke;
-	private static final String LCL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.@$+-.:";
-	private static final String UCL = LCL.toUpperCase();
-	private static final String NUMS = "0123456789";
+
 	private Image image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/brkp_obj.png");
 	private Image varImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/field_public_obj.png");
 	private Image varFuncCallImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/varfunccall.png");
@@ -80,6 +78,7 @@ public class ShellCompletion {
 	private RShellView view;
 	private boolean packageAll;
 	private boolean packageExport;
+	private IPreferenceStore store;
 	// public boolean data;
 	// public boolean library;
 
@@ -89,11 +88,16 @@ public class ShellCompletion {
 	 * autocompletecombotext-control/
 	 */
 	static char[] getAutoactivationChars() {
+		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+
+		String LCL = store.getString("RSHELL_ACTIVATION_CHARS");
+		// String UCL = LCL.toUpperCase();
 
 		// To enable content proposal on deleting a char
 
-		String delete = new String(new char[] { 8 });
-		String allChars = LCL + UCL + NUMS ;
+
+		// String delete = new String(new char[] { 8 });
+		String allChars = LCL;
 		return allChars.toCharArray();
 	}
 
@@ -109,7 +113,7 @@ public class ShellCompletion {
 		contentProposalProvider.setFiltering(true);
 
 		stroke = getActivationKeystroke();
-		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		store = Bio7Plugin.getDefault().getPreferenceStore();
 		boolean typedCodeCompletion = store.getBoolean("RSHELL_TYPED_CODE_COMPLETION");
 		if (typedCodeCompletion) {
 			contentProposalAdapter = new ContentProposalAdapter(control, controlContentAdapter, contentProposalProvider, stroke, getAutoactivationChars());
@@ -130,7 +134,8 @@ public class ShellCompletion {
 			public void proposalAccepted(IContentProposal proposal) {
 				/* We have to care about the custom replacements! */
 				control.setFocus();
-				//String content = control.getText();
+
+				// String content = control.getText();
 				/*
 				 * Weird behavior of text.getCaretPosition() position on MacOSX. Solved by
 				 * extracting the a local var here!
@@ -157,7 +162,8 @@ public class ShellCompletion {
 					String textLastIndex = control.getText(0, lastIndex);
 					String after = control.getText(caretPosition, control.getText().length());
 					String content = textLastIndex + proposal.getContent() + after;
-					int cursorPosition = (textSel + proposal.getContent()).length();
+
+					int cursorPosition = (textLastIndex + proposal.getContent()).length();
 					control.setText(content);
 					control.setSelection(cursorPosition);
 				}
@@ -170,7 +176,8 @@ public class ShellCompletion {
 					String textLastIndex = control.getText(0, lastIndex);
 					String after = control.getText(caretPosition, control.getText().length());
 					String content = textLastIndex + proposal.getContent() + after;
-					int cursorPosition = (textSel + proposal.getContent()).length();
+
+					int cursorPosition = lastIndex + proposal.getContent().length() + 1;
 					control.setText(content);
 					control.setSelection(cursorPosition);
 				}
@@ -284,7 +291,8 @@ public class ShellCompletion {
 	 */
 	protected int calculateFirstOccurrenceOfChar(Text control, int offset) {
 		int i = offset;
-
+		String sep = store.getString("RSHELL_SEPERATOR_CHARS");
+		char[] charArray = sep.toCharArray();
 		String tex = control.getText();
 		if (i > tex.length())
 			return 0;
@@ -292,9 +300,18 @@ public class ShellCompletion {
 		while (i > 0) {
 
 			char ch = tex.charAt(i - 1);
+			
+			/*for (int j = 0; j < charArray.length; j++) {
+				
+				if (ch == charArray[j]) {
+					System.out.println("break");
+					break;
+				}
+			}*/
 
 			if ((ch == ';') || (ch == '(') || (ch == ',') || (ch == '[') || (ch == '=') || (ch == '-') || (ch == '+') || Character.isSpaceChar(ch))
 				break;
+
 			i--;
 		}
 
@@ -626,7 +643,7 @@ public class ShellCompletion {
 	 * Here we calculate the ::: package function and create ImageContentProposals!
 	 */
 	private ImageContentProposal[] namesPackageAllActivation(int offset, String prefix) {
-		
+
 		propo = null;
 		String afterLastIndex = prefix.substring(prefix.lastIndexOf(":") + 1, prefix.length());
 		int length = afterLastIndex.length();
