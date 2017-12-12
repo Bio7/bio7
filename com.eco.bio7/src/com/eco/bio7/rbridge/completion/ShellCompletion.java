@@ -292,21 +292,22 @@ public class ShellCompletion {
 		String tex = control.getText();
 		if (i > tex.length())
 			return 0;
-
-		while (i > 0) {
+		/* Label the outerloop for a break statement! */
+		outerloop: while (i > 0) {
 
 			char ch = tex.charAt(i - 1);
-			
-			/*for (int j = 0; j < charArray.length; j++) {
-				
-				if (ch == charArray[j]) {
-					System.out.println("break");
-					break;
-				}
-			}*/
 
-			if ((ch == ';') || (ch == '(') || (ch == ',') || (ch == '[') || (ch == '=') || (ch == '-') || (ch == '+') || Character.isSpaceChar(ch))
-				break;
+			for (int j = 0; j < charArray.length; j++) {
+
+				if (ch == charArray[j]) {
+					break outerloop;
+				}
+			}
+
+			/*
+			 * if ((ch == ';') || (ch == '(') || (ch == ',') || (ch == '[') || (ch == '=')
+			 * || (ch == '-') || (ch == '+') || Character.isSpaceChar(ch)) break;
+			 */
 
 			i--;
 		}
@@ -336,7 +337,10 @@ public class ShellCompletion {
 		}
 
 		public IContentProposal[] getProposals(String contents, int position) {
-
+			s4 = false;
+			s3 = false;
+			packageAll = false;
+			packageExport = false;
 			ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
 			ArrayList<IContentProposal> varWorkspace = new ArrayList<IContentProposal>();
 			int offset = position;
@@ -355,17 +359,21 @@ public class ShellCompletion {
 
 			/* We need the substring here without a trailing char like ')'! */
 			String contentLastCorr = control.getText(lastIndex, offset - 1);
+			if (contentLastCorr.contains("@") || contentLastCorr.contains("$")) {
+				int x = contentLastCorr.indexOf("@");
+				int y = contentLastCorr.indexOf("$");
 
-			if (contentLastCorr.contains("@")) {
+				if (x > y) {
 
-				s4 = true;
-				return s4Activation(position, contentLastCorr);
+					s4 = true;
+					return s4Activation(position, contentLastCorr);
 
-			} else if (contentLastCorr.contains("$")) {
+				} else {
 
-				s3 = true;
-				return s3Activation(position, contentLastCorr);
+					s3 = true;
+					return s3Activation(position, contentLastCorr);
 
+				}
 			} else if (contentLastCorr.contains(":::")) {
 				packageAll = true;
 				return namesPackageAllActivation(position, contentLastCorr);
@@ -596,7 +604,7 @@ public class ShellCompletion {
 						ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
 						String res = prefix.substring(0, prefix.lastIndexOf("::"));
 						try {
-							String[] result = (String[]) c.eval("try(grep(\"^[a-zA-Z]\",sort(getNamespaceExports(\"" + res + "\")),all,value=TRUE))").asStrings();
+							String[] result = (String[]) c.eval("try(grep(\"^[a-zA-Z]\",sort(getNamespaceExports(\"" + res + "\")),all,value=TRUE),silent=TRUE)").asStrings();
 							if (result != null && result.length > 0) {
 								if (result[0].startsWith("Error") == false) {
 
@@ -653,7 +661,7 @@ public class ShellCompletion {
 					if (c != null) {
 						String res = prefix.substring(0, prefix.lastIndexOf(":::"));
 						try {
-							String[] result = (String[]) c.eval("try(grep(\"^[a-zA-Z]\",ls(getNamespace(\"" + res + "\"), all.names=TRUE),value=TRUE))").asStrings();
+							String[] result = (String[]) c.eval("try(grep(\"^[a-zA-Z]\",ls(getNamespace(\"" + res + "\"), all.names=TRUE),value=TRUE),silent=TRUE)").asStrings();
 							if (result != null && result.length > 0) {
 								if (result[0].startsWith("Error") == false) {
 
@@ -737,7 +745,7 @@ public class ShellCompletion {
 
 										if (result[j].length() >= length && result[j].substring(0, length).equalsIgnoreCase(afterLastIndex)) {
 
-											String resultStr = (String) c.eval("try(capture.output(str(" + res + "@" + result[j] + ")))").asString();
+											String resultStr = (String) c.eval("try(capture.output(str(" + res + "@" + result[j] + ")),silent=TRUE)").asString();
 											if (resultStr != null) {
 												list.add(new ImageContentProposal(result[j], result[j], resultStr, result[j].length(), s4Image));
 											} else {
@@ -763,12 +771,13 @@ public class ShellCompletion {
 			} else {
 				System.out.println("Rserve is busy!");
 			}
+
 		}
 
 		else {
-			System.out.println("No Rserve connection available!");
+			// System.out.println("No Rserve connection available!");
 		}
-
+		list.clear();
 		return propo;
 	}
 
@@ -828,9 +837,9 @@ public class ShellCompletion {
 		}
 
 		else {
-			System.out.println("No Rserve connection available!");
+			// System.out.println("No Rserve connection available!");
 		}
-
+		list.clear();
 		return propo;
 	}
 

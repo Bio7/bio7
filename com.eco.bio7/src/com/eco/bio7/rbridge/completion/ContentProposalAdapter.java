@@ -566,7 +566,7 @@ public class ContentProposalAdapter {
 												out = (String) c.eval("try(.bio7TempHtmlHelpFile)").asString();
 											} catch (REXPMismatchException e) {
 
-												e.printStackTrace();
+												//e.printStackTrace();
 											}
 
 											url = out.replace("\\", "/");
