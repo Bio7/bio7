@@ -97,6 +97,7 @@ import com.eco.bio7.popup.actions.RunJavaClassFile;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.rbridge.actions.ExecuteRTextSelection;
 import com.eco.bio7.rbridge.debug.DebugContinueAction;
 import com.eco.bio7.rbridge.debug.DebugInfoAction;
 import com.eco.bio7.rbridge.debug.DebugNextAction;
@@ -295,6 +296,9 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				}
 				/* CTRL+c key event! */
 				else if (event.stateMask == SWT.CTRL && event.keyCode == 'c') {
+					/*Break the evaluate line selection action!*/
+					ExecuteRTextSelection lineSelection=ExecuteRTextSelection.getInstance();
+					lineSelection.stopEvaluation();
 
 					// Send OS signal
 					if (Bio7Dialog.getOS().equals("Windows")) {

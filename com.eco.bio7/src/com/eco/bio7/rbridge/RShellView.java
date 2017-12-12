@@ -126,6 +126,7 @@ import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.documents.JavaFXWebBrowser;
 import com.eco.bio7.os.pid.Pid;
 import com.eco.bio7.preferences.PreferenceConstants;
+import com.eco.bio7.rbridge.actions.ExecuteRTextSelection;
 import com.eco.bio7.rbridge.completion.ContentProposalAdapter;
 import com.eco.bio7.rbridge.completion.ShellCompletion;
 //import com.eco.bio7.rbridge.plot.RPlot;
@@ -798,6 +799,10 @@ public class RShellView extends ViewPart {
 		btnNewButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				/*Break the evaluate line selection action!*/
+				ExecuteRTextSelection lineSelection=ExecuteRTextSelection.getInstance();
+				lineSelection.stopEvaluation();
+				
 				String interpreterSelection = ConsolePageParticipant.getInterpreterSelection();
 				Process RProcess = ConsolePageParticipant.getConsolePageParticipantInstance().getRProcess();
 				Pid rPid = ConsolePageParticipant.getConsolePageParticipantInstance().getrPid();
