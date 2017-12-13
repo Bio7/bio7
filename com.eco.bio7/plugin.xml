@@ -1023,14 +1023,14 @@
       </wizard>
       <category
             id="com.eco.bio7.reproducible"
-            name="Reproducible Code Project">
+            name="Reproducible Project">
       </category>
       <wizard
             category="com.eco.bio7.reproducible"
             class="com.eco.bio7.wizards.java.Bio7ReproducibleRProjectWizard"
             icon="icons/workbench/folderopened.png"
             id="com.eco.bio7.wizard.reproducible"
-            name="Reproducible R Code Project"
+            name="Reproducible R Project"
             project="true">
       </wizard>
       

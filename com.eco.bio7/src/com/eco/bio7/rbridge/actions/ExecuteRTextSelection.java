@@ -85,7 +85,7 @@ public class ExecuteRTextSelection extends Action {
 						error = parse.parseShellSource(code, 0);
 						if (error == false) {
 							System.out.println(code);
-							RServeUtil.evalR("try(" + code + ")", null);
+							RServeUtil.evalR("try(try(" + code + "))", null);
 							buff.setLength(0); // clear buffer!
 						} else {
 							/*Data will be appended: Buffer will not be cleared until we have valid r code or an interrupt
@@ -123,7 +123,7 @@ public class ExecuteRTextSelection extends Action {
 
 	public void stopEvaluation() {
 		error = false;
-		RServeUtil.evalR("try(" + code + ")", null);
+		RServeUtil.evalR("try(try(" + code + "))", null);
 		buff.setLength(0); // clear buffer!
 	}
 
