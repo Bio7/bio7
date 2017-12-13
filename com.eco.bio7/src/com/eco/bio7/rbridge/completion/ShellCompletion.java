@@ -106,6 +106,7 @@ public class ShellCompletion {
 	}
 
 	public ShellCompletion(RShellView view, Text control, final IControlContentAdapter controlContentAdapter) {
+		//IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		this.view = view;
 		this.control = control;
 		contentProposalProvider = new ContentProposalProvider();
@@ -116,10 +117,10 @@ public class ShellCompletion {
 		boolean typedCodeCompletion = store.getBoolean("RSHELL_TYPED_CODE_COMPLETION");
 		if (typedCodeCompletion) {
 			contentProposalAdapter = new ContentProposalAdapter(control, controlContentAdapter, contentProposalProvider, stroke, getAutoactivationChars());
-			contentProposalAdapter.setPopupSize(new Point(700, 400));
+			contentProposalAdapter.setPopupSize(new Point(store.getInt("CODE_COMPLETION_POPUP_SIZE_X"), store.getInt("CODE_COMPLETION_POPUP_SIZE_Y")));
 		} else {
 			contentProposalAdapter = new ContentProposalAdapter(control, controlContentAdapter, contentProposalProvider, stroke, null);
-			contentProposalAdapter.setPopupSize(new Point(700, 400));
+			contentProposalAdapter.setPopupSize(new Point(store.getInt("CODE_COMPLETION_POPUP_SIZE_X"), store.getInt("CODE_COMPLETION_POPUP_SIZE_Y")));
 		}
 		contentProposalAdapter.setPropagateKeys(true);
 		contentProposalAdapter.setLabelProvider(new ContentProposalLabelProvider());
