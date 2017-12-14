@@ -435,7 +435,7 @@ public class ContentProposalAdapter {
 			 * Construct an info-popup with the specified parent.
 			 */
 			InfoPopupDialog(Shell parent) {
-				super(parent, PopupDialog.INFOPOPUPRESIZE_SHELLSTYLE, false, false, false, false, false, null, null);
+				super(parent, PopupDialog.HOVER_SHELLSTYLE, false, false, false, false, false, null, null);
 			}
 
 			/*
@@ -444,7 +444,7 @@ public class ContentProposalAdapter {
 			@Override
 			protected Control createDialogArea(Composite parent) {
 				text = new StyledText(parent,
-						SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY | SWT.WRAP | SWT.NO_FOCUS);
+						SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY  | SWT.NO_FOCUS);
                 text.setFont(control.getFont());
 				// Use the compact margins employed by PopupDialog.
 				GridData gd = new GridData(GridData.BEGINNING | GridData.FILL_BOTH);

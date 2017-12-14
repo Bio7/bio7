@@ -78,6 +78,14 @@ public class CreateBio7ReproducibleRProject {
 						IFolder modelFolder = project.getFolder("model");
 						modelFolder.create(false, true, monitor);
 					}
+					if (page.getBtnCreateImgFolder().getSelection()) {
+						IFolder modelFolder = project.getFolder("img");
+						modelFolder.create(false, true, monitor);
+					}
+					if (page.getBtnCreatePlotFolder().getSelection()) {
+						IFolder modelFolder = project.getFolder("plot");
+						modelFolder.create(false, true, monitor);
+					}
 
 					// IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 					IResource resource = root.findMember(new Path(containerName));
@@ -154,6 +162,7 @@ public class CreateBio7ReproducibleRProject {
 
 		return new ByteArrayInputStream(contents.getBytes());
 	}
+
 	private InputStream openContentRStream(String filename) {
 
 		String contents = "";

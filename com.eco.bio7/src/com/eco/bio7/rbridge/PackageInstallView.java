@@ -304,7 +304,7 @@ public class PackageInstallView extends ViewPart {
 						public void done(IJobChangeEvent event) {
 							if (event.getResult().isOK()) {
 								RState.setBusy(false);
-								Bio7Dialog.message("All packages were updated!");
+								Bio7Dialog.message("Update action executed!\nSee console for details!");
 							} else {
 								RState.setBusy(false);
 							}

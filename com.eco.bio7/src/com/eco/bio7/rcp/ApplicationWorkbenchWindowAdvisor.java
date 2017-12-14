@@ -638,6 +638,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		
 		store.setDefault("RSHELL_ACTIVATION_CHARS", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.@$+-.:");
 		store.setDefault("RSHELL_SEPERATOR_CHARS", ";(,[=-+ ");
+		store.setDefault("CODE_COMPLETION_POPUP_SIZE_X",600);
+		store.setDefault("CODE_COMPLETION_POPUP_SIZE_Y",400);
 
 		store.setDefault("LATEX_CLEAN_FILES", false);
 

@@ -44,6 +44,10 @@ public class Bio7ReproducibleRProjectWizardPage extends WizardPage {
 	private Button btnCreateReferencesFolder;
 
 	private Button btnCreateModelFolder;
+	
+	private Button btnCreateImgFolder;
+	
+	private Button btnCreatePlotFolder;
 
 	public Bio7ReproducibleRProjectWizardPage(ISelection selection) {
 		super("wizardPage");
@@ -130,6 +134,16 @@ public class Bio7ReproducibleRProjectWizardPage extends WizardPage {
 		btnCreateReportsFolder.setText("Create reports folder");
 		new Label(container, SWT.NONE);
 		new Label(container, SWT.NONE);
+		
+		btnCreateImgFolder = new Button(container, SWT.CHECK);
+		btnCreateImgFolder.setText("Create img folder");
+		new Label(container, SWT.NONE);
+		new Label(container, SWT.NONE);
+		
+		btnCreatePlotFolder = new Button(container, SWT.CHECK);
+		btnCreatePlotFolder.setText("Create plot folder");
+		new Label(container, SWT.NONE);
+		new Label(container, SWT.NONE);
 
 		btnCreateReferencesFolder = new Button(container, SWT.CHECK);
 		btnCreateReferencesFolder.setText("Create references folder");
@@ -179,6 +193,14 @@ public class Bio7ReproducibleRProjectWizardPage extends WizardPage {
 
 	public Button getBtnCreateModelFolder() {
 		return btnCreateModelFolder;
+	}
+	
+	public Button getBtnCreateImgFolder() {
+		return btnCreateImgFolder;
+	}
+
+	public Button getBtnCreatePlotFolder() {
+		return btnCreatePlotFolder;
 	}
 
 	private void initialize() {

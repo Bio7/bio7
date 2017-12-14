@@ -456,14 +456,14 @@ public class RShellView extends ViewPart {
 						IDocument doc = new Document();
 						new SaveFileCreateSourceTemplate(doc, 0, doc.getLength());
 						text.insert(doc.get());
-					} else if (((e.stateMask & SWT.COMMAND) == SWT.COMMAND) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.keyCode == '-')) {
+					} else if (((e.stateMask & SWT.ALT) == SWT.ALT) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.keyCode == '-')) {
 						String t = text.getText();
 						// String a = t.substring(0, text.getCaretPosition());
 						// String b = t.substring(text.getCaretPosition(), t.length());
 						// text.setText(a + "<-" + b);
 						text.insert("<");
 						text.insert("-");
-					} else if (((e.stateMask & SWT.COMMAND) == SWT.COMMAND) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.keyCode == 'm')) {
+					} else if (((e.stateMask & SWT.ALT) == SWT.ALT) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.keyCode == 'n')) {
 						String t = text.getText();
 						// String a = t.substring(0, text.getCaretPosition());
 						// String b = t.substring(text.getCaretPosition(), t.length());
@@ -505,14 +505,14 @@ public class RShellView extends ViewPart {
 						IDocument doc = new Document();
 						new SaveFileCreateSourceTemplate(doc, 0, doc.getLength());
 						text.insert(doc.get());
-					} else if (((e.stateMask & SWT.CTRL) == SWT.CTRL) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.keyCode == '-')) {
+					} else if (((e.stateMask & SWT.ALT) == SWT.ALT) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.keyCode == '-')) {
 						String t = text.getText();
 						// String a = t.substring(0, text.getCaretPosition());
 						// String b = t.substring(text.getCaretPosition(), t.length());
 						// text.setText(a + "<-" + b);
 						text.insert("<-");
-						
-					} else if (((e.stateMask & SWT.CTRL) == SWT.CTRL) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.keyCode == 'n')) {
+
+					} else if (((e.stateMask & SWT.ALT) == SWT.ALT) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.keyCode == 'n')) {
 						String t = text.getText();
 						// String a = t.substring(0, text.getCaretPosition());
 						// String b = t.substring(text.getCaretPosition(), t.length());
@@ -799,10 +799,10 @@ public class RShellView extends ViewPart {
 		btnNewButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				/*Break the evaluate line selection action!*/
-				ExecuteRTextSelection lineSelection=ExecuteRTextSelection.getInstance();
+				/* Break the evaluate line selection action! */
+				ExecuteRTextSelection lineSelection = ExecuteRTextSelection.getInstance();
 				lineSelection.stopEvaluation();
-				
+
 				String interpreterSelection = ConsolePageParticipant.getInterpreterSelection();
 				Process RProcess = ConsolePageParticipant.getConsolePageParticipantInstance().getRProcess();
 				Pid rPid = ConsolePageParticipant.getConsolePageParticipantInstance().getrPid();
@@ -1232,23 +1232,16 @@ public class RShellView extends ViewPart {
 				ToolTip infoTip = new ToolTip(new Shell(), SWT.BALLOON | SWT.ICON_INFORMATION);
 				infoTip.setText("Info!");
 
-				infoTip.setMessage("Expression textfield:"
-						+ "_________________________________\n"
-						+ "STRG+SPACE = Open code completion!\n"
-						+ "UP ARROW =  Open history!\n"
-						+ "STRG(CMD)+I = Transfer history to opened R editor!\n"
-						+ "STRG(CMD)+ALT+R = Refresh code completion!\n"
-						+ "STRG(CMD)+SHIFT+ALT+O = Open file and create load file template!\n"
-						+ "STRG(CMD)+SHIFT+ALT+S = Save file and create save file template!\n"
-						+ "STRG(CMD)+SHIFT+- = Create assign operator ('<-')!\n"
-						+ "STRG(CMD)+SHIFT+M = Create pipe operator ('%>%')!\n"
-						+ "Key + Mouse click (before bracket) - select matching brackets!\n\n"
-						+ "Objects panel (left):"
-						+ "_________________________________\n"
-						+ "Selection + 'C' key = Concatenate selected variables in Expression textfield!\n"
-						+ "Selection + 'A' key = Comma seperate selected variables in Expression textfield!\n"
-						+ "Right-Click = Menu\n" + "Select variable(s) = To show, summarize, plot, transfer and convert data!\n"
-						);
+				infoTip.setMessage("Expression textfield:" + "_________________________________\n" + "STRG + SPACE = Open code completion!\n"+ "ESC =  Close code completion!\n"+ "UP ARROW =  Open history!\n"
+						+ "STRG(CMD) + SHIFT + I = Transfer history to opened R editor!\n" + "STRG(CMD) + ALT + R = Refresh code completion!\n" + "STRG(CMD) + SHIFT + ALT + O = Open file and create load file template!\n"
+						+ "STRG(CMD) + SHIFT + ALT + S = Save file and create save file template!\n" + "SHIFT + ALT + - = Create assign operator ('<-')!\n"
+						+ "SHIFT + ALT + N = Create pipe operator ('%>%')!\n" + "Key + Mouse Click (before bracket) - select matching brackets!\n\n" + "Objects panel (left):"
+						+ "_________________________________\n" + "Selection + 'C' key = Concatenate selected variables in Expression textfield!\n"
+						+ "Selection + 'A' key = Comma seperate selected variables in Expression textfield!\n" + "Right-Click = Menu\n"
+						+ "Select variable(s) = To show, summarize, plot, transfer and convert data!\n\n" + "Tabs templates:" + "_________________________________\n"
+						+ "Double-Click = Add template to the R-Shell textfield!\n" + "Double-Right-Click = Add template to the R editor!\n"
+
+				);
 				infoTip.setVisible(true);
 
 			}
@@ -2619,9 +2612,10 @@ public class RShellView extends ViewPart {
 		listShell.setFont(font);
 
 		sashForm_1.setWeights(new int[] { 1 });
-		textConsole = new StyledText(sashForm,  SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
-		//textConsole = new StyledText(sashForm, SWT.WRAP | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
-       // textConsole.setTextLimit(5000);    
+		textConsole = new StyledText(sashForm, SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
+		// textConsole = new StyledText(sashForm, SWT.WRAP | SWT.MULTI | SWT.V_SCROLL |
+		// SWT.H_SCROLL | SWT.BORDER);
+		// textConsole.setTextLimit(5000);
 		textConsole.setFont(font);
 
 		sashForm.setWeights(new int[] { 233, 319 });
