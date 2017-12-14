@@ -20,10 +20,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.Vector;
-
-import org.commonmark.Extension;
-import org.commonmark.ext.front.matter.YamlFrontMatterExtension;
-import org.commonmark.parser.Parser;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.NotEnabledException;
+import org.eclipse.core.commands.NotHandledException;
+import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
@@ -43,44 +43,24 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.spelling.ISpellingProblemCollector;
 import org.eclipse.ui.texteditor.spelling.SpellingAnnotation;
 import org.eclipse.ui.texteditor.spelling.SpellingContext;
 import org.eclipse.ui.texteditor.spelling.SpellingProblem;
 import org.eclipse.ui.texteditor.spelling.SpellingService;
-import java.util.Collections;
-import java.util.Set;
-import java.util.Stack;
-import java.util.Vector;
-import java.util.concurrent.TimeUnit;
-
-import org.commonmark.Extension;
-import org.commonmark.ext.front.matter.YamlFrontMatterExtension;
-import org.commonmark.parser.Parser;
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.commands.NotEnabledException;
-import org.eclipse.core.commands.NotHandledException;
-import org.eclipse.core.commands.common.NotDefinedException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.reconciler.DirtyRegion;
-import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
-import org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.handlers.IHandlerService;
-import org.eclipse.ui.texteditor.IDocumentProvider;
-
 import com.eco.bio7.markdownedit.Activator;
 import com.eco.bio7.markdownedit.outline.MarkdownEditorOutlineNode;
-import com.eco.bio7.markdownedit.parser.CustomVisitor;
-import com.eco.bio7.markdownedit.parser.Yamlheader;
-
-import com.eco.bio7.markdownedit.outline.MarkdownEditorOutlineNode;
-
+import com.eco.bio7.markdownedit.parser.RMarkdownVisitor;
+import com.vladsch.flexmark.Extension;
+import com.vladsch.flexmark.ast.Node;
+import com.vladsch.flexmark.ext.yaml.front.matter.AbstractYamlFrontMatterVisitor;
+import com.vladsch.flexmark.ext.yaml.front.matter.YamlFrontMatterExtension;
+import com.vladsch.flexmark.ext.yaml.front.matter.YamlFrontMatterVisitorExt;
+import com.vladsch.flexmark.parser.Parser;
 
 /**
  * Reconcile strategy used for spell checking.
@@ -88,7 +68,6 @@ import com.eco.bio7.markdownedit.outline.MarkdownEditorOutlineNode;
  * @since 3.3
  */
 public class RMarkdownSpellingReconcileStrategy implements IReconcilingStrategy, IReconcilingStrategyExtension {
-
 
 	/**
 	 * Spelling problem collector.
@@ -103,88 +82,84 @@ public class RMarkdownSpellingReconcileStrategy implements IReconcilingStrategy,
 
 		/** Lock object for modifying the annotations. */
 		private Object fLockObject;
-		
+
 		/** The document to operate on. */
 		private IDocument fDocument;
 
-		
-		
-		
-		
 		/*
 		 * (non-Javadoc)
 		 * 
-		 * @see org.eclipse.jface.text.reconciler.IReconcilingStrategy#setDocument(org. eclipse.jface.text.IDocument)
+		 * @see org.eclipse.jface.text.reconciler.IReconcilingStrategy#setDocument(org.
+		 * eclipse.jface.text.IDocument)
 		 */
 		public void setDocument(IDocument document) {
 			this.fDocument = document;
 
 		}
-		
-		
-		
-		
 
 		/**
 		 * Initializes this collector with the given annotation model.
 		 *
-		 * @param annotationModel the annotation model
+		 * @param annotationModel
+		 *            the annotation model
 		 */
 		public SpellingProblemCollector(IAnnotationModel annotationModel) {
 			Assert.isLegal(annotationModel != null);
-			fAnnotationModel= annotationModel;
+			fAnnotationModel = annotationModel;
 			if (fAnnotationModel instanceof ISynchronizable)
-				fLockObject= ((ISynchronizable)fAnnotationModel).getLockObject();
+				fLockObject = ((ISynchronizable) fAnnotationModel).getLockObject();
 			else
-				fLockObject= fAnnotationModel;
-			
+				fLockObject = fAnnotationModel;
+
 			methods = new Stack<MarkdownEditorOutlineNode>();
 			store = Activator.getDefault().getPreferenceStore();
 		}
 
 		@Override
 		public void accept(SpellingProblem problem) {
-			fAddAnnotations.put(new SpellingAnnotation(problem), new Position(problem.getOffset(), problem.getLength()));
+			fAddAnnotations.put(new SpellingAnnotation(problem),
+					new Position(problem.getOffset(), problem.getLength()));
 		}
 
 		@Override
 		public void beginCollecting() {
-			fAddAnnotations= new HashMap<>();
+			fAddAnnotations = new HashMap<>();
 		}
 
 		@Override
 		public void endCollecting() {
 
-			List<Annotation> toRemove= new ArrayList<>();
+			List<Annotation> toRemove = new ArrayList<>();
 
 			synchronized (fLockObject) {
-				Iterator<Annotation> iter= fAnnotationModel.getAnnotationIterator();
+				Iterator<Annotation> iter = fAnnotationModel.getAnnotationIterator();
 				while (iter.hasNext()) {
-					Annotation annotation= iter.next();
+					Annotation annotation = iter.next();
 					if (SpellingAnnotation.TYPE.equals(annotation.getType()))
 						toRemove.add(annotation);
 				}
-				Annotation[] annotationsToRemove= toRemove.toArray(new Annotation[toRemove.size()]);
+				Annotation[] annotationsToRemove = toRemove.toArray(new Annotation[toRemove.size()]);
 
 				if (fAnnotationModel instanceof IAnnotationModelExtension)
-					((IAnnotationModelExtension)fAnnotationModel).replaceAnnotations(annotationsToRemove, fAddAnnotations);
+					((IAnnotationModelExtension) fAnnotationModel).replaceAnnotations(annotationsToRemove,
+							fAddAnnotations);
 				else {
-					for (int i= 0; i < annotationsToRemove.length; i++)
+					for (int i = 0; i < annotationsToRemove.length; i++)
 						fAnnotationModel.removeAnnotation(annotationsToRemove[i]);
-					for (iter= fAddAnnotations.keySet().iterator(); iter.hasNext();) {
-						Annotation annotation= iter.next();
+					for (iter = fAddAnnotations.keySet().iterator(); iter.hasNext();) {
+						Annotation annotation = iter.next();
 						fAnnotationModel.addAnnotation(annotation, fAddAnnotations.get(annotation));
 					}
 				}
 			}
 
-			fAddAnnotations= null;
+			fAddAnnotations = null;
 		}
 	}
 
-
 	/** Text content type */
-	private static final IContentType TEXT_CONTENT_TYPE= Platform.getContentTypeManager().getContentType(IContentTypeManager.CT_TEXT);
+	private static final IContentType TEXT_CONTENT_TYPE = Platform.getContentTypeManager()
+			.getContentType(IContentTypeManager.CT_TEXT);
 
 	/** The text editor to operate on. */
 	private ISourceViewer fViewer;
@@ -203,16 +178,21 @@ public class RMarkdownSpellingReconcileStrategy implements IReconcilingStrategy,
 	private SpellingContext fSpellingContext;
 
 	/**
-	 * Region array, used to prevent us from creating a new array on each reconcile pass.
+	 * Region array, used to prevent us from creating a new array on each reconcile
+	 * pass.
+	 * 
 	 * @since 3.4
 	 */
-	private IRegion[] fRegions= new IRegion[1];
-	
-	
-	private Vector<MarkdownEditorOutlineNode> editorOldNodes;
-	private Stack<MarkdownEditorOutlineNode> methods;
-	public  Set<Extension> EXTENSIONS = Collections.singleton(YamlFrontMatterExtension.create());
-	//private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
+	private IRegion[] fRegions = new IRegion[1];
+
+	public Vector<MarkdownEditorOutlineNode> editorOldNodes;
+	public Stack<MarkdownEditorOutlineNode> methods;
+
+	private static final Set<Extension> EXTENSIONS = Collections.singleton(YamlFrontMatterExtension.create());
+	private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
+
+	// private static final Parser PARSER =
+	// Parser.builder().extensions(EXTENSIONS).build();
 
 	/** The offset of the next character to be read */
 	protected int fOffset;
@@ -220,30 +200,28 @@ public class RMarkdownSpellingReconcileStrategy implements IReconcilingStrategy,
 	/** The end offset of the range to be scanned */
 	protected int fRangeEnd;
 
-	private MarkdownEditor markdownEditor;
-	
+	public MarkdownEditor markdownEditor;
+
 	private IPreferenceStore store;
-
-	
-	
-
 
 	/**
 	 * Creates a new comment reconcile strategy.
 	 *
-	 * @param viewer the source viewer
-	 * @param spellingService the spelling service to use
+	 * @param viewer
+	 *            the source viewer
+	 * @param spellingService
+	 *            the spelling service to use
 	 */
 	public RMarkdownSpellingReconcileStrategy(ISourceViewer viewer, SpellingService spellingService) {
 		Assert.isNotNull(viewer);
 		Assert.isNotNull(spellingService);
-		fViewer= viewer;
-		fSpellingService= spellingService;
-		fSpellingContext= new SpellingContext();
+		fViewer = viewer;
+		fSpellingService = spellingService;
+		fSpellingContext = new SpellingContext();
 		fSpellingContext.setContentType(getContentType());
 
 	}
-	
+
 	/* Update the HTML Editor view! */
 	private void doReconcile() {
 		editorOldNodes = markdownEditor.nodes;
@@ -254,45 +232,26 @@ public class RMarkdownSpellingReconcileStrategy implements IReconcilingStrategy,
 		IDocumentProvider dp = markdownEditor.getDocumentProvider();
 		IDocument doc = dp.getDocument(markdownEditor.getEditorInput());
 		String source = doc.get();
-		String selSource = "";
-		int offset = 0;
-		int length = 0;
-		int lines = doc.getNumberOfLines();
-		for (int i = 0; i < lines; i++) {
+		/* The parser doesn't like Windows linebreak! */
+		source = source.replaceAll("\r", "");
 
-			try {
-				offset = doc.getLineOffset(i);
-
-				length = doc.getLineLength(i);
-
-				selSource = doc.get(offset, length);
-			} catch (BadLocationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			if (selSource.contains("```{r") || selSource.contains("```{R")) {
-				methods.push(new MarkdownEditorOutlineNode("{R Chunk} (L."+(i+1)+")", i + 1, "RMarkdown", markdownEditor.baseNode));
-			}
-			else if(selSource.contains("#")){
-				String sub=selSource.substring(selSource.lastIndexOf("#") + 1).trim();
-				methods.push(new MarkdownEditorOutlineNode(sub+" (L." +(i + 1)+")", i + 1, "MarkdownHeader", markdownEditor.baseNode));
-			}
-		}
-		/*
-		 * org.commonmark.node.Node document = parser.parse(source); HtmlRenderer renderer = HtmlRenderer.builder().build(); renderer.render(document); //
-		 */
+		Node document = parser.parse(source);
+		RMarkdownVisitor sa = new RMarkdownVisitor(this);
+		sa.visitor.visit(document);
 
 		/*
-		 * Yamlheader yamlVisitor = new Yamlheader(methods, markdownEditor); org.commonmark.node.Node nodey = PARSER.parse(source);
+		 * AbstractYamlFrontMatterVisitor visitor = new
+		 * AbstractYamlFrontMatterVisitor(); Node docu = PARSER.parse(source);
+		 * visitor.visit(docu);
 		 * 
-		 * nodey.accept(yamlVisitor);
+		 * Map<String, List<String>> data = visitor.getData();
+		 * 
+		 * if (data.containsKey("output")) {
+		 * 
+		 * List dat = data.get("output"); for (int i = 0; i < dat.size(); i++) {
+		 * System.out.println(dat.get(i)); } }
 		 */
 
-		/*
-		 * org.commonmark.node.Node node = parser.parse(source); CustomVisitor visitor = new CustomVisitor(methods, markdownEditor); node.accept(visitor);
-		 */
-
-		//
 		/* Update the outline! */
 
 		Display.getDefault().asyncExec(new Runnable() {
@@ -306,12 +265,13 @@ public class RMarkdownSpellingReconcileStrategy implements IReconcilingStrategy,
 		});
 
 	}
-	
+
 	private void triggerRMarkdownAction() {
 		boolean markdownReconcile = store.getBoolean("RECONCILE_MARKDOWN");
 		if (markdownReconcile) {
 			String commandId = "com.eco.bio7.RMarkdownAction";
-			IHandlerService handlerService = (IHandlerService) (IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class);
+			IHandlerService handlerService = (IHandlerService) (IHandlerService) PlatformUI.getWorkbench()
+					.getService(IHandlerService.class);
 			Display.getDefault().asyncExec(new Runnable() {
 				@Override
 				public void run() {
@@ -334,15 +294,17 @@ public class RMarkdownSpellingReconcileStrategy implements IReconcilingStrategy,
 	@Override
 	public void reconcile(DirtyRegion dirtyRegion, IRegion subRegion) {
 		try {
-			IRegion startLineInfo= fDocument.getLineInformationOfOffset(subRegion.getOffset());
-			IRegion endLineInfo= fDocument.getLineInformationOfOffset(subRegion.getOffset() + Math.max(0, subRegion.getLength() - 1));
+			IRegion startLineInfo = fDocument.getLineInformationOfOffset(subRegion.getOffset());
+			IRegion endLineInfo = fDocument
+					.getLineInformationOfOffset(subRegion.getOffset() + Math.max(0, subRegion.getLength() - 1));
 			if (startLineInfo.getOffset() == endLineInfo.getOffset())
-				subRegion= startLineInfo;
+				subRegion = startLineInfo;
 			else
-				subRegion= new Region(startLineInfo.getOffset(), endLineInfo.getOffset() + Math.max(0, endLineInfo.getLength() - 1) - startLineInfo.getOffset());
+				subRegion = new Region(startLineInfo.getOffset(),
+						endLineInfo.getOffset() + Math.max(0, endLineInfo.getLength() - 1) - startLineInfo.getOffset());
 
 		} catch (BadLocationException e) {
-			subRegion= new Region(0, fDocument.getLength());
+			subRegion = new Region(0, fDocument.getLength());
 		}
 		reconcile(subRegion);
 	}
@@ -351,21 +313,22 @@ public class RMarkdownSpellingReconcileStrategy implements IReconcilingStrategy,
 	public void reconcile(IRegion region) {
 		if (getAnnotationModel() == null || fSpellingProblemCollector == null)
 			return;
-
-		fRegions[0]= region;
-		fSpellingService.check(fDocument, fRegions, fSpellingContext, fSpellingProblemCollector, fProgressMonitor);
-	
+		
+		boolean checkSpelling = store.getBoolean("CHECK_SPELLING");
+		if (checkSpelling) {
+			fRegions[0] = region;
+			fSpellingService.check(fDocument, fRegions, fSpellingContext, fSpellingProblemCollector, fProgressMonitor);
+		}
 		doReconcile();
 		triggerRMarkdownAction();
-		
-		
+
 	}
 
 	/**
 	 * Returns the content type of the underlying editor input.
 	 *
-	 * @return the content type of the underlying editor input or
-	 *         <code>null</code> if none could be determined
+	 * @return the content type of the underlying editor input or <code>null</code>
+	 *         if none could be determined
 	 */
 	protected IContentType getContentType() {
 		return TEXT_CONTENT_TYPE;
@@ -382,8 +345,8 @@ public class RMarkdownSpellingReconcileStrategy implements IReconcilingStrategy,
 
 	@Override
 	public void setDocument(IDocument document) {
-		fDocument= document;
-		fSpellingProblemCollector= createSpellingProblemCollector();
+		fDocument = document;
+		fSpellingProblemCollector = createSpellingProblemCollector();
 	}
 
 	/**
@@ -392,7 +355,7 @@ public class RMarkdownSpellingReconcileStrategy implements IReconcilingStrategy,
 	 * @return the collector or <code>null</code> if none is available
 	 */
 	protected ISpellingProblemCollector createSpellingProblemCollector() {
-		IAnnotationModel model= getAnnotationModel();
+		IAnnotationModel model = getAnnotationModel();
 		if (model == null)
 			return null;
 		return new SpellingProblemCollector(model);
@@ -400,7 +363,7 @@ public class RMarkdownSpellingReconcileStrategy implements IReconcilingStrategy,
 
 	@Override
 	public final void setProgressMonitor(IProgressMonitor monitor) {
-		fProgressMonitor= monitor;
+		fProgressMonitor = monitor;
 	}
 
 	/**
@@ -412,9 +375,9 @@ public class RMarkdownSpellingReconcileStrategy implements IReconcilingStrategy,
 	protected IAnnotationModel getAnnotationModel() {
 		return fViewer.getAnnotationModel();
 	}
+
 	public void setEditor(MarkdownEditor markdownEditor) {
 		this.markdownEditor = markdownEditor;
 	}
-
 
 }

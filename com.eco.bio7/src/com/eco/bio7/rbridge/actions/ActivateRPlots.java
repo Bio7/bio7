@@ -1,4 +1,4 @@
-package com.eco.bio7.rbridge.actions;
+/*package com.eco.bio7.rbridge.actions;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -35,4 +35,4 @@ public class ActivateRPlots extends Action {
 
 	}
 
-}
+}*/

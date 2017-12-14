@@ -264,23 +264,39 @@ if (Get-Service ssh-agent -ErrorAction SilentlyContinue)
    sc.exe delete ssh-agent 1>$null
 }
 
-New-Service -Name ssh-agent -BinaryPathName $sshagentpath -Description "SSH Agent" -StartupType Manual | Out-Null
+New-Service -Name ssh-agent -BinaryPathName `"$sshagentpath`" -Description "SSH Agent" -StartupType Manual | Out-Null
 cmd.exe /c 'sc.exe sdset ssh-agent D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;CCLCSWLOCRRC;;;IU)(A;;CCLCSWLOCRRC;;;SU)(A;;RP;;;AU)'
 
-New-Service -Name sshd -BinaryPathName $sshdpath -Description "SSH Daemon" -StartupType Manual -DependsOn ssh-agent | Out-Null
+New-Service -Name sshd -BinaryPathName `"$sshdpath`" -Description "SSH Daemon" -StartupType Manual -DependsOn ssh-agent | Out-Null
 sc.exe config sshd obj= $sshdAccount
 sc.exe privs sshd SeAssignPrimaryTokenPrivilege
 
 Add-Privilege -Account $sshdSid -Privilege SeAssignPrimaryTokenPrivilege
 Add-Privilege -Account $sshdSid -Privilege SeServiceLogonRight
 
+# create logs folder and set its permissions
 if(-not (test-path $logsdir -PathType Container))
 {
     $null = New-Item $logsdir -ItemType Directory -Force -ErrorAction Stop
 }
-$rights = [System.Security.AccessControl.FileSystemRights]"Read, Write"
-$accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($sshdAccount, $rights, "ContainerInherit,ObjectInherit", "None", "Allow")
 $acl = Get-Acl -Path $logsdir
-$Acl.SetAccessRule($accessRule)
+# following SDDL implies 
+# - owner - built in Administrators
+# - disabled inheritance
+# - Full access to System
+# - Full access to built in Administrators
+$acl.SetSecurityDescriptorSddlForm("O:BAD:PAI(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)")
 Set-Acl -Path $logsdir -AclObject $acl
+
+$agentlog = Join-Path $logsdir "ssh-agent.log"
+if(-not (test-path $agentlog)){ $null | Set-Content $agentlog }
+Set-Acl -Path $agentlog -AclObject $acl
+
+$sshdlog = Join-Path $logsdir "sshd.log"
+if(-not (test-path $sshdlog)){ $null | Set-Content $sshdlog }
+$rights = [System.Security.AccessControl.FileSystemRights]"Read, Write"
+$accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($sshdAccount, $rights, "None", "None", "Allow")
+$acl.SetAccessRule($accessRule)
+Set-Acl -Path $sshdlog -AclObject $acl
+
 Write-Host -ForegroundColor Green "sshd and ssh-agent services successfully installed"

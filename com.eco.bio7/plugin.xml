@@ -299,7 +299,7 @@
             class="com.eco.bio7.rbridge.PackageInstallView"
             icon="icons/views/rview.png"
             id="com.eco.bio7.rbridge.PackageInstallView"
-            name="Install Packages">
+            name="Packages">
       </view>
       <view
             category="com.eco.bio7.rapplication"
@@ -426,16 +426,6 @@
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
             keySequence="ALT+V">
       </keyBinding>
-      <keyBinding
-            commandId="com.eco.bio7.activatRPlot"
-            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            keySequence="ALT+A">
-      </keyBinding>
-      <command
-            description="Activate R Plots"
-            id="com.eco.bio7.activatRPlot"
-            name="Activate R Plots">
-      </command>
       <command
             description="Executes a R script from toolbar"
             id="com.eco.bio7.execute_r_script2"
@@ -542,16 +532,6 @@
             commandId="com.eco.bio7.save_r_workspace2"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
             keySequence="CTRL+ALT+SHIFT+S">
-      </keyBinding>
-      <command
-            description="Load R packages"
-            id="com.eco.bio7.rserve_loadRLibrary"
-            name="Load R packages">
-      </command>
-      <keyBinding
-            commandId="com.eco.bio7.rserve_loadRLibrary"
-            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            keySequence="CTRL+ALT+SHIFT+U">
       </keyBinding>
       <command
             description="Open the R preferences"
@@ -1040,6 +1020,18 @@
             id="com.eco.bio7.shiny.single.wizard"
             name="Shiny Single File Web App"
             project="false">
+      </wizard>
+      <category
+            id="com.eco.bio7.reproducible"
+            name="Reproducible Project">
+      </category>
+      <wizard
+            category="com.eco.bio7.reproducible"
+            class="com.eco.bio7.wizards.java.Bio7ReproducibleRProjectWizard"
+            icon="icons/workbench/folderopened.png"
+            id="com.eco.bio7.wizard.reproducible"
+            name="Reproducible R Project"
+            project="true">
       </wizard>
       
    </extension>

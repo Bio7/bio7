@@ -115,12 +115,12 @@ public class RFunctions {
 	
 	public String[] spatialStats={"library(spatstat)", "library(spatial)","nndist(x,y)",
 			"pairdist(x,y)","exactdt(x,y)","rpoint(100)",
-			"X<- ppp(x, y, c(0,100), c(0,100))","X<- ppp(rpoint(100)*100, rpoint(100)*100, c(0,100), c(0,100))","summary(X)","pp <- runifpoint(50)","K <- Kest(pp)","nearest.raster.point(0.5,0.3,owin(c(0,1),c(0,1),mask=matrix(TRUE, 100,100)))","p$x","p$y","readOGR(name)",
+			"X<- ppp(x, y, c(0,100), c(0,100))","X<-ppp(runif(100),runif(100),window=owin(xrange=c(0,100),yrange=c(0,100)))","X<-ppp(Particles$X,Particles$Y,window=owin(xrange=c(0,imageSizeX),yrange=c(0,imageSizeY)))","summary(X)","pp <- runifpoint(50)","K <- Kest(pp)","nearest.raster.point(0.5,0.3,owin(c(0,1),c(0,1),mask=matrix(TRUE, 100,100)))","p$x","p$y","readOGR(name)",
 			"readGDAL(name)","name$band1","writeOGR(obj)"};
 	
 	public String[] spatialStatsContext={"Loads the spatstat library!", "Loads the spatial library!","Returns the nearest neighbour distances!\n(required: loaded spatstat library)!",
 			"Returns the pair distances!","exactdt(x,y)\n(Required: loaded spatstat library)!","Generates random points\n(required: loaded spatstat library and argument has to be of \nspatstat class ppp (ppp(x, y, c(0,100), c(0,100))))!",
-			"Creates an spatstat object in the specified window!","Creates an random spatstat object in the specified window!","Prints useful summary of point pattern X","Creates random points","Calculates Ripley's K.\nThe library spatstat is required!","Maps continuous coordinates to raster locations","Returns the x-coordinates!","Returns the y-coordinates!","Read a vector file!\n(Required: loaded rgdal library)!",
+			"Creates an spatstat object in the specified window!","Creates an random spatstat object in the specified window!","Creates a spatstat point pattern object from an ImageJ particle analysis!","Prints useful summary of point pattern X","Creates random points","Calculates Ripley's K.\nThe library spatstat is required!","Maps continuous coordinates to raster locations","Returns the x-coordinates!","Returns the y-coordinates!","Read a vector file!\n(Required: loaded rgdal library)!",
 			"Read a vector file!\n(requires: loaded rgdal library)!","Returns the first band (channel) of the specified data!","Writes vector data to a file!\n(Required: loaded rgdal library)!"};
 	
 	public String[] matrix={"m1<-matrix(c(29,26,58,53,61,54,33,21,46),3,3)","m2<-matrix(c(26,56,58,83,13,54,23,29,16),3,3)",
@@ -165,8 +165,8 @@ public class RFunctions {
 
 	private void initHistory() {
 		for (int i = 0; i < history.length; i++) {
-			history[i] = " ";
-			temphistory[i] = " ";
+			history[i] = "";
+			temphistory[i] = "";
 		}
 	}
 

@@ -13,6 +13,9 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.text.source.SourceViewer;
+import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
@@ -59,6 +62,7 @@ public class MarkdownEditor extends TextEditor implements IPropertyChangeListene
 	protected ArrayList<TreeItem> selectedItems;
 	private MarkdownConfiguration markConf;
 	final private ScopedPreferenceStore storeWorkbench = new ScopedPreferenceStore(new InstanceScope(), "org.eclipse.ui.workbench");
+	private ISourceViewer viewer;
 	
 	private static String selectedContent;
 
@@ -73,6 +77,12 @@ public class MarkdownEditor extends TextEditor implements IPropertyChangeListene
 	public ColorManager getColorManager() {
 		return colorManager;
 	}
+	
+	public ISourceViewer getViewer() {
+		return viewer;
+	}
+	
+	
 
 	public MarkdownEditor() {
 		super();
@@ -82,8 +92,14 @@ public class MarkdownEditor extends TextEditor implements IPropertyChangeListene
 		setSourceViewerConfiguration(markConf);
 		setDocumentProvider(new MarkdownDocumentProvider());
 		selectedItems = new ArrayList<TreeItem>();
+		/*
+		 * Set the context to avoid that menus appear in a different editor. E.g.,
+		 * refactor dialogs!
+		 */
+		setEditorContextMenuId("#RMarkdownEditorContext");
 
 	}
+
 	/* Add a new key binding scope for this editor! */
 
 	protected void initializeKeyBindingScopes() {
@@ -161,6 +177,7 @@ public class MarkdownEditor extends TextEditor implements IPropertyChangeListene
 			}
 
 		});
+		viewer = getSourceViewer();
 
 	}
 

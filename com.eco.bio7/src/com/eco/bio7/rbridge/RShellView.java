@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2017 M. Austenfeld
+ * Copyright (c) 2005-2017 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -51,6 +51,7 @@ import org.eclipse.swt.custom.CTabFolderEvent;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DragSource;
 import org.eclipse.swt.dnd.DragSourceEvent;
@@ -70,6 +71,7 @@ import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MenuListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -124,6 +126,7 @@ import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.documents.JavaFXWebBrowser;
 import com.eco.bio7.os.pid.Pid;
 import com.eco.bio7.preferences.PreferenceConstants;
+import com.eco.bio7.rbridge.actions.ExecuteRTextSelection;
 import com.eco.bio7.rbridge.completion.ContentProposalAdapter;
 import com.eco.bio7.rbridge.completion.ShellCompletion;
 //import com.eco.bio7.rbridge.plot.RPlot;
@@ -178,6 +181,7 @@ public class RShellView extends ViewPart {
 	private Button fontButton;
 	public boolean cmdError;
 	protected Parse parse;
+
 	private static RShellView instance;
 	/* Create the plot tab! */
 	private Button loadButton;
@@ -185,9 +189,14 @@ public class RShellView extends ViewPart {
 	private SashForm sashForm;
 	private ShellCompletion shellCompletion;
 	public ControlDecoration txtIndication;
+	protected boolean keyPressed;
 
 	public RShellView() {
 		instance = this;
+	}
+
+	public ShellCompletion getShellCompletion() {
+		return shellCompletion;
 	}
 
 	public static List getList_8() {
@@ -202,6 +211,10 @@ public class RShellView extends ViewPart {
 
 	public static StyledText getTextConsole() {
 		return textConsole;
+	}
+
+	public Parse getParser() {
+		return parse;
 	}
 
 	@Override
@@ -223,8 +236,10 @@ public class RShellView extends ViewPart {
 
 		/* Return key listener! */
 		/*
-		 * ControlDecoration dec = new ControlDecoration(text, SWT.TOP | SWT.LEFT); FieldDecoration infoFieldIndicator = FieldDecorationRegistry
-		 * .getDefault().getFieldDecoration(FieldDecorationRegistry .DEC_CONTENT_PROPOSAL); dec.setImage(infoFieldIndicator.getImage());
+		 * ControlDecoration dec = new ControlDecoration(text, SWT.TOP | SWT.LEFT);
+		 * FieldDecoration infoFieldIndicator = FieldDecorationRegistry
+		 * .getDefault().getFieldDecoration(FieldDecorationRegistry
+		 * .DEC_CONTENT_PROPOSAL); dec.setImage(infoFieldIndicator.getImage());
 		 * dec.setDescriptionText("Press UP ARROW key to get the History!");
 		 */
 
@@ -267,6 +282,8 @@ public class RShellView extends ViewPart {
 		// "a", "b", "c" });
 
 		text = new Text(composite_1, SWT.SINGLE | SWT.BORDER);
+		Font font = new Font(Util.getDisplay(), currentFont);
+		text.setFont(font);
 		GridData gd_text = new GridData(SWT.FILL, SWT.FILL, true, true, 6, 1);
 		gd_text.heightHint = 49;
 		gd_text.widthHint = 570;
@@ -308,55 +325,244 @@ public class RShellView extends ViewPart {
 				}
 			}
 		});
+
+		text.addMouseListener(new MouseListener() {
+
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+
+			}
+
+			@Override
+			public void mouseDown(MouseEvent e) {
+				if (keyPressed) {
+					int caretPosition = ((Text) (e.widget)).getCaretPosition();
+					String textBeforeCaret = text.getText(caretPosition - 1, caretPosition - 1);
+					String textBehingClosingCaret = text.getText(caretPosition, caretPosition);
+					char xch = '(';
+					char ych = '(';
+					if (textBeforeCaret.equals("(") || textBeforeCaret.equals("[") || textBeforeCaret.equals("{")) {
+						Document doc = new Document();
+						switch (textBeforeCaret) {
+						case "(":
+							xch = '(';
+							ych = ')';
+							break;
+						case "[":
+							xch = '[';
+							ych = ']';
+							break;
+						case "{":
+							xch = '{';
+							ych = '}';
+							break;
+
+						default:
+							break;
+						}
+
+						doc.set(text.getText());
+						try {
+							int closingBracket = searchForClosingBracket(caretPosition, xch, ych, doc);
+							if (closingBracket >= 0) {
+								text.setSelection(caretPosition, closingBracket);
+							}
+
+						} catch (BadLocationException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
+					if (textBehingClosingCaret.equals(")") || textBehingClosingCaret.equals("]") || textBehingClosingCaret.equals("}")) {
+						Document doc = new Document();
+						switch (textBeforeCaret) {
+						case ")":
+							xch = '(';
+							ych = ')';
+							break;
+						case "]":
+							xch = '[';
+							ych = ']';
+							break;
+						case "}":
+							xch = '{';
+							ych = '}';
+							break;
+
+						default:
+							break;
+						}
+
+						doc.set(text.getText());
+						try {
+							int openingBracket = searchForOpenBracket(caretPosition, xch, ych, doc);
+							if (openingBracket >= 0) {
+								text.setSelection(openingBracket + 1, caretPosition);
+							}
+
+						} catch (BadLocationException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
+				}
+
+			}
+
+			@Override
+			public void mouseUp(MouseEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+		});
+
 		text.addKeyListener(new KeyListener() {
 
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if (((e.stateMask & SWT.CTRL) == SWT.CTRL) && (e.stateMask & SWT.ALT) == SWT.ALT && (e.keyCode == 'r')) {
+				/* For the mouse bracket selection press any key! */
+				keyPressed = true;
 
-					/*
-					 * Add code completion to textfield! At startup load the default R proposals and add them to the templates! Update completion porposals if a new package has been loaded!
-					 */
-					if (RServe.isAliveDialog()) {
-						shellCompletion.update();
-						System.out.println("Reloaded code completion!");
+				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
+
+					if (((e.stateMask & SWT.COMMAND) == SWT.COMMAND) && (e.stateMask & SWT.ALT) == SWT.ALT && (e.keyCode == 'r')) {
+
+						/*
+						 * Add code completion to textfield! At startup load the default R proposals and
+						 * add them to the templates! Update completion porposals if a new package has
+						 * been loaded!
+						 */
+						if (RServe.isAliveDialog()) {
+							shellCompletion.update();
+							System.out.println("Reloaded code completion!");
+
+						}
+
+					} else if (((e.stateMask & SWT.COMMAND) == SWT.COMMAND) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.stateMask & SWT.ALT) == SWT.ALT && (e.keyCode == 'o')) {
+
+						/*
+						 * We us the dialog also for the R editor so we wrap the text in an IDocument!
+						 */
+						IDocument doc = new Document();
+						new OpenFileCreateSourceTemplate(doc, 0, doc.getLength());
+						String t = text.getText();
+						// String a = t.substring(0, text.getCaretPosition());
+						// String b = t.substring(text.getCaretPosition(), t.length());
+						text.insert(doc.get());
 
 					}
 
-				} else if (((e.stateMask & SWT.CTRL) == SWT.CTRL) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.stateMask & SWT.ALT) == SWT.ALT && (e.keyCode == 'o')) {
+					else if (((e.stateMask & SWT.COMMAND) == SWT.COMMAND) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.stateMask & SWT.ALT) == SWT.ALT && (e.keyCode == 's')) {
+						IDocument doc = new Document();
+						new SaveFileCreateSourceTemplate(doc, 0, doc.getLength());
+						text.insert(doc.get());
+					} else if (((e.stateMask & SWT.ALT) == SWT.ALT) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.keyCode == '-')) {
+						String t = text.getText();
+						// String a = t.substring(0, text.getCaretPosition());
+						// String b = t.substring(text.getCaretPosition(), t.length());
+						// text.setText(a + "<-" + b);
+						text.insert("<");
+						text.insert("-");
+					} else if (((e.stateMask & SWT.ALT) == SWT.ALT) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.keyCode == 'n')) {
+						String t = text.getText();
+						// String a = t.substring(0, text.getCaretPosition());
+						// String b = t.substring(text.getCaretPosition(), t.length());
+						// text.setText(a + "<-" + b);
+						text.insert(" %>% ");
+					} else if (((e.stateMask & SWT.COMMAND) == SWT.COMMAND) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.keyCode == 'i')) {
+						setTextInREditor();
+					}
 
-					/*
-					 * We us the dialog also for the R editor so we wrap the text in an IDocument!
-					 */
-					IDocument doc = new Document();
-					new OpenFileCreateSourceTemplate(doc, 0, doc.getLength());
-					String t = text.getText();
-					String a = t.substring(0, text.getCaretPosition());
-					String b = t.substring(text.getCaretPosition(), t.length());
-					text.setText(a + doc.get() + b);
+				} else {
+					if (((e.stateMask & SWT.CTRL) == SWT.CTRL) && (e.stateMask & SWT.ALT) == SWT.ALT && (e.keyCode == 'r')) {
 
+						/*
+						 * Add code completion to textfield! At startup load the default R proposals and
+						 * add them to the templates! Update completion porposals if a new package has
+						 * been loaded!
+						 */
+						if (RServe.isAliveDialog()) {
+							shellCompletion.update();
+							System.out.println("Reloaded code completion!");
+
+						}
+
+					} else if (((e.stateMask & SWT.CTRL) == SWT.CTRL) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.stateMask & SWT.ALT) == SWT.ALT && (e.keyCode == 'o')) {
+
+						/*
+						 * We us the dialog also for the R editor so we wrap the text in an IDocument!
+						 */
+						IDocument doc = new Document();
+						new OpenFileCreateSourceTemplate(doc, 0, doc.getLength());
+						String t = text.getText();
+						// a = t.substring(0, text.getCaretPosition());
+						// String b = t.substring(text.getCaretPosition(), t.length());
+						text.insert(doc.get());
+
+					}
+
+					else if (((e.stateMask & SWT.CTRL) == SWT.CTRL) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.stateMask & SWT.ALT) == SWT.ALT && (e.keyCode == 's')) {
+						IDocument doc = new Document();
+						new SaveFileCreateSourceTemplate(doc, 0, doc.getLength());
+						text.insert(doc.get());
+					} else if (((e.stateMask & SWT.ALT) == SWT.ALT) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.keyCode == '-')) {
+						String t = text.getText();
+						// String a = t.substring(0, text.getCaretPosition());
+						// String b = t.substring(text.getCaretPosition(), t.length());
+						// text.setText(a + "<-" + b);
+						text.insert("<-");
+
+					} else if (((e.stateMask & SWT.ALT) == SWT.ALT) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.keyCode == 'n')) {
+						String t = text.getText();
+						// String a = t.substring(0, text.getCaretPosition());
+						// String b = t.substring(text.getCaretPosition(), t.length());
+						// text.setText(a + "<-" + b);
+						text.insert(" %>% ");
+					} else if (((e.stateMask & SWT.CTRL) == SWT.CTRL) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.keyCode == 'i')) {
+						setTextInREditor();
+
+					}
 				}
+				Text text = (Text) e.getSource();
+				String command = text.getText();
+				/*
+				 * Here we parse the command(s) which comes from the textfield! Parsing is very
+				 * fast so we don't need a text listener delay here. Each key stroke is
+				 * evaluated!
+				 */
+				if (parse == null) {
+					parse = new Parse(null);
+					cmdError = parse.parseShellSource(command, text.getCaretPosition());
 
-				else if (((e.stateMask & SWT.CTRL) == SWT.CTRL) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.stateMask & SWT.ALT) == SWT.ALT && (e.keyCode == 's')) {
-					IDocument doc = new Document();
-					new SaveFileCreateSourceTemplate(doc, 0, doc.getLength());
-					text.setText(doc.get());
+				} else {
+					cmdError = parse.parseShellSource(command, text.getCaretPosition());
+				}
+				if (cmdError) {
+					txtIndication.show();
+				} else {
+					txtIndication.hide();
 				}
 
 			}
 
 			@Override
 			public void keyReleased(KeyEvent e) {
+				/* For the mouse bracket selection release the key! */
+				keyPressed = false;
+
 				Text text = (Text) e.getSource();
 				String command = text.getText();
 				/*
-				 * Here we parse the command(s) which comes from the textfield! Parsing is very fast so we don't need a text listener delay here. Each key stroke is evaluated!
+				 * Here we parse the command(s) which comes from the textfield! Parsing is very
+				 * fast so we don't need a text listener delay here. Each key stroke is
+				 * evaluated!
 				 */
 				if (parse == null) {
 					parse = new Parse(null);
-					cmdError = parse.parseShellSource(command);
+					cmdError = parse.parseShellSource(command, text.getCaretPosition());
+
 				} else {
-					cmdError = parse.parseShellSource(command);
+					cmdError = parse.parseShellSource(command, text.getCaretPosition());
 				}
 				if (cmdError) {
 					txtIndication.show();
@@ -519,7 +725,8 @@ public class RShellView extends ViewPart {
 										}
 									});
 									c.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".html\", sep=\"\"))").toString();
-									c.eval("tryCatch(tools::Rd2HTML(utils:::.getHelpFile(?" + htmlHelpText + "),.bio7TempHtmlHelpFile,package=\"tools\", stages=c(\"install\", \"render\")),warning = function(w) {print(paste(\"negative argument\", x))})");
+									c.eval("tryCatch(tools::Rd2HTML(utils:::.getHelpFile(?" + htmlHelpText
+											+ "),.bio7TempHtmlHelpFile,package=\"tools\", stages=c(\"install\", \"render\")),warning = function(w) {print(paste(\"negative argument\", x))})");
 									String out = null;
 									try {
 										out = (String) c.eval("try(.bio7TempHtmlHelpFile)").asString();
@@ -545,6 +752,7 @@ public class RShellView extends ViewPart {
 
 											public void run() {
 												JavaFXWebBrowser br = new JavaFXWebBrowser(true);
+												br.setDarkCssIfDarkTheme(true);
 												br.createBrowser(url, "R Help");
 
 											}
@@ -591,6 +799,10 @@ public class RShellView extends ViewPart {
 		btnNewButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				/* Break the evaluate line selection action! */
+				ExecuteRTextSelection lineSelection = ExecuteRTextSelection.getInstance();
+				lineSelection.stopEvaluation();
+
 				String interpreterSelection = ConsolePageParticipant.getInterpreterSelection();
 				Process RProcess = ConsolePageParticipant.getConsolePageParticipantInstance().getRProcess();
 				Pid rPid = ConsolePageParticipant.getConsolePageParticipantInstance().getrPid();
@@ -683,7 +895,7 @@ public class RShellView extends ViewPart {
 				if (RServe.isAliveDialog()) {
 					displayRObjects();
 
-					createAttachedPackageTree();
+					// createAttachedPackageTree();
 				}
 
 			}
@@ -740,134 +952,6 @@ public class RShellView extends ViewPart {
 		 * plotTabItem = new CTabItem(tab, SWT.NONE); plotTabItem.setText("Plot Data");
 		 */
 		// new RPlot(tab, SWT.NONE, plotTabItem);
-
-		CTabItem packagesTabItem = new CTabItem(tab, SWT.NONE);
-		packagesTabItem.setText("Packages");
-
-		Composite composite_2 = new Composite(tab, SWT.NONE);
-		packagesTabItem.setControl(composite_2);
-		composite_2.setLayout(new FillLayout(SWT.HORIZONTAL));
-
-		tree = new Tree(composite_2, SWT.BORDER);
-		final Menu menuList = new Menu(tree);
-		tree.setMenu(menuList);
-		menuList.addMenuListener(new MenuAdapter() {
-			public void menuShown(MenuEvent e) {
-				// Get rid of existing menu items
-				MenuItem[] items = menuList.getItems();
-				for (int i = 0; i < items.length; i++) {
-					((MenuItem) items[i]).dispose();
-				}
-				MenuItem refreshItem = new MenuItem(menuList, SWT.NONE);
-
-				refreshItem.setText("Refresh");
-				refreshItem.addSelectionListener(new SelectionListener() {
-
-					public void widgetSelected(SelectionEvent e) {
-						if (RServe.isAliveDialog()) {
-							if (RState.isBusy() == false) {
-
-								createAttachedPackageTree();
-
-							} else {
-								Bio7Dialog.message("Rserve is busy!");
-							}
-						}
-
-					}
-
-					public void widgetDefaultSelected(SelectionEvent e) {
-
-					}
-				});
-				// Add menu items for current selection
-				MenuItem detachItem = new MenuItem(menuList, SWT.NONE);
-
-				detachItem.setText("Detach");
-				detachItem.addSelectionListener(new SelectionListener() {
-
-					public void widgetSelected(SelectionEvent e) {
-						if (RServe.isAliveDialog()) {
-							if (RState.isBusy() == false) {
-
-								RConnection c = RServe.getConnection();
-								if (tree.getSelection().length > 0) {
-									String selectedPackage = tree.getSelection()[0].getText();
-
-									try {
-										c.eval("try(detach(package:" + selectedPackage + ", unload=TRUE))");
-										createAttachedPackageTree();
-									} catch (RserveException e1) {
-
-										e1.printStackTrace();
-									}
-								}
-
-							} else {
-								Bio7Dialog.message("Rserve is busy!");
-							}
-						}
-
-					}
-
-					public void widgetDefaultSelected(SelectionEvent e) {
-
-					}
-				});
-
-				/*
-				 * MenuItem updateItem = new MenuItem(menuList, SWT.NONE); //update.packages() updateItem.setText("Update All"); updateItem.addSelectionListener(new SelectionListener() {
-				 * 
-				 * public void widgetSelected(SelectionEvent e) { if (RServe.isAliveDialog()) { if (RState.isBusy() == false) { IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-				 * String destdir = store.getString("InstallLocation"); String server = store.getString(PreferenceConstants.PACKAGE_R_SERVER);
-				 * 
-				 * RConnection c = RServe.getConnection(); try { c.eval( "try(update.packages(repos =\"" + server + "\",ask=FALSE));"); } catch (RserveException e1) {
-				 * 
-				 * e1.printStackTrace(); }
-				 * 
-				 * } else { Bio7Dialog.message("Rserve is busy!"); } }
-				 * 
-				 * }
-				 * 
-				 * public void widgetDefaultSelected(SelectionEvent e) {
-				 * 
-				 * } });
-				 */
-				/*
-				 * MenuItem removeItem = new MenuItem(menuList, SWT.NONE); //update.packages() removeItem.setText("Remove"); removeItem.addSelectionListener(new SelectionListener() {
-				 * 
-				 * public void widgetSelected(SelectionEvent e) { String selectedPackage=tree.getSelection()[0].getText(); if (RServe.isAliveDialog()) { if (RState.isBusy() == false) {
-				 * 
-				 * 
-				 * RConnection c = RServe.getConnection(); try { c.eval("try(remove.packages(\"" + selectedPackage + "\"))"); } catch (RserveException ex) {
-				 * 
-				 * ex.printStackTrace(); } System.out.println("Removed library " +selectedPackage);
-				 * 
-				 * } else { Bio7Dialog.message("Rserve is busy!"); } }
-				 * 
-				 * }
-				 * 
-				 * public void widgetDefaultSelected(SelectionEvent e) {
-				 * 
-				 * } });
-				 */
-
-			}
-		});
-
-		tree.addListener(SWT.MouseDown, new Listener() {
-			public void handleEvent(Event event) {
-				Point point = new Point(event.x, event.y);
-				TreeItem item = tree.getItem(point);
-				if (item != null) {
-
-					// System.out.println("Mouse down: " + item.getText());
-					// item.setImage(new Image(Display.getCurrent(),
-					// getClass().getResourceAsStream("/pics/regelmaessig.gif")));
-
-				}
-			}
-		});
 
 		final CTabItem variablesTabItem = new CTabItem(tab, SWT.NONE);
 		variablesTabItem.setText("Variables");
@@ -1125,10 +1209,13 @@ public class RShellView extends ViewPart {
 				FontData newFont = fd.open();
 				if (newFont == null)
 					return;
-				textConsole.setFont(new Font(Util.getDisplay(), newFont));
-				listShell.setFont(new Font(Util.getDisplay(), newFont));
-				textConsole.setForeground(new Color(Util.getDisplay(), fd.getRGB()));
-				listShell.setForeground(new Color(Util.getDisplay(), fd.getRGB()));
+				Font font = new Font(Util.getDisplay(), newFont);
+				text.setFont(font);
+				textConsole.setFont(font);
+				listShell.setFont(font);
+				Color color = new Color(Util.getDisplay(), fd.getRGB());
+				textConsole.setForeground(color);
+				listShell.setForeground(color);
 				PreferenceConverter.setValue(store, "RShellFonts", newFont);
 
 			}
@@ -1145,8 +1232,16 @@ public class RShellView extends ViewPart {
 				ToolTip infoTip = new ToolTip(new Shell(), SWT.BALLOON | SWT.ICON_INFORMATION);
 				infoTip.setText("Info!");
 
-				infoTip.setMessage("Click = Object properties\n" + "Right-Click = Menu\n" + "Select variable(s) = To show, summarize, plot, transfer and convert data!\n" + "\nPress the \"UP ARROW\" key to get the History in the expression textfield!\n"
-						+ "\nIf you plot a PDF please close the Window of an opened reader (old plot)\nto get the new plot!\n" + "\nRight-Click on \"Plot Data\" textfield detour = Menu to inject text commands (a help to customize plots!)");
+				infoTip.setMessage("Expression textfield:" + "_________________________________\n" + "STRG + SPACE = Open code completion!\n"+ "ESC =  Close code completion!\n"+ "UP ARROW =  Open history!\n"
+						+ "STRG(CMD) + I = Transfer history to opened R editor!\n" + "STRG(CMD) + ALT + R = Refresh code completion!\n" + "STRG(CMD) + SHIFT + ALT + O = Open file and create load file template!\n"
+						+ "STRG(CMD) + SHIFT + ALT + S = Save file and create save file template!\n" + "SHIFT + ALT + - = Create assign operator ('<-')!\n"
+						+ "SHIFT + ALT + N = Create pipe operator ('%>%')!\n" + "Key + Mouse Click (before bracket) - select matching brackets!\n\n" + "Objects panel (left):"
+						+ "_________________________________\n" + "Selection + 'C' key = Concatenate selected variables in Expression textfield!\n"
+						+ "Selection + 'A' key = Comma seperate selected variables in Expression textfield!\n" + "Right-Click = Menu\n"
+						+ "Select variable(s) = To show, summarize, plot, transfer and convert data!\n\n" + "Tabs templates:" + "_________________________________\n"
+						+ "Double-Click = Add template to the R-Shell textfield!\n" + "Double-Right-Click = Add template to the R editor!\n"
+
+				);
 				infoTip.setVisible(true);
 
 			}
@@ -1192,17 +1287,22 @@ public class RShellView extends ViewPart {
 		listShell.addMouseListener(new MouseAdapter() {
 			public void mouseDoubleClick(final MouseEvent e) {
 				/*
-				 * if (RState.isBusy() == false) { boolean[] bolExists = null; String selected = list_8.getItem(list_8.getSelectionIndex());
+				 * if (RState.isBusy() == false) { boolean[] bolExists = null; String selected =
+				 * list_8.getItem(list_8.getSelectionIndex());
 				 * 
-				 * if (e.button != 3) { if (RServe.isAliveDialog()) { RConnection c = RServe.getConnection();
+				 * if (e.button != 3) { if (RServe.isAliveDialog()) { RConnection c =
+				 * RServe.getConnection();
 				 * 
-				 * try { REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected + "\")"); bolExists = bolDataExists.isTrue(); } catch (RserveException e2) {
+				 * try { REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected
+				 * + "\")"); bolExists = bolDataExists.isTrue(); } catch (RserveException e2) {
 				 * 
 				 * e2.printStackTrace(); }
 				 * 
 				 * if (bolExists[0]) {
 				 * 
-				 * RServe.printJob("" + selected + ""); } else { Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!"); }
+				 * RServe.printJob("" + selected + ""); } else {
+				 * Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" +
+				 * "Please refresh the list!"); }
 				 * 
 				 * }
 				 * 
@@ -1210,13 +1310,16 @@ public class RShellView extends ViewPart {
 				 * 
 				 * if (RServe.isAliveDialog()) { RConnection c = RServe.getConnection();
 				 * 
-				 * try { REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected + "\")"); bolExists = bolDataExists.isTrue(); } catch (RserveException e2) {
+				 * try { REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected
+				 * + "\")"); bolExists = bolDataExists.isTrue(); } catch (RserveException e2) {
 				 * 
 				 * e2.printStackTrace(); }
 				 * 
 				 * if (bolExists[0]) {
 				 * 
-				 * RServe.printJob("summary(" + selected + ")"); } else { Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!"); }
+				 * RServe.printJob("summary(" + selected + ")"); } else {
+				 * Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" +
+				 * "Please refresh the list!"); }
 				 * 
 				 * }
 				 * 
@@ -1431,7 +1534,8 @@ public class RShellView extends ViewPart {
 
 							con.eval(".bio7TempVarEnvironment <- new.env()");
 
-							con.eval(".bio7TempVarEnvironment$workspVar<-NULL;for(i in 1:length(ls())){if(is.matrix(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}}");
+							con.eval(
+									".bio7TempVarEnvironment$workspVar<-NULL;for(i in 1:length(ls())){if(is.matrix(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}}");
 							x = RServe.getConnection().eval(".bio7TempVarEnvironment$workspVar");
 							if (x.isNull() == false) {
 								try {
@@ -1479,7 +1583,8 @@ public class RShellView extends ViewPart {
 							RConnection con = RServe.getConnection();
 
 							con.eval(".bio7TempVarEnvironment <- new.env()");
-							con.eval(".bio7TempVarEnvironment$workspVar<-NULL;for(i in 1:length(ls())){if(is.vector(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}}");
+							con.eval(
+									".bio7TempVarEnvironment$workspVar<-NULL;for(i in 1:length(ls())){if(is.vector(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}}");
 							x = RServe.getConnection().eval(".bio7TempVarEnvironment$workspVar");
 							if (x.isNull() == false) {
 								try {
@@ -1528,7 +1633,8 @@ public class RShellView extends ViewPart {
 							RConnection con = RServe.getConnection();
 
 							con.eval(".bio7TempVarEnvironment <- new.env()");
-							con.eval(".bio7TempVarEnvironment$workspVar<-NULL;for(i in 1:length(ls())){if(is.function(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}}");
+							con.eval(
+									".bio7TempVarEnvironment$workspVar<-NULL;for(i in 1:length(ls())){if(is.function(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}}");
 							x = RServe.getConnection().eval(".bio7TempVarEnvironment$workspVar");
 							if (x.isNull() == false) {
 								try {
@@ -1576,7 +1682,8 @@ public class RShellView extends ViewPart {
 							RConnection con = RServe.getConnection();
 
 							con.eval(".bio7TempVarEnvironment <- new.env()");
-							con.eval(".bio7TempVarEnvironment$workspVar<-NULL;for(i in 1:length(ls())){if(is.factor(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}}");
+							con.eval(
+									".bio7TempVarEnvironment$workspVar<-NULL;for(i in 1:length(ls())){if(is.factor(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}}");
 							x = RServe.getConnection().eval(".bio7TempVarEnvironment$workspVar");
 							if (x.isNull() == false) {
 								try {
@@ -1624,7 +1731,8 @@ public class RShellView extends ViewPart {
 							RConnection con = RServe.getConnection();
 
 							con.eval(".bio7TempVarEnvironment <- new.env()");
-							con.eval(".bio7TempVarEnvironment$workspVar<-NULL;for(i in 1:length(ls())){if(is.data.frame(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}}");
+							con.eval(
+									".bio7TempVarEnvironment$workspVar<-NULL;for(i in 1:length(ls())){if(is.data.frame(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}}");
 							x = RServe.getConnection().eval(".bio7TempVarEnvironment$workspVar");
 							if (x.isNull() == false) {
 								try {
@@ -2501,13 +2609,15 @@ public class RShellView extends ViewPart {
 
 			}
 		});
-		listShell.setFont(new Font(Util.getDisplay(), currentFont));
+		listShell.setFont(font);
 
 		sashForm_1.setWeights(new int[] { 1 });
+		textConsole = new StyledText(sashForm, SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
+		// textConsole = new StyledText(sashForm, SWT.WRAP | SWT.MULTI | SWT.V_SCROLL |
+		// SWT.H_SCROLL | SWT.BORDER);
+		// textConsole.setTextLimit(5000);
+		textConsole.setFont(font);
 
-		textConsole = new StyledText(sashForm, SWT.WRAP | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
-
-		textConsole.setFont(new Font(Util.getDisplay(), currentFont));
 		sashForm.setWeights(new int[] { 233, 319 });
 		target.addDropListener(new DropTargetAdapter() {
 			public void drop(DropTargetEvent event) {
@@ -2522,13 +2632,17 @@ public class RShellView extends ViewPart {
 	}
 
 	/*
-	 * public static void startJob(String plotInstruction, int b) { if (RState.isBusy() == false) { RState.setBusy(true);
+	 * public static void startJob(String plotInstruction, int b) { if
+	 * (RState.isBusy() == false) { RState.setBusy(true);
 	 * 
-	 * PlotJob plot = new PlotJob(plotInstruction, b); plot.addJobChangeListener(new JobChangeAdapter() { public void done(IJobChangeEvent event) { if (event.getResult().isOK()) {
+	 * PlotJob plot = new PlotJob(plotInstruction, b); plot.addJobChangeListener(new
+	 * JobChangeAdapter() { public void done(IJobChangeEvent event) { if
+	 * (event.getResult().isOK()) {
 	 * 
 	 * RState.setBusy(false); } else {
 	 * 
-	 * RState.setBusy(false); } } }); plot.setUser(true); plot.schedule(); } else { Bio7Dialog.message("Rserve is busy!"); } }
+	 * RState.setBusy(false); } } }); plot.setUser(true); plot.schedule(); } else {
+	 * Bio7Dialog.message("Rserve is busy!"); } }
 	 */
 
 	private void loadScript() {
@@ -2668,9 +2782,11 @@ public class RShellView extends ViewPart {
 			String tex = text.getText();
 			if (tex != null) {
 				/*
-				 * Omit escape sequences. Lead to an error if a windows path is specified wrong by chance!
+				 * Omit escape sequences. Lead to an error if a windows path is specified wrong
+				 * by chance!
 				 * 
-				 * if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) { tex = tex.replace("\\", "/"); }
+				 * if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) { tex =
+				 * tex.replace("\\", "/"); }
 				 */
 				// System.out.println(tex);
 
@@ -2904,76 +3020,119 @@ public class RShellView extends ViewPart {
 		}
 	}
 
-	public void createAttachedPackageTree() {
-		REXP pack = null;
-		REXP functions = null;
-		tree.removeAll();
-
-		if (RServe.isAliveDialog()) {
-			if (RState.isBusy() == false) {
-				String[] v = null;
-				// List all variables in the R workspace!
-
-				try {
-					RConnection con = RServe.getConnection();
-
-					con.eval(".bio7TempVarEnvironment <- new.env()");
-					con.eval("try(.bio7TempVarEnvironment$workspaceRPackages<-.packages())");
-					pack = RServe.getConnection().eval("try(.bio7TempVarEnvironment$workspaceRPackages)");
-					try {
-						v = pack.asStrings();
-					} catch (REXPMismatchException e1) {
-
-						e1.printStackTrace();
-					}
-					con.eval("try(rm(workspaceRPackages,envir=.bio7TempVarEnvironment))");
-
-				} catch (RserveException e1) {
-
-					e1.printStackTrace();
-				}
-				TreeItem packages = new TreeItem(tree, 0);
-				packages.setText("Attached Packages:");
-				// packages.removeAll();
-				for (int i = 0; i < v.length; i++) {
-
-					// lsf.str("package:MASS")
-					TreeItem treeItem = new TreeItem(packages, 0);
-					treeItem.setText(v[i]);
-
-					/*
-					 * String[] func = null;
-					 * 
-					 * try { RServe.getConnection().eval("listfunc<-ls.str(\"package:" +v[i]+"\")");
-					 * 
-					 * try { func = RServe.getConnection().eval("as.vector(listfunc)" ).asStrings(); } catch (REXPMismatchException e) { // TODO Auto-generated catch block e.printStackTrace(); } }
-					 * catch (RserveException e) { // TODO Auto-generated catch block e.printStackTrace(); }
-					 * 
-					 * 
-					 * 
-					 * for (int j = 0; j < func.length; j++) {
-					 * 
-					 * TreeItem treeItemSub= new TreeItem(treeItem, 0); treeItemSub.setText(func[i]) ;
-					 * 
-					 * }
-					 */
-
-				}
-				packages.setExpanded(true);
-			} else {
-				Bio7Dialog.message("Rserve is busy!");
-
-			}
-
-		}
-
-	}
-
 	public static RShellView getInstance() {
 		return instance;
 	}
 
 	public static List getListShell() {
 		return listShell;
+	}
+
+	/**
+	 * Returns the position of the closing bracket after <code>startPosition</code>.
+	 * 
+	 * @param startPosition
+	 *            - the beginning position
+	 * @param openBracket
+	 *            - the character that represents the open bracket
+	 * @param closeBracket
+	 *            - the character that represents the close bracket
+	 * @param document
+	 *            - the document being searched
+	 * @return the location of the closing bracket.
+	 * @throws BadLocationException
+	 *             in case <code>startPosition</code> is invalid in the document
+	 */
+	protected int searchForClosingBracket(int startPosition, char openBracket, char closeBracket, IDocument document) throws BadLocationException {
+		int stack = 1;
+		int closePosition = startPosition + 1;
+		int length = document.getLength();
+		char nextChar;
+
+		while (closePosition < length && stack > 0) {
+			nextChar = document.getChar(closePosition);
+			if (nextChar == openBracket && nextChar != closeBracket)
+				stack++;
+			else if (nextChar == closeBracket)
+				stack--;
+			closePosition++;
+		}
+
+		if (stack == 0)
+			return closePosition - 1;
+		return -1;
+
+	}
+
+	private void setTextInREditor() {
+		StringBuffer buff = new StringBuffer();
+		/* Revers order! */
+		for (int i = history.length - 1; i >= 0; i--) {
+			if (history[i].isEmpty() == false) {
+				buff.append(history[i]);
+				if (i > 0) {
+					buff.append(System.lineSeparator());
+				}
+			}
+
+		}
+		String txt = buff.toString();
+		if (txt.length() > 0) {
+			IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+			if (editor != null && editor instanceof REditor) {
+
+				ITextEditor editor2 = (ITextEditor) editor;
+
+				IDocumentProvider dp = editor2.getDocumentProvider();
+				IDocument doc = dp.getDocument(editor.getEditorInput());
+
+				ISelectionProvider sp = editor2.getSelectionProvider();
+				ISelection selectionsel = sp.getSelection();
+				ITextSelection selection = (ITextSelection) selectionsel;
+
+				int off = selection.getOffset();
+
+				try {
+					doc.replace(off, 0, txt);
+				} catch (BadLocationException e1) {
+					e1.printStackTrace();
+				}
+
+			}
+		}
+	}
+
+	/**
+	 * Returns the position of the open bracket before <code>startPosition</code>.
+	 * 
+	 * @param startPosition
+	 *            - the beginning position
+	 * @param openBracket
+	 *            - the character that represents the open bracket
+	 * @param closeBracket
+	 *            - the character that represents the close bracket
+	 * @param document
+	 *            - the document being searched
+	 * @return the location of the starting bracket.
+	 * @throws BadLocationException
+	 *             in case <code>startPosition</code> is invalid in the document
+	 */
+	protected int searchForOpenBracket(int startPosition, char openBracket, char closeBracket, IDocument document) throws BadLocationException {
+		int stack = 1;
+		int openPos = startPosition - 1;
+		char nextChar;
+
+		while (openPos >= 0 && stack > 0) {
+			nextChar = document.getChar(openPos);
+			if (nextChar == closeBracket && nextChar != openBracket)
+				stack++;
+			else if (nextChar == openBracket)
+				stack--;
+			openPos--;
+		}
+
+		if (stack == 0)
+			return openPos + 1;
+		return -1;
 	}
 }

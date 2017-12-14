@@ -79,6 +79,8 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 		/*Here we use a string field editor because a integer field editor throws exceptions each time the value is empty!*/
 		addField(new StringFieldEditor("RECONCILE_MARKDOWN_TIME", "Compile markdown interval (in ms after last keystroke - restart necessary!)", getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
+		addField(new BooleanFieldEditor("CHECK_SPELLING", "Enable Spell Checking", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		final Link link2 = new Link(getFieldEditorParent(), SWT.NONE);
 		link2.setText("See <a href=\"com.eco.bio7.browser.preferences\">'Browser Preferences'</a> to select or configure the browser.");
 		link2.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 3, 1));
