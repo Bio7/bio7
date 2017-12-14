@@ -1361,6 +1361,7 @@ public class ContentProposalAdapter {
 			this.autoActivateString = new String(autoActivationCharacters);
 		}
 		addControlListener(control);
+		control.setFocus();
 	}
 
 	/**
