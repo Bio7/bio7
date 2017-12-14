@@ -1233,7 +1233,7 @@ public class RShellView extends ViewPart {
 				infoTip.setText("Info!");
 
 				infoTip.setMessage("Expression textfield:" + "_________________________________\n" + "STRG + SPACE = Open code completion!\n"+ "ESC =  Close code completion!\n"+ "UP ARROW =  Open history!\n"
-						+ "STRG(CMD) + I = Transfer history to opened R editor!\n" + "STRG(CMD) + ALT + R = Refresh code completion!\n" + "STRG(CMD) + SHIFT + ALT + O = Open file and create load file template!\n"
+						+ "STRG(CMD) + SHIFT + I = Transfer history to opened R editor!\n" + "STRG(CMD) + ALT + R = Refresh code completion!\n" + "STRG(CMD) + SHIFT + ALT + O = Open file and create load file template!\n"
 						+ "STRG(CMD) + SHIFT + ALT + S = Save file and create save file template!\n" + "SHIFT + ALT + - = Create assign operator ('<-')!\n"
 						+ "SHIFT + ALT + N = Create pipe operator ('%>%')!\n" + "Key + Mouse Click (before bracket) - select matching brackets!\n\n" + "Objects panel (left):"
 						+ "_________________________________\n" + "Selection + 'C' key = Concatenate selected variables in Expression textfield!\n"

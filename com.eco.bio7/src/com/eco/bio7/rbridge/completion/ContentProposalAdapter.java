@@ -435,7 +435,7 @@ public class ContentProposalAdapter {
 			 * Construct an info-popup with the specified parent.
 			 */
 			InfoPopupDialog(Shell parent) {
-				super(parent, PopupDialog.INFOPOPUPRESIZE_SHELLSTYLE, false, false, false, false, false, null, null);
+				super(parent, PopupDialog.HOVER_SHELLSTYLE, false, false, false, false, false, null, null);
 			}
 
 			/*
