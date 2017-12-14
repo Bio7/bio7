@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.eco.bio7.actions;
 
-import org.codehaus.commons.compiler.jdk.SimpleCompiler;
+//import org.codehaus.commons.compiler.jdk.SimpleCompiler;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -28,13 +28,13 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
 import com.eco.bio7.compile.CompilerMessages;
-import com.eco.bio7.compile.JavaCompileWorkspaceJob;
+//import com.eco.bio7.compile.JavaCompileWorkspaceJob;
 import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 import com.eco.bio7.rcp.StartBio7Utils;
 
 public class Compile extends Action {
 	public static String COMPILE_IMPORTS = CompilerMessages.getString("Import.bio7");
-	private boolean classbody = true;
+	//private boolean classbody = true;
 	public static IResource resource;
 	public IWorkbenchPage pag;
 	protected IFile ifile;
@@ -56,7 +56,7 @@ public class Compile extends Action {
 		
 		
 		IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
-		classbody = store.getBoolean("classbody");
+		//classbody = store.getBoolean("classbody");
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		if(editor==null||editor instanceof CompilationUnitEditor==false){
 			return;
@@ -73,9 +73,9 @@ public class Compile extends Action {
 			ifile = ((IFileEditorInput) editorInput).getFile();
 		}
 
-		SimpleCompiler.resource = resource;
+		//SimpleCompiler.resource = resource;
 		/* Compile a class from a classbody! */
-		if (classbody == true) {
+		/*if (classbody == true) {
 
 			String a = doc.get();
 			String script = (a);
@@ -93,8 +93,8 @@ public class Compile extends Action {
 			job.setUser(true);
 
 			job.schedule();
-			/* Compile a project with one or several Classes! */
-		} else {
+			 Compile a project with one or several Classes! 
+		} else {*/
 
 			NullProgressMonitor monitor = new NullProgressMonitor();
 			IEditorPart[] dirtyEditors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getDirtyEditors();
@@ -108,7 +108,7 @@ public class Compile extends Action {
 		}
 
 		// Quad2d.getQuad2dInstance().repaint();
-	}
+	//}
 
 	
 

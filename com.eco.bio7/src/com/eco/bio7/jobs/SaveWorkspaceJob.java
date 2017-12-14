@@ -56,8 +56,8 @@ public class SaveWorkspaceJob extends WorkspaceJob {
 		grid.setDescriptions(CurrentStates.getStateDescriptions());
 		/* A reference */
 		grid.setStates(Field.getStateArray());
-		IPreferenceStore storeJava = Bio7EditorPlugin.getDefault().getPreferenceStore();
-		grid.setClassBody(storeJava.getBoolean("classbody"));
+		//IPreferenceStore storeJava = Bio7EditorPlugin.getDefault().getPreferenceStore();
+		grid.setClassBody(false);
 		/* Save java source! */
 
 		if (javaSource != null) {

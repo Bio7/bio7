@@ -135,11 +135,11 @@ Shell[style~='SWT.RADIO'][style~='SWT.CASCADE'][style~='SWT.SHADOW_ETCHED_IN'][s
     background-color:#515658; /* SWT-BUG: background color is hard-coded */
     color: #E39898;
 }
-
+/*StyledText background important for MacOSX!*/
 StyledText,
 Spinner,
 CCombo {
-    background-color: #383C3E;
+    background-color: #252525;
     color: #dddddd;
 }
 

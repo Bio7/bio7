@@ -45,6 +45,7 @@ jre/lib/jli/libjli.dylib
       startupMessageRect="0,0,0,0"
       startupForegroundColor="000000" />
    <launcher name="Bio7">
+      <linux icon="/com.eco.bio7/src/pics/bio7.xpm"/>
       <win useIco="false">
          <ico path="/com.eco.bio7/icons/bio7.ico"/>
          <bmp
@@ -62,7 +63,6 @@ jre/lib/jli/libjli.dylib
 
    <vm>
    </vm>
-
 
    <plugins>
       <plugin id="Bundled_R"/>

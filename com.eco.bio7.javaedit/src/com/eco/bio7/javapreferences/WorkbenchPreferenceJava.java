@@ -29,7 +29,7 @@ public class WorkbenchPreferenceJava extends FieldEditorPreferencePage implement
 	public void createFieldEditors() {
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new LabelFieldEditor("Java Compiler:", getFieldEditorParent()));
-		addField(new BooleanFieldEditor("classbody", "Default parse and compile a Java file with a classbody", getFieldEditorParent()));
+		//addField(new BooleanFieldEditor("classbody", "Default parse and compile a Java file with a classbody", getFieldEditorParent()));
 		addField(new ComboFieldEditor("compiler_version", "Java Version", new String[][]{{"1.8", "1.8"},{"1.7", "1.7"},{"1.6", "1.6"}, {"1.5", "1.5"}, {"1.4", "1.4"}}, getFieldEditorParent()));
 		addField(new BooleanFieldEditor("compiler_debug", "Generate Debugging Information", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		addField(new BooleanFieldEditor("compiler_verbose", "Verbose", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
@@ -67,7 +67,7 @@ public class WorkbenchPreferenceJava extends FieldEditorPreferencePage implement
 	public void init(IWorkbench workbench) {
 
 		IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
-		store.setDefault("classbody",false);
+		//store.setDefault("classbody",false);
 		PreferenceConverter.setDefault(store, "colourkey", new RGB(127, 0, 85));
 		PreferenceConverter.setDefault(store, "colourkey1", new RGB(127, 0, 85));
 		PreferenceConverter.setDefault(store, "colourkey2", new RGB(42, 0, 255));

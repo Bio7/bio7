@@ -31,9 +31,9 @@ Export-Package: com.eco.bio7.compile,
  org.codehaus.commons.compiler,
  org.codehaus.commons.compiler.jdk,
  org.codehaus.commons.compiler.samples,
- org.codehaus.commons.io
- 
-Bundle-ClassPath: libs/commons-compiler.jar,
+ org.codehaus.commons.io,
+ org.codehaus.commons.nullanalysis
+Bundle-ClassPath: libs/commons-compiler-3.0.7.jar,
  external:$java.home$/lib/tools.jar,
  bin/,
  src/,

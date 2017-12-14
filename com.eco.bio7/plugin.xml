@@ -788,22 +788,7 @@
       <category
             id="com.eco.bio7.bio7"
             name="Flow"/>
-      <wizard
-            category="com.eco.bio7.bio7java"
-            class="com.eco.bio7.wizards.JavaNewWizard"
-            icon="icons/editor/java.png"
-            id="com.eco.bio7.wizard2"
-            name="Bio7 Java (Classbody)"
-            project="false">
-      </wizard>
-      <wizard
-            category="com.eco.bio7.bio7java"
-            class="com.eco.bio7.wizards.JavaJoglNewWizard"
-            icon="icons/editor/java.png"
-            id="com.eco.bio7.openglwizard"
-            name="Bio7 Java OpenGL (Classbody)"
-            project="false">
-      </wizard>
+ 
       <wizard
             category="com.eco.bio7.bio7java"
             class="com.eco.bio7.wizards.JavaBio7ClassPluginWizard"
@@ -886,14 +871,6 @@
             icon="icons/editor/java.png"
             id="com.eco.bio7.wizardJavaManifest"
             name="Java Manifest File"
-            project="false">
-      </wizard>
-      <wizard
-            category="com.eco.bio7.bio7java"
-            class="com.eco.bio7.wizards.JavaFXWizard"
-            icon="icons/editor/java.png"
-            id="com.eco.bio7.javafx"
-            name="Java FX Template (Classbody)"
             project="false">
       </wizard>
       <wizard

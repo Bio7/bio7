@@ -38,11 +38,11 @@ import com.eco.bio7.worldwind.DynamicLayer;
 
 public class Compile {
 
-	private static String script;
+	//private static String script;
 
-	private static String COMPILE_IMPORTS = CompilerMessages.getString("Import.bio7");
+	//private static String COMPILE_IMPORTS = CompilerMessages.getString("Import.bio7");
 
-	public static void compile(String cu) throws InstantiationException {
+	/*public static void compile(String cu) throws InstantiationException {
 
 		StringBuffer buffer = new StringBuffer();
 		buffer.append(COMPILE_IMPORTS);
@@ -83,7 +83,7 @@ public class Compile {
 						}
 
 						Compiled.setModel(eco);
-						/* For Java WorldWind! */
+						 For Java WorldWind! 
 						DynamicLayer.setEcoclass(eco);
 
 						if (pm.isCanceled()) {
@@ -120,9 +120,9 @@ public class Compile {
 		}
 		buffer = null;
 		script = null;
-	}
+	}*/
 
-	public static void failure(final String text) {
+	/*public static void failure(final String text) {
 		Display display = PlatformUI.getWorkbench().getDisplay();
 		display.syncExec(new Runnable() {
 
@@ -134,9 +134,9 @@ public class Compile {
 				messageBox.open();
 			}
 		});
-	}
+	}*/
 
-	public static void compileJob(String source) {
+	/*public static void compileJob(String source) {
 
 		JavaCompileWorkspaceJob job = new JavaCompileWorkspaceJob(source);
 
@@ -151,10 +151,10 @@ public class Compile {
 
 		job.schedule();
 
-	}
+	}*/
 
 	/* A helper method to compile classbody for the drag and drop functionality! */
-	public static void compileClassbodyWithoutJob(String source) {
+	/*public static void compileClassbodyWithoutJob(String source) {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append(COMPILE_IMPORTS);
 		buffer.append(source);
@@ -183,9 +183,9 @@ public class Compile {
 		}
 
 		Compiled.setModel(eco);
-		/* For Java WorldWind! */
+		 For Java WorldWind! 
 		DynamicLayer.setEcoclass(eco);
-	}
+	}*/
 
 	/*
 	 * A helper method to compile a full class for the drag and drop
