@@ -341,14 +341,11 @@ public class ShellCompletion {
 		}
 
 		public IContentProposal[] getProposals(String contents, int position) {
-<<<<<<< HEAD
-			
-=======
+
 			s4 = false;
 			s3 = false;
 			packageAll = false;
 			packageExport = false;
->>>>>>> branch 'master' of https://github.com/Bio7/bio7.git
 			ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
 			ArrayList<IContentProposal> varWorkspace = new ArrayList<IContentProposal>();
 			int offset = position;
