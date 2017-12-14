@@ -99,6 +99,7 @@ public class ShellCompletion {
 		String allChars = LCL;
 		return allChars.toCharArray();
 	}
+	
 
 	static KeyStroke getActivationKeystroke() {
 		KeyStroke instance = KeyStroke.getInstance(new Integer(SWT.CTRL).intValue(), new Integer(' ').intValue());
