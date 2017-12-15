@@ -362,7 +362,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		 */
 
 		// Listen to changed perspective !!!!
-		// Listen to changed perspective !!!!
 		configurer.getWindow().addPerspectiveListener(new IPerspectiveListener3() {
 
 			@Override
@@ -416,7 +415,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			@Override
 			public void perspectiveSavedAs(IWorkbenchPage page, IPerspectiveDescriptor oldPerspective,
 					IPerspectiveDescriptor newPerspective) {
-				// TODO Auto-generated method stub
 
 			}
 
@@ -635,7 +633,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("SHINY_PORT", 5559);
 		store.setDefault("LATEX_ENGINE", "pdflatex");
 		store.setDefault("BIBTEX_ENGINE", "bibtex");
-		
+		store.setDefault("RSHELL_TYPED_CODE_COMPLETION", true);
 		store.setDefault("RSHELL_ACTIVATION_CHARS", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.@$+-.:");
 		store.setDefault("RSHELL_SEPERATOR_CHARS", ";(,[=-+ ");
 		store.setDefault("CODE_COMPLETION_POPUP_SIZE_X",600);
