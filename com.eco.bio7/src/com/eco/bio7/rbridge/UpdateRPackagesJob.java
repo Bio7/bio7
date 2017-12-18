@@ -44,71 +44,67 @@ public class UpdateRPackagesJob extends WorkspaceJob {
 			RConnection c = RServe.getConnection();
 
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-			//String destdir = store.getString("InstallLocation");
+			// String destdir = store.getString("InstallLocation");
 			String server = store.getString(PreferenceConstants.PACKAGE_R_SERVER);
-			//if (Bio7Dialog.getOS().equals("Windows")) {
-				/* If a location is given! */
+			// if (Bio7Dialog.getOS().equals("Windows")) {
+			/* If a location is given! */
 
-				//destdir = destdir.replace("\\", "\\\\");
+			// destdir = destdir.replace("\\", "\\\\");
+            /*Here we update the packages but exclude Rserve!*/
+			String out = null;
+			try {
+				out = c.eval(".pkgListToUpdate <- installed.packages(priority='NA')[,'Package'];" + ".pkgListToUpdate<-.pkgListToUpdate[-which(.pkgListToUpdate==\"Rserve\",arr.ind =TRUE)];"
+						+ "try(paste(capture.output(update.packages(repos =\"" + server + "\",checkBuilt=TRUE, ask=FALSE,oldPkgs=.pkgListToUpdate)),collapse=\"\\n\"))").asString();
+				c.eval("remove(.pkgListToUpdate)");
+			} catch (REXPMismatchException e) {
 
-				String out = null;
-				try {
-					out = c.eval(
-							"try(paste(capture.output(update.packages(repos =\"" + server + "\",checkBuilt=TRUE, ask=FALSE)),collapse=\"\\n\"))")
-							.asString();
-				} catch (REXPMismatchException e) {
+				e.printStackTrace();
+			} catch (RserveException e) {
 
-					e.printStackTrace();
-				} catch (RserveException e) {
+				e.printStackTrace();
+			}
 
-					e.printStackTrace();
-				}
+			System.out.println(out);
 
-				System.out.println(out);
-
-		//	}
+			// }
 			/*
 			 * For the packages on Linux and Mac we try the default path if no custom path
 			 * is given!
 			 */
-			/*else {
-
-				if (destdir.isEmpty() == false) {
-
-					String out = null;
-					try {
-						out = c.eval("try(paste(capture.output(update.packages(repos =\"" + server
-								+ "\")),collapse=\"\\n\"))").asString();
-
-					} catch (REXPMismatchException e) {
-
-						e.printStackTrace();
-					} catch (RserveException e) {
-
-						e.printStackTrace();
-					}
-
-					System.out.println(out);
-
-				} else {
-
-					String out = null;
-					try {
-						out = c.eval("try(paste(capture.output(install.packages(\"" + items[i]
-								+ "\",dependencies=TRUE,repos =\"" + server + "\")),collapse=\"\\n\"))").asString();
-					} catch (REXPMismatchException e) {
-
-						e.printStackTrace();
-					} catch (RserveException e) {
-
-						e.printStackTrace();
-					}
-
-					System.out.println(out);
-
-				}
-
-			}*/
+			/*
+			 * else {
+			 * 
+			 * if (destdir.isEmpty() == false) {
+			 * 
+			 * String out = null; try { out =
+			 * c.eval("try(paste(capture.output(update.packages(repos =\"" + server +
+			 * "\")),collapse=\"\\n\"))").asString();
+			 * 
+			 * } catch (REXPMismatchException e) {
+			 * 
+			 * e.printStackTrace(); } catch (RserveException e) {
+			 * 
+			 * e.printStackTrace(); }
+			 * 
+			 * System.out.println(out);
+			 * 
+			 * } else {
+			 * 
+			 * String out = null; try { out =
+			 * c.eval("try(paste(capture.output(install.packages(\"" + items[i] +
+			 * "\",dependencies=TRUE,repos =\"" + server +
+			 * "\")),collapse=\"\\n\"))").asString(); } catch (REXPMismatchException e) {
+			 * 
+			 * e.printStackTrace(); } catch (RserveException e) {
+			 * 
+			 * e.printStackTrace(); }
+			 * 
+			 * System.out.println(out);
+			 * 
+			 * }
+			 * 
+			 * }
+			 */
 
 			/* If thematic (spatial) packages are selected! */
 			/*

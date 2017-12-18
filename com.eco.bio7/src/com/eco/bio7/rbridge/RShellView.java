@@ -425,7 +425,7 @@ public class RShellView extends ViewPart {
 
 				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 
-					if (((e.stateMask & SWT.COMMAND) == SWT.COMMAND) && (e.stateMask & SWT.ALT) == SWT.ALT && (e.keyCode == 'r')) {
+					if (((e.stateMask & SWT.COMMAND) == SWT.COMMAND) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.stateMask & SWT.ALT) == SWT.ALT && (e.keyCode == 'r')) {
 
 						/*
 						 * Add code completion to textfield! At startup load the default R proposals and
@@ -434,7 +434,7 @@ public class RShellView extends ViewPart {
 						 */
 						if (RServe.isAliveDialog()) {
 							shellCompletion.update();
-							System.out.println("Reloaded code completion!");
+							System.out.println("\nReloaded code completion!");
 
 						}
 
@@ -445,7 +445,6 @@ public class RShellView extends ViewPart {
 						 */
 						IDocument doc = new Document();
 						new OpenFileCreateSourceTemplate(doc, 0, doc.getLength());
-						String t = text.getText();
 						// String a = t.substring(0, text.getCaretPosition());
 						// String b = t.substring(text.getCaretPosition(), t.length());
 						text.insert(doc.get());
@@ -456,20 +455,18 @@ public class RShellView extends ViewPart {
 						IDocument doc = new Document();
 						new SaveFileCreateSourceTemplate(doc, 0, doc.getLength());
 						text.insert(doc.get());
-					} else if (((e.stateMask & SWT.ALT) == SWT.ALT) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.keyCode == '-')) {
-						String t = text.getText();
+					} else if ((((e.stateMask & SWT.COMMAND) == SWT.COMMAND) && (e.stateMask & SWT.ALT) == SWT.ALT) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.keyCode == 'b')) {
 						// String a = t.substring(0, text.getCaretPosition());
 						// String b = t.substring(text.getCaretPosition(), t.length());
 						// text.setText(a + "<-" + b);
 						text.insert("<");
 						text.insert("-");
-					} else if (((e.stateMask & SWT.ALT) == SWT.ALT) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.keyCode == 'n')) {
-						String t = text.getText();
+					} else if (((e.stateMask & SWT.COMMAND) == SWT.COMMAND) && ((e.stateMask & SWT.ALT) == SWT.ALT) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.keyCode == 'n')) {
 						// String a = t.substring(0, text.getCaretPosition());
 						// String b = t.substring(text.getCaretPosition(), t.length());
 						// text.setText(a + "<-" + b);
 						text.insert(" %>% ");
-					} else if (((e.stateMask & SWT.COMMAND) == SWT.COMMAND) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.keyCode == 'i')) {
+					} else if (((e.stateMask & SWT.COMMAND) == SWT.COMMAND) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.stateMask & SWT.ALT) == SWT.ALT && (e.keyCode == 'i')) {
 						setTextInREditor();
 					}
 
@@ -494,7 +491,6 @@ public class RShellView extends ViewPart {
 						 */
 						IDocument doc = new Document();
 						new OpenFileCreateSourceTemplate(doc, 0, doc.getLength());
-						String t = text.getText();
 						// a = t.substring(0, text.getCaretPosition());
 						// String b = t.substring(text.getCaretPosition(), t.length());
 						text.insert(doc.get());
@@ -506,14 +502,12 @@ public class RShellView extends ViewPart {
 						new SaveFileCreateSourceTemplate(doc, 0, doc.getLength());
 						text.insert(doc.get());
 					} else if (((e.stateMask & SWT.ALT) == SWT.ALT) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.keyCode == '-')) {
-						String t = text.getText();
 						// String a = t.substring(0, text.getCaretPosition());
 						// String b = t.substring(text.getCaretPosition(), t.length());
 						// text.setText(a + "<-" + b);
 						text.insert("<-");
 
 					} else if (((e.stateMask & SWT.ALT) == SWT.ALT) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.keyCode == 'n')) {
-						String t = text.getText();
 						// String a = t.substring(0, text.getCaretPosition());
 						// String b = t.substring(text.getCaretPosition(), t.length());
 						// text.setText(a + "<-" + b);
@@ -1231,17 +1225,31 @@ public class RShellView extends ViewPart {
 			public void widgetSelected(final SelectionEvent e) {
 				ToolTip infoTip = new ToolTip(new Shell(), SWT.BALLOON | SWT.ICON_INFORMATION);
 				infoTip.setText("Info!");
+				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
+					infoTip.setMessage("Expression textfield:\n\n"  + "STRG + SPACE (Change in pref.!) = Open code completion!\n" + "ESC =  Close code completion!\n"
+							+ "UP ARROW =  Open history!\n" + "CMD + ALT + SHIFT + I = Transfer history to opened R editor!\n" + "CMD + ALT + SHIFT + R = Refresh code completion!\n"
+							+ "CMD + ALT + SHIFT + O = Open file and create load file template!\n" + "CMD + ALT + SHIFT + S = Save file and create save file template!\n"
+							+ "CMD + ALT + SHIFT + B = Create assign operator ('<-')!\n" + "CMD + ALT + SHIFT + N = Create pipe operator ('%>%')!\n"
+							+ "Key + Mouse Click (before bracket) - select matching brackets!\n\n" + "Objects panel (left):\n\n"
+							+ "Selection + 'C' key = Concatenate selected variables in Expression textfield!\n" + "Selection + 'A' key = Comma seperate selected variables in Expression textfield!\n"
+							+ "Right-Click = Menu\n" + "Select variable(s) = To show, summarize, plot, transfer and convert data!\n\n" + "Tabs templates:\n\n"
+							+ "Double-Click = Add template to the R-Shell textfield!\n" + "Double-Right-Click = Add template to the R editor!\n"
 
-				infoTip.setMessage("Expression textfield:" + "_________________________________\n" + "STRG + SPACE = Open code completion!\n"+ "ESC =  Close code completion!\n"+ "UP ARROW =  Open history!\n"
-						+ "STRG(CMD) + SHIFT + I = Transfer history to opened R editor!\n" + "STRG(CMD) + ALT + R = Refresh code completion!\n" + "STRG(CMD) + SHIFT + ALT + O = Open file and create load file template!\n"
-						+ "STRG(CMD) + SHIFT + ALT + S = Save file and create save file template!\n" + "SHIFT + ALT + - = Create assign operator ('<-')!\n"
-						+ "SHIFT + ALT + N = Create pipe operator ('%>%')!\n" + "Key + Mouse Click (before bracket) - select matching brackets!\n\n" + "Objects panel (left):"
-						+ "_________________________________\n" + "Selection + 'C' key = Concatenate selected variables in Expression textfield!\n"
-						+ "Selection + 'A' key = Comma seperate selected variables in Expression textfield!\n" + "Right-Click = Menu\n"
-						+ "Select variable(s) = To show, summarize, plot, transfer and convert data!\n\n" + "Tabs templates:" + "_________________________________\n"
+					);
+					
+				}
+				else {
+				infoTip.setMessage("Expression textfield:\n\n" + "STRG + SPACE (Change in pref.!) = Open code completion!\n" + "ESC =  Close code completion!\n"
+						+ "UP ARROW =  Open history!\n" + "STRG + SHIFT + I = Transfer history to opened R editor!\n" + "STRG + ALT + R = Refresh code completion!\n"
+						+ "STRG + SHIFT + ALT + O = Open file and create load file template!\n" + "STRG + SHIFT + ALT + S = Save file and create save file template!\n"
+						+ "SHIFT + ALT + - = Create assign operator ('<-')!\n" + "SHIFT + ALT + N = Create pipe operator ('%>%')!\n"
+						+ "Key + Mouse Click (before bracket) - select matching brackets!\n\n" + "Objects panel (left):\n\n"
+						+ "Selection + 'C' key = Concatenate selected variables in Expression textfield!\n" + "Selection + 'A' key = Comma seperate selected variables in Expression textfield!\n"
+						+ "Right-Click = Menu\n" + "Select variable(s) = To show, summarize, plot, transfer and convert data!\n\n" + "Tabs templates:\n\n"
 						+ "Double-Click = Add template to the R-Shell textfield!\n" + "Double-Right-Click = Add template to the R editor!\n"
 
 				);
+				}
 				infoTip.setVisible(true);
 
 			}
