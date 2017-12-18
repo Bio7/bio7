@@ -105,7 +105,7 @@ public class ShellCompletion {
 		KeyStroke instance;
 		boolean useAlt = storeLocal.getBoolean("RSHELL_CODE_COMPLETION_ACTIVATOR_ALTERED");
 		if (useAlt) {
-			instance = KeyStroke.getInstance(new Integer(SWT.ALT).intValue(), new Integer(' ').intValue());
+			instance = KeyStroke.getInstance(new Integer(SWT.COMMAND).intValue(), new Integer(' ').intValue());
 		} else {
 			instance = KeyStroke.getInstance(new Integer(SWT.CTRL).intValue(), new Integer(' ').intValue());
 		}
