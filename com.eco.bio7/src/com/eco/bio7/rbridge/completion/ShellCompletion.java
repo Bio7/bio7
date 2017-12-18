@@ -99,15 +99,22 @@ public class ShellCompletion {
 		String allChars = LCL;
 		return allChars.toCharArray();
 	}
-	
 
 	static KeyStroke getActivationKeystroke() {
-		KeyStroke instance = KeyStroke.getInstance(new Integer(SWT.CTRL).intValue(), new Integer(' ').intValue());
+		IPreferenceStore storeLocal = Bio7Plugin.getDefault().getPreferenceStore();
+		KeyStroke instance;
+		boolean useAlt = storeLocal.getBoolean("RSHELL_CODE_COMPLETION_ACTIVATOR_ALTERED");
+		if (useAlt) {
+			instance = KeyStroke.getInstance(new Integer(SWT.ALT).intValue(), new Integer(' ').intValue());
+		} else {
+			instance = KeyStroke.getInstance(new Integer(SWT.CTRL).intValue(), new Integer(' ').intValue());
+		}
+
 		return instance;
 	}
 
 	public ShellCompletion(RShellView view, Text control, final IControlContentAdapter controlContentAdapter) {
-		//IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		// IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		this.view = view;
 		this.control = control;
 		contentProposalProvider = new ContentProposalProvider();
