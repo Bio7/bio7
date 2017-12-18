@@ -119,15 +119,15 @@ public class RServePrefs extends FieldEditorPreferencePage implements IWorkbench
 		addField(new LabelFieldEditor("R-Shell code completion:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("RSHELL_TYPED_CODE_COMPLETION", "Open code completion/templates when typing", getFieldEditorParent()));
         
-		addField(new StringFieldEditor("RSHELL_ACTIVATION_CHARS", "Activation chars", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
+		addField(new StringFieldEditor("RSHELL_ACTIVATION_CHARS", "Activation chars (Restart to apply!)", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
 		addField(new StringFieldEditor("RSHELL_SEPERATOR_CHARS", "Seperator chars", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
 		{
 			LabelFieldEditor labelFieldEditor = new LabelFieldEditor("Close and reopen R-Shell view or restart necessary:", getFieldEditorParent());
-			labelFieldEditor.setLabelText("For the follwing preferences please close and reopen the R-Shell view(s) or simply restart Bio7!");
+			labelFieldEditor.setLabelText("Code Completion Popup");
 			addField(labelFieldEditor);
 		}
-		addField(new IntegerFieldEditor("CODE_COMPLETION_POPUP_SIZE_X", "Popup size width", getFieldEditorParent()));
-		addField(new IntegerFieldEditor("CODE_COMPLETION_POPUP_SIZE_Y", "Popup size height", getFieldEditorParent()));
+		addField(new IntegerFieldEditor("CODE_COMPLETION_POPUP_SIZE_X", "Popup size width (Restart to apply!)", getFieldEditorParent()));
+		addField(new IntegerFieldEditor("CODE_COMPLETION_POPUP_SIZE_Y", "Popup size height (Restart to apply!)", getFieldEditorParent()));
 	}
 
 	public void init(IWorkbench workbench) {
