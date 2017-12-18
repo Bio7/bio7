@@ -1226,26 +1226,26 @@ public class RShellView extends ViewPart {
 				ToolTip infoTip = new ToolTip(new Shell(), SWT.BALLOON | SWT.ICON_INFORMATION);
 				infoTip.setText("Info!");
 				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
-					infoTip.setMessage("Expression textfield:" + "_________________________________\n" + "STRG + SPACE = Open code completion!\n" + "ESC =  Close code completion!\n"
+					infoTip.setMessage("Expression textfield:\n\n"  + "STRG + SPACE (Change in pref.!) = Open code completion!\n" + "ESC =  Close code completion!\n"
 							+ "UP ARROW =  Open history!\n" + "CMD + ALT + SHIFT + I = Transfer history to opened R editor!\n" + "CMD + ALT + SHIFT + R = Refresh code completion!\n"
 							+ "CMD + ALT + SHIFT + O = Open file and create load file template!\n" + "CMD + ALT + SHIFT + S = Save file and create save file template!\n"
 							+ "CMD + ALT + SHIFT + B = Create assign operator ('<-')!\n" + "CMD + ALT + SHIFT + N = Create pipe operator ('%>%')!\n"
-							+ "Key + Mouse Click (before bracket) - select matching brackets!\n\n" + "Objects panel (left):" + "_________________________________\n"
+							+ "Key + Mouse Click (before bracket) - select matching brackets!\n\n" + "Objects panel (left):\n\n"
 							+ "Selection + 'C' key = Concatenate selected variables in Expression textfield!\n" + "Selection + 'A' key = Comma seperate selected variables in Expression textfield!\n"
-							+ "Right-Click = Menu\n" + "Select variable(s) = To show, summarize, plot, transfer and convert data!\n\n" + "Tabs templates:" + "_________________________________\n"
+							+ "Right-Click = Menu\n" + "Select variable(s) = To show, summarize, plot, transfer and convert data!\n\n" + "Tabs templates:\n\n"
 							+ "Double-Click = Add template to the R-Shell textfield!\n" + "Double-Right-Click = Add template to the R editor!\n"
 
 					);
 					
 				}
 				else {
-				infoTip.setMessage("Expression textfield:" + "_________________________________\n" + "STRG + SPACE = Open code completion!\n" + "ESC =  Close code completion!\n"
+				infoTip.setMessage("Expression textfield:\n\n" + "STRG + SPACE (Change in pref.!) = Open code completion!\n" + "ESC =  Close code completion!\n"
 						+ "UP ARROW =  Open history!\n" + "STRG + SHIFT + I = Transfer history to opened R editor!\n" + "STRG + ALT + R = Refresh code completion!\n"
 						+ "STRG + SHIFT + ALT + O = Open file and create load file template!\n" + "STRG + SHIFT + ALT + S = Save file and create save file template!\n"
 						+ "SHIFT + ALT + - = Create assign operator ('<-')!\n" + "SHIFT + ALT + N = Create pipe operator ('%>%')!\n"
-						+ "Key + Mouse Click (before bracket) - select matching brackets!\n\n" + "Objects panel (left):" + "_________________________________\n"
+						+ "Key + Mouse Click (before bracket) - select matching brackets!\n\n" + "Objects panel (left):\n\n"
 						+ "Selection + 'C' key = Concatenate selected variables in Expression textfield!\n" + "Selection + 'A' key = Comma seperate selected variables in Expression textfield!\n"
-						+ "Right-Click = Menu\n" + "Select variable(s) = To show, summarize, plot, transfer and convert data!\n\n" + "Tabs templates:" + "_________________________________\n"
+						+ "Right-Click = Menu\n" + "Select variable(s) = To show, summarize, plot, transfer and convert data!\n\n" + "Tabs templates:\n\n"
 						+ "Double-Click = Add template to the R-Shell textfield!\n" + "Double-Right-Click = Add template to the R editor!\n"
 
 				);
