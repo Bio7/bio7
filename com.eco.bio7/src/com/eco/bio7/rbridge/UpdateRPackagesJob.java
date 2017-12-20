@@ -50,7 +50,7 @@ public class UpdateRPackagesJob extends WorkspaceJob {
 			/* If a location is given! */
 
 			// destdir = destdir.replace("\\", "\\\\");
-
+            /*Here we update the packages but exclude Rserve!*/
 			String out = null;
 			try {
 				out = c.eval(".pkgListToUpdate <- installed.packages(priority='NA')[,'Package'];" + ".pkgListToUpdate<-.pkgListToUpdate[-which(.pkgListToUpdate==\"Rserve\",arr.ind =TRUE)];"

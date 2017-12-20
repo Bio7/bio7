@@ -121,6 +121,9 @@ public class RServePrefs extends FieldEditorPreferencePage implements IWorkbench
         
 		addField(new StringFieldEditor("RSHELL_ACTIVATION_CHARS", "Activation chars (Restart to apply!)", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
 		addField(new StringFieldEditor("RSHELL_SEPERATOR_CHARS", "Seperator chars", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
+		addField(new RadioGroupFieldEditor("RSHELL_CODE_COMPLETION_ACTIVATOR_ALTERED", "Use a different key combination for code completion activation", 3, new String[][]{{"Strg+Space", "STRG"}, {"Alt+Space", "ALT"},{"Cmd+Space", "CMD"}}, getFieldEditorParent(), false));
+		//addField(new BooleanFieldEditor("RSHELL_CODE_COMPLETION_ACTIVATOR_ALTERED", "Use Key Combination 'ALT+SPACE' to trigger code completion (Restart to apply!)", getFieldEditorParent()));
+
 		{
 			LabelFieldEditor labelFieldEditor = new LabelFieldEditor("Close and reopen R-Shell view or restart necessary:", getFieldEditorParent());
 			labelFieldEditor.setLabelText("Code Completion Popup");

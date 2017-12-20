@@ -531,7 +531,7 @@
       <keyBinding
             commandId="com.eco.bio7.save_r_workspace2"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            keySequence="CTRL+ALT+SHIFT+O">
+            keySequence="CTRL+ALT+K">
       </keyBinding>
       <command
             description="Open the R preferences"
