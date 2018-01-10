@@ -920,7 +920,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			System.setProperty("swing.aatext", "true");
 		}
 
-		Display dis = Display.getDefault();
+		Display dis = Util.getDisplay();
 
 		assert EventQueue.isDispatchThread(); // On AWT event thread
 
