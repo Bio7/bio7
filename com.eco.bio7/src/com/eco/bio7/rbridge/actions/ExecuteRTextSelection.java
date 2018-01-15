@@ -107,16 +107,6 @@ public class ExecuteRTextSelection extends Action {
 					messageBox.open();
 
 				}
-
-				/*
-				 * else { MessageBox messageBox = new MessageBox(new Shell(),
-				 * 
-				 * SWT.ICON_WARNING);
-				 * messageBox.setMessage("RServer connection failed - Server is not running !");
-				 * messageBox.open();
-				 * 
-				 * }
-				 */
 			}
 		}
 	}
