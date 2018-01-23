@@ -928,10 +928,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		int resolution = Toolkit.getDefaultToolkit().getScreenResolution();
 		
-		int dpi = Util.getDisplay().getDPI().x;
-     
-        //int awtFontSize = (int) Math.round((double) fontData.getHeight() * resolution / 72.0);
-		int awtFontSize = (int) Math.round((double) fontData.getHeight() * resolution / dpi);
+		//int dpi = Util.getDisplay().getDPI().x;
+        
+        int awtFontSize = (int) Math.round((double) fontData.getHeight() * resolution / 72.0);
+		//int awtFontSize = (int) Math.round((double) fontData.getHeight() * resolution / dpi);
 		java.awt.Font awtFont = null;
         
 		int fontSizeCorrection = 0;
