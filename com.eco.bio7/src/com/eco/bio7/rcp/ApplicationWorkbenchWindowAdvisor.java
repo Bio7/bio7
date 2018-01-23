@@ -927,16 +927,19 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		FontData fontData = dis.getSystemFont().getFontData()[0];
 
 		int resolution = Toolkit.getDefaultToolkit().getScreenResolution();
-
-		int awtFontSize = (int) Math.round((double) fontData.getHeight() * resolution / 72.0);
+		
+		int dpi = Util.getDisplay().getDPI().x;
+     
+        //int awtFontSize = (int) Math.round((double) fontData.getHeight() * resolution / 72.0);
+		int awtFontSize = (int) Math.round((double) fontData.getHeight() * resolution / dpi);
 		java.awt.Font awtFont = null;
-
+        
 		int fontSizeCorrection = 0;
 		fontSizeCorrection = store.getInt("FONT_SIZE_CORRECTION");
 		/* Font size correction! */
 
 		awtFont = new java.awt.Font(fontData.getName(), fontData.getStyle(), awtFontSize + fontSizeCorrection);
-
+		//System.out.println("DPI: "+dpi+" fonsize:"+awtFontSize );
 		// Update the look and feel defaults to use new font.
 		updateLookAndFeel(awtFont);
 
