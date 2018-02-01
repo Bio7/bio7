@@ -202,7 +202,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 				optionList.addElement("-classpath");
 				/* Add the Bio7 libs etc. for the compiler! */
 				optionList.addElement(new ScanClassPath().scan());
-	
+	 
 				if (debug) {
 					optionList.addElement("-g");
 				} else {
