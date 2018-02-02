@@ -184,7 +184,6 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 				if (sourceFileObject == null) {
 					throw new DiagnosticException("Source for '" + className + "' not found");
 				}
-
 				// Compose the effective compiler options.
 				Vector<String> optionList = new Vector<String>();
 
