@@ -2,8 +2,10 @@ package com.eco.bio7.rcp;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -55,10 +57,13 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 			close = true;
 			//IWorkbench workbench = PlatformUI.getWorkbench();
 			//final IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-			IWorkbench workbench = PlatformUI.getWorkbench();
-			final IWorkbenchPage activePage = workbench.getActiveWorkbenchWindow().getActivePage();
+			
 			if (Util.getOS().equals("Mac")) {
-				activePage.closeEditors( activePage.getEditorReferences(), true);
+				NullProgressMonitor monitor = new NullProgressMonitor();
+				IEditorPart[] dirtyEditors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getDirtyEditors();
+				for (IEditorPart iEditorPart : dirtyEditors) {
+				    iEditorPart.doSave(monitor);
+				}
 				Platform.exit();
 				//Work.openPerspective("com.eco.bio7.perspective_2d");
 			}
