@@ -5,6 +5,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
@@ -54,8 +55,10 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 			close = true;
 			//IWorkbench workbench = PlatformUI.getWorkbench();
 			//final IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-
+			IWorkbench workbench = PlatformUI.getWorkbench();
+			final IWorkbenchPage activePage = workbench.getActiveWorkbenchWindow().getActivePage();
 			if (Util.getOS().equals("Mac")) {
+				activePage.closeEditors( activePage.getEditorReferences(), true);
 				Platform.exit();
 				//Work.openPerspective("com.eco.bio7.perspective_2d");
 			}
