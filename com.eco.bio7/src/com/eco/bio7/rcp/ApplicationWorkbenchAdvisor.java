@@ -13,6 +13,9 @@ import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 
 import com.eco.bio7.collection.Work;
+import com.eco.bio7.util.Util;
+
+import javafx.application.Platform;
 
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
@@ -49,11 +52,12 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 		boolean close = super.preShutdown();
 		if (close) {
 			close = true;
-			IWorkbench workbench = PlatformUI.getWorkbench();
-			final IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+			//IWorkbench workbench = PlatformUI.getWorkbench();
+			//final IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
 
-			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
-				Work.openPerspective("com.eco.bio7.perspective_2d");
+			if (Util.getOS().equals("Mac")) {
+				Platform.exit();
+				//Work.openPerspective("com.eco.bio7.perspective_2d");
 			}
 
 		}
