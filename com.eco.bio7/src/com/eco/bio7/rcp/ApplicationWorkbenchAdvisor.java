@@ -58,6 +58,9 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 			//IWorkbench workbench = PlatformUI.getWorkbench();
 			//final IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
 			
+			/*Here we stop the JavaFX thread for MacOSX (avoiding a crash which sometimes occur). 
+			 *Before all editors must be saved to avoid a cancel option for unsaved editors!
+			 */
 			if (Util.getOS().equals("Mac")) {
 				NullProgressMonitor monitor = new NullProgressMonitor();
 				IEditorPart[] dirtyEditors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getDirtyEditors();
