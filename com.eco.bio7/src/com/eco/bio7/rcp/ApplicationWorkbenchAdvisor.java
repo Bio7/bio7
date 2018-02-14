@@ -6,6 +6,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -65,18 +66,18 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 			 */
 			if (Util.getOS().equals("Mac")) {
 				NullProgressMonitor monitor = new NullProgressMonitor();
-				IEditorPart[] dirtyEditors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getDirtyEditors();
+				IEditorPart[] dirtyEditors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+						.getDirtyEditors();
 				for (IEditorPart iEditorPart : dirtyEditors) {
 					iEditorPart.doSave(monitor);
 				}
-				Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						StateTable.grid.dispose();
-					}
-				});
-				// Platform.exit();
-				// Work.openPerspective("com.eco.bio7.perspective_2d");
+
+				// StateTable.grid.dispose();
+
+				IViewPart view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+						.findView("com.eco.bio7.spreadsheet");
+				PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(view);
+				view.dispose();// Work.openPerspective("com.eco.bio7.perspective_2d");
 			}
 
 		}
