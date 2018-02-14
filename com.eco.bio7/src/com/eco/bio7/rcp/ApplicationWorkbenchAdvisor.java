@@ -74,11 +74,11 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
 				// StateTable.grid.dispose();
 
-				IViewPart view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+				/*IViewPart view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
 						.findView("com.eco.bio7.spreadsheet");
 				//PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(view);
 				view.dispose();// Work.openPerspective("com.eco.bio7.perspective_2d");
-			}
+*/			}
 
 		}
 		return close;
