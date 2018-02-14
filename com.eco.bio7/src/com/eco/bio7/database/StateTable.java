@@ -64,7 +64,7 @@ public class StateTable {
 
 	}
 
-	public static StateTable getDatatable_instance() {
+	public static StateTable getDatatableInstance() {
 		return stateTableInstance;
 	}
 
@@ -74,16 +74,16 @@ public class StateTable {
 			public void handleEvent(Event event) {
 				checkedEvent = event.detail == SWT.CHECK ? true : false;
 
-				//GridItem item = (GridItem) event.item;
+				// GridItem item = (GridItem) event.item;
 
 			}
 		});
-		//grid.setRowsResizeable(true);
+		// grid.setRowsResizeable(true);
 		grid.setHeaderVisible(true);
-		//grid.setRowHeaderVisible(true);
-		
+		// grid.setRowHeaderVisible(true);
+
 		// grid.setCellSelectionEnabled(true);
-       
+
 		grid.addListener(SWT.MouseDown, new Listener() {
 			public void handleEvent(Event event) {
 
@@ -93,15 +93,14 @@ public class StateTable {
 				while (index < grid.getItemCount()) {
 					boolean visible = false;
 					GridItem item = grid.getItem(index);
-					
+
 					for (int i = 2; i < 4; i++) {
 						Rectangle rect = item.getBounds(i);
 
 						if (rect.contains(pt)) {
 
 							/*
-							 * Proof if a checked event occured, else selection
-							 * event causes an error!
+							 * Proof if a checked event occured, else selection event causes an error!
 							 */
 
 							if (checkedEvent) {
@@ -149,14 +148,13 @@ public class StateTable {
 		 * grid.addListener(SWT.MouseDoubleClick, new Listener() { public void
 		 * handleEvent(Event event) {
 		 * 
-		 * Rectangle clientArea = grid.getClientArea(); Point pt = new
-		 * Point(event.x, event.y); index = grid.getTopIndex(); while (index <
-		 * grid.getItemCount()) {
+		 * Rectangle clientArea = grid.getClientArea(); Point pt = new Point(event.x,
+		 * event.y); index = grid.getTopIndex(); while (index < grid.getItemCount()) {
 		 * 
 		 * GridItem item = grid.getItem(index);
 		 * 
-		 * if (grid.getItem(index).getBounds(2).contains(pt)) { ColorDialog
-		 * dialog = new ColorDialog(parent.getShell(), SWT.APPLICATION_MODAL);
+		 * if (grid.getItem(index).getBounds(2).contains(pt)) { ColorDialog dialog = new
+		 * ColorDialog(parent.getShell(), SWT.APPLICATION_MODAL);
 		 * 
 		 * RGB color = dialog.open(); grid.getItem(index).setBackground(2, new
 		 * Color(Display.getCurrent(), color));
@@ -180,7 +178,7 @@ public class StateTable {
 						Rectangle rect = item.getBounds(i);
 						if (rect.contains(pt)) {
 							final int column = i;
-							final int itemNr=index;
+							final int itemNr = index;
 							if (i == 1) {
 								final Text text = new Text(grid, SWT.NONE);
 
@@ -189,7 +187,7 @@ public class StateTable {
 										switch (e.type) {
 										case SWT.FocusOut:
 											item.setText(column, text.getText());
-											//System.out.println(CurrentStates.getStateDescriptions().size());
+											// System.out.println(CurrentStates.getStateDescriptions().size());
 											CurrentStates.getStateDescriptions().set(itemNr, text.getText());
 											text.dispose();
 											break;
@@ -197,7 +195,7 @@ public class StateTable {
 											switch (e.detail) {
 											case SWT.TRAVERSE_RETURN:
 												item.setText(column, text.getText());
-												//System.out.println(itemNr);
+												// System.out.println(itemNr);
 												CurrentStates.getStateDescriptions().set(itemNr, text.getText());
 												// FALL THROUGH
 											case SWT.TRAVERSE_ESCAPE:
@@ -258,34 +256,36 @@ public class StateTable {
 		/* Resize column width if shell changes! */
 		parent.addControlListener(new ControlAdapter() {
 			public void controlResized(ControlEvent e) {
-				Rectangle area = parent.getClientArea();
-				Point preferredSize = grid.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-				int width = area.width - 2 * grid.getBorderWidth();
-				if (preferredSize.y > area.height + grid.getHeaderHeight()) {
-					// Subtract the scrollbar width from the total column width
-					// if a vertical scrollbar will be required
-					Point vBarSize = grid.getVerticalBar().getSize();
-					width -= vBarSize.x;
-				}
-				Point oldSize = grid.getSize();
-				if (oldSize.x > area.width) {
-					// table is getting smaller so make the columns
-					// smaller first and then resize the table to
-					// match the client area width
-					column1.setWidth(width / 4);
-					column2.setWidth(width / 4);
-					column3.setWidth(width / 4);
-					column.setWidth(width / 4);
-					grid.setSize(area.width, area.height);
-				} else {
-					// table is getting bigger so make the table
-					// bigger first and then make the columns wider
-					// to match the client area width
-					grid.setSize(area.width, area.height);
-					column1.setWidth(width / 4);
-					column2.setWidth(width / 4);
-					column3.setWidth(width / 4);
-					column.setWidth(width / 4);
+				if (grid.isDisposed() == false) {
+					Rectangle area = parent.getClientArea();
+					Point preferredSize = grid.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+					int width = area.width - 2 * grid.getBorderWidth();
+					if (preferredSize.y > area.height + grid.getHeaderHeight()) {
+						// Subtract the scrollbar width from the total column width
+						// if a vertical scrollbar will be required
+						Point vBarSize = grid.getVerticalBar().getSize();
+						width -= vBarSize.x;
+					}
+					Point oldSize = grid.getSize();
+					if (oldSize.x > area.width) {
+						// table is getting smaller so make the columns
+						// smaller first and then resize the table to
+						// match the client area width
+						column1.setWidth(width / 4);
+						column2.setWidth(width / 4);
+						column3.setWidth(width / 4);
+						column.setWidth(width / 4);
+						grid.setSize(area.width, area.height);
+					} else {
+						// table is getting bigger so make the table
+						// bigger first and then make the columns wider
+						// to match the client area width
+						grid.setSize(area.width, area.height);
+						column1.setWidth(width / 4);
+						column2.setWidth(width / 4);
+						column3.setWidth(width / 4);
+						column.setWidth(width / 4);
+					}
 				}
 			}
 		});
@@ -335,10 +335,10 @@ public class StateTable {
 			/* Add the state! */
 			CurrentStates.addState(species);
 			CurrentStates.getStateDescriptions().add("");
-			
+
 			/* Create the button for the selection! */
 			CurrentStates.getIndexStateName(name);
-			
+
 			ButtonContainer.getinstance().addButton(species);
 			/* Create the counter for the new state! */
 			Quad2d.getQuad2dInstance().createzaehler();

@@ -1,14 +1,6 @@
 package com.eco.bio7.discrete;
 
 import java.awt.Color;
-import java.awt.Frame;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Stack;
-
-import javax.swing.JApplet;
-import javax.swing.JRootPane;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -18,23 +10,14 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTarget;
 import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IActionBars;
@@ -46,41 +29,25 @@ import org.eclipse.ui.part.ViewPart;
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
-
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.collection.SwingFxSwtView;
 import com.eco.bio7.jobs.LoadData;
-import com.eco.bio7.jobs.LoadWorkspaceJob;
-import com.eco.bio7.methods.Compiled;
 import com.eco.bio7.methods.CurrentStates;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
-import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
-import com.eco.bio7.swt.SwtAwt;
 import com.eco.bio7.time.Time;
-
-import javafx.embed.swing.SwingNode;
-import javafx.embed.swt.FXCanvas;
-import javafx.event.EventHandler;
-import javafx.scene.Scene;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.StackPane;
-import javafx.stage.Screen;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 public class Quadview extends ViewPart {
 	public static final String ID = "com.eco.bio7.quadgrid";
 
 	private IPartListener partListener;
 
-	private JApplet panel;
+	//private JApplet panel;
 
 	private Composite top;
 
-	private java.awt.Frame frame;
+	//private java.awt.Frame frame;
 
 	// private JRootPane root;
 
@@ -91,26 +58,6 @@ public class Quadview extends ViewPart {
 	private Action transferCounts;
 
 	private Action transferPattern;
-
-	private Scene scene;
-
-	// private Parent root;
-
-	private Stage stage1;
-
-	private Stage stage2;
-
-	private Stage stage3;
-
-	private Stage stage4;
-
-	private Stage primaryStage;
-
-	private FXCanvas canvas;
-
-	private SwingNode swingNode;
-
-	private StackPane pane;
 
 	public Quadview() {
 
@@ -157,7 +104,7 @@ public class Quadview extends ViewPart {
 		DropTarget dt = new DropTarget(top, DND.DROP_DEFAULT | DND.DROP_MOVE);
 		dt.setTransfer(new Transfer[] { FileTransfer.getInstance() });
 		dt.addDropListener(new DropTargetAdapter() {
-			private LoadWorkspaceJob ab;
+			//private LoadWorkspaceJob ab;
 
 			public void drop(DropTargetEvent event) {
 
@@ -182,31 +129,29 @@ public class Quadview extends ViewPart {
 			}
 		});
 		/*
-		 * try { System.setProperty("sun.awt.noerasebackground", "true"); }
-		 * catch (NoSuchMethodError error) { }
+		 * try { System.setProperty("sun.awt.noerasebackground", "true"); } catch
+		 * (NoSuchMethodError error) { }
 		 * 
 		 * frame = SWT_AWT.new_Frame(top); SwtAwt.setSwtAwtFocus(frame, top);
 		 * 
 		 * panel = new JApplet();
 		 * 
-		 * frame.add(panel); root = new JRootPane(); panel.add(root);
-		 * java.awt.Container contentPane = root.getContentPane();
+		 * frame.add(panel); root = new JRootPane(); panel.add(root); java.awt.Container
+		 * contentPane = root.getContentPane();
 		 * 
 		 * Time.setPause(true);
 		 * 
 		 * contentPane.add(Quad2d.getQuad2dInstance().jScrollPane);
 		 */
-		
-		
-		Time.setPause(true);
-		SwingFxSwtView view=new SwingFxSwtView();
-		Quad2d quad=Quad2d.getQuad2dInstance();
-		quad.setBackground(getSystemColour(parent));
-		view.embedd(top,quad.jScrollPane);
 
-		
+		Time.setPause(true);
+		SwingFxSwtView view = new SwingFxSwtView();
+		Quad2d quad = Quad2d.getQuad2dInstance();
+		quad.setBackground(getSystemColour(parent));
+		view.embedd(top, quad.jScrollPane);
+
 	}
-	
+
 	public java.awt.Color getSystemColour(Composite parent) {
 		Color col = null;
 		org.eclipse.swt.graphics.Color colswt = parent.getBackground();
@@ -224,9 +169,10 @@ public class Quadview extends ViewPart {
 
 	public void setstatusline(String message) {
 		IActionBars bars = getViewSite().getActionBars();
-		Image im;
+		//Image im;
 
-		//im = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/views/2dperspview.png"));
+		// im = new Image(Display.getCurrent(),
+		// getClass().getResourceAsStream("/icons/views/2dperspview.png"));
 
 		bars.getStatusLineManager().setMessage(message);
 
@@ -394,5 +340,4 @@ public class Quadview extends ViewPart {
 
 	}
 
-	
 }

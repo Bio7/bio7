@@ -16,6 +16,7 @@ import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 
 import com.eco.bio7.collection.Work;
+import com.eco.bio7.database.StateTable;
 import com.eco.bio7.util.Util;
 
 import javafx.application.Platform;
@@ -34,12 +35,11 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 		super.initialize(configurer);
 		configurer.setSaveAndRestore(false);
 	}
-	
-	
-	  /*Refresh e.g. the Project Explorer when opening!*/
-	  public IAdaptable getDefaultPageInput() {
-	    return  ResourcesPlugin.getWorkspace().getRoot();
-	  }
+
+	/* Refresh e.g. the Project Explorer when opening! */
+	public IAdaptable getDefaultPageInput() {
+		return ResourcesPlugin.getWorkspace().getRoot();
+	}
 
 	public String getInitialWindowPerspectiveId() {
 		return PERSPECTIVE_ID;
@@ -55,20 +55,28 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 		boolean close = super.preShutdown();
 		if (close) {
 			close = true;
-			//IWorkbench workbench = PlatformUI.getWorkbench();
-			//final IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-			
-			/*Here we stop the JavaFX thread for MacOSX (avoiding a crash which sometimes occur). 
-			 *Before all editors must be saved to avoid a cancel option for unsaved editors!
+			// IWorkbench workbench = PlatformUI.getWorkbench();
+			// final IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+
+			/*
+			 * Here we stop the JavaFX thread for MacOSX (avoiding a crash which sometimes
+			 * occur). Before all editors must be saved to avoid a cancel option for unsaved
+			 * editors!
 			 */
 			if (Util.getOS().equals("Mac")) {
 				NullProgressMonitor monitor = new NullProgressMonitor();
 				IEditorPart[] dirtyEditors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getDirtyEditors();
 				for (IEditorPart iEditorPart : dirtyEditors) {
-				    iEditorPart.doSave(monitor);
+					iEditorPart.doSave(monitor);
 				}
-				Platform.exit();
-				//Work.openPerspective("com.eco.bio7.perspective_2d");
+				Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						StateTable.grid.dispose();
+					}
+				});
+				// Platform.exit();
+				// Work.openPerspective("com.eco.bio7.perspective_2d");
 			}
 
 		}
