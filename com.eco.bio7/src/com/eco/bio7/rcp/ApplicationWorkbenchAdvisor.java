@@ -76,7 +76,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
 				IViewPart view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
 						.findView("com.eco.bio7.spreadsheet");
-				PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(view);
+				//PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(view);
 				view.dispose();// Work.openPerspective("com.eco.bio7.perspective_2d");
 			}
 
