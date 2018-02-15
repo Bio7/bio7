@@ -56,14 +56,9 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 		boolean close = super.preShutdown();
 		if (close) {
 			close = true;
-			// IWorkbench workbench = PlatformUI.getWorkbench();
-			// final IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+			
 
-			/*
-			 * Here we stop the JavaFX thread for MacOSX (avoiding a crash which sometimes
-			 * occur). Before all editors must be saved to avoid a cancel option for unsaved
-			 * editors!
-			 */
+			/*Save all editors before shutdown!*/
 			if (Util.getOS().equals("Mac")) {
 				NullProgressMonitor monitor = new NullProgressMonitor();
 				IEditorPart[] dirtyEditors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
@@ -72,13 +67,8 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 					iEditorPart.doSave(monitor);
 				}
 
-				// StateTable.grid.dispose();
-
-				/*IViewPart view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-						.findView("com.eco.bio7.spreadsheet");
-				//PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(view);
-				view.dispose();// Work.openPerspective("com.eco.bio7.perspective_2d");
-*/			}
+				
+		}
 
 		}
 		return close;
