@@ -56,19 +56,15 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 		boolean close = super.preShutdown();
 		if (close) {
 			close = true;
-			
-
-			/*Save all editors before shutdown!*/
+			/* Save all editors before shutdown! */
 			if (Util.getOS().equals("Mac")) {
 				NullProgressMonitor monitor = new NullProgressMonitor();
-				IEditorPart[] dirtyEditors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-						.getDirtyEditors();
+				IEditorPart[] dirtyEditors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getDirtyEditors();
 				for (IEditorPart iEditorPart : dirtyEditors) {
 					iEditorPart.doSave(monitor);
 				}
 
-				
-		}
+			}
 
 		}
 		return close;
