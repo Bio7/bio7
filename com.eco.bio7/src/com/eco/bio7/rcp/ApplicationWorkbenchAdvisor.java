@@ -1,8 +1,15 @@
 package com.eco.bio7.rcp;
 
+import java.lang.reflect.InvocationTargetException;
+
+import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
@@ -45,11 +52,53 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 			close = true;
 			/* Save all editors before shutdown! */
 			if (Util.getOS().equals("Mac")) {
+
 				NullProgressMonitor monitor = new NullProgressMonitor();
 				IEditorPart[] dirtyEditors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getDirtyEditors();
 				for (IEditorPart iEditorPart : dirtyEditors) {
 					iEditorPart.doSave(monitor);
 				}
+				// Save the workspace!
+				// final MultiStatus status = new MultiStatus(...);
+				IRunnableWithProgress runnable = new IRunnableWithProgress() {
+					public void run(IProgressMonitor monitor) {
+						IWorkspace ws = ResourcesPlugin.getWorkspace();
+						
+						try {
+							// status.merge(ws.save(true, monitor));
+							ws.save(true, monitor);
+						} catch (CoreException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				};
+				try {
+					new ProgressMonitorDialog(null).run(false, false, runnable);
+				} catch (InvocationTargetException | InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				/*
+				 * IWorkbench workbench = PlatformUI.getWorkbench(); final IWorkbenchWindow
+				 * window = workbench.getActiveWorkbenchWindow();
+				 * 
+				 * IPerspectiveRegistry perspectiveRegistry = window.getWorkbench()
+				 * .getPerspectiveRegistry(); IPerspectiveDescriptor
+				 * personalPerspectiveDescriptor = perspectiveRegistry
+				 * .findPerspectiveWithId("com.eco.bio7.WorldWind.3dglobe");
+				 * IPerspectiveDescriptor personalPerspectiveDescriptor2 = perspectiveRegistry
+				 * .findPerspectiveWithId("com.eco.bio7.perspective_3d");
+				 * 
+				 * IWorkbenchPage wbp =
+				 * PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+				 * 
+				 * //wbp.hideView(wbp.findView("com.eco.bio7.worldwind.WorldWindOptionsView"));
+				 * 
+				 * wbp.closePerspective(personalPerspectiveDescriptor, false, true);
+				 * 
+				 * wbp.closePerspective(personalPerspectiveDescriptor2, false, true);
+				 */
 
 			}
 
