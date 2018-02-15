@@ -3,24 +3,13 @@ package com.eco.bio7.rcp;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
-
-import com.eco.bio7.collection.Work;
-import com.eco.bio7.database.StateTable;
 import com.eco.bio7.util.Util;
-
-import javafx.application.Platform;
 
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
@@ -30,9 +19,8 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 		return new ApplicationWorkbenchWindowAdvisor(configurer);
 	}
 
-	public void initialize(IWorkbenchConfigurer configurer) {// speichert die
-																// Konfiguration
-																// !!
+	/* Save the configuration! */
+	public void initialize(IWorkbenchConfigurer configurer) {
 		super.initialize(configurer);
 		configurer.setSaveAndRestore(false);
 	}
@@ -51,7 +39,6 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 		return "com.eco.bio7.preferences.Bio7PreferencePage";
 	}
 
-	/* Workaround for MacOSX related to JavaFX and a shutdown error! */
 	public boolean preShutdown() {
 		boolean close = super.preShutdown();
 		if (close) {
