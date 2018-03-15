@@ -267,8 +267,7 @@ public class WorldWindOptionsView extends ViewPart {
 						if (curPos == null)
 							return;
 						/*
-						 * Counts the amounts of clicks to set the data in the
-						 * min max textfields!
+						 * Counts the amounts of clicks to set the data in the min max textfields!
 						 */
 						if (mouseCount == 1) {
 
@@ -317,7 +316,7 @@ public class WorldWindOptionsView extends ViewPart {
 		container.setLayout(new FillLayout());
 
 		expandBar = new ExpandBar(container, SWT.V_SCROLL);
-		//expandBar.setBackground(parent.getBackground());
+		// expandBar.setBackground(parent.getBackground());
 
 		final ExpandItem newItemExpandItem_3 = new ExpandItem(expandBar, SWT.NONE);
 		newItemExpandItem_3.setHeight(330);
@@ -325,7 +324,7 @@ public class WorldWindOptionsView extends ViewPart {
 
 		final Composite composite_2 = new Composite(expandBar, SWT.NONE);
 		newItemExpandItem_3.setControl(composite_2);
-		
+
 		composite_2.setLayout(new GridLayout(1, true));
 
 		Composite composite_8 = new Composite(composite_2, SWT.NONE);
@@ -347,7 +346,9 @@ public class WorldWindOptionsView extends ViewPart {
 				infoTip = new ToolTip(new Shell(), SWT.BALLOON | SWT.ICON_INFORMATION);
 				infoTip.setText("Projection");
 
-				infoTip.setMessage("Equirectangular projection \nDatum: WGS 84\nEPSG: 4326\n\n" + "Enter city or coordinates like:\n" + "Street, City\n" + "39.53, -119.816  (Reno, NV)\n" + "21 10 14 N, 86 51 0 W (Cancun)" + "\n-31¡ 59' 43\", 115¡ 45' 32\" (Perth)");
+				infoTip.setMessage("Equirectangular projection \nDatum: WGS 84\nEPSG: 4326\n\n"
+						+ "Enter city or coordinates like:\n" + "Street, City\n" + "39.53, -119.816  (Reno, NV)\n"
+						+ "21 10 14 N, 86 51 0 W (Cancun)" + "\n-31ï¿½ 59' 43\", 115ï¿½ 45' 32\" (Perth)");
 				infoTip.setVisible(true);
 
 			}
@@ -419,30 +420,29 @@ public class WorldWindOptionsView extends ViewPart {
 				flyToCoords();
 			}
 		});
-		
-				final Button setButton = new Button(composite_8, SWT.NONE);
-				GridData gd_setButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-				gd_setButton.heightHint = 40;
-				setButton.setLayoutData(gd_setButton);
-				setButton.setToolTipText("Fly to the coordinates");
-				setButton.addSelectionListener(new SelectionAdapter() {
-					public void widgetSelected(final SelectionEvent e) {
-						/*
-						 * LatLon latLon = computeLatLonFromString(text.getText(),
-						 * WorldWindView.getWwd().getModel().getGlobe());
-						 * updateResult(latLon); if (latLon != null) { OrbitView view =
-						 * (OrbitView) WorldWindView.getWwd().getView(); Globe globe =
-						 * WorldWindView.getWwd().getModel().getGlobe();
-						 * 
-						 * ((BasicOrbitView) view).addPanToAnimator(new Position(latLon,
-						 * 0), view.getHeading(), view.getPitch(), view.getZoom(),
-						 * true); }
-						 */
-						flyToCoords();
 
-					}
-				});
-				setButton.setText("Set");
+		final Button setButton = new Button(composite_8, SWT.NONE);
+		GridData gd_setButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_setButton.heightHint = 40;
+		setButton.setLayoutData(gd_setButton);
+		setButton.setToolTipText("Fly to the coordinates");
+		setButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				/*
+				 * LatLon latLon = computeLatLonFromString(text.getText(),
+				 * WorldWindView.getWwd().getModel().getGlobe()); updateResult(latLon); if
+				 * (latLon != null) { OrbitView view = (OrbitView)
+				 * WorldWindView.getWwd().getView(); Globe globe =
+				 * WorldWindView.getWwd().getModel().getGlobe();
+				 * 
+				 * ((BasicOrbitView) view).addPanToAnimator(new Position(latLon, 0),
+				 * view.getHeading(), view.getPitch(), view.getZoom(), true); }
+				 */
+				flyToCoords();
+
+			}
+		});
+		setButton.setText("Set");
 
 		final Label coordinatesLabel = new Label(composite_8, SWT.NONE);
 		GridData gd_coordinatesLabel = new GridData(SWT.LEFT, SWT.FILL, true, false, 1, 1);
@@ -452,7 +452,8 @@ public class WorldWindOptionsView extends ViewPart {
 		new Label(composite_8, SWT.NONE);
 		new Label(composite_8, SWT.NONE);
 
-		scrolLList = new org.eclipse.swt.widgets.List(composite_8, SWT.V_SCROLL | SWT.MULTI | SWT.H_SCROLL | SWT.BORDER);
+		scrolLList = new org.eclipse.swt.widgets.List(composite_8,
+				SWT.V_SCROLL | SWT.MULTI | SWT.H_SCROLL | SWT.BORDER);
 		GridData gd_scrolLList = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 4);
 		gd_scrolLList.heightHint = 44;
 		scrolLList.setLayoutData(gd_scrolLList);
@@ -498,16 +499,17 @@ public class WorldWindOptionsView extends ViewPart {
 			IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
 			public void widgetSelected(final SelectionEvent e) {
-				InputDialog dialog = new InputDialog(Util.getShell(), "Enter Description", "Please enter a description!", "", new IInputValidator() {
+				InputDialog dialog = new InputDialog(Util.getShell(), "Enter Description",
+						"Please enter a description!", "", new IInputValidator() {
 
-					public String isValid(String text) {
-						if (text.length() == 0) {
-							return "Please enter a description!";
-						}
-						return null;
-					}
+							public String isValid(String text) {
+								if (text.length() == 0) {
+									return "Please enter a description!";
+								}
+								return null;
+							}
 
-				});
+						});
 
 				if (dialog.open() == Window.OK) {
 
@@ -802,11 +804,12 @@ public class WorldWindOptionsView extends ViewPart {
 					imp = WindowManager.getCurrentWindow().getImagePlus();
 
 					BufferedImage image = imp.getBufferedImage();
-					addBufferedImages(image, imp.getTitle(), new Double(minLat.getText()), new Double(maxLat.getText()), new Double(minLon.getText()), new Double(maxLon.getText()));
+					addBufferedImages(image, imp.getTitle(), new Double(minLat.getText()), new Double(maxLat.getText()),
+							new Double(minLon.getText()), new Double(maxLon.getText()));
 				} else {
 					MessageBox messageBox = new MessageBox(new Shell(),
 
-					SWT.ICON_WARNING);
+							SWT.ICON_WARNING);
 					messageBox.setText("Info!");
 					messageBox.setMessage("No image available!");
 					messageBox.open();
@@ -822,7 +825,8 @@ public class WorldWindOptionsView extends ViewPart {
 		videoButton.setToolTipText("Enables a dynamic ImageJ layer\non top of the globe");
 		videoButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				addImageJDynamicImage(new Double(minLat.getText()), new Double(maxLat.getText()), new Double(minLon.getText()), new Double(maxLon.getText()));
+				addImageJDynamicImage(new Double(minLat.getText()), new Double(maxLat.getText()),
+						new Double(minLon.getText()), new Double(maxLon.getText()));
 			}
 		});
 		videoButton.setText("IJ Dynamic");
@@ -843,7 +847,8 @@ public class WorldWindOptionsView extends ViewPart {
 		GridData gd_removeAllButton = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
 		gd_removeAllButton.heightHint = 40;
 		removeAllButton.setLayoutData(gd_removeAllButton);
-		removeAllButton.setToolTipText("Add an area to the text fields.\nThe variables have to be defined in the current R workspace");
+		removeAllButton.setToolTipText(
+				"Add an area to the text fields.\nThe variables have to be defined in the current R workspace");
 		removeAllButton.addSelectionListener(new SelectionAdapter() {
 			private REXPLogical bolExistsMaxLon;
 			private REXPLogical bolExistsMinLon;
@@ -878,7 +883,7 @@ public class WorldWindOptionsView extends ViewPart {
 						} else {
 							MessageBox messageBox = new MessageBox(new Shell(),
 
-							SWT.ICON_WARNING);
+									SWT.ICON_WARNING);
 							messageBox.setText("Info!");
 							messageBox.setMessage("Lat-Lon variables are not available\n" + "in R workspace!");
 							messageBox.open();
@@ -895,7 +900,7 @@ public class WorldWindOptionsView extends ViewPart {
 				} else {
 					MessageBox messageBox = new MessageBox(new Shell(),
 
-					SWT.ICON_WARNING);
+							SWT.ICON_WARNING);
 					messageBox.setText("Info!");
 					messageBox.setMessage("Rserve is not Alive!");
 					messageBox.open();
@@ -955,10 +960,9 @@ public class WorldWindOptionsView extends ViewPart {
 				 * Rectangle r=WorldWindView.getWwd().getBounds(); View view =
 				 * WorldWindView.getWwd().getView();
 				 * 
-				 * Position upperLeft; Position lowerLeft; if(view!=null){
-				 * upperLeft = view.computePositionFromScreenPoint(0, 0);
-				 * lowerLeft = view.computePositionFromScreenPoint(r.width,
-				 * r.height);
+				 * Position upperLeft; Position lowerLeft; if(view!=null){ upperLeft =
+				 * view.computePositionFromScreenPoint(0, 0); lowerLeft =
+				 * view.computePositionFromScreenPoint(r.width, r.height);
 				 * 
 				 * 
 				 * 
@@ -1010,11 +1014,13 @@ public class WorldWindOptionsView extends ViewPart {
 				}
 			}
 		});
-		imageAlphaButton.setToolTipText("If this button is checked image\r\npixels with value 0 (RGB, greyscale, float, etc.) \r\nwill rendered transparent.");
+		imageAlphaButton.setToolTipText(
+				"If this button is checked image\r\npixels with value 0 (RGB, greyscale, float, etc.) \r\nwill rendered transparent.");
 		imageAlphaButton.setText("Image Alpha");
 
 		final Spinner spinner_1 = new Spinner(composite_7, SWT.BORDER);
-		spinner_1.setToolTipText("Select the layer (image tab) which will be rendered to ImageJ.\r\nThis action allows the rendering and simulation simultanously\r\nwith WorldWind and ImageJ.");
+		spinner_1.setToolTipText(
+				"Select the layer (image tab) which will be rendered to ImageJ.\r\nThis action allows the rendering and simulation simultanously\r\nwith WorldWind and ImageJ.");
 		GridData gd_spinner_1 = new GridData(SWT.FILL, SWT.TOP, true, false, 1, 1);
 		gd_spinner_1.heightHint = 30;
 		spinner_1.setLayoutData(gd_spinner_1);
@@ -1097,18 +1103,24 @@ public class WorldWindOptionsView extends ViewPart {
 		screenshotButton.setToolTipText("Creates a screenshot image in ImageJ");
 		screenshotButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				SwingUtilities.invokeLater(new Runnable() {
+				if (Util.getOS().equals("Mac")) {
+					ScreenRecording screen = new ScreenRecording(capture);
+					ImagePlus ip = screen.captureImage();
+					ip.show();
+				} else {
+					SwingUtilities.invokeLater(new Runnable() {
 
-					public void run() {
+						public void run() {
 
-						ScreenRecording screen = new ScreenRecording(capture);
-						ImagePlus ip = screen.captureImage();
-						ip.show();
+							ScreenRecording screen = new ScreenRecording(capture);
+							ImagePlus ip = screen.captureImage();
+							ip.show();
 
-						// WorldWindowGLAutoDrawable.screenshot = true;
+							// WorldWindowGLAutoDrawable.screenshot = true;
 
-					}
-				});
+						}
+					});
+				}
 
 			}
 		});
@@ -1141,7 +1153,9 @@ public class WorldWindOptionsView extends ViewPart {
 				captureTip = new ToolTip(new Shell(), SWT.BALLOON | SWT.ICON_INFORMATION);
 				captureTip.setText("Info");
 
-				captureTip.setMessage("" + "If the globe is resized within the capture mode the recording\n" + "is interrupted!\n" + "The captured images are added to an ImageJ stack which\n" + "can be saved e.g. as an *.avi or animated *.gif file.");
+				captureTip.setMessage("" + "If the globe is resized within the capture mode the recording\n"
+						+ "is interrupted!\n" + "The captured images are added to an ImageJ stack which\n"
+						+ "can be saved e.g. as an *.avi or animated *.gif file.");
 				captureTip.setVisible(true);
 			}
 		});
@@ -1198,7 +1212,8 @@ public class WorldWindOptionsView extends ViewPart {
 				if (c != null) {
 
 					measureTool.setLineColor(c);
-					Color fill = new Color(c.getRed() / 255f * .5f, c.getGreen() / 255f * .5f, c.getBlue() / 255f * .5f, .5f);
+					Color fill = new Color(c.getRed() / 255f * .5f, c.getGreen() / 255f * .5f, c.getBlue() / 255f * .5f,
+							.5f);
 					measureTool.setFillColor(fill);
 				}
 
@@ -1381,7 +1396,8 @@ public class WorldWindOptionsView extends ViewPart {
 
 			}
 		});
-		combo_3.setItems(new String[] { "M/M^2", "KM/KM^2", "KM/Hectare", "Feet/Feet^2", "Miles/Miles^2", "Nm/Miles^2", "Yards/Acres" });
+		combo_3.setItems(new String[] { "M/M^2", "KM/KM^2", "KM/Hectare", "Feet/Feet^2", "Miles/Miles^2", "Nm/Miles^2",
+				"Yards/Acres" });
 		combo_3.select(0);
 
 		final Label angleFormatLabel = new Label(composite_6, SWT.NONE);
@@ -1533,7 +1549,8 @@ public class WorldWindOptionsView extends ViewPart {
 				pauseButton.setText(!measureTool.isArmed() ? "Resume" : "Pause");
 				pauseButton.setEnabled(true);
 				if (wC != null) {
-					((Component) wC).setCursor(!measureTool.isArmed() ? Cursor.getDefaultCursor() : Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+					((Component) wC).setCursor(!measureTool.isArmed() ? Cursor.getDefaultCursor()
+							: Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 				}
 			}
 		});
@@ -1573,7 +1590,8 @@ public class WorldWindOptionsView extends ViewPart {
 		GridData gd_toSpreadButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_toSpreadButton.heightHint = 40;
 		toSpreadButton.setLayoutData(gd_toSpreadButton);
-		toSpreadButton.setToolTipText("Adds the current measurments to a dataframe.\nDelete the dataframe to start a new measurement series!");
+		toSpreadButton.setToolTipText(
+				"Adds the current measurments to a dataframe.\nDelete the dataframe to start a new measurement series!");
 		toSpreadButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 
@@ -1604,7 +1622,7 @@ public class WorldWindOptionsView extends ViewPart {
 					}
 					MessageBox messageBox = new MessageBox(new Shell(),
 
-					SWT.ICON_INFORMATION);
+							SWT.ICON_INFORMATION);
 					messageBox.setText("Info!");
 					messageBox.setMessage("Value(s) transferred!");
 					messageBox.open();
@@ -1612,7 +1630,7 @@ public class WorldWindOptionsView extends ViewPart {
 				} else {
 					MessageBox messageBox = new MessageBox(new Shell(),
 
-					SWT.ICON_WARNING);
+							SWT.ICON_WARNING);
 					messageBox.setText("Info!");
 					messageBox.setMessage("Rserve is not Alive!");
 					messageBox.open();
@@ -1700,7 +1718,9 @@ public class WorldWindOptionsView extends ViewPart {
 			measureTool.addPropertyChangeListener(new PropertyChangeListener() {
 				public void propertyChange(PropertyChangeEvent event) {
 					// Add, remove or change positions
-					if (event.getPropertyName().equals(MeasureTool.EVENT_POSITION_ADD) || event.getPropertyName().equals(MeasureTool.EVENT_POSITION_REMOVE) || event.getPropertyName().equals(MeasureTool.EVENT_POSITION_REPLACE)) {
+					if (event.getPropertyName().equals(MeasureTool.EVENT_POSITION_ADD)
+							|| event.getPropertyName().equals(MeasureTool.EVENT_POSITION_REMOVE)
+							|| event.getPropertyName().equals(MeasureTool.EVENT_POSITION_REPLACE)) {
 
 					}
 					// The tool was armed / disarmed
@@ -1735,8 +1755,7 @@ public class WorldWindOptionsView extends ViewPart {
 
 					// Metric changed - sent after each render frame
 					/*
-					 * With syncExec error occurred after perspective
-					 * switch!!!!!
+					 * With syncExec error occurred after perspective switch!!!!!
 					 */
 					else if (event.getPropertyName().equals(MeasureTool.EVENT_METRIC_CHANGED)) {
 						Display display = PlatformUI.getWorkbench().getDisplay();
@@ -1916,8 +1935,13 @@ public class WorldWindOptionsView extends ViewPart {
 					}
 				});
 
-				if (layer.getName().equals("MS Virtual Earth Aerial") || layer.getName().equals("Bing Imagery") || layer.getName().equals("MS Virtual Earth Hybrid") || layer.getName().equals("MS Virtual Earth Roads") || layer.getName().equals("OpenStreetMap") || layer.getName().equals("USGS Urban Area") || layer.getName().equals("USDA NAIP") || layer.getName().equals("i-cubed Landsat")
-						|| layer.getName().equals("Blue Marble (WMS) 2004") || layer.getName().equals("NASA Blue Marble Image") || layer.getName().equals("USGS Urban Area Ortho")) {
+				if (layer.getName().equals("MS Virtual Earth Aerial") || layer.getName().equals("Bing Imagery")
+						|| layer.getName().equals("MS Virtual Earth Hybrid")
+						|| layer.getName().equals("MS Virtual Earth Roads") || layer.getName().equals("OpenStreetMap")
+						|| layer.getName().equals("USGS Urban Area") || layer.getName().equals("USDA NAIP")
+						|| layer.getName().equals("i-cubed Landsat") || layer.getName().equals("Blue Marble (WMS) 2004")
+						|| layer.getName().equals("NASA Blue Marble Image")
+						|| layer.getName().equals("USGS Urban Area Ortho")) {
 
 					final Scale scale = new Scale(composite, SWT.NONE);
 					scale.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -1933,10 +1957,10 @@ public class WorldWindOptionsView extends ViewPart {
 						}
 					});
 
-					//scale.setBounds(10, ystart + 30, 200, 40);
+					// scale.setBounds(10, ystart + 30, 200, 40);
 				}
-				//b.setBounds(10, ystart, 200, 40);
-				//ystart = ystart + 65;
+				// b.setBounds(10, ystart, 200, 40);
+				// ystart = ystart + 65;
 			}
 		}
 	}
@@ -1948,7 +1972,8 @@ public class WorldWindOptionsView extends ViewPart {
 		if (latLon != null) {
 			text.setText(text.getText().toUpperCase());
 
-			tip.setMessage(String.format("Lat %7.4f\u00B0 Lon %7.4f\u00B0", latLon.getLatitude().degrees, latLon.getLongitude().degrees));
+			tip.setMessage(String.format("Lat %7.4f\u00B0 Lon %7.4f\u00B0", latLon.getLatitude().degrees,
+					latLon.getLongitude().degrees));
 			tip.setVisible(true);
 
 		} else
@@ -2035,8 +2060,8 @@ public class WorldWindOptionsView extends ViewPart {
 		// Try to extract two degrees minute seconds blocks separated by a
 		// space, ',' or ', '
 		// Allow S, N, W, E suffixes and signs.
-		// eg: -123° 34' 42" +45° 12' 30"
-		// eg: 123° 34' 42"S 45° 12' 30"W
+		// eg: -123ï¿½ 34' 42" +45ï¿½ 12' 30"
+		// eg: 123ï¿½ 34' 42"S 45ï¿½ 12' 30"W
 		if (lat == null || lon == null) {
 			regex = "([-|\\+]?\\d{1,3}[d|D|\u00B0|\\s](\\s*\\d{1,2}['|\u2019|\\s])?(\\s*\\d{1,2}[\"|\u201d])?\\s*[N|n|S|s]?)";
 			regex += separators;
@@ -2098,11 +2123,13 @@ public class WorldWindOptionsView extends ViewPart {
 		return null;
 	}
 
-	public void addImages(String path, double minLatitude, double maxLatitude, double minLongitude, double maxLongitude) {
+	public void addImages(String path, double minLatitude, double maxLatitude, double minLongitude,
+			double maxLongitude) {
 		scalestart = scalestart + 40;
 		try {
 
-			final SurfaceImage si1 = new SurfaceImage(path, Sector.fromDegrees(minLatitude, maxLatitude, minLongitude, maxLongitude));
+			final SurfaceImage si1 = new SurfaceImage(path,
+					Sector.fromDegrees(minLatitude, maxLatitude, minLongitude, maxLongitude));
 
 			final RenderableLayer layerImages = new RenderableLayer();
 			layerImages.setName(new File(path).getName());
@@ -2134,7 +2161,8 @@ public class WorldWindOptionsView extends ViewPart {
 			// configured factory. The factory class is specified in the
 			// Configuration, and a different one can be
 			// specified there.
-			DataRasterReaderFactory readerFactory = (DataRasterReaderFactory) WorldWind.createConfigurationComponent(AVKey.DATA_RASTER_READER_FACTORY_CLASS_NAME);
+			DataRasterReaderFactory readerFactory = (DataRasterReaderFactory) WorldWind
+					.createConfigurationComponent(AVKey.DATA_RASTER_READER_FACTORY_CLASS_NAME);
 			DataRasterReader reader = readerFactory.findReaderFor(sourceFile, null);
 
 			// Before reading the raster, verify that the file contains imagery.
@@ -2254,21 +2282,24 @@ public class WorldWindOptionsView extends ViewPart {
 		}
 	}
 
-	public void addImageJDynamicImage(final double minLatitude, final double maxLatitude, final double minLongitude, final double maxLongitude) {
+	public void addImageJDynamicImage(final double minLatitude, final double maxLatitude, final double minLongitude,
+			final double maxLongitude) {
 		image = null;
 		if (makeDynamicIJImage() != null) {
 			RenderableLayer layer = new RenderableLayer();
 			layer.setPickEnabled(false);
 			layer.setName("IJ Dynamic");
 
-			final SurfaceImage surfaceImage = new SurfaceImage(makeDynamicIJImage(), Sector.fromDegrees(minLatitude, maxLatitude, minLongitude, maxLongitude));
+			final SurfaceImage surfaceImage = new SurfaceImage(makeDynamicIJImage(),
+					Sector.fromDegrees(minLatitude, maxLatitude, minLongitude, maxLongitude));
 			layer.addRenderable(surfaceImage);
 			layer.setOpacity(0.5);
 			javax.swing.Timer timer = new javax.swing.Timer(20, new ActionListener() {
 				public void actionPerformed(ActionEvent actionEvent) {
 					BufferedImage im = makeDynamicIJImage();
 					if (im != null) {
-						surfaceImage.setImageSource(im, Sector.fromDegrees(minLatitude, maxLatitude, minLongitude, maxLongitude));
+						surfaceImage.setImageSource(im,
+								Sector.fromDegrees(minLatitude, maxLatitude, minLongitude, maxLongitude));
 						if (wC != null) {
 							wC.redraw();
 						}
@@ -2288,7 +2319,7 @@ public class WorldWindOptionsView extends ViewPart {
 		} else {
 			MessageBox messageBox = new MessageBox(new Shell(),
 
-			SWT.ICON_WARNING);
+					SWT.ICON_WARNING);
 			messageBox.setText("Info!");
 			messageBox.setMessage("No ImageJ image opened!");
 			messageBox.open();
@@ -2313,9 +2344,8 @@ public class WorldWindOptionsView extends ViewPart {
 			if (imp != null) {
 				ImageProcessor pr = imp.getProcessor();
 				/*
-				 * If the image is a color image convert it to RGBA buffered
-				 * image. If pixel RGB values are 0 alpha value becomes
-				 * transparent (0)!
+				 * If the image is a color image convert it to RGBA buffered image. If pixel RGB
+				 * values are 0 alpha value becomes transparent (0)!
 				 */
 				if (imageAlpha) {
 					if (pr instanceof ColorProcessor) {
@@ -2348,9 +2378,8 @@ public class WorldWindOptionsView extends ViewPart {
 					}
 
 					/*
-					 * If the image is a greyscale image convert to RGBA
-					 * buffered image. If greyscale value is 0 the pixel becomes
-					 * transparent!
+					 * If the image is a greyscale image convert to RGBA buffered image. If
+					 * greyscale value is 0 the pixel becomes transparent!
 					 */
 					else if (pr instanceof ByteProcessor) {
 
@@ -2451,11 +2480,13 @@ public class WorldWindOptionsView extends ViewPart {
 		return image;
 	}
 
-	public void addBufferedImages(BufferedImage image, final String name, double minLatitude, double maxLatitude, double minLongitude, double maxLongitude) {
+	public void addBufferedImages(BufferedImage image, final String name, double minLatitude, double maxLatitude,
+			double minLongitude, double maxLongitude) {
 
 		try {
 
-			final SurfaceImage si1 = new SurfaceImage(image, Sector.fromDegrees(minLatitude, maxLatitude, minLongitude, maxLongitude));
+			final SurfaceImage si1 = new SurfaceImage(image,
+					Sector.fromDegrees(minLatitude, maxLatitude, minLongitude, maxLongitude));
 			si1.setImageSource(image, Sector.fromDegrees(minLatitude, maxLatitude, minLongitude, maxLongitude));
 			final RenderableLayer layerImages = new RenderableLayer();
 			layerImages.setName(name);
@@ -2512,11 +2543,10 @@ public class WorldWindOptionsView extends ViewPart {
 		 * else{
 		 * 
 		 * 
-		 * for (Control tmp : children) { // The check below will not work
-		 * because x, y and the control's bounds could be // relative to
-		 * different parents... Better to convert all coordinates to display //
-		 * by using Control.toDisplay() and then compare below
-		 * System.out.println( tmp.getBounds().y);
+		 * for (Control tmp : children) { // The check below will not work because x, y
+		 * and the control's bounds could be // relative to different parents... Better
+		 * to convert all coordinates to display // by using Control.toDisplay() and
+		 * then compare below System.out.println( tmp.getBounds().y);
 		 * 
 		 * 
 		 * if(tmp.getBounds().y>200){
@@ -2575,8 +2605,7 @@ public class WorldWindOptionsView extends ViewPart {
 	}
 
 	/**
-	 * Opens a file-open dialog which displays the file with the given
-	 * extensions.
+	 * Opens a file-open dialog which displays the file with the given extensions.
 	 * 
 	 * @param extension
 	 *            the extensions as a String array which should be displayed.
@@ -2692,8 +2721,8 @@ public class WorldWindOptionsView extends ViewPart {
 			}
 
 			/*
-			 * else { resultsBox.removeAllItems(); for ( PointOfInterest p:poi)
-			 * { resultsBox.addItem(p); } resultsPanel.setVisible(true); }
+			 * else { resultsBox.removeAllItems(); for ( PointOfInterest p:poi) {
+			 * resultsBox.addItem(p); } resultsPanel.setVisible(true); }
 			 */
 		}
 	}
@@ -2707,8 +2736,8 @@ public class WorldWindOptionsView extends ViewPart {
 	}
 
 	/*
-	 * Sample inputs Coordinate formats: 39.53, -119.816 (Reno, NV) 21 10 14 N,
-	 * 86 51 0 W (Cancun)
+	 * Sample inputs Coordinate formats: 39.53, -119.816 (Reno, NV) 21 10 14 N, 86
+	 * 51 0 W (Cancun)
 	 */
 	public java.util.List<PointOfInterest> parseSearchValues(String searchStr) {
 		String sepRegex = "[,]"; // other separators??
@@ -2797,7 +2826,8 @@ public class WorldWindOptionsView extends ViewPart {
 			Globe globe = wC.getModel().getGlobe();
 
 			if (altitude == null || altitude == 0) {
-				double t = sector.getDeltaLonRadians() > sector.getDeltaLonRadians() ? sector.getDeltaLonRadians() : sector.getDeltaLonRadians();
+				double t = sector.getDeltaLonRadians() > sector.getDeltaLonRadians() ? sector.getDeltaLonRadians()
+						: sector.getDeltaLonRadians();
 				double w = 0.5 * t * 6378137.0;
 				altitude = w / wC.getView().getFieldOfView().tanHalfAngle();
 			}
