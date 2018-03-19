@@ -17,7 +17,6 @@ import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveFactory;
 import org.eclipse.ui.IWorkbenchPage;
 
-
 public class WorldWindPerspective implements IPerspectiveFactory {
 
 	@Override
@@ -28,21 +27,17 @@ public class WorldWindPerspective implements IPerspectiveFactory {
 
 		Right.addView(WorldWindView.ID);
 		layout.setEditorAreaVisible(false);
-		
-		
+
 		layout.addPlaceholder(WorldWindOptionsView.ID, IPageLayout.LEFT, 0.25f, "Right");
 
 	}
 
 	public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-		
 
 	}
 
 	public void perspectiveChanged(IWorkbenchPage page, IPerspectiveDescriptor perspective, String changeId) {
-		
 
 	}
-
 
 }
