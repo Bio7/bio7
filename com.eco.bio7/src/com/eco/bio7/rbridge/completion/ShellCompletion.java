@@ -472,7 +472,7 @@ public class ShellCompletion {
 			IContentProposal[] arrayTemp = makeProposalArray(array);
 			/* The var Workspace arrays are already an ImageContentProposal! */
 			IContentProposal[] varWorkspaceArray = varWorkspace.toArray(new IContentProposal[varWorkspace.size()]);
-			/* Concatenate both whith the Apache commons library! */
+			/* Concatenate both with the Apache commons library! */
 			IContentProposal[] allProposals = (IContentProposal[]) ArrayUtils.addAll(varWorkspaceArray, arrayTemp);
 			return allProposals;
 		}
