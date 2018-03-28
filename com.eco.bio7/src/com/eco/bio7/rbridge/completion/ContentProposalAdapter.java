@@ -139,6 +139,11 @@ public class ContentProposalAdapter {
 					scrollbarClicked = true;
 					return;
 				}
+				/*Changed for Bio7! deactivate event raises an 'Widget is disposed' exception (when clicking in the Infopopup a second time!)*/
+				if(e.type==SWT.Deactivate) {
+					
+					return;
+				}
 				// For all other events, merely getting them dictates closure.
 				close();
 			}
