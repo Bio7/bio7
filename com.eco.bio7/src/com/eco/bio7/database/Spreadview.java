@@ -2,24 +2,13 @@ package com.eco.bio7.database;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Vector;
-
-import javax.swing.JRootPane;
-import javax.swing.JScrollPane;
-
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ControlContribution;
 import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.nebula.widgets.grid.Grid;
-import org.eclipse.nebula.widgets.grid.GridItem;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTarget;
 import org.eclipse.swt.dnd.DropTargetAdapter;
@@ -30,7 +19,6 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Listener;
@@ -47,17 +35,12 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
-
 import com.eco.bio7.actions.SafeSaveDialog;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.discrete.Field;
 import com.eco.bio7.javaeditors.JavaEditor;
 import com.eco.bio7.jobs.LoadData;
-import com.eco.bio7.jobs.LoadWorkspaceJob;
 import com.eco.bio7.jobs.SaveWorkspaceJob;
-import com.eco.bio7.methods.Compiled;
-import com.eco.bio7.rbridge.RState;
-import com.swtdesigner.ResourceManager;
 
 public class Spreadview extends ViewPart {
 	

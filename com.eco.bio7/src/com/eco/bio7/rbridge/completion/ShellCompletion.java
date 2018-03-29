@@ -62,7 +62,7 @@ public class ShellCompletion {
 	private KeyStroke stroke;
 
 	private Image image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/brkp_obj.png");
-	private Image varImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/field_public_obj.png");
+	private Image varImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/methdef_obj.png");
 	private Image varFuncCallImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/varfunccall.png");
 	private Image s4Image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/s4.png");
 	private Image s3Image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/s3.png");
@@ -477,7 +477,7 @@ public class ShellCompletion {
 			IContentProposal[] arrayTemp = makeProposalArray(array);
 			/* The var Workspace arrays are already an ImageContentProposal! */
 			IContentProposal[] varWorkspaceArray = varWorkspace.toArray(new IContentProposal[varWorkspace.size()]);
-			/* Concatenate both whith the Apache commons library! */
+			/* Concatenate both with the Apache commons library! */
 			IContentProposal[] allProposals = (IContentProposal[]) ArrayUtils.addAll(varWorkspaceArray, arrayTemp);
 			return allProposals;
 		}
@@ -574,6 +574,7 @@ public class ShellCompletion {
 					if (c != null) {
 						try {
 							String[] result = (String[]) c.eval("try(ls(),silent=TRUE)").asStrings();
+							String []varsWorkspaceClass = (String[]) c.eval("try(as.character(lapply(mget(ls()),class)))").asStrings();
 							if (result != null && result.length > 0) {
 								if (result[0].startsWith("Error") == false) {
 
@@ -581,7 +582,7 @@ public class ShellCompletion {
 
 									for (int j = 0; j < result.length; j++) {
 
-										propo[j] = new ImageContentProposal(result[j], result[j], result[j], result[j].length(), varImage);
+										propo[j] = new ImageContentProposal(result[j], result[j]+" - "+varsWorkspaceClass[j], result[j], result[j].length(), varImage);
 
 									}
 								}

@@ -99,6 +99,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 	private void init() {
 		// this.compiler = ToolProvider.getSystemJavaCompiler();
 		// JavaCompiler compiler = new EclipseCompiler();
+		
 		this.compiler = com.sun.tools.javac.api.JavacTool.create();
 		if (this.compiler == null) {
 			throw new UnsupportedOperationException("JDK Java compiler not available - probably you're running a JRE, not a JDK");
@@ -183,7 +184,6 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 				if (sourceFileObject == null) {
 					throw new DiagnosticException("Source for '" + className + "' not found");
 				}
-
 				// Compose the effective compiler options.
 				Vector<String> optionList = new Vector<String>();
 
@@ -201,6 +201,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 				optionList.addElement("-classpath");
 				/* Add the Bio7 libs etc. for the compiler! */
 				optionList.addElement(new ScanClassPath().scan());
+	 
 				if (debug) {
 					optionList.addElement("-g");
 				} else {
@@ -267,7 +268,8 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 			throw new DiagnosticException(ioe);
 		}
 
-		return this.defineClass(className, ba, 0, size, (this.optionalProtectionDomainFactory == null ? null : this.optionalProtectionDomainFactory.getProtectionDomain(getSourceResourceName(className))));
+		return this.defineClass(className, ba, 0, size,
+				(this.optionalProtectionDomainFactory == null ? null : this.optionalProtectionDomainFactory.getProtectionDomain(getSourceResourceName(className))));
 	}
 
 	private void markError(DiagnosticCollector<JavaFileObject> diagnosticsCollector, boolean markerCreation) {
@@ -347,8 +349,8 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 	}
 
 	/**
-	 * Construct the name of a resource that could contain the source code of
-	 * the class with the given name.
+	 * Construct the name of a resource that could contain the source code of the
+	 * class with the given name.
 	 * <p>
 	 * Notice that member types are declared inside a different type, so the
 	 * relevant source file is that of the outermost declaring class.

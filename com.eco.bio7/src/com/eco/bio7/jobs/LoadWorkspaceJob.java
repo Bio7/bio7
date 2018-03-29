@@ -163,8 +163,8 @@ public class LoadWorkspaceJob extends WorkspaceJob {
 		Display display = PlatformUI.getWorkbench().getDisplay();
 		display.syncExec(new Runnable() {
 
-			public void run() {
-				StateTable stt = StateTable.getDatatable_instance();
+			public void run() { 
+				StateTable stt = StateTable.getDatatableInstance();
 				GridItem item = stt.getGrid().getItem(count);
 				item.setText(1, grid.getDescriptions().get(count));
 			}

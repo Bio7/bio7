@@ -107,23 +107,13 @@ public class ExecuteRTextSelection extends Action {
 					messageBox.open();
 
 				}
-
-				/*
-				 * else { MessageBox messageBox = new MessageBox(new Shell(),
-				 * 
-				 * SWT.ICON_WARNING);
-				 * messageBox.setMessage("RServer connection failed - Server is not running !");
-				 * messageBox.open();
-				 * 
-				 * }
-				 */
 			}
 		}
 	}
 
 	public void stopEvaluation() {
 		error = false;
-		RServeUtil.evalR("try(try(" + code + "))", null);
+		//RServeUtil.evalR("try(try(" + code + "))", null);
 		buff.setLength(0); // clear buffer!
 	}
 

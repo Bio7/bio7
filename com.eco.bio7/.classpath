@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="libs/bsh-2.0b6.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/groovy-all-2.4.12.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/py4j0.10.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="bin/"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry exported="true" kind="lib" path="libs/bsh-2.0b5.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/common.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jcommon-0.9.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jfreechart-0.9.20.1.jar"/>
