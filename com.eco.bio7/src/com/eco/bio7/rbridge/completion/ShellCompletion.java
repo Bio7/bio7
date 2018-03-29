@@ -569,6 +569,7 @@ public class ShellCompletion {
 					if (c != null) {
 						try {
 							String[] result = (String[]) c.eval("try(ls(),silent=TRUE)").asStrings();
+							String []varsWorkspaceClass = (String[]) c.eval("try(as.character(lapply(mget(ls()),class)))").asStrings();
 							if (result != null && result.length > 0) {
 								if (result[0].startsWith("Error") == false) {
 
@@ -576,7 +577,7 @@ public class ShellCompletion {
 
 									for (int j = 0; j < result.length; j++) {
 
-										propo[j] = new ImageContentProposal(result[j], result[j], result[j], result[j].length(), varImage);
+										propo[j] = new ImageContentProposal(result[j], result[j]+" - "+varsWorkspaceClass[j], result[j], result[j].length(), varImage);
 
 									}
 								}

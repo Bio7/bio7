@@ -1543,7 +1543,7 @@ public class RShellView extends ViewPart {
 							con.eval(".bio7TempVarEnvironment <- new.env()");
 
 							con.eval(
-									".bio7TempVarEnvironment$workspVar<-NULL;for(i in 1:length(ls())){if(is.matrix(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}}");
+									".bio7TempVarEnvironment$workspVar<-NULL;try(for(i in 1:length(ls())){if(is.matrix(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}})");
 							x = RServe.getConnection().eval(".bio7TempVarEnvironment$workspVar");
 							if (x.isNull() == false) {
 								try {
@@ -1592,7 +1592,7 @@ public class RShellView extends ViewPart {
 
 							con.eval(".bio7TempVarEnvironment <- new.env()");
 							con.eval(
-									".bio7TempVarEnvironment$workspVar<-NULL;for(i in 1:length(ls())){if(is.vector(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}}");
+									".bio7TempVarEnvironment$workspVar<-NULL;try(for(i in 1:length(ls())){if(is.vector(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}})");
 							x = RServe.getConnection().eval(".bio7TempVarEnvironment$workspVar");
 							if (x.isNull() == false) {
 								try {
@@ -1642,7 +1642,7 @@ public class RShellView extends ViewPart {
 
 							con.eval(".bio7TempVarEnvironment <- new.env()");
 							con.eval(
-									".bio7TempVarEnvironment$workspVar<-NULL;for(i in 1:length(ls())){if(is.function(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}}");
+									".bio7TempVarEnvironment$workspVar<-NULL;try(for(i in 1:length(ls())){if(is.function(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}})");
 							x = RServe.getConnection().eval(".bio7TempVarEnvironment$workspVar");
 							if (x.isNull() == false) {
 								try {
@@ -1691,7 +1691,7 @@ public class RShellView extends ViewPart {
 
 							con.eval(".bio7TempVarEnvironment <- new.env()");
 							con.eval(
-									".bio7TempVarEnvironment$workspVar<-NULL;for(i in 1:length(ls())){if(is.factor(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}}");
+									".bio7TempVarEnvironment$workspVar<-NULL;try(for(i in 1:length(ls())){if(is.factor(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}})");
 							x = RServe.getConnection().eval(".bio7TempVarEnvironment$workspVar");
 							if (x.isNull() == false) {
 								try {
@@ -1740,7 +1740,7 @@ public class RShellView extends ViewPart {
 
 							con.eval(".bio7TempVarEnvironment <- new.env()");
 							con.eval(
-									".bio7TempVarEnvironment$workspVar<-NULL;for(i in 1:length(ls())){if(is.data.frame(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}}");
+									".bio7TempVarEnvironment$workspVar<-NULL;try(for(i in 1:length(ls())){if(is.data.frame(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}})");
 							x = RServe.getConnection().eval(".bio7TempVarEnvironment$workspVar");
 							if (x.isNull() == false) {
 								try {
