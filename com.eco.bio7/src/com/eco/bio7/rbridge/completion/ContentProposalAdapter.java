@@ -563,7 +563,7 @@ public class ContentProposalAdapter {
 												c.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".txt\", sep=\"\"),silent = T)")
 														.toString();
 
-												c.eval("if (!is.null(r <- get0('" + finalContent + "'))) {"
+												c.eval("if (!is.null(get0('" + finalContent + "'))) {"
 														+ "try(paste(capture.output(str(" + finalContent
 														+ "),file = .bio7TempHtmlHelpFile),collapse=\"\\n\"))"
 														+ "} else {try(paste(capture.output(cat(\"\"),file = .bio7TempHtmlHelpFile),collapse=\"\\n\"))}");
