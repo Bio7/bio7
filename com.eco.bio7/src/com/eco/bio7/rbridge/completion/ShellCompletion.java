@@ -42,6 +42,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Text;
+import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
@@ -151,7 +152,7 @@ public class ShellCompletion {
 				// String content = control.getText();
 				/*
 				 * Weird behavior of text.getCaretPosition() position on MacOSX. Solved by
-				 * extracting the a local var here!
+				 * extracting a local var here!
 				 */
 				int caretPosition = control.getCaretPosition();
 				control.setSelection(contentProposalProvider.lastIndex, caretPosition);
@@ -400,6 +401,12 @@ public class ShellCompletion {
 			}
 
 			Parse parse = view.getParser();
+
+			
+             /*For the differentiation in nested function or matrix indexing calls the parser takes the nearest, see the ExtractInterfaceListener class!
+              *If a argument completion is not available it returns the default completion!
+              */
+			
 			/* Control if we are in a function call! */
 			if (parse != null && parse.isInFunctionCall()) {
 				String funcName = parse.getFuncName();
@@ -424,6 +431,43 @@ public class ShellCompletion {
 					}
 
 				}
+			}
+			/* Control if we are in a matrix '[]' call! */
+			if (parse != null && parse.isInMatrixBracketCall()) {
+				if (contentLastCorr.length() == 0) {
+					String name = parse.getBracketMatrixName();
+					byte state = parse.getMatrixArgState();
+					if (state == 1) {
+						return matrixDataFrameSubset(position, contentLastCorr, name, state, false);
+					}
+					// if call has two arguments, cursor on the left argument!
+					else if (state == 21) {
+						return matrixDataFrameSubset(position, contentLastCorr, name, state, false);
+					}
+					// if call has two arguments, cursor on the right argument!
+					else if (state == 22) {
+						return matrixDataFrameSubset(position, contentLastCorr, name, state, false);
+					}
+				}
+			}
+			/* Control if we are in a matrix '[[]]' call! */
+			if (parse != null && parse.isInMatrixDoubleBracketCall()) {
+				if (contentLastCorr.length() == 0) {
+					String name = parse.getBracketMatrixName();
+					byte state = parse.getMatrixArgState();
+					if (state == 1) {
+						return matrixDataFrameSubset(position, contentLastCorr, name, state, true);
+					}
+					// if call has two arguments, cursor on the left argument!
+					else if (state == 21) {
+						return matrixDataFrameSubset(position, contentLastCorr, name, state, true);
+					}
+					// if call has two arguments, cursor on the right argument!
+					else if (state == 22) {
+						return matrixDataFrameSubset(position, contentLastCorr, name, state, true);
+					}
+				}
+
 			}
 			/*
 			 * This section loads the general code completion if no other method returned a
@@ -554,6 +598,107 @@ public class ShellCompletion {
 	}
 
 	/*
+	 * Here we calculate matrix, dataframe subsets (rows, columns, etc.)
+	 */
+	private ImageContentProposal[] matrixDataFrameSubset(int position, String contentLastCorr, String matDfName, int state, boolean doubleMatrixCall) {
+		IContentProposal[] array = null;
+		int length = contentLastCorr.length();
+		RConnection c = RServe.getConnection();
+		if (c != null) {
+			propo = null;
+			ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
+			String[] item = null;
+			/* Get all installed dataset names, their package and description! */
+
+			if (doubleMatrixCall) {
+
+			}
+
+			else {
+				if (state == 1) {
+					try {
+						REXP rexp = RServeUtil.fromR("try(colnames(" + matDfName + "),silent=TRUE)");
+						if (rexp.isNull() == false) {
+							item = rexp.asStrings();
+						}
+
+					} catch (REXPMismatchException e) {
+
+						e.printStackTrace();
+					}
+				} else if (state == 21) {
+					try {
+						REXP rexp = RServeUtil.fromR("try(rownames(" + matDfName + "),silent=TRUE)");
+						if (rexp.isNull() == false) {
+							item = rexp.asStrings();
+						}
+
+					} catch (REXPMismatchException e) {
+
+						e.printStackTrace();
+					}
+
+				} else if (state == 22) {
+					try {
+						REXP rexp = RServeUtil.fromR("try(colnames(" + matDfName + "),silent=TRUE)");
+						if (rexp.isNull() == false) {
+							item = rexp.asStrings();
+						}
+
+					} catch (REXPMismatchException e) {
+
+						e.printStackTrace();
+					}
+
+				}
+				// packages = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Package\"])").asStrings();
+				// title = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Title\"])").asStrings();
+
+				if (item != null) {
+					/* If text length after parenheses is at least 0! */
+					if (length >= 0) {
+						for (int i = 0; i < item.length; i++) {
+							/*
+							 * Here we filter out the templates by comparing the typed letters with the
+							 * available templates!
+							 */
+							if (item[i].length() >= length && item[i].substring(0, length).equalsIgnoreCase(contentLastCorr)) {
+
+								list.add(new ImageContentProposal("\"" + item[i] + "\"", item[i], item[i], item[i].length(), dataImage));
+							}
+						}
+
+					}
+
+					else {
+
+						for (int j = 0; j < item.length; j++) {
+
+							list.add(new ImageContentProposal("\"" + item[j] + "\"", item[j], item[j], item[j].length(), dataImage));
+
+						}
+					}
+
+					propo = list.toArray(new ImageContentProposal[list.size()]);
+					
+					/*ImageContentProposal[] prop = getWorkSpaceVars(position);
+					if (prop != null) {
+						propo = (ImageContentProposal[]) ArrayUtils.addAll(propo, prop);
+					}*/
+
+					/* We have to convert the proposals to an ImageContentProposal! */
+					// IContentProposal[] arrayTemp = makeProposalArray(array);
+					list.clear();
+					
+				}
+			}
+		} else {
+			System.out.println("No Rserve connection available!");
+		}
+		return propo;
+	}
+
+	/*
 	 * Here we calculate the workspace variables and create ImageContentProposals!
 	 */
 	private ImageContentProposal[] getWorkSpaceVars(int offset) {
@@ -569,7 +714,7 @@ public class ShellCompletion {
 					if (c != null) {
 						try {
 							String[] result = (String[]) c.eval("try(ls(),silent=TRUE)").asStrings();
-							String []varsWorkspaceClass = (String[]) c.eval("try(as.character(lapply(mget(ls()),class)))").asStrings();
+							String[] varsWorkspaceClass = (String[]) c.eval("try(as.character(lapply(mget(ls()),class)))").asStrings();
 							if (result != null && result.length > 0) {
 								if (result[0].startsWith("Error") == false) {
 
@@ -577,7 +722,7 @@ public class ShellCompletion {
 
 									for (int j = 0; j < result.length; j++) {
 
-										propo[j] = new ImageContentProposal(result[j], result[j]+" - "+varsWorkspaceClass[j], result[j], result[j].length(), varImage);
+										propo[j] = new ImageContentProposal(result[j], result[j] + " - " + varsWorkspaceClass[j], result[j], result[j].length(), varImage);
 
 									}
 								}
@@ -662,7 +807,6 @@ public class ShellCompletion {
 	 * Here we calculate the ::: package function and create ImageContentProposals!
 	 */
 	private ImageContentProposal[] namesPackageAllActivation(int offset, String prefix) {
-
 		propo = null;
 		String afterLastIndex = prefix.substring(prefix.lastIndexOf(":") + 1, prefix.length());
 		int length = afterLastIndex.length();
@@ -727,7 +871,6 @@ public class ShellCompletion {
 
 	/* Here we calculate the s4 variables and create ImageContentProposals! */
 	private ImageContentProposal[] s4Activation(int offset, String prefix) {
-		propo = null;
 		propo = null;
 		String afterLastIndex = prefix.substring(prefix.lastIndexOf("@") + 1, prefix.length());
 		int length = afterLastIndex.length();
@@ -864,7 +1007,7 @@ public class ShellCompletion {
 	 * ImageContentProposals!
 	 */
 	private ImageContentProposal[] dataActivation(int offset, String contentLastCorr) {
-		IContentProposal[] array = null;
+		// IContentProposal[] array = null;
 		int length = contentLastCorr.length();
 		RConnection c = RServe.getConnection();
 		if (c != null) {
