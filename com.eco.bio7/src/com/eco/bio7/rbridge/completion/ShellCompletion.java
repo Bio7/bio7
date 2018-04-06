@@ -402,11 +402,12 @@ public class ShellCompletion {
 
 			Parse parse = view.getParser();
 
-			
-             /*For the differentiation in nested function or matrix indexing calls the parser takes the nearest, see the ExtractInterfaceListener class!
-              *If a argument completion is not available it returns the default completion!
-              */
-			
+			/*
+			 * For the differentiation in nested function or matrix indexing calls the
+			 * parser takes the nearest, see the ExtractInterfaceListener class! If a
+			 * argument completion is not available it returns the default completion!
+			 */
+
 			/* Control if we are in a function call! */
 			if (parse != null && parse.isInFunctionCall()) {
 				String funcName = parse.getFuncName();
@@ -608,10 +609,20 @@ public class ShellCompletion {
 			propo = null;
 			ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
 			String[] item = null;
+			ImageContentProposal[] prop = getWorkSpaceVars(position);
 			/* Get all installed dataset names, their package and description! */
 
 			if (doubleMatrixCall) {
+				try {
+					REXP rexp = RServeUtil.fromR("try(colnames(" + matDfName + "),silent=TRUE)");
+					if (rexp.isNull() == false) {
+						item = rexp.asStrings();
+					}
 
+				} catch (REXPMismatchException e) {
+
+					e.printStackTrace();
+				}
 			}
 
 			else {
@@ -651,12 +662,19 @@ public class ShellCompletion {
 					}
 
 				}
-				// packages = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Package\"])").asStrings();
-				// title = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Title\"])").asStrings();
+			}
+			// packages = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Package\"])").asStrings();
+			// title = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Title\"])").asStrings();
 
-				if (item != null) {
+			if (item != null) {
+				/*
+				 * If colnames, rownames applied on non existent object an error string will be
+				 * returned which we exclude here!
+				 */
+				if (item[0].startsWith("Error") == false) {
 					/* If text length after parenheses is at least 0! */
 					if (length >= 0) {
+
 						for (int i = 0; i < item.length; i++) {
 							/*
 							 * Here we filter out the templates by comparing the typed letters with the
@@ -680,18 +698,18 @@ public class ShellCompletion {
 					}
 
 					propo = list.toArray(new ImageContentProposal[list.size()]);
-					
-					/*ImageContentProposal[] prop = getWorkSpaceVars(position);
-					if (prop != null) {
-						propo = (ImageContentProposal[]) ArrayUtils.addAll(propo, prop);
-					}*/
 
 					/* We have to convert the proposals to an ImageContentProposal! */
 					// IContentProposal[] arrayTemp = makeProposalArray(array);
 					list.clear();
-					
+					if (prop != null) {
+						propo = (ImageContentProposal[]) ArrayUtils.addAll(propo, prop);
+					} else {
+						propo = null;
+					}
 				}
 			}
+
 		} else {
 			System.out.println("No Rserve connection available!");
 		}
