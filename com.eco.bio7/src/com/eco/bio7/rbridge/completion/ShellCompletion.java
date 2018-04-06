@@ -603,13 +603,15 @@ public class ShellCompletion {
 	 */
 	private ImageContentProposal[] matrixDataFrameSubset(int position, String contentLastCorr, String matDfName, int state, boolean doubleMatrixCall) {
 		IContentProposal[] array = null;
+		ImageContentProposal[] proposalsMatDFVec=null;
 		int length = contentLastCorr.length();
 		RConnection c = RServe.getConnection();
 		if (c != null) {
-			propo = null;
+			//propo = null;
+			
 			ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
 			String[] item = null;
-			ImageContentProposal[] prop = getWorkSpaceVars(position);
+			
 			/* Get all installed dataset names, their package and description! */
 
 			if (doubleMatrixCall) {
@@ -667,6 +669,7 @@ public class ShellCompletion {
 			// title = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Title\"])").asStrings();
 
 			if (item != null) {
+				
 				/*
 				 * If colnames, rownames applied on non existent object an error string will be
 				 * returned which we exclude here!
@@ -696,16 +699,18 @@ public class ShellCompletion {
 
 						}
 					}
-
-					propo = list.toArray(new ImageContentProposal[list.size()]);
+					
+					proposalsMatDFVec = list.toArray(new ImageContentProposal[list.size()]);
 
 					/* We have to convert the proposals to an ImageContentProposal! */
 					// IContentProposal[] arrayTemp = makeProposalArray(array);
 					list.clear();
+					
+					ImageContentProposal[] prop = getWorkSpaceVars(position);
 					if (prop != null) {
-						propo = (ImageContentProposal[]) ArrayUtils.addAll(propo, prop);
+						proposalsMatDFVec = (ImageContentProposal[]) ArrayUtils.addAll(proposalsMatDFVec, prop);
 					} else {
-						propo = null;
+						proposalsMatDFVec = null;
 					}
 				}
 			}
@@ -713,7 +718,7 @@ public class ShellCompletion {
 		} else {
 			System.out.println("No Rserve connection available!");
 		}
-		return propo;
+		return proposalsMatDFVec;
 	}
 
 	/*
@@ -1153,7 +1158,7 @@ public class ShellCompletion {
 
 	/* Here we display the function arguments from the default package functions! */
 	private ImageContentProposal[] functionArgumentsActivation(int position, String func) {
-		ImageContentProposal[] propo = null;
+		ImageContentProposal[] propoFuncArg = null;
 		for (int i = 0; i < statisticsSet.length; i++) {
 			/* Do we have the method in the proposals? */
 
@@ -1171,27 +1176,27 @@ public class ShellCompletion {
 
 					String[] proposalMethods = split(calc).toArray(new String[0]);
 
-					propo = new ImageContentProposal[proposalMethods.length];
+					propoFuncArg = new ImageContentProposal[proposalMethods.length];
 
 					for (int j = 0; j < proposalMethods.length; j++) {
 						/*
 						 * We add a suffix to mark this proposal for a scrolling to the arguments
 						 * section in the description!
 						 */
-						propo[j] = new ImageContentProposal(proposalMethods[j], proposalMethods[j], func + "::::args::::", proposalMethods[j].length(), varFuncCallImage);
+						propoFuncArg[j] = new ImageContentProposal(proposalMethods[j], proposalMethods[j], func + "::::args::::", proposalMethods[j].length(), varFuncCallImage);
 
 					}
 
 					ImageContentProposal[] prop = getWorkSpaceVars(position);
 					if (prop != null) {
-						propo = (ImageContentProposal[]) ArrayUtils.addAll(propo, prop);
+						propoFuncArg = (ImageContentProposal[]) ArrayUtils.addAll(propoFuncArg, prop);
 					}
 
 				}
 			}
 		}
 
-		return propo;
+		return propoFuncArg;
 
 	}
 
