@@ -437,36 +437,35 @@ public class ShellCompletion {
 			if (parse != null && parse.isInMatrixBracketCall()) {
 				if (contentLastCorr.length() == 0) {
 					String name = parse.getBracketMatrixName();
-					byte state = parse.getMatrixArgState();
-					if (state == 1) {
-						return matrixDataFrameSubset(position, contentLastCorr, name, state, false);
-					}
-					// if call has two arguments, cursor on the left argument!
-					else if (state == 21) {
-						return matrixDataFrameSubset(position, contentLastCorr, name, state, false);
-					}
-					// if call has two arguments, cursor on the right argument!
-					else if (state == 22) {
-						return matrixDataFrameSubset(position, contentLastCorr, name, state, false);
-					}
+					int state = parse.getMatrixArgState();
+					int bracketCommaCount = parse.getBracketCommaCount();
+					return matrixDataFrameSubset(position, contentLastCorr, name, state, bracketCommaCount, false);
+					/*
+					 * if (state == 1) { return matrixDataFrameSubset(position, contentLastCorr,
+					 * name, state, false); } // if call has two arguments, cursor on the left
+					 * argument! else if (state == 21) { return matrixDataFrameSubset(position,
+					 * contentLastCorr, name, state, false); } // if call has two arguments, cursor
+					 * on the right argument! else if (state == 22) { return
+					 * matrixDataFrameSubset(position, contentLastCorr, name, state, false); }
+					 */
 				}
 			}
 			/* Control if we are in a matrix '[[]]' call! */
 			if (parse != null && parse.isInMatrixDoubleBracketCall()) {
 				if (contentLastCorr.length() == 0) {
 					String name = parse.getBracketMatrixName();
-					byte state = parse.getMatrixArgState();
-					if (state == 1) {
-						return matrixDataFrameSubset(position, contentLastCorr, name, state, true);
-					}
-					// if call has two arguments, cursor on the left argument!
-					else if (state == 21) {
-						return matrixDataFrameSubset(position, contentLastCorr, name, state, true);
-					}
-					// if call has two arguments, cursor on the right argument!
-					else if (state == 22) {
-						return matrixDataFrameSubset(position, contentLastCorr, name, state, true);
-					}
+					int state = parse.getMatrixArgState();
+					/*Probably bracket comma count not needed here!*/
+					int bracketCommaCount = parse.getBracketCommaCount();
+					return matrixDataFrameSubset(position, contentLastCorr, name, state,bracketCommaCount, true);
+					/*
+					 * if (state == 1) { return matrixDataFrameSubset(position, contentLastCorr,
+					 * name, state, true); } // if call has two arguments, cursor on the left
+					 * argument! else if (state == 21) { return matrixDataFrameSubset(position,
+					 * contentLastCorr, name, state, true); } // if call has two arguments, cursor
+					 * on the right argument! else if (state == 22) { return
+					 * matrixDataFrameSubset(position, contentLastCorr, name, state, true); }
+					 */
 				}
 
 			}
@@ -601,22 +600,26 @@ public class ShellCompletion {
 	/*
 	 * Here we calculate matrix, dataframe subsets (rows, columns, etc.)
 	 */
-	private ImageContentProposal[] matrixDataFrameSubset(int position, String contentLastCorr, String matDfName, int state, boolean doubleMatrixCall) {
+	private ImageContentProposal[] matrixDataFrameSubset(int position, String contentLastCorr, String matDfName, int state, int bracketCommaCount, boolean doubleMatrixCall) {
 		IContentProposal[] array = null;
-		ImageContentProposal[] proposalsMatDFVec=null;
+		ImageContentProposal[] proposalsMatDFVec = null;
 		int length = contentLastCorr.length();
 		RConnection c = RServe.getConnection();
 		if (c != null) {
-			//propo = null;
-			
+			// propo = null;
+
 			ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
 			String[] item = null;
-			
+
 			/* Get all installed dataset names, their package and description! */
 
 			if (doubleMatrixCall) {
 				try {
-					REXP rexp = RServeUtil.fromR("try(colnames(" + matDfName + "),silent=TRUE)");
+					REXP rexp = null;
+
+					rexp = RServeUtil.fromR("try(if (is.data.frame(" + matDfName + ")||is.matrix(" + matDfName + ")){colnames(" + matDfName + ")} else if(is.array(" + matDfName + ")){rownames("
+							+ matDfName + ")} else{names(" + matDfName + ")} ,silent=TRUE)");
+
 					if (rexp.isNull() == false) {
 						item = rexp.asStrings();
 					}
@@ -627,33 +630,68 @@ public class ShellCompletion {
 				}
 			}
 
+			/* If we have a '[' expression! */
 			else {
-				if (state == 1) {
+				/* If we have only one argument! */
+				if (bracketCommaCount == 0) {
 					try {
-						REXP rexp = RServeUtil.fromR("try(colnames(" + matDfName + "),silent=TRUE)");
+						REXP rexp = null;
+
+						rexp = RServeUtil.fromR("try(if (is.data.frame(" + matDfName + ")||is.matrix(" + matDfName + ")){colnames(" + matDfName + ")} else if(is.array(" + matDfName + ")){rownames("
+								+ matDfName + ")} else{names(" + matDfName + ")} ,silent=TRUE)");
+
 						if (rexp.isNull() == false) {
 							item = rexp.asStrings();
+
 						}
 
 					} catch (REXPMismatchException e) {
 
 						e.printStackTrace();
 					}
-				} else if (state == 21) {
-					try {
-						REXP rexp = RServeUtil.fromR("try(rownames(" + matDfName + "),silent=TRUE)");
-						if (rexp.isNull() == false) {
-							item = rexp.asStrings();
+					/* If we have two arguments with one comma! */
+				} else if (bracketCommaCount == 1) {
+					/* Left argument from nearest offset calculation!! */
+					if (state == 0) {
+						try {
+							REXP rexp = null;
+
+							rexp = RServeUtil.fromR("try(rownames(" + matDfName + "),silent=TRUE)");
+
+							if (rexp.isNull() == false) {
+								item = rexp.asStrings();
+							}
+
+						} catch (REXPMismatchException e) {
+
+							e.printStackTrace();
 						}
+						/* Right argument from nearest offset calculation! */
+					} else if (state == 1) {
+						try {
+							REXP rexp = null;
 
-					} catch (REXPMismatchException e) {
+							rexp = RServeUtil.fromR("try(colnames(" + matDfName + "),silent=TRUE)");
 
-						e.printStackTrace();
+							if (rexp.isNull() == false) {
+								item = rexp.asStrings();
+							}
+
+						} catch (REXPMismatchException e) {
+
+							e.printStackTrace();
+						}
 					}
-
-				} else if (state == 22) {
+					/*
+					 * If we have more then 2-dimensions we expect an array! Before the array
+					 * arguments are give with row- and colnames function!
+					 */
+				} else {
 					try {
-						REXP rexp = RServeUtil.fromR("try(colnames(" + matDfName + "),silent=TRUE)");
+						REXP rexp = null;
+
+						rexp = RServeUtil.fromR("try(dimnames(" + matDfName + ")[[" + (state + 1) + "]],silent=TRUE)");
+
 						if (rexp.isNull() == false) {
 							item = rexp.asStrings();
 						}
@@ -669,7 +707,7 @@ public class ShellCompletion {
 			// title = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Title\"])").asStrings();
 
 			if (item != null) {
-				
+
 				/*
 				 * If colnames, rownames applied on non existent object an error string will be
 				 * returned which we exclude here!
@@ -699,13 +737,13 @@ public class ShellCompletion {
 
 						}
 					}
-					
+
 					proposalsMatDFVec = list.toArray(new ImageContentProposal[list.size()]);
 
 					/* We have to convert the proposals to an ImageContentProposal! */
 					// IContentProposal[] arrayTemp = makeProposalArray(array);
 					list.clear();
-					
+
 					ImageContentProposal[] prop = getWorkSpaceVars(position);
 					if (prop != null) {
 						proposalsMatDFVec = (ImageContentProposal[]) ArrayUtils.addAll(proposalsMatDFVec, prop);
