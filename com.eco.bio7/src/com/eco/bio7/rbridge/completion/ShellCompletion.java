@@ -614,19 +614,25 @@ public class ShellCompletion {
 			/* Get all installed dataset names, their package and description! */
 
 			if (doubleMatrixCall) {
-				try {
-					REXP rexp = null;
+				/* If we have only one argument! */
+				if (bracketCommaCount == 0) {
+					try {
+						REXP rexp = null;
+						/*Here we leave out matrices and arrays (matrices are arrays)!*/
+						rexp = RServeUtil.fromR("try(if (is.data.frame(" + matDfName + ")){colnames(" + matDfName + ")} else if (is.list(" + matDfName + ")) {names(" + matDfName + ")} else if (is.vector(" + matDfName + ")) {names(" + matDfName + ")} ,silent=TRUE)");
 
-					rexp = RServeUtil.fromR("try(if (is.data.frame(" + matDfName + ")||is.matrix(" + matDfName + ")){colnames(" + matDfName + ")} else if(is.array(" + matDfName + ")){rownames("
-							+ matDfName + ")} else{names(" + matDfName + ")} ,silent=TRUE)");
+						if (rexp.isNull() == false) {
+							item = rexp.asStrings();
 
-					if (rexp.isNull() == false) {
-						item = rexp.asStrings();
+						}
+
+					} catch (REXPMismatchException e) {
+
+						e.printStackTrace();
 					}
-
-				} catch (REXPMismatchException e) {
-
-					e.printStackTrace();
+					/* If we have two arguments with one comma! */
+				} else if (bracketCommaCount == 1) {
+					
 				}
 			}
 
@@ -723,7 +729,7 @@ public class ShellCompletion {
 							 */
 							if (item[i].length() >= length && item[i].substring(0, length).equalsIgnoreCase(contentLastCorr)) {
 
-								list.add(new ImageContentProposal("\"" + item[i] + "\"", item[i], item[i], item[i].length(), dataImage));
+								list.add(new ImageContentProposal("\"" + item[i] + "\"", item[i], null, item[i].length(), dataImage));
 							}
 						}
 
