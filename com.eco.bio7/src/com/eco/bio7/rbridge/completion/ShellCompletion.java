@@ -51,6 +51,7 @@ import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RShellView;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.rbridge.RStrObjectInformation;
 import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.rpreferences.template.CalculateRProposals;
@@ -719,6 +720,8 @@ public class ShellCompletion {
 				 * returned which we exclude here!
 				 */
 				if (item[0].startsWith("Error") == false) {
+					/*Get the object information str() as context info!*/
+					String resultStr = new RStrObjectInformation().getRStrObjectInfo(matDfName, c);
 					/* If text length after parenheses is at least 0! */
 					if (length >= 0) {
 
@@ -729,7 +732,7 @@ public class ShellCompletion {
 							 */
 							if (item[i].length() >= length && item[i].substring(0, length).equalsIgnoreCase(contentLastCorr)) {
 
-								list.add(new ImageContentProposal("\"" + item[i] + "\"", item[i], null, item[i].length(), dataImage));
+								list.add(new ImageContentProposal("\"" + item[i] + "\"", item[i], resultStr, item[i].length(), dataImage));
 							}
 						}
 
