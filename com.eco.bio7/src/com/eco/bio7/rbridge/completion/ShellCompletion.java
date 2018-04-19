@@ -52,6 +52,7 @@ import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RShellView;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.RStrObjectInformation;
+import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.rpreferences.template.CalculateRProposals;
@@ -70,6 +71,7 @@ public class ShellCompletion {
 	private Image s3Image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/s3.png");
 	private Image dataImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/settings_obj.png");
 	private Image libImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/package_obj.png");
+	private Image arrayImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/goto_input.png");
 	private Text control;
 	private String[] statistics;
 	private String[] statisticsContext;
@@ -733,7 +735,7 @@ public class ShellCompletion {
 							 */
 							if (item[i].length() >= length && item[i].substring(0, length).equalsIgnoreCase(contentLastCorr)) {
 
-								list.add(new ImageContentProposal("\"" + item[i] + "\"", item[i], resultStr, item[i].length(), dataImage));
+								list.add(new ImageContentProposal("\"" + item[i] + "\"", item[i], resultStr, item[i].length(), arrayImage));
 							}
 						}
 
@@ -743,7 +745,7 @@ public class ShellCompletion {
 
 						for (int j = 0; j < item.length; j++) {
 
-							list.add(new ImageContentProposal("\"" + item[j] + "\"", item[j], item[j], item[j].length(), dataImage));
+							list.add(new ImageContentProposal("\"" + item[j] + "\"", item[j], item[j], item[j].length(), arrayImage));
 
 						}
 					}
@@ -801,7 +803,7 @@ public class ShellCompletion {
 										String[] pipeArgumentContext = new String[pipeArguments.length];
 										for (int i = 0; i < pipeArguments.length; i++) {
 
-											pipeArgumentContext[i] = " %>% data: " + pipedDataName;
+											pipeArgumentContext[i] = pipedDataName;
 
 										}
 
@@ -819,8 +821,15 @@ public class ShellCompletion {
 									propo = new ImageContentProposal[result.length];
 
 									for (int j = 0; j < result.length; j++) {
-
-										propo[j] = new ImageContentProposal(result[j], result[j] + " - " + varsWorkspaceClass[j], result[j], result[j].length(), varImage);
+										if (pipedDataName != null) {
+											if (varsWorkspaceClass[j].equals(pipedDataName)) {
+												propo[j] = new ImageContentProposal(result[j], result[j] + " - " + varsWorkspaceClass[j], varsWorkspaceClass[j], result[j].length(), varImage);
+											} else {
+												propo[j] = new ImageContentProposal(result[j], result[j] + " - " + varsWorkspaceClass[j], result[j], result[j].length(), varImage);
+											}
+										} else {
+											propo[j] = new ImageContentProposal(result[j], result[j] + " - " + varsWorkspaceClass[j], result[j], result[j].length(), varImage);
+										}
 
 									}
 								}
