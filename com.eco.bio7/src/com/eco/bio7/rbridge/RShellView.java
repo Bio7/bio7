@@ -120,6 +120,7 @@ import com.eco.bio7.collection.Work;
 import com.eco.bio7.compile.BeanShellInterpreter;
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
 import com.eco.bio7.compile.GroovyInterpreter;
+import com.eco.bio7.compile.JavaScriptInterpreter;
 import com.eco.bio7.compile.PythonInterpreter;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
@@ -725,7 +726,7 @@ public class RShellView extends ViewPart {
 								if (htmlHelpText!=null) {
 
 									try {
-										c.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".html\", sep=\"\"))").toString();
+										c.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".html\", sep=\"\"))");
 										c.eval("tryCatch(tools::Rd2HTML(utils:::.getHelpFile(?" + htmlHelpText
 												+ "),.bio7TempHtmlHelpFile,package=\"tools\", stages=c(\"install\", \"render\")),error = function(w) {print(\"No helpfile available!\")})");
 									} catch (RserveException e1) {
@@ -2517,7 +2518,7 @@ public class RShellView extends ViewPart {
 				// Bio7Plugin.getDefault().getPreferenceStore();
 
 				File files = new File(store.getString(PreferenceConstants.D_RSHELL_SCRIPTS));
-				final File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".r", ".R", ".bsh", ".groovy", ".py" });
+				final File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".r", ".R", ".bsh", ".groovy", ".py",".js" });
 
 				for (int i = 0; i < fil.length; i++) {
 
@@ -2572,6 +2573,10 @@ public class RShellView extends ViewPart {
 							} else if (fil[scriptCount].getName().endsWith(".py")) {
 
 								PythonInterpreter.interpretJob(null, fil[scriptCount].toString());
+							}
+							else if (fil[scriptCount].getName().endsWith(".js")) {
+
+								JavaScriptInterpreter.interpretJob(null, fil[scriptCount].toString());
 
 							} else if (fil[scriptCount].getName().endsWith(".java")) {
 
@@ -2825,6 +2830,8 @@ public class RShellView extends ViewPart {
 					System.out.println();
 
 				}
+				
+				
 
 			}
 		} catch (RuntimeException ev) {

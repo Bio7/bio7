@@ -790,7 +790,6 @@ public class ShellCompletion {
 							boolean isInPipedFunction = parse.isInPipeFunction();
 							String pipedDataName = parse.getCurrentPipeData();
 							if (isInPipedFunction) {
-								System.out.println(pipedDataName);
 								REXP rexp = null;
 								/* We accept dataframes! */
 								rexp = c.eval("try(if (is.data.frame(" + pipedDataName + ")){colnames(" + pipedDataName + ")} ,silent=TRUE)");
