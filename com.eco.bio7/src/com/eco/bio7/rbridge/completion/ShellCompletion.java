@@ -65,7 +65,7 @@ public class ShellCompletion {
 	private KeyStroke stroke;
 
 	private Image image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/brkp_obj.png");
-	private Image varImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/methdef_obj.png");
+	private Image varImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/types.png");
 	private Image varFuncCallImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/varfunccall.png");
 	private Image s4Image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/s4.png");
 	private Image s3Image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/s3.png");
@@ -823,7 +823,7 @@ public class ShellCompletion {
 									for (int j = 0; j < result.length; j++) {
 										if (pipedDataName != null) {
 											if (varsWorkspaceClass[j].equals(pipedDataName)) {
-												propo[j] = new ImageContentProposal(result[j], result[j] + " - " + varsWorkspaceClass[j], varsWorkspaceClass[j], result[j].length(), varImage);
+												propo[j] = new ImageContentProposal(result[j], result[j] + " - " + varsWorkspaceClass[j]+" %>%", varsWorkspaceClass[j], result[j].length(), varImage);
 											} else {
 												propo[j] = new ImageContentProposal(result[j], result[j] + " - " + varsWorkspaceClass[j], result[j], result[j].length(), varImage);
 											}
