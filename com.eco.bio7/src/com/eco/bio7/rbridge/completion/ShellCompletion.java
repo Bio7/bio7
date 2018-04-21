@@ -52,6 +52,7 @@ import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RShellView;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.RStrObjectInformation;
+import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.rpreferences.template.CalculateRProposals;
@@ -64,12 +65,13 @@ public class ShellCompletion {
 	private KeyStroke stroke;
 
 	private Image image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/brkp_obj.png");
-	private Image varImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/methdef_obj.png");
+	private Image varImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/types.png");
 	private Image varFuncCallImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/varfunccall.png");
 	private Image s4Image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/s4.png");
 	private Image s3Image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/s3.png");
 	private Image dataImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/settings_obj.png");
 	private Image libImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/package_obj.png");
+	private Image arrayImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/goto_input.png");
 	private Text control;
 	private String[] statistics;
 	private String[] statisticsContext;
@@ -434,7 +436,7 @@ public class ShellCompletion {
 					 */
 					if (contentLastCorr.length() == 0) {
 
-						return functionArgumentsActivation(position, funcName);
+						return functionArgumentsActivation(position, funcName, parse);
 					}
 
 				}
@@ -445,7 +447,7 @@ public class ShellCompletion {
 					String name = parse.getBracketMatrixName();
 					int state = parse.getMatrixArgState();
 					int bracketCommaCount = parse.getBracketCommaCount();
-					return matrixDataFrameSubset(position, contentLastCorr, name, state, bracketCommaCount, false);
+					return matrixDataFrameSubset(position, contentLastCorr, name, state, bracketCommaCount, false, parse);
 					/*
 					 * if (state == 1) { return matrixDataFrameSubset(position, contentLastCorr,
 					 * name, state, false); } // if call has two arguments, cursor on the left
@@ -461,9 +463,9 @@ public class ShellCompletion {
 				if (contentLastCorr.length() == 0) {
 					String name = parse.getBracketMatrixName();
 					int state = parse.getMatrixArgState();
-					/*Probably bracket comma count not needed here!*/
+					/* Probably bracket comma count not needed here! */
 					int bracketCommaCount = parse.getBracketCommaCount();
-					return matrixDataFrameSubset(position, contentLastCorr, name, state,bracketCommaCount, true);
+					return matrixDataFrameSubset(position, contentLastCorr, name, state, bracketCommaCount, true, parse);
 					/*
 					 * if (state == 1) { return matrixDataFrameSubset(position, contentLastCorr,
 					 * name, state, true); } // if call has two arguments, cursor on the left
@@ -481,7 +483,7 @@ public class ShellCompletion {
 			 */
 			if (RServe.isAlive()) {
 				/* Here we get the R workspace vars! */
-				ImageContentProposal[] workspaceVars = getWorkSpaceVars(position);
+				ImageContentProposal[] workspaceVars = getWorkSpaceVars(position, parse);
 				if (workspaceVars != null) {
 					for (int i = 0; i < workspaceVars.length; i++) {
 						/*
@@ -606,7 +608,7 @@ public class ShellCompletion {
 	/*
 	 * Here we calculate matrix, dataframe subsets (rows, columns, etc.)
 	 */
-	private ImageContentProposal[] matrixDataFrameSubset(int position, String contentLastCorr, String matDfName, int state, int bracketCommaCount, boolean doubleMatrixCall) {
+	private ImageContentProposal[] matrixDataFrameSubset(int position, String contentLastCorr, String matDfName, int state, int bracketCommaCount, boolean doubleMatrixCall, Parse parse) {
 		IContentProposal[] array = null;
 		ImageContentProposal[] proposalsMatDFVec = null;
 		int length = contentLastCorr.length();
@@ -624,8 +626,9 @@ public class ShellCompletion {
 				if (bracketCommaCount == 0) {
 					try {
 						REXP rexp = null;
-						/*Here we leave out matrices and arrays (matrices are arrays)!*/
-						rexp = RServeUtil.fromR("try(if (is.data.frame(" + matDfName + ")){colnames(" + matDfName + ")} else if (is.list(" + matDfName + ")) {names(" + matDfName + ")} else if (is.vector(" + matDfName + ")) {names(" + matDfName + ")} ,silent=TRUE)");
+						/* Here we leave out matrices and arrays (matrices are arrays)! */
+						rexp = RServeUtil.fromR("try(if (is.data.frame(" + matDfName + ")){colnames(" + matDfName + ")} else if (is.list(" + matDfName + ")) {names(" + matDfName
+								+ ")} else if (is.vector(" + matDfName + ")) {names(" + matDfName + ")} ,silent=TRUE)");
 
 						if (rexp.isNull() == false) {
 							item = rexp.asStrings();
@@ -638,7 +641,7 @@ public class ShellCompletion {
 					}
 					/* If we have two arguments with one comma! */
 				} else if (bracketCommaCount == 1) {
-					
+
 				}
 			}
 
@@ -725,7 +728,7 @@ public class ShellCompletion {
 				 * returned which we exclude here!
 				 */
 				if (item[0].startsWith("Error") == false) {
-					/*Get the object information str() as context info!*/
+					/* Get the object information str() as context info! */
 					String resultStr = new RStrObjectInformation().getRStrObjectInfo(matDfName, c);
 					/* If text length after parenheses is at least 0! */
 					if (length >= 0) {
@@ -737,7 +740,7 @@ public class ShellCompletion {
 							 */
 							if (item[i].length() >= length && item[i].substring(0, length).equalsIgnoreCase(contentLastCorr)) {
 
-								list.add(new ImageContentProposal("\"" + item[i] + "\"", item[i], resultStr, item[i].length(), dataImage));
+								list.add(new ImageContentProposal("\"" + item[i] + "\"", item[i], resultStr, item[i].length(), arrayImage));
 							}
 						}
 
@@ -747,7 +750,7 @@ public class ShellCompletion {
 
 						for (int j = 0; j < item.length; j++) {
 
-							list.add(new ImageContentProposal("\"" + item[j] + "\"", item[j], item[j], item[j].length(), dataImage));
+							list.add(new ImageContentProposal("\"" + item[j] + "\"", item[j], item[j], item[j].length(), arrayImage));
 
 						}
 					}
@@ -758,7 +761,7 @@ public class ShellCompletion {
 					// IContentProposal[] arrayTemp = makeProposalArray(array);
 					list.clear();
 
-					ImageContentProposal[] prop = getWorkSpaceVars(position);
+					ImageContentProposal[] prop = getWorkSpaceVars(position, parse);
 					if (prop != null) {
 						proposalsMatDFVec = (ImageContentProposal[]) ArrayUtils.addAll(proposalsMatDFVec, prop);
 					} else {
@@ -776,7 +779,7 @@ public class ShellCompletion {
 	/*
 	 * Here we calculate the workspace variables and create ImageContentProposals!
 	 */
-	private ImageContentProposal[] getWorkSpaceVars(int offset) {
+	private ImageContentProposal[] getWorkSpaceVars(int offset, Parse parse) {
 		propo = null;
 
 		RConnection c = RServe.getConnection();
@@ -790,14 +793,48 @@ public class ShellCompletion {
 						try {
 							String[] result = (String[]) c.eval("try(ls(),silent=TRUE)").asStrings();
 							String[] varsWorkspaceClass = (String[]) c.eval("try(as.character(lapply(mget(ls()),class)))").asStrings();
+
+							boolean isInPipedFunction = parse.isInPipeFunction();
+							String pipedDataName = parse.getCurrentPipeData();
+							if (isInPipedFunction) {
+								REXP rexp = null;
+								/* We accept dataframes! */
+								rexp = c.eval("try(if (is.data.frame(" + pipedDataName + ")){colnames(" + pipedDataName + ")} ,silent=TRUE)");
+
+								if (rexp.isNull() == false) {
+
+									String[] pipeArguments = rexp.asStrings();
+									if (pipeArguments[0].startsWith("Error") == false) {
+										String[] pipeArgumentContext = new String[pipeArguments.length];
+										for (int i = 0; i < pipeArguments.length; i++) {
+
+											pipeArgumentContext[i] = pipedDataName;
+
+										}
+
+										result = ArrayUtils.addAll(pipeArguments, result);
+										varsWorkspaceClass = ArrayUtils.addAll(pipeArgumentContext, varsWorkspaceClass);
+									}
+
+								}
+
+							}
+
 							if (result != null && result.length > 0) {
 								if (result[0].startsWith("Error") == false) {
 
 									propo = new ImageContentProposal[result.length];
 
 									for (int j = 0; j < result.length; j++) {
-
-										propo[j] = new ImageContentProposal(result[j], result[j] + " - " + varsWorkspaceClass[j], result[j], result[j].length(), varImage);
+										if (pipedDataName != null) {
+											if (varsWorkspaceClass[j].equals(pipedDataName)) {
+												propo[j] = new ImageContentProposal(result[j], result[j] + " - " + varsWorkspaceClass[j]+" %>%", varsWorkspaceClass[j], result[j].length(), varImage);
+											} else {
+												propo[j] = new ImageContentProposal(result[j], result[j] + " - " + varsWorkspaceClass[j], result[j], result[j].length(), varImage);
+											}
+										} else {
+											propo[j] = new ImageContentProposal(result[j], result[j] + " - " + varsWorkspaceClass[j], result[j], result[j].length(), varImage);
+										}
 
 									}
 								}
@@ -1211,7 +1248,7 @@ public class ShellCompletion {
 	}
 
 	/* Here we display the function arguments from the default package functions! */
-	private ImageContentProposal[] functionArgumentsActivation(int position, String func) {
+	private ImageContentProposal[] functionArgumentsActivation(int position, String func, Parse parse) {
 		ImageContentProposal[] propoFuncArg = null;
 		for (int i = 0; i < statisticsSet.length; i++) {
 			/* Do we have the method in the proposals? */
@@ -1240,8 +1277,7 @@ public class ShellCompletion {
 						propoFuncArg[j] = new ImageContentProposal(proposalMethods[j], proposalMethods[j], func + "::::args::::", proposalMethods[j].length(), varFuncCallImage);
 
 					}
-
-					ImageContentProposal[] prop = getWorkSpaceVars(position);
+					ImageContentProposal[] prop = getWorkSpaceVars(position, parse);
 					if (prop != null) {
 						propoFuncArg = (ImageContentProposal[]) ArrayUtils.addAll(propoFuncArg, prop);
 					}

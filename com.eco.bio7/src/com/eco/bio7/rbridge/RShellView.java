@@ -120,6 +120,7 @@ import com.eco.bio7.collection.Work;
 import com.eco.bio7.compile.BeanShellInterpreter;
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
 import com.eco.bio7.compile.GroovyInterpreter;
+import com.eco.bio7.compile.JavaScriptInterpreter;
 import com.eco.bio7.compile.PythonInterpreter;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
@@ -164,7 +165,7 @@ public class RShellView extends ViewPart {
 	private static RCompletionShell shellInstance = null;
 	// private String t;
 	private String url;
-	protected Object htmlHelpText;
+	protected String htmlHelpText;
 	protected REXPLogical isVector;
 	private Button objectsButton;
 	private Button iButton;
@@ -701,32 +702,44 @@ public class RShellView extends ViewPart {
 							protected IStatus run(IProgressMonitor monitor) {
 								monitor.beginTask("Help ...", IProgressMonitor.UNKNOWN);
 
-								try {
-									RConnection c = RServe.getConnection();
+								RConnection c = RServe.getConnection();
 
-									Display display = PlatformUI.getWorkbench().getDisplay();
+								Display display = PlatformUI.getWorkbench().getDisplay();
 
-									display.syncExec(new Runnable() {
+								display.syncExec(new Runnable() {
 
-										public void run() {
-											String selText = text.getSelectionText();
-											if (selText.isEmpty()) {
-												htmlHelpText = text.getText();
-											} else {
-												htmlHelpText = selText;
+									public void run() {
+										String selText = text.getSelectionText();
+										if (selText.isEmpty()) {
+											htmlHelpText = text.getText();
+
+											if (htmlHelpText.isEmpty()) {
+
+												htmlHelpText = null;
 											}
-
+										} else {
+											htmlHelpText = selText;
 										}
-									});
-									c.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".html\", sep=\"\"))").toString();
-									c.eval("tryCatch(tools::Rd2HTML(utils:::.getHelpFile(?" + htmlHelpText
-											+ "),.bio7TempHtmlHelpFile,package=\"tools\", stages=c(\"install\", \"render\")),warning = function(w) {print(paste(\"negative argument\", x))})");
+
+									}
+								});
+								if (htmlHelpText!=null) {
+
+									try {
+										c.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".html\", sep=\"\"))");
+										c.eval("tryCatch(tools::Rd2HTML(utils:::.getHelpFile(?" + htmlHelpText
+												+ "),.bio7TempHtmlHelpFile,package=\"tools\", stages=c(\"install\", \"render\")),error = function(w) {print(\"No helpfile available!\")})");
+									} catch (RserveException e1) {
+
+										System.out.println(e1.getMessage());
+									}
 									String out = null;
+
 									try {
 										out = (String) c.eval("try(.bio7TempHtmlHelpFile)").asString();
-									} catch (REXPMismatchException e) {
+									} catch (RserveException | REXPMismatchException e) {
 
-										e.printStackTrace();
+										System.out.println(e.getMessage());
 									}
 
 									String pattern = "file:///" + out;
@@ -752,10 +765,6 @@ public class RShellView extends ViewPart {
 											}
 										});
 									}
-
-								} catch (RserveException e1) {
-
-									e1.printStackTrace();
 								}
 
 								monitor.done();
@@ -1226,8 +1235,8 @@ public class RShellView extends ViewPart {
 				ToolTip infoTip = new ToolTip(new Shell(), SWT.BALLOON | SWT.ICON_INFORMATION);
 				infoTip.setText("Info!");
 				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
-					infoTip.setMessage("Expression textfield:\n\n"  + "STRG + SPACE (Change in pref.!) = Open code completion!\n" + "ESC =  Close code completion!\n"
-							+ "UP ARROW =  Open history!\n" + "CMD + ALT + SHIFT + I = Transfer history to opened R editor!\n" + "CMD + ALT + SHIFT + R = Refresh code completion!\n"
+					infoTip.setMessage("Expression textfield:\n\n" + "STRG + SPACE (Change in pref.!) = Open code completion!\n" + "ESC =  Close code completion!\n" + "UP ARROW =  Open history!\n"
+							+ "CMD + ALT + SHIFT + I = Transfer history to opened R editor!\n" + "CMD + ALT + SHIFT + R = Refresh code completion!\n"
 							+ "CMD + ALT + SHIFT + O = Open file and create load file template!\n" + "CMD + ALT + SHIFT + S = Save file and create save file template!\n"
 							+ "CMD + ALT + SHIFT + B = Create assign operator ('<-')!\n" + "CMD + ALT + SHIFT + N = Create pipe operator ('%>%')!\n"
 							+ "Key + Mouse Click (before bracket) - select matching brackets!\n\n" + "Objects panel (left):\n\n"
@@ -1236,19 +1245,18 @@ public class RShellView extends ViewPart {
 							+ "Double-Click = Add template to the R-Shell textfield!\n" + "Double-Right-Click = Add template to the R editor!\n"
 
 					);
-					
-				}
-				else {
-				infoTip.setMessage("Expression textfield:\n\n" + "STRG + SPACE (Change in pref.!) = Open code completion!\n" + "ESC =  Close code completion!\n"
-						+ "UP ARROW =  Open history!\n" + "STRG + SHIFT + I = Transfer history to opened R editor!\n" + "STRG + ALT + R = Refresh code completion!\n"
-						+ "STRG + SHIFT + ALT + O = Open file and create load file template!\n" + "STRG + SHIFT + ALT + S = Save file and create save file template!\n"
-						+ "SHIFT + ALT + - = Create assign operator ('<-')!\n" + "SHIFT + ALT + N = Create pipe operator ('%>%')!\n"
-						+ "Key + Mouse Click (before bracket) - select matching brackets!\n\n" + "Objects panel (left):\n\n"
-						+ "Selection + 'C' key = Concatenate selected variables in Expression textfield!\n" + "Selection + 'A' key = Comma seperate selected variables in Expression textfield!\n"
-						+ "Right-Click = Menu\n" + "Select variable(s) = To show, summarize, plot, transfer and convert data!\n\n" + "Tabs templates:\n\n"
-						+ "Double-Click = Add template to the R-Shell textfield!\n" + "Double-Right-Click = Add template to the R editor!\n"
 
-				);
+				} else {
+					infoTip.setMessage("Expression textfield:\n\n" + "STRG + SPACE (Change in pref.!) = Open code completion!\n" + "ESC =  Close code completion!\n" + "UP ARROW =  Open history!\n"
+							+ "STRG + SHIFT + I = Transfer history to opened R editor!\n" + "STRG + ALT + R = Refresh code completion!\n"
+							+ "STRG + SHIFT + ALT + O = Open file and create load file template!\n" + "STRG + SHIFT + ALT + S = Save file and create save file template!\n"
+							+ "SHIFT + ALT + - = Create assign operator ('<-')!\n" + "SHIFT + ALT + N = Create pipe operator ('%>%')!\n"
+							+ "Key + Mouse Click (before bracket) - select matching brackets!\n\n" + "Objects panel (left):\n\n"
+							+ "Selection + 'C' key = Concatenate selected variables in Expression textfield!\n" + "Selection + 'A' key = Comma seperate selected variables in Expression textfield!\n"
+							+ "Right-Click = Menu\n" + "Select variable(s) = To show, summarize, plot, transfer and convert data!\n\n" + "Tabs templates:\n\n"
+							+ "Double-Click = Add template to the R-Shell textfield!\n" + "Double-Right-Click = Add template to the R editor!\n"
+
+					);
 				}
 				infoTip.setVisible(true);
 
@@ -2510,7 +2518,7 @@ public class RShellView extends ViewPart {
 				// Bio7Plugin.getDefault().getPreferenceStore();
 
 				File files = new File(store.getString(PreferenceConstants.D_RSHELL_SCRIPTS));
-				final File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".r", ".R", ".bsh", ".groovy", ".py" });
+				final File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".r", ".R", ".bsh", ".groovy", ".py",".js" });
 
 				for (int i = 0; i < fil.length; i++) {
 
@@ -2565,6 +2573,10 @@ public class RShellView extends ViewPart {
 							} else if (fil[scriptCount].getName().endsWith(".py")) {
 
 								PythonInterpreter.interpretJob(null, fil[scriptCount].toString());
+							}
+							else if (fil[scriptCount].getName().endsWith(".js")) {
+
+								JavaScriptInterpreter.interpretJob(null, fil[scriptCount].toString());
 
 							} else if (fil[scriptCount].getName().endsWith(".java")) {
 
@@ -2818,6 +2830,8 @@ public class RShellView extends ViewPart {
 					System.out.println();
 
 				}
+				
+				
 
 			}
 		} catch (RuntimeException ev) {
