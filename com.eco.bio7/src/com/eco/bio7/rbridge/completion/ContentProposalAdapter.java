@@ -515,7 +515,7 @@ public class ContentProposalAdapter {
 				return control.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND);
 			}
 
-			private String getRApiInformation(String finalContent) {
+			private String getRApiInformation(String finalContent, String label) {
 				IPreferenceStore store = Bio7REditorPlugin.getDefault().getPreferenceStore();
 
 				RConnection c = REditor.getRserveConnection();
@@ -528,9 +528,9 @@ public class ContentProposalAdapter {
 
 								RStrObjectInformation rObjectInfo = new RStrObjectInformation();
 								
-								informationControlText = rObjectInfo.getRHelpInfo(finalContent, c);
+								informationControlText = rObjectInfo.getRHelpInfo(finalContent, c,label);
                                
-								if (informationControlText == null || informationControlText.startsWith("Error")) {
+								if (informationControlText == null || informationControlText.startsWith(RStrObjectInformation.ERROR_CHECK)) {
 									/* If we would like to show the str objects! */
 									if (store.getBoolean("SHOW_HOVERPOPUP_STR")) {
 
@@ -556,23 +556,32 @@ public class ContentProposalAdapter {
 			/*
 			 * Set the text contents of the popup.
 			 */
-			void setContents(String newContents) {
+			void setContents(String description, String content, String label) {
+				
+				
 				boolean isArg = false;
-				if (newContents.contains("::::args::::")) {
-					newContents = newContents.split("::::args::::")[0];
+				if (description.contains("::::args::::")) {
+					description  = description.split("::::args::::")[0];
 					isArg = true;
 				}
 
-				String defaultContent = newContents;
-				newContents = getRApiInformation(newContents);
-				if (newContents.isEmpty()) {
-					newContents = defaultContent;
+				String defaultContent = description;
+				/*Here we extract the package info for the info popup!*/
+				/*if(label.contains("package:")) {
+					label=label.substring(label.lastIndexOf(":")+1, label.length()-1);
+				}*/
+				//else {
+					//String packageLabel="see package info!";
+				//}
+				description = getRApiInformation(description,RStrObjectInformation.PACKAGE_LABEL);
+				if (description.isEmpty()) {
+					description = defaultContent;
 				}
 
 				/*
 				 * if (newContents == null) { newContents = EMPTY; }
 				 */
-				this.contents = newContents;
+				this.contents = description;
 				if (text != null && !text.isDisposed()) {
 					text.setText(contents);
 
@@ -980,7 +989,7 @@ public class ContentProposalAdapter {
 									infoPopup.open();
 									infoPopup.getShell().addDisposeListener(event -> infoPopup = null);
 								}
-								infoPopup.setContents(p.getDescription());
+								infoPopup.setContents(p.getDescription(),p.getContent(),p.getLabel());
 							} else if (infoPopup != null) {
 								infoPopup.close();
 							}
