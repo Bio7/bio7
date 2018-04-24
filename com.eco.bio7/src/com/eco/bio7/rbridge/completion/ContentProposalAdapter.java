@@ -60,6 +60,7 @@ import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.rbridge.RStrObjectInformation;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditors.REditor;
 
@@ -119,8 +120,7 @@ public class ContentProposalAdapter {
 							// the popup shell on the Mac.
 							// Check the active shell.
 							Shell activeShell = e.display.getActiveShell();
-							if (activeShell == getShell()
-									|| (infoPopup != null && infoPopup.getShell() == activeShell)) {
+							if (activeShell == getShell() || (infoPopup != null && infoPopup.getShell() == activeShell)) {
 								return;
 							}
 							/*
@@ -139,9 +139,12 @@ public class ContentProposalAdapter {
 					scrollbarClicked = true;
 					return;
 				}
-				/*Changed for Bio7! deactivate event raises an 'Widget is disposed' exception (when clicking in the Infopopup a second time!)*/
-				if(e.type==SWT.Deactivate) {
-					
+				/*
+				 * Changed for Bio7! deactivate event raises an 'Widget is disposed' exception
+				 * (when clicking in the Infopopup a second time!)
+				 */
+				if (e.type == SWT.Deactivate) {
+
 					return;
 				}
 				// For all other events, merely getting them dictates closure.
@@ -335,8 +338,7 @@ public class ContentProposalAdapter {
 					// Modifier keys are explicitly checked and ignored because
 					// they are not complete yet (no character).
 					default:
-						if (e.keyCode != SWT.CAPS_LOCK && e.keyCode != SWT.NUM_LOCK && e.keyCode != SWT.MOD1
-								&& e.keyCode != SWT.MOD2 && e.keyCode != SWT.MOD3 && e.keyCode != SWT.MOD4) {
+						if (e.keyCode != SWT.CAPS_LOCK && e.keyCode != SWT.NUM_LOCK && e.keyCode != SWT.MOD1 && e.keyCode != SWT.MOD2 && e.keyCode != SWT.MOD3 && e.keyCode != SWT.MOD4) {
 							close();
 						}
 						return;
@@ -448,9 +450,8 @@ public class ContentProposalAdapter {
 			 */
 			@Override
 			protected Control createDialogArea(Composite parent) {
-				text = new StyledText(parent,
-						SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY  | SWT.NO_FOCUS);
-                text.setFont(control.getFont());
+				text = new StyledText(parent, SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY | SWT.NO_FOCUS);
+				text.setFont(control.getFont());
 				// Use the compact margins employed by PopupDialog.
 				GridData gd = new GridData(GridData.BEGINNING | GridData.FILL_BOTH);
 				gd.horizontalIndent = PopupDialog.POPUP_HORIZONTALSPACING;
@@ -476,22 +477,18 @@ public class ContentProposalAdapter {
 				Rectangle parentBounds = getParentShell().getBounds();
 				Rectangle proposedBounds;
 				// Try placing the info popup to the right
-				Rectangle rightProposedBounds = new Rectangle(
-						parentBounds.x + parentBounds.width + PopupDialog.POPUP_HORIZONTALSPACING,
-						parentBounds.y + PopupDialog.POPUP_VERTICALSPACING, parentBounds.width, parentBounds.height);
+				Rectangle rightProposedBounds = new Rectangle(parentBounds.x + parentBounds.width + PopupDialog.POPUP_HORIZONTALSPACING, parentBounds.y + PopupDialog.POPUP_VERTICALSPACING,
+						parentBounds.width, parentBounds.height);
 				rightProposedBounds = getConstrainedShellBounds(rightProposedBounds);
 				// If it won't fit on the right, try the left
 				if (rightProposedBounds.intersects(parentBounds)) {
-					Rectangle leftProposedBounds = new Rectangle(
-							parentBounds.x - parentBounds.width - POPUP_HORIZONTALSPACING - 1, parentBounds.y,
-							parentBounds.width, parentBounds.height);
+					Rectangle leftProposedBounds = new Rectangle(parentBounds.x - parentBounds.width - POPUP_HORIZONTALSPACING - 1, parentBounds.y, parentBounds.width, parentBounds.height);
 					leftProposedBounds = getConstrainedShellBounds(leftProposedBounds);
 					// If it won't fit on the left, choose the proposed bounds
 					// that fits the best
 					if (leftProposedBounds.intersects(parentBounds)) {
 						if (rightProposedBounds.x - parentBounds.x >= parentBounds.x - leftProposedBounds.x) {
-							rightProposedBounds.x = parentBounds.x + parentBounds.width
-									+ PopupDialog.POPUP_HORIZONTALSPACING;
+							rightProposedBounds.x = parentBounds.x + parentBounds.width + PopupDialog.POPUP_HORIZONTALSPACING;
 							proposedBounds = rightProposedBounds;
 						} else {
 							leftProposedBounds.width = parentBounds.x - POPUP_HORIZONTALSPACING - leftProposedBounds.x;
@@ -518,7 +515,7 @@ public class ContentProposalAdapter {
 				return control.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND);
 			}
 
-			private String getRApiInformation(String finalContent) {
+			private String getRApiInformation(String finalContent, String label) {
 				IPreferenceStore store = Bio7REditorPlugin.getDefault().getPreferenceStore();
 
 				RConnection c = REditor.getRserveConnection();
@@ -529,112 +526,71 @@ public class ContentProposalAdapter {
 						display.syncExec(new Runnable() {
 							public void run() {
 
-								try {
+								RStrObjectInformation rObjectInfo = new RStrObjectInformation();
+								
+								informationControlText = rObjectInfo.getRHelpInfo(finalContent, c,label);
+                               
+								if (informationControlText == null || informationControlText.startsWith(RStrObjectInformation.ERROR_CHECK)) {
+									/* If we would like to show the str objects! */
+									if (store.getBoolean("SHOW_HOVERPOPUP_STR")) {
 
-									c.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".txt\", sep=\"\"),silent = T)")
-											.toString();
-									c.eval("try(tools::Rd2txt(utils:::.getHelpFile(?" + finalContent
-											+ "),.bio7TempHtmlHelpFile,package=\"tools\", stages=c(\"install\", \"render\"),outputEncoding = \"\"),silent = T)");
-									String out = null;
-									try {
-										out = (String) c.eval("try(.bio7TempHtmlHelpFile)").asString();
-									} catch (REXPMismatchException e) {
+										informationControlText = rObjectInfo.getRStrObjectInfo(finalContent, c);
 
-										e.printStackTrace();
 									}
-
-									String url = out.replace("\\", "/");
-
-									byte[] encoded = null;
-									try {
-										encoded = Files.readAllBytes(Paths.get(url));
-									} catch (IOException e) {
-
-										e.printStackTrace();
-									}
-									informationControlText = new String(encoded, Charset.defaultCharset());
-									// help = new Util().fileToString(url);
-									informationControlText = informationControlText.replace("_\b", "");
-
-									if (informationControlText == null || informationControlText.isEmpty()) {
-										/* If we would like to show the str objects! */
-										if (store.getBoolean("SHOW_HOVERPOPUP_STR")) {
-											try {
-												c.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".txt\", sep=\"\"),silent = T)")
-														.toString();
-
-												c.eval("if (!is.null(get0('" + finalContent + "'))) {"
-														+ "try(paste(capture.output(str(" + finalContent
-														+ "),file = .bio7TempHtmlHelpFile),collapse=\"\\n\"))"
-														+ "} else {try(paste(capture.output(cat(\"\"),file = .bio7TempHtmlHelpFile),collapse=\"\\n\"))}");
-
-												out = (String) c.eval("try(.bio7TempHtmlHelpFile)").asString();
-											} catch (REXPMismatchException e) {
-
-												//e.printStackTrace();
-											}
-
-											url = out.replace("\\", "/");
-
-											encoded = null;
-											try {
-												encoded = Files.readAllBytes(Paths.get(url));
-											} catch (IOException e) {
-
-												e.printStackTrace();
-											}
-											informationControlText = new String(encoded, Charset.defaultCharset());
-
-											// if(hooverInfo!=null||informationControlText.isEmpty()==false){
-											// informationControlText = out;
-											// }
-										}
-									}
-
-								} catch (RserveException e1) {
-
-									// e1.printStackTrace();
 								}
+
 							}
 						});
 						RState.setBusy(false);
 					}
 				}
-				if (informationControlText == null) {
+				if (informationControlText == null)
+
+				{
 					informationControlText = "";
 				}
+				informationControlText = informationControlText.replace("_\b", "");
 				return informationControlText;
 			}
 
 			/*
 			 * Set the text contents of the popup.
 			 */
-			void setContents(String newContents) {
+			void setContents(String description, String content, String label) {
+				
+				
 				boolean isArg = false;
-				if (newContents.contains("::::args::::")) {
-					newContents = newContents.split("::::args::::")[0];
+				if (description.contains("::::args::::")) {
+					description  = description.split("::::args::::")[0];
 					isArg = true;
 				}
 
-				String defaultContent = newContents;
-				newContents = getRApiInformation(newContents);
-				if (newContents.isEmpty()) {
-					newContents = defaultContent;
+				String defaultContent = description;
+				/*Here we extract the package info for the info popup!*/
+				/*if(label.contains("package:")) {
+					label=label.substring(label.lastIndexOf(":")+1, label.length()-1);
+				}*/
+				//else {
+					//String packageLabel="see package info!";
+				//}
+				description = getRApiInformation(description,RStrObjectInformation.PACKAGE_LABEL);
+				if (description.isEmpty()) {
+					description = defaultContent;
 				}
 
 				/*
 				 * if (newContents == null) { newContents = EMPTY; }
 				 */
-				this.contents = newContents;
+				this.contents = description;
 				if (text != null && !text.isDisposed()) {
 					text.setText(contents);
 
 					if (isArg) {
-                        /*Check if we have arguments in the text!*/
+						/* Check if we have arguments in the text! */
 						int index = contents.indexOf("Arguments:");
 						if (index >= 0 && index < text.getCharCount()) {
 							int lineOffset = text.getLineAtOffset(index);
-							/*scroll to the arguments section!*/
+							/* scroll to the arguments section! */
 							text.setTopIndex(lineOffset);
 						}
 					}
@@ -794,8 +750,7 @@ public class ContentProposalAdapter {
 			}
 
 			// Constrain to the display
-			Rectangle constrainedBounds = getConstrainedShellBounds(
-					new Rectangle(initialX, initialY, popupSize.x, popupSize.y));
+			Rectangle constrainedBounds = getConstrainedShellBounds(new Rectangle(initialX, initialY, popupSize.x, popupSize.y));
 
 			// If there has been an adjustment causing the popup to overlap
 			// with the control, then put the popup above the control.
@@ -1034,7 +989,7 @@ public class ContentProposalAdapter {
 									infoPopup.open();
 									infoPopup.getShell().addDisposeListener(event -> infoPopup = null);
 								}
-								infoPopup.setContents(p.getDescription());
+								infoPopup.setContents(p.getDescription(),p.getContent(),p.getLabel());
 							} else if (infoPopup != null) {
 								infoPopup.close();
 							}
@@ -1110,8 +1065,7 @@ public class ContentProposalAdapter {
 			ArrayList<IContentProposal> list = new ArrayList<>();
 			for (IContentProposal proposal : proposals) {
 				String string = getString(proposal);
-				if (string.length() >= filterString.length()
-						&& string.substring(0, filterString.length()).equalsIgnoreCase(filterString)) {
+				if (string.length() >= filterString.length() && string.substring(0, filterString.length()).equalsIgnoreCase(filterString)) {
 					list.add(proposal);
 				}
 
@@ -1350,8 +1304,7 @@ public class ContentProposalAdapter {
 	 *            keyStroke parameter is <code>null</code>, then all alphanumeric
 	 *            characters will auto-activate content proposal.
 	 */
-	public ContentProposalAdapter(Control control, IControlContentAdapter controlContentAdapter,
-			IContentProposalProvider proposalProvider, KeyStroke keyStroke, char[] autoActivationCharacters) {
+	public ContentProposalAdapter(Control control, IControlContentAdapter controlContentAdapter, IContentProposalProvider proposalProvider, KeyStroke keyStroke, char[] autoActivationCharacters) {
 		super();
 		// We always assume the control and content adapter are valid.
 		Assert.isNotNull(control);
@@ -1779,13 +1732,10 @@ public class ContentProposalAdapter {
 					if (triggerKeyStroke != null) {
 						// Either there are no modifiers for the trigger and we
 						// check the character field...
-						if ((triggerKeyStroke.getModifierKeys() == KeyStroke.NO_KEY
-								&& triggerKeyStroke.getNaturalKey() == e.character) ||
+						if ((triggerKeyStroke.getModifierKeys() == KeyStroke.NO_KEY && triggerKeyStroke.getNaturalKey() == e.character) ||
 						// ...or there are modifiers, in which case the
 						// keycode and state must match
-						(triggerKeyStroke.getNaturalKey() == e.keyCode
-								&& ((triggerKeyStroke.getModifierKeys() & e.stateMask) == triggerKeyStroke
-										.getModifierKeys()))) {
+						(triggerKeyStroke.getNaturalKey() == e.keyCode && ((triggerKeyStroke.getModifierKeys() & e.stateMask) == triggerKeyStroke.getModifierKeys()))) {
 							// We never propagate the keystroke for an explicit
 							// keystroke invocation of the popup
 							e.doit = false;
