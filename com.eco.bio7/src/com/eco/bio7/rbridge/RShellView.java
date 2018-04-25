@@ -571,6 +571,7 @@ public class RShellView extends ViewPart {
 		adapter = new ContentProposalAdapter(text, new TextContentAdapter(), prov, stroke, null);
 		/* Add code completion to textfield! */
 		shellCompletion = new ShellCompletion(this, text, new TextContentAdapter());
+		REditor.setShellCompletion(shellCompletion);
 
 		DropTarget target = new DropTarget(text, operations);
 		target.setTransfer(types);

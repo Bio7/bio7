@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="libs/controlsfx-8.40.14.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/commons-codec-1.10.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/commons-collections4-4.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/opencsv-3.9.jar"/>
