@@ -257,31 +257,6 @@ public class RCompletionShell extends Shell {
 		list_1.setItems(RFunctions.getPropsHistInstance().data);
 		newItemExpandItem_1.setControl(list_1);
 
-		final ExpandItem newItemExpandItem_2 = new ExpandItem(expandBar, SWT.NONE);
-		newItemExpandItem_2.setHeight(500);
-		newItemExpandItem_2.setText("Data Conversion");
-
-		list_2 = new List(expandBar, SWT.BORDER | SWT.V_SCROLL);
-		list_2.addMouseListener(new MouseAdapter() {
-			public void mouseDoubleClick(final MouseEvent e) {
-				if (e.button == 3) {
-					setInDocument(list_2);
-				} else {
-					String[] items = list_2.getSelection();
-					text.setText(items[0]);
-				}
-			}
-
-			public void mouseDown(final MouseEvent e) {
-
-				int index = list_2.getSelectionIndex();
-				list_2.setToolTipText(RFunctions.getPropsHistInstance().dataConversionContext[index]);
-
-			}
-		});
-		list_2.setItems(RFunctions.getPropsHistInstance().dataConversion);
-		newItemExpandItem_2.setControl(list_2);
-
 		final ExpandItem newItemExpandItem_3 = new ExpandItem(expandBar, SWT.NONE);
 		newItemExpandItem_3.setHeight(750);
 		newItemExpandItem_3.setText("Math");

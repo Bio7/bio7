@@ -19,6 +19,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.UUID;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.comparator.NameFileComparator;
@@ -58,6 +59,7 @@ import com.eco.bio7.documents.JavaFXWebBrowser;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
+import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.util.Util;
 import ij.IJ;
 import ij.ImagePlus;
@@ -65,7 +67,8 @@ import ij.ImageStack;
 import javafx.scene.web.WebEngine;
 
 /**
- * This class provides methods for the communication with the Rserve application.
+ * This class provides methods for the communication with the Rserve
+ * application.
  * 
  * @author Bio7
  * 
@@ -85,7 +88,9 @@ public class RServe {
 	private static RSession rSession;
 
 	/**
-	 * Evaluates an R expression without running in a job. This method can be used to evaluate R scripts from e.g. Groovy (running already in a job). R plots a possible, too.
+	 * Evaluates an R expression without running in a job. This method can be used
+	 * to evaluate R scripts from e.g. Groovy (running already in a job). R plots a
+	 * possible, too.
 	 * 
 	 * @param expression
 	 *            a R expression.
@@ -137,12 +142,14 @@ public class RServe {
 							RServe.closeAndDisplay();
 						}
 						System.out.flush();
+						updatePackageImports();
 					} else {
 						RState.setBusy(false);
 
 						System.out.flush();
 					}
 				}
+
 			});
 
 			// job.setSystem(true);
@@ -188,7 +195,8 @@ public class RServe {
 	}
 
 	/**
-	 * Evaluates and prints an array of expressions to the Bio7 console executed in a job.
+	 * Evaluates and prints an array of expressions to the Bio7 console executed in
+	 * a job.
 	 * 
 	 * @param expressions
 	 *            a R expression as a string.
@@ -207,7 +215,10 @@ public class RServe {
 						if (countDev > 0) {
 							RServe.closeAndDisplay();
 						}
+						System.out.flush();
+						updatePackageImports();
 					} else {
+						System.out.flush();
 						RState.setBusy(false);
 					}
 				}
@@ -219,6 +230,18 @@ public class RServe {
 
 			Bio7Dialog.message("Rserve is busy!");
 
+		}
+
+	}
+
+	/**
+	 * Update the packages import if a library/require statement was detected!
+	 * Method is called in the RShellView class!
+	 */
+	private static void updatePackageImports() {
+		RShellView rShellInst = RShellView.getInstance();
+		if (rShellInst != null) {
+			rShellInst.updatePackageImports();
 		}
 
 	}
@@ -488,7 +511,8 @@ public class RServe {
 	}
 
 	/**
-	 * A method to get the selected variable names in the left Objects tab in the R-Shell view (variables in the R workspace!).
+	 * A method to get the selected variable names in the left Objects tab in the
+	 * R-Shell view (variables in the R workspace!).
 	 * 
 	 * @return the selected workspace variables.
 	 */
@@ -534,7 +558,7 @@ public class RServe {
 		});
 		// job.setSystem(true);
 		job.schedule();
-		/*Wait until finished!*/
+		/* Wait until finished! */
 		try {
 			job.join();
 		} catch (InterruptedException e) {
@@ -577,7 +601,7 @@ public class RServe {
 				// System.out.println(plotPathR);
 
 				File[] files = ListFilesDirectory(new File(plotPathR), new String[] { ".tiff", ".tif", ".jpg", ".jpeg", ".png", ".bmp" });
-				if (files!=null&&files.length > 0) {
+				if (files != null && files.length > 0) {
 					if (ijCreateSingle) {
 
 						for (int i = 0; i < files.length; i++) {
@@ -638,7 +662,8 @@ public class RServe {
 						BrowserView b = BrowserView.getBrowserInstance();
 						b.browser.setJavascriptEnabled(true);
 						/*
-						 * System.out.println(url); boolean result = b.browser.execute("var DEFAULT_URL ='" + url + "'");
+						 * System.out.println(url); boolean result =
+						 * b.browser.execute("var DEFAULT_URL ='" + url + "'");
 						 * 
 						 * System.out.println(result); b.browser.setUrl("file:///" + pathBundle + "");
 						 */
@@ -680,7 +705,7 @@ public class RServe {
 
 				public void run() {
 					JavaFXWebBrowser br = new JavaFXWebBrowser(false);
-					WebEngine webEngine = br.getWebEngine();					
+					WebEngine webEngine = br.getWebEngine();
 					// System.out.println("Path to PDF file: " + tempFile);
 					/* Copy path to clipboard! */
 					if (store.getBoolean("COPY_PDF_PATH_TO_CLIP")) {
@@ -693,8 +718,10 @@ public class RServe {
 					}
 
 					/*
-					 * Here we use a simple but effective trick. We define the default variable 'DEFAULT_URL' in JavaScript for the viewer.js (we comment the variable out there) to load and reload
-					 * local documents which won't be possible if using the path as an argument, see: https://github.com/mozilla/pdf.js/issues/5057
+					 * Here we use a simple but effective trick. We define the default variable
+					 * 'DEFAULT_URL' in JavaScript for the viewer.js (we comment the variable out
+					 * there) to load and reload local documents which won't be possible if using
+					 * the path as an argument, see: https://github.com/mozilla/pdf.js/issues/5057
 					 */
 					webEngine.executeScript("var DEFAULT_URL =\"" + url + "\"");
 
@@ -783,7 +810,8 @@ public class RServe {
 		// Filter the extension of the file.
 		FilenameFilter filter = new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2]) || name.endsWith(extensions[3]) || name.endsWith(extensions[4]) || name.endsWith(extensions[5]));
+				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2]) || name.endsWith(extensions[3]) || name.endsWith(extensions[4])
+						|| name.endsWith(extensions[5]));
 			}
 		};
 

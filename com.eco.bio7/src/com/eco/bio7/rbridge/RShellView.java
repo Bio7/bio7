@@ -191,6 +191,7 @@ public class RShellView extends ViewPart {
 	private ShellCompletion shellCompletion;
 	public ControlDecoration txtIndication;
 	protected boolean keyPressed;
+	public int packageImportSize = 0;
 
 	public RShellView() {
 		instance = this;
@@ -564,6 +565,7 @@ public class RShellView extends ViewPart {
 				} else {
 					txtIndication.hide();
 				}
+
 			}
 
 		});
@@ -724,7 +726,7 @@ public class RShellView extends ViewPart {
 
 									}
 								});
-								if (htmlHelpText!=null) {
+								if (htmlHelpText != null) {
 
 									try {
 										c.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".html\", sep=\"\"))");
@@ -1075,32 +1077,6 @@ public class RShellView extends ViewPart {
 		});
 		list_4.setItems(RFunctions.getPropsHistInstance().statistics);
 		statisticsTabItem.setControl(list_4);
-
-		final CTabItem dataConversionTabItem = new CTabItem(tab, SWT.NONE);
-		dataConversionTabItem.setText("Data Conversion");
-
-		list_2 = new List(dataConversionTabItem.getParent(), SWT.BORDER | SWT.V_SCROLL);
-		list_2.addMouseListener(new MouseAdapter() {
-			public void mouseDoubleClick(final MouseEvent e) {
-				if (e.button == 3) {
-					setInDocument(list_2);
-				} else {
-					String[] items = list_2.getSelection();
-					text.setText(items[0]);
-				}
-			}
-
-			public void mouseDown(final MouseEvent e) {
-
-				int index = list_2.getSelectionIndex();
-				/* For MacOSX we proof if the result is >0! */
-				if (index >= 0) {
-					list_2.setToolTipText(RFunctions.getPropsHistInstance().dataConversionContext[index]);
-				}
-			}
-		});
-		list_2.setItems(RFunctions.getPropsHistInstance().dataConversion);
-		dataConversionTabItem.setControl(list_2);
 
 		final CTabItem imageTabItem = new CTabItem(tab, SWT.NONE);
 		imageTabItem.setText("Image");
@@ -2519,7 +2495,7 @@ public class RShellView extends ViewPart {
 				// Bio7Plugin.getDefault().getPreferenceStore();
 
 				File files = new File(store.getString(PreferenceConstants.D_RSHELL_SCRIPTS));
-				final File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".r", ".R", ".bsh", ".groovy", ".py",".js" });
+				final File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".r", ".R", ".bsh", ".groovy", ".py", ".js" });
 
 				for (int i = 0; i < fil.length; i++) {
 
@@ -2574,8 +2550,7 @@ public class RShellView extends ViewPart {
 							} else if (fil[scriptCount].getName().endsWith(".py")) {
 
 								PythonInterpreter.interpretJob(null, fil[scriptCount].toString());
-							}
-							else if (fil[scriptCount].getName().endsWith(".js")) {
+							} else if (fil[scriptCount].getName().endsWith(".js")) {
 
 								JavaScriptInterpreter.interpretJob(null, fil[scriptCount].toString());
 
@@ -2817,6 +2792,11 @@ public class RShellView extends ViewPart {
 					// http://stackoverflow.com/questions/1757065/java-splitting-a-comma-separated-string-but-ignoring-commas-in-quotes
 					// Changed to exclude quoted semicolons!
 					String[] t = tex.split(";(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+					/*
+					 * Before the job runs we store the package size if we need to reload the
+					 * package completion (the job will get 0!)
+					 */
+					packageImportSize = parse.getShellCurrentPackageImports().size();
 					/* Send multiple expressions and evaluate them! */
 					com.eco.bio7.rbridge.RServe.printJobs(t);
 					/* Linebreak in the job for multiple expressions! */
@@ -2826,13 +2806,15 @@ public class RShellView extends ViewPart {
 					Bio7Dialog.message("Please remove all R comments(#)!");
 
 				} else {
-
+					/*
+					 * Before the job runs we store the package size if we need to reload the
+					 * package completion (the job will get 0!)
+					 */
+					packageImportSize = parse.getShellCurrentPackageImports().size();
 					com.eco.bio7.rbridge.RServe.printJob(tex);
 					System.out.println();
 
 				}
-				
-				
 
 			}
 		} catch (RuntimeException ev) {
@@ -2842,6 +2824,16 @@ public class RShellView extends ViewPart {
 		/* Add text to history! */
 		history();
 
+	}
+
+	/*
+	 * This method is called when the job from the
+	 * com.eco.bio7.rbridge.RServe.printJob(tex)method has finished!
+	 */
+	public void updatePackageImports() {
+		if (packageImportSize > 0) {
+			shellCompletion.update();
+		}
 	}
 
 	private void history() {
