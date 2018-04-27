@@ -313,7 +313,7 @@
             class="com.eco.bio7.rbridge.views.RTemplatesView"
             icon="icons/views/rview.png"
             id="com.eco.bio7.rbridge.views.RTemplatesView"
-            name="Templates">
+            name="Reference Snippets">
       </view>
    </extension>
    
