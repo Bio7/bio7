@@ -22,6 +22,7 @@ package com.eco.bio7.rbridge.completion;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -52,14 +53,15 @@ import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RShellView;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.RStrObjectInformation;
-import com.eco.bio7.reditor.Bio7REditorPlugin;
+import com.eco.bio7.rbridge.UpdateCompletion;
+import com.eco.bio7.reditor.actions.RefreshLoadedPackagesForCompletion;
 import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.rpreferences.template.CalculateRProposals;
 import com.eco.bio7.util.Util;
 import com.swtdesigner.ResourceManager;
 
-public class ShellCompletion {
+public class ShellCompletion implements UpdateCompletion {
 	private ContentProposalProvider contentProposalProvider;
 	private ContentProposalAdapter contentProposalAdapter;
 	private KeyStroke stroke;
@@ -85,7 +87,7 @@ public class ShellCompletion {
 	private IPreferenceStore store;
 	// public boolean data;
 	// public boolean library;
-
+    
 	/*
 	 * Next two methods adapted from:
 	 * https://krishnanmohan.wordpress.com/2011/12/12/eclipse-rcp-
@@ -228,6 +230,15 @@ public class ShellCompletion {
 		});
 
 	}
+	/*This is an interface function to reload the RShell completion from the R editor which otherwise would'nt be possible
+	 *(cyclic dependencies!)**/
+	public void trigger() {		
+		/* Load the created proposals from the R editor! */
+		statistics = CalculateRProposals.getStatistics();
+		statisticsContext = CalculateRProposals.getStatisticsContext();
+		statisticsSet = CalculateRProposals.getStatisticsSet();
+		
+	}
 
 	/* Here we update the code templates by calling the R function! */
 	public void update() {
@@ -260,10 +271,19 @@ public class ShellCompletion {
 							 */
 							CalculateRProposals.setStartupTemplate(false);
 							CalculateRProposals.loadRCodePackageTemplates();
+							
 							/* Load the created proposals! */
 							statistics = CalculateRProposals.getStatistics();
 							statisticsContext = CalculateRProposals.getStatisticsContext();
 							statisticsSet = CalculateRProposals.getStatisticsSet();
+							
+							/*Here we update the code completion of the R editor with the trigger interface!*/
+							REditor rEditor=REditor.getREditorInstance();
+							if (rEditor != null) {
+							/*Update the completions of the R editor!*/
+							CalculateRProposals.updateCompletions();
+								rEditor.trigger();
+							}
 
 						}
 
@@ -277,8 +297,9 @@ public class ShellCompletion {
 			job.addJobChangeListener(new JobChangeAdapter() {
 				public void done(IJobChangeEvent event) {
 					if (event.getResult().isOK()) {
-
+                       
 						RState.setBusy(false);
+						
 					} else {
 
 					}
@@ -1331,5 +1352,7 @@ public class ShellCompletion {
 		result.add(input.substring(start).replace(tempReplacement, "\",\""));
 		return result;
 	}
+
+	
 
 }

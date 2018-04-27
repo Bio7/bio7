@@ -73,13 +73,20 @@ public class LatexSweaveKnitrAction extends Action {
 	}
 
 	/*
-	 * public void run(IAction action) { StartBio7Utils utils = StartBio7Utils.getConsoleInstance(); if (utils != null) { Bring the console to the front and clear it! utils.cons.activate();
-	 * utils.cons.clear(); } String project = null; ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().getSelection(); IStructuredSelection
-	 * strucSelection = null; if (selection instanceof IStructuredSelection) { strucSelection = (IStructuredSelection) selection; if (strucSelection.size() == 0) {
+	 * public void run(IAction action) { StartBio7Utils utils =
+	 * StartBio7Utils.getConsoleInstance(); if (utils != null) { Bring the console
+	 * to the front and clear it! utils.cons.activate(); utils.cons.clear(); }
+	 * String project = null; ISelection selection =
+	 * PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().
+	 * getSelection(); IStructuredSelection strucSelection = null; if (selection
+	 * instanceof IStructuredSelection) { strucSelection = (IStructuredSelection)
+	 * selection; if (strucSelection.size() == 0) {
 	 * 
-	 * } else if (strucSelection.size() == 1) { final String nameofiofile; Object selectedObj = strucSelection.getFirstElement();
+	 * } else if (strucSelection.size() == 1) { final String nameofiofile; Object
+	 * selectedObj = strucSelection.getFirstElement();
 	 * 
-	 * IResource resource = (IResource) strucSelection.getFirstElement(); final IProject activeProject = resource.getProject();
+	 * IResource resource = (IResource) strucSelection.getFirstElement(); final
+	 * IProject activeProject = resource.getProject();
 	 * 
 	 * knitrFile(selectedObj, activeProject);
 	 * 
@@ -150,7 +157,6 @@ public class LatexSweaveKnitrAction extends Action {
 				protected IStatus run(IProgressMonitor monitor) {
 					if (extension.equals("tex")) {
 						monitor.beginTask("LaTeX file...", IProgressMonitor.UNKNOWN);
-					
 
 						compileLatex(activeProject, theName, dirPath, true);
 
@@ -162,8 +168,10 @@ public class LatexSweaveKnitrAction extends Action {
 							RConnection c = RServe.getConnection();
 
 							try {
+								c.eval("try(.tempCurrentWd<-getwd());");
 								c.eval("try(setwd('" + dirPath + "'));");
 								c.eval("try(Sweave(\"" + project + "\"))");
+								c.eval("try(setwd(.tempCurrentWd));");
 								// c.eval("try(dev.off());");//not needed with Rserve?
 
 							} catch (RserveException e) {
@@ -191,6 +199,7 @@ public class LatexSweaveKnitrAction extends Action {
 									}
 
 									c.eval("try(library(knitr))");
+									c.eval("try(.tempCurrentWd<-getwd());");
 									c.eval("setwd('" + dirPath + "')");
 									IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 									String knitrOptions = store.getString("knitroptions");
@@ -202,10 +211,10 @@ public class LatexSweaveKnitrAction extends Action {
 
 										// String docTemp=doc.get();
 										Document docHtml = Jsoup.parse(docTemp);
-										/*Remove the content editable attribute!*/
+										/* Remove the content editable attribute! */
 										Elements elements = docHtml.select("body");
 										elements.removeAttr("contenteditable");
-										//System.out.println(docHtml.getElementsByTag("body"));
+										// System.out.println(docHtml.getElementsByTag("body"));
 										/* Search for divs with the selected id! */
 										Elements contents = docHtml.select("#knitrcode"); // a
 																							// with
@@ -225,7 +234,8 @@ public class LatexSweaveKnitrAction extends Action {
 											contents.get(i).remove();
 										}
 										/*
-										 * Create a temp file for the parsed and edited *.html file for processing with knitr!
+										 * Create a temp file for the parsed and edited *.html file for processing with
+										 * knitr!
 										 */
 										File temp = null;
 										try {
@@ -304,6 +314,12 @@ public class LatexSweaveKnitrAction extends Action {
 									compileLatex(activeProject, theName, dirPath, true);
 
 								}
+								try {
+									c.eval("try(setwd(.tempCurrentWd));");
+								} catch (RserveException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
 							}
 
 						}
@@ -353,56 +369,55 @@ public class LatexSweaveKnitrAction extends Action {
 		boolean includeBibTex = store.getBoolean("INCLUDE_BIBTEX");
 		boolean includeMakeIndex = store.getBoolean("INCLUDE_BIBTEX");
 		String bibtexEngine = store.getString("BIBTEX_ENGINE");
-		/*With bibtex (optional biber) and make index!*/
-		if(includeBibTex&&includeMakeIndex){
-			compileLatexWithBibtexAndIndex(activeProject,theName,dirPath,pureLatex,bibtexEngine);
+		/* With bibtex (optional biber) and make index! */
+		if (includeBibTex && includeMakeIndex) {
+			compileLatexWithBibtexAndIndex(activeProject, theName, dirPath, pureLatex, bibtexEngine);
 		}
-		/*With bibtex (optional biber) only!*/
-		else if(includeBibTex){
-			compileLatexWithBibtex(activeProject,theName,dirPath,pureLatex,bibtexEngine);
+		/* With bibtex (optional biber) only! */
+		else if (includeBibTex) {
+			compileLatexWithBibtex(activeProject, theName, dirPath, pureLatex, bibtexEngine);
 		}
-		/*With makeindex only!*/
-		else if (includeMakeIndex){
-			compileLatexWithMakeIndex(activeProject,theName,dirPath,pureLatex);
+		/* With makeindex only! */
+		else if (includeMakeIndex) {
+			compileLatexWithMakeIndex(activeProject, theName, dirPath, pureLatex);
 		}
-		/*LaTeX file only*/
-		else{
-		compileLatexFinal(activeProject, theName, dirPath, pureLatex);
+		/* LaTeX file only */
+		else {
+			compileLatexFinal(activeProject, theName, dirPath, pureLatex);
 		}
 	}
-	
-	private void compileLatexWithBibtex(final IProject activeProject, final String theName, String dirPath, boolean pureLatex,String bibtexEngine) {
+
+	private void compileLatexWithBibtex(final IProject activeProject, final String theName, String dirPath, boolean pureLatex, String bibtexEngine) {
 		compileLatexPre(activeProject, theName, dirPath, pureLatex);
 
-		compileBibtex(theName, dirPath,bibtexEngine);
+		compileBibtex(theName, dirPath, bibtexEngine);
 
 		compileLatexPre(activeProject, theName, dirPath, pureLatex);
 
 		compileLatexFinal(activeProject, theName, dirPath, pureLatex);
 	}
-	
+
 	private void compileLatexWithMakeIndex(final IProject activeProject, final String theName, String dirPath, boolean pureLatex) {
 		compileLatexPre(activeProject, theName, dirPath, pureLatex);
 
 		compileMakeIndex(theName, dirPath);
 
-		//compileLatexPre(activeProject, theName, dirPath, true);
+		// compileLatexPre(activeProject, theName, dirPath, true);
 
 		compileLatexFinal(activeProject, theName, dirPath, pureLatex);
 	}
-	
-	private void compileLatexWithBibtexAndIndex(final IProject activeProject, final String theName, String dirPath, boolean pureLatex,String bibtexEngine) {
-		
+
+	private void compileLatexWithBibtexAndIndex(final IProject activeProject, final String theName, String dirPath, boolean pureLatex, String bibtexEngine) {
+
 		compileLatexPre(activeProject, theName, dirPath, pureLatex);
-		compileBibtex(theName, dirPath,bibtexEngine);
-        
+		compileBibtex(theName, dirPath, bibtexEngine);
+
 		compileLatexPre(activeProject, theName, dirPath, pureLatex);
 		compileLatexPre(activeProject, theName, dirPath, pureLatex);
 		compileMakeIndex(theName, dirPath);
 
 		compileLatexFinal(activeProject, theName, dirPath, pureLatex);
 	}
-	
 
 	private void compileLatexFinal(final IProject activeProject, final String theName, String dirPath, boolean pureLatex) {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
@@ -484,7 +499,8 @@ public class LatexSweaveKnitrAction extends Action {
 		ProcessBuilder pb = new ProcessBuilder(args);
 		// set environment variable u
 		/*
-		 * String otexinputs =env.get("TEXINPUTS"); env.put("TEXINPUTS", otexinputs+"/"+dirPath);
+		 * String otexinputs =env.get("TEXINPUTS"); env.put("TEXINPUTS",
+		 * otexinputs+"/"+dirPath);
 		 */
 
 		/*
@@ -500,7 +516,8 @@ public class LatexSweaveKnitrAction extends Action {
 
 			e.printStackTrace();
 			/*
-			 * Bio7Dialog.message( "Rserve executable not available !" ); RServe.setConnection(null);
+			 * Bio7Dialog.message( "Rserve executable not available !" );
+			 * RServe.setConnection(null);
 			 */
 		}
 
@@ -521,7 +538,8 @@ public class LatexSweaveKnitrAction extends Action {
 					if (fil.exists()) {
 
 						/*
-						 * if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) { RServe.plotLinux(dirPath + "/" + theName + ".pdf"); }
+						 * if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
+						 * RServe.plotLinux(dirPath + "/" + theName + ".pdf"); }
 						 */
 
 						// else {
@@ -595,7 +613,8 @@ public class LatexSweaveKnitrAction extends Action {
 		ProcessBuilder pb = new ProcessBuilder(args);
 		// set environment variable u
 		/*
-		 * String otexinputs =env.get("TEXINPUTS"); env.put("TEXINPUTS", otexinputs+"/"+dirPath);
+		 * String otexinputs =env.get("TEXINPUTS"); env.put("TEXINPUTS",
+		 * otexinputs+"/"+dirPath);
 		 */
 
 		/*
@@ -613,7 +632,7 @@ public class LatexSweaveKnitrAction extends Action {
 			e1.printStackTrace();
 		}
 		try {
-			p.waitFor(5,TimeUnit.SECONDS);
+			p.waitFor(5, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -644,7 +663,7 @@ public class LatexSweaveKnitrAction extends Action {
 	}
 
 	/* We don't need a special path for bibtex. Should be the same as pdflatex! */
-	private void compileBibtex(final String theName, String dirPath,String bibtexEngine) {
+	private void compileBibtex(final String theName, String dirPath, String bibtexEngine) {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		String pdfLatexPath = store.getString("pdfLatex");
 
@@ -682,7 +701,8 @@ public class LatexSweaveKnitrAction extends Action {
 		ProcessBuilder pb = new ProcessBuilder(args);
 		// set environment variable u
 		/*
-		 * String otexinputs =env.get("TEXINPUTS"); env.put("TEXINPUTS", otexinputs+"/"+dirPath);
+		 * String otexinputs =env.get("TEXINPUTS"); env.put("TEXINPUTS",
+		 * otexinputs+"/"+dirPath);
 		 */
 
 		/*
@@ -700,7 +720,7 @@ public class LatexSweaveKnitrAction extends Action {
 			e1.printStackTrace();
 		}
 		try {
-			p.waitFor(5,TimeUnit.SECONDS);
+			p.waitFor(5, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -807,7 +827,8 @@ public class LatexSweaveKnitrAction extends Action {
 		ProcessBuilder pb = new ProcessBuilder(args);
 		// set environment variable u
 		/*
-		 * String otexinputs =env.get("TEXINPUTS"); env.put("TEXINPUTS", otexinputs+"/"+dirPath);
+		 * String otexinputs =env.get("TEXINPUTS"); env.put("TEXINPUTS",
+		 * otexinputs+"/"+dirPath);
 		 */
 
 		/*
@@ -825,36 +846,32 @@ public class LatexSweaveKnitrAction extends Action {
 
 			e.printStackTrace();
 			/*
-			 * Bio7Dialog.message( "Rserve executable not available !" ); RServe.setConnection(null);
+			 * Bio7Dialog.message( "Rserve executable not available !" );
+			 * RServe.setConnection(null);
 			 */
 		}
 		try {
-			p.waitFor(5,TimeUnit.SECONDS);
+			p.waitFor(5, TimeUnit.SECONDS);
 		} catch (InterruptedException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		/*input = new BufferedReader(new InputStreamReader(p.getInputStream()));
-		stdin = p.getOutputStream();
-		new Thread() {
-
-			public void run() {
-				setPriority(Thread.MAX_PRIORITY);
-				String line;
-				try {
-
-					while ((line = input.readLine()) != null) {
-						System.out.println(line);
-					}
-
-				} catch (IOException e) {
-
-					e.printStackTrace();
-				}
-
-			}
-
-		}.start();*/
+		/*
+		 * input = new BufferedReader(new InputStreamReader(p.getInputStream())); stdin
+		 * = p.getOutputStream(); new Thread() {
+		 * 
+		 * public void run() { setPriority(Thread.MAX_PRIORITY); String line; try {
+		 * 
+		 * while ((line = input.readLine()) != null) { System.out.println(line); }
+		 * 
+		 * } catch (IOException e) {
+		 * 
+		 * e.printStackTrace(); }
+		 * 
+		 * }
+		 * 
+		 * }.start();
+		 */
 
 	}
 
