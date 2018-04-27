@@ -478,6 +478,7 @@ public class ExecuteBatchFile {
 						}
 
 						c.eval("try(library(knitr))");
+						c.eval("try(.tempCurrentWd<-getwd());");
 						c.eval("setwd('" + dir + "')");
 						IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 						String knitrOptions = store.getString("knitroptions");
@@ -575,11 +576,18 @@ public class ExecuteBatchFile {
 
 					} else if (fileext.equals("tex")) {
 					}
+					
+					try {
+						c.eval("try(setwd(.tempCurrentWd));");
+					} catch (RserveException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 
 			}
 
-			Work.refreshAllWorkspaces();
+			//Work.refreshAllWorkspaces();
 		}
 
 		else if (fileextension.equals("Rtex") || fileextension.equals("rtex")) {
@@ -610,6 +618,7 @@ public class ExecuteBatchFile {
 						}
 
 						c.eval("try(library(knitr))");
+						c.eval("try(.tempCurrentWd<-getwd());");
 						c.eval("setwd('" + dir + "')");
 						
 						/*
@@ -617,6 +626,8 @@ public class ExecuteBatchFile {
 						 */
                         System.out.println("try(knit('" + dir + "','" + theName + "." + fileext + "'))");
 						RServe.print("try(knit('" + dir + "','" + theName + "." + fileext + "'))");
+						c.eval("try(setwd(.tempCurrentWd));");
+						
                        
 						// RServe.print("try(knit('" + name + "','" + theName + "." + fileext + "'))");
 
@@ -694,7 +705,7 @@ public class ExecuteBatchFile {
 				}
 			}.start();
 
-			Work.refreshAllWorkspaces();
+			//Work.refreshAllWorkspaces();
 
 		}
 

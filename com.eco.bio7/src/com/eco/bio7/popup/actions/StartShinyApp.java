@@ -91,10 +91,10 @@ public class StartShinyApp extends Action implements IObjectActionDelegate {
 
 							// con.eval("try(setwd(\"" + cleanedPath + "\"))");
 							// con.eval("try(library(shiny))");
-
+							ConsolePageParticipant.pipeInputToConsole(".tempCurrentWd<-getwd()",true,false);
 							ConsolePageParticipant.pipeInputToConsole("setwd(\"" + cleanedPath + "\");library(shiny);runApp(port="+shinyPort+",launch.browser =FALSE)", true, true);
 							System.out.println("runApp(port="+shinyPort+",launch.browser =FALSE)");
-
+							ConsolePageParticipant.pipeInputToConsole("setwd(.tempCurrentWd);",true,false);
 							// con.eval("try(runApp(port=5099,launch.browser =FALSE))");
 							/*
 							 * } catch (RserveException e) { // TODO Auto-generated catch block e.printStackTrace(); }
