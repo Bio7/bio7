@@ -308,6 +308,13 @@
             id="com.eco.bio7.rbridge.RPlotView"
             name="Plot">
       </view>
+      <view
+            category="com.eco.bio7.rapplication"
+            class="com.eco.bio7.rbridge.views.RTemplatesView"
+            icon="icons/views/rview.png"
+            id="com.eco.bio7.rbridge.views.RTemplatesView"
+            name="Templates">
+      </view>
    </extension>
    
    <extension

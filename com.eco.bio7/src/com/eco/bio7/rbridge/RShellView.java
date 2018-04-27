@@ -143,14 +143,6 @@ public class RShellView extends ViewPart {
 
 	private static List listShell;
 	private static boolean isConsoleExpanded = true;
-	private List list_7;
-	private List list_6;
-	private List list_5;
-	private List list_4;
-	private List list_3;
-	private List list_2;
-	private List list_1;
-	private List list;
 	public Text text;
 	private SimpleContentProposalProvider prov;
 	private ContentProposalAdapter adapter;
@@ -175,8 +167,6 @@ public class RShellView extends ViewPart {
 	private Composite composite;
 	private Tree tree;
 	// private IPreferenceStore store;
-
-	private CTabFolder tab;
 	// private CTabItem plotTabItem;
 	private Button loadButton_1;
 	private Button fontButton;
@@ -858,37 +848,35 @@ public class RShellView extends ViewPart {
 
 		btnNewButton.setToolTipText("Interrupt R execution");
 		btnNewButton.setImage(Bio7Plugin.getImageDescriptor("/icons/views/deleteaction.png").createImage());
-		tab = new CTabFolder(parent, SWT.NONE);
-		fd_composite_1.bottom = new FormAttachment(tab, -16);
+		composite = new Composite(parent, SWT.NONE);
+		fd_composite_1.bottom = new FormAttachment(composite, -16);
 		FormData fd_tab = new FormData();
 		fd_tab.top = new FormAttachment(0, 115);
 		fd_tab.bottom = new FormAttachment(100);
 		fd_tab.left = new FormAttachment(0);
 		fd_tab.right = new FormAttachment(100);
-		tab.setLayoutData(fd_tab);
-		tab.setRegion(null);
-		tab.setTabHeight(22);
-		tab.addSelectionListener(new SelectionListener() {
-			public void itemClosed(CTabFolderEvent event) {
-
-			}
-
-			public void widgetDefaultSelected(SelectionEvent e) {
-
-			}
-
-			public void widgetSelected(SelectionEvent e) {
-
-			}
-		});
-
-		final CTabItem objectsTabItem = new CTabItem(tab, SWT.NONE);
-		objectsTabItem.setText("Objects");
-
-		tab.setSelection(objectsTabItem);
-
-		composite = new Composite(objectsTabItem.getParent(), SWT.NONE);
-		objectsTabItem.setControl(composite);
+		composite.setLayoutData(fd_tab);
+		composite.setRegion(null);
+		/*
+		 * tab.setTabHeight(22); tab.addSelectionListener(new SelectionListener() {
+		 * public void itemClosed(CTabFolderEvent event) {
+		 * 
+		 * }
+		 * 
+		 * public void widgetDefaultSelected(SelectionEvent e) {
+		 * 
+		 * }
+		 * 
+		 * public void widgetSelected(SelectionEvent e) {
+		 * 
+		 * } });
+		 * 
+		 * final CTabItem objectsTabItem = new CTabItem(tab, SWT.NONE);
+		 * objectsTabItem.setText("Objects");
+		 * 
+		 * tab.setSelection(objectsTabItem);
+		 */
+		// tab.setControl(composite);
 		composite.setLayout(new GridLayout(7, true));
 
 		objectsButton = new Button(composite, SWT.NONE);
@@ -958,207 +946,6 @@ public class RShellView extends ViewPart {
 		 * plotTabItem = new CTabItem(tab, SWT.NONE); plotTabItem.setText("Plot Data");
 		 */
 		// new RPlot(tab, SWT.NONE, plotTabItem);
-
-		final CTabItem variablesTabItem = new CTabItem(tab, SWT.NONE);
-		variablesTabItem.setText("Variables");
-
-		list = new List(variablesTabItem.getParent(), SWT.BORDER | SWT.V_SCROLL);
-		list.addMouseListener(new MouseAdapter() {
-			public void mouseDoubleClick(final MouseEvent e) {
-
-				if (e.button == 3) {
-
-					setInDocument(list);
-
-					String[] items = list.getSelection();
-
-					String t = text.getText();
-					int pos = text.getCaretPosition();
-					String res = t.substring(pos);
-					String res2 = t.substring(0, pos);
-					String fin = res2 + items[0] + res;
-
-					text.setText(fin);
-				} else {
-					String[] items = list.getSelection();
-					text.setText(items[0]);
-				}
-			}
-
-			public void mouseDown(final MouseEvent e) {
-
-				int index = list.getSelectionIndex();
-				/* For MacOSX we proof if the result is >0! */
-				if (index >= 0) {
-					list.setToolTipText(RFunctions.getPropsHistInstance().variablesContext[index]);
-				}
-			}
-
-		});
-
-		list.setItems(RFunctions.getPropsHistInstance().variables);
-		variablesTabItem.setControl(list);
-
-		final CTabItem createextractDataTabItem = new CTabItem(tab, SWT.NONE);
-		createextractDataTabItem.setText("Data");
-
-		list_1 = new List(createextractDataTabItem.getParent(), SWT.BORDER | SWT.V_SCROLL);
-		list_1.addMouseListener(new MouseAdapter() {
-			public void mouseDoubleClick(final MouseEvent e) {
-				if (e.button == 3) {
-					setInDocument(list_1);
-				} else {
-					String[] items = list_1.getSelection();
-					text.setText(items[0]);
-				}
-			}
-
-			public void mouseDown(final MouseEvent e) {
-
-				int index = list_1.getSelectionIndex();
-				/* For MacOSX we proof if the result is >0! */
-				if (index >= 0) {
-					list_1.setToolTipText(RFunctions.getPropsHistInstance().dataContext[index]);
-				}
-			}
-		});
-		list_1.setItems(RFunctions.getPropsHistInstance().data);
-		createextractDataTabItem.setControl(list_1);
-
-		final CTabItem mathTabItem = new CTabItem(tab, SWT.NONE);
-		mathTabItem.setText("Math");
-
-		list_3 = new List(mathTabItem.getParent(), SWT.BORDER | SWT.V_SCROLL);
-		list_3.addMouseListener(new MouseAdapter() {
-			public void mouseDoubleClick(final MouseEvent e) {
-				if (e.button == 3) {
-					setInDocument(list_3);
-				} else {
-					String[] items = list_3.getSelection();
-					text.setText(items[0]);
-				}
-			}
-
-			public void mouseDown(final MouseEvent e) {
-
-				int index = list_3.getSelectionIndex();
-				/* For MacOSX we proof if the result is >0! */
-				if (index >= 0) {
-					list_3.setToolTipText(RFunctions.getPropsHistInstance().mathContext[index]);
-				}
-
-			}
-		});
-		list_3.setItems(RFunctions.getPropsHistInstance().math);
-		mathTabItem.setControl(list_3);
-
-		final CTabItem statisticsTabItem = new CTabItem(tab, SWT.NONE);
-		statisticsTabItem.setText("Statistics");
-
-		list_4 = new List(statisticsTabItem.getParent(), SWT.BORDER | SWT.V_SCROLL);
-		list_4.addMouseListener(new MouseAdapter() {
-			public void mouseDoubleClick(final MouseEvent e) {
-				if (e.button == 3) {
-					setInDocument(list_4);
-				} else {
-					String[] items = list_4.getSelection();
-					text.setText(items[0]);
-				}
-			}
-
-			public void mouseDown(final MouseEvent e) {
-
-				int index = list_4.getSelectionIndex();
-				/* For MacOSX we proof if the result is >0! */
-				if (index >= 0) {
-					list_4.setToolTipText(RFunctions.getPropsHistInstance().statisticsContext[index]);
-				}
-			}
-		});
-		list_4.setItems(RFunctions.getPropsHistInstance().statistics);
-		statisticsTabItem.setControl(list_4);
-
-		final CTabItem imageTabItem = new CTabItem(tab, SWT.NONE);
-		imageTabItem.setText("Image");
-
-		list_7 = new List(imageTabItem.getParent(), SWT.V_SCROLL | SWT.BORDER);
-		list_7.addMouseListener(new MouseAdapter() {
-			public void mouseDoubleClick(final MouseEvent e) {
-				if (e.button == 3) {
-					setInDocument(list_7);
-				} else {
-					String[] items = list_7.getSelection();
-					text.setText(items[0]);
-				}
-
-			}
-
-			public void mouseDown(final MouseEvent e) {
-
-				int index = list_7.getSelectionIndex();
-				/* For MacOSX we proof if the result is >0! */
-				if (index >= 0) {
-					list_7.setToolTipText(RFunctions.getPropsHistInstance().imageAnalysisContext[index]);
-				}
-			}
-		});
-
-		list_7.setItems(RFunctions.getPropsHistInstance().imageAnalysis);
-		imageTabItem.setControl(list_7);
-
-		final CTabItem matixTabItem = new CTabItem(tab, SWT.NONE);
-		matixTabItem.setText("Matrix");
-
-		list_6 = new List(matixTabItem.getParent(), SWT.BORDER | SWT.V_SCROLL);
-		list_6.addMouseListener(new MouseAdapter() {
-			public void mouseDoubleClick(final MouseEvent e) {
-				if (e.button == 3) {
-					setInDocument(list_6);
-				} else {
-					String[] items = list_6.getSelection();
-					text.setText(items[0]);
-				}
-
-			}
-
-			public void mouseDown(final MouseEvent e) {
-
-				int index = list_6.getSelectionIndex();
-				/* For MacOSX we proof if the result is >0! */
-				if (index >= 0) {
-					list_6.setToolTipText(RFunctions.getPropsHistInstance().matrixContext[index]);
-				}
-			}
-		});
-		list_6.setItems(RFunctions.getPropsHistInstance().matrix);
-		matixTabItem.setControl(list_6);
-
-		final CTabItem spatialStatisticsTabItem = new CTabItem(tab, SWT.NONE);
-		spatialStatisticsTabItem.setText("Spatial Statistics");
-
-		list_5 = new List(spatialStatisticsTabItem.getParent(), SWT.BORDER | SWT.V_SCROLL);
-		list_5.addMouseListener(new MouseAdapter() {
-			public void mouseDoubleClick(final MouseEvent e) {
-				if (e.button == 3) {
-					setInDocument(list_5);
-				} else {
-					String[] items = list_5.getSelection();
-					text.setText(items[0]);
-				}
-			}
-
-			public void mouseDown(final MouseEvent e) {
-
-				int index = list_5.getSelectionIndex();
-				/* For MacOSX we proof if the result is >0! */
-				if (index >= 0) {
-					list_5.setToolTipText(RFunctions.getPropsHistInstance().spatialStatsContext[index]);
-				}
-
-			}
-		});
-		list_5.setItems(RFunctions.getPropsHistInstance().spatialStats);
-		spatialStatisticsTabItem.setControl(list_5);
 
 		xButton = new Button(composite, SWT.NONE);
 		GridData gd_xButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
@@ -2739,37 +2526,39 @@ public class RShellView extends ViewPart {
 		return shellInstance;
 	}
 
-	private void setInDocument(List aList) {
+	public void setInDocument(List aList) {
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		if (editor != null && editor instanceof REditor) {
 
 			String[] items = aList.getSelection();
-			ITextEditor editor2 = (ITextEditor) editor;
+			if (items.length > 0) {
+				ITextEditor editor2 = (ITextEditor) editor;
 
-			IDocumentProvider dp = editor2.getDocumentProvider();
-			IDocument doc = dp.getDocument(editor.getEditorInput());
+				IDocumentProvider dp = editor2.getDocumentProvider();
+				IDocument doc = dp.getDocument(editor.getEditorInput());
 
-			ISelectionProvider sp = editor2.getSelectionProvider();
-			ISelection selectionsel = sp.getSelection();
-			ITextSelection selection = (ITextSelection) selectionsel;
+				ISelectionProvider sp = editor2.getSelectionProvider();
+				ISelection selectionsel = sp.getSelection();
+				ITextSelection selection = (ITextSelection) selectionsel;
 
-			int off = selection.getOffset();
+				int off = selection.getOffset();
 
-			try {
-				doc.replace(off, 0, items[0] + System.lineSeparator());
-			} catch (BadLocationException e1) {
-				e1.printStackTrace();
+				try {
+					doc.replace(off, 0, items[0] + System.lineSeparator());
+				} catch (BadLocationException e1) {
+					e1.printStackTrace();
+				}
+
+				int er = 0;
+				try {
+					er = doc.getLineOffset(selection.getStartLine() + 1);
+				} catch (BadLocationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				ITextEditor textEditor = (ITextEditor) editor;
+				textEditor.selectAndReveal(er, 0);
 			}
-
-			int er = 0;
-			try {
-				er = doc.getLineOffset(selection.getStartLine() + 1);
-			} catch (BadLocationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			ITextEditor textEditor = (ITextEditor) editor;
-			textEditor.selectAndReveal(er, 0);
 		}
 	}
 
