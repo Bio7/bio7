@@ -644,7 +644,7 @@ public class ShellCompletion implements UpdateCompletion {
 						REXP rexp = null;
 						/* Here we leave out matrices and arrays (matrices are arrays)! */
 						rexp = RServeUtil.fromR("try(if (is.data.frame(" + matDfName + ")){colnames(" + matDfName + ")} else if (is.list(" + matDfName + ")) {names(" + matDfName
-								+ ")} else if (is.vector(" + matDfName + ")) {names(" + matDfName + ")} ,silent=TRUE)");
+								+ ")} else if (is.vector(" + matDfName + ")) {names(" + matDfName + ")} ,silent=TRUE)",true);
 
 						if (rexp.isNull() == false) {
 							item = rexp.asStrings();
@@ -669,7 +669,7 @@ public class ShellCompletion implements UpdateCompletion {
 						REXP rexp = null;
 
 						rexp = RServeUtil.fromR("try(if (is.data.frame(" + matDfName + ")||is.matrix(" + matDfName + ")){colnames(" + matDfName + ")} else if(is.array(" + matDfName + ")){rownames("
-								+ matDfName + ")} else{names(" + matDfName + ")} ,silent=TRUE)");
+								+ matDfName + ")} else{names(" + matDfName + ")} ,silent=TRUE)",true);
 
 						if (rexp.isNull() == false) {
 							item = rexp.asStrings();
@@ -687,7 +687,7 @@ public class ShellCompletion implements UpdateCompletion {
 						try {
 							REXP rexp = null;
 
-							rexp = RServeUtil.fromR("try(rownames(" + matDfName + "),silent=TRUE)");
+							rexp = RServeUtil.fromR("try(rownames(" + matDfName + "),silent=TRUE)",true);
 
 							if (rexp.isNull() == false) {
 								item = rexp.asStrings();
@@ -702,7 +702,7 @@ public class ShellCompletion implements UpdateCompletion {
 						try {
 							REXP rexp = null;
 
-							rexp = RServeUtil.fromR("try(colnames(" + matDfName + "),silent=TRUE)");
+							rexp = RServeUtil.fromR("try(colnames(" + matDfName + "),silent=TRUE)",true);
 
 							if (rexp.isNull() == false) {
 								item = rexp.asStrings();
@@ -721,7 +721,7 @@ public class ShellCompletion implements UpdateCompletion {
 					try {
 						REXP rexp = null;
 
-						rexp = RServeUtil.fromR("try(dimnames(" + matDfName + ")[[" + (state + 1) + "]],silent=TRUE)");
+						rexp = RServeUtil.fromR("try(dimnames(" + matDfName + ")[[" + (state + 1) + "]],silent=TRUE)",true);
 
 						if (rexp.isNull() == false) {
 							item = rexp.asStrings();
@@ -1148,10 +1148,10 @@ public class ShellCompletion implements UpdateCompletion {
 			/* Get all installed dataset names, their package and description! */
 			try {
 				RServeUtil.evalR("try(.bio7Pkgs <- setdiff(.packages(TRUE), c(\"base\", \"stats\")));" + "try(.bio7PkgsTemp<-data(package = .bio7Pkgs)$result);"
-						+ "try(.bio7PkgsTemp<-.bio7PkgsTemp[order(.bio7PkgsTemp[,3]), ])", null);
-				item = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Item\"])").asStrings();
-				packages = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Package\"])").asStrings();
-				title = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Title\"])").asStrings();
+						+ "try(.bio7PkgsTemp<-.bio7PkgsTemp[order(.bio7PkgsTemp[,3]), ])", null,true);
+				item = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Item\"])",true).asStrings();
+				packages = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Package\"])",true).asStrings();
+				title = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Title\"])",true).asStrings();
 			} catch (REXPMismatchException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -1203,10 +1203,10 @@ public class ShellCompletion implements UpdateCompletion {
 			String[] packageTitle = null;
 			try {
 				RServeUtil.evalR("try(.bio7ListOfWebPackages <- list(sort(.packages(all.available = TRUE))));" + "try(.bio7ListOfWebPackagesNames<-.bio7ListOfWebPackages[[1]]);"
-						+ "try(.bio7TitleResult<-lapply(.bio7ListOfWebPackagesNames,packageDescription,fields = c(\"Title\")))", null);
+						+ "try(.bio7TitleResult<-lapply(.bio7ListOfWebPackagesNames,packageDescription,fields = c(\"Title\")))", null,true);
 
-				packageTitle = RServeUtil.fromR("try(as.character(.bio7TitleResult))").asStrings();
-				dirPackageFiles = RServeUtil.fromR("try(.bio7ListOfWebPackagesNames)").asStrings();
+				packageTitle = RServeUtil.fromR("try(as.character(.bio7TitleResult))",true).asStrings();
+				dirPackageFiles = RServeUtil.fromR("try(.bio7ListOfWebPackagesNames)",true).asStrings();
 
 			} catch (REXPMismatchException e) {
 				// TODO Auto-generated catch block
