@@ -1088,7 +1088,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 					// System.out.println(files[i].getName());
 					if (files[i].getName().endsWith(".R") || files[i].getName().endsWith(".r")) {
 
-						RServeUtil.evalR(null, files[i].toString(),true);
+						RServeUtil.evalR(null, files[i].toString());
 					}
 
 					else if (files[i].getName().endsWith(".bsh")) {

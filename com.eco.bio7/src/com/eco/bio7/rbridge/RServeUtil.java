@@ -29,7 +29,7 @@ public class RServeUtil {
 	 * @param loc
 	 *            the script location.
 	 */
-	public static void evalR(String script, String loc, boolean join) {
+	public static void evalR(String script, String loc) {
 		if (RServe.isAliveDialog()) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
@@ -52,13 +52,11 @@ public class RServeUtil {
 				});
 
 				Do.schedule();
-				if (join) {
-					try {
-						Do.join();
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+				try {
+					Do.join();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 			} else {
 				System.out.println("Rserve is busy. Can't execute the R script!");
@@ -75,7 +73,7 @@ public class RServeUtil {
 	 *            a R command.
 	 * @return a REXP object.
 	 */
-	public static REXP fromR(String eval, boolean join) {
+	public static REXP fromR(String eval) {
 
 		if (RServe.isAliveDialog()) {
 			if (RState.isBusy() == false) {
@@ -110,13 +108,11 @@ public class RServeUtil {
 				});
 				// job.setSystem(true);
 				job.schedule();
-				if (join) {
-					try {
-						job.join();
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+				try {
+					job.join();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 			} else {
 				System.out.println("Rserve is busy. Can't execute the R script!");
@@ -133,7 +129,7 @@ public class RServeUtil {
 	 * @param assign
 	 *            the object to assign.
 	 */
-	public static void toR(String name, boolean join, Object... assign) {
+	public static void toR(String name, Object... assign) {
 
 		if (RServe.isAliveDialog()) {
 			if (RState.isBusy() == false) {
@@ -211,13 +207,11 @@ public class RServeUtil {
 				});
 				// job.setSystem(true);
 				job.schedule();
-				if (join) {
-					try {
-						job.join();
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+				try {
+					job.join();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 
 				RState.setBusy(false);

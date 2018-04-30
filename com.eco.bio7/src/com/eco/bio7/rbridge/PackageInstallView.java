@@ -501,7 +501,7 @@ public class PackageInstallView extends ViewPart {
 
 						if (tree.getSelection().length > 0) {
 							String selectedPackage = tree.getSelection()[0].getText();
-							RServeUtil.evalR("try(detach(package:" + selectedPackage + ", unload=TRUE))", null,true);
+							RServeUtil.evalR("try(detach(package:" + selectedPackage + ", unload=TRUE))", null);
 							createAttachedPackageTree();
 
 						}
@@ -652,10 +652,10 @@ public class PackageInstallView extends ViewPart {
 
 			String[] listPackages = null;
 
-			RServeUtil.evalR("try(.bio7ListOfWebPackages <- list(sort(.packages(all.available = TRUE))))", null,true);
+			RServeUtil.evalR("try(.bio7ListOfWebPackages <- list(sort(.packages(all.available = TRUE))))", null);
 
 			try {
-				REXP rexp = RServeUtil.fromR(".bio7ListOfWebPackages[[1]]",true);
+				REXP rexp = RServeUtil.fromR(".bio7ListOfWebPackages[[1]]");
 				if (rexp != null)
 					listPackages = rexp.asStrings();
 			} catch (REXPMismatchException e1) {
@@ -724,8 +724,8 @@ public class PackageInstallView extends ViewPart {
 
 		RServeUtil.evalR(
 				".bio7TempVarEnvironment <- new.env();try(.bio7TempVarEnvironment$workspaceRPackages<-.packages())",
-				null,true);
-		pack = RServeUtil.fromR("try(.bio7TempVarEnvironment$workspaceRPackages)",true);
+				null);
+		pack = RServeUtil.fromR("try(.bio7TempVarEnvironment$workspaceRPackages)");
 		if (pack == null) {
 			return;
 		}
@@ -736,7 +736,7 @@ public class PackageInstallView extends ViewPart {
 
 			e1.printStackTrace();
 		}
-		RServeUtil.evalR("try(rm(workspaceRPackages,envir=.bio7TempVarEnvironment))", null,true);
+		RServeUtil.evalR("try(rm(workspaceRPackages,envir=.bio7TempVarEnvironment))", null);
 
 		TreeItem packages = new TreeItem(tree, 0);
 		packages.setText("Attached Packages:");
