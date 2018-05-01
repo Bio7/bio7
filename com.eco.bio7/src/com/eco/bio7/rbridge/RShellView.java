@@ -871,10 +871,15 @@ public class RShellView extends ViewPart {
 		FormData fd_tab = new FormData();
 		fd_tab.top = new FormAttachment(0, 115);
 		fd_tab.bottom = new FormAttachment(100);
-		fd_tab.left = new FormAttachment(0);
-		fd_tab.right = new FormAttachment(100);
+		fd_tab.left = new FormAttachment(0,5);
+		fd_tab.right = new FormAttachment(100,-5);
 		composite.setLayoutData(fd_tab);
 		composite.setRegion(null);
+		
+		
+		/*fd_composite_1.top = new FormAttachment(0, 10);
+		fd_composite_1.left = new FormAttachment(0, 5);
+		fd_composite_1.right = new FormAttachment(100, -5);*/
 		/*
 		 * tab.setTabHeight(22); tab.addSelectionListener(new SelectionListener() {
 		 * public void itemClosed(CTabFolderEvent event) {
@@ -895,7 +900,7 @@ public class RShellView extends ViewPart {
 		 * tab.setSelection(objectsTabItem);
 		 */
 		// tab.setControl(composite);
-		composite.setLayout(new GridLayout(7, true));
+		composite.setLayout(new GridLayout(6, true));
 
 		objectsButton = new Button(composite, SWT.NONE);
 		GridData gd_objectsButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
@@ -925,7 +930,7 @@ public class RShellView extends ViewPart {
 			}
 		});
 		removeButton.setText("Remove");
-		loadButton_1 = new Button(composite, SWT.NONE);
+		/*loadButton_1 = new Button(composite, SWT.NONE);
 		GridData gd_loadButton_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_loadButton_1.heightHint = 40;
 		loadButton_1.setLayoutData(gd_loadButton_1);
@@ -938,7 +943,7 @@ public class RShellView extends ViewPart {
 			}
 
 		});
-		loadButton_1.setImage(Bio7Plugin.getImageDescriptor("/icons/views/savefile.png").createImage());
+		loadButton_1.setImage(Bio7Plugin.getImageDescriptor("/icons/views/savefile.png").createImage());*/
 
 		gcButton = new Button(composite, SWT.NONE);
 		GridData gd_gcButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
@@ -2658,7 +2663,16 @@ public class RShellView extends ViewPart {
 					 * Before the job runs we store the package size if we need to reload the
 					 * package completion (the job will get 0!)
 					 */
-					packageImportSize = parse.getShellCurrentPackageImports().size();
+					/*
+					 * Before the job runs we store the package size if we need to reload the
+					 * package completion (the job will get 0!)
+					 */
+					if (parse != null) {
+						Map map = parse.getShellCurrentPackageImports();
+						if (map != null) {
+							packageImportSize = map.size();
+						}
+					}
 					/* Send multiple expressions and evaluate them! */
 					com.eco.bio7.rbridge.RServe.printJobs(t);
 					/* Linebreak in the job for multiple expressions! */
