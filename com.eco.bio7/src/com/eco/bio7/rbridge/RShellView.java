@@ -867,7 +867,7 @@ public class RShellView extends ViewPart {
 		btnNewButton.setToolTipText("Interrupt R execution");
 		btnNewButton.setImage(Bio7Plugin.getImageDescriptor("/icons/views/deleteaction.png").createImage());
 		composite = new Composite(parent, SWT.NONE);
-		fd_composite_1.bottom = new FormAttachment(composite, -16);
+		fd_composite_1.bottom = new FormAttachment(composite, 0);
 		FormData fd_tab = new FormData();
 		fd_tab.top = new FormAttachment(0, 115);
 		fd_tab.bottom = new FormAttachment(100);
