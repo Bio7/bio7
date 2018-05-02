@@ -750,7 +750,7 @@ public class ShellCompletion implements UpdateCompletion {
 				 */
 				if (item[0].startsWith("Error") == false) {
 					/* Get the object information str() as context info! */
-					String resultStr = new RStrObjectInformation().getRStrObjectInfo(matDfName, c);
+					//String resultStr = new RStrObjectInformation().getRStrObjectInfo(matDfName, c);
 					/* If text length after parenheses is at least 0! */
 					if (length >= 0) {
 
@@ -761,7 +761,7 @@ public class ShellCompletion implements UpdateCompletion {
 							 */
 							if (item[i].length() >= length && item[i].substring(0, length).equalsIgnoreCase(contentLastCorr)) {
 
-								list.add(new ImageContentProposal("\"" + item[i] + "\"", item[i], resultStr, item[i].length(), arrayImage));
+								list.add(new ImageContentProposal("\"" + item[i] + "\"", item[i], matDfName, item[i].length(), arrayImage));
 							}
 						}
 
