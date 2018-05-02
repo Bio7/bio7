@@ -95,6 +95,7 @@ import org.eclipse.ui.IEditorRegistry;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener3;
+import org.eclipse.ui.IPerspectiveRegistry;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
@@ -1244,6 +1245,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			// Start console and output!!
 			StartBio7Utils.getConsoleInstance().startutils();
 			// *************************************************
+			/*Select the R perspective after all perspectives have been set!*/
+			//IWorkbenchWindow window = getViewSite().getWorkbenchWindow();
+			IPerspectiveRegistry registry = configurer.getWorkbenchConfigurer().getWorkbench().getPerspectiveRegistry();
+			IWorkbenchPage page = configurer.getWindow().getActivePage();
+			page.setPerspective(registry.findPerspectiveWithId("com.eco.bio7.rbridge.RPerspective"));
 			/*
 			 * If Bio7 should be customized at startup the startup scripts have to be
 			 * enabled! The startup is faster without!
@@ -1275,6 +1281,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		for (Logger logger : loggers) {
 			logger.setLevel(Level.OFF);
 		}
+		
+		
 	}
 
 	/* The listener for save events of the Java editor! */
