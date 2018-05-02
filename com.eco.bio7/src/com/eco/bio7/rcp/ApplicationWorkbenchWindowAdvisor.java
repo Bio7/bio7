@@ -1244,7 +1244,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			new StartBio7Utils();
 			// Start console and output!!
 			StartBio7Utils.getConsoleInstance().startutils();
-			// *************************************************
+			// ************************************************* 
 			/*Select the R perspective after all perspectives have been set!*/
 			//IWorkbenchWindow window = getViewSite().getWorkbenchWindow();
 			IPerspectiveRegistry registry = configurer.getWorkbenchConfigurer().getWorkbench().getPerspectiveRegistry();
