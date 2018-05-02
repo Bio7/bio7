@@ -10,6 +10,7 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
@@ -85,11 +86,19 @@ public class ExecuteRTextSelection extends Action {
 						error = parse.parseShellSource(code, 0);
 						if (error == false) {
 							System.out.println(code);
-							RServeUtil.evalR("try(try(" + code + "))", null);
+							Display display = PlatformUI.getWorkbench().getDisplay();
+							display.asyncExec(new Runnable() {
+
+								public void run() {
+									RServeUtil.evalR("try(try(" + code + "))", null);
+								}
+							});
 							buff.setLength(0); // clear buffer!
 						} else {
-							/*Data will be appended: Buffer will not be cleared until we have valid r code or an interrupt
-							 *signal!*/
+							/*
+							 * Data will be appended: Buffer will not be cleared until we have valid r code
+							 * or an interrupt signal!
+							 */
 							String[] output = code.split("\n");
 							for (int i = 0; i < output.length; i++) {
 								System.out.println("+ " + output[i]);
@@ -113,7 +122,7 @@ public class ExecuteRTextSelection extends Action {
 
 	public void stopEvaluation() {
 		error = false;
-		//RServeUtil.evalR("try(try(" + code + "))", null);
+		// RServeUtil.evalR("try(try(" + code + "))", null);
 		buff.setLength(0); // clear buffer!
 	}
 

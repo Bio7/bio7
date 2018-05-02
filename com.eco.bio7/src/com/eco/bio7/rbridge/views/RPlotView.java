@@ -1,4 +1,4 @@
-package com.eco.bio7.rbridge;
+package com.eco.bio7.rbridge.views;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
@@ -23,6 +23,8 @@ import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RScript;
+import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RState;
 
 public class RPlotView extends ViewPart {
 

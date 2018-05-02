@@ -15,7 +15,7 @@ import org.eclipse.ui.part.ViewPart;
 
 import com.eco.bio7.image.Util;
 import com.eco.bio7.rbridge.RFunctions;
-import com.eco.bio7.rbridge.RShellView;
+
 import org.eclipse.swt.events.ExpandAdapter;
 import org.eclipse.swt.events.ExpandEvent;
 

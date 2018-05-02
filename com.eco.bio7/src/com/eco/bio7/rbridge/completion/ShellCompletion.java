@@ -50,10 +50,10 @@ import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RServeUtil;
-import com.eco.bio7.rbridge.RShellView;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.RStrObjectInformation;
 import com.eco.bio7.rbridge.UpdateCompletion;
+import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.reditor.actions.RefreshLoadedPackagesForCompletion;
 import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditors.REditor;
@@ -750,7 +750,7 @@ public class ShellCompletion implements UpdateCompletion {
 				 */
 				if (item[0].startsWith("Error") == false) {
 					/* Get the object information str() as context info! */
-					String resultStr = new RStrObjectInformation().getRStrObjectInfo(matDfName, c);
+					//String resultStr = new RStrObjectInformation().getRStrObjectInfo(matDfName, c);
 					/* If text length after parenheses is at least 0! */
 					if (length >= 0) {
 
@@ -761,7 +761,7 @@ public class ShellCompletion implements UpdateCompletion {
 							 */
 							if (item[i].length() >= length && item[i].substring(0, length).equalsIgnoreCase(contentLastCorr)) {
 
-								list.add(new ImageContentProposal("\"" + item[i] + "\"", item[i], resultStr, item[i].length(), arrayImage));
+								list.add(new ImageContentProposal("\"" + item[i] + "\"", item[i], matDfName, item[i].length(), arrayImage));
 							}
 						}
 

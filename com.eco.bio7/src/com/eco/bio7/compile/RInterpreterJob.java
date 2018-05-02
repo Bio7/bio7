@@ -27,7 +27,7 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.Console;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RServe;
-import com.eco.bio7.rbridge.RShellView;
+import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.StartBio7Utils;
 
 public class RInterpreterJob extends WorkspaceJob {

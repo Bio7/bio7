@@ -20,6 +20,8 @@ import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
+import com.eco.bio7.rbridge.views.PackageInstallView;
+
 
 public class RemoveRLibrarysJob extends WorkspaceJob {
 

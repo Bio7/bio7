@@ -38,6 +38,7 @@ import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.util.Util;
 
