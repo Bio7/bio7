@@ -57,6 +57,7 @@ import com.eco.bio7.console.Console;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.documents.JavaFXWebBrowser;
 import com.eco.bio7.preferences.PreferenceConstants;
+import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
 import com.eco.bio7.reditor.antlr.Parse;

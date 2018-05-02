@@ -9,7 +9,7 @@
  *     M. Austenfeld
  *******************************************************************************/
 
-package com.eco.bio7.rbridge;
+package com.eco.bio7.rbridge.views;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -118,6 +118,14 @@ import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.documents.JavaFXWebBrowser;
 import com.eco.bio7.os.pid.Pid;
 import com.eco.bio7.preferences.PreferenceConstants;
+import com.eco.bio7.rbridge.RCompletionShell;
+import com.eco.bio7.rbridge.RFunctions;
+import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.rbridge.RTable;
+import com.eco.bio7.rbridge.TransferDataframeToGridJob;
+import com.eco.bio7.rbridge.TransferMatrixToGridJob;
+import com.eco.bio7.rbridge.TransferVectorToGridJob;
 import com.eco.bio7.rbridge.actions.ExecuteRTextSelection;
 import com.eco.bio7.rbridge.completion.ContentProposalAdapter;
 import com.eco.bio7.rbridge.completion.ShellCompletion;

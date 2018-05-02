@@ -7,7 +7,7 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 
-import com.eco.bio7.rbridge.RShellView;
+import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.StartBio7Utils;
 import com.eco.bio7.util.Util;
 

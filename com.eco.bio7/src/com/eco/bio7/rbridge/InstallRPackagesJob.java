@@ -28,6 +28,7 @@ import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.preferences.PreferenceConstants;
+import com.eco.bio7.rbridge.views.PackageInstallView;
 
 public class InstallRPackagesJob extends WorkspaceJob {
 
