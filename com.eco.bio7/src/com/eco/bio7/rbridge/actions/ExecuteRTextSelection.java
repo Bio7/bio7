@@ -86,13 +86,9 @@ public class ExecuteRTextSelection extends Action {
 						error = parse.parseShellSource(code, 0);
 						if (error == false) {
 							System.out.println(code);
-							Display display = PlatformUI.getWorkbench().getDisplay();
-							display.asyncExec(new Runnable() {
 
-								public void run() {
-									RServeUtil.evalR("try(try(" + code + "))", null);
-								}
-							});
+							RServeUtil.evalR("try(try(" + code + "))", null);
+
 							buff.setLength(0); // clear buffer!
 						} else {
 							/*

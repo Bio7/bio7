@@ -849,7 +849,7 @@ public class ShellCompletion implements UpdateCompletion {
 									for (int j = 0; j < result.length; j++) {
 										if (pipedDataName != null) {
 											if (varsWorkspaceClass[j].equals(pipedDataName)) {
-												propo[j] = new ImageContentProposal(result[j], result[j] + " - " + varsWorkspaceClass[j]+" %>%", varsWorkspaceClass[j], result[j].length(), varImage);
+												propo[j] = new ImageContentProposal(result[j], result[j] + " - " + varsWorkspaceClass[j]+" column", varsWorkspaceClass[j], result[j].length(), varImage);
 											} else {
 												propo[j] = new ImageContentProposal(result[j], result[j] + " - " + varsWorkspaceClass[j], result[j], result[j].length(), varImage);
 											}

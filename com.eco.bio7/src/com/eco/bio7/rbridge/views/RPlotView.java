@@ -24,6 +24,7 @@ import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RScript;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 
 public class RPlotView extends ViewPart {
@@ -291,10 +292,10 @@ public class RPlotView extends ViewPart {
 
 							if (text_1.isEnabled() == false) {
 
-								RServe.printJob("plot(tri.vm,main=\"" + titleText.getText() + "\",xlab=\""
+								RServeUtil.evalR("plot(tri.vm,main=\"" + titleText.getText() + "\",xlab=\""
 										+ xText.getText() + "\",ylab=\"" + yText.getText() + "\");" + "text("
 										+ selections[0] + "," + selections[1] + ", tri.vm.areas, cex=0.5);" + "points("
-										+ selections[0] + "," + selections[1] + ",cex=0.5)");
+										+ selections[0] + "," + selections[1] + ",cex=0.5)",null);
 							} else {
 								text_1.setText("plot(tri.vm,main=\"" + titleText.getText() + "\",xlab=\""
 										+ xText.getText() + "\",ylab=\"" + yText.getText() + "\");" + "text("
