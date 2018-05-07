@@ -19,6 +19,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
+import java.util.Stack;
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -91,10 +94,13 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.ToolTip;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.FileStoreEditorInput;
+import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -102,6 +108,7 @@ import org.osgi.framework.Bundle;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.REXPMismatchException;
+import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
@@ -179,6 +186,9 @@ public class RShellView extends ViewPart {
 	public ControlDecoration txtIndication;
 	protected boolean keyPressed;
 	public int packageImportSize = 0;
+	protected Stack<Menu> menuStack;
+	private Menu menuScripts;
+	private Menu menu;
 
 	public RShellView() {
 		instance = this;
@@ -261,7 +271,6 @@ public class RShellView extends ViewPart {
 		FontData currentFont = PreferenceConverter.getFontData(store, "RShellFonts");
 
 		// Composite composite_1 = new Composite(parent, SWT.NONE);
-		
 
 		// provCompletion = new SimpleContentProposalProvider(new String[] {
 		// "a", "b", "c" });
@@ -866,11 +875,11 @@ public class RShellView extends ViewPart {
 		 * tab.setSelection(objectsTabItem);
 		 */
 		// tab.setControl(composite);
-		
-		 Label separator = new Label(parent, SWT.HORIZONTAL | SWT.SEPARATOR);
-		 GridData gd_label = new GridData(SWT.FILL, SWT.FILL, true, false, 6, 1);
-			
-			separator.setLayoutData(gd_label);
+
+		Label separator = new Label(parent, SWT.HORIZONTAL | SWT.SEPARATOR);
+		GridData gd_label = new GridData(SWT.FILL, SWT.FILL, true, false, 6, 1);
+
+		separator.setLayoutData(gd_label);
 		objectsButton = new Button(parent, SWT.NONE);
 		GridData gd_objectsButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		gd_objectsButton.heightHint = 40;
@@ -987,7 +996,7 @@ public class RShellView extends ViewPart {
 		iButton.setImage(Bio7Plugin.getImageDescriptor("/icons/views/helpaction.png").createImage());
 		iButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				
+
 				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 					textConsole.setText("Expression textfield:\n\n" + "STRG + SPACE (Change in pref.!) = Open code completion!\n" + "ESC =  Close code completion!\n" + "UP ARROW =  Open history!\n"
 							+ "CMD + ALT + SHIFT + I = Transfer history to opened R editor!\n" + "CMD + ALT + SHIFT + R = Refresh code completion!\n"
@@ -1012,7 +1021,6 @@ public class RShellView extends ViewPart {
 
 					);
 				}
-				
 
 			}
 		});
@@ -1169,6 +1177,17 @@ public class RShellView extends ViewPart {
 							} else {
 								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" + "Please refresh the list!");
 							}
+							
+							for (int i = 0; i < types.length; i++) {
+								
+							}
+							/*Transfer selected names to the R workspace!*/
+							try {
+								c.assign(".selectedRShellViewVars",listShell.getSelection());
+							} catch (REngineException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
 						}
 					}
 				}
@@ -1204,7 +1223,30 @@ public class RShellView extends ViewPart {
 			}
 		});
 
-		final Menu menu = new Menu(listShell);
+		menu = new Menu(listShell);
+		menu.addMenuListener(new MenuListener() {
+
+			public void menuHidden(MenuEvent e) {
+
+			}
+
+			@Override
+			public void menuShown(MenuEvent e) {
+				MenuItem[] menuItems = menu.getItems();
+				// Only delete the plugins menu items and menus!
+				for (int i = 5; i < menuItems.length; i++) {
+					if (menuItems[i] != null) {
+						menuItems[i].dispose();
+					}
+				}
+				/*Here we create the submenus with actions for the scripts recursively!*/
+				menuStack = new Stack<Menu>();
+				menuStack.push(menu);
+				String loc = store.getString(PreferenceConstants.D_RSHELL_SCRIPTS);
+				createSubMenus(loc);
+
+			}
+		});
 		listShell.setMenu(menu);
 
 		final MenuItem newItemMenuItem_20 = new MenuItem(menu, SWT.NONE);
@@ -2245,143 +2287,6 @@ public class RShellView extends ViewPart {
 		});
 		VectorColumn.setText("Vector to Columns");
 
-		MenuItem mntmRScripts = new MenuItem(menu, SWT.CASCADE);
-		mntmRScripts.setText("Scripts");
-		final Menu menuScripts = new Menu(mntmRScripts);
-		mntmRScripts.setMenu(menuScripts);
-
-		menuScripts.addMenuListener(new MenuListener() {
-
-			public void menuHidden(MenuEvent e) {
-
-			}
-
-			@Override
-			public void menuShown(MenuEvent e) {
-
-				// plugins_ = new MenuItem[Menus.getPlugins().length];
-				MenuItem[] menuItems = menuScripts.getItems();
-				// Only delete the plugins menu items and menus!
-				for (int i = 0; i < menuItems.length; i++) {
-					if (menuItems[i] != null) {
-						menuItems[i].dispose();
-					}
-				}
-
-				// IPreferenceStore storeSc =
-				// Bio7Plugin.getDefault().getPreferenceStore();
-
-				File files = new File(store.getString(PreferenceConstants.D_RSHELL_SCRIPTS));
-				final File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".r", ".R", ".bsh", ".groovy", ".py", ".js" });
-
-				for (int i = 0; i < fil.length; i++) {
-
-					final int scriptCount = i;
-
-					MenuItem item = new MenuItem(menuScripts, SWT.NONE);
-
-					item.setText(fil[i].getName().substring(0, fil[i].getName().lastIndexOf(".")));
-
-					item.addSelectionListener(new SelectionListener() {
-
-						public void widgetSelected(SelectionEvent e) {
-
-							if (text.equals("Empty")) {
-								System.out.println("No script available!");
-							}
-
-							else if (fil[scriptCount].getName().endsWith(".R") || fil[scriptCount].getName().endsWith(".r")) {
-								if (RServe.isAliveDialog()) {
-									if (RState.isBusy() == false) {
-										RState.setBusy(true);
-										final RInterpreterJob Do = new RInterpreterJob(null, true, fil[scriptCount].toString());
-										Do.addJobChangeListener(new JobChangeAdapter() {
-											public void done(IJobChangeEvent event) {
-												if (event.getResult().isOK()) {
-													int countDev = RServe.getDisplayNumber();
-													RState.setBusy(false);
-													if (countDev > 0) {
-														RServe.closeAndDisplay();
-													}
-												}
-											}
-										});
-										Do.setUser(true);
-										Do.schedule();
-									} else {
-
-										Bio7Dialog.message("Rserve is busy!");
-									}
-
-								}
-							}
-
-							else if (fil[scriptCount].getName().endsWith(".bsh")) {
-
-								BeanShellInterpreter.interpretJob(null, fil[scriptCount].toString());
-
-							} else if (fil[scriptCount].getName().endsWith(".groovy")) {
-
-								GroovyInterpreter.interpretJob(null, fil[scriptCount].toString());
-
-							} else if (fil[scriptCount].getName().endsWith(".py")) {
-
-								PythonInterpreter.interpretJob(null, fil[scriptCount].toString());
-							} else if (fil[scriptCount].getName().endsWith(".js")) {
-
-								JavaScriptInterpreter.interpretJob(null, fil[scriptCount].toString());
-
-							} else if (fil[scriptCount].getName().endsWith(".java")) {
-
-								Job job = new Job("Compile Java") {
-									@Override
-									protected IStatus run(IProgressMonitor monitor) {
-										monitor.beginTask("Compile Java...", IProgressMonitor.UNKNOWN);
-										String name = fil[scriptCount].getName().replaceFirst("[.][^.]+$", "");
-										// IWorkspace workspace =
-										// ResourcesPlugin.getWorkspace();
-										IPath location = Path.fromOSString(fil[scriptCount].getAbsolutePath());
-
-										// IFile ifile =
-										// workspace.getRoot().getFileForLocation(location);
-										CompileClassAndMultipleClasses cp = new CompileClassAndMultipleClasses();
-										try {
-											cp.compileAndLoad(new File(location.toOSString()), new File(location.toOSString()).getParent(), name, null, true);
-										} catch (Exception e) {
-											// TODO Auto-generated catch block
-											// Bio7Dialog.message(e.getMessage());
-										}
-
-										monitor.done();
-										return Status.OK_STATUS;
-									}
-
-								};
-								job.addJobChangeListener(new JobChangeAdapter() {
-									public void done(IJobChangeEvent event) {
-										if (event.getResult().isOK()) {
-
-										} else {
-
-										}
-									}
-								});
-								// job.setSystem(true);
-								job.schedule();
-
-							}
-
-						}
-
-						public void widgetDefaultSelected(SelectionEvent e) {
-
-						}
-					});
-
-				}
-
-			}
-		});
 		listShell.setFont(font);
 
 		sashForm_1.setWeights(new int[] { 1 });
@@ -2403,20 +2308,168 @@ public class RShellView extends ViewPart {
 			}
 		});
 	}
+    /*List files and folders recursively!*/
+	public void createSubMenus(String directoryName) {
+		File directory = new File(directoryName);
+		File[] fList = directory.listFiles();
+		for (File file : fList) {
+			if (file.isFile()) {
+				createScriptSubmenus(file);
+			} else if (file.isDirectory()) {
+				Menu men = menuStack.peek();
+				MenuItem mntmRScripts = new MenuItem(men, SWT.CASCADE);
+				mntmRScripts.setText(file.getName());
+				menuScripts = new Menu(mntmRScripts);
+				mntmRScripts.setMenu(menuScripts);
+				menuStack.push(menuScripts);
+				/*
+				 * menuScripts.addMenuListener(new MenuListener() {
+				 * 
+				 * public void menuHidden(MenuEvent e) {
+				 * 
+				 * }
+				 * 
+				 * @Override public void menuShown(MenuEvent e) {
+				 * 
+				 * // plugins_ = new MenuItem[Menus.getPlugins().length]; MenuItem[] menuItems =
+				 * menuScripts.getItems(); // Only delete the plugins menu items and menus! for
+				 * (int i = 0; i < menuItems.length; i++) { if (menuItems[i] != null) {
+				 * menuItems[i].dispose(); } }
+				 * 
+				 * } });
+				 */
 
-	/*
-	 * public static void startJob(String plotInstruction, int b) { if
-	 * (RState.isBusy() == false) { RState.setBusy(true);
-	 * 
-	 * PlotJob plot = new PlotJob(plotInstruction, b); plot.addJobChangeListener(new
-	 * JobChangeAdapter() { public void done(IJobChangeEvent event) { if
-	 * (event.getResult().isOK()) {
-	 * 
-	 * RState.setBusy(false); } else {
-	 * 
-	 * RState.setBusy(false); } } }); plot.setUser(true); plot.schedule(); } else {
-	 * Bio7Dialog.message("Rserve is busy!"); } }
-	 */
+				createSubMenus(file.getAbsolutePath());
+			}
+
+		}
+       /*Leave the menu!*/
+		menuStack.pop();
+
+	}
+    /*Create a menu item and action for the different files!*/
+	public void createScriptSubmenus(File file) {
+		
+		Menu submenu = menuStack.peek();
+
+		MenuItem item = new MenuItem(submenu, SWT.NONE);
+
+		item.setText(file.getName().substring(0, file.getName().lastIndexOf(".")));
+
+		item.addSelectionListener(new SelectionListener() {
+
+			public void widgetSelected(SelectionEvent e) {
+
+				if (text.equals("Empty")) {
+					System.out.println("No script available!");
+				}
+
+				else if (file.getName().endsWith(".R") || file.getName().endsWith(".r")) {
+					if (RServe.isAliveDialog()) {
+						if (RState.isBusy() == false) {
+							RState.setBusy(true);
+							final RInterpreterJob Do = new RInterpreterJob(null, true, file.toString());
+							Do.addJobChangeListener(new JobChangeAdapter() {
+								public void done(IJobChangeEvent event) {
+									if (event.getResult().isOK()) {
+										int countDev = RServe.getDisplayNumber();
+										RState.setBusy(false);
+										if (countDev > 0) {
+											RServe.closeAndDisplay();
+										}
+									}
+								}
+							});
+							Do.setUser(true);
+							Do.schedule();
+						} else {
+
+							Bio7Dialog.message("Rserve is busy!");
+						}
+
+					}
+				}
+
+				else if (file.getName().endsWith(".bsh")) {
+
+					BeanShellInterpreter.interpretJob(null, file.toString());
+
+				} else if (file.getName().endsWith(".groovy")) {
+
+					GroovyInterpreter.interpretJob(null, file.toString());
+
+				} else if (file.getName().endsWith(".py")) {
+
+					PythonInterpreter.interpretJob(null, file.toString());
+				} else if (file.getName().endsWith(".js")) {
+
+					JavaScriptInterpreter.interpretJob(null, file.toString());
+
+				} else if (file.getName().endsWith(".java")) {
+
+					Job job = new Job("Compile Java") {
+						@Override
+						protected IStatus run(IProgressMonitor monitor) {
+							monitor.beginTask("Compile Java...", IProgressMonitor.UNKNOWN);
+							String name = file.getName().replaceFirst("[.][^.]+$", "");
+							// IWorkspace workspace =
+							// ResourcesPlugin.getWorkspace();
+							IPath location = Path.fromOSString(file.getAbsolutePath());
+
+							// IFile ifile =
+							// workspace.getRoot().getFileForLocation(location);
+							CompileClassAndMultipleClasses cp = new CompileClassAndMultipleClasses();
+							try {
+								cp.compileAndLoad(new File(location.toOSString()), new File(location.toOSString()).getParent(), name, null, true);
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								// Bio7Dialog.message(e.getMessage());
+							}
+
+							monitor.done();
+							return Status.OK_STATUS;
+						}
+
+					};
+					job.addJobChangeListener(new JobChangeAdapter() {
+						public void done(IJobChangeEvent event) {
+							if (event.getResult().isOK()) {
+
+							} else {
+
+							}
+						}
+					});
+					// job.setSystem(true);
+					job.schedule();
+
+				}
+				
+				else if (file.getName().endsWith(".txt")) {
+					File fileToOpen = file;
+					 
+					if (fileToOpen.exists() && fileToOpen.isFile()) {
+					    IFileStore fileStore = EFS.getLocalFileSystem().getStore(fileToOpen.toURI());
+					    IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+					 
+					    try {
+					        IDE.openEditorOnFileStore( page, fileStore );
+					    } catch ( PartInitException ex ) {
+					        //Put your exception handler here if you wish to
+					    }
+					} else {
+					    //Do something if the file does not exist
+					}
+				}
+
+			}
+
+			public void widgetDefaultSelected(SelectionEvent e) {
+
+			}
+		});
+
+	}
 
 	private void loadScript() {
 		StringBuffer buffer = new StringBuffer();

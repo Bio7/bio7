@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="libs/commons-io-2.6.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/controlsfx-8.40.14.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/commons-codec-1.10.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/commons-collections4-4.1.jar"/>
@@ -16,7 +17,6 @@
 	<classpathentry exported="true" kind="lib" path="R/RserveEngine.jar"/>
 	<classpathentry exported="true" kind="lib" path="math/commons-math3-3.6.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="processing/core.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/commons-io-1.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="math/jgrapht-core-0.9.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="math/jgrapht-ext-0.9.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/commons-lang3-3.4.jar"/>
