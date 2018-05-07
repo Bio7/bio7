@@ -1183,7 +1183,7 @@ public class RShellView extends ViewPart {
 							}
 							/*Transfer selected names to the R workspace!*/
 							try {
-								c.assign(".selectedRShellViewVars",listShell.getSelection());
+								c.assign(".r_shell_vars",listShell.getSelection());
 							} catch (REngineException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
@@ -1233,8 +1233,8 @@ public class RShellView extends ViewPart {
 			@Override
 			public void menuShown(MenuEvent e) {
 				MenuItem[] menuItems = menu.getItems();
-				// Only delete the plugins menu items and menus!
-				for (int i = 5; i < menuItems.length; i++) {
+				// Only delete the extra script menu items!
+				for (int i = 6; i < menuItems.length; i++) {
 					if (menuItems[i] != null) {
 						menuItems[i].dispose();
 					}
@@ -2286,6 +2286,8 @@ public class RShellView extends ViewPart {
 			}
 		});
 		VectorColumn.setText("Vector to Columns");
+		
+		 new MenuItem(menu, SWT.SEPARATOR);
 
 		listShell.setFont(font);
 
@@ -2308,6 +2310,7 @@ public class RShellView extends ViewPart {
 			}
 		});
 	}
+	 
     /*List files and folders recursively!*/
 	public void createSubMenus(String directoryName) {
 		File directory = new File(directoryName);
