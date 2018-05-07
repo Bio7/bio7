@@ -376,10 +376,10 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 					if (OS.equals("Mac")) {
 						String tempDir = System.getProperty("java.io.tmpdir");
 						outputPath = tempDir + "/" + "Rserve_Mac_cooperative.tgz";
-						System.out.println("Download file from: https://raw.github.com/Bio7/Rserve_Cooperative/master");
+						System.out.println("Download file from: https://bio7.github.io/rserve/");
 						System.out.println("Download file to: " + outputPath);
 						try {
-							FileUtils.copyURLToFile(new URL("https://raw.github.com/Bio7/Rserve_Cooperative/master/Rserve_Mac_cooperative.tgz"), new File(outputPath));
+							FileUtils.copyURLToFile(new URL("https://bio7.github.io/rserve/Rserve_Mac_cooperative.tgz"), new File(outputPath));
 						} catch (MalformedURLException e2) {
 
 							e2.printStackTrace();
@@ -390,10 +390,10 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 					} else if (OS.equals("Linux")) {
 						String tempDir = System.getProperty("java.io.tmpdir");
 						outputPath = tempDir + "/" + "Rserve_Linux_cooperative.tar.gz";
-						System.out.println("Download file from: https://raw.github.com/Bio7/Rserve_Cooperative/master");
+						System.out.println("Download file from: https://bio7.github.io/rserve/");
 						System.out.println("Download file to: " + outputPath);
 						try {
-							FileUtils.copyURLToFile(new URL("https://raw.github.com/Bio7/Rserve_Cooperative/master/Rserve_Linux_cooperative.tar.gz"), new File(outputPath));
+							FileUtils.copyURLToFile(new URL("https://bio7.github.io/rserve/Rserve_Linux_cooperative.tar.gz"), new File(outputPath));
 						} catch (MalformedURLException e2) {
 
 							e2.printStackTrace();
