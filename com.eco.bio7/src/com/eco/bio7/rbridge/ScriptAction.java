@@ -12,9 +12,7 @@
 package com.eco.bio7.rbridge;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.Stack;
-
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.IPath;
@@ -40,19 +38,16 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
-
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.compile.BeanShellInterpreter;
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
 import com.eco.bio7.compile.GroovyInterpreter;
 import com.eco.bio7.compile.JavaScriptInterpreter;
-import com.eco.bio7.compile.BeanShellInterpreter;
 import com.eco.bio7.compile.PythonInterpreter;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.jobs.ImageMacroWorkspaceJob;
 import com.eco.bio7.preferences.PreferenceConstants;
-import com.eco.bio7.rbridge.RState;
-import com.eco.bio7.util.Util;
 
 public class ScriptAction extends Action implements IMenuCreator {
 
