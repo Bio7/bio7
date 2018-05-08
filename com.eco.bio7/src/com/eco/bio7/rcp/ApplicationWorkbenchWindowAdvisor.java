@@ -468,9 +468,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		File fileImportScripts = new File(path + "/importscripts");
 		File fileExportScripts = new File(path + "/export_scripts");
 		File fileGeneralScripts = new File(path + "/scripts");
-		File fileSpatialScripts = new File(path + "/spatial_scripts");
-		File fileImageScripts = new File(path + "/image_scripts");
-		File fileRScripts = new File(path + "/r_scripts");
 		File fileRShellScripts = new File(path + "/r_shell_scripts");
 		File fileGridScripts = new File(path + "/grid_scripts");
 
@@ -566,9 +563,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault(PreferenceConstants.D_IMPORT, fileImportScripts.getAbsolutePath());
 		store.setDefault(PreferenceConstants.D_EXPORT, fileExportScripts.getAbsolutePath());
 		store.setDefault(PreferenceConstants.D_SCRIPT_GENERAL, fileGeneralScripts.getAbsolutePath());
-		store.setDefault(PreferenceConstants.D_SCRIPT_SPATIAL, fileSpatialScripts.getAbsolutePath());
-		store.setDefault(PreferenceConstants.D_SCRIPT_IMAGE, fileImageScripts.getAbsolutePath());
-		store.setDefault(PreferenceConstants.D_SCRIPT_R, fileRScripts.getAbsolutePath());
 		store.setDefault(PreferenceConstants.D_RSHELL_SCRIPTS, fileRShellScripts.getAbsolutePath());
 		store.setDefault(PreferenceConstants.D_GRID_SCRIPTS, fileGridScripts.getAbsolutePath());
 

@@ -12,8 +12,19 @@
 package com.eco.bio7.rcp;
 
 import java.io.File;
+import java.util.Stack;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.IExtension;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IContributionItem;
@@ -29,14 +40,23 @@ import org.eclipse.jface.action.ToolBarContributionItem;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MenuEvent;
+import org.eclipse.swt.events.MenuListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import org.eclipse.ui.actions.ContributionItemFactory;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
+import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.registry.ActionSetRegistry;
 import org.eclipse.ui.internal.registry.IActionSetDescriptor;
@@ -71,9 +91,18 @@ import com.eco.bio7.actions.ShowEditorAreaAction;
 import com.eco.bio7.actions.ShowMainMenus;
 import com.eco.bio7.actions.Start;
 import com.eco.bio7.actions.Start3d;
+import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.compile.BeanShellInterpreter;
+import com.eco.bio7.compile.CompileClassAndMultipleClasses;
+import com.eco.bio7.compile.GroovyInterpreter;
+import com.eco.bio7.compile.JavaScriptInterpreter;
+import com.eco.bio7.compile.PythonInterpreter;
+import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.documents.LatexSweaveKnitrAction;
 import com.eco.bio7.documents.RMarkdownAction;
 import com.eco.bio7.preferences.PreferenceConstants;
+import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.actions.ClearRWorkspace;
 import com.eco.bio7.rbridge.actions.ClipboardRScipt;
 import com.eco.bio7.rbridge.actions.ClipboardRValues;
@@ -95,8 +124,10 @@ import com.eco.bio7.util.Util;
 public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	private static StatusLineContributionItem userItem = null;
 
-	private String id[] = new String[] { "org.eclipse.ui.views.ResourceNavigator", "org.eclipse.ui.console.ConsoleView", "com.eco.bio7.RShell", "com.eco.bio7.rbridge.RTable", "com.eco.bio7.imagej", "com.eco.bio7.ijtoolbar", "com.eco.bio7.image_methods", "com.eco.bio7.points","com.eco.bio7.image.TransferGeometryView",
-			"com.eco.bio7.browser.Browser", "com.eco.bio7.worldwind.WorldWindView", "com.eco.bio7.worldwind.WorldWindOptionsView", "com.eco.bio7.spatial", "com.eco.bio7.discrete3d.Options3d", "com.eco.bio7.control","com.eco.bio7.spreadsheet","com.eco.bio7.states","com.eco.bio7.quadgrid", "com.eco.bio7.hexgrid","com.eco.bio7.linechart","com.eco.bio7.piechart" };
+	private String id[] = new String[] { "org.eclipse.ui.views.ResourceNavigator", "org.eclipse.ui.console.ConsoleView", "com.eco.bio7.RShell", "com.eco.bio7.rbridge.RTable", "com.eco.bio7.imagej",
+			"com.eco.bio7.ijtoolbar", "com.eco.bio7.image_methods", "com.eco.bio7.points", "com.eco.bio7.image.TransferGeometryView", "com.eco.bio7.browser.Browser",
+			"com.eco.bio7.worldwind.WorldWindView", "com.eco.bio7.worldwind.WorldWindOptionsView", "com.eco.bio7.spatial", "com.eco.bio7.discrete3d.Options3d", "com.eco.bio7.control",
+			"com.eco.bio7.spreadsheet", "com.eco.bio7.states", "com.eco.bio7.quadgrid", "com.eco.bio7.hexgrid", "com.eco.bio7.linechart", "com.eco.bio7.piechart" };
 
 	private IWorkbenchWindow window;
 
@@ -228,7 +259,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 	private IContributionItem showViewItem;
 
-	//private IWorkbenchAction switchWorkspaceAction;
+	// private IWorkbenchAction switchWorkspaceAction;
 
 	private IWorkbenchAction refreshAction;
 
@@ -240,7 +271,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 	private IWorkbenchAction toggleCoolBar;
 
-	//private FastOpenScriptAction fastOpenScriptAction;
+	protected Stack<MenuManager> menuStack;
+
+	// private FastOpenScriptAction fastOpenScriptAction;
 
 	public ApplicationActionBarAdvisor(IActionBarConfigurer configurer) {
 		super(configurer);
@@ -253,14 +286,14 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		New = ActionFactory.NEW.create(window);
 		New.setText("New");
 		register(New);
-		
+
 		toggleCoolBar = ActionFactory.TOGGLE_COOLBAR.create(window);
 		register(toggleCoolBar);
-		
-		showMainMenu=new ShowMainMenus("Show all menus",window2);
+
+		showMainMenu = new ShowMainMenus("Show all menus", window2);
 		register(showMainMenu);
-		
-		hideMainMenu=new HideMainMenus("Hide all Menus",window2);
+
+		hideMainMenu = new HideMainMenus("Hide all Menus", window2);
 		register(hideMainMenu);
 
 		officeopenspread = new OfficeOpenAction("Open Spreadsheet", window2);
@@ -345,9 +378,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		newWindowAction = ActionFactory.OPEN_NEW_WINDOW.create(window);
 		register(newWindowAction);
-		
-		 showViewItem = ContributionItemFactory.VIEWS_SHORTLIST.create(window);
-		
+
+		showViewItem = ContributionItemFactory.VIEWS_SHORTLIST.create(window);
+
 		libreofficeconnection = new LibreOfficeConnection("Open LibreOffice Connection", window);
 		register(libreofficeconnection);
 
@@ -379,7 +412,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		register(setup);
 
 		viewShortlist = ContributionItemFactory.VIEWS_SHORTLIST.create(window);
-		
+
 		perspect = ContributionItemFactory.PERSPECTIVES_SHORTLIST.create(window);
 
 		flowexternalstartaction = new FlowExternalStartAction("Flowexternalstart", window);
@@ -405,8 +438,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		saveR = new SaveRWorkspace("Save Workspace", window);
 		register(saveR);
-		
-		clearWorkspace=new ClearRWorkspace("Remove all objects", window);
+
+		clearWorkspace = new ClearRWorkspace("Remove all objects", window);
 		register(clearWorkspace);
 
 		openBrowser = new OpenBio7BrowserAction("Bio7 Internet", window);
@@ -429,7 +462,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		interpretPython = new InterpretPython("Interpret Python");
 		register(interpretPython);
-		
+
 		javaScriptInterpret = new JavaScriptInterpret("Interpret JavaScript");
 		register(javaScriptInterpret);
 
@@ -441,13 +474,17 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		generateControllerAction = new GenerateControllerAction("Generate Controller Class");
 		register(generateControllerAction);
-		
-		/*switchWorkspaceAction = IDEActionFactory.OPEN_WORKSPACE.create(window);
-		register(switchWorkspaceAction);*/
-		
-		/*fastOpenScriptAction = new FastOpenScriptAction("Script");
-		register(fastOpenScriptAction);*/
-		
+
+		/*
+		 * switchWorkspaceAction = IDEActionFactory.OPEN_WORKSPACE.create(window);
+		 * register(switchWorkspaceAction);
+		 */
+
+		/*
+		 * fastOpenScriptAction = new FastOpenScriptAction("Script");
+		 * register(fastOpenScriptAction);
+		 */
+
 		refreshAction = ActionFactory.REFRESH.create(window);
 		register(refreshAction);
 
@@ -455,8 +492,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 	protected void fillMenuBar(IMenuManager menuBar) {
 		/*
-		 * Remove actions tip from:
-		 * http://random-eclipse-tips.blogspot.de/2009/02
+		 * Remove actions tip from: http://random-eclipse-tips.blogspot.de/2009/02
 		 * /eclipse-rcp-removing-unwanted_02.html
 		 */
 		// SHOW_JDT_GUI
@@ -465,10 +501,13 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		if (showJDTGui == false) {
 			final ActionSetRegistry reg = WorkbenchPlugin.getDefault().getActionSetRegistry();
 			final IActionSetDescriptor[] actionSets = reg.getActionSets();
-			final String[] removeActionSets = new String[] { "org.eclipse.search.searchActionSet", "org.eclipse.ui.cheatsheets.actionSet", "org.eclipse.ui.actionSet.keyBindings", "org.eclipse.ui.edit.text.actionSet.navigation", "org.eclipse.ui.edit.text.actionSet.annotationNavigation",
-					"org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo", "org.eclipse.ui.edit.text.actionSet.openExternalFile", "org.eclipse.ui.externaltools.ExternalToolsSet", "org.eclipse.ui.externaltools.ExternalToolsSet", "org.eclipse.ui.WorkingSetActionSet",
-					"org.eclipse.update.ui.softwareUpdates", "org.eclipse.ui.actionSet.openFiles", "org.eclipse.mylyn.tasks.ui.navigation", "org.eclipse.debug.ui.launchActionSet", "org.eclipse.jdt.ui.JavaElementCreationActionSet", "org.eclipse.jdt.ui.JavaActionSet",
-					"org.eclipse.ui.edit.text.actionSet.presentation", "org.eclipse.ui.cheatsheets.actionSet", "org.eclipse.ui.externaltools.ExternalToolsSet", "org.eclipse.jdt.ui.text.java.actionSet.presentation", "org.eclipse.debug.ui.breakpointActionSet", "org.eclipse.wb.core.ui.actionset" };
+			final String[] removeActionSets = new String[] { "org.eclipse.search.searchActionSet", "org.eclipse.ui.cheatsheets.actionSet", "org.eclipse.ui.actionSet.keyBindings",
+					"org.eclipse.ui.edit.text.actionSet.navigation", "org.eclipse.ui.edit.text.actionSet.annotationNavigation", "org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo",
+					"org.eclipse.ui.edit.text.actionSet.openExternalFile", "org.eclipse.ui.externaltools.ExternalToolsSet", "org.eclipse.ui.externaltools.ExternalToolsSet",
+					"org.eclipse.ui.WorkingSetActionSet", "org.eclipse.update.ui.softwareUpdates", "org.eclipse.ui.actionSet.openFiles", "org.eclipse.mylyn.tasks.ui.navigation",
+					"org.eclipse.debug.ui.launchActionSet", "org.eclipse.jdt.ui.JavaElementCreationActionSet", "org.eclipse.jdt.ui.JavaActionSet", "org.eclipse.ui.edit.text.actionSet.presentation",
+					"org.eclipse.ui.cheatsheets.actionSet", "org.eclipse.ui.externaltools.ExternalToolsSet", "org.eclipse.jdt.ui.text.java.actionSet.presentation",
+					"org.eclipse.debug.ui.breakpointActionSet", "org.eclipse.wb.core.ui.actionset" };
 
 			for (int i = 0; i < actionSets.length; i++) {
 				boolean found = false;
@@ -504,141 +543,116 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		prefMenu.setVisible(!Util.getOS().equals("Mac"));
 		MenuManager rMenu = new MenuManager("R");
 		MenuManager OpenOfficeMenu = new MenuManager("LibreOffice");
-		// MenuManager BeanShellMenu = new MenuManager("Bsh");
 
 		MenuManager WindowMenu = new MenuManager("&Window");
 		helpMenu = new MenuManager("&Help", IWorkbenchActionConstants.M_HELP);// p2
 		MenuManager showViewMenuMgr = new MenuManager("Show View", "showView");
-		
-		//MenuManager showViewMenu = new MenuManager("Show View");
+
 		MenuManager openPerspectiveMenu = new MenuManager("Open Perspective");
 		MenuManager scriptMenu = new MenuManager("&Scripts");
+
 		//
-		MenuManager generalMenu = new MenuManager("&General-Scripts");
-		generalMenu.add(new ExecuteScriptAction("Empty", window2, new File("")));
-		generalMenu.setRemoveAllWhenShown(true);
-		IMenuListener listener = new IMenuListener() {
-			public void menuAboutToShow(IMenuManager m) {
-				File files = new File(store.getString(PreferenceConstants.D_SCRIPT_GENERAL));
-				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".bsh", ".groovy", ".py",".js" });
-
-				if (fil.length > 0) {
-					int a;
-					for (int i = 0; i < fil.length; i++) {
-
-						m.add(new ExecuteScriptAction(fil[i].getName().substring(0, fil[i].getName().lastIndexOf(".")), window2, fil[i]));
-						a = i + 1;
-						if (a % 5 == 0) {
-							m.add(new Separator());
-						}
-
-					}
-
-				}
-
-				else {
-					m.add(new ExecuteScriptAction("Empty", window2, new File("")));
-				}
-
-			}
-
-		};
-
-		generalMenu.addMenuListener(listener);
-		MenuManager spatialMenu = new MenuManager("&Spatial-Scripts");
-		spatialMenu.add(new ExecuteScriptAction("Empty", window2, new File("")));
-		spatialMenu.setRemoveAllWhenShown(true);
-		IMenuListener listener4 = new IMenuListener() {
-			public void menuAboutToShow(IMenuManager m) {
-				File files = new File(store.getString(PreferenceConstants.D_SCRIPT_SPATIAL));
-				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".bsh", ".groovy", ".py",".js" });
-
-				if (fil.length > 0) {
-					int a;
-					for (int i = 0; i < fil.length; i++) {
-
-						m.add(new ExecuteScriptAction(fil[i].getName().substring(0, fil[i].getName().lastIndexOf(".")), window2, fil[i]));
-						a = i + 1;
-						if (a % 5 == 0) {
-							m.add(new Separator());
-						}
-
-					}
-
-				}
-
-				else {
-					m.add(new ExecuteScriptAction("Empty", window2, new File("")));
-				}
-
-			}
-
-		};
-
-		spatialMenu.addMenuListener(listener4);
-
-		MenuManager macrosImageJMenu = new MenuManager("&ImageJ-Macros");
-		macrosImageJMenu.add(new ExecuteImageMacroAction("Empty", window2, new File("")));
-		macrosImageJMenu.setRemoveAllWhenShown(true);
-		IMenuListener listener5 = new IMenuListener() {
-			public void menuAboutToShow(IMenuManager m) {
-				File files = new File(store.getString(PreferenceConstants.D_SCRIPT_IMAGE));
-				File[] fil = new Util().ListFileDirectory(files, ".txt");
-
-				if (fil.length > 0) {
-					int a;
-					for (int i = 0; i < fil.length; i++) {
-
-						m.add(new ExecuteImageMacroAction(fil[i].getName().substring(0, fil[i].getName().lastIndexOf(".")), window2, fil[i]));
-						a = i + 1;
-						if (a % 5 == 0) {
-							m.add(new Separator());
-						}
-					}
-
-				}
-
-				else {
-					m.add(new ExecuteImageMacroAction("Empty", window2, new File("")));
-				}
-
-			}
-
-		};
-
-		macrosImageJMenu.addMenuListener(listener5);
-
-		MenuManager rScriptMenu = new MenuManager("&R-Scripts");
-		rScriptMenu.add(new ExecuteScriptAction("Empty", window2, new File("")));
-		rScriptMenu.setRemoveAllWhenShown(true);
-		IMenuListener listener6 = new IMenuListener() {
-			public void menuAboutToShow(IMenuManager m) {
-				File files = new File(store.getString(PreferenceConstants.D_SCRIPT_R));
-				File[] fil = new Util().ListFileDirectory(files, ".R");
-
-				if (fil.length > 0) {
-					int a;
-					for (int i = 0; i < fil.length; i++) {
-
-						m.add(new ExecuteRScriptAction(fil[i].getName().substring(0, fil[i].getName().lastIndexOf(".")), window2, fil[i]));
-						a = i + 1;
-						if (a % 5 == 0) {
-							m.add(new Separator());
-						}
-
-					}
-
-				}
-
-				else {
-					m.add(new ExecuteScriptAction("Empty", window2, new File("")));
-				}
-
-			}
-
-		};
-
-		rScriptMenu.addMenuListener(listener6);
+		/*
+		 * MenuManager generalMenu = new MenuManager("&General-Scripts");
+		 * generalMenu.add(new ExecuteScriptAction("Empty", window2, new File("")));
+		 * generalMenu.setRemoveAllWhenShown(true); IMenuListener listener = new
+		 * IMenuListener() { public void menuAboutToShow(IMenuManager m) { File files =
+		 * new File(store.getString(PreferenceConstants.D_SCRIPT_GENERAL)); File[] fil =
+		 * new Util().ListFilesDirectory(files, new String[] { ".java", ".bsh",
+		 * ".groovy", ".py",".js" });
+		 * 
+		 * if (fil.length > 0) { int a; for (int i = 0; i < fil.length; i++) {
+		 * 
+		 * m.add(new ExecuteScriptAction(fil[i].getName().substring(0,
+		 * fil[i].getName().lastIndexOf(".")), window2, fil[i])); a = i + 1; if (a % 5
+		 * == 0) { m.add(new Separator()); }
+		 * 
+		 * }
+		 * 
+		 * }
+		 * 
+		 * else { m.add(new ExecuteScriptAction("Empty", window2, new File(""))); }
+		 * 
+		 * }
+		 * 
+		 * };
+		 * 
+		 * 
+		 * generalMenu.addMenuListener(listener); MenuManager spatialMenu = new
+		 * MenuManager("&Spatial-Scripts"); spatialMenu.add(new
+		 * ExecuteScriptAction("Empty", window2, new File("")));
+		 * spatialMenu.setRemoveAllWhenShown(true); IMenuListener listener4 = new
+		 * IMenuListener() { public void menuAboutToShow(IMenuManager m) { File files =
+		 * new File(store.getString(PreferenceConstants.D_SCRIPT_SPATIAL)); File[] fil =
+		 * new Util().ListFilesDirectory(files, new String[] { ".java", ".bsh",
+		 * ".groovy", ".py",".js" });
+		 * 
+		 * if (fil.length > 0) { int a; for (int i = 0; i < fil.length; i++) {
+		 * 
+		 * m.add(new ExecuteScriptAction(fil[i].getName().substring(0,
+		 * fil[i].getName().lastIndexOf(".")), window2, fil[i])); a = i + 1; if (a % 5
+		 * == 0) { m.add(new Separator()); }
+		 * 
+		 * }
+		 * 
+		 * }
+		 * 
+		 * else { m.add(new ExecuteScriptAction("Empty", window2, new File(""))); }
+		 * 
+		 * }
+		 * 
+		 * };
+		 * 
+		 * spatialMenu.addMenuListener(listener4);
+		 * 
+		 * MenuManager macrosImageJMenu = new MenuManager("&ImageJ-Macros");
+		 * macrosImageJMenu.add(new ExecuteImageMacroAction("Empty", window2, new
+		 * File(""))); macrosImageJMenu.setRemoveAllWhenShown(true); IMenuListener
+		 * listener5 = new IMenuListener() { public void menuAboutToShow(IMenuManager m)
+		 * { File files = new File(store.getString(PreferenceConstants.D_SCRIPT_IMAGE));
+		 * File[] fil = new Util().ListFileDirectory(files, ".txt");
+		 * 
+		 * if (fil.length > 0) { int a; for (int i = 0; i < fil.length; i++) {
+		 * 
+		 * m.add(new ExecuteImageMacroAction(fil[i].getName().substring(0,
+		 * fil[i].getName().lastIndexOf(".")), window2, fil[i])); a = i + 1; if (a % 5
+		 * == 0) { m.add(new Separator()); } }
+		 * 
+		 * }
+		 * 
+		 * else { m.add(new ExecuteImageMacroAction("Empty", window2, new File(""))); }
+		 * 
+		 * }
+		 * 
+		 * };
+		 * 
+		 * macrosImageJMenu.addMenuListener(listener5);
+		 * 
+		 * MenuManager rScriptMenu = new MenuManager("&R-Scripts"); rScriptMenu.add(new
+		 * ExecuteScriptAction("Empty", window2, new File("")));
+		 * rScriptMenu.setRemoveAllWhenShown(true); IMenuListener listener6 = new
+		 * IMenuListener() { public void menuAboutToShow(IMenuManager m) { File files =
+		 * new File(store.getString(PreferenceConstants.D_SCRIPT_R)); File[] fil = new
+		 * Util().ListFileDirectory(files, ".R");
+		 * 
+		 * if (fil.length > 0) { int a; for (int i = 0; i < fil.length; i++) {
+		 * 
+		 * m.add(new ExecuteRScriptAction(fil[i].getName().substring(0,
+		 * fil[i].getName().lastIndexOf(".")), window2, fil[i])); a = i + 1; if (a % 5
+		 * == 0) { m.add(new Separator()); }
+		 * 
+		 * }
+		 * 
+		 * }
+		 * 
+		 * else { m.add(new ExecuteScriptAction("Empty", window2, new File(""))); }
+		 * 
+		 * }
+		 * 
+		 * };
+		 * 
+		 * rScriptMenu.addMenuListener(listener6);
+		 */
 
 		MenuManager importScriptMenu = new MenuManager("&Import-Scripts");
 		importScriptMenu.add(new ExecuteScriptAction("Empty", window2, new File("")));
@@ -646,7 +660,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		IMenuListener listener2 = new IMenuListener() {
 			public void menuAboutToShow(IMenuManager m) {
 				File files = new File(store.getString(PreferenceConstants.D_IMPORT));
-				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".bsh", ".groovy", ".py",".js" });
+				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".bsh", ".groovy", ".py", ".js" });
 
 				if (fil.length > 0) {
 					int a;
@@ -677,7 +691,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		IMenuListener listener3 = new IMenuListener() {
 			public void menuAboutToShow(IMenuManager m) {
 				File files = new File(store.getString(PreferenceConstants.D_EXPORT));
-				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".bsh", ".groovy", ".py",".js" });
+				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".bsh", ".groovy", ".py", ".js" });
 
 				if (fil.length > 0) {
 					int a;
@@ -713,14 +727,13 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 				IViewRegistry viewRegistry = PlatformUI.getWorkbench().getViewRegistry();
 				IViewDescriptor[] views = viewRegistry.getViews();
 				for (int i = 0; i < id.length; i++) {
-					if (i==2||i==4||i==9||i==10||i==12||i==14) {
+					if (i == 2 || i == 4 || i == 9 || i == 10 || i == 12 || i == 14) {
 						viewMenu.add(new Separator());
 					}
 					for (int j = 0; j < views.length; j++) {
 
 						if (id[i].equals(views[j].getId()))
 							viewMenu.add(new OpenViewMenuAction(views[j].getLabel(), views[j].getId()));
-						
 
 					}
 
@@ -785,7 +798,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		fileMenu.add(saveall);
 		fileMenu.add(saveas);
 		fileMenu.add(refreshAction);
-		//fileMenu.add(switchWorkspaceAction);
+		// fileMenu.add(switchWorkspaceAction);
 		fileMenu.add(new Separator());
 		fileMenu.add(Import);
 		fileMenu.add(Export);
@@ -810,15 +823,22 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		editMenu.add(new Separator());
 		editMenu.add(print);
 
-		// findMenu.add(findAction);
+		/* Here we create the submenus with actions for the scripts recursively! */
+		scriptMenu.setRemoveAllWhenShown(true);
 
-		scriptMenu.add(generalMenu);
-		scriptMenu.add(new Separator());
-		scriptMenu.add(rScriptMenu);
-		scriptMenu.add(new Separator());
-		scriptMenu.add(spatialMenu);
-		scriptMenu.add(new Separator());
-		scriptMenu.add(macrosImageJMenu);
+		IMenuListener ScriptListener = new IMenuListener() {
+			public void menuAboutToShow(IMenuManager m) {
+
+				menuStack = new Stack<MenuManager>();
+				menuStack.push(scriptMenu);
+				String loc = store.getString(PreferenceConstants.D_SCRIPT_GENERAL);
+				createSubMenus(loc);
+
+			}
+
+		};
+
+		scriptMenu.addMenuListener(ScriptListener);
 
 		rMenu.add(startrserve);
 		rMenu.add(new Separator());
@@ -837,8 +857,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 			rMenu.add(new SaveRWorkspaceAndStart("Start RGui with Workspace", window2));
 		} else {
-			//No R shell for Bio7 Linux and Mac.
-			//rMenu.add(new SaveRWorkspaceand_Start("Start R Shell", window2));
+			// No R shell for Bio7 Linux and Mac.
+			// rMenu.add(new SaveRWorkspaceand_Start("Start R Shell", window2));
 		}
 		rMenu.add(new Separator());
 		rMenu.add(openRservePref);
@@ -852,22 +872,22 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		OpenOfficeMenu.add(officepopdata);
 
 		/*
-		 * BeanShellMenu.add(bshclearaction); BeanShellMenu.add(new
-		 * Separator()); BeanShellMenu.add(bshimportaction);
+		 * BeanShellMenu.add(bshclearaction); BeanShellMenu.add(new Separator());
+		 * BeanShellMenu.add(bshimportaction);
 		 */
 		WindowMenu.add(viewMenu);
 		WindowMenu.add(viewMenuAll);
 		showViewMenuMgr.add(showViewItem);
 		WindowMenu.add(showViewMenuMgr);
-		//WindowMenu.add(showViewMenu); // Displays the show menu.
+		// WindowMenu.add(showViewMenu); // Displays the show menu.
 
 		WindowMenu.add(openPerspectiveMenu);
 		WindowMenu.add(new Separator());
 		WindowMenu.add(new ShowEditorAreaAction("Show/Hide Editor", window2));
 		WindowMenu.add(new Separator());
-		//WindowMenu.add(hideMainMenu);
-		//WindowMenu.add(showMainMenu);
-		//WindowMenu.add(toggleCoolBar);
+		// WindowMenu.add(hideMainMenu);
+		// WindowMenu.add(showMainMenu);
+		// WindowMenu.add(toggleCoolBar);
 		WindowMenu.add(new Separator());
 		WindowMenu.add(saveperspectiveas);
 		helpMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
@@ -915,7 +935,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		toolbar.add(libreofficeconnection);
 		toolbar.add(startrserve);
 		toolbar.add(print);
-		//toolbar.add(fastOpenScriptAction);
+		// toolbar.add(fastOpenScriptAction);
 
 	}
 
@@ -970,6 +990,37 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 				submenu.add((IWorkbenchAction) i);
 		}
 		return submenu;
+	}
+
+	/* List files and folders recursively! */
+	public void createSubMenus(String directoryName) {
+		File directory = new File(directoryName);
+		File[] fList = directory.listFiles();
+		for (File file : fList) {
+			if (file.isFile()) {
+				createScriptSubmenus(file);
+			} else if (file.isDirectory()) {
+				MenuManager men = menuStack.peek();
+				MenuManager submenu = new MenuManager(file.getName());
+				// submenu.setRemoveAllWhenShown(true);
+				menuStack.push(submenu);
+				men.add(submenu);
+				createSubMenus(file.getAbsolutePath());
+			}
+
+		}
+		/* Leave the menu! */
+		menuStack.pop();
+
+	}
+
+	/* Create a menu item and action for the different files! */
+	public void createScriptSubmenus(File file) {
+
+		MenuManager submenu = menuStack.peek();
+
+		submenu.add(new ExecuteScriptAction(file.getName().substring(0, file.getName().lastIndexOf(".")), window2, file));
+
 	}
 
 }

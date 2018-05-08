@@ -34,9 +34,6 @@ public class Bio7PreferencePage extends FieldEditorPreferencePage implements IWo
 		addField(new DirectoryFieldEditor(PreferenceConstants.D_IMPORT, "&Path to Import Scripts:", getFieldEditorParent()));
 		addField(new DirectoryFieldEditor(PreferenceConstants.D_EXPORT, "&Path to Export Scripts:", getFieldEditorParent()));
 		addField(new DirectoryFieldEditor(PreferenceConstants.D_SCRIPT_GENERAL, "&Path to General Scripts:", getFieldEditorParent()));
-		addField(new DirectoryFieldEditor(PreferenceConstants.D_SCRIPT_SPATIAL, "&Path to Spatial Scripts:", getFieldEditorParent()));
-		addField(new DirectoryFieldEditor(PreferenceConstants.D_SCRIPT_IMAGE, "&Path to Image Scripts:", getFieldEditorParent()));
-		addField(new DirectoryFieldEditor(PreferenceConstants.D_SCRIPT_R, "&Path to R Scripts:", getFieldEditorParent()));
 		addField(new DirectoryFieldEditor(PreferenceConstants.D_RSHELL_SCRIPTS, "&Path to R Shell Scripts:", getFieldEditorParent()));
 		addField(new DirectoryFieldEditor(PreferenceConstants.D_GRID_SCRIPTS, "&Path to Grid Scripts:", getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
