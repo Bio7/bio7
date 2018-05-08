@@ -209,7 +209,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 	private OfficeValueToRHeadAction officevaluetorhead;
 
-	private OfficeValueAction officevalue;
+	//private OfficeValueAction officevalue;
 
 	private OfficeSendValueAction officepopdata;
 
@@ -302,7 +302,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		officevaluetorhead = new OfficeValueToRHeadAction("Data with head to R ", window2);
 
-		officevalue = new OfficeValueAction("Data to Beanshell", window2);
+		//officevalue = new OfficeValueAction("Data to Beanshell", window2);
 
 		officepopdata = new OfficeSendValueAction("Send Bio7 counts", window2);
 
@@ -867,7 +867,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		OpenOfficeMenu.add(new Separator());
 		OpenOfficeMenu.add(officevaluetor);
 		OpenOfficeMenu.add(officevaluetorhead);
-		OpenOfficeMenu.add(officevalue);
+		//OpenOfficeMenu.add(officevalue);
 		OpenOfficeMenu.add(new Separator());
 		OpenOfficeMenu.add(officepopdata);
 

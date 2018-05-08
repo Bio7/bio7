@@ -22,9 +22,13 @@ import org.eclipse.ui.ide.IDE;
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
 import com.eco.bio7.compile.GroovyInterpreter;
 import com.eco.bio7.compile.JavaScriptInterpreter;
+import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.BeanShellInterpreter;
 import com.eco.bio7.compile.PythonInterpreter;
+import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.jobs.ImageMacroWorkspaceJob;
+import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RState;
 
 public class ExecuteScriptAction extends Action {
 
@@ -40,8 +44,34 @@ public class ExecuteScriptAction extends Action {
 	}
 
 	public void run() {
+		
+		if (file.getName().endsWith(".R") || file.getName().endsWith(".r")) {
+			if (RServe.isAliveDialog()) {
+				if (RState.isBusy() == false) {
+					RState.setBusy(true);
+					final RInterpreterJob Do = new RInterpreterJob(null, true, file.toString());
+					Do.addJobChangeListener(new JobChangeAdapter() {
+						public void done(IJobChangeEvent event) {
+							if (event.getResult().isOK()) {
+								int countDev = RServe.getDisplayNumber();
+								RState.setBusy(false);
+								if (countDev > 0) {
+									RServe.closeAndDisplay();
+								}
+							}
+						}
+					});
+					Do.setUser(true);
+					Do.schedule();
+				} else {
 
-		if (file.getName().endsWith(".ijm")) {
+					Bio7Dialog.message("Rserve is busy!");
+				}
+
+			}
+		}
+
+		else if (file.getName().endsWith(".ijm")) {
 
 			ImageMacroWorkspaceJob job = new ImageMacroWorkspaceJob(file);
 
