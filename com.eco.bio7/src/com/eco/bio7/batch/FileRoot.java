@@ -52,18 +52,6 @@ public class FileRoot {
 	}
 
 	/**
-	 * Returns the statistic script path from the preferences.
-	 * 
-	 * @return the path as a string.
-	 */
-	public static String getStatisticScriptLocation() {
-		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		String fileroot = store.getString(PreferenceConstants.D_SCRIPT_SPATIAL);
-		return fileroot;
-
-	}
-
-	/**
 	 * Returns the general script path from the preferences.
 	 * 
 	 * @return the path as a string.
@@ -72,30 +60,6 @@ public class FileRoot {
 	public static String getGeneralScriptLocation() {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		String fileroot = store.getString(PreferenceConstants.D_SCRIPT_GENERAL);
-		return fileroot;
-
-	}
-
-	/**
-	 * Returns the image script path from the preferences.
-	 * 
-	 * @return the path as a string.
-	 */
-	public static String getImageScriptLocation() {
-		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		String fileroot = store.getString(PreferenceConstants.D_SCRIPT_IMAGE);
-		return fileroot;
-
-	}
-
-	/**
-	 * Returns the R script path from the preferences.
-	 * 
-	 * @return the path as a string.
-	 */
-	public static String getRScriptLocation() {
-		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		String fileroot = store.getString(PreferenceConstants.D_SCRIPT_R);
 		return fileroot;
 
 	}
@@ -138,6 +102,7 @@ public class FileRoot {
 		return fileroot;
 
 	}
+
 	/**
 	 * Returns the grid script path from the preferences.
 	 * 
@@ -150,7 +115,7 @@ public class FileRoot {
 		return fileroot;
 
 	}
-	
+
 	/**
 	 * Returns the R shell script path from the preferences.
 	 * 

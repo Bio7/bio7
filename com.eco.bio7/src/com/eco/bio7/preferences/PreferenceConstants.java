@@ -23,12 +23,6 @@ public class PreferenceConstants {
 	public static final String D_EXPORT = "export";
 	
 	public static final String D_SCRIPT_GENERAL = "general_scripts";
-	
-	public static final String D_SCRIPT_SPATIAL = "spatial_scripts";
-	
-	public static final String D_SCRIPT_IMAGE = "image_scripts";
-	
-	public static final String D_SCRIPT_R = "r_scripts";
 
 	public static final String P_TEMP_R = "pathTempR";
 

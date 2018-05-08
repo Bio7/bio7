@@ -256,7 +256,42 @@ public class Bio7Dialog {
 
 				dlg.setFilterPath("c:/");
 
-				dlg.setText("Bio7");
+				dlg.setText(text);
+
+				dlg.setMessage(text);
+
+				dir = dlg.open();
+				/* We print the path of the selected folder! */
+
+			}
+		});
+		return dir;
+	}
+	
+	/**
+	 * Opens a Directory Dialog with the given text and the default path.
+	 * 
+	 * @param text
+	 *            the text for the dialog.
+	 *  @param path
+	 *            the path for the dialog.
+	 * 
+	 * @return a string with the selected directory.
+	 */
+	public static String directoryPath(final String text,String path) {
+
+		final Display display = PlatformUI.getWorkbench().getDisplay();
+		display.syncExec(new Runnable() {
+
+			public void run() {
+				// Shell must be created with style SWT.NO_TRIM
+				Shell shell = new Shell(display, SWT.NO_TRIM | SWT.ON_TOP);
+
+				DirectoryDialog dlg = new DirectoryDialog(shell);
+
+				dlg.setFilterPath(path);
+
+				dlg.setText(text);
 
 				dlg.setMessage(text);
 

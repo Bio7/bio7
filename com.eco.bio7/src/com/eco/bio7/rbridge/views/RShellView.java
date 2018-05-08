@@ -99,7 +99,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
@@ -123,6 +122,7 @@ import com.eco.bio7.compile.PythonInterpreter;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.documents.JavaFXWebBrowser;
+import com.eco.bio7.jobs.ImageMacroWorkspaceJob;
 import com.eco.bio7.os.pid.Pid;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RCompletionShell;
@@ -2363,11 +2363,11 @@ public class RShellView extends ViewPart {
 
 			public void widgetSelected(SelectionEvent e) {
 
-				if (text.equals("Empty")) {
+				/*if (text.equals("Empty")) {
 					System.out.println("No script available!");
-				}
+				}*/
 
-				else if (file.getName().endsWith(".R") || file.getName().endsWith(".r")) {
+				 if (file.getName().endsWith(".R") || file.getName().endsWith(".r")) {
 					if (RServe.isAliveDialog()) {
 						if (RState.isBusy() == false) {
 							RState.setBusy(true);
@@ -2392,6 +2392,19 @@ public class RShellView extends ViewPart {
 
 					}
 				}
+				 else if (file.getName().endsWith(".ijm")) {
+					 ImageMacroWorkspaceJob job = new ImageMacroWorkspaceJob(file);
+
+						job.addJobChangeListener(new JobChangeAdapter() {
+							public void done(IJobChangeEvent event) {
+								if (event.getResult().isOK()) {
+
+								}
+							}
+						});
+
+						job.schedule();
+				 }
 
 				else if (file.getName().endsWith(".bsh")) {
 
