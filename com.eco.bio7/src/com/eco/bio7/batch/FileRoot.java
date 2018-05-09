@@ -16,6 +16,24 @@ import com.eco.bio7.preferences.PreferenceConstants;
  */
 public class FileRoot {
 
+	private static String currentCompileDir;
+
+	/**
+	 * A method to get the current compile file directory. The directory is set before the compilation process.
+	 * @return the directory of the current file which will be compiled.
+	 */
+	public static String getCurrentCompileDir() {
+		return currentCompileDir;
+	}
+
+	/**
+	 * Sets the current compile directory. For internal use.
+	 * @param currentCompileDir
+	 */
+	public static void setCurrentCompileDir(String currentCompileDir) {
+		FileRoot.currentCompileDir = currentCompileDir;
+	}
+
 	/**
 	 * Returns the path of the workspace location of the Bio7 application.
 	 * 

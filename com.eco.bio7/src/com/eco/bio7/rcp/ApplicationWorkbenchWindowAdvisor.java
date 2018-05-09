@@ -126,6 +126,7 @@ import com.eco.bio7.collection.Work;
 import com.eco.bio7.compile.BeanShellInterpreter;
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
 import com.eco.bio7.compile.GroovyInterpreter;
+import com.eco.bio7.compile.JavaScriptInterpreter;
 import com.eco.bio7.compile.PythonInterpreter;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.compile.utils.ScanClassPath;
@@ -231,7 +232,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			// e.printStackTrace();
 			System.out.println("Minor error! Please check the classpath of the project and if necessary calculate again!");
 		}
-		
+
 		// Bio7Dialog.message("Java
 		// Bio7 Project
 		// Libraries
@@ -286,7 +287,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 																	// TODO Auto-generated catch block
 																	e.printStackTrace();
 																}
-																recalculateClasspath(project,monitor);
+																recalculateClasspath(project, monitor);
 															}
 														});
 
@@ -404,18 +405,18 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			public void perspectiveDeactivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
 				// Workaround a bug on MacOSX when closing a SWT_AWT perspective
 				// 3D and WorldWind!
-				/*if (OS.equals("Mac")) {
-					if (perspective.getId().equals("com.eco.bio7.perspective_3d")) {
+				/*
+				 * if (OS.equals("Mac")) { if
+				 * (perspective.getId().equals("com.eco.bio7.perspective_3d")) {
+				 * 
+				 * Work.closeView("com.eco.bio7.spatial"); }
+				 * 
+				 * else if (perspective.getId().equals("com.eco.bio7.WorldWind.3dglobe")) {
+				 * Work.closeView("com.eco.bio7.worldwind.WorldWindView");
+				 * 
+				 * } }
+				 */
 
-						Work.closeView("com.eco.bio7.spatial");
-					}
-
-					else if (perspective.getId().equals("com.eco.bio7.WorldWind.3dglobe")) {
-						Work.closeView("com.eco.bio7.worldwind.WorldWindView");
-
-					}
-				}*/
- 
 			}
 
 			@Override
@@ -922,19 +923,20 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		FontData fontData = dis.getSystemFont().getFontData()[0];
 
 		int resolution = Toolkit.getDefaultToolkit().getScreenResolution();
-		
-		//int dpi = Util.getDisplay().getDPI().x;
-        
-        int awtFontSize = (int) Math.round((double) fontData.getHeight() * resolution / 72.0);
-		//int awtFontSize = (int) Math.round((double) fontData.getHeight() * resolution / dpi);
+
+		// int dpi = Util.getDisplay().getDPI().x;
+
+		int awtFontSize = (int) Math.round((double) fontData.getHeight() * resolution / 72.0);
+		// int awtFontSize = (int) Math.round((double) fontData.getHeight() * resolution
+		// / dpi);
 		java.awt.Font awtFont = null;
-        
+
 		int fontSizeCorrection = 0;
 		fontSizeCorrection = store.getInt("FONT_SIZE_CORRECTION");
 		/* Font size correction! */
 
 		awtFont = new java.awt.Font(fontData.getName(), fontData.getStyle(), awtFontSize + fontSizeCorrection);
-		//System.out.println("DPI: "+dpi+" fonsize:"+awtFontSize );
+		// System.out.println("DPI: "+dpi+" fonsize:"+awtFontSize );
 		// Update the look and feel defaults to use new font.
 		updateLookAndFeel(awtFont);
 
@@ -1076,7 +1078,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		if (startupDirectory != null && startupDirectory != "") {
 
-			File[] files = new Util().ListFilesDirectory(new File(startupDirectory), new String[] { ".java", ".r", ".R", ".bsh", ".groovy", ".py" });
+			File[] files = new Util().ListFilesDirectory(new File(startupDirectory), new String[] { ".java", ".r", ".R", ".bsh", ".groovy", ".py", ".js" });
 			// System.out.println(files.length);
 			if (files.length > 0) {
 				for (int i = 0; i < files.length; i++) {
@@ -1097,6 +1099,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 					} else if (files[i].getName().endsWith(".py")) {
 
 						PythonInterpreter.interpretJob(null, files[i].toString());
+
+					} else if (files[i].getName().endsWith(".js")) {
+
+						JavaScriptInterpreter.interpretJob(null, files[i].toString());
 
 					}
 
@@ -1232,15 +1238,17 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.document.DocumentPerspective", configurer.getWindow());
 
+			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.ijmacro.editor.perspectives.ImageJEditPerspective", configurer.getWindow());
+
 			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.bio7resource", configurer.getWindow());
 
 			// *************************************
 			new StartBio7Utils();
 			// Start console and output!!
 			StartBio7Utils.getConsoleInstance().startutils();
-			// ************************************************* 
-			/*Select the R perspective after all perspectives have been set!*/
-			//IWorkbenchWindow window = getViewSite().getWorkbenchWindow();
+			// *************************************************
+			/* Select the R perspective after all perspectives have been set! */
+			// IWorkbenchWindow window = getViewSite().getWorkbenchWindow();
 			IPerspectiveRegistry registry = configurer.getWorkbenchConfigurer().getWorkbench().getPerspectiveRegistry();
 			IWorkbenchPage page = configurer.getWindow().getActivePage();
 			page.setPerspective(registry.findPerspectiveWithId("com.eco.bio7.rbridge.RPerspective"));
@@ -1275,8 +1283,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		for (Logger logger : loggers) {
 			logger.setLevel(Level.OFF);
 		}
-		
-		
+
 	}
 
 	/* The listener for save events of the Java editor! */

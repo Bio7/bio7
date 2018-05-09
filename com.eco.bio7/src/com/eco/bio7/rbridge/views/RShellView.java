@@ -2353,11 +2353,17 @@ public class RShellView extends ViewPart {
     /*Create a menu item and action for the different files!*/
 	public void createScriptSubmenus(File file) {
 		
+		String name = file.getName();
+		int lastIndexOf = name.lastIndexOf(".");
+		if (lastIndexOf > 0==false||name.startsWith("_")) {
+			return;
+		}
+		
 		Menu submenu = menuStack.peek();
 
 		MenuItem item = new MenuItem(submenu, SWT.NONE);
 
-		item.setText(file.getName().substring(0, file.getName().lastIndexOf(".")));
+		item.setText(name.substring(0, lastIndexOf));
 
 		item.addSelectionListener(new SelectionListener() {
 

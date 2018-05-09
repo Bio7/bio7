@@ -55,6 +55,7 @@ import org.eclipse.ui.PlatformUI;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.BatchModel;
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.batch.FileRoot;
 import com.eco.bio7.javaeditors.JavaEditor;
 import com.eco.bio7.methods.Compiled;
 import com.eco.bio7.rcp.StartBio7Utils;
@@ -150,7 +151,7 @@ public class CompileClassAndMultipleClasses {
 	}
 
 	public void compileAndLoad(File path, String dir, String name, IWorkbenchPage pag, boolean startupScript) {
-
+		FileRoot.setCurrentCompileDir(dir);
 		JavaSourceClassLoader cla = new JavaSourceClassLoader(Bio7Plugin.class.getClassLoader());
 		cla.pag = pag;
 
