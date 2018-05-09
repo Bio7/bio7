@@ -1079,30 +1079,37 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			if (files.length > 0) {
 				for (int i = 0; i < files.length; i++) {
 					// System.out.println(files[i].getName());
-					if (files[i].getName().endsWith(".R") || files[i].getName().endsWith(".r")) {
+					String fileName = files[i].getName();
+
+					int lastIndexOf = fileName.lastIndexOf(".");
+					if (lastIndexOf > 0 == false) {
+						return;
+					}
+
+					if (fileName.endsWith(".R") || fileName.endsWith(".r")) {
 
 						RServeUtil.evalR(null, files[i].toString());
 					}
 
-					else if (files[i].getName().endsWith(".bsh")) {
+					else if (fileName.endsWith(".bsh")) {
 
 						BeanShellInterpreter.interpretJob(null, files[i].toString());
 
-					} else if (files[i].getName().endsWith(".groovy")) {
+					} else if (fileName.endsWith(".groovy")) {
 
 						GroovyInterpreter.interpretJob(null, files[i].toString());
 
-					} else if (files[i].getName().endsWith(".py")) {
+					} else if (fileName.endsWith(".py")) {
 
 						PythonInterpreter.interpretJob(null, files[i].toString());
 
-					} else if (files[i].getName().endsWith(".js")) {
+					} else if (fileName.endsWith(".js")) {
 
 						JavaScriptInterpreter.interpretJob(null, files[i].toString());
 
 					}
 
-					else if (files[i].getName().endsWith(".java")) {
+					else if (fileName.endsWith(".java")) {
 
 						final int count = i;
 
