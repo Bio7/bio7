@@ -33,6 +33,7 @@ public class ExecuteRTextSelection extends Action {
 	private StringBuffer buff;
 	private String code;
 	private boolean error;
+	private boolean interrupt=false;
 	private static ExecuteRTextSelection instance;
 
 	public static ExecuteRTextSelection getInstance() {
@@ -75,7 +76,10 @@ public class ExecuteRTextSelection extends Action {
 			else {
 
 				if (rEditor instanceof REditor) {
-
+                   if(interrupt) {
+                	   interrupt=false;
+                	   return;
+                   }
 					// canEvaluate = false;
 					String inhalt = getTextAndForwardCursor(rEditor);
 					inhalt.replace(System.lineSeparator(), "");
@@ -122,7 +126,7 @@ public class ExecuteRTextSelection extends Action {
 	}
 
 	public void stopEvaluation() {
-		error = false;
+		interrupt = true;
 		// RServeUtil.evalR("try(try(" + code + "))", null);
 		buff.setLength(0); // clear buffer!
 	}
