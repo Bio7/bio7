@@ -18,10 +18,6 @@ public class PreferenceConstants {
 	
 	public static final String D_STRING = "FilesDirectory";
 	
-	public static final String D_IMPORT = "import";
-	
-	public static final String D_EXPORT = "export";
-	
 	public static final String D_SCRIPT_GENERAL = "general_scripts";
 
 	public static final String P_TEMP_R = "pathTempR";

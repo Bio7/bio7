@@ -466,8 +466,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		// System.out.println(path);
 		File fileStartupScripts = new File(path + "/startup_scripts");
-		File fileImportScripts = new File(path + "/importscripts");
-		File fileExportScripts = new File(path + "/export_scripts");
 		File fileGeneralScripts = new File(path + "/scripts");
 		File fileRShellScripts = new File(path + "/r_shell_scripts");
 		File fileGridScripts = new File(path + "/grid_scripts");
@@ -561,8 +559,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("SHOW_JDT_GUI", false);
 		store.setDefault("datatablesize", 100);
 		store.setDefault(PreferenceConstants.D_STRING, fileStartupScripts.getAbsolutePath());
-		store.setDefault(PreferenceConstants.D_IMPORT, fileImportScripts.getAbsolutePath());
-		store.setDefault(PreferenceConstants.D_EXPORT, fileExportScripts.getAbsolutePath());
 		store.setDefault(PreferenceConstants.D_SCRIPT_GENERAL, fileGeneralScripts.getAbsolutePath());
 		store.setDefault(PreferenceConstants.D_RSHELL_SCRIPTS, fileRShellScripts.getAbsolutePath());
 		store.setDefault(PreferenceConstants.D_GRID_SCRIPTS, fileGridScripts.getAbsolutePath());

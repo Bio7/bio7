@@ -654,67 +654,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		 * rScriptMenu.addMenuListener(listener6);
 		 */
 
-		MenuManager importScriptMenu = new MenuManager("&Import-Scripts");
-		importScriptMenu.add(new ExecuteScriptAction("Empty", window2, new File("")));
-		importScriptMenu.setRemoveAllWhenShown(true);
-		IMenuListener listener2 = new IMenuListener() {
-			public void menuAboutToShow(IMenuManager m) {
-				File files = new File(store.getString(PreferenceConstants.D_IMPORT));
-				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".bsh", ".groovy", ".py", ".js" });
-
-				if (fil.length > 0) {
-					int a;
-					for (int i = 0; i < fil.length; i++) {
-
-						m.add(new ExecuteScriptAction(fil[i].getName().substring(0, fil[i].getName().lastIndexOf(".")), window2, fil[i]));
-						a = i + 1;
-						if (a % 5 == 0) {
-							m.add(new Separator());
-						}
-					}
-
-				}
-
-				else {
-					m.add(new ExecuteScriptAction("Empty", window2, new File("")));
-				}
-
-			}
-
-		};
-
-		importScriptMenu.addMenuListener(listener2);
-
-		MenuManager exportScriptMenu = new MenuManager("&Export-Scripts");
-		exportScriptMenu.add(new ExecuteScriptAction("Empty", window2, new File("")));
-		exportScriptMenu.setRemoveAllWhenShown(true);
-		IMenuListener listener3 = new IMenuListener() {
-			public void menuAboutToShow(IMenuManager m) {
-				File files = new File(store.getString(PreferenceConstants.D_EXPORT));
-				File[] fil = new Util().ListFilesDirectory(files, new String[] { ".java", ".bsh", ".groovy", ".py", ".js" });
-
-				if (fil.length > 0) {
-					int a;
-					for (int i = 0; i < fil.length; i++) {
-
-						m.add(new ExecuteScriptAction(fil[i].getName().substring(0, fil[i].getName().lastIndexOf(".")), window2, fil[i]));
-						a = i + 1;
-						if (a % 5 == 0) {
-							m.add(new Separator());
-						}
-
-					}
-
-				}
-
-				else {
-					m.add(new ExecuteScriptAction("Empty", window2, new File("")));
-				}
-			}
-
-		};
-
-		exportScriptMenu.addMenuListener(listener3);
+		
 
 		/* Implement a custom show view action! */
 
@@ -790,13 +730,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		// fileMenu.add(loadpattern);
 		// fileMenu.add(savepattern);
 		fileMenu.add(new Separator());
-		fileMenu.add(importScriptMenu);
-		fileMenu.add(exportScriptMenu);
-		fileMenu.add(new Separator());
-		fileMenu.add(new Separator());
 		fileMenu.add(save);
 		fileMenu.add(saveall);
 		fileMenu.add(saveas);
+		fileMenu.add(new Separator());
 		fileMenu.add(refreshAction);
 		// fileMenu.add(switchWorkspaceAction);
 		fileMenu.add(new Separator());
