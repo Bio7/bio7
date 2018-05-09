@@ -39,6 +39,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import com.eco.bio7.Bio7Plugin;
+import com.eco.bio7.actions.ExecuteScriptAction;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.BeanShellInterpreter;
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
@@ -62,8 +63,6 @@ public class ScriptAction extends Action implements IMenuCreator {
 	protected File[] fil;
 
 	protected Stack<Menu> menuStack;
-
-	
 
 	public ScriptAction() {
 		setId("GridScripts");
@@ -96,7 +95,7 @@ public class ScriptAction extends Action implements IMenuCreator {
 						menuItems[i].dispose();
 					}
 				}
-				/*Here we create the submenus with actions for the scripts recursively!*/
+				/* Here we create the submenus with actions for the scripts recursively! */
 				menuStack = new Stack<Menu>();
 				menuStack.push(menu);
 				String loc = store.getString(PreferenceConstants.D_GRID_SCRIPTS);
@@ -116,166 +115,170 @@ public class ScriptAction extends Action implements IMenuCreator {
 
 		return null;
 	}
-	
-	 /*List files and folders recursively!*/
-		public void createSubMenus(String directoryName) {
-			File directory = new File(directoryName);
-			File[] fList = directory.listFiles();
-			for (File file : fList) {
-				if (file.isFile()) {
-					createScriptSubmenus(file);
-				} else if (file.isDirectory()) {
-					Menu men = menuStack.peek();
-					MenuItem mntmRScripts = new MenuItem(men, SWT.CASCADE);
-					mntmRScripts.setText(file.getName());
-					Menu menuScripts = new Menu(mntmRScripts);
-					mntmRScripts.setMenu(menuScripts);
-					menuStack.push(menuScripts);
-					createSubMenus(file.getAbsolutePath());
-				}
 
+	/* List files and folders recursively! */
+	public void createSubMenus(String directoryName) {
+		File directory = new File(directoryName);
+		File[] fList = directory.listFiles();
+		for (File file : fList) {
+			if (file.isFile()) {
+				createScriptSubmenus(file);
+			} else if (file.isDirectory()) {
+				Menu men = menuStack.peek();
+				MenuItem mntmRScripts = new MenuItem(men, SWT.CASCADE);
+				mntmRScripts.setText(file.getName());
+				Menu menuScripts = new Menu(mntmRScripts);
+				mntmRScripts.setMenu(menuScripts);
+				menuStack.push(menuScripts);
+				createSubMenus(file.getAbsolutePath());
 			}
-	       /*Leave the menu!*/
-			menuStack.pop();
 
 		}
-	    /*Create a menu item and action for the different files!*/
-		public void createScriptSubmenus(File file) {
-			
-			Menu submenu = menuStack.peek();
+		/* Leave the menu! */
+		menuStack.pop();
 
-			MenuItem item = new MenuItem(submenu, SWT.NONE);
+	}
 
-			item.setText(file.getName().substring(0, file.getName().lastIndexOf(".")));
+	/* Create a menu item and action for the different files! */
+	public void createScriptSubmenus(File file) {
 
-			item.addSelectionListener(new SelectionListener() {
+		String name = file.getName();
+		int lastIndexOf = name.lastIndexOf(".");
+		if (lastIndexOf > 0 == false || name.startsWith("_")) {
+			return;
+		}
 
-				public void widgetSelected(SelectionEvent e) {
+		Menu submenu = menuStack.peek();
 
-					/*if (text.equals("Empty")) {
-						System.out.println("No script available!");
-					}*/
+		MenuItem item = new MenuItem(submenu, SWT.NONE);
 
-					 if (file.getName().endsWith(".R") || file.getName().endsWith(".r")) {
-						if (RServe.isAliveDialog()) {
-							if (RState.isBusy() == false) {
-								RState.setBusy(true);
-								final RInterpreterJob Do = new RInterpreterJob(null, true, file.toString());
-								Do.addJobChangeListener(new JobChangeAdapter() {
-									public void done(IJobChangeEvent event) {
-										if (event.getResult().isOK()) {
-											int countDev = RServe.getDisplayNumber();
-											RState.setBusy(false);
-											if (countDev > 0) {
-												RServe.closeAndDisplay();
-											}
-										}
-									}
-								});
-								Do.setUser(true);
-								Do.schedule();
-							} else {
+		item.setText(name.substring(0, lastIndexOf));
 
-								Bio7Dialog.message("Rserve is busy!");
-							}
+		item.addSelectionListener(new SelectionListener() {
 
-						}
-					}
-					 else if (file.getName().endsWith(".ijm")) {
-						 ImageMacroWorkspaceJob job = new ImageMacroWorkspaceJob(file);
+			public void widgetSelected(SelectionEvent e) {
 
-							job.addJobChangeListener(new JobChangeAdapter() {
+				/*
+				 * if (text.equals("Empty")) { System.out.println("No script available!"); }
+				 */
+
+				if (file.getName().endsWith(".R") || file.getName().endsWith(".r")) {
+					if (RServe.isAliveDialog()) {
+						if (RState.isBusy() == false) {
+							RState.setBusy(true);
+							final RInterpreterJob Do = new RInterpreterJob(null, file.toString());
+							Do.addJobChangeListener(new JobChangeAdapter() {
 								public void done(IJobChangeEvent event) {
 									if (event.getResult().isOK()) {
-
+										int countDev = RServe.getDisplayNumber();
+										RState.setBusy(false);
+										if (countDev > 0) {
+											RServe.closeAndDisplay();
+										}
 									}
 								}
 							});
-
-							job.schedule();
-					 }
-
-					else if (file.getName().endsWith(".bsh")) {
-
-						BeanShellInterpreter.interpretJob(null, file.toString());
-
-					} else if (file.getName().endsWith(".groovy")) {
-
-						GroovyInterpreter.interpretJob(null, file.toString());
-
-					} else if (file.getName().endsWith(".py")) {
-
-						PythonInterpreter.interpretJob(null, file.toString());
-					} else if (file.getName().endsWith(".js")) {
-
-						JavaScriptInterpreter.interpretJob(null, file.toString());
-
-					} else if (file.getName().endsWith(".java")) {
-
-						Job job = new Job("Compile Java") {
-							@Override
-							protected IStatus run(IProgressMonitor monitor) {
-								monitor.beginTask("Compile Java...", IProgressMonitor.UNKNOWN);
-								String name = file.getName().replaceFirst("[.][^.]+$", "");
-								// IWorkspace workspace =
-								// ResourcesPlugin.getWorkspace();
-								IPath location = Path.fromOSString(file.getAbsolutePath());
-
-								// IFile ifile =
-								// workspace.getRoot().getFileForLocation(location);
-								CompileClassAndMultipleClasses cp = new CompileClassAndMultipleClasses();
-								try {
-									cp.compileAndLoad(new File(location.toOSString()), new File(location.toOSString()).getParent(), name, null, true);
-								} catch (Exception e) {
-									// TODO Auto-generated catch block
-									// Bio7Dialog.message(e.getMessage());
-								}
-
-								monitor.done();
-								return Status.OK_STATUS;
-							}
-
-						};
-						job.addJobChangeListener(new JobChangeAdapter() {
-							public void done(IJobChangeEvent event) {
-								if (event.getResult().isOK()) {
-
-								} else {
-
-								}
-							}
-						});
-						// job.setSystem(true);
-						job.schedule();
-
-					}
-					
-					else if (file.getName().endsWith(".txt")) {
-						File fileToOpen = file;
-						 
-						if (fileToOpen.exists() && fileToOpen.isFile()) {
-						    IFileStore fileStore = EFS.getLocalFileSystem().getStore(fileToOpen.toURI());
-						    IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-						 
-						    try {
-						        IDE.openEditorOnFileStore( page, fileStore );
-						    } catch ( PartInitException ex ) {
-						        //Put your exception handler here if you wish to
-						    }
+							Do.setUser(true);
+							Do.schedule();
 						} else {
-						    //Do something if the file does not exist
+
+							Bio7Dialog.message("Rserve is busy!");
 						}
+
 					}
+				} else if (file.getName().endsWith(".ijm")) {
+					ImageMacroWorkspaceJob job = new ImageMacroWorkspaceJob(file);
+
+					job.addJobChangeListener(new JobChangeAdapter() {
+						public void done(IJobChangeEvent event) {
+							if (event.getResult().isOK()) {
+
+							}
+						}
+					});
+
+					job.schedule();
+				}
+
+				else if (file.getName().endsWith(".bsh")) {
+
+					BeanShellInterpreter.interpretJob(null, file.toString());
+
+				} else if (file.getName().endsWith(".groovy")) {
+
+					GroovyInterpreter.interpretJob(null, file.toString());
+
+				} else if (file.getName().endsWith(".py")) {
+
+					PythonInterpreter.interpretJob(null, file.toString());
+				} else if (file.getName().endsWith(".js")) {
+
+					JavaScriptInterpreter.interpretJob(null, file.toString());
+
+				} else if (file.getName().endsWith(".java")) {
+
+					Job job = new Job("Compile Java") {
+						@Override
+						protected IStatus run(IProgressMonitor monitor) {
+							monitor.beginTask("Compile Java...", IProgressMonitor.UNKNOWN);
+							String name = file.getName().replaceFirst("[.][^.]+$", "");
+							// IWorkspace workspace =
+							// ResourcesPlugin.getWorkspace();
+							IPath location = Path.fromOSString(file.getAbsolutePath());
+
+							// IFile ifile =
+							// workspace.getRoot().getFileForLocation(location);
+							CompileClassAndMultipleClasses cp = new CompileClassAndMultipleClasses();
+							try {
+								cp.compileAndLoad(new File(location.toOSString()), new File(location.toOSString()).getParent(), name, null, true);
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								// Bio7Dialog.message(e.getMessage());
+							}
+
+							monitor.done();
+							return Status.OK_STATUS;
+						}
+
+					};
+					job.addJobChangeListener(new JobChangeAdapter() {
+						public void done(IJobChangeEvent event) {
+							if (event.getResult().isOK()) {
+
+							} else {
+
+							}
+						}
+					});
+					// job.setSystem(true);
+					job.schedule();
 
 				}
 
-				public void widgetDefaultSelected(SelectionEvent e) {
+				else if (file.getName().endsWith(".txt")) {
+					File fileToOpen = file;
 
+					if (fileToOpen.exists() && fileToOpen.isFile()) {
+						IFileStore fileStore = EFS.getLocalFileSystem().getStore(fileToOpen.toURI());
+						IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+
+						try {
+							IDE.openEditorOnFileStore(page, fileStore);
+						} catch (PartInitException ex) {
+							// Put your exception handler here if you wish to
+						}
+					} else {
+						// Do something if the file does not exist
+					}
 				}
-			});
 
-		}
+			}
 
-	
+			public void widgetDefaultSelected(SelectionEvent e) {
+
+			}
+		});
+
+	}
 
 }

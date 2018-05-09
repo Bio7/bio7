@@ -2353,11 +2353,17 @@ public class RShellView extends ViewPart {
     /*Create a menu item and action for the different files!*/
 	public void createScriptSubmenus(File file) {
 		
+		String name = file.getName();
+		int lastIndexOf = name.lastIndexOf(".");
+		if (lastIndexOf > 0==false||name.startsWith("_")) {
+			return;
+		}
+		
 		Menu submenu = menuStack.peek();
 
 		MenuItem item = new MenuItem(submenu, SWT.NONE);
 
-		item.setText(file.getName().substring(0, file.getName().lastIndexOf(".")));
+		item.setText(name.substring(0, lastIndexOf));
 
 		item.addSelectionListener(new SelectionListener() {
 
@@ -2371,7 +2377,7 @@ public class RShellView extends ViewPart {
 					if (RServe.isAliveDialog()) {
 						if (RState.isBusy() == false) {
 							RState.setBusy(true);
-							final RInterpreterJob Do = new RInterpreterJob(null, true, file.toString());
+							final RInterpreterJob Do = new RInterpreterJob(null, file.toString());
 							Do.addJobChangeListener(new JobChangeAdapter() {
 								public void done(IJobChangeEvent event) {
 									if (event.getResult().isOK()) {
@@ -2770,7 +2776,7 @@ public class RShellView extends ViewPart {
 				if (RState.isBusy() == false) {
 					RState.setBusy(true);
 
-					RInterpreterJob Do = new RInterpreterJob(save, false, null);
+					RInterpreterJob Do = new RInterpreterJob(save, null);
 
 					Do.addJobChangeListener(new JobChangeAdapter() {
 						public void done(IJobChangeEvent event) {

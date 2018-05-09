@@ -6,6 +6,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.Rserve.RserveException;
@@ -33,7 +35,7 @@ public class RServeUtil {
 		if (RServe.isAliveDialog()) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
-				RInterpreterJob Do = new RInterpreterJob(script, false, loc);
+				RInterpreterJob Do = new RInterpreterJob(script, loc);
 				Do.setUser(true);
 				Do.addJobChangeListener(new JobChangeAdapter() {
 					public void done(IJobChangeEvent event) {
@@ -222,6 +224,7 @@ public class RServeUtil {
 		}
 
 	}
+
 	/**
 	 * Evaluates a script in R running in a job without to join threads!.
 	 * 
@@ -234,7 +237,7 @@ public class RServeUtil {
 		if (RServe.isAliveDialog()) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
-				RInterpreterJob Do = new RInterpreterJob(script, false, loc);
+				RInterpreterJob Do = new RInterpreterJob(script, loc);
 				Do.setUser(true);
 				Do.addJobChangeListener(new JobChangeAdapter() {
 					public void done(IJobChangeEvent event) {
@@ -253,12 +256,25 @@ public class RServeUtil {
 				});
 
 				Do.schedule();
-				
+
 			} else {
 				System.out.println("Rserve is busy. Can't execute the R script!");
 			}
 		}
 
+	}
+
+	/**
+	 * Evaluates a script in R running in a job and joins threads!. Display thread
+	 * is wrapped!
+	 * 
+	 * @param script
+	 *            a script.
+	 * @param loc
+	 *            the script location.
+	 */
+	public static void evalStringR(String script) {
+		RServe.printJobJoin(script);
 	}
 
 }

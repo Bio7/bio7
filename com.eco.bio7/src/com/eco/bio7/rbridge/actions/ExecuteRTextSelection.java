@@ -33,6 +33,7 @@ public class ExecuteRTextSelection extends Action {
 	private StringBuffer buff;
 	private String code;
 	private boolean error;
+	private boolean interrupt=false;
 	private static ExecuteRTextSelection instance;
 
 	public static ExecuteRTextSelection getInstance() {
@@ -75,19 +76,27 @@ public class ExecuteRTextSelection extends Action {
 			else {
 
 				if (rEditor instanceof REditor) {
-
+                   if(interrupt) {
+                	   interrupt=false;
+                	   return;
+                   }
 					// canEvaluate = false;
 					String inhalt = getTextAndForwardCursor(rEditor);
+					inhalt.replace(System.lineSeparator(), "");
+					if (inhalt.startsWith("#")) {
+						return;
+					}
 					if (inhalt.isEmpty() == false) {
 						buff.append(inhalt);
 						buff.append("\n");
 						Parse parse = new Parse(null);
-						code = buff.toString().replaceAll("\r", "");
+						code = buff.toString();
 						error = parse.parseShellSource(code, 0);
 						if (error == false) {
 							System.out.println(code);
 
-							RServeUtil.evalR("try(try(" + code + "))", null);
+							// RServe.printJobJoin(code);
+							RServeUtil.evalStringR(code);
 
 							buff.setLength(0); // clear buffer!
 						} else {
@@ -117,7 +126,7 @@ public class ExecuteRTextSelection extends Action {
 	}
 
 	public void stopEvaluation() {
-		error = false;
+		interrupt = true;
 		// RServeUtil.evalR("try(try(" + code + "))", null);
 		buff.setLength(0); // clear buffer!
 	}

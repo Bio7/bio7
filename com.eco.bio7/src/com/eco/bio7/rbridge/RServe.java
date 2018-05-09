@@ -194,6 +194,83 @@ public class RServe {
 		}
 
 	}
+	/**
+	 * Evaluates and prints an expression to the Bio7 console executed in a job with job join.
+	 * 
+	 * @param expression
+	 *            a R expression as a string.
+	 */
+	public static void printJobJoin(String expression) {// helper class to print
+		if (RState.isBusy() == false) {
+			RState.setBusy(true);
+			REvaluateJob job = new REvaluateJob(expression);
+			job.addJobChangeListener(new JobChangeAdapter() {
+				public void done(IJobChangeEvent event) {
+					if (event.getResult().isOK()) {
+
+						int countDev = getDisplayNumber();
+						RState.setBusy(false);
+						if (countDev > 0) {
+							RServe.closeAndDisplay();
+						}
+						System.out.flush();
+						updatePackageImports();
+					} else {
+						RState.setBusy(false);
+
+						System.out.flush();
+					}
+				}
+
+			});
+
+			// job.setSystem(true);
+			job.schedule();
+			try {
+				job.join();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else {
+			Process p;
+			// IPreferenceStore store =
+			// Bio7Plugin.getDefault().getPreferenceStore();
+			// if (store.getBoolean("RSERVE_NATIVE_START")) {
+			ConsolePageParticipant consol = ConsolePageParticipant.getConsolePageParticipantInstance();
+			p = consol.getRProcess();
+			/*
+			 * } else {
+			 * 
+			 * p = RConnectionJob.getProc(); }
+			 */
+
+			// Write to the output!
+			if (p != null) {
+				final OutputStream os = p.getOutputStream();
+				final OutputStreamWriter osw = new OutputStreamWriter(os);
+				final BufferedWriter bw = new BufferedWriter(osw, 100);
+
+				try {
+					bw.write(expression);
+
+					bw.newLine();
+
+					os.flush();
+					bw.flush();
+					// bw.close();
+					System.out.flush();
+				} catch (IOException e) {
+					System.err.println("");
+				}
+
+			}
+
+			// Bio7Dialog.message("Rserve is busy!");
+
+		}
+
+	}
 
 	/**
 	 * Evaluates and prints an array of expressions to the Bio7 console executed in

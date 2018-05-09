@@ -63,7 +63,7 @@ public class SaveRStartWorkspace extends Action {
 			//System.out.println("" + selected);
 			String save = "save.image(file =\"" + selected
 					+ "\", version = NULL, ascii = FALSE)";
-			RInterpreterJob Do = new RInterpreterJob(save,false,null);
+			RInterpreterJob Do = new RInterpreterJob(save,null);
 			Do.setUser(true);
 			Do.schedule();
 

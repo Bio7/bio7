@@ -271,7 +271,7 @@ public class StartRServe extends Action implements IMenuCreator {
 		if (RState.isBusy() == false) {
 			RState.setBusy(true);
 			String load = "try(load(file=.bio7TempRScriptFile))";
-			RInterpreterJob Do = new RInterpreterJob(load, false, null);
+			RInterpreterJob Do = new RInterpreterJob(load, null);
 			Do.addJobChangeListener(new JobChangeAdapter() {
 				public void done(IJobChangeEvent event) {
 					if (event.getResult().isOK()) {

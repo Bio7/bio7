@@ -41,7 +41,7 @@ public class ExecuteRScriptAction extends Action {
 
 				if (RState.isBusy() == false) {
 					RState.setBusy(true);
-					final RInterpreterJob Do = new RInterpreterJob(null, true, path);
+					final RInterpreterJob Do = new RInterpreterJob(null, path);
 					Do.addJobChangeListener(new JobChangeAdapter() {
 						public void done(IJobChangeEvent event) {
 							if (event.getResult().isOK()) {

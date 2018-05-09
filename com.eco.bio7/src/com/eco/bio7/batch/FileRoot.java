@@ -16,6 +16,27 @@ import com.eco.bio7.preferences.PreferenceConstants;
  */
 public class FileRoot {
 
+	private static String currentCompileDir;
+
+	/**
+	 * A method to get the current compile file directory. The directory is set
+	 * before the compilation process.
+	 * 
+	 * @return the directory of the current file which will be compiled.
+	 */
+	public static String getCurrentCompileDir() {
+		return currentCompileDir;
+	}
+
+	/**
+	 * Sets the current compile directory. For internal use.
+	 * 
+	 * @param currentCompileDir
+	 */
+	public static void setCurrentCompileDir(String currentCompileDir) {
+		FileRoot.currentCompileDir = currentCompileDir;
+	}
+
 	/**
 	 * Returns the path of the workspace location of the Bio7 application.
 	 * 
@@ -60,32 +81,6 @@ public class FileRoot {
 	public static String getGeneralScriptLocation() {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		String fileroot = store.getString(PreferenceConstants.D_SCRIPT_GENERAL);
-		return fileroot;
-
-	}
-
-	/**
-	 * Returns the import script path from the preferences.
-	 * 
-	 * @return the path as a string.
-	 * 
-	 */
-	public static String getImportScriptLocation() {
-		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		String fileroot = store.getString(PreferenceConstants.D_IMPORT);
-		return fileroot;
-
-	}
-
-	/**
-	 * Returns the export script path from the preferences.
-	 * 
-	 * @return the path as a string.
-	 * 
-	 */
-	public static String getExportScriptLocation() {
-		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		String fileroot = store.getString(PreferenceConstants.D_EXPORT);
 		return fileroot;
 
 	}
