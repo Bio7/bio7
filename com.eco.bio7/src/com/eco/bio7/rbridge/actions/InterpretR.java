@@ -92,10 +92,10 @@ public class InterpretR extends Action {
 				RState.setBusy(true);
 				final RInterpreterJob Do;
 				if (remote == false) {
-					Do = new RInterpreterJob(rCode, true, loc);
+					Do = new RInterpreterJob(rCode, loc);
 
 				} else {
-					Do = new RInterpreterJob(rCode, true, null);
+					Do = new RInterpreterJob(rCode, null);
 				}
 				Do.addJobChangeListener(new JobChangeAdapter() {
 					public void done(IJobChangeEvent event) {

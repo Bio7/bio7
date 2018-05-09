@@ -71,7 +71,7 @@ public class ProfileSelectionAction implements IObjectActionDelegate, IEditorAct
 							RState.setBusy(true);
 							ProfileRScript prof = new ProfileRScript();
 							String editorScript = prof.profileSourceRserve(rEditor, true);
-							final RInterpreterJob Do = new RInterpreterJob(editorScript, true, null);
+							final RInterpreterJob Do = new RInterpreterJob(editorScript, null);
 							Do.addJobChangeListener(new JobChangeAdapter() {
 								public void done(IJobChangeEvent event) {
 									if (event.getResult().isOK()) {

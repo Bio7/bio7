@@ -23,6 +23,7 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RServeUtil;
+import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditors.REditor;
 
@@ -77,40 +78,47 @@ public class ExecuteRTextSelection extends Action {
 				if (rEditor instanceof REditor) {
 
 					// canEvaluate = false;
-					String inhalt = getTextAndForwardCursor(rEditor);
-					if (inhalt.isEmpty() == false) {
-						buff.append(inhalt);
-						buff.append("\n");
-						Parse parse = new Parse(null);
-						code = buff.toString().replaceAll("\r", "");
-						error = parse.parseShellSource(code, 0);
-						if (error == false) {
-							System.out.println(code);
-
-							RServeUtil.evalR("try(try(" + code + "))", null);
-
-							buff.setLength(0); // clear buffer!
-						} else {
-							/*
-							 * Data will be appended: Buffer will not be cleared until we have valid r code
-							 * or an interrupt signal!
-							 */
-							String[] output = code.split("\n");
-							for (int i = 0; i < output.length; i++) {
-								System.out.println("+ " + output[i]);
-							}
-
+					if (RState.isBusy() == false) {
+						String inhalt = getTextAndForwardCursor(rEditor);
+						inhalt.replace(System.lineSeparator(), "");
+						if (inhalt.startsWith("#")) {
+							return;
 						}
+						if (inhalt.isEmpty() == false) {
+							buff.append(inhalt);
+							buff.append("\n");
+							Parse parse = new Parse(null);
+							code = buff.toString();
+							error = parse.parseShellSource(code, 0);
+							if (error == false) {
+								System.out.println(code);
+
+								// RServe.printJobJoin(code);
+								RServeUtil.evalStringR(code);
+
+								buff.setLength(0); // clear buffer!
+							} else {
+								/*
+								 * Data will be appended: Buffer will not be cleared until we have valid r code
+								 * or an interrupt signal!
+								 */
+								String[] output = code.split("\n");
+								for (int i = 0; i < output.length; i++) {
+									System.out.println("+ " + output[i]);
+								}
+
+							}
+						}
+
+					} else {
+
+						MessageBox messageBox = new MessageBox(new Shell(),
+
+								SWT.ICON_WARNING);
+						messageBox.setMessage("There is no Bio7 editor available !");
+						messageBox.open();
+
 					}
-
-				} else {
-
-					MessageBox messageBox = new MessageBox(new Shell(),
-
-							SWT.ICON_WARNING);
-					messageBox.setMessage("There is no Bio7 editor available !");
-					messageBox.open();
-
 				}
 			}
 		}

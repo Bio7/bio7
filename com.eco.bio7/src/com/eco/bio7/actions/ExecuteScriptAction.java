@@ -49,7 +49,7 @@ public class ExecuteScriptAction extends Action {
 			if (RServe.isAliveDialog()) {
 				if (RState.isBusy() == false) {
 					RState.setBusy(true);
-					final RInterpreterJob Do = new RInterpreterJob(null, true, file.toString());
+					final RInterpreterJob Do = new RInterpreterJob(null, file.toString());
 					Do.addJobChangeListener(new JobChangeAdapter() {
 						public void done(IJobChangeEvent event) {
 							if (event.getResult().isOK()) {

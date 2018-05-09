@@ -2377,7 +2377,7 @@ public class RShellView extends ViewPart {
 					if (RServe.isAliveDialog()) {
 						if (RState.isBusy() == false) {
 							RState.setBusy(true);
-							final RInterpreterJob Do = new RInterpreterJob(null, true, file.toString());
+							final RInterpreterJob Do = new RInterpreterJob(null, file.toString());
 							Do.addJobChangeListener(new JobChangeAdapter() {
 								public void done(IJobChangeEvent event) {
 									if (event.getResult().isOK()) {
@@ -2776,7 +2776,7 @@ public class RShellView extends ViewPart {
 				if (RState.isBusy() == false) {
 					RState.setBusy(true);
 
-					RInterpreterJob Do = new RInterpreterJob(save, false, null);
+					RInterpreterJob Do = new RInterpreterJob(save, null);
 
 					Do.addJobChangeListener(new JobChangeAdapter() {
 						public void done(IJobChangeEvent event) {

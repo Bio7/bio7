@@ -204,7 +204,7 @@ public class RScript {
 	public static void rScriptJob(String script, String loc) {
 		if (RState.isBusy() == false) {
 			RState.setBusy(true);
-			RInterpreterJob Do = new RInterpreterJob(script, false, loc);
+			RInterpreterJob Do = new RInterpreterJob(script, loc);
 			Do.setUser(true);
 			Do.addJobChangeListener(new JobChangeAdapter() {
 				public void done(IJobChangeEvent event) {

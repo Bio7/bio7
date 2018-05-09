@@ -1414,7 +1414,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			RInterpreterJob Do = new RInterpreterJob(load, false, null);
+			RInterpreterJob Do = new RInterpreterJob(load, null);
 			Do.addJobChangeListener(new JobChangeAdapter() {
 				public void done(IJobChangeEvent event) {
 					if (event.getResult().isOK()) {
