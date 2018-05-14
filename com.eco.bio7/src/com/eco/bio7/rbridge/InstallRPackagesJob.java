@@ -54,7 +54,7 @@ public class InstallRPackagesJob extends WorkspaceJob {
 			});
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 			String destdir = store.getString("InstallLocation");
-			String server = store.getString(PreferenceConstants.PACKAGE_R_SERVER);
+			String server = store.getString("R_PACKAGE_SERVER");
 			if (Bio7Dialog.getOS().equals("Windows")) {
 				/* If a location is given! */
 
