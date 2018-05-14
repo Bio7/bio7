@@ -596,7 +596,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		}
 
 		// store.setDefault("RSERVE_AUTOSTART", false);
-		store.setDefault(PreferenceConstants.PACKAGE_R_SERVER, "http://cran.r-project.org");
+		store.setDefault("R_PACKAGE_SERVER", "http://cran.r-project.org");
 		if (getOS().equals("Linux")) {
 			store.setDefault("knitroptions", "opts_chunk$set(dev=\"png\",echo=TRUE, dev.args=list(type=\"cairo\"),dpi=96)");
 

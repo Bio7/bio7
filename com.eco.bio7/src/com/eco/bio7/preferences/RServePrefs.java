@@ -81,7 +81,7 @@ public class RServePrefs extends FieldEditorPreferencePage implements IWorkbench
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 
 		addField(new LabelFieldEditor("Packages:", getFieldEditorParent()));
-		PackageServer = new StringFieldEditor(PreferenceConstants.PACKAGE_R_SERVER, "Package Server", getFieldEditorParent());
+		PackageServer = new StringFieldEditor("R_PACKAGE_SERVER", "Package Server", getFieldEditorParent());
 		PackageServer.setErrorMessage("Please enter a valid address!");
 		PackageServer.setEmptyStringAllowed(false);
 		PackageServer.setStringValue("http://cran.r-project.org");

@@ -45,7 +45,7 @@ public class RServeUtil {
 							if (countDev > 0) {
 								RServe.closeAndDisplay();
 							}
-							BatchModel.resumeFlow();
+							//BatchModel.resumeFlow();
 
 						} else {
 							RState.setBusy(false);
@@ -247,7 +247,7 @@ public class RServeUtil {
 							if (countDev > 0) {
 								RServe.closeAndDisplay();
 							}
-							BatchModel.resumeFlow();
+							//BatchModel.resumeFlow();
 
 						} else {
 							RState.setBusy(false);

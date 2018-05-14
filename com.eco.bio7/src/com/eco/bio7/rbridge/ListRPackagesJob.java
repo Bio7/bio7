@@ -37,7 +37,7 @@ public class ListRPackagesJob extends WorkspaceJob {
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
 		monitor.beginTask("Retrieve package list..", IProgressMonitor.UNKNOWN);
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		String server = store.getString(PreferenceConstants.PACKAGE_R_SERVER);
+		String server = store.getString("R_PACKAGE_SERVER");
 		if (RServe.isAlive()) {
 			Display display = PlatformUI.getWorkbench().getDisplay();
 			display.syncExec(new Runnable() {
