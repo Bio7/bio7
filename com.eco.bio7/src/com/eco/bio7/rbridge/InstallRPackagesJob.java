@@ -28,6 +28,7 @@ import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.preferences.PreferenceConstants;
+import com.eco.bio7.rbridge.views.PackageInstallView;
 
 public class InstallRPackagesJob extends WorkspaceJob {
 
@@ -53,7 +54,7 @@ public class InstallRPackagesJob extends WorkspaceJob {
 			});
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 			String destdir = store.getString("InstallLocation");
-			String server = store.getString(PreferenceConstants.PACKAGE_R_SERVER);
+			String server = store.getString("R_PACKAGE_SERVER");
 			if (Bio7Dialog.getOS().equals("Windows")) {
 				/* If a location is given! */
 

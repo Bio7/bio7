@@ -40,7 +40,7 @@
             name="Resource">
       </perspective>
       <perspective
-            class="com.eco.bio7.rbridge.RPerspective"
+            class="com.eco.bio7.rbridge.perspectives.RPerspective"
             fixed="false"
             icon="icons/perspective/rpersp.png"
             id="com.eco.bio7.rbridge.RPerspective"
@@ -53,14 +53,14 @@
             name="Custom">
       </perspective>
       <perspective
-            class="com.eco.bio7.rbridge.RImagePerspective"
+            class="com.eco.bio7.rbridge.perspectives.RImagePerspective"
             fixed="false"
             icon="icons/perspective/rimageanalysispersp.png"
             id="com.eco.bio7.rbridge.RImagePerspective"
             name="R ImageJ Analysis">
       </perspective>
       <perspective
-            class="com.eco.bio7.rbridge.RDebugPerspective"
+            class="com.eco.bio7.rbridge.perspectives.RDebugPerspective"
             fixed="false"
             icon="icons/perspective/rdebugpersp.png"
             id="com.eco.bio7.rbridge.RDebugPerspective"
@@ -252,7 +252,7 @@
       <view
             allowMultiple="true"
             category="com.eco.bio7.rapplication"
-            class="com.eco.bio7.rbridge.RShellView"
+            class="com.eco.bio7.rbridge.views.RShellView"
             icon="icons/views/rview.png"
             id="com.eco.bio7.RShell"
             name="R-Shell"
@@ -296,17 +296,24 @@
       </view>
       <view
             category="com.eco.bio7.rapplication"
-            class="com.eco.bio7.rbridge.PackageInstallView"
+            class="com.eco.bio7.rbridge.views.PackageInstallView"
             icon="icons/views/rview.png"
             id="com.eco.bio7.rbridge.PackageInstallView"
             name="Packages">
       </view>
       <view
             category="com.eco.bio7.rapplication"
-            class="com.eco.bio7.rbridge.RPlotView"
+            class="com.eco.bio7.rbridge.views.RPlotView"
             icon="icons/views/rview.png"
             id="com.eco.bio7.rbridge.RPlotView"
             name="Plot">
+      </view>
+      <view
+            category="com.eco.bio7.rapplication"
+            class="com.eco.bio7.rbridge.views.RTemplatesView"
+            icon="icons/views/rview.png"
+            id="com.eco.bio7.rbridge.views.RTemplatesView"
+            name="R Snippets">
       </view>
    </extension>
    

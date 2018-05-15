@@ -27,7 +27,7 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.Console;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RServe;
-import com.eco.bio7.rbridge.RShellView;
+import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.StartBio7Utils;
 
 public class RInterpreterJob extends WorkspaceJob {
@@ -40,15 +40,15 @@ public class RInterpreterJob extends WorkspaceJob {
 
 	private static boolean exception = false;
 
-	private static boolean plot = true;
+	//private static boolean plot = true;
 	
 	private static String rCommand = "" + "try(paste(capture.output(source(.bio7TempRScriptFile,echo=T)),collapse=\"\\n\"))";
 
-	public RInterpreterJob(String tointerpret, boolean doPlot, String loc) {
+	public RInterpreterJob(String tointerpret, String loc) {
 		super("Interpret RScript");
 
 		this.tointerpret = tointerpret;
-		this.plot = doPlot;
+		//this.plot = doPlot;
 		this.location = loc;
 
 	}
@@ -56,7 +56,7 @@ public class RInterpreterJob extends WorkspaceJob {
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
 		monitor.beginTask("Interpret RScript.....", IProgressMonitor.UNKNOWN);
 
-		interpretRJob(tointerpret, plot, location);
+		interpretRJob(tointerpret, location);
 		if (monitor.isCanceled()) {
 			try {
 				throw new InterruptedException();
@@ -70,7 +70,7 @@ public class RInterpreterJob extends WorkspaceJob {
 		return Status.OK_STATUS;
 	}
 
-	public void interpretRJob(String thesource, final boolean plot, String loc) {
+	public void interpretRJob(String thesource, String loc) {
 		String temp = thesource;
 
 		final RConnection cscript = RServe.getConnection();
@@ -167,7 +167,7 @@ public class RInterpreterJob extends WorkspaceJob {
 				}
 
 			}
-			if (plot == true) {
+			/*if (plot == true) {
 				Display display = PlatformUI.getWorkbench().getDisplay();
 				display.syncExec(new Runnable() {
 
@@ -184,7 +184,7 @@ public class RInterpreterJob extends WorkspaceJob {
 
 					}
 				});
-			}
+			}*/
 		}
 		temp = null;
 		script = null;

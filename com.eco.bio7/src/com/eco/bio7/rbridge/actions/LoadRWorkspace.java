@@ -132,7 +132,7 @@ public class LoadRWorkspace extends Action {
 
 					e.printStackTrace();
 				}
-				RInterpreterJob Do = new RInterpreterJob(load, false, null);
+				RInterpreterJob Do = new RInterpreterJob(load, null);
 				Do.addJobChangeListener(new JobChangeAdapter() {
 					public void done(IJobChangeEvent event) {
 						if (event.getResult().isOK()) {

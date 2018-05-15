@@ -23,6 +23,7 @@ import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.preferences.PreferenceConstants;
+import com.eco.bio7.rbridge.views.PackageInstallView;
 
 public class ListRPackagesJob extends WorkspaceJob {
 
@@ -36,7 +37,7 @@ public class ListRPackagesJob extends WorkspaceJob {
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
 		monitor.beginTask("Retrieve package list..", IProgressMonitor.UNKNOWN);
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		String server = store.getDefaultString(PreferenceConstants.PACKAGE_R_SERVER);
+		String server = store.getString("R_PACKAGE_SERVER");
 		if (RServe.isAlive()) {
 			Display display = PlatformUI.getWorkbench().getDisplay();
 			display.syncExec(new Runnable() {

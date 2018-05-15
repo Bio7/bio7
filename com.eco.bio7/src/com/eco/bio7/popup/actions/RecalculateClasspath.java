@@ -40,82 +40,23 @@ public class RecalculateClasspath implements IObjectActionDelegate {
 	}
 
 	public void run(IAction action) {
-		ISelection selection = PlatformUI.getWorkbench()
-				.getActiveWorkbenchWindow().getSelectionService()
-				.getSelection();
+		ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().getSelection();
 		IStructuredSelection strucSelection = null;
 		if (selection instanceof IStructuredSelection) {
 			strucSelection = (IStructuredSelection) selection;
 
 			Object selectedObj = strucSelection.getFirstElement();
 			if (selectedObj instanceof IAdaptable) {
-				IProject project = (IProject) ((IAdaptable) selectedObj)
-						.getAdapter(IProject.class);
+				IProject project = (IProject) ((IAdaptable) selectedObj).getAdapter(IProject.class);
 				if (project != null) {
 					try {
 						if (project.hasNature(JavaCore.NATURE_ID)) {
-
-							IJavaProject javaProject = JavaCore.create(project);
-
-							IFolder sourceFolder = project.getFolder("src");
-							IPackageFragmentRoot fragRoot = javaProject
-									.getPackageFragmentRoot(sourceFolder);
-
-							List<IClasspathEntry> entriesJre = new ArrayList<IClasspathEntry>();
-
-							IVMInstallType installType = JavaRuntime
-									.getVMInstallType("org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType");
-
-							VMStandin vmStandin = new VMStandin(installType,
-									"Bio7 Bundled JRE");
-							vmStandin.setName("Bio7 Bundled JRE");
-
-							String path = Platform.getInstallLocation()
-									.getURL().getPath();
-							/*Extra path for the different MacOSX installation paths!*/
-							String OS = ApplicationWorkbenchWindowAdvisor.getOS();
-							if (OS.equals("Mac")) {
-								vmStandin.setInstallLocation(new File(path + "../MacOS/jre"));
-
-							} else {
-								vmStandin.setInstallLocation(new File(path + "/jre"));
-							}
-
-							IVMInstall vmInstall = vmStandin.convertToRealVM();
-
-							// IVMInstall vmInstall =
-							// JavaRuntime.getDefaultVMInstall();
-
-							LibraryLocation[] locations = JavaRuntime
-									.getLibraryLocations(vmInstall);
-							for (LibraryLocation element : locations) {
-								// System.out.println("location: "+locations);
-								entriesJre.add(JavaCore.newLibraryEntry(
-										element.getSystemLibraryPath(), null,
-										null));
-							}
-							IClasspathEntry[] newEntries = new ScanClassPath()
-									.scanForJDT();
-
-							IClasspathEntry[] oldEntries = entriesJre
-									.toArray(new IClasspathEntry[entriesJre
-											.size()]);
-
-							System.arraycopy(oldEntries, 0, newEntries, 0,
-									oldEntries.length);
-							newEntries[oldEntries.length] = JavaCore
-									.newSourceEntry(fragRoot.getPath());
-
-							try {
-								javaProject.setRawClasspath(newEntries, null);
-							} catch (JavaModelException e) {
-								// TODO Auto-generated catch block
-								// e.printStackTrace();
-								System.out
-										.println("Minor error! Please check the classpath of the project and if necessary calculate again!");
-							}
-							Bio7Dialog
-									.message("Java Bio7 Project Libraries Recalculated!");
+							javafx.application.Platform.runLater(new Runnable() {
+								@Override
+								public void run() {
+									recalculateClasspath(project);
+								}
+							});
 
 						} else {
 							Bio7Dialog.message("Please select a Java Project!");
@@ -130,6 +71,56 @@ public class RecalculateClasspath implements IObjectActionDelegate {
 			}
 		}
 
+	}
+
+	private void recalculateClasspath(IProject project) {
+		IJavaProject javaProject = JavaCore.create(project);
+
+		IFolder sourceFolder = project.getFolder("src");
+		IPackageFragmentRoot fragRoot = javaProject.getPackageFragmentRoot(sourceFolder);
+
+		List<IClasspathEntry> entriesJre = new ArrayList<IClasspathEntry>();
+
+		IVMInstallType installType = JavaRuntime.getVMInstallType("org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType");
+
+		VMStandin vmStandin = new VMStandin(installType, "Bio7 Bundled JRE");
+		vmStandin.setName("Bio7 Bundled JRE");
+
+		String path = Platform.getInstallLocation().getURL().getPath();
+		/* Extra path for the different MacOSX installation paths! */
+		String OS = ApplicationWorkbenchWindowAdvisor.getOS();
+		if (OS.equals("Mac")) {
+			vmStandin.setInstallLocation(new File(path + "../MacOS/jre"));
+
+		} else {
+			vmStandin.setInstallLocation(new File(path + "/jre"));
+		}
+
+		IVMInstall vmInstall = vmStandin.convertToRealVM();
+
+		// IVMInstall vmInstall =
+		// JavaRuntime.getDefaultVMInstall();
+
+		LibraryLocation[] locations = JavaRuntime.getLibraryLocations(vmInstall);
+		for (LibraryLocation element : locations) {
+			// System.out.println("location: "+locations);
+			entriesJre.add(JavaCore.newLibraryEntry(element.getSystemLibraryPath(), null, null));
+		}
+		IClasspathEntry[] newEntries = new ScanClassPath().scanForJDT();
+
+		IClasspathEntry[] oldEntries = entriesJre.toArray(new IClasspathEntry[entriesJre.size()]);
+
+		System.arraycopy(oldEntries, 0, newEntries, 0, oldEntries.length);
+		newEntries[oldEntries.length] = JavaCore.newSourceEntry(fragRoot.getPath());
+
+		try {
+			javaProject.setRawClasspath(newEntries, null);
+		} catch (JavaModelException e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+			System.out.println("Minor error! Please check the classpath of the project and if necessary calculate again!");
+		}
+		Bio7Dialog.message("Java Bio7 Project Libraries Recalculated!");
 	}
 
 	public void selectionChanged(IAction action, ISelection selection) {

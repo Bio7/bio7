@@ -22,6 +22,7 @@ package com.eco.bio7.rbridge.completion;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -42,32 +43,37 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Text;
+import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RServeUtil;
-import com.eco.bio7.rbridge.RShellView;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.rbridge.RStrObjectInformation;
+import com.eco.bio7.rbridge.UpdateCompletion;
+import com.eco.bio7.rbridge.views.RShellView;
+import com.eco.bio7.reditor.actions.RefreshLoadedPackagesForCompletion;
 import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.rpreferences.template.CalculateRProposals;
 import com.eco.bio7.util.Util;
 import com.swtdesigner.ResourceManager;
 
-public class ShellCompletion {
+public class ShellCompletion implements UpdateCompletion {
 	private ContentProposalProvider contentProposalProvider;
 	private ContentProposalAdapter contentProposalAdapter;
 	private KeyStroke stroke;
 
 	private Image image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/brkp_obj.png");
-	private Image varImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/field_public_obj.png");
+	private Image varImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/types.png");
 	private Image varFuncCallImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/varfunccall.png");
 	private Image s4Image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/s4.png");
 	private Image s3Image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/s3.png");
 	private Image dataImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/settings_obj.png");
 	private Image libImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/package_obj.png");
+	private Image arrayImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/goto_input.png");
 	private Text control;
 	private String[] statistics;
 	private String[] statisticsContext;
@@ -81,7 +87,7 @@ public class ShellCompletion {
 	private IPreferenceStore store;
 	// public boolean data;
 	// public boolean library;
-
+    
 	/*
 	 * Next two methods adapted from:
 	 * https://krishnanmohan.wordpress.com/2011/12/12/eclipse-rcp-
@@ -94,6 +100,7 @@ public class ShellCompletion {
 		// String UCL = LCL.toUpperCase();
 
 		// To enable content proposal on deleting a char
+
 
 		// String delete = new String(new char[] { 8 });
 		String allChars = LCL;
@@ -148,10 +155,11 @@ public class ShellCompletion {
 			public void proposalAccepted(IContentProposal proposal) {
 				/* We have to care about the custom replacements! */
 				control.setFocus();
+
 				// String content = control.getText();
 				/*
 				 * Weird behavior of text.getCaretPosition() position on MacOSX. Solved by
-				 * extracting the a local var here!
+				 * extracting a local var here!
 				 */
 				int caretPosition = control.getCaretPosition();
 				control.setSelection(contentProposalProvider.lastIndex, caretPosition);
@@ -175,6 +183,7 @@ public class ShellCompletion {
 					String textLastIndex = control.getText(0, lastIndex);
 					String after = control.getText(caretPosition, control.getText().length());
 					String content = textLastIndex + proposal.getContent() + after;
+
 					int cursorPosition = (textLastIndex + proposal.getContent()).length();
 					control.setText(content);
 					control.setSelection(cursorPosition);
@@ -188,6 +197,7 @@ public class ShellCompletion {
 					String textLastIndex = control.getText(0, lastIndex);
 					String after = control.getText(caretPosition, control.getText().length());
 					String content = textLastIndex + proposal.getContent() + after;
+
 					int cursorPosition = lastIndex + proposal.getContent().length() + 1;
 					control.setText(content);
 					control.setSelection(cursorPosition);
@@ -219,6 +229,15 @@ public class ShellCompletion {
 
 		});
 
+	}
+	/*This is an interface function to reload the RShell completion from the R editor which otherwise would'nt be possible
+	 *(cyclic dependencies!)**/
+	public void trigger() {		
+		/* Load the created proposals from the R editor! */
+		statistics = CalculateRProposals.getStatistics();
+		statisticsContext = CalculateRProposals.getStatisticsContext();
+		statisticsSet = CalculateRProposals.getStatisticsSet();
+		
 	}
 
 	/* Here we update the code templates by calling the R function! */
@@ -252,10 +271,19 @@ public class ShellCompletion {
 							 */
 							CalculateRProposals.setStartupTemplate(false);
 							CalculateRProposals.loadRCodePackageTemplates();
+							
 							/* Load the created proposals! */
 							statistics = CalculateRProposals.getStatistics();
 							statisticsContext = CalculateRProposals.getStatisticsContext();
 							statisticsSet = CalculateRProposals.getStatisticsSet();
+							
+							/*Here we update the code completion of the R editor with the trigger interface!*/
+							REditor rEditor=REditor.getREditorInstance();
+							if (rEditor != null) {
+							/*Update the completions of the R editor!*/
+							CalculateRProposals.updateCompletions();
+								rEditor.trigger();
+							}
 
 						}
 
@@ -269,8 +297,9 @@ public class ShellCompletion {
 			job.addJobChangeListener(new JobChangeAdapter() {
 				public void done(IJobChangeEvent event) {
 					if (event.getResult().isOK()) {
-
+                       
 						RState.setBusy(false);
+						
 					} else {
 
 					}
@@ -352,6 +381,7 @@ public class ShellCompletion {
 		}
 
 		public IContentProposal[] getProposals(String contents, int position) {
+
 			s4 = false;
 			s3 = false;
 			packageAll = false;
@@ -400,6 +430,13 @@ public class ShellCompletion {
 			}
 
 			Parse parse = view.getParser();
+
+			/*
+			 * For the differentiation in nested function or matrix indexing calls the
+			 * parser takes the nearest, see the ExtractInterfaceListener class! If a
+			 * argument completion is not available it returns the default completion!
+			 */
+
 			/* Control if we are in a function call! */
 			if (parse != null && parse.isInFunctionCall()) {
 				String funcName = parse.getFuncName();
@@ -420,10 +457,46 @@ public class ShellCompletion {
 					 */
 					if (contentLastCorr.length() == 0) {
 
-						return functionArgumentsActivation(position, funcName);
+						return functionArgumentsActivation(position, funcName, parse);
 					}
 
 				}
+			}
+			/* Control if we are in a matrix '[]' call! */
+			if (parse != null && parse.isInMatrixBracketCall()) {
+				if (contentLastCorr.length() == 0) {
+					String name = parse.getBracketMatrixName();
+					int state = parse.getMatrixArgState();
+					int bracketCommaCount = parse.getBracketCommaCount();
+					return matrixDataFrameSubset(position, contentLastCorr, name, state, bracketCommaCount, false, parse);
+					/*
+					 * if (state == 1) { return matrixDataFrameSubset(position, contentLastCorr,
+					 * name, state, false); } // if call has two arguments, cursor on the left
+					 * argument! else if (state == 21) { return matrixDataFrameSubset(position,
+					 * contentLastCorr, name, state, false); } // if call has two arguments, cursor
+					 * on the right argument! else if (state == 22) { return
+					 * matrixDataFrameSubset(position, contentLastCorr, name, state, false); }
+					 */
+				}
+			}
+			/* Control if we are in a matrix '[[]]' call! */
+			if (parse != null && parse.isInMatrixDoubleBracketCall()) {
+				if (contentLastCorr.length() == 0) {
+					String name = parse.getBracketMatrixName();
+					int state = parse.getMatrixArgState();
+					/* Probably bracket comma count not needed here! */
+					int bracketCommaCount = parse.getBracketCommaCount();
+					return matrixDataFrameSubset(position, contentLastCorr, name, state, bracketCommaCount, true, parse);
+					/*
+					 * if (state == 1) { return matrixDataFrameSubset(position, contentLastCorr,
+					 * name, state, true); } // if call has two arguments, cursor on the left
+					 * argument! else if (state == 21) { return matrixDataFrameSubset(position,
+					 * contentLastCorr, name, state, true); } // if call has two arguments, cursor
+					 * on the right argument! else if (state == 22) { return
+					 * matrixDataFrameSubset(position, contentLastCorr, name, state, true); }
+					 */
+				}
+
 			}
 			/*
 			 * This section loads the general code completion if no other method returned a
@@ -431,7 +504,7 @@ public class ShellCompletion {
 			 */
 			if (RServe.isAlive()) {
 				/* Here we get the R workspace vars! */
-				ImageContentProposal[] workspaceVars = getWorkSpaceVars(position);
+				ImageContentProposal[] workspaceVars = getWorkSpaceVars(position, parse);
 				if (workspaceVars != null) {
 					for (int i = 0; i < workspaceVars.length; i++) {
 						/*
@@ -472,7 +545,7 @@ public class ShellCompletion {
 			IContentProposal[] arrayTemp = makeProposalArray(array);
 			/* The var Workspace arrays are already an ImageContentProposal! */
 			IContentProposal[] varWorkspaceArray = varWorkspace.toArray(new IContentProposal[varWorkspace.size()]);
-			/* Concatenate both whith the Apache commons library! */
+			/* Concatenate both with the Apache commons library! */
 			IContentProposal[] allProposals = (IContentProposal[]) ArrayUtils.addAll(varWorkspaceArray, arrayTemp);
 			return allProposals;
 		}
@@ -554,9 +627,180 @@ public class ShellCompletion {
 	}
 
 	/*
+	 * Here we calculate matrix, dataframe subsets (rows, columns, etc.)
+	 */
+	private ImageContentProposal[] matrixDataFrameSubset(int position, String contentLastCorr, String matDfName, int state, int bracketCommaCount, boolean doubleMatrixCall, Parse parse) {
+		IContentProposal[] array = null;
+		ImageContentProposal[] proposalsMatDFVec = null;
+		int length = contentLastCorr.length();
+		RConnection c = RServe.getConnection();
+		if (c != null) {
+			// propo = null;
+
+			ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
+			String[] item = null;
+
+			/* Get all installed dataset names, their package and description! */
+
+			if (doubleMatrixCall) {
+				/* If we have only one argument! */
+				if (bracketCommaCount == 0) {
+					try {
+						REXP rexp = null;
+						/* Here we leave out matrices and arrays (matrices are arrays)! */
+						rexp = RServeUtil.fromR("try(if (is.data.frame(" + matDfName + ")){colnames(" + matDfName + ")} else if (is.list(" + matDfName + ")) {names(" + matDfName
+								+ ")} else if (is.vector(" + matDfName + ")) {names(" + matDfName + ")} ,silent=TRUE)");
+
+						if (rexp.isNull() == false) {
+							item = rexp.asStrings();
+
+						}
+
+					} catch (REXPMismatchException e) {
+
+						e.printStackTrace();
+					}
+					/* If we have two arguments with one comma! */
+				} else if (bracketCommaCount == 1) {
+
+				}
+			}
+
+			/* If we have a '[' expression! */
+			else {
+				/* If we have only one argument! */
+				if (bracketCommaCount == 0) {
+					try {
+						REXP rexp = null;
+
+						rexp = RServeUtil.fromR("try(if (is.data.frame(" + matDfName + ")||is.matrix(" + matDfName + ")){colnames(" + matDfName + ")} else if(is.array(" + matDfName + ")){rownames("
+								+ matDfName + ")} else{names(" + matDfName + ")} ,silent=TRUE)");
+
+						if (rexp.isNull() == false) {
+							item = rexp.asStrings();
+
+						}
+
+					} catch (REXPMismatchException e) {
+
+						e.printStackTrace();
+					}
+					/* If we have two arguments with one comma! */
+				} else if (bracketCommaCount == 1) {
+					/* Left argument from nearest offset calculation!! */
+					if (state == 0) {
+						try {
+							REXP rexp = null;
+
+							rexp = RServeUtil.fromR("try(rownames(" + matDfName + "),silent=TRUE)");
+
+							if (rexp.isNull() == false) {
+								item = rexp.asStrings();
+							}
+
+						} catch (REXPMismatchException e) {
+
+							e.printStackTrace();
+						}
+						/* Right argument from nearest offset calculation! */
+					} else if (state == 1) {
+						try {
+							REXP rexp = null;
+
+							rexp = RServeUtil.fromR("try(colnames(" + matDfName + "),silent=TRUE)");
+
+							if (rexp.isNull() == false) {
+								item = rexp.asStrings();
+							}
+
+						} catch (REXPMismatchException e) {
+
+							e.printStackTrace();
+						}
+					}
+					/*
+					 * If we have more then 2-dimensions we expect an array! Before the array
+					 * arguments are give with row- and colnames function!
+					 */
+				} else {
+					try {
+						REXP rexp = null;
+
+						rexp = RServeUtil.fromR("try(dimnames(" + matDfName + ")[[" + (state + 1) + "]],silent=TRUE)");
+
+						if (rexp.isNull() == false) {
+							item = rexp.asStrings();
+						}
+
+					} catch (REXPMismatchException e) {
+
+						e.printStackTrace();
+					}
+
+				}
+			}
+			// packages = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Package\"])").asStrings();
+			// title = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Title\"])").asStrings();
+
+			if (item != null) {
+
+				/*
+				 * If colnames, rownames applied on non existent object an error string will be
+				 * returned which we exclude here!
+				 */
+				if (item[0].startsWith("Error") == false) {
+					/* Get the object information str() as context info! */
+					//String resultStr = new RStrObjectInformation().getRStrObjectInfo(matDfName, c);
+					/* If text length after parenheses is at least 0! */
+					if (length >= 0) {
+
+						for (int i = 0; i < item.length; i++) {
+							/*
+							 * Here we filter out the templates by comparing the typed letters with the
+							 * available templates!
+							 */
+							if (item[i].length() >= length && item[i].substring(0, length).equalsIgnoreCase(contentLastCorr)) {
+
+								list.add(new ImageContentProposal("\"" + item[i] + "\"", item[i], matDfName, item[i].length(), arrayImage));
+							}
+						}
+
+					}
+
+					else {
+
+						for (int j = 0; j < item.length; j++) {
+
+							list.add(new ImageContentProposal("\"" + item[j] + "\"", item[j], item[j], item[j].length(), arrayImage));
+
+						}
+					}
+
+					proposalsMatDFVec = list.toArray(new ImageContentProposal[list.size()]);
+
+					/* We have to convert the proposals to an ImageContentProposal! */
+					// IContentProposal[] arrayTemp = makeProposalArray(array);
+					list.clear();
+
+					ImageContentProposal[] prop = getWorkSpaceVars(position, parse);
+					if (prop != null) {
+						proposalsMatDFVec = (ImageContentProposal[]) ArrayUtils.addAll(proposalsMatDFVec, prop);
+					} else {
+						proposalsMatDFVec = null;
+					}
+				}
+			}
+
+		} else {
+			System.out.println("No Rserve connection available!");
+		}
+		return proposalsMatDFVec;
+	}
+
+	/*
 	 * Here we calculate the workspace variables and create ImageContentProposals!
 	 */
-	private ImageContentProposal[] getWorkSpaceVars(int offset) {
+	private ImageContentProposal[] getWorkSpaceVars(int offset, Parse parse) {
 		propo = null;
 
 		RConnection c = RServe.getConnection();
@@ -569,14 +813,49 @@ public class ShellCompletion {
 					if (c != null) {
 						try {
 							String[] result = (String[]) c.eval("try(ls(),silent=TRUE)").asStrings();
+							String[] varsWorkspaceClass = (String[]) c.eval("try(as.character(lapply(mget(ls()),class)))").asStrings();
+
+							boolean isInPipedFunction = parse.isInPipeFunction();
+							String pipedDataName = parse.getCurrentPipeData();
+							if (isInPipedFunction) {
+								REXP rexp = null;
+								/* We accept dataframes! */
+								rexp = c.eval("try(if (is.data.frame(" + pipedDataName + ")){colnames(" + pipedDataName + ")} ,silent=TRUE)");
+
+								if (rexp.isNull() == false) {
+
+									String[] pipeArguments = rexp.asStrings();
+									if (pipeArguments[0].startsWith("Error") == false) {
+										String[] pipeArgumentContext = new String[pipeArguments.length];
+										for (int i = 0; i < pipeArguments.length; i++) {
+
+											pipeArgumentContext[i] = pipedDataName;
+
+										}
+
+										result = ArrayUtils.addAll(pipeArguments, result);
+										varsWorkspaceClass = ArrayUtils.addAll(pipeArgumentContext, varsWorkspaceClass);
+									}
+
+								}
+
+							}
+
 							if (result != null && result.length > 0) {
 								if (result[0].startsWith("Error") == false) {
 
 									propo = new ImageContentProposal[result.length];
 
 									for (int j = 0; j < result.length; j++) {
-
-										propo[j] = new ImageContentProposal(result[j], result[j], result[j], result[j].length(), varImage);
+										if (pipedDataName != null) {
+											if (varsWorkspaceClass[j].equals(pipedDataName)) {
+												propo[j] = new ImageContentProposal(result[j], result[j] + " - " + varsWorkspaceClass[j]+" column", varsWorkspaceClass[j], result[j].length(), varImage);
+											} else {
+												propo[j] = new ImageContentProposal(result[j], result[j] + " - " + varsWorkspaceClass[j], result[j], result[j].length(), varImage);
+											}
+										} else {
+											propo[j] = new ImageContentProposal(result[j], result[j] + " - " + varsWorkspaceClass[j], result[j], result[j].length(), varImage);
+										}
 
 									}
 								}
@@ -603,6 +882,7 @@ public class ShellCompletion {
 	 */
 	private ImageContentProposal[] namesPackageExportActivation(int offset, String prefix) {
 
+		
 		propo = null;
 		// int length=prefix.length();
 		// String lastIndex = prefix.substring(0, prefix.lastIndexOf(":"));
@@ -726,7 +1006,6 @@ public class ShellCompletion {
 
 	/* Here we calculate the s4 variables and create ImageContentProposals! */
 	private ImageContentProposal[] s4Activation(int offset, String prefix) {
-		propo = null;
 		propo = null;
 		String afterLastIndex = prefix.substring(prefix.lastIndexOf("@") + 1, prefix.length());
 		int length = afterLastIndex.length();
@@ -863,7 +1142,7 @@ public class ShellCompletion {
 	 * ImageContentProposals!
 	 */
 	private ImageContentProposal[] dataActivation(int offset, String contentLastCorr) {
-		IContentProposal[] array = null;
+		// IContentProposal[] array = null;
 		int length = contentLastCorr.length();
 		RConnection c = RServe.getConnection();
 		if (c != null) {
@@ -990,8 +1269,8 @@ public class ShellCompletion {
 	}
 
 	/* Here we display the function arguments from the default package functions! */
-	private ImageContentProposal[] functionArgumentsActivation(int position, String func) {
-		ImageContentProposal[] propo = null;
+	private ImageContentProposal[] functionArgumentsActivation(int position, String func, Parse parse) {
+		ImageContentProposal[] propoFuncArg = null;
 		for (int i = 0; i < statisticsSet.length; i++) {
 			/* Do we have the method in the proposals? */
 
@@ -1009,27 +1288,26 @@ public class ShellCompletion {
 
 					String[] proposalMethods = split(calc).toArray(new String[0]);
 
-					propo = new ImageContentProposal[proposalMethods.length];
+					propoFuncArg = new ImageContentProposal[proposalMethods.length];
 
 					for (int j = 0; j < proposalMethods.length; j++) {
 						/*
 						 * We add a suffix to mark this proposal for a scrolling to the arguments
 						 * section in the description!
 						 */
-						propo[j] = new ImageContentProposal(proposalMethods[j], proposalMethods[j], func + "::::args::::", proposalMethods[j].length(), varFuncCallImage);
+						propoFuncArg[j] = new ImageContentProposal(proposalMethods[j], proposalMethods[j], func + "::::args::::", proposalMethods[j].length(), varFuncCallImage);
 
 					}
-
-					ImageContentProposal[] prop = getWorkSpaceVars(position);
+					ImageContentProposal[] prop = getWorkSpaceVars(position, parse);
 					if (prop != null) {
-						propo = (ImageContentProposal[]) ArrayUtils.addAll(propo, prop);
+						propoFuncArg = (ImageContentProposal[]) ArrayUtils.addAll(propoFuncArg, prop);
 					}
 
 				}
 			}
 		}
 
-		return propo;
+		return propoFuncArg;
 
 	}
 
@@ -1074,5 +1352,7 @@ public class ShellCompletion {
 		result.add(input.substring(start).replace(tempReplacement, "\",\""));
 		return result;
 	}
+
+	
 
 }

@@ -1,4 +1,4 @@
-package com.eco.bio7.rbridge;
+package com.eco.bio7.rbridge.views;
 
 import java.util.HashMap;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -54,6 +54,14 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.browser.BrowserView;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.documents.JavaFXWebBrowser;
+import com.eco.bio7.rbridge.InstallRPackagesJob;
+import com.eco.bio7.rbridge.ListRPackagesJob;
+import com.eco.bio7.rbridge.LoadRLibrarysJob;
+import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RServeUtil;
+import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.rbridge.RemoveRLibrarysJob;
+import com.eco.bio7.rbridge.UpdateRPackagesJob;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.util.Util;
 import org.eclipse.swt.custom.CTabFolder;
@@ -655,13 +663,16 @@ public class PackageInstallView extends ViewPart {
 			RServeUtil.evalR("try(.bio7ListOfWebPackages <- list(sort(.packages(all.available = TRUE))))", null);
 
 			try {
-				listPackages = RServeUtil.fromR(".bio7ListOfWebPackages[[1]]").asStrings();
+				REXP rexp = RServeUtil.fromR(".bio7ListOfWebPackages[[1]]");
+				if (rexp != null)
+					listPackages = rexp.asStrings();
 			} catch (REXPMismatchException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-
-			allInstalledPackagesList.setItems(listPackages);
+			if (listPackages != null) {
+				allInstalledPackagesList.setItems(listPackages);
+			}
 
 		}
 
@@ -723,7 +734,11 @@ public class PackageInstallView extends ViewPart {
 				".bio7TempVarEnvironment <- new.env();try(.bio7TempVarEnvironment$workspaceRPackages<-.packages())",
 				null);
 		pack = RServeUtil.fromR("try(.bio7TempVarEnvironment$workspaceRPackages)");
+		if (pack == null) {
+			return;
+		}
 		try {
+
 			v = pack.asStrings();
 		} catch (REXPMismatchException e1) {
 

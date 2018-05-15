@@ -58,13 +58,6 @@ public class RFunctions {
 			"unique returns a vector, data frame or array like x \nbut with duplicate elements/rows removed","na.omit returns the object (e.g vector,dataframe) \nwith incomplete cases removed",
 			"Gives the TRUE indices of a logical object, \nallowing for array indices","Gives the TRUE indices of a logical object. If arr.ind == TRUE and x is an array (has a dim attribute), \nthe result is a matrix whose rows each are the indices of one element of x"};
 	
-	public String[] dataConversion={"mode(x)","as.double(x)","as.integer(x)","as.real(x)","as.array(x)","as.vector(x)",
-			"as.data.frame(x)","as.numeric(x)","as.logical(x)","as.factor(x)","as.character(x)","as.table(x)","as.list(x)","as.raw(x)",
-			"as.complex(x)","as.matrix(x)","is.double(x)","is.integer(x)","is.real(x)",
-			"is.factor(x)","is.matrix(x)","is.na(x)","is.vector(x)","is.table(x)","is.list(x)",
-			"is.numeric(x)","is.character(x)","is.null(x)","is.array(x)",
-			"is.complex(x)","is.data.frame(x)","is.na(x)","is.raw(x)"};
-	public String[] dataConversionContext={"Returns the mode of the data"};
 	
 	public String[] math={"x+x","x-x","x*x","x/x","x^x","x%%x",
 			"sqrt(x)","sqrt(x,3)", "exp(x)", "sin(x)", "cos(x)",

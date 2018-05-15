@@ -9,7 +9,7 @@
  *     M. Austenfeld
  *******************************************************************************/
 
-package com.eco.bio7.rbridge;
+package com.eco.bio7.rbridge.perspectives;
 
 import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
@@ -45,6 +45,7 @@ public class RPerspective implements IPerspectiveFactory {
 		
 		bottomLeft.addView("org.eclipse.ui.console.ConsoleView");
 		bottomLeft.addView("com.eco.bio7.rbridge.RPlotView");
+		bottomLeft.addView("com.eco.bio7.rbridge.views.RTemplatesView");
 		viewRight.addView(RTable.ID);		
 		viewRight.addView("org.eclipse.wst.common.snippets.internal.ui.SnippetsView");
 		layout.addView("org.eclipse.ui.views.ContentOutline", IPageLayout.RIGHT, 0.735f, editorArea);

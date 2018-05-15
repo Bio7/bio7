@@ -31,7 +31,7 @@ import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.rbridge.RServe;
-import com.eco.bio7.rbridge.RShellView;
+import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.ApplicationActionBarAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
 import com.eco.bio7.time.Time;

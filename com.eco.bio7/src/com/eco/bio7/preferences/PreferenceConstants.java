@@ -18,21 +18,11 @@ public class PreferenceConstants {
 	
 	public static final String D_STRING = "FilesDirectory";
 	
-	public static final String D_IMPORT = "import";
-	
-	public static final String D_EXPORT = "export";
-	
 	public static final String D_SCRIPT_GENERAL = "general_scripts";
-	
-	public static final String D_SCRIPT_SPATIAL = "spatial_scripts";
-	
-	public static final String D_SCRIPT_IMAGE = "image_scripts";
-	
-	public static final String D_SCRIPT_R = "r_scripts";
 
 	public static final String P_TEMP_R = "pathTempR";
 
-	public static final String PACKAGE_R_SERVER = "http://cran.r-project.org";
+	//public static final String PACKAGE_R_SERVER = "http://cran.r-project.org";
 
 	//public static final String D_OPENOFFICE_HEAD = "head";
 	

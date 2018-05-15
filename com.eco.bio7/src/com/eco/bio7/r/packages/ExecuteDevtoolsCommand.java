@@ -58,6 +58,7 @@ public class ExecuteDevtoolsCommand {
 					loc = loc.replace("\\", "/");
 				}
 				// System.out.println(loc);
+				
 				String rCommand = "library(devtools);setwd(\"" + loc + "\");" + command + "";
 				if (RServe.isAlive()) {
 
@@ -87,9 +88,12 @@ public class ExecuteDevtoolsCommand {
 									}
 
 									try {
-
+										/*Store the current workspace!*/
+										c.eval("try(.tempCurrentWd<-getwd());");
 										/* Remove the temporary variable! */
 										c.eval(rCommand);
+										/*Restore the current workspace!*/
+										c.eval("try(setwd(.tempCurrentWd));");
 
 									} catch (RserveException e) {
 										// TODO Auto-generated catch block

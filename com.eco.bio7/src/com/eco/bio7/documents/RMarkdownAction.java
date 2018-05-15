@@ -192,6 +192,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 								}
 
 								c.eval("try(library(rmarkdown))");
+								c.eval("try(.tempCurrentWd<-getwd());");
 								c.eval("setwd('" + dirPath + "')");
 
 								System.out.println(selFile);
@@ -331,6 +332,12 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 									});
 								}
 
+							}
+							try {
+								c.eval("try(setwd(.tempCurrentWd));");
+							} catch (RserveException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
 							}
 						}
 

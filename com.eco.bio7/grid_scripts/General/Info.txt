@@ -1,0 +1,14 @@
+The scripts menu display, interprets, compiles and executes all scripts which are found in the scripts location.
+
+Folders and nested folders with scripts can be created which will be dynamically added to
+the scripts menu (in the main 'Scripts' menu folders are displayed if a file can be found in the folder!).
+
+The base location of the scripts can be changed in the preferences.
+
+Files which start with a point '.' or with underscore '_' are not displayed (see Java info below).
+
+Java specific:
+
+If you name dependent Java classes or helpfiles with an underscore '_'
+they can be referenced and compiled from the main class (hiding the dependent
+classes or *.fxml files with an underscore for a clean menu).

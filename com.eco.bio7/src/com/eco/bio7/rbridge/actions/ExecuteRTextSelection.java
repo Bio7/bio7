@@ -1,5 +1,9 @@
 package com.eco.bio7.rbridge.actions;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -8,8 +12,6 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.dnd.Clipboard;
-import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
@@ -32,6 +34,7 @@ public class ExecuteRTextSelection extends Action {
 	private StringBuffer buff;
 	private String code;
 	private boolean error;
+	private boolean interrupt = false;
 	private static ExecuteRTextSelection instance;
 
 	public static ExecuteRTextSelection getInstance() {
@@ -74,22 +77,52 @@ public class ExecuteRTextSelection extends Action {
 			else {
 
 				if (rEditor instanceof REditor) {
-
+					if (interrupt) {
+						interrupt = false;
+						return;
+					}
 					// canEvaluate = false;
 					String inhalt = getTextAndForwardCursor(rEditor);
+					inhalt.replace(System.lineSeparator(), "");
+					/*Avoid commented lines (as the first character!). We evaluate R commands in a try() statement!*/
+					if (inhalt.startsWith("#")) {
+						return;
+					}
 					if (inhalt.isEmpty() == false) {
 						buff.append(inhalt);
 						buff.append("\n");
 						Parse parse = new Parse(null);
-						code = buff.toString().replaceAll("\r", "");
+						code = buff.toString();
 						error = parse.parseShellSource(code, 0);
+						File temp = null;
 						if (error == false) {
 							System.out.println(code);
-							RServeUtil.evalR("try(try(" + code + "))", null);
+
+							try {
+
+								// Work with a temporary file avoids a deadlock!
+								temp = File.createTempFile("tempfile", ".tmp");
+
+								// write it
+								BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
+								bw.write(code);
+								bw.close();
+
+							} catch (IOException e) {
+
+								e.printStackTrace();
+
+							}
+
+							// RServe.printJobJoin(code);
+							RServeUtil.evalR(null, temp.getAbsolutePath());
+							temp.delete();
 							buff.setLength(0); // clear buffer!
 						} else {
-							/*Data will be appended: Buffer will not be cleared until we have valid r code or an interrupt
-							 *signal!*/
+							/*
+							 * Data will be appended: Buffer will not be cleared until we have valid r code
+							 * or an interrupt signal!
+							 */
 							String[] output = code.split("\n");
 							for (int i = 0; i < output.length; i++) {
 								System.out.println("+ " + output[i]);
@@ -107,23 +140,13 @@ public class ExecuteRTextSelection extends Action {
 					messageBox.open();
 
 				}
-
-				/*
-				 * else { MessageBox messageBox = new MessageBox(new Shell(),
-				 * 
-				 * SWT.ICON_WARNING);
-				 * messageBox.setMessage("RServer connection failed - Server is not running !");
-				 * messageBox.open();
-				 * 
-				 * }
-				 */
 			}
 		}
 	}
 
 	public void stopEvaluation() {
-		error = false;
-		RServeUtil.evalR("try(try(" + code + "))", null);
+		interrupt = true;
+		// RServeUtil.evalR("try(try(" + code + "))", null);
 		buff.setLength(0); // clear buffer!
 	}
 

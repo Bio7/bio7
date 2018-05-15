@@ -148,7 +148,7 @@ public class SaveRWorkspace extends Action {
 		if (RState.isBusy() == false) {
 			RState.setBusy(true);
 
-			RInterpreterJob Do = new RInterpreterJob(save, false, null);
+			RInterpreterJob Do = new RInterpreterJob(save, null);
 
 			Do.addJobChangeListener(new JobChangeAdapter() {
 				public void done(IJobChangeEvent event) {

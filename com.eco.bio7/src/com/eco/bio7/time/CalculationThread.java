@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2012 M. Austenfeld
+ * Copyright (c) 2005-2017 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,14 +14,13 @@ package com.eco.bio7.time;
 import java.awt.Graphics;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.SwingUtilities;
-
 import org.eclipse.jface.action.StatusLineContributionItem;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.PlatformUI;
-
 import com.eco.bio7.Bio7Plugin;
+import com.eco.bio7.compile.Model;
 import com.eco.bio7.discrete.Hexagon;
 import com.eco.bio7.discrete.Quad2d;
 import com.eco.bio7.image.PointPanel;
@@ -32,7 +31,7 @@ import com.eco.bio7.rcp.ApplicationActionBarAdvisor;
 public class CalculationThread extends Thread {
 
 	public Quad2d quad;
-	
+
 	private IPreferenceStore store;
 
 	public CalculationThread() {
@@ -50,9 +49,10 @@ public class CalculationThread extends Thread {
 				sleep(Time.getInterval());
 				if (!Time.isPause()) {
 
-					if (Compiled.getModel() != null) {
+					Model model = Compiled.getModel();
+					if (model != null) {
 						try {
-							Compiled.getModel().run();
+							model.run();
 						} catch (RuntimeException e) {
 
 							e.printStackTrace();
@@ -60,8 +60,8 @@ public class CalculationThread extends Thread {
 						}
 					}
 					try {
-						if(store.getBoolean("RECORD_VALUES")){
-						this.quad.feldzaehler();
+						if (store.getBoolean("RECORD_VALUES")) {
+							this.quad.feldzaehler();
 						}
 						/* Count of the states and the amount */
 					} catch (RuntimeException e2) {
@@ -73,44 +73,43 @@ public class CalculationThread extends Thread {
 						SwingUtilities.invokeAndWait(new Runnable() {
 							// !!
 							public void run() {
-								
-								
-                                if(store.getBoolean("REPAINT_QUAD")){
-								if (quad.quadviewopenend == true) {
-									if (quad.activeRendering == false) {
 
-										quad.fieldrenderer();
-										quad.repaint();
-									}
+								if (store.getBoolean("REPAINT_QUAD")) {
+									if (quad.quadviewopenend == true) {
+										if (quad.activeRendering == false) {
 
-									else {
-										Graphics g = quad.getGraphics();
-										quad.malen(g);
-
-									}
-
-								}
-                                }
-                                if(store.getBoolean("REPAINT_HEX")){
-								Hexagon h=Hexagon.getHexagonInstance();
-								if (h != null) {
-									if (h.hexviewopenend == true) {
-										if (h.active_rendering == false) {
-											h.fieldrenderer();
-											h.repaint();
+											quad.fieldrenderer();
+											quad.repaint();
 										}
 
 										else {
-											h.repaint();
+											Graphics g = quad.getGraphics();
+											quad.malen(g);
 
 										}
 
 									}
 								}
-                                }
-                                if(store.getBoolean("REPAINT_POINTS")){
-                                	PointPanel.doPaint();
-                                }
+								if (store.getBoolean("REPAINT_HEX")) {
+									Hexagon h = Hexagon.getHexagonInstance();
+									if (h != null) {
+										if (h.hexviewopenend == true) {
+											if (h.active_rendering == false) {
+												h.fieldrenderer();
+												h.repaint();
+											}
+
+											else {
+												h.repaint();
+
+											}
+
+										}
+									}
+								}
+								if (store.getBoolean("REPAINT_POINTS")) {
+									PointPanel.doPaint();
+								}
 
 							}
 						});
@@ -122,7 +121,7 @@ public class CalculationThread extends Thread {
 						e1.printStackTrace();
 					}
 					Time.count();
-					//InfoView.getPan().repaint();
+					// InfoView.getPan().repaint();
 					Time.Timeupdate();
 
 					Display display = PlatformUI.getWorkbench().getDisplay();
@@ -131,10 +130,8 @@ public class CalculationThread extends Thread {
 						public void run() {
 							updateTimeDisplays();
 
-
 						}
 
-						
 					});
 
 				}
@@ -144,16 +141,17 @@ public class CalculationThread extends Thread {
 
 		}
 	}
+
 	private void updateTimeDisplays() {
-		StatusLineContributionItem ic=ApplicationActionBarAdvisor.getUserItem();
-		Label lt=InfoView.getLblTimesteps();
-		Label lm=InfoView.getLblMonth();
-		Label ly=InfoView.getLblYear();
-		
+		StatusLineContributionItem ic = ApplicationActionBarAdvisor.getUserItem();
+		Label lt = InfoView.getLblTimesteps();
+		Label lm = InfoView.getLblMonth();
+		Label ly = InfoView.getLblYear();
+
 		ic.setText("Time steps: " + Time.getCounter());
-		lt.setText("Time steps: "+Time.getTime());
-		lm.setText(InfoView.getMonth()+Time.getMonth());
-		ly.setText(InfoView.getYear()+Time.getYear());
+		lt.setText("Time steps: " + Time.getTime());
+		lm.setText(InfoView.getMonth() + Time.getMonth());
+		ly.setText(InfoView.getYear() + Time.getYear());
 	}
 
 }
