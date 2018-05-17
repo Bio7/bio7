@@ -15,6 +15,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
@@ -54,8 +56,18 @@ public class ExecuteRTextSelection extends Action {
 
 	public void run() {
 		if (canEvaluate) {
+			/*IWorkbenchPage page = window.getActivePage();
+			IEditorReference[] editors = page.getEditorReferences();
+			for (int i = 0; i < editors.length; i++) {
 
-			IEditorPart rEditor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+				if (editors[i].getId().equals("")) {
+
+					page.activate(editors[i].getEditor(true));
+
+				}
+			}*/
+
+			IEditorPart rEditor = (IEditorPart) window.getActivePage().getActiveEditor();
 			// IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 			// boolean rPipe = store.getBoolean("r_pipe");
 			RConnection con = RServe.getConnection();
@@ -76,7 +88,7 @@ public class ExecuteRTextSelection extends Action {
 			}
 
 			else {
-				if(RState.isBusy()) {
+				if (RState.isBusy()) {
 					return;
 				}
 
@@ -85,11 +97,14 @@ public class ExecuteRTextSelection extends Action {
 						interrupt = false;
 						return;
 					}
-					
+
 					// canEvaluate = false;
 					String inhalt = getTextAndForwardCursor(rEditor);
 					inhalt.replace(System.lineSeparator(), "");
-					/*Avoid commented lines (as the first character!). We evaluate R commands in a try() statement!*/
+					/*
+					 * Avoid commented lines (as the first character!). We evaluate R commands in a
+					 * try() statement!
+					 */
 					if (inhalt.startsWith("#")) {
 						return;
 					}
@@ -120,8 +135,10 @@ public class ExecuteRTextSelection extends Action {
 							}
 
 							// RServe.printJobJoin(code);
+
+							RServeUtil.evalR3(null, temp.getAbsolutePath());
 							
-							RServeUtil.evalRSelection(code, null);
+
 							temp.delete();
 							buff.setLength(0); // clear buffer!
 						} else {

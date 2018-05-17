@@ -264,14 +264,14 @@ public class RServeUtil {
 
 	}
 	/**
-	 * Evaluates a script in R running in a job and joins threads!.
+	 * Evaluates a script in R running in a job without using join for the plot job!.
 	 * 
 	 * @param script
 	 *            a script.
 	 * @param loc
 	 *            the script location.
 	 */
-	public static void evalRSelection(String script, String loc) {
+	public static void evalR3(String script, String loc) {
 		if (RServe.isAliveDialog()) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
