@@ -115,7 +115,7 @@ public class ExecuteRTextSelection extends Action {
 							}
 
 							// RServe.printJobJoin(code);
-							RServeUtil.evalR(null, temp.getAbsolutePath());
+							RServeUtil.evalR(code, null);
 							temp.delete();
 							buff.setLength(0); // clear buffer!
 						} else {

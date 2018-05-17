@@ -316,7 +316,7 @@ public class RServe {
 	 * Update the packages import if a library/require statement was detected!
 	 * Method is called in the RShellView class!
 	 */
-	private static void updatePackageImports() {
+	public static void updatePackageImports() {
 		RShellView rShellInst = RShellView.getInstance();
 		if (rShellInst != null) {
 			rShellInst.updatePackageImports();
@@ -645,7 +645,7 @@ public class RServe {
 		}
 	}
 
-	private static void finalCloseAndDisplay() {
+	public static void finalCloseAndDisplay() {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		boolean customDevice = store.getBoolean("USE_CUSTOM_DEVICE");
 		if (customDevice == true) {

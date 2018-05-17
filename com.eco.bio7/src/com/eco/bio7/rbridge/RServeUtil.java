@@ -35,27 +35,50 @@ public class RServeUtil {
 		if (RServe.isAliveDialog()) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
-				RInterpreterJob Do = new RInterpreterJob(script, loc);
-				Do.setUser(true);
-				Do.addJobChangeListener(new JobChangeAdapter() {
+				Job job = new Job("Transfer from R") {
+
+					@Override
+					protected IStatus run(IProgressMonitor monitor) {
+						monitor.beginTask("Transfer Data ...", IProgressMonitor.UNKNOWN);
+						try {
+							rexp = RServe.getConnection().eval(script);
+
+						} catch (RserveException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						
+						int countDev = RServe.getDisplayNumber();
+						RState.setBusy(false);
+						if (countDev > 0) {
+							RServe.finalCloseAndDisplay();
+						}
+						
+						monitor.done();
+						return Status.OK_STATUS;
+					}
+
+				};
+				job.setUser(true);
+				job.addJobChangeListener(new JobChangeAdapter() {
 					public void done(IJobChangeEvent event) {
 						if (event.getResult().isOK()) {
-							int countDev = RServe.getDisplayNumber();
+							
 							RState.setBusy(false);
-							if (countDev > 0) {
-								RServe.closeAndDisplay();
-							}
+							System.out.flush();
+							RServe.updatePackageImports();
 							//BatchModel.resumeFlow();
 
 						} else {
 							RState.setBusy(false);
+							System.out.flush();
 						}
 					}
 				});
 
-				Do.schedule();
+				job.schedule();
 				try {
-					Do.join();
+					job.join();
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
