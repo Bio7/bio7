@@ -24,6 +24,7 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RServeUtil;
+import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditors.REditor;
 
@@ -75,12 +76,16 @@ public class ExecuteRTextSelection extends Action {
 			}
 
 			else {
+				if(RState.isBusy()) {
+					return;
+				}
 
 				if (rEditor instanceof REditor) {
 					if (interrupt) {
 						interrupt = false;
 						return;
 					}
+					
 					// canEvaluate = false;
 					String inhalt = getTextAndForwardCursor(rEditor);
 					inhalt.replace(System.lineSeparator(), "");
@@ -115,7 +120,8 @@ public class ExecuteRTextSelection extends Action {
 							}
 
 							// RServe.printJobJoin(code);
-							RServeUtil.evalR(code, null);
+							
+							RServeUtil.evalRSelection(code, null);
 							temp.delete();
 							buff.setLength(0); // clear buffer!
 						} else {
