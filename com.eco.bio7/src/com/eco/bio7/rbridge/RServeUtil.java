@@ -51,7 +51,7 @@ public class RServeUtil {
 						int countDev = RServe.getDisplayNumber();
 						RState.setBusy(false);
 						if (countDev > 0) {
-							RServe.finalCloseAndDisplay();
+							RServe.closeAndDisplay();
 						}
 						
 						monitor.done();
