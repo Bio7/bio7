@@ -39,10 +39,8 @@ public class RInterpreterJob extends WorkspaceJob {
 	private String location;
 
 	private static boolean exception = false;
-
-	//private static boolean plot = true;
 	
-	private static String rCommand = "" + "try(paste(capture.output(source(.bio7TempRScriptFile,echo=T)),collapse=\"\\n\"))";
+	private static String rCommand = "" + "paste(capture.output(tryCatch(source(.bio7TempRScriptFile,echo=F),error = function(e) {message(paste0(\"\n\",e))})),collapse=\"\n\")";
 
 	public RInterpreterJob(String tointerpret, String loc) {
 		super("Interpret RScript");
@@ -93,7 +91,8 @@ public class RInterpreterJob extends WorkspaceJob {
 
 								String rout = null;
 								try {
-									
+									/*First write a message which file is sourced!*/
+									cscript.eval("message(paste0(\"> source('\",.bio7TempRScriptFile),\"')\",sep=\"\")");
 									rout = cscript.eval(rCommand).asString();
 									
 									
@@ -125,7 +124,7 @@ public class RInterpreterJob extends WorkspaceJob {
 
 						}
 					}
-					/* If Linux is the OS! */
+					/* If Linux or MacOSX is the OS! */
 					else {
 
 						if (loc != null) {
@@ -136,6 +135,7 @@ public class RInterpreterJob extends WorkspaceJob {
 							} else {*/
 								String rout = null;
 								try {
+									cscript.eval("message(paste0(\"> source('\",.bio7TempRScriptFile),\"')\",sep=\"\")");
 									rout = cscript.eval(rCommand).asString();
 								} catch (REXPMismatchException e) {
 									// TODO Auto-generated catch block

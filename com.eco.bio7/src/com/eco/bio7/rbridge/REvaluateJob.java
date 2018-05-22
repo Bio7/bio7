@@ -34,12 +34,12 @@ public class REvaluateJob extends WorkspaceJob {
 
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
 		monitor.beginTask("Evaluate Expression", IProgressMonitor.UNKNOWN);
-		String trybegin = "try(";
-		String tryend = ")";
+		String trybegin = "tryCatch({";
+		String tryend = "},error = function(e) {message(paste(\"Error: \",e$message))})";
 
 		String out = null;
 		try {
-			out = RServe.getConnection().eval("paste(capture.output(print(" + trybegin + trybegin + "(" + toprint + ")" + tryend + tryend + ")),collapse=\"\\n\")").asString();
+			out = RServe.getConnection().eval("paste(capture.output(print(" + trybegin  + "(" + toprint + ")"  + tryend + ")),collapse=\"\\n\")").asString();
 
 		} catch (REXPMismatchException e) {
 
