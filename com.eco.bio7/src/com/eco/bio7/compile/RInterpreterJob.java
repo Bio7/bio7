@@ -39,8 +39,6 @@ public class RInterpreterJob extends WorkspaceJob {
 	private String location;
 
 	private static boolean exception = false;
-
-	//private static boolean plot = true;
 	
 	private static String rCommand = "" + "paste(capture.output(tryCatch(source(.bio7TempRScriptFile,echo=F),error = function(e) {message(paste0(\"\n\",e))})),collapse=\"\n\")";
 
@@ -93,6 +91,7 @@ public class RInterpreterJob extends WorkspaceJob {
 
 								String rout = null;
 								try {
+									/*First write a message which file is sourced!*/
 									cscript.eval("message(paste0(\"> source('\",.bio7TempRScriptFile),\"')\",sep=\"\")");
 									rout = cscript.eval(rCommand).asString();
 									
