@@ -116,6 +116,8 @@ public class RServePrefs extends FieldEditorPreferencePage implements IWorkbench
 
 		integerFieldEditor.setValidRange(1, 100);
 		addField(integerFieldEditor);
+		addField(new LabelFieldEditor("R-Shell:", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("STREAM_TO_RSHELL", "Display outout/error stream", getFieldEditorParent()));
 		addField(new LabelFieldEditor("R-Shell code completion:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("RSHELL_TYPED_CODE_COMPLETION", "Open code completion/templates when typing", getFieldEditorParent()));
         

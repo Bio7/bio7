@@ -2,14 +2,7 @@ package com.eco.bio7.console;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-
-import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
-
-import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.StartBio7Utils;
-import com.eco.bio7.util.Util;
 
 public class ConsoleStreams {
 
@@ -39,23 +32,13 @@ public class ConsoleStreams {
 			String out = this.toString();
 			// Print to the console !!!!
 			StartBio7Utils.getConsoleInstance().cons.print(out);
-			StyledText rshellViewTextConsole = RShellView.getTextConsole();
-			if (rshellViewTextConsole != null) {
-				Display display = Util.getDisplay();
-				display.asyncExec(new Runnable() {
-
-					public void run() {
-						rshellViewTextConsole.append(out);
-						rshellViewTextConsole.setTopIndex(rshellViewTextConsole.getLineCount() - 1);
-					}
-				});
-			}
 
 			this.reset();
 		}
 	}
 
 	public ConsoleStreams() {
+
 		System.setErr(Bio7ErrorStream);
 		System.setOut(Bio7OutputStream);
 		Bio7ErrorStream2 = System.err;
