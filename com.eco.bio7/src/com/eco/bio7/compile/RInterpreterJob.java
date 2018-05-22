@@ -125,7 +125,7 @@ public class RInterpreterJob extends WorkspaceJob {
 
 						}
 					}
-					/* If Linux is the OS! */
+					/* If Linux or MacOSX is the OS! */
 					else {
 
 						if (loc != null) {
@@ -136,6 +136,7 @@ public class RInterpreterJob extends WorkspaceJob {
 							} else {*/
 								String rout = null;
 								try {
+									cscript.eval("message(paste0(\"> source('\",.bio7TempRScriptFile),\"')\",sep=\"\")");
 									rout = cscript.eval(rCommand).asString();
 								} catch (REXPMismatchException e) {
 									// TODO Auto-generated catch block
