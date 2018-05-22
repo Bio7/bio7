@@ -13,17 +13,10 @@ package com.eco.bio7.rbridge.debug;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.ToolTip;
-
 import com.eco.bio7.Bio7Plugin;
-import com.eco.bio7.util.Util;
+import com.eco.bio7.rcp.StartBio7Utils;
 
 public class DebugInfoAction extends Action {
-	
 
 	public DebugInfoAction() {
 		super("DebugInfo");
@@ -31,27 +24,28 @@ public class DebugInfoAction extends Action {
 		setId("DebugInfo");
 		setText("(?)");
 
-        
-		//ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/help.gif")));
+		// ImageDescriptor desc = ImageDescriptor.createFromImage(new
+		// Image(Display.getCurrent(),
+		// getClass().getResourceAsStream("/pics/help.gif")));
 		ImageDescriptor desc = Bio7Plugin.getImageDescriptor("/icons/rdebug/help_contents.png");
 		this.setImageDescriptor(desc);
 	}
 
 	public void run() {
-		ToolTip infoTip = new ToolTip(Util.getShell(), SWT.BALLOON | SWT.ICON_INFORMATION);
-		infoTip.setText("Info!");
-		infoTip.setAutoHide(false);
-		infoTip.setMessage(""
-				+ "Console commands:\n"
-				+ "n     		-     	next\n"
-				+ "s     		-     	step into\n"
-				+ "f     		-     	finish\n"
-				+ "c or cont 	-	continue\n"
-				+ "Q     		-     	quit\n"
-				+ "where 		-     	show stack\n"
-				+ "help  		-     	show help\n"
-				+ "<expr>		-     	evaluate expression");
-		infoTip.setVisible(true);
+		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
+		utils.cons.clearConsole();
+		StringBuffer buff = new StringBuffer();
+		buff.append("Console commands:\n");
+		buff.append("\n");
+		buff.append("n     		-     	next\n");
+		buff.append("s     		-     	step into\n");
+		buff.append("f     		-     	finish\n");
+		buff.append("c or cont 	-	continue\n");
+		buff.append("Q     		-     	quit\n");
+		buff.append("where 		-     	show stack\n");
+		buff.append("help  		-     	show help\n");
+		buff.append("<expr>		-     	evaluate expression");
+		utils.cons.print(buff.toString());
 	}
 
 }
