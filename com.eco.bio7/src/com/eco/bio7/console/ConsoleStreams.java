@@ -39,7 +39,7 @@ public class ConsoleStreams {
 			String out = this.toString();
 			// Print to the console !!!!
 			StartBio7Utils.getConsoleInstance().cons.print(out);
-			/*StyledText rshellViewTextConsole = RShellView.getTextConsole();
+			StyledText rshellViewTextConsole = RShellView.getTextConsole();
 			if (rshellViewTextConsole != null) {
 				Display display = Util.getDisplay();
 				display.asyncExec(new Runnable() {
@@ -49,7 +49,7 @@ public class ConsoleStreams {
 						rshellViewTextConsole.setTopIndex(rshellViewTextConsole.getLineCount() - 1);
 					}
 				});
-			}*/
+			}
 
 			this.reset();
 		}

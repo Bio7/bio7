@@ -263,6 +263,49 @@ public class RServeUtil {
 		}
 
 	}
+	/**
+	 * Evaluates a script in R running in a job without using join for the plot job!.
+	 * 
+	 * @param script
+	 *            a script.
+	 * @param loc
+	 *            the script location.
+	 */
+	public static void evalR3(String script, String loc) {
+		if (RServe.isAliveDialog()) {
+			if (RState.isBusy() == false) {
+				RState.setBusy(true);
+				RInterpreterJob Do = new RInterpreterJob(script, loc);
+				Do.setUser(true);
+				Do.addJobChangeListener(new JobChangeAdapter() {
+					public void done(IJobChangeEvent event) {
+						if (event.getResult().isOK()) {
+							int countDev = RServe.getDisplayNumber();
+							RState.setBusy(false);
+							if (countDev > 0) {
+								RServe.closeAndDisplayNoJoin();
+							}
+							//BatchModel.resumeFlow();
+
+						} else {
+							RState.setBusy(false);
+						}
+					}
+				});
+
+				Do.schedule();
+				try {
+					Do.join();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			} else {
+				System.out.println("Rserve is busy. Can't execute the R script!");
+			}
+		}
+
+	}
 
 	/**
 	 * Evaluates a script in R running in a job and joins threads!. Display thread

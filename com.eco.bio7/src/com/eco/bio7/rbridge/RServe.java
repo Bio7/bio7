@@ -644,6 +644,34 @@ public class RServe {
 			e.printStackTrace();
 		}
 	}
+	public static void closeAndDisplayNoJoin() {
+		Job job = new Job("Add To ImageStack") {
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				monitor.beginTask("Create Plots ...", IProgressMonitor.UNKNOWN);
+
+				finalCloseAndDisplay();
+
+				monitor.done();
+				return Status.OK_STATUS;
+			}
+
+		};
+		job.addJobChangeListener(new JobChangeAdapter() {
+			public void done(IJobChangeEvent event) {
+				if (event.getResult().isOK()) {
+
+					RState.setBusy(false);
+				} else {
+
+					RState.setBusy(false);
+				}
+			}
+		});
+		//job.setSystem(true);
+		job.schedule();
+		
+	}
 
 	private static void finalCloseAndDisplay() {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
