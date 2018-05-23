@@ -623,6 +623,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("LATEX_ENGINE", "pdflatex");
 		store.setDefault("BIBTEX_ENGINE", "bibtex");
 		store.setDefault("STREAM_TO_RSHELL", false);
+		store.setDefault("R_SOURCE_OPTIONS", "echo=F");
 		store.setDefault("RSHELL_TYPED_CODE_COMPLETION", true);
 		store.setDefault("RSHELL_ACTIVATION_CHARS", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.@$+-.:");
 		store.setDefault("RSHELL_SEPERATOR_CHARS", ";(,[=-+ ");
