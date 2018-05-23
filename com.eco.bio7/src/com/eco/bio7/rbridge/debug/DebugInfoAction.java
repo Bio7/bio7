@@ -35,16 +35,16 @@ public class DebugInfoAction extends Action {
 		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
 		utils.cons.clearConsole();
 		StringBuffer buff = new StringBuffer();
-		buff.append("Console commands:\n");
+		buff.append("R Debug Key commands:\n");
 		buff.append("\n");
-		buff.append("n     		-     	next\n");
-		buff.append("s     		-     	step into\n");
-		buff.append("f     		-     	finish\n");
-		buff.append("c or cont 	-	continue\n");
-		buff.append("Q     		-     	quit\n");
-		buff.append("where 		-     	show stack\n");
-		buff.append("help  		-     	show help\n");
-		buff.append("<expr>		-     	evaluate expression");
+		buff.append("n          -       next\n");
+		buff.append("s          -       step into\n");
+		buff.append("f          -       finish\n");
+		buff.append("c or cont  -       continue\n");
+		buff.append("Q          -       quit\n");
+		buff.append("where      -       show stack\n");
+		buff.append("help       -       show help\n");
+		buff.append("<expr>     -       evaluate expression");
 		utils.cons.print(buff.toString());
 	}
 
