@@ -35,7 +35,7 @@ public class DebugInfoAction extends Action {
 		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
 		utils.cons.clearConsole();
 		StringBuffer buff = new StringBuffer();
-		buff.append("R Debug Key commands:\n");
+		buff.append("Debug key commands:\n");
 		buff.append("\n");
 		buff.append("n          -       next\n");
 		buff.append("s          -       step into\n");
