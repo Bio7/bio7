@@ -194,8 +194,10 @@ public class RServe {
 		}
 
 	}
+
 	/**
-	 * Evaluates and prints an expression to the Bio7 console executed in a job with job join.
+	 * Evaluates and prints an expression to the Bio7 console executed in a job with
+	 * job join.
 	 * 
 	 * @param expression
 	 *            a R expression as a string.
@@ -535,12 +537,26 @@ public class RServe {
 
 			/* Call the custom Rscript ! */
 			String rout = null;
-			try {
-				rout = RServe.getConnection().eval("" + "try(paste(capture.output(source(fileroot,echo=T)),collapse=\"\\n\"))").asString();
-			} catch (REXPMismatchException e) {
+			/*
+			 * try { rout = RServe.getConnection().eval("" +
+			 * "try(paste(capture.output(source(fileroot,echo=T)),collapse=\"\\n\"))").
+			 * asString(); } catch (REXPMismatchException e) {
+			 * 
+			 * e.printStackTrace(); }
+			 */
 
+			/* First write a message which file is sourced! */
+			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+			RServe.getConnection().eval("message(paste0(\"> source('\",fileroot),\"')\",sep=\"\")");
+			String options = store.getString("R_SOURCE_OPTIONS");
+			String rCommand = "" + "paste(capture.output(tryCatch(source(fileroot," + options + "),error = function(e) {message(paste0(\"\n\",e))})),collapse=\"\\n\")";
+			try {
+				rout = RServe.getConnection().eval(rCommand).asString();
+			} catch (REXPMismatchException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+
 			Console cons = StartBio7Utils.getConsoleInstance().cons;
 			if (rout != null && rout.equals("NULL") == false) {
 				cons.println(rout);
@@ -644,6 +660,7 @@ public class RServe {
 			e.printStackTrace();
 		}
 	}
+
 	public static void closeAndDisplayNoJoin() {
 		Job job = new Job("Add To ImageStack") {
 			@Override
@@ -668,9 +685,9 @@ public class RServe {
 				}
 			}
 		});
-		//job.setSystem(true);
+		// job.setSystem(true);
 		job.schedule();
-		
+
 	}
 
 	private static void finalCloseAndDisplay() {
