@@ -106,6 +106,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 				 */
 
 			}
+			//RServe.print("q(save='yes')");
 
 		}
 		return close;
