@@ -34,9 +34,14 @@ public class REditorListener {
 				if (con != null) {
 
 					IEditorPart editor = partRef.getPage().getActiveEditor();
-					/*A workaround for MacOSX to give an editor hoover focus by creating an invisible shell!*/
+					/*
+					 * A workaround for MacOSX to give an editor hoover focus by creating an
+					 * invisible shell!
+					 */
 					if (Util.isMac()) {
-						REditor.activateEditorPage(editor);
+						if (editor != null) {
+							REditor.activateEditorPage(editor);
+						}
 					}
 					if (editor instanceof REditor) {
 						REditor reditor = (REditor) editor;
