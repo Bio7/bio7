@@ -428,7 +428,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		/*
 		 * Listen to the R editor if debugging actions should be added to the console
-		 * toolbar!
+		 * toolbar! Also creates a (not visible) shell for MacOSX to get editor focus after an ImageJ event!
 		 */
 
 		configurer.getWindow().getPartService().addPartListener(new REditorListener().listen());
