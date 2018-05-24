@@ -421,7 +421,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		flowstop = new FlowStopAction("Flowstop", window);
 		register(flowstop);
 
-		rselect = new ExecuteRTextSelection("Evaluate Selected Line", window);
+		rselect = new ExecuteRTextSelection("Evaluate Line or Selection", window);
 		register(rselect);
 
 		clipboardRScript = new ClipboardRScipt("Evaluate Clipboard", window);

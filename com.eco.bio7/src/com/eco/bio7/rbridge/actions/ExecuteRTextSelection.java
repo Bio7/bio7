@@ -15,10 +15,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.rosuda.REngine.Rserve.RConnection;
@@ -56,16 +53,16 @@ public class ExecuteRTextSelection extends Action {
 
 	public void run() {
 		if (canEvaluate) {
-			/*IWorkbenchPage page = window.getActivePage();
-			IEditorReference[] editors = page.getEditorReferences();
-			for (int i = 0; i < editors.length; i++) {
-
-				if (editors[i].getId().equals("")) {
-
-					page.activate(editors[i].getEditor(true));
-
-				}
-			}*/
+			/*
+			 * IWorkbenchPage page = window.getActivePage(); IEditorReference[] editors =
+			 * page.getEditorReferences(); for (int i = 0; i < editors.length; i++) {
+			 * 
+			 * if (editors[i].getId().equals("")) {
+			 * 
+			 * page.activate(editors[i].getEditor(true));
+			 * 
+			 * } }
+			 */
 
 			IEditorPart rEditor = (IEditorPart) window.getActivePage().getActiveEditor();
 			// IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
@@ -137,7 +134,6 @@ public class ExecuteRTextSelection extends Action {
 							// RServe.printJobJoin(code);
 
 							RServeUtil.evalR3(null, temp.getAbsolutePath());
-							
 
 							temp.delete();
 							buff.setLength(0); // clear buffer!
@@ -184,24 +180,38 @@ public class ExecuteRTextSelection extends Action {
 
 		ITextSelection selection = (ITextSelection) selectionsel;
 
-		int b = selection.getStartLine();
+		int startLine = selection.getStartLine();
+		int endLine = selection.getEndLine();
 		String inhalt = null;
 		IRegion reg = null;
-		try {
-			reg = doc.getLineInformation(b);
-		} catch (BadLocationException e1) {
-
-			e1.printStackTrace();
-		}
 
 		try {
-			inhalt = doc.get(reg.getOffset(), reg.getLength());
+			/*If we have a selection we interpret the selection form the offset and length of the selection!*/
+			if (selection.getLength() > 0) {
+				try {
+					reg = doc.getLineInformation(endLine);
+				} catch (BadLocationException e1) {
+
+					e1.printStackTrace();
+				}
+				inhalt = doc.get(selection.getOffset(), selection.getLength());
+				editor.selectAndReveal(reg.getOffset() + 1 + reg.getLength() + 1, 0);
+			} else {
+				/*If we have only the line information we interpret the line from the region offset and length!*/
+				try {
+					reg = doc.getLineInformation(startLine);
+				} catch (BadLocationException e1) {
+
+					e1.printStackTrace();
+				}
+				inhalt = doc.get(reg.getOffset(), reg.getLength());
+				editor.selectAndReveal(reg.getOffset() + 1 + reg.getLength() + 1, 0);
+			}
 		} catch (BadLocationException e) {
 
 			e.printStackTrace();
 		}
 
-		editor.selectAndReveal(reg.getOffset() + 1 + reg.getLength() + 1, 0);
 		return inhalt;
 	}
 }

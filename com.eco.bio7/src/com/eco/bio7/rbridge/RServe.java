@@ -19,7 +19,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.UUID;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.comparator.NameFileComparator;
@@ -60,7 +59,6 @@ import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
-import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.util.Util;
 import ij.IJ;
 import ij.ImagePlus;
@@ -194,8 +192,10 @@ public class RServe {
 		}
 
 	}
+
 	/**
-	 * Evaluates and prints an expression to the Bio7 console executed in a job with job join.
+	 * Evaluates and prints an expression to the Bio7 console executed in a job with
+	 * job join.
 	 * 
 	 * @param expression
 	 *            a R expression as a string.
@@ -332,14 +332,26 @@ public class RServe {
 	 */
 	public static void print(String expression) {
 
+		/*
+		 * try { RServe.rout = RServe.connection.eval("try(paste(capture.output(print("
+		 * + expression + ")),collapse=\"\\n\"))").asString(); } catch
+		 * (REXPMismatchException e) {
+		 * 
+		 * e.printStackTrace(); } catch (RserveException e) {
+		 * 
+		 * e.printStackTrace(); }
+		 */
+		String trybegin = "tryCatch({";
+		String tryend = "},error = function(e) {message(paste(\"Error: \",e$message))})";
+
 		try {
-			RServe.rout = RServe.connection.eval("try(paste(capture.output(print(" + expression + ")),collapse=\"\\n\"))").asString();
+			RServe.rout = RServe.getConnection().eval("paste(capture.output(print(" + trybegin + "(" + expression + ")" + tryend + ")),collapse=\"\\n\")").asString();
+
 		} catch (REXPMismatchException e) {
 
 			e.printStackTrace();
 		} catch (RserveException e) {
-
-			e.printStackTrace();
+			System.out.println("Error : " + e.getMessage());
 		}
 
 		// StartBio7Utils.getConsoleInstance().cons.println(RServe.rout);
@@ -535,12 +547,26 @@ public class RServe {
 
 			/* Call the custom Rscript ! */
 			String rout = null;
-			try {
-				rout = RServe.getConnection().eval("" + "try(paste(capture.output(source(fileroot,echo=T)),collapse=\"\\n\"))").asString();
-			} catch (REXPMismatchException e) {
+			/*
+			 * try { rout = RServe.getConnection().eval("" +
+			 * "try(paste(capture.output(source(fileroot,echo=T)),collapse=\"\\n\"))").
+			 * asString(); } catch (REXPMismatchException e) {
+			 * 
+			 * e.printStackTrace(); }
+			 */
 
+			/* First write a message which file is sourced! */
+			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+			RServe.getConnection().eval("message(paste0(\"> source('\",fileroot),\"')\",sep=\"\")");
+			String options = store.getString("R_SOURCE_OPTIONS");
+			String rCommand = "" + "paste(capture.output(tryCatch(source(fileroot," + options + "),error = function(e) {message(paste0(\"\n\",e))})),collapse=\"\\n\")";
+			try {
+				rout = RServe.getConnection().eval(rCommand).asString();
+			} catch (REXPMismatchException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+
 			Console cons = StartBio7Utils.getConsoleInstance().cons;
 			if (rout != null && rout.equals("NULL") == false) {
 				cons.println(rout);
@@ -579,7 +605,7 @@ public class RServe {
 
 			/* Call the custom Rscript ! */
 
-			RServe.getConnection().eval("try(source(fileroot,echo=F))");
+			RServe.getConnection().eval("tryCatch(source(fileroot,echo=F),error = function(e) {message(paste0(\"\n\",e))})");
 
 		} catch (RserveException e) {
 			// TODO Auto-generated catch block
@@ -644,6 +670,7 @@ public class RServe {
 			e.printStackTrace();
 		}
 	}
+
 	public static void closeAndDisplayNoJoin() {
 		Job job = new Job("Add To ImageStack") {
 			@Override
@@ -668,9 +695,9 @@ public class RServe {
 				}
 			}
 		});
-		//job.setSystem(true);
+		// job.setSystem(true);
 		job.schedule();
-		
+
 	}
 
 	private static void finalCloseAndDisplay() {

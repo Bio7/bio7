@@ -257,13 +257,13 @@ public class LatexSweaveKnitrAction extends Action {
 										/* Clean the path for R and knitr! */
 										String cleanedPath = temp.getPath().replace("\\", "/");
 
-										RServe.print("try(knit('" + cleanedPath + "','" + theName + "." + fileext + "'))");
+										RServe.print("knit('" + cleanedPath + "','" + theName + "." + fileext + "')");
 
 									}
 
 									else if (fileext.equals("tex")) {
 
-										RServe.print("try(knit('" + selFile + "','" + theName + "." + fileext + "'))");
+										RServe.print("knit('" + selFile + "','" + theName + "." + fileext + "')");
 									}
 
 								} catch (RserveException e1) {

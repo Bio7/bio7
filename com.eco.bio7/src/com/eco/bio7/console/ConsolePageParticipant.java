@@ -704,6 +704,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					args.add(rPath + "/bin/i386/rterm");
 				}
 				args.add("--ess");
+				/*args.add("--no-restore"); 
+				args.add("--no-save");*/
 				ProcessBuilder builder = new ProcessBuilder(args);
 				builder.redirectErrorStream(true);
 				RProcess = builder.start();

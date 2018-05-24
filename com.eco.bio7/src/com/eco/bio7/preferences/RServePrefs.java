@@ -117,10 +117,9 @@ public class RServePrefs extends FieldEditorPreferencePage implements IWorkbench
 		integerFieldEditor.setValidRange(1, 100);
 		addField(integerFieldEditor);
 		addField(new LabelFieldEditor("R-Shell:", getFieldEditorParent()));
-		addField(new BooleanFieldEditor("STREAM_TO_RSHELL", "Display outout/error stream", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("STREAM_TO_RSHELL", "Display output/error stream of console", getFieldEditorParent()));
 		addField(new LabelFieldEditor("R-Shell code completion:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("RSHELL_TYPED_CODE_COMPLETION", "Open code completion/templates when typing", getFieldEditorParent()));
-        
 		addField(new StringFieldEditor("RSHELL_ACTIVATION_CHARS", "Activation chars (Restart to apply!)", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
 		addField(new StringFieldEditor("RSHELL_SEPERATOR_CHARS", "Seperator chars", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
 		addField(new RadioGroupFieldEditor("RSHELL_CODE_COMPLETION_ACTIVATOR_ALTERED", "Use a different key combination for code completion activation", 3, new String[][]{{"Strg+Space", "STRG"}, {"Alt+Space", "ALT"},{"Cmd+Space", "CMD"}}, getFieldEditorParent(), false));
@@ -133,6 +132,8 @@ public class RServePrefs extends FieldEditorPreferencePage implements IWorkbench
 		}
 		addField(new IntegerFieldEditor("CODE_COMPLETION_POPUP_SIZE_X", "Popup size width (Restart to apply!)", getFieldEditorParent()));
 		addField(new IntegerFieldEditor("CODE_COMPLETION_POPUP_SIZE_Y", "Popup size height (Restart to apply!)", getFieldEditorParent()));
+		addField(new LabelFieldEditor("R source options:", getFieldEditorParent()));
+		addField(new StringFieldEditor("R_SOURCE_OPTIONS", "Options for the source command", getFieldEditorParent()));
 	}
 
 	public void init(IWorkbench workbench) {

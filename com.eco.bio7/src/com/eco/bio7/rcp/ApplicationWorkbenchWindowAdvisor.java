@@ -428,7 +428,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		/*
 		 * Listen to the R editor if debugging actions should be added to the console
-		 * toolbar!
+		 * toolbar! Also creates a (not visible) shell for MacOSX to get editor focus after an ImageJ event!
 		 */
 
 		configurer.getWindow().getPartService().addPartListener(new REditorListener().listen());
@@ -561,7 +561,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault(PreferenceConstants.D_STRING, fileStartupScripts.getAbsolutePath());
 		store.setDefault(PreferenceConstants.D_SCRIPT_GENERAL, fileGeneralScripts.getAbsolutePath());
 		store.setDefault(PreferenceConstants.D_RSHELL_SCRIPTS, fileRShellScripts.getAbsolutePath());
-		store.setDefault(PreferenceConstants.D_GRID_SCRIPTS, fileGridScripts.getAbsolutePath());
+		store.setDefault(PreferenceConstants.D_GRID_SCRIPTS, fileGridScripts.getAbsolutePath());		
+		store.setDefault("SAVE_ALL_EDITORS", true);
 
 		if (getOS().equals("Windows")) {
 			String pathTempR2 = pathTempR + "\\bio7temp\\";
@@ -623,6 +624,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("LATEX_ENGINE", "pdflatex");
 		store.setDefault("BIBTEX_ENGINE", "bibtex");
 		store.setDefault("STREAM_TO_RSHELL", false);
+		store.setDefault("R_SOURCE_OPTIONS", "echo=F");
 		store.setDefault("RSHELL_TYPED_CODE_COMPLETION", true);
 		store.setDefault("RSHELL_ACTIVATION_CHARS", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.@$+-.:");
 		store.setDefault("RSHELL_SEPERATOR_CHARS", ";(,[=-+ ");

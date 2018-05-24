@@ -1,11 +1,7 @@
 package com.eco.bio7.actions;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
-
 import com.eco.bio7.collection.Work;
 
 public class OpenViewMenuAction extends Action implements IWorkbenchAction {

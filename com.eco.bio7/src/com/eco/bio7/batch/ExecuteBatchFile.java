@@ -530,7 +530,7 @@ public class ExecuteBatchFile {
 						/* Clean the path for R and knitr! */
 						String cleanedPath = temp.getPath().replace("\\", "/");
 
-						RServe.print("try(knit('" + cleanedPath + "','" + theName + "." + fileext + "'))");
+						RServe.print("knit('" + cleanedPath + "','" + theName + "." + fileext + "')");
 
 						// RServe.print("try(knit('" + name + "','" + theName + "." + fileext + "'))");
 
