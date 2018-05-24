@@ -561,7 +561,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault(PreferenceConstants.D_STRING, fileStartupScripts.getAbsolutePath());
 		store.setDefault(PreferenceConstants.D_SCRIPT_GENERAL, fileGeneralScripts.getAbsolutePath());
 		store.setDefault(PreferenceConstants.D_RSHELL_SCRIPTS, fileRShellScripts.getAbsolutePath());
-		store.setDefault(PreferenceConstants.D_GRID_SCRIPTS, fileGridScripts.getAbsolutePath());
+		store.setDefault(PreferenceConstants.D_GRID_SCRIPTS, fileGridScripts.getAbsolutePath());		
+		store.setDefault("SAVE_ALL_EDITORS", true);
 
 		if (getOS().equals("Windows")) {
 			String pathTempR2 = pathTempR + "\\bio7temp\\";

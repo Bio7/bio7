@@ -10,12 +10,15 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
+
+import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.util.Util;
 
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
@@ -51,7 +54,9 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 		if (close) {
 			close = true;
 			/* Save all editors before shutdown! */
-			if (Util.getOS().equals("Mac")) {
+			//SAVE_ALL_EDITORS
+			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+			if (store.getBoolean("SAVE_ALL_EDITORS")) {
 
 				NullProgressMonitor monitor = new NullProgressMonitor();
 				IEditorPart[] dirtyEditors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getDirtyEditors();
