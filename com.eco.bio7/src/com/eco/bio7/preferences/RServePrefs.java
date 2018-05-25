@@ -135,7 +135,7 @@ public class RServePrefs extends FieldEditorPreferencePage implements IWorkbench
 		addField(new LabelFieldEditor("R source options:", getFieldEditorParent()));
 		addField(new StringFieldEditor("R_SOURCE_OPTIONS", "Options for the source command", getFieldEditorParent()));
 		
-		addField(new LabelFieldEditor("Bio7 Shutdown:", getFieldEditorParent()));
+		addField(new LabelFieldEditor("Bio7 Shutdown (saving all editors first):", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("SAVE_R_WORKSPACE_ON_QUIT", "Execute R command on shutdown", getFieldEditorParent()));
 		addField(new StringFieldEditor("ON_QUIT_COMMAND", "Options for the source command", getFieldEditorParent()));
 	}

@@ -16,6 +16,7 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import com.eco.bio7.Bio7Plugin;
+import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RServeUtil;
 
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
@@ -55,45 +56,64 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 			boolean storeEditors = store.getBoolean("SAVE_ALL_EDITORS");
 			boolean storeRWorkspace = store.getBoolean("SAVE_R_WORKSPACE_ON_QUIT");
-			
-			// Save the workspace!
-			IRunnableWithProgress runnable = new IRunnableWithProgress() {
-				public void run(IProgressMonitor monitor) {
 
-					monitor.beginTask("Saving workspace...", IProgressMonitor.UNKNOWN);
-					IWorkspace ws = ResourcesPlugin.getWorkspace();
+			// Save the workspace and the editors!
+			if (storeEditors) {
+				IRunnableWithProgress runnable = new IRunnableWithProgress() {
+					public void run(IProgressMonitor monitor) {
 
-					try {
-						// status.merge(ws.save(true, monitor));
-						ws.save(true, monitor);
-					} catch (CoreException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					
-					if (storeEditors) {
-						monitor.setTaskName("Saving editors...");
-						//NullProgressMonitor monitor = new NullProgressMonitor();
+						monitor.beginTask("Saving editors...", IProgressMonitor.UNKNOWN);
+						IWorkspace ws = ResourcesPlugin.getWorkspace();
+						// NullProgressMonitor monitor = new NullProgressMonitor();
 						IEditorPart[] dirtyEditors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getDirtyEditors();
 						for (IEditorPart iEditorPart : dirtyEditors) {
 							iEditorPart.doSave(monitor);
 						}
+						/* Here we store the workspace once more, mainly for MacOSX! */
+						try {
+							// status.merge(ws.save(true, monitor));
+							ws.save(true, monitor);
+						} catch (CoreException e) {
+							e.printStackTrace();
+						}
+
 					}
 
-					if (storeRWorkspace) {
-						monitor.setTaskName("Saving R workspace...");
+				};
+				try {
+					new ProgressMonitorDialog(null).run(false, false, runnable);
+				} catch (InvocationTargetException | InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			if (storeRWorkspace) {
+				IRunnableWithProgress runnableR = new IRunnableWithProgress() {
+					public void run(IProgressMonitor monitor) {
+
+						monitor.beginTask("Saving R workspace...", IProgressMonitor.UNKNOWN);
+						/*
+						 * We have to save the R editors here because else the Rserve connection will be
+						 * lost because of the save file dialog of the editors!
+						 */
+						IEditorPart[] dirtyEditors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getDirtyEditors();
+						for (IEditorPart iEditorPart : dirtyEditors) {
+							iEditorPart.doSave(monitor);
+						}
 						/* Save the R workspace for the next session if enabled! */
 						String command = store.getString("ON_QUIT_COMMAND");
-						RServeUtil.evalR(command, null);
+						if (RServe.isAlive()) {
+							RServeUtil.evalR(command, null);
+						}
 					}
 
+				};
+
+				try {
+					new ProgressMonitorDialog(null).run(false, false, runnableR);
+				} catch (InvocationTargetException | InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
-			};
-			try {
-				new ProgressMonitorDialog(null).run(false, false, runnable);
-			} catch (InvocationTargetException | InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 
 			/*
