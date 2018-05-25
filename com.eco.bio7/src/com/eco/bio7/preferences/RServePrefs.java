@@ -134,6 +134,10 @@ public class RServePrefs extends FieldEditorPreferencePage implements IWorkbench
 		addField(new IntegerFieldEditor("CODE_COMPLETION_POPUP_SIZE_Y", "Popup size height (Restart to apply!)", getFieldEditorParent()));
 		addField(new LabelFieldEditor("R source options:", getFieldEditorParent()));
 		addField(new StringFieldEditor("R_SOURCE_OPTIONS", "Options for the source command", getFieldEditorParent()));
+		
+		addField(new LabelFieldEditor("Bio7 Shutdown:", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("SAVE_R_WORKSPACE_ON_QUIT", "Execute R command on shutdown", getFieldEditorParent()));
+		addField(new StringFieldEditor("ON_QUIT_COMMAND", "Options for the source command", getFieldEditorParent()));
 	}
 
 	public void init(IWorkbench workbench) {
