@@ -157,7 +157,7 @@ public class StartRServe extends Action implements IMenuCreator {
 
 			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 
-				ConsolePageParticipant.pipeInputToConsole("options(device='cairo')", true, true);
+				ConsolePageParticipant.pipeInputToConsole("options(device='quartz')", true, true);
 			}
 			// options(device='windows')
 		}
