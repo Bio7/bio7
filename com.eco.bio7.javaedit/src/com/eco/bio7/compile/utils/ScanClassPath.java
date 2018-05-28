@@ -34,7 +34,8 @@ import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 public class ScanClassPath {
 
 	private String pathBundle;
-	String[] bundles = new String[] { "com.eco.bio7", "com.eco.bio7.libs", "com.eco.bio7.javaedit", "com.eco.bio7.image", "com.eco.bio7.WorldWind", "com.eco.bio7.scenebuilder", "com.eco.bio7.browser",
+	String[] bundles = new String[] { "com.eco.bio7", "com.eco.bio7.libs", "com.eco.bio7.javaedit",
+			"com.eco.bio7.image", "com.eco.bio7.WorldWind", "com.eco.bio7.scenebuilder", "com.eco.bio7.browser",
 			"Bundled_R" };// "org.eclipse.ui.workbench","org.eclipse.core.commands"
 
 	String[] bundlesEclipse;
@@ -44,21 +45,29 @@ public class ScanClassPath {
 		OS = getOS();
 		if (OS.equals("Windows")) {
 			if (getArch().equals("64")) {
-				bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui", "org.eclipse.swt", "org.eclipse.swt.win32.win32.x86_64",
-						"org.eclipse.draw2d", "org.eclipse.equinox.registry", "org.eclipse.equinox.common", "org.eclipse.core.runtime", "org.eclipse.core.jobs", "org.eclipse.jface" };
+				bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench",
+						"org.eclipse.ui", "org.eclipse.swt", "org.eclipse.swt.win32.win32.x86_64", "org.eclipse.draw2d",
+						"org.eclipse.equinox.registry", "org.eclipse.equinox.common", "org.eclipse.core.runtime",
+						"org.eclipse.core.jobs", "org.eclipse.jface" };
 			} else {
-				bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui", "org.eclipse.swt", "org.eclipse.swt.win32.win32.x86", "org.eclipse.draw2d",
-						"org.eclipse.equinox.registry", "org.eclipse.equinox.common", "org.eclipse.core.runtime", "org.eclipse.core.jobs", "org.eclipse.jface" };
+				bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench",
+						"org.eclipse.ui", "org.eclipse.swt", "org.eclipse.swt.win32.win32.x86", "org.eclipse.draw2d",
+						"org.eclipse.equinox.registry", "org.eclipse.equinox.common", "org.eclipse.core.runtime",
+						"org.eclipse.core.jobs", "org.eclipse.jface" };
 
 			}
 		} else if (OS.equals("Mac")) {
-			bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui", "org.eclipse.swt", "org.eclipse.swt.cocoa.macosx.x86_64", "org.eclipse.draw2d",
-					"org.eclipse.equinox.registry", "org.eclipse.equinox.common", "org.eclipse.core.runtime", "org.eclipse.core.jobs", "org.eclipse.jface" };
+			bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui",
+					"org.eclipse.swt", "org.eclipse.swt.cocoa.macosx.x86_64", "org.eclipse.draw2d",
+					"org.eclipse.equinox.registry", "org.eclipse.equinox.common", "org.eclipse.core.runtime",
+					"org.eclipse.core.jobs", "org.eclipse.jface" };
 		}
 
 		else if (OS.equals("Linux")) {
-			bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui", "org.eclipse.swt", "org.eclipse.swt.gtk.linux.x86_64", "org.eclipse.draw2d",
-					"org.eclipse.equinox.registry", "org.eclipse.equinox.common", "org.eclipse.core.runtime", "org.eclipse.core.jobs", "org.eclipse.jface" };
+			bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui",
+					"org.eclipse.swt", "org.eclipse.swt.gtk.linux.x86_64", "org.eclipse.draw2d",
+					"org.eclipse.equinox.registry", "org.eclipse.equinox.common", "org.eclipse.core.runtime",
+					"org.eclipse.core.jobs", "org.eclipse.jface" };
 		}
 	}
 
@@ -115,12 +124,19 @@ public class ScanClassPath {
 		 * Get the *.jar list from the Bio7 Java preferences and add them to the
 		 * classpath!
 		 */
-		
+
 		String libs = store.getString("javaLibs");
 		String[] conv = convert(libs);
 		for (int j = 0; j < conv.length; j++) {
 
-			buf.append(pathseparator + conv[j].replace("\\", "/"));
+			String addedExtLibs = conv[j];
+			if (OS.equals("Windows") == false) {
+				addedExtLibs = addedExtLibs.replace("::", "");
+				addedExtLibs = addedExtLibs.replace(":", "/");
+			}
+
+			addedExtLibs = addedExtLibs.replace("\\", "/");
+			buf.append(pathseparator + addedExtLibs);
 
 		}
 
@@ -289,16 +305,20 @@ public class ScanClassPath {
 		 */
 		String libs = store.getString("javaLibs");
 		String[] conv = convert(libs);
-		
+
 		for (int j = 0; j < conv.length; j++) {
 
 			String string = conv[j];
-			
-			string = string.replace("\\", "/");
-			
-			buf.add(pathseparator + string);
-			String en = pathseparator + string;
-			
+
+			String addedExtLibs = pathseparator + string;
+			if (OS.equals("Windows") == false) {
+				addedExtLibs = addedExtLibs.replace("::", "");
+				addedExtLibs = addedExtLibs.replace(":", "/");
+			}
+			addedExtLibs = addedExtLibs.replace("\\", "/");
+			buf.add(addedExtLibs);
+			String en = addedExtLibs;
+
 			classPathEntry.add(JavaCore.newLibraryEntry(new Path(en), null, // no
 																			// source
 					null, // no source
