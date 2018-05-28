@@ -27,6 +27,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
 
 import com.eco.bio7.javaeditor.Bio7EditorPlugin;
+import org.eclipse.swt.layout.FillLayout;
 
 /**
  * A preference page for the error-handling of a simple HTML editor.
@@ -84,43 +85,31 @@ public class ErrorsPreferencePage extends PreferencePage implements IWorkbenchPr
 		});
 
 		Composite addRemoveGroup = new Composite(top, SWT.NONE);
+		addRemoveGroup.setLayout(new FillLayout(SWT.HORIZONTAL));
 		addRemoveGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		GridLayout addRemoveLayout = new GridLayout();
-		addRemoveLayout.numColumns = 2;
-		addRemoveLayout.marginHeight = 0;
-		addRemoveLayout.marginWidth = 0;
-		addRemoveGroup.setLayout(addRemoveLayout);
 
 		// Create a composite for the add and remove buttons.
 		Composite buttonGroup = new Composite(addRemoveGroup, SWT.NONE);
-		GridLayout buttonLayout = new GridLayout();
-		buttonLayout.marginHeight = 0;
-		buttonLayout.marginWidth = 0;
-		buttonGroup.setLayout(buttonLayout);
+		buttonGroup.setLayout(new FillLayout(SWT.HORIZONTAL));
 
 		Button addTag = new Button(buttonGroup, SWT.NONE);
 		addTag.setText("Add Selected Libraries");
+		
+				removeTag = new Button(buttonGroup, SWT.NONE);
+				removeTag.setText("&Remove Selected Libraries");
+				removeTag.setEnabled(false);
+				removeTag.addSelectionListener(new SelectionAdapter() {
+					public void widgetSelected(SelectionEvent e) {
+						int[] selection = exemptTagsList.getSelectionIndices();
+
+						exemptTagsList.remove(selection);
+
+						selectionChanged();
+					}
+				});
 		addTag.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				addTag();
-			}
-		});
-		GridData addTagData = new GridData(GridData.FILL_HORIZONTAL);
-		addTagData.heightHint = convertVerticalDLUsToPixels(IDialogConstants.BUTTON_HEIGHT);
-		addTagData.widthHint = 176;
-		addTag.setLayoutData(addTagData);
-
-		removeTag = new Button(addRemoveGroup, SWT.NONE);
-		removeTag.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		removeTag.setText("&Remove Selected Libraries");
-		removeTag.setEnabled(false);
-		removeTag.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				int[] selection = exemptTagsList.getSelectionIndices();
-
-				exemptTagsList.remove(selection);
-
-				selectionChanged();
 			}
 		});
 
