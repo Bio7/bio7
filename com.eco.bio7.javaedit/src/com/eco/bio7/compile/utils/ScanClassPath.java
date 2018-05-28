@@ -289,7 +289,7 @@ public class ScanClassPath {
 		 */
 		String libs = store.getString("javaLibs");
 		String[] conv = convert(libs);
-		//System.out.println(conv.length);
+		
 		for (int j = 0; j < conv.length; j++) {
 
 			String string = conv[j];
@@ -371,7 +371,6 @@ public class ScanClassPath {
 		 * Here we add the results to the classpath. Src entries are created, too for
 		 * necessary plugins!
 		 */
-        System.out.println(buf.toString());
 		IClasspathEntry[] entries = new IClasspathEntry[buf.size()];
 		if (OS.equals("Windows")) {
 			for (int k = 0; k < buf.size(); k++) {

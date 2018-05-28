@@ -67,7 +67,7 @@ public class ErrorsPreferencePage extends PreferencePage implements IWorkbenchPr
 		top.setLayout(new GridLayout());
 
 		Label listLabel = new Label(top, SWT.NONE);
-		listLabel.setText("Add Selected Libraries");
+		listLabel.setText("Add libraries for dynamic compilation");
 
 		exemptTagsList = new List(top, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
 		exemptTagsList.setItems(getExemptTagsPreference());
@@ -99,7 +99,7 @@ public class ErrorsPreferencePage extends PreferencePage implements IWorkbenchPr
 		buttonGroup.setLayout(buttonLayout);
 
 		Button addTag = new Button(buttonGroup, SWT.NONE);
-		addTag.setText("Add Selected");
+		addTag.setText("Add Selected Libraries");
 		addTag.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				addTag();
@@ -107,10 +107,11 @@ public class ErrorsPreferencePage extends PreferencePage implements IWorkbenchPr
 		});
 		GridData addTagData = new GridData(GridData.FILL_HORIZONTAL);
 		addTagData.heightHint = convertVerticalDLUsToPixels(IDialogConstants.BUTTON_HEIGHT);
-		addTagData.widthHint = convertHorizontalDLUsToPixels(IDialogConstants.BUTTON_WIDTH);
+		addTagData.widthHint = 176;
 		addTag.setLayoutData(addTagData);
 
 		removeTag = new Button(addRemoveGroup, SWT.NONE);
+		removeTag.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		removeTag.setText("&Remove Selected Libraries");
 		removeTag.setEnabled(false);
 		removeTag.addSelectionListener(new SelectionAdapter() {
