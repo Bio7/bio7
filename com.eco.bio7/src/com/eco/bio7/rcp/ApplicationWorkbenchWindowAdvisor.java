@@ -563,7 +563,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault(PreferenceConstants.D_RSHELL_SCRIPTS, fileRShellScripts.getAbsolutePath());
 		store.setDefault(PreferenceConstants.D_GRID_SCRIPTS, fileGridScripts.getAbsolutePath());		
 		store.setDefault("SAVE_R_WORKSPACE_ON_QUIT", false);
-		store.setDefault("ON_QUIT_COMMAND", "q(save='yes')# use unlink(\".RData\") to delete saved R startup workspace!");
+		store.setDefault("ON_QUIT_COMMAND", "save.image(file='session.RData')");
 
 		if (getOS().equals("Windows")) {
 			store.setDefault("SAVE_ALL_EDITORS", false);
