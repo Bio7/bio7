@@ -49,9 +49,9 @@ import com.eco.bio7.discrete.Quad2d;
 import com.eco.bio7.methods.Compiled;
 import com.eco.bio7.methods.CurrentStates;
 import com.eco.bio7.time.Time;
-import com.vividsolutions.jts.awt.ShapeWriter;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.awt.ShapeWriter;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 
 /**
  * This class provides methods for the Points panel of the Bio7 application and
@@ -252,7 +252,7 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 			if(g!=null){
 			for (int i = 0; i <g.getNumGeometries() ; i++) {
 			Geometry geom = g.getGeometryN(i);
-			com.vividsolutions.jts.geom.Point p = geom.getCentroid();
+			org.locationtech.jts.geom.Point p = geom.getCentroid();
 			
 			g2d.drawString(""+geom.getArea(),(int)((p.getX()/ transformVorox)*transformx),(int)((p.getY()/ transformVoroy)*transformy));
 			
