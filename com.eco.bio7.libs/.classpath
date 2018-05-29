@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="hardware/arduino.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/poi-3.17.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/poi-ooxml-3.17.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/poi-ooxml-schemas-3.17.jar"/>
@@ -25,7 +26,6 @@
 	<classpathentry exported="true" kind="lib" path="physics/jbullet.jar"/>
 	<classpathentry exported="true" kind="lib" path="physics/stack-alloc.jar"/>
 	<classpathentry exported="true" kind="lib" path="physics/trove.jar"/>
-	<classpathentry exported="true" kind="lib" path="hardware/Arduino.jar"/>
 	<classpathentry exported="true" kind="lib" path="hardware/ch.ntb.usb-0.5.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="hardware/ardulink.jar"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
