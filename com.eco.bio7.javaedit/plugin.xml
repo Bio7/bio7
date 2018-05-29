@@ -44,7 +44,7 @@
             category="prefjava"
             class="com.eco.bio7.javapreferences.ErrorsPreferencePage"
             id="com.eco.bio7.preferences_compiler"
-            name="Preferences Java Libraries">
+            name="Preferences Dynamic Compilation">
       </page>
    </extension>
 

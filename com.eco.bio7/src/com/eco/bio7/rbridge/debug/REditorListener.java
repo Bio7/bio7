@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2014 M. Austenfeld
+ * Copyright (c) 2004-2018 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,7 @@ package com.eco.bio7.rbridge.debug;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.util.Util;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPartReference;
@@ -33,6 +34,15 @@ public class REditorListener {
 				if (con != null) {
 
 					IEditorPart editor = partRef.getPage().getActiveEditor();
+					/*
+					 * A workaround for MacOSX to give an editor hoover focus by creating an
+					 * invisible shell!
+					 */
+					if (Util.isMac()) {
+						if (editor != null) {
+							REditor.activateEditorPage(editor);
+						}
+					}
 					if (editor instanceof REditor) {
 						REditor reditor = (REditor) editor;
 						IResource resource = (IResource) reditor.getEditorInput().getAdapter(IResource.class);

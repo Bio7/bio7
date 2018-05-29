@@ -196,7 +196,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 								c.eval("setwd('" + dirPath + "')");
 
 								System.out.println(selFile);
-								RServe.print("try(render(\"" + selFile + "\"))");
+								RServe.print("render(\"" + selFile + "\")");
 
 							} catch (RserveException e1) {
 

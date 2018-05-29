@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2012 M. Austenfeld
+ * Copyright (c) 2004-2018 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,7 +17,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.Rserve.RserveException;
-
 import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.StartBio7Utils;
 
@@ -46,13 +45,15 @@ public class REvaluateExpressionsJob extends WorkspaceJob {
 	}
 
 	private void evaluate(int i) {
-		String trybegin = "try(";
-		String tryend = ")";
+		String trybegin = "tryCatch({";
+		String tryend = "},error = function(e) {message(paste(\"Error: \",e$message))})";
 
 		String out = null;
 		try {
-			out = RServe.getConnection().eval("paste(capture.output(print(" + trybegin + trybegin + "(" + expressionArray[i] + ")" + tryend + tryend + ")),collapse=\"\\n\")").asString();
-
+			// out = RServe.getConnection().eval("paste(capture.output(print(" + trybegin +
+			// trybegin + "(" + expressionArray[i] + ")" + tryend + tryend +
+			// ")),collapse=\"\\n\")").asString();
+			out = RServe.getConnection().eval("paste(capture.output(print(" + trybegin + "(" + expressionArray[i] + ")" + tryend + ")),collapse=\"\\n\")").asString();
 		} catch (REXPMismatchException e) {
 
 			e.printStackTrace();

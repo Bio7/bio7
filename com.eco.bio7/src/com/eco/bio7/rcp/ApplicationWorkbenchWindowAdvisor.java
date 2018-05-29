@@ -428,7 +428,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		/*
 		 * Listen to the R editor if debugging actions should be added to the console
-		 * toolbar!
+		 * toolbar! Also creates a (not visible) shell for MacOSX to get editor focus after an ImageJ event!
 		 */
 
 		configurer.getWindow().getPartService().addPartListener(new REditorListener().listen());
@@ -561,9 +561,12 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault(PreferenceConstants.D_STRING, fileStartupScripts.getAbsolutePath());
 		store.setDefault(PreferenceConstants.D_SCRIPT_GENERAL, fileGeneralScripts.getAbsolutePath());
 		store.setDefault(PreferenceConstants.D_RSHELL_SCRIPTS, fileRShellScripts.getAbsolutePath());
-		store.setDefault(PreferenceConstants.D_GRID_SCRIPTS, fileGridScripts.getAbsolutePath());
+		store.setDefault(PreferenceConstants.D_GRID_SCRIPTS, fileGridScripts.getAbsolutePath());		
+		store.setDefault("SAVE_R_WORKSPACE_ON_QUIT", false);
+		store.setDefault("ON_QUIT_COMMAND", "save.image(file='session.RData')");
 
 		if (getOS().equals("Windows")) {
+			store.setDefault("SAVE_ALL_EDITORS", false);
 			String pathTempR2 = pathTempR + "\\bio7temp\\";
 			// String pathTempR3 = pathTempR2.replace("\\", "\\\\");
 			store.setDefault(PreferenceConstants.P_TEMP_R, pathTempR2);
@@ -574,6 +577,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
 			store.setDefault("PDF_READER", "ACROBAT");
 		} else if (getOS().equals("Linux")) {
+			store.setDefault("SAVE_ALL_EDITORS", false);
 			pathTempR = pathTempR + "/bio7temp/";
 			store.setDefault(PreferenceConstants.P_TEMP_R, pathTempR);
 			store.setDefault("Console_Encoding", "UTF-8");
@@ -584,6 +588,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
 			store.setDefault("PDF_READER", "EVINCE");
 		} else if (getOS().equals("Mac")) {
+			store.setDefault("SAVE_ALL_EDITORS", true);
 			pathTempR = pathTempR + "/bio7temp/";
 			store.setDefault(PreferenceConstants.P_TEMP_R, pathTempR);
 			store.setDefault("Console_Encoding", "UTF-8");
@@ -623,6 +628,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("LATEX_ENGINE", "pdflatex");
 		store.setDefault("BIBTEX_ENGINE", "bibtex");
 		store.setDefault("STREAM_TO_RSHELL", false);
+		store.setDefault("R_SOURCE_OPTIONS", "echo=F");
 		store.setDefault("RSHELL_TYPED_CODE_COMPLETION", true);
 		store.setDefault("RSHELL_ACTIVATION_CHARS", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.@$+-.:");
 		store.setDefault("RSHELL_SEPERATOR_CHARS", ";(,[=-+ ");
