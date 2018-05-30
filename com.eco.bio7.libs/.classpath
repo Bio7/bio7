@@ -1,24 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="hardware/arduino.jar"/>
+	<classpathentry exported="true" kind="lib" path="Excel/poi-3.17.jar"/>
+	<classpathentry exported="true" kind="lib" path="Excel/poi-ooxml-3.17.jar"/>
+	<classpathentry exported="true" kind="lib" path="Excel/poi-ooxml-schemas-3.17.jar"/>
+	<classpathentry exported="true" kind="lib" path="math/jts-core-1.15.0-SNAPSHOT.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/opal-1.0.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/commons-io-2.6.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/controlsfx-8.40.14.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/commons-codec-1.10.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/commons-collections4-4.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/opencsv-3.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jsoup-1.10.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="Excel/poi-3.15.jar"/>
-	<classpathentry exported="true" kind="lib" path="Excel/poi-ooxml-3.15.jar"/>
-	<classpathentry exported="true" kind="lib" path="Excel/poi-ooxml-schemas-3.15.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/opal-1.0.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="math/jts-1.14.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/org.eclipse.nebula.visualization.widgets_1.0.0.201410030023.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/org.eclipse.nebula.visualization.xygraph_1.0.0.201410030023.jar"/>
 	<classpathentry exported="true" kind="lib" path="R/REngine.jar"/>
 	<classpathentry exported="true" kind="lib" path="R/RserveEngine.jar"/>
 	<classpathentry exported="true" kind="lib" path="math/commons-math3-3.6.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="processing/core.jar"/>
-	<classpathentry exported="true" kind="lib" path="math/jgrapht-core-0.9.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="math/jgrapht-ext-0.9.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/commons-lang3-3.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/guava-18.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="hardware/jssc.jar"/>
@@ -27,14 +26,10 @@
 	<classpathentry exported="true" kind="lib" path="physics/jbullet.jar"/>
 	<classpathentry exported="true" kind="lib" path="physics/stack-alloc.jar"/>
 	<classpathentry exported="true" kind="lib" path="physics/trove.jar"/>
-	<classpathentry exported="true" kind="lib" path="math/jgraphx-2.0.0.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="math/jgraph-5.13.0.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="hardware/Arduino.jar"/>
 	<classpathentry exported="true" kind="lib" path="hardware/ch.ntb.usb-0.5.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="hardware/ardulink.jar"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry exported="true" kind="lib" path="math/joone-engine.jar" sourcepath="com.eco.bio7.libssrc.zip"/>
 	<classpathentry exported="true" kind="lib" path="OpenOffice/juh.jar" sourcepath="com.eco.bio7.libssrc.zip"/>
 	<classpathentry exported="true" kind="lib" path="OpenOffice/jurt.jar"/>
 	<classpathentry exported="true" kind="lib" path="OpenOffice/ridl.jar"/>
