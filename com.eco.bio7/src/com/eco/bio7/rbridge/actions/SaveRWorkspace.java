@@ -1,19 +1,14 @@
 package com.eco.bio7.rbridge.actions;
 
 import java.util.prefs.Preferences;
-
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.rosuda.REngine.Rserve.RConnection;
-
-import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
@@ -36,7 +31,7 @@ public class SaveRWorkspace extends Action {
 
 	public void run() {
 
-		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		//IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		RConnection con = RServe.getConnection();
 		//boolean rPipe = store.getBoolean("r_pipe");
 		if (con==null) {
