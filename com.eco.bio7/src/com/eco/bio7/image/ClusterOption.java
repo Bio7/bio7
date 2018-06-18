@@ -1,7 +1,5 @@
 package com.eco.bio7.image;
 
-import ij.WindowManager;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.SelectionAdapter;
