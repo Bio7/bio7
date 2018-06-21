@@ -3,9 +3,7 @@ package com.eco.bio7.image.r;
 import java.awt.Polygon;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
-
 import javax.swing.SwingUtilities;
-
 import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
@@ -14,7 +12,6 @@ import ij.measure.ResultsTable;
 import ij.plugin.filter.Analyzer;
 import ij.process.ImageProcessor;
 import ij.text.TextWindow;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
@@ -23,7 +20,6 @@ import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
-
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.discrete.Field;
 import com.eco.bio7.discrete.Quad2d;
