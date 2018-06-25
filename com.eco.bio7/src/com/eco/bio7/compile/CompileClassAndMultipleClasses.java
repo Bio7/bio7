@@ -10,19 +10,10 @@
  *******************************************************************************/
 package com.eco.bio7.compile;
 
-import ij.plugin.PlugIn;
-import ij.plugin.filter.PlugInFilter;
-import ij.plugin.filter.PlugInFilterRunner;
-
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
 import javax.swing.SwingUtilities;
-
 import org.codehaus.commons.compiler.jdk.JavaSourceClassLoader;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -51,15 +42,16 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.BatchModel;
-import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.batch.FileRoot;
 import com.eco.bio7.javaeditors.JavaEditor;
 import com.eco.bio7.methods.Compiled;
 import com.eco.bio7.rcp.StartBio7Utils;
 import com.eco.bio7.worldwind.DynamicLayer;
+import ij.plugin.PlugIn;
+import ij.plugin.filter.PlugInFilter;
+import ij.plugin.filter.PlugInFilterRunner;
 
 public class CompileClassAndMultipleClasses {
 	private File fi;
