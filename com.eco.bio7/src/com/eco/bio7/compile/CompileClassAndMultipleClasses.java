@@ -141,7 +141,7 @@ public class CompileClassAndMultipleClasses {
 
 		job.schedule();
 	}
-
+    /*This method is called from above but also from the script menu actions directly (external Java path!)*/
 	public void compileAndLoad(File path, String dir, String name, IWorkbenchPage pag, boolean startupScript) {
 		FileRoot.setCurrentCompileDir(dir);
 		JavaSourceClassLoader cla = new JavaSourceClassLoader(Bio7Plugin.class.getClassLoader());
