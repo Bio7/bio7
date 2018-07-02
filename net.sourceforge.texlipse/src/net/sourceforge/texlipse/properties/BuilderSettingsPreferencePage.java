@@ -31,7 +31,7 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.eclipse.ui.help.WorkbenchHelp;
+//import org.eclipse.ui.help.WorkbenchHelp;
 
 
 /**
@@ -135,7 +135,7 @@ public class BuilderSettingsPreferencePage extends PreferencePage
         texDirField = new Text(parent, SWT.SINGLE | SWT.BORDER);
         texDirField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         texDirField.setText("");
-        WorkbenchHelp.setHelp(texDirField, TexlipseHelpIds.BUILDER_TEX_DIR);
+       // WorkbenchHelp.setHelp(texDirField, TexlipseHelpIds.BUILDER_TEX_DIR);
         
         Button button = new Button(parent, SWT.PUSH);
         button.setText(JFaceResources.getString("openBrowse"));
@@ -182,7 +182,7 @@ public class BuilderSettingsPreferencePage extends PreferencePage
                 int index = builderList.getSelectionIndex();
                 editButton.setEnabled(index >= 0);
             }});
-        WorkbenchHelp.setHelp(builderList, TexlipseHelpIds.BUILDER_LIST);
+        //WorkbenchHelp.setHelp(builderList, TexlipseHelpIds.BUILDER_LIST);
         
         Composite rightPart = new Composite(contents, SWT.NULL);
         rightPart.setLayout(new GridLayout());
