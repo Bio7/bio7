@@ -549,12 +549,12 @@ Composite #com-eco-bio7-rbridge-RTable.MToolBar {
 
 
 #com-eco-bio7-thumbnails.MToolBar Label {
-     background-color: #252525;
+      /* background-color: #252525;*/
      color: #dddddd; 
 }
 
 Composite #com-eco-bio7-thumbnails.MToolBar {
-     background-color: #252525;
+      /* background-color: #252525;*/
      color: #dddddd; 
 }
 
