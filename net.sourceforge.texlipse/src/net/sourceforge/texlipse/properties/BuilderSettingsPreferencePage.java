@@ -225,7 +225,7 @@ public class BuilderSettingsPreferencePage extends PreferencePage
         consoleOutputCheckBox.setText(TexlipsePlugin.getResourceString("preferenceBuilderConsoleOutput"));
         consoleOutputCheckBox.setSelection(getPreferenceStore().getBoolean(TexlipseProperties.BUILDER_CONSOLE_OUTPUT));
         // checkboxes don't show their help ids (at least on linux) 
-        //WorkbenchHelp.setHelp(consoleOutputCheckBox, TexlipseHelpIds.BUILDER_CONSOLE);
+       //WorkbenchHelp.setHelp(consoleOutputCheckBox, TexlipseHelpIds.BUILDER_CONSOLE);
     }
 
     /**
