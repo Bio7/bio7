@@ -160,11 +160,11 @@ CTabFolder Tree, CTabFolder Canvas {
 }
 
 
-/* ###################### Top Toolbar ########################## */
+/* ####################### Top Toolbar ########################## */
 
 #org-eclipse-ui-main-toolbar, #PerspectiveSwitcher {
     eclipse-perspective-keyline-color: #585858;
-    background-color: #515658 #515658 100%;
+    background-color:  #41464A #252525 #252525  10.0% 90.0% 5.0%;
     handle-image: none;
     color: #EBE8E4;
 }
