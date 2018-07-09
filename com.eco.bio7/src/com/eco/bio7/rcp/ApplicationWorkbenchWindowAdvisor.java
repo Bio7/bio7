@@ -145,6 +145,7 @@ import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.actions.StartRServe;
 import com.eco.bio7.rbridge.debug.REditorListener;
+import com.eco.bio7.reditor.actions.OpenHelpBrowserAction;
 import com.eco.bio7.scenebuilder.editor.ThemeHelper;
 import com.eco.bio7.time.CalculationThread;
 import com.eco.bio7.util.Util;
@@ -1219,6 +1220,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				javafx.application.Application.setUserAgentStylesheet(path);
 
 				themeBlack = true;
+				OpenHelpBrowserAction.isThemeBlack=true;
 
 			} else {
 
@@ -1233,6 +1235,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				javafx.application.Application.setUserAgentStylesheet(path);
 
 				themeBlack = false;
+				/*Set the R editor help browser in code completion popup!*/
+				OpenHelpBrowserAction.isThemeBlack=false;
 
 			}
 		}
