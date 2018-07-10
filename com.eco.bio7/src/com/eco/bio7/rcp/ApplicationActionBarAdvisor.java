@@ -776,7 +776,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		};
 
 		scriptMenu.addMenuListener(ScriptListener);
-
 		rMenu.add(startrserve);
 		rMenu.add(new Separator());
 		rMenu.add(loadR);
