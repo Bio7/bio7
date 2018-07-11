@@ -92,6 +92,7 @@ public class RServePlotPrefs extends FieldEditorPreferencePage implements IWorkb
 		});
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new LabelFieldEditor("Special image plot options:", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("IMPORT_R_PLOT_VIRTUAL", "Show image plots as ImageJ virtual (disk resident) stack", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		addField(new BooleanFieldEditor("IMAGEJ_CREATE_SINGLE_PLOTS", "Open plots in individual tab", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		addField(new BooleanFieldEditor("IJMACRO_EXECUTE_AFTER_PLOT_ENABLE", "Execute ImageJ macro after creation", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		mult_1=new MultiLineTextFieldEditor("IJMACRO_EXECUTE_AFTER_PLOT", "Execute ImageJ macro after plot creation", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent());

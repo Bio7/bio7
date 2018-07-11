@@ -638,15 +638,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("RSHELL_CODE_COMPLETION_ACTIVATOR_ALTERED", "STRG");
 
 		store.setDefault("LATEX_CLEAN_FILES", false);
-
 		store.setDefault("LATEX_FILES_EXT_DELETE", "out,log,nav,aux,bbl,blg,dvi,toc,.synctex.gz,snm");
-
 		store.setDefault("LINUX_SHELL", "GNOME");
-
 		store.setDefault("USE_CUSTOM_DEVICE", true);
-
 		store.setDefault("PDF_USE_BROWSER", false);
-
+		store.setDefault("IMPORT_R_PLOT_VIRTUAL", false);
 		store.setDefault("IMAGEJ_CREATE_SINGLE_PLOTS", false);
 
 		store.setDefault("ENABLE_JAVAFXWEBKIT_SCROLLBAR", false);

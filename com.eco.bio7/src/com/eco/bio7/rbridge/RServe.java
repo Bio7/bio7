@@ -63,6 +63,7 @@ import com.eco.bio7.util.Util;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.plugin.FolderOpener;
 import javafx.scene.web.WebEngine;
 
 /**
@@ -91,8 +92,7 @@ public class RServe {
 	 * to evaluate R scripts from e.g. Groovy (running already in a job). R plots a
 	 * possible, too.
 	 * 
-	 * @param expression
-	 *            a R expression.
+	 * @param expression a R expression.
 	 */
 	public static void evaluateExt(String expression) {
 		if (RServe.isAlive()) {
@@ -124,8 +124,7 @@ public class RServe {
 	/**
 	 * Evaluates and prints an expression to the Bio7 console executed in a job.
 	 * 
-	 * @param expression
-	 *            a R expression as a string.
+	 * @param expression a R expression as a string.
 	 */
 	public static void printJob(String expression) {// helper class to print
 		if (RState.isBusy() == false) {
@@ -197,8 +196,7 @@ public class RServe {
 	 * Evaluates and prints an expression to the Bio7 console executed in a job with
 	 * job join.
 	 * 
-	 * @param expression
-	 *            a R expression as a string.
+	 * @param expression a R expression as a string.
 	 */
 	public static void printJobJoin(String expression) {// helper class to print
 		if (RState.isBusy() == false) {
@@ -276,8 +274,7 @@ public class RServe {
 	 * Evaluates and prints an array of expressions to the Bio7 console executed in
 	 * a job.
 	 * 
-	 * @param expressions
-	 *            a R expression as a string.
+	 * @param expressions a R expression as a string.
 	 */
 	public static void printJobs(String[] expressions) {// helper class to print
 		if (RState.isBusy() == false) {
@@ -327,8 +324,7 @@ public class RServe {
 	/**
 	 * Evaluates and prints an expression to the Bio7 console.
 	 * 
-	 * @param expression
-	 *            a R expression as a string.
+	 * @param expression a R expression as a string.
 	 */
 	public static void print(String expression) {
 
@@ -345,7 +341,9 @@ public class RServe {
 		String tryend = "},error = function(e) {message(paste(\"Error: \",e$message))})";
 
 		try {
-			RServe.rout = RServe.getConnection().eval("paste(capture.output(print(" + trybegin + "(" + expression + ")" + tryend + ")),collapse=\"\\n\")").asString();
+			RServe.rout = RServe.getConnection().eval(
+					"paste(capture.output(print(" + trybegin + "(" + expression + ")" + tryend + ")),collapse=\"\\n\")")
+					.asString();
 
 		} catch (REXPMismatchException e) {
 
@@ -414,8 +412,7 @@ public class RServe {
 	/**
 	 * Sets a Rserve connection.
 	 * 
-	 * @param connection
-	 *            a R connection.
+	 * @param connection a R connection.
 	 */
 	public static void setConnection(RConnection connection) {
 		RServe.connection = connection;
@@ -433,8 +430,7 @@ public class RServe {
 	/**
 	 * Set the plotting device to pdf.
 	 * 
-	 * @param pdf
-	 *            a boolean value.
+	 * @param pdf a boolean value.
 	 */
 	public static void setPdf(boolean pdf) {
 		PlotJob.setPdf(pdf);
@@ -462,8 +458,7 @@ public class RServe {
 	/**
 	 * Set the Rserve running value.
 	 * 
-	 * @param running
-	 *            a boolean value.
+	 * @param running a boolean value.
 	 */
 	public static void setRrunning(boolean running) {
 		Rrunning = running;
@@ -472,8 +467,7 @@ public class RServe {
 	/**
 	 * Internal method of Bio7.
 	 * 
-	 * @param rout
-	 *            a string value.
+	 * @param rout a string value.
 	 */
 	public static void setRout(String rout) {
 		RServe.rout = rout;
@@ -506,10 +500,8 @@ public class RServe {
 	/**
 	 * Set the plot size in inch for a pdf plot.
 	 * 
-	 * @param inchx
-	 *            the width of the plot in inch units.
-	 * @param inchy
-	 *            the height of the plot in inch units.
+	 * @param inchx the width of the plot in inch units.
+	 * @param inchy the height of the plot in inch units.
 	 */
 	public static void setPlotInch(double inchx, double inchy) {
 		PlotJob.setPlotInch(inchx, inchy);
@@ -518,10 +510,8 @@ public class RServe {
 	/**
 	 * Set the plot size in pixel for a png plot.
 	 * 
-	 * @param imageWidth
-	 *            the width of the plot in pixel units.
-	 * @param imageHeight
-	 *            the height of the plot in pixel units.
+	 * @param imageWidth  the width of the plot in pixel units.
+	 * @param imageHeight the height of the plot in pixel units.
 	 */
 	public static void setPlotPixel(int imageWidth, int imageHeight) {
 		PlotJob.setPlotPixel(imageWidth, imageHeight);
@@ -531,8 +521,7 @@ public class RServe {
 	/**
 	 * A method to call a RScript.
 	 * 
-	 * @param path
-	 *            the relative path from the Bio7 Workspace to the script.
+	 * @param path the relative path from the Bio7 Workspace to the script.
 	 */
 	public static void callRScript(String path) {
 		/* Get the path and convert it for R (Windows) */
@@ -559,7 +548,8 @@ public class RServe {
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 			RServe.getConnection().eval("message(paste0(\"> source('\",fileroot),\"')\",sep=\"\")");
 			String options = store.getString("R_SOURCE_OPTIONS");
-			String rCommand = "" + "paste(capture.output(tryCatch(source(fileroot," + options + "),error = function(e) {message(paste0(\"\n\",e))})),collapse=\"\\n\")";
+			String rCommand = "" + "paste(capture.output(tryCatch(source(fileroot," + options
+					+ "),error = function(e) {message(paste0(\"\n\",e))})),collapse=\"\\n\")";
 			try {
 				rout = RServe.getConnection().eval(rCommand).asString();
 			} catch (REXPMismatchException e) {
@@ -588,8 +578,7 @@ public class RServe {
 	/**
 	 * A method to call a RScript without to capture (print) the output.
 	 * 
-	 * @param path
-	 *            the relative path from the Bio7 Workspace to the script.
+	 * @param path the relative path from the Bio7 Workspace to the script.
 	 * 
 	 */
 	public static void callRScriptSilent(String path) {
@@ -605,7 +594,8 @@ public class RServe {
 
 			/* Call the custom Rscript ! */
 
-			RServe.getConnection().eval("tryCatch(source(fileroot,echo=F),error = function(e) {message(paste0(\"\n\",e))})");
+			RServe.getConnection()
+					.eval("tryCatch(source(fileroot,echo=F),error = function(e) {message(paste0(\"\n\",e))})");
 
 		} catch (RserveException e) {
 			// TODO Auto-generated catch block
@@ -706,17 +696,20 @@ public class RServe {
 		if (customDevice == true) {
 
 			String plotPathR = store.getString(PreferenceConstants.P_TEMP_R);
+			boolean isVirtualPlot = store.getBoolean("IMPORT_R_PLOT_VIRTUAL");
 			String fileName = store.getString("DEVICE_FILENAME");
 			boolean useBrowser = store.getBoolean("PDF_USE_BROWSER");
 			String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
 
-			if (fileName.endsWith("pdf") || fileName.endsWith("eps") || fileName.endsWith("xfig") || fileName.endsWith("bitmap") || fileName.endsWith("pictex")) {
+			if (fileName.endsWith("pdf") || fileName.endsWith("eps") || fileName.endsWith("xfig")
+					|| fileName.endsWith("bitmap") || fileName.endsWith("pictex")) {
 
 				openPDF(plotPathR, fileName, useBrowser, openInJavaFXBrowser);
 			}
 
 			else if (fileName.endsWith("svg")) {
-				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows") || ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
+				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")
+						|| ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 					Program.launch(plotPathR + fileName);
 				} else {
 					plotLinuxSVG(plotPathR + fileName);
@@ -733,7 +726,8 @@ public class RServe {
 
 				// System.out.println(plotPathR);
 
-				File[] files = ListFilesDirectory(new File(plotPathR), new String[] { ".tiff", ".tif", ".jpg", ".jpeg", ".png", ".bmp" });
+				File[] files = ListFilesDirectory(new File(plotPathR),
+						new String[] { ".tiff", ".tif", ".jpg", ".jpeg", ".png", ".bmp" });
 				if (files != null && files.length > 0) {
 					if (ijCreateSingle) {
 
@@ -749,20 +743,34 @@ public class RServe {
 						}
 
 					} else {
-						ImagePlus plu = new ImagePlus(files[0].toString());
-						ImageStack stack = new ImageStack(plu.getWidth(), plu.getHeight());
-						// System.out.println(files.length);
-						for (int i = 0; i < files.length; i++) {
-							// System.out.println(files[i].toString());
-							ImagePlus plus = new ImagePlus(files[i].toString());
-							stack.addSlice(plus.getProcessor());
-							files[i].delete();
-						}
+						if (isVirtualPlot) {
+							
+							ImagePlus imp = FolderOpener.open(plotPathR, "virtual");
+							imp.show();
 
-						new ImagePlus("Plot", stack).show();
+							if (enableIjMacro) {
+								IJ.runMacro(ijmacro);
+							}
 
-						if (enableIjMacro) {
-							IJ.runMacro(ijmacro);
+							Program.launch(plotPathR);
+
+						} else {
+							ImagePlus plu = new ImagePlus(files[0].toString());
+							ImageStack stack = new ImageStack(plu.getWidth(), plu.getHeight());
+							// System.out.println(files.length);
+							for (int i = 0; i < files.length; i++) {
+								// System.out.println(files[i].toString());
+								ImagePlus plus = new ImagePlus(files[i].toString());
+								stack.addSlice(plus.getProcessor());
+								files[i].delete();
+							}
+
+							new ImagePlus("Plot", stack).show();
+
+							if (enableIjMacro) {
+								IJ.runMacro(ijmacro);
+							}
+
 						}
 
 						// ImageMethods.imageToR(plu.getShortTitle(), false, 1, plu);
@@ -806,7 +814,8 @@ public class RServe {
 
 			} else {
 				/* We use an exteranl pdf device with special rules for Linux! */
-				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows") || ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
+				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")
+						|| ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 					Display display = Util.getDisplay();
 					display.asyncExec(new Runnable() {
 
@@ -943,7 +952,8 @@ public class RServe {
 		// Filter the extension of the file.
 		FilenameFilter filter = new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2]) || name.endsWith(extensions[3]) || name.endsWith(extensions[4])
+				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2])
+						|| name.endsWith(extensions[3]) || name.endsWith(extensions[4])
 						|| name.endsWith(extensions[5]));
 			}
 		};
@@ -1002,8 +1012,7 @@ public class RServe {
 	/**
 	 * A method to store the current RSession.
 	 * 
-	 * @param rSess
-	 *            the RSession
+	 * @param rSess the RSession
 	 */
 	public static void setRsession(RSession rSess) {
 		rSession = rSess;
