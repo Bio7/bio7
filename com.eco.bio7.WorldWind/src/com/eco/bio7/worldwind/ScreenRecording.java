@@ -29,6 +29,10 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
+
+import com.jogamp.opengl.util.FPSAnimator;
+
+import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.WindowManager;
@@ -47,6 +51,7 @@ public class ScreenRecording {
 	private static ScreenRecording instance;
 	private static boolean capture = false;
 	String tmpDir = System.getProperty("java.io.tmpdir") + "WorldWindCapture";
+	protected FPSAnimator animator;
 
 	public ScreenRecording(Button captureButton) {
 		instance = this;
@@ -99,8 +104,8 @@ public class ScreenRecording {
 			BufferedImage img = robotAnim.createScreenCapture(bounds);
 			String ext = "png";
 			// ImagePlus imp = new ImagePlus("Spatial", img);
-			File file = new File(tmpDir +"/"+ "image_" + name + "." + ext);
-			
+			File file = new File(tmpDir + "/" + "image_" + name + "." + ext);
+
 			try {
 				ImageIO.write(img, ext, file); // ignore returned boolean
 			} catch (IOException e) {
@@ -172,6 +177,7 @@ public class ScreenRecording {
 	public void docaptureAnimationJob() {
 
 		Job job = new Job("Capture WorldWind Canvas") {
+
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				monitor.beginTask("Capture WorldWind Canvas ...", countTo);
@@ -181,6 +187,9 @@ public class ScreenRecording {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
+				/*WorldWindowGLCanvas wwc = WorldWindView.getWwd();
+				animator = new FPSAnimator((WorldWindowGLCanvas) wwc, 5  frames per second );
+				animator.start();*/
 				captureAnimation(monitor, robot);
 
 				monitor.done();
@@ -191,8 +200,8 @@ public class ScreenRecording {
 		job.addJobChangeListener(new JobChangeAdapter() {
 			public void done(IJobChangeEvent event) {
 				if (event.getResult().isOK()) {
-					
-					ImagePlus imp = FolderOpener.open(tmpDir+"/", "virtual");
+					animator.stop();
+					ImagePlus imp = FolderOpener.open(tmpDir + "/", "virtual");
 					imp.show();
 					Program.launch(tmpDir);
 					frameCount = 0;
@@ -222,6 +231,7 @@ public class ScreenRecording {
 		while (capture == true && frameCount <= countTo) {
 			if (ScreenRecording.doCapture()) {
 				String name = String.valueOf(frameCount);
+
 				addCapturedImage(name, robotAnim);
 				monitor.worked(1);
 				frameCount++;
