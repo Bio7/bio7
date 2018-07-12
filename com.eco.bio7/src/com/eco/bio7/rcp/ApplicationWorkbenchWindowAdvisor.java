@@ -191,7 +191,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		List<IClasspathEntry> entriesJre = new ArrayList<IClasspathEntry>();
 
-		IVMInstallType installType = JavaRuntime.getVMInstallType("org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType");
+		IVMInstallType installType = JavaRuntime
+				.getVMInstallType("org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType");
 
 		VMStandin vmStandin = new VMStandin(installType, "Bio7 Bundled JRE");
 		vmStandin.setName("Bio7 Bundled JRE");
@@ -231,7 +232,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			// Auto-generated
 			// catch block
 			// e.printStackTrace();
-			System.out.println("Minor error! Please check the classpath of the project and if necessary calculate again!");
+			System.out.println(
+					"Minor error! Please check the classpath of the project and if necessary calculate again!");
 		}
 
 		// Bio7Dialog.message("Java
@@ -278,7 +280,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 												Job job = new Job("Recalculate Classpath Job") {
 													protected IStatus run(IProgressMonitor monitor) {
-														monitor.beginTask("Recalculate classpath.....", IProgressMonitor.UNKNOWN);
+														monitor.beginTask("Recalculate classpath.....",
+																IProgressMonitor.UNKNOWN);
 														javafx.application.Platform.runLater(new Runnable() {
 															@Override
 															public void run() {
@@ -299,7 +302,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 												job.addJobChangeListener(new JobChangeAdapter() {
 													public void done(IJobChangeEvent event) {
 														if (event.getResult().isOK()) {
-															System.out.println("Java Bio7 Project Libraries Recalculated!");
+															System.out.println(
+																	"Java Bio7 Project Libraries Recalculated!");
 														}
 
 														else {
@@ -374,7 +378,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		configurer.getWindow().addPerspectiveListener(new IPerspectiveListener3() {
 
 			@Override
-			public void perspectiveChanged(IWorkbenchPage page, IPerspectiveDescriptor perspective, IWorkbenchPartReference partRef, String changeId) {
+			public void perspectiveChanged(IWorkbenchPage page, IPerspectiveDescriptor perspective,
+					IWorkbenchPartReference partRef, String changeId) {
 				// TODO Auto-generated method stub
 
 			}
@@ -421,7 +426,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			}
 
 			@Override
-			public void perspectiveSavedAs(IWorkbenchPage page, IPerspectiveDescriptor oldPerspective, IPerspectiveDescriptor newPerspective) {
+			public void perspectiveSavedAs(IWorkbenchPage page, IPerspectiveDescriptor oldPerspective,
+					IPerspectiveDescriptor newPerspective) {
 
 			}
 
@@ -429,13 +435,15 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		/*
 		 * Listen to the R editor if debugging actions should be added to the console
-		 * toolbar! Also creates a (not visible) shell for MacOSX to get editor focus after an ImageJ event!
+		 * toolbar! Also creates a (not visible) shell for MacOSX to get editor focus
+		 * after an ImageJ event!
 		 */
 
 		configurer.getWindow().getPartService().addPartListener(new REditorListener().listen());
 
 		PlatformUI.getPreferenceStore().setValue(IWorkbenchPreferenceConstants.SHOW_SYSTEM_JOBS, false);
-		PlatformUI.getPreferenceStore().setDefault(IWorkbenchPreferenceConstants.DOCK_PERSPECTIVE_BAR, IWorkbenchPreferenceConstants.TOP_LEFT);
+		PlatformUI.getPreferenceStore().setDefault(IWorkbenchPreferenceConstants.DOCK_PERSPECTIVE_BAR,
+				IWorkbenchPreferenceConstants.TOP_LEFT);
 		PlatformUI.getPreferenceStore().setValue(IWorkbenchPreferenceConstants.SHOW_TRADITIONAL_STYLE_TABS, false);
 		PlatformUI.getPreferenceStore().setValue(IWorkbenchPreferenceConstants.SHOW_INTRO, true);
 		PlatformUI.getPreferenceStore().setValue(IWorkbenchPreferenceConstants.SHOW_MEMORY_MONITOR, true);
@@ -562,7 +570,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault(PreferenceConstants.D_STRING, fileStartupScripts.getAbsolutePath());
 		store.setDefault(PreferenceConstants.D_SCRIPT_GENERAL, fileGeneralScripts.getAbsolutePath());
 		store.setDefault(PreferenceConstants.D_RSHELL_SCRIPTS, fileRShellScripts.getAbsolutePath());
-		store.setDefault(PreferenceConstants.D_GRID_SCRIPTS, fileGridScripts.getAbsolutePath());		
+		store.setDefault(PreferenceConstants.D_GRID_SCRIPTS, fileGridScripts.getAbsolutePath());
 		store.setDefault("SAVE_R_WORKSPACE_ON_QUIT", false);
 		store.setDefault("ON_QUIT_COMMAND", "save.image(file='session.RData')");
 
@@ -572,7 +580,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			// String pathTempR3 = pathTempR2.replace("\\", "\\\\");
 			store.setDefault(PreferenceConstants.P_TEMP_R, pathTempR2);
 			store.setDefault("Console_Encoding", "CP850");
-			store.setDefault("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTempR2 + "tempDevicePlot%05d.tiff"
+			store.setDefault("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTempR2
+					+ "tempDevicePlot%05d.tiff"
 					+ "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")");
 			store.setDefault("DEVICE_FILENAME", "");
 			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
@@ -583,7 +592,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault(PreferenceConstants.P_TEMP_R, pathTempR);
 			store.setDefault("Console_Encoding", "UTF-8");
 			store.setDefault("shell_arguments", "");
-			store.setDefault("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTempR + "tempDevicePlot%05d.tiff"
+			store.setDefault("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTempR
+					+ "tempDevicePlot%05d.tiff"
 					+ "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")");
 			store.setDefault("DEVICE_FILENAME", "");
 			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
@@ -595,7 +605,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault("Console_Encoding", "UTF-8");
 			store.setDefault("shell_arguments", "export TERM=xterm");
 			store.setDefault("DEVICE_DEFINITION",
-					".bio7Device <- function(filename = \"" + pathTempR + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = 480, height = 480)}; options(device=\".bio7Device\")");
+					".bio7Device <- function(filename = \"" + pathTempR + "tempDevicePlot%05d.tiff"
+							+ "\") { tiff(filename,width = 480, height = 480)}; options(device=\".bio7Device\")");
 			store.setDefault("DEVICE_FILENAME", "");
 			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
 			store.setDefault("PDF_READER", "ACROBAT");
@@ -604,15 +615,18 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		// store.setDefault("RSERVE_AUTOSTART", false);
 		store.setDefault("R_PACKAGE_SERVER", "http://cran.r-project.org");
 		if (getOS().equals("Linux")) {
-			store.setDefault("knitroptions", "opts_chunk$set(dev=\"png\",echo=TRUE, dev.args=list(type=\"cairo\"),dpi=96)");
+			store.setDefault("knitroptions",
+					"opts_chunk$set(dev=\"png\",echo=TRUE, dev.args=list(type=\"cairo\"),dpi=96)");
 
 			// store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "[^a-zA-Z0-9_.]");
 		} else if (getOS().equals("Mac")) {
-			store.setDefault("knitroptions", "opts_chunk$set(dev=\"png\",echo=TRUE, dev.args=list(type=\"quartz\"),dpi=96)");
+			store.setDefault("knitroptions",
+					"opts_chunk$set(dev=\"png\",echo=TRUE, dev.args=list(type=\"quartz\"),dpi=96)");
 
 			// store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "[^a-zA-Z0-9_.]");
 		} else {
-			store.setDefault("knitroptions", "opts_chunk$set(dev=\"png\",echo=TRUE, dev.args=list(type=\"cairo\"),dpi=96)");
+			store.setDefault("knitroptions",
+					"opts_chunk$set(dev=\"png\",echo=TRUE, dev.args=list(type=\"cairo\"),dpi=96)");
 
 			// store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "[^a-zA-Z0-9_.]");
 		}
@@ -671,8 +685,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("STARTUP_SCRIPTS", false);
 		store.setDefault("python_3x", false);
 		store.setDefault("blender_options", "interactive");
-		store.setDefault("before_script_blender", "import bpy;bpy.ops.object.select_all(action='SELECT');bpy.ops.object.delete()");
-		store.setDefault("after_script_blender", "bpy.ops.render.render();bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)");
+		store.setDefault("before_script_blender",
+				"import bpy;bpy.ops.object.select_all(action='SELECT');bpy.ops.object.delete()");
+		store.setDefault("after_script_blender",
+				"bpy.ops.render.render();bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)");
 
 		/* A default FPS setting for the 3d view! */
 		store.setDefault("fixedFps", 60);
@@ -715,8 +731,12 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		storeJava.setDefault("compiler_debug", false);
 		storeJava.setDefault("compiler_verbose", false);
 		storeJava.setDefault("compiler_warnings", false);
-
-		final String pathTo = store.getString(PreferenceConstants.P_TEMP_R);
+		final String pathTo;
+		if (getOS().equals("Windows")) {
+			pathTo = store.getString(PreferenceConstants.P_TEMP_R) + "\\";
+		} else {
+			pathTo = store.getString(PreferenceConstants.P_TEMP_R) + "/";
+		}
 		store.addPropertyChangeListener(new IPropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent event) {
@@ -781,7 +801,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 					if (sel.equals("PLOT_IMAGE")) {
 
-						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff"
+						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
+								+ "tempDevicePlot%05d.tiff"
 								+ "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")");
 						prefsPlotRserve.deviceFilename.setStringValue("");
 						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
@@ -792,42 +813,50 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 							Bio7Dialog.message("Cairo not supported on MacOSX!");
 
 						} else {
-							prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff"
+							prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
+									+ "tempDevicePlot%05d.tiff"
 									+ "\") { tiff(filename,width = 480, height = 480, type=\"cairo\")}; options(device=\".bio7Device\")");
 							prefsPlotRserve.deviceFilename.setStringValue("");
-							prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
+							prefsPlotRserve.deviceFilename.setEnabled(false,
+									prefsPlotRserve.getFieldEditorParentControl());
 						}
 					}
 
 					else if (sel.equals("PLOT_PRINT")) {
 
-						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff"
+						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
+								+ "tempDevicePlot%05d.tiff"
 								+ "\") { tiff(filename,width = 6, height = 6, units=\"in\",res=600)}; options(device=\".bio7Device\")");
 						prefsPlotRserve.deviceFilename.setStringValue("");
 						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 					} else if (sel.equals("PLOT_PDF")) {
 
-						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot.pdf" + "\") { pdf(filename)}; options(device=\".bio7Device\")");
+						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
+								+ "tempDevicePlot.pdf" + "\") { pdf(filename)}; options(device=\".bio7Device\")");
 						prefsPlotRserve.deviceFilename.setStringValue("tempDevicePlot.pdf");
 						prefsPlotRserve.deviceFilename.setEnabled(true, prefsPlotRserve.getFieldEditorParentControl());
 					}
 
 					else if (sel.equals("PLOT_SVG")) {
 
-						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot.svg" + "\") { svg(filename)}; options(device=\".bio7Device\")");
+						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
+								+ "tempDevicePlot.svg" + "\") { svg(filename)}; options(device=\".bio7Device\")");
 						prefsPlotRserve.deviceFilename.setStringValue("tempDevicePlot.svg");
 						prefsPlotRserve.deviceFilename.setEnabled(true, prefsPlotRserve.getFieldEditorParentControl());
 
 					} else if (sel.equals("PLOT_POSTSCRIPT")) {
 
-						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot.eps" + "\") { postscript(filename)}; options(device=\".bio7Device\")");
+						prefsPlotRserve.mult
+								.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot.eps"
+										+ "\") { postscript(filename)}; options(device=\".bio7Device\")");
 						prefsPlotRserve.deviceFilename.setStringValue("tempDevicePlot.eps");
 						prefsPlotRserve.deviceFilename.setEnabled(true, prefsPlotRserve.getFieldEditorParentControl());
 					}
 
 					else if (sel.equals("PLOT_IMAGEJ_IMAGESIZE")) {
 
-						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") {"
+						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
+								+ "tempDevicePlot%05d.tiff" + "\") {"
 								+ " tryCatch(tiff(filename,width = imageSizeX, height = imageSizeY, units = \"px\"),error = function (x) {tiff(filename,width = 512, height = 512, units = \"px\"); print('ImageSizeX and ImageSizeY variables not defined in R Workspace. Applied default values!')})"
 								+ "}; options(device=\".bio7Device\")");
 						prefsPlotRserve.deviceFilename.setStringValue("");
@@ -840,11 +869,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 							Bio7Dialog.message("Cairo not supported on MacOSX!");
 						} else {
 
-							prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { "
+							prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
+									+ "tempDevicePlot%05d.tiff" + "\") { "
 									+ "tryCatch(tiff(filename,width = imageSizeX, height = imageSizeY, units = \"px\",type=\"cairo\"),error = function (x) {tiff(filename,width = 512, height = 512, units = \"px\",type=\"cairo\"); print('ImageSizeX and ImageSizeY variables not defined in R Workspace. Applied default values!')})"
 									+ "}; options(device=\".bio7Device\")");
 							prefsPlotRserve.deviceFilename.setStringValue("");
-							prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
+							prefsPlotRserve.deviceFilename.setEnabled(false,
+									prefsPlotRserve.getFieldEditorParentControl());
 						}
 					}
 
@@ -862,15 +893,20 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 							if (view != null) {
 								Rectangle rec = view.getParent2().getClientArea();
 								if (rec.width > 0 && rec.height > correction) {
-									prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = " + rec.width
-											+ ", height = " + (rec.height - 100) + ", type=\"cairo\")}; options(device=\".bio7Device\")");
+									prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
+											+ "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = " + rec.width
+											+ ", height = " + (rec.height - 100)
+											+ ", type=\"cairo\")}; options(device=\".bio7Device\")");
 								} else {
-									prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = " + 512
-											+ ", height = " + 512 + ", type=\"cairo\")}; options(device=\".bio7Device\")");
+									prefsPlotRserve.mult.setStringValue(
+											".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff"
+													+ "\") { tiff(filename,width = " + 512 + ", height = " + 512
+													+ ", type=\"cairo\")}; options(device=\".bio7Device\")");
 
 								}
 								prefsPlotRserve.deviceFilename.setStringValue("");
-								prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
+								prefsPlotRserve.deviceFilename.setEnabled(false,
+										prefsPlotRserve.getFieldEditorParentControl());
 							}
 						}
 
@@ -885,15 +921,19 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 						if (view != null) {
 							Rectangle rec = view.getParent2().getClientArea();
 							if (rec.width > 0 && rec.height > correction) {
-								prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width =  " + rec.width
-										+ ", height = " + (rec.height - correction) + ", units = \"px\")}; options(device=\".bio7Device\")");
+								prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
+										+ "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width =  " + rec.width
+										+ ", height = " + (rec.height - correction)
+										+ ", units = \"px\")}; options(device=\".bio7Device\")");
 							} else {
-								prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width =  " + 512 + ", height = "
-										+ 512 + ", units = \"px\")}; options(device=\".bio7Device\")");
+								prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
+										+ "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width =  " + 512
+										+ ", height = " + 512 + ", units = \"px\")}; options(device=\".bio7Device\")");
 
 							}
 							prefsPlotRserve.deviceFilename.setStringValue("");
-							prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
+							prefsPlotRserve.deviceFilename.setEnabled(false,
+									prefsPlotRserve.getFieldEditorParentControl());
 						}
 					}
 
@@ -1078,7 +1118,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		if (startupDirectory != null && startupDirectory != "") {
 
-			File[] files = new Util().ListFilesDirectory(new File(startupDirectory), new String[] { ".java", ".r", ".R", ".bsh", ".groovy", ".py", ".js" });
+			File[] files = new Util().ListFilesDirectory(new File(startupDirectory),
+					new String[] { ".java", ".r", ".R", ".bsh", ".groovy", ".py", ".js" });
 			// System.out.println(files.length);
 			if (files.length > 0) {
 				for (int i = 0; i < files.length; i++) {
@@ -1130,7 +1171,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 								// workspace.getRoot().getFileForLocation(location);
 								CompileClassAndMultipleClasses cp = new CompileClassAndMultipleClasses();
 								try {
-									cp.compileAndLoad(new File(location.toOSString()), new File(location.toOSString()).getParent(), name, null, true);
+									cp.compileAndLoad(new File(location.toOSString()),
+											new File(location.toOSString()).getParent(), name, null, true);
 								} catch (Exception e) {
 									// TODO Auto-generated catch block
 									// Bio7Dialog.message(e.getMessage());
@@ -1203,7 +1245,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			/*
 			 * We use a black style if the CSS is the dark theme or the darkest dark theme!
 			 */
-			if (activeTheme.equals("org.eclipse.e4.ui.css.theme.e4_dark") || activeTheme.equals("com.genuitec.eclipse.themes.dark")) {
+			if (activeTheme.equals("org.eclipse.e4.ui.css.theme.e4_dark")
+					|| activeTheme.equals("com.genuitec.eclipse.themes.dark")) {
 
 				Bundle bundle = Platform.getBundle("com.eco.bio7.themes");
 				URL fileURL = bundle.getEntry("javafx/ModenaBlack.css");
@@ -1216,7 +1259,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				javafx.application.Application.setUserAgentStylesheet(path);
 
 				themeBlack = true;
-				OpenHelpBrowserAction.isThemeBlack=true;
+				OpenHelpBrowserAction.isThemeBlack = true;
 
 			} else {
 
@@ -1231,8 +1274,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				javafx.application.Application.setUserAgentStylesheet(path);
 
 				themeBlack = false;
-				/*Set the R editor help browser in code completion popup!*/
-				OpenHelpBrowserAction.isThemeBlack=false;
+				/* Set the R editor help browser in code completion popup! */
+				OpenHelpBrowserAction.isThemeBlack = false;
 
 			}
 		}
@@ -1240,17 +1283,23 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
 		try {
 
-			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.perspective_image", configurer.getWindow());
+			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.perspective_image",
+					configurer.getWindow());
 
-			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.rbridge.RPerspective", configurer.getWindow());
+			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.rbridge.RPerspective",
+					configurer.getWindow());
 
-			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.browser.SceneBuilderPerspective", configurer.getWindow());
+			configurer.getWorkbenchConfigurer().getWorkbench()
+					.showPerspective("com.eco.bio7.browser.SceneBuilderPerspective", configurer.getWindow());
 
-			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.document.DocumentPerspective", configurer.getWindow());
+			configurer.getWorkbenchConfigurer().getWorkbench()
+					.showPerspective("com.eco.bio7.document.DocumentPerspective", configurer.getWindow());
 
-			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.ijmacro.editor.perspectives.ImageJEditPerspective", configurer.getWindow());
+			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective(
+					"com.eco.bio7.ijmacro.editor.perspectives.ImageJEditPerspective", configurer.getWindow());
 
-			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.bio7resource", configurer.getWindow());
+			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.bio7resource",
+					configurer.getWindow());
 
 			// *************************************
 			new StartBio7Utils();
@@ -1483,10 +1532,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		declareWorkbenchImage(bio7, IDE.SharedImages.IMG_OBJ_PROJECT_CLOSED, BIO7_PATH + "folderclosed.png", false);
 
-		declareWorkbenchImage(bio7, IDEInternalWorkbenchImages.IMG_WIZBAN_NEWFOLDER_WIZ, BIO7_PATH + "resourcepersp.png", false);
+		declareWorkbenchImage(bio7, IDEInternalWorkbenchImages.IMG_WIZBAN_NEWFOLDER_WIZ,
+				BIO7_PATH + "resourcepersp.png", false);
 		/* Image for the printer! */
-		declareWorkbenchImage(bio7, org.eclipse.ui.ISharedImages.IMG_ETOOL_PRINT_EDIT_DISABLED, BIO7_TOOLBAR_PATH + "print_file.png", false);
-		declareWorkbenchImage(bio7, org.eclipse.ui.ISharedImages.IMG_ETOOL_PRINT_EDIT, BIO7_TOOLBAR_PATH + "print_file.png", false);
+		declareWorkbenchImage(bio7, org.eclipse.ui.ISharedImages.IMG_ETOOL_PRINT_EDIT_DISABLED,
+				BIO7_TOOLBAR_PATH + "print_file.png", false);
+		declareWorkbenchImage(bio7, org.eclipse.ui.ISharedImages.IMG_ETOOL_PRINT_EDIT,
+				BIO7_TOOLBAR_PATH + "print_file.png", false);
 		/* Image for the folders! */
 		declareWorkbenchImage(bio7, org.eclipse.ui.ISharedImages.IMG_OBJ_FOLDER, BIO7_PATH + "folderopened.png", false);
 		/* Get all JDT images! */
@@ -1497,7 +1549,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		// "cprj_obj.gif", true);
 
 		/* Here we set a Bio7 fieldassist image! */
-		FieldDecorationRegistry.getDefault().registerFieldDecoration("DEC_ERROR", JFaceResources.getString("FieldDecorationRegistry.errorMessage"),
+		FieldDecorationRegistry.getDefault().registerFieldDecoration("DEC_ERROR",
+				JFaceResources.getString("FieldDecorationRegistry.errorMessage"),
 				Bio7Plugin.getImageDescriptor("/icons/workbench/error_ovr.png").createImage());
 
 		declareWorkbenchImage(ideBundle, IDE.SharedImages.IMG_OPEN_MARKER, PATH_ELOCALTOOL + "gotoobj_tsk.png", true);
@@ -1507,58 +1560,91 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		String string = IDEInternalWorkbenchImages.IMG_OBJS_COMPLETE_TSK;
 		declareWorkbenchImage(ideBundle, string, PATH_OBJECT + "complete_tsk.png", true);
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_OBJS_INCOMPLETE_TSK, PATH_OBJECT + "incomplete_tsk.png", true);
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_OBJS_WELCOME_ITEM, PATH_OBJECT + "welcome_item.png", true);
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_OBJS_WELCOME_BANNER, PATH_OBJECT + "welcome_banner.png", true);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_OBJS_INCOMPLETE_TSK,
+				PATH_OBJECT + "incomplete_tsk.png", true);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_OBJS_WELCOME_ITEM,
+				PATH_OBJECT + "welcome_item.png", true);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_OBJS_WELCOME_BANNER,
+				PATH_OBJECT + "welcome_banner.png", true);
 
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_BUILD_EXEC, PATH_ETOOL + "build_exec.png", false);
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_BUILD_EXEC_HOVER, PATH_ETOOL + "build_exec.png", false);
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_BUILD_EXEC_DISABLED, PATH_DTOOL + "build_exec.png", false);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_BUILD_EXEC, PATH_ETOOL + "build_exec.png",
+				false);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_BUILD_EXEC_HOVER,
+				PATH_ETOOL + "build_exec.png", false);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_BUILD_EXEC_DISABLED,
+				PATH_DTOOL + "build_exec.png", false);
 
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_SEARCH_SRC, PATH_ETOOL + "search_src.png", false);
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_SEARCH_SRC_HOVER, PATH_ETOOL + "search_src.png", false);
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_SEARCH_SRC_DISABLED, PATH_DTOOL + "search_src.png", false);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_SEARCH_SRC, PATH_ETOOL + "search_src.png",
+				false);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_SEARCH_SRC_HOVER,
+				PATH_ETOOL + "search_src.png", false);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_SEARCH_SRC_DISABLED,
+				PATH_DTOOL + "search_src.png", false);
 
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_NEXT_NAV, PATH_ETOOL + "next_nav.png", false);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_NEXT_NAV, PATH_ETOOL + "next_nav.png",
+				false);
 
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_PREVIOUS_NAV, PATH_ETOOL + "prev_nav.png", false);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_PREVIOUS_NAV, PATH_ETOOL + "prev_nav.png",
+				false);
 
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_WIZBAN_NEWPRJ_WIZ, PATH_WIZBAN + "newprj_wiz.png", false);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_WIZBAN_NEWPRJ_WIZ,
+				PATH_WIZBAN + "newprj_wiz.png", false);
 
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_WIZBAN_NEWFILE_WIZ, PATH_WIZBAN + "newfile_wiz.png", false);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_WIZBAN_NEWFILE_WIZ,
+				PATH_WIZBAN + "newfile_wiz.png", false);
 
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_WIZBAN_IMPORTDIR_WIZ, PATH_WIZBAN + "importdir_wiz.png", false);
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_WIZBAN_IMPORTZIP_WIZ, PATH_WIZBAN + "importzip_wiz.png", false);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_WIZBAN_IMPORTDIR_WIZ,
+				PATH_WIZBAN + "importdir_wiz.png", false);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_WIZBAN_IMPORTZIP_WIZ,
+				PATH_WIZBAN + "importzip_wiz.png", false);
 
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_WIZBAN_EXPORTDIR_WIZ, PATH_WIZBAN + "exportdir_wiz.png", false);
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_WIZBAN_EXPORTZIP_WIZ, PATH_WIZBAN + "exportzip_wiz.png", false);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_WIZBAN_EXPORTDIR_WIZ,
+				PATH_WIZBAN + "exportdir_wiz.png", false);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_WIZBAN_EXPORTZIP_WIZ,
+				PATH_WIZBAN + "exportzip_wiz.png", false);
 
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_WIZBAN_RESOURCEWORKINGSET_WIZ, PATH_WIZBAN + "workset_wiz.png", false);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_WIZBAN_RESOURCEWORKINGSET_WIZ,
+				PATH_WIZBAN + "workset_wiz.png", false);
 
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_DLGBAN_SAVEAS_DLG, PATH_WIZBAN + "saveas_wiz.png", false);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_DLGBAN_SAVEAS_DLG,
+				PATH_WIZBAN + "saveas_wiz.png", false);
 
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_DLGBAN_QUICKFIX_DLG, PATH_WIZBAN + "quick_fix.png", false);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_DLGBAN_QUICKFIX_DLG,
+				PATH_WIZBAN + "quick_fix.png", false);
 
 		declareWorkbenchImage(ideBundle, IDE.SharedImages.IMG_OPEN_MARKER, PATH_ELOCALTOOL + "gotoobj_tsk.png", true);
 
 		declareWorkbenchImage(ideBundle, IDE.SharedImages.IMG_OBJS_TASK_TSK, PATH_OBJECT + "taskmrk_tsk.png", true);
 		declareWorkbenchImage(ideBundle, IDE.SharedImages.IMG_OBJS_BKMRK_TSK, PATH_OBJECT + "bkmrk_tsk.png", true);
 
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_OBJS_COMPLETE_TSK, PATH_OBJECT + "complete_tsk.png", true);
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_OBJS_INCOMPLETE_TSK, PATH_OBJECT + "incomplete_tsk.png", true);
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_OBJS_WELCOME_ITEM, PATH_OBJECT + "welcome_item.png", true);
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_OBJS_WELCOME_BANNER, PATH_OBJECT + "welcome_banner.png", true);
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_OBJS_ERROR_PATH, PATH_OBJECT + "error_tsk.png", true);
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_OBJS_WARNING_PATH, PATH_OBJECT + "warn_tsk.png", true);
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_OBJS_INFO_PATH, PATH_OBJECT + "info_tsk.png", true);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_OBJS_COMPLETE_TSK,
+				PATH_OBJECT + "complete_tsk.png", true);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_OBJS_INCOMPLETE_TSK,
+				PATH_OBJECT + "incomplete_tsk.png", true);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_OBJS_WELCOME_ITEM,
+				PATH_OBJECT + "welcome_item.png", true);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_OBJS_WELCOME_BANNER,
+				PATH_OBJECT + "welcome_banner.png", true);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_OBJS_ERROR_PATH, PATH_OBJECT + "error_tsk.png",
+				true);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_OBJS_WARNING_PATH, PATH_OBJECT + "warn_tsk.png",
+				true);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_OBJS_INFO_PATH, PATH_OBJECT + "info_tsk.png",
+				true);
 
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_LCL_FLAT_LAYOUT, PATH_ELOCALTOOL + "flatLayout.png", true);
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_LCL_HIERARCHICAL_LAYOUT, PATH_ELOCALTOOL + "hierarchicalLayout.png", true);
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_PROBLEM_CATEGORY, PATH_ETOOL + "problem_category.png", true);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_LCL_FLAT_LAYOUT,
+				PATH_ELOCALTOOL + "flatLayout.png", true);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_LCL_HIERARCHICAL_LAYOUT,
+				PATH_ELOCALTOOL + "hierarchicalLayout.png", true);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_PROBLEM_CATEGORY,
+				PATH_ETOOL + "problem_category.png", true);
 
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_PROBLEMS_VIEW, PATH_EVIEW + "problems_view.png", true);
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_PROBLEMS_VIEW_ERROR, PATH_EVIEW + "problems_view_error.png", true);
-		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_PROBLEMS_VIEW_WARNING, PATH_EVIEW + "problems_view_warning.png", true);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_PROBLEMS_VIEW,
+				PATH_EVIEW + "problems_view.png", true);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_PROBLEMS_VIEW_ERROR,
+				PATH_EVIEW + "problems_view_error.png", true);
+		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_PROBLEMS_VIEW_WARNING,
+				PATH_EVIEW + "problems_view_warning.png", true);
 
 	}
 

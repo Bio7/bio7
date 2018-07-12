@@ -695,7 +695,12 @@ public class RServe {
 		boolean customDevice = store.getBoolean("USE_CUSTOM_DEVICE");
 		if (customDevice == true) {
 
-			String plotPathR = store.getString(PreferenceConstants.P_TEMP_R);
+			String plotPathR;
+			if (Util.getOS().equals("Windows")) {
+				plotPathR = store.getString(PreferenceConstants.P_TEMP_R) + "\\";
+			} else {
+				plotPathR = store.getString(PreferenceConstants.P_TEMP_R) + "/";
+			}
 			boolean isVirtualPlot = store.getBoolean("IMPORT_R_PLOT_VIRTUAL");
 			String fileName = store.getString("DEVICE_FILENAME");
 			boolean useBrowser = store.getBoolean("PDF_USE_BROWSER");
@@ -744,7 +749,7 @@ public class RServe {
 
 					} else {
 						if (isVirtualPlot) {
-							
+
 							ImagePlus imp = FolderOpener.open(plotPathR, "virtual");
 							imp.show();
 
@@ -837,6 +842,7 @@ public class RServe {
 			// System.out.println(openInJavaFXBrowser);
 
 			File tempFile = createTempFileFromPlot(plotPathR, fileName);
+
 			// String temp = "../../../com.eco.bio7/bio7temp/tempDevicePlot.pdf";
 			String temp = "file:////" + tempFile;
 			String url = temp.replace("\\", "/");
@@ -889,6 +895,9 @@ public class RServe {
 					}
 				}
 			});
+			/* Delete file in default Bio7 temporay folder. Not the copy for pdf.js! */
+			File plotFile = new File(plotPathR + fileName);
+			plotFile.delete();
 
 		}
 	}
@@ -1003,7 +1012,15 @@ public class RServe {
 				Runtime.getRuntime().exec("evince " + finalpath);
 			} catch (IOException e2) {
 
-				Bio7Dialog.message("Can't starte Evince!");
+				Bio7Dialog.message("Can't start Evince!");
+			}
+
+		} else if (pdfReader.equals("OKULAR")) {
+			try {
+				Runtime.getRuntime().exec("okular " + finalpath);
+			} catch (IOException e2) {
+
+				Bio7Dialog.message("Can't start Okular!");
 			}
 
 		}

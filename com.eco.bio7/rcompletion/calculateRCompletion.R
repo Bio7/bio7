@@ -28,5 +28,5 @@
   all <- gsub(" ", "", all) # replace whitespace at beginning
   all <- grep("^[a-zA-Z]", all, value = TRUE) # extract those which starts with a letter!
   all <- sort(all)
-  write(all, file = paste(.bio7TempEnvPath$pathTemp, "rproposals.txt", sep = ""))
+  write(all, file = paste(.bio7TempEnvPath$scriptFolder, "rproposals.txt", sep = ""))
 }

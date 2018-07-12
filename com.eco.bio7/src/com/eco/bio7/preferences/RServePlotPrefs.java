@@ -73,7 +73,7 @@ public class RServePlotPrefs extends FieldEditorPreferencePage implements IWorkb
 		deviceFilename=new StringFieldEditor("DEVICE_FILENAME", "Filename", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent());
 		addField(deviceFilename);
 		deviceFilename.setEnabled(false, getFieldEditorParent());
-		selectPDFReader=new RadioGroupFieldEditor("PDF_READER", "PDF Reader (Linux):", 4, new String[][] { { "Acrobat", "ACROBAT" },{ "Evince", "EVINCE" },{ "Kpdf", "KPDF" },{ "Xpdf", "XPDF" } }, getFieldEditorParent(), false);
+		selectPDFReader=new RadioGroupFieldEditor("PDF_READER", "PDF Reader (Linux):", 5, new String[][] { { "Acrobat", "ACROBAT" },{ "Evince", "EVINCE" },{ "Kpdf", "KPDF" },{ "Xpdf", "XPDF" },{ "Okular", "OKULAR" } }, getFieldEditorParent(), false);
 		addField(selectPDFReader);
 		SpacerFieldEditor spacer1 = new SpacerFieldEditor(getFieldEditorParent());
 		addField(spacer1);
