@@ -10,26 +10,29 @@
  *******************************************************************************/
 package com.eco.bio7.worldwind;
 
-import ij.ImagePlus;
-import ij.ImageStack;
-import ij.WindowManager;
-import ij.gui.StackWindow;
-import ij.process.ImageProcessor;
 import java.awt.AWTException;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Robot;
-
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
+import ij.ImagePlus;
+import ij.ImageStack;
+import ij.WindowManager;
+import ij.plugin.FolderOpener;
 
 public class ScreenRecording {
 	private ImageStack s;
@@ -43,10 +46,12 @@ public class ScreenRecording {
 	private int fps = 25;
 	private static ScreenRecording instance;
 	private static boolean capture = false;
+	String tmpDir = System.getProperty("java.io.tmpdir") + "WorldWindCapture";
 
 	public ScreenRecording(Button captureButton) {
 		instance = this;
 		this.captureButton = captureButton;
+		new File(tmpDir).mkdirs();
 	}
 
 	/** Captures the active image window and returns it as an ImagePlus. */
@@ -67,61 +72,50 @@ public class ScreenRecording {
 		return imp2;
 	}
 
-	public ImagePlus setupCaptureImages() {
+	/*
+	 * public ImagePlus setupCaptureImages() {
+	 * 
+	 * ImagePlus imp2 = null;
+	 * 
+	 * Rectangle r = getCaptureRectangle();
+	 * 
+	 * try { robot = new Robot(); } catch (AWTException e) { // TODO Auto-generated
+	 * catch block e.printStackTrace(); } Image img = robot.createScreenCapture(r);
+	 * 
+	 * ImagePlus imp = new ImagePlus("Spatial", img); ImageProcessor ip =
+	 * imp.getProcessor(); s = new ImageStack(imp.getWidth(), imp.getHeight());
+	 * 
+	 * s.addSlice(null, ip); s.addSlice(null, ip); ImagePlus plus = new
+	 * ImagePlus("Stack", s); // We make it visible! plus.show();
+	 * 
+	 * return imp2; }
+	 */
 
-		ImagePlus imp2 = null;
+	public void addCapturedImage(String name, Robot robotAnim) {
 
-		Rectangle r = getCaptureRectangle();
+		if (Integer.parseInt(name) < countTo) {
+			Rectangle bounds = getCaptureRectangle();
 
-		try {
-			robot = new Robot();
-		} catch (AWTException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		Image img = robot.createScreenCapture(r);
-
-		ImagePlus imp = new ImagePlus("Spatial", img);
-		ImageProcessor ip = imp.getProcessor();
-		s = new ImageStack(imp.getWidth(), imp.getHeight());
-
-		s.addSlice(null, ip);
-		s.addSlice(null, ip);
-		ImagePlus plus = new ImagePlus("Stack", s);
-		// We make it visible!
-		plus.show();
-
-		return imp2;
-	}
-
-	public void addCapturedImage() {
-		if (s != null) {
-			if (s.getSize() < countTo) {
-
-				Rectangle bounds = getCaptureRectangle();
-
-				if (s.getWidth() == bounds.getWidth() && s.getHeight() == bounds.getHeight()) {
-
-					Image img = robot.createScreenCapture(bounds);
-
-					ImagePlus imp = new ImagePlus("Spatial", img);
-
-					ImageProcessor ip = imp.getProcessor();
-
-					s.addSlice(null, ip);
-					StackWindow sw = (StackWindow) WindowManager.getCurrentWindow();
-					if (sw != null) {
-						sw.updateSliceSelector();
-					}
-				}
-
-				else {
-					endCapture();
-
-				}
-			} else {
-				endCapture();
+			BufferedImage img = robotAnim.createScreenCapture(bounds);
+			String ext = "png";
+			// ImagePlus imp = new ImagePlus("Spatial", img);
+			File file = new File(tmpDir +"/"+ "image_" + name + "." + ext);
+			
+			try {
+				ImageIO.write(img, ext, file); // ignore returned boolean
+			} catch (IOException e) {
+				System.out.println("Write error for " + file.getPath() + ": " + e.getMessage());
 			}
+
+			/*
+			 * ImageProcessor ip = imp.getProcessor();
+			 * 
+			 * s.addSlice(null, ip); StackWindow sw = (StackWindow)
+			 * WindowManager.getCurrentWindow(); if (sw != null) { sw.updateSliceSelector();
+			 * }
+			 */
+		} else {
+			endCapture();
 		}
 
 	}
@@ -181,8 +175,13 @@ public class ScreenRecording {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				monitor.beginTask("Capture WorldWind Canvas ...", countTo);
-
-				captureAnimation(monitor);
+				try {
+					robot = new Robot();
+				} catch (AWTException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				captureAnimation(monitor, robot);
 
 				monitor.done();
 				return Status.OK_STATUS;
@@ -192,7 +191,10 @@ public class ScreenRecording {
 		job.addJobChangeListener(new JobChangeAdapter() {
 			public void done(IJobChangeEvent event) {
 				if (event.getResult().isOK()) {
-
+					
+					ImagePlus imp = FolderOpener.open(tmpDir+"/", "virtual");
+					imp.show();
+					Program.launch(tmpDir);
 					frameCount = 0;
 				} else {
 
@@ -205,9 +207,10 @@ public class ScreenRecording {
 	}
 
 	/*
-	 * Adapted source for this implementation: http://www.koonsolo.com/news/dewitters-gameloop/
+	 * Adapted source for this implementation:
+	 * http://www.koonsolo.com/news/dewitters-gameloop/
 	 */
-	public void captureAnimation(IProgressMonitor monitor) {
+	public void captureAnimation(IProgressMonitor monitor, Robot robotAnim) {
 
 		int framesPerSecond = fps;
 		int skipTicks = 1000 / framesPerSecond;
@@ -218,8 +221,8 @@ public class ScreenRecording {
 
 		while (capture == true && frameCount <= countTo) {
 			if (ScreenRecording.doCapture()) {
-
-				addCapturedImage();
+				String name = String.valueOf(frameCount);
+				addCapturedImage(name, robotAnim);
 				monitor.worked(1);
 				frameCount++;
 			}

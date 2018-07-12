@@ -1072,7 +1072,7 @@ public class WorldWindOptionsView extends ViewPart {
 					capture.setText("Rec.");
 					screen.setCount(countTo);
 					screen.setFps(spinner.getSelection());
-					screen.setupCaptureImages();
+					//screen.setupCaptureImages();
 					screen.setCapture(true);
 					screen.docaptureAnimationJob();
 				}
