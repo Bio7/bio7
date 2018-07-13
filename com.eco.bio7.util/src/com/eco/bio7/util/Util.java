@@ -190,6 +190,30 @@ public class Util {
 		return col;
 
 	}
+	
+	/**
+	 * A method to return the default foregound color as an AWT color.
+	 * 
+	 * @return a AWT color object
+	 */
+	public static Color getSWTForegroundToAWT() {
+
+		Display display = PlatformUI.getWorkbench().getDisplay();
+		display.syncExec(new Runnable() {
+
+			public void run() {
+
+				org.eclipse.swt.graphics.Color colswt = getShell().getForeground();
+				int r = colswt.getRed();
+				int g = colswt.getGreen();
+				int b = colswt.getBlue();
+				col = new Color(r, g, b);
+
+			}
+		});
+		return col;
+
+	}
 
 	/**
 	 * A method to return the default color as an SWT color.

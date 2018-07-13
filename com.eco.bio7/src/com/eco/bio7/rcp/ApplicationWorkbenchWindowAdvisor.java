@@ -54,6 +54,10 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.e4.core.contexts.IEclipseContext;
+import org.eclipse.e4.ui.css.swt.theme.ITheme;
+import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
+import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
@@ -96,6 +100,7 @@ import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener3;
 import org.eclipse.ui.IPerspectiveRegistry;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
@@ -1236,6 +1241,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	public void postWindowOpen() {
 
 		super.postWindowOpen();
+		
+		/*IWorkbench workbench = PlatformUI.getWorkbench();
+	    MApplication application = workbench.getService(MApplication.class);
+	    IEclipseContext context = application.getContext();
+	    IThemeEngine engine = context.get(IThemeEngine.class);
+	    ITheme theme = engine.getActiveTheme();
+	    System.out.println(theme.getLabel());*/
 
 		// IPreferenceStore workbenchStore =
 		// IDEWorkbenchPlugin.getDefault().getPreferenceStore();

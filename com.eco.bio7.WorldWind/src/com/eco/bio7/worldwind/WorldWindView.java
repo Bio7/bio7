@@ -72,6 +72,7 @@ import org.eclipse.ui.part.ViewPart;
 import org.rosuda.REngine.Rserve.RConnection;
 
 import com.eco.bio7.swt.SwtAwt;
+import com.eco.bio7.util.Util;
 
 public class WorldWindView extends ViewPart {
 
@@ -180,6 +181,9 @@ public class WorldWindView extends ViewPart {
 
 		parent.setLayoutData(new GridData(GridData.FILL_BOTH));
 		statusBar = new StatusBar();
+		/*Set color for dark theme necessary!*/
+		statusBar.setBackground(Util.getSWTBackgroundToAWT());
+		statusBar.setForeground(Util.getSWTForegroundToAWT());
 		worldFrame.add(statusBar, BorderLayout.PAGE_END);
 		statusBar.setEventSource(worldCanvas);
 		initializeToolBar();
