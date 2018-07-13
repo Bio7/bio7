@@ -200,7 +200,6 @@ public class ScreenRecording {
 		job.addJobChangeListener(new JobChangeAdapter() {
 			public void done(IJobChangeEvent event) {
 				if (event.getResult().isOK()) {
-					animator.stop();
 					ImagePlus imp = FolderOpener.open(tmpDir + "/", "virtual");
 					imp.show();
 					Program.launch(tmpDir);
