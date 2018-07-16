@@ -125,6 +125,20 @@
                style="push"
                tooltip="Formats the selected markdown editor source">
          </command>
+         <command
+               commandId="org.eclipse.ui.edit.text.toggleBlockSelectionMode"
+               label="Block Selection"
+               style="toggle"
+               tooltip="Block Selection">
+         </command>
+         <command
+               commandId="org.eclipse.ui.edit.text.toggleWordWrap"
+               style="push">
+         </command>
+         <command
+               commandId="org.eclipse.ui.edit.findReplace"
+               style="push">
+         </command>
       </menuContribution>
    </extension>
 

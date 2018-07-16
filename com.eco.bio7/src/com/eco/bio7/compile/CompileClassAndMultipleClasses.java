@@ -304,9 +304,9 @@ public class CompileClassAndMultipleClasses {
 	}
 
 	private void callPlugin(final Class<?> cl) {
-		SwingUtilities.invokeLater(new Runnable() {
+		/*SwingUtilities.invokeLater(new Runnable() {
 			// !!
-			public void run() {
+			public void run() {*/
 				try {
 
 					((PlugIn) cl.newInstance()).run("");
@@ -314,15 +314,15 @@ public class CompileClassAndMultipleClasses {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-			}
-		});
+			/*}
+		});*/
 
 	}
 
 	private void callPluginFilter(final Class<?> cl) {
-		SwingUtilities.invokeLater(new Runnable() {
+		/*SwingUtilities.invokeLater(new Runnable() {
 			// !!
-			public void run() {
+			public void run() {*/
 				// System.out.println("run plugin");
 				try {
 					new PlugInFilterRunner(cl.newInstance(), "plugin", "");
@@ -334,8 +334,8 @@ public class CompileClassAndMultipleClasses {
 					e.printStackTrace();
 				}
 
-			}
-		});
+			/*}
+		});*/
 	}
 
 	private void callMainMethod(Method method) {

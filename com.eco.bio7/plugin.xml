@@ -358,7 +358,11 @@
      <keyBinding
             commandId="com.eco.bio7.hide.main.menus"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            keySequence="CTRL+SHIFT+3"/>              
+            keySequence="CTRL+SHIFT+3"/>
+     <keyBinding
+            commandId="com.eco.bio7.hide.main.menus.fullscreen"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+SHIFT+4"/>              
      <command
             description="Show Main Menus"
             id="com.eco.bio7.show.main.menus"
@@ -367,6 +371,10 @@
             description="Hide Main Menus"
             id="com.eco.bio7.hide.main.menus"
             name="Hide Main Menus"/>
+     <command
+            description="Hide Main Menus and Fullscreen"
+            id="com.eco.bio7.hide.main.menus.fullscreen"
+            name="Hide Main Menus and Fullscreen"/>
       <command
             description="Start/Stop Action"
             id="com.eco.bio7.start"

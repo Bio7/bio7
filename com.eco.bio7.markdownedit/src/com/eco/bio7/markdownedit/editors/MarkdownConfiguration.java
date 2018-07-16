@@ -37,6 +37,8 @@ import com.eco.bio7.markdownedit.Activator;
 import com.eco.bio7.markdownedit.completion.MardownEditorQuickFixProcessor;
 import com.eco.bio7.markdownedit.completion.RMarkdownCompletionProcessor;
 import com.eco.bio7.markdownedit.hoover.RMarkdownEditorTextHover;
+import com.eco.bio7.reditor.Bio7REditorPlugin;
+import com.eco.bio7.rpreferences.template.RCompletionProcessor;
 
 public class MarkdownConfiguration extends TextSourceViewerConfiguration {
 	private MarkdownDoubleClickStrategy doubleClickStrategy;
@@ -49,6 +51,7 @@ public class MarkdownConfiguration extends TextSourceViewerConfiguration {
 	public SingleTokenScanner comment;
 	public SingleTokenScanner yaml;
 	private MardownEditorQuickFixProcessor assist;
+	private SingleTokenScanner commentR;
 
 	public MarkdownConfiguration(ColorManager colorManager, MarkdownEditor markdownEditor, IPreferenceStore preferenceStore) {
 		super(preferenceStore);
@@ -58,7 +61,7 @@ public class MarkdownConfiguration extends TextSourceViewerConfiguration {
 	}
 
 	public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
-		return new String[] { IDocument.DEFAULT_CONTENT_TYPE, MarkdownPartitionScanner.MARKDOWN_R_CHUNK, MarkdownPartitionScanner.MARKDOWN_TAG };
+		return new String[] { IDocument.DEFAULT_CONTENT_TYPE, MarkdownPartitionScanner.MARKDOWN_R_CHUNK, MarkdownPartitionScanner.MARKDOWN_TAG,MarkdownPartitionScanner.MARKDOWN_OTHER_CHUNK};
 	}
 
 	public ITextDoubleClickStrategy getDoubleClickStrategy(ISourceViewer sourceViewer, String contentType) {
@@ -127,8 +130,8 @@ public class MarkdownConfiguration extends TextSourceViewerConfiguration {
 		// strategy.setEditor(markdownEditor);
 
 		// MonoReconciler reconciler = new MonoReconciler(strategy, false);
-		Reconciler reconciler2 = new Reconciler();
-		reconciler2.setDocumentPartitioning(IDocumentExtension3.DEFAULT_PARTITIONING);
+		//Reconciler reconciler2 = new Reconciler();
+		//reconciler2.setDocumentPartitioning(IDocumentExtension3.DEFAULT_PARTITIONING);
 		// reconciler2.setReconcilingStrategy(strategy,IDocument.DEFAULT_CONTENT_TYPE);
 		// reconciler2.setReconcilingStrategy(strategy,MarkdownPartitionScanner.MARKDOWN_TAG);
 		// reconciler2.setReconcilingStrategy(strategySpelling,MarkdownPartitionScanner.MARKDOWN_TAG);
@@ -164,10 +167,23 @@ public class MarkdownConfiguration extends TextSourceViewerConfiguration {
 		/*
 		 * We create the special token with a default style from the preferences!
 		 */
-		comment = new SingleTokenScanner(new TextAttribute(new Color(Display.getDefault(), rgbkey2), null, isBold("BOLD_COLOURKEY2")));
-		DefaultDamagerRepairer ndr = new DefaultDamagerRepairer(comment);
+		//comment = new SingleTokenScanner(new TextAttribute(new Color(Display.getDefault(), rgbkey2), null, isBold("BOLD_COLOURKEY2")));
+		DefaultDamagerRepairer ndr = new DefaultDamagerRepairer(Bio7REditorPlugin.getDefault().getRCodeScanner());
 		reconciler.setDamager(ndr, MarkdownPartitionScanner.MARKDOWN_R_CHUNK);
 		reconciler.setRepairer(ndr, MarkdownPartitionScanner.MARKDOWN_R_CHUNK);
+		
+		/*commentR = new SingleTokenScanner(new TextAttribute(new Color(Display.getDefault(), rgbkey2), null, isBold("BOLD_COLOURKEY2")));
+		DefaultDamagerRepairer rcomment = new DefaultDamagerRepairer(commentR);
+		reconciler.setDamager(rcomment,  MarkdownPartitionScanner.MARKDOWN_R_CHUNK);
+		reconciler.setRepairer(rcomment,  MarkdownPartitionScanner.MARKDOWN_R_CHUNK);*/
+		
+		/*
+		 * We create the special token with a default style from the preferences!
+		 */
+		comment = new SingleTokenScanner(new TextAttribute(new Color(Display.getDefault(), rgbkey2), null, isBold("BOLD_COLOURKEY2")));
+		DefaultDamagerRepairer other = new DefaultDamagerRepairer(comment);
+		reconciler.setDamager(other, MarkdownPartitionScanner.MARKDOWN_OTHER_CHUNK);
+		reconciler.setRepairer(other, MarkdownPartitionScanner.MARKDOWN_OTHER_CHUNK);
 
 		/*
 		 * NonRuleBasedDamagerRepairer ndr = new NonRuleBasedDamagerRepairer(new TextAttribute(new Color(Display.getDefault(), rgbkey2), null, isBold("BOLD_COLOURKEY2"))); reconciler.setDamager(ndr,
@@ -212,6 +228,9 @@ public class MarkdownConfiguration extends TextSourceViewerConfiguration {
 
 		assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
 		assistant.setInformationControlCreator(getInformationControlCreator(sourceViewer));
+		
+		/*assistant = new RCompletionProcessor(rEditor, assistant);
+		assistant.setContentAssistProcessor(processorRMarkdown, MarkdownPartitionScanner.MARKDOWN_R_CHUNK);*/
 
 		return assistant;
 	}

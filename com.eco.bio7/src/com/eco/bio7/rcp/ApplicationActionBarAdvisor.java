@@ -75,6 +75,7 @@ import com.eco.bio7.actions.FlowEditorTestAction;
 import com.eco.bio7.actions.FlowExternalStartAction;
 import com.eco.bio7.actions.FlowStopAction;
 import com.eco.bio7.actions.HideMainMenus;
+import com.eco.bio7.actions.HideMainMenusAndFullscreen;
 import com.eco.bio7.actions.Interpret;
 import com.eco.bio7.actions.InterpretPython;
 import com.eco.bio7.actions.JavaScriptInterpret;
@@ -268,6 +269,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	private ShowMainMenus showMainMenu;
 
 	private HideMainMenus hideMainMenu;
+	
+	private HideMainMenusAndFullscreen hideMainMenuAndFullscreen;
 
 	private IWorkbenchAction toggleCoolBar;
 
@@ -295,6 +298,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		hideMainMenu = new HideMainMenus("Hide all Menus", window2);
 		register(hideMainMenu);
+		
+		hideMainMenuAndFullscreen = new HideMainMenusAndFullscreen("Hide all Menus and Toolbar", window2);
+		register(hideMainMenuAndFullscreen);
 
 		officeopenspread = new OfficeOpenAction("Open Spreadsheet", window2);
 
@@ -820,6 +826,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		WindowMenu.add(openPerspectiveMenu);
 		WindowMenu.add(new Separator());
 		WindowMenu.add(new ShowEditorAreaAction("Show/Hide Editor", window2));
+		WindowMenu.add(showMainMenu);
+		WindowMenu.add(hideMainMenu);		
+		WindowMenu.add(hideMainMenuAndFullscreen);
 		WindowMenu.add(new Separator());
 		// WindowMenu.add(hideMainMenu);
 		// WindowMenu.add(showMainMenu);
