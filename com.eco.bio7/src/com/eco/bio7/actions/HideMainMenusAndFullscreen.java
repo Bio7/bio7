@@ -10,6 +10,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.IHandlerService;
 
+import com.eco.bio7.util.Util;
+
 public class HideMainMenusAndFullscreen extends Action {
 
 	private final IWorkbenchWindow window;
@@ -35,12 +37,15 @@ public class HideMainMenusAndFullscreen extends Action {
 			public void run() {
 				try {
 					handlerService.executeCommand(fullscreenId, null);
-					if (hiddenMenu == false) {
-						handlerService.executeCommand(hideMainMenuId, null);
-						hiddenMenu = true;
-					} else {
-						handlerService.executeCommand(showMainMenuId, null);
-						hiddenMenu = false;
+					/*Exclude MacOSX which has automatically hides the menu!*/
+					if (Util.getOS().equals("Mac") == false) {
+						if (hiddenMenu == false) {
+							handlerService.executeCommand(hideMainMenuId, null);
+							hiddenMenu = true;
+						} else {
+							handlerService.executeCommand(showMainMenuId, null);
+							hiddenMenu = false;
+						}
 					}
 				} catch (ExecutionException | NotDefinedException | NotEnabledException | NotHandledException e) {
 					// TODO Auto-generated catch block

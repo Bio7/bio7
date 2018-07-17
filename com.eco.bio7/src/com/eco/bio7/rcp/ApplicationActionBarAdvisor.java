@@ -843,7 +843,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		WindowMenu.add(switchTheme);
 		WindowMenu.add(new Separator());
 		WindowMenu.add(saveperspectiveas);
-		WindowMenu.add(switchTheme);
 		helpMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 
 		if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {

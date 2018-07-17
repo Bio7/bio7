@@ -90,7 +90,7 @@ public class ThemeSwitchHandler extends Action {
 			PreferenceConverter.setValue(storeR, "colourkey1", new RGB(177, 102, 218));
 			PreferenceConverter.setValue(storeR, "colourkey2", new RGB(23, 198, 163));
 			PreferenceConverter.setValue(storeR, "colourkey3", new RGB(128, 128, 128));
-			PreferenceConverter.setValue(storeR, "colourkey4", new RGB(204, 108, 29));
+			PreferenceConverter.setValue(storeR, "colourkey4", new RGB(219,176,78));
 			PreferenceConverter.setValue(storeR, "colourkey5", new RGB(230, 230, 250));
 			PreferenceConverter.setValue(storeR, "colourkey6", new RGB(250, 243, 243));
 			PreferenceConverter.setValue(storeR, "colourkey7", new RGB(104, 151, 187));
