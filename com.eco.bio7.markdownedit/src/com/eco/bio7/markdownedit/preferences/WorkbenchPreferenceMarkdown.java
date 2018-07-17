@@ -101,8 +101,7 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 		PreferenceConverter.setDefault(store, "colourkey", new RGB(0, 0, 0));
 		PreferenceConverter.setDefault(store, "colourkey1", new RGB(127, 0, 85));
-		/*We now use the R editor colors!*/
-		//PreferenceConverter.setDefault(store, "colourkey2", new RGB(42, 0, 255));
+		PreferenceConverter.setDefault(store, "colourkey2", new RGB(42, 0, 255));
 		
 		//PreferenceConverter.setDefault(store, "colourkey3", new RGB(128, 128, 128));
 
@@ -132,7 +131,7 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 			scanner.other.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey")), null, 0));
 			scanner.head.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey1")), null, 0));
 			/*We now use the R editor colors instead of colorkey2!*/
-			//markdownEditor.getMarkConf().comment.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey2")), null, 0));
+			markdownEditor.getMarkConf().comment.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey2")), null, 0));
 			markdownEditor.getMarkConf().yaml.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getDefaultColor(store, "colourkey3")), null, 0));
 
 			markdownEditor.invalidateText();
@@ -169,7 +168,7 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 					break;
 					/*We now use the R editor colors instead of colorkey2!*/
 				case "colourkey2":
-					//markdownEditor.getMarkConf().comment.att.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY2")));
+					markdownEditor.getMarkConf().comment.att.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY2")));
 					break;
 				/*case "colourkey3":
 					markdownEditor.getMarkConf().yaml.att.setData(new TextAttribute(provider.getColor(rgb), null, isBold("BOLD_COLOURKEY3")));
@@ -212,12 +211,12 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 
 					break;
 					/*We now use the R editor colors instead of colorkey2!*/
-				/*case "BOLD_COLOURKEY2":
+				case "BOLD_COLOURKEY2":
 					if (fontData) {
 						markdownEditor.getMarkConf().comment.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey2")), null, SWT.BOLD));
 					} else {
 						markdownEditor.getMarkConf().comment.att.setData(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey2")), null, SWT.NORMAL));
-					}*/
+					}
 					//break;
 				/*case "BOLD_COLOURKEY3":
 					if (fontData) {

@@ -92,6 +92,7 @@ import com.eco.bio7.actions.ShowEditorAreaAction;
 import com.eco.bio7.actions.ShowMainMenus;
 import com.eco.bio7.actions.Start;
 import com.eco.bio7.actions.Start3d;
+import com.eco.bio7.actions.theme.ThemeSwitchHandler;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.BeanShellInterpreter;
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
@@ -275,6 +276,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	private IWorkbenchAction toggleCoolBar;
 
 	protected Stack<MenuManager> menuStack;
+
+	private ThemeSwitchHandler switchTheme;
 
 	// private FastOpenScriptAction fastOpenScriptAction;
 
@@ -493,6 +496,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		refreshAction = ActionFactory.REFRESH.create(window);
 		register(refreshAction);
+		
+		switchTheme=new ThemeSwitchHandler("Switch Theme");
+		register(switchTheme);
 
 	}
 
@@ -835,6 +841,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		// WindowMenu.add(toggleCoolBar);
 		WindowMenu.add(new Separator());
 		WindowMenu.add(saveperspectiveas);
+		WindowMenu.add(switchTheme);
 		helpMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 
 		if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {

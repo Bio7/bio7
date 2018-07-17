@@ -1241,24 +1241,24 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	public void postWindowOpen() {
 
 		super.postWindowOpen();
-		
-		/*IWorkbench workbench = PlatformUI.getWorkbench();
-	    MApplication application = workbench.getService(MApplication.class);
-	    IEclipseContext context = application.getContext();
-	    IThemeEngine engine = context.get(IThemeEngine.class);
-	    ITheme theme = engine.getActiveTheme();
-	    System.out.println(theme.getLabel());*/
+
+		IWorkbench workbench = PlatformUI.getWorkbench();
+		MApplication application = workbench.getService(MApplication.class);
+		IEclipseContext context = application.getContext();
+		IThemeEngine engine = context.get(IThemeEngine.class);
+		ITheme theme = engine.getActiveTheme();
+		// System.out.println(theme.getLabel());
 
 		// IPreferenceStore workbenchStore =
 		// IDEWorkbenchPlugin.getDefault().getPreferenceStore();
 		// System.out.print(ThemeHelper.getEngine().getActiveTheme().getId());
-		if (ThemeHelper.getEngine().getActiveTheme() != null) {
-			String activeTheme = ThemeHelper.getEngine().getActiveTheme().getId();
+		if (theme != null) {
+			String activeTheme = theme.getId();
 			/*
 			 * We use a black style if the CSS is the dark theme or the darkest dark theme!
 			 */
-			if (activeTheme.equals("org.eclipse.e4.ui.css.theme.e4_dark")
-					|| activeTheme.equals("com.genuitec.eclipse.themes.dark")) {
+			if (activeTheme.startsWith("org.eclipse.e4.ui.css.theme.e4_dark")
+					|| activeTheme.startsWith("com.genuitec.eclipse.themes.dark")) {
 
 				Bundle bundle = Platform.getBundle("com.eco.bio7.themes");
 				URL fileURL = bundle.getEntry("javafx/ModenaBlack.css");

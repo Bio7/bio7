@@ -153,7 +153,7 @@ public class MarkdownConfiguration extends TextSourceViewerConfiguration {
 	public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
 
 		RGB rgbkey2 = PreferenceConverter.getColor(store, "colourkey2");
-		RGB rgbkey3 = PreferenceConverter.getColor(store, "colourkey3");
+		//RGB rgbkey3 = PreferenceConverter.getColor(store, "colourkey3");
 		PresentationReconciler reconciler = new PresentationReconciler();
 
 		DefaultDamagerRepairer dr = new DefaultDamagerRepairer(getMarkdownTagScanner());
@@ -193,8 +193,8 @@ public class MarkdownConfiguration extends TextSourceViewerConfiguration {
 		/*
 		 * We create the special token with a default style from the preferences!
 		 */
-		yaml = new SingleTokenScanner(new TextAttribute(new Color(Display.getDefault(), rgbkey3), null, isBold("BOLD_COLOURKEY3")));
-		DefaultDamagerRepairer ndrcomment = new DefaultDamagerRepairer(yaml);
+		//yaml = new SingleTokenScanner(new TextAttribute(new Color(Display.getDefault(), rgbkey3), null, isBold("BOLD_COLOURKEY3")));
+		//DefaultDamagerRepairer ndrcomment = new DefaultDamagerRepairer(yaml);
 		// reconciler.setDamager(ndrcomment, MarkdownPartitionScanner.YAML_HEADER);
 		// reconciler.setRepairer(ndrcomment, MarkdownPartitionScanner.YAML_HEADER);
 
