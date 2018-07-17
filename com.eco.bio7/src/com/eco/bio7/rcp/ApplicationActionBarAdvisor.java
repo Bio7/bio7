@@ -839,6 +839,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		// WindowMenu.add(hideMainMenu);
 		// WindowMenu.add(showMainMenu);
 		// WindowMenu.add(toggleCoolBar);
+		
+		WindowMenu.add(switchTheme);
 		WindowMenu.add(new Separator());
 		WindowMenu.add(saveperspectiveas);
 		WindowMenu.add(switchTheme);
