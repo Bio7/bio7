@@ -101,7 +101,7 @@ public class ThemeSwitchHandler extends Action {
 			PreferenceConverter.setValue(store, "colourkey1", new RGB(177, 102, 218));
 			PreferenceConverter.setValue(store, "colourkey2", new RGB(23, 198, 163));
 			PreferenceConverter.setValue(store, "colourkey3", new RGB(128, 128, 128));
-			PreferenceConverter.setValue(store, "colourkey4", new RGB(204, 108, 29));
+			PreferenceConverter.setValue(store, "colourkey4", new RGB(219,176,78));
 			PreferenceConverter.setValue(store, "colourkey5", new RGB(230, 230, 250));
 			PreferenceConverter.setValue(store, "colourkey6", new RGB(250, 243, 243));
 			PreferenceConverter.setValue(store, "colourkey7", new RGB(104, 151, 187));
@@ -112,14 +112,14 @@ public class ThemeSwitchHandler extends Action {
 			PreferenceConverter.setValue(storeBsh, "colourkey1", new RGB(177, 102, 218));
 			PreferenceConverter.setValue(storeBsh, "colourkey2", new RGB(23, 198, 163));
 			PreferenceConverter.setValue(storeBsh, "colourkey3", new RGB(128, 128, 128));
-			PreferenceConverter.setValue(storeBsh, "colourkey4", new RGB(204, 108, 29));
+			PreferenceConverter.setValue(storeBsh, "colourkey4", new RGB(219,176,78));
 			PreferenceConverter.setValue(storeBsh, "colourkey5", new RGB(230, 230, 250));
 			PreferenceConverter.setValue(storeBsh, "colourkey6", new RGB(250, 243, 243));
 			PreferenceConverter.setValue(storeBsh, "colourkey7", new RGB(104, 151, 187));
                                 
 			IPreferenceStore storeMarkdown = Activator.getDefault().getPreferenceStore();
 			PreferenceConverter.setValue(storeMarkdown, "colourkey", new RGB(250, 243, 243));
-			PreferenceConverter.setValue(storeMarkdown, "colourkey1", new RGB(127, 0, 85));
+			PreferenceConverter.setValue(storeMarkdown, "colourkey1", new RGB(167, 236, 33));
 			PreferenceConverter.setValue(storeMarkdown, "colourkey2", new RGB(250, 243, 243));
 
 			IPreferenceStore storePython = PythonEditorPlugin.getDefault().getPreferenceStore();
@@ -127,7 +127,7 @@ public class ThemeSwitchHandler extends Action {
 			PreferenceConverter.setValue(storePython, "colourkey1", new RGB(177, 102, 218));
 			PreferenceConverter.setValue(storePython, "colourkey2", new RGB(23, 198, 163));
 			PreferenceConverter.setValue(storePython, "colourkey3", new RGB(128, 128, 128));
-			PreferenceConverter.setValue(storePython, "colourkey4", new RGB(204, 108, 29));
+			PreferenceConverter.setValue(storePython, "colourkey4", new RGB(219,176,78));
 			PreferenceConverter.setValue(storePython, "colourkey5", new RGB(230, 230, 250));
 			PreferenceConverter.setValue(storePython, "colourkey7", new RGB(250, 243, 243));
 			PreferenceConverter.setValue(storePython, "colourkey8", new RGB(104, 151, 187));
