@@ -7,10 +7,15 @@ import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 
+import org.eclipse.e4.core.contexts.IEclipseContext;
+import org.eclipse.e4.ui.css.swt.theme.ITheme;
+import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
+import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -274,6 +279,31 @@ public class Util {
 		});
 		if (editor != page.getActiveEditor())
 			throw new RuntimeException("Editor couldn't activated");
+	}
+	public static boolean isThemeBlack() {
+		boolean themeBlack = false;
+		IWorkbench workbench = PlatformUI.getWorkbench();
+		MApplication application = workbench.getService(MApplication.class);
+		IEclipseContext context = application.getContext();
+		IThemeEngine engine = context.get(IThemeEngine.class);
+		ITheme theme = engine.getActiveTheme();
+		// System.out.println(theme.getLabel());
+
+		// IPreferenceStore workbenchStore =
+		// IDEWorkbenchPlugin.getDefault().getPreferenceStore();
+		// System.out.print(ThemeHelper.getEngine().getActiveTheme().getId());
+		if (theme != null) {
+			String activeTheme = theme.getId();
+			/*
+			 * We use a black style if the CSS is the dark theme or the darkest dark theme!
+			 */
+			if (activeTheme.startsWith("org.eclipse.e4.ui.css.theme.e4_dark") || activeTheme.startsWith("com.genuitec.eclipse.themes.dark")) {
+
+				themeBlack = true;
+
+			}
+		}
+		return themeBlack;
 	}
 
 }

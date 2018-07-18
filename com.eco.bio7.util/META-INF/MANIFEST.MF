@@ -6,7 +6,10 @@ Bundle-Version: 2.5.0.qualifier
 Bundle-Activator: com.eco.bio7.util.Activator
 Bundle-Vendor: ECO
 Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime
+ org.eclipse.core.runtime,
+ org.eclipse.e4.ui.model.workbench,
+ org.eclipse.e4.core.contexts,
+ org.eclipse.e4.ui.css.swt.theme
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: bin/
