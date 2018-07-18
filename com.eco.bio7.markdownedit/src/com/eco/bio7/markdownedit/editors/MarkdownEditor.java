@@ -24,6 +24,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.LineStyleEvent;
+import org.eclipse.swt.custom.LineStyleListener;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
@@ -61,9 +63,10 @@ public class MarkdownEditor extends TextEditor implements IPropertyChangeListene
 	private Object[] expanded;
 	protected ArrayList<TreeItem> selectedItems;
 	private MarkdownConfiguration markConf;
-	final private ScopedPreferenceStore storeWorkbench = new ScopedPreferenceStore(new InstanceScope(), "org.eclipse.ui.workbench");
+	final private ScopedPreferenceStore storeWorkbench = new ScopedPreferenceStore(new InstanceScope(),
+			"org.eclipse.ui.workbench");
 	private ISourceViewer viewer;
-	
+
 	private static String selectedContent;
 
 	public static String getSelectedContent() {
@@ -77,12 +80,10 @@ public class MarkdownEditor extends TextEditor implements IPropertyChangeListene
 	public ColorManager getColorManager() {
 		return colorManager;
 	}
-	
+
 	public ISourceViewer getViewer() {
 		return viewer;
 	}
-	
-	
 
 	public MarkdownEditor() {
 		super();
@@ -125,8 +126,7 @@ public class MarkdownEditor extends TextEditor implements IPropertyChangeListene
 
 			@Override
 			public void mouseDown(MouseEvent e) {
-				
-				
+
 				IDocumentProvider dp = editor.getDocumentProvider();
 				IDocument doc = dp.getDocument(editor.getEditorInput());
 
@@ -137,7 +137,7 @@ public class MarkdownEditor extends TextEditor implements IPropertyChangeListene
 				ITextSelection selection = (ITextSelection) selectionsel;
 
 				int b = selection.getStartLine();
-				
+
 				IRegion reg = null;
 				try {
 					reg = doc.getLineInformation(b);
@@ -163,7 +163,8 @@ public class MarkdownEditor extends TextEditor implements IPropertyChangeListene
 				 * Hide the code completion tooltip if the mouse is clicked!
 				 */
 				/*
-				 * RCompletionProcessor processor = getRconf().getProcessor(); DefaultToolTip tip = processor.getTooltip(); if (tip != null) { tip.hide(); }
+				 * RCompletionProcessor processor = getRconf().getProcessor(); DefaultToolTip
+				 * tip = processor.getTooltip(); if (tip != null) { tip.hide(); }
 				 */
 			}
 
@@ -178,6 +179,15 @@ public class MarkdownEditor extends TextEditor implements IPropertyChangeListene
 
 		});
 		viewer = getSourceViewer();
+        
+		/*viewer.getTextWidget().addLineStyleListener(new LineStyleListener() {
+
+			public void lineGetStyle(LineStyleEvent event) {
+				// getLineStyle(event);
+				System.out.println(event.toString());
+			}
+
+		});*/
 
 	}
 
@@ -366,7 +376,8 @@ public class MarkdownEditor extends TextEditor implements IPropertyChangeListene
 	}
 
 	/*
-	 * This method is recursively called to walk all subtrees and compare the names of the nodes with the old ones!
+	 * This method is recursively called to walk all subtrees and compare the names
+	 * of the nodes with the old ones!
 	 */
 
 	public void walkTree(TreeItem item) {
@@ -377,7 +388,8 @@ public class MarkdownEditor extends TextEditor implements IPropertyChangeListene
 
 				TreeItem it = item.getItem(j);
 
-				if (((MarkdownEditorOutlineNode) it.getData()).getName().equals(((MarkdownEditorOutlineNode) expanded[i]).getName())) {
+				if (((MarkdownEditorOutlineNode) it.getData()).getName()
+						.equals(((MarkdownEditorOutlineNode) expanded[i]).getName())) {
 					contentOutlineViewer.setExpandedState(it.getData(), true);
 					/* Recursive call of the method for subnodes! */
 					walkTree(it);
