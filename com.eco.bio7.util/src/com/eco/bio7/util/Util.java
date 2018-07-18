@@ -43,7 +43,10 @@ public class Util {
 	}
 
 	/*
-	 * From: http://stackoverflow.com/questions/4748673/how-can-i-check-the-bitness-of -my-os-using-java-j2se-not-os-arch/5940770#5940770 Author: ChrisH: http://stackoverflow.com/users/71109/chrish
+	 * From:
+	 * http://stackoverflow.com/questions/4748673/how-can-i-check-the-bitness-of
+	 * -my-os-using-java-j2se-not-os-arch/5940770#5940770 Author: ChrisH:
+	 * http://stackoverflow.com/users/71109/chrish
 	 */
 	/**
 	 * A method to detect the architecture of the Operating System (32-bit, 64-bit).
@@ -74,7 +77,9 @@ public class Util {
 		// Filter the extension of the file.
 		FilenameFilter filter = new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2]) || name.endsWith(extensions[3]) || name.endsWith(extensions[4]) || name.endsWith(extensions[5]));
+				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2])
+						|| name.endsWith(extensions[3]) || name.endsWith(extensions[4])
+						|| name.endsWith(extensions[5]));
 			}
 		};
 
@@ -195,7 +200,7 @@ public class Util {
 		return col;
 
 	}
-	
+
 	/**
 	 * A method to return the default foregound color as an AWT color.
 	 * 
@@ -241,6 +246,7 @@ public class Util {
 		return colSwt;
 
 	}
+
 	/**
 	 * A method to return the default color as an SWT color.
 	 * 
@@ -280,6 +286,12 @@ public class Util {
 		if (editor != page.getActiveEditor())
 			throw new RuntimeException("Editor couldn't activated");
 	}
+
+	/**
+	 * A method to detect if the dark theme is active.
+	 * 
+	 * @return a boolean value.
+	 */
 	public static boolean isThemeBlack() {
 		boolean themeBlack = false;
 		IWorkbench workbench = PlatformUI.getWorkbench();
@@ -297,7 +309,8 @@ public class Util {
 			/*
 			 * We use a black style if the CSS is the dark theme or the darkest dark theme!
 			 */
-			if (activeTheme.startsWith("org.eclipse.e4.ui.css.theme.e4_dark") || activeTheme.startsWith("com.genuitec.eclipse.themes.dark")) {
+			if (activeTheme.startsWith("org.eclipse.e4.ui.css.theme.e4_dark")
+					|| activeTheme.startsWith("com.genuitec.eclipse.themes.dark")) {
 
 				themeBlack = true;
 
