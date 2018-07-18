@@ -1232,54 +1232,40 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		super.postWindowOpen();
 
-		IWorkbench workbench = PlatformUI.getWorkbench();
-		MApplication application = workbench.getService(MApplication.class);
-		IEclipseContext context = application.getContext();
-		IThemeEngine engine = context.get(IThemeEngine.class);
-		ITheme theme = engine.getActiveTheme();
-		// System.out.println(theme.getLabel());
+		/*
+		 * We use a black style if the CSS is the dark theme or the darkest dark theme!
+		 */
+		if (Util.isThemeBlack()) {
 
-		// IPreferenceStore workbenchStore =
-		// IDEWorkbenchPlugin.getDefault().getPreferenceStore();
-		// System.out.print(ThemeHelper.getEngine().getActiveTheme().getId());
-		if (theme != null) {
-			String activeTheme = theme.getId();
-			/*
-			 * We use a black style if the CSS is the dark theme or the darkest dark theme!
-			 */
-			if (activeTheme.startsWith("org.eclipse.e4.ui.css.theme.e4_dark")
-					|| activeTheme.startsWith("com.genuitec.eclipse.themes.dark")) {
+			Bundle bundle = Platform.getBundle("com.eco.bio7.themes");
+			URL fileURL = bundle.getEntry("javafx/ModenaBlack.css");
 
-				Bundle bundle = Platform.getBundle("com.eco.bio7.themes");
-				URL fileURL = bundle.getEntry("javafx/ModenaBlack.css");
+			String path = fileURL.toExternalForm();
 
-				String path = fileURL.toExternalForm();
+			// System.out.println(path);
+			// javafx.application.Application.setUserAgentStylesheet(null);
 
-				// System.out.println(path);
-				// javafx.application.Application.setUserAgentStylesheet(null);
+			javafx.application.Application.setUserAgentStylesheet(path);
 
-				javafx.application.Application.setUserAgentStylesheet(path);
+			themeBlack = true;
+			OpenHelpBrowserAction.isThemeBlack = true;
 
-				themeBlack = true;
-				OpenHelpBrowserAction.isThemeBlack = true;
+		} else {
 
-			} else {
+			Bundle bundle = Platform.getBundle("com.eco.bio7.themes");
+			URL fileURL = bundle.getEntry("javafx/Bio7Default.css");
 
-				Bundle bundle = Platform.getBundle("com.eco.bio7.themes");
-				URL fileURL = bundle.getEntry("javafx/Bio7Default.css");
+			String path = fileURL.toExternalForm();
 
-				String path = fileURL.toExternalForm();
+			// System.out.println(path);
+			// javafx.application.Application.setUserAgentStylesheet(null);
 
-				// System.out.println(path);
-				// javafx.application.Application.setUserAgentStylesheet(null);
+			javafx.application.Application.setUserAgentStylesheet(path);
 
-				javafx.application.Application.setUserAgentStylesheet(path);
+			themeBlack = false;
+			/* Set the R editor help browser in code completion popup! */
+			OpenHelpBrowserAction.isThemeBlack = false;
 
-				themeBlack = false;
-				/* Set the R editor help browser in code completion popup! */
-				OpenHelpBrowserAction.isThemeBlack = false;
-
-			}
 		}
 
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
