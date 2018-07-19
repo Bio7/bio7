@@ -15,6 +15,7 @@ import com.eco.bio7.ijmacro.editor.IJMacroEditorPlugin;
 import com.eco.bio7.markdownedit.Activator;
 import com.eco.bio7.pythonedit.PythonEditorPlugin;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
+import com.eco.bio7.util.Bio7Dialog;
 
 public class ThemeSwitchHandler extends Action {
 	private static final String DEFAULT_THEME = "org.eclipse.e4.ui.css.theme.e4_default";
@@ -143,6 +144,7 @@ public class ThemeSwitchHandler extends Action {
 		IEclipseContext context = application.getContext();
 		IThemeEngine engine = context.get(IThemeEngine.class);
 		switchTheme(engine);
+		Bio7Dialog.message("A restart is required for the theme change to take full effect.");
 
 	}
 
