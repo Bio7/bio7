@@ -20,9 +20,12 @@
    <requires>
       <import plugin="org.eclipse.ui"/>
       <import plugin="org.eclipse.core.runtime"/>
-      <import plugin="com.eco.bio7.javaedit" version="1.6.0" match="greaterOrEqual"/>
       <import plugin="com.eco.bio7.image" version="1.47.1" match="greaterOrEqual"/>
-      <import plugin="com.eco.bio7.libs" version="1.7.0" match="greaterOrEqual"/>
+      <import plugin="com.eco.bio7.javaedit" version="2.0.0" match="greaterOrEqual"/>
+      <import plugin="com.eco.bio7.libs" version="2.5.0" match="greaterOrEqual"/>
+      <import plugin="com.eco.bio7.os"/>
+      <import plugin="com.eco.bio7.util"/>
+      <import plugin="org.eclipse.nebula.widgets.grid" version="1.0.0" match="greaterOrEqual"/>
    </requires>
 
    <plugin

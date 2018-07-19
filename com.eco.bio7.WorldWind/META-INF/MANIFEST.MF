@@ -6,7 +6,7 @@ Bundle-Version: 2.1.0
 Bundle-Activator: worldw.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- com.eco.bio7.image;bundle-version="1.51.13",
+ com.eco.bio7.image,
  com.eco.bio7.javaedit;bundle-version="2.0.0",
  com.eco.bio7.libs;bundle-version="2.5.0",
  com.eco.bio7.os,
