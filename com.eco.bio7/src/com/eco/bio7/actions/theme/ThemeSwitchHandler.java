@@ -44,7 +44,7 @@ public class ThemeSwitchHandler extends Action {
 			PreferenceConverter.setValue(storeR, "colourkey7", new RGB(0, 0, 0));
 			PreferenceConverter.setValue(storeR, "colourkey8", new RGB(0, 0, 0));
             
-			/*IPreferenceStore store = IJMacroEditorPlugin.getDefault().getPreferenceStore();
+			IPreferenceStore store = IJMacroEditorPlugin.getDefault().getPreferenceStore();
 			PreferenceConverter.setValue(store, "colourkey", new RGB(127, 0, 85));
 			PreferenceConverter.setValue(store, "colourkey1", new RGB(127, 0, 85));
 			PreferenceConverter.setValue(store, "colourkey2", new RGB(42, 0, 255));
@@ -53,7 +53,7 @@ public class ThemeSwitchHandler extends Action {
 			PreferenceConverter.setValue(store, "colourkey5", new RGB(0, 0, 0));
 			PreferenceConverter.setValue(store, "colourkey6", new RGB(0, 0, 0));
 			PreferenceConverter.setValue(store, "colourkey7", new RGB(0, 0, 0));
-			PreferenceConverter.setValue(store, "colourkey8", new RGB(63, 127, 95));*/
+			PreferenceConverter.setValue(store, "colourkey8", new RGB(63, 127, 95));
 
 			IPreferenceStore storeBsh = BeanshellEditorPlugin.getDefault().getPreferenceStore();
 			PreferenceConverter.setValue(storeBsh, "colourkey", new RGB(127, 0, 85));
