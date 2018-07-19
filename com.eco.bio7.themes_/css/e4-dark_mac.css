@@ -140,17 +140,17 @@ CTabFolder.MArea .MPartStack,CTabFolder.MArea .MPartStack.active {
 
 
 CTabFolder Tree, CTabFolder Canvas {
-    background-color: #2F2F2F;
+    background-color: #252525;
     color: #CCC;
 }
 
 .MPartStack.active CTabFolder Canvas {
-    background-color: #262626;
+    background-color: #252525;
     color: #CCC;
 }
 
 .MPartStack.active Table {
-    background-color: #2F2F2F;
+    background-color: #252525;
     color: #CCC;
 }
 
