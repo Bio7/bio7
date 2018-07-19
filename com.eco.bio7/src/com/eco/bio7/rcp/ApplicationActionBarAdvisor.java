@@ -808,8 +808,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 			// No R shell for Bio7 Linux and Mac.
 			// rMenu.add(new SaveRWorkspaceand_Start("Start R Shell", window2));
 		}
-		rMenu.add(new Separator());
-		rMenu.add(openRservePref);
+		/*rMenu.add(new Separator());
+		rMenu.add(openRservePref);*/
 
 		OpenOfficeMenu.add(officeopenspread);
 		OpenOfficeMenu.add(new Separator());

@@ -195,7 +195,7 @@ ScrolledComposite > Composite > Composite > Composite > Tree,
 Shell > Composite > Composite > Composite > Composite > Composite > Tree,
 Shell[style~='SWT.RADIO'][style~='SWT.CASCADE'][style~='SWT.SHADOW_ETCHED_IN'][style~='SWT.SHADOW_ETCHED_OUT'][style~='SWT.RESIZE'][style~='SWT.MENU'][style~='SWT.FULL_SELECTION'][style~='SWT.DATE'] > Composite > Tree,
 Shell[style~='SWT.RADIO'][style~='SWT.CASCADE'][style~='SWT.SHADOW_ETCHED_IN'][style~='SWT.SHADOW_ETCHED_OUT'][style~='SWT.RESIZE'][style~='SWT.MENU'][style~='SWT.FULL_SELECTION'][style~='SWT.DATE'] > Composite > * > Tree {
-    background-color: #2F2F2F;
+    background-color: #252525;
     color: #CCC;
 }
 
