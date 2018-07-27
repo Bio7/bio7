@@ -302,7 +302,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		hideMainMenu = new HideMainMenus("Hide all Menus", window2);
 		register(hideMainMenu);
 		
-		hideMainMenuAndFullscreen = new HideMainMenusAndFullscreen("Hide all Menus and Toolbar", window2);
+		hideMainMenuAndFullscreen = new HideMainMenusAndFullscreen("Fullscreen/Hide Menus", window2);
 		register(hideMainMenuAndFullscreen);
 
 		officeopenspread = new OfficeOpenAction("Open Spreadsheet", window2);
