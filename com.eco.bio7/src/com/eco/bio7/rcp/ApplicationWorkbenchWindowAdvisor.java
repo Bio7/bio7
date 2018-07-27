@@ -592,7 +592,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 					+ "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")");
 			store.setDefault("DEVICE_FILENAME", "");
 			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
-			store.setDefault("PDF_READER", "EVINCE");
+			store.setDefault("PDF_READER", "OKULAR");
 		} else if (getOS().equals("Mac")) {
 			store.setDefault("SAVE_ALL_EDITORS", true);
 			pathTempR = pathTempR + "/bio7temp/";
