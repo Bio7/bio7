@@ -27,20 +27,20 @@ public class ProfileScriptAction implements IObjectActionDelegate, IEditorAction
 
 	public void run(IAction action) {
 		if (canEvaluate) {
-			 RConnection con = RServe.getConnection(); 
-			  if (con != null) {
-				  Bio7Dialog.message("Please change to the native R mode (toolbar 'Start Rserve' action) to profile the script!");
-				  return;
-			  }
+			RConnection con = RServe.getConnection();
+			if (con != null) {
+				Bio7Dialog.message(
+						"Please start the native R mode in the shell (or leave the Rserve connection  - toolbar 'Start Rserve' action) in the Bio7 console\nto profile the script!\n\nResults will be displayed in an external browser!");
+				return;
+			}
 
-			IEditorPart rEditor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+			IEditorPart rEditor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+					.getActiveEditor();
 
 			// IPreferenceStore store =
 			// Bio7Plugin.getDefault().getPreferenceStore();
 			// boolean rPipe = store.getBoolean("r_pipe");
-			
-			 
-			 
+
 			if (rEditor instanceof REditor) {
 				String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 				if (selectionConsole.equals("R")) {
@@ -48,7 +48,8 @@ public class ProfileScriptAction implements IObjectActionDelegate, IEditorAction
 					ConsolePageParticipant.pipeInputToConsole(editorScript, true, true);
 					System.out.println(editorScript);
 				} else {
-					Bio7Dialog.message("Please start the native R mode in the shell (or leave the Rserve connection  - toolbar 'Start Rserve' action) in the Bio7 console\nto profile the script!\n\nResults will be displayed in an external browser!");
+					Bio7Dialog.message(
+							"Please start the native R mode in the shell (or leave the Rserve connection  - toolbar 'Start Rserve' action) in the Bio7 console\nto profile the script!\n\nResults will be displayed in an external browser!");
 				}
 			}
 
