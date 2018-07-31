@@ -63,6 +63,34 @@ public class Bio7Grid {
 
 		return grid;
 	}
+	
+	/**
+	 * Creates a new grid and fills the grid with the given 2d array.
+	 * 
+	 * @param val
+	 *            a 2d-array of type String.
+	 * @param name the name of the grid.        
+	 */
+	public static void setValues(final String[][] val,final String name) {
+		final Grid grid = RTable.getGrid();
+		if (grid != null) {
+			Display display = PlatformUI.getWorkbench().getDisplay();
+			display.syncExec(new Runnable() {
+				public void run() {
+					Grid grid = RTable.getGrid();
+					if (grid != null) {
+						grid = new Spread().spread(RTable.getTabFolder(), val[0].length, val.length, name);
+						RTable.setGrid(grid);
+					}
+					for (int i = 0; i < val.length; i++) {
+						for (int j = 0; j < val[0].length; j++) {
+							grid.getItem(i).setText(j, val[i][j]);
+						}
+					}
+				}
+			});
+		}
+	}
 
 	/**
 	 * Creates a new sheet from the specified columns, rows.
