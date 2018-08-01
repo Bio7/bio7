@@ -23,8 +23,6 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
 
-import com.eco.bio7.util.PlaceholderLabel;
-
 public class BrowserView extends ViewPart {
 
 	private Action scriptAction;
