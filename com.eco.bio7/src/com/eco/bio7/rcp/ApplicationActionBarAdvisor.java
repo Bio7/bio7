@@ -296,10 +296,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		toggleCoolBar = ActionFactory.TOGGLE_COOLBAR.create(window);
 		register(toggleCoolBar);
 
-		showMainMenu = new ShowMainMenus("Show all menus", window2);
+		showMainMenu = new ShowMainMenus("Show All Menus", window2);
 		register(showMainMenu);
 
-		hideMainMenu = new HideMainMenus("Hide all Menus", window2);
+		hideMainMenu = new HideMainMenus("Hide All Menus", window2);
 		register(hideMainMenu);
 		
 		hideMainMenuAndFullscreen = new HideMainMenusAndFullscreen("Fullscreen/Hide Menus", window2);
@@ -309,11 +309,11 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		officevaluetor = new OfficeValueToRAction("Data to R", window2);
 
-		officevaluetorhead = new OfficeValueToRHeadAction("Data with head to R ", window2);
+		officevaluetorhead = new OfficeValueToRHeadAction("Data with Head to R ", window2);
 
 		// officevalue = new OfficeValueAction("Data to Beanshell", window2);
 
-		officepopdata = new OfficeSendValueAction("Send Bio7 counts", window2);
+		officepopdata = new OfficeSendValueAction("Send Bio7 Counts", window2);
 
 		save = ActionFactory.SAVE.create(window);
 		register(save);
@@ -448,7 +448,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		saveR = new SaveRWorkspace("Save Workspace", window);
 		register(saveR);
 
-		clearWorkspace = new ClearRWorkspace("Remove all objects", window);
+		clearWorkspace = new ClearRWorkspace("Remove All Objects", window);
 		register(clearWorkspace);
 
 		openBrowser = new OpenBio7BrowserAction("Bio7 Internet", window);
