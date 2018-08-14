@@ -2,7 +2,7 @@
 <feature
       id="com.eco.bio7.core.feature"
       label="Bio7 Core Plugin"
-      version="2.8.0.qualifier"
+      version="2.9.0.qualifier"
       provider-name="Bio7">
 
    <description url="http://www.example.com/description">
@@ -82,6 +82,6 @@
          id="com.eco.bio7"
          download-size="0"
          install-size="0"
-         version="2.8.0"/>
+         version="2.9.0"/>
 
 </feature>
