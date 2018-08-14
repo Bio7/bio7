@@ -1893,11 +1893,11 @@ public class WorldWindOptionsView extends ViewPart {
 				}
 
 				else if (layer.getName().equals("MS Virtual Earth Aerial")) {
-					b.setSelection(true);
+					b.setSelection(false);
 				} else if (layer.getName().equals("MS Virtual Earth Hybrid")) {
 					b.setSelection(false);
 				} else if (layer.getName().equals("Bing Imagery")) {
-					b.setSelection(false);
+					b.setSelection(true);
 
 				} else if (layer.getName().equals("MS Virtual Earth Roads")) {
 					b.setSelection(false);
