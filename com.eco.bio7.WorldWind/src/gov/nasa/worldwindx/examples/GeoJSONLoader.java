@@ -176,7 +176,7 @@ public class GeoJSONLoader
         return layer;
     }
 
-    protected void handleUnrecognizedObject(Object o)
+    public void handleUnrecognizedObject(Object o)
     {
         Logging.logger().warning(Logging.getMessage("generic.UnrecognizedObjectType", o));
     }

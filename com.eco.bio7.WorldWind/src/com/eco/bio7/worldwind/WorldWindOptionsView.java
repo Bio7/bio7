@@ -41,6 +41,7 @@ import gov.nasa.worldwind.layers.Earth.MGRSGraticuleLayer;
 import gov.nasa.worldwind.layers.placename.PlaceNameLayer;
 import gov.nasa.worldwind.poi.BasicPointOfInterest;
 import gov.nasa.worldwind.poi.Gazetteer;
+import gov.nasa.worldwind.poi.PhotonGazetteer;
 import gov.nasa.worldwind.poi.PointOfInterest;
 import gov.nasa.worldwind.poi.YahooGazetteer;
 import gov.nasa.worldwind.render.SurfaceImage;
@@ -310,7 +311,7 @@ public class WorldWindOptionsView extends ViewPart {
 				}
 			});
 		}
-		this.gazeteer = new YahooGazetteer();// to resolve names!
+		this.gazeteer = new PhotonGazetteer();// to resolve names!
 
 		Composite container = new Composite(parent, SWT.NONE);
 		container.setLayout(new FillLayout());
@@ -2706,7 +2707,7 @@ public class WorldWindOptionsView extends ViewPart {
 
 		// centerLabel.setText(s);
 	}
-
+   /*Here we take the first search result of the geocode service!*/
 	private void flyToCoords() {
 		String lookupString = text.getText();
 		if (lookupString == null || lookupString.length() < 1)
@@ -2715,7 +2716,7 @@ public class WorldWindOptionsView extends ViewPart {
 		java.util.List<PointOfInterest> poi = parseSearchValues(lookupString);
 
 		if (poi != null) {
-			if (poi.size() == 1) {
+			if (poi.size() > 0) {
 				moveToLocation(poi.get(0));
 
 			}
