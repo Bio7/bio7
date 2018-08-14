@@ -85,7 +85,6 @@ public class PhotonGazetteer implements Gazetteer {
                     LatLon latlon = LatLon.fromDegrees(position.getLatitude().degrees, position.getLongitude().degrees);
                     PointOfInterest loc = new BasicPointOfInterest(latlon);
                     loc.setValue(AVKey.DISPLAY_NAME, name + " - " + stateName + " - " + countryName);
-                    System.out.println(loc);
                     positions.add(loc);
                 }
             } else {
