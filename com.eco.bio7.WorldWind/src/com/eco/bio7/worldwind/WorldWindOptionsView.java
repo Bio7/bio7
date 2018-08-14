@@ -349,7 +349,7 @@ public class WorldWindOptionsView extends ViewPart {
 
 				infoTip.setMessage("Equirectangular projection \nDatum: WGS 84\nEPSG: 4326\n\n"
 						+ "Enter city or coordinates like:\n" + "Street, City\n" + "39.53, -119.816  (Reno, NV)\n"
-						+ "21 10 14 N, 86 51 0 W (Cancun)" + "\n-31� 59' 43\", 115� 45' 32\" (Perth)");
+						+ "21 10 14 N, 86 51 0 W (Cancun)");
 				infoTip.setVisible(true);
 
 			}
