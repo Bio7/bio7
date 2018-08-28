@@ -585,7 +585,6 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				/*
 				 * ProcessBuilder can redirect the error stream! No second thread needed!
 				 */
-
 				String cPython = store.getString("python_pipe_path");
 				List<String> args = new ArrayList<String>();
 				if (cPython.isEmpty() == false) {
