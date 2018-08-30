@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2013 M. Austenfeld
+ * Copyright (c) 2005-2018 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -36,17 +36,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
-
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -88,7 +84,6 @@ import org.eclipse.ui.part.IPageSite;
 import org.osgi.framework.Bundle;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
-
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.os.pid.Pid;
@@ -109,8 +104,6 @@ import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
 import com.eco.bio7.reditor.database.view.DatabaseView;
 import com.eco.bio7.scriptengines.ScriptEngineConnection;
-import com.eco.bio7.util.PlaceholderLabel;
-import com.pty4j.PtyProcess;
 
 public class ConsolePageParticipant implements IConsolePageParticipant {
 
@@ -296,8 +289,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				}
 				/* CTRL+c key event! */
 				else if (event.stateMask == SWT.CTRL && event.keyCode == 'c') {
-					/*Break the evaluate line selection action!*/
-					ExecuteRTextSelection lineSelection=ExecuteRTextSelection.getInstance();
+					/* Break the evaluate line selection action! */
+					ExecuteRTextSelection lineSelection = ExecuteRTextSelection.getInstance();
 					lineSelection.stopEvaluation();
 
 					// Send OS signal
@@ -513,7 +506,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				 */
 				ProcessBuilder builder = new ProcessBuilder("cmd");
 				builder.redirectErrorStream(true);
-				/*Add SSH path to local shell environment!*/
+				/* Add SSH path to local shell environment! */
 				Map<String, String> envs = builder.environment();
 				String addPath = DatabaseView.getSshWindowsPath();
 				addPath = new File(addPath).getParent();
@@ -703,8 +696,9 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					args.add(rPath + "/bin/i386/rterm");
 				}
 				args.add("--ess");
-				/*args.add("--no-restore"); 
-				args.add("--no-save");*/
+				/*
+				 * args.add("--no-restore"); args.add("--no-save");
+				 */
 				ProcessBuilder builder = new ProcessBuilder(args);
 				builder.redirectErrorStream(true);
 				RProcess = builder.start();
@@ -1543,7 +1537,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		/* Add the debug actions dynamically! */
 		IToolBarManager tm = toolBarManager;
 		/* Remove the distance label! */
-		//tm.remove("PlaceholderLabel");
+		// tm.remove("PlaceholderLabel");
 		IContributionItem[] its = toolBarManager.getItems();
 		boolean exist = false;
 		for (int i = 0; i < its.length; i++) {
