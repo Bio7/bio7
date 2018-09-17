@@ -68,7 +68,6 @@ import ij.process.ColorProcessor;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
-
 /**
  * This class provides some static methods for the analysis and transfer of
  * images inside the Bio7 application.
