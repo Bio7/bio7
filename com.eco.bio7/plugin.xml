@@ -635,7 +635,7 @@
             name="Preferences Custom">
       </page>
       <page
-            category="com.eco.bio7.preferences.Bio7PreferencePage"
+            category="com.eco.bio7.R"
             class="com.eco.bio7.preferences.PreferencePageShell"
             id="com.eco.bio7.native"
             name="Preferences Native">
@@ -675,6 +675,12 @@
             class="com.eco.bio7.preferences.LatexPreferences"
             id="com.eco.bio7.latex.preferences"
             name="Preferences LaTeX">
+      </page>
+      <page
+            category="prefpython"
+            class="com.eco.bio7.preferences.Python"
+            id="com.eco.bio7.python"
+            name="Preferences Python">
       </page>
    </extension>
    <extension

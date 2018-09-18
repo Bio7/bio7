@@ -30,13 +30,13 @@
             category="prefpython"
             class="com.eco.bio7.reditor.preferences.TemplatesPreferencePage"
             id="org.eclipse.ui.examples.templateeditor.preferencepage"
-            name="Template Editor Jython">
+            name="Template Editor Jython/Python">
       </page>
       <page
             category="com.eco.bio7.preferences.Bio7PreferencePage"
             class="com.eco.bio7.reditor.preferences.WorkbenchPreferencePython"
             id="prefpython"
-            name="Preferences Jython"/>
+            name="Preferences Jython/Python"/>
    </extension>
 
    <extension

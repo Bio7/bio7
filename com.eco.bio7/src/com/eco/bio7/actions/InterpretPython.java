@@ -10,6 +10,8 @@
  *******************************************************************************/
 package com.eco.bio7.actions;
 
+import java.io.IOException;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.Action;
@@ -91,8 +93,33 @@ public class InterpretPython extends Action {
 
 									"exec(compile(open('" + loc + "').read(),'" + loc + "', 'exec'))", true, true);
 						}
-					} else {
-						Bio7Dialog.message("Please start the \"Native Python\" Shell in the Bio7 console!");
+					} 
+					/*If the console is not selected we execute the python script in an external process!*/
+					else {
+						
+						
+						String pathPython = store.getString("python_pipe_path");
+						/*Change the path sep. for all OS!*/
+						pathPython=pathPython.replace("\\", "/");
+
+						if(pathPython.isEmpty()==false) {
+							pathPython=pathPython+"/python";
+						}
+						else {
+							pathPython="python";
+						}
+						String[] cmd = {
+								pathPython,
+						        loc
+						        
+						    };
+						try {
+							Runtime.getRuntime().exec(cmd);
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						//Bio7Dialog.message("Please start the \"Native Python\" Shell in the Bio7 console!");
 					}
 				}
 
