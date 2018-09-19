@@ -36,7 +36,8 @@ public class Python extends FieldEditorPreferencePage implements IWorkbenchPrefe
 		}
 		
 		addField(new BooleanFieldEditor("python_pipe", "Execute Editor (Floweditor) Source in Python/Blender", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
-		addField(new BooleanFieldEditor("python_3x", "Python 3 is used to evaluate scripts", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addField(new BooleanFieldEditor("python_process_extra", "Execute Editor Source in Seperate Python Process (not sent to Bio7 Python Shell)", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addField(new BooleanFieldEditor("python_3x", "Python 3 is used to evaluate scripts (only important if sent to Bio7 Python Shell)", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		addField(new RadioGroupFieldEditor("python_select", "Select Interpreter", 1, new String[][] { { "Python", "Python" }, { "Blender", "Blender" } }, getFieldEditorParent(), false));
 		addField(new DirectoryFieldEditor("python_pipe_path", "Path Python", getFieldEditorParent()));
 		addField(new LabelFieldEditor("Blender:", getFieldEditorParent()));

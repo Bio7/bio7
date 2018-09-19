@@ -69,6 +69,8 @@ public class InterpretPython extends Action {
 			boolean cPython = store.getBoolean("python_pipe");
 			String sel = store.getString("python_select");
 			String blenderSel = store.getString("blender_options");
+			boolean extraProcess = store.getBoolean("python_process_extra");
+			String pathPython = store.getString("python_pipe_path");
 
 			if (cPython == true) {
 				String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
@@ -85,72 +87,39 @@ public class InterpretPython extends Action {
 				String loc = aFile.getLocation().toString();
 
 				if (sel.equals("Python")) {
-					if (selectionConsole.equals("Python")) {
-						boolean python3x = store.getBoolean("python_3x");
-						if (python3x == false) {
-							ConsolePageParticipant.pipeInputToConsole("execfile('" + loc + "')", true, true);
-							ConsolePageParticipant.pipeInputToConsole("", true, true);
+
+					boolean python3x = store.getBoolean("python_3x");
+					if (python3x == false) {
+						if (extraProcess == false) {
+							/* Execute in Bio7 Python Shell! */
+							if (selectionConsole.equals("Python")) {
+								ConsolePageParticipant.pipeInputToConsole("execfile('" + loc + "')", true, true);
+								ConsolePageParticipant.pipeInputToConsole("", true, true);
+							} else {
+
+								Bio7Dialog.message("Please start the \"Native Python\" Shell in the Bio7 console!");
+							}
 						} else {
+							/* Execute in seperate process! */
+							executePythonProcess(pathPython, loc);
+						}
+					} else {
+						if (extraProcess == false) {
+							/* Execute in Bio7 Python Shell! */
+							if (selectionConsole.equals("Python")) {
+								ConsolePageParticipant.pipeInputToConsole(
 
-							ConsolePageParticipant.pipeInputToConsole(
+										"exec(compile(open('" + loc + "').read(),'" + loc + "', 'exec'))", true, true);
+							} else {
 
-									"exec(compile(open('" + loc + "').read(),'" + loc + "', 'exec'))", true, true);
+								Bio7Dialog.message("Please start the \"Native Python\" Shell in the Bio7 console!");
+							}
+						} else {
+							/* Execute in seperate process! */
+							executePythonProcess(pathPython, loc);
 						}
 					}
-					/*
-					 * If the console is not selected we execute the python script in an external
-					 * process!
-					 */
-					else {
 
-						String pathPython = store.getString("python_pipe_path");
-						/* Change the path sep. for all OS! */
-						pathPython = pathPython.replace("\\", "/");
-
-						if (pathPython.isEmpty() == false) {
-							pathPython = pathPython + "/python";
-						} else {
-							pathPython = "python";
-						}
-						String[] cmd = { pathPython, loc
-
-						};
-						Runtime rt = Runtime.getRuntime();
-						Process proc = null;
-						try {
-							proc = rt.exec(cmd);
-						} catch (IOException e1) {
-
-							e1.printStackTrace();
-						}
-
-						BufferedReader input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-
-						BufferedReader error = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-
-						// Output
-						String out = null;
-						try {
-							while ((out = input.readLine()) != null) {
-								System.out.println(out);
-							}
-						} catch (IOException e) {
-
-							e.printStackTrace();
-						}
-						// Errors
-						try {
-							while ((out = error.readLine()) != null) {
-								System.out.println(out);
-							}
-						} catch (IOException e) {
-
-							e.printStackTrace();
-						}
-
-						// Bio7Dialog.message("Please start the \"Native Python\" Shell in the Bio7
-						// console!");
-					}
 				}
 
 				else if (sel.equals("Blender")) {
@@ -192,6 +161,53 @@ public class InterpretPython extends Action {
 
 				PythonInterpreter.interpretJob(a, null);
 			}
+		}
+
+	}
+
+	private void executePythonProcess(String pathPython, String loc) {
+		/* Change the path sep. for all OS! */
+		pathPython = pathPython.replace("\\", "/");
+
+		if (pathPython.isEmpty() == false) {
+			pathPython = pathPython + "/python";
+		} else {
+			pathPython = "python";
+		}
+		String[] cmd = { pathPython, loc
+
+		};
+		Runtime rt = Runtime.getRuntime();
+		Process proc = null;
+		try {
+			proc = rt.exec(cmd);
+		} catch (IOException e1) {
+
+			e1.printStackTrace();
+		}
+
+		BufferedReader input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+
+		BufferedReader error = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+
+		// Output
+		String out = null;
+		try {
+			while ((out = input.readLine()) != null) {
+				System.out.println(out);
+			}
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
+		// Errors
+		try {
+			while ((out = error.readLine()) != null) {
+				System.out.println(out);
+			}
+		} catch (IOException e) {
+
+			e.printStackTrace();
 		}
 	}
 

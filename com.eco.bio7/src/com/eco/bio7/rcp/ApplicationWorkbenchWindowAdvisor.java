@@ -679,6 +679,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("POINTS_PANEL_SCROLLBAR", false);
 		store.setDefault("STARTUP_SCRIPTS", false);
 		store.setDefault("python_3x", false);
+		store.setDefault("python_process_extra", true);
 		store.setDefault("blender_options", "interactive");
 		store.setDefault("before_script_blender",
 				"import bpy;bpy.ops.object.select_all(action='SELECT');bpy.ops.object.delete()");
