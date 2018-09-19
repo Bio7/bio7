@@ -115,9 +115,7 @@ public class InterpretPython extends Action {
 						String[] cmd = { pathPython, loc
 
 						};
-
 						Runtime rt = Runtime.getRuntime();
-
 						Process proc = null;
 						try {
 							proc = rt.exec(cmd);
@@ -131,7 +129,6 @@ public class InterpretPython extends Action {
 						BufferedReader error = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
 
 						// Output
-
 						String out = null;
 						try {
 							while ((out = input.readLine()) != null) {
@@ -141,9 +138,7 @@ public class InterpretPython extends Action {
 
 							e.printStackTrace();
 						}
-
 						// Errors
-
 						try {
 							while ((out = error.readLine()) != null) {
 								System.out.println(out);
