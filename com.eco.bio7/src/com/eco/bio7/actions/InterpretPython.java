@@ -13,9 +13,14 @@ package com.eco.bio7.actions;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
@@ -28,12 +33,14 @@ import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.PythonInterpreter;
 import com.eco.bio7.console.ConsolePageParticipant;
-import com.eco.bio7.editors.python.PythonEditor;
 import com.eco.bio7.rcp.StartBio7Utils;
 
 public class InterpretPython extends Action {
 
 	private IFile file;
+	protected Process proc;
+	protected Runtime rt;
+	protected boolean canceled;
 	private static boolean isBlender = false;
 
 	public InterpretPython(String text) {
@@ -116,6 +123,7 @@ public class InterpretPython extends Action {
 							}
 						} else {
 							/* Execute in seperate process! */
+
 							executePythonProcess(pathPython, loc);
 						}
 					}
@@ -177,38 +185,90 @@ public class InterpretPython extends Action {
 		String[] cmd = { pathPython, loc
 
 		};
-		Runtime rt = Runtime.getRuntime();
-		Process proc = null;
-		try {
-			proc = rt.exec(cmd);
-		} catch (IOException e1) {
 
-			e1.printStackTrace();
-		}
+		Job job = new Job("Interpret Python") {
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				monitor.beginTask("Python process running...", IProgressMonitor.UNKNOWN);
+				rt = Runtime.getRuntime();
+				proc = null;
+				/* We start a thread here to make the process destroy possible! */
+				new Thread() {
+					public void run() {
+						try {
+							proc = rt.exec(cmd);
+						} catch (IOException e1) {
 
-		BufferedReader input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+							e1.printStackTrace();
+						}
 
-		BufferedReader error = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+						BufferedReader input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 
-		// Output
-		String out = null;
-		try {
-			while ((out = input.readLine()) != null) {
-				System.out.println(out);
+						BufferedReader error = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+
+						// Output
+						String out = null;
+						try {
+							while ((out = input.readLine()) != null) {
+								System.out.println(out);
+							}
+						} catch (IOException e) {
+
+							e.printStackTrace();
+						}
+						// Errors
+						try {
+							while ((out = error.readLine()) != null) {
+								System.out.println(out);
+							}
+						} catch (IOException e) {
+
+							e.printStackTrace();
+						}
+					}
+				}.start();
+
+				canceled = false;
+				/* Here we watch if the process is cancelled in the job interface! */
+				while (!canceled) {
+
+					if (monitor.isCanceled()) {
+						try {
+							throw new InterruptedException();
+						} catch (InterruptedException e) {
+							canceled = true;
+							proc.destroy();
+						}
+					}
+					if (proc != null) {
+						if (proc.isAlive() == false) {
+							canceled = true;
+						}
+					}
+
+					try {
+						Thread.sleep(100);
+					} catch (final InterruptedException e) {
+					}
+				}
+
+				monitor.done();
+				return Status.OK_STATUS;
 			}
-		} catch (IOException e) {
 
-			e.printStackTrace();
-		}
-		// Errors
-		try {
-			while ((out = error.readLine()) != null) {
-				System.out.println(out);
+		};
+		job.addJobChangeListener(new JobChangeAdapter() {
+			public void done(IJobChangeEvent event) {
+				if (event.getResult().isOK()) {
+
+				} else {
+
+				}
 			}
-		} catch (IOException e) {
+		});
+		// job.setSystem(true);
+		job.schedule();
 
-			e.printStackTrace();
-		}
 	}
 
 	public static void setBlenderInteractive(boolean isBlender) {
