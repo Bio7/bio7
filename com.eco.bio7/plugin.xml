@@ -939,7 +939,7 @@
             class="com.eco.bio7.wizards.JythonNewWizard"
             icon="icons/editor/python.png"
             id="com.eco.bio7.jythonScript"
-            name="Jython Script"
+            name="Python/Jython Script"
             project="false">
       </wizard>
       <wizard
