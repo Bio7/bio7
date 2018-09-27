@@ -30,7 +30,7 @@ public class WorkbenchPreferenceJava extends FieldEditorPreferencePage implement
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new LabelFieldEditor("Java Compiler:", getFieldEditorParent()));
 		//addField(new BooleanFieldEditor("classbody", "Default parse and compile a Java file with a classbody", getFieldEditorParent()));
-		addField(new ComboFieldEditor("compiler_version", "Java Version", new String[][]{{"1.8", "1.8"},{"1.7", "1.7"},{"1.6", "1.6"}, {"1.5", "1.5"}, {"1.4", "1.4"}}, getFieldEditorParent()));
+		addField(new ComboFieldEditor("compiler_version", "Java Version", new String[][]{{"11", "11"},{"10", "10"},{"1.9", "1.9"},{"1.8", "1.8"},{"1.7", "1.7"},{"1.6", "1.6"}, {"1.5", "1.5"}, {"1.4", "1.4"}}, getFieldEditorParent()));
 		addField(new BooleanFieldEditor("compiler_debug", "Generate Debugging Information", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		addField(new BooleanFieldEditor("compiler_verbose", "Verbose", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		addField(new BooleanFieldEditor("compiler_warnings", "Generate Warnings", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
