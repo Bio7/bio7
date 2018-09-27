@@ -3,22 +3,15 @@ package com.eco.bio7.image;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-
 import javax.imageio.ImageIO;
-import javax.swing.JApplet;
-import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
-
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTarget;
 import org.eclipse.swt.dnd.DropTargetAdapter;
@@ -30,14 +23,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-
 import com.eco.bio7.Bio7Plugin;
-import com.eco.bio7.actions.PlaceholderAction;
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.collection.SwingFxSwtView;
-import com.eco.bio7.discrete.Quad2d;
-import com.eco.bio7.swt.SwtAwt;
-import com.eco.bio7.util.Util;
 
 public class PointPanelView extends ViewPart {
 	private static PointPanel jp;

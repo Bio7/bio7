@@ -48,7 +48,7 @@ public class Reg {
 			// Path determined from the registry with reflection!
 			roo = null;
 			for (int i = 0; i < OOVERSION.length; i++) {
-				try {
+				/*try {
 					roo = WinRegistry.readString(WinRegistry.HKEY_LOCAL_MACHINE, "SOFTWARE\\LibreOffice\\LibreOffice\\" + OOVERSION[i], "Path");
 
 				} catch (IllegalArgumentException e) {
@@ -60,7 +60,7 @@ public class Reg {
 				} catch (InvocationTargetException e) {
 
 					e.printStackTrace();
-				}
+				}*/
 
 				if (roo != null) {
 					roo = roo.replace("soffice.exe", "");
@@ -80,7 +80,7 @@ public class Reg {
 		boolean bool = store.getBoolean(PreferenceConstants.P_BOOLEAN);
 
 		if (bool == true) {
-			try {
+			/*try {
 				WinRegistry.createKey(WinRegistry.HKEY_LOCAL_MACHINE, "SOFTWARE\\R-core\\R");
 			} catch (IllegalArgumentException e) {
 
@@ -106,7 +106,7 @@ public class Reg {
 
 				e.printStackTrace();
 			}
-
+*/
 		}
 
 	}

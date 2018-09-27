@@ -1,4 +1,4 @@
-package com.eco.bio7.preferences;
+/*package com.eco.bio7.preferences;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -10,15 +10,15 @@ import java.util.prefs.Preferences;
 
 public class WinRegistry {
 
-	/*
+	
 	 * Source from www.ragnon.com! 
 	 * Inspired by:
 	 * http://javabyexample.wisdomplug.com/java-concepts/34-core-java/62-java-registry-wrapper.html 
 	 * http://www.snipcode.org/java/1-java/23-java-class-for-accessing-reading-and-writing-from-windows-registry.html
 	 * http://snipplr.com/view/6620/accessing-windows-registry-in-java/
-	 */
+	 
 
-	/* Adapted for Bio7! */
+	 Adapted for Bio7! 
 
 	public static final int HKEY_CURRENT_USER = 0x80000001;
 	public static final int HKEY_LOCAL_MACHINE = 0x80000002;
@@ -72,7 +72,7 @@ public class WinRegistry {
 	private WinRegistry() {
 	}
 
-	/**
+	*//**
 	 * Read a value from key and value name
 	 * 
 	 * @param hkey
@@ -83,7 +83,7 @@ public class WinRegistry {
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
 	 * @throws InvocationTargetException
-	 */
+	 *//*
 	public static String readString(int hkey, String key, String valueName) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		if (hkey == HKEY_LOCAL_MACHINE) {
 			return readString(systemRoot, hkey, key, valueName);
@@ -94,7 +94,7 @@ public class WinRegistry {
 		}
 	}
 
-	/**
+	*//**
 	 * Read value(s) and value name(s) form given key
 	 * 
 	 * @param hkey
@@ -104,7 +104,7 @@ public class WinRegistry {
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
 	 * @throws InvocationTargetException
-	 */
+	 *//*
 	public static Map<String, String> readStringValues(int hkey, String key) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		if (hkey == HKEY_LOCAL_MACHINE) {
 			return readStringValues(systemRoot, hkey, key);
@@ -115,7 +115,7 @@ public class WinRegistry {
 		}
 	}
 
-	/**
+	*//**
 	 * Read the value name(s) from a given key
 	 * 
 	 * @param hkey
@@ -125,7 +125,7 @@ public class WinRegistry {
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
 	 * @throws InvocationTargetException
-	 */
+	 *//*
 	public static List<String> readStringSubKeys(int hkey, String key) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		if (hkey == HKEY_LOCAL_MACHINE) {
 			return readStringSubKeys(systemRoot, hkey, key);
@@ -136,7 +136,7 @@ public class WinRegistry {
 		}
 	}
 
-	/**
+	*//**
 	 * Create a key
 	 * 
 	 * @param hkey
@@ -145,7 +145,7 @@ public class WinRegistry {
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
 	 * @throws InvocationTargetException
-	 */
+	 *//*
 	public static void createKey(int hkey, String key) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		int[] ret;
 		if (hkey == HKEY_LOCAL_MACHINE) {
@@ -162,7 +162,7 @@ public class WinRegistry {
 		}
 	}
 
-	/**
+	*//**
 	 * Write a value in a given key/value name
 	 * 
 	 * @param hkey
@@ -172,7 +172,7 @@ public class WinRegistry {
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
 	 * @throws InvocationTargetException
-	 */
+	 *//*
 	public static void writeStringValue(int hkey, String key, String valueName, String value) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		if (hkey == HKEY_LOCAL_MACHINE) {
 			writeStringValue(systemRoot, hkey, key, valueName, value);
@@ -183,7 +183,7 @@ public class WinRegistry {
 		}
 	}
 
-	/**
+	*//**
 	 * Delete a given key
 	 * 
 	 * @param hkey
@@ -191,7 +191,7 @@ public class WinRegistry {
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
 	 * @throws InvocationTargetException
-	 */
+	 *//*
 	public static void deleteKey(int hkey, String key) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		int rc = -1;
 		if (hkey == HKEY_LOCAL_MACHINE) {
@@ -204,7 +204,7 @@ public class WinRegistry {
 		}
 	}
 
-	/**
+	*//**
 	 * delete a value from a given key/value name
 	 * 
 	 * @param hkey
@@ -213,7 +213,7 @@ public class WinRegistry {
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
 	 * @throws InvocationTargetException
-	 */
+	 *//*
 	public static void deleteValue(int hkey, String key, String value) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		int rc = -1;
 		if (hkey == HKEY_LOCAL_MACHINE) {
@@ -312,3 +312,4 @@ public class WinRegistry {
 		return result;
 	}
 }
+*/
