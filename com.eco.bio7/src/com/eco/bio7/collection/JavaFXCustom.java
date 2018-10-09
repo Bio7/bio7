@@ -32,6 +32,8 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 
+import com.eco.bio7.jfxswt.JavaFXUtil;
+
 public class JavaFXCustom {
 
 	// private Vector ve = null;
@@ -64,14 +66,7 @@ public class JavaFXCustom {
 		
 
 		// ve = new Vector();
-		canvas = new FXCanvas(view.getCustomViewParent(), SWT.NORMAL) {
-			public Point computeSize(int wHint, int hHint, boolean changed) {
-				getScene().getWindow().sizeToScene();
-				int width = (int) getScene().getWidth();
-				int height = (int) getScene().getHeight();
-				return new Point(width, height);
-			}
-		};
+		canvas = new JavaFXUtil().createFXCanvas(view.getCustomViewParent(), SWT.NORMAL);
 		canvas.setData("false");
 		canvas.addPaintListener(new PaintListener() {
 

@@ -22,6 +22,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 
+import com.eco.bio7.jfxswt.JavaFXUtil;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 
 import javafx.embed.swing.SwingNode;
@@ -74,14 +75,7 @@ public class SwtFXSwingCustom {
 
 		// top = new Composite(view.getCustomViewParent(), SWT.NO_BACKGROUND |
 		// SWT.EMBEDDED);
-		canvas = new FXCanvas(view.getCustomViewParent(), SWT.NORMAL) {
-			public Point computeSize(int wHint, int hHint, boolean changed) {
-				getScene().getWindow().sizeToScene();
-				int width = (int) getScene().getWidth();
-				int height = (int) getScene().getHeight();
-				return new Point(width, height);
-			}
-		};
+		canvas = new JavaFXUtil().createFXCanvas(view.getCustomViewParent(), SWT.NORMAL) ;
 		canvas.setData("false");
 		canvas.addPaintListener(new PaintListener() {
 

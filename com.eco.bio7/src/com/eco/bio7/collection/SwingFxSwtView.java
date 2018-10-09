@@ -13,6 +13,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 
 import com.eco.bio7.actions.Bio7Action;
+import com.eco.bio7.jfxswt.JavaFXUtil;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.util.Util;
 
@@ -50,14 +51,7 @@ public class SwingFxSwtView {
 
 	public void embedd(Composite top, JComponent comp) {
 
-		canvas = new FXCanvas(top, SWT.NORMAL) {
-			public Point computeSize(int wHint, int hHint, boolean changed) {
-				getScene().getWindow().sizeToScene();
-				int width = (int) getScene().getWidth();
-				int height = (int) getScene().getHeight();
-				return new Point(width, height);
-			}
-		};
+		canvas = new JavaFXUtil().createFXCanvas(top, SWT.NORMAL);
 		canvas.setBackground(Util.getSWTBackgroundColor());
 		canvas.setData("false");
 		canvas.addPaintListener(new PaintListener() {
