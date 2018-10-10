@@ -83,17 +83,17 @@ public class RecalculateClasspath implements IObjectActionDelegate {
 
 		IVMInstallType installType = JavaRuntime.getVMInstallType("org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType");
 
-		VMStandin vmStandin = new VMStandin(installType, "Bio7 Bundled JRE");
-		vmStandin.setName("Bio7 Bundled JRE");
+		VMStandin vmStandin = new VMStandin(installType, "Bio7 Bundled OpenJDK");
+		vmStandin.setName("Bio7 Bundled OpenJDK");
 
 		String path = Platform.getInstallLocation().getURL().getPath();
 		/* Extra path for the different MacOSX installation paths! */
 		String OS = ApplicationWorkbenchWindowAdvisor.getOS();
 		if (OS.equals("Mac")) {
-			vmStandin.setInstallLocation(new File(path + "../MacOS/jre"));
+			vmStandin.setInstallLocation(new File(path + "../MacOS/jdk"));
 
 		} else {
-			vmStandin.setInstallLocation(new File(path + "/jre"));
+			vmStandin.setInstallLocation(new File(path + "/jdk"));
 		}
 
 		IVMInstall vmInstall = vmStandin.convertToRealVM();

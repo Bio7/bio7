@@ -189,18 +189,18 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		IVMInstallType installType = JavaRuntime
 				.getVMInstallType("org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType");
 
-		VMStandin vmStandin = new VMStandin(installType, "Bio7 Bundled JRE");
-		vmStandin.setName("Bio7 Bundled JRE");
+		VMStandin vmStandin = new VMStandin(installType, "Bio7 Bundled OpenJDK");
+		vmStandin.setName("Bio7 Bundled OpenJDK");
 
 		String path = Platform.getInstallLocation().getURL().getPath();
 		/*
 		 * Extra path for the different MacOSX installation paths!
 		 */
 		if (OS.equals("Mac")) {
-			vmStandin.setInstallLocation(new File(path + "../MacOS/jre"));
+			vmStandin.setInstallLocation(new File(path + "../MacOS/jdk"));
 
 		} else {
-			vmStandin.setInstallLocation(new File(path + "/jre"));
+			vmStandin.setInstallLocation(new File(path + "/jdk"));
 		}
 
 		IVMInstall vmInstall = vmStandin.convertToRealVM();
@@ -1278,8 +1278,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.rbridge.RPerspective",
 					configurer.getWindow());
 
-			configurer.getWorkbenchConfigurer().getWorkbench()
-					.showPerspective("com.eco.bio7.browser.SceneBuilderPerspective", configurer.getWindow());
+			/*configurer.getWorkbenchConfigurer().getWorkbench()
+					.showPerspective("com.eco.bio7.browser.SceneBuilderPerspective", configurer.getWindow());*/
 
 			configurer.getWorkbenchConfigurer().getWorkbench()
 					.showPerspective("com.eco.bio7.document.DocumentPerspective", configurer.getWindow());
