@@ -193,6 +193,12 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 				boolean verbose = store.getBoolean("compiler_verbose");
 				boolean warnings = store.getBoolean("compiler_warnings");
 				boolean createMarker = store.getBoolean("compiler_marker");
+				if(version.equals("1.9")) {
+				optionList.addElement("--module-path=I:/openjdk11/jdk-11/javafx-sdk-11/lib");
+				}
+				optionList.addElement("--add-modules=ALL-SYSTEM");
+				
+				
 				optionList.addElement("-source");
 				optionList.addElement(version);
 				optionList.addElement("-target");
@@ -201,6 +207,9 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 				optionList.addElement("-classpath");
 				/* Add the Bio7 libs etc. for the compiler! */
 				optionList.addElement(new ScanClassPath().scan());
+				if(version.equals("1.9")) {
+				//optionList.addElement("--add-modules=javafx.controls,javafx.base,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,javafx.web,javafx.swt");
+				}
 	 
 				if (debug) {
 					optionList.addElement("-g");
