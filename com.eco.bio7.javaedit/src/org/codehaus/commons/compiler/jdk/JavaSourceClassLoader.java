@@ -28,6 +28,8 @@ package org.codehaus.commons.compiler.jdk;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,6 +52,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
@@ -193,10 +196,21 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 				boolean verbose = store.getBoolean("compiler_verbose");
 				boolean warnings = store.getBoolean("compiler_warnings");
 				boolean createMarker = store.getBoolean("compiler_marker");
-				if(version.equals("1.9")) {
-				optionList.addElement("--module-path=I:/openjdk11/jdk-11/javafx-sdk-11/lib");
+				if(version.equals("1.9")||version.equals("10")||version.equals("11")) {
+				URL url=Platform.getInstallLocation().getURL();
+				try {
+					File f=new File(url.toURI());
+					String path=("--module-path="+f.getAbsolutePath()+"/jdk/javafx-sdk-11/lib").replace("\\", "/");
+					optionList.addElement(path);
+					//System.out.println(path);
+					//optionList.addElement("--add-modules=ALL-SYSTEM");
+				} catch (URISyntaxException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
-				optionList.addElement("--add-modules=ALL-SYSTEM");
+				
+				}
+				
 				
 				
 				optionList.addElement("-source");
@@ -206,8 +220,10 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
 				optionList.addElement("-classpath");
 				/* Add the Bio7 libs etc. for the compiler! */
+				//optionList.addElement(System.getProperty("java.class.path"));
 				optionList.addElement(new ScanClassPath().scan());
-				if(version.equals("1.9")) {
+				if(version.equals("1.9")||version.equals("10")||version.equals("11")) {
+					optionList.addElement("--add-modules=ALL-MODULE-PATH");
 				//optionList.addElement("--add-modules=javafx.controls,javafx.base,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,javafx.web,javafx.swt");
 				}
 	 

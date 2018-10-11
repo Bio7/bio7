@@ -56,17 +56,17 @@ public class CreateBio7JdtProject {
 			IVMInstallType installType = JavaRuntime
 					.getVMInstallType("org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType");
 
-			VMStandin vmStandin = new VMStandin(installType, "Bio7 Bundled JRE");
-			vmStandin.setName("Bio7 Bundled JRE");
+			VMStandin vmStandin = new VMStandin(installType, "Bio7 Bundled JDK");
+			vmStandin.setName("Bio7 Bundled JDK");
 
 			String path = Platform.getInstallLocation().getURL().getPath();
 			String OS=ApplicationWorkbenchWindowAdvisor.getOS();
 			/*Extra path for the different MacOSX installation paths!*/
 			if (OS.equals("Mac")) {
-				vmStandin.setInstallLocation(new File(path + "../MacOS/jre"));
+				vmStandin.setInstallLocation(new File(path + "../MacOS/jdk"));
 
 			} else {
-				vmStandin.setInstallLocation(new File(path + "/jre"));
+				vmStandin.setInstallLocation(new File(path + "/jdk"));
 			}
 			
 
