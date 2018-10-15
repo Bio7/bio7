@@ -223,7 +223,8 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 				//optionList.addElement(System.getProperty("java.class.path"));
 				optionList.addElement(new ScanClassPath().scan());
 				if(version.equals("1.9")||version.equals("10")||version.equals("11")) {
-					optionList.addElement("--add-modules=ALL-MODULE-PATH");
+					optionList.addElement("--add-modules=java.base");
+				//optionList.addElement("--limit-modules=java.base,java.logging,java.scripting,java.rmi,java.sql,java.xml,java.compiler,java.management,java.naming,java.prefs,java.security.jgss,java.security.sasl,java.sql.rowset,java.xml.crypto");
 				//optionList.addElement("--add-modules=javafx.controls,javafx.base,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,javafx.web,javafx.swt");
 				}
 	 
