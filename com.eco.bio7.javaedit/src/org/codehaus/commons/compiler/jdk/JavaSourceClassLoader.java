@@ -100,12 +100,13 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 	}
 
 	private void init() {
-		 this.compiler = ToolProvider.getSystemJavaCompiler();
+		this.compiler = ToolProvider.getSystemJavaCompiler();
 		// JavaCompiler compiler = new EclipseCompiler();
-		
-		//this.compiler = com.sun.tools.javac.api.JavacTool.create();
+
+		// this.compiler = com.sun.tools.javac.api.JavacTool.create();
 		if (this.compiler == null) {
-			throw new UnsupportedOperationException("JDK Java compiler not available - probably you're running a JRE, not a JDK");
+			throw new UnsupportedOperationException(
+					"JDK Java compiler not available - probably you're running a JRE, not a JDK");
 		}
 	}
 
@@ -129,7 +130,8 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
 			// Wrap it in a file manager that finds source files through the
 			// source path.
-			jfm = new FileInputJavaFileManager(jfm, StandardLocation.SOURCE_PATH, Kind.SOURCE, this.sourcePath, this.optionalCharacterEncoding);
+			jfm = new FileInputJavaFileManager(jfm, StandardLocation.SOURCE_PATH, Kind.SOURCE, this.sourcePath,
+					this.optionalCharacterEncoding);
 
 			this.fileManager = jfm;
 		}
@@ -157,8 +159,8 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 	 * Notice: Don't use the '-g' options - these are controlled through
 	 * {@link #setDebuggingInfo(boolean, boolean, boolean)}.
 	 * 
-	 * @param compilerOptions
-	 *            All command line options supported by the JDK JAVAC tool
+	 * @param compilerOptions All command line options supported by the JDK JAVAC
+	 *                        tool
 	 */
 	public void setCompilerOptions(String[] compilerOptions) {
 		this.compilerOptions = Arrays.asList(compilerOptions);
@@ -178,12 +180,14 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 			// Maybe the bytecode is already there, because the class was
 			// compiled as a side effect of a preceding
 			// compilation.
-			JavaFileObject classFileObject = this.getJavaFileManager().getJavaFileForInput(StandardLocation.CLASS_OUTPUT, className, Kind.CLASS);
+			JavaFileObject classFileObject = this.getJavaFileManager()
+					.getJavaFileForInput(StandardLocation.CLASS_OUTPUT, className, Kind.CLASS);
 
 			if (classFileObject == null) {
 
 				// Get the sourceFile.
-				JavaFileObject sourceFileObject = this.getJavaFileManager().getJavaFileForInput(StandardLocation.SOURCE_PATH, className, Kind.SOURCE);
+				JavaFileObject sourceFileObject = this.getJavaFileManager()
+						.getJavaFileForInput(StandardLocation.SOURCE_PATH, className, Kind.SOURCE);
 				if (sourceFileObject == null) {
 					throw new DiagnosticException("Source for '" + className + "' not found");
 				}
@@ -196,23 +200,22 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 				boolean verbose = store.getBoolean("compiler_verbose");
 				boolean warnings = store.getBoolean("compiler_warnings");
 				boolean createMarker = store.getBoolean("compiler_marker");
-				if(version.equals("1.9")||version.equals("10")||version.equals("11")) {
-				URL url=Platform.getInstallLocation().getURL();
-				try {
-					File f=new File(url.toURI());
-					String path=("--module-path="+f.getAbsolutePath()+"/jdk/javafx-sdk-11/lib").replace("\\", "/");
-					optionList.addElement(path);
-					//System.out.println(path);
-					//optionList.addElement("--add-modules=ALL-SYSTEM");
-				} catch (URISyntaxException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				if (version.equals("1.9") || version.equals("10") || version.equals("11")) {
+					URL url = Platform.getInstallLocation().getURL();
+					try {
+						File f = new File(url.toURI());
+						String path = ("--module-path=" + f.getAbsolutePath() + "/jdk/javafx-sdk-11/lib").replace("\\",
+								"/");
+						optionList.addElement(path);
+						// System.out.println(path);
+						// optionList.addElement("--add-modules=ALL-SYSTEM");
+					} catch (URISyntaxException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
 				}
-				
-				}
-				
-				
-				
+
 				optionList.addElement("-source");
 				optionList.addElement(version);
 				optionList.addElement("-target");
@@ -220,14 +223,16 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
 				optionList.addElement("-classpath");
 				/* Add the Bio7 libs etc. for the compiler! */
-				//optionList.addElement(System.getProperty("java.class.path"));
-				optionList.addElement(new ScanClassPath().scan());
-				if(version.equals("1.9")||version.equals("10")||version.equals("11")) {
+				// optionList.addElement(System.getProperty("java.class.path"));
+				/*We have to format the classpath!*/
+				 String classpath=new ScanClassPath().scan().replace(";/","");
+				 optionList.addElement(classpath);
+				if (version.equals("1.9") || version.equals("10") || version.equals("11")) {
 					optionList.addElement("--add-modules=java.base");
-				//optionList.addElement("--limit-modules=java.base,java.logging,java.scripting,java.rmi,java.sql,java.xml,java.compiler,java.management,java.naming,java.prefs,java.security.jgss,java.security.sasl,java.sql.rowset,java.xml.crypto");
-				//optionList.addElement("--add-modules=javafx.controls,javafx.base,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,javafx.web,javafx.swt");
+					// optionList.addElement("--limit-modules=java.base,java.logging,java.scripting,java.rmi,java.sql,java.xml,java.compiler,java.management,java.naming,java.prefs,java.security.jgss,java.security.sasl,java.sql.rowset,java.xml.crypto");
+					// optionList.addElement("--add-modules=javafx.controls,javafx.base,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,javafx.web,javafx.swt");
 				}
-	 
+
 				if (debug) {
 					optionList.addElement("-g");
 				} else {
@@ -258,7 +263,8 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 					throw new ClassNotFoundException(className + ": Compilation failed");
 				}
 
-				classFileObject = this.getJavaFileManager().getJavaFileForInput(StandardLocation.CLASS_OUTPUT, className, Kind.CLASS);
+				classFileObject = this.getJavaFileManager().getJavaFileForInput(StandardLocation.CLASS_OUTPUT,
+						className, Kind.CLASS);
 
 				if (classFileObject == null) {
 					throw new ClassNotFoundException(className + ": Class file not created by compilation");
@@ -294,8 +300,8 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 			throw new DiagnosticException(ioe);
 		}
 
-		return this.defineClass(className, ba, 0, size,
-				(this.optionalProtectionDomainFactory == null ? null : this.optionalProtectionDomainFactory.getProtectionDomain(getSourceResourceName(className))));
+		return this.defineClass(className, ba, 0, size, (this.optionalProtectionDomainFactory == null ? null
+				: this.optionalProtectionDomainFactory.getProtectionDomain(getSourceResourceName(className))));
 	}
 
 	private void markError(DiagnosticCollector<JavaFileObject> diagnosticsCollector, boolean markerCreation) {
@@ -381,8 +387,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 	 * Notice that member types are declared inside a different type, so the
 	 * relevant source file is that of the outermost declaring class.
 	 * 
-	 * @param className
-	 *            Fully qualified class name, e.g. "pkg1.pkg2.Outer$Inner"
+	 * @param className Fully qualified class name, e.g. "pkg1.pkg2.Outer$Inner"
 	 * @return the name of the resource, e.g. "pkg1/pkg2/Outer.java"
 	 */
 	private static String getSourceResourceName(String className) {
