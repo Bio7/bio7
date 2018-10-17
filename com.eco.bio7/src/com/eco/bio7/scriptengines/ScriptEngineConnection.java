@@ -20,7 +20,7 @@ import org.python.core.Options;
 public class ScriptEngineConnection {
 	static {
 		/*
-		 * Workaround from:
+		 * Jython Workaround from:
 		 * http://python.6.x6.nabble.com/2-7b3-JSR-223-ScriptEngine-null-b2-works-
 		 * td5074755.html
 		 */
