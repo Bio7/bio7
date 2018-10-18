@@ -37,11 +37,15 @@ import org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor;
 import org.eclipse.jdt.ui.IWorkingCopyManager;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.eclipse.ui.texteditor.ITextEditor;
+
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.BatchModel;
 import com.eco.bio7.batch.FileRoot;
@@ -146,8 +150,10 @@ public class CompileClassAndMultipleClasses {
 		FileRoot.setCurrentCompileDir(dir);
 		JavaSourceClassLoader cla = new JavaSourceClassLoader(Bio7Plugin.class.getClassLoader());
 		cla.pag = pag;
-
-		cla.setSourcePath(new File[] { path, new File(dir) });
+		
+       // System.out.println(path.getAbsolutePath()+"/bin");
+		cla.setSourcePath(new File[] {new File(dir) });
+		cla.setBinaryPath(new File[] {new File(path.getAbsolutePath()+"/bin") });
 
 		Object o = null;
 		Class<?> cl = null;
@@ -190,13 +196,37 @@ public class CompileClassAndMultipleClasses {
 					// null, null);
 
 				}
+				
+				/*PackageDeclaration pdecl = compUnit.getPackage();
+				if (pdecl != null) {
+					Name packName = pdecl.getName();
 
+					String pack = packName.toString();
+					//cl = cla.findClass(pack + "." + name);
+					ITextEditor editor2 = (ITextEditor) editor;
+					IDocumentProvider prov = editor2.getDocumentProvider();
+					IDocument doc2 = prov.getDocument(editor2.getEditorInput());
+					org.joor.Compile com=new org.joor.Compile();
+					cl=com.compile(pack + "." + name, doc2.get(),null,Bio7Plugin.class.getClassLoader());
+
+				} else {
+					//cl = cla.findClass(name);
+					ITextEditor editor2 = (ITextEditor) editor;
+					IDocumentProvider prov = editor2.getDocumentProvider();
+					IDocument doc2 = prov.getDocument(editor2.getEditorInput());
+					org.joor.Compile com=new org.joor.Compile();
+					cl=com.compile(name, doc2.get(),null,Bio7Plugin.class.getClassLoader());
+				}
+*/
 				/*
 				 * If the class is in a package we receive the package name from
 				 * the AST!
 				 */
 				// org.eclipse.jdt.core.dom.CompilationUnit compUnit =
 				// jedit.getCompUnit();
+				
+				
+				
 				PackageDeclaration pdecl = compUnit.getPackage();
 				if (pdecl != null) {
 					Name packName = pdecl.getName();
