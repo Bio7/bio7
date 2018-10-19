@@ -70,14 +70,11 @@ import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
 	private File[] sourcePath;
-	private File[] binaryPath;
 	private String optionalCharacterEncoding;
 	private boolean debuggingInfoLines;
 	private boolean debuggingInfoVars;
 	private boolean debuggingInfoSource;
 	private Collection<String> compilerOptions = new ArrayList<String>();
-	private File[] classPath;
-
 
 	private JavaCompiler compiler;
 	private JavaFileManager fileManager;
@@ -86,7 +83,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 	// public boolean directCall = true;
 	public IWorkbenchPage pag;
 	protected IFile ifile;
-	
+	private File[] binaryPath;
 
 	/**
 	 * @see ICompilerFactory#newJavaSourceClassLoader()
@@ -126,14 +123,12 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 			// Get the original FM, which reads class files through this JVM's
 			// BOOTCLASSPATH and
 			// CLASSPATH.
-			//JavaFileManager jfm = this.compiler.getStandardFileManager(null, null, null);
+			JavaFileManager jfm;// = this.compiler.getStandardFileManager(null, null, null);
 
 			// Wrap it so that the output files (in our case class files) are
 			// stored in memory rather
 			// than in files.
 			//jfm = new ByteArrayJavaFileManager<JavaFileManager>(jfm);
-            
-			
 			StandardJavaFileManager fm = this.compiler.getStandardFileManager(null, null, null);
 			ArrayList ar=new ArrayList();
 			for (int i = 0; i < sourcePath.length; i++) {
@@ -145,7 +140,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 				arout.add(this.binaryPath[i]);
 			}
 		    try {
-		    	System.out.println("##### "+ar);
+		    	
 				fm.setLocation(StandardLocation.SOURCE_PATH,ar);
 				//fm.setLocation(StandardLocation.CLASS_PATH,arout);
 				fm.setLocation(StandardLocation.CLASS_OUTPUT,arout);
@@ -153,27 +148,13 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		    
-		    /*Path tempDirWithPrefix = null;
-			try {
-				tempDirWithPrefix = Files.createTempDirectory(null);
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			
-			ArrayList arout=new ArrayList();
-			
-			arout.add(tempDirWithPrefix.toFile());*/
-			
-			
-			
+
 			// Wrap it in a file manager that finds source files through the
 			// source path.
-			/*FileInputJavaFileManager jfm = new FileInputJavaFileManager(fm, StandardLocation.SOURCE_PATH, Kind.SOURCE, this.sourcePath,
-					this.optionalCharacterEncoding);*/
+			jfm = new FileInputJavaFileManager(fm, StandardLocation.SOURCE_PATH, Kind.SOURCE, this.sourcePath,
+					this.optionalCharacterEncoding);
 
-			this.fileManager = fm;
+			this.fileManager = jfm;
 		}
 		return this.fileManager;
 	}
@@ -182,7 +163,6 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 	public void setSourcePath(File[] sourcePath) {
 		this.sourcePath = sourcePath;
 	}
-	
 	public void setBinaryPath(File[] binaryPath) {
 		this.binaryPath = binaryPath;
 		
@@ -225,14 +205,12 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 			// Maybe the bytecode is already there, because the class was
 			// compiled as a side effect of a preceding
 			// compilation.
-			JavaFileObject classFileObject = null;//this.getJavaFileManager()
-					//.getJavaFileForInput(StandardLocation.CLASS_OUTPUT, className, Kind.CLASS);
+			JavaFileObject classFileObject = this.getJavaFileManager()
+					.getJavaFileForInput(StandardLocation.CLASS_OUTPUT, className, Kind.CLASS);
 
 			if (classFileObject == null) {
 
 				// Get the sourceFile.
-				System.out.println("''''''''''''''"+className);
-				
 				JavaFileObject sourceFileObject = this.getJavaFileManager()
 						.getJavaFileForInput(StandardLocation.SOURCE_PATH, className, Kind.SOURCE);
 				if (sourceFileObject == null) {
@@ -275,7 +253,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 				 String classpath=new ScanClassPath().scan().replace(";/","");
 				 optionList.addElement(classpath);
 				if (version.equals("1.9") || version.equals("10") || version.equals("11")) {
-					//optionList.addElement("--add-modules=java.base");
+					optionList.addElement("--add-modules=java.base");
 					// optionList.addElement("--limit-modules=java.base,java.logging,java.scripting,java.rmi,java.sql,java.xml,java.compiler,java.management,java.naming,java.prefs,java.security.jgss,java.security.sasl,java.sql.rowset,java.xml.crypto");
 					// optionList.addElement("--add-modules=javafx.controls,javafx.base,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,javafx.web,javafx.swt");
 				}
@@ -294,7 +272,6 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 				}
 
 				DiagnosticCollector<JavaFileObject> diagnosticsCollector = new DiagnosticCollector<JavaFileObject>();
-				//StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnosticsCollector, null, null);
 
 				// Run the compiler.
 				boolean success = this.compiler.getTask(null, // out
@@ -468,7 +445,5 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 			super(diagnostic.toString());
 		}
 	}
-
-	
 
 }

@@ -11,9 +11,12 @@
 package com.eco.bio7.compile;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import javax.swing.SwingUtilities;
+
+import org.apache.commons.io.FileUtils;
 import org.codehaus.commons.compiler.jdk.JavaSourceClassLoader;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -152,6 +155,12 @@ public class CompileClassAndMultipleClasses {
 		cla.pag = pag;
 		
        // System.out.println(path.getAbsolutePath()+"/bin");
+		try {
+			FileUtils.cleanDirectory(new File(path.getAbsolutePath()+"/bin"));
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} 
 		cla.setSourcePath(new File[] {new File(dir) });
 		cla.setBinaryPath(new File[] {new File(path.getAbsolutePath()+"/bin") });
 
