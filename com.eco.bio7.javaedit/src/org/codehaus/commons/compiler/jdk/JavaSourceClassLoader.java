@@ -123,13 +123,13 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 			// Get the original FM, which reads class files through this JVM's
 			// BOOTCLASSPATH and
 			// CLASSPATH.
-			JavaFileManager jfm;// = this.compiler.getStandardFileManager(null, null, null);
+			//JavaFileManager jfm;// = this.compiler.getStandardFileManager(null, null, null);
 
 			// Wrap it so that the output files (in our case class files) are
 			// stored in memory rather
 			// than in files.
 			//jfm = new ByteArrayJavaFileManager<JavaFileManager>(jfm);
-			StandardJavaFileManager fm = this.compiler.getStandardFileManager(null, null, null);
+			StandardJavaFileManager jfm = this.compiler.getStandardFileManager(null, null, null);
 			ArrayList ar=new ArrayList();
 			for (int i = 0; i < sourcePath.length; i++) {
 				ar.add(this.sourcePath[i]);
@@ -141,9 +141,9 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 			}
 		    try {
 		    	
-				fm.setLocation(StandardLocation.SOURCE_PATH,ar);
+				jfm.setLocation(StandardLocation.SOURCE_PATH,ar);
 				//fm.setLocation(StandardLocation.CLASS_PATH,arout);
-				fm.setLocation(StandardLocation.CLASS_OUTPUT,arout);
+				jfm.setLocation(StandardLocation.CLASS_OUTPUT,arout);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -151,8 +151,8 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
 			// Wrap it in a file manager that finds source files through the
 			// source path.
-			jfm = new FileInputJavaFileManager(fm, StandardLocation.SOURCE_PATH, Kind.SOURCE, this.sourcePath,
-					this.optionalCharacterEncoding);
+			/*jfm = new FileInputJavaFileManager(fm, StandardLocation.SOURCE_PATH, Kind.SOURCE, this.sourcePath,
+					this.optionalCharacterEncoding);*/
 
 			this.fileManager = jfm;
 		}

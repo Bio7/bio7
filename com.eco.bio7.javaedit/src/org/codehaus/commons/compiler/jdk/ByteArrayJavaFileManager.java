@@ -54,164 +54,150 @@ import javax.tools.StandardJavaFileManager;
 import org.codehaus.commons.nullanalysis.NotNullByDefault;
 
 /**
- * A {@link ForwardingJavaFileManager} that stores {@link JavaFileObject}s in byte arrays, i.e. in memory (as opposed
- * to the {@link StandardJavaFileManager}, which stores them in files).
+ * A {@link ForwardingJavaFileManager} that stores {@link JavaFileObject}s in
+ * byte arrays, i.e. in memory (as opposed to the
+ * {@link StandardJavaFileManager}, which stores them in files).
  *
  * @param <M>
  */
-@NotNullByDefault(false) public
-class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJavaFileManager<M> {
+@NotNullByDefault(false)
+public class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJavaFileManager<M> {
 
-    private final Map<Location, Map<Kind, Map<String /*className*/, JavaFileObject>>> javaFiles = (
-        new HashMap<Location, Map<Kind, Map<String, JavaFileObject>>>()
-    );
+	private final Map<Location, Map<Kind, Map<String /* className */, JavaFileObject>>> javaFiles = (new HashMap<Location, Map<Kind, Map<String, JavaFileObject>>>());
 
-    public
-    ByteArrayJavaFileManager(M delegate) {
-        super(delegate);
-    }
+	public ByteArrayJavaFileManager(M delegate) {
+		super(delegate);
+	}
 
-    @Override public FileObject
-    getFileForInput(Location location, String packageName, String relativeName) {
-        throw new UnsupportedOperationException("getFileForInput");
-    }
+	@Override
+	public FileObject getFileForInput(Location location, String packageName, String relativeName) {
+		throw new UnsupportedOperationException("getFileForInput");
+	}
 
-    @Override public FileObject
-    getFileForOutput(
-        Location   location,
-        String     packageName,
-        String     relativeName,
-        FileObject sibling
-    ) {
-        throw new UnsupportedOperationException("getFileForInput");
-    }
+	@Override
+	public FileObject getFileForOutput(Location location, String packageName, String relativeName, FileObject sibling) {
+		throw new UnsupportedOperationException("getFileForInput");
+	}
 
-    @Override public JavaFileObject
-    getJavaFileForInput(Location location, String className, Kind kind) throws IOException {
-        Map<Kind, Map<String, JavaFileObject>> locationJavaFiles = this.javaFiles.get(location);
-        if (locationJavaFiles == null) return null;
+	@Override
+	public JavaFileObject getJavaFileForInput(Location location, String className, Kind kind) throws IOException {
+		Map<Kind, Map<String, JavaFileObject>> locationJavaFiles = this.javaFiles.get(location);
+		if (locationJavaFiles == null)
+			return null;
 
-        Map<String, JavaFileObject> kindJavaFiles = locationJavaFiles.get(kind);
-        if (kindJavaFiles == null) return null;
+		Map<String, JavaFileObject> kindJavaFiles = locationJavaFiles.get(kind);
+		if (kindJavaFiles == null)
+			return null;
 
-        return kindJavaFiles.get(className);
-    }
+		return kindJavaFiles.get(className);
+	}
 
-    @Override public JavaFileObject
-    getJavaFileForOutput(
-        Location     location,
-        final String className,
-        Kind         kind,
-        FileObject   sibling
-    ) throws IOException {
+	@Override
+	public JavaFileObject getJavaFileForOutput(Location location, final String className, Kind kind, FileObject sibling)
+			throws IOException {
 
-        /**
-         * {@link StringWriter}-based implementation of {@link JavaFileObject}.
-         * <p>
-         *   Notice that {@link #getCharContent(boolean)} is much more efficient than {@link
-         *   ByteArrayJavaFileObject#getCharContent(boolean)}. However, memory consumption is roughly double, and
-         *   {@link #openInputStream()} and {@link #openOutputStream()} are not available.
-         * </p>
-         */
-        class StringWriterJavaFileObject extends SimpleJavaFileObject {
-            final StringWriter buffer = new StringWriter();
+		/**
+		 * {@link StringWriter}-based implementation of {@link JavaFileObject}.
+		 * <p>
+		 * Notice that {@link #getCharContent(boolean)} is much more efficient than
+		 * {@link ByteArrayJavaFileObject#getCharContent(boolean)}. However, memory
+		 * consumption is roughly double, and {@link #openInputStream()} and
+		 * {@link #openOutputStream()} are not available.
+		 * </p>
+		 */
+		class StringWriterJavaFileObject extends SimpleJavaFileObject {
+			final StringWriter buffer = new StringWriter();
 
-            StringWriterJavaFileObject(Kind kind) {
-                super(
-                    URI.create("stringbuffer:///" + className.replace('.', '/') + kind.extension),
-                    kind
-                );
-            }
+			StringWriterJavaFileObject(Kind kind) {
+				super(URI.create("stringbuffer:///" + className.replace('.', '/') + kind.extension), kind);
+			}
 
-            @Override public Writer
-            openWriter() throws IOException {
-                return this.buffer;
-            }
+			@Override
+			public Writer openWriter() throws IOException {
+				return this.buffer;
+			}
 
-            @Override public Reader
-            openReader(boolean ignoreEncodingErrors) throws IOException {
-                return new StringReader(this.buffer.toString());
-            }
+			@Override
+			public Reader openReader(boolean ignoreEncodingErrors) throws IOException {
+				return new StringReader(this.buffer.toString());
+			}
 
-            @Override public CharSequence
-            getCharContent(boolean ignoreEncodingErrors) {
-                return this.buffer.getBuffer();
-            }
-        }
+			@Override
+			public CharSequence getCharContent(boolean ignoreEncodingErrors) {
+				return this.buffer.getBuffer();
+			}
+		}
 
-        Map<Kind, Map<String, JavaFileObject>> locationJavaFiles = this.javaFiles.get(location);
-        if (locationJavaFiles == null) {
-            locationJavaFiles = new HashMap<Kind, Map<String, JavaFileObject>>();
-            this.javaFiles.put(location, locationJavaFiles);
-        }
-        Map<String, JavaFileObject> kindJavaFiles = locationJavaFiles.get(kind);
-        if (kindJavaFiles == null) {
-            kindJavaFiles = new HashMap<String, JavaFileObject>();
-            locationJavaFiles.put(kind, kindJavaFiles);
-        }
+		Map<Kind, Map<String, JavaFileObject>> locationJavaFiles = this.javaFiles.get(location);
+		if (locationJavaFiles == null) {
+			locationJavaFiles = new HashMap<Kind, Map<String, JavaFileObject>>();
+			this.javaFiles.put(location, locationJavaFiles);
+		}
+		Map<String, JavaFileObject> kindJavaFiles = locationJavaFiles.get(kind);
+		if (kindJavaFiles == null) {
+			kindJavaFiles = new HashMap<String, JavaFileObject>();
+			locationJavaFiles.put(kind, kindJavaFiles);
+		}
 
-        JavaFileObject fileObject = (
-            kind == Kind.SOURCE
-            ? new StringWriterJavaFileObject(kind)
-            : new ByteArrayJavaFileObject(className, kind)
-        );
+		JavaFileObject fileObject = (kind == Kind.SOURCE ? new StringWriterJavaFileObject(kind)
+				: new ByteArrayJavaFileObject(className, kind));
 
-        kindJavaFiles.put(className, fileObject);
-        return fileObject;
-    }
+		kindJavaFiles.put(className, fileObject);
+		return fileObject;
+	}
 
-    @Override public Iterable<JavaFileObject>
-    list(
-        Location  location,
-        String    packageName,
-        Set<Kind> kinds,
-        boolean   recurse
-    ) throws IOException {
-        Map<Kind, Map<String, JavaFileObject>> locationFiles = this.javaFiles.get(location);
-        if (locationFiles == null) return super.list(location, packageName, kinds, recurse);
+	@Override
+	public Iterable<JavaFileObject> list(Location location, String packageName, Set<Kind> kinds, boolean recurse)
+			throws IOException {
+		Map<Kind, Map<String, JavaFileObject>> locationFiles = this.javaFiles.get(location);
+		if (locationFiles == null)
+			return super.list(location, packageName, kinds, recurse);
 
-        String               prefix = packageName.length() == 0 ? "" : packageName + ".";
-        int                  pl     = prefix.length();
-        List<JavaFileObject> result = new ArrayList<JavaFileObject>();
-        for (Kind kind : kinds) {
-            Map<String, JavaFileObject> kindFiles = locationFiles.get(kind);
-            if (kindFiles == null) continue;
-            for (Entry<String, JavaFileObject> e : kindFiles.entrySet()) {
-                String className = e.getKey();
-                if (!className.startsWith(prefix)) continue;
-                if (!recurse && className.indexOf('.', pl) != -1) continue;
-                result.add(e.getValue());
-            }
-        }
-        return result;
-    }
+		String prefix = packageName.length() == 0 ? "" : packageName + ".";
+		int pl = prefix.length();
+		List<JavaFileObject> result = new ArrayList<JavaFileObject>();
+		for (Kind kind : kinds) {
+			Map<String, JavaFileObject> kindFiles = locationFiles.get(kind);
+			if (kindFiles == null)
+				continue;
+			for (Entry<String, JavaFileObject> e : kindFiles.entrySet()) {
+				String className = e.getKey();
+				if (!className.startsWith(prefix))
+					continue;
+				if (!recurse && className.indexOf('.', pl) != -1)
+					continue;
+				result.add(e.getValue());
+			}
+		}
+		return result;
+	}
 
-    /**
-     * Byte array-based implementation of {@link JavaFileObject}.
-     */
-    public static
-    class ByteArrayJavaFileObject extends SimpleJavaFileObject {
+	/**
+	 * Byte array-based implementation of {@link JavaFileObject}.
+	 */
+	public static class ByteArrayJavaFileObject extends SimpleJavaFileObject {
 
-        private final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+		private final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
-        public
-        ByteArrayJavaFileObject(String className, Kind kind) {
-            super(
-                URI.create("bytearray:///" + className.replace('.', '/') + kind.extension),
-                kind
-            );
-        }
+		public ByteArrayJavaFileObject(String className, Kind kind) {
+			super(URI.create("bytearray:///" + className.replace('.', '/') + kind.extension), kind);
+		}
 
-        @Override public OutputStream
-        openOutputStream() throws IOException { return this.buffer; }
+		@Override
+		public OutputStream openOutputStream() throws IOException {
+			return this.buffer;
+		}
 
-        /**
-         * @return The bytes that were previously written to this {@link JavaFileObject}
-         */
-        public byte[]
-        toByteArray() { return this.buffer.toByteArray(); }
+		/**
+		 * @return The bytes that were previously written to this {@link JavaFileObject}
+		 */
+		public byte[] toByteArray() {
+			return this.buffer.toByteArray();
+		}
 
-        @Override public InputStream
-        openInputStream() throws IOException { return new ByteArrayInputStream(this.toByteArray()); }
-    }
+		@Override
+		public InputStream openInputStream() throws IOException {
+			return new ByteArrayInputStream(this.toByteArray());
+		}
+	}
 }
