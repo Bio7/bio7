@@ -974,10 +974,11 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		String name = file.getName();
 		int lastIndexOf = name.lastIndexOf(".");
-		if (lastIndexOf > 0 == false || name.startsWith("_")) {
+		if (lastIndexOf > 0 == false || name.startsWith("_")||name.endsWith(".class")) {
 			return;
 		}
-		submenu.add(new ExecuteScriptAction(name.substring(0, lastIndexOf), window2, file));
+		/*Create a submenu form the name without extension and replace a underscore in the filename!*/
+		submenu.add(new ExecuteScriptAction(name.substring(0, lastIndexOf).replace("_", " "), window2, file));
 
 	}
 

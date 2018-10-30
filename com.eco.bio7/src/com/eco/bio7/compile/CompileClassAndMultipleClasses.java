@@ -148,159 +148,193 @@ public class CompileClassAndMultipleClasses {
 
 		job.schedule();
 	}
-    /*This method is called from above but also from the script menu actions directly (external Java path!)*/
+
+	/*
+	 * This method is called from above but also from the script menu actions
+	 * directly (external Java path!)
+	 */
 	public void compileAndLoad(File path, String dir, String name, IWorkbenchPage pag, boolean startupScript) {
 		FileRoot.setCurrentCompileDir(dir);
 		JavaSourceClassLoader cla = new JavaSourceClassLoader(Bio7Plugin.class.getClassLoader());
 		cla.pag = pag;
-		
-       // System.out.println(path.getAbsolutePath()+"/bin");
-		try {
-			FileUtils.cleanDirectory(new File(path.getAbsolutePath()+"/bin"));
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} 
-		cla.setSourcePath(new File[] {new File(dir) });
-		cla.setBinaryPath(new File[] {new File(path.getAbsolutePath()+"/bin") });
+
+		/*Here we set the path for the compilation of java files in the scripts menu folder and the drag and drop class files. 
+		 * We don't delete a bin (*.class files) folder!*/
+		if (startupScript) {
+			cla.setSourcePath(new File[] { new File(dir) });
+			cla.setBinaryPath(new File[] { new File(dir) });
+		/*Else we use the src and bin folder. Class files will be deleted!*/	
+		} else {
+			try {
+				FileUtils.cleanDirectory(new File(path.getAbsolutePath() + "/bin"));
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			cla.setSourcePath(new File[] { new File(dir) });
+			cla.setBinaryPath(new File[] { new File(path.getAbsolutePath() + "/bin") });
+		}
 
 		Object o = null;
 		Class<?> cl = null;
-		try {
 
-			// JavaEditor editor=JavaEditor.javaEditor;
-			/* If we have an opened Java Editor! */
-			if (editor != null && (editor instanceof JavaEditor || editor instanceof CompilationUnitEditor)) {
-				/*
-				 * If the class is in a package we receive the package name from
-				 * the AST!
-				 */
-				org.eclipse.jdt.core.dom.CompilationUnit compUnit = null;
-				if (editor instanceof JavaEditor) {
-					JavaEditor jedit = (JavaEditor) editor;
-					/*
-					 * If the class is in a package we receive the package name
-					 * from the AST!
-					 */
-					compUnit = jedit.getCompUnit();
-				}
-
-				else if (editor instanceof CompilationUnitEditor) {
-					CompilationUnitEditor jedit = (CompilationUnitEditor) editor;
-
-					IWorkingCopyManager mgr = JavaUI.getWorkingCopyManager();
-					ICompilationUnit cu = mgr.getWorkingCopy(jedit.getEditorInput());
-					ASTParser parser = ASTParser.newParser(AST.JLS10);
-					parser.setSource(cu);
-					// CompilationUnit cu = (CompilationUnit)
-					// parser.createAST(null);
-					compUnit = (CompilationUnit) parser.createAST(null);
-
-					/*
-					 * If the class is in a package we receive the package name
-					 * from the AST!
-					 */
-
-					// org.eclipse.jdt.internal.ui.javaeditor.ASTProvider.getASTProvider().getAST(input,
-					// null, null);
-
-				}
-				
-				/*PackageDeclaration pdecl = compUnit.getPackage();
-				if (pdecl != null) {
-					Name packName = pdecl.getName();
-
-					String pack = packName.toString();
-					//cl = cla.findClass(pack + "." + name);
-					ITextEditor editor2 = (ITextEditor) editor;
-					IDocumentProvider prov = editor2.getDocumentProvider();
-					IDocument doc2 = prov.getDocument(editor2.getEditorInput());
-					org.joor.Compile com=new org.joor.Compile();
-					cl=com.compile(pack + "." + name, doc2.get(),null,Bio7Plugin.class.getClassLoader());
-
-				} else {
-					//cl = cla.findClass(name);
-					ITextEditor editor2 = (ITextEditor) editor;
-					IDocumentProvider prov = editor2.getDocumentProvider();
-					IDocument doc2 = prov.getDocument(editor2.getEditorInput());
-					org.joor.Compile com=new org.joor.Compile();
-					cl=com.compile(name, doc2.get(),null,Bio7Plugin.class.getClassLoader());
-				}
-*/
-				/*
-				 * If the class is in a package we receive the package name from
-				 * the AST!
-				 */
-				// org.eclipse.jdt.core.dom.CompilationUnit compUnit =
-				// jedit.getCompUnit();
-				
-				
-				
-				PackageDeclaration pdecl = compUnit.getPackage();
-				if (pdecl != null) {
-					Name packName = pdecl.getName();
-
-					String pack = packName.toString();
-					cl = cla.findClass(pack + "." + name);
-
-				} else {
-					cl = cla.findClass(name);
-				}
-
-			}
-			/* Compile startup scripts! */
-			else if (startupScript) {
-				org.eclipse.jdt.core.dom.CompilationUnit compUnit = null;
-				Document doc = new Document(BatchModel.fileToString(path.getAbsolutePath()));
-
-				ASTParser parser = ASTParser.newParser(AST.JLS10);
-				parser.setSource(doc.get().toCharArray());
-				// CompilationUnit cu = (CompilationUnit)
-				// parser.createAST(null);
-				compUnit = (CompilationUnit) parser.createAST(null);
-				PackageDeclaration pdecl = compUnit.getPackage();
-				if (pdecl != null) {
-					Name packName = pdecl.getName();
-
-					String pack = packName.toString();
-					cl = cla.findClass(pack + "." + name);
-
-				} else {
-					cl = cla.findClass(name);
-				}
-
-			}
+		// JavaEditor editor=JavaEditor.javaEditor;
+		/* If we have an opened Java Editor! */
+		if (editor != null && (editor instanceof JavaEditor || editor instanceof CompilationUnitEditor)) {
 			/*
-			 * If we compile from the context menu or the Flow editor we create
-			 * the AST from the file!
+			 * If the class is in a package we receive the package name from the AST!
 			 */
-			else {
-				org.eclipse.jdt.core.dom.CompilationUnit compUnit = null;
-				Document doc = new Document(BatchModel.fileToString(ifile.getRawLocation().toString()));
+			org.eclipse.jdt.core.dom.CompilationUnit compUnit = null;
+			if (editor instanceof JavaEditor) {
+				JavaEditor jedit = (JavaEditor) editor;
+				/*
+				 * If the class is in a package we receive the package name from the AST!
+				 */
+				compUnit = jedit.getCompUnit();
+			}
 
-				ASTParser parser = ASTParser.newParser(AST.JLS8);
-				parser.setSource(doc.get().toCharArray());
+			else if (editor instanceof CompilationUnitEditor) {
+				CompilationUnitEditor jedit = (CompilationUnitEditor) editor;
+
+				IWorkingCopyManager mgr = JavaUI.getWorkingCopyManager();
+				ICompilationUnit cu = mgr.getWorkingCopy(jedit.getEditorInput());
+				ASTParser parser = ASTParser.newParser(AST.JLS10);
+				parser.setSource(cu);
 				// CompilationUnit cu = (CompilationUnit)
 				// parser.createAST(null);
 				compUnit = (CompilationUnit) parser.createAST(null);
-				PackageDeclaration pdecl = compUnit.getPackage();
-				if (pdecl != null) {
-					Name packName = pdecl.getName();
 
-					String pack = packName.toString();
-					cl = cla.findClass(pack + "." + name);
+				/*
+				 * If the class is in a package we receive the package name from the AST!
+				 */
 
-				} else {
-					cl = cla.findClass(name);
-				}
+				// org.eclipse.jdt.internal.ui.javaeditor.ASTProvider.getASTProvider().getAST(input,
+				// null, null);
 
 			}
 
-			// System.out.println(name);
-			o = cl.newInstance();
-		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-			System.out.println(e.getMessage());
+			/*
+			 * PackageDeclaration pdecl = compUnit.getPackage(); if (pdecl != null) { Name
+			 * packName = pdecl.getName();
+			 * 
+			 * String pack = packName.toString(); //cl = cla.findClass(pack + "." + name);
+			 * ITextEditor editor2 = (ITextEditor) editor; IDocumentProvider prov =
+			 * editor2.getDocumentProvider(); IDocument doc2 =
+			 * prov.getDocument(editor2.getEditorInput()); org.joor.Compile com=new
+			 * org.joor.Compile(); cl=com.compile(pack + "." + name,
+			 * doc2.get(),null,Bio7Plugin.class.getClassLoader());
+			 * 
+			 * } else { //cl = cla.findClass(name); ITextEditor editor2 = (ITextEditor)
+			 * editor; IDocumentProvider prov = editor2.getDocumentProvider(); IDocument
+			 * doc2 = prov.getDocument(editor2.getEditorInput()); org.joor.Compile com=new
+			 * org.joor.Compile(); cl=com.compile(name,
+			 * doc2.get(),null,Bio7Plugin.class.getClassLoader()); }
+			 */
+			/*
+			 * If the class is in a package we receive the package name from the AST!
+			 */
+			// org.eclipse.jdt.core.dom.CompilationUnit compUnit =
+			// jedit.getCompUnit();
+
+			PackageDeclaration pdecl = compUnit.getPackage();
+			if (pdecl != null) {
+				Name packName = pdecl.getName();
+
+				String pack = packName.toString();
+				try {
+					cl = cla.findClass(pack + "." + name);
+				} catch (ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+			} else {
+				try {
+					cl = cla.findClass(name);
+				} catch (ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+
 		}
+		/* Compile startup scripts! */
+		else if (startupScript) {
+			org.eclipse.jdt.core.dom.CompilationUnit compUnit = null;
+			Document doc = new Document(BatchModel.fileToString(path.getAbsolutePath()));
+
+			ASTParser parser = ASTParser.newParser(AST.JLS10);
+			parser.setSource(doc.get().toCharArray());
+			// CompilationUnit cu = (CompilationUnit)
+			// parser.createAST(null);
+			compUnit = (CompilationUnit) parser.createAST(null);
+			PackageDeclaration pdecl = compUnit.getPackage();
+			if (pdecl != null) {
+				Name packName = pdecl.getName();
+
+				String pack = packName.toString();
+				try {
+					cl = cla.findClass(pack + "." + name);
+				} catch (ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+			} else {
+				try {
+					cl = cla.findClass(name);
+				} catch (ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+
+		}
+		/*
+		 * If we compile from the context menu or the Flow editor we create the AST from
+		 * the file!
+		 */
+		else {
+			org.eclipse.jdt.core.dom.CompilationUnit compUnit = null;
+			Document doc = new Document(BatchModel.fileToString(ifile.getRawLocation().toString()));
+
+			ASTParser parser = ASTParser.newParser(AST.JLS8);
+			parser.setSource(doc.get().toCharArray());
+			// CompilationUnit cu = (CompilationUnit)
+			// parser.createAST(null);
+			compUnit = (CompilationUnit) parser.createAST(null);
+			PackageDeclaration pdecl = compUnit.getPackage();
+			if (pdecl != null) {
+				Name packName = pdecl.getName();
+
+				String pack = packName.toString();
+				try {
+					cl = cla.findClass(pack + "." + name);
+				} catch (ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+			} else {
+				try {
+					cl = cla.findClass(name);
+				} catch (ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+
+		}
+
+		// System.out.println(name);
+		try {
+			o = cl.getDeclaredConstructor().newInstance();
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+				| NoSuchMethodException | SecurityException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
 		if (o != null) {
 			if (o instanceof Model) {
 				Model model = (Model) o;
@@ -343,38 +377,41 @@ public class CompileClassAndMultipleClasses {
 	}
 
 	private void callPlugin(final Class<?> cl) {
-		/*SwingUtilities.invokeLater(new Runnable() {
-			// !!
-			public void run() {*/
-				try {
+		/*
+		 * SwingUtilities.invokeLater(new Runnable() { // !! public void run() {
+		 */
 
-					((PlugIn) cl.newInstance()).run("");
-				} catch (InstantiationException | IllegalAccessException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			/*}
-		});*/
+		try {
+			((PlugIn) cl.getDeclaredConstructor().newInstance()).run("");
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+				| NoSuchMethodException | SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		/*
+		 * } });
+		 */
 
 	}
 
 	private void callPluginFilter(final Class<?> cl) {
-		/*SwingUtilities.invokeLater(new Runnable() {
-			// !!
-			public void run() {*/
-				// System.out.println("run plugin");
-				try {
-					new PlugInFilterRunner(cl.newInstance(), "plugin", "");
-				} catch (InstantiationException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IllegalAccessException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+		/*
+		 * SwingUtilities.invokeLater(new Runnable() { // !! public void run() {
+		 */
+		// System.out.println("run plugin");
 
-			/*}
-		});*/
+		try {
+			new PlugInFilterRunner(cl.getDeclaredConstructor().newInstance(), "plugin", "");
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+				| NoSuchMethodException | SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		/*
+		 * } });
+		 */
 	}
 
 	private void callMainMethod(Method method) {
@@ -382,7 +419,7 @@ public class CompileClassAndMultipleClasses {
 		Object retVal;
 		/**/
 		try {
-			String[] params = {""};
+			String[] params = { "" };
 			method.invoke(null, (Object) params);
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 			// TODO Auto-generated catch block
