@@ -1278,8 +1278,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.rbridge.RPerspective",
 					configurer.getWindow());
 
-			/*configurer.getWorkbenchConfigurer().getWorkbench()
-					.showPerspective("com.eco.bio7.browser.SceneBuilderPerspective", configurer.getWindow());*/
+			configurer.getWorkbenchConfigurer().getWorkbench()
+					.showPerspective("com.eco.bio7.browser.SceneBuilderPerspective", configurer.getWindow());
 
 			configurer.getWorkbenchConfigurer().getWorkbench()
 					.showPerspective("com.eco.bio7.document.DocumentPerspective", configurer.getWindow());

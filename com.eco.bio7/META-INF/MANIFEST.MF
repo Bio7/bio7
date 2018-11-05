@@ -198,7 +198,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.filesystem;bundle-version="1.7.100",
  com.eco.bio7.pythonedit;bundle-version="2.5.0",
  Bundled_R;bundle-version="3.3.3",
- com.eco.bio7.image;bundle-version="1.51.17",
+ com.eco.bio7.image;bundle-version="1.52.850",
  com.eco.bio7.WorldWind;bundle-version="2.1.0",
  com.eco.bio7.albireo;bundle-version="2.1.1",
  com.eco.bio7.browser;bundle-version="2.0.0",
@@ -219,13 +219,14 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.draw2d,
  org.eclipse.swt,
  com.eco.bio7.themes;bundle-version="2.5.0",
- com.eco.bio7.jfxswt;bundle-version="2.0.0";resolution:=optional,
+ com.eco.bio7.jfxswt;bundle-version="2.0.0",
  com.eco.bio7.libs.ext;bundle-version="1.0.0";resolution:=optional,
  com.eco.bio7.imagej2;bundle-version="1.0.9",
  org.eclipse.nebula.widgets.grid;bundle-version="1.0.0",
  com.eco.bio7.markdownedit;bundle-version="2.5.0",
  org.eclipse.jface,
- net.sourceforge.texlipse
+ net.sourceforge.texlipse,
+ com.eco.bio7.javafx.devel;bundle-version="1.0.0";resolution:=optional
 Eclipse-LazyStart: true
 Bundle-ClassPath: 
  bin/,
@@ -238,6 +239,7 @@ Bundle-ClassPath:
  baseline.jar,
  libs/swt-grouplayout.jar,
  libs/groovy-all-2.4.12.jar,
- libs/py4j0.10.1.jar
+ libs/py4j0.10.1.jar,
+ libs/jython-standalone-2.7.0.jar
 Import-Package: org.eclipse.e4.ui.css.swt.theme
 

@@ -15,16 +15,17 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.ide;bundle-version="3.8.1",
  com.eco.bio7.libs;bundle-version="2.0.0",
  com.eco.bio7.scenebuilder;bundle-version="2.2.0",
- com.eco.bio7.jfxswt;bundle-version="2.0.0";resolution:=optional,
+ com.eco.bio7.jfxswt;bundle-version="2.0.0",
  com.eco.bio7.util;bundle-version="2.0.0",
- org.eclipse.ui.views
+ org.eclipse.ui.views,
+ com.eco.bio7.javafx.devel;bundle-version="1.0.0";resolution:=optional
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Bundle-ActivationPolicy: lazy
 Export-Package: com.eco.bio7.browser,
  com.eco.bio7.browser.editor,
  com.swtdesigner,
  org.eclipse.swt.widgets.baseline
 Bundle-ClassPath: bin/,
- external:$java.home$/lib/jfxswt.jar
+ external:$java.home$/javafx-sdk-11/lib/javafx-swt.jar
 Import-Package: org.eclipse.e4.ui.css.swt.theme
+Bundle-ActivationPolicy: lazy
 

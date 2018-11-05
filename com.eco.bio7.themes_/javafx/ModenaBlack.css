@@ -1,5 +1,5 @@
 /*Derive all from Modena.css and change some variables!*/
-@import "com/sun/javafx/scene/control/skin/modena/modena.css";
+@import "modena.css";
 
 .root {
     
