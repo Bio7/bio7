@@ -158,12 +158,15 @@ public class CompileClassAndMultipleClasses {
 		JavaSourceClassLoader cla = new JavaSourceClassLoader(Bio7Plugin.class.getClassLoader());
 		cla.pag = pag;
 
-		/*Here we set the path for the compilation of java files in the scripts menu folder and the drag and drop class files. 
-		 * We don't delete a bin (*.class files) folder!*/
+		/*
+		 * Here we set the path for the compilation of java files in the scripts menu
+		 * folder and the drag and drop class files. We don't delete a bin (*.class
+		 * files) folder!
+		 */
 		if (startupScript) {
 			cla.setSourcePath(new File[] { new File(dir) });
 			cla.setBinaryPath(new File[] { new File(dir) });
-		/*Else we use the src and bin folder. Class files will be deleted!*/	
+			/* Else we use the src and bin folder. Class files will be deleted! */
 		} else {
 			try {
 				FileUtils.cleanDirectory(new File(path.getAbsolutePath() + "/bin"));
