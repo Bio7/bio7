@@ -148,7 +148,7 @@ public class CompileClassAndMultipleClasses {
 
 		job.schedule();
 	}
-
+ 
 	/*
 	 * This method is called from above but also from the script menu actions
 	 * directly (external Java path!)
