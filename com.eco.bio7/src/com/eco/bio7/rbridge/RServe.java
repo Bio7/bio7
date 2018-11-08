@@ -895,7 +895,7 @@ public class RServe {
 					}
 				}
 			});
-			/*Delete not if opened from embedded Bio7 editor (alos drag and drop)!*/
+			/*Delete not if opened from embedded Bio7 editor (also when using drag and drop)!*/
 			if (delete) {
 				/* Delete file in default Bio7 temporay folder. Not the copy for pdf.js! */
 				File plotFile = new File(plotPathR + fileName);
