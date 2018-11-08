@@ -264,7 +264,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 										File fil = new File(dirPath + "/" + theName + ".pdf");
 										if (fil.exists()) {
 
-											RServe.openPDF(dirPath + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser);
+											RServe.openPDF(dirPath + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser,true);
 
 											// Program.launch(dirPath + "/" + theName + ".pdf");
 										} else {

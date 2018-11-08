@@ -686,7 +686,7 @@ public class ExecuteBatchFile {
 							boolean useBrowser = store.getBoolean("PDF_USE_BROWSER");
 							String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
 
-							RServe.openPDF(tempDirLoc + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser);
+							RServe.openPDF(tempDirLoc + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser,true);
 
 							// Program.launch(tempDirLoc + "/" + theName + ".pdf");
 						} else {

@@ -709,7 +709,7 @@ public class RServe {
 			if (fileName.endsWith("pdf") || fileName.endsWith("eps") || fileName.endsWith("xfig")
 					|| fileName.endsWith("bitmap") || fileName.endsWith("pictex")) {
 
-				openPDF(plotPathR, fileName, useBrowser, openInJavaFXBrowser);
+				openPDF(plotPathR, fileName, useBrowser, openInJavaFXBrowser,true);
 			}
 
 			else if (fileName.endsWith("svg")) {
@@ -788,7 +788,7 @@ public class RServe {
 		}
 	}
 
-	public static void openPDF(String plotPathR, String fileName, boolean useBrowser, String openInJavaFXBrowser) {
+	public static void openPDF(String plotPathR, String fileName, boolean useBrowser, String openInJavaFXBrowser, boolean delete) {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		if (openInJavaFXBrowser.equals("SWT_BROWSER")) {
 			File tempFile = createTempFileFromPlot(plotPathR, fileName);
@@ -895,9 +895,12 @@ public class RServe {
 					}
 				}
 			});
-			/* Delete file in default Bio7 temporay folder. Not the copy for pdf.js! */
-			File plotFile = new File(plotPathR + fileName);
-			plotFile.delete();
+			/*Delete not if opened from embedded Bio7 editor (alos drag and drop)!*/
+			if (delete) {
+				/* Delete file in default Bio7 temporay folder. Not the copy for pdf.js! */
+				File plotFile = new File(plotPathR + fileName);
+				plotFile.delete();
+			}
 
 		}
 	}

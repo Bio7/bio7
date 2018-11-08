@@ -545,7 +545,7 @@ public class LatexSweaveKnitrAction extends Action {
 						// else {
 
 						// Program.launch(dirPath + "/" + theName + ".pdf");
-						RServe.openPDF(dirPath + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser);
+						RServe.openPDF(dirPath + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser,true);
 						// }
 					} else {
 						Bio7Dialog.message("*.pdf file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");

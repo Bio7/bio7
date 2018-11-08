@@ -36,7 +36,7 @@ public class PdfEditor extends EditorPart {
 
 		String dirPath = new File(fi).getParentFile().getPath().replace("\\", "/");
 
-		RServe.openPDF(dirPath + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser);
+		RServe.openPDF(dirPath + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser,false);
 	}
 
 	public void init(IEditorSite site, IEditorInput input) {
