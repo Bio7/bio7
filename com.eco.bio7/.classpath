@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-10"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="libs/jython-standalone-2.7.0.jar"/>
 	<classpathentry kind="lib" path="libs/bsh-2.0b6.jar"/>
 	<classpathentry kind="lib" path="libs/groovy-all-2.4.12.jar"/>
@@ -15,6 +15,5 @@
 	<classpathentry kind="lib" path="baseline.jar"/>
 	<classpathentry kind="lib" path="libs/swt-grouplayout.jar"/>
 	<classpathentry kind="lib" path="/com.eco.bio7.libs/libs/jogl-all.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
