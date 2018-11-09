@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.help.IWorkbenchHelpSystem;
 
 
@@ -135,7 +136,7 @@ public class TexEditorPreferencePage
         IWorkbenchHelpSystem helpsystem = workbench.getHelpSystem();
         helpsystem.setHelp(wordWrapLength.getTextControl(wordWrapParent), TexlipseHelpIds.WRAP_LENGTH);
         
-        //WorkbenchHelp.setHelp(wordWrapLength.getTextControl(wordWrapParent), TexlipseHelpIds.WRAP_LENGTH);
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(wordWrapLength.getTextControl(wordWrapParent), TexlipseHelpIds.WRAP_LENGTH);
         
         TexlipsePreferencePage.addSpacer(wordWrapParent);
         Label label = new Label(wordWrapParent, SWT.LEFT | SWT.WRAP);
