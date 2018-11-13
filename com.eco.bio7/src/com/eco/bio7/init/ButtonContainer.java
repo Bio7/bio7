@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2013 M. Austenfeld
+ * Copyright (c) 2004-2018 M. Austenfeld
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -113,9 +113,9 @@ public class ButtonContainer {
 							RGB color = dialog.open();
 							if (color != null) {
 
-								CurrentStates.getR().set(stateSel, new Integer(color.red));
-								CurrentStates.getG().set(stateSel, new Integer(color.green));
-								CurrentStates.getB().set(stateSel, new Integer(color.blue));
+								CurrentStates.getR().set(stateSel, Integer.valueOf(color.red));
+								CurrentStates.getG().set(stateSel, Integer.valueOf(color.green));
+								CurrentStates.getB().set(stateSel, Integer.valueOf(color.blue));
 								Quad2d quad = Quad2d.getQuad2dInstance();
 								quad.setValue(stateSel);
 								Hexagon hex = Hexagon.getHexagonInstance();

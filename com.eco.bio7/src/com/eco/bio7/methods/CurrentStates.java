@@ -11,11 +11,8 @@
 
 package com.eco.bio7.methods;
 
-
 import java.util.ArrayList;
 import java.util.HashMap;
-
-
 
 public class CurrentStates {
 
@@ -41,10 +38,9 @@ public class CurrentStates {
 
 		stateName.add(new String(stat));
 
-		r.add(new Integer((int) (Math.random() * 255)));
-		g.add(new Integer((int) (Math.random() * 255)));
-		b.add(new Integer((int) (Math.random() * 255)));
-		
+		r.add(Integer.valueOf((int) (Math.random() * 255)));
+		g.add(Integer.valueOf((int) (Math.random() * 255)));
+		b.add(Integer.valueOf((int) (Math.random() * 255)));
 
 		hash.put(new String(stat), stateName.size() - 1);
 	}
@@ -135,6 +131,7 @@ public class CurrentStates {
 		String be = (String) stateName.get(b);
 		return be;
 	}
+
 	public static String getStateDescription(int b) {
 		String be = (String) stateDescriptions.get(b);
 		return be;

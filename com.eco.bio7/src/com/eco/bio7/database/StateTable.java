@@ -69,7 +69,8 @@ public class StateTable {
 	}
 
 	private void createTable(final Composite parent) {
-		grid = new Grid(parent, SWT.BORDER | SWT.V_SCROLL | SWT.SCROLL_LINE | SWT.MULTI | SWT.FULL_SELECTION | SWT.VIRTUAL);
+		grid = new Grid(parent,
+				SWT.BORDER | SWT.V_SCROLL | SWT.SCROLL_LINE | SWT.MULTI | SWT.FULL_SELECTION | SWT.VIRTUAL);
 		grid.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event event) {
 				checkedEvent = event.detail == SWT.CHECK ? true : false;
@@ -328,7 +329,7 @@ public class StateTable {
 	}
 
 	public static void setCell(final String name) {
-
+		
 		String species = name;
 		if (CurrentStates.stateExistent(species) == false) {
 			setInGrid(name);
@@ -344,24 +345,15 @@ public class StateTable {
 			Quad2d.getQuad2dInstance().createzaehler();
 			/* Important to wrap, if a lot of states will be set! */
 			if (LineChartView.linechart != null) {
-				try {
-					SwingUtilities.invokeAndWait(new Runnable() {
-						public void run() {
-							updateCharts();
-						}
-					});
-				} catch (InterruptedException e) {
 
-					e.printStackTrace();
-				} catch (InvocationTargetException e) {
+				updateCharts();
 
-					e.printStackTrace();
-				}
 			}
 
 		} else {
 			Bio7Dialog.message("A state with this name already exists!");
 		}
+		 
 	}
 
 	public static void unsetCell(String name) {

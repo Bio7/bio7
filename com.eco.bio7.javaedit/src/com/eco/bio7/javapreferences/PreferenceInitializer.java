@@ -56,7 +56,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			fsize = 14;
 
 		}*/
-		Font f= JFaceResources.getFont(JFaceResources.TEXT_FONT);
+		/*Font f= JFaceResources.getFont(JFaceResources.TEXT_FONT);
 		PreferenceConverter.setDefault(storeJava, "colourkey", new RGB(127, 0, 85));
 		PreferenceConverter.setDefault(storeJava, "colourkey1", new RGB(127, 0, 85));
 		PreferenceConverter.setDefault(storeJava, "colourkey2", new RGB(42, 0, 255));
@@ -75,7 +75,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		PreferenceConverter.setDefault(storeJava, "colourkeyfont4", f.getFontData());
 		PreferenceConverter.setDefault(storeJava, "colourkeyfont5", f.getFontData());
 		PreferenceConverter.setDefault(storeJava, "colourkeyfont6", f.getFontData());
-		PreferenceConverter.setDefault(storeJava, "colourkeyfont7", f.getFontData());
+		PreferenceConverter.setDefault(storeJava, "colourkeyfont7", f.getFontData());*/
 
 		storeJava.setDefault("compiler_marker",false);
 		

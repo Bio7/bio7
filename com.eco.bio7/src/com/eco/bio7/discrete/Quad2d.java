@@ -132,7 +132,8 @@ public class Quad2d extends JPanel implements KeyListener, MouseListener, MouseM
 		reset();
 		for (int i = 0; i < Field.getHeight(); i++) {
 			for (int u = 0; u < Field.getWidth(); u++) {
-				if (Field.getState(u, i) < CurrentStates.getStateList().size() && CurrentStates.getStateList().size() > 0) {
+				if (Field.getState(u, i) < CurrentStates.getStateList().size()
+						&& CurrentStates.getStateList().size() > 0) {
 					/* Get the self defined class ! */
 					CounterModel zahl = (CounterModel) zaehlerlist.get(Field.getState(u, i));
 					zahl.setZahl();
@@ -189,6 +190,7 @@ public class Quad2d extends JPanel implements KeyListener, MouseListener, MouseM
 	}
 
 	public void malen(Graphics g) {
+
 		if (g != null) {
 
 			if (dragclick == false) {
@@ -196,13 +198,16 @@ public class Quad2d extends JPanel implements KeyListener, MouseListener, MouseM
 
 					for (int u = 0; u < Field.getWidth(); u++) {
 
-						if ((Field.getHeight() == Field.getStateArray().length) && (Field.getWidth() == Field.getStateArray()[0].length)) {
+						if ((Field.getHeight() == Field.getStateArray().length)
+								&& (Field.getWidth() == Field.getStateArray()[0].length)) {
 
-							if (Field.getState(u, i) < CurrentStates.getStateList().size() && CurrentStates.getStateList().size() > 0) {
+							if (Field.getState(u, i) < CurrentStates.getStateList().size()
+									&& CurrentStates.getStateList().size() > 0) {
 								RGB = CurrentStates.getRGB(Field.getState(u, i));
 								g.setColor(new Color(RGB[0], RGB[1], RGB[2]));
 								if (i < quad.length && u < quad[0].length) {
-									g.fillRect(((int) quad[i][u].getX()), ((int) quad[i][u].getY()), ((int) quad[i][u].getWidth()), ((int) quad[i][u].getHeight()));
+									g.fillRect(((int) quad[i][u].getX()), ((int) quad[i][u].getY()),
+											((int) quad[i][u].getWidth()), ((int) quad[i][u].getHeight()));
 								}
 							}
 
@@ -213,16 +218,19 @@ public class Quad2d extends JPanel implements KeyListener, MouseListener, MouseM
 
 			else {// if dragged
 
-				if (Field.getState(exz, eyz) < CurrentStates.getStateList().size() && CurrentStates.getStateList().size() > 0) {
+				if (Field.getState(exz, eyz) < CurrentStates.getStateList().size()
+						&& CurrentStates.getStateList().size() > 0) {
 					RGB = CurrentStates.getRGB(Field.getState(exz, eyz));
 					g.setColor(new Color(RGB[0], RGB[1], RGB[2]));
 
-					g.fillRect(((int) quad[eyz][exz].getX()), ((int) quad[eyz][exz].getY()), ((int) quad[eyz][exz].getWidth()), ((int) quad[eyz][exz].getHeight()));
+					g.fillRect(((int) quad[eyz][exz].getX()), ((int) quad[eyz][exz].getY()),
+							((int) quad[eyz][exz].getWidth()), ((int) quad[eyz][exz].getHeight()));
 
 				}
 
 			}
 		}
+
 	}
 
 	public void drawQuad() {
@@ -254,7 +262,7 @@ public class Quad2d extends JPanel implements KeyListener, MouseListener, MouseM
 			}
 		}
 
-		//Field.setQuadSize(Field.getQuadSize());
+		// Field.setQuadSize(Field.getQuadSize());
 		rwidth = Field.getQuadSize();
 		rheight = Field.getQuadSize();
 		drawQuad();
@@ -332,7 +340,8 @@ public class Quad2d extends JPanel implements KeyListener, MouseListener, MouseM
 					display.syncExec(new Runnable() {
 
 						public void run() {
-							Quadview.getQuadview().setstatusline("Current " + Field.getState(exz, eyz) + " Temp: " + Field.getTempState(exz, eyz));
+							Quadview.getQuadview().setstatusline(
+									"Current " + Field.getState(exz, eyz) + " Temp: " + Field.getTempState(exz, eyz));
 						}
 					});
 
@@ -361,7 +370,8 @@ public class Quad2d extends JPanel implements KeyListener, MouseListener, MouseM
 
 			if (!activeRendering) {
 
-				if (rectanglex < jScrollPane.getVisibleRect().width || rectangley < jScrollPane.getVisibleRect().height) {
+				if (rectanglex < jScrollPane.getVisibleRect().width
+						|| rectangley < jScrollPane.getVisibleRect().height) {
 					offscreenimage = null;
 					fieldrenderer();
 
@@ -413,8 +423,7 @@ public class Quad2d extends JPanel implements KeyListener, MouseListener, MouseM
 	}
 
 	/**
-	 * @param pause
-	 *            The pause to set.
+	 * @param pause The pause to set.
 	 */
 	public static void setPause(boolean pause) {
 		Time.setPause(pause);

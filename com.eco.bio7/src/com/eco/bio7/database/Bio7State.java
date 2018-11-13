@@ -84,7 +84,8 @@ public class Bio7State {
 
 				}
 
-				grid.removeAll();
+				grid.disposeAllItems();
+				grid.clearItems();
 
 			}
 		});
