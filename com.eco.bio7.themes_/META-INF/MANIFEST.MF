@@ -6,6 +6,6 @@ Bundle-Version: 2.5.0.qualifier
 Bundle-Vendor: ECO
 Bundle-Localization: plugin
 Require-Bundle: org.eclipse.e4.ui.css.swt.theme
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Eclipse-BundleShape: dir
 Bundle-ActivationPolicy: lazy

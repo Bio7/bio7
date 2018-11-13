@@ -39,4 +39,5 @@ Bundle-ClassPath: libs/commons-compiler-3.0.7.jar,
 Import-Package: org.eclipse.core.filesystem,
  org.eclipse.ui,
  org.eclipse.ui.ide
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 
