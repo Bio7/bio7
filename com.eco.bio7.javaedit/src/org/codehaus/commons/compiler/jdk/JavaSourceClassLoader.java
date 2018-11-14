@@ -251,6 +251,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 				// optionList.addElement(System.getProperty("java.class.path"));
 				/*We have to format the classpath!*/
 				 String classpath=new ScanClassPath().scan().replace(";/","");
+				// System.out.println(classpath);
 				 optionList.addElement(classpath);
 				if (version.equals("1.9") || version.equals("10") || version.equals("11")) {
 					//optionList.addElement("--add-modules=java.base");
