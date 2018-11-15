@@ -413,7 +413,7 @@ public class ScanClassPath {
 		buf.add(pathseparator +platformPath+"jdk/javafx-sdk-11/lib/javafx.swing.jar;");
 		buf.add(pathseparator +platformPath+"jdk/javafx-sdk-11/lib/javafx.web.jar;");
 		buf.add(pathseparator +platformPath+"jdk/javafx-sdk-11/lib/javafx-swt.jar;");
-
+ 
 		/*
 		 * Here we add the results to the classpath. Src entries are created, too for
 		 * necessary plugins!
