@@ -30,7 +30,7 @@ jdk/bin/java
 2
       </programArgsLin>
       <programArgsMac>-vm
-jdk/lib/jli/libjli.dylib
+../MacOS/jdk/Contents/Home/lib/jli/libjli.dylib
       </programArgsMac>
       <programArgsWin>-vm
 jdk/bin/javaw.exe
@@ -67,7 +67,6 @@ jdk/bin/javaw.exe
 
    <vm>
    </vm>
-
 
    <plugins>
       <plugin id="Bundled_R"/>
