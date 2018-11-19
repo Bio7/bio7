@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.util.Util;
 import org.eclipse.osgi.util.ManifestElement;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
@@ -120,22 +121,21 @@ public class ScanClassPath {
 			}
 
 		}
-		
-		
-		String platformPath=Platform.getInstallLocation().getURL().getPath().replace("\\", "/");
-		
-		buf.append(";"+pathseparator +platformPath+"jdk/javafx-sdk-11/lib/javafx.base.jar;");
-		buf.append(pathseparator +platformPath+"jdk/javafx-sdk-11/lib/javafx.controls.jar;");
-		buf.append(pathseparator +platformPath+"jdk/javafx-sdk-11/lib/javafx.fxml.jar;");
-		buf.append(pathseparator +platformPath+"jdk/javafx-sdk-11/lib/javafx.graphics.jar;");
-		buf.append(pathseparator +platformPath+"jdk/javafx-sdk-11/lib/javafx.media.jar;");
-		buf.append(pathseparator +platformPath+"jdk/javafx-sdk-11/lib/javafx.swing.jar;");
-		buf.append(pathseparator +platformPath+"jdk/javafx-sdk-11/lib/javafx.web.jar;");
-		buf.append(pathseparator +platformPath+"jdk/javafx-sdk-11/lib/javafx-swt.jar;");
 
-		
-		
-		
+		String platformPath = Platform.getInstallLocation().getURL().getPath().replace("\\", "/");
+		if (Util.isWindows()) {
+			buf.append(";" + pathseparator + platformPath + "javafx/lib/javafx.base.jar;");
+			buf.append(pathseparator + platformPath + "javafx/lib/javafx.controls.jar;");
+			buf.append(pathseparator + platformPath + "javafx/lib/javafx.fxml.jar;");
+			buf.append(pathseparator + platformPath + "javafx/lib/javafx.graphics.jar;");
+			buf.append(pathseparator + platformPath + "javafx/lib/javafx.media.jar;");
+			buf.append(pathseparator + platformPath + "javafx/lib/javafx.swing.jar;");
+			buf.append(pathseparator + platformPath + "javafx/lib/javafx.web.jar;");
+			buf.append(pathseparator + platformPath + "javafx/lib/javafx-swt.jar;");
+		} else {
+
+		}
+
 		/*
 		 * Get the *.jar list from the Bio7 Java preferences and add them to the
 		 * classpath!
@@ -227,7 +227,7 @@ public class ScanClassPath {
 		// buf.append(File.pathSeparator+Platform.getInstallLocation().getURL().getPath()+"plugins/org.eclipse.ui.workbench_3.7.0.I20110519-0100.jar");
 		// buf.append(File.pathSeparator+Platform.getInstallLocation().getURL().getPath()+"/plugins/org.eclipse.core.commands_3.6.0.I20110111-0800.jar");
 		// System.out.println(buf.toString());
-		
+
 		String classpaths = buf.toString();
 
 		return classpaths;
@@ -402,18 +402,18 @@ public class ScanClassPath {
 		buf.add(pathseparator + bundlePaths.get(3) + "/bin");
 		buf.add(pathseparator + bundlePaths.get(4) + "/bin");
 		buf.add(pathseparator + bundlePaths.get(7) + "/bin");
-		
-		String platformPath=Platform.getInstallLocation().getURL().getPath().replace("\\", "/");
-		
-		buf.add(";"+pathseparator +platformPath+"jdk/javafx-sdk-11/lib/javafx.base.jar;");
-		buf.add(pathseparator +platformPath+"jdk/javafx-sdk-11/lib/javafx.controls.jar;");
-		buf.add(pathseparator +platformPath+"jdk/javafx-sdk-11/lib/javafx.fxml.jar;");
-		buf.add(pathseparator +platformPath+"jdk/javafx-sdk-11/lib/javafx.graphics.jar;");
-		buf.add(pathseparator +platformPath+"jdk/javafx-sdk-11/lib/javafx.media.jar;");
-		buf.add(pathseparator +platformPath+"jdk/javafx-sdk-11/lib/javafx.swing.jar;");
-		buf.add(pathseparator +platformPath+"jdk/javafx-sdk-11/lib/javafx.web.jar;");
-		buf.add(pathseparator +platformPath+"jdk/javafx-sdk-11/lib/javafx-swt.jar;");
- 
+
+		String platformPath = Platform.getInstallLocation().getURL().getPath().replace("\\", "/");
+
+		buf.add(";" + pathseparator + platformPath + "javafx/lib/javafx.base.jar;");
+		buf.add(pathseparator + platformPath + "javafx/lib/javafx.controls.jar;");
+		buf.add(pathseparator + platformPath + "javafx/lib/javafx.fxml.jar;");
+		buf.add(pathseparator + platformPath + "javafx/lib/javafx.graphics.jar;");
+		buf.add(pathseparator + platformPath + "javafx/lib/javafx.media.jar;");
+		buf.add(pathseparator + platformPath + "javafx/lib/javafx.swing.jar;");
+		buf.add(pathseparator + platformPath + "javafx/lib/javafx.web.jar;");
+		buf.add(pathseparator + platformPath + "javafx/lib/javafx-swt.jar;");
+
 		/*
 		 * Here we add the results to the classpath. Src entries are created, too for
 		 * necessary plugins!
