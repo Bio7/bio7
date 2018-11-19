@@ -123,7 +123,16 @@ public class ScanClassPath {
 		}
 
 		String platformPath = Platform.getInstallLocation().getURL().getPath().replace("\\", "/");
-		if (Util.isWindows()) {
+		if (Util.isMac()) {
+			buf.append(":" + pathseparator + platformPath + "../MacOS/javafx/lib/javafx.base.jar:");
+			buf.append(pathseparator + platformPath + "../MacOS/javafx/lib/javafx.controls.jar:");
+			buf.append(pathseparator + platformPath + "../MacOS/javafx/lib/javafx.fxml.jar:");
+			buf.append(pathseparator + platformPath + "../MacOS/javafx/lib/javafx.graphics.jar:");
+			buf.append(pathseparator + platformPath + "../MacOS/javafx/lib/javafx.media.jar:");
+			buf.append(pathseparator + platformPath + "../MacOS/javafx/lib/javafx.swing.jar:");
+			buf.append(pathseparator + platformPath + "../MacOS/javafx/lib/javafx.web.jar:");
+			buf.append(pathseparator + platformPath + "../MacOS/javafx/lib/javafx-swt.jar:");
+		} else if (Util.isWindows()) {
 			buf.append(";" + pathseparator + platformPath + "javafx/lib/javafx.base.jar;");
 			buf.append(pathseparator + platformPath + "javafx/lib/javafx.controls.jar;");
 			buf.append(pathseparator + platformPath + "javafx/lib/javafx.fxml.jar;");
@@ -404,16 +413,27 @@ public class ScanClassPath {
 		buf.add(pathseparator + bundlePaths.get(7) + "/bin");
 
 		String platformPath = Platform.getInstallLocation().getURL().getPath().replace("\\", "/");
+		if (Util.isWindows()) {
+			buf.add(";" + pathseparator + platformPath + "javafx/lib/javafx.base.jar;");
+			buf.add(pathseparator + platformPath + "javafx/lib/javafx.controls.jar;");
+			buf.add(pathseparator + platformPath + "javafx/lib/javafx.fxml.jar;");
+			buf.add(pathseparator + platformPath + "javafx/lib/javafx.graphics.jar;");
+			buf.add(pathseparator + platformPath + "javafx/lib/javafx.media.jar;");
+			buf.add(pathseparator + platformPath + "javafx/lib/javafx.swing.jar;");
+			buf.add(pathseparator + platformPath + "javafx/lib/javafx.web.jar;");
+			buf.add(pathseparator + platformPath + "javafx/lib/javafx-swt.jar;");
+		} else if (Util.isMac()) {
+			buf.add(":" + pathseparator + platformPath + "../MacOS/javafx/lib/javafx.base.jar:");
+			buf.add(pathseparator + platformPath + "../MacOS/javafx/lib/javafx.controls.jar:");
+			buf.add(pathseparator + platformPath + "../MacOS/javafx/lib/javafx.fxml.jar:");
+			buf.add(pathseparator + platformPath + "../MacOS/javafx/lib/javafx.graphics.jar:");
+			buf.add(pathseparator + platformPath + "../MacOS/javafx/lib/javafx.media.jar:");
+			buf.add(pathseparator + platformPath + "../MacOS/javafx/lib/javafx.swing.jar:");
+			buf.add(pathseparator + platformPath + "../MacOS/javafx/lib/javafx.web.jar:");
+			buf.add(pathseparator + platformPath + "../MacOS/javafx/lib/javafx-swt.jar:");
+		} else {
 
-		buf.add(";" + pathseparator + platformPath + "javafx/lib/javafx.base.jar;");
-		buf.add(pathseparator + platformPath + "javafx/lib/javafx.controls.jar;");
-		buf.add(pathseparator + platformPath + "javafx/lib/javafx.fxml.jar;");
-		buf.add(pathseparator + platformPath + "javafx/lib/javafx.graphics.jar;");
-		buf.add(pathseparator + platformPath + "javafx/lib/javafx.media.jar;");
-		buf.add(pathseparator + platformPath + "javafx/lib/javafx.swing.jar;");
-		buf.add(pathseparator + platformPath + "javafx/lib/javafx.web.jar;");
-		buf.add(pathseparator + platformPath + "javafx/lib/javafx-swt.jar;");
-
+		}
 		/*
 		 * Here we add the results to the classpath. Src entries are created, too for
 		 * necessary plugins!
