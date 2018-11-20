@@ -431,7 +431,15 @@ public class ScanClassPath {
 			buf.add(pathseparator + platformPath + "../MacOS/javafx/lib/javafx.swing.jar:");
 			buf.add(pathseparator + platformPath + "../MacOS/javafx/lib/javafx.web.jar:");
 			buf.add(pathseparator + platformPath + "../MacOS/javafx/lib/javafx-swt.jar:");
-		} else {
+		} else {// Linux!
+			buf.add(":" + pathseparator + platformPath + "javafx/lib/javafx.base.jar;");
+			buf.add(pathseparator + platformPath + "javafx/lib/javafx.controls.jar;");
+			buf.add(pathseparator + platformPath + "javafx/lib/javafx.fxml.jar;");
+			buf.add(pathseparator + platformPath + "javafx/lib/javafx.graphics.jar;");
+			buf.add(pathseparator + platformPath + "javafx/lib/javafx.media.jar;");
+			buf.add(pathseparator + platformPath + "javafx/lib/javafx.swing.jar;");
+			buf.add(pathseparator + platformPath + "javafx/lib/javafx.web.jar;");
+			buf.add(pathseparator + platformPath + "javafx/lib/javafx-swt.jar;");
 
 		}
 		/*
