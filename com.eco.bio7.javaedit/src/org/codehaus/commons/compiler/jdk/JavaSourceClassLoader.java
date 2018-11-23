@@ -225,7 +225,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 				boolean verbose = store.getBoolean("compiler_verbose");
 				boolean warnings = store.getBoolean("compiler_warnings");
 				boolean createMarker = store.getBoolean("compiler_marker");
-				if (version.equals("1.9") || version.equals("10") || version.equals("11")) {
+				if (version.equals("1.9") || version.equals("10") || version.equals("11")|| version.equals("12")) {
 					URL url = Platform.getInstallLocation().getURL();
 					try {
 						File f = new File(url.toURI());
@@ -253,7 +253,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 				 String classpath=new ScanClassPath().scan().replace(";/","");
 				// System.out.println(classpath);
 				 optionList.addElement(classpath);
-				if (version.equals("1.9") || version.equals("10") || version.equals("11")) {
+				if (version.equals("1.9") || version.equals("10") || version.equals("11")|| version.equals("12")) {
 					//optionList.addElement("--add-modules=java.base");
 					// optionList.addElement("--limit-modules=java.base,java.logging,java.scripting,java.rmi,java.sql,java.xml,java.compiler,java.management,java.naming,java.prefs,java.security.jgss,java.security.sasl,java.sql.rowset,java.xml.crypto");
 					optionList.addElement("--add-modules=javafx.controls,javafx.base,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,javafx.web,javafx.swt");
