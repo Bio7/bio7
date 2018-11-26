@@ -130,12 +130,12 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 			// than in files.
 			//jfm = new ByteArrayJavaFileManager<JavaFileManager>(jfm);
 			StandardJavaFileManager jfm = this.compiler.getStandardFileManager(null, null, null);
-			ArrayList ar=new ArrayList();
+			ArrayList<File> ar=new ArrayList<File>();
 			for (int i = 0; i < sourcePath.length; i++) {
 				ar.add(this.sourcePath[i]);
 			}
 			
-			ArrayList arout=new ArrayList();
+			ArrayList<File> arout=new ArrayList<File>();
 			for (int i = 0; i < binaryPath.length; i++) {
 				arout.add(this.binaryPath[i]);
 			}
