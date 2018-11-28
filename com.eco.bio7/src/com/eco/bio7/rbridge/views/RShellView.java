@@ -2355,7 +2355,7 @@ public class RShellView extends ViewPart {
 		
 		String name = file.getName();
 		int lastIndexOf = name.lastIndexOf(".");
-		if (lastIndexOf > 0==false||name.startsWith("_")) {
+		if (lastIndexOf > 0 == false || name.startsWith("_")||name.endsWith(".class")) {
 			return;
 		}
 		
@@ -2363,7 +2363,7 @@ public class RShellView extends ViewPart {
 
 		MenuItem item = new MenuItem(submenu, SWT.NONE);
 
-		item.setText(name.substring(0, lastIndexOf));
+		item.setText(name.substring(0, lastIndexOf).replace("_", " "));
 
 		item.addSelectionListener(new SelectionListener() {
 

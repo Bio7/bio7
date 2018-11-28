@@ -144,7 +144,7 @@ public class ScriptAction extends Action implements IMenuCreator {
 
 		String name = file.getName();
 		int lastIndexOf = name.lastIndexOf(".");
-		if (lastIndexOf > 0 == false || name.startsWith("_")) {
+		if (lastIndexOf > 0 == false || name.startsWith("_")||name.endsWith(".class")) {
 			return;
 		}
 
