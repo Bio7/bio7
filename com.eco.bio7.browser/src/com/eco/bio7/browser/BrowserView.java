@@ -57,7 +57,7 @@ public class BrowserView extends ViewPart {
 		
 		browser.setJavascriptEnabled(true);
 		
-		browser.setUrl("http://bio7.org/manual/Main.html");
+		browser.setUrl("https://bio7.org/manual/Main.html");
 
 		createActions();
 		initializeToolBar();
@@ -88,8 +88,8 @@ public class BrowserView extends ViewPart {
 					switch (index) {
 
 					case 0:
-						browser.setUrl("http://www.openstreetmap.org/");
-						txt.setText("http://www.openstreetmap.org/");
+						browser.setUrl("https://www.openstreetmap.org/");
+						txt.setText("https://www.openstreetmap.org/");
 
 						break;
 
@@ -142,42 +142,42 @@ public class BrowserView extends ViewPart {
 
 					case 0:
 
-						browser.setUrl("http://cran.r-project.org/web/views/");
-						txt.setText("http://cran.r-project.org/web/views/");
+						browser.setUrl("https://cran.r-project.org/web/views/");
+						txt.setText("https://cran.r-project.org/web/views/");
 
 						break;
 					case 1:
-						browser.setUrl("http://www.statmethods.net/");
-						txt.setText("http://www.statmethods.net/");
+						browser.setUrl("https://www.statmethods.net/");
+						txt.setText("https://www.statmethods.net/");
 
 						break;
 					case 2:
-						browser.setUrl("http://cran.r-project.org/doc/contrib/Short-refcard.pdf");
-						txt.setText("http://cran.r-project.org/doc/contrib/Short-refcard.pdf");
+						browser.setUrl("https://cran.r-project.org/doc/contrib/Short-refcard.pdf");
+						txt.setText("https://cran.r-project.org/doc/contrib/Short-refcard.pdf");
 						break;
 					case 3:
-						browser.setUrl("http://rosettacode.org/wiki/Category:R");
-						txt.setText("http://rosettacode.org/wiki/Category:R");
+						browser.setUrl("https://rosettacode.org/wiki/Category:R");
+						txt.setText("https://rosettacode.org/wiki/Category:R");
 						break;
 					case 4:
-						browser.setUrl("http://www.burns-stat.com/pages/Tutor/R_inferno.pdf");
-						txt.setText("http://www.burns-stat.com/pages/Tutor/R_inferno.pdf");
+						browser.setUrl("https://www.burns-stat.com/pages/Tutor/R_inferno.pdf");
+						txt.setText("https://www.burns-stat.com/pages/Tutor/R_inferno.pdf");
 						break;
 					case 5:
 						browser.setUrl("http://www.r-bloggers.com/");
-						txt.setText("http://www.r-bloggers.com/");
+						txt.setText("https://www.r-bloggers.com/");
 						break;
 					case 6:
-						browser.setUrl("http://www.rdocumentation.org/");
-						txt.setText("http://www.rdocumentation.org/");
+						browser.setUrl("https://www.rdocumentation.org/");
+						txt.setText("https://www.rdocumentation.org/");
 						break;
 					case 7:
-						browser.setUrl("http://en.wikibooks.org/wiki/R_Programming");
-						txt.setText("http://en.wikibooks.org/wiki/R_Programming");
+						browser.setUrl("https://en.wikibooks.org/wiki/R_Programming");
+						txt.setText("https://en.wikibooks.org/wiki/R_Programming");
 						break;
 					case 8:
-						browser.setUrl("http://stackoverflow.com/questions/tagged/r");
-						txt.setText("http://stackoverflow.com/questions/tagged/r");
+						browser.setUrl("https://stackoverflow.com/questions/tagged/r");
+						txt.setText("https://stackoverflow.com/questions/tagged/r");
 						break;
 
 					default:
@@ -227,19 +227,19 @@ public class BrowserView extends ViewPart {
 
 						break;
 					case 1:
-						browser.setUrl("http://rsb.info.nih.gov/ij/plugins/index.html");
-						txt.setText("http://rsb.info.nih.gov/ij/plugins/index.html");
+						browser.setUrl("https://rsb.info.nih.gov/ij/plugins/index.html");
+						txt.setText("https://rsb.info.nih.gov/ij/plugins/index.html");
 
 						break;
 
 					case 2:
-						browser.setUrl("http://rsb.info.nih.gov/ij/docs/index.html");
-						txt.setText("http://rsb.info.nih.gov/ij/docs/index.html");
+						browser.setUrl("https://rsb.info.nih.gov/ij/docs/index.html");
+						txt.setText("https://rsb.info.nih.gov/ij/docs/index.html");
 
 						break;
 					case 3:
-						browser.setUrl("http://rsbweb.nih.gov/ij/docs/guide/user-guide.pdf");
-						txt.setText("http://rsbweb.nih.gov/ij/docs/guide/user-guide.pdf");
+						browser.setUrl("https://rsbweb.nih.gov/ij/docs/guide/user-guide.pdf");
+						txt.setText("https://rsbweb.nih.gov/ij/docs/guide/user-guide.pdf");
 
 						break;
 
@@ -282,7 +282,7 @@ public class BrowserView extends ViewPart {
 					}
 				}
 			});
-			txt.setText("http://bio7.org");
+			txt.setText("https://bio7.org");
 			txt.addListener(SWT.DefaultSelection, new Listener() {
 				public void handleEvent(Event e) {
 					browser.setUrl(txt.getText());
@@ -301,7 +301,7 @@ public class BrowserView extends ViewPart {
 
 		openstreetmapAction = new Action("OpenStreetMap") {
 			public void run() {
-				browser.setUrl("http://www.openstreetmap.org/");
+				browser.setUrl("https://www.openstreetmap.org/");
 
 			}
 		};
@@ -339,16 +339,16 @@ public class BrowserView extends ViewPart {
 		scriptAction = new Action("Home") {
 			public void run() {
 
-				browser.setUrl("http://bio7.org");
-				txt.setText("http://bio7.org");
+				browser.setUrl("https://bio7.org");
+				txt.setText("https://bio7.org");
 
 			}
 		};
 		manualAction = new Action("Bio7 Manual") {
 			public void run() {
 
-				browser.setUrl("http://bio7.org/manual/Main.html");
-				txt.setText("http://bio7.org/manual/Main.html");
+				browser.setUrl("https://bio7.org/manual/Main.html");
+				txt.setText("https://bio7.org/manual/Main.html");
 
 			}
 		};
