@@ -90,7 +90,7 @@ public class RecalculateClasspath implements IObjectActionDelegate {
 		/* Extra path for the different MacOSX installation paths! */
 		String OS = ApplicationWorkbenchWindowAdvisor.getOS();
 		if (OS.equals("Mac")) {
-			vmStandin.setInstallLocation(new File(path + "../MacOS/jdk"));
+			vmStandin.setInstallLocation(new File(path + "../MacOS/jdk/Contents/Home/"));
 
 		} else {
 			vmStandin.setInstallLocation(new File(path + "/jdk"));

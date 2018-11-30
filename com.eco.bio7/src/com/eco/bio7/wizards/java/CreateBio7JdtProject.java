@@ -63,7 +63,7 @@ public class CreateBio7JdtProject {
 			String OS=ApplicationWorkbenchWindowAdvisor.getOS();
 			/*Extra path for the different MacOSX installation paths!*/
 			if (OS.equals("Mac")) {
-				vmStandin.setInstallLocation(new File(path + "../MacOS/jdk"));
+				vmStandin.setInstallLocation(new File(path + "../MacOS/jdk/Contents/Home/"));
 
 			} else {
 				vmStandin.setInstallLocation(new File(path + "/jdk"));
