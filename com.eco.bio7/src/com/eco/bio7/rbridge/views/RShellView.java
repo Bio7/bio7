@@ -476,10 +476,9 @@ public class RShellView extends ViewPart {
 					} else if (((e.stateMask & SWT.COMMAND) == SWT.COMMAND) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT
 							&& (e.stateMask & SWT.ALT) == SWT.ALT && (e.keyCode == 'i')) {
 						setHistoryTextInREditor();
-					}
-					else if (((e.stateMask & SWT.COMMAND) == SWT.COMMAND) &&  (e.keyCode == SWT.CR)) {
-						/*Write to RMarkdown or REditor with line break!*/
-						setTxtREditor(text.getText()+System.lineSeparator());
+					} else if (((e.stateMask & SWT.COMMAND) == SWT.COMMAND) && (e.keyCode == SWT.CR)) {
+						/* Write to RMarkdown or REditor with line break! */
+						setTxtREditor(text.getText() + System.lineSeparator());
 						/* Add text to history and clear text component! */
 						history();
 						triggerMarkdownAction();
@@ -538,14 +537,13 @@ public class RShellView extends ViewPart {
 							&& (e.keyCode == 'i')) {
 						setHistoryTextInREditor();
 
-					}
-					else if (((e.stateMask & SWT.CTRL) == SWT.CTRL) &&  (e.keyCode == SWT.CR)) {
-						/*Write to RMarkdown or REditor with line break!*/
-						setTxtREditor(text.getText()+System.lineSeparator());
+					} else if (((e.stateMask & SWT.CTRL) == SWT.CTRL) && (e.keyCode == SWT.CR)) {
+						/* Write to RMarkdown or REditor with line break! */
+						setTxtREditor(text.getText() + System.lineSeparator());
 						/* Add text to history and clear text component! */
 						history();
-                        triggerMarkdownAction();
-                        text.setFocus();
+						triggerMarkdownAction();
+						text.setFocus();
 					}
 				}
 				Text text = (Text) e.getSource();
@@ -3048,7 +3046,7 @@ public class RShellView extends ViewPart {
 			}
 
 		}
-		
+
 		String txt = buff.toString();
 		setTxtREditor(txt);
 	}
@@ -3111,21 +3109,9 @@ public class RShellView extends ViewPart {
 			return openPos + 1;
 		return -1;
 	}
-	
+    /*Execute the markdown action!*/
 	private void triggerMarkdownAction() {
 		String commandId = "com.eco.bio7.RMarkdownAction";
-		IHandlerService handlerService = (IHandlerService) (IHandlerService) PlatformUI.getWorkbench()
-				.getService(IHandlerService.class);
-		Display.getDefault().asyncExec(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					handlerService.executeCommand(commandId, null);
-				} catch (ExecutionException | NotDefinedException | NotEnabledException | NotHandledException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		});
+		Work.executeCommand(commandId);
 	}
 }

@@ -11,6 +11,10 @@
 
 package com.eco.bio7.collection;
 
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.NotEnabledException;
+import org.eclipse.core.commands.NotHandledException;
+import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -23,6 +27,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.actions.ActionFactory;
+import org.eclipse.ui.handlers.IHandlerService;
 
 import com.eco.bio7.editor.BeanshellEditorPlugin;
 import com.eco.bio7.ijmacro.editor.IJMacroEditorPlugin;
@@ -213,5 +218,26 @@ public class Work {
 			break;
 		}
 		return store;
+	}
+
+	/**
+	 * Execute an registered command.
+	 * 
+	 * @param commandID the command identifier as String.
+	 */
+	public static void executeCommand(String commandID) {
+		IHandlerService handlerService = (IHandlerService) (IHandlerService) PlatformUI.getWorkbench()
+				.getService(IHandlerService.class);
+		Display.getDefault().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					handlerService.executeCommand(commandID, null);
+				} catch (ExecutionException | NotDefinedException | NotEnabledException | NotHandledException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		});
 	}
 }
