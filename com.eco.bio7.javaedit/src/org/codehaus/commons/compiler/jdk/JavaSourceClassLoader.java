@@ -229,7 +229,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 					URL url = Platform.getInstallLocation().getURL();
 					try {
 						File f = new File(url.toURI());
-						String path = ("--module-path=" + f.getAbsolutePath() + "/javafx/lib").replace("\\",
+						String path = ("--module-path=" + f.getAbsolutePath() + "/jdk/javafx/lib").replace("\\",
 								"/");
 						optionList.addElement(path);
 						// System.out.println(path);
