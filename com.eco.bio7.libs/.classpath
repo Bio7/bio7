@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="libs/controlsfx-9.0.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jfxtras-all-9.0-r1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/Medusa-8.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="hardware/arduino.jar"/>
@@ -9,7 +10,6 @@
 	<classpathentry exported="true" kind="lib" path="math/jts-core-1.15.0-SNAPSHOT.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/opal-1.0.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/commons-io-2.6.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/controlsfx-8.40.14.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/commons-codec-1.10.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/commons-collections4-4.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/opencsv-3.9.jar"/>
