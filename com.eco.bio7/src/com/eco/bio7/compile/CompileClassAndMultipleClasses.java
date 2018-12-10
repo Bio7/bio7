@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import javax.swing.SwingUtilities;
 
 import org.apache.commons.io.FileUtils;
 import org.codehaus.commons.compiler.jdk.JavaSourceClassLoader;
@@ -40,22 +39,18 @@ import org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor;
 import org.eclipse.jdt.ui.IWorkingCopyManager;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.texteditor.IDocumentProvider;
-import org.eclipse.ui.texteditor.ITextEditor;
-
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.BatchModel;
 import com.eco.bio7.batch.FileRoot;
-import com.eco.bio7.javaeditors.JavaEditor;
 import com.eco.bio7.methods.Compiled;
 import com.eco.bio7.rcp.StartBio7Utils;
 import com.eco.bio7.worldwind.DynamicLayer;
+
 import ij.plugin.PlugIn;
 import ij.plugin.filter.PlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
@@ -113,8 +108,6 @@ public class CompileClassAndMultipleClasses {
 		// dir = new File(filLoc).getParentFile().getPath().replace("\\", "/");
 		if (editor instanceof CompilationUnitEditor) {
 			dir = pa.toFile().getPath().replace("\\", "/") + "/src";
-		} else if (editor instanceof JavaEditor) {
-			dir = pa.toFile().getPath().replace("\\", "/");
 		} else {// Compilation triggered from the Flow or the popup menu with no
 				// active editor opened!
 			dir = pa.toFile().getPath().replace("\\", "/") + "/src";
@@ -148,7 +141,7 @@ public class CompileClassAndMultipleClasses {
 
 		job.schedule();
 	}
- 
+
 	/*
 	 * This method is called from above but also from the script menu actions
 	 * directly (external Java path!)
@@ -183,20 +176,20 @@ public class CompileClassAndMultipleClasses {
 
 		// JavaEditor editor=JavaEditor.javaEditor;
 		/* If we have an opened Java Editor! */
-		if (editor != null && (editor instanceof JavaEditor || editor instanceof CompilationUnitEditor)) {
+		if (editor != null && (editor instanceof CompilationUnitEditor)) {
 			/*
 			 * If the class is in a package we receive the package name from the AST!
 			 */
 			org.eclipse.jdt.core.dom.CompilationUnit compUnit = null;
-			if (editor instanceof JavaEditor) {
-				JavaEditor jedit = (JavaEditor) editor;
-				/*
-				 * If the class is in a package we receive the package name from the AST!
-				 */
-				compUnit = jedit.getCompUnit();
-			}
+			/*
+			 * if (editor instanceof JavaEditor) { JavaEditor jedit = (JavaEditor) editor;
+			 * 
+			 * If the class is in a package we receive the package name from the AST!
+			 * 
+			 * compUnit = jedit.getCompUnit(); }
+			 */
 
-			else if (editor instanceof CompilationUnitEditor) {
+			if (editor instanceof CompilationUnitEditor) {
 				CompilationUnitEditor jedit = (CompilationUnitEditor) editor;
 
 				IWorkingCopyManager mgr = JavaUI.getWorkingCopyManager();

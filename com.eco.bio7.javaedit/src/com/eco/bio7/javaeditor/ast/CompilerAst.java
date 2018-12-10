@@ -21,18 +21,18 @@ import org.eclipse.jdt.core.dom.SimplePropertyDescriptor;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jface.text.Document;
 
-import com.eco.bio7.javaeditors.ClassModel;
+//import com.eco.bio7.javaeditors.ClassModel;
 
 public class CompilerAst {
 
 	private ASTParser parser;
-	
+
 	private List<ImportDeclaration> imports;
 
 	private PackageDeclaration packDecl;
 
 	public CompilationUnit cu;
-	
+
 	public CompilerAst(String source) {
 		Document doc = new Document(source);
 		parser = ASTParser.newParser(AST.JLS10);
@@ -70,70 +70,67 @@ public class CompilerAst {
 		}
 	}
 
-	public void parseAst(ClassModel cm) {
+	public void parseAst() {
 		cu = (CompilationUnit) parser.createAST(null);
 		cu.recordModifications();
 		AST ast = cu.getAST();
 		imports = cu.imports();
-		packDecl=cu.getPackage();
+		packDecl = cu.getPackage();
 		for (int i = 0; i < imports.size(); i++) {
-			
-			ImportDeclaration id=imports.get(i);
-			//cm.importNames.add(cuna+" "+cu.getLineNumber(id.getStartPosition()));
-			
-			JavaAstContainer jac=new JavaAstContainer();
-    		jac.setDescription(imports.get(i).getName().getFullyQualifiedName());
-    		jac.setLineNumber(cu.getLineNumber(id.getStartPosition()));
-    		cm.importNames.add(jac);
-			
-			
-			
-			//System.out.println(cuna+" "+cu.getLineNumber(id.getStartPosition()));
+
+			ImportDeclaration id = imports.get(i);
+			// cm.importNames.add(cuna+" "+cu.getLineNumber(id.getStartPosition()));
+
+			JavaAstContainer jac = new JavaAstContainer();
+			jac.setDescription(imports.get(i).getName().getFullyQualifiedName());
+			jac.setLineNumber(cu.getLineNumber(id.getStartPosition()));
+			// cm.importNames.add(jac);
+
+			// System.out.println(cuna+" "+cu.getLineNumber(id.getStartPosition()));
 		}
 		imports.clear();
 
 		List<AbstractTypeDeclaration> types = cu.types();
-		for(AbstractTypeDeclaration type : types) {
-		    if(type.getNodeType() == ASTNode.TYPE_DECLARATION) {
-		        // Class def found
-		        List<BodyDeclaration> bodies = type.bodyDeclarations();
-		        for(BodyDeclaration body : bodies) {
-		            if(body.getNodeType() == ASTNode.METHOD_DECLARATION) {
-		                MethodDeclaration method = (MethodDeclaration)body;
-		                	             
-		               //cm.methodNames.add(method.getName().getFullyQualifiedName()+" "+ cu.getLineNumber(method.getStartPosition()));
-		               
-		               JavaAstContainer jac=new JavaAstContainer();
-	            		jac.setDescription(method.getName().getFullyQualifiedName());
-	            		jac.setLineNumber(cu.getLineNumber(method.getStartPosition()));
-	            		cm.methodNames.add(jac);
-		               
-		               
-		            }
-		            else if(body.getNodeType() == ASTNode.FIELD_DECLARATION){
-		            	FieldDeclaration field = (FieldDeclaration)body;
-		            	List<VariableDeclarationFragment> vdfs = field.fragments();
-		            	for (VariableDeclarationFragment vdf : vdfs) {
-		            		
-		            		//cm.fieldNames.add(vdf.getName().getFullyQualifiedName()+" "+cu.getLineNumber(vdf.getStartPosition()));
-		            		JavaAstContainer jac=new JavaAstContainer();
-		            		jac.setDescription(vdf.getName().getFullyQualifiedName());
-		            		jac.setLineNumber(cu.getLineNumber(vdf.getStartPosition()));
-		            		cm.fieldNames.add(jac);
-		            	}		            	
-		            	
-		            }
-		           
-		        }
-		        bodies.clear();
-		    }
-	    
+		for (AbstractTypeDeclaration type : types) {
+			if (type.getNodeType() == ASTNode.TYPE_DECLARATION) {
+				// Class def found
+				List<BodyDeclaration> bodies = type.bodyDeclarations();
+				for (BodyDeclaration body : bodies) {
+					if (body.getNodeType() == ASTNode.METHOD_DECLARATION) {
+						MethodDeclaration method = (MethodDeclaration) body;
+
+						// cm.methodNames.add(method.getName().getFullyQualifiedName()+" "+
+						// cu.getLineNumber(method.getStartPosition()));
+
+						JavaAstContainer jac = new JavaAstContainer();
+						jac.setDescription(method.getName().getFullyQualifiedName());
+						jac.setLineNumber(cu.getLineNumber(method.getStartPosition()));
+						// cm.methodNames.add(jac);
+
+					} else if (body.getNodeType() == ASTNode.FIELD_DECLARATION) {
+						FieldDeclaration field = (FieldDeclaration) body;
+						List<VariableDeclarationFragment> vdfs = field.fragments();
+						for (VariableDeclarationFragment vdf : vdfs) {
+
+							// cm.fieldNames.add(vdf.getName().getFullyQualifiedName()+"
+							// "+cu.getLineNumber(vdf.getStartPosition()));
+							JavaAstContainer jac = new JavaAstContainer();
+							jac.setDescription(vdf.getName().getFullyQualifiedName());
+							jac.setLineNumber(cu.getLineNumber(vdf.getStartPosition()));
+							// cm.fieldNames.add(jac);
+						}
+
+					}
+
+				}
+				bodies.clear();
+			}
+
 		}
-	
-		
+
 		types.clear();
-        imports.clear();
-		
+		imports.clear();
+
 	}
 
 	private void print(ASTNode node) {

@@ -18,8 +18,7 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 import com.eco.bio7.javaeditor.ast.CompilerAst;
-import com.eco.bio7.javaeditors.ClassModel;
-import com.eco.bio7.javaeditors.JavaEditor;
+
 
 public class ModelClassAst {
 
@@ -65,15 +64,15 @@ public class ModelClassAst {
 		
 		
 
-		ClassModel cm = new ClassModel();
+		//ClassModel cm = new ClassModel();
 
-		compilerAst.parseAst(cm);
+		//compilerAst.parseAst(cm);
 
-		JavaEditor je = (JavaEditor) JEditor;
+		//JavaEditor je = (JavaEditor) JEditor;
 		/*Set a reference of the CompilationUnit in the Java editor!*/
-        je.setCompUnit(compilerAst.getCu());
+       // je.setCompUnit(compilerAst.getCu());
         
-		je.outlineInputChanged(je.currentClassModel, cm);
+		//je.outlineInputChanged(je.currentClassModel, cm);
 		
 
 	}

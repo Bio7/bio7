@@ -38,7 +38,6 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.eco.bio7.actions.SafeSaveDialog;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.discrete.Field;
-import com.eco.bio7.javaeditors.JavaEditor;
 import com.eco.bio7.jobs.LoadData;
 import com.eco.bio7.jobs.SaveWorkspaceJob;
 
@@ -292,7 +291,7 @@ public class Spreadview extends ViewPart {
 				fileName = name.replaceFirst("[.][^.]+$", "");
 
 			}
-			if (currentEditor instanceof JavaEditor||currentEditor instanceof CompilationUnitEditor) {
+			if (currentEditor instanceof CompilationUnitEditor) {
 
 				ITextEditor editor = (ITextEditor) currentEditor;
 				

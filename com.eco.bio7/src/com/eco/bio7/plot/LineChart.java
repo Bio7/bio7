@@ -68,10 +68,10 @@ public class LineChart  {
 	}
 
 	public static void delete() {
-		for (int i = 0; i < CurrentStates.getR().size(); i++) {
+		//for (int i = 0; i < CurrentStates.getR().size(); i++) {
 
 			Series.clear();
-		}
+		//}
 	}
 
 	/*private void exitForm(java.awt.event.WindowEvent evt) {

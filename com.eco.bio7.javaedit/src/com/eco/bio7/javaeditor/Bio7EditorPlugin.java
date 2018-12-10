@@ -13,11 +13,7 @@
 package com.eco.bio7.javaeditor;
 
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import com.eco.bio7.javaeditors.JavaCodeScanner;
-import com.eco.bio7.javaeditors.JavaColorProvider; 													
-import com.eco.bio7.javaeditors.JavaPartitionScanner;
 
 public class Bio7EditorPlugin extends AbstractUIPlugin {
 
@@ -25,17 +21,12 @@ public class Bio7EditorPlugin extends AbstractUIPlugin {
 
 	private static Bio7EditorPlugin fgInstance;
 
-	private JavaColorProvider fColorProvider;
-	private JavaCodeScanner fCodeScanner;
-
-	private JavaPartitionScanner fPartitionScanner;
-
 	/**
 	 * Creates a new plug-in instance.
 	 */
 	public Bio7EditorPlugin() {
 		fgInstance = this;
-		
+
 	}
 
 	/**
@@ -45,34 +36,6 @@ public class Bio7EditorPlugin extends AbstractUIPlugin {
 	 */
 	public static Bio7EditorPlugin getDefault() {
 		return fgInstance;
-	}
-
-	public JavaPartitionScanner getJavaPartitionScanner() {
-		if (fPartitionScanner == null)
-			fPartitionScanner = new JavaPartitionScanner();
-		return fPartitionScanner;
-	}
-
-	/**
-	 * Returns the singleton Java code scanner.
-	 * 
-	 * @return the singleton Java code scanner
-	 */
-	public RuleBasedScanner getJavaCodeScanner() {
-		if (fCodeScanner == null)
-			fCodeScanner = new JavaCodeScanner(getJavaColorProvider());
-		return fCodeScanner;
-	}
-
-	/**
-	 * Returns the singleton Java color provider.
-	 * 
-	 * @return the singleton Java color provider
-	 */
-	public JavaColorProvider getJavaColorProvider() {
-		if (fColorProvider == null)
-			fColorProvider = new JavaColorProvider();
-		return fColorProvider;
 	}
 
 	/**
