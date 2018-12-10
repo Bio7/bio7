@@ -158,7 +158,7 @@ public class ScanClassPath {
 		 * classpath!
 		 */
 
-		String libs = store.getString("javaLibs");
+		String libs = store.getString("JAVA_LIBS");
 		String[] conv = convert(libs);
 		for (int j = 0; j < conv.length; j++) {
 
@@ -336,7 +336,7 @@ public class ScanClassPath {
 		 * Get the *.jar list from the Bio7 Java preferences and add them to the
 		 * classpath!
 		 */
-		String libs = store.getString("javaLibs");
+		String libs = store.getString("JAVA_LIBS");
 		String[] conv = convert(libs);
 
 		for (int j = 0; j < conv.length; j++) {

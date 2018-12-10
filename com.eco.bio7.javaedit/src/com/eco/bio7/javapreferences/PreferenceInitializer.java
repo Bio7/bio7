@@ -76,7 +76,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		PreferenceConverter.setDefault(storeJava, "colourkeyfont5", f.getFontData());
 		PreferenceConverter.setDefault(storeJava, "colourkeyfont6", f.getFontData());
 		PreferenceConverter.setDefault(storeJava, "colourkeyfont7", f.getFontData());*/
-
+		storeJava.setDefault("JAVA_MODULES","ALL-MODULE-PATH");
 		storeJava.setDefault("compiler_marker",false);
 		
 	}

@@ -32,7 +32,7 @@ import org.eclipse.swt.layout.FillLayout;
 /**
  * A preference page for the error-handling of a simple HTML editor.
  */
-public class ErrorsPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
+public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkbenchPreferencePage {
 
 	private static final int VERTICAL_DIALOG_UNITS_PER_CHAR = 8;
 	private static final int LIST_HEIGHT_IN_CHARS = 10;
@@ -45,7 +45,7 @@ public class ErrorsPreferencePage extends PreferencePage implements IWorkbenchPr
 	private String[] files;
 	private String currentFilePath;
 
-	public ErrorsPreferencePage() {
+	public DynamicCompilerJavaLibries() {
 		super();
 
 		// Set the preference store for the preference page.
@@ -172,11 +172,11 @@ public class ErrorsPreferencePage extends PreferencePage implements IWorkbenchPr
 	}
 
 	public String[] getDefaultExemptTagsPreference() {
-		return convert(Bio7EditorPlugin.getDefault().getPreferenceStore().getDefaultString("javaLibs"));
+		return convert(Bio7EditorPlugin.getDefault().getPreferenceStore().getDefaultString("JAVA_LIBS"));
 	}
 
 	public String[] getExemptTagsPreference() {
-		return convert(Bio7EditorPlugin.getDefault().getPreferenceStore().getString("javaLibs"));
+		return convert(Bio7EditorPlugin.getDefault().getPreferenceStore().getString("JAVA_LIBS"));
 	}
 
 	private String[] convert(String preferenceValue) {
@@ -197,7 +197,7 @@ public class ErrorsPreferencePage extends PreferencePage implements IWorkbenchPr
 			buffer.append(elements[i]);
 			buffer.append(";");
 		}
-		Bio7EditorPlugin.getDefault().getPreferenceStore().setValue("javaLibs", buffer.toString());
+		Bio7EditorPlugin.getDefault().getPreferenceStore().setValue("JAVA_LIBS", buffer.toString());
 	}
 
 	/**
