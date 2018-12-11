@@ -247,8 +247,6 @@ public class ScanClassPath {
 		// System.out.println(buf.toString());
 
 		String classpaths = buf.toString();
-		/* We have to format the classpath for the dynamic compilation! */
-		classpaths = classpaths.replace(";/", "");
 		return classpaths;
 	}
 
