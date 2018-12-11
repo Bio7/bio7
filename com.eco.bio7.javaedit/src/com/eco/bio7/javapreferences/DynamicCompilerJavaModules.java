@@ -16,6 +16,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
@@ -94,10 +95,10 @@ public class DynamicCompilerJavaModules extends PreferencePage implements IWorkb
 		buttonGroup.setLayout(new FillLayout(SWT.HORIZONTAL));
 
 		Button addTag = new Button(buttonGroup, SWT.NONE);
-		addTag.setText("Add Selected Modules");
+		addTag.setText("Add Module Path");
 
 		removeTag = new Button(buttonGroup, SWT.NONE);
-		removeTag.setText("&Remove Selected Modules");
+		removeTag.setText("&Remove Selected Module Paths");
 		removeTag.setEnabled(false);
 
 		Label lblAddModules = new Label(top, SWT.NONE);
@@ -105,7 +106,7 @@ public class DynamicCompilerJavaModules extends PreferencePage implements IWorkb
 
 		text = new Text(top, SWT.BORDER);
 		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		//Load the preferences!
+		// Load the preferences!
 		text.setText(getTextPreference());
 
 		removeTag.addSelectionListener(new SelectionAdapter() {
@@ -140,12 +141,12 @@ public class DynamicCompilerJavaModules extends PreferencePage implements IWorkb
 		// errors.loadDefault();
 		exemptTagsList.setItems(
 
-		getDefaultExemptTagsPreference());
+				getDefaultExemptTagsPreference());
 		getDefaultTextPreference();
 		// getDefaultExemptTagsPreference() is a convenience
 		// method which retrieves the default preference from
 		// the preference store.
-		
+
 		super.performDefaults();
 	}
 
@@ -162,13 +163,10 @@ public class DynamicCompilerJavaModules extends PreferencePage implements IWorkb
 	}
 
 	private void addTag() {
-		String[] tag = openMultipleFiles(new String[] { "*.jmod" });
-		if (tag != null && tag.length > 0) {
-			for (int i = 0; i < tag.length; i++) {
-				currentFilePath = currentFilePath.replace("\\", "/");
-				String lib = currentFilePath + "/" + tag[i];
-				exemptTagsList.add(lib);
-			}
+		String tag = openFile();
+		if (tag != null) {
+			tag = tag.replace("\\", "/");
+			exemptTagsList.add(tag);
 
 		}
 		// textField.setText("");
@@ -190,11 +188,11 @@ public class DynamicCompilerJavaModules extends PreferencePage implements IWorkb
 	public String[] getExemptTagsPreference() {
 		return convert(Bio7EditorPlugin.getDefault().getPreferenceStore().getString("JAVA_MODULES_PATH"));
 	}
-	
+
 	public String getDefaultTextPreference() {
 		return Bio7EditorPlugin.getDefault().getPreferenceStore().getDefaultString("JAVA_MODULES");
 	}
-	
+
 	public String getTextPreference() {
 		return Bio7EditorPlugin.getDefault().getPreferenceStore().getDefaultString("JAVA_MODULES");
 	}
@@ -231,17 +229,17 @@ public class DynamicCompilerJavaModules extends PreferencePage implements IWorkb
 	 * @param extension the extensions as a String array which should be displayed.
 	 * @return a file path as a string from the file dialog.
 	 */
-	public String openFile(final String[] extension) {
+	public String openFile() {
 		file = null;
 		final Display display = PlatformUI.getWorkbench().getDisplay();
 		display.syncExec(new Runnable() {
 
 			public void run() {
 				Shell s = new Shell(SWT.ON_TOP);
-				FileDialog fd = new FileDialog(s, SWT.OPEN);
+				DirectoryDialog fd = new DirectoryDialog(s, SWT.OPEN);
 				fd.setText("Select Modules");
 
-				fd.setFilterExtensions(extension);
+				// fd.setFilterExtensions(extension);
 				file = fd.open();
 			}
 		});
@@ -253,28 +251,22 @@ public class DynamicCompilerJavaModules extends PreferencePage implements IWorkb
 	 * 
 	 * @return a String array with the file paths of the selected files.
 	 */
-	public String[] openMultipleFiles(final String[] extension) {
-
-		final Display display = PlatformUI.getWorkbench().getDisplay();
-		display.syncExec(new Runnable() {
-			public void run() {
-				Shell shell = new Shell(display);
-				FileDialog dlg = new FileDialog(shell, SWT.MULTI);
-				dlg.setFilterPath(null);
-				dlg.setFilterExtensions(extension);
-				dlg.setText("Select *.jmod files");
-				String f = dlg.open();
-				if (f != null) {
-
-					files = dlg.getFileNames();
-
-					currentFilePath = dlg.getFilterPath();
-				}
-
-			}
-		});
-
-		return files;
-	}
+	/*
+	 * public String[] openMultipleFiles(final String[] extension) {
+	 * 
+	 * final Display display = PlatformUI.getWorkbench().getDisplay();
+	 * display.syncExec(new Runnable() { public void run() { Shell shell = new
+	 * Shell(display); FileDialog dlg = new FileDialog(shell, SWT.MULTI);
+	 * dlg.setFilterPath(null); dlg.setFilterExtensions(extension);
+	 * dlg.setText("Select *.jmod files"); String f = dlg.open(); if (f != null) {
+	 * 
+	 * files = dlg.getFileNames();
+	 * 
+	 * currentFilePath = dlg.getFilterPath(); }
+	 * 
+	 * } });
+	 * 
+	 * return files; }
+	 */
 
 }
