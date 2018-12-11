@@ -105,6 +105,8 @@ public class DynamicCompilerJavaModules extends PreferencePage implements IWorkb
 
 		text = new Text(top, SWT.BORDER);
 		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		//Load the preferences!
+		text.setText(getTextPreference());
 
 		removeTag.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -138,11 +140,12 @@ public class DynamicCompilerJavaModules extends PreferencePage implements IWorkb
 		// errors.loadDefault();
 		exemptTagsList.setItems(
 
-				getDefaultExemptTagsPreference());
+		getDefaultExemptTagsPreference());
+		getDefaultTextPreference();
 		// getDefaultExemptTagsPreference() is a convenience
 		// method which retrieves the default preference from
 		// the preference store.
-		Bio7EditorPlugin.getDefault().getPreferenceStore().getDefaultString("JAVA_MODULES");
+		
 		super.performDefaults();
 	}
 
@@ -187,6 +190,14 @@ public class DynamicCompilerJavaModules extends PreferencePage implements IWorkb
 	public String[] getExemptTagsPreference() {
 		return convert(Bio7EditorPlugin.getDefault().getPreferenceStore().getString("JAVA_MODULES_PATH"));
 	}
+	
+	public String getDefaultTextPreference() {
+		return Bio7EditorPlugin.getDefault().getPreferenceStore().getDefaultString("JAVA_MODULES");
+	}
+	
+	public String getTextPreference() {
+		return Bio7EditorPlugin.getDefault().getPreferenceStore().getDefaultString("JAVA_MODULES");
+	}
 
 	private String[] convert(String preferenceValue) {
 		StringTokenizer tokenizer = new StringTokenizer(preferenceValue, ";");
@@ -209,7 +220,7 @@ public class DynamicCompilerJavaModules extends PreferencePage implements IWorkb
 		Bio7EditorPlugin.getDefault().getPreferenceStore().setValue("JAVA_MODULES_PATH", buffer.toString());
 	}
 
-	private void setModules(String text) {
+	public void setModules(String text) {
 
 		Bio7EditorPlugin.getDefault().getPreferenceStore().setValue("JAVA_MODULES", text);
 	}
