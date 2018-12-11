@@ -122,34 +122,35 @@ public class ScanClassPath {
 
 		}
 
-		String platformPath = Platform.getInstallLocation().getURL().getPath().replace("\\", "/");
+		//String platformPath = Platform.getInstallLocation().getURL().getPath().replace("\\", "/");
+		String modulePath= store.getString("JAVA_MODULES_PATH");
 		if (Util.isMac()) {
-			buf.append(":" + pathseparator + platformPath + "../MacOS/jdk/Contents/Home/javafx/lib/javafx.base.jar:");
-			buf.append(pathseparator + platformPath + "../MacOS/jdk/Contents/Home/javafx/lib/javafx.controls.jar:");
-			buf.append(pathseparator + platformPath + "../MacOS/jdk/Contents/Home/javafx/lib/javafx.fxml.jar:");
-			buf.append(pathseparator + platformPath + "../MacOS/jdk/Contents/Home/javafx/lib/javafx.graphics.jar:");
-			buf.append(pathseparator + platformPath + "../MacOS/jdk/Contents/Home/javafx/lib/javafx.media.jar:");
-			buf.append(pathseparator + platformPath + "../MacOS/jdk/Contents/Home/javafx/lib/javafx.swing.jar:");
-			buf.append(pathseparator + platformPath + "../MacOS/jdk/Contents/Home/javafx/lib/javafx.web.jar:");
-			buf.append(pathseparator + platformPath + "../MacOS/jdk/Contents/Home/javafx/lib/javafx-swt.jar:");
+			buf.append(":" + pathseparator + modulePath + "/javafx.base.jar:");
+			buf.append(pathseparator + modulePath + "/javafx.controls.jar:");
+			buf.append(pathseparator + modulePath + "/javafx.fxml.jar:");
+			buf.append(pathseparator + modulePath + "/javafx.graphics.jar:");
+			buf.append(pathseparator + modulePath + "/javafx.media.jar:");
+			buf.append(pathseparator + modulePath + "/javafx.swing.jar:");
+			buf.append(pathseparator + modulePath + "/javafx.web.jar:");
+			buf.append(pathseparator + modulePath + "/javafx-swt.jar:");
 		} else if (Util.isWindows()) {
-			buf.append(";" + pathseparator + platformPath + "jdk/javafx/lib/javafx.base.jar;");
-			buf.append(pathseparator + platformPath + "jdk/javafx/lib/javafx.controls.jar;");
-			buf.append(pathseparator + platformPath + "jdk/javafx/lib/javafx.fxml.jar;");
-			buf.append(pathseparator + platformPath + "jdk/javafx/lib/javafx.graphics.jar;");
-			buf.append(pathseparator + platformPath + "jdk/javafx/lib/javafx.media.jar;");
-			buf.append(pathseparator + platformPath + "jdk/javafx/lib/javafx.swing.jar;");
-			buf.append(pathseparator + platformPath + "jdk/javafx/lib/javafx.web.jar;");
-			buf.append(pathseparator + platformPath + "jdk/javafx/lib/javafx-swt.jar;");
+			buf.append(";" + pathseparator + modulePath + "/javafx.base.jar;");
+			buf.append(pathseparator + modulePath + "/javafx.controls.jar;");
+			buf.append(pathseparator + modulePath + "/javafx.fxml.jar;");
+			buf.append(pathseparator + modulePath + "/javafx.graphics.jar;");
+			buf.append(pathseparator + modulePath + "/javafx.media.jar;");
+			buf.append(pathseparator + modulePath + "/javafx.swing.jar;");
+			buf.append(pathseparator + modulePath + "/javafx.web.jar;");
+			buf.append(pathseparator + modulePath + "/javafx-swt.jar;");
 		} else {
-			buf.append(":" + pathseparator + platformPath + "jdk/javafx/lib/javafx.base.jar:");
-			buf.append(pathseparator + platformPath + "jdk/javafx/lib/javafx.controls.jar:");
-			buf.append(pathseparator + platformPath + "jdk/javafx/lib/javafx.fxml.jar:");
-			buf.append(pathseparator + platformPath + "jdk/javafx/lib/javafx.graphics.jar:");
-			buf.append(pathseparator + platformPath + "jdk/javafx/lib/javafx.media.jar:");
-			buf.append(pathseparator + platformPath + "jdk/javafx/lib/javafx.swing.jar:");
-			buf.append(pathseparator + platformPath + "jdk/javafx/lib/javafx.web.jar:");
-			buf.append(pathseparator + platformPath + "jdk/javafx/lib/javafx-swt.jar:");
+			buf.append(":" + pathseparator + modulePath + "/javafx.base.jar:");
+			buf.append(pathseparator + modulePath + "/javafx.controls.jar:");
+			buf.append(pathseparator + modulePath + "/javafx.fxml.jar:");
+			buf.append(pathseparator + modulePath + "/javafx.graphics.jar:");
+			buf.append(pathseparator + modulePath + "/javafx.media.jar:");
+			buf.append(pathseparator + modulePath + "/javafx.swing.jar:");
+			buf.append(pathseparator + modulePath + "/javafx.web.jar:");
+			buf.append(pathseparator + modulePath + "/javafx-swt.jar:");
 
 		}
 
@@ -246,7 +247,8 @@ public class ScanClassPath {
 		// System.out.println(buf.toString());
 
 		String classpaths = buf.toString();
-
+		/* We have to format the classpath for the dynamic compilation! */
+		classpaths = classpaths.replace(";/", "");
 		return classpaths;
 	}
 
@@ -419,35 +421,35 @@ public class ScanClassPath {
 		buf.add(pathseparator + bundlePaths.get(3) + "/bin");
 		buf.add(pathseparator + bundlePaths.get(4) + "/bin");
 		buf.add(pathseparator + bundlePaths.get(7) + "/bin");
-
+       String modulePath= store.getString("JAVA_MODULES_PATH");
 		String platformPath = Platform.getInstallLocation().getURL().getPath().replace("\\", "/");
 		if (Util.isWindows()) {
-			buf.add(";" + pathseparator + platformPath + "jdk/javafx/lib/javafx.base.jar;");
-			buf.add(pathseparator + platformPath + "jdk/javafx/lib/javafx.controls.jar;");
-			buf.add(pathseparator + platformPath + "jdk/javafx/lib/javafx.fxml.jar;");
-			buf.add(pathseparator + platformPath + "jdk/javafx/lib/javafx.graphics.jar;");
-			buf.add(pathseparator + platformPath + "jdk/javafx/lib/javafx.media.jar;");
-			buf.add(pathseparator + platformPath + "jdk/javafx/lib/javafx.swing.jar;");
-			buf.add(pathseparator + platformPath + "jdk/javafx/lib/javafx.web.jar;");
-			buf.add(pathseparator + platformPath + "jdk/javafx/lib/javafx-swt.jar;");
+			buf.add(";" + pathseparator + modulePath + "/javafx.base.jar;");
+			buf.add(pathseparator + modulePath + "/javafx.controls.jar;");
+			buf.add(pathseparator + modulePath + "/javafx.fxml.jar;");
+			buf.add(pathseparator + modulePath + "/javafx.graphics.jar;");
+			buf.add(pathseparator + modulePath + "/javafx.media.jar;");
+			buf.add(pathseparator + modulePath + "/javafx.swing.jar;");
+			buf.add(pathseparator + modulePath + "/javafx.web.jar;");
+			buf.add(pathseparator + modulePath + "/javafx-swt.jar;");
 		} else if (Util.isMac()) {
-			buf.add(":" + pathseparator + platformPath + "../MacOS/jdk/Contents/Home/javafx/lib/javafx.base.jar:");
-			buf.add(pathseparator + platformPath + "../MacOS/jdk/Contents/Home/javafx/lib/javafx.controls.jar:");
-			buf.add(pathseparator + platformPath + "../MacOS/jdk/Contents/Home/javafx/lib/javafx.fxml.jar:");
-			buf.add(pathseparator + platformPath + "../MacOS/jdk/Contents/Home/javafx/lib/javafx.graphics.jar:");
-			buf.add(pathseparator + platformPath + "../MacOS/jdk/Contents/Home/javafx/lib/javafx.media.jar:");
-			buf.add(pathseparator + platformPath + "../MacOS/jdk/Contents/Home/javafx/lib/javafx.swing.jar:");
-			buf.add(pathseparator + platformPath + "../MacOS/jdk/Contents/Home/javafx/lib/javafx.web.jar:");
-			buf.add(pathseparator + platformPath + "../MacOS/jdk/Contents/Home/javafx/lib/javafx-swt.jar:");
+			buf.add(":" + pathseparator + modulePath + "/javafx.base.jar:");
+			buf.add(pathseparator + modulePath + "/javafx.controls.jar:");
+			buf.add(pathseparator + modulePath + "/javafx.fxml.jar:");
+			buf.add(pathseparator + modulePath + "/javafx.graphics.jar:");
+			buf.add(pathseparator + modulePath + "/javafx.media.jar:");
+			buf.add(pathseparator + modulePath + "/javafx.swing.jar:");
+			buf.add(pathseparator + modulePath + "/javafx.web.jar:");
+			buf.add(pathseparator + modulePath + "/javafx-swt.jar:");
 		} else {// Linux!
-			buf.add(":" + pathseparator + platformPath + "jdk/javafx/lib/javafx.base.jar:");
-			buf.add(pathseparator + platformPath + "jdk/javafx/lib/javafx.controls.jar:");
-			buf.add(pathseparator + platformPath + "jdk/javafx/lib/javafx.fxml.jar:");
-			buf.add(pathseparator + platformPath + "jdk/javafx/lib/javafx.graphics.jar:");
-			buf.add(pathseparator + platformPath + "jdk/javafx/lib/javafx.media.jar:");
-			buf.add(pathseparator + platformPath + "jdk/javafx/lib/javafx.swing.jar:");
-			buf.add(pathseparator + platformPath + "jdk/javafx/lib/javafx.web.jar:");
-			buf.add(pathseparator + platformPath + "jdk/javafx/lib/javafx-swt.jar:");
+			buf.add(":" + pathseparator + modulePath + "/javafx.base.jar:");
+			buf.add(pathseparator + modulePath + "/javafx.controls.jar:");
+			buf.add(pathseparator + modulePath + "/javafx.fxml.jar:");
+			buf.add(pathseparator + modulePath + "/javafx.graphics.jar:");
+			buf.add(pathseparator + modulePath + "/javafx.media.jar:");
+			buf.add(pathseparator + modulePath + "/javafx.swing.jar:");
+			buf.add(pathseparator + modulePath + "/javafx.web.jar:");
+			buf.add(pathseparator + modulePath + "/javafx-swt.jar:");
 
 		}
 		/*

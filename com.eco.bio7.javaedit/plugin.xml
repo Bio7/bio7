@@ -12,18 +12,18 @@
             category="com.eco.bio7.preferences.Bio7PreferencePage"
             class="com.eco.bio7.javapreferences.WorkbenchPreferenceJava"
             id="prefjava"
-            name="Preferences Dynamic Compilation"/>
+            name="Preferences Java Dynamic Compilation"/>
       <page
             category="prefjava"
             class="com.eco.bio7.javapreferences.DynamicCompilerJavaLibries"
             id="com.eco.bio7.preferences_compiler"
-            name="Preferences Dynamic Compilation Libraries">
+            name="Preferences Libraries">
       </page>
       <page
             category="prefjava"
             class="com.eco.bio7.javapreferences.DynamicCompilerJavaModules"
             id="com.eco.bio7.preferences_compiler_modules"
-            name="Preferences Dynamic Compilation Modules">
+            name="Preferences Modules">
       </page>
    </extension>
 

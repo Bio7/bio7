@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.StringTokenizer;
 import java.util.Vector;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
@@ -123,27 +124,28 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 			// Get the original FM, which reads class files through this JVM's
 			// BOOTCLASSPATH and
 			// CLASSPATH.
-			//JavaFileManager jfm;// = this.compiler.getStandardFileManager(null, null, null);
+			// JavaFileManager jfm;// = this.compiler.getStandardFileManager(null, null,
+			// null);
 
 			// Wrap it so that the output files (in our case class files) are
 			// stored in memory rather
 			// than in files.
-			//jfm = new ByteArrayJavaFileManager<JavaFileManager>(jfm);
+			// jfm = new ByteArrayJavaFileManager<JavaFileManager>(jfm);
 			StandardJavaFileManager jfm = this.compiler.getStandardFileManager(null, null, null);
-			ArrayList<File> ar=new ArrayList<File>();
+			ArrayList<File> ar = new ArrayList<File>();
 			for (int i = 0; i < sourcePath.length; i++) {
 				ar.add(this.sourcePath[i]);
 			}
-			
-			ArrayList<File> arout=new ArrayList<File>();
+
+			ArrayList<File> arout = new ArrayList<File>();
 			for (int i = 0; i < binaryPath.length; i++) {
 				arout.add(this.binaryPath[i]);
 			}
-		    try {
-		    	
-				jfm.setLocation(StandardLocation.SOURCE_PATH,ar);
-				//fm.setLocation(StandardLocation.CLASS_PATH,arout);
-				jfm.setLocation(StandardLocation.CLASS_OUTPUT,arout);
+			try {
+
+				jfm.setLocation(StandardLocation.SOURCE_PATH, ar);
+				// fm.setLocation(StandardLocation.CLASS_PATH,arout);
+				jfm.setLocation(StandardLocation.CLASS_OUTPUT, arout);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -151,8 +153,10 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
 			// Wrap it in a file manager that finds source files through the
 			// source path.
-			/*jfm = new FileInputJavaFileManager(fm, StandardLocation.SOURCE_PATH, Kind.SOURCE, this.sourcePath,
-					this.optionalCharacterEncoding);*/
+			/*
+			 * jfm = new FileInputJavaFileManager(fm, StandardLocation.SOURCE_PATH,
+			 * Kind.SOURCE, this.sourcePath, this.optionalCharacterEncoding);
+			 */
 
 			this.fileManager = jfm;
 		}
@@ -163,9 +167,10 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 	public void setSourcePath(File[] sourcePath) {
 		this.sourcePath = sourcePath;
 	}
+
 	public void setBinaryPath(File[] binaryPath) {
 		this.binaryPath = binaryPath;
-		
+
 	}
 
 	@Override
@@ -225,20 +230,26 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 				boolean verbose = store.getBoolean("compiler_verbose");
 				boolean warnings = store.getBoolean("compiler_warnings");
 				boolean createMarker = store.getBoolean("compiler_marker");
-				if (version.equals("1.9") || version.equals("10") || version.equals("11")|| version.equals("12")) {
-					URL url = Platform.getInstallLocation().getURL();
-					try {
-						File f = new File(url.toURI());
-						String path = ("--module-path=" + f.getAbsolutePath() + "/jdk/javafx/lib").replace("\\",
-								"/");
+				/* See the preference initializer class for the default values of JavaFX! */
+				String[] modulePath = convert(store.getString("JAVA_MODULES_PATH"));
+				String modules = store.getString("JAVA_MODULES");
+				if (version.equals("1.9") || version.equals("10") || version.equals("11") || version.equals("12")) {
+                   /*Here we add the module paths from the preferences with the JavaFX path as default!*/
+					String pathseparator = File.pathSeparator;
+					StringBuffer buf = new StringBuffer();
+					for (int j = 0; j < modulePath.length; j++) {
+
+						String modulePaths = modulePath[j];
+						modulePaths = modulePaths.replace("\\", "/");
+						String addedExtLibs = pathseparator + modulePaths;
+
+						buf.append(addedExtLibs);
+						String path = ("--module-path=" + buf.toString());
 						optionList.addElement(path);
 						// System.out.println(path);
 						// optionList.addElement("--add-modules=ALL-SYSTEM");
-					} catch (URISyntaxException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
 
+					}
 				}
 
 				optionList.addElement("-source");
@@ -248,15 +259,14 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
 				optionList.addElement("-classpath");
 				/* Add the Bio7 libs etc. for the compiler! */
-				// optionList.addElement(System.getProperty("java.class.path"));
-				/*We have to format the classpath!*/
-				 String classpath=new ScanClassPath().scan().replace(";/","");
+				// optionList.addElement(System.getProperty("java.class.path"));				
+				String classpath = new ScanClassPath().scan();
 				// System.out.println(classpath);
-				 optionList.addElement(classpath);
-				if (version.equals("1.9") || version.equals("10") || version.equals("11")|| version.equals("12")) {
-					//optionList.addElement("--add-modules=java.base");
+				optionList.addElement(classpath);
+				if (version.equals("1.9") || version.equals("10") || version.equals("11") || version.equals("12")) {
+					// optionList.addElement("--add-modules=java.base");
 					// optionList.addElement("--limit-modules=java.base,java.logging,java.scripting,java.rmi,java.sql,java.xml,java.compiler,java.management,java.naming,java.prefs,java.security.jgss,java.security.sasl,java.sql.rowset,java.xml.crypto");
-					optionList.addElement("--add-modules=javafx.controls,javafx.base,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,javafx.web,javafx.swt");
+					optionList.addElement("--add-modules=" + modules);
 				}
 
 				if (debug) {
@@ -445,6 +455,19 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 		public DiagnosticException(Diagnostic<? extends JavaFileObject> diagnostic) {
 			super(diagnostic.toString());
 		}
+	}
+
+	/* Convert the string from the preferences! */
+	private String[] convert(String preferenceValue) {
+		StringTokenizer tokenizer = new StringTokenizer(preferenceValue, ";");
+		int tokenCount = tokenizer.countTokens();
+		String[] elements = new String[tokenCount];
+
+		for (int i = 0; i < tokenCount; i++) {
+			elements[i] = tokenizer.nextToken();
+		}
+
+		return elements;
 	}
 
 }
