@@ -247,6 +247,8 @@ public class ScanClassPath {
 		// System.out.println(buf.toString());
 
 		String classpaths = buf.toString();
+		/* We have to format the classpath for the dynamic compilation! */
+		classpaths = classpaths.replace(";/", "");
 		return classpaths;
 	}
 
@@ -503,7 +505,7 @@ public class ScanClassPath {
 			for (int k = 0; k < buf.size(); k++) {
 				String rep = buf.get(k).replace("::", "");
 				rep = rep.replace(":", "/");
-
+				rep = rep.replace(";/", "");
 				/* We add the source! */
 				if (k == temp) {
 
