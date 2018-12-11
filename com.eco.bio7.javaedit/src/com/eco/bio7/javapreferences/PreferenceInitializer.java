@@ -90,7 +90,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		}
 		String path;
 		if (Util.isMac()) {
-			path = file.getAbsolutePath() + "../MacOS/jdk/Contents/Home/javafx/lib/";
+			path = file.getAbsolutePath() + "/../MacOS/jdk/Contents/Home/javafx/lib/";
 		} else {
 			path = file.getAbsolutePath() + "/jdk/javafx/lib";
 		}
