@@ -89,9 +89,12 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			e.printStackTrace();
 		}
 		String path;
-
-		path = file.getAbsolutePath() + "/jdk/javafx/lib";
-        path=path.replace("\\", "/"); 
+		if (Util.isMac()) {
+			path = file.getAbsolutePath() + "../MacOS/jdk/Contents/Home/javafx/lib/";
+		} else {
+			path = file.getAbsolutePath() + "/jdk/javafx/lib";
+		}
+		path = path.replace("\\", "/");
 		storeJava.setDefault("JAVA_MODULES_PATH", path);
 		storeJava.setDefault("JAVA_MODULES",
 				"javafx.controls,javafx.base,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,javafx.web,javafx.swt");
