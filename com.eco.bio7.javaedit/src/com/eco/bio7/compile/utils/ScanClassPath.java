@@ -122,8 +122,9 @@ public class ScanClassPath {
 
 		}
 
-		//String platformPath = Platform.getInstallLocation().getURL().getPath().replace("\\", "/");
-		String modulePath= store.getString("JAVA_MODULES_PATH");
+		// String platformPath =
+		// Platform.getInstallLocation().getURL().getPath().replace("\\", "/");
+		String modulePath = store.getString("JAVA_MODULES_PATH");
 		if (Util.isMac()) {
 			buf.append(":" + pathseparator + modulePath + "/javafx.base.jar:");
 			buf.append(pathseparator + modulePath + "/javafx.controls.jar:");
@@ -421,7 +422,7 @@ public class ScanClassPath {
 		buf.add(pathseparator + bundlePaths.get(3) + "/bin");
 		buf.add(pathseparator + bundlePaths.get(4) + "/bin");
 		buf.add(pathseparator + bundlePaths.get(7) + "/bin");
-       String modulePath= store.getString("JAVA_MODULES_PATH");
+		String modulePath = store.getString("JAVA_MODULES_PATH");
 		String platformPath = Platform.getInstallLocation().getURL().getPath().replace("\\", "/");
 		if (Util.isWindows()) {
 			buf.add(";" + pathseparator + modulePath + "/javafx.base.jar;");
@@ -434,13 +435,13 @@ public class ScanClassPath {
 			buf.add(pathseparator + modulePath + "/javafx-swt.jar;");
 		} else if (Util.isMac()) {
 			buf.add(":" + pathseparator + modulePath + "/javafx.base.jar:");
-			buf.add(pathseparator + modulePath + "/javafx.controls.jar:");
-			buf.add(pathseparator + modulePath + "/javafx.fxml.jar:");
-			buf.add(pathseparator + modulePath + "/javafx.graphics.jar:");
-			buf.add(pathseparator + modulePath + "/javafx.media.jar:");
-			buf.add(pathseparator + modulePath + "/javafx.swing.jar:");
-			buf.add(pathseparator + modulePath + "/javafx.web.jar:");
-			buf.add(pathseparator + modulePath + "/javafx-swt.jar:");
+			buf.add(modulePath + "/javafx.controls.jar:");
+			buf.add(modulePath + "/javafx.fxml.jar:");
+			buf.add(modulePath + "/javafx.graphics.jar:");
+			buf.add(modulePath + "/javafx.media.jar:");
+			buf.add(modulePath + "/javafx.swing.jar:");
+			buf.add(modulePath + "/javafx.web.jar:");
+			buf.add(modulePath + "/javafx-swt.jar:");
 		} else {// Linux!
 			buf.add(":" + pathseparator + modulePath + "/javafx.base.jar:");
 			buf.add(pathseparator + modulePath + "/javafx.controls.jar:");
