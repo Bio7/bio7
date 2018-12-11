@@ -127,13 +127,13 @@ public class ScanClassPath {
 		String modulePath = store.getString("JAVA_MODULES_PATH");
 		if (Util.isMac()) {
 			buf.append(":" + pathseparator + modulePath + "/javafx.base.jar:");
-			buf.append(pathseparator + modulePath + "/javafx.controls.jar:");
-			buf.append(pathseparator + modulePath + "/javafx.fxml.jar:");
-			buf.append(pathseparator + modulePath + "/javafx.graphics.jar:");
-			buf.append(pathseparator + modulePath + "/javafx.media.jar:");
-			buf.append(pathseparator + modulePath + "/javafx.swing.jar:");
-			buf.append(pathseparator + modulePath + "/javafx.web.jar:");
-			buf.append(pathseparator + modulePath + "/javafx-swt.jar:");
+			buf.append(modulePath + "/javafx.controls.jar:");
+			buf.append(modulePath + "/javafx.fxml.jar:");
+			buf.append(modulePath + "/javafx.graphics.jar:");
+			buf.append(modulePath + "/javafx.media.jar:");
+			buf.append(modulePath + "/javafx.swing.jar:");
+			buf.append(modulePath + "/javafx.web.jar:");
+			buf.append(modulePath + "/javafx-swt.jar:");
 		} else if (Util.isWindows()) {
 			buf.append(";" + pathseparator + modulePath + "/javafx.base.jar;");
 			buf.append(pathseparator + modulePath + "/javafx.controls.jar;");
