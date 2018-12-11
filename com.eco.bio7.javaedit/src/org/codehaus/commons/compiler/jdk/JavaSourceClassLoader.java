@@ -261,7 +261,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 				/* Add the Bio7 libs etc. for the compiler! */
 				// optionList.addElement(System.getProperty("java.class.path"));
 				/* We have to format the classpath! */
-				String classpath = new ScanClassPath().scan().replace(";/", "");
+				String classpath = new ScanClassPath().scan();
 				// System.out.println(classpath);
 				optionList.addElement(classpath);
 				if (version.equals("1.9") || version.equals("10") || version.equals("11") || version.equals("12")) {
