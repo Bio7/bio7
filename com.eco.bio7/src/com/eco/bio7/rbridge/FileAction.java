@@ -17,6 +17,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.nebula.widgets.grid.Grid;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Control;
@@ -168,14 +169,14 @@ public class FileAction extends Action implements IMenuCreator {
 		/*
 		 * menuItem3.addSelectionListener(new SelectionListener() {
 		 * 
-		 * public void widgetSelected(SelectionEvent e) { String file = null;
-		 * file = Bio7Dialog.openFile(new String[] { "*.ods", "*." }); File fil
-		 * = null; if (file != null) {
+		 * public void widgetSelected(SelectionEvent e) { String file = null; file =
+		 * Bio7Dialog.openFile(new String[] { "*.ods", "*." }); File fil = null; if
+		 * (file != null) {
 		 * 
 		 * fil = new File(file);
 		 * 
-		 * if (fil.exists()) { LoadOpenOfficeJob job = new
-		 * LoadOpenOfficeJob(fil); job.setSystem(true); job.schedule(); } else {
+		 * if (fil.exists()) { LoadOpenOfficeJob job = new LoadOpenOfficeJob(fil);
+		 * job.setSystem(true); job.schedule(); } else {
 		 * Bio7Dialog.message("File not found!"); } }
 		 * 
 		 * }
@@ -226,9 +227,9 @@ public class FileAction extends Action implements IMenuCreator {
 			public void widgetSelected(SelectionEvent e) {
 
 				String save = Bio7Dialog.saveFile("*.xls");
-				Grid grid = RTable.getGrid();
+
 				if (save != null) {
-					SaveExcelJob job = new SaveExcelJob(save, grid);
+					SaveExcelJob job = new SaveExcelJob(save);
 					// job.setSystem(true);
 					job.schedule();
 				}
@@ -243,8 +244,8 @@ public class FileAction extends Action implements IMenuCreator {
 		 * menuItem4.addSelectionListener(new SelectionListener() {
 		 * 
 		 * public void widgetSelected(SelectionEvent e) { final String file =
-		 * Bio7Dialog.saveFile("*.ods"); grid = RTable.getGrid(); if (file !=
-		 * null) { SaveOpenOfficeJob job = new SaveOpenOfficeJob(file, grid);
+		 * Bio7Dialog.saveFile("*.ods"); grid = RTable.getGrid(); if (file != null) {
+		 * SaveOpenOfficeJob job = new SaveOpenOfficeJob(file, grid);
 		 * job.setSystem(true); job.schedule(); }
 		 * 
 		 * }
@@ -258,9 +259,8 @@ public class FileAction extends Action implements IMenuCreator {
 			public void widgetSelected(SelectionEvent e) {
 
 				String save = Bio7Dialog.saveFile("*.xlsx");
-				Grid grid = RTable.getGrid();
 				if (save != null) {
-					SaveXlsxExcelJob job = new SaveXlsxExcelJob(save, grid);
+					SaveXlsxExcelJob job = new SaveXlsxExcelJob(save);
 					// job.setSystem(true);
 					job.schedule();
 				}

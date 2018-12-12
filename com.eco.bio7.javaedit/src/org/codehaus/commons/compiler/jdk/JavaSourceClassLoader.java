@@ -76,10 +76,8 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 	private boolean debuggingInfoVars;
 	private boolean debuggingInfoSource;
 	private Collection<String> compilerOptions = new ArrayList<String>();
-
 	private JavaCompiler compiler;
 	private JavaFileManager fileManager;
-
 	public static IResource resource;
 	// public boolean directCall = true;
 	public IWorkbenchPage pag;
@@ -202,7 +200,15 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 	 * @throws ClassNotFoundException
 	 */
 	public Class<?> findClass(String className) throws ClassNotFoundException {
-
+		IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
+		String version = store.getString("compiler_version");
+		boolean debug = store.getBoolean("compiler_debug");
+		boolean verbose = store.getBoolean("compiler_verbose");
+		boolean warnings = store.getBoolean("compiler_warnings");
+		boolean createMarker = store.getBoolean("compiler_marker");
+		/* See the preference initializer class for the default values of JavaFX! */
+		String[] modulePath = convert(store.getString("JAVA_MODULES_PATH"));
+		String modules = store.getString("JAVA_MODULES");
 		byte[] ba;
 		int size;
 		try {
@@ -224,17 +230,11 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 				// Compose the effective compiler options.
 				Vector<String> optionList = new Vector<String>();
 
-				IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
-				String version = store.getString("compiler_version");
-				boolean debug = store.getBoolean("compiler_debug");
-				boolean verbose = store.getBoolean("compiler_verbose");
-				boolean warnings = store.getBoolean("compiler_warnings");
-				boolean createMarker = store.getBoolean("compiler_marker");
-				/* See the preference initializer class for the default values of JavaFX! */
-				String[] modulePath = convert(store.getString("JAVA_MODULES_PATH"));
-				String modules = store.getString("JAVA_MODULES");
 				if (version.equals("1.9") || version.equals("10") || version.equals("11") || version.equals("12")) {
-                   /*Here we add the module paths from the preferences with the JavaFX path as default!*/
+					/*
+					 * Here we add the module paths from the preferences with the JavaFX path as
+					 * default!
+					 */
 					String pathseparator = File.pathSeparator;
 					StringBuffer buf = new StringBuffer();
 					for (int j = 0; j < modulePath.length; j++) {
@@ -246,9 +246,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 						buf.append(addedExtLibs);
 						String path = ("--module-path=" + buf.toString());
 						optionList.addElement(path);
-						// System.out.println(path);
-						// optionList.addElement("--add-modules=ALL-SYSTEM");
-
+						optionList.addElement("--add-modules=" + modules);
 					}
 				}
 
@@ -264,11 +262,6 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 				String classpath = new ScanClassPath().scan();
 				// System.out.println(classpath);
 				optionList.addElement(classpath);
-				if (version.equals("1.9") || version.equals("10") || version.equals("11") || version.equals("12")) {
-					// optionList.addElement("--add-modules=java.base");
-					// optionList.addElement("--limit-modules=java.base,java.logging,java.scripting,java.rmi,java.sql,java.xml,java.compiler,java.management,java.naming,java.prefs,java.security.jgss,java.security.sasl,java.sql.rowset,java.xml.crypto");
-					optionList.addElement("--add-modules=" + modules);
-				}
 
 				if (debug) {
 					optionList.addElement("-g");
