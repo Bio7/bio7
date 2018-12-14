@@ -777,6 +777,38 @@ public class RServe {
 							}
 
 						}
+						/*else { Update Plot in same panel!
+
+							if (plotInPlace && plu != null) {
+								for (int i = 0; i < files.length; i++) {
+									ImagePlus impCurr = WindowManager.getCurrentImage();
+									ImagePlus plu2 = new ImagePlus(files[i].toString());
+									ImageProcessor proc2 = plu2.getProcessor();
+									impCurr.getProcessor().resize(plu2.getWidth(), plu2.getHeight());
+									impCurr.setProcessor(proc2);
+									impCurr.updateAndDraw();
+									impCurr.updateAndRepaintWindow();
+									files[i].delete();
+								}
+
+							} else {
+
+								plu = new ImagePlus(files[0].toString());
+								ImageStack stack = new ImageStack(plu.getWidth(), plu.getHeight());
+								// System.out.println(files.length);
+								for (int i = 0; i < files.length; i++) {
+									// System.out.println(files[i].toString());
+									ImagePlus plus = new ImagePlus(files[i].toString());
+									stack.addSlice(plus.getProcessor());
+									files[i].delete();
+								}
+
+								new ImagePlus("Plot", stack).show();
+
+								if (enableIjMacro) {
+									IJ.runMacro(ijmacro);
+								}
+							}*/
 
 						// ImageMethods.imageToR(plu.getShortTitle(), false, 1, plu);
 					}
