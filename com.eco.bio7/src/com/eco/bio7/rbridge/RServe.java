@@ -809,7 +809,6 @@ public class RServe {
 									IJ.runMacro(ijmacro);
 								}
 							}*/
-
 						// ImageMethods.imageToR(plu.getShortTitle(), false, 1, plu);
 					}
 
