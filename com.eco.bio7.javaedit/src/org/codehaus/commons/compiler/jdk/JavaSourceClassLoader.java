@@ -142,10 +142,10 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 			try {
 
 				jfm.setLocation(StandardLocation.SOURCE_PATH, ar);
-				// fm.setLocation(StandardLocation.CLASS_PATH,arout);
+
 				jfm.setLocation(StandardLocation.CLASS_OUTPUT, arout);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
+
 				e.printStackTrace();
 			}
 
