@@ -51,6 +51,7 @@ import com.eco.bio7.methods.Compiled;
 import com.eco.bio7.rcp.StartBio7Utils;
 import com.eco.bio7.worldwind.DynamicLayer;
 
+import ij.IJ;
 import ij.plugin.PlugIn;
 import ij.plugin.filter.PlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
@@ -148,7 +149,11 @@ public class CompileClassAndMultipleClasses {
 	 */
 	public void compileAndLoad(File path, String dir, String name, IWorkbenchPage pag, boolean startupScript) {
 		FileRoot.setCurrentCompileDir(dir);
-		JavaSourceClassLoader cla = new JavaSourceClassLoader(Bio7Plugin.class.getClassLoader());
+		
+		ClassLoader classLoaderMain = Bio7Plugin.class.getClassLoader();
+		//ClassLoader classLoaderImagej = com.eco.bio7.image.Activator.class.getClassLoader();
+		//ClassLoader classLoaderImagej =IJ.getClassLoader();//which uses com.eco.bio7.image.Activator.class.getClassLoader()
+		JavaSourceClassLoader cla = new JavaSourceClassLoader(classLoaderMain);
 		cla.pag = pag;
 
 		/*
