@@ -17,6 +17,11 @@
       [Enter License Description here.]
    </license>
 
+   <requires>
+      <import plugin="com.eco.bio7.libs" version="2.5.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.swt"/>
+   </requires>
+
    <plugin
          id="com.eco.bio7.os"
          download-size="0"

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Bio7" uid="2.9.0" id="com.eco.bio7.product" application="com.eco.bio7.application" version="2.9.0.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="Bio7" uid="3.0.0" id="com.eco.bio7.product" application="com.eco.bio7.application" version="3.0.0.qualifier" useFeatures="true" includeLaunchers="true">
 
    <aboutInfo>
       <image path="/com.eco.bio7/icons/bio7app/bio7_48.png"/>
@@ -37,9 +37,14 @@ jdk/bin/javaw.exe
       </programArgsWin>
       <vmArgs>-Xms1024m -Xmx4096m -Dprism.lcdtext=false -Dosgi.framework.extensions=org.eclipse.wst.jsdt.nashorn.extension -Dpython.console.encoding=UTF-8 -Dswt.enable.themedScrollBar=true
       </vmArgs>
+      <vmArgsLin>-DJAVAFX_LIBS_PATH=${eclipse_home}/jdk/javafx/lib
+      </vmArgsLin>
       <vmArgsMac>-XstartOnFirstThread
 -Dprism.order=sw
+-DJAVAFX_LIBS_PATH=${eclipse_home}/jdk/javafx/lib
       </vmArgsMac>
+      <vmArgsWin>-DJAVAFX_LIBS_PATH=${eclipse_home}\jdk\javafx\lib
+      </vmArgsWin>
    </launcherArgs>
 
    <windowImages i16="/com.eco.bio7/icons/bio7app/bio7_16_new.png" i32="/com.eco.bio7/icons/bio7app/bio7_32_new.png" i48="/com.eco.bio7/icons/bio7app/bio7_48_new.png" i64="/com.eco.bio7/icons/bio7app/bio7_64_new.png" i128="/com.eco.bio7/icons/bio7app/bio7_128_new.png" i256="/com.eco.bio7/icons/bio7app/bio7_256_new.png"/>
@@ -211,10 +216,17 @@ jdk/bin/javaw.exe
       <feature id="com.eco.bio7.jfxswt.feature"/>
    </features>
 
+   <configurations>
+      <plugin id="org.apache.felix.scr" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0" />
+      <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
+   </configurations>
 
    <repositories>
-      <repository location="http://download.eclipse.org/eclipse/updates/4.8" enabled="true" />
-      <repository location="http://download.eclipse.org/releases/photon" enabled="true" />
+      <repository location="http://download.eclipse.org/eclipse/updates/4.10" enabled="true" />
+      <repository location="http://download.eclipse.org/releases/2018-12" enabled="true" />
    </repositories>
 
    <preferencesInfo>

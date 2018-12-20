@@ -4,7 +4,7 @@ Created-By: 1.6.0_02-b05 (Sun Microsystems Inc.)
 Bundle-ManifestVersion: 2
 Bundle-Name: Bio7 Plug-in
 Bundle-SymbolicName: com.eco.bio7;singleton:=true
-Bundle-Version: 2.9.0
+Bundle-Version: 3.0.0
 Bundle-Activator: com.eco.bio7.Bio7Plugin
 Bundle-Vendor: ECO
 Bundle-Localization: plugin
