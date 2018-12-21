@@ -148,7 +148,6 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
 				e.printStackTrace();
 			}
-
 			// Wrap it in a file manager that finds source files through the
 			// source path.
 			/*
