@@ -186,12 +186,12 @@ public class PackageInstallView extends ViewPart {
 			public void handleEvent(Event event) {
 				if (btnContextSensitive.getSelection()) {
 					allPackagesList.deselectAll();
-					text.getText();
+					String sel = text.getText();
 
 					for (int i = 0; i < allPackagesList.getItemCount(); i++) {
 						String it = allPackagesList.getItem(i);
 
-						if (it.startsWith(text.getText())) {
+						if (it.startsWith(sel)) {
 							/*
 							 * We don't want a flickery search results each time we type a character. So we
 							 * update the info after a certain time interval with a job!
@@ -204,12 +204,12 @@ public class PackageInstallView extends ViewPart {
 
 				else {
 					allPackagesList.deselectAll();
-					text.getText();
+					String sel = text.getText();
 
 					for (int i = 0; i < allPackagesList.getItemCount(); i++) {
 
 						String it = allPackagesList.getItem(i).toLowerCase();
-						if (it.startsWith(text.getText().toLowerCase())) {
+						if (it.startsWith(sel.toLowerCase())) {
 							/*
 							 * We don't want a flickery search results each time we type a character. So we
 							 * update the info after a certain time interval with a job!

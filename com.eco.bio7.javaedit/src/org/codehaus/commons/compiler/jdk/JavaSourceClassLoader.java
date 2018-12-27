@@ -69,7 +69,7 @@ import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 //import com.sun.tools.javac.api.JavacTool;
 
 public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
-
+ 
 	private File[] sourcePath;
 	private String optionalCharacterEncoding;
 	private boolean debuggingInfoLines;
