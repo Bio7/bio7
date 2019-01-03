@@ -2,26 +2,25 @@ package com.eco.bio7.preferences;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.osgi.framework.Bundle;
-import com.eco.bio7.Bio7Plugin;
+import com.sun.jna.platform.win32.Advapi32Util;
+import com.sun.jna.platform.win32.Win32Exception;
+import com.sun.jna.platform.win32.WinReg;
 
 public class Reg {
-		
-	private static String[] s = Messages.getString("LibreOffice.0").split(",");
-	private static String[] OOVERSION = s;
-	private static String roo;//Temporary variable for the path!
 	/*
-	 * If the plugin is not available determine the location from the registry.
-	 * If the plugin is present set the path to the plugin as the default!
+	 * A class to set paths from the plugin location (R) or the registry
+	 * (LibreOffice if available!).
+	 *
 	 */
-	public static String setPrefReg(String path) {
-		if (path.equals("r")) {
+
+	public static String setPrefReg(String progDescr) {
+		String returnPath = null;
+		if (progDescr.equals("r")) {
 			if (Platform.getBundle("Bundled_R") == null) {
 				System.out.println("No bundle available! Please adjust the path to R manually!");
 
@@ -38,77 +37,33 @@ public class Reg {
 				}
 
 				File file = new File(fileUrl.getFile());
-				path = file.getAbsolutePath();
-
-				installRegPath(path);
+				returnPath = file.getAbsolutePath();
 
 			}
 
-		} else if (path.equals("libreoffice")) {
-			// Path determined from the registry with reflection!
-			roo = null;
-			for (int i = 0; i < OOVERSION.length; i++) {
-				/*try {
-					roo = WinRegistry.readString(WinRegistry.HKEY_LOCAL_MACHINE, "SOFTWARE\\LibreOffice\\LibreOffice\\" + OOVERSION[i], "Path");
+		} else if (progDescr.equals("libreoffice")) {
 
-				} catch (IllegalArgumentException e) {
+			boolean keyExists = false;
 
+			keyExists = Advapi32Util.registryKeyExists(WinReg.HKEY_LOCAL_MACHINE,
+					"SOFTWARE\\LibreOffice\\UNO\\InstallPath");
+
+			if (keyExists) {
+
+				try {
+					returnPath = Advapi32Util.registryGetStringValue(WinReg.HKEY_LOCAL_MACHINE,
+							"SOFTWARE\\LibreOffice\\UNO\\InstallPath", null);// null to get (default) reg value!
+				} catch (Win32Exception e) {
+					// TODO Auto-generated catch block
 					e.printStackTrace();
-				} catch (IllegalAccessException e) {
-
-					e.printStackTrace();
-				} catch (InvocationTargetException e) {
-
-					e.printStackTrace();
-				}*/
-
-				if (roo != null) {
-					roo = roo.replace("soffice.exe", "");
-					path = roo;
 				}
 
-			}
-			if (path == null||path.equals("libreoffice")) {
-				path = "C:\\";
+			} else {
+				returnPath = "C:\\";
+
 			}
 		}
-		return path;
-	}
-
-	private static void installRegPath(String path_to_r) {
-		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		boolean bool = store.getBoolean(PreferenceConstants.P_BOOLEAN);
-
-		if (bool == true) {
-			/*try {
-				WinRegistry.createKey(WinRegistry.HKEY_LOCAL_MACHINE, "SOFTWARE\\R-core\\R");
-			} catch (IllegalArgumentException e) {
-
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
-
-				e.printStackTrace();
-			}
-			try {
-				WinRegistry.writeStringValue(WinRegistry.HKEY_LOCAL_MACHINE, "SOFTWARE\\R-core\\R", "Current Version", "3.4.3");
-				WinRegistry.writeStringValue(WinRegistry.HKEY_LOCAL_MACHINE, "SOFTWARE\\R-core\\R", "InstallPath", path_to_r);
-				WinRegistry.writeStringValue(WinRegistry.HKEY_LOCAL_MACHINE, "SOFTWARE\\R-core\\R\\3.4.3", "InstallPath", path_to_r);
-			} catch (IllegalArgumentException e) {
-
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
-
-				e.printStackTrace();
-			}
-*/
-		}
-
+		return returnPath;
 	}
 
 }

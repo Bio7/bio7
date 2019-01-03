@@ -478,10 +478,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		File fileTempR = new File(fileUrl.getPath());
 		String pathTempR = fileTempR.toString();
 
-		String reg1 = "";
-		String reg2 = "";
+		
 
 		if (getOS().equals("Windows")) {
+			String reg1 = "";
+			String reg2 = "";
 			reg1 = Reg.setPrefReg(PreferenceConstants.PATH_R);
 			reg2 = Reg.setPrefReg(PreferenceConstants.PATH_LIBREOFFICE);
 			if (reg1 != null) {
@@ -491,11 +492,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				store.setDefault("SweaveScriptLocation", reg1 + "/share/texmf/tex/latex");
 				store.setDefault("pdfLatex", "");
 				store.setDefault("RSERVE_ARGS", "");
-
-				/*
-				 * if (is64BitVM()) { store.setDefault("r_pipe_path", reg1 + "\\bin\\x64"); }
-				 * else { store.setDefault("r_pipe_path", reg1 + "\\bin\\i386"); }
-				 */
 
 			}
 			if (reg2 != null) {
@@ -508,9 +504,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, "C:\\");
 			}
 		} else if (getOS().equals("Linux")) {
-			store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, reg2);
+			//store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, reg2);
 			// reg1 = "/usr/lib/R";
-			reg2 = "/usr/lib/libreoffice/program";
+			//reg2 = "/usr/lib/libreoffice/program";
 			/*
 			 * Now leave the R path empty by default to grab the systems path!
 			 */
@@ -547,15 +543,15 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault(PreferenceConstants.PATH_R, "/Library/Frameworks/R.framework/Resources");
 			store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, "");
 			/*
-			 * For the packages on Linux we try the default path if no custom path is given!
+			 * For the packages on MacOSX we try the default path if no custom path is given!
 			 */
 			store.setDefault("InstallLocation", "");
 			store.setDefault("SweaveScriptLocation", "");
 			store.setDefault("pdfLatex", "");
 			store.setDefault("RSERVE_ARGS", "");
-			reg2 = "";
+			//reg2 = "";
 			// reg2 = "/Applications/LibreOffice.app/Contents/MacOS";
-			store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, reg2);
+			//store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, reg2);
 
 		}
 
