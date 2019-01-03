@@ -45,14 +45,15 @@ public class Reg {
 
 			boolean keyExists = false;
 
+			String regKey = "SOFTWARE\\LibreOffice\\UNO\\InstallPath";
 			keyExists = Advapi32Util.registryKeyExists(WinReg.HKEY_LOCAL_MACHINE,
-					"SOFTWARE\\LibreOffice\\UNO\\InstallPath");
+					regKey);
 
 			if (keyExists) {
 
 				try {
 					returnPath = Advapi32Util.registryGetStringValue(WinReg.HKEY_LOCAL_MACHINE,
-							"SOFTWARE\\LibreOffice\\UNO\\InstallPath", null);// null to get (default) reg value!
+							regKey, null);// null to get (default) reg value!
 				} catch (Win32Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
