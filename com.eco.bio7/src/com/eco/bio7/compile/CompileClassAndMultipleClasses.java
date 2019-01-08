@@ -186,13 +186,6 @@ public class CompileClassAndMultipleClasses {
 			 * If the class is in a package we receive the package name from the AST!
 			 */
 			org.eclipse.jdt.core.dom.CompilationUnit compUnit = null;
-			/*
-			 * if (editor instanceof JavaEditor) { JavaEditor jedit = (JavaEditor) editor;
-			 * 
-			 * If the class is in a package we receive the package name from the AST!
-			 * 
-			 * compUnit = jedit.getCompUnit(); }
-			 */
 
 			if (editor instanceof CompilationUnitEditor) {
 				CompilationUnitEditor jedit = (CompilationUnitEditor) editor;
@@ -204,6 +197,16 @@ public class CompileClassAndMultipleClasses {
 				// CompilationUnit cu = (CompilationUnit)
 				// parser.createAST(null);
 				compUnit = (CompilationUnit) parser.createAST(null);
+				
+				/*
+				 * IJavaProject project = compUnit.getJavaElement().getJavaProject();
+				 * 
+				 * IClasspathEntry[] existingEntries = null; try { existingEntries =
+				 * project.getRawClasspath(); } catch (JavaModelException e) { // TODO
+				 * Auto-generated catch block e.printStackTrace(); } // iterate over the class
+				 * path for (IClasspathEntry entry : existingEntries) { String entryStr =
+				 * entry.getPath().toString(); System.out.println(entryStr); }
+				 */
 
 				/*
 				 * If the class is in a package we receive the package name from the AST!
@@ -214,28 +217,6 @@ public class CompileClassAndMultipleClasses {
 
 			}
 
-			/*
-			 * PackageDeclaration pdecl = compUnit.getPackage(); if (pdecl != null) { Name
-			 * packName = pdecl.getName();
-			 * 
-			 * String pack = packName.toString(); //cl = cla.findClass(pack + "." + name);
-			 * ITextEditor editor2 = (ITextEditor) editor; IDocumentProvider prov =
-			 * editor2.getDocumentProvider(); IDocument doc2 =
-			 * prov.getDocument(editor2.getEditorInput()); org.joor.Compile com=new
-			 * org.joor.Compile(); cl=com.compile(pack + "." + name,
-			 * doc2.get(),null,Bio7Plugin.class.getClassLoader());
-			 * 
-			 * } else { //cl = cla.findClass(name); ITextEditor editor2 = (ITextEditor)
-			 * editor; IDocumentProvider prov = editor2.getDocumentProvider(); IDocument
-			 * doc2 = prov.getDocument(editor2.getEditorInput()); org.joor.Compile com=new
-			 * org.joor.Compile(); cl=com.compile(name,
-			 * doc2.get(),null,Bio7Plugin.class.getClassLoader()); }
-			 */
-			/*
-			 * If the class is in a package we receive the package name from the AST!
-			 */
-			// org.eclipse.jdt.core.dom.CompilationUnit compUnit =
-			// jedit.getCompUnit();
 
 			PackageDeclaration pdecl = compUnit.getPackage();
 			if (pdecl != null) {
