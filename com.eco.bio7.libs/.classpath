@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry exported="true" kind="lib" path="libs/controlsfx-9.0.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/jfxtras-all-9.0-r1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/Medusa-8.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="hardware/arduino.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/poi-3.17.jar"/>
