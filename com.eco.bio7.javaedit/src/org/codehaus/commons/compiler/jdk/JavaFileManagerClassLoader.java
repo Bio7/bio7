@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
  
-package org.codehaus.commons.compiler.jdk;
+package org.codehaus.commons.compiler.jdk; 
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
