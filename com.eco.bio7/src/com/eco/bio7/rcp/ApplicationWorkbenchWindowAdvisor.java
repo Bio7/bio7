@@ -716,13 +716,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		 * System.out.println("getDepth(): " + device.getDepth());
 		 * System.out.println("getDPI(): " + device.getDPI());
 		 */
-		IPreferenceStore storeJava = Bio7EditorPlugin.getDefault().getPreferenceStore();
+		//IPreferenceStore storeJava = Bio7EditorPlugin.getDefault().getPreferenceStore();
 
 		// storeJava.setDefault("classbody", false);
-		storeJava.setDefault("compiler_version", 1.8);
-		storeJava.setDefault("compiler_debug", false);
-		storeJava.setDefault("compiler_verbose", false);
-		storeJava.setDefault("compiler_warnings", false);
+		
 		final String pathTo;
 		if (getOS().equals("Windows")) {
 			pathTo = store.getString(PreferenceConstants.P_TEMP_R) + "\\";

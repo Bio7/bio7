@@ -38,6 +38,7 @@ import org.eclipse.jdt.core.dom.PackageDeclaration;
 import org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor;
 import org.eclipse.jdt.ui.IWorkingCopyManager;
 import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.Document;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
@@ -47,6 +48,7 @@ import org.eclipse.ui.PlatformUI;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.BatchModel;
 import com.eco.bio7.batch.FileRoot;
+import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 import com.eco.bio7.methods.Compiled;
 import com.eco.bio7.rcp.StartBio7Utils;
 import com.eco.bio7.worldwind.DynamicLayer;
@@ -149,10 +151,17 @@ public class CompileClassAndMultipleClasses {
 	 */
 	public void compileAndLoad(File path, String dir, String name, IWorkbenchPage pag, boolean startupScript) {
 		FileRoot.setCurrentCompileDir(dir);
-		
-		ClassLoader classLoaderMain = Bio7Plugin.class.getClassLoader();
-		//ClassLoader classLoaderImagej = com.eco.bio7.image.Activator.class.getClassLoader();
-		//ClassLoader classLoaderImagej =IJ.getClassLoader();//which uses com.eco.bio7.image.Activator.class.getClassLoader()
+		ClassLoader classLoaderMain;
+		IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
+		boolean mainClassLoader = store.getBoolean("COMPILE_CLASSLOADER_IMAGEJ");
+		if (mainClassLoader==false) {
+			classLoaderMain = Bio7Plugin.class.getClassLoader();
+		} else {
+			classLoaderMain = IJ.getClassLoader();
+		}
+		// ClassLoader classLoaderImagej =
+		// com.eco.bio7.image.Activator.class.getClassLoader();
+
 		JavaSourceClassLoader cla = new JavaSourceClassLoader(classLoaderMain);
 		cla.pag = pag;
 
@@ -197,7 +206,7 @@ public class CompileClassAndMultipleClasses {
 				// CompilationUnit cu = (CompilationUnit)
 				// parser.createAST(null);
 				compUnit = (CompilationUnit) parser.createAST(null);
-				
+
 				/*
 				 * IJavaProject project = compUnit.getJavaElement().getJavaProject();
 				 * 
@@ -216,7 +225,6 @@ public class CompileClassAndMultipleClasses {
 				// null, null);
 
 			}
-
 
 			PackageDeclaration pdecl = compUnit.getPackage();
 			if (pdecl != null) {
