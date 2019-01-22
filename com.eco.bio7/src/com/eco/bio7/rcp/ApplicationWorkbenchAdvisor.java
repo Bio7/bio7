@@ -10,6 +10,7 @@ import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
@@ -18,6 +19,7 @@ import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RServeUtil;
+import com.eco.bio7.util.Util;
 
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
@@ -65,7 +67,8 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 						monitor.beginTask("Saving editors...", IProgressMonitor.UNKNOWN);
 						IWorkspace ws = ResourcesPlugin.getWorkspace();
 						// NullProgressMonitor monitor = new NullProgressMonitor();
-						IEditorPart[] dirtyEditors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getDirtyEditors();
+						IEditorPart[] dirtyEditors = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+								.getActivePage().getDirtyEditors();
 						for (IEditorPart iEditorPart : dirtyEditors) {
 							iEditorPart.doSave(monitor);
 						}
@@ -95,7 +98,8 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 						 * We have to save the R editors here because else the Rserve connection will be
 						 * lost because of the save file dialog of the editors!
 						 */
-						IEditorPart[] dirtyEditors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getDirtyEditors();
+						IEditorPart[] dirtyEditors = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+								.getActivePage().getDirtyEditors();
 						for (IEditorPart iEditorPart : dirtyEditors) {
 							iEditorPart.doSave(monitor);
 						}
@@ -136,6 +140,14 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 			 * 
 			 * wbp.closePerspective(personalPerspectiveDescriptor2, false, true);
 			 */
+			if (Util.getOS().equals("Mac")) {
+				IWorkbenchPage wbp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+
+				wbp.hideView(wbp.findView("com.eco.bio7.image"));
+				wbp.hideView(wbp.findView("com.eco.bio7.WorldWind"));
+				wbp.hideView(wbp.findView("com.eco.bio7.3d"));
+
+			}
 
 		}
 		return close;

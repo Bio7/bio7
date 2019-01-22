@@ -417,7 +417,32 @@ public class WorldWindView extends ViewPart {
 	public void setFocus() {
 	}
 
-	
+	@Override
+	public void dispose() {
+
+		SwingUtilities.invokeLater(new Runnable() {
+			// !!
+
+			public void run() {
+
+				// worldCanvas.shutdown();
+				worldCanvas = null;
+			}
+		});
+		Display display = PlatformUI.getWorkbench().getDisplay();
+
+		display.syncExec(new Runnable() {
+			public void run() {
+				IWorkbenchPage wbp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+
+				wbp.hideView(wbp.findView("com.eco.bio7.worldwind.WorldWindOptionsView"));
+
+			}
+
+		});
+
+		super.dispose();
+	}
 
 	/**
 	 * Create the actions
