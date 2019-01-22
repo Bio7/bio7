@@ -17,7 +17,6 @@ import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.avlist.AVList;
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
-import gov.nasa.worldwind.awt.WorldWindowGLJPanel;
 import gov.nasa.worldwind.cache.BasicDataFileStore;
 import gov.nasa.worldwind.cache.FileStore;
 import gov.nasa.worldwind.data.BufferedImageRaster;
@@ -211,7 +210,7 @@ public class WorldWindOptionsView extends ViewPart {
 	protected Position lowerLeft;
 	private ViewControlsLayer viewControlsLayer;
 	protected File cacheRoot;
-	private WorldWindowGLJPanel wC;
+	private WorldWindowGLCanvas wC;
 	private Text countToText;
 	private Button capture;
 	private Label errorLabel;

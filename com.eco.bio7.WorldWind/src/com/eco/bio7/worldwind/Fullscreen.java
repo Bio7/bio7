@@ -21,8 +21,6 @@ import java.awt.event.WindowEvent;
 import javax.media.opengl.awt.GLCanvas;
 import javax.swing.JFrame;
 
-import gov.nasa.worldwind.awt.WorldWindowGLJPanel;
-
 public class Fullscreen extends JFrame {
 
 	private static final long serialVersionUID = 1L;
@@ -37,7 +35,7 @@ public class Fullscreen extends JFrame {
 	private static int monitorHeight = 768;
 	private static int monitorWidth = 1024;
 
-	public Fullscreen(WorldWindowGLJPanel worldCanvas) {
+	public Fullscreen(GLCanvas canvas) {
 
 		String osname = System.getProperty("os.name");
 		boolean isWin = osname.startsWith("Windows");
@@ -74,7 +72,7 @@ public class Fullscreen extends JFrame {
 
 			}
 		});
-		add(worldCanvas);
+		add(canvas);
       
 	}
 
