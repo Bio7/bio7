@@ -16,7 +16,6 @@ import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
-import gov.nasa.worldwind.awt.WorldWindowGLJPanel;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globes.Earth;
@@ -58,8 +57,6 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.opengl.GLCanvas;
-import org.eclipse.swt.opengl.GLData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -90,7 +87,7 @@ public class WorldWindView extends ViewPart {
 	private static final String GEORSS_ICON_PATH = "images/georss.png";
 	private static final String NASA_ICON_PATH = "images/32x32-icon-nasa.png";
 	public static final String ID = "com.eco.bio7.worldwind.WorldWindView"; //$NON-NLS-1$
-	private static WorldWindowGLJPanel worldCanvas;
+	private static WorldWindowGLCanvas worldCanvas;
 	private static RConnection rConnection;
 	private ConcurrentHashMap<String, SurfaceImage> imageTable = new ConcurrentHashMap<String, SurfaceImage>();
 	private Frame worldFrame;
@@ -107,8 +104,8 @@ public class WorldWindView extends ViewPart {
 	private static Earth roundEarthModel;
 	private static EarthFlat flatEarthModel;
 
-	public static WorldWindowGLJPanel getWwd() {
-		WorldWindowGLJPanel canvas;
+	public static WorldWindowGLCanvas getWwd() {
+		WorldWindowGLCanvas canvas;
 		if (worldCanvas != null) {
 			canvas = worldCanvas;
 		} else {
@@ -154,7 +151,7 @@ public class WorldWindView extends ViewPart {
 		IWorkbenchPage page = PlatformUI.getWorkbench()
 				.getActiveWorkbenchWindow().getActivePage();
 		
-				worldCanvas = new WorldWindowGLJPanel();
+				worldCanvas = new WorldWindowGLCanvas();
 
 				initWorldWindLayerModel();
 				
@@ -171,11 +168,6 @@ public class WorldWindView extends ViewPart {
 		} catch (NoSuchMethodError error) {
 		}
 		top.setLayoutData(new GridData(GridData.FILL_BOTH));
-		GLData data = new GLData ();
-		data.doubleBuffer = true;
-		 final GLCanvas canvas = new GLCanvas(top, SWT.NONE, data);
-
-		 canvas.setCurrent();
 
 		// Swing Frame and Panel
 		worldFrame = SWT_AWT.new_Frame(top);
@@ -282,7 +274,7 @@ public class WorldWindView extends ViewPart {
 		WorldWindOptionsView.measureTool.getLayer().removeAllRenderables();
 		/* Necessary, else the gui freezes! */
 
-		//full = new Fullscreen(worldCanvas);
+		full = new Fullscreen(worldCanvas);
 		worldFrame.removeAll();
 
 	}
@@ -425,32 +417,7 @@ public class WorldWindView extends ViewPart {
 	public void setFocus() {
 	}
 
-	@Override
-	public void dispose() {
-
-		SwingUtilities.invokeLater(new Runnable() {
-			// !!
-
-			public void run() {
-
-				// worldCanvas.shutdown();
-				worldCanvas = null;
-			}
-		});
-		Display display = PlatformUI.getWorkbench().getDisplay();
-
-		display.syncExec(new Runnable() {
-			public void run() {
-				IWorkbenchPage wbp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-
-				wbp.hideView(wbp.findView("com.eco.bio7.worldwind.WorldWindOptionsView"));
-
-			}
-
-		});
-
-		super.dispose();
-	}
+	
 
 	/**
 	 * Create the actions
