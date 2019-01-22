@@ -16,6 +16,7 @@ import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
+import gov.nasa.worldwind.awt.WorldWindowGLJPanel;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globes.Earth;
@@ -71,6 +72,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.rosuda.REngine.Rserve.RConnection;
 
+import com.eco.bio7.image.SwingFxSwtView;
 import com.eco.bio7.swt.SwtAwt;
 import com.eco.bio7.util.Util;
 
@@ -87,7 +89,7 @@ public class WorldWindView extends ViewPart {
 	private static final String GEORSS_ICON_PATH = "images/georss.png";
 	private static final String NASA_ICON_PATH = "images/32x32-icon-nasa.png";
 	public static final String ID = "com.eco.bio7.worldwind.WorldWindView"; //$NON-NLS-1$
-	private static WorldWindowGLCanvas worldCanvas;
+	private static WorldWindowGLJPanel worldCanvas;
 	private static RConnection rConnection;
 	private ConcurrentHashMap<String, SurfaceImage> imageTable = new ConcurrentHashMap<String, SurfaceImage>();
 	private Frame worldFrame;
@@ -104,8 +106,8 @@ public class WorldWindView extends ViewPart {
 	private static Earth roundEarthModel;
 	private static EarthFlat flatEarthModel;
 
-	public static WorldWindowGLCanvas getWwd() {
-		WorldWindowGLCanvas canvas;
+	public static WorldWindowGLJPanel getWwd() {
+		WorldWindowGLJPanel canvas;
 		if (worldCanvas != null) {
 			canvas = worldCanvas;
 		} else {
@@ -122,19 +124,16 @@ public class WorldWindView extends ViewPart {
 		this.full = full;
 	}
 
-	public static void setFullscreen() {
-		if (WorldWindView.getInstance().getFull() == null) {
-			SwingUtilities.invokeLater(new Runnable() {
-				// !!
-				public void run() {
-					WorldWindView.getInstance().createFullscreen();
-				}
-			});
-		}
-
-		WorldWindView.getInstance().setFull(null);
-
-	}
+	/*
+	 * public static void setFullscreen() { if
+	 * (WorldWindView.getInstance().getFull() == null) {
+	 * SwingUtilities.invokeLater(new Runnable() { // !! public void run() {
+	 * WorldWindView.getInstance().createFullscreen(); } }); }
+	 * 
+	 * WorldWindView.getInstance().setFull(null);
+	 * 
+	 * }
+	 */
 
 	public static WorldWindView getInstance() {
 		return viewInstance;
@@ -151,7 +150,7 @@ public class WorldWindView extends ViewPart {
 		IWorkbenchPage page = PlatformUI.getWorkbench()
 				.getActiveWorkbenchWindow().getActivePage();
 		
-				worldCanvas = new WorldWindowGLCanvas();
+				worldCanvas = new WorldWindowGLJPanel();
 
 				initWorldWindLayerModel();
 				
@@ -162,30 +161,29 @@ public class WorldWindView extends ViewPart {
 			e.printStackTrace();
 		}
 
-		top = new Composite(parent, SWT.NO_BACKGROUND | SWT.EMBEDDED);
-		try {
-			System.setProperty("sun.awt.noerasebackground", "true");
-		} catch (NoSuchMethodError error) {
-		}
-		top.setLayoutData(new GridData(GridData.FILL_BOTH));
+		
 
 		// Swing Frame and Panel
-		worldFrame = SWT_AWT.new_Frame(top);
-		SwtAwt.setSwtAwtFocus(worldFrame, top);
-		panel = new java.awt.Panel(new java.awt.BorderLayout());
-
-		worldFrame.add(panel);
-
-		// Add the WWJ 3D OpenGL Canvas to the Swing Panel
-		panel.add(worldCanvas, BorderLayout.CENTER);
-
+		/*
+		 * worldFrame = SWT_AWT.new_Frame(top); SwtAwt.setSwtAwtFocus(worldFrame, top);
+		 * panel = new java.awt.Panel(new java.awt.BorderLayout());
+		 * 
+		 * worldFrame.add(panel);
+		 * 
+		 * // Add the WWJ 3D OpenGL Canvas to the Swing Panel panel.add(worldCanvas,
+		 * BorderLayout.CENTER);
+		 */
+		
+		SwingFxSwtView view = new SwingFxSwtView();
+		
+		view.embedd(parent, worldCanvas);
 		parent.setLayoutData(new GridData(GridData.FILL_BOTH));
 		statusBar = new StatusBar();
 		/*Set color for dark theme necessary!*/
 		statusBar.setBackground(Util.getSWTBackgroundToAWT());
 		statusBar.setForeground(Util.getSWTForegroundToAWT());
-		worldFrame.add(statusBar, BorderLayout.PAGE_END);
-		statusBar.setEventSource(worldCanvas);
+		//worldFrame.add(statusBar, BorderLayout.PAGE_END);
+		//statusBar.setEventSource(worldCanvas);
 		initializeToolBar();
 
 		roundEarthModel = new Earth();
@@ -279,14 +277,15 @@ public class WorldWindView extends ViewPart {
 
 	}
 
-	public void recreateGLCanvas() {
-
-		worldFrame.add(worldCanvas);
-		worldFrame.add(statusBar, BorderLayout.PAGE_END);
-		worldFrame.validate();
-		WorldWindOptionsView.optionsInstance.createMeasureTool();
-
-	}
+	/*
+	 * public void recreateGLCanvas() {
+	 * 
+	 * worldFrame.add(worldCanvas); worldFrame.add(statusBar,
+	 * BorderLayout.PAGE_END); worldFrame.validate();
+	 * WorldWindOptionsView.optionsInstance.createMeasureTool();
+	 * 
+	 * }
+	 */
 
 	public void addImage(String imagePath) throws IOException {
 		if (imagePath == null) {

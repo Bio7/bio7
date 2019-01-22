@@ -12,6 +12,7 @@
 package com.eco.bio7.worldwind;
 
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
+import gov.nasa.worldwind.awt.WorldWindowGLJPanel;
 
 /**
  * This class gives access to the WorldWind GLCanvas.
@@ -27,7 +28,7 @@ public class Ww {
 	 * 
 	 * @return the WorldWindowGLCanvas.
 	 */
-	public static WorldWindowGLCanvas getWwd() {
+	public static WorldWindowGLJPanel getWwd() {
 		
 		return WorldWindView.getWwd();
 	}
