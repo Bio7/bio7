@@ -49,7 +49,6 @@ import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.imageio.ImageIO;
-import javax.swing.JApplet;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
@@ -101,7 +100,7 @@ public class WorldWindView extends ViewPart {
 	private Fullscreen full;
 	private StatusBar statusBar;
 	private Composite top;
-	private JApplet panel;
+	private Panel panel;
 	private static Earth roundEarthModel;
 	private static EarthFlat flatEarthModel;
 
@@ -173,12 +172,7 @@ public class WorldWindView extends ViewPart {
 		// Swing Frame and Panel
 		worldFrame = SWT_AWT.new_Frame(top);
 		SwtAwt.setSwtAwtFocus(worldFrame, top);
-		panel = new JApplet() {
-			public void update(java.awt.Graphics g) {
-				// Do not erase the background
-				paint(g);
-			}
-		};
+		panel = new java.awt.Panel(new java.awt.BorderLayout());
 
 		worldFrame.add(panel);
 
