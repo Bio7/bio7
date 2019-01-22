@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Scale;
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
+import gov.nasa.worldwind.awt.WorldWindowGLJPanel;
 import gov.nasa.worldwind.layers.LayerList;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import worldw.Activator;
@@ -83,7 +84,7 @@ public class LayerCompositeDynamic extends Composite {
 				r.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(final SelectionEvent e) {
 						
-						WorldWindowGLCanvas wwd = WorldWindView.getWwd();
+						WorldWindowGLJPanel wwd = WorldWindView.getWwd();
 						if(wwd!=null){
 						LayerList layers = wwd.getModel().getLayers();
 						layers.remove(layer);
