@@ -421,11 +421,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				if (OS.equals("Mac")) {
 					if (perspective.getId().equals("com.eco.bio7.perspective_3d")) {
 
-						Work.openView("com.eco.bio7.spatial");
+						Work.closeView("com.eco.bio7.spatial");
 					}
 
 					else if (perspective.getId().equals("com.eco.bio7.WorldWind.3dglobe")) {
-						Work.openView("com.eco.bio7.worldwind.WorldWindView");
+						Work.closeView("com.eco.bio7.worldwind.WorldWindView");
 
 					}
 				}
