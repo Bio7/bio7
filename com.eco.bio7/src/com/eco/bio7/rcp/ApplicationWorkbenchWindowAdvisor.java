@@ -381,19 +381,18 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			}
 
 			public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-				// Workaround a bug on MacOSX when closing a SWT_AWT perspective
-				// 3D and WorldWind!
-				if (OS.equals("Mac")) {
-					if (perspective.getId().equals("com.eco.bio7.perspective_3d")) {
-
-						Work.openView("com.eco.bio7.spatial");
-					}
-
-					else if (perspective.getId().equals("com.eco.bio7.WorldWind.3dglobe")) {
-						Work.openView("com.eco.bio7.worldwind.WorldWindView");
-
-					}
-				}
+				/*
+				 * // Workaround a bug on MacOSX when closing a SWT_AWT perspective // 3D and
+				 * WorldWind! if (OS.equals("Mac")) { if
+				 * (perspective.getId().equals("com.eco.bio7.perspective_3d")) {
+				 * 
+				 * Work.openView("com.eco.bio7.spatial"); }
+				 * 
+				 * else if (perspective.getId().equals("com.eco.bio7.WorldWind.3dglobe")) {
+				 * Work.openView("com.eco.bio7.worldwind.WorldWindView");
+				 * 
+				 * } }
+				 */
 
 			}
 
