@@ -136,7 +136,6 @@ Export-Package: com.eco.bio7.extralayers,
  org.codehaus.jackson.sym,
  org.codehaus.jackson.type,
  org.codehaus.jackson.util,
- org.eclipse.swt.layout.grouplayout,
  worldw
 Bundle-ClassPath: bin/,
  swt-grouplayout.jar,
