@@ -120,6 +120,7 @@ import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.actions.Bio7Action;
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.collection.Work;
 import com.eco.bio7.compile.BeanShellInterpreter;
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
 import com.eco.bio7.compile.GroovyInterpreter;
@@ -379,9 +380,20 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 			}
 
-			@Override
 			public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-				// TODO Auto-generated method stub
+				// Workaround a bug on MacOSX when closing a SWT_AWT perspective
+				// 3D and WorldWind!
+				if (OS.equals("Mac")) {
+					if (perspective.getId().equals("com.eco.bio7.perspective_3d")) {
+
+						Work.openView("com.eco.bio7.spatial");
+					}
+
+					else if (perspective.getId().equals("com.eco.bio7.WorldWind.3dglobe")) {
+						Work.openView("com.eco.bio7.worldwind.WorldWindView");
+
+					}
+				}
 
 			}
 
@@ -406,17 +418,17 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			public void perspectiveDeactivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
 				// Workaround a bug on MacOSX when closing a SWT_AWT perspective
 				// 3D and WorldWind!
-				/*
-				 * if (OS.equals("Mac")) { if
-				 * (perspective.getId().equals("com.eco.bio7.perspective_3d")) {
-				 * 
-				 * Work.closeView("com.eco.bio7.spatial"); }
-				 * 
-				 * else if (perspective.getId().equals("com.eco.bio7.WorldWind.3dglobe")) {
-				 * Work.closeView("com.eco.bio7.worldwind.WorldWindView");
-				 * 
-				 * } }
-				 */
+				if (OS.equals("Mac")) {
+					if (perspective.getId().equals("com.eco.bio7.perspective_3d")) {
+
+						Work.openView("com.eco.bio7.spatial");
+					}
+
+					else if (perspective.getId().equals("com.eco.bio7.WorldWind.3dglobe")) {
+						Work.openView("com.eco.bio7.worldwind.WorldWindView");
+
+					}
+				}
 
 			}
 
@@ -478,8 +490,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		File fileTempR = new File(fileUrl.getPath());
 		String pathTempR = fileTempR.toString();
 
-		
-
 		if (getOS().equals("Windows")) {
 			String reg1 = "";
 			String reg2 = "";
@@ -504,9 +514,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, "C:\\");
 			}
 		} else if (getOS().equals("Linux")) {
-			//store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, reg2);
+			// store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, reg2);
 			// reg1 = "/usr/lib/R";
-			//reg2 = "/usr/lib/libreoffice/program";
+			// reg2 = "/usr/lib/libreoffice/program";
 			/*
 			 * Now leave the R path empty by default to grab the systems path!
 			 */
@@ -543,15 +553,16 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault(PreferenceConstants.PATH_R, "/Library/Frameworks/R.framework/Resources");
 			store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, "");
 			/*
-			 * For the packages on MacOSX we try the default path if no custom path is given!
+			 * For the packages on MacOSX we try the default path if no custom path is
+			 * given!
 			 */
 			store.setDefault("InstallLocation", "");
 			store.setDefault("SweaveScriptLocation", "");
 			store.setDefault("pdfLatex", "");
 			store.setDefault("RSERVE_ARGS", "");
-			//reg2 = "";
+			// reg2 = "";
 			// reg2 = "/Applications/LibreOffice.app/Contents/MacOS";
-			//store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, reg2);
+			// store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, reg2);
 
 		}
 
@@ -716,10 +727,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		 * System.out.println("getDepth(): " + device.getDepth());
 		 * System.out.println("getDPI(): " + device.getDPI());
 		 */
-		//IPreferenceStore storeJava = Bio7EditorPlugin.getDefault().getPreferenceStore();
+		// IPreferenceStore storeJava =
+		// Bio7EditorPlugin.getDefault().getPreferenceStore();
 
 		// storeJava.setDefault("classbody", false);
-		
+
 		final String pathTo;
 		if (getOS().equals("Windows")) {
 			pathTo = store.getString(PreferenceConstants.P_TEMP_R) + "\\";
