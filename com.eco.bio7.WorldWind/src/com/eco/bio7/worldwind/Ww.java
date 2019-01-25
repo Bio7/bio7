@@ -11,6 +11,8 @@
 
 package com.eco.bio7.worldwind;
 
+import com.eco.bio7.worldwind.swt.WorldWindowNewtCanvasSWT;
+
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
 
 /**
@@ -27,7 +29,7 @@ public class Ww {
 	 * 
 	 * @return the WorldWindowGLCanvas.
 	 */
-	public static WorldWindowGLCanvas getWwd() {
+	public static WorldWindowNewtCanvasSWT getWwd() {
 		
 		return WorldWindView.getWwd();
 	}

@@ -19,6 +19,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Scale;
+
+import com.eco.bio7.worldwind.swt.WorldWindowNewtCanvasSWT;
+
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
 import gov.nasa.worldwind.layers.LayerList;
 import gov.nasa.worldwind.layers.RenderableLayer;
@@ -83,7 +86,7 @@ public class LayerCompositeDynamic extends Composite {
 				r.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(final SelectionEvent e) {
 						
-						WorldWindowGLCanvas wwd = WorldWindView.getWwd();
+						WorldWindowNewtCanvasSWT wwd = WorldWindView.getWwd();
 						if(wwd!=null){
 						LayerList layers = wwd.getModel().getLayers();
 						layers.remove(layer);
