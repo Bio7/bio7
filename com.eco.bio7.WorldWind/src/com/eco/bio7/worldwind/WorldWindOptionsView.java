@@ -144,6 +144,7 @@ import worldw.Activator;
 
 import com.eco.bio7.image.CanvasView;
 import com.eco.bio7.util.Util;
+import com.eco.bio7.worldwind.swt.WorldWindowNewtCanvasSWT;
 import com.swtdesigner.SWTResourceManager;
 
 import org.eclipse.swt.widgets.Spinner;
@@ -210,7 +211,7 @@ public class WorldWindOptionsView extends ViewPart {
 	protected Position lowerLeft;
 	private ViewControlsLayer viewControlsLayer;
 	protected File cacheRoot;
-	private WorldWindowGLCanvas wC;
+	private WorldWindowNewtCanvasSWT wC;
 	private Text countToText;
 	private Button capture;
 	private Label errorLabel;
@@ -259,9 +260,11 @@ public class WorldWindOptionsView extends ViewPart {
 
 					if (selectionButtonEnabled) {
 
-						if (SwingUtilities.isRightMouseButton(mouseEvent)) {
-
-						}
+						/*
+						 * if (SwingUtilities.isRightMouseButton(mouseEvent)) {
+						 * 
+						 * }
+						 */
 						Display display = PlatformUI.getWorkbench().getDisplay();
 						final Position curPos = WorldWindView.getWwd().getCurrentPosition();
 
@@ -514,7 +517,7 @@ public class WorldWindOptionsView extends ViewPart {
 
 				if (dialog.open() == Window.OK) {
 
-					Rectangle r = WorldWindView.getWwd().getBounds();
+					org.eclipse.swt.graphics.Rectangle r = WorldWindView.getWwd().getBounds();
 					View view = WorldWindView.getWwd().getView();
 
 					if (view != null) {
@@ -921,7 +924,7 @@ public class WorldWindOptionsView extends ViewPart {
 				mouseCount = 1;
 				if (selectionButtonEnabled) {
 					if (wC != null) {
-						((Component) wC).setCursor(Cursor.getDefaultCursor());
+						//((Component) wC).setCursor(Cursor.getDefaultCursor());
 					}
 					selectionButtonEnabled = false;
 
@@ -940,7 +943,7 @@ public class WorldWindOptionsView extends ViewPart {
 					// org.eclipse.swt.graphics.Color(Display.getCurrent(),255,255,255));
 				} else if (selectionButtonEnabled == false) {
 					if (wC != null) {
-						((Component) wC).setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+						//((Component) wC).setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 					}
 
 					computeButton.setText("Armed");
@@ -1550,8 +1553,8 @@ public class WorldWindOptionsView extends ViewPart {
 				pauseButton.setText(!measureTool.isArmed() ? "Resume" : "Pause");
 				pauseButton.setEnabled(true);
 				if (wC != null) {
-					((Component) wC).setCursor(!measureTool.isArmed() ? Cursor.getDefaultCursor()
-							: Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+					//((Component) wC).setCursor(!measureTool.isArmed() ? Cursor.getDefaultCursor()
+							//: Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 				}
 			}
 		});
@@ -1737,7 +1740,7 @@ public class WorldWindOptionsView extends ViewPart {
 									endButton.setEnabled(true);
 								}
 							});
-							((Component) wC).setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+							//((Component) wC).setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 						} else {
 							Display display = PlatformUI.getWorkbench().getDisplay();
 							display.syncExec(new Runnable() {
@@ -1749,7 +1752,7 @@ public class WorldWindOptionsView extends ViewPart {
 									endButton.setEnabled(false);
 								}
 							});
-							((Component) wC).setCursor(Cursor.getDefaultCursor());
+							//((Component) wC).setCursor(Cursor.getDefaultCursor());
 						}
 
 					}

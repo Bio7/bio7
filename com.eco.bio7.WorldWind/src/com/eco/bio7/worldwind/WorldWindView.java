@@ -11,6 +11,7 @@
 
 package com.eco.bio7.worldwind;
 
+import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.Model;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
@@ -33,7 +34,6 @@ import gov.nasa.worldwind.util.StatusBar;
 import gov.nasa.worldwind.util.WWIO;
 import gov.nasa.worldwind.view.orbit.BasicOrbitView;
 import gov.nasa.worldwind.view.orbit.FlatOrbitView;
-
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Frame;
@@ -73,6 +73,9 @@ import org.rosuda.REngine.Rserve.RConnection;
 
 import com.eco.bio7.swt.SwtAwt;
 import com.eco.bio7.util.Util;
+import com.eco.bio7.worldwind.swt.NewtInputHandlerSWT;
+import com.eco.bio7.worldwind.swt.WorldWindowNewtAutoDrawableSWT;
+import com.eco.bio7.worldwind.swt.WorldWindowNewtCanvasSWT;
 
 public class WorldWindView extends ViewPart {
 
@@ -87,7 +90,7 @@ public class WorldWindView extends ViewPart {
 	private static final String GEORSS_ICON_PATH = "images/georss.png";
 	private static final String NASA_ICON_PATH = "images/32x32-icon-nasa.png";
 	public static final String ID = "com.eco.bio7.worldwind.WorldWindView"; //$NON-NLS-1$
-	private static WorldWindowGLCanvas worldCanvas;
+	private static WorldWindowNewtCanvasSWT worldCanvas;
 	private static RConnection rConnection;
 	private ConcurrentHashMap<String, SurfaceImage> imageTable = new ConcurrentHashMap<String, SurfaceImage>();
 	private Frame worldFrame;
@@ -104,8 +107,8 @@ public class WorldWindView extends ViewPart {
 	private static Earth roundEarthModel;
 	private static EarthFlat flatEarthModel;
 
-	public static WorldWindowGLCanvas getWwd() {
-		WorldWindowGLCanvas canvas;
+	public static WorldWindowNewtCanvasSWT getWwd() {
+		WorldWindowNewtCanvasSWT canvas;
 		if (worldCanvas != null) {
 			canvas = worldCanvas;
 		} else {
@@ -148,13 +151,15 @@ public class WorldWindView extends ViewPart {
 	@Override
 	public void createPartControl(Composite parent) {
 		/* Create a WorldWind instance */
-		IWorkbenchPage page = PlatformUI.getWorkbench()
-				.getActiveWorkbenchWindow().getActivePage();
+		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+		Configuration.setValue(AVKey.INPUT_HANDLER_CLASS_NAME, NewtInputHandlerSWT.class.getName());
+		Configuration.setValue(AVKey.WORLD_WINDOW_CLASS_NAME, WorldWindowNewtAutoDrawableSWT.class.getName());
 		
-				worldCanvas = new WorldWindowGLCanvas();
+		worldCanvas = new WorldWindowNewtCanvasSWT(parent, SWT.NONE, null);
+		// worldCanvas = new WorldWindowGLCanvas();
 
-				initWorldWindLayerModel();
-				
+		initWorldWindLayerModel();
+
 		try {
 			page.showView("com.eco.bio7.worldwind.WorldWindOptionsView");
 		} catch (PartInitException e) {
@@ -162,34 +167,53 @@ public class WorldWindView extends ViewPart {
 			e.printStackTrace();
 		}
 
-		top = new Composite(parent, SWT.NO_BACKGROUND | SWT.EMBEDDED);
-		try {
-			System.setProperty("sun.awt.noerasebackground", "true");
-		} catch (NoSuchMethodError error) {
-		}
-		top.setLayoutData(new GridData(GridData.FILL_BOTH));
+		
 
-		// Swing Frame and Panel
-		worldFrame = SWT_AWT.new_Frame(top);
-		SwtAwt.setSwtAwtFocus(worldFrame, top);
-		panel = new java.awt.Panel(new java.awt.BorderLayout());
+		/*
+		 * Composite composite = new Composite(shell, SWT.EMBEDDED); Frame frame =
+		 * SWT_AWT.new_Frame(composite); frame.setLayout(new BorderLayout());
+		 * Configuration.setValue(AVKey.INPUT_HANDLER_CLASS_NAME,
+		 * NewtInputHandlerAWT.class.getName());
+		 * Configuration.setValue(AVKey.WORLD_WINDOW_CLASS_NAME,
+		 * WorldWindowNewtAutoDrawableAWT.class.getName()); WorldWindowNewtCanvasAWT wwd
+		 * = new WorldWindowNewtCanvasAWT(); frame.add(wwd, BorderLayout.CENTER);
+		 */
 
-		worldFrame.add(panel);
-
-		// Add the WWJ 3D OpenGL Canvas to the Swing Panel
-		panel.add(worldCanvas, BorderLayout.CENTER);
-
-		parent.setLayoutData(new GridData(GridData.FILL_BOTH));
-		statusBar = new StatusBar();
-		/*Set color for dark theme necessary!*/
-		statusBar.setBackground(Util.getSWTBackgroundToAWT());
-		statusBar.setForeground(Util.getSWTForegroundToAWT());
-		worldFrame.add(statusBar, BorderLayout.PAGE_END);
-		statusBar.setEventSource(worldCanvas);
-		initializeToolBar();
+		/*
+		 * Model m = (Model)
+		 * WorldWind.createConfigurationComponent(AVKey.MODEL_CLASS_NAME);
+		 * worldCanvas.setModel(m);
+		 */
+		
+		//initWorldWindLayerModel();
 
 		roundEarthModel = new Earth();
 		flatEarthModel = new EarthFlat();
+
+		/*
+		 * top = new Composite(parent, SWT.NO_BACKGROUND | SWT.EMBEDDED); try {
+		 * System.setProperty("sun.awt.noerasebackground", "true"); } catch
+		 * (NoSuchMethodError error) { } top.setLayoutData(new
+		 * GridData(GridData.FILL_BOTH));
+		 * 
+		 * // Swing Frame and Panel worldFrame = SWT_AWT.new_Frame(top);
+		 * SwtAwt.setSwtAwtFocus(worldFrame, top); panel = new java.awt.Panel(new
+		 * java.awt.BorderLayout());
+		 * 
+		 * worldFrame.add(panel);
+		 * 
+		 * // Add the WWJ 3D OpenGL Canvas to the Swing Panel panel.add(worldCanvas,
+		 * BorderLayout.CENTER);
+		 * 
+		 * parent.setLayoutData(new GridData(GridData.FILL_BOTH)); statusBar = new
+		 * StatusBar(); Set color for dark theme necessary!
+		 * statusBar.setBackground(Util.getSWTBackgroundToAWT());
+		 * statusBar.setForeground(Util.getSWTForegroundToAWT());
+		 * worldFrame.add(statusBar, BorderLayout.PAGE_END);
+		 * statusBar.setEventSource(worldCanvas); initializeToolBar();
+		 * 
+		 * roundEarthModel = new Earth(); flatEarthModel = new EarthFlat();
+		 */
 
 	}
 
@@ -274,14 +298,14 @@ public class WorldWindView extends ViewPart {
 		WorldWindOptionsView.measureTool.getLayer().removeAllRenderables();
 		/* Necessary, else the gui freezes! */
 
-		full = new Fullscreen(worldCanvas);
+		// full = new Fullscreen(worldCanvas);
 		worldFrame.removeAll();
 
 	}
 
 	public void recreateGLCanvas() {
 
-		worldFrame.add(worldCanvas);
+		// worldFrame.add(worldCanvas);
 		worldFrame.add(statusBar, BorderLayout.PAGE_END);
 		worldFrame.validate();
 		WorldWindOptionsView.optionsInstance.createMeasureTool();
@@ -405,6 +429,7 @@ public class WorldWindView extends ViewPart {
 	/*
 	 * Initialize WW model with default layers
 	 */
+
 	static void initWorldWindLayerModel() {
 		Model m = (Model) WorldWind.createConfigurationComponent(AVKey.MODEL_CLASS_NAME);
 
@@ -469,8 +494,8 @@ public class WorldWindView extends ViewPart {
 	/**
 	 * WindowBuilder generated method.<br>
 	 * Please don't remove this method or its invocations.<br>
-	 * It used by WindowBuilder to associate the {@link javax.swing.JPopupMenu}
-	 * with parent.
+	 * It used by WindowBuilder to associate the {@link javax.swing.JPopupMenu} with
+	 * parent.
 	 */
 	private static void addPopup(Component component, final JPopupMenu popup) {
 		component.addMouseListener(new MouseAdapter() {
