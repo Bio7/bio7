@@ -5,8 +5,8 @@
  */
 package gov.nasa.worldwind.util;
 
-import javax.media.nativewindow.*;
-import javax.media.opengl.*;
+import com.jogamp.nativewindow.*;
+import com.jogamp.opengl.*;
 import java.util.List;
 
 /**

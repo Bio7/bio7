@@ -18,7 +18,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-import javax.media.opengl.awt.GLCanvas;
+import com.jogamp.opengl.awt.GLCanvas;
 import javax.swing.JFrame;
 
 public class Fullscreen extends JFrame {

@@ -9,7 +9,7 @@ import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.*;
+import com.jogamp.opengl.*;
 
 /**
  * GLRuntimeCapabilities describes the GL capabilities supported by the current GL runtime. It provides the caller with

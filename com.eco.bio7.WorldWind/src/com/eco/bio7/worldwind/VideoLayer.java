@@ -11,29 +11,29 @@
 
 package com.eco.bio7.worldwind;
 
-import static javax.media.opengl.GL.GL_TEXTURE_2D;
-import static javax.media.opengl.GL2.GL_CURRENT_BIT;
-import static javax.media.opengl.GL2.GL_ENABLE_BIT;
-import static javax.media.opengl.GL2.GL_LIGHTING_BIT;
-import static javax.media.opengl.GL2.GL_TEXTURE_BIT;
-import static javax.media.opengl.GL2.GL_TRANSFORM_BIT;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_AMBIENT;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_COLOR_MATERIAL;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_DIFFUSE;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_LIGHT0;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_LIGHT1;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_LIGHTING;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_NORMALIZE;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_POSITION;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_SPECULAR;
-import static javax.media.opengl.fixedfunc.GLMatrixFunc.GL_MODELVIEW;
+import static com.jogamp.opengl.GL.GL_TEXTURE_2D;
+import static com.jogamp.opengl.GL2.GL_CURRENT_BIT;
+import static com.jogamp.opengl.GL2.GL_ENABLE_BIT;
+import static com.jogamp.opengl.GL2.GL_LIGHTING_BIT;
+import static com.jogamp.opengl.GL2.GL_TEXTURE_BIT;
+import static com.jogamp.opengl.GL2.GL_TRANSFORM_BIT;
+import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_AMBIENT;
+import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_COLOR_MATERIAL;
+import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_DIFFUSE;
+import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_LIGHT0;
+import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_LIGHT1;
+import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_LIGHTING;
+import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_NORMALIZE;
+import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_POSITION;
+import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_SPECULAR;
+import static com.jogamp.opengl.fixedfunc.GLMatrixFunc.GL_MODELVIEW;
 import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.pick.PickSupport;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.Renderable;
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
-import javax.media.opengl.glu.GLU;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.glu.GLU;
 
 
 

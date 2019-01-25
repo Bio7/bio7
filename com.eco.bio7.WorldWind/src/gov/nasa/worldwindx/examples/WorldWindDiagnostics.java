@@ -7,8 +7,8 @@ package gov.nasa.worldwindx.examples;
 
 import gov.nasa.worldwind.Configuration;
 
-import javax.media.opengl.*;
-import javax.media.opengl.awt.GLCanvas;
+import com.jogamp.opengl.*;
+import com.jogamp.opengl.awt.GLCanvas;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;

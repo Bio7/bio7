@@ -18,10 +18,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 
 package com.eco.bio7.textures;
 
-import static javax.media.opengl.GL.GL_LINEAR;
-import static javax.media.opengl.GL.GL_TEXTURE_2D;
-import static javax.media.opengl.GL.GL_TEXTURE_MAG_FILTER;
-import static javax.media.opengl.GL.GL_TEXTURE_MIN_FILTER;
+import static com.jogamp.opengl.GL.GL_LINEAR;
+import static  com.jogamp.opengl.GL.GL_TEXTURE_2D;
+import static  com.jogamp.opengl.GL.GL_TEXTURE_MAG_FILTER;
+import static  com.jogamp.opengl.GL.GL_TEXTURE_MIN_FILTER;
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.process.ImageProcessor;
@@ -31,10 +31,10 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
-import javax.media.opengl.GLException;
-import javax.media.opengl.GLProfile;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GLException;
+import com.jogamp.opengl.GLProfile;
 import org.eclipse.jface.preference.IPreferenceStore;
 import com.jogamp.opengl.util.awt.TextureRenderer;
 import com.jogamp.opengl.util.texture.Texture;

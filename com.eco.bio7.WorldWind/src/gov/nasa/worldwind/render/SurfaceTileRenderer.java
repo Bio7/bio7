@@ -11,7 +11,7 @@ import gov.nasa.worldwind.Disposable;
 import gov.nasa.worldwind.terrain.SectorGeometry;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.*;
+import com.jogamp.opengl.*;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.logging.Level;

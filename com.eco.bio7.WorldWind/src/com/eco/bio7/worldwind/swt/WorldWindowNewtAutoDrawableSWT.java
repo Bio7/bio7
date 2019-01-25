@@ -15,6 +15,7 @@
  ******************************************************************************/
 package com.eco.bio7.worldwind.swt;
 
+
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.WorldWindowGLAutoDrawable;
 import gov.nasa.worldwind.event.PositionEvent;
@@ -24,7 +25,8 @@ import gov.nasa.worldwind.render.ScreenCreditController;
 
 import java.util.EventObject;
 
-import javax.media.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLContext;
 
 import org.eclipse.swt.widgets.Control;
 
@@ -118,5 +120,11 @@ public class WorldWindowNewtAutoDrawableSWT extends WorldWindowGLAutoDrawable im
 	{
 		//event source should be the world window, not the drawable
 		return event.getSource() == window ? swtControl : event.getSource();
+	}
+
+	@Override
+	public GLContext getContext() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

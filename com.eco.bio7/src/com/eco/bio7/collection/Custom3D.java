@@ -1,7 +1,7 @@
 /*package com.eco.bio7.collection;
 
 import java.util.Vector;
-import javax.media.opengl.GLCanvas;
+import com.jogamp.opengl.GLCanvas;
 import javax.swing.JPanel;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;

@@ -10,7 +10,7 @@ import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.render.GLRuntimeCapabilities;
 import gov.nasa.worldwind.util.Logging;
 
-import javax.media.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLAutoDrawable;
 
 /**
  * Illustrates how to specify the OpenGL features World Wind uses by configuring a <code>{@link

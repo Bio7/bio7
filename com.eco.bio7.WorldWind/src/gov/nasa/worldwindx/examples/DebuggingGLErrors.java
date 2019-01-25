@@ -8,7 +8,7 @@ package gov.nasa.worldwindx.examples;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
 
-import javax.media.opengl.*;
+import com.jogamp.opengl.*;
 
 /**
  * Illustrates how to capture OpenGL errors into the log during development. By defining a custom <code>{@link
