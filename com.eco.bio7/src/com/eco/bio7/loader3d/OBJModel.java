@@ -31,7 +31,7 @@ package com.eco.bio7.loader3d;
 
 import java.io.*;
 import java.util.*;
-import javax.media.opengl.*;
+import com.jogamp.opengl.*;
 
 
 public class OBJModel {

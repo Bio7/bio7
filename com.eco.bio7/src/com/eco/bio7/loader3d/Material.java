@@ -1,6 +1,14 @@
 package com.eco.bio7.loader3d;
 
 
+import static com.jogamp.opengl.GL.GL_NEAREST;
+import static com.jogamp.opengl.GL.GL_TEXTURE_MAG_FILTER;
+import static com.jogamp.opengl.GL.GL_TEXTURE_MIN_FILTER;
+import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_AMBIENT;
+import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_DIFFUSE;
+import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_SHININESS;
+import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_SPECULAR;
+
 // Material.java
 // Andrew Davison, November 2006, ad@fivedots.coe.psu.ac.th
 
@@ -12,19 +20,11 @@ package com.eco.bio7.loader3d;
    texture is done by the Materials object.
 
 */
-
-
-
-
-import java.io.*;
-import java.util.*;
-
-import javax.media.opengl.*;
-
+import java.io.File;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureIO;
-
-import static javax.media.opengl.GL2.*; // GL2 constants
 
 
 public class Material

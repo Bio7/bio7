@@ -17,11 +17,9 @@ package com.eco.bio7.loader3d;
 
 import java.io.*;
 import java.util.*;
-import javax.media.opengl.*;
-
+import com.jogamp.opengl.*;
 import com.jogamp.opengl.util.texture.Texture;
-
-import static javax.media.opengl.GL2.*; // GL2 constants
+import static com.jogamp.opengl.GL2.*; // GL2 constants
 
 public class Materials {
 	private static String MODEL_DIR;

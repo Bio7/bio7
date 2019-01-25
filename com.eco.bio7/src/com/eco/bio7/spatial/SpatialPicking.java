@@ -9,13 +9,12 @@ package com.eco.bio7.spatial;
 
 import java.awt.event.MouseEvent;
 import java.nio.IntBuffer;
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
-import javax.media.opengl.glu.GLU;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.glu.GLU;
 
-import com.sun.prism.impl.BufferUtil;
 
-import static javax.media.opengl.GL2.*; // GL2 constants
+import static com.jogamp.opengl.GL2.*; // GL2 constants
 
 /**
  * A custom class to enable 3d selection in the Spatial panel.
@@ -69,7 +68,8 @@ public class SpatialPicking {
 
 		/* The selection buffer. */
 		//int selectBuf[] = new int[buffSize];
-		selectBuffer = BufferUtil.newIntBuffer(buffSize);
+		//selectBuffer = BufferUtil.newIntBuffer(buffSize);
+		selectBuffer = com.jogamp.common.nio.Buffers.newDirectIntBuffer(buffSize);
 		gl.glSelectBuffer(buffSize, selectBuffer);
 
 		gl.glRenderMode(GL_SELECT); // switch to selection mode
