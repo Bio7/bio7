@@ -45,6 +45,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -76,6 +78,7 @@ import com.eco.bio7.util.Util;
 import com.eco.bio7.worldwind.swt.NewtInputHandlerSWT;
 import com.eco.bio7.worldwind.swt.WorldWindowNewtAutoDrawableSWT;
 import com.eco.bio7.worldwind.swt.WorldWindowNewtCanvasSWT;
+import com.jogamp.newt.MonitorDevice;
 import com.jogamp.newt.opengl.GLWindow;
 
 public class WorldWindView extends ViewPart {
@@ -293,6 +296,9 @@ public class WorldWindView extends ViewPart {
 
 		WorldWindOptionsView.measureTool.getLayer().removeAllRenderables();
 		GLWindow window = worldCanvas.getWindow();
+		 List<MonitorDevice> monitorDevices = new ArrayList<>();
+	        monitorDevices.add(window.getMainMonitor());
+	        window.setFullscreen(monitorDevices); 
 	
 			window.setFullscreen(true);
 		
