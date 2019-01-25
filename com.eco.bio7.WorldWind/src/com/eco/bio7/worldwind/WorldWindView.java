@@ -76,6 +76,7 @@ import com.eco.bio7.util.Util;
 import com.eco.bio7.worldwind.swt.NewtInputHandlerSWT;
 import com.eco.bio7.worldwind.swt.WorldWindowNewtAutoDrawableSWT;
 import com.eco.bio7.worldwind.swt.WorldWindowNewtCanvasSWT;
+import com.jogamp.newt.opengl.GLWindow;
 
 public class WorldWindView extends ViewPart {
 
@@ -126,16 +127,12 @@ public class WorldWindView extends ViewPart {
 	}
 
 	public static void setFullscreen() {
-		if (WorldWindView.getInstance().getFull() == null) {
-			SwingUtilities.invokeLater(new Runnable() {
-				// !!
-				public void run() {
-					WorldWindView.getInstance().createFullscreen();
-				}
-			});
+		GLWindow window = worldCanvas.getWindow();
+		if (window.isFullscreen()) {
+			window.setFullscreen(false);
+		} else {
+			window.setFullscreen(true);
 		}
-
-		WorldWindView.getInstance().setFull(null);
 
 	}
 
@@ -151,11 +148,11 @@ public class WorldWindView extends ViewPart {
 	@Override
 	public void createPartControl(Composite parent) {
 		/* Create a WorldWind instance */
-		top=parent;
+		top = parent;
 		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 		Configuration.setValue(AVKey.INPUT_HANDLER_CLASS_NAME, NewtInputHandlerSWT.class.getName());
 		Configuration.setValue(AVKey.WORLD_WINDOW_CLASS_NAME, WorldWindowNewtAutoDrawableSWT.class.getName());
-		
+
 		worldCanvas = new WorldWindowNewtCanvasSWT(parent, SWT.NONE, null);
 		// worldCanvas = new WorldWindowGLCanvas();
 
@@ -167,8 +164,6 @@ public class WorldWindView extends ViewPart {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		
 
 		/*
 		 * Composite composite = new Composite(shell, SWT.EMBEDDED); Frame frame =
@@ -185,8 +180,8 @@ public class WorldWindView extends ViewPart {
 		 * WorldWind.createConfigurationComponent(AVKey.MODEL_CLASS_NAME);
 		 * worldCanvas.setModel(m);
 		 */
-		
-		//initWorldWindLayerModel();
+
+		// initWorldWindLayerModel();
 
 		roundEarthModel = new Earth();
 		flatEarthModel = new EarthFlat();
@@ -297,18 +292,20 @@ public class WorldWindView extends ViewPart {
 	public void createFullscreen() {
 
 		WorldWindOptionsView.measureTool.getLayer().removeAllRenderables();
-		/* Necessary, else the gui freezes! */
-
-		// full = new Fullscreen(worldCanvas);
-		worldFrame.removeAll();
+		GLWindow window = worldCanvas.getWindow();
+	
+			window.setFullscreen(true);
+		
 
 	}
 
 	public void recreateGLCanvas() {
-
+		GLWindow window = worldCanvas.getWindow();
+		
+		window.setFullscreen(false);
 		// worldFrame.add(worldCanvas);
-		worldFrame.add(statusBar, BorderLayout.PAGE_END);
-		worldFrame.validate();
+		//worldFrame.add(statusBar, BorderLayout.PAGE_END);
+		//worldFrame.validate();
 		WorldWindOptionsView.optionsInstance.createMeasureTool();
 
 	}
