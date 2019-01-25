@@ -30,7 +30,6 @@ import gov.nasa.worldwind.layers.SkyColorLayer;
 import gov.nasa.worldwind.layers.SkyGradientLayer;
 import gov.nasa.worldwind.render.SurfaceImage;
 import gov.nasa.worldwind.util.Logging;
-import gov.nasa.worldwind.util.StatusBar;
 import gov.nasa.worldwind.util.WWIO;
 import gov.nasa.worldwind.view.orbit.BasicOrbitView;
 import gov.nasa.worldwind.view.orbit.FlatOrbitView;
@@ -56,16 +55,14 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolTip;
+import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartReference;
@@ -77,6 +74,7 @@ import org.rosuda.REngine.Rserve.RConnection;
 import com.eco.bio7.swt.SwtAwt;
 import com.eco.bio7.util.Util;
 import com.eco.bio7.worldwind.swt.NewtInputHandlerSWT;
+import com.eco.bio7.worldwind.swt.StatusBar;
 import com.eco.bio7.worldwind.swt.WorldWindowNewtAutoDrawableSWT;
 import com.eco.bio7.worldwind.swt.WorldWindowNewtCanvasSWT;
 import com.jogamp.newt.opengl.GLWindow;
@@ -108,8 +106,7 @@ public class WorldWindView extends ViewPart {
 	private StatusBar statusBar;
 	private Composite top;
 	private Panel panel;
-	private Composite fullscreenComposite;
-	private Shell fullscreenShell;
+	private WorldWindView view;
 	private static Earth roundEarthModel;
 	private static EarthFlat flatEarthModel;
 
@@ -153,6 +150,7 @@ public class WorldWindView extends ViewPart {
 	@Override
 	public void createPartControl(Composite parent) {
 		/* Create a WorldWind instance */
+		
 		top = parent;
 		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 		Configuration.setValue(AVKey.INPUT_HANDLER_CLASS_NAME, NewtInputHandlerSWT.class.getName());
@@ -190,7 +188,8 @@ public class WorldWindView extends ViewPart {
 
 		roundEarthModel = new Earth();
 		flatEarthModel = new EarthFlat();
-
+		statusBar = new StatusBar(this); // Set color for dark theme necessary!		
+		statusBar.setEventSource(worldCanvas);
 		/*
 		 * top = new Composite(parent, SWT.NO_BACKGROUND | SWT.EMBEDDED); try {
 		 * System.setProperty("sun.awt.noerasebackground", "true"); } catch
@@ -215,6 +214,11 @@ public class WorldWindView extends ViewPart {
 		 * 
 		 * roundEarthModel = new Earth(); flatEarthModel = new EarthFlat();
 		 */
+
+	}
+	public void setStatusline(String message) {
+		IActionBars bars = getViewSite().getActionBars();
+		bars.getStatusLineManager().setMessage(message);
 
 	}
 
@@ -298,35 +302,18 @@ public class WorldWindView extends ViewPart {
 
 		WorldWindOptionsView.measureTool.getLayer().removeAllRenderables();
 		GLWindow window = worldCanvas.getWindow();
-	
-			//window.setFullscreen(true);
-			fullscreenShell = new Shell(top.getDisplay(), SWT.ON_TOP);
-			worldCanvas.setParent(fullscreenShell);
-			fullscreenShell.setLayout(new FillLayout());
-			fullscreenComposite = new Composite(top, SWT.NONE);
-			fullscreenComposite.setLayout(new GridLayout());
-			fullscreenComposite.setBackground(top.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
-			
-			GridData gridData = new GridData();
-			gridData.verticalAlignment = SWT.CENTER;
-			gridData.horizontalAlignment = SWT.CENTER;
-			gridData.grabExcessVerticalSpace = true;
-			gridData.grabExcessHorizontalSpace = true;
-			
-			fullscreenShell.setVisible(true);
-			fullscreenShell.setFullScreen(true);	
-		    top.layout();
+
+		window.setFullscreen(true);
 
 	}
 
 	public void recreateGLCanvas() {
 		GLWindow window = worldCanvas.getWindow();
-		fullscreenShell.dispose();
-		top.layout();
-		//window.setFullscreen(false);
+
+		window.setFullscreen(false);
 		// worldFrame.add(worldCanvas);
-		//worldFrame.add(statusBar, BorderLayout.PAGE_END);
-		//worldFrame.validate();
+		// worldFrame.add(statusBar, BorderLayout.PAGE_END);
+		// worldFrame.validate();
 		WorldWindOptionsView.optionsInstance.createMeasureTool();
 
 	}
