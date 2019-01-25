@@ -11,7 +11,7 @@ import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.util.*;
 import org.w3c.dom.*;
 
-import javax.media.opengl.*;
+import com.jogamp.opengl.*;
 import javax.xml.xpath.*;
 import java.io.*;
 import java.util.*;

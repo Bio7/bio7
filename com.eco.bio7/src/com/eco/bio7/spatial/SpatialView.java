@@ -12,11 +12,7 @@
 package com.eco.bio7.spatial;
 
 import java.awt.Frame;
-
-import javax.media.opengl.awt.GLCanvas;
 import javax.swing.SwingUtilities;
-
-import org.eclipse.albireo.internal.Platform;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.layout.RowLayout;
@@ -24,9 +20,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-
 import com.eco.bio7.swt.SwtAwt;
 import com.eco.bio7.util.Util;
+import com.jogamp.opengl.awt.GLCanvas;
 
 public class SpatialView extends ViewPart {
 	public static final String ID = "com.eco.bio7.spatial";

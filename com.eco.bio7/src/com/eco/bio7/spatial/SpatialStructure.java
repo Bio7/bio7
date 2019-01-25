@@ -36,14 +36,14 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
-import javax.media.opengl.GLAutoDrawable;
-import javax.media.opengl.GLCapabilities;
-import javax.media.opengl.GLEventListener;
-import javax.media.opengl.GLProfile;
-import javax.media.opengl.awt.GLCanvas;
-import javax.media.opengl.glu.GLU;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLCapabilities;
+import com.jogamp.opengl.GLEventListener;
+import com.jogamp.opengl.GLProfile;
+import com.jogamp.opengl.awt.GLCanvas;
+import com.jogamp.opengl.glu.GLU;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
@@ -55,10 +55,9 @@ import com.eco.bio7.loader3d.OBJModel;
 import com.eco.bio7.methods.Compiled;
 import com.eco.bio7.spatial.preferences.Preferences3d;
 import com.jogamp.opengl.util.FPSAnimator;
-import com.jogamp.opengl.util.awt.Screenshot;
 import com.jogamp.opengl.util.awt.TextRenderer;
 import com.jogamp.opengl.util.gl2.GLUT;
-import static javax.media.opengl.GL2.*; // GL2 constants
+import static com.jogamp.opengl.GL2.*; // GL2 constants
 
 public class SpatialStructure implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener {
 	private static SpatialStructure SpatialStructureInstance = null;
@@ -244,15 +243,15 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 	public class initRenderer implements GLEventListener {
 
 		public void init(GLAutoDrawable drawable) {
-
+ 
 			gl = drawable.getGL().getGL2();
 			/* Switch off to wait for the monitor to refresh! */
 			gl.setSwapInterval(0);
 			glu = new GLU();
 			glut = new GLUT();
 			drawable_ = drawable;
-			width = drawable.getWidth();
-			height = drawable.getHeight();
+			width = drawable.getSurfaceWidth();
+			height = drawable.getSurfaceHeight();
 
 			setSplitScreenSize(0, 0, width / 3, height / 3);
 			/*
@@ -366,7 +365,7 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 
 		public void upsrate(GLAutoDrawable drawable) {
 
-			textRenderer.beginRendering(drawable.getWidth(), drawable.getHeight());
+			textRenderer.beginRendering(drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
 			textRenderer.setColor(0, 0, 0, 1);
 
 			textRenderer.draw("Step Fps: " + timeCounterTemp, 0, 20);
@@ -422,8 +421,8 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 				switchLight(gl);
 			}
 
-			width = drawable.getWidth();
-			height = drawable.getHeight();
+			width = drawable.getSurfaceWidth();
+			height = drawable.getSurfaceHeight();
 
 			arcBall.setBounds((float) width, (float) height);
 
@@ -499,7 +498,7 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 			if (createBufferedImage) {
 				if (CanvasView.getCanvas_view() != null) {
 
-					BufferedImage im = Screenshot.readToBufferedImage(width, height);
+					BufferedImage im = null ;//= Screenshot.readToBufferedImage(width, height);
 					imp = new ImagePlus("Spatial", im);
 					ip = imp.getProcessor();
 					s = new ImageStack(width, height);
@@ -692,7 +691,7 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 		}
 
 		private void takeScreenshot() {
-			BufferedImage im = Screenshot.readToBufferedImage(width, height);
+			BufferedImage im = null;//Screenshot.readToBufferedImage(width, height);
 			ImagePlus imp = new ImagePlus("Spatial", im);
 			imp.show();
 
@@ -704,7 +703,7 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 
 				if (s.getWidth() == width && s.getHeight() == height) {
 					if (s.getSize() < renderImageTo) {
-						BufferedImage im = Screenshot.readToBufferedImage(width, height);
+						BufferedImage im = null;//Screenshot.readToBufferedImage(width, height);
 
 						ImagePlus imp = new ImagePlus("Spatial", im);
 
@@ -806,7 +805,7 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 			}
 			/** ************************************************** */
 			if (showFramerate) {
-				textRenderer.beginRendering(drawable.getWidth(), drawable.getHeight());
+				textRenderer.beginRendering(drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
 				textRenderer.setColor(0, 0, 0, 1);
 
 				fpsTimeDiff2 = fpsTimeBefore - fpsTimeAfter;
@@ -864,7 +863,7 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 	}
 
 	public BufferedImage getImage() {
-		BufferedImage im = Screenshot.readToBufferedImage(width, height);
+		BufferedImage im = null;//Screenshot.readToBufferedImage(width, height);
 		return im;
 	}
 

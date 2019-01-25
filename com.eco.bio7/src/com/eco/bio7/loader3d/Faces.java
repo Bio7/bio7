@@ -1,34 +1,10 @@
 package com.eco.bio7.loader3d;
 
 
-// Faces.java
-// Andrew Davison, February 2007, ad@fivedots.coe.psu.ac.th
-
-/* Faces stores the information for each face of a model.
-
-   A face is represented by three arrays of indicies for 
-   the vertices, normals, and tex coords used in that face.
-
-   facesVertIdxs, facesTexIdxs, and facesNormIdxs are ArrayLists of
-   those arrays; one entry for each face.
-
-   renderFace() is supplied with a face index, looks up the
-   associated vertices, normals, and tex coords indicies arrays,
-   and uses those arrays to access the actual vertices, normals, 
-   and tex coords data for rendering the face.
-
-   CHANGES (Feb 2007)
-     - changed renderFace() to flip tex coords if necessary
-
-*/
-
-
-
-import java.io.*;
-import java.util.*;
-
-import javax.media.opengl.*;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
+import com.jogamp.opengl.GL2;
 
 
 

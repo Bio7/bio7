@@ -56,9 +56,9 @@ import com.jogamp.opengl.util.packrect.*;
 import com.jogamp.opengl.util.texture.TextureCoords;
 import jogamp.opengl.Debug;
 
-import javax.media.opengl.*;
-import javax.media.opengl.awt.GLCanvas;
-import javax.media.opengl.glu.GLU;
+import com.jogamp.opengl.*;
+import com.jogamp.opengl.awt.GLCanvas;
+import com.jogamp.opengl.glu.GLU;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.font.*;

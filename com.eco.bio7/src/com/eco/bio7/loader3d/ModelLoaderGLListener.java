@@ -13,11 +13,9 @@ import java.awt.event.*;
 import java.util.*;
 import java.text.DecimalFormat;
 import java.io.*;
-import javax.media.opengl.*;
-import javax.media.opengl.glu.*;
-import static javax.media.opengl.GL2.*; // GL2 constants
-
-
+import com.jogamp.opengl.*;
+import com.jogamp.opengl.glu.*;
+import static com.jogamp.opengl.GL2.*; // GL2 constants
 
 
 public class ModelLoaderGLListener implements GLEventListener 

@@ -19,10 +19,10 @@ import ij.ImagePlus;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import javax.media.opengl.GL;
-import javax.media.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GLAutoDrawable;
 
-import com.jogamp.opengl.util.awt.Screenshot;
+
 
 /**
  * @author tag
@@ -46,10 +46,11 @@ public class Bio7ScreenShotAction implements RenderingListener {
 			GLAutoDrawable glad = (GLAutoDrawable) event.getSource();
 			int[] viewport = new int[4];
 			glad.getGL().glGetIntegerv(GL.GL_VIEWPORT, viewport, 0);
-			BufferedImage im=Screenshot.readToBufferedImage(viewport[2] + 10, viewport[3], false);
-			glad.getGL().glViewport(0, 0, glad.getWidth(), glad.getHeight());
-			ImagePlus imp = new ImagePlus("Spatial", im);
-	        imp.show();
+			/*
+			 * BufferedImage im=Screenshot.readToBufferedImage(viewport[2] + 10,
+			 * viewport[3], false); glad.getGL().glViewport(0, 0, glad.getWidth(),
+			 * glad.getHeight()); ImagePlus imp = new ImagePlus("Spatial", im); imp.show();
+			 */
 
 		}
         screenshot=false;

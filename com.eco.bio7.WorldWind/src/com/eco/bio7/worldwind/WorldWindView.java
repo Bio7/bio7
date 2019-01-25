@@ -11,30 +11,6 @@
 
 package com.eco.bio7.worldwind;
 
-import gov.nasa.worldwind.Configuration;
-import gov.nasa.worldwind.Model;
-import gov.nasa.worldwind.WorldWind;
-import gov.nasa.worldwind.WorldWindow;
-import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
-import gov.nasa.worldwind.geom.Angle;
-import gov.nasa.worldwind.geom.Sector;
-import gov.nasa.worldwind.globes.Earth;
-import gov.nasa.worldwind.globes.EarthFlat;
-import gov.nasa.worldwind.globes.FlatGlobe;
-import gov.nasa.worldwind.layers.CompassLayer;
-import gov.nasa.worldwind.layers.Layer;
-import gov.nasa.worldwind.layers.LayerList;
-import gov.nasa.worldwind.layers.RenderableLayer;
-import gov.nasa.worldwind.layers.SkyColorLayer;
-import gov.nasa.worldwind.layers.SkyGradientLayer;
-import gov.nasa.worldwind.render.SurfaceImage;
-import gov.nasa.worldwind.util.Logging;
-import gov.nasa.worldwind.util.StatusBar;
-import gov.nasa.worldwind.util.WWIO;
-import gov.nasa.worldwind.view.orbit.BasicOrbitView;
-import gov.nasa.worldwind.view.orbit.FlatOrbitView;
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Panel;
@@ -57,29 +33,50 @@ import javax.swing.SwingUtilities;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
+<<<<<<< HEAD
 import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.layout.GridData;
+=======
+>>>>>>> branch 'master' of https://github.com/Bio7/bio7.git
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolTip;
-import org.eclipse.ui.IPartListener2;
+import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.rosuda.REngine.Rserve.RConnection;
-
-import com.eco.bio7.swt.SwtAwt;
-import com.eco.bio7.util.Util;
 import com.eco.bio7.worldwind.swt.NewtInputHandlerSWT;
+import com.eco.bio7.worldwind.swt.StatusBar;
 import com.eco.bio7.worldwind.swt.WorldWindowNewtAutoDrawableSWT;
 import com.eco.bio7.worldwind.swt.WorldWindowNewtCanvasSWT;
 import com.jogamp.newt.MonitorDevice;
 import com.jogamp.newt.opengl.GLWindow;
+import gov.nasa.worldwind.Configuration;
+import gov.nasa.worldwind.Model;
+import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.globes.Earth;
+import gov.nasa.worldwind.globes.EarthFlat;
+import gov.nasa.worldwind.globes.FlatGlobe;
+import gov.nasa.worldwind.layers.CompassLayer;
+import gov.nasa.worldwind.layers.Layer;
+import gov.nasa.worldwind.layers.LayerList;
+import gov.nasa.worldwind.layers.RenderableLayer;
+import gov.nasa.worldwind.layers.SkyColorLayer;
+import gov.nasa.worldwind.layers.SkyGradientLayer;
+import gov.nasa.worldwind.render.SurfaceImage;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.WWIO;
+import gov.nasa.worldwind.view.orbit.BasicOrbitView;
+import gov.nasa.worldwind.view.orbit.FlatOrbitView;
 
 public class WorldWindView extends ViewPart {
 
@@ -108,6 +105,10 @@ public class WorldWindView extends ViewPart {
 	private StatusBar statusBar;
 	private Composite top;
 	private Panel panel;
+<<<<<<< HEAD
+=======
+	private WorldWindView view;
+>>>>>>> branch 'master' of https://github.com/Bio7/bio7.git
 	private static Earth roundEarthModel;
 	private static EarthFlat flatEarthModel;
 
@@ -151,6 +152,7 @@ public class WorldWindView extends ViewPart {
 	@Override
 	public void createPartControl(Composite parent) {
 		/* Create a WorldWind instance */
+		
 		top = parent;
 		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 		Configuration.setValue(AVKey.INPUT_HANDLER_CLASS_NAME, NewtInputHandlerSWT.class.getName());
@@ -188,7 +190,8 @@ public class WorldWindView extends ViewPart {
 
 		roundEarthModel = new Earth();
 		flatEarthModel = new EarthFlat();
-
+		statusBar = new StatusBar(this); // Set color for dark theme necessary!		
+		statusBar.setEventSource(worldCanvas);
 		/*
 		 * top = new Composite(parent, SWT.NO_BACKGROUND | SWT.EMBEDDED); try {
 		 * System.setProperty("sun.awt.noerasebackground", "true"); } catch
@@ -213,6 +216,11 @@ public class WorldWindView extends ViewPart {
 		 * 
 		 * roundEarthModel = new Earth(); flatEarthModel = new EarthFlat();
 		 */
+
+	}
+	public void setStatusline(String message) {
+		IActionBars bars = getViewSite().getActionBars();
+		bars.getStatusLineManager().setMessage(message);
 
 	}
 
@@ -296,22 +304,31 @@ public class WorldWindView extends ViewPart {
 
 		WorldWindOptionsView.measureTool.getLayer().removeAllRenderables();
 		GLWindow window = worldCanvas.getWindow();
+<<<<<<< HEAD
 		 List<MonitorDevice> monitorDevices = new ArrayList<>();
 	        monitorDevices.add(window.getMainMonitor());
 	        window.setFullscreen(monitorDevices); 
 	
 			window.setFullscreen(true);
 		
+=======
+
+		window.setFullscreen(true);
+>>>>>>> branch 'master' of https://github.com/Bio7/bio7.git
 
 	}
 
 	public void recreateGLCanvas() {
 		GLWindow window = worldCanvas.getWindow();
+<<<<<<< HEAD
 		
+=======
+
+>>>>>>> branch 'master' of https://github.com/Bio7/bio7.git
 		window.setFullscreen(false);
 		// worldFrame.add(worldCanvas);
-		//worldFrame.add(statusBar, BorderLayout.PAGE_END);
-		//worldFrame.validate();
+		// worldFrame.add(statusBar, BorderLayout.PAGE_END);
+		// worldFrame.validate();
 		WorldWindOptionsView.optionsInstance.createMeasureTool();
 
 	}

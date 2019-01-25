@@ -15,8 +15,8 @@ import gov.nasa.worldwind.pick.*;
 import gov.nasa.worldwind.terrain.*;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.*;
-import javax.media.opengl.glu.GLU;
+import com.jogamp.opengl.*;
+import com.jogamp.opengl.glu.GLU;
 import java.awt.*;
 import java.nio.FloatBuffer;
 import java.util.*;

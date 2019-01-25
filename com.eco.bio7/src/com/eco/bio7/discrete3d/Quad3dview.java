@@ -1,7 +1,7 @@
 package com.eco.bio7.discrete3d;
 
 
-import javax.media.opengl.awt.GLCanvas;
+import com.jogamp.opengl.awt.GLCanvas;
 import javax.swing.JRootPane;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;

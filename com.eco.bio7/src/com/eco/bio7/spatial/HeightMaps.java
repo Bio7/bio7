@@ -15,12 +15,10 @@ package com.eco.bio7.spatial;
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.measure.Calibration;
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
+import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureCoords;
-
-import static javax.media.opengl.GL2.*; // GL2 constants
+import static com.jogamp.opengl.GL2.*; // GL2 constants
 
 public class HeightMaps {
 	public SpatialStructure grid;

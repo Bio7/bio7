@@ -17,7 +17,7 @@ package com.eco.bio7.worldwind.swt;
 
 import gov.nasa.worldwind.WorldWindowGLDrawable;
 
-import javax.media.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLAutoDrawable;
 
 import org.eclipse.swt.widgets.Control;
 

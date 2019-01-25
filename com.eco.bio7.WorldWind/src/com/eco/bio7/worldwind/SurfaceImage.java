@@ -7,9 +7,9 @@ All Rights Reserved.
 package com.eco.bio7.worldwind;
 
 
-import static javax.media.opengl.GL2.GL_CURRENT_BIT;
-import static javax.media.opengl.GL2.GL_POLYGON_BIT;
-import static javax.media.opengl.GL2GL3.GL_FILL;
+import static com.jogamp.opengl.GL2.GL_CURRENT_BIT;
+import static com.jogamp.opengl.GL2.GL_POLYGON_BIT;
+import static com.jogamp.opengl.GL2GL3.GL_FILL;
 import gov.nasa.worldwind.Disposable;
 import gov.nasa.worldwind.Exportable;
 import gov.nasa.worldwind.Movable;
@@ -35,8 +35,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;

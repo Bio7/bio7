@@ -103,8 +103,8 @@ public class JavaClassJoglPluginWizard extends Wizard implements INewWizard {
 	private InputStream openContentStream(String filename) {
 		String linefeed = "\r\n";
 		String imports=
-				"import javax.media.opengl.GL2;" +linefeed+
-				"import javax.media.opengl.glu.GLU;" +linefeed+
+				"import com.jogamp.opengl.GL2;" +linefeed+
+				"import com.jogamp.opengl.glu.GLU;" +linefeed+
 				"import com.jogamp.opengl.util.gl2.GLUT;"+ linefeed+ linefeed;
 		String setup = "\tpublic void setup(GL2 gl,GLU glu,GLUT glut){\r\n" 
 		+ linefeed + "\t// Please enter your setup code here!" 

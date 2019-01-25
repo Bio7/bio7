@@ -16,7 +16,7 @@ import java.awt.EventQueue;
 import java.awt.Panel;
 import java.util.Vector;
 
-import javax.media.opengl.awt.GLCanvas;
+import com.jogamp.opengl.awt.GLCanvas;
 import javax.swing.JApplet;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;

@@ -7,8 +7,8 @@ package gov.nasa.worldwind.util;
 
 import gov.nasa.worldwind.geom.*;
 
-import javax.media.opengl.*;
-import javax.media.opengl.glu.*;
+import com.jogamp.opengl.*;
+import com.jogamp.opengl.glu.*;
 import java.nio.IntBuffer;
 import java.util.*;
 
