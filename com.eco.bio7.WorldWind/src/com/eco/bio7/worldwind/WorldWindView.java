@@ -33,11 +33,6 @@ import javax.swing.SwingUtilities;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
-<<<<<<< HEAD
-import org.eclipse.swt.awt.SWT_AWT;
-import org.eclipse.swt.layout.GridData;
-=======
->>>>>>> branch 'master' of https://github.com/Bio7/bio7.git
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -105,10 +100,7 @@ public class WorldWindView extends ViewPart {
 	private StatusBar statusBar;
 	private Composite top;
 	private Panel panel;
-<<<<<<< HEAD
-=======
 	private WorldWindView view;
->>>>>>> branch 'master' of https://github.com/Bio7/bio7.git
 	private static Earth roundEarthModel;
 	private static EarthFlat flatEarthModel;
 
@@ -304,27 +296,13 @@ public class WorldWindView extends ViewPart {
 
 		WorldWindOptionsView.measureTool.getLayer().removeAllRenderables();
 		GLWindow window = worldCanvas.getWindow();
-<<<<<<< HEAD
-		 List<MonitorDevice> monitorDevices = new ArrayList<>();
-	        monitorDevices.add(window.getMainMonitor());
-	        window.setFullscreen(monitorDevices); 
-	
-			window.setFullscreen(true);
-		
-=======
 
 		window.setFullscreen(true);
->>>>>>> branch 'master' of https://github.com/Bio7/bio7.git
 
 	}
 
 	public void recreateGLCanvas() {
 		GLWindow window = worldCanvas.getWindow();
-<<<<<<< HEAD
-		
-=======
-
->>>>>>> branch 'master' of https://github.com/Bio7/bio7.git
 		window.setFullscreen(false);
 		// worldFrame.add(worldCanvas);
 		// worldFrame.add(statusBar, BorderLayout.PAGE_END);
