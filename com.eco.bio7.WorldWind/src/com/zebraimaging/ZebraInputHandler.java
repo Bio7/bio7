@@ -3,7 +3,6 @@ package com.zebraimaging;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.awt.*;
 
-import com.eco.bio7.worldwind.swt.WorldWindowNewtCanvasSWT;
 import com.jogamp.opengl.awt.GLCanvas;
 import java.awt.*;
 import java.awt.event.*;
@@ -172,9 +171,9 @@ public class ZebraInputHandler extends AWTInputHandler
             WorldWindow ww = this.getWorldWindow();
             if (ww != null)
             {
-            	WorldWindowNewtCanvasSWT wwgl = (WorldWindowNewtCanvasSWT) ww;
-                WorldWindowNewtCanvasSWT glc = wwgl;
-                WorldWindowNewtCanvasSWT cv = glc;
+                WorldWindowGLCanvas wwgl = (WorldWindowGLCanvas) ww;
+                GLCanvas glc = wwgl;
+                Canvas cv = glc;
                 Component c = cv;
                 hwnd = zebraGetWin32Handle(c);
             }

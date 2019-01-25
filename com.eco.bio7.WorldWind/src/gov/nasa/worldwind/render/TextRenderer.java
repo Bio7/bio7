@@ -1951,7 +1951,8 @@ public class TextRenderer {
 
         @Override
         public void dispose(GLAutoDrawable drawable) {
-            glu.destroy();
+        	//see: https://jogamp.org/deployment/archive/master/gluegen_806-joal_548-jogl_1297-jocl_980/javadoc/jogl/javadoc/javax/media/opengl/glu/GLU.html#destroy()
+           // glu.destroy();
             glu=null;
             frame=null;
         }
