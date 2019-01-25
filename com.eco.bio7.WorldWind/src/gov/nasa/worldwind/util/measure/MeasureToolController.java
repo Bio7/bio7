@@ -549,7 +549,7 @@ public class MeasureToolController extends MouseAdapter
 
     protected void setComponentCursor(Cursor cursor)
     {
-        ((Component) this.measureTool.getWwd()).setCursor(cursor != null ? cursor : Cursor.getDefaultCursor());
+        //((Component) this.measureTool.getWwd()).setCursor(cursor != null ? cursor : Cursor.getDefaultCursor());
     }
 
 
