@@ -92,8 +92,11 @@ public class Application implements IApplication {
 			}*/
 			/* Finally save the workspace! */
 			saveWorkspace();
-           /*Do not close display. Changed for Mac to close the JOGL pperspectives!*/
-			//display.dispose();
+           /*Close display to free all SWT resource. Important for MacOSX (former version
+            *did not close display for JOGL which has now been ported to NewtSWTCanvas).
+            *If not closed Java crashes at exit!*/
+			display.dispose();
+			
 			Location instanceLoc = Platform.getInstanceLocation();
             if (instanceLoc != null)
             	instanceLoc.release();
