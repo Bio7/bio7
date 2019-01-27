@@ -63,7 +63,7 @@ public class StatusBar implements PositionListener, RenderingListener {
 			public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
 				Display dis = Util.getDisplay();
 
-				dis.syncExec(new Runnable() {
+				dis.asyncExec(new Runnable() {
 
 					public void run() {
 						if (!showNetworkStatus.get()) {
@@ -161,7 +161,7 @@ public class StatusBar implements PositionListener, RenderingListener {
 	public void moved(PositionEvent event) {
 		Display dis = Util.getDisplay();
 
-		dis.syncExec(new Runnable() {
+		dis.asyncExec(new Runnable() {
 
 			public void run() {
 				StatusBar.this.handleCursorPositionChange(event);
@@ -239,7 +239,7 @@ public class StatusBar implements PositionListener, RenderingListener {
 	protected void handleCursorPositionChange(PositionEvent event) {
 		Display dis = Util.getDisplay();
 
-		dis.syncExec(new Runnable() {
+		dis.asyncExec(new Runnable() {
 
 			public void run() {
 				Position newPos = event.getPosition();
@@ -264,7 +264,7 @@ public class StatusBar implements PositionListener, RenderingListener {
 
 		Display dis = Util.getDisplay();
 
-		dis.syncExec(new Runnable() {
+		dis.asyncExec(new Runnable() {
 
 			public void run() {
 				if (eventSource.getView() != null && eventSource.getView().getEyePosition() != null)

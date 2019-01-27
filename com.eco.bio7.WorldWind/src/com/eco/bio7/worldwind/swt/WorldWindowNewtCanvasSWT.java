@@ -143,6 +143,7 @@ public class WorldWindowNewtCanvasSWT extends NewtCanvasSWT implements WorldWind
 			throw new WWRuntimeException(message, e);
 		}
 	}
+	
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt)

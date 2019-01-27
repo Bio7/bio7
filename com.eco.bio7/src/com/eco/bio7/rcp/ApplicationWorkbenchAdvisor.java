@@ -140,14 +140,16 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 			 * 
 			 * wbp.closePerspective(personalPerspectiveDescriptor2, false, true);
 			 */
-			if (Util.getOS().equals("Mac")) {
-				IWorkbenchPage wbp = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-
-				wbp.hideView(wbp.findView("com.eco.bio7.image"));
-				wbp.hideView(wbp.findView("com.eco.bio7.WorldWind"));
-				wbp.hideView(wbp.findView("com.eco.bio7.3d"));
-
-			}
+			/*
+			 * if (Util.getOS().equals("Mac")) { IWorkbenchPage wbp =
+			 * PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+			 * 
+			 * wbp.hideView(wbp.findView("com.eco.bio7.image"));
+			 * wbp.hideView(wbp.findView("com.eco.bio7.WorldWind"));
+			 * wbp.hideView(wbp.findView("com.eco.bio7.3d"));
+			 * 
+			 * }
+			 */
 
 		}
 		return close;

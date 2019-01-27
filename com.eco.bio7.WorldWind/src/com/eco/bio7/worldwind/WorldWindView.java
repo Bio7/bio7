@@ -144,7 +144,7 @@ public class WorldWindView extends ViewPart {
 	@Override
 	public void createPartControl(Composite parent) {
 		/* Create a WorldWind instance */
-		
+
 		top = parent;
 		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 		Configuration.setValue(AVKey.INPUT_HANDLER_CLASS_NAME, NewtInputHandlerSWT.class.getName());
@@ -182,8 +182,10 @@ public class WorldWindView extends ViewPart {
 
 		roundEarthModel = new Earth();
 		flatEarthModel = new EarthFlat();
-		statusBar = new StatusBar(this); // Set color for dark theme necessary!		
-		statusBar.setEventSource(worldCanvas);
+		/*
+		 * statusBar = new StatusBar(this); // Set color for dark theme necessary!
+		 * statusBar.setEventSource(worldCanvas);
+		 */
 		/*
 		 * top = new Composite(parent, SWT.NO_BACKGROUND | SWT.EMBEDDED); try {
 		 * System.setProperty("sun.awt.noerasebackground", "true"); } catch
@@ -210,6 +212,7 @@ public class WorldWindView extends ViewPart {
 		 */
 
 	}
+
 	public void setStatusline(String message) {
 		IActionBars bars = getViewSite().getActionBars();
 		bars.getStatusLineManager().setMessage(message);
@@ -444,15 +447,9 @@ public class WorldWindView extends ViewPart {
 	@Override
 	public void dispose() {
 
-		SwingUtilities.invokeLater(new Runnable() {
-			// !!
+		worldCanvas.shutdown();
+		worldCanvas = null;
 
-			public void run() {
-
-				// worldCanvas.shutdown();
-				worldCanvas = null;
-			}
-		});
 		Display display = PlatformUI.getWorkbench().getDisplay();
 
 		display.syncExec(new Runnable() {
