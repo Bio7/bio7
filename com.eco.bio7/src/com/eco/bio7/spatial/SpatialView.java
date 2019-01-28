@@ -12,6 +12,9 @@
 package com.eco.bio7.spatial;
 
 import java.awt.Frame;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.SwingUtilities;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
@@ -22,6 +25,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import com.eco.bio7.swt.SwtAwt;
 import com.eco.bio7.util.Util;
+import com.jogamp.newt.MonitorDevice;
+import com.jogamp.newt.Screen;
 import com.jogamp.opengl.awt.GLCanvas;
 
 public class SpatialView extends ViewPart {
@@ -35,27 +40,24 @@ public class SpatialView extends ViewPart {
 
 	private GLCanvas canvas;
 
-	private Composite top;
+	public Composite top;
 
 	private SpatialView instance;
 
 	public SpatialView() {
 
 		instance = this;
-		if (Util.getOS().equals("Windows")) {
-			SwingUtilities.invokeLater(new Runnable() {
-				// !!
-				public void run() {
 
-					spat = new SpatialStructure(instance);
-
-				}
-			});
-		} else {
-			/* For Linux! */
-			spat = new SpatialStructure(instance);
-
-		}
+		/*
+		 * if (Util.getOS().equals("Windows")) { SwingUtilities.invokeLater(new
+		 * Runnable() { // !! public void run() {
+		 * 
+		 * spat = new SpatialStructure(instance);
+		 * 
+		 * } }); } else { For Linux! spat = new SpatialStructure(instance);
+		 * 
+		 * }
+		 */
 
 	}
 
@@ -63,24 +65,21 @@ public class SpatialView extends ViewPart {
 
 		initializeToolBar();
 
-		top = new Composite(parent, SWT.NO_BACKGROUND | SWT.EMBEDDED);
-		try {
-			System.setProperty("sun.awt.noerasebackground", "true");
-		} catch (NoSuchMethodError error) {
-		}
+		top = parent;// new Composite(parent, SWT.NO_BACKGROUND | SWT.EMBEDDED);
 
-		Display display = PlatformUI.getWorkbench().getDisplay();
-		display.syncExec(new Runnable() {
-
-			public void run() {
-
-				frame = SWT_AWT.new_Frame(top);
-				SwtAwt.setSwtAwtFocus(frame, top);
-				canvas = spat.getCanvas();
-				top.setLayout(new RowLayout());
-				frame.add(canvas);
-			}
-		});
+		spat = new SpatialStructure(instance);
+		/*
+		 * try { System.setProperty("sun.awt.noerasebackground", "true"); } catch
+		 * (NoSuchMethodError error) { }
+		 * 
+		 * Display display = PlatformUI.getWorkbench().getDisplay();
+		 * display.syncExec(new Runnable() {
+		 * 
+		 * public void run() {
+		 * 
+		 * frame = SWT_AWT.new_Frame(top); SwtAwt.setSwtAwtFocus(frame, top); canvas =
+		 * spat.getCanvas(); top.setLayout(new RowLayout()); frame.add(canvas); } });
+		 */
 	}
 
 	/*
@@ -91,18 +90,23 @@ public class SpatialView extends ViewPart {
 	 * view.embedd(top,canvas);
 	 */
 
-	public void createFullscreen() {
+	public void createFullscreen(int i) {
 		spat.getAnimator().stop();
-		full = new Fullscreen(canvas);
-		frame.removeAll();
+		Screen screen = spat.glWindow.getScreen();
+		List<MonitorDevice> monitorDevices = new ArrayList<>();
+		MonitorDevice dev = screen.getMonitorDevices().get(i);
+		if (dev != null) {
+			monitorDevices.add(dev);
+			spat.glWindow.setFullscreen(monitorDevices);
+		}
+
 		spat.getAnimator().start();
 
 	}
 
 	public void recreateGLCanvas() {
 		spat.getAnimator().stop();
-		frame.add(canvas);
-		frame.validate();
+		spat.glWindow.setFullscreen(false);
 		spat.getAnimator().start();
 
 	}
@@ -124,20 +128,16 @@ public class SpatialView extends ViewPart {
 	}
 
 	public void dispose() {
-		SwingUtilities.invokeLater(new Runnable() {
-			// !!
-			public void run() {
-				Display display = PlatformUI.getWorkbench().getDisplay();
-				display.syncExec(new Runnable() {
 
-					public void run() {
-						spat.getAnimator().stop();
-						spat.setAnimator(null);
-						if (full != null) {
-							full.exit();
-						}
-					}
-				});
+		Display display = PlatformUI.getWorkbench().getDisplay();
+		display.syncExec(new Runnable() {
+
+			public void run() {
+				spat.getAnimator().stop();
+				spat.setAnimator(null);
+				if (full != null) {
+					full.exit();
+				}
 			}
 		});
 

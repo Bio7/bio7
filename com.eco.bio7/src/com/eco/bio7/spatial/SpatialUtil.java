@@ -44,8 +44,7 @@ public class SpatialUtil {
 	/**
 	 * Sets the rotation in x-direction.
 	 * 
-	 * @param rotatx
-	 *            a float value.
+	 * @param rotatx a float value.
 	 */
 	public static void setRotationX(float rotatx) {
 		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
@@ -71,8 +70,7 @@ public class SpatialUtil {
 	/**
 	 * Sets the rotation in y-direction.
 	 * 
-	 * @param rotaty
-	 *            a float value.
+	 * @param rotaty a float value.
 	 */
 	public static void setRotationY(float rotaty) {
 		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
@@ -98,8 +96,7 @@ public class SpatialUtil {
 	/**
 	 * Sets the rotation in z-direction.
 	 * 
-	 * @param rotatz
-	 *            a float value.
+	 * @param rotatz a float value.
 	 */
 	public static void setRotationZ(float rotatz) {
 		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
@@ -139,8 +136,7 @@ public class SpatialUtil {
 	 * A method which stops the movement in the Spatial panel for selection and
 	 * custom purposes.
 	 * 
-	 * @param stop
-	 *            a boolean value.
+	 * @param stop a boolean value.
 	 */
 	public static void setStopMovement(boolean stop) {
 		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
@@ -223,8 +219,7 @@ public class SpatialUtil {
 	/**
 	 * This methods triggers the switch from split view to normal view.
 	 * 
-	 * @param splitView
-	 *            a boolean value.
+	 * @param splitView a boolean value.
 	 */
 	public static void setSplitView(boolean splitView) {
 		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
@@ -236,12 +231,9 @@ public class SpatialUtil {
 	/**
 	 * Sets the light position of the first lamp.
 	 * 
-	 * @param x
-	 *            the x-position as a float.
-	 * @param y
-	 *            the y-position as a float.
-	 * @param z
-	 *            the z-position as a float.
+	 * @param x the x-position as a float.
+	 * @param y the y-position as a float.
+	 * @param z the z-position as a float.
 	 */
 	public static void setLightPos1(float x, float y, float z) {
 		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
@@ -255,12 +247,9 @@ public class SpatialUtil {
 	/**
 	 * Sets the light position of the second lamp.
 	 * 
-	 * @param x
-	 *            the x-position as a float.
-	 * @param y
-	 *            the y-position as a float.
-	 * @param z
-	 *            the z-position as a float.
+	 * @param x the x-position as a float.
+	 * @param y the y-position as a float.
+	 * @param z the z-position as a float.
 	 */
 	public static void setLightPos2(float x, float y, float z) {
 		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
@@ -275,12 +264,9 @@ public class SpatialUtil {
 	/**
 	 * Sets the light position of the third lamp.
 	 * 
-	 * @param x
-	 *            the x-position as a float.
-	 * @param y
-	 *            the y-position as a float.
-	 * @param z
-	 *            the z-position as a float.
+	 * @param x the x-position as a float.
+	 * @param y the y-position as a float.
+	 * @param z the z-position as a float.
 	 */
 	public static void setLightPos3(float x, float y, float z) {
 		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
@@ -294,12 +280,9 @@ public class SpatialUtil {
 	/**
 	 * Sets the light position of the fourth lamp.
 	 * 
-	 * @param x
-	 *            the x-position as a float.
-	 * @param y
-	 *            the y-position as a float.
-	 * @param z
-	 *            the z-position as a float.
+	 * @param x the x-position as a float.
+	 * @param y the y-position as a float.
+	 * @param z the z-position as a float.
 	 */
 	public static void setLightPos4(float x, float y, float z) {
 		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
@@ -370,14 +353,10 @@ public class SpatialUtil {
 	/**
 	 * This method adjusts the full screen monitor settings.
 	 * 
-	 * @param x
-	 *            the width of the screen.
-	 * @param y
-	 *            the height of the screen.
-	 * @param bit
-	 *            the bit resolution of the screen.
-	 * @param refreshRate
-	 *            the refresh rate of the monitor.
+	 * @param x           the width of the screen.
+	 * @param y           the height of the screen.
+	 * @param bit         the bit resolution of the screen.
+	 * @param refreshRate the refresh rate of the monitor.
 	 */
 
 	public static void setFullscreenOptions(int x, int y, int bit, int refreshRate) {
@@ -393,12 +372,9 @@ public class SpatialUtil {
 
 		final SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
 		if (struc != null) {
-			SwingUtilities.invokeLater(new Runnable() {
-				// !!
-				public void run() {
-					struc.getView().createFullscreen();
-				}
-			});
+
+			struc.getView().createFullscreen(0);
+
 		}
 
 	}
@@ -406,14 +382,10 @@ public class SpatialUtil {
 	/**
 	 * A method to set the splitscreen coordinates and size.
 	 * 
-	 * @param x
-	 *            the x-origin.
-	 * @param y
-	 *            the y-origin.
-	 * @param width
-	 *            the width.
-	 * @param height
-	 *            the height.
+	 * @param x      the x-origin.
+	 * @param y      the y-origin.
+	 * @param width  the width.
+	 * @param height the height.
 	 */
 	public static void setSplitScreenSizeLocation(int x, int y, int width, int height) {
 		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
@@ -465,11 +437,9 @@ public class SpatialUtil {
 	}
 
 	/**
-	 * This method enables or disables the visualization of the grid
-	 * orientation.
+	 * This method enables or disables the visualization of the grid orientation.
 	 * 
-	 * @param value
-	 *            a boolean value.
+	 * @param value a boolean value.
 	 */
 	public static void showGrid(boolean value) {
 		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
@@ -481,11 +451,9 @@ public class SpatialUtil {
 	}
 
 	/**
-	 * This method enables or disables the visualization of the quad
-	 * orientation.
+	 * This method enables or disables the visualization of the quad orientation.
 	 * 
-	 * @param value
-	 *            a boolean value.
+	 * @param value a boolean value.
 	 */
 	public static void showQuad(boolean value) {
 		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
@@ -496,11 +464,9 @@ public class SpatialUtil {
 	}
 
 	/**
-	 * This method enables or disables the visualization of the axes
-	 * orientation.
+	 * This method enables or disables the visualization of the axes orientation.
 	 * 
-	 * @param value
-	 *            a boolean value.
+	 * @param value a boolean value.
 	 */
 	public static void showAxes(boolean value) {
 		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
@@ -514,12 +480,9 @@ public class SpatialUtil {
 	/**
 	 * Sets the background color.
 	 * 
-	 * @param r
-	 *            the red value as an integer (0-255).
-	 * @param g
-	 *            the green value as an integer (0-255).
-	 * @param b
-	 *            the blue value as an integer (0-255).
+	 * @param r the red value as an integer (0-255).
+	 * @param g the green value as an integer (0-255).
+	 * @param b the blue value as an integer (0-255).
 	 */
 	public static void setBackgroundColor(int r, int g, int b) {
 		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
@@ -536,12 +499,9 @@ public class SpatialUtil {
 	/**
 	 * Sets the color of the cube, axes and grid.
 	 * 
-	 * @param r
-	 *            the red value as an integer (0-255).
-	 * @param g
-	 *            the green value as an integer (0-255).
-	 * @param b
-	 *            the blue value as an integer (0-255).
+	 * @param r the red value as an integer (0-255).
+	 * @param g the green value as an integer (0-255).
+	 * @param b the blue value as an integer (0-255).
 	 */
 	public static void setLinesColor(int r, int g, int b) {
 		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
@@ -572,8 +532,8 @@ public class SpatialUtil {
 	}
 
 	/**
-	 * This method returns a boolean which is triggered by the UI slider to
-	 * adjust a frame rate.
+	 * This method returns a boolean which is triggered by the UI slider to adjust a
+	 * frame rate.
 	 * 
 	 * @return a boolean value.
 	 */
@@ -630,8 +590,8 @@ public class SpatialUtil {
 	}
 
 	/**
-	 * This method returns the boolean value "true" if the OpenGL run method
-	 * is triggered!.
+	 * This method returns the boolean value "true" if the OpenGL run method is
+	 * triggered!.
 	 * 
 	 * @return a boolean value.
 	 */

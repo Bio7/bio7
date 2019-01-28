@@ -7,8 +7,9 @@
 
 package com.eco.bio7.spatial;
 
-import java.awt.event.MouseEvent;
+
 import java.nio.IntBuffer;
+import com.jogamp.newt.event.MouseEvent;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.glu.GLU;

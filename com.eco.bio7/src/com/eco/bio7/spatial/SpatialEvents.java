@@ -1,8 +1,7 @@
 package com.eco.bio7.spatial;
 
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
+import com.jogamp.newt.event.KeyEvent;
+import com.jogamp.newt.event.MouseEvent;
 
 /**
  * This class offers static methods to detect custom mouse and key events in the
@@ -43,7 +42,7 @@ public class SpatialEvents {
 
 	protected static boolean mouseWheelMoved;
 
-	protected static MouseWheelEvent mouseWheelEvent;
+	protected static MouseEvent mouseWheelEvent;
 
 	protected static boolean mouseMoved;
 
@@ -103,12 +102,12 @@ public class SpatialEvents {
 	 * 
 	 * @return a MouseWheelEvent instance.
 	 */
-	public static MouseWheelEvent getMouseWheelEvent() {
+	public static MouseEvent getMouseWheelEvent() {
 
 		return mouseWheelEvent;
 	}
 
-	protected static void setMouseWheelEvent(MouseWheelEvent mouseWheelEvent) {
+	protected static void setMouseWheelEvent(MouseEvent mouseWheelEvent) {
 		SpatialEvents.mouseWheelEvent = mouseWheelEvent;
 	}
 

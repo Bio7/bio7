@@ -1,8 +1,6 @@
 package com.eco.bio7.spatial;
 
-
-
-import java.awt.*;
+import com.jogamp.nativewindow.util.Point;
 
 /**
  * Created by Pepijn Van Eeckhoudt.
@@ -23,7 +21,7 @@ class ArcBall {
 
     public void mapToSphere(Point point, Vector3f vector) {
         //Copy paramter into temp point
-        Point2f tempPoint = new Point2f(point.x, point.y);
+        Point2f tempPoint = new Point2f(point.getX(), point.getY());
 
         //Adjust point coords and scale down to range of [-1 ... 1]
         tempPoint.x = (tempPoint.x * this.adjustWidth) - 1.0f;

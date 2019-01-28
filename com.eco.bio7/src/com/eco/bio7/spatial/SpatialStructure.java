@@ -19,51 +19,59 @@
 
 package com.eco.bio7.spatial;
 
-
-import ij.ImagePlus;
-import ij.ImageStack;
-import ij.WindowManager;
-import ij.gui.StackWindow;
-import ij.process.ImageProcessor;
-import java.awt.Dimension;
+import static com.jogamp.opengl.GL.GL_GREATER;
+import static com.jogamp.opengl.GL2ES1.GL_ALPHA_TEST;
+import static com.jogamp.opengl.GL2ES1.GL_LIGHT_MODEL_TWO_SIDE;
+import static com.jogamp.opengl.GL2ES1.GL_POINT_SMOOTH;
+import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_DIFFUSE;
+import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_LIGHT0;
+import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_LIGHT1;
+import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_LIGHT2;
+import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_LIGHT3;
+import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_LIGHTING;
+import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_POSITION;
+import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_SMOOTH;
+import static com.jogamp.opengl.fixedfunc.GLMatrixFunc.GL_MODELVIEW;
+import static com.jogamp.opengl.fixedfunc.GLMatrixFunc.GL_PROJECTION;
 import java.awt.Font;
-import java.awt.Point;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
-import com.jogamp.opengl.GL;
-import com.jogamp.opengl.GL2;
-import com.jogamp.opengl.GLAutoDrawable;
-import com.jogamp.opengl.GLCapabilities;
-import com.jogamp.opengl.GLEventListener;
-import com.jogamp.opengl.GLProfile;
-import com.jogamp.opengl.awt.GLCanvas;
-import com.jogamp.opengl.glu.GLU;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
-
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.compile.Model;
 import com.eco.bio7.image.CanvasView;
 import com.eco.bio7.loader3d.OBJModel;
 import com.eco.bio7.methods.Compiled;
 import com.eco.bio7.spatial.preferences.Preferences3d;
+import com.jogamp.nativewindow.util.Point;
+import com.jogamp.newt.event.MouseEvent;
+import com.jogamp.newt.event.MouseListener;
+import com.jogamp.newt.opengl.GLWindow;
+import com.jogamp.newt.swt.NewtCanvasSWT;
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLCapabilities;
+import com.jogamp.opengl.GLEventListener;
+import com.jogamp.opengl.GLProfile;
+import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.awt.TextRenderer;
 import com.jogamp.opengl.util.gl2.GLUT;
-import static com.jogamp.opengl.GL2.*; // GL2 constants
+import ij.ImagePlus;
+import ij.ImageStack;
+import ij.WindowManager;
+import ij.gui.StackWindow;
+import ij.process.ImageProcessor;
+import com.jogamp.newt.event.KeyEvent;
+import com.jogamp.newt.event.KeyListener;
 
-public class SpatialStructure implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener {
+public class SpatialStructure implements KeyListener, MouseListener {
 	private static SpatialStructure SpatialStructureInstance = null;
 	private initRenderer renderer;
-	private GLCanvas canvas;
-	private  FPSAnimator animator;
+	private NewtCanvasSWT canvas;
+	private FPSAnimator animator;
 	private GLU glu;
 	private GL2 gl;
 	private com.jogamp.opengl.util.gl2.GLUT glut;
@@ -202,23 +210,40 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 	public double spatialExtent = 100000.0f;// The perspective variable
 	private static int renderImageTo = 500;
 	private static int multiplyDragCameraSpeed = 1;
-	private int fixedFps=60;
+	private int fixedFps = 60;
+	public GLWindow glWindow;
 
 	SpatialStructure(SpatialView view) {
 		this.view = view;
 		SpatialStructureInstance = this;
 		renderer = new initRenderer();
 		arcBall = new ArcBall(800.0f, 600.0f);
-		GLProfile glprofile = GLProfile.getDefault();
-		canvas = new GLCanvas(new GLCapabilities(glprofile));
-		canvas.setSize(new Dimension(canvasWidth, canvasHeight));
 
-		canvas.addGLEventListener(renderer);
-		canvas.requestFocus();
-		canvas.addKeyListener(this);
-		canvas.addMouseListener(this);
-		canvas.addMouseMotionListener(this);
-		canvas.addMouseWheelListener(this);
+		/*
+		 * GLProfile glprofile = GLProfile.getDefault(); canvas = new GLCanvas(new
+		 * GLCapabilities(glprofile)); canvas.setSize(new Dimension(canvasWidth,
+		 * canvasHeight));
+		 */
+
+		GLProfile glprofile = GLProfile.getDefault();
+
+		glWindow = GLWindow.create(new GLCapabilities(glprofile));
+		// canvas = new GLCanvas(new GLCapabilities(glprofile));
+
+		canvas = new NewtCanvasSWT(view.top, SWT.NO_BACKGROUND, glWindow);
+		canvas.setSize(canvasWidth, canvasHeight);
+		// canvas.setData(gldata);
+
+		// glWindow.setSize(new Dimension(canvasWidth, canvasHeight));
+
+		glWindow.addGLEventListener(renderer);
+
+		canvas.setFocus();
+		glWindow.addKeyListener(this);
+		glWindow.addMouseListener(this);
+		// canvas.addMouseMotionListener(this);
+		// canvas.addMouseWheelListener(this);
+
 		/* Create the custom preferences store! */
 		pref3d = new Preferences3d();
 
@@ -243,7 +268,7 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 	public class initRenderer implements GLEventListener {
 
 		public void init(GLAutoDrawable drawable) {
- 
+
 			gl = drawable.getGL().getGL2();
 			/* Switch off to wait for the monitor to refresh! */
 			gl.setSwapInterval(0);
@@ -295,12 +320,12 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 			if (animator == null) {
 				/* Default fps to avoid unnecessary loops! */
 				if (pref3d.isFixedFps()) {
-					
+
 					Display display = PlatformUI.getWorkbench().getDisplay();
 					display.syncExec(new Runnable() {
 
 						public void run() {
-							 fixedFps = store.getInt("fixedFps");
+							fixedFps = store.getInt("fixedFps");
 						}
 					});
 					animator = new FPSAnimator(drawable, fixedFps, true);
@@ -498,7 +523,7 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 			if (createBufferedImage) {
 				if (CanvasView.getCanvas_view() != null) {
 
-					BufferedImage im = null ;//= Screenshot.readToBufferedImage(width, height);
+					BufferedImage im = null;// = Screenshot.readToBufferedImage(width, height);
 					imp = new ImagePlus("Spatial", im);
 					ip = imp.getProcessor();
 					s = new ImageStack(width, height);
@@ -587,6 +612,7 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 						yCameraPosition += heightSpeed * Math.sin(Math.toRadians(viewAngleY));
 						yLookAt += heightSpeed * Math.sin(Math.toRadians(viewAngleY));
 					}
+					System.out.println("forward");
 
 					verifyPosition();
 				} else if (backward) {
@@ -640,19 +666,23 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 				}
 				/* Two viewports */
 				if (view == 0) {
-					glu.gluLookAt(xCameraPosition, yCameraPosition, zCameraPosition, xLookAt, yLookAt, zLookAt, 0, 1, 0);
+					glu.gluLookAt(xCameraPosition, yCameraPosition, zCameraPosition, xLookAt, yLookAt, zLookAt, 0, 1,
+							0);
 				} else if (view == 1) {
-					glu.gluLookAt(xCameraPosition, yCameraPosition, zCameraPosition, xLookAt, yLookAt, zLookAt, 0, 1, 0);
+					glu.gluLookAt(xCameraPosition, yCameraPosition, zCameraPosition, xLookAt, yLookAt, zLookAt, 0, 1,
+							0);
 				}
 				/* One viewport */
 				else {// The overview!
 					if (customCamera) {
 
-						glu.gluLookAt(customCameraCoordinates[0], customCameraCoordinates[1], customCameraCoordinates[2], customCameraCoordinates[3], customCameraCoordinates[4],
+						glu.gluLookAt(customCameraCoordinates[0], customCameraCoordinates[1],
+								customCameraCoordinates[2], customCameraCoordinates[3], customCameraCoordinates[4],
 								customCameraCoordinates[5], 0, 1, 0);
 					} else {
 
-						glu.gluLookAt(xCamSplit, yCamSplit, zCamSplit, xSplitLookAt, ySplitLookAt, zSplitLookAt, 0, 1, 0);
+						glu.gluLookAt(xCamSplit, yCamSplit, zCamSplit, xSplitLookAt, ySplitLookAt, zSplitLookAt, 0, 1,
+								0);
 					}
 				}
 
@@ -664,10 +694,12 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 				} else if (view == 2) {
 					if (customCamera) {
 
-						glu.gluLookAt(customCameraCoordinates[0], customCameraCoordinates[1], customCameraCoordinates[2], customCameraCoordinates[3], customCameraCoordinates[4],
+						glu.gluLookAt(customCameraCoordinates[0], customCameraCoordinates[1],
+								customCameraCoordinates[2], customCameraCoordinates[3], customCameraCoordinates[4],
 								customCameraCoordinates[5], 0, 1, 0);
 					} else {
-						glu.gluLookAt(xCamSplit, yCamSplit, zCamSplit, xSplitLookAt, ySplitLookAt, zSplitLookAt, 0, 1, 0);
+						glu.gluLookAt(xCamSplit, yCamSplit, zCamSplit, xSplitLookAt, ySplitLookAt, zSplitLookAt, 0, 1,
+								0);
 					}
 
 				} else {// Normal mode!
@@ -677,7 +709,8 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 						glu.gluLookAt(dox, doy, doz, 0, 0, 0, 0, 1, 0);
 					} else {
 						// Custom camera without split!
-						glu.gluLookAt(customCameraCoordinates[0], customCameraCoordinates[1], customCameraCoordinates[2], customCameraCoordinates[3], customCameraCoordinates[4],
+						glu.gluLookAt(customCameraCoordinates[0], customCameraCoordinates[1],
+								customCameraCoordinates[2], customCameraCoordinates[3], customCameraCoordinates[4],
 								customCameraCoordinates[5], 0, 1, 0);
 					}
 				}
@@ -691,7 +724,7 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 		}
 
 		private void takeScreenshot() {
-			BufferedImage im = null;//Screenshot.readToBufferedImage(width, height);
+			BufferedImage im = null;// Screenshot.readToBufferedImage(width, height);
 			ImagePlus imp = new ImagePlus("Spatial", im);
 			imp.show();
 
@@ -703,7 +736,7 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 
 				if (s.getWidth() == width && s.getHeight() == height) {
 					if (s.getSize() < renderImageTo) {
-						BufferedImage im = null;//Screenshot.readToBufferedImage(width, height);
+						BufferedImage im = null;// Screenshot.readToBufferedImage(width, height);
 
 						ImagePlus imp = new ImagePlus("Spatial", im);
 
@@ -863,7 +896,7 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 	}
 
 	public BufferedImage getImage() {
-		BufferedImage im = null;//Screenshot.readToBufferedImage(width, height);
+		BufferedImage im = null;// Screenshot.readToBufferedImage(width, height);
 		return im;
 	}
 
@@ -940,7 +973,12 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 				break;
 			case KeyEvent.VK_F2:
 				if (view.getFullscreen() == null) {
-					view.createFullscreen();
+					view.createFullscreen(0);
+				}
+				break;
+			case KeyEvent.VK_F3:
+				if (view.getFullscreen() == null) {
+					view.createFullscreen(1);
 				}
 				break;
 
@@ -955,7 +993,8 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 
 	private void initViewerPosn()
 	/*
-	 * Specify the camera (player) position, the x- and z- step distance, and the position being looked at.
+	 * Specify the camera (player) position, the x- and z- step distance, and the
+	 * position being looked at.
 	 */
 	{
 		xCameraPosition = 0;
@@ -1016,10 +1055,16 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 
 		} else if (keyCode == KeyEvent.VK_F2) {
 			if (view.getFullscreen() == null) {
-				view.createFullscreen();
+				view.createFullscreen(0);
 			}
 
 		}
+		 else if (keyCode == KeyEvent.VK_F3) {
+				if (view.getFullscreen() == null) {
+					view.createFullscreen(1);
+				}
+
+			}
 
 		verifyPosition();
 
@@ -1053,7 +1098,7 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 		mouseButton = evt.getButton();
 		mouseButton = evt.getButton();
 		/* Important for the rotation! */
-		renderer.startDrag(evt.getPoint());
+		renderer.startDrag(new Point(evt.getX(), evt.getY()));
 
 	}
 
@@ -1066,16 +1111,16 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 			if (walkthrough == false) {
 				if (mouseButton == 1) {
 
-					renderer.drag(e.getPoint());
+					renderer.drag(new Point(e.getX(), e.getY()));
 
 				}
 
 				else if (mouseButton == 2) {
 
-					Dimension size = e.getComponent().getSize();
+					// Dimension size = e.getComponent().getSize();
 
-					float thetaY = 360.0f * ((float) (x - prevMouseX) / (float) size.width);
-					float thetaX = 360.0f * ((float) (prevMouseY - y) / (float) size.height);
+					float thetaY = 360.0f * ((float) (x - prevMouseX) / (float) glWindow.getWidth());
+					float thetaX = 360.0f * ((float) (prevMouseY - y) / (float) glWindow.getHeight());
 
 					prevMouseX = x;
 					prevMouseY = y;
@@ -1084,10 +1129,10 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 					transy += thetaX;
 
 				} else if (mouseButton == 3) {
-					Dimension size = e.getComponent().getSize();
+					// Dimension size = e.getComponent().getSize();
 
-					float thetaY = 360.0f * ((float) (x - prevMouseX) / (float) size.width);
-					float thetaX = 360.0f * ((float) (prevMouseY - y) / (float) size.height);
+					float thetaY = 360.0f * ((float) (x - prevMouseX) / (float) glWindow.getWidth());
+					float thetaX = 360.0f * ((float) (prevMouseY - y) / (float) glWindow.getHeight());
 
 					prevMouseX = x;
 					prevMouseY = y;
@@ -1098,10 +1143,10 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 			} else {
 				/* Handle walkthrough! */
 
-				Dimension size = e.getComponent().getSize();
+				// Dimension size = e.getComponent().getSize();
 
-				float thetaWalkY = 360.0f * ((float) (x - prevMouseX) / (float) size.width);
-				float thetaWalkX = 360.0f * ((float) (prevMouseY - y) / (float) size.height);
+				float thetaWalkY = 360.0f * ((float) (x - prevMouseX) / (float) glWindow.getWidth());
+				float thetaWalkX = 360.0f * ((float) (prevMouseY - y) / (float) glWindow.getHeight());
 				prevMouseX = x;
 				prevMouseY = y;
 
@@ -1166,7 +1211,7 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 
 	}
 
-	public GLCanvas getCanvas() {
+	public NewtCanvasSWT getCanvas() {
 		return canvas;
 	}
 
@@ -1175,13 +1220,13 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 		SpatialEvents.setMouseMoveEvent(e);
 	}
 
-	public void mouseWheelMoved(MouseWheelEvent e) {
+	public void mouseWheelMoved(MouseEvent e) {
 		SpatialEvents.setMouseWheelMoved(true);
 		SpatialEvents.setMouseWheelEvent(e);
 
 	}
 
-	public  FPSAnimator getLoop() {
+	public FPSAnimator getLoop() {
 		return animator;
 	}
 
@@ -1375,7 +1420,7 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 		this.lightPos4[2] = z;
 	}
 
-	public  FPSAnimator getAnimator() {
+	public FPSAnimator getAnimator() {
 		return animator;
 	}
 
@@ -1391,7 +1436,8 @@ public class SpatialStructure implements KeyListener, MouseListener, MouseMotion
 		this.gridSize = gridSize;
 	}
 
-	public static void setCustomCamera(double xpos, double ypos, double zpos, double xlook, double ylook, double zlook) {
+	public static void setCustomCamera(double xpos, double ypos, double zpos, double xlook, double ylook,
+			double zlook) {
 		customCameraCoordinates[0] = xpos;
 		customCameraCoordinates[1] = ypos;
 		customCameraCoordinates[2] = zpos;
