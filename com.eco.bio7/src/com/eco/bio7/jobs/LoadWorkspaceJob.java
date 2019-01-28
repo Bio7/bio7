@@ -39,7 +39,6 @@ import com.eco.bio7.database.StateTable;
 import com.eco.bio7.discrete.Field;
 import com.eco.bio7.discrete.Hexagon;
 import com.eco.bio7.discrete.Quad2d;
-import com.eco.bio7.discrete3d.Quad3dview;
 import com.eco.bio7.info.InfoView;
 import com.eco.bio7.methods.Compiled;
 import com.eco.bio7.methods.CurrentStates;
@@ -69,12 +68,6 @@ public class LoadWorkspaceJob extends WorkspaceJob {
 
 		monitor.beginTask("Load Pattern...", IProgressMonitor.UNKNOWN);
 		unsetAllStates();
-
-		// We have to stop the 3d animator for the process of loading!
-		FPSAnimator anim = Quad3dview.getAnimator();
-		if (anim != null) {
-			anim.stop();
-		}
 
 		ResizeArray.update(0, 0);
 		// For a fast loading we are resizing the field to a minimum!
