@@ -474,7 +474,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 				isSplitPanelDrawing = true;
 				views(drawable, 2);
 				/* Render the results to an image or to images! */
-				renderImages();
+				//renderImages();
 
 			}
 
@@ -502,7 +502,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 					views(drawable, 0);
 				}
 				/* Render the results to an image or to images! */
-				renderImages();
+				//renderImages();
 
 				getFps(drawable);
 
@@ -510,41 +510,30 @@ public class SpatialStructure implements KeyListener, MouseListener {
 
 		}
 
-		private void renderImages() {
-
-			/* If true takes a screenshot! */
-			if (takeScreenshot) {
-				if (CanvasView.getCanvas_view() != null) {
-					takeScreenshot();
-					takeScreenshot = false;
-				}
-			}
-
-			if (createBufferedImage) {
-				if (CanvasView.getCanvas_view() != null) {
-
-					BufferedImage im = null;// = Screenshot.readToBufferedImage(width, height);
-					imp = new ImagePlus("Spatial", im);
-					ip = imp.getProcessor();
-					s = new ImageStack(width, height);
-
-					s.addSlice(null, ip);
-					s.addSlice(null, ip);
-					plus = new ImagePlus("Stack", s);
-					// We make it visible!
-					plus.show();
-					// imp.show();
-
-					createBufferedImage = false;
-				}
-			}
-
-			if (renderToImageJ) {
-
-				renderToImageJ();
-
-			}
-		}
+		/*
+		 * private void renderImages() {
+		 * 
+		 * If true takes a screenshot! if (takeScreenshot) { if
+		 * (CanvasView.getCanvas_view() != null) { takeScreenshot(); takeScreenshot =
+		 * false; } }
+		 * 
+		 * if (createBufferedImage) { if (CanvasView.getCanvas_view() != null) {
+		 * 
+		 * BufferedImage im = null;// = Screenshot.readToBufferedImage(width, height);
+		 * imp = new ImagePlus("Spatial", im); ip = imp.getProcessor(); s = new
+		 * ImageStack(width, height);
+		 * 
+		 * s.addSlice(null, ip); s.addSlice(null, ip); plus = new ImagePlus("Stack", s);
+		 * // We make it visible! plus.show(); // imp.show();
+		 * 
+		 * createBufferedImage = false; } }
+		 * 
+		 * if (renderToImageJ) {
+		 * 
+		 * renderToImageJ();
+		 * 
+		 * } }
+		 */
 
 		private void views(GLAutoDrawable drawable, int view) {
 
@@ -723,52 +712,43 @@ public class SpatialStructure implements KeyListener, MouseListener {
 			}
 		}
 
-		private void takeScreenshot() {
-			BufferedImage im = null;// Screenshot.readToBufferedImage(width, height);
-			ImagePlus imp = new ImagePlus("Spatial", im);
-			imp.show();
+		/*
+		 * private void takeScreenshot() { BufferedImage im = null;//
+		 * Screenshot.readToBufferedImage(width, height); ImagePlus imp = new
+		 * ImagePlus("Spatial", im); imp.show();
+		 * 
+		 * }
+		 */
 
-		}
-
-		private void renderToImageJ() {
-
-			if (CanvasView.getCanvas_view() != null) {
-
-				if (s.getWidth() == width && s.getHeight() == height) {
-					if (s.getSize() < renderImageTo) {
-						BufferedImage im = null;// Screenshot.readToBufferedImage(width, height);
-
-						ImagePlus imp = new ImagePlus("Spatial", im);
-
-						ImageProcessor ip = imp.getProcessor();
-
-						s.addSlice(null, ip);
-						StackWindow sw = (StackWindow) WindowManager.getCurrentWindow();
-						if (sw != null) {
-							sw.updateSliceSelector();
-						} else {
-							renderToImageJ = false;
-							Options3d.setRenderImageJFrames(true);
-
-						}
-
-					} else {
-						renderToImageJ = false;
-						Options3d.setRenderImageJFrames(true);
-
-					}
-
-				} else {
-					renderToImageJ = false;
-					Options3d.setRenderImageJFrames(true);
-
-				}
-			} else {
-				renderToImageJ = false;
-				Options3d.setRenderImageJFrames(true);
-
-			}
-		}
+		/*
+		 * private void renderToImageJ() {
+		 * 
+		 * if (CanvasView.getCanvas_view() != null) {
+		 * 
+		 * if (s.getWidth() == width && s.getHeight() == height) { if (s.getSize() <
+		 * renderImageTo) { BufferedImage im = null;//
+		 * Screenshot.readToBufferedImage(width, height);
+		 * 
+		 * ImagePlus imp = new ImagePlus("Spatial", im);
+		 * 
+		 * ImageProcessor ip = imp.getProcessor();
+		 * 
+		 * s.addSlice(null, ip); StackWindow sw = (StackWindow)
+		 * WindowManager.getCurrentWindow(); if (sw != null) { sw.updateSliceSelector();
+		 * } else { renderToImageJ = false; Options3d.setRenderImageJFrames(true);
+		 * 
+		 * }
+		 * 
+		 * } else { renderToImageJ = false; Options3d.setRenderImageJFrames(true);
+		 * 
+		 * }
+		 * 
+		 * } else { renderToImageJ = false; Options3d.setRenderImageJFrames(true);
+		 * 
+		 * } } else { renderToImageJ = false; Options3d.setRenderImageJFrames(true);
+		 * 
+		 * } }
+		 */
 
 		public void GlSetup() {
 
@@ -901,6 +881,14 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	}
 
 	public void keyReleased(KeyEvent evt) {
+		/*
+		 * Changed for newt. Enabled auto repeat, see:
+		 * https://jogamp.org/deployment/webstart/javadoc/jogl/javadoc/com/jogamp/newt/
+		 * event/KeyListener.html#keyReleased(com.jogamp.newt.event.KeyEvent)!
+		 */
+		if (evt.isAutoRepeat()) {
+			return;
+		}
 		SpatialEvents.setKeyReleased(true);
 		SpatialEvents.setKeyReleaseEvent(evt);
 
@@ -1058,13 +1046,12 @@ public class SpatialStructure implements KeyListener, MouseListener {
 				view.createFullscreen(0);
 			}
 
-		}
-		 else if (keyCode == KeyEvent.VK_F3) {
-				if (view.getFullscreen() == null) {
-					view.createFullscreen(1);
-				}
-
+		} else if (keyCode == KeyEvent.VK_F3) {
+			if (view.getFullscreen() == null) {
+				view.createFullscreen(1);
 			}
+
+		}
 
 		verifyPosition();
 

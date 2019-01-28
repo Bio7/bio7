@@ -51,8 +51,7 @@ import org.eclipse.swt.layout.GridData;
 
 public class Options3d extends ViewPart {
 	public static final String ID = "com.eco.bio7.discrete3d.Options3d"; //$NON-NLS-1$
-	
-	
+
 	private ExpandItem newItemExpandItem;
 	private Text worldExtent;
 	private Text text_11;
@@ -100,13 +99,13 @@ public class Options3d extends ViewPart {
 	private static Button playPauseButton;
 	private static Button fixedFpsButton;
 	private static boolean renderImageJFrames = true;
-	private static Integer stackSizeCount;
+	private static int stackSizeCount=100;
+	private static int fpsScreenCapture=30;
 	private int fixedFps;
-	
-	public Options3d() {
-		
-	}
 
+	public Options3d() {
+
+	}
 
 	/**
 	 * Create contents of the view part
@@ -135,7 +134,7 @@ public class Options3d extends ViewPart {
 
 		ExpandBar expandBar;
 		expandBar = new ExpandBar(container, SWT.V_SCROLL);
-		//expandBar.setBackground(parent.getBackground());
+		// expandBar.setBackground(parent.getBackground());
 
 		newItemExpandItem = new ExpandItem(expandBar, SWT.NONE);
 		newItemExpandItem.setHeight(700);
@@ -146,7 +145,8 @@ public class Options3d extends ViewPart {
 		composite.setLayout(new GridLayout(3, true));
 		GraphicsDevice graphicDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 		DisplayMode defaultMode = graphicDevice.getDisplayMode();
-		SpatialUtil.setFullscreenOptions(defaultMode.getWidth(), defaultMode.getHeight(), defaultMode.getBitDepth(), defaultMode.getRefreshRate());
+		SpatialUtil.setFullscreenOptions(defaultMode.getWidth(), defaultMode.getHeight(), defaultMode.getBitDepth(),
+				defaultMode.getRefreshRate());
 		d = graphicDevice.getDisplayModes();
 
 		new Label(composite, SWT.NONE);
@@ -543,7 +543,8 @@ public class Options3d extends ViewPart {
 		GridData gd_playPauseButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_playPauseButton.heightHint = 40;
 		playPauseButton.setLayoutData(gd_playPauseButton);
-		playPauseButton.setToolTipText("Play/Pause: Invokes the compiled run method with the default Jogl timer.\n The timer fps determines the speed of invocation");
+		playPauseButton.setToolTipText(
+				"Play/Pause: Invokes the compiled run method with the default Jogl timer.\n The timer fps determines the speed of invocation");
 		playPauseButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 
@@ -574,7 +575,7 @@ public class Options3d extends ViewPart {
 			}
 		});
 		setupButton.setImage(Bio7Plugin.getImageDescriptor("/icons/maintoolbar/setup.png").createImage());
-		//setupButton.setText("Setup");
+		// setupButton.setText("Setup");
 		new Label(composite_2, SWT.NONE);
 		new Label(composite_2, SWT.NONE);
 
@@ -668,7 +669,8 @@ public class Options3d extends ViewPart {
 
 			}
 		});
-		fixedFpsButton.setToolTipText("If not selected:\n Sets a default 60 FPS for the OpenGL\ntimer for unnecessary loops.");
+		fixedFpsButton.setToolTipText(
+				"If not selected:\n Sets a default 60 FPS for the OpenGL\ntimer for unnecessary loops.");
 		fixedFpsButton.setText("Fixed fps");
 
 		final Button showFramerateButton = new Button(composite_2, SWT.CHECK);
@@ -1028,8 +1030,10 @@ public class Options3d extends ViewPart {
 			public void widgetSelected(final SelectionEvent e) {
 				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
 				if (grid != null) {
-					grid.getPref3d().storeModelLocation(new Double(modelPosX.getText()), new Double(modelPosY.getText()), new Double(modelPosZ.getText()));
-					grid.getPref3d().storeModelRotation(new Double(modelRotX.getText()), new Double(modelRotY.getText()), new Double(modelRotZ.getText()));
+					grid.getPref3d().storeModelLocation(new Double(modelPosX.getText()),
+							new Double(modelPosY.getText()), new Double(modelPosZ.getText()));
+					grid.getPref3d().storeModelRotation(new Double(modelRotX.getText()),
+							new Double(modelRotY.getText()), new Double(modelRotZ.getText()));
 					grid.getPref3d().storeModelScale(new Double(modelScale.getText()), 0, 0);
 				}
 
@@ -1072,86 +1076,87 @@ public class Options3d extends ViewPart {
 		GridData gd_label_5 = new GridData(SWT.FILL, SWT.FILL, true, false, 4, 1);
 		gd_label_5.heightHint = 25;
 		label_5.setLayoutData(gd_label_5);
-										
-												final Label staticTextureLabel = new Label(composite_5, SWT.NONE);
-												GridData gd_staticTextureLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-												gd_staticTextureLabel.heightHint = 25;
-												staticTextureLabel.setLayoutData(gd_staticTextureLabel);
-												staticTextureLabel.setText("Static Texture:");
-										new Label(composite_5, SWT.NONE);
-										new Label(composite_5, SWT.NONE);
-										new Label(composite_5, SWT.NONE);
-								
-										final Button fromFileButton_1 = new Button(composite_5, SWT.RADIO);
-										GridData gd_fromFileButton_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-										gd_fromFileButton_1.heightHint = 25;
-										fromFileButton_1.setLayoutData(gd_fromFileButton_1);
-										fromFileButton_1.setToolTipText("From file will create a non dynamic texture");
-										fromFileButton_1.addSelectionListener(new SelectionAdapter() {
-											public void widgetSelected(final SelectionEvent e) {
 
-											}
-										});
-										fromFileButton_1.setText("From File");
-								
-										fromImagejButton_2 = new Button(composite_5, SWT.RADIO);
-										GridData gd_fromImagejButton_2 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-										gd_fromImagejButton_2.heightHint = 25;
-										fromImagejButton_2.setLayoutData(gd_fromImagejButton_2);
-										fromImagejButton_2.setToolTipText("From ImageJ will create a non dynamic texture from an enabled image in ImageJ");
-										fromImagejButton_2.setText("From ImageJ");
-						
-								text_2 = new Text(composite_5, SWT.BORDER);
-								GridData gd_text_2 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-								gd_text_2.heightHint = 25;
-								text_2.setLayoutData(gd_text_2);
-								text_2.setText(store.getString("spatialImage"));
-						
-								final Button pathButton_2 = new Button(composite_5, SWT.NONE);
-								GridData gd_pathButton_2 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-								gd_pathButton_2.heightHint = 40;
-								pathButton_2.setLayoutData(gd_pathButton_2);
-								pathButton_2.addSelectionListener(new SelectionAdapter() {
-									public void widgetSelected(final SelectionEvent e) {
-										Shell s = new Shell(SWT.ON_TOP);
-										FileDialog fd = new FileDialog(s, SWT.OPEN);
-										fd.setText("Load");
-
-										String[] filterExt = { "*.*" };
-										fd.setFilterExtensions(filterExt);
-										String path = fd.open();
-
-										text_2.setText(path);
-										store.setValue("spatialImage", path);
-
-									}
-								});
-								pathButton_2.setText("Path");
-				
-						final Label label_5_1 = new Label(composite_5, SWT.HORIZONTAL | SWT.SEPARATOR);
-						GridData gd_label_5_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-						gd_label_5_1.heightHint = 25;
-						label_5_1.setLayoutData(gd_label_5_1);
-						label_5_1.setText("Label");
-		
-				final Label dynamicLabel = new Label(composite_5, SWT.NONE);
-				GridData gd_dynamicLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-				gd_dynamicLabel.heightHint = 25;
-				dynamicLabel.setLayoutData(gd_dynamicLabel);
-				dynamicLabel.setText("Dynamic Texture:");
+		final Label staticTextureLabel = new Label(composite_5, SWT.NONE);
+		GridData gd_staticTextureLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_staticTextureLabel.heightHint = 25;
+		staticTextureLabel.setLayoutData(gd_staticTextureLabel);
+		staticTextureLabel.setText("Static Texture:");
 		new Label(composite_5, SWT.NONE);
-		
-				final Button fromQuad2dButton = new Button(composite_5, SWT.RADIO);
-				GridData gd_fromQuad2dButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-				gd_fromQuad2dButton.heightHint = 25;
-				fromQuad2dButton.setLayoutData(gd_fromQuad2dButton);
-				fromQuad2dButton.setToolTipText("This options creates a dynamic texture from the Quads view");
-				fromQuad2dButton.addSelectionListener(new SelectionAdapter() {
-					public void widgetSelected(final SelectionEvent e) {
+		new Label(composite_5, SWT.NONE);
+		new Label(composite_5, SWT.NONE);
 
-					}
-				});
-				fromQuad2dButton.setText("From Quad2d");
+		final Button fromFileButton_1 = new Button(composite_5, SWT.RADIO);
+		GridData gd_fromFileButton_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_fromFileButton_1.heightHint = 25;
+		fromFileButton_1.setLayoutData(gd_fromFileButton_1);
+		fromFileButton_1.setToolTipText("From file will create a non dynamic texture");
+		fromFileButton_1.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+
+			}
+		});
+		fromFileButton_1.setText("From File");
+
+		fromImagejButton_2 = new Button(composite_5, SWT.RADIO);
+		GridData gd_fromImagejButton_2 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_fromImagejButton_2.heightHint = 25;
+		fromImagejButton_2.setLayoutData(gd_fromImagejButton_2);
+		fromImagejButton_2
+				.setToolTipText("From ImageJ will create a non dynamic texture from an enabled image in ImageJ");
+		fromImagejButton_2.setText("From ImageJ");
+
+		text_2 = new Text(composite_5, SWT.BORDER);
+		GridData gd_text_2 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_text_2.heightHint = 25;
+		text_2.setLayoutData(gd_text_2);
+		text_2.setText(store.getString("spatialImage"));
+
+		final Button pathButton_2 = new Button(composite_5, SWT.NONE);
+		GridData gd_pathButton_2 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_pathButton_2.heightHint = 40;
+		pathButton_2.setLayoutData(gd_pathButton_2);
+		pathButton_2.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Shell s = new Shell(SWT.ON_TOP);
+				FileDialog fd = new FileDialog(s, SWT.OPEN);
+				fd.setText("Load");
+
+				String[] filterExt = { "*.*" };
+				fd.setFilterExtensions(filterExt);
+				String path = fd.open();
+
+				text_2.setText(path);
+				store.setValue("spatialImage", path);
+
+			}
+		});
+		pathButton_2.setText("Path");
+
+		final Label label_5_1 = new Label(composite_5, SWT.HORIZONTAL | SWT.SEPARATOR);
+		GridData gd_label_5_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+		gd_label_5_1.heightHint = 25;
+		label_5_1.setLayoutData(gd_label_5_1);
+		label_5_1.setText("Label");
+
+		final Label dynamicLabel = new Label(composite_5, SWT.NONE);
+		GridData gd_dynamicLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_dynamicLabel.heightHint = 25;
+		dynamicLabel.setLayoutData(gd_dynamicLabel);
+		dynamicLabel.setText("Dynamic Texture:");
+		new Label(composite_5, SWT.NONE);
+
+		final Button fromQuad2dButton = new Button(composite_5, SWT.RADIO);
+		GridData gd_fromQuad2dButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_fromQuad2dButton.heightHint = 25;
+		fromQuad2dButton.setLayoutData(gd_fromQuad2dButton);
+		fromQuad2dButton.setToolTipText("This options creates a dynamic texture from the Quads view");
+		fromQuad2dButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+
+			}
+		});
+		fromQuad2dButton.setText("From Quad2d");
 		final Button fromImagejButton_1 = new Button(composite_5, SWT.RADIO);
 		GridData gd_fromImagejButton_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_fromImagejButton_1.heightHint = 25;
@@ -1163,57 +1168,57 @@ public class Options3d extends ViewPart {
 			}
 		});
 		fromImagejButton_1.setText("From ImageJ");
-						
-								final Label label_5_1_1 = new Label(composite_5, SWT.HORIZONTAL | SWT.SEPARATOR);
-								GridData gd_label_5_1_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-								gd_label_5_1_1.heightHint = 25;
-								label_5_1_1.setLayoutData(gd_label_5_1_1);
-								label_5_1_1.setText("Label");
-						
-								final Button setButton = new Button(composite_5, SWT.NONE);
-								GridData gd_setButton = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-								gd_setButton.heightHint = 40;
-								setButton.setLayoutData(gd_setButton);
-								setButton.setToolTipText("Changes the texture selection");
-								setButton.addSelectionListener(new SelectionAdapter() {
-									public void widgetSelected(final SelectionEvent e) {
-										SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-										if (grid != null) {
-											if (fromImagejButton_1.getSelection()) {
-												/* Creating a new texture! */
-												grid.textures.createNewTexture = true;
 
-												grid.textures.setRenderFromFile(false);
-												/* Dynamic texture from ImageJ! */
-												DynamicTexture.setImagejEnabled(true);
+		final Label label_5_1_1 = new Label(composite_5, SWT.HORIZONTAL | SWT.SEPARATOR);
+		GridData gd_label_5_1_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+		gd_label_5_1_1.heightHint = 25;
+		label_5_1_1.setLayoutData(gd_label_5_1_1);
+		label_5_1_1.setText("Label");
 
-											} else if (fromQuad2dButton.getSelection()) {
-												grid.textures.createNewTexture = true;
+		final Button setButton = new Button(composite_5, SWT.NONE);
+		GridData gd_setButton = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+		gd_setButton.heightHint = 40;
+		setButton.setLayoutData(gd_setButton);
+		setButton.setToolTipText("Changes the texture selection");
+		setButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					if (fromImagejButton_1.getSelection()) {
+						/* Creating a new texture! */
+						grid.textures.createNewTexture = true;
 
-												grid.textures.setRenderFromFile(false);
-												/* Dynamic texture from Quadgrid! */
-												DynamicTexture.setImagejEnabled(false);
+						grid.textures.setRenderFromFile(false);
+						/* Dynamic texture from ImageJ! */
+						DynamicTexture.setImagejEnabled(true);
 
-											}
+					} else if (fromQuad2dButton.getSelection()) {
+						grid.textures.createNewTexture = true;
 
-											else {
+						grid.textures.setRenderFromFile(false);
+						/* Dynamic texture from Quadgrid! */
+						DynamicTexture.setImagejEnabled(false);
 
-												grid.textures.createNewTexture = true;
+					}
 
-												grid.textures.setRenderFromFile(true);
-												/* Texture from file! */
-												if (fromFileButton_1.getSelection()) {
-													grid.textures.setStaticImageImageJ(false);
-												} else if (fromImagejButton_2.getSelection()) {
-													grid.textures.setStaticImageImageJ(true);
-												}
-												grid.textures.createImageTexture(grid.getGl().getGL2());
+					else {
 
-											}
-										}
-									}
-								});
-								setButton.setText("Change");
+						grid.textures.createNewTexture = true;
+
+						grid.textures.setRenderFromFile(true);
+						/* Texture from file! */
+						if (fromFileButton_1.getSelection()) {
+							grid.textures.setStaticImageImageJ(false);
+						} else if (fromImagejButton_2.getSelection()) {
+							grid.textures.setStaticImageImageJ(true);
+						}
+						grid.textures.createImageTexture(grid.getGl().getGL2());
+
+					}
+				}
+			}
+		});
+		setButton.setText("Change");
 
 		final ExpandItem newItemExpandItem_4 = new ExpandItem(expandBar, SWT.NONE);
 		newItemExpandItem_4.setHeight(300);
@@ -1242,125 +1247,127 @@ public class Options3d extends ViewPart {
 			}
 		});
 		enableHeightMapButton.setText("Enable Height Map");
-										
-												final Button gcButton = new Button(composite_3, SWT.CHECK);
-												GridData gd_gcButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-												gd_gcButton.heightHint = 25;
-												gcButton.setLayoutData(gd_gcButton);
-												gcButton.addSelectionListener(new SelectionAdapter() {
-													public void widgetSelected(final SelectionEvent e) {
-														if (gcButton.getSelection()) {
-															HeightMaps.setGraphicsCardSwitch(true);
-														} else {
-															HeightMaps.setGraphicsCardSwitch(false);
-														}
-													}
-												});
-												gcButton.setToolTipText("This is a special switch for the texture.\n For some graphics cards it seems to be necessary\n to assign the texture differently!");
-												gcButton.setText("Gc");
-										new Label(composite_3, SWT.NONE);
-								
-										final Button geoButton = new Button(composite_3, SWT.CHECK);
-										GridData gd_geoButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-										gd_geoButton.heightHint = 25;
-										geoButton.setLayoutData(gd_geoButton);
-										geoButton.addSelectionListener(new SelectionAdapter() {
-											public void widgetSelected(final SelectionEvent e) {
-												if (geoButton.getSelection()) {
-													HeightMaps.setInverse(true);
-												} else {
-													HeightMaps.setInverse(false);
-												}
-											}
-										});
-										geoButton.setToolTipText("Scales the values negative for a correct \ngeographic view");
-										geoButton.setText("Geo");
-						
-								final Button staticHeightButton = new Button(composite_3, SWT.CHECK);
-								GridData gd_staticHeightButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-								gd_staticHeightButton.heightHint = 25;
-								staticHeightButton.setLayoutData(gd_staticHeightButton);
-								staticHeightButton.setToolTipText("If dynamic is selected the height values are updated directly from the active ImageJ image");
-								staticHeightButton.setSelection(true);
-								staticHeightButton.addSelectionListener(new SelectionAdapter() {
-									public void widgetSelected(final SelectionEvent e) {
-										if (staticHeightButton.getSelection()) {
-											HeightMaps.setDynamicMap(true);
-										} else {
-											HeightMaps.setCreateMap(true);
-											HeightMaps.setDynamicMap(false);
-										}
-									}
-								});
-								staticHeightButton.setText("Dynamic");
-				
-						final Button lightenedButton = new Button(composite_3, SWT.CHECK);
-						GridData gd_lightenedButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-						gd_lightenedButton.heightHint = 25;
-						lightenedButton.setLayoutData(gd_lightenedButton);
-						lightenedButton.addSelectionListener(new SelectionAdapter() {
-							public void widgetSelected(final SelectionEvent e) {
-								SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-								if (grid != null) {
-									if (lightenedButton.getSelection()) {
-										grid.lightenedHeightMap = true;
-									} else {
-										grid.lightenedHeightMap = false;
-									}
-								}
-							}
-						});
-						lightenedButton.setToolTipText("Enables the lightening for the height map");
-						lightenedButton.setSelection(true);
-						lightenedButton.setText("Lighted");
-				new Label(composite_3, SWT.NONE);
-				new Label(composite_3, SWT.NONE);
-		
-				final Scale scale_8 = new Scale(composite_3, SWT.NONE);
-				scale_8.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
-				scale_8.setToolTipText("Adjusts the amount of triangles for the height map.");
-				scale_8.setSelection(15);
-				scale_8.addSelectionListener(new SelectionAdapter() {
-					public void widgetSelected(final SelectionEvent e) {
-						HeightMaps height = SpatialStructure.getHeightMapInstance();
 
-						height.setDetail(scale_8.getSelection());
+		final Button gcButton = new Button(composite_3, SWT.CHECK);
+		GridData gd_gcButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_gcButton.heightHint = 25;
+		gcButton.setLayoutData(gd_gcButton);
+		gcButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				if (gcButton.getSelection()) {
+					HeightMaps.setGraphicsCardSwitch(true);
+				} else {
+					HeightMaps.setGraphicsCardSwitch(false);
+				}
+			}
+		});
+		gcButton.setToolTipText(
+				"This is a special switch for the texture.\n For some graphics cards it seems to be necessary\n to assign the texture differently!");
+		gcButton.setText("Gc");
+		new Label(composite_3, SWT.NONE);
+
+		final Button geoButton = new Button(composite_3, SWT.CHECK);
+		GridData gd_geoButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_geoButton.heightHint = 25;
+		geoButton.setLayoutData(gd_geoButton);
+		geoButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				if (geoButton.getSelection()) {
+					HeightMaps.setInverse(true);
+				} else {
+					HeightMaps.setInverse(false);
+				}
+			}
+		});
+		geoButton.setToolTipText("Scales the values negative for a correct \ngeographic view");
+		geoButton.setText("Geo");
+
+		final Button staticHeightButton = new Button(composite_3, SWT.CHECK);
+		GridData gd_staticHeightButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_staticHeightButton.heightHint = 25;
+		staticHeightButton.setLayoutData(gd_staticHeightButton);
+		staticHeightButton.setToolTipText(
+				"If dynamic is selected the height values are updated directly from the active ImageJ image");
+		staticHeightButton.setSelection(true);
+		staticHeightButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				if (staticHeightButton.getSelection()) {
+					HeightMaps.setDynamicMap(true);
+				} else {
+					HeightMaps.setCreateMap(true);
+					HeightMaps.setDynamicMap(false);
+				}
+			}
+		});
+		staticHeightButton.setText("Dynamic");
+
+		final Button lightenedButton = new Button(composite_3, SWT.CHECK);
+		GridData gd_lightenedButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_lightenedButton.heightHint = 25;
+		lightenedButton.setLayoutData(gd_lightenedButton);
+		lightenedButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					if (lightenedButton.getSelection()) {
+						grid.lightenedHeightMap = true;
+					} else {
+						grid.lightenedHeightMap = false;
 					}
-				});
-				scale_8.setMinimum(1);
-		
-				final Label levelOfDetailLabel_1 = new Label(composite_3, SWT.NONE);
-				GridData gd_levelOfDetailLabel_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-				gd_levelOfDetailLabel_1.heightHint = 25;
-				levelOfDetailLabel_1.setLayoutData(gd_levelOfDetailLabel_1);
-				levelOfDetailLabel_1.setText("Level of Detail");
-		
-				final Scale scaleHeight = new Scale(composite_3, SWT.NONE);
-				GridData gd_scaleHeight = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-				gd_scaleHeight.widthHint = 200;
-				scaleHeight.setLayoutData(gd_scaleHeight);
-				scaleHeight.setToolTipText("A scaling factor for the height map");
-				scaleHeight.setSelection(100);
-				scaleHeight.setPageIncrement(1);
-				scaleHeight.setMinimum(1);
-				scaleHeight.addSelectionListener(new SelectionAdapter() {
-					public void widgetSelected(final SelectionEvent e) {
-						SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-						if (grid != null) {
-							int selection = scaleHeight.getSelection();
-							float scale = selection;
-							float h = 1 / (100 / scale);
-							scaleHeight.setToolTipText("scale: " + h);
-							grid.hMap.setScale(h);
-						}
-					}
-				});
-		
-				final Label factorHeightLabel = new Label(composite_3, SWT.NONE);
-				GridData gd_factorHeightLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-				gd_factorHeightLabel.heightHint = 25;
-				factorHeightLabel.setLayoutData(gd_factorHeightLabel);
-				factorHeightLabel.setText("Factor Height");
+				}
+			}
+		});
+		lightenedButton.setToolTipText("Enables the lightening for the height map");
+		lightenedButton.setSelection(true);
+		lightenedButton.setText("Lighted");
+		new Label(composite_3, SWT.NONE);
+		new Label(composite_3, SWT.NONE);
+
+		final Scale scale_8 = new Scale(composite_3, SWT.NONE);
+		scale_8.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		scale_8.setToolTipText("Adjusts the amount of triangles for the height map.");
+		scale_8.setSelection(15);
+		scale_8.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				HeightMaps height = SpatialStructure.getHeightMapInstance();
+
+				height.setDetail(scale_8.getSelection());
+			}
+		});
+		scale_8.setMinimum(1);
+
+		final Label levelOfDetailLabel_1 = new Label(composite_3, SWT.NONE);
+		GridData gd_levelOfDetailLabel_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+		gd_levelOfDetailLabel_1.heightHint = 25;
+		levelOfDetailLabel_1.setLayoutData(gd_levelOfDetailLabel_1);
+		levelOfDetailLabel_1.setText("Level of Detail");
+
+		final Scale scaleHeight = new Scale(composite_3, SWT.NONE);
+		GridData gd_scaleHeight = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+		gd_scaleHeight.widthHint = 200;
+		scaleHeight.setLayoutData(gd_scaleHeight);
+		scaleHeight.setToolTipText("A scaling factor for the height map");
+		scaleHeight.setSelection(100);
+		scaleHeight.setPageIncrement(1);
+		scaleHeight.setMinimum(1);
+		scaleHeight.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					int selection = scaleHeight.getSelection();
+					float scale = selection;
+					float h = 1 / (100 / scale);
+					scaleHeight.setToolTipText("scale: " + h);
+					grid.hMap.setScale(h);
+				}
+			}
+		});
+
+		final Label factorHeightLabel = new Label(composite_3, SWT.NONE);
+		GridData gd_factorHeightLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+		gd_factorHeightLabel.heightHint = 25;
+		factorHeightLabel.setLayoutData(gd_factorHeightLabel);
+		factorHeightLabel.setText("Factor Height");
 
 		final ExpandItem newItemExpandItem_5 = new ExpandItem(expandBar, SWT.NONE);
 		newItemExpandItem_5.setHeight(500);
@@ -1385,332 +1392,334 @@ public class Options3d extends ViewPart {
 			}
 		});
 		enableWalkthroughButton.setText("Enable Walkthrough");
-								
-										final Scale scale_3 = new Scale(composite_4, SWT.NONE);
-										scale_3.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
-										scale_3.setToolTipText("Horizontal speed");
-										scale_3.setMaximum(1000);
-										scale_3.setSelection(2);
-										scale_3.setMinimum(2);
-										scale_3.addSelectionListener(new SelectionAdapter() {
-											public void widgetSelected(final SelectionEvent e) {
-												SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-												if (grid != null) {
-													grid.SPEED = scale_3.getSelection() / 10;
 
-												}
-											}
-										});
-						
-								final Button enableFlythroughButton = new Button(composite_4, SWT.CHECK);
-								GridData gd_enableFlythroughButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-								gd_enableFlythroughButton.heightHint = 25;
-								enableFlythroughButton.setLayoutData(gd_enableFlythroughButton);
-								enableFlythroughButton.setToolTipText("Enable flythrough");
-								enableFlythroughButton.addSelectionListener(new SelectionAdapter() {
-									public void widgetSelected(final SelectionEvent e) {
-										SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-										if (grid != null) {
-											if (enableFlythroughButton.getSelection()) {
-												grid.flythrough = true;
-											} else {
-												grid.flythrough = false;
-											}
-										}
-									}
-								});
-								enableFlythroughButton.setText("Enable Flythrough");
-						
-								final Scale scale_3_1 = new Scale(composite_4, SWT.NONE);
-								scale_3_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
-								scale_3_1.setToolTipText("Vertical speed");
-								scale_3_1.addSelectionListener(new SelectionAdapter() {
-									public void widgetSelected(final SelectionEvent e) {
-										SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-										if (grid != null) {
-											grid.heightSpeed = scale_3_1.getSelection() / 10;
+		final Scale scale_3 = new Scale(composite_4, SWT.NONE);
+		scale_3.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		scale_3.setToolTipText("Horizontal speed");
+		scale_3.setMaximum(1000);
+		scale_3.setSelection(2);
+		scale_3.setMinimum(2);
+		scale_3.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					grid.SPEED = scale_3.getSelection() / 10;
 
-										}
+				}
+			}
+		});
 
-									}
-								});
-								scale_3_1.setSelection(1);
-								scale_3_1.setMinimum(1);
-								scale_3_1.setMaximum(1000);
-						
-								final Label label_1_1 = new Label(composite_4, SWT.HORIZONTAL | SWT.SEPARATOR);
-								GridData gd_label_1_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1);
-								gd_label_1_1.heightHint = 25;
-								label_1_1.setLayoutData(gd_label_1_1);
-								label_1_1.setText("Label");
-						
-								final Button customCameraButton = new Button(composite_4, SWT.CHECK);
-								GridData gd_customCameraButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-								gd_customCameraButton.heightHint = 25;
-								customCameraButton.setLayoutData(gd_customCameraButton);
-								customCameraButton.addSelectionListener(new SelectionAdapter() {
-									public void widgetSelected(final SelectionEvent e) {
-										SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-										if (grid != null) {
-											if (customCameraButton.getSelection()) {
-												grid.customCamera = true;
-
-											} else {
-												grid.customCamera = false;
-											}
-										}
-									}
-								});
-								customCameraButton.setText("Custom Camera");
-						new Label(composite_4, SWT.NONE);
-						new Label(composite_4, SWT.NONE);
-				
-						final Button splitViewButton = new Button(composite_4, SWT.CHECK);
-						GridData gd_splitViewButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-						gd_splitViewButton.heightHint = 25;
-						splitViewButton.setLayoutData(gd_splitViewButton);
-						splitViewButton.addSelectionListener(new SelectionAdapter() {
-							public void widgetSelected(final SelectionEvent e) {
-								SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-								if (grid != null) {
-									if (splitViewButton.getSelection()) {
-										grid.setSplitView(true);
-									} else {
-										grid.setSplitView(false);
-									}
-								}
-							}
-						});
-						splitViewButton.setText("Split View");
-				new Label(composite_4, SWT.NONE);
-				new Label(composite_4, SWT.NONE);
-				
-						final Label coordinatesLabel = new Label(composite_4, SWT.NONE);
-						GridData gd_coordinatesLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-						gd_coordinatesLabel.heightHint = 25;
-						coordinatesLabel.setLayoutData(gd_coordinatesLabel);
-						coordinatesLabel.setText("x");
-				
-						final Label yLabel = new Label(composite_4, SWT.NONE);
-						GridData gd_yLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-						gd_yLabel.heightHint = 25;
-						yLabel.setLayoutData(gd_yLabel);
-						yLabel.setText("y");
-				
-						final Label zLabel = new Label(composite_4, SWT.NONE);
-						GridData gd_zLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-						gd_zLabel.heightHint = 25;
-						zLabel.setLayoutData(gd_zLabel);
-						zLabel.setText("z");
-				
-						splitCamX = new Text(composite_4, SWT.BORDER);
-						GridData gd_splitCamX = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-						gd_splitCamX.heightHint = 25;
-						splitCamX.setLayoutData(gd_splitCamX);
-						splitCamX.setText("" + p.x);
-						splitCamX.addListener(SWT.Modify, new Listener() {
-							private Double value;
-
-							public void handleEvent(Event event) {
-								SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-								if (grid != null) {
-									try {
-										value = new Double(splitCamX.getText());
-										grid.xCamSplit = value;
-										splitCamX.setForeground(new Color(Display.getCurrent(), 0, 0, 0));
-
-										errorLabelSplit.setText("");
-									} catch (Exception e) {
-										splitCamX.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
-										errorLabelSplit.setText("Number input incorrect!");
-									}
-								}
-							}
-						});
-				
-						splitCamY = new Text(composite_4, SWT.BORDER);
-						GridData gd_splitCamY = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-						gd_splitCamY.heightHint = 25;
-						splitCamY.setLayoutData(gd_splitCamY);
-						splitCamY.setText("" + p.y);
-						splitCamY.addListener(SWT.Modify, new Listener() {
-							private Double value;
-
-							public void handleEvent(Event event) {
-								SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-								if (grid != null) {
-									try {
-										value = new Double(splitCamY.getText());
-										grid.yCamSplit = value;
-										splitCamY.setForeground(new Color(Display.getCurrent(), 0, 0, 0));
-
-										errorLabelSplit.setText("");
-									} catch (Exception e) {
-										splitCamY.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
-										errorLabelSplit.setText("Number input incorrect!");
-									}
-								}
-							}
-						});
-				
-						splitCamZ = new Text(composite_4, SWT.BORDER);
-						GridData gd_splitCamZ = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-						gd_splitCamZ.heightHint = 25;
-						splitCamZ.setLayoutData(gd_splitCamZ);
-						splitCamZ.setText("" + p.z);
-						splitCamZ.addListener(SWT.Modify, new Listener() {
-							private Double value;
-
-							public void handleEvent(Event event) {
-								SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-								if (grid != null) {
-									try {
-										value = new Double(splitCamZ.getText());
-										grid.zCamSplit = value;
-										splitCamZ.setForeground(new Color(Display.getCurrent(), 0, 0, 0));
-
-										errorLabelSplit.setText("");
-									} catch (Exception e) {
-										splitCamZ.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
-										errorLabelSplit.setText("Number input incorrect!");
-									}
-								}
-							}
-						});
-				
-						final Label positionLabel_2 = new Label(composite_4, SWT.NONE);
-						GridData gd_positionLabel_2 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-						gd_positionLabel_2.heightHint = 25;
-						positionLabel_2.setLayoutData(gd_positionLabel_2);
-						positionLabel_2.setText("Position");
-				new Label(composite_4, SWT.NONE);
-				new Label(composite_4, SWT.NONE);
-				
-						lookAtX = new Text(composite_4, SWT.BORDER);
-						GridData gd_lookAtX = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-						gd_lookAtX.heightHint = 25;
-						lookAtX.setLayoutData(gd_lookAtX);
-						lookAtX.setText("" + p2.x);
-						lookAtX.addListener(SWT.Modify, new Listener() {
-							private Double value;
-
-							public void handleEvent(Event event) {
-								SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-								if (grid != null) {
-									try {
-										value = new Double(lookAtX.getText());
-										grid.xSplitLookAt = value;
-										lookAtX.setForeground(new Color(Display.getCurrent(), 0, 0, 0));
-
-										errorLabelSplit.setText("");
-									} catch (Exception e) {
-										lookAtX.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
-										errorLabelSplit.setText("Number input incorrect!");
-									}
-								}
-							}
-						});
-				
-						lookAtY = new Text(composite_4, SWT.BORDER);
-						GridData gd_lookAtY = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-						gd_lookAtY.heightHint = 25;
-						lookAtY.setLayoutData(gd_lookAtY);
-						lookAtY.setText("" + p2.y);
-						lookAtY.addListener(SWT.Modify, new Listener() {
-							private Double value;
-
-							public void handleEvent(Event event) {
-								SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-								if (grid != null) {
-									try {
-										value = new Double(lookAtY.getText());
-										grid.ySplitLookAt = value;
-										lookAtY.setForeground(new Color(Display.getCurrent(), 0, 0, 0));
-
-										errorLabelSplit.setText("");
-									} catch (Exception e) {
-										lookAtY.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
-										errorLabelSplit.setText("Number input incorrect!");
-									}
-								}
-							}
-						});
-				
-						lookAtZ = new Text(composite_4, SWT.BORDER);
-						GridData gd_lookAtZ = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-						gd_lookAtZ.heightHint = 25;
-						lookAtZ.setLayoutData(gd_lookAtZ);
-						lookAtZ.setText("" + p2.z);
-						lookAtZ.addListener(SWT.Modify, new Listener() {
-							private Double value;
-
-							public void handleEvent(Event event) {
-								SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-								if (grid != null) {
-									try {
-										value = new Double(lookAtZ.getText());
-										grid.zSplitLookAt = value;
-										lookAtZ.setForeground(new Color(Display.getCurrent(), 0, 0, 0));
-
-										errorLabelSplit.setText("");
-									} catch (Exception e) {
-										lookAtZ.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
-										errorLabelSplit.setText("Number input incorrect!");
-									}
-								}
-							}
-						});
-		
-				final Label lookatLabel = new Label(composite_4, SWT.NONE);
-				GridData gd_lookatLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-				gd_lookatLabel.heightHint = 25;
-				lookatLabel.setLayoutData(gd_lookatLabel);
-				lookatLabel.setText("LookAt");
-		
-				final Button storeButton = new Button(composite_4, SWT.NONE);
-				GridData gd_storeButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-				gd_storeButton.heightHint = 40;
-				storeButton.setLayoutData(gd_storeButton);
-				storeButton.addSelectionListener(new SelectionAdapter() {
-					public void widgetSelected(final SelectionEvent e) {
-						SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-						if (grid != null) {
-							grid.getPref3d().storeSplitViewCameraLocation(new Double(splitCamX.getText()), new Double(splitCamY.getText()), new Double(splitCamZ.getText()));
-							grid.getPref3d().storeSplitViewCameraLookAt(new Double(lookAtX.getText()), new Double(lookAtY.getText()), new Double(lookAtZ.getText()));
-						}
+		final Button enableFlythroughButton = new Button(composite_4, SWT.CHECK);
+		GridData gd_enableFlythroughButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_enableFlythroughButton.heightHint = 25;
+		enableFlythroughButton.setLayoutData(gd_enableFlythroughButton);
+		enableFlythroughButton.setToolTipText("Enable flythrough");
+		enableFlythroughButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					if (enableFlythroughButton.getSelection()) {
+						grid.flythrough = true;
+					} else {
+						grid.flythrough = false;
 					}
-				});
-				storeButton.setText("Store");
+				}
+			}
+		});
+		enableFlythroughButton.setText("Enable Flythrough");
+
+		final Scale scale_3_1 = new Scale(composite_4, SWT.NONE);
+		scale_3_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		scale_3_1.setToolTipText("Vertical speed");
+		scale_3_1.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					grid.heightSpeed = scale_3_1.getSelection() / 10;
+
+				}
+
+			}
+		});
+		scale_3_1.setSelection(1);
+		scale_3_1.setMinimum(1);
+		scale_3_1.setMaximum(1000);
+
+		final Label label_1_1 = new Label(composite_4, SWT.HORIZONTAL | SWT.SEPARATOR);
+		GridData gd_label_1_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1);
+		gd_label_1_1.heightHint = 25;
+		label_1_1.setLayoutData(gd_label_1_1);
+		label_1_1.setText("Label");
+
+		final Button customCameraButton = new Button(composite_4, SWT.CHECK);
+		GridData gd_customCameraButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_customCameraButton.heightHint = 25;
+		customCameraButton.setLayoutData(gd_customCameraButton);
+		customCameraButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					if (customCameraButton.getSelection()) {
+						grid.customCamera = true;
+
+					} else {
+						grid.customCamera = false;
+					}
+				}
+			}
+		});
+		customCameraButton.setText("Custom Camera");
 		new Label(composite_4, SWT.NONE);
-		
-				errorLabelSplit = new Label(composite_4, SWT.NONE);
-				GridData gd_errorLabelSplit = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1);
-				gd_errorLabelSplit.heightHint = 25;
-				errorLabelSplit.setLayoutData(gd_errorLabelSplit);
-				errorLabelSplit.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
-		
-				final Label label_1 = new Label(composite_4, SWT.SEPARATOR | SWT.HORIZONTAL);
-				GridData gd_label_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1);
-				gd_label_1.heightHint = 25;
-				label_1.setLayoutData(gd_label_1);
-		
-				final Button stereoButton = new Button(composite_4, SWT.CHECK);
-				GridData gd_stereoButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-				gd_stereoButton.heightHint = 25;
-				stereoButton.setLayoutData(gd_stereoButton);
-				stereoButton.addSelectionListener(new SelectionAdapter() {
-					public void widgetSelected(final SelectionEvent e) {
-						SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-						if (grid != null) {
-							if (stereoButton.getSelection()) {
-								grid.stereo = true;
-							} else {
-								grid.stereo = false;
-							}
-						}
+		new Label(composite_4, SWT.NONE);
+
+		final Button splitViewButton = new Button(composite_4, SWT.CHECK);
+		GridData gd_splitViewButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_splitViewButton.heightHint = 25;
+		splitViewButton.setLayoutData(gd_splitViewButton);
+		splitViewButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					if (splitViewButton.getSelection()) {
+						grid.setSplitView(true);
+					} else {
+						grid.setSplitView(false);
 					}
-				});
-				stereoButton.setText("Stereo");
+				}
+			}
+		});
+		splitViewButton.setText("Split View");
+		new Label(composite_4, SWT.NONE);
+		new Label(composite_4, SWT.NONE);
+
+		final Label coordinatesLabel = new Label(composite_4, SWT.NONE);
+		GridData gd_coordinatesLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_coordinatesLabel.heightHint = 25;
+		coordinatesLabel.setLayoutData(gd_coordinatesLabel);
+		coordinatesLabel.setText("x");
+
+		final Label yLabel = new Label(composite_4, SWT.NONE);
+		GridData gd_yLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_yLabel.heightHint = 25;
+		yLabel.setLayoutData(gd_yLabel);
+		yLabel.setText("y");
+
+		final Label zLabel = new Label(composite_4, SWT.NONE);
+		GridData gd_zLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_zLabel.heightHint = 25;
+		zLabel.setLayoutData(gd_zLabel);
+		zLabel.setText("z");
+
+		splitCamX = new Text(composite_4, SWT.BORDER);
+		GridData gd_splitCamX = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_splitCamX.heightHint = 25;
+		splitCamX.setLayoutData(gd_splitCamX);
+		splitCamX.setText("" + p.x);
+		splitCamX.addListener(SWT.Modify, new Listener() {
+			private Double value;
+
+			public void handleEvent(Event event) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					try {
+						value = new Double(splitCamX.getText());
+						grid.xCamSplit = value;
+						splitCamX.setForeground(new Color(Display.getCurrent(), 0, 0, 0));
+
+						errorLabelSplit.setText("");
+					} catch (Exception e) {
+						splitCamX.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
+						errorLabelSplit.setText("Number input incorrect!");
+					}
+				}
+			}
+		});
+
+		splitCamY = new Text(composite_4, SWT.BORDER);
+		GridData gd_splitCamY = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_splitCamY.heightHint = 25;
+		splitCamY.setLayoutData(gd_splitCamY);
+		splitCamY.setText("" + p.y);
+		splitCamY.addListener(SWT.Modify, new Listener() {
+			private Double value;
+
+			public void handleEvent(Event event) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					try {
+						value = new Double(splitCamY.getText());
+						grid.yCamSplit = value;
+						splitCamY.setForeground(new Color(Display.getCurrent(), 0, 0, 0));
+
+						errorLabelSplit.setText("");
+					} catch (Exception e) {
+						splitCamY.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
+						errorLabelSplit.setText("Number input incorrect!");
+					}
+				}
+			}
+		});
+
+		splitCamZ = new Text(composite_4, SWT.BORDER);
+		GridData gd_splitCamZ = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_splitCamZ.heightHint = 25;
+		splitCamZ.setLayoutData(gd_splitCamZ);
+		splitCamZ.setText("" + p.z);
+		splitCamZ.addListener(SWT.Modify, new Listener() {
+			private Double value;
+
+			public void handleEvent(Event event) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					try {
+						value = new Double(splitCamZ.getText());
+						grid.zCamSplit = value;
+						splitCamZ.setForeground(new Color(Display.getCurrent(), 0, 0, 0));
+
+						errorLabelSplit.setText("");
+					} catch (Exception e) {
+						splitCamZ.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
+						errorLabelSplit.setText("Number input incorrect!");
+					}
+				}
+			}
+		});
+
+		final Label positionLabel_2 = new Label(composite_4, SWT.NONE);
+		GridData gd_positionLabel_2 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_positionLabel_2.heightHint = 25;
+		positionLabel_2.setLayoutData(gd_positionLabel_2);
+		positionLabel_2.setText("Position");
+		new Label(composite_4, SWT.NONE);
+		new Label(composite_4, SWT.NONE);
+
+		lookAtX = new Text(composite_4, SWT.BORDER);
+		GridData gd_lookAtX = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_lookAtX.heightHint = 25;
+		lookAtX.setLayoutData(gd_lookAtX);
+		lookAtX.setText("" + p2.x);
+		lookAtX.addListener(SWT.Modify, new Listener() {
+			private Double value;
+
+			public void handleEvent(Event event) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					try {
+						value = new Double(lookAtX.getText());
+						grid.xSplitLookAt = value;
+						lookAtX.setForeground(new Color(Display.getCurrent(), 0, 0, 0));
+
+						errorLabelSplit.setText("");
+					} catch (Exception e) {
+						lookAtX.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
+						errorLabelSplit.setText("Number input incorrect!");
+					}
+				}
+			}
+		});
+
+		lookAtY = new Text(composite_4, SWT.BORDER);
+		GridData gd_lookAtY = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_lookAtY.heightHint = 25;
+		lookAtY.setLayoutData(gd_lookAtY);
+		lookAtY.setText("" + p2.y);
+		lookAtY.addListener(SWT.Modify, new Listener() {
+			private Double value;
+
+			public void handleEvent(Event event) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					try {
+						value = new Double(lookAtY.getText());
+						grid.ySplitLookAt = value;
+						lookAtY.setForeground(new Color(Display.getCurrent(), 0, 0, 0));
+
+						errorLabelSplit.setText("");
+					} catch (Exception e) {
+						lookAtY.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
+						errorLabelSplit.setText("Number input incorrect!");
+					}
+				}
+			}
+		});
+
+		lookAtZ = new Text(composite_4, SWT.BORDER);
+		GridData gd_lookAtZ = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_lookAtZ.heightHint = 25;
+		lookAtZ.setLayoutData(gd_lookAtZ);
+		lookAtZ.setText("" + p2.z);
+		lookAtZ.addListener(SWT.Modify, new Listener() {
+			private Double value;
+
+			public void handleEvent(Event event) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					try {
+						value = new Double(lookAtZ.getText());
+						grid.zSplitLookAt = value;
+						lookAtZ.setForeground(new Color(Display.getCurrent(), 0, 0, 0));
+
+						errorLabelSplit.setText("");
+					} catch (Exception e) {
+						lookAtZ.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
+						errorLabelSplit.setText("Number input incorrect!");
+					}
+				}
+			}
+		});
+
+		final Label lookatLabel = new Label(composite_4, SWT.NONE);
+		GridData gd_lookatLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_lookatLabel.heightHint = 25;
+		lookatLabel.setLayoutData(gd_lookatLabel);
+		lookatLabel.setText("LookAt");
+
+		final Button storeButton = new Button(composite_4, SWT.NONE);
+		GridData gd_storeButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_storeButton.heightHint = 40;
+		storeButton.setLayoutData(gd_storeButton);
+		storeButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					grid.getPref3d().storeSplitViewCameraLocation(new Double(splitCamX.getText()),
+							new Double(splitCamY.getText()), new Double(splitCamZ.getText()));
+					grid.getPref3d().storeSplitViewCameraLookAt(new Double(lookAtX.getText()),
+							new Double(lookAtY.getText()), new Double(lookAtZ.getText()));
+				}
+			}
+		});
+		storeButton.setText("Store");
+		new Label(composite_4, SWT.NONE);
+
+		errorLabelSplit = new Label(composite_4, SWT.NONE);
+		GridData gd_errorLabelSplit = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1);
+		gd_errorLabelSplit.heightHint = 25;
+		errorLabelSplit.setLayoutData(gd_errorLabelSplit);
+		errorLabelSplit.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
+
+		final Label label_1 = new Label(composite_4, SWT.SEPARATOR | SWT.HORIZONTAL);
+		GridData gd_label_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1);
+		gd_label_1.heightHint = 25;
+		label_1.setLayoutData(gd_label_1);
+
+		final Button stereoButton = new Button(composite_4, SWT.CHECK);
+		GridData gd_stereoButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_stereoButton.heightHint = 25;
+		stereoButton.setLayoutData(gd_stereoButton);
+		stereoButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					if (stereoButton.getSelection()) {
+						grid.stereo = true;
+					} else {
+						grid.stereo = false;
+					}
+				}
+			}
+		});
+		stereoButton.setText("Stereo");
 		new Label(composite_4, SWT.NONE);
 		new Label(composite_4, SWT.NONE);
 		Point3d p = Bio7PrefConverterSpatial.getPoint(store, "splitCameraLoc");
@@ -1724,46 +1733,47 @@ public class Options3d extends ViewPart {
 		newItemExpandItem_6.setControl(composite_6);
 		composite_6.setLayout(new GridLayout(4, true));
 		/* Switch for the first light! */
-								
-										final Button localLightButton = new Button(composite_6, SWT.CHECK);
-										GridData gd_localLightButton = new GridData(SWT.FILL, SWT.FILL, true, false, 4, 1);
-										gd_localLightButton.heightHint = 25;
-										localLightButton.setLayoutData(gd_localLightButton);
-										localLightButton.setSelection(true);
-										localLightButton.setToolTipText("If enabled the lights will rotate with the arcball interface (like a fixed lamp on a plane). ");
-										localLightButton.addSelectionListener(new SelectionAdapter() {
-											public void widgetSelected(final SelectionEvent e) {
-												SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-												if (grid != null) {
-													if (localLightButton.getSelection()) {
-														grid.localLight = true;
 
-													} else {
-														grid.localLight = false;
-													}
-												}
-											}
-										});
-										localLightButton.setText("Local Light");
-								new Label(composite_6, SWT.NONE);
-						
-								final Label posXLabel = new Label(composite_6, SWT.NONE);
-								GridData gd_posXLabel = new GridData(SWT.CENTER, SWT.FILL, true, false, 1, 1);
-								gd_posXLabel.heightHint = 25;
-								posXLabel.setLayoutData(gd_posXLabel);
-								posXLabel.setText("x");
-				
-						final Label yLabel_1 = new Label(composite_6, SWT.NONE);
-						GridData gd_yLabel_1 = new GridData(SWT.CENTER, SWT.CENTER, true, false, 1, 1);
-						gd_yLabel_1.heightHint = 25;
-						yLabel_1.setLayoutData(gd_yLabel_1);
-						yLabel_1.setText("y");
-		
-				final Label zLabel_1 = new Label(composite_6, SWT.NONE);
-				GridData gd_zLabel_1 = new GridData(SWT.CENTER, SWT.FILL, true, false, 1, 1);
-				gd_zLabel_1.heightHint = 25;
-				zLabel_1.setLayoutData(gd_zLabel_1);
-				zLabel_1.setText("z");
+		final Button localLightButton = new Button(composite_6, SWT.CHECK);
+		GridData gd_localLightButton = new GridData(SWT.FILL, SWT.FILL, true, false, 4, 1);
+		gd_localLightButton.heightHint = 25;
+		localLightButton.setLayoutData(gd_localLightButton);
+		localLightButton.setSelection(true);
+		localLightButton.setToolTipText(
+				"If enabled the lights will rotate with the arcball interface (like a fixed lamp on a plane). ");
+		localLightButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					if (localLightButton.getSelection()) {
+						grid.localLight = true;
+
+					} else {
+						grid.localLight = false;
+					}
+				}
+			}
+		});
+		localLightButton.setText("Local Light");
+		new Label(composite_6, SWT.NONE);
+
+		final Label posXLabel = new Label(composite_6, SWT.NONE);
+		GridData gd_posXLabel = new GridData(SWT.CENTER, SWT.FILL, true, false, 1, 1);
+		gd_posXLabel.heightHint = 25;
+		posXLabel.setLayoutData(gd_posXLabel);
+		posXLabel.setText("x");
+
+		final Label yLabel_1 = new Label(composite_6, SWT.NONE);
+		GridData gd_yLabel_1 = new GridData(SWT.CENTER, SWT.CENTER, true, false, 1, 1);
+		gd_yLabel_1.heightHint = 25;
+		yLabel_1.setLayoutData(gd_yLabel_1);
+		yLabel_1.setText("y");
+
+		final Label zLabel_1 = new Label(composite_6, SWT.NONE);
+		GridData gd_zLabel_1 = new GridData(SWT.CENTER, SWT.FILL, true, false, 1, 1);
+		gd_zLabel_1.heightHint = 25;
+		zLabel_1.setLayoutData(gd_zLabel_1);
+		zLabel_1.setText("z");
 		final Button enabledButton = new Button(composite_6, SWT.CHECK);
 		GridData gd_enabledButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_enabledButton.heightHint = 25;
@@ -1784,68 +1794,68 @@ public class Options3d extends ViewPart {
 		});
 		enabledButton.setText("Enabled");
 		/* Switch for the second light! */
-														
-																final Spinner spinner = new Spinner(composite_6, SWT.BORDER);
-																GridData gd_spinner = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-																gd_spinner.heightHint = 25;
-																spinner.setLayoutData(gd_spinner);
-																spinner.setMinimum(-1000000);
-																spinner.addSelectionListener(new SelectionAdapter() {
 
-																	public void widgetSelected(final SelectionEvent e) {
-																		SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-																		if (grid != null) {
+		final Spinner spinner = new Spinner(composite_6, SWT.BORDER);
+		GridData gd_spinner = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_spinner.heightHint = 25;
+		spinner.setLayoutData(gd_spinner);
+		spinner.setMinimum(-1000000);
+		spinner.addSelectionListener(new SelectionAdapter() {
 
-																			grid.setLightPos1(spinner.getSelection(), grid.getLightPos1()[1], grid.getLightPos1()[2]);
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
 
-																		}
-																	}
-																});
-																spinner.setMaximum(1000000);
-												
-														final Spinner spinner_1 = new Spinner(composite_6, SWT.BORDER);
-														GridData gd_spinner_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-														gd_spinner_1.heightHint = 25;
-														spinner_1.setLayoutData(gd_spinner_1);
-														spinner_1.setMinimum(-1000000);
-														
-																spinner_1.setMaximum(1000000);
-																spinner_1.addSelectionListener(new SelectionAdapter() {
-																	public void widgetSelected(final SelectionEvent e) {
-																		SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-																		if (grid != null) {
+					grid.setLightPos1(spinner.getSelection(), grid.getLightPos1()[1], grid.getLightPos1()[2]);
 
-																			grid.setLightPos1(grid.getLightPos1()[0], spinner_1.getSelection(), grid.getLightPos1()[2]);
+				}
+			}
+		});
+		spinner.setMaximum(1000000);
 
-																		}
-																	}
-																});
-																spinner_1.setSelection(1000);
-										
-												final Spinner spinner_2 = new Spinner(composite_6, SWT.BORDER);
-												GridData gd_spinner_2 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-												gd_spinner_2.heightHint = 25;
-												spinner_2.setLayoutData(gd_spinner_2);
-												spinner_2.setMinimum(-1000000);
-												
-														spinner_2.setMaximum(1000000);
-														spinner_2.addSelectionListener(new SelectionAdapter() {
-															public void widgetSelected(final SelectionEvent e) {
-																SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-																if (grid != null) {
+		final Spinner spinner_1 = new Spinner(composite_6, SWT.BORDER);
+		GridData gd_spinner_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_spinner_1.heightHint = 25;
+		spinner_1.setLayoutData(gd_spinner_1);
+		spinner_1.setMinimum(-1000000);
 
-																	grid.setLightPos1(grid.getLightPos1()[0], grid.getLightPos1()[1], spinner_2.getSelection());
+		spinner_1.setMaximum(1000000);
+		spinner_1.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
 
-																}
-															}
-														});
-														spinner_2.setSelection(1000);
-								
-										final Label light1Label = new Label(composite_6, SWT.NONE);
-										GridData gd_light1Label = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-										gd_light1Label.heightHint = 25;
-										light1Label.setLayoutData(gd_light1Label);
-										light1Label.setText("Light 1");
+					grid.setLightPos1(grid.getLightPos1()[0], spinner_1.getSelection(), grid.getLightPos1()[2]);
+
+				}
+			}
+		});
+		spinner_1.setSelection(1000);
+
+		final Spinner spinner_2 = new Spinner(composite_6, SWT.BORDER);
+		GridData gd_spinner_2 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_spinner_2.heightHint = 25;
+		spinner_2.setLayoutData(gd_spinner_2);
+		spinner_2.setMinimum(-1000000);
+
+		spinner_2.setMaximum(1000000);
+		spinner_2.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+
+					grid.setLightPos1(grid.getLightPos1()[0], grid.getLightPos1()[1], spinner_2.getSelection());
+
+				}
+			}
+		});
+		spinner_2.setSelection(1000);
+
+		final Label light1Label = new Label(composite_6, SWT.NONE);
+		GridData gd_light1Label = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_light1Label.heightHint = 25;
+		light1Label.setLayoutData(gd_light1Label);
+		light1Label.setText("Light 1");
 		new Label(composite_6, SWT.NONE);
 		new Label(composite_6, SWT.NONE);
 		new Label(composite_6, SWT.NONE);
@@ -1867,63 +1877,63 @@ public class Options3d extends ViewPart {
 			}
 		});
 		enabledButton_1.setText("Enabled");
-								
-										final Spinner spinner_3 = new Spinner(composite_6, SWT.BORDER);
-										GridData gd_spinner_3 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-										gd_spinner_3.heightHint = 25;
-										spinner_3.setLayoutData(gd_spinner_3);
-										spinner_3.setMinimum(-1000000);
-										spinner_3.addSelectionListener(new SelectionAdapter() {
-											public void widgetSelected(final SelectionEvent e) {
-												SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-												if (grid != null) {
 
-													grid.setLightPos2(spinner_3.getSelection(), grid.getLightPos2()[1], grid.getLightPos2()[2]);
+		final Spinner spinner_3 = new Spinner(composite_6, SWT.BORDER);
+		GridData gd_spinner_3 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_spinner_3.heightHint = 25;
+		spinner_3.setLayoutData(gd_spinner_3);
+		spinner_3.setMinimum(-1000000);
+		spinner_3.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
 
-												}
-											}
-										});
-										spinner_3.setMaximum(1000000);
-						
-								final Spinner spinner_4 = new Spinner(composite_6, SWT.BORDER);
-								GridData gd_spinner_4 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-								gd_spinner_4.heightHint = 25;
-								spinner_4.setLayoutData(gd_spinner_4);
-								spinner_4.setMinimum(-1000000);
-								spinner_4.setMaximum(1000000);
-								spinner_4.addSelectionListener(new SelectionAdapter() {
-									public void widgetSelected(final SelectionEvent e) {
-										SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-										if (grid != null) {
+					grid.setLightPos2(spinner_3.getSelection(), grid.getLightPos2()[1], grid.getLightPos2()[2]);
 
-											grid.setLightPos2(grid.getLightPos2()[0], spinner_4.getSelection(), grid.getLightPos2()[2]);
+				}
+			}
+		});
+		spinner_3.setMaximum(1000000);
 
-										}
-									}
-								});
-				
-						final Spinner spinner_5 = new Spinner(composite_6, SWT.BORDER);
-						GridData gd_spinner_5 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-						gd_spinner_5.heightHint = 25;
-						spinner_5.setLayoutData(gd_spinner_5);
-						spinner_5.setMinimum(-1000000);
-						spinner_5.setMaximum(1000000);
-						spinner_5.addSelectionListener(new SelectionAdapter() {
-							public void widgetSelected(final SelectionEvent e) {
-								SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-								if (grid != null) {
+		final Spinner spinner_4 = new Spinner(composite_6, SWT.BORDER);
+		GridData gd_spinner_4 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_spinner_4.heightHint = 25;
+		spinner_4.setLayoutData(gd_spinner_4);
+		spinner_4.setMinimum(-1000000);
+		spinner_4.setMaximum(1000000);
+		spinner_4.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
 
-									grid.setLightPos2(grid.getLightPos2()[0], grid.getLightPos2()[1], spinner_5.getSelection());
+					grid.setLightPos2(grid.getLightPos2()[0], spinner_4.getSelection(), grid.getLightPos2()[2]);
 
-								}
-							}
-						});
-		
-				final Label light2Label = new Label(composite_6, SWT.NONE);
-				GridData gd_light2Label = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-				gd_light2Label.heightHint = 25;
-				light2Label.setLayoutData(gd_light2Label);
-				light2Label.setText("Light 2");
+				}
+			}
+		});
+
+		final Spinner spinner_5 = new Spinner(composite_6, SWT.BORDER);
+		GridData gd_spinner_5 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_spinner_5.heightHint = 25;
+		spinner_5.setLayoutData(gd_spinner_5);
+		spinner_5.setMinimum(-1000000);
+		spinner_5.setMaximum(1000000);
+		spinner_5.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+
+					grid.setLightPos2(grid.getLightPos2()[0], grid.getLightPos2()[1], spinner_5.getSelection());
+
+				}
+			}
+		});
+
+		final Label light2Label = new Label(composite_6, SWT.NONE);
+		GridData gd_light2Label = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_light2Label.heightHint = 25;
+		light2Label.setLayoutData(gd_light2Label);
+		light2Label.setText("Light 2");
 		new Label(composite_6, SWT.NONE);
 		new Label(composite_6, SWT.NONE);
 		new Label(composite_6, SWT.NONE);
@@ -1946,63 +1956,63 @@ public class Options3d extends ViewPart {
 			}
 		});
 		enabledButton_2.setText("Enabled");
-								
-										final Spinner spinner_6 = new Spinner(composite_6, SWT.BORDER);
-										GridData gd_spinner_6 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-										gd_spinner_6.heightHint = 25;
-										spinner_6.setLayoutData(gd_spinner_6);
-										spinner_6.setMinimum(-1000000);
-										spinner_6.addSelectionListener(new SelectionAdapter() {
-											public void widgetSelected(final SelectionEvent e) {
-												SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-												if (grid != null) {
 
-													grid.setLightPos3(spinner_6.getSelection(), grid.getLightPos3()[1], grid.getLightPos3()[2]);
+		final Spinner spinner_6 = new Spinner(composite_6, SWT.BORDER);
+		GridData gd_spinner_6 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_spinner_6.heightHint = 25;
+		spinner_6.setLayoutData(gd_spinner_6);
+		spinner_6.setMinimum(-1000000);
+		spinner_6.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
 
-												}
-											}
-										});
-										spinner_6.setMaximum(1000000);
-						
-								final Spinner spinner_7 = new Spinner(composite_6, SWT.BORDER);
-								GridData gd_spinner_7 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-								gd_spinner_7.heightHint = 25;
-								spinner_7.setLayoutData(gd_spinner_7);
-								spinner_7.setMinimum(-1000000);
-								spinner_7.setMaximum(1000000);
-								spinner_7.addSelectionListener(new SelectionAdapter() {
-									public void widgetSelected(final SelectionEvent e) {
-										SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-										if (grid != null) {
+					grid.setLightPos3(spinner_6.getSelection(), grid.getLightPos3()[1], grid.getLightPos3()[2]);
 
-											grid.setLightPos3(grid.getLightPos3()[0], spinner_7.getSelection(), grid.getLightPos3()[2]);
+				}
+			}
+		});
+		spinner_6.setMaximum(1000000);
 
-										}
-									}
-								});
-				
-						final Spinner spinner_8 = new Spinner(composite_6, SWT.BORDER);
-						GridData gd_spinner_8 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-						gd_spinner_8.heightHint = 25;
-						spinner_8.setLayoutData(gd_spinner_8);
-						spinner_8.setMinimum(-1000000);
-						spinner_8.setMaximum(1000000);
-						spinner_8.addSelectionListener(new SelectionAdapter() {
-							public void widgetSelected(final SelectionEvent e) {
-								SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-								if (grid != null) {
+		final Spinner spinner_7 = new Spinner(composite_6, SWT.BORDER);
+		GridData gd_spinner_7 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_spinner_7.heightHint = 25;
+		spinner_7.setLayoutData(gd_spinner_7);
+		spinner_7.setMinimum(-1000000);
+		spinner_7.setMaximum(1000000);
+		spinner_7.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
 
-									grid.setLightPos3(grid.getLightPos3()[0], grid.getLightPos3()[1], spinner_8.getSelection());
+					grid.setLightPos3(grid.getLightPos3()[0], spinner_7.getSelection(), grid.getLightPos3()[2]);
 
-								}
-							}
-						});
-		
-				final Label light3Label = new Label(composite_6, SWT.NONE);
-				GridData gd_light3Label = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-				gd_light3Label.heightHint = 25;
-				light3Label.setLayoutData(gd_light3Label);
-				light3Label.setText("Light 3");
+				}
+			}
+		});
+
+		final Spinner spinner_8 = new Spinner(composite_6, SWT.BORDER);
+		GridData gd_spinner_8 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_spinner_8.heightHint = 25;
+		spinner_8.setLayoutData(gd_spinner_8);
+		spinner_8.setMinimum(-1000000);
+		spinner_8.setMaximum(1000000);
+		spinner_8.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+
+					grid.setLightPos3(grid.getLightPos3()[0], grid.getLightPos3()[1], spinner_8.getSelection());
+
+				}
+			}
+		});
+
+		final Label light3Label = new Label(composite_6, SWT.NONE);
+		GridData gd_light3Label = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_light3Label.heightHint = 25;
+		light3Label.setLayoutData(gd_light3Label);
+		light3Label.setText("Light 3");
 		new Label(composite_6, SWT.NONE);
 		new Label(composite_6, SWT.NONE);
 		new Label(composite_6, SWT.NONE);
@@ -2025,66 +2035,66 @@ public class Options3d extends ViewPart {
 			}
 		});
 		enabledButton_3.setText("Enabled");
-								
-										final Spinner spinner_9 = new Spinner(composite_6, SWT.BORDER);
-										GridData gd_spinner_9 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-										gd_spinner_9.heightHint = 25;
-										spinner_9.setLayoutData(gd_spinner_9);
-										spinner_9.setMinimum(-1000000);
-										spinner_9.addSelectionListener(new SelectionAdapter() {
-											public void widgetSelected(final SelectionEvent e) {
-												SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-												if (grid != null) {
 
-													grid.setLightPos4(spinner_9.getSelection(), grid.getLightPos4()[1], grid.getLightPos4()[2]);
+		final Spinner spinner_9 = new Spinner(composite_6, SWT.BORDER);
+		GridData gd_spinner_9 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_spinner_9.heightHint = 25;
+		spinner_9.setLayoutData(gd_spinner_9);
+		spinner_9.setMinimum(-1000000);
+		spinner_9.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
 
-												}
-											}
-										});
-										spinner_9.setMaximum(1000000);
-						
-								final Spinner spinner_10 = new Spinner(composite_6, SWT.BORDER);
-								GridData gd_spinner_10 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-								gd_spinner_10.heightHint = 25;
-								spinner_10.setLayoutData(gd_spinner_10);
-								spinner_10.setMinimum(-1000000);
-								spinner_10.setMaximum(1000000);
-								spinner_10.addSelectionListener(new SelectionAdapter() {
-									public void widgetSelected(final SelectionEvent e) {
-										SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-										if (grid != null) {
+					grid.setLightPos4(spinner_9.getSelection(), grid.getLightPos4()[1], grid.getLightPos4()[2]);
 
-											grid.setLightPos4(grid.getLightPos4()[0], spinner_10.getSelection(), grid.getLightPos4()[2]);
+				}
+			}
+		});
+		spinner_9.setMaximum(1000000);
 
-										}
-									}
-								});
-				
-						final Spinner spinner_11 = new Spinner(composite_6, SWT.BORDER);
-						GridData gd_spinner_11 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-						gd_spinner_11.heightHint = 25;
-						spinner_11.setLayoutData(gd_spinner_11);
-						spinner_11.setMinimum(-1000000);
-						spinner_11.setMaximum(1000000);
-						spinner_11.addSelectionListener(new SelectionAdapter() {
-							public void widgetSelected(final SelectionEvent e) {
-								SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-								if (grid != null) {
+		final Spinner spinner_10 = new Spinner(composite_6, SWT.BORDER);
+		GridData gd_spinner_10 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_spinner_10.heightHint = 25;
+		spinner_10.setLayoutData(gd_spinner_10);
+		spinner_10.setMinimum(-1000000);
+		spinner_10.setMaximum(1000000);
+		spinner_10.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
 
-									grid.setLightPos4(grid.getLightPos4()[0], grid.getLightPos4()[1], spinner_11.getSelection());
+					grid.setLightPos4(grid.getLightPos4()[0], spinner_10.getSelection(), grid.getLightPos4()[2]);
 
-								}
-							}
-						});
-		
-				final Label light4Label = new Label(composite_6, SWT.NONE);
-				GridData gd_light4Label = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-				gd_light4Label.heightHint = 25;
-				light4Label.setLayoutData(gd_light4Label);
-				light4Label.setText("Light 4");
-				new Label(composite_6, SWT.NONE);
-				new Label(composite_6, SWT.NONE);
-				new Label(composite_6, SWT.NONE);
+				}
+			}
+		});
+
+		final Spinner spinner_11 = new Spinner(composite_6, SWT.BORDER);
+		GridData gd_spinner_11 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_spinner_11.heightHint = 25;
+		spinner_11.setLayoutData(gd_spinner_11);
+		spinner_11.setMinimum(-1000000);
+		spinner_11.setMaximum(1000000);
+		spinner_11.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+
+					grid.setLightPos4(grid.getLightPos4()[0], grid.getLightPos4()[1], spinner_11.getSelection());
+
+				}
+			}
+		});
+
+		final Label light4Label = new Label(composite_6, SWT.NONE);
+		GridData gd_light4Label = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_light4Label.heightHint = 25;
+		light4Label.setLayoutData(gd_light4Label);
+		light4Label.setText("Light 4");
+		new Label(composite_6, SWT.NONE);
+		new Label(composite_6, SWT.NONE);
+		new Label(composite_6, SWT.NONE);
 
 		final ExpandItem newItemExpandItem_8 = new ExpandItem(expandBar, SWT.NONE);
 		newItemExpandItem_8.setHeight(130);
@@ -2092,78 +2102,80 @@ public class Options3d extends ViewPart {
 
 		final Composite composite_8 = new Composite(expandBar, SWT.BORDER);
 		newItemExpandItem_8.setControl(composite_8);
-		composite_8.setLayout(new GridLayout(2, true));
+		composite_8.setLayout(new GridLayout(1, true));
 
-		final Button getImageButton = new Button(composite_8, SWT.NONE);
-		GridData gd_getImageButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_getImageButton.heightHint = 40;
-		getImageButton.setLayoutData(gd_getImageButton);
-		getImageButton.setToolTipText("Creates a screenshot image in ImageJ");
-		getImageButton.addSelectionListener(new SelectionAdapter() {
+		/*
+		 * final Button getImageButton = new Button(composite_8, SWT.NONE); GridData
+		 * gd_getImageButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		 * gd_getImageButton.heightHint = 40;
+		 * getImageButton.setLayoutData(gd_getImageButton);
+		 * getImageButton.setToolTipText("Creates a screenshot image in ImageJ");
+		 * getImageButton.addSelectionListener(new SelectionAdapter() { public void
+		 * widgetSelected(final SelectionEvent e) { SpatialStructure grid =
+		 * SpatialStructure.getSpatialStructureInstance(); if (grid != null) {
+		 * grid.takeScreenshot = true; }
+		 * 
+		 * } }); getImageButton.setText("Get Image");
+		 */
+
+		final Label numberLabel = new Label(composite_8, SWT.NONE);
+		GridData gd_numberLabel = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+		gd_numberLabel.heightHint = 30;
+		numberLabel.setLayoutData(gd_numberLabel);
+		numberLabel.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
+
+		final Button renderFramesButton = new Button(composite_8, SWT.NONE);
+		GridData gd_renderFramesButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+		gd_renderFramesButton.heightHint = 40;
+		renderFramesButton.setLayoutData(gd_renderFramesButton);
+		renderFramesButton.setToolTipText(
+				"Starts and stops rendering - \r\ncreates a stack in Imagej and renders the current\r\nframe of the spatial view to the stack until \r\nrendering is stopped or the max. numbers of frames\r\n(specified in the textfield) has been reached.");
+		renderFramesButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
 				if (grid != null) {
-					grid.takeScreenshot = true;
-				}
+					ScreenRecording screen = new ScreenRecording(renderFramesButton);
+					if (screen.doCapture() == false) {
+						renderFramesButton.setText("Rec.");
+						screen.setCount(stackSizeCount);
+						screen.setFps(fpsScreenCapture);
+						//screen.setupCaptureImages();
+						screen.setCapture(true);
+						screen.docaptureAnimationJob();
+					}
 
+					else {
+						screen.setCapture(false);
+						renderFramesButton.setText("Capture");
+					}
+
+				}
 			}
 		});
-		getImageButton.setText("Get Image");
-		
-				final Label numberLabel = new Label(composite_8, SWT.NONE);
-				GridData gd_numberLabel = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-				gd_numberLabel.heightHint = 30;
-				numberLabel.setLayoutData(gd_numberLabel);
-				numberLabel.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
-						
-								final Button renderFramesButton = new Button(composite_8, SWT.NONE);
-								GridData gd_renderFramesButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-								gd_renderFramesButton.heightHint = 40;
-								renderFramesButton.setLayoutData(gd_renderFramesButton);
-								renderFramesButton.setToolTipText("Starts and stops rendering - \r\ncreates a stack in Imagej and renders the current\r\nframe of the spatial view to the stack until \r\nrendering is stopped or the max. numbers of frames\r\n(specified in the textfield) has been reached.");
-								renderFramesButton.addSelectionListener(new SelectionAdapter() {
-									public void widgetSelected(final SelectionEvent e) {
-										SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-										if (grid != null) {
-											if (renderImageJFrames) {
-												grid.createBufferedImage = true;
+		renderFramesButton.setText("Render Frames");
+		text_11 = new Text(composite_8, SWT.BORDER);
+		text_11.setToolTipText("Number of frames to render!");
+		GridData gd_text_11 = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+		gd_text_11.heightHint = 30;
+		text_11.setLayoutData(gd_text_11);
+		text_11.setText(Integer.toString(stackSizeCount));
+		text_11.addListener(SWT.Modify, new Listener() {
 
-												renderImageJFrames = false;
-												grid.renderToImageJ = true;
+			SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
 
-											} else {
-												renderImageJFrames = true;
-												grid.renderToImageJ = false;
-
-											}
-
-										}
-									}
-								});
-								renderFramesButton.setText("Render Frames");
-						text_11 = new Text(composite_8, SWT.BORDER);
-						text_11.setToolTipText("Number of frames to render!");
-						GridData gd_text_11 = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-						gd_text_11.heightHint = 30;
-						text_11.setLayoutData(gd_text_11);
-						text_11.setText("500");
-						text_11.addListener(SWT.Modify, new Listener() {
-
-							SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-
-							public void handleEvent(Event event) {
-								SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-								if (grid != null) {
-									try {
-										stackSizeCount = new Integer(text_11.getText());
-										text_11.setForeground(new Color(Display.getCurrent(), 0, 0, 0));
-										grid.setRenderImageTo(stackSizeCount);
-										numberLabel.setText("");
-									} catch (Exception e) {
-										text_11.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
-										numberLabel.setText("Number input incorrect!");
-									}
-								}
+			public void handleEvent(Event event) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					try {
+						stackSizeCount = Integer.parseInt(text_11.getText());
+						text_11.setForeground(new Color(Display.getCurrent(), 0, 0, 0));
+						grid.setRenderImageTo(stackSizeCount);
+						numberLabel.setText("");
+					} catch (Exception e) {
+						text_11.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
+						numberLabel.setText("Number input incorrect!");
+					}
+				}
 			}
 		});
 

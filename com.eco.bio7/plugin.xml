@@ -77,15 +77,6 @@
          point="org.eclipse.ui.views">
       <view
             allowMultiple="true"
-            category="com.eco.bio7.ecolab"
-            class="com.eco.bio7.discrete3d.Quad3dview"
-            icon="icons/views/3dperspview.png"
-            id="com.eco.bio7.3d"
-            name="3Dgrid"
-            restorable="true">
-      </view>
-      <view
-            allowMultiple="true"
             category="com.eco.bio7.charts"
             class="com.eco.bio7.plot.PieChartView"
             icon="icons/views/piechartview.png"

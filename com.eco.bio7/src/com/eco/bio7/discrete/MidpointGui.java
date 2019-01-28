@@ -15,6 +15,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Display;
@@ -25,13 +27,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.discrete3d.Quad3dview;
 import com.eco.bio7.methods.CurrentStates;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.util.Util;
-import com.jogamp.opengl.util.FPSAnimator;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.GridData;
 
 public class MidpointGui extends Shell {
 
@@ -348,10 +346,9 @@ public class MidpointGui extends Shell {
 							 * animator of the Quad3D if active for the resize
 							 * event!
 							 */
-							FPSAnimator an = Quad3dview.getAnimator();
-							if (an != null) {
-								an.stop();
-							}
+							/*
+							 * FPSAnimator an = Quad3dview.getAnimator(); if (an != null) { an.stop(); }
+							 */
 							/* Adjust the fieldsize of the different grids! */
 							Field.setSize(pow, pow);
 							CreateMidpointJob job = new CreateMidpointJob(po,
@@ -360,9 +357,9 @@ public class MidpointGui extends Shell {
 							// job.setSystem(true);
 							job.schedule();
 							/* Restart the animator */
-							if (an != null) {
-								an.start();
-							}
+							/*
+							 * if (an != null) { an.start(); }
+							 */
 						} else {
 							Bio7Dialog
 									.message("At least one State and two weights\nhave to be selected!");

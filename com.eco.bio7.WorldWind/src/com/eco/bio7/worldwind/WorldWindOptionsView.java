@@ -1107,23 +1107,19 @@ public class WorldWindOptionsView extends ViewPart {
 		screenshotButton.setToolTipText("Creates a screenshot image in ImageJ");
 		screenshotButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				if (Util.getOS().equals("Mac")) {
-					ScreenRecording screen = new ScreenRecording(capture);
-					ImagePlus ip = screen.captureImage();
-					ip.show();
-				} else {
-					SwingUtilities.invokeLater(new Runnable() {
+				ScreenRecording screen = new ScreenRecording(capture);
+				if (screen.doCapture() == false) {
+					capture.setText("Rec.");
+					screen.setCount(1);
+					screen.setFps(spinner.getSelection());
+					//screen.setupCaptureImages();
+					screen.setCapture(true);
+					screen.docaptureAnimationJob();
+				}
 
-						public void run() {
-
-							ScreenRecording screen = new ScreenRecording(capture);
-							ImagePlus ip = screen.captureImage();
-							ip.show();
-
-							// WorldWindowGLAutoDrawable.screenshot = true;
-
-						}
-					});
+				else {
+					screen.setCapture(false);
+					capture.setText("Capture");
 				}
 
 			}
