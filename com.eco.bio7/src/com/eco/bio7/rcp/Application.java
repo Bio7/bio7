@@ -102,21 +102,27 @@ public class Application implements IApplication {
             	instanceLoc.release();
 		}
 	}
-
+	
 	@Override
 	public void stop() {
-		final IWorkbench workbench = PlatformUI.getWorkbench();
-		if (workbench == null)
+		if (!PlatformUI.isWorkbenchRunning())
 			return;
+		final IWorkbench workbench = PlatformUI.getWorkbench();
 		final Display display = workbench.getDisplay();
-		display.syncExec(new Runnable() {
-			public void run() {
-				if (!display.isDisposed())
-					workbench.close();
-			}
+		display.syncExec(() -> {
+			if (!display.isDisposed())
+				workbench.close();
 		});
-
 	}
+
+	/*
+	 * @Override public void stop() { final IWorkbench workbench =
+	 * PlatformUI.getWorkbench(); if (workbench == null) return; final Display
+	 * display = workbench.getDisplay(); display.syncExec(new Runnable() { public
+	 * void run() { if (!display.isDisposed()) workbench.close(); } });
+	 * 
+	 * }
+	 */
 
 	public void saveWorkspace() {
 
