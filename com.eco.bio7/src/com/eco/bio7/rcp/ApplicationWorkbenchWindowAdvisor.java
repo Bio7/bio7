@@ -93,6 +93,7 @@ import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener3;
 import org.eclipse.ui.IPerspectiveRegistry;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartReference;
@@ -398,7 +399,12 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 			@Override
 			public void perspectiveChanged(IWorkbenchPage page, IPerspectiveDescriptor perspective, String changeId) {
-				// TODO Auto-generated method stub
+				if (Util.getOS().equals("Mac")) {
+					IViewPart view = page.findView("com.eco.bio7.worldwind.WorldWindView");
+					if (view == null) {
+						Work.openView("com.eco.bio7.worldwind.WorldWindView");
+					}
+				}
 
 			}
 
@@ -417,7 +423,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			public void perspectiveDeactivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
 				// Workaround a bug on MacOSX when closing a SWT_AWT perspective
 				// 3D and WorldWind!
-				
 
 			}
 
