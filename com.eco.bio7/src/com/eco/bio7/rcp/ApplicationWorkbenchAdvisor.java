@@ -6,10 +6,12 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
@@ -22,6 +24,8 @@ import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.util.Util;
 
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
+	
+	boolean doClose=false;
 
 	private static final String PERSPECTIVE_ID = "com.eco.bio7.perspective_2d";
 
@@ -50,9 +54,20 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 	}
 
 	public boolean preShutdown() {
+
+		
+		
+
 		boolean close = super.preShutdown();
-		if (close) {
-			close = true;
+		
+		if (doClose==false) {
+			doClose=true;
+			IWorkbench workbench = PlatformUI.getWorkbench();
+			workbench.close();
+		}
+
+		if (close&&doClose) {
+			doClose=false;
 			/* Save all editors before shutdown! */
 			// SAVE_ALL_EDITORS
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();

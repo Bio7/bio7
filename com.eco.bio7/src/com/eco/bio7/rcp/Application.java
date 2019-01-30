@@ -17,11 +17,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
-import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
-import org.eclipse.ui.console.IOConsole;
 import org.rosuda.REngine.Rserve.RConnection;
-
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.rbridge.RConnectionJob;
 import com.eco.bio7.rbridge.RServe;
