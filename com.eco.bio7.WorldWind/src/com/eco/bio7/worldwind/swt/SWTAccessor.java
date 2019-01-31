@@ -39,7 +39,7 @@ public class SWTAccessor {
     public static final boolean isOSX;
     public static final boolean isWindows;
     public static final boolean isX11;
-    public static final boolean isX11GTK;
+    public static final boolean isX11GTK; 
 
     // X11/GTK, Windows/GDI, ..
     private static final String str_handle = "handle";
