@@ -25,7 +25,6 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.pick.PickedObjectList;
 import gov.nasa.worldwind.util.Logging;
 import gov.nasa.worldwind.util.PerformanceStatistic;
-
 import java.awt.GraphicsDevice;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -34,18 +33,16 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLCapabilitiesChooser;
 import com.jogamp.opengl.GLContext;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
-
 import org.eclipse.swt.widgets.Composite;
 
 import com.eco.bio7.worldwind.swt.WorldWindowNewtDrawableSWT;
 import com.jogamp.newt.opengl.GLWindow;
-import com.jogamp.newt.swt.NewtCanvasSWT;
+
 
 /**
  * {@link WorldWindow} implementation that uses a {@link NewtCanvasSWT} for
