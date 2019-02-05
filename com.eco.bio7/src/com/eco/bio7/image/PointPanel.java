@@ -9,7 +9,6 @@
  *     M. Austenfeld
  *******************************************************************************/
 
-
 package com.eco.bio7.image;
 
 import ij.ImagePlus;
@@ -68,7 +67,7 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 
 	private static int diameter = 5;
 
-	//private static Graphics2D g;
+	// private static Graphics2D g;
 
 	private static Vector<Double> ve = new Vector<Double>();
 
@@ -112,15 +111,17 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 
 	private boolean scroll;
 
-	public boolean dynamicVoronoi=true;
-	
-	public boolean dynamicDelauney=false;
+	public boolean dynamicVoronoi = true;
+
+	public boolean dynamicDelauney = false;
 
 	private double transformVorox;
 
 	private double transformVoroy;
 
-	public static boolean showAreas=false;
+	private boolean retina;
+
+	public static boolean showAreas = false;
 
 	private static PointPanel pointPanel;
 
@@ -128,7 +129,7 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 
 	private static Ellipse2D.Double currentellipse;
 
-	/* The  state selected from the Buttons! */
+	/* The state selected from the Buttons! */
 	private static int stateIndexJp = 0;
 
 	private static double sx = 1.0;
@@ -147,20 +148,23 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 
 	private static Collection<Coordinate> coordsDelauney;
 
-	private static double drawAreaScaled=1.0;
+	private static double drawAreaScaled = 1.0;
 
 	public static void setDrawAreaScaled(double drawAreaScaled) {
 		PointPanel.drawAreaScaled = drawAreaScaled;
 	}
+
 	PointPanel() {
+		retina=Util.isMacRetinaDisplay();
 		this.addMouseWheelListener(this);
 
 		this.addKeyListener(this);
 		this.addMouseListener(this);
 		this.addMouseMotionListener(this);
-		 pointPanel=this;
+		pointPanel = this;
 
 	}
+
 	public static PointPanel getPointPanel() {
 		return pointPanel;
 	}
@@ -168,13 +172,18 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 	public void paintComponent(Graphics g) {
 
 		super.paintComponent(g);
-       
+
 		Graphics2D g2 = (Graphics2D) g;
 		g2.scale(sx, sy);
 
 		AffineTransform aff = g2.getTransform();
-		transformx = aff.getScaleX();
-		transformy = aff.getScaleY();
+		if (retina) {
+			transformx = aff.getScaleX() / 2;
+			transformy = aff.getScaleY() / 2;
+		} else {
+			transformx = aff.getScaleX();
+			transformy = aff.getScaleY();
+		}
 
 		if (quad2dVisible) {
 			g2.setComposite(makeComposite(compos2 / 255.0f));
@@ -204,35 +213,35 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 
 		if (showVoronoi) {
 			g2.setColor(new Color(0, 0, 0));
-			
-				 if(geomVoronoi!=null){
-			drawVoronoiDelauney(g2, toShape(geomVoronoi));
-				 
-			 }
+
+			if (geomVoronoi != null) {
+				drawVoronoiDelauney(g2, toShape(geomVoronoi));
+
+			}
 		}
 		if (showDelauney) {
 			g2.setColor(new Color(0, 0, 0));
-			if(geomDelauney!=null){
-			drawVoronoiDelauney(g2, toShape(geomDelauney));
+			if (geomDelauney != null) {
+				drawVoronoiDelauney(g2, toShape(geomDelauney));
 			}
 		}
-		if(dynamicVoronoi&&showVoronoi){
+		if (dynamicVoronoi && showVoronoi) {
 			createVoronoi();
 		}
-		if(dynamicDelauney&&showDelauney){
+		if (dynamicDelauney && showDelauney) {
 			createDelauney();
 		}
-		if(showAreas){
+		if (showAreas) {
 			showAreas(g2);
 		}
-		
-		/*Draw from compiled context on the panel!*/
+
+		/* Draw from compiled context on the panel! */
 
 		Model eco = Compiled.getModel();
 		if (eco != null) {
 			try {
-				if(g2!=null){
-				eco.draw(g2);
+				if (g2 != null) {
+					eco.draw(g2);
 				}
 			} catch (RuntimeException e) {
 
@@ -241,27 +250,32 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 		}
 
 	}
-	
-	public void showAreas(Graphics2D g2d){
-			g2d.scale(drawAreaScaled, drawAreaScaled);
-			AffineTransform aff = g2d.getTransform();
-			transformVorox = aff.getScaleX();
-			transformVoroy = aff.getScaleY();
-			if(PointPanel.getPoints().length>1){
+
+	public void showAreas(Graphics2D g2d) {
+		g2d.scale(drawAreaScaled, drawAreaScaled);
+		AffineTransform aff = g2d.getTransform();
+		if (retina) {
+			transformVorox = aff.getScaleX() / 2;
+			transformVoroy = aff.getScaleY() / 2;
+		}
+		else {
+		transformVorox = aff.getScaleX();
+		transformVoroy = aff.getScaleY();
+		}
+		if (PointPanel.getPoints().length > 1) {
 			Geometry g = getGeomVoronoi();
-			if(g!=null){
-			for (int i = 0; i <g.getNumGeometries() ; i++) {
-			Geometry geom = g.getGeometryN(i);
-			org.locationtech.jts.geom.Point p = geom.getCentroid();
-			
-			g2d.drawString(""+geom.getArea(),(int)((p.getX()/ transformVorox)*transformx),(int)((p.getY()/ transformVoroy)*transformy));
-			
-			}
+			if (g != null) {
+				for (int i = 0; i < g.getNumGeometries(); i++) {
+					Geometry geom = g.getGeometryN(i);
+					org.locationtech.jts.geom.Point p = geom.getCentroid();
+
+					g2d.drawString("" + geom.getArea(), (int) ((p.getX() / transformVorox) * transformx),
+							(int) ((p.getY() / transformVoroy) * transformy));
+
+				}
 			}
 		}
 	}
-
-	
 
 	public static void cleanVoronoi() {
 		coords = null;
@@ -277,10 +291,10 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 	 * Creates Voronoi Geometry objects from the points in the Points panel.
 	 */
 	public static void createVoronoi() {
-       if(PointPanel.getPoints().length>1){
-		coords = DelaunayAndVoronoiApp.getPredefinedSites();
-		geomVoronoi = DelaunayAndVoronoiApp.buildVoronoiDiagram(coords);
-       }
+		if (PointPanel.getPoints().length > 1) {
+			coords = DelaunayAndVoronoiApp.getPredefinedSites();
+			geomVoronoi = DelaunayAndVoronoiApp.buildVoronoiDiagram(coords);
+		}
 
 	}
 
@@ -288,17 +302,15 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 	 * Creates Delauney Geometry objects from the points in the Points panel.
 	 */
 	public static void createDelauney() {
-		 if(PointPanel.getPoints().length>1){
-		coordsDelauney = DelaunayAndVoronoiApp.getPredefinedSites();
-		geomDelauney = DelaunayAndVoronoiApp.buildDelaunayTriangulation(coordsDelauney);
-		 }
+		if (PointPanel.getPoints().length > 1) {
+			coordsDelauney = DelaunayAndVoronoiApp.getPredefinedSites();
+			geomDelauney = DelaunayAndVoronoiApp.buildDelaunayTriangulation(coordsDelauney);
+		}
 
 	}
-	
-	
 
 	public static Shape toShape(Geometry geom) {
-		
+
 		ShapeWriter writer = new ShapeWriter();
 		return writer.toShape(geom);
 	}
@@ -315,8 +327,6 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 		}
 
 	}
-	
-	
 
 	/**
 	 * Returns the JTS Geometry which contains the Voronoi Geometry objects
@@ -340,7 +350,8 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 		for (int y = 0; y < individual.length; y++) {
 			if (individual[y] != null) {
 				diameter = individual[y].getDiameter();
-				ve.add(new Ellipse2D.Double(individual[y].getX() - (int) (diameter / 2), individual[y].getY() - (int) (diameter / 2), diameter, diameter));
+				ve.add(new Ellipse2D.Double(individual[y].getX() - (int) (diameter / 2),
+						individual[y].getY() - (int) (diameter / 2), diameter, diameter));
 				species.add(individual[y].getSpecies());
 				alpha.add(individual[y].getAlpha());
 				Points.add(new Point2D.Double(individual[y].getX(), individual[y].getY()));
@@ -349,12 +360,15 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 
 		}
 	}
+
 	public static Ellipse2D.Double getCurrentEllipse() {
 		return currentellipse;
 	}
+
 	public static int getSelectedX() {
 		return x;
 	}
+
 	public static int getSelectedY() {
 		return y;
 	}
@@ -375,7 +389,8 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 			String specie = CurrentStates.getStateName(sp);
 			int rgb[] = CurrentStates.getRGB(sp);
 			g2.setColor(new Color(rgb[0], rgb[1], rgb[2]));
-			g2.fillOval((int) (ellipse.getX()), (int) (ellipse.getY()), (int) ellipse.getHeight(), (int) ellipse.getWidth());
+			g2.fillOval((int) (ellipse.getX()), (int) (ellipse.getY()), (int) ellipse.getHeight(),
+					(int) ellipse.getWidth());
 
 			if (drag == true) {
 				if (currentellipse.equals(ellipse)) {
@@ -515,20 +530,20 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 					public void run() {
 						MessageBox messageBox = new MessageBox(new Shell(),
 
-						SWT.ICON_INFORMATION);
+								SWT.ICON_INFORMATION);
 						messageBox.setMessage("Point outside Pointpanel area !");
 						messageBox.open();
 					}
 				});
 
 			}
-			if(showVoronoi&&dynamicVoronoi){
+			if (showVoronoi && dynamicVoronoi) {
 				createVoronoi();
 			}
-			if(showDelauney&&dynamicDelauney){
+			if (showDelauney && dynamicDelauney) {
 				createDelauney();
 			}
-			
+
 		}
 
 		else if (e.getClickCount() == 1) {
@@ -565,7 +580,7 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 	}
 
 	public void mousePressed(MouseEvent e) {
-        //requestFocus();
+		// requestFocus();
 		x = (int) (e.getX() / transformx);
 		y = (int) (e.getY() / transformy);
 		currentellipse = null;
@@ -825,8 +840,7 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 	/**
 	 * Returns the name of the species of the given index.
 	 * 
-	 * @param index
-	 *            the index as an integer.
+	 * @param index the index as an integer.
 	 * @return the name as a string.
 	 */
 	public static String getName(int index) {
@@ -835,8 +849,8 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 	}
 
 	/**
-	 * Deletes all point values, alpha values, ellipse values and species values
-	 * in the Points panel.
+	 * Deletes all point values, alpha values, ellipse values and species values in
+	 * the Points panel.
 	 */
 	public static void delete() {
 		ve.clear();
@@ -849,8 +863,7 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 	/**
 	 * Sets the individuals in the Points panel and repaints the Points panel.
 	 * 
-	 * @param individuals
-	 *            an array of the type individual.
+	 * @param individuals an array of the type individual.
 	 */
 	public static void setIndividual(Individual[] individuals) {
 		if (individuals != null) {
@@ -864,16 +877,12 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 	/**
 	 * A torus function for the Points panel.
 	 * 
-	 * @param x
-	 *            the x-coordinate.
-	 * @param y
-	 *            the y-coordinate.
-	 * @param dx
-	 *            the distance from the x-coordinate.
-	 * @param dy
-	 *            the distance from the y-coordinate.
-	 * @return the coordinates as an integer array for the new location
-	 *         calculated from the torus function.
+	 * @param x  the x-coordinate.
+	 * @param y  the y-coordinate.
+	 * @param dx the distance from the x-coordinate.
+	 * @param dy the distance from the y-coordinate.
+	 * @return the coordinates as an integer array for the new location calculated
+	 *         from the torus function.
 	 */
 	public static int[] torus(int x, int y, int dx, int dy) {
 
@@ -894,13 +903,10 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 	}
 
 	/**
-	 * Sets the view of the scrollpane of the Points panel to the given
-	 * coordinates.
+	 * Sets the view of the scrollpane of the Points panel to the given coordinates.
 	 * 
-	 * @param x
-	 *            the x-coordinate.
-	 * @param y
-	 *            the y-coordinate.
+	 * @param x the x-coordinate.
+	 * @param y the y-coordinate.
 	 */
 	public static void setViewCoordinates(int x, int y) {
 		JViewport viewport = PointPanelView.getScroll().getViewport();
@@ -914,14 +920,17 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 		if (panel != null) {
 
 			if ((x * panel.transformx) - width / 2 >= 0 && (y * panel.transformy) - height / 2 >= 0) {
-				viewport.setViewPosition(new Point((int) ((x * panel.transformx) - width / 2), (int) ((y * panel.transformy) - height / 2)));
+				viewport.setViewPosition(new Point((int) ((x * panel.transformx) - width / 2),
+						(int) ((y * panel.transformy) - height / 2)));
 
 			}
 
 			else if ((x * panel.transformx) - width / 2 >= 0 && (y * panel.transformy) - height / 2 < 0) {
-				viewport.setViewPosition(new Point((int) ((x * panel.transformx) - width / 2), viewport.getViewPosition().y));
+				viewport.setViewPosition(
+						new Point((int) ((x * panel.transformx) - width / 2), viewport.getViewPosition().y));
 			} else if ((x * panel.transformx) - width / 2 < 0 && (y * panel.transformy) - height / 2 >= 0) {
-				viewport.setViewPosition(new Point(viewport.getViewPosition().x, (int) ((y * panel.transformy) - height / 2)));
+				viewport.setViewPosition(
+						new Point(viewport.getViewPosition().x, (int) ((y * panel.transformy) - height / 2)));
 			}
 
 		}
@@ -1014,8 +1023,7 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 	/**
 	 * Sets the plant index or active state in the Points panel.
 	 * 
-	 * @param state
-	 *            an available state as an integer.
+	 * @param state an available state as an integer.
 	 */
 	public static void setPlantIndexPanel(int state) {
 		PointPanel.stateIndexJp = state;
