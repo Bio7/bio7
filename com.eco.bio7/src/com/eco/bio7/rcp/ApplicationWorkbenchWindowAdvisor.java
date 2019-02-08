@@ -133,6 +133,7 @@ import com.eco.bio7.discrete.Quad2d;
 import com.eco.bio7.image.CanvasView;
 import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 import com.eco.bio7.jobs.LoadData;
+import com.eco.bio7.macosx.MacTouchBar;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.preferences.RServePlotPrefs;
 import com.eco.bio7.preferences.Reg;
@@ -145,6 +146,11 @@ import com.eco.bio7.rbridge.debug.REditorListener;
 import com.eco.bio7.reditor.actions.OpenHelpBrowserAction;
 import com.eco.bio7.time.CalculationThread;
 import com.eco.bio7.util.Util;
+import com.thizzer.jtouchbar.JTouchBar;
+import com.thizzer.jtouchbar.item.TouchBarItem;
+import com.thizzer.jtouchbar.item.view.TouchBarButton;
+import com.thizzer.jtouchbar.swt.JTouchBarSWT;
+
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
@@ -1044,8 +1050,12 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		javafx.application.Platform.setImplicitExit(false);
 
 		dragDropR();
-
+		
+		if(Util.getOS().equals("Mac")) {
+			new MacTouchBar();
+		}
 	}
+	
 
 	private void startupScripts() {
 		String startupDirectory = null;

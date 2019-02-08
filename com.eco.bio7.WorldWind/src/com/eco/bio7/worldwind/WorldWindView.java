@@ -33,6 +33,7 @@ import javax.swing.SwingUtilities;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -45,6 +46,8 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.rosuda.REngine.Rserve.RConnection;
+
+import com.eco.bio7.image.Util;
 import com.eco.bio7.worldwind.swt.NewtInputHandlerSWT;
 import com.eco.bio7.worldwind.swt.StatusBar;
 import com.eco.bio7.worldwind.swt.WorldWindowNewtAutoDrawableSWT;
@@ -144,7 +147,8 @@ public class WorldWindView extends ViewPart {
 	@Override
 	public void createPartControl(Composite parent) {
 		/* Create a WorldWind instance */
-
+		/*Workaround to set the images for Bio7 again on MacOSX!*/
+		Image[]imagesTemp=Util.getShell().getImages();
 		top = parent;
 		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 		Configuration.setValue(AVKey.INPUT_HANDLER_CLASS_NAME, NewtInputHandlerSWT.class.getName());
@@ -210,6 +214,7 @@ public class WorldWindView extends ViewPart {
 		 * 
 		 * roundEarthModel = new Earth(); flatEarthModel = new EarthFlat();
 		 */
+		Util.getShell().setImages(imagesTemp);
 
 	}
 

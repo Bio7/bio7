@@ -34,7 +34,7 @@ public class InfoView extends ViewPart {
 
 	public static final String ID = "com.eco.bio7.control";
 
-	private Scale scale;
+	private static Scale timeSwtScale;
 
 	private static Scale scale_1;
 
@@ -129,17 +129,17 @@ public class InfoView extends ViewPart {
 		lblYear.setBackground(parent.getBackground());
 		lblYear.setText(year + Time.getYear());
 
-		scale = new Scale(composite, SWT.NONE);
-		scale.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		timeSwtScale = new Scale(composite, SWT.NONE);
+		timeSwtScale.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 		// scale.setBackground(parent.getBackground());
 		// scale.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		scale.setMaximum(1000);
-		scale.setMinimum(1);
-		scale.setSelection(500);
-		scale.addSelectionListener(new SelectionAdapter() {
+		timeSwtScale.setMaximum(1000);
+		timeSwtScale.setMinimum(1);
+		timeSwtScale.setSelection(500);
+		timeSwtScale.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				Time.setInterval(scale.getSelection());
+				Time.setInterval(timeSwtScale.getSelection());
 			}
 		});
 
@@ -329,6 +329,10 @@ public class InfoView extends ViewPart {
 		 * item0.setText("Time and Space"); item0.setHeight(400); item0.setControl(top);
 		 */
 
+	}
+
+	public static Scale getTimeScaleSwt() {
+		return timeSwtScale;
 	}
 
 	@Override
