@@ -55,6 +55,7 @@ jdk/bin/javaw.exe
       startupMessageRect="0,0,0,0"
       startupForegroundColor="000000" />
    <launcher name="Bio7">
+      <macosx icon="/com.eco.bio7/bio7.icns"/>
       <win useIco="false">
          <ico path="/com.eco.bio7/icons/bio7.ico"/>
          <bmp

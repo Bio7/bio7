@@ -18,6 +18,7 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -62,7 +63,8 @@ public class SpatialView extends ViewPart {
 	}
 
 	public void createPartControl(Composite parent) {
-
+		/*Workaround to set the images for Bio7 again on MacOSX!*/
+		Image[]imagesTemp=Util.getShell().getImages();
 		initializeToolBar();
 
 		top = parent;// new Composite(parent, SWT.NO_BACKGROUND | SWT.EMBEDDED);
@@ -80,6 +82,7 @@ public class SpatialView extends ViewPart {
 		 * frame = SWT_AWT.new_Frame(top); SwtAwt.setSwtAwtFocus(frame, top); canvas =
 		 * spat.getCanvas(); top.setLayout(new RowLayout()); frame.add(canvas); } });
 		 */
+		Util.getShell().setImages(imagesTemp);
 	}
 
 	/*
