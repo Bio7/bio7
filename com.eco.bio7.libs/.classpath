@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="libs/jtouchbar-1.0.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jtouchbar-javafx-1.0.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jtouchbar-swt-1.0.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/Medusa-8.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="hardware/arduino.jar"/>
