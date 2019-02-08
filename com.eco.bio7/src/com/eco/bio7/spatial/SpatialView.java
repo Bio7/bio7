@@ -129,17 +129,7 @@ public class SpatialView extends ViewPart {
 
 	public void dispose() {
 
-		Display display = PlatformUI.getWorkbench().getDisplay();
-		display.syncExec(new Runnable() {
-
-			public void run() {
-				spat.getAnimator().stop();
-				spat.setAnimator(null);
-				if (full != null) {
-					full.exit();
-				}
-			}
-		});
+		
 
 		super.dispose();
 	}
