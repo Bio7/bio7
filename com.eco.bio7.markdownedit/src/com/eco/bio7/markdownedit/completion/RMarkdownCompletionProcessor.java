@@ -49,7 +49,7 @@ public class RMarkdownCompletionProcessor implements IContentAssistProcessor {
 				"...",
 				"$E = m*c^{2}$",
 				"$$E = m*c^{2}$$",
-				"[](path/myImage.png)",
+				"![image](path/myImage.png)",
 				"***",
 				">",
 				"* item"+System.lineSeparator()+"\t" +"+ subitem1"+System.lineSeparator()+"\t" +"+ subitem2",

@@ -8,7 +8,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -27,6 +26,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -49,8 +49,6 @@ import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
-import com.eco.bio7.util.Util;
-
 import net.sourceforge.texlipse.editor.TexEditor;
 
 public class LatexSweaveKnitrAction extends Action {
@@ -291,15 +289,23 @@ public class LatexSweaveKnitrAction extends Action {
 
 											String temp = "file:///" + dirPath + "/" + theName + ".html";
 											String url = temp.replace("\\", "/");
-											// System.out.println(url);
+											/* The option for using an external Browser! */
+											boolean useInternalSWTBrowser = store.getBoolean("PDF_USE_BROWSER");
 											if (openInJavaFXBrowser.equals("JAVAFX_BROWSER") == false) {
-												Work.openView("com.eco.bio7.browser.Browser");
-												BrowserView b = BrowserView.getBrowserInstance();
-												b.browser.setJavascriptEnabled(true);
-												b.setLocation(url);
+												if (useInternalSWTBrowser == true) {
+													Work.openView("com.eco.bio7.browser.Browser");
+													BrowserView b = BrowserView.getBrowserInstance();
+													b.browser.setJavascriptEnabled(true);
+													b.setLocation(url);
+												} else {
+
+													Program.launch(url);
+
+												}
 
 											} else {
-												boolean openInBrowserInExtraView = store.getBoolean("OPEN_BOWSER_IN_EXTRA_VIEW");
+												boolean openInBrowserInExtraView = store
+														.getBoolean("OPEN_BOWSER_IN_EXTRA_VIEW");
 												if (openInBrowserInExtraView) {
 													new JavaFXWebBrowser(true).createBrowser(url, theName + ".html");
 												} else {
@@ -387,7 +393,8 @@ public class LatexSweaveKnitrAction extends Action {
 		}
 	}
 
-	private void compileLatexWithBibtex(final IProject activeProject, final String theName, String dirPath, boolean pureLatex, String bibtexEngine) {
+	private void compileLatexWithBibtex(final IProject activeProject, final String theName, String dirPath,
+			boolean pureLatex, String bibtexEngine) {
 		compileLatexPre(activeProject, theName, dirPath, pureLatex);
 
 		compileBibtex(theName, dirPath, bibtexEngine);
@@ -397,7 +404,8 @@ public class LatexSweaveKnitrAction extends Action {
 		compileLatexFinal(activeProject, theName, dirPath, pureLatex);
 	}
 
-	private void compileLatexWithMakeIndex(final IProject activeProject, final String theName, String dirPath, boolean pureLatex) {
+	private void compileLatexWithMakeIndex(final IProject activeProject, final String theName, String dirPath,
+			boolean pureLatex) {
 		compileLatexPre(activeProject, theName, dirPath, pureLatex);
 
 		compileMakeIndex(theName, dirPath);
@@ -407,7 +415,8 @@ public class LatexSweaveKnitrAction extends Action {
 		compileLatexFinal(activeProject, theName, dirPath, pureLatex);
 	}
 
-	private void compileLatexWithBibtexAndIndex(final IProject activeProject, final String theName, String dirPath, boolean pureLatex, String bibtexEngine) {
+	private void compileLatexWithBibtexAndIndex(final IProject activeProject, final String theName, String dirPath,
+			boolean pureLatex, String bibtexEngine) {
 
 		compileLatexPre(activeProject, theName, dirPath, pureLatex);
 		compileBibtex(theName, dirPath, bibtexEngine);
@@ -419,7 +428,8 @@ public class LatexSweaveKnitrAction extends Action {
 		compileLatexFinal(activeProject, theName, dirPath, pureLatex);
 	}
 
-	private void compileLatexFinal(final IProject activeProject, final String theName, String dirPath, boolean pureLatex) {
+	private void compileLatexFinal(final IProject activeProject, final String theName, String dirPath,
+			boolean pureLatex) {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		String pdfLatexPath = store.getString("pdfLatex");
 		boolean useBrowser = store.getBoolean("PDF_USE_BROWSER");
@@ -545,10 +555,11 @@ public class LatexSweaveKnitrAction extends Action {
 						// else {
 
 						// Program.launch(dirPath + "/" + theName + ".pdf");
-						RServe.openPDF(dirPath + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser,true);
+						RServe.openPDF(dirPath + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser, true);
 						// }
 					} else {
-						Bio7Dialog.message("*.pdf file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
+						Bio7Dialog.message(
+								"*.pdf file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
 					}
 
 				} catch (IOException e) {
@@ -750,7 +761,8 @@ public class LatexSweaveKnitrAction extends Action {
 
 	}
 
-	private void compileLatexPre(final IProject activeProject, final String theName, String dirPath, boolean pureLatex) {
+	private void compileLatexPre(final IProject activeProject, final String theName, String dirPath,
+			boolean pureLatex) {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		String pdfLatexPath = store.getString("pdfLatex");
 
