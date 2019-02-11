@@ -14,12 +14,11 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
-import org.rosuda.REngine.Rserve.RConnection;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.actions.Bio7Action;
 import com.eco.bio7.batch.Bio7Dialog;
@@ -28,8 +27,6 @@ import com.eco.bio7.collection.Work;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.documents.JavaFXWebBrowser;
 import com.eco.bio7.rbridge.RServe;
-import com.eco.bio7.rbridge.RState;
-import com.eco.bio7.rbridge.actions.ProfileRScript;
 
 public class StartShinyApp extends Action implements IObjectActionDelegate {
 
@@ -39,7 +36,7 @@ public class StartShinyApp extends Action implements IObjectActionDelegate {
 		super();
 		setId("com.eco.bio7.startshinyapp");
 		setActionDefinitionId("com.eco.bio7.startshinyapp");
-		 store = Bio7Plugin.getDefault().getPreferenceStore();
+		store = Bio7Plugin.getDefault().getPreferenceStore();
 	}
 
 	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
@@ -47,9 +44,9 @@ public class StartShinyApp extends Action implements IObjectActionDelegate {
 
 	public void run(IAction action) {
 		PlatformUI.getWorkbench().saveAllEditors(true);
-		
 
-		ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().getSelection();
+		ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService()
+				.getSelection();
 		IStructuredSelection strucSelection = null;
 		if (selection instanceof IStructuredSelection) {
 			strucSelection = (IStructuredSelection) selection;
@@ -91,13 +88,16 @@ public class StartShinyApp extends Action implements IObjectActionDelegate {
 
 							// con.eval("try(setwd(\"" + cleanedPath + "\"))");
 							// con.eval("try(library(shiny))");
-							ConsolePageParticipant.pipeInputToConsole(".tempCurrentWd<-getwd()",true,false);
-							ConsolePageParticipant.pipeInputToConsole("setwd(\"" + cleanedPath + "\");library(shiny);runApp(port="+shinyPort+",launch.browser =FALSE)", true, true);
-							System.out.println("runApp(port="+shinyPort+",launch.browser =FALSE)");
-							ConsolePageParticipant.pipeInputToConsole("setwd(.tempCurrentWd);",true,false);
+							ConsolePageParticipant.pipeInputToConsole(".tempCurrentWd<-getwd()", true, false);
+							ConsolePageParticipant.pipeInputToConsole("setwd(\"" + cleanedPath
+									+ "\");library(shiny);runApp(port=" + shinyPort + ",launch.browser =FALSE)", true,
+									true);
+							System.out.println("runApp(port=" + shinyPort + ",launch.browser =FALSE)");
+							ConsolePageParticipant.pipeInputToConsole("setwd(.tempCurrentWd);", true, false);
 							// con.eval("try(runApp(port=5099,launch.browser =FALSE))");
 							/*
-							 * } catch (RserveException e) { // TODO Auto-generated catch block e.printStackTrace(); }
+							 * } catch (RserveException e) { // TODO Auto-generated catch block
+							 * e.printStackTrace(); }
 							 */
 
 							// }
@@ -124,21 +124,26 @@ public class StartShinyApp extends Action implements IObjectActionDelegate {
 
 						public void run() {
 
-							
 							String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
-
+							/* The option for using an external Browser! */
+							boolean useInternalSWTBrowser = store.getBoolean("PDF_USE_BROWSER");
 							if (openInJavaFXBrowser.equals("SWT_BROWSER")) {
-								Work.openView("com.eco.bio7.browser.Browser");
-								BrowserView b = BrowserView.getBrowserInstance();
-								b.browser.setJavascriptEnabled(true);
-								b.setLocation("http://127.0.0.1:"+shinyPort+"");
+								if (useInternalSWTBrowser == true) {
+									Work.openView("com.eco.bio7.browser.Browser");
+									BrowserView b = BrowserView.getBrowserInstance();
+									b.browser.setJavascriptEnabled(true);
+									b.setLocation("http://127.0.0.1:" + shinyPort + "");
+								} else {
+									Program.launch("http://127.0.0.1:" + shinyPort + "");
+								}
 							} else {
 								boolean openInBrowserInExtraView = store.getBoolean("OPEN_BOWSER_IN_EXTRA_VIEW");
 								if (openInBrowserInExtraView) {
 									String id = UUID.randomUUID().toString();
-									new JavaFXWebBrowser(true).createBrowser("http://127.0.0.1:"+shinyPort+"", id);
+									new JavaFXWebBrowser(true).createBrowser("http://127.0.0.1:" + shinyPort + "", id);
 								} else {
-									new JavaFXWebBrowser(true).createBrowser("http://127.0.0.1:"+shinyPort+"", "Display");
+									new JavaFXWebBrowser(true).createBrowser("http://127.0.0.1:" + shinyPort + "",
+											"Display");
 								}
 
 							}
