@@ -51,7 +51,6 @@
       <import plugin="Bundled_R" version="3.5.1" match="greaterOrEqual"/>
       <import plugin="com.eco.bio7.image" version="1.52.850" match="greaterOrEqual"/>
       <import plugin="com.eco.bio7.WorldWind" version="2.1.0" match="greaterOrEqual"/>
-      <import plugin="com.eco.bio7.albireo" version="2.1.1" match="greaterOrEqual"/>
       <import plugin="com.eco.bio7.browser" version="2.0.0" match="greaterOrEqual"/>
       <import plugin="com.eco.bio7.floweditor" version="2.0.0" match="greaterOrEqual"/>
       <import plugin="com.eco.bio7.javaedit" version="2.0.0" match="greaterOrEqual"/>
