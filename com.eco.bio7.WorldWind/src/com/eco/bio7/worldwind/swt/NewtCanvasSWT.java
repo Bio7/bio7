@@ -344,10 +344,14 @@ public class NewtCanvasSWT extends Canvas implements WindowClosingProtocol {
 		SWTAccessor.invoke(true, new Runnable() {
 			public void run() {
 				if (NewtCanvasSWT.this.isDisposed() == false) {
-					parentLoc[0] = getParent().toDisplay(0, 0);
-				}
-				else {
-					parentLoc[0] = new org.eclipse.swt.graphics.Point(0,0);
+					if (isFullscreen() == false) {
+						parentLoc[0] = getParent().toDisplay(0, 0);
+					} else {
+						Rectangle bounds = getParent().getMonitor().getBounds();
+						parentLoc[0] = new org.eclipse.swt.graphics.Point(bounds.x, bounds.y);
+					}
+				} else {
+					parentLoc[0] = new org.eclipse.swt.graphics.Point(0, 0);
 				}
 			}
 		});

@@ -41,7 +41,9 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolTip;
 import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
@@ -158,6 +160,61 @@ public class WorldWindView extends ViewPart {
 		// worldCanvas = new WorldWindowGLCanvas();
 
 		initWorldWindLayerModel();
+		
+		
+		IPartListener2 pl = new IPartListener2() {
+		      
+			@Override
+			public void partActivated(IWorkbenchPartReference partRef) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void partBroughtToTop(IWorkbenchPartReference partRef) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void partClosed(IWorkbenchPartReference partRef) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void partDeactivated(IWorkbenchPartReference partRef) {
+				
+				
+			}
+
+			@Override
+			public void partOpened(IWorkbenchPartReference partRef) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void partHidden(IWorkbenchPartReference partRef) {
+				
+				
+			}
+
+			@Override
+			public void partVisible(IWorkbenchPartReference partRef) {
+				
+				
+			}
+
+			@Override
+			public void partInputChanged(IWorkbenchPartReference partRef) {
+				// TODO Auto-generated method stub
+				
+			}
+		     
+		   };
+		   page.addPartListener(pl);
+
 
 		try {
 			page.showView("com.eco.bio7.worldwind.WorldWindOptionsView");
