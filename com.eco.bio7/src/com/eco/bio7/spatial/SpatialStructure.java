@@ -601,7 +601,6 @@ public class SpatialStructure implements KeyListener, MouseListener {
 						yCameraPosition += heightSpeed * Math.sin(Math.toRadians(viewAngleY));
 						yLookAt += heightSpeed * Math.sin(Math.toRadians(viewAngleY));
 					}
-					System.out.println("forward");
 
 					verifyPosition();
 				} else if (backward) {

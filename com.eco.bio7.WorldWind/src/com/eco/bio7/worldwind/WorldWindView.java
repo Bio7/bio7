@@ -37,6 +37,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolTip;
@@ -61,6 +62,7 @@ import gov.nasa.worldwind.Model;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globes.Earth;
@@ -148,9 +150,11 @@ public class WorldWindView extends ViewPart {
 	 */
 	@Override
 	public void createPartControl(Composite parent) {
+		Shell sh = new Shell(Util.getDisplay());
+		sh.setVisible(false);
 		/* Create a WorldWind instance */
-		/*Workaround to set the images for Bio7 again on MacOSX!*/
-		Image[]imagesTemp=Util.getShell().getImages();
+		/* Workaround to set the images for Bio7 again on MacOSX! */
+		Image[] imagesTemp = Util.getShell().getImages();
 		top = parent;
 		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 		Configuration.setValue(AVKey.INPUT_HANDLER_CLASS_NAME, NewtInputHandlerSWT.class.getName());
@@ -160,61 +164,67 @@ public class WorldWindView extends ViewPart {
 		// worldCanvas = new WorldWindowGLCanvas();
 
 		initWorldWindLayerModel();
-		
-		
+
 		IPartListener2 pl = new IPartListener2() {
-		      
+
 			@Override
 			public void partActivated(IWorkbenchPartReference partRef) {
-				// TODO Auto-generated method stub
-				
+
+				if (partRef.getId().equals("com.eco.bio7.worldwind.WorldWindView")) {
+
+				}
 			}
 
 			@Override
 			public void partBroughtToTop(IWorkbenchPartReference partRef) {
-				// TODO Auto-generated method stub
-				
+				if (partRef.getId().equals("com.eco.bio7.worldwind.WorldWindView")) {
+
+				}
 			}
 
 			@Override
 			public void partClosed(IWorkbenchPartReference partRef) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
 			public void partDeactivated(IWorkbenchPartReference partRef) {
-				
-				
+				if (partRef.getId().equals("com.eco.bio7.worldwind.WorldWindView")) {
+
+				}
+
 			}
 
 			@Override
 			public void partOpened(IWorkbenchPartReference partRef) {
-				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
 			public void partHidden(IWorkbenchPartReference partRef) {
-				
-				
+
+				if (partRef.getId().equals("com.eco.bio7.worldwind.WorldWindView")) {
+
+				}
+
 			}
 
 			@Override
 			public void partVisible(IWorkbenchPartReference partRef) {
-				
-				
+				if (partRef.getId().equals("com.eco.bio7.worldwind.WorldWindView")) {
+
+				}
+
 			}
 
 			@Override
 			public void partInputChanged(IWorkbenchPartReference partRef) {
 				// TODO Auto-generated method stub
-				
-			}
-		     
-		   };
-		   page.addPartListener(pl);
 
+			}
+
+		};
 
 		try {
 			page.showView("com.eco.bio7.worldwind.WorldWindOptionsView");
@@ -222,6 +232,7 @@ public class WorldWindView extends ViewPart {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		page.addPartListener(pl);
 
 		/*
 		 * Composite composite = new Composite(shell, SWT.EMBEDDED); Frame frame =
