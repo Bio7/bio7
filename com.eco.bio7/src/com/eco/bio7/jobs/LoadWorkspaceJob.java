@@ -73,6 +73,7 @@ public class LoadWorkspaceJob extends WorkspaceJob {
 		// For a fast loading we are resizing the field to a minimum!
 
 		XStream xs = new XStream(new DomDriver());
+		xs.allowTypesByRegExp(new String[] { ".*" });
 		xs.setClassLoader(com.eco.bio7.jobs.DataDescriptorGrids.class.getClassLoader());
 
 		try {

@@ -45,6 +45,7 @@ public class SaveWorkspaceJob extends WorkspaceJob {
 		 * "DataDescriptorGrids"!
 		 */
 		XStream xstream = new XStream();
+		xstream.allowTypesByRegExp(new String[] { ".*" });
 		DataDescriptorGrids grid = new DataDescriptorGrids();
 		grid.setFieldSizeX(Field.getWidth());
 		grid.setFieldSizeY(Field.getHeight());

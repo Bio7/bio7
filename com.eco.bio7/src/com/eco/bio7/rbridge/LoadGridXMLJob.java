@@ -110,6 +110,7 @@ public class LoadGridXMLJob extends WorkspaceJob {
 	private void loadXml(final String fileXml) {
 
 		XStream xs = new XStream(new DomDriver());
+		xs.allowTypesByRegExp(new String[] { ".*" });
 		xs.setClassLoader(com.eco.bio7.jobs.DataDescriptorGrids.class.getClassLoader());
 
 		try {

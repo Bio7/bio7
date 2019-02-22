@@ -692,8 +692,7 @@ public class ImageMethods extends ViewPart {
 		lblNewLabel.setText("Transfer Selected Data To R");
 
 		Button btnNewButton = new Button(top, SWT.NONE);
-		btnNewButton.setToolTipText(
-				"Transfers the ImageJ \"Results Table\" data\r\nas a dataframe to R (datatype double).");
+		btnNewButton.setToolTipText("Transfers the ImageJ \"Results Table\" data\r\nas a dataframe to R (datatype double).");
 		rGif = Bio7Plugin.getImageDescriptor("/icons/views/raction.png").createImage();
 		btnNewButton.setImage(rGif);
 		btnNewButton.addSelectionListener(new SelectionAdapter() {
@@ -718,8 +717,7 @@ public class ImageMethods extends ViewPart {
 		btnNewButton.setText("IJ RT       ");
 
 		btnNewButton_1 = new Button(top, SWT.NONE);
-		btnNewButton_1.setToolTipText(
-				"Transfers an opened ImageJ stack (pixel data)\r\nas a matrix list or RasterStack to R.\r\nThe datatype can be selected, too!");
+		btnNewButton_1.setToolTipText("Transfers an opened ImageJ stack (pixel data)\r\nas a matrix list or RasterStack to R.\r\nThe datatype can be selected, too!");
 		rGif = Bio7Plugin.getImageDescriptor("/icons/views/raction.png").createImage();
 		btnNewButton_1.setImage(rGif);
 		btnNewButton_1.addSelectionListener(new SelectionAdapter() {
@@ -830,8 +828,7 @@ public class ImageMethods extends ViewPart {
 		});
 
 		final Button selectedPixelsButton = new Button(top, SWT.NONE);
-		selectedPixelsButton.setToolTipText("" + "Transfers the selected pixels (Freehand, Rectangular etc.)\n"
-				+ "with or without a signature as a matrix to R.\n" + "The transfer type can be selected, too!");
+		selectedPixelsButton.setToolTipText("" + "Transfers the selected pixels (Freehand, Rectangular etc.)\n" + "with or without a signature as a matrix to R.\n" + "The transfer type can be selected, too!");
 		selectedPixelsButton.setImage(Bio7Plugin.getImageDescriptor("/icons/views/raction.png").createImage());
 		// selectedPixelsButton.setFont(SWTResourceManager.getFont("Courier New",
 		// 9, SWT.BOLD));
@@ -841,8 +838,7 @@ public class ImageMethods extends ViewPart {
 					ImagePlus imp = WindowManager.getCurrentImage();
 					if (imp != null) {
 
-						ImageSelectionTransferJob job = new ImageSelectionTransferJob(
-								transferTypeCombo.getSelectionIndex());
+						ImageSelectionTransferJob job = new ImageSelectionTransferJob(transferTypeCombo.getSelectionIndex());
 						// job.setSystem(true);
 						job.schedule();
 					} else {
@@ -862,8 +858,7 @@ public class ImageMethods extends ViewPart {
 		selectedPixelsButton.setText("Pixel       ");
 
 		final Button matchingButton = new Button(top, SWT.NONE);
-		matchingButton.setToolTipText(
-				"Transfers collected selection coordinates\n as a List of Lists (the single selections) to R.\nThe ROI Manager has to be available!");
+		matchingButton.setToolTipText("Transfers collected selection coordinates\n as a List of Lists (the single selections) to R.\nThe ROI Manager has to be available!");
 		matchingButton.setImage(rGif);
 		// matchingButton.setFont(SWTResourceManager.getFont("Courier New", 9,
 		// SWT.BOLD));
@@ -889,12 +884,8 @@ public class ImageMethods extends ViewPart {
 		selectedRoiPixelButton = new Button(top, SWT.NONE);
 		selectedRoiPixelButton.setImage(rGif);
 		selectedPixelsButton.setImage(rGif);
-		selectedRoiPixelButton.setToolTipText("" + "Transfers the selected pixels (Freehand, Rectangular etc.)\n"
-				+ "with or without a signature as a matrix to R.\n" + "The transfer type can be selected, too!\n"
-				+ "The ROI Manager with ROI selections has to be active.\n"
-				+ "All selections for all layers (opened tabs in the ImageJ view)\n"
-				+ "are transferred automatically with an incremental signature!\n"
-				+ "If a stack is among the opened images only the first slice (layer)\n" + "will be transferred!");
+		selectedRoiPixelButton.setToolTipText("" + "Transfers the selected pixels (Freehand, Rectangular etc.)\n" + "with or without a signature as a matrix to R.\n" + "The transfer type can be selected, too!\n" + "The ROI Manager with ROI selections has to be active.\n"
+				+ "All selections for all layers (opened tabs in the ImageJ view)\n" + "are transferred automatically with an incremental signature!\n" + "If a stack is among the opened images only the first slice (layer)\n" + "will be transferred!");
 		selectedRoiPixelButton.setText("Pixel RM");
 
 		selectedRoiPixelButton.addSelectionListener(new SelectionAdapter() {
@@ -905,8 +896,7 @@ public class ImageMethods extends ViewPart {
 					ImagePlus imp = WindowManager.getCurrentImage();
 					if (imp != null) {
 
-						ImageRoiSelectionTransferJob job = new ImageRoiSelectionTransferJob(
-								transferTypeCombo.getSelectionIndex());
+						ImageRoiSelectionTransferJob job = new ImageRoiSelectionTransferJob(transferTypeCombo.getSelectionIndex());
 						// job.setSystem(true);
 						job.schedule();
 					} else {
@@ -926,12 +916,8 @@ public class ImageMethods extends ViewPart {
 
 		btnPixelRoiStack = new Button(top, SWT.NONE);
 		btnPixelRoiStack.setImage(rGif);
-		btnPixelRoiStack.setToolTipText("" + "Transfers the selected pixels of the selected ImageJ\n"
-				+ "selections (Freehand, Rectangular etc.)in a stack \n"
-				+ "with or without a signature as a matrix to R.\n" + "The transfer type can be selected, too!\n"
-				+ "The ROI Manager with selections has to be active\n" + "and the selected image must be a stack!\n"
-				+ "All selections for all slices are transferred\n"
-				+ "automatically with an selected or incremental signature!");
+		btnPixelRoiStack.setToolTipText("" + "Transfers the selected pixels of the selected ImageJ\n" + "selections (Freehand, Rectangular etc.)in a stack \n" + "with or without a signature as a matrix to R.\n" + "The transfer type can be selected, too!\n"
+				+ "The ROI Manager with selections has to be active\n" + "and the selected image must be a stack!\n" + "All selections for all slices are transferred\n" + "automatically with an selected or incremental signature!");
 		btnPixelRoiStack.setText("Pixel RM Stack");
 		selectedPixelsButton.setImage(rGif);
 		btnPixelRoiStack.addSelectionListener(new SelectionAdapter() {
@@ -941,8 +927,7 @@ public class ImageMethods extends ViewPart {
 					ImagePlus imp = WindowManager.getCurrentImage();
 					if (imp != null) {
 
-						ImageStackRoiSelectionTransferJob job = new ImageStackRoiSelectionTransferJob(
-								transferTypeCombo.getSelectionIndex());
+						ImageStackRoiSelectionTransferJob job = new ImageStackRoiSelectionTransferJob(transferTypeCombo.getSelectionIndex());
 						// job.setSystem(true);
 						job.schedule();
 					} else {
@@ -977,8 +962,7 @@ public class ImageMethods extends ViewPart {
 					RState.setBusy(true);
 					if (canTransferPic) {
 						canTransferPic = false;
-						TransferPicJob picjob = new TransferPicJob(imageMatrixNameToR.getText(),
-								transferTypeCombo.getSelectionIndex());
+						TransferPicJob picjob = new TransferPicJob(imageMatrixNameToR.getText(), transferTypeCombo.getSelectionIndex());
 						picjob.addJobChangeListener(new JobChangeAdapter() {
 							public void done(IJobChangeEvent event) {
 								if (event.getResult().isOK()) {
@@ -1015,8 +999,7 @@ public class ImageMethods extends ViewPart {
 		picButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				if (transferTypeCombo.getSelectionIndex() == 3) {
-					Bio7Dialog.message(
-							"RGB transfer to ImageJ is not supported!\n Please use e.g. byte transfer for the R ,G ,B components\n which can be merged with ImageJ!");
+					Bio7Dialog.message("RGB transfer to ImageJ is not supported!\n Please use e.g. byte transfer for the R ,G ,B components\n which can be merged with ImageJ!");
 					return;
 				}
 				if (RState.isBusy() == false) {
@@ -1033,8 +1016,7 @@ public class ImageMethods extends ViewPart {
 						} else if (select == 3) {// Short type
 							transferImageType = 3;
 						}
-						PicFromRJob picFromRJob = new PicFromRJob(transferImageType, imageMatrixNameFromR.getText(),
-								transferTypeCombo.getSelectionIndex());
+						PicFromRJob picFromRJob = new PicFromRJob(transferImageType, imageMatrixNameFromR.getText(), transferTypeCombo.getSelectionIndex());
 						picFromRJob.addJobChangeListener(new JobChangeAdapter() {
 							public void done(IJobChangeEvent event) {
 								if (event.getResult().isOK()) {
@@ -1115,8 +1097,7 @@ public class ImageMethods extends ViewPart {
 		// clusterImageButton.setFont(SWTResourceManager.getFont("Courier New",
 		// 9, SWT.BOLD));
 		clusterImageButton.setText("Cluster Pic");
-		clusterImageButton
-				.setToolTipText("Performs a cluster analysis and creates\na new image from the assigned pixels");
+		clusterImageButton.setToolTipText("Performs a cluster analysis and creates\na new image from the assigned pixels");
 		// clusterImageButton.setImage(ResourceManager.getPluginImage(Bio7Plugin.getDefault(),
 		// "bin/pics/cluster.gif"));
 
@@ -1167,8 +1148,7 @@ public class ImageMethods extends ViewPart {
 		// pcaButton.setFont(SWTResourceManager.getFont("Courier New", 9,
 		// SWT.BOLD));
 		pcaButton.setText("PCA");
-		pcaButton.setToolTipText(
-				"Performs a Principal components analysis\nand creates new image(s) from the components");
+		pcaButton.setToolTipText("Performs a Principal components analysis\nand creates new image(s) from the components");
 		// pcaButton.setImage(ResourceManager.getPluginImage(Bio7Plugin.getDefault(),
 		// "bin/pics/pca.gif"));
 
@@ -1287,13 +1267,14 @@ public class ImageMethods extends ViewPart {
 		PointPanel.get_Species().clear();
 		PointPanel.get_Alpha().clear();
 		PointPanel Jp = PointPanelView.getJp();
-		Jp.repaint();
+		if (Jp != null) {
+			Jp.repaint();
+		}
 	}
 
 	private void resizePointpanel() {
 		PointPanel Jp = PointPanelView.getJp();
-		Jp.setPreferredSize(new Dimension((int) (spinner.getSelection() * Jp.getTransformx()),
-				(int) (spinner1.getSelection() * Jp.getTransformy())));
+		Jp.setPreferredSize(new Dimension((int) (spinner.getSelection() * Jp.getTransformx()), (int) (spinner1.getSelection() * Jp.getTransformy())));
 		PointPanelView.getScroll().setViewportView(Jp);
 		fieldx = spinner.getSelection();
 		fieldy = spinner1.getSelection();
@@ -1302,8 +1283,7 @@ public class ImageMethods extends ViewPart {
 
 	private void resizePointpanel2() {
 		PointPanel Jp = PointPanelView.getJp();
-		Jp.setPreferredSize(new Dimension((int) (spinner.getSelection() * Jp.getTransformx()),
-				(int) (spinner1.getSelection() * Jp.getTransformy())));
+		Jp.setPreferredSize(new Dimension((int) (spinner.getSelection() * Jp.getTransformx()), (int) (spinner1.getSelection() * Jp.getTransformy())));
 		PointPanelView.getScroll().setViewportView(Jp);
 		fieldx = spinner.getSelection();
 		fieldy = spinner1.getSelection();
@@ -1317,8 +1297,7 @@ public class ImageMethods extends ViewPart {
 			spinner.setSelection(Field.getQuadSize() * Field.getWidth());
 			spinner1.setSelection(Field.getQuadSize() * Field.getHeight());
 			PointPanel Jp = PointPanelView.getJp();
-			Jp.setPreferredSize(new Dimension((int) (spinner.getSelection() * Jp.getTransformx()),
-					(int) (spinner1.getSelection() * Jp.getTransformy())));
+			Jp.setPreferredSize(new Dimension((int) (spinner.getSelection() * Jp.getTransformx()), (int) (spinner1.getSelection() * Jp.getTransformy())));
 			PointPanelView.getScroll().setViewportView(Jp);
 			fieldx = spinner.getSelection();
 			fieldy = spinner1.getSelection();
@@ -1339,8 +1318,7 @@ public class ImageMethods extends ViewPart {
 		Jp.setSx(scaled);
 		Jp.setSy(scaled);
 
-		Jp.setPreferredSize(
-				new Dimension((int) (spinner.getSelection() * scaled), (int) (spinner1.getSelection() * scaled)));
+		Jp.setPreferredSize(new Dimension((int) (spinner.getSelection() * scaled), (int) (spinner1.getSelection() * scaled)));
 		Jp.repaint();
 		try {
 			SwingUtilities.invokeAndWait(new Runnable() {
@@ -1363,11 +1341,9 @@ public class ImageMethods extends ViewPart {
 		PointPanel Jp = PointPanelView.getJp();
 		BufferedImage sprite = null;
 		if (image != null) {
-			sprite = new BufferedImage((int) (fieldx * Jp.getTransformx()), (int) (fieldy * Jp.getTransformy()),
-					BufferedImage.TYPE_INT_RGB);
+			sprite = new BufferedImage((int) (fieldx * Jp.getTransformx()), (int) (fieldy * Jp.getTransformy()), BufferedImage.TYPE_INT_RGB);
 		} else {
-			sprite = new BufferedImage((int) (fieldx * Jp.getTransformx()), (int) (fieldy * Jp.getTransformy()),
-					BufferedImage.TYPE_INT_RGB);
+			sprite = new BufferedImage((int) (fieldx * Jp.getTransformx()), (int) (fieldy * Jp.getTransformy()), BufferedImage.TYPE_INT_RGB);
 		}
 
 		Graphics g2D = sprite.createGraphics();
@@ -1389,8 +1365,7 @@ public class ImageMethods extends ViewPart {
 			image = bufferdimage;
 			PointPanel Jp = PointPanelView.getJp();
 
-			Jp.setPreferredSize(new Dimension((int) (bufferdimage.getWidth() * Jp.getTransformx()),
-					(int) (bufferdimage.getHeight() * Jp.getTransformy())));
+			Jp.setPreferredSize(new Dimension((int) (bufferdimage.getWidth() * Jp.getTransformx()), (int) (bufferdimage.getHeight() * Jp.getTransformy())));
 			PointPanelView.getScroll().setViewportView(Jp);
 			Jp.setBuff(bufferdimage);
 			fieldx = bufferdimage.getWidth();
@@ -1422,8 +1397,7 @@ public class ImageMethods extends ViewPart {
 			}
 
 			PointPanel Jp = PointPanelView.getJp();
-			Jp.setPreferredSize(new Dimension((int) (image.getWidth() * Jp.getTransformx()),
-					(int) (image.getHeight() * Jp.getTransformy())));
+			Jp.setPreferredSize(new Dimension((int) (image.getWidth() * Jp.getTransformx()), (int) (image.getHeight() * Jp.getTransformy())));
 			PointPanelView.getScroll().setViewportView(Jp);
 			Jp.setBuff(image);
 
@@ -1532,8 +1506,7 @@ public class ImageMethods extends ViewPart {
 		PointPanel Jp = PointPanelView.getJp();
 		BufferedImage sprite = null;
 
-		sprite = new BufferedImage((int) (fieldx * Jp.getTransformx()), (int) (fieldy * Jp.getTransformy()),
-				BufferedImage.TYPE_INT_RGB);
+		sprite = new BufferedImage((int) (fieldx * Jp.getTransformx()), (int) (fieldy * Jp.getTransformy()), BufferedImage.TYPE_INT_RGB);
 
 		Graphics g2D = sprite.createGraphics();
 
@@ -1555,8 +1528,7 @@ public class ImageMethods extends ViewPart {
 		PointPanel Jp = PointPanelView.getJp();
 		BufferedImage sprite = null;
 
-		sprite = new BufferedImage((int) (fieldx * Jp.getTransformx()), (int) (fieldy * Jp.getTransformy()),
-				BufferedImage.TYPE_INT_RGB);
+		sprite = new BufferedImage((int) (fieldx * Jp.getTransformx()), (int) (fieldy * Jp.getTransformy()), BufferedImage.TYPE_INT_RGB);
 
 		Graphics g2D = sprite.createGraphics();
 
@@ -2152,8 +2124,7 @@ public class ImageMethods extends ViewPart {
 									imageData = null;
 
 								} else {
-									Bio7Dialog.message(
-											"The size variables (imageSizeX, imageSizeY)\n are not available!");
+									Bio7Dialog.message("The size variables (imageSizeX, imageSizeY)\n are not available!");
 								}
 							}
 							/*************************************
@@ -2339,9 +2310,7 @@ public class ImageMethods extends ViewPart {
 										}
 									} catch (REXPMismatchException e) {
 
-										System.out.println("An transfer error occured!\n"
-												+ "Please select the correct image type!\n"
-												+ "For a byte transfer a list has to be present!\n");
+										System.out.println("An transfer error occured!\n" + "Please select the correct image type!\n" + "For a byte transfer a list has to be present!\n");
 									} catch (RserveException e) {
 
 										e.printStackTrace();
@@ -2349,8 +2318,7 @@ public class ImageMethods extends ViewPart {
 									imageData = null;
 
 								} else {
-									System.out.println(
-											"The size variables (imageSizeX, imageSizeY)\n are not available!");
+									System.out.println("The size variables (imageSizeX, imageSizeY)\n are not available!");
 								}
 							} else {
 
@@ -2363,8 +2331,7 @@ public class ImageMethods extends ViewPart {
 						System.out.println("Specified image data is not numeric!");
 					}
 				} else {
-					System.out.println("Specified image data not existent\n"
-							+ "in the R workspace!\n (The word image is also forbidden for\n a transfer to ImageJ!)");
+					System.out.println("Specified image data not existent\n" + "in the R workspace!\n (The word image is also forbidden for\n a transfer to ImageJ!)");
 				}
 			} else {
 				System.out.println("No image data name specified!");
@@ -2744,12 +2711,11 @@ public class ImageMethods extends ViewPart {
 				for (int u = 0; u < imagesSizeX; u++) {
 					int value = (imageData[i * imagesSizeX + u]);
 					// value is a bit-packed RGB value
-					
-					  /*int red = value & 0xff; 
-					  int green = (value >> 8) & 0xff; 
-					  int blue = (value >>16) & 0xff;
-					  int result= red<<16|green<<8|blue;*/
-					 
+
+					/*
+					 * int red = value & 0xff; int green = (value >> 8) & 0xff; int blue = (value
+					 * >>16) & 0xff; int result= red<<16|green<<8|blue;
+					 */
 
 					ip.putPixel(u, i, value);
 

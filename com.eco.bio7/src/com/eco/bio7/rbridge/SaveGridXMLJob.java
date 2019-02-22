@@ -142,6 +142,7 @@ public class SaveGridXMLJob extends WorkspaceJob {
 		}
 
 		XStream xstream = new XStream();
+		xstream.allowTypesByRegExp(new String[] { ".*" });
 		GridXmlObject gridX = new GridXmlObject();
 		gridX.setGridValues(values);
 		gridX.setFontObject(fontObject);
