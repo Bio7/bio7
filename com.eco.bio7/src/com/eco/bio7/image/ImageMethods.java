@@ -508,8 +508,10 @@ public class ImageMethods extends ViewPart {
 		dynamicButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				PointPanel p = PointPanel.getPointPanel();
-				p.dynamicVoronoi = !p.dynamicVoronoi;
-				PointPanel.doPaint();
+				if (p != null) {
+					p.dynamicVoronoi = !p.dynamicVoronoi;
+					PointPanel.doPaint();
+				}
 			}
 		});
 		dynamicButton.setText("Dynamic Voro.");
@@ -547,9 +549,10 @@ public class ImageMethods extends ViewPart {
 
 			public void widgetSelected(SelectionEvent e) {
 				PointPanel p = PointPanel.getPointPanel();
-				p.dynamicDelauney = !p.dynamicDelauney;
-
-				PointPanel.doPaint();
+				if (p != null) {
+					p.dynamicDelauney = !p.dynamicDelauney;
+					PointPanel.doPaint();
+				}
 			}
 		});
 		btnDynamic.setText("Dynamic Del.");
@@ -1253,8 +1256,10 @@ public class ImageMethods extends ViewPart {
 		image = null;
 		PointPanel.setBuffNull();// set Buffered Image to null!
 		PointPanel Jp = PointPanelView.getJp();
-		Jp.repaint();
-		System.gc();
+		if (Jp != null) {
+			Jp.repaint();
+			System.gc();
+		}
 	}
 
 	/**
@@ -1274,19 +1279,23 @@ public class ImageMethods extends ViewPart {
 
 	private void resizePointpanel() {
 		PointPanel Jp = PointPanelView.getJp();
-		Jp.setPreferredSize(new Dimension((int) (spinner.getSelection() * Jp.getTransformx()), (int) (spinner1.getSelection() * Jp.getTransformy())));
-		PointPanelView.getScroll().setViewportView(Jp);
-		fieldx = spinner.getSelection();
-		fieldy = spinner1.getSelection();
+		if (Jp != null) {
+			Jp.setPreferredSize(new Dimension((int) (spinner.getSelection() * Jp.getTransformx()), (int) (spinner1.getSelection() * Jp.getTransformy())));
+			PointPanelView.getScroll().setViewportView(Jp);
+			fieldx = spinner.getSelection();
+			fieldy = spinner1.getSelection();
+		}
 
 	}
 
 	private void resizePointpanel2() {
 		PointPanel Jp = PointPanelView.getJp();
-		Jp.setPreferredSize(new Dimension((int) (spinner.getSelection() * Jp.getTransformx()), (int) (spinner1.getSelection() * Jp.getTransformy())));
-		PointPanelView.getScroll().setViewportView(Jp);
-		fieldx = spinner.getSelection();
-		fieldy = spinner1.getSelection();
+		if (Jp != null) {
+			Jp.setPreferredSize(new Dimension((int) (spinner.getSelection() * Jp.getTransformx()), (int) (spinner1.getSelection() * Jp.getTransformy())));
+			PointPanelView.getScroll().setViewportView(Jp);
+			fieldx = spinner.getSelection();
+			fieldy = spinner1.getSelection();
+		}
 
 	}
 
@@ -1297,62 +1306,69 @@ public class ImageMethods extends ViewPart {
 			spinner.setSelection(Field.getQuadSize() * Field.getWidth());
 			spinner1.setSelection(Field.getQuadSize() * Field.getHeight());
 			PointPanel Jp = PointPanelView.getJp();
-			Jp.setPreferredSize(new Dimension((int) (spinner.getSelection() * Jp.getTransformx()), (int) (spinner1.getSelection() * Jp.getTransformy())));
-			PointPanelView.getScroll().setViewportView(Jp);
-			fieldx = spinner.getSelection();
-			fieldy = spinner1.getSelection();
+			if (Jp != null) {
+				Jp.setPreferredSize(new Dimension((int) (spinner.getSelection() * Jp.getTransformx()), (int) (spinner1.getSelection() * Jp.getTransformy())));
+				PointPanelView.getScroll().setViewportView(Jp);
+				fieldx = spinner.getSelection();
+				fieldy = spinner1.getSelection();
+			}
 		}
 		PointPanel Jp = PointPanelView.getJp();
-		Jp.repaint();
+		if (Jp != null) {
+			Jp.repaint();
+		}
 	}
 
 	private void scaleImage() {
 		final PointPanel Jp = PointPanelView.getJp();
+		if (Jp != null) {
+			int select = scale2.getSelection();
 
-		int select = scale2.getSelection();
+			double sc = select;
+			double factor = 10000;
+			double scaled = sc / 10000;
 
-		double sc = select;
-		double factor = 10000;
-		double scaled = sc / 10000;
+			Jp.setSx(scaled);
+			Jp.setSy(scaled);
 
-		Jp.setSx(scaled);
-		Jp.setSy(scaled);
+			Jp.setPreferredSize(new Dimension((int) (spinner.getSelection() * scaled), (int) (spinner1.getSelection() * scaled)));
+			Jp.repaint();
+			try {
+				SwingUtilities.invokeAndWait(new Runnable() {
+					// !!
+					public void run() {
 
-		Jp.setPreferredSize(new Dimension((int) (spinner.getSelection() * scaled), (int) (spinner1.getSelection() * scaled)));
-		Jp.repaint();
-		try {
-			SwingUtilities.invokeAndWait(new Runnable() {
-				// !!
-				public void run() {
+						PointPanelView.getScroll().setViewportView(Jp);
+					}
+				});
+			} catch (InterruptedException e1) {
 
-					PointPanelView.getScroll().setViewportView(Jp);
-				}
-			});
-		} catch (InterruptedException e1) {
+				e1.printStackTrace();
+			} catch (InvocationTargetException e1) {
 
-			e1.printStackTrace();
-		} catch (InvocationTargetException e1) {
-
-			e1.printStackTrace();
+				e1.printStackTrace();
+			}
 		}
 	}
 
 	private void sendImageTo() {
 		PointPanel Jp = PointPanelView.getJp();
-		BufferedImage sprite = null;
-		if (image != null) {
-			sprite = new BufferedImage((int) (fieldx * Jp.getTransformx()), (int) (fieldy * Jp.getTransformy()), BufferedImage.TYPE_INT_RGB);
-		} else {
-			sprite = new BufferedImage((int) (fieldx * Jp.getTransformx()), (int) (fieldy * Jp.getTransformy()), BufferedImage.TYPE_INT_RGB);
+		if (Jp != null) {
+			BufferedImage sprite = null;
+			if (image != null) {
+				sprite = new BufferedImage((int) (fieldx * Jp.getTransformx()), (int) (fieldy * Jp.getTransformy()), BufferedImage.TYPE_INT_RGB);
+			} else {
+				sprite = new BufferedImage((int) (fieldx * Jp.getTransformx()), (int) (fieldy * Jp.getTransformy()), BufferedImage.TYPE_INT_RGB);
+			}
+
+			Graphics g2D = sprite.createGraphics();
+
+			Jp.paintComponent(g2D);
+
+			// java.awt.Image awtimage = toImage(sprite);
+			ImagePlus imp = new ImagePlus("Bio7", sprite);
+			imp.show();
 		}
-
-		Graphics g2D = sprite.createGraphics();
-
-		Jp.paintComponent(g2D);
-
-		// java.awt.Image awtimage = toImage(sprite);
-		ImagePlus imp = new ImagePlus("Bio7", sprite);
-		imp.show();
 	}
 
 	private void plusToBuffered() {
@@ -1364,14 +1380,15 @@ public class ImageMethods extends ViewPart {
 			BufferedImage bufferdimage = createBufferedImage(imageawt);
 			image = bufferdimage;
 			PointPanel Jp = PointPanelView.getJp();
-
-			Jp.setPreferredSize(new Dimension((int) (bufferdimage.getWidth() * Jp.getTransformx()), (int) (bufferdimage.getHeight() * Jp.getTransformy())));
-			PointPanelView.getScroll().setViewportView(Jp);
-			Jp.setBuff(bufferdimage);
-			fieldx = bufferdimage.getWidth();
-			fieldy = bufferdimage.getHeight();
-			spinner.setSelection(bufferdimage.getWidth());
-			spinner1.setSelection(bufferdimage.getHeight());
+			if (Jp != null) {
+				Jp.setPreferredSize(new Dimension((int) (bufferdimage.getWidth() * Jp.getTransformx()), (int) (bufferdimage.getHeight() * Jp.getTransformy())));
+				PointPanelView.getScroll().setViewportView(Jp);
+				Jp.setBuff(bufferdimage);
+				fieldx = bufferdimage.getWidth();
+				fieldy = bufferdimage.getHeight();
+				spinner.setSelection(bufferdimage.getWidth());
+				spinner1.setSelection(bufferdimage.getHeight());
+			}
 		} else {
 			Bio7Dialog.message("No image availabe in the ImageJ-Canvas view!");
 		}
@@ -1397,15 +1414,17 @@ public class ImageMethods extends ViewPart {
 			}
 
 			PointPanel Jp = PointPanelView.getJp();
-			Jp.setPreferredSize(new Dimension((int) (image.getWidth() * Jp.getTransformx()), (int) (image.getHeight() * Jp.getTransformy())));
-			PointPanelView.getScroll().setViewportView(Jp);
-			Jp.setBuff(image);
+			if (Jp != null) {
+				Jp.setPreferredSize(new Dimension((int) (image.getWidth() * Jp.getTransformx()), (int) (image.getHeight() * Jp.getTransformy())));
+				PointPanelView.getScroll().setViewportView(Jp);
+				Jp.setBuff(image);
 
-			Jp.setBuff(image);
-			fieldx = image.getWidth();
-			fieldy = image.getHeight();
-			spinner.setSelection(image.getWidth());
-			spinner1.setSelection(image.getHeight());
+				Jp.setBuff(image);
+				fieldx = image.getWidth();
+				fieldy = image.getHeight();
+				spinner.setSelection(image.getWidth());
+				spinner1.setSelection(image.getHeight());
+			}
 
 		}
 	}

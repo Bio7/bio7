@@ -155,7 +155,7 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 	}
 
 	PointPanel() {
-		retina=Util.isMacRetinaDisplay();
+		retina = Util.isMacRetinaDisplay();
 		this.addMouseWheelListener(this);
 
 		this.addKeyListener(this);
@@ -257,10 +257,9 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 		if (retina) {
 			transformVorox = aff.getScaleX() / 2;
 			transformVoroy = aff.getScaleY() / 2;
-		}
-		else {
-		transformVorox = aff.getScaleX();
-		transformVoroy = aff.getScaleY();
+		} else {
+			transformVorox = aff.getScaleX();
+			transformVoroy = aff.getScaleY();
 		}
 		if (PointPanel.getPoints().length > 1) {
 			Geometry g = getGeomVoronoi();
@@ -269,8 +268,7 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 					Geometry geom = g.getGeometryN(i);
 					org.locationtech.jts.geom.Point p = geom.getCentroid();
 
-					g2d.drawString("" + geom.getArea(), (int) ((p.getX() / transformVorox) * transformx),
-							(int) ((p.getY() / transformVoroy) * transformy));
+					g2d.drawString("" + geom.getArea(), (int) ((p.getX() / transformVorox) * transformx), (int) ((p.getY() / transformVoroy) * transformy));
 
 				}
 			}
@@ -350,8 +348,7 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 		for (int y = 0; y < individual.length; y++) {
 			if (individual[y] != null) {
 				diameter = individual[y].getDiameter();
-				ve.add(new Ellipse2D.Double(individual[y].getX() - (int) (diameter / 2),
-						individual[y].getY() - (int) (diameter / 2), diameter, diameter));
+				ve.add(new Ellipse2D.Double(individual[y].getX() - (int) (diameter / 2), individual[y].getY() - (int) (diameter / 2), diameter, diameter));
 				species.add(individual[y].getSpecies());
 				alpha.add(individual[y].getAlpha());
 				Points.add(new Point2D.Double(individual[y].getX(), individual[y].getY()));
@@ -389,8 +386,7 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 			String specie = CurrentStates.getStateName(sp);
 			int rgb[] = CurrentStates.getRGB(sp);
 			g2.setColor(new Color(rgb[0], rgb[1], rgb[2]));
-			g2.fillOval((int) (ellipse.getX()), (int) (ellipse.getY()), (int) ellipse.getHeight(),
-					(int) ellipse.getWidth());
+			g2.fillOval((int) (ellipse.getX()), (int) (ellipse.getY()), (int) ellipse.getHeight(), (int) ellipse.getWidth());
 
 			if (drag == true) {
 				if (currentellipse.equals(ellipse)) {
@@ -899,7 +895,9 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 	 */
 	public static void doPaint() {
 		PointPanel Jp = PointPanelView.getJp();
-		Jp.repaint();
+		if (Jp != null) {
+			Jp.repaint();
+		}
 	}
 
 	/**
@@ -920,17 +918,14 @@ public class PointPanel extends JPanel implements KeyListener, MouseListener, Mo
 		if (panel != null) {
 
 			if ((x * panel.transformx) - width / 2 >= 0 && (y * panel.transformy) - height / 2 >= 0) {
-				viewport.setViewPosition(new Point((int) ((x * panel.transformx) - width / 2),
-						(int) ((y * panel.transformy) - height / 2)));
+				viewport.setViewPosition(new Point((int) ((x * panel.transformx) - width / 2), (int) ((y * panel.transformy) - height / 2)));
 
 			}
 
 			else if ((x * panel.transformx) - width / 2 >= 0 && (y * panel.transformy) - height / 2 < 0) {
-				viewport.setViewPosition(
-						new Point((int) ((x * panel.transformx) - width / 2), viewport.getViewPosition().y));
+				viewport.setViewPosition(new Point((int) ((x * panel.transformx) - width / 2), viewport.getViewPosition().y));
 			} else if ((x * panel.transformx) - width / 2 < 0 && (y * panel.transformy) - height / 2 >= 0) {
-				viewport.setViewPosition(
-						new Point(viewport.getViewPosition().x, (int) ((y * panel.transformy) - height / 2)));
+				viewport.setViewPosition(new Point(viewport.getViewPosition().x, (int) ((y * panel.transformy) - height / 2)));
 			}
 
 		}

@@ -64,11 +64,13 @@ public class IJTranserResultsTable {
 						String columnName = rt.getColumnHeading(i);
 						if (columnName.equals("%Area")) {
 							columnName = columnName.replace("%Area", "Area_Prozent");
-						}	
-						
-						/*Replace all special characters except '_' and '.'!
-						 *This is necessary for customized Results table columns!*/
-						columnName =columnName.replaceAll("[^a-zA-Z0-9_.]+","_");
+						}
+
+						/*
+						 * Replace all special characters except '_' and '.'! This is necessary for
+						 * customized Results table columns!
+						 */
+						columnName = columnName.replaceAll("[^a-zA-Z0-9_.]+", "_");
 						try {
 							con.assign(columnName, col);
 						} catch (REngineException e1) {
@@ -106,10 +108,10 @@ public class IJTranserResultsTable {
 		Roi roi = null;
 
 		if (d != null) {
-			ImagePlus plu=WindowManager.getCurrentImage();
+			ImagePlus plu = WindowManager.getCurrentImage();
 			double xydia[][] = PointPanel.pointToArray();
 			if (plu != null) {
-				
+
 				/* Get the image processor of the image ! */
 				ImageProcessor ip = plu.getProcessor();
 				int w = ip.getWidth();
@@ -124,9 +126,7 @@ public class IJTranserResultsTable {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-				
-				
-				
+
 				roi = plu.getRoi();
 				int[] roix = null;
 				int[] roiy = null;
@@ -175,7 +175,7 @@ public class IJTranserResultsTable {
 				public void run() {
 					MessageBox messageBox = new MessageBox(new Shell(),
 
-					SWT.ICON_INFORMATION);
+							SWT.ICON_INFORMATION);
 					messageBox.setMessage("Transferred values to R");
 					messageBox.open();
 				}
@@ -186,7 +186,7 @@ public class IJTranserResultsTable {
 
 			MessageBox messageBox = new MessageBox(new Shell(),
 
-			SWT.ICON_INFORMATION);
+					SWT.ICON_INFORMATION);
 			messageBox.setMessage("RServer connection failed - Server is not running !");
 			messageBox.open();
 
@@ -196,29 +196,31 @@ public class IJTranserResultsTable {
 
 	public static void addParticleValues() {
 		PointPanel jp = PointPanelView.getJp();
-		MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
-		message.setMessage("Do you want to delete plants in the Points panel?");
-		message.setText("Delete Plants");
-		int response = message.open();
-		if (response == SWT.YES) {
+		if (jp != null) {
+			MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+			message.setMessage("Do you want to delete plants in the Points panel?");
+			message.setText("Delete Plants");
+			int response = message.open();
+			if (response == SWT.YES) {
 
-			jp.getVe().clear();
-			jp.get_Points().clear();
-			jp.get_Species().clear();
-			jp.get_Alpha().clear();
+				jp.getVe().clear();
+				jp.get_Points().clear();
+				jp.get_Species().clear();
+				jp.get_Alpha().clear();
 
-			//
-		}
-
-		SwingUtilities.invokeLater(new Runnable() {
-			// !!
-			public void run() {
-
-				setParticles(jp);
+				//
 			}
-		});
-		jp.repaint();
-		// Bio7ImageJAnalyse.clearList(); Options in class Analyzer regarded!
+
+			SwingUtilities.invokeLater(new Runnable() {
+				// !!
+				public void run() {
+
+					setParticles(jp);
+				}
+			});
+			jp.repaint();
+			// Bio7ImageJAnalyse.clearList(); Options in class Analyzer regarded!
+		}
 	}
 
 	private static void setParticles(PointPanel jp) {
@@ -229,7 +231,8 @@ public class IJTranserResultsTable {
 
 		IJ.runMacro("run(\"Analyze Particles...\")");
 
-		// IJ.runMacro("run(\"Analyze Particles...\", \"size=0-Infinity circularity=0.00-1.00 show=Nothing display clear stack\")");
+		// IJ.runMacro("run(\"Analyze Particles...\", \"size=0-Infinity
+		// circularity=0.00-1.00 show=Nothing display clear stack\")");
 		// System.out.println(rt.getColumnHeadings());
 		ResultsTable rt = Analyzer.getResultsTable();
 		if (rt == null) {
@@ -246,10 +249,10 @@ public class IJTranserResultsTable {
 				double[] xcol = rt.getColumnAsDoubles(x);
 				double[] ycol = rt.getColumnAsDoubles(y);
 				if (xcol != null && ycol != null) {
-					//System.out.println("xxxxxx   " + x);
+					// System.out.println("xxxxxx " + x);
 
 					for (int j = 0; j < xcol.length; j++) {
-						//System.out.println(xcol[j]);
+						// System.out.println(xcol[j]);
 						cmx = xcol[j] * ImageMethods.getPointScale();
 						/* Values with scale for precision ! */
 						cmy = ycol[j] * ImageMethods.getPointScale();
@@ -320,7 +323,7 @@ public class IJTranserResultsTable {
 
 				}
 				runParticleAnalysis(d, null);
-				
+
 				Bio7Dialog.message("Particles action executed!");
 			} else {
 
@@ -335,10 +338,8 @@ public class IJTranserResultsTable {
 	/**
 	 * A method to transfer results from a particle analysis in ImageJ.
 	 * 
-	 * @param con
-	 *            a Rserve connection.
-	 * @param macro
-	 *            an optional macro.
+	 * @param con   a Rserve connection.
+	 * @param macro an optional macro.
 	 */
 	public static void runParticleAnalysis(RConnection con, String macro) {
 		if (macro == null) {
@@ -347,7 +348,8 @@ public class IJTranserResultsTable {
 
 			IJ.runMacro(macro);
 		}
-		// IJ.runMacro("run(\"Analyze Particles...\", \"size=0-Infinity circularity=0.00-1.00 show=Nothing display clear stack\")");
+		// IJ.runMacro("run(\"Analyze Particles...\", \"size=0-Infinity
+		// circularity=0.00-1.00 show=Nothing display clear stack\")");
 		// System.out.println(rt.getColumnHeadings());
 		ResultsTable rt = Analyzer.getResultsTable();
 		TextWindow resultsWindow = ResultsTable.getResultsWindow();

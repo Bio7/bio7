@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="libs/Medusa-8.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/xstream-1.4.11.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jtouchbar-1.0.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jtouchbar-javafx-1.0.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jtouchbar-swt-1.0.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/Medusa-8.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="hardware/arduino.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/poi-3.17.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/poi-ooxml-3.17.jar"/>

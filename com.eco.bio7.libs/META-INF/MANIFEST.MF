@@ -56,11 +56,11 @@ Bundle-ClassPath: bin/,
  Excel/poi-ooxml-3.17.jar,
  Excel/poi-ooxml-schemas-3.17.jar,
  hardware/arduino.jar,
- libs/Medusa-8.0.jar,
  libs/jtouchbar-swt-1.0.0.jar,
  libs/jtouchbar-1.0.0.jar,
  libs/jtouchbar-javafx-1.0.0.jar,
- libs/xstream-1.4.11.1.jar
+ libs/xstream-1.4.11.1.jar,
+ libs/Medusa-8.3.jar
 Export-Package: Jama,
  Jama.examples,
  Jama.test,
