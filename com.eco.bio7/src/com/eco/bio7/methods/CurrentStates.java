@@ -63,17 +63,21 @@ public class CurrentStates {
 	}
 
 	public static int[] getRGB(int v) {
-		Integer R = (Integer) r.get(v);
-		int r = R.intValue();
+		if (r.size() > v && g.size() > v && b.size() > v) {
+			Integer R = (Integer) r.get(v);
+			int r = R.intValue();
 
-		Integer G = (Integer) g.get(v);
-		int g = G.intValue();
+			Integer G = (Integer) g.get(v);
+			int g = G.intValue();
 
-		Integer B = (Integer) b.get(v);
-		int b = B.intValue();
-		int rgb[] = { r, g, b };
+			Integer B = (Integer) b.get(v);
+			int b = B.intValue();
+			int rgb[] = { r, g, b };
 
-		return rgb; // Returns an array with the colour values!!
+			return rgb; // Returns an array with the colour values!!
+		}
+		int rgbg[] = { 0, 0, 0 };
+		return rgbg;
 
 	}
 
