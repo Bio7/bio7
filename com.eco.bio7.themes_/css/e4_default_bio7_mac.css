@@ -371,7 +371,7 @@ Bounds: x=1082 y=186 h=31 w=31;
 
 /*Font size for the view menus important for MacOSX!*/
 #com-eco-bio7-imagej.MToolBar {
-    /*background-color:  #eeeeee;*/
+    color:  #000000;
     font-size: 14px;
 }
 
@@ -409,13 +409,15 @@ Bounds: x=1082 y=186 h=31 w=31;
 }*/
 /*Font size for the PerspectiveBar important for MacOSX!*/
 #PerspectiveSwitcher ToolBar {
+  color:  #000000;
   font-size: 14px;
 }
-/*Package Explorer!*/
+/*
+Package Explorer!
 #org-eclipse-jdt-ui-PackageExplorer {
-      font-size:20;
-      background:black;
-}
+      font-size:14;
+      /*background:black;*/
+}*/
 
 /*
 * {
