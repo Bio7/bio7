@@ -64,13 +64,13 @@ public class Bio7LinuxTheme extends OceanTheme {
 	}
 
 	public void addCustomEntriesToTable(UIDefaults defaults) {
-		defaults.put("Button.gradient", Arrays.asList(new Object[] { new Double(0.3), new Double(0.0), new ColorUIResource(col), new ColorUIResource(Color.WHITE), new ColorUIResource(col) }));
+		defaults.put("Button.gradient", Arrays.asList(new Object[] { new Double(0.3), new Double(0.0), new ColorUIResource(col), new ColorUIResource(col), new ColorUIResource(col) }));
 		defaults.put("CheckBox.gradient", Arrays.asList(new Object[] { new Double(0.3), new Double(0.0), new ColorUIResource(col), new ColorUIResource(Color.WHITE), new ColorUIResource(col) }));
 		defaults.put("CheckBoxMenuItem.gradient", Arrays.asList(new Object[] { new Double(0.3), new Double(0.0), new ColorUIResource(221, 232, 243), new ColorUIResource(Color.WHITE), new ColorUIResource(184, 207, 229) }));
 		defaults.put("MenuBar.gradient", Arrays.asList(new Object[] { new Double(1.0), new Double(0.0), new ColorUIResource(col), new ColorUIResource(218, 218, 218), new ColorUIResource(218, 218, 218) }));
 		defaults.put("RadioButton.gradient", Arrays.asList(new Object[] { new Double(0.3), new Double(0.0), new ColorUIResource(col), new ColorUIResource(col), new ColorUIResource(col) }));
 		defaults.put("RadioButtonMenuItem.gradient", Arrays.asList(new Object[] { new Double(0.3), new Double(0.0), new ColorUIResource(221, 232, 243), new ColorUIResource(col), new ColorUIResource(184, 207, 229) }));
-		defaults.put("ScrollBar.gradient", Arrays.asList(new Object[] { new Double(0.3), new Double(0.0), new ColorUIResource(col), new ColorUIResource(Color.WHITE), new ColorUIResource(col) }));
+		defaults.put("ScrollBar.gradient", Arrays.asList(new Object[] { new Double(0.3), new Double(0.0), new ColorUIResource(col), new ColorUIResource(col), new ColorUIResource(col) }));
 		defaults.put("Slider.gradient", Arrays.asList(new Object[] { new Double(0.3), new Double(0.2), new ColorUIResource(col), new ColorUIResource(Color.WHITE), new ColorUIResource(col) }));
 		defaults.put("ToggleButton.gradient", Arrays.asList(new Object[] { new Double(0.3), new Double(0.0), new ColorUIResource(221, 232, 243), new ColorUIResource(col), new ColorUIResource(184, 207, 229) }));
 		defaults.put("InternalFrame.activeTitleGradient", Arrays.asList(new Object[] { new Double(0.3), new Double(0.0), new ColorUIResource(221, 232, 243), new ColorUIResource(col), new ColorUIResource(184, 207, 229) }));
