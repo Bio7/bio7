@@ -1016,6 +1016,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 				try {
 					UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel"); //$NON-NLS-1$
+					//UIManager.getLookAndFeelDefaults().put("Panel.background", Util.getSWTBackgroundToAWT(parent));
 					// SwingUtilities.updateComponentTreeUI(this);
 				} catch (Exception e) {
 					System.out.println(e);
@@ -1029,6 +1030,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 				try {
 					UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel"); //$NON-NLS-1$
+					UIManager.getLookAndFeelDefaults().put("Panel.background", Util.getSWTBackgroundToAWT());
 					// SwingUtilities.updateComponentTreeUI(this);
 				} catch (Exception e) {
 					System.out.println(e);
