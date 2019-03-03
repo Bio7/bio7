@@ -376,7 +376,7 @@ Bounds: x=1082 y=186 h=31 w=31;
 }
 
 #com-eco-bio7-rbridge-RTable.MToolBar {
-   
+    color:  #000000;
     font-size: 14px;
 }
 #com-eco-bio7-imagej.MToolBar {
@@ -384,17 +384,19 @@ Bounds: x=1082 y=186 h=31 w=31;
     font-size: 14px;
 }
 #com-eco-bio7-thumbnails.MToolBar {
-   
+    color:  #000000;
     font-size: 14px;
 }
 
 #org-eclipse-ui-console-ConsoleView.MToolBar {
     background-color:  #eeeeee;
+    color:  #000000;
     font-size: 14px;
 }
 
 #com-eco-bio7-browser-Browser.MToolBar {
     background-color:  #eeeeee;
+    color:  #000000;
     font-size: 14px;
 }
 
