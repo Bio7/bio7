@@ -17,7 +17,7 @@
 
 /* @import url("platform:/plugin/org.eclipse.ui.themes/css/e4-dark.css"); Bug 430052 */
 @import url("platform:/plugin/com.eco.bio7.themes/css/dark/e4-dark_basestyle.css");
-@import url("platform:/plugin/com.eco.bio7.themes/css/dark/e4-dark_globalstyle.css"); /* Remove this to have ONLY the main IDE shell dark */
+@import url("platform:/plugin/com.eco.bio7.themes/css/dark/e4-dark_linux_globalstyle.css"); /* Remove this to have ONLY the main IDE shell dark */
 @import url("platform:/plugin/com.eco.bio7.themes/css/dark/e4-dark_partstyle.css");
 
 
