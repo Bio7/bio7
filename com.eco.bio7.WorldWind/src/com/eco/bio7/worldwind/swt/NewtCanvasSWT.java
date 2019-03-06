@@ -53,6 +53,7 @@ import jogamp.newt.swt.SWTEDTUtil;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.internal.DPIUtil;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
@@ -125,7 +126,7 @@ public class NewtCanvasSWT extends Canvas implements WindowClosingProtocol {
 
 		SWTAccessor.setRealized(this, true);
 
-		clientArea = getClientArea();
+		clientArea = DPIUtil.autoScaleUp(getClientArea());
 
 		final AbstractGraphicsDevice device = SWTAccessor.getDevice(this);
 		screen = SWTAccessor.getScreen(device, -1 /* default */);
@@ -250,7 +251,7 @@ public class NewtCanvasSWT extends Canvas implements WindowClosingProtocol {
 	}
 
 	protected final void updateSizeCheck() {
-		final Rectangle nClientArea = getClientArea();
+		final Rectangle nClientArea = DPIUtil.autoScaleUp(getClientArea());
 		if (null != nClientArea) {
 			updatePosSizeCheck(nClientArea.x, nClientArea.y, nClientArea.width, nClientArea.height,
 					false /* updatePos */);
@@ -258,7 +259,7 @@ public class NewtCanvasSWT extends Canvas implements WindowClosingProtocol {
 	}
 
 	protected final void updatePosSizeCheck() {
-		final Rectangle nClientArea = getClientArea();
+		final Rectangle nClientArea = DPIUtil.autoScaleUp(getClientArea());
 		if (null != nClientArea) {
 			updatePosSizeCheck(nClientArea.x, nClientArea.y, nClientArea.width, nClientArea.height,
 					true /* updatePos */);
