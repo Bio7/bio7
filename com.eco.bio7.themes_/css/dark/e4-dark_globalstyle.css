@@ -48,7 +48,7 @@ ScrolledComposite > Composite > Composite > Composite > *, /* Composite > NewKey
 Shell > Composite > Composite > Composite > Composite > Composite > *, /* Composite > ShowRefactoringHistoryWizardPage$... */
 Shell[style~='SWT.RADIO'][style~='SWT.CASCADE'][style~='SWT.SHADOW_ETCHED_IN'][style~='SWT.SHADOW_ETCHED_OUT'][style~='SWT.RESIZE'][style~='SWT.MENU'][style~='SWT.FULL_SELECTION'][style~='SWT.DATE'] > Composite > *, /* Composite > RefactoringWizardDialog$... */
 Shell[style~='SWT.RADIO'][style~='SWT.CASCADE'][style~='SWT.SHADOW_ETCHED_IN'][style~='SWT.SHADOW_ETCHED_OUT'][style~='SWT.RESIZE'][style~='SWT.MENU'][style~='SWT.FULL_SELECTION'][style~='SWT.DATE'] > Composite > * > * /* Composite > RefactoringWizardDialog$... */ {
-    background-color:#515658;
+    background-color:#252525;
     color:#eeeeee;
 }
 
