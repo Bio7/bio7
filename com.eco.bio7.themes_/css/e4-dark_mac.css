@@ -392,6 +392,7 @@ Bounds: x=1082 y=186 h=31 w=31;
 }*/
 /*Font size for the PerspectiveBar important for MacOSX!*/
 #PerspectiveSwitcher ToolBar {
+  background-color:  #41464A #252525 #252525  10.0% 90.0% 5.0%;
   font-size: 14px;
 }
 /*Package Explorer!*/
