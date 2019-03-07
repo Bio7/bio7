@@ -21,6 +21,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
@@ -62,6 +63,28 @@ public class Work {
 				} catch (PartInitException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
+				}
+
+			}
+		});
+
+	}
+
+	/**
+	 * Activates the view with the specified id.
+	 * 
+	 * @param id the id as a string value.
+	 */
+	public void activateView(final String id) {
+
+		Display display = PlatformUI.getWorkbench().getDisplay();
+		display.syncExec(new Runnable() {
+			public void run() {
+
+				IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+				IViewPart viewPart = page.findView(id);
+				if (viewPart != null) {
+					page.activate(viewPart);
 				}
 
 			}
@@ -226,8 +249,7 @@ public class Work {
 	 * @param commandID the command identifier as String.
 	 */
 	public static void executeCommand(String commandID) {
-		IHandlerService handlerService = (IHandlerService) (IHandlerService) PlatformUI.getWorkbench()
-				.getService(IHandlerService.class);
+		IHandlerService handlerService = (IHandlerService) (IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class);
 		Display.getDefault().asyncExec(new Runnable() {
 			@Override
 			public void run() {
