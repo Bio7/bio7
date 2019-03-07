@@ -75,7 +75,7 @@ public class Work {
 	 * 
 	 * @param id the id as a string value.
 	 */
-	public void activateView(final String id) {
+	public static void activateView(final String id) {
 
 		Display display = PlatformUI.getWorkbench().getDisplay();
 		display.syncExec(new Runnable() {

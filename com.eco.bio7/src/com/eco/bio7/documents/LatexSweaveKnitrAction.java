@@ -555,7 +555,7 @@ public class LatexSweaveKnitrAction extends Action {
 						// else {
 
 						// Program.launch(dirPath + "/" + theName + ".pdf");
-						RServe.openPDF(dirPath + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser, true);
+						RServe.openPDF(dirPath + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser, true,false);
 						// }
 					} else {
 						Bio7Dialog.message(

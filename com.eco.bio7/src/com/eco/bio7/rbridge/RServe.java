@@ -341,9 +341,7 @@ public class RServe {
 		String tryend = "},error = function(e) {message(paste(\"Error: \",e$message))})";
 
 		try {
-			RServe.rout = RServe.getConnection().eval(
-					"paste(capture.output(print(" + trybegin + "(" + expression + ")" + tryend + ")),collapse=\"\\n\")")
-					.asString();
+			RServe.rout = RServe.getConnection().eval("paste(capture.output(print(" + trybegin + "(" + expression + ")" + tryend + ")),collapse=\"\\n\")").asString();
 
 		} catch (REXPMismatchException e) {
 
@@ -548,8 +546,7 @@ public class RServe {
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 			RServe.getConnection().eval("message(paste0(\"> source('\",fileroot),\"')\",sep=\"\")");
 			String options = store.getString("R_SOURCE_OPTIONS");
-			String rCommand = "" + "paste(capture.output(tryCatch(source(fileroot," + options
-					+ "),error = function(e) {message(paste0(\"\n\",e))})),collapse=\"\\n\")";
+			String rCommand = "" + "paste(capture.output(tryCatch(source(fileroot," + options + "),error = function(e) {message(paste0(\"\n\",e))})),collapse=\"\\n\")";
 			try {
 				rout = RServe.getConnection().eval(rCommand).asString();
 			} catch (REXPMismatchException e) {
@@ -594,8 +591,7 @@ public class RServe {
 
 			/* Call the custom Rscript ! */
 
-			RServe.getConnection()
-					.eval("tryCatch(source(fileroot,echo=F),error = function(e) {message(paste0(\"\n\",e))})");
+			RServe.getConnection().eval("tryCatch(source(fileroot,echo=F),error = function(e) {message(paste0(\"\n\",e))})");
 
 		} catch (RserveException e) {
 			// TODO Auto-generated catch block
@@ -706,15 +702,13 @@ public class RServe {
 			boolean useBrowser = store.getBoolean("PDF_USE_BROWSER");
 			String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
 
-			if (fileName.endsWith("pdf") || fileName.endsWith("eps") || fileName.endsWith("xfig")
-					|| fileName.endsWith("bitmap") || fileName.endsWith("pictex")) {
+			if (fileName.endsWith("pdf") || fileName.endsWith("eps") || fileName.endsWith("xfig") || fileName.endsWith("bitmap") || fileName.endsWith("pictex")) {
 
-				openPDF(plotPathR, fileName, useBrowser, openInJavaFXBrowser,true);
+				openPDF(plotPathR, fileName, useBrowser, openInJavaFXBrowser, true,false);
 			}
 
 			else if (fileName.endsWith("svg")) {
-				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")
-						|| ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
+				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows") || ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 					Program.launch(plotPathR + fileName);
 				} else {
 					plotLinuxSVG(plotPathR + fileName);
@@ -731,8 +725,7 @@ public class RServe {
 
 				// System.out.println(plotPathR);
 
-				File[] files = ListFilesDirectory(new File(plotPathR),
-						new String[] { ".tiff", ".tif", ".jpg", ".jpeg", ".png", ".bmp" });
+				File[] files = ListFilesDirectory(new File(plotPathR), new String[] { ".tiff", ".tif", ".jpg", ".jpeg", ".png", ".bmp" });
 				if (files != null && files.length > 0) {
 					if (ijCreateSingle) {
 
@@ -777,38 +770,29 @@ public class RServe {
 							}
 
 						}
-						/*else { Update Plot in same panel!
-
-							if (plotInPlace && plu != null) {
-								for (int i = 0; i < files.length; i++) {
-									ImagePlus impCurr = WindowManager.getCurrentImage();
-									ImagePlus plu2 = new ImagePlus(files[i].toString());
-									ImageProcessor proc2 = plu2.getProcessor();
-									impCurr.getProcessor().resize(plu2.getWidth(), plu2.getHeight());
-									impCurr.setProcessor(proc2);
-									impCurr.updateAndDraw();
-									impCurr.updateAndRepaintWindow();
-									files[i].delete();
-								}
-
-							} else {
-
-								plu = new ImagePlus(files[0].toString());
-								ImageStack stack = new ImageStack(plu.getWidth(), plu.getHeight());
-								// System.out.println(files.length);
-								for (int i = 0; i < files.length; i++) {
-									// System.out.println(files[i].toString());
-									ImagePlus plus = new ImagePlus(files[i].toString());
-									stack.addSlice(plus.getProcessor());
-									files[i].delete();
-								}
-
-								new ImagePlus("Plot", stack).show();
-
-								if (enableIjMacro) {
-									IJ.runMacro(ijmacro);
-								}
-							}*/
+						/*
+						 * else { Update Plot in same panel!
+						 * 
+						 * if (plotInPlace && plu != null) { for (int i = 0; i < files.length; i++) {
+						 * ImagePlus impCurr = WindowManager.getCurrentImage(); ImagePlus plu2 = new
+						 * ImagePlus(files[i].toString()); ImageProcessor proc2 = plu2.getProcessor();
+						 * impCurr.getProcessor().resize(plu2.getWidth(), plu2.getHeight());
+						 * impCurr.setProcessor(proc2); impCurr.updateAndDraw();
+						 * impCurr.updateAndRepaintWindow(); files[i].delete(); }
+						 * 
+						 * } else {
+						 * 
+						 * plu = new ImagePlus(files[0].toString()); ImageStack stack = new
+						 * ImageStack(plu.getWidth(), plu.getHeight()); //
+						 * System.out.println(files.length); for (int i = 0; i < files.length; i++) { //
+						 * System.out.println(files[i].toString()); ImagePlus plus = new
+						 * ImagePlus(files[i].toString()); stack.addSlice(plus.getProcessor());
+						 * files[i].delete(); }
+						 * 
+						 * new ImagePlus("Plot", stack).show();
+						 * 
+						 * if (enableIjMacro) { IJ.runMacro(ijmacro); } }
+						 */
 						// ImageMethods.imageToR(plu.getShortTitle(), false, 1, plu);
 					}
 
@@ -819,7 +803,16 @@ public class RServe {
 		}
 	}
 
-	public static void openPDF(String plotPathR, String fileName, boolean useBrowser, String openInJavaFXBrowser, boolean delete) {
+	/**
+	 * @param String plotPathR. A file path
+	 * @param String fileName the file name
+	 * @param boolean useBrowser if an internal or external browser should be used
+	 * @param boolean openInJavaFXBrowser if the JavaFX browser component should be used
+	 * @param boolean delete if the temporary file should be deleted. Not the copy (for pdf.js)!
+	 * @param boolean activateProjectExplorer if the Project Explorer should be activated again (to click multiple files- used
+	 * in the Project Explorer!)
+	 */
+	public static void openPDF(String plotPathR, String fileName, boolean useBrowser, String openInJavaFXBrowser, boolean delete, boolean activateProjectExplorer) {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		if (openInJavaFXBrowser.equals("SWT_BROWSER")) {
 			File tempFile = createTempFileFromPlot(plotPathR, fileName);
@@ -845,18 +838,24 @@ public class RServe {
 						 * System.out.println(result); b.browser.setUrl("file:///" + pathBundle + "");
 						 */
 						b.setLocation(url);
+						if (activateProjectExplorer) {
+							Work.activateView("org.eclipse.ui.navigator.ProjectExplorer");
+						}
 					}
 				});
 
 			} else {
 				/* We use an exteranl pdf device with special rules for Linux! */
-				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")
-						|| ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
+				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows") || ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 					Display display = Util.getDisplay();
 					display.asyncExec(new Runnable() {
 
 						public void run() {
 							Program.launch(tempFile.getAbsolutePath());
+							if (activateProjectExplorer) {
+								Work.activateView("org.eclipse.ui.navigator.ProjectExplorer");
+							}
+
 						}
 					});
 				} else {
@@ -924,9 +923,15 @@ public class RServe {
 						 */
 
 					}
+					if (activateProjectExplorer) {
+						Work.activateView("org.eclipse.ui.navigator.ProjectExplorer");
+					}
 				}
 			});
-			/*Delete not if opened from embedded Bio7 editor (also when using drag and drop)!*/
+			/*
+			 * Delete not if opened from embedded Bio7 editor (also when using drag and
+			 * drop)!
+			 */
 			if (delete) {
 				/* Delete file in default Bio7 temporay folder. Not the copy for pdf.js! */
 				File plotFile = new File(plotPathR + fileName);
@@ -995,9 +1000,7 @@ public class RServe {
 		// Filter the extension of the file.
 		FilenameFilter filter = new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2])
-						|| name.endsWith(extensions[3]) || name.endsWith(extensions[4])
-						|| name.endsWith(extensions[5]));
+				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2]) || name.endsWith(extensions[3]) || name.endsWith(extensions[4]) || name.endsWith(extensions[5]));
 			}
 		};
 

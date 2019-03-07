@@ -14,6 +14,7 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.part.EditorPart;
 
 import com.eco.bio7.Bio7Plugin;
+import com.eco.bio7.collection.Work;
 import com.eco.bio7.rbridge.RServe;
 
 public class PdfEditor extends EditorPart {
@@ -36,7 +37,9 @@ public class PdfEditor extends EditorPart {
 
 		String dirPath = new File(fi).getParentFile().getPath().replace("\\", "/");
 
-		RServe.openPDF(dirPath + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser,false);
+		RServe.openPDF(dirPath + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser,false,true);
+		
+		
 	}
 
 	public void init(IEditorSite site, IEditorInput input) {
