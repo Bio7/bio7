@@ -344,6 +344,7 @@ public class NewtCanvasSWT extends Canvas implements WindowClosingProtocol {
 		final org.eclipse.swt.graphics.Point[] parentLoc = new org.eclipse.swt.graphics.Point[] { null };
 		SWTAccessor.invoke(true, new Runnable() {
 			public void run() {
+				
 				if (NewtCanvasSWT.this.isDisposed() == false) {
 					if (isFullscreen() == false) {
 						parentLoc[0] = getParent().toDisplay(0, 0);

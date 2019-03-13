@@ -19,15 +19,21 @@ import javax.swing.SwingUtilities;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IPartListener2;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import com.eco.bio7.swt.SwtAwt;
 import com.eco.bio7.util.Util;
+import com.eco.bio7.worldwind.swt.NewtCanvasSWT;
 import com.jogamp.newt.MonitorDevice;
 import com.jogamp.newt.Screen;
+import com.jogamp.newt.Window;
 import com.jogamp.opengl.awt.GLCanvas;
 
 public class SpatialView extends ViewPart {
@@ -63,8 +69,10 @@ public class SpatialView extends ViewPart {
 	}
 
 	public void createPartControl(Composite parent) {
-		/*Workaround to set the images for Bio7 again on MacOSX!*/
-		Image[]imagesTemp=Util.getShell().getImages();
+		/* Workaround to set the images for Bio7 again on MacOSX! */
+		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+
+		Image[] imagesTemp = Util.getShell().getImages();
 		initializeToolBar();
 
 		top = parent;// new Composite(parent, SWT.NO_BACKGROUND | SWT.EMBEDDED);
@@ -83,6 +91,84 @@ public class SpatialView extends ViewPart {
 		 * spat.getCanvas(); top.setLayout(new RowLayout()); frame.add(canvas); } });
 		 */
 		Util.getShell().setImages(imagesTemp);
+
+		IPartListener2 pl = new IPartListener2() {
+
+			@Override
+			public void partActivated(IWorkbenchPartReference partRef) {
+
+				if (partRef.getId().equals("com.eco.bio7.spatial")) {
+
+				}
+			}
+
+			@Override
+			public void partBroughtToTop(IWorkbenchPartReference partRef) {
+				if (partRef.getId().equals("com.eco.bio7.spatial")) {
+
+				}
+			}
+
+			@Override
+			public void partClosed(IWorkbenchPartReference partRef) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void partDeactivated(IWorkbenchPartReference partRef) {
+				if (partRef.getId().equals("com.eco.bio7.spatial")) {
+
+				}
+
+			}
+
+			@Override
+			public void partOpened(IWorkbenchPartReference partRef) {
+
+			}
+
+			@Override
+			public void partHidden(IWorkbenchPartReference partRef) {
+
+				if (partRef.getId().equals("com.eco.bio7.spatial")) {
+
+					/*
+					 * NewtCanvasSWT scanvas = spat.getCanvas();
+					 * 
+					 * 
+					 * if(scanvas.getNEWTChild()!=null) scanvas.getNEWTChild().setSize(1, 1);
+					 */
+
+				}
+
+			}
+
+			@Override
+			public void partVisible(IWorkbenchPartReference partRef) {
+				if (partRef.getId().equals("com.eco.bio7.spatial")) {
+					/*
+					 * if (parent.isDisposed() == false) {
+					 * 
+					 * Rectangle rec = parent.getClientArea();
+					 * 
+					 * spat.getCanvas().getNEWTChild().setSize(rec.width, rec.height);
+					 * 
+					 * }
+					 */
+
+				}
+
+			}
+
+			@Override
+			public void partInputChanged(IWorkbenchPartReference partRef) {
+				// TODO Auto-generated method stub
+
+			}
+
+		};
+		page.addPartListener(pl);
 	}
 
 	/*
@@ -131,8 +217,6 @@ public class SpatialView extends ViewPart {
 	}
 
 	public void dispose() {
-
-		
 
 		super.dispose();
 	}

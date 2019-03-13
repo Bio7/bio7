@@ -34,6 +34,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -51,6 +52,7 @@ import org.eclipse.ui.part.ViewPart;
 import org.rosuda.REngine.Rserve.RConnection;
 
 import com.eco.bio7.image.Util;
+import com.eco.bio7.worldwind.swt.NewtCanvasSWT;
 import com.eco.bio7.worldwind.swt.NewtInputHandlerSWT;
 import com.eco.bio7.worldwind.swt.StatusBar;
 import com.eco.bio7.worldwind.swt.WorldWindowNewtAutoDrawableSWT;
@@ -62,6 +64,7 @@ import gov.nasa.worldwind.Model;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.avlist.AVList;
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.Sector;
@@ -108,6 +111,8 @@ public class WorldWindView extends ViewPart {
 	private Composite top;
 	private Panel panel;
 	private WorldWindView view;
+	protected int tempSizeY;
+	protected int tempSizeX;
 	private static Earth roundEarthModel;
 	private static EarthFlat flatEarthModel;
 
@@ -205,6 +210,7 @@ public class WorldWindView extends ViewPart {
 			public void partHidden(IWorkbenchPartReference partRef) {
 
 				if (partRef.getId().equals("com.eco.bio7.worldwind.WorldWindView")) {
+					//worldCanvas.getNEWTChild().setSize(1, 1);
 
 				}
 
@@ -213,6 +219,10 @@ public class WorldWindView extends ViewPart {
 			@Override
 			public void partVisible(IWorkbenchPartReference partRef) {
 				if (partRef.getId().equals("com.eco.bio7.worldwind.WorldWindView")) {
+					/*
+					 * if (parent.isDisposed() == false) { Rectangle rec = parent.getClientArea();
+					 * worldCanvas.getNEWTChild().setSize(rec.width, rec.height); }
+					 */
 
 				}
 
