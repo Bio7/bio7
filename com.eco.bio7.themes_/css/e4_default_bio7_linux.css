@@ -23,17 +23,20 @@ ThemesExtension { color-definition:
 	'#org-eclipse-ui-workbench-ACTIVE_UNSELECTED_TABS_COLOR_END',
 	'#org-eclipse-ui-workbench-ACTIVE_TAB_OUTER_KEYLINE_COLOR',
 	'#org-eclipse-ui-workbench-ACTIVE_TAB_INNER_KEYLINE_COLOR',
-	'#org-eclipse-ui-workbench-ACTIVE_TAB_OUTLINE_COLOR';
+	'#org-eclipse-ui-workbench-ACTIVE_TAB_OUTLINE_COLOR',
+	'#org-eclipse-ui-workbench-ACTIVE_TAB_BG_START',
+    '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_END';
 }
 
+
 ColorDefinition#org-eclipse-ui-workbench-INACTIVE_UNSELECTED_TABS_COLOR_START {
-	color: #eeeeee;
+	color: #ffffff;
 	category: '#org-eclipse-ui-presentation-default';
 	label: 'Inactive, unselected part color start';
 }
 
 ColorDefinition#org-eclipse-ui-workbench-INACTIVE_UNSELECTED_TABS_COLOR_END {
-	color: #eeeeee;
+	color: #dddddd;
 	category: '#org-eclipse-ui-presentation-default';
 	label: 'Inactive, unselected part color end';
 }
@@ -88,40 +91,47 @@ ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_OUTLINE_COLOR {
 
 /* Already existing ColorDefinitions overridden for the E4 default theme */
 ColorDefinition#org-eclipse-ui-workbench-INACTIVE_TAB_BG_START {
-category: '#org-eclipse-ui-presentation-default';
-	color: #eeeeee;
+	color: #dddfe5;
+	category: '#org-eclipse-ui-presentation-default';
 }
 
 ColorDefinition#org-eclipse-ui-workbench-INACTIVE_TAB_BG_END {
-category: '#org-eclipse-ui-presentation-default';
 	color: #eeeeee;
+	category: '#org-eclipse-ui-presentation-default';
 }
 
 ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_BG_START{
 	color: #eeeeee;
+	category: '#org-eclipse-ui-presentation-default';
 }
 
 ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_BG_END {
-category: '#org-eclipse-ui-presentation-default';
 	color: #eeeeee;
+	category: '#org-eclipse-ui-presentation-default';
 }
 
 ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_BG_START {
-category: '#org-eclipse-ui-presentation-default';
 	color: #eeeeee;
+	category: '#org-eclipse-ui-presentation-default';
 }
 
 ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_BG_END {
-category: '#org-eclipse-ui-presentation-default';
 	color: #eeeeee;
+	category: '#org-eclipse-ui-presentation-default';
 }
 
 ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_TEXT_COLOR {
-category: '#org-eclipse-ui-presentation-default';
 	color: #000000;
+	category: '#org-eclipse-ui-presentation-default';
 }
 
-
+.MTrimmedWindow.topLevel {
+	background-color: #ffffff;
+	margin-top: 4px;
+	margin-bottom: 4px;
+	margin-left: 2px;
+	margin-right: 2px;
+}
 
 .MPart.busy {
 	font-style: italic;
@@ -146,11 +156,11 @@ CTabItem:selected {
 	swt-outer-keyline-color: '#org-eclipse-ui-workbench-INACTIVE_TAB_OUTER_KEYLINE_COLOR';
 	swt-inner-keyline-color: '#org-eclipse-ui-workbench-INACTIVE_TAB_INNER_KEYLINE_COLOR';
 	swt-tab-outline: '#org-eclipse-ui-workbench-INACTIVE_TAB_OUTLINE_COLOR';
-	padding: 1.0px 2.0px 2.0px;
+	padding: 1.0px 1.0px 1.0px;
 	swt-shadow-visible: false;
 	swt-mru-visible: false;
 	color: '#org-eclipse-ui-workbench-INACTIVE_TAB_TEXT_COLOR';
-	/*swt-tab-height: 30.0px; */
+	/*swt-tab-height: 33.0px;*/ 
 	
 }
 
@@ -161,7 +171,7 @@ CTabItem:selected {
 	swt-inner-keyline-color: '#org-eclipse-ui-workbench-ACTIVE_TAB_INNER_KEYLINE_COLOR';
 	swt-tab-outline: '#org-eclipse-ui-workbench-ACTIVE_TAB_OUTLINE_COLOR';
 	swt-shadow-visible: false;
-	/*swt-tab-height: 30.0px;*/ 
+	/*swt-tab-height: 33.0px; */
 }
 
 .MPartStack.active.noFocus {
@@ -180,6 +190,22 @@ CTabItem:selected {
 	frame-image:  url('./win7TSFrame.png');
 	handle-image:  url('./win7Handle.png');
 	frame-cuts: 5px 1px 5px 16px;
+}
+
+.MToolBar.Draggable {
+  handle-image: url(./dragHandle.png);
+}
+
+.MToolControl.TrimStack {
+  handle-image: url(./dragHandle.png);
+}
+
+.MToolControl.Draggable {
+  handle-image: url(./dragHandle.png);
+}
+
+.DragFeedback {
+  background-color: #e0e0e0;
 }
 
 .DragFeedback {
@@ -204,23 +230,9 @@ CTabItem:selected {
 	background-color: '#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_BG_END';
 }
 
-.MToolBar.Draggable {
-  handle-image: url(./dragHandle.png);
-}
-
-.MToolControl.TrimStack {
-  handle-image: url(./dragHandle.png);
-}
-
-.MToolControl.Draggable {
-  handle-image: url(./dragHandle.png);
-}
-
-.DragFeedback {
-  background-color: #e0e0e0;
-}
 
 
+/*Here we start the Bio7 customizations!*/
 
 .MTrimBar {
 background-color: #eeeeee;
@@ -235,27 +247,22 @@ background-color: #eeeeee;
 background-color: #ffffff;
 
 }
-.MPart{
-
-
-}
 
 #org-eclipse-ui-editorss {
 	swt-tab-height: 8.0px;
 	padding: 0.0px 5.0px 7.0px;
 }
 
-/*The colour for the toolbar of the views*/
+/*The colour for all view toolbars. Not set!*/
 .MToolBar {
 
 
 
 }
 #org-eclipse-ui-main-toolbar {
-    eclipse-perspective-keyline-color: #585858;
-    background-color: #eeeeee;
-   background-image: url('./bio7.png');
-    color: #EBE8E4;
+    eclipse-perspective-keyline-color: #ffffff;
+    background-color: white #eeeeee #dddddd 25.0% 25.0% 50.0%;   
+    
 }
 
 
@@ -319,7 +326,15 @@ CTabItem:selected {
 /*Perspective Switch!*/
 #org-eclipse-ui-main-toolbar #PerspectiveSwitcher {
 	eclipse-perspective-keyline-color: #dddddd;
-	background-image: url('./bio7.png');
+	/*background-image: url('./bio7.png');*/
+	background-color: white #eeeeee #dddddd 25.0% 25.0% 50.0%;
+		
+}
+
+
+/*Navigator!*/
+#org-eclipse-ui-navigator-CommonNavigator  {
+	
 	background-color: #ffffff;
 		
 }
@@ -327,12 +342,13 @@ CTabItem:selected {
 .MPartSashContainer {
 
  background-color: 	#ffffff;
- margin-top: 4.0px;
-	margin-bottom: 4.0px;
-	margin-left: 4.0px;
-	margin-right: 4.0px;
+    margin-top: 2px;
+	margin-bottom: 2px;
+	margin-left: 2px;
+	margin-right: 2px;
  
 }
+
 
 /*Colour around views!*/
 .MTrimmedWindow {
@@ -341,35 +357,33 @@ CTabItem:selected {
 	margin-bottom: 4.0px;
 	margin-left: 4.0px;
 	margin-right: 4.0px;
-	
-    /*  */
 }
 
 /*Important to set height for the view menus!*/
 CTabFolder { 
 
  swt-corner-radius: 15.0;
- /*swt-tab-height: 30px;*/
+  
 }
 
-/*#com-eco-bio7-imagej.MToolBar {
-    background-color:  #eeeeee;
+
+/*Composite #com-eco-bio7-thumbnails.MToolBar {
+     background-color: #eeeeee;
+     
 }*/
-
-/*Needed for Linux*/
-Composite #com.eco.bio7.thumbnails {
-	background-color: #eeeeee;
-	
-}
-
-#com.eco.bio7.thumbnails Label  {
-	background-color: #eeeeee;
-	
-}
 
 Composite #com-eco-bio7-rbridge-RTable.MToolBar {
      background-color: #eeeeee;
      
+}
+
+#com-eco-bio7-rbridge-RTable.MToolBar Label {
+     background-color: #eeeeee;
+     color: #dddddd; /* see property startupForegroundColor in the product */ }
+
+Composite #com-eco-bio7-rbridge-RTable.MToolBar {
+     background-color: #eeeeee;
+     /*color: #dddddd;*/
 }
 
 
@@ -380,7 +394,6 @@ Composite #com-eco-bio7-rbridge-RTable.MToolBar {
 #org-eclipse-ui-console-ConsoleView.MToolBar {
     background-color:  #eeeeee;
 }
-
 
 /*Composite #com-eco-bio7-piechart {
    background-color:  #ffffff;
