@@ -369,58 +369,7 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 		installRserveMenuItem.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
-				String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
-				if (selectionConsole.equals("R")) {
-					String OS = ApplicationWorkbenchWindowAdvisor.getOS();
-					String outputPath;
-					if (OS.equals("Mac")) {
-						String tempDir = System.getProperty("java.io.tmpdir");
-						outputPath = tempDir + "/" + "Rserve_Mac_cooperative.tgz";
-						System.out.println("Download file from: https://raw.github.com/Bio7/Rserve_Cooperative/master");
-						System.out.println("Download file to: " + outputPath);
-						try {
-							FileUtils.copyURLToFile(new URL("https://raw.github.com/Bio7/Rserve_Cooperative/master/Rserve_Mac_cooperative.tgz"), new File(outputPath));
-						} catch (MalformedURLException e2) {
-
-							e2.printStackTrace();
-						} catch (IOException e2) {
-
-							e2.printStackTrace();
-						}
-					} else if (OS.equals("Linux")) {
-						String tempDir = System.getProperty("java.io.tmpdir");
-						outputPath = tempDir + "/" + "Rserve_Linux_cooperative.tar.gz";
-						System.out.println("Download file from: https://raw.github.com/Bio7/Rserve_Cooperative/master");
-						System.out.println("Download file to: " + outputPath);
-						try {
-							FileUtils.copyURLToFile(new URL("https://raw.github.com/Bio7/Rserve_Cooperative/master/Rserve_Linux_cooperative.tar.gz"), new File(outputPath));
-						} catch (MalformedURLException e2) {
-
-							e2.printStackTrace();
-						} catch (IOException e2) {
-
-							e2.printStackTrace();
-						}
-						// fileURL = bundle.getEntry("RserveLinMac/Rserve_1.8-4_Linux_cooperative.tar.gz");
-					} else {
-						Bio7Dialog.message("Only for Linux and MacOSX necessary!");
-						return;
-
-					}
-					/*
-					 * File file = null; try { file = new File(FileLocator.resolve(fileURL).toURI()); } catch (URISyntaxException e1) { e1.printStackTrace(); } catch (IOException e1) {
-					 * e1.printStackTrace(); }
-					 */
-					System.out.println("Download succesful! Installation of package started!");
-					String path = outputPath;// file.getAbsolutePath();
-
-					String install = "install.packages(\"" + path + "\",dependencies=TRUE,INSTALL_opts = c('--no-lock'),repos=NULL)";
-
-					ConsolePageParticipant.pipeInputToConsole(install, true, true);
-					System.out.println(install);
-				} else {
-					Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
-				}
+				installRPrevious();
 
 			}
 
@@ -428,66 +377,15 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 			}
 		});
-		
+
 		MenuItem installRserveMenuItem2 = new MenuItem(fMenu, SWT.CASCADE);
-		
+
 		installRserveMenuItem2.setText("Install Rserve (coop. mode) for R >= 3.5.0");
 
 		installRserveMenuItem2.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
-				String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
-				if (selectionConsole.equals("R")) {
-					String OS = ApplicationWorkbenchWindowAdvisor.getOS();
-					String outputPath;
-					if (OS.equals("Mac")) {
-						String tempDir = System.getProperty("java.io.tmpdir");
-						outputPath = tempDir + "/" + "Rserve_Mac_cooperative.tgz";
-						System.out.println("Download file from: https://bio7.github.io/rserve/");
-						System.out.println("Download file to: " + outputPath);
-						try {
-							FileUtils.copyURLToFile(new URL("https://bio7.github.io/rserve/Rserve_Mac_cooperative.tgz"), new File(outputPath));
-						} catch (MalformedURLException e2) {
-
-							e2.printStackTrace();
-						} catch (IOException e2) {
-
-							e2.printStackTrace();
-						}
-					} else if (OS.equals("Linux")) {
-						String tempDir = System.getProperty("java.io.tmpdir");
-						outputPath = tempDir + "/" + "Rserve_Linux_cooperative.tar.gz";
-						System.out.println("Download file from: https://bio7.github.io/rserve/");
-						System.out.println("Download file to: " + outputPath);
-						try {
-							FileUtils.copyURLToFile(new URL("https://bio7.github.io/rserve/Rserve_Linux_cooperative.tar.gz"), new File(outputPath));
-						} catch (MalformedURLException e2) {
-
-							e2.printStackTrace();
-						} catch (IOException e2) {
-
-							e2.printStackTrace();
-						}
-						// fileURL = bundle.getEntry("RserveLinMac/Rserve_1.8-4_Linux_cooperative.tar.gz");
-					} else {
-						Bio7Dialog.message("Only for Linux and MacOSX necessary!");
-						return;
-
-					}
-					/*
-					 * File file = null; try { file = new File(FileLocator.resolve(fileURL).toURI()); } catch (URISyntaxException e1) { e1.printStackTrace(); } catch (IOException e1) {
-					 * e1.printStackTrace(); }
-					 */
-					System.out.println("Download succesful! Installation of package started!");
-					String path = outputPath;// file.getAbsolutePath();
-
-					String install = "install.packages(\"" + path + "\",dependencies=TRUE,INSTALL_opts = c('--no-lock'),repos=NULL)";
-
-					ConsolePageParticipant.pipeInputToConsole(install, true, true);
-					System.out.println(install);
-				} else {
-					Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
-				}
+				installRServeCurrent();
 
 			}
 
@@ -669,6 +567,120 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 	public Menu getMenu(Menu parent) {
 
 		return null;
+	}
+
+	public static void installRPrevious() {
+		String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
+		if (selectionConsole.equals("R")) {
+			String OS = ApplicationWorkbenchWindowAdvisor.getOS();
+			String outputPath;
+			if (OS.equals("Mac")) {
+				String tempDir = System.getProperty("java.io.tmpdir");
+				outputPath = tempDir + "/" + "Rserve_Mac_cooperative.tgz";
+				System.out.println("Download file from: https://raw.github.com/Bio7/Rserve_Cooperative/master");
+				System.out.println("Download file to: " + outputPath);
+				try {
+					FileUtils.copyURLToFile(new URL("https://raw.github.com/Bio7/Rserve_Cooperative/master/Rserve_Mac_cooperative.tgz"), new File(outputPath));
+				} catch (MalformedURLException e2) {
+
+					e2.printStackTrace();
+				} catch (IOException e2) {
+
+					e2.printStackTrace();
+				}
+			} else if (OS.equals("Linux")) {
+				String tempDir = System.getProperty("java.io.tmpdir");
+				outputPath = tempDir + "/" + "Rserve_Linux_cooperative.tar.gz";
+				System.out.println("Download file from: https://raw.github.com/Bio7/Rserve_Cooperative/master");
+				System.out.println("Download file to: " + outputPath);
+				try {
+					FileUtils.copyURLToFile(new URL("https://raw.github.com/Bio7/Rserve_Cooperative/master/Rserve_Linux_cooperative.tar.gz"), new File(outputPath));
+				} catch (MalformedURLException e2) {
+
+					e2.printStackTrace();
+				} catch (IOException e2) {
+
+					e2.printStackTrace();
+				}
+				// fileURL =
+				// bundle.getEntry("RserveLinMac/Rserve_1.8-4_Linux_cooperative.tar.gz");
+			} else {
+				Bio7Dialog.message("Only for Linux and MacOSX necessary!");
+				return;
+
+			}
+			/*
+			 * File file = null; try { file = new
+			 * File(FileLocator.resolve(fileURL).toURI()); } catch (URISyntaxException e1) {
+			 * e1.printStackTrace(); } catch (IOException e1) { e1.printStackTrace(); }
+			 */
+			System.out.println("Download succesful! Installation of package started!");
+			String path = outputPath;// file.getAbsolutePath();
+
+			String install = "install.packages(\"" + path + "\",dependencies=TRUE,INSTALL_opts = c('--no-lock'),repos=NULL)";
+
+			ConsolePageParticipant.pipeInputToConsole(install, true, true);
+			System.out.println(install);
+		} else {
+			Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
+		}
+	}
+
+	public static void installRServeCurrent() {
+		String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
+		if (selectionConsole.equals("R")) {
+			String OS = ApplicationWorkbenchWindowAdvisor.getOS();
+			String outputPath;
+			if (OS.equals("Mac")) {
+				String tempDir = System.getProperty("java.io.tmpdir");
+				outputPath = tempDir + "/" + "Rserve_Mac_cooperative.tgz";
+				System.out.println("Download file from: https://bio7.github.io/rserve/");
+				System.out.println("Download file to: " + outputPath);
+				try {
+					FileUtils.copyURLToFile(new URL("https://bio7.github.io/rserve/Rserve_Mac_cooperative.tgz"), new File(outputPath));
+				} catch (MalformedURLException e2) {
+
+					e2.printStackTrace();
+				} catch (IOException e2) {
+
+					e2.printStackTrace();
+				}
+			} else if (OS.equals("Linux")) {
+				String tempDir = System.getProperty("java.io.tmpdir");
+				outputPath = tempDir + "/" + "Rserve_Linux_cooperative.tar.gz";
+				System.out.println("Download file from: https://bio7.github.io/rserve/");
+				System.out.println("Download file to: " + outputPath);
+				try {
+					FileUtils.copyURLToFile(new URL("https://bio7.github.io/rserve/Rserve_Linux_cooperative.tar.gz"), new File(outputPath));
+				} catch (MalformedURLException e2) {
+
+					e2.printStackTrace();
+				} catch (IOException e2) {
+
+					e2.printStackTrace();
+				}
+				// fileURL =
+				// bundle.getEntry("RserveLinMac/Rserve_1.8-4_Linux_cooperative.tar.gz");
+			} else {
+				Bio7Dialog.message("Only for Linux and MacOSX necessary!");
+				return;
+
+			}
+			/*
+			 * File file = null; try { file = new
+			 * File(FileLocator.resolve(fileURL).toURI()); } catch (URISyntaxException e1) {
+			 * e1.printStackTrace(); } catch (IOException e1) { e1.printStackTrace(); }
+			 */
+			System.out.println("Download succesful! Installation of package started!");
+			String path = outputPath;// file.getAbsolutePath();
+
+			String install = "install.packages(\"" + path + "\",dependencies=TRUE,INSTALL_opts = c('--no-lock'),repos=NULL)";
+
+			ConsolePageParticipant.pipeInputToConsole(install, true, true);
+			System.out.println(install);
+		} else {
+			Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
+		}
 	}
 
 }
