@@ -14,13 +14,13 @@ import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.retrieve.*;
 import gov.nasa.worldwind.util.*;
-
+import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import java.awt.image.*;
 import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
-
+ 
 /**
  * BasicTiledImageLayer modified 2009-02-03 to add support for Mercator projections.
  *
@@ -108,7 +108,7 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
                     layer.getLevels().markResourceAbsent(tile);
                     String message = Logging.getMessage(
                         "generic.DeletedCorruptDataFile", textureURL);
-                    Logging.logger().info(message);
+                    //Logging.logger().info(message);
                 }
             }
 
@@ -127,7 +127,7 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
             if (that == null)
             {
                 String msg = Logging.getMessage("nullValue.RequestTaskIsNull");
-                Logging.logger().severe(msg);
+                //Logging.logger().severe(msg);
                 throw new IllegalArgumentException(msg);
             }
             return this.tile.getPriority() == that.tile.getPriority() ? 0
@@ -297,7 +297,7 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
             if (retriever == null)
             {
                 String msg = Logging.getMessage("nullValue.RetrieverIsNull");
-                Logging.logger().severe(msg);
+                //Logging.logger().severe(msg);
                 throw new IllegalArgumentException(msg);
             }
 
