@@ -609,7 +609,7 @@ public class RShellView extends ViewPart {
 		GridData gd_btnEvaluate = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_btnEvaluate.heightHint = 40;
 		btnEvaluate.setLayoutData(gd_btnEvaluate);
-		btnEvaluate.setText("Evaluate");
+		btnEvaluate.setText("Eval");
 		btnEvaluate.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				if (RServe.isAlive()) {
@@ -712,7 +712,7 @@ public class RShellView extends ViewPart {
 
 			}
 		});
-		rhelpButton.setText("R Docu");
+		rhelpButton.setText("R Doc");
 
 		Button helpButton = new Button(parent, SWT.NONE);
 		GridData gd_helpButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
@@ -921,7 +921,7 @@ public class RShellView extends ViewPart {
 		GridData gd_objectsButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		gd_objectsButton.heightHint = 40;
 		objectsButton.setLayoutData(gd_objectsButton);
-		objectsButton.setToolTipText("Refresh the R workspace");
+		objectsButton.setToolTipText("List the current R workspace objects (command 'ls')");
 		objectsButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				if (RServe.isAliveDialog()) {
@@ -932,7 +932,7 @@ public class RShellView extends ViewPart {
 
 			}
 		});
-		objectsButton.setText("Refresh");
+		objectsButton.setText("List");
 
 		removeButton = new Button(parent, SWT.NONE);
 		GridData gd_removeButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
@@ -944,7 +944,7 @@ public class RShellView extends ViewPart {
 				removeSelectedVars();
 			}
 		});
-		removeButton.setText("Remove");
+		removeButton.setText("Del");
 		/*
 		 * loadButton_1 = new Button(composite, SWT.NONE); GridData gd_loadButton_1 =
 		 * new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);

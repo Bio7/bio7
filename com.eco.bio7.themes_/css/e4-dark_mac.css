@@ -372,7 +372,7 @@ Form > LayoutComposite > LayoutComposite > Text[style~='SWT.SEARCH'],
 }
 
 #org-eclipse-ui-console-ConsoleView.MToolBar {
-    
+    background-color:  #eeeeee;
     font-size: 14px;
 }
 
