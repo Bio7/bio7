@@ -211,8 +211,8 @@ Shell[style~='SWT.BORDER'], Shell[style~='SWT.DIALOG_TRIM'], Shell[style~='SWT.I
 Shell[style~='SWT.FULL_SELECTION'], Shell[style~='SWT.SMOOTH'], Shell[style~='SWT.VIRTUAL'],
 Shell[style~='SWT.APPLICATION_MODAL'], Shell[style~='SWT.MEDIUM'], Shell[style~='SWT.LONG']
 {
-    background-color: #515658;
-    color: #cccccc;
+    background-color: #252525;
+    color: #dddddd;
 }
 Shell > Composite > Table[style~='SWT.DROP_DOWN'] {
     background-color: #35393C;
