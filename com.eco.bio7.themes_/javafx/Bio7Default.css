@@ -12,7 +12,7 @@
  }
 */
  
- .html-editor-foreground {
+.html-editor-foreground {
   
     -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Text-Color.png);
 }
@@ -46,11 +46,23 @@
 .html-editor-outdent {
     -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Outdent.png);
 }
+.html-editor-outdent:dir(rtl) {
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Outdent-rtl.png);
+}
 .html-editor-indent {
     -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Indent.png);
 }
+.html-editor-indent:dir(rtl) {
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Indent-rtl.png);
+}
 .html-editor-bullets {
     -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Bullets.png);
+}
+.html-editor-bullets:dir(rtl) {
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Bullets-rtl.png);
+}
+.html-editor-numbers:dir(rtl) {
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Numbered-rtl.png);
 }
 .html-editor-numbers {
     -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Numbered.png);
@@ -69,4 +81,36 @@
 }
 .html-editor-hr {
     -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/HTMLEditor-Break.png);
+}
+
+.custom-color-dialog .transparent-pattern {
+    -fx-background-image: url(/com/sun/javafx/scene/control/skin/modena/pattern-transparent.png);
+    -fx-background-repeat: repeat;
+    -fx-background-size: auto;
+}
+
+.dialog-pane > .button-bar > .container > .details-button.more {
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/dialog-more-details.png);
+}
+
+.dialog-pane > .button-bar > .container > .details-button.less {
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/dialog-fewer-details.png);
+}
+
+.alert.confirmation.dialog-pane,
+.text-input-dialog.dialog-pane,
+.choice-dialog.dialog-pane {
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/dialog-confirm.png);
+}
+
+.alert.information.dialog-pane {
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/dialog-information.png);
+}
+
+.alert.error.dialog-pane {
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/dialog-error.png);
+}
+
+.alert.warning.dialog-pane {
+    -fx-graphic: url(/com/sun/javafx/scene/control/skin/modena/dialog-warning.png);
 }
