@@ -20,11 +20,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.plaf.FontUIResource;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.MetalTheme;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -52,10 +54,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.e4.core.contexts.IEclipseContext;
-import org.eclipse.e4.ui.css.swt.theme.ITheme;
-import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
-import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
@@ -93,7 +91,6 @@ import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener3;
 import org.eclipse.ui.IPerspectiveRegistry;
-import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
@@ -120,7 +117,6 @@ import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.actions.Bio7Action;
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.collection.Work;
 import com.eco.bio7.compile.BeanShellInterpreter;
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
 import com.eco.bio7.compile.GroovyInterpreter;
@@ -131,7 +127,6 @@ import com.eco.bio7.compile.utils.ScanClassPath;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.discrete.Quad2d;
 import com.eco.bio7.image.CanvasView;
-import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 import com.eco.bio7.jobs.LoadData;
 import com.eco.bio7.macosx.MacTouchBar;
 import com.eco.bio7.preferences.PreferenceConstants;
@@ -143,14 +138,10 @@ import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.actions.StartRServe;
 import com.eco.bio7.rbridge.debug.REditorListener;
+import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.reditor.actions.OpenHelpBrowserAction;
 import com.eco.bio7.time.CalculationThread;
 import com.eco.bio7.util.Util;
-import com.thizzer.jtouchbar.JTouchBar;
-import com.thizzer.jtouchbar.item.TouchBarItem;
-import com.thizzer.jtouchbar.item.view.TouchBarButton;
-import com.thizzer.jtouchbar.swt.JTouchBarSWT;
-
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
@@ -1016,7 +1007,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 				try {
 					UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel"); //$NON-NLS-1$
-					//UIManager.getLookAndFeelDefaults().put("Panel.background", Util.getSWTBackgroundToAWT(parent));
+					// UIManager.getLookAndFeelDefaults().put("Panel.background",
+					// Util.getSWTBackgroundToAWT(parent));
 					// SwingUtilities.updateComponentTreeUI(this);
 				} catch (Exception e) {
 					System.out.println(e);
@@ -1052,12 +1044,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		javafx.application.Platform.setImplicitExit(false);
 
 		dragDropR();
-		
-		if(Util.getOS().equals("Mac")) {
+
+		if (Util.getOS().equals("Mac")) {
 			new MacTouchBar();
 		}
 	}
-	
 
 	private void startupScripts() {
 		String startupDirectory = null;
@@ -1238,7 +1229,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
 		try {
 
-			//configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.perspective_image", configurer.getWindow());
+			// configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.perspective_image",
+			// configurer.getWindow());
 
 			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.rbridge.RPerspective", configurer.getWindow());
 
@@ -1424,6 +1416,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 						 */
 						RConfig.config(con);
 						RState.setBusy(false);
+						RShellView rShellInst = RShellView.getInstance();
+						rShellInst.displayRObjects();
 					} else {
 						RState.setBusy(false);
 					}

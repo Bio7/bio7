@@ -25,6 +25,7 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 
 public class ClearRWorkspace extends Action {
@@ -49,22 +50,19 @@ public class ClearRWorkspace extends Action {
 		}
 
 		if (rPipe == true) {
-			String selectionConsole = ConsolePageParticipant
-					.getInterpreterSelection();
+			String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 			if (selectionConsole.equals("R")) {
-				MessageBox message = new MessageBox(new Shell(),
-						SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+				MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
 				message.setMessage("Do you really want to remove all visible objects?");
 				message.setText("Remove objects");
 				int response = message.open();
 				if (response == SWT.YES) {
 					String clear = "rm(list=ls(all=TRUE))";
-					ConsolePageParticipant.pipeInputToConsole(clear,true,true);
+					ConsolePageParticipant.pipeInputToConsole(clear, true, true);
 				}
 
 			} else {
-				Bio7Dialog
-						.message("Please start the \"Native R\" shell in the Bio7 console!");
+				Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
 			}
 
 		} else {
@@ -73,29 +71,29 @@ public class ClearRWorkspace extends Action {
 
 			if (d != null) {
 				if (RState.isBusy() == false) {
-					MessageBox message = new MessageBox(new Shell(),
-							SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+					MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
 					message.setMessage("Do you really want to remove all visible objects?");
 					message.setText("Remove objects");
 					int response = message.open();
 					if (response == SWT.YES) {
 						String clear = "rm(list=ls())";
-						//String clear = "rm(list=ls(all=TRUE))";
+						// String clear = "rm(list=ls(all=TRUE))";
 
 						try {
 							RConnection con = RServe.getConnection();
 							con.eval(clear);
 							/* Reestablish default device! */
-							/*boolean customDevice = store
-									.getBoolean("USE_CUSTOM_DEVICE");
-							if (customDevice) {
-								con.eval(dev);
-							}*/
+							/*
+							 * boolean customDevice = store .getBoolean("USE_CUSTOM_DEVICE"); if
+							 * (customDevice) { con.eval(dev); }
+							 */
 
 						} catch (RserveException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
+						RShellView rShellInst = RShellView.getInstance();
+						rShellInst.displayRObjects();
 					}
 				} else {
 					Bio7Dialog.message("Rserve is busy!");
@@ -105,9 +103,8 @@ public class ClearRWorkspace extends Action {
 
 				MessageBox messageBox = new MessageBox(new Shell(),
 
-				SWT.ICON_WARNING);
-				messageBox
-						.setMessage("RServer connection failed - Server is not running !");
+						SWT.ICON_WARNING);
+				messageBox.setMessage("RServer connection failed - Server is not running !");
 				messageBox.open();
 
 			}

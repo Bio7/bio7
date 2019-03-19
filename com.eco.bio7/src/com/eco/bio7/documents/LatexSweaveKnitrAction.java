@@ -47,6 +47,7 @@ import com.eco.bio7.browser.MultiPageEditor;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
 import net.sourceforge.texlipse.editor.TexEditor;
@@ -340,6 +341,8 @@ public class LatexSweaveKnitrAction extends Action {
 					if (event.getResult().isOK()) {
 						/* Activate the editor again after the job! */
 						// Util.activateEditorPage(editor);
+						RShellView rShellInst = RShellView.getInstance();
+						rShellInst.displayRObjects();
 					} else {
 
 					}

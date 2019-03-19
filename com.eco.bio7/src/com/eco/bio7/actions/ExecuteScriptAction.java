@@ -29,6 +29,7 @@ import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.jobs.ImageMacroWorkspaceJob;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.rbridge.views.RShellView;
 
 public class ExecuteScriptAction extends Action {
 
@@ -58,6 +59,8 @@ public class ExecuteScriptAction extends Action {
 								if (countDev > 0) {
 									RServe.closeAndDisplay();
 								}
+								RShellView rShellInst = RShellView.getInstance();
+								rShellInst.displayRObjects();
 							}
 						}
 					});

@@ -13,6 +13,7 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.libreoffice.LibreOfficeValueToRJob;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.rbridge.views.RShellView;
 
 public class OfficeValueToRAction extends Action {
 
@@ -37,6 +38,8 @@ public class OfficeValueToRAction extends Action {
 						if (event.getResult().isOK()) {
 
 							RState.setBusy(false);
+							RShellView rShellInst = RShellView.getInstance();
+							rShellInst.displayRObjects();
 						} else {
 							RState.setBusy(false);
 						}

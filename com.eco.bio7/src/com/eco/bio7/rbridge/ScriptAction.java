@@ -49,6 +49,7 @@ import com.eco.bio7.compile.PythonInterpreter;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.jobs.ImageMacroWorkspaceJob;
 import com.eco.bio7.preferences.PreferenceConstants;
+import com.eco.bio7.rbridge.views.RShellView;
 
 public class ScriptAction extends Action implements IMenuCreator {
 
@@ -175,6 +176,8 @@ public class ScriptAction extends Action implements IMenuCreator {
 										if (countDev > 0) {
 											RServe.closeAndDisplay();
 										}
+										RShellView rShellInst = RShellView.getInstance();
+										rShellInst.displayRObjects();
 									}
 								}
 							});

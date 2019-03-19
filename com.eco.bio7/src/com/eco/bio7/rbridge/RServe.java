@@ -141,6 +141,9 @@ public class RServe {
 						}
 						System.out.flush();
 						updatePackageImports();
+						
+						RShellView rShellInst = RShellView.getInstance();
+						rShellInst.displayRObjects();
 					} else {
 						RState.setBusy(false);
 
@@ -704,7 +707,7 @@ public class RServe {
 
 			if (fileName.endsWith("pdf") || fileName.endsWith("eps") || fileName.endsWith("xfig") || fileName.endsWith("bitmap") || fileName.endsWith("pictex")) {
 
-				openPDF(plotPathR, fileName, useBrowser, openInJavaFXBrowser, true,false);
+				openPDF(plotPathR, fileName, useBrowser, openInJavaFXBrowser, true, false);
 			}
 
 			else if (fileName.endsWith("svg")) {
@@ -806,11 +809,15 @@ public class RServe {
 	/**
 	 * @param String plotPathR. A file path
 	 * @param String fileName the file name
-	 * @param boolean useBrowser if an internal or external browser should be used
-	 * @param boolean openInJavaFXBrowser if the JavaFX browser component should be used
-	 * @param boolean delete if the temporary file should be deleted. Not the copy (for pdf.js)!
-	 * @param boolean activateProjectExplorer if the Project Explorer should be activated again (to click multiple files- used
-	 * in the Project Explorer!)
+	 * @param        boolean useBrowser if an internal or external browser should be
+	 *               used
+	 * @param        boolean openInJavaFXBrowser if the JavaFX browser component
+	 *               should be used
+	 * @param        boolean delete if the temporary file should be deleted. Not the
+	 *               copy (for pdf.js)!
+	 * @param        boolean activateProjectExplorer if the Project Explorer should
+	 *               be activated again (to click multiple files- used in the
+	 *               Project Explorer!)
 	 */
 	public static void openPDF(String plotPathR, String fileName, boolean useBrowser, String openInJavaFXBrowser, boolean delete, boolean activateProjectExplorer) {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();

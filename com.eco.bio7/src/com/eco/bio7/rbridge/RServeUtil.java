@@ -13,6 +13,7 @@ import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.batch.BatchModel;
 import com.eco.bio7.compile.RInterpreterJob;
+import com.eco.bio7.rbridge.views.RShellView;
 
 /**
  * @author Bio7 A Rserve utility class to evaluate R scripts and code in an
@@ -285,6 +286,8 @@ public class RServeUtil {
 							if (countDev > 0) {
 								RServe.closeAndDisplayNoJoin();
 							}
+							RShellView rShellInst = RShellView.getInstance();
+							rShellInst.displayRObjects();
 							//BatchModel.resumeFlow();
 
 						} else {

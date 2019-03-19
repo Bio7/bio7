@@ -44,6 +44,7 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.rbridge.PlotJob;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.rbridge.views.RShellView;
 
 public class RScript {
 
@@ -214,6 +215,8 @@ public class RScript {
 						if (countDev > 0) {
 							RServe.closeAndDisplay();
 						}
+						RShellView rShellInst = RShellView.getInstance();
+						rShellInst.displayRObjects();
 						BatchModel.resumeFlow();
 
 					} else {

@@ -45,6 +45,7 @@ import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.util.Util;
 
 public class FromSpreadAction extends Action implements IMenuCreator {
@@ -132,6 +133,8 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 									if (event.getResult().isOK()) {
 
 										RState.setBusy(false);
+										RShellView rShellInst = RShellView.getInstance();
+										rShellInst.displayRObjects();
 									} else {
 
 										RState.setBusy(false);
@@ -181,6 +184,8 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 									if (event.getResult().isOK()) {
 
 										RState.setBusy(false);
+										RShellView rShellInst = RShellView.getInstance();
+										rShellInst.displayRObjects();
 									} else {
 
 										RState.setBusy(false);
@@ -230,6 +235,8 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 									if (event.getResult().isOK()) {
 
 										RState.setBusy(false);
+										RShellView rShellInst = RShellView.getInstance();
+										rShellInst.displayRObjects();
 									} else {
 
 										RState.setBusy(false);
@@ -279,6 +286,8 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 									if (event.getResult().isOK()) {
 
 										RState.setBusy(false);
+										RShellView rShellInst = RShellView.getInstance();
+										rShellInst.displayRObjects();
 									} else {
 
 										RState.setBusy(false);
@@ -328,6 +337,8 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 									if (event.getResult().isOK()) {
 
 										RState.setBusy(false);
+										RShellView rShellInst = RShellView.getInstance();
+										rShellInst.displayRObjects();
 									} else {
 
 										RState.setBusy(false);

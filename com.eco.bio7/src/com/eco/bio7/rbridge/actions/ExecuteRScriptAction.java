@@ -12,6 +12,7 @@ import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.rbridge.views.RShellView;
 
 public class ExecuteRScriptAction extends Action {
 
@@ -52,6 +53,8 @@ public class ExecuteRScriptAction extends Action {
 								}
 
 							}
+							RShellView rShellInst = RShellView.getInstance();
+							rShellInst.displayRObjects();
 						}
 					});
 					Do.setUser(true);

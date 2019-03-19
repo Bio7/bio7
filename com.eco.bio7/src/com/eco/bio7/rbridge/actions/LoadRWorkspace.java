@@ -16,6 +16,7 @@ import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RConfig;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 
 public class LoadRWorkspace extends Action {
@@ -137,6 +138,8 @@ public class LoadRWorkspace extends Action {
 							
 							System.out.print("try(load(file = " + filePath + "))");
 							System.out.println();
+							RShellView rShellInst = RShellView.getInstance();
+							rShellInst.displayRObjects();
 						} else {
 							RState.setBusy(false);
 						}
