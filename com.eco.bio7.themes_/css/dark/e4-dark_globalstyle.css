@@ -200,7 +200,7 @@ Shell[style~='SWT.RADIO'][style~='SWT.CASCADE'][style~='SWT.SHADOW_ETCHED_IN'][s
 }
 
 /* prevent CSS Spy red borders to be grayed with a generic Shell selector 
-Shell background for Bio7!*/
+Shell background for Bio7. Improtant for grid and dialog background!*/
 Shell[style~='SWT.SHADOW_ETCHED_OUT'], Shell[style~='SWT.SHADOW_ETCHED_IN'],
 Shell[style~='SWT.CHECK'], Shell[style~='SWT.TITLE'], Shell[style~='SWT.OK'],
 Shell[style~='SWT.CANCEL'], Shell[style~='SWT.ABORT'], Shell[style~='SWT.DROP_DOWN'],
