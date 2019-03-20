@@ -27,10 +27,8 @@ public class RServeUtil {
 	/**
 	 * Evaluates a script in R running in a job and joins threads!.
 	 * 
-	 * @param script
-	 *            a script.
-	 * @param loc
-	 *            the script location.
+	 * @param script a script.
+	 * @param loc    the script location.
 	 */
 	public static void evalR(String script, String loc) {
 		if (RServe.isAliveDialog()) {
@@ -46,7 +44,7 @@ public class RServeUtil {
 							if (countDev > 0) {
 								RServe.closeAndDisplay();
 							}
-							//BatchModel.resumeFlow();
+							// BatchModel.resumeFlow();
 
 						} else {
 							RState.setBusy(false);
@@ -72,8 +70,7 @@ public class RServeUtil {
 	 * A method to return REXP objects of Rserve running in a job. This method also
 	 * checks if a R job is already running.
 	 * 
-	 * @param eval
-	 *            a R command.
+	 * @param eval a R command.
 	 * @return a REXP object.
 	 */
 	public static REXP fromR(String eval) {
@@ -127,10 +124,8 @@ public class RServeUtil {
 	/**
 	 * A method to assign values from Java to R.
 	 * 
-	 * @param name
-	 *            the object name in R.
-	 * @param assign
-	 *            the object to assign.
+	 * @param name   the object name in R.
+	 * @param assign the object to assign.
 	 */
 	public static void toR(String name, Object... assign) {
 
@@ -229,10 +224,8 @@ public class RServeUtil {
 	/**
 	 * Evaluates a script in R running in a job without to join threads!.
 	 * 
-	 * @param script
-	 *            a script.
-	 * @param loc
-	 *            the script location.
+	 * @param script a script.
+	 * @param loc    the script location.
 	 */
 	public static void evalR2(String script, String loc) {
 		if (RServe.isAliveDialog()) {
@@ -248,7 +241,7 @@ public class RServeUtil {
 							if (countDev > 0) {
 								RServe.closeAndDisplay();
 							}
-							//BatchModel.resumeFlow();
+							// BatchModel.resumeFlow();
 
 						} else {
 							RState.setBusy(false);
@@ -264,13 +257,13 @@ public class RServeUtil {
 		}
 
 	}
+
 	/**
-	 * Evaluates a script in R running in a job without using join for the plot job!.
+	 * Evaluates a script in R running in a job without using join for the plot
+	 * job!.
 	 * 
-	 * @param script
-	 *            a script.
-	 * @param loc
-	 *            the script location.
+	 * @param script a script.
+	 * @param loc    the script location.
 	 */
 	public static void evalR3(String script, String loc) {
 		if (RServe.isAliveDialog()) {
@@ -288,7 +281,7 @@ public class RServeUtil {
 							}
 							RShellView rShellInst = RShellView.getInstance();
 							rShellInst.displayRObjects();
-							//BatchModel.resumeFlow();
+							// BatchModel.resumeFlow();
 
 						} else {
 							RState.setBusy(false);
@@ -314,13 +307,21 @@ public class RServeUtil {
 	 * Evaluates a script in R running in a job and joins threads!. Display thread
 	 * is wrapped!
 	 * 
-	 * @param script
-	 *            a script.
-	 * @param loc
-	 *            the script location.
+	 * @param script a script.
+	 * @param loc    the script location.
 	 */
 	public static void evalStringR(String script) {
 		RServe.printJobJoin(script);
+	}
+
+	/**
+	 * A method to trigger the update of the R object list in the R/Shell view.
+	 */
+	public static void listRObjects() {
+		RShellView rShellView = RShellView.getInstance();
+		if (rShellView != null) {
+			rShellView.displayRObjects();
+		}
 	}
 
 }

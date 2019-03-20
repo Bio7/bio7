@@ -601,6 +601,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 			// store.setDefault(PreferenceConstants.D_OPENOFFICE_HEAD, "[^a-zA-Z0-9_.]");
 		}
+		store.setDefault("UPDATE_VAR_RSHELL", true);
 		store.setDefault("BROWSER_SELECTION", "JAVAFX_BROWSER");
 		store.setDefault("OPEN_BOWSER_IN_EXTRA_VIEW", false);
 		store.setDefault("COPY_PDF_PATH_TO_CLIP", true);
