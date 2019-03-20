@@ -782,7 +782,7 @@ public class RShellView extends ViewPart {
 											e.printStackTrace();
 										}
 										
-										System.out.println("black!");
+								
 									}
 
 									else {
@@ -827,8 +827,7 @@ public class RShellView extends ViewPart {
 										display.asyncExec(new Runnable() {
 
 											public void run() {
-												JavaFXWebBrowser br = new JavaFXWebBrowser(true);
-												
+												JavaFXWebBrowser br = new JavaFXWebBrowser(true);												
 												br.setDarkCssIfDarkTheme(true);
 												br.getWebEngine().setUserStyleSheetLocation("file:///"+cssPath);
 												br.createBrowser(url, "R Help");
