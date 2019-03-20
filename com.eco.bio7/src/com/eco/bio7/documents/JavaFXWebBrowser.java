@@ -15,14 +15,14 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.osgi.framework.Bundle;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
-import org.w3c.dom.events.Event;
-import org.w3c.dom.events.EventListener;
-import org.w3c.dom.events.EventTarget;
-import org.w3c.dom.html.HTMLAnchorElement;
+//import org.w3c.dom.Document;
+//import org.w3c.dom.Element;
+//import org.w3c.dom.NodeList;
+//import org.w3c.dom.Text;
+//import org.w3c.dom.events.Event;
+//import org.w3c.dom.events.EventListener;
+//import org.w3c.dom.events.EventTarget;
+//import org.w3c.dom.html.HTMLAnchorElement;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.browser.MultiPageEditor;
@@ -130,37 +130,42 @@ public class JavaFXWebBrowser {
 				if (html == false) {
 					// webEng.executeScript("document.getElementById('viewerContainer').style.overflow
 					// = 'hidden';");
-					webEng.executeScript("PDFViewerApplication.pdfViewer.currentPageNumber=" + JavaFXBrowserHelper.pageNumber + "");
-					/* Set the bookmark to select the page! */
-					webEng.executeScript("PDFViewerApplication.initialBookmark = \"" + JavaFXBrowserHelper.pageNumber + "\";");
-
-					Document doc = webEng.getDocument();
-
-					Element el = doc.getDocumentElement();
-
-					((EventTarget) el).addEventListener("click", new EventListener() {
-
-						@Override
-						public void handleEvent(Event evt) {
-							JavaFXBrowserHelper.pageNumber = (int) (webEng.executeScript("PDFViewerApplication.pdfViewer.currentPageNumber;"));
-
-						}
-					}, false);
-
-					((EventTarget) el).addEventListener("keyup", new EventListener() {
-
-						@Override
-						public void handleEvent(Event evt) {
-							JavaFXBrowserHelper.pageNumber = (int) (webEng.executeScript("PDFViewerApplication.pdfViewer.currentPageNumber;"));
-							/*
-							 * System.out.println(String.valueOf(((com.sun.webkit.dom.KeyboardEventImpl)
-							 * evt).getKeyCode())); com.sun.webkit.dom.KeyboardEventImpl event =
-							 * (com.sun.webkit.dom.KeyboardEventImpl) evt;
-							 * System.out.println(event.getKeyIdentifier());
-							 */
-
-						}
-					}, false);
+					/*
+					 * webEng.executeScript("PDFViewerApplication.pdfViewer.currentPageNumber=" +
+					 * JavaFXBrowserHelper.pageNumber + ""); Set the bookmark to select the page!
+					 * webEng.executeScript("PDFViewerApplication.initialBookmark = \"" +
+					 * JavaFXBrowserHelper.pageNumber + "\";");
+					 * 
+					 * // Document doc = webEng.getDocument();
+					 * 
+					 * // Element el = doc.getDocumentElement();
+					 * 
+					 * ((EventTarget)
+					 * webEng.getDocument().getDocumentElement()).addEventListener("click", new
+					 * EventListener() {
+					 * 
+					 * @Override public void handleEvent(Event evt) { JavaFXBrowserHelper.pageNumber
+					 * = (int)
+					 * (webEng.executeScript("PDFViewerApplication.pdfViewer.currentPageNumber;"));
+					 * 
+					 * } }, false);
+					 * 
+					 * ((EventTarget)
+					 * webEng.getDocument().getDocumentElement()).addEventListener("keyup", new
+					 * EventListener() {
+					 * 
+					 * @Override public void handleEvent(Event evt) { JavaFXBrowserHelper.pageNumber
+					 * = (int)
+					 * (webEng.executeScript("PDFViewerApplication.pdfViewer.currentPageNumber;"));
+					 * 
+					 * System.out.println(String.valueOf(((com.sun.webkit.dom.KeyboardEventImpl)
+					 * evt).getKeyCode())); com.sun.webkit.dom.KeyboardEventImpl event =
+					 * (com.sun.webkit.dom.KeyboardEventImpl) evt;
+					 * System.out.println(event.getKeyIdentifier());
+					 * 
+					 * 
+					 * } }, false);
+					 */
 					/* Html */
 				} else {
 					/*
@@ -169,74 +174,50 @@ public class JavaFXWebBrowser {
 					 * webview-open-in-browser-instead Author:
 					 * http://stackoverflow.com/users/8840/avrom
 					 */
-					if (webEng.getDocument() != null) {
-						NodeList nodeList = webEng.getDocument().getElementsByTagName("a");
-						for (int i = 0; i < nodeList.getLength(); i++) {
-							org.w3c.dom.Node node = nodeList.item(i);
-							EventTarget eventTarget = (EventTarget) node;
-							eventTarget.addEventListener("click", new EventListener() {
-								@Override
-								public void handleEvent(Event evt) {
-									EventTarget target = evt.getCurrentTarget();
-									HTMLAnchorElement anchorElement = (HTMLAnchorElement) target;
-									String href = anchorElement.getHref();
-									URL url1 = null;
-									URLConnection urlConn = null;
-									try {
-										url1 = new URL(href);
-									} catch (MalformedURLException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									}
-
-									try {
-										urlConn = url1.openConnection();
-									} catch (IOException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									}
-
-									// Checking whether the URL contains a PDF
-									if (urlConn.getContentType() != null) {
-										if (urlConn.getContentType().equalsIgnoreCase("application/pdf")) {
-											// JavaFXWebBrowser.this.html=false;
-											String pathBundle = getPdfjsPath();
-
-											webEng.load("file:///" + pathBundle + "?file=" + href);
-
-											evt.preventDefault();
-										}
-									}
-								}
-							}, false);
-						}
-						/* Do we have a black theme? */
-						if (ApplicationWorkbenchWindowAdvisor.isThemeBlack()) {
-							// System.out.println(brow.getEngine().getLocation());
-							if (darkCss == true) {
-								/* Load a CSS applied to the R HTML helpfile! */
-								Bundle bundle = Platform.getBundle("com.eco.bio7.themes");
-								URL fileURL = bundle.getEntry("javafx/Bio7BrowserDarkHTML.css");
-								File file = null;
-								try {
-									file = new File(FileLocator.resolve(fileURL).toURI());
-								} catch (URISyntaxException e1) {
-									e1.printStackTrace();
-								} catch (IOException e1) {
-									e1.printStackTrace();
-								}
-								String path = file.getPath();
-								String css = Util.fileToString(path);
-								Document doc = webEng.getDocument();
-								Element styleNode = doc.createElement("style");
-								Text styleContent = doc.createTextNode(css);
-								styleNode.appendChild(styleContent);
-								doc.getDocumentElement().getElementsByTagName("head").item(0).appendChild(styleNode);
-								darkCss = false;
-							}
-						}
-
-					}
+					/*
+					 * if (webEng.getDocument() != null) { //NodeList nodeList =
+					 * webEng.getDocument().getElementsByTagName("a"); for (int i = 0; i <
+					 * webEng.getDocument().getElementsByTagName("a").getLength(); i++) {
+					 * //org.w3c.dom.Node node =
+					 * webEng.getDocument().getElementsByTagName("a").item(i); EventTarget
+					 * eventTarget = (EventTarget)
+					 * webEng.getDocument().getElementsByTagName("a").item(i);
+					 * eventTarget.addEventListener("click", new EventListener() {
+					 * 
+					 * @Override public void handleEvent(Event evt) { EventTarget target =
+					 * evt.getCurrentTarget(); HTMLAnchorElement anchorElement = (HTMLAnchorElement)
+					 * target; String href = t.getHref(); URL url1 = null; URLConnection urlConn =
+					 * null; try { url1 = new URL(href); } catch (MalformedURLException e) { // TODO
+					 * Auto-generated catch block e.printStackTrace(); }
+					 * 
+					 * try { urlConn = url1.openConnection(); } catch (IOException e) { // TODO
+					 * Auto-generated catch block e.printStackTrace(); }
+					 * 
+					 * // Checking whether the URL contains a PDF if (urlConn.getContentType() !=
+					 * null) { if (urlConn.getContentType().equalsIgnoreCase("application/pdf")) {
+					 * // JavaFXWebBrowser.this.html=false; String pathBundle = getPdfjsPath();
+					 * 
+					 * webEng.load("file:///" + pathBundle + "?file=" + href);
+					 * 
+					 * evt.preventDefault(); } } } }, false); } Do we have a black theme?
+					 * 
+					 * if (ApplicationWorkbenchWindowAdvisor.isThemeBlack()) { //
+					 * System.out.println(brow.getEngine().getLocation()); if (darkCss == true) {
+					 * Load a CSS applied to the R HTML helpfile! Bundle bundle =
+					 * Platform.getBundle("com.eco.bio7.themes"); URL fileURL =
+					 * bundle.getEntry("javafx/Bio7BrowserDarkHTML.css"); File file = null; try {
+					 * file = new File(FileLocator.resolve(fileURL).toURI()); } catch
+					 * (URISyntaxException e1) { e1.printStackTrace(); } catch (IOException e1) {
+					 * e1.printStackTrace(); } String path = file.getPath(); String css =
+					 * Util.fileToString(path); Document doc = webEng.getDocument(); Element
+					 * styleNode = doc.createElement("style"); Text styleContent =
+					 * doc.createTextNode(css); styleNode.appendChild(styleContent);
+					 * doc.getDocumentElement().getElementsByTagName("head").item(0).appendChild(
+					 * styleNode); darkCss = false; } }
+					 * 
+					 * 
+					 * }
+					 */
 
 					// webEng.executeScript("window.find('runif')");
 
@@ -389,9 +370,7 @@ public class JavaFXWebBrowser {
 					webEng.executeScript("if (document.getElementById('toolbarContainer').style.display == '')" + "{ "
 							+ "document.getElementById('viewerContainer').style.overflow = 'hidden';document.getElementById('toolbarContainer').style.display='none';document.getElementById('viewerContainer').style.top=0;}"
 
-							+ "else{"
-							+ "document.getElementById('viewerContainer').style.overflow = 'scroll';document.getElementById('toolbarContainer').style.display='';document.getElementById('viewerContainer').style.top=32;"
-							+ "}");
+							+ "else{" + "document.getElementById('viewerContainer').style.overflow = 'scroll';document.getElementById('toolbarContainer').style.display='';document.getElementById('viewerContainer').style.top=32;" + "}");
 					// }
 				}
 

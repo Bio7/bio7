@@ -23,7 +23,7 @@ import processing.core.PApplet;
 import com.eco.bio7.compile.Model;
 import com.eco.bio7.methods.Compiled;
 import com.jogamp.opengl.util.Animator;
-
+ 
 /**
  * This class provides some static methods for the creation of custom views
  * inside the Bio7 application.

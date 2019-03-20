@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Map;
 import java.util.Stack;
@@ -715,6 +716,8 @@ public class RShellView extends ViewPart {
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);
 						Job job = new Job("Html help") {
+							private String cssPath;
+
 							@Override
 							protected IStatus run(IProgressMonitor monitor) {
 								monitor.beginTask("Help ...", IProgressMonitor.UNKNOWN);
@@ -742,23 +745,73 @@ public class RShellView extends ViewPart {
 								});
 								if (htmlHelpText != null) {
 
-									try {
-										c.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".html\", sep=\"\"))");
-										c.eval("tryCatch(tools::Rd2HTML(utils:::.getHelpFile(?" + htmlHelpText + "),.bio7TempHtmlHelpFile,package=\"tools\", stages=c(\"install\", \"render\")),error = function(w) {print(\"No helpfile available!\")})");
-									} catch (RserveException e1) {
-
-										System.out.println(e1.getMessage());
-									}
 									String out = null;
-
 									try {
-										out = (String) c.eval("try(.bio7TempHtmlHelpFile)").asString();
-									} catch (RserveException | REXPMismatchException e) {
-
-										System.out.println(e.getMessage());
+										c.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".html\", sep=\"\"))").toString();
+									} catch (RserveException e2) {
+										// TODO Auto-generated catch block
+										e2.printStackTrace();
 									}
+									/* Do we have a black theme? */
+									if (Util.isThemeBlack()) {
+										// System.out.println(brow.getEngine().getLocation());
+
+										/* Load a CSS applied to the R HTML helpfile! */
+										Bundle bundle = Platform.getBundle("com.eco.bio7.themes");
+										URL fileURL = bundle.getEntry("javafx/Bio7BrowserDarkHTML.css");
+										File file = null;
+										try {
+											file = new File(FileLocator.resolve(fileURL).toURI());
+										} catch (URISyntaxException e1) {
+											e1.printStackTrace();
+										} catch (IOException e1) {
+											e1.printStackTrace();
+										}
+										 cssPath = file.getPath().replace("\\", "/");
+										// String css = Util.fileToString(path);
+										try {
+											c.assign("pathcss", cssPath);
+										} catch (RserveException e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
+										}
+										try {
+											c.eval("try(tools::Rd2HTML(utils:::.getHelpFile(?" + htmlHelpText + "),.bio7TempHtmlHelpFile,package=\"tools\", stages=c(\"install\", \"render\"),stylesheet = pathcss))");
+										} catch (RserveException e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
+										}
+										
+										System.out.println("black!");
+									}
+
+									else {
+
+										try {
+											c.eval("try(tools::Rd2HTML(utils:::.getHelpFile(?" + htmlHelpText + "),.bio7TempHtmlHelpFile,package=\"tools\", stages=c(\"install\", \"render\")))");
+										} catch (RserveException e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
+										}
+
+									}
+									try {
+										try {
+											out = (String) c.eval("try(.bio7TempHtmlHelpFile)").asString();
+										} catch (RserveException e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
+										}
+									} catch (REXPMismatchException e) {
+
+										e.printStackTrace();
+									}
+									
+									
 
 									String pattern = "file:///" + out;
+									url = pattern.replace("\\", "/");
+
 									url = pattern.replace("\\", "/");
 									if (openInJavaFXBrowser.equals("SWT_BROWSER")) {
 										Work.openView("com.eco.bio7.browser.Browser");
@@ -775,7 +828,9 @@ public class RShellView extends ViewPart {
 
 											public void run() {
 												JavaFXWebBrowser br = new JavaFXWebBrowser(true);
+												
 												br.setDarkCssIfDarkTheme(true);
+												br.getWebEngine().setUserStyleSheetLocation("file:///"+cssPath);
 												br.createBrowser(url, "R Help");
 
 											}
@@ -926,7 +981,7 @@ public class RShellView extends ViewPart {
 		removeButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				removeSelectedVars();
-			        displayRObjects();
+				displayRObjects();
 			}
 		});
 		removeButton.setText("Del");

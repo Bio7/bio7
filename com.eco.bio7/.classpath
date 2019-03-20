@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="libs/jython-standalone-2.7.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="baseline.jar"/>
+	<classpathentry kind="lib" path="libs/bsh-2.0b6.jar"/>
+	<classpathentry kind="lib" path="bin/"/>
+	<classpathentry kind="lib" path="libs/common.jar"/>
 	<classpathentry kind="lib" path="libs/groovy-2.5.4.jar"/>
 	<classpathentry kind="lib" path="libs/groovy-ant-2.5.4.jar"/>
 	<classpathentry kind="lib" path="libs/groovy-cli-commons-2.5.4.jar"/>
@@ -24,17 +29,11 @@
 	<classpathentry kind="lib" path="libs/groovy-test-junit5-2.5.4.jar"/>
 	<classpathentry kind="lib" path="libs/groovy-testng-2.5.4.jar"/>
 	<classpathentry kind="lib" path="libs/groovy-xml-2.5.4.jar"/>
-	<classpathentry kind="lib" path="libs/jython-standalone-2.7.0.jar"/>
-	<classpathentry kind="lib" path="libs/bsh-2.0b6.jar"/>
-	<classpathentry kind="lib" path="libs/py4j0.10.1.jar"/>
-	<classpathentry kind="lib" path="bin/"/>
-	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry kind="lib" path="libs/common.jar"/>
 	<classpathentry kind="lib" path="libs/jcommon-0.9.5.jar"/>
 	<classpathentry kind="lib" path="libs/jfreechart-0.9.20.1.jar"/>
+	<classpathentry kind="lib" path="libs/py4j0.10.1.jar"/>
 	<classpathentry kind="lib" path="libs/swing-layout-1.0.jar"/>
-	<classpathentry kind="lib" path="baseline.jar"/>
 	<classpathentry kind="lib" path="libs/swt-grouplayout.jar"/>
-	<classpathentry kind="lib" path="/com.eco.bio7.libs/libs/jogl-all.jar"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
