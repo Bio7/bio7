@@ -238,7 +238,6 @@ Bundle-ClassPath:
  baseline.jar,
  libs/swt-grouplayout.jar,
  libs/py4j0.10.1.jar,
- libs/jython-standalone-2.7.0.jar,
  libs/groovy-2.5.4.jar,
  libs/groovy-ant-2.5.4.jar,
  libs/groovy-cli-commons-2.5.4.jar,
@@ -260,7 +259,8 @@ Bundle-ClassPath:
  libs/groovy-test-2.5.4.jar,
  libs/groovy-test-junit5-2.5.4.jar,
  libs/groovy-testng-2.5.4.jar,
- libs/groovy-xml-2.5.4.jar
+ libs/groovy-xml-2.5.4.jar,
+ libs/jython-standalone-2.7.0.jar
 Import-Package: org.eclipse.e4.ui.css.swt.theme
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 
