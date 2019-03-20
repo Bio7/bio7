@@ -498,12 +498,12 @@ ExpandBar {
 
 /*View id's are improtant to color the toolbar, etc.!*/
 Composite #com-eco-bio7-imagej {
-	background-color: #252525;
+	
 	color: #dddddd; /* see property startupForegroundColor in the product */
 }
 
 #com-eco-bio7-imagej Label  {
-	background-color: #252525;
+	
 	color: #dddddd; /* see property startupForegroundColor in the product */
 }
 
@@ -513,17 +513,17 @@ Composite #org-eclipse-ui-console-ConsoleView.MToolBar {
 }
 
 #org-eclipse-ui-console-ConsoleView.MToolBar Label {
-    background-color:  #252525;
+    /*background-color:  #252525;*/
     color: #dddddd; /* see property startupForegroundColor in the product */
 }
 
 Composite #com.eco.bio7.rbridge.RTable {
-	background-color: #252525;
+	/*background-color: #252525;*/
 	color: #dddddd; /* see property startupForegroundColor in the product */
 }
 
 #com.eco.bio7.rbridge.RTable Label  {
-	background-color: #252525;
+	/*background-color: #252525;*/S
 	color: #dddddd; /* see property startupForegroundColor in the product */
 }
 
@@ -539,11 +539,11 @@ Composite #com.eco.bio7.thumbnails {
 }
 
 #com-eco-bio7-rbridge-RTable.MToolBar Label {
-     background-color: #252525;
+     /*background-color: #252525;*/
      color: #dddddd; /* see property startupForegroundColor in the product */ }
 
 Composite #com-eco-bio7-rbridge-RTable.MToolBar {
-     background-color: #252525;
+     /*background-color: #252525;*/
      color: #dddddd; 
 }
 
@@ -559,12 +559,12 @@ Composite #com-eco-bio7-thumbnails.MToolBar {
 }
 
 Composite #com-eco-bio7-browser-Browser.MToolBar {
-	 background-color: #252525;
+	 /*background-color: #252525;*/
      color: #dddddd; 
 }
 
 #com-eco-bio7-browser-Browser.MToolBar Label{
-	 background-color: #252525;;
+	/* background-color: #252525;*/
      color: #dddddd; 
 } 
 
