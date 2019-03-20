@@ -912,7 +912,7 @@ public class RShellView extends ViewPart {
 						} catch (IOException ex) {
 							ex.printStackTrace();
 						}
-						System.out.println(rPid.getPidWindows(RProcess));
+						System.out.println(rPid.getPidUnix(RProcess));
 					}
 
 				}

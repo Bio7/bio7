@@ -40,7 +40,7 @@ public class RClipboardScriptJob extends WorkspaceJob {
 
 				if (Util.getOS().equals("Mac")) {
 
-					con.eval("try(f <- paste(scan(pipe(\"pbpaste\"),what=character())))");
+					con.eval("try(f <- paste(scan(pipe(\"pbpaste\"),what=character())),sep=\"\", collapse=\"\")");
 				} else {
 					con.eval("try(f <- file(\"clipboard\", open=\"r\"))");
 				}

@@ -301,7 +301,7 @@ public class ImageStackRoiSelectionTransferJob extends WorkspaceJob implements I
 						}
 
 					}
-					Bio7Dialog.message("Selected Pixels transferred to R!");
+					
 					impd = null;
 				} else {
 					return;

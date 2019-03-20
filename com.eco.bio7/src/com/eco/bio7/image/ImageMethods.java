@@ -58,6 +58,7 @@ import com.eco.bio7.discrete.Quad2d;
 import com.eco.bio7.image.r.IJTranserResultsTable;
 import com.eco.bio7.image.r.TransferImageStack;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.util.Util;
 import ij.IJ;
@@ -706,6 +707,7 @@ public class ImageMethods extends ViewPart {
 				if (RServe.isAliveDialog()) {
 					if (RState.isBusy() == false) {
 						new IJTranserResultsTable().transferResultsTable(con, true);
+						RServeUtil.listRObjects();
 						Bio7Dialog.message("Results table transferred!");
 					} else {
 						Bio7Dialog.message("Rserve is busy!");
@@ -752,6 +754,7 @@ public class ImageMethods extends ViewPart {
 								if (event.getResult().isOK()) {
 
 									RState.setBusy(false);
+									RServeUtil.listRObjects();
 								} else {
 
 									RState.setBusy(false);
@@ -795,6 +798,7 @@ public class ImageMethods extends ViewPart {
 				if (con != null) {
 					if (RState.isBusy() == false) {
 						new IJTranserResultsTable().pointsToR(con);
+						RServeUtil.listRObjects();
 					} else {
 						Bio7Dialog.message("Rserve is busy!");
 					}
@@ -821,6 +825,7 @@ public class ImageMethods extends ViewPart {
 						// !!
 						public void run() {
 							new IJTranserResultsTable().particledescriptors();
+							RServeUtil.listRObjects();
 						}
 					});
 				} else {
@@ -901,6 +906,20 @@ public class ImageMethods extends ViewPart {
 
 						ImageRoiSelectionTransferJob job = new ImageRoiSelectionTransferJob(transferTypeCombo.getSelectionIndex());
 						// job.setSystem(true);
+						job.addJobChangeListener(new JobChangeAdapter() {
+							public void done(IJobChangeEvent event) {
+								if (event.getResult().isOK()) {
+
+									RState.setBusy(false);
+									RServeUtil.listRObjects();
+									Bio7Dialog.message("Selected Pixels transferred to R!");
+
+								} else {
+
+									RState.setBusy(false);
+								}
+							}
+						});
 						job.schedule();
 					} else {
 
@@ -932,6 +951,19 @@ public class ImageMethods extends ViewPart {
 
 						ImageStackRoiSelectionTransferJob job = new ImageStackRoiSelectionTransferJob(transferTypeCombo.getSelectionIndex());
 						// job.setSystem(true);
+						job.addJobChangeListener(new JobChangeAdapter() {
+							public void done(IJobChangeEvent event) {
+								if (event.getResult().isOK()) {
+
+									RState.setBusy(false);
+									RServeUtil.listRObjects();
+									Bio7Dialog.message("Selected Pixels transferred to R!");
+								} else {
+
+									RState.setBusy(false);
+								}
+							}
+						});
 						job.schedule();
 					} else {
 
@@ -971,6 +1003,7 @@ public class ImageMethods extends ViewPart {
 								if (event.getResult().isOK()) {
 									canTransferPic = true;
 									RState.setBusy(false);
+									RServeUtil.listRObjects();
 								} else {
 									canTransferPic = true;
 									RState.setBusy(false);
@@ -1124,6 +1157,7 @@ public class ImageMethods extends ViewPart {
 									if (event.getResult().isOK()) {
 										canTransfer = true;
 										RState.setBusy(false);
+										RServeUtil.listRObjects();
 									} else {
 										canTransfer = true;
 										RState.setBusy(false);
@@ -1172,6 +1206,7 @@ public class ImageMethods extends ViewPart {
 									if (event.getResult().isOK()) {
 										canTransfer = true;
 										RState.setBusy(false);
+										RServeUtil.listRObjects();
 									} else {
 										canTransfer = true;
 										RState.setBusy(false);

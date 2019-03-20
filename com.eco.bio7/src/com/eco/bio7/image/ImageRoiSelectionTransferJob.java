@@ -288,7 +288,6 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 						}
 
 					}
-					Bio7Dialog.message("Selected Pixels transferred to R!");
 					imp = null;
 				}
 			} else {
