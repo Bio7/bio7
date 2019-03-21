@@ -39,9 +39,7 @@ public class ClipboardRScipt extends Action {
 		if (RServe.getConnection() == null) {
 			String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 			if (selectionConsole.equals("R")) {
-				ConsolePageParticipant.pipeInputToConsole(
-						"fileClipboardTemp<-file(\"clipboard\", open=\"r\");source(fileClipboardTemp,echo=T);close(fileClipboardTemp);remove(fileClipboardTemp)",
-						true, true);
+				ConsolePageParticipant.pipeInputToConsole("fileClipboardTemp<-file(\"clipboard\", open=\"r\");source(fileClipboardTemp,echo=T);close(fileClipboardTemp);remove(fileClipboardTemp)", true, true);
 				System.out.println();
 			} else {
 				Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
@@ -55,28 +53,27 @@ public class ClipboardRScipt extends Action {
 
 			TextTransfer transfer = TextTransfer.getInstance();
 			data = (String) cb.getContents(transfer);
-			// data = data.replace(System.lineSeparator(), "\n");
+			data = data.replace(System.lineSeparator(), "\n");
 
-			if (data != null) {
+			System.out.println(data);
 
-				System.out.println(data);
+			try {
 
-				try {
+				// Work with a temporary file avoids a deadlock!
+				temp = File.createTempFile("tempfile", ".tmp");
 
-					// Work with a temporary file avoids a deadlock!
-					temp = File.createTempFile("tempfile", ".tmp");
+				// write it
+				BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
+				bw.write(data);
+				bw.close();
 
-					// write it
-					BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
-					bw.write(data);
-					bw.close();
+			} catch (IOException e) {
 
-				} catch (IOException e) {
+				e.printStackTrace();
 
-					e.printStackTrace();
-
-				}
-
+			}
+			if (RState.isBusy() == false) {
+				RState.setBusy(true);
 				RInterpreterJob clipboardJob = new RInterpreterJob(null, temp.getAbsolutePath());
 
 				clipboardJob.addJobChangeListener(new JobChangeAdapter() {
@@ -89,18 +86,20 @@ public class ClipboardRScipt extends Action {
 								RServe.closeAndDisplay();
 							}
 							RServeUtil.listRObjects();
-							temp.delete();
 
 						} else {
 							RState.setBusy(false);
 						}
 					}
 				});
-				clipboardJob.setUser(true);
+
 				clipboardJob.schedule();
+			} else {
+				Bio7Dialog.message("Rserve is busy!");
 
 				
 			}
+
 		}
 
 	}
