@@ -28,6 +28,7 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.StartBio7Utils;
@@ -107,8 +108,7 @@ public class InterpretR extends Action {
 							if (countDev > 0) {
 								RServe.closeAndDisplay();
 							}
-							RShellView rShellInst = RShellView.getInstance();
-							rShellInst.displayRObjects();
+							RServeUtil.listRObjects();
 						} else {
 							RState.setBusy(false);
 						}

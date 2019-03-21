@@ -323,8 +323,7 @@ public class IJTranserResultsTable {
 
 				}
 				runParticleAnalysis(d, null);
-
-				Bio7Dialog.message("Particles action executed!");
+				
 			} else {
 
 				Bio7Dialog.message("Rserve is not alive!");

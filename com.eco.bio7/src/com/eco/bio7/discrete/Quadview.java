@@ -35,6 +35,7 @@ import com.eco.bio7.image.SwingFxSwtView;
 import com.eco.bio7.jobs.LoadData;
 import com.eco.bio7.methods.CurrentStates;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.time.Time;
 
@@ -267,6 +268,8 @@ public class Quadview extends ViewPart {
 								if (event.getResult().isOK()) {
 
 									RState.setBusy(false);
+									RServeUtil.listRObjects();
+									
 								} else {
 
 									RState.setBusy(false);
@@ -320,6 +323,8 @@ public class Quadview extends ViewPart {
 								if (event.getResult().isOK()) {
 
 									RState.setBusy(false);
+									RServeUtil.listRObjects();
+									
 								} else {
 
 									RState.setBusy(false);

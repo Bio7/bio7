@@ -24,6 +24,7 @@ import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
@@ -92,8 +93,7 @@ public class ClearRWorkspace extends Action {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-						RShellView rShellInst = RShellView.getInstance();
-						rShellInst.displayRObjects();
+						RServeUtil.listRObjects();
 					}
 				} else {
 					Bio7Dialog.message("Rserve is busy!");

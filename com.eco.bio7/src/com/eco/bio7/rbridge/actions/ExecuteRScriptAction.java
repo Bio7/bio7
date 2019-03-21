@@ -11,6 +11,7 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.views.RShellView;
 
@@ -53,8 +54,7 @@ public class ExecuteRScriptAction extends Action {
 								}
 
 							}
-							RShellView rShellInst = RShellView.getInstance();
-							rShellInst.displayRObjects();
+							RServeUtil.listRObjects();
 						}
 					});
 					Do.setUser(true);

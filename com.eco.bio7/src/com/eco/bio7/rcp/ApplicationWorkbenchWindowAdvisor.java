@@ -1417,8 +1417,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 						 */
 						RConfig.config(con);
 						RState.setBusy(false);
-						RShellView rShellInst = RShellView.getInstance();
-						rShellInst.displayRObjects();
+						RServeUtil.listRObjects();
 					} else {
 						RState.setBusy(false);
 					}

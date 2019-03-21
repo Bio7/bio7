@@ -15,6 +15,7 @@ import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RClipboardScriptJob;
 import com.eco.bio7.rbridge.RClipboardValuesJob;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.views.RShellView;
 
@@ -53,8 +54,7 @@ public class ClipboardRValues extends Action {
 					public void done(IJobChangeEvent event) {
 						if (event.getResult().isOK()) {
 							RState.setBusy(false);
-							RShellView rShellInst = RShellView.getInstance();
-							rShellInst.displayRObjects();
+							RServeUtil.listRObjects();
 						} else {
 							RState.setBusy(false);
 						}

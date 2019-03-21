@@ -912,7 +912,7 @@ public class RShellView extends ViewPart {
 						} catch (IOException ex) {
 							ex.printStackTrace();
 						}
-						//System.out.println(rPid.getPidUnix(RProcess));
+						// System.out.println(rPid.getPidUnix(RProcess));
 					}
 
 				}
@@ -2449,8 +2449,8 @@ public class RShellView extends ViewPart {
 										if (countDev > 0) {
 											RServe.closeAndDisplay();
 										}
-										RShellView rShellInst = RShellView.getInstance();
-										rShellInst.displayRObjects();
+										
+										displayRObjects();
 									}
 								}
 							});
@@ -2864,77 +2864,27 @@ public class RShellView extends ViewPart {
 			Bio7Dialog.message("Directory is not writable!");
 		}
 	}
-	 /*Update the R object list in the R-Shell used by all hard implemented eval actions (excluded are Rserve API scripts) 
-	  *if the update preference is true (by default is)!*/
+
+	/*
+	 * Update the R object list in the R-Shell used by all hard implemented eval
+	 * actions (excluded are Rserve API scripts) if the update preference is true
+	 * (by default is)!
+	 */
 	public void displayRObjects() {
 
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		boolean updateRShellObjects = store.getBoolean("UPDATE_VAR_RSHELL");
 		if (updateRShellObjects == true) {
-			if (RState.isBusy() == false) {
-				RState.setBusy(true);
-				Job job = new Job("List Objects") {
-					@Override
-					protected IStatus run(IProgressMonitor monitor) {
-						monitor.beginTask("List Objects...", IProgressMonitor.UNKNOWN);
-						REXP x = null;
 
-						// List all variables in the R workspace!
-
-						try {
-							RConnection con = RServe.getConnection();
-
-							con.eval(".bio7TempVarEnvironment <- new.env()");
-							con.eval(".bio7TempVarEnvironment$workspVar <-ls()");
-
-							// RServe.getConnection().eval("try(.varRWorkspaceObjects<-ls())");
-							x = con.eval("try(.bio7TempVarEnvironment$workspVar)");
-							try {
-								listObjectsArray = x.asStrings();
-							} catch (REXPMismatchException e1) {
-
-								e1.printStackTrace();
-							}
-							con.eval("try(rm(workspVar,envir=.bio7TempVarEnvironment))");
-
-						} catch (RserveException e1) {
-
-							e1.printStackTrace();
-						}
-						Display dis = Util.getDisplay();
-						dis.syncExec(new Runnable() {
-
-							public void run() {
-								listShell.removeAll();
-								listShell.setItems(listObjectsArray);
-							}
-						});
-
-						monitor.done();
-						return Status.OK_STATUS;
-					}
-
-				};
-				job.addJobChangeListener(new JobChangeAdapter() {
-					public void done(IJobChangeEvent event) {
-						if (event.getResult().isOK()) {
-
-							RState.setBusy(false);
-						} else {
-
-							RState.setBusy(false);
-						}
-					}
-				});
-				// job.setSystem(true);
-				job.schedule();
-			} else {
-				Bio7Dialog.message("Rserve is busy!");
-			}
+			displayRObjectsInternal();
 		}
 
 	}
-       /*Same method as above but without the dependence of the preference value. Only used by the 'List' action!*/
+
+	/*
+	 * Same method as above but without the dependence of the preference value. Only
+	 * used by the 'List' action!
+	 */
 	public void displayRObjectsInternal() {
 
 		if (RState.isBusy() == false) {

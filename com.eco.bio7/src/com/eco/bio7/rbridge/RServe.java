@@ -140,10 +140,8 @@ public class RServe {
 							RServe.closeAndDisplay();
 						}
 						System.out.flush();
-						updatePackageImports();
-						
-						RShellView rShellInst = RShellView.getInstance();
-						rShellInst.displayRObjects();
+						updatePackageImports();						
+						RServeUtil.listRObjects();
 					} else {
 						RState.setBusy(false);
 

@@ -133,8 +133,7 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 									if (event.getResult().isOK()) {
 
 										RState.setBusy(false);
-										RShellView rShellInst = RShellView.getInstance();
-										rShellInst.displayRObjects();
+										RServeUtil.listRObjects();
 									} else {
 
 										RState.setBusy(false);
@@ -184,8 +183,7 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 									if (event.getResult().isOK()) {
 
 										RState.setBusy(false);
-										RShellView rShellInst = RShellView.getInstance();
-										rShellInst.displayRObjects();
+										RServeUtil.listRObjects();
 									} else {
 
 										RState.setBusy(false);
@@ -235,8 +233,7 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 									if (event.getResult().isOK()) {
 
 										RState.setBusy(false);
-										RShellView rShellInst = RShellView.getInstance();
-										rShellInst.displayRObjects();
+										RServeUtil.listRObjects();
 									} else {
 
 										RState.setBusy(false);
@@ -286,8 +283,7 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 									if (event.getResult().isOK()) {
 
 										RState.setBusy(false);
-										RShellView rShellInst = RShellView.getInstance();
-										rShellInst.displayRObjects();
+										RServeUtil.listRObjects();
 									} else {
 
 										RState.setBusy(false);
@@ -337,8 +333,7 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 									if (event.getResult().isOK()) {
 
 										RState.setBusy(false);
-										RShellView rShellInst = RShellView.getInstance();
-										rShellInst.displayRObjects();
+										RServeUtil.listRObjects();
 									} else {
 
 										RState.setBusy(false);

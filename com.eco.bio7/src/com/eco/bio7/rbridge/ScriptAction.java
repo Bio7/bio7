@@ -176,8 +176,7 @@ public class ScriptAction extends Action implements IMenuCreator {
 										if (countDev > 0) {
 											RServe.closeAndDisplay();
 										}
-										RShellView rShellInst = RShellView.getInstance();
-										rShellInst.displayRObjects();
+										RServeUtil.listRObjects();
 									}
 								}
 							});

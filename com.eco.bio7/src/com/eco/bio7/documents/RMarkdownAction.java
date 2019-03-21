@@ -40,6 +40,7 @@ import com.eco.bio7.collection.Work;
 import com.eco.bio7.markdownedit.Activator;
 import com.eco.bio7.markdownedit.editors.MarkdownEditor;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
@@ -366,8 +367,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 						 * finished!
 						 */
 						canOperate = true;
-						RShellView rShellInst = RShellView.getInstance();
-						rShellInst.displayRObjects();
+						RServeUtil.listRObjects();
 
 					} else {
 

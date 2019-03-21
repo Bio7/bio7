@@ -289,7 +289,7 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 			}
 		}
 
-		Bio7Dialog.message("Selected Pixels transferred to R!");
+		
 		imp = null;
 	}
 

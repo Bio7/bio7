@@ -826,6 +826,7 @@ public class ImageMethods extends ViewPart {
 						public void run() {
 							new IJTranserResultsTable().particledescriptors();
 							RServeUtil.listRObjects();
+							Bio7Dialog.message("Particles action executed!");
 						}
 					});
 				} else {
@@ -845,10 +846,27 @@ public class ImageMethods extends ViewPart {
 				if (RServe.isAlive()) {
 					ImagePlus imp = WindowManager.getCurrentImage();
 					if (imp != null) {
+						if (RState.isBusy() == false) {
+							RState.setBusy(true);
 
-						ImageSelectionTransferJob job = new ImageSelectionTransferJob(transferTypeCombo.getSelectionIndex());
-						// job.setSystem(true);
-						job.schedule();
+							ImageSelectionTransferJob job = new ImageSelectionTransferJob(transferTypeCombo.getSelectionIndex());
+							job.addJobChangeListener(new JobChangeAdapter() {
+								public void done(IJobChangeEvent event) {
+									if (event.getResult().isOK()) {
+										RState.setBusy(false);
+										RServeUtil.listRObjects();
+										Bio7Dialog.message("Selected Pixels transferred to R!");
+									} else {
+										RState.setBusy(false);
+									}
+								}
+							});
+							job.schedule();
+						} else {
+
+							Bio7Dialog.message("Rserve is busy!");
+
+						}
 					} else {
 
 						Bio7Dialog.message("No image available!");

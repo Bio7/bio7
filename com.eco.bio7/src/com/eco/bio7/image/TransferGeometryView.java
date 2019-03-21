@@ -1,5 +1,7 @@
 package com.eco.bio7.image;
 
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
@@ -18,6 +20,7 @@ import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import org.eclipse.swt.widgets.Label;
 
@@ -148,8 +151,7 @@ public class TransferGeometryView extends ViewPart {
 						// List all variables in the R workspace!
 
 						try {
-							RServe.getConnection().eval(
-									"varWorkspaceType<-NULL;for(i in 1:length(ls())){if(is.data.frame(get(ls()[i]))==TRUE){varWorkspaceType<-append(varWorkspaceType,ls()[i])}}");
+							RServe.getConnection().eval("varWorkspaceType<-NULL;for(i in 1:length(ls())){if(is.data.frame(get(ls()[i]))==TRUE){varWorkspaceType<-append(varWorkspaceType,ls()[i])}}");
 							x = RServe.getConnection().eval("varWorkspaceType");
 							if (x.isNull() == false) {
 								try {
@@ -280,11 +282,27 @@ public class TransferGeometryView extends ViewPart {
 				String crs = getCrsText();
 				String selectedDf = getSelDataframe();
 				boolean asCentroid = isTransferCentroid();
+				if (RState.isBusy() == false) {
+					RState.setBusy(true);
+					TransferSelectionCoordsJob job = new TransferSelectionCoordsJob(transferAsList, selection, doSetCRS, doSetDf, crs, selectedDf, asCentroid);
+					// job.setSystem(true);
+					job.addJobChangeListener(new JobChangeAdapter() {
+						public void done(IJobChangeEvent event) {
+							if (event.getResult().isOK()) {
 
-				TransferSelectionCoordsJob job = new TransferSelectionCoordsJob(transferAsList, selection, doSetCRS,
-						doSetDf, crs, selectedDf, asCentroid);
-				// job.setSystem(true);
-				job.schedule();
+								RState.setBusy(false);
+								RServeUtil.listRObjects();
+							} else {
+								RState.setBusy(false);
+							}
+						}
+					});
+					job.schedule();
+				} else {
+
+					Bio7Dialog.message("Rserve is busy!");
+
+				}
 				/*
 				 * MatchingDialoge m=new MatchingDialoge(new Shell()); m.open()
 				 */;

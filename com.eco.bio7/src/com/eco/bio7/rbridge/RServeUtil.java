@@ -279,8 +279,7 @@ public class RServeUtil {
 							if (countDev > 0) {
 								RServe.closeAndDisplayNoJoin();
 							}
-							RShellView rShellInst = RShellView.getInstance();
-							rShellInst.displayRObjects();
+							RServeUtil.listRObjects();
 							// BatchModel.resumeFlow();
 
 						} else {
