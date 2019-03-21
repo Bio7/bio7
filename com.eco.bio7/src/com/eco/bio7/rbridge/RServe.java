@@ -214,6 +214,7 @@ public class RServe {
 						}
 						System.out.flush();
 						updatePackageImports();
+						RServeUtil.listRObjects();
 					} else {
 						RState.setBusy(false);
 
@@ -293,6 +294,7 @@ public class RServe {
 						}
 						System.out.flush();
 						updatePackageImports();
+						RServeUtil.listRObjects();
 					} else {
 						System.out.flush();
 						RState.setBusy(false);
