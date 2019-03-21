@@ -1,24 +1,19 @@
 package com.eco.bio7.rbridge.actions;
 
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
-
-import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
-import com.eco.bio7.rbridge.RClipboardScriptJob;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RServeUtil;
-import com.eco.bio7.rbridge.RState;
-import com.eco.bio7.rbridge.views.RShellView;
+import com.eco.bio7.util.Util;
 
 public class ClipboardRScipt extends Action {
+
+	protected String data;
 
 	public ClipboardRScipt(String text, IWorkbenchWindow window) {
 		super(text);
@@ -28,13 +23,13 @@ public class ClipboardRScipt extends Action {
 	}
 
 	public void run() {
-		//IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		//boolean rPipe = store.getBoolean("r_pipe");
+		// IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		// boolean rPipe = store.getBoolean("r_pipe");
 
-		if (RServe.getConnection()==null) {
+		if (RServe.getConnection() == null) {
 			String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 			if (selectionConsole.equals("R")) {
-				ConsolePageParticipant.pipeInputToConsole("fileClipboardTemp<-file(\"clipboard\", open=\"r\");source(fileClipboardTemp,echo=T);close(fileClipboardTemp);remove(fileClipboardTemp)",true,true);
+				ConsolePageParticipant.pipeInputToConsole("fileClipboardTemp<-file(\"clipboard\", open=\"r\");source(fileClipboardTemp,echo=T);close(fileClipboardTemp);remove(fileClipboardTemp)", true, true);
 				System.out.println();
 			} else {
 				Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
@@ -44,34 +39,26 @@ public class ClipboardRScipt extends Action {
 
 		else {
 
-			/* Execute a script from the clipboard, if available! */
-			if (RState.isBusy() == false) {
-				RState.setBusy(true);
-				RClipboardScriptJob Do = new RClipboardScriptJob();
-				Do.addJobChangeListener(new JobChangeAdapter() {
-					public void done(IJobChangeEvent event) {
-						if (event.getResult().isOK()) {
-							int countDev = RServe.getDisplayNumber();
-							RState.setBusy(false);
-							if (countDev > 0) {
-								RServe.closeAndDisplay();
-							}
-							RServeUtil.listRObjects();
-						} else {
-							RState.setBusy(false);
-						}
-					}
-				});
-				Do.setUser(true);
-				Do.schedule();
+			Display dis = Util.getDisplay();
+			dis.syncExec(new Runnable() {
 
+				public void run() {
+
+					Clipboard cb = new Clipboard(Util.getDisplay());
+
+					TextTransfer transfer = TextTransfer.getInstance();
+					data = (String) cb.getContents(transfer);
+				}
+			});
+			data = data.replace("\r", "");
+			
+			if (data != null) {
+				RServeUtil.evalR(data, null);
+				RServeUtil.listRObjects();
 			}
 
-			else {
-
-				Bio7Dialog.message("Rserve is busy!");
-
-			}
 		}
+
 	}
+
 }
