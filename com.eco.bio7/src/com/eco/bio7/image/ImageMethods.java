@@ -21,7 +21,12 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import javax.imageio.ImageIO;
 import javax.swing.SwingUtilities;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
@@ -702,18 +707,41 @@ public class ImageMethods extends ViewPart {
 		btnNewButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				RConnection con = RServe.getConnection();
 
 				if (RServe.isAliveDialog()) {
 					if (RState.isBusy() == false) {
-						new IJTranserResultsTable().transferResultsTable(con, true);
-						RServeUtil.listRObjects();
-						Bio7Dialog.message("Results table transferred!");
+						RState.setBusy(true);
+						Job job = new Job("Transfer to R") {
+							@Override
+							protected IStatus run(IProgressMonitor monitor) {
+								monitor.beginTask("Transfer Data ...", IProgressMonitor.UNKNOWN);
+
+								new IJTranserResultsTable().transferResultsTable(RServe.getConnection(), true);
+
+								monitor.done();
+								return Status.OK_STATUS;
+							}
+
+						};
+						job.addJobChangeListener(new JobChangeAdapter() {
+							public void done(IJobChangeEvent event) {
+								if (event.getResult().isOK()) {
+
+									RState.setBusy(false);
+									RServeUtil.listRObjects();
+								} else {
+
+									RState.setBusy(false);
+								}
+							}
+						});
+						// job.setSystem(true);
+						job.schedule();
 					} else {
 						Bio7Dialog.message("Rserve is busy!");
 					}
-
 				}
+
 			}
 		});
 		GridData gd_btnNewButton = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
@@ -793,17 +821,42 @@ public class ImageMethods extends ViewPart {
 		button2.setLayoutData(gridData);
 		button2.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
 			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
-				RConnection con = RServe.getConnection();
 
-				if (con != null) {
+				if (RServe.isAliveDialog()) {
 					if (RState.isBusy() == false) {
-						new IJTranserResultsTable().pointsToR(con);
-						RServeUtil.listRObjects();
+						RState.setBusy(true);
+						Job job = new Job("Transfer to R") {
+							@Override
+							protected IStatus run(IProgressMonitor monitor) {
+								monitor.beginTask("Transfer Data ...", IProgressMonitor.UNKNOWN);
+
+								new IJTranserResultsTable().pointsToR(RServe.getConnection());
+
+								monitor.done();
+								return Status.OK_STATUS;
+							}
+
+						};
+						job.addJobChangeListener(new JobChangeAdapter() {
+							public void done(IJobChangeEvent event) {
+								if (event.getResult().isOK()) {
+
+									RState.setBusy(false);
+									RServeUtil.listRObjects();
+									Bio7Dialog.message("Points transferred!");
+								} else {
+
+									RState.setBusy(false);
+								}
+							}
+						});
+						// job.setSystem(true);
+						job.schedule();
 					} else {
 						Bio7Dialog.message("Rserve is busy!");
 					}
-
 				}
+
 			}
 		});
 		GridData gridData131 = new GridData(SWT.FILL, SWT.FILL, true, true);
@@ -820,18 +873,42 @@ public class ImageMethods extends ViewPart {
 				"Transfers a particle measurement to R.\r\nThe image has to be thresholded and in\r\nthe ImageJ \"Analyze Particles\" dialog the option\r\n\"Display results\" has to be selected.\r\nSimply automates an ImageJ \"Results\r\nTable\" transfer workflow (see \"IJ RT\" action).");
 		button4.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
 			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
-				if (RState.isBusy() == false) {
-					SwingUtilities.invokeLater(new Runnable() {
-						// !!
-						public void run() {
-							new IJTranserResultsTable().particledescriptors();
-							RServeUtil.listRObjects();
-							Bio7Dialog.message("Particles action executed!");
-						}
-					});
-				} else {
-					Bio7Dialog.message("Rserve is busy!");
+
+				if (RServe.isAliveDialog()) {
+					if (RState.isBusy() == false) {
+						RState.setBusy(true);
+						Job job = new Job("Transfer to R") {
+							@Override
+							protected IStatus run(IProgressMonitor monitor) {
+								monitor.beginTask("Transfer Data ...", IProgressMonitor.UNKNOWN);
+
+								new IJTranserResultsTable().particledescriptors();
+
+								monitor.done();
+								return Status.OK_STATUS;
+							}
+
+						};
+						job.addJobChangeListener(new JobChangeAdapter() {
+							public void done(IJobChangeEvent event) {
+								if (event.getResult().isOK()) {
+
+									RState.setBusy(false);
+									RServeUtil.listRObjects();
+									//Bio7Dialog.message("Particles action executed!");
+								} else {
+
+									RState.setBusy(false);
+								}
+							}
+						});
+						// job.setSystem(true);
+						job.schedule();
+					} else {
+						Bio7Dialog.message("Rserve is busy!");
+					}
 				}
+
 			}
 
 		});
@@ -921,24 +998,27 @@ public class ImageMethods extends ViewPart {
 				if (RServe.isAlive()) {
 					ImagePlus imp = WindowManager.getCurrentImage();
 					if (imp != null) {
+						if (RState.isBusy() == false) {
+							RState.setBusy(true);
 
-						ImageRoiSelectionTransferJob job = new ImageRoiSelectionTransferJob(transferTypeCombo.getSelectionIndex());
-						// job.setSystem(true);
-						job.addJobChangeListener(new JobChangeAdapter() {
-							public void done(IJobChangeEvent event) {
-								if (event.getResult().isOK()) {
+							ImageRoiSelectionTransferJob job = new ImageRoiSelectionTransferJob(transferTypeCombo.getSelectionIndex());
+							// job.setSystem(true);
+							job.addJobChangeListener(new JobChangeAdapter() {
+								public void done(IJobChangeEvent event) {
+									if (event.getResult().isOK()) {
 
-									RState.setBusy(false);
-									RServeUtil.listRObjects();
-									Bio7Dialog.message("Selected Pixels transferred to R!");
+										RState.setBusy(false);
+										RServeUtil.listRObjects();
+										Bio7Dialog.message("Selected Pixels transferred to R!");
 
-								} else {
+									} else {
 
-									RState.setBusy(false);
+										RState.setBusy(false);
+									}
 								}
-							}
-						});
-						job.schedule();
+							});
+							job.schedule();
+						}
 					} else {
 
 						Bio7Dialog.message("No image available!");
@@ -966,23 +1046,25 @@ public class ImageMethods extends ViewPart {
 				if (RServe.isAlive()) {
 					ImagePlus imp = WindowManager.getCurrentImage();
 					if (imp != null) {
+						if (RState.isBusy() == false) {
+							RState.setBusy(true);
+							ImageStackRoiSelectionTransferJob job = new ImageStackRoiSelectionTransferJob(transferTypeCombo.getSelectionIndex());
+							// job.setSystem(true);
+							job.addJobChangeListener(new JobChangeAdapter() {
+								public void done(IJobChangeEvent event) {
+									if (event.getResult().isOK()) {
 
-						ImageStackRoiSelectionTransferJob job = new ImageStackRoiSelectionTransferJob(transferTypeCombo.getSelectionIndex());
-						// job.setSystem(true);
-						job.addJobChangeListener(new JobChangeAdapter() {
-							public void done(IJobChangeEvent event) {
-								if (event.getResult().isOK()) {
+										RState.setBusy(false);
+										RServeUtil.listRObjects();
+										Bio7Dialog.message("Selected Pixels transferred to R!");
+									} else {
 
-									RState.setBusy(false);
-									RServeUtil.listRObjects();
-									Bio7Dialog.message("Selected Pixels transferred to R!");
-								} else {
-
-									RState.setBusy(false);
+										RState.setBusy(false);
+									}
 								}
-							}
-						});
-						job.schedule();
+							});
+							job.schedule();
+						}
 					} else {
 
 						Bio7Dialog.message("No image available!");

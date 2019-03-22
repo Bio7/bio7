@@ -98,6 +98,9 @@ public class LatexSweaveKnitrAction extends Action {
 	 */
 
 	public void run() {
+		if (RServe.isAliveDialog() == false) {
+			return;
+		}
 		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
 		if (utils != null) {
 			/* Bring the console to the front and clear it! */
@@ -151,20 +154,20 @@ public class LatexSweaveKnitrAction extends Action {
 			// dirPath = null;
 
 			dirPath = new File(fi).getParentFile().getPath().replace("\\", "/");
+			if (RState.isBusy() == false) {
+				RState.setBusy(true);
+				Job job = new Job("Knitr file") {
+					@Override
+					protected IStatus run(IProgressMonitor monitor) {
+						if (extension.equals("tex")) {
+							monitor.beginTask("LaTeX file...", IProgressMonitor.UNKNOWN);
 
-			Job job = new Job("Knitr file") {
-				@Override
-				protected IStatus run(IProgressMonitor monitor) {
-					if (extension.equals("tex")) {
-						monitor.beginTask("LaTeX file...", IProgressMonitor.UNKNOWN);
+							compileLatex(activeProject, theName, dirPath, true);
 
-						compileLatex(activeProject, theName, dirPath, true);
+						}
 
-					}
+						else if (extension.equals("rnw") || extension.equals("Rnw")) {
 
-					else if (extension.equals("rnw") || extension.equals("Rnw")) {
-
-						if (RServe.isAliveDialog()) {
 							RConnection c = RServe.getConnection();
 
 							try {
@@ -178,178 +181,174 @@ public class LatexSweaveKnitrAction extends Action {
 
 								System.out.println(e.getMessage());
 							}
+
+							compileLatex(activeProject, theName, dirPath, false);
+
 						}
 
-						compileLatex(activeProject, theName, dirPath, false);
+						else {
+							monitor.beginTask("LaTeX file...", IProgressMonitor.UNKNOWN);
 
-					}
+							RConnection c = RServe.getConnection();
 
-					else {
-						monitor.beginTask("LaTeX file...", IProgressMonitor.UNKNOWN);
-						if (RServe.isAliveDialog()) {
-							if (RState.isBusy() == false) {
+							try {
+								REXPLogical rl = (REXPLogical) c.eval("require(knitr)");
+								if (!(rl.isTRUE()[0])) {
 
-								RConnection c = RServe.getConnection();
-
-								try {
-									REXPLogical rl = (REXPLogical) c.eval("require(knitr)");
-									if (!(rl.isTRUE()[0])) {
-
-										Bio7Dialog.message("Cannot load 'knitr' package!");
-									}
-
-									c.eval("try(library(knitr))");
-									c.eval("try(.tempCurrentWd<-getwd());");
-									c.eval("setwd('" + dirPath + "')");
-									IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-									String knitrOptions = store.getString("knitroptions");
-									if (fileext.equals("html")) {
-										c.eval("try(" + knitrOptions + ")");
-										// File file =
-										// selectedFile.getLocation().toFile();
-										String docTemp = BatchModel.fileToString(selectedFile.getLocation().toString());
-
-										// String docTemp=doc.get();
-										Document docHtml = Jsoup.parse(docTemp);
-										/* Remove the content editable attribute! */
-										Elements elements = docHtml.select("body");
-										elements.removeAttr("contenteditable");
-										// System.out.println(docHtml.getElementsByTag("body"));
-										/* Search for divs with the selected id! */
-										Elements contents = docHtml.select("#knitrcode"); // a
-																							// with
-																							// href
-										for (int i = 0; i < contents.size(); i++) {
-											/*
-											 * Replace in the div the linebreak and page tags with text linebreak(s)!
-											 */
-											contents.get(i).select("br").append("\\n");
-											contents.get(i).select("p").prepend("\\n\\n");
-
-											String cleaned = contents.get(i).text().replaceAll("\\\\n", "\n");
-											/*
-											 * Wrap the parsed div text in a knitr section!
-											 */
-											contents.get(i).after("<!--begin.rcode\n " + cleaned + " \nend.rcode-->");
-											contents.get(i).remove();
-										}
-										/*
-										 * Create a temp file for the parsed and edited *.html file for processing with
-										 * knitr!
-										 */
-										File temp = null;
-										try {
-											temp = File.createTempFile(theName, ".tmp");
-										} catch (IOException e) {
-											// TODO Auto-generated catch block
-											e.printStackTrace();
-										}
-
-										/*
-										 * Write the changes to the file with the help of the ApacheIO lib!
-										 */
-										try {
-											FileUtils.writeStringToFile(temp, docHtml.html());
-										} catch (IOException e) {
-											// TODO Auto-generated catch block
-											e.printStackTrace();
-										}
-										/* Clean the path for R and knitr! */
-										String cleanedPath = temp.getPath().replace("\\", "/");
-
-										RServe.print("knit('" + cleanedPath + "','" + theName + "." + fileext + "')");
-
-									}
-
-									else if (fileext.equals("tex")) {
-
-										RServe.print("knit('" + selFile + "','" + theName + "." + fileext + "')");
-									}
-
-								} catch (RserveException e1) {
-
-									e1.printStackTrace();
+									Bio7Dialog.message("Cannot load 'knitr' package!");
 								}
 
-								IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-								IProject proj = root.getProject(activeProject.getName());
-								try {
-									proj.refreshLocal(IResource.DEPTH_INFINITE, null);
-								} catch (CoreException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
+								c.eval("try(library(knitr))");
+								c.eval("try(.tempCurrentWd<-getwd());");
+								c.eval("setwd('" + dirPath + "')");
+								IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+								String knitrOptions = store.getString("knitroptions");
 								if (fileext.equals("html")) {
+									c.eval("try(" + knitrOptions + ")");
+									// File file =
+									// selectedFile.getLocation().toFile();
+									String docTemp = BatchModel.fileToString(selectedFile.getLocation().toString());
 
-									Display display = PlatformUI.getWorkbench().getDisplay();
-									display.asyncExec(new Runnable() {
+									// String docTemp=doc.get();
+									Document docHtml = Jsoup.parse(docTemp);
+									/* Remove the content editable attribute! */
+									Elements elements = docHtml.select("body");
+									elements.removeAttr("contenteditable");
+									// System.out.println(docHtml.getElementsByTag("body"));
+									/* Search for divs with the selected id! */
+									Elements contents = docHtml.select("#knitrcode"); // a
+																// with
+																// href
+									for (int i = 0; i < contents.size(); i++) {
+										/*
+										 * Replace in the div the linebreak and page tags with text linebreak(s)!
+										 */
+										contents.get(i).select("br").append("\\n");
+										contents.get(i).select("p").prepend("\\n\\n");
 
-										public void run() {
+										String cleaned = contents.get(i).text().replaceAll("\\\\n", "\n");
+										/*
+										 * Wrap the parsed div text in a knitr section!
+										 */
+										contents.get(i).after("<!--begin.rcode\n " + cleaned + " \nend.rcode-->");
+										contents.get(i).remove();
+									}
+									/*
+									 * Create a temp file for the parsed and edited *.html file for processing with
+									 * knitr!
+									 */
+									File temp = null;
+									try {
+										temp = File.createTempFile(theName, ".tmp");
+									} catch (IOException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
 
-											IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-											String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
+									/*
+									 * Write the changes to the file with the help of the ApacheIO lib!
+									 */
+									try {
+										FileUtils.writeStringToFile(temp, docHtml.html());
+									} catch (IOException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+									/* Clean the path for R and knitr! */
+									String cleanedPath = temp.getPath().replace("\\", "/");
 
-											String temp = "file:///" + dirPath + "/" + theName + ".html";
-											String url = temp.replace("\\", "/");
-											/* The option for using an external Browser! */
-											boolean useInternalSWTBrowser = store.getBoolean("PDF_USE_BROWSER");
-											if (openInJavaFXBrowser.equals("JAVAFX_BROWSER") == false) {
-												if (useInternalSWTBrowser == true) {
-													Work.openView("com.eco.bio7.browser.Browser");
-													BrowserView b = BrowserView.getBrowserInstance();
-													b.browser.setJavascriptEnabled(true);
-													b.setLocation(url);
-												} else {
+									RServe.print("knit('" + cleanedPath + "','" + theName + "." + fileext + "')");
 
-													Program.launch(url);
+								}
 
-												}
+								else if (fileext.equals("tex")) {
 
+									RServe.print("knit('" + selFile + "','" + theName + "." + fileext + "')");
+								}
+
+							} catch (RserveException e1) {
+
+								e1.printStackTrace();
+							}
+
+							IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+							IProject proj = root.getProject(activeProject.getName());
+							try {
+								proj.refreshLocal(IResource.DEPTH_INFINITE, null);
+							} catch (CoreException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							if (fileext.equals("html")) {
+
+								Display display = PlatformUI.getWorkbench().getDisplay();
+								display.asyncExec(new Runnable() {
+
+									public void run() {
+
+										IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+										String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
+
+										String temp = "file:///" + dirPath + "/" + theName + ".html";
+										String url = temp.replace("\\", "/");
+										/* The option for using an external Browser! */
+										boolean useInternalSWTBrowser = store.getBoolean("PDF_USE_BROWSER");
+										if (openInJavaFXBrowser.equals("JAVAFX_BROWSER") == false) {
+											if (useInternalSWTBrowser == true) {
+												Work.openView("com.eco.bio7.browser.Browser");
+												BrowserView b = BrowserView.getBrowserInstance();
+												b.browser.setJavascriptEnabled(true);
+												b.setLocation(url);
 											} else {
-												boolean openInBrowserInExtraView = store
-														.getBoolean("OPEN_BOWSER_IN_EXTRA_VIEW");
-												if (openInBrowserInExtraView) {
-													new JavaFXWebBrowser(true).createBrowser(url, theName + ".html");
-												} else {
-													new JavaFXWebBrowser(true).createBrowser(url, "Display");
-												}
+
+												Program.launch(url);
 
 											}
+
+										} else {
+											boolean openInBrowserInExtraView = store.getBoolean("OPEN_BOWSER_IN_EXTRA_VIEW");
+											if (openInBrowserInExtraView) {
+												new JavaFXWebBrowser(true).createBrowser(url, theName + ".html");
+											} else {
+												new JavaFXWebBrowser(true).createBrowser(url, "Display");
+											}
+
 										}
-									});
+									}
+								});
 
-								} else if (fileext.equals("tex")) {
-									compileLatex(activeProject, theName, dirPath, true);
+							} else if (fileext.equals("tex")) {
+								compileLatex(activeProject, theName, dirPath, true);
 
-								}
-								try {
-									c.eval("try(setwd(.tempCurrentWd));");
-								} catch (RserveException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
+							}
+							try {
+								c.eval("try(setwd(.tempCurrentWd));");
+							} catch (RserveException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
 							}
 
 						}
+						monitor.done();
+						return Status.OK_STATUS;
 					}
-					monitor.done();
-					return Status.OK_STATUS;
-				}
 
-			};
-			job.addJobChangeListener(new JobChangeAdapter() {
-				public void done(IJobChangeEvent event) {
-					if (event.getResult().isOK()) {
-						/* Activate the editor again after the job! */
-						// Util.activateEditorPage(editor);
-						RServeUtil.listRObjects();
-					} else {
-
+				};
+				job.addJobChangeListener(new JobChangeAdapter() {
+					public void done(IJobChangeEvent event) {
+						if (event.getResult().isOK()) {
+							RState.setBusy(false);
+							/* Activate the editor again after the job! */
+							// Util.activateEditorPage(editor);
+							RServeUtil.listRObjects();
+						} else {
+							RState.setBusy(false);
+						}
 					}
-				}
-			});
-			// job.setSystem(true);
-			job.schedule();
+				});
+				// job.setSystem(true);
+				job.schedule();
+			}
 
 		}
 	}
@@ -396,8 +395,7 @@ public class LatexSweaveKnitrAction extends Action {
 		}
 	}
 
-	private void compileLatexWithBibtex(final IProject activeProject, final String theName, String dirPath,
-			boolean pureLatex, String bibtexEngine) {
+	private void compileLatexWithBibtex(final IProject activeProject, final String theName, String dirPath, boolean pureLatex, String bibtexEngine) {
 		compileLatexPre(activeProject, theName, dirPath, pureLatex);
 
 		compileBibtex(theName, dirPath, bibtexEngine);
@@ -407,8 +405,7 @@ public class LatexSweaveKnitrAction extends Action {
 		compileLatexFinal(activeProject, theName, dirPath, pureLatex);
 	}
 
-	private void compileLatexWithMakeIndex(final IProject activeProject, final String theName, String dirPath,
-			boolean pureLatex) {
+	private void compileLatexWithMakeIndex(final IProject activeProject, final String theName, String dirPath, boolean pureLatex) {
 		compileLatexPre(activeProject, theName, dirPath, pureLatex);
 
 		compileMakeIndex(theName, dirPath);
@@ -418,8 +415,7 @@ public class LatexSweaveKnitrAction extends Action {
 		compileLatexFinal(activeProject, theName, dirPath, pureLatex);
 	}
 
-	private void compileLatexWithBibtexAndIndex(final IProject activeProject, final String theName, String dirPath,
-			boolean pureLatex, String bibtexEngine) {
+	private void compileLatexWithBibtexAndIndex(final IProject activeProject, final String theName, String dirPath, boolean pureLatex, String bibtexEngine) {
 
 		compileLatexPre(activeProject, theName, dirPath, pureLatex);
 		compileBibtex(theName, dirPath, bibtexEngine);
@@ -431,8 +427,7 @@ public class LatexSweaveKnitrAction extends Action {
 		compileLatexFinal(activeProject, theName, dirPath, pureLatex);
 	}
 
-	private void compileLatexFinal(final IProject activeProject, final String theName, String dirPath,
-			boolean pureLatex) {
+	private void compileLatexFinal(final IProject activeProject, final String theName, String dirPath, boolean pureLatex) {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		String pdfLatexPath = store.getString("pdfLatex");
 		boolean useBrowser = store.getBoolean("PDF_USE_BROWSER");
@@ -558,11 +553,10 @@ public class LatexSweaveKnitrAction extends Action {
 						// else {
 
 						// Program.launch(dirPath + "/" + theName + ".pdf");
-						RServe.openPDF(dirPath + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser, true,false);
+						RServe.openPDF(dirPath + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser, true, false);
 						// }
 					} else {
-						Bio7Dialog.message(
-								"*.pdf file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
+						Bio7Dialog.message("*.pdf file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
 					}
 
 				} catch (IOException e) {
@@ -764,8 +758,7 @@ public class LatexSweaveKnitrAction extends Action {
 
 	}
 
-	private void compileLatexPre(final IProject activeProject, final String theName, String dirPath,
-			boolean pureLatex) {
+	private void compileLatexPre(final IProject activeProject, final String theName, String dirPath, boolean pureLatex) {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		String pdfLatexPath = store.getString("pdfLatex");
 
