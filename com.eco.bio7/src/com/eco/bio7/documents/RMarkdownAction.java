@@ -67,6 +67,10 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 
 	public void run(IAction action) {
 
+		if (RServe.isAliveDialog() == false) {
+			return;
+		}
+
 		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
 		if (utils != null) {
 			/* Bring the console to the front and clear it! */
@@ -74,8 +78,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 			utils.cons.clear();
 		}
 		// String project = null;
-		ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService()
-				.getSelection();
+		ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().getSelection();
 		IStructuredSelection strucSelection = null;
 		if (selection instanceof IStructuredSelection) {
 			strucSelection = (IStructuredSelection) selection;
@@ -135,8 +138,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 			String title = StringUtils.substringBetween(doc.get(), "---", "---");
 			String sub = title.substring(title.lastIndexOf("output:") + 7);
 
-			if (sub.contains("html_document") || sub.contains("ioslides_presentation")
-					|| sub.contains("slidy_presentation")) {
+			if (sub.contains("html_document") || sub.contains("ioslides_presentation") || sub.contains("slidy_presentation")) {
 
 				docType = "Html";
 
@@ -176,110 +178,138 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 
 			System.out.println(dirPath);
 
-			Job job = new Job("Markdown file") {
-				@Override
-				protected IStatus run(IProgressMonitor monitor) {
-					monitor.beginTask("Markdown file...", IProgressMonitor.UNKNOWN);
-					canOperate = false;
+			if (RState.isBusy() == false) {
+				RState.setBusy(true);
 
-					if (RServe.isAliveDialog()) {
-						if (RState.isBusy() == false) {
+				Job job = new Job("Markdown file") {
+					@Override
+					protected IStatus run(IProgressMonitor monitor) {
+						monitor.beginTask("Markdown file...", IProgressMonitor.UNKNOWN);
+						canOperate = false;
 
-							RConnection c = RServe.getConnection();
+						RConnection c = RServe.getConnection();
 
-							try {
-								REXPLogical rl = (REXPLogical) c.eval("require(rmarkdown)");
-								if (!(rl.isTRUE()[0])) {
+						try {
+							REXPLogical rl = (REXPLogical) c.eval("require(rmarkdown)");
+							if (!(rl.isTRUE()[0])) {
 
-									Bio7Dialog.message("Cannot load 'markdown' package!");
-								}
-
-								c.eval("try(library(rmarkdown))");
-								c.eval("try(.tempCurrentWd<-getwd());");
-								c.eval("setwd('" + dirPath + "')");
-
-								System.out.println(selFile);
-								RServe.print("render(\"" + selFile + "\")");
-
-							} catch (RserveException e1) {
-
-								e1.printStackTrace();
+								Bio7Dialog.message("Cannot load 'markdown' package!");
 							}
 
-							IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-							IProject proj = root.getProject(activeProject.getName());
-							try {
-								proj.refreshLocal(IResource.DEPTH_INFINITE, null);
-							} catch (CoreException e) {
+							c.eval("try(library(rmarkdown))");
+							c.eval("try(.tempCurrentWd<-getwd());");
+							c.eval("setwd('" + dirPath + "')");
 
-								e.printStackTrace();
-							}
-							if (docType.equals("Html")) {
-								// boolean dec = Bio7Dialog.decision("Open JavaFX browser?");
-								// if (dec == false) {
+							System.out.println(selFile);
+							RServe.print("render(\"" + selFile + "\")");
 
-								// }
-								Display display = PlatformUI.getWorkbench().getDisplay();
-								display.asyncExec(new Runnable() {
+						} catch (RserveException e1) {
 
-									public void run() {
-										String temp = "file:///" + dirPath + "/" + theName + ".html";
-										String url = temp.replace("\\", "/");
-										IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-										String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
-										/* The option for using an external Browser! */
-										boolean useInternalSWTBrowser = store.getBoolean("PDF_USE_BROWSER");
-										if (openInJavaFXBrowser.equals("JAVAFX_BROWSER") == false) {
-											if (useInternalSWTBrowser == true) {
-												Work.openView("com.eco.bio7.browser.Browser");
-												BrowserView b = BrowserView.getBrowserInstance();
-												b.browser.setJavascriptEnabled(true);
-												b.setLocation(url);
-											} else {
+							e1.printStackTrace();
+						}
 
-												Program.launch(url);
+						IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+						IProject proj = root.getProject(activeProject.getName());
+						try {
+							proj.refreshLocal(IResource.DEPTH_INFINITE, null);
+						} catch (CoreException e) {
 
-											}
-										}
+							e.printStackTrace();
+						}
+						if (docType.equals("Html")) {
+							// boolean dec = Bio7Dialog.decision("Open JavaFX browser?");
+							// if (dec == false) {
 
-										else {
+							// }
+							Display display = PlatformUI.getWorkbench().getDisplay();
+							display.asyncExec(new Runnable() {
 
-											boolean openInBrowserInExtraView = store
-													.getBoolean("OPEN_BOWSER_IN_EXTRA_VIEW");
-											if (openInBrowserInExtraView) {
+								public void run() {
+									String temp = "file:///" + dirPath + "/" + theName + ".html";
+									String url = temp.replace("\\", "/");
+									IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+									String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
+									/* The option for using an external Browser! */
+									boolean useInternalSWTBrowser = store.getBoolean("PDF_USE_BROWSER");
+									if (openInJavaFXBrowser.equals("JAVAFX_BROWSER") == false) {
+										if (useInternalSWTBrowser == true) {
+											Work.openView("com.eco.bio7.browser.Browser");
+											BrowserView b = BrowserView.getBrowserInstance();
+											b.browser.setJavascriptEnabled(true);
+											b.setLocation(url);
+										} else {
 
-												new JavaFXWebBrowser(true).createBrowser(url, theName + ".html");
-											} else {
-												new JavaFXWebBrowser(true).createBrowser(url, "Display");
-											}
+											Program.launch(url);
+
 										}
 									}
-								});
 
-							}
+									else {
 
-							else if (docType.equals("Pdf")) {
+										boolean openInBrowserInExtraView = store.getBoolean("OPEN_BOWSER_IN_EXTRA_VIEW");
+										if (openInBrowserInExtraView) {
 
-								IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-								boolean useBrowser = store.getBoolean("PDF_USE_BROWSER");
-								String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
+											new JavaFXWebBrowser(true).createBrowser(url, theName + ".html");
+										} else {
+											new JavaFXWebBrowser(true).createBrowser(url, "Display");
+										}
+									}
+								}
+							});
 
+						}
+
+						else if (docType.equals("Pdf")) {
+
+							IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+							boolean useBrowser = store.getBoolean("PDF_USE_BROWSER");
+							String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
+
+							Display display = PlatformUI.getWorkbench().getDisplay();
+							display.asyncExec(new Runnable() {
+
+								public void run() {
+									setPriority(Thread.MAX_PRIORITY);
+
+									File fil = new File(dirPath + "/" + theName + ".pdf");
+									if (fil.exists()) {
+
+										RServe.openPDF(dirPath + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser, true, false);
+
+										// Program.launch(dirPath + "/" + theName + ".pdf");
+									} else {
+										Bio7Dialog.message("*.pdf file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
+									}
+
+									IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+									IProject proj = root.getProject(activeProject.getName());
+									try {
+										proj.refreshLocal(IResource.DEPTH_INFINITE, null);
+									} catch (CoreException e) {
+										// TODO Auto-generated catch
+										// block
+										e.printStackTrace();
+									}
+
+								}
+							});
+
+						} else if (docType.equals("Word")) {
+							IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+							boolean openWordInView = store.getBoolean("OPEN_WORD_IN_VIEW");
+							if (openWordInView == false) {
 								Display display = PlatformUI.getWorkbench().getDisplay();
 								display.asyncExec(new Runnable() {
 
 									public void run() {
 										setPriority(Thread.MAX_PRIORITY);
+										// String line;
 
-										File fil = new File(dirPath + "/" + theName + ".pdf");
+										File fil = new File(dirPath + "/" + theName + ".docx");
 										if (fil.exists()) {
-
-											RServe.openPDF(dirPath + "/", theName + ".pdf", useBrowser,
-													openInJavaFXBrowser, true,false);
-
-											// Program.launch(dirPath + "/" + theName + ".pdf");
+											Program.launch(dirPath + "/" + theName + ".docx");
 										} else {
-											Bio7Dialog.message(
-													"*.pdf file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
+											Bio7Dialog.message("*.docx file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
 										}
 
 										IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
@@ -294,88 +324,57 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 
 									}
 								});
+								/* Open Word in view if possible! */
+							} else if (openWordInView) {
+								Display display = PlatformUI.getWorkbench().getDisplay();
+								display.asyncExec(new Runnable() {
 
-							} else if (docType.equals("Word")) {
-								IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-								boolean openWordInView = store.getBoolean("OPEN_WORD_IN_VIEW");
-								if (openWordInView == false) {
-									Display display = PlatformUI.getWorkbench().getDisplay();
-									display.asyncExec(new Runnable() {
-
-										public void run() {
-											setPriority(Thread.MAX_PRIORITY);
-											// String line;
-
-											File fil = new File(dirPath + "/" + theName + ".docx");
-											if (fil.exists()) {
-												Program.launch(dirPath + "/" + theName + ".docx");
-											} else {
-												Bio7Dialog.message(
-														"*.docx file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
-											}
-
-											IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-											IProject proj = root.getProject(activeProject.getName());
-											try {
-												proj.refreshLocal(IResource.DEPTH_INFINITE, null);
-											} catch (CoreException e) {
-												// TODO Auto-generated catch
-												// block
-												e.printStackTrace();
-											}
-
-										}
-									});
-									/* Open Word in view if possible! */
-								} else if (openWordInView) {
-									Display display = PlatformUI.getWorkbench().getDisplay();
-									display.asyncExec(new Runnable() {
-
-										public void run() {
-											if (docType.equals("Word")) {
-												if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
-													File fil = new File(dirPath + "/" + theName + ".docx");
-													if (fil.exists()) {
-														// new WordOleView(dirPath + "/" + theName + ".docx");
-													}
+									public void run() {
+										if (docType.equals("Word")) {
+											if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+												File fil = new File(dirPath + "/" + theName + ".docx");
+												if (fil.exists()) {
+													// new WordOleView(dirPath + "/" + theName + ".docx");
 												}
 											}
 										}
-									});
-								}
+									}
+								});
+							}
 
-							}
-							try {
-								c.eval("try(setwd(.tempCurrentWd));");
-							} catch (RserveException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
+						}
+						try {
+							c.eval("try(setwd(.tempCurrentWd));");
+						} catch (RserveException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
 						}
 
+						monitor.done();
+						return Status.OK_STATUS;
 					}
-					monitor.done();
-					return Status.OK_STATUS;
-				}
 
-			};
-			job.addJobChangeListener(new JobChangeAdapter() {
-				public void done(IJobChangeEvent event) {
-					if (event.getResult().isOK()) {
-						/*
-						 * Set the flag that a new compilation is possible after the last job has been
-						 * finished!
-						 */
-						canOperate = true;
-						RServeUtil.listRObjects();
+				};
+				job.addJobChangeListener(new JobChangeAdapter() {
+					public void done(IJobChangeEvent event) {
+						if (event.getResult().isOK()) {
+							/*
+							 * Set the flag that a new compilation is possible after the last job has been
+							 * finished!
+							 */
+							RState.setBusy(false);
+							canOperate = true;
+							RServeUtil.listRObjects();
 
-					} else {
+						} else {
+							RState.setBusy(false);
 
+						}
 					}
-				}
-			});
-			// job.setSystem(true);
-			job.schedule();
+				});
+				// job.setSystem(true);
+				job.schedule();
+			}
 
 		}
 	}
