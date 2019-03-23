@@ -309,7 +309,7 @@ Shell[style~='SWT.RADIO'][style~='SWT.CASCADE'][style~='SWT.SHADOW_ETCHED_IN'][s
 Form > LayoutComposite > LayoutComposite > Combo,
 .MPart LayoutComposite > * > LayoutComposite > Section > LayoutComposite > Combo {
     background-color: #949DA5; 
-    color: #222;  /* background of drop-drown list is hard-coded to white */
+    color: #dddddd;  /* background of drop-drown list is hard-coded to white */
 }
 Combo:selected,
 /* the following are required due to Bug 419482: */
@@ -328,7 +328,7 @@ Shell[style~='SWT.RADIO'][style~='SWT.CASCADE'][style~='SWT.SHADOW_ETCHED_IN'][s
 Form > LayoutComposite > LayoutComposite > Combo:selected,
 .MPart LayoutComposite > * > LayoutComposite > Section > LayoutComposite > Combo:selected {
     background-color: #41464A;
-    color: #FFF;
+    color: #dddddd;
 }
 
 Text[style~='SWT.SEARCH'],

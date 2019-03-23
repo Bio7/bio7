@@ -523,7 +523,7 @@ Composite #com.eco.bio7.rbridge.RTable {
 }
 
 #com.eco.bio7.rbridge.RTable Label  {
-	/*background-color: #252525;*/S
+	/*background-color: #252525;*/
 	color: #dddddd; /* see property startupForegroundColor in the product */
 }
 
@@ -629,6 +629,13 @@ Table, Tree, Grid {
     flat-scroll-bar: true;
     swt-header-color: #252525;
     swt-header-background-color: #383D3F;
+}
+
+/*Colour around views (evtl shadows?!*/
+.MPartSashContainer {
+
+	background-color: #252525;   
+ 
 }
 
 
