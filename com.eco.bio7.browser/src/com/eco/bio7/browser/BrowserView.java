@@ -164,7 +164,7 @@ public class BrowserView extends ViewPart {
 						txt.setText("https://www.burns-stat.com/pages/Tutor/R_inferno.pdf");
 						break;
 					case 5:
-						browser.setUrl("http://www.r-bloggers.com/");
+						browser.setUrl("https://www.r-bloggers.com/");
 						txt.setText("https://www.r-bloggers.com/");
 						break;
 					case 6:
@@ -204,8 +204,8 @@ public class BrowserView extends ViewPart {
 		protected Control createControl(Composite parent) {
 
 			combo = new Combo(parent, SWT.READ_ONLY);
-			combo.add("ImageJ Wiki");
-
+			combo.add("ImageJ Forum");
+            combo.add("ImageJ Mailing List");
 			combo.add("ImageJ Plugins");
 			combo.add("ImageJ Documentation");
 			combo.add("ImageJ Manual");
@@ -222,22 +222,27 @@ public class BrowserView extends ViewPart {
 					switch (index) {
 
 					case 0:
-						browser.setUrl("http://imagejdocu.tudor.lu/doku.php");
-						txt.setText("http://imagejdocu.tudor.lu/doku.php");
+						browser.setUrl("https://forum.image.sc/");
+						txt.setText("https://forum.image.sc/");
 
 						break;
-					case 1:
+				   case 1:
+						browser.setUrl("https://imagej.nih.gov/nih-image/list.html");
+						txt.setText("https://imagej.nih.gov/nih-image/list.html");
+
+						break;
+					case 2:
 						browser.setUrl("https://rsb.info.nih.gov/ij/plugins/index.html");
 						txt.setText("https://rsb.info.nih.gov/ij/plugins/index.html");
 
 						break;
 
-					case 2:
+					case 3:
 						browser.setUrl("https://rsb.info.nih.gov/ij/docs/index.html");
 						txt.setText("https://rsb.info.nih.gov/ij/docs/index.html");
 
 						break;
-					case 3:
+					case 4:
 						browser.setUrl("https://rsbweb.nih.gov/ij/docs/guide/user-guide.pdf");
 						txt.setText("https://rsbweb.nih.gov/ij/docs/guide/user-guide.pdf");
 

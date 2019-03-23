@@ -549,7 +549,7 @@ Composite #com-eco-bio7-rbridge-RTable.MToolBar {
 
 
 #com-eco-bio7-thumbnails.MToolBar Label {
-      /* background-color: #252525;*/
+      background-color: #252525;
      color: #dddddd; 
 }
 
@@ -559,12 +559,12 @@ Composite #com-eco-bio7-thumbnails.MToolBar {
 }
 
 Composite #com-eco-bio7-browser-Browser.MToolBar {
-	 /*background-color: #252525;*/
+	 background-color: #252525;
      color: #dddddd; 
 }
 
 #com-eco-bio7-browser-Browser.MToolBar Label{
-	/* background-color: #252525;*/
+	background-color: #252525;
      color: #dddddd; 
 } 
 
