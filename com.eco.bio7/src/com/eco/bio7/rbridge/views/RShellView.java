@@ -825,8 +825,10 @@ public class RShellView extends ViewPart {
 
 											public void run() {
 												JavaFXWebBrowser br = new JavaFXWebBrowser(true);
-												br.setDarkCssIfDarkTheme(true);
+												//br.setDarkCssIfDarkTheme(false);
+												if (Util.isThemeBlack()) {
 												br.getWebEngine().setUserStyleSheetLocation("file:///" + cssPath);
+												}
 												br.createBrowser(url, "R Help");
 
 											}

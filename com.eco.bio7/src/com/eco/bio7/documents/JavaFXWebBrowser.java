@@ -14,6 +14,9 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 import org.osgi.framework.Bundle;
 //import org.w3c.dom.Document;
 //import org.w3c.dom.Element;
@@ -91,7 +94,8 @@ public class JavaFXWebBrowser {
 		webEng.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
 
 			@Override
-			public void changed(ObservableValue<? extends Worker.State> observable, Worker.State oldValue, Worker.State newValue) {
+			public void changed(ObservableValue<? extends Worker.State> observable, Worker.State oldValue,
+					Worker.State newValue) {
 
 				if (newValue != Worker.State.SUCCEEDED) {
 
@@ -243,12 +247,14 @@ public class JavaFXWebBrowser {
 				boolean requestEditorFocus = store.getBoolean("REQUEST_EDITOR_FOCUS");
 				if (requestEditorFocus) {
 					/* We have to activate the editor again to enable all keyboard actions, etc.! */
-					IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+					IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+							.getActivePage().getActiveEditor();
 					if (editor == null) {
 						return;
 					}
 
-					if (editor instanceof MarkdownEditor || editor instanceof MultiPageEditor || editor instanceof TexEditor) {
+					if (editor instanceof MarkdownEditor || editor instanceof MultiPageEditor
+							|| editor instanceof TexEditor) {
 						Util.activateEditorPage(editor);
 					}
 				}
@@ -370,7 +376,9 @@ public class JavaFXWebBrowser {
 					webEng.executeScript("if (document.getElementById('toolbarContainer').style.display == '')" + "{ "
 							+ "document.getElementById('viewerContainer').style.overflow = 'hidden';document.getElementById('toolbarContainer').style.display='none';document.getElementById('viewerContainer').style.top=0;}"
 
-							+ "else{" + "document.getElementById('viewerContainer').style.overflow = 'scroll';document.getElementById('toolbarContainer').style.display='';document.getElementById('viewerContainer').style.top=32;" + "}");
+							+ "else{"
+							+ "document.getElementById('viewerContainer').style.overflow = 'scroll';document.getElementById('toolbarContainer').style.display='';document.getElementById('viewerContainer').style.top=32;"
+							+ "}");
 					// }
 				}
 
@@ -409,7 +417,8 @@ public class JavaFXWebBrowser {
 							e1.printStackTrace();
 						}
 
-						if (FilenameUtils.isExtension(file.getName(), "html") || FilenameUtils.isExtension(file.getName(), "htm")) {
+						if (FilenameUtils.isExtension(file.getName(), "html")
+								|| FilenameUtils.isExtension(file.getName(), "htm")) {
 							JavaFXWebBrowser br = new JavaFXWebBrowser(true);
 							// WebEngine webEngine = br.getWebEngine();
 							// webEngine.load(path);
@@ -446,7 +455,35 @@ public class JavaFXWebBrowser {
 
 		anchorPane.getChildren().add(brow);
 
-		webEng.load(url);
+		if (ApplicationWorkbenchWindowAdvisor.isThemeBlack()) { //
+			if (darkCss == true) {
+				
+				Document document = null;
+				try {
+					document = Jsoup.connect(url).get();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				// document.getElementsByTag("style").remove();
+				// document.select("[style]").removeAttr("style");
+
+				Elements links = document.select("body");
+				links.attr("style", "background: #252525; color: #CCCCCC;");
+				Elements a = document.select("a");
+				a.attr("style", "background: #252525;color: #FFFFFF;");
+				String html = document.html();
+				webEng.loadContent(html);
+				darkCss=false;
+
+			} else {
+				webEng.load(url);
+			}
+		} else {
+			webEng.load(url);
+		}
+
+		//webEng.load(url);
 
 		CustomView view = new CustomView();
 

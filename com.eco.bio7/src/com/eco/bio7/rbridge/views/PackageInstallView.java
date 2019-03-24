@@ -1,5 +1,6 @@
 package com.eco.bio7.rbridge.views;
 
+import java.io.IOException;
 import java.util.HashMap;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -44,6 +45,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.jsoup.Jsoup;
+import org.jsoup.select.Elements;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.Rserve.RConnection;
@@ -62,6 +65,7 @@ import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.RemoveRLibrarysJob;
 import com.eco.bio7.rbridge.UpdateRPackagesJob;
+import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.util.Util;
 import org.eclipse.swt.custom.CTabFolder;
@@ -147,12 +151,33 @@ public class PackageInstallView extends ViewPart {
 								display.asyncExec(new Runnable() {
 
 									public void run() {
+										
 										Work.openView("com.eco.bio7.browser.Browser");
+										if (ApplicationWorkbenchWindowAdvisor.isThemeBlack()) { //
 
-										BrowserView b = BrowserView.getBrowserInstance();
-										b.browser.setJavascriptEnabled(true);
+											org.jsoup.nodes.Document document = null;
+											try {
+												document = Jsoup.connect(packageInfoSite).get();
+											} catch (IOException e) {
+												// TODO Auto-generated catch block
+												e.printStackTrace();
+											}
 
-										b.setLocation(packageInfoSite);
+											Elements links = document.select("body");
+											links.attr("style", "background: #252525; color: #CCCCCC;");
+											Elements a = document.select("a");
+											a.attr("style", "background: #252525;color: #FFFFFF;");
+											String html = document.html();
+											BrowserView b = BrowserView.getBrowserInstance();
+											b.browser.setText(html, true);
+
+										} else {
+											BrowserView b = BrowserView.getBrowserInstance();
+											b.setLocation(packageInfoSite);
+										}
+
+										
+
 									}
 								});
 							}
