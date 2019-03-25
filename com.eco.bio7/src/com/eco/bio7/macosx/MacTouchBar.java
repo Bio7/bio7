@@ -63,17 +63,6 @@ public class MacTouchBar {
 		touchBarButtonStartStop.setImage(new com.thizzer.jtouchbar.common.Image(
 				new File(url.getFile() + "/maintoolbar/play_pause@2x.png").getAbsolutePath(), true));
 
-		TouchBarButton touchBarButtonSetup = new TouchBarButton();
-		touchBarButtonSetup.setAction(new TouchBarViewAction() {
-
-			public void onCall(TouchBarView view) {
-				Bio7Action.reset();
-			}
-		});
-		//touchBarButtonSetup.setTitle("Reset");
-		touchBarButtonSetup.setImage(new com.thizzer.jtouchbar.common.Image(
-				new File(url.getFile() + "/maintoolbar/counter_reset@2x.png").getAbsolutePath(), true));
-		jTouchBar.addItem(new TouchBarItem("Reset", touchBarButtonSetup, true));
 
 		TouchBarSlider slider = new TouchBarSlider();
 		slider.setMinValue(1.0);
@@ -86,7 +75,7 @@ public class MacTouchBar {
 
 				Scale scale = InfoView.getTimeScaleSwt();
 				scale.setSelection((int) (value));
-				Time.setInterval((int) (1000.0 - value));
+				Time.setInterval((int) (1.0 +value));
 			}
 		});
 
@@ -129,6 +118,18 @@ public class MacTouchBar {
 		touchBarButtonOpenImageJImage.setImage(new com.thizzer.jtouchbar.common.Image(
 				new File(url.getFile() + "/views/imagejview@2x.png").getAbsolutePath(), true));
 		jTouchBar.addItem(new TouchBarItem("Open Image", touchBarButtonOpenImageJImage, true));
+		
+		TouchBarButton touchBarButtonIJMacroRecorder = new TouchBarButton();
+		touchBarButtonIJMacroRecorder.setAction(new TouchBarViewAction() {
+
+			public void onCall(TouchBarView view) {
+				IJ.run("Record...");
+			}
+		});
+		//touchBarButtonSetup.setTitle("Reset");
+		touchBarButtonIJMacroRecorder.setImage(new com.thizzer.jtouchbar.common.Image(
+				new File(url.getFile() + "/editor/imagejmacrofile@2x.png").getAbsolutePath(), true));
+		jTouchBar.addItem(new TouchBarItem("Macro Recorder", touchBarButtonIJMacroRecorder, true));
 
 		return jTouchBar;
 	}
