@@ -101,6 +101,10 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 	}
 
 	public void run() {
+		
+		if (RServe.isAliveDialog() == false) {
+			return;
+		}
 
 		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
 		if (utils != null) {

@@ -3,7 +3,6 @@ package com.eco.bio7.macosx;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
@@ -11,13 +10,11 @@ import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.swt.widgets.Scale;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.osgi.framework.Bundle;
-
 import com.eco.bio7.actions.Bio7Action;
 import com.eco.bio7.info.InfoView;
 import com.eco.bio7.time.Time;
 import com.eco.bio7.util.Util;
 import com.thizzer.jtouchbar.JTouchBar;
-import com.thizzer.jtouchbar.common.Image;
 import com.thizzer.jtouchbar.item.TouchBarItem;
 import com.thizzer.jtouchbar.item.view.TouchBarButton;
 import com.thizzer.jtouchbar.item.view.TouchBarSlider;
