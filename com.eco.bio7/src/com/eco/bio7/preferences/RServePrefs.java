@@ -130,6 +130,7 @@ public class RServePrefs extends FieldEditorPreferencePage implements IWorkbench
 			labelFieldEditor.setLabelText("Code Completion Popup");
 			addField(labelFieldEditor);
 		}
+		addField(new IntegerFieldEditor("CODE_COMPLETION_RSHELL_FONT_HEIGHT_CORRECTION", "R-Shell Code completion height correction", getFieldEditorParent()));
 		addField(new IntegerFieldEditor("CODE_COMPLETION_POPUP_SIZE_X", "Popup size width (Restart to apply!)", getFieldEditorParent()));
 		addField(new IntegerFieldEditor("CODE_COMPLETION_POPUP_SIZE_Y", "Popup size height (Restart to apply!)", getFieldEditorParent()));
 		addField(new LabelFieldEditor("R source options:", getFieldEditorParent()));
