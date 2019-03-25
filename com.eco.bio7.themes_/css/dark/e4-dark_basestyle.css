@@ -38,13 +38,13 @@ ThemesExtension { color-definition:
 }
 
 ColorDefinition#org-eclipse-ui-workbench-INACTIVE_UNSELECTED_TABS_COLOR_START {
-	color: #515658;
+	color: #252525;
 	category: '#org-eclipse-ui-presentation-default';
 	label: url('platform:/plugin/org.eclipse.ui.themes?message=INACTIVE_UNSELECTED_TABS_COLOR_START');
 }
 
 ColorDefinition#org-eclipse-ui-workbench-INACTIVE_UNSELECTED_TABS_COLOR_END {
-	color: #464649;
+	color: #252525;
 	category: '#org-eclipse-ui-presentation-default';
 	label: url('platform:/plugin/org.eclipse.ui.themes?message=INACTIVE_UNSELECTED_TABS_COLOR_END');
 }
