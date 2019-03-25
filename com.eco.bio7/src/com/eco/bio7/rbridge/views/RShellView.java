@@ -131,6 +131,7 @@ import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RCompletionShell;
 import com.eco.bio7.rbridge.RFunctions;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.RTable;
 import com.eco.bio7.rbridge.TransferDataframeToGridJob;
@@ -2761,10 +2762,17 @@ public class RShellView extends ViewPart {
 	/*
 	 * This method is called when the job from the
 	 * com.eco.bio7.rbridge.RServe.printJob(tex)method has finished!
+	 * If a package was detected the package list job is executed which calls
+	 * (after finished) the job function RServeUtil.listRObjects().
+	 * If no package has been called the RServeUtil.listRObjects() is called to show
+	 * new objects in the R-Shell view.
 	 */
 	public void updatePackageImports() {
 		if (packageImportSize > 0) {
 			shellCompletion.update();
+		}
+		else {
+			RServeUtil.listRObjects();
 		}
 	}
 

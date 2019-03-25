@@ -279,7 +279,7 @@ public class RServeUtil {
 							if (countDev > 0) {
 								RServe.closeAndDisplayNoJoin();
 							}
-							RServeUtil.listRObjects();
+							
 							// BatchModel.resumeFlow();
 
 						} else {

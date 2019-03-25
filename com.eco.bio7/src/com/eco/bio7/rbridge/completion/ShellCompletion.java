@@ -87,7 +87,7 @@ public class ShellCompletion implements UpdateCompletion {
 	private IPreferenceStore store;
 	// public boolean data;
 	// public boolean library;
-    
+
 	/*
 	 * Next two methods adapted from:
 	 * https://krishnanmohan.wordpress.com/2011/12/12/eclipse-rcp-
@@ -100,7 +100,6 @@ public class ShellCompletion implements UpdateCompletion {
 		// String UCL = LCL.toUpperCase();
 
 		// To enable content proposal on deleting a char
-
 
 		// String delete = new String(new char[] { 8 });
 		String allChars = LCL;
@@ -137,11 +136,15 @@ public class ShellCompletion implements UpdateCompletion {
 		store = Bio7Plugin.getDefault().getPreferenceStore();
 		boolean typedCodeCompletion = store.getBoolean("RSHELL_TYPED_CODE_COMPLETION");
 		if (typedCodeCompletion) {
-			contentProposalAdapter = new ContentProposalAdapter(control, controlContentAdapter, contentProposalProvider, stroke, getAutoactivationChars());
-			contentProposalAdapter.setPopupSize(new Point(store.getInt("CODE_COMPLETION_POPUP_SIZE_X"), store.getInt("CODE_COMPLETION_POPUP_SIZE_Y")));
+			contentProposalAdapter = new ContentProposalAdapter(control, controlContentAdapter, contentProposalProvider,
+					stroke, getAutoactivationChars());
+			contentProposalAdapter.setPopupSize(new Point(store.getInt("CODE_COMPLETION_POPUP_SIZE_X"),
+					store.getInt("CODE_COMPLETION_POPUP_SIZE_Y")));
 		} else {
-			contentProposalAdapter = new ContentProposalAdapter(control, controlContentAdapter, contentProposalProvider, stroke, null);
-			contentProposalAdapter.setPopupSize(new Point(store.getInt("CODE_COMPLETION_POPUP_SIZE_X"), store.getInt("CODE_COMPLETION_POPUP_SIZE_Y")));
+			contentProposalAdapter = new ContentProposalAdapter(control, controlContentAdapter, contentProposalProvider,
+					stroke, null);
+			contentProposalAdapter.setPopupSize(new Point(store.getInt("CODE_COMPLETION_POPUP_SIZE_X"),
+					store.getInt("CODE_COMPLETION_POPUP_SIZE_Y")));
 		}
 		contentProposalAdapter.setPropagateKeys(true);
 		contentProposalAdapter.setLabelProvider(new ContentProposalLabelProvider());
@@ -230,14 +233,17 @@ public class ShellCompletion implements UpdateCompletion {
 		});
 
 	}
-	/*This is an interface function to reload the RShell completion from the R editor which otherwise would'nt be possible
-	 *(cyclic dependencies!)**/
-	public void trigger() {		
+
+	/*
+	 * This is an interface function to reload the RShell completion from the R
+	 * editor which otherwise would'nt be possible (cyclic dependencies!)
+	 **/
+	public void trigger() {
 		/* Load the created proposals from the R editor! */
 		statistics = CalculateRProposals.getStatistics();
 		statisticsContext = CalculateRProposals.getStatisticsContext();
 		statisticsSet = CalculateRProposals.getStatisticsSet();
-		
+
 	}
 
 	/* Here we update the code templates by calling the R function! */
@@ -271,17 +277,20 @@ public class ShellCompletion implements UpdateCompletion {
 							 */
 							CalculateRProposals.setStartupTemplate(false);
 							CalculateRProposals.loadRCodePackageTemplates();
-							
+
 							/* Load the created proposals! */
 							statistics = CalculateRProposals.getStatistics();
 							statisticsContext = CalculateRProposals.getStatisticsContext();
 							statisticsSet = CalculateRProposals.getStatisticsSet();
-							
-							/*Here we update the code completion of the R editor with the trigger interface!*/
-							REditor rEditor=REditor.getREditorInstance();
+
+							/*
+							 * Here we update the code completion of the R editor with the trigger
+							 * interface!
+							 */
+							REditor rEditor = REditor.getREditorInstance();
 							if (rEditor != null) {
-							/*Update the completions of the R editor!*/
-							CalculateRProposals.updateCompletions();
+								/* Update the completions of the R editor! */
+								CalculateRProposals.updateCompletions();
 								rEditor.trigger();
 							}
 
@@ -297,11 +306,13 @@ public class ShellCompletion implements UpdateCompletion {
 			job.addJobChangeListener(new JobChangeAdapter() {
 				public void done(IJobChangeEvent event) {
 					if (event.getResult().isOK()) {
-                       
-						RState.setBusy(false);
-						
-					} else {
 
+						RState.setBusy(false);
+						/*We need to call the update if we also declare objects with a package call in the R-Shell!*/
+						RServeUtil.listRObjects();
+
+					} else {
+						RState.setBusy(false);
 					}
 				}
 			});
@@ -468,7 +479,8 @@ public class ShellCompletion implements UpdateCompletion {
 					String name = parse.getBracketMatrixName();
 					int state = parse.getMatrixArgState();
 					int bracketCommaCount = parse.getBracketCommaCount();
-					return matrixDataFrameSubset(position, contentLastCorr, name, state, bracketCommaCount, false, parse);
+					return matrixDataFrameSubset(position, contentLastCorr, name, state, bracketCommaCount, false,
+							parse);
 					/*
 					 * if (state == 1) { return matrixDataFrameSubset(position, contentLastCorr,
 					 * name, state, false); } // if call has two arguments, cursor on the left
@@ -486,7 +498,8 @@ public class ShellCompletion implements UpdateCompletion {
 					int state = parse.getMatrixArgState();
 					/* Probably bracket comma count not needed here! */
 					int bracketCommaCount = parse.getBracketCommaCount();
-					return matrixDataFrameSubset(position, contentLastCorr, name, state, bracketCommaCount, true, parse);
+					return matrixDataFrameSubset(position, contentLastCorr, name, state, bracketCommaCount, true,
+							parse);
 					/*
 					 * if (state == 1) { return matrixDataFrameSubset(position, contentLastCorr,
 					 * name, state, true); } // if call has two arguments, cursor on the left
@@ -511,7 +524,8 @@ public class ShellCompletion implements UpdateCompletion {
 						 * Here we filter out the vars by comparing the typed letters with the available
 						 * workspace vars!
 						 */
-						if (workspaceVars[i].getLabel().length() >= textLength && workspaceVars[i].getLabel().substring(0, textLength).equalsIgnoreCase(contentLastCorr)) {
+						if (workspaceVars[i].getLabel().length() >= textLength && workspaceVars[i].getLabel()
+								.substring(0, textLength).equalsIgnoreCase(contentLastCorr)) {
 							varWorkspace.add(workspaceVars[i]);
 						}
 					}
@@ -525,7 +539,8 @@ public class ShellCompletion implements UpdateCompletion {
 					 * Here we filter out the templates by comparing the typed letters with the
 					 * available templates!
 					 */
-					if (statistics[i].length() >= textLength && statistics[i].substring(0, textLength).equalsIgnoreCase(contentLastCorr)) {
+					if (statistics[i].length() >= textLength
+							&& statistics[i].substring(0, textLength).equalsIgnoreCase(contentLastCorr)) {
 						list.add(makeContentProposal(statistics[i] + "()", statisticsContext[i], statisticsSet[i]));
 					}
 				}
@@ -555,8 +570,9 @@ public class ShellCompletion implements UpdateCompletion {
 				IContentProposal[] arrContentProposals = new IContentProposal[proposals.length];
 				for (int i = 0; i < proposals.length; i++) {
 
-					ImageContentProposal contentProposal = new ImageContentProposal(proposals[i].getContent(), proposals[i].getLabel(), proposals[i].getDescription(),
-							proposals[i].getContent().length(), image);
+					ImageContentProposal contentProposal = new ImageContentProposal(proposals[i].getContent(),
+							proposals[i].getLabel(), proposals[i].getDescription(), proposals[i].getContent().length(),
+							image);
 					arrContentProposals[i] = contentProposal;
 				}
 				return arrContentProposals;
@@ -575,7 +591,8 @@ public class ShellCompletion implements UpdateCompletion {
 			contentProposals = null;
 		}
 
-		private IContentProposal makeContentProposal(final String proposal, final String label, final String description) {
+		private IContentProposal makeContentProposal(final String proposal, final String label,
+				final String description) {
 			return new IContentProposal() {
 
 				public String getContent() {
@@ -629,7 +646,8 @@ public class ShellCompletion implements UpdateCompletion {
 	/*
 	 * Here we calculate matrix, dataframe subsets (rows, columns, etc.)
 	 */
-	private ImageContentProposal[] matrixDataFrameSubset(int position, String contentLastCorr, String matDfName, int state, int bracketCommaCount, boolean doubleMatrixCall, Parse parse) {
+	private ImageContentProposal[] matrixDataFrameSubset(int position, String contentLastCorr, String matDfName,
+			int state, int bracketCommaCount, boolean doubleMatrixCall, Parse parse) {
 		IContentProposal[] array = null;
 		ImageContentProposal[] proposalsMatDFVec = null;
 		int length = contentLastCorr.length();
@@ -648,7 +666,8 @@ public class ShellCompletion implements UpdateCompletion {
 					try {
 						REXP rexp = null;
 						/* Here we leave out matrices and arrays (matrices are arrays)! */
-						rexp = RServeUtil.fromR("try(if (is.data.frame(" + matDfName + ")){colnames(" + matDfName + ")} else if (is.list(" + matDfName + ")) {names(" + matDfName
+						rexp = RServeUtil.fromR("try(if (is.data.frame(" + matDfName + ")){colnames(" + matDfName
+								+ ")} else if (is.list(" + matDfName + ")) {names(" + matDfName
 								+ ")} else if (is.vector(" + matDfName + ")) {names(" + matDfName + ")} ,silent=TRUE)");
 
 						if (rexp.isNull() == false) {
@@ -673,7 +692,8 @@ public class ShellCompletion implements UpdateCompletion {
 					try {
 						REXP rexp = null;
 
-						rexp = RServeUtil.fromR("try(if (is.data.frame(" + matDfName + ")||is.matrix(" + matDfName + ")){colnames(" + matDfName + ")} else if(is.array(" + matDfName + ")){rownames("
+						rexp = RServeUtil.fromR("try(if (is.data.frame(" + matDfName + ")||is.matrix(" + matDfName
+								+ ")){colnames(" + matDfName + ")} else if(is.array(" + matDfName + ")){rownames("
 								+ matDfName + ")} else{names(" + matDfName + ")} ,silent=TRUE)");
 
 						if (rexp.isNull() == false) {
@@ -750,7 +770,8 @@ public class ShellCompletion implements UpdateCompletion {
 				 */
 				if (item[0].startsWith("Error") == false) {
 					/* Get the object information str() as context info! */
-					//String resultStr = new RStrObjectInformation().getRStrObjectInfo(matDfName, c);
+					// String resultStr = new RStrObjectInformation().getRStrObjectInfo(matDfName,
+					// c);
 					/* If text length after parenheses is at least 0! */
 					if (length >= 0) {
 
@@ -759,9 +780,11 @@ public class ShellCompletion implements UpdateCompletion {
 							 * Here we filter out the templates by comparing the typed letters with the
 							 * available templates!
 							 */
-							if (item[i].length() >= length && item[i].substring(0, length).equalsIgnoreCase(contentLastCorr)) {
+							if (item[i].length() >= length
+									&& item[i].substring(0, length).equalsIgnoreCase(contentLastCorr)) {
 
-								list.add(new ImageContentProposal("\"" + item[i] + "\"", item[i], matDfName, item[i].length(), arrayImage));
+								list.add(new ImageContentProposal("\"" + item[i] + "\"", item[i], matDfName,
+										item[i].length(), arrayImage));
 							}
 						}
 
@@ -771,7 +794,8 @@ public class ShellCompletion implements UpdateCompletion {
 
 						for (int j = 0; j < item.length; j++) {
 
-							list.add(new ImageContentProposal("\"" + item[j] + "\"", item[j], item[j], item[j].length(), arrayImage));
+							list.add(new ImageContentProposal("\"" + item[j] + "\"", item[j], item[j], item[j].length(),
+									arrayImage));
 
 						}
 					}
@@ -813,14 +837,16 @@ public class ShellCompletion implements UpdateCompletion {
 					if (c != null) {
 						try {
 							String[] result = (String[]) c.eval("try(ls(),silent=TRUE)").asStrings();
-							String[] varsWorkspaceClass = (String[]) c.eval("try(as.character(lapply(mget(ls()),class)))").asStrings();
+							String[] varsWorkspaceClass = (String[]) c
+									.eval("try(as.character(lapply(mget(ls()),class)))").asStrings();
 
 							boolean isInPipedFunction = parse.isInPipeFunction();
 							String pipedDataName = parse.getCurrentPipeData();
 							if (isInPipedFunction) {
 								REXP rexp = null;
 								/* We accept dataframes! */
-								rexp = c.eval("try(if (is.data.frame(" + pipedDataName + ")){colnames(" + pipedDataName + ")} ,silent=TRUE)");
+								rexp = c.eval("try(if (is.data.frame(" + pipedDataName + ")){colnames(" + pipedDataName
+										+ ")} ,silent=TRUE)");
 
 								if (rexp.isNull() == false) {
 
@@ -849,12 +875,18 @@ public class ShellCompletion implements UpdateCompletion {
 									for (int j = 0; j < result.length; j++) {
 										if (pipedDataName != null) {
 											if (varsWorkspaceClass[j].equals(pipedDataName)) {
-												propo[j] = new ImageContentProposal(result[j], result[j] + " - " + varsWorkspaceClass[j]+" column", varsWorkspaceClass[j], result[j].length(), varImage);
+												propo[j] = new ImageContentProposal(result[j],
+														result[j] + " - " + varsWorkspaceClass[j] + " column",
+														varsWorkspaceClass[j], result[j].length(), varImage);
 											} else {
-												propo[j] = new ImageContentProposal(result[j], result[j] + " - " + varsWorkspaceClass[j], result[j], result[j].length(), varImage);
+												propo[j] = new ImageContentProposal(result[j],
+														result[j] + " - " + varsWorkspaceClass[j], result[j],
+														result[j].length(), varImage);
 											}
 										} else {
-											propo[j] = new ImageContentProposal(result[j], result[j] + " - " + varsWorkspaceClass[j], result[j], result[j].length(), varImage);
+											propo[j] = new ImageContentProposal(result[j],
+													result[j] + " - " + varsWorkspaceClass[j], result[j],
+													result[j].length(), varImage);
 										}
 
 									}
@@ -882,7 +914,6 @@ public class ShellCompletion implements UpdateCompletion {
 	 */
 	private ImageContentProposal[] namesPackageExportActivation(int offset, String prefix) {
 
-		
 		propo = null;
 		// int length=prefix.length();
 		// String lastIndex = prefix.substring(0, prefix.lastIndexOf(":"));
@@ -899,7 +930,8 @@ public class ShellCompletion implements UpdateCompletion {
 						ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
 						String res = prefix.substring(0, prefix.lastIndexOf("::"));
 						try {
-							String[] result = (String[]) c.eval("try(grep(\"^[a-zA-Z]\",sort(getNamespaceExports(\"" + res + "\")),all,value=TRUE),silent=TRUE)").asStrings();
+							String[] result = (String[]) c.eval("try(grep(\"^[a-zA-Z]\",sort(getNamespaceExports(\""
+									+ res + "\")),all,value=TRUE),silent=TRUE)").asStrings();
 							if (result != null && result.length > 0) {
 								if (result[0].startsWith("Error") == false) {
 
@@ -908,9 +940,11 @@ public class ShellCompletion implements UpdateCompletion {
 
 									for (int j = 0; j < result.length; j++) {
 
-										if (result[j].length() >= length && result[j].substring(0, length).equalsIgnoreCase(afterLastIndex)) {
+										if (result[j].length() >= length
+												&& result[j].substring(0, length).equalsIgnoreCase(afterLastIndex)) {
 
-											list.add(new ImageContentProposal(result[j], result[j], result[j], result[j].length(), image));
+											list.add(new ImageContentProposal(result[j], result[j], result[j],
+													result[j].length(), image));
 										}
 
 									}
@@ -956,7 +990,8 @@ public class ShellCompletion implements UpdateCompletion {
 					if (c != null) {
 						String res = prefix.substring(0, prefix.lastIndexOf(":::"));
 						try {
-							String[] result = (String[]) c.eval("try(grep(\"^[a-zA-Z]\",ls(getNamespace(\"" + res + "\"), all.names=TRUE),value=TRUE),silent=TRUE)").asStrings();
+							String[] result = (String[]) c.eval("try(grep(\"^[a-zA-Z]\",ls(getNamespace(\"" + res
+									+ "\"), all.names=TRUE),value=TRUE),silent=TRUE)").asStrings();
 							if (result != null && result.length > 0) {
 								if (result[0].startsWith("Error") == false) {
 
@@ -973,9 +1008,11 @@ public class ShellCompletion implements UpdateCompletion {
 										 * result[j].length(), image); } else {
 										 */
 
-										if (result[j].length() >= length && result[j].substring(0, length).equalsIgnoreCase(afterLastIndex)) {
+										if (result[j].length() >= length
+												&& result[j].substring(0, length).equalsIgnoreCase(afterLastIndex)) {
 
-											list.add(new ImageContentProposal(result[j], result[j], result[j], result[j].length(), image));
+											list.add(new ImageContentProposal(result[j], result[j], result[j],
+													result[j].length(), image));
 										}
 
 										// propo[j] = new ImageContentProposal(result[j], result[j], null,
@@ -1037,13 +1074,17 @@ public class ShellCompletion implements UpdateCompletion {
 									 */
 									for (int j = 0; j < result.length; j++) {
 
-										if (result[j].length() >= length && result[j].substring(0, length).equalsIgnoreCase(afterLastIndex)) {
+										if (result[j].length() >= length
+												&& result[j].substring(0, length).equalsIgnoreCase(afterLastIndex)) {
 
-											String resultStr = (String) c.eval("try(capture.output(str(" + res + "@" + result[j] + ")),silent=TRUE)").asString();
+											String resultStr = (String) c.eval("try(capture.output(str(" + res + "@"
+													+ result[j] + ")),silent=TRUE)").asString();
 											if (resultStr != null) {
-												list.add(new ImageContentProposal(result[j], result[j], resultStr, result[j].length(), s4Image));
+												list.add(new ImageContentProposal(result[j], result[j], resultStr,
+														result[j].length(), s4Image));
 											} else {
-												list.add(new ImageContentProposal(result[j], result[j], null, result[j].length(), s4Image));
+												list.add(new ImageContentProposal(result[j], result[j], null,
+														result[j].length(), s4Image));
 											}
 
 										}
@@ -1100,13 +1141,18 @@ public class ShellCompletion implements UpdateCompletion {
 									propo = new ImageContentProposal[result.length];
 									for (int j = 0; j < result.length; j++) {
 
-										if (result[j].length() >= length && result[j].substring(0, length).equalsIgnoreCase(afterLastIndex)) {
+										if (result[j].length() >= length
+												&& result[j].substring(0, length).equalsIgnoreCase(afterLastIndex)) {
 
-											String resultStr = (String) c.eval("try(capture.output(str(" + res + "$" + result[j] + ")))").asString();
+											String resultStr = (String) c
+													.eval("try(capture.output(str(" + res + "$" + result[j] + ")))")
+													.asString();
 											if (resultStr != null) {
-												list.add(new ImageContentProposal(result[j], result[j], resultStr, result[j].length(), s3Image));
+												list.add(new ImageContentProposal(result[j], result[j], resultStr,
+														result[j].length(), s3Image));
 											} else {
-												list.add(new ImageContentProposal(result[j], result[j], null, result[j].length(), s3Image));
+												list.add(new ImageContentProposal(result[j], result[j], null,
+														result[j].length(), s3Image));
 											}
 
 										}
@@ -1154,7 +1200,8 @@ public class ShellCompletion implements UpdateCompletion {
 			String[] title = null;
 			/* Get all installed dataset names, their package and description! */
 			try {
-				RServeUtil.evalR("try(.bio7Pkgs <- setdiff(.packages(TRUE), c(\"base\", \"stats\")));" + "try(.bio7PkgsTemp<-data(package = .bio7Pkgs)$result);"
+				RServeUtil.evalR("try(.bio7Pkgs <- setdiff(.packages(TRUE), c(\"base\", \"stats\")));"
+						+ "try(.bio7PkgsTemp<-data(package = .bio7Pkgs)$result);"
 						+ "try(.bio7PkgsTemp<-.bio7PkgsTemp[order(.bio7PkgsTemp[,3]), ])", null);
 				item = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Item\"])").asStrings();
 				packages = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Package\"])").asStrings();
@@ -1173,7 +1220,8 @@ public class ShellCompletion implements UpdateCompletion {
 					 */
 					if (item[i].length() >= length && item[i].substring(0, length).equalsIgnoreCase(contentLastCorr)) {
 
-						list.add(new ImageContentProposal(item[i], item[i] + " (package: " + packages[i] + ")", title[i], item[i].length(), dataImage));
+						list.add(new ImageContentProposal(item[i], item[i] + " (package: " + packages[i] + ")",
+								title[i], item[i].length(), dataImage));
 					}
 				}
 
@@ -1183,7 +1231,8 @@ public class ShellCompletion implements UpdateCompletion {
 
 				for (int j = 0; j < item.length; j++) {
 
-					list.add(new ImageContentProposal(item[j], item[j] + " (package: " + packages[j] + ")", title[j], item[j].length(), dataImage));
+					list.add(new ImageContentProposal(item[j], item[j] + " (package: " + packages[j] + ")", title[j],
+							item[j].length(), dataImage));
 
 				}
 			}
@@ -1209,8 +1258,10 @@ public class ShellCompletion implements UpdateCompletion {
 			String[] dirPackageFiles = null;
 			String[] packageTitle = null;
 			try {
-				RServeUtil.evalR("try(.bio7ListOfWebPackages <- list(sort(.packages(all.available = TRUE))));" + "try(.bio7ListOfWebPackagesNames<-.bio7ListOfWebPackages[[1]]);"
-						+ "try(.bio7TitleResult<-lapply(.bio7ListOfWebPackagesNames,packageDescription,fields = c(\"Title\")))", null);
+				RServeUtil.evalR("try(.bio7ListOfWebPackages <- list(sort(.packages(all.available = TRUE))));"
+						+ "try(.bio7ListOfWebPackagesNames<-.bio7ListOfWebPackages[[1]]);"
+						+ "try(.bio7TitleResult<-lapply(.bio7ListOfWebPackagesNames,packageDescription,fields = c(\"Title\")))",
+						null);
 
 				packageTitle = RServeUtil.fromR("try(as.character(.bio7TitleResult))").asStrings();
 				dirPackageFiles = RServeUtil.fromR("try(.bio7ListOfWebPackagesNames)").asStrings();
@@ -1226,9 +1277,11 @@ public class ShellCompletion implements UpdateCompletion {
 					 * Here we filter out the templates by comparing the typed letters with the
 					 * available templates!
 					 */
-					if (dirPackageFiles[i].length() >= length && dirPackageFiles[i].substring(0, length).equalsIgnoreCase(contentLastCorr)) {
+					if (dirPackageFiles[i].length() >= length
+							&& dirPackageFiles[i].substring(0, length).equalsIgnoreCase(contentLastCorr)) {
 
-						list.add(new ImageContentProposal(dirPackageFiles[i], dirPackageFiles[i], packageTitle[i], dirPackageFiles[i].length(), libImage));
+						list.add(new ImageContentProposal(dirPackageFiles[i], dirPackageFiles[i], packageTitle[i],
+								dirPackageFiles[i].length(), libImage));
 					}
 				}
 
@@ -1238,7 +1291,8 @@ public class ShellCompletion implements UpdateCompletion {
 
 				for (int j = 0; j < dirPackageFiles.length; j++) {
 
-					list.add(new ImageContentProposal(dirPackageFiles[j], dirPackageFiles[j], packageTitle[j], dirPackageFiles[j].length(), libImage));
+					list.add(new ImageContentProposal(dirPackageFiles[j], dirPackageFiles[j], packageTitle[j],
+							dirPackageFiles[j].length(), libImage));
 
 				}
 			}
@@ -1295,7 +1349,8 @@ public class ShellCompletion implements UpdateCompletion {
 						 * We add a suffix to mark this proposal for a scrolling to the arguments
 						 * section in the description!
 						 */
-						propoFuncArg[j] = new ImageContentProposal(proposalMethods[j], proposalMethods[j], func + "::::args::::", proposalMethods[j].length(), varFuncCallImage);
+						propoFuncArg[j] = new ImageContentProposal(proposalMethods[j], proposalMethods[j],
+								func + "::::args::::", proposalMethods[j].length(), varFuncCallImage);
 
 					}
 					ImageContentProposal[] prop = getWorkSpaceVars(position, parse);
@@ -1352,7 +1407,5 @@ public class ShellCompletion implements UpdateCompletion {
 		result.add(input.substring(start).replace(tempReplacement, "\",\""));
 		return result;
 	}
-
-	
 
 }

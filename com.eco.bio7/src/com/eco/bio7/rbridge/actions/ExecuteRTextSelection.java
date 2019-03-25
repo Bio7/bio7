@@ -4,6 +4,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -20,6 +23,7 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.rosuda.REngine.Rserve.RConnection;
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RServeUtil;
@@ -133,7 +137,7 @@ public class ExecuteRTextSelection extends Action {
 
 							// RServe.printJobJoin(code);
 
-							RServeUtil.evalR3(null, temp.getAbsolutePath());
+							evalRSelection(null, temp.getAbsolutePath());
 
 							temp.delete();
 							buff.setLength(0); // clear buffer!
@@ -213,5 +217,48 @@ public class ExecuteRTextSelection extends Action {
 		}
 
 		return inhalt;
+	}
+	/**
+	 * Evaluates a script in R running in a job without using join for the plot
+	 * job!.
+	 * 
+	 * @param script a script.
+	 * @param loc    the script location.
+	 */
+	public static void evalRSelection(String script, String loc) {
+		if (RServe.isAliveDialog()) {
+			if (RState.isBusy() == false) {
+				RState.setBusy(true);
+				RInterpreterJob Do = new RInterpreterJob(script, loc);
+				Do.setUser(true);
+				Do.addJobChangeListener(new JobChangeAdapter() {
+					public void done(IJobChangeEvent event) {
+						if (event.getResult().isOK()) {
+							int countDev = RServe.getDisplayNumber();
+							RState.setBusy(false);
+							if (countDev > 0) {
+								RServe.closeAndDisplayNoJoin();
+							}
+							RServeUtil.listRObjects();
+							// BatchModel.resumeFlow();
+
+						} else {
+							RState.setBusy(false);
+						}
+					}
+				});
+
+				Do.schedule();
+				try {
+					Do.join();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			} else {
+				System.out.println("Rserve is busy. Can't execute the R script!");
+			}
+		}
+
 	}
 }
