@@ -19,7 +19,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.jfree.chart.ChartPanel;
-import processing.core.PApplet;
 import com.eco.bio7.compile.Model;
 import com.eco.bio7.methods.Compiled;
 import com.jogamp.opengl.util.Animator;
@@ -520,17 +519,7 @@ public class CustomView extends ViewPart implements ISaveablePart2 {
 			} else if ((ve.get(0)) instanceof javax.swing.JPanel) {
 				JPanel panel = (JPanel) ve.get(0);
 				panel = null;
-			} else if ((ve.get(0)) instanceof processing.core.PApplet) {
-				PApplet panel = (PApplet) ve.get(0);
-				try {
-					panel.stop();
-					panel.dispose();
-					panel = null;
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			} else if ((ve.get(0)) instanceof FXCanvas) {
+			}  else if ((ve.get(0)) instanceof FXCanvas) {
 				FXCanvas canvas = (FXCanvas) ve.get(0);
 				canvas.dispose();
 				canvas = null;
