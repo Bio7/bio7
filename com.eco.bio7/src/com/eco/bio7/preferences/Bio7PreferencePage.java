@@ -36,6 +36,8 @@ public class Bio7PreferencePage extends FieldEditorPreferencePage implements IWo
 		addField(new DirectoryFieldEditor(PreferenceConstants.D_GRID_SCRIPTS, "&Path to 'Table' menu scripts:", getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new BooleanFieldEditor("SAVE_ALL_EDITORS", "Save all editors on close", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("TOUCH_BAR_MAC", "Enable Touch Bar for MacOSX", getFieldEditorParent()));
+		
 		
 
 	}

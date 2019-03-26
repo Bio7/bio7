@@ -619,7 +619,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("RSHELL_TYPED_CODE_COMPLETION", true);
 		store.setDefault("RSHELL_ACTIVATION_CHARS", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.@$+-.:");
 		store.setDefault("RSHELL_SEPERATOR_CHARS", ";(,[=-+ ");
-		store.setDefault("CODE_COMPLETION_RSHELL_FONT_HEIGHT_CORRECTION",5);
+		store.setDefault("CODE_COMPLETION_RSHELL_FONT_HEIGHT_CORRECTION", 5);
 		store.setDefault("CODE_COMPLETION_POPUP_SIZE_X", 600);
 		store.setDefault("CODE_COMPLETION_POPUP_SIZE_Y", 400);
 		store.setDefault("RSHELL_CODE_COMPLETION_ACTIVATOR_ALTERED", "STRG");
@@ -664,6 +664,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		/* A default FPS setting for the 3d view! */
 		store.setDefault("fixedFps", 60);
+		/*Enable TouchBar functions for MacOSX!*/
+		store.setDefault("TOUCH_BAR_MAC",false);
 
 		/*
 		 * Default Colours for the Bio7 editors!
@@ -1048,7 +1050,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		dragDropR();
 
 		if (Util.getOS().equals("Mac")) {
-			new MacTouchBar();
+			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+			boolean touchBarEnabled = store.getBoolean("TOUCH_BAR_MAC");
+			if (touchBarEnabled) {
+				new MacTouchBar();
+			}
 		}
 	}
 
