@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            category="com.eco.bio7.worldwind"
+            class="com.eco.bio7.worldwind.WorldWindView"
+            icon="pics/worldwindpersp.png"
+            id="com.eco.bio7.worldwind.WorldWindView"
+            name="WorldWind"
+            restorable="true">
+      </view>
+      <view
+            category="com.eco.bio7.worldwind"
+            class="com.eco.bio7.worldwind.WorldWindOptionsView"
+            icon="pics/worldwindpersp.png"
+            id="com.eco.bio7.worldwind.WorldWindOptionsView"
+            name="Options WorldWind ">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="com.eco.bio7.worldwind.WorldWindPerspective"
+            icon="pics/worldwindpersp.png"
+            id="com.eco.bio7.WorldWind.3dglobe"
+            name="WorldWind">
+      </perspective>
+   </extension>
+</plugin>

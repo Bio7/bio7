@@ -1,0 +1,41 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.7.0
+Created-By: 1.6.0_02-b05 (Sun Microsystems Inc.)
+Bundle-ManifestVersion: 2
+Bundle-Name: Java Plug-in
+Bundle-SymbolicName: com.eco.bio7.javaedit;singleton:=true
+Bundle-Version: 2.0.0
+Bundle-Activator: com.eco.bio7.javaeditor.Bio7EditorPlugin
+Bundle-Vendor: ECO
+Bundle-Localization: plugin
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.jface.text,
+ org.eclipse.ui.editors,
+ org.eclipse.ui.workbench.texteditor,
+ org.eclipse.jdt.core,
+ org.eclipse.ui.views,
+ org.eclipse.core.resources,
+ com.eco.bio7.libs;bundle-version="2.0.0",
+ org.eclipse.ui.workbench,
+ org.eclipse.jdt.ui;bundle-version="3.16.0"
+Eclipse-LazyStart: true
+Export-Package: com.eco.bio7.compile,
+ com.eco.bio7.compile.utils,
+ com.eco.bio7.javaeditor,
+ com.eco.bio7.javaeditor.ast,
+ com.eco.bio7.javapreferences,
+ org.codehaus.commons.compiler,
+ org.codehaus.commons.compiler.jdk,
+ org.codehaus.commons.compiler.samples,
+ org.codehaus.commons.io,
+ org.codehaus.commons.nullanalysis
+Bundle-ClassPath: libs/commons-compiler-3.0.7.jar,
+ bin/,
+ src/,
+ .
+Import-Package: org.eclipse.core.filesystem,
+ org.eclipse.ui,
+ org.eclipse.ui.ide
+Bundle-RequiredExecutionEnvironment: JavaSE-14
+

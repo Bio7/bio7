@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+
+   
+   
+   
+
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="com.eco.bio7.preferences.Bio7PreferencePage"
+            class="com.eco.bio7.javapreferences.WorkbenchPreferenceJava"
+            id="prefjava"
+            name="Preferences Java Dynamic Compilation"/>
+      <page
+            category="prefjava"
+            class="com.eco.bio7.javapreferences.DynamicCompilerJavaLibries"
+            id="com.eco.bio7.preferences_compiler"
+            name="Preferences Libraries">
+      </page>
+      <page
+            category="prefjava"
+            class="com.eco.bio7.javapreferences.DynamicCompilerJavaModules"
+            id="com.eco.bio7.preferences_compiler_modules"
+            name="Preferences Modules">
+      </page>
+   </extension>
+
+   <extension
+        point="org.eclipse.core.runtime.preferences">
+     <initializer
+           class="com.eco.bio7.javapreferences.PreferenceInitializer">
+     </initializer>
+  </extension>
+   
+
+</plugin>

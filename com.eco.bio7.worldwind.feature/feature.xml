@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="com.eco.bio7.worldwind.feature"
+      label="Bio7 WorldWind Plugin"
+      version="2.1.0.qualifier"
+      provider-name="Bio7">
+
+   <description url="http://www.example.com/description">
+      [Enter Feature Description here.]
+   </description>
+
+   <copyright url="http://www.example.com/copyright">
+      [Enter Copyright Description here.]
+   </copyright>
+
+   <license url="http://www.example.com/license">
+      [Enter License Description here.]
+   </license>
+
+   <requires>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="com.eco.bio7.image" version="1.47.1" match="greaterOrEqual"/>
+      <import plugin="com.eco.bio7.javaedit" version="2.0.0" match="greaterOrEqual"/>
+      <import plugin="com.eco.bio7.libs" version="2.5.0" match="greaterOrEqual"/>
+      <import plugin="com.eco.bio7.os"/>
+      <import plugin="com.eco.bio7.util"/>
+      <import plugin="org.eclipse.nebula.widgets.grid" version="1.0.0" match="greaterOrEqual"/>
+   </requires>
+
+   <plugin
+         id="com.eco.bio7.WorldWind"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+</feature>

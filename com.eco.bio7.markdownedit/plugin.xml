@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="com.eco.bio7.markdownedit.editors.MarkdownEditor"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            default="true"
+            extensions="Rmd,rmd,md"
+            icon="icons/rmarkdownfile.png"
+            id="com.eco.bio7.markdownedit"
+            name="R Markdown Editor"
+            symbolicFontName="com.eco.bio7.reditor.markdown.textfont">
+      </editor>
+   </extension>
+   <extension
+         point="org.eclipse.ui.themes">
+      <fontDefinition
+            categoryId="com.eco.bio7.markdown.rtheme"
+            defaultsTo="org.eclipse.jface.textfont"
+            id="com.eco.bio7.reditor.markdown.textfont"
+            label="Markdown Editor Font">
+      </fontDefinition>
+      <themeElementCategory
+            id="com.eco.bio7.markdown.rtheme"
+            label="Markdown editor">
+      </themeElementCategory>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="com.eco.bio7.markdownedit.preferences.PreferenceInitializer">
+      </initializer>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="com.eco.bio7.R"
+            class="com.eco.bio7.markdownedit.preferences.WorkbenchPreferenceMarkdown"
+            id="com.eco.bio7.markdownedit.preferences.editor"
+            name="Preferences Markdown Editor">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="com.eco.bio7.markdownedit.actions.TextZoomInHandler"
+            commandId="com.eco.bio7.markdownedit.actions.zoomIn">
+           
+      </handler>
+      <handler
+            class="com.eco.bio7.markdownedit.actions.TextZoomOutHandler"
+            commandId="com.eco.bio7.markdownedit.actions.zoomOut">
+           
+      </handler>
+      <handler
+            class="com.eco.bio7.markdownedit.actions.RMarkdownFormatAction"
+            commandId="com.eco.bio7.reditor.rmarkdown.format">
+           
+      </handler>
+   </extension>
+   <extension point="org.eclipse.ui.contexts">
+          <context name="Markdown Editor Context"
+           description="Markdown Editor Context"
+           parentId="org.eclipse.ui.textEditorScope"
+           id="com.eco.bio7.markdownedit.MarkdownEditorScope" />
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+         <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Zoom in text, increase default font size for text editors"
+          id="com.eco.bio7.markdownedit.actions.zoomIn"
+          name="Zoom In">
+    </command>
+    <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Zoom out text, decrease default font size for text editors"
+          id="com.eco.bio7.markdownedit.actions.zoomOut"
+          name="Zoom Out">
+    </command>
+     <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Format RMarkdown source"
+          id="com.eco.bio7.reditor.rmarkdown.format"
+          name="Format">
+    </command>
+   </extension>
+   <extension
+        id="com.eco.bio7.markdownedit.binding"
+       	point="org.eclipse.ui.bindings">
+       <sequenceModifier
+  			find="CTRL"
+  			replace="COMMAND"
+  			platforms="cocoa,carbon" />
+  	<key
+          commandId="com.eco.bio7.markdownedit.actions.zoomIn"
+          contextId="com.eco.bio7.markdownedit.MarkdownEditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL++">
+    </key>
+    <key
+          commandId="com.eco.bio7.markdownedit.actions.zoomOut"
+          contextId="com.eco.bio7.markdownedit.MarkdownEditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+-">
+    </key>
+    <key
+          commandId="com.eco.bio7.reditor.rmarkdown.format"
+          contextId="com.eco.bio7.markdownedit.MarkdownEditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+SHIFT+F">
+    </key>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="true"
+            locationURI="popup:#RMarkdownEditorContext?after=additions">
+         <command
+               commandId="com.eco.bio7.reditor.rmarkdown.format"
+               label="Format Selection"
+               style="push"
+               tooltip="Formats the selected markdown editor source">
+         </command>
+         <menu
+               id="rmarkdowneditor.text"
+               label="Text">
+            <command
+                  commandId="org.eclipse.ui.edit.text.toggleWordWrap"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.edit.text.toggleBlockSelectionMode"
+                  label="Block Selection"
+                  style="toggle"
+                  tooltip="Block Selection">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.edit.findReplace"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.edit.text.upperCase"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.edit.text.lowerCase"
+                  style="push">
+            </command>
+         </menu>
+      </menuContribution>
+   </extension>
+
+</plugin>

@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.7.0
+Created-By: 1.6.0_02-b05 (Sun Microsystems Inc.)
+Bundle-ManifestVersion: 2
+Bundle-Name: Flow plugin
+Bundle-SymbolicName: com.eco.bio7.floweditor;singleton:=true
+Bundle-Version: 2.0.0
+Bundle-Activator: com.eco.bio7.floweditor.shapes.ShapesPlugin
+Bundle-Vendor: Eclipse.org
+Bundle-Localization: plugin
+Require-Bundle: org.eclipse.ui,org.eclipse.core.runtime,org.eclipse.co
+ re.resources,org.eclipse.ui.views,org.eclipse.ui.workbench,org.eclips
+ e.ui.ide,org.eclipse.jface,org.eclipse.gef
+Eclipse-LazyStart: true
+Export-Package: com.eco.bio7.floweditor.commands,com.eco.bio7.flowedit
+ or.model,com.eco.bio7.floweditor.parts,com.eco.bio7.floweditor.shapes
+ ,com.eco.bio7.floweditor.shapes.icons,com.eco.bio7.floweditor.figures
+Bundle-ClassPath: bin/
+Bundle-RequiredExecutionEnvironment: JavaSE-14
+

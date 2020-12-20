@@ -1,0 +1,1948 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+
+     <extension
+           id="application"
+           point="org.eclipse.core.runtime.applications">
+        <application>
+           <run
+                 class="com.eco.bio7.rcp.Application">
+           </run>
+        </application>
+     </extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="com.eco.bio7.rcp.Perspective"
+            fixed="false"
+            icon="icons/perspective/2dpersp.png"
+            id="com.eco.bio7.perspective_2d"
+            name=" 2d">
+      </perspective>
+      <perspective
+            class="com.eco.bio7.discrete3d.Perspective3d"
+            fixed="false"
+            icon="icons/perspective/3dpersp.png"
+            id="com.eco.bio7.perspective_3d"
+            name="3d"/>
+      <perspective
+            class="com.eco.bio7.rcp.Bio7ResourcePerspective"
+            fixed="false"
+            icon="icons/perspective/resourcepersp.png"
+            id="com.eco.bio7.bio7resource"
+            name="Resource">
+      </perspective>
+      <perspective
+            class="com.eco.bio7.rbridge.perspectives.RPerspective"
+            fixed="false"
+            icon="icons/perspective/rpersp.png"
+            id="com.eco.bio7.rbridge.RPerspective"
+            name="R">
+      </perspective>
+      <perspective
+            class="com.eco.bio7.collection.CustomPerspective"
+            icon="icons/perspective/custompersp.png"
+            id="com.eco.bio7.CustomPerspective"
+            name="Custom">
+      </perspective>
+      <perspective
+            class="com.eco.bio7.rbridge.perspectives.RImagePerspective"
+            fixed="false"
+            icon="icons/perspective/rimageanalysispersp.png"
+            id="com.eco.bio7.rbridge.RImagePerspective"
+            name="R ImageJ Analysis">
+      </perspective>
+      <perspective
+            class="com.eco.bio7.rbridge.perspectives.RDebugPerspective"
+            fixed="false"
+            icon="icons/perspective/rdebugpersp.png"
+            id="com.eco.bio7.rbridge.RDebugPerspective"
+            name="R Debug">
+      </perspective>
+      <perspective
+            class="com.eco.bio7.document.DocumentPerspective"
+            icon="icons/perspective/documentpersp.png"
+            id="com.eco.bio7.document.DocumentPerspective"
+            name="Document">
+      </perspective>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            allowMultiple="true"
+            category="com.eco.bio7.charts"
+            class="com.eco.bio7.plot.PieChartView"
+            icon="icons/views/piechartview.png"
+            id="com.eco.bio7.piechart"
+            name="Piechart"
+            restorable="true">
+      </view>
+      <view
+            allowMultiple="true"
+            category="com.eco.bio7.charts"
+            class="com.eco.bio7.plot.LineChartView"
+            icon="icons/views/linechartview.png"
+            id="com.eco.bio7.linechart"
+            name="Linechart"
+            restorable="true"/>
+      <view
+            allowMultiple="true"
+            category="com.eco.bio7.discrete"
+            class="com.eco.bio7.discrete.Quadview"
+            icon="icons/views/2dperspview.png"
+            id="com.eco.bio7.quadgrid"
+            name="Quadgrid"
+            restorable="true"/>
+      <view
+            allowMultiple="true"
+            category="com.eco.bio7.database"
+            class="com.eco.bio7.database.Spreadview"
+            icon="icons/views/tableview.png"
+            id="com.eco.bio7.spreadsheet"
+            name="Spreadsheet"
+            restorable="true"/>
+      
+      <view
+            allowMultiple="true"
+            category="com.eco.bio7.control"
+            class="com.eco.bio7.discrete.StateButtonView"
+            icon="icons/views/2dperspview.png"
+            id="com.eco.bio7.states"
+            name="State"
+            restorable="true"/>
+      <view
+            allowMultiple="true"
+            category="com.eco.bio7.discrete"
+            class="com.eco.bio7.discrete.Hexview"
+            icon="icons/views/2dperspview.png"
+            id="com.eco.bio7.hexgrid"
+            name="Hexgrid"
+            restorable="true"/>
+      <view
+            allowMultiple="true"
+            category="com.eco.bio7.custom"
+            class="com.eco.bio7.plot.ChartView"
+            icon="icons/views/linechartview.png"
+            id="com.eco.bio7.custom_chart"
+            name="Custom Chart"
+            restorable="true"/>
+      <view
+            allowMultiple="true"
+            category="com.eco.bio7.rapplication"
+            class="com.eco.bio7.image.RImageMethodsView"
+            icon="icons/views/rview.png"
+            id="com.eco.bio7.image_methods"
+            name="Image-Methods"
+            restorable="true"/>
+      <view
+            allowMultiple="true"
+            category="com.eco.bio7.console"
+            class="com.eco.bio7.scriptengines.BshView"
+            icon="icons/views/console.png"
+            id="com.eco.bio7.bsh"
+            name="Bsh-Console"
+            restorable="true"/>
+      <view
+            allowMultiple="true"
+            category="com.eco.bio7.control"
+            class="com.eco.bio7.info.InfoView"
+            icon="icons/views/timeview.png"
+            id="com.eco.bio7.control"
+            name="Control"
+            restorable="true"/>
+      <category
+            id="com.eco.bio7.ecolab"
+            name="Bio7-3D"/>
+            
+      <category
+            id="com.eco.bio7.discrete"
+            name="Bio7-Panels"/>
+            
+            
+       <category
+            id="com.eco.bio7.image"
+            name="Bio7-Image"/>
+        <category
+            id="com.eco.bio7.database"
+            name="Bio7-Database"/>
+            
+         <category
+            id="com.eco.bio7.charts"
+            name="Bio7-Charts"/>
+            
+           <category
+            id="com.eco.bio7.console"
+            name="Bio7-Console"/>
+          <category
+            id="com.eco.bio7.control"
+            name="Bio7-Control"/>
+          <category
+                id="com.eco.bio7.worldwind"
+                name="Bio7-WorldWind">
+          </category>
+          <category
+                id="com.eco.bio7.rapplication"
+                name="Bio7-R">
+          </category>
+          <category
+                id="com.eco.bio7.web"
+                name="Bio7-Web">
+          </category>
+      <view
+            allowMultiple="true"
+            category="com.eco.bio7.custom"
+            class="com.eco.bio7.collection.CustomView"
+            icon="icons/views/custom.png"
+            id="com.eco.bio7.custom_controls"
+            name="Custom Controls"
+            restorable="true"/>
+      <category
+            id="com.eco.bio7.custom"
+            name="Bio7-Custom"/>
+      <view
+            allowMultiple="true"
+            category="com.eco.bio7.ecolab"
+            class="com.eco.bio7.spatial.SpatialView"
+            icon="icons/views/3dperspview.png"
+            id="com.eco.bio7.spatial"
+            name="Space"
+            restorable="true">
+      </view>
+      <view
+            allowMultiple="true"
+            category="com.eco.bio7.ecolab"
+            class="com.eco.bio7.spatial.Options3d"
+            icon="icons/views/3dperspview.png"
+            id="com.eco.bio7.discrete3d.Options3d"
+            name="Options Space"
+            restorable="true">
+      </view>
+      <view
+            allowMultiple="true"
+            category="com.eco.bio7.rapplication"
+            class="com.eco.bio7.rbridge.views.RShellView"
+            icon="icons/views/rview.png"
+            id="com.eco.bio7.RShell"
+            name="R-Shell"
+            restorable="true">
+      </view>
+      <view
+            allowMultiple="true"
+            category="com.eco.bio7.rapplication"
+            class="com.eco.bio7.rbridge.RTable"
+            icon="icons/views/tableview.png"
+            id="com.eco.bio7.rbridge.RTable"
+            name="Table"
+            restorable="true">
+      </view>
+      <view
+            allowMultiple="true"
+            category="com.eco.bio7.rapplication"
+            class="com.eco.bio7.rbridge.debug.DebugVariablesView"
+            icon="icons/views/rview.png"
+            id="com.eco.bio7.rbridge.debug.DebugVariablesView"
+            name="Debug (x)">
+      </view>
+      <view
+            allowMultiple="true"
+            category="com.eco.bio7.rapplication"
+            class="com.eco.bio7.rbridge.debug.DebugTextView"
+            icon="icons/views/rview.png"
+            id="com.eco.bio7.rbridge.debug.DebugTextView"
+            name="Debug Text">
+      </view>
+      <category
+            id="com.eco.bio7.scenebuilder"
+            name="SceneBuilder">
+      </category>
+      <view
+            category="com.eco.bio7.image"
+            class="com.eco.bio7.image.TransferGeometryView"
+            icon="icons/views/rview.png"
+            id="com.eco.bio7.image.TransferGeometryView"
+            name="Geometry Selections">
+      </view>
+      <view
+            category="com.eco.bio7.rapplication"
+            class="com.eco.bio7.rbridge.views.PackageInstallView"
+            icon="icons/views/rview.png"
+            id="com.eco.bio7.rbridge.PackageInstallView"
+            name="Packages">
+      </view>
+      <view
+            category="com.eco.bio7.rapplication"
+            class="com.eco.bio7.rbridge.views.RPlotView"
+            icon="icons/views/rview.png"
+            id="com.eco.bio7.rbridge.RPlotView"
+            name="Plot">
+      </view>
+      <view
+            category="com.eco.bio7.rapplication"
+            class="com.eco.bio7.rbridge.views.RTemplatesView"
+            icon="icons/views/rview.png"
+            id="com.eco.bio7.rbridge.views.RTemplatesView"
+            name="R Snippets">
+      </view>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            name="Draw Empty Field"
+            description="Reset the Field"
+            id="com.eco.bio7.empty_field">
+      </command>
+      <command
+            description="Start RServe"
+            id="com.eco.bio7.Start_RServe_Action"
+            name="Start RServe">
+      </command>
+      <sequenceModifier
+  			find="CTRL"
+  			replace="COMMAND"
+  			platforms="cocoa,carbon" />
+      <keyBinding
+            commandId="com.eco.bio7.Start_RServe_Action"
+            keySequence="CTRL+R"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration">
+      </keyBinding>
+      <keyBinding
+            commandId="com.eco.bio7.empty_field"
+            keySequence="CTRL+0"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration">
+      </keyBinding>
+      <keyBinding
+            commandId="com.eco.bio7.Enable_Selection"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="ALT+S"/>
+       <keyBinding
+            commandId="com.eco.bio7.start"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="ALT+P"/>
+     <keyBinding
+            commandId="com.eco.bio7.show.main.menus"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+SHIFT+2"/>
+     <keyBinding
+            commandId="com.eco.bio7.hide.main.menus"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+SHIFT+3"/>
+     <keyBinding
+            commandId="com.eco.bio7.hide.main.menus.fullscreen"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+SHIFT+4"/>              
+     <command
+            description="Show Main Menus"
+            id="com.eco.bio7.show.main.menus"
+            name="Show Main Menus"/>
+     <command
+            description="Hide Main Menus"
+            id="com.eco.bio7.hide.main.menus"
+            name="Hide Main Menus"/>
+     <command
+            description="Hide Main Menus and Fullscreen"
+            id="com.eco.bio7.hide.main.menus.fullscreen"
+            name="Hide Main Menus and Fullscreen"/>
+      <command
+            description="Start/Stop Action"
+            id="com.eco.bio7.start"
+            name="Start/Stop Action"/>
+      <command
+            description="Stop-Action"
+            id="com.eco.bio7.StopAction"
+            name="Stop Action"/>
+      <command
+            description="Enable Selection"
+            id="com.eco.bio7.Enable_Selection"
+            name="Enable Selection"/>
+      <command
+            description="Stop the flow"
+            id="com.eco.bio7.flowstop"
+            name="Flowstop"/>
+      <command
+            description="Evaluate Expression"
+            id="com.eco.bio7.print_expression"
+            name="Expression Dialog"/>
+      <keyBinding
+            commandId="com.eco.bio7.flowstop"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+ALT+SHIFT+X"/>
+     
+      <keyBinding
+            commandId="com.eco.bio7.print_expression"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="ALT+X"/>
+      <command
+            description="Executes a line selection in R"
+            id="com.eco.bio7.execute_r_select"
+            name="R_Selection"/>
+      <keyBinding
+            commandId="com.eco.bio7.execute_r_select"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="F8"/>
+            
+            <command
+            description="Executes a R script"
+            id="com.eco.bio7.execute_r_script"
+            name="R_Execute"/>
+      <keyBinding
+            commandId="com.eco.bio7.execute_r_script"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="F6"/>
+            
+            
+      <command
+            id="com.eco.bio7.execute_r_clipboard"
+            name="Evaluate R Clipboard">
+      </command>
+      <keyBinding
+            commandId="com.eco.bio7.execute_r_clipboard"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="M2+F8">
+      </keyBinding>
+      <command
+            id="com.eco.bio7.execute_r_clipboard_values"
+            name="Execute R clipboard values">
+      </command>
+      <keyBinding
+            commandId="com.eco.bio7.execute_r_clipboard_values"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="ALT+V">
+      </keyBinding>
+      <command
+            description="Executes a R script from toolbar"
+            id="com.eco.bio7.execute_r_script2"
+            name="Interpret R Action">
+      </command>
+      <keyBinding
+            commandId="com.eco.bio7.execute_r_script2"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="ALT+Y">
+      </keyBinding>
+      <command
+            description="Compile Java Dynamically"
+            id="com.eco.bio7.compilejavaaction"
+            name="Compile Java">
+      </command>
+      <keyBinding
+            commandId="com.eco.bio7.compilejavaaction"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+ALT+SHIFT+J">
+      </keyBinding>
+      
+      <command
+            description="Execute a Bio7 Flow"
+            id="com.eco.bio7.executeflowaction"
+            name="Flow Action">
+      </command>
+      <keyBinding
+            commandId="com.eco.bio7.executeflowaction"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+ALT+SHIFT+F">
+      </keyBinding>
+      <command
+            description="Debug a Bio7 Flow"
+            id="com.eco.bio7.debugflowaction"
+            name="Debug Flow Action">
+      </command>
+      <command
+            description="Interpret Groovy/BeanShell"
+            id="com.eco.bio7.interpretgroovybeanshellaction"
+            name="Interpret Groovy/BeanShell Action">
+      </command>
+      <keyBinding
+            commandId="com.eco.bio7.interpretgroovybeanshellaction"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+ALT+SHIFT+G">
+      </keyBinding>
+      <command
+            description="Interpret Python"
+            id="com.eco.bio7.interpretpythonaction"
+            name="Interpret Python Action">
+      </command>
+      
+      <keyBinding
+            commandId="com.eco.bio7.interpretpythonaction"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+ALT+SHIFT+P">
+      </keyBinding>
+      <command
+            description="Interpret Knitr"
+            id="com.eco.bio7.browser.knitrAction"
+            name="LaTeX Action">
+      </command>
+      <keyBinding
+            commandId="com.eco.bio7.browser.knitrAction"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+ALT+SHIFT+K">
+      </keyBinding>
+      <command
+            description="Interpret Markdown"
+            id="com.eco.bio7.RMarkdownAction"
+            name="Markdown Action">
+      </command>
+      <keyBinding
+            commandId="com.eco.bio7.RMarkdownAction"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+ALT+SHIFT+M">
+      </keyBinding>
+      <command
+            description="Clear the R workspace"
+            id="com.eco.bio7.clear_r_workspace"
+            name="Clear R workspace">
+      </command>
+      <keyBinding
+            commandId="com.eco.bio7.clear_r_workspace"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="ALT+C">
+      </keyBinding>
+      <command
+            description="Load a R workspace"
+            id="com.eco.bio7.load_r_workspace"
+            name="Load R workspace">
+      </command>
+      <keyBinding
+            commandId="com.eco.bio7.load_r_workspace"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+ALT+O">
+      </keyBinding>
+      <command
+            description="Save a R workspace"
+            id="com.eco.bio7.save_r_workspace2"
+            name="Save R workspace">
+      </command>
+      <keyBinding
+            commandId="com.eco.bio7.save_r_workspace2"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+ALT+K">
+      </keyBinding>
+      <command
+            description="Open the R preferences"
+            id="com.eco.bio7.rserve_openPreferences"
+            name="Open R preferences">
+      </command>
+      <keyBinding
+            commandId="com.eco.bio7.rserve_openPreferences"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+ALT+P">
+      </keyBinding>
+      <command
+            description="Interpret JavaScript"
+            id="com.eco.bio7.interpretjavascriptaction"
+            name="Interpret JavaScript Action">
+      </command>
+      <keyBinding
+            commandId="com.eco.bio7.interpretjavascriptaction"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="CTRL+ALT+SHIFT+T">
+      </keyBinding>
+   </extension>
+   <extension
+         id="product"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="com.eco.bio7.application"
+            name="Bio7">
+         <property
+               name="windowImage"
+               value="icons/bio7new.png"/>
+         <property
+               name="startupProgressRect"
+               value="95,50,510,30"/>
+          <!-- <property
+               name="aboutImage"
+               value="icons/bio7new.png"/>-->
+         <property
+               name="startupForegroundColor"
+               value="000000"/>
+         <property
+               name="startupMessageRect"
+               value="0,0,0,0"/>
+         <property
+               name="appName"
+               value="Bio7">
+         </property>
+         <property
+               name="aboutText"
+               value="Bio7 - An Integrated Development Environment for Ecological Modeling&#x0A;&#x0A;Developer: M. Austenfeld&#x0A;&#x0A;For more information about Bio7 visit the website:&#x0A;&#x0A;http://bio7.org&#x0A;&#x0A;-----------------------------------------------------------">
+         </property>
+         <property
+               name="windowImages"
+               value="icons/bio7app/bio7_16_new.png,icons/bio7app/bio7_32_new.png,icons/bio7app/bio7_48_new.png,icons/bio7app/bio7_64_new.png,icons/bio7app/bio7_128_new.png,icons/bio7app/bio7_256_new.png">
+         </property>
+         
+         <property
+	name="applicationCSSResources"
+	value="platform:/plugin/com.eco.bio7.themes/images/">
+</property>
+         <property
+               name="aboutImage"
+               value="icons/bio7app/bio7_48.png">
+         </property>
+         <property
+               name="preferenceCustomization"
+               value="plugin_customization.ini">
+         </property>
+      </product>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="com.eco.bio7.preferences.Bio7PreferencePage"
+            id="com.eco.bio7.preferences.Bio7PreferencePage"
+            name="Preferences Bio7"/>
+      <page
+            category="com.eco.bio7.preferences.Bio7PreferencePage"
+            class="com.eco.bio7.preferences.RServePrefs"
+            id="com.eco.bio7.R"
+            name="Preferences R"/>
+      <page
+            category="com.eco.bio7.preferences.Bio7PreferencePage"
+            class="com.eco.bio7.preferences.Bio7PaintPreferences"
+            id="com.eco.bio7.PreferencesPanels"
+            name="Preferences Custom">
+      </page>
+      <page
+            category="com.eco.bio7.R"
+            class="com.eco.bio7.preferences.PreferencePageShell"
+            id="com.eco.bio7.native"
+            name="Preferences Native">
+      </page>
+      <page
+            category="com.eco.bio7.R"
+            class="com.eco.bio7.preferences.RPackagesPreferencePage"
+            id="com.eco.bio7.rpackages"
+            name="Preferences R Build Tools">
+      </page>
+      <page
+            category="com.eco.bio7.R"
+            class="com.eco.bio7.preferences.RServeRemotePreferences"
+            id="com.eco.bio7.rserve.remote"
+            name="Preferences Rserve Remote">
+      </page>
+      <page
+            category="com.eco.bio7.R"
+            class="com.eco.bio7.preferences.RServePlotPrefs"
+            id="com.eco.bio7.RServePlot"
+            name="Preferences RServe Plots">
+      </page>
+      <page
+            category="com.eco.bio7.R"
+            class="com.eco.bio7.preferences.RPrefDebug"
+            id="com.eco.bio7.debug"
+            name="Preferences R Debug">
+      </page>
+      <page
+            category="com.eco.bio7.R"
+            class="com.eco.bio7.preferences.BrowserPreferences"
+            id="com.eco.bio7.browser.preferences"
+            name="Preferences Browser">
+      </page>
+      <page
+            category="com.eco.bio7.R"
+            class="com.eco.bio7.preferences.LatexPreferences"
+            id="com.eco.bio7.latex.preferences"
+            name="Preferences LaTeX">
+      </page>
+      <page
+            category="prefpython"
+            class="com.eco.bio7.preferences.Python"
+            id="com.eco.bio7.python"
+            name="Preferences Python">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.ui.viewActions">
+         
+   </extension>
+   <extension
+         point="org.eclipse.ui.intro">
+      <intro
+            class="org.eclipse.ui.intro.config.CustomizableIntroPart"
+            id="com.eco.bio7.introID">
+      </intro>
+      <introProductBinding
+            introId="com.eco.bio7.introID"
+            productId="com.eco.bio7.product">
+      </introProductBinding>
+      <intro
+            class="org.eclipse.ui.intro.config.CustomizableIntroPart"
+            id="com.eco.bio7.intro">
+      </intro>
+      <introProductBinding
+            introId="com.eco.bio7.intro"
+            productId="com.eco.bio7.product">
+      </introProductBinding>
+   </extension>
+   <extension
+         point="org.eclipse.ui.intro.config">
+      <config
+            content="introContent.xml"
+            id="com.eco.bio7.configId"
+            introId="com.eco.bio7.introID">
+         <presentation home-page-id="root">
+            <implementation
+                  kind="html"
+                  os="win32,linux,macosx"/>
+         </presentation>
+      </config>
+      <config
+            content="introContent.xml"
+            id="com.eco.bio7.introConfigId"
+            introId="com.eco.bio7.intro">
+         <presentation
+               home-page-id="root">
+            <implementation
+                  kind="html"
+                  os="win32,linux,macosx"
+                  style="content/shared.css">
+            </implementation>
+         </presentation>
+      </config>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.activities">
+      <activity
+            id="activity.eclipseUpdateManager"
+            name="Eclipse Update Manager"/>
+     <activityPatternBinding
+          
+     activityId="activity.eclipseUpdateManager"
+
+         pattern="org\.eclipse\.ui\.editors/org\.eclipse\.ui\.edit\.text\.gotoLastEditPosition"/>
+       
+       <activityPatternBinding
+          
+     activityId="activity.eclipseUpdateManager"
+
+         pattern="org\.eclipse\.ui\.editors/org\.eclipse\.ui\.edit\.text\.gotoNextAnnotation"/>
+      <activityPatternBinding
+          
+     activityId="activity.eclipseUpdateManager"
+
+         pattern="org\.eclipse\.ui\.editors/org\.eclipse\.ui\.edit\.text\.gotoPreviousAnnotation"/>
+     <activityPatternBinding
+               activityId="activity.eclipseUpdateManager"
+               pattern="org\.eclipse\.ui\.ide/selectWorkingSets"/>
+      <!-- for RCP 3.3
+      
+         <activityPatternBinding
+               activityId="activity.eclipseUpdateManager"
+               pattern="org\.eclipse\.ui\.ide/removeFromWorkingSet"/>
+         
+         <activityPatternBinding
+               activityId="activity.eclipseUpdateManager"
+               pattern="org\.eclipse\.ui\.ide/addToWorkingSet"/> -->    
+         
+           
+   </extension>
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <wizard
+      
+            category="com.eco.bio7.bio7beanshell"
+            class="com.eco.bio7.wizards.BeanShellNewWizard"
+            icon="icons/editor/groovy.png"
+            id="com.eco.bio7.wizards.SampleNewWizard"
+            name="BeanShell Script"
+            project="false"/>
+      <wizard
+            category="com.eco.bio7.RCategory"
+            class="com.eco.bio7.wizards.RScriptNewWizard"
+            icon="icons/editor/rfile.png"
+            id="com.eco.bio7.wizard1"
+            name="R Script"
+            project="false"/>
+      <category
+            id="com.eco.bio7.bio7"
+            name="Flow"/>
+ 
+      <wizard
+            category="com.eco.bio7.bio7java"
+            class="com.eco.bio7.wizards.JavaBio7ClassPluginWizard"
+            icon="icons/editor/java.png"
+            id="com.eco.bio7.wizardJavaModelClass"
+            name="Bio7 Java (Class)"
+            project="false">
+      </wizard>
+      <wizard
+            category="com.eco.bio7.bio7java"
+            class="com.eco.bio7.wizards.JavaClassJoglPluginWizard"
+            icon="icons/editor/java.png"
+            id="com.eco.bio7.wizardJavaModelClass"
+            name="Bio7 Java OpenGL (Class)"
+            project="false">
+      </wizard>
+      <wizard
+            category="com.eco.bio7.bio7groovy"
+            class="com.eco.bio7.wizards.GroovyNewWizard"
+            icon="icons/editor/groovy.png"
+            id="com.eco.bio7.groovyScript"
+            name="Groovy Script"
+            project="false">
+      </wizard>
+      <wizard
+            category="com.eco.bio7.ImageJ"
+            class="com.eco.bio7.wizards.ImageJPluginWizard"
+            icon="icons/editor/java.png"
+            id="com.eco.bio7.wizardImageJPlugin"
+            name="ImageJ Plugin File"
+            project="false">
+      </wizard>
+      <category
+            id="com.eco.bio7.ImageJ"
+            name="ImageJ">
+      </category>
+      <wizard
+            category="com.eco.bio7.bio7java"
+            class="com.eco.bio7.wizards.JavaClassPluginWizard"
+            icon="icons/editor/java.png"
+            id="com.eco.bio7.wizardJavaclass"
+            name="Java Class File"
+            project="false">
+      </wizard>
+      <wizard
+            category="com.eco.bio7.ImageJ"
+            class="com.eco.bio7.wizards.ImageJFilterWizard"
+            icon="icons/editor/java.png"
+            id="com.eco.bio7.wizardImageJFilter"
+            name="ImageJ Filter File"
+            project="false">
+      </wizard>
+      <category
+            id="com.eco.bio7.RCategory"
+            name="R">
+      </category>
+      <wizard
+            category="com.eco.bio7.RCategory"
+            class="com.eco.bio7.wizards.SweavePluginWizard"
+            icon="icons/editor/sweavefile.png"
+            id="com.eco.bio7.sweaveWizard"
+            name="Sweave"
+            project="false">
+      </wizard>
+      <wizard
+            category="com.eco.bio7.ImageJ"
+            class="com.eco.bio7.wizards.ImageJPluginConfigWizard"
+            icon="icons/editor/java.png"
+            id="com.eco.bio7.wizardImageJPluginConfig"
+            name="ImageJ Configuration File"
+            project="false">
+      </wizard>
+      <category
+            id="com.eco.bio7.web"
+            name="Web">
+      </category>
+      <wizard
+            category="com.eco.bio7.bio7java"
+            class="com.eco.bio7.wizards.JavaBio7ClassPluginWizard"
+            icon="icons/editor/java.png"
+            id="com.eco.bio7.wizardJavaManifest"
+            name="Java Manifest File"
+            project="false">
+      </wizard>
+      <wizard
+            category="com.eco.bio7.bio7groovy"
+            class="com.eco.bio7.wizards.GroovyFXWizard"
+            icon="icons/editor/groovy.png"
+            id="com.eco.bio7.groovyfx"
+            name="Groovy FX Template"
+            project="false">
+      </wizard>
+      <wizard
+            category="com.eco.bio7.bio7java"
+            class="com.eco.bio7.wizards.JavaFXBio7ClassWizard"
+            icon="icons/editor/java.png"
+            id="com.eco.bio7.javafxclass"
+            name="Java FX Template (Class)"
+            project="false">
+      </wizard>
+      <wizard
+            category="com.eco.bio7.web"
+            class="com.eco.bio7.wizards.HtmlPluginWizard"
+            icon="icons/editor/htmlfile.png"
+            id="com.eco.bio7.html"
+            name="Html"
+            project="false">
+      </wizard>
+      <wizard
+            category="com.eco.bio7.javascript"
+            class="com.eco.bio7.wizards.JavaScriptPluginWizard"
+            icon="icons/editor/javascriptfile.png"
+            id="com.eco.bio7.javascript"
+            name="JavaScript"
+            project="false">
+      </wizard>
+      <wizard
+            category="com.eco.bio7.web"
+            class="com.eco.bio7.wizards.HtmlJavaScriptWizard"
+            icon="icons/editor/htmlfile.png"
+            id="com.eco.bio7.htmljavascript"
+            name="Html+JavaScript"
+            project="false">
+      </wizard>
+      <wizard
+            category="com.eco.bio7.web"
+            class="com.eco.bio7.wizards.HtmlPanelPluginWizard"
+            icon="icons/editor/htmlfile.png"
+            id="com.eco.bio7.htmlcanvas"
+            name="Html 2D Canvas"
+            project="false">
+      </wizard>
+      <wizard
+            category="com.eco.bio7.web"
+            class="com.eco.bio7.wizards.HtmlWebGLPluginWizard"
+            icon="icons/editor/htmlfile.png"
+            id="com.eco.bio7.htmlwebgl"
+            name="Html WebGL"
+            project="false">
+      </wizard>
+      <category
+            id="com.eco.bio7.bio7java"
+            name="Java Bio7 Files">
+      </category>
+      <wizard
+            category="com.eco.bio7.bio7jython"
+            class="com.eco.bio7.wizards.JythonNewWizard"
+            icon="icons/editor/python.png"
+            id="com.eco.bio7.jythonScript"
+            name="Python/Jython Script"
+            project="false">
+      </wizard>
+      <wizard
+            category="com.eco.bio7.RCategory"
+            class="com.eco.bio7.wizards.KnitrHtmlPluginWizard"
+            icon="icons/editor/knitr.png"
+            id="com.eco.bio7.knitrHtmlWizard"
+            name="knitr Html"
+            project="false">
+      </wizard>
+      <wizard
+            category="com.eco.bio7.RCategory"
+            class="com.eco.bio7.wizards.KnitrLatexPluginWizard"
+            icon="icons/editor/knitr.png"
+            id="com.eco.bio7.knitrLatexWizard"
+            name="knitr Latex"
+            project="false">
+      </wizard>
+      <wizard
+            category="com.eco.bio7.bio7javaproject"
+            class="com.eco.bio7.wizards.java.JavaFXBio7ClassWizard"
+            icon="icons/maintoolbar/create_project_file_java.png"
+            id="com.eco.bio7.javafxclassjdt"
+            name="Bio7 Java Project (JavaFX Model Template)"
+            project="true">
+      </wizard>
+      <wizard
+            category="com.eco.bio7.bio7javaproject"
+            class="com.eco.bio7.wizards.java.Bio7JDTProjectPluginWizard"
+            icon="icons/maintoolbar/create_project_file_java.png"
+            id="com.eco.bio7.wizardJavaJdtEmtpy"
+            name="Bio7 Java Project (Empty)"
+            project="true">
+      </wizard>
+      <wizard
+            category="com.eco.bio7.bio7javaproject"
+            class="com.eco.bio7.wizards.java.JavaBio7ModelClassPluginWizard"
+            icon="icons/maintoolbar/create_project_file_java.png"
+            id="com.eco.bio7.wizardJavaJdtBio7Model"
+            name="Bio7 Java  Project (Model Template)"
+            project="true">
+      </wizard>
+      <wizard
+            category="com.eco.bio7.bio7javaproject"
+            class="com.eco.bio7.wizards.java.JavaClassJoglPluginWizard"
+            icon="icons/maintoolbar/create_project_file_java.png"
+            id="com.eco.bio7.wizardJavaJdtBio7ModelJogl"
+            name="Bio7 Java Project (OpenGL Model Template)"
+            project="true">
+      </wizard>
+      <wizard
+            category="com.eco.bio7.bio7javaproject"
+            class="com.eco.bio7.wizards.java.JavaWindowBuilderBio7ClassWizard"
+            icon="icons/maintoolbar/create_project_file_java.png"
+            id="com.eco.bio7.javafxclassjdtwindowbuilder"
+            name="Bio7 Java Project (WindowBuilder Template)"
+            project="true">
+      </wizard>
+      <category
+            id="com.eco.bio7.bio7javaproject"
+            name="Java Bio7 Projects">
+      </category>
+      <category
+            id="com.eco.bio7.bio7groovy"
+            name="Groovy">
+      </category>
+      <category
+            id="com.eco.bio7.bio7beanshell"
+            name="BeanShell">
+      </category>
+      <category
+            id="com.eco.bio7.bio7jython"
+            name="Jython/Python">
+      </category>
+      <wizard
+            category="com.eco.bio7.RCategory"
+            class="com.eco.bio7.wizards.RMarkdownPluginWizard"
+            icon="icons/editor/rmarkdownfile.png"
+            id="com.eco.bio7.markdown.Wizard"
+            name="R Markdown"
+            project="false">
+      </wizard>
+      <category
+            id="com.eco.bio7.javascript"
+            name="JavaScript">
+      </category>
+      <wizard
+            category="com.eco.bio7.RCategory"
+            class="com.eco.bio7.wizards.RShinyScriptWizard"
+            icon="icons/editor/rfile.png"
+            id="com.eco.bio7.shiny.wizard"
+            name="Shiny Multiple Files Web App"
+            project="false">
+      </wizard>
+      <wizard
+            category="com.eco.bio7.RCategory"
+            class="com.eco.bio7.wizards.RShinySingleScriptWizard"
+            icon="icons/editor/rfile.png"
+            id="com.eco.bio7.shiny.single.wizard"
+            name="Shiny Single File Web App"
+            project="false">
+      </wizard>
+      <category
+            id="com.eco.bio7.reproducible"
+            name="Reproducible Project">
+      </category>
+      <wizard
+            category="com.eco.bio7.reproducible"
+            class="com.eco.bio7.wizards.java.Bio7ReproducibleRProjectWizard"
+            icon="icons/maintoolbar/create_project_file.png"
+            id="com.eco.bio7.wizard.reproducible"
+            name="Reproducible R Project"
+            project="true">
+      </wizard>
+      <wizard
+            category="com.eco.bio7.RCategory"
+            class="com.eco.bio7.wizards.NewRProjectWizardAndFile"
+            icon="icons/maintoolbar/create_project_file.png"
+            id="com.eco.bio7.wizard.new.r.project.file"
+            name="Create New Projekt With R file"
+            project="true">
+      </wizard>
+      <wizard
+            category="com.eco.bio7.bio7javaproject"
+            class="com.eco.bio7.wizards.java.JavaClassImagejPluginWizard"
+            icon="icons/maintoolbar/create_project_file_java.png"
+            id="com.eco.bio7.wizardJavaJdtBio7ImageJPlugin"
+            name="Bio7 Java ImageJ Plugin Project"
+            project="true">
+      </wizard>
+      
+   </extension>
+   <extension
+         point="org.eclipse.ui.actionSetPartAssociations">
+   </extension>
+   <extension point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            adaptable="false"
+            id="CompileNavigatorFile"
+            nameFilter="*"
+            objectClass="org.eclipse.core.resources.IFile">
+         <action
+               class="com.eco.bio7.popup.actions.AddToJarAction"
+               id="com.eco.bio7.jaraction"
+               label="Add Files To JAR"
+               menubarPath="additions.jar"
+               tooltip="Creates a jar file from the selected files">
+         </action>
+         <menu
+               id="com.eco.bio7.menu4"
+               label="jar"
+               path="additions.jar">
+         </menu>
+      </objectContribution>
+      <objectContribution
+            adaptable="false"
+            id="CompileAndRun"
+            nameFilter="*.java"
+            objectClass="org.eclipse.core.resources.IFile">
+         <action
+               class="com.eco.bio7.popup.actions.CompileImageJClass"
+               icon="icons/editor/java.png"
+               id="com.eco.bio7.compileImageJClass"
+               label="Compile Java To File"
+               menubarPath="additions.path">
+         </action>
+      </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="CompileGroovy"
+          nameFilter="*.groovy"
+          objectClass="org.eclipse.core.resources.IFile">
+       <action
+             class="com.eco.bio7.popup.actions.CompileGroovyAction"
+             icon="icons/editor/groovy.png"
+             id="com.eco.bio7.action1"
+             label="Compile Groovy"
+             menubarPath="additions.groovy"
+             tooltip="Compiles the Groovy script to a classfile">
+       </action>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="CompileDirectory"
+          nameFilter="*.java"
+          objectClass="org.eclipse.core.resources.IFile">
+       <action
+             class="com.eco.bio7.popup.actions.CompileAndLoadDirectory"
+             icon="icons/editor/java.png"
+             id="com.eco.bio7.action2"
+             label="Compile Java"
+             menubarPath="additions.path"
+             tooltip="Compiles and executes dynamically one or multiple Java files">
+       </action>
+    </objectContribution>
+    
+    <!--<objectContribution
+          adaptable="false"
+          id="Knitrtex"
+          nameFilter="*.Rtex"
+          objectClass="org.eclipse.core.resources.IFile">
+       <action
+             class="com.eco.bio7.popup.actions.KnitrAction"
+             icon="icons/editor/knitr.png"
+             id="com.eco.bio7.knitrtex"
+             label="Knitr"
+             menubarPath="additions.knitr">
+       </action>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="Knitrhtml"
+          nameFilter="*.Rhtml"
+          objectClass="org.eclipse.core.resources.IFile">
+       <action
+             class="com.eco.bio7.popup.actions.KnitrAction"
+             icon="icons/editor/knitr.png"
+             id="com.eco.bio7.knitrhtml"
+             label="Knitr"
+             menubarPath="additions.knitr">
+       </action>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="Knitrrmd"
+          nameFilter="*.Rmd"
+          objectClass="org.eclipse.core.resources.IFile">
+       <action
+             class="com.eco.bio7.popup.actions.KnitrAction"
+             icon="icons/editor/knitr.png"
+             id="com.eco.bio7.knitrrmd"
+             label="Knitr"
+             menubarPath="additions.knitr">
+       </action>
+    </objectContribution>-->
+   
+    <objectContribution
+          adaptable="false"
+          id="CreateRPackageSkeleton"
+          objectClass="org.eclipse.core.resources.IFile">
+       <action
+             class="com.eco.bio7.popup.actions.RPackageSkeleton"
+             id="com.eco.bio7.rpackageskeleton"
+             label="Create R Package Skeleton"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupRSkeleton"
+             tooltip="Creates a R package skeleton">
+       </action>
+       <menu
+         id="com.eco.bio7.RPackages.subMenu"
+         label="R Packages"
+         path="additions.R">
+      <separator name="groupR"/>
+      <separator
+            name="groupBuildR">
+      </separator>
+      <separator
+            name="groupRSkeleton">
+      </separator>
+      <separator
+            name="groupPdf">
+      </separator>
+      </menu>
+     <!--Here we set the  actions for a Folder popup selection -->
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="CheckBuildRPackage"
+          objectClass="org.eclipse.core.resources.IFolder">
+          <action
+             class="com.eco.bio7.popup.actions.StartShinyApp"
+             id="com.eco.bio7.startshinyapp"
+             label="Start Shiny App"
+             menubarPath="additions.shiny"
+             tooltip="Starts a Shiny App">
+       </action>
+       <action
+             class="com.eco.bio7.popup.actions.CheckRPackage"
+             id="com.eco.bio7.checkrpackage"
+             label="Check R Package"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupR"
+             tooltip="Checks a R package">
+       </action>
+       <action
+             class="com.eco.bio7.popup.actions.BuildRPackage"
+             id="com.eco.bio7.buildrpackage"
+             label="Build R Package"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupBuildR"
+             tooltip="Builds a R package">
+       </action>
+       <action
+             class="com.eco.bio7.popup.actions.BuildRPackageWindows"
+             id="com.eco.bio7.buildrpackagewindows"
+             label="Install R Package"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupInstallR"
+             tooltip="Builds a R package for Windows">
+       </action>
+       <action
+             class="com.eco.bio7.popup.actions.RBuildPdfFromRd"
+             id="com.eco.bio7.rdtopdf"
+             label="Build PDF From Rd"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupR"
+             tooltip="Builds *.pdf files from *.Rd files">
+       </action>
+      <action
+             class="com.eco.bio7.r.packages.ReleasePackageAction"
+             id="com.eco.bio7.devtools.release"
+             label="Release (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Release package">
+       </action>
+       <action
+             class="com.eco.bio7.r.packages.CheckManualPackageAction"
+             id="com.eco.bio7.devtools.check.manual"
+             label="Check Manuals (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Check all manuals">
+       </action>
+       <action
+             class="com.eco.bio7.r.packages.RunExamplesPackagesAction"
+             id="com.eco.bio7.devtools.run.examples"
+             label="Run Examples (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Run all examples">
+       </action>
+       <action
+             class="com.eco.bio7.r.packages.BuildWindowsPackageAction"
+             id="com.eco.bio7.devtools.check.windows"
+             label="Check Windows Release (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Check the package for Windows (Release)">
+       </action>
+     
+       <action
+             class="com.eco.bio7.r.packages.CheckPackageAction"
+             id="com.eco.bio7.devtools.check"
+             label="Check (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Check the packages">
+       </action>
+       <action
+             class="com.eco.bio7.r.packages.BuildPackageAction"
+             id="com.eco.bio7.devtools.build"
+             label="Build (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Build the packages">
+       </action>
+       <action
+             class="com.eco.bio7.r.packages.InstallPackageAction"
+             id="com.eco.bio7.devtools.install"
+             label="Install (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Install the packages">
+       </action>
+       
+       <action
+             class="com.eco.bio7.r.packages.TestPackagesAction"
+             id="com.eco.bio7.devtools.testall"
+             label="Test - Test the packages (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Test the packages">
+       </action>
+       <action
+             class="com.eco.bio7.r.packages.DocumentPackageAction"
+             id="com.eco.bio7.devtools.document"
+             label="Document - Update documentation, etc. (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Update documentation, etc.">
+       </action>
+       <action
+             class="com.eco.bio7.r.packages.LoadAllPackageAction"
+             id="com.eco.bio7.devtools.loadall"
+             label="Load All - Simulate installing and reloading (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Simulates installing and reloading of the package">
+       </action>
+       <action
+             class="com.eco.bio7.r.packages.SetupPackageAction"
+             id="com.eco.bio7.devtools.setup"
+             label="Create - Create a new R package project in the selected folder (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Create a package">
+       </action>
+       <menu
+             id="com.eco.bio7.RPackages.subMenu"
+             label="R Packages"
+             path="additions.R">
+          <separator
+                name="groupR">
+          </separator>
+          <separator
+                name="groupBuildR">
+          </separator>
+          <separator
+                name="groupRSkeleton">
+          </separator>
+          <groupMarker
+                name="groupInstallR">
+          </groupMarker>
+          <groupMarker
+                name="groupPdf">
+          </groupMarker>
+          <separator
+                name="groupDevtoolsSkeleton">
+          </separator>
+          <groupMarker
+                name="groupDevtools">
+          </groupMarker>
+       </menu>
+       
+       <!--Here we set the same actions again for a Project popup selection-->  
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="CheckBuildRPackage2"
+          objectClass="org.eclipse.core.resources.IProject">
+      <action
+             class="com.eco.bio7.popup.actions.StartShinyApp"
+             id="com.eco.bio7.startshinyapp"
+             label="Start Shiny App"
+             menubarPath="additions.shiny"
+             tooltip="Starts a Shiny App">
+       </action>
+       
+       <action
+             class="com.eco.bio7.popup.actions.CheckRPackage"
+             id="com.eco.bio7.checkrpackage"
+             label="Check R Package"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupR"
+             tooltip="Checks a R package">
+       </action>
+       <action
+             class="com.eco.bio7.popup.actions.BuildRPackage"
+             id="com.eco.bio7.buildrpackage"
+             label="Build R Package"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupBuildR"
+             tooltip="Builds a R package">
+       </action>
+       <action
+             class="com.eco.bio7.popup.actions.BuildRPackageWindows"
+             id="com.eco.bio7.buildrpackagewindows"
+             label="Install R Package"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupInstallR"
+             tooltip="Builds a R package for Windows">
+       </action>
+       <action
+             class="com.eco.bio7.popup.actions.RBuildPdfFromRd"
+             id="com.eco.bio7.rdtopdf"
+             label="Build PDF From Rd"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupR"
+             tooltip="Builds *.pdf files from *.Rd files">
+       </action>
+       <action
+             class="com.eco.bio7.r.packages.ReleasePackageAction"
+             id="com.eco.bio7.devtools.release"
+             label="Release (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Release package">
+       </action>
+       <action
+             class="com.eco.bio7.r.packages.CheckManualPackageAction"
+             id="com.eco.bio7.devtools.check.manual"
+             label="Check Manuals (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Check all manuals">
+       </action>
+       <action
+             class="com.eco.bio7.r.packages.RunExamplesPackagesAction"
+             id="com.eco.bio7.devtools.run.examples"
+             label="Run Examples (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Run all examples">
+       </action>
+       <action
+             class="com.eco.bio7.r.packages.BuildWindowsPackageAction"
+             id="com.eco.bio7.devtools.check.windows"
+             label="Check Windows Release (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Check the package for Windows (Release)">
+       </action>
+     
+       <action
+             class="com.eco.bio7.r.packages.CheckPackageAction"
+             id="com.eco.bio7.devtools.check"
+             label="Check (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Check the packages">
+       </action>
+       <action
+             class="com.eco.bio7.r.packages.BuildPackageAction"
+             id="com.eco.bio7.devtools.build"
+             label="Build (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Build the packages">
+       </action>
+       <action
+             class="com.eco.bio7.r.packages.InstallPackageAction"
+             id="com.eco.bio7.devtools.install"
+             label="Install (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Install the packages">
+       </action>
+       
+       <action
+             class="com.eco.bio7.r.packages.TestPackagesAction"
+             id="com.eco.bio7.devtools.testall"
+             label="Test - Test the packages (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Test the packages">
+       </action>
+       <action
+             class="com.eco.bio7.r.packages.DocumentPackageAction"
+             id="com.eco.bio7.devtools.document"
+             label="Document - Update documentation, etc. (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Update documentation, etc.">
+       </action>
+       <action
+             class="com.eco.bio7.r.packages.LoadAllPackageAction"
+             id="com.eco.bio7.devtools.loadall"
+             label="Load All - Simulate installing and reloading (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Simulates installing and reloading of the package">
+       </action>
+       <action
+             class="com.eco.bio7.r.packages.SetupPackageAction"
+             id="com.eco.bio7.devtools.setup"
+             label="Create - Create a new R package project in the selected folder (devtools)"
+             menubarPath="com.eco.bio7.RPackages.subMenu/groupDevtools"
+             tooltip="Create a package">
+       </action>
+       <menu
+             id="com.eco.bio7.RPackages.subMenu"
+             label="R Packages"
+             path="additions.R">
+          <separator
+                name="groupR">
+          </separator>
+          <separator
+                name="groupBuildR">
+          </separator>
+          <separator
+                name="groupRSkeleton">
+          </separator>
+          <groupMarker
+                name="groupInstallR">
+          </groupMarker>
+          <groupMarker
+                name="groupPdf">
+          </groupMarker>
+          <separator
+                name="groupDevtoolsSkeleton">
+          </separator>
+          <groupMarker
+                name="groupDevtools">
+          </groupMarker>
+          
+       </menu>
+       
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="RunClass"
+          nameFilter="*.class"
+          objectClass="org.eclipse.core.resources.IFile">
+       <action
+             class="com.eco.bio7.popup.actions.RunJavaClassFile"
+             icon="icons/editor/java.png"
+             id="com.eco.bio7.runclass"
+             label="Run Compiled Java Class"
+             menubarPath="additions.path">
+       </action>
+    </objectContribution>
+    <objectContribution
+            objectClass="org.eclipse.ui.IEditorInput"
+            nameFilter="*.R"
+            id="RContextMenu.contribution">
+         <menu
+               label="Format Source (formatR)"
+               path="additions"
+               id="REditorMenu.menu">
+            <separator
+                  name="group1">
+            </separator>
+         </menu>
+         <action
+               label="Format Source (formatR)"
+               class="com.eco.bio7.rbridge.reditor.RFormatAction"
+               menubarPath="REditorMenu.menu"
+               enablesFor="1"
+               id="RPopupMenu.newAction">
+         </action>
+      </objectContribution>
+      <objectContribution
+            objectClass="org.eclipse.ui.IEditorInput"
+            nameFilter="*.R"
+            id="RContextMenu.contribution">
+         <menu
+               label="Profile Script Selection (profvis)"
+               path="additions"
+               id="REditorMenu.menu">
+            <separator
+                  name="group1">
+            </separator>
+         </menu>
+         <action
+               label="Profile Script Selection (profvis)"
+               class="com.eco.bio7.rbridge.actions.ProfileSelectionAction"
+               menubarPath="REditorMenu.menu"
+               enablesFor="1"
+               id="RPopupMenu.newAction">
+         </action>
+      </objectContribution>
+      <objectContribution
+            objectClass="org.eclipse.ui.IEditorInput"
+            nameFilter="*.R"
+            id="RContextMenu.contribution">
+         <menu
+               label="Profile Script (profvis)"
+               path="additions"
+               id="REditorMenu.menu">
+            <separator
+                  name="group1">
+            </separator>
+         </menu>
+         <action
+               label="Profile Script (profvis)"
+               class="com.eco.bio7.rbridge.actions.ProfileScriptAction"
+               menubarPath="REditorMenu.menu"
+               enablesFor="1"
+               id="RPopupMenu.newAction">
+         </action>
+      </objectContribution>
+    <viewerContribution
+          id="REditorDebug.rulerActions"
+          targetID="com.eco.bio7.reditors.TemplateEditor.RulerContext">
+       <action
+             class="com.eco.bio7.rbridge.debug.DeleteBreakpointAction"
+             id="DeleteBreakpointAction"
+             label="Delete All Breakpoints"
+             menubarPath="debug">
+       </action>
+       <action
+             class="com.eco.bio7.rbridge.debug.DeleteSelBreakpointAction"
+             id="DeleteSelectedBreakpointAction"
+             label="Delete Selected Breakpoint"
+             menubarPath="debug">
+       </action>
+       <action
+             class="com.eco.bio7.rbridge.debug.EditSelBreakpointAction"
+             id="EditConditionalBreakpointAction"
+             label="Edit Conditional Breakpoint"
+             menubarPath="debug">
+       </action>
+       <action
+             class="com.eco.bio7.rbridge.debug.ToggleDebugConditionalBreakpointAction"
+             id="AddConditionalBreakpointAction"
+             label="Add Conditional Breakpoint"
+             menubarPath="debug">
+       </action>
+       <action
+             class="com.eco.bio7.rbridge.debug.ToggleDebugBreakpointAction"
+             id="AddBreakpointAction"
+             label="Add Breakpoint"
+             menubarPath="debug">
+       </action>
+    </viewerContribution>
+    <objectContribution
+          adaptable="false"
+          id="RecalculateClasspath"
+          objectClass="org.eclipse.core.resources.IResource">
+       <action
+             class="com.eco.bio7.popup.actions.RecalculateClasspath"
+             icon="icons/editor/java.png"
+             id="com.eco.bio7.recalculateClasspath"
+             label="Fix Project Classpath"
+             menubarPath="additions.path">
+       </action>
+    </objectContribution>
+    <!--<objectContribution
+          adaptable="false"
+          id="RMarkdown"
+          nameFilter="*.Rmd"
+          objectClass="org.eclipse.core.resources.IFile">
+       <action
+             class="com.eco.bio7.popup.actions.RMarkdownAction"
+             icon="icons/editor/rmarkdownfile.png"
+             id="com.eco.bio7.rmarkdown"
+             label="R Markdown"
+             menubarPath="additions.rmarkdown">
+       </action>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="RMarkdownHtml"
+          nameFilter="*.R"
+          objectClass="org.eclipse.core.resources.IFile">
+       <action
+             class="com.eco.bio7.popup.actions.RMarkdownAction"
+             icon="icons/editor/rmarkdownfile.png"
+             id="com.eco.bio7.rmarkdown"
+             label="R Markdown"
+             menubarPath="additions.rmarkdown">
+       </action>
+    </objectContribution>-->
+    <objectContribution
+          adaptable="false"
+          id="SetRWorkingDirFolder"
+          objectClass="org.eclipse.core.resources.IFolder">
+       <action
+             class="com.eco.bio7.popup.actions.SetWdRAction"
+             id="com.eco.bio7.setwdr"
+             label="Set Working Directory (R)"
+             menubarPath="additions.path">
+       </action>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="SetRWorkingDirProject"
+          objectClass="org.eclipse.core.resources.IProject">
+       <action
+             class="com.eco.bio7.popup.actions.SetWdRAction"
+             id="com.eco.bio7.setwdr"
+             label="Set Working Directory (R)"
+             menubarPath="additions.path">
+       </action>
+    </objectContribution>
+  </extension>
+  <extension
+        id="bshextension"
+        name="bsh"
+        point="org.eclipse.ui.perspectiveExtensions">
+     <perspectiveExtension targetID="org.eclipse.ui.resourcePerspective">
+        <view
+              closeable="true"
+              id="com.eco.bio7.bsh"
+              moveable="true"
+              ratio="0.25"
+              relationship="stack"
+              relative="org.eclipse.ui.views.Console"
+              showTitle="true"
+              standalone="false"
+              visible="true"/>
+     </perspectiveExtension>
+  </extension>
+  <extension
+        point="org.eclipse.help.toc">
+     <toc
+           file="toc.xml"
+           primary="true">
+     </toc>
+  </extension>
+  
+  
+   <extension
+      id="RPlot"
+      point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.problemmarker"/>
+      <super type="com.eco.bio7.rplot"/>
+      <attribute name="RPlot" />
+      <persistent value="false" />
+   </extension>
+   <extension
+         point="org.eclipse.ui.console.consolePageParticipants">
+      <consolePageParticipant
+            class="com.eco.bio7.console.ConsolePageParticipant"
+            id="com.eco.bio7.console.consolePageParticipant">
+         <enablement>
+         <instanceof value="com.eco.bio7.console.Console" />
+         </enablement>
+      </consolePageParticipant>
+   </extension>
+   <extension
+     point="org.eclipse.ui.menus">
+  <menuContribution
+        locationURI="toolbar:org.eclipse.ui.main.toolbar?after=mainbio7">
+     <toolbar
+           id="com.eco.bio7.reditor.rexecuteraction"
+           label="Editor Actions">
+        <command
+              commandId="com.eco.bio7.execute_r_script2"
+              disabledIcon="icons/editor/rinterpret.png"
+              icon="icons/editor/rinterpret.png"
+              id="bio7toolbar.executer"
+              label="R"
+              style="push">
+           <visibleWhen>
+                     <with
+                         variable="activePartId">
+                          <equals
+                             value="com.eco.bio7.reditors.TemplateEditor">
+                          </equals>
+                     </with>
+          </visibleWhen>
+        </command>
+        <command
+              commandId="com.eco.bio7.compilejavaaction"
+              disabledIcon="icons/editor/javacompile.png"
+              icon="icons/editor/javacompile.png"
+              id="bio7toolbar.compilejava"
+              label="Compile Java"
+              style="push">
+           <visibleWhen>
+              <with
+                    variable="activePartId">
+                 <equals
+                       value="org.eclipse.jdt.ui.CompilationUnitEditor">
+                 </equals>
+              </with>
+           </visibleWhen>
+        </command>
+        <command
+              commandId="com.eco.bio7.executeflowaction"
+              disabledIcon="icons/editor/flowexecute.png"
+              icon="icons/editor/flowexecute.png"
+              id="bio7toolbar.executeflow"
+              label="Flow Action"
+              style="push">
+           <visibleWhen>
+              <with
+                    variable="activePartId">
+                 <equals
+                       value="com.eco.bio7.floweditor.ShapesEditor">
+                 </equals>
+              </with>
+           </visibleWhen>
+        </command>
+        <command
+              commandId="com.eco.bio7.debugflowaction"
+              disabledIcon="icons/editor/flowdebug.png"
+              icon="icons/editor/flowdebug.png"
+              id="bio7toolbar.debugflow"
+              label="Debug Flow Action"
+              style="push">
+           <visibleWhen>
+              <with
+                    variable="activePartId">
+                 <equals
+                       value="com.eco.bio7.floweditor.ShapesEditor">
+                 </equals>
+              </with>
+           </visibleWhen>
+        </command>
+        <command
+              commandId="com.eco.bio7.interpretgroovybeanshellaction"
+              disabledIcon="icons/editor/groovyinterpret.png"
+              icon="icons/editor/groovyinterpret.png"
+              id="bio7toolbar.interpretgroovybeanshell"
+              label="Interpret Groovy/BeanShell"
+              style="push">
+           <visibleWhen>
+              <with
+                    variable="activePartId">
+                 <or>
+                    <equals
+                          value="com.eco.bio7.editors.TemplateEditor">
+                    </equals>
+                    <equals
+                          value="org.codehaus.groovy.eclipse.editor.GroovyEditor">
+                    </equals>
+                 </or>
+              </with>
+           </visibleWhen>
+        </command>
+        <command
+              commandId="com.eco.bio7.interpretpythonaction"
+              disabledIcon="icons/editor/pythoninterpret.png"
+              icon="icons/editor/pythoninterpret.png"
+              id="bio7toolbar.interpretpython"
+              label="Interpret Python"
+              style="push">
+           <visibleWhen>
+              <with
+                    variable="activePartId">
+                 <or>
+                    <equals
+                          value="com.eco.bio7.pythoneditors.PythonEditor">
+                    </equals>
+                    <equals
+                          value="org.python.pydev.editor.PythonEditor">
+                    </equals>
+                 </or>
+              </with>
+           </visibleWhen>
+        </command>
+        <command
+              commandId="com.eco.bio7.browser.knitrAction"
+              disabledIcon="icons/editor/knitraction.png"
+              icon="icons/editor/knitraction.png"
+              id="bio7toolbar.executer"
+              label="Knitr"
+              style="push">
+           <visibleWhen>
+              <with
+                    variable="activePartId">
+                 <or>
+                    <equals
+                          value="com.eco.bio7.browser.guieditor">
+                    </equals>
+                    
+                 </or>
+              </with>
+           </visibleWhen>
+        </command>
+        <command
+              commandId="com.eco.bio7.RMarkdownAction"
+              disabledIcon="icons/editor/rmarkdownaction.png"
+              icon="icons/editor/rmarkdownaction.png"
+              id="bio7toolbar.executer"
+              label="Markdown"
+              style="push">
+           <visibleWhen>
+              <with
+                    variable="activePartId">
+                 <or>
+                    <equals
+                          value="com.eco.bio7.markdownedit">
+                    </equals>
+                    <equals
+                          value="winterwell.markdown.editors.MarkdownEditor">
+                    </equals>
+                 </or>
+              </with>
+           </visibleWhen>
+        </command>
+        <command
+              commandId="com.eco.bio7.interpretjavascriptaction"
+              disabledIcon="icons/editor/javascriptinterpret.png"
+              icon="icons/editor/javascriptinterpret.png"
+              id="bio7toolbar.interpretjavascript"
+              label="Interpret JavaScript"
+              style="push">
+           <visibleWhen>
+              <with
+                    variable="activePartId">
+                 <or>
+                    <equals
+                          value="org.eclipse.ui.DefaultTextEditor">
+                    </equals>
+                    <equals
+                          value="org.eclipse.wst.jsdt.ui.CompilationUnitEditor">
+                    </equals>
+                 </or>
+              </with>
+           </visibleWhen>
+        </command>
+        <command
+              commandId="com.eco.bio7.browser.knitrAction"
+              disabledIcon="icons/editor/texfile.png"
+              icon="icons/editor/texfile.png"
+              id="bio7toolbar.executer"
+              label="LaTeX"
+              style="push">
+           <visibleWhen>
+              <with
+                    variable="activePartId">
+                 <or>
+                    
+                    <equals
+                          value="net.sourceforge.texlipse.TexEditor">
+                    </equals>
+                 </or>
+              </with>
+           </visibleWhen>
+        </command>
+     </toolbar>
+  </menuContribution>
+  <menuContribution locationURI="menu:org.eclipse.ui.main.menu?after=edit">
+        <menu label="Search"
+              mnemonic="%searchMenu.mnemonic"
+              id="org.eclipse.search.menu">
+           <separator name="internalDialogGroup" visible="false" />
+           <separator name="dialogGroup" visible="false" />
+           <separator name="fileSearchContextMenuActionsGroup"
+                      visible="true" />
+           <separator name="contextMenuActionsGroup" visible="true" />
+           <separator name="occurencesActionsGroup" visible="true" />
+           <separator name="extraSearchGroup" visible="true" />
+        </menu>
+     </menuContribution>
+  <menuContribution
+        locationURI="menu:org.eclipse.ui.main.menu?after=edit">
+     <menu
+           id="org.eclipse.ui.run"
+           label="Run"
+           mnemonic="%searchMenu.mnemonic">
+        <separator
+              name="internalDialogGroup"
+              visible="false">
+        </separator>
+        <separator
+              name="dialogGroup"
+              visible="false">
+        </separator>
+        <separator
+              name="fileSearchContextMenuActionsGroup"
+              visible="true">
+        </separator>
+        <separator
+              name="contextMenuActionsGroup"
+              visible="true">
+        </separator>
+        <separator
+              name="occurencesActionsGroup"
+              visible="true">
+        </separator>
+        <separator
+              name="extraSearchGroup"
+              visible="true">
+        </separator>
+     </menu>
+  </menuContribution>
+</extension>
+<extension
+ point="org.eclipse.ui.perspectiveExtensions">
+    <perspectiveExtension
+     targetID="com.eco.bio7.bio7resource">
+         <hiddenMenuItem id="org.eclipse.ui.run"></hiddenMenuItem>
+         <hiddenMenuItem id="navigate"></hiddenMenuItem>
+     </perspectiveExtension>
+ 
+</extension>
+<extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="com.eco.bio7.editors.PdfEditor"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            default="true"
+            extensions="pdf"
+            icon="icons/editor/pdf.png"
+            id="com.eco.bio7.editors.pdf.editor"
+            name="Pdf Editor"
+            symbolicFontName="com.eco.bio7.pdf.editor">
+      </editor>
+   </extension>
+   
+  
+</plugin>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="com.eco.bio7.markdownedit.feature"
+      label="Feature"
+      version="2.5.0.qualifier">
+
+   <description url="http://bio7.org">
+      [Enter Feature Description here.]
+   </description>
+
+   <copyright url="http://bio7.org">
+      [Enter Copyright Description here.]
+   </copyright>
+
+   <license url="http://bio7.org">
+      [Enter License Description here.]
+   </license>
+
+   <requires>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.jface.text"/>
+      <import plugin="org.eclipse.ui.editors"/>
+      <import plugin="org.eclipse.text"/>
+      <import plugin="org.eclipse.ui.workbench.texteditor"/>
+      <import plugin="com.eco.bio7.redit" version="2.5.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.ui.views"/>
+   </requires>
+
+   <plugin
+         id="com.eco.bio7.markdownedit"
+         download-size="0"
+         install-size="0"
+         version="2.5.0.qualifier"
+         unpack="false"/>
+
+</feature>

@@ -1,0 +1,103 @@
+<!--
+/*******************************************************************************
+ * Copyright (c) 2004 Elias Volanakis.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Elias Volanakis - initial contents
+ *    IBM Corporation
+ *******************************************************************************/
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+</head>
+<body bgcolor="white">
+<p>
+Implementation of the Controller.
+<p>In GEF EditParts play the role of the Controllers.</p>
+<p>
+Each model element shown in the editor has a corresponding EditPart.
+An EditPart maps a model element to a graphical representation (<tt>IFigure</tt> from 
+Draw2D) and provides a number of edit policies, that determine how this model element
+can be modified.
+</p>
+<p>
+The Shapes-Example uses three kinds of EditParts:
+</p>
+<ul>
+<li>Subclasses of <tt>AbstractGraphicalEditPart</tt> for regular model elements
+(EllipticalShape, RectangularShape, ShapesDiagram).</li>
+<li>A subclass of <tt>AbstractConnectionEditPart</tt> for the Connection model element.</li>
+<li>Subclasses of <tt>AbstractTreeEditPart</tt> for the EditParts used in the outline view.</li>
+</ul>
+<p>
+Subclasses of <tt>EditPartFactory</tt> are responsible for mapping model elements to 
+EditParts.
+</p>
+<h2><b>How are new model elements created?</b></h2>
+<p>
+To create a new model elements several classes of your application work together:
+<ol>
+<li>
+Uppon a mouse-click, the selected tool in the palette 
+(see <tt>ShapesEditorPaletteFactory#createComponentsGroup()</tt>)
+issues a request to the EditPart (for example a <tt>CreateRequest</tt>) under the 
+mouse pointer.
+</li>
+<li>
+The EditPart might process the request directly or forward the request to
+an EditPolicy. The request is processed  and if the preconditions are
+met, it is answered by a command (for example a <tt>ShapeCreateCommand</tt>), otherwise
+ <tt>null</tt> is returned (for an example see <tt>getCreateCommand(CreateRequest)
+</tt> in <tt>DiagramEditPart.ShapesXYLayoutEditPolicy</tt>).
+</li>
+<li>
+If the command can execute (depending on the return value of the <tt>canExecute()</tt> method),
+the execute() method will be called, which is responsible for adding a new model element 
+instance into the model. As you can observe in <tt>ShapeCreateCommand</tt>, in our case there is
+no need to instantiate a new model element directly. This has already been done by the
+Factory associated with selected tool (e.g. the <tt>CombinedTemplateSelectionEntry</tt>, 
+see code snippet 1). Therefore we can just retrieve the new instance from the creation request and
+put in into the model (see code snippet 2).
+</li>
+<li>When the Shape is added into the model (redo() method in snippet 2), a
+CHILD_ADDED_PROP property change event is fired by the <tt>ShapesDiagram</tt> 
+instance (<tt>parent</tt> field in snippet 2). This property change event, will cause
+the DiagramEditPart to refresh its children (see 
+<tt>DiagramEditPart#propertyChange(PropertyChangeEvent)</tt>) and thus the new
+shape will appear in the editor.
+</ol>
+<tt>
+// snippet 1, taken from ShapesEditorPaletteFactory#createToolsGroup()<br>
+CombinedTemplateCreationEntry component = new CombinedTemplateCreationEntry(<br>
+&nbsp;&nbsp; "Ellipse",<br>
+&nbsp;&nbsp; "Create an elliptical shape",<br> 
+&nbsp;&nbsp; EllipticalShape.class,<br>
+&nbsp;&nbsp; new SimpleFactory(EllipticalShape.class),  // <-- responsible for creating a new instance<br>
+&nbsp;&nbsp; ImageDescriptor.createFromFile(ShapesPlugin.class, "icons/ellipse16.gif"),<br> 
+&nbsp;&nbsp; ImageDescriptor.createFromFile(ShapesPlugin.class, "icons/ellipse24.gif"));
+</tt>
+<p>&nbsp;</p>
+<tt>
+// snippet 2, taken from ShapeCreateCommand<br>
+public void execute() {<br>
+&nbsp;&nbsp; newShape = (Shape) request.getNewObject();<br>
+&nbsp;&nbsp; newShape.setSize(request.getSize()); // might be null!<br>
+&nbsp;&nbsp; newShape.setLocation(request.getLocation());<br>
+&nbsp;&nbsp; redo();<br>
+}<br>
+</tt>
+<tt>
+public void redo() {<br>
+&nbsp;&nbsp; childAdded = parent.addChild(newShape);<br>
+}<br>
+</tt>
+<h2>More...</h2>
+<p>For detailed information on EditParts, EditPolicies, Request and many other classes
+mentioned here, please consult the GEF API-Reference.</p>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="com.eco.bio7.editors.python.PythonEditor"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            extensions="py"
+            icon="icons/python.png"
+            id="com.eco.bio7.pythoneditors.PythonEditor"
+            name="Python Editor"
+            symbolicFontName="com.eco.bio7.pythoneditor.textfont">
+      </editor>
+   </extension>
+   <extension
+         id="ExampleJavaDocumentSetupParticipant"
+         name="%documentSetupParticipantName"
+         point="org.eclipse.core.filebuffers.documentSetup">
+      <participant
+            extensions="py"
+            class="com.eco.bio7.pythoneditors.ScriptDocumentSetupParticipant">
+      </participant>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="prefpython"
+            class="com.eco.bio7.reditor.preferences.TemplatesPreferencePage"
+            id="org.eclipse.ui.examples.templateeditor.preferencepage"
+            name="Template Editor Jython/Python">
+      </page>
+      <page
+            category="com.eco.bio7.preferences.Bio7PreferencePage"
+            class="com.eco.bio7.reditor.preferences.WorkbenchPreferencePython"
+            id="prefpython"
+            name="Preferences Jython/Python"/>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.editors.templates">
+      <contextType
+            name="Jython Templates"
+            class="com.eco.bio7.reditor.preferences.template.PythonContextType"
+            id="py">
+      </contextType>
+     
+      <include
+      		file="templates/ant.xml"
+      		translations="$nl$/templates/ant.properties">
+      </include>
+   </extension>
+   <extension
+        point="org.eclipse.core.runtime.preferences">
+     <initializer
+           class="com.eco.bio7.reditor.preferences.PreferenceInitializer">
+     </initializer>
+  </extension>
+  <extension
+     point="org.eclipse.ui.themes">
+  <fontDefinition
+        label="Python Editor Font"
+        defaultsTo="org.eclipse.jface.textfont"
+        categoryId="com.eco.bio7.pythoneditor.theme"
+        id="com.eco.bio7.pythoneditor.textfont">
+     
+  </fontDefinition>
+  <themeElementCategory
+        id="com.eco.bio7.pythoneditor.theme"
+        label="Python editor">
+  </themeElementCategory>
+ </extension>
+ <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="com.eco.bio7.pythoneditor.actions.TextZoomInHandler"
+            commandId="com.eco.bio7.pythoneditor.actions.text.zoomIn">
+           
+      </handler>
+      <handler
+            class="com.eco.bio7.pythoneditor.actions.TextZoomOutHandler"
+            commandId="com.eco.bio7.pythoneditor.actions.text.zoomOut">
+           
+      </handler>
+     
+   </extension>
+   <extension
+       id="com.eco.bio7.pythoneditor.refactor.rename"
+       point="org.eclipse.ui.bindings">
+        <sequenceModifier
+  			find="CTRL"
+  			replace="COMMAND"
+  			platforms="cocoa,carbon" />
+     
+   
+    <key
+          commandId="com.eco.bio7.pythoneditor.actions.text.zoomIn"
+          contextId="com.eco.bio7.python.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL++">
+    </key>
+    <key
+          commandId="com.eco.bio7.pythoneditor.actions.text.zoomOut"
+          contextId="com.eco.bio7.python.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+-">
+    </key>
+    </extension>
+   <extension 
+   point="org.eclipse.ui.commands">
+       <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Zoom in text, increase default font size for text editors"
+          id="com.eco.bio7.pythoneditor.actions.text.zoomIn"
+          name="Zoom In">
+    </command>
+    <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Zoom out text, decrease default font size for text editors"
+          id="com.eco.bio7.pythoneditor.actions.text.zoomOut"
+          name="Zoom Out">
+    </command>
+     
+   </extension>
+   <extension point="org.eclipse.ui.contexts">
+          <context name="Python Editor Context"
+           description="Python Editor Context"
+           parentId="org.eclipse.ui.textEditorScope"
+           id="com.eco.bio7.python.editor.scope" />
+   </extension>
+
+</plugin>

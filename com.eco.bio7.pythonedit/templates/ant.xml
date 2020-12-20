@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Here the description is self defined and not in the file ant.properties. -->
+<templates>
+<template autoinsert="false" context="py" id="class_python" deleted="false" description="A class template" enabled="true" name="class">class Plant:&#13;
+   'Common base class for all Plants'&#13;
+   plantCount = 0&#13;
+&#13;
+   def __init__(self, name, height):&#13;
+      self.name = name&#13;
+      self.height = height&#13;
+      Plant.plantCount += 1&#13;
+   &#13;
+   def displayCount(self):&#13;
+     print "Total Plants %d",Plant.plantCount&#13;
+&#13;
+   def displayPlant(self):&#13;
+      print "Name : ", self.name,  ", Height: ", self.height&#13;
+      &#13;
+"Here we create an object from the class Plant!"&#13;
+plant1 = Plant("Polytrichum", 10)&#13;
+&#13;
+"Call method to display attributes!"&#13;
+plant1.displayPlant()&#13;
+    </template><template autoinsert="false" context="py" deleted="false" description="A for loop " enabled="true" id="for_python" name="for">for ${index} in range (1,10):
+		print ${index}
+	</template><template autoinsert="false" context="py" id="function_python" deleted="false" description="Function definition " enabled="true" name="function">def ${name}(${str} ):
+	print ${str};
+	return;
+	</template><template autoinsert="false" context="py" id="if_python" deleted="false" description="If statement " enabled="true" name="if">${index} = 100
+if (${index}==100):
+  print "Value of expression is 100"
+	</template><template autoinsert="false" context="py" id="ifelse_python" deleted="false" description="Ifelse statement" enabled="true" name="ifelse">${index} = 10&#13;
+if ${index}==100:&#13;
+   print "True"&#13;
+else:&#13;
+   print "False"</template><template autoinsert="false" id="nested_loop_python" context="py" deleted="false" description="A nested loop" enabled="true" name="loop nested">${index} = 0&#13;
+while(${index} &lt; 10):&#13;
+   ${index2} = 0&#13;
+   while(${index2} &lt; 10):    &#13;
+      ${index2} = ${index2} + 1&#13;
+      print ${index},${index2}&#13;
+   ${index} = ${index} + 1</template><template autoinsert="false" context="py" id="while_python" deleted="false" description="A while Loop" enabled="true" name="while">${index} = 0&#13;
+while (${index} &lt; 9):&#13;
+   print 'Iteration:', ${index}&#13;
+   ${index} =${index} + 1&#13;
+</template>
+	
+	
+
+</templates>
+
+
+
+

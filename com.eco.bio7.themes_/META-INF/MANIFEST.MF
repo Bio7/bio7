@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Bio7Theme
+Bundle-SymbolicName: com.eco.bio7.themes;singleton:=true
+Bundle-Version: 2.5.0.qualifier
+Bundle-Vendor: ECO
+Bundle-Localization: plugin
+Require-Bundle: org.eclipse.e4.ui.css.swt.theme
+Bundle-RequiredExecutionEnvironment: JavaSE-14
+Eclipse-BundleShape: dir
+Bundle-ActivationPolicy: lazy
