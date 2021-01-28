@@ -1850,6 +1850,9 @@
                     <equals
                           value="org.eclipse.wst.jsdt.ui.CompilationUnitEditor">
                     </equals>
+                    <equals
+                          value="org.eclipse.ui.genericeditor.GenericEditor">
+                    </equals>
                  </or>
               </with>
            </visibleWhen>
