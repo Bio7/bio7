@@ -73,6 +73,7 @@ import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.RemoveRLibrarysJob;
+import com.eco.bio7.rbridge.UpdateREnvironmentTableJob;
 import com.eco.bio7.rbridge.UpdateRPackagesJob;
 import com.eco.bio7.rbridge.UpdateSelectedRPackagesJob;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
@@ -81,6 +82,7 @@ import com.eco.bio7.util.Util;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.TableEditor;
+import org.eclipse.swt.custom.SashForm;
 
 public class PackageInstallView extends ViewPart {
 
@@ -109,6 +111,15 @@ public class PackageInstallView extends ViewPart {
 	private Button btnCheckSelectedPackageButton;
 	private Label emptyLabel;
 	protected RList out;
+	private Table table;
+	private TableColumn columnEnvironment1;
+	private TableColumn columnEnvironment2;
+	private TableColumn columnEnvironment3;
+	private SashForm sashForm;
+	private Composite composite_1;
+	private Composite composite_2;
+	private Composite composite_3;
+	protected boolean showFunc;
 
 	public PackageInstallView() {
 		editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
@@ -124,16 +135,16 @@ public class PackageInstallView extends ViewPart {
 	public void createPartControl(Composite parent) {
 
 		createActions();
-		//initializeToolBar();
+		// initializeToolBar();
 		initializeMenu();
 
 		tabFolder = new CTabFolder(parent, SWT.BORDER);
 		tabFolder.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(org.eclipse.swt.events.SelectionEvent event) {
 				if (tabFolder.getSelectionIndex() == 1) {
-					//if(allInstalledPackagesList.getItemCount()==0) {
+					// if(allInstalledPackagesList.getItemCount()==0) {
 					packageInstallUpdateJob();
-					//}
+					// }
 				} else if (tabFolder.getSelectionIndex() == 2) {
 					if (RServe.isAlive()) {
 						createAttachedPackageTree();
@@ -143,7 +154,8 @@ public class PackageInstallView extends ViewPart {
 
 			}
 		});
-		tabFolder.setSelectionBackground(Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT));
+		tabFolder.setSelectionBackground(
+				Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT));
 		tbtmUpdatePackages = new CTabItem(tabFolder, SWT.NONE);
 		tabFolder.setSelection(tbtmUpdatePackages);
 		tbtmUpdatePackages.setText("Install Packages");
@@ -425,7 +437,8 @@ public class PackageInstallView extends ViewPart {
 				for (int i = 0; i < tableItems.length; i++) {
 					selectePackages[i] = tableItems[i].getText(0);
 					if (selectePackages[i].equals("Rserve")) {
-						Bio7Dialog.message("The update of the Rserve package is disabled for Bio7.\nPlease deselect the Rserve package!");
+						Bio7Dialog.message(
+								"The update of the Rserve package is disabled for Bio7.\nPlease deselect the Rserve package!");
 						return;
 					}
 				}
@@ -438,7 +451,7 @@ public class PackageInstallView extends ViewPart {
 							public void done(IJobChangeEvent event) {
 								if (event.getResult().isOK()) {
 									RState.setBusy(false);
-									/*Reload the installed packages view. Also running in a job!*/
+									/* Reload the installed packages view. Also running in a job! */
 									packageInstallUpdateJob();
 
 									Bio7Dialog.message("Update action executed!\nSee console for details!");
@@ -471,7 +484,8 @@ public class PackageInstallView extends ViewPart {
 		gd_uninstallButton.heightHint = 40;
 		gd_uninstallButton.widthHint = 133;
 		uninstallButton.setLayoutData(gd_uninstallButton);
-		uninstallButton.setToolTipText("Removes installed packages/bundles and updates index information as necessary. ");
+		uninstallButton
+				.setToolTipText("Removes installed packages/bundles and updates index information as necessary. ");
 		uninstallButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				if (RServe.isAlive()) {
@@ -630,76 +644,173 @@ public class PackageInstallView extends ViewPart {
 		CTabItem packagesTabItem = new CTabItem(tabFolder, SWT.NONE);
 		packagesTabItem.setText("Attached Packages");
 
-		Composite composite_2 = new Composite(tabFolder, SWT.NONE);
-		packagesTabItem.setControl(composite_2);
-		composite_2.setLayout(new GridLayout(2, true));
+		composite_1 = new Composite(tabFolder, SWT.NONE);
+		packagesTabItem.setControl(composite_1);
+		composite_1.setLayout(new GridLayout(2, false));
+
+		sashForm = new SashForm(composite_1, SWT.VERTICAL);
+		sashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
+
+		composite_2 = new Composite(sashForm, SWT.NONE);
+		composite_2.setLayout(new FillLayout(SWT.HORIZONTAL));
 
 		tree = new Tree(composite_2, SWT.BORDER);
-		GridData gd_tree = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
-		gd_tree.heightHint = 277;
-		gd_tree.widthHint = 107;
-		tree.setLayoutData(gd_tree);
 		final Menu menuList = new Menu(tree);
-		tree.setMenu(menuList);
-		menuList.addMenuListener(new MenuAdapter() {
-			public void menuShown(MenuEvent e) {
-				// Get rid of existing menu items
-				MenuItem[] items = menuList.getItems();
-				for (int i = 0; i < items.length; i++) {
-					((MenuItem) items[i]).dispose();
+		
+		MenuItem refreshItem = new MenuItem(menuList, SWT.NONE);
+
+		refreshItem.setText("Refresh");
+		refreshItem.addSelectionListener(new SelectionListener() {
+
+			public void widgetSelected(SelectionEvent e) {
+
+				createAttachedPackageTree();
+
+			}
+
+			public void widgetDefaultSelected(SelectionEvent e) {
+
+			}
+		});
+		// Add menu items for current selection
+		MenuItem detachItem = new MenuItem(menuList, SWT.NONE);
+
+		detachItem.setText("Detach");
+		detachItem.addSelectionListener(new SelectionListener() {
+
+			public void widgetSelected(SelectionEvent e) {
+
+				if (tree.getSelection().length > 0) {
+					String selectedPackage = tree.getSelection()[0].getText();
+					RServeUtil.evalR("try(detach(package:" + selectedPackage + ", unload=TRUE))", null);
+					createAttachedPackageTree();
+
 				}
-				MenuItem refreshItem = new MenuItem(menuList, SWT.NONE);
 
-				refreshItem.setText("Refresh");
-				refreshItem.addSelectionListener(new SelectionListener() {
+			}
 
-					public void widgetSelected(SelectionEvent e) {
+			public void widgetDefaultSelected(SelectionEvent e) {
 
-						createAttachedPackageTree();
+			}
+		});
+		MenuItem showFunctionOption = new MenuItem(menuList, SWT.CHECK);
 
-					}
+		showFunctionOption.setText("On MouseClick List Functions");
+		showFunctionOption.addSelectionListener(new SelectionListener() {
 
-					public void widgetDefaultSelected(SelectionEvent e) {
+			public void widgetSelected(SelectionEvent e) {
+				if (showFunctionOption.getSelection()) {
+					showFunctionOption.setSelection(true);
+					showFunc=true;
+				}
 
-					}
-				});
-				// Add menu items for current selection
-				MenuItem detachItem = new MenuItem(menuList, SWT.NONE);
+				else {
+					showFunctionOption.setSelection(false);
+					showFunc=false;
+				}
 
-				detachItem.setText("Detach");
-				detachItem.addSelectionListener(new SelectionListener() {
+			}
 
-					public void widgetSelected(SelectionEvent e) {
+			public void widgetDefaultSelected(SelectionEvent e) {
 
-						if (tree.getSelection().length > 0) {
-							String selectedPackage = tree.getSelection()[0].getText();
-							RServeUtil.evalR("try(detach(package:" + selectedPackage + ", unload=TRUE))", null);
-							createAttachedPackageTree();
+			}
+		});
+
+		tree.setMenu(menuList);
+		
+
+		tree.addListener(SWT.MouseDown, new Listener() {
+			public void handleEvent(Event event) {
+				if (showFunc) {
+
+					Point point = new Point(event.x, event.y);
+					TreeItem item = tree.getItem(point);
+					if (item != null) {
+
+						String packageItem = item.getText();
+						if (RState.isBusy() == false) {
+							RState.setBusy(true);
+							UpdateREnvironmentTableJob Do = new UpdateREnvironmentTableJob(packageItem, table, true);
+							Do.addJobChangeListener(new JobChangeAdapter() {
+								public void done(IJobChangeEvent event) {
+									if (event.getResult().isOK()) {
+										RState.setBusy(false);
+
+									} else {
+										RState.setBusy(false);
+									}
+								}
+							});
+							Do.setUser(true);
+							Do.schedule();
+
+						} else {
+
+							Bio7Dialog.message("Rserve is busy!");
 
 						}
 
 					}
 
-					public void widgetDefaultSelected(SelectionEvent e) {
+				} else {
+					Point point = new Point(event.x, event.y);
+					TreeItem item = tree.getItem(point);
+					if (item != null) {
+
+						String packageItem = item.getText();
+						if (RState.isBusy() == false) {
+							RState.setBusy(true);
+							UpdateREnvironmentTableJob Do = new UpdateREnvironmentTableJob(packageItem, table, false);
+							Do.addJobChangeListener(new JobChangeAdapter() {
+								public void done(IJobChangeEvent event) {
+									if (event.getResult().isOK()) {
+										RState.setBusy(false);
+
+									} else {
+										RState.setBusy(false);
+									}
+								}
+							});
+							Do.setUser(true);
+							Do.schedule();
+
+						} else {
+
+							Bio7Dialog.message("Rserve is busy!");
+
+						}
 
 					}
-				});
-
-			}
-		});
-
-		tree.addListener(SWT.MouseDown, new Listener() {
-			public void handleEvent(Event event) {
-				Point point = new Point(event.x, event.y);
-				TreeItem item = tree.getItem(point);
-				if (item != null) {
-
 				}
 			}
 		});
-		packagesTabItem.setControl(composite_2);
 
-		btnNewButton = new Button(composite_2, SWT.NONE);
+		composite_3 = new Composite(sashForm, SWT.NONE);
+		sashForm.setWeights(new int[] { 1, 1 });
+		packagesTabItem.setControl(composite_1);
+
+		table = createEnvironmentPackagesTable(composite_3);
+
+		table.addMouseListener(new MouseAdapter() {
+			public void mouseDown(MouseEvent e) {
+
+			}
+
+			public void mouseDoubleClick(final MouseEvent e) {
+				int[] selection = table.getSelectionIndices();
+				if (selection.length > 0) {
+					String text = table.getItem(selection[0]).getText(0);
+					if (text.isEmpty() == false) {
+
+						RServeUtil.evalR("data(" + text + ")", null);
+						RServeUtil.listRObjects();
+					}
+				}
+			}
+		});
+
+		btnNewButton = new Button(composite_1, SWT.NONE);
+		btnNewButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
 		btnNewButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -707,30 +818,41 @@ public class PackageInstallView extends ViewPart {
 				createAttachedPackageTree();
 			}
 		});
-		GridData gd_btnNewButton = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
-		gd_btnNewButton.heightHint = 40;
-		btnNewButton.setLayoutData(gd_btnNewButton);
 		btnNewButton.setText("Refresh Packages List");
 
 		map.clear();
-		map.put("spatstat", new String[] { "A package for the statistical analysis of spatial data, \n mainly spatial point patterns.", "https://www.spatstat.org" });
-		map.put("raster",
-				new String[] { "A package for reading, writing, manipulating, analyzing and modeling of gridded spatial data.", "https://cran.r-project.org/web/packages/raster/index.html" });
-		map.put("maptools", new String[] { "Tools for reading and handling spatial objects", "https://cran.r-project.org/web/packages/maptools/index.html" });
-		map.put("gstat", new String[] { "Gstat is an open source (GPL) computer code for multivariable \n geostatistical modelling, prediction and simulation", "https://www.gstat.org/" });
-		map.put("maps", new String[] { "Display of maps. Projection code and larger maps are in separate packages (mapproj and mapdata).", "https://cran.r-project.org/web/packages/maps/index.html" });
-		map.put("rgdal",
+		map.put("spatstat",
 				new String[] {
-						"Provides bindings to Frank Warmerdam's Geospatial Data Abstraction Library (GDAL) (>= 1.3.1)\n and access to projection/transformation operations from the PROJ.4 library.",
-						"https://cran.r-project.org/web/packages/rgdal/index.html" });
+						"A package for the statistical analysis of spatial data, \n mainly spatial point patterns.",
+						"https://www.spatstat.org" });
+		map.put("raster",
+				new String[] {
+						"A package for reading, writing, manipulating, analyzing and modeling of gridded spatial data.",
+						"https://cran.r-project.org/web/packages/raster/index.html" });
+		map.put("maptools", new String[] { "Tools for reading and handling spatial objects",
+				"https://cran.r-project.org/web/packages/maptools/index.html" });
+		map.put("gstat", new String[] {
+				"Gstat is an open source (GPL) computer code for multivariable \n geostatistical modelling, prediction and simulation",
+				"https://www.gstat.org/" });
+		map.put("maps", new String[] {
+				"Display of maps. Projection code and larger maps are in separate packages (mapproj and mapdata).",
+				"https://cran.r-project.org/web/packages/maps/index.html" });
+		map.put("rgdal", new String[] {
+				"Provides bindings to Frank Warmerdam's Geospatial Data Abstraction Library (GDAL) (>= 1.3.1)\n and access to projection/transformation operations from the PROJ.4 library.",
+				"https://cran.r-project.org/web/packages/rgdal/index.html" });
 		map.put("PBSmapping", new String[] {
 				"This software has evolved from fisheries research conducted at the Pacific Biological Station (PBS) in Nanaimo, British Columbia, Canada.\n It extends the R language to include two-dimensional plotting features similar to those commonly available in a Geographic Information System (GIS).",
 				"https://cran.r-project.org/web/packages/PBSmapping/index.html" });
-		map.put("shapefiles", new String[] { "Functions to read and write ESRI shapefiles.", "https://cran.r-project.org/web/packages/shapefiles/index.html" });
-		map.put("RSAGA", new String[] { "RSAGA provides access to geocomputing and terrain analysis functions of SAGA from within R\n by running the command line version of SAGA.",
+		map.put("shapefiles", new String[] { "Functions to read and write ESRI shapefiles.",
+				"https://cran.r-project.org/web/packages/shapefiles/index.html" });
+		map.put("RSAGA", new String[] {
+				"RSAGA provides access to geocomputing and terrain analysis functions of SAGA from within R\n by running the command line version of SAGA.",
 				"https://cran.r-project.org/web/packages/RSAGA/index.html" });
-		map.put("geoR", new String[] { "Geostatistical analysis including traditional, likelihood-based and Bayesian methods.", "https://leg.ufpr.br/geoR/" });
-		map.put("geoRglm", new String[] { "Functions for inference in generalised linear spatial models. \nThe posterior and predictive inference is based on Markov chain Monte Carlo methods.",
+		map.put("geoR",
+				new String[] { "Geostatistical analysis including traditional, likelihood-based and Bayesian methods.",
+						"https://leg.ufpr.br/geoR/" });
+		map.put("geoRglm", new String[] {
+				"Functions for inference in generalised linear spatial models. \nThe posterior and predictive inference is based on Markov chain Monte Carlo methods.",
 				"https://gbi.agrsci.dk/~ofch/geoRglm/" });
 		map.put("SDMTools", new String[] {
 				"This packages provides a set of tools for post processing the outcomes\nof species distribution modeling exercises. It includes novel methods for comparing models\nand tracking changes in distributions through time.\nIt further includes methods for visualizing outcomes, selecting thresholds, calculating measures\nof accuracy and landscape fragmentation statistics, etc.",
@@ -784,9 +906,10 @@ public class PackageInstallView extends ViewPart {
 	/**
 	 * Initialize the toolbar.
 	 */
-	/*private void initializeToolBar() {
-		IToolBarManager toolbarManager = getViewSite().getActionBars().getToolBarManager();
-	}*/
+	/*
+	 * private void initializeToolBar() { IToolBarManager toolbarManager =
+	 * getViewSite().getActionBars().getToolBarManager(); }
+	 */
 
 	/**
 	 * Initialize the menu.
@@ -848,22 +971,31 @@ public class PackageInstallView extends ViewPart {
 			String server = store.getString("R_PACKAGE_SERVER");
 			try {
 
-				/*Here we get information about the installed packages, versions and new available repo versions!
-				 *First we create a dataframe (will be sorted at the end) with a fixed number of rows (n) which we fill with the information extracted from the
-				 *current installed packages and the latest online versions!*/
+				/*
+				 * Here we get information about the installed packages, versions and new
+				 * available repo versions! First we create a dataframe (will be sorted at the
+				 * end) with a fixed number of rows (n) which we fill with the information
+				 * extracted from the current installed packages and the latest online versions!
+				 */
 
-				out = c.eval(
-						"try(.calculate_version_update<-function(){\n" + "  new_versions <- old.packages(repos =\"" + server + "\")\n" + "  new_versions_repo_vers <- new_versions[, \"ReposVer\"]\n"
-								+ "  installed_packages <- installed.packages()\n" + "  installed_package_names <- as.character(installed_packages[, \"Package\"])\n"
-								+ "  version_installed_package_names <- as.character(installed_packages[, \"Version\"])\n" + "  n<-length(installed_package_names)\n"
-								+ "  df_packages <- data.frame(Name = character(n), Current_Version = character(n), Latest_Version = character(n), \n" + "      stringsAsFactors = FALSE)\n"
-								+ "  for (x in 1:length(installed_package_names)) {\n" + "      if (isTRUE(installed_package_names[x] %in% new_versions[, \"Package\"])) {\n" + "       \n"
-								+ "          df_packages$Name[x] <- installed_package_names[x]\n" + "          df_packages$Current_Version[x] <- version_installed_package_names[x]\n"
-								+ "          df_packages$Latest_Version[x] <- new_versions_repo_vers[installed_package_names[x]]\n" + "          \n" + "      } else {\n" + "         \n"
-								+ "          df_packages$Name[x] <- installed_package_names[x]\n" + "          df_packages$Current_Version[x] <- version_installed_package_names[x]\n"
-								+ "          df_packages$Latest_Version[x] <- version_installed_package_names[x]\n" + "      }\n" + "  }\n" + "df_packages<-df_packages[order(df_packages$Name),]\n"
-								+ "  return(df_packages)\n" + "})\n" + "try(.calculate_version_update())")
-						.asList();
+				out = c.eval("try(.calculate_version_update<-function(){\n" + "  new_versions <- old.packages(repos =\""
+						+ server + "\")\n" + "  new_versions_repo_vers <- new_versions[, \"ReposVer\"]\n"
+						+ "  installed_packages <- installed.packages()\n"
+						+ "  installed_package_names <- as.character(installed_packages[, \"Package\"])\n"
+						+ "  version_installed_package_names <- as.character(installed_packages[, \"Version\"])\n"
+						+ "  n<-length(installed_package_names)\n"
+						+ "  df_packages <- data.frame(Name = character(n), Current_Version = character(n), Latest_Version = character(n), \n"
+						+ "      stringsAsFactors = FALSE)\n" + "  for (x in 1:length(installed_package_names)) {\n"
+						+ "      if (isTRUE(installed_package_names[x] %in% new_versions[, \"Package\"])) {\n"
+						+ "       \n" + "          df_packages$Name[x] <- installed_package_names[x]\n"
+						+ "          df_packages$Current_Version[x] <- version_installed_package_names[x]\n"
+						+ "          df_packages$Latest_Version[x] <- new_versions_repo_vers[installed_package_names[x]]\n"
+						+ "          \n" + "      } else {\n" + "         \n"
+						+ "          df_packages$Name[x] <- installed_package_names[x]\n"
+						+ "          df_packages$Current_Version[x] <- version_installed_package_names[x]\n"
+						+ "          df_packages$Latest_Version[x] <- version_installed_package_names[x]\n"
+						+ "      }\n" + "  }\n" + "df_packages<-df_packages[order(df_packages$Name),]\n"
+						+ "  return(df_packages)\n" + "})\n" + "try(.calculate_version_update())").asList();
 
 			} catch (REXPMismatchException e) {
 
@@ -878,7 +1010,10 @@ public class PackageInstallView extends ViewPart {
 		display.syncExec(new Runnable() {
 
 			public void run() {
-				/*Store the selected top index of the table to scroll to it after an update of the table!*/
+				/*
+				 * Store the selected top index of the table to scroll to it after an update of
+				 * the table!
+				 */
 				int tempIndex = allInstalledPackagesList.getTopIndex();
 				int[] selIndex = allInstalledPackagesList.getSelectionIndices();
 
@@ -887,7 +1022,7 @@ public class PackageInstallView extends ViewPart {
 				String[] packageNames = null;
 				String[] currentVersions = null;
 				String[] latestVersions = null;
-				/*Get the dataframe columns as string lists!*/
+				/* Get the dataframe columns as string lists! */
 				try {
 					packageNames = out.at(0).asStrings();
 					currentVersions = out.at(1).asStrings();
@@ -932,14 +1067,15 @@ public class PackageInstallView extends ViewPart {
 	}
 
 	private void setInDocument(Table aList) {
-		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+				.getActiveEditor();
 		if (editor != null && editor instanceof REditor) {
 			TableItem[] tableSelection = aList.getSelection();
 			String[] items = new String[aList.getSelection().length];
 			for (int i = 0; i < tableSelection.length; i++) {
 				items[i] = tableSelection[i].getText(0);
 			}
-			//String[] items = aList.getSelection();
+			// String[] items = aList.getSelection();
 			StringBuffer buff = new StringBuffer();
 			for (int i = 0; i < items.length; i++) {
 				buff.append("library(");
@@ -986,7 +1122,9 @@ public class PackageInstallView extends ViewPart {
 		String[] v = null;
 		// List all variables in the R workspace!
 
-		RServeUtil.evalR(".bio7TempVarEnvironment <- new.env();try(.bio7TempVarEnvironment$workspaceRPackages<-.packages())", null);
+		RServeUtil.evalR(
+				".bio7TempVarEnvironment <- new.env();try(.bio7TempVarEnvironment$workspaceRPackages<-.packages())",
+				null);
 		pack = RServeUtil.fromR("try(.bio7TempVarEnvironment$workspaceRPackages)");
 		if (pack == null) {
 			return;
@@ -1015,25 +1153,29 @@ public class PackageInstallView extends ViewPart {
 	}
 
 	public Table createInstalledPackagesTable(Composite parent) {
-		Table grid = new Table(parent, SWT.BORDER | SWT.V_SCROLL | SWT.SCROLL_LINE | SWT.MULTI | SWT.FULL_SELECTION | SWT.VIRTUAL);
+		Table grid = new Table(parent,
+				SWT.BORDER | SWT.V_SCROLL | SWT.SCROLL_LINE | SWT.MULTI | SWT.FULL_SELECTION | SWT.VIRTUAL);
 
 		{
 			column1 = new TableColumn(grid, SWT.CENTER);
 			column1.setText("Library");
-			column1.setToolTipText("Use double-click to load libraries and update the code completion API information!");
+			column1.setToolTipText(
+					"Use double-click to load libraries and update the code completion API information!");
 			column1.setWidth(100);
 		}
 		{
 			column2 = new TableColumn(grid, SWT.CENTER);
 			column2.setText("Installed Version");
-			column2.setToolTipText("Use double-click to load libraries and update the code completion API information!");
+			column2.setToolTipText(
+					"Use double-click to load libraries and update the code completion API information!");
 			column2.setWidth(100);
 		}
 
 		{
 			column3 = new TableColumn(grid, SWT.CENTER);
 			column3.setText("Latest Version");
-			column3.setToolTipText("Use double-click to load libraries and update the code completion API information!");
+			column3.setToolTipText(
+					"Use double-click to load libraries and update the code completion API information!");
 			column3.setWidth(100);
 		}
 
@@ -1046,9 +1188,9 @@ public class PackageInstallView extends ViewPart {
 		editor.horizontalAlignment = SWT.LEFT;
 		editor.grabHorizontal = true;
 
-		createActions();
-		//initializeToolBar();
-		initializeMenu();
+		// createActions();
+		// initializeToolBar();
+		// initializeMenu();
 
 		/* Resize column width if shell changes! */
 		parent.addControlListener(new ControlAdapter() {
@@ -1081,6 +1223,87 @@ public class PackageInstallView extends ViewPart {
 						column1.setWidth(width / 3);
 						column2.setWidth(width / 3);
 						column3.setWidth(width / 3);
+
+					}
+				}
+				parent.layout();
+			}
+		});
+		return grid;
+	}
+
+	public Table createEnvironmentPackagesTable(Composite parent) {
+		parent.setLayout(new GridLayout(1, true));
+		Table grid = new Table(parent,
+				SWT.BORDER | SWT.V_SCROLL | SWT.SCROLL_LINE | SWT.MULTI | SWT.FULL_SELECTION | SWT.VIRTUAL);
+		grid.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+
+		{
+			columnEnvironment1 = new TableColumn(grid, SWT.CENTER);
+			columnEnvironment1.setText("Dataset");
+			// columnEnvironment1.setToolTipText("Use double-click to load libraries and
+			// update the code completion API information!");
+			columnEnvironment1.setWidth(100);
+		}
+		{
+			columnEnvironment2 = new TableColumn(grid, SWT.CENTER);
+			columnEnvironment2.setText("Dataset Description");
+			// columnEnvironment2.setToolTipText("Use double-click to load libraries and
+			// update the code completion API information!");
+			columnEnvironment2.setWidth(100);
+		}
+
+		/*
+		 * { columnEnvironment3 = new TableColumn(grid, SWT.CENTER);
+		 * columnEnvironment3.setText(""); // columnEnvironment3.setToolTipText("Use
+		 * double-click to load libraries and // update the code completion API
+		 * information!"); columnEnvironment3.setWidth(100); }
+		 */
+
+		grid.setHeaderVisible(true);
+		grid.setLinesVisible(true);
+
+		// Show row header
+
+		final TableEditor editor = new TableEditor(grid);
+		editor.horizontalAlignment = SWT.LEFT;
+		editor.grabHorizontal = true;
+
+		// createActions();
+		// initializeToolBar();
+		// initializeMenu();
+
+		/* Resize column width if shell changes! */
+		parent.addControlListener(new ControlAdapter() {
+			public void controlResized(ControlEvent e) {
+				if (grid.isDisposed() == false) {
+					Rectangle area = parent.getClientArea();
+					Point preferredSize = grid.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+					int width = area.width - 2 * grid.getBorderWidth();
+					if (preferredSize.y > area.height + grid.getHeaderHeight()) {
+						// Subtract the scrollbar width from the total column width
+						// if a vertical scrollbar will be required
+						Point vBarSize = grid.getVerticalBar().getSize();
+						width -= vBarSize.x;
+					}
+					Point oldSize = grid.getSize();
+					if (oldSize.x > area.width) {
+						// table is getting smaller so make the columns
+						// smaller first and then resize the table to
+						// match the client area width
+						columnEnvironment1.setWidth(width / 2);
+						columnEnvironment2.setWidth(width / 2);
+						// columnEnvironment3.setWidth(width / 3);
+
+						grid.setSize(area.width, area.height);
+					} else {
+						// table is getting bigger so make the table
+						// bigger first and then make the columns wider
+						// to match the client area width
+						grid.setSize(area.width, area.height);
+						columnEnvironment1.setWidth(width / 2);
+						columnEnvironment2.setWidth(width / 2);
+						// columnEnvironment3.setWidth(width / 3);
 
 					}
 				}
