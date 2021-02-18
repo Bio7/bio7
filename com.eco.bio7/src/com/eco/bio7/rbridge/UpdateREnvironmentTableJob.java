@@ -72,7 +72,6 @@ public class UpdateREnvironmentTableJob extends WorkspaceJob {
 
 			Display display = PlatformUI.getWorkbench().getDisplay();
 			display.syncExec(new Runnable() {
-
 				public void run() {
 					table.setVisible(false);
 					if (table != null) {
@@ -84,11 +83,9 @@ public class UpdateREnvironmentTableJob extends WorkspaceJob {
 								TableColumn colDescr = table.getColumn(1);
 								colDescr.setText("");
 								for (int i = 0; i < packageLsfList.length; i++) {
-
 									TableItem it = new TableItem(table, SWT.NONE);
 									it.setText(0, packageLsfList[i]);
 									it.setText(1, "Function");
-
 								}
 
 							} else {
@@ -97,11 +94,9 @@ public class UpdateREnvironmentTableJob extends WorkspaceJob {
 								TableColumn colDescr = table.getColumn(1);
 								colDescr.setText("Dataset Description");
 								for (int i = 0; i < packageDataList.length; i++) {
-
 									TableItem it = new TableItem(table, SWT.NONE);
 									it.setText(0, packageDataList[i]);
 									it.setText(1, packageDataListDescription[i]);
-
 								}
 							}
 						}
