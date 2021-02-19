@@ -648,11 +648,12 @@ public class PackageInstallView extends ViewPart {
 		packagesTabItem.setControl(composite_1);
 		composite_1.setLayout(new GridLayout(2, false));
 
-		sashForm = new SashForm(composite_1, SWT.VERTICAL);
+		sashForm = new SashForm(composite_1, SWT.NONE);
 		sashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 
 		composite_2 = new Composite(sashForm, SWT.NONE);
-		composite_2.setLayout(new FillLayout(SWT.HORIZONTAL));
+		FillLayout fl_composite_2 = new FillLayout(SWT.VERTICAL);
+		composite_2.setLayout(fl_composite_2);
 
 		tree = new Tree(composite_2, SWT.BORDER);
 		final Menu menuList = new Menu(tree);
@@ -693,9 +694,10 @@ public class PackageInstallView extends ViewPart {
 
 			}
 		});
+		new MenuItem(menuList, SWT.SEPARATOR);
 		MenuItem showFunctionOption = new MenuItem(menuList, SWT.CHECK);
 
-		showFunctionOption.setText("On MouseClick List Functions");
+		showFunctionOption.setText("Selected Package List Functions");
 		showFunctionOption.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
@@ -786,7 +788,7 @@ public class PackageInstallView extends ViewPart {
 		});
 
 		composite_3 = new Composite(sashForm, SWT.NONE);
-		sashForm.setWeights(new int[] { 1, 1 });
+		sashForm.setWeights(new int[] {1, 3});
 		packagesTabItem.setControl(composite_1);
 
 		table = createEnvironmentPackagesTable(composite_3);
@@ -801,9 +803,16 @@ public class PackageInstallView extends ViewPart {
 				if (selection.length > 0) {
 					String text = table.getItem(selection[0]).getText(0);
 					if (text.isEmpty() == false) {
-
-						RServeUtil.evalR("data(" + text + ")", null);
-						RServeUtil.listRObjects();
+						/*Open function body on click!*/
+                        if(showFunc) {
+                        	RServeUtil.evalR("print(force(" + text + "))", null);
+    						//RServeUtil.listRObjects();
+                        }
+                        /*Load data on click!*/
+                        else {
+                        	RServeUtil.evalR("try(data(" + text + "))", null);
+    						RServeUtil.listRObjects();
+                        }
 					}
 				}
 			}
@@ -1139,7 +1148,7 @@ public class PackageInstallView extends ViewPart {
 		RServeUtil.evalR("try(rm(workspaceRPackages,envir=.bio7TempVarEnvironment))", null);
 
 		TreeItem packages = new TreeItem(tree, 0);
-		packages.setText("Attached Packages:");
+		packages.setText("Attached:");
 		// packages.removeAll();
 		for (int i = 0; i < v.length; i++) {
 
@@ -1233,7 +1242,10 @@ public class PackageInstallView extends ViewPart {
 	}
 
 	public Table createEnvironmentPackagesTable(Composite parent) {
-		parent.setLayout(new GridLayout(1, true));
+		GridLayout gl_composite_3 = new GridLayout(1, true);
+		gl_composite_3.marginWidth = 0;
+		gl_composite_3.marginHeight = 0;
+		parent.setLayout(gl_composite_3);
 		Table grid = new Table(parent,
 				SWT.BORDER | SWT.V_SCROLL | SWT.SCROLL_LINE | SWT.MULTI | SWT.FULL_SELECTION | SWT.VIRTUAL);
 		grid.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));

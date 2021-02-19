@@ -47,7 +47,7 @@ public class UpdateREnvironmentTableJob extends WorkspaceJob {
 
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
 		monitor.beginTask("Update Environment Table..", IProgressMonitor.UNKNOWN);
-		if (packageItem.equals("Attached Packages:")) {
+		if (packageItem.equals("Attached:")) {
 			return Status.OK_STATUS;
 		}
 		if (RServe.isAlive()) {
@@ -56,8 +56,9 @@ public class UpdateREnvironmentTableJob extends WorkspaceJob {
 			try {
 				if (func) {
 
-					packageLsList = c.eval("try(ls(\"package:" + packageItem + "\"))").asStrings();
+					
 					packageLsfList = c.eval("try(lsf.str(\"package:" + packageItem + "\"))").asStrings();
+					//packageLsList = c.eval("try(gsub(\" \\nNULL\", \"\",as.character(lapply(as.list(lsf.str(\"package:base\")),args))))").asStrings();
 				} else {
 
 					packageDataList = c.eval("try(data(package=\"" + packageItem + "\")$results[,\"Item\"])")
