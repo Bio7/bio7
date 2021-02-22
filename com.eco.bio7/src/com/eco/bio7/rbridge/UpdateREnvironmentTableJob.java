@@ -20,6 +20,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.Rserve.RConnection;
@@ -28,7 +31,7 @@ import org.rosuda.REngine.Rserve.RserveException;
 public class UpdateREnvironmentTableJob extends WorkspaceJob {
 
 	private String packageItem;
-	private Table table;
+	private Tree table;
 	String[] packageLsList = null;
 	String[] packageLsfList = null;
 	String[] packageDataList = null;
@@ -37,7 +40,7 @@ public class UpdateREnvironmentTableJob extends WorkspaceJob {
 
 	// protected String[] itemsSpatial;
 
-	public UpdateREnvironmentTableJob(String packageItem, Table table, boolean func) {
+	public UpdateREnvironmentTableJob(String packageItem, Tree  table, boolean func) {
 		super("Update packages...");
 		this.packageItem = packageItem;
 		this.table = table;
@@ -58,7 +61,7 @@ public class UpdateREnvironmentTableJob extends WorkspaceJob {
 
 					
 					packageLsfList = c.eval("try(lsf.str(\"package:" + packageItem + "\"))").asStrings();
-					//packageLsList = c.eval("try(gsub(\" \\nNULL\", \"\",as.character(lapply(as.list(lsf.str(\"package:base\")),args))))").asStrings();
+					packageLsList = c.eval("try(gsub(\" \\nNULL\", \"\",as.character(lapply(as.list(lsf.str(\"package:" + packageItem + "\")),args))))").asStrings();
 				} else {
 
 					packageDataList = c.eval("try(data(package=\"" + packageItem + "\")$results[,\"Item\"])")
@@ -79,23 +82,23 @@ public class UpdateREnvironmentTableJob extends WorkspaceJob {
 						if (table.isDisposed() == false) {
 							table.removeAll();
 							if (func) {
-								TableColumn colTitle = table.getColumn(0);
+								TreeColumn colTitle = table.getColumn(0);
 								colTitle.setText("Function");
-								TableColumn colDescr = table.getColumn(1);
-								colDescr.setText("");
+								TreeColumn colDescr = table.getColumn(1);
+								colDescr.setText("Arguments");
 								for (int i = 0; i < packageLsfList.length; i++) {
-									TableItem it = new TableItem(table, SWT.NONE);
+									TreeItem it = new TreeItem(table, SWT.NONE);
 									it.setText(0, packageLsfList[i]);
-									it.setText(1, "Function");
+									it.setText(1, packageLsList[i]);
 								}
 
 							} else {
-								TableColumn colTitle = table.getColumn(0);
+								TreeColumn colTitle = table.getColumn(0);
 								colTitle.setText("Dataset");
-								TableColumn colDescr = table.getColumn(1);
+								TreeColumn colDescr = table.getColumn(1);
 								colDescr.setText("Dataset Description");
 								for (int i = 0; i < packageDataList.length; i++) {
-									TableItem it = new TableItem(table, SWT.NONE);
+									TreeItem it = new TreeItem(table, SWT.NONE);
 									it.setText(0, packageDataList[i]);
 									it.setText(1, packageDataListDescription[i]);
 								}

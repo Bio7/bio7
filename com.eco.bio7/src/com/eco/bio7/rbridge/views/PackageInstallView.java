@@ -46,6 +46,7 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
@@ -82,6 +83,7 @@ import com.eco.bio7.util.Util;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.TableEditor;
+import org.eclipse.swt.custom.TreeEditor;
 import org.eclipse.swt.custom.SashForm;
 
 public class PackageInstallView extends ViewPart {
@@ -111,10 +113,10 @@ public class PackageInstallView extends ViewPart {
 	private Button btnCheckSelectedPackageButton;
 	private Label emptyLabel;
 	protected RList out;
-	private Table table;
-	private TableColumn columnEnvironment1;
-	private TableColumn columnEnvironment2;
-	private TableColumn columnEnvironment3;
+	private Tree table;
+	private TreeColumn columnEnvironment1;
+	private TreeColumn columnEnvironment2;
+	private TreeColumn columnEnvironment3;
 	private SashForm sashForm;
 	private Composite composite_1;
 	private Composite composite_2;
@@ -657,7 +659,7 @@ public class PackageInstallView extends ViewPart {
 
 		tree = new Tree(composite_2, SWT.BORDER);
 		final Menu menuList = new Menu(tree);
-		
+
 		MenuItem refreshItem = new MenuItem(menuList, SWT.NONE);
 
 		refreshItem.setText("Refresh");
@@ -703,12 +705,12 @@ public class PackageInstallView extends ViewPart {
 			public void widgetSelected(SelectionEvent e) {
 				if (showFunctionOption.getSelection()) {
 					showFunctionOption.setSelection(true);
-					showFunc=true;
+					showFunc = true;
 				}
 
 				else {
 					showFunctionOption.setSelection(false);
-					showFunc=false;
+					showFunc = false;
 				}
 
 			}
@@ -719,7 +721,6 @@ public class PackageInstallView extends ViewPart {
 		});
 
 		tree.setMenu(menuList);
-		
 
 		tree.addListener(SWT.MouseDown, new Listener() {
 			public void handleEvent(Event event) {
@@ -788,32 +789,78 @@ public class PackageInstallView extends ViewPart {
 		});
 
 		composite_3 = new Composite(sashForm, SWT.NONE);
-		sashForm.setWeights(new int[] {1, 3});
+		sashForm.setWeights(new int[] { 1, 3 });
 		packagesTabItem.setControl(composite_1);
 
 		table = createEnvironmentPackagesTable(composite_3);
 
 		table.addMouseListener(new MouseAdapter() {
 			public void mouseDown(MouseEvent e) {
+				Point point = new Point(e.x, e.y);
+				TreeItem item = table.getItem(point);
+				if (item != null) {
+
+					String text = item.getText(0);
+					/* Check if item exists */
+					if (item.getItemCount() >= 1 || item.getParentItem() != null) {
+						return;
+					}
+					if (text.isEmpty() == false) {
+						/* Open function body on click! */
+						if (showFunc) {
+							// RServeUtil.evalR("print(force(" + text + "))", null);
+							// RServeUtil.listRObjects();
+						}
+						/* Load data on click! */
+						else {
+							//RServeUtil.evalR("try(force(" + text + "))", null);
+							String head = null;
+							String str = null;
+							try {
+								head = RServeUtil.fromR("class(" + text + ")").asString();
+								str = RServeUtil.fromR("capture.output(str(" + text + "))").asString();
+							} catch (REXPMismatchException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+
+							TreeItem subItem = new TreeItem(item, SWT.NONE);
+							subItem.setText(new String[] { head, str });
+							item.setExpanded(true);
+
+						}
+					}
+
+				}
 
 			}
 
 			public void mouseDoubleClick(final MouseEvent e) {
-				int[] selection = table.getSelectionIndices();
-				if (selection.length > 0) {
-					String text = table.getItem(selection[0]).getText(0);
+				// int[] selection = table.getSelectionIndices();
+				Point point = new Point(e.x, e.y);
+				TreeItem item = table.getItem(point);
+				if (item != null) {
+
+					String text = item.getText(0);
 					if (text.isEmpty() == false) {
-						/*Open function body on click!*/
-                        if(showFunc) {
-                        	RServeUtil.evalR("print(force(" + text + "))", null);
-    						//RServeUtil.listRObjects();
-                        }
-                        /*Load data on click!*/
-                        else {
-                        	RServeUtil.evalR("try(data(" + text + "))", null);
-    						RServeUtil.listRObjects();
-                        }
+						/* Open function body on click! */
+						if (showFunc) {
+							RServeUtil.evalR("print(force(" + text + "))", null);
+							// RServeUtil.listRObjects();
+						}
+						/* Load data on click! */
+						else {
+							if (item.getParentItem() != null) {
+                               /*Load the data also from an expanded tree item!*/
+								text = item.getParentItem().getText();
+
+							}
+							RServeUtil.evalR("try(data(" + text + "))", null);
+							RServeUtil.listRObjects();
+							System.out.println("data(" + text + "))");
+						}
 					}
+
 				}
 			}
 		});
@@ -1241,24 +1288,24 @@ public class PackageInstallView extends ViewPart {
 		return grid;
 	}
 
-	public Table createEnvironmentPackagesTable(Composite parent) {
+	public Tree createEnvironmentPackagesTable(Composite parent) {
 		GridLayout gl_composite_3 = new GridLayout(1, true);
 		gl_composite_3.marginWidth = 0;
 		gl_composite_3.marginHeight = 0;
 		parent.setLayout(gl_composite_3);
-		Table grid = new Table(parent,
+		Tree grid = new Tree(parent,
 				SWT.BORDER | SWT.V_SCROLL | SWT.SCROLL_LINE | SWT.MULTI | SWT.FULL_SELECTION | SWT.VIRTUAL);
 		grid.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 
 		{
-			columnEnvironment1 = new TableColumn(grid, SWT.CENTER);
+			columnEnvironment1 = new TreeColumn(grid, SWT.LEFT);
 			columnEnvironment1.setText("Dataset");
 			// columnEnvironment1.setToolTipText("Use double-click to load libraries and
 			// update the code completion API information!");
 			columnEnvironment1.setWidth(100);
 		}
 		{
-			columnEnvironment2 = new TableColumn(grid, SWT.CENTER);
+			columnEnvironment2 = new TreeColumn(grid, SWT.LEFT);
 			columnEnvironment2.setText("Dataset Description");
 			// columnEnvironment2.setToolTipText("Use double-click to load libraries and
 			// update the code completion API information!");
@@ -1277,7 +1324,7 @@ public class PackageInstallView extends ViewPart {
 
 		// Show row header
 
-		final TableEditor editor = new TableEditor(grid);
+		final TreeEditor editor = new TreeEditor(grid);
 		editor.horizontalAlignment = SWT.LEFT;
 		editor.grabHorizontal = true;
 
