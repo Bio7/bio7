@@ -724,6 +724,10 @@ public class PackageInstallView extends ViewPart {
 
 		tree.addListener(SWT.MouseDown, new Listener() {
 			public void handleEvent(Event event) {
+				/* Only consider the left button! */
+				if (event.button > 1) {
+					return;
+				}
 				if (showFunc) {
 
 					Point point = new Point(event.x, event.y);
@@ -813,12 +817,16 @@ public class PackageInstallView extends ViewPart {
 						}
 						/* Load data on click! */
 						else {
-							//RServeUtil.evalR("try(force(" + text + "))", null);
+							// RServeUtil.evalR("try(force(" + text + "))", null);
 							String head = null;
 							String str = null;
+							int ind = text.indexOf("(");
+							if (ind > -1) {
+								text = text.substring(0, ind - 1);
+							}
 							try {
-								head = RServeUtil.fromR("class(" + text + ")").asString();
-								str = RServeUtil.fromR("capture.output(str(" + text + "))").asString();
+								head = RServeUtil.fromR("try(class(" + text + "))").asString();
+								str = RServeUtil.fromR("try(capture.output(str(" + text + ")))").asString();
 							} catch (REXPMismatchException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
@@ -851,13 +859,21 @@ public class PackageInstallView extends ViewPart {
 						/* Load data on click! */
 						else {
 							if (item.getParentItem() != null) {
-                               /*Load the data also from an expanded tree item!*/
+								/* Load the data also from an expanded tree item! */
 								text = item.getParentItem().getText();
 
 							}
+
+							int ind = text.indexOf("(");
+							if (ind > -1) {
+
+								text = text.substring(0, ind - 1);
+							}
 							RServeUtil.evalR("try(data(" + text + "))", null);
+
+							RServeUtil.evalR("try(print(summary(" + text + ")))", null);
+
 							RServeUtil.listRObjects();
-							System.out.println("data(" + text + "))");
 						}
 					}
 

@@ -17,11 +17,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.REXPMismatchException;
@@ -40,7 +36,7 @@ public class UpdateREnvironmentTableJob extends WorkspaceJob {
 
 	// protected String[] itemsSpatial;
 
-	public UpdateREnvironmentTableJob(String packageItem, Tree  table, boolean func) {
+	public UpdateREnvironmentTableJob(String packageItem, Tree table, boolean func) {
 		super("Update packages...");
 		this.packageItem = packageItem;
 		this.table = table;
@@ -59,9 +55,9 @@ public class UpdateREnvironmentTableJob extends WorkspaceJob {
 			try {
 				if (func) {
 
-					
 					packageLsfList = c.eval("try(lsf.str(\"package:" + packageItem + "\"))").asStrings();
-					packageLsList = c.eval("try(gsub(\" \\nNULL\", \"\",as.character(lapply(as.list(lsf.str(\"package:" + packageItem + "\")),args))))").asStrings();
+					packageLsList = c.eval("try(gsub(\" \\nNULL\", \"\",as.character(lapply(as.list(lsf.str(\"package:"
+							+ packageItem + "\")),args))))").asStrings();
 				} else {
 
 					packageDataList = c.eval("try(data(package=\"" + packageItem + "\")$results[,\"Item\"])")
@@ -78,40 +74,63 @@ public class UpdateREnvironmentTableJob extends WorkspaceJob {
 			display.syncExec(new Runnable() {
 				public void run() {
 					table.setVisible(false);
-					if (table != null) {
-						if (table.isDisposed() == false) {
+				}
+			});
+			if (table != null) {
+				if (table.isDisposed() == false) {
+					display.syncExec(new Runnable() {
+						public void run() {
 							table.removeAll();
-							if (func) {
-								TreeColumn colTitle = table.getColumn(0);
-								colTitle.setText("Function");
-								TreeColumn colDescr = table.getColumn(1);
-								colDescr.setText("Arguments");
-								for (int i = 0; i < packageLsfList.length; i++) {
-									TreeItem it = new TreeItem(table, SWT.NONE);
-									it.setText(0, packageLsfList[i]);
-									it.setText(1, packageLsList[i]);
-								}
+						}
+					});
 
-							} else {
-								TreeColumn colTitle = table.getColumn(0);
-								colTitle.setText("Dataset");
-								TreeColumn colDescr = table.getColumn(1);
-								colDescr.setText("Dataset Description");
-								for (int i = 0; i < packageDataList.length; i++) {
+					if (func) {
+						setColumnText("Function", "Arguments");
+						for (int i = 0; i < packageLsfList.length; i++) {
+							int count = i;
+							display.syncExec(new Runnable() {
+								public void run() {
 									TreeItem it = new TreeItem(table, SWT.NONE);
-									it.setText(0, packageDataList[i]);
-									it.setText(1, packageDataListDescription[i]);
+									it.setText(0, packageLsfList[count]);
+									it.setText(1, packageLsList[count]);
 								}
-							}
+							});
 						}
 
+					} else {
+						setColumnText("Dataset", "Dataset Description");
+						for (int i = 0; i < packageDataList.length; i++) {
+							int count = i;
+							display.syncExec(new Runnable() {
+								public void run() {
+									TreeItem it = new TreeItem(table, SWT.NONE);
+									it.setText(0, packageDataList[count]);
+									it.setText(1, packageDataListDescription[count]);
+								}
+							});
+						}
 					}
+				}
+
+			}
+			display.syncExec(new Runnable() {
+				public void run() {
 					table.setVisible(true);
 				}
 			});
 
 		}
 		return Status.OK_STATUS;
+	}
+
+	public void setColumnText(String arg1, String arg2) {
+		Display display = PlatformUI.getWorkbench().getDisplay();
+		display.syncExec(new Runnable() {
+			public void run() {
+				table.getColumn(0).setText(arg1);
+				table.getColumn(1).setText(arg2);
+			}
+		});
 	}
 
 }

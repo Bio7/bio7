@@ -648,7 +648,17 @@ public class RShellView extends ViewPart {
 		loadButton.setToolTipText("Load history");
 		loadButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				loadScript();
+				IDocument doc = new Document();
+				OpenFileCreateSourceTemplate ofct = new OpenFileCreateSourceTemplate(doc, 0, doc.getLength());
+				// a = t.substring(0, text.getCaretPosition());
+				// String b = t.substring(text.getCaretPosition(), t.length());
+				text.insert(doc.get());
+				if (ofct.getExtension() != null) {
+					if (ofct.getExtension().equals("*.Rhistory")) {
+						loadScript(ofct.getFilePath());
+						System.out.println("Loaded R-Shell history");
+					}
+				}
 			}
 		});
 		loadButton.setText("Load");
@@ -659,7 +669,15 @@ public class RShellView extends ViewPart {
 		saveButton.setToolTipText("Save history");
 		saveButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				saveScript();
+				IDocument doc = new Document();
+				SaveFileCreateSourceTemplate sfcst = new SaveFileCreateSourceTemplate(doc, 0, doc.getLength());
+				text.insert(doc.get());
+				if (sfcst.getExtension() != null) {
+					if (sfcst.getExtension().equals("*.Rhistory")) {
+						saveScript(sfcst.getFilePath());
+						System.out.println("Saved R-Shell history");
+					}
+				}
 			}
 		});
 		saveButton.setText("Save");
@@ -2474,7 +2492,7 @@ public class RShellView extends ViewPart {
 				if (name.startsWith("_") == false) {
 					Menu men = menuStack.peek();
 					MenuItem mntmRScripts = new MenuItem(men, SWT.CASCADE);
-					mntmRScripts.setText(name.replace("_"," "));
+					mntmRScripts.setText(name.replace("_", " "));
 					menuScripts = new Menu(mntmRScripts);
 					mntmRScripts.setMenu(menuScripts);
 					menuStack.push(menuScripts);
@@ -2650,9 +2668,9 @@ public class RShellView extends ViewPart {
 
 	}
 
-	private void loadScript() {
+	private void loadScript(String file) {
 		StringBuffer buffer = new StringBuffer();
-		String file = Bio7Dialog.openFile(new String[] { "*.txt", "*" });
+		// String file = Bio7Dialog.openFile(new String[] { "*.txt", "*" });
 		if (file != null) {
 			File fil = new File(file);
 
@@ -2681,13 +2699,13 @@ public class RShellView extends ViewPart {
 		}
 	}
 
-	private void saveScript() {
+	private void saveScript(String file) {
 		StringBuffer buffer = new StringBuffer();
 		for (int i = 0; i < history.length; i++) {
 			buffer.append(history[i]);
 			buffer.append(System.getProperty("line.separator"));
 		}
-		String file = Bio7Dialog.saveFile("*.txt");
+
 		if (file != null) {
 			File fil = new File(file);
 			FileWriter fileWriter = null;
