@@ -462,7 +462,15 @@ public class RShellView extends ViewPart {
 					else if (((e.stateMask & SWT.COMMAND) == SWT.COMMAND) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT
 							&& (e.stateMask & SWT.ALT) == SWT.ALT && (e.keyCode == 's')) {
 						IDocument doc = new Document();
-						new SaveFileCreateSourceTemplate(doc, 0, doc.getLength());
+						String ssel[]=getListShell().getSelection();
+						String sel;
+						if(ssel.length>0) {
+							 sel=ssel[0];
+						}
+						else {
+							sel=null;
+						}
+						new SaveFileCreateSourceTemplate(doc, 0, doc.getLength(), sel);
 						text.insert(doc.get());
 					} else if ((((e.stateMask & SWT.COMMAND) == SWT.COMMAND) && (e.stateMask & SWT.ALT) == SWT.ALT)
 							&& (e.stateMask & SWT.SHIFT) == SWT.SHIFT && (e.keyCode == 'b')) {
@@ -522,7 +530,14 @@ public class RShellView extends ViewPart {
 					else if (((e.stateMask & SWT.CTRL) == SWT.CTRL) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT
 							&& (e.stateMask & SWT.ALT) == SWT.ALT && (e.keyCode == 's')) {
 						IDocument doc = new Document();
-						new SaveFileCreateSourceTemplate(doc, 0, doc.getLength());
+						String ssel[] = getListShell().getSelection();
+						String sel;
+						if (ssel.length > 0) {
+							sel = ssel[0];
+						} else {
+							sel = null;
+						}
+						new SaveFileCreateSourceTemplate(doc, 0, doc.getLength(), sel);
 						text.insert(doc.get());
 					} else if (((e.stateMask & SWT.ALT) == SWT.ALT) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT
 							&& (e.keyCode == '-')) {
@@ -670,7 +685,14 @@ public class RShellView extends ViewPart {
 		saveButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				IDocument doc = new Document();
-				SaveFileCreateSourceTemplate sfcst = new SaveFileCreateSourceTemplate(doc, 0, doc.getLength());
+				String ssel[] = getListShell().getSelection();
+				String sel;
+				if (ssel.length > 0) {
+					sel = ssel[0];
+				} else {
+					sel = null;
+				}
+				SaveFileCreateSourceTemplate sfcst = new SaveFileCreateSourceTemplate(doc, 0, doc.getLength(), sel);
 				text.insert(doc.get());
 				if (sfcst.getExtension() != null) {
 					if (sfcst.getExtension().equals("*.Rhistory")) {

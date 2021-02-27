@@ -829,6 +829,7 @@ public class PackageInstallView extends ViewPart {
 								str = RServeUtil.fromR("try(capture.output(str(" + text + ")))").asString();
 							} catch (REXPMismatchException e1) {
 								// TODO Auto-generated catch block
+								str="NA";
 								e1.printStackTrace();
 							}
 
