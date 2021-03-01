@@ -818,18 +818,20 @@ public class PackageInstallView extends ViewPart {
 						/* Load data on click! */
 						else {
 							// RServeUtil.evalR("try(force(" + text + "))", null);
-							String head = null;
-							String str = null;
+							String head = "NA";
+							String str = "NA";
 							int ind = text.indexOf("(");
 							if (ind > -1) {
 								text = text.substring(0, ind - 1);
 							}
 							try {
-								head = RServeUtil.fromR("try(class(" + text + "))").asString();
-								str = RServeUtil.fromR("try(capture.output(str(" + text + ")))").asString();
+								String evalHead = "tryCatch({class(" + text + ")},error=function(error_message) {return(\"Dataset not available!\")})";
+								head = RServeUtil.fromR(evalHead).asString();
+								String evalStr = "try(capture.output(tryCatch({str(" + text + ")},error=function(error_message) {return(\"Load data first!\")})))";
+								str = RServeUtil.fromR(evalStr).asString();
 							} catch (REXPMismatchException e1) {
 								// TODO Auto-generated catch block
-								str="NA";
+								
 								e1.printStackTrace();
 							}
 
