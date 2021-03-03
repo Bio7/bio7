@@ -8,6 +8,9 @@ import java.util.regex.Pattern;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -18,6 +21,7 @@ import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.KeyEvent;
@@ -26,7 +30,9 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPartListener2;
@@ -44,18 +50,17 @@ import com.eco.bio7.browser.editor.outline.HTMLEditorLabelProvider;
 import com.eco.bio7.browser.editor.outline.HTMLEditorOutlineNode;
 import com.eco.bio7.browser.editor.outline.HTMLEditorTreeContentProvider;
 
-
-public class XMLEditor extends TextEditor  {
+public class XMLEditor extends TextEditor {
 
 	private ColorManager colorManager;
-	
+
 	private IContentOutlinePage contentOutlinePage;
 	// public ClassModel currentClassModel;
 	public HTMLEditorTreeContentProvider tcp;
 	private TreeViewer contentOutlineViewer;
 	public Vector<HTMLEditorOutlineNode> nodes = new Vector<HTMLEditorOutlineNode>();
 	public HTMLEditorOutlineNode baseNode;// Function category!
-	//private RConfiguration rconf;
+	// private RConfiguration rconf;
 
 	private Object[] expanded;
 
@@ -70,47 +75,47 @@ public class XMLEditor extends TextEditor  {
 	private IPreferenceStore store;
 
 	protected IEditorPart editor;
-	
 
 	public XMLEditor() {
 		super();
-		
+
 		colorManager = new ColorManager();
-		setSourceViewerConfiguration(new XMLConfiguration(colorManager,this));
+		setSourceViewerConfiguration(new XMLConfiguration(colorManager, this));
 		setDocumentProvider(new XMLDocumentProvider());
-		//getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
-		//getSite().getWorkbenchWindow().getSelectionService().addSelectionListener(listener);
+		// getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
+		// getSite().getWorkbenchWindow().getSelectionService().addSelectionListener(listener);
 	}
-	
+
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.reditor");
 		getSite().getWorkbenchWindow().getSelectionService().addSelectionListener(listener);
-		//viewer = (ProjectionViewer) getSourceViewer();
+		// viewer = (ProjectionViewer) getSourceViewer();
 
-		//projectionSupport = new ProjectionSupport(viewer, getAnnotationAccess(), getSharedColors());
-		//projectionSupport.install();
+		// projectionSupport = new ProjectionSupport(viewer, getAnnotationAccess(),
+		// getSharedColors());
+		// projectionSupport.install();
 
 		// turn projection mode on
-		//viewer.doOperation(ProjectionViewer.TOGGLE);
+		// viewer.doOperation(ProjectionViewer.TOGGLE);
 
-		//annotationModel = viewer.getProjectionAnnotationModel();
+		// annotationModel = viewer.getProjectionAnnotationModel();
 
 		getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
 		selectedItems = new ArrayList<TreeItem>();
 		// ISourceViewer viewer = getSourceViewer();
 		store = Activator.getDefault().getPreferenceStore();
 		// updateFoldingStructure(new ArrayList());
-		
 
-		//System.out.println(partRef.getId());
+		// System.out.println(partRef.getId());
 		// IEditorPart editorPart =
 		// getSite().getPage().getActiveEditor();
 
-		  editor = this;//partRef.getPage().getActiveEditor();
-		//ITextOperationTarget target = (ITextOperationTarget) editor.getAdapter(ITextOperationTarget.class);
+		editor = this;// partRef.getPage().getActiveEditor();
+		// ITextOperationTarget target = (ITextOperationTarget)
+		// editor.getAdapter(ITextOperationTarget.class);
 
-		//final ITextEditor textEditor = (ITextEditor) editor;
+		// final ITextEditor textEditor = (ITextEditor) editor;
 		if (editor instanceof XMLEditor) {
 
 			((StyledText) editor.getAdapter(Control.class)).addKeyListener(new KeyListener() {
@@ -143,72 +148,55 @@ public class XMLEditor extends TextEditor  {
 
 				@Override
 				public void mouseDown(MouseEvent e) {
-					/*IDocumentProvider prov = textEditor.getDocumentProvider();
-					IEditorInput inp = editor.getEditorInput();
-					if (prov != null) {
-						IDocument document = prov.getDocument(inp);
-						if (document != null) {
-
-							ITextSelection textSelection = (ITextSelection) editor.getSite().getSelectionProvider().getSelection();
-							int offset = textSelection.getOffset();
-							if (store.getBoolean("MARK_WORDS")) {
-								markWords(offset, document, editor);
-							}
-
-							int lineNumber = 0;
-
-							try {
-								lineNumber = document.getLineOfOffset(offset);
-							} catch (BadLocationException e1) {
-
-								e1.printStackTrace();
-							}
-
-							TreeItem treeItem = null;
-							if (contentOutlineViewer.getTree().isDisposed() == false) {
-								if (contentOutlineViewer.getTree().getItemCount() > 0) {
-									if (contentOutlineViewer.getTree().getItem(0).isDisposed() == false) {
-										treeItem = contentOutlineViewer.getTree().getItem(0);
-										contentOutlineViewer.getTree().setRedraw(false);
-
-										// Object[] exp =
-										// contentOutlineViewer.getExpandedElements();
-
-										TreePath[] treePaths = contentOutlineViewer.getExpandedTreePaths();
-										contentOutlineViewer.expandAll();
-										contentOutlineViewer.refresh();
-										walkTreeLineNumber(treeItem, lineNumber + 1);
-
-										// contentOutlineViewer.setExpandedElements(expanded);
-
-										contentOutlineViewer.setExpandedTreePaths(treePaths);
-										for (int i = 0; i < selectedItems.size(); i++) {
-											TreeItem it = (TreeItem) selectedItems.get(i);
-											it.setExpanded(true);
-											TreeItem parent = it;
-											while (parent != null) {
-												if (parent.getParentItem() != null) {
-													parent = parent.getParentItem();
-													parent.setExpanded(true);
-												} else {
-													break;
-												}
-
-											}
-											contentOutlineViewer.refresh(it);
-										}
-
-										contentOutlineViewer.getTree().setRedraw(true);
-
-									}
-
-								}
-							}
-
-						}
-
-					}
-					selectedItems.clear();*/
+					/*
+					 * IDocumentProvider prov = textEditor.getDocumentProvider(); IEditorInput inp =
+					 * editor.getEditorInput(); if (prov != null) { IDocument document =
+					 * prov.getDocument(inp); if (document != null) {
+					 * 
+					 * ITextSelection textSelection = (ITextSelection)
+					 * editor.getSite().getSelectionProvider().getSelection(); int offset =
+					 * textSelection.getOffset(); if (store.getBoolean("MARK_WORDS")) {
+					 * markWords(offset, document, editor); }
+					 * 
+					 * int lineNumber = 0;
+					 * 
+					 * try { lineNumber = document.getLineOfOffset(offset); } catch
+					 * (BadLocationException e1) {
+					 * 
+					 * e1.printStackTrace(); }
+					 * 
+					 * TreeItem treeItem = null; if (contentOutlineViewer.getTree().isDisposed() ==
+					 * false) { if (contentOutlineViewer.getTree().getItemCount() > 0) { if
+					 * (contentOutlineViewer.getTree().getItem(0).isDisposed() == false) { treeItem
+					 * = contentOutlineViewer.getTree().getItem(0);
+					 * contentOutlineViewer.getTree().setRedraw(false);
+					 * 
+					 * // Object[] exp = // contentOutlineViewer.getExpandedElements();
+					 * 
+					 * TreePath[] treePaths = contentOutlineViewer.getExpandedTreePaths();
+					 * contentOutlineViewer.expandAll(); contentOutlineViewer.refresh();
+					 * walkTreeLineNumber(treeItem, lineNumber + 1);
+					 * 
+					 * // contentOutlineViewer.setExpandedElements(expanded);
+					 * 
+					 * contentOutlineViewer.setExpandedTreePaths(treePaths); for (int i = 0; i <
+					 * selectedItems.size(); i++) { TreeItem it = (TreeItem) selectedItems.get(i);
+					 * it.setExpanded(true); TreeItem parent = it; while (parent != null) { if
+					 * (parent.getParentItem() != null) { parent = parent.getParentItem();
+					 * parent.setExpanded(true); } else { break; }
+					 * 
+					 * } contentOutlineViewer.refresh(it); }
+					 * 
+					 * contentOutlineViewer.getTree().setRedraw(true);
+					 * 
+					 * }
+					 * 
+					 * } }
+					 * 
+					 * }
+					 * 
+					 * } selectedItems.clear();
+					 */
 
 				}
 
@@ -220,34 +208,27 @@ public class XMLEditor extends TextEditor  {
 			});
 		}
 
-	
-		
-		
 	}
-	
+
 	public void dispose() {
 		colorManager.dispose();
 		super.dispose();
 	}
+
 	private IPartListener2 partListener = new IPartListener2() {
 
 		@Override
 		public void partActivated(IWorkbenchPartReference partRef) { //
 			if (partRef.getId().equals("com.eco.bio7.browser.guieditor")) {
-				
+
 			}
 
 		}
 
-		
-
 		/*
-		 * This method is recursively called to walk all subtrees and compare
-		 * the line numbers of selected tree items with the selected line number
-		 * in the editor!
+		 * This method is recursively called to walk all subtrees and compare the line
+		 * numbers of selected tree items with the selected line number in the editor!
 		 */
-
-		
 
 		private void updateHierachyView(IWorkbenchPartReference partRef, final boolean closed) {
 
@@ -284,6 +265,7 @@ public class XMLEditor extends TextEditor  {
 		}
 
 	};
+
 	public void walkTreeLineNumber(TreeItem item, int lineNumber) {
 
 		if (item.isDisposed() == false) {
@@ -319,8 +301,7 @@ public class XMLEditor extends TextEditor  {
 							} else {
 
 								/*
-								 * Recursive call of the method for
-								 * subnodes!
+								 * Recursive call of the method for subnodes!
 								 */
 								// if(treeItemLine.size()>2){
 								/* Set recursion depth! */
@@ -347,9 +328,10 @@ public class XMLEditor extends TextEditor  {
 		}
 
 	}
+
 	/*
-	 * Here we search for similar words of a selected word in the editor.
-	 * The results will be marked!
+	 * Here we search for similar words of a selected word in the editor. The
+	 * results will be marked!
 	 */
 	public void markWords(int offset, IDocument doc, IEditorPart editor) {
 
@@ -367,7 +349,8 @@ public class XMLEditor extends TextEditor  {
 					e.printStackTrace();
 				}
 
-				if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false && (c == '_') == false)
+				if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false
+						&& (c == '_') == false)
 					break;
 
 				length++;
@@ -389,7 +372,8 @@ public class XMLEditor extends TextEditor  {
 					e.printStackTrace();
 				}
 
-				if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false && (c == '_') == false)
+				if (Character.isLetter(c) == false && (c == '.') == false && Character.isDigit(c) == false
+						&& (c == '_') == false)
 					break;
 
 				minusLength--;
@@ -419,8 +403,8 @@ public class XMLEditor extends TextEditor  {
 			 * Display display = PlatformUI.getWorkbench().getDisplay();
 			 * display.syncExec(new Runnable() {
 			 * 
-			 * public void run() { textViewer.setSelectedRange(wordOffset,
-			 * resultedLength); } });
+			 * public void run() { textViewer.setSelectedRange(wordOffset, resultedLength);
+			 * } });
 			 */
 
 			if (searchForWord != null) {
@@ -454,8 +438,8 @@ public class XMLEditor extends TextEditor  {
 
 			/*
 			 * try { htmlHelpText = textViewer.getDocument().get(wordOffset,
-			 * resultedLength); } catch (BadLocationException e) { // TODO
-			 * Auto-generated catch block e.printStackTrace(); }
+			 * resultedLength); } catch (BadLocationException e) { // TODO Auto-generated
+			 * catch block e.printStackTrace(); }
 			 */
 		} else {
 			IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
@@ -469,196 +453,249 @@ public class XMLEditor extends TextEditor  {
 	}
 
 	// the listener we register with the selection service
-		private ISelectionListener listener = new ISelectionListener() {
-			public void selectionChanged(IWorkbenchPart sourcepart, ISelection selection) {
+	private ISelectionListener listener = new ISelectionListener() {
+		public void selectionChanged(IWorkbenchPart sourcepart, ISelection selection) {
 
-				// we ignore our own selections
-				if (sourcepart != XMLEditor.this) {
-					// showSelection(sourcepart, selection);
+			// we ignore our own selections
+			if (sourcepart != XMLEditor.this) {
+				// showSelection(sourcepart, selection);
 
-					if (selection instanceof IStructuredSelection) {
-						IStructuredSelection strucSelection = (IStructuredSelection) selection;
-						Object selectedObj = strucSelection.getFirstElement();
-						if (selectedObj instanceof HTMLEditorOutlineNode) {
+				if (selection instanceof IStructuredSelection) {
+					IStructuredSelection strucSelection = (IStructuredSelection) selection;
+					Object selectedObj = strucSelection.getFirstElement();
+					if (selectedObj instanceof HTMLEditorOutlineNode) {
 
-							HTMLEditorOutlineNode cm = (HTMLEditorOutlineNode) selectedObj;
-							if (cm != null) {
+						HTMLEditorOutlineNode cm = (HTMLEditorOutlineNode) selectedObj;
+						if (cm != null) {
 
-								int lineNumber = cm.getLineNumber();
-								/*
-								 * If a line number exist - if a class member of
-								 * type is available!
-								 */
-								if (lineNumber > 0) {
-									goToLine(XMLEditor.this, lineNumber);
-								}
-
+							int lineNumber = cm.getLineNumber();
+							/*
+							 * If a line number exist - if a class member of type is available!
+							 */
+							if (lineNumber > 0) {
+								goToLine(XMLEditor.this, lineNumber);
 							}
 
 						}
-					}
 
+					}
+				}
+
+			}
+		}
+
+	};
+
+	private static void goToLine(IEditorPart editorPart, int toLine) {
+		if ((editorPart instanceof XMLEditor) || toLine <= 0) {
+
+			ITextEditor editor = (ITextEditor) editorPart;
+
+			IDocumentProvider prov = editor.getDocumentProvider();
+			IEditorInput inp = editor.getEditorInput();
+			if (prov != null) {
+				IDocument document = prov.getDocument(inp);
+				if (document != null) {
+					IRegion region = null;
+
+					try {
+
+						region = document.getLineInformation(toLine - 1);
+					} catch (BadLocationException e) {
+
+					}
+					if (region != null) {
+						editor.selectAndReveal(region.getOffset(), region.getLength());
+					}
 				}
 			}
+		}
+	}
 
-		};
+	public Object getAdapter(Class key) {
+		if (key.equals(IContentOutlinePage.class)) {
 
-		private static void goToLine(IEditorPart editorPart, int toLine) {
-			if ((editorPart instanceof XMLEditor) || toLine <= 0) {
+			return getContentOutlinePage();
 
-				ITextEditor editor = (ITextEditor) editorPart;
+		} else {
+			return super.getAdapter(key);
+		}
+	}
 
-				IDocumentProvider prov = editor.getDocumentProvider();
-				IEditorInput inp = editor.getEditorInput();
-				if (prov != null) {
-					IDocument document = prov.getDocument(inp);
-					if (document != null) {
-						IRegion region = null;
+	public void outlineInputChanged(Vector nodesALt, Vector nodesNew) {
 
-						try {
+		if (contentOutlineViewer != null) {
+			/* Store temporary the old expanded elements! */
+			expanded = contentOutlineViewer.getExpandedElements();
 
-							region = document.getLineInformation(toLine - 1);
-						} catch (BadLocationException e) {
+			TreeViewer viewer = contentOutlineViewer;
 
+			if (viewer != null) {
+
+				Control control = viewer.getControl();
+				if (control != null && !control.isDisposed()) {
+
+					control.setRedraw(false);
+					/* Create default categories! */
+
+					/* Set the new tree nodes! */
+					viewer.setInput(nodesNew);
+					/* First item is the file! */
+					TreeItem treeItem = contentOutlineViewer.getTree().getItem(0);
+					/* Expand to get access to the subnodes! */
+					contentOutlineViewer.setExpandedState(treeItem.getData(), true);
+					walkTree(treeItem);
+					/* The default expand level! */
+					contentOutlineViewer.expandToLevel(2);
+					control.setRedraw(true);
+				}
+			}
+		}
+
+	}
+
+	/*
+	 * This method is recursively called to walk all subtrees and compare the names
+	 * of the nodes with the old ones!
+	 */
+
+	public void walkTree(TreeItem item) {
+
+		for (int i = 0; i < expanded.length; i++) {
+
+			for (int j = 0; j < item.getItemCount(); j++) {
+
+				TreeItem it = item.getItem(j);
+
+				if (((HTMLEditorOutlineNode) it.getData()).getName()
+						.equals(((HTMLEditorOutlineNode) expanded[i]).getName())) {
+					contentOutlineViewer.setExpandedState(it.getData(), true);
+					/* Recursive call of the method for subnodes! */
+					walkTree(it);
+					break;
+				}
+
+			}
+
+		}
+
+	}
+
+	public IContentOutlinePage getContentOutlinePage() {
+		if (contentOutlinePage == null) {
+			// The content outline is just a tree.
+			//
+
+			contentOutlinePage = new MyContentOutlinePage();
+
+		}
+
+		return contentOutlinePage;
+	}
+
+	public void createNodes() {
+		nodes.clear();
+		baseNode = new HTMLEditorOutlineNode("File", 0, "base", null);
+		nodes.add(baseNode);
+
+	}
+
+	class MyContentOutlinePage extends ContentOutlinePage {
+		boolean sort = true;
+
+		public void createControl(Composite parent) {
+			super.createControl(parent);
+
+			contentOutlineViewer = getTreeViewer();
+			Action sortAlphabetAction = new Action("Sort", IAction.AS_PUSH_BUTTON) {
+
+				@Override
+				public void run() {
+
+					TreeViewer treeViewer2 = getTreeViewer();
+					Tree tree = treeViewer2.getTree();
+					tree.setRedraw(false);
+					try {
+
+						// getTreeViewer().collapseAll();
+						TreeViewer viewer = contentOutlineViewer;
+						// Sort tree alphabetically
+						if (sort) {
+
+							viewer.setComparator(new ViewerComparator());
+							sort = false;
+						} else {
+							viewer.setComparator(null);
+							sort = true;
 						}
-						if (region != null) {
-							editor.selectAndReveal(region.getOffset(), region.getLength());
-						}
+					} finally {
+						tree.setRedraw(true);
 					}
+					tree.redraw();
 				}
-			}
-		}
 
-		public Object getAdapter(Class key) {
-			if (key.equals(IContentOutlinePage.class)) {
+			};
+			sortAlphabetAction.setImageDescriptor(Activator.getImageDescriptor("icons/alphab_sort_co.png"));
+			Action collapseAllAction = new Action("Collapse", IAction.AS_PUSH_BUTTON) {
 
-				return getContentOutlinePage();
+				@Override
+				public void run() {
 
-			} else {
-				return super.getAdapter(key);
-			}
-		}
+					TreeViewer treeViewer2 = getTreeViewer();
+					Tree tree = treeViewer2.getTree();
+					tree.setRedraw(false);
+					try {
 
-		public void outlineInputChanged(Vector nodesALt, Vector nodesNew) {
+						getTreeViewer().collapseAll();
 
-			if (contentOutlineViewer != null) {
-				/* Store temporary the old expanded elements! */
-				expanded = contentOutlineViewer.getExpandedElements();
-
-				TreeViewer viewer = contentOutlineViewer;
-
-				if (viewer != null) {
-
-					Control control = viewer.getControl();
-					if (control != null && !control.isDisposed()) {
-
-						control.setRedraw(false);
-						/* Create default categories! */
-
-						/* Set the new tree nodes! */
-						viewer.setInput(nodesNew);
-						/* First item is the file! */
-						TreeItem treeItem = contentOutlineViewer.getTree().getItem(0);
-						/* Expand to get access to the subnodes! */
-						contentOutlineViewer.setExpandedState(treeItem.getData(), true);
-						walkTree(treeItem);
-						/* The default expand level! */
-						contentOutlineViewer.expandToLevel(2);
-						control.setRedraw(true);
+					} finally {
+						tree.setRedraw(true);
 					}
-				}
-			}
-
-		}
-
-		/*
-		 * This method is recursively called to walk all subtrees and compare the
-		 * names of the nodes with the old ones!
-		 */
-
-		public void walkTree(TreeItem item) {
-
-			for (int i = 0; i < expanded.length; i++) {
-
-				for (int j = 0; j < item.getItemCount(); j++) {
-
-					TreeItem it = item.getItem(j);
-
-					if (((HTMLEditorOutlineNode) it.getData()).getName().equals(((HTMLEditorOutlineNode) expanded[i]).getName())) {
-						contentOutlineViewer.setExpandedState(it.getData(), true);
-						/* Recursive call of the method for subnodes! */
-						walkTree(it);
-						break;
-					}
-
+					tree.redraw();
 				}
 
-			}
+			};
+			collapseAllAction.setImageDescriptor(Activator.getImageDescriptor("icons/collapseall.png"));
+			IActionBars actionBars = getSite().getActionBars();
+			IToolBarManager toolbarManager = actionBars.getToolBarManager();
+			toolbarManager.add(collapseAllAction);
+			toolbarManager.add(sortAlphabetAction);
+
+			contentOutlineViewer.addSelectionChangedListener(this);
+
+			// Set up the tree viewer.
+
+			tcp = new HTMLEditorTreeContentProvider();
+			contentOutlineViewer.setContentProvider(new HTMLEditorTreeContentProvider());
+			contentOutlineViewer.setInput(nodes);
+			contentOutlineViewer.setLabelProvider(new HTMLEditorLabelProvider());
+
+			// Provide the input to the ContentProvider
+
+			getSite().setSelectionProvider(contentOutlineViewer);
 
 		}
 
-		public IContentOutlinePage getContentOutlinePage() {
-			if (contentOutlinePage == null) {
-				// The content outline is just a tree.
-				//
-
-				contentOutlinePage = new MyContentOutlinePage();
-
-			}
-
-			return contentOutlinePage;
-		}
-
-		public void createNodes() {
-			nodes.clear();
-			baseNode = new HTMLEditorOutlineNode("File", 0, "base", null);
-			nodes.add(baseNode);
-
-		}
-
-		class MyContentOutlinePage extends ContentOutlinePage {
-
-			public void createControl(Composite parent) {
-				super.createControl(parent);
-
-				contentOutlineViewer = getTreeViewer();
-
-				contentOutlineViewer.addSelectionChangedListener(this);
-
-				// Set up the tree viewer.
-
-				tcp = new HTMLEditorTreeContentProvider();
-				contentOutlineViewer.setContentProvider(new HTMLEditorTreeContentProvider());
-				contentOutlineViewer.setInput(nodes);
-				contentOutlineViewer.setLabelProvider(new HTMLEditorLabelProvider());
-
-				// Provide the input to the ContentProvider
-
-				getSite().setSelectionProvider(contentOutlineViewer);
-
-			}
-
-			public void traditional() {
-				for (int i = 0; nodes != null && i < nodes.size(); i++) {
-					HTMLEditorOutlineNode node = (HTMLEditorOutlineNode) nodes.elementAt(i);
-					addNode(null, node);
-				}
-			}
-
-			private void addNode(TreeItem parentItem, HTMLEditorOutlineNode node) {
-				TreeItem item = null;
-				if (parentItem == null)
-					item = new TreeItem(getTreeViewer().getTree(), SWT.NONE);
-				else
-					item = new TreeItem(parentItem, SWT.NONE);
-
-				item.setText(node.getName());
-
-				Vector subs = node.getSubCategories();
-				for (int i = 0; subs != null && i < subs.size(); i++)
-					addNode(item, (HTMLEditorOutlineNode) subs.elementAt(i));
+		public void traditional() {
+			for (int i = 0; nodes != null && i < nodes.size(); i++) {
+				HTMLEditorOutlineNode node = (HTMLEditorOutlineNode) nodes.elementAt(i);
+				addNode(null, node);
 			}
 		}
-	
+
+		private void addNode(TreeItem parentItem, HTMLEditorOutlineNode node) {
+			TreeItem item = null;
+			if (parentItem == null)
+				item = new TreeItem(getTreeViewer().getTree(), SWT.NONE);
+			else
+				item = new TreeItem(parentItem, SWT.NONE);
+
+			item.setText(node.getName());
+
+			Vector subs = node.getSubCategories();
+			for (int i = 0; subs != null && i < subs.size(); i++)
+				addNode(item, (HTMLEditorOutlineNode) subs.elementAt(i));
+		}
+	}
 
 }
