@@ -548,6 +548,7 @@ public class XMLEditor extends TextEditor {
 					/* The default expand level! */
 					contentOutlineViewer.expandToLevel(2);
 					control.setRedraw(true);
+					control.redraw();
 				}
 			}
 		}
@@ -646,7 +647,9 @@ public class XMLEditor extends TextEditor {
 					tree.setRedraw(false);
 					try {
 
+						/* The default expand level! */
 						getTreeViewer().collapseAll();
+						contentOutlineViewer.expandToLevel(2);
 
 					} finally {
 						tree.setRedraw(true);
