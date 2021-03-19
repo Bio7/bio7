@@ -30,7 +30,7 @@ public class WorkbenchPreferenceJava extends FieldEditorPreferencePage
 		// addField(new BooleanFieldEditor("classbody", "Default parse and compile a
 		// Java file with a classbody", getFieldEditorParent()));
 		addField(new ComboFieldEditor(
-				"compiler_version", "Java Version", new String[][] {{ "14", "14" }, { "13", "13" },{ "12", "12" },{ "11", "11" }, { "10", "10" }, { "1.9", "1.9" },
+				"compiler_version", "Java Version", new String[][] {{ "15", "15" },{ "14", "14" }, { "13", "13" },{ "12", "12" },{ "11", "11" }, { "10", "10" }, { "1.9", "1.9" },
 						{ "1.8", "1.8" }, { "1.7", "1.7" }, { "1.6", "1.6" }, { "1.5", "1.5" }, { "1.4", "1.4" } },
 				getFieldEditorParent()));
 		addField(new BooleanFieldEditor("compiler_debug", "Generate Debugging Information", BooleanFieldEditor.DEFAULT,
