@@ -456,7 +456,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			double java2dScale = store.getDouble("JAVA2D_UI_SCALE");
 			System.setProperty("sun.java2d.uiScale", Double.toString(java2dScale));
 		}
-		System.setProperty("nashorn.args", "--no-deprecation-warning");
+		//System.setProperty("nashorn.args", "--no-deprecation-warning");
 		//-Dnashorn.args=--no-deprecation-warning
 		IEditorRegistry registry = PlatformUI.getWorkbench().getEditorRegistry();
 		registry.setDefaultEditor("*.Rnw", "org.eclipse.ui.DefaultTextEditor");
