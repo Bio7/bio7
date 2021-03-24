@@ -8,7 +8,6 @@ public abstract class RScriptExecuter implements RScriptExecuterInterface {
 	@Override
 	public void evaluate(RConnection con, IProgressMonitor monitor) {
 		// TODO Auto-generated method stub
-		
 	}
 
 }
