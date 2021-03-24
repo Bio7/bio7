@@ -123,7 +123,7 @@ public class TransferGeometryView extends ViewPart {
 
 		combo = new Combo(container, SWT.NONE);
 		GridData gd_combo = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_combo.heightHint = 30;
+		gd_combo.heightHint = 25;
 		combo.setLayoutData(gd_combo);
 		combo.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -199,7 +199,7 @@ public class TransferGeometryView extends ViewPart {
 
 		combo_1 = new Combo(container, SWT.NONE);
 		GridData gd_combo_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_combo_1.heightHint = 30;
+		gd_combo_1.heightHint = 25;
 		combo_1.setLayoutData(gd_combo_1);
 		combo_1.addSelectionListener(new SelectionAdapter() {
 

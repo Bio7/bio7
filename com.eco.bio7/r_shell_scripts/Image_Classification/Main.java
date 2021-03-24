@@ -10,1145 +10,817 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import static com.eco.bio7.image.ImageMethods.imageFeatureStackToR;
-import static com.eco.bio7.rbridge.RServeUtil.evalRScript;
-import static com.eco.bio7.rbridge.RServeUtil.listRObjects;
-import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.Vector;
-import org.apache.commons.io.FileUtils;
+
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.bindings.keys.KeyStroke;
+import org.eclipse.jface.bindings.keys.ParseException;
+import org.eclipse.jface.fieldassist.ContentProposalAdapter;
+import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
+import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
+import org.eclipse.jface.fieldassist.TextContentAdapter;
+import org.eclipse.jface.wizard.IWizard;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.DropTarget;
+import org.eclipse.swt.dnd.DropTargetAdapter;
+import org.eclipse.swt.dnd.DropTargetEvent;
+import org.eclipse.swt.dnd.FileTransfer;
+import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.wizards.IWizardDescriptor;
+
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.collection.CustomView;
-import com.eco.bio7.collection.Work;
+import com.eco.bio7.batch.FileRoot;
+import com.eco.bio7.console.Bio7Console;
+import com.eco.bio7.image.CanvasView;
 import com.eco.bio7.image.RImageMethodsView;
 import com.eco.bio7.image.Util;
-import com.eco.bio7.rbridge.RServe;
-import com.eco.bio7.rbridge.RState;
-import Catalano.Imaging.FastBitmap;
-import Catalano.Imaging.Filters.GaborFilter;
-import _util.ImageToRTransfer;
-import _util.Kuwahara_Filter;
-import _util.Lipschitz_;
-import boofcv.alg.filter.derivative.DerivativeLaplacian;
-import boofcv.alg.filter.derivative.DerivativeType;
-import boofcv.alg.filter.derivative.GImageDerivativeOps;
-import boofcv.struct.border.BorderType;
-import boofcv.struct.image.GrayF32;
 import ij.IJ;
 import ij.ImagePlus;
-import ij.ImageStack;
-import ij.WindowManager;
-import ij.gui.ImageRoi;
-import ij.gui.Overlay;
 import ij.gui.Roi;
 import ij.gui.RoiListener;
-import ij.plugin.ChannelSplitter;
-import ij.plugin.Duplicator;
-import ij.plugin.ImageCalculator;
-import ij.plugin.filter.GaussianBlur;
-import ij.plugin.filter.RankFilters;
-import ij.plugin.frame.RoiManager;
-import ij.process.ColorProcessor;
-import ij.process.ColorSpaceConverter;
-import ij.process.FloatProcessor;
-import ij.process.ImageConverter;
-import ij.process.ImageProcessor;
 
-public class Main extends com.eco.bio7.compile.Model {
-
-	private String[] files;
-	private _ModelGui gui;
+public class _ModelGui extends Composite implements RoiListener {
+	protected boolean convolve;
+	protected boolean gaussian;
+	protected boolean median;
+	protected boolean mean;
+	protected boolean maximum;
+	protected boolean minimum;
+	protected boolean edges;
+	protected String convolveOption = "text1=[\n-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 24 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n] normalize";
+	protected String medianOption = "2";
+	protected String channelOption = "";
+	protected String gaussianOption = "2";
+	protected String meanOption = "2";
+	protected String maximumOption = "2";
+	protected String minimumOption = "2";
+	private Main model;
+	protected Text channelSelectionText;
+	protected Text optionGaussian;
+	protected Text optionMedian;
+	protected Text optionConvolve;
+	protected Text optionsMean;
+	protected Text optionsMaximum;
+	protected Text optionsMinimum;
+	protected Button checkGaussianFilter;
+	protected Button checkMedian;
+	protected Button checkConvolve;
+	protected Button checkMaximum;
+	protected Button checkMean;
+	protected Button checkMinimum;
+	protected Button checkEdges;
+	private CTabFolder tabFolder;
+	private CTabItem tabItemFeatures;
+	private Composite composite;
+	private CTabItem tbtmMore;
+	private Composite composite_1;
+	private Button btnLoadConfiguration;
+	private Button btnNewButton_4;
+	protected Text txtTrainingRScript;
+	private Button btnNewButton_5;
+	private Button btnRClassificationScript;
+	protected Text txtClassificationRScript;
+	protected String pathTrainingScript;
+	protected String pathClassificationScript;
+	protected Button checkConvertToHsb;
+	protected boolean toHsb;
+	private ScrolledComposite scrolledComposite;
+	protected Button checkGradientHessian;
+	protected Text optionGradientHessian;
+	protected Button checkLaplacian;
+	protected Text optionLaplacian;
+	protected boolean gradientHessian;
+	protected String gradientHessianOption;
+	protected boolean laplacian;
+	protected String laplacianOption;
+	protected Button checkVariance;
+	protected Text optionsVariance;
+	protected boolean variance;
+	protected String varianceOption;
+	protected Text optionsEdges;
+	protected Text optionDiffGaussian;
+	protected Button checkDifferenceOfGaussian;
+	protected boolean diffOfGaussian;
+	protected String diffGaussianOption;
+	protected Button checkLipschitz;
+	protected Text optionLipschitz;
+	protected Button checkGabor;
+	protected Text optionGabor;
+	protected boolean lipschitz;
+	protected String lipschitzOption;
+	protected boolean gabor;
+	protected String gaborOption;
+	protected Button checkUseImportMacro;
+	protected Text textImageJMacro;
+	protected boolean useImportMacro;
+	protected String textOptionMacro;
+	private Button buttonMacro;
+	protected Button checkTopHat;
+	protected Text optionsTopHat;
+	protected boolean topHat;
+	protected String topHatOption;
+	protected Button checkKuwahara;
+	protected Text optionsKuwahara;
+	protected boolean kuwahara;
+	protected String kuwaharaOption;
+	protected String edgesOption;
+	protected Button checkUseDirectory;
+	protected boolean useDirectoryDialog;
+	protected Button checkConvertToLab;
+	protected boolean toLab;
+	private Label transferTypeLabel;
+	protected Combo transferTypeCombo;
 	protected int transferType;
-	protected String currentFilePathMultipleDialog;
-	protected IProgressMonitor actionMonitor;
-	private boolean jobDone = true;
-	private Job previewJob;
+	protected boolean interruptBatch;
+	private Button interruptButton;
+	protected Button checkOpenStack;
+	protected boolean openStack;
+	protected Button checkUseGroups;
+	protected boolean useGroups;
+	protected Button checkGeneratePreview;
+	protected boolean generatePreview;
+	private Label scriptsLabel;
+	private Label featureLabel;
+	private Label previewLabel;
+	private Label classificationOpenLabel;
+	protected Button checkRetrainPreview;
+	protected boolean retrainPreview;
+	private Label lblNewLabel;
+	private Label lblLutToApply;
+	protected Text optionOpacity;
+	protected Text optionLUT;
+	protected String lutOption;
+	protected String opacityOption;
+	private ScrolledComposite scrolledCompositeSettings;
+	private Button btnClassificationProject;
+	private Label lblClassified;
+	protected Button checkShowInImagej;
+	protected boolean showClassifiedInImageJ;
 
-	public Main() {
-		/*
-		 * Call a method at startup to remove old ROI listeners if you recompile this
-		 * plugin and a listener is still active!
-		 */
-		removeRoiListenerAtStartup();
-		/* Create the GUI interface! */
-		CustomView view = new CustomView();
+	public _ModelGui(Composite parent, Main model, int style) {
+		super(parent, SWT.NONE);
+		this.model = model;
+		setLayout(new FillLayout(SWT.HORIZONTAL));
+		tabFolder = new CTabFolder(this, SWT.BORDER);
+		/* Add drag and drop for the Configuration file! */
+		DropTarget dt = new DropTarget(tabFolder, DND.DROP_DEFAULT | DND.DROP_MOVE);
+		dt.setTransfer(new Transfer[] { FileTransfer.getInstance() });
+		dt.addDropListener(new DropTargetAdapter() {
+			public void drop(DropTargetEvent event) {
 
-		Display display = Util.getDisplay();
-
-		display.syncExec(() -> {
-			Composite parent = view.getComposite("Classification");
-			/*
-			 * Create the GUI and transfer a reference to this class that the GUI can
-			 * execute methods from this class!
-			 */
-			gui = new _ModelGui(parent, Main.this, SWT.NONE);
-
-			parent.layout(true);
+				FileTransfer ft = FileTransfer.getInstance();
+				if (ft.isSupportedType(event.currentDataType)) {
+					String[] fileList = (String[]) event.data;
+					for (int i = 0; i < fileList.length; i++) {
+						// System.out.println(fileList[i]);
+						new _Settings(_ModelGui.this).loadScript(fileList[0]);
+					}
+				}
+			}
 		});
-	}
+		// tabFolder.setSelectionBackground(
+		// Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT));
 
-	/* Called from the GUI class! */
-	public void executeSelection(int choice) {
+		tabItemFeatures = new CTabItem(tabFolder, SWT.NONE);
+		tabItemFeatures.setText("Features");
+		tabFolder.setSelection(tabItemFeatures);
+		scrolledComposite = new ScrolledComposite(tabFolder, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+		tabItemFeatures.setControl(scrolledComposite);
+		scrolledComposite.setExpandHorizontal(true);
+		scrolledComposite.setExpandVertical(false);
+		composite = new Composite(scrolledComposite, SWT.NONE);
+		composite.setSize(300, 950);
+		scrolledComposite.setContent(composite);
+		composite.setLayout(new GridLayout(2, true));
 
-		Job job = new Job("Classification Process") {
-
+		Button btnNewButton_1 = new Button(composite, SWT.NONE);
+		btnNewButton_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		btnNewButton_1.addSelectionListener(new SelectionAdapter() {
 			@Override
-			protected IStatus run(IProgressMonitor monitor) {
-				actionMonitor = monitor;
-				monitor.beginTask("Started selected action ...", IProgressMonitor.UNKNOWN);
-				/* We create a feature stack. R connection not necessary! */
-				if (choice == 2) {
-					action(choice, monitor);
-				}
-
-				else {
-					if (RServe.isAliveDialog()) {
-						if (RState.isBusy() == false) {
-							/* Notify that R is busy! */
-							RState.setBusy(true);
-							action(choice, monitor);
-						} else {
-							System.out.println("RServer is busy. Can't execute the R script!");
-						}
-
-					}
-				}
-				monitor.done();
-				return Status.OK_STATUS;
+			public void widgetSelected(SelectionEvent e) {
+				model.executeSelection(2);
 			}
+		});
+		btnNewButton_1.setText("Select Features (1)");
 
-		};
-		job.addJobChangeListener(new JobChangeAdapter() {
-			public void done(IJobChangeEvent event) {
-				if (event.getResult().isOK()) {
+		Button btnNewButton = new Button(composite, SWT.NONE);
+		btnNewButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		btnNewButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				model.executeSelection(1);
+			}
+		});
+		btnNewButton.setText("Create Features (2)");
 
-					RState.setBusy(false);
-					/* Update the R-Shell view workspace objects! */
-					if (RServe.isAlive()) {
-						listRObjects();
+		Button btnNewButton_2 = new Button(composite, SWT.NONE);
+		btnNewButton_2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		btnNewButton_2.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				model.executeSelection(3);
+			}
+		});
+		btnNewButton_2.setText("Train Script (3)");
+
+		Button btnNewButton_3 = new Button(composite, SWT.NONE);
+		btnNewButton_3.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		btnNewButton_3.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				model.executeSelection(4);
+			}
+		});
+		btnNewButton_3.setText("Classify Script (4)");
+
+		btnLoadConfiguration = new Button(composite, SWT.NONE);
+		btnLoadConfiguration.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		btnLoadConfiguration.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				new _Settings(_ModelGui.this).loadScript(null);
+			}
+		});
+		btnLoadConfiguration.setText("Load Configuration");
+
+		btnNewButton_4 = new Button(composite, SWT.NONE);
+		btnNewButton_4.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		btnNewButton_4.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				new _Settings(_ModelGui.this).saveScript();
+			}
+		});
+		btnNewButton_4.setText("Save Configuration");
+
+		interruptButton = new Button(composite, SWT.NONE);
+		interruptButton.addSelectionListener(new SelectionAdapter() {
+
+			public void widgetSelected(SelectionEvent e) {
+				interruptBatch = true;
+				boolean answer = Bio7Dialog.decision("Should the R process be interrupted (if possible)?");
+				if (answer) {
+					if (Util.getOS().equals("Win")) {
+						Bio7Console.sendWinCtrlBreak();
+					} else {
+						Bio7Console.sendLinCtrlC();
 					}
-				} else {
+				}
 
-					RState.setBusy(false);
+			}
+		});
+		interruptButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		interruptButton.setText("Interrupt Classification");
+
+		checkConvertToHsb = new Button(composite, SWT.CHECK);
+		checkConvertToHsb.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				checkConvertToLab.setSelection(false);
+			}
+		});
+		checkConvertToHsb.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		checkConvertToHsb.setText("Convert to HSB Color Space");
+
+		checkConvertToLab = new Button(composite, SWT.CHECK);
+		checkConvertToLab.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				checkConvertToHsb.setSelection(false);
+			}
+		});
+		checkConvertToLab.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		checkConvertToLab.setText("Convert to LAB Color Space");
+		new Label(composite, SWT.NONE);
+		new Label(composite, SWT.NONE);
+
+		Label lblSelectChannels = new Label(composite, SWT.NONE);
+		GridData gd_lblSelectChannels = new GridData(SWT.CENTER, SWT.CENTER, true, false, 2, 1);
+		gd_lblSelectChannels.widthHint = 279;
+		lblSelectChannels.setLayoutData(gd_lblSelectChannels);
+		lblSelectChannels.setText("Select Channels (1,2,... - Leave blank for all!)\r\n");
+
+		channelSelectionText = new Text(composite, SWT.BORDER);
+		channelSelectionText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		new Label(composite, SWT.NONE);
+		new Label(composite, SWT.NONE);
+
+		checkGaussianFilter = new Button(composite, SWT.CHECK);
+		checkGaussianFilter.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		checkGaussianFilter.setText("Gaussian Blur");
+
+		checkDifferenceOfGaussian = new Button(composite, SWT.CHECK);
+		checkDifferenceOfGaussian.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		checkDifferenceOfGaussian.setText("Difference of Gaussian");
+
+		optionGaussian = new Text(composite, SWT.BORDER);
+		optionGaussian.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		optionGaussian.setText("2");
+
+		optionDiffGaussian = new Text(composite, SWT.BORDER);
+		optionDiffGaussian.setText("2,4");
+		optionDiffGaussian.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+
+		checkMean = new Button(composite, SWT.CHECK);
+		checkMean.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		checkMean.setText("Mean");
+
+		checkMedian = new Button(composite, SWT.CHECK);
+		checkMedian.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		checkMedian.setText("Median");
+
+		optionsMean = new Text(composite, SWT.BORDER);
+		optionsMean.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		optionsMean.setText("2");
+
+		optionMedian = new Text(composite, SWT.BORDER);
+		optionMedian.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		optionMedian.setText("2");
+
+		checkMinimum = new Button(composite, SWT.CHECK);
+		checkMinimum.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		checkMinimum.setText("Minimum");
+
+		checkVariance = new Button(composite, SWT.CHECK);
+		checkVariance.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		checkVariance.setText("Variance");
+
+		optionsMinimum = new Text(composite, SWT.BORDER);
+		GridData gd_optionsMinimum = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_optionsMinimum.widthHint = 167;
+		optionsMinimum.setLayoutData(gd_optionsMinimum);
+		optionsMinimum.setText("2");
+
+		optionsVariance = new Text(composite, SWT.BORDER);
+		optionsVariance.setText("2");
+		optionsVariance.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+
+		checkMaximum = new Button(composite, SWT.CHECK);
+		checkMaximum.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		checkMaximum.setText("Maximum");
+
+		checkGradientHessian = new Button(composite, SWT.CHECK);
+		checkGradientHessian.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		checkGradientHessian.setText("Gradient");
+
+		optionsMaximum = new Text(composite, SWT.BORDER);
+		optionsMaximum.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		optionsMaximum.setText("2");
+
+		optionGradientHessian = new Text(composite, SWT.BORDER);
+		optionGradientHessian.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+
+		checkLaplacian = new Button(composite, SWT.CHECK);
+		checkLaplacian.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		checkLaplacian.setText("Laplacian");
+
+		checkEdges = new Button(composite, SWT.CHECK);
+		checkEdges.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		checkEdges.setText("Sobel Edge");
+
+		optionLaplacian = new Text(composite, SWT.BORDER);
+		optionLaplacian.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+
+		optionsEdges = new Text(composite, SWT.BORDER);
+		optionsEdges.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+
+		checkLipschitz = new Button(composite, SWT.CHECK);
+		checkLipschitz.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		checkLipschitz.setText("Lipschitz");
+
+		checkGabor = new Button(composite, SWT.CHECK);
+		checkGabor.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		checkGabor.setText("Gabor");
+
+		optionLipschitz = new Text(composite, SWT.BORDER);
+		optionLipschitz.setText("true,true,10");
+		optionLipschitz.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+
+		optionGabor = new Text(composite, SWT.BORDER);
+		optionGabor.setText("3,4.0,0.6,1.0,2.0,0.3");
+		optionGabor.addSelectionListener(new SelectionAdapter() {
+
+			public void widgetSelected(SelectionEvent e) {
+
+			}
+		});
+		optionGabor.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+
+		checkTopHat = new Button(composite, SWT.CHECK);
+		checkTopHat.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		checkTopHat.setText("Top Hat");
+
+		checkKuwahara = new Button(composite, SWT.CHECK);
+		checkKuwahara.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		checkKuwahara.setText("Kuwahara");
+
+		optionsTopHat = new Text(composite, SWT.BORDER);
+		optionsTopHat.setText("2");
+		optionsTopHat.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+
+		optionsKuwahara = new Text(composite, SWT.BORDER);
+		optionsKuwahara.setText("2");
+		optionsKuwahara.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		new Label(composite, SWT.NONE);
+		new Label(composite, SWT.NONE);
+
+		checkConvolve = new Button(composite, SWT.CHECK);
+		checkConvolve.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		checkConvolve.setText("Convolve");
+		new Label(composite, SWT.NONE);
+
+		optionConvolve = new Text(composite, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
+		GridData gd_optionConvolve = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
+		gd_optionConvolve.widthHint = 189;
+		optionConvolve.setLayoutData(gd_optionConvolve);
+		optionConvolve.setText(
+				"text1=[\n-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 24 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n] normalize");
+
+		tbtmMore = new CTabItem(tabFolder, SWT.NONE);
+		tbtmMore.setText("Settings");
+		scrolledCompositeSettings = new ScrolledComposite(tabFolder, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+		tbtmMore.setControl(scrolledCompositeSettings);
+		scrolledCompositeSettings.setExpandHorizontal(true);
+		scrolledCompositeSettings.setExpandVertical(false);
+		composite_1 = new Composite(scrolledCompositeSettings, SWT.NONE);
+		composite_1.setSize(300, 520);
+		scrolledCompositeSettings.setContent(composite_1);
+		composite_1.setLayout(new GridLayout(2, true));
+
+		classificationOpenLabel = new Label(composite_1, SWT.NONE);
+		classificationOpenLabel.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 2, 1));
+		classificationOpenLabel.setText("Classification Open Images");
+
+		checkUseImportMacro = new Button(composite_1, SWT.CHECK);
+		checkUseImportMacro.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		checkUseImportMacro.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+
+			}
+		});
+		checkUseImportMacro.setText("Use ImageJ Macro at Import");
+
+		checkUseDirectory = new Button(composite_1, SWT.CHECK);
+		GridData gd_checkUseDirectory = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_checkUseDirectory.heightHint = 25;
+		checkUseDirectory.setLayoutData(gd_checkUseDirectory);
+		checkUseDirectory.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+			}
+		});
+		checkUseDirectory.setText("Use Directory Dialog");
+
+		scriptsLabel = new Label(composite_1, SWT.NONE);
+		scriptsLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		scriptsLabel.setText("Scripts");
+
+		textImageJMacro = new Text(composite_1, SWT.BORDER);
+		textImageJMacro.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textImageJMacro.setText(FileRoot.getCurrentCompileDir() + "/_Macro/IJMacro.ijm");
+
+		buttonMacro = new Button(composite_1, SWT.NONE);
+		buttonMacro.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				String path = Bio7Dialog.openFile();
+				path = path.replace("\\", "/");
+				textImageJMacro.setText(path);
+			}
+		});
+		buttonMacro.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		buttonMacro.setText("Macro");
+
+		txtTrainingRScript = new Text(composite_1, SWT.BORDER);
+		txtTrainingRScript.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		txtTrainingRScript.setText(FileRoot.getCurrentCompileDir() + "/_R/Train.R");
+
+		btnNewButton_5 = new Button(composite_1, SWT.NONE);
+		btnNewButton_5.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				String path = Bio7Dialog.openFile();
+				path = path.replace("\\", "/");
+				txtTrainingRScript.setText(path);
+			}
+		});
+		btnNewButton_5.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		btnNewButton_5.setText("Training Script");
+
+		txtClassificationRScript = new Text(composite_1, SWT.BORDER);
+		txtClassificationRScript.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		txtClassificationRScript.setText(FileRoot.getCurrentCompileDir() + "/_R/Classify.R");
+		btnRClassificationScript = new Button(composite_1, SWT.NONE);
+		btnRClassificationScript.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				String path = Bio7Dialog.openFile();
+				path = path.replace("\\", "/");
+				txtClassificationRScript.setText(path);
+			}
+		});
+		btnRClassificationScript.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		btnRClassificationScript.setText("Classification Script");
+
+		btnClassificationProject = new Button(composite_1, SWT.NONE);
+		btnClassificationProject.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				IWizardDescriptor descriptor = PlatformUI.getWorkbench().getNewWizardRegistry()
+						.findWizard("com.eco.bio7.wizard.reproducible");
+				IWizard wizard = null;
+				try {
+					wizard = descriptor.createWizard();
+				} catch (CoreException e1) {
+					e1.printStackTrace();
+				}
+				WizardDialog wd = new WizardDialog(Util.getShell(), wizard);
+				wd.setTitle(wizard.getWindowTitle());
+				wd.open();
+				boolean doOpen = Bio7Dialog.decision("Copy the train and classify scripts to the new project folder.\n"
+						+ "Adjust the paths to the scripts and save a configuration file\n"
+						+ "in the project folder!\n\n"
+						+ "Would you like to copy the R scripts for customization (simply drag and drop to the project)?");
+				if (doOpen) {
+					org.eclipse.swt.program.Program.launch(new File(txtTrainingRScript.getText()).getParent());
 				}
 			}
 		});
+		btnClassificationProject.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		btnClassificationProject.setText("Create Classification Project");
 
-		job.schedule();
+		featureLabel = new Label(composite_1, SWT.NONE);
+		featureLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		featureLabel.setText("Feature Options");
 
+		checkOpenStack = new Button(composite_1, SWT.CHECK);
+		checkOpenStack.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+			}
+		});
+		checkOpenStack.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		checkOpenStack.setText("Open Feature Stack");
+
+		checkUseGroups = new Button(composite_1, SWT.CHECK);
+		checkUseGroups.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+			}
+		});
+		checkUseGroups.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		checkUseGroups.setText("Use Group Signature");
+
+		transferTypeLabel = new Label(composite_1, SWT.CENTER);
+		GridData gd_transferTypeLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+		gd_transferTypeLabel.widthHint = 254;
+		transferTypeLabel.setLayoutData(gd_transferTypeLabel);
+		transferTypeLabel.setText("Select Transfer Type");
+
+		transferTypeCombo = new Combo(composite_1, SWT.NONE);
+		GridData gd_transferTypeCombo = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+		gd_transferTypeCombo.widthHint = 269;
+		transferTypeCombo.setLayoutData(gd_transferTypeCombo);
+		transferTypeCombo.setItems(new String[] { "Double", "Integer", "Byte" });
+		transferTypeCombo.select(0);
+		transferTypeCombo.setText("Double");
+
+		previewLabel = new Label(composite_1, SWT.NONE);
+		previewLabel.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 2, 1));
+		previewLabel.setText("Preview Overlay");
+
+		checkGeneratePreview = new Button(composite_1, SWT.CHECK);
+		checkGeneratePreview.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if (checkGeneratePreview.getSelection() == true) {
+					Roi.addRoiListener(_ModelGui.this);
+				} else {
+					Roi.removeRoiListener(_ModelGui.this);
+					IJ.run("Remove Overlay", "");
+				}
+			}
+		});
+		GridData gd_checkGeneratePreview = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_checkGeneratePreview.widthHint = 247;
+		checkGeneratePreview.setLayoutData(gd_checkGeneratePreview);
+		checkGeneratePreview.setText("Selection Preview (Train)");
+
+		checkRetrainPreview = new Button(composite_1, SWT.CHECK);
+		checkRetrainPreview.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		checkRetrainPreview.setText("Retrain for Preview");
+
+		lblNewLabel = new Label(composite_1, SWT.NONE);
+		lblNewLabel.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 1, 1));
+		lblNewLabel.setText("Opacity");
+
+		lblLutToApply = new Label(composite_1, SWT.NONE);
+		lblLutToApply.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 1, 1));
+		lblLutToApply.setText("LUT");
+
+		optionOpacity = new Text(composite_1, SWT.BORDER);
+		optionOpacity.setText("0.4");
+		optionOpacity.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+
+		optionLUT = new Text(composite_1, SWT.BORDER);
+
+		optionLUT.setText("Spectrum");
+
+		setLutCompletion(optionLUT);
+
+		optionLUT.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		lblClassified = new Label(composite_1, SWT.NONE);
+		lblClassified.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 2, 1));
+		lblClassified.setText("Classified");
+		
+		checkShowInImagej = new Button(composite_1, SWT.CHECK);
+		checkShowInImagej.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+			}
+		});
+		checkShowInImagej.setSelection(true);
+		checkShowInImagej.setText("Show in ImageJ");
+		
+		new Label(composite_1, SWT.NONE);
+		transferTypeCombo.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				int index = transferTypeCombo.getSelectionIndex();
+				RImageMethodsView.getTransferTypeCombo().select(index);
+			}
+		});
 	}
 
-	public void action(int choice, IProgressMonitor monitor) {
+	/* Add code completion to the LUT textfield! */
+	private void setLutCompletion(Text lutText) {
+		String[] lutProposals = IJ.getLuts();
+		final ControlDecoration controlDecor = new ControlDecoration(lutText, SWT.TOP | SWT.RIGHT);
+		Image image = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION)
+				.getImage();
+		controlDecor.setDescriptionText("Use CTRL + SPACE for available LUTs!");
+		controlDecor.setImage(image);
+		// always show decoration
+		controlDecor.setShowOnlyOnFocus(false);
+
+		// hide the decoration if the text widget has content
 		/*
-		 * Important call to get the features and feature settings from the GUI
-		 * (syncExec wrapped for SWT)!
+		 * lutText.addModifyListener(e -> { Text source = (Text) e.getSource(); if
+		 * (!source.getText().isEmpty()) { controlDecor.hide(); } else {
+		 * controlDecor.show(); } });
 		 */
-		gui.getFeatureOptions();
-
-		/* Create feature stack! */
-		if (choice == 1) {
-			// String files = Bio7Dialog.openFile();
-			// if (files != null) {
-			ImagePlus image = WindowManager.getCurrentImage();
-			if (image == null) {
-				Bio7Dialog.message("Please open an image in ImageJ!");
-				return;
-			}
-
-			/*
-			 * Here we add a dialog to check if really only the ROI Manager selections
-			 * should be transferred! It happens that a selection is present in the ROI
-			 * Manager but it was intended to transfer all ROI's. Here a little workflow
-			 * help!
-			 */
-
-			RoiManager mInstance = RoiManager.getInstance();
-			if (mInstance == null) {
-				/* If ROI Manager isn't active! */
-				Bio7Dialog.message("Please open and add selections to the ROI Manager!");
-				return;
-			}
-			Roi[] r = mInstance.getSelectedRoisAsArray();
-
-			if (r.length < 1) {
-				Bio7Dialog.message("NO ROI's available in ROI Manager!");
-				return;
-			}
-			Roi[] r2 = mInstance.getRoisAsArray();
-			if (r.length < r2.length) {
-				boolean all = Bio7Dialog.decision("Selections in ROI Manager exists!\n"
-						+ "Only the selected ROI's in the ROI Manager will be transferred!\n\n"
-						+ "Press 'Yes' if you want to transfer the selected ROI's only!\n"
-						+ "Press 'No' to transfer all ROI's in the ROI Manager!");
-				if (all == false) {
-					mInstance.deselect();
-				}
-			}
-
-			ImagePlus imPlus = createStackFeatures(null, image, monitor);
-			if (gui.openStack) {
-				imPlus.show();
-				gui.layout();
-			}
-			monitor.setTaskName("Transfer Feature data to R");
-			int typeTransfer = gui.transferType;
-			if (gui.useGroups) {
-				/* Special method to transfer ROI Manager ROI's with a signature to R! */
-				ImageToRTransfer.imageFeatureStackSelectionToR(imPlus, typeTransfer, 1, imPlus.getStackSize(), true);
-			} else {
-				ImageToRTransfer.imageFeatureStackSelectionToR(imPlus, typeTransfer, 1, imPlus.getStackSize(), false);
-
-			}
-
-			// }
-
-		}
-		/* Create ROI Classes! */
-		else if (choice == 2) {
-			ImagePlus image = WindowManager.getCurrentImage();
-			if (image == null) {
-				Bio7Dialog.message("Please open an image in ImageJ to create feature selections!");
-				return;
-			}
-			Bio7Dialog.message("Add selections (ROI's = specific class) to the ROI Manager.\n\n"
-					+ "To set a class signature:\n\n" + "Option 1 (default):\n"
-					+ "Rename the ROI's to identify the classes - at the end of the string use an underscore followed by the class"
-					+ "number (class_1, class_2 or cell_1, cell_2..., etc.).\n\n" + "Option 2:\n"
-					+ "Enable the 'Use Group Signature' option in the 'Settings tab' to set signatures according "
-					+ "to the group membership (set ROI Groups, e.g., with the ImageJ toolbar action)!");
-			/* Opens the ROI Manager of ImageJ! */
-			IJ.run("ROI Manager...", "");
-
-		}
-
-		/* Train Classifier with external script! */
-		else if (choice == 3) {
-			/*
-			 * We have set the busy variable to false to use the R-Shell selection in this
-			 * job!
-			 */
-			RState.setBusy(false);
-			Work.openView("com.eco.bio7.RShell");
-			Bio7Dialog.selection("Select training features (classes) in R-Shell!\n\n"
-					+ "Select multiple with STRG (CMD)+MouseClick or SHIFT+MouseClick!\n\nPress 'OK' when selected to execute the training R script!");
-			/* Set the busy variable again to true because now we call R! */
-			RState.setBusy(true);
-			monitor.setTaskName("Apply Training Script");
-			String path = gui.getPathTrainingScript();
-			/* Execute R script! */
-			if (path.endsWith(".R")) {
-				System.out.println("");
-				evalRScript(path);
-			}
-
-		}
-
-		/* Classify selected images with external Script! */
-		else if (choice == 4) {
-			gui.interruptBatch = false;
-			if (gui.useDirectoryDialog) {
-				String dirSelection = Bio7Dialog.directory("Select the base directory");
-				if (dirSelection == null) {
-					return;
-				}
-				File dir = new File(dirSelection);
-				/* If you need only certain image types! */
-				// final String[] ext = { "tif", "tiff", "dcm", "png" };
-				List<File> files = (List<File>) FileUtils.listFiles(dir, null, true);
-				// Only directories:
-				// FileUtils.listFilesAndDirs(new File(dir), new
-				// NotFileFilter(TrueFileFilter.INSTANCE), DirectoryFileFilter.DIRECTORY)
-				for (int i = 0; i < files.size(); i++) {
-					if (gui.interruptBatch) {
-						break;
-					}
-					File file = files.get(i);
-
-					String currentFile = null;
-					try {
-						currentFile = file.getCanonicalPath();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					ImagePlus imPlus = createStackFeatures(currentFile, null, monitor);
-					// System.out.println(choice);
-
-					classify(monitor, imPlus);
-				}
-			} else {
-				String[] files = openMultipleFiles();
-				if (files == null) {
-					return;
-				}
-				for (int i = 0; i < files.length; i++) {
-
-					if (gui.interruptBatch) {
-						break;
-					}
-
-					ImagePlus imPlus = createStackFeatures(files[i], null, monitor);
-
-					classify(monitor, imPlus);
-
-				}
-
-			}
-
-		}
-
-	}
-
-	private void classify(IProgressMonitor monitor, ImagePlus imPlus) {
-		/* Correct some image names for R! */
-		String name = imPlus.getTitle();
-		String nameCorrected = "current_feature_stack";
-		/* Set the data type for the R transfer from the Bio7 GUI! */
-		int transferType = getRDataTransferType();
-		/* Transfer the feature stack to R in the selected datatype! */
-		imageFeatureStackToR(nameCorrected, transferType, imPlus);
-		imPlus = null;
-		monitor.setTaskName("Apply Classification Script");
-		/* Predict in R (evalRScript is a custom method) with the randomForest model! */
-		String path = gui.getPathClassificationScript();
-		if (path.endsWith(".R")) {
-			evalRScript(path);
-			// imageFromR(3, "imageMatrix", 1);
-			ImagePlus imageClassified = ImageToRTransfer.imageFromR("imageMatrix");
-			if (imageClassified != null) {
-				imageClassified.setTitle(name + "_Classified");
-				imageClassified.show();
-				gui.layout();
-			}
-		}
-
-	}
-
-	public void classifyPreview(IProgressMonitor monitor, ImagePlus imPlus, Roi roi) {
-		/* Correction of name here not necessary! */
-		// String name = imPlus.getTitle();
-		String nameCorrected = "current_feature_stack";
-		/* Set the data type for the R transfer from the Bio7 GUI! */
-		int transferType = getRDataTransferType();
-		/* Transfer the feature stack to R in the selected datatype! */
-		imageFeatureStackToR(nameCorrected, transferType, imPlus);
-		imPlus = null;
-		if (monitor != null) {
-			monitor.setTaskName("Apply Classification Preview");
-		}
-		/* Predict in R (evalRScript is a custom method) with the randomForest model! */
-		String path = gui.getPathClassificationScript();
-		if (path.endsWith(".R")) {
-			evalRScript(path);
-
-			if (roi != null) {
-				Rectangle bounds = roi.getBounds();
-				int x = bounds.x;
-				int y = bounds.y;
-				ImagePlus impOverlay = ImageToRTransfer.imageFromR("imageMatrix");
-				if (impOverlay != null) {
-					/* Apply the LUT option! */
-					IJ.run(impOverlay, gui.lutOption, "");
-					ImageRoi imageRoi = new ImageRoi(x, y, impOverlay.getProcessor());
-
-					/* Parse and apply the opacity option! */
-					imageRoi.setOpacity(Double.parseDouble(gui.opacityOption));
-					// imageRoi.setZeroTransparent(true);
-					Overlay overlay = new Overlay(imageRoi);
-					ImagePlus iDisplayed = WindowManager.getCurrentImage();
-					iDisplayed.setOverlay(overlay);
-					// Font font = new Font("Arial", Font.PLAIN, 18);
-					// TextRoi roiText = new TextRoi(x, y, "Preview", font);
-					// roiText.setStrokeColor(new Color(1, 0, 0));
-					// overlay.add(roiText);
-					// impOverlay.show();
-					// iDisplayed.setRoi(imageRoi);
-				}
-			}
-
-		}
-
-	}
-
-	public ImagePlus createStackFeatures(String files, ImagePlus sourceImage, IProgressMonitor monitor) {
-		ImagePlus imPlus = null;
-		ImagePlus image = null;
-		ImageStack stack = null;
-
-		/*
-		 * If we want to use an import macro, e.g., using the BioFormats library
-		 * commands which can be recorded with the ImageJ macro recorder!
-		 */
-		if (gui.useImportMacro) {
-			/* Multiple files selected! */
-			if (files != null) {
-				/* If we used the directory dialog to open all files! */
-				if (gui.useDirectoryDialog) {
-					IJ.runMacroFile(gui.getMacroTextOption(), files);
-				} else {
-					/*
-					 * currentFilePathMultipleDialog is the path to the directory which we need for
-					 * the multiple files dialog which returns only the filenames!
-					 */
-					IJ.runMacroFile(gui.getMacroTextOption(), currentFilePathMultipleDialog + "/" + files);
-				}
-
-			}
-			// else {
-			/* Call ImageJ macro with option (file path)! */
-			// IJ.runMacroFile(gui.getMacroTextOption(), singleFile);
-			// }
-
-		} else {
-			/* Multiple files selected! */
-			if (files != null) {
-				/* If we used the directory dialog to open all files! */
-				if (gui.useDirectoryDialog) {
-					image = IJ.openImage(files);
-				} else {
-					/*
-					 * currentFilePathMultipleDialog is the path to the directory which we need for
-					 * the multiple files dialog which returns only the filenames!
-					 */
-					image = IJ.openImage(currentFilePathMultipleDialog + "/" + files);
-				}
-
-			} else {
-				// if (singleFile != null) {
-				// image = IJ.openImage(singleFile);
-				// } else {
-				image = sourceImage;
-				// }
-			}
-		}
-		/*
-		 * We must avoid a null reference when using the BioFormats library with the
-		 * macro import option!
-		 */
-		if (gui.useImportMacro && image == null) {
-			image = WindowManager.getCurrentImage();
-		}
-
-		/* If we have a RGB! */
-		if (image.getProcessor() instanceof ColorProcessor) {
-			/* Convert to HSB! */
-			if (gui.toHsb) {
-				if (monitor != null) {
-					monitor.setTaskName("Convert RGB To HSB Color Space");
-				}
-				/* Duplicate the image! */
-				Duplicator duplicator = new Duplicator();
-				/* Duplicate original for the HSB channels! */
-				ImagePlus impToHasb = duplicator.run(image);
-				ImageConverter con = new ImageConverter(impToHasb);
-				con.convertToHSB32();
-
-				String opt = gui.channelOption;
-				String[] channelToInclude = opt.split(",");
-				ImageStack hsbStack = impToHasb.getStack();
-
-				if (opt.isEmpty() == false && channelToInclude.length > 0) {
-					/* Create a feature stack from selected HSB channels! */
-					stack = new ImageStack(impToHasb.getWidth(), impToHasb.getHeight());
-
-					for (int j = 0; j < channelToInclude.length; j++) {
-						/* Add selected HSB float channels to the stack! */
-						int sel = Integer.parseInt(channelToInclude[j]);
-						/* Use selected slices! */
-						ImageProcessor floatProcessor = hsbStack.getProcessor(sel);
-						stack.addSlice("Channel_" + j, floatProcessor);
-					}
-				} else {
-					/* Use all slices. Already Float! */
-					stack = impToHasb.getStack();
-				}
-
-			}
-			/* Convert to LAB! */
-			else if (gui.toLab) {
-				if (monitor != null) {
-					monitor.setTaskName("Convert RGB To LAB Color Space");
-				}
-				/* Duplicate the image! */
-				Duplicator duplicator = new Duplicator();
-				/* Duplicate original for the LAB channels! */
-				ImagePlus impToLab = duplicator.run(image);
-				ColorSpaceConverter converter = new ColorSpaceConverter();
-				ImagePlus imp = converter.RGBToLab(impToLab);
-				// imp.show();
-				// image.hide();
-				imp.copyAttributes(impToLab);
-				// image.changes = false;
-				// image.close();
-				String opt = gui.channelOption;
-				String[] channelToInclude = opt.split(",");
-				ImageStack labStack = imp.getStack();
-
-				if (opt.isEmpty() == false && channelToInclude.length > 0) {
-					/* Create a LAB stack from selected channels! */
-					stack = new ImageStack(imp.getWidth(), imp.getHeight());
-					for (int j = 0; j < channelToInclude.length; j++) {
-						/* Add LAB channels to the stack. LAB stack are already float images! */
-						int sel = Integer.parseInt(channelToInclude[j]);
-						/* Use selected slices! */
-						ImageProcessor floatProcessor = labStack.getProcessor(sel);
-						stack.addSlice("Channel_" + j, floatProcessor);
-					}
-				} else {
-					/* Use all slices. LAB stack are already float images! */
-					stack = imp.getStack();
-				}
-
-			}
-
-			else {
-
-				/* Split original to R,G,B channels! */
-				ImagePlus[] channels = ChannelSplitter.split(image);
-
-				String opt = gui.channelOption;
-				String[] channelToInclude = opt.split(",");
-
-				/* Create a feature stack from all available channels (e.g., R,G,B) images! */
-				stack = new ImageStack(image.getWidth(), image.getHeight());
-				if (opt.isEmpty() == false && channelToInclude.length > 0) {
-					for (int j = 0; j < channelToInclude.length; j++) {
-						/* Add selected RGB channels to the new stack! */
-						/* Convert original to float to have a float image stack for the filters! */
-						int sel = Integer.parseInt(channelToInclude[j]) - 1;// Channels index starts with 0 so we
-																			// correct here with -1!
-						ImageProcessor floatProcessor = channels[sel].getProcessor().convertToFloat();
-						stack.addSlice("Channel_" + j, floatProcessor);
-					}
-
-				} else {
-					for (int j = 0; j < channels.length; j++) {
-						/* Add RGB channels to the stack! */
-						/* Convert original to float to have a float image stack for the filters! */
-						ImageProcessor floatProcessor = channels[j].getProcessor().convertToFloat();
-						stack.addSlice("Channel_" + j, floatProcessor);
-					}
-				}
-			}
-		} else {/* Grayscale images (8-bit, 16-bit, 32-bit) */
-			/* If we have a grayscale stack! */
-			if (image.getStackSize() > 1) {
-				String opt = gui.channelOption;
-				String[] channelToInclude = opt.split(",");
-				/* Check if we only want to include certain slices! */
-				if (opt.isEmpty() == false && channelToInclude.length > 0) {
-					stack = new ImageStack(image.getWidth(), image.getHeight());
-					for (int j = 0; j < channelToInclude.length; j++) {
-						/* Add selected slices to a new stack! */
-						int sel = Integer.parseInt(channelToInclude[j]);// Stack starts with index 1 no correction
-																		// necessary!
-						stack.addSlice("Grayscale_Layer_" + j, image.getStack().getProcessor(sel).convertToFloat());
-					}
-				} else {
-					/* Convert original to float to have a float image stack for the filters! */
-					stack = image.getStack().convertToFloat();
-				}
-			} else {
-
-				stack = new ImageStack(image.getWidth(), image.getHeight());
-				/* Convert original to float to have a float image stack for the filters! */
-				stack.addSlice("Grayscale", image.getProcessor().convertToFloat());
-			}
-		}
-
-		/*
-		 * Duplicate the base stack as basis for the different filters! the filtered
-		 * images will be added to the base stack!
-		 */
-
-		ImageStack tempStack = stack.duplicate();
-		/*
-		 * See:
-		 * https://imagej.nih.gov/ij/developer/api/ij/plugin/filter/GaussianBlur.html#
-		 * blur-ij.process.ImageProcessor-double-
-		 */
-		if (gui.gaussian) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Gaussian Filter");
-			}
-			GaussianBlur gaussian = new GaussianBlur();
-			/* Split the gaussian option to get all sigmas! */
-			String[] gaussianSigma = gui.gaussianOption.split(",");
-			int stackSize = tempStack.getSize();
-			for (int i = 1; i <= stackSize; i++) {
-				for (int j = 0; j < gaussianSigma.length; j++) {
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-					double sigma = Double.parseDouble(gaussianSigma[j]);
-					gaussian.blurGaussian(ip, 0.4 * sigma, 0.4 * sigma, 0.0002);
-					stack.addSlice("Gaussian_" + "Sigma_" + sigma + "Layer_" + i, ip);
-				}
-			}
-		}
-
-		if (gui.diffOfGaussian) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Difference of Gaussian Filters");
-			}
-			GaussianBlur gaussian = new GaussianBlur();
-			int stackSize = tempStack.getSize();
-			for (int i = 1; i <= stackSize; i++) {
-
-				/* See if we have several Gaussian Difference filter settings! */
-				String[] gaussianDiffOptionSet = gui.diffGaussianOption.split(";");
-				for (int j = 0; j < gaussianDiffOptionSet.length; j++) {
-
-					String opGaussianDiff = gaussianDiffOptionSet[j];
-					/* Split the gaussian option to get all sigmas! */
-					String[] gaussianSigma = opGaussianDiff.split(",");
-
-					/* Here we have two sigmas to calculate the difference! */
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-					double sigma1 = Double.parseDouble(gaussianSigma[0]);
-					gaussian.blurGaussian(ip, sigma1, sigma1, 0.0002);
-
-					ImageProcessor ip2 = tempStack.getProcessor(i).duplicate();
-					double sigma2 = Double.parseDouble(gaussianSigma[1]);
-					gaussian.blurGaussian(ip2, sigma2, sigma2, 0.0002);
-
-					ImageCalculator ic = new ImageCalculator();
-					ImagePlus finalDiffGaussian = ic.run("Subtract create 32-bit", new ImagePlus("sigma1", ip),
-							new ImagePlus("sigma2", ip2));
-					stack.addSlice("DiffOfGaussian_Set_" + j + "_Layer" + i, finalDiffGaussian.getProcessor());
-
-				}
-
-			}
-
-		}
-
-		if (gui.median) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Median Filter");
-			}
-			/* Split the median option to get all radii! */
-			String[] medianRadius = gui.medianOption.split(",");
-			int stackSize = tempStack.getSize();
-			for (int i = 1; i <= stackSize; i++) {
-				for (int j = 0; j < medianRadius.length; j++) {
-					double radius = Double.parseDouble(medianRadius[j]);
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-					RankFilters ran = new RankFilters();
-					extracted(radius, ran, ip, RankFilters.MEDIAN);
-					stack.addSlice("Median_" + "Radius_" + radius + "Layer_" + i, ip);
-				}
-			}
-		}
-
-		if (gui.mean) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Mean Filter");
-			}
-			/* Split the mean option to get all radii! */
-			String[] meanRadius = gui.meanOption.split(",");
-			int stackSize = tempStack.getSize();
-			for (int i = 1; i <= stackSize; i++) {
-				for (int j = 0; j < meanRadius.length; j++) {
-					double radius = Double.parseDouble(meanRadius[j]);
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-					RankFilters ran = new RankFilters();
-					ran.rank(ip, radius, RankFilters.MEAN);
-					stack.addSlice("Mean_" + "Radius_" + radius + "Layer_" + i, ip);
-				}
-			}
-		}
-
-		if (gui.variance) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Variance Filter");
-			}
-			/* Split the mean option to get all radii! */
-			String[] varianceSigma = gui.varianceOption.split(",");
-			int stackSize = tempStack.getSize();
-			for (int i = 1; i <= stackSize; i++) {
-				for (int j = 0; j < varianceSigma.length; j++) {
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-					double radius = Double.parseDouble(varianceSigma[j]);
-					RankFilters ran = new RankFilters();
-					extracted(radius, ran, ip, RankFilters.VARIANCE);
-					stack.addSlice("Variance_" + "Radius_" + radius + "Layer_" + i, ip);
-				}
-			}
-		}
-		if (gui.maximum) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Maximum Filter");
-			}
-			/* Split the mean option to get all radii! */
-			String[] maximumSigma = gui.maximumOption.split(",");
-			int stackSize = tempStack.getSize();
-			for (int i = 1; i <= stackSize; i++) {
-				for (int j = 0; j < maximumSigma.length; j++) {
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-					double radius = Double.parseDouble(maximumSigma[j]);
-					RankFilters ran = new RankFilters();
-					extracted(radius, ran, ip, RankFilters.MAX);
-					stack.addSlice("Maximum_" + "Radius_" + radius + "Layer_" + i, ip);
-				}
-			}
-		}
-
-		if (gui.minimum) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Minimum Filter");
-			}
-			/* Split the mean option to get all radii! */
-			String[] minimumSigma = gui.minimumOption.split(",");
-			int stackSize = tempStack.getSize();
-			for (int i = 1; i <= stackSize; i++) {
-				for (int j = 0; j < minimumSigma.length; j++) {
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-					double radius = Double.parseDouble(minimumSigma[j]);
-					RankFilters ran = new RankFilters();
-					extracted(radius, ran, ip, RankFilters.MIN);
-					// ran.rank(ip, Double.parseDouble(minimumSigma[j]), RankFilters.MIN);
-					stack.addSlice("Minimum_" + "Radius_" + radius + "Layer_" + i, ip);
-				}
-			}
-		}
-
-		if (gui.gradientHessian) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Gradient, Hessian Derivative");
-			}
-			/*  */
-			GaussianBlur gaussian = new GaussianBlur();
-			int stackSize = tempStack.getSize();
-			for (int i = 1; i <= stackSize; i++) {
-
-				String[] gradientHessian = gui.gradientHessianOption.split(",");
-				/* Apply a Gaussian blur if we have double arguments! */
-				if (gradientHessian[0].isEmpty() == false) {
-					for (int j = 0; j < gradientHessian.length; j++) {
-						double sigma = Double.parseDouble(gradientHessian[j]);
-						ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-						gaussian.blurGaussian(ip, 0.4 * sigma, 0.4 * sigma, 0.0002);
-						gradient(stack, ip);
-					}
-				} else {
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-					gradient(stack, ip);
-				}
-			}
-		}
-
-		if (gui.laplacian) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Laplacian Derivative");
-			}
-			int stackSize = tempStack.getSize();
-			GaussianBlur gaussian = new GaussianBlur();
-			for (int i = 1; i <= stackSize; i++) {
-				String[] laplacianSigma = gui.laplacianOption.split(",");
-				/* Apply a Gaussian blur if we have double arguments! */
-				if (laplacianSigma[0].isEmpty() == false) {
-					for (int j = 0; j < laplacianSigma.length; j++) {
-						double sigma = Double.parseDouble(laplacianSigma[j]);
-						ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-						gaussian.blurGaussian(ip, 0.4 * sigma, 0.4 * sigma, 0.0002);
-						int width = ip.getWidth();
-						int height = ip.getHeight();
-						GrayF32 boofFilterImageInput = new GrayF32(width, height);
-						GrayF32 boofFilterImageOutput = new GrayF32(width, height);
-						/* Transfer ImageProcessor data in place to boofcv image input! */
-						ipToBoofCVGray32(ip, boofFilterImageInput);
-						DerivativeLaplacian.process(boofFilterImageInput, boofFilterImageOutput, null);
-						FloatProcessor flProcessor = new FloatProcessor(width, height, boofFilterImageOutput.getData());
-						stack.addSlice("Laplacian_Derivative_From_Gaussian_" + sigma + "_Layer" + i, flProcessor);
-					}
-				} else {
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-					int width = ip.getWidth();
-					int height = ip.getHeight();
-					GrayF32 boofFilterImageInput = new GrayF32(width, height);
-					GrayF32 boofFilterImageOutput = new GrayF32(width, height);
-					/* Transfer ImageProcessor data in place to boofcv image input! */
-					ipToBoofCVGray32(ip, boofFilterImageInput);
-					DerivativeLaplacian.process(boofFilterImageInput, boofFilterImageOutput, null);
-					FloatProcessor flProcessor = new FloatProcessor(width, height, boofFilterImageOutput.getData());
-					stack.addSlice("Laplacian Derivative_" + "Layer_" + i, flProcessor);
-
-				}
-			}
-		}
-
-		if (gui.edges) {
-			// see:
-			// https://imagejdocu.tudor.lu/faq/technical/what_is_the_algorithm_used_in_find_edges
-			if (monitor != null) {
-				monitor.setTaskName("Apply Edges");
-			}
-			int stackSize = tempStack.getSize();
-			GaussianBlur gaussian = new GaussianBlur();
-			for (int i = 1; i <= stackSize; i++) {
-				String[] edgesSigma = gui.edgesOption.split(",");
-				/* Apply a Gaussian blur if we have double arguments! */
-				if (edgesSigma[0].isEmpty() == false) {
-					for (int j = 0; j < edgesSigma.length; j++) {
-						double sigma = Double.parseDouble(edgesSigma[j]);
-						ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-						gaussian.blurGaussian(ip, 0.4 * sigma, 0.4 * sigma, 0.0002);
-						IJ.run(new ImagePlus("Edges_layer" + i + "_temp", ip), "Find Edges", "stack");
-						stack.addSlice("Edges_Layer_From_Gaussian_" + j + "_Layer_" + i, ip);
-					}
-				} else {
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-					IJ.run(new ImagePlus("Edges_layer" + i + "_temp", ip), "Find Edges", "stack");
-					stack.addSlice("Edges_" + "Layer_" + i, ip);
-
-				}
-			}
-
-		}
-
-		if (gui.lipschitz) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Lipschitz Filter");
-			}
-			int stackSize = tempStack.getSize();
-			for (int i = 1; i <= stackSize; i++) {
-				/* See if we have several Lipschitz filter settings! */
-				String[] libschitzOptionsSet = gui.lipschitzOption.split(";");
-				for (int j = 0; j < libschitzOptionsSet.length; j++) {
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate().convertToByte(true);
-					String opLipschitz = libschitzOptionsSet[j];
-					/* Split the Lipschitz set for one filter! */
-					String[] lipschitzOptions = opLipschitz.split(",");
-					Lipschitz_ filter = new Lipschitz_();
-					Lipschitz_.setDownHatFilter(Boolean.parseBoolean(lipschitzOptions[0]));
-					Lipschitz_.setTopHatFilter(Boolean.parseBoolean(lipschitzOptions[1]));
-					Lipschitz_.setSlopeFilter(Double.parseDouble(lipschitzOptions[2]));
-					filter.Lipschitz2D(ip);
-					stack.addSlice("Lipschitz_Set_" + j + "_Layer_" + i, ip.convertToFloat());
-				}
-			}
-		}
-
-		if (gui.gabor) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Gabor Filter");
-			}
-			int stackSize = tempStack.getSize();
-			for (int i = 1; i <= stackSize; i++) {
-				/* See if we have several Gabor filter settings! */
-				String[] gaborOptionsSet = gui.gaborOption.split(";");
-
-				for (int j = 0; j < gaborOptionsSet.length; j++) {
-					String opGabor = gaborOptionsSet[j];
-					/* Split the Gabor set for one filter! */
-					String[] gaborOptions = opGabor.split(",");
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-					/* Will work with 8-bit only! */
-					BufferedImage buff = new ImagePlus("tempGabor", ip).getBufferedImage();
-					FastBitmap fb = new FastBitmap(buff);
-
-					GaborFilter gabor = new GaborFilter();
-					/* Extract the arguments for one filter for the different layers! */
-					gabor.setSize(Integer.parseInt(gaborOptions[0]));
-					gabor.setWavelength(Double.parseDouble(gaborOptions[1]));
-					gabor.setOrientation(Double.parseDouble(gaborOptions[2]));
-					gabor.setPhaseOffset(Double.parseDouble(gaborOptions[3]));
-					gabor.setGaussianVar(Double.parseDouble(gaborOptions[4]));
-					gabor.setAspectRatio(Double.parseDouble(gaborOptions[5]));
-
-					gabor.applyInPlace(fb);
-					float[] imArray = fb.toArrayGrayAsFloat();
-					int width = ip.getWidth();
-					int height = ip.getHeight();
-					stack.addSlice("Gabor_Set_" + j + "_Layer_" + i, new FloatProcessor(width, height, imArray));
-					// new Gabor_Filter(ip,stack);
-
-				}
-			}
-		}
-
-		if (gui.topHat) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Top Hat Filter");
-			}
-			/* Split the mean option to get all radii! */
-			String[] topHatRadius = gui.topHatOption.split(",");
-			int stackSize = tempStack.getSize();
-			for (int i = 1; i <= stackSize; i++) {
-				for (int j = 0; j < topHatRadius.length; j++) {
-					double radius = Double.parseDouble(topHatRadius[j]);
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-					RankFilters ran = new RankFilters();
-					ran.rank(ip, radius, RankFilters.TOP_HAT);
-					stack.addSlice("Top_Hat_" + radius + "_Layer_" + i, ip);
-				}
-			}
-		}
-
-		if (gui.kuwahara) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Kuwahara Filter");
-			}
-			int stackSize = tempStack.getSize();
-			for (int i = 1; i <= stackSize; i++) {
-				/* Split the mean option to get all radii! */
-				String[] kuwaharaOptions = gui.kuwaharaOption.split(",");
-				for (int j = 0; j < kuwaharaOptions.length; j++) {
-					int radius = Integer.parseInt(kuwaharaOptions[j]);
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-					/* Will work with 8-bit only! */
-					Kuwahara_Filter kuw = new Kuwahara_Filter();
-					Kuwahara_Filter.size = radius;
-					kuw.filter(ip);
-					stack.addSlice("Kuwahara_" + radius + "_Layer_" + i, ip);
-				}
-			}
-		}
-
-		if (gui.convolve) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Convolve");
-			}
-			String[] matrices = gui.convolveOption.split(";");
-			for (int i = 0; i < matrices.length; i++) {
-				int stackSize = tempStack.getSize();
-				for (int u = 1; u <= stackSize; u++) {
-					ImageProcessor ip = tempStack.getProcessor(u).duplicate();
-					IJ.run(new ImagePlus("Convolved_" + i + "_layer" + u + "_temp", ip), "Convolve...", matrices[i]);
-					stack.addSlice("Convolved_" + i + "_Layer_" + u, ip);
-				}
-			}
-
-		}
-
-		String name = image.getShortTitle();
-		imPlus = new ImagePlus(name, stack);
-		image = null;
-		stack = null;
-		tempStack = null;
-		return imPlus;
-	}
-
-	/* Method to calculate the gradient! */
-	private void gradient(ImageStack stack, ImageProcessor ip) {
-		int width = ip.getWidth();
-		int height = ip.getHeight();
-		GrayF32 boofFilterImageInput = new GrayF32(width, height);
-
-		/* Transfer ImageProcessor data in place to boofcv image input! */
-		ipToBoofCVGray32(ip, boofFilterImageInput);
-
-		// First order derivative, also known as the gradient
-		GrayF32 derivX = new GrayF32(boofFilterImageInput.width, boofFilterImageInput.height);
-		GrayF32 derivY = new GrayF32(boofFilterImageInput.width, boofFilterImageInput.height);
-
-		GImageDerivativeOps.gradient(DerivativeType.SOBEL, boofFilterImageInput, derivX, derivY, BorderType.EXTENDED);
-
-		// Second order derivative, also known as the Hessian
-		// GrayF32 derivXX = new GrayF32(boofFilterImageInput.width,
-		// boofFilterImageInput.height);
-		// GrayF32 derivXY = new GrayF32(boofFilterImageInput.width,
-		// boofFilterImageInput.height);
-		// GrayF32 derivYY = new GrayF32(boofFilterImageInput.width,
-		// boofFilterImageInput.height);
-
-		// GImageDerivativeOps.hessian(DerivativeType.SOBEL, derivX, derivY, derivXX,
-		// derivXY, derivYY,
-		// BorderType.EXTENDED);
-
-		FloatProcessor flxProcessor = new FloatProcessor(width, height, derivX.getData());
-		FloatProcessor flyProcessor = new FloatProcessor(width, height, derivY.getData());
-
-		// FloatProcessor flxxProcessor = new FloatProcessor(width, height,
-		// derivXX.getData());
-		// FloatProcessor flxyProcessor = new FloatProcessor(width, height,
-		// derivXY.getData());
-		// FloatProcessor flyyProcessor = new FloatProcessor(width, height,
-		// derivYY.getData());
-
-		stack.addSlice("Gradient_Sobel X", flxProcessor);
-		stack.addSlice("Gradient_Sobel Y", flyProcessor);
-
-		// stack.addSlice("Hessian_Sobel XX", flxxProcessor);
-		// stack.addSlice("Hessian_Sobel XY", flxyProcessor);
-		// stack.addSlice("Hessian_Sobel YY", flyyProcessor);
-	}
-
-	/* Method to apply the RankFilters! */
-	private void extracted(double radius, final RankFilters ran, ImageProcessor ip, int FilterType) {
-
-		ran.rank(ip, radius, FilterType);
-
-	}
-
-	/* Method to convert BoofCV data to ImageJ ImageProcessor! */
-	private void ipToBoofCVGray32(ImageProcessor ip, GrayF32 boofFilterImageInput) {
-		float[][] fl = ip.getFloatArray();
-		for (int y = 0; y < ip.getHeight(); y++) {
-			for (int x = 0; x < ip.getWidth(); x++) {
-				float value = fl[x][y];
-				boofFilterImageInput.set(x, y, value);
-			}
+		char[] activChars = new char[] { ' ' };
+		KeyStroke keystr;
+		try {
+			keystr = KeyStroke.getInstance("Ctrl+Space");
+			ContentProposalAdapter adapter = new ContentProposalAdapter(lutText, new TextContentAdapter(),
+					new SimpleContentProposalProvider(lutProposals), keystr, activChars);
+			adapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
+		} catch (ParseException e1) {
+			e1.printStackTrace();
 		}
 	}
 
-	/* A method to get the Bio7 GUI R data transfer type */
-	private int getRDataTransferType() {
-		/* Wrap to avoid an invalid thread access! */
-		Display display = Util.getDisplay();
-		display.syncExec(() -> transferType = RImageMethodsView.getTransferTypeCombo().getSelectionIndex());
-		return transferType;
-	}
-
-	public String[] openMultipleFiles() {
-		files = null;
+	/*
+	 * A method to access all options wrapped in a syncExec for SWT widgets access!
+	 */
+	public void getFeatureOptions() {
 
 		Display display = Util.getDisplay();
+
 		display.syncExec(() -> {
-			Shell shell = new Shell(display);
-			FileDialog dlg = new FileDialog(shell, SWT.MULTI);
-			dlg.setFilterPath(null);
-			String f = dlg.open();
-			if (f != null) {
 
-				files = dlg.getFileNames();
-				currentFilePathMultipleDialog = dlg.getFilterPath();
-			}
+			toHsb = checkConvertToHsb.getSelection();
+
+			toLab = checkConvertToLab.getSelection();
+
+			useImportMacro = checkUseImportMacro.getSelection();
+
+			useDirectoryDialog = checkUseDirectory.getSelection();
+
+			openStack = checkOpenStack.getSelection();
+
+			useGroups = checkUseGroups.getSelection();
+
+			transferType = transferTypeCombo.getSelectionIndex();
+
+			generatePreview = checkGeneratePreview.getSelection();
+
+			lutOption = optionLUT.getText();
+
+			opacityOption = optionOpacity.getText();
+
+			retrainPreview = checkRetrainPreview.getSelection();
+			
+			showClassifiedInImageJ=checkShowInImagej.getSelection();
+
+			channelOption = channelSelectionText.getText();
+
+			gaussian = checkGaussianFilter.getSelection();
+			gaussianOption = optionGaussian.getText();
+
+			diffOfGaussian = checkDifferenceOfGaussian.getSelection();
+			diffGaussianOption = optionDiffGaussian.getText();
+
+			median = checkMedian.getSelection();
+			medianOption = optionMedian.getText();
+
+			mean = checkMean.getSelection();
+			meanOption = optionsMean.getText();
+
+			variance = checkVariance.getSelection();
+			varianceOption = optionsVariance.getText();
+
+			maximum = checkMaximum.getSelection();
+			maximumOption = optionsMaximum.getText();
+
+			minimum = checkMinimum.getSelection();
+			minimumOption = optionsMinimum.getText();
+
+			edges = checkEdges.getSelection();
+			edgesOption = optionsEdges.getText();
+
+			convolve = checkConvolve.getSelection();
+			convolveOption = optionConvolve.getText();
+
+			gradientHessian = checkGradientHessian.getSelection();
+			gradientHessianOption = optionGradientHessian.getText();
+
+			laplacian = checkLaplacian.getSelection();
+			laplacianOption = optionLaplacian.getText();
+
+			lipschitz = checkLipschitz.getSelection();
+			lipschitzOption = optionLipschitz.getText();
+
+			gabor = checkGabor.getSelection();
+			gaborOption = optionGabor.getText();
+
+			topHat = checkTopHat.getSelection();
+			topHatOption = optionsTopHat.getText();
+
+			kuwahara = checkKuwahara.getSelection();
+			kuwaharaOption = optionsKuwahara.getText();
 
 		});
 
-		return files;
 	}
 
+	/* Return the path to the training script! */
+	public String getPathTrainingScript() {
+		Display display = Util.getDisplay();
+		display.syncExec(() -> pathTrainingScript = txtTrainingRScript.getText());
+		return pathTrainingScript;
+	}
+
+	/* Return the path to the classification script! */
+	public String getPathClassificationScript() {
+		Display display = Util.getDisplay();
+		display.syncExec(() -> pathClassificationScript = txtClassificationRScript.getText());
+		return pathClassificationScript;
+	}
+
+	public String getMacroTextOption() {
+		Display display = Util.getDisplay();
+		display.syncExec(() -> textOptionMacro = textImageJMacro.getText());
+		return textOptionMacro;
+	}
+
+	/* Here we layout the ImageJ panel! */
+	public void layout() {
+		CanvasView canvasView = CanvasView.getCanvas_view();
+		canvasView.updatePlotCanvas();
+	}
+
+	@Override
 	/*
 	 * If the ImageJ ROI has changed this method will be called for preview. A job
 	 * avoids a recall if the job is busy to update the preview!
 	 */
 	public void roiModified(ImagePlus imp, int id) {
-		/* Each time the job has finished we start a new job! */
-		if (jobDone == false) {
-			return;
-		}
-		/*
-		 * Or we wait until dragging finished! if (job != null) { job.cancel(); }
-		 */
-		jobDone = false;
-		previewJob = new Job("Generate Preview") {
-			@Override
-			protected IStatus run(IProgressMonitor monitor) {
-				monitor.beginTask("Load...", IProgressMonitor.UNKNOWN);
-				ImagePlus image = WindowManager.getCurrentImage();
-				if (image.getRoi() != null) {
-					Roi roi = image.getRoi();
-					int roiWidth = roi.getBounds().width;
-					int roiHeight = roi.getBounds().height;
-					if (roiWidth >= 5 && roiHeight >= 5) {
-						/* Get all settings before the workflow for preview starts! */
-						if (RServe.isAlive()) {
-							if (RState.isBusy() == false) {
-								/* Notify that R is busy! */
-								RState.setBusy(true);
-								gui.getFeatureOptions();
-								/* Classify a preview from a selection! */
-								if (gui.retrainPreview) {
-									String path = gui.getPathTrainingScript();
-									/* Execute R script! */
-									if (path.endsWith(".R")) {
-										evalRScript(path);
-									}
-								}
-								ImagePlus roiImage;
-								if (image.getStackSize() == 1) {
-									roiImage = image.crop();
-								} else {
-									roiImage = image.crop("stack");
-								}
-								/* Call method in main class! */
-								ImagePlus imPlus = createStackFeatures(null, roiImage, monitor);
-								classifyPreview(monitor, imPlus, roi);
-							}
-						}
-
-					} else {
-						System.out.println("Selection (width and height) must be >= 5px");
-					}
-
-				}
-				monitor.done();
-				return Status.OK_STATUS;
-			}
-
-		};
-		previewJob.addJobChangeListener(new JobChangeAdapter() {
-			public void done(IJobChangeEvent event) {
-				if (event.getResult().isOK()) {
-
-					RState.setBusy(false);
-					/* Update the R-Shell view workspace objects! */
-					if (RServe.isAlive()) {
-						listRObjects();
-					}
-					jobDone = true;
-				} else {
-
-					RState.setBusy(false);
-					jobDone = true;
-				}
-			}
-		});
-
-		previewJob.schedule(1000);
-
-	}
-
-	/*
-	 * A method to clean all RoiListeners on startup and recompilation coming from
-	 * the ModelGui class!
-	 */
-	private void removeRoiListenerAtStartup() {
-		Vector listen = Roi.getListeners();
-		if (listen.size() > 0) {
-			for (int i = 0; i < listen.size(); i++) {
-				RoiListener rl = (RoiListener) listen.get(i);
-				String className = rl.getClass().getName().toString();
-				// System.out.println(className);
-				if (className.equals("ModelGui")) {
-					Roi.removeRoiListener(rl);
-					IJ.run("Remove Overlay", "");
-				}
-
-			}
-
-		}
-	}
-
-	/*
-	 * We overwrite a close method of the super class 'Model' which this class
-	 * extends!
-	 */
-	public void close() {
-		Roi.removeRoiListener(gui);
-		IJ.run("Remove Overlay", "");
-	}
-
-	/*
-	 * Only implemented to avoid a console warning! Constructor of this class will
-	 * be called after compilation and instantiation!
-	 */
-	public static void main(String[] args) {
-
+		/* Call update method in main class! */
+		model.roiModified(imp, id);
 	}
 }

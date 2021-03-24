@@ -156,7 +156,7 @@ public class RImageMethodsView extends ViewPart {
 		gridLayout1.horizontalSpacing = 2;
 		top = new Composite(scrolledComposite, SWT.NONE);
 		top.setLayout(gridLayout1);
-		top.setSize(300,350);
+		top.setSize(300,400);
 		scrolledComposite.setContent(top);
 		
 

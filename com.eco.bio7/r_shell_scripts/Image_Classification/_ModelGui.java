@@ -175,6 +175,9 @@ public class _ModelGui extends Composite implements RoiListener {
 	protected String opacityOption;
 	private ScrolledComposite scrolledCompositeSettings;
 	private Button btnClassificationProject;
+	private Label lblClassified;
+	protected Button checkShowInImagej;
+	protected boolean showClassifiedInImageJ;
 
 	public _ModelGui(Composite parent, Main model, int style) {
 		super(parent, SWT.NONE);
@@ -208,7 +211,7 @@ public class _ModelGui extends Composite implements RoiListener {
 		scrolledComposite.setExpandHorizontal(true);
 		scrolledComposite.setExpandVertical(false);
 		composite = new Composite(scrolledComposite, SWT.NONE);
-		composite.setSize(300, 800);
+		composite.setSize(300, 950);
 		scrolledComposite.setContent(composite);
 		composite.setLayout(new GridLayout(2, true));
 
@@ -462,7 +465,7 @@ public class _ModelGui extends Composite implements RoiListener {
 		scrolledCompositeSettings.setExpandHorizontal(true);
 		scrolledCompositeSettings.setExpandVertical(false);
 		composite_1 = new Composite(scrolledCompositeSettings, SWT.NONE);
-		composite_1.setSize(300, 450);
+		composite_1.setSize(300, 520);
 		scrolledCompositeSettings.setContent(composite_1);
 		composite_1.setLayout(new GridLayout(2, true));
 
@@ -649,6 +652,21 @@ public class _ModelGui extends Composite implements RoiListener {
 		setLutCompletion(optionLUT);
 
 		optionLUT.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		lblClassified = new Label(composite_1, SWT.NONE);
+		lblClassified.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 2, 1));
+		lblClassified.setText("Classified");
+		
+		checkShowInImagej = new Button(composite_1, SWT.CHECK);
+		checkShowInImagej.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+			}
+		});
+		checkShowInImagej.setSelection(true);
+		checkShowInImagej.setText("Show in ImageJ");
+		
+		new Label(composite_1, SWT.NONE);
 		transferTypeCombo.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				int index = transferTypeCombo.getSelectionIndex();
@@ -716,6 +734,8 @@ public class _ModelGui extends Composite implements RoiListener {
 			opacityOption = optionOpacity.getText();
 
 			retrainPreview = checkRetrainPreview.getSelection();
+			
+			showClassifiedInImageJ=checkShowInImagej.getSelection();
 
 			channelOption = channelSelectionText.getText();
 

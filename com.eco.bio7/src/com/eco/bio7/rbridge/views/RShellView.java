@@ -660,7 +660,7 @@ public class RShellView extends ViewPart {
 		GridData gd_loadButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_loadButton.heightHint = 40;
 		loadButton.setLayoutData(gd_loadButton);
-		loadButton.setToolTipText("Load history");
+		loadButton.setToolTipText("Import Data to R/Load R History");
 		loadButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				IDocument doc = new Document();
@@ -681,7 +681,7 @@ public class RShellView extends ViewPart {
 		GridData gd_saveButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_saveButton.heightHint = 40;
 		saveButton.setLayoutData(gd_saveButton);
-		saveButton.setToolTipText("Save history");
+		saveButton.setToolTipText("Export R Data/Save R History");
 		saveButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				IDocument doc = new Document();

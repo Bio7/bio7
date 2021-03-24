@@ -129,6 +129,8 @@ public class _Settings {
 				modelGui.optionLUT.setText(reader.readLine());
 				
 				modelGui.optionOpacity.setText(reader.readLine());
+				
+				modelGui.checkShowInImagej.setSelection(read(reader));
 
 				reader.close();
 
@@ -266,6 +268,9 @@ public class _Settings {
 		buffer.append(sep);
 		
 		buffer.append(modelGui.optionLUT.getText());
+		buffer.append(sep);
+		
+		buffer.append(modelGui.checkShowInImagej.getSelection());
 		
 		String file = Bio7Dialog.saveFile("*.txt");
 		if (file != null) {
