@@ -362,54 +362,50 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 			}
 		});
-		new MenuItem(fMenu, SWT.SEPARATOR);
-		MenuItem installRserveMenuItem = new MenuItem(fMenu, SWT.CASCADE);
-		installRserveMenuItem.setText("Install Rserve for MacOSX or Linux");
-
-		installRserveMenuItem.setText("Install Rserve (coop. mode) for R < 3.5.0");
-
-		installRserveMenuItem.addSelectionListener(new SelectionListener() {
-
-			public void widgetSelected(SelectionEvent e) {
-				installRPrevious();
-
-			}
-
-			public void widgetDefaultSelected(SelectionEvent e) {
-
-			}
-		});
-
-		MenuItem installRserveMenuItem2 = new MenuItem(fMenu, SWT.CASCADE);
-
-		installRserveMenuItem2.setText("Install Rserve (coop. mode) for R >= 3.5.0");
-
-		installRserveMenuItem2.addSelectionListener(new SelectionListener() {
-
-			public void widgetSelected(SelectionEvent e) {
-				installRServeCurrent();
-
-			}
-
-			public void widgetDefaultSelected(SelectionEvent e) {
-
-			}
-		});
-
-		MenuItem installRserveMenuItem3 = new MenuItem(fMenu, SWT.CASCADE);
-
-		installRserveMenuItem3.setText("Install Rserve (coop. mode) for R >= 3.5.0 for SSL 1.1");
-
-		installRserveMenuItem3.addSelectionListener(new SelectionListener() {
-
-			public void widgetSelected(SelectionEvent e) {
-				installRServeLinuxSSL11();
-			}
-
-			public void widgetDefaultSelected(SelectionEvent e) {
-
-			}
-		});
+		//new MenuItem(fMenu, SWT.SEPARATOR);
+		/*
+		 * MenuItem installRserveMenuItem = new MenuItem(fMenu, SWT.CASCADE);
+		 * installRserveMenuItem.setText("Install Rserve for MacOSX or Linux");
+		 * 
+		 * installRserveMenuItem.setText("Install Rserve (coop. mode) for R < 3.5.0");
+		 * 
+		 * installRserveMenuItem.addSelectionListener(new SelectionListener() {
+		 * 
+		 * public void widgetSelected(SelectionEvent e) { installRPrevious();
+		 * 
+		 * }
+		 * 
+		 * public void widgetDefaultSelected(SelectionEvent e) {
+		 * 
+		 * } });
+		 * 
+		 * MenuItem installRserveMenuItem2 = new MenuItem(fMenu, SWT.CASCADE);
+		 * 
+		 * installRserveMenuItem2.setText("Install Rserve (coop. mode) for R >= 3.5.0");
+		 * 
+		 * installRserveMenuItem2.addSelectionListener(new SelectionListener() {
+		 * 
+		 * public void widgetSelected(SelectionEvent e) { installRServeCurrent();
+		 * 
+		 * }
+		 * 
+		 * public void widgetDefaultSelected(SelectionEvent e) {
+		 * 
+		 * } });
+		 * 
+		 * MenuItem installRserveMenuItem3 = new MenuItem(fMenu, SWT.CASCADE);
+		 * 
+		 * installRserveMenuItem3.
+		 * setText("Install Rserve (coop. mode) for R >= 3.5.0 for SSL 1.1");
+		 * 
+		 * installRserveMenuItem3.addSelectionListener(new SelectionListener() {
+		 * 
+		 * public void widgetSelected(SelectionEvent e) { installRServeLinuxSSL11(); }
+		 * 
+		 * public void widgetDefaultSelected(SelectionEvent e) {
+		 * 
+		 * } });
+		 */
 
 		new MenuItem(fMenu, SWT.SEPARATOR);
 		MenuItem menuEncoding = new MenuItem(fMenu, SWT.CASCADE);
