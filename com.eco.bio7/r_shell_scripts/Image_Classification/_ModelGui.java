@@ -211,7 +211,7 @@ public class _ModelGui extends Composite implements RoiListener {
 		scrolledComposite.setExpandHorizontal(true);
 		scrolledComposite.setExpandVertical(false);
 		composite = new Composite(scrolledComposite, SWT.NONE);
-		composite.setSize(300, 950);
+		composite.setSize(300, 1150);
 		scrolledComposite.setContent(composite);
 		composite.setLayout(new GridLayout(2, true));
 
@@ -465,7 +465,7 @@ public class _ModelGui extends Composite implements RoiListener {
 		scrolledCompositeSettings.setExpandHorizontal(true);
 		scrolledCompositeSettings.setExpandVertical(false);
 		composite_1 = new Composite(scrolledCompositeSettings, SWT.NONE);
-		composite_1.setSize(300, 520);
+		composite_1.setSize(300, 600);
 		scrolledCompositeSettings.setContent(composite_1);
 		composite_1.setLayout(new GridLayout(2, true));
 
