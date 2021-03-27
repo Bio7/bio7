@@ -127,7 +127,7 @@ CTabFolder Canvas {
     font-size: 14px;
 }
 #com-eco-bio7-imagej.MToolBar {
-   
+    color:  #000000;
     font-size: 14px;
 }
 #com-eco-bio7-thumbnails.MToolBar {
@@ -136,18 +136,18 @@ CTabFolder Canvas {
 }
 
 #org-eclipse-ui-console-ConsoleView.MToolBar {
-    background-color:  #eeeeee;
     color:  #000000;
     font-size: 14px;
 }
 
 #com-eco-bio7-browser-Browser.MToolBar {
-    background-color:  #eeeeee;
     color:  #000000;
     font-size: 14px;
 }
 
 /*Font size for the PerspectiveBar important for MacOSX!*/
 #PerspectiveSwitcher ToolBar {
+  color:  #000000;
   font-size: 14px;
 }
+
