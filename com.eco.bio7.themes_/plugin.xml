@@ -90,8 +90,14 @@
          os="linux">
    </theme>
    <theme
+            basestylesheeturi="css/e4_default_gtk.css"
+            id="org.eclipse.e4.ui.css.theme.e4_default_linux"
+            label="%theme.gtk"
+            os="linux">
+    </theme>
+   <theme
          basestylesheeturi="css/e4_default_mac.css"
-         id="org.eclipse.e4.ui.css.theme.e4_default"
+         id="org.eclipse.e4.ui.css.theme.e4_default_mac"
          label="%theme.mac"
          os="macosx">
    </theme>
