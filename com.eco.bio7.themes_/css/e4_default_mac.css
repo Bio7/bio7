@@ -116,3 +116,37 @@ CTabFolder CTabItem:selected {
 CTabFolder Canvas {
   background-color: rgb(255, 255, 255);
 }
+/*Font size for the view menus important for MacOSX!*/
+#com-eco-bio7-imagej.MToolBar {
+    
+   font-size: 14px;
+}
+
+#com-eco-bio7-rbridge-RTable.MToolBar {
+
+    font-size: 14px;
+}
+#com-eco-bio7-imagej.MToolBar {
+   
+    font-size: 14px;
+}
+#com-eco-bio7-thumbnails.MToolBar {
+    
+    font-size: 14px;
+}
+
+#org-eclipse-ui-console-ConsoleView.MToolBar {
+
+    font-size: 14px;
+}
+
+#com-eco-bio7-browser-Browser.MToolBar {
+    
+    font-size: 14px;
+}
+
+/*Font size for the PerspectiveBar important for MacOSX!*/
+#PerspectiveSwitcher ToolBar {
+    font-size: 14px;
+}
+
