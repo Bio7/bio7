@@ -68,25 +68,6 @@
             os="win32"
             os_version="6.0,6.1,6.2,6.3,10.0">
       </theme>
-      <theme
-            basestylesheeturi="css/e4_default_winxp_blu.css"
-            id="org.eclipse.e4.ui.css.theme.e4_default.xpblu"
-            label="%theme.winxpBlue"
-            os="win32">
-      </theme>
-	  <theme
-            basestylesheeturi="css/e4_default_winxp_olv.css"
-            id="org.eclipse.e4.ui.css.theme.e4_default.xpolive"
-            label="%theme.winxpOlive"
-            os="win32">
-      </theme>
-   <theme
-         basestylesheeturi="css/e4_classic_win7.css"
-         id="org.eclipse.e4.ui.css.theme.e4_classic"
-         label="%theme.win7Classic"
-         os="win32"
-         os_version="6.0,6.1,6.2,6.3,10.0">
-   </theme>
    <theme
 		basestylesheeturi="css/high-contrast.css"
         id="org.eclipse.e4.ui.css.theme.high-contrast"
@@ -103,24 +84,10 @@
             refid="org.eclipse.e4.ui.css.theme.e4_dark"></themeid>
    </stylesheet>
    <theme
-         basestylesheeturi="css/e4_eclipse_default_win7.css"
-         id="org.eclipse.e4.ui.css.theme.e4_eclipse_default"
-         label="Windows 7 Eclipse"
-         os="win32"
-         os_version="6.0,6.1,6.2,6.3,10.0">
-   </theme>
-   <theme
          basestylesheeturi="css/e4_default_bio7_linux.css"
          id="org.eclipse.e4.ui.css.theme.e4_default"
          label="Bio7 Linux"
          os="linux">
-   </theme>
-   <theme
-         basestylesheeturi="css/e4_default_bio7_windows_2.css"
-         id="org.eclipse.e4.ui.css.theme.e4_win2"
-         label="Bio7 Windows 2"
-         os="win32"
-         os_version="6.0,6.1,6.2,6.3,10.0">
    </theme>
    <theme
          basestylesheeturi="css/e4_default_mac.css"
@@ -128,6 +95,12 @@
          label="%theme.mac"
          os="macosx">
    </theme>
+   <theme
+            basestylesheeturi="css/e4_default_win.css"
+            id="org.eclipse.e4.ui.css.theme.e4_default"
+            label="%theme.win"
+            os="win32">
+      </theme>
 
    </extension>
 

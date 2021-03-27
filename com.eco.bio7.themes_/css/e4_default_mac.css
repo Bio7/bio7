@@ -15,7 +15,7 @@
  *     Ingo Mohr <tellastory73@gmail.com> - Bug 566842
  *******************************************************************************/
 
-@import url("platform:/plugin/org.eclipse.ui.themes/css/e4_basestyle.css");
+@import url("platform:/plugin/com.eco.bio7.themes/css/e4_basestyle.css");
 
 ColorDefinition#org-eclipse-ui-workbench-ACTIVE_UNSELECTED_TABS_COLOR_START {
 	color: rgb(255, 255, 255);
