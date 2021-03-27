@@ -118,12 +118,12 @@ CTabFolder Canvas {
 }
 /*Font size for the view menus important for MacOSX!*/
 #com-eco-bio7-imagej.MToolBar {
-    
-   font-size: 14px;
+    color:  #000000;
+    font-size: 14px;
 }
 
 #com-eco-bio7-rbridge-RTable.MToolBar {
-
+    color:  #000000;
     font-size: 14px;
 }
 #com-eco-bio7-imagej.MToolBar {
@@ -131,22 +131,23 @@ CTabFolder Canvas {
     font-size: 14px;
 }
 #com-eco-bio7-thumbnails.MToolBar {
-    
+    color:  #000000;
     font-size: 14px;
 }
 
 #org-eclipse-ui-console-ConsoleView.MToolBar {
-
+    background-color:  #eeeeee;
+    color:  #000000;
     font-size: 14px;
 }
 
 #com-eco-bio7-browser-Browser.MToolBar {
-    
+    background-color:  #eeeeee;
+    color:  #000000;
     font-size: 14px;
 }
 
 /*Font size for the PerspectiveBar important for MacOSX!*/
 #PerspectiveSwitcher ToolBar {
-    font-size: 14px;
+  font-size: 14px;
 }
-
