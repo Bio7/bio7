@@ -116,6 +116,15 @@ CTabFolder CTabItem:selected {
 CTabFolder Canvas {
   background-color: rgb(255, 255, 255);
 }
+
+Composite {
+  background-color: rgb(255, 255, 255);
+}
+
+CLabel {
+  background-color: rgb(255, 255, 255);
+}
+
 /*Font size for the view menus important for MacOSX!*/
 #com-eco-bio7-imagej.MToolBar {
     color:  #000000;
