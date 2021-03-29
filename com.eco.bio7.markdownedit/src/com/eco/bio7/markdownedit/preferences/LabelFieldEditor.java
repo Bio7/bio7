@@ -31,7 +31,12 @@ class LabelFieldEditor extends FieldEditor {
 		gridData.grabExcessVerticalSpace = false;
 
 		label.setLayoutData(gridData);
-		Font font = new Font(parent.getDisplay(), "Verdana", 8, SWT.BOLD);
+		Font font = null;
+		if ( SWT.getPlatform().equals("cocoa")) {
+			font = new Font(parent.getDisplay(), "Helvetica Neue", 11, SWT.BOLD);
+		} else {
+			font = new Font(parent.getDisplay(), "Arial", 9, SWT.BOLD);
+		}
 		label.setFont(font);
 	}
 
