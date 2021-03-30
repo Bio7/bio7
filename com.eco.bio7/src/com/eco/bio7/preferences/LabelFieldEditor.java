@@ -34,7 +34,7 @@ class LabelFieldEditor extends FieldEditor {
 		Font font = null;
 		label.setLayoutData(gridData);
 		if (Util.getOS().equals("Mac")) {
-			font = new Font(parent.getDisplay(), "Helvetica Neue", 11, SWT.BOLD);
+			font = new Font(parent.getDisplay(), "Helvetica Neue", 14, SWT.BOLD);
 		} else {
 			font = new Font(parent.getDisplay(), "Arial", 9, SWT.BOLD);
 		}

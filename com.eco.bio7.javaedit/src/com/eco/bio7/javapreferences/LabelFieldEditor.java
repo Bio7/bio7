@@ -33,7 +33,7 @@ class LabelFieldEditor extends FieldEditor {
 		label.setLayoutData(gridData);
 		Font font = null;
 		if ( SWT.getPlatform().equals("cocoa")) {
-			font = new Font(parent.getDisplay(), "Helvetica Neue", 11, SWT.BOLD);
+			font = new Font(parent.getDisplay(), "Helvetica Neue", 14, SWT.BOLD);
 		} else {
 			font = new Font(parent.getDisplay(), "Arial", 9, SWT.BOLD);
 		}
