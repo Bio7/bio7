@@ -10,6 +10,8 @@
  *******************************************************************************/
 package com.eco.bio7.editors;
 
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.text.DefaultIndentLineAutoEditStrategy;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
@@ -33,7 +35,7 @@ import com.eco.bio7.reditor.preferences.template.BeanshellCompletionProcessor;
 public class BeanshellConfiguration extends TextSourceViewerConfiguration {
 
 	private BeanshellDoubleClickStrategy doubleClickStrategy;
-
+	IPreferenceStore store = BeanshellEditorPlugin.getDefault().getPreferenceStore();
 	private ColorManager colorManager;
 	ScriptColorProvider provider;
 
@@ -82,7 +84,8 @@ public class BeanshellConfiguration extends TextSourceViewerConfiguration {
 	public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
 		return new String[] { IDocument.DEFAULT_CONTENT_TYPE,
 				ScriptPartitionScanner.SCRIPT_DOC,
-				ScriptPartitionScanner.SCRIPT_MULTILINE_COMMENT };
+				ScriptPartitionScanner.SCRIPT_MULTILINE_COMMENT,
+				ScriptPartitionScanner.SCRIPT_MULTILINE_STRING};
 	}
 
 	public IPresentationReconciler getPresentationReconciler(
@@ -109,8 +112,28 @@ public class BeanshellConfiguration extends TextSourceViewerConfiguration {
 
 		reconciler.setDamager(dr, ScriptPartitionScanner.SCRIPT_MULTILINE_COMMENT);
 		reconciler.setRepairer(dr, ScriptPartitionScanner.SCRIPT_MULTILINE_COMMENT);
+		
+		dr = new DefaultDamagerRepairer(BeanshellEditorPlugin.getDefault()
+				.getScriptPartitionScanner());
+		reconciler.setDamager(dr, ScriptPartitionScanner.SCRIPT_MULTILINE_STRING);
+		reconciler.setRepairer(dr, ScriptPartitionScanner.SCRIPT_MULTILINE_STRING);
+
+		dr = new DefaultDamagerRepairer(new SingleTokenScanner(
+				new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey2")),null, isBold("BOLD_COLOURKEY2"))));
+
+		reconciler.setDamager(dr, ScriptPartitionScanner.SCRIPT_MULTILINE_STRING);
+		reconciler.setRepairer(dr, ScriptPartitionScanner.SCRIPT_MULTILINE_STRING);
 
 		return reconciler;
+	}
+	private int isBold(String string2) {
+		int style = 0;
+		IPreferenceStore store = BeanshellEditorPlugin.getDefault().getPreferenceStore();
+		if (store.getBoolean(string2)) {
+			style = 1;
+		}
+
+		return style;
 	}
 
 	public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {

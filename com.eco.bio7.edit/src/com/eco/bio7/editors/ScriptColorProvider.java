@@ -25,6 +25,7 @@ public class ScriptColorProvider {
 			.getPreferenceStore();
 
 	public static final RGB MULTI_LINE_COMMENT = new RGB(63,127,95);
+	//public static final RGB MULTI_LINE_STRING = new RGB(42,0,255);
 
 	protected Map fColorTable = new HashMap(10);
 

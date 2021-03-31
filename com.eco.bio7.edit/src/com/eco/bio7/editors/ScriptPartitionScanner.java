@@ -22,9 +22,10 @@ import com.eco.bio7.editor.BeanshellEditorPlugin;
  */
 public class ScriptPartitionScanner extends RuleBasedPartitionScanner {
 
+	public final static String SCRIPT_MULTILINE_STRING= "__java_multiline_string"; //$NON-NLS-1$
 	public final static String SCRIPT_MULTILINE_COMMENT= "__java_multiline_comment"; //$NON-NLS-1$
 	public final static String SCRIPT_DOC= "__java_javadoc"; 
-	public final static String[] SCRIPT_PARTITION_TYPES= new String[] { SCRIPT_MULTILINE_COMMENT, SCRIPT_DOC };
+	public final static String[] SCRIPT_PARTITION_TYPES= new String[] { SCRIPT_MULTILINE_COMMENT, SCRIPT_DOC,SCRIPT_MULTILINE_STRING };
 
 	/**
 	 * Detector for empty comments.
@@ -72,6 +73,7 @@ public class ScriptPartitionScanner extends RuleBasedPartitionScanner {
 
 		IToken javaDoc= new Token(SCRIPT_DOC);
 		IToken comment= new Token(SCRIPT_MULTILINE_COMMENT);
+		IToken multiLineString= new Token(SCRIPT_MULTILINE_STRING);
 
 		List rules= new ArrayList();
 		/*BeanshellEditorPlugin fginstance = BeanshellEditorPlugin.getDefault();
@@ -79,7 +81,8 @@ public class ScriptPartitionScanner extends RuleBasedPartitionScanner {
 
 		// Add rule for single line comments.
 		rules.add(new EndOfLineRule("//", Token.UNDEFINED)); //$NON-NLS-1$
-
+		rules.add(new MultiLineRule("\"\"\"", "\"\"\"", multiLineString, (char) 0, true)); //$NON-NLS-1$ //$NON-NLS-2$
+		rules.add(new MultiLineRule("'''", "'''", multiLineString, (char) 0, true)); //$NON-NLS-1$ //$NON-NLS-2$
 		// Add rule for strings and character constants.
 		rules.add(new SingleLineRule("\"", "\"", Token.UNDEFINED, '\\')); //$NON-NLS-2$ //$NON-NLS-1$
 		rules.add(new SingleLineRule("'", "'", Token.UNDEFINED, '\\')); //$NON-NLS-2$ //$NON-NLS-1$
@@ -90,6 +93,8 @@ public class ScriptPartitionScanner extends RuleBasedPartitionScanner {
 		// Add rules for multi-line comments and javadoc.
 		rules.add(new MultiLineRule("/**", "*/", javaDoc, (char) 0, true)); //$NON-NLS-1$ //$NON-NLS-2$
 		rules.add(new MultiLineRule("/*", "*/", comment, (char) 0, true)); //$NON-NLS-1$ //$NON-NLS-2$
+		
+		
 
 		IPredicateRule[] result= new IPredicateRule[rules.size()];
 		rules.toArray(result);
