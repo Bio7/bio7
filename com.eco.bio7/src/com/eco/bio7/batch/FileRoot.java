@@ -1,6 +1,7 @@
 package com.eco.bio7.batch;
 
 import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 import com.eco.bio7.Bio7Plugin;
@@ -122,6 +123,17 @@ public class FileRoot {
 		String fileroot = store.getString(PreferenceConstants.D_RSHELL_SCRIPTS);
 		return fileroot;
 
+	}
+	/**
+	 * Returns the workspace path.
+	 * 
+	 * @return the path as a string.
+	 * 
+	 */
+	public static String getWorkspacePath() {
+		String path = null;
+		path = ResourcesPlugin.getWorkspace().getRoot().getLocation().toString();
+		return path;
 	}
 
 }

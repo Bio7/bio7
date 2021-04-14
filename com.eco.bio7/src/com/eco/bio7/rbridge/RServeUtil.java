@@ -320,6 +320,16 @@ public class RServeUtil {
 	public static void evalStringR(String script) {
 		RServe.printJobJoin(script);
 	}
+	
+	/**
+	 * A method to trigger a R plot if a device is available.
+	 */
+	public static void displayPlotEvent() {
+		int countDev = RServe.getDisplayNumber();
+		if (countDev > 0) {
+			RServe.closeAndDisplay();
+		}
+	}
 
 	/**
 	 * A method to trigger the update of the R object list in the R/Shell view.
@@ -351,13 +361,23 @@ public class RServeUtil {
 
 		return names;
 	}
-
+	
 	/**
 	 * A method to evaluate a R script from the given location.
 	 * 
 	 * @param loc The path to the script
 	 */
 	public static void evalRScript(String loc) {
+		evalRScript(loc, true);
+	}
+
+	/**
+	 * A method to evaluate a R script from the given location.
+	 * 
+	 * @param loc The path to the script
+	 * @param printCommand A boolean value if the R output should be printed
+	 */
+	public static void evalRScript(String loc, boolean printCommand) {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		final RConnection cscript = RServe.getConnection();
 
@@ -377,7 +397,9 @@ public class RServeUtil {
 							String rout = null;
 							try {
 								/* First write a message which file is sourced! */
-								cscript.eval("message(paste0(\"> source('\",.bio7TempRScriptFile),\"')\",sep=\"\")");
+								if (printCommand) {
+									cscript.eval("message(paste0(\"> source('\",.bio7TempRScriptFile),\"')\",sep=\"\")");
+								}
 								String options = store.getString("R_SOURCE_OPTIONS");
 								String rCommand = "" + "paste(capture.output(tryCatch(source(.bio7TempRScriptFile," + options + "),error = function(e) {message(paste0(\"\n\",e))})),collapse=\"\\n\")";
 								rout = cscript.eval(rCommand).asString();
@@ -409,7 +431,9 @@ public class RServeUtil {
 							 */
 							String rout = null;
 							try {
-								cscript.eval("message(paste0(\"> source('\",.bio7TempRScriptFile),\"')\",sep=\"\")");
+								if (printCommand) {
+									cscript.eval("message(paste0(\"> source('\",.bio7TempRScriptFile),\"')\",sep=\"\")");
+								}
 								String options = store.getString("R_SOURCE_OPTIONS");
 								String rCommand = "" + "paste(capture.output(tryCatch(source(.bio7TempRScriptFile," + options + "),error = function(e) {message(paste0(\"\n\",e))})),collapse=\"\\n\")";
 								rout = cscript.eval(rCommand).asString();

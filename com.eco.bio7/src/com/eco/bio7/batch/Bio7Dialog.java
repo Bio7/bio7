@@ -296,7 +296,7 @@ public class Bio7Dialog {
 
 				DirectoryDialog dlg = new DirectoryDialog(shell);
 
-				dlg.setFilterPath("c:/");
+				//dlg.setFilterPath("c:/");
 
 				dlg.setText(text);
 
