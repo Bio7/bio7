@@ -28,10 +28,12 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.batch.FileRoot;
 import com.eco.bio7.collection.CustomView;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.image.RImageMethodsView;
@@ -74,12 +76,13 @@ import ij.process.ImageProcessor;
 public class Main extends com.eco.bio7.compile.Model {
 
 	private String[] files;
-	private _ModelGui gui; 
+	private _ModelGui gui;
 	protected int transferType;
 	protected String currentFilePathMultipleDialog;
 	protected IProgressMonitor actionMonitor;
 	private boolean jobDone = true;
 	private Job previewJob;
+	protected static String classifyDir;
 
 	public Main() {
 		/*
@@ -264,7 +267,7 @@ public class Main extends com.eco.bio7.compile.Model {
 		else if (choice == 4) {
 			gui.interruptBatch = false;
 			if (gui.useDirectoryDialog) {
-				String dirSelection = Bio7Dialog.directory("Select the base directory");
+				String dirSelection = directory("Select the base directory");
 				if (dirSelection == null) {
 					return;
 				}
@@ -339,6 +342,10 @@ public class Main extends com.eco.bio7.compile.Model {
 					gui.layout();
 				}
 			}
+		}
+		if (gui.applyPostImageJMacro) {
+			String macroPath = gui.getPathImageJMacroPostScript();
+			IJ.runMacroFile(macroPath);
 		}
 
 	}
@@ -1147,6 +1154,31 @@ public class Main extends com.eco.bio7.compile.Model {
 	public void close() {
 		Roi.removeRoiListener(gui);
 		IJ.run("Remove Overlay", "");
+	}
+
+	public static String directory(final String text) {
+
+		Display display = Util.getDisplay();
+		display.syncExec(new Runnable() {
+
+			public void run() {
+				// Shell must be created with style SWT.NO_TRIM
+				Shell shell = new Shell(display, SWT.NO_TRIM | SWT.ON_TOP);
+
+				DirectoryDialog dlg = new DirectoryDialog(shell);
+                //Set the workspace path!
+				dlg.setFilterPath(FileRoot.getFileRoot());
+
+				dlg.setText(text);
+
+				dlg.setMessage(text);
+
+				classifyDir = dlg.open();
+				/* We print the path of the selected folder! */
+
+			}
+		});
+		return classifyDir;
 	}
 
 	/*

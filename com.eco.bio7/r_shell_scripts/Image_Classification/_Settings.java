@@ -126,11 +126,15 @@ public class _Settings {
 				
 				modelGui.checkRetrainPreview.setSelection(read(reader));
 				
-				modelGui.optionLUT.setText(reader.readLine());
-				
 				modelGui.optionOpacity.setText(reader.readLine());
 				
+				modelGui.optionLUT.setText(reader.readLine());
+				
 				modelGui.checkShowInImagej.setSelection(read(reader));
+				
+				modelGui.checkApplyPostImagejMacro.setSelection(read(reader));
+				
+				modelGui.textPostMacro.setText(reader.readLine());
 
 				reader.close();
 
@@ -271,6 +275,12 @@ public class _Settings {
 		buffer.append(sep);
 		
 		buffer.append(modelGui.checkShowInImagej.getSelection());
+		buffer.append(sep);
+		
+		buffer.append(modelGui.checkApplyPostImagejMacro.getSelection());
+		buffer.append(sep);
+		
+		buffer.append(modelGui.getPathImageJMacroPostScript());
 		
 		String file = Bio7Dialog.saveFile("*.txt");
 		if (file != null) {

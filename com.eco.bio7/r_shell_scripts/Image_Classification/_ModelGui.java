@@ -137,6 +137,7 @@ public class _ModelGui extends Composite implements RoiListener {
 	protected Text textImageJMacro;
 	protected boolean useImportMacro;
 	protected String textOptionMacro;
+	protected String pathpostImageJMacro;
 	private Button buttonMacro;
 	protected Button checkTopHat;
 	protected Text optionsTopHat;
@@ -181,6 +182,10 @@ public class _ModelGui extends Composite implements RoiListener {
 	protected boolean showClassifiedInImageJ;
 	private Label lblFeatures;
 	private Label lblColor;
+	protected Button checkApplyPostImagejMacro;
+	protected Text textPostMacro;
+	private Button btnMacro;
+	protected boolean applyPostImageJMacro;
 
 	public _ModelGui(Composite parent, Main model, int style) {
 		super(parent, SWT.NONE);
@@ -296,7 +301,7 @@ public class _ModelGui extends Composite implements RoiListener {
 		});
 		interruptButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 		interruptButton.setText("Interrupt Classification");
-		
+
 		lblColor = new Label(composite, SWT.NONE);
 		lblColor.setFont(SWTResourceManager.getFont("Arial", 9, SWT.BOLD));
 		lblColor.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 2, 1));
@@ -332,7 +337,7 @@ public class _ModelGui extends Composite implements RoiListener {
 
 		channelSelectionText = new Text(composite, SWT.BORDER);
 		channelSelectionText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-		
+
 		lblFeatures = new Label(composite, SWT.NONE);
 		lblFeatures.setFont(SWTResourceManager.getFont("Arial", 9, SWT.BOLD));
 		lblFeatures.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 2, 1));
@@ -668,12 +673,12 @@ public class _ModelGui extends Composite implements RoiListener {
 		setLutCompletion(optionLUT);
 
 		optionLUT.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		
+
 		lblClassified = new Label(composite_1, SWT.NONE);
 		lblClassified.setFont(SWTResourceManager.getFont("Arial", 9, SWT.BOLD));
 		lblClassified.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 2, 1));
 		lblClassified.setText("Classified Images");
-		
+
 		checkShowInImagej = new Button(composite_1, SWT.CHECK);
 		checkShowInImagej.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -682,8 +687,31 @@ public class _ModelGui extends Composite implements RoiListener {
 		});
 		checkShowInImagej.setSelection(true);
 		checkShowInImagej.setText("Show in ImageJ");
-		
-		new Label(composite_1, SWT.NONE);
+
+		checkApplyPostImagejMacro = new Button(composite_1, SWT.CHECK);
+		checkApplyPostImagejMacro.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+			}
+		});
+		checkApplyPostImagejMacro.setText("Apply ImageJ Macro");
+
+		textPostMacro = new Text(composite_1, SWT.BORDER);
+		textPostMacro.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textPostMacro.setText(FileRoot.getCurrentCompileDir() + "/_Macro/IJPostMacro.ijm");
+		btnMacro = new Button(composite_1, SWT.NONE);
+		btnMacro.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+
+				String path = Bio7Dialog.openFile();
+				path = path.replace("\\", "/");
+				textPostMacro.setText(path);
+
+			}
+		});
+		btnMacro.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		btnMacro.setText("Macro");
 		transferTypeCombo.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				int index = transferTypeCombo.getSelectionIndex();
@@ -751,8 +779,10 @@ public class _ModelGui extends Composite implements RoiListener {
 			opacityOption = optionOpacity.getText();
 
 			retrainPreview = checkRetrainPreview.getSelection();
+
+			showClassifiedInImageJ = checkShowInImagej.getSelection();
 			
-			showClassifiedInImageJ=checkShowInImagej.getSelection();
+			applyPostImageJMacro=checkApplyPostImagejMacro.getSelection();
 
 			channelOption = channelSelectionText.getText();
 
@@ -823,6 +853,13 @@ public class _ModelGui extends Composite implements RoiListener {
 		Display display = Util.getDisplay();
 		display.syncExec(() -> textOptionMacro = textImageJMacro.getText());
 		return textOptionMacro;
+	}
+	
+	/* Return the path to the classification script! */
+	public String getPathImageJMacroPostScript() {
+		Display display = Util.getDisplay();
+		display.syncExec(() -> pathpostImageJMacro = textPostMacro.getText());
+		return pathpostImageJMacro;
 	}
 
 	/* Here we layout the ImageJ panel! */
