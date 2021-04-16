@@ -49,10 +49,14 @@ public class Bio7ReproducibleRProjectWizardPage extends WizardPage {
 	
 	private Button btnCreatePlotFolder;
 
+	private Button btnCreatePythonFile;
+
+	private Button btnCreatePythonFolder;
+
 	public Bio7ReproducibleRProjectWizardPage(ISelection selection) {
 		super("wizardPage");
-		setTitle("Reproducible R Project");
-		setDescription("This wizard creates a Reproducible R Project.");
+		setTitle("Reproducible Project");
+		setDescription("This wizard creates a Reproducible Project.");
 		this.selection = selection;
 	}
 
@@ -93,6 +97,12 @@ public class Bio7ReproducibleRProjectWizardPage extends WizardPage {
 		btnCreateRFile.setText("Create R file template");
 		new Label(container, SWT.NONE);
 		new Label(container, SWT.NONE);
+		
+		btnCreatePythonFile = new Button(container, SWT.CHECK);
+		btnCreatePythonFile.setSelection(true);
+		btnCreatePythonFile.setText("Create Python file template");
+		new Label(container, SWT.NONE);
+		new Label(container, SWT.NONE);
 
 		Label label_1 = new Label(container, SWT.SEPARATOR | SWT.HORIZONTAL);
 		label_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
@@ -126,6 +136,12 @@ public class Bio7ReproducibleRProjectWizardPage extends WizardPage {
 		btnCreateRFolder = new Button(container, SWT.CHECK);
 		btnCreateRFolder.setSelection(true);
 		btnCreateRFolder.setText("Create R folder");
+		new Label(container, SWT.NONE);
+		new Label(container, SWT.NONE);
+		
+		btnCreatePythonFolder = new Button(container, SWT.CHECK);
+		btnCreatePythonFolder.setSelection(true);
+		btnCreatePythonFolder.setText("Create Python folder");
 		new Label(container, SWT.NONE);
 		new Label(container, SWT.NONE);
 
@@ -162,6 +178,10 @@ public class Bio7ReproducibleRProjectWizardPage extends WizardPage {
 	public Button getBtnCreateRFile() {
 		return btnCreateRFile;
 	}
+	
+	public Button getBtnCreatePythonFile() {
+		return btnCreatePythonFile;
+	}
 
 	public Button getBtnCreateDataFolder() {
 		return btnCreateDataFolder;
@@ -181,6 +201,10 @@ public class Bio7ReproducibleRProjectWizardPage extends WizardPage {
 
 	public Button getBtnCreateRFolder() {
 		return btnCreateRFolder;
+	}
+	
+	public Button getBtnCreatePythonFolder() {
+		return btnCreatePythonFolder;
 	}
 
 	public Button getBtnCreateReportsFolder() {

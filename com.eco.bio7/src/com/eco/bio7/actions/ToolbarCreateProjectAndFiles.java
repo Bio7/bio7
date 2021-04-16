@@ -245,9 +245,9 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 			}
 
 		});
-
+		new MenuItem(fMenu, SWT.SEPARATOR);
 		MenuItem menuItemRReprocible = new MenuItem(fMenu, SWT.PUSH);
-		menuItemRReprocible.setText("Project with Reproducible R folders");
+		menuItemRReprocible.setText("Reproducible Project");
 
 		// Image image
 		// =PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);

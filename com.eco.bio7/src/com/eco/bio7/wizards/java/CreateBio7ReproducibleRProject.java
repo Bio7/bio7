@@ -66,6 +66,11 @@ public class CreateBio7ReproducibleRProject {
 						IFolder rFolder = project.getFolder("R");
 						rFolder.create(false, true, monitor);
 					}
+					
+					if (page.getBtnCreateRFolder().getSelection()) {
+						IFolder pythonFolder = project.getFolder("Python");
+						pythonFolder.create(false, true, monitor);
+					}
 					if (page.getBtnCreateReportsFolder().getSelection()) {
 						IFolder reportsFolder = project.getFolder("reports");
 						reportsFolder.create(false, true, monitor);
@@ -105,6 +110,26 @@ public class CreateBio7ReproducibleRProject {
 
 						try {
 							InputStream stream = openContentRStream(anR);
+							if (fileMd.exists()) {
+								fileMd.setContents(stream, true, true, monitor);
+							} else {
+								fileMd.create(stream, true, monitor);
+							}
+							stream.close();
+						} catch (IOException e) {
+						}
+						monitor.worked(1);
+					}
+					if (page.getBtnCreatePythonFile().getSelection()) {
+						final IFile fileMd = container.getFile(new Path("01_template.py"));
+						String anPython = "template";
+						int indexR = fileMd.getName().lastIndexOf('.');
+						if (indexR > 0 && indexR <= fileMd.getName().length() - 2) {
+							anPython = fileMd.getName().substring(0, indexR);
+						}
+
+						try {
+							InputStream stream = openContentRStream(anPython);
 							if (fileMd.exists()) {
 								fileMd.setContents(stream, true, true, monitor);
 							} else {

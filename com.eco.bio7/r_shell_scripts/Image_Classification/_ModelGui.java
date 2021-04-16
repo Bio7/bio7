@@ -226,6 +226,33 @@ public class _ModelGui extends Composite implements RoiListener {
 		scrolledComposite.setContent(composite);
 		composite.setLayout(new GridLayout(2, true));
 
+		btnClassificationProject = new Button(composite, SWT.NONE);
+		btnClassificationProject.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				IWizardDescriptor descriptor = PlatformUI.getWorkbench().getNewWizardRegistry()
+						.findWizard("com.eco.bio7.wizard.reproducible");
+				IWizard wizard = null;
+				try {
+					wizard = descriptor.createWizard();
+				} catch (CoreException e1) {
+					e1.printStackTrace();
+				}
+				WizardDialog wd = new WizardDialog(Util.getShell(), wizard);
+				wd.setTitle(wizard.getWindowTitle());
+				wd.open();
+				boolean doOpen = Bio7Dialog.decision("Copy the train and classify scripts to the new project folder.\n"
+						+ "Adjust the paths to the scripts and save a configuration file\n"
+						+ "in the project folder!\n\n"
+						+ "Would you like to copy the R scripts for customization (simply drag and drop to the project)?");
+				if (doOpen) {
+					org.eclipse.swt.program.Program.launch(new File(txtTrainingRScript.getText()).getParent());
+				}
+			}
+		});
+		btnClassificationProject.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		btnClassificationProject.setText("Create Classification Project");
+
 		Button btnNewButton_1 = new Button(composite, SWT.NONE);
 		btnNewButton_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		btnNewButton_1.addSelectionListener(new SelectionAdapter() {
@@ -337,7 +364,8 @@ public class _ModelGui extends Composite implements RoiListener {
 		new Label(composite, SWT.NONE);
 
 		Label lblSelectChannels = new Label(composite, SWT.NONE);
-		GridData gd_lblSelectChannels = new GridData(SWT.CENTER, SWT.CENTER, true, false, 2, 1);
+		lblSelectChannels.setAlignment(SWT.CENTER);
+		GridData gd_lblSelectChannels = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 		gd_lblSelectChannels.widthHint = 279;
 		lblSelectChannels.setLayoutData(gd_lblSelectChannels);
 		lblSelectChannels.setText("Select Channels (1,2,... - Leave blank for all!)\r\n");
@@ -498,62 +526,62 @@ public class _ModelGui extends Composite implements RoiListener {
 		classificationOpenLabel.setBackground(SWTResourceManager.getColor(SWT.COLOR_GRAY));
 		classificationOpenLabel.setAlignment(SWT.CENTER);
 		classificationOpenLabel.setFont(boldFont);
-		classificationOpenLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
+		classificationOpenLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 		classificationOpenLabel.setText("Classify Images");
-		
-				checkUseDirectory = new Button(composite_1, SWT.CHECK);
-				GridData gd_checkUseDirectory = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
-				gd_checkUseDirectory.heightHint = 25;
-				checkUseDirectory.setLayoutData(gd_checkUseDirectory);
-				checkUseDirectory.addSelectionListener(new SelectionAdapter() {
-					@Override
-					public void widgetSelected(SelectionEvent e) {
-					}
-				});
-				checkUseDirectory.setText("Open images from folders");
-						
-						lblTrainAndClassify = new Label(composite_1, SWT.NONE);
-						lblTrainAndClassify.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
-						lblTrainAndClassify.setAlignment(SWT.CENTER);
-						lblTrainAndClassify.setFont(boldFont);
-						lblTrainAndClassify.setBackground(SWTResourceManager.getColor(SWT.COLOR_GRAY));
-						lblTrainAndClassify.setText("Files");
-				
-						checkUseImportMacro = new Button(composite_1, SWT.CHECK);
-						checkUseImportMacro.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-						checkUseImportMacro.addSelectionListener(new SelectionAdapter() {
-							@Override
-							public void widgetSelected(SelectionEvent e) {
 
-							}
-						});
-						checkUseImportMacro.setText("Open files with ImageJ Macro");
-		
-				textImageJMacro = new Text(composite_1, SWT.BORDER);
-				textImageJMacro.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-				textImageJMacro.setText(FileRoot.getCurrentCompileDir() + "/_Macro/IJMacro.ijm");
-		
-				buttonMacro = new Button(composite_1, SWT.NONE);
-				buttonMacro.addSelectionListener(new SelectionAdapter() {
-					@Override
-					public void widgetSelected(SelectionEvent e) {
-						String path = Bio7Dialog.openFile();
-						path = path.replace("\\", "/");
-						textImageJMacro.setText(path);
-					}
-				});
-				buttonMacro.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-				buttonMacro.setText("Macro");
+		checkUseDirectory = new Button(composite_1, SWT.CHECK);
+		GridData gd_checkUseDirectory = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
+		gd_checkUseDirectory.heightHint = 25;
+		checkUseDirectory.setLayoutData(gd_checkUseDirectory);
+		checkUseDirectory.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+			}
+		});
+		checkUseDirectory.setText("Open images from folders");
+
+		lblTrainAndClassify = new Label(composite_1, SWT.NONE);
+		lblTrainAndClassify.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		lblTrainAndClassify.setAlignment(SWT.CENTER);
+		lblTrainAndClassify.setFont(boldFont);
+		lblTrainAndClassify.setBackground(SWTResourceManager.getColor(SWT.COLOR_GRAY));
+		lblTrainAndClassify.setText("Files");
+
+		checkUseImportMacro = new Button(composite_1, SWT.CHECK);
+		checkUseImportMacro.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		checkUseImportMacro.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+
+			}
+		});
+		checkUseImportMacro.setText("Open files with ImageJ Macro");
+
+		textImageJMacro = new Text(composite_1, SWT.BORDER);
+		textImageJMacro.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		textImageJMacro.setText(FileRoot.getCurrentCompileDir() + "/_Macro/IJMacro.ijm");
+
+		buttonMacro = new Button(composite_1, SWT.NONE);
+		buttonMacro.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				String path = Bio7Dialog.openFile();
+				path = path.replace("\\", "/");
+				textImageJMacro.setText(path);
+			}
+		});
+		buttonMacro.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		buttonMacro.setText("Macro");
 
 		scriptsLabel = new Label(composite_1, SWT.NONE);
 		scriptsLabel.setBackground(SWTResourceManager.getColor(SWT.COLOR_GRAY));
 		scriptsLabel.setAlignment(SWT.CENTER);
 		scriptsLabel.setFont(boldFont);
-		scriptsLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		scriptsLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 		scriptsLabel.setText("Scripts");
 
 		txtTrainingRScript = new Text(composite_1, SWT.BORDER);
-		txtTrainingRScript.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		txtTrainingRScript.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 		txtTrainingRScript.setText(FileRoot.getCurrentCompileDir() + "/_R/Train.R");
 
 		btnNewButton_5 = new Button(composite_1, SWT.NONE);
@@ -569,7 +597,7 @@ public class _ModelGui extends Composite implements RoiListener {
 		btnNewButton_5.setText("Training Script");
 
 		txtClassificationRScript = new Text(composite_1, SWT.BORDER);
-		txtClassificationRScript.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		txtClassificationRScript.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 		txtClassificationRScript.setText(FileRoot.getCurrentCompileDir() + "/_R/Classify.R");
 		btnRClassificationScript = new Button(composite_1, SWT.NONE);
 		btnRClassificationScript.addSelectionListener(new SelectionAdapter() {
@@ -583,38 +611,11 @@ public class _ModelGui extends Composite implements RoiListener {
 		btnRClassificationScript.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		btnRClassificationScript.setText("Classification Script");
 
-		btnClassificationProject = new Button(composite_1, SWT.NONE);
-		btnClassificationProject.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				IWizardDescriptor descriptor = PlatformUI.getWorkbench().getNewWizardRegistry()
-						.findWizard("com.eco.bio7.wizard.reproducible");
-				IWizard wizard = null;
-				try {
-					wizard = descriptor.createWizard();
-				} catch (CoreException e1) {
-					e1.printStackTrace();
-				}
-				WizardDialog wd = new WizardDialog(Util.getShell(), wizard);
-				wd.setTitle(wizard.getWindowTitle());
-				wd.open();
-				boolean doOpen = Bio7Dialog.decision("Copy the train and classify scripts to the new project folder.\n"
-						+ "Adjust the paths to the scripts and save a configuration file\n"
-						+ "in the project folder!\n\n"
-						+ "Would you like to copy the R scripts for customization (simply drag and drop to the project)?");
-				if (doOpen) {
-					org.eclipse.swt.program.Program.launch(new File(txtTrainingRScript.getText()).getParent());
-				}
-			}
-		});
-		btnClassificationProject.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
-		btnClassificationProject.setText("Create Classification Project");
-
 		featureLabel = new Label(composite_1, SWT.NONE);
 		featureLabel.setBackground(SWTResourceManager.getColor(SWT.COLOR_GRAY));
 		featureLabel.setAlignment(SWT.CENTER);
 		featureLabel.setFont(boldFont);
-		featureLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		featureLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 		featureLabel.setText("Feature Options");
 
 		checkOpenStack = new Button(composite_1, SWT.CHECK);
@@ -655,7 +656,7 @@ public class _ModelGui extends Composite implements RoiListener {
 		previewLabel.setBackground(SWTResourceManager.getColor(SWT.COLOR_GRAY));
 		previewLabel.setAlignment(SWT.CENTER);
 		previewLabel.setFont(boldFont);
-		previewLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		previewLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 		previewLabel.setText("Preview Overlay");
 
 		checkGeneratePreview = new Button(composite_1, SWT.CHECK);
@@ -670,17 +671,17 @@ public class _ModelGui extends Composite implements RoiListener {
 				}
 			}
 		});
-		GridData gd_checkGeneratePreview = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		GridData gd_checkGeneratePreview = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_checkGeneratePreview.widthHint = 247;
 		checkGeneratePreview.setLayoutData(gd_checkGeneratePreview);
 		checkGeneratePreview.setText("Selection Preview");
 
 		checkRetrainPreview = new Button(composite_1, SWT.CHECK);
-		checkRetrainPreview.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		checkRetrainPreview.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 		checkRetrainPreview.setText("Retrain for Preview");
 
 		lblNewLabel = new Label(composite_1, SWT.NONE);
-		lblNewLabel.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 1, 1));
+		lblNewLabel.setLayoutData(new GridData(SWT.CENTER, SWT.FILL, true, false, 1, 1));
 		lblNewLabel.setText("Opacity");
 
 		lblLutToApply = new Label(composite_1, SWT.NONE);
@@ -703,10 +704,11 @@ public class _ModelGui extends Composite implements RoiListener {
 		lblClassified.setBackground(SWTResourceManager.getColor(SWT.COLOR_GRAY));
 		lblClassified.setAlignment(SWT.CENTER);
 		lblClassified.setFont(boldFont);
-		lblClassified.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		lblClassified.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 		lblClassified.setText("Classified Images");
 
 		checkShowInImagej = new Button(composite_1, SWT.CHECK);
+		checkShowInImagej.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, true, false, 1, 1));
 		checkShowInImagej.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -716,6 +718,7 @@ public class _ModelGui extends Composite implements RoiListener {
 		checkShowInImagej.setText("Show in ImageJ");
 
 		checkApplyPostImagejMacro = new Button(composite_1, SWT.CHECK);
+		checkApplyPostImagejMacro.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, true, false, 1, 1));
 		checkApplyPostImagejMacro.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -724,7 +727,7 @@ public class _ModelGui extends Composite implements RoiListener {
 		checkApplyPostImagejMacro.setText("Apply ImageJ Macro");
 
 		textPostMacro = new Text(composite_1, SWT.BORDER);
-		textPostMacro.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textPostMacro.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 		textPostMacro.setText(FileRoot.getCurrentCompileDir() + "/_Macro/IJPostMacro.ijm");
 		btnMacro = new Button(composite_1, SWT.NONE);
 		btnMacro.addSelectionListener(new SelectionAdapter() {
@@ -808,8 +811,8 @@ public class _ModelGui extends Composite implements RoiListener {
 			retrainPreview = checkRetrainPreview.getSelection();
 
 			showClassifiedInImageJ = checkShowInImagej.getSelection();
-			
-			applyPostImageJMacro=checkApplyPostImagejMacro.getSelection();
+
+			applyPostImageJMacro = checkApplyPostImagejMacro.getSelection();
 
 			channelOption = channelSelectionText.getText();
 
@@ -881,7 +884,7 @@ public class _ModelGui extends Composite implements RoiListener {
 		display.syncExec(() -> textOptionMacro = textImageJMacro.getText());
 		return textOptionMacro;
 	}
-	
+
 	/* Return the path to the classification script! */
 	public String getPathImageJMacroPostScript() {
 		Display display = Util.getDisplay();
