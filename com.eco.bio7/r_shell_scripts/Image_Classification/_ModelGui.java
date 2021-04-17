@@ -558,7 +558,7 @@ public class _ModelGui extends Composite implements RoiListener {
 		checkUseImportMacro.setText("Open files with ImageJ Macro");
 
 		textImageJMacro = new Text(composite_1, SWT.BORDER);
-		textImageJMacro.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		textImageJMacro.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		textImageJMacro.setText(FileRoot.getCurrentCompileDir() + "/_Macro/IJMacro.ijm");
 
 		buttonMacro = new Button(composite_1, SWT.NONE);
@@ -581,7 +581,7 @@ public class _ModelGui extends Composite implements RoiListener {
 		scriptsLabel.setText("Scripts");
 
 		txtTrainingRScript = new Text(composite_1, SWT.BORDER);
-		txtTrainingRScript.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		txtTrainingRScript.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		txtTrainingRScript.setText(FileRoot.getCurrentCompileDir() + "/_R/Train.R");
 
 		btnNewButton_5 = new Button(composite_1, SWT.NONE);
@@ -597,7 +597,7 @@ public class _ModelGui extends Composite implements RoiListener {
 		btnNewButton_5.setText("Training Script");
 
 		txtClassificationRScript = new Text(composite_1, SWT.BORDER);
-		txtClassificationRScript.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		txtClassificationRScript.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		txtClassificationRScript.setText(FileRoot.getCurrentCompileDir() + "/_R/Classify.R");
 		btnRClassificationScript = new Button(composite_1, SWT.NONE);
 		btnRClassificationScript.addSelectionListener(new SelectionAdapter() {
@@ -727,7 +727,7 @@ public class _ModelGui extends Composite implements RoiListener {
 		checkApplyPostImagejMacro.setText("Apply ImageJ Macro");
 
 		textPostMacro = new Text(composite_1, SWT.BORDER);
-		textPostMacro.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		textPostMacro.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		textPostMacro.setText(FileRoot.getCurrentCompileDir() + "/_Macro/IJPostMacro.ijm");
 		btnMacro = new Button(composite_1, SWT.NONE);
 		btnMacro.addSelectionListener(new SelectionAdapter() {
