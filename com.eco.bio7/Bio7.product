@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Bio7" uid="3.2.0" id="com.eco.bio7.product" application="com.eco.bio7.application" version="3.2.0.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="Bio7" uid="3.3.0" id="com.eco.bio7.product" application="com.eco.bio7.application" version="3.3.0.qualifier" useFeatures="true" includeLaunchers="true">
 
    <aboutInfo>
       <image path="/com.eco.bio7/icons/bio7app/bio7_48.png"/>
@@ -223,8 +223,9 @@ jdk/bin/javaw.exe
    </configurations>
 
    <repositories>
-      <repository location="http://download.eclipse.org/releases/2020-09" enabled="true" />
-      <repository location="http://download.eclipse.org/eclipse/updates/4.17" enabled="true" />
+      <repository location="http://download.eclipse.org/eclipse/updates/4.19" enabled="true" />
+      <repository location="http://download.eclipse.org/releases/2021-03" enabled="true" />
+      <repository location="http://https://bio7.github.io/imagej" enabled="true" />
    </repositories>
 
    <preferencesInfo>
