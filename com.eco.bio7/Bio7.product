@@ -225,7 +225,7 @@ jdk/bin/javaw.exe
    <repositories>
       <repository location="http://download.eclipse.org/eclipse/updates/4.19" enabled="true" />
       <repository location="http://download.eclipse.org/releases/2021-03" enabled="true" />
-      <repository location="http://https://bio7.github.io/imagej" enabled="true" />
+      <repository location="https://bio7.github.io/imagej" enabled="true" />
    </repositories>
 
    <preferencesInfo>
