@@ -24,8 +24,6 @@ public class ExecuteRScript {
 	 * @param executer      a RScriptExecuterInterface class
 	 * @param progressSteps steps as integer or 'IProgressMonitor.UNKNOWN' (which
 	 *                      has value -1)
-	 * @param listRObjects  a boolean flag if the R variables in the R-Shell view
-	 *                      list should be updated
 	 */
 	public ExecuteRScript(RScriptExecuterInterface executer, int progressSteps) {
 		this.executer = executer;
