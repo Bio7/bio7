@@ -28,7 +28,7 @@ import java.util.logging.Level;
  * Source from: https://forum.worldwindcentral.com/forum/world-wind-java-forums/development-help/13553-another-geocoder-software-instead-of-yahoogazetteer/page2
  */
 public class PhotonGazetteer implements Gazetteer {
-    protected static final String GEOCODE_SERVICE = "https://photon.komoot.de/api/?q=";
+    protected static final String GEOCODE_SERVICE = "https://photon.komoot.io/api/?q=";
 
     public List<PointOfInterest> findPlaces(String lookupString) throws NoItemException, ServiceException {
         if (lookupString == null || lookupString.length() < 1)
