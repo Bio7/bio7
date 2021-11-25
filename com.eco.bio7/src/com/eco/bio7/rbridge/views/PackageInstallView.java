@@ -233,11 +233,12 @@ public class PackageInstallView extends ViewPart {
 		});
 
 		lblSearch = new Label(container, SWT.NONE);
+		lblSearch.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		lblSearch.setText("Search");
 		new Label(container, SWT.NONE);
 
 		text = new Text(container, SWT.BORDER);
-		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
+		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 		text.addListener(SWT.Modify, new Listener() {
 			public void handleEvent(Event event) {
 				if (btnContextSensitive.getSelection()) {
@@ -283,10 +284,12 @@ public class PackageInstallView extends ViewPart {
 		});
 
 		btnContextSensitive = new Button(container, SWT.CHECK);
+		btnContextSensitive.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		btnContextSensitive.setText("Context Sensitive");
 		new Label(container, SWT.NONE);
 
 		btnCheckButton = new Button(container, SWT.CHECK);
+		btnCheckButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		btnCheckButton.setText("Open Package Description");
 		new Label(container, SWT.NONE);
 		new Label(container, SWT.NONE);
@@ -990,7 +993,7 @@ public class PackageInstallView extends ViewPart {
 	 * Initialize the menu.
 	 */
 	private void initializeMenu() {
-		IMenuManager menuManager = getViewSite().getActionBars().getMenuManager();
+		//IMenuManager menuManager = getViewSite().getActionBars().getMenuManager();
 	}
 
 	@Override
