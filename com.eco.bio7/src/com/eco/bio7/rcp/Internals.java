@@ -1,4 +1,4 @@
-package com.eco.bio7.rcp;
+/*package com.eco.bio7.rcp;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -49,4 +49,4 @@ public final class Internals
             e.printStackTrace();
         }
     }
-}
+}*/
