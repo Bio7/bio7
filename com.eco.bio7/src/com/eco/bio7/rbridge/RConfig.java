@@ -2,6 +2,7 @@ package com.eco.bio7.rbridge;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
@@ -30,7 +31,9 @@ public class RConfig {
 			// URL scriptPath = fileURL.toExternalForm();
 			File file = null;
 			try {
-				file = new File(FileLocator.resolve(fileURL).toURI());
+				URL url = FileLocator.resolve(fileURL);
+				URI uri = new URI(url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort(), url.getPath(), url.getQuery(), url.getRef());		
+				file = new File(uri.toASCIIString());
 			} catch (URISyntaxException e1) {
 				e1.printStackTrace();
 			} catch (IOException e1) {

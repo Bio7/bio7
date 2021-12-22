@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Map;
@@ -816,7 +817,9 @@ public class RShellView extends ViewPart {
 										URL fileURL = bundle.getEntry("javafx/Bio7BrowserDarkHTML.css");
 										File file = null;
 										try {
-											file = new File(FileLocator.resolve(fileURL).toURI());
+											URL url = FileLocator.resolve(fileURL);
+											URI uri = new URI(url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort(), url.getPath(), url.getQuery(), url.getRef());		
+											file = new File(uri.toASCIIString());
 										} catch (URISyntaxException e1) {
 											e1.printStackTrace();
 										} catch (IOException e1) {
