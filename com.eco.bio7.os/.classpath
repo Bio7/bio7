@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="bin/"/>
 	<classpathentry exported="true" kind="lib" path="lib/jna-4.5.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jna-platform-4.5.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/log4j-1.2.14.jar"/>

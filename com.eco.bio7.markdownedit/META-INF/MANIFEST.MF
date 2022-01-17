@@ -14,9 +14,9 @@ Require-Bundle: org.eclipse.ui,
  com.eco.bio7.redit;bundle-version="2.5.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-14
 Bundle-ActivationPolicy: lazy
-Bundle-ClassPath: .,
- libs/flexmark-all-0.28.6-lib.jar,
- libs/autolink-0.7.0.jar
+Bundle-ClassPath: libs/flexmark-all-0.28.6-lib.jar,
+ libs/autolink-0.7.0.jar,
+ bin/
 Import-Package: org.eclipse.ui.views.contentoutline
 Export-Package: com.eco.bio7.markdownedit,
  com.eco.bio7.markdownedit.actions,

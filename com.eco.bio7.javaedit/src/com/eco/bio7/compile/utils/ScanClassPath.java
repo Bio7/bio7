@@ -166,7 +166,7 @@ public class ScanClassPath {
 		for (int i = 0; i < bundlesEclipse.length; i++) {
 			Bundle bundle = Platform.getBundle(bundlesEclipse[i]);
 			if (OS.equals("Windows")) {
-				String loc = bundle.getLocation().substring(15);
+				String loc = bundle.getLocation().substring(23);
 				// System.out.println("loc: " + loc);
 				/*
 				 * Eclipse PDE and exported RCP paths are different (absolute vs. relative)!
@@ -197,7 +197,7 @@ public class ScanClassPath {
 			}
 
 			else if (OS.equals("Linux")) {
-				String loc = bundle.getLocation().substring(15);
+				String loc = bundle.getLocation().substring(23);
 				// System.out.println("loc: " + loc);
 				/*
 				 * Eclipse PDE and exported RCP paths are different (absolute vs. relative)!
@@ -354,8 +354,8 @@ public class ScanClassPath {
 		for (int i = 0; i < bundlesEclipse.length; i++) {
 			Bundle bundle = Platform.getBundle(bundlesEclipse[i]);
 			if (OS.equals("Windows")) {
-				String loc = bundle.getLocation().substring(15);
-				// System.out.println("loc: " + loc);
+				String loc = bundle.getLocation().substring(23);
+				System.out.println("loc: " + loc);
 
 				/*
 				 * Eclipse PDE and exported RCP paths are different (absolute vs. relative)!
@@ -372,6 +372,11 @@ public class ScanClassPath {
 				// System.out.println("path:" + File.pathSeparator +
 				// path.toAbsolutePath().toString());
 				buf.add(pathseparator + path.toAbsolutePath().toString());
+				
+				/*String loc = Platform.getInstallLocation().getURL() + "/plugins/";
+				String[] bundleName = bundle.toString().split(" ");
+				String locat = (loc + bundleName[0] + ".jar");
+				locat = locat.replace("file:", "");*/
 			}
 
 			else if (OS.equals("Mac")) {

@@ -58,7 +58,7 @@ import ij.plugin.filter.PlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.plugin.frame.PlugInFrame;
 
-/*For the Java compilation Java compiler update change AST.JLS15 and  change in the class JavaSourceClassLoader the version compatibility!*/
+/*For the Java compilation Java compiler update change AST.JLS17 and  change in the class JavaSourceClassLoader,WorkbenchPreferenceJava,PreferenceInitializer the version compatibility!*/
 public class CompileClassAndMultipleClasses {
 	private File fi;
 	private String name;
@@ -202,7 +202,7 @@ public class CompileClassAndMultipleClasses {
 
 				IWorkingCopyManager mgr = JavaUI.getWorkingCopyManager();
 				ICompilationUnit cu = mgr.getWorkingCopy(jedit.getEditorInput());
-				ASTParser parser = ASTParser.newParser(AST.JLS15);
+				ASTParser parser = ASTParser.newParser(AST.JLS17);
 				parser.setSource(cu);
 				// CompilationUnit cu = (CompilationUnit)
 				// parser.createAST(null);
@@ -254,7 +254,7 @@ public class CompileClassAndMultipleClasses {
 			org.eclipse.jdt.core.dom.CompilationUnit compUnit = null;
 			Document doc = new Document(BatchModel.fileToString(path.getAbsolutePath()));
 
-			ASTParser parser = ASTParser.newParser(AST.JLS15);
+			ASTParser parser = ASTParser.newParser(AST.JLS17);
 			parser.setSource(doc.get().toCharArray());
 			// CompilationUnit cu = (CompilationUnit)
 			// parser.createAST(null);
@@ -289,7 +289,7 @@ public class CompileClassAndMultipleClasses {
 			org.eclipse.jdt.core.dom.CompilationUnit compUnit = null;
 			Document doc = new Document(BatchModel.fileToString(ifile.getRawLocation().toString()));
 
-			ASTParser parser = ASTParser.newParser(AST.JLS15);
+			ASTParser parser = ASTParser.newParser(AST.JLS17);
 			parser.setSource(doc.get().toCharArray());
 			// CompilationUnit cu = (CompilationUnit)
 			// parser.createAST(null);

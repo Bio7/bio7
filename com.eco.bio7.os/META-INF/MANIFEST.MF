@@ -10,7 +10,7 @@ Bundle-ClassPath: lib/pty4j-0.5.jar,
  lib/purejavacomm-0.0.17.jar,
  lib/guava-14.0.1.jar,
  lib/log4j-1.2.14.jar,
- .
+ bin/
 Export-Package: com.eco.bio7.os.pid,
  com.eco.bio7.swt,
  com.google.common.annotations,

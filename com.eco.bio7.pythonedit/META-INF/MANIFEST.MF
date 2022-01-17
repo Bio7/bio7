@@ -19,3 +19,4 @@ Export-Package: com.eco.bio7.editors.python,
  com.eco.bio7.pythoneditors,
  com.eco.bio7.reditor.preferences,
  com.eco.bio7.reditor.preferences.template
+Bundle-ClassPath: bin/
