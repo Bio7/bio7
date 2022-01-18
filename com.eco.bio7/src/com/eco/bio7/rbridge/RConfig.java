@@ -2,17 +2,14 @@ package com.eco.bio7.rbridge;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
-
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.osgi.framework.Bundle;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
-
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
@@ -22,34 +19,31 @@ public class RConfig {
 
 	public static void config(RConnection con) {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		/*
-		 * Set the max print option to avoid a kind of deadlock in print situations!
-		 */
+		
 		try {
 			Bundle bundle = Platform.getBundle("com.eco.bio7");
-			URL fileURL = bundle.getEntry("rcompletion/calculateRCompletion.R");
-			// URL scriptPath = fileURL.toExternalForm();
-			File file = null;
+			URL url = FileLocator.find(bundle, new Path("rcompletion/calculateRCompletion.R"), null);		
+			File file = null;			
 			try {
-				URL url = FileLocator.resolve(fileURL);
-				URI uri = new URI(url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort(), url.getPath(), url.getQuery(), url.getRef());		
-				file = new File(uri.toASCIIString());
-			} catch (URISyntaxException e1) {
-				e1.printStackTrace();
+				URL fileUrl = FileLocator.toFileURL(url);
+				
+				file = new File(fileUrl.getPath());
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
 			String scriptPath = file.getAbsolutePath();
-			String scriptFolder = file.getParent()+"/";
-			
+			String scriptFolder = file.getParent() + "/";
+
 			String tempPath = store.getString(PreferenceConstants.P_TEMP_R);
 			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 
 				tempPath = tempPath.replace("\\", "/");
 				scriptPath = scriptPath.replace("\\", "/");
-				scriptFolder= scriptFolder.replace("\\", "/");
+				scriptFolder = scriptFolder.replace("\\", "/");
 			}
-			// System.out.println(tempPath);
+			/*
+			 * Set the max print option to avoid a kind of deadlock in print situations!
+			 */
 			con.eval("try(options(max.print=5000))");
 			/* Make the default completion function in R available! */
 			con.eval("try(source('" + scriptPath + "'))");
@@ -59,7 +53,6 @@ public class RConfig {
 			con.eval("try(assign(\"scriptFolder\", \"" + scriptFolder + "\", env=.bio7TempEnvPath))");
 			/* Set Bio7 temp path in R! */
 			con.eval("try(assign(\"pathTemp\", \"" + tempPath + "\", env=.bio7TempEnvPath))");
-			
 
 			// con.eval("try(setHook(packageEvent(\"spatstat\",\"onLoad\"),\"writeFunctionDef\"))");
 			/*
