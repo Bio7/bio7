@@ -622,11 +622,7 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 				return;
 
 			}
-			/*
-			 * File file = null; try { file = new
-			 * File(FileLocator.resolve(fileURL).toURI()); } catch (URISyntaxException e1) {
-			 * e1.printStackTrace(); } catch (IOException e1) { e1.printStackTrace(); }
-			 */
+			
 			System.out.println("Download succesful! Installation of package started!");
 			String path = outputPath;// file.getAbsolutePath();
 
@@ -679,11 +675,7 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 				return;
 
 			}
-			/*
-			 * File file = null; try { file = new
-			 * File(FileLocator.resolve(fileURL).toURI()); } catch (URISyntaxException e1) {
-			 * e1.printStackTrace(); } catch (IOException e1) { e1.printStackTrace(); }
-			 */
+			
 			System.out.println("Download succesful! Installation of package started!");
 			String path = outputPath;// file.getAbsolutePath();
 
@@ -722,11 +714,7 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 				return;
 
 			}
-			/*
-			 * File file = null; try { file = new
-			 * File(FileLocator.resolve(fileURL).toURI()); } catch (URISyntaxException e1) {
-			 * e1.printStackTrace(); } catch (IOException e1) { e1.printStackTrace(); }
-			 */
+			
 			System.out.println("Download succesful! Installation of package started!");
 			String path = outputPath;// file.getAbsolutePath();
 
