@@ -166,23 +166,16 @@ public class ScanClassPath {
 		for (int i = 0; i < bundlesEclipse.length; i++) {
 			Bundle bundle = Platform.getBundle(bundlesEclipse[i]);
 			if (OS.equals("Windows")) {
-				String loc = bundle.getLocation().substring(23);
-				// System.out.println("loc: " + loc);
-				/*
-				 * Eclipse PDE and exported RCP paths are different (absolute vs. relative)!
-				 */
-				if (loc.startsWith("/")) {
-					loc = loc.substring(1);
-				}
-				java.nio.file.Path path;
-				/*
-				 * Calculate an absolute path to the resource. Exported RCP has a relative path!
-				 */
-				path = Paths.get(loc);
+				String loc =  Platform.getInstallLocation().getURL().getFile() + "/plugins/";
+				String[] bundleName = bundle.toString().split(" ");
+				String locat = (loc + bundleName[0] + ".jar");
+				locat = locat.replace("file", "");
 
-				// System.out.println("path:" + File.pathSeparator +
+				// java.nio.file.Path path = Paths.get(loc);
+
+				//System.out.println("compile path:" + locat);
 				// path.toAbsolutePath().toString());
-				buf.append(pathseparator + path.toAbsolutePath().toString());
+				buf.append(pathseparator+locat+pathseparator);
 			} else if (OS.equals("Mac")) {
 				String loc = Platform.getInstallLocation().getURL() + "/plugins/";
 				String[] bundleName = bundle.toString().split(" ");
@@ -354,29 +347,16 @@ public class ScanClassPath {
 		for (int i = 0; i < bundlesEclipse.length; i++) {
 			Bundle bundle = Platform.getBundle(bundlesEclipse[i]);
 			if (OS.equals("Windows")) {
-				String loc = bundle.getLocation().substring(23);
-				System.out.println("loc: " + loc);
+				String loc = Platform.getInstallLocation().getURL().getFile() + "/plugins/";
+				String[] bundleName = bundle.toString().split(" ");
+				String locat = (loc + bundleName[0] + ".jar");
+				locat = locat.replace("file", "");
 
-				/*
-				 * Eclipse PDE and exported RCP paths are different (absolute vs. relative)!
-				 */
-				if (loc.startsWith("/")) {
-					loc = loc.substring(1);
-				}
-				java.nio.file.Path path;
-				/*
-				 * Calculate an absolute path to the resource. Exported RCP has a relative path!
-				 */
-				path = Paths.get(loc);
+				// java.nio.file.Path path = Paths.get(loc);
 
 				// System.out.println("path:" + File.pathSeparator +
 				// path.toAbsolutePath().toString());
-				buf.add(pathseparator + path.toAbsolutePath().toString());
-				
-				/*String loc = Platform.getInstallLocation().getURL() + "/plugins/";
-				String[] bundleName = bundle.toString().split(" ");
-				String locat = (loc + bundleName[0] + ".jar");
-				locat = locat.replace("file:", "");*/
+				buf.add(pathseparator+locat+pathseparator);
 			}
 
 			else if (OS.equals("Mac")) {
