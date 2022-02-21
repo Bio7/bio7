@@ -35,7 +35,9 @@ import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 public class ScanClassPath {
 
 	private String pathBundle;
-	String[] bundles = new String[] { "com.eco.bio7", "com.eco.bio7.libs", "com.eco.bio7.javaedit", "com.eco.bio7.image", "com.eco.bio7.WorldWind", "com.eco.bio7.scenebuilder", "com.eco.bio7.browser", "Bundled_R","com.eco.bio7.javacv" };// "org.eclipse.ui.workbench","org.eclipse.core.commands"
+	String[] bundles = new String[] { "com.eco.bio7", "com.eco.bio7.libs", "com.eco.bio7.javaedit",
+			"com.eco.bio7.image", "com.eco.bio7.WorldWind", "com.eco.bio7.scenebuilder", "com.eco.bio7.browser",
+			"Bundled_R", "com.eco.bio7.javacv" };// "org.eclipse.ui.workbench","org.eclipse.core.commands"
 
 	String[] bundlesEclipse;
 	private String OS;
@@ -44,16 +46,22 @@ public class ScanClassPath {
 		OS = getOS();
 		if (OS.equals("Windows")) {
 
-			bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui", "org.eclipse.swt", "org.eclipse.swt.win32.win32.x86_64", "org.eclipse.draw2d", "org.eclipse.equinox.registry", "org.eclipse.equinox.common", "org.eclipse.core.runtime",
+			bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui",
+					"org.eclipse.swt", "org.eclipse.swt.win32.win32.x86_64", "org.eclipse.draw2d",
+					"org.eclipse.equinox.registry", "org.eclipse.equinox.common", "org.eclipse.core.runtime",
 					"org.eclipse.core.jobs", "org.eclipse.jface" };
 
 		} else if (OS.equals("Mac")) {
-			bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui", "org.eclipse.swt", "org.eclipse.swt.cocoa.macosx.x86_64", "org.eclipse.draw2d", "org.eclipse.equinox.registry", "org.eclipse.equinox.common", "org.eclipse.core.runtime",
+			bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui",
+					"org.eclipse.swt", "org.eclipse.swt.cocoa.macosx.x86_64", "org.eclipse.draw2d",
+					"org.eclipse.equinox.registry", "org.eclipse.equinox.common", "org.eclipse.core.runtime",
 					"org.eclipse.core.jobs", "org.eclipse.jface" };
 		}
 
 		else if (OS.equals("Linux")) {
-			bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui", "org.eclipse.swt", "org.eclipse.swt.gtk.linux.x86_64", "org.eclipse.draw2d", "org.eclipse.equinox.registry", "org.eclipse.equinox.common", "org.eclipse.core.runtime",
+			bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui",
+					"org.eclipse.swt", "org.eclipse.swt.gtk.linux.x86_64", "org.eclipse.draw2d",
+					"org.eclipse.equinox.registry", "org.eclipse.equinox.common", "org.eclipse.core.runtime",
 					"org.eclipse.core.jobs", "org.eclipse.jface" };
 		}
 	}
@@ -111,7 +119,7 @@ public class ScanClassPath {
 		// String platformPath =
 		// Platform.getInstallLocation().getURL().getPath().replace("\\", "/");
 		String modulePath = store.getString("JAVA_MODULES_PATH");
-		modulePath=modulePath.replace(";", "");
+		modulePath = modulePath.replace(";", "");
 		if (Util.isMac()) {
 			buf.append(":" + pathseparator + modulePath + "/javafx.base.jar:");
 			buf.append(modulePath + "/javafx.controls.jar:");
@@ -166,16 +174,16 @@ public class ScanClassPath {
 		for (int i = 0; i < bundlesEclipse.length; i++) {
 			Bundle bundle = Platform.getBundle(bundlesEclipse[i]);
 			if (OS.equals("Windows")) {
-				String loc =  Platform.getInstallLocation().getURL().getFile() + "/plugins/";
+				String loc = Platform.getInstallLocation().getURL().getFile() + "/plugins/";
 				String[] bundleName = bundle.toString().split(" ");
 				String locat = (loc + bundleName[0] + ".jar");
 				locat = locat.replace("file", "");
 
 				// java.nio.file.Path path = Paths.get(loc);
 
-				//System.out.println("compile path:" + locat);
+				// System.out.println("compile path:" + locat);
 				// path.toAbsolutePath().toString());
-				buf.append(pathseparator+locat+pathseparator);
+				buf.append(pathseparator + locat + pathseparator);
 			} else if (OS.equals("Mac")) {
 				String loc = Platform.getInstallLocation().getURL() + "/plugins/";
 				String[] bundleName = bundle.toString().split(" ");
@@ -190,27 +198,40 @@ public class ScanClassPath {
 			}
 
 			else if (OS.equals("Linux")) {
-				String loc = bundle.getLocation().substring(23);
-				// System.out.println("loc: " + loc);
-				/*
-				 * Eclipse PDE and exported RCP paths are different (absolute vs. relative)!
-				 */
 
-				/*
-				 * if (loc.startsWith("/")) { loc = loc.substring(1); }
-				 */
-				loc = loc.replace("::", "");
-				loc = loc.replace(":", "/");
-				java.nio.file.Path path;
-				/*
-				 * Calculate an absolute path to the resource. Exported RCP has a relative path!
-				 */
+				String loc = Platform.getInstallLocation().getURL().getFile() + "/plugins/";
+				String[] bundleName = bundle.toString().split(" ");
+				String locat = (loc + bundleName[0] + ".jar");
+				locat = locat.replace("file", "");
 
-				path = Paths.get(loc);
+				// java.nio.file.Path path = Paths.get(loc);
 
-				// System.out.println("path:" + File.pathSeparator +
+				// System.out.println("compile path:" + locat);
 				// path.toAbsolutePath().toString());
-				buf.append(pathseparator + path.toAbsolutePath().toString());
+				buf.append(pathseparator + locat + pathseparator);
+
+				/*
+				 * String loc = bundle.getLocation().substring(23); //
+				 * System.out.println("loc: " + loc);
+				 * 
+				 * Eclipse PDE and exported RCP paths are different (absolute vs. relative)!
+				 * 
+				 * 
+				 * 
+				 * if (loc.startsWith("/")) { loc = loc.substring(1); }
+				 * 
+				 * loc = loc.replace("::", ""); loc = loc.replace(":", "/"); java.nio.file.Path
+				 * path;
+				 * 
+				 * Calculate an absolute path to the resource. Exported RCP has a relative path!
+				 * 
+				 * 
+				 * path = Paths.get(loc);
+				 * 
+				 * // System.out.println("path:" + File.pathSeparator + //
+				 * path.toAbsolutePath().toString()); buf.append(pathseparator +
+				 * path.toAbsolutePath().toString());
+				 */
 			}
 
 			// System.out.println(File.pathSeparator +loc);
@@ -285,8 +306,11 @@ public class ScanClassPath {
 				e.printStackTrace();
 			}
 			if (elements != null) {
-				/* We only parse the plugins with the important  *. jar libraries. See array 'bundles'! */
-				if (i == 0 | i == 1 || i == 6|| i == 8) {
+				/*
+				 * We only parse the plugins with the important *. jar libraries. See array
+				 * 'bundles'!
+				 */
+				if (i == 0 | i == 1 || i == 6 || i == 8) {
 					for (int u = 0; u < elements.length; u++) {
 
 						/*
@@ -306,7 +330,8 @@ public class ScanClassPath {
 						}
 
 						else {
-							//System.out.println(pathseparator + bundlePaths.get(i) + elements[u].getValue());
+							// System.out.println(pathseparator + bundlePaths.get(i) +
+							// elements[u].getValue());
 							buf.add(pathseparator + bundlePaths.get(i) + elements[u].getValue());
 						}
 
@@ -337,7 +362,7 @@ public class ScanClassPath {
 			String en = addedExtLibs;
 
 			classPathEntry.add(JavaCore.newLibraryEntry(new Path(en), null, // no
-											// source
+					// source
 					null, // no source
 					false)); // not exported
 
@@ -356,7 +381,7 @@ public class ScanClassPath {
 
 				// System.out.println("path:" + File.pathSeparator +
 				// path.toAbsolutePath().toString());
-				buf.add(pathseparator+locat+pathseparator);
+				buf.add(pathseparator + locat + pathseparator);
 			}
 
 			else if (OS.equals("Mac")) {
@@ -373,7 +398,7 @@ public class ScanClassPath {
 			}
 
 			else if (OS.equals("Linux")) {
-				String loc = Platform.getInstallLocation().getURL() + "/plugins/";
+				String loc = Platform.getInstallLocation().getURL().getFile() + "/plugins/";
 				String[] bundleName = bundle.toString().split(" ");
 				String locat = (loc + bundleName[0] + ".jar");
 				locat = locat.replace("file", "");
@@ -382,7 +407,7 @@ public class ScanClassPath {
 
 				// System.out.println("path:" + File.pathSeparator +
 				// path.toAbsolutePath().toString());
-				buf.add(locat);
+				buf.add(pathseparator + locat + pathseparator);
 			}
 
 			// System.out.println(File.pathSeparator +loc);
@@ -391,14 +416,15 @@ public class ScanClassPath {
 		/* We don't need the *.jar libs for this plugins! */
 		buf.add(pathseparator + bundlePaths.get(0) + "/bin");
 		int temp = buf.size() - 1;// We need to store the current index of the ArrayList to relate the src folders
-						// (see below)!
+		// (see below)!
 		buf.add(pathseparator + bundlePaths.get(2) + "/bin");
 		buf.add(pathseparator + bundlePaths.get(3) + "/bin");
 		buf.add(pathseparator + bundlePaths.get(4) + "/bin");
 		buf.add(pathseparator + bundlePaths.get(7) + "/bin");
 		String modulePath = store.getString("JAVA_MODULES_PATH");
-		modulePath=modulePath.replace(";", "");
-		//String platformPath = Platform.getInstallLocation().getURL().getPath().replace("\\", "/");
+		modulePath = modulePath.replace(";", "");
+		// String platformPath =
+		// Platform.getInstallLocation().getURL().getPath().replace("\\", "/");
 		if (Util.isWindows()) {
 			buf.add(";" + pathseparator + modulePath + "/javafx.base.jar;");
 			buf.add(pathseparator + modulePath + "/javafx.controls.jar;");
@@ -408,7 +434,7 @@ public class ScanClassPath {
 			buf.add(pathseparator + modulePath + "/javafx.swing.jar;");
 			buf.add(pathseparator + modulePath + "/javafx.web.jar;");
 			buf.add(pathseparator + modulePath + "/javafx-swt.jar;");
-			
+
 		} else if (Util.isMac()) {
 			buf.add(":" + pathseparator + modulePath + "/javafx.base.jar:");
 			buf.add(modulePath + "/javafx.controls.jar:");
@@ -476,7 +502,7 @@ public class ScanClassPath {
 
 				else {
 					entries[k] = JavaCore.newLibraryEntry(new Path(rep), null, // no
-													// source
+							// source
 							null, // no source
 							false); // not exported
 
@@ -522,7 +548,7 @@ public class ScanClassPath {
 
 				else {
 					entries[k] = JavaCore.newLibraryEntry(new Path(rep), null, // no
-													// source
+							// source
 							null, // no source
 							false); // not exported
 
