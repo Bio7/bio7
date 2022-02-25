@@ -735,8 +735,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				} else {
 					args.add("R");
 				}
-				args.add("--interactive");
-
+				//args.add("--interactive");
+				args.add("--no-save");
 				ProcessBuilder builder = new ProcessBuilder(args);
 				builder.redirectErrorStream(true);
 				RProcess = builder.start();

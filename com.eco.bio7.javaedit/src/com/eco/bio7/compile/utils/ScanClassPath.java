@@ -52,10 +52,18 @@ public class ScanClassPath {
 					"org.eclipse.core.jobs", "org.eclipse.jface" };
 
 		} else if (OS.equals("Mac")) {
-			bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui",
-					"org.eclipse.swt", "org.eclipse.swt.cocoa.macosx.x86_64", "org.eclipse.draw2d",
-					"org.eclipse.equinox.registry", "org.eclipse.equinox.common", "org.eclipse.core.runtime",
-					"org.eclipse.core.jobs", "org.eclipse.jface" };
+			if (isaarch64()) {
+				bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench",
+						"org.eclipse.ui", "org.eclipse.swt", "org.eclipse.swt.cocoa.macosx.aarch64",
+						"org.eclipse.draw2d", "org.eclipse.equinox.registry", "org.eclipse.equinox.common",
+						"org.eclipse.core.runtime", "org.eclipse.core.jobs", "org.eclipse.jface" };
+
+			} else {
+				bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench",
+						"org.eclipse.ui", "org.eclipse.swt", "org.eclipse.swt.cocoa.macosx.x86_64",
+						"org.eclipse.draw2d", "org.eclipse.equinox.registry", "org.eclipse.equinox.common",
+						"org.eclipse.core.runtime", "org.eclipse.core.jobs", "org.eclipse.jface" };
+			}
 		}
 
 		else if (OS.equals("Linux")) {
@@ -185,7 +193,7 @@ public class ScanClassPath {
 				// path.toAbsolutePath().toString());
 				buf.append(pathseparator + locat + pathseparator);
 			} else if (OS.equals("Mac")) {
-				String loc = Platform.getInstallLocation().getURL() + "/plugins/";
+				String loc = Platform.getInstallLocation().getURL().getFile() + "/plugins/";
 				String[] bundleName = bundle.toString().split(" ");
 				String locat = (loc + bundleName[0] + ".jar");
 				locat = locat.replace("file", "");
@@ -194,7 +202,7 @@ public class ScanClassPath {
 
 				// System.out.println("path:" + File.pathSeparator +
 				// path.toAbsolutePath().toString());
-				buf.append(locat);
+				buf.append(pathseparator + locat + pathseparator);
 			}
 
 			else if (OS.equals("Linux")) {
@@ -385,7 +393,7 @@ public class ScanClassPath {
 			}
 
 			else if (OS.equals("Mac")) {
-				String loc = Platform.getInstallLocation().getURL() + "/plugins/";
+				String loc = Platform.getInstallLocation().getURL().getFile() + "/plugins/";
 				String[] bundleName = bundle.toString().split(" ");
 				String locat = (loc + bundleName[0] + ".jar");
 				locat = locat.replace("file", "");
@@ -394,7 +402,7 @@ public class ScanClassPath {
 
 				// System.out.println("path:" + File.pathSeparator +
 				// path.toAbsolutePath().toString());
-				buf.add(locat);
+				buf.add(pathseparator + locat + pathseparator);
 			}
 
 			else if (OS.equals("Linux")) {
@@ -557,6 +565,18 @@ public class ScanClassPath {
 		}
 
 		return entries;
+	}
+
+	public boolean isaarch64() {
+		boolean isaarch;
+
+		String osname = System.getProperty("os.arch");
+		if (osname.startsWith("aarch64")) {
+			isaarch = true;
+		} else {
+			isaarch = false;
+		}
+		return isaarch;
 	}
 
 	public String getOS() {
