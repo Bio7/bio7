@@ -64,6 +64,8 @@ import ij.ImageStack;
 import ij.WindowManager;
 import ij.gui.StackWindow;
 import ij.process.ImageProcessor;
+import javafx.application.Platform;
+
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.KeyListener;
 
@@ -71,7 +73,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	private static SpatialStructure SpatialStructureInstance = null;
 	private initRenderer renderer;
 	private NewtCanvasSWT canvas;
-	private FPSAnimator animator;
+	private com.eco.bio7.spatial.FPSAnimator animator;
 	private GLU glu;
 	private GL2 gl;
 	private com.jogamp.opengl.util.gl2.GLUT glut;
@@ -328,13 +330,15 @@ public class SpatialStructure implements KeyListener, MouseListener {
 							fixedFps = store.getInt("fixedFps");
 						}
 					});
-					animator = new FPSAnimator(drawable, fixedFps, true);
+					animator = new com.eco.bio7.spatial.FPSAnimator(drawable, fixedFps, true);
 
 				} else {
-					animator = new FPSAnimator(drawable, 60, true);
+					animator = new com.eco.bio7.spatial.FPSAnimator(drawable, 60, true);
 				}
 				//
+
 				animator.start();
+
 			}
 
 		}
@@ -474,7 +478,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 				isSplitPanelDrawing = true;
 				views(drawable, 2);
 				/* Render the results to an image or to images! */
-				//renderImages();
+				// renderImages();
 
 			}
 
@@ -502,7 +506,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 					views(drawable, 0);
 				}
 				/* Render the results to an image or to images! */
-				//renderImages();
+				// renderImages();
 
 				getFps(drawable);
 
@@ -1212,7 +1216,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 
 	}
 
-	public FPSAnimator getLoop() {
+	public com.eco.bio7.spatial.FPSAnimator getLoop() {
 		return animator;
 	}
 
@@ -1406,11 +1410,11 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		this.lightPos4[2] = z;
 	}
 
-	public FPSAnimator getAnimator() {
+	public com.eco.bio7.spatial.FPSAnimator getAnimator() {
 		return animator;
 	}
 
-	public void setAnimator(FPSAnimator animatore) {
+	public void setAnimator(com.eco.bio7.spatial.FPSAnimator animatore) {
 		animator = animatore;
 	}
 
