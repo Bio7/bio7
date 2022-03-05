@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="lib/jna-5.10.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jna-platform-5.10.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="bin/"/>
-	<classpathentry exported="true" kind="lib" path="lib/jna-4.5.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jna-platform-4.5.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/guava-14.0.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/pty4j-0.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/purejavacomm-0.0.17.jar"/>
