@@ -44,34 +44,34 @@ public class ScanClassPath {
 
 	private void assignBundleLibs() {
 		OS = getOS();
+		String swtLibraryOS = "";
+		
 		if (OS.equals("Windows")) {
 
-			bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui",
-					"org.eclipse.swt", "org.eclipse.swt.win32.win32.x86_64", "org.eclipse.draw2d",
-					"org.eclipse.equinox.registry", "org.eclipse.equinox.common", "org.eclipse.core.runtime",
-					"org.eclipse.core.jobs", "org.eclipse.jface" };
+			swtLibraryOS = "org.eclipse.swt.win32.win32.x86_64";
 
 		} else if (OS.equals("Mac")) {
+			
 			if (isaarch64()) {
-				bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench",
-						"org.eclipse.ui", "org.eclipse.swt", "org.eclipse.swt.cocoa.macosx.aarch64",
-						"org.eclipse.draw2d", "org.eclipse.equinox.registry", "org.eclipse.equinox.common",
-						"org.eclipse.core.runtime", "org.eclipse.core.jobs", "org.eclipse.jface" };
+
+				swtLibraryOS = "org.eclipse.swt.cocoa.macosx.aarch64";
 
 			} else {
-				bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench",
-						"org.eclipse.ui", "org.eclipse.swt", "org.eclipse.swt.cocoa.macosx.x86_64",
-						"org.eclipse.draw2d", "org.eclipse.equinox.registry", "org.eclipse.equinox.common",
-						"org.eclipse.core.runtime", "org.eclipse.core.jobs", "org.eclipse.jface" };
+				swtLibraryOS = "org.eclipse.swt.cocoa.macosx.x86_64";
+
 			}
 		}
 
 		else if (OS.equals("Linux")) {
-			bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui",
-					"org.eclipse.swt", "org.eclipse.swt.gtk.linux.x86_64", "org.eclipse.draw2d",
-					"org.eclipse.equinox.registry", "org.eclipse.equinox.common", "org.eclipse.core.runtime",
-					"org.eclipse.core.jobs", "org.eclipse.jface" };
+			
+			swtLibraryOS = "org.eclipse.swt.gtk.linux.x86_64";
+
 		}
+		/*Add all Eclipse necessary libraries*/
+		bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui",
+				"org.eclipse.swt", swtLibraryOS, "org.eclipse.draw2d", "org.eclipse.equinox.registry",
+				"org.eclipse.equinox.common", "org.eclipse.core.runtime", "org.eclipse.core.jobs",
+				"org.eclipse.jface" };
 	}
 
 	public String scan() {
