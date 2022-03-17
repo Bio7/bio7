@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="hardware/jssc-2.9.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="hardware/nrjavaserial-5.2.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/commons-io-2.6.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/commons-codec-1.13.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/commons-collections4-4.4.jar"/>
@@ -27,7 +29,6 @@
 	<classpathentry exported="true" kind="lib" path="math/commons-math3-3.6.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/commons-lang3-3.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/guava-18.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="hardware/jssc.jar"/>
 	<classpathentry exported="true" kind="lib" path="physics/jbullet-gimpact.jar"/>
 	<classpathentry exported="true" kind="lib" path="physics/jbullet.jar"/>
 	<classpathentry exported="true" kind="lib" path="physics/stack-alloc.jar"/>
@@ -49,7 +50,6 @@
 	<classpathentry exported="true" kind="lib" path="OpenOffice/unoil.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jogl-all.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/gluegen-rt.jar"/>
-	<classpathentry exported="true" kind="lib" path="hardware/nrjavaserial-3.8.8.jar"/>
 	<classpathentry exported="true" kind="lib" path="bin" sourcepath="bin"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
