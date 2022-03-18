@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="baseline.jar"/>
+	<classpathentry exported="true" kind="lib" path="swt-grouplayout.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/groovy/ant-1.10.11.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/groovy/ant-antlr-1.10.11.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/groovy/ant-junit-1.10.11.jar"/>
@@ -46,6 +48,8 @@
 	<classpathentry exported="true" kind="lib" path="libs/groovy/javaparser-core-3.23.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/groovy/javax.servlet.jsp-api-2.3.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/groovy/javax.servlet-api-4.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/jcommander-1.78.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/jline-2.14.6.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/groovy/jquery-3.5.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/groovy/jsr166y-1.7.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/groovy/junit-4.13.2.jar"/>
@@ -56,28 +60,25 @@
 	<classpathentry exported="true" kind="lib" path="libs/groovy/junit-platform-launcher-1.7.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/groovy/multiverse-core-0.7.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/groovy/mxparser-1.2.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/opentest4j-1.2.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/groovy/org.abego.treelayout.core-1.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/qdox-1.12.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/groovy/snakeyaml-1.27.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/groovy/testng-7.4.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/activation-1.1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/bsh-2.0b6.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/common.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jaxb-api-2.3.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jaxb-core-2.3.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jaxb-impl-2.3.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jcommon-0.9.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jfreechart-0.9.20.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jython-standalone-2.7.2b2.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/py4j0.10.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/swing-layout-1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/swt-grouplayout.jar"/>
+	<classpathentry exported="true" kind="lib" path="bin/"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="libs/groovy/jcommander-1.78.jar"/>
-	<classpathentry kind="lib" path="libs/groovy/jline-2.14.6.jar"/>
-	<classpathentry kind="lib" path="libs/groovy/opentest4j-1.2.0.jar"/>
-	<classpathentry kind="lib" path="libs/groovy/qdox-1.12.1.jar"/>
-	<classpathentry kind="lib" path="libs/activation-1.1.1.jar"/>
-	<classpathentry kind="lib" path="libs/bsh-2.0b6.jar"/>
-	<classpathentry kind="lib" path="libs/common.jar"/>
-	<classpathentry kind="lib" path="libs/jaxb-api-2.3.0.jar"/>
-	<classpathentry kind="lib" path="libs/jaxb-core-2.3.0.1.jar"/>
-	<classpathentry kind="lib" path="libs/jaxb-impl-2.3.0.1.jar"/>
-	<classpathentry kind="lib" path="libs/jcommon-0.9.5.jar"/>
-	<classpathentry kind="lib" path="libs/jfreechart-0.9.20.1.jar"/>
-	<classpathentry kind="lib" path="libs/jython-standalone-2.7.2b2.jar"/>
-	<classpathentry kind="lib" path="libs/py4j0.10.1.jar"/>
-	<classpathentry kind="lib" path="libs/swing-layout-1.0.jar"/>
-	<classpathentry kind="lib" path="libs/swt-grouplayout.jar"/>
-	<classpathentry kind="lib" path="baseline.jar"/>
-	<classpathentry kind="lib" path="swt-grouplayout.jar"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
