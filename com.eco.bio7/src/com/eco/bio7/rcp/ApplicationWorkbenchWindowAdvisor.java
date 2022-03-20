@@ -646,8 +646,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("UPDATE_VAR_RSHELL", true);
 
 		/* Disable for HighDPI bug if necessary! */
-		boolean isLinux = getOS().equals("Linux");
-		if (isLinux) {
+		//boolean isLinux = getOS().equals("Linux");
+		/*if (isLinux) {
 
 			boolean sceneBuilderEnabled = store.getBoolean("ENABLE_SCENE_BUILDER_LINUX");
 			if (sceneBuilderEnabled) {
@@ -655,10 +655,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			} else {
 				store.setDefault("BROWSER_SELECTION", "SWT_BROWSER");
 			}
-		} else {
+		} else {*/
 
-			store.setDefault("BROWSER_SELECTION", "JAVAFX_BROWSER");
-		}
+			store.setDefault("BROWSER_SELECTION", "SWT_BROWSER");
+		//}
 
 		store.setDefault("BIO7_CONSOLE_INTERPRET_ASCII", true);
 		store.setDefault("BIO7_CONSOLE_INTERPRET_CARRIAGE_RETURN", true);
