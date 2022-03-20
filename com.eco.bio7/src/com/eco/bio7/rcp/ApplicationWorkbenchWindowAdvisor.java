@@ -246,7 +246,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 	public void preWindowOpen() {
 		String osname = System.getProperty("os.name");
-		
 
 		if (osname.startsWith("Windows")) {
 			OS = "Windows";
@@ -646,19 +645,19 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("UPDATE_VAR_RSHELL", true);
 
 		/* Disable for HighDPI bug if necessary! */
-		//boolean isLinux = getOS().equals("Linux");
-		/*if (isLinux) {
+		// boolean isLinux = getOS().equals("Linux");
+		/*
+		 * if (isLinux) {
+		 * 
+		 * boolean sceneBuilderEnabled = store.getBoolean("ENABLE_SCENE_BUILDER_LINUX");
+		 * if (sceneBuilderEnabled) { store.setDefault("BROWSER_SELECTION",
+		 * "JAVAFX_BROWSER"); } else { store.setDefault("BROWSER_SELECTION",
+		 * "SWT_BROWSER"); } } else {
+		 */
 
-			boolean sceneBuilderEnabled = store.getBoolean("ENABLE_SCENE_BUILDER_LINUX");
-			if (sceneBuilderEnabled) {
-				store.setDefault("BROWSER_SELECTION", "JAVAFX_BROWSER");
-			} else {
-				store.setDefault("BROWSER_SELECTION", "SWT_BROWSER");
-			}
-		} else {*/
-
-			store.setDefault("BROWSER_SELECTION", "SWT_BROWSER");
-		//}
+		store.setDefault("BROWSER_SELECTION", "SWT_BROWSER");
+		
+		// }
 
 		store.setDefault("BIO7_CONSOLE_INTERPRET_ASCII", true);
 		store.setDefault("BIO7_CONSOLE_INTERPRET_CARRIAGE_RETURN", true);
@@ -688,7 +687,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("LATEX_FILES_EXT_DELETE", "out,log,nav,aux,bbl,blg,dvi,toc,.synctex.gz,snm");
 		store.setDefault("LINUX_SHELL", "GNOME");
 		store.setDefault("USE_CUSTOM_DEVICE", true);
-		store.setDefault("PDF_USE_BROWSER", false);
+		store.setDefault("PDF_USE_BROWSER", true);
 		store.setDefault("IMPORT_R_PLOT_VIRTUAL", false);
 		store.setDefault("IMAGEJ_CREATE_SINGLE_PLOTS", false);
 
@@ -1415,7 +1414,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		 * Instead of WorldWind in GDALUtils initialize we load the native libraries
 		 * here! We have no native libs for mac arch!
 		 */
-		if (isArch==false) {
+		if (isArch == false) {
 			gdal.AllRegister();
 			ogr.RegisterAll();
 		}
