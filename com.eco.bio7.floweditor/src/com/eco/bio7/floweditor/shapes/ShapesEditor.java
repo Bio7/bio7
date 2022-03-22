@@ -8,7 +8,7 @@
  * Contributors:
  * Elias Volanakis - initial API and implementation
  * M.Austenfeld - Some changes for the Bio7 application
-  *******************************************************************************/
+ ï¿½*******************************************************************************/
 package com.eco.bio7.floweditor.shapes;
 
 import com.eco.bio7.floweditor.actions.DebugMode;
