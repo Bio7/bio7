@@ -733,12 +733,20 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				if (rPath.isEmpty() == false) {
 					args.add(rPath + "/bin/R");
 				} else {
-					args.add("R");
+					args.add("R");//open /usr/local/bin/r --args --interactive
+							
 				}
-				//args.add("--interactive");
-				args.add("--no-save");
+				/*On Mac arch the option interactive crashes!*/
+				if(ApplicationWorkbenchWindowAdvisor.isArch()) {
+					args.add("--no-save");
+				}
+				else {
+					args.add("--interactive");
+				}
+				
 				ProcessBuilder builder = new ProcessBuilder(args);
 				builder.redirectErrorStream(true);
+				
 				RProcess = builder.start();
 				RprocessThread = new Thread(new RProcessGrabber());
 				RprocessThread.start();
@@ -869,7 +877,9 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					}
 				}
 			}
+				
 		}
+			
 	}
 
 	class ProcessGrabber implements Runnable {

@@ -4,7 +4,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.rosuda.REngine.Rserve.RConnection;
 
 public interface RScriptExecuterInterface {
-	
-	 void evaluate(RConnection con,IProgressMonitor monitor);
+
+	void evaluate(RConnection con, IProgressMonitor monitor);
 
 }

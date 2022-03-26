@@ -17,13 +17,13 @@
     <Layer href="config/Earth/LandsatI3WMSLayer.xml" actuate="onLoad"/>
      <!--<Layer href="config/Earth/USDANAIPWMSImageLayer.xml" actuate="onRequest"/>-->
     <Layer href="config/Earth/USGSNAIPPlusLayer.xml" actuate="onRequest"/>
-    <Layer href="config/Earth/MSVirtualEarthAerialLayer.xml" actuate="onRequest"/>
+    <!--<<Layer href="config/Earth/MSVirtualEarthAerialLayer.xml" actuate="onRequest"/>-->
     <Layer href="config/Earth/BingImagery.xml" actuate="onLoad"/>
-    <Layer className="gov.nasa.worldwind.layers.Earth.OSMMapnikLayer" actuate="onRequest"/>
+  <!--  <Layer className="gov.nasa.worldwind.layers.Earth.OSMMapnikLayer" actuate="onRequest"/>-->
     <!--<Layer className="com.eco.bio7.extralayers.OSMMapnikLayer" title="OpenStreetMap" actuate="onRequest"/>-->
-    <Layer href="config/Earth/USGSTopoLowResLayer.xml" actuate="onRequest"/>
+  <!--  <Layer href="config/Earth/USGSTopoLowResLayer.xml" actuate="onRequest"/>
     <Layer href="config/Earth/USGSTopoMedResLayer.xml" actuate="onRequest"/>
-    <Layer href="config/Earth/USGSTopoHighResLayer.xml" actuate="onRequest"/>
+    <Layer href="config/Earth/USGSTopoHighResLayer.xml" actuate="onRequest"/>-->
     <Layer href="config/Earth/USGSUrbanAreaOrthoLayer.xml" actuate="onRequest"/>
     <!--<<Layer className="gov.nasa.worldwind.layers.Earth.OSMMapnikLayer" actuate="onRequest"/>-->
     <!--<Layer className="gov.nasa.worldwind.layers.Earth.OSMCycleMapLayer" actuate="onRequest"/>-->

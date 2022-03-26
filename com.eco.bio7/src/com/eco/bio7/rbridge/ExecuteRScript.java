@@ -73,6 +73,14 @@ public class ExecuteRScript {
 				} else {
 					RState.setBusy(false);
 				}
+				/*
+				 * If we use the RScriptExecuter class we can call the done method which can be
+				 * overridden if necessary!
+				 */
+				if (executer instanceof RScriptExecuter) {
+					RScriptExecuter exec = (RScriptExecuter) executer;
+					exec.done(event);
+				}
 			}
 		});
 

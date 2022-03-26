@@ -158,7 +158,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	private boolean x11ErrorHandlerFixInstalled = false;
 	private IExecutionListener executionListener;
 	private IPartListener2 partListener;
-	private boolean isArch;
+	private static boolean isArch;
 	private static boolean themeBlack;
 	private static final Point DEFAULT_SIZE = new Point(1024, 768);
 
@@ -1769,6 +1769,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 	public static String getOS() {
 		return OS;
+	}
+	
+	public static boolean isArch() {
+		return isArch;
 	}
 
 	public void initialize(IWorkbenchConfigurer configurer) {
