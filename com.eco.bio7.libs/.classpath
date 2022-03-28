@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="hardware/jSerialComm-2.9.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="hardware/jssc-2.9.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="hardware/nrjavaserial-5.2.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/commons-io-2.6.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/commons-codec-1.13.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/commons-collections4-4.4.jar"/>
@@ -18,7 +18,6 @@
 	<classpathentry exported="true" kind="lib" path="libs/jtouchbar-1.0.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jtouchbar-javafx-1.0.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jtouchbar-swt-1.0.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="hardware/arduino.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/opal-1.0.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/opencsv-3.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jsoup-1.10.2.jar"/>
@@ -33,8 +32,6 @@
 	<classpathentry exported="true" kind="lib" path="physics/jbullet.jar"/>
 	<classpathentry exported="true" kind="lib" path="physics/stack-alloc.jar"/>
 	<classpathentry exported="true" kind="lib" path="physics/trove.jar"/>
-	<classpathentry exported="true" kind="lib" path="hardware/ch.ntb.usb-0.5.9.jar"/>
-	<classpathentry exported="true" kind="lib" path="hardware/ardulink.jar"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry exported="true" kind="lib" path="OpenOffice/juh.jar" sourcepath="com.eco.bio7.libssrc.zip"/>

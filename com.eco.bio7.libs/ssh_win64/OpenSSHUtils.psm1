@@ -43,6 +43,8 @@ $everyoneSid = Get-UserSID -WellKnownSidType ([System.Security.Principal.WellKno
 
 $currentUserSid = Get-UserSID -User "$($env:USERDOMAIN)\$($env:USERNAME)"
 
+$authenticatedUserSid = Get-UserSID -WellKnownSidType ([System.Security.Principal.WellKnownSidType]::AuthenticatedUserSid)
+
 #Taken from P/Invoke.NET with minor adjustments.
  $definition = @'
 using System;
@@ -95,7 +97,15 @@ public class AdjPriv
 }
 '@
  
-$type = Add-Type $definition -PassThru -ErrorAction SilentlyContinue
+try
+{
+    $type = Add-Type $definition -PassThru -ErrorAction SilentlyContinue
+}
+catch
+{
+    # Powershell 7 does not add a type if it already exists
+    $type = [AdjPriv]
+}
 
 <#
     .Synopsis
@@ -184,6 +194,42 @@ function Repair-AuthorizedKeyPermission
 
 <#
     .Synopsis
+    Repair-AdministratorsAuthorizedKeysPermission
+    Repair the file owner and Permission of administrators_authorized_keys
+#>
+
+function Repair-AdministratorsAuthorizedKeysPermission
+{
+    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact="High")]
+    param (
+        [parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]        
+        [string]$FilePath) 
+
+        Repair-FilePermission -Owners $adminsSid -FullAccessNeeded $adminsSid,$systemSid -ReadAccessOK $everyoneSid @psBoundParameters        
+
+}
+
+<#
+    .Synopsis
+    Repair-ModuliFilePermission
+    Repair the file owner and Permission of moduli file 
+#>
+
+function Repair-ModuliFilePermission
+{
+    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact="High")]
+    param (
+        [parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]        
+        [string]$FilePath) 
+
+        Repair-FilePermission -Owners $adminsSid -FullAccessNeeded $adminsSid,$systemSid -ReadAccessOK $everyoneSid @psBoundParameters        
+
+}
+
+<#
+    .Synopsis
     Repair-UserKeyPermission
     Repair the file owner and Permission of user config
     -FilePath: The path of the private user key
@@ -226,6 +272,54 @@ function Repair-UserSshConfigPermission
 
 <#
     .Synopsis
+    Repair-SSHFolderPermission
+    Repair the folder owner and permission of ProgramData\ssh folder
+#>
+function Repair-SSHFolderPermission
+{
+    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact="High")]
+    param (
+        [parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]        
+        [string]$FilePath)
+
+    Repair-FilePermission -Owners $adminsSid, $systemSid -FullAccessNeeded $adminsSid,$systemSid -ReadAndExecuteAccessOK $authenticatedUserSid @psBoundParameters
+}
+
+<#
+    .Synopsis
+    Repair-SSHFolderFilePermission
+    Repair the file owner and permission of general files inside ProgramData\ssh folder
+#>
+function Repair-SSHFolderFilePermission
+{
+    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact="High")]
+    param (
+        [parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]        
+        [string]$FilePath)
+
+    Repair-FilePermission -Owners $adminsSid, $systemSid -FullAccessNeeded $adminsSid, $systemSid -ReadAndExecuteAccessOK $authenticatedUserSid @psBoundParameters
+}
+
+<#
+    .Synopsis
+    Repair-SSHFolderPrivateKeyPermission
+    Repair the file owner and permission of private key files inside ProgramData\ssh folder
+#>
+function Repair-SSHFolderPrivateKeyPermission
+{
+    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact="High")]
+    param (
+        [parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]        
+        [string]$FilePath)
+
+    Repair-FilePermission -Owners $adminsSid, $systemSid -FullAccessNeeded $systemSid, $adminsSid @psBoundParameters
+}
+
+<#
+    .Synopsis
     Repair-FilePermissionInternal
     Only validate owner and ACEs of the file
 #>
@@ -241,10 +335,11 @@ function Repair-FilePermission
         [System.Security.Principal.SecurityIdentifier[]] $AnyAccessOK = $null,
         [System.Security.Principal.SecurityIdentifier[]] $FullAccessNeeded = $null,
         [System.Security.Principal.SecurityIdentifier[]] $ReadAccessOK = $null,
-        [System.Security.Principal.SecurityIdentifier[]] $ReadAccessNeeded = $null
+        [System.Security.Principal.SecurityIdentifier[]] $ReadAccessNeeded = $null,
+        [System.Security.Principal.SecurityIdentifier[]] $ReadAndExecuteAccessOK = $null
     )
 
-    if(-not (Test-Path $FilePath -PathType Leaf))
+    if(-not (Test-Path $FilePath))
     {
         Write-host "$FilePath not found" -ForegroundColor Yellow
         return
@@ -275,7 +370,8 @@ function Repair-FilePermissionInternal {
         [System.Security.Principal.SecurityIdentifier[]] $AnyAccessOK = $null,
         [System.Security.Principal.SecurityIdentifier[]] $FullAccessNeeded = $null,
         [System.Security.Principal.SecurityIdentifier[]] $ReadAccessOK = $null,
-        [System.Security.Principal.SecurityIdentifier[]] $ReadAccessNeeded = $null
+        [System.Security.Principal.SecurityIdentifier[]] $ReadAccessNeeded = $null,
+        [System.Security.Principal.SecurityIdentifier[]] $ReadAndExecuteAccessOK = $null
     )
 
     $acl = Get-Acl $FilePath
@@ -309,6 +405,7 @@ function Repair-FilePermissionInternal {
 
     $ReadAccessPerm = ([System.UInt32] [System.Security.AccessControl.FileSystemRights]::Read.value__) -bor `
                     ([System.UInt32] [System.Security.AccessControl.FileSystemRights]::Synchronize.value__)
+    $ReadAndExecuteAccessPerm = $ReadAccessPerm -bor ([System.UInt32] [System.Security.AccessControl.FileSystemRights]::ReadAndExecute.value__)
     $FullControlPerm = [System.UInt32] [System.Security.AccessControl.FileSystemRights]::FullControl.value__
 
     #system and admin groups can have any access to the file; plus the account in the AnyAccessOK list
@@ -410,6 +507,48 @@ function Repair-FilePermissionInternal {
         {
             #ignore those accounts listed in the AnyAccessOK list.
             continue;
+        }
+        # Handle ReadAndExecuteAccessOK list and make sure they are only granted Read or ReadAndExecute & Synchronize access
+        elseif($ReadAndExecuteAccessOK -contains $IdentityReferenceSid)
+        {
+            # checks if user access is already either: Read or ReadAndExecute & Synchronize
+            if (-not ($a.AccessControlType.Equals([System.Security.AccessControl.AccessControlType]::Allow)) -or `
+            (-not (([System.UInt32]$a.FileSystemRights.value__) -band (-bnot $ReadAndExecuteAccessPerm))))
+            {
+                continue;
+            }
+            
+            if($a.IsInherited)
+            {
+                if($needChange)    
+                {
+                    Enable-Privilege SeRestorePrivilege | out-null
+                    Set-Acl -Path $FilePath -AclObject $acl -Confirm:$false
+                }
+                
+                return Remove-RuleProtection @paras
+            }
+            $caption = "'$($a.IdentityReference)' has the following access to '$FilePath': '$($a.FileSystemRights)'."
+            $prompt = "Shall I make it ReadAndExecute, and Synchronize only?"
+            $description = "Set'$($a.IdentityReference)' Read access only to '$FilePath'. "
+
+            if($pscmdlet.ShouldProcess($description, $prompt, $caption))
+            {
+                $needChange = $true
+                $ace = New-Object System.Security.AccessControl.FileSystemAccessRule `
+                    ($IdentityReferenceSid, "ReadAndExecute, Synchronize", "None", "None", "Allow")
+                          
+                $acl.SetAccessRule($ace)
+                Write-Host "'$($a.IdentityReference)' now has ReadAndExecute, Synchronize access to '$FilePath'. " -ForegroundColor Green
+            }
+            else
+            {
+                $health = $false
+                if(-not $PSBoundParameters.ContainsKey("WhatIf"))
+                {
+                    Write-Host "'$($a.IdentityReference)' still has these access to '$FilePath': '$($a.FileSystemRights)'." -ForegroundColor Yellow
+                }
+            }
         }
         #If everyone is in the ReadAccessOK list, any user can have read access;
         # below block make sure they are granted Read access only
@@ -605,7 +744,7 @@ function Remove-RuleProtection
         [string]$FilePath
     )
     $message = "Need to remove the inheritance before repair the rules."
-    $prompt = "Shall I remove the inheritace?"
+    $prompt = "Shall I remove the inheritance?"
     $description = "Remove inheritance of '$FilePath'."
 
     if($pscmdlet.ShouldProcess($description, $prompt, $message))
@@ -690,45 +829,45 @@ function Enable-Privilege {
     $type[0]::EnablePrivilege($Privilege, $Disable)
 }
 
-Export-ModuleMember -Function Repair-FilePermission, Repair-SshdConfigPermission, Repair-SshdHostKeyPermission, Repair-AuthorizedKeyPermission, Repair-UserKeyPermission, Repair-UserSshConfigPermission, Enable-Privilege, Get-UserAccount, Get-UserSID
+Export-ModuleMember -Function Repair-FilePermission, Repair-SshdConfigPermission, Repair-SshdHostKeyPermission, Repair-AuthorizedKeyPermission, Repair-UserKeyPermission, Repair-UserSshConfigPermission, Enable-Privilege, Get-UserAccount, Get-UserSID, Repair-AdministratorsAuthorizedKeysPermission, Repair-ModuliFilePermission, Repair-SSHFolderPermission, Repair-SSHFolderFilePermission, Repair-SSHFolderPrivateKeyPermission
 
 # SIG # Begin signature block
-# MIIjhgYJKoZIhvcNAQcCoIIjdzCCI3MCAQExDzANBglghkgBZQMEAgEFADB5Bgor
+# MIInoAYJKoZIhvcNAQcCoIInkTCCJ40CAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBSg3sZNxEWbpQ5
-# snmq1XCxqU++2F2G74A02OvDRP1ZuaCCDYEwggX/MIID56ADAgECAhMzAAABUZ6N
-# j0Bxow5BAAAAAAFRMA0GCSqGSIb3DQEBCwUAMH4xCzAJBgNVBAYTAlVTMRMwEQYD
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBtYI7mgyoN3+PW
+# H3AE/kRCDtP6AKqJacExNxHDc5o/R6CCDYEwggX/MIID56ADAgECAhMzAAACUosz
+# qviV8znbAAAAAAJSMA0GCSqGSIb3DQEBCwUAMH4xCzAJBgNVBAYTAlVTMRMwEQYD
 # VQQIEwpXYXNoaW5ndG9uMRAwDgYDVQQHEwdSZWRtb25kMR4wHAYDVQQKExVNaWNy
 # b3NvZnQgQ29ycG9yYXRpb24xKDAmBgNVBAMTH01pY3Jvc29mdCBDb2RlIFNpZ25p
-# bmcgUENBIDIwMTEwHhcNMTkwNTAyMjEzNzQ2WhcNMjAwNTAyMjEzNzQ2WjB0MQsw
+# bmcgUENBIDIwMTEwHhcNMjEwOTAyMTgzMjU5WhcNMjIwOTAxMTgzMjU5WjB0MQsw
 # CQYDVQQGEwJVUzETMBEGA1UECBMKV2FzaGluZ3RvbjEQMA4GA1UEBxMHUmVkbW9u
 # ZDEeMBwGA1UEChMVTWljcm9zb2Z0IENvcnBvcmF0aW9uMR4wHAYDVQQDExVNaWNy
 # b3NvZnQgQ29ycG9yYXRpb24wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIB
-# AQCVWsaGaUcdNB7xVcNmdfZiVBhYFGcn8KMqxgNIvOZWNH9JYQLuhHhmJ5RWISy1
-# oey3zTuxqLbkHAdmbeU8NFMo49Pv71MgIS9IG/EtqwOH7upan+lIq6NOcw5fO6Os
-# +12R0Q28MzGn+3y7F2mKDnopVu0sEufy453gxz16M8bAw4+QXuv7+fR9WzRJ2CpU
-# 62wQKYiFQMfew6Vh5fuPoXloN3k6+Qlz7zgcT4YRmxzx7jMVpP/uvK6sZcBxQ3Wg
-# B/WkyXHgxaY19IAzLq2QiPiX2YryiR5EsYBq35BP7U15DlZtpSs2wIYTkkDBxhPJ
-# IDJgowZu5GyhHdqrst3OjkSRAgMBAAGjggF+MIIBejAfBgNVHSUEGDAWBgorBgEE
-# AYI3TAgBBggrBgEFBQcDAzAdBgNVHQ4EFgQUV4Iarkq57esagu6FUBb270Zijc8w
+# AQDQ5M+Ps/X7BNuv5B/0I6uoDwj0NJOo1KrVQqO7ggRXccklyTrWL4xMShjIou2I
+# sbYnF67wXzVAq5Om4oe+LfzSDOzjcb6ms00gBo0OQaqwQ1BijyJ7NvDf80I1fW9O
+# L76Kt0Wpc2zrGhzcHdb7upPrvxvSNNUvxK3sgw7YTt31410vpEp8yfBEl/hd8ZzA
+# v47DCgJ5j1zm295s1RVZHNp6MoiQFVOECm4AwK2l28i+YER1JO4IplTH44uvzX9o
+# RnJHaMvWzZEpozPy4jNO2DDqbcNs4zh7AWMhE1PWFVA+CHI/En5nASvCvLmuR/t8
+# q4bc8XR8QIZJQSp+2U6m2ldNAgMBAAGjggF+MIIBejAfBgNVHSUEGDAWBgorBgEE
+# AYI3TAgBBggrBgEFBQcDAzAdBgNVHQ4EFgQUNZJaEUGL2Guwt7ZOAu4efEYXedEw
 # UAYDVR0RBEkwR6RFMEMxKTAnBgNVBAsTIE1pY3Jvc29mdCBPcGVyYXRpb25zIFB1
-# ZXJ0byBSaWNvMRYwFAYDVQQFEw0yMzAwMTIrNDU0MTM1MB8GA1UdIwQYMBaAFEhu
+# ZXJ0byBSaWNvMRYwFAYDVQQFEw0yMzAwMTIrNDY3NTk3MB8GA1UdIwQYMBaAFEhu
 # ZOVQBdOCqhc3NyK1bajKdQKVMFQGA1UdHwRNMEswSaBHoEWGQ2h0dHA6Ly93d3cu
 # bWljcm9zb2Z0LmNvbS9wa2lvcHMvY3JsL01pY0NvZFNpZ1BDQTIwMTFfMjAxMS0w
 # Ny0wOC5jcmwwYQYIKwYBBQUHAQEEVTBTMFEGCCsGAQUFBzAChkVodHRwOi8vd3d3
 # Lm1pY3Jvc29mdC5jb20vcGtpb3BzL2NlcnRzL01pY0NvZFNpZ1BDQTIwMTFfMjAx
-# MS0wNy0wOC5jcnQwDAYDVR0TAQH/BAIwADANBgkqhkiG9w0BAQsFAAOCAgEAWg+A
-# rS4Anq7KrogslIQnoMHSXUPr/RqOIhJX+32ObuY3MFvdlRElbSsSJxrRy/OCCZdS
-# se+f2AqQ+F/2aYwBDmUQbeMB8n0pYLZnOPifqe78RBH2fVZsvXxyfizbHubWWoUf
-# NW/FJlZlLXwJmF3BoL8E2p09K3hagwz/otcKtQ1+Q4+DaOYXWleqJrJUsnHs9UiL
-# crVF0leL/Q1V5bshob2OTlZq0qzSdrMDLWdhyrUOxnZ+ojZ7UdTY4VnCuogbZ9Zs
-# 9syJbg7ZUS9SVgYkowRsWv5jV4lbqTD+tG4FzhOwcRQwdb6A8zp2Nnd+s7VdCuYF
-# sGgI41ucD8oxVfcAMjF9YX5N2s4mltkqnUe3/htVrnxKKDAwSYliaux2L7gKw+bD
-# 1kEZ/5ozLRnJ3jjDkomTrPctokY/KaZ1qub0NUnmOKH+3xUK/plWJK8BOQYuU7gK
-# YH7Yy9WSKNlP7pKj6i417+3Na/frInjnBkKRCJ/eYTvBH+s5guezpfQWtU4bNo/j
-# 8Qw2vpTQ9w7flhH78Rmwd319+YTmhv7TcxDbWlyteaj4RK2wk3pY1oSz2JPE5PNu
-# Nmd9Gmf6oePZgy7Ii9JLLq8SnULV7b+IP0UXRY9q+GdRjM2AEX6msZvvPCIoG0aY
-# HQu9wZsKEK2jqvWi8/xdeeeSI9FN6K1w4oVQM4Mwggd6MIIFYqADAgECAgphDpDS
+# MS0wNy0wOC5jcnQwDAYDVR0TAQH/BAIwADANBgkqhkiG9w0BAQsFAAOCAgEAFkk3
+# uSxkTEBh1NtAl7BivIEsAWdgX1qZ+EdZMYbQKasY6IhSLXRMxF1B3OKdR9K/kccp
+# kvNcGl8D7YyYS4mhCUMBR+VLrg3f8PUj38A9V5aiY2/Jok7WZFOAmjPRNNGnyeg7
+# l0lTiThFqE+2aOs6+heegqAdelGgNJKRHLWRuhGKuLIw5lkgx9Ky+QvZrn/Ddi8u
+# TIgWKp+MGG8xY6PBvvjgt9jQShlnPrZ3UY8Bvwy6rynhXBaV0V0TTL0gEx7eh/K1
+# o8Miaru6s/7FyqOLeUS4vTHh9TgBL5DtxCYurXbSBVtL1Fj44+Od/6cmC9mmvrti
+# yG709Y3Rd3YdJj2f3GJq7Y7KdWq0QYhatKhBeg4fxjhg0yut2g6aM1mxjNPrE48z
+# 6HWCNGu9gMK5ZudldRw4a45Z06Aoktof0CqOyTErvq0YjoE4Xpa0+87T/PVUXNqf
+# 7Y+qSU7+9LtLQuMYR4w3cSPjuNusvLf9gBnch5RqM7kaDtYWDgLyB42EfsxeMqwK
+# WwA+TVi0HrWRqfSx2olbE56hJcEkMjOSKz3sRuupFCX3UroyYf52L+2iVTrda8XW
+# esPG62Mnn3T8AuLfzeJFuAbfOSERx7IFZO92UPoXE1uEjL5skl1yTZB3MubgOA4F
+# 8KoRNhviFAEST+nG8c8uIsbZeb08SeYQMqjVEmkwggd6MIIFYqADAgECAgphDpDS
 # AAAAAAADMA0GCSqGSIb3DQEBCwUAMIGIMQswCQYDVQQGEwJVUzETMBEGA1UECBMK
 # V2FzaGluZ3RvbjEQMA4GA1UEBxMHUmVkbW9uZDEeMBwGA1UEChMVTWljcm9zb2Z0
 # IENvcnBvcmF0aW9uMTIwMAYDVQQDEylNaWNyb3NvZnQgUm9vdCBDZXJ0aWZpY2F0
@@ -768,119 +907,141 @@ Export-ModuleMember -Function Repair-FilePermission, Repair-SshdConfigPermission
 # xw4o7t5lL+yX9qFcltgA1qFGvVnzl6UJS0gQmYAf0AApxbGbpT9Fdx41xtKiop96
 # eiL6SJUfq/tHI4D1nvi/a7dLl+LrdXga7Oo3mXkYS//WsyNodeav+vyL6wuA6mk7
 # r/ww7QRMjt/fdW1jkT3RnVZOT7+AVyKheBEyIXrvQQqxP/uozKRdwaGIm1dxVk5I
-# RcBCyZt2WwqASGv9eZ/BvW1taslScxMNelDNMYIVWzCCFVcCAQEwgZUwfjELMAkG
+# RcBCyZt2WwqASGv9eZ/BvW1taslScxMNelDNMYIZdTCCGXECAQEwgZUwfjELMAkG
 # A1UEBhMCVVMxEzARBgNVBAgTCldhc2hpbmd0b24xEDAOBgNVBAcTB1JlZG1vbmQx
 # HjAcBgNVBAoTFU1pY3Jvc29mdCBDb3Jwb3JhdGlvbjEoMCYGA1UEAxMfTWljcm9z
-# b2Z0IENvZGUgU2lnbmluZyBQQ0EgMjAxMQITMwAAAVGejY9AcaMOQQAAAAABUTAN
+# b2Z0IENvZGUgU2lnbmluZyBQQ0EgMjAxMQITMwAAAlKLM6r4lfM52wAAAAACUjAN
 # BglghkgBZQMEAgEFAKCBrjAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgor
-# BgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg0s15cao+
-# +85MUIvMbU1P34Af+p4BxbgU4yE8Ib+48XowQgYKKwYBBAGCNwIBDDE0MDKgFIAS
+# BgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgpdUYfXr0
+# B/V+XvMn9cxxhyM7n+nO8XtQWa8s+YXSqkMwQgYKKwYBBAGCNwIBDDE0MDKgFIAS
 # AE0AaQBjAHIAbwBzAG8AZgB0oRqAGGh0dHA6Ly93d3cubWljcm9zb2Z0LmNvbTAN
-# BgkqhkiG9w0BAQEFAASCAQBUUI255+jWNftJsYivM1K/dDQ+UVqqtgRKlvuNtFxk
-# /qs070txFWqYKdvTebfDDoKEBq4mb+H5VvHN5CFw1mLjFip4hqnw0iIYTPPcWRTJ
-# gwH6PnQeoXf0RDeWIcCRp72amsUW6l7FdU9fTSXK+/Pt8xUGzroVFf7vaY6wl8UL
-# QOue+j18YBrBpThQbVZ1Gdi1TfmIsj0jJIMyNLesHudC4vfcJCvhjw96jVAnUzjm
-# 6I2+3JuhlQSxfZTH/EblZFYr3hJumSn2+jRSxLzZmw2A0+DS0I0M/KuFnIjcQWRB
-# /m0hJgcFDTQZ6yy2s3bnA7lRJlsE8zPFcKOQKs4wUdlXoYIS5TCCEuEGCisGAQQB
-# gjcDAwExghLRMIISzQYJKoZIhvcNAQcCoIISvjCCEroCAQMxDzANBglghkgBZQME
-# AgEFADCCAVEGCyqGSIb3DQEJEAEEoIIBQASCATwwggE4AgEBBgorBgEEAYRZCgMB
-# MDEwDQYJYIZIAWUDBAIBBQAEIJ6g7yjpUrbQROBuhkJYK0wg2ijqVcrYChj6SqzT
-# hXFcAgZcyeDmzEQYEzIwMTkwNjIwMTkwNTE2LjAzM1owBIACAfSggdCkgc0wgcox
-# CzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpXYXNoaW5ndG9uMRAwDgYDVQQHEwdSZWRt
-# b25kMR4wHAYDVQQKExVNaWNyb3NvZnQgQ29ycG9yYXRpb24xJTAjBgNVBAsTHE1p
-# Y3Jvc29mdCBBbWVyaWNhIE9wZXJhdGlvbnMxJjAkBgNVBAsTHVRoYWxlcyBUU1Mg
-# RVNOOjEyQkMtRTNBRS03NEVCMSUwIwYDVQQDExxNaWNyb3NvZnQgVGltZS1TdGFt
-# cCBTZXJ2aWNloIIOPDCCBPEwggPZoAMCAQICEzMAAAD4wl8z0LWPFQQAAAAAAPgw
-# DQYJKoZIhvcNAQELBQAwfDELMAkGA1UEBhMCVVMxEzARBgNVBAgTCldhc2hpbmd0
-# b24xEDAOBgNVBAcTB1JlZG1vbmQxHjAcBgNVBAoTFU1pY3Jvc29mdCBDb3Jwb3Jh
-# dGlvbjEmMCQGA1UEAxMdTWljcm9zb2Z0IFRpbWUtU3RhbXAgUENBIDIwMTAwHhcN
-# MTgxMDI0MjExNDI5WhcNMjAwMTEwMjExNDI5WjCByjELMAkGA1UEBhMCVVMxEzAR
-# BgNVBAgTCldhc2hpbmd0b24xEDAOBgNVBAcTB1JlZG1vbmQxHjAcBgNVBAoTFU1p
-# Y3Jvc29mdCBDb3Jwb3JhdGlvbjElMCMGA1UECxMcTWljcm9zb2Z0IEFtZXJpY2Eg
-# T3BlcmF0aW9uczEmMCQGA1UECxMdVGhhbGVzIFRTUyBFU046MTJCQy1FM0FFLTc0
-# RUIxJTAjBgNVBAMTHE1pY3Jvc29mdCBUaW1lLVN0YW1wIFNlcnZpY2UwggEiMA0G
-# CSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCWG4/+N8O+D28f14jQFJ4IelzVpAdF
-# yEORF2758iUItiMKXth0ydPSWoBcQOEG43o5VZyAIwKwxDnIlusmJvrvej1qWpMb
-# zw3x7DoZeiunALXxIUOXFDgUt7eMRG2LvAnpm8Df0Y3CNaKpWtBy5Loww48Fa0hs
-# 9VhNog6pXOEPuvBUf2nDM6s6NB9yDNVzoRVy25PkgbDakOG9XDII1IyiOZM1w4o1
-# KBK6Ury8orZx5n/az2kb+HLc6WkoSK/ewrqyfToM2qLeX8hxeaI8nLMUvfspRKLe
-# q6tyUelFBZWBRE2Id42W03YHZpeuR5PGyU1jAeW1iXd2ZvQ03cfrzH4/AgMBAAGj
-# ggEbMIIBFzAdBgNVHQ4EFgQU7Jd2aCn+E0/NdMYlGPIAfNp916cwHwYDVR0jBBgw
-# FoAU1WM6XIoxkPNDe3xGG8UzaFqFbVUwVgYDVR0fBE8wTTBLoEmgR4ZFaHR0cDov
-# L2NybC5taWNyb3NvZnQuY29tL3BraS9jcmwvcHJvZHVjdHMvTWljVGltU3RhUENB
-# XzIwMTAtMDctMDEuY3JsMFoGCCsGAQUFBwEBBE4wTDBKBggrBgEFBQcwAoY+aHR0
-# cDovL3d3dy5taWNyb3NvZnQuY29tL3BraS9jZXJ0cy9NaWNUaW1TdGFQQ0FfMjAx
-# MC0wNy0wMS5jcnQwDAYDVR0TAQH/BAIwADATBgNVHSUEDDAKBggrBgEFBQcDCDAN
-# BgkqhkiG9w0BAQsFAAOCAQEAqGTwfiwoXv5slFtdMIP9ESeh5btzNOZyD63KsYTd
-# WnUE+P7pQvo1Geg6IHAONJrSBZ4lpttMf78MzoTItciD7GAeOgAoIPFjKWv7ambS
-# WHN1bn3pmR1QYUpxar6Q5KoHyo1g24Lx+693JpRi98MFdEMmnLVTT3LA50mQZJXU
-# Y6gRqqHhTbu/AD/px4Lof5tue0U7R9FD3PL4FYUJOl+bpuAugeWOtCFJTvIEZR3Q
-# ym+xNTCimTu9VIYnkL1q9SRjjcN2os5ya6noSXf/frAGpbDIU7u6cFCeyPtJhjYC
-# NGwu6Fv4KYJxNhS+2sTD7McIhAz9b2pSzzhs+ebv4vq6tDCCBnEwggRZoAMCAQIC
-# CmEJgSoAAAAAAAIwDQYJKoZIhvcNAQELBQAwgYgxCzAJBgNVBAYTAlVTMRMwEQYD
-# VQQIEwpXYXNoaW5ndG9uMRAwDgYDVQQHEwdSZWRtb25kMR4wHAYDVQQKExVNaWNy
-# b3NvZnQgQ29ycG9yYXRpb24xMjAwBgNVBAMTKU1pY3Jvc29mdCBSb290IENlcnRp
-# ZmljYXRlIEF1dGhvcml0eSAyMDEwMB4XDTEwMDcwMTIxMzY1NVoXDTI1MDcwMTIx
-# NDY1NVowfDELMAkGA1UEBhMCVVMxEzARBgNVBAgTCldhc2hpbmd0b24xEDAOBgNV
-# BAcTB1JlZG1vbmQxHjAcBgNVBAoTFU1pY3Jvc29mdCBDb3Jwb3JhdGlvbjEmMCQG
-# A1UEAxMdTWljcm9zb2Z0IFRpbWUtU3RhbXAgUENBIDIwMTAwggEiMA0GCSqGSIb3
-# DQEBAQUAA4IBDwAwggEKAoIBAQCpHQ28dxGKOiDs/BOX9fp/aZRrdFQQ1aUKAIKF
-# ++18aEssX8XD5WHCdrc+Zitb8BVTJwQxH0EbGpUdzgkTjnxhMFmxMEQP8WCIhFRD
-# DNdNuDgIs0Ldk6zWczBXJoKjRQ3Q6vVHgc2/JGAyWGBG8lhHhjKEHnRhZ5FfgVSx
-# z5NMksHEpl3RYRNuKMYa+YaAu99h/EbBJx0kZxJyGiGKr0tkiVBisV39dx898Fd1
-# rL2KQk1AUdEPnAY+Z3/1ZsADlkR+79BL/W7lmsqxqPJ6Kgox8NpOBpG2iAg16Hgc
-# sOmZzTznL0S6p/TcZL2kAcEgCZN4zfy8wMlEXV4WnAEFTyJNAgMBAAGjggHmMIIB
-# 4jAQBgkrBgEEAYI3FQEEAwIBADAdBgNVHQ4EFgQU1WM6XIoxkPNDe3xGG8UzaFqF
-# bVUwGQYJKwYBBAGCNxQCBAweCgBTAHUAYgBDAEEwCwYDVR0PBAQDAgGGMA8GA1Ud
-# EwEB/wQFMAMBAf8wHwYDVR0jBBgwFoAU1fZWy4/oolxiaNE9lJBb186aGMQwVgYD
-# VR0fBE8wTTBLoEmgR4ZFaHR0cDovL2NybC5taWNyb3NvZnQuY29tL3BraS9jcmwv
-# cHJvZHVjdHMvTWljUm9vQ2VyQXV0XzIwMTAtMDYtMjMuY3JsMFoGCCsGAQUFBwEB
-# BE4wTDBKBggrBgEFBQcwAoY+aHR0cDovL3d3dy5taWNyb3NvZnQuY29tL3BraS9j
-# ZXJ0cy9NaWNSb29DZXJBdXRfMjAxMC0wNi0yMy5jcnQwgaAGA1UdIAEB/wSBlTCB
-# kjCBjwYJKwYBBAGCNy4DMIGBMD0GCCsGAQUFBwIBFjFodHRwOi8vd3d3Lm1pY3Jv
-# c29mdC5jb20vUEtJL2RvY3MvQ1BTL2RlZmF1bHQuaHRtMEAGCCsGAQUFBwICMDQe
-# MiAdAEwAZQBnAGEAbABfAFAAbwBsAGkAYwB5AF8AUwB0AGEAdABlAG0AZQBuAHQA
-# LiAdMA0GCSqGSIb3DQEBCwUAA4ICAQAH5ohRDeLG4Jg/gXEDPZ2joSFvs+umzPUx
-# vs8F4qn++ldtGTCzwsVmyWrf9efweL3HqJ4l4/m87WtUVwgrUYJEEvu5U4zM9GAS
-# inbMQEBBm9xcF/9c+V4XNZgkVkt070IQyK+/f8Z/8jd9Wj8c8pl5SpFSAK84Dxf1
-# L3mBZdmptWvkx872ynoAb0swRCQiPM/tA6WWj1kpvLb9BOFwnzJKJ/1Vry/+tuWO
-# M7tiX5rbV0Dp8c6ZZpCM/2pif93FSguRJuI57BlKcWOdeyFtw5yjojz6f32WapB4
-# pm3S4Zz5Hfw42JT0xqUKloakvZ4argRCg7i1gJsiOCC1JeVk7Pf0v35jWSUPei45
-# V3aicaoGig+JFrphpxHLmtgOR5qAxdDNp9DvfYPw4TtxCd9ddJgiCGHasFAeb73x
-# 4QDf5zEHpJM692VHeOj4qEir995yfmFrb3epgcunCaw5u+zGy9iCtHLNHfS4hQEe
-# gPsbiSpUObJb2sgNVZl6h3M7COaYLeqN4DMuEin1wC9UJyH3yKxO2ii4sanblrKn
-# QqLJzxlBTeCG+SqaoxFmMNO7dDJL32N79ZmKLxvHIa9Zta7cRDyXUHHXodLFVeNp
-# 3lfB0d4wwP3M5k37Db9dT+mdHhk4L7zPWAUu7w2gUDXa7wknHNWzfjUeCLraNtvT
-# X4/edIhJEqGCAs4wggI3AgEBMIH4oYHQpIHNMIHKMQswCQYDVQQGEwJVUzETMBEG
+# BgkqhkiG9w0BAQEFAASCAQBnFXG5zN2PyegQ8qANMdw9W7bblQnE5iOJVD1g/geP
+# 0oD3ecx44CdsfMLb97v8N27KlMIcafaBrjR7MWoUuh27F0o2r81XZBYWtA5ySBgo
+# ZFbXZfaEgPo46uPxT7ffN/xndipTvBf86yjj70t04urVB8/pV/5G97vTta/fzdbE
+# v7LnOK47ZU5BkFFA5BnbYwIeapgYm0bV17MVFKaY7pxWD/FYH5oJnSuyy9mUSlCE
+# D31G34kOuKNP6Bi4B+kmKYXkJ++G7gR7GIN7aCB7rjDqfOn9fnc63fsGKP+Y5DzM
+# GZlh2ZSg2KNP7qd76iClq8iPNq1LVwxrVJl4jOGvaLF4oYIW/zCCFvsGCisGAQQB
+# gjcDAwExghbrMIIW5wYJKoZIhvcNAQcCoIIW2DCCFtQCAQMxDzANBglghkgBZQME
+# AgEFADCCAVAGCyqGSIb3DQEJEAEEoIIBPwSCATswggE3AgEBBgorBgEEAYRZCgMB
+# MDEwDQYJYIZIAWUDBAIBBQAEIGFDzEAfbpgvOv8+HK5i4VKE3qi51OGaWSIs3XGy
+# wUkfAgZiFmClLxYYEjIwMjIwMzIyMTgyMzMzLjkyWjAEgAIB9KCB0KSBzTCByjEL
+# MAkGA1UEBhMCVVMxEzARBgNVBAgTCldhc2hpbmd0b24xEDAOBgNVBAcTB1JlZG1v
+# bmQxHjAcBgNVBAoTFU1pY3Jvc29mdCBDb3Jwb3JhdGlvbjElMCMGA1UECxMcTWlj
+# cm9zb2Z0IEFtZXJpY2EgT3BlcmF0aW9uczEmMCQGA1UECxMdVGhhbGVzIFRTUyBF
+# U046QUUyQy1FMzJCLTFBRkMxJTAjBgNVBAMTHE1pY3Jvc29mdCBUaW1lLVN0YW1w
+# IFNlcnZpY2WgghFXMIIHDDCCBPSgAwIBAgITMwAAAZZJW2LhL933TwABAAABljAN
+# BgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzETMBEGA1UECBMKV2FzaGluZ3Rv
+# bjEQMA4GA1UEBxMHUmVkbW9uZDEeMBwGA1UEChMVTWljcm9zb2Z0IENvcnBvcmF0
+# aW9uMSYwJAYDVQQDEx1NaWNyb3NvZnQgVGltZS1TdGFtcCBQQ0EgMjAxMDAeFw0y
+# MTEyMDIxOTA1MTNaFw0yMzAyMjgxOTA1MTNaMIHKMQswCQYDVQQGEwJVUzETMBEG
 # A1UECBMKV2FzaGluZ3RvbjEQMA4GA1UEBxMHUmVkbW9uZDEeMBwGA1UEChMVTWlj
 # cm9zb2Z0IENvcnBvcmF0aW9uMSUwIwYDVQQLExxNaWNyb3NvZnQgQW1lcmljYSBP
-# cGVyYXRpb25zMSYwJAYDVQQLEx1UaGFsZXMgVFNTIEVTTjoxMkJDLUUzQUUtNzRF
-# QjElMCMGA1UEAxMcTWljcm9zb2Z0IFRpbWUtU3RhbXAgU2VydmljZaIjCgEBMAcG
-# BSsOAwIaAxUA+nMNJAAghSaP1+UmH9+BnvMDG5mggYMwgYCkfjB8MQswCQYDVQQG
-# EwJVUzETMBEGA1UECBMKV2FzaGluZ3RvbjEQMA4GA1UEBxMHUmVkbW9uZDEeMBwG
-# A1UEChMVTWljcm9zb2Z0IENvcnBvcmF0aW9uMSYwJAYDVQQDEx1NaWNyb3NvZnQg
-# VGltZS1TdGFtcCBQQ0EgMjAxMDANBgkqhkiG9w0BAQUFAAIFAOC2SYkwIhgPMjAx
-# OTA2MjEwMjA2MDFaGA8yMDE5MDYyMjAyMDYwMVowdzA9BgorBgEEAYRZCgQBMS8w
-# LTAKAgUA4LZJiQIBADAKAgEAAgIEugIB/zAHAgEAAgIRxTAKAgUA4LebCQIBADA2
-# BgorBgEEAYRZCgQCMSgwJjAMBgorBgEEAYRZCgMCoAowCAIBAAIDB6EgoQowCAIB
-# AAIDAYagMA0GCSqGSIb3DQEBBQUAA4GBAFbO3kGSsOwyJP4e7S4wzJ4u+CqzrBSq
-# pBcpz4KyXWuFG0e1ASu89NNHOR5rnLedx2m1UIo6KqKPWPqpi5kHxFBxjIAQPGi6
-# aQDHYguxyemEkN3VfuCyS8npeNAZT7SlUwloucWk9mNskT00Hlgb1cmoXyxI6ldk
-# WsA14arXUEliMYIDDTCCAwkCAQEwgZMwfDELMAkGA1UEBhMCVVMxEzARBgNVBAgT
-# Cldhc2hpbmd0b24xEDAOBgNVBAcTB1JlZG1vbmQxHjAcBgNVBAoTFU1pY3Jvc29m
-# dCBDb3Jwb3JhdGlvbjEmMCQGA1UEAxMdTWljcm9zb2Z0IFRpbWUtU3RhbXAgUENB
-# IDIwMTACEzMAAAD4wl8z0LWPFQQAAAAAAPgwDQYJYIZIAWUDBAIBBQCgggFKMBoG
-# CSqGSIb3DQEJAzENBgsqhkiG9w0BCRABBDAvBgkqhkiG9w0BCQQxIgQgPTJcOVKn
-# 44hHUIiViKliLtG6upSfbTQ17fgCBmXBbDAwgfoGCyqGSIb3DQEJEAIvMYHqMIHn
-# MIHkMIG9BCB0JO0yGE8zWtffR/JEnox2OlsEDxZrOHB9U6eRbXOcDjCBmDCBgKR+
-# MHwxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpXYXNoaW5ndG9uMRAwDgYDVQQHEwdS
-# ZWRtb25kMR4wHAYDVQQKExVNaWNyb3NvZnQgQ29ycG9yYXRpb24xJjAkBgNVBAMT
-# HU1pY3Jvc29mdCBUaW1lLVN0YW1wIFBDQSAyMDEwAhMzAAAA+MJfM9C1jxUEAAAA
-# AAD4MCIEIGlXc+r2g1D1kLM2avAIDJ/g0K0CFBQH5L4JbPTH/LQNMA0GCSqGSIb3
-# DQEBCwUABIIBAEWXbfA5CgTM2u7NCqsywb/BlRDb9lZmWbfz7qL9KcGAEAZS7twg
-# PWcmoPHd23kfF+kaNA1QxLj06pNEfx4s1tJT6WmePF0or/BE10bhvETHVPaj2ylS
-# kuwo/z0NFaTqoZ1PtLf6YBF6aOsJsi7JBy7tGtyzvjRMcqY3OpNYMTI3IgMsv2s5
-# YfYvzaUrewsh7XJzPyPjsGsBDG9806E637v+meSBeZn6bT+sl33wwZ9WarWf4738
-# xuSo4DqlM6g2R9YusYqcVNuGoyp+yJdO3tIl0UbbwA/FAuEz9V+J7skhgsoB2LGW
-# T5wBiQ2JkrEVfHWZZwbTOFO23WRZ3TCmKXI=
+# cGVyYXRpb25zMSYwJAYDVQQLEx1UaGFsZXMgVFNTIEVTTjpBRTJDLUUzMkItMUFG
+# QzElMCMGA1UEAxMcTWljcm9zb2Z0IFRpbWUtU3RhbXAgU2VydmljZTCCAiIwDQYJ
+# KoZIhvcNAQEBBQADggIPADCCAgoCggIBANIfbBALb63+PMDqMvotkyEM0kbSe/Vx
+# Sp74fgwYrISBFlTCnViweXUhMbKLwr2uQ9EoooCLSVPyDRvUYiKmRZzyoK0TfCJv
+# Gg1HiYLKu+ASxe62dvEjWhvHxwx9rZeByEb9cEZlwW0Z3RRC9eTFRi+iR8bVPIEy
+# qchm9DYu1yYaPzqVo9E25Gh2QQztVVQ7agxIcltpM2PVvaQALyyqXK0fXOZ+tClM
+# Detk7ISbLBPjcNF+w2VeaQ0oyJbsFp82cdksYcZpymKYTh2gMy6vfKIf+oILHY87
+# ikiqQDpYsZI3zKFhq9xBlEVW2yX/H8iK4vR/E8alCZFzzibjXJq6dy942H/n/Xgy
+# qxnu6BjWLHx+Q5iAkGUuyzybI+FowDqpwQH9FZapwJ+HIBE2MJyYE0Y1d4yArJn/
+# 57dsI6VeZZ4O1UkMuY63MQMEuaSDb962ndP2E5f4uh1jB0GRjaegIMTM9ZVrzfgC
+# aQm9HrKcR4EaPqi5aJ+lfFqhsF1qxvT6v/15iv5PTTKssWfXqutNQudXORbuUvJd
+# YSi6y/Nie6Xcc8JCihBLgtjUcEpPJNJ+0ZfnpmA7PtGT56y9tyv42Mu8EHLtd6ia
+# CS7DUX9Su7uVn0BH4RBumDam8IdJqsxBAdt/UZc+GUNMfCR6yRGLPmM+NOvVbP9/
+# 70JnHmi+1MXRAgMBAAGjggE2MIIBMjAdBgNVHQ4EFgQU0t8I2SwuZa0gYSyJi4Qq
+# mtHNdLIwHwYDVR0jBBgwFoAUn6cVXQBeYl2D9OXSZacbUzUZ6XIwXwYDVR0fBFgw
+# VjBUoFKgUIZOaHR0cDovL3d3dy5taWNyb3NvZnQuY29tL3BraW9wcy9jcmwvTWlj
+# cm9zb2Z0JTIwVGltZS1TdGFtcCUyMFBDQSUyMDIwMTAoMSkuY3JsMGwGCCsGAQUF
+# BwEBBGAwXjBcBggrBgEFBQcwAoZQaHR0cDovL3d3dy5taWNyb3NvZnQuY29tL3Br
+# aW9wcy9jZXJ0cy9NaWNyb3NvZnQlMjBUaW1lLVN0YW1wJTIwUENBJTIwMjAxMCgx
+# KS5jcnQwDAYDVR0TAQH/BAIwADATBgNVHSUEDDAKBggrBgEFBQcDCDANBgkqhkiG
+# 9w0BAQsFAAOCAgEAr2ALELghVtgpVAEc/nO0lz+R+BK5twvmFNF5UTW7BJUqn3ZJ
+# 938gi8WAZBzBWUBlzwO5s6FOyGVHZ9IV8rr6xTOgw65/0i0oXubfjz5KlnjnmIhM
+# PJOASOpeFOZNO8F/IQcDqDEcbNWjnvyTZCxzupK5eY+vxmR65E0c07EVFCadRaZ1
+# M4sYmVsmr3NMf4phuclna0rnHBPZ3aKu0G7tT8Wu7MLFJuczTTLp2lhlwxQJ0u7P
+# EcSdfz96k7WdCWulROknqB6XY+/4T7iiS11fzPPRjRZ/B1A5lVufmCv/A8u8ihx4
+# oknfroADfqVtzwOjmHpNK8ltUCs261uD/UlwJPlOX2l4wSaIrVvfPmREVl9/O1R7
+# 2k1ieGKOQZpCdFNuwGpdoIIuY9T2Lg8Qdw7KHzPu3m3OM4CdBheLug0FtFeK3Pxd
+# s8rZdqw0H1BpT7TVMplGVW1iWxasOuI3vELAJzHhtSfKIcY2JXmt4iwMxsIpnuHW
+# zEshB6Dm1b8yDdHfQSfOMVXlyrxE9e+hoWPz0ukUyWYluTz4oWYfPBdyXnBL4ZXL
+# fxW6UD7fpoQzgUAMqoyNbXQUJQRVV/OcVndSUZ1JLsarIV6hcHMSq/BohbG/QFe8
+# u0099H5jE7N4Jp6IxULdzHQ+UNzP4AX9U3ZYcojzV04CYT+osmR38SmYtnMwggdx
+# MIIFWaADAgECAhMzAAAAFcXna54Cm0mZAAAAAAAVMA0GCSqGSIb3DQEBCwUAMIGI
+# MQswCQYDVQQGEwJVUzETMBEGA1UECBMKV2FzaGluZ3RvbjEQMA4GA1UEBxMHUmVk
+# bW9uZDEeMBwGA1UEChMVTWljcm9zb2Z0IENvcnBvcmF0aW9uMTIwMAYDVQQDEylN
+# aWNyb3NvZnQgUm9vdCBDZXJ0aWZpY2F0ZSBBdXRob3JpdHkgMjAxMDAeFw0yMTA5
+# MzAxODIyMjVaFw0zMDA5MzAxODMyMjVaMHwxCzAJBgNVBAYTAlVTMRMwEQYDVQQI
+# EwpXYXNoaW5ndG9uMRAwDgYDVQQHEwdSZWRtb25kMR4wHAYDVQQKExVNaWNyb3Nv
+# ZnQgQ29ycG9yYXRpb24xJjAkBgNVBAMTHU1pY3Jvc29mdCBUaW1lLVN0YW1wIFBD
+# QSAyMDEwMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA5OGmTOe0ciEL
+# eaLL1yR5vQ7VgtP97pwHB9KpbE51yMo1V/YBf2xK4OK9uT4XYDP/XE/HZveVU3Fa
+# 4n5KWv64NmeFRiMMtY0Tz3cywBAY6GB9alKDRLemjkZrBxTzxXb1hlDcwUTIcVxR
+# MTegCjhuje3XD9gmU3w5YQJ6xKr9cmmvHaus9ja+NSZk2pg7uhp7M62AW36MEByd
+# Uv626GIl3GoPz130/o5Tz9bshVZN7928jaTjkY+yOSxRnOlwaQ3KNi1wjjHINSi9
+# 47SHJMPgyY9+tVSP3PoFVZhtaDuaRr3tpK56KTesy+uDRedGbsoy1cCGMFxPLOJi
+# ss254o2I5JasAUq7vnGpF1tnYN74kpEeHT39IM9zfUGaRnXNxF803RKJ1v2lIH1+
+# /NmeRd+2ci/bfV+AutuqfjbsNkz2K26oElHovwUDo9Fzpk03dJQcNIIP8BDyt0cY
+# 7afomXw/TNuvXsLz1dhzPUNOwTM5TI4CvEJoLhDqhFFG4tG9ahhaYQFzymeiXtco
+# dgLiMxhy16cg8ML6EgrXY28MyTZki1ugpoMhXV8wdJGUlNi5UPkLiWHzNgY1GIRH
+# 29wb0f2y1BzFa/ZcUlFdEtsluq9QBXpsxREdcu+N+VLEhReTwDwV2xo3xwgVGD94
+# q0W29R6HXtqPnhZyacaue7e3PmriLq0CAwEAAaOCAd0wggHZMBIGCSsGAQQBgjcV
+# AQQFAgMBAAEwIwYJKwYBBAGCNxUCBBYEFCqnUv5kxJq+gpE8RjUpzxD/LwTuMB0G
+# A1UdDgQWBBSfpxVdAF5iXYP05dJlpxtTNRnpcjBcBgNVHSAEVTBTMFEGDCsGAQQB
+# gjdMg30BATBBMD8GCCsGAQUFBwIBFjNodHRwOi8vd3d3Lm1pY3Jvc29mdC5jb20v
+# cGtpb3BzL0RvY3MvUmVwb3NpdG9yeS5odG0wEwYDVR0lBAwwCgYIKwYBBQUHAwgw
+# GQYJKwYBBAGCNxQCBAweCgBTAHUAYgBDAEEwCwYDVR0PBAQDAgGGMA8GA1UdEwEB
+# /wQFMAMBAf8wHwYDVR0jBBgwFoAU1fZWy4/oolxiaNE9lJBb186aGMQwVgYDVR0f
+# BE8wTTBLoEmgR4ZFaHR0cDovL2NybC5taWNyb3NvZnQuY29tL3BraS9jcmwvcHJv
+# ZHVjdHMvTWljUm9vQ2VyQXV0XzIwMTAtMDYtMjMuY3JsMFoGCCsGAQUFBwEBBE4w
+# TDBKBggrBgEFBQcwAoY+aHR0cDovL3d3dy5taWNyb3NvZnQuY29tL3BraS9jZXJ0
+# cy9NaWNSb29DZXJBdXRfMjAxMC0wNi0yMy5jcnQwDQYJKoZIhvcNAQELBQADggIB
+# AJ1VffwqreEsH2cBMSRb4Z5yS/ypb+pcFLY+TkdkeLEGk5c9MTO1OdfCcTY/2mRs
+# fNB1OW27DzHkwo/7bNGhlBgi7ulmZzpTTd2YurYeeNg2LpypglYAA7AFvonoaeC6
+# Ce5732pvvinLbtg/SHUB2RjebYIM9W0jVOR4U3UkV7ndn/OOPcbzaN9l9qRWqveV
+# tihVJ9AkvUCgvxm2EhIRXT0n4ECWOKz3+SmJw7wXsFSFQrP8DJ6LGYnn8AtqgcKB
+# GUIZUnWKNsIdw2FzLixre24/LAl4FOmRsqlb30mjdAy87JGA0j3mSj5mO0+7hvoy
+# GtmW9I/2kQH2zsZ0/fZMcm8Qq3UwxTSwethQ/gpY3UA8x1RtnWN0SCyxTkctwRQE
+# cb9k+SS+c23Kjgm9swFXSVRk2XPXfx5bRAGOWhmRaw2fpCjcZxkoJLo4S5pu+yFU
+# a2pFEUep8beuyOiJXk+d0tBMdrVXVAmxaQFEfnyhYWxz/gq77EFmPWn9y8FBSX5+
+# k77L+DvktxW/tM4+pTFRhLy/AsGConsXHRWJjXD+57XQKBqJC4822rpM+Zv/Cuk0
+# +CQ1ZyvgDbjmjJnW4SLq8CdCPSWU5nR0W2rRnj7tfqAxM328y+l7vzhwRNGQ8cir
+# Ooo6CGJ/2XBjU02N7oJtpQUQwXEGahC0HVUzWLOhcGbyoYICzjCCAjcCAQEwgfih
+# gdCkgc0wgcoxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpXYXNoaW5ndG9uMRAwDgYD
+# VQQHEwdSZWRtb25kMR4wHAYDVQQKExVNaWNyb3NvZnQgQ29ycG9yYXRpb24xJTAj
+# BgNVBAsTHE1pY3Jvc29mdCBBbWVyaWNhIE9wZXJhdGlvbnMxJjAkBgNVBAsTHVRo
+# YWxlcyBUU1MgRVNOOkFFMkMtRTMyQi0xQUZDMSUwIwYDVQQDExxNaWNyb3NvZnQg
+# VGltZS1TdGFtcCBTZXJ2aWNloiMKAQEwBwYFKw4DAhoDFQDQ+iaaVVlp24q0MeCH
+# O0FkN+ZW/qCBgzCBgKR+MHwxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpXYXNoaW5n
+# dG9uMRAwDgYDVQQHEwdSZWRtb25kMR4wHAYDVQQKExVNaWNyb3NvZnQgQ29ycG9y
+# YXRpb24xJjAkBgNVBAMTHU1pY3Jvc29mdCBUaW1lLVN0YW1wIFBDQSAyMDEwMA0G
+# CSqGSIb3DQEBBQUAAgUA5eR1wzAiGA8yMDIyMDMyMzAwMjAxOVoYDzIwMjIwMzI0
+# MDAyMDE5WjB3MD0GCisGAQQBhFkKBAExLzAtMAoCBQDl5HXDAgEAMAoCAQACAgre
+# AgH/MAcCAQACAhJPMAoCBQDl5cdDAgEAMDYGCisGAQQBhFkKBAIxKDAmMAwGCisG
+# AQQBhFkKAwKgCjAIAgEAAgMHoSChCjAIAgEAAgMBhqAwDQYJKoZIhvcNAQEFBQAD
+# gYEAkACz7jB8j7I5BhmJ7N+JxB7xcI3Wvn0axJZEFnAu9rMs/pVwaI96fLN3dip4
+# 4/9BwajJFqHanNT4rX2xHAS1wxms3ET4E5+RLYORx1ztzxS9HmDp2ibGxpDNg8mz
+# GIeS2CjHJ8nGeBGDUKkS9JTtFnXUgtn9Zb9D7YIiNi0+gakxggQNMIIECQIBATCB
+# kzB8MQswCQYDVQQGEwJVUzETMBEGA1UECBMKV2FzaGluZ3RvbjEQMA4GA1UEBxMH
+# UmVkbW9uZDEeMBwGA1UEChMVTWljcm9zb2Z0IENvcnBvcmF0aW9uMSYwJAYDVQQD
+# Ex1NaWNyb3NvZnQgVGltZS1TdGFtcCBQQ0EgMjAxMAITMwAAAZZJW2LhL933TwAB
+# AAABljANBglghkgBZQMEAgEFAKCCAUowGgYJKoZIhvcNAQkDMQ0GCyqGSIb3DQEJ
+# EAEEMC8GCSqGSIb3DQEJBDEiBCDPHZEUBsi0okgk2ggu/nJJHtsv8lvMOxhtFTUk
+# Gsk7eTCB+gYLKoZIhvcNAQkQAi8xgeowgecwgeQwgb0EIHYE1gL4HTXTknZHLoJ+
+# dnQkDwl+VlBDqwukcjctsr2QMIGYMIGApH4wfDELMAkGA1UEBhMCVVMxEzARBgNV
+# BAgTCldhc2hpbmd0b24xEDAOBgNVBAcTB1JlZG1vbmQxHjAcBgNVBAoTFU1pY3Jv
+# c29mdCBDb3Jwb3JhdGlvbjEmMCQGA1UEAxMdTWljcm9zb2Z0IFRpbWUtU3RhbXAg
+# UENBIDIwMTACEzMAAAGWSVti4S/d908AAQAAAZYwIgQgQbpFo7HdFmcXEtiQnPUr
+# eFHmkhPNrJID7F635+yH0i8wDQYJKoZIhvcNAQELBQAEggIAwTMMYWLqS7girWJw
+# r4tGUu2ws/ydYF/B4eJ+3rfevnTx0m4tMln9JnSffVDMgVGc0LG0mRBE+15gdeww
+# VHSppBUAIUCxBXTAMue/spKUgl1szzAjU4Xjv4V4aq3vjh4e7Mrpumog3dhUXLHZ
+# ZZkJ/58Wf2YAGqMf9atp72PpRBrNf18gncwcySiDBPgCQZcH6dL/xebVQ1e1+uwl
+# v0Myajb7how19VjaU8QfOayiZKwi2UUf3pJwXROiF+F+2ULJsA8SZlRBrpYFp05U
+# Qtot4JjuXfJAb10bywghKvRk+FrhAAb0gPG23FIX6KoY3LFwpxP7nMb2YtXzzs1+
+# mctx918iUEoNKkeBhuQ65I5xDo2bA6+IDrCps0ja11SGwn4k9CKAiPKfk3iFhX7H
+# /Rzcd4P2JIpIDGvQMxdi+dWCHkneo6chv3/n2uKtqpNh6bQQcQF/loUhP0i02X2n
+# +1nxz+Qm6z39c72qTV+70vMoCt2NK+zn1dEBW8qZchnKsoKSDP7PmBWxLNbGzNc/
+# k1MOh6CGAuG62oia6cq1It1RGkk2dAbinoAHHYbpL+YIta0fHF2m8DEJ05KrxJTQ
+# tzMmYIfOWIR2w7cUFcEC1B1U288EFasfig9Z3SzcodgvY6a+wOA/+FLbVRIcBoUj
+# 52OmEBTIBxoLOdAaoTIko6oJRZk=
 # SIG # End signature block
