@@ -16,6 +16,7 @@ public class ExecuteRScript {
 	private RScriptExecuterInterface executer;
 	private int progressSteps;
 	private RConnection con;
+	private boolean listRObjects;
 
 	/**
 	 * Constructor to execute a job which calls the interface class of the given
@@ -28,6 +29,33 @@ public class ExecuteRScript {
 	public ExecuteRScript(RScriptExecuterInterface executer, int progressSteps) {
 		this.executer = executer;
 		this.progressSteps = progressSteps;
+		this.listRObjects = true;
+		if (RServe.isAlive()) {
+			con = RServe.getConnection();
+			if (RState.isBusy() == false) {
+				/* Notify that R is busy! */
+				RState.setBusy(true);
+				executeRScript();
+			} else {
+				System.out.println("RServer is busy. Can't execute the R script!");
+			}
+
+		}
+	}
+	
+	/**
+	 * Constructor to execute a job which calls the interface class of the given
+	 * RScriptExecuterInterface instance.
+	 * 
+	 * @param executer      a RScriptExecuterInterface class
+	 * @param progressSteps steps as integer or 'IProgressMonitor.UNKNOWN' (which
+	 *                      has value -1)
+	 *  @param listRObjects automatically list the R objects in the R-Shell view                     
+	 */
+	public ExecuteRScript(RScriptExecuterInterface executer, int progressSteps, boolean listRObjects) {
+		this.executer = executer;
+		this.progressSteps = progressSteps;
+		this.listRObjects = listRObjects;
 		if (RServe.isAlive()) {
 			con = RServe.getConnection();
 			if (RState.isBusy() == false) {
@@ -66,8 +94,10 @@ public class ExecuteRScript {
 					if (countDev > 0) {
 						RServe.closeAndDisplay();
 					}
-
-					RServeUtil.listRObjects();
+					/*List the R objects in the R-Shell view!*/
+					if (listRObjects) {
+						RServeUtil.listRObjects();
+					}
 					// BatchModel.resumeFlow();
 
 				} else {
