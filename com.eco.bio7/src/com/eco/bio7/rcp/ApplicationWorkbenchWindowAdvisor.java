@@ -364,7 +364,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		configurer.setShowCoolBar(true);
 		configurer.setShowStatusLine(true);
-		configurer.setShowFastViewBars(true);
+		//configurer.setShowFastViewBars(true);
 		configurer.setShowPerspectiveBar(true);
 		configurer.setShowProgressIndicator(true);
 		// Drag and drop support for the editor area!

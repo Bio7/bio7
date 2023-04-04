@@ -37,7 +37,7 @@ public class ScanClassPath {
 	private String pathBundle;
 	String[] bundles = new String[] { "com.eco.bio7", "com.eco.bio7.libs", "com.eco.bio7.javaedit",
 			"com.eco.bio7.image", "com.eco.bio7.WorldWind", "com.eco.bio7.scenebuilder", "com.eco.bio7.browser",
-			"Bundled_R", "com.eco.bio7.javacv" };// "org.eclipse.ui.workbench","org.eclipse.core.commands"
+			"Bundled_R", "com.eco.bio7.javacv","com.eco.bio7.deepcv" };// "org.eclipse.ui.workbench","org.eclipse.core.commands"
 
 	String[] bundlesEclipse;
 	private String OS;
@@ -318,7 +318,7 @@ public class ScanClassPath {
 				 * We only parse the plugins with the important *. jar libraries. See array
 				 * 'bundles'!
 				 */
-				if (i == 0 | i == 1 || i == 6 || i == 8) {
+				if (i == 0 | i == 1 || i == 6 || i == 8|| i == 9) {
 					for (int u = 0; u < elements.length; u++) {
 
 						/*

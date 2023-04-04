@@ -70,7 +70,8 @@ Require-Bundle: org.eclipse.ui,
  com.eco.bio7.markdownedit;bundle-version="2.5.0",
  org.eclipse.jface,
  net.sourceforge.texlipse,
- org.apache.httpcomponents.httpcore
+ org.apache.httpcomponents.httpcore,
+ com.eco.bio7.deepcv;bundle-version="1.0.0";resolution:=optional
 Eclipse-LazyStart: true
 Import-Package: org.eclipse.e4.ui.css.swt.theme
 Bundle-RequiredExecutionEnvironment: JavaSE-14
