@@ -19,9 +19,9 @@
 
 
 /* ############################## Global Styles ############################## */
-
+/*Commented out ToolItem for Bio7 to have a raised action bar and perspective switch!*/
 Composite, ScrolledComposite, ExpandableComposite, TabFolder, CLabel, Label,
-ToolItem, Sash, Group, Hyperlink, RefactoringLocationControl, Link, FilteredTree,
+/*ToolItem,*/ Sash, Group, Hyperlink, RefactoringLocationControl, Link, FilteredTree,
 ProxyEntriesComposite, NonProxyHostsComposite, DelayedFilterCheckboxTree,
 Splitter, ScrolledPageContent, ViewForm, LaunchConfigurationFilteredTree,
 ContainerSelectionGroup, BrowseCatalogItem, EncodingSettings,
