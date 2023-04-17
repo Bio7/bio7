@@ -89,7 +89,7 @@ public class SpatialView extends ViewPart {
 		parent.addControlListener(new ControlAdapter() {
 			@Override
 			public void controlResized(ControlEvent e) {
-				/* Detached views have not title! */
+				/* Detached views have no title! */
 				if (Util.getOS().equals("Mac")) {
 					boolean isDetached = parent.getShell().getText().length() == 0;
 					if (isDetached) {
