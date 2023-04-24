@@ -98,7 +98,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		storeJava.setDefault("JAVA_MODULES_PATH", path);
 		storeJava.setDefault("JAVA_MODULES",
 				"javafx.controls,javafx.base,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,javafx.web,javafx.swt");
-		storeJava.setDefault("compiler_version", 17);
+		storeJava.setDefault("compiler_version", 20);
 		storeJava.setDefault("compiler_debug", false);
 		storeJava.setDefault("compiler_verbose", false);
 		storeJava.setDefault("compiler_warnings", false);

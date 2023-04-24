@@ -37,7 +37,7 @@ public class ScanClassPath {
 	private String pathBundle;
 	String[] bundles = new String[] { "com.eco.bio7", "com.eco.bio7.libs", "com.eco.bio7.javaedit",
 			"com.eco.bio7.image", "com.eco.bio7.WorldWind", "com.eco.bio7.scenebuilder", "com.eco.bio7.browser",
-			"Bundled_R", "com.eco.bio7.javacv","com.eco.bio7.deepcv" };// "org.eclipse.ui.workbench","org.eclipse.core.commands"
+			"Bundled_R", "com.eco.bio7.javacv", "com.eco.bio7.deepcv" };// "org.eclipse.ui.workbench","org.eclipse.core.commands"
 
 	String[] bundlesEclipse;
 	private String OS;
@@ -45,13 +45,13 @@ public class ScanClassPath {
 	private void assignBundleLibs() {
 		OS = getOS();
 		String swtLibraryOS = "";
-		
+
 		if (OS.equals("Windows")) {
 
 			swtLibraryOS = "org.eclipse.swt.win32.win32.x86_64";
 
 		} else if (OS.equals("Mac")) {
-			
+
 			if (isaarch64()) {
 
 				swtLibraryOS = "org.eclipse.swt.cocoa.macosx.aarch64";
@@ -63,11 +63,11 @@ public class ScanClassPath {
 		}
 
 		else if (OS.equals("Linux")) {
-			
+
 			swtLibraryOS = "org.eclipse.swt.gtk.linux.x86_64";
 
 		}
-		/*Add all Eclipse necessary libraries*/
+		/* Add all Eclipse necessary libraries */
 		bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui",
 				"org.eclipse.swt", swtLibraryOS, "org.eclipse.draw2d", "org.eclipse.equinox.registry",
 				"org.eclipse.equinox.common", "org.eclipse.core.runtime", "org.eclipse.core.jobs",
@@ -89,39 +89,39 @@ public class ScanClassPath {
 		String pathseparator = File.pathSeparator;
 		for (int i = 0; i < bundles.length; i++) {
 			Bundle bundle = Platform.getBundle(bundles[i]);
+			if (bundle != null) {
+				URL locationUrl = FileLocator.find(bundle, new Path("/"), null);
+				URL fileUrl = null;
+				try {
+					fileUrl = FileLocator.toFileURL(locationUrl);
+				} catch (IOException e2) {
+					// TODO Auto-generated catch block
+					e2.printStackTrace();
+				}
+				pathBundle = fileUrl.getFile();
+				bundlePaths.add(pathseparator + pathBundle);
 
-			URL locationUrl = FileLocator.find(bundle, new Path("/"), null);
-			URL fileUrl = null;
-			try {
-				fileUrl = FileLocator.toFileURL(locationUrl);
-			} catch (IOException e2) {
-				// TODO Auto-generated catch block
-				e2.printStackTrace();
-			}
-			pathBundle = fileUrl.getFile();
-			bundlePaths.add(pathseparator + pathBundle);
+				ManifestElement[] elements = null;
+				String requires = (String) bundle.getHeaders().get(Constants.BUNDLE_CLASSPATH);
+				// String
+				// requireBundles=(String)bundle.getHeaders().get(Constants.REQUIRE_BUNDLE);
+				// System.out.println(requires);
 
-			ManifestElement[] elements = null;
-			String requires = (String) bundle.getHeaders().get(Constants.BUNDLE_CLASSPATH);
-			// String
-			// requireBundles=(String)bundle.getHeaders().get(Constants.REQUIRE_BUNDLE);
-			// System.out.println(requires);
+				try {
+					elements = ManifestElement.parseHeader(Constants.BUNDLE_CLASSPATH, requires);
+				} catch (BundleException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				if (elements != null) {
+					for (int u = 0; u < elements.length; u++) {
+						// System.out.println(File.pathSeparator
+						// +bundlePaths.get(i)+elements[u].getValue());
+						buf.append(pathseparator + bundlePaths.get(i) + elements[u].getValue());
 
-			try {
-				elements = ManifestElement.parseHeader(Constants.BUNDLE_CLASSPATH, requires);
-			} catch (BundleException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			if (elements != null) {
-				for (int u = 0; u < elements.length; u++) {
-					// System.out.println(File.pathSeparator
-					// +bundlePaths.get(i)+elements[u].getValue());
-					buf.append(pathseparator + bundlePaths.get(i) + elements[u].getValue());
-
+					}
 				}
 			}
-
 		}
 
 		// String platformPath =
@@ -289,64 +289,65 @@ public class ScanClassPath {
 		String pathseparator = File.pathSeparator;
 		for (int i = 0; i < bundles.length; i++) {
 			Bundle bundle = Platform.getBundle(bundles[i]);
+			if (bundle != null) {
 
-			URL locationUrl = FileLocator.find(bundle, new Path("/"), null);
-			URL fileUrl = null;
-			try {
-				fileUrl = FileLocator.toFileURL(locationUrl);
-			} catch (IOException e2) {
-				// TODO Auto-generated catch block
-				e2.printStackTrace();
-			}
-			pathBundle = fileUrl.getFile();
-			bundlePaths.add(pathseparator + pathBundle);
-			// System.out.println("2:" + File.pathSeparator + pathBundle);
-			ManifestElement[] elements = null;
-			String requires = (String) bundle.getHeaders().get(Constants.BUNDLE_CLASSPATH);
-			// String
-			// requireBundles=(String)bundle.getHeaders().get(Constants.REQUIRE_BUNDLE);
-			// System.out.println(requires);
+				URL locationUrl = FileLocator.find(bundle, new Path("/"), null);
+				URL fileUrl = null;
+				try {
+					fileUrl = FileLocator.toFileURL(locationUrl);
+				} catch (IOException e2) {
+					// TODO Auto-generated catch block
+					e2.printStackTrace();
+				}
+				pathBundle = fileUrl.getFile();
+				bundlePaths.add(pathseparator + pathBundle);
+				// System.out.println("2:" + File.pathSeparator + pathBundle);
+				ManifestElement[] elements = null;
+				String requires = (String) bundle.getHeaders().get(Constants.BUNDLE_CLASSPATH);
+				// String
+				// requireBundles=(String)bundle.getHeaders().get(Constants.REQUIRE_BUNDLE);
+				// System.out.println(requires);
 
-			try {
-				elements = ManifestElement.parseHeader(Constants.BUNDLE_CLASSPATH, requires);
-			} catch (BundleException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			if (elements != null) {
-				/*
-				 * We only parse the plugins with the important *. jar libraries. See array
-				 * 'bundles'!
-				 */
-				if (i == 0 | i == 1 || i == 6 || i == 8|| i == 9) {
-					for (int u = 0; u < elements.length; u++) {
+				try {
+					elements = ManifestElement.parseHeader(Constants.BUNDLE_CLASSPATH, requires);
+				} catch (BundleException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				if (elements != null) {
+					/*
+					 * We only parse the plugins with the important *. jar libraries. See array
+					 * 'bundles'!
+					 */
+					if (i == 0 | i == 1 || i == 6 || i == 8 || i == 9) {
+						for (int u = 0; u < elements.length; u++) {
 
-						/*
-						 * We do not need the external referenced jfxswt.jar listed here (browser plugin
-						 * with external reference is not listed!)!
-						 */
-						if (i == 0 || i == 6) {
+							/*
+							 * We do not need the external referenced jfxswt.jar listed here (browser plugin
+							 * with external reference is not listed!)!
+							 */
+							if (i == 0 || i == 6) {
 
-							String lib = pathseparator + bundlePaths.get(i) + elements[u].getValue();
-							// System.out.println(lib);
-							String external = "external";
-							if (lib.toLowerCase().contains(external.toLowerCase()) == false) {
+								String lib = pathseparator + bundlePaths.get(i) + elements[u].getValue();
 								// System.out.println(lib);
-								buf.add(lib);
+								String external = "external";
+								if (lib.toLowerCase().contains(external.toLowerCase()) == false) {
+									// System.out.println(lib);
+									buf.add(lib);
+								}
+
+							}
+
+							else {
+								// System.out.println(pathseparator + bundlePaths.get(i) +
+								// elements[u].getValue());
+								buf.add(pathseparator + bundlePaths.get(i) + elements[u].getValue());
 							}
 
 						}
-
-						else {
-							// System.out.println(pathseparator + bundlePaths.get(i) +
-							// elements[u].getValue());
-							buf.add(pathseparator + bundlePaths.get(i) + elements[u].getValue());
-						}
-
 					}
 				}
 			}
-
 		}
 
 		/*
