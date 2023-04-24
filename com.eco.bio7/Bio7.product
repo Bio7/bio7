@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Bio7" uid="3.3.0" id="com.eco.bio7.product" application="com.eco.bio7.application" version="3.3.0.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="Bio7" uid="3.4.0" id="com.eco.bio7.product" application="com.eco.bio7.application" version="3.4.0.qualifier" useFeatures="true" includeLaunchers="true" autoIncludeRequirements="true">
 
    <aboutInfo>
       <image path="/com.eco.bio7/icons/bio7app/bio7_48.png"/>
@@ -183,7 +183,7 @@ jdk/bin/javaw.exe
       <feature id="com.eco.bio7.browser.feature" installMode="root"/>
       <feature id="com.eco.bio7.core.feature"/>
       <feature id="com.eco.bio7.edit.feature" installMode="root"/>
-      <feature id="com.eco.bio7.floweditor.feature"/>
+      <feature id="com.eco.bio7.floweditor.feature" installMode="root"/>
       <feature id="com.eco.bio7.image.feature" installMode="root"/>
       <feature id="com.eco.bio7.javaedit.feature" installMode="root"/>
       <feature id="com.eco.bio7.r.feature" installMode="root"/>
@@ -212,6 +212,7 @@ jdk/bin/javaw.exe
       <feature id="com.eco.bio7.jfxswt.feature" installMode="root"/>
       <feature id="org.eclipse.nebula.widgets.grid.feature" installMode="root"/>
       <feature id="com.eco.bio7.javacv.feature" installMode="root"/>
+      <feature id="com.eco.bio7.deepcv.feature" installMode="root"/>
    </features>
 
    <configurations>
@@ -223,9 +224,10 @@ jdk/bin/javaw.exe
    </configurations>
 
    <repositories>
-      <repository location="http://download.eclipse.org/eclipse/updates/4.19" enabled="true" />
-      <repository location="http://download.eclipse.org/releases/2021-03" enabled="true" />
       <repository location="https://bio7.github.io/imagej" enabled="true" />
+      <repository location="http://download.eclipse.org/eclipse/updates/4.23" enabled="true" />
+      <repository location="http://download.eclipse.org/releases/2022-03" enabled="true" />
+      <repository location="https://bio7.github.io/reditor" enabled="true" />
    </repositories>
 
    <preferencesInfo>

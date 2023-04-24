@@ -738,7 +738,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				}
 				/*On Mac arch the option interactive crashes!*/
 				if(ApplicationWorkbenchWindowAdvisor.isArch()) {
-					args.add("--no-save");
+					args.add("--interactive");
+					//args.add("--no-save");
 				}
 				else {
 					args.add("--interactive");
