@@ -319,7 +319,7 @@ public class ScanClassPath {
 					 * We only parse the plugins with the important *. jar libraries. See array
 					 * 'bundles'!
 					 */
-					if (i == 0 | i == 1 || i == 6 || i == 8 || i == 9) {
+					if (i == 0 | i == 1 || i == 6 || i == 8 ) {
 						for (int u = 0; u < elements.length; u++) {
 
 							/*
