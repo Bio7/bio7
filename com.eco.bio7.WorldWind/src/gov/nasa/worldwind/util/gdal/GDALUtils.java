@@ -50,8 +50,8 @@ public class GDALUtils {
     protected static final AtomicBoolean gdalIsAvailable = new AtomicBoolean(false);
 
     // This is an OLD default libname request by WW build of GDAL
-    //protected static final String gdalalljni = Configuration.isMacOS()
-          //  ? "gdalalljni" : (is32bitArchitecture() ? "gdalalljni32" : "gdalalljni64");
+    protected static final String gdalalljni = Configuration.isMacOS()
+            ? "gdalalljni" : (is32bitArchitecture() ? "gdalalljni32" : "gdalalljni64");
 
     protected static final CopyOnWriteArraySet<String> loadedLibraries = new CopyOnWriteArraySet<String>();
     protected static final CopyOnWriteArraySet<String> failedLibraries = new CopyOnWriteArraySet<String>();
@@ -59,12 +59,12 @@ public class GDALUtils {
     static {
         // Allow the app or user to prevent library loader replacement.
         if (System.getProperty("gov.nasa.worldwind.prevent.gdal.loader.replacement") == null) {
-            //replaceLibraryLoader(); // This must be the first line of initialization
+            replaceLibraryLoader(); // This must be the first line of initialization
         }
         initialize();
     }
 
-    /*private static class GDALLibraryLoader implements gdal.LibraryLoader {
+    private static class GDALLibraryLoader implements gdal.LibraryLoader {
 
         @Override
         public void load(String libName) throws UnsatisfiedLinkError {
@@ -156,7 +156,7 @@ public class GDALUtils {
         }
 
         return false;
-    }*/
+    }
 
     protected static void initialize() {
         try {
@@ -164,9 +164,9 @@ public class GDALUtils {
 
             // attempt to load library from default locations
             // (current path OR by specifying java.library.path from the command line)
-            //boolean gdalNativeLibraryLoaded = gdalPreLoadNativeLibrary(false);
+            boolean gdalNativeLibraryLoaded = gdalPreLoadNativeLibrary(false);
 
-           /* if (!gdalNativeLibraryLoaded && !runningAsJavaWebStart) {
+            if (!gdalNativeLibraryLoaded && !runningAsJavaWebStart) {
                 // if we are here, library is not in any default place, so we will search in sub-folders
                 String[] folders = findGdalFolders();
                 String newJavaLibraryPath = buildPathString(folders, true);
@@ -179,7 +179,7 @@ public class GDALUtils {
                         Logging.logger().log(Level.WARNING, message, e);
                     }
                 }
-            }*/
+            }
 
             if ( /* gdalNativeLibraryLoaded && */gdalJNI.isAvailable() && gdalconstJNI.isAvailable()) {
                 if (!runningAsJavaWebStart) {

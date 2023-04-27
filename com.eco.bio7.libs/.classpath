@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="math/gdal.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jogl-all.jar"/>
 	<classpathentry exported="true" kind="lib" path="hardware/jSerialComm-2.9.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="hardware/jssc-2.9.4.jar"/>
@@ -14,7 +15,6 @@
 	<classpathentry exported="true" kind="lib" path="Excel/xmlbeans-3.1.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/Medusa-11.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="math/jts-core-1.16.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="math/gdal.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/xstream-1.4.11.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jtouchbar-1.0.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jtouchbar-javafx-1.0.0.jar"/>
