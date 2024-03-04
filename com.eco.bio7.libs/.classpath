@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="libs/hamcrest-core-1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jackson-annotations-2.16.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jackson-core-2.16.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jackson-databind-2.16.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/junit-4.10.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/Medusa-11.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jsoup-1.17.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jogl-all.jar"/>
