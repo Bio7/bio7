@@ -35,10 +35,10 @@ public class CompilerAst {
 
 	public CompilerAst(String source) {
 		Document doc = new Document(source);
-		parser = ASTParser.newParser(AST.JLS19);
+		parser = ASTParser.newParser(AST.JLS21);
 
 		Map<String, String> options = JavaCore.getOptions();
-		JavaCore.setComplianceOptions(JavaCore.VERSION_19, options);
+		JavaCore.setComplianceOptions(JavaCore.VERSION_21, options);
 		parser.setCompilerOptions(options);
 		parser.setResolveBindings(true);
 		parser.setBindingsRecovery(true);

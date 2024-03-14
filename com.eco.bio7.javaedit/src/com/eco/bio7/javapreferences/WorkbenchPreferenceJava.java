@@ -3,16 +3,11 @@ package com.eco.bio7.javapreferences;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.eclipse.jface.preference.BooleanFieldEditor;
-import org.eclipse.jface.preference.ColorFieldEditor;
+import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
-import org.eclipse.jface.preference.FontFieldEditor;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.PreferenceConverter;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import com.eco.bio7.javaeditor.Bio7EditorPlugin;
-import org.eclipse.jface.preference.ComboFieldEditor;
 
 public class WorkbenchPreferenceJava extends FieldEditorPreferencePage
 		implements IWorkbenchPreferencePage, PropertyChangeListener {
@@ -30,7 +25,7 @@ public class WorkbenchPreferenceJava extends FieldEditorPreferencePage
 		// addField(new BooleanFieldEditor("classbody", "Default parse and compile a
 		// Java file with a classbody", getFieldEditorParent()));
 		addField(new ComboFieldEditor(
-				"compiler_version", "Java Version", new String[][] {{ "19", "19" },{ "18", "18" },{ "17", "17" },{ "16", "16" },{ "15", "15" },{ "14", "14" }, { "13", "13" },{ "12", "12" },{ "11", "11" }, { "10", "10" }, { "1.9", "1.9" },
+				"compiler_version", "Java Version", new String[][] {{ "21", "21" },{ "20", "20" },{ "19", "19" },{ "18", "18" },{ "17", "17" },{ "16", "16" },{ "15", "15" },{ "14", "14" }, { "13", "13" },{ "12", "12" },{ "11", "11" }, { "10", "10" }, { "1.9", "1.9" },
 						{ "1.8", "1.8" }, { "1.7", "1.7" }, { "1.6", "1.6" }, { "1.5", "1.5" }, { "1.4", "1.4" } },
 				getFieldEditorParent()));
 		addField(new BooleanFieldEditor("compiler_debug", "Generate Debugging Information", BooleanFieldEditor.DEFAULT,
