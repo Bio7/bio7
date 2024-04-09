@@ -9,7 +9,7 @@ import org.eclipse.ui.internal.WorkbenchWindow;
 
 public class HideMainMenus extends Action {
 
-	private final IWorkbenchWindow window;
+	protected final IWorkbenchWindow window;
 
 	public HideMainMenus(String text, IWorkbenchWindow window) {
 		super(text);

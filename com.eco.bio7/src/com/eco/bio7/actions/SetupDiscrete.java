@@ -1,20 +1,16 @@
 package com.eco.bio7.actions;
 
-import java.io.File;
 import org.eclipse.jface.action.Action;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
-
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.jobs.SaveWorkspaceJob;
 import com.eco.bio7.methods.Compiled;
 
 public class SetupDiscrete extends Action {
 
-	private final IWorkbenchWindow window;
+	protected final IWorkbenchWindow window;
 
-	private SaveWorkspaceJob ab;
+	protected SaveWorkspaceJob ab;
 
 	public SetupDiscrete(String text, IWorkbenchWindow window) {
 		super(text);

@@ -7,7 +7,7 @@ import com.eco.bio7.libreoffice.LibreOfficeSendValueJob;
 
 public class OfficeSendValueAction extends Action {
 
-	private final IWorkbenchWindow window;
+	protected final IWorkbenchWindow window;
 
 	public OfficeSendValueAction(String text, IWorkbenchWindow window) {
 		super(text);

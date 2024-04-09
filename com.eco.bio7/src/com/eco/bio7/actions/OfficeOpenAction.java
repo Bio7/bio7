@@ -7,7 +7,7 @@ import com.eco.bio7.libreoffice.LibreOpenJob;
 
 public class OfficeOpenAction extends Action {
 
-	private final IWorkbenchWindow window;
+	protected final IWorkbenchWindow window;
 
 	public OfficeOpenAction(String text, IWorkbenchWindow window) {
 		super(text);

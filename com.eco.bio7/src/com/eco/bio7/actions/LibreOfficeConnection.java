@@ -7,7 +7,7 @@ import com.eco.bio7.libreoffice.LibreOfficeConnectionJob;
 
 public class LibreOfficeConnection extends Action {
 
-	private final IWorkbenchWindow window;
+	protected final IWorkbenchWindow window;
 
 	public LibreOfficeConnection(String text, IWorkbenchWindow window) {
 		

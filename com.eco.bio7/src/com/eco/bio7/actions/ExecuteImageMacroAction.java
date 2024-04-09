@@ -7,7 +7,7 @@ import com.eco.bio7.jobs.ImageMacroWorkspaceJob;
 
 public class ExecuteImageMacroAction extends Action {
 
-	private final IWorkbenchWindow window;
+	protected final IWorkbenchWindow window;
 
 	private File file;
 

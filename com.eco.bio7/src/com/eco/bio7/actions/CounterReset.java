@@ -12,7 +12,7 @@ import com.eco.bio7.time.Time;
 
 public class CounterReset extends Action {
 
-	private final IWorkbenchWindow window;
+	protected final IWorkbenchWindow window;
 
 	public CounterReset(String text, IWorkbenchWindow window) {
 		super(text);

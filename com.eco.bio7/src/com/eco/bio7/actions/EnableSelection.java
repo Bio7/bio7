@@ -9,7 +9,7 @@ import com.eco.bio7.discrete.Quad2d;
 
 public class EnableSelection extends Action {
 
-	private final IWorkbenchWindow window;
+	protected final IWorkbenchWindow window;
 
 	public EnableSelection(String text, IWorkbenchWindow window) {
 		super(text);

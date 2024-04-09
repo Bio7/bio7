@@ -13,7 +13,7 @@ import com.eco.bio7.floweditor.shapes.ShapesEditor;
 
 public class FlowStopAction extends Action {
 
-	private final IWorkbenchWindow window;
+	protected final IWorkbenchWindow window;
 
 	public FlowStopAction(String text, IWorkbenchWindow window) {
 		super(text);

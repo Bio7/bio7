@@ -16,7 +16,7 @@ import com.eco.bio7.image.PointPanel;
 
 public class ResetField extends Action implements IMenuCreator {
 
-	private final IWorkbenchWindow window;
+	protected final IWorkbenchWindow window;
 
 	private Menu fMenu;
 

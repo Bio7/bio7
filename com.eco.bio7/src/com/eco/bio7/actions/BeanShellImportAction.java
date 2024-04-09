@@ -17,7 +17,7 @@ import com.eco.bio7.compile.BeanShellInterpreter;
 
 public class BeanShellImportAction extends Action {
 
-	private final IWorkbenchWindow window;
+	protected final IWorkbenchWindow window;
 
 	public BeanShellImportAction(String text, IWorkbenchWindow window) {
 		super(text);

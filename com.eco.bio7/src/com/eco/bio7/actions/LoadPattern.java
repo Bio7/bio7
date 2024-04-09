@@ -5,17 +5,14 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
-
 import com.eco.bio7.Bio7Plugin;
-import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.jobs.LoadWorkspaceJob;
-import com.eco.bio7.methods.Compiled;
 
 public class LoadPattern extends Action {
 
 	private LoadWorkspaceJob ab;
 
-	private final IWorkbenchWindow window;
+	protected final IWorkbenchWindow window;
 
 	public LoadPattern(String text, IWorkbenchWindow window) {
 		super(text);

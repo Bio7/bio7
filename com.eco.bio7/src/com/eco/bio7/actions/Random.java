@@ -25,7 +25,7 @@ import com.eco.bio7.plot.LineChartView;
 
 public class Random extends Action implements IMenuCreator {
 
-	private final IWorkbenchWindow window;
+	protected final IWorkbenchWindow window;
 
 	private Menu fMenu;
 

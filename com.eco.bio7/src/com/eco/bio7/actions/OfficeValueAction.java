@@ -7,7 +7,7 @@ import com.eco.bio7.libreoffice.LibreOfficeValueJob;
 
 public class OfficeValueAction extends Action {
 
-	private final IWorkbenchWindow window;
+	protected final IWorkbenchWindow window;
 
 	public OfficeValueAction(String text, IWorkbenchWindow window) {
 		

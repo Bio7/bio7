@@ -30,7 +30,7 @@ import com.eco.bio7.time.Time;
 
 public class Start extends Action implements IMenuCreator {
 
-	private final IWorkbenchWindow window;
+	protected final IWorkbenchWindow window;
 
 	private Point storepointquad;
 

@@ -7,7 +7,7 @@ import org.eclipse.ui.actions.ActionFactory;
 
 public class ShowEditorAreaAction extends Action {
 
-	private final IWorkbenchWindow window;
+	protected final IWorkbenchWindow window;
 
 	public ShowEditorAreaAction(String text, IWorkbenchWindow window) {
 		super(text);

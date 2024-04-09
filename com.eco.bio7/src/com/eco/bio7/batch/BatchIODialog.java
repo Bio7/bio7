@@ -29,9 +29,9 @@ public class BatchIODialog extends Dialog {
 
 	private Text text1 = null;
 
-	private Button button1 = null;
+	protected Button button1 = null;
 
-	private static Label label5 = null;
+	protected static Label label5 = null;
 
 	private Button button2 = null;
 
@@ -45,7 +45,7 @@ public class BatchIODialog extends Dialog {
 	
 	protected static String inputDirectory;
 
-	private String fileName;
+	protected String fileName;
 
 	/**
 	 * Create the dialog.

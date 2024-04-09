@@ -9,7 +9,7 @@ import org.eclipse.ui.internal.WorkbenchWindow;
 
 public class ShowMainMenus extends Action {
 
-	private final IWorkbenchWindow window;
+	protected final IWorkbenchWindow window;
 
 	public ShowMainMenus(String text, IWorkbenchWindow window) {
 		super(text);

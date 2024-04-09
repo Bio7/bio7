@@ -18,7 +18,7 @@ import com.eco.bio7.compile.BeanShellInterpreter;
 
 public class BeanShellClearAction extends Action {
 
-	private final IWorkbenchWindow window;
+	protected final IWorkbenchWindow window;
 
 	public BeanShellClearAction(String text, IWorkbenchWindow window) {
 		super(text);

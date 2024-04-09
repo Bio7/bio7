@@ -8,7 +8,7 @@ import com.eco.bio7.batch.BatchModel;
 
 public class FlowExternalStartAction extends Action {
 
-	private final IWorkbenchWindow window;
+	protected final IWorkbenchWindow window;
 
 	public FlowExternalStartAction(String text, IWorkbenchWindow window) {
 		

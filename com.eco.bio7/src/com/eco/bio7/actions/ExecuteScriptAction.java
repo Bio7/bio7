@@ -18,7 +18,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
-
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
 import com.eco.bio7.compile.GroovyInterpreter;
 import com.eco.bio7.compile.JavaScriptInterpreter;
@@ -30,12 +29,11 @@ import com.eco.bio7.jobs.ImageMacroWorkspaceJob;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
-import com.eco.bio7.rbridge.views.RShellView;
 
 public class ExecuteScriptAction extends Action {
 
 	private File file;
-	private String text;
+	protected String text;
 
 	public ExecuteScriptAction(String text, IWorkbenchWindow window, File file) {
 		super(text);

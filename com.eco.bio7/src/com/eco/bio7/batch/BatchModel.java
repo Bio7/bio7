@@ -55,7 +55,7 @@ public class BatchModel {
 
 	private static Shape shapetemp = null;
 
-	private static List dia;
+	protected static List<?> dia;
 
 	private static String decision = "true";
 
@@ -113,8 +113,8 @@ public class BatchModel {
 
 					/* Reset all loops to the default value! */
 					a.setPropertyValue(a.LOOP_COUNT, a.getPropertyValue(a.INIT_LOOP));
-					List sourceconnectionlist = a.getSourceConnections();
-					List targetconnectionlist = a.getTargetConnections();
+					List<?> sourceconnectionlist = a.getSourceConnections();
+					List<?> targetconnectionlist = a.getTargetConnections();
 
 					/* Control if loop is connected correctly! */
 					if (targetconnectionlist.size() != 1 || sourceconnectionlist.size() != 1) {

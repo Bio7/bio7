@@ -17,7 +17,7 @@ import com.eco.bio7.util.Util;
 
 public class HideMainMenusAndFullscreen extends Action {
 
-	private final IWorkbenchWindow window;
+	protected final IWorkbenchWindow window;
 	protected boolean hiddenMenu = false;
 
 	public HideMainMenusAndFullscreen(String text, IWorkbenchWindow window) {
