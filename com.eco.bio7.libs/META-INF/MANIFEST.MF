@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Libs Plug-in
 Bundle-SymbolicName: com.eco.bio7.libs; singleton:=true
-Bundle-Version: 2.5.0
+Bundle-Version: 3.4.0
 Bundle-Activator: com.eco.bio7.libs.Activator
 Bundle-Vendor: ECO
 Require-Bundle: org.eclipse.ui,
