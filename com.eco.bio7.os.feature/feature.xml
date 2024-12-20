@@ -2,7 +2,7 @@
 <feature
       id="com.eco.bio7.os.feature"
       label="Feature"
-      version="2.5.0.qualifier"
+      version="3.4.0.qualifier"
       provider-name="ECO">
 
    <description url="http://www.example.com/description">
@@ -18,7 +18,7 @@
    </license>
 
    <requires>
-      <import plugin="com.eco.bio7.libs" version="2.5.0" match="greaterOrEqual"/>
+      <import plugin="com.eco.bio7.libs" version="3.4.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.swt"/>
    </requires>
 
@@ -26,6 +26,6 @@
          id="com.eco.bio7.os"
          download-size="0"
          install-size="0"
-         version="2.5.0.qualifier"/>
+         version="3.4.0.qualifier"/>
 
 </feature>

@@ -2,7 +2,7 @@
 <feature
       id="com.eco.bio7.themes.feature"
       label="Feature"
-      version="2.5.0.qualifier"
+      version="3.4.0.qualifier"
       provider-name="ECO">
 
    <description url="http://www.example.com/description">
@@ -25,6 +25,6 @@
          id="com.eco.bio7.themes"
          download-size="0"
          install-size="0"
-         version="2.5.0.qualifier"/>
+         version="3.4.0.qualifier"/>
 
 </feature>
