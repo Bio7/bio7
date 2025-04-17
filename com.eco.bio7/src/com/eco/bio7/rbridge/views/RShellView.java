@@ -124,7 +124,6 @@ import com.eco.bio7.compile.JavaScriptInterpreter;
 import com.eco.bio7.compile.PythonInterpreter;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
-import com.eco.bio7.documents.JavaFXWebBrowser;
 import com.eco.bio7.jobs.ImageMacroWorkspaceJob;
 import com.eco.bio7.markdownedit.editors.MarkdownEditor;
 import com.eco.bio7.preferences.PreferenceConstants;
@@ -463,13 +462,12 @@ public class RShellView extends ViewPart {
 					else if (((e.stateMask & SWT.COMMAND) == SWT.COMMAND) && (e.stateMask & SWT.SHIFT) == SWT.SHIFT
 							&& (e.stateMask & SWT.ALT) == SWT.ALT && (e.keyCode == 's')) {
 						IDocument doc = new Document();
-						String ssel[]=getListShell().getSelection();
+						String ssel[] = getListShell().getSelection();
 						String sel;
-						if(ssel.length>0) {
-							 sel=ssel[0];
-						}
-						else {
-							sel=null;
+						if (ssel.length > 0) {
+							sel = ssel[0];
+						} else {
+							sel = null;
 						}
 						new SaveFileCreateSourceTemplate(doc, 0, doc.getLength(), sel);
 						text.insert(doc.get());
@@ -765,7 +763,7 @@ public class RShellView extends ViewPart {
 
 			public void widgetSelected(SelectionEvent e) {
 
-				String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
+				
 				htmlHelpText = null;
 				if (RServe.isAliveDialog()) {
 					if (RState.isBusy() == false) {
@@ -818,7 +816,8 @@ public class RShellView extends ViewPart {
 										File file = null;
 										try {
 											URL url = FileLocator.resolve(fileURL);
-											URI uri = new URI(url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort(), url.getPath(), url.getQuery(), url.getRef());		
+											URI uri = new URI(url.getProtocol(), url.getUserInfo(), url.getHost(),
+													url.getPort(), url.getPath(), url.getQuery(), url.getRef());
 											file = new File(uri.toASCIIString());
 										} catch (URISyntaxException e1) {
 											e1.printStackTrace();
@@ -870,31 +869,16 @@ public class RShellView extends ViewPart {
 									url = pattern.replace("\\", "/");
 
 									url = pattern.replace("\\", "/");
-									if (openInJavaFXBrowser.equals("SWT_BROWSER")) {
-										Work.openView("com.eco.bio7.browser.Browser");
-										display.syncExec(new Runnable() {
 
-											public void run() {
-												BrowserView b = BrowserView.getBrowserInstance();
-												b.setLocation(url);
-											}
-										});
-									} else {
+									Work.openView("com.eco.bio7.browser.Browser");
+									display.syncExec(new Runnable() {
 
-										display.asyncExec(new Runnable() {
+										public void run() {
+											BrowserView b = BrowserView.getBrowserInstance();
+											b.setLocation(url);
+										}
+									});
 
-											public void run() {
-												JavaFXWebBrowser br = new JavaFXWebBrowser(true);
-												// br.setDarkCssIfDarkTheme(false);
-												/* Do we have a black theme? */
-												if (Util.isThemeBlack()) {
-													br.getWebEngine().setUserStyleSheetLocation("file:///" + cssPath);
-												}
-												br.createBrowser(url, "R Help");
-
-											}
-										});
-									}
 								}
 
 								monitor.done();

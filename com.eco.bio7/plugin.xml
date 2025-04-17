@@ -252,10 +252,7 @@
             id="com.eco.bio7.rbridge.debug.DebugTextView"
             name="Debug Text">
       </view>
-      <category
-            id="com.eco.bio7.scenebuilder"
-            name="SceneBuilder">
-      </category>
+      
       <view
             category="com.eco.bio7.image"
             class="com.eco.bio7.image.TransferGeometryView"
@@ -844,22 +841,6 @@
             project="false">
       </wizard>
       <wizard
-            category="com.eco.bio7.bio7groovy"
-            class="com.eco.bio7.wizards.GroovyFXWizard"
-            icon="icons/editor/groovy.png"
-            id="com.eco.bio7.groovyfx"
-            name="Groovy FX Template"
-            project="false">
-      </wizard>
-      <wizard
-            category="com.eco.bio7.bio7java"
-            class="com.eco.bio7.wizards.JavaFXBio7ClassWizard"
-            icon="icons/editor/java.png"
-            id="com.eco.bio7.javafxclass"
-            name="Java FX Template (Class)"
-            project="false">
-      </wizard>
-      <wizard
             category="com.eco.bio7.web"
             class="com.eco.bio7.wizards.HtmlPluginWizard"
             icon="icons/editor/htmlfile.png"
@@ -926,14 +907,6 @@
             id="com.eco.bio7.knitrLatexWizard"
             name="knitr Latex"
             project="false">
-      </wizard>
-      <wizard
-            category="com.eco.bio7.bio7javaproject"
-            class="com.eco.bio7.wizards.java.JavaFXBio7ClassWizard"
-            icon="icons/maintoolbar/create_project_file_java.png"
-            id="com.eco.bio7.javafxclassjdt"
-            name="Bio7 Java Project (JavaFX Model Template)"
-            project="true">
       </wizard>
       <wizard
             category="com.eco.bio7.bio7javaproject"

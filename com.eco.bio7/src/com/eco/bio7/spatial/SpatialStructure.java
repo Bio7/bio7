@@ -33,19 +33,23 @@ import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_POSITION;
 import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_SMOOTH;
 import static com.jogamp.opengl.fixedfunc.GLMatrixFunc.GL_MODELVIEW;
 import static com.jogamp.opengl.fixedfunc.GLMatrixFunc.GL_PROJECTION;
+
 import java.awt.Font;
 import java.awt.image.BufferedImage;
+
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
+
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.compile.Model;
-import com.eco.bio7.image.CanvasView;
 import com.eco.bio7.loader3d.OBJModel;
 import com.eco.bio7.methods.Compiled;
 import com.eco.bio7.spatial.preferences.Preferences3d;
 import com.jogamp.nativewindow.util.Point;
+import com.jogamp.newt.event.KeyEvent;
+import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.event.MouseEvent;
 import com.jogamp.newt.event.MouseListener;
 import com.jogamp.newt.opengl.GLWindow;
@@ -56,18 +60,12 @@ import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.glu.GLU;
-import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.awt.TextRenderer;
 import com.jogamp.opengl.util.gl2.GLUT;
+
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.WindowManager;
-import ij.gui.StackWindow;
 import ij.process.ImageProcessor;
-import javafx.application.Platform;
-
-import com.jogamp.newt.event.KeyEvent;
-import com.jogamp.newt.event.KeyListener;
 
 public class SpatialStructure implements KeyListener, MouseListener {
 	private static SpatialStructure SpatialStructureInstance = null;

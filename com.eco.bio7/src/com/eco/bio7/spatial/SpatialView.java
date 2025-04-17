@@ -213,14 +213,6 @@ public class SpatialView extends ViewPart {
 		page.addPartListener(pl);
 	}
 
-	/*
-	 * JavaFX performant?
-	 * 
-	 * top = new Composite(parent, SWT.NONE); top.setLayout(new FillLayout());
-	 * SwingFxSwtView view=new SwingFxSwtView(); canvas = spat.getCanvas();
-	 * view.embedd(top,canvas);
-	 */
-
 	public void createFullscreen(int i) {
 
 		Job job = new Job("Fullscreen") {

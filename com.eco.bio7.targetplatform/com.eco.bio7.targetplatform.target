@@ -19,52 +19,12 @@
 		<repository location="https://download.eclipse.org/texlipse/2.0.3/"/>
 		<unit id="org.eclipse.texlipse.main.feature.group" version="0.0.0"/>
 	</location>
-	<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" label="org.openjfx:javafx" missingManifest="generate" type="Maven">
+	<location includeDependencyDepth="none" includeSource="true" missingManifest="generate" type="Maven">
 		<dependencies>
 			<dependency>
-				<groupId>org.openjfx</groupId>
-				<artifactId>javafx-base</artifactId>
-				<version>21.0.3</version>
-				<type>jar</type>
-			</dependency>
-			<dependency>
-				<groupId>org.openjfx</groupId>
-				<artifactId>javafx-controls</artifactId>
-				<version>21.0.3</version>
-				<type>jar</type>
-			</dependency>
-			<dependency>
-				<groupId>org.openjfx</groupId>
-				<artifactId>javafx-fxml</artifactId>
-				<version>21.0.3</version>
-				<type>jar</type>
-			</dependency>
-			<dependency>
-				<groupId>org.openjfx</groupId>
-				<artifactId>javafx-graphics</artifactId>
-				<version>21.0.3</version>
-				<type>jar</type>
-			</dependency>
-			<dependency>
-				<groupId>org.openjfx</groupId>
-				<artifactId>javafx-swing</artifactId>
-				<version>21.0.3</version>
-				<type>jar</type>
-			</dependency>
-			<dependency>
-				<groupId>org.openjfx</groupId>
-				<artifactId>javafx-web</artifactId>
-				<version>21.0.3</version>
-				<type>jar</type>
-			</dependency>
-		</dependencies>
-	</location>
-	<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
-		<dependencies>
-			<dependency>
-				<groupId>com.tlcsdm</groupId>
-				<artifactId>javafx-swt</artifactId>
-				<version>21.0.3</version>
+				<groupId>org.apache.groovy</groupId>
+				<artifactId>groovy</artifactId>
+				<version>4.0.26</version>
 				<type>jar</type>
 			</dependency>
 		</dependencies>

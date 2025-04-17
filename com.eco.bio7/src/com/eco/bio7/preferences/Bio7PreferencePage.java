@@ -1,11 +1,5 @@
 package com.eco.bio7.preferences;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
@@ -13,7 +7,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.wb.swt.DoubleFieldEditor;
-import org.osgi.framework.Bundle;
+
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 
@@ -39,7 +33,7 @@ public class Bio7PreferencePage extends FieldEditorPreferencePage implements IWo
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new BooleanFieldEditor("SAVE_ALL_EDITORS", "Save all editors on close", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("TOUCH_BAR_MAC", "Enable Touch Bar for MacOSX", getFieldEditorParent()));
-		addField(new BooleanFieldEditor("ENABLE_SCENE_BUILDER_LINUX", "Enable SceneBuilder for Linux", getFieldEditorParent()));
+		
 		
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new LabelFieldEditor("Bio7 Console", getFieldEditorParent()));

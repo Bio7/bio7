@@ -25,10 +25,8 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.browser.BrowserView;
 import com.eco.bio7.compile.JavaScriptInterpreter;
-import com.eco.bio7.documents.JavaFXWebBrowser;
 import com.eco.bio7.image.Util;
 import com.eco.bio7.rcp.StartBio7Utils;
-import javafx.scene.web.WebEngine;
 
 public class JavaScriptInterpret extends Action {
 
@@ -46,7 +44,8 @@ public class JavaScriptInterpret extends Action {
 		if (utils != null) {
 			utils.cons.clear();
 		}
-		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+				.getActiveEditor();
 		if (editor == null) {
 			return;
 		}
@@ -61,24 +60,17 @@ public class JavaScriptInterpret extends Action {
 			boolean interpretJavascriptInBrowser = store.getBoolean("INTERPRET_JAVASCRIPT_IN_BROWSER");
 			String content = doc.get();
 			if (interpretJavascriptInBrowser) {
-				String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
-				if (openInJavaFXBrowser.equals("SWT_BROWSER")) {
-					// Work.openView("com.eco.bio7.browser.Browser");
-					Display display = Util.getDisplay();
-					display.syncExec(new Runnable() {
 
-						public void run() {
-							BrowserView b = BrowserView.getBrowserInstance();
-							Browser browser = b.getBrowser();
-							browser.execute(content);
-						}
-					});
-				}
-				JavaFXWebBrowser browser = JavaFXWebBrowser.getJavaFXWebBrowserInstance();
-				if (browser != null) {
-					WebEngine webEngine = browser.getWebEngine();
-					webEngine.executeScript(content);
-				}
+				// Work.openView("com.eco.bio7.browser.Browser");
+				Display display = Util.getDisplay();
+				display.syncExec(new Runnable() {
+
+					public void run() {
+						BrowserView b = BrowserView.getBrowserInstance();
+						Browser browser = b.getBrowser();
+						browser.execute(content);
+					}
+				});
 
 			} else {
 				JavaScriptInterpreter.interpretJob(content, null);
@@ -86,21 +78,19 @@ public class JavaScriptInterpret extends Action {
 
 		}
 
-		/*else if (file.getFileExtension().equals("ijm") || file.getFileExtension().equals("txt")) {
-			String content = doc.get();
-
-			ImageJMacroWorkspaceJob job = new ImageJMacroWorkspaceJob(content);
-
-			job.addJobChangeListener(new JobChangeAdapter() {
-				public void done(IJobChangeEvent event) {
-					if (event.getResult().isOK()) {
-
-					}
-				}
-			});
-
-			job.schedule();
-		}*/
+		/*
+		 * else if (file.getFileExtension().equals("ijm") ||
+		 * file.getFileExtension().equals("txt")) { String content = doc.get();
+		 * 
+		 * ImageJMacroWorkspaceJob job = new ImageJMacroWorkspaceJob(content);
+		 * 
+		 * job.addJobChangeListener(new JobChangeAdapter() { public void
+		 * done(IJobChangeEvent event) { if (event.getResult().isOK()) {
+		 * 
+		 * } } });
+		 * 
+		 * job.schedule(); }
+		 */
 
 	}
 

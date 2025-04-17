@@ -1,6 +1,5 @@
 package com.eco.bio7.popup.actions;
 
-import java.util.UUID;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -19,13 +18,13 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
+
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.actions.Bio7Action;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.browser.BrowserView;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.console.ConsolePageParticipant;
-import com.eco.bio7.documents.JavaFXWebBrowser;
 import com.eco.bio7.rbridge.RServe;
 
 public class StartShinyApp extends Action implements IObjectActionDelegate {
@@ -101,7 +100,7 @@ public class StartShinyApp extends Action implements IObjectActionDelegate {
 							 */
 
 							// }
-							/*Add timeout for the startup of the server!*/
+							/* Add timeout for the startup of the server! */
 							try {
 								Thread.sleep(1000);
 							} catch (InterruptedException e) {
@@ -142,28 +141,18 @@ public class StartShinyApp extends Action implements IObjectActionDelegate {
 
 			public void run() {
 
-				String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
 				/* The option for using an external Browser! */
 				boolean useInternalSWTBrowser = store.getBoolean("PDF_USE_BROWSER");
-				if (openInJavaFXBrowser.equals("SWT_BROWSER")) {
-					if (useInternalSWTBrowser == true) {
-						Work.openView("com.eco.bio7.browser.Browser");
-						BrowserView b = BrowserView.getBrowserInstance();
-						b.browser.setJavascriptEnabled(true);
-						b.setLocation("http://127.0.0.1:" + shinyPort + "");
-					} else {
-						Program.launch("http://127.0.0.1:" + shinyPort + "");
-					}
-				} else {
-					boolean openInBrowserInExtraView = store.getBoolean("OPEN_BOWSER_IN_EXTRA_VIEW");
-					if (openInBrowserInExtraView) {
-						String id = UUID.randomUUID().toString();
-						new JavaFXWebBrowser(true).createBrowser("http://127.0.0.1:" + shinyPort + "", id);
-					} else {
-						new JavaFXWebBrowser(true).createBrowser("http://127.0.0.1:" + shinyPort + "", "Display");
-					}
 
+				if (useInternalSWTBrowser == true) {
+					Work.openView("com.eco.bio7.browser.Browser");
+					BrowserView b = BrowserView.getBrowserInstance();
+					b.browser.setJavascriptEnabled(true);
+					b.setLocation("http://127.0.0.1:" + shinyPort + "");
+				} else {
+					Program.launch("http://127.0.0.1:" + shinyPort + "");
 				}
+
 			}
 		});
 	}

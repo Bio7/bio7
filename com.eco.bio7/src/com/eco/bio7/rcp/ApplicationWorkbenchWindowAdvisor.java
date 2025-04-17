@@ -291,7 +291,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 													protected IStatus run(IProgressMonitor monitor) {
 														monitor.beginTask("Recalculate classpath.....",
 																IProgressMonitor.UNKNOWN);
-														javafx.application.Platform.runLater(new Runnable() {
+														Display.getDefault().asyncExec(new Runnable() {
 															@Override
 															public void run() {
 																try {
@@ -364,7 +364,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		configurer.setShowCoolBar(true);
 		configurer.setShowStatusLine(true);
-		//configurer.setShowFastViewBars(true);
+		// configurer.setShowFastViewBars(true);
 		configurer.setShowPerspectiveBar(true);
 		configurer.setShowProgressIndicator(true);
 		// Drag and drop support for the editor area!
@@ -644,19 +644,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		}
 		store.setDefault("UPDATE_VAR_RSHELL", true);
 
-		/* Disable for HighDPI bug if necessary! */
-		// boolean isLinux = getOS().equals("Linux");
-		/*
-		 * if (isLinux) {
-		 * 
-		 * boolean sceneBuilderEnabled = store.getBoolean("ENABLE_SCENE_BUILDER_LINUX");
-		 * if (sceneBuilderEnabled) { store.setDefault("BROWSER_SELECTION",
-		 * "JAVAFX_BROWSER"); } else { store.setDefault("BROWSER_SELECTION",
-		 * "SWT_BROWSER"); } } else {
-		 */
-
 		store.setDefault("BROWSER_SELECTION", "SWT_BROWSER");
-		
+
 		// }
 
 		store.setDefault("BIO7_CONSOLE_INTERPRET_ASCII", true);
@@ -691,7 +680,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("IMPORT_R_PLOT_VIRTUAL", false);
 		store.setDefault("IMAGEJ_CREATE_SINGLE_PLOTS", false);
 
-		store.setDefault("ENABLE_JAVAFXWEBKIT_SCROLLBAR", false);
 		store.setDefault("SCROLL_TO_DOCUMENT_END", false);
 		store.setDefault("ENABLE_BROWSER_LOG", false);
 		store.setDefault("ENABLE_BROWSER_SCROLLBARS", true);
@@ -1167,7 +1155,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		/*
 		 * Important to set, see: https://bugs.eclipse.org/bugs/show_bug.cgi?id=422258
 		 */
-		javafx.application.Platform.setImplicitExit(false);
+		// Removed JavaFX: javafx.application.Platform.setImplicitExit(false);
 
 		dragDropR();
 
@@ -1333,19 +1321,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.rbridge.RPerspective",
 					configurer.getWindow());
 			/* Disable for HighDPI bug if necessary! */
-			boolean isLinux = getOS().equals("Linux");
-			if (isLinux) {
-				IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-				boolean sceneBuilderEnabled = store.getBoolean("ENABLE_SCENE_BUILDER_LINUX");
-				if (sceneBuilderEnabled) {
-					configurer.getWorkbenchConfigurer().getWorkbench()
-							.showPerspective("com.eco.bio7.browser.SceneBuilderPerspective", configurer.getWindow());
-				}
-
-			} else {
-				configurer.getWorkbenchConfigurer().getWorkbench()
-						.showPerspective("com.eco.bio7.browser.SceneBuilderPerspective", configurer.getWindow());
-			}
+			// boolean isLinux = getOS().equals("Linux");
 
 			configurer.getWorkbenchConfigurer().getWorkbench()
 					.showPerspective("com.eco.bio7.document.DocumentPerspective", configurer.getWindow());
@@ -1369,20 +1345,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			 * We use a black style if the CSS is the dark theme or the darkest dark theme!
 			 */
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-			/*
-			 * Special case for Linux HighDPI on startup. We do not want to crash the
-			 * application with JavaFX on HighDPI displays (Zoom = 200%). So we don't load
-			 * it as a workaround (See L.692 and L. 1267)!
-			 */
-			if (isLinux) {
-				boolean sceneBuilderEnabled = store.getBoolean("ENABLE_SCENE_BUILDER_LINUX");
-
-				if (sceneBuilderEnabled) {
-					setJavaFXTheme();
-				}
-			} else {
-				setJavaFXTheme();
-			}
 
 			/*
 			 * If Bio7 should be customized at startup the startup scripts have to be
@@ -1414,46 +1376,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		 * Instead of WorldWind in GDALUtils initialize we load the native libraries
 		 * here! We have no native libs for mac arch!
 		 */
-		//if (isArch == false) {
-			gdal.AllRegister();
-			ogr.RegisterAll();
-		//}
+		// if (isArch == false) {
+		gdal.AllRegister();
+		ogr.RegisterAll();
+		// }
 
-	}
-
-	public void setJavaFXTheme() {
-		if (Util.isThemeBlack()) {
-
-			Bundle bundle = Platform.getBundle("com.eco.bio7.themes");
-			URL fileURL = bundle.getEntry("javafx/ModenaBlack.css");
-
-			String path = fileURL.toExternalForm();
-
-			// System.out.println(path);
-			// javafx.application.Application.setUserAgentStylesheet(null);
-
-			javafx.application.Application.setUserAgentStylesheet(path);
-
-			themeBlack = true;
-			OpenHelpBrowserAction.isThemeBlack = true;
-
-		} else {
-
-			Bundle bundle = Platform.getBundle("com.eco.bio7.themes");
-			URL fileURL = bundle.getEntry("javafx/Bio7Default.css");
-
-			String path = fileURL.toExternalForm();
-
-			// System.out.println(path);
-			// javafx.application.Application.setUserAgentStylesheet(null);
-
-			javafx.application.Application.setUserAgentStylesheet(path);
-
-			themeBlack = false;
-			/* Set the R editor help browser in code completion popup! */
-			OpenHelpBrowserAction.isThemeBlack = false;
-
-		}
 	}
 
 	/* The listener for save events of the Java editor! */
@@ -1770,7 +1697,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	public static String getOS() {
 		return OS;
 	}
-	
+
 	public static boolean isArch() {
 		return isArch;
 	}

@@ -57,7 +57,6 @@ import com.eco.bio7.browser.BrowserView;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.console.Console;
 import com.eco.bio7.console.ConsolePageParticipant;
-import com.eco.bio7.documents.JavaFXWebBrowser;
 import com.eco.bio7.image.CanvasView;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.views.RShellView;
@@ -71,7 +70,6 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.plugin.FolderOpener;
-import javafx.scene.web.WebEngine;
 
 /**
  * This class provides methods for the communication with the Rserve
@@ -147,7 +145,7 @@ public class RServe {
 							RServe.closeAndDisplay();
 						}
 						System.out.flush();
-						/*The next calls RServeUtil.listRObjects()!*/
+						/* The next calls RServeUtil.listRObjects()! */
 						updatePackageImports();
 
 					} else {
@@ -221,7 +219,7 @@ public class RServe {
 							RServe.closeAndDisplay();
 						}
 						System.out.flush();
-						/*The next calls RServeUtil.listRObjects()!*/
+						/* The next calls RServeUtil.listRObjects()! */
 						updatePackageImports();
 
 					} else {
@@ -302,7 +300,7 @@ public class RServe {
 							RServe.closeAndDisplay();
 						}
 						System.out.flush();
-						/*The next calls RServeUtil.listRObjects()!*/
+						/* The next calls RServeUtil.listRObjects()! */
 						updatePackageImports();
 
 					} else {
@@ -354,7 +352,9 @@ public class RServe {
 		String tryend = "},error = function(e) {message(paste(\"Error: \",e$message))})";
 
 		try {
-			RServe.rout = RServe.getConnection().eval("paste(capture.output(print(" + trybegin + "(" + expression + ")" + tryend + ")),collapse=\"\\n\")").asString();
+			RServe.rout = RServe.getConnection().eval(
+					"paste(capture.output(print(" + trybegin + "(" + expression + ")" + tryend + ")),collapse=\"\\n\")")
+					.asString();
 
 		} catch (REXPMismatchException e) {
 
@@ -561,7 +561,8 @@ public class RServe {
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 			RServe.getConnection().eval("message(paste0(\"> source('\",fileroot),\"')\",sep=\"\")");
 			String options = store.getString("R_SOURCE_OPTIONS");
-			String rCommand = "" + "paste(capture.output(tryCatch(source(fileroot," + options + "),error = function(e) {message(paste0(\"\n\",e))})),collapse=\"\\n\")";
+			String rCommand = "" + "paste(capture.output(tryCatch(source(fileroot," + options
+					+ "),error = function(e) {message(paste0(\"\n\",e))})),collapse=\"\\n\")";
 			try {
 				rout = RServe.getConnection().eval(rCommand).asString();
 			} catch (REXPMismatchException e) {
@@ -606,7 +607,8 @@ public class RServe {
 
 			/* Call the custom Rscript ! */
 
-			RServe.getConnection().eval("tryCatch(source(fileroot,echo=F),error = function(e) {message(paste0(\"\n\",e))})");
+			RServe.getConnection()
+					.eval("tryCatch(source(fileroot,echo=F),error = function(e) {message(paste0(\"\n\",e))})");
 
 		} catch (RserveException e) {
 			// TODO Auto-generated catch block
@@ -717,13 +719,15 @@ public class RServe {
 			boolean useBrowser = store.getBoolean("PDF_USE_BROWSER");
 			String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
 
-			if (fileName.endsWith("pdf") || fileName.endsWith("eps") || fileName.endsWith("xfig") || fileName.endsWith("bitmap") || fileName.endsWith("pictex")) {
+			if (fileName.endsWith("pdf") || fileName.endsWith("eps") || fileName.endsWith("xfig")
+					|| fileName.endsWith("bitmap") || fileName.endsWith("pictex")) {
 
 				openPDF(plotPathR, fileName, useBrowser, openInJavaFXBrowser, true, false);
 			}
 
 			else if (fileName.endsWith("svg")) {
-				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows") || ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
+				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")
+						|| ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 					Program.launch(plotPathR + fileName);
 				} else {
 					plotLinuxSVG(plotPathR + fileName);
@@ -740,7 +744,8 @@ public class RServe {
 
 				// System.out.println(plotPathR);
 
-				File[] files = ListFilesDirectory(new File(plotPathR), new String[] { ".tiff", ".tif", ".jpg", ".jpeg", ".png", ".bmp" });
+				File[] files = ListFilesDirectory(new File(plotPathR),
+						new String[] { ".tiff", ".tif", ".jpg", ".jpeg", ".png", ".bmp" });
 				if (files != null && files.length > 0) {
 					if (ijCreateSingle) {
 
@@ -812,7 +817,7 @@ public class RServe {
 					}
 
 				}
-				/*Recalculate the JPanel layout of the ImageJ view!*/
+				/* Recalculate the JPanel layout of the ImageJ view! */
 				JPanel current = CanvasView.getCurrent();
 				if (current != null) {
 					current.doLayout();
@@ -835,133 +840,58 @@ public class RServe {
 	 *                activated again (to click multiple files- used in the Project
 	 *                Explorer!)
 	 */
-	public static void openPDF(String plotPathR, String fileName, boolean useBrowser, String openInJavaFXBrowser, boolean delete, boolean activateProjectExplorer) {
-		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		if (openInJavaFXBrowser.equals("SWT_BROWSER")) {
-			File tempFile = createTempFileFromPlot(plotPathR, fileName);
+	public static void openPDF(String plotPathR, String fileName, boolean useBrowser, String openInJavaFXBrowser,
+			boolean delete, boolean activateProjectExplorer) {
+	
+		File tempFile = createTempFileFromPlot(plotPathR, fileName);
 
-			String temp = "file:////" + tempFile;
-			String url = temp.replace("\\", "/");
-			/* Embedded in browser! */
-			if (useBrowser) {
+		String temp = "file:////" + tempFile;
+		String url = temp.replace("\\", "/");
+		/* Embedded in browser! */
+		if (useBrowser) {
 
-				// String pathBundle = getPdfjsPath();
-				Display display = Util.getDisplay();
-				display.asyncExec(new Runnable() {
-
-					public void run() {
-						Work.openView("com.eco.bio7.browser.Browser");
-
-						BrowserView b = BrowserView.getBrowserInstance();
-						b.browser.setJavascriptEnabled(true);
-						/*
-						 * System.out.println(url); boolean result =
-						 * b.browser.execute("var DEFAULT_URL ='" + url + "'");
-						 * 
-						 * System.out.println(result); b.browser.setUrl("file:///" + pathBundle + "");
-						 */
-						b.setLocation(url);
-						if (activateProjectExplorer) {
-							Work.activateView("org.eclipse.ui.navigator.ProjectExplorer");
-						}
-					}
-				});
-
-			} else {
-				/* We use an exteranl pdf device with special rules for Linux! */
-				if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows") || ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
-					Display display = Util.getDisplay();
-					display.asyncExec(new Runnable() {
-
-						public void run() {
-							Program.launch(tempFile.getAbsolutePath());
-							if (activateProjectExplorer) {
-								Work.activateView("org.eclipse.ui.navigator.ProjectExplorer");
-							}
-
-						}
-					});
-				} else {
-					plotLinux(plotPathR + fileName);
-				}
-			}
-		} else {
-
-			// FilenameUtils.removeExtension(fileName);
-
-			// boolean openInJavaFXBrowser =
-			// store.getBoolean("javafxbrowser");
-			// String temp = plotPathR + fileName;
-			// System.out.println(openInJavaFXBrowser);
-
-			File tempFile = createTempFileFromPlot(plotPathR, fileName);
-
-			// String temp = "../../../com.eco.bio7/bio7temp/tempDevicePlot.pdf";
-			String temp = "file:////" + tempFile;
-			String url = temp.replace("\\", "/");
-			String pathBundle = getPdfjsPath();
-
+			// String pathBundle = getPdfjsPath();
 			Display display = Util.getDisplay();
 			display.asyncExec(new Runnable() {
 
 				public void run() {
-					JavaFXWebBrowser br = new JavaFXWebBrowser(false);
-					WebEngine webEngine = br.getWebEngine();
-					// System.out.println("Path to PDF file: " + tempFile);
-					/* Copy path to clipboard! */
-					if (store.getBoolean("COPY_PDF_PATH_TO_CLIP")) {
-						String pathClip = tempFile.toString();
-						if (pathClip.length() > 0) {
-							Clipboard cb = new Clipboard(display);
-							TextTransfer textTransfer = TextTransfer.getInstance();
-							cb.setContents(new Object[] { pathClip }, new Transfer[] { textTransfer });
-						}
-					}
+					Work.openView("com.eco.bio7.browser.Browser");
 
+					BrowserView b = BrowserView.getBrowserInstance();
+					b.browser.setJavascriptEnabled(true);
 					/*
-					 * Here we use a simple but effective trick. We define the default variable
-					 * 'DEFAULT_URL' in JavaScript for the viewer.js (we comment the variable out
-					 * there) to load and reload local documents which won't be possible if using
-					 * the path as an argument, see: https://github.com/mozilla/pdf.js/issues/5057
+					 * System.out.println(url); boolean result =
+					 * b.browser.execute("var DEFAULT_URL ='" + url + "'");
+					 * 
+					 * System.out.println(result); b.browser.setUrl("file:///" + pathBundle + "");
 					 */
-					webEngine.executeScript("var DEFAULT_URL =\"" + url + "\"");
-
-					// System.out.println("Path to URL file: " + url);
-
-					IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-					boolean openInBrowserInExtraView = store.getBoolean("OPEN_BOWSER_IN_EXTRA_VIEW");
-					if (openInBrowserInExtraView) {
-						String id = UUID.randomUUID().toString();
-						br.createBrowser("file:///" + pathBundle + "", id);
-						// br.createBrowser("file:///" + pathBundle + "?file=" + url,id);
-					}
-
-					else {
-
-						// br.createBrowser("file:///" + pathBundle + "?file=" + url,"Display");
-
-						br.createBrowser("file:///" + pathBundle + "", "Display");
-						/*
-						 * webEngine.executeScript( "alert(pdfjsVersion);");
-						 */
-
-					}
+					b.setLocation(url);
 					if (activateProjectExplorer) {
 						Work.activateView("org.eclipse.ui.navigator.ProjectExplorer");
 					}
 				}
 			});
-			/*
-			 * Delete not if opened from embedded Bio7 editor (also when using drag and
-			 * drop)!
-			 */
-			if (delete) {
-				/* Delete file in default Bio7 temporay folder. Not the copy for pdf.js! */
-				File plotFile = new File(plotPathR + fileName);
-				plotFile.delete();
-			}
 
+		} else {
+			/* We use an exteranl pdf device with special rules for Linux! */
+			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")
+					|| ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
+				Display display = Util.getDisplay();
+				display.asyncExec(new Runnable() {
+
+					public void run() {
+						Program.launch(tempFile.getAbsolutePath());
+						if (activateProjectExplorer) {
+							Work.activateView("org.eclipse.ui.navigator.ProjectExplorer");
+						}
+
+					}
+				});
+			} else {
+				plotLinux(plotPathR + fileName);
+			}
 		}
+
 	}
 
 	private static File createTempFileFromPlot(String plotPathR, String fileName) {
@@ -1023,7 +953,8 @@ public class RServe {
 		// Filter the extension of the file.
 		FilenameFilter filter = new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2]) || name.endsWith(extensions[3]) || name.endsWith(extensions[4])
+				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2])
+						|| name.endsWith(extensions[3]) || name.endsWith(extensions[4])
 						|| name.endsWith(extensions[5]));
 			}
 		};

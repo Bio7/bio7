@@ -90,7 +90,6 @@ import com.eco.bio7.rbridge.actions.PrintExpression;
 import com.eco.bio7.rbridge.actions.SaveRWorkspace;
 import com.eco.bio7.rbridge.actions.SaveRWorkspaceAndStart;
 import com.eco.bio7.rbridge.actions.StartRServe;
-import com.eco.bio7.scenebuilder.GenerateControllerAction;
 import com.eco.bio7.time.Time;
 import com.eco.bio7.util.Util;
 
@@ -228,8 +227,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	private LatexSweaveKnitrAction knitrAction;
 
 	private RMarkdownAction markdownAction;
-
-	private GenerateControllerAction generateControllerAction;
 
 	private ClearRWorkspace clearWorkspace;
 
@@ -457,9 +454,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		markdownAction = new RMarkdownAction();
 		register(markdownAction);
-
-		generateControllerAction = new GenerateControllerAction("Generate Controller Class");
-		register(generateControllerAction);
 
 		toolbarCreateProjectAndFiles = new ToolbarCreateProjectAndFiles("Create Projects or Files", window);
 		register(toolbarCreateProjectAndFiles);

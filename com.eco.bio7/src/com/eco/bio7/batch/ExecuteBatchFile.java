@@ -55,7 +55,6 @@ import com.eco.bio7.compile.JavaScriptInterpreter;
 import com.eco.bio7.compile.PythonInterpreter;
 import com.eco.bio7.compile.RScript;
 import com.eco.bio7.console.ConsolePageParticipant;
-import com.eco.bio7.documents.JavaFXWebBrowser;
 import com.eco.bio7.floweditor.shapes.ShapesPlugin;
 import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 import com.eco.bio7.jobs.ImageFlowMacroWorkspaceJob;
@@ -143,18 +142,26 @@ public class ExecuteBatchFile {
 						String blenderArgs = store.getString("blender_args");
 						if (blenderSel.equals("pscript")) {
 
-							ConsolePageParticipant.pipeInputToConsole("\"" + path + "/blender\"" + " " + blenderArgs + " -P " + fileproper, true, true);
+							ConsolePageParticipant.pipeInputToConsole(
+									"\"" + path + "/blender\"" + " " + blenderArgs + " -P " + fileproper, true, true);
 						} else if (blenderSel.equals("interactive")) {
 
-							ConsolePageParticipant.pipeInputToConsole("\"" + path + "/blender\"" + " " + blenderArgs + " --python-console", true, true);
-							ConsolePageParticipant.pipeInputToConsole(store.getString("before_script_blender"), true, true);
-							ConsolePageParticipant.pipeInputToConsole("exec(compile(open('" + fileproper + "').read(),'" + fileproper + "', 'exec'))", true, true);
-							ConsolePageParticipant.pipeInputToConsole(store.getString("after_script_blender"), true, true);
+							ConsolePageParticipant.pipeInputToConsole(
+									"\"" + path + "/blender\"" + " " + blenderArgs + " --python-console", true, true);
+							ConsolePageParticipant.pipeInputToConsole(store.getString("before_script_blender"), true,
+									true);
+							ConsolePageParticipant.pipeInputToConsole(
+									"exec(compile(open('" + fileproper + "').read(),'" + fileproper + "', 'exec'))",
+									true, true);
+							ConsolePageParticipant.pipeInputToConsole(store.getString("after_script_blender"), true,
+									true);
 						} else {
-							ConsolePageParticipant.pipeInputToConsole("\"" + path + "/blender\"" + " " + blenderArgs, true, true);
+							ConsolePageParticipant.pipeInputToConsole("\"" + path + "/blender\"" + " " + blenderArgs,
+									true, true);
 						}
 					} else {
-						System.out.println("Please start the Shell in the Bio7 Console\n" + "to interpret the Python script in Blender!");
+						System.out.println("Please start the Shell in the Bio7 Console\n"
+								+ "to interpret the Python script in Blender!");
 					}
 				}
 
@@ -227,7 +234,8 @@ public class ExecuteBatchFile {
 		/* Executes a nested flow! */
 		else if (fileextension.equals("ecoflow")) {
 			/* At the moment only works with one component inside a child flow! */
-			IEditorPart editorstart = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+			IEditorPart editorstart = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+					.getActiveEditor();
 			IFile ifilestart = ((IFileEditorInput) editorstart.getEditorInput()).getFile();
 			BatchModel.getS().push(ifilestart);
 
@@ -453,7 +461,9 @@ public class ExecuteBatchFile {
 
 		}
 
-		else if (fileextension.equals("rhtml") || fileextension.equals("Rhtml") || fileextension.equals("Rmw") || fileextension.equals("rmw") || fileextension.equals("Rmd") || fileextension.equals("rmd") || fileextension.equals("Rst") || fileextension.equals("rst")) {
+		else if (fileextension.equals("rhtml") || fileextension.equals("Rhtml") || fileextension.equals("Rmw")
+				|| fileextension.equals("rmw") || fileextension.equals("Rmd") || fileextension.equals("rmd")
+				|| fileextension.equals("Rst") || fileextension.equals("rst")) {
 			fileprop = fileroot + fileprop;
 
 			String fileext = fileextension.replace("R", "");
@@ -501,8 +511,8 @@ public class ExecuteBatchFile {
 						Document docHtml = Jsoup.parse(docTemp);
 						/* Search for divs with the selected id! */
 						Elements contents = docHtml.select("#knitrcode"); // a
-													// with
-													// href
+						// with
+						// href
 						for (int i = 0; i < contents.size(); i++) {
 							/* Replace in the div the linebreak and page tags with text linebreak(s)! */
 							contents.get(i).select("br").append("\\n");
@@ -546,30 +556,16 @@ public class ExecuteBatchFile {
 
 					if (fileext.equals("html")) {
 
-						IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-						String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
 						final String dir2 = dir;
 						String temp = "file:///" + dir2 + "/" + theName + ".html";
 						String url = temp.replace("\\", "/");
 						System.out.println(url);
 
-						if (openInJavaFXBrowser.equals("JAVAFX_BROWSER") == false) {
-							Work.openView("com.eco.bio7.browser.Browser");
-							BrowserView b = BrowserView.getBrowserInstance();
-							b.browser.setJavascriptEnabled(true);
-							b.setLocation(url);
-						}
+						Work.openView("com.eco.bio7.browser.Browser");
+						BrowserView b = BrowserView.getBrowserInstance();
+						b.browser.setJavascriptEnabled(true);
+						b.setLocation(url);
 
-						else {
-
-							boolean openInBrowserInExtraView = store.getBoolean("OPEN_BOWSER_IN_EXTRA_VIEW");
-							if (openInBrowserInExtraView) {
-
-								new JavaFXWebBrowser(true).createBrowser(url, theName + ".html");
-							} else {
-								new JavaFXWebBrowser(true).createBrowser(url, "Display");
-							}
-						}
 						/*
 						 * Work.openView("com.eco.bio7.browser.Browser"); final String dir2 = dir;
 						 * 
@@ -693,7 +689,8 @@ public class ExecuteBatchFile {
 							boolean useBrowser = store.getBoolean("PDF_USE_BROWSER");
 							String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
 
-							RServe.openPDF(tempDirLoc + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser, true, false);
+							RServe.openPDF(tempDirLoc + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser, true,
+									false);
 
 							// Program.launch(tempDirLoc + "/" + theName + ".pdf");
 						} else {

@@ -1282,7 +1282,6 @@ Require-Bundle: org.eclipse.ui,
  com.eco.bio7.util;bundle-version="3.4.0",
  com.eco.bio7.edit;bundle-version="2.0.0",
  org.eclipse.e4.core.contexts,
- com.eco.bio7.scenebuilder;bundle-version="2.2.0",
  com.eco.bio7.ijmacro.editor;bundle-version="2.0.8",
  com.eco.bio7.os;bundle-version="3.4.0",
  org.eclipse.jdt.launching,
@@ -1292,18 +1291,15 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.draw2d,
  org.eclipse.swt,
  com.eco.bio7.themes;bundle-version="3.4.0",
- com.eco.bio7.jfxswt;bundle-version="2.0.0",
  com.eco.bio7.libs.ext;bundle-version="1.0.0";resolution:=optional,
  com.eco.bio7.javacv;bundle-version="1.4.5",
  com.eco.bio7.imagej2;bundle-version="1.0.9";resolution:=optional,
- com.eco.bio7.javafx.libs.ext;bundle-version="1.0.0";resolution:=optional,
  org.eclipse.nebula.widgets.grid;bundle-version="1.0.0",
  com.eco.bio7.markdownedit;bundle-version="3.4.0",
  org.eclipse.jface,
  net.sourceforge.texlipse,
  org.apache.httpcomponents.httpcore,
- com.eco.bio7.deepcv;bundle-version="1.0.0";resolution:=optional,
- wrapped.com.tlcsdm.javafx-swt;bundle-version="21.0.3"
+ com.eco.bio7.deepcv;bundle-version="1.0.0";resolution:=optional
 Eclipse-LazyStart: true
 Import-Package: org.eclipse.e4.ui.css.swt.theme
 Bundle-RequiredExecutionEnvironment: JavaSE-14

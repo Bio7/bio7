@@ -67,7 +67,7 @@ import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 //import com.sun.tools.javac.api.JavacTool;
 
 public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
- 
+
 	private File[] sourcePath;
 	private String optionalCharacterEncoding;
 	private boolean debuggingInfoLines;
@@ -81,7 +81,6 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 	public IWorkbenchPage pag;
 	protected IFile ifile;
 	private File[] binaryPath;
-	
 
 	/**
 	 * @see ICompilerFactory#newJavaSourceClassLoader()
@@ -91,14 +90,14 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 	}
 
 	/**
-	 * @param proj 
+	 * @param proj
 	 * @see ICompilerFactory#newJavaSourceClassLoader(ClassLoader)
 	 */
 	public JavaSourceClassLoader(ClassLoader parentClassLoader) {
 		super(parentClassLoader);
 		this.init();
 		this.pag = pag;
-	
+
 	}
 
 	private void init() {
@@ -230,23 +229,28 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 				// Compose the effective compiler options.
 				Vector<String> optionList = new Vector<String>();
 
-				if (Double.parseDouble(version) >=1.9) {
+				if (Double.parseDouble(version) >= 1.9) {
 					/*
-					 * Here we add the module paths from the preferences with the JavaFX path as
+					 * Here we add the module paths from the preferences with the given path as
 					 * default!
 					 */
 					String pathseparator = File.pathSeparator;
 					StringBuffer buf = new StringBuffer();
-					for (int j = 0; j < modulePath.length; j++) {
+					if (modulePath.length > 0) {
+						for (int j = 0; j < modulePath.length; j++) {
 
-						String modulePaths = modulePath[j];
-						modulePaths = modulePaths.replace("\\", "/");
-						String addedExtLibs = pathseparator + modulePaths;
+							String modulePaths = modulePath[j];
+							modulePaths = modulePaths.replace("\\", "/");
+							String addedExtLibs = pathseparator + modulePaths;
 
-						buf.append(addedExtLibs);
-						String path = ("--module-path=" + buf.toString());
-						optionList.addElement(path);
-						optionList.addElement("--add-modules=" + modules);
+							buf.append(addedExtLibs);
+							String string = buf.toString();
+							if (string.isEmpty() == false) {
+								String path = ("--module-path=" + string);
+								optionList.addElement(path);
+								optionList.addElement("--add-modules=" + modules);
+							}
+						}
 					}
 				}
 
@@ -258,45 +262,27 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 				optionList.addElement("-classpath");
 				/* Add the Bio7 libs etc. for the compiler! */
 				// optionList.addElement(System.getProperty("java.class.path"));
-				
-				
-				/*If we want to calculate the classpath with JDT here a template!*/
-				/*StringBuffer buf=new StringBuffer();
-				 Not Running: Can't cast IProject to IJavaProject that simple!
-				IJavaProject targetProject = (IJavaProject) proj;
-				IClasspathEntry[] resolvedClasspath = null;
-				try {
-					resolvedClasspath = targetProject.getResolvedClasspath(true);
-				} catch (JavaModelException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				
-				for (IClasspathEntry entry : resolvedClasspath) {
-				    if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
-				        IPath outputLocation = entry.getOutputLocation();
-				
-				        if (outputLocation != null) {
-				            buf.append(outputLocation.toString());
-				        }
-				        else {
-				            buf.append(entry.getPath().toString());
-				        }
-				    }
-				    else {
-				        buf.append(entry.getPath().toString());
-				    }
-				    buf.append(";");
-				}
-				
-				
-				optionList.addElement(buf.toString());
-				System.out.println(buf.toString());*/
-				
-				
-						
-				
-				
+
+				/* If we want to calculate the classpath with JDT here a template! */
+				/*
+				 * StringBuffer buf=new StringBuffer(); Not Running: Can't cast IProject to
+				 * IJavaProject that simple! IJavaProject targetProject = (IJavaProject) proj;
+				 * IClasspathEntry[] resolvedClasspath = null; try { resolvedClasspath =
+				 * targetProject.getResolvedClasspath(true); } catch (JavaModelException e) { //
+				 * TODO Auto-generated catch block e.printStackTrace(); }
+				 * 
+				 * for (IClasspathEntry entry : resolvedClasspath) { if (entry.getEntryKind() ==
+				 * IClasspathEntry.CPE_SOURCE) { IPath outputLocation =
+				 * entry.getOutputLocation();
+				 * 
+				 * if (outputLocation != null) { buf.append(outputLocation.toString()); } else {
+				 * buf.append(entry.getPath().toString()); } } else {
+				 * buf.append(entry.getPath().toString()); } buf.append(";"); }
+				 * 
+				 * 
+				 * optionList.addElement(buf.toString()); System.out.println(buf.toString());
+				 */
+
 				/* We have to format the classpath! */
 				String classpath = new ScanClassPath().scan();
 				// System.out.println(classpath);

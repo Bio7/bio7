@@ -26,8 +26,6 @@
       <import plugin="org.eclipse.ui.ide" version="3.8.1" match="greaterOrEqual"/>
       <import plugin="com.eco.bio7.edit" version="2.0.0" match="greaterOrEqual"/>
       <import plugin="com.eco.bio7.libs" version="2.0.0" match="greaterOrEqual"/>
-      <import plugin="com.eco.bio7.scenebuilder" version="2.2.0" match="greaterOrEqual"/>
-      <import plugin="com.eco.bio7.jfxswt" version="2.0.0" match="greaterOrEqual"/>
       <import plugin="com.eco.bio7.util" version="2.0.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.ui.views"/>
       <import plugin="org.eclipse.e4.ui.css.swt.theme"/>
@@ -35,8 +33,6 @@
 
    <plugin
          id="com.eco.bio7.browser"
-         download-size="0"
-         install-size="0"
          version="2.0.0"/>
 
 </feature>

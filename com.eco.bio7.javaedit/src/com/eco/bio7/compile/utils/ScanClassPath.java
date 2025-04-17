@@ -14,7 +14,6 @@ package com.eco.bio7.compile.utils;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
@@ -36,7 +35,7 @@ public class ScanClassPath {
 
 	private String pathBundle;
 	String[] bundles = new String[] { "com.eco.bio7", "com.eco.bio7.libs", "com.eco.bio7.javaedit",
-			"com.eco.bio7.image", "com.eco.bio7.WorldWind", "com.eco.bio7.scenebuilder", "com.eco.bio7.browser",
+			"com.eco.bio7.image", "com.eco.bio7.WorldWind", "com.eco.bio7.browser",
 			"Bundled_R", "com.eco.bio7.javacv", "com.eco.bio7.deepcv" };// "org.eclipse.ui.workbench","org.eclipse.core.commands"
 
 	String[] bundlesEclipse;
@@ -129,32 +128,36 @@ public class ScanClassPath {
 		String modulePath = store.getString("JAVA_MODULES_PATH");
 		modulePath = modulePath.replace(";", "");
 		if (Util.isMac()) {
-			buf.append(":" + pathseparator + modulePath + "/javafx.base.jar:");
-			buf.append(modulePath + "/javafx.controls.jar:");
-			buf.append(modulePath + "/javafx.fxml.jar:");
-			buf.append(modulePath + "/javafx.graphics.jar:");
-			buf.append(modulePath + "/javafx.media.jar:");
-			buf.append(modulePath + "/javafx.swing.jar:");
-			buf.append(modulePath + "/javafx.web.jar:");
-			buf.append(modulePath + "/javafx-swt.jar:");
+			/*
+			 * buf.append(":" + pathseparator + modulePath + "/javafx.base.jar:");
+			 * buf.append(modulePath + "/javafx.controls.jar:"); buf.append(modulePath +
+			 * "/javafx.fxml.jar:"); buf.append(modulePath + "/javafx.graphics.jar:");
+			 * buf.append(modulePath + "/javafx.media.jar:"); buf.append(modulePath +
+			 * "/javafx.swing.jar:"); buf.append(modulePath + "/javafx.web.jar:");
+			 * buf.append(modulePath + "/javafx-swt.jar:");
+			 */
 		} else if (Util.isWindows()) {
-			buf.append(";" + pathseparator + modulePath + "/javafx.base.jar;");
-			buf.append(pathseparator + modulePath + "/javafx.controls.jar;");
-			buf.append(pathseparator + modulePath + "/javafx.fxml.jar;");
-			buf.append(pathseparator + modulePath + "/javafx.graphics.jar;");
-			buf.append(pathseparator + modulePath + "/javafx.media.jar;");
-			buf.append(pathseparator + modulePath + "/javafx.swing.jar;");
-			buf.append(pathseparator + modulePath + "/javafx.web.jar;");
-			buf.append(pathseparator + modulePath + "/javafx-swt.jar;");
+			/*
+			 * buf.append(";" + pathseparator + modulePath + "/javafx.base.jar;");
+			 * buf.append(pathseparator + modulePath + "/javafx.controls.jar;");
+			 * buf.append(pathseparator + modulePath + "/javafx.fxml.jar;");
+			 * buf.append(pathseparator + modulePath + "/javafx.graphics.jar;");
+			 * buf.append(pathseparator + modulePath + "/javafx.media.jar;");
+			 * buf.append(pathseparator + modulePath + "/javafx.swing.jar;");
+			 * buf.append(pathseparator + modulePath + "/javafx.web.jar;");
+			 * buf.append(pathseparator + modulePath + "/javafx-swt.jar;");
+			 */
 		} else {
-			buf.append(":" + pathseparator + modulePath + "/javafx.base.jar:");
-			buf.append(pathseparator + modulePath + "/javafx.controls.jar:");
-			buf.append(pathseparator + modulePath + "/javafx.fxml.jar:");
-			buf.append(pathseparator + modulePath + "/javafx.graphics.jar:");
-			buf.append(pathseparator + modulePath + "/javafx.media.jar:");
-			buf.append(pathseparator + modulePath + "/javafx.swing.jar:");
-			buf.append(pathseparator + modulePath + "/javafx.web.jar:");
-			buf.append(pathseparator + modulePath + "/javafx-swt.jar:");
+			/*
+			 * buf.append(":" + pathseparator + modulePath + "/javafx.base.jar:");
+			 * buf.append(pathseparator + modulePath + "/javafx.controls.jar:");
+			 * buf.append(pathseparator + modulePath + "/javafx.fxml.jar:");
+			 * buf.append(pathseparator + modulePath + "/javafx.graphics.jar:");
+			 * buf.append(pathseparator + modulePath + "/javafx.media.jar:");
+			 * buf.append(pathseparator + modulePath + "/javafx.swing.jar:");
+			 * buf.append(pathseparator + modulePath + "/javafx.web.jar:");
+			 * buf.append(pathseparator + modulePath + "/javafx-swt.jar:");
+			 */
 
 		}
 
@@ -250,7 +253,7 @@ public class ScanClassPath {
 		buf.append(pathseparator + bundlePaths.get(2) + "/bin");
 		buf.append(pathseparator + bundlePaths.get(3) + "/bin");
 		buf.append(pathseparator + bundlePaths.get(4) + "/bin");
-		buf.append(pathseparator + bundlePaths.get(7) + "/bin");
+		buf.append(pathseparator + bundlePaths.get(6) + "/bin");
 
 		// buf.append(File.pathSeparator+Platform.getInstallLocation().getURL().getPath()+"plugins/org.eclipse.ui.workbench_3.7.0.I20110519-0100.jar");
 		// buf.append(File.pathSeparator+Platform.getInstallLocation().getURL().getPath()+"/plugins/org.eclipse.core.commands_3.6.0.I20110111-0800.jar");
@@ -319,14 +322,14 @@ public class ScanClassPath {
 					 * We only parse the plugins with the important *. jar libraries. See array
 					 * 'bundles'!
 					 */
-					if (i == 0 | i == 1 || i == 6 || i == 8 ) {
+					if (i == 0 | i == 1 || i == 5 || i == 7 ) {
 						for (int u = 0; u < elements.length; u++) {
 
 							/*
 							 * We do not need the external referenced jfxswt.jar listed here (browser plugin
 							 * with external reference is not listed!)!
 							 */
-							if (i == 0 || i == 6) {
+							if (i == 0 || i == 5) {
 
 								String lib = pathseparator + bundlePaths.get(i) + elements[u].getValue();
 								// System.out.println(lib);
@@ -429,39 +432,36 @@ public class ScanClassPath {
 		buf.add(pathseparator + bundlePaths.get(2) + "/bin");
 		buf.add(pathseparator + bundlePaths.get(3) + "/bin");
 		buf.add(pathseparator + bundlePaths.get(4) + "/bin");
-		buf.add(pathseparator + bundlePaths.get(7) + "/bin");
-		String modulePath = store.getString("JAVA_MODULES_PATH");
-		modulePath = modulePath.replace(";", "");
+		buf.add(pathseparator + bundlePaths.get(6) + "/bin");
+		//String modulePath = store.getString("JAVA_MODULES_PATH");
+		//modulePath = modulePath.replace(";", "");
 		// String platformPath =
 		// Platform.getInstallLocation().getURL().getPath().replace("\\", "/");
 		if (Util.isWindows()) {
-			buf.add(";" + pathseparator + modulePath + "/javafx.base.jar;");
-			buf.add(pathseparator + modulePath + "/javafx.controls.jar;");
-			buf.add(pathseparator + modulePath + "/javafx.fxml.jar;");
-			buf.add(pathseparator + modulePath + "/javafx.graphics.jar;");
-			buf.add(pathseparator + modulePath + "/javafx.media.jar;");
-			buf.add(pathseparator + modulePath + "/javafx.swing.jar;");
-			buf.add(pathseparator + modulePath + "/javafx.web.jar;");
-			buf.add(pathseparator + modulePath + "/javafx-swt.jar;");
+			
+			 // buf.add(";" + pathseparator + modulePath);
+			 
 
 		} else if (Util.isMac()) {
-			buf.add(":" + pathseparator + modulePath + "/javafx.base.jar:");
-			buf.add(modulePath + "/javafx.controls.jar:");
-			buf.add(modulePath + "/javafx.fxml.jar:");
-			buf.add(modulePath + "/javafx.graphics.jar:");
-			buf.add(modulePath + "/javafx.media.jar:");
-			buf.add(modulePath + "/javafx.swing.jar:");
-			buf.add(modulePath + "/javafx.web.jar:");
-			buf.add(modulePath + "/javafx-swt.jar:");
+			/*
+			 * buf.add(":" + pathseparator + modulePath + "/javafx.base.jar:");
+			 * buf.add(modulePath + "/javafx.controls.jar:"); buf.add(modulePath +
+			 * "/javafx.fxml.jar:"); buf.add(modulePath + "/javafx.graphics.jar:");
+			 * buf.add(modulePath + "/javafx.media.jar:"); buf.add(modulePath +
+			 * "/javafx.swing.jar:"); buf.add(modulePath + "/javafx.web.jar:");
+			 * buf.add(modulePath + "/javafx-swt.jar:");
+			 */
 		} else {// Linux!
-			buf.add(":" + pathseparator + modulePath + "/javafx.base.jar:");
-			buf.add(pathseparator + modulePath + "/javafx.controls.jar:");
-			buf.add(pathseparator + modulePath + "/javafx.fxml.jar:");
-			buf.add(pathseparator + modulePath + "/javafx.graphics.jar:");
-			buf.add(pathseparator + modulePath + "/javafx.media.jar:");
-			buf.add(pathseparator + modulePath + "/javafx.swing.jar:");
-			buf.add(pathseparator + modulePath + "/javafx.web.jar:");
-			buf.add(pathseparator + modulePath + "/javafx-swt.jar:");
+			/*
+			 * buf.add(":" + pathseparator + modulePath + "/javafx.base.jar:");
+			 * buf.add(pathseparator + modulePath + "/javafx.controls.jar:");
+			 * buf.add(pathseparator + modulePath + "/javafx.fxml.jar:");
+			 * buf.add(pathseparator + modulePath + "/javafx.graphics.jar:");
+			 * buf.add(pathseparator + modulePath + "/javafx.media.jar:");
+			 * buf.add(pathseparator + modulePath + "/javafx.swing.jar:");
+			 * buf.add(pathseparator + modulePath + "/javafx.web.jar:");
+			 * buf.add(pathseparator + modulePath + "/javafx-swt.jar:");
+			 */
 
 		}
 		/*
@@ -502,7 +502,7 @@ public class ScanClassPath {
 				}
 				/* With WorldWind plugin source! */
 				else if (k == (temp + 4)) {
-					String pathSr = pathseparator + bundlePaths.get(7) + "/src";
+					String pathSr = pathseparator + bundlePaths.get(6) + "/src";
 					String pathSrc = pathSr.replace(";", "");
 
 					entries[k] = JavaCore.newLibraryEntry(new Path(rep), new Path(pathSrc), null, false);
@@ -548,7 +548,7 @@ public class ScanClassPath {
 				}
 				/* With WorldWind plugin source! */
 				else if (k == (temp + 4)) {
-					String pathSr = pathseparator + bundlePaths.get(7) + "/src";
+					String pathSr = pathseparator + bundlePaths.get(6) + "/src";
 					String pathSrc = pathSr.replace("::", "");
 
 					entries[k] = JavaCore.newLibraryEntry(new Path(rep), new Path(pathSrc), null, false);

@@ -66,7 +66,6 @@ import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.browser.BrowserView;
 import com.eco.bio7.collection.Work;
-import com.eco.bio7.documents.JavaFXWebBrowser;
 import com.eco.bio7.rbridge.InstallRPackagesJob;
 import com.eco.bio7.rbridge.ListRPackagesJob;
 import com.eco.bio7.rbridge.LoadRLibrarysJob;
@@ -176,55 +175,42 @@ public class PackageInstallView extends ViewPart {
 						String text = allPackagesList.getItem(selection[0]);
 						if (text.isEmpty() == false) {
 							IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-							String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
+						
 							String installPackagesDescritpionUrl = store.getString("INSTALL_R_PACKAGES_DESCRPTION_URL");
 							String packageInfoSite = installPackagesDescritpionUrl + text + "/index.html";
-							if (openInJavaFXBrowser.equals("SWT_BROWSER")) {
-								Display display = Util.getDisplay();
-								display.asyncExec(new Runnable() {
 
-									public void run() {
+							Display display = Util.getDisplay();
+							display.asyncExec(new Runnable() {
 
-										Work.openView("com.eco.bio7.browser.Browser");
-										if (ApplicationWorkbenchWindowAdvisor.isThemeBlack()) { //
+								public void run() {
 
-											org.jsoup.nodes.Document document = null;
-											try {
-												document = Jsoup.connect(packageInfoSite).get();
-											} catch (IOException e) {
-												// TODO Auto-generated catch block
-												e.printStackTrace();
-											}
+									Work.openView("com.eco.bio7.browser.Browser");
+									if (ApplicationWorkbenchWindowAdvisor.isThemeBlack()) { //
 
-											Elements links = document.select("body");
-											links.attr("style", "background: #252525; color: #CCCCCC;");
-											Elements a = document.select("a");
-											a.attr("style", "background: #252525;color: #FFFFFF;");
-											String html = document.html();
-											BrowserView b = BrowserView.getBrowserInstance();
-											b.browser.setText(html, true);
-
-										} else {
-											BrowserView b = BrowserView.getBrowserInstance();
-											b.setLocation(packageInfoSite);
+										org.jsoup.nodes.Document document = null;
+										try {
+											document = Jsoup.connect(packageInfoSite).get();
+										} catch (IOException e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
 										}
 
+										Elements links = document.select("body");
+										links.attr("style", "background: #252525; color: #CCCCCC;");
+										Elements a = document.select("a");
+										a.attr("style", "background: #252525;color: #FFFFFF;");
+										String html = document.html();
+										BrowserView b = BrowserView.getBrowserInstance();
+										b.browser.setText(html, true);
+
+									} else {
+										BrowserView b = BrowserView.getBrowserInstance();
+										b.setLocation(packageInfoSite);
 									}
-								});
-							}
 
-							else {
-								Display display = Util.getDisplay();
-								display.asyncExec(new Runnable() {
+								}
+							});
 
-									public void run() {
-										JavaFXWebBrowser br = new JavaFXWebBrowser(true);
-										br.setDarkCssIfDarkTheme(true);
-										br.createBrowser(packageInfoSite, "R Package Description");
-
-									}
-								});
-							}
 						}
 					}
 
@@ -544,55 +530,42 @@ public class PackageInstallView extends ViewPart {
 						String text = allInstalledPackagesList.getItem(selection[0]).getText(0);
 						if (text.isEmpty() == false) {
 							IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-							String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
+							
 							String installPackagesDescritpionUrl = store.getString("INSTALL_R_PACKAGES_DESCRPTION_URL");
 							String packageInfoSite = installPackagesDescritpionUrl + text + "/index.html";
-							if (openInJavaFXBrowser.equals("SWT_BROWSER")) {
-								Display display = Util.getDisplay();
-								display.asyncExec(new Runnable() {
 
-									public void run() {
+							Display display = Util.getDisplay();
+							display.asyncExec(new Runnable() {
 
-										Work.openView("com.eco.bio7.browser.Browser");
-										if (ApplicationWorkbenchWindowAdvisor.isThemeBlack()) { //
+								public void run() {
 
-											org.jsoup.nodes.Document document = null;
-											try {
-												document = Jsoup.connect(packageInfoSite).get();
-											} catch (IOException e) {
-												// TODO Auto-generated catch block
-												e.printStackTrace();
-											}
+									Work.openView("com.eco.bio7.browser.Browser");
+									if (ApplicationWorkbenchWindowAdvisor.isThemeBlack()) { //
 
-											Elements links = document.select("body");
-											links.attr("style", "background: #252525; color: #CCCCCC;");
-											Elements a = document.select("a");
-											a.attr("style", "background: #252525;color: #FFFFFF;");
-											String html = document.html();
-											BrowserView b = BrowserView.getBrowserInstance();
-											b.browser.setText(html, true);
-
-										} else {
-											BrowserView b = BrowserView.getBrowserInstance();
-											b.setLocation(packageInfoSite);
+										org.jsoup.nodes.Document document = null;
+										try {
+											document = Jsoup.connect(packageInfoSite).get();
+										} catch (IOException e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
 										}
 
+										Elements links = document.select("body");
+										links.attr("style", "background: #252525; color: #CCCCCC;");
+										Elements a = document.select("a");
+										a.attr("style", "background: #252525;color: #FFFFFF;");
+										String html = document.html();
+										BrowserView b = BrowserView.getBrowserInstance();
+										b.browser.setText(html, true);
+
+									} else {
+										BrowserView b = BrowserView.getBrowserInstance();
+										b.setLocation(packageInfoSite);
 									}
-								});
-							}
 
-							else {
-								Display display = Util.getDisplay();
-								display.asyncExec(new Runnable() {
+								}
+							});
 
-									public void run() {
-										JavaFXWebBrowser br = new JavaFXWebBrowser(true);
-										br.setDarkCssIfDarkTheme(true);
-										br.createBrowser(packageInfoSite, "R Package Description");
-
-									}
-								});
-							}
 						}
 					}
 
@@ -828,13 +801,15 @@ public class PackageInstallView extends ViewPart {
 								text = text.substring(0, ind - 1);
 							}
 							try {
-								String evalHead = "tryCatch({class(" + text + ")},error=function(error_message) {return(\"Dataset not available!\")})";
+								String evalHead = "tryCatch({class(" + text
+										+ ")},error=function(error_message) {return(\"Dataset not available!\")})";
 								head = RServeUtil.fromR(evalHead).asString();
-								String evalStr = "try(capture.output(tryCatch({str(" + text + ")},error=function(error_message) {return(\"Load data first!\")})))";
+								String evalStr = "try(capture.output(tryCatch({str(" + text
+										+ ")},error=function(error_message) {return(\"Load data first!\")})))";
 								str = RServeUtil.fromR(evalStr).asString();
 							} catch (REXPMismatchException e1) {
 								// TODO Auto-generated catch block
-								
+
 								e1.printStackTrace();
 							}
 
@@ -993,7 +968,7 @@ public class PackageInstallView extends ViewPart {
 	 * Initialize the menu.
 	 */
 	private void initializeMenu() {
-		//IMenuManager menuManager = getViewSite().getActionBars().getMenuManager();
+		// IMenuManager menuManager = getViewSite().getActionBars().getMenuManager();
 	}
 
 	@Override

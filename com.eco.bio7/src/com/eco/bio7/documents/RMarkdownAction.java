@@ -78,7 +78,8 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 			utils.cons.clear();
 		}
 		// String project = null;
-		ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().getSelection();
+		ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService()
+				.getSelection();
 		IStructuredSelection strucSelection = null;
 		if (selection instanceof IStructuredSelection) {
 			strucSelection = (IStructuredSelection) selection;
@@ -101,7 +102,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 	}
 
 	public void run() {
-		
+
 		if (RServe.isAliveDialog() == false) {
 			return;
 		}
@@ -142,7 +143,8 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 			String title = StringUtils.substringBetween(doc.get(), "---", "---");
 			String sub = title.substring(title.lastIndexOf("output:") + 7);
 
-			if (sub.contains("html_document") || sub.contains("ioslides_presentation") || sub.contains("slidy_presentation")) {
+			if (sub.contains("html_document") || sub.contains("ioslides_presentation")
+					|| sub.contains("slidy_presentation")) {
 
 				docType = "Html";
 
@@ -232,32 +234,21 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 									String temp = "file:///" + dirPath + "/" + theName + ".html";
 									String url = temp.replace("\\", "/");
 									IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-									String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
+
 									/* The option for using an external Browser! */
 									boolean useInternalSWTBrowser = store.getBoolean("PDF_USE_BROWSER");
-									if (openInJavaFXBrowser.equals("JAVAFX_BROWSER") == false) {
-										if (useInternalSWTBrowser == true) {
-											Work.openView("com.eco.bio7.browser.Browser");
-											BrowserView b = BrowserView.getBrowserInstance();
-											b.browser.setJavascriptEnabled(true);
-											b.setLocation(url);
-										} else {
 
-											Program.launch(url);
+									if (useInternalSWTBrowser == true) {
+										Work.openView("com.eco.bio7.browser.Browser");
+										BrowserView b = BrowserView.getBrowserInstance();
+										b.browser.setJavascriptEnabled(true);
+										b.setLocation(url);
+									} else {
 
-										}
+										Program.launch(url);
+
 									}
 
-									else {
-
-										boolean openInBrowserInExtraView = store.getBoolean("OPEN_BOWSER_IN_EXTRA_VIEW");
-										if (openInBrowserInExtraView) {
-
-											new JavaFXWebBrowser(true).createBrowser(url, theName + ".html");
-										} else {
-											new JavaFXWebBrowser(true).createBrowser(url, "Display");
-										}
-									}
 								}
 							});
 
@@ -278,11 +269,13 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 									File fil = new File(dirPath + "/" + theName + ".pdf");
 									if (fil.exists()) {
 
-										RServe.openPDF(dirPath + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser, true, false);
+										RServe.openPDF(dirPath + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser,
+												true, false);
 
 										// Program.launch(dirPath + "/" + theName + ".pdf");
 									} else {
-										Bio7Dialog.message("*.pdf file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
+										Bio7Dialog.message(
+												"*.pdf file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
 									}
 
 									IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
@@ -313,7 +306,8 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 										if (fil.exists()) {
 											Program.launch(dirPath + "/" + theName + ".docx");
 										} else {
-											Bio7Dialog.message("*.docx file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
+											Bio7Dialog.message(
+													"*.docx file was not created.\nPlease check the error messages!\nProbably an empty space in the file path caused the error!");
 										}
 
 										IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="libs/jericho-html-3.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/mxparser-1.2.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/xstream-1.4.20.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/hamcrest-core-1.1.jar"/>

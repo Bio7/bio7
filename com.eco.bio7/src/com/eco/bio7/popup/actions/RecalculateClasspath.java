@@ -22,6 +22,7 @@ import org.eclipse.jdt.launching.VMStandin;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
@@ -51,7 +52,7 @@ public class RecalculateClasspath implements IObjectActionDelegate {
 				if (project != null) {
 					try {
 						if (project.hasNature(JavaCore.NATURE_ID)) {
-							javafx.application.Platform.runLater(new Runnable() {
+							Display.getDefault().asyncExec(new Runnable() {
 								@Override
 								public void run() {
 									recalculateClasspath(project);
@@ -87,6 +88,8 @@ public class RecalculateClasspath implements IObjectActionDelegate {
 		vmStandin.setName("Bio7 Bundled OpenJDK");
 
 		String path = Platform.getInstallLocation().getURL().getPath();
+		
+		System.out.println(path);
 		/* Extra path for the different MacOSX installation paths! */
 		String OS = ApplicationWorkbenchWindowAdvisor.getOS();
 		if (OS.equals("Mac")) {

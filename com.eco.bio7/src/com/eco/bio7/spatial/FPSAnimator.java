@@ -49,7 +49,6 @@ import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLException;
 import com.jogamp.opengl.util.AnimatorBase;
 
-import javafx.application.Platform;
 
 import com.jogamp.common.ExceptionUtils;
 

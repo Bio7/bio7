@@ -4,10 +4,6 @@ import java.util.List;
 import java.util.Stack;
 import java.util.Vector;
 
-import net.htmlparser.jericho.Element;
-import net.htmlparser.jericho.OutputDocument;
-import net.htmlparser.jericho.Source;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -19,13 +15,11 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Node;
-import org.jsoup.nodes.TextNode;
-import org.jsoup.select.NodeVisitor;
 
 import com.eco.bio7.browser.editor.outline.HTMLEditorOutlineNode;
+
+import net.htmlparser.jericho.Element;
+import net.htmlparser.jericho.Source;
 
 //import com.eco.bio7.browser.BrowserEditorNewView;
 
