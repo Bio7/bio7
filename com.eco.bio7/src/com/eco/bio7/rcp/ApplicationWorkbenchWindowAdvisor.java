@@ -1376,10 +1376,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		 * Instead of WorldWind in GDALUtils initialize we load the native libraries
 		 * here! We have no native libs for mac arch!
 		 */
-		// if (isArch == false) {
-		gdal.AllRegister();
-		ogr.RegisterAll();
-		// }
+		if (isArch == false) {
+			gdal.AllRegister();
+			ogr.RegisterAll();
+		}
 
 	}
 

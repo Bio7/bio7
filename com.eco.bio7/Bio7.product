@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Bio7" uid="3.4.0" id="com.eco.bio7.product" application="com.eco.bio7.application" version="3.4.0.qualifier" useFeatures="true" includeLaunchers="true" autoIncludeRequirements="true">
+<product name="Bio7" uid="3.4.0" id="com.eco.bio7.product" application="com.eco.bio7.application" version="3.4.0.qualifier" type="features" includeLaunchers="true" autoIncludeRequirements="true">
 
    <aboutInfo>
       <image path="/com.eco.bio7/icons/bio7app/bio7_48.png"/>
@@ -29,22 +29,14 @@ jdk/bin/java
 --launcher.GTK_version
 2
       </programArgsLin>
-      <programArgsMac>-vm
+      <programArgsMac>-vm 
 ../MacOS/jdk/Contents/Home/lib/libjli.dylib
       </programArgsMac>
       <programArgsWin>-vm
 jdk/bin/javaw.exe
       </programArgsWin>
-      <vmArgs>-Xms1024m -Xmx4096m -Dprism.lcdtext=false -Dosgi.framework.extensions=org.eclipse.wst.jsdt.nashorn.extension -Dpython.console.encoding=UTF-8 -Dswt.enable.themedScrollBar=true
-      </vmArgs>
-      <vmArgsLin>-DJAVAFX_LIBS_PATH=${eclipse_home}/jdk/javafx/lib
-      </vmArgsLin>
-      <vmArgsMac>-XstartOnFirstThread
--Dprism.order=sw
--DJAVAFX_LIBS_PATH=${eclipse_home}/jdk/javafx/lib
+      <vmArgsMac>-Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=true -Xms4048m -Xmx8096m -Dprism.lcdtext=false -Dprism.order=sw -Dpython.console.encoding=UTF-8 -Dswt.enable.themedScrollBar=true -XstartOnFirstThread --add-modules=ALL-SYSTEM --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --module-path=../MacOS/jdk/Contents/Home/nashorn/ --add-modules=org.openjdk.nashorn --add-opens java.desktop/sun.awt.windows=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.desktop/sun.awt=ALL-UNNAMED --add-opens java.desktop/sun.java2d.opengl=ALL-UNNAMED --add-opens java.base/java.lang.invoke=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.desktop/java.awt.font=ALL-UNNAMED
       </vmArgsMac>
-      <vmArgsWin>-DJAVAFX_LIBS_PATH=${eclipse_home}\jdk\javafx\lib
-      </vmArgsWin>
    </launcherArgs>
 
    <windowImages i16="/com.eco.bio7/icons/bio7app/bio7_16_new.png" i32="/com.eco.bio7/icons/bio7app/bio7_32_new.png" i48="/com.eco.bio7/icons/bio7app/bio7_48_new.png" i64="/com.eco.bio7/icons/bio7app/bio7_64_new.png" i128="/com.eco.bio7/icons/bio7app/bio7_128_new.png" i256="/com.eco.bio7/icons/bio7app/bio7_256_new.png"/>
@@ -108,15 +100,15 @@ jdk/bin/javaw.exe
       <plugin id="org.eclipse.core.expressions"/>
       <plugin id="org.eclipse.core.filebuffers"/>
       <plugin id="org.eclipse.core.filesystem"/>
-      <plugin id="org.eclipse.core.filesystem.win32.x86" fragment="true"/>
+      <plugin id="org.eclipse.core.filesystem.win32.x86"/>
       <plugin id="org.eclipse.core.jobs"/>
       <plugin id="org.eclipse.core.net"/>
-      <plugin id="org.eclipse.core.net.win32.x86" fragment="true"/>
+      <plugin id="org.eclipse.core.net.win32.x86"/>
       <plugin id="org.eclipse.core.resources"/>
-      <plugin id="org.eclipse.core.resources.win32.x86" fragment="true"/>
+      <plugin id="org.eclipse.core.resources.win32.x86"/>
       <plugin id="org.eclipse.core.runtime"/>
       <plugin id="org.eclipse.core.runtime.compatibility"/>
-      <plugin id="org.eclipse.core.runtime.compatibility.registry" fragment="true"/>
+      <plugin id="org.eclipse.core.runtime.compatibility.registry"/>
       <plugin id="org.eclipse.core.variables"/>
       <plugin id="org.eclipse.debug.core"/>
       <plugin id="org.eclipse.draw2d"/>
@@ -126,7 +118,7 @@ jdk/bin/javaw.exe
       <plugin id="org.eclipse.equinox.jsp.jasper"/>
       <plugin id="org.eclipse.equinox.jsp.jasper.registry"/>
       <plugin id="org.eclipse.equinox.launcher"/>
-      <plugin id="org.eclipse.equinox.launcher.win32.win32.x86" fragment="true"/>
+      <plugin id="org.eclipse.equinox.launcher.win32.win32.x86"/>
       <plugin id="org.eclipse.equinox.p2.core"/>
       <plugin id="org.eclipse.equinox.p2.engine"/>
       <plugin id="org.eclipse.equinox.p2.metadata"/>
@@ -135,15 +127,15 @@ jdk/bin/javaw.exe
       <plugin id="org.eclipse.equinox.preferences"/>
       <plugin id="org.eclipse.equinox.registry"/>
       <plugin id="org.eclipse.equinox.security"/>
-      <plugin id="org.eclipse.equinox.security.win32.x86" fragment="true"/>
+      <plugin id="org.eclipse.equinox.security.win32.x86"/>
       <plugin id="org.eclipse.gef"/>
       <plugin id="org.eclipse.help"/>
       <plugin id="org.eclipse.help.appserver"/>
       <plugin id="org.eclipse.help.base"/>
       <plugin id="org.eclipse.help.ui"/>
       <plugin id="org.eclipse.help.webapp"/>
-      <plugin id="org.eclipse.jdt.compiler.apt" fragment="true"/>
-      <plugin id="org.eclipse.jdt.compiler.tool" fragment="true"/>
+      <plugin id="org.eclipse.jdt.compiler.apt"/>
+      <plugin id="org.eclipse.jdt.compiler.tool"/>
       <plugin id="org.eclipse.jdt.core"/>
       <plugin id="org.eclipse.jface"/>
       <plugin id="org.eclipse.jface.databinding"/>
@@ -154,7 +146,7 @@ jdk/bin/javaw.exe
       <plugin id="org.eclipse.osgi.services"/>
       <plugin id="org.eclipse.platform"/>
       <plugin id="org.eclipse.swt"/>
-      <plugin id="org.eclipse.swt.win32.win32.x86" fragment="true"/>
+      <plugin id="org.eclipse.swt.win32.win32.x86"/>
       <plugin id="org.eclipse.team.core"/>
       <plugin id="org.eclipse.team.ui"/>
       <plugin id="org.eclipse.text"/>
@@ -169,12 +161,12 @@ jdk/bin/javaw.exe
       <plugin id="org.eclipse.ui.navigator.resources"/>
       <plugin id="org.eclipse.ui.views"/>
       <plugin id="org.eclipse.ui.views.properties.tabbed"/>
-      <plugin id="org.eclipse.ui.win32" fragment="true"/>
+      <plugin id="org.eclipse.ui.win32"/>
       <plugin id="org.eclipse.ui.workbench"/>
       <plugin id="org.eclipse.ui.workbench.texteditor"/>
       <plugin id="org.eclipse.update.configurator"/>
       <plugin id="org.eclipse.update.core"/>
-      <plugin id="org.eclipse.update.core.win32" fragment="true"/>
+      <plugin id="org.eclipse.update.core.win32"/>
       <plugin id="org.eclipse.update.ui"/>
       <plugin id="org.eclipse.wst.common.snippets"/>
    </plugins>
@@ -192,11 +184,8 @@ jdk/bin/javaw.exe
       <feature id="com.eco.bio7.util.feature"/>
       <feature id="com.eco.bio7.worldwind.feature" installMode="root"/>
       <feature id="com.eco.bio7.pythonedit.feature" installMode="root"/>
-      <feature id="com.eco.bio7.scenebuilder.feature" installMode="root"/>
       <feature id="org.eclipse.e4.rcp"/>
       <feature id="com.eco.bio7.os.feature" installMode="root"/>
-      <feature id="org.eclipse.ecf.core.ssl.feature"/>
-      <feature id="org.eclipse.ecf.filetransfer.ssl.feature"/>
       <feature id="org.eclipse.ecf.filetransfer.feature"/>
       <feature id="org.eclipse.ecf.core.feature"/>
       <feature id="com.eco.bio7.themes.feature" installMode="root"/>
@@ -209,10 +198,11 @@ jdk/bin/javaw.exe
       <feature id="org.eclipse.rcp"/>
       <feature id="org.eclipse.jdt"/>
       <feature id="com.eco.bio7.ijmacroedit.feature" installMode="root"/>
-      <feature id="com.eco.bio7.jfxswt.feature" installMode="root"/>
       <feature id="org.eclipse.nebula.widgets.grid.feature" installMode="root"/>
       <feature id="com.eco.bio7.javacv.feature" installMode="root"/>
       <feature id="com.eco.bio7.deepcv.feature" installMode="root"/>
+      <feature id="org.eclipse.ecf.filetransfer.httpclient5.feature" installMode="root"/>
+      <feature id="org.eclipse.ecf.filetransfer.httpclientjava.feature" installMode="root"/>
    </features>
 
    <configurations>
@@ -224,10 +214,10 @@ jdk/bin/javaw.exe
    </configurations>
 
    <repositories>
-      <repository location="https://bio7.github.io/imagej" enabled="true" />
-      <repository location="http://download.eclipse.org/eclipse/updates/4.23" enabled="true" />
-      <repository location="http://download.eclipse.org/releases/2022-03" enabled="true" />
-      <repository location="https://bio7.github.io/reditor" enabled="true" />
+      <repository location="https://bio7.github.io/imagej" name="" enabled="true" />
+      <repository location="http://download.eclipse.org/eclipse/updates/4.23" name="" enabled="true" />
+      <repository location="http://download.eclipse.org/releases/2022-03" name="" enabled="true" />
+      <repository location="https://bio7.github.io/reditor" name="" enabled="true" />
    </repositories>
 
    <preferencesInfo>

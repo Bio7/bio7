@@ -12,6 +12,7 @@ import com.eco.bio7.image.Util;
 class LabelFieldEditor extends FieldEditor {
 
 	private Label label;
+	Font font;
 
 	public LabelFieldEditor(String value, Composite parent) {
 		super("label", value, parent);
@@ -31,9 +32,15 @@ class LabelFieldEditor extends FieldEditor {
 		gridData.grabExcessHorizontalSpace = false;
 		gridData.verticalAlignment = GridData.CENTER;
 		gridData.grabExcessVerticalSpace = false;
-		Font font = null;
+
+		if (font!=null&&font.isDisposed() == false) {
+			font.dispose();
+
+		}
+		
 		label.setLayoutData(gridData);
 		if (Util.getOS().equals("Mac")) {
+
 			font = new Font(parent.getDisplay(), "Helvetica Neue", 15, SWT.BOLD);
 		} else {
 			font = new Font(parent.getDisplay(), "Arial", 9, SWT.BOLD);
