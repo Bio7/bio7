@@ -13,13 +13,14 @@
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<repository location="https://download.eclipse.org/nebula/updates/release/3.1.1"/>
-		<unit id="org.eclipse.nebula.widgets.grid.feature.feature.group" version="0.0.0"/>
+		<unit id="org.eclipse.nebula.visualization.feature.feature.group" version="2.1.0.202402011804"/>
+		<unit id="org.eclipse.nebula.feature.feature.group" version="3.1.1.202402011804"/>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<repository location="https://download.eclipse.org/texlipse/2.0.3/"/>
 		<unit id="org.eclipse.texlipse.main.feature.group" version="0.0.0"/>
 	</location>
-	<location includeDependencyDepth="none" includeSource="true" missingManifest="generate" type="Maven">
+	<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
 		<dependencies>
 			<dependency>
 				<groupId>org.apache.groovy</groupId>
