@@ -1,4 +1,4 @@
-package com.eco.bio7.popup.actions;
+/*package com.eco.bio7.popup.actions;
 
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
@@ -165,4 +165,4 @@ public class CompileGroovyAction implements IObjectActionDelegate {
 	public void selectionChanged(IAction action, ISelection selection) {
 	}
 
-}
+}*/

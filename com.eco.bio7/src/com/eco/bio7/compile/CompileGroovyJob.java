@@ -14,8 +14,7 @@ package com.eco.bio7.compile;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
-import groovy.lang.GroovyShell;
-import org.codehaus.groovy.control.CompilationFailedException;
+
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
