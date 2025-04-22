@@ -1051,20 +1051,6 @@
       </objectContribution>
     <objectContribution
           adaptable="false"
-          id="CompileGroovy"
-          nameFilter="*.groovy"
-          objectClass="org.eclipse.core.resources.IFile">
-       <action
-             class="com.eco.bio7.popup.actions.CompileGroovyAction"
-             icon="icons/editor/groovy.png"
-             id="com.eco.bio7.action1"
-             label="Compile Groovy"
-             menubarPath="additions.groovy"
-             tooltip="Compiles the Groovy script to a classfile">
-       </action>
-    </objectContribution>
-    <objectContribution
-          adaptable="false"
           id="CompileDirectory"
           nameFilter="*.java"
           objectClass="org.eclipse.core.resources.IFile">
@@ -1843,7 +1829,7 @@
                  <or>
                     
                     <equals
-                          value="net.sourceforge.texlipse.TexEditor">
+                          value="org.eclipse.texlipse.TexEditor">
                     </equals>
                  </or>
               </with>

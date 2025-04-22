@@ -65,27 +65,6 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 
 		});
 
-		MenuItem menuItemBio7JavaFXJavaProject = new MenuItem(fMenu, SWT.PUSH);
-		menuItemBio7JavaFXJavaProject.setText("Bio7 JavaFX GUI Project");
-
-		// Image image
-		// =PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
-
-		menuItemBio7JavaFXJavaProject.setImage(Bio7Plugin.getImageDescriptor("/icons/maintoolbar/create_project_file_java.png").createImage());
-		menuItemBio7JavaFXJavaProject.addSelectionListener(new SelectionListener() {
-
-			public void widgetSelected(SelectionEvent e) {
-				selection = "java";
-				openWizard("com.eco.bio7.javafxclassjdt");
-				selection = "r";
-			}
-
-			public void widgetDefaultSelected(SelectionEvent e) {
-
-			}
-
-		});
-
 		MenuItem menuItemBio7WindowBuilderJavaProject = new MenuItem(fMenu, SWT.PUSH);
 		menuItemBio7WindowBuilderJavaProject.setText("Bio7 Window Builder GUI Project");
 

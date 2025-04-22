@@ -28,6 +28,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.texlipse.editor.TexEditor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
@@ -51,7 +52,6 @@ import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
-import net.sourceforge.texlipse.editor.TexEditor;
 
 public class LatexSweaveKnitrAction extends Action {
 
