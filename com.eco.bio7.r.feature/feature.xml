@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="com.eco.bio7.r.feature"
+      label="Bio7 R Container Plugin"
+      version="4.0.3.qualifier"
+      provider-name="Bio7">
+
+   <description url="http://www.example.com/description">
+      This is a software container for the Windows version of
+the free software R an environment for statistical computing
+and graphics.
+   </description>
+
+   <copyright url="http://www.example.com/copyright">
+      [Read the copyright notice in the embedded R folder]
+   </copyright>
+
+   <license url="http://www.gnu.org/licenses/gpl-3.0.html">
+      See the licence text of the R application.
+   </license>
+
+   <url>
+      <discovery label="R" url="http://www.r-project.org/"/>
+   </url>
+
+   <requires>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="com.eco.bio7.libs" version="2.5.0" match="greaterOrEqual"/>
+   </requires>
+
+   <plugin
+         id="Bundled_R"
+         download-size="0"
+         install-size="0"
+         version="4.0.5"/>
+
+</feature>

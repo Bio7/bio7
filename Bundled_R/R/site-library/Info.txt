@@ -1,0 +1,1 @@
+The default folder for the bundled R packages (Windows only).
