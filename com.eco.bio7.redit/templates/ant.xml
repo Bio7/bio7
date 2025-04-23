@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+
+<template id="rscript.for"
+	context="rscript" 
+	name="for"
+	description="iterate over a vector" 
+	autoinsert="false" 
+	>for (${x} in ${vector}) {${cursor}}&#13;
+</template>
+
+<template id="rscript.else" 
+	context="rscript" 
+	name="else"
+	description="else block" 
+	autoinsert="false" 
+	>else {${cursor}}&#13;
+	</template>
+
+<template id="rscript.elseif"
+	context="rscript" 
+	name="elseif"
+	description="else if block" 
+	autoinsert="false" 
+	>else if (${condition}) {${cursor}}&#13;
+	</template>
+
+<template id="rscript.for.index"
+	context="rscript" 
+	name="for"
+	description="iterate with index over a vector" 
+	autoinsert="false" 
+	>for (${i} in 1:length(${vector})) {${cursor}}&#13;
+	</template>
+
+<template id="rscript.function"
+	context="rscript" 
+	name="function"
+	description="function definition" 
+	autoinsert="false" 
+	>${myFunc}&lt;-function(${parameter}) {${cursor}}&#13;
+	</template>
+
+<template id="rscript.if"
+	context="rscript" 
+	name="if"
+	description="if statement" 
+	autoinsert="false" 
+	>if (${condition}) {${cursor}}&#13;
+	</template>
+
+<template id="rscript.ifelse"
+	context="rscript" 
+	name="ifelse"
+	description="if else statement" 
+	autoinsert="false" 
+	>if (${condition}) {${cursor}} else{}&#13;
+	</template>
+
+<template id="rscript.repeat"
+	context="rscript" 
+	name="repeat"
+	description="repeat loop block" 
+	autoinsert="false" 
+	>repeat {${cursor}}&#13;
+	</template>
+
+<template id="rscript.while"
+	context="rscript" 
+	name="while"
+	description="while loop block" 
+	autoinsert="false" 
+	>while (${condition}) {${cursor}}&#13;
+	</template>
+	
+<template id="rscript.S3"
+	context="rscript" 
+	name="S3 class"
+	description="S3 class" 
+	autoinsert="false" 
+	>${listName} &lt;- list(stringVar = "AString", intVar = 10, doubleVar = 2.1)&#13;
+class(${listName}) &lt;- "${className}"&#13;
+${listName}$$stringVar
+</template>
+
+<template id="rscript.S4"
+	context="rscript" 
+	name="S4 class"
+	description="S4 class" 
+	autoinsert="false" 
+	>
+${myS4Class} &lt;- setClass("${myS4Class}",&#13;
+    slots = c(&#13;
+       var1 = "numeric",&#13;
+       var2   = "numeric",&#13;
+       var3   = "logical"&#13;
+             ),&#13;
+     prototype=list(&#13;
+        var1 = c(0.0,0.0),&#13;
+        var3   = TRUE,&#13;
+        var2 = c(0.0,0.0)&#13;
+              ),&#13;
+     validity=function(object)
+        {
+           if(is.numeric(object@var1)) {&#13;
+              return("Correct datatype!")&#13;
+           }&#13;
+           else {&#13;
+              return("Wrong datatype!")&#13;
+           }  
+           return(TRUE)&#13;
+         }&#13;
+      )&#13;
+anObject &lt;- ${myS4Class}()        	
+</template>
+
+<template id="rscript.refClass"
+	context="rscript" 
+	name="Reference class"
+	description="reference class" 
+	autoinsert="false" 
+	>${plant} &lt;- setRefClass("${plant}",&#13;
+    fields = list(name = "character", weight = "numeric", age = "numeric"),&#13;
+    methods = list(&#13;
+      getName = function(x) {&#13;
+        name &lt;&lt;- name&#13;
+      },&#13;
+      getWeight = function(x) {&#13;
+        weight &lt;&lt;- weight&#13;
+      },&#13;
+      getAge = function(x) {&#13;
+        age &lt;&lt;- age&#13;
+      }&#13;
+    )&#13;
+)&#13;
+s &lt;- ${plant}(name = "Corynephorus canescens", weight = 15, age = 3.5)&#13;
+</template>
+
+<template id="rscript.R6Class"
+	context="rscript" 
+	name="R6 class"
+	description="R6 class" 
+	autoinsert="false" 
+	>library(R6)
+${className} &lt;- R6Class("${className}",&#13;
+    public = list(&#13;
+      var1 = NULL,&#13;
+      var2 = NULL,&#13;
+      initialize = function(var1 = NA, var2 = NA) {&#13;
+        self$$var1 &lt;- var1&#13;
+        self$$var2 &lt;- var2&#13;
+        self$$result()&#13;
+      },&#13;
+      set_var2 = function(val) {&#13;
+        self$$var2 &lt;- val&#13;
+      },&#13;
+      result = function() {&#13;
+        cat(paste0("The given values are: ", self$$var1, " and ", self$$var2,".\n"))&#13;
+      }&#13;
+   )&#13;
+)&#13;
+testObject &lt;- ${className}$$new("high", "green")&#13;
+</template>
+</templates>
+
+
+
+

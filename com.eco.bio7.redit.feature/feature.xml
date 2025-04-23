@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="com.eco.bio7.redit.feature"
+      label="Bio7 R Editor Plugin"
+      version="2.5.2.qualifier"
+      provider-name="Bio7">
+
+   <description url="http://www.example.com/description">
+      [Enter Feature Description here.]
+   </description>
+
+   <copyright url="http://www.example.com/copyright">
+      [Enter Copyright Description here.]
+   </copyright>
+
+   <license url="http://www.example.com/license">
+      [Enter License Description here.]
+   </license>
+
+   <requires>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.jface.text"/>
+      <import plugin="org.eclipse.ui.editors"/>
+      <import plugin="org.eclipse.ui.workbench.texteditor"/>
+      <import plugin="org.eclipse.core.resources"/>
+      <import plugin="org.eclipse.debug.core"/>
+      <import plugin="org.eclipse.ui.workbench"/>
+      <import plugin="org.eclipse.ui.ide"/>
+      <import plugin="org.eclipse.compare"/>
+      <import plugin="org.eclipse.ltk.ui.refactoring"/>
+      <import plugin="org.eclipse.jdt.core"/>
+      <import plugin="org.eclipse.ltk.core.refactoring"/>
+      <import plugin="com.eco.bio7.util"/>
+      <import plugin="com.eco.bio7.browser"/>
+      <import plugin="com.eco.bio7.libs"/>
+      <import plugin="Bundled_R"/>
+      <import plugin="org.eclipse.e4.ui.css.swt.theme"/>
+      <import plugin="org.eclipse.ui.views"/>
+   </requires>
+
+   <plugin
+         id="com.eco.bio7.redit"
+         version="2.5.2"/>
+
+</feature>

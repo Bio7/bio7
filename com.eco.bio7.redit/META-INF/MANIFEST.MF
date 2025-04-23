@@ -1,0 +1,50 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.7.0
+Created-By: 1.6.0_02-b05 (Sun Microsystems Inc.)
+Bundle-ManifestVersion: 2
+Bundle-Name: R Plug-in
+Bundle-SymbolicName: com.eco.bio7.redit;singleton:=true
+Bundle-Version: 3.6.0
+Bundle-Activator: com.eco.bio7.reditor.Bio7REditorPlugin
+Bundle-Vendor: ECO
+Bundle-Localization: plugin
+Eclipse-BuddyPolicy: registered
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.jface.text,
+ org.eclipse.ui.editors,
+ org.eclipse.ui.workbench.texteditor,
+ org.eclipse.core.resources,
+ org.eclipse.debug.core,
+ org.eclipse.ui.workbench,
+ org.eclipse.ui.ide,
+ org.eclipse.compare,
+ org.eclipse.ltk.ui.refactoring,
+ org.eclipse.jdt.core,
+ org.eclipse.ltk.core.refactoring,
+ org.eclipse.e4.ui.css.swt.theme,
+ com.eco.bio7.util,
+ com.eco.bio7.browser,
+ com.eco.bio7.libs,
+ Bundled_R
+Eclipse-LazyStart: true
+Export-Package: com.eco.bio7.reditor,
+ com.eco.bio7.reditor.actions,
+ com.eco.bio7.reditor.actions.color,
+ com.eco.bio7.reditor.antlr,
+ com.eco.bio7.reditor.antlr.ref,
+ com.eco.bio7.reditor.antlr.refactor,
+ com.eco.bio7.reditor.antlr.util,
+ com.eco.bio7.reditor.code,
+ com.eco.bio7.reditor.control,
+ com.eco.bio7.reditor.database.view,
+ com.eco.bio7.reditor.images,
+ com.eco.bio7.reditor.outline,
+ com.eco.bio7.reditors,
+ com.eco.bio7.rpreferences,
+ com.eco.bio7.rpreferences.template
+Bundle-ClassPath: bin/,
+ libs/antlr-runtime-4.13.1.jar
+Import-Package: org.eclipse.ui.views.contentoutline
+Bundle-RequiredExecutionEnvironment: JavaSE-14
+

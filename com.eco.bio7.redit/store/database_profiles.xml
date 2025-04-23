@@ -1,0 +1,40 @@
+<com.eco.bio7.reditor.database.view.ConnectionProfiles>
+  <profiles>
+    <com.eco.bio7.reditor.database.view.ConnectionProfile>
+      <profileName>MySQL Connection SSH Private Key Windows Template</profileName>
+      <odbcDriver>MySQL ODBC 5.3 Unicode Driver</odbcDriver>
+      <server>127.0.0.1</server>
+      <database>TheDatabase</database>
+      <port>3306</port>
+      <user>user</user>
+      <password></password>
+      <customDisconnect>try(dbDisconnect(con));shell(&quot;taskkill /F /IM ssh.exe&quot;);</customDisconnect>
+      <sshEnabled>true</sshEnabled>
+      <sshSshHost>serveradress.com</sshSshHost>
+      <sshCustomArgs>-v -f -N -o StrictHostKeyChecking=no</sshCustomArgs>
+      <sshPort>22</sshPort>
+      <sshUsername>user</sshUsername>
+      <sshTimeout>10</sshTimeout>
+      <sshPrivateKey>C:/</sshPrivateKey>
+      <localSshPort>3306</localSshPort>
+    </com.eco.bio7.reditor.database.view.ConnectionProfile>
+    <com.eco.bio7.reditor.database.view.ConnectionProfile>
+      <profileName>MySQL Connection SSH Private Key Linux/MacOSX Template</profileName>
+      <odbcDriver>MySQL ODBC 5.3 Driver</odbcDriver>
+      <server>127.0.0.1</server>
+      <database>TheDatabase</database>
+      <port>3306</port>
+      <user>user</user>
+      <password></password>
+      <customDisconnect>try(dbDisconnect(con));system2(&apos;killall&apos;, &apos;ssh&apos;)</customDisconnect>
+      <sshEnabled>true</sshEnabled>
+      <sshSshHost>serveradress.com</sshSshHost>
+      <sshCustomArgs>-v -f -N -o StrictHostKeyChecking=no</sshCustomArgs>
+      <sshPort>22</sshPort>
+      <sshUsername>user</sshUsername>
+      <sshTimeout>20</sshTimeout>
+      <sshPrivateKey>/home</sshPrivateKey>
+      <localSshPort>3306</localSshPort>
+    </com.eco.bio7.reditor.database.view.ConnectionProfile>
+  </profiles>
+</com.eco.bio7.reditor.database.view.ConnectionProfiles>

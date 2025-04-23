@@ -1,0 +1,744 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>       
+    <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="com.eco.bio7.reditors.REditor"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            default="true"
+            extensions="R,r"
+            icon="icons/rfile.png"
+            id="com.eco.bio7.reditors.TemplateEditor"
+            name="Bio7 RScript-Editor"
+            symbolicFontName="com.eco.bio7.reditor.reditor.textfont">
+      </editor>
+      <editorContentTypeBinding
+            contentTypeId="com.eco.bio7.reditor.rfile"
+            editorId="com.eco.bio7.reditors.TemplateEditor">
+      </editorContentTypeBinding>
+   </extension>
+    <extension
+          point="org.eclipse.core.contenttype.contentTypes">
+       <content-type
+             base-type="org.eclipse.core.runtime.text"
+             file-extensions="R,r"
+             id="com.eco.bio7.reditor.rfile"
+             name="R File"
+             priority="normal">
+       </content-type>
+    </extension>
+   <extension
+         id="RDocumentSetupParticipant"
+         name="%documentSetupParticipantName"
+         point="org.eclipse.core.filebuffers.documentSetup">
+      <participant
+            extensions="R,r"
+            class="com.eco.bio7.reditors.RDocumentSetupParticipant">
+      </participant>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="com.eco.bio7.R"
+            class="com.eco.bio7.rpreferences.TemplatesPreferencePage"
+            id="rpreferencepage"
+            name="Preferences Editor Templates">
+      </page>
+      <page
+             category="com.eco.bio7.R"
+            class="com.eco.bio7.rpreferences.WorkbenchPreferenceR"
+            id="prefr"
+            name="Preferences Editor">
+       </page>
+      <page
+            category="com.eco.bio7.R"
+            class="com.eco.bio7.rpreferences.RCodePreferences"
+            id="RCodePreferences"
+            name="Preferences Editor Code">
+      </page>
+      <page
+            category="com.eco.bio7.R"
+            class="com.eco.bio7.rpreferences.RCodeAnalysisPreferences"
+            id="RCodeAnalysisPreferences"
+            name="Preferences Editor Code Analysis">
+      </page>
+      <page
+            category="com.eco.bio7.R"
+            class="com.eco.bio7.rpreferences.FormatPreferences"
+            id="com.eco.bio7.redit.formatting"
+            name="Preferences Editor Formatting">
+      </page>
+      <page
+            category="com.eco.bio7.R"
+            class="com.eco.bio7.rpreferences.DatabasePreference"
+            id="databaseconfig"
+            name="Preferences Database">
+      </page>
+      
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.editors.templates">
+      <contextType
+            name="%xml.contextType.name"
+            class="com.eco.bio7.rpreferences.template.RContextType"
+            id="rscript">
+      </contextType>
+     
+      <include
+      		file="templates/ant.xml"
+      		translations="$nl$/templates/ant.properties">
+      </include>
+   </extension>
+   
+    <extension point="org.eclipse.core.resources.markers"   
+        id="debugMarker">
+     <super type="org.eclipse.core.resources.textmarker"/>         
+     <persistent value="true"/>
+  </extension>
+
+  <extension point="org.eclipse.ui.editors.annotationTypes">
+     <type
+           markerSeverity="0"
+           markerType="com.eco.bio7.redit.debugMarker"
+           name="com.eco.bio7.redit.debugAnnotation"
+           super="org.eclipse.ui.workbench.texteditor.warning"/>
+  </extension>
+
+  <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
+     <specification
+           annotationType="com.eco.bio7.redit.debugAnnotation"
+           colorPreferenceKey="clcolor"
+           colorPreferenceValue="0,255,0"
+           highlightPreferenceKey="highlight.background"
+           highlightPreferenceValue="true"
+           icon="icons/brkp_obj.png"
+           overviewRulerPreferenceValue="true"
+           presentationLayer="0"
+           quickFixIcon="icons/brkp_obj.png"
+           textPreferenceKey="cltext"
+           textPreferenceValue="true"
+           textStylePreferenceKey="clstyle"
+           textStylePreferenceValue="BOX"
+           verticalRulerPreferenceKey="clvertical"
+           verticalRulerPreferenceValue="true">
+        </specification> 
+  </extension>
+  <extension
+        point="org.eclipse.core.runtime.preferences">
+     <initializer
+           class="com.eco.bio7.rpreferences.PreferenceInitializer">
+     </initializer>
+  </extension>
+  <extension point="org.eclipse.ui.elementFactories">
+<factory id="org.eclipse.ui.part.FileEditorInputFactory "
+class=" org.eclipse.ui.part.FileEditorInputFactory " />
+</extension>
+<extension point="org.eclipse.ui.ide.markerResolution">
+      <markerResolutionGenerator
+         markerType="org.eclipse.core.resources.problemmarker"
+         class="com.eco.bio7.reditor.code.QuickFixer"/>
+   </extension>
+<extension
+      point="org.eclipse.ui.editors.annotationTypes">
+   <type
+         markerSeverity="0"
+         markerType="org.eclipse.core.resources.problemmarker"
+         name="com.eco.bio7.redit.error"
+         super="org.eclipse.ui.workbench.texteditor.error">
+   </type>
+</extension>
+<extension
+      point="org.eclipse.ui.editors.markerAnnotationSpecification">
+   <specification
+         annotationType="com.eco.bio7.redit.error"
+         colorPreferenceKey="com.eco.bio7.reditor.clcolor"
+         colorPreferenceValue="0,255,0"
+         contributesToHeader="false"
+         highlightPreferenceKey="com.eco.bio7.reditor.highlight.background"
+         highlightPreferenceValue="true"
+         icon="icons/error_obj.png"
+         includeOnPreferencePage="true"
+         label="R Editor Marker"
+         overviewRulerPreferenceKey="com.eco.bio7.reditor.overview"
+         overviewRulerPreferenceValue="true"
+         presentationLayer="0"
+         quickFixIcon="icons/quickfix_error_obj.png"
+         textPreferenceKey="com.eco.bio7.reditor.cltext"
+         textPreferenceValue="true"
+         textStylePreferenceKey="clstyle"
+         textStylePreferenceValue="BOX"
+         verticalRulerPreferenceKey="com.eco.bio7.reditor.clvertical"
+         verticalRulerPreferenceValue="true">
+   </specification>
+</extension>
+<extension
+    id="com.eco.bio7.reditor.wordmarker"
+    name="R Editor Word"
+    point="org.eclipse.core.resources.markers">
+  <super
+    type="org.eclipse.core.resources.textmarker">
+  </super>
+</extension>
+<extension
+         point="org.eclipse.ui.editors.annotationTypes">
+      <type
+            markerType="com.eco.bio7.reditor.wordmarker"
+            name="com.eco.bio7.reditor.wordmarker">
+      </type>
+   </extension>
+ <extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="com.eco.bio7.reditor.wordmarker"
+            colorPreferenceKey="com.eco.bio7.reditor.wordmarker.color"
+            colorPreferenceValue="112,128,144"
+            contributesToHeader="false"
+            highlightPreferenceKey="com.eco.bio7.reditor.wordmarker.highlight"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="true"
+            label="R Editor Word Marker"
+            overviewRulerPreferenceKey="com.eco.bio7.reditor.wordmarker.overview"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="0"
+            textPreferenceKey="com.eco.bio7.reditor.wordmarker.text"
+            textPreferenceValue="true"
+            textStylePreferenceValue="BOX"
+            verticalRulerPreferenceKey="com.eco.bio7.reditor.wordmarker.ruler"
+            verticalRulerPreferenceValue="true">
+      </specification>
+   </extension>
+   
+   <extension
+    id="com.eco.bio7.reditor.debugrulermark"
+    name="R Editor Word"
+    point="org.eclipse.core.resources.markers">
+  <super
+    type="org.eclipse.core.resources.textmarker">
+  </super>
+</extension>
+<extension
+         point="org.eclipse.ui.editors.annotationTypes">
+      <type
+            markerType="com.eco.bio7.reditor.debugrulermark"
+            name="com.eco.bio7.reditor.debugrulermark">
+      </type>
+   </extension>
+
+ <extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="com.eco.bio7.reditor.debugrulermark"
+            colorPreferenceKey="com.eco.bio7.reditor.debugrulermark.color"
+            colorPreferenceValue="180,230,180"
+            contributesToHeader="false"
+            highlightPreferenceKey="com.eco.bio7.reditor.debugrulermark.highlight"
+            highlightPreferenceValue="true"
+            icon="/icons/occ_match.png"
+            includeOnPreferencePage="true"
+            label="R Editor Debug Ruler Marker"
+            overviewRulerPreferenceKey="com.eco.bio7.reditor.debugrulermark.overview"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="0"
+            textPreferenceKey="com.eco.bio7.reditor.debugrulermark.text"
+            textPreferenceValue="true"
+            textStylePreferenceValue="BOX"
+            verticalRulerPreferenceKey="com.eco.bio7.reditor.debugrulermark.ruler"
+            verticalRulerPreferenceValue="true">
+      </specification>
+   </extension>
+
+<extension point="org.eclipse.ui.editorActions">
+    <editorContribution
+          targetID="com.eco.bio7.reditors.TemplateEditor"
+          id="example.rulerActions">
+       <action
+             label="QuickFix"
+             class="com.eco.bio7.reditor.actions.REditorRulerQuickFixAction"
+             style="push"
+             actionID="RulerClick"
+             id="com.eco.bio7.reditor.rulerclick"/>
+    </editorContribution>
+ </extension>
+ <extension point="org.eclipse.ui.popupMenus">
+    <!-- put a context menu item into the menu of standard text editors.
+         If the properties editor had an own context menu id, we could
+         target this more specifically. This way, we must have the
+         refactoring itself decide whether the operation can run.
+      -->
+    <viewerContribution
+          id="com.eco.bio7.reditor.refactor.extract.method"
+          targetID="#REditorContext">
+          <menu
+               label="Refactor"
+               path="additions"
+               id="refactor.menu">
+            <separator
+                  name="refact">
+            </separator>
+         </menu>
+         <menu
+               label="R Format"
+               path="additions"
+               id="format.menu">
+            <separator
+                  name="format">
+            </separator>
+         </menu>
+         <menu
+               label="R Docs"
+               path="additions"
+               id="docs.menu">
+            <separator
+                  name="comments">
+            </separator>
+         </menu>
+         <menu
+               label="R Source"
+               path="additions"
+               id="source.menu">
+            <separator
+                  name="source">
+            </separator>
+         </menu>
+         <menu
+               id="rprofile.menu"
+               label="Profile"
+               path="additions">
+            <separator
+                  name="profile">
+            </separator>
+         </menu>
+       <action
+             class="com.eco.bio7.reditor.actions.ExtractMethod"
+             definitionId="com.eco.bio7.reditor.refactor.extract.method"
+             id="com.eco.bio7.reditor.refactor.extract.meth"
+             label="Extract Method"
+             menubarPath="refactor.menu/refact">
+       </action>
+       <action
+             class="com.eco.bio7.reditor.actions.ExtractVariable"
+             definitionId="com.eco.bio7.reditor.refactor.extract.variable"
+             id="com.eco.bio7.reditor.refactor.extract.var"
+             label="Extract Variable"
+             menubarPath="refactor.menu/refact">
+       </action>
+       <action
+             class="com.eco.bio7.reditor.actions.RFormatAction"
+             definitionId="com.eco.bio7.reditor.rserve.format"
+             id="com.eco.bio7.reditor.rserve.for"
+             label="Format R Source (Rserve)"
+             menubarPath="format.menu/format">
+       </action>
+       <action
+             class="com.eco.bio7.reditor.actions.RFormatSelectionAction"
+             definitionId="com.eco.bio7.reditor.rserve.format.selection"
+             id="com.eco.bio7.reditor.rserve.for.sel"
+             label="Format Selected R Source (Rserve)"
+             menubarPath="format.menu/format">
+       </action>
+       <action
+             class="com.eco.bio7.reditor.actions.ExtractSelectionToFile"
+             definitionId="com.eco.bio7.reditor.refactor.extract.selection"
+             id="com.eco.bio7.reditor.refactor.extract.selection"
+             label="Extract Editor Selection to File"
+             menubarPath="refactor.menu/refact">
+       </action>
+       <action
+             class="com.eco.bio7.reditor.actions.CreateRFileFromClipboard"
+             definitionId="com.eco.bio7.reditor.refactor.create.file.clipboard"
+             id="com.eco.bio7.reditor.refactor.create.file.clipboard"
+             label="Create new File from Clipboard"
+             menubarPath="refactor.menu/refact">
+       </action>
+       <action
+             class="com.eco.bio7.reditor.actions.RefactorRename"
+             definitionId="com.eco.bio7.reditor.refactor.rename"
+             id="com.eco.bio7.reditor.refactor.rename"
+             label="Rename"
+             menubarPath="refactor.menu/refact">
+       </action>
+       <action
+             class="com.eco.bio7.reditor.actions.InsertRoxygenComment"
+             definitionId="com.eco.bio7.reditor.roxygen.comment"
+             id="com.eco.bio7.reditor.insert.roxygen"
+             label="Insert Roxygen Comment"
+             menubarPath="docs.menu/docs">
+       </action>
+       <action
+             class="com.eco.bio7.reditor.actions.SurroundTryCatch"
+             definitionId="com.eco.bio7.reditor.surround.trycatch"
+             id="com.eco.bio7.reditor.surround.trycatch"
+             label="Surround with try and catch"
+             menubarPath="source.menu/source">
+       </action>
+    </viewerContribution>
+  </extension>
+  <extension
+       id="com.eco.bio7.reditor.refactor.rename"
+       point="org.eclipse.ui.bindings">
+        <sequenceModifier
+  			find="CTRL"
+  			replace="COMMAND"
+  			platforms="cocoa,carbon" />
+  	<key
+          commandId="com.eco.bio7.reditor.surround.trycatch"
+          contextId="com.eco.bio7.reditor.REditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+ALT+SHIFT+E">
+    </key>
+  	<key
+          commandId="com.eco.bio7.reditor.insert.roxygen"
+          contextId="com.eco.bio7.reditor.REditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+ALT+SHIFT+R">
+    </key>
+    
+    <key
+          commandId="com.eco.bio7.reditor.refactor.rename"
+          contextId="com.eco.bio7.reditor.REditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+ALT+W">
+    </key>
+    <key
+          commandId="com.eco.bio7.reditor.refactor.extract.method"
+          contextId="com.eco.bio7.reditor.REditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+ALT+X">
+    </key>
+    <key
+          commandId="com.eco.bio7.reditor.refactor.extract.variable"
+          contextId="com.eco.bio7.reditor.REditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+ALT+V">
+    </key>
+    <key
+          commandId="com.eco.bio7.reditor.rserve.format"
+          contextId="com.eco.bio7.reditor.REditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+SHIFT+F">
+    </key>
+    <key
+          commandId="com.eco.bio7.reditor.rserve.format.selection"
+          contextId="com.eco.bio7.reditor.REditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+SHIFT+ALT+F">
+    </key>
+    <key
+          commandId="com.eco.bio7.reditor.rserve.plot.preferences"
+          contextId="org.eclipse.ui.contexts.window"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+SHIFT+P">
+    </key>
+    <key
+          commandId="com.eco.bio7.reditor.rserve.refresh.packages"
+          contextId="com.eco.bio7.reditor.REditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+ALT+R">
+    </key>
+    <key
+          commandId="com.eco.bio7.r_editor_preferences"
+          contextId="com.eco.bio7.reditor.REditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+ALT+F">
+    </key>
+    <key
+          commandId="com.eco.bio7.r_editor_set_comment"
+          contextId="com.eco.bio7.reditor.REditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="ALT+C">
+    </key>
+    <key
+          commandId="com.eco.bio7.r_editor_unset_comment"
+          contextId="com.eco.bio7.reditor.REditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+ALT+C">
+    </key>
+    <key
+          commandId="com.eco.bio7.r_editor_open_color_dialog"
+          contextId="com.eco.bio7.reditor.REditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+ALT+SHIFT+C">
+    </key>
+    <key
+          commandId="com.eco.bio7.r_editor_open_color_rgbtohex_dialog"
+          contextId="com.eco.bio7.reditor.REditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+ALT+SHIFT+H">
+    </key>
+    <key
+          commandId="com.eco.bio7.reditor.refactor.extract.selection"
+          contextId="com.eco.bio7.reditor.REditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+ALT+E">
+    </key>
+    <key
+          commandId="com.eco.bio7.reditor.refactor.create.file.clipboard"
+          contextId="com.eco.bio7.reditor.REditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+ALT+Z">
+    </key>
+    <key
+          commandId="com.eco.bio7.reditor.actions.text.zoomIn"
+          contextId="com.eco.bio7.reditor.REditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL++">
+    </key>
+    <key
+          commandId="com.eco.bio7.reditor.actions.text.zoomOut"
+          contextId="com.eco.bio7.reditor.REditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+-">
+    </key>
+    <key
+          commandId="com.eco.bio7.reditor.actions.addAssignemntOp"
+          contextId="com.eco.bio7.reditor.REditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="SHIFT+ALT+-">
+    </key>
+    <key
+          commandId="com.eco.bio7.reditor.actions.addPipeOp"
+          contextId="com.eco.bio7.reditor.REditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="SHIFT+ALT+N">
+    </key>
+    <key
+          commandId="com.eco.bio7.r_editor_open_file_dialog"
+          contextId="com.eco.bio7.reditor.REditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+SHIFT+ALT+O">
+    </key>
+    <key
+          commandId="com.eco.bio7.r_editor_save_file_dialog"
+          contextId="com.eco.bio7.reditor.REditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+SHIFT+ALT+S">
+    </key>
+    <key
+          commandId="com.eco.bio7.r_editor_open_directory_dialog"
+          contextId="com.eco.bio7.reditor.REditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+SHIFT+ALT+D">
+    </key>
+    <scheme
+          id="com.eco.bio7.redit.scheme"
+          name="REditorScheme">
+    </scheme>
+    
+ </extension>
+ <extension
+       point="org.eclipse.ui.commands">
+      <command
+          description="Surround with try catch"
+          id="com.eco.bio7.reditor.surround.trycatch"
+          name="Surround with try catch">
+    </command>
+    <command
+          description="Insert Roxygen Comment"
+          id="com.eco.bio7.reditor.insert.roxygen"
+          name="Insert Roxygen Comment">
+    </command>
+    
+    <command
+          description="Rename"
+          id="com.eco.bio7.reditor.refactor.rename"
+          name="Rename">
+    </command>
+    <command
+          description="Extract a Method"
+          id="com.eco.bio7.reditor.refactor.extract.method"
+          name="Extract Method">
+    </command>
+    <command
+          description="Extract a Variable"
+          id="com.eco.bio7.reditor.refactor.extract.variable"
+          name="Extract Variable">
+    </command>
+    <command
+          description="Format R Source"
+          id="com.eco.bio7.reditor.rserve.format"
+          name="Format R Source">
+    </command>
+    <command
+          description="Format Selected R Source"
+          id="com.eco.bio7.reditor.rserve.format.selection"
+          name="Format R Selected Source">
+    </command>
+    <command
+          description="Plot Preferences"
+          id="com.eco.bio7.reditor.rserve.plot.preferences"
+          name="Plot Preferences">
+    </command>
+    <command
+          description="Refresh Package Completion"
+          id="com.eco.bio7.reditor.rserve.refresh.packages"
+          name="Refresh Package Completion">
+    </command>
+    <command
+          description="Open Font Preferences"
+          id="com.eco.bio7.r_editor_preferences"
+          name="Open Font Preferences">
+    </command>
+    <command
+          description="Add Comment(s)"
+          id="com.eco.bio7.r_editor_set_comment"
+          name="Add Comment(s)">
+    </command>
+    <command
+          description="Remove Comment(s)"
+          id="com.eco.bio7.r_editor_unset_comment"
+          name="Remove Comment(s)">
+    </command>
+    <command
+          description="Open color dialog"
+          id="com.eco.bio7.r_editor_open_color_dialog"
+          name="Open color dialog">
+    </command>
+    <command
+          description="Open hex color dialog"
+          id="com.eco.bio7.r_editor_open_color_rgbtohex_dialog"
+          name="Open hex color dialog">
+    </command>
+    <command
+          description="Open color hex dialog"
+          id="com.eco.bio7.r_editor_open_color_hex_dialog"
+          name="Open color hex dialog">
+    </command>
+     <command
+          description="Open color name dialog"
+          id="com.eco.bio7.r_editor_open_color_name_dialog"
+          name="Open color hex dialog">
+    </command>
+    
+    
+    <command
+          description="Extract editor selection to file"
+          id="com.eco.bio7.reditor.refactor.extract.selection"
+          name="Extract editor selection to file">
+    </command>
+    <command
+          description="Create new file from clipboard"
+          id="com.eco.bio7.reditor.refactor.create.file.clipboard"
+          name="Create new File from clipboard">
+    </command>
+    <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Zoom in text, increase default font size for text editors"
+          id="com.eco.bio7.reditor.actions.text.zoomIn"
+          name="Zoom In">
+    </command>
+    <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Zoom out text, decrease default font size for text editors"
+          id="com.eco.bio7.reditor.actions.text.zoomOut"
+          name="Zoom Out">
+    </command>
+    <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Add an assignment operator"
+          id="com.eco.bio7.reditor.actions.addAssignemntOp"
+          name="Add Assignment">
+    </command>
+    <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Add a pipe operator"
+          id="com.eco.bio7.reditor.actions.addPipeOp"
+          name="Add Pipe Operator">
+    </command>
+    <command
+          description="Open file dialog"
+          id="com.eco.bio7.r_editor_open_file_dialog"
+          name="Open file dialog">
+    </command>
+    <command
+          description="Save file dialog"
+          id="com.eco.bio7.r_editor_save_file_dialog"
+          name="Save file dialog">
+    </command>
+    <command
+          description="Open directory dialog"
+          id="com.eco.bio7.r_editor_open_directory_dialog"
+          name="Open directory dialog">
+    </command>
+ </extension>
+ <extension
+     point="org.eclipse.ui.themes">
+  <fontDefinition
+        label="R Editor Font"
+        defaultsTo="org.eclipse.jface.textfont"
+        categoryId="com.eco.bio7.redit.rtheme"
+        id="com.eco.bio7.reditor.reditor.textfont">
+     
+  </fontDefinition>
+  <themeElementCategory
+        id="com.eco.bio7.redit.rtheme"
+        label="R editor">
+  </themeElementCategory>
+ </extension>
+ <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="com.eco.bio7.reditor.actions.TextZoomInHandler"
+            commandId="com.eco.bio7.reditor.actions.text.zoomIn">
+           
+      </handler>
+      <handler
+            class="com.eco.bio7.reditor.actions.TextZoomOutHandler"
+            commandId="com.eco.bio7.reditor.actions.text.zoomOut">
+           
+      </handler>
+      <handler
+            class="com.eco.bio7.reditor.actions.AddAssignOperator"
+            commandId="com.eco.bio7.reditor.actions.addAssignemntOp">
+      </handler>
+      <handler
+            class="com.eco.bio7.reditor.actions.AddPipeOperator"
+            commandId="com.eco.bio7.reditor.actions.addPipeOp">
+      </handler>
+   </extension>
+   <extension point="org.eclipse.ui.contexts">
+          <context name="R Editor Context"
+           description="R Editor Context"
+           parentId="org.eclipse.ui.textEditorScope"
+           id="com.eco.bio7.reditor.REditorScope" />
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            category="com.eco.bio7.rapplication"
+            class="com.eco.bio7.reditor.database.view.DatabaseView"
+            icon="icons/reditor.png"
+            id="com.eco.bio7.reditor.database.view.DatabaseView"
+            name="Database">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:#REditorContext?after=additions">
+         <menu
+               id="reditor.text"
+               label="Text">
+            <command
+                  commandId="org.eclipse.ui.edit.findReplace"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.edit.text.toggleBlockSelectionMode"
+                  style="toggle">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.edit.text.upperCase"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.edit.text.lowerCase"
+                  style="push">
+            </command>
+         </menu>
+      </menuContribution>
+   </extension>
+</plugin>
