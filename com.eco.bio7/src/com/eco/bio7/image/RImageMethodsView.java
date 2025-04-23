@@ -166,7 +166,8 @@ public class RImageMethodsView extends ViewPart {
 
 		btnNewButton = new Button(top, SWT.NONE);
 		btnNewButton.setToolTipText("Transfers the ImageJ \"Results Table\" data\r\nas a dataframe to R (datatype double).");
-		rGif = Bio7Plugin.getImageDescriptor("/icons/views/raction.png").createImage();
+		Image rGif = Bio7Plugin.getImageDescriptor("/icons/views/raction.png").createImage();
+		
 		btnNewButton.setImage(rGif);
 		btnNewButton.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -215,7 +216,7 @@ public class RImageMethodsView extends ViewPart {
 
 		btnNewButton_1 = new Button(top, SWT.NONE);
 		btnNewButton_1.setToolTipText("Transfers an opened ImageJ stack (pixel data)\r\nas a matrix list or RasterStack to R.\r\nThe datatype can be selected, too!");
-		rGif = Bio7Plugin.getImageDescriptor("/icons/views/raction.png").createImage();
+		
 		btnNewButton_1.setImage(rGif);
 		btnNewButton_1.addSelectionListener(new SelectionAdapter() {
 			boolean convertToRaster;
@@ -276,7 +277,7 @@ public class RImageMethodsView extends ViewPart {
 		// button2.setFont(SWTResourceManager.getFont("Courier New", 9,
 		// SWT.BOLD));
 		button2.setText("ROI         ");
-		rGif = Bio7Plugin.getImageDescriptor("/icons/views/raction.png").createImage();
+		
 		button2.setImage(rGif);
 		button2.setToolTipText("Transfer the current ROI selection coordinates\nto R ");
 
@@ -380,7 +381,7 @@ public class RImageMethodsView extends ViewPart {
 		selectedPixelsButton = new Button(top, SWT.NONE);
 		selectedPixelsButton
 				.setToolTipText("" + "Transfers the selected pixels (Freehand, Rectangular etc.)\n" + "with or without a signature as a matrix to R.\n" + "The transfer type can be selected, too!");
-		selectedPixelsButton.setImage(Bio7Plugin.getImageDescriptor("/icons/views/raction.png").createImage());
+		selectedPixelsButton.setImage(rGif);
 		// selectedPixelsButton.setFont(SWTResourceManager.getFont("Courier New",
 		// 9, SWT.BOLD));
 		selectedPixelsButton.addSelectionListener(new SelectionAdapter() {
