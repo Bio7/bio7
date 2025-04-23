@@ -30,5 +30,15 @@
 			</dependency>
 		</dependencies>
 	</location>
+	<location includeDependencyDepth="none" includeSource="true" missingManifest="generate" type="Maven">
+		<dependencies>
+			<dependency>
+				<groupId>org.boofcv</groupId>
+				<artifactId>boofcv-core</artifactId>
+				<version>1.2.1</version>
+				<type>jar</type>
+			</dependency>
+		</dependencies>
+	</location>
 </locations>
 </target>
