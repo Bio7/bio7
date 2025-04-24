@@ -13,32 +13,11 @@
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<repository location="https://download.eclipse.org/nebula/updates/release/3.1.1"/>
-		<unit id="org.eclipse.nebula.visualization.feature.feature.group" version="2.1.0.202402011804"/>
 		<unit id="org.eclipse.nebula.feature.feature.group" version="3.1.1.202402011804"/>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<repository location="https://download.eclipse.org/texlipse/2.0.3/"/>
 		<unit id="org.eclipse.texlipse.main.feature.group" version="0.0.0"/>
-	</location>
-	<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
-		<dependencies>
-			<dependency>
-				<groupId>org.apache.groovy</groupId>
-				<artifactId>groovy</artifactId>
-				<version>4.0.26</version>
-				<type>jar</type>
-			</dependency>
-		</dependencies>
-	</location>
-	<location includeDependencyDepth="none" includeSource="true" missingManifest="generate" type="Maven">
-		<dependencies>
-			<dependency>
-				<groupId>org.boofcv</groupId>
-				<artifactId>boofcv-core</artifactId>
-				<version>1.2.1</version>
-				<type>jar</type>
-			</dependency>
-		</dependencies>
 	</location>
 </locations>
 </target>

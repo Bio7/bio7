@@ -9,7 +9,19 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.nebula.widgets.richtext.RichTextEditor;
+import org.eclipse.nebula.widgets.richtext.RichTextViewer;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
@@ -22,6 +34,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.eco.bio7.browser.editor.XMLEditor;
 
@@ -54,6 +67,8 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 
 	protected Timer timer;
 	protected Job job;
+	private RichTextViewer viewer;
+	private Text htmlOutput;
 
 	public MultiPageEditor() {
 		super();
@@ -64,6 +79,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	}
 
 	void createPage1() {
+		
 		try {
 			editor = new XMLEditor();
 			int index = addPage(editor, getEditorInput());
@@ -75,6 +91,36 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	}
 
 	public void createPage0() {
+		Composite composite = new Composite(getContainer(), SWT.NONE);
+		composite.setLayout(new GridLayout(2, true));
+		final RichTextEditor editor = new RichTextEditor(composite);
+		GridDataFactory.fillDefaults().grab(true, true).applyTo(editor);
+
+		viewer = new RichTextViewer(composite, SWT.BORDER | SWT.WRAP);
+		viewer.setWordSplitRegex("\\s|\\-");//wrap after whitespace characters and delimiter
+		GridDataFactory.fillDefaults().grab(true, true).span(1, 2).applyTo(viewer);
+
+		htmlOutput = new Text(composite,
+				SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.READ_ONLY);
+		GridDataFactory.fillDefaults().grab(true, false).span(2, 1).hint(SWT.DEFAULT, 100).applyTo(htmlOutput);
+
+		Composite buttonPanel = new Composite(composite, SWT.NONE);
+		buttonPanel.setLayout(new RowLayout());
+		GridDataFactory.fillDefaults().grab(true, false).applyTo(buttonPanel);
+
+		Button getButton = new Button(buttonPanel, SWT.PUSH);
+		getButton.setText("Get text");
+		getButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				String htmlText = editor.getText();
+				viewer.setText(htmlText);
+				htmlOutput.setText(htmlText);
+			}
+		});
+		
+		int index = addPage(composite);
+		setPageText(index, "Nebula");
 	}
 
 	/*
@@ -95,10 +141,10 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 	 */
 	@Override
 	protected void createPages() {
-		// createPage0();
+		//createPage0();
 		createPage1();
 
-		setActivePage(1);
+		setActivePage(0);
 
 	}
 
@@ -205,8 +251,16 @@ public class MultiPageEditor extends MultiPageEditorPart implements IResourceCha
 		super.pageChange(newPageIndex);
 		if (newPageIndex == 0) {
 			//IDocument doc = editor.getDocumentProvider().getDocument(getEditor(1).getEditorInput());
+			//IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(getEditor(1).getEditorInput());
+
+			
+			//viewer.setText(doc.get());
+			//htmlOutput.setText(doc.get());
 
 		} else if (newPageIndex == 1) {
+			
+			
+			
 
 		}
 		refreshOutlineView();
