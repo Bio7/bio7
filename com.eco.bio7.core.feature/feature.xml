@@ -72,9 +72,9 @@
       <import plugin="org.eclipse.nebula.widgets.grid" version="1.0.0" match="greaterOrEqual"/>
       <import plugin="com.eco.bio7.markdownedit" version="3.4.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.jface"/>
-      <import plugin="net.sourceforge.texlipse"/>
       <import plugin="org.apache.httpcomponents.httpcore"/>
       <import plugin="org.eclipse.e4.ui.css.swt.theme"/>
+      <import plugin="org.eclipse.texlipse"/>
    </requires>
 
    <plugin

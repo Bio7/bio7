@@ -22,6 +22,7 @@
 	</developer>
 </developers>
 <modules>
+	<module>../Bundled_R</module>
 	<module>../com.eco.bio7.browser</module>
 	<module>../com.eco.bio7.browser.feature</module>
 	<module>../com.eco.bio7.core.feature</module>
@@ -29,6 +30,8 @@
 	<module>../com.eco.bio7.edit.feature</module>
 	<module>../com.eco.bio7.floweditor</module>
 	<module>../com.eco.bio7.floweditor.feature</module>
+	<module>../com.eco.bio7.javacv</module>
+	<module>../com.eco.bio7.javacv.feature</module>
 	<module>../com.eco.bio7.javaedit</module>
 	<module>../com.eco.bio7.javaedit.feature</module>
 	<module>../com.eco.bio7.libs</module>
@@ -39,6 +42,8 @@
 	<module>../com.eco.bio7.os.feature</module>
 	<module>../com.eco.bio7.pythonedit</module>
 	<module>../com.eco.bio7.pythonedit.feature</module>
+	<module>../com.eco.bio7.redit</module>
+	<module>../com.eco.bio7.redit.feature</module>
 	<module>../com.eco.bio7.targetplatform</module>
 	<module>../com.eco.bio7.themes_</module>
 	<module>../com.eco.bio7.themes.feature</module>
@@ -46,7 +51,5 @@
 	<module>../com.eco.bio7.util.feature</module>
 	<module>../com.eco.bio7.WorldWind</module>
 	<module>../com.eco.bio7.worldwind.feature</module>
-	<!-- <module>../net.sourceforge.texlipse</module> -->
-	<!-- <module>../net.sourceforge.texlipse-feature</module> -->
 </modules>
 </project>
