@@ -1,16 +1,17 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Javacv
-Bundle-SymbolicName: com.eco.bio7.javacv
-Bundle-Version: 1.4.5.qualifier
+Bundle-SymbolicName: com.eco.bio7.javacv;singleton:=true
+Bundle-Version: 1.4.6
 Bundle-Activator: com.eco.bio7.javacv.Activator
 Bundle-Vendor: ECO
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime
-Bundle-RequiredExecutionEnvironment: JavaSE-14
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: com.eco.bio7.javacv
 Bundle-ActivationPolicy: lazy
-Bundle-ClassPath: libs/boofcv-core-1.2.1.jar,
+Bundle-ClassPath: bin/,
+ libs/boofcv-core-1.2.1.jar,
  libs/boofcv-feature-1.2.1.jar,
  libs/boofcv-geo-1.2.1.jar,
  libs/boofcv-io-1.2.1.jar,

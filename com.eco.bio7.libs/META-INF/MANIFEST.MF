@@ -8,7 +8,7 @@ Bundle-Vendor: ECO
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.draw2d
-Bundle-RequiredExecutionEnvironment: JavaSE-14
+Bundle-RequiredExecutionEnvironment: JavaSE-18
 Bundle-ActivationPolicy: lazy
 Eclipse-BuddyPolicy: ext
 Bundle-ClassPath: bin/,

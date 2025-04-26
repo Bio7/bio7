@@ -2,7 +2,7 @@
 <feature
       id="com.eco.bio7.javacv.feature"
       label="Java CV"
-      version="1.4.5.qualifier"
+      version="1.4.6"
       provider-name="ECO">
 
    <description url="http://www.example.com/description">
@@ -375,8 +375,6 @@ Apache License
 
    <plugin
          id="com.eco.bio7.javacv"
-         download-size="0"
-         install-size="0"
-         version="1.4.5.qualifier"/>
+         version="1.4.6"/>
 
 </feature>

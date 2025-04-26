@@ -6,6 +6,7 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="bin/"/>
 	<classpathentry exported="true" kind="lib" path="libs/boofcv-core-1.2.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/boofcv-feature-1.2.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/boofcv-geo-1.2.1.jar"/>
