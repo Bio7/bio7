@@ -375,6 +375,6 @@ Apache License
 
    <plugin
          id="com.eco.bio7.javacv"
-         version="1.4.6"/>
+         version="3.6.0.qualifier"/>
 
 </feature>
