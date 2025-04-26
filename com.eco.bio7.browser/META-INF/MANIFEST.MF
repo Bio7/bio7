@@ -17,7 +17,7 @@ Require-Bundle: org.eclipse.ui,
  com.eco.bio7.util;bundle-version="2.0.0",
  org.eclipse.ui.views,
  org.eclipse.nebula.widgets.richtext;bundle-version="1.5.1"
-Bundle-RequiredExecutionEnvironment: JavaSE-14
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: com.eco.bio7.browser,
  com.eco.bio7.browser.editor,
  com.swtdesigner,

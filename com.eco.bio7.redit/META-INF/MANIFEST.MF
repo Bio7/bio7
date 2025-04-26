@@ -46,5 +46,5 @@ Export-Package: com.eco.bio7.reditor,
 Bundle-ClassPath: bin/,
  libs/antlr-runtime-4.13.1.jar
 Import-Package: org.eclipse.ui.views.contentoutline
-Bundle-RequiredExecutionEnvironment: JavaSE-14
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 

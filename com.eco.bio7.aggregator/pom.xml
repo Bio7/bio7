@@ -32,6 +32,8 @@
 	<module>../com.eco.bio7.edit.feature</module>
 	<module>../com.eco.bio7.floweditor</module>
 	<module>../com.eco.bio7.floweditor.feature</module>
+	<module>../com.eco.bio7.javacv</module>
+	<module>../com.eco.bio7.javacv.feature</module>
 	<module>../com.eco.bio7.javaedit</module>
 	<module>../com.eco.bio7.javaedit.feature</module>
 	<module>../com.eco.bio7.libs</module>

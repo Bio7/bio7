@@ -62,4 +62,4 @@ Export-Package: com.eco.bio7.os.pid,
  purejavacomm.testsuite
 Import-Package: org.eclipse.swt.widgets
 Require-Bundle: com.eco.bio7.libs;bundle-version="3.4.0"
-Bundle-RequiredExecutionEnvironment: JavaSE-14
+Bundle-RequiredExecutionEnvironment: JavaSE-21

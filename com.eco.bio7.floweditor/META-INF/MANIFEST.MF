@@ -16,5 +16,5 @@ Export-Package: com.eco.bio7.floweditor.commands,com.eco.bio7.flowedit
  or.model,com.eco.bio7.floweditor.parts,com.eco.bio7.floweditor.shapes
  ,com.eco.bio7.floweditor.shapes.icons,com.eco.bio7.floweditor.figures
 Bundle-ClassPath: bin/
-Bundle-RequiredExecutionEnvironment: JavaSE-14
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 

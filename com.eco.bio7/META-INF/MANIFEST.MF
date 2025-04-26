@@ -1295,10 +1295,11 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jface,
  org.apache.httpcomponents.httpcore,
  org.eclipse.nebula.widgets.grid;bundle-version="1.1.1",
- org.eclipse.texlipse;bundle-version="2.0.3"
+ org.eclipse.texlipse;bundle-version="2.0.3",
+ com.eco.bio7.javacv;bundle-version="3.6.0"
 Eclipse-LazyStart: true
 Import-Package: org.eclipse.e4.ui.css.swt.theme
-Bundle-RequiredExecutionEnvironment: JavaSE-14
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ClassPath: bin/,
  libs/groovy/ant-1.10.14.jar,
  libs/groovy/ant-antlr-1.10.14.jar,

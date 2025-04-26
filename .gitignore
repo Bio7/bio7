@@ -1,2 +1,6 @@
 # Tycho
 *.polyglot.*
+*.class
+*.DS_Store
+*/target/*
+/bin

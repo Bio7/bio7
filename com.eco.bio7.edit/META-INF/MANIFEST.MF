@@ -17,6 +17,6 @@ Export-Package: com.eco.bio7.beanshell.editor.preferences,
  com.eco.bio7.editor,
  com.eco.bio7.editors,
  com.eco.bio7.reditor.preferences.template
-Bundle-RequiredExecutionEnvironment: JavaSE-14
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ClassPath: bin/
 

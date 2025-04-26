@@ -74,6 +74,7 @@
       <import plugin="org.apache.httpcomponents.httpcore"/>
       <import plugin="org.eclipse.e4.ui.css.swt.theme"/>
       <import plugin="org.eclipse.texlipse"/>
+      <import plugin="com.eco.bio7.javacv"/>
    </requires>
 
    <plugin
