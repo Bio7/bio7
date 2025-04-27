@@ -57,5 +57,6 @@
 	<module>../com.eco.bio7.util.feature</module>
 	<module>../com.eco.bio7.WorldWind</module>
 	<module>../com.eco.bio7.worldwind.feature</module>
+	<module>../com.eco.bio7.product</module>
 </modules>
 </project>
