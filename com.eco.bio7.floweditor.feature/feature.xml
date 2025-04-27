@@ -30,9 +30,6 @@
 
    <plugin
          id="com.eco.bio7.floweditor"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="2.0.0"/>
 
 </feature>

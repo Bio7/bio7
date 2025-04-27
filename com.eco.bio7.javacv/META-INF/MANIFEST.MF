@@ -818,6 +818,6 @@ Bundle-ClassPath: libs/boofcv-core-1.2.1.jar,
 Bundle-Vendor: ECO
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime
-Bundle-RequiredExecutionEnvironment: JavaSE-18
+Bundle-RequiredExecutionEnvironment: JavaSE-20
 Automatic-Module-Name: com.eco.bio7.javacv
 Bundle-ActivationPolicy: lazy

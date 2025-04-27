@@ -66,7 +66,6 @@ jdk/bin/javaw.exe
    <vm>
    </vm>
 
-
    <plugins>
       <plugin id="Bundled_R"/>
       <plugin id="com.eco.bio7"/>
@@ -216,8 +215,8 @@ jdk/bin/javaw.exe
    <repositories>
       <repository location="https://bio7.github.io/imagej" name="" enabled="true" />
       <repository location="https://bio7.github.io/reditor" name="" enabled="true" />
-      <repository location="http://download.eclipse.org/releases/2025-03" enabled="true" />
-      <repository location="http://download.eclipse.org/eclipse/updates/4.35" enabled="true" />
+      <repository location="http://download.eclipse.org/releases/2025-03" name="" enabled="true" />
+      <repository location="http://download.eclipse.org/eclipse/updates/4.35" name="" enabled="true" />
    </repositories>
 
    <preferencesInfo>

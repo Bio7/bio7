@@ -10,7 +10,7 @@ Bundle-Activator: bundled_r.Activator
 Bundle-Localization: plugin
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- com.eco.bio7.libs;bundle-version="2.5.0"
+ com.eco.bio7.libs;bundle-version="3.4.0"
 Eclipse-LazyStart: true
 Export-Package: bundled_r,
  com.eco.bio7.rbridge
