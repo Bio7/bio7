@@ -23,7 +23,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jdt.ui,
  org.eclipse.text
 Eclipse-LazyStart: true
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ClassPath: bin/,
  commons-io-1.4.jar,
  external:$java.home$/lib/tools.jar

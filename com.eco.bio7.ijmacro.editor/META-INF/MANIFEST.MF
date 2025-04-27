@@ -22,7 +22,7 @@ Eclipse-LazyStart: true
 Import-Package: org.eclipse.ui.views.contentoutline
 Bundle-ClassPath: bin/,
  libs/antlr-runtime-4.13.1.jar
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: com.eco.bio7.ijmacro.editor,
  com.eco.bio7.ijmacro.editor.actions,
  com.eco.bio7.ijmacro.editor.preferences,
