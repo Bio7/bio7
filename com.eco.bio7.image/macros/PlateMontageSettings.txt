@@ -1,0 +1,18 @@
+inputPath	C:\AttoVision\Data\
+outputPath	..\..\
+folderFormat	384
+imageUse1	1
+image1	Alexa 594 - n000000.tif
+imageUse2	1
+image2	Hoechst - n000000.tif
+imageUse3	0
+image3	
+rowFromChar	A
+colFrom	1
+rowToChar	P
+colTo	24
+scaledWidth	200
+invertImages	0
+invertMontage	0
+invertBorders	0
+popupDone	1

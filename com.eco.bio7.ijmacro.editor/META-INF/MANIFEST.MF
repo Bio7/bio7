@@ -1,0 +1,32 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.7.0
+Created-By: 1.6.0_02-b05 (Sun Microsystems Inc.)
+Bundle-ManifestVersion: 2
+Bundle-Name: ImageJ Macro Editor
+Bundle-SymbolicName: com.eco.bio7.ijmacro.editor;singleton:=true
+Bundle-Version: 2.0.287
+Bundle-Activator: com.eco.bio7.ijmacro.editor.IJMacroEditorPlugin
+Bundle-Vendor: ECO
+Bundle-Localization: plugin
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.jface.text,
+ org.eclipse.ui.editors,
+ org.eclipse.ui.workbench.texteditor,
+ org.eclipse.jdt.core,
+ org.eclipse.text,
+ org.eclipse.ui.ide,
+ org.eclipse.core.resources,
+ com.eco.bio7.image,
+ com.eco.bio7.imagej2;resolution:=optional
+Eclipse-LazyStart: true
+Import-Package: org.eclipse.ui.views.contentoutline
+Bundle-ClassPath: bin/,
+ libs/antlr-runtime-4.13.1.jar
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Export-Package: com.eco.bio7.ijmacro.editor,
+ com.eco.bio7.ijmacro.editor.actions,
+ com.eco.bio7.ijmacro.editor.preferences,
+ com.eco.bio7.ijmacro.editor.preferences.template,
+ com.eco.bio7.ijmacro.editors
+

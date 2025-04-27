@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--Here the description is self defined and not in the file ant.properties. -->
+<templates>
+
+<!--Here the description are taken from the ant.properties file -->
+
+<template name="for" description="%Templates.for_array" id="org.eclipse.jdt.ui.templates.for_array" context="ijmacro" enabled="true" autoinsert="false">for (${index} = 0; ${index} &lt; ${array}.length; ${index}++) {
+	${line_selection}${cursor}
+}</template>
+
+
+<template name="do" description="%Templates.do" id="org.eclipse.jdt.ui.templates.do" context="ijmacro" enabled="true" autoinsert="false">do {
+	${line_selection}${cursor}
+} while (${condition});</template>
+
+<template name="if" description="%Templates.if" id="org.eclipse.jdt.ui.templates.if" context="ijmacro" enabled="true" autoinsert="false">if (${condition}) {
+	${line_selection}${cursor}
+}</template>
+
+<template name="ifelse" description="%Templates.ifelse" id="org.eclipse.jdt.ui.templates.ifelse" context="ijmacro" enabled="true" autoinsert="false">if (${condition}) {
+	${cursor}
+} else {
+	
+}</template>
+
+
+<template name="else" description="%Templates.else" id="org.eclipse.jdt.ui.templates.else" context="ijmacro" enabled="true" autoinsert="false">else {
+	${cursor}
+}</template>
+
+
+
+<template name="function" description="%Templates.public_method" id="org.eclipse.jdt.ui.templates.public_method" context="ijmacro" enabled="true" autoinsert="false">function ${name}(${}) {
+	${cursor}
+}</template>
+
+<template name="macro" description="A macro definition" id="org.eclipse.jdt.ui.templates.ijmacro.macro" context="ijmacro" enabled="true" autoinsert="false">macro "${name}" {
+	${cursor}
+}</template>
+
+
+<template name="while" description="%Templates.while_condition" id="org.eclipse.jdt.ui.templates.while_condition" context="ijmacro" enabled="true" autoinsert="false">while (${condition}) {
+	${line_selection}${cursor}
+}</template>
+
+<template autoinsert="true" context="ijmacro" deleted="false" id="org.eclipse.jdt.ui.templates.roi_iteration" description="ROI Iteration Template" enabled="true" name="ROI Manager Iteration">n = roiManager("count");&#13;
+for (${index}=0; ${index}&lt;n; ${index}++) {&#13;
+      roiManager("select", ${index});&#13;
+      getStatistics(area, mean);&#13;
+      setResult("Area",  ${index}, area);&#13;
+      setResult("Mean", ${index}, mean);&#13;
+}&#13;
+updateResults();
+</template>
+
+<template autoinsert="true" context="ijmacro" deleted="false" id="org.eclipse.jdt.ui.templates.stack_iteration" description="A loop over all slices in a stack" enabled="true" name="Stack Iteration">for (n=1; n&lt;=nSlices; n++) {&#13;
+          setSlice(n);&#13;
+          run("Measure");&#13;
+}</template>
+
+</templates>
+
+
+
+
+
+

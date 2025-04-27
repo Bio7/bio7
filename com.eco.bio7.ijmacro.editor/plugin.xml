@@ -1,0 +1,848 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>  
+    <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="com.eco.bio7.ijmacro.editors.IJMacroEditor"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            default="true"
+            extensions="ijm"
+            icon="icons/imagejmacrofile.png"
+            id="com.eco.bio7.editors.ijmacro.editor"
+            name="ImageJ Macro Editor"
+            symbolicFontName="com.eco.bio7.ijmacro.editor.textfont">
+      </editor>
+   </extension>
+   <extension
+         id="ExampleJavaDocumentSetupParticipant"
+         name="%documentSetupParticipantName"
+         point="org.eclipse.core.filebuffers.documentSetup">
+      <participant
+            extensions="ijm"
+            class="com.eco.bio7.ijmacro.editors.ScriptDocumentSetupParticipant">
+      </participant>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="com.eco.bio7.image.preferences.Bio7ImageJPreferences"
+            class="com.eco.bio7.ijmacro.editor.preferences.TemplatesPreferencePage"
+            id="org.eclipse.ui.examples.templateeditor.preferencepage"
+            name="Preferences ImageJ Macro Editor Templates">
+      </page>
+      <page
+            category="com.eco.bio7.image.preferences.Bio7ImageJPreferences"
+            class="com.eco.bio7.ijmacro.editor.preferences.WorkbenchPreferenceijmacro"
+            id="prefijmacroeditor"
+            name="Preferences ImageJ Macro Editor"/>
+      <page
+            category="com.eco.bio7.image.preferences.Bio7ImageJPreferences"
+            class="com.eco.bio7.ijmacro.editor.preferences.PreferencesCode"
+            id="com.eco.bio7.ijmacro.editor.code"
+            name="Preferences ImageJ Macro Code">
+      </page>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.editors.templates">
+      <contextType
+            name="%xml.contextType.name"
+            class="com.eco.bio7.ijmacro.editor.preferences.template.IJMacroContextType"
+            id="ijmacro">
+      </contextType>
+     
+      <include
+      		file="templates/ant.xml"
+      		translations="$nl$/templates/ant.properties">
+      </include>
+   </extension>
+   <extension
+        point="org.eclipse.core.runtime.preferences">
+     <initializer
+           class="com.eco.bio7.ijmacro.editor.preferences.PreferenceInitializer">
+     </initializer>
+  </extension>
+  <extension
+     point="org.eclipse.ui.themes">
+  <fontDefinition
+        label="ImageJ Macro Editor Font"
+        defaultsTo="org.eclipse.jface.textfont"
+        categoryId="com.eco.bio7.ijmacro.editor.theme"
+        id="com.eco.bio7.ijmacro.editor.textfont">
+     
+  </fontDefinition>
+  <themeElementCategory
+        id="com.eco.bio7.ijmacro.editor.theme"
+        label="ImageJ Macro editor">
+  </themeElementCategory>
+ </extension>
+ <extension
+    id="com.eco.bio7.ijmacroeditor.wordmarker"
+    name="IJ Macro Editor Word"
+    point="org.eclipse.core.resources.markers">
+  <super
+    type="org.eclipse.core.resources.textmarker">
+  </super>
+</extension>
+ <extension
+         point="org.eclipse.ui.editors.annotationTypes">
+      <type
+            markerType="com.eco.bio7.ijmacroeditor.wordmarker"
+            name="com.eco.bio7.ijmacroeditor.wordmarker">
+      </type>
+   </extension>
+ <extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="com.eco.bio7.ijmacroeditor.wordmarker"
+            colorPreferenceKey="com.eco.bio7.ijmacroeditor.wordmarker.color"
+            colorPreferenceValue="112,128,144"
+            contributesToHeader="false"
+            highlightPreferenceKey="com.eco.bio7.ijmacroeditor.wordmarker.highlight"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="true"
+            label="IJ Macro Editor Word Marker"
+            overviewRulerPreferenceKey="com.eco.bio7.ijmacroeditor.wordmarker.overview"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="0"
+            textPreferenceKey="com.eco.bio7.ijmacroeditor.wordmarker.text"
+            textPreferenceValue="true"
+            textStylePreferenceValue="BOX"
+            verticalRulerPreferenceKey="com.eco.bio7.ijmacroeditor.wordmarker.ruler"
+            verticalRulerPreferenceValue="true">
+      </specification>
+   </extension>
+ <extension
+         point="org.eclipse.ui.handlers">
+         <handler
+            class="com.eco.bio7.ijmacro.editor.actions.debug.DebugHandler"
+            commandId="com.eco.bio7.ijmacro.editor.actions.text.debug">
+           
+      </handler>
+      <handler
+            class="com.eco.bio7.ijmacro.editor.actions.debug.DebugAbortHandler"
+            commandId="com.eco.bio7.ijmacro.editor.actions.text.debug.abort">
+           
+      </handler>
+      <handler
+            class="com.eco.bio7.ijmacro.editor.actions.debug.DebugStepHandler"
+            commandId="com.eco.bio7.ijmacro.editor.actions.text.debug.step">
+           
+      </handler>
+      <handler
+            class="com.eco.bio7.ijmacro.editor.actions.debug.TraceHandler"
+            commandId="com.eco.bio7.ijmacro.editor.actions.text.debug.trace">
+           
+      </handler>
+      <handler
+            class="com.eco.bio7.ijmacro.editor.actions.debug.FastTraceHandler"
+            commandId="com.eco.bio7.ijmacro.editor.actions.text.debug.fasttrace">
+           
+      </handler>
+      
+      <handler
+            class="com.eco.bio7.ijmacro.editor.actions.debug.RunToInsertionPointHandler"
+            commandId="com.eco.bio7.ijmacro.editor.actions.text.debug.runto">
+           
+      </handler>
+      
+      <handler
+            class="com.eco.bio7.ijmacro.editor.actions.debug.RunToCompletionHandler"
+            commandId="com.eco.bio7.ijmacro.editor.actions.text.debug.runtocompletion">
+           
+      </handler>
+      
+      <handler
+            class="com.eco.bio7.ijmacro.editor.actions.debug.EvaluateLineHandler"
+            commandId="com.eco.bio7.ijmacro.editor.actions.text.debug.evaluateline">
+           
+      </handler>
+      <handler
+            class="com.eco.bio7.ijmacro.editor.actions.TextZoomInHandler"
+            commandId="com.eco.bio7.ijmacro.editor.actions.text.zoomIn">
+           
+      </handler>
+      <handler
+            class="com.eco.bio7.ijmacro.editor.actions.TextZoomOutHandler"
+            commandId="com.eco.bio7.ijmacro.editor.actions.text.zoomOut">
+           
+      </handler>
+       <handler
+            class="com.eco.bio7.ijmacro.editor.actions.GetMacroRecorderText"
+            commandId="com.eco.bio7.ijmacro.editor.actions.getmacrorecordertext">
+           
+      </handler>
+      <handler
+            class="com.eco.bio7.ijmacro.editor.actions.RefactorRename"
+            commandId="com.eco.bio7.ijmacroeditor.refactor.rename">
+           
+      </handler>
+      
+      <handler
+            class="com.eco.bio7.ijmacro.editor.actions.OpenFileDialog"
+            commandId="com.eco.bio7.ijmacro.editor.actions.openfiledialog">
+           
+      </handler>
+       <handler
+            class="com.eco.bio7.ijmacro.editor.actions.SaveFileDialog"
+            commandId="com.eco.bio7.ijmacro.editor.actions.opensavedialog">
+           
+      </handler>
+      <handler
+            class="com.eco.bio7.ijmacro.editor.actions.OpenDirDialog"
+            commandId="com.eco.bio7.ijmacro.editor.actions.opendirdialog">
+           
+      </handler>
+      
+      <handler
+            class="com.eco.bio7.ijmacro.editor.actions.OpenColorDialog"
+            commandId="com.eco.bio7.ijmacro.editor.actions.opencolordialog">
+           
+      </handler>
+      <handler
+            class="com.eco.bio7.ijmacro.editor.actions.OpenColorDialogRGBToHex"
+            commandId="com.eco.bio7.ijmacro.editor.actions.openhexcolordialog">
+           
+      </handler>
+     
+   </extension>
+   <extension
+       id="com.eco.bio7.beanshelleditor.refactor.rename"
+       point="org.eclipse.ui.bindings">
+        <sequenceModifier
+  			find="CTRL"
+  			replace="COMMAND"
+  			platforms="cocoa,carbon" />
+     
+   <key
+          commandId="com.eco.bio7.ijmacro.editor.actions.text.debug"
+          contextId="com.eco.bio7.ijmacro.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+D">
+    </key>
+    <key
+          commandId="com.eco.bio7.ijmacro.editor.actions.text.debug.abort"
+          contextId="com.eco.bio7.ijmacro.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+SHIFT+A">
+    </key>
+    <key
+          commandId="com.eco.bio7.ijmacro.editor.actions.text.debug.step"
+          contextId="com.eco.bio7.ijmacro.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+E">
+    </key>
+    <key
+          commandId="com.eco.bio7.ijmacro.editor.actions.text.debug.trace"
+          contextId="com.eco.bio7.ijmacro.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+T">
+    </key>
+    <key
+          commandId="com.eco.bio7.ijmacro.editor.actions.text.debug.fasttrace"
+          contextId="com.eco.bio7.ijmacro.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+SHIFT+T">
+    </key>
+    <key
+          commandId="com.eco.bio7.ijmacro.editor.actions.text.debug.runto"
+          contextId="com.eco.bio7.ijmacro.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+SHIFT+E">
+    </key>
+    
+     <key
+          commandId="com.eco.bio7.ijmacro.editor.actions.text.debug.runtocompletion"
+          contextId="com.eco.bio7.ijmacro.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+SHIFT+X">
+    </key>
+    <key
+          commandId="com.eco.bio7.ijmacro.editor.actions.text.debug.evaluateline"
+          contextId="com.eco.bio7.ijmacro.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+Y">
+    </key>
+     <key
+            commandId="com.eco.bio7.interpret.ijmacro"
+            contextId="com.eco.bio7.ijmacro.editor.scope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="CTRL+R">
+      </key>
+    <key
+          commandId="com.eco.bio7.ijmacro.editor.actions.text.zoomIn"
+          contextId="com.eco.bio7.ijmacro.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL++">
+    </key>
+    <key
+          commandId="com.eco.bio7.ijmacro.editor.actions.text.zoomOut"
+          contextId="com.eco.bio7.ijmacro.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+-">
+    </key>
+    <key
+          commandId="com.eco.bio7.interpret.ijmacro.format"
+          contextId="com.eco.bio7.ijmacro.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+SHIFT+F">
+    </key>
+    <key
+          commandId="com.eco.bio7.interpret.ijmacro.select.format"
+          contextId="com.eco.bio7.ijmacro.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+ALT+SHIFT+F">
+    </key>
+     <key
+          commandId="com.eco.bio7.ijmacro.editor.setblockcomment"
+          contextId="com.eco.bio7.ijmacro.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+SHIFT+B">
+    </key>
+    <key
+          commandId="com.eco.bio7.ijmacro.editor.unsetblockcomment"
+          contextId="com.eco.bio7.ijmacro.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+ALT+SHIFT+B">
+    </key>
+    <key
+          commandId="com.eco.bio7.ijmacro.editor.copy.imagej.forum"
+          contextId="com.eco.bio7.ijmacro.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+SHIFT+C">
+    </key>
+    <key
+          commandId="com.eco.bio7.ijmacro.editor.preferences"
+          contextId="com.eco.bio7.ijmacro.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+SHIFT+P">
+    </key>
+     <key
+          commandId="com.eco.bio7.ijmacro.editor.actions.getmacrorecordertext"
+          contextId="com.eco.bio7.ijmacro.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+SHIFT+R">
+    </key>
+    <key
+          commandId="com.eco.bio7.ijmacroeditor.refactor.rename"
+          contextId="com.eco.bio7.ijmacro.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+ALT+W">
+    </key>
+    <key
+          commandId="com.eco.bio7.ijmacro.editor.actions.openfiledialog"
+          contextId="com.eco.bio7.ijmacro.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+SHIFT+ALT+O">
+    </key>
+    <key
+          commandId="com.eco.bio7.ijmacro.editor.actions.opensavedialog"
+          contextId="com.eco.bio7.ijmacro.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+SHIFT+ALT+S">
+    </key>
+    <key
+          commandId="com.eco.bio7.ijmacro.editor.actions.opendirdialog"
+          contextId="com.eco.bio7.ijmacro.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+SHIFT+ALT+D">
+    </key>
+    
+    <key
+          commandId="com.eco.bio7.ijmacro.editor.actions.opencolordialog"
+          contextId="com.eco.bio7.ijmacro.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+ALT+SHIFT+C">
+    </key>
+    <key
+          commandId="com.eco.bio7.ijmacro.editor.actions.openhexcolordialog"
+          contextId="com.eco.bio7.ijmacro.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+ALT+SHIFT+H">
+    </key>
+    
+    
+   
+    </extension>
+   <extension 
+   point="org.eclipse.ui.commands">
+   <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Debug command"
+          id="com.eco.bio7.ijmacro.editor.actions.text.debug"
+          name="Debug">
+    </command>
+    <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Debug abort"
+          id="com.eco.bio7.ijmacro.editor.actions.text.debug.abort"
+          name="Abort">
+    </command>
+    <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Debug step"
+          id="com.eco.bio7.ijmacro.editor.actions.text.debug.step"
+          name="Step">
+    </command>
+    <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Trace"
+          id="com.eco.bio7.ijmacro.editor.actions.text.debug.trace"
+          name="Trace">
+    </command>
+    <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Fast Trace"
+          id="com.eco.bio7.ijmacro.editor.actions.text.debug.fasttrace"
+          name="Fast Trace">
+    </command>
+    <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Run To Insertion Point (Caret)"
+          id="com.eco.bio7.ijmacro.editor.actions.text.debug.runto"
+          name="Run To Insertion Point">
+    </command>
+    <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Run"
+          id="com.eco.bio7.ijmacro.editor.actions.text.debug.runtocompletion"
+          name="Run">
+    </command>
+    <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Evaluate Line"
+          id="com.eco.bio7.ijmacro.editor.actions.text.debug.evaluateline"
+          name="Evaluate Line">
+    </command>
+       <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Zoom in text, increase default font size for text editors"
+          id="com.eco.bio7.ijmacro.editor.actions.text.zoomIn"
+          name="Zoom In">
+    </command>
+    <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Zoom out text, decrease default font size for text editors"
+          id="com.eco.bio7.ijmacro.editor.actions.text.zoomOut"
+          name="Zoom Out">
+    </command>
+    
+    <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Format source"
+          id="com.eco.bio7.interpret.ijmacro.format"
+          name="Format source">
+    </command>
+    <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Format selected source"
+          id="com.eco.bio7.interpret.ijmacro.select.format"
+          name="Format selected source">
+    </command>
+    <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Add block comment"
+          id="com.eco.bio7.ijmacro.editor.setblockcomment"
+          name="Add block comment">
+    </command>
+    <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Remove block comment"
+          id="com.eco.bio7.ijmacro.editor.unsetblockcomment"
+          name="Remove block comment">
+    </command>
+    <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Copy code to ImageJ forum"
+          id="com.eco.bio7.ijmacro.editor.copy.imagej.forum"
+          name="Copy code to ImageJ forum">
+    </command>
+    <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Interpret ImageJ Macro"
+          id="com.eco.bio7.interpret.ijmacro"
+          name="Interpret ImageJ Macro Action">
+      </command>    
+    <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Open the ImageJ editor preferences"
+          id="com.eco.bio7.ijmacro.editor.preferences"
+          name="Open ImageJ editor preferences">
+    </command>
+     <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Get Macro Recorder Text"
+          id="com.eco.bio7.ijmacro.editor.actions.getmacrorecordertext"
+          name="Get Macro Recorder Text">
+    </command>
+    <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Rename"
+          id="com.eco.bio7.ijmacroeditor.refactor.rename"
+          name="Rename">
+    </command>
+    <command
+          description="Open file dialog"
+          id="com.eco.bio7.ijmacro.editor.actions.openfiledialog"
+          name="Open file dialog">
+    </command>
+    <command
+          description="Save file dialog"
+          id="com.eco.bio7.ijmacro.editor.actions.opensavedialog"
+          name="Save file dialog">
+    </command>
+    <command
+          description="Open directory dialog"
+          id="com.eco.bio7.ijmacro.editor.actions.opendirdialog"
+          name="Open directory dialog">
+    </command>
+    
+     <command
+          description="Open color dialog"
+          id="com.eco.bio7.ijmacro.editor.actions.opencolordialog"
+          name="Open color dialog">
+    </command>
+    <command
+          description="Open hex color dialog"
+          id="com.eco.bio7.ijmacro.editor.actions.openhexcolordialog"
+          name="Open hex color dialog">
+    </command>
+      
+     
+   </extension>
+   <extension point="org.eclipse.ui.contexts">
+          <context name="ImageJ Macro Editor Context"
+           description="ImageJ Macro Editor Context"
+           parentId="org.eclipse.ui.textEditorScope"
+           id="com.eco.bio7.ijmacro.editor.scope" />
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="toolbar:org.eclipse.ui.main.toolbar">
+         <toolbar
+               id="com.eco.bio7.ijmacro.editor.interpret"
+               label="Editor Actions">
+            <command
+                  commandId="com.eco.bio7.interpret.ijmacro"
+                  disabledIcon="icons/imagejmacrointerpret.png"
+                  icon="icons/imagejmacrointerpret.png"
+                  id="toolbar.interpretmacro"
+                  label="Interpret ImageJ Macro"
+                  style="push">
+               <visibleWhen>
+                  <with
+                        variable="activePartId">
+                     <or>
+                        <equals
+                              value="com.eco.bio7.editors.ijmacro.editor">
+                        </equals>
+                     </or>
+                  </with>
+               </visibleWhen>
+            </command>
+         </toolbar>
+      </menuContribution>
+      <menuContribution
+            allPopups="true"
+            locationURI="popup:#IJMacroContext?after=additions">
+         <menu
+               id="debug.menu"
+               label="Debug"
+               tooltip="Debug">
+            <command
+                  commandId="com.eco.bio7.ijmacro.editor.actions.text.debug"
+                  label="Debug Macro"
+                  style="push">
+            </command>
+            <command
+                  commandId="com.eco.bio7.ijmacro.editor.actions.text.debug.step"
+                  label="Step"
+                  style="push">
+            </command>
+            <command
+                  commandId="com.eco.bio7.ijmacro.editor.actions.text.debug.trace"
+                  label="Trace"
+                  style="push">
+            </command>
+            <command
+                  commandId="com.eco.bio7.ijmacro.editor.actions.text.debug.fasttrace"
+                  label="Fast Trace"
+                  style="push">
+            </command>
+            <command
+                  commandId="com.eco.bio7.ijmacro.editor.actions.text.debug.runtocompletion"
+                  label="Run"
+                  style="push">
+            </command>
+            <command
+                  commandId="com.eco.bio7.ijmacro.editor.actions.text.debug.runto"
+                  label="Run To Insertion Point"
+                  style="push">
+            </command>
+            <command
+                  commandId="com.eco.bio7.ijmacro.editor.actions.text.debug.abort"
+                  label="Abort"
+                  style="push">
+            </command>
+         </menu>
+         <command
+               commandId="com.eco.bio7.ijmacro.editor.actions.getmacrorecordertext"
+               label="Get Macro Recorder Text"
+               style="push">
+         </command>
+         <command
+               commandId="com.eco.bio7.ijmacro.editor.actions.text.debug.evaluateline"
+               label="Evaluate Line"
+               style="push">
+         </command>
+         <separator
+               name="com.eco.bio7.ijmacro.editor.separator1">
+         </separator>
+         <command
+               commandId="com.eco.bio7.ijmacroeditor.refactor.rename"
+               label="Rename"
+               style="push">
+         </command>
+      </menuContribution>
+      
+      <menuContribution
+            allPopups="true"
+            locationURI="popup:#IJMacroContext?after=additions">
+         <menu
+               id="dialog.menu"
+               label="File Dialogs"
+               tooltip="Filepath Dialogs">
+            <command
+                  commandId="com.eco.bio7.ijmacro.editor.actions.openfiledialog"
+                  label="Open File Dialog"
+                  style="push">
+            </command>
+            <command
+                  commandId="com.eco.bio7.ijmacro.editor.actions.opensavedialog"
+                  label="Save File Dialog"
+                  style="push">
+            </command>
+            <command
+                  commandId="com.eco.bio7.ijmacro.editor.actions.opendirdialog"
+                  label="Open Directory Dialog"
+                  style="push">
+            </command>
+           
+         </menu>        
+      </menuContribution>
+      <menuContribution
+            allPopups="true"
+            locationURI="popup:#IJMacroContext?after=additions">
+         <menu
+               id="color.dialog.menu"
+               label="Color Dialogs"
+               tooltip="Color Dialogs">
+            <command
+                  commandId="com.eco.bio7.ijmacro.editor.actions.opencolordialog"
+                  label="Open Color Dialog"
+                  style="push">
+            </command>
+            <command
+                  commandId="com.eco.bio7.ijmacro.editor.actions.openhexcolordialog"
+                  label="Open Hex Color Dialog"
+                  style="push">
+            </command>        
+         </menu>        
+      </menuContribution>
+      
+   </extension>
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <wizard
+            category="com.eco.bio7.ImageJ"
+            class="com.eco.bio7.ijmacro.editor.wizards.ImageJMacroWizard"
+            icon="icons/imagejmacrofile.png"
+            id="com.eco.bio7.ijmacro"
+            name="ImageJ Macro File"
+            project="false">
+      </wizard>
+      <category
+            id="com.eco.bio7.ImageJ"
+            name="ImageJ">
+      </category>
+   </extension>
+   <extension
+         point="org.eclipse.ui.contexts">
+      <context
+            description="IJ Macro Editor Context"
+            id="com.eco.bio7.ijmacro.editor.scope"
+            name="IJ Macro Editor Context"
+            parentId="org.eclipse.ui.textEditorScope">
+      </context>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="com.eco.bio7.ijmacro.editor.perspectives.ImageJEditPerspective"
+            icon="icons/ijeditorperspective.png"
+            id="com.eco.bio7.ijmacro.editor.perspectives.ImageJEditPerspective"
+            name="ImageJ Edit">
+      </perspective>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:#IJMacroContext?after=additions">
+            <menu
+               id="ijmacroeditor.text"
+               label="Text">
+            <command
+                  commandId="org.eclipse.ui.edit.findReplace"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.edit.text.toggleBlockSelectionMode"
+                  style="toggle">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.edit.text.upperCase"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.edit.text.lowerCase"
+                  style="push">
+            </command>
+         </menu>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            allowMultiple="true"
+            category="com.eco.bio7.image.plugin"
+            class="com.eco.bio7.ijmacro.editor.toolbar.debug.DebugVariablesView"
+            icon="icons/imagejview.png"
+            id="com.eco.bio7.ijmacro.editor.toolbar.debug"
+            name="Debug"
+            restorable="true">
+      </view>
+   </extension>
+   <extension
+    id="com.eco.bio7.ijmacro.editor.debugrulermark"
+    name="IJMacro Editor Word"
+    point="org.eclipse.core.resources.markers">
+  <super
+    type="org.eclipse.core.resources.textmarker">
+  </super>
+</extension>
+<!--To make the ruler marker persistent we have to add the suffix from 'com.eco.bio7.ijmacro.editor.debugrulermark' id here: 'debugrulermark'-->
+<extension point="org.eclipse.core.resources.markers"   
+        id="debugrulermark">
+     <super type="org.eclipse.core.resources.textmarker"/>         
+     <persistent value="true"/>
+  </extension>
+   <extension
+         point="org.eclipse.ui.editors.annotationTypes">
+      <type
+            markerType="com.eco.bio7.ijmacro.editor.debugrulermark"
+            name="com.eco.bio7.ijmacro.editor.debugrulermark">
+      </type>
+   </extension>
+
+ <extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="com.eco.bio7.ijmacro.editor.debugrulermark"
+            colorPreferenceKey="com.eco.bio7.ijmacro.editor.debugrulermark.color"
+            colorPreferenceValue="180,230,180"
+            contributesToHeader="false"
+            highlightPreferenceKey="com.eco.bio7.ijmacro.editor.debugrulermark.highlight"
+            highlightPreferenceValue="true"
+            icon="/icons/brkp_obj.png"
+            includeOnPreferencePage="true"
+            label="ImageJ Breakpoint Marker"
+            overviewRulerPreferenceKey="com.eco.bio7.ijmacro.editor.debugrulermark.overview"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="0"
+            textPreferenceKey="com.eco.bio7.ijmacro.editor.debugrulermark.text"
+            textPreferenceValue="true"
+            textStylePreferenceValue="BOX"
+            verticalRulerPreferenceKey="com.eco.bio7.ijmacro.editor.debugrulermark.ruler"
+            verticalRulerPreferenceValue="true">
+      </specification>
+   </extension>
+ <extension
+       point="org.eclipse.ui.popupMenus">
+    <viewerContribution
+          id="IJMacroDebug.rulerActions"
+          targetID="com.eco.bio7.editors.ijmacro.editor.RulerContext">
+       <action
+             class="com.eco.bio7.ijmacro.editor.toolbar.debug.DeleteBreakpointAction"
+             id="DeleteBreakpointAction"
+             label="Delete All Breakpoints"
+             menubarPath="debug">
+       </action>
+       <action
+             class="com.eco.bio7.ijmacro.editor.toolbar.debug.DeleteSelBreakpointAction"
+             id="DeleteSelectedBreakpointAction"
+             label="Delete Selected Breakpoint"
+             menubarPath="debug">
+       </action>
+       <action
+             class="com.eco.bio7.ijmacro.editor.toolbar.debug.EditSelBreakpointAction"
+             id="EditConditionalBreakpointAction"
+             label="Edit Conditional Breakpoint"
+             menubarPath="debug">
+       </action>
+       <action
+             class="com.eco.bio7.ijmacro.editor.toolbar.debug.ToggleDebugConditionalBreakpointAction"
+             id="AddConditionalBreakpointAction"
+             label="Add Conditional Breakpoint"
+             menubarPath="debug">
+       </action>
+       <action
+             class="com.eco.bio7.ijmacro.editor.toolbar.debug.ToggleDebugBreakpointAction"
+             id="AddBreakpointAction"
+             label="Add Breakpoint"
+             menubarPath="debug">
+       </action>
+    </viewerContribution>
+ </extension>
+ 	<extension
+    id="com.eco.bio7.ijmacroeditor.debugrulermarkarrow"
+    name="ImageJ Macro Editor Word"
+    point="org.eclipse.core.resources.markers">
+  		<super
+    type="org.eclipse.core.resources.textmarker">
+  		</super>
+	</extension>
+	<extension
+         point="org.eclipse.ui.editors.annotationTypes">
+      <type
+            markerType="com.eco.bio7.ijmacroeditor.debugrulermarkarrow"
+            name="com.eco.bio7.ijmacroeditor.debugrulermarkarrow">
+      </type>
+   	</extension>
+
+ 	<extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="com.eco.bio7.ijmacroeditor.debugrulermarkarrow"
+            colorPreferenceKey="com.eco.bio7.ijmacroeditor.debugrulermarkarrow.color"
+            colorPreferenceValue="128,128,128"
+            contributesToHeader="false"
+            highlightPreferenceKey="com.eco.bio7.ijmacroeditor.debugrulermarkarrow.highlight"
+            highlightPreferenceValue="true"
+            icon="/icons/occ_match.png"
+            includeOnPreferencePage="true"
+            label="ImageJ Debug Marker"
+            overviewRulerPreferenceKey="com.eco.bio7.ijmacroeditor.debugrulermarkarrow.overview"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="0"
+            textPreferenceKey="com.eco.bio7.ijmacroeditor.debugrulermarkarrow.text"
+            textPreferenceValue="true"
+            textStylePreferenceValue="BOX"
+            verticalRulerPreferenceKey="com.eco.bio7.ijmacroeditor.debugrulermarkarrow.ruler"
+            verticalRulerPreferenceValue="true">
+      </specification>
+   </extension>
+</plugin>

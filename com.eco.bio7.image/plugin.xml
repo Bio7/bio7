@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            allowMultiple="true"
+            category="com.eco.bio7.image.plugin"
+            class="com.eco.bio7.image.CanvasView"
+            icon="pics/imagejview.png"
+            id="com.eco.bio7.imagej"
+            name="ImageJ-Canvas"/>
+      <view
+            category="com.eco.bio7.image.plugin.extra"
+            class="com.eco.bio7.image.thumbs.ThumbnailsView"
+            icon="pics/thumbnails.png"
+            id="com.eco.bio7.thumbnails"
+            name="Thumbnails"/>
+      <view
+            allowMultiple="true"
+            category="com.eco.bio7.image.plugin"
+            class="com.eco.bio7.image.IJtoolbar"
+            icon="pics/imagejview.png"
+            id="com.eco.bio7.ijtoolbar"
+            name="ImageJ-Toolbar"/>
+      <view
+            allowMultiple="true"
+            category="com.eco.bio7.image.plugin.extra"
+            class="com.eco.bio7.image.CustomDetachedImageJView"
+            icon="pics/imagejview.png"
+            id="com.eco.bio7.image.detachedImage"
+            name="Image"
+            restorable="true">
+      </view>
+      <category
+            id="com.eco.bio7.image.plugin"
+            name="ImageJ">
+      </category>
+      <category
+            id="com.eco.bio7.image.plugin.extra"
+            name="ImageJ Extra"
+            parentCategory="com.eco.bio7.image.plugin">
+      </category>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="com.eco.bio7.preferences.Bio7PreferencePage"
+            class="com.eco.bio7.image.preferences.Bio7ImageJPreferences"
+            id="com.eco.bio7.image.preferences.Bio7ImageJPreferences"
+            name="Preferences ImageJ">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="com.eco.bio7.image.preferences.PreferenceInitializer">
+      </initializer>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="com.eco.bio7.image.ImageJBio7OpenEditor"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            default="true"
+            extensions="jpg,jpeg,tif,tiff,TIF,TIFF,png,bmp,gif,avi,pnm,dcm,roi,pgm,pbm"
+            icon="pics/imagefile.png"
+            id="com.eco.bio7.editors.imagej.editor"
+            name="ImageJ Image Editor"
+            symbolicFontName="com.eco.bio7.imagej.editor">
+      </editor>
+   </extension>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            adaptable="false"
+            id="OpenDirectoryInThumbnailsFolder"
+            objectClass="org.eclipse.core.resources.IFolder">
+         <action
+               class="com.eco.bio7.image.popup.action.OpenImageThumbnailView"
+               icon="pics/thumbnails.png"
+               id="com.eco.bio7.image.open.thumbnail.view"
+               label="Open in Thumbnail view"
+               menubarPath="additions.path"
+               tooltip="Open image directory in Thumbnail View">
+         </action>
+      </objectContribution>
+      <objectContribution
+            adaptable="false"
+            id="OpenDirectoryInThumbnailsProject"
+            objectClass="org.eclipse.core.resources.IProject">
+         <action
+               class="com.eco.bio7.image.popup.action.OpenImageThumbnailView"
+               icon="pics/thumbnails.png"
+               id="com.eco.bio7.image.open.thumbnail.view"
+               label="Open in Thumbnail view"
+               menubarPath="additions.path"
+               tooltip="Open image directory in Thumbnail View">
+         </action>
+      </objectContribution>
+   </extension>
+
+</plugin>
