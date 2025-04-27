@@ -24,6 +24,10 @@
 <modules>
     <module>../com.eco.bio7</module>
 	<module>../com.eco.bio7.core.feature</module>
+	<module>../com.eco.bio7.image</module>
+	<module>../com.eco.bio7.image.feature</module>
+	<module>../com.eco.bio7.ijmacro.editor</module>
+	<module>../com.eco.bio7.ijmacroedit.feature</module>
 	<module>../Bundled_R</module>
 	<module>../com.eco.bio7.r.feature</module>
 	<module>../com.eco.bio7.browser</module>
