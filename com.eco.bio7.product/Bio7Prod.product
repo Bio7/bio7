@@ -52,13 +52,12 @@ http://bio7.org
       <plugin id="com.eco.bio7.image"/>
       <plugin id="com.eco.bio7.javacv"/>
       <plugin id="com.eco.bio7.javaedit"/>
-      <plugin id="com.eco.bio7.jfxswt"/>
       <plugin id="com.eco.bio7.libs"/>
       <plugin id="com.eco.bio7.markdownedit"/>
       <plugin id="com.eco.bio7.os"/>
       <plugin id="com.eco.bio7.pythonedit"/>
+      <plugin id="org.eclipse.texlipse"/>
       <plugin id="com.eco.bio7.redit"/>
-      <plugin id="com.eco.bio7.scenebuilder"/>
       <plugin id="com.eco.bio7.themes"/>
       <plugin id="com.eco.bio7.util"/>
       <plugin id="com.google.gson"/>
@@ -71,7 +70,6 @@ http://bio7.org
       <plugin id="jakarta.annotation-api"/>
       <plugin id="jakarta.inject.jakarta.inject-api"/>
       <plugin id="jaxen"/>
-      <plugin id="net.sourceforge.texlipse"/>
       <plugin id="org.apache.ant"/>
       <plugin id="org.apache.aries.spifly.dynamic.bundle"/>
       <plugin id="org.apache.batik.constants"/>
@@ -80,10 +78,8 @@ http://bio7.org
       <plugin id="org.apache.batik.util"/>
       <plugin id="org.apache.commons.cli"/>
       <plugin id="org.apache.commons.collections"/>
-      <plugin id="org.apache.commons.commons-beanutils"/>
       <plugin id="org.apache.commons.commons-codec"/>
       <plugin id="org.apache.commons.commons-io"/>
-      <plugin id="org.apache.commons.jxpath"/>
       <plugin id="org.apache.commons.logging"/>
       <plugin id="org.apache.felix.scr"/>
       <plugin id="org.apache.httpcomponents.httpcore"/>

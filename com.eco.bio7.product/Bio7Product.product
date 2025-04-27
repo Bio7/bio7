@@ -197,7 +197,7 @@ jdk/bin/javaw.exe
       <feature id="org.eclipse.ecf.filetransfer.feature"/>
       <feature id="org.eclipse.ecf.core.feature"/>
       <feature id="com.eco.bio7.themes.feature" installMode="root"/>
-      <feature id="net.sourceforge.texlipse" installMode="root"/>
+      <feature id="org.eclipse.texlipse.main" installMode="root"/>
       <feature id="com.eco.bio7.markdownedit.feature" installMode="root"/>
       <feature id="org.eclipse.equinox.p2.core.feature"/>
       <feature id="org.eclipse.equinox.p2.rcp.feature"/>
