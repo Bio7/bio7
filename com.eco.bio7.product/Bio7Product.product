@@ -29,14 +29,22 @@ jdk/bin/java
 --launcher.GTK_version
 2
       </programArgsLin>
-      <programArgsMac>-vm 
+      <programArgsMac>-vm
 ../MacOS/jdk/Contents/Home/lib/libjli.dylib
       </programArgsMac>
       <programArgsWin>-vm
 jdk/bin/javaw.exe
       </programArgsWin>
-      <vmArgsMac>-Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=true -Xms4048m -Xmx8096m -Dprism.lcdtext=false -Dprism.order=sw -Dpython.console.encoding=UTF-8 -Dswt.enable.themedScrollBar=true -XstartOnFirstThread --add-modules=ALL-SYSTEM --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --module-path=../MacOS/jdk/Contents/Home/nashorn/ --add-modules=org.openjdk.nashorn --add-opens java.desktop/sun.awt.windows=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.desktop/sun.awt=ALL-UNNAMED --add-opens java.desktop/sun.java2d.opengl=ALL-UNNAMED --add-opens java.base/java.lang.invoke=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.desktop/java.awt.font=ALL-UNNAMED
+      <vmArgs>-Xms1024m -Xmx4096m -Dprism.lcdtext=false -Dosgi.framework.extensions=org.eclipse.wst.jsdt.nashorn.extension -Dpython.console.encoding=UTF-8 -Dswt.enable.themedScrollBar=true
+      </vmArgs>
+      <vmArgsLin>-DJAVAFX_LIBS_PATH=${eclipse_home}/jdk/javafx/lib
+      </vmArgsLin>
+      <vmArgsMac>-XstartOnFirstThread
+-Dprism.order=sw
+-DJAVAFX_LIBS_PATH=${eclipse_home}/jdk/javafx/lib
       </vmArgsMac>
+      <vmArgsWin>-DJAVAFX_LIBS_PATH=${eclipse_home}\jdk\javafx\lib
+      </vmArgsWin>
    </launcherArgs>
 
    <windowImages i16="/com.eco.bio7/icons/bio7app/bio7_16_new.png" i32="/com.eco.bio7/icons/bio7app/bio7_32_new.png" i48="/com.eco.bio7/icons/bio7app/bio7_48_new.png" i64="/com.eco.bio7/icons/bio7app/bio7_64_new.png" i128="/com.eco.bio7/icons/bio7app/bio7_128_new.png" i256="/com.eco.bio7/icons/bio7app/bio7_256_new.png"/>
@@ -65,7 +73,6 @@ jdk/bin/javaw.exe
 
    <vm>
    </vm>
-
 
    <plugins>
       <plugin id="Bundled_R"/>
@@ -176,13 +183,13 @@ jdk/bin/javaw.exe
       <feature id="com.eco.bio7.browser.feature" installMode="root"/>
       <feature id="com.eco.bio7.core.feature"/>
       <feature id="com.eco.bio7.edit.feature" installMode="root"/>
-      <feature id="com.eco.bio7.floweditor.feature" installMode="root"/>
+      <feature id="com.eco.bio7.floweditor.feature"/>
       <feature id="com.eco.bio7.image.feature" installMode="root"/>
       <feature id="com.eco.bio7.javaedit.feature" installMode="root"/>
       <feature id="com.eco.bio7.r.feature" installMode="root"/>
       <feature id="com.eco.bio7.libs.feature" installMode="root"/>
       <feature id="com.eco.bio7.redit.feature" installMode="root"/>
-      <feature id="com.eco.bio7.util.feature"/>
+      <feature id="com.eco.bio7.util.feature" installMode="root"/>
       <feature id="com.eco.bio7.worldwind.feature" installMode="root"/>
       <feature id="com.eco.bio7.pythonedit.feature" installMode="root"/>
       <feature id="org.eclipse.e4.rcp"/>
@@ -190,6 +197,7 @@ jdk/bin/javaw.exe
       <feature id="org.eclipse.ecf.filetransfer.feature"/>
       <feature id="org.eclipse.ecf.core.feature"/>
       <feature id="com.eco.bio7.themes.feature" installMode="root"/>
+      <feature id="org.eclipse.texlipse.main" installMode="root"/>
       <feature id="com.eco.bio7.markdownedit.feature" installMode="root"/>
       <feature id="org.eclipse.equinox.p2.core.feature"/>
       <feature id="org.eclipse.equinox.p2.rcp.feature"/>
@@ -198,12 +206,8 @@ jdk/bin/javaw.exe
       <feature id="org.eclipse.rcp"/>
       <feature id="org.eclipse.jdt"/>
       <feature id="com.eco.bio7.ijmacroedit.feature" installMode="root"/>
-      <feature id="com.eco.bio7.javacv.feature" installMode="root"/>
-      <feature id="com.eco.bio7.deepcv.feature" installMode="root"/>
-      <feature id="org.eclipse.ecf.filetransfer.httpclient5.feature" installMode="root"/>
-      <feature id="org.eclipse.ecf.filetransfer.httpclientjava.feature" installMode="root"/>
-      <feature id="org.eclipse.texlipse.main" installMode="root"/>
       <feature id="org.eclipse.nebula.widgets.grid.feature" installMode="root"/>
+      <feature id="com.eco.bio7.javacv.feature" installMode="root"/>
    </features>
 
    <configurations>
@@ -217,8 +221,11 @@ jdk/bin/javaw.exe
    <repositories>
       <repository location="https://bio7.github.io/imagej" name="" enabled="true" />
       <repository location="https://bio7.github.io/reditor" name="" enabled="true" />
-      <repository location="http://download.eclipse.org/releases/2025-03" enabled="true" />
-      <repository location="http://download.eclipse.org/eclipse/updates/4.35" enabled="true" />
+      <repository location="http://download.eclipse.org/releases/2023-03" name="" enabled="true" />
+      <repository location="http://download.eclipse.org/eclipse/updates/4.27" name="" enabled="true" />
+      <repository location="https://bio7.github.io/deepcv" name="" enabled="true" />
+      <repository location="http://download.eclipse.org/eclipse/updates/4.23" name="" enabled="true" />
+      <repository location="http://download.eclipse.org/releases/2022-03" name="" enabled="true" />
    </repositories>
 
    <preferencesInfo>

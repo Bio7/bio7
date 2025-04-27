@@ -9,6 +9,36 @@
 		<unit id="org.eclipse.gef.feature.group" version="0.0.0"/>
 		<unit id="org.eclipse.wst.common.snippets" version="0.0.0"/>
 		<unit id="org.apache.httpcomponents.httpcore" version="0.0.0"/>
+		<unit id="ch.qos.logback.classic" version="0.0.0"/>
+		<unit id="ch.qos.logback.core" version="0.0.0"/>
+		<unit id="com.google.gson" version="0.0.0"/>
+		<unit id="com.google.guava" version="0.0.0"/>
+		<unit id="com.google.guava.failureaccess" version="0.0.0"/>
+		<unit id="org.apache.commons.cli" version="0.0.0"/>
+		<unit id="org.apache.commons.collections" version="0.0.0"/>
+		<unit id="org.apache.xerces" version="0.0.0"/>
+		<unit id="org.apache.xml.resolver" version="0.0.0"/>
+		<unit id="org.eclipse.emf.ecore.edit" version="0.0.0"/>
+		<unit id="org.eclipse.m2e.archetype.catalog" version="0.0.0"/>
+		<unit id="org.eclipse.m2e.archetype.common" version="0.0.0"/>
+		<unit id="org.eclipse.m2e.archetype.descriptor" version="0.0.0"/>
+		<unit id="org.eclipse.m2e.archetype.maven-artifact-transfer" version="0.0.0"/>
+		<unit id="org.eclipse.m2e.core" version="0.0.0"/>
+		<unit id="org.eclipse.m2e.core.ui" version="0.0.0"/>
+		<unit id="org.eclipse.m2e.logback" version="0.0.0"/>
+		<unit id="org.eclipse.m2e.maven.runtime" version="0.0.0"/>
+		<unit id="org.eclipse.m2e.model.edit" version="0.0.0"/>
+		<unit id="org.eclipse.m2e.workspace.cli" version="0.0.0"/>
+		<unit id="org.eclipse.wst.common.core" version="0.0.0"/>
+		<unit id="org.eclipse.wst.common.emf" version="0.0.0"/>
+		<unit id="org.eclipse.wst.common.environment" version="0.0.0"/>
+		<unit id="org.eclipse.wst.common.frameworks" version="0.0.0"/>
+		<unit id="org.eclipse.wst.common.uriresolver" version="0.0.0"/>
+		<unit id="org.eclipse.wst.sse.core" version="0.0.0"/>
+		<unit id="org.eclipse.wst.xml.core" version="0.0.0"/>
+		<unit id="org.hamcrest.core" version="0.0.0"/>
+		<unit id="org.jdom" version="0.0.0"/>
+		<unit id="org.jdom2" version="0.0.0"/>
 		<repository location="https://download.eclipse.org/releases/2025-03/"/>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
