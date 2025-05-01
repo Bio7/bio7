@@ -11,6 +11,7 @@ Require-Bundle: org.eclipse.ui,
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Eclipse-BuddyPolicy: ext
+Eclipse-BundleShape: dir
 Bundle-ClassPath: bin/,
  OpenOffice/juh.jar,
  OpenOffice/jurt.jar,

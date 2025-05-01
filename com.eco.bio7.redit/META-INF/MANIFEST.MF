@@ -9,6 +9,7 @@ Bundle-Activator: com.eco.bio7.reditor.Bio7REditorPlugin
 Bundle-Vendor: ECO
 Bundle-Localization: plugin
 Eclipse-BuddyPolicy: registered
+Eclipse-BundleShape: dir
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.jface.text,

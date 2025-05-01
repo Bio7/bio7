@@ -27,7 +27,7 @@ http://bio7.org
       <programArgsLin>-vm
 jdk/bin/java
 --launcher.GTK_version
-2
+3
       </programArgsLin>
       <programArgsMac>-vm 
 ../MacOS/jdk/Contents/Home/lib/libjli.dylib
@@ -35,8 +35,12 @@ jdk/bin/java
       <programArgsWin>-vm
 jdk/bin/javaw.exe
       </programArgsWin>
+      <vmArgsLin>-Xms2048m -Xmx8096m -Dprism.lcdtext=false -Dpython.console.encoding=UTF-8 -Dswt.enable.themedScrollBar=true --add-modules=ALL-SYSTEM --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --module-path=jdk/nashorn --add-modules=org.openjdk.nashorn --add-opens java.desktop/sun.awt.windows=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.desktop/sun.awt=ALL-UNNAMED --add-opens java.desktop/sun.java2d.opengl=ALL-UNNAMED --add-opens java.base/java.lang.invoke=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.desktop/java.awt.font=ALL-UNNAMED
+      </vmArgsLin>
       <vmArgsMac>-Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=true -Xms4048m -Xmx8096m -Dprism.lcdtext=false -Dprism.order=sw -Dpython.console.encoding=UTF-8 -Dswt.enable.themedScrollBar=true -XstartOnFirstThread --add-modules=ALL-SYSTEM --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --module-path=../MacOS/jdk/Contents/Home/nashorn/ --add-modules=org.openjdk.nashorn --add-opens java.desktop/sun.awt.windows=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.desktop/sun.awt=ALL-UNNAMED --add-opens java.desktop/sun.java2d.opengl=ALL-UNNAMED --add-opens java.base/java.lang.invoke=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.desktop/java.awt.font=ALL-UNNAMED
       </vmArgsMac>
+      <vmArgsWin>-Xms2048m -Xmx8096m -Dorg.eclipse.swt.browser.DefaultType=&quot;edge&quot; -Dsun.java2d.opengl=true -Dprism.lcdtext=false -Dpython.console.encoding=UTF-8 -Dswt.enable.themedScrollBar=true --add-modules=ALL-SYSTEM --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --module-path=jdk\nashorn --add-modules=org.openjdk.nashorn --add-opens java.desktop/sun.awt.windows=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.desktop/sun.awt=ALL-UNNAMED --add-opens java.desktop/sun.java2d.opengl=ALL-UNNAMED --add-opens java.base/java.lang.invoke=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.desktop/java.awt.font=ALL-UNNAMED
+      </vmArgsWin>
    </launcherArgs>
 
    <windowImages i16="/com.eco.bio7/icons/bio7app/bio7_16_new.png" i32="/com.eco.bio7/icons/bio7app/bio7_32_new.png" i48="/com.eco.bio7/icons/bio7app/bio7_48_new.png" i64="/com.eco.bio7/icons/bio7app/bio7_64_new.png" i128="/com.eco.bio7/icons/bio7app/bio7_128_new.png" i256="/com.eco.bio7/icons/bio7app/bio7_256_new.png"/>
@@ -64,6 +68,7 @@ jdk/bin/javaw.exe
    <intro introId="com.eco.bio7.intro"/>
 
    <vm>
+      <windows include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-21</windows>
    </vm>
 
    <plugins>

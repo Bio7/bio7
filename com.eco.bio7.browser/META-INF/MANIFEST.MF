@@ -6,6 +6,7 @@ Bundle-Version: 2.0.0
 Bundle-Activator: com.eco.bio7.browser.Activator
 Bundle-Vendor: ECO
 Eclipse-BuddyPolicy: ext
+Eclipse-BundleShape: dir
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  com.eco.bio7.edit;bundle-version="2.0.0",

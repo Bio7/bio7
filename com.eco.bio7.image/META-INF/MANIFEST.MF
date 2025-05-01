@@ -9,6 +9,7 @@ Bundle-Activator: com.eco.bio7.image.Activator
 Bundle-Vendor: ECO
 Bundle-Localization: plugin
 Eclipse-BuddyPolicy: ext
+Eclipse-BundleShape: dir
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.core.resources,

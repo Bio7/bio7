@@ -3,6 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Javacv
 Bundle-SymbolicName: com.eco.bio7.javacv;singleton:=true
 Bundle-Version: 3.6.0.qualifier
+Eclipse-BundleShape: dir
 Export-Package: boofcv,
  boofcv,
  boofcv,
@@ -813,8 +814,7 @@ Bundle-ClassPath: libs/boofcv-core-1.2.1.jar,
  libs/snakeyaml-2.3.jar,
  libs/trove4j-3.0.3.jar,
  libs/xz-1.4.jar,
- libs/zip4j-1.3.2.jar,
- .
+ libs/zip4j-1.3.2.jar
 Bundle-Vendor: ECO
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime

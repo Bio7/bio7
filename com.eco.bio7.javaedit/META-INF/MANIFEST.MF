@@ -1,6 +1,7 @@
 Manifest-Version: 1.0
 Ant-Version: Apache Ant 1.7.0
 Created-By: 1.6.0_02-b05 (Sun Microsystems Inc.)
+Eclipse-BundleShape: dir
 Bundle-ManifestVersion: 2
 Bundle-Name: Java Plug-in
 Bundle-SymbolicName: com.eco.bio7.javaedit;singleton:=true
@@ -31,8 +32,7 @@ Export-Package: com.eco.bio7.compile,
  org.codehaus.commons.io,
  org.codehaus.commons.nullanalysis
 Bundle-ClassPath: libs/commons-compiler-3.0.7.jar,
- bin/,
- src/
+ bin/
 Import-Package: org.eclipse.core.filesystem,
  org.eclipse.ui,
  org.eclipse.ui.ide
