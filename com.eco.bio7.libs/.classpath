@@ -8,7 +8,6 @@
 	<classpathentry exported="true" kind="lib" path="libs/jackson-core-2.16.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jackson-databind-2.16.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/junit-4.10.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/Medusa-11.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jsoup-1.17.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jogl-all.jar"/>
 	<classpathentry exported="true" kind="lib" path="math/gdal.jar"/>
@@ -24,9 +23,6 @@
 	<classpathentry exported="true" kind="lib" path="Excel/poi-ooxml-schemas-4.1.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/xmlbeans-3.1.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="math/jts-core-1.16.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/jtouchbar-1.0.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/jtouchbar-javafx-1.0.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/jtouchbar-swt-1.0.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/opal-1.0.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/opencsv-3.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/org.eclipse.nebula.visualization.widgets_1.0.0.201410030023.jar"/>
