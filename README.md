@@ -59,7 +59,7 @@ https://tycho.eclipseprojects.io/doc/latest/
 
 #### Acknowledgments
 
-Huge thanks to (Matthias Mailänder)[https://github.com/Mailaender] who made this new Bio7 Maven Tycho built  possible.
+Huge thanks to [Matthias Mailänder](https://github.com/Mailaender) who made this new Bio7 Maven Tycho built  possible.
 
 
 
