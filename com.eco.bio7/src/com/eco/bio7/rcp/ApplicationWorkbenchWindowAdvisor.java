@@ -11,18 +11,14 @@
 
 package com.eco.bio7.rcp;
 
-import java.awt.Color;
 import java.awt.EventQueue;
-import java.awt.Toolkit;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.plaf.FontUIResource;
@@ -64,7 +60,6 @@ import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.launching.LibraryLocation;
 import org.eclipse.jdt.launching.VMStandin;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
-import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -78,10 +73,8 @@ import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.internal.DPIUtil;
@@ -119,6 +112,7 @@ import org.gdal.ogr.ogr;
 import org.osgi.framework.Bundle;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
+
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.ImageJPluginActions.ImageJWindowAction;
 import com.eco.bio7.actions.Bio7Action;
@@ -131,12 +125,9 @@ import com.eco.bio7.compile.PythonInterpreter;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.compile.utils.ScanClassPath;
 import com.eco.bio7.console.ConsolePageParticipant;
-import com.eco.bio7.discrete.Quad2d;
-import com.eco.bio7.image.Bio7DarkThemeAdditions;
 import com.eco.bio7.image.Bio7LinuxTheme;
 import com.eco.bio7.image.CanvasView;
 import com.eco.bio7.jobs.LoadData;
-import com.eco.bio7.macosx.MacTouchBar;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.preferences.RServePlotPrefs;
 import com.eco.bio7.preferences.Reg;
@@ -146,8 +137,6 @@ import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.actions.StartRServe;
 import com.eco.bio7.rbridge.debug.REditorListener;
-import com.eco.bio7.rbridge.views.RShellView;
-import com.eco.bio7.reditor.actions.OpenHelpBrowserAction;
 import com.eco.bio7.time.CalculationThread;
 import com.eco.bio7.util.Util;
 
@@ -713,15 +702,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		/* A default FPS setting for the 3d view! */
 		store.setDefault("fixedFps", 60);
-		/* Enable TouchBar functions for MacOSX! */
-		store.setDefault("TOUCH_BAR_MAC", false);
-		int deviceZoomLinux = DPIUtil.getDeviceZoom();
-		if (deviceZoomLinux >= 200) {
-			store.setDefault("ENABLE_SCENE_BUILDER_LINUX", false);
-		} else {
-			store.setDefault("ENABLE_SCENE_BUILDER_LINUX", true);
-		}
-
 		/*
 		 * Default Colours for the Bio7 editors!
 		 */
@@ -1160,11 +1140,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		dragDropR();
 
 		if (Util.getOS().equals("Mac")) {
-			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-			boolean touchBarEnabled = store.getBoolean("TOUCH_BAR_MAC");
-			if (touchBarEnabled) {
-				new MacTouchBar();
-			}
+			// IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+
 		}
 	}
 
