@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: X86_64
+Bundle-SymbolicName: com.eco.bio7.linux.gtk.x86_64
+Bundle-Version: 1.0.0.qualifier
+Eclipse-PlatformFilter: (osgi.ws=gtk)
+Bundle-Vendor: ECO
+Fragment-Host: com.eco.bio7.libs;bundle-version="3.4.0"
+Automatic-Module-Name: com.eco.bio7.linux.gtk.x86.64
+Bundle-RequiredExecutionEnvironment: JavaSE-21
