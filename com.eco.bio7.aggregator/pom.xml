@@ -57,6 +57,9 @@
 	<module>../com.eco.bio7.util.feature</module>
 	<module>../com.eco.bio7.WorldWind</module>
 	<module>../com.eco.bio7.worldwind.feature</module>
-	<module>../com.eco.bio7.product</module>
+	<module>../com.eco.bio7.product</module>	
+	<module>../com.eco.bio7.cocoa.macosx.aarch64</module>
+	<module>../com.eco.bio7.linux.gtk.x86_64</module>
+	<module>../com.eco.bio7.win32.x86_64</module>
 </modules>
 </project>
