@@ -47,9 +47,11 @@ Bio7 is now available as a Maven Tycho built and can be created locally. All plu
 
 8. The Bio7 built is now available in the com.eco.bio7.product plugin (in the targets/products folder - refresh the folder if not visible!).
 
-To start Bio7 with a locally bundled JDK navigate to the Bio7 folder and change the Bio7.ini file (add a -vm option which points to a JDK, see: https://wiki.eclipse.org/Eclipse.ini
+To start Bio7 with a locally bundled JDK navigate to the Bio7 folder and change the Bio7.ini file (by default a path is added which point to a local JDK (delete this argument if you want to start Bio7 with your already installed JDK). For the -vm option which points to a JDK, see: https://wiki.eclipse.org/Eclipse.ini
 
-To start Bio7 in Eclipse navigate to the com.eco.bio7.product plugin and open the Bio7.product file. Then execute the "Launch an Eclipse application" action.
+#### Developing an Testing Bio7 with Eclipse:
+
+To start Bio7 within Eclipse for testing and development navigate to the com.eco.bio7.product plugin and open the Bio7.product file. Then execute the "Launch an Eclipse application" action.
 
 Links: 
 
