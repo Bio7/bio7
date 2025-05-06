@@ -25,27 +25,27 @@
 
    <plugin
          id="com.eco.bio7.libs"
-         version="0.0.0"/>
+         version="3.4.0"/>
 
    <plugin
          id="com.eco.bio7.cocoa.macosx.aarch64"
          os="macosx"
          ws="cocoa"
          arch="aarch64"
-         version="0.0.0"/>
+         version="1.0.0.qualifier"/>
 
    <plugin
          id="com.eco.bio7.linux.gtk.x86_64"
          os="linux"
          ws="gtk"
          arch="x86_64"
-         version="0.0.0"/>
+         version="1.0.0.qualifier"/>
 
    <plugin
          id="com.eco.bio7.win32.x86_64"
          os="win32"
          ws="win32"
          arch="x86_64"
-         version="0.0.0"/>
+         version="1.0.0.qualifier"/>
 
 </feature>
