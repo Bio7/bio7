@@ -2,15 +2,15 @@
   "files": [
     {
       "fileName": "./../../s/OSS_Microsoft_OpenSSH_Dev/contrib/win32/openssh/libfido2/_manifest/spdx_2.2/manifest.spdx.json",
-      "SPDXID": "SPDXRef-File--..-..-s-OSS-Microsoft-OpenSSH-Dev-contrib-win32-openssh-libfido2--manifest-spdx-2.2-manifest.spdx.json-310BD4FA72CEC9EE54E77223406471F26F78A856",
+      "SPDXID": "SPDXRef-File--..-..-s-OSS-Microsoft-OpenSSH-Dev-contrib-win32-openssh-libfido2--manifest-spdx-2.2-manifest.spdx.json-B4D71991155EFC0E5C2B2F7186CCBEC3B7E54CB6",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "e8020ea98f2a9de0787225ae16299a633c102b87bc93cdfeb55166e7dcf2bf51"
+          "checksumValue": "88b03732d10ef8588678ebe6e837ffe201d21d2c5034e30c1203602d36484cc4"
         },
         {
           "algorithm": "SHA1",
-          "checksumValue": "310bd4fa72cec9ee54e77223406471f26f78a856"
+          "checksumValue": "b4d71991155efc0e5c2b2f7186ccbec3b7e54cb6"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -24,15 +24,15 @@
     },
     {
       "fileName": "./../../s/OSS_Microsoft_OpenSSH_Dev/contrib/win32/openssh/LibreSSL/_manifest/spdx_2.2/manifest.spdx.json",
-      "SPDXID": "SPDXRef-File--..-..-s-OSS-Microsoft-OpenSSH-Dev-contrib-win32-openssh-LibreSSL--manifest-spdx-2.2-manifest.spdx.json-703648163083F513D486D8363F525021A6D08A91",
+      "SPDXID": "SPDXRef-File--..-..-s-OSS-Microsoft-OpenSSH-Dev-contrib-win32-openssh-LibreSSL--manifest-spdx-2.2-manifest.spdx.json-4EAF53D434EBCC53C686F3ABFEE54BAF11EFFCF0",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "a5ba1af446bc49e7079f5a8b4404aae546eebf05b1e772bd9738e2bed6355e3d"
+          "checksumValue": "e989196aec2f04c79c9af6730b0a81bb7a6be40e6b7d923502cc0ac131bcb17f"
         },
         {
           "algorithm": "SHA1",
-          "checksumValue": "703648163083f513d486d8363f525021a6d08a91"
+          "checksumValue": "4eaf53d434ebcc53c686f3abfee54baf11effcf0"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -46,15 +46,15 @@
     },
     {
       "fileName": "./../../s/OSS_Microsoft_OpenSSH_Dev/contrib/win32/openssh/ZLib/_manifest/spdx_2.2/manifest.spdx.json",
-      "SPDXID": "SPDXRef-File--..-..-s-OSS-Microsoft-OpenSSH-Dev-contrib-win32-openssh-ZLib--manifest-spdx-2.2-manifest.spdx.json-954C206CEBFE20C7D8D6413FD131BEBDC36F9039",
+      "SPDXID": "SPDXRef-File--..-..-s-OSS-Microsoft-OpenSSH-Dev-contrib-win32-openssh-ZLib--manifest-spdx-2.2-manifest.spdx.json-16232B68C57E9D662108A05698D26F43C0ACABEA",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "f04a34415479d39b4c5496d2e07a5e0549a591cb98577baf0410639a17142ede"
+          "checksumValue": "8faed6bc326795cd62f6c260495d25ffc563dd6c85b94acaa83dc6306f3bee56"
         },
         {
           "algorithm": "SHA1",
-          "checksumValue": "954c206cebfe20c7d8d6413fd131bebdc36f9039"
+          "checksumValue": "16232b68c57e9d662108a05698d26f43c0acabea"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -67,8 +67,8 @@
       ]
     },
     {
-      "fileName": "./NOTICE.txt",
-      "SPDXID": "SPDXRef-File--NOTICE.txt-0C6BEDA8BE1A704C0C2615D4A481BACA0E56372D",
+      "fileName": "./OpenSSH-Win64/NOTICE.txt",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-NOTICE.txt-0C6BEDA8BE1A704C0C2615D4A481BACA0E56372D",
       "checksums": [
         {
           "algorithm": "SHA256",
@@ -86,16 +86,16 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./ssh-agent.exe",
-      "SPDXID": "SPDXRef-File--ssh-agent.exe-8FF28330B34340225812D9284D60A77C0498F9D7",
+      "fileName": "./OpenSSH-Win64/FixHostFilePermissions.ps1",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-FixHostFilePermissions.ps1-8F5FD364A9DB299B3D3896CF02F4595036BB22BE",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "c98fcecabf16090a5fde87d2171f2ff4c3a7190c9bb78ca8b044a80e5df211c4"
+          "checksumValue": "76e458a5ef99e521795d3620a424cc9e460fad650e2129f926dd48efa7dce712"
         },
         {
           "algorithm": "SHA1",
-          "checksumValue": "8ff28330b34340225812d9284d60a77c0498f9d7"
+          "checksumValue": "8f5fd364a9db299b3d3896cf02f4595036bb22be"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -105,16 +105,16 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./sshd_config_default",
-      "SPDXID": "SPDXRef-File--sshd-config-default-825CDEC4CF05869C74B01E7A1C8BF3C5E2C45CD8",
+      "fileName": "./OpenSSH-Win64/install-sshd.ps1",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-install-sshd.ps1-A8BF62E7C1CFF8545AACB1E60711B288680182A6",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "99f373a06dfa706f0a8a98d655c776850305b4b1ea3bf9a33fa926897bb15649"
+          "checksumValue": "362fda643d3238858134ea612bac77b12a37515ce264eb636cf337bdd1d14334"
         },
         {
           "algorithm": "SHA1",
-          "checksumValue": "825cdec4cf05869c74b01e7a1c8bf3c5e2c45cd8"
+          "checksumValue": "a8bf62e7c1cff8545aacb1e60711b288680182a6"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -124,8 +124,8 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./LICENSE.txt",
-      "SPDXID": "SPDXRef-File--LICENSE.txt-A7739A32F1926D71A9EB22D101287ECEA09A6AC5",
+      "fileName": "./OpenSSH-Win64/LICENSE.txt",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-LICENSE.txt-A7739A32F1926D71A9EB22D101287ECEA09A6AC5",
       "checksums": [
         {
           "algorithm": "SHA256",
@@ -143,16 +143,16 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./sftp.exe",
-      "SPDXID": "SPDXRef-File--sftp.exe-96772AE7ED0A8826AB6E88437394F7684796B63B",
+      "fileName": "./OpenSSH-Win64/FixUserFilePermissions.ps1",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-FixUserFilePermissions.ps1-DD73EDE2304F767B0F20212DE09F601977844C79",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "e0a85bcc07b4f420cf0dba891f473bc4f3bfc10582cb933ea79fe96211daa565"
+          "checksumValue": "bb896e498e14ec5f8a52f906373e96dc11806bce474ffde89798abfdaf49cf78"
         },
         {
           "algorithm": "SHA1",
-          "checksumValue": "96772ae7ed0a8826ab6e88437394f7684796b63b"
+          "checksumValue": "dd73ede2304f767b0f20212de09f601977844c79"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -162,8 +162,350 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./openssh-events.man",
-      "SPDXID": "SPDXRef-File--openssh-events.man-39F0E1C5FDF3F456EEAF9F1A5696A7CA64617F86",
+      "fileName": "./OpenSSH-Win64/OpenSSHUtils.psd1",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-OpenSSHUtils.psd1-C0CF5DBFEC3B98F63CBA9E6BB831E5080F7D1B81",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "e78859bc83e815fdc757ff0ae48ca986ef3522c0af4ae926bb0694a60ab5545e"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "c0cf5dbfec3b98f63cba9e6bb831e5080f7d1b81"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "./OpenSSH-Win64/OpenSSHUtils.psm1",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-OpenSSHUtils.psm1-23436B0C028831D40376FD211331046A508DF2CE",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "f73387821f59a4ea578e3486c502a1d31abae23e7981029d3aa41e4fd4dd0295"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "23436b0c028831d40376fd211331046a508df2ce"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "./OpenSSH-Win64/scp.exe",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-scp.exe-0B505571C7EE6B57166D9330919AEF7FE5BCD1E6",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "f55bcc0cc787ff730df54606badcae5a771a6411cb6870f98ee34b792832ee0c"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0b505571c7ee6b57166d9330919aef7fe5bcd1e6"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "./OpenSSH-Win64/sftp.exe",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-sftp.exe-24ACCE55CACE31F139546291DD29E0D0B6A03C9E",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "99562df0b5d01352cbd200b2ddfb1ab0b13b754753497d2cc8059ae56c6e4ace"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "24acce55cace31f139546291dd29e0d0b6a03c9e"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "./OpenSSH-Win64/moduli",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-moduli-D000837A7C67C88BAAA61D643E48A28B2F40B7AF",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "bd6b9d63cd668af7ba13ae367f40a9efa30986aba0e4d91a03e212992351daeb"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "d000837a7c67c88baaa61d643e48a28b2f40b7af"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "./OpenSSH-Win64/ssh-agent.exe",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-ssh-agent.exe-3C3E3369DE1A5083ED29FDE0B71E6246D5D9C07E",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "0206b9f122eb37f3dbc1c6092f0562dcb04187d9bca966acea74e3f9e3d71d99"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "3c3e3369de1a5083ed29fde0b71e6246d5d9c07e"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "./OpenSSH-Win64/ssh-pkcs11-helper.exe",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-ssh-pkcs11-helper.exe-4858FA17AE8ED4DAC583D4223B385896794A3786",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "d8e568bb2e31baca171ec991c06235ee3aff705bf2504bc7424f9036493ee50b"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "4858fa17ae8ed4dac583d4223b385896794a3786"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "./OpenSSH-Win64/ssh-shellhost.exe",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-ssh-shellhost.exe-F60260C63ECA328B12CA022E965662AE91A371BB",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "c87e112ddaae3fc56e35e898bb5d74bf073bba7ee00b5b947f54783f4dd28035"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "f60260c63eca328b12ca022e965662ae91a371bb"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "./OpenSSH-Win64/ssh-keyscan.exe",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-ssh-keyscan.exe-15163D97718491B854D04849FF773E84BC416C43",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "bd190031d695faa4398bbe07d7a7f8264486a063e43654d9437251eb486f5eda"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "15163d97718491b854d04849ff773e84bc416c43"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "./OpenSSH-Win64/uninstall-sshd.ps1",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-uninstall-sshd.ps1-55744262CB2DA5EC333B5500BE91A5863DF92BBD",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "5ecc8433cb719b6801b2be7131a093020220be655c3ca251426cec160807e44c"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "55744262cb2da5ec333b5500be91a5863df92bbd"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "./OpenSSH-Win64/ssh-add.exe",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-ssh-add.exe-6F6E3F130CCC07112EE1EF3E6520B10CC3893B29",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "d9e4caf961732f0fa4b747a37a430a651e1e4991cfee5a5eb3beb7e69324d25b"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "6f6e3f130ccc07112ee1ef3e6520b10cc3893b29"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "./OpenSSH-Win64/sshd.exe",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-sshd.exe-0784674213366C64D1FEAE887C30AD6CEF535FBB",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "b3962bfec8c0c74d7423a5cc6ec0551c6ccf426142bd601932d01b034adc3fe1"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0784674213366c64d1feae887c30ad6cef535fbb"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "./OpenSSH-Win64/libcrypto.dll",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-libcrypto.dll-861AC30C7A3AEA387D107D4AD2E5FA25D9F2C0BA",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "1e45ea4b8393408add9da02c56fe05164a9f42b88e4b4529793794275d4c7530"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "861ac30c7a3aea387d107d4ad2e5fa25d9f2c0ba"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "./OpenSSH-Win64/sftp-server.exe",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-sftp-server.exe-9EBCABC295E30361723692AA8DFF8277AF5B0058",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "eef21def84b96aaa9716a0b49687ed8e21199248ae660db49bdf5ed148849f5f"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "9ebcabc295e30361723692aa8dff8277af5b0058"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "./OpenSSH-Win64/ssh.exe",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-ssh.exe-08DBF3A55DE35C70328FEA9633218CF56F37CE4E",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "edb93b2139ee59fbee2b8dc0ba9f929d7ecda64d47d61eb1029de1413dff3224"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "08dbf3a55de35c70328fea9633218cf56f37ce4e"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "./OpenSSH-Win64/ssh-sk-helper.exe",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-ssh-sk-helper.exe-31431AA1B2BCEF9C61E8C1C78BBA404D2423D5BB",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "80ac66606d8bcdecb4d7557beafb1ea051decb18b783a2af0ad9e9171091a728"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "31431aa1b2bcef9c61e8c1c78bba404d2423d5bb"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "./OpenSSH-Win64/sshd-session.exe",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-sshd-session.exe-17B8074CA2B15F889C105A33B0DC3D3AE98A2207",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "c1623e150afc187f88e14d06b0d356f4c93b372e44d196a45e986db25b53a8d1"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "17b8074ca2b15f889c105a33b0dc3d3ae98a2207"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "./OpenSSH-MSI-Win64/openssh.msi",
+      "SPDXID": "SPDXRef-File--OpenSSH-MSI-Win64-openssh.msi-9DDEBA07DB1120C161D85B7A5A4235B328720838",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "c8a8c7e21136a099665c2fad9accb41152d129466b719ea71678bab665e03389"
+        },
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "9ddeba07db1120c161d85b7a5a4235b328720838"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "./OpenSSH-Win64/openssh-events.man",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-openssh-events.man-39F0E1C5FDF3F456EEAF9F1A5696A7CA64617F86",
       "checksums": [
         {
           "algorithm": "SHA256",
@@ -181,16 +523,16 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./ssh-keygen.exe",
-      "SPDXID": "SPDXRef-File--ssh-keygen.exe-EF9E3FCE7640BF24E8FF72ECB021BE2278B5BAFF",
+      "fileName": "./OpenSSH-Win64_Symbols/ssh-agent.pdb",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-Symbols-ssh-agent.pdb-A8FB00A9B3A4A7358ED6B46FA9C91FA34236AC0F",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "9aad9250dc45eb289ef81187d54e9979090321cd1b854b4587990e731ac7dd84"
+          "checksumValue": "e0caa987aa9e1b285ff8f0f1653a2452d7e1a2d07ffe098494168782f80a0feb"
         },
         {
           "algorithm": "SHA1",
-          "checksumValue": "ef9e3fce7640bf24e8ff72ecb021be2278b5baff"
+          "checksumValue": "a8fb00a9b3a4a7358ed6b46fa9c91fa34236ac0f"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -200,16 +542,16 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./uninstall-sshd.ps1",
-      "SPDXID": "SPDXRef-File--uninstall-sshd.ps1-131C3180EA51887D4A1C5141BC1CF7BA337214E4",
+      "fileName": "./OpenSSH-Win64_Symbols/sftp.pdb",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-Symbols-sftp.pdb-9483D2D04BDF6C13748640F22C6014AD6F939012",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "b52716a0039737fb215136f0d3d7123bde76e3097d2a65ad9f73e697f55b2fc9"
+          "checksumValue": "af9d101997806500e5460265e1e853f1ed233d78f1f2fcddfc5542132d963128"
         },
         {
           "algorithm": "SHA1",
-          "checksumValue": "131c3180ea51887d4a1c5141bc1cf7ba337214e4"
+          "checksumValue": "9483d2d04bdf6c13748640f22c6014ad6f939012"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -219,16 +561,16 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./moduli",
-      "SPDXID": "SPDXRef-File--moduli-07BBADDD000D6BFC1F3C30A314A5208A5F8B3AEF",
+      "fileName": "./OpenSSH-Win64/ssh-keygen.exe",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-ssh-keygen.exe-58858E8B74DB6427CFC688D7F7BD2C9F0DC76092",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "cc12aebe3fb41a092e53cf41dd05029e5b93f336d67b5f941a6132e5440fdcc8"
+          "checksumValue": "01c0446141b93c40e7e2741db033337eabb6e16a94a470ffff7e3080a52849ad"
         },
         {
           "algorithm": "SHA1",
-          "checksumValue": "07bbaddd000d6bfc1f3c30a314a5208a5f8b3aef"
+          "checksumValue": "58858e8b74db6427cfc688d7f7bd2c9f0dc76092"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -238,16 +580,16 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./ssh-add.exe",
-      "SPDXID": "SPDXRef-File--ssh-add.exe-E7D6EC27C96B47A515A9933FF1506ACEB17B8CA9",
+      "fileName": "./OpenSSH-Win64/sshd_config_default",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-sshd-config-default-7F6AC27C5927EF4127C392D53DDD5DB763B65A1E",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "b67899edbd5b294b9eea020e7a20d3ffe13bfd8d026552ffc508c8778d8f3d29"
+          "checksumValue": "796f518d1f4bb03d775da710c259b518eb770d123133dbd6429ca7e14d3c224b"
         },
         {
           "algorithm": "SHA1",
-          "checksumValue": "e7d6ec27c96b47a515a9933ff1506aceb17b8ca9"
+          "checksumValue": "7f6ac27c5927ef4127c392d53ddd5db763b65a1e"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -257,16 +599,16 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./install-sshd.ps1",
-      "SPDXID": "SPDXRef-File--install-sshd.ps1-6428988C166F4D1F88625EF7903B60977A52903A",
+      "fileName": "./OpenSSH-Win64_Symbols/scp.pdb",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-Symbols-scp.pdb-ECEA0DEE7158C6A817019822BAE60CBAFBE5216D",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "bd31f371225a8ed4f2a2b48342d7e2b0a79e5a2807160b30fa66b0cd51eed739"
+          "checksumValue": "2d9048029b664454e9bbde16b4a71bf86979b91025177f6be80b4c4e5a25300a"
         },
         {
           "algorithm": "SHA1",
-          "checksumValue": "6428988c166f4d1f88625ef7903b60977a52903a"
+          "checksumValue": "ecea0dee7158c6a817019822bae60cbafbe5216d"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -276,16 +618,16 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./scp.exe",
-      "SPDXID": "SPDXRef-File--scp.exe-260B14386BC18D7D3F35DA5CED56E169A6E600AE",
+      "fileName": "./OpenSSH-Win64_Symbols/sftp-server.pdb",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-Symbols-sftp-server.pdb-C7BDD7F9DB9C7B655EC3B6702A6B3C99B892DB66",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "cc66952828e47a6afdcaa1a1fa876e9e6188bb933576845e02659e3cace4283b"
+          "checksumValue": "449377089d74e0213eb1b48f17283e280dc7d7ca1b20681eee6255992b32a12c"
         },
         {
           "algorithm": "SHA1",
-          "checksumValue": "260b14386bc18d7d3f35da5ced56e169a6e600ae"
+          "checksumValue": "c7bdd7f9db9c7b655ec3b6702a6b3c99b892db66"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -295,16 +637,16 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./libcrypto.dll",
-      "SPDXID": "SPDXRef-File--libcrypto.dll-D71484F8F0B8FE26222677597D04AD61DD68291F",
+      "fileName": "./OpenSSH-Win64_Symbols/libcrypto.pdb",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-Symbols-libcrypto.pdb-1DA3CA6C77B278799D9FEF10525696B8ECE2177C",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "065d3a16b418dfe5647c56c8a1787ac540b13299bdf35f69e9980525804cb9ab"
+          "checksumValue": "ff763cc6157fa20a2237aca02c9bc22f0f36eec5dc8a196dbe5e4b536bd550fc"
         },
         {
           "algorithm": "SHA1",
-          "checksumValue": "d71484f8f0b8fe26222677597d04ad61dd68291f"
+          "checksumValue": "1da3ca6c77b278799d9fef10525696b8ece2177c"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -314,16 +656,16 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./FixUserFilePermissions.ps1",
-      "SPDXID": "SPDXRef-File--FixUserFilePermissions.ps1-9580BDCEF61E1953460295118E74EC13402A8951",
+      "fileName": "./OpenSSH-Win64_Symbols/sshd.pdb",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-Symbols-sshd.pdb-3D98B0F3510376B538090D15B2382E9417624E6C",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "4747ff1c797a36faa38b424e9d58db23cb0a1d9d3102e3a3e101f2d760365d5f"
+          "checksumValue": "24194df40470cc90bcd3725dd463d564b42ebc542c9dd7a59f077c2ff1903aa5"
         },
         {
           "algorithm": "SHA1",
-          "checksumValue": "9580bdcef61e1953460295118e74ec13402a8951"
+          "checksumValue": "3d98b0f3510376b538090d15b2382e9417624e6c"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -333,16 +675,16 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./OpenSSHUtils.psm1",
-      "SPDXID": "SPDXRef-File--OpenSSHUtils.psm1-E323BB4C869BCE3E060BC4B01A47AAABD5F6A6C8",
+      "fileName": "./OpenSSH-Win64_Symbols/ssh-add.pdb",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-Symbols-ssh-add.pdb-DEF28C72F13CB78B55FC5884190BF53EBBEF88FF",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "80d7a213594593029839a1072b034b35bd6e89158779c1596ef9157bac610a75"
+          "checksumValue": "3d8d57cbd46ecd5ba90797cde7dd1133c84da1aea7261ba8598c433dc53a637f"
         },
         {
           "algorithm": "SHA1",
-          "checksumValue": "e323bb4c869bce3e060bc4b01a47aaabd5f6a6c8"
+          "checksumValue": "def28c72f13cb78b55fc5884190bf53ebbef88ff"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -352,16 +694,16 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./FixHostFilePermissions.ps1",
-      "SPDXID": "SPDXRef-File--FixHostFilePermissions.ps1-69BFE802C483927F86FA8AC6A6206ABF248EAFDD",
+      "fileName": "./OpenSSH-Win64_Symbols/ssh-shellhost.pdb",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-Symbols-ssh-shellhost.pdb-B248C71CA6109C466FC9065415F7D0DE50962371",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "bb9d7873b0eec27ab192702b6a92183282911df0ed5363dc357dde8b96094bb4"
+          "checksumValue": "462c57f60a654d2f16aed3c948692a4330eff83161634d134c424556a014a766"
         },
         {
           "algorithm": "SHA1",
-          "checksumValue": "69bfe802c483927f86fa8ac6a6206abf248eafdd"
+          "checksumValue": "b248c71ca6109c466fc9065415f7d0de50962371"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -371,16 +713,16 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./OpenSSHUtils.psd1",
-      "SPDXID": "SPDXRef-File--OpenSSHUtils.psd1-528144F0A6ED07FAB245C44E4CBCC10F4F6A49F3",
+      "fileName": "./OpenSSH-Win64_Symbols/ssh.pdb",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-Symbols-ssh.pdb-6A3437726192FF3FABB7A217A70CEF37497FC3D1",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "5bfa7c950a7d3dea68232a7a23282bd4ac9a97ea0c1d1ec2caaaf348c8184c3a"
+          "checksumValue": "785b51429fb6ebe1af9f713df10702ef1b2139e4c4927506b802120c655876e7"
         },
         {
           "algorithm": "SHA1",
-          "checksumValue": "528144f0a6ed07fab245c44e4cbcc10f4f6a49f3"
+          "checksumValue": "6a3437726192ff3fabb7a217a70cef37497fc3d1"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -390,16 +732,16 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./sftp-server.exe",
-      "SPDXID": "SPDXRef-File--sftp-server.exe-3E7B02953CCAEF1D63C4E1C4BC69DAA1656E5AB0",
+      "fileName": "./OpenSSH-Win64_Symbols/ssh-sk-helper.pdb",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-Symbols-ssh-sk-helper.pdb-B21852DC115A6E34B15DF904CD9D64D28D2DEE1F",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "a0eed0e1ef8fc4129f630e6f68c29c357c717df0fe352961e92e7f8c93e5371b"
+          "checksumValue": "e478ad8487d76c17e1491678c41d3e8cecaf1871392fe659720ed75a4c573d5e"
         },
         {
           "algorithm": "SHA1",
-          "checksumValue": "3e7b02953ccaef1d63c4e1c4bc69daa1656e5ab0"
+          "checksumValue": "b21852dc115a6e34b15df904cd9d64d28d2dee1f"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -409,16 +751,16 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./sshd.exe",
-      "SPDXID": "SPDXRef-File--sshd.exe-8D4F19B221751297B0C3A10F105772D7286C9411",
+      "fileName": "./OpenSSH-Win64_BuildInfo/Unittests-Win64.zip",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-BuildInfo-Unittests-Win64.zip-2E8C582187C3FF47797743C73736A3F2DA5D5FBE",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "6f31cf7a11189c683d8455180b4ee6a60781d2e3f3aadf3ecc86f578d480cfa9"
+          "checksumValue": "f39700ca9b6fd4e14640bf98a30df52540033e6aefb9087ed50a0e31392afd61"
         },
         {
           "algorithm": "SHA1",
-          "checksumValue": "8d4f19b221751297b0c3a10f105772d7286c9411"
+          "checksumValue": "2e8c582187c3ff47797743c73736a3f2da5d5fbe"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -428,16 +770,16 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./ssh.exe",
-      "SPDXID": "SPDXRef-File--ssh.exe-45DD06206759855BBAFA59D3869FDDED3DA059F9",
+      "fileName": "./OpenSSH-Win64_Symbols/ssh-pkcs11-helper.pdb",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-Symbols-ssh-pkcs11-helper.pdb-69A7033E9FC54DA2D2C60E7BE808A7FABD08B5D5",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "e41e50a22dffeae8bb13bce4cb47b6c4aa0de4cdecbd62ef79d5046adc05a8b1"
+          "checksumValue": "4beef4e9c7f992d67d894793e1edac6f365d303b609226a06363713492018450"
         },
         {
           "algorithm": "SHA1",
-          "checksumValue": "45dd06206759855bbafa59d3869fdded3da059f9"
+          "checksumValue": "69a7033e9fc54da2d2c60e7be808a7fabd08b5d5"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -447,16 +789,16 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./ssh-shellhost.exe",
-      "SPDXID": "SPDXRef-File--ssh-shellhost.exe-B6D7215F6336C1F2873006CC38C7BABC0B56F1D1",
+      "fileName": "./OpenSSH-Win64_Symbols/sshd-session.pdb",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-Symbols-sshd-session.pdb-D48E3B8526F6574032D8164A8168FB2F8B4FB11C",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "feae0baf291ff54a1366f0cd628665d2b1c9fe279ce2544d4f84c7aa46064f3c"
+          "checksumValue": "693e750fa162fb726c4b6a5d94d04f123c00319b679f2187f9ec3e482d8b77ea"
         },
         {
           "algorithm": "SHA1",
-          "checksumValue": "b6d7215f6336c1f2873006cc38c7babc0b56f1d1"
+          "checksumValue": "d48e3b8526f6574032d8164a8168fb2f8b4fb11c"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -466,16 +808,16 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./ssh-pkcs11-helper.exe",
-      "SPDXID": "SPDXRef-File--ssh-pkcs11-helper.exe-42C69733C4D65C007F4DB88C5F98C4531FDFFDE3",
+      "fileName": "./OpenSSH-Win64_Symbols/ssh-keyscan.pdb",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-Symbols-ssh-keyscan.pdb-4CCBC7E29CAE4F72734D185A15EAB374CAD5F147",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "269e8211cfc33a5251d72b93f142836889141652e1f569056cf2566f2579c1ba"
+          "checksumValue": "0093ac444343b9aec601ccf3b42431ee76e139f10c55d2645475c6656148c88b"
         },
         {
           "algorithm": "SHA1",
-          "checksumValue": "42c69733c4d65c007f4db88c5f98c4531fdffde3"
+          "checksumValue": "4ccbc7e29cae4f72734d185a15eab374cad5f147"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -485,16 +827,16 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./ssh-keyscan.exe",
-      "SPDXID": "SPDXRef-File--ssh-keyscan.exe-99E28EEFC6927BEE594A2FC9ED4100C51F1EEECD",
+      "fileName": "./OpenSSH-Win64_BuildInfo/OpenSSHReleasex64.log",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-BuildInfo-OpenSSHReleasex64.log-ECBA3D6E44F3AAAA7AAB7BCCA36ADA91FE5020C9",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "be7349cbd65e23fc46090c6e28b029db299580d9a44580d2e67946f30bc76067"
+          "checksumValue": "97d5c064fba1d6e48a291096f0ce084b81c632c38d0ff39c3e6c51c1aa88d0cb"
         },
         {
           "algorithm": "SHA1",
-          "checksumValue": "99e28eefc6927bee594a2fc9ed4100c51f1eeecd"
+          "checksumValue": "ecba3d6e44f3aaaa7aab7bcca36ada91fe5020c9"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -504,16 +846,16 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./ssh-sk-helper.exe",
-      "SPDXID": "SPDXRef-File--ssh-sk-helper.exe-F4E868192ED8CE06E459DC9F27DCA65964C5051A",
+      "fileName": "./OpenSSH-Win64_Symbols/ssh-keygen.pdb",
+      "SPDXID": "SPDXRef-File--OpenSSH-Win64-Symbols-ssh-keygen.pdb-7C569A591D34E050F8EDE29AABEDBB9A88F18AE7",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "6394adb498ff35a641c3b59199e3f956aafdd401354b674ee044374cef444270"
+          "checksumValue": "51a6ce138e0fa77d513e5402047f9ecaa3c52b76255a9bac2cd13f6427cc1cd4"
         },
         {
           "algorithm": "SHA1",
-          "checksumValue": "f4e868192ed8ce06e459dc9f27dca65964c5051a"
+          "checksumValue": "7c569a591d34e050f8ede29aabedbb9a88f18ae7"
         }
       ],
       "licenseConcluded": "NOASSERTION",
@@ -525,109 +867,109 @@
   ],
   "packages": [
     {
-      "name": "zlib",
-      "SPDXID": "SPDXRef-Package-E1D6D1090EC004EF8E5ACE051FE39067A45BFF860C462BE7D8FC326764DFF027",
-      "downloadLocation": "http://zlib.net/",
-      "filesAnalyzed": false,
-      "licenseConcluded": "NOASSERTION",
-      "licenseDeclared": "NOASSERTION",
-      "copyrightText": "NOASSERTION",
-      "versionInfo": "1.3",
-      "supplier": "NOASSERTION"
-    },
-    {
-      "name": "libressl",
-      "SPDXID": "SPDXRef-Package-CABBB102315F68264C755296D76A974F23AAD1EFA8EF89711C4E89929131792F",
-      "downloadLocation": "https://www.libressl.org/",
-      "filesAnalyzed": false,
-      "licenseConcluded": "NOASSERTION",
-      "licenseDeclared": "NOASSERTION",
-      "copyrightText": "NOASSERTION",
-      "versionInfo": "3.8.2.0",
-      "supplier": "NOASSERTION"
-    },
-    {
-      "name": "libcbor",
-      "SPDXID": "SPDXRef-Package-E17DDC71403E9F2B1007C3A60AE26F724C7E742A1D6D5FBE9816B0532D7F73B9",
-      "downloadLocation": "https://github.com/PJK/libcbor",
-      "filesAnalyzed": false,
-      "licenseConcluded": "NOASSERTION",
-      "licenseDeclared": "NOASSERTION",
-      "copyrightText": "NOASSERTION",
-      "versionInfo": "0.10.1",
-      "supplier": "NOASSERTION"
-    },
-    {
-      "name": "powershell_libfido2",
-      "SPDXID": "SPDXRef-Package-9E6200C7AEF3072AC50B4F0750F7AC3C0E12DF663CC774902350E2D9FD416A81",
-      "downloadLocation": "https://github.com/PowerShell/libfido2/archive/refs/tags/1.14.0.zip",
-      "filesAnalyzed": false,
-      "licenseConcluded": "NOASSERTION",
-      "licenseDeclared": "NOASSERTION",
-      "copyrightText": "NOASSERTION",
-      "versionInfo": "1.14.0",
-      "supplier": "NOASSERTION"
-    },
-    {
-      "name": "powershell_libressl",
-      "SPDXID": "SPDXRef-Package-66BF7592AFBC2CD50D9FC5F18ABAFA76ABBBF9C3F2847C95D1F99D150B3CE46D",
-      "downloadLocation": "https://github.com/PowerShell/LibreSSL/releases/tag/V3.8.2.0.zip",
-      "filesAnalyzed": false,
-      "licenseConcluded": "NOASSERTION",
-      "licenseDeclared": "NOASSERTION",
-      "copyrightText": "NOASSERTION",
-      "versionInfo": "3.8.2.0",
-      "supplier": "NOASSERTION"
-    },
-    {
-      "name": "powershell_zlib",
-      "SPDXID": "SPDXRef-Package-8E19BEDF1EF380B338DB20F1048FF763D0578C185910D40C62204AFA51D29532",
-      "downloadLocation": "https://github.com/PowerShell/ZLib/releases/tag/V1.3.zip",
-      "filesAnalyzed": false,
-      "licenseConcluded": "NOASSERTION",
-      "licenseDeclared": "NOASSERTION",
-      "copyrightText": "NOASSERTION",
-      "versionInfo": "1.3",
-      "supplier": "NOASSERTION"
-    },
-    {
-      "name": "powershell_libcbor",
-      "SPDXID": "SPDXRef-Package-0633FC36A057DF0C87EED52E5DEDF9B329FB7D81AAA4F276018A43EA45B452BD",
-      "downloadLocation": "https://github.com/PowerShell/libcbor",
-      "filesAnalyzed": false,
-      "licenseConcluded": "NOASSERTION",
-      "licenseDeclared": "NOASSERTION",
-      "copyrightText": "NOASSERTION",
-      "versionInfo": "0.10.1",
-      "supplier": "NOASSERTION"
-    },
-    {
-      "name": "Microsoft.Telemetry.Inbox.Native",
-      "SPDXID": "SPDXRef-Package-0E13AAD00D3394DF297FCA773EC1B0EDEF66F936E6C99311CBC4763108E2033B",
-      "downloadLocation": "NOASSERTION",
-      "filesAnalyzed": false,
-      "licenseConcluded": "NOASSERTION",
-      "licenseDeclared": "NOASSERTION",
-      "copyrightText": "NOASSERTION",
-      "versionInfo": "10.0.18362.1-190318-1202.19h1-release.amd64fre",
-      "externalRefs": [
-        {
-          "referenceCategory": "PACKAGE-MANAGER",
-          "referenceType": "purl",
-          "referenceLocator": "pkg:nuget/Microsoft.Telemetry.Inbox.Native@10.0.18362.1-190318-1202.19h1-release.amd64fre"
-        }
-      ],
-      "supplier": "NOASSERTION"
-    },
-    {
       "name": "libfido2",
-      "SPDXID": "SPDXRef-Package-EF6CDF9F1FC7596E226D734530809E9E82AD8AF8A15D3F13085AB4E09523033E",
+      "SPDXID": "SPDXRef-Package-DBE1ADCC77824D44C3798D437C096E9C2F45322F9BFB9D84DF3B676062741CAA",
       "downloadLocation": "https://github.com/Yubico/libfido2",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
       "licenseDeclared": "NOASSERTION",
       "copyrightText": "NOASSERTION",
-      "versionInfo": "1.14.0",
+      "versionInfo": "1.15.0",
+      "supplier": "NOASSERTION"
+    },
+    {
+      "name": "powershell_libfido2",
+      "SPDXID": "SPDXRef-Package-50FA054C3CF71B778225C94E02FCA57826614416A915D007D604DF84D814DFA2",
+      "downloadLocation": "https://github.com/PowerShell/libfido2/archive/refs/tags/1.15.0.zip",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "versionInfo": "1.15.0",
+      "supplier": "NOASSERTION"
+    },
+    {
+      "name": "zlib",
+      "SPDXID": "SPDXRef-Package-C48644207E7AC039A85B1C41085F3B31ADE0273DA9D828D7D7C0D1F0CD93B8BA",
+      "downloadLocation": "http://zlib.net/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "versionInfo": "1.3.1",
+      "supplier": "NOASSERTION"
+    },
+    {
+      "name": "powershell_libcbor",
+      "SPDXID": "SPDXRef-Package-41513D39CF449D8ADCB8FD146C5BA8697DDD30C2F972014C55C4A6EC6AA7EB76",
+      "downloadLocation": "https://github.com/PowerShell/libcbor",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "versionInfo": "0.11.0",
+      "supplier": "NOASSERTION"
+    },
+    {
+      "name": "libressl",
+      "SPDXID": "SPDXRef-Package-9614F2FF20731E430A1CE5431F21F43F46BDB83CB7CFF36ACA5BA70896E2A5B3",
+      "downloadLocation": "https://www.libressl.org/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "versionInfo": "4.0.0.0",
+      "supplier": "NOASSERTION"
+    },
+    {
+      "name": "powershell_zlib",
+      "SPDXID": "SPDXRef-Package-7D958500B3992EFD73E1B44F7EE13941A499D40BC9121889534BA2383A0CBB0D",
+      "downloadLocation": "https://github.com/PowerShell/ZLib/releases/tag/V1.3.1.zip",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "versionInfo": "1.3.1",
+      "supplier": "NOASSERTION"
+    },
+    {
+      "name": "powershell_libressl",
+      "SPDXID": "SPDXRef-Package-5F010068EE8252D5E475FC87F530282199C049CDFAEE9F55FC2F5CB2AE696F17",
+      "downloadLocation": "https://github.com/PowerShell/LibreSSL/releases/tag/V4.0.0.0.zip",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "versionInfo": "4.0.0.0",
+      "supplier": "NOASSERTION"
+    },
+    {
+      "name": "WiX",
+      "SPDXID": "SPDXRef-Package-0453B7455A0B8778D4DD20EE81622AB2F93F2F060FF21F033C6ECF10EA3EFE9F",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "versionInfo": "3.14.1",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:nuget/WiX@3.14.1"
+        }
+      ],
+      "supplier": "NOASSERTION"
+    },
+    {
+      "name": "libcbor",
+      "SPDXID": "SPDXRef-Package-971DCD74BBB31990D0289EF759070595E5B80F51DA88731700252A67F3064BD6",
+      "downloadLocation": "https://github.com/PJK/libcbor",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "versionInfo": "0.11.0",
       "supplier": "NOASSERTION"
     },
     {
@@ -635,7 +977,7 @@
       "SPDXID": "SPDXRef-RootPackage",
       "downloadLocation": "NOASSERTION",
       "packageVerificationCode": {
-        "packageVerificationCodeValue": "7035c7823ae5272e1f18bd4b6a704e4d9246f723"
+        "packageVerificationCodeValue": "36fde6468cb9e5790554ae4b0ad69c856f2cfa9b"
       },
       "filesAnalyzed": true,
       "licenseConcluded": "NOASSERTION",
@@ -644,74 +986,117 @@
       ],
       "licenseDeclared": "NOASSERTION",
       "copyrightText": "NOASSERTION",
-      "versionInfo": "v9.5.0.0",
+      "versionInfo": "9.8.3.0",
       "externalRefs": [
         {
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
-          "referenceLocator": "pkg:swid/Microsoft/sbom.microsoft/OpenSSH@v9.5.0.0?tag_id=782c7ef8-5a6a-4898-808e-2d2762f1c69b"
+          "referenceLocator": "pkg:swid/Microsoft/sbom.microsoft/OpenSSH@9.8.3.0?tag_id=3849f558-c9c5-414c-9b5c-af170d26447d"
         }
       ],
       "supplier": "Organization: Microsoft",
       "hasFiles": [
-        "SPDXRef-File--ssh-pkcs11-helper.exe-42C69733C4D65C007F4DB88C5F98C4531FDFFDE3",
-        "SPDXRef-File--ssh-shellhost.exe-B6D7215F6336C1F2873006CC38C7BABC0B56F1D1",
-        "SPDXRef-File--ssh-keyscan.exe-99E28EEFC6927BEE594A2FC9ED4100C51F1EEECD",
-        "SPDXRef-File--ssh.exe-45DD06206759855BBAFA59D3869FDDED3DA059F9",
-        "SPDXRef-File--ssh-sk-helper.exe-F4E868192ED8CE06E459DC9F27DCA65964C5051A",
-        "SPDXRef-File--sshd.exe-8D4F19B221751297B0C3A10F105772D7286C9411",
-        "SPDXRef-File--sftp-server.exe-3E7B02953CCAEF1D63C4E1C4BC69DAA1656E5AB0",
-        "SPDXRef-File--OpenSSHUtils.psd1-528144F0A6ED07FAB245C44E4CBCC10F4F6A49F3",
-        "SPDXRef-File--FixHostFilePermissions.ps1-69BFE802C483927F86FA8AC6A6206ABF248EAFDD",
-        "SPDXRef-File--OpenSSHUtils.psm1-E323BB4C869BCE3E060BC4B01A47AAABD5F6A6C8",
-        "SPDXRef-File--FixUserFilePermissions.ps1-9580BDCEF61E1953460295118E74EC13402A8951",
-        "SPDXRef-File--libcrypto.dll-D71484F8F0B8FE26222677597D04AD61DD68291F",
-        "SPDXRef-File--scp.exe-260B14386BC18D7D3F35DA5CED56E169A6E600AE",
-        "SPDXRef-File--install-sshd.ps1-6428988C166F4D1F88625EF7903B60977A52903A",
-        "SPDXRef-File--ssh-add.exe-E7D6EC27C96B47A515A9933FF1506ACEB17B8CA9",
-        "SPDXRef-File--moduli-07BBADDD000D6BFC1F3C30A314A5208A5F8B3AEF",
-        "SPDXRef-File--uninstall-sshd.ps1-131C3180EA51887D4A1C5141BC1CF7BA337214E4",
-        "SPDXRef-File--ssh-keygen.exe-EF9E3FCE7640BF24E8FF72ECB021BE2278B5BAFF",
-        "SPDXRef-File--openssh-events.man-39F0E1C5FDF3F456EEAF9F1A5696A7CA64617F86",
-        "SPDXRef-File--sftp.exe-96772AE7ED0A8826AB6E88437394F7684796B63B",
-        "SPDXRef-File--LICENSE.txt-A7739A32F1926D71A9EB22D101287ECEA09A6AC5",
-        "SPDXRef-File--sshd-config-default-825CDEC4CF05869C74B01E7A1C8BF3C5E2C45CD8",
-        "SPDXRef-File--ssh-agent.exe-8FF28330B34340225812D9284D60A77C0498F9D7",
-        "SPDXRef-File--NOTICE.txt-0C6BEDA8BE1A704C0C2615D4A481BACA0E56372D"
+        "SPDXRef-File--OpenSSH-Win64-Symbols-ssh-keygen.pdb-7C569A591D34E050F8EDE29AABEDBB9A88F18AE7",
+        "SPDXRef-File--OpenSSH-Win64-BuildInfo-OpenSSHReleasex64.log-ECBA3D6E44F3AAAA7AAB7BCCA36ADA91FE5020C9",
+        "SPDXRef-File--OpenSSH-Win64-Symbols-ssh-keyscan.pdb-4CCBC7E29CAE4F72734D185A15EAB374CAD5F147",
+        "SPDXRef-File--OpenSSH-Win64-Symbols-sshd-session.pdb-D48E3B8526F6574032D8164A8168FB2F8B4FB11C",
+        "SPDXRef-File--OpenSSH-Win64-Symbols-ssh-pkcs11-helper.pdb-69A7033E9FC54DA2D2C60E7BE808A7FABD08B5D5",
+        "SPDXRef-File--OpenSSH-Win64-BuildInfo-Unittests-Win64.zip-2E8C582187C3FF47797743C73736A3F2DA5D5FBE",
+        "SPDXRef-File--OpenSSH-Win64-Symbols-ssh-sk-helper.pdb-B21852DC115A6E34B15DF904CD9D64D28D2DEE1F",
+        "SPDXRef-File--OpenSSH-Win64-Symbols-ssh-shellhost.pdb-B248C71CA6109C466FC9065415F7D0DE50962371",
+        "SPDXRef-File--OpenSSH-Win64-openssh-events.man-39F0E1C5FDF3F456EEAF9F1A5696A7CA64617F86",
+        "SPDXRef-File--OpenSSH-MSI-Win64-openssh.msi-9DDEBA07DB1120C161D85B7A5A4235B328720838",
+        "SPDXRef-File--OpenSSH-Win64-ssh-sk-helper.exe-31431AA1B2BCEF9C61E8C1C78BBA404D2423D5BB",
+        "SPDXRef-File--OpenSSH-Win64-Symbols-ssh-add.pdb-DEF28C72F13CB78B55FC5884190BF53EBBEF88FF",
+        "SPDXRef-File--OpenSSH-Win64-Symbols-sshd.pdb-3D98B0F3510376B538090D15B2382E9417624E6C",
+        "SPDXRef-File--OpenSSH-Win64-Symbols-libcrypto.pdb-1DA3CA6C77B278799D9FEF10525696B8ECE2177C",
+        "SPDXRef-File--OpenSSH-Win64-sshd-config-default-7F6AC27C5927EF4127C392D53DDD5DB763B65A1E",
+        "SPDXRef-File--OpenSSH-Win64-ssh-add.exe-6F6E3F130CCC07112EE1EF3E6520B10CC3893B29",
+        "SPDXRef-File--OpenSSH-Win64-uninstall-sshd.ps1-55744262CB2DA5EC333B5500BE91A5863DF92BBD",
+        "SPDXRef-File--OpenSSH-Win64-moduli-D000837A7C67C88BAAA61D643E48A28B2F40B7AF",
+        "SPDXRef-File--OpenSSH-Win64-scp.exe-0B505571C7EE6B57166D9330919AEF7FE5BCD1E6",
+        "SPDXRef-File--OpenSSH-Win64-Symbols-ssh.pdb-6A3437726192FF3FABB7A217A70CEF37497FC3D1",
+        "SPDXRef-File--OpenSSH-Win64-Symbols-sftp-server.pdb-C7BDD7F9DB9C7B655EC3B6702A6B3C99B892DB66",
+        "SPDXRef-File--OpenSSH-Win64-Symbols-scp.pdb-ECEA0DEE7158C6A817019822BAE60CBAFBE5216D",
+        "SPDXRef-File--OpenSSH-Win64-ssh-keygen.exe-58858E8B74DB6427CFC688D7F7BD2C9F0DC76092",
+        "SPDXRef-File--OpenSSH-Win64-Symbols-sftp.pdb-9483D2D04BDF6C13748640F22C6014AD6F939012",
+        "SPDXRef-File--OpenSSH-Win64-Symbols-ssh-agent.pdb-A8FB00A9B3A4A7358ED6B46FA9C91FA34236AC0F",
+        "SPDXRef-File--OpenSSH-Win64-sshd-session.exe-17B8074CA2B15F889C105A33B0DC3D3AE98A2207",
+        "SPDXRef-File--OpenSSH-Win64-libcrypto.dll-861AC30C7A3AEA387D107D4AD2E5FA25D9F2C0BA",
+        "SPDXRef-File--OpenSSH-Win64-sshd.exe-0784674213366C64D1FEAE887C30AD6CEF535FBB",
+        "SPDXRef-File--OpenSSH-Win64-ssh-pkcs11-helper.exe-4858FA17AE8ED4DAC583D4223B385896794A3786",
+        "SPDXRef-File--OpenSSH-Win64-sftp.exe-24ACCE55CACE31F139546291DD29E0D0B6A03C9E",
+        "SPDXRef-File--OpenSSH-Win64-LICENSE.txt-A7739A32F1926D71A9EB22D101287ECEA09A6AC5",
+        "SPDXRef-File--OpenSSH-Win64-OpenSSHUtils.psm1-23436B0C028831D40376FD211331046A508DF2CE",
+        "SPDXRef-File--OpenSSH-Win64-FixUserFilePermissions.ps1-DD73EDE2304F767B0F20212DE09F601977844C79",
+        "SPDXRef-File--OpenSSH-Win64-ssh.exe-08DBF3A55DE35C70328FEA9633218CF56F37CE4E",
+        "SPDXRef-File--OpenSSH-Win64-sftp-server.exe-9EBCABC295E30361723692AA8DFF8277AF5B0058",
+        "SPDXRef-File--OpenSSH-Win64-ssh-keyscan.exe-15163D97718491B854D04849FF773E84BC416C43",
+        "SPDXRef-File--OpenSSH-Win64-ssh-shellhost.exe-F60260C63ECA328B12CA022E965662AE91A371BB",
+        "SPDXRef-File--OpenSSH-Win64-ssh-agent.exe-3C3E3369DE1A5083ED29FDE0B71E6246D5D9C07E",
+        "SPDXRef-File--OpenSSH-Win64-install-sshd.ps1-A8BF62E7C1CFF8545AACB1E60711B288680182A6",
+        "SPDXRef-File--OpenSSH-Win64-OpenSSHUtils.psd1-C0CF5DBFEC3B98F63CBA9E6BB831E5080F7D1B81",
+        "SPDXRef-File--OpenSSH-Win64-FixHostFilePermissions.ps1-8F5FD364A9DB299B3D3896CF02F4595036BB22BE",
+        "SPDXRef-File--OpenSSH-Win64-NOTICE.txt-0C6BEDA8BE1A704C0C2615D4A481BACA0E56372D"
       ]
     }
   ],
   "externalDocumentRefs": [
     {
-      "externalDocumentId": "DocumentRef-libfido2-1.9.0-310bd4fa72cec9ee54e77223406471f26f78a856",
-      "spdxDocument": "https://sbom.microsoft/1:2QSF7qZlbE-F7QrUJlEo7g:Ifmy0CRpKEe0S33n1Rdb-w/1853:435610/libfido2:1.9.0:93nfKlPFskqYActXB9ihUQ",
+      "externalDocumentId": "DocumentRef-LibreSSL-4.0.0.0-4eaf53d434ebcc53c686f3abfee54baf11effcf0",
+      "spdxDocument": "https://sbom.microsoft/1:2QSF7qZlbE-F7QrUJlEo7g:Ifmy0CRpKEe0S33n1Rdb-w/2904:575877/LibreSSL:4.0.0.0:WMH2o0P7HE6tnReYBNrzWQ",
       "checksum": {
         "algorithm": "SHA1",
-        "checksumValue": "310bd4fa72cec9ee54e77223406471f26f78a856"
+        "checksumValue": "4eaf53d434ebcc53c686f3abfee54baf11effcf0"
       }
     },
     {
-      "externalDocumentId": "DocumentRef-ZLib-1.3-954c206cebfe20c7d8d6413fd131bebdc36f9039",
-      "spdxDocument": "https://sbom.microsoft/1:2QSF7qZlbE-F7QrUJlEo7g:Ifmy0CRpKEe0S33n1Rdb-w/1748:435286/ZLib:1.3:31b8OLNRLEmOO3WeVkbPxQ",
+      "externalDocumentId": "DocumentRef-libfido2-1.15.0-b4d71991155efc0e5c2b2f7186ccbec3b7e54cb6",
+      "spdxDocument": "https://sbom.microsoft/1:2QSF7qZlbE-F7QrUJlEo7g:Ifmy0CRpKEe0S33n1Rdb-w/2912:530705/libfido2:1.15.0:I44gQlgQAkeFIC0SjN9gPw",
       "checksum": {
         "algorithm": "SHA1",
-        "checksumValue": "954c206cebfe20c7d8d6413fd131bebdc36f9039"
+        "checksumValue": "b4d71991155efc0e5c2b2f7186ccbec3b7e54cb6"
       }
     },
     {
-      "externalDocumentId": "DocumentRef-LibreSSL-3.8.2-703648163083f513d486d8363f525021a6d08a91",
-      "spdxDocument": "https://sbom.microsoft/1:2QSF7qZlbE-F7QrUJlEo7g:Ifmy0CRpKEe0S33n1Rdb-w/1750:435379/LibreSSL:3.8.2:ZQ-1YmWb40uaupP_NzN-UA",
+      "externalDocumentId": "DocumentRef-ZLib-1.3.1-16232b68c57e9d662108a05698d26f43c0acabea",
+      "spdxDocument": "https://sbom.microsoft/1:2QSF7qZlbE-F7QrUJlEo7g:Ifmy0CRpKEe0S33n1Rdb-w/2901:522012/ZLib:1.3.1:0alOYoxgr0aKgbhQo6OyNw",
       "checksum": {
         "algorithm": "SHA1",
-        "checksumValue": "703648163083f513d486d8363f525021a6d08a91"
+        "checksumValue": "16232b68c57e9d662108a05698d26f43c0acabea"
       }
     }
   ],
   "relationships": [
     {
-      "relationshipType": "DEPENDS_ON",
-      "relatedSpdxElement": "SPDXRef-Package-EF6CDF9F1FC7596E226D734530809E9E82AD8AF8A15D3F13085AB4E09523033E",
+      "relationshipType": "PREREQUISITE_FOR",
+      "relatedSpdxElement": "DocumentRef-libfido2-1.15.0-b4d71991155efc0e5c2b2f7186ccbec3b7e54cb6:SPDXRef-RootPackage",
       "spdxElementId": "SPDXRef-RootPackage"
+    },
+    {
+      "relationshipType": "PREREQUISITE_FOR",
+      "relatedSpdxElement": "DocumentRef-LibreSSL-4.0.0.0-4eaf53d434ebcc53c686f3abfee54baf11effcf0:SPDXRef-RootPackage",
+      "spdxElementId": "SPDXRef-RootPackage"
+    },
+    {
+      "relationshipType": "PREREQUISITE_FOR",
+      "relatedSpdxElement": "DocumentRef-ZLib-1.3.1-16232b68c57e9d662108a05698d26f43c0acabea:SPDXRef-RootPackage",
+      "spdxElementId": "SPDXRef-RootPackage"
+    },
+    {
+      "relationshipType": "DESCRIBED_BY",
+      "relatedSpdxElement": "SPDXRef-DOCUMENT",
+      "spdxElementId": "SPDXRef-File--..-..-s-OSS-Microsoft-OpenSSH-Dev-contrib-win32-openssh-LibreSSL--manifest-spdx-2.2-manifest.spdx.json-4EAF53D434EBCC53C686F3ABFEE54BAF11EFFCF0"
+    },
+    {
+      "relationshipType": "DESCRIBED_BY",
+      "relatedSpdxElement": "SPDXRef-DOCUMENT",
+      "spdxElementId": "SPDXRef-File--..-..-s-OSS-Microsoft-OpenSSH-Dev-contrib-win32-openssh-ZLib--manifest-spdx-2.2-manifest.spdx.json-16232B68C57E9D662108A05698D26F43C0ACABEA"
+    },
+    {
+      "relationshipType": "DESCRIBED_BY",
+      "relatedSpdxElement": "SPDXRef-DOCUMENT",
+      "spdxElementId": "SPDXRef-File--..-..-s-OSS-Microsoft-OpenSSH-Dev-contrib-win32-openssh-libfido2--manifest-spdx-2.2-manifest.spdx.json-B4D71991155EFC0E5C2B2F7186CCBEC3B7E54CB6"
     },
     {
       "relationshipType": "DESCRIBES",
@@ -719,86 +1104,61 @@
       "spdxElementId": "SPDXRef-DOCUMENT"
     },
     {
-      "relationshipType": "PREREQUISITE_FOR",
-      "relatedSpdxElement": "DocumentRef-LibreSSL-3.8.2-703648163083f513d486d8363f525021a6d08a91:SPDXRef-RootPackage",
-      "spdxElementId": "SPDXRef-RootPackage"
-    },
-    {
-      "relationshipType": "DESCRIBED_BY",
-      "relatedSpdxElement": "SPDXRef-DOCUMENT",
-      "spdxElementId": "SPDXRef-File--..-..-s-OSS-Microsoft-OpenSSH-Dev-contrib-win32-openssh-ZLib--manifest-spdx-2.2-manifest.spdx.json-954C206CEBFE20C7D8D6413FD131BEBDC36F9039"
-    },
-    {
       "relationshipType": "DEPENDS_ON",
-      "relatedSpdxElement": "SPDXRef-Package-0E13AAD00D3394DF297FCA773EC1B0EDEF66F936E6C99311CBC4763108E2033B",
-      "spdxElementId": "SPDXRef-RootPackage"
-    },
-    {
-      "relationshipType": "DESCRIBED_BY",
-      "relatedSpdxElement": "SPDXRef-DOCUMENT",
-      "spdxElementId": "SPDXRef-File--..-..-s-OSS-Microsoft-OpenSSH-Dev-contrib-win32-openssh-libfido2--manifest-spdx-2.2-manifest.spdx.json-310BD4FA72CEC9EE54E77223406471F26F78A856"
-    },
-    {
-      "relationshipType": "PREREQUISITE_FOR",
-      "relatedSpdxElement": "DocumentRef-ZLib-1.3-954c206cebfe20c7d8d6413fd131bebdc36f9039:SPDXRef-RootPackage",
+      "relatedSpdxElement": "SPDXRef-Package-971DCD74BBB31990D0289EF759070595E5B80F51DA88731700252A67F3064BD6",
       "spdxElementId": "SPDXRef-RootPackage"
     },
     {
       "relationshipType": "DEPENDS_ON",
-      "relatedSpdxElement": "SPDXRef-Package-0633FC36A057DF0C87EED52E5DEDF9B329FB7D81AAA4F276018A43EA45B452BD",
+      "relatedSpdxElement": "SPDXRef-Package-0453B7455A0B8778D4DD20EE81622AB2F93F2F060FF21F033C6ECF10EA3EFE9F",
       "spdxElementId": "SPDXRef-RootPackage"
     },
     {
       "relationshipType": "DEPENDS_ON",
-      "relatedSpdxElement": "SPDXRef-Package-66BF7592AFBC2CD50D9FC5F18ABAFA76ABBBF9C3F2847C95D1F99D150B3CE46D",
+      "relatedSpdxElement": "SPDXRef-Package-5F010068EE8252D5E475FC87F530282199C049CDFAEE9F55FC2F5CB2AE696F17",
       "spdxElementId": "SPDXRef-RootPackage"
     },
     {
       "relationshipType": "DEPENDS_ON",
-      "relatedSpdxElement": "SPDXRef-Package-9E6200C7AEF3072AC50B4F0750F7AC3C0E12DF663CC774902350E2D9FD416A81",
+      "relatedSpdxElement": "SPDXRef-Package-7D958500B3992EFD73E1B44F7EE13941A499D40BC9121889534BA2383A0CBB0D",
       "spdxElementId": "SPDXRef-RootPackage"
     },
     {
       "relationshipType": "DEPENDS_ON",
-      "relatedSpdxElement": "SPDXRef-Package-E17DDC71403E9F2B1007C3A60AE26F724C7E742A1D6D5FBE9816B0532D7F73B9",
-      "spdxElementId": "SPDXRef-RootPackage"
-    },
-    {
-      "relationshipType": "DESCRIBED_BY",
-      "relatedSpdxElement": "SPDXRef-DOCUMENT",
-      "spdxElementId": "SPDXRef-File--..-..-s-OSS-Microsoft-OpenSSH-Dev-contrib-win32-openssh-LibreSSL--manifest-spdx-2.2-manifest.spdx.json-703648163083F513D486D8363F525021A6D08A91"
-    },
-    {
-      "relationshipType": "PREREQUISITE_FOR",
-      "relatedSpdxElement": "DocumentRef-libfido2-1.9.0-310bd4fa72cec9ee54e77223406471f26f78a856:SPDXRef-RootPackage",
+      "relatedSpdxElement": "SPDXRef-Package-9614F2FF20731E430A1CE5431F21F43F46BDB83CB7CFF36ACA5BA70896E2A5B3",
       "spdxElementId": "SPDXRef-RootPackage"
     },
     {
       "relationshipType": "DEPENDS_ON",
-      "relatedSpdxElement": "SPDXRef-Package-CABBB102315F68264C755296D76A974F23AAD1EFA8EF89711C4E89929131792F",
+      "relatedSpdxElement": "SPDXRef-Package-41513D39CF449D8ADCB8FD146C5BA8697DDD30C2F972014C55C4A6EC6AA7EB76",
       "spdxElementId": "SPDXRef-RootPackage"
     },
     {
       "relationshipType": "DEPENDS_ON",
-      "relatedSpdxElement": "SPDXRef-Package-8E19BEDF1EF380B338DB20F1048FF763D0578C185910D40C62204AFA51D29532",
+      "relatedSpdxElement": "SPDXRef-Package-C48644207E7AC039A85B1C41085F3B31ADE0273DA9D828D7D7C0D1F0CD93B8BA",
       "spdxElementId": "SPDXRef-RootPackage"
     },
     {
       "relationshipType": "DEPENDS_ON",
-      "relatedSpdxElement": "SPDXRef-Package-E1D6D1090EC004EF8E5ACE051FE39067A45BFF860C462BE7D8FC326764DFF027",
+      "relatedSpdxElement": "SPDXRef-Package-DBE1ADCC77824D44C3798D437C096E9C2F45322F9BFB9D84DF3B676062741CAA",
+      "spdxElementId": "SPDXRef-RootPackage"
+    },
+    {
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-50FA054C3CF71B778225C94E02FCA57826614416A915D007D604DF84D814DFA2",
       "spdxElementId": "SPDXRef-RootPackage"
     }
   ],
   "spdxVersion": "SPDX-2.2",
   "dataLicense": "CC0-1.0",
   "SPDXID": "SPDXRef-DOCUMENT",
-  "name": "OpenSSH v9.5.0.0",
-  "documentNamespace": "https://sbom.microsoft/1:2QSF7qZlbE-F7QrUJlEo7g:Ifmy0CRpKEe0S33n1Rdb-w/1908:435989/OpenSSH:v9.5.0.0:mSMmWGvvb0670lYCb5sFtA",
+  "name": "OpenSSH 9.8.3.0",
+  "documentNamespace": "https://sbom.microsoft/1:2QSF7qZlbE-F7QrUJlEo7g:Ifmy0CRpKEe0S33n1Rdb-w/2896:582846/OpenSSH:9.8.3.0:yi0yEmmTjkuDZGL-kl_uMw",
   "creationInfo": {
-    "created": "2023-12-13T16:47:29Z",
+    "created": "2025-04-17T20:58:04Z",
     "creators": [
       "Organization: Microsoft",
-      "Tool: Microsoft.SBOMTool-2.2.1"
+      "Tool: Microsoft.SBOMTool-3.1.0"
     ]
   },
   "documentDescribes": [
