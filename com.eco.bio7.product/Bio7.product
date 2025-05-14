@@ -35,11 +35,32 @@ jdk/bin/java
       <programArgsWin>-vm
 jdk/bin/javaw.exe
       </programArgsWin>
-      <vmArgsLin>-Xms2048m -Xmx8096m -Dprism.lcdtext=false -Dpython.console.encoding=UTF-8 -Dswt.enable.themedScrollBar=true --add-modules=ALL-SYSTEM --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-opens java.desktop/sun.awt.windows=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.desktop/sun.awt=ALL-UNNAMED --add-opens java.desktop/sun.java2d.opengl=ALL-UNNAMED --add-opens java.base/java.lang.invoke=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.desktop/java.awt.font=ALL-UNNAMED
+      <vmArgs>-Xms2048m
+-Xmx8096m
+--add-modules=ALL-SYSTEM 
+--add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED 
+--add-opens java.desktop/sun.awt.windows=ALL-UNNAMED 
+--add-opens java.base/java.lang=ALL-UNNAMED 
+--add-opens java.desktop/sun.awt=ALL-UNNAMED 
+--add-opens java.desktop/sun.java2d.opengl=ALL-UNNAMED 
+--add-opens java.base/java.lang.invoke=ALL-UNNAMED 
+--add-opens java.base/java.util=ALL-UNNAMED 
+--add-opens java.base/java.lang.reflect=ALL-UNNAMED 
+--add-opens java.base/java.text=ALL-UNNAMED 
+--add-opens java.desktop/java.awt.font=ALL-UNNAMED
+      </vmArgs>
+      <vmArgsLin>-Dpython.console.encoding=UTF-8 
+-Dswt.enable.themedScrollBar=true
       </vmArgsLin>
-      <vmArgsMac>-Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=true -Xms4048m -Xmx8096m -Dprism.lcdtext=false -Dprism.order=sw -Dpython.console.encoding=UTF-8 -Dswt.enable.themedScrollBar=true -XstartOnFirstThread --add-modules=ALL-SYSTEM --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-opens java.desktop/sun.awt.windows=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.desktop/sun.awt=ALL-UNNAMED --add-opens java.desktop/sun.java2d.opengl=ALL-UNNAMED --add-opens java.base/java.lang.invoke=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.desktop/java.awt.font=ALL-UNNAMED
+      <vmArgsMac>-Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=true 
+-Dpython.console.encoding=UTF-8 
+-Dswt.enable.themedScrollBar=true 
+-XstartOnFirstThread
       </vmArgsMac>
-      <vmArgsWin>-Xms2048m -Xmx8096m -Dorg.eclipse.swt.browser.DefaultType=&quot;edge&quot; -Dsun.java2d.opengl=true -Dprism.lcdtext=false -Dpython.console.encoding=UTF-8 -Dswt.enable.themedScrollBar=true --add-modules=ALL-SYSTEM --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-opens java.desktop/sun.awt.windows=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.desktop/sun.awt=ALL-UNNAMED --add-opens java.desktop/sun.java2d.opengl=ALL-UNNAMED --add-opens java.base/java.lang.invoke=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.desktop/java.awt.font=ALL-UNNAMED
+      <vmArgsWin>-Dorg.eclipse.swt.browser.DefaultType=&quot;edge&quot; 
+-Dsun.java2d.opengl=true 
+-Dpython.console.encoding=UTF-8 
+-Dswt.enable.themedScrollBar=true
       </vmArgsWin>
    </launcherArgs>
 
