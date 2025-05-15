@@ -1082,7 +1082,7 @@ public class DatabaseView extends ViewPart {
 	}
 
 	public static String getSshWindowsPath() {
-		Bundle bundle = Platform.getBundle("com.eco.bio7.libs");
+		Bundle bundle = Platform.getBundle("com.eco.bio7.win32.x86_64");
 		Path path = new Path("ssh_win64/ssh.exe");
 		URL locationURL = FileLocator.find(bundle, path, null);
 		URL fileUrl = null;

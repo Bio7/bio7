@@ -38,16 +38,7 @@ jdk/bin/javaw.exe
       <vmArgs>-Xms2048m
 -Xmx8096m
 --add-modules=ALL-SYSTEM 
---add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED 
---add-opens java.desktop/sun.awt.windows=ALL-UNNAMED 
---add-opens java.base/java.lang=ALL-UNNAMED 
---add-opens java.desktop/sun.awt=ALL-UNNAMED 
---add-opens java.desktop/sun.java2d.opengl=ALL-UNNAMED 
---add-opens java.base/java.lang.invoke=ALL-UNNAMED 
---add-opens java.base/java.util=ALL-UNNAMED 
---add-opens java.base/java.lang.reflect=ALL-UNNAMED 
---add-opens java.base/java.text=ALL-UNNAMED 
---add-opens java.desktop/java.awt.font=ALL-UNNAMED
+--add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
       </vmArgs>
       <vmArgsLin>-Dpython.console.encoding=UTF-8 
 -Dswt.enable.themedScrollBar=true

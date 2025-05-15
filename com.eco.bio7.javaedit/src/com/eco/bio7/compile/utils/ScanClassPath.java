@@ -36,8 +36,8 @@ public class ScanClassPath {
 
 	private String pathBundle;
 	String[] bundles = new String[] { "com.eco.bio7", "com.eco.bio7.libs", "com.eco.bio7.javaedit",
-			"com.eco.bio7.image", "com.eco.bio7.WorldWind", "com.eco.bio7.browser",
-			"Bundled_R", "com.eco.bio7.javacv" };// "org.eclipse.ui.workbench","org.eclipse.core.commands"
+			"com.eco.bio7.image", "com.eco.bio7.WorldWind", "com.eco.bio7.browser", "Bundled_R",
+			"com.eco.bio7.javacv" };// "org.eclipse.ui.workbench","org.eclipse.core.commands"
 
 	String[] bundlesEclipse;
 	private String OS;
@@ -123,45 +123,53 @@ public class ScanClassPath {
 				}
 			}
 		}
-
+		if (Util.isMac()) {
+			buf.append(":");
+		} else if (Util.isWindows()) {
+			buf.append(";");
+		} else {
+			buf.append(":");
+		}
 		// String platformPath =
 		// Platform.getInstallLocation().getURL().getPath().replace("\\", "/");
-		//String modulePath = store.getString("JAVA_MODULES_PATH");
-		//modulePath = modulePath.replace(";", "");
-		//if (Util.isMac()) {
-		//	buf.append(":"); 
-			/*
-			 * + pathseparator + modulePath + "/javafx.base.jar:"); buf.append(modulePath +
-			 * "/javafx.controls.jar:"); buf.append(modulePath + "/javafx.fxml.jar:");
-			 * buf.append(modulePath + "/javafx.graphics.jar:"); buf.append(modulePath +
-			 * "/javafx.media.jar:"); buf.append(modulePath + "/javafx.swing.jar:");
-			 * buf.append(modulePath + "/javafx.web.jar:"); buf.append(modulePath +
-			 * "/javafx-swt.jar:");
-			 */
-		//} else if (Util.isWindows()) {
-		//	buf.append(";");
-		//+ pathseparator + modulePath + "/javafx.base.jar;");
-			/*
-			 * buf.append(pathseparator + modulePath + "/javafx.controls.jar;");
-			 * buf.append(pathseparator + modulePath + "/javafx.fxml.jar;");
-			 * buf.append(pathseparator + modulePath + "/javafx.graphics.jar;");
-			 * buf.append(pathseparator + modulePath + "/javafx.media.jar;");
-			 * buf.append(pathseparator + modulePath + "/javafx.swing.jar;");
-			 * buf.append(pathseparator + modulePath + "/javafx.web.jar;");
-			 * buf.append(pathseparator + modulePath + "/javafx-swt.jar;");
-			 */
-		//} else {
-		//	buf.append(":");
-		    /*+ pathseparator + modulePath + "/javafx.base.jar:");
-			buf.append(pathseparator + modulePath + "/javafx.controls.jar:");
-			buf.append(pathseparator + modulePath + "/javafx.fxml.jar:");
-			buf.append(pathseparator + modulePath + "/javafx.graphics.jar:");
-			buf.append(pathseparator + modulePath + "/javafx.media.jar:");
-			buf.append(pathseparator + modulePath + "/javafx.swing.jar:");
-			buf.append(pathseparator + modulePath + "/javafx.web.jar:");
-			buf.append(pathseparator + modulePath + "/javafx-swt.jar:");*/
+		// String modulePath = store.getString("JAVA_MODULES_PATH");
+		// modulePath = modulePath.replace(";", "");
+		// if (Util.isMac()) {
+		// buf.append(":");
+		/*
+		 * + pathseparator + modulePath + "/javafx.base.jar:"); buf.append(modulePath +
+		 * "/javafx.controls.jar:"); buf.append(modulePath + "/javafx.fxml.jar:");
+		 * buf.append(modulePath + "/javafx.graphics.jar:"); buf.append(modulePath +
+		 * "/javafx.media.jar:"); buf.append(modulePath + "/javafx.swing.jar:");
+		 * buf.append(modulePath + "/javafx.web.jar:"); buf.append(modulePath +
+		 * "/javafx-swt.jar:");
+		 */
+		// } else if (Util.isWindows()) {
+		// buf.append(";");
+		// + pathseparator + modulePath + "/javafx.base.jar;");
+		/*
+		 * buf.append(pathseparator + modulePath + "/javafx.controls.jar;");
+		 * buf.append(pathseparator + modulePath + "/javafx.fxml.jar;");
+		 * buf.append(pathseparator + modulePath + "/javafx.graphics.jar;");
+		 * buf.append(pathseparator + modulePath + "/javafx.media.jar;");
+		 * buf.append(pathseparator + modulePath + "/javafx.swing.jar;");
+		 * buf.append(pathseparator + modulePath + "/javafx.web.jar;");
+		 * buf.append(pathseparator + modulePath + "/javafx-swt.jar;");
+		 */
+		// } else {
+		// buf.append(":");
+		/*
+		 * + pathseparator + modulePath + "/javafx.base.jar:"); buf.append(pathseparator
+		 * + modulePath + "/javafx.controls.jar:"); buf.append(pathseparator +
+		 * modulePath + "/javafx.fxml.jar:"); buf.append(pathseparator + modulePath +
+		 * "/javafx.graphics.jar:"); buf.append(pathseparator + modulePath +
+		 * "/javafx.media.jar:"); buf.append(pathseparator + modulePath +
+		 * "/javafx.swing.jar:"); buf.append(pathseparator + modulePath +
+		 * "/javafx.web.jar:"); buf.append(pathseparator + modulePath +
+		 * "/javafx-swt.jar:");
+		 */
 
-		//}
+		// }
 
 		/*
 		 * Get the *.jar list from the Bio7 Java preferences and add them to the
@@ -255,7 +263,7 @@ public class ScanClassPath {
 		buf.append(pathseparator + bundlePaths.get(2) + "/bin");
 		buf.append(pathseparator + bundlePaths.get(3) + "/bin");
 		buf.append(pathseparator + bundlePaths.get(4) + "/bin");
-		//buf.append(pathseparator + bundlePaths.get(5) + "/bin");
+		// buf.append(pathseparator + bundlePaths.get(5) + "/bin");
 
 		// buf.append(File.pathSeparator+Platform.getInstallLocation().getURL().getPath()+"plugins/org.eclipse.ui.workbench_3.7.0.I20110519-0100.jar");
 		// buf.append(File.pathSeparator+Platform.getInstallLocation().getURL().getPath()+"/plugins/org.eclipse.core.commands_3.6.0.I20110111-0800.jar");
@@ -325,7 +333,7 @@ public class ScanClassPath {
 					 * We only parse the plugins with the important *. jar libraries. See array
 					 * 'bundles'!
 					 */
-					if (i == 0 | i == 1 || i == 5 || i == 7 ) {
+					if (i == 0 | i == 1 || i == 5 || i == 7) {
 						for (int u = 0; u < elements.length; u++) {
 
 							/*
@@ -355,7 +363,7 @@ public class ScanClassPath {
 				}
 			}
 		}
-		System.out.println("1: "+buf.toString());
+		System.out.println("1: " + buf.toString());
 
 		/*
 		 * Get the *.jar list from the Bio7 Java preferences and add them to the
@@ -426,7 +434,7 @@ public class ScanClassPath {
 				buf.add(pathseparator + locat + pathseparator);
 			}
 
-			System.out.println("2: "+buf.toString());
+			System.out.println("2: " + buf.toString());
 
 		}
 		/* We don't need the *.jar libs for this plugins! */
@@ -436,46 +444,47 @@ public class ScanClassPath {
 		buf.add(pathseparator + bundlePaths.get(2) + "/bin");
 		buf.add(pathseparator + bundlePaths.get(3) + "/bin");
 		buf.add(pathseparator + bundlePaths.get(4) + "/bin");
-		//buf.add(pathseparator + bundlePaths.get(5) + "/bin");
+		// buf.add(pathseparator + bundlePaths.get(5) + "/bin");
 		String modulePath = store.getString("JAVA_MODULES_PATH");
 		modulePath = modulePath.replace(";", "");
 		// String platformPath =
 		// Platform.getInstallLocation().getURL().getPath().replace("\\", "/");
-		//if (Util.isWindows()) {
-		//	buf.add(";");
-		   /* + pathseparator + modulePath + "/javafx.base.jar;");
-			buf.add(pathseparator + modulePath + "/javafx.controls.jar;");
-			buf.add(pathseparator + modulePath + "/javafx.fxml.jar;");
-			buf.add(pathseparator + modulePath + "/javafx.graphics.jar;");
-			buf.add(pathseparator + modulePath + "/javafx.media.jar;");
-			buf.add(pathseparator + modulePath + "/javafx.swing.jar;");
-			buf.add(pathseparator + modulePath + "/javafx.web.jar;");
-			buf.add(pathseparator + modulePath + "/javafx-swt.jar;");
-*/
-		//} else if (Util.isMac()) {
-		//	buf.add(":");
-		   /* + pathseparator + modulePath + "/javafx.base.jar:");
-			buf.add(modulePath + "/javafx.controls.jar:");
-			buf.add(modulePath + "/javafx.fxml.jar:");
-			buf.add(modulePath + "/javafx.graphics.jar:");
-			buf.add(modulePath + "/javafx.media.jar:");
-			buf.add(modulePath + "/javafx.swing.jar:");
-			buf.add(modulePath + "/javafx.web.jar:");
-			buf.add(modulePath + "/javafx-swt.jar:");*/
-		//} else {// Linux!
-		//	buf.add(":"); 
-			/*
-			 * + pathseparator + modulePath + "/javafx.base.jar:"); buf.add(pathseparator +
-			 * modulePath + "/javafx.controls.jar:"); buf.add(pathseparator + modulePath +
-			 * "/javafx.fxml.jar:"); buf.add(pathseparator + modulePath +
-			 * "/javafx.graphics.jar:"); buf.add(pathseparator + modulePath +
-			 * "/javafx.media.jar:"); buf.add(pathseparator + modulePath +
-			 * "/javafx.swing.jar:"); buf.add(pathseparator + modulePath +
-			 * "/javafx.web.jar:"); buf.add(pathseparator + modulePath +
-			 * "/javafx-swt.jar:");
-			 */
+		// if (Util.isWindows()) {
+		// buf.add(";");
+		/*
+		 * + pathseparator + modulePath + "/javafx.base.jar;"); buf.add(pathseparator +
+		 * modulePath + "/javafx.controls.jar;"); buf.add(pathseparator + modulePath +
+		 * "/javafx.fxml.jar;"); buf.add(pathseparator + modulePath +
+		 * "/javafx.graphics.jar;"); buf.add(pathseparator + modulePath +
+		 * "/javafx.media.jar;"); buf.add(pathseparator + modulePath +
+		 * "/javafx.swing.jar;"); buf.add(pathseparator + modulePath +
+		 * "/javafx.web.jar;"); buf.add(pathseparator + modulePath +
+		 * "/javafx-swt.jar;");
+		 */
+		// } else if (Util.isMac()) {
+		// buf.add(":");
+		/*
+		 * + pathseparator + modulePath + "/javafx.base.jar:"); buf.add(modulePath +
+		 * "/javafx.controls.jar:"); buf.add(modulePath + "/javafx.fxml.jar:");
+		 * buf.add(modulePath + "/javafx.graphics.jar:"); buf.add(modulePath +
+		 * "/javafx.media.jar:"); buf.add(modulePath + "/javafx.swing.jar:");
+		 * buf.add(modulePath + "/javafx.web.jar:"); buf.add(modulePath +
+		 * "/javafx-swt.jar:");
+		 */
+		// } else {// Linux!
+		// buf.add(":");
+		/*
+		 * + pathseparator + modulePath + "/javafx.base.jar:"); buf.add(pathseparator +
+		 * modulePath + "/javafx.controls.jar:"); buf.add(pathseparator + modulePath +
+		 * "/javafx.fxml.jar:"); buf.add(pathseparator + modulePath +
+		 * "/javafx.graphics.jar:"); buf.add(pathseparator + modulePath +
+		 * "/javafx.media.jar:"); buf.add(pathseparator + modulePath +
+		 * "/javafx.swing.jar:"); buf.add(pathseparator + modulePath +
+		 * "/javafx.web.jar:"); buf.add(pathseparator + modulePath +
+		 * "/javafx-swt.jar:");
+		 */
 
-		//}
+		// }
 		/*
 		 * Here we add the results to the classpath. Src entries are created, too for
 		 * necessary plugins!
@@ -534,7 +543,7 @@ public class ScanClassPath {
 				String rep = buf.get(k).replace("::", "");
 				rep = rep.replace(":", "/");
 				rep = rep.replace(";/", "");
-				System.out.println("3: "+rep.toString());
+				System.out.println("3: " + rep.toString());
 				/* We add the source! */
 				if (k == temp) {
 
@@ -575,10 +584,10 @@ public class ScanClassPath {
 							false); // not exported
 
 				}
-				
+
 			}
 		}
-		
+
 		return entries;
 	}
 
