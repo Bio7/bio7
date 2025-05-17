@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="bin/"/>
 	<classpathentry exported="true" kind="lib" path="libs/boofcv-core-1.2.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/boofcv-feature-1.2.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/boofcv-geo-1.2.1.jar"/>

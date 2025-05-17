@@ -115,8 +115,7 @@ public class ScanClassPath {
 				}
 				if (elements != null) {
 					for (int u = 0; u < elements.length; u++) {
-						// System.out.println(File.pathSeparator
-						// +bundlePaths.get(i)+elements[u].getValue());
+						// System.out.println(File.pathSeparator +bundlePaths.get(i)+elements[u].getValue());
 						buf.append(pathseparator + bundlePaths.get(i) + elements[u].getValue());
 
 					}
@@ -263,7 +262,7 @@ public class ScanClassPath {
 		buf.append(pathseparator + bundlePaths.get(2) + "/bin");
 		buf.append(pathseparator + bundlePaths.get(3) + "/bin");
 		buf.append(pathseparator + bundlePaths.get(4) + "/bin");
-		// buf.append(pathseparator + bundlePaths.get(5) + "/bin");
+		buf.append(pathseparator + bundlePaths.get(6) + "/bin");
 
 		// buf.append(File.pathSeparator+Platform.getInstallLocation().getURL().getPath()+"plugins/org.eclipse.ui.workbench_3.7.0.I20110519-0100.jar");
 		// buf.append(File.pathSeparator+Platform.getInstallLocation().getURL().getPath()+"/plugins/org.eclipse.core.commands_3.6.0.I20110111-0800.jar");
@@ -272,7 +271,7 @@ public class ScanClassPath {
 		String classpaths = buf.toString();
 		/* We have to format the classpath for the dynamic compilation! */
 		classpaths = classpaths.replace(";/", "");
-		System.out.println(classpaths);
+		
 		return classpaths;
 	}
 
@@ -315,7 +314,7 @@ public class ScanClassPath {
 				}
 				pathBundle = fileUrl.getFile();
 				bundlePaths.add(pathseparator + pathBundle);
-				// System.out.println("2:" + File.pathSeparator + pathBundle);
+				
 				ManifestElement[] elements = null;
 				String requires = (String) bundle.getHeaders().get(Constants.BUNDLE_CLASSPATH);
 				// String
@@ -325,7 +324,7 @@ public class ScanClassPath {
 				try {
 					elements = ManifestElement.parseHeader(Constants.BUNDLE_CLASSPATH, requires);
 				} catch (BundleException e) {
-					// TODO Auto-generated catch block
+					
 					e.printStackTrace();
 				}
 				if (elements != null) {
@@ -337,24 +336,22 @@ public class ScanClassPath {
 						for (int u = 0; u < elements.length; u++) {
 
 							/*
-							 * We do not need the external referenced jfxswt.jar listed here (browser plugin
-							 * with external reference is not listed!)!
+							 * We add "external" libraries referenced in the bundles.
 							 */
 							if (i == 0) {
 
 								String lib = pathseparator + bundlePaths.get(i) + elements[u].getValue();
-								// System.out.println(lib);
+								
 								String external = "external";
 								if (lib.toLowerCase().contains(external.toLowerCase()) == false) {
-									// System.out.println(lib);
+									
 									buf.add(lib);
 								}
 
 							}
 
 							else {
-								// System.out.println(pathseparator + bundlePaths.get(i) +
-								// elements[u].getValue());
+								
 								buf.add(pathseparator + bundlePaths.get(i) + elements[u].getValue());
 							}
 
@@ -363,7 +360,7 @@ public class ScanClassPath {
 				}
 			}
 		}
-		System.out.println("1: " + buf.toString());
+		
 
 		/*
 		 * Get the *.jar list from the Bio7 Java preferences and add them to the
@@ -401,10 +398,7 @@ public class ScanClassPath {
 				String locat = (loc + bundleName[0] + ".jar");
 				locat = locat.replace("file", "");
 
-				// java.nio.file.Path path = Paths.get(loc);
-
-				// System.out.println("path:" + File.pathSeparator +
-				// path.toAbsolutePath().toString());
+				
 				buf.add(pathseparator + locat + pathseparator);
 			}
 
@@ -414,10 +408,7 @@ public class ScanClassPath {
 				String locat = (loc + bundleName[0] + ".jar");
 				locat = locat.replace("file", "");
 
-				// java.nio.file.Path path = Paths.get(loc);
-
-				// System.out.println("path:" + File.pathSeparator +
-				// path.toAbsolutePath().toString());
+				
 				buf.add(pathseparator + locat + pathseparator);
 			}
 
@@ -427,14 +418,11 @@ public class ScanClassPath {
 				String locat = (loc + bundleName[0] + ".jar");
 				locat = locat.replace("file", "");
 
-				// java.nio.file.Path path = Paths.get(loc);
-
-				// System.out.println("path:" + File.pathSeparator +
-				// path.toAbsolutePath().toString());
+				
 				buf.add(pathseparator + locat + pathseparator);
 			}
 
-			System.out.println("2: " + buf.toString());
+			
 
 		}
 		/* We don't need the *.jar libs for this plugins! */
@@ -444,9 +432,10 @@ public class ScanClassPath {
 		buf.add(pathseparator + bundlePaths.get(2) + "/bin");
 		buf.add(pathseparator + bundlePaths.get(3) + "/bin");
 		buf.add(pathseparator + bundlePaths.get(4) + "/bin");
-		// buf.add(pathseparator + bundlePaths.get(5) + "/bin");
+		buf.add(pathseparator + bundlePaths.get(6) + "/bin");
 		String modulePath = store.getString("JAVA_MODULES_PATH");
 		modulePath = modulePath.replace(";", "");
+		
 		// String platformPath =
 		// Platform.getInstallLocation().getURL().getPath().replace("\\", "/");
 		// if (Util.isWindows()) {
@@ -543,7 +532,7 @@ public class ScanClassPath {
 				String rep = buf.get(k).replace("::", "");
 				rep = rep.replace(":", "/");
 				rep = rep.replace(";/", "");
-				System.out.println("3: " + rep.toString());
+				
 				/* We add the source! */
 				if (k == temp) {
 

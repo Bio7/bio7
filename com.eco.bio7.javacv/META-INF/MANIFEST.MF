@@ -768,7 +768,8 @@ Export-Package: boofcv,
  org.yaml.snakeyaml.util,
  pabeles.concurrency
 Bundle-Activator: com.eco.bio7.javacv.Activator
-Bundle-ClassPath: libs/boofcv-core-1.2.1.jar,
+Bundle-ClassPath: bin/,
+ libs/boofcv-core-1.2.1.jar,
  libs/boofcv-feature-1.2.1.jar,
  libs/boofcv-geo-1.2.1.jar,
  libs/boofcv-io-1.2.1.jar,
