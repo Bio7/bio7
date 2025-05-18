@@ -105,7 +105,6 @@ public class ScanClassPath {
 				String requires = (String) bundle.getHeaders().get(Constants.BUNDLE_CLASSPATH);
 				// String
 				// requireBundles=(String)bundle.getHeaders().get(Constants.REQUIRE_BUNDLE);
-				// System.out.println(requires);
 
 				try {
 					elements = ManifestElement.parseHeader(Constants.BUNDLE_CLASSPATH, requires);
@@ -115,7 +114,7 @@ public class ScanClassPath {
 				}
 				if (elements != null) {
 					for (int u = 0; u < elements.length; u++) {
-						// System.out.println(File.pathSeparator +bundlePaths.get(i)+elements[u].getValue());
+
 						buf.append(pathseparator + bundlePaths.get(i) + elements[u].getValue());
 
 					}
@@ -129,46 +128,6 @@ public class ScanClassPath {
 		} else {
 			buf.append(":");
 		}
-		// String platformPath =
-		// Platform.getInstallLocation().getURL().getPath().replace("\\", "/");
-		// String modulePath = store.getString("JAVA_MODULES_PATH");
-		// modulePath = modulePath.replace(";", "");
-		// if (Util.isMac()) {
-		// buf.append(":");
-		/*
-		 * + pathseparator + modulePath + "/javafx.base.jar:"); buf.append(modulePath +
-		 * "/javafx.controls.jar:"); buf.append(modulePath + "/javafx.fxml.jar:");
-		 * buf.append(modulePath + "/javafx.graphics.jar:"); buf.append(modulePath +
-		 * "/javafx.media.jar:"); buf.append(modulePath + "/javafx.swing.jar:");
-		 * buf.append(modulePath + "/javafx.web.jar:"); buf.append(modulePath +
-		 * "/javafx-swt.jar:");
-		 */
-		// } else if (Util.isWindows()) {
-		// buf.append(";");
-		// + pathseparator + modulePath + "/javafx.base.jar;");
-		/*
-		 * buf.append(pathseparator + modulePath + "/javafx.controls.jar;");
-		 * buf.append(pathseparator + modulePath + "/javafx.fxml.jar;");
-		 * buf.append(pathseparator + modulePath + "/javafx.graphics.jar;");
-		 * buf.append(pathseparator + modulePath + "/javafx.media.jar;");
-		 * buf.append(pathseparator + modulePath + "/javafx.swing.jar;");
-		 * buf.append(pathseparator + modulePath + "/javafx.web.jar;");
-		 * buf.append(pathseparator + modulePath + "/javafx-swt.jar;");
-		 */
-		// } else {
-		// buf.append(":");
-		/*
-		 * + pathseparator + modulePath + "/javafx.base.jar:"); buf.append(pathseparator
-		 * + modulePath + "/javafx.controls.jar:"); buf.append(pathseparator +
-		 * modulePath + "/javafx.fxml.jar:"); buf.append(pathseparator + modulePath +
-		 * "/javafx.graphics.jar:"); buf.append(pathseparator + modulePath +
-		 * "/javafx.media.jar:"); buf.append(pathseparator + modulePath +
-		 * "/javafx.swing.jar:"); buf.append(pathseparator + modulePath +
-		 * "/javafx.web.jar:"); buf.append(pathseparator + modulePath +
-		 * "/javafx-swt.jar:");
-		 */
-
-		// }
 
 		/*
 		 * Get the *.jar list from the Bio7 Java preferences and add them to the
@@ -199,10 +158,6 @@ public class ScanClassPath {
 				String locat = (loc + bundleName[0] + ".jar");
 				locat = locat.replace("file", "");
 
-				// java.nio.file.Path path = Paths.get(loc);
-
-				// System.out.println("compile path:" + locat);
-				// path.toAbsolutePath().toString());
 				buf.append(pathseparator + locat + pathseparator);
 			} else if (OS.equals("Mac")) {
 				String loc = Platform.getInstallLocation().getURL().getFile() + "/plugins/";
@@ -210,10 +165,6 @@ public class ScanClassPath {
 				String locat = (loc + bundleName[0] + ".jar");
 				locat = locat.replace("file", "");
 
-				// java.nio.file.Path path = Paths.get(loc);
-
-				// System.out.println("path:" + File.pathSeparator +
-				// path.toAbsolutePath().toString());
 				buf.append(pathseparator + locat + pathseparator);
 			}
 
@@ -271,7 +222,7 @@ public class ScanClassPath {
 		String classpaths = buf.toString();
 		/* We have to format the classpath for the dynamic compilation! */
 		classpaths = classpaths.replace(";/", "");
-		
+
 		return classpaths;
 	}
 
@@ -314,7 +265,7 @@ public class ScanClassPath {
 				}
 				pathBundle = fileUrl.getFile();
 				bundlePaths.add(pathseparator + pathBundle);
-				
+
 				ManifestElement[] elements = null;
 				String requires = (String) bundle.getHeaders().get(Constants.BUNDLE_CLASSPATH);
 				// String
@@ -324,7 +275,7 @@ public class ScanClassPath {
 				try {
 					elements = ManifestElement.parseHeader(Constants.BUNDLE_CLASSPATH, requires);
 				} catch (BundleException e) {
-					
+
 					e.printStackTrace();
 				}
 				if (elements != null) {
@@ -341,17 +292,17 @@ public class ScanClassPath {
 							if (i == 0) {
 
 								String lib = pathseparator + bundlePaths.get(i) + elements[u].getValue();
-								
+
 								String external = "external";
 								if (lib.toLowerCase().contains(external.toLowerCase()) == false) {
-									
+
 									buf.add(lib);
 								}
 
 							}
 
 							else {
-								
+
 								buf.add(pathseparator + bundlePaths.get(i) + elements[u].getValue());
 							}
 
@@ -360,7 +311,6 @@ public class ScanClassPath {
 				}
 			}
 		}
-		
 
 		/*
 		 * Get the *.jar list from the Bio7 Java preferences and add them to the
@@ -398,7 +348,6 @@ public class ScanClassPath {
 				String locat = (loc + bundleName[0] + ".jar");
 				locat = locat.replace("file", "");
 
-				
 				buf.add(pathseparator + locat + pathseparator);
 			}
 
@@ -408,7 +357,6 @@ public class ScanClassPath {
 				String locat = (loc + bundleName[0] + ".jar");
 				locat = locat.replace("file", "");
 
-				
 				buf.add(pathseparator + locat + pathseparator);
 			}
 
@@ -418,11 +366,8 @@ public class ScanClassPath {
 				String locat = (loc + bundleName[0] + ".jar");
 				locat = locat.replace("file", "");
 
-				
 				buf.add(pathseparator + locat + pathseparator);
 			}
-
-			
 
 		}
 		/* We don't need the *.jar libs for this plugins! */
@@ -435,45 +380,7 @@ public class ScanClassPath {
 		buf.add(pathseparator + bundlePaths.get(6) + "/bin");
 		String modulePath = store.getString("JAVA_MODULES_PATH");
 		modulePath = modulePath.replace(";", "");
-		
-		// String platformPath =
-		// Platform.getInstallLocation().getURL().getPath().replace("\\", "/");
-		// if (Util.isWindows()) {
-		// buf.add(";");
-		/*
-		 * + pathseparator + modulePath + "/javafx.base.jar;"); buf.add(pathseparator +
-		 * modulePath + "/javafx.controls.jar;"); buf.add(pathseparator + modulePath +
-		 * "/javafx.fxml.jar;"); buf.add(pathseparator + modulePath +
-		 * "/javafx.graphics.jar;"); buf.add(pathseparator + modulePath +
-		 * "/javafx.media.jar;"); buf.add(pathseparator + modulePath +
-		 * "/javafx.swing.jar;"); buf.add(pathseparator + modulePath +
-		 * "/javafx.web.jar;"); buf.add(pathseparator + modulePath +
-		 * "/javafx-swt.jar;");
-		 */
-		// } else if (Util.isMac()) {
-		// buf.add(":");
-		/*
-		 * + pathseparator + modulePath + "/javafx.base.jar:"); buf.add(modulePath +
-		 * "/javafx.controls.jar:"); buf.add(modulePath + "/javafx.fxml.jar:");
-		 * buf.add(modulePath + "/javafx.graphics.jar:"); buf.add(modulePath +
-		 * "/javafx.media.jar:"); buf.add(modulePath + "/javafx.swing.jar:");
-		 * buf.add(modulePath + "/javafx.web.jar:"); buf.add(modulePath +
-		 * "/javafx-swt.jar:");
-		 */
-		// } else {// Linux!
-		// buf.add(":");
-		/*
-		 * + pathseparator + modulePath + "/javafx.base.jar:"); buf.add(pathseparator +
-		 * modulePath + "/javafx.controls.jar:"); buf.add(pathseparator + modulePath +
-		 * "/javafx.fxml.jar:"); buf.add(pathseparator + modulePath +
-		 * "/javafx.graphics.jar:"); buf.add(pathseparator + modulePath +
-		 * "/javafx.media.jar:"); buf.add(pathseparator + modulePath +
-		 * "/javafx.swing.jar:"); buf.add(pathseparator + modulePath +
-		 * "/javafx.web.jar:"); buf.add(pathseparator + modulePath +
-		 * "/javafx-swt.jar:");
-		 */
 
-		// }
 		/*
 		 * Here we add the results to the classpath. Src entries are created, too for
 		 * necessary plugins!
@@ -532,7 +439,7 @@ public class ScanClassPath {
 				String rep = buf.get(k).replace("::", "");
 				rep = rep.replace(":", "/");
 				rep = rep.replace(";/", "");
-				
+
 				/* We add the source! */
 				if (k == temp) {
 
