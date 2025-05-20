@@ -48,7 +48,14 @@ public class ScanClassPath {
 
 		if (OS.equals("Windows")) {
 
-			swtLibraryOS = "org.eclipse.swt.win32.win32.x86_64";
+			if (isaarch64()) {
+
+				swtLibraryOS = "org.eclipse.swt.win32.win32.aarch64";
+
+			} else {
+
+				swtLibraryOS = "org.eclipse.swt.win32.win32.x86_64";
+			}
 
 		} else if (OS.equals("Mac")) {
 
@@ -63,8 +70,16 @@ public class ScanClassPath {
 		}
 
 		else if (OS.equals("Linux")) {
+			if (isaarch64()) {
 
-			swtLibraryOS = "org.eclipse.swt.gtk.linux.x86_64";
+				swtLibraryOS = "org.eclipse.swt.gtk.linux.aarch64";
+			}
+
+			else {
+
+				swtLibraryOS = "org.eclipse.swt.gtk.linux.x86_64";
+
+			}
 
 		}
 		/* Add all Eclipse necessary libraries */
