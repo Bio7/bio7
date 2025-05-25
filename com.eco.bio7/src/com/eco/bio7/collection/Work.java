@@ -27,6 +27,8 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IPerspectiveDescriptor;
+import org.eclipse.ui.IPerspectiveRegistry;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -319,7 +321,8 @@ public class Work {
 	 * @param commandID the command identifier as String.
 	 */
 	public static void executeCommand(String commandID) {
-		IHandlerService handlerService = (IHandlerService) (IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class);
+		IHandlerService handlerService = (IHandlerService) (IHandlerService) PlatformUI.getWorkbench()
+				.getService(IHandlerService.class);
 		Display.getDefault().asyncExec(new Runnable() {
 			@Override
 			public void run() {
@@ -331,5 +334,22 @@ public class Work {
 				}
 			}
 		});
+	}
+
+	/**
+	 * Create a cloned "Custom" perspective.
+	 * 
+	 * @param cloneid       the id of the new perspective as a String.
+	 * @param name          the name of the new perspective as a String.
+	 * @param perspectiveId the id of the perspective which should be cloned.
+	 */
+	public static void clonePerspective(String cloneid, String name, String perspectiveId) {
+		IPerspectiveRegistry reg = (IPerspectiveRegistry) PlatformUI.getWorkbench().getPerspectiveRegistry();
+
+		IPerspectiveDescriptor desc = (IPerspectiveDescriptor) reg
+				.findPerspectiveWithId("com.eco.bio7.CustomPerspective");
+
+		reg.clonePerspective(cloneid, name, desc);
+
 	}
 }
