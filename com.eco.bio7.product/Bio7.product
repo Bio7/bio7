@@ -218,7 +218,7 @@ jdk/bin/javaw.exe
       <feature id="org.eclipse.ecf.filetransfer.httpclient5.feature" installMode="root"/>
       <feature id="org.eclipse.ecf.filetransfer.httpclientjava.feature" installMode="root"/>
       <feature id="org.eclipse.texlipse.main" installMode="root"/>
-      <feature id="org.eclipse.nebula.widgets.grid.feature" installMode="root"/>
+      <feature id="org.eclipse.nebula.feature" installMode="root"/>
    </features>
 
    <configurations>

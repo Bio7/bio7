@@ -43,7 +43,7 @@
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<repository location="https://download.eclipse.org/nebula/updates/release/3.1.1"/>
-		<unit id="org.eclipse.nebula.feature.feature.group" version="0.0.0"/>
+		<unit id="org.eclipse.nebula.feature.feature.group" version="3.1.1.202402011804"/>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<repository location="https://download.eclipse.org/texlipse/2.0.3/"/>

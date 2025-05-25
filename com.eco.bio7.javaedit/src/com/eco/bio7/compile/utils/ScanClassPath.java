@@ -86,7 +86,7 @@ public class ScanClassPath {
 		bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui",
 				"org.eclipse.swt", swtLibraryOS, "org.eclipse.draw2d", "org.eclipse.equinox.registry",
 				"org.eclipse.equinox.common", "org.eclipse.core.runtime", "org.eclipse.core.jobs",
-				"org.eclipse.jface" };
+				"org.eclipse.jface","org.eclipse.nebula.visualization.widgets","org.eclipse.nebula.visualization.xygraph" };
 	}
 
 	public String scan() {
