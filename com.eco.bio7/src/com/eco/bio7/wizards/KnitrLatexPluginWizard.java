@@ -94,7 +94,7 @@ public class KnitrLatexPluginWizard extends Wizard implements INewWizard {
 						.getActiveWorkbenchWindow().getActivePage();
 				try {
 					//IDE.openEditor(page, file, true);
-					IDE.openEditor(page, file, "net.sourceforge.texlipse.TexEditor"); 
+					IDE.openEditor(page, file, "org.eclipse.texlipse.TexEditor"); 
 				} catch (PartInitException e) {
 				}
 			}

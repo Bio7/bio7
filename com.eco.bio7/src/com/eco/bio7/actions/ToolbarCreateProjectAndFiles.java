@@ -369,7 +369,7 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 
 			public void widgetSelected(SelectionEvent e) {
 				selection = "latex";
-				openWizard("net.sourceforge.texlipse.TexProjectWizard");
+				openWizard("org.eclipse.texlipse.TexProjectWizard");
 				selection = "r";
 			}
 

@@ -161,6 +161,13 @@ public class ScanClassPath {
 
 			addedExtLibs = addedExtLibs.replace("\\", "/");
 			buf.append(pathseparator + addedExtLibs);
+			if (Util.isMac()) {
+				buf.append(":");
+			} else if (Util.isWindows()) {
+				buf.append(";");
+			} else {
+				buf.append(":");
+			}
 
 		}
 
