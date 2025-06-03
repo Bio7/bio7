@@ -162,12 +162,13 @@ public class ScanClassPath {
 			addedExtLibs = addedExtLibs.replace("\\", "/");
 			buf.append(pathseparator + addedExtLibs);
 			if (Util.isMac()) {
-				buf.append(":");
+				//buf.append(":");
 			} else if (Util.isWindows()) {
 				buf.append(";");
 			} else {
-				buf.append(":");
+				//buf.append(":");
 			}
+			
 
 		}
 
@@ -351,6 +352,7 @@ public class ScanClassPath {
 				addedExtLibs = addedExtLibs.replace(":", "/");
 			}
 			addedExtLibs = addedExtLibs.replace("\\", "/");
+			addedExtLibs = addedExtLibs.replace("//", "/");
 			buf.add(addedExtLibs);
 			String en = addedExtLibs;
 
@@ -360,6 +362,8 @@ public class ScanClassPath {
 					false)); // not exported
 
 		}
+		
+		System.out.println(buf.toString());
 
 		/* Here we add the required Eclipse *.jars! */
 		for (int i = 0; i < bundlesEclipse.length; i++) {
