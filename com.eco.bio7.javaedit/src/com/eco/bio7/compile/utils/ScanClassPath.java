@@ -85,8 +85,8 @@ public class ScanClassPath {
 		/* Add all Eclipse necessary libraries */
 		bundlesEclipse = new String[] { "org.eclipse.core.commands", "org.eclipse.ui.workbench", "org.eclipse.ui",
 				"org.eclipse.swt", swtLibraryOS, "org.eclipse.draw2d", "org.eclipse.equinox.registry",
-				"org.eclipse.equinox.common", "org.eclipse.core.runtime", "org.eclipse.core.jobs",
-				"org.eclipse.jface","org.eclipse.nebula.visualization.widgets","org.eclipse.nebula.visualization.xygraph" };
+				"org.eclipse.equinox.common", "org.eclipse.core.runtime", "org.eclipse.core.jobs", "org.eclipse.jface",
+				"org.eclipse.nebula.visualization.widgets", "org.eclipse.nebula.visualization.xygraph" };
 	}
 
 	public String scan() {
@@ -162,13 +162,12 @@ public class ScanClassPath {
 			addedExtLibs = addedExtLibs.replace("\\", "/");
 			buf.append(pathseparator + addedExtLibs);
 			if (Util.isMac()) {
-				//buf.append(":");
+				// buf.append(":");
 			} else if (Util.isWindows()) {
 				buf.append(";");
 			} else {
-				//buf.append(":");
+				// buf.append(":");
 			}
-			
 
 		}
 
@@ -362,8 +361,6 @@ public class ScanClassPath {
 					false)); // not exported
 
 		}
-		
-		System.out.println(buf.toString());
 
 		/* Here we add the required Eclipse *.jars! */
 		for (int i = 0; i < bundlesEclipse.length; i++) {
