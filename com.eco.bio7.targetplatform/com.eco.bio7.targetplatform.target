@@ -49,5 +49,15 @@
 		<repository location="https://download.eclipse.org/texlipse/2.0.3/"/>
 		<unit id="org.eclipse.texlipse.main.feature.group" version="0.0.0"/>
 	</location>
+	<location includeDependencyDepth="none" includeSource="true" missingManifest="generate" type="Maven">
+		<dependencies>
+			<dependency>
+				<groupId>net.java.dev.jna</groupId>
+				<artifactId>jna</artifactId>
+				<version>5.17.0</version>
+				<type>jar</type>
+			</dependency>
+		</dependencies>
+	</location>
 </locations>
 </target>

@@ -41,7 +41,7 @@ public class UnixProcessManager {
 	static {
 		try {
 			if (!Platform.isWindows()) {
-				C_LIB = ((CLib) Native.loadLibrary("c", CLib.class));
+				C_LIB = ((CLib) Native.load("c", CLib.class));
 			}
 		} catch (Exception e) {
 			C_LIB = null;

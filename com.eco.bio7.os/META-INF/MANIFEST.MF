@@ -1,16 +1,15 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
+Bundle-ActivationPolicy: lazy
 Bundle-Name: Os
-Bundle-SymbolicName: com.eco.bio7.os
+Bundle-SymbolicName: com.eco.bio7.os;singleton:=true
 Bundle-Version: 3.4.0.qualifier
 Eclipse-BundleShape: dir
 Bundle-Vendor: ECO
 Bundle-ClassPath: lib/pty4j-0.5.jar,
  lib/purejavacomm-0.0.17.jar,
  lib/guava-14.0.1.jar,
- bin/,
- lib/jna-5.11.0.jar,
- lib/jna-platform-5.11.0.jar
+ bin/
 Export-Package: com.eco.bio7.os.pid,
  com.eco.bio7.swt,
  com.google.common.annotations,
@@ -32,24 +31,6 @@ Export-Package: com.eco.bio7.os.pid,
  com.pty4j.unix.macosx,
  com.pty4j.util,
  com.pty4j.windows,
- com.sun.jna,
- com.sun.jna.internal,
- com.sun.jna.platform,
- com.sun.jna.platform.dnd,
- com.sun.jna.platform.linux,
- com.sun.jna.platform.mac,
- com.sun.jna.platform.unix,
- com.sun.jna.platform.unix.aix,
- com.sun.jna.platform.unix.solaris,
- com.sun.jna.platform.win32,
- com.sun.jna.platform.win32.COM,
- com.sun.jna.platform.win32.COM.tlb,
- com.sun.jna.platform.win32.COM.tlb.imp,
- com.sun.jna.platform.win32.COM.util,
- com.sun.jna.platform.win32.COM.util.annotation,
- com.sun.jna.platform.wince,
- com.sun.jna.ptr,
- com.sun.jna.win32,
  jtermios,
  jtermios.freebsd,
  jtermios.linux,
@@ -62,5 +43,7 @@ Export-Package: com.eco.bio7.os.pid,
  purejavacomm.example,
  purejavacomm.testsuite
 Import-Package: org.eclipse.swt.widgets
-Require-Bundle: com.eco.bio7.libs;bundle-version="3.4.0"
+Require-Bundle: com.eco.bio7.libs;bundle-version="3.4.0",
+ com.sun.jna;bundle-version="5.17.0",
+ com.sun.jna.platform;bundle-version="5.16.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-21
