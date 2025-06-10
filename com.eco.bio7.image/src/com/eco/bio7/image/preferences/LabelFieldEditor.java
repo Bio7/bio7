@@ -1,7 +1,7 @@
 package com.eco.bio7.image.preferences;
 
 import org.eclipse.jface.preference.FieldEditor;
-import org.eclipse.swt.SWT;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -12,6 +12,7 @@ import com.eco.bio7.image.Util;
 class LabelFieldEditor extends FieldEditor {
 
 	private Label label;
+	private Font font;
 
 	public LabelFieldEditor(String value, Composite parent) {
 		super("label", value, parent);
@@ -33,11 +34,11 @@ class LabelFieldEditor extends FieldEditor {
 		gridData.grabExcessVerticalSpace = false;
 
 		label.setLayoutData(gridData);
-		Font font = null;
 		if (Util.getOS().equals("Mac")) {
-			font = new Font(parent.getDisplay(), "Helvetica Neue", 15, SWT.BOLD);
+
+			font = JFaceResources.getFont("HEADER_FONT");
 		} else {
-			font = new Font(parent.getDisplay(), "Arial", 9, SWT.BOLD);
+			font = JFaceResources.getFont("HEADER_FONT");
 		}
 		label.setFont(font);
 	}
