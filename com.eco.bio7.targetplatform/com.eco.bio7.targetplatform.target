@@ -39,7 +39,7 @@
 		<unit id="org.hamcrest.core" version="0.0.0"/>
 		<unit id="org.jdom" version="0.0.0"/>
 		<unit id="org.jdom2" version="0.0.0"/>
-		<repository location="https://download.eclipse.org/releases/2025-03/"/>
+		<repository location="https://download.eclipse.org/releases/2025-06/"/>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<repository location="https://download.eclipse.org/nebula/updates/release/3.1.1"/>
@@ -49,7 +49,7 @@
 		<repository location="https://download.eclipse.org/texlipse/2.0.3/"/>
 		<unit id="org.eclipse.texlipse.main.feature.group" version="0.0.0"/>
 	</location>
-	<location includeDependencyDepth="none" includeSource="true" missingManifest="generate" type="Maven">
+	<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
 		<dependencies>
 			<dependency>
 				<groupId>net.java.dev.jna</groupId>
