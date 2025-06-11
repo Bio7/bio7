@@ -17,12 +17,12 @@ if(RServe.isAliveDialog()==false){
 	return;
 }
 /*Test if rgdal package for the import is installed!*/
-evalR(".isInstalled<-as.character(require('rgdal'))", null);
+evalR(".isInstalled<-as.character(require('terra'))", null);
 rexpr = fromR(".isInstalled");
 isAvail = rexpr.asString();
 
 if (isAvail.equals("FALSE")) {
-	Bio7Dialog.message("Can't load 'rgdal' package!");
+	Bio7Dialog.message("Can't load 'terra' package!");
 	return;
 }
 
@@ -39,18 +39,17 @@ name = FilenameUtils.removeExtension(f.getName());
 
 /*Read the shape file with the filename as the layer!*/
 //evalR("library(rgdal);",null);
-evalR("try(" + name + " <- readGDAL(\"" + file + "\"));",null);
+evalR("try(" + name + " <- rast(\"" + file + "\"));",null);
 
 println("Loaded Grid: " + name + "\n");
 evalR("print(summary(" + name + "))",null);
 /*We need to access the cell size by means of the slots!*/
-evalR("try(.cellSize<-slot(" + name + ",\"grid\"))",null);
-evalR("try(.imageDimension<-slot(.cellSize,\"cells.dim\"))",null);
+evalR("try(.imageDimension<-dim(" + name + "))",null);
 evalR("imageSizeY<-.imageDimension[2]",null);
 evalR("imageSizeX<-.imageDimension[1]",null);
 
 /*Access bounding box for WorldWind!*/
-evalR("try(.bboxImage<-slot(" + name + ",\"bbox\"))",null);
+evalR("try(.bboxImage<-ext(" + name + "))",null);
 minLat =  fromR(".bboxImage[2]").asDouble();
 maxLat =  fromR(".bboxImage[4]").asDouble();
 minLon =  fromR(".bboxImage[1]").asDouble();
@@ -62,24 +61,26 @@ if (WorldWindOptionsView.getOptionsInstance() != null) {
 	WorldWindOptionsView.setMinLon(Double.toString(minLon));
 	WorldWindOptionsView.setMaxLon(Double.toString(maxLon));
 }
-/*Create an image vector for the first band of the srtm-hgt file!*/
-evalR(".datadf<-slot(" + name + ",\"data\")",null);
+/*Create an image vector for the first band of the file!*/
+evalR(".datadf1<-as.raw(" + name + "[[1]][,])",null);
+evalR(".datadf2<-as.raw(" + name + "[[2]][,])",null);
+evalR(".datadf3<-as.raw(" + name + "[[3]][,])",null);
 /*Groovy specific we have to escape the $ char!*/
 //evalR("eval("+name+"<-.datadf\$band1)",null);
-evalR("try(imageMatrixR<-as.raw(.datadf\$band1))",null);
-evalR("try(imageMatrixG<-as.raw(.datadf\$band2))",null);
-evalR("try(imageMatrixB<-as.raw(.datadf\$band3))",null);
+evalR("try(imageMatrixR<-.datadf1)",null);
+evalR("try(imageMatrixG<-.datadf2)",null);
+evalR("try(imageMatrixB<-.datadf3)",null);
 /*Create images from the band data transfered to ImageJ*/
-imageFromR(1, "imageMatrixR",2);
-imageFromR(1, "imageMatrixG",2);
-imageFromR(1, "imageMatrixB",2);
+imageFromR(1, "imageMatrixR",0);
+imageFromR(1, "imageMatrixG",0);
+imageFromR(1, "imageMatrixB",0);
 
 
 /*Create an float image from the data transfered to ImageJ as integers!*/
 //ImageMethods.imageFromR(2, name, 0);
 
 /*Cleanup and remove temporary variables!*/
-evalR("try(remove(list = c('.isInstalled','.cellSize','.imageDimension','.datadf','.bboxImage','imageMatrixR','imageMatrixG','imageMatrixB')));", null);
+evalR("try(remove(list = c('.isInstalled','.cellSize','.imageDimension','.datadf1','.datadf2','.datadf3','.bboxImage','imageMatrixR','imageMatrixG','imageMatrixB')));", null);
 RServeUtil.listRObjects();
 ij.IJ.run("Merge Channels...", "red=imageMatrixR green=imageMatrixG blue=imageMatrixB gray=*None*");
 

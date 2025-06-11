@@ -14,12 +14,12 @@ if(RServe.isAliveDialog()==false){
 	return;
 }
 /*Test if rgdal package for the import is installed!*/
-evalR(".isInstalled<-as.character(require('rgdal'))", null);
+evalR(".isInstalled<-as.character(require('terra'))", null);
 rexpr = fromR(".isInstalled");
 isAvail = rexpr.asString();
 
 if (isAvail.equals("FALSE")) {
-	Bio7Dialog.message("Can't load 'rgdal' package!");
+	Bio7Dialog.message("Can't load 'terra' package!");
 	return;
 }
 
@@ -35,12 +35,12 @@ f = new File(file);
 name = FilenameUtils.removeExtension(f.getName());
 
 /*Read the shape file with the filename as the layer!*/
-evalR("try(" + name + " <- readOGR(\"" + file + "\", \"" + name + "\"));",null);
+evalR("try(" + name + " <- vect(\"" + file + "\", \"" + name + "\"));",null);
 println("Loaded Shape: " + name + "\n");
 evalR("print(summary(" + name + "))",null);
 /*Access bounding box for WorldWind!*/
 /*Access bounding box for WorldWind!*/
-evalR("try(.bboxImage<-slot(" + name + ",\"bbox\"))",null);
+evalR("try(.bboxImage<-ext(" + name + "))",null);
 minLat =  fromR(".bboxImage[2]").asDouble();
 maxLat =  fromR(".bboxImage[4]").asDouble();
 minLon =  fromR(".bboxImage[1]").asDouble();
