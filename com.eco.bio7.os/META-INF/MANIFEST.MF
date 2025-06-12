@@ -45,5 +45,5 @@ Export-Package: com.eco.bio7.os.pid,
 Import-Package: org.eclipse.swt.widgets
 Require-Bundle: com.eco.bio7.libs;bundle-version="3.4.0",
  com.sun.jna;bundle-version="5.17.0",
- com.sun.jna.platform;bundle-version="5.16.0"
+ com.sun.jna.platform;bundle-version="5.17.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-21
