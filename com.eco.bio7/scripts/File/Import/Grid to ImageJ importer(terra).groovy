@@ -1,7 +1,7 @@
 /*
 Gridfile importer script. Using the 'rgdal' package of R.
 Author: M. Austenfeld 
-Year:   2005-2017
+Year:   2005-2025
 */
 import com.eco.bio7.worldwind.WorldWindOptionsView;
 import static com.eco.bio7.rbridge.RServeUtil.*;

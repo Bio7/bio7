@@ -1,7 +1,7 @@
 /*
 Shapefile importer script. Using the 'rgdal' package of R.
 Author: M. Austenfeld 
-Year:   2008
+Year:   2005-2025
 */
 
 import com.eco.bio7.worldwind.WorldWindOptionsView;

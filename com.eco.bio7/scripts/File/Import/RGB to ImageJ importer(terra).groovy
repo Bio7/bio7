@@ -3,7 +3,7 @@ Gridfile importer script. Using the 'rgdal' package of R.
 Transfers the RGB data to ImageJ.
 
 Author: M. Austenfeld 
-Year:   2005-2017
+Year:   2005-2025
 */
 
 import com.eco.bio7.worldwind.WorldWindOptionsView;
