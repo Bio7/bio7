@@ -461,11 +461,11 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		ProcessBuilder pb = new ProcessBuilder();
 		/* Send a CTRL+Break to Windows! */
 		if (ctrlBreak) {
-			pb.command(System.getProperty("java.home") + "/bin/javaw", "-cp", pathJna + "/jna-4.5.0.jar;" + pathJna + "/jna-platform-4.5.0.jar;" + pathMain, CtrlBreakSender.class.getName(), "" + nativeShellProcess.pid());
+			pb.command(System.getProperty("java.home") + "/bin/javaw", "-cp", pathJna + "/jna-5.17.0.jar;" + pathJna + "/jna-platform-5.17.0.jar;" + pathMain, CtrlBreakSender.class.getName(), "" + nativeShellProcess.pid());
 		}
 		/* Send a CTRL+C to Windows! */
 		else {
-			pb.command(System.getProperty("java.home") + "/bin/javaw", "-cp", pathJna + "/jna-4.5.0.jar;" + pathJna + "/jna-platform-4.5.0.jar;" + pathMain, CtrlCSender.class.getName(), "" + nativeShellProcess.pid());
+			pb.command(System.getProperty("java.home") + "/bin/javaw", "-cp", pathJna + "/jna-5.17.0.jar;" + pathJna + "/jna-platform-5.17.0.jar;" + pathMain, CtrlCSender.class.getName(), "" + nativeShellProcess.pid());
 		}
 		pb.redirectErrorStream();
 		pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);

@@ -38,7 +38,7 @@ jdk/bin/javaw.exe
       <vmArgs>-Xms2048m
 -Xmx8096m
 --add-modules=ALL-SYSTEM 
---add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
+--add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED
       </vmArgs>
       <vmArgsLin>-Dpython.console.encoding=UTF-8 
 -Dswt.enable.themedScrollBar=true
