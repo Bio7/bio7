@@ -1357,7 +1357,16 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.nebula.widgets.tiles;bundle-version="1.0.0",
  org.eclipse.nebula.widgets.treemapper;bundle-version="1.0.0",
  org.eclipse.nebula.widgets.xviewer;bundle-version="1.1.0",
- org.eclipse.nebula.widgets.xviewer.core;bundle-version="1.0.0"
+ org.eclipse.nebula.widgets.xviewer.core;bundle-version="1.0.0",
+ org.eclipse.tm.terminal.connector.cdtserial;bundle-version="4.8.200",
+ org.eclipse.tm.terminal.connector.local;bundle-version="4.8.300",
+ org.eclipse.tm.terminal.connector.process;bundle-version="4.9.300",
+ org.eclipse.tm.terminal.connector.remote;bundle-version="4.8.500",
+ org.eclipse.tm.terminal.connector.ssh;bundle-version="4.8.500",
+ org.eclipse.tm.terminal.connector.telnet;bundle-version="4.8.300",
+ org.eclipse.tm.terminal.control;bundle-version="5.6.0",
+ org.eclipse.tm.terminal.view.core;bundle-version="4.10.500",
+ org.eclipse.tm.terminal.view.ui;bundle-version="4.11.700"
 Eclipse-LazyStart: true
 Import-Package: org.eclipse.e4.ui.css.swt.theme
 Bundle-RequiredExecutionEnvironment: JavaSE-21

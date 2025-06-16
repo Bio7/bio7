@@ -39,6 +39,7 @@ import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.script.ScriptEngine;
@@ -68,6 +69,9 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.tm.terminal.view.core.TerminalServiceFactory;
+import org.eclipse.tm.terminal.view.core.interfaces.ITerminalService;
+import org.eclipse.tm.terminal.view.core.interfaces.constants.ITerminalsConnectorConstants;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IViewSite;
@@ -522,7 +526,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				// String[] env = { "TERM=xterm" };
 				// nativeShellProcess = PtyProcess.exec(new String[] { "/bin/sh", "-i" });
 
-				List<String> args = new ArrayList<String>();
+				/*List<String> args = new ArrayList<String>();
 				args.add("/bin/sh");
 				args.add("-i");
 				ProcessBuilder builder = new ProcessBuilder(args);
@@ -533,14 +537,33 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				nativeShellprocessThread = new Thread(new NativeProcessGrabber());
 				nativeShellprocessThread.start();
 				/* Start shell with arguments! */
-				ConsolePageParticipant.pipeInputToConsole(shellArgs, true, true);
+				//ConsolePageParticipant.pipeInputToConsole(shellArgs, true, true);
+				
+				Map<String, Object> properties = new HashMap<String, Object>();
+				properties.put(ITerminalsConnectorConstants.PROP_TITLE, "Bio7 Console");
+				properties.put(ITerminalsConnectorConstants.PROP_ENCODING, "UTF-8");
+				//properties.put(ITerminalsConnectorConstants.PROP_PROCESS_WORKING_DIR, "/tmp");
+				properties.put(ITerminalsConnectorConstants.PROP_DELEGATE_ID, "org.eclipse.tm.terminal.connector.local.launcher.local");
+				properties.put(ITerminalsConnectorConstants.PROP_PROCESS_PATH, "/bin/bash");
+				//properties.put(ITerminalsConnectorConstants.PROP_PROCESS_ARGS, "xterm");
+
+				// Create the done callback object
+				ITerminalService.Done done = new ITerminalService.Done() {
+				    public void done(IStatus done) {
+				        // Place any post processing here
+				    }
+				};
+
+				// Open the terminal
+				ITerminalService terminal = TerminalServiceFactory.getService();
+				if (terminal != null) terminal.openConsole(properties, done);
 				
 				// System.out.println("Process Id is: " +
 				// shellPid.getPidUnix(nativeShellProcess));
 			}
 
 			else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
-				List<String> args = new ArrayList<String>();
+				/*List<String> args = new ArrayList<String>();
 				args.add("/bin/sh");
 				args.add("-i");
 				ProcessBuilder builder = new ProcessBuilder(args);
@@ -549,10 +572,32 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				nativeShellprocessThread = new Thread(new NativeProcessGrabber());
 				nativeShellprocessThread.start();
 				/* Start shell with arguments! */
-				ConsolePageParticipant.pipeInputToConsole(shellArgs, true, false);
+				//ConsolePageParticipant.pipeInputToConsole(shellArgs, true, false);
 				
 				// System.out.println("Process Id is: " +
 				// shellPid.getPidUnix(nativeShellProcess));
+				
+				// Define the terminal properties
+				Map<String, Object> properties = new HashMap<String, Object>();
+				properties.put(ITerminalsConnectorConstants.PROP_TITLE, "Bio7 Console");
+				properties.put(ITerminalsConnectorConstants.PROP_ENCODING, "UTF-8");
+				//properties.put(ITerminalsConnectorConstants.PROP_PROCESS_WORKING_DIR, "/tmp");
+				properties.put(ITerminalsConnectorConstants.PROP_DELEGATE_ID, "org.eclipse.tm.terminal.connector.local.launcher.local");
+				properties.put(ITerminalsConnectorConstants.PROP_PROCESS_PATH, "/bin/bash");
+				//properties.put(ITerminalsConnectorConstants.PROP_PROCESS_ARGS, "xterm");
+
+				// Create the done callback object
+				ITerminalService.Done done = new ITerminalService.Done() {
+				    public void done(IStatus done) {
+				        // Place any post processing here
+				    }
+				};
+
+				// Open the terminal
+				ITerminalService terminal = TerminalServiceFactory.getService();
+				if (terminal != null) terminal.openConsole(properties, done);
+				
+				
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -673,6 +718,29 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		consoleEncoding = store.getString("Console_Encoding");
 		try {
+			/*
+			 * Map<String, Object> properties = new HashMap<String, Object>();
+				properties.put(ITerminalsConnectorConstants.PROP_TITLE, "Bio7 Console");
+				properties.put(ITerminalsConnectorConstants.PROP_ENCODING, "UTF-8");
+				properties.put(ITerminalsConnectorConstants.PROP_DELEGATE_ID, "org.eclipse.tm.terminal.connector.local.launcher.local");
+				properties.put(ITerminalsConnectorConstants.PROP_PROCESS_PATH, "/usr/local/bin/r");
+				properties.put(ITerminalsConnectorConstants.PROP_PROCESS_ARGS, "-e 'library(Rserve);run.Rserve()'");
+
+				// Create the done callback object
+				ITerminalService.Done done = new ITerminalService.Done() {
+				    public void done(IStatus done) {
+				        // Place any post processing here
+				    }
+				};
+
+				// Open the terminal
+				ITerminalService terminal = TerminalServiceFactory.getService();
+				if (terminal != null) terminal.openConsole(properties, done);
+			 * 
+			 * 
+			 * 
+			 * */		
+			
 			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 				// process = Runtime.getRuntime().exec("cmd");
 				/*
