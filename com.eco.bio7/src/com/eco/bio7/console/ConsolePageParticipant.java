@@ -583,13 +583,14 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				properties.put(ITerminalsConnectorConstants.PROP_ENCODING, "UTF-8");
 				//properties.put(ITerminalsConnectorConstants.PROP_PROCESS_WORKING_DIR, "/tmp");
 				properties.put(ITerminalsConnectorConstants.PROP_DELEGATE_ID, "org.eclipse.tm.terminal.connector.local.launcher.local");
-				properties.put(ITerminalsConnectorConstants.PROP_PROCESS_PATH, "/bin/bash");
+				//properties.put(ITerminalsConnectorConstants.PROP_PROCESS_PATH, "/bin/bash");
 				//properties.put(ITerminalsConnectorConstants.PROP_PROCESS_ARGS, "xterm");
 
 				// Create the done callback object
 				ITerminalService.Done done = new ITerminalService.Done() {
 				    public void done(IStatus done) {
-				        // Place any post processing here
+				       
+				    	// Place any post processing here
 				    }
 				};
 
