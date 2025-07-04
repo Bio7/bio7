@@ -69,5 +69,15 @@
 		<unit id="org.eclipse.tm.terminal.feature.feature.group" version="12.1.0.202505062016"/>
 		<unit id="org.eclipse.tm.terminal.feature.source.feature.group" version="12.1.0.202505062016"/>
 	</location>
+	<location includeDependencyDepth="none" includeSource="true" missingManifest="generate" type="Maven">
+		<dependencies>
+			<dependency>
+				<groupId>tech.tablesaw</groupId>
+				<artifactId>tablesaw-core</artifactId>
+				<version>0.43.1</version>
+				<type>jar</type>
+			</dependency>
+		</dependencies>
+	</location>
 </locations>
 </target>
