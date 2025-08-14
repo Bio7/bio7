@@ -39,7 +39,7 @@ Bio7 is now available as a Maven Tycho built and can be created locally. All plu
 
 4. Import all Plugins and Features from the bio7 Git repository (https://github.com/Bio7/bio7).
 
-5. Expand the com.eco.bio7.targetplatform plugin. Execute "Set as Active Target Platform" and then execute Reload Target Platform". See also: https://www.vogella.com/tutorials/EclipseTargetPlatform/article.html
+5. Expand the com.eco.bio7.targetplatform plugin. Execute "Set as Active Target Platform" and then execute "Reload Target Platform". See also: https://www.vogella.com/tutorials/EclipseTargetPlatform/article.html
 
 6. Open a shell and navigate to the main Maven *.pom in the Git repository (in the downloaded Git repository, e.g., on MacOSX: 'cd /Users/xxxx/git/bio7/').
 
