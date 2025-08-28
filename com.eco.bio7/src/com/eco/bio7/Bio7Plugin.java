@@ -1,14 +1,15 @@
 /*******************************************************************************
- * Copyright (c) 2007-2012 M. Austenfeld
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * Copyright (c) 2007-2025 M. Austenfeld
+ * 
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
  *
+ * SPDX-License-Identifier: EPL-2.0
+ * 
  * Contributors:
  *     M. Austenfeld
  *******************************************************************************/
-
 
 package com.eco.bio7;
 
@@ -21,19 +22,16 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
-
 public class Bio7Plugin extends AbstractUIPlugin {
-	//The shared instance.
+	// The shared instance.
 	public static Bio7Plugin plugin;
-	//Resource bundle.
+	// Resource bundle.
 	private ResourceBundle resourceBundle;
-	
-	
+
 	public Bio7Plugin() {
 		super();
 		plugin = this;
-		
-		
+
 	}
 
 	/**
@@ -50,10 +48,7 @@ public class Bio7Plugin extends AbstractUIPlugin {
 		super.stop(context);
 		plugin = null;
 		resourceBundle = null;
-		
-		
-		
-		
+
 	}
 
 	/**
@@ -62,14 +57,14 @@ public class Bio7Plugin extends AbstractUIPlugin {
 	public static Bio7Plugin getDefault() {
 		return plugin;
 	}
-	
+
 	// get the root of the plugin
 	public static IWorkspace getWorkspace() {
 		return ResourcesPlugin.getWorkspace();
 	}
+
 	/**
-	 * Returns the string from the plugin's resource bundle,
-	 * or 'key' if not found.
+	 * Returns the string from the plugin's resource bundle, or 'key' if not found.
 	 */
 	public static String getResourceString(String key) {
 		ResourceBundle bundle = Bio7Plugin.getDefault().getResourceBundle();
@@ -94,8 +89,8 @@ public class Bio7Plugin extends AbstractUIPlugin {
 	}
 
 	/**
-	 * Returns an image descriptor for the image file at the given
-	 * plug-in relative path.
+	 * Returns an image descriptor for the image file at the given plug-in relative
+	 * path.
 	 *
 	 * @param path the path
 	 * @return the image descriptor
