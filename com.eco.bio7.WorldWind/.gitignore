@@ -1,1 +1,6 @@
-/bin
+*.class
+*.DS_Store
+/bin/gov/
+/bin/images/
+/bin/config/
+/bin/org/
