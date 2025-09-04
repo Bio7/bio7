@@ -8,6 +8,7 @@ public class IJMacroFunctions {
 			"abs(n)####Returns the absolute value of n."+linSeparator +			
 			"acos(n)####Returns the inverse cosine (in radians) of n."+linSeparator +
 			"Array.applyMacro()####Applies a macro to an array."+linSeparator + 
+			"Array.applyMacro(code)####Applies macro code to each element of an array."+linSeparator + 
 			"Array.concat(array1,array2)####Returns a new array created by joining two or more arrays or values (examples)."+linSeparator + 
 			"Array.copy(array)####Returns a copy of array."+linSeparator +
 			"Array.deleteValue()####Delete an array value."+linSeparator + 
