@@ -219,6 +219,7 @@ jdk/bin/javaw.exe
       <feature id="org.eclipse.ecf.filetransfer.httpclientjava.feature" installMode="root"/>
       <feature id="org.eclipse.texlipse.main" installMode="root"/>
       <feature id="org.eclipse.nebula.feature" installMode="root"/>
+      <feature id="org.eclipse.justj.openjdk.hotspot.jre.full" installMode="root"/>
    </features>
 
    <configurations>
