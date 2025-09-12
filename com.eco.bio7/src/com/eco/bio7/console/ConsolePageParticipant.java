@@ -69,9 +69,6 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.tm.terminal.view.core.TerminalServiceFactory;
-import org.eclipse.tm.terminal.view.core.interfaces.ITerminalService;
-import org.eclipse.tm.terminal.view.core.interfaces.constants.ITerminalsConnectorConstants;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IViewSite;
@@ -312,7 +309,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 						if (interpreterSelection.equals("R")) {
 							try {
-								Process p = Runtime.getRuntime().exec(pathBundle + "/SendSignalCtrlC.exe " + RProcess.pid());
+								Process p = Runtime.getRuntime()
+										.exec(pathBundle + "/SendSignalCtrlC.exe " + RProcess.pid());
 
 							} catch (IOException e) {
 								e.printStackTrace();
@@ -327,7 +325,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 						else if (interpreterSelection.equals("python")) {
 							try {
-								Process p = Runtime.getRuntime().exec(pathBundle + "/SendSignalCtrlC.exe " + pythonProcess.pid());
+								Process p = Runtime.getRuntime()
+										.exec(pathBundle + "/SendSignalCtrlC.exe " + pythonProcess.pid());
 
 							} catch (IOException e) {
 								e.printStackTrace();
@@ -465,11 +464,15 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		ProcessBuilder pb = new ProcessBuilder();
 		/* Send a CTRL+Break to Windows! */
 		if (ctrlBreak) {
-			pb.command(System.getProperty("java.home") + "/bin/javaw", "-cp", pathJna + "/jna-5.17.0.jar;" + pathJna + "/jna-platform-5.17.0.jar;" + pathMain, CtrlBreakSender.class.getName(), "" + nativeShellProcess.pid());
+			pb.command(System.getProperty("java.home") + "/bin/javaw", "-cp",
+					pathJna + "/jna-5.17.0.jar;" + pathJna + "/jna-platform-5.17.0.jar;" + pathMain,
+					CtrlBreakSender.class.getName(), "" + nativeShellProcess.pid());
 		}
 		/* Send a CTRL+C to Windows! */
 		else {
-			pb.command(System.getProperty("java.home") + "/bin/javaw", "-cp", pathJna + "/jna-5.17.0.jar;" + pathJna + "/jna-platform-5.17.0.jar;" + pathMain, CtrlCSender.class.getName(), "" + nativeShellProcess.pid());
+			pb.command(System.getProperty("java.home") + "/bin/javaw", "-cp",
+					pathJna + "/jna-5.17.0.jar;" + pathJna + "/jna-platform-5.17.0.jar;" + pathMain,
+					CtrlCSender.class.getName(), "" + nativeShellProcess.pid());
 		}
 		pb.redirectErrorStream();
 		pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
@@ -515,7 +518,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				nativeShellprocessThread.start();
 				/* Start shell with arguments! */
 				ConsolePageParticipant.pipeInputToConsole(shellArgs, true, true);
-				
+
 				// System.out.println("Process Id is: " +
 				// shellPid.getPidWindows(nativeShellProcess));
 
@@ -526,7 +529,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				// String[] env = { "TERM=xterm" };
 				// nativeShellProcess = PtyProcess.exec(new String[] { "/bin/sh", "-i" });
 
-				/*List<String> args = new ArrayList<String>();
+				List<String> args = new ArrayList<String>();
 				args.add("/bin/sh");
 				args.add("-i");
 				ProcessBuilder builder = new ProcessBuilder(args);
@@ -537,33 +540,14 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				nativeShellprocessThread = new Thread(new NativeProcessGrabber());
 				nativeShellprocessThread.start();
 				/* Start shell with arguments! */
-				//ConsolePageParticipant.pipeInputToConsole(shellArgs, true, true);
-				
-				Map<String, Object> properties = new HashMap<String, Object>();
-				properties.put(ITerminalsConnectorConstants.PROP_TITLE, "Bio7 Console");
-				properties.put(ITerminalsConnectorConstants.PROP_ENCODING, "UTF-8");
-				//properties.put(ITerminalsConnectorConstants.PROP_PROCESS_WORKING_DIR, "/tmp");
-				properties.put(ITerminalsConnectorConstants.PROP_DELEGATE_ID, "org.eclipse.tm.terminal.connector.local.launcher.local");
-				properties.put(ITerminalsConnectorConstants.PROP_PROCESS_PATH, "/bin/bash");
-				//properties.put(ITerminalsConnectorConstants.PROP_PROCESS_ARGS, "xterm");
+				ConsolePageParticipant.pipeInputToConsole(shellArgs, true, true);
 
-				// Create the done callback object
-				ITerminalService.Done done = new ITerminalService.Done() {
-				    public void done(IStatus done) {
-				        // Place any post processing here
-				    }
-				};
-
-				// Open the terminal
-				ITerminalService terminal = TerminalServiceFactory.getService();
-				if (terminal != null) terminal.openConsole(properties, done);
-				
 				// System.out.println("Process Id is: " +
 				// shellPid.getPidUnix(nativeShellProcess));
 			}
 
 			else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
-				/*List<String> args = new ArrayList<String>();
+				List<String> args = new ArrayList<String>();
 				args.add("/bin/sh");
 				args.add("-i");
 				ProcessBuilder builder = new ProcessBuilder(args);
@@ -572,33 +556,11 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				nativeShellprocessThread = new Thread(new NativeProcessGrabber());
 				nativeShellprocessThread.start();
 				/* Start shell with arguments! */
-				//ConsolePageParticipant.pipeInputToConsole(shellArgs, true, false);
-				
+				ConsolePageParticipant.pipeInputToConsole(shellArgs, true, false);
+
 				// System.out.println("Process Id is: " +
 				// shellPid.getPidUnix(nativeShellProcess));
-				
-				// Define the terminal properties
-				Map<String, Object> properties = new HashMap<String, Object>();
-				properties.put(ITerminalsConnectorConstants.PROP_TITLE, "Bio7 Console");
-				properties.put(ITerminalsConnectorConstants.PROP_ENCODING, "UTF-8");
-				//properties.put(ITerminalsConnectorConstants.PROP_PROCESS_WORKING_DIR, "/tmp");
-				properties.put(ITerminalsConnectorConstants.PROP_DELEGATE_ID, "org.eclipse.tm.terminal.connector.local.launcher.local");
-				//properties.put(ITerminalsConnectorConstants.PROP_PROCESS_PATH, "/bin/bash");
-				//properties.put(ITerminalsConnectorConstants.PROP_PROCESS_ARGS, "xterm");
 
-				// Create the done callback object
-				ITerminalService.Done done = new ITerminalService.Done() {
-				    public void done(IStatus done) {
-				       
-				    	// Place any post processing here
-				    }
-				};
-
-				// Open the terminal
-				ITerminalService terminal = TerminalServiceFactory.getService();
-				if (terminal != null) terminal.openConsole(properties, done);
-				
-				
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -633,7 +595,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				pythonProcess = builder.start();
 				pythonProcessThread = new Thread(new PythonProcessGrabber());
 				pythonProcessThread.start();
-				
+
 				// System.out.println("Process Id is: " +
 				// pythonPid.getPidWindows(pythonProcess));
 
@@ -654,7 +616,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				pythonProcess = builder.start();
 				pythonProcessThread = new Thread(new PythonProcessGrabber());
 				pythonProcessThread.start();
-				
+
 				// System.out.println("Process Id is: " +
 				// pythonPid.getPidUnix(pythonProcess));
 			}
@@ -675,14 +637,15 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				pythonProcess = builder.start();
 				pythonProcessThread = new Thread(new PythonProcessGrabber());
 				pythonProcessThread.start();
-				
+
 				// System.out.println("Process Id is: " +
 				// pythonPid.getPidUnix(pythonProcess));
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
-			Bio7Dialog.message("Interpreter not available!\n\nPlease adjust the path to the interpreter in the Bio7 preferences!");
+			Bio7Dialog.message(
+					"Interpreter not available!\n\nPlease adjust the path to the interpreter in the Bio7 preferences!");
 		}
 
 	}
@@ -721,27 +684,27 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		try {
 			/*
 			 * Map<String, Object> properties = new HashMap<String, Object>();
-				properties.put(ITerminalsConnectorConstants.PROP_TITLE, "Bio7 Console");
-				properties.put(ITerminalsConnectorConstants.PROP_ENCODING, "UTF-8");
-				properties.put(ITerminalsConnectorConstants.PROP_DELEGATE_ID, "org.eclipse.tm.terminal.connector.local.launcher.local");
-				properties.put(ITerminalsConnectorConstants.PROP_PROCESS_PATH, "/usr/local/bin/r");
-				properties.put(ITerminalsConnectorConstants.PROP_PROCESS_ARGS, "-e 'library(Rserve);run.Rserve()'");
+			 * properties.put(ITerminalsConnectorConstants.PROP_TITLE, "Bio7 Console");
+			 * properties.put(ITerminalsConnectorConstants.PROP_ENCODING, "UTF-8");
+			 * properties.put(ITerminalsConnectorConstants.PROP_DELEGATE_ID,
+			 * "org.eclipse.tm.terminal.connector.local.launcher.local");
+			 * properties.put(ITerminalsConnectorConstants.PROP_PROCESS_PATH,
+			 * "/usr/local/bin/r");
+			 * properties.put(ITerminalsConnectorConstants.PROP_PROCESS_ARGS,
+			 * "-e 'library(Rserve);run.Rserve()'");
+			 * 
+			 * // Create the done callback object ITerminalService.Done done = new
+			 * ITerminalService.Done() { public void done(IStatus done) { // Place any post
+			 * processing here } };
+			 * 
+			 * // Open the terminal ITerminalService terminal =
+			 * TerminalServiceFactory.getService(); if (terminal != null)
+			 * terminal.openConsole(properties, done);
+			 * 
+			 * 
+			 * 
+			 */
 
-				// Create the done callback object
-				ITerminalService.Done done = new ITerminalService.Done() {
-				    public void done(IStatus done) {
-				        // Place any post processing here
-				    }
-				};
-
-				// Open the terminal
-				ITerminalService terminal = TerminalServiceFactory.getService();
-				if (terminal != null) terminal.openConsole(properties, done);
-			 * 
-			 * 
-			 * 
-			 * */		
-			
 			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 				// process = Runtime.getRuntime().exec("cmd");
 				/*
@@ -763,7 +726,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				RProcess = builder.start();
 				RprocessThread = new Thread(new RProcessGrabber());
 				RprocessThread.start();
-				
+
 				// System.out.println("Process Id is: " +
 				// rPid.getPidWindows(RProcess));
 				rOptions();
@@ -789,7 +752,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				RProcess = builder.start();
 				RprocessThread = new Thread(new RProcessGrabber());
 				RprocessThread.start();
-				
+
 				// System.out.println("Process Id is: " +
 				// rPid.getPidUnix(RProcess));
 				rOptions();
@@ -802,25 +765,24 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				if (rPath.isEmpty() == false) {
 					args.add(rPath + "/bin/R");
 				} else {
-					args.add("R");//open /usr/local/bin/r --args --interactive
-							
+					args.add("R");// open /usr/local/bin/r --args --interactive
+
 				}
-				/*On Mac arch the option interactive crashes!*/
-				if(ApplicationWorkbenchWindowAdvisor.isArch()) {
+				/* On Mac arch the option interactive crashes! */
+				if (ApplicationWorkbenchWindowAdvisor.isArch()) {
 					args.add("--interactive");
-					//args.add("--no-save");
-				}
-				else {
+					// args.add("--no-save");
+				} else {
 					args.add("--interactive");
 				}
-				
+
 				ProcessBuilder builder = new ProcessBuilder(args);
 				builder.redirectErrorStream(true);
-				
+
 				RProcess = builder.start();
 				RprocessThread = new Thread(new RProcessGrabber());
 				RprocessThread.start();
-				
+
 				// System.out.println("Process Id is: " +
 				// rPid.getPidUnix(RProcess));
 				rOptions();
@@ -947,9 +909,9 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					}
 				}
 			}
-				
+
 		}
-			
+
 	}
 
 	class ProcessGrabber implements Runnable {
@@ -1037,8 +999,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		// }.start();
 		/* Destroy the IOConsole! */
 
-		//ioc.partitionerFinished();
-		//ioc.destroy();
+		// ioc.partitionerFinished();
+		// ioc.destroy();
 	}
 
 	@Override
@@ -1452,7 +1414,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		 */
 		public void documentChanged(DocumentEvent event) {
 			IDocument doc = event.getDocument();
-			TextConsoleViewer viewer = ((page instanceof TextConsolePage) ? ((TextConsolePage) page).getViewer() : null);
+			TextConsoleViewer viewer = ((page instanceof TextConsolePage) ? ((TextConsolePage) page).getViewer()
+					: null);
 			if (doc != null) {
 				try {
 					int textLen = (event.getText() != null ? event.getText().length() : 0);
@@ -1541,7 +1504,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 			if (selected != null) {
 
-				final String save = "try(save.image(file =\"" + selected + ".RData" + "\", version = NULL, ascii = FALSE))";
+				final String save = "try(save.image(file =\"" + selected + ".RData"
+						+ "\", version = NULL, ascii = FALSE))";
 				if (RState.isBusy() == false) {
 					RState.setBusy(true);
 
@@ -1679,7 +1643,6 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	public Process getPythonProcess() {
 		return pythonProcess;
 	}
-
 
 	public void pipeToRConsole(String command) {
 		String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
