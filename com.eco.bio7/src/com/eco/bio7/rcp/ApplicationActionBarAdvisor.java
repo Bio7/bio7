@@ -12,9 +12,14 @@
 package com.eco.bio7.rcp;
 
 import java.io.File;
+import java.util.List;
 import java.util.Stack;
 
 import org.eclipse.core.runtime.IExtension;
+import org.eclipse.e4.ui.model.application.MApplication;
+import org.eclipse.e4.ui.model.application.ui.basic.MTrimBar;
+import org.eclipse.e4.ui.model.application.ui.menu.MToolControl;
+import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IContributionItem;
@@ -30,6 +35,8 @@ import org.eclipse.jface.action.ToolBarContributionItem;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -39,6 +46,7 @@ import org.eclipse.ui.actions.ContributionItemFactory;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.internal.WorkbenchPlugin;
+import org.eclipse.ui.internal.WorkbenchWindow;
 import org.eclipse.ui.internal.registry.ActionSetRegistry;
 import org.eclipse.ui.internal.registry.IActionSetDescriptor;
 import org.eclipse.ui.views.IViewDescriptor;
@@ -473,6 +481,22 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		switchTheme = new ThemeSwitchHandler("Switch Theme");
 		register(switchTheme);
+
+		MTrimBar topTrim = ((WorkbenchWindow) window).getTopTrim();
+		IWorkbench workbench = PlatformUI.getWorkbench();
+		if (workbench instanceof org.eclipse.e4.ui.workbench.IWorkbench) {
+			MApplication mApplication = ((org.eclipse.e4.ui.workbench.IWorkbench) workbench).getApplication();
+			EModelService modelService = mApplication.getContext().get(EModelService.class);
+
+			Display.getDefault().asyncExec(() -> {
+				List<MToolControl> elements = modelService.findElements(topTrim, "PerspectiveSwitcher",
+						MToolControl.class, null, EModelService.IN_TRIM);
+				if (elements != null && !elements.isEmpty()) {
+					elements.get(0).getTags().add("NoMenu");
+				}
+			});
+
+		}
 
 	}
 
@@ -935,8 +959,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 			} else if (file.isDirectory()) {
 				String name = file.getName();
 				if (name.startsWith("_") == false) {
-					MenuManager men = menuStack.peek();					
-					String replacedName = name.replace("_"," ");
+					MenuManager men = menuStack.peek();
+					String replacedName = name.replace("_", " ");
 					MenuManager submenu = new MenuManager(replacedName);
 					// submenu.setRemoveAllWhenShown(true);
 					menuStack.push(submenu);
