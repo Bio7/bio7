@@ -488,13 +488,13 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 			MApplication mApplication = ((org.eclipse.e4.ui.workbench.IWorkbench) workbench).getApplication();
 			EModelService modelService = mApplication.getContext().get(EModelService.class);
 
-			Display.getDefault().asyncExec(() -> {
+			/*Display.getDefault().asyncExec(() -> {
 				List<MToolControl> elements = modelService.findElements(topTrim, "PerspectiveSwitcher",
 						MToolControl.class, null, EModelService.IN_TRIM);
 				if (elements != null && !elements.isEmpty()) {
 					elements.get(0).getTags().add("NoMenu");
 				}
-			});
+			});*/
 
 		}
 
