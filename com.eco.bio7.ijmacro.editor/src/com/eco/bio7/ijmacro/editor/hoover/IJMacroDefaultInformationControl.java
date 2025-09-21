@@ -644,7 +644,7 @@ public class IJMacroDefaultInformationControl extends AbstractInformationControl
 			public IInformationControl createInformationControl(Shell parent) {
 				ToolBarManager tbm = new ToolBarManager(SWT.FLAT);
 				OpenHelpBrowserAction localBrowserHelp = new OpenHelpBrowserAction(
-						"https://imagej.nih.gov/ij/developer/macro/functions.html#" + contentFromHoover);
+						" https://imagej.net/ij/developer/macro/functions.html#" + contentFromHoover);
 				tbm.add(localBrowserHelp);
 				tbm.update(true);
 				return new IJMacroDefaultInformationControl(parent, (ToolBarManager) tbm, fPresenter);
