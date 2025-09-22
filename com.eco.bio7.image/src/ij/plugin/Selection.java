@@ -245,6 +245,7 @@ public class Selection implements PlugIn, Measurements {
 		if (roi instanceof EllipseRoi)
 			return;
 		PolygonRoi p = (PolygonRoi)roi;
+		p = (PolygonRoi)p.clone();
 		Undo.setup(Undo.ROI, imp);
 		if (!segmentedSelection && p.getNCoordinates()>3) {
 			if (p.subPixelResolution())
@@ -259,6 +260,7 @@ public class Selection implements PlugIn, Measurements {
 			p.removeSplineFit();
 		else
 			p.fitSpline();
+		imp.setRoi(p);
 		imp.draw();
 		LineWidthAdjuster.update(); 
 	}
@@ -344,7 +346,6 @@ public class Selection implements PlugIn, Measurements {
 		float[] curvature = getCurvature(x, y, n);
 		Rectangle r = roi.getBounds();
 		double threshold = rodbard(length);
-		//IJ.log("trim: "+length+" "+threshold);
 		double distance = Math.sqrt((x[1]-x[0])*(x[1]-x[0])+(y[1]-y[0])*(y[1]-y[0]));
 		x[0] += r.x; y[0]+=r.y;
 		int i2 = 1;
@@ -465,7 +466,6 @@ public class Selection implements PlugIn, Measurements {
 		y = smooth(y, n);
 		float[] curvature = getCurvature(x, y, n);
 		double threshold = rodbard(length);
-		//IJ.log("trim: "+length+" "+threshold);
 		double distance = Math.sqrt((x[1]-x[0])*(x[1]-x[0])+(y[1]-y[0])*(y[1]-y[0]));
 		int i2 = 1;
 		double x1,y1,x2=0,y2=0;
@@ -960,7 +960,7 @@ public class Selection implements PlugIn, Measurements {
 	 *	
 	 * 	Loosely based on:
 	 * 	H. Freeman and R. Shapira. 1975. Determining the minimum-area encasing rectangle for an arbitrary 
-	 * 	closed curve. Commun. ACM 18, 7 (July 1975), 409�413. DOI:https://doi.org/10.1145/360881.360919	
+	 * 	closed curve. Commun. ACM 18, 7 (July 1975), 409–413. DOI:https://doi.org/10.1145/360881.360919	
 	*/
 	private void fitRectangle(ImagePlus imp) {
 		if (!imp.okToDeleteRoi()) return;

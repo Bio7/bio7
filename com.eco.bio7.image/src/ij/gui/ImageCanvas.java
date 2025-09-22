@@ -380,8 +380,6 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 			labelColor = Color.white;
 		initGraphics(overlay, g, labelColor, Roi.getColor());
 		int n = overlay.size();
-		// if (IJ.debugMode)
-		// IJ.log("drawOverlay: " + n);
 		int currentImage = imp != null ? imp.getCurrentSlice() : -1;
 		int stackSize = imp.getStackSize();
 		if (stackSize == 1)
@@ -420,14 +418,13 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 			int t = roi.getTPosition();
 			if (hyperstack) {
 				int position = roi.getPosition();
-				//IJ.log(c+" "+z+" "+t+"  "+channel+" "+position+" "+roiManagerShowAllMode);
 				if (position > 0) {
 					if (z == 0 && imp.getNSlices() > 1)
 						z = position;
 					else if (t == 0)
 						t = position;
 				}
-				//IJ.log("drawOverlay: i="+i+", pos="+roi.getPosition());
+				//IJ.log("drawOverlay: i="+i+", pos="+roi.getPosition()+" "+c+" "+z+" "+t);
 				if (((c==0||c==channel) && (z==0||z==slice) && (t==0||t==frame)) || roiManagerShowAllMode || position == PointRoi.POINTWISE_POSITION)
 					drawRoi(g, roi, drawLabels ? i + LIST_OFFSET : -1);
 			} else {
@@ -446,7 +443,6 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 					position = 0;
 				if ((roi instanceof PointRoi) && Prefs.showAllPoints)
 					position = 0;
-				//IJ.log("drawOverlay: i="+i+", pos="+roi.getPosition()+", pos2="+position);
 				if (position == 0 || position == currentImage || roiManagerShowAllMode)
 					drawRoi(g, roi, drawLabels ? i + LIST_OFFSET : -1);
 			}
@@ -589,7 +585,6 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 			} else
 				labelRects[index] = new Rectangle(x - 3, y - h + 1, w + 4, h);
 		}
-		// IJ.log("drawRoiLabel: "+" "+label+" "+x+" "+y+" "+flattening);
 		g.setColor(labelColor);
 		g.drawString(label, x + xoffset, y - 2 + yoffset);
 		g.setColor(defaultColor);
@@ -867,8 +862,6 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 	/** Resizes the canvas when the user resizes the window. */
 	void resizeCanvas(int width, int height) {
 		ImageWindow win = imp.getWindow();
-		// IJ.log("resizeCanvas: "+srcRect+" "+imageWidth+" "+imageHeight+"
-		// "+width+" "+height+" "+dstWidth+" "+dstHeight+" "+win.maxBounds);
 		if (!maxBoundsReset && (width > dstWidth || height > dstHeight) && win != null && win.maxBounds != null
 				&& width != win.maxBounds.width - 10) {
 			if (resetMaxBoundsCount != 0)
@@ -896,8 +889,6 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 				srcRect.y = imageHeight - srcRect.height;
 			repaint();
 		}
-		// IJ.log("resizeCanvas2: "+srcRect+" "+dstWidth+" "+dstHeight+"
-		// "+width+" "+height);
 	}
 
 	public void fitToWindow() {
@@ -1038,7 +1029,6 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 
 	/** Centers the viewable area on offscreen (image) coordinates x, y */
 	void adjustSourceRect(double newMag, int x, int y) {
-		// IJ.log("adjustSourceRect1: "+newMag+" "+dstWidth+" "+dstHeight);
 		int w = (int) Math.round(dstWidth / newMag);
 		if (w * newMag < dstWidth)
 			w++;
@@ -1056,7 +1046,6 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 			r.y = imageHeight - h;
 		srcRect = r;
 		setMagnification(newMag);
-		// IJ.log("adjustSourceRect2: "+srcRect+" "+dstWidth+" "+dstHeight);
 	}
 	
 	/**
@@ -1216,12 +1205,10 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 			if (newSrcY < 0)
 				newSrcY = 0;
 			srcRect = new Rectangle(newSrcX, newSrcY, newSrcWidth, newSrcHeight);
-			// IJ.log(newMag+" "+srcRect+" "+dstWidth+" "+dstHeight);
-			int newDstWidth = (int) (srcRect.width * newMag);
+			int newDstWidth = (int)(srcRect.width*newMag);
 			int newDstHeight = (int) (srcRect.height * newMag);
 			setMagnification(newMag);
 			setMaxBounds();
-			// IJ.log(newDstWidth+" "+dstWidth+" "+newDstHeight+" "+dstHeight);
 			if (newDstWidth < dstWidth || newDstHeight < dstHeight) {
 				setSize(newDstWidth, newDstHeight);
 				imp.getWindow().pack();
@@ -1339,7 +1326,6 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 		int ox = xSrcStart + (int) (sx / magnification); // convert to offscreen
 		// coordinates
 		int oy = ySrcStart + (int) (sy / magnification);
-		// IJ.log("scroll: "+ox+" "+oy+" "+xMouseStart+" "+yMouseStart);
 		int newx = xSrcStart + (xMouseStart - ox);
 		int newy = ySrcStart + (yMouseStart - oy);
 		if (newx < 0)
@@ -1352,7 +1338,6 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 			newy = imageHeight - srcRect.height;
 		srcRect.x = newx;
 		srcRect.y = newy;
-		// IJ.log(sx+" "+sy+" "+newx+" "+newy+" "+srcRect);
 		imp.draw();
 		Thread.yield();
 	}
@@ -1368,7 +1353,6 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 	 * true) to the color of the pixel at (ox,oy).
 	 */
 	public void setDrawingColor(int ox, int oy, boolean setBackground) {
-		// IJ.log("setDrawingColor: "+setBackground+this);
 		int type = imp.getType();
 		int[] v = imp.getPixel(ox, oy);
 		switch (type) {
@@ -1624,8 +1608,7 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 					boolean unchanged = state != Roi.MOVING_HANDLE && r1 != null && r2 != null && r2.x == r1.x
 							&& r2.y == r1.y && r2.width == r1.width && r2.height == r1.height && size2 == size1
 							&& !(size2 > 1 && state == Roi.CONSTRUCTING);
-					boolean cursorMoved = !getCursorLoc().equals(cursorLoc);
-					//IJ.log(size2+" "+empty+" "+unchanged+" "+state+" "+roi1+"  "+roi2);			
+					boolean cursorMoved = !getCursorLoc().equals(cursorLoc);		
 					if ((roi1 == null && (size2 <= 1 || empty)) || unchanged) {
 						if (roi1 == null)
 							imp.deleteRoi();
@@ -1748,7 +1731,6 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 		yMouse = offScreenY(y);
 		flags = e.getModifiers();
 		mousePressedX = mousePressedY = -1;
-		// IJ.log("mouseDragged: "+flags);
 		if (flags == 0) // workaround for Mac OS 9 bug
 			flags = InputEvent.BUTTON1_MASK;
 		if (Toolbar.getToolId() == Toolbar.HAND || IJ.spaceBarDown())
@@ -1862,7 +1844,6 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 			roi.modState = Roi.SUBTRACT_FROM_ROI;
 		else
 			roi.modState = Roi.NO_MODS;
-		// IJ.log("setRoiModState: "+roi.modState+" "+ roi.state);
 	}
 
 	/** Disable/enable popup menu. */
@@ -2068,7 +2049,6 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 			Roi roi = o.get(i);
 			if (roi==null)
 				continue;
-			// IJ.log(".isAltDown: "+roi.contains(ox, oy));
 			boolean containsMousePoint = false;
 			if (roi instanceof Line) { // grab line roi near its center
 				double grabLineWidth = 1.1 + 5. / magnification;
