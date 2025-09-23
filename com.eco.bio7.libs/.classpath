@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="math/joml-1.10.8.jar"/>
+	<classpathentry exported="true" kind="lib" path="hardware/jSerialComm-2.11.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="hardware/jssc-2.10.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jericho-html-3.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/mxparser-1.2.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/xstream-1.4.20.jar"/>
@@ -11,8 +14,6 @@
 	<classpathentry exported="true" kind="lib" path="libs/jsoup-1.17.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jogl-all.jar"/>
 	<classpathentry exported="true" kind="lib" path="math/gdal.jar"/>
-	<classpathentry exported="true" kind="lib" path="hardware/jSerialComm-2.9.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="hardware/jssc-2.9.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/commons-io-2.6.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/commons-codec-1.13.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/commons-collections4-4.4.jar"/>
