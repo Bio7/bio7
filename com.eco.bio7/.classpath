@@ -1,6 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/ant-1.10.15.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/ant-antlr-1.10.15.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/ant-junit-1.10.15.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/ant-launcher-1.10.15.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/asm-9.8.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/asm-analysis-9.8.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/asm-tree-9.8.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/asm-util-9.8.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/groovy-5.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/groovy-ant-5.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/groovy-cli-picocli-5.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/groovy-console-5.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/groovy-datetime-5.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/groovy-docgenerator-5.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/groovy-groovydoc-5.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/groovy-groovysh-5.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/groovy-jmx-5.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/groovy-json-5.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/groovy-jsr223-5.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/groovy-macro-5.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/groovy-nio-5.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/groovy-servlet-5.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/groovy-sql-5.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/groovy-swing-5.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/groovy-templates-5.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/groovy-test-5.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/groovy-test-junit5-5.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/groovy-xml-5.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/groovy-yaml-5.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/ivy-2.5.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/jackson-annotations-2.19.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/jackson-core-2.19.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/jackson-databind-2.19.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/jackson-dataformat-yaml-2.19.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/jansi-3.30.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/javaparser-core-3.27.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/jline-builtins-3.30.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/jline-console-3.30.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/jline-native-3.30.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/jline-reader-3.30.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/jline-style-3.30.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/jline-terminal-3.30.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/jline-terminal-jansi-3.30.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/jline-terminal-jna-3.30.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/jline-terminal-jni-3.30.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/jna-4.5.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/junit-jupiter-api-5.13.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/junit-jupiter-engine-5.13.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/junit-platform-commons-1.13.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/junit-platform-engine-1.13.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/junit-platform-launcher-1.13.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/opentest4j-1.3.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/org.abego.treelayout.core-1.0.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/picocli-3.8.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/qdox-2.2.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/groovy/snakeyaml-1.24.jar"/>
 	<classpathentry exported="true" kind="lib" path="baseline.jar"/>
 	<classpathentry exported="true" kind="lib" path="swt-grouplayout.jar"/>
 	<classpathentry kind="lib" path="libs/activation-1.1.1.jar"/>
