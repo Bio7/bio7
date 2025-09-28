@@ -1,8 +1,15 @@
 package com.eco.bio7.batch;
 
+import java.io.IOException;
+import java.net.URL;
+
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.osgi.framework.Bundle;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.floweditor.shapes.ShapesPlugin;
@@ -124,6 +131,7 @@ public class FileRoot {
 		return fileroot;
 
 	}
+
 	/**
 	 * Returns the workspace path.
 	 * 
@@ -134,6 +142,28 @@ public class FileRoot {
 		String path = null;
 		path = ResourcesPlugin.getWorkspace().getRoot().getLocation().toString();
 		return path;
+	}
+
+	/**
+	 * Returns the path to the plugins folder.
+	 * 
+	 * @param symbolicName the symbolic name of the bundle to be returned.
+	 * @param relativePath file path relative to plug-in installation location.
+	 * @return the path as a string.
+	 */
+	public static String getPluginsPath(String symbolicName, String relativePath) {
+		Bundle bundle = Platform.getBundle(symbolicName);
+		Path path = new Path(relativePath);
+		URL locationURL = FileLocator.find(bundle, path, null);
+		URL fileUrl = null;
+		try {
+			fileUrl = FileLocator.toFileURL(locationURL);
+		} catch (IOException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+		String pathBundle = fileUrl.getFile().replaceFirst("/", "");
+		return pathBundle;
 	}
 
 }
