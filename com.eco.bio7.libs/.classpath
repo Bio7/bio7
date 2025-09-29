@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="math/jts-core-1.20.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="math/joml-1.10.8.jar"/>
 	<classpathentry exported="true" kind="lib" path="hardware/jSerialComm-2.11.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="hardware/jssc-2.10.2.jar"/>
@@ -23,7 +24,6 @@
 	<classpathentry exported="true" kind="lib" path="Excel/poi-ooxml-4.1.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/poi-ooxml-schemas-4.1.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="Excel/xmlbeans-3.1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="math/jts-core-1.16.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/opencsv-3.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="R/REngine.jar"/>
 	<classpathentry exported="true" kind="lib" path="R/RserveEngine.jar"/>
