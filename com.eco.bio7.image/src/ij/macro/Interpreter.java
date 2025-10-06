@@ -32,7 +32,7 @@ public class Interpreter implements MacroConstants {
 	boolean checkingType;
 	int prefixValue;
 	
-	public Variable[] stack;
+	Variable[] stack;
 	int topOfStack = -1;
 	int topOfGlobals = -1;
 	int startOfLocals = 0;
@@ -42,11 +42,11 @@ public class Interpreter implements MacroConstants {
 	static Vector imageTable; // images opened in batch mode
 	static Vector imageActivations; // images ordered by activation time
 	volatile boolean done;
-	public Program pgm;
+	Program pgm;
 	Functions func;
 	boolean inFunction;
 	String macroName;
-	public String argument;
+	String argument;
 	String returnValue;
 	boolean calledMacro; // macros envoked by eval() or runMacro()
 	boolean batchMacro; // macros envoked by Process/Batch commands
@@ -54,7 +54,7 @@ public class Interpreter implements MacroConstants {
 	boolean inPrint;
 	static String additionalFunctions;
 	Debugger debugger;
-	public int debugMode = Debugger.NOT_DEBUGGING;
+	int debugMode = Debugger.NOT_DEBUGGING;
 	boolean showDebugFunctions;
 	static boolean showVariables;
 	boolean wasError;
@@ -1354,7 +1354,7 @@ public class Interpreter implements MacroConstants {
 		}
 	}
 
-	public void error (String message) {
+	void error(String message) {
 		errorMessage = message;
 		if (ignoreErrors)
 			return;
@@ -1373,9 +1373,23 @@ public class Interpreter implements MacroConstants {
 			instance = null;
 		if (showMessage && message!=null) {
 			String line = getErrorLine();
+			String originalLine = line;
 			done = true;
-			if (line.length()>120)
-				line = line.substring(0,119)+"...";			
+			int max = 90;
+			int len = line.length();
+			if (len>max) {
+				StringBuilder sb = new StringBuilder(len+50);
+				int count = 0;
+				for (int i=0; i<len; i++){
+					sb.append(line.charAt(i));
+					count++;
+					if (count>=max && i<len-7) {
+						sb.append("\n  ");
+						count = 0;
+					}
+				}
+				line = sb.toString();
+			}
 			Frame f = WindowManager.getFrame("Debug");			
 			TextPanel panel = null;
 			if (showVariables && f!=null && (f instanceof TextWindow)) { //clear previous content
@@ -1398,7 +1412,7 @@ public class Interpreter implements MacroConstants {
 				TextWindow debugWindow = (TextWindow)f;
 				debugWindow.append("\n---\t\t---\nError:\t\t" + message + " in line "+lineNumber + ":");
 				debugWindow.append(calledFrom + "\t\t");	
-				debugWindow.append("\t\t"+line);
+				debugWindow.append("\t\t"+originalLine);
 			}			
 			throw new RuntimeException(Macro.MACRO_CANCELED);
 		}
@@ -1459,7 +1473,7 @@ public class Interpreter implements MacroConstants {
 
 	private static String[] prevVars; //previous variables for comparison
 
-	public String[] markChanges(String[] newVars) {//add asterisk if variable has changed
+	private String[] markChanges(String[] newVars) {//add asterisk if variable has changed
 		int len = newVars.length;
 		String[] copyOfNew = new String[len];
 		String[] hilitedVars = new String[len];
@@ -2530,8 +2544,3 @@ public class Interpreter implements MacroConstants {
 	}
 			
 } // class Interpreter
-
-
-
-
-

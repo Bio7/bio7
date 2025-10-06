@@ -424,7 +424,7 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 					else if (t == 0)
 						t = position;
 				}
-				//IJ.log("drawOverlay: i="+i+", pos="+roi.getPosition()+" "+c+" "+z+" "+t);
+				//IJ.log("drawOverlay: i="+i+", pos="+roi.getPosition()+" "+c+" "+z+" "+t+" "+roiManagerShowAllMode);
 				if (((c==0||c==channel) && (z==0||z==slice) && (t==0||t==frame)) || roiManagerShowAllMode || position == PointRoi.POINTWISE_POSITION)
 					drawRoi(g, roi, drawLabels ? i + LIST_OFFSET : -1);
 			} else {
