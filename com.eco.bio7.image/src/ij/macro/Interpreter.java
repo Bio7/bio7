@@ -32,7 +32,7 @@ public class Interpreter implements MacroConstants {
 	boolean checkingType;
 	int prefixValue;
 	
-	Variable[] stack;
+	public Variable[] stack;
 	int topOfStack = -1;
 	int topOfGlobals = -1;
 	int startOfLocals = 0;
@@ -42,11 +42,11 @@ public class Interpreter implements MacroConstants {
 	static Vector imageTable; // images opened in batch mode
 	static Vector imageActivations; // images ordered by activation time
 	volatile boolean done;
-	Program pgm;
+	public Program pgm;
 	Functions func;
 	boolean inFunction;
 	String macroName;
-	String argument;
+	public String argument;
 	String returnValue;
 	boolean calledMacro; // macros envoked by eval() or runMacro()
 	boolean batchMacro; // macros envoked by Process/Batch commands
@@ -54,7 +54,7 @@ public class Interpreter implements MacroConstants {
 	boolean inPrint;
 	static String additionalFunctions;
 	Debugger debugger;
-	int debugMode = Debugger.NOT_DEBUGGING;
+	public int debugMode = Debugger.NOT_DEBUGGING;
 	boolean showDebugFunctions;
 	static boolean showVariables;
 	boolean wasError;
@@ -1354,7 +1354,7 @@ public class Interpreter implements MacroConstants {
 		}
 	}
 
-	void error(String message) {
+	public void error(String message) {
 		errorMessage = message;
 		if (ignoreErrors)
 			return;
@@ -1473,7 +1473,7 @@ public class Interpreter implements MacroConstants {
 
 	private static String[] prevVars; //previous variables for comparison
 
-	private String[] markChanges(String[] newVars) {//add asterisk if variable has changed
+	public String[] markChanges(String[] newVars) {//add asterisk if variable has changed
 		int len = newVars.length;
 		String[] copyOfNew = new String[len];
 		String[] hilitedVars = new String[len];
