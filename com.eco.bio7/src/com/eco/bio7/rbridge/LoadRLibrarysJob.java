@@ -1,26 +1,18 @@
 /*******************************************************************************
- * Copyright (c) 2007-2012 M. Austenfeld
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * Copyright (c) 2007-2025 M. Austenfeld
+ * 
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
  *
+ * SPDX-License-Identifier: EPL-2.0
+ * 
  * Contributors:
  *     M. Austenfeld
  *******************************************************************************/
 
 package com.eco.bio7.rbridge;
 
-/*******************************************************************************
- * Copyright (c) 2005-2017 M. Austenfeld
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     M. Austenfeld
- *******************************************************************************/
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -39,7 +31,7 @@ import com.eco.bio7.rpreferences.template.CalculateRProposals;
 
 public class LoadRLibrarysJob extends WorkspaceJob {
 
-	//protected String[] items;
+	// protected String[] items;
 	private IEditorPart editor;
 	protected TableItem[] tableItems;
 
@@ -65,8 +57,7 @@ public class LoadRLibrarysJob extends WorkspaceJob {
 							c.eval("try(library(" + tableItems[i].getText(0) + "))");
 
 							/*
-							 * Function loaded at Rserve startup. Writes the available
-							 * functions to a file!
+							 * Function loaded at Rserve startup. Writes the available functions to a file!
 							 */
 							c.eval(".bio7WriteFunctionDef();");
 						} catch (RserveException e) {

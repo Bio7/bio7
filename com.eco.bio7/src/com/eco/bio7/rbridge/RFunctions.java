@@ -1,10 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2007-2012 M. Austenfeld
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * Copyright (c) 2007-2025 M. Austenfeld
+ * 
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
  *
+ * SPDX-License-Identifier: EPL-2.0
+ * 
  * Contributors:
  *     M. Austenfeld
  *******************************************************************************/
@@ -98,7 +100,7 @@ public class RFunctions {
 			"Computes the variance of x","Computes the covariance of x","Computes the correlation of x and y","This function computes the standard deviation of the values in x","This function computes summary statistics of the given argument","The generic function quantile produces sample \nquantiles corresponding to the given probabilities","remove and rm can be used to remove objects",
 			"Performs a one sample t-test on vectors of data","Performs a two sample t-test on vectors of data","Performs a paired two sample t-test on vectors of data",
 			"Performs Fisher's exact test for \ntesting the null of independence of rows and columns \nin a contingency table with fixed marginals","chisq.test performs chi-squared contingency table tests and goodness-of-fit tests","chisq.test performs chi-squared contingency table tests and goodness-of-fit tests","Performs the Shapiro-Wilk test of normality","Performs Bartlett's test (homogeneity of variances) \nof the null that the variances in each of the groups (samples) are the same",
-			"Performs one and two sample Wilcoxon tests on vectors of data; \nthe latter is also known as ‘Mann-Whitney’ test","Performs a Kruskal-Wallis rank sum test",
+			"Performs one and two sample Wilcoxon tests on vectors of data; \nthe latter is also known as ï¿½Mann-Whitneyï¿½ test","Performs a Kruskal-Wallis rank sum test",
 			"Performs one or two sample Kolmogorov-Smirnov tests","Converts the given argument to a factor","Performs an Analysis of Variance","Performs an Analysis of Variance\nand returns a summary","Calculate pairwise comparisons between group levels with corrections for multiple testing","Calculate pairwise comparisons between group levels with corrections for multiple testing","Create a set of confidence intervals on the \ndifferences between the means of the levels of a factor with \nthe specified family-wise probability of coverage",
 			"Test for association between paired samples, \nusing one of Pearson's product moment correlation coefficient, \nKendall's tau or Spearman's rho","Test for association between paired samples, \nusing one of Pearson's product moment correlation coefficient, \nKendall's tau or Spearman's rho","lm is used to fit linear models. \nIt can be used to carry out regression, \nsingle stratum analysis of variance and \nanalysis of covariance","lm is used to fit linear models. \nIt can be used to carry out regression, \nsingle stratum analysis of variance and \nanalysis of covariance.\nWith the function summary a summary is displayed",
 			"-----Multivariate------","Performs a Cluster Analysis \nwith the calculated distances of\n the available specified dataset","Clusters the given data \nwith the kmeans algorithm",
