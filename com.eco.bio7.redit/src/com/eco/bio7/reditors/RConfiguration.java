@@ -1,21 +1,13 @@
+
 /*******************************************************************************
- * Copyright (c) 2000, 2005 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * Copyright (c) 2007-2025 M. Austenfeld
+ * 
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
  *
- * Contributors:
- *     IBM Corporation - initial API and implementation
- *     
- *******************************************************************************/
-/*******************************************************************************
- * Copyright (c) 2007-2014 M. Austenfeld
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
+ * SPDX-License-Identifier: EPL-2.0
+ * 
  * Contributors:
  *     M. Austenfeld
  *******************************************************************************/
@@ -86,9 +78,9 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 	private RAssistProcessor rAssist;
 
-	//private RTextAttribute tex;
+	// private RTextAttribute tex;
 
-	//private RTextAttribute tex1;
+	// private RTextAttribute tex1;
 
 	private RoxygenCompletionProcessor processorRoxygen;
 
@@ -102,7 +94,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 		return processor;
 	}
 
-	public  class SingleTokenScanner extends BufferedRuleBasedScanner {
+	public class SingleTokenScanner extends BufferedRuleBasedScanner {
 		public Token att;
 
 		public SingleTokenScanner(TextAttribute attribute) {
@@ -128,16 +120,17 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 	 * closing a brace!
 	 */
 	public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {
-		IAutoEditStrategy strategy = (IDocument.DEFAULT_CONTENT_TYPE.equals(contentType) ? new REditorEditStrategy() : new DefaultIndentLineAutoEditStrategy());
+		IAutoEditStrategy strategy = (IDocument.DEFAULT_CONTENT_TYPE.equals(contentType) ? new REditorEditStrategy()
+				: new DefaultIndentLineAutoEditStrategy());
 		return new IAutoEditStrategy[] { strategy };
 	}
 
 	/*
-	 * public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer
-	 * sourceViewer, String contentType) { IAutoEditStrategy strategy =
+	 * public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer,
+	 * String contentType) { IAutoEditStrategy strategy =
 	 * (IDocument.DEFAULT_CONTENT_TYPE.equals(contentType) ? new
-	 * RAutoIndentStrategy() : new DefaultIndentLineAutoEditStrategy()); return
-	 * new IAutoEditStrategy[] { strategy }; }
+	 * RAutoIndentStrategy() : new DefaultIndentLineAutoEditStrategy()); return new
+	 * IAutoEditStrategy[] { strategy }; }
 	 */
 
 	public String getConfiguredDocumentPartitioning(ISourceViewer sourceViewer) {
@@ -173,27 +166,28 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 		// IPreferenceStore store =
 		// Bio7REditorPlugin.getDefault().getPreferenceStore();
-		RGB rgbkey2 = PreferenceConverter.getColor(store, "colourkey2");	
+		RGB rgbkey2 = PreferenceConverter.getColor(store, "colourkey2");
 		RGB rgbkey3 = PreferenceConverter.getColor(store, "colourkey3");
-		
-		/*We create the special token with a default style from the preferences!*/
-		single = new SingleTokenScanner(new TextAttribute(new Color(Display.getDefault(), rgbkey2), null, isBold("BOLD_COLOURKEY2")));
+
+		/* We create the special token with a default style from the preferences! */
+		single = new SingleTokenScanner(
+				new TextAttribute(new Color(Display.getDefault(), rgbkey2), null, isBold("BOLD_COLOURKEY2")));
 		DefaultDamagerRepairer ndr = new DefaultDamagerRepairer(single);
 		reconciler.setDamager(ndr, "R_MULTILINE_STRING");
 		reconciler.setRepairer(ndr, "R_MULTILINE_STRING");
 		/*
-		 * We have to set the comments separately, too (to ignore quotes in
-		 * comments!)
+		 * We have to set the comments separately, too (to ignore quotes in comments!)
 		 */
-		/*We create the special token with a default style from the preferences!*/
-		comment = new SingleTokenScanner(new TextAttribute(new Color(Display.getDefault(), rgbkey3), null, isBold("BOLD_COLOURKEY3")));
+		/* We create the special token with a default style from the preferences! */
+		comment = new SingleTokenScanner(
+				new TextAttribute(new Color(Display.getDefault(), rgbkey3), null, isBold("BOLD_COLOURKEY3")));
 		DefaultDamagerRepairer ndrcomment = new DefaultDamagerRepairer(comment);
 		reconciler.setDamager(ndrcomment, "R_COMMENT");
 		reconciler.setRepairer(ndrcomment, "R_COMMENT");
 
 		return reconciler;
 	}
-	
+
 	private int isBold(String string2) {
 		int style = 0;
 		IPreferenceStore store = Bio7REditorPlugin.getDefault().getPreferenceStore();
@@ -204,28 +198,30 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 		return style;
 	}
 
-	/*public void resetMultilineStringToken(RGB rgbkey2, FontData[] f2) {
-		
-		RTextAttribute texTemp2 = (RTextAttribute)single.att.getData();
-		texTemp2.putFontRegistry("colourkeyfont2",  f2);
-		Color col=new Color(Display.getDefault(),rgbkey2);
-		texTemp2.setForeground(col);
-		//single.att.setData(texTemp2);
-		
-		
-		
-	}*/
+	/*
+	 * public void resetMultilineStringToken(RGB rgbkey2, FontData[] f2) {
+	 * 
+	 * RTextAttribute texTemp2 = (RTextAttribute)single.att.getData();
+	 * texTemp2.putFontRegistry("colourkeyfont2", f2); Color col=new
+	 * Color(Display.getDefault(),rgbkey2); texTemp2.setForeground(col);
+	 * //single.att.setData(texTemp2);
+	 * 
+	 * 
+	 * 
+	 * }
+	 */
 
-	/*public void resetCommentToken(RGB rgbkey3,  FontData[] f3) {
-		
-		RTextAttribute texTemp3 = (RTextAttribute)comment.att.getData();
-		texTemp3.putFontRegistry("colourkeyfont3",  f3);
-		Color col=new Color(Display.getDefault(),rgbkey3);
-		texTemp3.setForeground(col);
-		//comment.att.setData(texTemp3);
-		
-		
-	}*/
+	/*
+	 * public void resetCommentToken(RGB rgbkey3, FontData[] f3) {
+	 * 
+	 * RTextAttribute texTemp3 = (RTextAttribute)comment.att.getData();
+	 * texTemp3.putFontRegistry("colourkeyfont3", f3); Color col=new
+	 * Color(Display.getDefault(),rgbkey3); texTemp3.setForeground(col);
+	 * //comment.att.setData(texTemp3);
+	 * 
+	 * 
+	 * }
+	 */
 
 	public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
 		ContentAssistant assistant = new ContentAssistant();
@@ -233,13 +229,13 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 
 		processor = new RCompletionProcessor(rEditor, assistant);
 		assistant.setContentAssistProcessor(processor, IDocument.DEFAULT_CONTENT_TYPE);
-		
-        processorRoxygen=new RoxygenCompletionProcessor();
-        assistant.setContentAssistProcessor(processorRoxygen,"R_COMMENT" );
-        
+
+		processorRoxygen = new RoxygenCompletionProcessor();
+		assistant.setContentAssistProcessor(processorRoxygen, "R_COMMENT");
+
 		assistant.enableAutoActivation(true);
 		assistant.setAutoActivationDelay(100);
-        assistant.enablePrefixCompletion(true);
+		assistant.enablePrefixCompletion(true);
 		assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
 		assistant.setInformationControlCreator(getInformationControlCreator(sourceViewer));
 
@@ -250,7 +246,7 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 		SpellingService spellingService = EditorsUI.getSpellingService();
 		if (spellingService.getActiveSpellingEngineDescriptor(store) == null)
 			return null;
-		RReconcilingStrategy strategy = new RReconcilingStrategy(sourceViewer,spellingService);
+		RReconcilingStrategy strategy = new RReconcilingStrategy(sourceViewer, spellingService);
 		strategy.setEditor(rEditor);
 
 		MonoReconciler reconciler = new MonoReconciler(strategy, false);
@@ -288,8 +284,8 @@ public class RConfiguration extends TextSourceViewerConfiguration {
 			public IInformationControl createInformationControl(Shell parent) {
 
 				/*
-				 * SeeRHoverInformationControl for HTML implementation! ToolBar
-				 * is added in the InformationControl!
+				 * SeeRHoverInformationControl for HTML implementation! ToolBar is added in the
+				 * InformationControl!
 				 */
 				return new RSimpleDefaultInformationControl(parent);
 			}
