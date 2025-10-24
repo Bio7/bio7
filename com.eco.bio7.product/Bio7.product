@@ -30,7 +30,7 @@ jdk/bin/java
 3
       </programArgsLin>
       <programArgsMac>-vm 
-../MacOS/jdk/Contents/Home/lib/libjli.dylib
+../Eclipse/jdk/Contents/Home/lib/libjli.dylib
       </programArgsMac>
       <programArgsWin>-vm
 jdk/bin/javaw.exe
@@ -275,6 +275,7 @@ jdk/bin/javaw.exe
       <feature id="org.eclipse.nebula.widgets.opal.propertytable.feature" installMode="root"/>
       <feature id="org.eclipse.nebula.widgets.radiogroup.feature" installMode="root"/>
       <feature id="org.eclipse.jdt.javanextpatch" installMode="root"/>
+      <feature id="com.eco.bio7.jdk" installMode="root"/>
    </features>
 
    <configurations>
