@@ -8,6 +8,7 @@ import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
@@ -24,7 +25,12 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 
 	private Menu fMenu;
 
-	public static String selection = "r";// This variable is used in the called wizard to create the different filetypes!
+	private Image imageCreateProject;
+
+	private Image imageCreateProjectFileJava;
+
+	public static String selection = "r";// This variable is used in the called wizard to create the different
+											// filetypes!
 
 	public ToolbarCreateProjectAndFiles(String text, IWorkbenchWindow window) {
 		super(text, AS_DROP_DOWN_MENU);
@@ -50,7 +56,9 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 		// Image image
 		// =PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
 
-		menuItemBio7JavaProject.setImage(Bio7Plugin.getImageDescriptor("/icons/maintoolbar/create_project_file_java.png").createImage());
+		imageCreateProjectFileJava = Bio7Plugin.getImageDescriptor("/icons/maintoolbar/create_project_file_java.png")
+				.createImage();
+		menuItemBio7JavaProject.setImage(imageCreateProjectFileJava);
 		menuItemBio7JavaProject.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
@@ -71,7 +79,7 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 		// Image image
 		// =PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
 
-		menuItemBio7WindowBuilderJavaProject.setImage(Bio7Plugin.getImageDescriptor("/icons/maintoolbar/create_project_file_java.png").createImage());
+		menuItemBio7WindowBuilderJavaProject.setImage(imageCreateProjectFileJava);
 		menuItemBio7WindowBuilderJavaProject.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
@@ -92,7 +100,7 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 		// Image image
 		// =PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
 
-		menuItemBio7OpenGLJavaProject.setImage(Bio7Plugin.getImageDescriptor("/icons/maintoolbar/create_project_file_java.png").createImage());
+		menuItemBio7OpenGLJavaProject.setImage(imageCreateProjectFileJava);
 		menuItemBio7OpenGLJavaProject.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
@@ -118,7 +126,7 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 		// Image image
 		// =PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
 
-		menuItemBio7OpenGLWorldWindProject.setImage(Bio7Plugin.getImageDescriptor("/icons/maintoolbar/create_project_file_java.png").createImage());
+		menuItemBio7OpenGLWorldWindProject.setImage(imageCreateProjectFileJava);
 		menuItemBio7OpenGLWorldWindProject.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
@@ -135,23 +143,21 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 			}
 
 		});
-		
-		
-		
+
 		MenuItem menuItemBio7ImageJPluginProject = new MenuItem(fMenu, SWT.PUSH);
 		menuItemBio7ImageJPluginProject.setText("Bio7 ImageJ Plugin Project");
 
 		// Image image
 		// =PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
 
-		menuItemBio7ImageJPluginProject.setImage(Bio7Plugin.getImageDescriptor("/icons/maintoolbar/create_project_file_java.png").createImage());
+		menuItemBio7ImageJPluginProject.setImage(imageCreateProjectFileJava);
 		menuItemBio7ImageJPluginProject.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
 				selection = "java";
 				int dialogAction = openWizard("com.eco.bio7.wizardJavaJdtBio7ImageJPlugin");
 				if (dialogAction == 0) {
-					//Work.openPerspectiveEditorInJob("com.eco.bio7.WorldWind.3dglobe");
+					// Work.openPerspectiveEditorInJob("com.eco.bio7.WorldWind.3dglobe");
 				}
 				selection = "r";
 			}
@@ -169,7 +175,8 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 		// Image image
 		// =PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
 
-		menuItemR.setImage(Bio7Plugin.getImageDescriptor("/icons/maintoolbar/create_project_file.png").createImage());
+		imageCreateProject = Bio7Plugin.getImageDescriptor("/icons/maintoolbar/create_project_file.png").createImage();
+		menuItemR.setImage(imageCreateProject);
 		menuItemR.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
@@ -189,7 +196,7 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 		// Image image
 		// =PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
 
-		menuItemRMarkdown.setImage(Bio7Plugin.getImageDescriptor("/icons/maintoolbar/create_project_file.png").createImage());
+		menuItemRMarkdown.setImage(imageCreateProject);
 		menuItemRMarkdown.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
@@ -209,7 +216,7 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 		// Image image
 		// =PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
 
-		menuItemRShiny.setImage(Bio7Plugin.getImageDescriptor("/icons/maintoolbar/create_project_file.png").createImage());
+		menuItemRShiny.setImage(imageCreateProject);
 		menuItemRShiny.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
@@ -230,7 +237,7 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 		// Image image
 		// =PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
 
-		menuItemRReprocible.setImage(Bio7Plugin.getImageDescriptor("/icons/maintoolbar/create_project_file.png").createImage());
+		menuItemRReprocible.setImage(imageCreateProject);
 		menuItemRReprocible.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
@@ -247,7 +254,7 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 		new MenuItem(fMenu, SWT.SEPARATOR);
 		MenuItem menuItemPyhon = new MenuItem(fMenu, SWT.PUSH);
 		menuItemPyhon.setText("Project with Python file");
-		menuItemPyhon.setImage(Bio7Plugin.getImageDescriptor("/icons/maintoolbar/create_project_file.png").createImage());
+		menuItemPyhon.setImage(imageCreateProject);
 
 		// Image image =
 		// PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
@@ -266,11 +273,11 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 			}
 
 		});
-		//new MenuItem(fMenu, SWT.SEPARATOR);
-		
+		// new MenuItem(fMenu, SWT.SEPARATOR);
+
 		MenuItem menuItemJyhon = new MenuItem(fMenu, SWT.PUSH);
 		menuItemJyhon.setText("Project with Jython file");
-		menuItemJyhon.setImage(Bio7Plugin.getImageDescriptor("/icons/maintoolbar/create_project_file.png").createImage());
+		menuItemJyhon.setImage(imageCreateProject);
 
 		// Image image =
 		// PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
@@ -292,7 +299,7 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 		new MenuItem(fMenu, SWT.SEPARATOR);
 		MenuItem menuItemGroovy = new MenuItem(fMenu, SWT.PUSH);
 		menuItemGroovy.setText("Project with Groovy file");
-		menuItemGroovy.setImage(Bio7Plugin.getImageDescriptor("/icons/maintoolbar/create_project_file.png").createImage());
+		menuItemGroovy.setImage(imageCreateProject);
 
 		// Image image =
 		// PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
@@ -314,7 +321,7 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 		new MenuItem(fMenu, SWT.SEPARATOR);
 		MenuItem menuItemJavaScript = new MenuItem(fMenu, SWT.PUSH);
 		menuItemJavaScript.setText("Project with JavaScript file");
-		menuItemJavaScript.setImage(Bio7Plugin.getImageDescriptor("/icons/maintoolbar/create_project_file.png").createImage());
+		menuItemJavaScript.setImage(imageCreateProject);
 
 		// Image image =
 		// PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
@@ -336,7 +343,7 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 		new MenuItem(fMenu, SWT.SEPARATOR);
 		MenuItem menuItemImageJMacroFile = new MenuItem(fMenu, SWT.PUSH);
 		menuItemImageJMacroFile.setText("Project with ImageJ Macro file");
-		menuItemImageJMacroFile.setImage(Bio7Plugin.getImageDescriptor("/icons/maintoolbar/create_project_file.png").createImage());
+		menuItemImageJMacroFile.setImage(imageCreateProject);
 
 		// Image image =
 		// PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
@@ -356,10 +363,10 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 
 		});
 		new MenuItem(fMenu, SWT.SEPARATOR);
-		
+
 		MenuItem menuItemLatexFile = new MenuItem(fMenu, SWT.PUSH);
 		menuItemLatexFile.setText("Project with Latex file");
-		menuItemLatexFile.setImage(Bio7Plugin.getImageDescriptor("/icons/maintoolbar/create_project_file.png").createImage());
+		menuItemLatexFile.setImage(imageCreateProject);
 
 		// Image image =
 		// PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
@@ -409,7 +416,15 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 
 	@Override
 	public void dispose() {
-		// TODO Auto-generated method stub
+
+		if (imageCreateProject != null && !imageCreateProject.isDisposed()) {
+			imageCreateProject.dispose();
+			imageCreateProject = null;
+		}
+		if (imageCreateProjectFileJava != null && !imageCreateProjectFileJava.isDisposed()) {
+			imageCreateProjectFileJava.dispose();
+			imageCreateProjectFileJava = null;
+		}
 
 	}
 

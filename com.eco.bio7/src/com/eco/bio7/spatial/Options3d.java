@@ -104,9 +104,13 @@ public class Options3d extends ViewPart {
 	private static Button playPauseButton;
 	private static Button fixedFpsButton;
 	private static boolean renderImageJFrames = true;
-	private static int stackSizeCount=100;
-	private static int fpsScreenCapture=30;
+	private static int stackSizeCount = 100;
+	private static int fpsScreenCapture = 30;
 	private int fixedFps;
+
+	private Image imagePlayPause;
+
+	private Image imageSetup;
 
 	public Options3d() {
 
@@ -142,25 +146,28 @@ public class Options3d extends ViewPart {
 		// expandBar.setBackground(parent.getBackground());
 
 		newItemExpandItem = new CTabItem(expandBar, SWT.NONE);
-		//newItemExpandItem.setHeight(700);
+		// newItemExpandItem.setHeight(700);
 		newItemExpandItem.setText("Space");
-		
+
 		ScrolledComposite scroll = new ScrolledComposite(expandBar, SWT.V_SCROLL);
 		final Composite composite = new Composite(scroll, SWT.BORDER);
 		newItemExpandItem.setControl(scroll);
 		composite.setLayout(new GridLayout(3, true));
-		
-		scroll.setMinSize(200,700);
-	    scroll.setContent(composite);
-	    scroll.setExpandVertical(true);
-	    scroll.setExpandHorizontal(true);
-	    scroll.setAlwaysShowScrollBars(true);
-		
-	    expandBar.setSelection(newItemExpandItem);
+
+		scroll.setMinSize(200, 700);
+		scroll.setContent(composite);
+		scroll.setExpandVertical(true);
+		scroll.setExpandHorizontal(true);
+		scroll.setAlwaysShowScrollBars(true);
+
+		expandBar.setSelection(newItemExpandItem);
 		GraphicsDevice graphicDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-		/*DisplayMode defaultMode = graphicDevice.getDisplayMode();
-		SpatialUtil.setFullscreenOptions(defaultMode.getWidth(), defaultMode.getHeight(), defaultMode.getBitDepth(),
-				defaultMode.getRefreshRate());*/
+		/*
+		 * DisplayMode defaultMode = graphicDevice.getDisplayMode();
+		 * SpatialUtil.setFullscreenOptions(defaultMode.getWidth(),
+		 * defaultMode.getHeight(), defaultMode.getBitDepth(),
+		 * defaultMode.getRefreshRate());
+		 */
 		d = graphicDevice.getDisplayModes();
 
 		new Label(composite, SWT.NONE);
@@ -548,14 +555,14 @@ public class Options3d extends ViewPart {
 		}
 
 		final CTabItem newItemExpandItem_1 = new CTabItem(expandBar, SWT.NONE);
-		//newItemExpandItem_1.setHeight(350);
+		// newItemExpandItem_1.setHeight(350);
 		newItemExpandItem_1.setText("Time");
 		ScrolledComposite scroll_2 = new ScrolledComposite(expandBar, SWT.V_SCROLL);
 		final Composite composite_2 = new Composite(scroll_2, SWT.BORDER);
 		newItemExpandItem_1.setControl(scroll_2);
 		composite_2.setLayout(new GridLayout(2, true));
-		
-		scroll_2.setMinSize(200,350);
+
+		scroll_2.setMinSize(200, 350);
 		scroll_2.setContent(composite_2);
 		scroll_2.setExpandVertical(true);
 		scroll_2.setExpandHorizontal(true);
@@ -580,7 +587,8 @@ public class Options3d extends ViewPart {
 				}
 			}
 		});
-		playPauseButton.setImage(Bio7Plugin.getImageDescriptor("/icons/maintoolbar/play_pause.png").createImage());
+		imagePlayPause = Bio7Plugin.getImageDescriptor("/icons/maintoolbar/play_pause.png").createImage();
+		playPauseButton.setImage(imagePlayPause);
 
 		final Button setupButton = new Button(composite_2, SWT.NONE);
 		GridData gd_setupButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
@@ -596,7 +604,8 @@ public class Options3d extends ViewPart {
 
 			}
 		});
-		setupButton.setImage(Bio7Plugin.getImageDescriptor("/icons/maintoolbar/setup.png").createImage());
+		imageSetup = Bio7Plugin.getImageDescriptor("/icons/maintoolbar/setup.png").createImage();
+		setupButton.setImage(imageSetup);
 		// setupButton.setText("Setup");
 		new Label(composite_2, SWT.NONE);
 		new Label(composite_2, SWT.NONE);
@@ -731,20 +740,17 @@ public class Options3d extends ViewPart {
 		setFixedFPS.setMinimum(1);
 
 		final CTabItem newItemExpandItem_2 = new CTabItem(expandBar, SWT.NONE);
-		//newItemExpandItem_2.setHeight(600);
+		// newItemExpandItem_2.setHeight(600);
 		newItemExpandItem_2.setText("Model");
 		ScrolledComposite scroll_1 = new ScrolledComposite(expandBar, SWT.V_SCROLL);
 		final Composite composite_1 = new Composite(scroll_1, SWT.BORDER);
 		newItemExpandItem_2.setControl(scroll_1);
-		composite_1.setLayout(new GridLayout(3, true));	
-		scroll_1.setMinSize(200,600);
+		composite_1.setLayout(new GridLayout(3, true));
+		scroll_1.setMinSize(200, 600);
 		scroll_1.setContent(composite_1);
 		scroll_1.setExpandVertical(true);
 		scroll_1.setExpandHorizontal(true);
 		scroll_1.setAlwaysShowScrollBars(true);
-		
-		
-		
 
 		text = new Text(composite_1, SWT.BORDER);
 		GridData gd_text = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
@@ -1072,14 +1078,14 @@ public class Options3d extends ViewPart {
 		storeButton_1.setText("Store");
 
 		final CTabItem newItemExpandItem_3 = new CTabItem(expandBar, SWT.NONE);
-		//newItemExpandItem_3.setHeight(400);
+		// newItemExpandItem_3.setHeight(400);
 		newItemExpandItem_3.setText("Texture");
-		
+
 		ScrolledComposite scroll_5 = new ScrolledComposite(expandBar, SWT.V_SCROLL);
 		final Composite composite_5 = new Composite(scroll_5, SWT.BORDER);
 		newItemExpandItem_3.setControl(scroll_5);
 		composite_5.setLayout(new GridLayout(2, true));
-		scroll_5.setMinSize(200,400);
+		scroll_5.setMinSize(200, 400);
 		scroll_5.setContent(composite_5);
 		scroll_5.setExpandVertical(true);
 		scroll_5.setExpandHorizontal(true);
@@ -1257,7 +1263,7 @@ public class Options3d extends ViewPart {
 		setButton.setText("Change");
 
 		final CTabItem newItemExpandItem_4 = new CTabItem(expandBar, SWT.NONE);
-		//newItemExpandItem_4.setHeight(300);
+		// newItemExpandItem_4.setHeight(300);
 		newItemExpandItem_4.setText("Height Map");
 
 		ScrolledComposite scroll_3 = new ScrolledComposite(expandBar, SWT.V_SCROLL);
@@ -1265,7 +1271,7 @@ public class Options3d extends ViewPart {
 		composite_3.setToolTipText("Enables the height map. Visible if a texture is active!");
 		newItemExpandItem_4.setControl(scroll_3);
 		composite_3.setLayout(new GridLayout(2, true));
-		scroll_3.setMinSize(200,300);
+		scroll_3.setMinSize(200, 300);
 		scroll_3.setContent(composite_3);
 		scroll_3.setExpandVertical(true);
 		scroll_3.setExpandHorizontal(true);
@@ -1412,13 +1418,13 @@ public class Options3d extends ViewPart {
 		factorHeightLabel.setText("Factor Height");
 
 		final CTabItem newItemExpandItem_5 = new CTabItem(expandBar, SWT.NONE);
-		//newItemExpandItem_5.setHeight(500);
+		// newItemExpandItem_5.setHeight(500);
 		newItemExpandItem_5.setText("Camera");
 		ScrolledComposite scroll_4 = new ScrolledComposite(expandBar, SWT.V_SCROLL);
 		final Composite composite_4 = new Composite(scroll_4, SWT.BORDER);
 		newItemExpandItem_5.setControl(scroll_4);
 		composite_4.setLayout(new GridLayout(3, true));
-		scroll_4.setMinSize(200,500);
+		scroll_4.setMinSize(200, 500);
 		scroll_4.setContent(composite_4);
 		scroll_4.setExpandVertical(true);
 		scroll_4.setExpandHorizontal(true);
@@ -1773,19 +1779,19 @@ public class Options3d extends ViewPart {
 		Point3d p2 = Bio7PrefConverterSpatial.getPoint(store, "splitCameraLookAt");
 
 		final CTabItem newItemExpandItem_6 = new CTabItem(expandBar, SWT.NONE);
-		//newItemExpandItem_6.setHeight(350);
+		// newItemExpandItem_6.setHeight(350);
 		newItemExpandItem_6.setText("Light");
 		ScrolledComposite scroll_6 = new ScrolledComposite(expandBar, SWT.V_SCROLL);
 		final Composite composite_6 = new Composite(scroll_6, SWT.BORDER);
 		newItemExpandItem_6.setControl(scroll_6);
 		composite_6.setLayout(new GridLayout(4, true));
 
-		scroll_6.setMinSize(200,350);
+		scroll_6.setMinSize(200, 350);
 		scroll_6.setContent(composite_6);
 		scroll_6.setExpandVertical(true);
 		scroll_6.setExpandHorizontal(true);
 		scroll_6.setAlwaysShowScrollBars(true);
-		
+
 		/* Switch for the first light! */
 
 		final Button localLightButton = new Button(composite_6, SWT.CHECK);
@@ -2151,7 +2157,7 @@ public class Options3d extends ViewPart {
 		new Label(composite_6, SWT.NONE);
 
 		final CTabItem newItemExpandItem_8 = new CTabItem(expandBar, SWT.NONE);
-		//newItemExpandItem_8.setHeight(130);
+		// newItemExpandItem_8.setHeight(130);
 		newItemExpandItem_8.setText("Image");
 		ScrolledComposite scroll_8 = new ScrolledComposite(expandBar, SWT.V_SCROLL);
 		final Composite composite_8 = new Composite(scroll_8, SWT.BORDER);
@@ -2199,7 +2205,7 @@ public class Options3d extends ViewPart {
 						renderFramesButton.setText("Rec.");
 						screen.setCount(stackSizeCount);
 						screen.setFps(fpsScreenCapture);
-						//screen.setupCaptureImages();
+						// screen.setupCaptureImages();
 						screen.setCapture(true);
 						screen.docaptureAnimationJob();
 					}
@@ -2241,8 +2247,21 @@ public class Options3d extends ViewPart {
 
 		//
 		createActions();
-		//initializeToolBar();
+		// initializeToolBar();
 		initializeMenu();
+	}
+
+	@Override
+	public void dispose() {
+		if (imagePlayPause != null && !imagePlayPause.isDisposed()) {
+			imagePlayPause.dispose();
+			imagePlayPause = null;
+		}
+		if (imageSetup != null && !imageSetup.isDisposed()) {
+			imageSetup.dispose();
+			imageSetup = null;
+		}
+		super.dispose();
 	}
 
 	/**
@@ -2255,9 +2274,10 @@ public class Options3d extends ViewPart {
 	/**
 	 * Initialize the toolbar
 	 */
-	/*private void initializeToolBar() {
-		IToolBarManager toolbarManager = getViewSite().getActionBars().getToolBarManager();
-	}*/
+	/*
+	 * private void initializeToolBar() { IToolBarManager toolbarManager =
+	 * getViewSite().getActionBars().getToolBarManager(); }
+	 */
 
 	/**
 	 * Initialize the menu
