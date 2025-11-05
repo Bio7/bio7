@@ -55,7 +55,10 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 
 		// Image image
 		// =PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
-
+		if (imageCreateProjectFileJava != null && !imageCreateProjectFileJava.isDisposed()) {
+			imageCreateProjectFileJava.dispose();
+			imageCreateProjectFileJava = null;
+		}
 		imageCreateProjectFileJava = Bio7Plugin.getImageDescriptor("/icons/maintoolbar/create_project_file_java.png")
 				.createImage();
 		menuItemBio7JavaProject.setImage(imageCreateProjectFileJava);
@@ -174,7 +177,10 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 
 		// Image image
 		// =PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
-
+		if (imageCreateProject != null && !imageCreateProject.isDisposed()) {
+			imageCreateProject.dispose();
+			imageCreateProject = null;
+		}
 		imageCreateProject = Bio7Plugin.getImageDescriptor("/icons/maintoolbar/create_project_file.png").createImage();
 		menuItemR.setImage(imageCreateProject);
 		menuItemR.addSelectionListener(new SelectionListener() {
