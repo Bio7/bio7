@@ -7,6 +7,7 @@
       <editor
             class="com.eco.bio7.editors.python.PythonEditor"
             contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            default="true"
             extensions="py"
             icon="icons/python.png"
             id="com.eco.bio7.pythoneditors.PythonEditor"
