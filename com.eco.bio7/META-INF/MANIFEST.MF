@@ -828,7 +828,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.terminal.view.ui;bundle-version="1.0.0"
 Eclipse-LazyStart: true
 Import-Package: org.eclipse.e4.ui.css.swt.theme
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-RequiredExecutionEnvironment: JavaSE-25
 Bundle-ClassPath: .,
  bin/,
  libs/activation-1.1.1.jar,

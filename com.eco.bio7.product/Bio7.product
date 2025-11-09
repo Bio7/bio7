@@ -23,6 +23,7 @@ http://bio7.org
 
    <launcherArgs>
       <programArgs>-clearPersistedState
+--launcher.appendVmargs
       </programArgs>
       <programArgsLin>-vm
 jdk/bin/java
@@ -38,6 +39,7 @@ jdk/bin/javaw.exe
       <vmArgs>-Xms2048m
 -Xmx8096m
 --add-modules=ALL-SYSTEM 
+--module-path=../Eclipse/jdk/Contents/Home/nashorn
 --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED
       </vmArgs>
       <vmArgsLin>-Dpython.console.encoding=UTF-8 
