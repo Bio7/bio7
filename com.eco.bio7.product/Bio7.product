@@ -39,18 +39,20 @@ jdk/bin/javaw.exe
       <vmArgs>-Xms2048m
 -Xmx8096m
 --add-modules=ALL-SYSTEM 
---module-path=../Eclipse/jdk/Contents/Home/nashorn
 --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED
       </vmArgs>
-      <vmArgsLin>-Dpython.console.encoding=UTF-8 
+      <vmArgsLin>--module-path=jdk/nashorn
+-Dpython.console.encoding=UTF-8 
 -Dswt.enable.themedScrollBar=true
       </vmArgsLin>
-      <vmArgsMac>-Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=true 
+      <vmArgsMac>--module-path=../Eclipse/jdk/Contents/Home/nashorn
+-Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=true 
 -Dpython.console.encoding=UTF-8 
 -Dswt.enable.themedScrollBar=true 
 -XstartOnFirstThread
       </vmArgsMac>
-      <vmArgsWin>-Dorg.eclipse.swt.browser.DefaultType=&quot;edge&quot; 
+      <vmArgsWin>--module-path=jdk/nashorn
+-Dorg.eclipse.swt.browser.DefaultType=&quot;edge&quot; 
 -Dsun.java2d.opengl=true 
 -Dpython.console.encoding=UTF-8 
 -Dswt.enable.themedScrollBar=true
