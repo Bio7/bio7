@@ -1,6 +1,7 @@
 package com.eco.bio7.javapreferences;
 
 import org.eclipse.jface.preference.FieldEditor;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
@@ -31,11 +32,12 @@ class LabelFieldEditor extends FieldEditor {
 		gridData.grabExcessVerticalSpace = false;
 
 		label.setLayoutData(gridData);
+		
 		Font font = null;
 		if ( SWT.getPlatform().equals("cocoa")) {
-			font = new Font(parent.getDisplay(), "Helvetica Neue", 15, SWT.BOLD);
+			font = JFaceResources.getFont("HEADER_FONT");
 		} else {
-			font = new Font(parent.getDisplay(), "Arial", 9, SWT.BOLD);
+			font = JFaceResources.getFont("HEADER_FONT");
 		}
 		label.setFont(font);
 	}
