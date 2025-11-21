@@ -8,7 +8,7 @@ jobs:
 
     steps:
     - name: Checkout Bio7
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Set up OpenJDK
       uses: actions/setup-java@v5
