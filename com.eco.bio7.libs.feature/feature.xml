@@ -48,4 +48,8 @@
          arch="x86_64"
          version="1.0.0.qualifier"/>
 
+   <plugin
+         id="com.eco.bio7.linux.gtk.aarch64"
+         version="1.0.0.qualifier"/>
+
 </feature>
