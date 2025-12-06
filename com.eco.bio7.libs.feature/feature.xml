@@ -50,6 +50,9 @@
 
    <plugin
          id="com.eco.bio7.linux.gtk.aarch64"
+         os="linux"
+         ws="gtk"
+         arch="aarch64"
          version="1.0.0.qualifier"/>
 
 </feature>
