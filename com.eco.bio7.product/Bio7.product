@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Bio7" uid="3.4.0" id="com.eco.bio7.product" application="com.eco.bio7.application" version="3.4.0.qualifier" type="features" includeLaunchers="true" autoIncludeRequirements="true">
+<product name="Bio7" uid="3.5.0" id="com.eco.bio7.product" application="com.eco.bio7.application" version="3.5.0.qualifier" type="features" includeLaunchers="true" autoIncludeRequirements="true">
 
    <aboutInfo>
       <image path="/com.eco.bio7/icons/bio7app/bio7_48.png"/>
@@ -278,7 +278,6 @@ jdk/bin/javaw.exe
       <feature id="org.eclipse.nebula.widgets.opal.textassist.feature" installMode="root"/>
       <feature id="org.eclipse.nebula.widgets.opal.propertytable.feature" installMode="root"/>
       <feature id="org.eclipse.nebula.widgets.radiogroup.feature" installMode="root"/>
-      <feature id="org.eclipse.jdt.javanextpatch" installMode="root"/>
       <feature id="com.eco.bio7.jdk" installMode="root"/>
    </features>
 
