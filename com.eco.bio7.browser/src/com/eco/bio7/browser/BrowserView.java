@@ -227,24 +227,24 @@ public class BrowserView extends ViewPart {
 
 						break;
 				   case 1:
-						browser.setUrl("https://imagej.nih.gov/nih-image/list.html");
-						txt.setText("https://imagej.nih.gov/nih-image/list.html");
+						browser.setUrl("https://imagej.net/nih-image/list.html");
+						txt.setText("https://imagej.net/nih-image/list.html");
 
 						break;
 					case 2:
-						browser.setUrl("https://rsb.info.nih.gov/ij/plugins/index.html");
-						txt.setText("https://rsb.info.nih.gov/ij/plugins/index.html");
+						browser.setUrl("https://imagej.net/ij/plugins/index.html");
+						txt.setText("https://imagej.net/ij/plugins/index.html");
 
 						break;
 
 					case 3:
-						browser.setUrl("https://rsb.info.nih.gov/ij/docs/index.html");
-						txt.setText("https://rsb.info.nih.gov/ij/docs/index.html");
+						browser.setUrl("https://imagej.net/ij/docs/index.html");
+						txt.setText("https://imagej.net/ij/docs/index.html");
 
 						break;
 					case 4:
-						browser.setUrl("https://rsbweb.nih.gov/ij/docs/guide/user-guide.pdf");
-						txt.setText("https://rsbweb.nih.gov/ij/docs/guide/user-guide.pdf");
+						browser.setUrl("https://imagej.net/ij/docs/guide/user-guide.pdf");
+						txt.setText("https://imagej.net/ij/docs/guide/user-guide.pdf");
 
 						break;
 

@@ -14,22 +14,18 @@ package com.eco.bio7.console;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.URI;
 import java.nio.charset.Charset;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
 import org.apache.commons.io.FileUtils;
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
@@ -46,11 +42,9 @@ import org.eclipse.swt.widgets.FontDialog;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
-import org.osgi.framework.Bundle;
 import org.rosuda.REngine.Rserve.RConnection;
 
 import com.eco.bio7.Bio7Plugin;
-import com.eco.bio7.actions.Bio7Action;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.TerminateRserve;
@@ -63,8 +57,9 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 	private Menu fMenu;
 	private ConsolePageParticipant participant;
-	private String[] encoding = { "UTF-8", "UTF-16", "CP850", "Big5", "Windows-1252", "Windows-1250", "Windows-1251", "Windows-1252", "Windows-1253", "Windows-1254", "Windows-1255", "Windows-1256",
-			"Windows-1257", "Windows-1258" };
+	private String[] encoding = { "UTF-8", "UTF-16", "CP850", "Big5", "Windows-1252", "Windows-1250", "Windows-1251",
+			"Windows-1252", "Windows-1253", "Windows-1254", "Windows-1255", "Windows-1256", "Windows-1257",
+			"Windows-1258" };
 
 	public ConsoleCustomActions(ConsolePageParticipant participant) {
 		setId("Interpreter_Console_Custom_Actions");
@@ -164,10 +159,6 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 		menuItem1.addSelectionListener(new SelectionListener() {
 
-			public void selectionChanged(SelectionChangedEvent event) {
-
-			}
-
 			public void widgetSelected(SelectionEvent e) {
 				ScriptEngineConnection.reinitializeBeanShell();
 			}
@@ -181,10 +172,6 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 		menuItem2.addSelectionListener(new SelectionListener() {
 
-			public void selectionChanged(SelectionChangedEvent event) {
-
-			}
-
 			public void widgetSelected(SelectionEvent e) {
 				ScriptEngineConnection.reinitializeGroovy();
 			}
@@ -197,10 +184,6 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 		menuItem3.setText("Reinitialize Jython");
 
 		menuItem3.addSelectionListener(new SelectionListener() {
-
-			public void selectionChanged(SelectionChangedEvent event) {
-
-			}
 
 			public void widgetSelected(SelectionEvent e) {
 				ScriptEngineConnection.reinitializeJython();
@@ -216,10 +199,6 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 		menuItem31.addSelectionListener(new SelectionListener() {
 
-			public void selectionChanged(SelectionChangedEvent event) {
-
-			}
-
 			public void widgetSelected(SelectionEvent e) {
 				ScriptEngineConnection.reinitializeJavaScript();
 			}
@@ -234,10 +213,6 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 		menuItem4.setText("Stop Native Process (R, Python, Shell)");
 
 		menuItem4.addSelectionListener(new SelectionListener() {
-
-			public void selectionChanged(SelectionChangedEvent event) {
-
-			}
 
 			public void widgetSelected(SelectionEvent e) {
 
@@ -304,14 +279,12 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 		menuItem5.addSelectionListener(new SelectionListener() {
 
-			public void selectionChanged(SelectionChangedEvent event) {
-
-			}
-
 			public void widgetSelected(SelectionEvent e) {
 
-				boolean destroy = Bio7Dialog.decision("Should all running Rterm (Windows) or R (Linux, Mac) processes be destroyed?\n"
-						+ "If you you confirm all Rterm, R processes on the OS will be terminated!\n" + "Use only if no other Rterm, R instances are running!");
+				boolean destroy = Bio7Dialog
+						.decision("Should all running Rterm (Windows) or R (Linux, Mac) processes be destroyed?\n"
+								+ "If you you confirm all Rterm, R processes on the OS will be terminated!\n"
+								+ "Use only if no other Rterm, R instances are running!");
 
 				if (destroy) {
 
@@ -362,7 +335,7 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 			}
 		});
-		//new MenuItem(fMenu, SWT.SEPARATOR);
+		// new MenuItem(fMenu, SWT.SEPARATOR);
 		/*
 		 * MenuItem installRserveMenuItem = new MenuItem(fMenu, SWT.CASCADE);
 		 * installRserveMenuItem.setText("Install Rserve for MacOSX or Linux");
@@ -484,7 +457,8 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 						IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 
-						InputDialog dlg = new InputDialog(Util.getShell(), "", "Enter Encoding", store.getString("Console_Encoding"), null);
+						InputDialog dlg = new InputDialog(Util.getShell(), "", "Enter Encoding",
+								store.getString("Console_Encoding"), null);
 						if (dlg.open() == Window.OK) {
 							// User clicked OK; update the label with the input
 
@@ -539,7 +513,7 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 				fd.setText("Select Font");
 				fd.setRGB(new RGB(0, 0, 0));
 				if (defaultFont != null) {
-					fd.setFontData(defaultFont);
+					fd.setFontList(new FontData[] { defaultFont });
 				}
 				FontData newFont = fd.open();
 				if (newFont == null)
@@ -553,22 +527,6 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 			}
 		});
-
-		/*
-		 * menuItem5.addSelectionListener(new SelectionListener() {
-		 * 
-		 * public void selectionChanged(SelectionChangedEvent event) {
-		 * 
-		 * }
-		 * 
-		 * public void widgetSelected(SelectionEvent e) {
-		 * 
-		 * }
-		 * 
-		 * public void widgetDefaultSelected(SelectionEvent e) {
-		 * 
-		 * } });
-		 */
 
 		return fMenu;
 	}
@@ -593,7 +551,9 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 				System.out.println("Download file from: https://raw.github.com/Bio7/Rserve_Cooperative/master");
 				System.out.println("Download file to: " + outputPath);
 				try {
-					FileUtils.copyURLToFile(new URL("https://raw.github.com/Bio7/Rserve_Cooperative/master/Rserve_Mac_cooperative.tgz"), new File(outputPath));
+					FileUtils.copyURLToFile(URI
+							.create("https://raw.github.com/Bio7/Rserve_Cooperative/master/Rserve_Mac_cooperative.tgz")
+							.toURL(), new File(outputPath));
 				} catch (MalformedURLException e2) {
 
 					e2.printStackTrace();
@@ -607,7 +567,9 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 				System.out.println("Download file from: https://raw.github.com/Bio7/Rserve_Cooperative/master");
 				System.out.println("Download file to: " + outputPath);
 				try {
-					FileUtils.copyURLToFile(new URL("https://raw.github.com/Bio7/Rserve_Cooperative/master/Rserve_Linux_cooperative.tar.gz"), new File(outputPath));
+					FileUtils.copyURLToFile(URI.create(
+							"https://raw.github.com/Bio7/Rserve_Cooperative/master/Rserve_Linux_cooperative.tar.gz")
+							.toURL(), new File(outputPath));
 				} catch (MalformedURLException e2) {
 
 					e2.printStackTrace();
@@ -622,11 +584,12 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 				return;
 
 			}
-			
+
 			System.out.println("Download succesful! Installation of package started!");
 			String path = outputPath;// file.getAbsolutePath();
 
-			String install = "install.packages(\"" + path + "\",dependencies=TRUE,INSTALL_opts = c('--no-lock'),repos=NULL)";
+			String install = "install.packages(\"" + path
+					+ "\",dependencies=TRUE,INSTALL_opts = c('--no-lock'),repos=NULL)";
 
 			ConsolePageParticipant.pipeInputToConsole(install, true, true);
 			System.out.println(install);
@@ -646,7 +609,9 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 				System.out.println("Download file from: https://bio7.github.io/rserve/");
 				System.out.println("Download file to: " + outputPath);
 				try {
-					FileUtils.copyURLToFile(new URL("https://bio7.github.io/rserve/Rserve_Mac_cooperative.tgz"), new File(outputPath));
+					FileUtils.copyURLToFile(
+							URI.create("https://bio7.github.io/rserve/Rserve_Mac_cooperative.tgz").toURL(),
+							new File(outputPath));
 				} catch (MalformedURLException e2) {
 
 					e2.printStackTrace();
@@ -660,7 +625,9 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 				System.out.println("Download file from: https://bio7.github.io/rserve/");
 				System.out.println("Download file to: " + outputPath);
 				try {
-					FileUtils.copyURLToFile(new URL("https://bio7.github.io/rserve/Rserve_Linux_cooperative.tar.gz"), new File(outputPath));
+					FileUtils.copyURLToFile(
+							URI.create("https://bio7.github.io/rserve/Rserve_Linux_cooperative.tar.gz").toURL(),
+							new File(outputPath));
 				} catch (MalformedURLException e2) {
 
 					e2.printStackTrace();
@@ -675,11 +642,12 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 				return;
 
 			}
-			
+
 			System.out.println("Download succesful! Installation of package started!");
 			String path = outputPath;// file.getAbsolutePath();
 
-			String install = "install.packages(\"" + path + "\",dependencies=TRUE,INSTALL_opts = c('--no-lock'),repos=NULL)";
+			String install = "install.packages(\"" + path
+					+ "\",dependencies=TRUE,INSTALL_opts = c('--no-lock'),repos=NULL)";
 
 			ConsolePageParticipant.pipeInputToConsole(install, true, true);
 			System.out.println(install);
@@ -687,7 +655,8 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 			Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
 		}
 	}
-   /*Install Rserve for Linux compiled with SSL 1.1 (e.g., since Ubuntu 19.04)!*/
+
+	/* Install Rserve for Linux compiled with SSL 1.1 (e.g., since Ubuntu 19.04)! */
 	public static void installRServeLinuxSSL11() {
 		String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 		if (selectionConsole.equals("R")) {
@@ -699,7 +668,9 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 				System.out.println("Download file from: https://bio7.github.io/rserve/");
 				System.out.println("Download file to: " + outputPath);
 				try {
-					FileUtils.copyURLToFile(new URL("https://bio7.github.io/rserve/Rserve_Linux_cooperative_ssl.tar.gz"), new File(outputPath));
+					FileUtils.copyURLToFile(
+							URI.create("https://bio7.github.io/rserve/Rserve_Linux_cooperative_ssl.tar.gz").toURL(),
+							new File(outputPath));
 				} catch (MalformedURLException e2) {
 
 					e2.printStackTrace();
@@ -714,11 +685,12 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 				return;
 
 			}
-			
+
 			System.out.println("Download succesful! Installation of package started!");
 			String path = outputPath;// file.getAbsolutePath();
 
-			String install = "install.packages(\"" + path + "\",dependencies=TRUE,INSTALL_opts = c('--no-lock'),repos=NULL)";
+			String install = "install.packages(\"" + path
+					+ "\",dependencies=TRUE,INSTALL_opts = c('--no-lock'),repos=NULL)";
 
 			ConsolePageParticipant.pipeInputToConsole(install, true, true);
 			System.out.println(install);
