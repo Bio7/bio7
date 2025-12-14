@@ -55,7 +55,7 @@ public class Interpret extends Action {
 
 			Quad2d quad2dInstance = Quad2d.getQuad2dInstance();
 			if (quad2dInstance != null) {
-				quad2dInstance.repaint();
+				quad2dInstance.redraw();
 			}
 		} else if (file.getFileExtension().equals("groovy")) {
 

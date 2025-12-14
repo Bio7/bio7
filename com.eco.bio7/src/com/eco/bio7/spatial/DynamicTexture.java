@@ -33,10 +33,11 @@ public class DynamicTexture {
 
 	public void render(int w, int h, Graphics2D g2) {
 		if (imagejEnabled == false) {
-			if (Quad2d.getQuad2dInstance() != null) {
-
-				Quad2d.getQuad2dInstance().malen(g2);
-			}
+			/*
+			 * if (Quad2d.getQuad2dInstance() != null) {
+			 * 
+			 * Quad2d.getQuad2dInstance().malen(g2); }
+			 */
 		} else {
 			if (WindowManager.getImageCount() > 0) {
 

@@ -78,9 +78,7 @@ public class Spreadview extends ViewPart {
 		createActions();
 		initializeToolBar();
 		/* Create the instance of the discrete grid! */
-		if (Quad2d.getQuad2dInstance() == null) {
-			new Quad2d();
-		}
+		
 		new StateTable(parent);
 
 	}

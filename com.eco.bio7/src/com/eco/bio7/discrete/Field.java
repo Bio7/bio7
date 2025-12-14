@@ -207,7 +207,15 @@ public class Field {
 	 * Repaints the discrete quad and if available the discrete hexagon panel.
 	 */
 	public static void doPaint() {
-		Quad2d.getQuad2dInstance().repaint();
+		
+		Quad2d quad2dInstance = Quad2d.getQuad2dInstance();
+		if (quad2dInstance != null) {
+			Display.getDefault().syncExec(() -> {
+				quad2dInstance.fullRedrawAll();
+				
+			});
+			
+		}
 		Hexagon hex = Hexagon.getHexagonInstance();
 		if (hex != null) {
 			hex.repaint();
@@ -222,7 +230,7 @@ public class Field {
 	 * @return the rectangle array of the discrete quad field.
 	 * 
 	 */
-	public static Rectangle[][] getQuads() {
+	public static org.eclipse.swt.graphics.Rectangle[][] getQuads() {
 
 		return Quad2d.getQuad2dInstance().quad;
 

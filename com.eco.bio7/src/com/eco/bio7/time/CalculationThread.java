@@ -25,7 +25,7 @@ import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.compile.Model;
 import com.eco.bio7.discrete.Hexagon;
 import com.eco.bio7.discrete.Quad2d;
-import com.eco.bio7.image.PointPanel;
+//import com.eco.bio7.image.PointPanel;
 import com.eco.bio7.info.InfoView;
 import com.eco.bio7.methods.Compiled;
 import com.eco.bio7.rcp.ApplicationActionBarAdvisor;
@@ -70,32 +70,33 @@ public class CalculationThread extends Thread {
 
 						e2.printStackTrace();
 					}
+					if (store.getBoolean("REPAINT_QUAD")) {
+
+						Quad2d quad = Quad2d.getQuad2dInstance();
+						if (quad != null) {
+							if (quad.quadviewopenend == true) {
+								if (quad.activeRendering == false) {
+
+									//quad.fieldrenderer();
+									quad.fullRedrawAll();
+								}
+
+								else {
+									//Graphics g = quad.getGraphics();
+									//quad.malen(g);
+
+								}
+							}
+
+						}
+					}
 
 					try {
 						SwingUtilities.invokeAndWait(new Runnable() {
 							// !!
 							public void run() {
 
-								if (store.getBoolean("REPAINT_QUAD")) {
-
-									Quad2d quad = Quad2d.getQuad2dInstance();
-									if (quad != null) {
-										if (quad.quadviewopenend == true) {
-											if (quad.activeRendering == false) {
-
-												quad.fieldrenderer();
-												quad.repaint();
-											}
-
-											else {
-												Graphics g = quad.getGraphics();
-												quad.malen(g);
-
-											}
-										}
-
-									}
-								}
+								
 								if (store.getBoolean("REPAINT_HEX")) {
 									Hexagon h = Hexagon.getHexagonInstance();
 									if (h != null) {
@@ -113,9 +114,9 @@ public class CalculationThread extends Thread {
 										}
 									}
 								}
-								if (store.getBoolean("REPAINT_POINTS")) {
-									PointPanel.doPaint();
-								}
+								/*
+								 * if (store.getBoolean("REPAINT_POINTS")) { PointPanel.doPaint(); }
+								 */
 
 							}
 						});

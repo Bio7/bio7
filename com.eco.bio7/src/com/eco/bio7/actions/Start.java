@@ -152,43 +152,17 @@ public class Start extends Action implements IMenuCreator {
 	}
 
 	private void stopconditionsquad() {
-		this.quad2d = Quad2d.getQuad2dInstance();
-		if (quad2d != null) {
-			quad2d.jScrollPane.getVerticalScrollBar().setEnabled(true);
-			quad2d.jScrollPane.getHorizontalScrollBar().setEnabled(true);
-			SwingUtilities.invokeLater(new Runnable() {// notwendig
-				// !!
-				public void run() {
-					quad2d.jScrollPane.getViewport().setViewPosition(storepointquad);
-				}
-			});
-			quad2d.setCursor(new Cursor(0));
-		}
+		
 
 	}
 
 	private void startconditionsquad() {
-		this.quad2d = Quad2d.getQuad2dInstance();
-		if (quad2d != null) {
-			quad2d.offscreenimage = null;
-
-			storepointquad = quad2d.jScrollPane.getViewport().getViewPosition();
-			SwingUtilities.invokeLater(new Runnable() {// notwendig
-				// !!
-				public void run() {
-					quad2d.jScrollPane.getViewport().setViewPosition(new Point(0, 0));
-				}
-			});
-			quad2d.jScrollPane.getVerticalScrollBar().setEnabled(false);
-			quad2d.jScrollPane.getHorizontalScrollBar().setEnabled(false);
-
-			setcursor_quad();
-		}
+		
 	}
 
 	private void setcursor_quad() {
 		//Cursor c = quad2d.getToolkit().createCustomCursor(new ImageIcon(file.getPath()).getImage(), new Point(5, 5), "Cursor");
-		quad2d.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		//quad2d.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 	}
 
 	private void stopconditionshex() {

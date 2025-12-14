@@ -1,4 +1,4 @@
-package com.eco.bio7.image;
+/*package com.eco.bio7.image;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -11,11 +11,11 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.triangulate.DelaunayTriangulationBuilder;
 import org.locationtech.jts.triangulate.VoronoiDiagramBuilder;
 
-/**
+*//**
  * 
  * @author Sun Ning/SNDA
  * @since 2010-3-3
- */
+ *//*
 public class DelaunayAndVoronoiApp {
 
 	private static boolean intersection = false;
@@ -28,11 +28,11 @@ public class DelaunayAndVoronoiApp {
 		DelaunayAndVoronoiApp.intersection = intersection;
 	}
 
-	/**
+	*//**
 	 * create some predefined sites
 	 * 
 	 * @return
-	 */
+	 *//*
 	public static Collection<Coordinate> getPredefinedSites() {
 		// double[][] coords = {{100,27},{28, 50},{29, 40},{32, 90}, {12, 26}};
 		Point2D.Double[] ps = PointPanel.getPoints();
@@ -45,22 +45,22 @@ public class DelaunayAndVoronoiApp {
 		return coordinates;
 	}
 
-	/**
+	*//**
 	 * 
 	 * @param coords
 	 * @return a geometry collection of triangulations
-	 */
+	 *//*
 	public static Geometry buildDelaunayTriangulation(Collection<Coordinate> coords) {
 		DelaunayTriangulationBuilder builder = new DelaunayTriangulationBuilder();
 		builder.setSites(coords);
 		return builder.getTriangles(new GeometryFactory());
 	}
 
-	/**
+	*//**
 	 * 
 	 * @param coords
 	 * @return a collection of polygons
-	 */
+	 *//*
 	public static Geometry buildVoronoiDiagram(Collection<Coordinate> coords) {
 		VoronoiDiagramBuilder builder = new VoronoiDiagramBuilder();
 
@@ -76,14 +76,14 @@ public class DelaunayAndVoronoiApp {
 
 		GeometryFactory factory = new GeometryFactory();
 
-		/*
+		
 		 * WKTReader reader = new WKTReader( geometryFactory );
 		 * 
 		 * Polygon polygon = null; try { polygon = (Polygon)
 		 * reader.read("POLYGON((0 0, 1000 1000, 0 0, 1000 1000))"); } catch
 		 * (ParseException e) { // TODO Auto-generated catch block
 		 * e.printStackTrace(); }
-		 */
+		 
 
 		LinearRing ring = factory.createLinearRing(coordinates);
 		Polygon polygon = factory.createPolygon(ring, null);
@@ -95,5 +95,5 @@ public class DelaunayAndVoronoiApp {
 			return builder.getDiagram(new GeometryFactory());
 		}
 	}
-
 }
+*/

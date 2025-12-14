@@ -9,6 +9,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.IWorkbench;
@@ -19,7 +20,7 @@ import com.eco.bio7.discrete.Field;
 import com.eco.bio7.discrete.Hexagon;
 import com.eco.bio7.discrete.MidpointGui;
 import com.eco.bio7.discrete.Quad2d;
-import com.eco.bio7.image.PointPanel;
+//import com.eco.bio7.image.PointPanel;
 import com.eco.bio7.methods.CurrentStates;
 import com.eco.bio7.plot.LineChartView;
 
@@ -43,38 +44,23 @@ public class Random extends Action implements IMenuCreator {
 
 	public void run() {
 
-		IWorkbench wb = PlatformUI.getWorkbench();
-		IProgressService ps = wb.getProgressService();
-		try {
-			ps.busyCursorWhile(new IRunnableWithProgress() {
-				public void run(IProgressMonitor pm) {
+		Field.chance();
+		Quad2d quad2dInstance = Quad2d.getQuad2dInstance();
+		if (quad2dInstance != null) {
+			quad2dInstance.fullRedrawAll();
 
-					Field.chance();
-					Quad2d quad2dInstance = Quad2d.getQuad2dInstance();
-					if (quad2dInstance != null) {
-						Quad2d.getQuad2dInstance().repaint();
-					}
-					Hexagon hexagonInstance = Hexagon.getHexagonInstance();
-					if (hexagonInstance != null) {
-						hexagonInstance.repaint();
-					}
-					if (LineChartView.linechart != null) {
-						LineChartView.linechart.deleteDataset();
-						LineChartView.linechart.createDataset();
-						LineChartView.linechart.renderer();
-					}
-
-					PointPanel.doPaint();
-
-				}
-			});
-		} catch (InvocationTargetException e) {
-
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-
-			e.printStackTrace();
 		}
+		Hexagon hexagonInstance = Hexagon.getHexagonInstance();
+		if (hexagonInstance != null) {
+			hexagonInstance.repaint();
+		}
+		if (LineChartView.linechart != null) {
+			LineChartView.linechart.deleteDataset();
+			LineChartView.linechart.createDataset();
+			LineChartView.linechart.renderer();
+		}
+
+		//PointPanel.doPaint();
 
 	}
 
@@ -102,14 +88,18 @@ public class Random extends Action implements IMenuCreator {
 						Field.setState(u, i, (int) (Math.random() * (CurrentStates.getStateList().size())));
 						Field.setTempState(u, i, (int) (Math.random() * (CurrentStates.getStateList().size())));
 
-						/*Field.setPlant(u, i, null);
-						Field.setTempPlant(u, i, null);*/
+						/*
+						 * Field.setPlant(u, i, null); Field.setTempPlant(u, i, null);
+						 */
 					}
 				}
 				Quad2d quad2dInstance = Quad2d.getQuad2dInstance();
 				if (quad2dInstance != null) {
+					Display.getDefault().asyncExec(() -> {
+						quad2dInstance.redrawCanvas();
 
-					quad2dInstance.repaint();
+					});
+
 				}
 
 				Hexagon hexagonInstance = Hexagon.getHexagonInstance();

@@ -23,7 +23,7 @@ public class EnableSelection extends Action {
 
 	public void run() {
 
-		Quad2d.getQuad2dInstance().setCursor(new Cursor(1));
+		//Quad2d.getQuad2dInstance().setCursor(new Cursor(1));
 		Quad2d.getQuad2dInstance().selectionenabled = true;
 		Quad2d.getQuad2dInstance().donotdrag = true;
 

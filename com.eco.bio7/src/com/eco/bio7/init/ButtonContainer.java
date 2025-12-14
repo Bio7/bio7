@@ -26,7 +26,7 @@ import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.discrete.Hexagon;
 import com.eco.bio7.discrete.StateButtonView;
 import com.eco.bio7.discrete.Quad2d;
-import com.eco.bio7.image.PointPanel;
+//import com.eco.bio7.image.PointPanel;
 import com.eco.bio7.methods.CurrentStates;
 import com.eco.bio7.plot.LineChartView;
 import com.eco.bio7.plot.PieChartView;
@@ -124,14 +124,15 @@ public class ButtonContainer {
 								}
 								LineChartView.linechart.renderer();
 								/* Change the colour of the linechart! */
-								quad.repaint();
+								quad.ensureColorAndPixelCache(); // or call a public wrapper if method not accessible
+								quad.fullRedrawAll();
 
 								if (hex != null) {
 									hex.repaint();
 								}
 								PieChartView.getPiechart().plotter();
 								/* Change the colour of the piechart! */
-								PointPanel.setPlantIndexPanel(stateSel);
+								//PointPanel.setPlantIndexPanel(stateSel);
 								/*
 								 * Set the selected plant for spatial analysis !
 								 */

@@ -11,31 +11,26 @@
 
 package com.eco.bio7.discrete;
 
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.PaletteData;
+import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 
@@ -44,32 +39,39 @@ import com.eco.bio7.methods.CurrentStates;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.time.Time;
 
-/*This class is instantiated in the Spreadview class!*/
-public class Quad2d extends JPanel implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener {
+/*
+ * Faster Quad2d that makes resizing (zoom) very fast by:
+ * - Maintaining a small "cell image" (smallImage) where each pixel == one cell.
+ * - On paint, scaling smallImage to the desired zoom (quad size) via GC.drawImage.
+ * - For incremental updates (click/drag), we only update the smallImage pixel(s) and recreate smallImage (cheap because it's small),
+ *   then redraw the scaled region. No per-cell fillRect loops for the full-sized image.
+ *
+ * This approach drastically speeds up resizing because we don't rebuild a huge image with many pixels.
+ */
+
+public class Quad2d extends org.eclipse.swt.widgets.Composite implements KeyListener {
 
 	private static final long serialVersionUID = 1L;
 
+	/* Quad dimensions (in pixels) */
 	public int rwidth = Field.getQuadSize();
-
 	public int rheight = Field.getQuadSize();
-
 	public int rx = 0;
-
 	public int ry = 0;
-
 	private int quaddist = 0;
 
+	/* drawing area size in pixels */
 	public int zeichenflaechex = (Field.getHeight() * Field.getQuadSize());
-
 	public int zeichenflaechey = (Field.getWidth() * Field.getQuadSize());
 
-	public static Rectangle[][] quad = new Rectangle[Field.getHeight()][Field.getWidth()];
+	/* grid rectangles - using SWT Rectangle */
+	public Rectangle[][] quad = new Rectangle[Field.getHeight()][Field.getWidth()];
 
-	public JScrollPane jScrollPane = null;
+	/* Scrolling */
+	private ScrolledComposite scrolledComposite;
+	public Canvas canvas;
 
-	private static int value = 0;// The active value of the selected State when
-	// dragging etc.
-	public Graphics g = null;
+	private static int value = 0; // The active value of the selected State when dragging etc.
 
 	public int RGB[] = new int[3];
 
@@ -78,7 +80,6 @@ public class Quad2d extends JPanel implements KeyListener, MouseListener, MouseM
 	public boolean dragclick = false;
 
 	public int exz;
-
 	public int eyz;
 
 	public boolean resized = false;
@@ -87,10 +88,6 @@ public class Quad2d extends JPanel implements KeyListener, MouseListener, MouseM
 
 	private static Quad2d quad2d_instance;
 
-	public Graphics gbuff;
-
-	public Image offscreenimage = null;
-
 	public boolean selectionenabled = false;
 
 	public boolean donotdrag = false;
@@ -98,144 +95,460 @@ public class Quad2d extends JPanel implements KeyListener, MouseListener, MouseM
 	public boolean activeRendering = false;
 
 	private int rectanglex;
-
 	private int rectangley;
 
-	private boolean popup_trigger = false;// For Linux !
+	private boolean popup_trigger = false; // Linux check
 
 	private IPreferenceStore store;
 
-	JScrollPane getJScrollPane() {
-		if (jScrollPane == null) {
-			jScrollPane = new JScrollPane();
-			jScrollPane.setComponentOrientation(java.awt.ComponentOrientation.UNKNOWN);
-			jScrollPane.setWheelScrollingEnabled(true);
-			if (store.getBoolean("QUAD_PANEL_SCROLLBAR") == false) {
-				jScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-				jScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-			}
+	/* Small image (one pixel per cell) and its ImageData */
+	private ImageData smallImageData = null;
+	private Image smallImage = null;
+	private PaletteData palette = new PaletteData(0xFF0000, 0xFF00, 0xFF);
+	private int[] palettePixel = null; // cached palette pixel value per state
+	private int lastStateCount = 0;
 
+	/* Batched update flags (coalescing many cell updates) */
+	private boolean updateScheduled = false;
+	private int dirtyCellX1 = Integer.MAX_VALUE, dirtyCellY1 = Integer.MAX_VALUE, dirtyCellX2 = Integer.MIN_VALUE,
+			dirtyCellY2 = Integer.MIN_VALUE;
+	private org.eclipse.swt.graphics.Color[] swtColors = null;
+	
+
+	public Quad2d(org.eclipse.swt.widgets.Composite parent, int style) {
+		super(parent, style);
+		quad2d_instance = this;
+		store = Bio7Plugin.getDefault().getPreferenceStore();
+		createScrolledComposite();
+		drawQuad();
+		ensurePixelCache();
+		createSmallImageFromField(); // initial small image (one pixel per cell)
+		Field.chance();
+
+		setPreferredSize(zeichenflaechey, zeichenflaechex);
+
+		for (int i = 0; i < CurrentStates.getR().size(); i++) {
+			zaehlerlist.add(new CounterModel());
 		}
-		return jScrollPane;
+
+		// Paint listener
+		canvas.addListener(SWT.Paint, evt -> {
+			GC gc = evt.gc;
+			paintCanvas(gc, evt.getBounds());
+		});
+
+		// Mouse events (SWT Event objects)
+		// canvas.addListener(SWT.MouseDown, evt -> mousePressedSWT(evt));
+		canvas.addListener(SWT.MouseUp, evt -> mouseReleasedSWT(evt));
+		canvas.addListener(SWT.MouseMove, evt -> {
+			if ((evt.stateMask & SWT.BUTTON1) != 0) {
+				mouseDraggedSWT(evt);
+			}
+		});
+		canvas.addListener(SWT.MouseWheel, evt -> {
+			if (Time.isPause()) {
+				groesser(evt.count);
+			}
+		});
+
+		// Key handling
+		canvas.addKeyListener(new org.eclipse.swt.events.KeyAdapter() {
+			@Override
+			public void keyPressed(org.eclipse.swt.events.KeyEvent e) {
+				// KeyEvent ke = new KeyEvent(null);
+				keyPressed(e);
+			}
+		});
+
+		// Dispose listener to free resources
+		this.addDisposeListener(new DisposeListener() {
+			@Override
+			public void widgetDisposed(DisposeEvent e) {
+				disposeResources();
+			}
+		});
+	}
+
+	private void createScrolledComposite() {
+		scrolledComposite = new ScrolledComposite(this, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
+		scrolledComposite.setExpandHorizontal(true);
+		scrolledComposite.setExpandVertical(true);
+		canvas = new Canvas(scrolledComposite, SWT.TRANSPARENT | SWT.DOUBLE_BUFFERED);
+		scrolledComposite.setContent(canvas);
+		scrolledComposite.setMinSize(zeichenflaechey, zeichenflaechex);
+
+		// layout the scrolledComposite to fill this Composite
+		scrolledComposite.setBounds(0, 0, Math.max(1, this.getSize().x), Math.max(1, this.getSize().y));
+		this.addListener(SWT.Resize, e -> {
+			org.eclipse.swt.graphics.Point s = Quad2d.this.getSize();
+			scrolledComposite.setBounds(0, 0, Math.max(1, s.x), Math.max(1, s.y));
+		});
+	}
+
+	public ScrolledComposite getScrolledComposite() {
+		return scrolledComposite;
 	}
 
 	public void createzaehler() {
-		zaehlerlist.clear();// Deletes all Objects in the ArrayList !
+		zaehlerlist.clear();
 		for (int i = 0; i < CurrentStates.getR().size(); i++) {
-
-			zaehlerlist.add(new CounterModel());// New count Objects !
+			zaehlerlist.add(new CounterModel());
 		}
-
 	}
 
-	/* Count the different states ! */
 	public void feldzaehler() {
 		reset();
 		for (int i = 0; i < Field.getHeight(); i++) {
 			for (int u = 0; u < Field.getWidth(); u++) {
-				if (Field.getState(u, i) < CurrentStates.getStateList().size() && CurrentStates.getStateList().size() > 0) {
-					/* Get the self defined class ! */
+				if (Field.getState(u, i) < CurrentStates.getStateList().size()
+						&& CurrentStates.getStateList().size() > 0) {
 					CounterModel zahl = (CounterModel) zaehlerlist.get(Field.getState(u, i));
 					zahl.setZahl();
-
 				}
-
 			}
-
 		}
-
 		for (int i = 0; i < CurrentStates.getStateList().size(); i++) {
-
 			CounterModel zahl = (CounterModel) zaehlerlist.get(i);
-
-			zahl.addCountList(zahl.getCount()); // Copy the counts into the List
-			// !
+			zahl.addCountList(zahl.getCount());
 		}
-
 	}
 
 	public void reset() {
-		/* This is called after one iteration. Sets the counter to zero ! */
 		for (int i = 0; i < zaehlerlist.size(); i++) {
-
 			CounterModel zahl = (CounterModel) zaehlerlist.get(i);
 			zahl.reset();
-
 		}
 	}
 
-	public Quad2d() {
+	/*
+	 * ------------------ Small image (one pixel per cell) logic ------------------
+	 */
 
-		super();
-		quad2d_instance = this;
-		store = Bio7Plugin.getDefault().getPreferenceStore();
-		drawQuad();
-		getJScrollPane();
-		/* We use the random function to assign objects at startup ! */
-		Field.chance();
-		setPreferredSize(new Dimension(zeichenflaechey, zeichenflaechex));
-		jScrollPane.setViewportView(this);
-		jScrollPane.setFocusable(true);
-		addMouseWheelListener(this);
-		addMouseListener(this);
-		addMouseMotionListener(this);
-		setFocusable(true);
-		addKeyListener(this);
-
-		for (int i = 0; i < CurrentStates.getR().size(); i++) {
-			zaehlerlist.add(new CounterModel());// initialize new Counter
-
+	/**
+	 * Create or update palettePixel[] mapping state -> pixel and mark for
+	 * recreation.
+	 */
+	private void ensurePixelCache() {
+		int stateCount = Math.max(0, CurrentStates.getStateList().size());
+		if (palettePixel == null || stateCount != lastStateCount) {
+			palettePixel = null;
+			if (stateCount > 0) {
+				palettePixel = new int[stateCount];
+				for (int i = 0; i < stateCount; i++) {
+					int[] rgb = CurrentStates.getRGB(i);
+					int r = Math.max(0, Math.min(255, rgb[0]));
+					int g = Math.max(0, Math.min(255, rgb[1]));
+					int b = Math.max(0, Math.min(255, rgb[2]));
+					palettePixel[i] = palette.getPixel(new RGB(r, g, b));
+				}
+			}
+			lastStateCount = stateCount;
 		}
-
 	}
 
-	public void malen(Graphics g) {
+	/**
+	 * Build smallImageData (width = number of columns, height = number of rows) and
+	 * create smallImage (Image) from it. Each pixel in smallImage represents one
+	 * cell.
+	 */
+	private void createSmallImageFromField() {
+		Display d = Display.getCurrent();
+		if (d == null) {
+			d = Display.getDefault();
+		}
+		ensurePixelCache();
 
-		if (g != null) {
+		int cols = Math.max(1, Field.getWidth());
+		int rows = Math.max(1, Field.getHeight());
 
-			if (dragclick == false) {
-				for (int i = 0; i < Field.getHeight(); i++) {
+		smallImageData = new ImageData(cols, rows, 24, palette);
 
-					for (int u = 0; u < Field.getWidth(); u++) {
+		// background pixel
+		
+		int bgPixel = palette.getPixel(new RGB(canvas.getBackground().getRed(), canvas.getBackground().getGreen(),
+				canvas.getBackground().getBlue()));
 
-						if ((Field.getHeight() == Field.getStateArray().length) && (Field.getWidth() == Field.getStateArray()[0].length)) {
+		// fill with background
+		for (int y = 0; y < rows; y++) {
+			for (int x = 0; x < cols; x++) {
+				smallImageData.setPixel(x, y, bgPixel);
+			}
+		}
 
-							if (Field.getState(u, i) < CurrentStates.getStateList().size() && CurrentStates.getStateList().size() > 0) {
-								RGB = CurrentStates.getRGB(Field.getState(u, i));
-								g.setColor(new Color(RGB[0], RGB[1], RGB[2]));
-								if (i < quad.length && u < quad[0].length) {
-									g.fillRect(((int) quad[i][u].getX()), ((int) quad[i][u].getY()), ((int) quad[i][u].getWidth()), ((int) quad[i][u].getHeight()));
-								}
-							}
+		// set pixels per cell state
+		if (palettePixel != null) {
+			for (int row = 0; row < rows; row++) {
+				for (int col = 0; col < cols; col++) {
+					int state = Field.getState(col, row);
+					int px = (state >= 0 && state < palettePixel.length) ? palettePixel[state] : bgPixel;
+					smallImageData.setPixel(col, row, px);
+				}
+			}
+		}
 
-						}
+		// create SWT Image (small) from data
+		disposeSmallImage();
+		try {
+			smallImage = new Image(d, smallImageData);
+		} catch (IllegalArgumentException iae) {
+			// fallback: ignore, smallImage remains null and will be recreated later
+			smallImage = null;
+		}
+	}
+
+	private void disposeSmallImage() {
+		if (smallImage != null && !smallImage.isDisposed()) {
+			try {
+				smallImage.dispose();
+			} catch (Exception ex) {
+				// ignore
+			}
+			smallImage = null;
+		}
+	}
+	
+	
+
+	// call this to (re)build the SWT Color and palette pixel caches from CurrentStates
+	public void ensureColorAndPixelCache() {
+	    // must run on UI thread
+	    Display d = Display.getCurrent();
+	    if (d == null) {
+	        d = Display.getDefault();
+	    }
+
+	    int stateCount =CurrentStates.getStateList().size();
+	    
+
+	    // dispose old colors
+	    disposeColorCache();
+
+	    if (stateCount > 0) {
+	        swtColors = new org.eclipse.swt.graphics.Color[stateCount];
+	        palettePixel = new int[stateCount];
+	        for (int i = 0; i < stateCount; i++) {
+	            int[] rgb = CurrentStates.getRGB(i); // assume returns int[3]
+	            int r = Math.max(0, Math.min(255, rgb[0]));
+	            int g = Math.max(0, Math.min(255, rgb[1]));
+	            int b = Math.max(0, Math.min(255, rgb[2]));
+	            swtColors[i] = new org.eclipse.swt.graphics.Color(d, r, g, b);
+	            palettePixel[i] = palette.getPixel(new org.eclipse.swt.graphics.RGB(r, g, b));
+	        }
+	    } else {
+	        swtColors = null;
+	        palettePixel = null;
+	    }
+	    lastStateCount = stateCount;
+	}
+
+	// dispose cached SWT Color objects
+	private void disposeColorCache() {
+	    if (swtColors != null) {
+	        for (org.eclipse.swt.graphics.Color c : swtColors) {
+	            if (c != null && !c.isDisposed()) {
+	                try { c.dispose(); } catch (Exception ex) { /* ignore */ }
+	            }
+	        }
+	        swtColors = null;
+	    }
+	    palettePixel = null;
+	    lastStateCount = 0;
+	}
+
+	/* ------------------ Painting (draw scaled smallImage) ------------------ */
+
+	/**
+	 * Paint handler draws the scaled smallImage to the canvas. Only the
+	 * visible/clip area is drawn by computing a corresponding source rectangle in
+	 * cell coordinates.
+	 */
+	private void paintCanvas(GC gc, Rectangle clip) {
+		if (smallImage == null || smallImage.isDisposed()) {
+			createSmallImageFromField();
+		}
+		if (smallImage == null || smallImage.isDisposed()) {
+			// fallback: nothing to draw
+			return;
+		}
+
+		int cols = smallImageData.width;
+		int rows = smallImageData.height;
+		int cellSize = Field.getQuadSize();
+		int destW = cols * cellSize;
+		int destH = rows * cellSize;
+
+		// if clip bounds are bigger than image, clamp
+		int clipX = Math.max(0, clip.x);
+		int clipY = Math.max(0, clip.y);
+		int clipW = Math.min(clip.width, Math.max(0, destW - clipX));
+		int clipH = Math.min(clip.height, Math.max(0, destH - clipY));
+		if (clipW <= 0 || clipH <= 0) {
+			return;
+		}
+
+		// Convert clip in destination pixels to source (cell) coords.
+		// Add one extra cell margin to avoid pixel gaps due to integer division.
+		int srcX = clipX / cellSize;
+		int srcY = clipY / cellSize;
+		int srcW = (clipW + cellSize - 1) / cellSize + 1;
+		int srcH = (clipH + cellSize - 1) / cellSize + 1;
+
+		// Clamp source rectangle
+		if (srcX < 0)
+			srcX = 0;
+		if (srcY < 0)
+			srcY = 0;
+		if (srcX + srcW > cols)
+			srcW = cols - srcX;
+		if (srcY + srcH > rows)
+			srcH = rows - srcY;
+		if (srcW <= 0 || srcH <= 0) {
+			return;
+		}
+
+		// Destination rectangle corresponding to the source rectangle
+		int dstX = srcX * cellSize;
+		int dstY = srcY * cellSize;
+		int dstW = srcW * cellSize;
+		int dstH = srcH * cellSize;
+		try {
+			gc.setAntialias(SWT.OFF); // optional, disables antialiasing
+		} catch (NoSuchMethodError ignore) {
+		}
+		// set interpolation to none (nearest-neighbor)
+		gc.setInterpolation(SWT.NONE);
+		// Finally draw the required portion of the small image scaled up.
+		try {
+			gc.drawImage(smallImage, srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH);
+		} catch (IllegalArgumentException iae) {
+			// Fallback: draw full scaled image if the partial draw fails
+			gc.drawImage(smallImage, 0, 0, cols, rows, 0, 0, destW, destH);
+		}
+	}
+
+	/*
+	 * ------------------ Incremental updates (update smallImage pixel and recreate
+	 * smallImage) ------------------
+	 */
+
+	/**
+	 * Update one cell in the smallImageData and schedule a batched recreation of
+	 * smallImage + redraw. This is cheap because smallImage dimensions == number of
+	 * cells.
+	 */
+	private void updateCellInSmallImage(final int cellX, final int cellY) {
+		if (cellX < 0 || cellY < 0 || cellY >= quad.length || cellX >= quad[0].length) {
+			return;
+		}
+
+		ensurePixelCache();
+
+		Display d = Display.getCurrent();
+		if (d == null) {
+			d = Display.getDefault();
+		}
+		final Display disp = d;
+
+		Runnable writeAndSchedule = () -> {
+			if (smallImageData == null) {
+				createSmallImageFromField();
+				if (!canvas.isDisposed())
+					canvas.redraw();
+				return;
+			}
+
+			int cols = smallImageData.width;
+			int rows = smallImageData.height;
+			if (cellX >= cols || cellY >= rows)
+				return;
+
+			int state = Field.getState(cellX, cellY);
+			int pixel = (palettePixel != null && state >= 0 && state < palettePixel.length) ? palettePixel[state]
+					: palette.getPixel(new RGB(canvas.getBackground().getRed(), canvas.getBackground().getGreen(),
+							canvas.getBackground().getBlue()));
+
+			smallImageData.setPixel(cellX, cellY, pixel);
+
+			// mark dirty cell extents
+			dirtyCellX1 = Math.min(dirtyCellX1, cellX);
+			dirtyCellY1 = Math.min(dirtyCellY1, cellY);
+			dirtyCellX2 = Math.max(dirtyCellX2, cellX + 1);
+			dirtyCellY2 = Math.max(dirtyCellY2, cellY + 1);
+
+			// schedule recreation and redraw (coalesced)
+			if (!updateScheduled) {
+				updateScheduled = true;
+				disp.asyncExec(() -> {
+					updateScheduled = false;
+					// recreate smallImage from smallImageData
+					disposeSmallImage();
+					try {
+						smallImage = new Image(disp, smallImageData);
+					} catch (IllegalArgumentException iae) {
+						// ignore — will try again later
+						smallImage = null;
 					}
-				}
+					// compute redraw rectangle in destination (scaled) coords
+					if (!canvas.isDisposed()) {
+						int cellSize = Field.getQuadSize();
+						int dx = (dirtyCellX1 == Integer.MAX_VALUE) ? 0 : dirtyCellX1 * cellSize;
+						int dy = (dirtyCellY1 == Integer.MAX_VALUE) ? 0 : dirtyCellY1 * cellSize;
+						int dw = ((dirtyCellX2 == Integer.MIN_VALUE) ? canvas.getBounds().width
+								: (dirtyCellX2 - dirtyCellX1) * cellSize);
+						int dh = ((dirtyCellY2 == Integer.MIN_VALUE) ? canvas.getBounds().height
+								: (dirtyCellY2 - dirtyCellY1) * cellSize);
+						if (dw <= 0)
+							dw = 1;
+						if (dh <= 0)
+							dh = 1;
+						canvas.redraw(dx, dy, dw, dh, true);
+					}
+					// reset dirty extents
+					dirtyCellX1 = Integer.MAX_VALUE;
+					dirtyCellY1 = Integer.MAX_VALUE;
+					dirtyCellX2 = Integer.MIN_VALUE;
+					dirtyCellY2 = Integer.MIN_VALUE;
+				});
 			}
+		};
 
-			else {// if dragged
-
-				if (Field.getState(exz, eyz) < CurrentStates.getStateList().size() && CurrentStates.getStateList().size() > 0) {
-					RGB = CurrentStates.getRGB(Field.getState(exz, eyz));
-					g.setColor(new Color(RGB[0], RGB[1], RGB[2]));
-
-					g.fillRect(((int) quad[eyz][exz].getX()), ((int) quad[eyz][exz].getY()), ((int) quad[eyz][exz].getWidth()), ((int) quad[eyz][exz].getHeight()));
-
-				}
-
-			}
+		if (disp.getThread() == Thread.currentThread()) {
+			writeAndSchedule.run();
+		} else {
+			disp.syncExec(writeAndSchedule);
 		}
-
 	}
+
+	/**
+	 * Recreate the entire smallImage from current field (use when many cells
+	 * change).
+	 */
+	public void fullRedrawAll() {
+		Display d = Display.getCurrent();
+		if (d == null) {
+			d = Display.getDefault();
+		}
+		final Display disp = d;
+		Runnable r = () -> {
+			createSmallImageFromField();
+			if (!canvas.isDisposed()) {
+				canvas.redraw();
+			}
+		};
+		if (disp.getThread() == Thread.currentThread()) {
+			r.run();
+		} else {
+			disp.asyncExec(r);
+		}
+	}
+
+	/* ------------------ Original logic adapted ------------------ */
 
 	public void drawQuad() {
-
+		rx = 0;
+		ry = 0;
 		for (int u = 0; u < Field.getHeight(); u++) {
-
-			for (int v = 0; v < Field.getWidth(); v++)
-
-			{
-
+			for (int v = 0; v < Field.getWidth(); v++) {
 				quad[u][v] = new Rectangle(rx, ry, rwidth, rheight);
 				rx = rx + rwidth + quaddist;
 			}
@@ -243,99 +556,72 @@ public class Quad2d extends JPanel implements KeyListener, MouseListener, MouseM
 			ry = ry + rheight + quaddist;
 		}
 		ry = 0;
-
+		if (scrolledComposite != null) {
+			scrolledComposite.setMinSize(zeichenflaechey, zeichenflaechex);
+		}
+		// Recreate the small image to match the (possibly) new grid size
+		createSmallImageFromField();
 	}
 
-	public void groesser(MouseWheelEvent e) {
-		double r = e.getPreciseWheelRotation();
+	public void groesser(int wheelRotation) {
 		Time.setPause(true);
-		int rotation = e.getWheelRotation();
-		int amount = e.getScrollAmount();
-		if (amount < 1)
-			amount = 1;
-		if (rotation == 0)
-			return;
-		if (rotation >= 1) {
+		if (wheelRotation >= 1) {
 			Field.setQuadSize(Field.getQuadSize() + 1);
 		} else {
 			if (Field.getQuadSize() > 1) {
 				Field.setQuadSize(Field.getQuadSize() - 1);
 			}
-
 		}
-		/*if (r >= 1) {
-			Field.setQuadSize(Field.getQuadSize() + 1);
-		} else {
-			if (Field.getQuadSize() > 1) {
-				Field.setQuadSize(Field.getQuadSize() - 1);
-			}
-		}*/
-
-		// Field.setQuadSize(Field.getQuadSize());
 		rwidth = Field.getQuadSize();
 		rheight = Field.getQuadSize();
-		drawQuad();
 		zeichenflaechex = ((Field.getHeight() * Field.getQuadSize()));
 		zeichenflaechey = ((Field.getWidth() * Field.getQuadSize()));
-
-		setPreferredSize(new Dimension(zeichenflaechey, zeichenflaechex));
-		SwingUtilities.invokeLater(new Runnable() {
-			// !!
-			public void run() {
-				jScrollPane.setViewportView(quad2d_instance);
-			}
-		});
-
+		drawQuad();
+		setPreferredSize(zeichenflaechey, zeichenflaechex);
+		// No heavy per-pixel rebuild needed here — smallImage will be scaled at paint
+		// time.
+		if (!canvas.isDisposed()) {
+			canvas.redraw();
+		}
 	}
 
 	public void quadResize(int size) {
-
 		Field.setQuadSize(size);
 		Time.setPause(true);
-		Field.setQuadSize(Field.getQuadSize());
 		rwidth = Field.getQuadSize();
 		rheight = Field.getQuadSize();
-		drawQuad();
 		zeichenflaechex = ((Field.getHeight() * Field.getQuadSize()));
 		zeichenflaechey = ((Field.getWidth() * Field.getQuadSize()));
-
-		setPreferredSize(new Dimension(zeichenflaechey, zeichenflaechex));
-		SwingUtilities.invokeLater(new Runnable() {
-			// !!
-			public void run() {
-				jScrollPane.setViewportView(quad2d_instance);
-			}
-		});
-
+		drawQuad();
+		setPreferredSize(zeichenflaechey, zeichenflaechex);
+		if (!canvas.isDisposed()) {
+			canvas.redraw();
+		}
 	}
 
-	private void Panel1MousePressed(java.awt.event.MouseEvent evt) {
-
-		mousepressed(evt, 1, 1);
+	private void Panel1MousePressed(org.eclipse.swt.widgets.Event evt) {
+		// org.eclipse.swt.events.MouseEvent me = new
+		// org.eclipse.swt.events.MouseEvent(evt);
+		mousepressedSWT(evt);
 	}
 
 	/* This method is for Image J ! */
 	public void setquads(double x, double y) {
-
 		exz = (int) (x / Field.getQuadSize());
 		eyz = (int) (y / Field.getQuadSize());
 		if (exz <= Field.getWidth() && eyz <= Field.getHeight()) {
-
 			Field.setState(exz, eyz, getValue());
 			Field.setTempState(exz, eyz, getValue());
-
-			repaint();
-
+			updateCellInSmallImage(exz, eyz); // update the one-pixel representation
 		}
-
 	}
 
-	public void mousepressed(java.awt.event.MouseEvent evt, double transformx, double transformy) {
-		int ex = 0;
-		int ey = 0;
+	/* SWT-style mouse handlers */
 
-		ex = (int) (evt.getX() / transformx);
-		ey = (int) (evt.getY() / transformx);
+	private void mousepressedSWT(org.eclipse.swt.widgets.Event evt) {
+		org.eclipse.swt.events.MouseEvent e = new org.eclipse.swt.events.MouseEvent(evt);
+		int ex = e.x;
+		int ey = e.y;
 
 		exz = ex / Field.getQuadSize();
 		eyz = ey / Field.getQuadSize();
@@ -343,203 +629,93 @@ public class Quad2d extends JPanel implements KeyListener, MouseListener, MouseM
 
 			if (selectionenabled) {
 
-				if (quad[eyz][exz].contains(ex, ey)) {
+				if (rectContains(quad[eyz][exz], ex, ey)) {
 
 					Display display = PlatformUI.getWorkbench().getDisplay();
 					display.syncExec(new Runnable() {
 
 						public void run() {
-							Quadview.getQuadview().setstatusline("Current " + Field.getState(exz, eyz) + " Temp: " + Field.getTempState(exz, eyz));
+							Quadview.getQuadview().setstatusline(
+									"Current " + Field.getState(exz, eyz) + " Temp: " + Field.getTempState(exz, eyz));
 						}
 					});
 
-					// }
-
 				}
 
 			} else {
 
-				if (quad[eyz][exz].contains(ex, ey) && evt.getButton() != 3) {
+				if (rectContains(quad[eyz][exz], ex, ey) && e.button != 3) {
 
 					Field.setState(exz, eyz, getValue());
 					Field.setTempState(exz, eyz, getValue());
-					repaint();
+					updateCellInSmallImage(exz, eyz);
 
 				}
 
 			}
 		}
-
 	}
 
-	public void paintComponent(Graphics g) {
-		super.paintComponent(g);
-		if (Time.isPause() == false) {
-
-			if (!activeRendering) {
-
-				if (rectanglex < jScrollPane.getVisibleRect().width || rectangley < jScrollPane.getVisibleRect().height) {
-					offscreenimage = null;
-					fieldrenderer();
-
-				}
-
-				else {
-
-					g.drawImage(offscreenimage, jScrollPane.getVisibleRect().x, jScrollPane.getVisibleRect().y, this);
-				}
-			} else {
-				malen(g);
-			}
-		} else {
-			malen(g);
-		}
-
+	private boolean rectContains(Rectangle r, int x, int y) {
+		if (r == null)
+			return false;
+		return (x >= r.x && x < (r.x + r.width) && y >= r.y && y < (r.y + r.height));
 	}
 
-	public void fieldrenderer() {
-
-		if (offscreenimage == null) {
-			int width = jScrollPane.getVisibleRect().width;
-			int height = jScrollPane.getVisibleRect().height;
-			if (width > 0 && height > 0) {
-				offscreenimage = jScrollPane.createImage(width, height);
-			} else {
-				offscreenimage = jScrollPane.createImage(1, 1);
-			}
-
-			gbuff = offscreenimage.getGraphics();
-
-		}
-		gbuff.setColor(this.getBackground());
-		gbuff.fillRect(0, 0, jScrollPane.getVisibleRect().width, jScrollPane.getVisibleRect().height);
-		rectanglex = jScrollPane.getVisibleRect().width;
-		rectangley = jScrollPane.getVisibleRect().height;
-
-		malen(gbuff);
-		repaint();// recursive paint !
-
-	}
-
-	/**
-	 * @return Returns the pause.
-	 */
-
-	public static boolean isPause() {
-		return Time.isPause();
-	}
-
-	/**
-	 * @param pause The pause to set.
-	 */
-	public static void setPause(boolean pause) {
-		Time.setPause(pause);
-	}
-
-	public void keyTyped(KeyEvent e) {
-
-	}
-
-	public void keyPressed(KeyEvent e) {
-		int r = Field.getQuadSize();
-		if (e.getKeyCode() == 521) {
-
-			r = Field.getQuadSize() + 1;
-		} else if (e.getKeyCode() == 45) {
-			if (Field.getQuadSize() - 1 > 0) {
-				r = Field.getQuadSize() - 1;
-			}
-		}
-
-		Time.setPause(true);
-
-		;
-		Field.setQuadSize(r);
-		rwidth = Field.getQuadSize();
-		rheight = Field.getQuadSize();
-		drawQuad();
-		zeichenflaechex = ((Field.getHeight() * Field.getQuadSize()));
-		zeichenflaechey = ((Field.getWidth() * Field.getQuadSize()));
-
-		setPreferredSize(new Dimension(zeichenflaechey, zeichenflaechex));
-
-		SwingUtilities.invokeLater(new Runnable() {
-			// !!
-			public void run() {
-				jScrollPane.setViewportView(quad2d_instance);
-			}
-		});
-	}
-
-	public void keyReleased(KeyEvent e) {
-
-	}
-
-	public void mouseReleased(final MouseEvent e) {
+	private void mouseReleasedSWT(org.eclipse.swt.widgets.Event event) {
+		org.eclipse.swt.events.MouseEvent e = new org.eclipse.swt.events.MouseEvent(event);
 		if (Time.isPause()) {
 
-			if (e.isPopupTrigger() || popup_trigger == true && selectionenabled == false) {
+			boolean isPopup = (e.button == 3) || popup_trigger;
+			if (isPopup && selectionenabled == false) {
 
-				JPopupMenu menu = new JPopupMenu();
-				final JMenuItem it1 = new JMenuItem();
+				Menu menu = new Menu(canvas);
+				final MenuItem it1 = new MenuItem(menu, SWT.PUSH);
 				it1.setText("Active Rendering on/off");
 
-				it1.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						activeRendering = !activeRendering;
+				it1.addListener(SWT.Selection, ev -> {
+					activeRendering = !activeRendering;
 
-						Display dis = Quadview.getQuadview().getTop().getDisplay();
-						dis.syncExec(new Runnable() {
-							public void run() {
+					Display dis = Quadview.getQuadview().getTop().getDisplay();
+					dis.syncExec(new Runnable() {
+						public void run() {
 
-								MessageBox messageBox = new MessageBox(new Shell(),
-
-										SWT.ICON_WARNING);
-								if (activeRendering) {
-									messageBox.setMessage("Switched rendering mode to active rendering !");
-								} else {
-									messageBox.setMessage("Switched rendering mode to default rendering !");
-								}
-								messageBox.open();
+							MessageBox messageBox = new MessageBox(new Shell(), SWT.ICON_WARNING);
+							if (activeRendering) {
+								messageBox.setMessage("Switched rendering mode to active rendering !");
+							} else {
+								messageBox.setMessage("Switched rendering mode to default rendering !");
 							}
-						});
+							messageBox.open();
+						}
+					});
 
-					}
 				});
-				menu.add(it1);
-				menu.addSeparator();
-				final JMenuItem it2 = new JMenuItem();
+				new MenuItem(menu, SWT.SEPARATOR);
+				final MenuItem it2 = new MenuItem(menu, SWT.PUSH);
 				it2.setText("Random");
 
-				it2.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-
-						Field.chance();
-						repaint();
-					}
+				it2.addListener(SWT.Selection, ev -> {
+					Field.chance();
+					fullRedrawAll(); // rebuild the small image and redraw
 				});
-				menu.add(it2);
-				menu.addSeparator();
-				final JMenuItem it3 = new JMenuItem();
+				new MenuItem(menu, SWT.SEPARATOR);
+				final MenuItem it3 = new MenuItem(menu, SWT.PUSH);
 				it3.setText("Select State");
 
-				it3.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-
-						setCursor(new Cursor(1));
-						selectionenabled = true;
-						donotdrag = true;
-					}
+				it3.addListener(SWT.Selection, ev -> {
+					canvas.setCursor(Display.getCurrent().getSystemCursor(SWT.CURSOR_CROSS));
+					selectionenabled = true;
+					donotdrag = true;
 				});
-				menu.add(it3);
 
-				Point pt = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), this);
-
-				menu.show(this, pt.x, pt.y);
+				org.eclipse.swt.graphics.Point pt = new org.eclipse.swt.graphics.Point(e.x, e.y);
+				menu.setLocation(canvas.toDisplay(pt));
+				menu.setVisible(true);
 
 			} else {
 
-				setCursor(new Cursor(0));
+				canvas.setCursor(Display.getCurrent().getSystemCursor(SWT.CURSOR_ARROW));
 				donotdrag = false;
 
 			}
@@ -548,29 +724,30 @@ public class Quad2d extends JPanel implements KeyListener, MouseListener, MouseM
 		popup_trigger = false;
 	}
 
-	public void mouseDragged(MouseEvent e) {
+	private void mouseDraggedSWT(org.eclipse.swt.widgets.Event event) {
+		org.eclipse.swt.events.MouseEvent e = new org.eclipse.swt.events.MouseEvent(event);
 		if (Time.isPause()) {
 			if (selectionenabled == false && donotdrag == false) {
-				mousedrag(e);
+				mousedragSWT(e);
 			}
 		}
 	}
 
-	public void mousedrag(MouseEvent e) {
-		if (SwingUtilities.isRightMouseButton(e) == false) {
-			int x = e.getX();
-			int y = e.getY();
+	private void mousedragSWT(org.eclipse.swt.events.MouseEvent e) {
+		if (e.button != 3) {
+			int x = e.x;
+			int y = e.y;
 			exz = x / Field.getQuadSize();
 			eyz = y / Field.getQuadSize();
 
 			if ((exz >= 0 && exz < Field.getWidth()) && (eyz >= 0 && eyz < Field.getHeight())) {// dragging
 
-				if (quad[eyz][exz].contains(x, y)) {
+				if (rectContains(quad[eyz][exz], x, y)) {
 
 					Field.setState(exz, eyz, getValue());
 					Field.setTempState(exz, eyz, getValue());
 
-					repaint(quad[eyz][exz]);
+					updateCellInSmallImage(exz, eyz);
 
 				}
 
@@ -579,67 +756,87 @@ public class Quad2d extends JPanel implements KeyListener, MouseListener, MouseM
 	}
 
 	public void resize_scrollpane_quad2d() {
-		int zeichenflaechex = ((Field.getHeight() * Field.getQuadSize()));
-		int zeichenflaechey = ((Field.getWidth() * Field.getQuadSize()));
-		setPreferredSize(new Dimension(zeichenflaechey, zeichenflaechex));
-		SwingUtilities.invokeLater(new Runnable() {
-			// !!
-			public void run() {
-				jScrollPane.setViewportView(quad2d_instance);
-			}
-		});
-	}
-
-	public void mouseWheelMoved(MouseWheelEvent e) {
-
-		if (Time.isPause()) {
-			groesser(e);
+		zeichenflaechex = ((Field.getHeight() * Field.getQuadSize()));
+		zeichenflaechey = ((Field.getWidth() * Field.getQuadSize()));
+		setPreferredSize(zeichenflaechey, zeichenflaechex);
+		// smallImage scales instantly at paint time; no expensive rebuild here
+		if (!canvas.isDisposed()) {
+			canvas.redraw();
 		}
 	}
 
-	public void mouseMoved(MouseEvent evt) {
-
-		/*
-		 * if (this.isFocusOwner() == false) { this.requestFocus(); }
-		 */
-
+	public void mouseMoved(org.eclipse.swt.events.MouseEvent evt) {
+		// no-op
 	}
 
-	public void mouseClicked(MouseEvent e) {
-
-		if (this.isFocusOwner() == false) {
-			this.requestFocus();
-
+	public void mouseClicked(org.eclipse.swt.events.MouseEvent e) {
+		if (!canvas.isFocusControl()) {
+			canvas.setFocus();
 		}
-
 	}
 
-	public void mousePressed(MouseEvent e) {
-		if (this.isFocusOwner() == false) {
-			this.requestFocus();
-
+	public void mousePressed(org.eclipse.swt.events.MouseEvent e) {
+		if (!canvas.isFocusControl()) {
+			canvas.setFocus();
 		}
 		if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
-			if (e.isPopupTrigger()) {
-				popup_trigger = true;// A check for Linux !
+			if (e.button == 3) {
+				popup_trigger = true;
 			}
 		}
 
 		if (Time.isPause()) {
 
-			Panel1MousePressed(e);
+			Panel1MousePressed(new org.eclipse.swt.widgets.Event());
 			selectionenabled = false;
 		}
-
 	}
 
-	public void mouseEntered(MouseEvent evt) {
-
+	public void mouseEntered(org.eclipse.swt.events.MouseEvent evt) {
+		// no-op
 	}
 
-	public void mouseExited(MouseEvent e) {
-
+	public void mouseExited(org.eclipse.swt.events.MouseEvent e) {
+		// no-op
 	}
+
+	/* KeyListener implementation */
+	@Override
+	public void keyPressed(KeyEvent e) {
+		int r = Field.getQuadSize();
+		// plus/minus handling via character
+		if (e.character == '+' || e.keyCode == SWT.KEYPAD_ADD) {
+			r = Field.getQuadSize() + 1;
+		} else if (e.character == '-' || e.keyCode == SWT.KEYPAD_SUBTRACT) {
+			if (Field.getQuadSize() - 1 > 0) {
+				r = Field.getQuadSize() - 1;
+			}
+		}
+		Time.setPause(true);
+		Field.setQuadSize(r);
+		rwidth = Field.getQuadSize();
+		rheight = Field.getQuadSize();
+		zeichenflaechex = ((Field.getHeight() * Field.getQuadSize()));
+		zeichenflaechey = ((Field.getWidth() * Field.getQuadSize()));
+		drawQuad();
+		setPreferredSize(zeichenflaechey, zeichenflaechex);
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		// no-op
+	}
+
+	/* ------------------ Utilities and cleanup ------------------ */
+
+	private void disposeResources() {
+		disposeSmallImage();
+		smallImageData = null;
+		palettePixel = null;
+		lastStateCount = 0;
+	}
+
+	/* Public helpers */
 
 	public static Quad2d getQuad2dInstance() {
 		return quad2d_instance;
@@ -653,4 +850,37 @@ public class Quad2d extends JPanel implements KeyListener, MouseListener, MouseM
 		return value;
 	}
 
+	/* Helper to set preferred size of the scrolled content */
+	public void setPreferredSize(int width, int height) {
+		this.zeichenflaechey = width;
+		this.zeichenflaechex = height;
+		if (scrolledComposite != null) {
+			scrolledComposite.setMinSize(width, height);
+		}
+		if (canvas != null) {
+			canvas.setSize(width, height);
+		}
+	}
+
+	/* redraw the whole canvas */
+	public void redrawCanvas() {
+
+		Display.getDefault().syncExec(() -> {
+			canvas.redraw();
+
+		});
+
+	}
+
+	/* redraw a single cell (requests redraw of the scaled region) */
+	private void redrawCell(int cellX, int cellY) {
+		if (cellX < 0 || cellY < 0 || cellY >= quad.length || cellX >= quad[0].length)
+			return;
+		Rectangle r = quad[cellY][cellX];
+		if (r != null && canvas != null && !canvas.isDisposed()) {
+			canvas.redraw(r.x, r.y, r.width, r.height, true);
+		} else {
+			redrawCanvas();
+		}
+	}
 }

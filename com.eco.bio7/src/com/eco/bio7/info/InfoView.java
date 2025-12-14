@@ -171,13 +171,14 @@ public class InfoView extends ViewPart {
 				sc2 = scale_2.getSelection();
 
 				if (resizable) {
+					ResizeArray.update(sc1, sc2);
+
+					Quad2d.getQuad2dInstance().fullRedrawAll();
 					try {
 						SwingUtilities.invokeAndWait(new Runnable() {
 							// !!
 							public void run() {
-								ResizeArray.update(sc1, sc2);
 
-								Quad2d.getQuad2dInstance().repaint();
 								// repaint_soilpanel();
 
 								if (Hexagon.getHexagonInstance() != null) {
@@ -221,13 +222,13 @@ public class InfoView extends ViewPart {
 				sc1 = scale_1.getSelection();
 				sc2 = scale_2.getSelection();
 				if (resizable) {
+					ResizeArray.update(sc1, sc2);
+
+					Quad2d.getQuad2dInstance().fullRedrawAll();
 					try {
 						SwingUtilities.invokeAndWait(new Runnable() {
 							// !!
 							public void run() {
-								ResizeArray.update(sc1, sc2);
-
-								Quad2d.getQuad2dInstance().repaint();
 
 								if (Hexagon.getHexagonInstance() != null) {
 									Hexagon.getHexagonInstance().repaint();
@@ -284,14 +285,15 @@ public class InfoView extends ViewPart {
 			public void widgetSelected(SelectionEvent e) {
 				sc1 = scale_1.getSelection();
 				sc2 = scale_2.getSelection();
+				ResizeArray.update(sc1, sc2);
+
+				Quad2d.getQuad2dInstance().fullRedrawAll();
 
 				try {
 					SwingUtilities.invokeAndWait(new Runnable() {
 						// !!
 						public void run() {
-							ResizeArray.update(sc1, sc2);
 
-							Quad2d.getQuad2dInstance().repaint();
 							// repaint_soilpanel();
 
 							if (Hexagon.getHexagonInstance() != null) {

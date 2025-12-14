@@ -188,7 +188,7 @@ public class LoadWorkspaceJob extends WorkspaceJob {
 	}
 
 	private void repaintFields() {
-		Quad2d.getQuad2dInstance().repaint();
+		Quad2d.getQuad2dInstance().redraw();
 		Hexagon hex = Hexagon.getHexagonInstance();
 		if (hex != null) {
 

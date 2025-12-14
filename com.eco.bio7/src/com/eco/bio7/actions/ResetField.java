@@ -6,13 +6,14 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.IWorkbenchWindow;
 import com.eco.bio7.discrete.Field;
 import com.eco.bio7.discrete.Hexagon;
 import com.eco.bio7.discrete.Quad2d;
-import com.eco.bio7.image.PointPanel;
+//import com.eco.bio7.image.PointPanel;
 
 public class ResetField extends Action implements IMenuCreator {
 
@@ -35,24 +36,31 @@ public class ResetField extends Action implements IMenuCreator {
 
 		for (int i = 0; i < Field.getHeight(); i++) {
 			for (int u = 0; u < Field.getWidth(); u++) {
+
 				Field.setState(u, i, 0);
 				Field.setTempState(u, i, 0);
-				/*Field.setTempPlant(u,i,Field.getSoil(u, i));// 
-				Field.setPlant(u,i,Field.getSoil(u, i));// set
-				*/
-				Quad2d quad2dInstance = Quad2d.getQuad2dInstance();
-				if (quad2dInstance != null) {
-					Quad2d.getQuad2dInstance().repaint();
-				}
-				Hexagon hexagonInstance = Hexagon.getHexagonInstance();
-				if (hexagonInstance != null) {
-					hexagonInstance.repaint();
-				}
+				/*
+				 * Field.setTempPlant(u,i,Field.getSoil(u, i));//
+				 * Field.setPlant(u,i,Field.getSoil(u, i));// set
+				 */
+
+				/*
+				 * Hexagon hexagonInstance = Hexagon.getHexagonInstance(); if (hexagonInstance
+				 * != null) { hexagonInstance.repaint(); }
+				 */
 
 			}
 		}
+		Display.getDefault().asyncExec(() -> {
+			Quad2d quad2dInstance = Quad2d.getQuad2dInstance();
+			if (quad2dInstance != null) {
+				quad2dInstance.fullRedrawAll();
 
-		PointPanel.doPaint();
+			}
+
+		});
+
+		//PointPanel.doPaint();
 
 	}
 
@@ -75,7 +83,7 @@ public class ResetField extends Action implements IMenuCreator {
 						Field.setTempState(u, i, 0);
 						Quad2d quad2dInstance = Quad2d.getQuad2dInstance();
 						if (quad2dInstance != null) {
-							Quad2d.getQuad2dInstance().repaint();
+							Quad2d.getQuad2dInstance().redraw();
 						}
 						if (Hexagon.getHexagonInstance() != null) {
 							Hexagon.getHexagonInstance().repaint();

@@ -1,9 +1,20 @@
 package com.eco.bio7.image.r;
 
 import java.awt.Polygon;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.Point2D;
-import javax.swing.SwingUtilities;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
+import org.rosuda.REngine.REngineException;
+import org.rosuda.REngine.Rserve.RConnection;
+import org.rosuda.REngine.Rserve.RserveException;
+
+import com.eco.bio7.batch.Bio7Dialog;
+//import com.eco.bio7.image.PointPanel;
+//import com.eco.bio7.image.PointPanelImageMethodsView;
+//import com.eco.bio7.image.PointPanelView;
+import com.eco.bio7.rbridge.RServe;
+
 import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
@@ -12,22 +23,6 @@ import ij.measure.ResultsTable;
 import ij.plugin.filter.Analyzer;
 import ij.process.ImageProcessor;
 import ij.text.TextWindow;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.PlatformUI;
-import org.rosuda.REngine.REngineException;
-import org.rosuda.REngine.Rserve.RConnection;
-import org.rosuda.REngine.Rserve.RserveException;
-import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.discrete.Field;
-import com.eco.bio7.discrete.Quad2d;
-import com.eco.bio7.image.ImageMethods;
-import com.eco.bio7.image.PointPanel;
-import com.eco.bio7.image.PointPanelImageMethodsView;
-import com.eco.bio7.image.PointPanelView;
-import com.eco.bio7.rbridge.RServe;
 
 /**
  * @author M. Austenfeld A class to transfer the results of an ImageJ Particle
@@ -110,7 +105,7 @@ public class IJTranserResultsTable {
 
 		if (d != null) {
 			ImagePlus plu = WindowManager.getCurrentImage();
-			//double xydia[][] = PointPanel.pointToArray();
+			// double xydia[][] = PointPanel.pointToArray();
 			if (plu != null) {
 
 				/* Get the image processor of the image ! */
@@ -148,40 +143,32 @@ public class IJTranserResultsTable {
 				}
 			}
 
-			/*try {
-				d.assign("x", xydia[0]);
-			
-				d.assign("y", xydia[1]);
-				d.assign("diameter_panel", xydia[2]);
-				d.assign("species", xydia[3]);
-				d.assign("alpha", xydia[4]);
-			} catch (REngineException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-			try {
-				d.voidEval("fieldx<-" + PointPanelImageMethodsView.getFieldX() + "");
-			
-				d.voidEval("fieldy<-" + PointPanelImageMethodsView.getFieldY() + "");
-			} catch (RserveException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}*/
+			/*
+			 * try { d.assign("x", xydia[0]);
+			 * 
+			 * d.assign("y", xydia[1]); d.assign("diameter_panel", xydia[2]);
+			 * d.assign("species", xydia[3]); d.assign("alpha", xydia[4]); } catch
+			 * (REngineException e) { // TODO Auto-generated catch block
+			 * e.printStackTrace(); }
+			 * 
+			 * try { d.voidEval("fieldx<-" + PointPanelImageMethodsView.getFieldX() + "");
+			 * 
+			 * d.voidEval("fieldy<-" + PointPanelImageMethodsView.getFieldY() + ""); } catch
+			 * (RserveException e) { // TODO Auto-generated catch block e.printStackTrace();
+			 * }
+			 */
 			// }
 
-			/*Display display = PlatformUI.getWorkbench().getDisplay();
-			display.syncExec(new Runnable() {
-			
-				public void run() {
-					MessageBox messageBox = new MessageBox(new Shell(),
-			
-							SWT.ICON_INFORMATION);
-					messageBox.setMessage("Transferred values to R");
-					messageBox.open();
-				}
-			});*/
-			//xydia = null;
+			/*
+			 * Display display = PlatformUI.getWorkbench().getDisplay();
+			 * display.syncExec(new Runnable() {
+			 * 
+			 * public void run() { MessageBox messageBox = new MessageBox(new Shell(),
+			 * 
+			 * SWT.ICON_INFORMATION); messageBox.setMessage("Transferred values to R");
+			 * messageBox.open(); } });
+			 */
+			// xydia = null;
 
 		} else {
 
@@ -195,102 +182,75 @@ public class IJTranserResultsTable {
 
 	}
 
-	public static void addParticleValues() {
-		PointPanel jp = PointPanelView.getJp();
-		if (jp != null) {
-			MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
-			message.setMessage("Do you want to delete plants in the Points panel?");
-			message.setText("Delete Plants");
-			int response = message.open();
-			if (response == SWT.YES) {
+	/*
+	 * public static void addParticleValues() { PointPanel jp =
+	 * PointPanelView.getJp(); if (jp != null) { MessageBox message = new
+	 * MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+	 * message.setMessage("Do you want to delete plants in the Points panel?");
+	 * message.setText("Delete Plants"); int response = message.open(); if (response
+	 * == SWT.YES) {
+	 * 
+	 * jp.getVe().clear(); jp.get_Points().clear(); jp.get_Species().clear();
+	 * jp.get_Alpha().clear();
+	 * 
+	 * // }
+	 * 
+	 * SwingUtilities.invokeLater(new Runnable() { // !! public void run() {
+	 * 
+	 * setParticles(jp); } }); jp.repaint(); // Bio7ImageJAnalyse.clearList();
+	 * Options in class Analyzer regarded! } }
+	 */
 
-				jp.getVe().clear();
-				jp.get_Points().clear();
-				jp.get_Species().clear();
-				jp.get_Alpha().clear();
-
-				//
-			}
-
-			SwingUtilities.invokeLater(new Runnable() {
-				// !!
-				public void run() {
-
-					setParticles(jp);
-				}
-			});
-			jp.repaint();
-			// Bio7ImageJAnalyse.clearList(); Options in class Analyzer regarded!
-		}
-	}
-
-	private static void setParticles(PointPanel jp) {
-
-		Double cmx = 0.0;
-
-		Double cmy = 0.0;
-
-		IJ.runMacro("run(\"Analyze Particles...\")");
-
-		// IJ.runMacro("run(\"Analyze Particles...\", \"size=0-Infinity
-		// circularity=0.00-1.00 show=Nothing display clear stack\")");
-		// System.out.println(rt.getColumnHeadings());
-		ResultsTable rt = Analyzer.getResultsTable();
-		if (rt == null) {
-			Bio7Dialog.message("No ImageJ Results Table");
-		} else {
-
-			if (rt.getColumn(0) != null) {
-
-				// System.out.println(rt.getColumnHeading(i) +
-				// "::::::::");
-				int x = rt.getColumnIndex("X");
-				int y = rt.getColumnIndex("Y");
-
-				double[] xcol = rt.getColumnAsDoubles(x);
-				double[] ycol = rt.getColumnAsDoubles(y);
-				if (xcol != null && ycol != null) {
-					// System.out.println("xxxxxx " + x);
-
-					for (int j = 0; j < xcol.length; j++) {
-						// System.out.println(xcol[j]);
-						cmx = xcol[j] * PointPanelImageMethodsView.getPointScale();
-						/* Values with scale for precision ! */
-						cmy = ycol[j] * PointPanelImageMethodsView.getPointScale();
-
-						jp.getVe().add(new Ellipse2D.Double(cmx - (int) (jp.get_Diameter() / 2), cmy - (int) (jp.get_Diameter() / 2), jp.get_Diameter(), jp.get_Diameter()));
-						jp.get_Points().add(new Point2D.Double(cmx, cmy));
-
-						jp.get_Species().add(PointPanel.getPlantIndexPanel());
-
-						jp.get_Alpha().add(PointPanel.getCompos3());
-						jp.setCount(jp.getCount() + 1);
-						if (PointPanel.isQuad2d_visible()) {
-							if (cmx < (Field.getWidth() * Field.getQuadSize()) && cmy < (Field.getHeight() * Field.getQuadSize())) {
-								try {
-									Quad2d.getQuad2dInstance().setquads(cmx, cmy);
-								} catch (RuntimeException e) {
-
-									e.printStackTrace();
-								}
-							}
-						}
-
-					}
-					if (ResultsTable.getResultsWindow() != null) {
-						ResultsTable.getResultsWindow().close(false);
-					}
-
-				} else {
-					if (ResultsTable.getResultsWindow() != null) {
-						ResultsTable.getResultsWindow().close(false);
-					}
-					Bio7Dialog.message("Please select 'Centroid' in the 'Set Measurements' dialog");
-				}
-			}
-		}
-		PointPanel.doPaint();
-	}
+	/*
+	 * private static void setParticles(PointPanel jp) {
+	 * 
+	 * Double cmx = 0.0;
+	 * 
+	 * Double cmy = 0.0;
+	 * 
+	 * IJ.runMacro("run(\"Analyze Particles...\")");
+	 * 
+	 * // IJ.runMacro("run(\"Analyze Particles...\", \"size=0-Infinity //
+	 * circularity=0.00-1.00 show=Nothing display clear stack\")"); //
+	 * System.out.println(rt.getColumnHeadings()); ResultsTable rt =
+	 * Analyzer.getResultsTable(); if (rt == null) {
+	 * Bio7Dialog.message("No ImageJ Results Table"); } else {
+	 * 
+	 * if (rt.getColumn(0) != null) {
+	 * 
+	 * // System.out.println(rt.getColumnHeading(i) + // "::::::::"); int x =
+	 * rt.getColumnIndex("X"); int y = rt.getColumnIndex("Y");
+	 * 
+	 * double[] xcol = rt.getColumnAsDoubles(x); double[] ycol =
+	 * rt.getColumnAsDoubles(y); if (xcol != null && ycol != null) { //
+	 * System.out.println("xxxxxx " + x);
+	 * 
+	 * for (int j = 0; j < xcol.length; j++) { // System.out.println(xcol[j]); cmx =
+	 * xcol[j] * PointPanelImageMethodsView.getPointScale(); Values with scale for
+	 * precision ! cmy = ycol[j] * PointPanelImageMethodsView.getPointScale();
+	 * 
+	 * jp.getVe().add(new Ellipse2D.Double(cmx - (int) (jp.get_Diameter() / 2), cmy
+	 * - (int) (jp.get_Diameter() / 2), jp.get_Diameter(), jp.get_Diameter()));
+	 * jp.get_Points().add(new Point2D.Double(cmx, cmy));
+	 * 
+	 * jp.get_Species().add(PointPanel.getPlantIndexPanel());
+	 * 
+	 * jp.get_Alpha().add(PointPanel.getCompos3()); jp.setCount(jp.getCount() + 1);
+	 * if (PointPanel.isQuad2d_visible()) { if (cmx < (Field.getWidth() *
+	 * Field.getQuadSize()) && cmy < (Field.getHeight() * Field.getQuadSize())) {
+	 * try { Quad2d.getQuad2dInstance().setquads(cmx, cmy); } catch
+	 * (RuntimeException e) {
+	 * 
+	 * e.printStackTrace(); } } }
+	 * 
+	 * } if (ResultsTable.getResultsWindow() != null) {
+	 * ResultsTable.getResultsWindow().close(false); }
+	 * 
+	 * } else { if (ResultsTable.getResultsWindow() != null) {
+	 * ResultsTable.getResultsWindow().close(false); } Bio7Dialog.
+	 * message("Please select 'Centroid' in the 'Set Measurements' dialog"); } } }
+	 * PointPanel.doPaint(); }
+	 */
 
 	public void particledescriptors() {
 		Roi roi = null;
@@ -324,7 +284,7 @@ public class IJTranserResultsTable {
 
 				}
 				runParticleAnalysis(d, null);
-				
+
 			} else {
 
 				Bio7Dialog.message("Rserve is not alive!");
@@ -403,7 +363,7 @@ public class IJTranserResultsTable {
 					e.printStackTrace();
 				}
 			} else {
-				
+
 				System.out.println("Please select the 'Area' measurement in the 'Set Measurements' dialog!");
 				// Bio7Dialog.message("No Results! Image Thresholded");
 			}

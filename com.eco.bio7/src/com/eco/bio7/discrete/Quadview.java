@@ -190,43 +190,14 @@ public class Quadview extends ViewPart {
 			}
 		});
 
-		try {
-			System.setProperty("sun.awt.noerasebackground", "true");
-		} catch (NoSuchMethodError error) {
-		}
-
-		frame = SWT_AWT.new_Frame(top);
-		SwtAwt.setSwtAwtFocus(frame, top);
 		
 
-		panel = new JApplet();
-
-		frame.add(panel);
-		root = new JRootPane();
-		panel.add(root);
-		java.awt.Container contentPane = root.getContentPane();
-
 		Time.setPause(true);
-		Quad2d quad = Quad2d.getQuad2dInstance();
-		quad.setBackground(getSystemColour(parent));
-		contentPane.add(Quad2d.getQuad2dInstance().jScrollPane);
+		new Quad2d(top, SWT.NO_BACKGROUND);
+		//quad.setBackground(getSystemColour(parent));
+		
 		top.setParent(parent);
-		/*HighDPI fix for Windows frame layout which reverts the DPIUtil settings of the default implementation of the SWT_AWT class!*/
-		if (Util.getOS().equals("Windows")) {
-			if (Util.getZoom() >= 175) {
-				Composite parent2 = top.getParent();
-				parent2.getDisplay().asyncExec(() -> {
-					if (parent2.isDisposed())
-						return;
-					final Rectangle clientArea = parent2.getClientArea(); // To Pixels
-					EventQueue.invokeLater(() -> {
-						frame.setSize(clientArea.width, clientArea.height);
-						frame.validate();
-					});
-				});
-			}
-
-		}
+		
 		/*Time.setPause(true);
 		SwingFxSwtView view = new SwingFxSwtView();
 		Quad2d quad = Quad2d.getQuad2dInstance();

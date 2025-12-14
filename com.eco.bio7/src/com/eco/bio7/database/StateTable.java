@@ -24,8 +24,8 @@ import org.eclipse.ui.PlatformUI;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.discrete.Hexagon;
 import com.eco.bio7.discrete.Quad2d;
-import com.eco.bio7.image.PointPanel;
-import com.eco.bio7.image.PointPanelImageMethodsView;
+//import com.eco.bio7.image.PointPanel;
+//import com.eco.bio7.image.PointPanelImageMethodsView;
 import com.eco.bio7.init.ButtonContainer;
 import com.eco.bio7.methods.CurrentStates;
 import com.eco.bio7.plot.LineChart;
@@ -127,7 +127,7 @@ public class StateTable {
 												if (hex != null) {
 													hex.value = index;
 												}
-												PointPanel.setPlantIndexPanel(index);
+												//PointPanel.setPlantIndexPanel(index);
 
 											}
 										}
@@ -400,7 +400,7 @@ public class StateTable {
 		 * if (Plantspecies.getSpeciesList().size() == 0) { setcell("0"); }
 		 */
 		/* Delete the points in the Points panel!!! */
-		PointPanelImageMethodsView.deletePoints();
+		//PointPanelImageMethodsView.deletePoints();
 		/* Reset - Species have to be selected again for the Points panel! */
 		resetActivePlant();
 
@@ -412,11 +412,11 @@ public class StateTable {
 		if (hex != null) {
 			hex.value = 0;
 		}
-		PointPanel.setPlantIndexPanel(0);
+		//PointPanel.setPlantIndexPanel(0);
 	}
 
 	private static void repaintFields() {
-		Quad2d.getQuad2dInstance().repaint();
+		Quad2d.getQuad2dInstance().fullRedrawAll();
 		Hexagon hex = Hexagon.getHexagonInstance();
 		if (hex != null) {
 			hex.repaint();

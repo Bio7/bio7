@@ -62,7 +62,7 @@ public class ResizeArray {
 		Field.setWidth(x);
 		Field.setStateArray(resize2d(Field.getStateArray(), y, x));
 		Field.setTempArray(resize2d(Field.getTempArray(), y, x));
-		qu.quad = resizequad2d(Quad2d.quad, y, x);
+		qu.quad = resizequad2d(qu.quad, y, x);
 		qu.drawQuad();
 		
 	}
@@ -100,19 +100,19 @@ public class ResizeArray {
 		return thearray;
 	}
 
-	private static Rectangle[][] resizequad2d(Rectangle[][] thearray, int feldgroessey, int feldgroessex) {
+	private static org.eclipse.swt.graphics.Rectangle[][] resizequad2d(org.eclipse.swt.graphics.Rectangle[][] thearray, int feldgroessey, int feldgroessex) {
 
-		thearray = (Rectangle[][]) resizeArray(thearray, feldgroessey);
+		thearray = (org.eclipse.swt.graphics.Rectangle[][]) resizeArray(thearray, feldgroessey);
 
 		for (int i = 0; i < thearray.length; i++) {
 
 			if (thearray[i] == null) {
-				thearray[i] = new Rectangle[feldgroessex];
+				thearray[i] = new org.eclipse.swt.graphics.Rectangle[feldgroessex];
 			}
 
 			else {
 
-				thearray[i] = (Rectangle[]) resizeArray(thearray[i], feldgroessex);
+				thearray[i] = (org.eclipse.swt.graphics.Rectangle[]) resizeArray(thearray[i], feldgroessex);
 
 			}
 		}
