@@ -13,8 +13,8 @@ package com.eco.bio7.discrete;
 
 import java.util.ArrayList;
 
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.KeyEvent;
@@ -30,14 +30,13 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 
-import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.methods.CurrentStates;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.time.Time;
+import com.eco.bio7.util.Util;
 
 /*
  * Faster Quad2d that makes resizing (zoom) very fast by:
@@ -50,8 +49,6 @@ import com.eco.bio7.time.Time;
  */
 
 public class Quad2d extends org.eclipse.swt.widgets.Composite implements KeyListener {
-
-	private static final long serialVersionUID = 1L;
 
 	/* Quad dimensions (in pixels) */
 	public int rwidth = Field.getQuadSize();
@@ -94,12 +91,7 @@ public class Quad2d extends org.eclipse.swt.widgets.Composite implements KeyList
 
 	public boolean activeRendering = false;
 
-	private int rectanglex;
-	private int rectangley;
-
 	private boolean popup_trigger = false; // Linux check
-
-	private IPreferenceStore store;
 
 	/* Small image (one pixel per cell) and its ImageData */
 	private ImageData smallImageData = null;
@@ -113,12 +105,10 @@ public class Quad2d extends org.eclipse.swt.widgets.Composite implements KeyList
 	private int dirtyCellX1 = Integer.MAX_VALUE, dirtyCellY1 = Integer.MAX_VALUE, dirtyCellX2 = Integer.MIN_VALUE,
 			dirtyCellY2 = Integer.MIN_VALUE;
 	private org.eclipse.swt.graphics.Color[] swtColors = null;
-	
 
 	public Quad2d(org.eclipse.swt.widgets.Composite parent, int style) {
 		super(parent, style);
 		quad2d_instance = this;
-		store = Bio7Plugin.getDefault().getPreferenceStore();
 		createScrolledComposite();
 		drawQuad();
 		ensurePixelCache();
@@ -264,7 +254,7 @@ public class Quad2d extends org.eclipse.swt.widgets.Composite implements KeyList
 		smallImageData = new ImageData(cols, rows, 24, palette);
 
 		// background pixel
-		
+
 		int bgPixel = palette.getPixel(new RGB(canvas.getBackground().getRed(), canvas.getBackground().getGreen(),
 				canvas.getBackground().getBlue()));
 
@@ -306,53 +296,54 @@ public class Quad2d extends org.eclipse.swt.widgets.Composite implements KeyList
 			smallImage = null;
 		}
 	}
-	
-	
 
-	// call this to (re)build the SWT Color and palette pixel caches from CurrentStates
+	// call this to (re)build the SWT Color and palette pixel caches from
+	// CurrentStates
 	public void ensureColorAndPixelCache() {
-	    // must run on UI thread
-	    Display d = Display.getCurrent();
-	    if (d == null) {
-	        d = Display.getDefault();
-	    }
+		// must run on UI thread
+		Display d = Display.getCurrent();
+		if (d == null) {
+			d = Display.getDefault();
+		}
 
-	    int stateCount =CurrentStates.getStateList().size();
-	    
+		int stateCount = CurrentStates.getStateList().size();
 
-	    // dispose old colors
-	    disposeColorCache();
+		// dispose old colors
+		disposeColorCache();
 
-	    if (stateCount > 0) {
-	        swtColors = new org.eclipse.swt.graphics.Color[stateCount];
-	        palettePixel = new int[stateCount];
-	        for (int i = 0; i < stateCount; i++) {
-	            int[] rgb = CurrentStates.getRGB(i); // assume returns int[3]
-	            int r = Math.max(0, Math.min(255, rgb[0]));
-	            int g = Math.max(0, Math.min(255, rgb[1]));
-	            int b = Math.max(0, Math.min(255, rgb[2]));
-	            swtColors[i] = new org.eclipse.swt.graphics.Color(d, r, g, b);
-	            palettePixel[i] = palette.getPixel(new org.eclipse.swt.graphics.RGB(r, g, b));
-	        }
-	    } else {
-	        swtColors = null;
-	        palettePixel = null;
-	    }
-	    lastStateCount = stateCount;
+		if (stateCount > 0) {
+			swtColors = new org.eclipse.swt.graphics.Color[stateCount];
+			palettePixel = new int[stateCount];
+			for (int i = 0; i < stateCount; i++) {
+				int[] rgb = CurrentStates.getRGB(i); // assume returns int[3]
+				int r = Math.max(0, Math.min(255, rgb[0]));
+				int g = Math.max(0, Math.min(255, rgb[1]));
+				int b = Math.max(0, Math.min(255, rgb[2]));
+				swtColors[i] = new org.eclipse.swt.graphics.Color(d, r, g, b);
+				palettePixel[i] = palette.getPixel(new org.eclipse.swt.graphics.RGB(r, g, b));
+			}
+		} else {
+			swtColors = null;
+			palettePixel = null;
+		}
+		lastStateCount = stateCount;
 	}
 
 	// dispose cached SWT Color objects
 	private void disposeColorCache() {
-	    if (swtColors != null) {
-	        for (org.eclipse.swt.graphics.Color c : swtColors) {
-	            if (c != null && !c.isDisposed()) {
-	                try { c.dispose(); } catch (Exception ex) { /* ignore */ }
-	            }
-	        }
-	        swtColors = null;
-	    }
-	    palettePixel = null;
-	    lastStateCount = 0;
+		if (swtColors != null) {
+			for (org.eclipse.swt.graphics.Color c : swtColors) {
+				if (c != null && !c.isDisposed()) {
+					try {
+						c.dispose();
+					} catch (Exception ex) {
+						/* ignore */ }
+				}
+			}
+			swtColors = null;
+		}
+		palettePixel = null;
+		lastStateCount = 0;
 	}
 
 	/* ------------------ Painting (draw scaled smallImage) ------------------ */
@@ -416,7 +407,10 @@ public class Quad2d extends org.eclipse.swt.widgets.Composite implements KeyList
 		} catch (NoSuchMethodError ignore) {
 		}
 		// set interpolation to none (nearest-neighbor)
-		gc.setInterpolation(SWT.NONE);
+		if (Util.getOS().equals("Mac") || Util.getOS().equals("Linux")) {
+			/* On Windows drastically reduces the speed of display! */
+			gc.setInterpolation(SWT.NONE);
+		}
 		// Finally draw the required portion of the small image scaled up.
 		try {
 			gc.drawImage(smallImage, srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH);
@@ -670,27 +664,7 @@ public class Quad2d extends org.eclipse.swt.widgets.Composite implements KeyList
 			if (isPopup && selectionenabled == false) {
 
 				Menu menu = new Menu(canvas);
-				final MenuItem it1 = new MenuItem(menu, SWT.PUSH);
-				it1.setText("Active Rendering on/off");
 
-				it1.addListener(SWT.Selection, ev -> {
-					activeRendering = !activeRendering;
-
-					Display dis = Quadview.getQuadview().getTop().getDisplay();
-					dis.syncExec(new Runnable() {
-						public void run() {
-
-							MessageBox messageBox = new MessageBox(new Shell(), SWT.ICON_WARNING);
-							if (activeRendering) {
-								messageBox.setMessage("Switched rendering mode to active rendering !");
-							} else {
-								messageBox.setMessage("Switched rendering mode to default rendering !");
-							}
-							messageBox.open();
-						}
-					});
-
-				});
 				new MenuItem(menu, SWT.SEPARATOR);
 				final MenuItem it2 = new MenuItem(menu, SWT.PUSH);
 				it2.setText("Random");
@@ -698,15 +672,6 @@ public class Quad2d extends org.eclipse.swt.widgets.Composite implements KeyList
 				it2.addListener(SWT.Selection, ev -> {
 					Field.chance();
 					fullRedrawAll(); // rebuild the small image and redraw
-				});
-				new MenuItem(menu, SWT.SEPARATOR);
-				final MenuItem it3 = new MenuItem(menu, SWT.PUSH);
-				it3.setText("Select State");
-
-				it3.addListener(SWT.Selection, ev -> {
-					canvas.setCursor(Display.getCurrent().getSystemCursor(SWT.CURSOR_CROSS));
-					selectionenabled = true;
-					donotdrag = true;
 				});
 
 				org.eclipse.swt.graphics.Point pt = new org.eclipse.swt.graphics.Point(e.x, e.y);
