@@ -9,7 +9,6 @@
  * Marcel Austenfeld - initial API and implementation
  *******************************************************************************/
 
-
 package com.eco.bio7.discrete;
 
 import java.awt.Polygon;
@@ -64,11 +63,12 @@ public class Field {
 	private static FloatUniform uni;
 
 	/**
-	 * A random function for the discrete grid. Plants and states are dispersed
-	 * over the grid.
+	 * A random function for the discrete grid. Plants and states are dispersed over
+	 * the grid.
 	 */
 	public static void chance() {// Random method!!
-		uni = new FloatUniform(0.0f, CurrentStates.getStateList().size() - 1, new FloatMersenneTwister(new java.util.Date()));
+		uni = new FloatUniform(0.0f, CurrentStates.getStateList().size() - 1,
+				new FloatMersenneTwister(new java.util.Date()));
 		for (int i = 0; i < sizey; i++) {
 
 			for (int u = 0; u < sizex; u++) {
@@ -110,10 +110,8 @@ public class Field {
 	/**
 	 * A method for adjusting the size of the discrete field.
 	 * 
-	 * @param x
-	 *            the width of the field.
-	 * @param y
-	 *            the height of the field.
+	 * @param x the width of the field.
+	 * @param y the height of the field.
 	 */
 	public static void setSize(final int x, final int y) {
 
@@ -137,14 +135,10 @@ public class Field {
 	 * A method which returns the coordinates of the neighbourhood of the given
 	 * distance.
 	 * 
-	 * @param x
-	 *            the x-coordinate.
-	 * @param y
-	 *            the y-coordinate
-	 * @param dx
-	 *            the distance from the x-coordinate.
-	 * @param dy
-	 *            the distance from the y-coordinate.
+	 * @param x  the x-coordinate.
+	 * @param y  the y-coordinate
+	 * @param dx the distance from the x-coordinate.
+	 * @param dy the distance from the y-coordinate.
 	 * @return an integer array with the coordinates of the given distance.
 	 */
 	public static int[] torus(int x, int y, int dx, int dy) {
@@ -159,12 +153,9 @@ public class Field {
 	/**
 	 * A method which calculates the sum of the cells in the neighbourhood n*8.
 	 * 
-	 * @param n
-	 *            an integer value for the neighbourhood.
-	 * @param x
-	 *            the x-coordinate of the center cell.
-	 * @param y
-	 *            the y-coordinate of the center cell.
+	 * @param n an integer value for the neighbourhood.
+	 * @param x the x-coordinate of the center cell.
+	 * @param y the y-coordinate of the center cell.
 	 * 
 	 * @return the sum of the neighbourhood.
 	 */
@@ -207,14 +198,14 @@ public class Field {
 	 * Repaints the discrete quad and if available the discrete hexagon panel.
 	 */
 	public static void doPaint() {
-		
+
 		Quad2d quad2dInstance = Quad2d.getQuad2dInstance();
 		if (quad2dInstance != null) {
 			Display.getDefault().syncExec(() -> {
 				quad2dInstance.fullRedrawAll();
-				
+
 			});
-			
+
 		}
 		Hexagon hex = Hexagon.getHexagonInstance();
 		if (hex != null) {
@@ -250,14 +241,12 @@ public class Field {
 	}
 
 	/**
-	 * Returns an object for the barrier state with the same attributes as a
-	 * plant object.
+	 * Returns an object for the barrier state with the same attributes as a plant
+	 * object.
 	 * 
-	 * @param x
-	 *            the x-coordinate
+	 * @param x the x-coordinate
 	 * 
-	 * @param y
-	 *            the y-coordinate
+	 * @param y the y-coordinate
 	 * 
 	 * @return a plant object as the soil state.
 	 */
@@ -274,22 +263,19 @@ public class Field {
 	/**
 	 * Sets the size of the quads.
 	 * 
-	 * @param size
-	 *            the size of the quads in the quadgrid as an integer value.
+	 * @param size the size of the quads in the quadgrid as an integer value.
 	 */
 	public static void setQuadSize(int size) {
 		Field.quadsize = size;
+		doPaint();
 	}
 
 	/**
 	 * Set the state at the specified x,y coordinates.
 	 * 
-	 * @param x
-	 *            the x-coordinate.
-	 * @param y
-	 *            the y-coordinate.
-	 * @param state
-	 *            the integer value of an available state.
+	 * @param x     the x-coordinate.
+	 * @param y     the y-coordinate.
+	 * @param state the integer value of an available state.
 	 */
 	public static void setState(int x, int y, int state) {
 		if (state >= 0 && state < CurrentStates.getStateList().size()) {
@@ -301,12 +287,9 @@ public class Field {
 	/**
 	 * Set the temporary state at the specified x,y coordinates.
 	 * 
-	 * @param x
-	 *            the x-coordinate.
-	 * @param y
-	 *            the y-coordinate.
-	 * @param state
-	 *            the integer value of an available state.
+	 * @param x     the x-coordinate.
+	 * @param y     the y-coordinate.
+	 * @param state the integer value of an available state.
 	 */
 	public static void setTempState(int x, int y, int state) {
 		if (state >= 0 && state < CurrentStates.getStateList().size()) {
@@ -317,10 +300,8 @@ public class Field {
 	/**
 	 * Get the state at the specified x,y coordinates.
 	 * 
-	 * @param x
-	 *            the x-coordinate.
-	 * @param y
-	 *            the y-coordinate.
+	 * @param x the x-coordinate.
+	 * @param y the y-coordinate.
 	 * @return the integer value of an available state.
 	 */
 	public static int getState(int x, int y) {
@@ -330,10 +311,8 @@ public class Field {
 	/**
 	 * Get the temporary state at the specified x,y coordinates.
 	 * 
-	 * @param x
-	 *            the x-coordinate.
-	 * @param y
-	 *            the y-coordinate.
+	 * @param x the x-coordinate.
+	 * @param y the y-coordinate.
 	 * @return the integer value of an available state.
 	 */
 	public static int getTempState(int x, int y) {
@@ -343,8 +322,7 @@ public class Field {
 	/**
 	 * A method to return the name of the selected state number.
 	 * 
-	 * @param number
-	 *            the state number.
+	 * @param number the state number.
 	 * @return the name of the state.
 	 */
 	public static String getStateName(int number) {
@@ -355,12 +333,9 @@ public class Field {
 	 * A method which returns a boolean true value if the given state with name
 	 * exists at the given coordinates.
 	 * 
-	 * @param x
-	 *            the x-coordinate of the grid.
-	 * @param y
-	 *            the y-coordinate of the grid.
-	 * @param name
-	 *            the name of the state.
+	 * @param x    the x-coordinate of the grid.
+	 * @param y    the y-coordinate of the grid.
+	 * @param name the name of the state.
 	 * @return a boolean value.
 	 */
 	public static boolean isState(int x, int y, String name) {
@@ -377,8 +352,7 @@ public class Field {
 	/**
 	 * A method to return the description of the selected state number.
 	 * 
-	 * @param number
-	 *            the state number.
+	 * @param number the state number.
 	 * @return the description of the state.
 	 */
 	public static String getStateDescription(int number) {
@@ -397,8 +371,7 @@ public class Field {
 	/**
 	 * Set the width of the field.
 	 * 
-	 * @param sizex
-	 *            an integer value for the width.
+	 * @param sizex an integer value for the width.
 	 */
 	public static void setWidth(int sizex) {
 		Field.sizex = sizex;
@@ -416,8 +389,7 @@ public class Field {
 	/**
 	 * Sets the height of the Field.
 	 * 
-	 * @param sizey
-	 *            an integer value for the height.
+	 * @param sizey an integer value for the height.
 	 */
 	public static void setHeight(int sizey) {
 		Field.sizey = sizey;
@@ -435,8 +407,7 @@ public class Field {
 	/**
 	 * Sets the temporary state array.
 	 * 
-	 * @param xynew
-	 *            an integer array.
+	 * @param xynew an integer array.
 	 */
 	public static void setTempArray(int[][] xynew) {
 		Field.xytempstate = xynew;
@@ -454,14 +425,11 @@ public class Field {
 	/**
 	 * Sets the state array.
 	 * 
-	 * @param xyold
-	 *            an integer array.
+	 * @param xyold an integer array.
 	 */
 	public static void setStateArray(int[][] xyold) {
 		Field.xystate = xyold;
 	}
-	
-	
 
 	/**
 	 * Transfers the Quadgrid pattern to the R workspace!
