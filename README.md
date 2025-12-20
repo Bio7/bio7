@@ -27,7 +27,8 @@ Features:
 
 ### Built Bio7
 
-Bio7 is now available as a Maven Tycho built and can be created locally. 
+Bio7 is now available as a Maven Tycho built (Windows, Linux, Mac) 
+and can be created locally. 
 
 All plugins and features are now available in one Github repository.
 
