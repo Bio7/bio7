@@ -548,6 +548,13 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			}
 
 			else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
+				
+				//Map<String, String> env = new HashMap<>(System.getenv());
+		        //env.put("TERM", "xterm-256color");
+		        // start an interactive bash attached to a PTY
+		        //String[] cmd = { "bash", "-lc", "bash","export TERM=xterm-256color" };
+		        // nativeShellProcess = (PtyProcess) PtyProcess.exec(cmd, env, new String("."));
+			
 				List<String> args = new ArrayList<String>();
 				args.add("/bin/sh");
 				args.add("-i");

@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="lib/kotlin-stdlib-2.3.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/pty4j-0.13.11.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/slf4j-api-2.0.17.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/slf4j-simple-2.0.17.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jna-5.17.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jna-platform-5.17.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="bin/"/>
