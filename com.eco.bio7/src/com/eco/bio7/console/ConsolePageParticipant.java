@@ -105,6 +105,7 @@ import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
 import com.eco.bio7.reditor.database.view.DatabaseView;
 import com.eco.bio7.scriptengines.ScriptEngineConnection;
+import com.pty4j.PtyProcessBuilder;
 
 public class ConsolePageParticipant implements IConsolePageParticipant {
 
@@ -548,18 +549,32 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			}
 
 			else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
+				/*String[] cmd = new String[] { "sh", "--login", "-i" };
+
+		        // copy OS environment (including PATH) and augment if needed
+		        Map<String,String> env = new HashMap<>(System.getenv());
+		        env.put("TERM", "xterm-256color"); // helpful for color support
+		        // env.put("PATH", System.getenv("PATH")); // not normally needed, shown for clarity
+
+		        String workDir = new File(System.getProperty("user.home")).toString();
+
+		        // Create builder and start the PTY-backed process
+		        PtyProcessBuilder builder = new PtyProcessBuilder(cmd);
+		        builder.setEnvironment(env);      // pass the environment
+		        builder.setDirectory(workDir);    // set working directory
+		        // builder.setConsole(true/false) // other builder options may exist in your version
+
+		        PtyProcess pty = (PtyProcess) builder.start(); // start() should return a PtyProcess
+				builder.setRedirectErrorStream(true);
+				 */
 				
-				//Map<String, String> env = new HashMap<>(System.getenv());
-		        //env.put("TERM", "xterm-256color");
-		        // start an interactive bash attached to a PTY
-		        //String[] cmd = { "bash", "-lc", "bash","export TERM=xterm-256color" };
-		        // nativeShellProcess = (PtyProcess) PtyProcess.exec(cmd, env, new String("."));
-			
 				List<String> args = new ArrayList<String>();
 				args.add("/bin/sh");
 				args.add("-i");
 				ProcessBuilder builder = new ProcessBuilder(args);
 				builder.redirectErrorStream(true);
+				
+				
 				nativeShellProcess = builder.start();
 				nativeShellprocessThread = new Thread(new NativeProcessGrabber());
 				nativeShellprocessThread.start();
