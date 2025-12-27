@@ -105,6 +105,7 @@ import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
 import com.eco.bio7.reditor.database.view.DatabaseView;
 import com.eco.bio7.scriptengines.ScriptEngineConnection;
+import com.pty4j.PtyProcess;
 import com.pty4j.PtyProcessBuilder;
 
 public class ConsolePageParticipant implements IConsolePageParticipant {
@@ -549,10 +550,10 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			}
 
 			else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
-				/*String[] cmd = new String[] { "sh", "--login", "-i" };
+				String[] cmd = new String[] { "sh", "--login", "-i" };
 
 		        // copy OS environment (including PATH) and augment if needed
-		        Map<String,String> env = new HashMap<>(System.getenv());
+		       /* Map<String,String> env = new HashMap<>(System.getenv());
 		        env.put("TERM", "xterm-256color"); // helpful for color support
 		        // env.put("PATH", System.getenv("PATH")); // not normally needed, shown for clarity
 
@@ -565,8 +566,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		        // builder.setConsole(true/false) // other builder options may exist in your version
 
 		        PtyProcess pty = (PtyProcess) builder.start(); // start() should return a PtyProcess
-				builder.setRedirectErrorStream(true);
-				 */
+				builder.setRedirectErrorStream(true);*/
+				 
 				
 				List<String> args = new ArrayList<String>();
 				args.add("/bin/sh");
