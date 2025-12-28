@@ -552,30 +552,30 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 				String[] cmd = new String[] { "sh", "--login", "-i" };
 
-		        // copy OS environment (including PATH) and augment if needed
-		       /* Map<String,String> env = new HashMap<>(System.getenv());
-		        env.put("TERM", "xterm-256color"); // helpful for color support
-		        // env.put("PATH", System.getenv("PATH")); // not normally needed, shown for clarity
+				// copy OS environment (including PATH) and augment if needed
+				/*
+				 * Map<String,String> env = new HashMap<>(System.getenv()); env.put("TERM",
+				 * "xterm-256color"); // helpful for color support // env.put("PATH",
+				 * System.getenv("PATH")); // not normally needed, shown for clarity
+				 * 
+				 * String workDir = new File(System.getProperty("user.home")).toString();
+				 * 
+				 * // Create builder and start the PTY-backed process PtyProcessBuilder builder
+				 * = new PtyProcessBuilder(cmd); builder.setEnvironment(env); // pass the
+				 * environment builder.setDirectory(workDir); // set working directory //
+				 * builder.setConsole(true/false) // other builder options may exist in your
+				 * version
+				 * 
+				 * PtyProcess pty = (PtyProcess) builder.start(); // start() should return a
+				 * PtyProcess builder.setRedirectErrorStream(true);
+				 */
 
-		        String workDir = new File(System.getProperty("user.home")).toString();
-
-		        // Create builder and start the PTY-backed process
-		        PtyProcessBuilder builder = new PtyProcessBuilder(cmd);
-		        builder.setEnvironment(env);      // pass the environment
-		        builder.setDirectory(workDir);    // set working directory
-		        // builder.setConsole(true/false) // other builder options may exist in your version
-
-		        PtyProcess pty = (PtyProcess) builder.start(); // start() should return a PtyProcess
-				builder.setRedirectErrorStream(true);*/
-				 
-				
 				List<String> args = new ArrayList<String>();
 				args.add("/bin/sh");
 				args.add("-i");
 				ProcessBuilder builder = new ProcessBuilder(args);
 				builder.redirectErrorStream(true);
-				
-				
+
 				nativeShellProcess = builder.start();
 				nativeShellprocessThread = new Thread(new NativeProcessGrabber());
 				nativeShellprocessThread.start();
@@ -706,28 +706,6 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		consoleEncoding = store.getString("Console_Encoding");
 		try {
-			/*
-			 * Map<String, Object> properties = new HashMap<String, Object>();
-			 * properties.put(ITerminalsConnectorConstants.PROP_TITLE, "Bio7 Console");
-			 * properties.put(ITerminalsConnectorConstants.PROP_ENCODING, "UTF-8");
-			 * properties.put(ITerminalsConnectorConstants.PROP_DELEGATE_ID,
-			 * "org.eclipse.tm.terminal.connector.local.launcher.local");
-			 * properties.put(ITerminalsConnectorConstants.PROP_PROCESS_PATH,
-			 * "/usr/local/bin/r");
-			 * properties.put(ITerminalsConnectorConstants.PROP_PROCESS_ARGS,
-			 * "-e 'library(Rserve);run.Rserve()'");
-			 * 
-			 * // Create the done callback object ITerminalService.Done done = new
-			 * ITerminalService.Done() { public void done(IStatus done) { // Place any post
-			 * processing here } };
-			 * 
-			 * // Open the terminal ITerminalService terminal =
-			 * TerminalServiceFactory.getService(); if (terminal != null)
-			 * terminal.openConsole(properties, done);
-			 * 
-			 * 
-			 * 
-			 */
 
 			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
 				// process = Runtime.getRuntime().exec("cmd");
