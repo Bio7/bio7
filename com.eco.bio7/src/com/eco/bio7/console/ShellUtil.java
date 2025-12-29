@@ -18,6 +18,9 @@ import org.osgi.util.tracker.ServiceTracker;
  */
 public class ShellUtil {
 
+	Map<String, Object> properties;
+	private ITerminalService terminalService;
+
 	/**
 	 * A method to execute shell commands
 	 * 
@@ -31,32 +34,23 @@ public class ShellUtil {
 		properties.put(ITerminalsConnectorConstants.PROP_DELEGATE_ID,
 				"org.eclipse.terminal.connector.local.launcher.local");
 
-		// properties.put(ITerminalsConnectorConstants.PROP_PROCESS_PATH,
-		// "/usr/local/bin/r");
-		// properties.put(ITerminalsConnectorConstants.PROP_PROCESS_ARGS, "-e
-		// 'library(Rserve);run.Rserve()'");
-
-		// terminalService.openConsole(properties, null);
-
-		// 4. Retrieve and Open Service
 		Bundle bundle = FrameworkUtil.getBundle(this.getClass());
 		ServiceTracker<ITerminalService, ITerminalService> tracker = new ServiceTracker<>(bundle.getBundleContext(),
 				ITerminalService.class, null);
 		tracker.open();
 
-		ITerminalService terminalService = tracker.getService();
+		terminalService = tracker.getService();
 		if (terminalService != null) {
-			// Pass 'null' for the ITerminalService.Done callback
+
 			if (terminalService != null) {
-				// 1. Force the Terminal View to become visible
+
 				Display.getDefault().syncExec(() -> {
-					// Place showView and openConsole code here
 
 					try {
 						IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 						page.showView("org.eclipse.terminal.view.ui.TerminalsView");
 					} catch (Exception e) {
-						e.printStackTrace(); // View ID might vary in some custom RCPs
+						e.printStackTrace();
 					}
 
 					terminalService.openConsole(properties);
@@ -75,7 +69,7 @@ public class ShellUtil {
 	 */
 	public void execShellCommand(String title, String processPath, String processArgs) {
 
-		Map<String, Object> properties = new HashMap<>();
+		properties = new HashMap<>();
 
 		properties.put(ITerminalsConnectorConstants.PROP_TITLE, title);
 		properties.put(ITerminalsConnectorConstants.PROP_PROCESS_PATH, processPath);
@@ -93,7 +87,7 @@ public class ShellUtil {
 				ITerminalService.class, null);
 		tracker.open();
 
-		ITerminalService terminalService = tracker.getService();
+		terminalService = tracker.getService();
 		if (terminalService != null) {
 
 			if (terminalService != null) {
@@ -107,9 +101,45 @@ public class ShellUtil {
 					}
 
 					terminalService.openConsole(properties);
+
 				});
 			}
 
 		}
 	}
+
+	/**
+	 * A method to terminate the current process.
+	 */
+	public void terminateProcess() {
+		terminalService.terminateConsole(properties);
+	}
+
+	/**
+	 * A method to terminate the current process.
+	 * 
+	 * @param properties the properties the process started with.
+	 */
+	public void terminateProcess(HashMap<String, Object> properties) {
+		this.properties = properties;
+		terminalService.terminateConsole(properties);
+	}
+
+	/**
+	 * A method to close the current process.
+	 */
+	public void closeProcess() {
+		terminalService.closeConsole(properties);
+	}
+
+	/**
+	 * A method to close the current process.
+	 * 
+	 * @param properties the properties the process started with.
+	 */
+	public void closeProcess(HashMap<String, Object> properties) {
+		this.properties = properties;
+		terminalService.closeConsole(properties);
+	}
+
 }
