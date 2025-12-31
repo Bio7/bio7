@@ -18,7 +18,7 @@ import org.osgi.util.tracker.ServiceTracker;
  */
 public class ShellUtil {
 
-	Map<String, Object> properties;
+	private Map<String, Object> properties;
 	private ITerminalService terminalService;
 
 	/**
