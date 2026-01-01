@@ -294,7 +294,7 @@ public class RShellView extends ViewPart {
 		gd_text.heightHint = 30;
 		// gd_text.widthHint = 570;
 		text.setLayoutData(gd_text);
-		Util.updateTextHeight(text,font,parent);
+		Util.updateTextHeight(text, font, parent);
 		txtIndication = new ControlDecoration(text, SWT.TOP | SWT.LEFT);
 		FieldDecoration textDecoration = FieldDecorationRegistry.getDefault()
 				.getFieldDecoration(FieldDecorationRegistry.DEC_ERROR);
@@ -766,7 +766,6 @@ public class RShellView extends ViewPart {
 
 			public void widgetSelected(SelectionEvent e) {
 
-				
 				htmlHelpText = null;
 				if (RServe.isAliveDialog()) {
 					if (RState.isBusy() == false) {
@@ -1097,11 +1096,17 @@ public class RShellView extends ViewPart {
 				FontData newFont = fd.open();
 				if (newFont == null)
 					return;
+				Font oldFont = text.getFont();
+				
 				Font font = new Font(Util.getDisplay(), newFont);
 				text.setFont(font);
-				Util.updateTextHeight(text,font,parent);
+				Util.updateTextHeight(text, font, parent);
 				textConsole.setFont(font);
 				listShell.setFont(font);
+				if (oldFont != null && !oldFont.isDisposed()) {
+					oldFont.dispose();
+
+				}
 				Color color = new Color(Util.getDisplay(), fd.getRGB());
 				textConsole.setForeground(color);
 				listShell.setForeground(color);
