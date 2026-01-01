@@ -294,6 +294,7 @@ public class RShellView extends ViewPart {
 		gd_text.heightHint = 30;
 		// gd_text.widthHint = 570;
 		text.setLayoutData(gd_text);
+		Util.updateTextHeight(text,font,parent);
 		txtIndication = new ControlDecoration(text, SWT.TOP | SWT.LEFT);
 		FieldDecoration textDecoration = FieldDecorationRegistry.getDefault()
 				.getFieldDecoration(FieldDecorationRegistry.DEC_ERROR);
@@ -1098,6 +1099,7 @@ public class RShellView extends ViewPart {
 					return;
 				Font font = new Font(Util.getDisplay(), newFont);
 				text.setFont(font);
+				Util.updateTextHeight(text,font,parent);
 				textConsole.setFont(font);
 				listShell.setFont(font);
 				Color color = new Color(Util.getDisplay(), fd.getRGB());

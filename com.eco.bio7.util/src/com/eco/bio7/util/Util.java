@@ -20,11 +20,16 @@ import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.ui.css.swt.theme.ITheme;
 import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.e4.ui.model.application.MApplication;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbench;
@@ -90,7 +95,8 @@ public class Util {
 		// Filter the extension of the file.
 		FilenameFilter filter = new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2]) || name.endsWith(extensions[3]) || name.endsWith(extensions[4])
+				return (name.endsWith(extensions[0]) || name.endsWith(extensions[1]) || name.endsWith(extensions[2])
+						|| name.endsWith(extensions[3]) || name.endsWith(extensions[4])
 						|| name.endsWith(extensions[5]));
 			}
 		};
@@ -321,8 +327,10 @@ public class Util {
 			/*
 			 * We use a black style if the CSS is the dark theme or the darkest dark theme!
 			 */
-			if (activeTheme.startsWith(MessagesThemeIDsSettings.Theme_Black_1) || activeTheme.startsWith(MessagesThemeIDsSettings.Theme_Black_2)
-					|| activeTheme.startsWith(MessagesThemeIDsSettings.Theme_Black_3) || activeTheme.startsWith(MessagesThemeIDsSettings.Theme_Black_4)
+			if (activeTheme.startsWith(MessagesThemeIDsSettings.Theme_Black_1)
+					|| activeTheme.startsWith(MessagesThemeIDsSettings.Theme_Black_2)
+					|| activeTheme.startsWith(MessagesThemeIDsSettings.Theme_Black_3)
+					|| activeTheme.startsWith(MessagesThemeIDsSettings.Theme_Black_4)
 					|| activeTheme.startsWith(MessagesThemeIDsSettings.Theme_Black_5)) {
 
 				themeBlack = true;
@@ -331,14 +339,16 @@ public class Util {
 		}
 		return themeBlack;
 	}
-	// from http://www.java2s.com/Tutorial/Java/0280__SWT/ConvertbetweenSWTImageandAWTBufferedImage.htm
+	// from
+	// http://www.java2s.com/Tutorial/Java/0280__SWT/ConvertbetweenSWTImageandAWTBufferedImage.htm
 
 	public static BufferedImage convertToAWT(ImageData data) {
 		ColorModel colorModel = null;
 		PaletteData palette = data.palette;
 		if (palette.isDirect) {
 			colorModel = new DirectColorModel(data.depth, palette.redMask, palette.greenMask, palette.blueMask);
-			BufferedImage bufferedImage = new BufferedImage(colorModel, colorModel.createCompatibleWritableRaster(data.width, data.height), false, null);
+			BufferedImage bufferedImage = new BufferedImage(colorModel,
+					colorModel.createCompatibleWritableRaster(data.width, data.height), false, null);
 			WritableRaster raster = bufferedImage.getRaster();
 			int[] pixelArray = new int[3];
 			for (int y = 0; y < data.height; y++) {
@@ -368,7 +378,8 @@ public class Util {
 			} else {
 				colorModel = new IndexColorModel(data.depth, rgbs.length, red, green, blue);
 			}
-			BufferedImage bufferedImage = new BufferedImage(colorModel, colorModel.createCompatibleWritableRaster(data.width, data.height), false, null);
+			BufferedImage bufferedImage = new BufferedImage(colorModel,
+					colorModel.createCompatibleWritableRaster(data.width, data.height), false, null);
 			WritableRaster raster = bufferedImage.getRaster();
 			int[] pixelArray = new int[1];
 			for (int y = 0; y < data.height; y++) {
@@ -401,6 +412,35 @@ public class Util {
 		}
 		String path = new File(fileUrl.getFile()).toString();
 		return path;
+	}
+
+	/**
+	 * A method to adjust the height of a text widget.
+	 * 
+	 * @param text the text widget
+	 * @param newFont a new font object
+	 * @param parent a parent composite for a temporary text to calculate a default height.
+	 */
+	public static void updateTextHeight(Text text, Font newFont, Composite parent) {
+		
+		Text temp = new Text(parent, SWT.BORDER);
+		int defaultHeight = temp.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
+		temp.dispose();
+		
+		text.setFont(newFont);
+
+		// Calculate new preferred size based on the new font
+		int preferredHeight = text.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
+
+		// Ensure it doesn't go below the original system default
+		int finalHeight = Math.max(preferredHeight, defaultHeight);
+
+		// Update LayoutData (assuming GridLayout is used)
+		GridData data = (GridData) text.getLayoutData();
+		data.heightHint = finalHeight;
+
+		// Force the parent to re-evaluate the layout
+		text.getParent().layout(true);
 	}
 
 }
