@@ -354,70 +354,178 @@ public class Quad2d extends org.eclipse.swt.widgets.Composite implements KeyList
 	 * cell coordinates.
 	 */
 	private void paintCanvas(GC gc, Rectangle clip) {
-		if (smallImage == null || smallImage.isDisposed()) {
-			createSmallImageFromField();
-		}
-		if (smallImage == null || smallImage.isDisposed()) {
-			// fallback: nothing to draw
-			return;
-		}
+	    if (smallImage == null || smallImage.isDisposed()) {
+	        createSmallImageFromField();
+	    }
+	    if (smallImage == null || smallImage.isDisposed()) {
+	        // fallback: nothing to draw
+	        return;
+	    }
 
-		int cols = smallImageData.width;
-		int rows = smallImageData.height;
-		int cellSize = Field.getQuadSize();
-		int destW = cols * cellSize;
-		int destH = rows * cellSize;
+	    final int cols = smallImageData.width;
+	    final int rows = smallImageData.height;
+	    final int cellSize = Field.getQuadSize();
+	    final int destW = cols * cellSize;
+	    final int destH = rows * cellSize;
 
-		// if clip bounds are bigger than image, clamp
-		int clipX = Math.max(0, clip.x);
-		int clipY = Math.max(0, clip.y);
-		int clipW = Math.min(clip.width, Math.max(0, destW - clipX));
-		int clipH = Math.min(clip.height, Math.max(0, destH - clipY));
-		if (clipW <= 0 || clipH <= 0) {
-			return;
-		}
+	    // if clip bounds are bigger than image, clamp
+	    final int clipX = Math.max(0, clip.x);
+	    final int clipY = Math.max(0, clip.y);
+	    final int clipW = Math.min(clip.width, Math.max(0, destW - clipX));
+	    final int clipH = Math.min(clip.height, Math.max(0, destH - clipY));
+	    if (clipW <= 0 || clipH <= 0) {
+	        return;
+	    }
 
-		// Convert clip in destination pixels to source (cell) coords.
-		// Add one extra cell margin to avoid pixel gaps due to integer division.
-		int srcX = clipX / cellSize;
-		int srcY = clipY / cellSize;
-		int srcW = (clipW + cellSize - 1) / cellSize + 1;
-		int srcH = (clipH + cellSize - 1) / cellSize + 1;
+	    // Convert clip in destination pixels to source (cell) coords.
+	    // Add one extra cell margin to avoid pixel gaps due to integer division.
+	    int srcX = clipX / cellSize;
+	    int srcY = clipY / cellSize;
+	    int srcW = (clipW + cellSize - 1) / cellSize + 1;
+	    int srcH = (clipH + cellSize - 1) / cellSize + 1;
 
-		// Clamp source rectangle
-		if (srcX < 0)
-			srcX = 0;
-		if (srcY < 0)
-			srcY = 0;
-		if (srcX + srcW > cols)
-			srcW = cols - srcX;
-		if (srcY + srcH > rows)
-			srcH = rows - srcY;
-		if (srcW <= 0 || srcH <= 0) {
-			return;
-		}
+	    // Clamp source rectangle
+	    if (srcX < 0) srcX = 0;
+	    if (srcY < 0) srcY = 0;
+	    if (srcX + srcW > cols) srcW = cols - srcX;
+	    if (srcY + srcH > rows) srcH = rows - srcY;
+	    if (srcW <= 0 || srcH <= 0) return;
 
-		// Destination rectangle corresponding to the source rectangle
-		int dstX = srcX * cellSize;
-		int dstY = srcY * cellSize;
-		int dstW = srcW * cellSize;
-		int dstH = srcH * cellSize;
-		try {
-			gc.setAntialias(SWT.OFF); // optional, disables antialiasing
-		} catch (NoSuchMethodError ignore) {
-		}
-		// set interpolation to none (nearest-neighbor)
-		if (Util.getOS().equals("Mac") || Util.getOS().equals("Linux")) {
-			/* On Windows drastically reduces the speed of display! */
-			gc.setInterpolation(SWT.NONE);
-		}
-		// Finally draw the required portion of the small image scaled up.
-		try {
-			gc.drawImage(smallImage, srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH);
-		} catch (IllegalArgumentException iae) {
-			// Fallback: draw full scaled image if the partial draw fails
-			gc.drawImage(smallImage, 0, 0, cols, rows, 0, 0, destW, destH);
-		}
+	    final int dstX = srcX * cellSize;
+	    final int dstY = srcY * cellSize;
+	    final int dstW = srcW * cellSize;
+	    final int dstH = srcH * cellSize;
+
+	    // Try to disable antialias/interpolation where supported
+	    try {
+	        gc.setAntialias(SWT.OFF);
+	    } catch (NoSuchMethodError ignore) {
+	    } catch (Throwable ignore) {
+	    }
+	    try {
+	        // Try to request nearest-neighbour. On some Windows SWT versions this is ignored,
+	        // so we fall back to a manual pre-scaling path below.
+	        gc.setInterpolation(SWT.NONE);
+	    } catch (Throwable ignore) {
+	    }
+
+	    // Fast path attempt: single drawImage scaled (original approach).
+	    // If platform does nearest-neighbour when asked, this will be the fastest.
+	    try {
+	        gc.drawImage(smallImage, srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH);
+	        // If the platform honours SWT.NONE this yields crisp output and we are done.
+	        // On some Windows installs this will still appear blurred (native scaling uses smoothing).
+	        // We'll still return; if you reliably see blurring you can force the manual path
+	        // by setting forceManualScaling = true below.
+	        boolean forceManualScaling = false; // set true to always use manual scaling
+	        if (!forceManualScaling) return;
+	    } catch (IllegalArgumentException iae) {
+	        // Fall through to manual (safe) approach below
+	    }
+
+	    // --- Manual nearest-neighbour scaling for Windows (only scale the visible region)
+	    // Strategy: build an int[] destPixels of size dstW*dstH with 0xRRGGBB values,
+	    // using a fast per-row expansion (Arrays.fill) + vertical replication (System.arraycopy),
+	    // then create an ImageData and a temporary SWT Image and draw it 1:1.
+	    //
+	    // This touches only the clipped region (srcW x srcH cells), limiting work & memory.
+
+	    // Heuristic: if the region is tiny (few cells), draw per-cell using drawImage(1x1->cellSize*cellSize)
+	    // to avoid allocating a temp image; otherwise create a temp image for the region.
+	    final int cellCount = srcW * srcH;
+	    final int perCellDrawThreshold = 2000; // tweak: if cellCount <= threshold, do per-cell draws
+	    if (cellCount <= perCellDrawThreshold) {
+	        // Per-cell draw: draw each source pixel scaled up individually.
+	        // This produces nearest-neighbour-like replication because we're scaling a 1x1 source pixel.
+	        int sy = srcY;
+	        for (int y = 0; y < srcH; y++, sy++) {
+	            int sx = srcX;
+	            for (int x = 0; x < srcW; x++, sx++) {
+	                try {
+	                    gc.drawImage(smallImage, sx, sy, 1, 1,
+	                                 dstX + x * cellSize, dstY + y * cellSize, cellSize, cellSize);
+	                } catch (IllegalArgumentException ignore) {
+	                    // ignore and continue
+	                }
+	            }
+	        }
+	        return;
+	    }
+
+	    // Build scaled pixel buffer for the clipped region.
+	    final int regionW = dstW;
+	    final int regionH = dstH;
+	    final int regionSize = regionW * regionH;
+	    if (regionSize <= 0) return;
+
+	    // Reuse arrays if you have class-level buffers; here we'll allocate small temp buffers.
+	    // If you find performance issues reintroduce a reusable transient int[] buffer at class scope.
+	    int[] destPixels = new int[regionSize];
+	    int[] expandedRow = new int[regionW]; // temporary expanded row for one source row
+
+	    // For each source row, read srcW pixels into a rowSrc[] and expand horizontally into expandedRow,
+	    // then copy expandedRow cellSize times into the destPixels (vertical replication).
+	    int destIndex = 0;
+	    int[] rowSrc = new int[srcW];
+	    for (int sy = 0; sy < srcH; sy++) {
+	        // read one row of source pixels from smallImageData
+	        try {
+	            smallImageData.getPixels(srcX, srcY + sy, srcW, rowSrc, 0);
+	        } catch (Exception e) {
+	            // fallback to per-pixel getPixel (slower but safe)
+	            for (int sx = 0; sx < srcW; sx++) {
+	                int p = smallImageData.getPixel(srcX + sx, srcY + sy);
+	                org.eclipse.swt.graphics.RGB rgb = smallImageData.palette.getRGB(p);
+	                rowSrc[sx] = (rgb.red << 16) | (rgb.green << 8) | rgb.blue;
+	            }
+	        }
+
+	        // Expand horizontally: for each source pixel repeat it cellSize times
+	        int dstPos = 0;
+	        for (int sx = 0; sx < srcW; sx++) {
+	            int pix = rowSrc[sx] & 0x00FFFFFF; // normalize to RRGGBB
+	            // fill expandedRow[dstPos .. dstPos+cellSize-1] with pix
+	            java.util.Arrays.fill(expandedRow, dstPos, dstPos + cellSize, pix);
+	            dstPos += cellSize;
+	        }
+
+	        // Copy the expandedRow into destPixels cellSize times (vertical replication)
+	        for (int ry = 0; ry < cellSize; ry++) {
+	            // copy one scanline worth
+	            System.arraycopy(expandedRow, 0, destPixels, destIndex, regionW);
+	            destIndex += regionW;
+	        }
+	    }
+
+	    // create ImageData from destPixels and draw it 1:1 at dstX,dstY
+	    PaletteData palette = new PaletteData(0xFF0000, 0x00FF00, 0x0000FF);
+	    ImageData id = new ImageData(regionW, regionH, 24, palette);
+	    // set all pixels in one call
+	    id.setPixels(0, 0, regionW * regionH, destPixels, 0);
+
+	    org.eclipse.swt.graphics.Image temp = null;
+	    try {
+	        temp = new org.eclipse.swt.graphics.Image(Display.getCurrent(), id);
+	        // draw the temporary scaled region into the canvas at dstX,dstY
+	        gc.drawImage(temp, 0, 0, regionW, regionH, dstX, dstY, regionW, regionH);
+	    } catch (Throwable t) {
+	        // fallback: try per-cell draw if image creation/draw failed
+	        int sy2 = srcY;
+	        for (int y = 0; y < srcH; y++, sy2++) {
+	            int sx2 = srcX;
+	            for (int x = 0; x < srcW; x++, sx2++) {
+	                try {
+	                    gc.drawImage(smallImage, sx2, sy2, 1, 1,
+	                                 dstX + x * cellSize, dstY + y * cellSize, cellSize, cellSize);
+	                } catch (IllegalArgumentException ignore) {
+	                }
+	            }
+	        }
+	    } finally {
+	        if (temp != null && !temp.isDisposed()) {
+	            try { temp.dispose(); } catch (Throwable ignore) {}
+	        }
+	    }
 	}
 
 	/*
