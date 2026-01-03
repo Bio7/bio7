@@ -16,6 +16,7 @@ package com.eco.bio7.worldwind;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -24,22 +25,27 @@ import org.eclipse.swt.widgets.Scale;
 
 import com.eco.bio7.worldwind.swt.WorldWindowNewtCanvasSWT;
 
-import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
 import gov.nasa.worldwind.layers.LayerList;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import worldw.Activator;
+
 public class LayerCompositeDynamic extends Composite {
 
 	private int number;
+	private Image image;
 
 	/**
 	 * Create the composite
+	 * 
 	 * @param parent
 	 * @param style
 	 */
-	public LayerCompositeDynamic(Composite parent, int style,final RenderableLayer layer) {
+	public LayerCompositeDynamic(Composite parent, int style, final RenderableLayer layer) {
 		super(parent, style);
-		/*Important to set the layout data for this composite to scale relative to the parent!*/
+		/*
+		 * Important to set the layout data for this composite to scale relative to the
+		 * parent!
+		 */
 		this.setBackground(parent.getBackground());
 		this.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 		setLayout(new GridLayout(5, true));
@@ -72,61 +78,73 @@ public class LayerCompositeDynamic extends Composite {
 		scale.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				DynamicLayer.setPeriod(scale.getSelection());
-				
+
 			}
 		});
-				
 
-				
-				final Button r = new Button(this, SWT.NONE);
-				GridData gd_r = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-				gd_r.heightHint = 50;
-				r.setLayoutData(gd_r);
-				//r.setText("X");
-				r.setImage(Activator.getImageDescriptor("/pics/deleteaction.png").createImage());
-				r.setSelection(true);
-				r.addSelectionListener(new SelectionAdapter() {
-					public void widgetSelected(final SelectionEvent e) {
-						
-						WorldWindowNewtCanvasSWT wwd = WorldWindView.getWwd();
-						if(wwd!=null){
-						LayerList layers = wwd.getModel().getLayers();
-						layers.remove(layer);
-						
-						dispose();
-						WorldWindOptionsView.optionsInstance.computeScrolledSize();
-						
-						
-						
-						wwd.redraw();
-						}
+		final Button r = new Button(this, SWT.NONE);
+		GridData gd_r = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_r.heightHint = 50;
+		r.setLayoutData(gd_r);
+		// r.setText("X");
+		image = Activator.getImageDescriptor("/pics/deleteaction.png").createImage();
+		r.setImage(image);
+		r.setSelection(true);
+		r.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
 
-					}
-				});
-		
-				final Button setupButton = new Button(this, SWT.NONE);
-				GridData gd_setupButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-				gd_setupButton.heightHint = 50;
-				setupButton.setLayoutData(gd_setupButton);
-				setupButton.addSelectionListener(new SelectionAdapter() {
-					public void widgetSelected(final SelectionEvent e) {
-						DynamicLayer.invokeSetup();
-					}
-				});
-				setupButton.setText("Setup");
+				WorldWindowNewtCanvasSWT wwd = WorldWindView.getWwd();
+				if (wwd != null) {
+					LayerList layers = wwd.getModel().getLayers();
+					layers.remove(layer);
+					image.dispose();
+					dispose();
+					WorldWindOptionsView.computeScrolledSize();
+
+					wwd.redraw();
+				}
+
+			}
+		});
+
+		final Button setupButton = new Button(this, SWT.NONE);
+		GridData gd_setupButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_setupButton.heightHint = 50;
+		setupButton.setLayoutData(gd_setupButton);
+		setupButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				DynamicLayer.invokeSetup();
+			}
+		});
+		setupButton.setText("Setup");
 		//
 	}
-	
-	public void addComponents(final SurfaceImage si){
-		
+
+	public void addComponents(final SurfaceImage si) {
+
 	}
-	public void setListNumber(int number){
-		this.number=number;
+
+	public void setListNumber(int number) {
+		this.setNumber(number);
+	}
+
+	@Override
+	public void dispose() {
+
+		super.dispose();
 	}
 
 	@Override
 	protected void checkSubclass() {
 		// Disable the check that prevents subclassing of SWT components
+	}
+
+	public int getNumber() {
+		return number;
+	}
+
+	public void setNumber(int number) {
+		this.number = number;
 	}
 
 }

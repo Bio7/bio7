@@ -78,7 +78,8 @@ public class LoadShapefileJob extends Job {
 						lc = new LayerCompositeShapefile(composite_4, SWT.NONE, layer, factory.getSect());
 
 						lc.setBounds(10, 10, 260, 60);
-						WorldWindOptionsView.getOptionsInstance().computeScrolledSize();
+						WorldWindOptionsView.getOptionsInstance();
+						WorldWindOptionsView.computeScrolledSize();
 						WorldWindOptionsView.insertBeforePlacenames(WorldWindView.getWwd(), layer);
 
 					}

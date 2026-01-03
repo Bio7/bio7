@@ -16,6 +16,7 @@ package com.eco.bio7.worldwind;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -30,22 +31,25 @@ import gov.nasa.worldwind.layers.LayerList;
 import gov.nasa.worldwind.render.SurfaceImage;
 import gov.nasa.worldwindx.examples.util.ExampleUtil;
 import worldw.Activator;
+
 public class LayerCompositeShapefile extends Composite {
 
 	private int number;
 	private Sector secto;
-	
+	private Image image;
+	private Image imagePerspective;
 
 	/**
 	 * Create the composite
+	 * 
 	 * @param parent
 	 * @param style
-	 * @param sect 
+	 * @param sect
 	 */
-	public LayerCompositeShapefile(Composite parent, int style,final Layer layer, final Sector sect) {
+	public LayerCompositeShapefile(Composite parent, int style, final Layer layer, final Sector sect) {
 		super(parent, style);
 		this.setBackground(parent.getBackground());
-		this.secto=sect;
+		this.secto = sect;
 		this.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 		setLayout(new GridLayout(5, true));
 		final Button b = new Button(this, SWT.CHECK);
@@ -79,24 +83,25 @@ public class LayerCompositeShapefile extends Composite {
 				WorldWindView.getWwd().redraw();
 			}
 		});
-		
 
-		
 		final Button r = new Button(this, SWT.NONE);
 		GridData gd_r = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_r.heightHint = 50;
 		r.setLayoutData(gd_r);
-		//r.setText("X");
-		r.setImage(Activator.getImageDescriptor("/pics/deleteaction.png").createImage());
+		// r.setText("X");
+		image = Activator.getImageDescriptor("/pics/deleteaction.png").createImage();
+		r.setImage(image);
 		r.setSelection(true);
 		r.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				
+
 				LayerList layers = WorldWindView.getWwd().getModel().getLayers();
 				layers.remove(layer);
-				
+				image.dispose();
+				imagePerspective.dispose();
 				dispose();
-				WorldWindOptionsView.getOptionsInstance().computeScrolledSize();
+				WorldWindOptionsView.getOptionsInstance();
+				WorldWindOptionsView.computeScrolledSize();
 				WorldWindView.getWwd().redraw();
 
 			}
@@ -105,8 +110,9 @@ public class LayerCompositeShapefile extends Composite {
 		GridData gd_goTo = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_goTo.heightHint = 50;
 		goTo.setLayoutData(gd_goTo);
-		//goTo.setText("Loc");
-		goTo.setImage(Activator.getImageDescriptor("/pics/worldwindpersp.png").createImage());
+		// goTo.setText("Loc");
+		imagePerspective = Activator.getImageDescriptor("/pics/worldwindpersp.png").createImage();
+		goTo.setImage(imagePerspective);
 		goTo.setToolTipText("Move to location");
 		goTo.setSelection(true);
 		goTo.addSelectionListener(new SelectionAdapter() {
@@ -123,13 +129,14 @@ public class LayerCompositeShapefile extends Composite {
 					MessageBox messageBox = new MessageBox(new Shell(),
 
 							SWT.ICON_WARNING);
-							messageBox.setText("Info!");
-							messageBox.setMessage("No georeference available!");
-							messageBox.open();
+					messageBox.setText("Info!");
+					messageBox.setMessage("No georeference available!");
+					messageBox.open();
 
 				}
 
-				WorldWindOptionsView.getOptionsInstance().computeScrolledSize();
+				WorldWindOptionsView.getOptionsInstance();
+				WorldWindOptionsView.computeScrolledSize();
 				WorldWindView.getWwd().redraw();
 
 			}
@@ -141,17 +148,26 @@ public class LayerCompositeShapefile extends Composite {
 		new Label(this, SWT.NONE);
 		//
 	}
-	
-	public void addComponents(final SurfaceImage si){
-		
+
+	public void addComponents(final SurfaceImage si) {
+
 	}
-	public void setListNumber(int number){
-		this.number=number;
+
+	public void setListNumber(int number) {
+		this.setNumber(number);
 	}
 
 	@Override
 	protected void checkSubclass() {
 		// Disable the check that prevents subclassing of SWT components
+	}
+
+	public int getNumber() {
+		return number;
+	}
+
+	public void setNumber(int number) {
+		this.number = number;
 	}
 
 }

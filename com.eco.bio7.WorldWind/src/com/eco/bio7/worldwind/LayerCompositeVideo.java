@@ -17,6 +17,7 @@ import javax.swing.Timer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -30,6 +31,7 @@ import worldw.Activator;
 public class LayerCompositeVideo extends Composite {
 
 	private int number;
+	private Image image;
 
 	/**
 	 * Create the composite
@@ -37,11 +39,12 @@ public class LayerCompositeVideo extends Composite {
 	 * @param parent
 	 * @param style
 	 */
-	public LayerCompositeVideo(Composite parent, int style, final SurfaceImage si, final RenderableLayer layerImages, final Timer timer) {
+	public LayerCompositeVideo(Composite parent, int style, final SurfaceImage si, final RenderableLayer layerImages,
+			final Timer timer) {
 		super(parent, style);
 		/*
-		 * Important to set the layout data for this composite to scale relative
-		 * to the parent!
+		 * Important to set the layout data for this composite to scale relative to the
+		 * parent!
 		 */
 		this.setBackground(parent.getBackground());
 		this.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
@@ -86,7 +89,8 @@ public class LayerCompositeVideo extends Composite {
 		gd_r.heightHint = 50;
 		r.setLayoutData(gd_r);
 		// r.setText("X");
-		r.setImage(Activator.getImageDescriptor("/pics/deleteaction.png").createImage());
+		image = Activator.getImageDescriptor("/pics/deleteaction.png").createImage();
+		r.setImage(image);
 		r.setSelection(true);
 		r.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -94,9 +98,10 @@ public class LayerCompositeVideo extends Composite {
 				LayerList layers = WorldWindView.getWwd().getModel().getLayers();
 				layers.remove(layerImages);
 				timer.stop();
-
+				image.dispose();
 				dispose();
-				WorldWindOptionsView.getOptionsInstance().computeScrolledSize();
+				WorldWindOptionsView.getOptionsInstance();
+				WorldWindOptionsView.computeScrolledSize();
 				WorldWindView.getWwd().redraw();
 
 			}
@@ -109,12 +114,20 @@ public class LayerCompositeVideo extends Composite {
 	}
 
 	public void setListNumber(int number) {
-		this.number = number;
+		this.setNumber(number);
 	}
 
 	@Override
 	protected void checkSubclass() {
 		// Disable the check that prevents subclassing of SWT components
+	}
+
+	public int getNumber() {
+		return number;
+	}
+
+	public void setNumber(int number) {
+		this.number = number;
 	}
 
 }
