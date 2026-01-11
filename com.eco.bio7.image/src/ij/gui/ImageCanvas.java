@@ -274,7 +274,13 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseWheelList
 		super.paintComponent(g);
 		painted = true;
 		Roi roi = imp.getRoi();
+
 		Overlay overlay = imp.getOverlay();
+		if (roi != null || overlay != null || showAllOverlay != null || Prefs.paintDoubleBuffered || (IJ.isLinux() && magnification < 0.25)) {
+			if (roi != null)
+				roi.updatePaste();
+		}
+
 		/* Changed for Bio7! */
 		// Already double buffered because we use a JPanel here!
 
