@@ -8189,7 +8189,7 @@ public class Functions implements MacroConstants, Measurements {
 			return null;
 		} else if (name.equals("setGroup")) {
 			int group = (int)getArg();
-			if (group<0 || group>255)
+			if (group<0 || group>Roi.MAX_ROI_GROUP)
 				interp.error("Group out of range");
 			rm.setGroup(group);
 			return null;

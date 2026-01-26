@@ -30,13 +30,14 @@ public class WaitForUserDialog extends JDialog implements ActionListener, KeyLis
 		if (text != null && text.startsWith("IJ: "))
 			text = text.substring(4);
 		label = new MultiLineLabel(text, 175);
-		if (!IJ.isLinux()) label.setFont(ImageJ.SansSerif14);
+		if (!IJ.isLinux())
+			label.setFont(ImageJ.SansSerif14);
 		if (IJ.isMacOSX()) {
 			RoiManager rm = RoiManager.getInstance();
 			if (rm != null)
 				rm.runCommand("enable interrupts");
 		}
-		GridBagLayout gridbag = new GridBagLayout(); //set up the layout
+		GridBagLayout gridbag = new GridBagLayout(); // set up the layout
 		GridBagConstraints c = new GridBagConstraints();
 		setLayout(gridbag);
 		c.insets = new Insets(6, 6, 0, 6);
@@ -56,7 +57,7 @@ public class WaitForUserDialog extends JDialog implements ActionListener, KeyLis
 			cancelButton = new Button(" Cancel ");
 			cancelButton.addActionListener(this);
 			cancelButton.addKeyListener(this);
-			c.anchor = GridBagConstraints.WEST; //same as OK button but WEST	
+			c.anchor = GridBagConstraints.WEST; // same as OK button but WEST
 			add(cancelButton, c);
 		}
 
@@ -85,7 +86,9 @@ public class WaitForUserDialog extends JDialog implements ActionListener, KeyLis
 
 	public void show() {
 		super.show();
-		synchronized (this) { //wait for OK
+		if (EventQueue.isDispatchThread())
+			throw new RuntimeException("To avoid a deadlock, WaitForUserDialog must not be called from the Event Queue");
+		synchronized (this) { // wait for OK
 			try {
 				wait();
 			} catch (InterruptedException e) {

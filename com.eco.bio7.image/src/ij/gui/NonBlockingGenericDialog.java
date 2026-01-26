@@ -23,7 +23,9 @@ public class NonBlockingGenericDialog extends GenericDialog {
 		super.showDialog();
 		if (isMacro())
 			return;
-		if (!IJ.macroRunning()) {   // add to Window menu on event dispatch thread
+		if (EventQueue.isDispatchThread())
+			throw new RuntimeException("To avoid a deadlock, NonBlockingGenericDialog must not be called from the Event Queue");
+ 		if (!IJ.macroRunning()) {   // add to Window menu on event dispatch thread
 			final NonBlockingGenericDialog thisDialog = this;
 			EventQueue.invokeLater(new Runnable() {
 				public void run() {

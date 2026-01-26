@@ -223,6 +223,7 @@ public class HyperStackConverter implements PlugIn {
 						autoCbxIndex = -1;
 					}
 					double sizeProduct = 1;
+					gd.getNextChoiceIndex();				//ensure macro recording of 'ordering' choice
 					for (int i=0; i<MAX_DIMENSIONS; i++) {
 						double num = gd.getNextNumber();
 						if (i==autoCbxIndex) continue;
@@ -232,6 +233,9 @@ public class HyperStackConverter implements PlugIn {
 						}
 						sizeProduct *= num;
 					}
+					gd.getNextChoiceIndex();				//ensure macro recording of 'mode' choice
+					if (rgb)
+						gd.getNextBoolean();				//ensure macro recording of 'splitRGB' checkbox
 					if (autoCbxIndex >= 0) {                //calculate the 'auto' dimension
 						double autoValue = stackSize/sizeProduct;
 						boolean autoOk = (autoValue == (int)autoValue);
