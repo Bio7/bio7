@@ -8,7 +8,7 @@
 	<version>3.4.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<properties>
-		<tycho.version>5.0.1</tycho.version>
+		<tycho.version>5.0.2</tycho.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<skip.install>true</skip.install>
 	</properties>
