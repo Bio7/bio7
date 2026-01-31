@@ -25,13 +25,11 @@
       <import plugin="com.eco.bio7.libs" version="3.4.0" match="greaterOrEqual"/>
       <import plugin="com.eco.bio7.os"/>
       <import plugin="com.eco.bio7.util"/>
-      <import plugin="org.eclipse.nebula.widgets.grid" version="1.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.nebula.widgets.grid" match="greaterOrEqual"/>
    </requires>
 
    <plugin
          id="com.eco.bio7.WorldWind"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
 </feature>

@@ -216,7 +216,6 @@ jdk/bin/javaw.exe
       <feature id="com.eco.bio7.ijmacroedit.feature" installMode="root"/>
       <feature id="com.eco.bio7.javacv.feature" installMode="root"/>
       <feature id="org.eclipse.texlipse.main" installMode="root"/>
-      <feature id="org.eclipse.nebula.feature" installMode="root"/>
       <feature id="org.eclipse.nebula.widgets.gallery.feature" installMode="root"/>
       <feature id="org.eclipse.nebula.widgets.opal.starrating.feature" installMode="root"/>
       <feature id="org.eclipse.nebula.widgets.opal.heapmanager.feature" installMode="root"/>
@@ -237,12 +236,10 @@ jdk/bin/javaw.exe
       <feature id="org.eclipse.nebula.widgets.opal.multichoice.feature" installMode="root"/>
       <feature id="org.eclipse.nebula.widgets.opal.tipoftheday.feature" installMode="root"/>
       <feature id="org.eclipse.nebula.widgets.opal.checkboxgroup.feature" installMode="root"/>
-      <feature id="org.eclipse.nebula.widgets.grid.feature" installMode="root"/>
       <feature id="org.eclipse.nebula.widgets.opal.roundedtoolbar.feature" installMode="root"/>
       <feature id="org.eclipse.nebula.widgets.fontawesome.feature" installMode="root"/>
       <feature id="org.eclipse.nebula.widgets.tablecombo.feature" installMode="root"/>
       <feature id="org.eclipse.nebula.widgets.passwordrevealer.feature" installMode="root"/>
-      <feature id="org.eclipse.nebula.widgets.carousel.feature" installMode="root"/>
       <feature id="org.eclipse.nebula.widgets.geomap.feature" installMode="root"/>
       <feature id="org.eclipse.nebula.widgets.opal.preferencewindow.feature" installMode="root"/>
       <feature id="org.eclipse.nebula.widgets.tiles.feature" installMode="root"/>
@@ -277,8 +274,19 @@ jdk/bin/javaw.exe
       <feature id="org.eclipse.nebula.widgets.opal.panels.feature" installMode="root"/>
       <feature id="org.eclipse.nebula.widgets.opal.textassist.feature" installMode="root"/>
       <feature id="org.eclipse.nebula.widgets.opal.propertytable.feature" installMode="root"/>
-      <feature id="org.eclipse.nebula.widgets.radiogroup.feature" installMode="root"/>
       <feature id="com.eco.bio7.jdk" installMode="root"/>
+      <feature id="org.eclipse.nebula.widgets.grid.feature" installMode="root"/>
+      <feature id="org.eclipse.nebula.widgets.calendarcombo.feature" installMode="root"/>
+      <feature id="org.eclipse.nebula.widgets.carousel.feature" installMode="root"/>
+      <feature id="org.eclipse.nebula.widgets.radiogroup.feature" installMode="root"/>
+      <feature id="org.eclipse.nebula.widgets.cdatetime.css.feature" installMode="root"/>
+      <feature id="org.eclipse.nebula.widgets.collapsiblebuttons.feature" installMode="root"/>
+      <feature id="org.eclipse.nebula.widgets.datechooser.feature" installMode="root"/>
+      <feature id="org.eclipse.nebula.widgets.oscilloscope.css.feature" installMode="root"/>
+      <feature id="org.eclipse.nebula.widgets.pagination.feature" installMode="root"/>
+      <feature id="org.eclipse.nebula.widgets.picture.feature" installMode="root"/>
+      <feature id="org.eclipse.nebula.widgets.tablecombo.css.feature" installMode="root"/>
+      <feature id="org.eclipse.nebula.widgets.timeline.feature" installMode="root"/>
    </features>
 
    <configurations>
