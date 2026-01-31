@@ -753,12 +753,10 @@ Require-Bundle: org.eclipse.ui,
  com.eco.bio7.javacv;bundle-version="3.6.0",
  org.eclipse.ui.genericeditor,
  com.eco.bio7.deepcv;bundle-version="1.0.0";resolution:=optional,
- org.eclipse.nebula.widgets.grid;bundle-version="1.1.1",
  org.eclipse.nebula.visualization.widgets;bundle-version="1.1.0",
  org.eclipse.nebula.visualization.xygraph;bundle-version="3.1.1",
  org.eclipse.nebula.paperclips.widgets;bundle-version="2.1.0",
  org.eclipse.nebula.widgets.badgedlabel;bundle-version="1.0.0",
- org.eclipse.nebula.widgets.carousel;bundle-version="1.0.0",
  org.eclipse.nebula.widgets.cdatetime;bundle-version="1.5.0",
  org.eclipse.nebula.widgets.chips;bundle-version="1.0.0",
  org.eclipse.nebula.widgets.compositetable;bundle-version="1.0.0",
@@ -821,7 +819,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.terminal.connector.telnet;bundle-version="[1.0.0,2.0.0)",
  org.eclipse.terminal.control;bundle-version="[1.0.100,2.0.0)",
  org.eclipse.terminal.view.core;bundle-version="[1.0.0,2.0.0)",
- org.eclipse.terminal.view.ui;bundle-version="[1.0.100,2.0.0)"
+ org.eclipse.terminal.view.ui;bundle-version="[1.0.100,2.0.0)",
+ org.eclipse.nebula.widgets.grid;bundle-version="1.2.1"
 Eclipse-LazyStart: true
 Import-Package: org.eclipse.e4.ui.css.swt.theme
 Bundle-RequiredExecutionEnvironment: JavaSE-25

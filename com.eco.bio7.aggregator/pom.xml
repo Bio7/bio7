@@ -63,5 +63,7 @@
 	<module>../com.eco.bio7.win32.x86_64</module>
 	<module>../com.eco.bio7.linux.gtk.aarch64</module>
 	<module>../com.eco.bio7.jdk</module>
+	<module>../org.eclipse.nebula.widgets.grid</module>
+	<module>../org.eclipse.nebula.widgets.grid.feature</module>
 </modules>
 </project>

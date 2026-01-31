@@ -25,7 +25,7 @@
       <import plugin="com.eco.bio7.libs" version="3.4.0" match="greaterOrEqual"/>
       <import plugin="com.eco.bio7.os"/>
       <import plugin="com.eco.bio7.util"/>
-      <import plugin="org.eclipse.nebula.widgets.grid" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.nebula.widgets.grid"/>
    </requires>
 
    <plugin
