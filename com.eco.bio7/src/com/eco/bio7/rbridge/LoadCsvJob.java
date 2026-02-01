@@ -160,7 +160,7 @@ public class LoadCsvJob extends WorkspaceJob {
 			public void run() {
 				grid = new Spread().spread(RTable.getTabFolder(), sizex, sizey, name);
 				RTable.setGrid(grid);
-
+                grid.forceFocus();
 				count = 0;
 				try {
 					while ((readLineNext = reader.readNext()) != null) {

@@ -13,10 +13,15 @@
 
 package com.eco.bio7.rbridge;
 
+import static com.eco.bio7.rbridge.RServeUtil.listRObjects;
+
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
+
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.nebula.widgets.grid.Grid;
 import org.eclipse.nebula.widgets.grid.GridColumn;
 import org.eclipse.nebula.widgets.grid.GridItem;
@@ -77,8 +82,6 @@ public class CSVImport {
 	private Button btnClipboardData;
 	private boolean noProblemsDetected;
 
-	
-
 	/**
 	 * @param args
 	 */
@@ -118,7 +121,7 @@ public class CSVImport {
 	 */
 	void createSShell() {
 		sShell = new Shell(SWT.CLOSE | SWT.RESIZE | SWT.TITLE);
-		/*On Linux GTK this flag cares about the right background!*/
+		/* On Linux GTK this flag cares about the right background! */
 		sShell.setBackgroundMode(SWT.INHERIT_DEFAULT);
 		sShell.setText("CSV Reader");
 		sShell.setSize(new Point(518, 812));
@@ -414,13 +417,33 @@ public class CSVImport {
 					String fileToRead = textFile.getText();
 					LoadCsvJob job = new LoadCsvJob(CSVImport.this, fileToRead);
 					// job.setSystem(true);
+					job.addJobChangeListener(new JobChangeAdapter() {
+						public void done(IJobChangeEvent event) {
+							if (event.getResult().isOK()) {
+								Display.getDefault().syncExec(new Runnable() {
+
+									public void run() {
+										table.dispose();
+										sShell.dispose();
+									}
+								});
+
+							} else {
+								Display.getDefault().syncExec(new Runnable() {
+
+									public void run() {
+										table.dispose();
+										sShell.dispose();
+									}
+								});
+							}
+						}
+					});
 					job.schedule();
-					sShell.dispose();
+
 				} else {
 					Bio7Dialog.message("Problems detected! Please read the parser message!");
 				}
-
-				
 
 			}
 		});
@@ -432,12 +455,11 @@ public class CSVImport {
 		button3.setText("Cancel");
 		button3.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
 			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
+				table.dispose();
 				sShell.dispose();
 
 			}
 		});
-		
-		
 
 	}
 
@@ -452,7 +474,8 @@ public class CSVImport {
 
 		/* Detect if char is given! */
 
-		if (textSeperator.getText().length() <= 0 || textQuotedChar.getText().length() <= 0 || textEscape.getText().length() <= 0) {
+		if (textSeperator.getText().length() <= 0 || textQuotedChar.getText().length() <= 0
+				|| textEscape.getText().length() <= 0) {
 			labelError.setForeground(SWTResourceManager.getColor(SWT.COLOR_RED));
 			labelError.setText("The separator, quote, and escape characters could'nt be empty!");
 			noProblemsDetected = false;
@@ -493,7 +516,8 @@ public class CSVImport {
 				String plainText = (String) clipboard.getContents(TextTransfer.getInstance());
 				if (plainText != null && plainText.isEmpty() == false) {
 					st = new StringReader(plainText);
-					reader = new CSVReader(st, seperator, quoteChar, escape, spinner.getSelection(), strictQuotes.getSelection(), ignoreWs.getSelection(), keepCr.getSelection());
+					reader = new CSVReader(st, seperator, quoteChar, escape, spinner.getSelection(),
+							strictQuotes.getSelection(), ignoreWs.getSelection(), keepCr.getSelection());
 					clipboard.dispose();
 					labelError.setForeground(SWTResourceManager.getColor(SWT.COLOR_BLACK));
 					labelError.setText("No problems detected!");
@@ -510,7 +534,8 @@ public class CSVImport {
 				String fil = textFile.getText();
 				if (fil != null && fil.isEmpty() == false) {
 					fi = new FileReader(textFile.getText());
-					reader = new CSVReader(fi, seperator, quoteChar, escape, spinner.getSelection(), strictQuotes.getSelection(), ignoreWs.getSelection(), keepCr.getSelection());
+					reader = new CSVReader(fi, seperator, quoteChar, escape, spinner.getSelection(),
+							strictQuotes.getSelection(), ignoreWs.getSelection(), keepCr.getSelection());
 					labelError.setForeground(SWTResourceManager.getColor(SWT.COLOR_BLACK));
 					labelError.setText("No problems detected!");
 					noProblemsDetected = true;
@@ -555,17 +580,17 @@ public class CSVImport {
 	 * 
 	 * Copyright 2005 Bytecode Pty Ltd.
 	 * 
-	 * Licensed under the Apache License, Version 2.0 (the "License"); you may
-	 * not use this file except in compliance with the License. You may obtain a
-	 * copy of the License at
+	 * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+	 * use this file except in compliance with the License. You may obtain a copy of
+	 * the License at
 	 * 
 	 * http://www.apache.org/licenses/LICENSE-2.0
 	 * 
 	 * Unless required by applicable law or agreed to in writing, software
 	 * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
 	 * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-	 * License for the specific language governing permissions and limitations
-	 * under the License.
+	 * License for the specific language governing permissions and limitations under
+	 * the License.
 	 */
 
 	public Button getBtnClipboardData() {
@@ -581,26 +606,22 @@ public class CSVImport {
 	 * because in opencsv the separator, quote, and escape characters must the
 	 * different.
 	 *
-	 * @param separator
-	 *            The defined separator character
-	 * @param quotechar
-	 *            The defined quotation cahracter
-	 * @param escape
-	 *            The defined escape character
+	 * @param separator The defined separator character
+	 * @param quotechar The defined quotation cahracter
+	 * @param escape    The defined escape character
 	 * @return True if any two of the three are the same.
 	 */
 	private boolean anyCharactersAreTheSame(char separator, char quotechar, char escape) {
-		return isSameCharacter(separator, quotechar) || isSameCharacter(separator, escape) || isSameCharacter(quotechar, escape);
+		return isSameCharacter(separator, quotechar) || isSameCharacter(separator, escape)
+				|| isSameCharacter(quotechar, escape);
 	}
 
 	/**
 	 * Checks that the two characters are the same and are not the defined
 	 * NULL_CHARACTER.
 	 * 
-	 * @param c1
-	 *            First character
-	 * @param c2
-	 *            Second character
+	 * @param c1 First character
+	 * @param c2 Second character
 	 * @return True if both characters are the same and are not the defined
 	 *         NULL_CHARACTER
 	 */
