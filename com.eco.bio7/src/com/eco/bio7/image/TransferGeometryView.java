@@ -58,7 +58,7 @@ public class TransferGeometryView extends ViewPart {
 	public void createPartControl(Composite parent) {
 		
 		
-		scrolledComposite = new ScrolledComposite(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);	
+		scrolledComposite = new ScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL);	
 		scrolledComposite.setExpandHorizontal(true);
 		scrolledComposite.setExpandVertical(false);
 		
