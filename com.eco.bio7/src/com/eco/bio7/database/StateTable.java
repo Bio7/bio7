@@ -79,7 +79,7 @@ public class StateTable {
 
 	private void createTable(final Composite parent) {
 		grid = new Grid(parent,
-				SWT.BORDER | SWT.V_SCROLL | SWT.SCROLL_LINE | SWT.MULTI | SWT.FULL_SELECTION | SWT.VIRTUAL);
+				 SWT.V_SCROLL | SWT.SCROLL_LINE | SWT.MULTI | SWT.FULL_SELECTION | SWT.VIRTUAL);
 		grid.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event event) {
 				checkedEvent = event.detail == SWT.CHECK ? true : false;

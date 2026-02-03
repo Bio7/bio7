@@ -35,7 +35,7 @@ public class DebugTextView extends ViewPart {
 	 */
 	@Override
 	public void createPartControl(Composite parent) {
-		container = new Composite(parent, SWT.BORDER);
+		container = new Composite(parent, SWT.NONE);
 		container.setLayout(new FillLayout(SWT.HORIZONTAL));
 		
 		styledText = new StyledText(container, SWT.BORDER | SWT.V_SCROLL|SWT.H_SCROLL);

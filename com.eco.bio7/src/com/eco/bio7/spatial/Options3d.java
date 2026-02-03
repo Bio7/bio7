@@ -150,7 +150,7 @@ public class Options3d extends ViewPart {
 		newItemExpandItem.setText("Space");
 
 		ScrolledComposite scroll = new ScrolledComposite(expandBar, SWT.V_SCROLL);
-		final Composite composite = new Composite(scroll, SWT.BORDER);
+		final Composite composite = new Composite(scroll, SWT.NONE);
 		newItemExpandItem.setControl(scroll);
 		composite.setLayout(new GridLayout(3, true));
 
@@ -558,7 +558,7 @@ public class Options3d extends ViewPart {
 		// newItemExpandItem_1.setHeight(350);
 		newItemExpandItem_1.setText("Time");
 		ScrolledComposite scroll_2 = new ScrolledComposite(expandBar, SWT.V_SCROLL);
-		final Composite composite_2 = new Composite(scroll_2, SWT.BORDER);
+		final Composite composite_2 = new Composite(scroll_2, SWT.NONE);
 		newItemExpandItem_1.setControl(scroll_2);
 		composite_2.setLayout(new GridLayout(2, true));
 
@@ -743,7 +743,7 @@ public class Options3d extends ViewPart {
 		// newItemExpandItem_2.setHeight(600);
 		newItemExpandItem_2.setText("Model");
 		ScrolledComposite scroll_1 = new ScrolledComposite(expandBar, SWT.V_SCROLL);
-		final Composite composite_1 = new Composite(scroll_1, SWT.BORDER);
+		final Composite composite_1 = new Composite(scroll_1, SWT.NONE);
 		newItemExpandItem_2.setControl(scroll_1);
 		composite_1.setLayout(new GridLayout(3, true));
 		scroll_1.setMinSize(200, 600);
@@ -1082,7 +1082,7 @@ public class Options3d extends ViewPart {
 		newItemExpandItem_3.setText("Texture");
 
 		ScrolledComposite scroll_5 = new ScrolledComposite(expandBar, SWT.V_SCROLL);
-		final Composite composite_5 = new Composite(scroll_5, SWT.BORDER);
+		final Composite composite_5 = new Composite(scroll_5, SWT.NONE);
 		newItemExpandItem_3.setControl(scroll_5);
 		composite_5.setLayout(new GridLayout(2, true));
 		scroll_5.setMinSize(200, 400);
@@ -1267,7 +1267,7 @@ public class Options3d extends ViewPart {
 		newItemExpandItem_4.setText("Height Map");
 
 		ScrolledComposite scroll_3 = new ScrolledComposite(expandBar, SWT.V_SCROLL);
-		final Composite composite_3 = new Composite(scroll_3, SWT.BORDER);
+		final Composite composite_3 = new Composite(scroll_3, SWT.NONE);
 		composite_3.setToolTipText("Enables the height map. Visible if a texture is active!");
 		newItemExpandItem_4.setControl(scroll_3);
 		composite_3.setLayout(new GridLayout(2, true));
@@ -1421,7 +1421,7 @@ public class Options3d extends ViewPart {
 		// newItemExpandItem_5.setHeight(500);
 		newItemExpandItem_5.setText("Camera");
 		ScrolledComposite scroll_4 = new ScrolledComposite(expandBar, SWT.V_SCROLL);
-		final Composite composite_4 = new Composite(scroll_4, SWT.BORDER);
+		final Composite composite_4 = new Composite(scroll_4, SWT.NONE);
 		newItemExpandItem_5.setControl(scroll_4);
 		composite_4.setLayout(new GridLayout(3, true));
 		scroll_4.setMinSize(200, 500);
@@ -1782,7 +1782,7 @@ public class Options3d extends ViewPart {
 		// newItemExpandItem_6.setHeight(350);
 		newItemExpandItem_6.setText("Light");
 		ScrolledComposite scroll_6 = new ScrolledComposite(expandBar, SWT.V_SCROLL);
-		final Composite composite_6 = new Composite(scroll_6, SWT.BORDER);
+		final Composite composite_6 = new Composite(scroll_6, SWT.NONE);
 		newItemExpandItem_6.setControl(scroll_6);
 		composite_6.setLayout(new GridLayout(4, true));
 
@@ -2160,7 +2160,7 @@ public class Options3d extends ViewPart {
 		// newItemExpandItem_8.setHeight(130);
 		newItemExpandItem_8.setText("Image");
 		ScrolledComposite scroll_8 = new ScrolledComposite(expandBar, SWT.V_SCROLL);
-		final Composite composite_8 = new Composite(scroll_8, SWT.BORDER);
+		final Composite composite_8 = new Composite(scroll_8, SWT.NONE);
 		newItemExpandItem_8.setControl(scroll_8);
 		composite_8.setLayout(new GridLayout(1, true));
 
