@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2006 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ *
+ * This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ * 
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  *    chris.gross@us.ibm.com    - initial API and implementation
@@ -19,6 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -44,7 +48,10 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer
     int bottomMargin = 3;
 
     private TextLayout textLayout;
-    
+
+	private int truncationStyle =SWT.CENTER;
+
+
     /**
      * {@inheritDoc}
      */
@@ -55,13 +62,19 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer
 
         String text = getHeaderText(item);
 
-        gc.setFont(getDisplay().getSystemFont());
-        
+		if (getHeaderFont(item) == null) {
+			gc.setFont(item.getParent().getFont());
+		} else {
+			gc.setFont(getHeaderFont(item));
+		}
+
         Color background = getHeaderBackground(item);
         if( background == null ) {
-        	background = Util.getShell().getBackground();
+        	background = getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
         }
-        gc.setBackground(background);
+        //gc.setBackground(background);
+        /*Changed for Bio7!*/
+    	gc.setBackground(Util.getShell().getBackground());
 
         if (isSelected() && item.getParent().getCellSelectionEnabled())
         {
@@ -157,28 +170,29 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer
         if( foreground == null ) {
         	foreground = getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND);
         }
-        
-        gc.setForeground(Util.getShell().getForeground());
 
-        
+        //gc.setForeground(foreground);
+        /*Changed for Bio7!*/
+    	gc.setForeground(Util.getShell().getForeground());
+
         int y = getBounds().y;
         int selectionOffset = 0;
         if (isSelected() && !item.getParent().getCellSelectionEnabled())
         {
             selectionOffset = 1;
         }
-        
+
         if (!item.getParent().isWordWrapHeader())
         {
             y += (getBounds().height - gc.stringExtent(text).y) / 2;
-            gc.drawString(TextUtils.getShortString(gc, text, width), getBounds().x + x + selectionOffset, y + selectionOffset, true);
+            gc.drawString(TextUtils.getShortStr(gc, text, width, truncationStyle), getBounds().x + x + selectionOffset, y + selectionOffset, true);
         }
         else
         {
           getTextLayout(gc, item);
           textLayout.setWidth(width < 1 ? 1 : width);
           textLayout.setText(text);
-          
+
           if (item.getParent().isAutoHeight())
           {
             // Look through all columns to get the max height needed for this item
@@ -193,16 +207,20 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer
               maxHeight = Math.max(maxHeight, height);
             }
           }
-            
+
           if (maxHeight != item.getHeight())
           {
             item.setHeight(maxHeight);
           }
           }
-          
+
           textLayout.draw(gc, getBounds().x + x + selectionOffset, y + selectionOffset);
         }
 
+    }
+
+    private Font getHeaderFont(GridItem item){
+    	return item.getHeaderFont();
     }
 
     /**
@@ -216,9 +234,14 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer
         String text = getHeaderText(item);
         Image image = getHeaderImage(item);
 
-        int x = 0;
+        Font previousFont = gc.getFont();
+		if (getHeaderFont(item) == null) {
+			gc.setFont(item.getParent().getFont());
+		} else {
+			gc.setFont(getHeaderFont(item));
+		}
 
-        x += leftMargin;
+        int x = leftMargin;
 
         if( image != null ) {
         	x += image.getBounds().width + 5;
@@ -226,9 +249,7 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer
 
         x += gc.stringExtent(text).x + rightMargin;
 
-        int y = 0;
-
-        y += topMargin;
+        int y = topMargin;
 
         if( image != null ) {
         	y += Math.max(gc.getFontMetrics().getHeight(),image.getBounds().height);
@@ -238,6 +259,7 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer
 
 
         y += bottomMargin;
+        gc.setFont(previousFont);
 
         return new Point(x, y);
     }
@@ -255,15 +277,15 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer
         }
         return text;
     }
-    
+
     private Color getHeaderBackground(GridItem item) {
     	return item.getHeaderBackground();
     }
-    
+
     private Color getHeaderForeground(GridItem item) {
     	return item.getHeaderForeground();
     }
-    
+
     private void getTextLayout(GC gc, GridItem gridItem)
     {
         if (textLayout == null)
@@ -271,13 +293,32 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer
             textLayout = new TextLayout(gc.getDevice());
             textLayout.setFont(gc.getFont());
             gridItem.getParent().addDisposeListener(new DisposeListener()
-            {                
+            {
                 @Override
 				public void widgetDisposed(DisposeEvent e)
                 {
                     textLayout.dispose();
-                }                
+                }
             });
         }
     }
+
+    /**
+     * Get the truncation style
+     * @return the truncation style.
+     */
+	public int getTruncationStyle() {
+		return truncationStyle;
+	}
+
+	/**
+	 * Set the truncation style to use when cell content is too large.
+	 * @see SWT#LEFT
+	 * @see SWT#CENTER
+	 * @see SWT#RIGHT
+	 * @param truncationStyle the truncation style
+	 */
+	public void setTruncationStyle(int truncationStyle) {
+		this.truncationStyle = truncationStyle;
+	}
 }

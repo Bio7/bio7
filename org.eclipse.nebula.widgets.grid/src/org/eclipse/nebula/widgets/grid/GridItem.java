@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2006 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ *
+ * This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ * 
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  *    chris.gross@us.ibm.com - initial API and implementation
@@ -27,7 +30,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Item;
-import org.eclipse.swt.widgets.TypedListener;
 
 /**
  * <p>
@@ -47,7 +49,7 @@ import org.eclipse.swt.widgets.TypedListener;
  *
  * @author chris.gross@us.ibm.com
  * @author Mirko Paturzo <mirko.paturzo@exeura.eu>
- * 
+ *
  *         Mirko removed all collections, improve dispose performance, reduce
  *         used memory
  */
@@ -131,6 +133,11 @@ public class GridItem extends Item {
 	 * Foreground color of the header
 	 */
 	public Color headerForeground = null;
+
+	/**
+	 * Font of the header
+	 */
+	private Font headerFont = null;
 
 	/**
 	 * (SWT.VIRTUAL only) Flag that specifies whether the client has already
@@ -340,11 +347,7 @@ public class GridItem extends Item {
 	 *                </ul>
 	 */
 	public void addControlListener(ControlListener listener) {
-		checkWidget();
-		if (listener == null)
-			SWT.error(SWT.ERROR_NULL_ARGUMENT);
-		TypedListener typedListener = new TypedListener(listener);
-		addListener(SWT.Resize, typedListener);
+		addTypedListener(listener, SWT.Resize);
 	}
 
 	/**
@@ -367,10 +370,7 @@ public class GridItem extends Item {
 	 *                </ul>
 	 */
 	public void removeControlListener(ControlListener listener) {
-		checkWidget();
-		if (listener == null)
-			SWT.error(SWT.ERROR_NULL_ARGUMENT);
-		removeListener(SWT.Resize, listener);
+		removeTypedListener(SWT.Resize, listener);
 	}
 
 	/**
@@ -494,6 +494,30 @@ public class GridItem extends Item {
 	public Rectangle getBounds(int columnIndex) {
 		checkWidget();
 
+		final Point origin = parent.getOrigin(parent.getColumn(columnIndex), this);
+		final Point cellSize = this.getCellSize(columnIndex, parent.getExtraFill());
+		return new Rectangle(origin.x, origin.y, cellSize.x, cellSize.y);
+	}
+
+	/**
+	 * Returns a rectangle describing the receiver's size and location relative
+	 * to its parent at a column in the table.
+	 * Handle not visible items.
+	 *
+	 * @param columnIndex
+	 *            the index that specifies the column
+	 * @return the receiver's bounding column rectangle
+	 * @throws SWTException
+	 *             <ul>
+	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
+	 *             </li>
+	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
+	 *             thread that created the receiver</li>
+	 *             </ul>
+	 */
+	public Rectangle getBoundsCorrected(final int columnIndex) {
+		checkWidget();
+
 		// HACK: The -1000,-1000 xy coordinates below are a hack to deal with
 		// GridEditor issues. In
 		// normal SWT Table, when an editor is created on Table and its
@@ -517,27 +541,49 @@ public class GridItem extends Item {
 		if (origin.x < 0 && parent.isRowHeaderVisible())
 			return new Rectangle(-1000, -1000, 0, 0);
 
-		Point cellSize = this.getCellSize(columnIndex);
+		Point cellSize = this.getCellSize(columnIndex, parent.getExtraFill());
 
 		return new Rectangle(origin.x, origin.y, cellSize.x, cellSize.y);
 	}
 
 	/**
 	 *
-	 * @param columnIndex
+	 * @param columnIndex index of the column to get the cell size
 	 * @return width and height
 	 */
 	protected Point getCellSize(int columnIndex) {
+		return getCellSize(columnIndex, parent.getExtraFill());
+	}
+	/**
+	 *
+	 * @param columnIndex index of the column to get the cell size
+	 * @param extraFill any extra width that should be applied to columns that have fill property
+	 * @return width and height
+	 */
+	protected Point getCellSize(int columnIndex, int extraFill) {
+		/* width */
 		int width = 0;
 
 		int span = getColumnSpan(columnIndex);
-		for (int i = 0; i <= span; i++) {
-			if (parent.getColumnCount() <= columnIndex + i) {
+
+		int[] columnOrder = parent.getColumnOrder();
+		int visualColumnIndex = columnIndex;
+		for (int i = 0; i < columnOrder.length; i++) {
+			if (columnOrder[i] == columnIndex) {
+				visualColumnIndex = i;
 				break;
 			}
-			width += parent.getColumn(columnIndex + i).getWidth();
 		}
 
+		for (int i = 0; i <= span; i++) {
+			if (visualColumnIndex + i >= columnOrder.length) {
+				break;
+			}
+			int nextColumnIndex = columnOrder[visualColumnIndex + i];
+			width += parent.getColumn(nextColumnIndex).getWidth(extraFill);
+		}
+
+		/* height */
 		int indexOfCurrentItem = parent.getIndexOfItem(this);
 
 		GridItem item = parent.getItem(indexOfCurrentItem);
@@ -1256,7 +1302,7 @@ public class GridItem extends Item {
 		GridColumn[] columns = getParent().getColumns();
 
 		for (int i = 0; i < columns.length; i++) {
-			Point cell = new Point(getParent().indexOf(columns[i]), index);
+			Point cell = new Point(columns[i].index, index);
 			if (getParent().isCellSelected(cell)) {
 				flag = true;
 				getParent().deselectCell(cell);
@@ -1644,7 +1690,7 @@ public class GridItem extends Item {
 	void newItem(GridItem item, int index) {
 		setHasChildren(true);
 		if (children == null)
-			children = new ArrayList<GridItem>();
+			children = new ArrayList<>();
 		if (index == NO_ROW) {
 			children.add(item);
 		} else {
@@ -1769,6 +1815,23 @@ public class GridItem extends Item {
 	}
 
 	/**
+	 * Returns the receiver's row header font
+	 *
+	 * @return the font or <code>null</code> if none
+	 * @throws org.eclipse.swt.SWTException
+	 *             <ul>
+	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
+	 *             </li>
+	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
+	 *             thread that created the receiver</li>
+	 *             </ul>
+	 */
+	public Font getHeaderFont() {
+		checkWidget();
+		return headerFont;
+	}
+
+	/**
 	 * Sets the receiver's row header text. If the text is <code>null</code> the
 	 * row header will display the row number.
 	 *
@@ -1877,6 +1940,25 @@ public class GridItem extends Item {
 	public void setHeaderForeground(Color headerForeground) {
 		checkWidget();
 		this.headerForeground = headerForeground;
+		parent.redraw();
+	}
+
+	/**
+	 * Set the new header font
+	 *
+	 * @param headerFont
+	 *            the font or <code>null</code>
+	 * @throws org.eclipse.swt.SWTException
+	 *             <ul>
+	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
+	 *             </li>
+	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
+	 *             thread that created the receiver</li>
+	 *             </ul>
+	 */
+	public void setHeaderFont(Font headerFont) {
+		checkWidget();
+		this.headerFont=headerFont;
 		parent.redraw();
 	}
 

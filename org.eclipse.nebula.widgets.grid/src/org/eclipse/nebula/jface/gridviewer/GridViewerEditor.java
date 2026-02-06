@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2007 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ *
+ * This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ * 
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  *    rmcamara@us.ibm.com                       - initial API and implementation
@@ -134,10 +137,11 @@ public class GridViewerEditor extends ColumnViewerEditor {
 	}
 
 	/**
-	 * FIXME
-	 * @param viewer
-	 * @param editorActivationStrategy
-	 * @param feature
+	 * Creates a grid viewer editor for the given table viewer.
+	 * 
+	 * @param viewer the grid table viewer
+	 * @param editorActivationStrategy the editor activation strategy
+	 * @param feature the feature flags for the editor
 	 */
 	public static void create(GridTableViewer viewer,
 			ColumnViewerEditorActivationStrategy editorActivationStrategy,
@@ -146,10 +150,11 @@ public class GridViewerEditor extends ColumnViewerEditor {
 	}
 
 	/**
-	 * FIXME
-	 * @param viewer
-	 * @param editorActivationStrategy
-	 * @param feature
+	 * Creates a grid viewer editor for the given tree viewer.
+	 * 
+	 * @param viewer the grid tree viewer
+	 * @param editorActivationStrategy the editor activation strategy
+	 * @param feature the feature flags for the editor
 	 */
 	public static void create(GridTreeViewer viewer,
 			ColumnViewerEditorActivationStrategy editorActivationStrategy,

@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2006 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ *
+ * This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ * 
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  *    chris.gross@us.ibm.com - initial API and implementation
@@ -39,7 +42,9 @@ public class DefaultEmptyColumnHeaderRenderer extends AbstractRenderer
      */
     public void paint(GC gc, Object value)
     {
-        gc.setBackground(Util.getShell().getBackground());
+        //gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+        /*Changed for Bio7!*/
+    	gc.setBackground(Util.getShell().getBackground());
 
         gc.fillRectangle(getBounds().x, getBounds().y, getBounds().width + 1,
                          getBounds().height + 1);

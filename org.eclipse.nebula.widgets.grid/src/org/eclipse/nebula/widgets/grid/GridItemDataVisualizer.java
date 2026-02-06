@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2014 Mirko Paturzo (Exeura srl).
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ *
+ * This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ * 
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  *     Mirko Paturzo - initial API and implementation
@@ -38,9 +41,9 @@ public class GridItemDataVisualizer implements DataVisualizer {
 	/**
 	 * Create {@link GridItemDataVisualizer} with default value
 	 * 
-	 * @param defaultBackground
-	 * @param defaultForeground
-	 * @param defaultFont
+	 * @param defaultBackground the default background color
+	 * @param defaultForeground the default foreground color
+	 * @param defaultFont the default font
 	 */
 	public GridItemDataVisualizer(Color defaultBackground, Color defaultForeground, Font defaultFont) {
 		this.defaultBackground = defaultBackground;
@@ -64,21 +67,33 @@ public class GridItemDataVisualizer implements DataVisualizer {
 	private Color defaultForeground;
 	private Font defaultFont;
 
+	/**
+	 * @see org.eclipse.nebula.widgets.grid.DataVisualizer#getDefaultBackground()
+	 */
 	@Override
 	public Color getDefaultBackground() {
 		return defaultBackground;
 	}
 
+	/**
+	 * @see org.eclipse.nebula.widgets.grid.DataVisualizer#getDefaultForeground()
+	 */
 	@Override
 	public Color getDefaultForeground() {
 		return defaultForeground;
 	}
 
+	/**
+	 * @see org.eclipse.nebula.widgets.grid.DataVisualizer#getDefaultFont()
+	 */
 	@Override
 	public Font getDefaultFont() {
 		return defaultFont;
 	}
 
+	/**
+	 * @see org.eclipse.nebula.widgets.grid.DataVisualizer#getBackground(org.eclipse.nebula.widgets.grid.GridItem, int)
+	 */
 	@Override
 	public Color getBackground(GridItem gridItem, int column) {
 		return getValueOrDefault(backgrounds, gridItem, column, defaultBackground);
@@ -87,10 +102,10 @@ public class GridItemDataVisualizer implements DataVisualizer {
 	/**
 	 * get value or default
 	 * 
-	 * @param map
-	 * @param gridItem
-	 * @param column
-	 * @param defaultValue
+	 * @param map the map to retrieve the value from
+	 * @param gridItem the grid item
+	 * @param column the column index
+	 * @param defaultValue the default value to return if not found
 	 * @return T
 	 */
 	protected <T> T getValueOrDefault(Map<GridItem, List<T>> map, GridItem gridItem, int column, T defaultValue) {
@@ -110,46 +125,73 @@ public class GridItemDataVisualizer implements DataVisualizer {
 		return t;
 	}
 
+	/**
+	 * @see org.eclipse.nebula.widgets.grid.DataVisualizer#getChecked(org.eclipse.nebula.widgets.grid.GridItem, int)
+	 */
 	@Override
 	public boolean getChecked(GridItem gridItem, int column) {
 		return getValueOrDefault(checkeds, gridItem, column, Boolean.FALSE);
 	}
 
+	/**
+	 * @see org.eclipse.nebula.widgets.grid.DataVisualizer#getColumnSpan(org.eclipse.nebula.widgets.grid.GridItem, int)
+	 */
 	@Override
 	public int getColumnSpan(GridItem gridItem, int column) {
 		return getValueOrDefault(columnSpans, gridItem, column, 0);
 	}
 
+	/**
+	 * @see org.eclipse.nebula.widgets.grid.DataVisualizer#getRowSpan(org.eclipse.nebula.widgets.grid.GridItem, int)
+	 */
 	@Override
 	public int getRowSpan(GridItem gridItem, int column) {
 		return getValueOrDefault(rowSpans, gridItem, column, 0);
 	}
 
+	/**
+	 * @see org.eclipse.nebula.widgets.grid.DataVisualizer#getFont(org.eclipse.nebula.widgets.grid.GridItem, int)
+	 */
 	@Override
 	public Font getFont(GridItem gridItem, int column) {
 		return getValueOrDefault(fonts, gridItem, column, defaultFont);
 	}
 
+	/**
+	 * @see org.eclipse.nebula.widgets.grid.DataVisualizer#getForeground(org.eclipse.nebula.widgets.grid.GridItem, int)
+	 */
 	@Override
 	public Color getForeground(GridItem gridItem, int column) {
 		return getValueOrDefault(foregrounds, gridItem, column, defaultForeground);
 	}
 
+	/**
+	 * @see org.eclipse.nebula.widgets.grid.DataVisualizer#getGrayed(org.eclipse.nebula.widgets.grid.GridItem, int)
+	 */
 	@Override
 	public boolean getGrayed(GridItem gridItem, int column) {
 		return getValueOrDefault(grayeds, gridItem, column, Boolean.FALSE);
 	}
 
+	/**
+	 * @see org.eclipse.nebula.widgets.grid.DataVisualizer#getImage(org.eclipse.nebula.widgets.grid.GridItem, int)
+	 */
 	@Override
 	public Image getImage(GridItem gridItem, int column) {
 		return getValueOrDefault(images, gridItem, column, null);
 	}
 
+	/**
+	 * @see org.eclipse.nebula.widgets.grid.DataVisualizer#getText(org.eclipse.nebula.widgets.grid.GridItem, int)
+	 */
 	@Override
 	public String getText(GridItem gridItem, int column) {
 		return getValueOrDefault(texts, gridItem, column, "");
 	}
 
+	/**
+	 * @see org.eclipse.nebula.widgets.grid.DataVisualizer#setBackground(org.eclipse.nebula.widgets.grid.GridItem, int, org.eclipse.swt.graphics.Color)
+	 */
 	@Override
 	public void setBackground(GridItem gridItem, int column, Color color) {
 		put(backgrounds, gridItem, column, color);
@@ -158,10 +200,10 @@ public class GridItemDataVisualizer implements DataVisualizer {
 	/**
 	 * put value on maps
 	 * 
-	 * @param map
-	 * @param gridItem
-	 * @param column
-	 * @param value
+	 * @param map the map to store the value in
+	 * @param gridItem the grid item
+	 * @param column the column index
+	 * @param value the value to store
 	 */
 	protected <T> void put(Map<GridItem, List<T>> map, GridItem gridItem, int column, T value) {
 		List<T> list = map.get(gridItem);
@@ -178,61 +220,97 @@ public class GridItemDataVisualizer implements DataVisualizer {
 		list.add(column, value);
 	}
 
+	/**
+	 * @see org.eclipse.nebula.widgets.grid.DataVisualizer#setChecked(org.eclipse.nebula.widgets.grid.GridItem, int, boolean)
+	 */
 	@Override
 	public void setChecked(GridItem gridItem, int column, boolean checked) {
 		put(checkeds, gridItem, column, checked);
 	}
 
+	/**
+	 * @see org.eclipse.nebula.widgets.grid.DataVisualizer#setColumnSpan(org.eclipse.nebula.widgets.grid.GridItem, int, int)
+	 */
 	@Override
 	public void setColumnSpan(GridItem gridItem, int column, int span) {
 		put(columnSpans, gridItem, column, span);
 	}
 
+	/**
+	 * @see org.eclipse.nebula.widgets.grid.DataVisualizer#setRowSpan(org.eclipse.nebula.widgets.grid.GridItem, int, int)
+	 */
 	@Override
 	public void setRowSpan(GridItem gridItem, int column, int span) {
 		put(rowSpans, gridItem, column, span);
 	}
 
+	/**
+	 * @see org.eclipse.nebula.widgets.grid.DataVisualizer#setFont(org.eclipse.nebula.widgets.grid.GridItem, int, org.eclipse.swt.graphics.Font)
+	 */
 	@Override
 	public void setFont(GridItem gridItem, int column, Font font) {
 		put(fonts, gridItem, column, font);
 	}
 
+	/**
+	 * @see org.eclipse.nebula.widgets.grid.DataVisualizer#setForeground(org.eclipse.nebula.widgets.grid.GridItem, int, org.eclipse.swt.graphics.Color)
+	 */
 	@Override
 	public void setForeground(GridItem gridItem, int column, Color foreground) {
 		put(foregrounds, gridItem, column, foreground);
 	}
 
+	/**
+	 * @see org.eclipse.nebula.widgets.grid.DataVisualizer#setGrayed(org.eclipse.nebula.widgets.grid.GridItem, int, boolean)
+	 */
 	@Override
 	public void setGrayed(GridItem gridItem, int column, boolean grayed) {
 		put(grayeds, gridItem, column, grayed);
 	}
 
+	/**
+	 * @see org.eclipse.nebula.widgets.grid.DataVisualizer#setImage(org.eclipse.nebula.widgets.grid.GridItem, int, org.eclipse.swt.graphics.Image)
+	 */
 	@Override
 	public void setImage(GridItem gridItem, int column, Image image) {
 		put(images, gridItem, column, image);
 	}
 
+	/**
+	 * @see org.eclipse.nebula.widgets.grid.DataVisualizer#setText(org.eclipse.nebula.widgets.grid.GridItem, int, java.lang.String)
+	 */
 	@Override
 	public void setText(GridItem gridItem, int column, String text) {
 		put(texts, gridItem, column, text);
 	}
 
+	/**
+	 * @see org.eclipse.nebula.widgets.grid.DataVisualizer#getCheckable(org.eclipse.nebula.widgets.grid.GridItem, int)
+	 */
 	@Override
 	public boolean getCheckable(GridItem gridItem, int column) {
 		return getValueOrDefault(checkables, gridItem, column, Boolean.TRUE);
 	}
 
+	/**
+	 * @see org.eclipse.nebula.widgets.grid.DataVisualizer#setCheckable(org.eclipse.nebula.widgets.grid.GridItem, int, boolean)
+	 */
 	@Override
 	public void setCheckable(GridItem gridItem, int column, boolean checked) {
 		put(this.checkables, gridItem, column, checked);
 	}
 
+	/**
+	 * @see org.eclipse.nebula.widgets.grid.DataVisualizer#getToolTipText(org.eclipse.nebula.widgets.grid.GridItem, int)
+	 */
 	@Override
 	public String getToolTipText(GridItem gridItem, int column) {
-		return getValueOrDefault(toolTipTexts, gridItem, column, "");
+		return getValueOrDefault(toolTipTexts, gridItem, column, null);
 	}
 
+	/**
+	 * @see org.eclipse.nebula.widgets.grid.DataVisualizer#setToolTipText(org.eclipse.nebula.widgets.grid.GridItem, int, java.lang.String)
+	 */
 	@Override
 	public void setToolTipText(GridItem gridItem, int column, String tooltip) {
 		put(toolTipTexts, gridItem, column, tooltip);
@@ -261,8 +339,8 @@ public class GridItemDataVisualizer implements DataVisualizer {
 	/**
 	 * Remove in revertIndex
 	 * 
-	 * @param map
-	 * @param column
+	 * @param map the map to remove from
+	 * @param column the column index
 	 */
 	protected <T> void removeInvertIndex(Map<GridItem, List<T>> map, int column) {
 		for (List<T> list : map.values()) {

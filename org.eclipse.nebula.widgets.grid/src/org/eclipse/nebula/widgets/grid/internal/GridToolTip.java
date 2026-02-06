@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2006 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ *
+ * This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ * 
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  *    chris.gross@us.ibm.com - initial API and implementation
@@ -69,7 +72,7 @@ public class GridToolTip extends Widget
     /**
      * Paints the tooltip.
      *
-     * @param gc
+     * @param gc the graphics context
      */
     private void onPaint(GC gc)
     {
@@ -81,7 +84,7 @@ public class GridToolTip extends Widget
     /**
      * Sets the location of the tooltip.
      *
-     * @param location
+     * @param location the location point
      */
     public void setLocation(Point location)
     {
@@ -91,7 +94,7 @@ public class GridToolTip extends Widget
     /**
      * Shows or hides the tooltip.
      *
-     * @param visible
+     * @param visible true to show the tooltip, false to hide it
      */
     public void setVisible(boolean visible)
     {
@@ -106,7 +109,9 @@ public class GridToolTip extends Widget
     }
 
     /**
-     * @param font
+     * Sets the font for the tooltip text.
+     * 
+     * @param font the font to set
      */
     public void setFont(Font font)
     {
