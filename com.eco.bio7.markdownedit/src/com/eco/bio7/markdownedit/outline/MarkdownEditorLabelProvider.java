@@ -46,6 +46,7 @@ public class MarkdownEditorLabelProvider implements ILabelProvider {
 	}
 
 	public void dispose() {
+		MarkdownHeaderIcon.dispose();
 		rMarkdownIcon.dispose();
 		/*
 		 * publicMethodIcon.dispose(); importIcon.dispose(); baseNode.dispose();
