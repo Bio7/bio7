@@ -157,6 +157,11 @@ FormText {
     color: #eeeeee;
 }
 
+ToolItem {
+    background-color: #252525;
+    
+}
+
 ToolItem:selected {
     background-color: #313538;
     color: #dddddd;
