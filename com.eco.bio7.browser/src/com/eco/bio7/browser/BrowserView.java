@@ -1,11 +1,23 @@
 package com.eco.bio7.browser;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Base64;
+
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.URIUtil;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ControlContribution;
-import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.browser.ProgressAdapter;
+import org.eclipse.swt.browser.ProgressEvent;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTarget;
 import org.eclipse.swt.dnd.DropTargetAdapter;
@@ -22,6 +34,9 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
+import org.osgi.framework.Bundle;
+
+import com.eco.bio7.util.Util;
 
 public class BrowserView extends ViewPart {
 
@@ -36,9 +51,8 @@ public class BrowserView extends ViewPart {
 	public Browser browser;
 	public Text txt;
 
-	private Object realUrl;
-	//private IContributionItem placeholderlabel;
-	
+	// private IContributionItem placeholderlabel;
+
 	private static BrowserView browserInstance;
 	public static final String ID = "com.eco.bio7.browser.BrowserView"; //$NON-NLS-1$
 
@@ -54,9 +68,55 @@ public class BrowserView extends ViewPart {
 		container.setLayout(new FillLayout());
 
 		browser = new Browser(container, SWT.NONE);
-		
+
 		browser.setJavascriptEnabled(true);
-		
+
+		browser.addProgressListener(new ProgressAdapter() {
+
+			@Override
+
+			public void completed(ProgressEvent event) {
+
+				if (Util.isThemeBlack()) {
+					/* Load a CSS applied to the R HTML helpfile! */
+					Bundle bundle = Platform.getBundle("com.eco.bio7.themes");
+					URL fileURL = bundle.getEntry("javafx/Bio7BrowserDarkHTML.css");
+					// This converts the bundle URL to a file URL (extracting it if necessary)
+					URL resolvedURL = null;
+					try {
+						resolvedURL = FileLocator.toFileURL(fileURL);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					// Convert the URL to a URI to handle spaces and special characters, then get
+					// the path
+					File file = null;
+					try {
+						file = new File(URIUtil.toURI(resolvedURL));
+					} catch (URISyntaxException e) {
+						e.printStackTrace();
+					}
+					String path = file.getAbsolutePath();
+					try {
+						// Paths.get handles Windows spaces naturally
+						byte[] encoded = Files.readAllBytes(Paths.get(path));
+						String cssContent = new String(encoded, "UTF-8");
+						// We use Base64 to avoid issues with quotes, newlines, or special characters
+						String base64Css = Base64.getEncoder().encodeToString(cssContent.getBytes("UTF-8"));
+						String script = "var style = document.createElement('style');"
+								+ "style.innerHTML = window.atob('" + base64Css + "');"
+								+ "document.head.appendChild(style);";
+						browser.execute(script);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+
+				}
+
+			}
+
+		});
+
 		browser.setUrl("https://bio7.org/manual/Main.html");
 
 		createActions();
@@ -109,7 +169,6 @@ public class BrowserView extends ViewPart {
 
 	class RLinksCombo extends ControlContribution {
 		private Combo combo;
-		private IContributionItem placeholderlabel;
 
 		RLinksCombo() {
 			super("RLinkCombo");
@@ -205,7 +264,7 @@ public class BrowserView extends ViewPart {
 
 			combo = new Combo(parent, SWT.READ_ONLY);
 			combo.add("ImageJ Forum");
-            combo.add("ImageJ Mailing List");
+			combo.add("ImageJ Mailing List");
 			combo.add("ImageJ Plugins");
 			combo.add("ImageJ Documentation");
 			combo.add("ImageJ Manual");
@@ -226,7 +285,7 @@ public class BrowserView extends ViewPart {
 						txt.setText("https://forum.image.sc/");
 
 						break;
-				   case 1:
+					case 1:
 						browser.setUrl("https://imagej.net/nih-image/list.html");
 						txt.setText("https://imagej.net/nih-image/list.html");
 
@@ -360,6 +419,10 @@ public class BrowserView extends ViewPart {
 
 	}
 
+	public Action getOpenstreetmapAction() {
+		return openstreetmapAction;
+	}
+
 	public void setLocation(String loc) {
 		browser.setUrl(loc);
 		txt.setText(loc);
@@ -374,8 +437,6 @@ public class BrowserView extends ViewPart {
 		toolbarManager.add(new RLinksCombo());
 		toolbarManager.add(new ZoomCombo());
 		toolbarManager.add(new TextItem());
-		
-		
 
 		toolbarManager.add(goAction);
 
@@ -388,11 +449,13 @@ public class BrowserView extends ViewPart {
 		toolbarManager.add(refreshAction);
 
 		toolbarManager.add(scriptAction);
-		
+
 		toolbarManager.add(manualAction);
-		
-		/*placeholderlabel = new PlaceholderLabel().getPlaceholderLabel();
-		toolbarManager.add(placeholderlabel);*/
+
+		/*
+		 * placeholderlabel = new PlaceholderLabel().getPlaceholderLabel();
+		 * toolbarManager.add(placeholderlabel);
+		 */
 
 	}
 
