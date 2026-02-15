@@ -78,39 +78,42 @@ public class BrowserView extends ViewPart {
 			public void completed(ProgressEvent event) {
 
 				if (Util.isThemeBlack()) {
-					/* Load a CSS applied to the R HTML helpfile! */
-					Bundle bundle = Platform.getBundle("com.eco.bio7.themes");
-					URL fileURL = bundle.getEntry("javafx/Bio7BrowserDarkHTML.css");
-					// This converts the bundle URL to a file URL (extracting it if necessary)
-					URL resolvedURL = null;
-					try {
-						resolvedURL = FileLocator.toFileURL(fileURL);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					// Convert the URL to a URI to handle spaces and special characters, then get
-					// the path
-					File file = null;
-					try {
-						file = new File(URIUtil.toURI(resolvedURL));
-					} catch (URISyntaxException e) {
-						e.printStackTrace();
-					}
-					String path = file.getAbsolutePath();
-					try {
-						// Paths.get handles Windows spaces naturally
-						byte[] encoded = Files.readAllBytes(Paths.get(path));
-						String cssContent = new String(encoded, "UTF-8");
-						// We use Base64 to avoid issues with quotes, newlines, or special characters
-						String base64Css = Base64.getEncoder().encodeToString(cssContent.getBytes("UTF-8"));
-						String script = "var style = document.createElement('style');"
-								+ "style.innerHTML = window.atob('" + base64Css + "');"
-								+ "document.head.appendChild(style);";
-						browser.execute(script);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+					String url = browser.getUrl();
+					if (url.startsWith("file")) {
+						/* Load a CSS applied to the R HTML helpfile! */
+						Bundle bundle = Platform.getBundle("com.eco.bio7.themes");
+						URL fileURL = bundle.getEntry("javafx/Bio7BrowserDarkHTML.css");
+						// This converts the bundle URL to a file URL (extracting it if necessary)
+						URL resolvedURL = null;
+						try {
+							resolvedURL = FileLocator.toFileURL(fileURL);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						// Convert the URL to a URI to handle spaces and special characters, then get
+						// the path
+						File file = null;
+						try {
+							file = new File(URIUtil.toURI(resolvedURL));
+						} catch (URISyntaxException e) {
+							e.printStackTrace();
+						}
+						String path = file.getAbsolutePath();
+						try {
+							// Paths.get handles Windows spaces naturally
+							byte[] encoded = Files.readAllBytes(Paths.get(path));
+							String cssContent = new String(encoded, "UTF-8");
+							// We use Base64 to avoid issues with quotes, newlines, or special characters
+							String base64Css = Base64.getEncoder().encodeToString(cssContent.getBytes("UTF-8"));
+							String script = "var style = document.createElement('style');"
+									+ "style.innerHTML = window.atob('" + base64Css + "');"
+									+ "document.head.appendChild(style);";
+							browser.execute(script);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 
+					}
 				}
 
 			}
