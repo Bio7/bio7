@@ -49,6 +49,9 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.e4.ui.model.application.ui.basic.MWindow;
+import org.eclipse.e4.ui.model.application.ui.menu.MToolControl;
+import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
@@ -90,6 +93,7 @@ import org.eclipse.ui.IPerspectiveRegistry;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.activities.IActivityManager;
@@ -1357,6 +1361,18 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			gdal.AllRegister();
 			ogr.RegisterAll();
 		}*/
+		/*Hide the Perspective Switcher Menu!*/
+		IWorkbenchWindow window = getWindowConfigurer().getWindow();
+        EModelService modelService = window.getService(EModelService.class);
+        MWindow mWindow = window.getService(MWindow.class);
+
+        Display.getDefault().asyncExec(() -> {
+            List<MToolControl> elements = modelService.findElements(mWindow, "PerspectiveSwitcher", 
+                MToolControl.class, null, EModelService.IN_TRIM);
+            if (!elements.isEmpty()) {
+                elements.get(0).getTags().add("NoMenu");
+            }
+        });
 
 	}
 

@@ -733,7 +733,25 @@
                activityId="activity.eclipseUpdateManager"
                pattern="org\.eclipse\.ui\.ide/addToWorkingSet"/> -->    
          
-           
+          <activity
+         id="my.app.hide.saveperspective"
+         name="Hide Save Perspective Activity">
+   </activity>
+
+   <!-- Remove Save Perspective -->
+  
+   <activityPatternBinding
+         activityId="my.app.hide.saveperspective"
+         isEqualityPattern="true"
+         pattern="org.eclipse.ui.window.savePerspective">
+   </activityPatternBinding>
+   
+   <!-- "Save as..." -->
+   <activityPatternBinding
+         activityId="my.app.hide.saveperspective"
+         isEqualityPattern="true"
+         pattern="org.eclipse.ui.window.savePerspectiveAs">
+   </activityPatternBinding>
    </extension>
    <extension
          point="org.eclipse.ui.newWizards">
