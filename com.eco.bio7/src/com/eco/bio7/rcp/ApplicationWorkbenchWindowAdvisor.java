@@ -1362,7 +1362,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			ogr.RegisterAll();
 		}*/
 		/*Hide the Perspective Switcher Menu!*/
-		IWorkbenchWindow window = getWindowConfigurer().getWindow();
+		/*IWorkbenchWindow window = getWindowConfigurer().getWindow();
         EModelService modelService = window.getService(EModelService.class);
         MWindow mWindow = window.getService(MWindow.class);
 
@@ -1372,7 +1372,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
             if (!elements.isEmpty()) {
                 elements.get(0).getTags().add("NoMenu");
             }
-        });
+        });*/
 
 	}
 
