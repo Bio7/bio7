@@ -183,6 +183,11 @@ ToolItem {
   background-color:  #41464A #252525 #252525  10.0% 90.0% 5.0%;
 }
 
+/* Check your plugin.xml for the view ID */
+#org.eclipse.ui.views.ResourceNavigator ToolItem {
+  background-color: #252525;
+}
+
 /* #################### Bottom Status Bar ######################## */
 
 #org-eclipse-ui-StatusLine,
