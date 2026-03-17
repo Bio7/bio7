@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Bio7" uid="3.5.0" id="com.eco.bio7.product" application="com.eco.bio7.application" version="3.5.0.qualifier" type="features" includeLaunchers="true" autoIncludeRequirements="true">
+<product name="Bio7" uid="3.6.0" id="com.eco.bio7.product" application="com.eco.bio7.application" version="3.6.0.qualifier" type="features" includeLaunchers="true" autoIncludeRequirements="true">
 
    <aboutInfo>
       <image path="/com.eco.bio7/icons/bio7app/bio7_48.png"/>
@@ -86,6 +86,7 @@ jdk/bin/javaw.exe
    <vm>
       <windows include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-21</windows>
    </vm>
+
 
    <plugins>
       <plugin id="Bundled_R"/>

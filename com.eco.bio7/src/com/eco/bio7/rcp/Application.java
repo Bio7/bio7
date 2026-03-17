@@ -23,8 +23,10 @@ public class Application implements IApplication {
 			 * Close display to free all SWT resource. Important for MacOSX (former version
 			 * did not close display for JOGL which has now been ported to NewtSWTCanvas).
 			 * If not closed Java crashes at exit!
+			 * We now use System.exit to avoid a deadlock on MacOSX with SWT_AWT ImageJ!
 			 */
-			display.dispose();
+			//display.dispose();
+			System.exit(0); 
 
 			
 		}
