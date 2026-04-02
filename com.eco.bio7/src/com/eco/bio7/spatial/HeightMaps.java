@@ -218,6 +218,14 @@ public class HeightMaps {
 				float z3 = Height(X + detail + cx, Y + detail + cy) * scale;
 				float z4 = Height(X + detail + cx, Y + cy) * scale;
 
+				// Apply inverse flag for geo mode (negative z-coordinates)
+				if (inverse) {
+					z1 = -z1;
+					z2 = -z2;
+					z3 = -z3;
+					z4 = -z4;
+				}
+
 				// Triangle 1: v1, v2, v3
 				vertexBuffer.put(X).put(Y).put(z1);
 				vertexBuffer.put(X).put(Y + detail).put(z2);
