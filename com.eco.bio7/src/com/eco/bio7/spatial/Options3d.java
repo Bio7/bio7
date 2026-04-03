@@ -416,6 +416,25 @@ public class Options3d extends ViewPart {
 		});
 		xyButton.setText("XY");
 
+		Button btnDrawnumbers = new Button(composite, SWT.CHECK);
+		btnDrawnumbers.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				SpatialStructure st = SpatialStructure.getSpatialStructureInstance();
+
+				AxisLabelsRenderer axisLabelsRenderer = st.getAxisLabelsRenderer();
+				if (axisLabelsRenderer.isEnabled()) {
+					axisLabelsRenderer.setEnabled(false);
+				} else {
+					axisLabelsRenderer.setEnabled(true);
+				}
+
+			}
+		});
+		btnDrawnumbers.setText("Draw Axis Numbers");
+		new Label(composite, SWT.NONE);
+		new Label(composite, SWT.NONE);
+
 		final Label label_2 = new Label(composite, SWT.HORIZONTAL | SWT.SEPARATOR);
 		GridData gd_label_2 = new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
 		gd_label_2.heightHint = 25;

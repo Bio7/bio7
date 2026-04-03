@@ -29,7 +29,7 @@ public class HeightMaps {
 	public int imageWidth;
 	public int imageHeight;
 	public int detail = 16;
-	public boolean cartesian = true;
+	public static boolean cartesian = true;
 	private boolean bRender = true;
 	float v1[] = new float[3];
 	float v2[] = new float[3];
@@ -785,7 +785,7 @@ public class HeightMaps {
 		this.detail = detail;
 	}
 
-	public boolean isCartesian() {
+	public static boolean isCartesian() {
 		return cartesian;
 	}
 

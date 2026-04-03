@@ -214,6 +214,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	private static int multiplyDragCameraSpeed = 1;
 	private int fixedFps = 60;
 	public GLWindow glWindow;
+	private AxisLabelsRenderer axisLabelsRenderer;
 
 	SpatialStructure(SpatialView view) {
 		this.view = view;
@@ -289,6 +290,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 			textRenderer = new TextRenderer(font, true, false);
 			space = new SpatialLoader(gl);
 			scene = new SpatialScene();
+			axisLabelsRenderer = new AxisLabelsRenderer(0, 1000, 0, 1000, 0, 1000);
 			textures.createTexture(gl);
 			addLight(gl);
 			/* Load the.obj model from the path! */
@@ -1542,7 +1544,9 @@ public class SpatialStructure implements KeyListener, MouseListener {
 				scene.drawGrid(gl, getSpatialStructureInstance());
 				this.renderer.drawQuad();
 				scene.showAxes(gl, getSpatialStructureInstance());
-
+				if (axisLabelsRenderer != null) {
+				    axisLabelsRenderer.renderAxisLabels(gl, this);
+				}
 				gl.glEnable(GL_LIGHTING);
 
 			} else {
@@ -1568,7 +1572,9 @@ public class SpatialStructure implements KeyListener, MouseListener {
 				gl.glDisable(GL_LIGHTING);
 				scene.drawGrid2(gl, getSpatialStructureInstance());
 				scene.showAxes(gl, getSpatialStructureInstance());
-
+				if (axisLabelsRenderer != null) {
+				    axisLabelsRenderer.renderAxisLabels(gl, this);
+				}
 				gl.glEnable(GL_LIGHTING);
 
 			}
@@ -1600,6 +1606,9 @@ public class SpatialStructure implements KeyListener, MouseListener {
 				scene.drawGrid(gl, getSpatialStructureInstance());
 				this.renderer.drawQuad();
 				scene.showAxes(gl, getSpatialStructureInstance());
+				if (axisLabelsRenderer != null) {
+				    axisLabelsRenderer.renderAxisLabels(gl, this);
+				}
 				gl.glEnable(GL_LIGHTING);
 
 			} else {
@@ -1627,7 +1636,9 @@ public class SpatialStructure implements KeyListener, MouseListener {
 				gl.glDisable(GL_LIGHTING);
 				scene.drawGrid2(gl, getSpatialStructureInstance());
 				scene.showAxes(gl, getSpatialStructureInstance());
-
+				if (axisLabelsRenderer != null && axisLabelsRenderer.isEnabled()) {
+			        axisLabelsRenderer.renderAxisLabels(gl, this);
+			    }
 				gl.glEnable(GL_LIGHTING);
 
 			}
@@ -1669,6 +1680,10 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	/* Set view distance to object! */
 	public void setDoz(int doz) {
 		this.doz = doz;
+	}
+	// Add getter method:
+	public AxisLabelsRenderer getAxisLabelsRenderer() {
+	    return axisLabelsRenderer;
 	}
 
 }

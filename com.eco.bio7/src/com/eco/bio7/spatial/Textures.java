@@ -92,7 +92,12 @@ public class Textures {
 
 					buff = createBufferedImage(img);
 
-					tex = AWTTextureIO.newTexture(GLProfile.getDefault(),buff, true);
+					try {
+						tex = AWTTextureIO.newTexture(GLProfile.getDefault(),buff, true);
+					} catch (GLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 
 					tex.setTexParameteri(gl,GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 					tex.setTexParameteri(gl,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
