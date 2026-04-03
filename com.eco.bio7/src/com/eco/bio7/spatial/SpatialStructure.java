@@ -291,7 +291,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 			space = new SpatialLoader(gl);
 			scene = new SpatialScene();
 			axisLabelsRenderer = new AxisLabelsRenderer(0, 1000, 0, 1000, 0, 1000);
-			textures.createTexture(gl);
+			textures.createTexture(gl,drawable);
 			addLight(gl);
 			/* Load the.obj model from the path! */
 			if (loadModel) {
@@ -568,10 +568,10 @@ public class SpatialStructure implements KeyListener, MouseListener {
 
 			if (textures.createNewTexture) {
 
-				textures.createTexture(gl);
+				textures.createTexture(gl,drawable);
 				textures.createNewTexture = false;
 			}
-			drawSpace(gl);
+			drawSpace(gl,drawable);
 
 			/* Load the.obj model from the path! */
 			if (reloadModel) {
@@ -1514,7 +1514,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	}
 
 	/* Draws the quad and the height map in (positive) cartesian view! */
-	private void drawSpace(GL2 gl) {
+	private void drawSpace(GL2 gl, GLAutoDrawable drawable) {
 		if (textures.isRenderImage() == false) {
 
 			if (hMap.cartesian == true) {
@@ -1530,11 +1530,11 @@ public class SpatialStructure implements KeyListener, MouseListener {
 						if (lightenedHeightMap == false) {
 							gl.glDisable(GL_LIGHTING);
 						}
-						hMap.renderDynamicHeightMap(gl);
+						hMap.renderDynamicHeightMap(gl,drawable);
 					} else {
 						/* No Height Map, just a texture! */
 						gl.glDisable(GL_LIGHTING);
-						hMap.renderDynamicTexture(gl);
+						hMap.renderDynamicTexture(gl, drawable);
 					}
 
 				}
@@ -1561,10 +1561,10 @@ public class SpatialStructure implements KeyListener, MouseListener {
 						if (lightenedHeightMap == false) {
 							gl.glDisable(GL_LIGHTING);
 						}
-						hMap.renderDynamicHeightMap(gl);
+						hMap.renderDynamicHeightMap(gl,drawable);
 					} else {
 						gl.glDisable(GL_LIGHTING);
-						hMap.renderDynamicTexture(gl);
+						hMap.renderDynamicTexture(gl,drawable);
 					}
 
 				}
@@ -1592,10 +1592,10 @@ public class SpatialStructure implements KeyListener, MouseListener {
 						if (lightenedHeightMap == false) {
 							gl.glDisable(GL_LIGHTING);
 						}
-						hMap.RenderHeightMap(textures.tex, gl);
+						hMap.RenderHeightMap(textures.tex, gl,drawable);
 					} else {
 						gl.glDisable(GL_LIGHTING);
-						hMap.renderTexture(textures.tex, gl);
+						hMap.renderTexture(textures.tex, gl,drawable);
 						gl.glEnable(GL_LIGHTING);
 					}
 
@@ -1623,11 +1623,11 @@ public class SpatialStructure implements KeyListener, MouseListener {
 							gl.glDisable(GL_LIGHTING);
 						}
 
-						hMap.RenderHeightMap(textures.tex, gl);
+						hMap.RenderHeightMap(textures.tex, gl,drawable);
 					} else {
 						/* It makes no sense to light a single textured quad! */
 						gl.glDisable(GL_LIGHTING);
-						hMap.renderTexture(textures.tex, gl);
+						hMap.renderTexture(textures.tex, gl,drawable);
 
 					}
 

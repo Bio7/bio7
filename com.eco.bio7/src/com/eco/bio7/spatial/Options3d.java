@@ -1273,7 +1273,7 @@ public class Options3d extends ViewPart {
 						} else if (fromImagejButton_2.getSelection()) {
 							grid.textures.setStaticImageImageJ(true);
 						}
-						grid.textures.createImageTexture(grid.getGl().getGL2());
+						grid.textures.createImageTexture(grid.getGl().getGL2(),grid.getDrawable());
 
 					}
 				}

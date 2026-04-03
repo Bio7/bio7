@@ -17,6 +17,7 @@ import ij.ImagePlus;
 import ij.WindowManager;
 import ij.measure.Calibration;
 import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureCoords;
 import static com.jogamp.opengl.GL2.*;
@@ -165,8 +166,9 @@ public class HeightMaps {
 
 	/**
 	 * Faster VBO-based rendering method with smooth shading (preferred)
+	 * @param drawable 
 	 */
-	public void RenderHeightMap(Texture text, GL2 gl) {
+	public void RenderHeightMap(Texture text, GL2 gl, GLAutoDrawable drawable) {
 		// Recompute normals if detail changed
 		if (vertexNormals == null || lastDetailUsed != detail) {
 			computeVertexNormals(text, gl);
@@ -307,7 +309,7 @@ public class HeightMaps {
 		text.disable(gl);
 	}
 
-	public void renderDynamicHeightMap(GL2 gl) {
+	public void renderDynamicHeightMap(GL2 gl, GLAutoDrawable drawable) {
 		/* Get a reference to the textures!!! */
 		grid.textures.updateAnimRenderer();
 		int x, y;
@@ -494,7 +496,7 @@ public class HeightMaps {
 
 	}
 
-	public void renderTexture(Texture text, GL2 gl) {
+	public void renderTexture(Texture text, GL2 gl, GLAutoDrawable drawable) {
 		float mX = text.getWidth();
 		float mY = text.getHeight();
 		text.bind(gl);
@@ -533,7 +535,7 @@ public class HeightMaps {
 		text.disable(gl);
 	}
 
-	public void renderDynamicTexture(GL2 gl) {
+	public void renderDynamicTexture(GL2 gl, GLAutoDrawable drawable) {
 		grid.textures.updateAnimRenderer();
 		Texture text = Textures.animRenderer.getTexture();
 		float mX = text.getWidth();

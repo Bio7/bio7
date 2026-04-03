@@ -11,7 +11,6 @@
  *     M. Austenfeld
  *******************************************************************************/
 
-
 package com.eco.bio7.spatial;
 
 import ij.ImagePlus;
@@ -24,8 +23,11 @@ import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLException;
 import com.jogamp.opengl.GLProfile;
+import com.jogamp.opengl.GLRunnable;
+
 import org.eclipse.jface.preference.IPreferenceStore;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.discrete.Field;
@@ -33,8 +35,6 @@ import com.jogamp.opengl.util.awt.TextureRenderer;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.awt.AWTTextureIO;
 import static com.jogamp.opengl.GL2.*; // GL2 constants
-
-
 
 public class Textures {
 	public DynamicTexture dynamicTexture;
@@ -49,7 +49,7 @@ public class Textures {
 	public boolean createNewTexture = true;
 	public boolean showTexture;
 	private IPreferenceStore store;
-	
+
 	private boolean staticImageImageJ = false;
 
 	public Textures(HeightMaps heightMap) {
@@ -59,26 +59,25 @@ public class Textures {
 
 	}
 
-	public void createImageTexture(GL2 gl) {
+	public void createImageTexture(GL2 gl, GLAutoDrawable drawable) {
 		if (tex != null) {
-			//tex.destroy(gl);
+			// tex.destroy(gl);
 		}
 		createNewTexture = true;
-		createTexture(gl);
+		createTexture(gl, drawable);
 
 	}
 
-	void createTexture(GL2 gl) {
+	void createTexture(GL2 gl, GLAutoDrawable drawable) {
 		if (renderImage) {
-			imageTexture(gl);
+			imageTexture(gl, drawable);
 
 		} else {
 			renderPaint();
 		}
 	}
 
-	
-	private void imageTexture(GL2 gl) {
+	private void imageTexture(GL2 gl, GLAutoDrawable drawable) {
 		if (staticImageImageJ) {
 			if (WindowManager.getImageCount() > 0) {
 
@@ -92,22 +91,23 @@ public class Textures {
 
 					buff = createBufferedImage(img);
 
-					try {
-						tex = AWTTextureIO.newTexture(GLProfile.getDefault(),buff, true);
-					} catch (GLException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+					drawable.invoke(false, new GLRunnable() {
+						@Override
+						public boolean run(GLAutoDrawable drawable) {
+							tex = AWTTextureIO.newTexture(drawable.getGLProfile(), buff, false);
+							return true;
+						}
+					});
 
-					tex.setTexParameteri(gl,GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-					tex.setTexParameteri(gl,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+					tex.setTexParameteri(gl, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+					tex.setTexParameteri(gl, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 					gl.glBindTexture(GL_TEXTURE_2D, texture);
-					// 
+					//
 				}
 			}
 		} else {
 
-			initTextures(gl);
+			initTextures(gl, drawable);
 		}
 	}
 
@@ -126,7 +126,8 @@ public class Textures {
 
 		} else {
 
-			animRenderer = new TextureRenderer(Field.getWidth() * Field.getQuadSize(), Field.getHeight() * Field.getQuadSize(), false);
+			animRenderer = new TextureRenderer(Field.getWidth() * Field.getQuadSize(),
+					Field.getHeight() * Field.getQuadSize(), false);
 			dynamicTexture = new DynamicTexture();
 
 			tex = animRenderer.getTexture();
@@ -145,37 +146,39 @@ public class Textures {
 		animRenderer.markDirty(0, 0, w, h);
 	}
 
-	public void initTextures(GL2 gl) {
-		if (tex != null)
-			//tex.destroy(gl);
-
-		tex = createTexture(store.getString("spatialImage"),gl);
+	public void initTextures(GL2 gl, GLAutoDrawable drawable) {
+		String path = null;
+		// if (tex != null)
+		// tex.destroy(gl);
+		path = store.getString("spatialImage");
+		if (path != null) {
+			tex = createTexture(store.getString("spatialImage"), gl, drawable);
+		}
 
 	}
 
-	private Texture createTexture(String filename,GL2 gl) {
-		Texture t = null;
+	private Texture createTexture(String filename, GL2 gl, GLAutoDrawable drawable) {
 
+		BufferedImage image;
 		try {
-			BufferedImage image = ImageIO.read(new File(filename));
-			try {
-				if (image != null) {
-					t = AWTTextureIO.newTexture(GLProfile.getDefault(),image, false);
+			image = ImageIO.read(new File(filename));
+			drawable.invoke(false, new GLRunnable() {
+				@Override
+				public boolean run(GLAutoDrawable drawable) {
+					tex = AWTTextureIO.newTexture(drawable.getGLProfile(), image, false);
+					return true;
 				}
-			} catch (GLException e) {
-
-				e.printStackTrace();
-			}
-			if (t != null) {
+			});
+			if (tex != null) {
 				heightMap.imageHeight = image.getHeight();
 				heightMap.imageWidth = image.getWidth();
-				t.setTexParameteri(gl,GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				t.setTexParameteri(gl,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				tex.setTexParameteri(gl, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				tex.setTexParameteri(gl, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			}
 		} catch (IOException e) {
-			System.err.println("Image not available! " + filename);
+			System.err.println(e);
 		}
-		return t;
+		return tex;
 	}
 
 	private BufferedImage createBufferedImage(java.awt.Image image) {
