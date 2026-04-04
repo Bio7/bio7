@@ -11,15 +11,12 @@
  *     M. Austenfeld
  *******************************************************************************/
 
-
 package com.eco.bio7.spatial;
 
 import java.awt.Font;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.util.awt.TextRenderer;
-
-
 
 public class SpatialScene {
 	private TextRenderer renderer;
@@ -38,39 +35,82 @@ public class SpatialScene {
 		float sizeZ = grid.getSizeZ();
 		if (grid.showAxes) {
 			setAxesLines(gl, grid);
+
+			// Save original matrix
+			float[] originalMV = new float[16];
+			gl.glGetFloatv(GL2.GL_MODELVIEW_MATRIX, originalMV, 0);
+
+			// X Axis Label
+			gl.glPushMatrix();
+			gl.glTranslatef(sizeX + 10, 0, 0);
+			applyBillboardRotation(gl, originalMV);
 			renderer.begin3DRendering();
-			renderer.setColor(colorCubeLines[0], colorCubeLines[1],
-					colorCubeLines[2], colorCubeLines[3]);
-
-			renderer.draw3D("X", sizeX + 10, 0, 0, 1.0f);
+			renderer.setColor(colorCubeLines[0], colorCubeLines[1], colorCubeLines[2], colorCubeLines[3]);
+			renderer.draw3D("X", 0, 0, 0, 1.0f);
 			renderer.end3DRendering();
+			gl.glPopMatrix();
 
+			// Y Axis Label
+			gl.glPushMatrix();
+			gl.glTranslatef(0, sizeY + 10, 0);
+			applyBillboardRotation(gl, originalMV);
 			renderer.begin3DRendering();
-			renderer.setColor(colorCubeLines[0], colorCubeLines[1],
-					colorCubeLines[2], colorCubeLines[3]);
-
-			renderer.draw3D("Y", 0, sizeY + 10, 0, 1.0f);
+			renderer.setColor(colorCubeLines[0], colorCubeLines[1], colorCubeLines[2], colorCubeLines[3]);
+			renderer.draw3D("Y", 0, 0, 0, 1.0f);
 			renderer.end3DRendering();
+			gl.glPopMatrix();
 
+			// Z Axis Label
+			gl.glPushMatrix();
+			gl.glTranslatef(0, 0, sizeZ + 10);
+			applyBillboardRotation(gl, originalMV);
 			renderer.begin3DRendering();
-			renderer.setColor(colorCubeLines[0], colorCubeLines[1],
-					colorCubeLines[2], colorCubeLines[3]);
-
-			renderer.draw3D("Z", 0, 0, sizeZ + 10, 1.0f);
-
+			renderer.setColor(colorCubeLines[0], colorCubeLines[1], colorCubeLines[2], colorCubeLines[3]);
+			renderer.draw3D("Z", 0, 0, 0, 1.0f);
 			renderer.end3DRendering();
+			gl.glPopMatrix();
 		}
 	}
 
-	private void setInfoText() {
+	/**
+	 * Applies a billboard rotation that makes text face the camera. Extracts the
+	 * camera's rotation and applies the inverse.
+	 * 
+	 * @param gl         the OpenGL context
+	 * @param originalMV the original modelview matrix before translation
+	 */
+	private void applyBillboardRotation(GL2 gl, float[] originalMV) {
+		// Extract scale from the original matrix
+		float scaleX = (float) Math
+				.sqrt(originalMV[0] * originalMV[0] + originalMV[1] * originalMV[1] + originalMV[2] * originalMV[2]);
+		float scaleY = (float) Math
+				.sqrt(originalMV[4] * originalMV[4] + originalMV[5] * originalMV[5] + originalMV[6] * originalMV[6]);
+		float scaleZ = (float) Math
+				.sqrt(originalMV[8] * originalMV[8] + originalMV[9] * originalMV[9] + originalMV[10] * originalMV[10]);
 
-		renderer.draw("Y", 5, 25);
-		renderer.draw("|_X", 10, 15);
-		renderer.draw("/", 7, 3);
-		renderer.draw("Z", 0, 0);
+		// Create billboard rotation matrix (transpose of normalized rotation)
+		float[] billboardRot = new float[16];
+		billboardRot[0] = originalMV[0] / scaleX;
+		billboardRot[1] = originalMV[4] / scaleY;
+		billboardRot[2] = originalMV[8] / scaleZ;
+		billboardRot[3] = 0;
 
-		renderer.endRendering();
+		billboardRot[4] = originalMV[1] / scaleX;
+		billboardRot[5] = originalMV[5] / scaleY;
+		billboardRot[6] = originalMV[9] / scaleZ;
+		billboardRot[7] = 0;
 
+		billboardRot[8] = originalMV[2] / scaleX;
+		billboardRot[9] = originalMV[6] / scaleY;
+		billboardRot[10] = originalMV[10] / scaleZ;
+		billboardRot[11] = 0;
+
+		billboardRot[12] = 0;
+		billboardRot[13] = 0;
+		billboardRot[14] = 0;
+		billboardRot[15] = 1;
+
+		gl.glMultMatrixf(billboardRot, 0);
 	}
 
 	public void setAxesLines(GL2 gl, SpatialStructure grid) {
@@ -107,8 +147,7 @@ public class SpatialScene {
 			float sizeZ = grid.getSizeZ();
 			float gridSize = grid.getGridSize();
 			gl.glBegin(GL.GL_LINES);
-			gl.glColor3f(colorCubeLines[0], colorCubeLines[1],
-					colorCubeLines[2]);
+			gl.glColor3f(colorCubeLines[0], colorCubeLines[1], colorCubeLines[2]);
 			/* Horizontal lines. */
 			if (grid.layerXYGrid) {
 				for (float i = 0; i <= sizeY; i = i + gridSize) {
@@ -240,11 +279,10 @@ public class SpatialScene {
 			}
 
 			/*
-			 * gl.glBegin(GL.GL_LINES); gl.glColor3ui(0, 0, 0); Horizontal
-			 * lines. for (float i=-sizeY; i<=sizeY; i=i+gridSize) {
-			 * gl.glVertex2f(-sizeX, i); gl.glVertex2f(sizeX, i); } Vertical
-			 * lines. for (float i=-sizeX; i<=sizeX; i=i+gridSize) {
-			 * gl.glVertex2f(i, -sizeY); gl.glVertex2f(i, sizeY); }
+			 * gl.glBegin(GL.GL_LINES); gl.glColor3ui(0, 0, 0); Horizontal lines. for (float
+			 * i=-sizeY; i<=sizeY; i=i+gridSize) { gl.glVertex2f(-sizeX, i);
+			 * gl.glVertex2f(sizeX, i); } Vertical lines. for (float i=-sizeX; i<=sizeX;
+			 * i=i+gridSize) { gl.glVertex2f(i, -sizeY); gl.glVertex2f(i, sizeY); }
 			 */
 
 			gl.glEnd();
@@ -259,8 +297,7 @@ public class SpatialScene {
 		if (grid.showGrid) {
 			gl.glBegin(GL.GL_LINES);
 			/* Horizontal lines. */
-			gl.glColor3f(colorCubeLines[0], colorCubeLines[1],
-					colorCubeLines[2]);
+			gl.glColor3f(colorCubeLines[0], colorCubeLines[1], colorCubeLines[2]);
 			if (grid.layerXYGrid) {
 				for (float i = 0; i <= sizeY; i = i + gridSize) {
 					gl.glVertex2f(0, i);
