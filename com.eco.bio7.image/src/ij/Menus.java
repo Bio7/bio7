@@ -345,6 +345,7 @@ public class Menus {
 		menu.add(submenu);
 		submenu = new Menu("Macro");
 		addExample(submenu, "Sphere", "Sphere.ijm");
+		addExample(submenu, "Pong", "Pong.ijm");
 		addExample(submenu, "Dialog Box", "Dialog_Box.ijm");
 		addExample(submenu, "Process Folder", "Batch_Process_Folder.ijm");
 		addExample(submenu, "OpenDialog Demo", "OpenDialog_Demo.ijm");
@@ -367,6 +368,7 @@ public class Menus {
 		menu.add(submenu);
 		submenu = new Menu("JavaScript");
 		addExample(submenu, "Sphere", "Sphere.js");
+		addExample(submenu, "Asteroids", "Asteroids.js");
 		addExample(submenu, "Plasma Cloud", "Plasma_Cloud.js");
 		addExample(submenu, "Cloud Debugger", "Cloud_Debugger.js");
 		addExample(submenu, "Synthetic Images", "Synthetic_Images.js");

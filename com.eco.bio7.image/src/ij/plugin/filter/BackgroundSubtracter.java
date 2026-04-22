@@ -42,7 +42,8 @@ Rolling ball code based on the NIH Image Pascal version by Michael Castle and Ja
 Keller of the University of Michigan Mental Health Research Institute.
 Sliding Paraboloid by Michael Schmid, 2007.
 
-Version 10-Jan-2008
+Version 12-Apr-2026, fixes sliding paraboloid bugs with imagex containing NaNs,
+uses nonblocking dialog.
 */
 public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListener {
     /* parameters from the dialog: */
@@ -92,7 +93,7 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
             useParaboloid = false;
             doPresmooth = true;
         }
-        GenericDialog gd = new GenericDialog(command);
+        GenericDialog gd = GUI.newNonBlockingDialog(command, imp);
         gd.addNumericField("Rolling ball radius:", radius, 1, 6, "pixels");
         gd.addCheckbox("Light background", lightBackground);
         if (isRGB) gd.addCheckbox("Separate colors", separateColors);
@@ -266,8 +267,29 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
 
     //  S L I D E   P A R A B O L O I D   S E C T I O N
 
-    /** Create background for a float image by sliding a paraboloid over
-     * the image. */
+    /** This algorithm works similar to the rolling ball background, but it is an approximation of
+     *  sliding a paraboloid: Imagine that the 2D grayscale image has a third (height) dimension
+     *  defined by the intensity value at every point in the image (like a 3D plot), with the
+     *  foreground objects pointing up. The bottom of this surface is touched by a paraboloid
+     *  with negative curvature (with the vertex pointing up). The parabola slides over the
+     *  bottom of the surface representing the image. The background is constructed from the hull
+     *  of all paraboloid positions.
+     *  Since the full algorithm with a parabolid would be slow, an approximation is made, and
+     *  instead of sliding a paraboloid, we handle only lines of pixels and slide parbolas.
+     *  These lines are image rows and columns as well as the lines in +/-45 degree directions.
+     *  Preprocessing:
+     *  To avoid negative outliers having a strong influence on the background, a 3x3 maximum
+     *  filter is applied before calculating the background (unless 'Disable Smoothing' is checked).
+     *  Since this would lead to many negative intensities after background subtraction, an offset
+     *  based on  difference with and without preprocessing is added.
+     *  Corner correction:
+     *  If there is a foreground particle at a corner, the algorithm would strongly suppress
+     *  it. To avoid this, for sliding the paraboloid, an estimated background value is used
+     *  for corner pixels that are suspected to belong to a foreground object (i.e., if a corner
+     *  pixel is are higher than the estimated background). */
+
+    /** Creates a background from a float image by sliding a paraboloid over
+     *  the image, and replaces the pixels with the approximation of this background. */
     void slidingParaboloidFloatBackground(FloatProcessor fp, float radius, boolean invert,
             boolean doPresmooth, boolean correctCorners) {
         float[] pixels = (float[])fp.getPixels();   //this will become the background
@@ -308,15 +330,19 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
 
         if (invert)
             for (int i=0; i<pixels.length; i++)
-                pixels[i] = -(pixels[i] - shiftBy);
+                pixels[i] = -(pixels[i] - 2*shiftBy);
         else if (doPresmooth)
             for (int i=0; i<pixels.length; i++)
-                pixels[i] -= shiftBy;   //correct for shift by 3x3 maximum
-
+                pixels[i] -= 2*shiftBy;   //correct for shift by 3x3 maximum
     }
 
-    /** Filter by subtracting a sliding parabola for all lines in one direction, x, y or one of
-     *  the two diagonal directions (diagonals are processed only for half the image per call). */
+    /** Filters by subtracting a sliding parabola for all lines in one direction, x, y or one of
+     *  the two diagonal directions (diagonals are processed only for half the image per call).
+     *  @param fp        Input image, will be modified by setting the pixel values to the background
+     *                   resulting from the operation
+     *  @param direction Determines for lines in which direction the parabola background is applied.
+     *  @param coeff2    Magnitude of the 2nd order coefficient of the polynomial describing the parabola.
+     *  @param nextPoint Work array. */
     void filter1D(FloatProcessor fp, int direction, float coeff2, float[] cache, int[] nextPoint) {
         float[] pixels = (float[])fp.getPixels();   //this will become the background
         int width = fp.getWidth();
@@ -403,28 +429,34 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
     static float[] lineSlideParabola(float[] pixels, int start, int inc, int length, float coeff2, float[] cache, int[] nextPoint, float[] correctedEdges) {
         float minValue = Float.MAX_VALUE;
         int lastpoint = 0;
-        int firstCorner = length-1;             // the first point except the edge that is touched
-        int lastCorner = 0;                     // the last point except the edge that is touched
         float vPrevious1 = 0f;
         float vPrevious2 = 0f;
         float curvatureTest = 1.999f*coeff2;     //not 2: numeric scatter of 2nd derivative
-        /* copy data to cache, determine the minimum, and find points with local curvature such
-         * that the parabola can touch them - only these need to be examined futher on */
+        /* Copy data to cache, determine the minimum, and find points with a local curvature
+         * such that the parabola from the bottom can touch them - only these need to be examined futher on */
         for (int i=0, p=start; i<length; i++, p+=inc) {
             float v = pixels[p];
             cache[i] = v;
             if (v < minValue) minValue = v;
-            if (i >= 2 && vPrevious1+vPrevious1-vPrevious2-v < curvatureTest) {
+            if (i >= 2 && (vPrevious1+vPrevious1-vPrevious2-v < curvatureTest ||
+					((Float.isNaN(vPrevious2) || Float.isNaN(v)) && !Float.isNaN(vPrevious1)))) {
                 nextPoint[lastpoint] = i-1;     // point i-1 may be touched
                 lastpoint = i-1;
             }
             vPrevious2 = vPrevious1;
             vPrevious1 = v;
         }
-        nextPoint[lastpoint] = length-1;
-        nextPoint[length-1] = Integer.MAX_VALUE;// breaks the search loop
-
+        if (Float.isNaN(cache[length-1])) {
+			nextPoint[lastpoint] = Integer.MAX_VALUE;   // will break the search loop
+		} else {
+			nextPoint[lastpoint] = length-1;
+			nextPoint[length-1] = Integer.MAX_VALUE;    // will break the search loop
+		}
+        int firstCorner = length;               // the first point except the edge that is touched
+        int lastCorner = 0;                     // the last point except the edge that is touched
         int i1 = 0;                             // i1 and i2 will be the two points where the parabola touches
+		if (Float.isNaN(cache[i1]))             // if line starts with NaN: we can't put a parabola here
+			i1 = nextPoint[i1];
         while (i1<length-1) {
             float v1 = cache[i1];
             float minSlope = Float.MAX_VALUE;
@@ -434,6 +466,10 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
             /* find the second point where the parabola through point i1,v1 touches: */
             for (int j=nextPoint[i1]; j<searchTo; j=nextPoint[j], recalculateLimitNow++) {
                 float v2 = cache[j];
+                if (Float.isNaN(v2)) {          // can only happen at end of line, then can't make a parabola
+					i1 = length - 1;
+					break;
+				}
                 float slope = (v2-v1)/(j-i1)+coeff2*(j-i1);
                 if (slope < minSlope) {
                     minSlope = slope;
@@ -446,9 +482,12 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
                     if (maxSearch < searchTo && maxSearch > 0) searchTo = maxSearch;
                 }
             }
-            if (i1 == 0) firstCorner = i2;
-            if (i2 == length-1) lastCorner = i1;
-            /* interpolate between the two points where the parabola touches: */
+            if (i2 <= i1) i2 = length-1;        //no 2nd point found (e.g. all NaN)
+            if (firstCorner >= length && i1 > 0)
+				firstCorner = i1;               //the first non-border corner
+            if (i2 < length-1)
+				lastCorner = i2;                //the last non-border corner
+            /* interpolate between the two 'corner' points where the parabola touches: */
             for (int j=i1+1, p=start+j*inc; j<i2; j++, p+=inc)
                 pixels[p] = v1 + (j-i1)*(minSlope - (j-i1)*coeff2);
             i1 = i2;                            // continue from this new point
@@ -456,67 +495,108 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
         /* Now calculate estimated edge values without an edge particle, allowing for vignetting
          * described as a 6th-order polynomial: */
         if (correctedEdges != null) {
-            if (4*firstCorner >= length) firstCorner = 0; // edge particles must be < 1/4 image size
-            if (4*(length - 1 - lastCorner) >= length) lastCorner = length - 1;
-            float v1 = cache[firstCorner];
-            float v2 = cache[lastCorner];
-            float slope = (v2-v1)/(lastCorner-firstCorner); // of the line through the two outermost non-edge touching points
-            float value0 = v1 - slope * firstCorner;        // offset of this line
-            float coeff6 = 0;                               // coefficient of 6th order polynomial
-            float mid = 0.5f * (lastCorner + firstCorner);
-            for (int i=(length+2)/3; i<=(2*length)/3; i++) {// compare with mid-image pixels to detect vignetting
-                float dx = (i-mid)*2f/(lastCorner-firstCorner);
-                float poly6 = dx*dx*dx*dx*dx*dx - 1f;       // the 6th order polynomial, zero at firstCorner and lastCorner
-                if (cache[i] < value0 + slope*i + coeff6*poly6) {
-                    coeff6 = -(value0 + slope*i - cache[i])/poly6;
-                }
-            }
-            float dx = (firstCorner-mid)*2f/(lastCorner-firstCorner);
-            correctedEdges[0] = value0 + coeff6*(dx*dx*dx*dx*dx*dx - 1f) + coeff2*firstCorner*firstCorner;
-            dx = (lastCorner-mid)*2f/(lastCorner-firstCorner);
-            correctedEdges[1] = value0 + (length-1)*slope + coeff6*(dx*dx*dx*dx*dx*dx - 1f) + coeff2*(length-1-lastCorner)*(length-1-lastCorner);
+			if (firstCorner > lastCorner) {
+				correctedEdges[0] = Float.NaN;
+				correctedEdges[1] = Float.NaN;
+			} else {
+				if (4*firstCorner >= length && !Float.isNaN(cache[0]))
+					firstCorner = 0;   			// edge correction only within < 1/4 image size
+				if (4*(length - 1 - lastCorner) >= length&& !Float.isNaN(cache[length-1]))
+					lastCorner = length - 1;
+				float v1 = cache[firstCorner];
+				float v2 = cache[lastCorner];
+				float slope = lastCorner-firstCorner > length/4 + 1 ?
+						(v2-v1)/(lastCorner-firstCorner) :      // slope of the line through the two outermost non-edge touching points
+						Float.NaN;                              //(unless the baseline for the slope is too short)
+				float value0 = v1 - slope * firstCorner;        // offset of this line
+				float coeff6 = 0;                               // coefficient of 6th order polynomial
+				float mid = 0.5f * (lastCorner + firstCorner);
+				for (int i=(length+2)/3; i<=(2*length)/3; i++) {// compare with mid-image pixels to detect vignetting
+					float dx = (i-mid)*2f/(lastCorner-firstCorner);
+					float poly6 = dx*dx*dx*dx*dx*dx - 1f;       // the 6th order polynomial, zero at firstCorner and lastCorner
+					if (cache[i] < value0 + slope*i + coeff6*poly6) {
+						coeff6 = -(value0 + slope*i - cache[i])/poly6;
+					}
+				}
+				float dx = (firstCorner-mid)*2f/(lastCorner-firstCorner);
+				correctedEdges[0] = value0 + coeff6*(dx*dx*dx*dx*dx*dx - 1f) + coeff2*firstCorner*firstCorner;
+				dx = (lastCorner-mid)*2f/(lastCorner-firstCorner);
+				correctedEdges[1] = value0 + (length-1)*slope + coeff6*(dx*dx*dx*dx*dx*dx - 1f) + coeff2*(length-1-lastCorner)*(length-1-lastCorner);
+			}
         }
         return correctedEdges;
     } //void lineSlideParabola
 
-    /** Detect corner particles and adjust corner pixels if a particle is there.
-     *  Analyzing the directions parallel to the edges and the diagonals, we
-     *  average over the 3 correction values (found for the 3 directions)
+    /** Detects foreground objects at the corners and adjusts the respective corner pixel if
+     *  there is a foreground object at this corner.
+     *  Based on lines in the 3 directions parallel to the edges and at 45 deg angle, we
+     *  average over the 3 estimates for the background (found for the 3 directions).
+     *  We assume that we have a corner particle if the pixel value is higher than
+     *  the average of the guessed background intensity.
+     *  To avoid mistaking vignetting as foreground objects, allows for vignetting
+     *  with a 6-th order polynomial along the 3 lines (see lineSlideParabola).
      */
     void correctCorners(FloatProcessor fp, float coeff2, float[] cache, int[] nextPoint) {
         int width = fp.getWidth();
         int height = fp.getHeight();
         float[] pixels = (float[])fp.getPixels();
         float[] corners = new float[4];         //(0,0); (xmax,0); (ymax,0); (xmax,ymax)
+        int[] cornersN = new int[4];			//counts how many contributions we have added
         float[] correctedEdges = new float[2];
+        //horizontal at y=0
         correctedEdges = lineSlideParabola(pixels, 0, 1, width, coeff2, cache, nextPoint, correctedEdges);
-        corners[0] = correctedEdges[0];
-        corners[1] = correctedEdges[1];
+        addCornerValue(corners, cornersN, 0, correctedEdges[0]);
+        addCornerValue(corners, cornersN, 1, correctedEdges[1]);
+        //horizontal at ymax
         correctedEdges = lineSlideParabola(pixels, (height-1)*width, 1, width, coeff2, cache, nextPoint, correctedEdges);
-        corners[2] = correctedEdges[0];
-        corners[3] = correctedEdges[1];
+        addCornerValue(corners, cornersN, 2, correctedEdges[0]);
+        addCornerValue(corners, cornersN, 3, correctedEdges[1]);
+        //vertical at x=0
         correctedEdges = lineSlideParabola(pixels, 0, width, height, coeff2, cache, nextPoint, correctedEdges);
-        corners[0] += correctedEdges[0];
-        corners[2] += correctedEdges[1];
+        addCornerValue(corners, cornersN, 0, correctedEdges[0]);
+        addCornerValue(corners, cornersN, 2, correctedEdges[1]);
+        //vertical at xmax
         correctedEdges = lineSlideParabola(pixels, width-1, width, height, coeff2, cache, nextPoint, correctedEdges);
-        corners[1] += correctedEdges[0];
-        corners[3] += correctedEdges[1];
+        addCornerValue(corners, cornersN, 1, correctedEdges[0]);
+        addCornerValue(corners, cornersN, 3, correctedEdges[1]);
         int diagLength = Math.min(width,height);        //length of a 45-degree line from a corner
         float coeff2diag = 2 * coeff2;
+        //-45 deg starting at x=0, y=0
         correctedEdges = lineSlideParabola(pixels, 0, 1+width, diagLength, coeff2diag, cache, nextPoint, correctedEdges);
-        corners[0] += correctedEdges[0];
+        addCornerValue(corners, cornersN, 0, correctedEdges[0]);
+        //+45 deg starting at xmax, y=0
         correctedEdges = lineSlideParabola(pixels, width-1, -1+width, diagLength, coeff2diag, cache, nextPoint, correctedEdges);
-        corners[1] += correctedEdges[0];
+        addCornerValue(corners, cornersN, 1, correctedEdges[0]);
+        //+45 deg starting at x=0, ymax
         correctedEdges = lineSlideParabola(pixels, (height-1)*width, 1-width, diagLength, coeff2diag, cache, nextPoint, correctedEdges);
-        corners[2] += correctedEdges[0];
+        addCornerValue(corners, cornersN, 2, correctedEdges[0]);
+        //-45 deg starting at xmax, ymax
         correctedEdges = lineSlideParabola(pixels, width*height-1, -1-width, diagLength, coeff2diag, cache, nextPoint, correctedEdges);
-        corners[3] += correctedEdges[0];
-        if (pixels[0] > corners[0]/3) pixels[0] = corners[0]/3;
-        if (pixels[width-1] > corners[1]/3) pixels[width-1] = corners[1]/3;
-        if (pixels[(height-1)*width] > corners[2]/3) pixels[(height-1)*width] = corners[2]/3;
-        if (pixels[width*height-1] > corners[3]/3) pixels[width*height-1] = corners[3]/3;
+        addCornerValue(corners, cornersN, 3, correctedEdges[0]);
+        float[] cornerAvg = new float[4];
+        for (int i=0; i<4; i++)
+			cornerAvg[i] = corners[i]/cornersN[i];
+
+		//replace corner pixels that are higher than the estimate (or NaN) with the background estimate
+        if (pixels[0] > cornerAvg[0] || Float.isNaN(pixels[0]))
+			pixels[0] = cornerAvg[0];
+        if (pixels[width-1] > cornerAvg[1] || Float.isNaN(pixels[width-1]))
+			pixels[width-1] = cornerAvg[1];
+        if (pixels[(height-1)*width] > cornerAvg[2] || Float.isNaN(pixels[(height-1)*width]))
+			pixels[(height-1)*width] = cornerAvg[2];
+        if (pixels[width*height-1] > cornerAvg[3] || Float.isNaN(pixels[width*height-1]))
+			pixels[width*height-1] = cornerAvg[3];
         //new ImagePlus("corner corrected",fp.duplicate()).show();
     } //void correctCorners
+
+	/** Adds a value to the i-th element of the 'corners' array and increments
+	 *  the i-th element of cornersN, which counts how many summands we have.
+	 *  Does nothing if the value is NaN */
+	private void addCornerValue(float[] corners, int[] cornersN, int i, float value) {
+		if (Float.isNaN(value)) return;
+		corners[i] += value;
+		cornersN[i] ++;		
+	}
 
     //  R O L L   B A L L   S E C T I O N
 
@@ -712,24 +792,27 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
 
     /** Replace the pixels by the mean or maximum in a 3x3 neighborhood.
      *  No snapshot is required (less memory needed than e.g., fp.smooth()).
-     *  When used as maximum filter, it returns the average change of the
-     *  pixel value by this operation
+     *  When used as maximum filter, it returns the average increase of the
+     *  pixel values by this operation
      */
     double filter3x3(FloatProcessor fp, int type) {
         int width = fp.getWidth();
         int height = fp.getHeight();
-        double shiftBy = 0;
+        double[] shiftByAndN = new double[2];	//sum of shifts and count
+        int n=0;
         float[] pixels = (float[])fp.getPixels();
         for (int y=0; y<height; y++)
-            shiftBy += filter3(pixels, width, y*width, 1, type);
+            filter3(pixels, width, y*width, 1, shiftByAndN, type);
         for (int x=0; x<width; x++)
-            shiftBy += filter3(pixels, height, x, width, type);
-        return shiftBy/width/height;
+            filter3(pixels, height, x, width, shiftByAndN, type);
+        return shiftByAndN[0]/shiftByAndN[1];
     }
 
-    /** Filter a line: maximum or average of 3-pixel neighborhood */
-    double filter3(float[] pixels, int length, int pixel0, int inc, int type) {
-        double shiftBy = 0;
+    /** Filter a line (row or column): maximum or average of 3-pixel neighborhood.
+     *  If type is MAXIMUM, the array elements of shiftByAndN are incremented
+     *  by [0] the difference of the maximum and the pixel value and [1] by one
+     *  (unless it is NaN and no maximum is available) */
+    void filter3(float[] pixels, int length, int pixel0, int inc, double[] shiftByAndN, int type) {
         float v3 = pixels[pixel0];  //will be pixel[i+1]
         float v2 = v3;              //will be pixel[i]
         float v1;                   //will be pixel[i-1]
@@ -738,14 +821,19 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
             v2 = v3;
             if (i<length-1) v3 = pixels[p+inc];
             if (type == MAXIMUM) {
-                float max = v1 > v3 ? v1 : v3;
-                if (v2 > max) max = v2;
-                shiftBy += max - v2;
+                float max = v1 > v3 || Double.isNaN(v3) ? v1 : v3;
+                if (v2 > max || Double.isNaN(max)) max = v2;
+                float shift = max - v2;
+                if (!Double.isNaN(shift)) {
+					shiftByAndN[0] +=shift;
+					shiftByAndN[1] ++;
+				}
                 pixels[p] = max;
-            } else
-                pixels[p] = (v1+v2+v3)*0.33333333f;
+            } else {
+                float mean = (v1+v2+v3)*0.333333333f;
+				if (!Float.isNaN(mean)) pixels[p] = mean;
+			}
         }
-        return shiftBy;
     }
 
 
