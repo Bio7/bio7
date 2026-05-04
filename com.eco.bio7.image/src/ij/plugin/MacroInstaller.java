@@ -343,9 +343,16 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 			return;
 		String shortcut = name.substring(index1+1, index2);
 		int len = shortcut.length();
+		if (len>1) { // arrow key shortcuts
+			if (shortcut.equals("up")) shortcut="AU";
+			if (shortcut.equals("down")) shortcut="AD";
+			if (shortcut.equals("left")) shortcut="AL";
+			if (shortcut.equals("right")) shortcut="AR";
+			len = shortcut.length();
+		}
 		if (len>1)
 			shortcut = shortcut.toUpperCase(Locale.US);;
-		if (len>3 || (len>1 && shortcut.charAt(0)!='F' && shortcut.charAt(0)!='N' && shortcut.charAt(0)!='&'))
+		if (len>3 || (len>1 && shortcut.charAt(0)!='F' && shortcut.charAt(0)!='N' && shortcut.charAt(0)!='&' && shortcut.charAt(0)!='A'))
 			return;
 		boolean bothNumKeys = shortcut.startsWith("&");
 		if (bothNumKeys){ //first handle num key of keyboard

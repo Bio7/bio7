@@ -98,7 +98,7 @@ public class ImageJ extends Frame implements ActionListener, MouseListener, KeyL
 	 */
 
 	public static final String VERSION = "1.54t";
-	public static final String BUILD = "4";
+	public static final String BUILD = "8";
 	public static Color backgroundColor;
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -578,8 +578,7 @@ public class ImageJ extends Frame implements ActionListener, MouseListener, KeyL
 			return; // Allow macOS to run ImageJ>Hide ImageJ command
 		String cmd = null;
 		ImagePlus imp = WindowManager.getCurrentImage();
-		boolean isStack = (imp != null) && (imp.getStackSize() > 1);
-
+		boolean isStack = (imp!=null) && (imp.getStackSize()>1);	
 		if (imp != null && !meta && ((keyChar >= 32 && keyChar <= 255) || keyChar == '\b' || keyChar == '\n')) {
 			Roi roi = imp.getRoi();
 			if (roi != null && roi instanceof TextRoi) {
@@ -626,8 +625,11 @@ public class ImageJ extends Frame implements ActionListener, MouseListener, KeyL
 		if (keyCode == KeyEvent.VK_SEPARATOR)
 			keyCode = KeyEvent.VK_DECIMAL;
 		boolean functionKey = keyCode >= KeyEvent.VK_F1 && keyCode <= KeyEvent.VK_F12;
+		boolean arrowKey = keyCode==37 || keyCode==38 || keyCode==39 || keyCode==40;
+		if (Interpreter.getInstance()==null)
+			arrowKey = false;
 		boolean numPad = keyCode == KeyEvent.VK_DIVIDE || keyCode == KeyEvent.VK_MULTIPLY || keyCode == KeyEvent.VK_DECIMAL || (keyCode >= KeyEvent.VK_NUMPAD0 && keyCode <= KeyEvent.VK_NUMPAD9);
-		if ((!Prefs.requireControlKey || control || meta || functionKey || numPad) && keyChar != '+') {
+		if ((!Prefs.requireControlKey||control||meta||functionKey||numPad||arrowKey) && keyChar!='+') {
 			Hashtable shortcuts = Menus.getShortcuts();
 			if (shift && !functionKey)
 				cmd = (String) shortcuts.get(Integer.valueOf(keyCode + 200));
@@ -722,10 +724,10 @@ public class ImageJ extends Frame implements ActionListener, MouseListener, KeyL
 					cmd = "Next Slice [>]";
 				else if (stackKey && keyCode == KeyEvent.VK_LEFT)
 					cmd = "Previous Slice [<]";
-				else if (zoomKey && keyCode==KeyEvent.VK_DOWN && !ignoreArrowKeys(imp,control) && Toolbar.getToolId()<Toolbar.SPARE6)
-					cmd = "Out [-]";
-				else if (zoomKey && keyCode==KeyEvent.VK_UP && !ignoreArrowKeys(imp,control) && Toolbar.getToolId()<Toolbar.SPARE6)
-					cmd = "In [+]";
+				//else if (zoomKey && keyCode==KeyEvent.VK_DOWN && !ignoreArrowKeys(imp,control) && Toolbar.getToolId()<Toolbar.SPARE6)
+				//		cmd="Out [-]";
+				//else if (zoomKey && keyCode==KeyEvent.VK_UP && !ignoreArrowKeys(imp,control) && Toolbar.getToolId()<Toolbar.SPARE6)
+				//		cmd="In [+]";
 				else if (roi != null) {
 					if ((flags & KeyEvent.ALT_MASK) != 0 || (flags & KeyEvent.CTRL_MASK) != 0)
 						roi.nudgeCorner(keyCode);

@@ -345,7 +345,6 @@ public class Menus {
 		menu.add(submenu);
 		submenu = new Menu("Macro");
 		addExample(submenu, "Sphere", "Sphere.ijm");
-		addExample(submenu, "Pong", "Pong.ijm");
 		addExample(submenu, "Dialog Box", "Dialog_Box.ijm");
 		addExample(submenu, "Process Folder", "Batch_Process_Folder.ijm");
 		addExample(submenu, "OpenDialog Demo", "OpenDialog_Demo.ijm");
@@ -368,7 +367,6 @@ public class Menus {
 		menu.add(submenu);
 		submenu = new Menu("JavaScript");
 		addExample(submenu, "Sphere", "Sphere.js");
-		addExample(submenu, "Asteroids", "Asteroids.js");
 		addExample(submenu, "Plasma Cloud", "Plasma_Cloud.js");
 		addExample(submenu, "Cloud Debugger", "Cloud_Debugger.js");
 		addExample(submenu, "Synthetic Images", "Synthetic_Images.js");
@@ -423,6 +421,12 @@ public class Menus {
 		addExample(submenu, "Plugin Filter", "Filter_Plugin.java");
 		addExample(submenu, "Plugin Frame", "Plugin_Frame.java");
 		addExample(submenu, "Plugin Tool", "Prototype_Tool.java");
+		submenu.addActionListener(listener);
+		menu.add(submenu);
+		submenu = new Menu("Games");
+		addExample(submenu, "Asteroids", "Asteroids.js");
+		addExample(submenu, "Pong", "Pong.ijm");
+		addExample(submenu, "Snake", "Snake.ijm");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		menu.addSeparator();
@@ -1700,6 +1704,13 @@ public class Menus {
 	public static int convertShortcutToCode(String shortcut) {
 		int code = 0;
 		int len = shortcut.length();
+		if (len==2 && shortcut.charAt(0)=='A') { //arrow key shortcuts
+			if (shortcut.charAt(1)=='L') code=37;
+			if (shortcut.charAt(1)=='U') code=38;
+			if (shortcut.charAt(1)=='R') code=39;
+			if (shortcut.charAt(1)=='D') code=40;
+			return code;
+		}
 		if (len == 2 && shortcut.charAt(0) == 'F') {
 			code = KeyEvent.VK_F1 + (int) shortcut.charAt(1) - 49;
 			if (code >= KeyEvent.VK_F1 && code <= KeyEvent.VK_F9)
