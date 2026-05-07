@@ -14,6 +14,9 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URLClassLoader;
+import java.util.List;
+
 import org.apache.commons.io.FileUtils;
 import org.codehaus.commons.compiler.jdk.JavaSourceClassLoader;
 import org.eclipse.core.resources.IFile;
@@ -160,10 +163,20 @@ public class CompileClassAndMultipleClasses {
 		} else {
 			classLoaderMain = IJ.getClassLoader();
 		}
-		// ClassLoader classLoaderImagej =
-		// com.eco.bio7.image.Activator.class.getClassLoader();
+		// 1. Get the compiled libraries from preferences
+		List<String> jarPaths = DynamicCompilerClassLoaderUtil.getDynamicCompilerLibraries();
 
-		JavaSourceClassLoader cla = new JavaSourceClassLoader(classLoaderMain);
+		URLClassLoader dynCompilerLoader = null;
+		try {
+			dynCompilerLoader = DynamicCompilerClassLoaderUtil.buildLibraryClassLoader(jarPaths, classLoaderMain);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		
+		JavaSourceClassLoader cla = new JavaSourceClassLoader(dynCompilerLoader);
+
+		
 		cla.pag = pag;
 
 		/*
