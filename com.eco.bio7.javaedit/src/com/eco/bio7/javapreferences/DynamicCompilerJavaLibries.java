@@ -1,6 +1,7 @@
 package com.eco.bio7.javapreferences;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -19,13 +20,18 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -72,6 +78,9 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
     // Cache for POM properties to avoid repeated fetches
     private final java.util.Map<String, java.util.Map<String, String>> pomPropertiesCache = new java.util.HashMap<>();
 
+    // Font for path display
+    private Font pathFont;
+
     private String file;
     private String[] files;
     private String currentFilePath;
@@ -79,6 +88,7 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
     // Compiler libraries UI
     private List compilerLibsList;
     private Button removeCompilerLibBtn;
+    private Button openCompilerLibLocationBtn;
 
     // Fragment libraries UI
     private List fragmentLibsList;
@@ -86,6 +96,7 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
     private Button addFragmentLibBtn;
     private Button scanFragmentDirBtn;
     private Button mavenFragmentBtn;
+    private Button openFragmentLibLocationBtn;
 
     // Transfer buttons
     private Button transferToFragmentBtn;
@@ -107,7 +118,17 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
         super();
         IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
         setPreferenceStore(store);
+        initializeDefaultPreferences();
         initializeDataDirectory();
+    }
+
+    private void initializeDefaultPreferences() {
+        IPreferenceStore store = getPreferenceStore();
+        store.setDefault(DATA_LOCATION_PREF, DATA_LOCATION_INSTALL);
+        store.setDefault(CUSTOM_DATA_PATH_PREF, "");
+        store.setDefault(FRAGMENT_LOADING_ENABLED_PREF, false);
+        store.setDefault(JAVA_LIBS_PREF, "");
+        store.setDefault(FRAGMENT_LIBS_PREF, "");
     }
 
     private void initializeDataDirectory() {
@@ -263,6 +284,31 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
         }
     }
 
+    private Font getPathFont(Display display) {
+        if (pathFont == null || pathFont.isDisposed()) {
+            Font textFont = JFaceResources.getTextFont();
+            if (textFont != null) {
+                FontData[] fontData = textFont.getFontData();
+                if (fontData.length > 0) {
+                    fontData[0].setHeight(fontData[0].getHeight() - 1);
+                    pathFont = new Font(display, fontData);
+                }
+            }
+            if (pathFont == null) {
+                pathFont = new Font(display, "Monospace", 9, SWT.NORMAL);
+            }
+        }
+        return pathFont;
+    }
+
+    @Override
+    public void dispose() {
+        if (pathFont != null && !pathFont.isDisposed()) {
+            pathFont.dispose();
+        }
+        super.dispose();
+    }
+
     @Override
     protected Control createContents(Composite parent) {
         Composite top = new Composite(parent, SWT.LEFT);
@@ -278,6 +324,20 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
         updateDataLocationUI();
 
         return top;
+    }
+
+    private Text createPathDisplay(Composite parent, String path, int horizontalSpan) {
+        Text pathText = new Text(parent, SWT.BORDER | SWT.READ_ONLY | SWT.SINGLE);
+        pathText.setText(path != null ? path : "(not available)");
+        pathText.setFont(getPathFont(parent.getDisplay()));
+        pathText.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND));
+        pathText.setForeground(parent.getDisplay().getSystemColor(SWT.COLOR_INFO_FOREGROUND));
+
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = horizontalSpan;
+        pathText.setLayoutData(gd);
+
+        return pathText;
     }
 
     private void createDataLocationSection(Composite parent) {
@@ -300,44 +360,36 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
         });
 
         Label installPathLabel = new Label(group, SWT.NONE);
-        installPathLabel.setText("    ");
-        Label installPathValue = new Label(group, SWT.NONE);
+        installPathLabel.setText("    Path:");
         Path installPath = getInstallationDataPath();
-        installPathValue.setText(installPath != null ? installPath.toString() : "(not available)");
-        installPathValue.setForeground(group.getDisplay().getSystemColor(SWT.COLOR_DARK_GRAY));
-        GridData installPathData = new GridData(GridData.FILL_HORIZONTAL);
-        installPathData.horizontalSpan = 2;
-        installPathValue.setLayoutData(installPathData);
+        createPathDisplay(group, installPath != null ? installPath.toString() : null, 2);
 
         if (!isPathWritable(installPath)) {
+            new Label(group, SWT.NONE);
             Label warningLabel = new Label(group, SWT.NONE);
-            warningLabel.setText("    ⚠ Installation folder is not writable");
+            warningLabel.setText("⚠ Installation folder is not writable");
             warningLabel.setForeground(group.getDisplay().getSystemColor(SWT.COLOR_RED));
-            GridData warnData = new GridData();
-            warnData.horizontalSpan = 3;
+            GridData warnData = new GridData(GridData.FILL_HORIZONTAL);
+            warnData.horizontalSpan = 2;
             warningLabel.setLayoutData(warnData);
         }
 
         userHomeLocationRadio = new Button(group, SWT.RADIO);
         userHomeLocationRadio.setText("User home folder");
         userHomeLocationRadio.setToolTipText("Store data in user's home directory - survives reinstalls");
+        GridData homeData = new GridData();
+        homeData.horizontalSpan = 3;
+        userHomeLocationRadio.setLayoutData(homeData);
         userHomeLocationRadio.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 updateDataLocationUI();
             }
         });
-        new Label(group, SWT.NONE);
-        new Label(group, SWT.NONE);
 
         Label homePathLabel = new Label(group, SWT.NONE);
-        homePathLabel.setText("    ");
-        Label homePathValue = new Label(group, SWT.NONE);
-        homePathValue.setText(getUserHomeDataPath().toString());
-        homePathValue.setForeground(group.getDisplay().getSystemColor(SWT.COLOR_DARK_GRAY));
-        GridData homePathData = new GridData(GridData.FILL_HORIZONTAL);
-        homePathData.horizontalSpan = 2;
-        homePathValue.setLayoutData(homePathData);
+        homePathLabel.setText("    Path:");
+        createPathDisplay(group, getUserHomeDataPath().toString(), 2);
 
         customLocationRadio = new Button(group, SWT.RADIO);
         customLocationRadio.setText("Custom location:");
@@ -351,6 +403,7 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
 
         customPathText = new Text(group, SWT.BORDER);
         customPathText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        customPathText.setFont(getPathFont(group.getDisplay()));
         String savedCustomPath = getPreferenceStore().getString(CUSTOM_DATA_PATH_PREF);
         if (savedCustomPath != null && !savedCustomPath.isEmpty()) {
             customPathText.setText(savedCustomPath);
@@ -371,12 +424,19 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
             }
         });
 
+        Label separator = new Label(group, SWT.SEPARATOR | SWT.HORIZONTAL);
+        GridData sepData = new GridData(GridData.FILL_HORIZONTAL);
+        sepData.horizontalSpan = 3;
+        sepData.verticalIndent = 5;
+        separator.setLayoutData(sepData);
+
         Label currentLabel = new Label(group, SWT.NONE);
-        currentLabel.setText("Current:");
-        currentLabel.setFont(group.getDisplay().getSystemFont());
+        currentLabel.setText("Active:");
+        currentLabel.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT));
 
         currentDataPathLabel = new Label(group, SWT.NONE);
         currentDataPathLabel.setText(mavenCacheDir.getParent().toString());
+        currentDataPathLabel.setFont(getPathFont(group.getDisplay()));
         currentDataPathLabel.setForeground(group.getDisplay().getSystemColor(SWT.COLOR_DARK_BLUE));
         GridData currentData = new GridData(GridData.FILL_HORIZONTAL);
         currentData.horizontalSpan = 2;
@@ -435,7 +495,7 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
         label.setText("Libraries for dynamic Java compilation (available on compiler classpath):");
         label.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        compilerLibsList = new List(group, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
+        compilerLibsList = new List(group, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
         compilerLibsList.setItems(getPreferenceArray(JAVA_LIBS_PREF));
         GridData listData = new GridData(GridData.FILL_HORIZONTAL);
         listData.heightHint = convertVerticalDLUsToPixels(LIST_HEIGHT_IN_DLUS);
@@ -447,8 +507,12 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
             }
         });
 
+        compilerLibsList.addListener(SWT.MouseDoubleClick, e -> {
+            openSelectedLibraryLocation(compilerLibsList);
+        });
+
         Composite buttonGroup = new Composite(group, SWT.NONE);
-        buttonGroup.setLayout(new GridLayout(4, true));
+        buttonGroup.setLayout(new GridLayout(5, false));
         buttonGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         Button addBtn = new Button(buttonGroup, SWT.PUSH);
@@ -481,8 +545,20 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
             }
         });
 
+        openCompilerLibLocationBtn = new Button(buttonGroup, SWT.PUSH);
+        openCompilerLibLocationBtn.setText("Open Location");
+        openCompilerLibLocationBtn.setToolTipText("Open the folder containing the selected library");
+        openCompilerLibLocationBtn.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        openCompilerLibLocationBtn.setEnabled(false);
+        openCompilerLibLocationBtn.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
+                openSelectedLibraryLocation(compilerLibsList);
+            }
+        });
+
         removeCompilerLibBtn = new Button(buttonGroup, SWT.PUSH);
-        removeCompilerLibBtn.setText("Remove Selected");
+        removeCompilerLibBtn.setText("Remove");
+        removeCompilerLibBtn.setToolTipText("Remove selected libraries from the list");
         removeCompilerLibBtn.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         removeCompilerLibBtn.setEnabled(false);
         removeCompilerLibBtn.addSelectionListener(new SelectionAdapter() {
@@ -544,7 +620,7 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
         label.setText("Libraries loaded as OSGi fragments (available to all Bio7 plugins at runtime):");
         label.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        fragmentLibsList = new List(fragmentGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
+        fragmentLibsList = new List(fragmentGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
         fragmentLibsList.setItems(getPreferenceArray(FRAGMENT_LIBS_PREF));
         GridData listData = new GridData(GridData.FILL_HORIZONTAL);
         listData.heightHint = convertVerticalDLUsToPixels(LIST_HEIGHT_IN_DLUS);
@@ -556,8 +632,12 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
             }
         });
 
+        fragmentLibsList.addListener(SWT.MouseDoubleClick, e -> {
+            openSelectedLibraryLocation(fragmentLibsList);
+        });
+
         Composite buttonGroup = new Composite(fragmentGroup, SWT.NONE);
-        buttonGroup.setLayout(new GridLayout(4, true));
+        buttonGroup.setLayout(new GridLayout(5, false));
         buttonGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         addFragmentLibBtn = new Button(buttonGroup, SWT.PUSH);
@@ -590,8 +670,20 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
             }
         });
 
+        openFragmentLibLocationBtn = new Button(buttonGroup, SWT.PUSH);
+        openFragmentLibLocationBtn.setText("Open Location");
+        openFragmentLibLocationBtn.setToolTipText("Open the folder containing the selected library");
+        openFragmentLibLocationBtn.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        openFragmentLibLocationBtn.setEnabled(false);
+        openFragmentLibLocationBtn.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
+                openSelectedLibraryLocation(fragmentLibsList);
+            }
+        });
+
         removeFragmentLibBtn = new Button(buttonGroup, SWT.PUSH);
-        removeFragmentLibBtn.setText("Remove Selected");
+        removeFragmentLibBtn.setText("Remove");
+        removeFragmentLibBtn.setToolTipText("Remove selected libraries from the list");
         removeFragmentLibBtn.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         removeFragmentLibBtn.setEnabled(false);
         removeFragmentLibBtn.addSelectionListener(new SelectionAdapter() {
@@ -608,6 +700,50 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
         infoLabel.setLayoutData(infoData);
     }
 
+    private void openSelectedLibraryLocation(List list) {
+        String[] selection = list.getSelection();
+        if (selection == null || selection.length == 0) {
+            return;
+        }
+
+        String selectedPath = selection[0];
+        File file = new File(selectedPath);
+        File folder = file.isDirectory() ? file : file.getParentFile();
+
+        if (folder != null && folder.exists()) {
+            openFolderInFileManager(folder);
+        } else {
+            showErrorMessage("Folder Not Found", "The folder does not exist:\n" + folder);
+        }
+    }
+
+    private void openFolderInFileManager(File folder) {
+        try {
+            String os = System.getProperty("os.name").toLowerCase();
+
+            if (os.contains("win")) {
+                Runtime.getRuntime().exec(new String[] { "explorer.exe", folder.getAbsolutePath() });
+            } else if (os.contains("mac")) {
+                Runtime.getRuntime().exec(new String[] { "open", folder.getAbsolutePath() });
+            } else {
+                try {
+                    Runtime.getRuntime().exec(new String[] { "xdg-open", folder.getAbsolutePath() });
+                } catch (IOException e) {
+                    try {
+                        Runtime.getRuntime().exec(new String[] { "nautilus", folder.getAbsolutePath() });
+                    } catch (IOException e2) {
+                        Runtime.getRuntime().exec(new String[] { "dolphin", folder.getAbsolutePath() });
+                    }
+                }
+            }
+        } catch (Exception e) {
+            if (!Program.launch(folder.getAbsolutePath())) {
+                showErrorMessage("Cannot Open Folder",
+                        "Could not open the file manager.\nPath: " + folder.getAbsolutePath());
+            }
+        }
+    }
+
     private void updateFragmentSectionEnabled() {
         boolean enabled = enableFragmentLoadingBtn.getSelection();
 
@@ -616,6 +752,7 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
         scanFragmentDirBtn.setEnabled(enabled);
         mavenFragmentBtn.setEnabled(enabled);
         removeFragmentLibBtn.setEnabled(enabled && fragmentLibsList.getSelectionCount() > 0);
+        openFragmentLibLocationBtn.setEnabled(enabled && fragmentLibsList.getSelectionCount() > 0);
         transferToFragmentBtn.setEnabled(enabled && compilerLibsList.getSelectionCount() > 0);
         transferToCompilerBtn.setEnabled(enabled && fragmentLibsList.getSelectionCount() > 0);
 
@@ -632,7 +769,9 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
         int fragmentSelection = fragmentLibsList.getSelectionCount();
 
         removeCompilerLibBtn.setEnabled(compilerSelection > 0);
+        openCompilerLibLocationBtn.setEnabled(compilerSelection > 0);
         removeFragmentLibBtn.setEnabled(fragmentEnabled && fragmentSelection > 0);
+        openFragmentLibLocationBtn.setEnabled(fragmentEnabled && fragmentSelection > 0);
         transferToFragmentBtn.setEnabled(fragmentEnabled && compilerSelection > 0);
         transferToCompilerBtn.setEnabled(fragmentEnabled && fragmentSelection > 0);
     }
@@ -864,6 +1003,105 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
     }
 
     // =========================================================================
+    // VERSION REPLACEMENT DATA CLASSES AND DIALOG
+    // =========================================================================
+
+    /**
+     * Data class to hold information about a version replacement.
+     */
+    private static class VersionReplacement {
+        final String groupId;
+        final String artifactId;
+        final String oldVersion;
+        final String newVersion;
+
+        VersionReplacement(String groupId, String artifactId, String oldVersion, String newVersion) {
+            this.groupId = groupId;
+            this.artifactId = artifactId;
+            this.oldVersion = oldVersion;
+            this.newVersion = newVersion;
+        }
+    }
+
+    /**
+     * Dialog to confirm version replacements before proceeding.
+     */
+    private class VersionReplacementDialog extends Dialog {
+        private final java.util.List<VersionReplacement> replacements;
+        private boolean confirmed = false;
+
+        public VersionReplacementDialog(Shell parentShell, java.util.List<VersionReplacement> replacements) {
+            super(parentShell);
+            this.replacements = replacements;
+            setShellStyle(getShellStyle() | SWT.RESIZE);
+        }
+
+        @Override
+        protected void configureShell(Shell newShell) {
+            super.configureShell(newShell);
+            newShell.setText("Confirm Version Replacement");
+            newShell.setMinimumSize(500, 300);
+        }
+
+        @Override
+        protected Control createDialogArea(Composite parent) {
+            Composite container = (Composite) super.createDialogArea(parent);
+            container.setLayout(new GridLayout(1, false));
+
+            Composite headerComp = new Composite(container, SWT.NONE);
+            headerComp.setLayout(new GridLayout(2, false));
+            headerComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            Label iconLabel = new Label(headerComp, SWT.NONE);
+            iconLabel.setImage(parent.getDisplay().getSystemImage(SWT.ICON_WARNING));
+
+            Label messageLabel = new Label(headerComp, SWT.WRAP);
+            messageLabel.setText("The following libraries already exist with different versions.\n"
+                    + "Do you want to replace the old versions with the new ones?\n\n"
+                    + "This will remove the old versions from both the list and the cache.");
+            GridData msgData = new GridData(GridData.FILL_HORIZONTAL);
+            msgData.widthHint = 400;
+            messageLabel.setLayoutData(msgData);
+
+            Label separator = new Label(container, SWT.SEPARATOR | SWT.HORIZONTAL);
+            separator.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            org.eclipse.swt.widgets.List replacementList = new org.eclipse.swt.widgets.List(container,
+                    SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
+            GridData listData = new GridData(GridData.FILL_BOTH);
+            listData.heightHint = 150;
+            replacementList.setLayoutData(listData);
+
+            for (VersionReplacement r : replacements) {
+                String entry = r.artifactId + ":  " + r.oldVersion + "  →  " + r.newVersion;
+                replacementList.add(entry);
+            }
+
+            Label summaryLabel = new Label(container, SWT.NONE);
+            summaryLabel.setText("Total: " + replacements.size() + " library(ies) will be replaced.");
+            summaryLabel.setForeground(container.getDisplay().getSystemColor(SWT.COLOR_DARK_BLUE));
+
+            return container;
+        }
+
+        @Override
+        protected void createButtonsForButtonBar(Composite parent) {
+            createButton(parent, IDialogConstants.OK_ID, "Replace", true);
+            createButton(parent, IDialogConstants.CANCEL_ID, "Cancel", false);
+        }
+
+        @Override
+        protected void okPressed() {
+            confirmed = true;
+            super.okPressed();
+        }
+
+        public boolean isConfirmed() {
+            return confirmed;
+        }
+    }
+
+    // =========================================================================
     // MAVEN DOWNLOAD FUNCTIONALITY
     // =========================================================================
 
@@ -881,8 +1119,161 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
                 || artifactId.contains("-x86") || artifactId.contains("-gpu") || artifactId.contains("-redist");
     }
 
+    /**
+     * Check if artifacts already exist with the SAME version in the list.
+     */
+    private java.util.List<String> findAlreadyUpToDate(List targetList,
+            java.util.List<MavenDownloadDialog.SimpleDep> deps) {
+        java.util.List<String> upToDate = new ArrayList<>();
+        String[] items = targetList.getItems();
+
+        for (MavenDownloadDialog.SimpleDep dep : deps) {
+            String groupPath = dep.groupId.replace('.', '/');
+            String pattern = "/" + groupPath + "/" + dep.artifactId + "/" + dep.version + "/";
+
+            for (String item : items) {
+                String normalizedItem = item.replace("\\", "/");
+                if (normalizedItem.contains(pattern)) {
+                    upToDate.add(dep.groupId + ":" + dep.artifactId + ":" + dep.version);
+                    break;
+                }
+            }
+        }
+
+        return upToDate;
+    }
+
+    /**
+     * Check if a single artifact already exists with the SAME version.
+     */
+    private boolean isAlreadyUpToDate(List targetList, String groupId, String artifactId, String version) {
+        String[] items = targetList.getItems();
+        String groupPath = groupId.replace('.', '/');
+        String pattern = "/" + groupPath + "/" + artifactId + "/" + version + "/";
+
+        for (String item : items) {
+            String normalizedItem = item.replace("\\", "/");
+            if (normalizedItem.contains(pattern)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Find version replacements for batch dependencies.
+     */
+    private java.util.List<VersionReplacement> findVersionReplacementsForDeps(List targetList,
+            java.util.List<MavenDownloadDialog.SimpleDep> deps) {
+        java.util.List<VersionReplacement> replacements = new ArrayList<>();
+        String[] items = targetList.getItems();
+
+        for (MavenDownloadDialog.SimpleDep dep : deps) {
+            String groupPath = dep.groupId.replace('.', '/');
+            String pattern = "/" + groupPath + "/" + dep.artifactId + "/";
+
+            for (String item : items) {
+                String normalizedItem = item.replace("\\", "/");
+                if (normalizedItem.contains(pattern)) {
+                    String oldVersion = extractVersionFromPath(normalizedItem, groupPath, dep.artifactId);
+                    if (oldVersion != null && !oldVersion.equals(dep.version)) {
+                        boolean alreadyAdded = replacements.stream()
+                                .anyMatch(r -> r.groupId.equals(dep.groupId) && r.artifactId.equals(dep.artifactId));
+                        if (!alreadyAdded) {
+                            replacements.add(new VersionReplacement(dep.groupId, dep.artifactId, oldVersion, dep.version));
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+        return replacements;
+    }
+
+    /**
+     * Find version replacements for a single artifact.
+     */
+    private java.util.List<VersionReplacement> findVersionReplacementsForArtifact(List targetList,
+            String groupId, String artifactId, String newVersion) {
+        java.util.List<VersionReplacement> replacements = new ArrayList<>();
+        String[] items = targetList.getItems();
+
+        String groupPath = groupId.replace('.', '/');
+        String pattern = "/" + groupPath + "/" + artifactId + "/";
+
+        for (String item : items) {
+            String normalizedItem = item.replace("\\", "/");
+            if (normalizedItem.contains(pattern)) {
+                String oldVersion = extractVersionFromPath(normalizedItem, groupPath, artifactId);
+                if (oldVersion != null && !oldVersion.equals(newVersion)) {
+                    replacements.add(new VersionReplacement(groupId, artifactId, oldVersion, newVersion));
+                }
+                break;
+            }
+        }
+
+        return replacements;
+    }
+
+    /**
+     * Find version replacements for a group download.
+     */
+    private java.util.List<VersionReplacement> findVersionReplacementsForGroup(List targetList,
+            String groupId, String newVersion) {
+        java.util.List<VersionReplacement> replacements = new ArrayList<>();
+        String[] items = targetList.getItems();
+
+        String groupPath = groupId.replace('.', '/');
+        String groupPattern = "/" + groupPath + "/";
+
+        java.util.Set<String> processedArtifacts = new java.util.HashSet<>();
+
+        for (String item : items) {
+            String normalizedItem = item.replace("\\", "/");
+            if (normalizedItem.contains(groupPattern)) {
+                int idx = normalizedItem.indexOf(groupPattern);
+                if (idx == -1) continue;
+
+                String remaining = normalizedItem.substring(idx + groupPattern.length());
+                int slashIdx = remaining.indexOf('/');
+                if (slashIdx == -1) continue;
+
+                String artifactId = remaining.substring(0, slashIdx);
+
+                if (processedArtifacts.contains(artifactId)) continue;
+                processedArtifacts.add(artifactId);
+
+                String oldVersion = extractVersionFromPath(normalizedItem, groupPath, artifactId);
+                if (oldVersion != null && !oldVersion.equals(newVersion)) {
+                    replacements.add(new VersionReplacement(groupId, artifactId, oldVersion, newVersion));
+                }
+            }
+        }
+
+        return replacements;
+    }
+
+    /**
+     * Extract version from a JAR path.
+     */
+    private String extractVersionFromPath(String path, String groupPath, String artifactId) {
+        try {
+            String pattern = "/" + groupPath + "/" + artifactId + "/";
+            int idx = path.indexOf(pattern);
+            if (idx == -1) return null;
+
+            String remaining = path.substring(idx + pattern.length());
+            int slashIdx = remaining.indexOf('/');
+            if (slashIdx == -1) return null;
+
+            return remaining.substring(0, slashIdx);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     private void downloadFromMaven(List targetList) {
-        // Clear properties cache for fresh download
         pomPropertiesCache.clear();
 
         MavenDownloadDialog dialog = new MavenDownloadDialog(
@@ -897,10 +1288,28 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
             boolean downloadNatives = dialog.isDownloadNatives();
 
             if (batchDeps != null && !batchDeps.isEmpty()) {
-                // ===== BATCH MODE =====
-                downloadBatchDependencies(targetList, batchDeps, downloadDependencies, downloadNatives);
+                // Check for version conflicts BEFORE downloading
+                java.util.List<VersionReplacement> replacements = findVersionReplacementsForDeps(targetList, batchDeps);
+
+                // Check for already up-to-date
+                java.util.List<String> upToDate = findAlreadyUpToDate(targetList, batchDeps);
+
+                if (!replacements.isEmpty()) {
+                    VersionReplacementDialog confirmDialog = new VersionReplacementDialog(getShell(), replacements);
+                    confirmDialog.open();
+                    if (!confirmDialog.isConfirmed()) {
+                        showInfoMessage("Download Cancelled", "Download was cancelled. No changes were made.");
+                        return;
+                    }
+                } else if (upToDate.size() == batchDeps.size() && !downloadDependencies) {
+                    showInfoMessage("Already Up-to-Date",
+                            "All " + upToDate.size() + " requested libraries are already in the list with the same version.\n\n" +
+                            "Enable 'Download dependencies' if you want to fetch transitive dependencies.");
+                    return;
+                }
+
+                downloadBatchDependencies(targetList, batchDeps, downloadDependencies, downloadNatives, !replacements.isEmpty());
             } else {
-                // ===== SINGLE ARTIFACT MODE =====
                 String groupId = dialog.getGroupId();
                 String artifactId = dialog.getArtifactId();
                 String version = dialog.getVersion();
@@ -916,14 +1325,43 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
                         showErrorMessage("Invalid Input", "Please provide a version when downloading all modules.");
                         return;
                     }
-                    downloadAllModulesFromGroup(targetList, groupId, version, downloadDependencies, downloadNatives);
+                    java.util.List<VersionReplacement> replacements = findVersionReplacementsForGroup(targetList, groupId, version);
+
+                    if (!replacements.isEmpty()) {
+                        VersionReplacementDialog confirmDialog = new VersionReplacementDialog(getShell(), replacements);
+                        confirmDialog.open();
+                        if (!confirmDialog.isConfirmed()) {
+                            showInfoMessage("Download Cancelled", "Download was cancelled. No changes were made.");
+                            return;
+                        }
+                    }
+                    downloadAllModulesFromGroup(targetList, groupId, version, downloadDependencies, downloadNatives, !replacements.isEmpty());
                 } else {
                     if (artifactId.isEmpty() || version.isEmpty()) {
                         showErrorMessage("Invalid Input", "Please provide groupId, artifactId, and version.");
                         return;
                     }
-                    downloadMavenArtifact(targetList, groupId, artifactId, version, downloadDependencies,
-                            downloadNatives);
+
+                    // Check for version conflicts
+                    java.util.List<VersionReplacement> replacements = findVersionReplacementsForArtifact(targetList, groupId, artifactId, version);
+
+                    // Check if already up-to-date (same version exists)
+                    if (replacements.isEmpty() && isAlreadyUpToDate(targetList, groupId, artifactId, version) && !downloadDependencies) {
+                        showInfoMessage("Already Up-to-Date",
+                                "The library " + artifactId + " version " + version + " is already in the list.\n\n" +
+                                "Enable 'Download dependencies' if you want to fetch transitive dependencies.");
+                        return;
+                    }
+
+                    if (!replacements.isEmpty()) {
+                        VersionReplacementDialog confirmDialog = new VersionReplacementDialog(getShell(), replacements);
+                        confirmDialog.open();
+                        if (!confirmDialog.isConfirmed()) {
+                            showInfoMessage("Download Cancelled", "Download was cancelled. No changes were made.");
+                            return;
+                        }
+                    }
+                    downloadMavenArtifact(targetList, groupId, artifactId, version, downloadDependencies, downloadNatives, !replacements.isEmpty());
                 }
             }
         }
@@ -931,7 +1369,7 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
 
     private void downloadBatchDependencies(List targetList,
             java.util.List<MavenDownloadDialog.SimpleDep> batchDeps, boolean downloadDependencies,
-            boolean downloadNatives) {
+            boolean downloadNatives, boolean replaceOldVersions) {
 
         Job downloadJob = new Job("Batch downloading Maven dependencies") {
             @Override
@@ -969,14 +1407,12 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
                         monitor.subTask("Downloading: " + depArtifactId);
                         System.out.println("[Maven Batch] Processing: " + depKey + ":" + depVersion);
 
-                        // First check if it's a POM-only artifact
                         if (isPomOnlyArtifact(depGroupId, depArtifactId, depVersion)) {
                             System.out.println("[Maven Batch] POM-only artifact: " + depKey
                                     + ", resolving transitive dependencies...");
                             downloadDependenciesRecursively(depGroupId, depArtifactId, depVersion, downloadedJars,
                                     failedDownloads, processedArtifacts, monitor, 0, downloadNatives);
                         } else {
-                            // Try to download JAR
                             Path jar = downloadJar(depGroupId, depArtifactId, depVersion, null, monitor);
 
                             if (jar != null) {
@@ -1007,7 +1443,7 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
                     final java.util.List<String> failed = failedDownloads;
 
                     Display.getDefault().asyncExec(() -> {
-                        addJarsToList(targetList, jarsToAdd, failed, "Batch download complete");
+                        addJarsToList(targetList, jarsToAdd, failed, "Batch download complete", replaceOldVersions);
                     });
 
                     return Status.OK_STATUS;
@@ -1027,7 +1463,7 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
     }
 
     private void downloadAllModulesFromGroup(List targetList, String groupId, String version,
-            boolean downloadDependencies, boolean downloadNatives) {
+            boolean downloadDependencies, boolean downloadNatives, boolean replaceOldVersions) {
         Job downloadJob = new Job("Downloading all modules from: " + groupId) {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
@@ -1058,7 +1494,6 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
 
                     java.util.List<Path> downloadedJars = new ArrayList<>();
                     java.util.List<String> failedDownloads = new ArrayList<>();
-                    java.util.List<String> skippedPomOnly = new ArrayList<>();
                     java.util.Set<String> processedArtifacts = new java.util.HashSet<>();
 
                     monitor.beginTask("Downloading modules", allArtifacts.size());
@@ -1078,9 +1513,7 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
 
                         monitor.subTask("Downloading: " + artArtifactId);
 
-                        // Check if POM-only first
                         if (isPomOnlyArtifact(artGroupId, artArtifactId, artVersion)) {
-                            skippedPomOnly.add(artArtifactId);
                             if (downloadDependencies) {
                                 downloadDependenciesRecursively(artGroupId, artArtifactId, artVersion, downloadedJars,
                                         failedDownloads, processedArtifacts, monitor, 0, downloadNatives);
@@ -1113,7 +1546,7 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
                     final java.util.List<String> failed = failedDownloads;
 
                     Display.getDefault().asyncExec(() -> {
-                        addJarsToList(targetList, jarsToAdd, failed, groupId, version);
+                        addJarsToList(targetList, jarsToAdd, failed, "Group: " + groupId + "\nVersion: " + version, replaceOldVersions);
                     });
 
                     return Status.OK_STATUS;
@@ -1132,16 +1565,86 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
         downloadJob.schedule();
     }
 
-    /**
-     * Detect POM-only artifacts by checking packaging and JAR existence.
-     */
+    private void downloadMavenArtifact(List targetList, String groupId, String artifactId, String version,
+            boolean downloadDependencies, boolean downloadNatives, boolean replaceOldVersions) {
+        Job downloadJob = new Job("Downloading: " + artifactId) {
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                try {
+                    String platformClassifier = detectPlatformClassifier();
+
+                    System.out.println("[Maven Download] ==========================================");
+                    System.out.println("[Maven Download] Downloading: " + groupId + ":" + artifactId + ":" + version);
+                    System.out.println("[Maven Download]   Platform: " + platformClassifier);
+                    System.out.println("[Maven Download]   Cache: " + mavenCacheDir);
+                    System.out.println("[Maven Download] ==========================================");
+
+                    Files.createDirectories(mavenCacheDir);
+
+                    java.util.List<Path> downloadedJars = new ArrayList<>();
+                    java.util.List<String> failedDownloads = new ArrayList<>();
+                    java.util.Set<String> processedArtifacts = new java.util.HashSet<>();
+
+                    monitor.beginTask("Downloading", IProgressMonitor.UNKNOWN);
+                    monitor.subTask("Downloading main artifact...");
+
+                    boolean isPomOnly = isPomOnlyArtifact(groupId, artifactId, version);
+
+                    if (isPomOnly) {
+                        processedArtifacts.add(groupId + ":" + artifactId);
+                        System.out.println("[Maven Download] POM-only artifact, downloading dependencies...");
+                    } else {
+                        Path mainJar = downloadJar(groupId, artifactId, version, null, monitor);
+
+                        if (mainJar != null) {
+                            downloadedJars.add(mainJar);
+                            processedArtifacts.add(groupId + ":" + artifactId);
+
+                            if (downloadNatives) {
+                                downloadNativeJars(groupId, artifactId, version, downloadedJars, monitor);
+                            }
+                        } else {
+                            failedDownloads.add(groupId + ":" + artifactId + ":" + version);
+                        }
+                    }
+
+                    if (downloadDependencies && !monitor.isCanceled()) {
+                        downloadDependenciesRecursively(groupId, artifactId, version, downloadedJars, failedDownloads,
+                                processedArtifacts, monitor, 0, downloadNatives);
+                    }
+
+                    monitor.done();
+
+                    final java.util.List<Path> jarsToAdd = downloadedJars;
+                    final java.util.List<String> failed = failedDownloads;
+                    final boolean wasPomOnly = isPomOnly;
+
+                    Display.getDefault().asyncExec(() -> {
+                        addJarsToList(targetList, jarsToAdd, failed, wasPomOnly ? "(POM aggregator) " : "", replaceOldVersions);
+                    });
+
+                    return Status.OK_STATUS;
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Display.getDefault().asyncExec(() -> {
+                        showErrorMessage("Download Error", "Error: " + e.getMessage());
+                    });
+                    return new Status(IStatus.ERROR, "com.eco.bio7.javaedit", "Download failed", e);
+                }
+            }
+        };
+
+        downloadJob.setUser(true);
+        downloadJob.schedule();
+    }
+
     private boolean isPomOnlyArtifact(String groupId, String artifactId, String version) {
         try {
             String groupPath = groupId.replace('.', '/');
             String basePath = MAVEN_CENTRAL_URL + "/" + groupPath + "/" + artifactId + "/" + version + "/" + artifactId
                     + "-" + version;
 
-            // First, try to download and parse the POM to check packaging
             String pomUrl = basePath + ".pom";
             HttpURLConnection pomConn = (HttpURLConnection) new URL(pomUrl).openConnection();
             pomConn.setRequestMethod("GET");
@@ -1160,7 +1663,6 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
 
                 String pom = content.toString();
 
-                // Check for <packaging>pom</packaging>
                 Pattern packagingPattern = Pattern.compile("<packaging>\\s*([^<]+)\\s*</packaging>");
                 Matcher matcher = packagingPattern.matcher(pom);
                 if (matcher.find()) {
@@ -1174,7 +1676,6 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
             }
             pomConn.disconnect();
 
-            // If no explicit packaging, check if JAR actually exists
             String jarUrl = basePath + ".jar";
             HttpURLConnection jarConn = (HttpURLConnection) new URL(jarUrl).openConnection();
             jarConn.setRequestMethod("HEAD");
@@ -1271,88 +1772,150 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
         }
     }
 
-    private void downloadMavenArtifact(List targetList, String groupId, String artifactId, String version,
-            boolean downloadDependencies, boolean downloadNatives) {
-        Job downloadJob = new Job("Downloading: " + artifactId) {
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                try {
-                    String platformClassifier = detectPlatformClassifier();
+    // =========================================================================
+    // VERSION REPLACEMENT FUNCTIONALITY
+    // =========================================================================
 
-                    System.out.println("[Maven Download] ==========================================");
-                    System.out.println("[Maven Download] Downloading: " + groupId + ":" + artifactId + ":" + version);
-                    System.out.println("[Maven Download]   Platform: " + platformClassifier);
-                    System.out.println("[Maven Download]   Cache: " + mavenCacheDir);
-                    System.out.println("[Maven Download] ==========================================");
+    /**
+     * Remove existing versions of an artifact from the list.
+     */
+    private int removeExistingVersions(List targetList, String groupId, String artifactId) {
+        String[] items = targetList.getItems();
+        java.util.List<Integer> indicesToRemove = new ArrayList<>();
 
-                    Files.createDirectories(mavenCacheDir);
+        String groupPath = groupId.replace('.', '/');
+        String pattern = "/" + groupPath + "/" + artifactId + "/";
 
-                    java.util.List<Path> downloadedJars = new ArrayList<>();
-                    java.util.List<String> failedDownloads = new ArrayList<>();
-                    java.util.Set<String> processedArtifacts = new java.util.HashSet<>();
-
-                    monitor.beginTask("Downloading", IProgressMonitor.UNKNOWN);
-                    monitor.subTask("Downloading main artifact...");
-
-                    // Check if POM-only first
-                    boolean isPomOnly = isPomOnlyArtifact(groupId, artifactId, version);
-
-                    if (isPomOnly) {
-                        processedArtifacts.add(groupId + ":" + artifactId);
-                        System.out.println("[Maven Download] POM-only artifact, downloading dependencies...");
-                    } else {
-                        Path mainJar = downloadJar(groupId, artifactId, version, null, monitor);
-
-                        if (mainJar != null) {
-                            downloadedJars.add(mainJar);
-                            processedArtifacts.add(groupId + ":" + artifactId);
-
-                            if (downloadNatives) {
-                                downloadNativeJars(groupId, artifactId, version, downloadedJars, monitor);
-                            }
-                        } else {
-                            failedDownloads.add(groupId + ":" + artifactId + ":" + version);
-                        }
-                    }
-
-                    if (downloadDependencies && !monitor.isCanceled()) {
-                        downloadDependenciesRecursively(groupId, artifactId, version, downloadedJars, failedDownloads,
-                                processedArtifacts, monitor, 0, downloadNatives);
-                    }
-
-                    monitor.done();
-
-                    final java.util.List<Path> jarsToAdd = downloadedJars;
-                    final java.util.List<String> failed = failedDownloads;
-                    final boolean wasPomOnly = isPomOnly;
-
-                    Display.getDefault().asyncExec(() -> {
-                        addJarsToList(targetList, jarsToAdd, failed, wasPomOnly ? "(POM aggregator) " : "");
-                    });
-
-                    return Status.OK_STATUS;
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Display.getDefault().asyncExec(() -> {
-                        showErrorMessage("Download Error", "Error: " + e.getMessage());
-                    });
-                    return new Status(IStatus.ERROR, "com.eco.bio7.javaedit", "Download failed", e);
-                }
+        for (int i = 0; i < items.length; i++) {
+            String item = items[i].replace("\\", "/");
+            if (item.contains(pattern)) {
+                indicesToRemove.add(i);
             }
-        };
+        }
 
-        downloadJob.setUser(true);
-        downloadJob.schedule();
+        for (int i = indicesToRemove.size() - 1; i >= 0; i--) {
+            targetList.remove(indicesToRemove.get(i));
+        }
+
+        if (!indicesToRemove.isEmpty()) {
+            System.out.println("[Maven] Removed " + indicesToRemove.size() + " old version(s) of " + groupId + ":" + artifactId);
+        }
+
+        return indicesToRemove.size();
     }
 
+    /**
+     * Extract groupId, artifactId, and version from a cached JAR path.
+     */
+    private String[] extractArtifactInfo(Path jarPath) {
+        try {
+            Path parent = jarPath.getParent();
+            if (parent == null) return null;
+
+            String version = parent.getFileName().toString();
+
+            parent = parent.getParent();
+            if (parent == null) return null;
+
+            String artifactId = parent.getFileName().toString();
+
+            Path groupPath = parent.getParent();
+            if (groupPath == null) return null;
+
+            java.util.List<String> groupParts = new ArrayList<>();
+            while (groupPath != null && !groupPath.getFileName().toString().equals(".maven-cache")) {
+                groupParts.add(0, groupPath.getFileName().toString());
+                groupPath = groupPath.getParent();
+            }
+
+            if (groupParts.isEmpty()) return null;
+
+            String groupId = String.join(".", groupParts);
+
+            return new String[] { groupId, artifactId, version };
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Delete old versions of an artifact from the Maven cache.
+     */
+    private void cleanOldVersionsFromCache(String groupId, String artifactId, String keepVersion) {
+        try {
+            String groupPath = groupId.replace('.', '/');
+            Path artifactDir = mavenCacheDir.resolve(groupPath).resolve(artifactId);
+
+            if (!Files.exists(artifactDir) || !Files.isDirectory(artifactDir)) {
+                return;
+            }
+
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(artifactDir)) {
+                for (Path versionDir : stream) {
+                    if (Files.isDirectory(versionDir)) {
+                        String version = versionDir.getFileName().toString();
+                        if (!version.equals(keepVersion)) {
+                            System.out.println("[Maven Cache] Removing old version from cache: " + groupId + ":" + artifactId + ":" + version);
+                            deleteDirectory(versionDir);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[Maven Cache] Error cleaning old versions: " + e.getMessage());
+        }
+    }
+
+    private void deleteDirectory(Path dir) throws IOException {
+        Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                Files.delete(file);
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path d, IOException exc) throws IOException {
+                Files.delete(d);
+                return FileVisitResult.CONTINUE;
+            }
+        });
+    }
+
+    /**
+     * Add JARs to the list. If replaceOldVersions is true, remove old versions first.
+     */
     private void addJarsToList(List targetList, java.util.List<Path> jarsToAdd, java.util.List<String> failed,
-            String prefix) {
+            String prefix, boolean replaceOldVersions) {
         if (jarsToAdd.isEmpty()) {
             showErrorMessage("Download Failed", "No JAR files could be downloaded.");
             return;
         }
 
+        int removedCount = 0;
+
+        if (replaceOldVersions) {
+            // Track which artifacts we're adding (to remove old versions)
+            java.util.Map<String, String> artifactVersions = new java.util.HashMap<>();
+            for (Path jar : jarsToAdd) {
+                String[] parts = extractArtifactInfo(jar);
+                if (parts != null) {
+                    String key = parts[0] + ":" + parts[1];
+                    artifactVersions.put(key, parts[2]);
+                }
+            }
+
+            // Remove old versions of artifacts we're about to add
+            for (java.util.Map.Entry<String, String> entry : artifactVersions.entrySet()) {
+                String[] parts = entry.getKey().split(":");
+                if (parts.length == 2) {
+                    removedCount += removeExistingVersions(targetList, parts[0], parts[1]);
+                    cleanOldVersionsFromCache(parts[0], parts[1], entry.getValue());
+                }
+            }
+        }
+
+        // Now add the new JARs
         java.util.Set<String> existingItems = new java.util.HashSet<>();
         for (String item : targetList.getItems()) {
             existingItems.add(normalizeLibPath(item));
@@ -1373,22 +1936,47 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
             }
         }
 
+        // Build appropriate message
         StringBuilder message = new StringBuilder();
-        if (!prefix.isEmpty())
+        if (!prefix.isEmpty()) {
             message.append(prefix).append("\n");
-        message.append("Downloaded: ").append(jarsToAdd.size()).append(" JAR(s)\n");
-        message.append("Added to list: ").append(added).append("\n");
-        if (skipped > 0)
-            message.append("Skipped (duplicates): ").append(skipped).append("\n");
-        if (!failed.isEmpty())
-            message.append("\nFailed: ").append(failed.size()).append(" (some are normal)");
+        }
 
-        showInfoMessage("Maven Download Complete", message.toString());
-    }
+        // Choose appropriate title and message based on what happened
+        String title;
 
-    private void addJarsToList(List targetList, java.util.List<Path> jarsToAdd, java.util.List<String> failed,
-            String groupId, String version) {
-        addJarsToList(targetList, jarsToAdd, failed, "Group: " + groupId + "\nVersion: " + version + "\n");
+        if (added == 0 && removedCount == 0 && skipped > 0) {
+            // Everything was already in the list with the same version
+            title = "Already Up-to-Date";
+            message.append("All ").append(skipped).append(" JAR(s) are already in the list.\n");
+            message.append("No changes were made.");
+        } else {
+            if (removedCount > 0) {
+                title = "Maven Download Complete (Updated)";
+            } else {
+                title = "Maven Download Complete";
+            }
+
+            message.append("Downloaded: ").append(jarsToAdd.size()).append(" JAR(s)\n");
+
+            if (added > 0) {
+                message.append("Added to list: ").append(added).append("\n");
+            }
+
+            if (removedCount > 0) {
+                message.append("Replaced (old versions): ").append(removedCount).append("\n");
+            }
+
+            if (skipped > 0) {
+                message.append("Already exists (same version): ").append(skipped).append("\n");
+            }
+
+            if (!failed.isEmpty()) {
+                message.append("\nFailed: ").append(failed.size()).append(" (some are normal)");
+            }
+        }
+
+        showInfoMessage(title, message.toString());
     }
 
     private void downloadDependenciesRecursively(String groupId, String artifactId, String version,
@@ -1417,7 +2005,6 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
 
             monitor.subTask("Downloading: " + depArtifactId);
 
-            // Check if POM-only first
             if (isPomOnlyArtifact(depGroupId, depArtifactId, depVersion)) {
                 System.out.println("[Maven] " + ind + "  POM-only: " + depKey + ", resolving dependencies...");
                 downloadDependenciesRecursively(depGroupId, depArtifactId, depVersion, downloadedJars, failedDownloads,
@@ -1444,13 +2031,9 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
     // POM PARSING WITH RECURSIVE PARENT PROPERTY RESOLUTION
     // =========================================================================
 
-    /**
-     * Recursively fetch properties from a POM and its entire parent chain.
-     */
     private java.util.Map<String, String> fetchPomPropertiesRecursively(String groupId, String artifactId,
             String version, int depth) {
 
-        // Check cache first
         String cacheKey = groupId + ":" + artifactId + ":" + version;
         if (pomPropertiesCache.containsKey(cacheKey)) {
             return new java.util.HashMap<>(pomPropertiesCache.get(cacheKey));
@@ -1494,7 +2077,6 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
 
             String pom = content.toString();
 
-            // First, check for parent and fetch its properties recursively
             String parentGroupId = extractXmlValueFromParent(pom, "groupId");
             String parentArtifactId = extractXmlValueFromParent(pom, "artifactId");
             String parentVersion = extractXmlValueFromParent(pom, "version");
@@ -1505,7 +2087,6 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
                 properties.putAll(parentProps);
             }
 
-            // Add standard project properties (can override parent)
             properties.put("project.version", version);
             properties.put("project.groupId", groupId);
             properties.put("project.artifactId", artifactId);
@@ -1513,10 +2094,8 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
                 properties.put("project.parent.version", parentVersion);
             }
 
-            // Extract properties from this POM (overrides parent)
             extractPropertiesFromPom(pom, properties);
 
-            // Cache the result
             pomPropertiesCache.put(cacheKey, new java.util.HashMap<>(properties));
 
         } catch (Exception e) {
@@ -1526,9 +2105,6 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
         return properties;
     }
 
-    /**
-     * Recursively fetch managed dependency versions from a POM and its parent chain.
-     */
     private java.util.Map<String, String> fetchManagedDependencyVersionsRecursively(String groupId, String artifactId,
             String version, java.util.Map<String, String> properties, int depth) {
 
@@ -1563,7 +2139,6 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
 
             String pom = content.toString();
 
-            // First, check for parent and fetch its managed versions recursively
             String parentGroupId = extractXmlValueFromParent(pom, "groupId");
             String parentArtifactId = extractXmlValueFromParent(pom, "artifactId");
             String parentVersion = extractXmlValueFromParent(pom, "version");
@@ -1574,12 +2149,11 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
                 managedVersions.putAll(parentManagedVersions);
             }
 
-            // Extract managed versions from this POM (overrides parent)
             java.util.Map<String, String> currentManagedVersions = extractManagedDependencyVersions(pom, properties);
             managedVersions.putAll(currentManagedVersions);
 
         } catch (Exception e) {
-            // Silently ignore errors for managed versions
+            // Silently ignore
         }
 
         return managedVersions;
@@ -1618,21 +2192,17 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
 
             String pom = content.toString();
 
-            // Get parent info
             String parentGroupId = extractXmlValueFromParent(pom, "groupId");
             String parentArtifactId = extractXmlValueFromParent(pom, "artifactId");
             String parentVersion = extractXmlValueFromParent(pom, "version");
 
-            // Recursively fetch ALL properties from entire parent chain
             java.util.Map<String, String> properties = new java.util.HashMap<>();
 
             if (parentGroupId != null && parentArtifactId != null && parentVersion != null) {
                 System.out.println("[Maven POM] Found parent: " + parentGroupId + ":" + parentArtifactId + ":" + parentVersion);
 
-                // Fetch all properties from parent chain
                 properties = fetchPomPropertiesRecursively(parentGroupId, parentArtifactId, parentVersion, 0);
 
-                // Fetch all managed dependency versions from parent chain
                 java.util.Map<String, String> managedVersions = fetchManagedDependencyVersionsRecursively(
                         parentGroupId, parentArtifactId, parentVersion, properties, 0);
                 for (java.util.Map.Entry<String, String> entry : managedVersions.entrySet()) {
@@ -1640,7 +2210,6 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
                 }
             }
 
-            // Set current project properties (can override parent)
             properties.put("project.version", version);
             properties.put("project.groupId", groupId);
             properties.put("project.artifactId", artifactId);
@@ -1648,16 +2217,13 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
                 properties.put("project.parent.version", parentVersion);
             }
 
-            // Extract properties from current POM (overrides parent)
             extractPropertiesFromPom(pom, properties);
 
-            // Extract managed versions from current POM
             java.util.Map<String, String> currentManagedVersions = extractManagedDependencyVersions(pom, properties);
             for (java.util.Map.Entry<String, String> entry : currentManagedVersions.entrySet()) {
                 properties.put("managed." + entry.getKey(), entry.getValue());
             }
 
-            // Find the main dependencies section (not inside dependencyManagement)
             String depsSection = extractMainDependenciesSection(pom);
 
             if (depsSection == null || depsSection.isEmpty()) {
@@ -1665,7 +2231,6 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
                 return dependencies;
             }
 
-            // Parse dependencies
             int pos = 0;
             while (true) {
                 int depStart = depsSection.indexOf("<dependency>", pos);
@@ -1698,7 +2263,6 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
                 depArtifactId = MavenDownloadDialog.resolveProperties(depArtifactId, properties);
                 depVersion = MavenDownloadDialog.resolveProperties(depVersion, properties);
 
-                // If version is still missing or unresolved, try managed dependencies
                 if ((depVersion == null || depVersion.isEmpty() || depVersion.contains("${")) && depGroupId != null
                         && depArtifactId != null) {
                     String managedKey = depGroupId + ":" + depArtifactId;
@@ -1709,13 +2273,11 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
                     }
                 }
 
-                // Skip if artifactId still unresolved
                 if (depArtifactId != null && depArtifactId.contains("${")) {
                     pos = depEnd;
                     continue;
                 }
 
-                // If version still unresolved, try to look it up
                 if (depVersion != null && depVersion.contains("${")) {
                     System.out.println("[Maven POM] Attempting to resolve: " + depVersion);
                     depVersion = MavenDownloadDialog.resolveProperties(depVersion, properties);
@@ -1733,7 +2295,6 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
                     }
                 }
 
-                // Lookup version if still missing
                 if ((depVersion == null || depVersion.isEmpty()) && depGroupId != null && depArtifactId != null) {
                     depVersion = lookupLatestVersion(depGroupId, depArtifactId);
                     if (depVersion != null) {
