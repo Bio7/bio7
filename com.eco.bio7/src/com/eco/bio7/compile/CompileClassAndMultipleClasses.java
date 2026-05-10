@@ -260,7 +260,6 @@ public class CompileClassAndMultipleClasses {
             this.sourceClassLoader = sourceClassLoader;
             this.sourcePaths = sourcePaths;
         }
-
         @Override
         protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
             synchronized (getClassLoadingLock(name)) {
