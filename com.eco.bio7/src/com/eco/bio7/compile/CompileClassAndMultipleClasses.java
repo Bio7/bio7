@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2026 M. Austenfeld
+ * Copyright (c) 2007-2025 M. Austenfeld
  * 
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which is available at
@@ -21,6 +21,8 @@
  *   2. User classes are compiled from source files
  *   3. Changed source files are recompiled on each run
  *   4. ServiceLoader and Class.forName() work correctly
+ *   5. Execution can be cancelled via progress monitor
+ *   6. Errors in user code don't crash the main application
  * 
  * 
  * ARCHITECTURE DIAGRAM
@@ -36,33 +38,33 @@
  *     │                  ParentFirstClassLoader                        │
  *     │            (Context ClassLoader for execution)                 │
  *     │                                                                │
- *     │  ┌──────────────────────┐    ┌───────────────────────────┐    │
+ *     │  ┌──────────────────────┐    ┌───────────────────────────┐     │
  *     │  │   hasSourceFile()    │    │  loadClass() / findClass() │    │
  *     │  │                      │    │                            │    │
  *     │  │  - Checks if .java   │    │  - Libraries first         │    │
  *     │  │    file exists       │    │  - Source compile second   │    │
- *     │  └──────────────────────┘    └───────────────────────────┘    │
+ *     │  └──────────────────────┘    └───────────────────────────┘     │
  *     └────────────────────────────────────────────────────────────────┘
  *                │                                │
  *                ▼                                ▼
  *     ┌─────────────────────┐      ┌─────────────────────────────────┐
- *     │ JavaSourceClassLoader│      │        URLClassLoader           │
- *     │                      │      │      (dynCompilerLoader)        │
- *     │  - Compiles .java    │      │                                 │
- *     │  - Only user code    │      │  ┌───────────────────────────┐ │
- *     │  - Fresh each run    │      │  │  library-a.jar            │ │
- *     └─────────────────────┘      │  │  library-b.jar            │ │
- *                                   │  │  library-c.jar            │ │
- *                                   │  │  ... (other libraries)     │ │
- *                                   │  └───────────────────────────┘ │
- *                                   └─────────────────────────────────┘
+ *     │JavaSourceClassLoader│      │        URLClassLoader           │
+ *     │                     │      │      (dynCompilerLoader)        │
+ *     │  - Compiles .java   │      │                                 │
+ *     │  - Only user code   │      │  ┌───────────────────────────┐  │
+ *     │  - Fresh each run   │      │  │  library-a.jar            │  │
+ *     └─────────────────────┘      │  │  library-b.jar            │  │
+ *                                  │  │  library-c.jar            │  │
+ *                                  │  │  ... (other libraries)    │  │
+ *                                  │  └───────────────────────────┘  │
+ *                                  └─────────────────────────────────┘
  *                                                  │
  *                                                  ▼
  *                                   ┌─────────────────────────────────┐
- *                                   │  Bio7Plugin.class.getClassLoader │
- *                                   │      (or IJ.getClassLoader)      │
- *                                   │                                  │
- *                                   │   Eclipse/OSGi Platform Classes  │
+ *                                   │  Bio7Plugin.class.getClassLoader│
+ *                                   │      (or IJ.getClassLoader)     │
+ *                                   │                                 │
+ *                                   │   Eclipse/OSGi Platform Classes │
  *                                   └─────────────────────────────────┘
  * 
  * 
@@ -92,6 +94,28 @@
  *     │              └─► Not found → ClassNotFoundException             │
  *     │                  (expected for optional/non-existent classes)   │
  *     └─────────────────────────────────────────────────────────────────┘
+ * 
+ * 
+ * CANCELLATION FLOW
+ * =================
+ * 
+ *     User clicks Cancel button in Progress Dialog
+ *                    │
+ *                    ▼
+ *     ┌────────────────────────────┐
+ *     │  monitor.isCanceled()      │──► returns true
+ *     │      returns true          │
+ *     └────────────────────────────┘
+ *                    │
+ *                    ▼
+ *     ┌────────────────────────────┐
+ *     │  canceling() called        │──► interrupts executionThread
+ *     └────────────────────────────┘
+ *                    │
+ *                    ▼
+ *     ┌────────────────────────────┐
+ *     │  return CANCEL_STATUS      │──► job ends cleanly
+ *     └────────────────────────────┘
  * 
  * 
  * EXAMPLES
@@ -146,8 +170,8 @@
  *   1. Fresh ClassLoaders: New JavaSourceClassLoader and ParentFirstClassLoader
  *      are created for EACH compilation run (not cached/reused)
  *   
- *   2. No Parent Caching: ParentFirstClassLoader uses super(null) to prevent
- *      the default parent classloader from caching user classes
+ *   2. No Parent Caching: ParentFirstClassLoader uses super(libraryClassLoader)
+ *      but checks hasSourceFile() first to route user classes to fresh compiler
  *   
  *   3. Source-First for User Classes: Classes with .java files always go
  *      through the fresh sourceClassLoader, triggering recompilation
@@ -239,15 +263,11 @@ public class CompileClassAndMultipleClasses {
     private IWorkbenchPage pag;
     private IFile ifile;
     private IEditorPart editor;
-    private Thread processThread;
 
     /**
      * A wrapper classloader that delegates to parent first, then to JavaSourceClassLoader.
      * This prevents the JavaSourceClassLoader from trying to compile classes that exist in JARs.
      * Only classes with actual source files will be compiled.
-     * 
-     * IMPORTANT: This classloader does NOT cache user classes - it always delegates to
-     * the sourceClassLoader which will recompile if needed.
      */
     private static class ParentFirstClassLoader extends ClassLoader {
         private final JavaSourceClassLoader sourceClassLoader;
@@ -255,34 +275,29 @@ public class CompileClassAndMultipleClasses {
         private final File[] sourcePaths;
 
         public ParentFirstClassLoader(ClassLoader libraryClassLoader, JavaSourceClassLoader sourceClassLoader, File[] sourcePaths) {
-            super(libraryClassLoader);  // <-- USE PARENT for resource delegation
+            super(libraryClassLoader);
             this.libraryClassLoader = libraryClassLoader;
             this.sourceClassLoader = sourceClassLoader;
             this.sourcePaths = sourcePaths;
         }
+
         @Override
         protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
             synchronized (getClassLoadingLock(name)) {
-                Class<?> c = null;
+                Class<?> c = findLoadedClass(name);
                 
-                // First check if already loaded by THIS classloader
-                c = findLoadedClass(name);
-                if (c != null) {
-                    if (resolve) resolveClass(c);
-                    return c;
-                }
-                
-                // For user classes with source files, compile them
-                if (hasSourceFile(name)) {
-                    try {
-                        c = sourceClassLoader.findClass(name);
-                    } catch (ClassNotFoundException | RuntimeException e) {
-                        throw new ClassNotFoundException("Failed to compile: " + name, e);
+                if (c == null) {
+                    // For user classes with source files, compile them
+                    if (hasSourceFile(name)) {
+                        try {
+                            c = sourceClassLoader.findClass(name);
+                        } catch (ClassNotFoundException | RuntimeException e) {
+                            throw new ClassNotFoundException("Failed to compile: " + name, e);
+                        }
+                    } else {
+                        // For library classes, delegate to parent
+                        c = super.loadClass(name, false);
                     }
-                } else {
-                    // For library classes, delegate to parent (libraryClassLoader)
-                    // This will also handle caching properly
-                    c = super.loadClass(name, false);
                 }
                 
                 if (resolve && c != null) {
@@ -301,10 +316,12 @@ public class CompileClassAndMultipleClasses {
                     throw new ClassNotFoundException("Failed to compile: " + name, e);
                 }
             }
-            // This will throw ClassNotFoundException, which is correct
             throw new ClassNotFoundException(name);
         }
         
+        /**
+         * Check if a source file exists for the given class name.
+         */
         private boolean hasSourceFile(String className) {
             if (sourcePaths == null || sourcePaths.length == 0) {
                 return false;
@@ -321,6 +338,9 @@ public class CompileClassAndMultipleClasses {
             return false;
         }
         
+        /**
+         * Find and load a class that should be compiled from source.
+         */
         public Class<?> findSourceClass(String name) throws ClassNotFoundException {
             return sourceClassLoader.findClass(name);
         }
@@ -330,6 +350,7 @@ public class CompileClassAndMultipleClasses {
         this.resource = res;
         this.pag = page;
         this.ifile = ifil;
+        
         IWorkbench aWorkbench = PlatformUI.getWorkbench();
         IWorkbenchWindow win = aWorkbench.getActiveWorkbenchWindow();
 
@@ -342,6 +363,7 @@ public class CompileClassAndMultipleClasses {
         if (pages != null) {
             editor = (IEditorPart) pages.getActiveEditor();
         }
+        
         JavaSourceClassLoader.resource = resource;
         IProject proj = resource.getProject();
 
@@ -353,43 +375,124 @@ public class CompileClassAndMultipleClasses {
         }
 
         IPath pa = proj.getLocation();
-
         fi = pa.toFile();
-
-        /* Get the filename without extension! */
         name = ifile.getName().replaceFirst("[.][^.]+$", "");
-
-        pa.toFile().getPath().replace("\\", "/");
-
-        /* Get the parent directory! */
         dir = pa.toFile().getPath().replace("\\", "/") + "/src";
 
         StartBio7Utils.getConsoleInstance().cons.clear();
 
         Job job = new Job("Compile And Run") {
+            
+            /** The thread running user code - can be interrupted for cancellation */
+            private volatile Thread executionThread;
+            
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                monitor.beginTask("Compile And Run...", IProgressMonitor.UNKNOWN);
-                compileAndLoad(fi, dir, name, pag, false);
-                monitor.done();
+                monitor.beginTask("Compiling and running...", IProgressMonitor.UNKNOWN);
+                
+                final boolean[] completed = { false };
+                final Throwable[] error = { null };
+                
+                // Run user code in separate thread so we can monitor for cancellation
+                executionThread = new Thread(() -> {
+                    try {
+                        compileAndLoad(fi, dir, name, pag, false);
+                    } catch (Throwable t) {
+                        error[0] = t;
+                    } finally {
+                        completed[0] = true;
+                    }
+                }, "DynamicCode-Execution");
+                
+                executionThread.setUncaughtExceptionHandler((t, e) -> {
+                    error[0] = e;
+                    completed[0] = true;
+                });
+                
+                executionThread.start();
+                
+                // Wait for completion while checking for cancellation
+                try {
+                    while (!completed[0] && executionThread.isAlive()) {
+                        // Check if user clicked cancel button
+                        if (monitor.isCanceled()) {
+                            handleCancellation(executionThread);
+                            return Status.CANCEL_STATUS;
+                        }
+                        Thread.sleep(100);
+                    }
+                } catch (InterruptedException e) {
+                    handleCancellation(executionThread);
+                    return Status.CANCEL_STATUS;
+                } finally {
+                    executionThread = null;
+                    monitor.done();
+                }
+                
+                if (error[0] != null) {
+                    handleExecutionError("Execution failed", error[0]);
+                }
+                
                 return Status.OK_STATUS;
+            }
+            
+            @Override
+            protected void canceling() {
+                // Called when job.cancel() is invoked or user clicks cancel
+                Thread thread = executionThread;
+                if (thread != null && thread.isAlive()) {
+                    thread.interrupt();
+                }
+            }
+            
+            private void handleCancellation(Thread thread) {
+                System.out.println();
+                System.out.println("╔═══════════════════════════════════════════════════════════════╗");
+                System.out.println("║  CANCELLATION REQUESTED                                       ║");
+                System.out.println("╚═══════════════════════════════════════════════════════════════╝");
+                
+                thread.interrupt();
+                
+                // Wait briefly for graceful termination
+                try {
+                    thread.join(3000);
+                } catch (InterruptedException e) {
+                    // Ignore
+                }
+                
+                if (thread.isAlive()) {
+                    System.err.println();
+                    System.err.println("╔═══════════════════════════════════════════════════════════════╗");
+                    System.err.println("║  WARNING: Code did not respond to cancellation!               ║");
+                    System.err.println("╠═══════════════════════════════════════════════════════════════╣");
+                    System.err.println("║  The code may be in an infinite loop that doesn't check       ║");
+                    System.err.println("║  for interrupts. The thread will continue in background.      ║");
+                    System.err.println("║                                                               ║");
+                    System.err.println("║  Tip: Add Thread.interrupted() checks in long-running loops.  ║");
+                    System.err.println("╚═══════════════════════════════════════════════════════════════╝");
+                } else {
+                    System.out.println("Execution cancelled successfully.");
+                }
             }
         };
         
+        // Show progress dialog with cancel button
+        job.setUser(true);
+        
         job.addJobChangeListener(new JobChangeAdapter() {
+            @Override
             public void done(IJobChangeEvent event) {
                 if (event.getResult().isOK()) {
                     BatchModel.resume();
                 }
             }
         });
-
+        
         job.schedule();
     }
 
     /**
      * Check if the editor is a Java editor using public API.
-     * Returns the ICompilationUnit if it's a Java editor, null otherwise.
      */
     private ICompilationUnit getCompilationUnitFromEditor(IEditorPart editor) {
         if (editor == null) {
@@ -401,12 +504,12 @@ public class CompileClassAndMultipleClasses {
                 return (ICompilationUnit) javaElement;
             }
         } catch (Exception e) {
-            // Not a Java editor or other error
+            // Not a Java editor
         }
         return null;
     }
 
-    /*
+    /**
      * This method is called from above but also from the script menu actions
      * directly (external Java path!)
      */
@@ -421,7 +524,7 @@ public class CompileClassAndMultipleClasses {
             classLoaderMain = IJ.getClassLoader();
         }
         
-        // 1. Get the compiled libraries from preferences
+        // Get the compiled libraries from preferences
         List<String> jarPaths = DynamicCompilerClassLoaderUtil.getDynamicCompilerLibraries();
 
         URLClassLoader dynCompilerLoader = null;
@@ -438,11 +541,6 @@ public class CompileClassAndMultipleClasses {
         // Determine source paths
         File[] sourcePaths;
         
-        /*
-         * Here we set the path for the compilation of java files in the scripts menu
-         * folder and the drag and drop class files. We don't delete a bin (*.class
-         * files) folder!
-         */
         if (startupScript) {
             sourcePaths = new File[] { new File(dir) };
             sourceLoader.setSourcePath(sourcePaths);
@@ -458,21 +556,19 @@ public class CompileClassAndMultipleClasses {
             sourceLoader.setBinaryPath(new File[] { new File(path.getAbsolutePath() + "/bin") });
         }
 
-        // Create the parent-first wrapper classloader with source paths for checking
+        // Create the parent-first wrapper classloader
         ParentFirstClassLoader wrapperLoader = new ParentFirstClassLoader(dynCompilerLoader, sourceLoader, sourcePaths);
 
         Object o = null;
         Class<?> cl = null;
 
-        // Check if we have a Java editor using public API
+        // Check if we have a Java editor
         ICompilationUnit cu = getCompilationUnitFromEditor(editor);
         
-        /* If we have an opened Java Editor! */
         if (cu != null) {
             ASTParser parser = ASTParser.newParser(AST.JLS25);
             parser.setSource(cu);
-            org.eclipse.jdt.core.dom.CompilationUnit compUnit = 
-                (org.eclipse.jdt.core.dom.CompilationUnit) parser.createAST(null);
+            CompilationUnit compUnit = (CompilationUnit) parser.createAST(null);
 
             PackageDeclaration pdecl = compUnit.getPackage();
             if (pdecl != null) {
@@ -491,14 +587,13 @@ public class CompileClassAndMultipleClasses {
                 }
             }
         }
-        /* Compile startup scripts! */
         else if (startupScript) {
-            org.eclipse.jdt.core.dom.CompilationUnit compUnit = null;
+            CompilationUnit compUnit = null;
             Document doc = new Document(BatchModel.fileToString(path.getAbsolutePath()));
 
             ASTParser parser = ASTParser.newParser(AST.JLS25);
             parser.setSource(doc.get().toCharArray());
-            compUnit = (org.eclipse.jdt.core.dom.CompilationUnit) parser.createAST(null);
+            compUnit = (CompilationUnit) parser.createAST(null);
             PackageDeclaration pdecl = compUnit.getPackage();
             if (pdecl != null) {
                 Name packName = pdecl.getName();
@@ -516,17 +611,13 @@ public class CompileClassAndMultipleClasses {
                 }
             }
         }
-        /*
-         * If we compile from the context menu or the Flow editor we create the AST from
-         * the file!
-         */
         else {
-            org.eclipse.jdt.core.dom.CompilationUnit compUnit = null;
+            CompilationUnit compUnit = null;
             Document doc = new Document(BatchModel.fileToString(ifile.getRawLocation().toString()));
 
             ASTParser parser = ASTParser.newParser(AST.JLS25);
             parser.setSource(doc.get().toCharArray());
-            compUnit = (org.eclipse.jdt.core.dom.CompilationUnit) parser.createAST(null);
+            compUnit = (CompilationUnit) parser.createAST(null);
             PackageDeclaration pdecl = compUnit.getPackage();
             if (pdecl != null) {
                 Name packName = pdecl.getName();
@@ -545,9 +636,13 @@ public class CompileClassAndMultipleClasses {
             }
         }
 
+        if (cl == null) {
+            System.err.println("Failed to compile class: " + name);
+            return;
+        }
+
         boolean useObjectCreation = store.getBoolean("COMPILE_OBJECT_CREATION");
         if (useObjectCreation) {
-
             try {
                 o = cl.getDeclaredConstructor().newInstance();
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
@@ -559,27 +654,21 @@ public class CompileClassAndMultipleClasses {
                 if (o instanceof Model) {
                     Model model = (Model) o;
                     Compiled.setModel(model);
-                    /* For Java WorldWind! */
                     DynamicLayer.setEcoclass(model);
                 }
-
                 else if (o instanceof PlugInFrame) {
                     return;
                 }
-
                 else if (o instanceof PlugIn) {
                     callPlugin(cl, wrapperLoader);
-
-                } else if (o instanceof PlugInFilter) {
+                } 
+                else if (o instanceof PlugInFilter) {
                     callPluginFilter(cl, wrapperLoader);
-
                 }
-
                 else {
                     Method method = null;
                     try {
                         method = cl.getMethod("main", String[].class);
-
                     } catch (NoSuchMethodException | SecurityException e) {
                         System.out.println("No main method! Only class compiled and loaded!");
                     }
@@ -605,9 +694,8 @@ public class CompileClassAndMultipleClasses {
         try {
             Thread.currentThread().setContextClassLoader(contextLoader);
             ((PlugIn) cl.getDeclaredConstructor().newInstance()).run("");
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-                | NoSuchMethodException | SecurityException e) {
-            e.printStackTrace();
+        } catch (Throwable t) {
+            handleExecutionError("Plugin execution failed", t);
         } finally {
             Thread.currentThread().setContextClassLoader(originalContextCL);
         }
@@ -618,9 +706,8 @@ public class CompileClassAndMultipleClasses {
         try {
             Thread.currentThread().setContextClassLoader(contextLoader);
             new PlugInFilterRunner(cl.getDeclaredConstructor().newInstance(), "plugin", "");
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-                | NoSuchMethodException | SecurityException e) {
-            e.printStackTrace();
+        } catch (Throwable t) {
+            handleExecutionError("PluginFilter execution failed", t);
         } finally {
             Thread.currentThread().setContextClassLoader(originalContextCL);
         }
@@ -629,40 +716,169 @@ public class CompileClassAndMultipleClasses {
     private void callMainMethod(Method method, ClassLoader contextLoader) {
         ClassLoader originalContextCL = Thread.currentThread().getContextClassLoader();
         try {
-            // Set context classloader to the wrapper loader
-            // This ensures ServiceLoader finds classes from the library JARs
             Thread.currentThread().setContextClassLoader(contextLoader);
-
+            
+            // Check if already interrupted
+            if (Thread.currentThread().isInterrupted()) {
+                System.out.println("Execution cancelled before start.");
+                return;
+            }
+            
             String[] params = { "" };
             method.invoke(null, (Object) params);
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            e.printStackTrace();
+            
+        } catch (Throwable t) {
+            if (isInterruptedException(t)) {
+                System.out.println("Execution was interrupted.");
+            } else {
+                handleExecutionError("Execution failed", t);
+            }
         } finally {
             Thread.currentThread().setContextClassLoader(originalContextCL);
         }
     }
 
-    /* This only calls the main method without creating an object instance! */
     private void callMainMethodNoInstance(final Class<?> cl, String[] param, ClassLoader contextLoader) {
         Method meth = null;
         try {
             meth = cl.getMethod("main", String[].class);
-        } catch (NoSuchMethodException | SecurityException e3) {
+        } catch (NoSuchMethodException | SecurityException e) {
             Bio7Dialog.message("No main method available!");
+            return;
         }
+        
         if (meth != null) {
             ClassLoader originalContextCL = Thread.currentThread().getContextClassLoader();
             try {
-                // Set context classloader to the wrapper loader
                 Thread.currentThread().setContextClassLoader(contextLoader);
-
-                String[] params = param;
-                meth.invoke(null, (Object) params);
-            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e2) {
-                e2.printStackTrace();
+                
+                // Check if already interrupted
+                if (Thread.currentThread().isInterrupted()) {
+                    System.out.println("Execution cancelled before start.");
+                    return;
+                }
+                
+                meth.invoke(null, (Object) param);
+                
+            } catch (Throwable t) {
+                if (isInterruptedException(t)) {
+                    System.out.println("Execution was interrupted.");
+                } else {
+                    handleExecutionError("Execution failed", t);
+                }
             } finally {
                 Thread.currentThread().setContextClassLoader(originalContextCL);
             }
         }
+    }
+
+    /**
+     * Check if the throwable is caused by an interruption.
+     */
+    private boolean isInterruptedException(Throwable t) {
+        Throwable cause = t;
+        while (cause != null) {
+            if (cause instanceof InterruptedException) {
+                return true;
+            }
+            cause = cause.getCause();
+        }
+        return Thread.currentThread().isInterrupted();
+    }
+
+    /**
+     * Handle execution errors with user-friendly output.
+     */
+    private void handleExecutionError(String context, Throwable t) {
+        Throwable cause = unwrapException(t);
+        String message = getErrorMessage(cause);
+        
+        System.err.println();
+        System.err.println("╔═══════════════════════════════════════════════════════════════╗");
+        System.err.println("║  ERROR IN DYNAMICALLY COMPILED CODE                           ║");
+        System.err.println("╠═══════════════════════════════════════════════════════════════╣");
+        System.err.println("║  " + padRight(context, 62) + "║");
+        System.err.println("║  " + padRight(message, 62) + "║");
+        System.err.println("╚═══════════════════════════════════════════════════════════════╝");
+        System.err.println();
+        System.err.println("Stack trace:");
+        System.err.println("─────────────────────────────────────────────────────────────────");
+        cause.printStackTrace();
+        System.err.println("─────────────────────────────────────────────────────────────────");
+        System.err.println();
+        
+        if (cause instanceof OutOfMemoryError) {
+            System.gc();
+        }
+    }
+
+    /**
+     * Unwrap nested exceptions to find the root cause.
+     */
+    private Throwable unwrapException(Throwable t) {
+        Throwable cause = t;
+        while (cause != null) {
+            if (cause instanceof InvocationTargetException || 
+                cause instanceof ExceptionInInitializerError) {
+                Throwable nested = cause.getCause();
+                if (nested == null) break;
+                cause = nested;
+            } else {
+                break;
+            }
+        }
+        return cause;
+    }
+
+    /**
+     * Get a user-friendly error message for common exceptions.
+     */
+    private String getErrorMessage(Throwable t) {
+        if (t instanceof NullPointerException) {
+            return "NullPointerException - a variable is null";
+        } else if (t instanceof ArrayIndexOutOfBoundsException) {
+            return "Array index out of bounds: " + t.getMessage();
+        } else if (t instanceof StringIndexOutOfBoundsException) {
+            return "String index out of bounds: " + t.getMessage();
+        } else if (t instanceof ClassNotFoundException) {
+            return "Class not found: " + t.getMessage();
+        } else if (t instanceof NoClassDefFoundError) {
+            return "Missing class definition: " + t.getMessage();
+        } else if (t instanceof NoSuchMethodError) {
+            return "Method not found: " + t.getMessage();
+        } else if (t instanceof UnsatisfiedLinkError) {
+            return "Native library not found: " + t.getMessage();
+        } else if (t instanceof OutOfMemoryError) {
+            return "Out of memory! Increase heap size (-Xmx)";
+        } else if (t instanceof StackOverflowError) {
+            return "Stack overflow! Check for infinite recursion";
+        } else if (t instanceof IllegalArgumentException) {
+            return "Illegal argument: " + t.getMessage();
+        } else if (t instanceof IllegalStateException) {
+            return "Illegal state: " + t.getMessage();
+        } else if (t instanceof UnsupportedOperationException) {
+            return "Unsupported operation: " + t.getMessage();
+        } else if (t instanceof java.io.FileNotFoundException) {
+            return "File not found: " + t.getMessage();
+        } else if (t instanceof java.io.IOException) {
+            return "I/O error: " + t.getMessage();
+        } else if (t instanceof SecurityException) {
+            return "Security error: " + t.getMessage();
+        } else if (t.getMessage() != null && !t.getMessage().isEmpty()) {
+            return t.getClass().getSimpleName() + ": " + t.getMessage();
+        } else {
+            return t.getClass().getName();
+        }
+    }
+
+    /**
+     * Pad a string to a fixed length for formatted output.
+     */
+    private String padRight(String s, int length) {
+        if (s == null) s = "";
+        if (s.length() > length) {
+            return s.substring(0, length - 3) + "...";
+        }
+        return String.format("%-" + length + "s", s);
     }
 }
