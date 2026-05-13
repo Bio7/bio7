@@ -35,6 +35,30 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.util.Util;
 
+/*
+ * Conditional breakpoint expressions:
+ * 
+ * The condition is any valid R expression that evaluates to TRUE or FALSE.
+ * R will only pause at the breakpoint when the expression is TRUE.
+ * 
+ * Examples:
+ * 
+ *   Goal                              Expression
+ *   ─────────────────────────────────  ──────────────────────────
+ *   Stop when x equals 5              x == 5
+ *   Stop when x is greater than 10    x > 10
+ *   Stop when name is "Alice"         name == "Alice"
+ *   Stop when a loop counter hits 50  i == 50
+ *   Stop when x is NULL               is.null(x)
+ *   Stop when x is NA                 is.na(x)
+ *   Stop when list has items          length(myList) > 0
+ *   Stop when object has class        is(obj, "Person")
+ *   Combine conditions                x > 5 && y < 10
+ *   Stop on specific iteration        i %% 10 == 0
+ *   Stop when string contains text    grepl("error", msg)
+ *   Stop when value changes           x != .bio7_prev_x
+ */
+
 public class ToggleDebugConditionalBreakpointAction extends AbstractRulerActionDelegate implements IEditorActionDelegate {
 
 	private class ToggleBreakpointAction extends Action {
@@ -57,7 +81,7 @@ public class ToggleDebugConditionalBreakpointAction extends AbstractRulerActionD
 			String rDebugExpression = null;
 			IEditorPart editore = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 
-			InputDialog dlg = new InputDialog(Util.getShell(), "", "Enter Expressions:  e.g. 'if(x==5) browser()'", "", null);
+			InputDialog dlg = new InputDialog(Util.getShell(), "", "Enter Expressions:  e.g. 'x==5'", "", null);
 			if (dlg.open() == Window.OK) {
 				
 				rDebugExpression = dlg.getValue();

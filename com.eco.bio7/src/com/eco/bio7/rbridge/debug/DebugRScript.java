@@ -10,11 +10,6 @@
  *******************************************************************************/
 package com.eco.bio7.rbridge.debug;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.ConnectException;
-import java.net.Socket;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -28,7 +23,11 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -37,7 +36,6 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -52,16 +50,48 @@ import org.rosuda.REngine.Rserve.RConnection;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.actions.Bio7Action;
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.collection.Work;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RServe;
 
+/*
+ * DebugRScript sets up an R debugging session from within Bio7.
+ * 
+ * When the user clicks the Debug button, this class:
+ * 
+ * 1. Saves the active editor and reads the R source file.
+ * 2. Finds all debug breakpoint markers set by the user in the editor ruler.
+ * 3. For each breakpoint, creates a modified temp file where:
+ *    - The entire script is wrapped in a function (.bio7debugfunc) so that
+ *      R's n/s/f/c debug commands can step line-by-line. Without the
+ *      function wrapper, R executes all top-level expressions at once.
+ *    - A browser() call (or conditional browser() for conditional breakpoints)
+ *      is injected at the breakpoint line, causing R to pause there.
+ * 4. Sources the temp file to define .bio7debugfunc, then calls it.
+ *    R hits browser() and enters Browse mode, waiting for debug commands.
+ * 5. Highlights the breakpoint line in the editor with a debug marker.
+ * 
+ * The temp file layout relative to the original source:
+ * 
+ *   Line 1:  .bio7debugfunc <- function() {   (wrapper, +1 offset)
+ *   Line 2:  <original line 1>
+ *   ...
+ *   Line N:  browser()                         (injected, +1 offset)
+ *   ...
+ *   Line M:  }                                 (wrapper close)
+ * 
+ * This means all line numbers reported by R from the temp file are
+ * shifted by +2 compared to the original source (one for the wrapper,
+ * one for browser()). DebugProgress compensates for this offset when
+ * mapping line numbers back to the editor.
+ * 
+ * Extends Action so it can be used as a toolbar/menu action in Eclipse.
+ */
 public class DebugRScript extends Action {
+
 	private IEditorPart part;
 	private IMarker[] markers;
 	boolean untrace = false;
 	private IEditorPart editor;
-	private Socket debugSocket;
 	private boolean errorFunction = false;
 
 	public DebugRScript() {
@@ -70,29 +100,26 @@ public class DebugRScript extends Action {
 		setId("Debug");
 		setText("Debug Trace Action - Insert debugging code at chosen places in any function.");
 
-		//ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/rundebug.gif")));
 		ImageDescriptor desc = Bio7Plugin.getImageDescriptor("/icons/rdebug/rundebug.png");
 		this.setImageDescriptor(desc);
 	}
 
 	public void dispose() {
-
 	}
 
 	public void init(IWorkbenchWindow window) {
-
 	}
 
 	public void run() {
 		errorFunction = false;
-		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		/* End any previous debug session */
+		DebugProgress.endSession();
+		final IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 
 		/* Automatically disconnect from Rserve for debugging! */
 		if (RServe.isAlive()) {
 			Bio7Action.callRserve();
-			store.setValue("RSERVE_ALIVE_DEBUG", true);// store the state to
-														// resume Rserve after
-														// debugging stop!
+			store.setValue("RSERVE_ALIVE_DEBUG", true);
 		} else {
 			store.setValue("RSERVE_ALIVE_DEBUG", false);
 		}
@@ -102,9 +129,7 @@ public class DebugRScript extends Action {
 			editor.doSave(new NullProgressMonitor());
 		}
 
-		IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
-
-		IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
+		final IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
 
 		RConnection d = RServe.getConnection();
 		IEditorInput editorInput = editor.getEditorInput();
@@ -113,92 +138,87 @@ public class DebugRScript extends Action {
 		if (editorInput instanceof IFileEditorInput) {
 			aFile = ((IFileEditorInput) editorInput).getFile();
 		}
-		String loc = aFile.getLocation().toString();
+		final String loc = aFile.getLocation().toString();
 
 		if (d == null) {
 
-			String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
+			final String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 
 			if (selectionConsole.equals("R")) {
-				// Work.openView("com.eco.bio7.rbridge.debug.DebugVariablesView");
-				/* Find the line numbers of the markers! */
-				int lineNum = 0;
-				String expression = null;
 
 				if (resource != null) {
 					Map<Integer, String> map1 = findMyMarkers(resource);
-					/* Sorting the Map with a Treemap! */
-					Map<Integer, String> map = new TreeMap<Integer, String>(map1);
+					final Map<Integer, String> map = new TreeMap<Integer, String>(map1);
 
-					for (Map.Entry<Integer, String> entry : map.entrySet()) {
+					Job debugJob = new Job("R Debug Setup") {
+						@Override
+						protected IStatus run(IProgressMonitor monitor) {
 
-						lineNum = entry.getKey();
-						expression = entry.getValue();
+							for (Map.Entry<Integer, String> entry : map.entrySet()) {
 
-						if (lineNum > 0) {
+								final int lineNum = entry.getKey();
+								final String expression = entry.getValue();
 
-							int port = store.getInt("R_DEBUG_PORT");
-							if (expression == null) {
-								ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
-								con.pipeToRConsole("options(prompt=\" \")");
-								con.pipeToRConsole("source('" + loc + "')");
-								/*
-								 * Create a hidden environment for the temporary
-								 * variable!
-								 */
-								con.pipeToRConsole(".bio7tempenv<- new.env();num<-NULL");
-								con.pipeToRConsole("assign(\"bio7tempVar\", findLineNum('" + loc + "#" + lineNum + "'), env=.bio7tempenv)");
-								con.pipeToRConsole("setBreakpoint('" + loc + "#" + lineNum + "')");
-								con.pipeToRConsole("print(.bio7tempenv$bio7tempVar[[1]]$name)");
-								con.pipeToRConsole(".bio7DebugScriptSocketConnection <- socketConnection(port = " + port + ",  server = TRUE,timeout=10)");
-								con.pipeToRConsole("tryCatch(writeLines(.bio7tempenv$bio7tempVar[[1]]$name, .bio7DebugScriptSocketConnection),error = function(e) print('error'))");
-								con.pipeToRConsole("tryCatch(writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), .bio7DebugScriptSocketConnection),error = function(e) print('error'))");
-								con.pipeToRConsole("tryCatch(close(.bio7DebugScriptSocketConnection),error = function(e) print('error'))");
-								con.pipeToRConsole("options(prompt=\"> \")");
-								con.pipeToRConsole("writeLines(\"\")");
-								try {
-									Thread.sleep(100);
-								} catch (InterruptedException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
+								if (lineNum > 0) {
+
+									ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
+
+									/* Suppress the R prompt during setup */
+									con.pipeToRConsole("options(prompt=\" \")");
+
+									if (expression == null) {
+										/*
+										 * browser() injection with function wrapper:
+										 * Wrapping in a function is required because R's n (next)
+										 * only steps line-by-line inside a function body.
+										 */
+										con.pipeToRConsole(".bio7tempenv <- new.env()");
+										con.pipeToRConsole(".bio7tempenv$lines <- readLines('" + loc + "')");
+										con.pipeToRConsole(".bio7tempenv$lines <- append(.bio7tempenv$lines, 'browser()', after = " + (lineNum - 1) + ")");
+										con.pipeToRConsole(".bio7tempenv$lines <- c('.bio7debugfunc <- function() {', .bio7tempenv$lines, '}')");
+										con.pipeToRConsole(".bio7tempenv$tmpFile <- tempfile(fileext = '.R')");
+										con.pipeToRConsole("writeLines(.bio7tempenv$lines, .bio7tempenv$tmpFile)");
+									} else {
+										/* Conditional breakpoint */
+										con.pipeToRConsole(".bio7tempenv <- new.env()");
+										con.pipeToRConsole(".bio7tempenv$lines <- readLines('" + loc + "')");
+										con.pipeToRConsole(".bio7tempenv$lines <- append(.bio7tempenv$lines, 'if (" + expression.replace("'", "\\'") + ") browser()', after = " + (lineNum - 1) + ")");
+										con.pipeToRConsole(".bio7tempenv$lines <- c('.bio7debugfunc <- function() {', .bio7tempenv$lines, '}')");
+										con.pipeToRConsole(".bio7tempenv$tmpFile <- tempfile(fileext = '.R')");
+										con.pipeToRConsole("writeLines(.bio7tempenv$lines, .bio7tempenv$tmpFile)");
+									}
+
+									/* Highlight the breakpoint line in the editor */
+									highlightLine(lineNum);
+
+									try {
+										Thread.sleep(200);
+									} catch (InterruptedException e) {
+										e.printStackTrace();
+									}
+
+									/* Clear the console before debugging starts */
+									Display.getDefault().asyncExec(new Runnable() {
+										public void run() {
+											IOConsole consoleForClear = ConsolePageParticipant.getConsolePageParticipantInstance().getIoc();
+											consoleForClear.clearConsole();
+										}
+									});
+									/* Mark the debug session as active */
+									DebugProgress.startSession();
+									/* Restore prompt, source the file, call the debug function */
+									con.pipeToRConsole("options(prompt=\"Browse> \")");
+									con.pipeToRConsole("source(.bio7tempenv$tmpFile)");
+									con.pipeToRConsole("environment(.bio7debugfunc) <- .GlobalEnv");
+									con.pipeToRConsole(".bio7debugfunc()");
 								}
-								/* Add a linebreak in R */
-								con.pipeToRConsole("cat(\"\r\")");
-								readSocket(lineNum);
-
 							}
-							/* If an expression is available! */
-							else {
-								ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
-								con.pipeToRConsole("options(prompt=\" \")");
-								con.pipeToRConsole("source('" + loc + "')");
-								/*
-								 * Create a hidden environment for the temporary
-								 * variable!
-								 */
-								con.pipeToRConsole(".bio7tempenv<- new.env()");
-								con.pipeToRConsole("try(assign(\"bio7tempVar\", findLineNum('" + loc + "#" + lineNum + "'), env=.bio7tempenv))");
-								con.pipeToRConsole("try(setBreakpoint('" + loc + "#" + lineNum + "',tracer=quote(" + expression + ")))");
-								con.pipeToRConsole("try(.bio7DebugScriptSocketConnection <- socketConnection(port = " + port + ", server = TRUE,timeout=10))");
-								con.pipeToRConsole("tryCatch(writeLines(.bio7tempenv$bio7tempVar[[1]]$name, .bio7DebugScriptSocketConnection),error = function(e) print('error'))");
-								con.pipeToRConsole("tryCatch(writeLines(as.character(.bio7tempenv$bio7tempVar[[1]]$line), .bio7DebugScriptSocketConnection),error = function(e) print('error'))");
-								con.pipeToRConsole("tryCatch(close(.bio7DebugScriptSocketConnection),error = function(e) print('error'))");
-								con.pipeToRConsole("options(prompt=\"> \")");
-								con.pipeToRConsole("writeLines(\"\")");
-								try {
-									Thread.sleep(100);
-								} catch (InterruptedException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
-								/* Add a linebreak in R */
-								con.pipeToRConsole("cat(\"\r\")");
-
-								readSocket(lineNum);
-							}
+							return Status.OK_STATUS;
 						}
-					}
-
+					};
+					debugJob.setUser(false);
+					debugJob.setSystem(true);
+					debugJob.schedule();
 				}
 
 			} else {
@@ -209,136 +229,40 @@ public class DebugRScript extends Action {
 
 	}
 
-	private void readSocket(int lineNum) {
+	private void highlightLine(final int lineNum) {
+		Display.getDefault().asyncExec(new Runnable() {
+			public void run() {
+				ITextEditor edit = (ITextEditor) editor;
+				IDocumentProvider dp = edit.getDocumentProvider();
+				IDocument doc = dp.getDocument(editor.getEditorInput());
 
-		String lineNumber = "0";
-		String result = null;
-		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		int port = store.getInt("R_DEBUG_PORT");
-		BufferedReader input = null;
-		try {
-			try {
-				debugSocket = new Socket("127.0.0.1", port);
-				// debugSocket.setTcpNoDelay(true);
-				debugSocket.setSoTimeout(10000);
-
+				IRegion reg = null;
 				try {
-					input = new BufferedReader(new InputStreamReader(debugSocket.getInputStream()));
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
+					reg = doc.getLineInformation(lineNum - 1);
+				} catch (BadLocationException e1) {
 					e1.printStackTrace();
 				}
 
-				result = input.readLine();
-
-			} catch (ConnectException e) {
-				// TODO Auto-generated catch block
-				// e.printStackTrace();
-				result = "SOCKET_CON_ERROR";
-			}
-
-			if (result==null||result.equals("ERROR") || result.equals("SOCKET_CON_ERROR")) {
-
-				errorFunction = true;
-				Bio7Dialog.message("The breakpoint seems to be outside a function\ndefinition and cannot be traced!\n\n"
-						+ "A breakpoint has to be set inside a function!"
-						+ "\n\nPress STRG+C if the console is blocking!");
-				System.out.println("Press STRG+C (evtl. several times) if the console is blocking!");
-				/*We also send a SIGINT to reactivate the console if a plot was called!*/
-				//UnixProcessManager.sendSigIntToProcessTree(ConsolePageParticipant.getConsolePageParticipantInstance().getRProcess());
-
-			}
-
-			else {
-				lineNumber = input.readLine();
-			}
-			if (debugSocket != null)
-				debugSocket.close();
-
-			IOConsole ioc = ConsolePageParticipant.getConsolePageParticipantInstance().getIoc();
-			ioc.clearConsole();
-
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		if (errorFunction == false) {
-			for (int i = 0; i < markers.length; i++) {
-				Integer line = null;
-				try {
-					line = (Integer) markers[i].getAttribute(IMarker.LINE_NUMBER);
-				} catch (CoreException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-				if (line.intValue() == lineNum) {
-
+				if (reg != null) {
+					edit.selectAndReveal(reg.getOffset() + reg.getLength(), 0);
+					IResource res = (IResource) editor.getEditorInput().getAdapter(IResource.class);
 					try {
-						markers[i].setAttribute(IMarker.TEXT, result);
+						res.deleteMarkers("com.eco.bio7.reditor.debugrulermark", false, IResource.DEPTH_ZERO);
+					} catch (CoreException e1) {
+						e1.printStackTrace();
+					}
 
+					IMarker marker;
+					try {
+						marker = res.createMarker("com.eco.bio7.reditor.debugrulermark");
+						marker.setAttribute(IMarker.CHAR_START, reg.getOffset());
+						marker.setAttribute(IMarker.CHAR_END, reg.getOffset() + reg.getLength());
 					} catch (CoreException e) {
-
 						e.printStackTrace();
 					}
 				}
-
 			}
-			ITextEditor edit = (ITextEditor) editor;
-			IDocumentProvider dp = edit.getDocumentProvider();
-			IDocument doc = dp.getDocument(editor.getEditorInput());
-
-			IRegion reg = null;
-
-			int lineNumBreakpoint = -1;
-			try {
-				lineNumBreakpoint = Integer.parseInt(lineNumber);
-			} catch (NumberFormatException e) {
-				// TODO Auto-generated catch block
-				lineNumBreakpoint = 1;
-				errorFunction = true;
-				System.out.println("Can't parse a line number! Generate default=1!");
-				// Bio7Dialog.message("The breakpoint seems to be outside a function\ndefinition and cannot be traced!\n\nA breakpoint has to be set inside a function!");
-
-			}
-			if (lineNumBreakpoint > -1) {
-				try {
-					reg = doc.getLineInformation(lineNumBreakpoint - 1);
-				} catch (BadLocationException e1) {
-
-					e1.printStackTrace();
-				}
-
-				edit.selectAndReveal(reg.getOffset() + reg.getLength(), 0);
-				IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
-				try {
-					resource.deleteMarkers("com.eco.bio7.reditor.debugrulermark", false, IResource.DEPTH_ZERO);
-				} catch (CoreException e1) {
-
-					e1.printStackTrace();
-				}
-
-				IMarker marker;
-
-				try {
-
-					marker = resource.createMarker("com.eco.bio7.reditor.debugrulermark");
-					marker.setAttribute(IMarker.CHAR_START, reg.getOffset());
-					marker.setAttribute(IMarker.CHAR_END, reg.getOffset() + reg.getLength());
-				} catch (CoreException e) {
-
-					e.printStackTrace();
-				}
-			}
-			if (errorFunction == false) {
-
-				Bio7Dialog.message("To start the debugging process call\n" + " the traced function from within the console!");
-				System.out.println("To start the debugging process call" + " the traced function!");
-				IOConsole ioc = ConsolePageParticipant.getConsolePageParticipantInstance().getIoc();
-
-				ioc.getInputStream().appendData(System.getProperty("line.separator"));
-			}
-		}
+		});
 	}
 
 	public Map<Integer, String> findMyMarkers(IResource target) {
@@ -346,9 +270,7 @@ public class DebugRScript extends Action {
 
 		try {
 			markers = target.findMarkers(type, false, IResource.DEPTH_ZERO);
-
 		} catch (CoreException e) {
-
 			e.printStackTrace();
 		}
 
@@ -357,9 +279,7 @@ public class DebugRScript extends Action {
 		for (int i = 0; i < markers.length; ++i) {
 			try {
 				map1.put((Integer) markers[i].getAttribute(IMarker.LINE_NUMBER), (String) markers[i].getAttribute(IMarker.MESSAGE));
-
 			} catch (CoreException e) {
-
 				e.printStackTrace();
 			}
 		}
@@ -383,7 +303,6 @@ public class DebugRScript extends Action {
 	}
 
 	public void selectionChanged(IAction action, ISelection selection) {
-
 	}
 
 	public void setActiveEditor(IAction action, IEditorPart targetEditor) {
