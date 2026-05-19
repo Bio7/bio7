@@ -1,3 +1,5 @@
-/bin
+*.class
 *.DS_Store
 */target/*
+# Ignore all subfolders inside the bin directory
+bin/*/

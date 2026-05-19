@@ -1,2 +1,4 @@
-/bin
+*.class
 /IJ_Prefs.txt
+# Ignore all subfolders inside the bin directory
+bin/*/

@@ -1,1 +1,3 @@
-/bin/
+*.class
+# Ignore all subfolders inside the bin directory
+bin/*/
