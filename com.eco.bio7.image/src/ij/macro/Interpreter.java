@@ -32,7 +32,7 @@ public class Interpreter implements MacroConstants {
 	boolean checkingType;
 	int prefixValue;
 	
-	public Variable[] stack;
+	Variable[] stack;
 	int topOfStack = -1;
 	int topOfGlobals = -1;
 	int startOfLocals = 0;
@@ -42,11 +42,11 @@ public class Interpreter implements MacroConstants {
 	static Vector imageTable; // images opened in batch mode
 	static Vector imageActivations; // images ordered by activation time
 	volatile boolean done;
-	public Program pgm;
+	Program pgm;
 	Functions func;
 	boolean inFunction;
 	String macroName;
-	public String argument;
+	String argument;
 	String returnValue;
 	boolean calledMacro; // macros envoked by eval() or runMacro()
 	boolean batchMacro; // macros envoked by Process/Batch commands
@@ -54,7 +54,7 @@ public class Interpreter implements MacroConstants {
 	boolean inPrint;
 	static String additionalFunctions;
 	Debugger debugger;
-	public int debugMode = Debugger.NOT_DEBUGGING;
+	int debugMode = Debugger.NOT_DEBUGGING;
 	boolean showDebugFunctions;
 	static boolean showVariables;
 	boolean wasError;
@@ -1138,6 +1138,15 @@ public class Interpreter implements MacroConstants {
 	}
 
 	final double getLogicalExpression() {
+		double value = getLogicalExpression2();
+		//IJ.log("getLogicalExpression: "+value+" "+nextToken());
+		if (nextToken()=='?')
+			return ternaryOperatorValue(value);
+		else
+			return value;
+	}
+	
+	final double getLogicalExpression2() {
 		double v1 = getBooleanExpression();
 		int next = nextToken();
 		if (!(next==LOGICAL_AND || next==LOGICAL_OR))
@@ -1152,6 +1161,27 @@ public class Interpreter implements MacroConstants {
 		else if (op==LOGICAL_OR)
 			return (int)v1 | (int)v2;
 		return v1;
+	}
+
+	private double ternaryOperatorValue(double value) {
+		getToken(); // Consume '?'		
+		boolean condition = (value!=0.0); // ImageJ macro treats non-zero as true		
+		if (condition) {
+			// True branch: Evaluate the expression after '?'
+			value = getExpression();
+			getToken(); // skip ':'
+			if (token!=':')
+				error("':' expected");
+			getExpression(); // Skip the false expression
+		} else {
+			// False branch: Skip the true expression up to the ':'
+			getExpression(); // Skip the true expression
+			getToken(); // skip ':'
+			if (token!=':')
+				error("':' expected");
+			value = getExpression();
+		}
+		return value;
 	}
 
 	final double getBooleanExpression() {
@@ -1354,7 +1384,7 @@ public class Interpreter implements MacroConstants {
 		}
 	}
 
-	public void error(String message) {
+	void error(String message) {
 		errorMessage = message;
 		if (ignoreErrors)
 			return;
@@ -1473,7 +1503,7 @@ public class Interpreter implements MacroConstants {
 
 	private static String[] prevVars; //previous variables for comparison
 
-	public String[] markChanges(String[] newVars) {//add asterisk if variable has changed
+	private String[] markChanges(String[] newVars) {//add asterisk if variable has changed
 		int len = newVars.length;
 		String[] copyOfNew = new String[len];
 		String[] hilitedVars = new String[len];
@@ -1609,7 +1639,7 @@ public class Interpreter implements MacroConstants {
 		}
 		return value;
 	}
-
+		
 	final double getTerm() {
 		double value = getFactor();
 		boolean done = false;
