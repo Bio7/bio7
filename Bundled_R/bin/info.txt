@@ -1,0 +1,1 @@
+ A file to make an empty /bin folder in git available!
