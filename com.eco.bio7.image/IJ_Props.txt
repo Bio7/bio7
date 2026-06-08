@@ -416,6 +416,7 @@ utilities12="ImageJ Properties",ij.plugin.JavaProperties
 utilities13="Threads",ij.plugin.ThreadLister
 utilities14="Benchmark",ij.plugin.Benchmark
 utilities15="Reset...",ij.plugin.SimpleCommands("reset")
+utilities16="DICOM Metadata...",ij.plugin.DicomMetadata
 
 # Plugins installed in the Plugins/New submenu
 new_01="Macro",ij.plugin.NewPlugin("macro")
