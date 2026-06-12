@@ -71,7 +71,7 @@ public class RefactorRename extends AbstractHandler {
 
 	/**
 	 * Mostly based on code from
-	 * {@link org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal}
+	 * org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal
 	 */
 	private void startEditing(ISourceViewer viewer) throws ExecutionException {
 		Point selOffsetAndLen = viewer.getSelectedRange();
