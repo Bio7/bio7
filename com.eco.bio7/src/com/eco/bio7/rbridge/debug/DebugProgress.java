@@ -194,37 +194,19 @@ public class DebugProgress {
 						javaReadFromRSocket(port, command);
 
 						/* Update editor on UI thread */
-						Display.getDefault().asyncExec(new Runnable() {
-							public void run() {
-								if (debugStepLine != null) {
-									updateEditor(debugStepLine);
-								} else {
-									/*
-									 * No debug stepping line received.
-									 * R likely hit an error and exited Browse mode,
-									 * or the script has finished executing.
-									 */
-									endSession();
-									ConsolePageParticipant c = ConsolePageParticipant.getConsolePageParticipantInstance();
-									c.pipeToRConsole("options(prompt=\"> \")");
-									Bio7Dialog.message("Debug session ended.\n\n"
-											+ "R may have exited Browse mode due to an error\n"
-											+ "or the script has finished executing.\n\n"
-											+ "Check the R console for details.");
-
-									/* Clean up the debug marker in the editor */
-									try {
-										IEditorPart edit = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-										IResource res = (IResource) edit.getEditorInput().getAdapter(IResource.class);
-										if (res != null) {
-											res.deleteMarkers("com.eco.bio7.reditor.debugrulermark", false, IResource.DEPTH_ZERO);
-										}
-									} catch (CoreException e) {
-										e.printStackTrace();
+							Display.getDefault().asyncExec(new Runnable() {
+								public void run() {
+									if (debugStepLine != null) {
+										updateEditor(debugStepLine);
 									}
+									/*
+									 * No .R#N: line in this step's output — this is normal for some
+									 * steps (e.g. entering browser(), stepping over a closing brace,
+									 * or a line that produces no debug trace).  Keep the session alive
+									 * and let the user continue stepping or stop manually.
+									 */
 								}
-							}
-						});
+							});
 
 					} finally {
 						/* Always allow the next step, even if something went wrong */
