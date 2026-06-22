@@ -19,7 +19,6 @@ import org.osgi.framework.Bundle;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
-import com.eco.bio7.browser.BrowserView;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditors.REditor;
@@ -98,13 +97,8 @@ public class OpenHelpBrowserAction extends Action {
 							display.asyncExec(new Runnable() {
 
 								public void run() {
-									BrowserView b = BrowserView.getBrowserInstance();
-									try {
-										b.setLocation(url);
-									} catch (Exception e) {
-
-										e.printStackTrace();
-									}
+									ActionUtil.setBrowserLocation(url);
+									
 								}
 							});
 						} else {

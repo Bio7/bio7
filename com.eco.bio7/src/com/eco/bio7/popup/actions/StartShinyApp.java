@@ -22,8 +22,7 @@ import org.eclipse.ui.PlatformUI;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.actions.Bio7Action;
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.browser.BrowserView;
-import com.eco.bio7.collection.Work;
+import com.eco.bio7.collection.BrowserUtil;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RServe;
 
@@ -145,10 +144,7 @@ public class StartShinyApp extends Action implements IObjectActionDelegate {
 				boolean useInternalSWTBrowser = store.getBoolean("PDF_USE_BROWSER");
 
 				if (useInternalSWTBrowser == true) {
-					Work.openView("com.eco.bio7.browser.Browser");
-					BrowserView b = BrowserView.getBrowserInstance();
-					b.browser.setJavascriptEnabled(true);
-					b.setLocation("http://127.0.0.1:" + shinyPort + "");
+					BrowserUtil.setLocationWithJS("http://127.0.0.1:" + shinyPort + "");
 				} else {
 					Program.launch("http://127.0.0.1:" + shinyPort + "");
 				}

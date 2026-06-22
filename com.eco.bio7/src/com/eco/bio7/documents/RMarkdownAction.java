@@ -1,6 +1,7 @@
 package com.eco.bio7.documents;
 
 import java.io.File;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -33,16 +34,15 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
+
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.browser.BrowserView;
-import com.eco.bio7.collection.Work;
+import com.eco.bio7.collection.BrowserUtil;
 import com.eco.bio7.markdownedit.Activator;
 import com.eco.bio7.markdownedit.editors.MarkdownEditor;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
-import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
 
@@ -239,10 +239,8 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 									boolean useInternalSWTBrowser = store.getBoolean("PDF_USE_BROWSER");
 
 									if (useInternalSWTBrowser == true) {
-										Work.openView("com.eco.bio7.browser.Browser");
-										BrowserView b = BrowserView.getBrowserInstance();
-										b.browser.setJavascriptEnabled(true);
-										b.setLocation(url);
+										//Work.openView("com.eco.bio7.browser.Browser");
+										BrowserUtil.setLocationWithJS(url);
 									} else {
 
 										Program.launch(url);

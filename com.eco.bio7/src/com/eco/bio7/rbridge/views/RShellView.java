@@ -117,7 +117,7 @@ import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.browser.BrowserView;
+import com.eco.bio7.collection.BrowserUtil;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.compile.BeanShellInterpreter;
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
@@ -872,12 +872,11 @@ public class RShellView extends ViewPart {
 
 									url = pattern.replace("\\", "/");
 
-									Work.openView("com.eco.bio7.browser.Browser");
+									//Work.openView("com.eco.bio7.browser.Browser");
 									display.syncExec(new Runnable() {
 
 										public void run() {
-											BrowserView b = BrowserView.getBrowserInstance();
-											b.setLocation(url);
+											BrowserUtil.setLocation(url);
 										}
 									});
 

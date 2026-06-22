@@ -13,8 +13,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import com.eco.bio7.browser.BrowserView;
-import com.eco.bio7.collection.Work;
+import com.eco.bio7.collection.BrowserUtil;
 
 public class ProfileRScript {
 
@@ -112,10 +111,8 @@ public class ProfileRScript {
 				String url = temp.replace("\\", "/");
 				System.out.println(url);
 
-				Work.openView("com.eco.bio7.browser.Browser");
-				BrowserView b = BrowserView.getBrowserInstance();
-				b.browser.setJavascriptEnabled(true);
-				b.setLocation(url);
+				// Work.openView("com.eco.bio7.browser.Browser");
+				BrowserUtil.setLocationWithJS(url);
 
 			}
 		});

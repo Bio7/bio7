@@ -32,7 +32,6 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.program.Program;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbench;
@@ -45,8 +44,7 @@ import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
-import com.eco.bio7.browser.BrowserView;
-import com.eco.bio7.collection.Work;
+import com.eco.bio7.collection.BrowserUtil;
 import com.eco.bio7.compile.BeanShellInterpreter;
 //import com.eco.bio7.compile.Compile;
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
@@ -561,10 +559,7 @@ public class ExecuteBatchFile {
 						String url = temp.replace("\\", "/");
 						System.out.println(url);
 
-						Work.openView("com.eco.bio7.browser.Browser");
-						BrowserView b = BrowserView.getBrowserInstance();
-						b.browser.setJavascriptEnabled(true);
-						b.setLocation(url);
+						BrowserUtil.setLocationWithJS(url);
 
 						/*
 						 * Work.openView("com.eco.bio7.browser.Browser"); final String dir2 = dir;

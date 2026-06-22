@@ -64,7 +64,7 @@ import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.browser.BrowserView;
+import com.eco.bio7.collection.BrowserUtil;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.rbridge.InstallRPackagesJob;
 import com.eco.bio7.rbridge.ListRPackagesJob;
@@ -200,12 +200,10 @@ public class PackageInstallView extends ViewPart {
 										Elements a = document.select("a");
 										a.attr("style", "background: #252525;color: #FFFFFF;");
 										String html = document.html();
-										BrowserView b = BrowserView.getBrowserInstance();
-										b.browser.setText(html, true);
+										BrowserUtil.setText(html);
 
 									} else {
-										BrowserView b = BrowserView.getBrowserInstance();
-										b.setLocation(packageInfoSite);
+										BrowserUtil.setLocation(packageInfoSite);
 									}
 
 								}
@@ -555,12 +553,10 @@ public class PackageInstallView extends ViewPart {
 										Elements a = document.select("a");
 										a.attr("style", "background: #252525;color: #FFFFFF;");
 										String html = document.html();
-										BrowserView b = BrowserView.getBrowserInstance();
-										b.browser.setText(html, true);
+										BrowserUtil.setText(html);
 
 									} else {
-										BrowserView b = BrowserView.getBrowserInstance();
-										b.setLocation(packageInfoSite);
+										BrowserUtil.setLocation(packageInfoSite);
 									}
 
 								}

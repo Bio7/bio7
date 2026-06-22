@@ -16,14 +16,13 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 import com.eco.bio7.Bio7Plugin;
-import com.eco.bio7.browser.BrowserView;
+import com.eco.bio7.collection.BrowserUtil;
 import com.eco.bio7.compile.JavaScriptInterpreter;
 import com.eco.bio7.image.Util;
 import com.eco.bio7.rcp.StartBio7Utils;
@@ -66,9 +65,7 @@ public class JavaScriptInterpret extends Action {
 				display.syncExec(new Runnable() {
 
 					public void run() {
-						BrowserView b = BrowserView.getBrowserInstance();
-						Browser browser = b.getBrowser();
-						browser.execute(content);
+						 BrowserUtil.executeScript(content);
 					}
 				});
 

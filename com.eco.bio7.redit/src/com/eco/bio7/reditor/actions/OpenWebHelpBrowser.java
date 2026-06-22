@@ -7,19 +7,11 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.dialogs.PreferencesUtil;
 
-import com.eco.bio7.browser.BrowserView;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditors.REditorTextHover;
-import com.eco.bio7.reditors.RConfiguration;
 
 public class OpenWebHelpBrowser extends Action {
 	private boolean canBrowse = true;
@@ -51,13 +43,7 @@ public class OpenWebHelpBrowser extends Action {
 					display.asyncExec(new Runnable() {
 
 						public void run() {
-							BrowserView b = BrowserView.getBrowserInstance();
-							try {
-								b.setLocation("https://www.rdocumentation.org/search?q="  + htmlHelpText);
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
+							ActionUtil.setBrowserLocation("https://www.rdocumentation.org/search?q="  + htmlHelpText);
 						}
 					});
 

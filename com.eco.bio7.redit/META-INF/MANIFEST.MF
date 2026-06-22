@@ -25,7 +25,6 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ltk.core.refactoring,
  org.eclipse.e4.ui.css.swt.theme,
  com.eco.bio7.util,
- com.eco.bio7.browser,
  com.eco.bio7.libs,
  Bundled_R
 Eclipse-LazyStart: true

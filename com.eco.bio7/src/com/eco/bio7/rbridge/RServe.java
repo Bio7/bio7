@@ -21,7 +21,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.UUID;
 
 import javax.swing.JPanel;
 
@@ -38,9 +37,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.dnd.Clipboard;
-import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
@@ -55,7 +51,7 @@ import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.batch.FileRoot;
-import com.eco.bio7.browser.BrowserView;
+import com.eco.bio7.collection.BrowserUtil;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.console.Console;
 import com.eco.bio7.console.ConsolePageParticipant;
@@ -857,17 +853,9 @@ public class RServe {
 			display.asyncExec(new Runnable() {
 
 				public void run() {
-					Work.openView("com.eco.bio7.browser.Browser");
+					//Work.openView("com.eco.bio7.browser.Browser");
 
-					BrowserView b = BrowserView.getBrowserInstance();
-					b.browser.setJavascriptEnabled(true);
-					/*
-					 * System.out.println(url); boolean result =
-					 * b.browser.execute("var DEFAULT_URL ='" + url + "'");
-					 * 
-					 * System.out.println(result); b.browser.setUrl("file:///" + pathBundle + "");
-					 */
-					b.setLocation(url);
+					BrowserUtil.setLocationWithJS(url);
 					if (activateProjectExplorer) {
 						Work.activateView("org.eclipse.ui.navigator.ProjectExplorer");
 					}

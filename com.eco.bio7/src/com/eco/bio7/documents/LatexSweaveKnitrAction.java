@@ -43,8 +43,7 @@ import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.BatchModel;
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.browser.BrowserView;
-import com.eco.bio7.browser.MultiPageEditor;
+import com.eco.bio7.collection.BrowserUtil;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RServeUtil;
@@ -111,7 +110,7 @@ public class LatexSweaveKnitrAction extends Action {
 
 			return;
 		}
-		if (editor instanceof TexEditor || editor instanceof MultiPageEditor) {
+		if (editor instanceof TexEditor || "com.eco.bio7.browser.BrowserEditorView".equals(editor.getSite().getId())) {
 
 			if (editor.isDirty()) {
 				editor.doSave(new NullProgressMonitor());
@@ -300,10 +299,7 @@ public class LatexSweaveKnitrAction extends Action {
 										boolean useInternalSWTBrowser = store.getBoolean("PDF_USE_BROWSER");
 
 										if (useInternalSWTBrowser == true) {
-											Work.openView("com.eco.bio7.browser.Browser");
-											BrowserView b = BrowserView.getBrowserInstance();
-											b.browser.setJavascriptEnabled(true);
-											b.setLocation(url);
+											BrowserUtil.setLocationWithJS(url);
 										} else {
 
 											Program.launch(url);
