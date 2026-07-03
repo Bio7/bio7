@@ -1,6 +1,7 @@
 package com.eco.bio7.javapreferences;
 
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -83,9 +84,17 @@ public class MavenDownloadDialog extends Dialog {
             this.version = v;
         }
 
+        /**
+         * @return {@code true} if this dependency has a concrete, resolved version.
+         */
+        public boolean hasVersion() {
+            return version != null && !version.isEmpty() && !version.contains("${");
+        }
+
         @Override
         public String toString() {
-            return groupId + ":" + artifactId + ":" + version;
+            String v = (version == null || version.isEmpty()) ? "(version required)" : version;
+            return groupId + ":" + artifactId + ":" + v;
         }
     }
 
@@ -185,21 +194,76 @@ public class MavenDownloadDialog extends Dialog {
         parseBtnGd.horizontalSpan = 4;
         parseButton.setLayoutData(parseBtnGd);
 
-        parseButton.addListener(SWT.Selection, e -> {
-            String xml = mavenDependenciesText.getText();
-            java.util.List<SimpleDep> parsed = parseMavenXmlDependencies(xml);
+        parseButton.addListener(SWT.Selection, e -> parseAndResolveBatch());
+    }
+
+    /**
+     * Parses the pasted Maven XML and, for any dependency whose version is not
+     * inline, resolves the version from the pasted POM's parent / BOM chain
+     * (falling back to the latest release on Maven Central). All network access
+     * runs in a background {@link Job} so the UI stays responsive.
+     */
+    private void parseAndResolveBatch() {
+        final String xml = mavenDependenciesText.getText();
+
+        // Local parse only (no network) so we can react instantly.
+        final java.util.List<SimpleDep> parsed = parseMavenXmlDependencies(xml);
+        if (parsed.isEmpty()) {
+            setStatus("No valid <dependency> blocks found (check groupId/artifactId).", true);
+            return;
+        }
+
+        previewList.removeAll();
+        for (SimpleDep dep : parsed) {
+            previewList.add(dep.toString());
+        }
+
+        long missing = parsed.stream().filter(d -> !d.hasVersion()).count();
+        if (missing == 0) {
             parsedBatchDependencies.clear();
             parsedBatchDependencies.addAll(parsed);
-            if (parsed.isEmpty()) {
-                setStatus("No valid <dependency> blocks found (check property definitions).", true);
-                return;
-            }
             setStatus("Parsed " + parsed.size() + " dependencies. Click 'Download' to start.", false);
-            previewList.removeAll();
-            for (SimpleDep dep : parsed) {
-                previewList.add(dep.toString());
+            return;
+        }
+
+        setStatus("Parsed " + parsed.size() + " dependencies. Resolving " + missing
+                + " missing version(s) from parent POM / Maven Central...", false);
+        parseButton.setEnabled(false);
+
+        Job resolveJob = new Job("Resolving Maven versions") {
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                final java.util.List<SimpleDep> resolved = resolveDependencyVersions(xml, parsed);
+                long unresolved = resolved.stream().filter(d -> !d.hasVersion()).count();
+
+                Display.getDefault().asyncExec(() -> {
+                    if (parseButton != null && !parseButton.isDisposed()) {
+                        parseButton.setEnabled(true);
+                    }
+
+                    parsedBatchDependencies.clear();
+                    parsedBatchDependencies.addAll(resolved);
+
+                    previewList.removeAll();
+                    for (SimpleDep dep : resolved) {
+                        previewList.add(dep.toString());
+                    }
+
+                    if (unresolved > 0) {
+                        setStatus("Parsed " + resolved.size() + " dependencies, but "
+                                + unresolved + " version(s) could not be resolved (shown as '(version required)'). "
+                                + "See the console log for details, or edit them manually.", true);
+                    } else {
+                        setStatus("Parsed and resolved " + resolved.size()
+                                + " dependencies. Click 'Download' to start.", false);
+                    }
+                });
+
+                return Status.OK_STATUS;
             }
-        });
+        };
+        resolveJob.setSystem(true);
+        resolveJob.schedule();
     }
 
     private void createSingleArtifactSection(Composite container) {
@@ -356,58 +420,596 @@ public class MavenDownloadDialog extends Dialog {
 
     /**
      * Parse Maven XML with property resolution.
-     * Supports both properties section and dependency blocks.
+     * <p>
+     * Each {@code <dependency>} block is parsed independently. Only
+     * {@code <groupId>} and {@code <artifactId>} are mandatory; the
+     * {@code <version>} is optional so that POMs which inherit versions from a
+     * parent/BOM (e.g. {@code pom-scijava}) are still detected. Dependencies
+     * whose version is missing or is an unresolved {@code ${...}} property are
+     * returned with an empty version string. Use
+     * {@link #resolveDependencyVersions(String, java.util.List)} to fill those
+     * in from the parent POM chain / Maven Central.
+     * <p>
+     * Only the pasted POM's own {@code <properties>} are applied here (no
+     * network access), so this method is safe to call on the UI thread.
+     * {@code <dependencyManagement>} blocks are ignored so that BOM imports are
+     * not mistaken for real dependencies.
      */
     public static java.util.List<SimpleDep> parseMavenXmlDependencies(String xml) {
         java.util.List<SimpleDep> result = new java.util.ArrayList<>();
-
-        // First, extract properties from the pasted XML (if any)
-        java.util.Map<String, String> properties = new java.util.HashMap<>();
-
-        Pattern propsPattern = Pattern.compile("<properties>([\\s\\S]*?)</properties>", Pattern.CASE_INSENSITIVE);
-        Matcher propsMatcher = propsPattern.matcher(xml);
-        if (propsMatcher.find()) {
-            String propsSection = propsMatcher.group(1);
-            Pattern propPattern = Pattern.compile("<([a-zA-Z0-9._-]+)>([^<]*)</\\1>");
-            Matcher propMatcher = propPattern.matcher(propsSection);
-            while (propMatcher.find()) {
-                String propName = propMatcher.group(1);
-                String propValue = propMatcher.group(2).trim();
-                properties.put(propName, propValue);
-                System.out.println("[Maven Parse] Found property: " + propName + " = " + propValue);
-            }
+        if (xml == null || xml.trim().isEmpty()) {
+            return result;
         }
 
-        // Now parse dependencies
-        Pattern depPattern = Pattern.compile(
-                "<dependency>\\s*"
-                + "(?s:.*?)<groupId>\\s*([^<]+)\\s*</groupId>"
-                + "(?s:.*?)<artifactId>\\s*([^<]+)\\s*</artifactId>"
-                + "(?s:.*?)<version>\\s*([^<]+)\\s*</version>"
-                + "(?s:.*?)</dependency>",
-                Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-        Matcher matcher = depPattern.matcher(xml);
+        // Extract the local <properties> (if any) for immediate resolution.
+        java.util.Map<String, String> properties = extractProperties(xml);
 
-        while (matcher.find()) {
-            String gId = matcher.group(1).trim();
-            String aId = matcher.group(2).trim();
-            String ver = matcher.group(3).trim();
+        // Ignore <dependencyManagement> so managed entries are not treated as
+        // real dependencies; only parse the "main" <dependencies> section(s).
+        String scanXml = stripDependencyManagement(xml);
 
-            // Resolve property references
-            gId = resolveProperties(gId, properties);
-            aId = resolveProperties(aId, properties);
-            ver = resolveProperties(ver, properties);
+        // Grab each <dependency>...</dependency> block on its own so a missing
+        // <version> in one block cannot make the whole match fail. The opening
+        // tag may carry attributes/namespace prefixes.
+        Pattern blockPattern = Pattern.compile("<dependency\\b[^>]*>([\\s\\S]*?)</dependency>",
+                Pattern.CASE_INSENSITIVE);
+        Matcher blockMatcher = blockPattern.matcher(scanXml);
 
-            // Skip if version still contains unresolved properties
-            if (ver.contains("${")) {
-                System.out.println("[Maven Parse] Skipping unresolved: " + gId + ":" + aId + ":" + ver);
-                continue;
+        Pattern gidP = Pattern.compile("<groupId>\\s*([^<]+?)\\s*</groupId>", Pattern.CASE_INSENSITIVE);
+        Pattern aidP = Pattern.compile("<artifactId>\\s*([^<]+?)\\s*</artifactId>", Pattern.CASE_INSENSITIVE);
+        Pattern verP = Pattern.compile("<version>\\s*([^<]+?)\\s*</version>", Pattern.CASE_INSENSITIVE);
+        Pattern scopeP = Pattern.compile("<scope>\\s*([^<]+?)\\s*</scope>", Pattern.CASE_INSENSITIVE);
+
+        while (blockMatcher.find()) {
+            String block = blockMatcher.group(1);
+
+            Matcher gm = gidP.matcher(block);
+            Matcher am = aidP.matcher(block);
+            Matcher vm = verP.matcher(block);
+            Matcher sm = scopeP.matcher(block);
+
+            if (!gm.find() || !am.find()) {
+                continue; // groupId + artifactId are mandatory
             }
 
-            result.add(new SimpleDep(gId, aId, ver));
+            // Skip non-runtime scopes (test/provided/system) and BOM imports.
+            if (sm.find()) {
+                String scope = sm.group(1).trim().toLowerCase();
+                if (scope.equals("test") || scope.equals("provided")
+                        || scope.equals("system") || scope.equals("import")) {
+                    continue;
+                }
+            }
+
+            String gId = resolveProperties(gm.group(1).trim(), properties);
+            String aId = resolveProperties(am.group(1).trim(), properties);
+
+            String ver = "";
+            if (vm.find()) {
+                ver = resolveProperties(vm.group(1).trim(), properties);
+                if (ver != null && ver.contains("${")) {
+                    ver = ""; // still unresolved -> resolve later
+                }
+            }
+
+            if (gId != null && gId.contains("${")) {
+                continue; // unresolved groupId -> nothing sensible to download
+            }
+            if (aId != null && aId.contains("${")) {
+                continue; // unresolved artifactId -> skip
+            }
+
+            if ((ver == null || ver.isEmpty())) {
+                System.out.println("[Maven Parse] No inline version for " + gId + ":" + aId
+                        + " -> will resolve from parent POM / Maven Central");
+            }
+
+            result.add(new SimpleDep(gId, aId, ver == null ? "" : ver));
         }
 
         return result;
+    }
+
+    /**
+     * Fills in missing versions for the given dependencies using, in order:
+     * <ol>
+     *   <li>the pasted POM's own {@code <properties>};</li>
+     *   <li>the parent POM chain declared via {@code <parent>} in the pasted
+     *       XML — walking every ancestor's {@code <properties>} and
+     *       {@code <dependencyManagement>} (including {@code ${...}} placeholders
+     *       and imported BOMs) exactly like Maven would. This yields the
+     *       byte-for-byte versions a BOM such as {@code pom-scijava} pins;</li>
+     *   <li>as a last resort, the latest release on Maven Central
+     *       (via {@code maven-metadata.xml}).</li>
+     * </ol>
+     * Dependencies that already have a version are returned unchanged.
+     * <p>
+     * This performs network calls and MUST NOT be invoked on the UI thread.
+     *
+     * @param xml  the originally pasted POM XML (used to find {@code <parent>})
+     * @param deps the dependencies parsed from {@code xml}
+     */
+    public static java.util.List<SimpleDep> resolveDependencyVersions(String xml, java.util.List<SimpleDep> deps) {
+        java.util.List<SimpleDep> resolved = new java.util.ArrayList<>();
+
+        // 1. Build ONE fully-merged property map: ancestors first, local last (local wins).
+        java.util.Map<String, String> properties = new java.util.HashMap<>();
+        // Managed versions are collected RAW (may still contain ${...}) and are
+        // only resolved once the full property map is assembled below.
+        java.util.Map<String, String> managedRaw = new java.util.HashMap<>();
+
+        String parentGroupId = extractXmlValueFromParent(xml, "groupId");
+        String parentArtifactId = extractXmlValueFromParent(xml, "artifactId");
+        String parentVersion = extractXmlValueFromParent(xml, "version");
+
+        if (parentGroupId != null && parentArtifactId != null && parentVersion != null) {
+            System.out.println("[Maven Parse] Pasted POM declares parent: "
+                    + parentGroupId + ":" + parentArtifactId + ":" + parentVersion);
+            properties.putAll(fetchPomPropertiesRecursively(
+                    parentGroupId, parentArtifactId, parentVersion, 0, new java.util.HashMap<>()));
+            managedRaw.putAll(fetchManagedDependencyVersionsRecursively(
+                    parentGroupId, parentArtifactId, parentVersion, 0));
+            System.out.println("[Maven Parse] Collected " + properties.size() + " properties and "
+                    + managedRaw.size() + " managed-dependency entries from the parent chain.");
+        } else {
+            System.out.println("[Maven Parse] Pasted POM declares no <parent>; "
+                    + "missing versions will use Maven Central latest.");
+        }
+
+        // Local <properties> and local <dependencyManagement> override the parent chain.
+        properties.putAll(extractProperties(xml));
+        managedRaw.putAll(extractManagedDependencyVersions(xml));
+
+        // 2. Now that ALL properties are known, resolve every managed version.
+        java.util.Map<String, String> managedVersions = new java.util.HashMap<>();
+        for (java.util.Map.Entry<String, String> e : managedRaw.entrySet()) {
+            String v = resolveProperties(e.getValue(), properties);
+            if (v != null && !v.contains("${")) {
+                managedVersions.put(e.getKey(), v);
+            } else {
+                System.out.println("[Maven Parse] Managed entry " + e.getKey()
+                        + " has unresolved version '" + e.getValue() + "' -> " + v);
+            }
+        }
+
+        // Cache latest-version lookups so duplicates only hit the network once.
+        java.util.Map<String, String> latestCache = new java.util.HashMap<>();
+
+        for (SimpleDep dep : deps) {
+            if (dep.hasVersion()) {
+                resolved.add(dep);
+                continue;
+            }
+
+            String key = dep.groupId + ":" + dep.artifactId;
+            String ver = managedVersions.get(key);
+
+            if (ver != null) {
+                System.out.println("[Maven Parse] Managed version for " + key + ": " + ver);
+            } else {
+                // Fall back to the latest release on Maven Central.
+                if (!latestCache.containsKey(key)) {
+                    latestCache.put(key, lookupLatestVersion(dep.groupId, dep.artifactId));
+                }
+                String latest = latestCache.get(key);
+                if (latest != null && !latest.isEmpty()) {
+                    ver = latest;
+                    System.out.println("[Maven Parse] Latest version for " + key + ": " + ver + " (BOM miss)");
+                }
+            }
+
+            if (ver != null && !ver.isEmpty()) {
+                resolved.add(new SimpleDep(dep.groupId, dep.artifactId, ver));
+            } else {
+                System.out.println("[Maven Parse] Could not resolve version for " + key);
+                resolved.add(dep); // keep with empty version so the UI can flag it
+            }
+        }
+
+        return resolved;
+    }
+
+    // -------------------------------------------------------------------------
+    // Parent-POM / dependencyManagement walking (self-contained and static so it
+    // can also resolve a *pasted* POM's ancestry).
+    // -------------------------------------------------------------------------
+
+    /**
+     * Recursively fetches and merges {@code <properties>} from the given POM and
+     * all of its ancestors. Ancestors are applied first so that closer POMs win.
+     */
+    private static java.util.Map<String, String> fetchPomPropertiesRecursively(String groupId, String artifactId,
+            String version, int depth, java.util.Map<String, java.util.Map<String, String>> cache) {
+
+        String cacheKey = groupId + ":" + artifactId + ":" + version;
+        if (cache.containsKey(cacheKey)) {
+            return new java.util.HashMap<>(cache.get(cacheKey));
+        }
+
+        java.util.Map<String, String> properties = new java.util.HashMap<>();
+        if (depth > 15) {
+            return properties;
+        }
+
+        String pom = fetchPom(groupId, artifactId, version);
+        if (pom == null) {
+            return properties;
+        }
+
+        String pGroupId = extractXmlValueFromParent(pom, "groupId");
+        String pArtifactId = extractXmlValueFromParent(pom, "artifactId");
+        String pVersion = extractXmlValueFromParent(pom, "version");
+
+        if (pGroupId != null && pArtifactId != null && pVersion != null) {
+            properties.putAll(fetchPomPropertiesRecursively(pGroupId, pArtifactId, pVersion, depth + 1, cache));
+        }
+
+        properties.put("project.version", version);
+        properties.put("project.groupId", groupId);
+        properties.put("project.artifactId", artifactId);
+        if (pVersion != null) {
+            properties.put("project.parent.version", pVersion);
+        }
+
+        mergePropertiesFromPom(pom, properties);
+
+        cache.put(cacheKey, new java.util.HashMap<>(properties));
+        return properties;
+    }
+
+    /**
+     * Recursively collects RAW {@code <dependencyManagement>} versions (which may
+     * still contain {@code ${...}} placeholders) from the given POM and all of
+     * its ancestors and imported BOMs. Closer POMs win. The caller resolves the
+     * placeholders once the full property map is assembled.
+     */
+    private static java.util.Map<String, String> fetchManagedDependencyVersionsRecursively(String groupId,
+            String artifactId, String version, int depth) {
+
+        java.util.Map<String, String> managedVersions = new java.util.HashMap<>();
+        if (depth > 15) {
+            return managedVersions;
+        }
+
+        String pom = fetchPom(groupId, artifactId, version);
+        if (pom == null) {
+            return managedVersions;
+        }
+
+        String pGroupId = extractXmlValueFromParent(pom, "groupId");
+        String pArtifactId = extractXmlValueFromParent(pom, "artifactId");
+        String pVersion = extractXmlValueFromParent(pom, "version");
+
+        if (pGroupId != null && pArtifactId != null && pVersion != null) {
+            managedVersions.putAll(fetchManagedDependencyVersionsRecursively(
+                    pGroupId, pArtifactId, pVersion, depth + 1));
+        }
+
+        // Imported BOMs (scope=import / type=pom) must be followed too.
+        managedVersions.putAll(fetchImportedBomVersions(pom, depth));
+
+        managedVersions.putAll(extractManagedDependencyVersions(pom));
+        return managedVersions;
+    }
+
+    /**
+     * Follows {@code <dependencyManagement>} entries with
+     * {@code <scope>import</scope>} (BOM imports) and merges their managed
+     * versions.
+     */
+    private static java.util.Map<String, String> fetchImportedBomVersions(String pom, int depth) {
+        java.util.Map<String, String> imported = new java.util.HashMap<>();
+        if (depth > 15 || pom == null) {
+            return imported;
+        }
+
+        String dmSection = extractSection(pom, "dependencyManagement");
+        if (dmSection == null) {
+            return imported;
+        }
+
+        for (String dep : extractDependencyBlocks(dmSection)) {
+            String scope = extractXmlValue(dep, "scope");
+            String type = extractXmlValue(dep, "type");
+            if (!"import".equalsIgnoreCase(scope) && !"pom".equalsIgnoreCase(type)) {
+                continue;
+            }
+
+            // BOM coordinates rarely use properties; if they do we cannot resolve
+            // them yet (properties not assembled here), so skip unresolved ones.
+            String bomGroupId = extractXmlValue(dep, "groupId");
+            String bomArtifactId = extractXmlValue(dep, "artifactId");
+            String bomVersion = extractXmlValue(dep, "version");
+
+            if (bomGroupId != null && bomArtifactId != null && bomVersion != null && !bomVersion.contains("${")) {
+                System.out.println("[Maven POM] Importing BOM: "
+                        + bomGroupId + ":" + bomArtifactId + ":" + bomVersion);
+                imported.putAll(fetchManagedDependencyVersionsRecursively(
+                        bomGroupId, bomArtifactId, bomVersion, depth + 1));
+            }
+        }
+        return imported;
+    }
+
+    /**
+     * Downloads a POM from Maven Central; returns its text or {@code null}.
+     * Follows HTTP redirects (including http-&gt;https) and logs the outcome.
+     */
+    private static String fetchPom(String groupId, String artifactId, String version) {
+        String groupPath = groupId.replace('.', '/');
+        String pomUrl = MAVEN_CENTRAL_URL + "/" + groupPath + "/" + artifactId + "/" + version + "/"
+                + artifactId + "-" + version + ".pom";
+        try {
+            String body = httpGet(pomUrl, 0);
+            if (body == null) {
+                System.err.println("[Maven POM] Failed to fetch parent/BOM POM: " + pomUrl);
+                return null;
+            }
+            System.out.println("[Maven POM] Fetched " + groupId + ":" + artifactId + ":" + version
+                    + " (" + body.length() + " chars)");
+            return body;
+        } catch (Exception e) {
+            System.err.println("[Maven POM] Error fetching POM " + pomUrl + ": " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Performs an HTTP GET and returns the body text, following up to a handful
+     * of redirects manually (HttpURLConnection does not auto-follow across
+     * protocols such as http-&gt;https).
+     */
+    private static String httpGet(String urlStr, int redirectDepth) throws Exception {
+        if (redirectDepth > 5) {
+            return null;
+        }
+
+        HttpURLConnection conn = (HttpURLConnection) new URL(urlStr).openConnection();
+        conn.setRequestMethod("GET");
+        conn.setConnectTimeout(15000);
+        conn.setReadTimeout(30000);
+        conn.setInstanceFollowRedirects(true);
+        conn.setRequestProperty("User-Agent", "Bio7/1.0");
+
+        int code = conn.getResponseCode();
+
+        if (code == HttpURLConnection.HTTP_MOVED_TEMP || code == HttpURLConnection.HTTP_MOVED_PERM
+                || code == HttpURLConnection.HTTP_SEE_OTHER || code == 307 || code == 308) {
+            String location = conn.getHeaderField("Location");
+            conn.disconnect();
+            if (location == null || location.isEmpty()) {
+                return null;
+            }
+            return httpGet(location, redirectDepth + 1);
+        }
+
+        if (code != 200) {
+            conn.disconnect();
+            return null;
+        }
+
+        StringBuilder content = new StringBuilder();
+        try (InputStream in = conn.getInputStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                content.append(line).append("\n");
+            }
+        } finally {
+            conn.disconnect();
+        }
+        return content.toString();
+    }
+
+    /** Extracts the top-level {@code <properties>} from a POM into a fresh map. */
+    private static java.util.Map<String, String> extractProperties(String xml) {
+        java.util.Map<String, String> properties = new java.util.HashMap<>();
+        mergePropertiesFromPom(xml, properties);
+        return properties;
+    }
+
+    /**
+     * Merges the project-level {@code <properties>} of the given POM into
+     * {@code properties}.
+     * <p>
+     * NOTE: a POM may contain several {@code <properties>} elements — most
+     * notably tiny ones inside {@code <contributor>}/{@code <developer>} entries
+     * (e.g. {@code <properties><id>hinerm</id></properties>}). We must ignore
+     * those and use the real project-level block. Since the project properties
+     * block is by far the largest, we pick the longest {@code <properties>}
+     * section found in the document.
+     */
+    private static void mergePropertiesFromPom(String xml, java.util.Map<String, String> properties) {
+        if (xml == null) {
+            return;
+        }
+
+        Matcher propsMatcher = Pattern.compile("<properties\\b[^>]*>([\\s\\S]*?)</properties>",
+                Pattern.CASE_INSENSITIVE).matcher(xml);
+
+        String bestSection = null;
+        while (propsMatcher.find()) {
+            String section = propsMatcher.group(1);
+            if (bestSection == null || section.length() > bestSection.length()) {
+                bestSection = section;
+            }
+        }
+
+        if (bestSection == null) {
+            return;
+        }
+
+        // Each simple property is <name>value</name>. Values here are plain text
+        // (no nested elements) which covers all version properties in practice.
+        Pattern propPattern = Pattern.compile("<([a-zA-Z0-9._\\-]+)>\\s*([^<]*?)\\s*</\\1>");
+        Matcher propMatcher = propPattern.matcher(bestSection);
+        int count = 0;
+        while (propMatcher.find()) {
+            String propName = propMatcher.group(1);
+            String propValue = resolveProperties(propMatcher.group(2).trim(), properties);
+            properties.put(propName, propValue);
+            count++;
+        }
+        System.out.println("[Maven POM] Merged " + count + " properties (block length "
+                + bestSection.length() + ").");
+    }
+
+    /**
+     * Extracts RAW {@code groupId:artifactId -> version} entries from the
+     * {@code <dependencyManagement>} section of the given POM. Versions are
+     * returned as-is (may contain {@code ${...}} placeholders); the caller is
+     * responsible for resolving them.
+     */
+    private static java.util.Map<String, String> extractManagedDependencyVersions(String pom) {
+        java.util.Map<String, String> managedVersions = new java.util.HashMap<>();
+        if (pom == null) {
+            return managedVersions;
+        }
+
+        String dmSection = extractSection(pom, "dependencyManagement");
+        if (dmSection == null) {
+            return managedVersions;
+        }
+
+        for (String dep : extractDependencyBlocks(dmSection)) {
+            String depGroupId = extractXmlValue(dep, "groupId");
+            String depArtifactId = extractXmlValue(dep, "artifactId");
+            String depVersion = extractXmlValue(dep, "version"); // may be ${...}
+
+            if (depGroupId != null && depArtifactId != null && depVersion != null && !depVersion.isEmpty()) {
+                managedVersions.put(depGroupId + ":" + depArtifactId, depVersion);
+            }
+        }
+
+        return managedVersions;
+    }
+
+    /**
+     * Returns the inner text of the first {@code <tag>...</tag>} section (tag may
+     * carry attributes), or {@code null} if absent.
+     */
+    private static String extractSection(String xml, String tag) {
+        if (xml == null) {
+            return null;
+        }
+        Matcher m = Pattern.compile("<" + tag + "\\b[^>]*>([\\s\\S]*?)</" + tag + ">",
+                Pattern.CASE_INSENSITIVE).matcher(xml);
+        return m.find() ? m.group(1) : null;
+    }
+
+    /**
+     * Splits a section of XML into the inner text of each
+     * {@code <dependency>...</dependency>} block (opening tag may carry
+     * attributes).
+     */
+    private static java.util.List<String> extractDependencyBlocks(String xml) {
+        java.util.List<String> blocks = new java.util.ArrayList<>();
+        if (xml == null) {
+            return blocks;
+        }
+        Matcher m = Pattern.compile("<dependency\\b[^>]*>([\\s\\S]*?)</dependency>",
+                Pattern.CASE_INSENSITIVE).matcher(xml);
+        while (m.find()) {
+            blocks.add(m.group(1));
+        }
+        return blocks;
+    }
+
+    /** Removes the {@code <dependencyManagement>} block from a POM string. */
+    private static String stripDependencyManagement(String pom) {
+        if (pom == null) {
+            return "";
+        }
+        return Pattern.compile("<dependencyManagement\\b[^>]*>[\\s\\S]*?</dependencyManagement>",
+                Pattern.CASE_INSENSITIVE).matcher(pom).replaceAll("");
+    }
+
+    private static String extractXmlValueFromParent(String xml, String childTag) {
+        String parentSection = extractSection(xml, "parent");
+        if (parentSection == null) {
+            return null;
+        }
+        return extractXmlValue(parentSection, childTag);
+    }
+
+    /**
+     * Returns the trimmed inner text of the first {@code <tagName>...</tagName>}
+     * element (tag may carry attributes), or {@code null} if absent.
+     */
+    private static String extractXmlValue(String xml, String tagName) {
+        if (xml == null) {
+            return null;
+        }
+        Matcher m = Pattern.compile("<" + tagName + "\\b[^>]*>\\s*([^<]*?)\\s*</" + tagName + ">",
+                Pattern.CASE_INSENSITIVE).matcher(xml);
+        if (m.find()) {
+            String v = m.group(1).trim();
+            return v.isEmpty() ? null : v;
+        }
+        return null;
+    }
+
+    /**
+     * Looks up the latest release version of an artifact on Maven Central by
+     * reading {@code maven-metadata.xml} (the legacy {@code search.maven.org}
+     * solrsearch API is deprecated/unreliable, so it is only used as a
+     * last-resort fallback). Returns {@code null} if nothing is found.
+     */
+    public static String lookupLatestVersion(String groupId, String artifactId) {
+        if (groupId == null || artifactId == null || groupId.isEmpty() || artifactId.isEmpty()) {
+            return null;
+        }
+
+        // Preferred: maven-metadata.xml on repo1.maven.org
+        try {
+            String groupPath = groupId.replace('.', '/');
+            String metaUrl = MAVEN_CENTRAL_URL + "/" + groupPath + "/" + artifactId + "/maven-metadata.xml";
+            String meta = httpGet(metaUrl, 0);
+            if (meta != null) {
+                // Prefer <release>, then <latest>, then the last <version> listed.
+                String release = extractXmlValue(meta, "release");
+                if (release != null) {
+                    return release;
+                }
+                String latest = extractXmlValue(meta, "latest");
+                if (latest != null) {
+                    return latest;
+                }
+                Matcher ver = Pattern.compile("<version>\\s*([^<]+?)\\s*</version>").matcher(meta);
+                String last = null;
+                while (ver.find()) {
+                    last = ver.group(1).trim();
+                }
+                if (last != null) {
+                    return last;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[Maven Parse] maven-metadata lookup failed for "
+                    + groupId + ":" + artifactId + ": " + e.getMessage());
+        }
+
+        // Fallback: legacy solrsearch (deprecated, may be flaky).
+        try {
+            String searchUrl = "https://search.maven.org/solrsearch/select?q=g:" + groupId + "+AND+a:" + artifactId
+                    + "&rows=1&wt=json";
+            String json = httpGet(searchUrl, 0);
+            if (json != null) {
+                Matcher latest = Pattern.compile("\"latestVersion\":\"([^\"]+)\"").matcher(json);
+                if (latest.find()) {
+                    return latest.group(1);
+                }
+                Matcher v = Pattern.compile("\"v\":\"([^\"]+)\"").matcher(json);
+                if (v.find()) {
+                    return v.group(1);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[Maven Parse] solrsearch fallback failed for "
+                    + groupId + ":" + artifactId + ": " + e.getMessage());
+        }
+
+        return null;
     }
 
     /**
@@ -523,10 +1125,19 @@ public class MavenDownloadDialog extends Dialog {
         // If batch mode, show batch preview
         if (!parsedBatchDependencies.isEmpty()) {
             previewList.removeAll();
+            long unresolved = 0;
             for (SimpleDep dep : parsedBatchDependencies) {
                 previewList.add(dep.toString());
+                if (!dep.hasVersion()) {
+                    unresolved++;
+                }
             }
-            setStatus("Batch preview: " + parsedBatchDependencies.size() + " dependencies.", false);
+            if (unresolved > 0) {
+                setStatus("Batch preview: " + parsedBatchDependencies.size() + " dependencies ("
+                        + unresolved + " missing a version).", true);
+            } else {
+                setStatus("Batch preview: " + parsedBatchDependencies.size() + " dependencies.", false);
+            }
             return;
         }
 
@@ -714,8 +1325,20 @@ public class MavenDownloadDialog extends Dialog {
         downloadAllModules = downloadAllModulesCheckbox.getSelection();
         downloadNatives = downloadNativesCheckbox.getSelection();
 
-        // If batch mode was used, allow empty single fields
+        // If batch mode was used, allow empty single fields, but make sure every
+        // batch dependency actually has a resolved version before downloading.
         if (!parsedBatchDependencies.isEmpty()) {
+            java.util.List<String> missing = new java.util.ArrayList<>();
+            for (SimpleDep dep : parsedBatchDependencies) {
+                if (!dep.hasVersion()) {
+                    missing.add(dep.groupId + ":" + dep.artifactId);
+                }
+            }
+            if (!missing.isEmpty()) {
+                setStatus(missing.size() + " dependency(ies) still have no version (e.g. "
+                        + missing.get(0) + "). Re-run 'Parse Dependencies' or remove them.", true);
+                return;
+            }
             super.okPressed();
             return;
         }
