@@ -22,7 +22,6 @@ import com.eco.bio7.compile.Model;
 import com.eco.bio7.methods.Compiled;
 import com.jogamp.opengl.util.Animator;
 
-
 /**
  * This class provides some static methods for the creation of custom views
  * inside the Bio7 application.
@@ -48,8 +47,14 @@ public class CustomView extends ViewPart {// implements ISaveablePart2
 
 	protected boolean singleView = false;
 
+	private String name;
+
 	public CustomView() {
 
+	}
+
+	public CustomView(String name) {
+		this.name = name;
 	}
 
 	public void createPartControl(Composite parent) {
@@ -129,7 +134,11 @@ public class CustomView extends ViewPart {// implements ISaveablePart2
 				}
 				if (activated instanceof CustomView) {
 					CustomView view = (CustomView) activated;
-					view.setPartName(id);
+					if (name != null) {
+						view.setPartName(name);
+					} else {
+						view.setPartName(id);
+					}
 					if (image != null) {
 						view.setTitleImage(image);
 					}
@@ -185,7 +194,11 @@ public class CustomView extends ViewPart {// implements ISaveablePart2
 				}
 				if (activated instanceof CustomView) {
 					CustomView view = (CustomView) activated;
-					view.setPartName(id);
+					if (name != null) {
+						view.setPartName(name);
+					} else {
+						view.setPartName(id);
+					}
 					if (image != null) {
 						view.setTitleImage(image);
 					}
@@ -252,7 +265,11 @@ public class CustomView extends ViewPart {// implements ISaveablePart2
 		CustomView viewReturn = null;
 		if (activated instanceof CustomView) {
 			final CustomView view = (CustomView) activated;
-			view.setPartName(id);
+			if (name != null) {
+				view.setPartName(name);
+			} else {
+				view.setPartName(id);
+			}
 			if (image != null) {
 				view.setTitleImage(image);
 			}
@@ -314,7 +331,11 @@ public class CustomView extends ViewPart {// implements ISaveablePart2
 		LightweightSystem light = null;
 		if (activated instanceof CustomView) {
 			final CustomView view = (CustomView) activated;
-			view.setPartName(id);
+			if (name != null) {
+				view.setPartName(name);
+			} else {
+				view.setPartName(id);
+			}
 			if (image != null) {
 				view.setTitleImage(image);
 			}

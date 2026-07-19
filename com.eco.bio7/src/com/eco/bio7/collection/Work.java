@@ -26,7 +26,13 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -76,6 +82,206 @@ public class Work {
 			}
 		});
 
+	}
+
+	/**
+	 * Moves an Eclipse workbench view into a custom Bio7 panel by reparenting its
+	 * SWT widget tree.
+	 * <p>
+	 * The view is first opened the regular way in the Eclipse workbench
+	 * ({@link Work#openView(String)}). Asynchronously on the UI thread, the method
+	 * then locates the view's root SWT control using several strategies:
+	 * <ol>
+	 * <li>Invoking a public {@code getControl()} method on the view part, if
+	 * present</li>
+	 * <li>Scanning the view part's declared fields for an initialized
+	 * {@link Control}</li>
+	 * <li>Climbing the widget tree upwards to the outermost container that still
+	 * belongs to the view (stopping just before the Eclipse workbench
+	 * wrappers)</li>
+	 * </ol>
+	 * The located root container is then reparented into the target Bio7 panel, the
+	 * panel's tab is renamed, a layout pass is forced, and the now-empty original
+	 * view tab is hidden in the workbench.
+	 * <p>
+	 * Note: Reparenting relies on {@link Control#setParent(Composite)}, which
+	 * requires platform support for reparenting.
+	 *
+	 * @param customView    the Bio7 {@code CustomView} providing the target panels;
+	 *                      if {@code null}, the method returns without effect
+	 * @param viewId        the Eclipse view ID of the view to embed (e.g.
+	 *                      {@code "org.eclipse.ui.console.ConsoleView"}); must not
+	 *                      be {@code null}
+	 * @param panelLocation the identifier of the target panel inside the
+	 *                      CustomView; must not be {@code null}
+	 * @param newTitle      the new title for the panel's tab; may be {@code null}
+	 *                      to leave the tab title unchanged
+	 */
+	public static void moveViewToPanel(final CustomView customView, final String viewId, final String panelLocation,
+			String newTitle) {
+		if (customView == null || viewId == null || panelLocation == null) {
+			return;
+		}
+
+		// Get the target composite from Bio7 and set the focus
+		final Composite targetParent = customView.getComposite(panelLocation);
+		if (targetParent == null) {
+			System.err.println("Bio7 panel '" + panelLocation + "' could not be found.");
+			return;
+		}
+		renamePanelTab(targetParent, newTitle);
+		targetParent.setFocus();
+
+		// First open the view the classic way in the Eclipse background
+		Work.openView(viewId);
+
+		// Defer to the UI thread asynchronously so the widgets have time to render
+		Display.getDefault().asyncExec(new Runnable() {
+			public void run() {
+				if (targetParent.isDisposed()) {
+					return;
+				}
+
+				try {
+					IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+					IViewPart targetView = page.findView(viewId);
+
+					if (targetView != null) {
+						Control foundControl = null;
+
+						// Strategy A: Try to call the view's standard control getter
+						try {
+							java.lang.reflect.Method getControlMethod = targetView.getClass().getMethod("getControl");
+							foundControl = (Control) getControlMethod.invoke(targetView);
+						} catch (Exception e) {
+							// Ignore if not publicly declared
+						}
+
+						// Strategy B: If null, scan the view's internal fields for
+						// initialized widgets
+						if (foundControl == null) {
+							java.lang.reflect.Field[] fields = targetView.getClass().getDeclaredFields();
+							for (java.lang.reflect.Field field : fields) {
+								if (Control.class.isAssignableFrom(field.getType())) {
+									field.setAccessible(true);
+									Object value = field.get(targetView);
+									if (value != null) {
+										foundControl = (Control) value;
+										break;
+									}
+								}
+							}
+						}
+
+						// Strategy C: Climb up recursively to the view's true root layout container
+						if (foundControl != null && !foundControl.isDisposed()) {
+							Control rootContainer = foundControl;
+
+							/*
+							 * Climb the widget tree upwards until we hit the official boundary of the
+							 * Eclipse framework wrappers (tab folder structures).
+							 */
+							while (rootContainer.getParent() != null) {
+								String parentClassName = rootContainer.getParent().getClass().getName();
+
+								if (parentClassName.contains("org.eclipse.ui")
+										|| parentClassName.contains("org.eclipse.e4")
+										|| parentClassName.contains("ViewSite")) {
+									break; // Stop right before the workbench wrappers
+								}
+								rootContainer = rootContainer.getParent();
+							}
+
+							// REPARENTING: Change the native SWT parent to the Bio7 panel
+							rootContainer.setParent(targetParent);
+
+							// Force a layout update so the elements adapt to the panel
+							targetParent.layout(true, true);
+							rootContainer.setVisible(true);
+
+							// Close the empty, unused Eclipse background tab of the original view
+							page.hideView(targetView);
+						} else {
+							System.err.println("Could not locate the UI components of view '" + viewId + "'.");
+						}
+					}
+				} catch (Exception e) {
+					System.err.println("Error while moving view '" + viewId + "': " + e.getMessage());
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Changes the tab title of the CustomView panel that contains the given
+	 * composite.
+	 * <p>
+	 * The method climbs up the SWT widget tree starting from the given panel
+	 * composite until it finds the enclosing tab container. Both {@link CTabFolder}
+	 * (used by the Bio7 CustomView) and the classic {@link TabFolder} are
+	 * supported. Within the folder, the tab item whose control is the panel
+	 * composite itself — or an ancestor wrapper of it — is located and its text is
+	 * updated.
+	 * <p>
+	 * If the tab items report no control (i.e. {@code getControl()} returns
+	 * {@code null}), the currently selected tab of the folder is renamed as a
+	 * fallback. If no tab container is found at all, an error message is printed
+	 * and the title remains unchanged.
+	 * <p>
+	 * Note: This method must be called from the SWT UI thread, since it accesses
+	 * and modifies widgets.
+	 *
+	 * @param panelComposite the composite of the CustomView panel whose tab should
+	 *                       be renamed (as returned by
+	 *                       {@code CustomView.getComposite(String)}); if
+	 *                       {@code null} or disposed, the method returns without
+	 *                       effect
+	 * @param newTitle       the new text for the tab; if {@code null}, the method
+	 *                       returns without effect and the title remains unchanged
+	 */
+	public static void renamePanelTab(final Composite panelComposite, final String newTitle) {
+		if (panelComposite == null || panelComposite.isDisposed() || newTitle == null) {
+			return;
+		}
+
+		// Climb up the widget tree until we reach the CTabFolder of the CustomView
+		Composite parent = panelComposite.getParent();
+		Control child = panelComposite;
+
+		while (parent != null) {
+			if (parent instanceof CTabFolder) {
+				CTabFolder folder = (CTabFolder) parent;
+				for (CTabItem item : folder.getItems()) {
+					// Find the CTabItem whose control is our panel (or contains it)
+					if (item.getControl() == child || item.getControl() == panelComposite) {
+						item.setText(newTitle);
+						return;
+					}
+				}
+				// Fallback: if getControl() returns null for the items,
+				// rename the currently selected tab instead
+				if (folder.getSelection() != null) {
+					folder.getSelection().setText(newTitle);
+				}
+				return;
+			}
+			// Also support the classic (non-custom) TabFolder
+			if (parent instanceof TabFolder) {
+				TabFolder folder = (TabFolder) parent;
+				for (TabItem item : folder.getItems()) {
+					if (item.getControl() == child || item.getControl() == panelComposite) {
+						item.setText(newTitle);
+						return;
+					}
+				}
+				return;
+			}
+			child = parent;
+			parent = parent.getParent();
+		}
+
+		System.err.println("No tab container found for the panel - title unchanged.");
 	}
 
 	/**
