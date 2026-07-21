@@ -90,6 +90,7 @@ import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener3;
 import org.eclipse.ui.IPerspectiveRegistry;
+import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
@@ -418,12 +419,16 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 			@Override
 			public void perspectiveClosed(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-
+				if ("com.eco.bio7.CustomPerspective ".equals(perspective.getId())) {
+					closeAllCustomViews(page);
+				}
 			}
 
 			@Override
 			public void perspectiveDeactivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-
+				if ("com.eco.bio7.CustomPerspective ".equals(perspective.getId())) {
+					closeAllCustomViews(page);
+				}
 			}
 
 			@Override
@@ -958,6 +963,25 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 	}
 
+	/**
+	 * Hides all Bio7 CustomView instances (primary and secondary IDs) in the given
+	 * page so they are not persisted and restored with stale content when the
+	 * perspective is reopened.
+	 *
+	 * @param page the workbench page to clean up
+	 */
+	private void closeAllCustomViews(final IWorkbenchPage page) {
+		Display.getDefault().syncExec(new Runnable() {
+			public void run() {
+				for (IViewReference ref : page.getViewReferences()) {
+					if ("com.eco.bio7.custom_controls".equals(ref.getId())) {
+						page.hideView(ref);
+					}
+				}
+			}
+		});
+	}
+
 	private void setComponentFont() {
 		IPreferenceStore store = com.eco.bio7.image.Activator.getDefault().getPreferenceStore();
 		boolean antialiasedFonts = false;
@@ -1357,22 +1381,20 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		 * Instead of WorldWind in GDALUtils initialize we load the native libraries
 		 * here! We have no native libs for mac arch!
 		 */
-		/*if (isArch == false) {
-			gdal.AllRegister();
-			ogr.RegisterAll();
-		}*/
-		/*Hide the Perspective Switcher Menu!*/
-		/*IWorkbenchWindow window = getWindowConfigurer().getWindow();
-        EModelService modelService = window.getService(EModelService.class);
-        MWindow mWindow = window.getService(MWindow.class);
-
-        Display.getDefault().asyncExec(() -> {
-            List<MToolControl> elements = modelService.findElements(mWindow, "PerspectiveSwitcher", 
-                MToolControl.class, null, EModelService.IN_TRIM);
-            if (!elements.isEmpty()) {
-                elements.get(0).getTags().add("NoMenu");
-            }
-        });*/
+		/*
+		 * if (isArch == false) { gdal.AllRegister(); ogr.RegisterAll(); }
+		 */
+		/* Hide the Perspective Switcher Menu! */
+		/*
+		 * IWorkbenchWindow window = getWindowConfigurer().getWindow(); EModelService
+		 * modelService = window.getService(EModelService.class); MWindow mWindow =
+		 * window.getService(MWindow.class);
+		 * 
+		 * Display.getDefault().asyncExec(() -> { List<MToolControl> elements =
+		 * modelService.findElements(mWindow, "PerspectiveSwitcher", MToolControl.class,
+		 * null, EModelService.IN_TRIM); if (!elements.isEmpty()) {
+		 * elements.get(0).getTags().add("NoMenu"); } });
+		 */
 
 	}
 

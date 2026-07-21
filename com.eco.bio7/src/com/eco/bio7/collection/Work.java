@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -90,22 +91,15 @@ public class Work {
 	 * <p>
 	 * The view is first opened the regular way in the Eclipse workbench
 	 * ({@link Work#openView(String)}). Asynchronously on the UI thread, the method
-	 * then locates the view's root SWT control using several strategies:
-	 * <ol>
-	 * <li>Invoking a public {@code getControl()} method on the view part, if
-	 * present</li>
-	 * <li>Scanning the view part's declared fields for an initialized
-	 * {@link Control}</li>
-	 * <li>Climbing the widget tree upwards to the outermost container that still
-	 * belongs to the view (stopping just before the Eclipse workbench
-	 * wrappers)</li>
-	 * </ol>
-	 * The located root container is then reparented into the target Bio7 panel, the
-	 * panel's tab is renamed, a layout pass is forced, and the now-empty original
-	 * view tab is hidden in the workbench.
+	 * then retrieves the view's e4 part model ({@code MPart}) from the part site
+	 * and takes its widget — the composite the workbench passed to
+	 * {@code createPartControl()}. All children of that composite (i.e. the view's
+	 * actual UI) are reparented into the target Bio7 panel, a layout pass is
+	 * forced, and the now-empty original view tab is hidden in the workbench.
 	 * <p>
 	 * Note: Reparenting relies on {@link Control#setParent(Composite)}, which
-	 * requires platform support for reparenting.
+	 * requires platform support for reparenting. Requires a dependency on the e4
+	 * workbench model bundle ({@code org.eclipse.e4.ui.model.workbench}).
 	 *
 	 * @param customView    the Bio7 {@code CustomView} providing the target panels;
 	 *                      if {@code null}, the method returns without effect
@@ -147,57 +141,27 @@ public class Work {
 					IViewPart targetView = page.findView(viewId);
 
 					if (targetView != null) {
-						Control foundControl = null;
+						// Retrieve the e4 part model of the view; its widget is the
+						// composite that hosts everything created in createPartControl()
+						MPart partModel = targetView.getSite().getService(MPart.class);
+						Composite partComposite = null;
 
-						// Strategy A: Try to call the view's standard control getter
-						try {
-							java.lang.reflect.Method getControlMethod = targetView.getClass().getMethod("getControl");
-							foundControl = (Control) getControlMethod.invoke(targetView);
-						} catch (Exception e) {
-							// Ignore if not publicly declared
+						if (partModel != null && partModel.getWidget() instanceof Composite) {
+							partComposite = (Composite) partModel.getWidget();
 						}
 
-						// Strategy B: If null, scan the view's internal fields for
-						// initialized widgets
-						if (foundControl == null) {
-							java.lang.reflect.Field[] fields = targetView.getClass().getDeclaredFields();
-							for (java.lang.reflect.Field field : fields) {
-								if (Control.class.isAssignableFrom(field.getType())) {
-									field.setAccessible(true);
-									Object value = field.get(targetView);
-									if (value != null) {
-										foundControl = (Control) value;
-										break;
-									}
-								}
+						if (partComposite != null && !partComposite.isDisposed()) {
+							// REPARENTING: Move the view's actual UI (the children of the
+							// part composite) into the Bio7 panel. The part composite
+							// itself stays with the workbench so it can be disposed
+							// safely when the view is hidden below.
+							for (Control child : partComposite.getChildren()) {
+								child.setParent(targetParent);
+								child.setVisible(true);
 							}
-						}
-
-						// Strategy C: Climb up recursively to the view's true root layout container
-						if (foundControl != null && !foundControl.isDisposed()) {
-							Control rootContainer = foundControl;
-
-							/*
-							 * Climb the widget tree upwards until we hit the official boundary of the
-							 * Eclipse framework wrappers (tab folder structures).
-							 */
-							while (rootContainer.getParent() != null) {
-								String parentClassName = rootContainer.getParent().getClass().getName();
-
-								if (parentClassName.contains("org.eclipse.ui")
-										|| parentClassName.contains("org.eclipse.e4")
-										|| parentClassName.contains("ViewSite")) {
-									break; // Stop right before the workbench wrappers
-								}
-								rootContainer = rootContainer.getParent();
-							}
-
-							// REPARENTING: Change the native SWT parent to the Bio7 panel
-							rootContainer.setParent(targetParent);
 
 							// Force a layout update so the elements adapt to the panel
 							targetParent.layout(true, true);
-							rootContainer.setVisible(true);
 
 							// Close the empty, unused Eclipse background tab of the original view
 							page.hideView(targetView);
