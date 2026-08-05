@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Nebula Grid
 Bundle-SymbolicName: org.eclipse.nebula.widgets.grid
 Bundle-Version: 1.2.1
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-RequiredExecutionEnvironment: JavaSE-25
 Require-Bundle: org.eclipse.swt,
  org.eclipse.jface;resolution:=optional,
  com.eco.bio7.util;bundle-version="2.5.0"

@@ -4,7 +4,7 @@ Created-By: 10.0-b19 (Sun Microsystems Inc.)
 Eclipse-BundleShape: dir
 Bundle-ManifestVersion: 2
 Bundle-Name: Bundled_R Plug-in
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-RequiredExecutionEnvironment: JavaSE-25
 Bundle-SymbolicName: Bundled_R; singleton:=true
 Bundle-Version: 4.0.5
 Bundle-Activator: bundled_r.Activator

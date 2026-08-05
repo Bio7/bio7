@@ -98,4 +98,4 @@ Export-Package: com.eco.bio7.os.pid,
  org.slf4j.spi
 Import-Package: org.eclipse.swt.widgets
 Require-Bundle: com.eco.bio7.libs;bundle-version="3.4.0"
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-RequiredExecutionEnvironment: JavaSE-25

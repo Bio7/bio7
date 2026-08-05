@@ -14,7 +14,7 @@ Require-Bundle: org.eclipse.ui,
  com.eco.bio7.util,
  org.eclipse.nebula.widgets.grid;bundle-version="1.2.1"
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-RequiredExecutionEnvironment: JavaSE-25
 Export-Package: com.eco.bio7.extralayers,
  com.eco.bio7.textures,
  com.eco.bio7.worldwind,
