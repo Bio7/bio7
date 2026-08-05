@@ -141,6 +141,5 @@ Export-Package: com.eco.bio7.extralayers,
  org.eclipse.swt.layout.grouplayout,
  worldw
 Bundle-ClassPath: bin/,
- swt-grouplayout.jar,
- src/
+ swt-grouplayout.jar
 
