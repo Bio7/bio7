@@ -1,16 +1,20 @@
 package com.eco.bio7.javapreferences;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -73,6 +77,18 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
     public static final String CUSTOM_DATA_PATH_PREF = "CUSTOM_DATA_PATH";
 
     private static final String MAVEN_CENTRAL_URL = "https://repo1.maven.org/maven2";
+
+    /**
+     * Repository base URLs tried in order for every POM/JAR fetch. Some
+     * artifacts (e.g. {@code net.imglib2:imglib2-algorithm}, {@code imglib2-ij})
+     * were never published to Maven Central and only exist on the SciJava/Fiji
+     * Nexus repository.
+     */
+    private static final String[] REPOSITORY_URLS = {
+            MAVEN_CENTRAL_URL,
+            "https://maven.scijava.org/content/groups/public"
+    };
+
     private Path mavenCacheDir;
 
     // Cache for POM properties to avoid repeated fetches
@@ -1105,6 +1121,55 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
     // MAVEN DOWNLOAD FUNCTIONALITY
     // =========================================================================
 
+    /**
+     * Redirects {@link System#out}/{@link System#err} for the duration of a
+     * download {@link Job} so every existing {@code println} call also shows
+     * up live in a {@link MavenDownloadProgressWindow} -- without having to
+     * touch the dozens of individual logging call sites.
+     */
+    private static void runWithProgressWindow(Shell parentShell, String title, Consumer<MavenDownloadProgressWindow> body) {
+        MavenDownloadProgressWindow progressWindow = new MavenDownloadProgressWindow(parentShell, title);
+        PrintStream originalOut = System.out;
+        PrintStream originalErr = System.err;
+        System.setOut(new PrintStream(new LineTeeOutputStream(originalOut, progressWindow::log), true));
+        System.setErr(new PrintStream(new LineTeeOutputStream(originalErr, progressWindow::log), true));
+        try {
+            body.accept(progressWindow);
+        } finally {
+            System.setOut(originalOut);
+            System.setErr(originalErr);
+            progressWindow.setTitle(title + " (done)");
+        }
+    }
+
+    /** Writes through to the wrapped stream and also forwards each completed line to a listener. */
+    private static class LineTeeOutputStream extends OutputStream {
+        private final OutputStream original;
+        private final Consumer<String> lineListener;
+        private final ByteArrayOutputStream lineBuffer = new ByteArrayOutputStream();
+
+        LineTeeOutputStream(OutputStream original, Consumer<String> lineListener) {
+            this.original = original;
+            this.lineListener = lineListener;
+        }
+
+        @Override
+        public synchronized void write(int b) throws IOException {
+            original.write(b);
+            if (b == '\n') {
+                lineListener.accept(lineBuffer.toString());
+                lineBuffer.reset();
+            } else if (b != '\r') {
+                lineBuffer.write(b);
+            }
+        }
+
+        @Override
+        public void flush() throws IOException {
+            original.flush();
+        }
+    }
+
     private String indent(int depth) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < depth; i++) {
@@ -1371,90 +1436,96 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
             java.util.List<MavenDownloadDialog.SimpleDep> batchDeps, boolean downloadDependencies,
             boolean downloadNatives, boolean replaceOldVersions) {
 
+        final Shell parentShell = getShell();
+
         Job downloadJob = new Job("Batch downloading Maven dependencies") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                try {
-                    System.out.println("[Maven Batch] ==========================================");
-                    System.out.println("[Maven Batch] Downloading " + batchDeps.size() + " dependencies");
-                    System.out.println("[Maven Batch] Platform: " + detectPlatformClassifier());
-                    System.out.println("[Maven Batch] Cache: " + mavenCacheDir);
-                    System.out.println("[Maven Batch] ==========================================");
+                final IStatus[] result = new IStatus[1];
+                runWithProgressWindow(parentShell, "Maven Download Log", progressWindow -> {
+                    try {
+                        System.out.println("[Maven Batch] ==========================================");
+                        System.out.println("[Maven Batch] Downloading " + batchDeps.size() + " dependencies");
+                        System.out.println("[Maven Batch] Platform: " + detectPlatformClassifier());
+                        System.out.println("[Maven Batch] Cache: " + mavenCacheDir);
+                        System.out.println("[Maven Batch] ==========================================");
 
-                    Files.createDirectories(mavenCacheDir);
+                        Files.createDirectories(mavenCacheDir);
 
-                    java.util.List<Path> downloadedJars = new ArrayList<>();
-                    java.util.List<String> failedDownloads = new ArrayList<>();
-                    java.util.Set<String> processedArtifacts = new java.util.HashSet<>();
+                        java.util.List<Path> downloadedJars = new ArrayList<>();
+                        java.util.List<String> failedDownloads = new ArrayList<>();
+                        java.util.Set<String> processedArtifacts = new java.util.HashSet<>();
 
-                    monitor.beginTask("Downloading batch dependencies", batchDeps.size());
+                        monitor.beginTask("Downloading batch dependencies", batchDeps.size());
 
-                    for (MavenDownloadDialog.SimpleDep dep : batchDeps) {
-                        if (monitor.isCanceled())
-                            break;
+                        for (MavenDownloadDialog.SimpleDep dep : batchDeps) {
+                            if (monitor.isCanceled())
+                                break;
 
-                        String depGroupId = dep.groupId;
-                        String depArtifactId = dep.artifactId;
-                        String depVersion = dep.version;
-                        String depKey = depGroupId + ":" + depArtifactId;
+                            String depGroupId = dep.groupId;
+                            String depArtifactId = dep.artifactId;
+                            String depVersion = dep.version;
+                            String depKey = depGroupId + ":" + depArtifactId;
 
-                        if (processedArtifacts.contains(depKey)) {
-                            monitor.worked(1);
-                            continue;
-                        }
-                        processedArtifacts.add(depKey);
-
-                        monitor.subTask("Downloading: " + depArtifactId);
-                        System.out.println("[Maven Batch] Processing: " + depKey + ":" + depVersion);
-
-                        if (isPomOnlyArtifact(depGroupId, depArtifactId, depVersion)) {
-                            System.out.println("[Maven Batch] POM-only artifact: " + depKey
-                                    + ", resolving transitive dependencies...");
-                            downloadDependenciesRecursively(depGroupId, depArtifactId, depVersion, downloadedJars,
-                                    failedDownloads, processedArtifacts, monitor, 0, downloadNatives);
-                        } else {
-                            Path jar = downloadJar(depGroupId, depArtifactId, depVersion, null, monitor);
-
-                            if (jar != null) {
-                                downloadedJars.add(jar);
-                                System.out.println("[Maven Batch] Downloaded JAR: " + jar.getFileName());
-
-                                if (downloadNatives) {
-                                    downloadNativeJars(depGroupId, depArtifactId, depVersion, downloadedJars, monitor);
-                                }
-
-                                if (downloadDependencies) {
-                                    downloadDependenciesRecursively(depGroupId, depArtifactId, depVersion,
-                                            downloadedJars, failedDownloads, processedArtifacts, monitor, 0,
-                                            downloadNatives);
-                                }
-                            } else {
-                                System.err.println("[Maven Batch] Failed to download: " + depKey);
-                                failedDownloads.add(depKey + ":" + depVersion);
+                            if (processedArtifacts.contains(depKey)) {
+                                monitor.worked(1);
+                                continue;
                             }
+                            processedArtifacts.add(depKey);
+
+                            monitor.subTask("Downloading: " + depArtifactId);
+                            System.out.println("[Maven Batch] Processing: " + depKey + ":" + depVersion);
+
+                            if (isPomOnlyArtifact(depGroupId, depArtifactId, depVersion)) {
+                                System.out.println("[Maven Batch] POM-only artifact: " + depKey
+                                        + ", resolving transitive dependencies...");
+                                downloadDependenciesRecursively(depGroupId, depArtifactId, depVersion, downloadedJars,
+                                        failedDownloads, processedArtifacts, monitor, 0, downloadNatives);
+                            } else {
+                                Path jar = downloadJar(depGroupId, depArtifactId, depVersion, null, monitor);
+
+                                if (jar != null) {
+                                    downloadedJars.add(jar);
+                                    System.out.println("[Maven Batch] Downloaded JAR: " + jar.getFileName());
+
+                                    if (downloadNatives) {
+                                        downloadNativeJars(depGroupId, depArtifactId, depVersion, downloadedJars, monitor);
+                                    }
+
+                                    if (downloadDependencies) {
+                                        downloadDependenciesRecursively(depGroupId, depArtifactId, depVersion,
+                                                downloadedJars, failedDownloads, processedArtifacts, monitor, 0,
+                                                downloadNatives);
+                                    }
+                                } else {
+                                    System.err.println("[Maven Batch] Failed to download: " + depKey);
+                                    failedDownloads.add(depKey + ":" + depVersion);
+                                }
+                            }
+
+                            monitor.worked(1);
                         }
 
-                        monitor.worked(1);
+                        monitor.done();
+
+                        final java.util.List<Path> jarsToAdd = downloadedJars;
+                        final java.util.List<String> failed = failedDownloads;
+
+                        Display.getDefault().asyncExec(() -> {
+                            addJarsToList(targetList, jarsToAdd, failed, "Batch download complete", replaceOldVersions);
+                        });
+
+                        result[0] = Status.OK_STATUS;
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Display.getDefault().asyncExec(() -> {
+                            showErrorMessage("Batch Download Error", "Error: " + e.getMessage());
+                        });
+                        result[0] = new Status(IStatus.ERROR, "com.eco.bio7.javaedit", "Batch download failed", e);
                     }
-
-                    monitor.done();
-
-                    final java.util.List<Path> jarsToAdd = downloadedJars;
-                    final java.util.List<String> failed = failedDownloads;
-
-                    Display.getDefault().asyncExec(() -> {
-                        addJarsToList(targetList, jarsToAdd, failed, "Batch download complete", replaceOldVersions);
-                    });
-
-                    return Status.OK_STATUS;
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Display.getDefault().asyncExec(() -> {
-                        showErrorMessage("Batch Download Error", "Error: " + e.getMessage());
-                    });
-                    return new Status(IStatus.ERROR, "com.eco.bio7.javaedit", "Batch download failed", e);
-                }
+                });
+                return result[0];
             }
         };
 
@@ -1464,100 +1535,103 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
 
     private void downloadAllModulesFromGroup(List targetList, String groupId, String version,
             boolean downloadDependencies, boolean downloadNatives, boolean replaceOldVersions) {
+        final Shell parentShell = getShell();
         Job downloadJob = new Job("Downloading all modules from: " + groupId) {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                try {
-                    String platformClassifier = detectPlatformClassifier();
+                final IStatus[] result = new IStatus[] { Status.OK_STATUS };
+                runWithProgressWindow(parentShell, "Maven Download Log", progressWindow -> {
+                    try {
+                        String platformClassifier = detectPlatformClassifier();
 
-                    System.out.println("[Maven Download] ==========================================");
-                    System.out.println("[Maven Download] Downloading ALL modules from group:");
-                    System.out.println("[Maven Download]   GroupId: " + groupId);
-                    System.out.println("[Maven Download]   Version: " + version);
-                    System.out.println("[Maven Download]   Platform: " + platformClassifier);
-                    System.out.println("[Maven Download]   Cache: " + mavenCacheDir);
-                    System.out.println("[Maven Download] ==========================================");
+                        System.out.println("[Maven Download] ==========================================");
+                        System.out.println("[Maven Download] Downloading ALL modules from group:");
+                        System.out.println("[Maven Download]   GroupId: " + groupId);
+                        System.out.println("[Maven Download]   Version: " + version);
+                        System.out.println("[Maven Download]   Platform: " + platformClassifier);
+                        System.out.println("[Maven Download]   Cache: " + mavenCacheDir);
+                        System.out.println("[Maven Download] ==========================================");
 
-                    monitor.beginTask("Searching for modules", IProgressMonitor.UNKNOWN);
+                        monitor.beginTask("Searching for modules", IProgressMonitor.UNKNOWN);
 
-                    java.util.List<String[]> allArtifacts = MavenDownloadDialog.searchArtifactsWithVersion(groupId, version);
+                        java.util.List<String[]> allArtifacts = MavenDownloadDialog.searchArtifactsWithVersion(groupId, version);
 
-                    if (allArtifacts.isEmpty()) {
-                        Display.getDefault().asyncExec(() -> {
-                            showErrorMessage("No Modules Found",
-                                    "No artifacts found in group: " + groupId + " with version " + version);
-                        });
-                        return Status.OK_STATUS;
-                    }
-
-                    Files.createDirectories(mavenCacheDir);
-
-                    java.util.List<Path> downloadedJars = new ArrayList<>();
-                    java.util.List<String> failedDownloads = new ArrayList<>();
-                    java.util.Set<String> processedArtifacts = new java.util.HashSet<>();
-
-                    monitor.beginTask("Downloading modules", allArtifacts.size());
-
-                    for (String[] artifact : allArtifacts) {
-                        if (monitor.isCanceled())
-                            break;
-
-                        String artGroupId = artifact[0];
-                        String artArtifactId = artifact[1];
-                        String artVersion = artifact[2];
-                        String artKey = artGroupId + ":" + artArtifactId;
-
-                        if (processedArtifacts.contains(artKey))
-                            continue;
-                        processedArtifacts.add(artKey);
-
-                        monitor.subTask("Downloading: " + artArtifactId);
-
-                        if (isPomOnlyArtifact(artGroupId, artArtifactId, artVersion)) {
-                            if (downloadDependencies) {
-                                downloadDependenciesRecursively(artGroupId, artArtifactId, artVersion, downloadedJars,
-                                        failedDownloads, processedArtifacts, monitor, 0, downloadNatives);
-                            }
-                        } else {
-                            Path jar = downloadJar(artGroupId, artArtifactId, artVersion, null, monitor);
-                            if (jar != null) {
-                                downloadedJars.add(jar);
-
-                                if (downloadNatives) {
-                                    downloadNativeJars(artGroupId, artArtifactId, artVersion, downloadedJars, monitor);
-                                }
-
-                                if (downloadDependencies) {
-                                    downloadDependenciesRecursively(artGroupId, artArtifactId, artVersion,
-                                            downloadedJars, failedDownloads, processedArtifacts, monitor, 0,
-                                            downloadNatives);
-                                }
-                            } else if (!isOptionalPlatformArtifact(artArtifactId)) {
-                                failedDownloads.add(artKey + ":" + artVersion);
-                            }
+                        if (allArtifacts.isEmpty()) {
+                            Display.getDefault().asyncExec(() -> {
+                                showErrorMessage("No Modules Found",
+                                        "No artifacts found in group: " + groupId + " with version " + version);
+                            });
+                            return;
                         }
 
-                        monitor.worked(1);
+                        Files.createDirectories(mavenCacheDir);
+
+                        java.util.List<Path> downloadedJars = new ArrayList<>();
+                        java.util.List<String> failedDownloads = new ArrayList<>();
+                        java.util.Set<String> processedArtifacts = new java.util.HashSet<>();
+
+                        monitor.beginTask("Downloading modules", allArtifacts.size());
+
+                        for (String[] artifact : allArtifacts) {
+                            if (monitor.isCanceled())
+                                break;
+
+                            String artGroupId = artifact[0];
+                            String artArtifactId = artifact[1];
+                            String artVersion = artifact[2];
+                            String artKey = artGroupId + ":" + artArtifactId;
+
+                            if (processedArtifacts.contains(artKey))
+                                continue;
+                            processedArtifacts.add(artKey);
+
+                            monitor.subTask("Downloading: " + artArtifactId);
+
+                            if (isPomOnlyArtifact(artGroupId, artArtifactId, artVersion)) {
+                                if (downloadDependencies) {
+                                    downloadDependenciesRecursively(artGroupId, artArtifactId, artVersion, downloadedJars,
+                                            failedDownloads, processedArtifacts, monitor, 0, downloadNatives);
+                                }
+                            } else {
+                                Path jar = downloadJar(artGroupId, artArtifactId, artVersion, null, monitor);
+                                if (jar != null) {
+                                    downloadedJars.add(jar);
+
+                                    if (downloadNatives) {
+                                        downloadNativeJars(artGroupId, artArtifactId, artVersion, downloadedJars, monitor);
+                                    }
+
+                                    if (downloadDependencies) {
+                                        downloadDependenciesRecursively(artGroupId, artArtifactId, artVersion,
+                                                downloadedJars, failedDownloads, processedArtifacts, monitor, 0,
+                                                downloadNatives);
+                                    }
+                                } else if (!isOptionalPlatformArtifact(artArtifactId)) {
+                                    failedDownloads.add(artKey + ":" + artVersion);
+                                }
+                            }
+
+                            monitor.worked(1);
+                        }
+
+                        monitor.done();
+
+                        final java.util.List<Path> jarsToAdd = downloadedJars;
+                        final java.util.List<String> failed = failedDownloads;
+
+                        Display.getDefault().asyncExec(() -> {
+                            addJarsToList(targetList, jarsToAdd, failed, "Group: " + groupId + "\nVersion: " + version, replaceOldVersions);
+                        });
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Display.getDefault().asyncExec(() -> {
+                            showErrorMessage("Download Error", "Error: " + e.getMessage());
+                        });
+                        result[0] = new Status(IStatus.ERROR, "com.eco.bio7.javaedit", "Download failed", e);
                     }
-
-                    monitor.done();
-
-                    final java.util.List<Path> jarsToAdd = downloadedJars;
-                    final java.util.List<String> failed = failedDownloads;
-
-                    Display.getDefault().asyncExec(() -> {
-                        addJarsToList(targetList, jarsToAdd, failed, "Group: " + groupId + "\nVersion: " + version, replaceOldVersions);
-                    });
-
-                    return Status.OK_STATUS;
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Display.getDefault().asyncExec(() -> {
-                        showErrorMessage("Download Error", "Error: " + e.getMessage());
-                    });
-                    return new Status(IStatus.ERROR, "com.eco.bio7.javaedit", "Download failed", e);
-                }
+                });
+                return result[0];
             }
         };
 
@@ -1567,71 +1641,74 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
 
     private void downloadMavenArtifact(List targetList, String groupId, String artifactId, String version,
             boolean downloadDependencies, boolean downloadNatives, boolean replaceOldVersions) {
+        final Shell parentShell = getShell();
         Job downloadJob = new Job("Downloading: " + artifactId) {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                try {
-                    String platformClassifier = detectPlatformClassifier();
+                final IStatus[] result = new IStatus[] { Status.OK_STATUS };
+                runWithProgressWindow(parentShell, "Maven Download Log", progressWindow -> {
+                    try {
+                        String platformClassifier = detectPlatformClassifier();
 
-                    System.out.println("[Maven Download] ==========================================");
-                    System.out.println("[Maven Download] Downloading: " + groupId + ":" + artifactId + ":" + version);
-                    System.out.println("[Maven Download]   Platform: " + platformClassifier);
-                    System.out.println("[Maven Download]   Cache: " + mavenCacheDir);
-                    System.out.println("[Maven Download] ==========================================");
+                        System.out.println("[Maven Download] ==========================================");
+                        System.out.println("[Maven Download] Downloading: " + groupId + ":" + artifactId + ":" + version);
+                        System.out.println("[Maven Download]   Platform: " + platformClassifier);
+                        System.out.println("[Maven Download]   Cache: " + mavenCacheDir);
+                        System.out.println("[Maven Download] ==========================================");
 
-                    Files.createDirectories(mavenCacheDir);
+                        Files.createDirectories(mavenCacheDir);
 
-                    java.util.List<Path> downloadedJars = new ArrayList<>();
-                    java.util.List<String> failedDownloads = new ArrayList<>();
-                    java.util.Set<String> processedArtifacts = new java.util.HashSet<>();
+                        java.util.List<Path> downloadedJars = new ArrayList<>();
+                        java.util.List<String> failedDownloads = new ArrayList<>();
+                        java.util.Set<String> processedArtifacts = new java.util.HashSet<>();
 
-                    monitor.beginTask("Downloading", IProgressMonitor.UNKNOWN);
-                    monitor.subTask("Downloading main artifact...");
+                        monitor.beginTask("Downloading", IProgressMonitor.UNKNOWN);
+                        monitor.subTask("Downloading main artifact...");
 
-                    boolean isPomOnly = isPomOnlyArtifact(groupId, artifactId, version);
+                        boolean isPomOnly = isPomOnlyArtifact(groupId, artifactId, version);
 
-                    if (isPomOnly) {
-                        processedArtifacts.add(groupId + ":" + artifactId);
-                        System.out.println("[Maven Download] POM-only artifact, downloading dependencies...");
-                    } else {
-                        Path mainJar = downloadJar(groupId, artifactId, version, null, monitor);
-
-                        if (mainJar != null) {
-                            downloadedJars.add(mainJar);
+                        if (isPomOnly) {
                             processedArtifacts.add(groupId + ":" + artifactId);
-
-                            if (downloadNatives) {
-                                downloadNativeJars(groupId, artifactId, version, downloadedJars, monitor);
-                            }
+                            System.out.println("[Maven Download] POM-only artifact, downloading dependencies...");
                         } else {
-                            failedDownloads.add(groupId + ":" + artifactId + ":" + version);
+                            Path mainJar = downloadJar(groupId, artifactId, version, null, monitor);
+
+                            if (mainJar != null) {
+                                downloadedJars.add(mainJar);
+                                processedArtifacts.add(groupId + ":" + artifactId);
+
+                                if (downloadNatives) {
+                                    downloadNativeJars(groupId, artifactId, version, downloadedJars, monitor);
+                                }
+                            } else {
+                                failedDownloads.add(groupId + ":" + artifactId + ":" + version);
+                            }
                         }
+
+                        if (downloadDependencies && !monitor.isCanceled()) {
+                            downloadDependenciesRecursively(groupId, artifactId, version, downloadedJars, failedDownloads,
+                                    processedArtifacts, monitor, 0, downloadNatives);
+                        }
+
+                        monitor.done();
+
+                        final java.util.List<Path> jarsToAdd = downloadedJars;
+                        final java.util.List<String> failed = failedDownloads;
+                        final boolean wasPomOnly = isPomOnly;
+
+                        Display.getDefault().asyncExec(() -> {
+                            addJarsToList(targetList, jarsToAdd, failed, wasPomOnly ? "(POM aggregator) " : "", replaceOldVersions);
+                        });
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Display.getDefault().asyncExec(() -> {
+                            showErrorMessage("Download Error", "Error: " + e.getMessage());
+                        });
+                        result[0] = new Status(IStatus.ERROR, "com.eco.bio7.javaedit", "Download failed", e);
                     }
-
-                    if (downloadDependencies && !monitor.isCanceled()) {
-                        downloadDependenciesRecursively(groupId, artifactId, version, downloadedJars, failedDownloads,
-                                processedArtifacts, monitor, 0, downloadNatives);
-                    }
-
-                    monitor.done();
-
-                    final java.util.List<Path> jarsToAdd = downloadedJars;
-                    final java.util.List<String> failed = failedDownloads;
-                    final boolean wasPomOnly = isPomOnly;
-
-                    Display.getDefault().asyncExec(() -> {
-                        addJarsToList(targetList, jarsToAdd, failed, wasPomOnly ? "(POM aggregator) " : "", replaceOldVersions);
-                    });
-
-                    return Status.OK_STATUS;
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Display.getDefault().asyncExec(() -> {
-                        showErrorMessage("Download Error", "Error: " + e.getMessage());
-                    });
-                    return new Status(IStatus.ERROR, "com.eco.bio7.javaedit", "Download failed", e);
-                }
+                });
+                return result[0];
             }
         };
 
@@ -1639,32 +1716,70 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
         downloadJob.schedule();
     }
 
-    private boolean isPomOnlyArtifact(String groupId, String artifactId, String version) {
-        try {
-            String groupPath = groupId.replace('.', '/');
-            String basePath = MAVEN_CENTRAL_URL + "/" + groupPath + "/" + artifactId + "/" + version + "/" + artifactId
-                    + "-" + version;
+    /**
+     * Performs a GET against {@code relativePath} on each of
+     * {@link #REPOSITORY_URLS} in order, returning the first repository's body
+     * as {@code {resolvedUrl, body}}, or {@code null} if none of them have it.
+     */
+    private static String[] httpGetFromRepositories(String relativePath) {
+        for (String repo : REPOSITORY_URLS) {
+            String urlStr = repo + relativePath;
+            try {
+                HttpURLConnection conn = (HttpURLConnection) new URL(urlStr).openConnection();
+                conn.setRequestMethod("GET");
+                conn.setConnectTimeout(5000);
+                conn.setReadTimeout(10000);
+                conn.setRequestProperty("User-Agent", "Bio7/1.0");
 
-            String pomUrl = basePath + ".pom";
-            HttpURLConnection pomConn = (HttpURLConnection) new URL(pomUrl).openConnection();
-            pomConn.setRequestMethod("GET");
-            pomConn.setConnectTimeout(5000);
-            pomConn.setReadTimeout(10000);
-            pomConn.setRequestProperty("User-Agent", "Bio7/1.0");
+                if (conn.getResponseCode() != 200) {
+                    continue;
+                }
 
-            if (pomConn.getResponseCode() == 200) {
                 StringBuilder content = new StringBuilder();
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(pomConn.getInputStream()))) {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
                         content.append(line).append("\n");
                     }
                 }
+                return new String[] { urlStr, content.toString() };
+            } catch (Exception e) {
+                // try the next repository
+            }
+        }
+        return null;
+    }
 
-                String pom = content.toString();
+    /** Returns {@code true} if {@code relativePath} responds with 200 to a HEAD on any of {@link #REPOSITORY_URLS}. */
+    private static boolean httpHeadExistsInRepositories(String relativePath) {
+        for (String repo : REPOSITORY_URLS) {
+            try {
+                HttpURLConnection conn = (HttpURLConnection) new URL(repo + relativePath).openConnection();
+                conn.setRequestMethod("HEAD");
+                conn.setConnectTimeout(5000);
+                conn.setReadTimeout(5000);
+                conn.setRequestProperty("User-Agent", "Bio7/1.0");
+                boolean exists = conn.getResponseCode() == 200;
+                conn.disconnect();
+                if (exists) {
+                    return true;
+                }
+            } catch (Exception e) {
+                // try the next repository
+            }
+        }
+        return false;
+    }
 
+    private boolean isPomOnlyArtifact(String groupId, String artifactId, String version) {
+        try {
+            String groupPath = groupId.replace('.', '/');
+            String basePath = "/" + groupPath + "/" + artifactId + "/" + version + "/" + artifactId + "-" + version;
+
+            String[] pomResult = httpGetFromRepositories(basePath + ".pom");
+            if (pomResult != null) {
                 Pattern packagingPattern = Pattern.compile("<packaging>\\s*([^<]+)\\s*</packaging>");
-                Matcher matcher = packagingPattern.matcher(pom);
+                Matcher matcher = packagingPattern.matcher(pomResult[1]);
                 if (matcher.find()) {
                     String packaging = matcher.group(1).trim().toLowerCase();
                     if ("pom".equals(packaging)) {
@@ -1674,18 +1789,8 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
                     }
                 }
             }
-            pomConn.disconnect();
 
-            String jarUrl = basePath + ".jar";
-            HttpURLConnection jarConn = (HttpURLConnection) new URL(jarUrl).openConnection();
-            jarConn.setRequestMethod("HEAD");
-            jarConn.setConnectTimeout(5000);
-            jarConn.setReadTimeout(5000);
-            jarConn.setRequestProperty("User-Agent", "Bio7/1.0");
-            int jarResponse = jarConn.getResponseCode();
-            jarConn.disconnect();
-
-            if (jarResponse != 200) {
+            if (!httpHeadExistsInRepositories(basePath + ".jar")) {
                 System.out.println("[Maven] Detected POM-only artifact (no JAR found): " + groupId + ":" + artifactId
                         + ":" + version);
                 return true;
@@ -1709,9 +1814,7 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
             } else {
                 jarName = artifactId + "-" + version + ".jar";
             }
-            String urlStr = MAVEN_CENTRAL_URL + "/" + groupPath + "/" + artifactId + "/" + version + "/" + jarName;
-
-            System.out.println("[Maven Download] Downloading: " + urlStr);
+            String relativePath = "/" + groupPath + "/" + artifactId + "/" + version + "/" + jarName;
 
             Path targetDir = mavenCacheDir.resolve(groupPath).resolve(artifactId).resolve(version);
             Files.createDirectories(targetDir);
@@ -1722,36 +1825,47 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
                 return targetFile;
             }
 
-            URL url = new URL(urlStr);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setConnectTimeout(15000);
-            conn.setReadTimeout(60000);
-            conn.setInstanceFollowRedirects(true);
-            conn.setRequestProperty("User-Agent", "Bio7/1.0");
+            for (String repo : REPOSITORY_URLS) {
+                String urlStr = repo + relativePath;
+                System.out.println("[Maven Download] Downloading: " + urlStr);
+                try {
+                    HttpURLConnection conn = (HttpURLConnection) new URL(urlStr).openConnection();
+                    conn.setRequestMethod("GET");
+                    conn.setConnectTimeout(15000);
+                    conn.setReadTimeout(60000);
+                    conn.setInstanceFollowRedirects(true);
+                    conn.setRequestProperty("User-Agent", "Bio7/1.0");
 
-            int responseCode = conn.getResponseCode();
+                    int responseCode = conn.getResponseCode();
 
-            if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP || responseCode == HttpURLConnection.HTTP_MOVED_PERM
-                    || responseCode == HttpURLConnection.HTTP_SEE_OTHER || responseCode == 307
-                    || responseCode == 308) {
-                String newUrl = conn.getHeaderField("Location");
-                conn = (HttpURLConnection) new URL(newUrl).openConnection();
-                conn.setRequestProperty("User-Agent", "Bio7/1.0");
-                responseCode = conn.getResponseCode();
+                    if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP
+                            || responseCode == HttpURLConnection.HTTP_MOVED_PERM
+                            || responseCode == HttpURLConnection.HTTP_SEE_OTHER || responseCode == 307
+                            || responseCode == 308) {
+                        String newUrl = conn.getHeaderField("Location");
+                        conn = (HttpURLConnection) new URL(newUrl).openConnection();
+                        conn.setRequestProperty("User-Agent", "Bio7/1.0");
+                        responseCode = conn.getResponseCode();
+                    }
+
+                    if (responseCode != 200) {
+                        System.err.println("[Maven Download] Failed: " + responseCode + " for " + jarName
+                                + " at " + repo);
+                        continue;
+                    }
+
+                    try (InputStream in = conn.getInputStream()) {
+                        Files.copy(in, targetFile, StandardCopyOption.REPLACE_EXISTING);
+                    }
+
+                    System.out.println("[Maven Download] Success: " + targetFile);
+                    return targetFile;
+                } catch (Exception e) {
+                    System.err.println("[Maven Download] Error from " + repo + ": " + e.getMessage());
+                }
             }
 
-            if (responseCode != 200) {
-                System.err.println("[Maven Download] Failed: " + responseCode + " for " + jarName);
-                return null;
-            }
-
-            try (InputStream in = conn.getInputStream()) {
-                Files.copy(in, targetFile, StandardCopyOption.REPLACE_EXISTING);
-            }
-
-            System.out.println("[Maven Download] Success: " + targetFile);
-            return targetFile;
+            return null;
 
         } catch (Exception e) {
             System.err.println("[Maven Download] Error: " + e.getMessage());
@@ -2048,7 +2162,7 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
 
         try {
             String groupPath = groupId.replace('.', '/');
-            String pomUrl = MAVEN_CENTRAL_URL + "/" + groupPath + "/" + artifactId + "/" + version + "/" + artifactId
+            String relativePath = "/" + groupPath + "/" + artifactId + "/" + version + "/" + artifactId
                     + "-" + version + ".pom";
 
             if (depth == 0) {
@@ -2057,25 +2171,12 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
                 System.out.println("[Maven POM] " + "  ".repeat(depth) + "Parent: " + cacheKey);
             }
 
-            HttpURLConnection conn = (HttpURLConnection) new URL(pomUrl).openConnection();
-            conn.setRequestMethod("GET");
-            conn.setConnectTimeout(5000);
-            conn.setReadTimeout(10000);
-            conn.setRequestProperty("User-Agent", "Bio7/1.0");
-
-            if (conn.getResponseCode() != 200) {
+            String[] result = httpGetFromRepositories(relativePath);
+            if (result == null) {
                 return properties;
             }
 
-            StringBuilder content = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    content.append(line).append("\n");
-                }
-            }
-
-            String pom = content.toString();
+            String pom = result[1];
 
             String parentGroupId = extractXmlValueFromParent(pom, "groupId");
             String parentArtifactId = extractXmlValueFromParent(pom, "artifactId");
@@ -2116,28 +2217,15 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
 
         try {
             String groupPath = groupId.replace('.', '/');
-            String pomUrl = MAVEN_CENTRAL_URL + "/" + groupPath + "/" + artifactId + "/" + version + "/" + artifactId
+            String relativePath = "/" + groupPath + "/" + artifactId + "/" + version + "/" + artifactId
                     + "-" + version + ".pom";
 
-            HttpURLConnection conn = (HttpURLConnection) new URL(pomUrl).openConnection();
-            conn.setRequestMethod("GET");
-            conn.setConnectTimeout(5000);
-            conn.setReadTimeout(10000);
-            conn.setRequestProperty("User-Agent", "Bio7/1.0");
-
-            if (conn.getResponseCode() != 200) {
+            String[] result = httpGetFromRepositories(relativePath);
+            if (result == null) {
                 return managedVersions;
             }
 
-            StringBuilder content = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    content.append(line).append("\n");
-                }
-            }
-
-            String pom = content.toString();
+            String pom = result[1];
 
             String parentGroupId = extractXmlValueFromParent(pom, "groupId");
             String parentArtifactId = extractXmlValueFromParent(pom, "artifactId");
@@ -2166,31 +2254,17 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
         try {
             String groupPath = groupId.replace('.', '/');
             String pomName = artifactId + "-" + version + ".pom";
-            String urlStr = MAVEN_CENTRAL_URL + "/" + groupPath + "/" + artifactId + "/" + version + "/" + pomName;
+            String relativePath = "/" + groupPath + "/" + artifactId + "/" + version + "/" + pomName;
 
-            System.out.println("[Maven POM] Fetching: " + urlStr);
-
-            URL url = new URL(urlStr);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setConnectTimeout(10000);
-            conn.setReadTimeout(30000);
-            conn.setRequestProperty("User-Agent", "Bio7/1.0");
-
-            if (conn.getResponseCode() != 200) {
-                System.err.println("[Maven POM] Failed to fetch POM: " + conn.getResponseCode());
+            String[] result = httpGetFromRepositories(relativePath);
+            if (result == null) {
+                System.err.println("[Maven POM] Failed to fetch POM " + groupId + ":" + artifactId + ":" + version
+                        + " from any repository: " + relativePath);
                 return dependencies;
             }
+            System.out.println("[Maven POM] Fetching: " + result[0]);
 
-            StringBuilder content = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    content.append(line).append("\n");
-                }
-            }
-
-            String pom = content.toString();
+            String pom = result[1];
 
             String parentGroupId = extractXmlValueFromParent(pom, "groupId");
             String parentArtifactId = extractXmlValueFromParent(pom, "artifactId");
@@ -2428,36 +2502,7 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
     }
 
     private String lookupLatestVersion(String groupId, String artifactId) {
-        try {
-            String searchUrl = "https://search.maven.org/solrsearch/select?q=g:" + groupId + "+AND+a:" + artifactId
-                    + "&rows=1&wt=json";
-
-            HttpURLConnection conn = (HttpURLConnection) new URL(searchUrl).openConnection();
-            conn.setRequestMethod("GET");
-            conn.setConnectTimeout(5000);
-            conn.setReadTimeout(5000);
-            conn.setRequestProperty("User-Agent", "Bio7/1.0");
-
-            if (conn.getResponseCode() == 200) {
-                StringBuilder content = new StringBuilder();
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        content.append(line);
-                    }
-                }
-
-                String json = content.toString();
-                Pattern versionPattern = Pattern.compile("\"latestVersion\":\"([^\"]+)\"");
-                Matcher matcher = versionPattern.matcher(json);
-                if (matcher.find()) {
-                    return matcher.group(1);
-                }
-            }
-        } catch (Exception e) {
-            // Ignore
-        }
-        return null;
+        return MavenDownloadDialog.lookupLatestVersion(groupId, artifactId);
     }
 
     // =========================================================================
