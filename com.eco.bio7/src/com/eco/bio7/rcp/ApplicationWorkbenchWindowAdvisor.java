@@ -155,6 +155,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	private static boolean isArch;
 	private static boolean themeBlack;
 	private static final Point DEFAULT_SIZE = new Point(1024, 768);
+	/* Perspectives whose com.eco.bio7.custom_controls views must be
+	 *  fully closed whenever the perspective is left, so no stale panel
+	 *  is restored the next time it (or another perspective sharing the
+	 *  same view id) is opened. */
+	private static final java.util.Set<String> CUSTOM_CONTROLS_HOST_PERSPECTIVES = new java.util.HashSet<>(
+			java.util.Arrays.asList(
+					"com.eco.bio7.CustomPerspective"));
 
 	public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
 		super(configurer);
@@ -419,14 +426,14 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 			@Override
 			public void perspectiveClosed(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-				if ("com.eco.bio7.CustomPerspective ".equals(perspective.getId())) {
+				if (CUSTOM_CONTROLS_HOST_PERSPECTIVES.contains(perspective.getId())) {
 					closeAllCustomViews(page);
 				}
 			}
 
 			@Override
 			public void perspectiveDeactivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-				if ("com.eco.bio7.CustomPerspective ".equals(perspective.getId())) {
+				if (CUSTOM_CONTROLS_HOST_PERSPECTIVES.contains(perspective.getId())) {
 					closeAllCustomViews(page);
 				}
 			}

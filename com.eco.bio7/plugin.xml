@@ -196,7 +196,7 @@
             icon="icons/views/custom.png"
             id="com.eco.bio7.custom_controls"
             name="Custom Controls"
-            restorable="true"/>
+            restorable="false"/>
       <category
             id="com.eco.bio7.custom"
             name="Bio7-Custom"/>
