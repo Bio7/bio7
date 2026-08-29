@@ -16,8 +16,8 @@ public class CustomPerspective implements IPerspectiveFactory {
 		addPerspectiveShortcuts(layout);
 
 		layout.setEditorAreaVisible(false);
-		IFolderLayout left = layout.createFolder("MainLeft", IPageLayout.LEFT, (float) 0.25, editorArea);//$NON-NLS-1$
-		IFolderLayout Right = layout.createFolder("MainRight", IPageLayout.RIGHT, (float) 0.75, editorArea);
+		IFolderLayout left = layout.createFolder("MainLeft", IPageLayout.LEFT, (float) 0.5, editorArea);//$NON-NLS-1$
+		IFolderLayout Right = layout.createFolder("MainRight", IPageLayout.RIGHT, (float) 0.5, editorArea);
 
 		IFolderLayout subLeftTop = layout.createFolder("SubLeftTop", IPageLayout.TOP, (float) 0.5, "MainLeft");//$NON-NLS-1$
 		IFolderLayout subLeftBottom = layout.createFolder("SubLeftBottom", IPageLayout.BOTTOM, (float) 0.5, "MainLeft");//$NON-NLS-1$
