@@ -13,6 +13,7 @@ package com.eco.bio7.collection;
 
 import java.util.Vector;
 import org.eclipse.draw2d.LightweightSystem;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Display;
 
@@ -35,7 +36,7 @@ public class Draw2dCustom {
 			public void run() {
 
 				view.getCustomViewParent().setData(ve);
-				Canvas canvas = new Canvas(view.getCustomViewParent(), 0);
+				Canvas canvas = new Canvas(view.getCustomViewParent(), SWT.TRANSPARENT | SWT.DOUBLE_BUFFERED);
 
 				lws = new LightweightSystem(canvas);
 				view.getCustomViewParent().layout();
