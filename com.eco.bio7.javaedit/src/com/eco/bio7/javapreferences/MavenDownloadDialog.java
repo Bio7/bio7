@@ -42,12 +42,11 @@ public class MavenDownloadDialog extends Dialog {
 	private static final String MAVEN_CENTRAL_URL = "https://repo1.maven.org/maven2";
 
 	/**
-	 * Repository base URLs tried in order for every POM/metadata fetch. Some
-	 * artifacts were never published to Maven Central and only exist in a specific
-	 * Nexus repository.
+	 * Some artifacts (e.g. {@code net.imglib2:imglib2-algorithm}) were never
+	 * published to Maven Central and only exist on the SciJava/Fiji Nexus
+	 * repository. Trying it is opt-in via {@link #sciJavaCheckbox}.
 	 */
-	private static final String[] REPOSITORY_URLS = { MAVEN_CENTRAL_URL,
-			"https://maven.scijava.org/content/groups/public" };
+	private static final String SCIJAVA_URL = "https://maven.scijava.org/content/groups/public";
 
 	// UI components
 	private Text groupIdText;
@@ -57,6 +56,8 @@ public class MavenDownloadDialog extends Dialog {
 	private Button downloadDepsCheckbox;
 	private Button downloadAllModulesCheckbox;
 	private Button downloadNativesCheckbox;
+	private Button mavenCentralCheckbox;
+	private Button sciJavaCheckbox;
 	private Label statusLabel;
 	private Combo presetsCombo;
 	private List previewList;
@@ -222,10 +223,12 @@ public class MavenDownloadDialog extends Dialog {
 				+ " missing version(s) from parent POM / Maven Central...", false);
 		parseButton.setEnabled(false);
 
+		final String[] repos = getSelectedRepositories();
+
 		Job resolveJob = new Job("Resolving Maven versions") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				final java.util.List<SimpleDep> resolved = resolveDependencyVersions(xml, parsed);
+				final java.util.List<SimpleDep> resolved = resolveDependencyVersions(xml, parsed, repos);
 				long unresolved = resolved.stream().filter(d -> !d.hasVersion()).count();
 
 				Display.getDefault().asyncExec(() -> {
@@ -369,6 +372,55 @@ public class MavenDownloadDialog extends Dialog {
 		GridData natData = new GridData();
 		natData.horizontalSpan = 4;
 		downloadNativesCheckbox.setLayoutData(natData);
+
+		Label repoLabel = new Label(container, SWT.NONE);
+		repoLabel.setText("Repositories:");
+		GridData repoLabelGd = new GridData();
+		repoLabelGd.horizontalSpan = 4;
+		repoLabel.setLayoutData(repoLabelGd);
+
+		mavenCentralCheckbox = new Button(container, SWT.CHECK);
+		mavenCentralCheckbox.setText("Maven Central");
+		mavenCentralCheckbox.setSelection(true);
+		GridData mcData = new GridData();
+		mcData.horizontalSpan = 4;
+		mavenCentralCheckbox.setLayoutData(mcData);
+
+		sciJavaCheckbox = new Button(container, SWT.CHECK);
+		sciJavaCheckbox.setText("SciJava Repository (for artifacts not on Maven Central, e.g. imglib2-algorithm)");
+		GridData sjData = new GridData();
+		sjData.horizontalSpan = 4;
+		sciJavaCheckbox.setLayoutData(sjData);
+
+		SelectionAdapter requireAtLeastOneRepo = new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if (!mavenCentralCheckbox.getSelection() && !sciJavaCheckbox.getSelection()) {
+					((Button) e.widget).setSelection(true);
+					setStatus("At least one repository must be selected.", true);
+				}
+			}
+		};
+		mavenCentralCheckbox.addSelectionListener(requireAtLeastOneRepo);
+		sciJavaCheckbox.addSelectionListener(requireAtLeastOneRepo);
+	}
+
+	/**
+	 * @return the repository base URLs the user selected, in priority order
+	 *         (Maven Central first when both are checked). Never empty.
+	 */
+	public String[] getSelectedRepositories() {
+		java.util.List<String> repos = new java.util.ArrayList<>();
+		if (mavenCentralCheckbox == null || mavenCentralCheckbox.getSelection()) {
+			repos.add(MAVEN_CENTRAL_URL);
+		}
+		if (sciJavaCheckbox != null && sciJavaCheckbox.getSelection()) {
+			repos.add(SCIJAVA_URL);
+		}
+		if (repos.isEmpty()) {
+			repos.add(MAVEN_CENTRAL_URL);
+		}
+		return repos.toArray(new String[0]);
 	}
 
 	private void createPreviewSection(Composite container) {
@@ -519,10 +571,13 @@ public class MavenDownloadDialog extends Dialog {
 	 * <p>
 	 * This performs network calls and MUST NOT be invoked on the UI thread.
 	 *
-	 * @param xml  the originally pasted POM XML (used to find {@code <parent>})
-	 * @param deps the dependencies parsed from {@code xml}
+	 * @param xml   the originally pasted POM XML (used to find {@code <parent>})
+	 * @param deps  the dependencies parsed from {@code xml}
+	 * @param repos repository base URLs to try, in order (see
+	 *              {@link #getSelectedRepositories()})
 	 */
-	public static java.util.List<SimpleDep> resolveDependencyVersions(String xml, java.util.List<SimpleDep> deps) {
+	public static java.util.List<SimpleDep> resolveDependencyVersions(String xml, java.util.List<SimpleDep> deps,
+			String[] repos) {
 		java.util.List<SimpleDep> resolved = new java.util.ArrayList<>();
 
 		// 1. Build ONE fully-merged property map: ancestors first, local last (local
@@ -540,9 +595,9 @@ public class MavenDownloadDialog extends Dialog {
 			System.out.println("[Maven Parse] Pasted POM declares parent: " + parentGroupId + ":" + parentArtifactId
 					+ ":" + parentVersion);
 			properties.putAll(fetchPomPropertiesRecursively(parentGroupId, parentArtifactId, parentVersion, 0,
-					new java.util.HashMap<>()));
-			managedRaw.putAll(
-					fetchManagedDependencyVersionsRecursively(parentGroupId, parentArtifactId, parentVersion, 0));
+					new java.util.HashMap<>(), repos));
+			managedRaw.putAll(fetchManagedDependencyVersionsRecursively(parentGroupId, parentArtifactId,
+					parentVersion, 0, repos));
 			System.out.println("[Maven Parse] Collected " + properties.size() + " properties and " + managedRaw.size()
 					+ " managed-dependency entries from the parent chain.");
 		} else {
@@ -557,8 +612,9 @@ public class MavenDownloadDialog extends Dialog {
 		// with no enclosing <parent> relies entirely on this to pin versions.
 		for (String[] bom : extractDirectBomImports(xml)) {
 			System.out.println("[Maven Parse] Pasted POM imports BOM: " + bom[0] + ":" + bom[1] + ":" + bom[2]);
-			properties.putAll(fetchPomPropertiesRecursively(bom[0], bom[1], bom[2], 0, new java.util.HashMap<>()));
-			managedRaw.putAll(fetchManagedDependencyVersionsRecursively(bom[0], bom[1], bom[2], 0));
+			properties.putAll(
+					fetchPomPropertiesRecursively(bom[0], bom[1], bom[2], 0, new java.util.HashMap<>(), repos));
+			managedRaw.putAll(fetchManagedDependencyVersionsRecursively(bom[0], bom[1], bom[2], 0, repos));
 		}
 
 		// Local <properties> and local <dependencyManagement> override the parent
@@ -595,7 +651,7 @@ public class MavenDownloadDialog extends Dialog {
 			} else {
 				// Fall back to the latest release on Maven Central.
 				if (!latestCache.containsKey(key)) {
-					latestCache.put(key, lookupLatestVersion(dep.groupId, dep.artifactId));
+					latestCache.put(key, lookupLatestVersion(dep.groupId, dep.artifactId, repos));
 				}
 				String latest = latestCache.get(key);
 				if (latest != null && !latest.isEmpty()) {
@@ -625,7 +681,7 @@ public class MavenDownloadDialog extends Dialog {
 	 * all of its ancestors. Ancestors are applied first so that closer POMs win.
 	 */
 	private static java.util.Map<String, String> fetchPomPropertiesRecursively(String groupId, String artifactId,
-			String version, int depth, java.util.Map<String, java.util.Map<String, String>> cache) {
+			String version, int depth, java.util.Map<String, java.util.Map<String, String>> cache, String[] repos) {
 
 		String cacheKey = groupId + ":" + artifactId + ":" + version;
 		if (cache.containsKey(cacheKey)) {
@@ -637,7 +693,7 @@ public class MavenDownloadDialog extends Dialog {
 			return properties;
 		}
 
-		String pom = fetchPom(groupId, artifactId, version);
+		String pom = fetchPom(groupId, artifactId, version, repos);
 		if (pom == null) {
 			return properties;
 		}
@@ -647,7 +703,8 @@ public class MavenDownloadDialog extends Dialog {
 		String pVersion = extractXmlValueFromParent(pom, "version");
 
 		if (pGroupId != null && pArtifactId != null && pVersion != null) {
-			properties.putAll(fetchPomPropertiesRecursively(pGroupId, pArtifactId, pVersion, depth + 1, cache));
+			properties.putAll(
+					fetchPomPropertiesRecursively(pGroupId, pArtifactId, pVersion, depth + 1, cache, repos));
 		}
 
 		properties.put("project.version", version);
@@ -670,14 +727,14 @@ public class MavenDownloadDialog extends Dialog {
 	 * placeholders once the full property map is assembled.
 	 */
 	private static java.util.Map<String, String> fetchManagedDependencyVersionsRecursively(String groupId,
-			String artifactId, String version, int depth) {
+			String artifactId, String version, int depth, String[] repos) {
 
 		java.util.Map<String, String> managedVersions = new java.util.HashMap<>();
 		if (depth > 15) {
 			return managedVersions;
 		}
 
-		String pom = fetchPom(groupId, artifactId, version);
+		String pom = fetchPom(groupId, artifactId, version, repos);
 		if (pom == null) {
 			return managedVersions;
 		}
@@ -687,12 +744,12 @@ public class MavenDownloadDialog extends Dialog {
 		String pVersion = extractXmlValueFromParent(pom, "version");
 
 		if (pGroupId != null && pArtifactId != null && pVersion != null) {
-			managedVersions
-					.putAll(fetchManagedDependencyVersionsRecursively(pGroupId, pArtifactId, pVersion, depth + 1));
+			managedVersions.putAll(
+					fetchManagedDependencyVersionsRecursively(pGroupId, pArtifactId, pVersion, depth + 1, repos));
 		}
 
 		// Imported BOMs (scope=import / type=pom) must be followed too.
-		managedVersions.putAll(fetchImportedBomVersions(pom, depth));
+		managedVersions.putAll(fetchImportedBomVersions(pom, depth, repos));
 
 		managedVersions.putAll(extractManagedDependencyVersions(pom));
 		return managedVersions;
@@ -703,7 +760,7 @@ public class MavenDownloadDialog extends Dialog {
 	 * {@code <scope>import</scope>} (BOM imports) and merges their managed
 	 * versions.
 	 */
-	private static java.util.Map<String, String> fetchImportedBomVersions(String pom, int depth) {
+	private static java.util.Map<String, String> fetchImportedBomVersions(String pom, int depth, String[] repos) {
 		java.util.Map<String, String> imported = new java.util.HashMap<>();
 		if (depth > 15 || pom == null) {
 			return imported;
@@ -711,7 +768,7 @@ public class MavenDownloadDialog extends Dialog {
 
 		for (String[] bom : extractDirectBomImports(pom)) {
 			System.out.println("[Maven POM] Importing BOM: " + bom[0] + ":" + bom[1] + ":" + bom[2]);
-			imported.putAll(fetchManagedDependencyVersionsRecursively(bom[0], bom[1], bom[2], depth + 1));
+			imported.putAll(fetchManagedDependencyVersionsRecursively(bom[0], bom[1], bom[2], depth + 1, repos));
 		}
 		return imported;
 	}
@@ -753,16 +810,16 @@ public class MavenDownloadDialog extends Dialog {
 	}
 
 	/**
-	 * Downloads a POM, trying each of {@link #REPOSITORY_URLS} in order; returns
-	 * its text or {@code null} if none of them have it. Follows HTTP redirects
-	 * (including http-&gt;https) and logs the outcome.
+	 * Downloads a POM, trying each of {@code repos} in order; returns its text or
+	 * {@code null} if none of them have it. Follows HTTP redirects (including
+	 * http-&gt;https) and logs the outcome.
 	 */
-	private static String fetchPom(String groupId, String artifactId, String version) {
+	private static String fetchPom(String groupId, String artifactId, String version, String[] repos) {
 		String groupPath = groupId.replace('.', '/');
 		String relativePath = "/" + groupPath + "/" + artifactId + "/" + version + "/" + artifactId + "-" + version
 				+ ".pom";
 
-		for (String repo : REPOSITORY_URLS) {
+		for (String repo : repos) {
 			String pomUrl = repo + relativePath;
 			try {
 				String body = httpGet(pomUrl, 0);
@@ -983,15 +1040,15 @@ public class MavenDownloadDialog extends Dialog {
 	 * solrsearch API is deprecated/unreliable, so it is only used as a last-resort
 	 * fallback). Returns {@code null} if nothing is found.
 	 */
-	public static String lookupLatestVersion(String groupId, String artifactId) {
+	public static String lookupLatestVersion(String groupId, String artifactId, String[] repos) {
 		if (groupId == null || artifactId == null || groupId.isEmpty() || artifactId.isEmpty()) {
 			return null;
 		}
 
-		// Preferred: maven-metadata.xml, tried against each of REPOSITORY_URLS.
+		// Preferred: maven-metadata.xml, tried against each of repos.
 		String groupPath = groupId.replace('.', '/');
 		String relativePath = "/" + groupPath + "/" + artifactId + "/maven-metadata.xml";
-		for (String repo : REPOSITORY_URLS) {
+		for (String repo : repos) {
 			try {
 				String meta = httpGet(repo + relativePath, 0);
 				if (meta == null) {

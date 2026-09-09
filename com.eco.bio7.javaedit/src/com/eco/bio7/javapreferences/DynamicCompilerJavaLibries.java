@@ -79,15 +79,14 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
     private static final String MAVEN_CENTRAL_URL = "https://repo1.maven.org/maven2";
 
     /**
-     * Repository base URLs tried in order for every POM/JAR fetch. Some
-     * artifacts (e.g. {@code net.imglib2:imglib2-algorithm}, {@code imglib2-ij})
-     * were never published to Maven Central and only exist on the SciJava/Fiji
-     * Nexus repository.
+     * Repository base URLs to try, in order, for the download currently in
+     * progress -- set from {@link MavenDownloadDialog#getSelectedRepositories()}
+     * right before each download Job is scheduled. Defaults to Maven Central
+     * only. Some artifacts (e.g. {@code net.imglib2:imglib2-algorithm}) were
+     * never published to Maven Central and only exist on the SciJava/Fiji Nexus
+     * repository, which the user can opt into via a checkbox in the dialog.
      */
-    private static final String[] REPOSITORY_URLS = {
-            MAVEN_CENTRAL_URL,
-            "https://maven.scijava.org/content/groups/public"
-    };
+    private String[] activeRepositories = { MAVEN_CENTRAL_URL };
 
     private Path mavenCacheDir;
 
@@ -1348,6 +1347,7 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
         );
 
         if (dialog.open() == Dialog.OK) {
+            activeRepositories = dialog.getSelectedRepositories();
             java.util.List<MavenDownloadDialog.SimpleDep> batchDeps = dialog.getBatchDependencies();
             boolean downloadDependencies = dialog.isDownloadDependencies();
             boolean downloadNatives = dialog.isDownloadNatives();
@@ -1718,11 +1718,12 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
 
     /**
      * Performs a GET against {@code relativePath} on each of
-     * {@link #REPOSITORY_URLS} in order, returning the first repository's body
-     * as {@code {resolvedUrl, body}}, or {@code null} if none of them have it.
+     * {@link #activeRepositories} in order, returning the first repository's
+     * body as {@code {resolvedUrl, body}}, or {@code null} if none of them have
+     * it.
      */
-    private static String[] httpGetFromRepositories(String relativePath) {
-        for (String repo : REPOSITORY_URLS) {
+    private String[] httpGetFromRepositories(String relativePath) {
+        for (String repo : activeRepositories) {
             String urlStr = repo + relativePath;
             try {
                 HttpURLConnection conn = (HttpURLConnection) new URL(urlStr).openConnection();
@@ -1750,9 +1751,9 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
         return null;
     }
 
-    /** Returns {@code true} if {@code relativePath} responds with 200 to a HEAD on any of {@link #REPOSITORY_URLS}. */
-    private static boolean httpHeadExistsInRepositories(String relativePath) {
-        for (String repo : REPOSITORY_URLS) {
+    /** Returns {@code true} if {@code relativePath} responds with 200 to a HEAD on any of {@link #activeRepositories}. */
+    private boolean httpHeadExistsInRepositories(String relativePath) {
+        for (String repo : activeRepositories) {
             try {
                 HttpURLConnection conn = (HttpURLConnection) new URL(repo + relativePath).openConnection();
                 conn.setRequestMethod("HEAD");
@@ -1825,7 +1826,7 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
                 return targetFile;
             }
 
-            for (String repo : REPOSITORY_URLS) {
+            for (String repo : activeRepositories) {
                 String urlStr = repo + relativePath;
                 System.out.println("[Maven Download] Downloading: " + urlStr);
                 try {
@@ -2502,7 +2503,7 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
     }
 
     private String lookupLatestVersion(String groupId, String artifactId) {
-        return MavenDownloadDialog.lookupLatestVersion(groupId, artifactId);
+        return MavenDownloadDialog.lookupLatestVersion(groupId, artifactId, activeRepositories);
     }
 
     // =========================================================================
