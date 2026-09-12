@@ -26,7 +26,7 @@ public class Application implements IApplication {
 			 * We now use System.exit to avoid a deadlock on MacOSX with SWT_AWT ImageJ!
 			 */
 			//display.dispose();
-			System.exit(0); 
+			System.exit(0); // for an error analysis comment out this command.
 
 			
 		}

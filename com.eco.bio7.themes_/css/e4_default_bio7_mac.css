@@ -340,7 +340,7 @@ CTabItem:selected {
 	eclipse-perspective-keyline-color: #dddddd;
 	/*background-image: url('./bio7.png');*/
 	background-color: white #eeeeee #dddddd 25.0% 25.0% 50.0%;
-	#handle-image: none;
+	
 		
 }
 /*Colour around views (evtl shadows?!*/
@@ -435,17 +435,5 @@ Bounds: x=1082 y=186 h=31 w=31;
   color:  #000000;
   font-size: 14px;
 }
-/*
-Package Explorer!
-#org-eclipse-jdt-ui-PackageExplorer {
-      font-size:14;
-      /*background:black;*/
-}*/
 
-/*
-* {
-  font-size:16;
-  /*font-weight: bold;*/
-  /*font-family: "Terminal";*/
-} 
-*/
+
