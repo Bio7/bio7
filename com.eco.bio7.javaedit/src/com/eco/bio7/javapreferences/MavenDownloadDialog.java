@@ -74,6 +74,7 @@ public class MavenDownloadDialog extends Dialog {
 	private boolean downloadDependencies = true;
 	private boolean downloadAllModules = false;
 	private boolean downloadNatives = true;
+	private String[] selectedRepositories = { MAVEN_CENTRAL_URL };
 
 	// Platform info (passed from parent)
 	private final String platformClassifier;
@@ -223,7 +224,7 @@ public class MavenDownloadDialog extends Dialog {
 				+ " missing version(s) from parent POM / Maven Central...", false);
 		parseButton.setEnabled(false);
 
-		final String[] repos = getSelectedRepositories();
+		final String[] repos = readSelectedRepositoriesFromUI();
 
 		Job resolveJob = new Job("Resolving Maven versions") {
 			@Override
@@ -406,10 +407,11 @@ public class MavenDownloadDialog extends Dialog {
 	}
 
 	/**
-	 * @return the repository base URLs the user selected, in priority order
-	 *         (Maven Central first when both are checked). Never empty.
+	 * Reads the live checkbox state. Only safe to call while the dialog's
+	 * widgets still exist -- i.e. before the shell is disposed (before/at
+	 * {@code okPressed()}, never after {@link #open()} has returned).
 	 */
-	public String[] getSelectedRepositories() {
+	private String[] readSelectedRepositoriesFromUI() {
 		java.util.List<String> repos = new java.util.ArrayList<>();
 		if (mavenCentralCheckbox == null || mavenCentralCheckbox.getSelection()) {
 			repos.add(MAVEN_CENTRAL_URL);
@@ -421,6 +423,16 @@ public class MavenDownloadDialog extends Dialog {
 			repos.add(MAVEN_CENTRAL_URL);
 		}
 		return repos.toArray(new String[0]);
+	}
+
+	/**
+	 * @return the repository base URLs the user selected, in priority order
+	 *         (Maven Central first when both are checked). Never empty. Cached
+	 *         at {@code okPressed()} time so this remains safe to call after
+	 *         the dialog has closed and its widgets are disposed.
+	 */
+	public String[] getSelectedRepositories() {
+		return selectedRepositories;
 	}
 
 	private void createPreviewSection(Composite container) {
@@ -1415,6 +1427,7 @@ public class MavenDownloadDialog extends Dialog {
 		downloadDependencies = downloadDepsCheckbox.getSelection();
 		downloadAllModules = downloadAllModulesCheckbox.getSelection();
 		downloadNatives = downloadNativesCheckbox.getSelection();
+		selectedRepositories = readSelectedRepositoriesFromUI();
 
 		// If batch mode was used, allow empty single fields, but make sure every
 		// batch dependency actually has a resolved version before downloading.

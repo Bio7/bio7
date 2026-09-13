@@ -132,6 +132,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	public Thread nativeShellprocessThread;
 	public Thread pythonProcessThread;
 	private IOConsoleInputStream iocinput;
+	private Font customShellFont;
 	private boolean runThread;
 	public ConsoleInterpreterAction ia;
 	public IToolBarManager toolBarManager;
@@ -200,7 +201,12 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		FontData shellFont = PreferenceConverter.getFontData(store, "Bio7ShellFonts");
 		if (shellFont != null) {
-			styledText.setFont(new Font(Display.getDefault(), shellFont));
+			Font oldCustomShellFont = customShellFont;
+			customShellFont = new Font(Display.getDefault(), shellFont);
+			styledText.setFont(customShellFont);
+			if (oldCustomShellFont != null && !oldCustomShellFont.isDisposed()) {
+				oldCustomShellFont.dispose();
+			}
 		}
 		styledText.setKeyBinding(SWT.ARROW_UP, SWT.NULL);
 		styledText.setKeyBinding(SWT.ARROW_DOWN, SWT.NULL);
@@ -994,6 +1000,10 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 		if (pythonProcessThread != null) {
 			pythonProcessThread.interrupt();
+		}
+		if (customShellFont != null && !customShellFont.isDisposed()) {
+			customShellFont.dispose();
+			customShellFont = null;
 		}
 		in = null;
 
