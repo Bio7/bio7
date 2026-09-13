@@ -433,13 +433,7 @@ Button[style~='SWT.CHECK'] {
    background-color: #252525;
     color: #dddddd;
 }
-/*
-* {
-  font-size:16;
-  /*font-weight: bold;*/
-  /*font-family: "Terminal";*/
-}
-*/
+
 StyledText {
     swt-scrollbar-themed: true;
     swt-scrollbar-background-color: #383838;
