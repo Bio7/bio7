@@ -178,7 +178,7 @@ CTabFolder Tree, CTabFolder Canvas {
     color: #EBE8E4;
 }
 
-ToolItem {
+#org-eclipse-ui-main-toolbar ToolItem, #PerspectiveSwitcher ToolItem {
   /* actual values */
   background-color:  #41464A #252525 #252525  10.0% 90.0% 5.0%;
 }
@@ -443,6 +443,6 @@ StyledText {
     swt-scrollbar-mouse-near-scroll-width: 15px;
 }
 StyledText {
-    background-color: #383C3E;
+    background-color: #252525;
     color: #dddddd;
 }
