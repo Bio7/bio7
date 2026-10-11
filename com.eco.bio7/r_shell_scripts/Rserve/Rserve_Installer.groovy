@@ -1,6 +1,6 @@
 import com.eco.bio7.batch.Bio7Dialog
 import com.eco.bio7.console.Bio7Console
-import com.eco.bio7.image.Util
+import com.eco.bio7.util.Util
 
 /**
  * Script to install Rserve based on OS and Architecture.

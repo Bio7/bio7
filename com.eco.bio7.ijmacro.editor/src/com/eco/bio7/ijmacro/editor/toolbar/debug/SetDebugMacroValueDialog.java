@@ -16,7 +16,7 @@ import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import com.eco.bio7.image.Util;
+import com.eco.bio7.util.Util;
 
 /*Class from: http://www.vogella.com/tutorials/EclipseDialogs/article.html*/
 

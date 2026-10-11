@@ -10,6 +10,8 @@
 
 package com.eco.bio7.image;
 
+import com.eco.bio7.image.ui.CanvasView;
+
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.ImageCanvas;

@@ -30,7 +30,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractRulerActionDelegate;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
-import com.eco.bio7.image.Util;
+import com.eco.bio7.util.Util;
 
 public class ToggleDebugConditionalBreakpointAction extends AbstractRulerActionDelegate
 		implements IEditorActionDelegate {

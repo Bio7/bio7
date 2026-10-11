@@ -12,7 +12,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import com.eco.bio7.image.Util;
+import com.eco.bio7.util.Util;
 
 /*For this class only a command is defined. It is used in the RColorInformationControl hover!*/
 public class OpenColorHexDialog extends Action {

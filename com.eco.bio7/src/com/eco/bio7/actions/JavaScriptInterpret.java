@@ -24,7 +24,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.collection.BrowserUtil;
 import com.eco.bio7.compile.JavaScriptInterpreter;
-import com.eco.bio7.image.Util;
+import com.eco.bio7.util.Util;
 import com.eco.bio7.rcp.StartBio7Utils;
 
 public class JavaScriptInterpret extends Action {

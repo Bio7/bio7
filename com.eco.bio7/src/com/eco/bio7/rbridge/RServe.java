@@ -55,7 +55,7 @@ import com.eco.bio7.collection.BrowserUtil;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.console.Console;
 import com.eco.bio7.console.ConsolePageParticipant;
-import com.eco.bio7.image.CanvasView;
+import com.eco.bio7.image.ui.CanvasView;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
@@ -815,10 +815,9 @@ public class RServe {
 					}
 
 				}
-				/* Recalculate the JPanel layout of the ImageJ view! */
-				JPanel current = CanvasView.getCurrent();
-				if (current != null) {
-					current.doLayout();
+				/* Recalculate the layout of the ImageJ view! */
+				if (CanvasView.getCanvas_view() != null) {
+					CanvasView.getCanvas_view().recalculateLayout();
 				}
 
 			}

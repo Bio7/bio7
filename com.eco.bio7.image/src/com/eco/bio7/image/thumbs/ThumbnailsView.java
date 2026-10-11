@@ -27,7 +27,6 @@ import java.util.prefs.Preferences;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import javax.swing.JPanel;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -72,8 +71,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
-import com.eco.bio7.image.CanvasView;
-import com.eco.bio7.image.Util;
+import com.eco.bio7.image.ui.CanvasView;
+import com.eco.bio7.image.ui.Util;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -421,11 +420,10 @@ public class ThumbnailsView extends ViewPart {
 				} else if (fileExtension.equals(".lut")) {
 					ImagePlus plus = null;
 					ImageData imageData = null;
-					Opener.setErrorMessage(false);
 					setThumbSize();
 					String pathParent = Util.getImageJPath().replace("\\", "/");
 					/* Apply a LUT on the example image. Will be scaled afterwards! */
-					plus = IJ.openImage(pathParent + "/src/images/lut200.tif");
+					plus = openSilent(pathParent + "/src/images/lut200.tif");
 
 					if (plus != null) {
 						LUT lut = Opener.openLut(files[i].getAbsolutePath());
@@ -460,7 +458,6 @@ public class ThumbnailsView extends ViewPart {
 
 					plus = null;
 					imageData = null;
-					Opener.setErrorMessage(true);
 					/* We handle *.zip files extra to also detect ROI Sets! */
 				} else if (fileExtension.equals(".zip")) {
 					boolean zipRoi = false;
@@ -485,8 +482,7 @@ public class ThumbnailsView extends ViewPart {
 						}
 
 					} else {
-						Opener.setErrorMessage(false);
-						ImagePlus plus = IJ.openImage(files[i].getAbsolutePath());
+						ImagePlus plus = openSilent(files[i].getAbsolutePath());
 						createFromImagePlus(plus, fileExtension, files[i]);
 					}
 				}
@@ -495,16 +491,14 @@ public class ThumbnailsView extends ViewPart {
 				 * stack!
 				 */
 				else if (fileExtension.equals(".tif") || fileExtension.equals(".TIF") || fileExtension.equals(".TIFF")) {
-					Opener.setErrorMessage(false);
 					// ImagePlus plus = IJ.openImage(files[i].getAbsolutePath(), 1); not used since
 					// the conversion results in a single images, no stack anymore and wrong color!
-					ImagePlus plus = IJ.openImage(files[i].getAbsolutePath());
+					ImagePlus plus = openSilent(files[i].getAbsolutePath());
 					createFromImagePlus(plus, fileExtension, files[i]);
 				}
 				/* All other supported image types are handled here! */
 				else {
-					Opener.setErrorMessage(false);
-					ImagePlus plus = IJ.openImage(files[i].getAbsolutePath());
+					ImagePlus plus = openSilent(files[i].getAbsolutePath());
 					createFromImagePlus(plus, fileExtension, files[i]);
 				}
 
@@ -516,7 +510,7 @@ public class ThumbnailsView extends ViewPart {
 					 * type!
 					 */
 					public void actionPerformed(ActionEvent arg0) {
-						if (com.eco.bio7.image.CanvasView.getCanvas_view() != null) {
+						if (com.eco.bio7.image.ui.CanvasView.getCanvas_view() != null) {
 							Job job = new Job("Open...") {
 								@Override
 								protected IStatus run(IProgressMonitor monitor) {
@@ -544,10 +538,6 @@ public class ThumbnailsView extends ViewPart {
 
 											}
 										});
-										JPanel current = CanvasView.getCurrent();
-										if (current != null) {
-											current.doLayout();
-										}
 									}
 
 									monitor.done();
@@ -617,8 +607,14 @@ public class ThumbnailsView extends ViewPart {
 
 	}
 
+	/* Opens an image without error dialogs (unsupported files are skipped)! */
+	private static ImagePlus openSilent(String path) {
+		Opener opener = new Opener();
+		opener.setSilentMode(true);
+		return opener.openImage(path);
+	}
+
 	public void createFromImagePlus(ImagePlus plus, String fileExtension, File file) {
-		Opener.setErrorMessage(true);
 		ImageData imageData;
 		Image im = null;
 		if (plus != null) {

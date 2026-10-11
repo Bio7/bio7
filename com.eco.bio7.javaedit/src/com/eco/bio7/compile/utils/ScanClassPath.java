@@ -36,7 +36,7 @@ public class ScanClassPath {
 
 	private String pathBundle;
 	String[] bundles = new String[] { "com.eco.bio7", "com.eco.bio7.libs", "com.eco.bio7.javaedit",
-			"com.eco.bio7.image", "com.eco.bio7.WorldWind", "com.eco.bio7.browser", "Bundled_R",
+			"com.eco.bio7.image", "org.eclipse.swt.imagej", "com.eco.bio7.WorldWind", "com.eco.bio7.browser", "Bundled_R",
 			"com.eco.bio7.javacv" };// "org.eclipse.ui.workbench","org.eclipse.core.commands"
 
 	String[] bundlesEclipse;

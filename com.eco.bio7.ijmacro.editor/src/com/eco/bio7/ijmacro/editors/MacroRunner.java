@@ -172,7 +172,7 @@ public class MacroRunner implements Runnable {
 				interp.run(macro);
 			else {
 				if ("Popup Menu".equals(name)) {
-					PopupMenu popup = Menus.getPopupMenu();
+					org.eclipse.swt.widgets.Menu popup = Menus.getPopupMenu();
 					if (popup!=null) {
 						ImagePlus imp = null;
 						Object parent = popup.getParent();

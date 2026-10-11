@@ -17,7 +17,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.plot.PiePlot;
-import com.eco.bio7.image.Util;
+import com.eco.bio7.image.ui.Util;
 
 public class PieChartView extends ViewPart {
 

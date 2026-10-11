@@ -19,7 +19,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.jfree.chart.ChartPanel;
 
-import com.eco.bio7.image.CanvasView;
+import com.eco.bio7.image.ui.CanvasView;
 
 /**
  * This class provides static methods to create a custom chart panel inside of Bio7.

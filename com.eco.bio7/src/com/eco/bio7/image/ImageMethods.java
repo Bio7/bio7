@@ -1,5 +1,7 @@
 package com.eco.bio7.image;
 
+import com.eco.bio7.image.ui.CanvasView;
+
 import java.awt.Point;
 import java.util.ArrayList;
 

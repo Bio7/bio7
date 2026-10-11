@@ -6,8 +6,8 @@ import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.IntegerFieldEditor;
 
-import com.eco.bio7.image.Activator;
-import com.eco.bio7.image.Util;
+import com.eco.bio7.image.ui.Activator;
+import com.eco.bio7.image.ui.Util;
 
 /**
  * Class used to initialize default preference values.
@@ -28,9 +28,6 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		store.setDefault("PLUGINS_PATH", pluginsPath);
 		store.setDefault("MACROS_PATH", macrosPath);
 
-		store.setDefault("ROI_MANAGER", false);
-		store.setDefault("RESULTS_TABLE", false);
-		store.setDefault("MACRO_RECORDER", false);
 		/* Dialog Sizes for ImageJ dialogs! */
 		store.setDefault("IMAGE_METHODS_SIZE_X", 360);// 260
 		store.setDefault("IMAGE_METHODS_SIZE_Y", 450);// 790
@@ -46,26 +43,6 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		store.setDefault("DETACHED_IMAGE_SPACING_Y", 50);
 		store.setDefault("DETACHED_IMAGE_SPACING_X_MAX", 300);
 		store.setDefault("DETACHED_IMAGE_SPACING_Y_MAX", 0);
-		
-		
-		
-		store.setDefault("MAC_MENU_ENABLED", false);
-
-		if (Util.getOS().equals("Windows")) {
-			store.setDefault("FONT_SIZE_CORRECTION", 0);
-			store.setDefault("FONT_ANTIALIASED", false);
-		} else if (Util.getOS().equals("Linux")) {
-			store.setDefault("FONT_SIZE_CORRECTION", 0);
-			store.setDefault("FONT_ANTIALIASED", true);
-		} else if (Util.getOS().equals("Mac")) {
-			/*Correct Swing fonts on Retina displays!*/
-			if (Util.isMacRetinaDisplay()) {
-				store.setDefault("FONT_SIZE_CORRECTION", 0);
-			} else {
-				store.setDefault("FONT_SIZE_CORRECTION", 0);
-			}
-			store.setDefault("FONT_ANTIALIASED", false);
-		}
 
 	}
 

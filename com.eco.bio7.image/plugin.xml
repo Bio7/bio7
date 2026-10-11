@@ -6,7 +6,7 @@
       <view
             allowMultiple="true"
             category="com.eco.bio7.image.plugin"
-            class="com.eco.bio7.image.CanvasView"
+            class="com.eco.bio7.image.ui.CanvasView"
             icon="pics/imagejview.png"
             id="com.eco.bio7.imagej"
             name="ImageJ-Canvas"/>
@@ -19,14 +19,14 @@
       <view
             allowMultiple="true"
             category="com.eco.bio7.image.plugin"
-            class="com.eco.bio7.image.IJtoolbar"
+            class="com.eco.bio7.image.ui.IJtoolbar"
             icon="pics/imagejview.png"
             id="com.eco.bio7.ijtoolbar"
             name="ImageJ-Toolbar"/>
       <view
             allowMultiple="true"
             category="com.eco.bio7.image.plugin.extra"
-            class="com.eco.bio7.image.CustomDetachedImageJView"
+            class="com.eco.bio7.image.ui.CustomDetachedImageJView"
             icon="pics/imagejview.png"
             id="com.eco.bio7.image.detachedImage"
             name="Image"
@@ -60,7 +60,7 @@
    <extension
          point="org.eclipse.ui.editors">
       <editor
-            class="com.eco.bio7.image.ImageJBio7OpenEditor"
+            class="com.eco.bio7.image.ui.ImageJBio7OpenEditor"
             contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
             default="true"
             extensions="jpg,jpeg,tif,tiff,TIF,TIFF,png,bmp,gif,avi,pnm,dcm,roi,pgm,pbm"

@@ -20,7 +20,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-import com.eco.bio7.image.CanvasView;
+import com.eco.bio7.image.ui.CanvasView;
 
 *//**
  * This class provides some static methods for the creation of

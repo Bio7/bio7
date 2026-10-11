@@ -15,7 +15,7 @@ import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.ui.part.ViewPart;
 
-import com.eco.bio7.image.Util;
+import com.eco.bio7.util.Util;
 import com.eco.bio7.rbridge.RFunctions;
 
 import org.eclipse.swt.events.ExpandAdapter;

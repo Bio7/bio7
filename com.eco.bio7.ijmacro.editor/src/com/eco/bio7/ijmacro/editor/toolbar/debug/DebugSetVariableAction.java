@@ -18,7 +18,7 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Shell;
 
 import com.eco.bio7.ijmacro.editor.IJMacroEditorPlugin;
-import com.eco.bio7.image.Util;
+import com.eco.bio7.util.Util;
 
 import ij.macro.Interpreter;
 

@@ -61,7 +61,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.rosuda.REngine.Rserve.RConnection;
 
-import com.eco.bio7.image.Util;
+import com.eco.bio7.util.Util;
 import com.eco.bio7.worldwind.swt.NewtInputHandlerSWT;
 import com.eco.bio7.worldwind.swt.StatusBar;
 import com.eco.bio7.worldwind.swt.WorldWindowNewtAutoDrawableSWT;

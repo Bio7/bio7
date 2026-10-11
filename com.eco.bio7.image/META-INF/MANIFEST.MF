@@ -5,10 +5,11 @@ Bundle-ManifestVersion: 2
 Bundle-Name: ImageJ Plug-in
 Bundle-SymbolicName: com.eco.bio7.image;singleton:=true
 Bundle-Version: 1.54.196
-Bundle-Activator: com.eco.bio7.image.Activator
+Bundle-Activator: com.eco.bio7.image.ui.Activator
 Bundle-Vendor: ECO
 Bundle-Localization: plugin
 Eclipse-BuddyPolicy: ext
+Eclipse-RegisterBuddy: org.eclipse.swt.imagej
 Eclipse-BundleShape: dir
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
@@ -22,28 +23,15 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.e4.core.contexts,
  org.eclipse.swt,
  org.eclipse.jdt.ui,
- org.eclipse.text
+ org.eclipse.text,
+ com.eco.bio7.util,
+ org.eclipse.swt.imagej;bundle-version="0.7.0";visibility:=reexport
 Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Bundle-ClassPath: bin/,
- commons-io-1.4.jar,
- external:$java.home$/lib/tools.jar
-Export-Package: .,
- com.eco.bio7.ImageJPluginActions,
- com.eco.bio7.image,
- com.eco.bio7.image.thumbs,
- ij,
- ij.gui,
- ij.io,
- ij.macro,
- ij.measure,
- ij.plugin,
- ij.plugin.filter,
- ij.plugin.frame,
- ij.plugin.tool,
- ij.process,
- ij.text,
- ij.util
+ commons-io-1.4.jar
+Export-Package: com.eco.bio7.ImageJPluginActions,
+ com.eco.bio7.image.ui,
+ com.eco.bio7.image.thumbs
 Bundle-ActivationPolicy: lazy
-Import-Package: ij.gui
 
