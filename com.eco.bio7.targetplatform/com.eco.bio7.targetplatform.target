@@ -129,7 +129,7 @@
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<!-- SWTImageJ (branch bio7-host-hooks) built locally with "mvn verify". Replace with the published SWTImageJ update site when available! -->
-		<repository location="file:${system_property:user.home}/git/SWTImageJ/org.eclipse.swt.imagej.updatesite/target/repository"/>
+		<repository location="file:/Users/marcel/git/SWTImageJ/org.eclipse.swt.imagej.updatesite/target/repository"/>
 		<unit id="org.eclipse.swt.imagej.feature.feature.group" version="0.0.0"/>
 	</location>
 </locations>
