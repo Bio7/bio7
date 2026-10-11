@@ -1,5 +1,7 @@
 /*
  * package com.eco.bio7.image;
+
+import com.eco.bio7.image.ui.CanvasView;
  * 
  * import org.eclipse.ui.IFolderLayout; import org.eclipse.ui.IPageLayout;
  * import org.eclipse.ui.IPerspectiveFactory; import

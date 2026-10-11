@@ -379,12 +379,59 @@ public class Bio7Grid {
 			display.syncExec(new Runnable() {
 				public void run() {
 					GridItem item = grid.getItem(row);
+					Image old = item.getImage(column);
+					if (old == image) {
+						return;
+					}
 					item.setImage(column, image);
-
+					retainImage(item, image);
+					releaseImage(old);
 				}
 			});
 		}
 
+	}
+
+	/*
+	 * The grid owns the images set with setImage (e.g. created with toSWTImage). An
+	 * image is disposed if no cell uses it anymore (replaced or row removed)!
+	 */
+	private static final java.util.Map<Image, Integer> imageReferences = new java.util.HashMap<Image, Integer>();
+
+	private static final String IMAGES_RELEASED = "com.eco.bio7.grid.imagesReleased";
+
+	private static void retainImage(GridItem item, Image image) {
+		if (image == null) {
+			return;
+		}
+		imageReferences.merge(image, 1, Integer::sum);
+		if (item.getData(IMAGES_RELEASED) == null) {
+			item.setData(IMAGES_RELEASED, Boolean.TRUE);
+			item.addDisposeListener(e -> {
+				for (int i = 0; i < item.getParent().getColumnCount(); i++) {
+					releaseImage(item.getImage(i));
+				}
+			});
+		}
+	}
+
+	private static void releaseImage(Image image) {
+		if (image == null) {
+			return;
+		}
+		Integer count = imageReferences.get(image);
+		if (count == null) {
+			/* Not set by this class (owned by the caller)! */
+			return;
+		}
+		if (count > 1) {
+			imageReferences.put(image, count - 1);
+		} else {
+			imageReferences.remove(image);
+			if (!image.isDisposed()) {
+				image.dispose();
+			}
+		}
 	}
 
 	private static ImageData convertToSWT(BufferedImage bufferedImage) {
@@ -436,11 +483,17 @@ public class Bio7Grid {
 	 * 
 	 * @param bufferedImage
 	 *            the image.
-	 * @return returns a SWT image.
+	 * @return returns a SWT image. If the image is set in the grid with
+	 *         setImage(...) it is disposed by the grid, else it must be disposed by
+	 *         the caller.
 	 */
 	public static Image toSWTImage(BufferedImage bufferedImage) {
-
-		return new Image(Display.getCurrent(), convertToSWT(bufferedImage));
+		/* Scripts run outside the SWT thread (Display.getCurrent() is null there)! */
+		Display display = PlatformUI.getWorkbench().getDisplay();
+		ImageData data = convertToSWT(bufferedImage);
+		Image[] image = new Image[1];
+		display.syncExec(() -> image[0] = new Image(display, data));
+		return image[0];
 	}
 
 }

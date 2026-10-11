@@ -1,5 +1,7 @@
 package com.eco.bio7.image;
 
+import com.eco.bio7.image.ui.CanvasView;
+
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;

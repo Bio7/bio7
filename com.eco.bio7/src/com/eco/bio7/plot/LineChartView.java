@@ -16,7 +16,7 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.jfree.chart.plot.Plot;
-import com.eco.bio7.image.Util;
+import com.eco.bio7.image.ui.Util;
 
 public class LineChartView extends ViewPart {
 	public static final String ID = "com.eco.bio7.linechart";

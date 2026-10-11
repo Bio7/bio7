@@ -24,7 +24,7 @@ import org.eclipse.ui.ide.IDE;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.actions.ToolbarCreateProjectAndFiles;
-import com.eco.bio7.image.Activator;
+import com.eco.bio7.image.ui.Activator;
 import com.eco.bio7.util.Bio7Dialog;
 import com.eco.bio7.util.Util;
 

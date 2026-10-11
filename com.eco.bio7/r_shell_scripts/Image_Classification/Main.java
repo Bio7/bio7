@@ -37,7 +37,7 @@ import com.eco.bio7.batch.FileRoot;
 import com.eco.bio7.collection.CustomView;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.image.RImageMethodsView;
-import com.eco.bio7.image.Util;
+import com.eco.bio7.util.Util;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
 import Catalano.Imaging.FastBitmap;

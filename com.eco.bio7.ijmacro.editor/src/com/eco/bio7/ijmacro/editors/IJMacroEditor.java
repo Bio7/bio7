@@ -112,8 +112,8 @@ import com.eco.bio7.ijmacro.editor.outline.IJMacroEditorLabelProvider;
 import com.eco.bio7.ijmacro.editor.outline.IJMacroEditorOutlineNode;
 import com.eco.bio7.ijmacro.editor.outline.IJMacroEditorTreeContentProvider;
 import com.eco.bio7.ijmacro.editor.toolbar.debug.DebugVariablesView;
-import com.eco.bio7.image.CanvasView;
-import com.eco.bio7.image.Util;
+import com.eco.bio7.image.ui.CanvasView;
+import com.eco.bio7.util.Util;
 
 import ij.IJ;
 import ij.WindowManager;
@@ -128,6 +128,10 @@ import ij.text.TextWindow;
  * 
  */
 public class IJMacroEditor extends TextEditor implements IPropertyChangeListener, Debugger {
+
+	/* Bio7 debug mode (not available in the ImageJ Debugger interface)! */
+	public static final int RUN_TO_EXPRESSION = 6;
+
 
 	private static final String TEMPLATE_PROPOSALS = "template_proposals_action";
 

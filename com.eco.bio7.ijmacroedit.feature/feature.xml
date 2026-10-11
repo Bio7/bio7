@@ -231,6 +231,7 @@ litigation.
       <import plugin="org.eclipse.ui.ide" version="3.13.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.core.resources" version="3.12.0" match="greaterOrEqual"/>
       <import plugin="com.eco.bio7.image"/>
+      <import plugin="com.eco.bio7.util"/>
       <import plugin="org.eclipse.ui.views"/>
    </requires>
 

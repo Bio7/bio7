@@ -31,7 +31,7 @@ import org.eclipse.swt.widgets.Display;
 public class Thumbnail extends Figure implements UpdateListener {
     
     // Bug on Mac - images are cached
-    private static final boolean useMacFix = Util.isMac() && com.eco.bio7.image.Util.compareOSVersion("10.14") >= 0;;
+    private static final boolean useMacFix = Util.isMac() && com.eco.bio7.image.ui.Util.compareOSVersion("10.14") >= 0;;
     
     
     // Hack for Mac Mojave drawing issue

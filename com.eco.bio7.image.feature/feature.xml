@@ -117,6 +117,10 @@ This Agreement is governed by the laws of the State of New York and the intellec
       <discovery label="Bio7 Website" url="http://bio7.org"/>
    </url>
 
+   <includes
+         id="org.eclipse.swt.imagej.feature"
+         version="0.0.0"/>
+
    <requires>
       <import plugin="org.eclipse.ui"/>
       <import plugin="org.eclipse.core.runtime"/>
@@ -132,6 +136,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
       <import plugin="org.eclipse.swt"/>
       <import plugin="org.eclipse.jdt.ui"/>
       <import plugin="org.eclipse.text"/>
+      <import plugin="com.eco.bio7.util"/>
    </requires>
 
    <plugin

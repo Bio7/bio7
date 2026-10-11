@@ -33,7 +33,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PlatformUI;
 
-import com.eco.bio7.image.Util;
+import com.eco.bio7.image.ui.Util;
 
 public class ImageJPluginsAction extends Action implements IMenuCreator {
 
@@ -197,7 +197,7 @@ public class ImageJPluginsAction extends Action implements IMenuCreator {
 		Display display = PlatformUI.getWorkbench().getDisplay();
 		display.syncExec(new Runnable() {
 			public void run() {
-				MessageBox messageBox = new MessageBox(com.eco.bio7.image.Util.getShell(),
+				MessageBox messageBox = new MessageBox(com.eco.bio7.image.ui.Util.getShell(),
 
 						SWT.ICON_WARNING);
 				messageBox.setText("Info!");

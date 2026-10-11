@@ -37,7 +37,7 @@ import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.image.Util;
+import com.eco.bio7.util.Util;
 import com.eco.bio7.jobs.LoadData;
 import com.eco.bio7.methods.CurrentStates;
 import com.eco.bio7.rbridge.RServe;

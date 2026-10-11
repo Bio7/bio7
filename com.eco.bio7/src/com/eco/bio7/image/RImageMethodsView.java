@@ -11,6 +11,8 @@
 
 package com.eco.bio7.image;
 
+import com.eco.bio7.image.ui.CanvasView;
+
 import java.awt.image.BufferedImage;
 
 import org.eclipse.core.runtime.IProgressMonitor;

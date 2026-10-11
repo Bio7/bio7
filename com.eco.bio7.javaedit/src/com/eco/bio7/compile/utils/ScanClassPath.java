@@ -16,6 +16,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import org.eclipse.core.runtime.FileLocator;
@@ -33,6 +35,8 @@ import org.osgi.framework.Constants;
 import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 
 public class ScanClassPath {
+
+	private static final String IMAGEJ_BUNDLE = "org.eclipse.swt.imagej";
 
 	private String pathBundle;
 	String[] bundles = new String[] { "com.eco.bio7", "com.eco.bio7.libs", "com.eco.bio7.javaedit",
@@ -241,6 +245,11 @@ public class ScanClassPath {
 		// buf.append(File.pathSeparator+Platform.getInstallLocation().getURL().getPath()+"/plugins/org.eclipse.core.commands_3.6.0.I20110111-0800.jar");
 		// System.out.println(buf.toString());
 
+		/* The ImageJ classes (SWTImageJ bundle)! */
+		for (String[] lib : getImageJLibraries()) {
+			buf.append(pathseparator + lib[0]);
+		}
+
 		String classpaths = buf.toString();
 		/* We have to format the classpath for the dynamic compilation! */
 		classpaths = classpaths.replace(";/", "");
@@ -401,6 +410,8 @@ public class ScanClassPath {
 		buf.add(pathseparator + bundlePaths.get(3) + "/bin");
 		buf.add(pathseparator + bundlePaths.get(4) + "/bin");
 		buf.add(pathseparator + bundlePaths.get(6) + "/bin");
+		/* The ImageJ classes (SWTImageJ bundle) are added at the end (see below)! */
+		List<String[]> imageJLibs = getImageJLibraries();
 		String modulePath = store.getString("JAVA_MODULES_PATH");
 		modulePath = modulePath.replace(";", "");
 
@@ -507,7 +518,57 @@ public class ScanClassPath {
 			}
 		}
 
-		return entries;
+		/* Add the ImageJ classes (SWTImageJ bundle) with the sources if available! */
+		List<IClasspathEntry> all = new ArrayList<IClasspathEntry>(Arrays.asList(entries));
+		for (String[] lib : imageJLibs) {
+			all.add(JavaCore.newLibraryEntry(new Path(lib[0]), lib[1] != null ? new Path(lib[1]) : null, null, false));
+		}
+		return all.toArray(new IClasspathEntry[0]);
+	}
+
+	/*
+	 * Returns the class folders or jar of the SWTImageJ bundle as {path, source
+	 * path or null}. The bundle is a jar (target platform, exported RCP) or a
+	 * project folder (workspace in development mode)!
+	 */
+	private List<String[]> getImageJLibraries() {
+		List<String[]> libs = new ArrayList<String[]>();
+		Bundle bundle = Platform.getBundle(IMAGEJ_BUNDLE);
+		if (bundle == null) {
+			return libs;
+		}
+		File file;
+		try {
+			file = FileLocator.getBundleFile(bundle);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return libs;
+		}
+		if (file.isDirectory()) {
+			File src = new File(file, "src");
+			String srcPath = src.isDirectory() ? src.getAbsolutePath() : null;
+			for (String folder : new String[] { "bin", "target/classes" }) {
+				File dir = new File(file, folder);
+				if (dir.isDirectory()) {
+					libs.add(new String[] { dir.getAbsolutePath(), srcPath });
+				}
+			}
+			if (libs.isEmpty()) {
+				libs.add(new String[] { file.getAbsolutePath(), srcPath });
+			}
+		} else {
+			String srcPath = null;
+			Bundle source = Platform.getBundle(IMAGEJ_BUNDLE + ".source");
+			if (source != null) {
+				try {
+					srcPath = FileLocator.getBundleFile(source).getAbsolutePath();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			libs.add(new String[] { file.getAbsolutePath(), srcPath });
+		}
+		return libs;
 	}
 
 	public boolean isaarch64() {

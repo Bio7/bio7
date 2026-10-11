@@ -1,5 +1,7 @@
 package com.eco.bio7.image;
 
+import com.eco.bio7.image.ui.CanvasView;
+
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.Roi;
@@ -172,12 +174,12 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 
 								public void run() {
 									title = items[count].getText();
-									Vector<?> ve = (Vector<?>) items[count].getData();
+									imp = com.eco.bio7.image.ui.IJTabs.getImagePlus(items[count]);
 									/*
 									 * More secure to use the ImagePlus from the
 									 * tabs!
 									 */
-									imp = (ImagePlus) ve.get(0);
+									
 								}
 							});
 							// ImagePlus imp = WindowManager.getImage(title);

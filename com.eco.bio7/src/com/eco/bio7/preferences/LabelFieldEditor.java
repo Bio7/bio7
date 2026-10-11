@@ -7,7 +7,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
-import com.eco.bio7.image.Util;
+import com.eco.bio7.util.Util;
 
 class LabelFieldEditor extends FieldEditor {
 

@@ -8,8 +8,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
-import com.eco.bio7.image.Activator;
-import com.eco.bio7.image.Util;
+import com.eco.bio7.image.ui.Activator;
+import com.eco.bio7.image.ui.Util;
 
 import ij.Menus;
 
@@ -41,25 +41,8 @@ public class Bio7ImageJPreferences extends FieldEditorPreferencePage implements 
 
 		addField(new DirectoryFieldEditor("PLUGINS_PATH", "&Plugins Path", getFieldEditorParent()));
 
-		addField(new DirectoryFieldEditor("MACROS_PATH", "&Macros Path", getFieldEditorParent()));
-
-		addField(new SpacerFieldEditor(getFieldEditorParent()));
-
-		addField(new BooleanFieldEditor("ROI_MANAGER", "&ROI Manager window on top", getFieldEditorParent()));
-
-		addField(new BooleanFieldEditor("RESULTS_TABLE", "&Results Table window on top", getFieldEditorParent()));
-
-		addField(new BooleanFieldEditor("MACRO_RECORDER", "&Macro Recorder window on top", getFieldEditorParent()));
-		{
-
-			IntegerFieldEditor integerFieldEditor = new IntegerFieldEditor("FONT_SIZE_CORRECTION", "Fontsize correction (Restart necessary)", getFieldEditorParent());
-			integerFieldEditor.setValidRange(-50, 50);
-			addField(integerFieldEditor);
-		}
-
-		addField(new BooleanFieldEditor("FONT_ANTIALIASED", "Antialiased Fonts", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
-
-		addField(new BooleanFieldEditor("MAC_MENU_ENABLED", "Enable ImageJ Menu on MacOSX", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		/* SWTImageJ loads the macros from the folder 'macros' next to the plugins folder! */
+		addField(new LabelFieldEditor("Macros are loaded from the 'macros' folder next to the plugins folder (restart necessary).", getFieldEditorParent()));
 
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new LabelFieldEditor("Image Methods Dialog Size:", getFieldEditorParent()));

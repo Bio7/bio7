@@ -130,8 +130,7 @@ import com.eco.bio7.compile.PythonInterpreter;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.compile.utils.ScanClassPath;
 import com.eco.bio7.console.ConsolePageParticipant;
-import com.eco.bio7.image.Bio7LinuxTheme;
-import com.eco.bio7.image.CanvasView;
+import com.eco.bio7.image.ui.CanvasView;
 import com.eco.bio7.jobs.LoadData;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.preferences.RServePlotPrefs;
@@ -990,7 +989,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	}
 
 	private void setComponentFont() {
-		IPreferenceStore store = com.eco.bio7.image.Activator.getDefault().getPreferenceStore();
+		IPreferenceStore store = com.eco.bio7.image.ui.Activator.getDefault().getPreferenceStore();
 		boolean antialiasedFonts = false;
 		antialiasedFonts = store.getBoolean("FONT_ANTIALIASED");
 		if (antialiasedFonts) {
@@ -1138,7 +1137,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 			} else {
 
-				MetalTheme theme = new com.eco.bio7.image.Bio7LinuxTheme();
+				MetalTheme theme = new com.eco.bio7.rcp.Bio7LinuxTheme();
 				/* Do not load twice in the ImageJ plugin! */
 				Bio7LinuxTheme.setSet(true);
 				MetalLookAndFeel.setCurrentTheme(theme);
@@ -1324,6 +1323,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		// *************************************************
 		/* Set the Bio7-Toobar menu in the ImageJ plugin! */
 		ImageJWindowAction.setBio7RCP(true);
+		/* Register Bio7 as the SWTImageJ host (images are displayed in the ImageJ-Canvas view)! */
+		com.eco.bio7.image.ui.Bio7ImageJ.install();
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
 		try {
 

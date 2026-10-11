@@ -145,7 +145,7 @@ import org.rosuda.REngine.Rserve.RserveException;
 
 import worldw.Activator;
 
-import com.eco.bio7.image.CanvasView;
+import com.eco.bio7.image.ui.CanvasView;
 import com.eco.bio7.util.Util;
 import com.eco.bio7.worldwind.swt.WorldWindowNewtCanvasSWT;
 import com.swtdesigner.SWTResourceManager;

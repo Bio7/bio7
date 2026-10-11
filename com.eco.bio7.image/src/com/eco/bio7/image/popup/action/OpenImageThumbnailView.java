@@ -10,7 +10,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
-import com.eco.bio7.image.Util;
+import com.eco.bio7.image.ui.Util;
 import com.eco.bio7.image.thumbs.ThumbnailAction;
 
 public class OpenImageThumbnailView extends Action implements IObjectActionDelegate {

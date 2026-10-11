@@ -15,7 +15,6 @@ package com.eco.bio7.rbridge;
 
 import ij.io.Opener;
 
-import java.awt.EventQueue;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -23,7 +22,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
 
-import javax.swing.SwingUtilities;
 
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.FileLocator;
@@ -198,8 +196,9 @@ public class PlotJob extends WorkspaceJob {
 
 			final File pathfinal = new File(finalpath);
 
-			if (com.eco.bio7.image.CanvasView.getCanvas_view() != null) {
-				SwingUtilities.invokeLater(new Runnable() {
+			if (com.eco.bio7.image.ui.CanvasView.getCanvas_view() != null) {
+				/* Not in the AWT event thread. SWTImageJ uses the SWT thread for the GUI! */
+				new Thread(new Runnable() {
 					public void run() {
 
 						Opener o = new Opener();
@@ -207,7 +206,7 @@ public class PlotJob extends WorkspaceJob {
 						o.open(pathfinal.toString());
 
 					}
-				});
+				}).start();
 			} else {
 				MessageDialog.openWarning(new Shell(), "ImageJ", "You probably closed all ImageJ-Views");
 
@@ -253,8 +252,9 @@ public class PlotJob extends WorkspaceJob {
 
 			final File pathfinal = new File(finalpath);
 
-			if (com.eco.bio7.image.CanvasView.getCanvas_view() != null) {
-				EventQueue.invokeLater(new Runnable() {
+			if (com.eco.bio7.image.ui.CanvasView.getCanvas_view() != null) {
+				/* Not in the AWT event thread. SWTImageJ uses the SWT thread for the GUI! */
+				new Thread(new Runnable() {
 					public void run() {
 
 						Opener o = new Opener();
@@ -262,7 +262,7 @@ public class PlotJob extends WorkspaceJob {
 						o.open(pathfinal.toString());
 
 					}
-				});
+				}).start();
 			} else {
 				MessageDialog.openWarning(new Shell(), "ImageJ", "You probably closed all ImageJ-Views");
 
