@@ -13,7 +13,9 @@
 package com.eco.bio7.image.ui;
 
 import java.io.File;
+import java.io.IOException;
 
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabItem;
@@ -25,11 +27,14 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.osgi.framework.Bundle;
 
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImageListener;
 import ij.ImagePlus;
+import ij.Menus;
+import ij.Prefs;
 import ij.gui.ImageWindow;
 import ij.swt.ImageJHost;
 
@@ -46,6 +51,11 @@ public class Bio7ImageJ implements ImageJHost, ImageListener {
 
 	private static Bio7ImageJ instance;
 
+	/* See ij.plugin.Compiler! */
+	private static final String COMPILER_TARGET_KEY = "javac.target";
+
+	private static final int COMPILER_TARGET = 25;
+
 	private Bio7ImageJ() {
 	}
 
@@ -59,6 +69,7 @@ public class Bio7ImageJ implements ImageJHost, ImageListener {
 		}
 		instance = new Bio7ImageJ();
 		setPluginsDirectory();
+		addBundlesToCompilerClassPath();
 		IJ.setHost(instance);
 		ImagePlus.addImageListener(instance);
 		/* F2 displays the current image in fullscreen mode (ESC closes it)! */
@@ -67,6 +78,7 @@ public class Bio7ImageJ implements ImageJHost, ImageListener {
 			/* The ImageJ shell is never shown. Bio7 displays toolbar and menus! */
 			new ImageJ(ImageJ.NO_SHOW);
 		}
+		setCompilerTarget();
 	}
 
 	/*
@@ -83,6 +95,55 @@ public class Bio7ImageJ implements ImageJHost, ImageListener {
 			System.setProperty("plugins.dir", plugins.getParentFile().getAbsolutePath());
 		} else {
 			System.setProperty("plugins.dir", Util.getImageJPath());
+		}
+	}
+
+	/*
+	 * Plugins are compiled for Java 25 by default (SWTImageJ uses Java 8). The
+	 * preference must be set after ImageJ has loaded the preferences and before
+	 * the compiler class is loaded. A target selected in "Compile and Run" options
+	 * (other than the old default 8) is kept!
+	 */
+	private static void setCompilerTarget() {
+		int target = (int) Prefs.get(COMPILER_TARGET_KEY, 0);
+		if (target == 0 || target == 8) {
+			Prefs.set(COMPILER_TARGET_KEY, COMPILER_TARGET);
+		}
+	}
+
+	/*
+	 * The ImageJ compiler (Compile and Run, Script Explorer) uses the
+	 * "java.class.path" property which only contains the OSGi launcher. Add the
+	 * ImageJ, SWT and Bio7 image bundles so that plugins can be compiled!
+	 */
+	private static void addBundlesToCompilerClassPath() {
+		Bundle self = Activator.getDefault().getBundle();
+		for (Bundle bundle : self.getBundleContext().getBundles()) {
+			String name = bundle.getSymbolicName();
+			if (name == null || !(name.startsWith("org.eclipse.swt") || bundle == self)) {
+				continue;
+			}
+			try {
+				File file = FileLocator.getBundleFile(bundle);
+				if (file.isDirectory()) {
+					/* A bundle in the workspace (development) or an unpacked bundle! */
+					boolean classes = false;
+					for (String folder : new String[] { "bin", "target/classes" }) {
+						File dir = new File(file, folder);
+						if (dir.isDirectory()) {
+							Menus.addExtraClassPathDirectory(dir.getAbsolutePath());
+							classes = true;
+						}
+					}
+					if (!classes) {
+						Menus.addExtraClassPathDirectory(file.getAbsolutePath());
+					}
+				} else {
+					Menus.addExtraClassPathDirectory(file.getAbsolutePath());
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
