@@ -13,8 +13,11 @@
 
 package com.eco.bio7.image.ui;
 
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.part.ViewPart;
 
 import ij.IJ;
@@ -45,6 +48,8 @@ public class IJtoolbar extends ViewPart {
 		ijComposite = ij.getComposite();
 		ijComposite.setParent(parent);
 		parent.layout(true, true);
+		/* The CSS theme is applied to the view after creation! */
+		parent.getDisplay().asyncExec(() -> applyThemeColors(parent));
 		/* The dispose event is sent before the children are disposed! */
 		parent.addDisposeListener(e -> {
 			if (ijComposite != null && !ijComposite.isDisposed() && ij.getShell() != null && !ij.getShell().isDisposed()) {
@@ -55,7 +60,41 @@ public class IJtoolbar extends ViewPart {
 
 	public void setFocus() {
 		if (ijComposite != null && !ijComposite.isDisposed()) {
+			applyThemeColors(ijComposite.getParent());
 			ijComposite.setFocus();
+		}
+	}
+
+	/*
+	 * The ImageJ toolbar uses the colors of its control. Apply the colors of the
+	 * (themed) view, e.g., for the Bio7 dark theme!
+	 */
+	private void applyThemeColors(Composite parent) {
+		if (parent.isDisposed() || ijComposite == null || ijComposite.isDisposed()) {
+			return;
+		}
+		Color background = parent.getBackground();
+		Color foreground = parent.getForeground();
+		RGB b = background.getRGB();
+		boolean darkBackground = (0.299 * b.red + 0.587 * b.green + 0.114 * b.blue) < 128;
+		if (Util.isThemeBlack() && !darkBackground) {
+			/* The view is not styled (yet). Use dark default colors! */
+			background = new Color(47, 47, 47);
+			foreground = new Color(220, 220, 220);
+		}
+		setColors(ijComposite, background, foreground);
+		ijComposite.redraw();
+		ijComposite.update();
+	}
+
+	private static void setColors(Control control, Color background, Color foreground) {
+		control.setBackground(background);
+		control.setForeground(foreground);
+		control.redraw();
+		if (control instanceof Composite) {
+			for (Control child : ((Composite) control).getChildren()) {
+				setColors(child, background, foreground);
+			}
 		}
 	}
 
