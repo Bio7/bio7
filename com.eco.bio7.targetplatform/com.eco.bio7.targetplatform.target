@@ -128,8 +128,7 @@
 		<unit id="org.eclipse.tm.terminal.connector.remote.feature.source.feature.group" version="12.3.0.202512020204"/>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-		<!-- SWTImageJ (branch bio7-host-hooks) built locally with "mvn verify". Replace with the published SWTImageJ update site when available! -->
-		<repository location="file:/Users/marcel/git/SWTImageJ-bio7hooks/org.eclipse.swt.imagej.updatesite/target/repository"/>
+		<repository location="https://download.eclipse.org/swtimagej/integration/repository/"/>
 		<unit id="org.eclipse.swt.imagej.feature.feature.group" version="0.0.0"/>
 	</location>
 </locations>
