@@ -13,6 +13,15 @@
 
 package com.eco.bio7.image.ui;
 
+import java.util.List;
+
+import org.eclipse.e4.ui.model.application.ui.MUIElement;
+import org.eclipse.e4.ui.model.application.ui.basic.MPart;
+import org.eclipse.e4.ui.model.application.ui.basic.MPartSashContainer;
+import org.eclipse.e4.ui.model.application.ui.basic.MPartSashContainerElement;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FillLayout;
@@ -50,6 +59,17 @@ public class IJtoolbar extends ViewPart {
 		parent.layout(true, true);
 		/* The CSS theme is applied to the view after creation! */
 		parent.getDisplay().asyncExec(() -> applyThemeColors(parent));
+		/* Enlarge the view once if the toolbar, status line and progress bar don't fit! */
+		parent.addControlListener(new ControlAdapter() {
+			@Override
+			public void controlResized(ControlEvent e) {
+				if (parent.getClientArea().height <= 0) {
+					return;
+				}
+				parent.removeControlListener(this);
+				parent.getDisplay().asyncExec(() -> ensureToolbarHeight(parent));
+			}
+		});
 		/* The dispose event is sent before the children are disposed! */
 		parent.addDisposeListener(e -> {
 			if (ijComposite != null && !ijComposite.isDisposed() && ij.getShell() != null && !ij.getShell().isDisposed()) {
@@ -85,6 +105,68 @@ public class IJtoolbar extends ViewPart {
 		setColors(ijComposite, background, foreground);
 		ijComposite.redraw();
 		ijComposite.update();
+	}
+
+	/*
+	 * Increases the weight of the part stack of this view in its (vertical) sash
+	 * container so that the complete ImageJ toolbar is visible.
+	 */
+	private void ensureToolbarHeight(Composite parent) {
+		if (parent.isDisposed() || ijComposite == null || ijComposite.isDisposed()) {
+			return;
+		}
+		int width = parent.getClientArea().width;
+		int needed = ijComposite.computeSize(width > 0 ? width : SWT.DEFAULT, SWT.DEFAULT).y;
+		int missing = needed - parent.getClientArea().height;
+		if (missing <= 0) {
+			return;
+		}
+		MPart part = getSite().getService(MPart.class);
+		if (part == null) {
+			return;
+		}
+		MUIElement element = part.getCurSharedRef() != null ? part.getCurSharedRef() : part;
+		/* The part is in a part stack which is a child of a sash container! */
+		MUIElement stack = element.getParent();
+		Object container = stack != null ? stack.getParent() : null;
+		if (!(container instanceof MPartSashContainer)) {
+			return;
+		}
+		MPartSashContainer sash = (MPartSashContainer) container;
+		if (sash.isHorizontal() || !(stack.getWidget() instanceof Control)) {
+			return;
+		}
+		List<MPartSashContainerElement> children = sash.getChildren();
+		int sashHeight = 0;
+		double otherWeights = 0;
+		for (MUIElement child : children) {
+			if (!child.isToBeRendered() || !child.isVisible() || !(child.getWidget() instanceof Control)) {
+				continue;
+			}
+			sashHeight += ((Control) child.getWidget()).getSize().y;
+			if (child != stack) {
+				otherWeights += weight(child);
+			}
+		}
+		int stackHeight = ((Control) stack.getWidget()).getSize().y;
+		if (sashHeight <= 0 || otherWeights <= 0) {
+			return;
+		}
+		double fraction = (double) (stackHeight + missing) / sashHeight;
+		if (fraction >= 0.9) {
+			/* The window is too small. Don't hide the other views! */
+			return;
+		}
+		double newWeight = fraction * otherWeights / (1 - fraction);
+		stack.setContainerData(Integer.toString((int) Math.ceil(newWeight)));
+	}
+
+	private static double weight(MUIElement element) {
+		try {
+			return Double.parseDouble(element.getContainerData());
+		} catch (NumberFormatException | NullPointerException e) {
+			return 0;
+		}
 	}
 
 	private static void setColors(Control control, Color background, Color foreground) {

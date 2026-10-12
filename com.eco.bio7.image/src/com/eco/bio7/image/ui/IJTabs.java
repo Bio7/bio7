@@ -68,6 +68,18 @@ public class IJTabs {
 	}
 
 	/**
+	 * Returns the title of the image displayed in the given tab. The tab text can
+	 * differ (e.g., it contains the zoom factor).
+	 *
+	 * @param item a tab of the ImageJ view.
+	 * @return the image title or the tab text if the tab displays no image.
+	 */
+	public static String getImageTitle(CTabItem item) {
+		ImagePlus imp = getImagePlus(item);
+		return imp != null ? imp.getTitle() : item.getText();
+	}
+
+	/**
 	 * Returns the image window displayed in the given tab.
 	 *
 	 * @param item a tab of the ImageJ view.

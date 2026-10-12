@@ -36,6 +36,7 @@ import ij.ImagePlus;
 import ij.Menus;
 import ij.Prefs;
 import ij.gui.ImageWindow;
+import ij.swt.CodeEditors;
 import ij.swt.ImageJHost;
 
 /**
@@ -71,6 +72,8 @@ public class Bio7ImageJ implements ImageJHost, ImageListener {
 		setPluginsDirectory();
 		addBundlesToCompilerClassPath();
 		IJ.setHost(instance);
+		/* SWTImageJ tools (e.g., an assistant) can read and write the workbench editors! */
+		CodeEditors.addProvider(new WorkbenchCodeEditors());
 		ImagePlus.addImageListener(instance);
 		/* F2 displays the current image in fullscreen mode (ESC closes it)! */
 		Util.getDisplay().addFilter(SWT.KeyDown, Fullscreen.KEY_FILTER);

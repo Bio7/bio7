@@ -24,6 +24,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.swt,
  org.eclipse.jdt.ui,
  org.eclipse.text,
+ org.eclipse.jface.text,
+ org.eclipse.ui.workbench.texteditor,
  com.eco.bio7.util,
  org.eclipse.swt.imagej;bundle-version="0.7.0";visibility:=reexport
 Eclipse-LazyStart: true
