@@ -1,6 +1,7 @@
 package com.eco.bio7.image;
 
 import com.eco.bio7.image.ui.CanvasView;
+import com.eco.bio7.image.ui.IJTabs;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -174,10 +175,12 @@ public class ClusterDialog extends Dialog {
 		list_1 = new List(container, SWT.V_SCROLL | SWT.MULTI | SWT.H_SCROLL | SWT.BORDER);
 		list_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 2));
 		CTabItem item = CanvasView.tabFolder.getSelection();
-		list_1.add(item.getText());
+		if (item != null) {
+			list_1.add(IJTabs.getImageTitle(item));
+		}
 		CTabItem[] items = CanvasView.getCanvas_view().tabFolder.getItems();
 		for (int i = 0; i < items.length; i++) {
-			String title = items[i].getText();
+			String title = IJTabs.getImageTitle(items[i]);
 			list.add(title, i);
 
 		}

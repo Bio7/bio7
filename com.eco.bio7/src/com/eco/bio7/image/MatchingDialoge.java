@@ -1,6 +1,7 @@
 package com.eco.bio7.image;
 
 import com.eco.bio7.image.ui.CanvasView;
+import com.eco.bio7.image.ui.IJTabs;
 
 import java.awt.Rectangle;
 
@@ -225,7 +226,7 @@ public class MatchingDialoge extends Dialog {
 		CTabItem[] items = CanvasView.getCanvas_view().tabFolder.getItems();
 		for (int i = 0; i < items.length; i++) {
 
-			combo.add(items[i].getText(), i);
+			combo.add(IJTabs.getImageTitle(items[i]), i);
 
 		}
 		

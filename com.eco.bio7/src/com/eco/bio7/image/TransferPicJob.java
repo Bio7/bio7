@@ -106,8 +106,8 @@ class TransferPicJob extends WorkspaceJob {
 				if (transferDataType == 0) {
 					/* From Float images we transfer the scaled values! */
 					if (ip instanceof DoubleProcessor) {
-						/* Double images: the exact values (pixels in row order)! */
-						pDouble = ((double[]) ip.getPixels()).clone();
+						/* Double images: the exact values (pixels in row order, not copied)! */
+						pDouble = (double[]) ip.getPixels();
 					} else if (ip instanceof FloatProcessor) {
 
 						pDouble = new double[w * h];
