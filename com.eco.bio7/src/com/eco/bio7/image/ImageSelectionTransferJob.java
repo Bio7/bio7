@@ -5,6 +5,7 @@ import com.eco.bio7.image.ui.CanvasView;
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.Roi;
+import ij.process.DoubleProcessor;
 import ij.process.ImageProcessor;
 
 import java.awt.Point;
@@ -300,7 +301,7 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 		ArrayList<Double> values = new ArrayList<Double>();
 		for (Point p : roi.getContainedPoints()) {
 
-			values.add(new Double(ip.getPixelValue(p.x, p.y)));
+			values.add(Double.valueOf(pixelValue(ip, p.x, p.y)));
 
 		}
 		return values;
@@ -411,4 +412,11 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 
 	}
 
+	/* The exact value of double images (getPixelValue() returns a float)! */
+	private static double pixelValue(ImageProcessor ip, int x, int y) {
+		if (ip instanceof DoubleProcessor) {
+			return ((DoubleProcessor) ip).getPixelValueDouble(x, y);
+		}
+		return ip.getPixelValue(x, y);
+	}
 }

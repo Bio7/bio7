@@ -13,6 +13,7 @@ package com.eco.bio7.image;
 
 import ij.ImagePlus;
 import ij.WindowManager;
+import ij.process.DoubleProcessor;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import org.eclipse.core.resources.WorkspaceJob;
@@ -104,7 +105,10 @@ class TransferPicJob extends WorkspaceJob {
 				/* Double transfer type */
 				if (transferDataType == 0) {
 					/* From Float images we transfer the scaled values! */
-					if (ip instanceof FloatProcessor) {
+					if (ip instanceof DoubleProcessor) {
+						/* Double images: the exact values (pixels in row order)! */
+						pDouble = ((double[]) ip.getPixels()).clone();
+					} else if (ip instanceof FloatProcessor) {
 
 						pDouble = new double[w * h];
 

@@ -14,6 +14,7 @@ package com.eco.bio7.image;
 import ij.ImagePlus;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
+import ij.process.DoubleProcessor;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
@@ -62,7 +63,7 @@ class PicFromRJob extends WorkspaceJob {
 	}
 	/*
 	   This method creates an ImageJ image from the given named data in R.
-       Image type: 0=ColourProcessor, 1=ByteProcessor, 2=FloatProcessor,3=ShortProcessor
+       Image type: 0=ColourProcessor, 1=ByteProcessor, 2=FloatProcessor,3=ShortProcessor, 4=DoubleProcessor
        Transfer typ: 0=Double, 1=Integer, 2=Byte.
     */
 
@@ -139,6 +140,17 @@ class PicFromRJob extends WorkspaceJob {
 										}
 									} else if (type == 2) {
 										ip = new FloatProcessor(matrix.length, matrix[0].length);
+										for (int i = 0; i < matrix.length; i++) {
+											for (int u = 0; u < matrix[0].length; u++) {
+												double value = (matrix[i][u]);
+												ip.putPixelValue(i, u, value);
+
+											}
+
+										}
+										ip.resetMinAndMax();
+									} else if (type == 4) {
+										ip = new DoubleProcessor(matrix.length, matrix[0].length);
 										for (int i = 0; i < matrix.length; i++) {
 											for (int u = 0; u < matrix[0].length; u++) {
 												double value = (matrix[i][u]);
@@ -229,6 +241,18 @@ class PicFromRJob extends WorkspaceJob {
 												}
 											} else if (type == 2) {
 												ip = new FloatProcessor(imagesSizeX, imagesSizeY);
+												for (int i = 0; i < imagesSizeY; i++) {
+
+													for (int u = 0; u < imagesSizeX; u++) {
+														double value = (imageData[i * imagesSizeX + u]);
+														ip.putPixelValue(u, i, value);
+
+													}
+
+												}
+												ip.resetMinAndMax();
+											} else if (type == 4) {
+												ip = new DoubleProcessor(imagesSizeX, imagesSizeY);
 												for (int i = 0; i < imagesSizeY; i++) {
 
 													for (int u = 0; u < imagesSizeX; u++) {
@@ -330,7 +354,19 @@ class PicFromRJob extends WorkspaceJob {
 
 												for (int u = 0; u < imagesSizeX; u++) {
 													int value = (imageData[i * imagesSizeX + u]);
-													ip.putPixel(u, i, value);
+													ip.putPixelValue(u, i, value);
+
+												}
+
+											}
+											ip.resetMinAndMax();
+										} else if (type == 4) {
+											ip = new DoubleProcessor(imagesSizeX, imagesSizeY);
+											for (int i = 0; i < imagesSizeY; i++) {
+
+												for (int u = 0; u < imagesSizeX; u++) {
+													int value = (imageData[i * imagesSizeX + u]);
+													ip.putPixelValue(u, i, value);
 
 												}
 
@@ -423,7 +459,19 @@ class PicFromRJob extends WorkspaceJob {
 
 													for (int u = 0; u < imagesSizeX; u++) {
 														int value = (imageData[i * imagesSizeX + u]);
-														ip.putPixel(u, i, value & 0xff);
+														ip.putPixelValue(u, i, value & 0xff);
+
+													}
+
+												}
+												ip.resetMinAndMax();
+											} else if (type == 4) {
+												ip = new DoubleProcessor(imagesSizeX, imagesSizeY);
+												for (int i = 0; i < imagesSizeY; i++) {
+
+													for (int u = 0; u < imagesSizeX; u++) {
+														int value = (imageData[i * imagesSizeX + u]);
+														ip.putPixelValue(u, i, value & 0xff);
 
 													}
 

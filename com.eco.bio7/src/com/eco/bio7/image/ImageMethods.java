@@ -23,6 +23,7 @@ import ij.gui.Roi;
 import ij.plugin.frame.RoiManager;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
+import ij.process.DoubleProcessor;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
@@ -97,7 +98,10 @@ public class ImageMethods {
 				/* Double transfer type */
 				if (transferDataType == 0) {
 					/* From Float images we transfer the scaled values! */
-					if (ip instanceof FloatProcessor) {
+					if (ip instanceof DoubleProcessor) {
+						/* Double images: the exact values (pixels in row order)! */
+						pDouble = ((double[]) ip.getPixels()).clone();
+					} else if (ip instanceof FloatProcessor) {
 
 						pDouble = new double[w * h];
 
@@ -299,7 +303,8 @@ public class ImageMethods {
 	 * 
 	 * @param type             an integer which represents an ImageJ image
 	 *                         type.(0=ColourProcessor, 1=ByteProcessor,
-	 *                         2=FloatProcessor, 3=ShortProcessor)
+	 *                         2=FloatProcessor, 3=ShortProcessor,
+	 *                         4=DoubleProcessor)
 	 * @param name             a string identifier for the R data.
 	 * 
 	 * @param transferDataType the data type as transfer type (0=double, 1=integer,
@@ -401,6 +406,17 @@ public class ImageMethods {
 
 										}
 										ip.resetMinAndMax();
+									} else if (type == 4) {
+										ip = new DoubleProcessor(matrix.length, matrix[0].length);
+										for (int i = 0; i < matrix.length; i++) {
+											for (int u = 0; u < matrix[0].length; u++) {
+												double value = (matrix[i][u]);
+												ip.putPixelValue(i, u, value);
+
+											}
+
+										}
+										ip.resetMinAndMax();
 									} else {
 										ip = new ShortProcessor(matrix.length, matrix[0].length);
 										for (int i = 0; i < matrix.length; i++) {
@@ -479,6 +495,18 @@ public class ImageMethods {
 												}
 											} else if (type == 2) {
 												ip = new FloatProcessor(imagesSizeX, imagesSizeY);
+												for (int i = 0; i < imagesSizeY; i++) {
+
+													for (int u = 0; u < imagesSizeX; u++) {
+														double value = (imageData[i * imagesSizeX + u]);
+														ip.putPixelValue(u, i, value);
+
+													}
+
+												}
+												ip.resetMinAndMax();
+											} else if (type == 4) {
+												ip = new DoubleProcessor(imagesSizeX, imagesSizeY);
 												for (int i = 0; i < imagesSizeY; i++) {
 
 													for (int u = 0; u < imagesSizeX; u++) {
@@ -582,7 +610,19 @@ public class ImageMethods {
 
 												for (int u = 0; u < imagesSizeX; u++) {
 													int value = (imageData[i * imagesSizeX + u]);
-													ip.putPixel(u, i, value);
+													ip.putPixelValue(u, i, value);
+
+												}
+
+											}
+											ip.resetMinAndMax();
+										} else if (type == 4) {
+											ip = new DoubleProcessor(imagesSizeX, imagesSizeY);
+											for (int i = 0; i < imagesSizeY; i++) {
+
+												for (int u = 0; u < imagesSizeX; u++) {
+													int value = (imageData[i * imagesSizeX + u]);
+													ip.putPixelValue(u, i, value);
 
 												}
 
@@ -678,7 +718,19 @@ public class ImageMethods {
 
 													for (int u = 0; u < imagesSizeX; u++) {
 														int value = (imageData[i * imagesSizeX + u]);
-														ip.putPixel(u, i, value & 0xff);
+														ip.putPixelValue(u, i, value & 0xff);
+
+													}
+
+												}
+												ip.resetMinAndMax();
+											} else if (type == 4) {
+												ip = new DoubleProcessor(imagesSizeX, imagesSizeY);
+												for (int i = 0; i < imagesSizeY; i++) {
+
+													for (int u = 0; u < imagesSizeX; u++) {
+														int value = (imageData[i * imagesSizeX + u]);
+														ip.putPixelValue(u, i, value & 0xff);
 
 													}
 
@@ -771,7 +823,10 @@ public class ImageMethods {
 				/* Double transfer type */
 				if (transferDataType == 0) {
 					/* From Float images we transfer the scaled values! */
-					if (ip instanceof FloatProcessor) {
+					if (ip instanceof DoubleProcessor) {
+						/* Double images: the exact values (pixels in row order)! */
+						pDouble = ((double[]) ip.getPixels()).clone();
+					} else if (ip instanceof FloatProcessor) {
 
 						pDouble = new double[w * h];
 
@@ -1210,7 +1265,10 @@ public class ImageMethods {
 					/* Double transfer type */
 					if (transferDataType == 0) {
 						/* From Float images we transfer the scaled values! */
-						if (ip instanceof FloatProcessor) {
+						if (ip instanceof DoubleProcessor) {
+							/* Double images: the exact values (pixels in row order)! */
+							pDouble = ((double[]) ip.getPixels()).clone();
+						} else if (ip instanceof FloatProcessor) {
 
 							pDouble = new double[w * h];
 
@@ -1623,7 +1681,7 @@ public class ImageMethods {
 		ArrayList<Double> values = new ArrayList<Double>();
 		for (Point p : roi.getContainedPoints()) {
 
-			values.add(Double.valueOf(ip.getPixelValue(p.x, p.y)));
+			values.add(Double.valueOf(pixelValue(ip, p.x, p.y)));
 		}
 		return values;
 	}
@@ -1666,4 +1724,11 @@ public class ImageMethods {
 
 	}
 
+	/* The exact value of double images (getPixelValue() returns a float)! */
+	private static double pixelValue(ImageProcessor ip, int x, int y) {
+		if (ip instanceof DoubleProcessor) {
+			return ((DoubleProcessor) ip).getPixelValueDouble(x, y);
+		}
+		return ip.getPixelValue(x, y);
+	}
 }

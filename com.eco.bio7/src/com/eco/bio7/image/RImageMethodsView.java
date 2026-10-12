@@ -626,6 +626,8 @@ public class RImageMethodsView extends ViewPart {
 								transferImageType = 2;
 							} else if (select == 3) {// Short type
 								transferImageType = 3;
+							} else if (select == 4) {// Double type
+								transferImageType = 4;
 							}
 							PicFromRJob picFromRJob = new PicFromRJob(transferImageType, imageMatrixNameFromR.getText(), transferTypeCombo.getSelectionIndex());
 							picFromRJob.addJobChangeListener(new JobChangeAdapter() {
@@ -676,7 +678,7 @@ public class RImageMethodsView extends ViewPart {
 
 			}
 		});
-		toimageJCombo.setItems(new String[] { "Colour", "Greyscale", "Float", "Short" });
+		toimageJCombo.setItems(new String[] { "Colour", "Greyscale", "Float", "Short", "Double" });
 		toimageJCombo.setText("Float");
 		toimageJCombo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		// greyscaleButton.setToolTipText(

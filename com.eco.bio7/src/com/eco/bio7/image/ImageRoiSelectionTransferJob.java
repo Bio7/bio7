@@ -6,6 +6,7 @@ import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.Roi;
 import ij.plugin.frame.RoiManager;
+import ij.process.DoubleProcessor;
 import ij.process.ImageProcessor;
 
 import java.awt.Point;
@@ -382,7 +383,7 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 		ArrayList<Double> values = new ArrayList<Double>();
 		for (Point p : roi.getContainedPoints()) {
 
-			values.add(Double.valueOf(ip.getPixelValue(p.x, p.y)));
+			values.add(Double.valueOf(pixelValue(ip, p.x, p.y)));
 		}
 		return values;
 	}
@@ -510,4 +511,11 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 		return names;
 	}
 
+	/* The exact value of double images (getPixelValue() returns a float)! */
+	private static double pixelValue(ImageProcessor ip, int x, int y) {
+		if (ip instanceof DoubleProcessor) {
+			return ((DoubleProcessor) ip).getPixelValueDouble(x, y);
+		}
+		return ip.getPixelValue(x, y);
+	}
 }

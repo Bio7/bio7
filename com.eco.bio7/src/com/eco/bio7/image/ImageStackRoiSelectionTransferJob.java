@@ -23,6 +23,7 @@ import ij.ImageStack;
 import ij.WindowManager;
 import ij.gui.Roi;
 import ij.plugin.frame.RoiManager;
+import ij.process.DoubleProcessor;
 import ij.process.ImageProcessor;
 
 public class ImageStackRoiSelectionTransferJob extends WorkspaceJob implements IJobChangeListener {
@@ -387,7 +388,7 @@ public class ImageStackRoiSelectionTransferJob extends WorkspaceJob implements I
 		ArrayList<Double> values = new ArrayList<Double>();
 		for (Point p : roi.getContainedPoints()) {
 
-			values.add(Double.valueOf(ip.getPixelValue(p.x, p.y)));
+			values.add(Double.valueOf(pixelValue(ip, p.x, p.y)));
 		}
 		return values;
 	}
@@ -423,7 +424,7 @@ public class ImageStackRoiSelectionTransferJob extends WorkspaceJob implements I
 					count++;
 	              
 					// ip.set(x + r.x, y + r.y, 0);
-					values.add(new Double(ip.getPixelValue(x + r.x, y + r.y)));
+					values.add(Double.valueOf(pixelValue(ip, x + r.x, y + r.y)));
 				}
 			}
 		}
@@ -517,4 +518,11 @@ public class ImageStackRoiSelectionTransferJob extends WorkspaceJob implements I
 
 	}
 
+	/* The exact value of double images (getPixelValue() returns a float)! */
+	private static double pixelValue(ImageProcessor ip, int x, int y) {
+		if (ip instanceof DoubleProcessor) {
+			return ((DoubleProcessor) ip).getPixelValueDouble(x, y);
+		}
+		return ip.getPixelValue(x, y);
+	}
 }
