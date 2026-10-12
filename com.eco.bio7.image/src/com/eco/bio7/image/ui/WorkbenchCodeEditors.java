@@ -44,6 +44,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import ij.swt.CodeEditor;
 import ij.swt.CodeEditorProvider;
+import ij.swt.CodeMarker;
 
 /**
  * Supplies the open text editors of the workbench (R, Python, Java, ImageJ
@@ -51,7 +52,8 @@ import ij.swt.CodeEditorProvider;
  * e.g., to an assistant which writes generated code into a Bio7 editor. New
  * code is saved in the folder of the active editor's file or in the workspace
  * project {@value #PROJECT_NAME} and opened with the editor registered for the
- * file extension.
+ * file extension. Markers with quick fixes are placed with
+ * {@link WorkbenchCodeMarkers} and do not change the markers of the editors.
  *
  * @author M. Austenfeld
  */
@@ -288,6 +290,61 @@ public class WorkbenchCodeEditors implements CodeEditorProvider {
 		public boolean isOpen() {
 			return sync(() -> editor.getDocumentProvider() != null && editor.getSite() != null && editor.getSite().getPage() != null
 					&& editor.getSite().getPage().findEditor(editor.getEditorInput()) != null);
+		}
+
+		@Override
+		public boolean supportsMarkers() {
+			return sync(() -> WorkbenchCodeMarkers.supported(editor));
+		}
+
+		@Override
+		public boolean addMarker(CodeMarker marker) {
+			return sync(() -> {
+				WorkbenchCodeMarkers markers = WorkbenchCodeMarkers.of(editor, true);
+				return markers != null && markers.add(marker);
+			});
+		}
+
+		@Override
+		public boolean removeMarker(CodeMarker marker) {
+			return sync(() -> {
+				WorkbenchCodeMarkers markers = WorkbenchCodeMarkers.of(editor, false);
+				return markers != null && markers.remove(marker);
+			});
+		}
+
+		@Override
+		public boolean hasMarker(CodeMarker marker) {
+			return sync(() -> {
+				WorkbenchCodeMarkers markers = WorkbenchCodeMarkers.of(editor, false);
+				return markers != null && markers.has(marker);
+			});
+		}
+
+		@Override
+		public List<CodeMarker> getMarkers() {
+			return sync(() -> {
+				WorkbenchCodeMarkers markers = WorkbenchCodeMarkers.of(editor, false);
+				return markers == null ? new ArrayList<CodeMarker>() : markers.list();
+			});
+		}
+
+		@Override
+		public boolean applyQuickFix(CodeMarker marker) {
+			return sync(() -> {
+				WorkbenchCodeMarkers markers = WorkbenchCodeMarkers.of(editor, false);
+				return markers != null && markers.apply(marker);
+			});
+		}
+
+		@Override
+		public void clearMarkers() {
+			syncRun(() -> {
+				WorkbenchCodeMarkers markers = WorkbenchCodeMarkers.of(editor, false);
+				if (markers != null) {
+					markers.clear();
+				}
+			});
 		}
 
 		@Override
