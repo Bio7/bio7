@@ -14,9 +14,12 @@ public class ImageJEditPerspective implements IPerspectiveFactory {
 		addFastViews(layout);
 		addViewShortcuts(layout);
 		addPerspectiveShortcuts(layout);
-		layout.addView("org.eclipse.ui.navigator.ProjectExplorer", IPageLayout.LEFT, 0.15f, IPageLayout.ID_EDITOR_AREA);
+		/* The thumbnails view is behind the Project Explorer! */
+		IFolderLayout explorerFolder = layout.createFolder("explorerFolder", IPageLayout.LEFT, 0.15f, IPageLayout.ID_EDITOR_AREA);
+		explorerFolder.addView("org.eclipse.ui.navigator.ProjectExplorer");
+		explorerFolder.addView("com.eco.bio7.thumbnails");
 		{
-			IFolderLayout folderLayout = layout.createFolder("folder", IPageLayout.BOTTOM, 0.5f, "org.eclipse.ui.navigator.ProjectExplorer");
+			IFolderLayout folderLayout = layout.createFolder("folder", IPageLayout.BOTTOM, 0.5f, "explorerFolder");
 			folderLayout.addView("org.eclipse.ui.views.ContentOutline");
 			folderLayout.addView("org.eclipse.ui.console.ConsoleView");
 			folderLayout.addView("com.eco.bio7.ijmacro.editor.toolbar.debug");
@@ -24,7 +27,6 @@ public class ImageJEditPerspective implements IPerspectiveFactory {
 		}
 		layout.addView("com.eco.bio7.imagej", IPageLayout.RIGHT, 0.5f, IPageLayout.ID_EDITOR_AREA);
 		layout.addPlaceholder("com.eco.bio7.image.detachedImage", IPageLayout.BOTTOM, 0.5f, "com.eco.bio7.imagej");
-		layout.addPlaceholder("com.eco.bio7.thumbnails", IPageLayout.BOTTOM, 0.5f, IPageLayout.ID_EDITOR_AREA);
 	}
 
 	/**

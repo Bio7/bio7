@@ -33,14 +33,7 @@ public class EnablePreviewAction extends Action {
 
 	public void run() {
 
-		ThumbnailsView view = ThumbnailsView.getThumb();
-		if (view.thumbnail.isVisible()) {
-			view.thumbnail.setVisible(false);
-			view.sashForm.setWeights(new int[] { 1, 0});
-		} else {
-			view.thumbnail.setVisible(true);
-			view.sashForm.setWeights(new int[] { 3, 1});
-		}
+		ThumbnailsView.getThumb().togglePreview();
 
 		/*
 		 * ThumbnailsView.getThumb().setInarow(15); Preferences prefs =
