@@ -4,6 +4,7 @@ import java.awt.Panel;
 import java.util.Vector;
 import javax.swing.JPanel;
 import org.eclipse.draw2d.LightweightSystem;
+import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -12,12 +13,14 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.jfree.chart.ChartPanel;
+import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.compile.Model;
 import com.eco.bio7.methods.Compiled;
 import com.jogamp.opengl.util.Animator;
@@ -67,12 +70,26 @@ public class CustomView extends ViewPart {// implements ISaveablePart2
 		 */
 		this.customViewParent = new Composite(parent, SWT.NONE);
 		customViewParent.setLayout(new FillLayout());
+		/* The view of the content for the fullscreen mode (F2)! */
+		customViewParent.setData(CustomViewFullscreen.VIEW_KEY, this);
+		CustomViewFullscreen.install(parent.getDisplay());
+		Action fullscreen = new Action("Fullscreen (F2)") {
+			public void run() {
+				CustomViewFullscreen.toggle(CustomView.this);
+			}
+		};
+		fullscreen.setToolTipText("Display the view in fullscreen mode (F2, F3: secondary monitor, F4: tertiary monitor, F5: select the monitor, exit with ESC)");
+		fullscreen.setImageDescriptor(Bio7Plugin.getImageDescriptor("/icons/views/fullscreen.png"));
+		getViewSite().getActionBars().getToolBarManager().add(fullscreen);
+		getViewSite().getActionBars().updateActionBars();
 		parent.addDisposeListener(new DisposeListener() {
 
 			@Override
 			public void widgetDisposed(DisposeEvent e) {
 				Vector<?> ve = (Vector<?>) customViewParent.getData();
 				closeTabPanels(ve);
+				/* The content is disposed with the fullscreen shell! */
+				CustomViewFullscreen.viewDisposed(CustomView.this);
 
 				/* Call the close method of the Model class! */
 				Model model = Compiled.getModel();
@@ -450,6 +467,74 @@ public class CustomView extends ViewPart {// implements ISaveablePart2
 			}
 
 		}
+	}
+
+	/**
+	 * Displays the view in fullscreen mode or returns to the view. Only one view
+	 * can be displayed in fullscreen mode at a time. The fullscreen mode can also
+	 * be toggled with the F2 key and closed with the ESC key.
+	 * 
+	 * @param fullscreen true to display the view in fullscreen mode.
+	 */
+	public void setFullscreen(final boolean fullscreen) {
+		getDisplay().syncExec(new Runnable() {
+			public void run() {
+				CustomView view = part();
+				if (fullscreen) {
+					CustomViewFullscreen.enter(view);
+				} else if (CustomViewFullscreen.isFullscreen(view)) {
+					CustomViewFullscreen.exit();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Displays the view in fullscreen mode on the given monitor or moves the
+	 * fullscreen mode to the monitor. The monitors are numbered with the primary
+	 * monitor first (0: primary, 1: secondary, 2: tertiary monitor, etc.). If the
+	 * monitor is not available the view is displayed on the monitor of the view.
+	 * 
+	 * @param monitor the index of the monitor.
+	 */
+	public void setFullscreen(final int monitor) {
+		getDisplay().syncExec(new Runnable() {
+			public void run() {
+				Monitor[] monitors = CustomViewFullscreen.getMonitors(getDisplay());
+				CustomView view = part();
+				if (monitor >= 0 && monitor < monitors.length) {
+					CustomViewFullscreen.show(view, monitors[monitor]);
+				} else {
+					CustomViewFullscreen.enter(view);
+				}
+			}
+		});
+	}
+
+	/**
+	 * Returns true if the view is displayed in fullscreen mode.
+	 * 
+	 * @return true if the view is displayed in fullscreen mode.
+	 */
+	public boolean isFullscreen() {
+		final boolean[] fullscreen = new boolean[1];
+		getDisplay().syncExec(new Runnable() {
+			public void run() {
+				fullscreen[0] = CustomViewFullscreen.isFullscreen(part());
+			}
+		});
+		return fullscreen[0];
+	}
+
+	/*
+	 * The view of the workbench. A CustomView created in a script only opens the
+	 * view (e.g., with getComposite) which is another instance!
+	 */
+	private CustomView part() {
+		if (customViewParent != null) {
+			return this;
+		}
+		return activated instanceof CustomView ? (CustomView) activated : null;
 	}
 
 	public void setSingleView(boolean singleView) {
