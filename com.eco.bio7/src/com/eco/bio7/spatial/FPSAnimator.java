@@ -41,9 +41,9 @@ package com.eco.bio7.spatial;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
 
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLException;
@@ -70,6 +70,9 @@ public class FPSAnimator extends AnimatorBase {
 	private boolean isAnimating; // MainTask feedback
 	private volatile boolean pauseIssued; // MainTask trigger
 	private volatile boolean stopIssued; // MainTask trigger
+	/* A frame is waiting to be displayed in the UI thread (macOS aarch64)! */
+	private final AtomicBoolean framePending = new AtomicBoolean(false);
+	private volatile UncaughtAnimatorException asyncException;
 
 	@Override
 	protected String getBaseName(final String prefix) {
@@ -196,17 +199,38 @@ public class FPSAnimator extends AnimatorBase {
 					}
 				}
 			}
+			/* An exception of the last frame displayed in the UI thread (see below)! */
+			if (asyncException != null) {
+				caughtException = asyncException;
+				asyncException = null;
+				stopIssued = true;
+			}
 			if (!pauseIssued && !stopIssued) { // RUN
 				try {
 					/* Workaround for Timer crash on MacOSX aarch when changing the display! */
 					String osname = System.getProperty("os.arch");
 					if (osname.startsWith("aarch64")) {
-						Display display = PlatformUI.getWorkbench().getDisplay();
-						display.syncExec(new Runnable() {
-							public void run() {
-								display();
-							}
-						});
+						/*
+						 * The frame is displayed asynchronously! A blocking syncExec waits for the UI
+						 * thread while pause() or stop() is called in the UI thread (e.g., when the
+						 * view is closed) and waits for this task until the lifecycle timeout.
+						 */
+						if (framePending.compareAndSet(false, true)) {
+							Display display = Display.getDefault();
+							display.asyncExec(new Runnable() {
+								public void run() {
+									try {
+										if (!pauseIssued && !stopIssued && isStarted()) {
+											display();
+										}
+									} catch (final UncaughtAnimatorException dre) {
+										asyncException = dre;
+									} finally {
+										framePending.set(false);
+									}
+								}
+							});
+						}
 					} else {
 						display();
 					}

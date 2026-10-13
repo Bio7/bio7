@@ -446,3 +446,11 @@ StyledText {
     background-color: #252525;
     color: #dddddd;
 }
+/*
+ * The view menu toolbar in the tab row of a view (CTabFolder top right) is transparent and a
+ * line of the tab folder is drawn through the view menu icon. #252525 (the color of the tab
+ * folder) has no effect, so a nearly identical color is used!
+ */
+CTabFolder ToolBar {
+    background-color: #262626;
+}
