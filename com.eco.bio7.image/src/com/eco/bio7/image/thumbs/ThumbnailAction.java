@@ -58,6 +58,9 @@ public class ThumbnailAction extends Action {
 
 	private static boolean recursive = false;
 
+	/* The directory which has been loaded last (for a refresh)! */
+	private static volatile File lastDirectory;
+
 	private ArrayList<File> fil;
 
 	protected File[] filList;
@@ -97,6 +100,7 @@ public class ThumbnailAction extends Action {
 			prefs.put("LAST_OUTPUT_DIR", save);
 
 			directory = new java.io.File(save);
+			lastDirectory = directory;
 
 			if (recursive) {
 
@@ -151,9 +155,7 @@ public class ThumbnailAction extends Action {
 		view.getSmall().setEnabled(true);
 		view.getMedium().setEnabled(true);
 		view.getLarge().setEnabled(true);
-		view.getFive().setEnabled(true);
-		view.getTen().setEnabled(true);
-		view.getFifteen().setEnabled(true);
+		view.setRowSelectionEnabled(true);
 	}
 
 	private void jobDisabled() {
@@ -162,9 +164,7 @@ public class ThumbnailAction extends Action {
 		view.getSmall().setEnabled(false);
 		view.getMedium().setEnabled(false);
 		view.getLarge().setEnabled(false);
-		view.getFive().setEnabled(false);
-		view.getTen().setEnabled(false);
-		view.getFifteen().setEnabled(false);
+		view.setRowSelectionEnabled(false);
 	}
 
 	public void dispose() {
@@ -272,6 +272,11 @@ public class ThumbnailAction extends Action {
 
 	public static void setStartNewJob(boolean startNewJob) {
 		ThumbnailAction.startNewJob = startNewJob;
+	}
+
+	/** The directory which has been loaded last (null if no directory has been loaded). */
+	public static File getLastDirectory() {
+		return lastDirectory;
 	}
 
 	public static boolean isRecursive() {

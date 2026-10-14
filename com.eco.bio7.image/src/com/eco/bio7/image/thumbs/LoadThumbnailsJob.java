@@ -29,6 +29,10 @@ class LoadThumbnailsJob extends WorkspaceJob {
 	}
 
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
+		/* The directory cannot be listed (e.g., it has been deleted)! */
+		if (files == null) {
+			return Status.OK_STATUS;
+		}
 
 		monitor.beginTask("Load Images in preview", files.length);
 		ThumbnailsView.getThumb().setCanceled(false);

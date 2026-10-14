@@ -36,7 +36,7 @@ import org.eclipse.swt.widgets.ScrollBar;
  * resources per thumbnail. The thumbnails are kept as image data and only the
  * visible area is composed into one temporary image when the canvas is painted
  * (one image handle at a time). Must be used in the UI thread, except
- * {@link #setData(int, int, ThumbData)}.
+ * {@link #setData(int, Item, ThumbData)}.
  */
 class ThumbnailGrid extends Canvas {
 
@@ -100,25 +100,44 @@ class ThumbnailGrid extends Canvas {
 	/* The thumbnail size in points and the size of the thumbnail pixels! */
 	private int thumbSize = 50;
 	private int pixelSize = 50;
+	/* The number of thumbnails in a row (0 to fit the width of the canvas)! */
 	private int columns = 15;
 	private double zoom = 1.0;
 	private int originX, originY;
 	private int hover = -1;
+	/* The selected item (selected with a click, null if none)! */
+	private Item selected;
 	private boolean redrawScheduled;
 	private Consumer<Item> openListener, folderListener;
 	private Runnable viewportListener;
 	private Color hoverColor, frameColor, textColor;
+	/* The information of the thumbnail under the mouse! */
+	private final InfoPopup info;
 
 	ThumbnailGrid(Composite parent) {
 		super(parent, SWT.V_SCROLL | SWT.H_SCROLL | SWT.DOUBLE_BUFFERED | SWT.NO_BACKGROUND);
 		updateColors();
 		addListener(SWT.Paint, this::paint);
-		addListener(SWT.Resize, e -> updateScrollBars());
+		addListener(SWT.Resize, e -> {
+			updateScrollBars();
+			if (columns == 0) {
+				/* The thumbnails are arranged again! */
+				redraw();
+				fireViewport();
+			}
+		});
 		getVerticalBar().addListener(SWT.Selection, e -> scrollTo(originX, getVerticalBar().getSelection()));
 		getHorizontalBar().addListener(SWT.Selection, e -> scrollTo(getHorizontalBar().getSelection(), originY));
 		addListener(SWT.MouseMove, e -> setHover(indexAt(e.x, e.y)));
 		addListener(SWT.MouseExit, e -> setHover(-1));
 		addListener(SWT.MouseUp, this::mouseUp);
+		addListener(SWT.MouseDoubleClick, this::mouseDoubleClick);
+		info = new InfoPopup(this);
+		addListener(SWT.MouseDown, e -> {
+			info.hide();
+			setFocus();
+		});
+		addListener(SWT.KeyDown, this::keyDown);
 		/* Also called if the parent is disposed (dispose() of this control is not called then)! */
 		addListener(SWT.Dispose, e -> {
 			items = new Item[0];
@@ -141,9 +160,8 @@ class ThumbnailGrid extends Canvas {
 		this.reloader = reloader;
 	}
 
-	/* Reloads a released thumbnail in the background! */
-	private void reload(int index) {
-		Item item = items[index];
+	/* Reloads a released thumbnail in the background (a deleted file is removed)! */
+	private void reload(Item item) {
 		Function<File, ThumbData> r = reloader;
 		if (r == null || item.reloading) {
 			return;
@@ -151,18 +169,47 @@ class ThumbnailGrid extends Canvas {
 		item.reloading = true;
 		final int gen = generation;
 		reloadPool.execute(() -> {
+			if (!item.file.exists()) {
+				getDisplay().asyncExec(() -> {
+					if (!isDisposed()) {
+						removeDeleted(item);
+					}
+				});
+				return;
+			}
 			ThumbData d = r.apply(item.file);
 			getDisplay().asyncExec(() -> item.reloading = false);
-			setData(gen, index, d);
+			setData(gen, item, d);
 		});
 	}
 
-	/** Called with an item when it is clicked (left button). */
+	/** Removes the item of a deleted file and reports it in the Bio7 console. */
+	void removeDeleted(Item item) {
+		int index = java.util.Arrays.asList(items).indexOf(item);
+		if (index < 0) {
+			return;
+		}
+		Item[] newItems = new Item[items.length - 1];
+		System.arraycopy(items, 0, newItems, 0, index);
+		System.arraycopy(items, index + 1, newItems, index, items.length - index - 1);
+		items = newItems;
+		hover = -1;
+		if (selected == item) {
+			selected = null;
+		}
+		info.hide();
+		System.out.println("Thumbnails: " + item.file.getAbsolutePath() + ": the file has been deleted, the thumbnail is removed");
+		updateScrollBars();
+		redraw();
+		fireViewport();
+	}
+
+	/** Called with an item when it is double clicked (left button). */
 	void setOpenListener(Consumer<Item> listener) {
 		this.openListener = listener;
 	}
 
-	/** Called with an item when it is clicked with the right button. */
+	/** Called with an item when it is double clicked with the right button. */
 	void setFolderListener(Consumer<Item> listener) {
 		this.folderListener = listener;
 	}
@@ -174,9 +221,10 @@ class ThumbnailGrid extends Canvas {
 
 	/**
 	 * Displays the files (thumbnails are added with setData). Returns the
-	 * generation of this content, which setData needs.
+	 * generation of this content, which setData needs. The scroll position is kept
+	 * if keepPosition is true (e.g., for a refresh).
 	 */
-	int setFiles(File[] files, int thumbSize, int pixelSize) {
+	int setFiles(File[] files, int thumbSize, int pixelSize, boolean keepPosition) {
 		Item[] newItems = new Item[files.length];
 		for (int i = 0; i < files.length; i++) {
 			newItems[i] = new Item(files[i]);
@@ -185,7 +233,21 @@ class ThumbnailGrid extends Canvas {
 		this.thumbSize = thumbSize;
 		this.pixelSize = pixelSize;
 		this.hover = -1;
-		originX = originY = 0;
+		info.hide();
+		/* A refresh keeps the selected file! */
+		Item old = selected;
+		this.selected = null;
+		if (keepPosition && old != null) {
+			for (Item it : newItems) {
+				if (it.file.equals(old.file)) {
+					selected = it;
+					break;
+				}
+			}
+		}
+		if (!keepPosition) {
+			originX = originY = 0;
+		}
 		generation++;
 		updateScrollBars();
 		redraw();
@@ -196,13 +258,15 @@ class ThumbnailGrid extends Canvas {
 		return items;
 	}
 
-	/** Sets the thumbnail of an item. Can be called in any thread. */
-	void setData(int gen, int index, ThumbData data) {
-		Item[] current = items;
-		if (gen != generation || index >= current.length) {
+	/**
+	 * Sets the thumbnail of an item (of the array returned by getItems after
+	 * setFiles). Can be called in any thread.
+	 */
+	void setData(int gen, Item item, ThumbData data) {
+		if (gen != generation) {
 			return;
 		}
-		current[index].set(data);
+		item.set(data);
 		scheduleRedraw();
 	}
 
@@ -225,8 +289,9 @@ class ThumbnailGrid extends Canvas {
 		});
 	}
 
+	/** Sets the number of thumbnails in a row (0 to fit the width of the canvas). */
 	void setColumns(int columns) {
-		this.columns = Math.max(1, columns);
+		this.columns = Math.max(0, columns);
 		updateScrollBars();
 		redraw();
 		fireViewport();
@@ -260,8 +325,17 @@ class ThumbnailGrid extends Canvas {
 		return box() + labelHeight() + Math.max(10, box() / 5);
 	}
 
+	/* The number of thumbnails in a row (computed from the width if they fit)! */
+	private int cols() {
+		if (columns > 0) {
+			return columns;
+		}
+		return Math.max(1, (getClientArea().width - 2 * MARGIN) / cellWidth());
+	}
+
 	/** The size of the whole content in points. */
 	Point getContentSize() {
+		int columns = cols();
 		int rows = (items.length + columns - 1) / columns;
 		return new Point(2 * MARGIN + Math.min(columns, Math.max(1, items.length)) * cellWidth(), 2 * MARGIN + rows * cellHeight());
 	}
@@ -274,6 +348,7 @@ class ThumbnailGrid extends Canvas {
 
 	/** The bounds of the cell of an item in content coordinates. */
 	Rectangle cellBounds(int index) {
+		int columns = cols();
 		return new Rectangle(MARGIN + (index % columns) * cellWidth(), MARGIN + (index / columns) * cellHeight(), cellWidth(), cellHeight());
 	}
 
@@ -282,6 +357,7 @@ class ThumbnailGrid extends Canvas {
 		if (cx < 0 || cy < 0) {
 			return -1;
 		}
+		int columns = cols();
 		int col = cx / cellWidth(), row = cy / cellHeight();
 		int i = row * columns + col;
 		return col < columns && i < items.length ? i : -1;
@@ -332,11 +408,25 @@ class ThumbnailGrid extends Canvas {
 			return;
 		}
 		hover = index;
-		setToolTipText(index < 0 ? null : tooltip(items[index]));
+		info.hoverChanged(index < 0 ? null : items[index]);
 		redraw();
 	}
 
+	/* A click selects a thumbnail (a click on the background removes the selection)! */
 	private void mouseUp(Event e) {
+		if (e.button != 1 && e.button != 3) {
+			return;
+		}
+		int i = indexAt(e.x, e.y);
+		Item item = i < 0 ? null : items[i];
+		if (item != selected) {
+			selected = item;
+			redraw();
+		}
+	}
+
+	/* A double click opens the image, a double click with the right button the folder! */
+	private void mouseDoubleClick(Event e) {
 		int i = indexAt(e.x, e.y);
 		if (i < 0) {
 			return;
@@ -346,6 +436,97 @@ class ThumbnailGrid extends Canvas {
 		} else if (e.button == 3 && folderListener != null) {
 			folderListener.accept(items[i]);
 		}
+	}
+
+	/*
+	 * The arrow keys, Home, End, Page Up and Page Down move the selection, Enter
+	 * opens the selected image!
+	 */
+	private void keyDown(Event e) {
+		if (items.length == 0) {
+			return;
+		}
+		info.hide();
+		int current = selected == null ? -1 : java.util.Arrays.asList(items).indexOf(selected);
+		int columns = cols();
+		int page = Math.max(1, getClientArea().height / cellHeight()) * columns;
+		int next;
+		switch (e.keyCode) {
+		case SWT.CR:
+		case SWT.KEYPAD_CR:
+			if (current >= 0 && openListener != null) {
+				openListener.accept(items[current]);
+			}
+			return;
+		case SWT.ARROW_RIGHT:
+			next = current + 1;
+			break;
+		case SWT.ARROW_LEFT:
+			next = current - 1;
+			break;
+		case SWT.ARROW_DOWN:
+			next = current < 0 ? 0 : current + columns;
+			break;
+		case SWT.ARROW_UP:
+			next = current - columns;
+			break;
+		case SWT.PAGE_DOWN:
+			next = current < 0 ? 0 : current + page;
+			break;
+		case SWT.PAGE_UP:
+			next = current - page;
+			break;
+		case SWT.HOME:
+			next = 0;
+			break;
+		case SWT.END:
+			next = items.length - 1;
+			break;
+		default:
+			return;
+		}
+		e.doit = false;
+		/* Without a selection the first thumbnail is selected! */
+		if (current < 0) {
+			next = 0;
+		}
+		if (next < 0 || next >= items.length) {
+			/* Page keys and the last row move to the first or last thumbnail! */
+			if (e.keyCode == SWT.PAGE_DOWN || e.keyCode == SWT.ARROW_DOWN) {
+				next = items.length - 1;
+			} else if (e.keyCode == SWT.PAGE_UP || e.keyCode == SWT.ARROW_UP) {
+				next = 0;
+			} else {
+				return;
+			}
+		}
+		select(next);
+	}
+
+	/* Selects the thumbnail and scrolls it into the visible area! */
+	private void select(int index) {
+		selected = items[index];
+		Rectangle cell = cellBounds(index);
+		Rectangle v = getViewport();
+		int x = originX, y = originY;
+		if (cell.y < v.y) {
+			y = cell.y - MARGIN;
+		} else if (cell.y + cell.height > v.y + v.height) {
+			y = cell.y + cell.height + MARGIN - v.height;
+		}
+		if (cell.x < v.x) {
+			x = cell.x - MARGIN;
+		} else if (cell.x + cell.width > v.x + v.width) {
+			x = cell.x + cell.width + MARGIN - v.width;
+		}
+		scrollTo(x, y);
+		info.hide();
+		redraw();
+	}
+
+	/** The selected item (null if none). */
+	Item getSelection() {
+		return selected;
 	}
 
 	/** The tooltip of an item: the image information or the file information. */
@@ -375,7 +556,7 @@ class ThumbnailGrid extends Canvas {
 		ThumbData d = item.thumb();
 		if (d == null) {
 			if (item.loaded) {
-				reload(index);
+				reload(item);
 			}
 			return null;
 		}
@@ -407,6 +588,7 @@ class ThumbnailGrid extends Canvas {
 		int boxPx = (int) Math.round(box * pixelSize / (double) thumbSize);
 		/* The cells which intersect the clip area! */
 		int cw = cellWidth(), ch = cellHeight();
+		int columns = cols();
 		int firstRow = Math.max(0, (clip.y + originY - MARGIN) / ch);
 		int lastRow = (clip.y + clip.height + originY - MARGIN) / ch;
 		int firstCol = Math.max(0, (clip.x + originX - MARGIN) / cw);
@@ -489,17 +671,27 @@ class ThumbnailGrid extends Canvas {
 					gc.drawRectangle(ix + 3, iy - 3, iw - 1, ih - 1);
 					gc.drawRectangle(ix + 6, iy - 6, iw - 1, ih - 1);
 				}
-				if (i == hover) {
+				boolean isSelected = item == selected;
+				if (isSelected || i == hover) {
+					/* The selection has a thick frame, the hover a thin one! */
 					gc.setForeground(hoverColor);
-					gc.setLineWidth(2);
+					gc.setLineWidth(isSelected ? 3 : 1);
 					gc.drawRoundRectangle(bx - 4, by - 4, box + 8, box + 8 + lh, 8, 8);
 					gc.setLineWidth(1);
 				}
 				if (lh > 0) {
-					gc.setForeground(textColor);
 					String name = shorten(gc, item.file.getName(), cw - 6);
 					int tw = gc.textExtent(name).x;
-					gc.drawText(name, cell.x - originX + (cw - tw) / 2, by + box + 3, true);
+					int tx = cell.x - originX + (cw - tw) / 2;
+					if (isSelected) {
+						/* The name of the selected thumbnail is highlighted! */
+						gc.setBackground(hoverColor);
+						gc.fillRoundRectangle(tx - 3, by + box + 2, tw + 6, lh - 2, 6, 6);
+						gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
+					} else {
+						gc.setForeground(textColor);
+					}
+					gc.drawText(name, tx, by + box + 3, true);
 				}
 			}
 		}

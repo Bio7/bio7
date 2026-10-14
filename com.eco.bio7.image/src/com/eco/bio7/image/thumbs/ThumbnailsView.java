@@ -15,6 +15,8 @@ import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
 import java.io.File;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -25,6 +27,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ControlContribution;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -63,11 +66,12 @@ public class ThumbnailsView extends ViewPart {
 
 	private ThumbnailAction menuAction = new ThumbnailAction();
 
-	private FiveInRowAction five = new FiveInRowAction();
+	/* The selectable numbers of thumbnails in a row (0 fits the width of the view)! */
+	private static final int[] IN_A_ROW = { 0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30, 40, 50 };
 
-	private TenInRowAction ten = new TenInRowAction();
+	private Combo rowCombo;
 
-	private FifteenInRowAction fifteen = new FifteenInRowAction();
+	private RefreshAction refreshAction = new RefreshAction();
 
 	private SmallThumbAction small = new SmallThumbAction();
 
@@ -103,6 +107,9 @@ public class ThumbnailsView extends ViewPart {
 
 	/* The files which are displayed (to reload them with another size)! */
 	private File[] files;
+
+	/* True if the next load keeps the scroll position (a refresh)! */
+	private volatile boolean keepPosition;
 
 	/* Incremented for each load, so that a new load cancels the old one! */
 	private final AtomicInteger loadId = new AtomicInteger();
@@ -146,15 +153,21 @@ public class ThumbnailsView extends ViewPart {
 			this.size = "large";
 		}
 
+		/* The old preferences ("five", "ten", "fifteen") are also read! */
 		if (prefer2.equals("five")) {
-			five.setChecked(true);
 			this.inarow = 5;
 		} else if (prefer2.equals("ten")) {
-			ten.setChecked(true);
 			this.inarow = 10;
 		} else if (prefer2.equals("fifteen")) {
-			fifteen.setChecked(true);
 			this.inarow = 15;
+		} else if (prefer2.equals("fit")) {
+			this.inarow = 0;
+		} else {
+			try {
+				this.inarow = Math.max(0, Integer.parseInt(prefer2));
+			} catch (NumberFormatException e) {
+				/* The default! */
+			}
 		}
 	}
 
@@ -171,8 +184,18 @@ public class ThumbnailsView extends ViewPart {
 
 		grid = new ThumbnailGrid(sashForm);
 		grid.setColumns(inarow);
-		grid.setOpenListener(item -> open(item.file));
+		grid.setOpenListener(item -> {
+			if (!item.file.exists()) {
+				grid.removeDeleted(item);
+				return;
+			}
+			open(item.file);
+		});
 		grid.setFolderListener(item -> {
+			if (!item.file.exists()) {
+				grid.removeDeleted(item);
+				return;
+			}
 			try {
 				Program.launch(item.file.getParent());
 			} catch (RuntimeException e) {
@@ -217,10 +240,13 @@ public class ThumbnailsView extends ViewPart {
 			return;
 		}
 		final int id = loadId.incrementAndGet();
+		final boolean keep = keepPosition;
+		keepPosition = false;
 		this.files = files;
 		ThumbnailCache.prune();
 		setThumbSize();
 		final int[] state = new int[2]; // generation, pixel size
+		final ThumbnailGrid.Item[][] items = new ThumbnailGrid.Item[1][];
 		Display display = PlatformUI.getWorkbench().getDisplay();
 		display.syncExec(() -> {
 			if (grid == null || grid.isDisposed()) {
@@ -231,7 +257,8 @@ public class ThumbnailsView extends ViewPart {
 			/* Thumbnails have device pixels, so that they are sharp on a Retina display! */
 			double scale = Math.max(1, grid.getMonitor().getZoom() / 100.0);
 			state[1] = (int) Math.round(thumbsize * scale);
-			state[0] = grid.setFiles(files, thumbsize, state[1]);
+			state[0] = grid.setFiles(files, thumbsize, state[1], keep);
+			items[0] = grid.getItems();
 		});
 		if (state[1] == 0) {
 			return;
@@ -262,9 +289,20 @@ public class ThumbnailsView extends ViewPart {
 				if (canceled || loadId.get() != id) {
 					return;
 				}
-				ThumbData data = loader.load(files[index]);
+				ThumbnailGrid.Item item = items[0][index];
+				/* A file which has been deleted meanwhile is removed! */
+				if (!item.file.exists()) {
+					display.asyncExec(() -> {
+						if (!grid.isDisposed() && loadId.get() == id) {
+							grid.removeDeleted(item);
+						}
+					});
+					done.incrementAndGet();
+					return;
+				}
+				ThumbData data = loader.load(item.file);
 				if (loadId.get() == id) {
-					grid.setData(state[0], index, data);
+					grid.setData(state[0], item, data);
 				}
 				done.incrementAndGet();
 			});
@@ -289,15 +327,45 @@ public class ThumbnailsView extends ViewPart {
 		monitor.worked(done.get() - reported);
 	}
 
-	/* Reloads the displayed files (e.g., with another thumbnail size)! */
+	/*
+	 * Reloads the displayed files (e.g., with another thumbnail size). Deleted
+	 * files are removed and reported in the Bio7 console!
+	 */
 	private void reload() {
 		if (files == null || files.length == 0) {
 			return;
 		}
+		List<File> existing = new ArrayList<File>(files.length);
+		for (File f : files) {
+			if (f.exists()) {
+				existing.add(f);
+			} else {
+				System.out.println("Thumbnails: " + f.getAbsolutePath() + ": the file has been deleted, the thumbnail is removed");
+			}
+		}
 		canceled = false;
-		LoadThumbnailsJob job = new LoadThumbnailsJob(files);
+		LoadThumbnailsJob job = new LoadThumbnailsJob(existing.toArray(new File[0]));
 		job.setUser(true);
 		job.schedule();
+	}
+
+	/**
+	 * Lists the loaded directory again (new files are added and deleted files are
+	 * removed) and reloads the thumbnails from the cache. The scroll position is
+	 * kept.
+	 */
+	public void refresh() {
+		File dir = ThumbnailAction.getLastDirectory();
+		keepPosition = true;
+		if (dir == null) {
+			/* Files which have not been loaded from a directory! */
+			reload();
+		} else if (!dir.isDirectory()) {
+			keepPosition = false;
+			System.out.println("Thumbnails: " + dir.getAbsolutePath() + ": the directory does not exist anymore");
+		} else {
+			new ThumbnailAction().loadDirectoryJob(dir.getAbsolutePath());
+		}
 	}
 
 	/*
@@ -368,9 +436,8 @@ public class ThumbnailsView extends ViewPart {
 		IToolBarManager tbm = getViewSite().getActionBars().getToolBarManager();
 
 		ZoomCombo zo = new ZoomCombo();
-		tbm.add(five);
-		tbm.add(ten);
-		tbm.add(fifteen);
+		tbm.add(refreshAction);
+		tbm.add(new RowCombo());
 		tbm.add(small);
 		tbm.add(medium);
 		tbm.add(large);
@@ -378,6 +445,55 @@ public class ThumbnailsView extends ViewPart {
 		tbm.add(recursiveAction);
 		tbm.add(preview);
 		tbm.add(zo);
+	}
+
+	/* Reloads the directory (new and deleted files)! */
+	class RefreshAction extends Action {
+		RefreshAction() {
+			super("Refresh");
+			setId("refresh");
+			setToolTipText("Refresh (list the directory again and reload the thumbnails)");
+			setImageDescriptor(com.eco.bio7.image.ui.Activator.getImageDescriptor("/pics/refresh.png"));
+		}
+
+		@Override
+		public void run() {
+			refresh();
+		}
+	}
+
+	/* Selects the number of thumbnails in a row! */
+	class RowCombo extends ControlContribution {
+		RowCombo() {
+			super("rowCombo");
+		}
+
+		protected Control createControl(Composite parent) {
+			rowCombo = new Combo(parent, SWT.READ_ONLY);
+			rowCombo.setToolTipText("Images in a row");
+			int selected = -1;
+			for (int i = 0; i < IN_A_ROW.length; i++) {
+				rowCombo.add(IN_A_ROW[i] == 0 ? "Fit width" : IN_A_ROW[i] + " in a row");
+				if (IN_A_ROW[i] == inarow) {
+					selected = i;
+				}
+			}
+			if (selected < 0) {
+				/* A number of a script which is not in the list! */
+				rowCombo.add(inarow + " in a row");
+				selected = IN_A_ROW.length;
+			}
+			rowCombo.select(selected);
+			rowCombo.addListener(SWT.Selection, e -> {
+				int i = rowCombo.getSelectionIndex();
+				if (i >= 0 && i < IN_A_ROW.length) {
+					Preferences prefs = Preferences.userNodeForPackage(ThumbnailsView.class);
+					prefs.put("INROW", IN_A_ROW[i] == 0 ? "fit" : Integer.toString(IN_A_ROW[i]));
+					setInarow(IN_A_ROW[i]);
+				}
+			});
+			return rowCombo;
+		}
 	}
 
 	class ZoomCombo extends ControlContribution {
@@ -465,7 +581,7 @@ public class ThumbnailsView extends ViewPart {
 		return inarow;
 	}
 
-	/** Sets the number of thumbnails in a row. */
+	/** Sets the number of thumbnails in a row (0 to fit the width of the view). */
 	public void setInarow(int inarow) {
 		this.inarow = inarow;
 		if (grid != null && !grid.isDisposed()) {
@@ -477,27 +593,14 @@ public class ThumbnailsView extends ViewPart {
 		this.canceled = canceled;
 	}
 
-	public FiveInRowAction getFive() {
-		return five;
-	}
-
-	public void setFive(FiveInRowAction five) {
-		this.five = five;
-	}
-
-	public TenInRowAction getTen() {
-		return ten;
-	}
-
-	public void setTen(TenInRowAction ten) {
-		this.ten = ten;
-	}
-
-	public FifteenInRowAction getFifteen() {
-		return fifteen;
-	}
-
-	public void setFifteen(FifteenInRowAction fifteen) {
-		this.fifteen = fifteen;
+	/** Enables or disables the selection of the thumbnails in a row (can be called in any thread). */
+	public void setRowSelectionEnabled(boolean enabled) {
+		Display display = PlatformUI.getWorkbench().getDisplay();
+		display.asyncExec(() -> {
+			if (rowCombo != null && !rowCombo.isDisposed()) {
+				rowCombo.setEnabled(enabled);
+			}
+			refreshAction.setEnabled(enabled);
+		});
 	}
 }
