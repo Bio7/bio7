@@ -6,7 +6,6 @@ import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.widgets.Display;
 import com.eco.bio7.markdownedit.Activator;
 
 public class PreferenceInitializer extends AbstractPreferenceInitializer {
@@ -22,20 +21,15 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		FontData[] f = JFaceResources.getFontRegistry().get("com.eco.bio7.reditor.markdown.textfont").getFontData();
 		//Font f= JFaceResources.getFont(JFaceResources.TEXT_FONT);
 
-		boolean isDark = Display.isSystemDarkTheme();
-		
-		if (isDark) {
-
-			PreferenceConverter.setDefault(storeR, "colourkey", new RGB(250, 243, 243));
-			PreferenceConverter.setDefault(storeR, "colourkey1", new RGB(167, 236, 33));
-			PreferenceConverter.setDefault(storeR, "colourkey2", new RGB(250, 243, 243));
-
-		} else {
-			PreferenceConverter.setDefault(storeR, "colourkey", new RGB(0, 0, 0));
-			PreferenceConverter.setDefault(storeR, "colourkey1", new RGB(127, 0, 85));
-			PreferenceConverter.setDefault(storeR, "colourkey2", new RGB(42, 0, 255));
-			//PreferenceConverter.setDefault(storeR, "colourkey3", new RGB(128, 128, 128));
-		}
+		setColorDefaults(storeR, com.eco.bio7.util.Util.isDarkTheme());
+		/* Stored colors of a theme (not changed by the user) follow the theme! */
+		com.eco.bio7.util.Util.followThemeColors(storeR, PreferenceInitializer::setColorDefaults);
+		/* The colors are changed when the theme is changed between light and dark! */
+		com.eco.bio7.util.Util.addThemeListener(dark -> {
+			setColorDefaults(storeR, dark);
+			com.eco.bio7.util.Util.followThemeColors(storeR, PreferenceInitializer::setColorDefaults);
+			WorkbenchPreferenceMarkdown.updateEditorColors();
+		});
 
 		PreferenceConverter.setDefault(storeR, "colourkeyfont", f);
 		PreferenceConverter.setDefault(storeR, "colourkeyfont1", f);
@@ -46,6 +40,27 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		storeR.setDefault("RECONCILE_MARKDOWN_TIME", "500");
 		storeR.setDefault("CHECK_SPELLING", true);
 
+	}
+
+	/**
+	 * Sets the default colors of the Markdown editor for the light or the dark theme.
+	 * 
+	 * @param store  the preference store.
+	 * @param isDark true for the dark theme.
+	 */
+	public static void setColorDefaults(IPreferenceStore store, boolean isDark) {
+		if (isDark) {
+
+			PreferenceConverter.setDefault(store, "colourkey", new RGB(250, 243, 243));
+			PreferenceConverter.setDefault(store, "colourkey1", new RGB(167, 236, 33));
+			PreferenceConverter.setDefault(store, "colourkey2", new RGB(250, 243, 243));
+
+		} else {
+			PreferenceConverter.setDefault(store, "colourkey", new RGB(0, 0, 0));
+			PreferenceConverter.setDefault(store, "colourkey1", new RGB(127, 0, 85));
+			PreferenceConverter.setDefault(store, "colourkey2", new RGB(42, 0, 255));
+			//PreferenceConverter.setDefault(store, "colourkey3", new RGB(128, 128, 128));
+		}
 	}
 
 }

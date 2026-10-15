@@ -1323,6 +1323,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		// *************************************************
 		/* Set the Bio7-Toobar menu in the ImageJ plugin! */
 		ImageJWindowAction.setBio7RCP(true);
+		/* The window of the LLM Assistant plugin is docked into a custom view! */
+		com.eco.bio7.collection.AssistantDocking.install(getWindowConfigurer().getWindow().getShell().getDisplay());
 		/* Register Bio7 as the SWTImageJ host (images are displayed in the ImageJ-Canvas view)! */
 		com.eco.bio7.image.ui.Bio7ImageJ.install();
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();

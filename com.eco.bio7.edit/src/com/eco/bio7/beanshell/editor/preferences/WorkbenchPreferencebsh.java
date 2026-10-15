@@ -82,29 +82,7 @@ public class WorkbenchPreferencebsh extends FieldEditorPreferencePage implements
 	public void init(IWorkbench workbench) {
 
 		IPreferenceStore store = BeanshellEditorPlugin.getDefault().getPreferenceStore();
-		boolean isDark = Display.isSystemDarkTheme();
-
-		if (isDark) {
-
-			PreferenceConverter.setDefault(store, "colourkey", new RGB(167, 236, 33));
-			PreferenceConverter.setDefault(store, "colourkey1", new RGB(177, 102, 218));
-			PreferenceConverter.setDefault(store, "colourkey2", new RGB(23, 198, 163));
-			PreferenceConverter.setDefault(store, "colourkey3", new RGB(128, 128, 128));
-			PreferenceConverter.setDefault(store, "colourkey4", new RGB(219, 176, 78));
-			PreferenceConverter.setDefault(store, "colourkey5", new RGB(230, 230, 250));
-			PreferenceConverter.setDefault(store, "colourkey6", new RGB(250, 243, 243));
-			PreferenceConverter.setDefault(store, "colourkey7", new RGB(104, 151, 187));
-
-		} else {
-			PreferenceConverter.setDefault(store, "colourkey", new RGB(127, 0, 85));
-			PreferenceConverter.setDefault(store, "colourkey1", new RGB(127, 0, 85));
-			PreferenceConverter.setDefault(store, "colourkey2", new RGB(42, 0, 255));
-			PreferenceConverter.setDefault(store, "colourkey3", new RGB(128, 128, 128));
-			PreferenceConverter.setDefault(store, "colourkey4", new RGB(0, 0, 0));
-			PreferenceConverter.setDefault(store, "colourkey5", new RGB(0, 0, 0));
-			PreferenceConverter.setDefault(store, "colourkey6", new RGB(0, 0, 0));
-			PreferenceConverter.setDefault(store, "colourkey7", new RGB(0, 0, 0));
-		}
+		PreferenceInitializer.setColorDefaults(store, com.eco.bio7.util.Util.isDarkTheme());
 
 	}
 
@@ -286,4 +264,28 @@ public class WorkbenchPreferencebsh extends FieldEditorPreferencePage implements
 
 		return super.performOk();
 	}
+
+	/**
+	 * Updates the colors of the open BeanShell/Groovy editors from the preferences (e.g., after
+	 * the theme has been changed between light and dark).
+	 */
+	public static void updateEditorColors() {
+		IPreferenceStore store = BeanshellEditorPlugin.getDefault().getPreferenceStore();
+		ScriptCodeScanner scanner = (ScriptCodeScanner) BeanshellEditorPlugin.getDefault().getScriptCodeScanner();
+		ScriptColorProvider provider = BeanshellEditorPlugin.getDefault().getScriptColorProvider();
+		java.util.function.BiFunction<String, String, TextAttribute> attribute = (key, bold) -> new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, key)), null,
+				store.getBoolean(bold) ? SWT.BOLD : SWT.NORMAL);
+		scanner.keyword.setData(attribute.apply("colourkey", "BOLD_COLOURKEY"));
+		scanner.type.setData(attribute.apply("colourkey1", "BOLD_COLOURKEY1"));
+		scanner.string.setData(attribute.apply("colourkey2", "BOLD_COLOURKEY2"));
+		scanner.comment.setData(attribute.apply("colourkey3", "BOLD_COLOURKEY3"));
+		scanner.other.setData(attribute.apply("colourkey4", "BOLD_COLOURKEY4"));
+		scanner.operators.setData(attribute.apply("colourkey5", "BOLD_COLOURKEY5"));
+		scanner.braces.setData(attribute.apply("colourkey6", "BOLD_COLOURKEY6"));
+		scanner.numbers.setData(attribute.apply("colourkey7", "BOLD_COLOURKEY7"));
+		for (BeanshellEditor editor : com.eco.bio7.util.Util.getOpenEditors(BeanshellEditor.class)) {
+			editor.invalidateText();
+		}
+	}
+
 }

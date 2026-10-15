@@ -99,19 +99,7 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 	public void init(IWorkbench workbench) {
 
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-		boolean isDark = Display.isSystemDarkTheme();
-
-		if (isDark) {
-
-			PreferenceConverter.setDefault(store, "colourkey", new RGB(250, 243, 243));
-			PreferenceConverter.setDefault(store, "colourkey1", new RGB(167, 236, 33));
-			PreferenceConverter.setDefault(store, "colourkey2", new RGB(250, 243, 243));
-
-		} else {
-			PreferenceConverter.setDefault(store, "colourkey", new RGB(0, 0, 0));
-			PreferenceConverter.setDefault(store, "colourkey1", new RGB(127, 0, 85));
-			PreferenceConverter.setDefault(store, "colourkey2", new RGB(42, 0, 255));
-		}
+		PreferenceInitializer.setColorDefaults(store, com.eco.bio7.util.Util.isDarkTheme());
 
 		//PreferenceConverter.setDefault(store, "colourkey3", new RGB(128, 128, 128));
 
@@ -272,6 +260,23 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 	public boolean performOk() {
 
 		return super.performOk();
+	}
+
+	/**
+	 * Updates the colors of the open Markdown editors from the preferences (e.g., after
+	 * the theme has been changed between light and dark).
+	 */
+	public static void updateEditorColors() {
+		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+		MarkdownColorProvider provider = Activator.getDefault().getMarkdownColorProvider();
+		java.util.function.BiFunction<String, String, TextAttribute> attribute = (key, bold) -> new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, key)), null,
+				store.getBoolean(bold) ? SWT.BOLD : SWT.NORMAL);
+		for (MarkdownEditor editor : com.eco.bio7.util.Util.getOpenEditors(MarkdownEditor.class)) {
+			editor.getMarkConf().getMarkdownScanner().other.setData(attribute.apply("colourkey", "BOLD_COLOURKEY"));
+			editor.getMarkConf().getMarkdownScanner().head.setData(attribute.apply("colourkey1", "BOLD_COLOURKEY1"));
+			editor.getMarkConf().comment.att.setData(attribute.apply("colourkey2", "BOLD_COLOURKEY2"));
+			editor.invalidateText();
+		}
 	}
 
 }

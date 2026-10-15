@@ -399,32 +399,6 @@ public class IJMacroEditor extends TextEditor implements IPropertyChangeListener
 		 */
 		setEditorContextMenuId("#IJMacroContext");
 
-		if (Util.isThemeBlack()) {
-			IPreferenceStore store = IJMacroEditorPlugin.getDefault().getPreferenceStore();
-			PreferenceConverter.setDefault(store, "colourkey", new RGB(167, 236, 33));
-			PreferenceConverter.setDefault(store, "colourkey1", new RGB(177, 102, 218));
-			PreferenceConverter.setDefault(store, "colourkey2", new RGB(23, 198, 163));
-			PreferenceConverter.setDefault(store, "colourkey3", new RGB(128, 128, 128));
-			PreferenceConverter.setDefault(store, "colourkey4", new RGB(204, 108, 29));
-			PreferenceConverter.setDefault(store, "colourkey5", new RGB(230, 230, 250));
-			PreferenceConverter.setDefault(store, "colourkey6", new RGB(250, 243, 243));
-			PreferenceConverter.setDefault(store, "colourkey7", new RGB(104, 151, 187));
-			PreferenceConverter.setDefault(store, "colourkey8", new RGB(250, 243, 243));
-		} else {
-
-			IPreferenceStore store = IJMacroEditorPlugin.getDefault().getPreferenceStore();
-			PreferenceConverter.setDefault(store, "colourkey", new RGB(127, 0, 85));
-			PreferenceConverter.setDefault(store, "colourkey1", new RGB(127, 0, 85));
-			PreferenceConverter.setDefault(store, "colourkey2", new RGB(42, 0, 255));
-			PreferenceConverter.setDefault(store, "colourkey3", new RGB(128, 128, 128));
-			PreferenceConverter.setDefault(store, "colourkey4", new RGB(0, 0, 0));
-			PreferenceConverter.setDefault(store, "colourkey5", new RGB(0, 0, 0));
-			PreferenceConverter.setDefault(store, "colourkey6", new RGB(0, 0, 0));
-			PreferenceConverter.setDefault(store, "colourkey7", new RGB(0, 0, 0));
-			PreferenceConverter.setDefault(store, "colourkey8", new RGB(63, 127, 95));
-
-		}
-
 	}
 
 	public IJMacroConfiguration getIjMacroConfig() {

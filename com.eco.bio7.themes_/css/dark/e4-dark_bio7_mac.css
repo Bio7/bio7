@@ -1,0 +1,49 @@
+/*******************************************************************************
+ * Copyright (c) 2007-2026 M. Austenfeld
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     M. Austenfeld
+ *******************************************************************************/
+
+/* The Bio7 additions to the Eclipse dark theme for MacOSX (imported after e4-dark_bio7.css)! */
+
+/* Some font size corrections for the Mac tool bars! */
+#com-eco-bio7-rbridge-RTable.MToolBar,
+#com-eco-bio7-imagej.MToolBar,
+#com-eco-bio7-thumbnails.MToolBar,
+#com-eco-bio7-browser-Browser.MToolBar,
+#org-eclipse-ui-console-ConsoleView.MToolBar,
+#org-eclipse-ui-views-ContentOutline.MToolBar {
+	background-color: '#org-eclipse-ui-workbench-DARK_BACKGROUND';
+	font-size: 14px;
+}
+
+#com-eco-bio7-ijmacro-editor-toolbar-debug.MToolBar {
+	background-color: '#org-eclipse-ui-workbench-DARK_BACKGROUND';
+	font-size: 14px;
+}
+
+/* The font size of the perspective bar! */
+#PerspectiveSwitcher ToolBar {
+	background-color: #41464A #1E1E1E #1E1E1E 10.0% 90.0% 5.0%;
+	font-size: 14px;
+}
+
+#org-eclipse-jdt-ui-PackageExplorer,
+#org-eclipse-ui-navigator-ProjectExplorer {
+	background-color: '#org-eclipse-ui-workbench-DARK_BACKGROUND';
+	font-size: 14px;
+}
+
+/*
+ * The view menu toolbar in the tab row of a view (CTabFolder top right) is transparent and a
+ * line of the tab folder is drawn through the view menu icon. The color of the tab folder
+ * (DARK_BACKGROUND, #1E1E1E) has no effect, so a nearly identical color is used!
+ */
+CTabFolder ToolBar {
+	background-color: #1F1F1F;
+}

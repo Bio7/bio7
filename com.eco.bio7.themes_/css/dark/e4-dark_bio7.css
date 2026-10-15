@@ -1,0 +1,278 @@
+/*******************************************************************************
+ * Copyright (c) 2007-2026 M. Austenfeld
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     M. Austenfeld
+ *******************************************************************************/
+
+/*
+ * The Bio7 additions to the Eclipse dark theme (all platforms). The Eclipse dark
+ * theme is copied unchanged into the folder "eclipse" (see the README.txt there)
+ * and imported before this file, so that the rules here override it.
+ */
+
+/* ######################## Colors (Preferences > Colors and Fonts) ######################## */
+
+/* The darker Bio7 background (like the background of MacOSX in the dark mode)! */
+ColorDefinition#org-eclipse-ui-workbench-DARK_BACKGROUND {
+	color: #1E1E1E;
+}
+
+ColorDefinition#org-eclipse-ui-workbench-DARK_FOREGROUND {
+	color: #dddddd;
+}
+
+/* The Bio7 tabs (the selected tab has the background of the views)! */
+ColorDefinition#org-eclipse-ui-workbench-INACTIVE_UNSELECTED_TABS_COLOR_START {
+	color: #1E1E1E;
+}
+
+ColorDefinition#org-eclipse-ui-workbench-INACTIVE_UNSELECTED_TABS_COLOR_END {
+	color: #1E1E1E;
+}
+
+ColorDefinition#org-eclipse-ui-workbench-INACTIVE_TAB_BG_START {
+	color: #1E1E1E;
+}
+
+ColorDefinition#org-eclipse-ui-workbench-INACTIVE_TAB_BG_END {
+	color: #1E1E1E;
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_UNSELECTED_TABS_COLOR_START {
+	color: #1E1E1E;
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_UNSELECTED_TABS_COLOR_END {
+	color: #1E1E1E;
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_BG_START {
+	color: #1E1E1E;
+}
+
+/* Also the background of the tool bar area of the active view (e.g., the ImageJ menus)! */
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_BG_END {
+	color: #1E1E1E;
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_BG_START {
+	color: #1E1E1E;
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_BG_END {
+	color: #1E1E1E;
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_OUTER_KEYLINE_COLOR {
+	color: #4B4C4F;
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_OUTLINE_COLOR {
+	color: #484848;
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_UNSELECTED_TEXT_COLOR {
+	color: #DDDDDD;
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_SELECTED_TEXT_COLOR {
+	color: #F7F8F8;
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_SELECTED_TEXT_COLOR {
+	color: #CCCCCC;
+}
+
+/* ############################## Workbench ############################## */
+
+/* The raised Bio7 tool bar, perspective switcher and trim bars! */
+.MTrimBar,
+#org-eclipse-ui-main-toolbar,
+#PerspectiveSwitcher,
+#org-eclipse-ui-main-toolbar ToolItem,
+#PerspectiveSwitcher ToolItem {
+	background-color: #41464A #1E1E1E #1E1E1E 10.0% 90.0% 5.0%;
+	color: #EBE8E4;
+}
+
+#org-eclipse-ui-main-toolbar,
+#PerspectiveSwitcher {
+	eclipse-perspective-keyline-color: #585858;
+	handle-image: none;
+}
+
+#org-eclipse-ui-trim-status,
+#org-eclipse-ui-trim-vertical1,
+#org-eclipse-ui-trim-vertical2,
+.MPartSashContainer {
+	background-color: '#org-eclipse-ui-workbench-DARK_BACKGROUND';
+}
+
+/* The progress bar of the status line! */
+#org-eclipse-ui-ProgressBar Composite,
+#org-eclipse-ui-ProgressBar Canvas {
+	background-color: '#org-eclipse-ui-workbench-DARK_BACKGROUND';
+	color: #eeeeee;
+}
+
+Shell Tree, Shell Table, Shell List {
+	background-color: '#org-eclipse-ui-workbench-DARK_BACKGROUND';
+}
+
+/* The Bio7 editor background (see e4-dark_preferencestyle.css)! */
+#org-eclipse-ui-editorss CTabFolder {
+	swt-selected-tab-fill: '#1E1E1E';
+}
+
+#org-eclipse-e4-ui-compatibility-editor Canvas,
+#org-eclipse-e4-ui-compatibility-editor Canvas > * {
+	background-color: '#org-eclipse-ui-workbench-DARK_BACKGROUND';
+}
+
+/* The darker Bio7 background of the views (#2F2F2F in Eclipse)! */
+.MPart Composite,
+.MPart Composite > *,
+.MPart Composite > * > *,
+.MPart Label,
+.MPart ScrolledForm,
+.MPart Form,
+.MPart Section,
+.MPart FormText,
+.MPart Link,
+.MPart Sash,
+.MPart Button,
+.MPart Group,
+.MPart SashForm,
+.MPart Tree,
+.MPart FilteredTree,
+.MPart RegistryFilteredTree,
+.MPart PageSiteComposite,
+.MPart DependenciesComposite,
+.MPart Text[style~='SWT.READ_ONLY'],
+.MPart FigureCanvas,
+.MPart ListEditorComposite,
+.MPart ScrolledComposite,
+.Mpart ScrolledComposite ProgressInfoItem,
+.MPart Form ScrolledPageBook,
+.MPart DependenciesComposite > SashForm > Section > *,
+.MPart Section > Label {
+	background-color: '#org-eclipse-ui-workbench-DARK_BACKGROUND';
+}
+
+/* Rules of the Eclipse dark theme with a fixed background (#252525, #262626)! */
+.MPartStack.active CTabFolder Canvas,
+#org-eclipse-jdt-ui-SourceView StyledText,
+#org-eclipse-wst-jsdt-ui-SourceView StyledText,
+#org-eclipse-e4-ui-compatibility-editor LayoutCanvas {
+	background-color: '#org-eclipse-ui-workbench-DARK_BACKGROUND';
+}
+
+/* Windows and Linux: rules of the Eclipse dark theme with a fixed background (#2F2F2F, #262626)! */
+CTabFolder Canvas,
+.MPartStack.active CTabFolder Canvas,
+.MPartStack.active Table,
+.MPart Form,
+.MPart Form Link,
+.MPart Form Button,
+.MPart Form Group,
+.MPart Form ScrolledPageBook,
+.MPart Form DependenciesComposite,
+.MPart Form ListEditorComposite,
+.MPart Form Text[style~='SWT.READ_ONLY'],
+.MPart Form DependenciesComposite > SashForm > Section > *,
+.MPartStack.active .MPart Form,
+.MPartStack.active .MPart Form Link,
+.MPartStack.active .MPart Form Button,
+.MPartStack.active .MPart Form Group,
+.MPartStack.active .MPart Form ScrolledPageBook,
+.MPartStack.active .MPart Form DependenciesComposite,
+.MPartStack.active .MPart Form ListEditorComposite,
+.MPartStack.active .MPart Form Text[style~='SWT.READ_ONLY'],
+.MPartStack.active .MPart Form DependenciesComposite > SashForm > Section > *,
+#org-eclipse-help-ui-HelpView Form,
+#org-eclipse-help-ui-HelpView Form Sash,
+#org-eclipse-help-ui-HelpView Form Label,
+#org-eclipse-help-ui-HelpView Form Section,
+#org-eclipse-help-ui-HelpView Form FormText,
+#org-eclipse-help-ui-HelpView Form Button,
+#org-eclipse-help-ui-HelpView Form Group,
+#org-eclipse-help-ui-HelpView Form ScrolledPageBook,
+#org-eclipse-help-ui-HelpView Form Text[style~='SWT.READ_ONLY'],
+.MPartStack.active #org-eclipse-help-ui-HelpView Form,
+.MPartStack.active #org-eclipse-help-ui-HelpView Form Sash,
+.MPartStack.active #org-eclipse-help-ui-HelpView Form Label,
+.MPartStack.active #org-eclipse-help-ui-HelpView Form Section,
+.MPartStack.active #org-eclipse-help-ui-HelpView Form FormText,
+.MPartStack.active #org-eclipse-help-ui-HelpView Form Button,
+.MPartStack.active #org-eclipse-help-ui-HelpView Form Group,
+.MPartStack.active #org-eclipse-help-ui-HelpView Form ScrolledPageBook,
+.MPartStack.active #org-eclipse-help-ui-HelpView Form Text[style~='SWT.READ_ONLY'] {
+	background-color: '#org-eclipse-ui-workbench-DARK_BACKGROUND';
+}
+
+/* The Bio7 console has the background of the views! */
+#org-eclipse-ui-console-ConsoleView .MPart > Composite,
+#org-eclipse-ui-console-ConsoleView .MPart StyledText,
+#org-eclipse-ui-console-ConsoleView .MPart PageBook Label {
+	background-color: '#org-eclipse-ui-workbench-DARK_BACKGROUND';
+	color: #CCCCCC;
+}
+
+.MPartStack.active #org-eclipse-ui-console-ConsoleView .MPart > Composite,
+.MPartStack.active #org-eclipse-ui-console-ConsoleView .MPart StyledText,
+.MPartStack.active #org-eclipse-ui-console-ConsoleView .MPart PageBook Label {
+	background-color: '#org-eclipse-ui-workbench-DARK_BACKGROUND';
+	color: #CCCCCC;
+}
+
+/* ############################## Widgets ############################## */
+
+/* The Nebula grid (e.g. the R table, more specific than the views rule)! */
+Grid,
+.MPart Grid {
+	background-color: '#org-eclipse-ui-workbench-DARK_BACKGROUND';
+	color: #AAAAAA;
+}
+
+/* The flat scrollbar overlay! */
+Table, Tree, Grid {
+	flat-scroll-bar: true;
+	swt-header-color: #eeeeee;
+	swt-header-background-color: #1E1E1E;
+}
+
+StyledText {
+	swt-scrollbar-themed: true;
+	swt-scrollbar-background-color: #383838;
+	swt-scrollbar-foreground-color: #494949;
+	swt-scrollbar-width: 4px;
+	swt-scrollbar-border-radius: 4px;
+	swt-scrollbar-mouse-near-scroll-width: 15px;
+}
+
+/* ############################## Bio7 views ############################## */
+
+/* The view ids are important to color the tool bars, etc.! */
+#com-eco-bio7-imagej Label,
+#com-eco-bio7-rbridge-RTable Label,
+#com-eco-bio7-rbridge-RTable.MToolBar,
+#com-eco-bio7-rbridge-RTable.MToolBar Label,
+#org-eclipse-ui-console-ConsoleView.MToolBar Label {
+	color: #dddddd;
+}
+
+#com-eco-bio7-thumbnails,
+#com-eco-bio7-thumbnails Label,
+#com-eco-bio7-thumbnails.MToolBar,
+#com-eco-bio7-thumbnails.MToolBar Label,
+#com-eco-bio7-browser-Browser.MToolBar,
+#com-eco-bio7-browser-Browser.MToolBar Label,
+#org-eclipse-ui-console-ConsoleView.MToolBar {
+	background-color: '#org-eclipse-ui-workbench-DARK_BACKGROUND';
+	color: #dddddd;
+}

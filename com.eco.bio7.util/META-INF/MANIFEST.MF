@@ -13,6 +13,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.ide
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Bundle-ActivationPolicy: lazy
+Import-Package: org.osgi.service.event
 Bundle-ClassPath: bin/
 Export-Package: com.eco.bio7.util,
  com.eco.bio7.zip.util

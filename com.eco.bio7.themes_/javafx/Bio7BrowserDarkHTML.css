@@ -1,10 +1,10 @@
 body {
-    background: #252525;
+    background: #1E1E1E;
     color: #CCCCCC;
  }
 
 h1 {
-    background: #252525;
+    background: #1E1E1E;
     color: #CCCCCC;
     font-family: monospace;
     font-size: x-large;
@@ -12,27 +12,27 @@ h1 {
 }
 
 h2 {
-    background: #252525;
+    background: #1E1E1E;
     color: #CCCCCC;
     font-family: monospace;
     font-size: large;
 }
 
 h3, h4, h5 {
-    background: #252525;
+    background: #1E1E1E;
     color: #CCCCCC;
     font-family: monospace;
 }
 
 a {
-    background: #252525;
+    background: #1E1E1E;
     color: grey;
 }
 
 em.navigation {
     font-weight: bold;
     font-style: normal;
-    background: #252525;
+    background: #1E1E1E;
     color: rgb(40%, 40%, 40%);
     font-family: monospace;
 }

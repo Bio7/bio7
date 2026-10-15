@@ -306,6 +306,128 @@ public class Util {
 	}
 
 	/**
+	 * Returns true if the dark theme is active or will be activated at startup.
+	 * Unlike {@link #isThemeBlack()} this method can be called before the
+	 * workbench has been created (e.g., in a preference initializer). Like the
+	 * Eclipse theme engine the theme of the preferences is used and without a
+	 * selected theme the dark theme if the operating system uses a dark theme.
+	 * 
+	 * @return a boolean value.
+	 */
+	public static boolean isDarkTheme() {
+		String id = Platform.getPreferencesService().getString("org.eclipse.e4.ui.css.swt.theme", "themeid", null, null);
+		if (id == null || id.isEmpty()) {
+			return Display.isSystemDarkTheme() && !"true".equalsIgnoreCase(System.getProperty("org.eclipse.e4.ui.css.theme.disableOSDarkThemeInherit"));
+		}
+		return isDarkThemeId(id);
+	}
+
+	/**
+	 * Calls the listener (in the UI thread) when the theme is changed between a
+	 * light and a dark theme, e.g. to update the colors of the editors. The
+	 * argument is true for a dark theme.
+	 * 
+	 * @param listener the listener.
+	 */
+	public static void addThemeListener(java.util.function.Consumer<Boolean> listener) {
+		org.osgi.framework.BundleContext context = org.osgi.framework.FrameworkUtil.getBundle(Util.class).getBundleContext();
+		if (context == null) {
+			return;
+		}
+		final boolean[] last = { isDarkTheme() };
+		java.util.Dictionary<String, Object> properties = new java.util.Hashtable<String, Object>();
+		properties.put(org.osgi.service.event.EventConstants.EVENT_TOPIC, IThemeEngine.Events.THEME_CHANGED);
+		org.osgi.service.event.EventHandler handler = event -> {
+			Object theme = event.getProperty(IThemeEngine.Events.THEME);
+			if (!(theme instanceof ITheme)) {
+				return;
+			}
+			boolean dark = isDarkThemeId(((ITheme) theme).getId());
+			Runnable update = () -> {
+				if (dark != last[0]) {
+					last[0] = dark;
+					listener.accept(dark);
+				}
+			};
+			if (Display.getCurrent() != null) {
+				update.run();
+			} else {
+				Display.getDefault().asyncExec(update);
+			}
+		};
+		context.registerService(org.osgi.service.event.EventHandler.class, handler, properties);
+	}
+
+	/**
+	 * Removes the stored colors which are equal to the default color of the light
+	 * or the dark theme, so that these colors follow the theme. E.g., older Bio7
+	 * versions stored the colors of the light theme, which then were also used in
+	 * the dark theme. Colors which have been changed by the user are kept.
+	 * 
+	 * @param store    the preference store of an editor.
+	 * @param defaults sets the default colors of the light (false) or the dark
+	 *                 (true) theme in the given store.
+	 */
+	public static void followThemeColors(org.eclipse.jface.preference.IPreferenceStore store, java.util.function.BiConsumer<org.eclipse.jface.preference.IPreferenceStore, Boolean> defaults) {
+		java.util.Map<String, String> light = themeDefaults(defaults, false);
+		java.util.Map<String, String> dark = themeDefaults(defaults, true);
+		java.util.Set<String> names = new java.util.HashSet<String>(light.keySet());
+		names.addAll(dark.keySet());
+		for (String name : names) {
+			if (store.contains(name) && !store.isDefault(name)) {
+				String value = store.getString(name);
+				if (value.equals(light.get(name)) || value.equals(dark.get(name))) {
+					store.setToDefault(name);
+				}
+			}
+		}
+	}
+
+	/* The default values of a theme (recorded with a temporary store)! */
+	private static java.util.Map<String, String> themeDefaults(java.util.function.BiConsumer<org.eclipse.jface.preference.IPreferenceStore, Boolean> defaults, boolean dark) {
+		java.util.Map<String, String> values = new java.util.HashMap<String, String>();
+		defaults.accept(new org.eclipse.jface.preference.PreferenceStore() {
+			@Override
+			public void setDefault(String name, String value) {
+				values.put(name, value);
+			}
+		}, dark);
+		return values;
+	}
+
+	/**
+	 * Returns the open (restored) editors of the given type in all workbench
+	 * windows.
+	 * 
+	 * @param type the class of the editors.
+	 * @return a list of editors.
+	 */
+	public static <T> java.util.List<T> getOpenEditors(Class<T> type) {
+		java.util.List<T> editors = new java.util.ArrayList<T>();
+		if (!PlatformUI.isWorkbenchRunning()) {
+			return editors;
+		}
+		for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+			for (IWorkbenchPage page : window.getPages()) {
+				for (org.eclipse.ui.IEditorReference ref : page.getEditorReferences()) {
+					IEditorPart editor = ref.getEditor(false);
+					if (type.isInstance(editor)) {
+						editors.add(type.cast(editor));
+					}
+				}
+			}
+		}
+		return editors;
+	}
+
+	/* True if the theme id is one of the dark themes! */
+	private static boolean isDarkThemeId(String activeTheme) {
+		return activeTheme.startsWith(MessagesThemeIDsSettings.Theme_Black_1) || activeTheme.startsWith(MessagesThemeIDsSettings.Theme_Black_2)
+				|| activeTheme.startsWith(MessagesThemeIDsSettings.Theme_Black_3) || activeTheme.startsWith(MessagesThemeIDsSettings.Theme_Black_4)
+				|| activeTheme.startsWith(MessagesThemeIDsSettings.Theme_Black_5);
+	}
+
+	/**
 	 * A method to detect if the dark theme is active.
 	 * 
 	 * @return a boolean value.
@@ -327,11 +449,7 @@ public class Util {
 			/*
 			 * We use a black style if the CSS is the dark theme or the darkest dark theme!
 			 */
-			if (activeTheme.startsWith(MessagesThemeIDsSettings.Theme_Black_1)
-					|| activeTheme.startsWith(MessagesThemeIDsSettings.Theme_Black_2)
-					|| activeTheme.startsWith(MessagesThemeIDsSettings.Theme_Black_3)
-					|| activeTheme.startsWith(MessagesThemeIDsSettings.Theme_Black_4)
-					|| activeTheme.startsWith(MessagesThemeIDsSettings.Theme_Black_5)) {
+			if (isDarkThemeId(activeTheme)) {
 
 				themeBlack = true;
 

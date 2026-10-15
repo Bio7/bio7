@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
@@ -54,7 +55,6 @@ import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.jsoup.Jsoup;
-import org.jsoup.select.Elements;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.REngineException;
@@ -76,7 +76,6 @@ import com.eco.bio7.rbridge.RemoveRLibrarysJob;
 import com.eco.bio7.rbridge.UpdateREnvironmentTableJob;
 import com.eco.bio7.rbridge.UpdateRPackagesJob;
 import com.eco.bio7.rbridge.UpdateSelectedRPackagesJob;
-import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.util.Util;
 import org.eclipse.swt.custom.CTabFolder;
@@ -184,27 +183,7 @@ public class PackageInstallView extends ViewPart {
 
 								public void run() {
 
-									Work.openView("com.eco.bio7.browser.Browser");
-									if (ApplicationWorkbenchWindowAdvisor.isThemeBlack()) { //
-
-										org.jsoup.nodes.Document document = null;
-										try {
-											document = Jsoup.connect(packageInfoSite).get();
-										} catch (IOException e) {
-											// TODO Auto-generated catch block
-											e.printStackTrace();
-										}
-
-										Elements links = document.select("body");
-										links.attr("style", "background: #252525; color: #CCCCCC;");
-										Elements a = document.select("a");
-										a.attr("style", "background: #252525;color: #FFFFFF;");
-										String html = document.html();
-										BrowserUtil.setText(html);
-
-									} else {
-										BrowserUtil.setLocation(packageInfoSite);
-									}
+									showPackageDescription(packageInfoSite);
 
 								}
 							});
@@ -537,27 +516,7 @@ public class PackageInstallView extends ViewPart {
 
 								public void run() {
 
-									Work.openView("com.eco.bio7.browser.Browser");
-									if (ApplicationWorkbenchWindowAdvisor.isThemeBlack()) { //
-
-										org.jsoup.nodes.Document document = null;
-										try {
-											document = Jsoup.connect(packageInfoSite).get();
-										} catch (IOException e) {
-											// TODO Auto-generated catch block
-											e.printStackTrace();
-										}
-
-										Elements links = document.select("body");
-										links.attr("style", "background: #252525; color: #CCCCCC;");
-										Elements a = document.select("a");
-										a.attr("style", "background: #252525;color: #FFFFFF;");
-										String html = document.html();
-										BrowserUtil.setText(html);
-
-									} else {
-										BrowserUtil.setLocation(packageInfoSite);
-									}
+									showPackageDescription(packageInfoSite);
 
 								}
 							});
@@ -1365,4 +1324,55 @@ public class PackageInstallView extends ViewPart {
 		return grid;
 	}
 
+	/*
+	 * Opens the CRAN description of a package in the Bio7 browser. In the dark
+	 * theme the page is loaded in a job and displayed with the dark CSS of the R
+	 * help (like in the R-Shell view)!
+	 */
+	private void showPackageDescription(String url) {
+		Work.openView("com.eco.bio7.browser.Browser");
+		if (!Util.isThemeBlack()) {
+			BrowserUtil.setLocation(url);
+			return;
+		}
+		Job job = new Job("Load package description") {
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				String html = null;
+				try {
+					org.jsoup.nodes.Document document = Jsoup.connect(url).get();
+					/* Relative links and images of the page are resolved with the base URL! */
+					document.head().prependElement("base").attr("href", url);
+					/* After the CSS of the page, so that the dark CSS is applied! */
+					document.head().appendElement("style").text(darkBrowserCss());
+					html = document.html();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				final String text = html;
+				Util.getDisplay().asyncExec(() -> {
+					if (text != null) {
+						BrowserUtil.setText(text);
+					} else {
+						BrowserUtil.setLocation(url);
+					}
+				});
+				return Status.OK_STATUS;
+			}
+		};
+		job.setSystem(true);
+		job.schedule();
+	}
+
+	/* The dark CSS of the R help (see the R-Shell view)! */
+	private static String darkBrowserCss() {
+		try {
+			java.net.URL css = Platform.getBundle("com.eco.bio7.themes").getEntry("javafx/Bio7BrowserDarkHTML.css");
+			try (java.io.InputStream in = css.openStream()) {
+				return new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+			}
+		} catch (IOException | RuntimeException e) {
+			return "body { background: #1E1E1E; color: #CCCCCC; } a { color: grey; }";
+		}
+	}
 }

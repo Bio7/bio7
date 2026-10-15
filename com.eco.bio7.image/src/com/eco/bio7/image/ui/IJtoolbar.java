@@ -99,7 +99,7 @@ public class IJtoolbar extends ViewPart {
 		boolean darkBackground = (0.299 * b.red + 0.587 * b.green + 0.114 * b.blue) < 128;
 		if (Util.isThemeBlack() && !darkBackground) {
 			/* The view is not styled (yet). Use dark default colors! */
-			background = new Color(47, 47, 47);
+			background = new Color(30, 30, 30);
 			foreground = new Color(220, 220, 220);
 		}
 		setColors(ijComposite, background, foreground);
