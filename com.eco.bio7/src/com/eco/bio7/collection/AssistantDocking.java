@@ -22,7 +22,10 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PlatformUI;
 
 import ij.Executer;
@@ -134,12 +137,45 @@ public final class AssistantDocking {
 		parent.addListener(SWT.Resize, sync);
 		parent.addListener(SWT.Move, sync);
 		syncBounds();
-		/* The plugin updates its editor list when its shell is activated! */
-		parent.addListener(SWT.Activate, e -> {
-			if (shell != null && !shell.isDisposed()) {
-				shell.notifyListeners(SWT.Activate, new Event());
-			}
-		});
+		/*
+		 * The plugin updates its editor list (and the "Auto" target) when its shell is
+		 * activated, but the hidden shell is never activated. The shell is notified
+		 * when the view gets the focus and when editors are opened, closed or
+		 * activated in the workbench!
+		 */
+		parent.addListener(SWT.Activate, e -> notifyEditorsChanged());
+		IWorkbenchPage page = viewPage(parent);
+		if (page != null) {
+			IPartListener2 editorListener = new IPartListener2() {
+				@Override
+				public void partActivated(IWorkbenchPartReference ref) {
+					notifyEditorsChanged();
+				}
+
+				@Override
+				public void partOpened(IWorkbenchPartReference ref) {
+					if (ref instanceof IEditorReference) {
+						notifyEditorsChanged();
+					}
+				}
+
+				@Override
+				public void partClosed(IWorkbenchPartReference ref) {
+					if (ref instanceof IEditorReference) {
+						notifyEditorsChanged();
+					}
+				}
+
+				@Override
+				public void partInputChanged(IWorkbenchPartReference ref) {
+					if (ref instanceof IEditorReference) {
+						notifyEditorsChanged();
+					}
+				}
+			};
+			page.addPartListener(editorListener);
+			parent.addListener(SWT.Dispose, e -> page.removePartListener(editorListener));
+		}
 		/* Closing the view closes the assistant! */
 		Listener closeAssistant = e -> {
 			Shell docked = shell;
@@ -168,6 +204,24 @@ public final class AssistantDocking {
 				break;
 			}
 		}
+	}
+
+	/* Lets the plugin refresh its editor list (later, so that the workbench has finished the part change)! */
+	private static void notifyEditorsChanged() {
+		Shell s = shell;
+		if (s == null || s.isDisposed()) {
+			return;
+		}
+		s.getDisplay().asyncExec(() -> {
+			if (!s.isDisposed() && s == shell) {
+				s.notifyListeners(SWT.Activate, new Event());
+			}
+		});
+	}
+
+	private static IWorkbenchPage viewPage(Composite parent) {
+		Object view = parent.getData(CustomViewFullscreen.VIEW_KEY);
+		return view instanceof CustomView ? ((CustomView) view).getSite().getPage() : null;
 	}
 
 	/* The hidden shell has the bounds of the view, so that dialogs of the plugin are centered on the view! */
