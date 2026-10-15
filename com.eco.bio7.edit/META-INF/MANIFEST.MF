@@ -8,9 +8,13 @@ Bundle-Version: 2.0.0
 Bundle-Activator: com.eco.bio7.editor.BeanshellEditorPlugin
 Bundle-Vendor: ECO
 Bundle-Localization: plugin
-Require-Bundle: org.eclipse.ui,org.eclipse.core.runtime,org.eclipse.jf
- ace.text,org.eclipse.ui.editors,org.eclipse.ui.workbench.texteditor,o
- rg.eclipse.jdt.core
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.jface.text,
+ org.eclipse.ui.editors,
+ org.eclipse.ui.workbench.texteditor,
+ org.eclipse.jdt.core,
+ com.eco.bio7.util
 Eclipse-LazyStart: true
 Export-Package: com.eco.bio7.beanshell.editor.preferences,
  com.eco.bio7.beanshelleditor.actions,
