@@ -15,6 +15,12 @@ public class Application implements IApplication {
 		try {
 			int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
 			if (returnCode == PlatformUI.RETURN_RESTART) {
+				/*
+				 * The JVM runs in the launcher process (-vm libjli), so System.exit below also
+				 * ends the launcher and it cannot restart Bio7. A helper process starts Bio7
+				 * again (e.g., after an update or a theme change)!
+				 */
+				DebugRestart.relaunchAfterExit();
 				return IApplication.EXIT_RESTART;
 			}
 			return IApplication.EXIT_OK;

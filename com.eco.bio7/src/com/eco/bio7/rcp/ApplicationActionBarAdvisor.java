@@ -116,6 +116,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 	private IWorkbenchAction exitAction;
 
+	private org.eclipse.jface.action.IAction restartDebugAction;
+
 	private IWorkbenchAction print;
 
 	private IWorkbenchAction New;
@@ -365,6 +367,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		aboutAction = ActionFactory.ABOUT.create(window);
 		register(aboutAction);
+
+		/* Restarts Bio7 with (or without) a port for a Java debugger! */
+		restartDebugAction = DebugRestart.createAction(window);
 
 		newWindowAction = ActionFactory.OPEN_NEW_WINDOW.create(window);
 		register(newWindowAction);
@@ -754,6 +759,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		fileMenu.add(new Separator());
 		fileMenu.add(Import);
 		fileMenu.add(Export);
+		fileMenu.add(new Separator());
+		fileMenu.add(restartDebugAction);
 		fileMenu.add(new Separator());
 		/* Avoid buggy action on MacOSX */
 		if (!Util.getOS().equals("Mac")) {

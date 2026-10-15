@@ -1325,6 +1325,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		ImageJWindowAction.setBio7RCP(true);
 		/* The window of the LLM Assistant plugin is docked into a custom view! */
 		com.eco.bio7.collection.AssistantDocking.install(getWindowConfigurer().getWindow().getShell().getDisplay());
+		/* Started with File > Restart in Debug Mode... (or another JDWP argument)! */
+		if (DebugRestart.isDebugMode()) {
+			System.out.println("[Bio7] Debug mode: a Java debugger can attach to " + DebugRestart.debugAddress()
+					+ " (e.g. Eclipse: Debug Configurations > Remote Java Application).");
+		}
 		/* Register Bio7 as the SWTImageJ host (images are displayed in the ImageJ-Canvas view)! */
 		com.eco.bio7.image.ui.Bio7ImageJ.install();
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
