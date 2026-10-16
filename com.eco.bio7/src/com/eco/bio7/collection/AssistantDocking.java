@@ -214,7 +214,20 @@ public final class AssistantDocking {
 		}
 		s.getDisplay().asyncExec(() -> {
 			if (!s.isDisposed() && s == shell) {
-				s.notifyListeners(SWT.Activate, new Event());
+				/*
+				 * Only the Activate listeners of the shell are called. notifyListeners would
+				 * also run the Activate filters of the display: the workbench would then take
+				 * the hidden shell as the active (dialog) shell and disable the key bindings
+				 * of the editors!
+				 */
+				Event event = new Event();
+				event.type = SWT.Activate;
+				event.display = s.getDisplay();
+				event.widget = s;
+				event.time = (int) System.currentTimeMillis();
+				for (Listener listener : s.getListeners(SWT.Activate)) {
+					listener.handleEvent(event);
+				}
 			}
 		});
 	}
