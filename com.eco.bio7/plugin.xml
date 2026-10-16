@@ -463,7 +463,7 @@
                value="icons/bio7new.png"/>
          <property
                name="startupProgressRect"
-               value="95,50,510,30"/>
+               value="398,330,250,8"/>
           <!-- <property
                name="aboutImage"
                value="icons/bio7new.png"/>-->

@@ -68,7 +68,6 @@ import com.eco.bio7.actions.Interpret;
 import com.eco.bio7.actions.InterpretPython;
 import com.eco.bio7.actions.JavaScriptInterpret;
 import com.eco.bio7.actions.LibreOfficeConnection;
-import com.eco.bio7.actions.OfficeOpenAction;
 import com.eco.bio7.actions.OpenBio7BrowserAction;
 import com.eco.bio7.actions.OpenViewMenuAction;
 import com.eco.bio7.actions.ShowEditorAreaAction;
@@ -86,8 +85,6 @@ import com.eco.bio7.rbridge.actions.ClipboardRValues;
 import com.eco.bio7.rbridge.actions.ExecuteRTextSelection;
 import com.eco.bio7.rbridge.actions.InterpretR;
 import com.eco.bio7.rbridge.actions.LoadRWorkspace;
-import com.eco.bio7.rbridge.actions.OfficeValueToRAction;
-import com.eco.bio7.rbridge.actions.OfficeValueToRHeadAction;
 import com.eco.bio7.rbridge.actions.OpenRservePreferencesAction;
 import com.eco.bio7.rbridge.actions.PrintExpression;
 import com.eco.bio7.rbridge.actions.SaveRWorkspace;
@@ -172,13 +169,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 	private IPreferenceStore store;
 
-	private OfficeOpenAction officeopenspread;
-
-	private OfficeValueToRAction officevaluetor;
-
-	private OfficeValueToRHeadAction officevaluetorhead;
-
-	// private OfficeValueAction officevalue;
 
 
 	private static BeanShellImportAction bshimportaction;
@@ -270,14 +260,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		hideMainMenuAndFullscreen = new HideMainMenusAndFullscreen("Fullscreen/Hide Menus", window2);
 		register(hideMainMenuAndFullscreen);
-
-		officeopenspread = new OfficeOpenAction("Open Spreadsheet", window2);
-
-		officevaluetor = new OfficeValueToRAction("Data to R", window2);
-
-		officevaluetorhead = new OfficeValueToRHeadAction("Data with Head to R ", window2);
-
-		// officevalue = new OfficeValueAction("Data to Beanshell", window2);
 
 		save = ActionFactory.SAVE.create(window);
 		register(save);
@@ -529,7 +511,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		/* Set not an references extra menu for MacOSX! */
 		prefMenu.setVisible(!Util.getOS().equals("Mac"));
 		MenuManager rMenu = new MenuManager("R");
-		MenuManager OpenOfficeMenu = new MenuManager("LibreOffice");
 
 		MenuManager WindowMenu = new MenuManager("&Window");
 		helpMenu = new MenuManager("&Help", IWorkbenchActionConstants.M_HELP);// p2
@@ -702,7 +683,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		menuBar.add(prefMenu);
 		menuBar.add(scriptMenu);
 		menuBar.add(rMenu);
-		menuBar.add(OpenOfficeMenu);
 		// menuBar.add(BeanShellMenu);
 		menuBar.add(WindowMenu);
 		menuBar.add(helpMenu);
@@ -786,12 +766,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		 * rMenu.add(new Separator()); rMenu.add(openRservePref);
 		 */
 
-		OpenOfficeMenu.add(officeopenspread);
-		OpenOfficeMenu.add(new Separator());
-		OpenOfficeMenu.add(officevaluetor);
-		OpenOfficeMenu.add(officevaluetorhead);
-		// OpenOfficeMenu.add(officevalue);
-
 		/*
 		 * BeanShellMenu.add(bshclearaction); BeanShellMenu.add(new Separator());
 		 * BeanShellMenu.add(bshimportaction);
@@ -854,10 +828,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		coolBar.add(new ToolBarContributionItem(toolbar, "mainbio7"));
 		// coolBar.add(new ToolBarContributionItem(imagebar, "image"));
 		toolbar.add(start);
-		toolbar.add(counterreset);
-		toolbar.add(libreofficeconnection);
 		toolbar.add(startrserve);
-		toolbar.add(print);
 		toolbar.add(toolbarCreateProjectAndFiles);
 		// toolbar.add(fastOpenScriptAction);
 

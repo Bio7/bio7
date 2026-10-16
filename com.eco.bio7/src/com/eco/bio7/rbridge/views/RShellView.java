@@ -36,6 +36,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.dialogs.Dialog;
@@ -101,6 +102,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.IHandlerService;
@@ -139,9 +141,13 @@ import com.eco.bio7.rbridge.TransferDataframeToGridJob;
 import com.eco.bio7.rbridge.TransferMatrixToGridJob;
 import com.eco.bio7.rbridge.TransferVectorToGridJob;
 import com.eco.bio7.rbridge.actions.ExecuteRTextSelection;
+import com.eco.bio7.rbridge.actions.OfficeValueToRAction;
+import com.eco.bio7.rbridge.actions.OfficeValueToRHeadAction;
 import com.eco.bio7.rbridge.completion.ContentProposalAdapter;
 import com.eco.bio7.rbridge.completion.ShellCompletion;
+import com.eco.bio7.rcp.ApplicationActionBarAdvisor;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
+import com.eco.bio7.actions.OfficeOpenAction;
 import com.eco.bio7.reditor.actions.OpenFileCreateSourceTemplate;
 import com.eco.bio7.reditor.actions.SaveFileCreateSourceTemplate;
 import com.eco.bio7.reditor.antlr.Parse;
@@ -198,6 +204,8 @@ public class RShellView extends ViewPart {
 	protected Stack<Menu> menuStack;
 	private Menu menuScripts;
 	private Menu menu;
+	/* The number of the fixed items of the context menu (the script items follow)! */
+	private int fixedMenuItems = 6;
 	protected String[] listObjectsArray;
 
 	public RShellView() {
@@ -1391,7 +1399,7 @@ public class RShellView extends ViewPart {
 			public void menuShown(MenuEvent e) {
 				MenuItem[] menuItems = menu.getItems();
 				// Only delete the extra script menu items!
-				for (int i = 6; i < menuItems.length; i++) {
+				for (int i = fixedMenuItems; i < menuItems.length; i++) {
 					if (menuItems[i] != null) {
 						menuItems[i].dispose();
 					}
@@ -2473,7 +2481,10 @@ public class RShellView extends ViewPart {
 		});
 		VectorColumn.setText("Vector to Columns");
 
+		createLibreOfficeMenu(menu);
+
 		new MenuItem(menu, SWT.SEPARATOR);
+		fixedMenuItems = menu.getItemCount();
 
 		listShell.setFont(font);
 
@@ -2498,6 +2509,28 @@ public class RShellView extends ViewPart {
 	}
 
 	/* List files and folders recursively! */
+	/* The LibreOffice actions (connection, spreadsheet, data transfer to R) as a submenu! */
+	private void createLibreOfficeMenu(Menu parent) {
+		IWorkbenchWindow window = getSite().getWorkbenchWindow();
+		MenuItem libreOffice = new MenuItem(parent, SWT.CASCADE);
+		libreOffice.setText("LibreOffice");
+		Menu sub = new Menu(libreOffice);
+		libreOffice.setMenu(sub);
+		addActionItem(sub, "Open LibreOffice Connection", ApplicationActionBarAdvisor.getOpenofficeconnection());
+		new MenuItem(sub, SWT.SEPARATOR);
+		addActionItem(sub, "Open Spreadsheet", new OfficeOpenAction("Open Spreadsheet", window));
+		new MenuItem(sub, SWT.SEPARATOR);
+		addActionItem(sub, "Data to R", new OfficeValueToRAction("Data to R", window));
+		addActionItem(sub, "Data with Head to R", new OfficeValueToRHeadAction("Data with Head to R", window));
+	}
+
+	private static void addActionItem(Menu parent, String text, IAction action) {
+		MenuItem item = new MenuItem(parent, SWT.PUSH);
+		item.setText(text);
+		item.setEnabled(action != null);
+		item.addListener(SWT.Selection, e -> action.run());
+	}
+
 	public void createSubMenus(String directoryName) {
 		File directory = new File(directoryName);
 		File[] fList = directory.listFiles();

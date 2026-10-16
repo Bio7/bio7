@@ -11,6 +11,7 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import com.eco.bio7.collection.Work;
+import com.eco.bio7.rcp.ApplicationActionBarAdvisor;
 import com.eco.bio7.time.Time;
 
 public class Start extends Action implements IMenuCreator {
@@ -53,6 +54,12 @@ public class Start extends Action implements IMenuCreator {
 			}
 
 		});
+
+		new MenuItem(fMenu, SWT.SEPARATOR);
+
+		MenuItem resetItem = new MenuItem(fMenu, SWT.PUSH);
+		resetItem.setText("Counter Reset");
+		resetItem.addListener(SWT.Selection, e -> ApplicationActionBarAdvisor.getCounterreset().run());
 		return fMenu;
 	}
 
