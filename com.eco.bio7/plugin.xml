@@ -453,6 +453,17 @@
       </keyBinding>
    </extension>
    <extension
+         point="org.eclipse.ui.splashHandlers">
+      <splashHandler
+            class="com.eco.bio7.rcp.HiDpiSplashHandler"
+            id="com.eco.bio7.splashHandler">
+      </splashHandler>
+      <splashHandlerProductBinding
+            productId="com.eco.bio7.product"
+            splashId="com.eco.bio7.splashHandler">
+      </splashHandlerProductBinding>
+   </extension>
+   <extension
          id="product"
          point="org.eclipse.core.runtime.products">
       <product
