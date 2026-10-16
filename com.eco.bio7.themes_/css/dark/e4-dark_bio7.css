@@ -100,6 +100,17 @@ ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_SELECTED_TEXT_COLOR 
 	color: #EBE8E4;
 }
 
+/*
+ * The tool bars in the main tool bar (e.g., the tool bar of an editor). When a tool bar is
+ * added, the workbench styles them again and they would lose the inherited gradient!
+ */
+#org-eclipse-ui-main-toolbar .MToolBar,
+#org-eclipse-ui-main-toolbar .MToolControl,
+#org-eclipse-ui-main-toolbar ImageBasedFrame,
+#org-eclipse-ui-main-toolbar ToolBar {
+	background-color: #41464A #1E1E1E #1E1E1E 10.0% 90.0% 5.0%;
+}
+
 #org-eclipse-ui-main-toolbar,
 #PerspectiveSwitcher {
 	eclipse-perspective-keyline-color: #585858;
