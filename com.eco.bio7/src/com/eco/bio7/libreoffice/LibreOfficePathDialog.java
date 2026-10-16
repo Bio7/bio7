@@ -153,7 +153,6 @@ public class LibreOfficePathDialog extends MessageDialog {
 			}
 		} else if ("Mac".equals(os)) {
 			list.add("/Applications/LibreOffice.app/Contents/MacOS");
-			list.add(System.getProperty("user.home") + "/Applications/LibreOffice.app/Contents/MacOS");
 		} else {
 			list.add("/usr/lib/libreoffice/program");
 			list.add("/usr/lib64/libreoffice/program");
