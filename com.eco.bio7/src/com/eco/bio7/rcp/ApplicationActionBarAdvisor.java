@@ -72,6 +72,7 @@ import com.eco.bio7.actions.OpenBio7BrowserAction;
 import com.eco.bio7.actions.OpenViewMenuAction;
 import com.eco.bio7.actions.ShowEditorAreaAction;
 import com.eco.bio7.actions.ShowMainMenus;
+import com.eco.bio7.actions.Setup;
 import com.eco.bio7.actions.Start;
 import com.eco.bio7.actions.ToolbarCreateProjectAndFiles;
 //import com.eco.bio7.actions.Start3d;
@@ -150,6 +151,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	private static Action libreofficeconnection;
 
 	private static Action start;
+
+	private Action setup;
 
 	private IWorkbenchAction propAction;
 
@@ -344,6 +347,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		start = new Start("Start", window);
 		register(start);
+
+		setup = new Setup("Setup", window);
+		register(setup);
 
 		counterreset = new CounterReset("Counter Reset", window);
 		register(counterreset);
@@ -828,6 +834,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		coolBar.add(new ToolBarContributionItem(toolbar, "mainbio7"));
 		// coolBar.add(new ToolBarContributionItem(imagebar, "image"));
 		toolbar.add(start);
+		toolbar.add(setup);
 		toolbar.add(startrserve);
 		toolbar.add(toolbarCreateProjectAndFiles);
 		// toolbar.add(fastOpenScriptAction);
