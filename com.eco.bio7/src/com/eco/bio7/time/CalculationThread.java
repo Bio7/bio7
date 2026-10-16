@@ -13,158 +13,168 @@
 
 package com.eco.bio7.time;
 
-import java.awt.Graphics;
-import java.lang.reflect.InvocationTargetException;
-import javax.swing.SwingUtilities;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.eclipse.jface.action.StatusLineContributionItem;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.PlatformUI;
-import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.compile.Model;
-import com.eco.bio7.discrete.Hexagon;
-import com.eco.bio7.discrete.Quad2d;
-//import com.eco.bio7.image.PointPanel;
 import com.eco.bio7.info.InfoView;
 import com.eco.bio7.methods.Compiled;
 import com.eco.bio7.rcp.ApplicationActionBarAdvisor;
 
+/**
+ * Calls the run method of the compiled model in the interval of
+ * {@link Time#getInterval()} while the pause is not active.
+ * <ul>
+ * <li>The steps have a fixed rate: the run time of the model is part of the
+ * interval. If the model is slower than the interval, the next step starts
+ * immediately (no steps are made up later).</li>
+ * <li>Start, stop and a changed interval take effect immediately, also during
+ * a long interval. In the pause the thread waits without polling.</li>
+ * <li>The displays are updated asynchronously, at most 25 times per second, so
+ * that the user interface does not slow down the calculation.</li>
+ * <li>An error of the model removes the model, the thread keeps running.</li>
+ * </ul>
+ */
 public class CalculationThread extends Thread {
 
-	private IPreferenceStore store;
+	/* The minimum time between two display updates (25 per second)! */
+	private static final long DISPLAY_PERIOD = TimeUnit.MILLISECONDS.toNanos(40);
+
+	/* The measured frames per second (smoothed), 0 in the pause! */
+	private static volatile double measuredFps = 0;
+
+	private final AtomicBoolean displayPending = new AtomicBoolean(false);
+
+	private long lastDisplay = 0;
+
+	private long lastStep = 0;
 
 	public CalculationThread() {
+		super("Bio7 Calculation Thread");
+		/* The thread does not prevent the exit of the application! */
+		setDaemon(true);
+	}
 
-		store = Bio7Plugin.getDefault().getPreferenceStore();
+	/**
+	 * Returns the measured frame rate (calculation steps per second).
+	 * 
+	 * @return the frames per second, 0 if the calculation is paused.
+	 */
+	public static double getMeasuredFps() {
+		return measuredFps;
 	}
 
 	public void run() {
-
+		/* The planned start of the last step (0 after the pause) and of the next step! */
+		long planned = 0;
+		long next = System.nanoTime();
 		while (true) {
-
 			try {
-
-				sleep(Time.getInterval());
-				if (!Time.isPause()) {
-
-					Model model = Compiled.getModel();
-					if (model != null) {
-						try {
-							model.run();
-						} catch (RuntimeException e) {
-
-							e.printStackTrace();
-							Compiled.setModel(null);
+				synchronized (Time.LOCK) {
+					if (Time.isPause()) {
+						measuredFps = 0;
+						lastStep = 0;
+						planned = 0;
+						updateDisplays(true);
+						while (Time.isPause()) {
+							Time.LOCK.wait();
+						}
+						/* After the pause the first step starts immediately! */
+						next = System.nanoTime();
+					}
+					/* Wait until the next step (a changed interval wakes up the thread)! */
+					long wait;
+					while (!Time.isPause() && (wait = next - System.nanoTime()) > 0) {
+						TimeUnit.NANOSECONDS.timedWait(Time.LOCK, wait);
+						/* The interval might have been changed during the wait (shorter or longer)! */
+						if (planned != 0) {
+							next = planned + Time.getIntervalNanos();
 						}
 					}
-					try {
-						if (store.getBoolean("RECORD_VALUES")) {
-							Quad2d quad = Quad2d.getQuad2dInstance();
-							if (quad != null) {
-								quad.feldzaehler();
-							}
-						}
-						/* Count of the states and the amount */
-					} catch (RuntimeException e2) {
-
-						e2.printStackTrace();
+					if (Time.isPause()) {
+						continue;
 					}
-					if (store.getBoolean("REPAINT_QUAD")) {
-
-						Quad2d quad = Quad2d.getQuad2dInstance();
-						if (quad != null) {
-							if (quad.quadviewopenend == true) {
-								if (quad.activeRendering == false) {
-
-									//quad.fieldrenderer();
-									quad.fullRedrawAll();
-								}
-
-								else {
-									//Graphics g = quad.getGraphics();
-									//quad.malen(g);
-
-								}
-							}
-
-						}
-					}
-
-					try {
-						SwingUtilities.invokeAndWait(new Runnable() {
-							// !!
-							public void run() {
-
-								
-								if (store.getBoolean("REPAINT_HEX")) {
-									Hexagon h = Hexagon.getHexagonInstance();
-									if (h != null) {
-										if (h.hexviewopenend == true) {
-											if (h.active_rendering == false) {
-												h.fieldrenderer();
-												h.repaint();
-											}
-
-											else {
-												h.repaint();
-
-											}
-
-										}
-									}
-								}
-								/*
-								 * if (store.getBoolean("REPAINT_POINTS")) { PointPanel.doPaint(); }
-								 */
-
-							}
-						});
-					} catch (InterruptedException e1) {
-
-						e1.printStackTrace();
-					} catch (InvocationTargetException e1) {
-
-						e1.printStackTrace();
-					}
-					Time.count();
-					// InfoView.getPan().repaint();
-					Time.Timeupdate();
-
-					Display display = PlatformUI.getWorkbench().getDisplay();
-					display.syncExec(new Runnable() {
-
-						public void run() {
-							updateTimeDisplays();
-
-						}
-
-					});
-
 				}
-
+				long start = System.nanoTime();
+				step();
+				measure(start);
+				/*
+				 * The next step is planned from the planned (not the actual) start, so that
+				 * the delays of the wait do not add up!
+				 */
+				planned = next;
+				next = planned + Time.getIntervalNanos();
+				/* A model slower than the interval: no steps are made up later! */
+				long now = System.nanoTime();
+				if (next < now) {
+					planned = now - Time.getIntervalNanos();
+					next = now;
+				}
+				updateDisplays(false);
 			} catch (InterruptedException e) {
+				return;
+			} catch (Throwable t) {
+				/* The thread must not end, e.g., after an error in a display update! */
+				t.printStackTrace();
 			}
-
 		}
 	}
 
-	private void updateTimeDisplays() {
-		StatusLineContributionItem ic = ApplicationActionBarAdvisor.getUserItem();
-		Label lt = InfoView.getLblTimesteps();
-		Label lm = InfoView.getLblMonth();
-		Label ly = InfoView.getLblYear();
+	private void step() {
+		Model model = Compiled.getModel();
+		if (model != null) {
+			try {
+				model.run();
+			} catch (Throwable e) {
+				/* Also errors (e.g., a StackOverflowError) of the model! */
+				System.err.println("The run method of the compiled model failed, the model is removed:");
+				e.printStackTrace();
+				Compiled.setModel(null);
+			}
+		}
+		Time.count();
+		Time.Timeupdate();
+	}
 
-		ic.setText("Time steps: " + Time.getCounter());
-		if (lt != null && lt.isDisposed() == false) {
-			lt.setText("Time steps: " + Time.getTime());
+	/* Smoothed frames per second from the time between the starts of two steps! */
+	private void measure(long start) {
+		if (lastStep != 0) {
+			double rate = 1e9 / Math.max(1, start - lastStep);
+			measuredFps = measuredFps == 0 ? rate : measuredFps * 0.8 + rate * 0.2;
 		}
-		if (lm != null && lm.isDisposed() == false) {
-			lm.setText(InfoView.getMonth() + Time.getMonth());
+		lastStep = start;
+	}
+
+	/* Updates the displays asynchronously, at most 25 times per second (always if forced)! */
+	private void updateDisplays(boolean force) {
+		long now = System.nanoTime();
+		if (!force && now - lastDisplay < DISPLAY_PERIOD) {
+			return;
 		}
-		if (ly != null && ly.isDisposed() == false) {
-			ly.setText(InfoView.getYear() + Time.getYear());
+		if (!PlatformUI.isWorkbenchRunning() || !displayPending.compareAndSet(false, true)) {
+			return;
 		}
+		lastDisplay = now;
+		Display display = PlatformUI.getWorkbench().getDisplay();
+		if (display.isDisposed()) {
+			return;
+		}
+		display.asyncExec(() -> {
+			displayPending.set(false);
+			StatusLineContributionItem ic = ApplicationActionBarAdvisor.getUserItem();
+			if (ic != null) {
+				ic.setText("Time steps: " + Time.getCounter());
+			}
+			Label lt = InfoView.getLblTimesteps();
+			if (lt != null && lt.isDisposed() == false) {
+				lt.setText("Time steps: " + Time.getTime());
+			}
+			InfoView.updateRate();
+		});
 	}
 
 }

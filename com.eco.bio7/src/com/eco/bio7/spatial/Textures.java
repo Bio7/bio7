@@ -30,7 +30,6 @@ import com.jogamp.opengl.GLRunnable;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import com.eco.bio7.Bio7Plugin;
-import com.eco.bio7.discrete.Field;
 import com.jogamp.opengl.util.awt.TextureRenderer;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.awt.AWTTextureIO;
@@ -39,6 +38,8 @@ import static com.jogamp.opengl.GL2.*; // GL2 constants
 public class Textures {
 	public DynamicTexture dynamicTexture;
 	public static TextureRenderer animRenderer;
+
+	private static final int EMPTY_TEXTURE_SIZE = 1000;
 	public Texture tex;
 	private boolean renderImage = false;
 	private ImagePlus imp;
@@ -126,8 +127,8 @@ public class Textures {
 
 		} else {
 
-			animRenderer = new TextureRenderer(Field.getWidth() * Field.getQuadSize(),
-					Field.getHeight() * Field.getQuadSize(), false);
+			/* No dynamic source: an empty texture (the size of the former default discrete field)! */
+			animRenderer = new TextureRenderer(EMPTY_TEXTURE_SIZE, EMPTY_TEXTURE_SIZE, false);
 			dynamicTexture = new DynamicTexture();
 
 			tex = animRenderer.getTexture();

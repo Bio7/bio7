@@ -14,13 +14,6 @@
    <extension
          point="org.eclipse.ui.perspectives">
       <perspective
-            class="com.eco.bio7.rcp.Perspective"
-            fixed="false"
-            icon="icons/perspective/2dpersp.png"
-            id="com.eco.bio7.perspective_2d"
-            name=" 2d">
-      </perspective>
-      <perspective
             class="com.eco.bio7.discrete3d.Perspective3d"
             fixed="false"
             icon="icons/perspective/3dpersp.png"
@@ -69,56 +62,7 @@
    </extension>
    <extension
          point="org.eclipse.ui.views">
-      <view
-            allowMultiple="true"
-            category="com.eco.bio7.charts"
-            class="com.eco.bio7.plot.PieChartView"
-            icon="icons/views/piechartview.png"
-            id="com.eco.bio7.piechart"
-            name="Piechart"
-            restorable="true">
-      </view>
-      <view
-            allowMultiple="true"
-            category="com.eco.bio7.charts"
-            class="com.eco.bio7.plot.LineChartView"
-            icon="icons/views/linechartview.png"
-            id="com.eco.bio7.linechart"
-            name="Linechart"
-            restorable="true"/>
-      <view
-            allowMultiple="true"
-            category="com.eco.bio7.discrete"
-            class="com.eco.bio7.discrete.Quadview"
-            icon="icons/views/2dperspview.png"
-            id="com.eco.bio7.quadgrid"
-            name="Quadgrid"
-            restorable="true"/>
-      <view
-            allowMultiple="true"
-            category="com.eco.bio7.database"
-            class="com.eco.bio7.database.Spreadview"
-            icon="icons/views/tableview.png"
-            id="com.eco.bio7.spreadsheet"
-            name="Spreadsheet"
-            restorable="true"/>
       
-      <view
-            allowMultiple="true"
-            category="com.eco.bio7.control"
-            class="com.eco.bio7.discrete.StateButtonView"
-            icon="icons/views/2dperspview.png"
-            id="com.eco.bio7.states"
-            name="State"
-            restorable="true"/>
-      <view
-            allowMultiple="true"
-            category="com.eco.bio7.discrete"
-            class="com.eco.bio7.discrete.Hexview"
-            icon="icons/views/2dperspview.png"
-            id="com.eco.bio7.hexgrid"
-            name="Hexgrid"
-            restorable="true"/>
       <view
             allowMultiple="true"
             category="com.eco.bio7.custom"
@@ -155,21 +99,12 @@
             id="com.eco.bio7.ecolab"
             name="Bio7-3D"/>
             
-      <category
-            id="com.eco.bio7.discrete"
-            name="Bio7-Panels"/>
             
             
        <category
             id="com.eco.bio7.image"
             name="Bio7-Image"/>
-        <category
-            id="com.eco.bio7.database"
-            name="Bio7-Database"/>
             
-         <category
-            id="com.eco.bio7.charts"
-            name="Bio7-Charts"/>
             
            <category
             id="com.eco.bio7.console"
@@ -286,11 +221,6 @@
    <extension
          point="org.eclipse.ui.commands">
       <command
-            name="Draw Empty Field"
-            description="Reset the Field"
-            id="com.eco.bio7.empty_field">
-      </command>
-      <command
             description="Start RServe"
             id="com.eco.bio7.Start_RServe_Action"
             name="Start RServe">
@@ -304,15 +234,6 @@
             keySequence="CTRL+R"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration">
       </keyBinding>
-      <keyBinding
-            commandId="com.eco.bio7.empty_field"
-            keySequence="CTRL+0"
-            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration">
-      </keyBinding>
-      <keyBinding
-            commandId="com.eco.bio7.Enable_Selection"
-            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            keySequence="ALT+S"/>
        <keyBinding
             commandId="com.eco.bio7.start"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
@@ -349,10 +270,6 @@
             description="Stop-Action"
             id="com.eco.bio7.StopAction"
             name="Stop Action"/>
-      <command
-            description="Enable Selection"
-            id="com.eco.bio7.Enable_Selection"
-            name="Enable Selection"/>
       <command
             description="Stop the flow"
             id="com.eco.bio7.flowstop"

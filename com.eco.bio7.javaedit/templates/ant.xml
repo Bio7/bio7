@@ -12,27 +12,7 @@
           }
      }</template>
      
-<template name="bio7->for-2d_discrete2d" description="A loop over 2-D bio7-array" id="org.eclipse.jdt.ui.templates.forfordiscrete2d_array" context="java" enabled="true" autoinsert="false">for (int ${index} = 0; ${index} &lt; Field.getHeight(); ${index}++) {
-	for (int ${index2} = 0; ${index2} &lt; Field.getWidth(); ${index2}++) { ${line_selection}${cursor}
-       }
-  }</template>
-  <template name="bio7->modulo-2d" description="A loop over 2-D bio7-array with modulo for torus" id="org.eclipse.jdt.ui.templates.modulo" context="java" enabled="true" autoinsert="false">
- for (int ${index} = 0; ${index} &lt; Field.getHeight(); ${index}++) {
-	for (int ${index2} = 0; ${index2} &lt; Field.getWidth(); ${index2}++) {
-	    int ${index3} = ((${index} + 1 + Field.getHeight())${modulo_operator} (Field.getHeight()));
-		int ${index4} = ((${index2} + 1 + Field.getWidth())${modulo_operator}  (Field.getWidth()));
-		int ${index5} = ((${index} - 1 + Field.getHeight())${modulo_operator} (Field.getHeight()));
-		int ${index6} = ((${index2} - 1 + Field.getWidth())${modulo_operator}(Field.getWidth()));
-
-	
-       }
-  }
-  </template>
   
-  <template name="bio7->random" description="loop with random function" id="org.eclipse.jdt.ui.templates.2drandom" context="java" enabled="true" autoinsert="false">Field.setState(x,y,(int)(Math.random()*${number}));
-	
-       
-  </template>
 
 <!--Here the description are taken from the ant.properties file -->
 

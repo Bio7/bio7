@@ -19,7 +19,6 @@ import ij.ImagePlus;
 import ij.WindowManager;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import com.eco.bio7.discrete.Quad2d;
 
 public class DynamicTexture {
 
@@ -32,13 +31,7 @@ public class DynamicTexture {
 	}
 
 	public void render(int w, int h, Graphics2D g2) {
-		if (imagejEnabled == false) {
-			/*
-			 * if (Quad2d.getQuad2dInstance() != null) {
-			 * 
-			 * Quad2d.getQuad2dInstance().malen(g2); }
-			 */
-		} else {
+		if (imagejEnabled) {
 			if (WindowManager.getImageCount() > 0) {
 
 				try {

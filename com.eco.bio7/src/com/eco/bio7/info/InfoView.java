@@ -1,31 +1,18 @@
 package com.eco.bio7.info;
 
-import java.lang.reflect.InvocationTargetException;
-import javax.swing.SwingUtilities;
+import java.util.Locale;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.ExpandBar;
-import org.eclipse.swt.widgets.ExpandItem;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Scale;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-import com.eco.bio7.collection.ResizeArray;
-import com.eco.bio7.discrete.Field;
-import com.eco.bio7.discrete.Hexagon;
-import com.eco.bio7.discrete.Quad2d;
+import com.eco.bio7.time.CalculationThread;
 import com.eco.bio7.time.Time;
-import com.swtdesigner.SWTResourceManager;
-import org.eclipse.swt.layout.FormLayout;
-import org.eclipse.swt.layout.FormData;
-import org.eclipse.swt.layout.FormAttachment;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.GridData;
 
 public class InfoView extends ViewPart {
 
@@ -35,47 +22,13 @@ public class InfoView extends ViewPart {
 
 	public static final String ID = "com.eco.bio7.control";
 
-	private static Scale timeSwtScale;
-
-	private static Scale scale_1;
-
-	private static Scale scale_2;
-
-	private boolean resizable = true;
-
-	private Button btnResizeAfterAdjust;
-
-	private static Label lblFieldsizeY;
-
-	private static Label lblFieldsizeX;
+	private static SpeedSlider timeSwtScale;
 
 	private static String timeSteps = "Time steps: ";
 
-	private static String month = "Month:      ";
-
-	private static String year = "Year:       ";
-
 	private static Label lblTimesteps;
 
-	private static Label lblMonth;
-
-	private static Label lblYear;
-
-	public static Label getLblFieldsizeY() {
-		return lblFieldsizeY;
-	}
-
-	public static Label getLblFieldsizeX() {
-		return lblFieldsizeX;
-	}
-
-	public static Scale getScale_1() {
-		return scale_1;
-	}
-
-	public static Scale getScale_2() {
-		return scale_2;
-	}
+	private static Label lblSpeed;
 
 	public static Label getLblTimesteps() {
 		return lblTimesteps;
@@ -85,34 +38,15 @@ public class InfoView extends ViewPart {
 		InfoView.lblTimesteps = lblTimesteps;
 	}
 
-	public static Label getLblMonth() {
-		return lblMonth;
-	}
-
-	public static void setLblMonth(Label lblMonth) {
-		InfoView.lblMonth = lblMonth;
-	}
-
-	public static Label getLblYear() {
-		return lblYear;
-	}
-
-	public static void setLblYear(Label lblYear) {
-		InfoView.lblYear = lblYear;
-	}
-
 	public void createPartControl(Composite parent) {
-		// parent.setBackgroundMode(SWT.INHERIT_FORCE);
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.control");
 		ScrolledComposite scroll = new ScrolledComposite(parent, SWT.V_SCROLL);
 		Composite composite = new Composite(scroll, SWT.NONE);
 		composite.setBackground(parent.getBackground());
 		composite.setLayout(new GridLayout(1, true));
-		scroll.setMinSize(200, 500);
 		scroll.setContent(composite);
 		scroll.setExpandVertical(true);
 		scroll.setExpandHorizontal(true);
-		scroll.setAlwaysShowScrollBars(true);
 
 		lblTimesteps = new Label(composite, SWT.NONE);
 		GridData gd_lblTimesteps = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
@@ -121,238 +55,77 @@ public class InfoView extends ViewPart {
 		lblTimesteps.setBackground(parent.getBackground());
 		lblTimesteps.setText(timeSteps + Time.getTime());
 
-		lblMonth = new Label(composite, SWT.NONE);
-		GridData gd_lblMonth = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_lblMonth.heightHint = 35;
-		lblMonth.setLayoutData(gd_lblMonth);
-		lblMonth.setBackground(parent.getBackground());
-		lblMonth.setText(month + Time.getMonth());
-
-		lblYear = new Label(composite, SWT.NONE);
-		GridData gd_lblYear = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_lblYear.heightHint = 35;
-		lblYear.setLayoutData(gd_lblYear);
-		lblYear.setBackground(parent.getBackground());
-		lblYear.setText(year + Time.getYear());
-
-		timeSwtScale = new Scale(composite, SWT.NONE);
+		/* A logarithmic frame rate slider: each tick distance is the same speed factor! */
+		timeSwtScale = new SpeedSlider(composite, SWT.NONE, Time.MIN_FPS, Time.MAX_FPS);
 		timeSwtScale.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-		// scale.setBackground(parent.getBackground());
-		// scale.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		timeSwtScale.setMaximum(1000);
-		timeSwtScale.setMinimum(1);
-		timeSwtScale.setSelection(500);
-		timeSwtScale.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				Time.setInterval(timeSwtScale.getSelection());
-			}
+		timeSwtScale.setBackground(parent.getBackground());
+		timeSwtScale.setValue(Time.getFps());
+		timeSwtScale.setToolTipText("Frames (calculation steps) per second: left slower, right faster.\n"
+				+ "Keys: Left/Right one step (8%), Shift+Left/Right or PageDown/PageUp 10 steps, Home/End minimum/maximum.");
+		timeSwtScale.addListener(SWT.Selection, e -> {
+			Time.setFps(timeSwtScale.getValue());
+			updateRate();
 		});
 
-		Label lblSpeed = new Label(composite, SWT.NONE);
+		lblSpeed = new Label(composite, SWT.NONE);
 		GridData gd_lblSpeed = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_lblSpeed.heightHint = 35;
 		lblSpeed.setLayoutData(gd_lblSpeed);
 		lblSpeed.setBackground(parent.getBackground());
-		lblSpeed.setText("Speed");
+		updateRate();
 
-		scale_1 = new Scale(composite, SWT.NONE);
-		scale_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-		// scale_1.setBackground(parent.getBackground());
-		// scale_1.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-
-		scale_1.addSelectionListener(new SelectionAdapter() {
-			private int sc1;
-			private int sc2;
-
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				sc1 = scale_1.getSelection();
-				sc2 = scale_2.getSelection();
-
-				if (resizable) {
-					ResizeArray.update(sc1, sc2);
-
-					Quad2d.getQuad2dInstance().fullRedrawAll();
-					try {
-						SwingUtilities.invokeAndWait(new Runnable() {
-							// !!
-							public void run() {
-
-								// repaint_soilpanel();
-
-								if (Hexagon.getHexagonInstance() != null) {
-									Hexagon.getHexagonInstance().repaint();
-								}
-							}
-						});
-					} catch (InterruptedException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					} catch (InvocationTargetException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-
-				}
-				lblFieldsizeY.setText("Fieldsize Y -> " + scale_1.getSelection());
-			}
-		});
-		scale_1.setMaximum(2000);
-		scale_1.setMinimum(1);
-		scale_1.setSelection(50);
-
-		lblFieldsizeY = new Label(composite, SWT.NONE);
-		GridData gd_lblFieldsizeY = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_lblFieldsizeY.heightHint = 35;
-		lblFieldsizeY.setLayoutData(gd_lblFieldsizeY);
-		lblFieldsizeY.setBackground(parent.getBackground());
-		lblFieldsizeY.setText("Fieldsize Y -> " + Field.getHeight());
-
-		scale_2 = new Scale(composite, SWT.NONE);
-		scale_2.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-		// scale_2.setBackground(parent.getBackground());
-		// scale_2.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		scale_2.addSelectionListener(new SelectionAdapter() {
-			private int sc1;
-			private int sc2;
-
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				sc1 = scale_1.getSelection();
-				sc2 = scale_2.getSelection();
-				if (resizable) {
-					ResizeArray.update(sc1, sc2);
-
-					Quad2d.getQuad2dInstance().fullRedrawAll();
-					try {
-						SwingUtilities.invokeAndWait(new Runnable() {
-							// !!
-							public void run() {
-
-								if (Hexagon.getHexagonInstance() != null) {
-									Hexagon.getHexagonInstance().repaint();
-								}
-							}
-						});
-					} catch (InterruptedException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					} catch (InvocationTargetException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-
-				}
-				lblFieldsizeX.setText("Fieldsize X -> " + scale_2.getSelection());
-			}
-		});
-		scale_2.setMaximum(2000);
-		scale_2.setMinimum(1);
-		scale_2.setSelection(50);
-
-		lblFieldsizeX = new Label(composite, SWT.NONE);
-		GridData gd_lblFieldsizeX = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_lblFieldsizeX.heightHint = 35;
-		lblFieldsizeX.setLayoutData(gd_lblFieldsizeX);
-		lblFieldsizeX.setBackground(parent.getBackground());
-		lblFieldsizeX.setText("Fieldsize X -> " + Field.getWidth());
-
-		btnResizeAfterAdjust = new Button(composite, SWT.CHECK);
-		GridData gd_btnResizeAfterAdjust = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_btnResizeAfterAdjust.heightHint = 35;
-		btnResizeAfterAdjust.setLayoutData(gd_btnResizeAfterAdjust);
-
-		btnResizeAfterAdjust.setBackground(parent.getBackground());
-
-		btnResizeAfterAdjust.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				resizable = !resizable;
-			}
-		});
-		btnResizeAfterAdjust.setText("Resize after adjust");
-
-		Button btnResize = new Button(composite, SWT.NONE);
-		GridData gd_btnResize = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_btnResize.heightHint = 35;
-		btnResize.setLayoutData(gd_btnResize);
-		btnResize.addSelectionListener(new SelectionAdapter() {
-			private int sc1;
-			private int sc2;
-
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				sc1 = scale_1.getSelection();
-				sc2 = scale_2.getSelection();
-				ResizeArray.update(sc1, sc2);
-
-				Quad2d.getQuad2dInstance().fullRedrawAll();
-
-				try {
-					SwingUtilities.invokeAndWait(new Runnable() {
-						// !!
-						public void run() {
-
-							// repaint_soilpanel();
-
-							if (Hexagon.getHexagonInstance() != null) {
-								Hexagon.getHexagonInstance().repaint();
-							}
-						}
-					});
-				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (InvocationTargetException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-
-			}
-		});
-		btnResize.setText("Resize");
-
-		/*
-		 * Composite top = new Composite(bar, SWT.NO_BACKGROUND | SWT.EMBEDDED); try {
-		 * System.setProperty("sun.awt.noerasebackground", "true"); } catch
-		 * (NoSuchMethodError error) { }
-		 * 
-		 * java.awt.Frame frame = SWT_AWT.new_Frame(top);
-		 * 
-		 * java.awt.Panel panel = new java.awt.Panel(new java.awt.BorderLayout()) {
-		 * public void update(java.awt.Graphics g) {
-		 * 
-		 * paint(g); } };
-		 * 
-		 * frame.add(panel); JRootPane root = new JRootPane(); panel.add(root);
-		 * java.awt.Container contentPane = root.getContentPane(); //pan = new
-		 * Infopan();
-		 * 
-		 * Time.setPause(true);
-		 * 
-		 * //contentPane.add(pan);
-		 * 
-		 * ExpandItem item0 = new ExpandItem(bar, SWT.NONE, 0); item0.setExpanded(true);
-		 * item0.setText("Time and Space"); item0.setHeight(400); item0.setControl(top);
-		 */
+		scroll.setMinSize(composite.computeSize(200, SWT.DEFAULT));
 
 	}
 
-	public static Scale getTimeScaleSwt() {
+	/** Updates the speed label (in the UI thread). */
+	public static void updateRate() {
+		if (lblSpeed == null || lblSpeed.isDisposed()) {
+			return;
+		}
+		String text = "Speed: " + SpeedSlider.format(Time.getFps()) + " fps (" + formatMillis(Time.getIntervalNanos() / 1e6) + " ms per frame)";
+		double measured = CalculationThread.getMeasuredFps();
+		if (measured > 0) {
+			text += ", measured: " + SpeedSlider.format(measured) + " fps";
+		}
+		if (!text.equals(lblSpeed.getText())) {
+			lblSpeed.setText(text);
+		}
+	}
+
+	private static String formatMillis(double ms) {
+		return ms >= 10 ? String.format(Locale.ROOT, "%.0f", ms) : String.format(Locale.ROOT, "%.2f", ms).replaceAll("0+$", "").replaceAll("\\.$", "");
+	}
+
+	/** Called when the interval is changed, e.g., by a script (any thread). */
+	public static void intervalChanged() {
+		if (!PlatformUI.isWorkbenchRunning()) {
+			return;
+		}
+		Display display = PlatformUI.getWorkbench().getDisplay();
+		if (display.isDisposed()) {
+			return;
+		}
+		display.asyncExec(() -> {
+			SpeedSlider slider = timeSwtScale;
+			if (slider != null && !slider.isDisposed()) {
+				slider.setValue(Time.getFps());
+			}
+			updateRate();
+		});
+	}
+
+	/** The frame rate slider of the view (null if the view is not open). */
+	public static SpeedSlider getTimeScaleSwt() {
 		return timeSwtScale;
 	}
 
 	@Override
 	public void setFocus() {
-
+		if (timeSwtScale != null && !timeSwtScale.isDisposed()) {
+			timeSwtScale.setFocus();
+		}
 	}
-
-	/*
-	 * public static Infopan getPan() { return pan; }
-	 * 
-	 * public static void setPan(Infopan pan) { InfoView.pan = pan; }
-	 */
 
 	public static String getTimeSteps() {
 		return timeSteps;
@@ -360,25 +133,6 @@ public class InfoView extends ViewPart {
 
 	public static void setTimeSteps(String timeSteps) {
 		InfoView.timeSteps = timeSteps;
-	}
-
-	public static String getMonth() {
-		return month;
-	}
-
-	public static void setMonth(String month) {
-		InfoView.month = month;
-
-	}
-
-	public static String getYear() {
-		return year;
-	}
-
-	public static void setYear(String year) {
-		InfoView.year = year;
-		lblYear.setText(year);
-
 	}
 
 }

@@ -42,8 +42,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.discrete.Field;
-import com.eco.bio7.discrete.Quad2d;
 import com.eco.bio7.image.r.IJTranserResultsTable;
 import ij.IJ;
 import ij.ImagePlus;

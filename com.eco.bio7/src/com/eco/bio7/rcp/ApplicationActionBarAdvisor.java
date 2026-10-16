@@ -56,7 +56,6 @@ import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.actions.BeanShellImportAction;
 import com.eco.bio7.actions.Compile;
 import com.eco.bio7.actions.CounterReset;
-import com.eco.bio7.actions.EnableSelection;
 import com.eco.bio7.actions.ExecuteScriptAction;
 //import com.eco.bio7.actions.FastOpenScriptAction;
 import com.eco.bio7.actions.FlowEditorAction;
@@ -70,12 +69,8 @@ import com.eco.bio7.actions.InterpretPython;
 import com.eco.bio7.actions.JavaScriptInterpret;
 import com.eco.bio7.actions.LibreOfficeConnection;
 import com.eco.bio7.actions.OfficeOpenAction;
-import com.eco.bio7.actions.OfficeSendValueAction;
 import com.eco.bio7.actions.OpenBio7BrowserAction;
 import com.eco.bio7.actions.OpenViewMenuAction;
-import com.eco.bio7.actions.Random;
-import com.eco.bio7.actions.ResetField;
-import com.eco.bio7.actions.SetupDiscrete;
 import com.eco.bio7.actions.ShowEditorAreaAction;
 import com.eco.bio7.actions.ShowMainMenus;
 import com.eco.bio7.actions.Start;
@@ -109,8 +104,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 			"com.eco.bio7.image_methods", "com.eco.bio7.points", "com.eco.bio7.image.TransferGeometryView",
 			"com.eco.bio7.browser.Browser", "com.eco.bio7.worldwind.WorldWindView",
 			"com.eco.bio7.worldwind.WorldWindOptionsView", "com.eco.bio7.spatial", "com.eco.bio7.discrete3d.Options3d",
-			"com.eco.bio7.control", "com.eco.bio7.spreadsheet", "com.eco.bio7.states", "com.eco.bio7.quadgrid",
-			"com.eco.bio7.hexgrid", "com.eco.bio7.linechart", "com.eco.bio7.piechart" };
+			"com.eco.bio7.control" };
 
 	private IWorkbenchWindow window;
 
@@ -160,23 +154,13 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 	private static Action start;
 
-	private Action enableselection;
-
 	private IWorkbenchAction propAction;
 
 	private IWorkbenchAction helpAction;
 
-	private static Action start3d;
-
-	private Action resetfield;
-
 	private static Action counterreset;
 
-	private Action random;
-
 	private static Action startrserve;
-
-	private Action setup;
 
 	private static Action flowstop;
 
@@ -196,7 +180,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 	// private OfficeValueAction officevalue;
 
-	private OfficeSendValueAction officepopdata;
 
 	private static BeanShellImportAction bshimportaction;
 
@@ -296,8 +279,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		// officevalue = new OfficeValueAction("Data to Beanshell", window2);
 
-		officepopdata = new OfficeSendValueAction("Send Bio7 Counts", window2);
-
 		save = ActionFactory.SAVE.create(window);
 		register(save);
 
@@ -382,30 +363,14 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		start = new Start("Start", window);
 		register(start);
 
-		/*
-		 * start3d = new Start3d("Start/Stop Animation", window); register(start3d);
-		 */
-
-		resetfield = new ResetField("Reset Field", window);
-		register(resetfield);
-
 		counterreset = new CounterReset("Counter Reset", window);
 		register(counterreset);
-
-		enableselection = new EnableSelection("EnableSelection", window);
-		register(enableselection);
-
-		random = new Random("Random", window);
-		register(random);
 
 		startrserve = new StartRServe("Start Rserve", window);
 		register(startrserve);
 
 		printexpression = new PrintExpression("PrintExpression", window);
 		register(printexpression);
-
-		setup = new SetupDiscrete("Save Pattern", window);
-		register(setup);
 
 		viewShortlist = ContributionItemFactory.VIEWS_SHORTLIST.create(window);
 
@@ -826,8 +791,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		OpenOfficeMenu.add(officevaluetor);
 		OpenOfficeMenu.add(officevaluetorhead);
 		// OpenOfficeMenu.add(officevalue);
-		OpenOfficeMenu.add(new Separator());
-		OpenOfficeMenu.add(officepopdata);
 
 		/*
 		 * BeanShellMenu.add(bshclearaction); BeanShellMenu.add(new Separator());
@@ -891,10 +854,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		coolBar.add(new ToolBarContributionItem(toolbar, "mainbio7"));
 		// coolBar.add(new ToolBarContributionItem(imagebar, "image"));
 		toolbar.add(start);
-		toolbar.add(setup);
-		toolbar.add(resetfield);
 		toolbar.add(counterreset);
-		toolbar.add(random);
 		toolbar.add(libreofficeconnection);
 		toolbar.add(startrserve);
 		toolbar.add(print);
@@ -929,10 +889,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 	public static Action getCounterreset() {
 		return counterreset;
-	}
-
-	public static Action getStart3d() {
-		return start3d;
 	}
 
 	public static StatusLineContributionItem getUserItem() {

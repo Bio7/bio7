@@ -1207,17 +1207,6 @@ public class Options3d extends ViewPart {
 		dynamicLabel.setText("Dynamic Texture:");
 		new Label(composite_5, SWT.NONE);
 
-		final Button fromQuad2dButton = new Button(composite_5, SWT.RADIO);
-		GridData gd_fromQuad2dButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_fromQuad2dButton.heightHint = 25;
-		fromQuad2dButton.setLayoutData(gd_fromQuad2dButton);
-		fromQuad2dButton.setToolTipText("This options creates a dynamic texture from the Quads view");
-		fromQuad2dButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-
-			}
-		});
-		fromQuad2dButton.setText("From Quad2d");
 		final Button fromImagejButton_1 = new Button(composite_5, SWT.RADIO);
 		GridData gd_fromImagejButton_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_fromImagejButton_1.heightHint = 25;
@@ -1229,6 +1218,7 @@ public class Options3d extends ViewPart {
 			}
 		});
 		fromImagejButton_1.setText("From ImageJ");
+		new Label(composite_5, SWT.NONE);
 
 		final Label label_5_1_1 = new Label(composite_5, SWT.HORIZONTAL | SWT.SEPARATOR);
 		GridData gd_label_5_1_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
@@ -1253,16 +1243,7 @@ public class Options3d extends ViewPart {
 						/* Dynamic texture from ImageJ! */
 						DynamicTexture.setImagejEnabled(true);
 
-					} else if (fromQuad2dButton.getSelection()) {
-						grid.textures.createNewTexture = true;
-
-						grid.textures.setRenderFromFile(false);
-						/* Dynamic texture from Quadgrid! */
-						DynamicTexture.setImagejEnabled(false);
-
-					}
-
-					else {
+					} else {
 
 						grid.textures.createNewTexture = true;
 

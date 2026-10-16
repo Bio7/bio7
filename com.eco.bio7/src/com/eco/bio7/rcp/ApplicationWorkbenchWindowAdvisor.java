@@ -131,7 +131,6 @@ import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.compile.utils.ScanClassPath;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.image.ui.CanvasView;
-import com.eco.bio7.jobs.LoadData;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.preferences.RServePlotPrefs;
 import com.eco.bio7.preferences.Reg;
@@ -701,10 +700,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("DEFAULT_DIGITS", 15);
 		store.setDefault("TRANSFER_METHOD", false);
 
-		store.setDefault("REPAINT_QUAD", true);
-		store.setDefault("REPAINT_HEX", true);
-		store.setDefault("RECORD_VALUES", true);
-		store.setDefault("QUAD_PANEL_SCROLLBAR", false);
 		store.setDefault("POINTS_PANEL_SCROLLBAR", false);
 		store.setDefault("STARTUP_SCRIPTS", false);
 		store.setDefault("python_3x", false);
@@ -1498,13 +1493,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 						}
 					}
-					/*
-					 * Load an xml file for the discrete grid and quick compilation!
-					 */
-					else if (fileListR[0].endsWith("exml")) {
-						LoadData.load(fileListR[0].toString());
-					}
-
 					else {
 						MessageBox messageBox = new MessageBox(new Shell(),
 

@@ -19,7 +19,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
-import com.eco.bio7.discrete.Quad2d;
 import com.eco.bio7.rcp.StartBio7Utils;
 
 public class Interpret extends Action {
@@ -52,11 +51,6 @@ public class Interpret extends Action {
 
 			String a = doc.get();
 			com.eco.bio7.compile.BeanShellInterpreter.interpretJob(a, null);
-
-			Quad2d quad2dInstance = Quad2d.getQuad2dInstance();
-			if (quad2dInstance != null) {
-				quad2dInstance.redraw();
-			}
 		} else if (file.getFileExtension().equals("groovy")) {
 
 			String a = doc.get();

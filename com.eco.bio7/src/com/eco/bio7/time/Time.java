@@ -48,10 +48,23 @@ public class Time {
 	 * from BeanShell.
 	 */
 
-	private static int interval = 500; // The speed of update-> or of one
-										// calculation!
+	/** The shortest and the longest interval of the calculation thread in milliseconds. */
+	public static final int MIN_INTERVAL = 1;
 
-	private static boolean pause = true; // Pause the calculation thread!
+	public static final int MAX_INTERVAL = 2000;
+
+	/** The highest and the lowest frame rate (steps per second) of the calculation thread. */
+	public static final double MAX_FPS = 1000.0 / MIN_INTERVAL;
+
+	public static final double MIN_FPS = 1000.0 / MAX_INTERVAL;
+
+	/* The time between two calculation steps in nanoseconds (also for frame rates between whole milliseconds)! */
+	private static volatile long intervalNanos = 500_000_000L;
+
+	private static volatile boolean pause = true; // Pause the calculation thread!
+
+	/* The calculation thread waits on this lock and is woken up when the pause or the interval changes! */
+	static final Object LOCK = new Object();
 
 	public static void Timeupdate() {
 
@@ -85,14 +98,6 @@ public class Time {
 				Label lblTimesteps = InfoView.getLblTimesteps();
 				if (lblTimesteps != null) {
 					lblTimesteps.setText("Time steps: " + Time.getTime());
-				}
-				Label lblMonth = InfoView.getLblMonth();
-				if (lblMonth != null) {
-					lblMonth.setText(InfoView.getMonth() + Time.getMonth());
-				}
-				Label lblYear = InfoView.getLblYear();
-				if (lblYear != null) {
-					lblYear.setText(InfoView.getYear() + Time.getYear());
 				}
 			}
 		});
@@ -196,7 +201,10 @@ public class Time {
 	 * @param pause a boolean value.
 	 */
 	public static void setPause(boolean pause) {
-		Time.pause = pause;
+		synchronized (LOCK) {
+			Time.pause = pause;
+			LOCK.notifyAll();
+		}
 	}
 
 	/**
@@ -259,56 +267,63 @@ public class Time {
 	}
 
 	/**
-	 * Sets the speed of the calculation thread.
+	 * Sets the time between two calculation steps. The change takes effect
+	 * immediately, also during a long interval.
 	 * 
-	 * @param value the speed in milliseconds.
+	 * @param value the interval in milliseconds (limited to MIN_INTERVAL -
+	 *              MAX_INTERVAL).
 	 */
 	public static void setInterval(int value) {
-		Time.interval = value;
+		setIntervalNanos(Math.max(MIN_INTERVAL, Math.min(MAX_INTERVAL, value)) * 1_000_000L);
 	}
 
 	/**
-	 * Returns the speed of the calculation thread.
+	 * Sets the frame rate (calculation steps per second). The change takes effect
+	 * immediately, also during a long interval.
 	 * 
-	 * @return the speed in milliseconds.
+	 * @param fps the frames per second (limited to MIN_FPS - MAX_FPS).
+	 */
+	public static void setFps(double fps) {
+		if (Double.isNaN(fps)) {
+			return;
+		}
+		double f = Math.max(MIN_FPS, Math.min(MAX_FPS, fps));
+		setIntervalNanos(Math.round(1e9 / f));
+	}
+
+	/**
+	 * Returns the frame rate (calculation steps per second).
+	 * 
+	 * @return the frames per second.
+	 */
+	public static double getFps() {
+		return 1e9 / intervalNanos;
+	}
+
+	/**
+	 * Returns the time between two calculation steps in nanoseconds.
+	 * 
+	 * @return the interval in nanoseconds.
+	 */
+	public static long getIntervalNanos() {
+		return intervalNanos;
+	}
+
+	private static void setIntervalNanos(long nanos) {
+		synchronized (LOCK) {
+			Time.intervalNanos = nanos;
+			LOCK.notifyAll();
+		}
+		InfoView.intervalChanged();
+	}
+
+	/**
+	 * Returns the time between two calculation steps.
+	 * 
+	 * @return the interval in milliseconds.
 	 */
 	public static int getInterval() {
-		return interval;
-	}
-
-	/**
-	 * Changes the label of the default month label in the Control panel.
-	 * 
-	 * @param label a string as the new label.
-	 */
-	public static void changeMonthLabel(final String label) {
-
-		Display display = PlatformUI.getWorkbench().getDisplay();
-		display.syncExec(new Runnable() {
-
-			public void run() {
-				InfoView.setMonth(label);
-				InfoView.getLblMonth().setText(label + Time.getMonth());
-			}
-		});
-	}
-
-	/**
-	 * Changes the label of the default year label in the Control panel.
-	 * 
-	 * @param label a string as the new label.
-	 */
-	public static void changeYearLabel(final String label) {
-
-		Display display = PlatformUI.getWorkbench().getDisplay();
-		display.syncExec(new Runnable() {
-
-			public void run() {
-				InfoView.setYear(label);
-				InfoView.getLblYear().setText(label + Time.getYear());
-			}
-		});
-
+		return (int) Math.round(intervalNanos / 1e6);
 	}
 
 }
