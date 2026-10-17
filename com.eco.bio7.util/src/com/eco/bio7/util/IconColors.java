@@ -37,7 +37,8 @@ import org.osgi.framework.Bundle;
 /**
  * Changes the color of the Bio7 *.svg icons. The green of the Bio7 icons
  * (#638d43) and its shades are replaced by the icon color of the preferences
- * (one color for the light and one for the dark theme). The recolored icons are
+ * (one color for the light and one for the dark theme) and the white details
+ * (e.g., the letters of the file icons) by the detail color. The recolored icons are
  * written once to the state location of this plugin and used instead of the
  * original icons. The Eclipse icons and the Bio7 logo keep their colors. A
  * change of the colors is applied after a restart.
@@ -50,22 +51,32 @@ public final class IconColors {
 	public static final String COLOR_LIGHT = "ICON_COLOR_LIGHT";
 	/** Preference key: the icon color of the dark theme. */
 	public static final String COLOR_DARK = "ICON_COLOR_DARK";
+	/** Preference key: the detail color (white by default) of the light theme. */
+	public static final String DETAIL_LIGHT = "ICON_DETAIL_LIGHT";
+	/** Preference key: the detail color (white by default) of the dark theme. */
+	public static final String DETAIL_DARK = "ICON_DETAIL_DARK";
 
 	/** The green of the Bio7 icons. */
 	public static final RGB BIO7_GREEN = new RGB(0x63, 0x8d, 0x43);
 	/** The default icon color of the dark theme (a lighter green). */
 	public static final RGB DARK_GREEN = new RGB(0x86, 0xb5, 0x5a);
+	/** The color of the details of the Bio7 icons. */
+	public static final RGB WHITE = new RGB(0xff, 0xff, 0xff);
 
 	/* Shades of the Bio7 green which are recolored (hue distance in degrees, minimal saturation)! */
 	private static final float HUE_RANGE = 40f;
 	private static final float MIN_SATURATION = 0.12f;
+	/* White and light grey tones (without color) which are replaced by the detail color! */
+	private static final float MIN_DETAIL_BRIGHTNESS = 0.8f;
 
 	private static final Pattern HEX = Pattern.compile("#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})(?![0-9a-fA-F])");
+	private static final Pattern WHITE_NAME = Pattern.compile("((?:fill|stroke|stop-color)\\s*(?::|=)\\s*[\"']?)white\\b", Pattern.CASE_INSENSITIVE);
 
 	private static final Map<String, URL> CACHE = new ConcurrentHashMap<String, URL>();
 
-	/* The color of this session (a change is applied after a restart)! */
+	/* The colors of this session (a change is applied after a restart)! */
 	private static RGB sessionColor;
+	private static RGB sessionDetail;
 
 	private IconColors() {
 	}
@@ -76,6 +87,8 @@ public final class IconColors {
 		store.setDefault(ENABLED, true);
 		PreferenceConverter.setDefault(store, COLOR_LIGHT, BIO7_GREEN);
 		PreferenceConverter.setDefault(store, COLOR_DARK, DARK_GREEN);
+		PreferenceConverter.setDefault(store, DETAIL_LIGHT, WHITE);
+		PreferenceConverter.setDefault(store, DETAIL_DARK, WHITE);
 		return store;
 	}
 
@@ -86,6 +99,27 @@ public final class IconColors {
 			return BIO7_GREEN;
 		}
 		return PreferenceConverter.getColor(store, dark ? COLOR_DARK : COLOR_LIGHT);
+	}
+
+	/** The detail color of the preferences for the light or dark theme. */
+	public static RGB getPreferenceDetail(boolean dark) {
+		IPreferenceStore store = getPreferenceStore();
+		if (!store.getBoolean(ENABLED)) {
+			return WHITE;
+		}
+		return PreferenceConverter.getColor(store, dark ? DETAIL_DARK : DETAIL_LIGHT);
+	}
+
+	/** The detail color which is used in this session. */
+	public static synchronized RGB getDetailColor() {
+		if (sessionDetail == null) {
+			try {
+				sessionDetail = getPreferenceDetail(Util.isDarkTheme());
+			} catch (RuntimeException e) {
+				sessionDetail = WHITE;
+			}
+		}
+		return sessionDetail;
 	}
 
 	/** The icon color which is used in this session. */
@@ -100,9 +134,9 @@ public final class IconColors {
 		return sessionColor;
 	}
 
-	/** True if the icons are displayed with another color than the Bio7 green. */
+	/** True if the icons are displayed with other colors than the Bio7 green and white. */
 	public static boolean isActive() {
-		return !BIO7_GREEN.equals(getColor());
+		return !BIO7_GREEN.equals(getColor()) || !WHITE.equals(getDetailColor());
 	}
 
 	/**
@@ -176,10 +210,12 @@ public final class IconColors {
 				return null;
 			}
 			RGB color = getColor();
-			File file = Activator.getDefault().getStateLocation().append("icons").append(hex(color)).append(bundleId).append(clean).toFile();
+			RGB detail = getDetailColor();
+			String folder = WHITE.equals(detail) ? hex(color) : hex(color) + "_" + hex(detail);
+			File file = Activator.getDefault().getStateLocation().append("icons").append(folder).append(bundleId).append(clean).toFile();
 			if (!file.exists()) {
 				file.getParentFile().mkdirs();
-				Files.writeString(file.toPath(), recolor(svg, color), StandardCharsets.UTF_8);
+				Files.writeString(file.toPath(), recolor(svg, color, detail), StandardCharsets.UTF_8);
 			}
 			URL url = file.toURI().toURL();
 			CACHE.put(key, url);
@@ -205,8 +241,21 @@ public final class IconColors {
 	 * that lighter and darker shades stay lighter and darker.
 	 */
 	public static String recolor(String svg, RGB target) {
+		return recolor(svg, target, WHITE);
+	}
+
+	/**
+	 * Replaces the Bio7 green and its shades by the given color and the white
+	 * details (white and light grey tones) by the detail color.
+	 */
+	public static String recolor(String svg, RGB target, RGB detail) {
 		float[] base = BIO7_GREEN.getHSB();
 		float[] to = target.getHSB();
+		float[] det = detail.getHSB();
+		boolean details = !WHITE.equals(detail);
+		if (details) {
+			svg = WHITE_NAME.matcher(svg).replaceAll("$1#ffffff");
+		}
 		Matcher m = HEX.matcher(svg);
 		StringBuilder out = new StringBuilder(svg.length());
 		while (m.find()) {
@@ -219,6 +268,9 @@ public final class IconColors {
 				float s = clamp(hsb[1] * ratio(to[1], base[1]));
 				float b = clamp(hsb[2] * ratio(to[2], base[2]));
 				replacement = "#" + hex(new RGB(h, s, b));
+			} else if (details && hsb[1] < MIN_SATURATION && hsb[2] >= MIN_DETAIL_BRIGHTNESS) {
+				/* Lighter tones stay lighter (the brightness of the detail color is scaled)! */
+				replacement = "#" + hex(new RGB(det[0], det[1], clamp(det[2] * hsb[2])));
 			}
 			m.appendReplacement(out, Matcher.quoteReplacement(replacement));
 		}

@@ -111,7 +111,7 @@ public class LayerCompositeShapefile extends Composite {
 		gd_goTo.heightHint = 50;
 		goTo.setLayoutData(gd_goTo);
 		// goTo.setText("Loc");
-		imagePerspective = Activator.getImageDescriptor("/pics/worldwindpersp.png").createImage();
+		imagePerspective = Activator.getImageDescriptor("/pics/worldwindpersp.svg").createImage();
 		goTo.setImage(imagePerspective);
 		goTo.setToolTipText("Move to location");
 		goTo.setSelection(true);

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon (replaces the Eclipse icon icons/full/elcl16/filter_ps.svg) -->
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <path d="M1.6 1.8h12.8a.6.6 0 0 1 .45 1L10 8.4v5.2a.6.6 0 0 1-.9.52L6.6 12.7a.6.6 0 0 1-.3-.52V8.4L1.15 2.8a.6.6 0 0 1 .45-1z" fill="#638d43"/>
+</svg>

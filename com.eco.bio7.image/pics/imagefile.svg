@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon from com.eco.bio7/icons/maintoolbar/Button_Template_Views.svg (g040) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="16" height="16" viewBox="2878.070 -4301.790 1021.260 1021.260">
+  <defs
+     id="defs1">
+    <symbol
+       id="file-image-o"
+       class="Web-Application-Icons File-Type-Icons">
+      <title
+         id="title81886">Image File Outlined</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="M1468 1156q28 -28 48 -76t20 -88v-1152q0 -40 -28 -68t-68 -28h-1344q-40 0 -68 28t-28 68v1600q0 40 28 68t68 28h896q40 0 88 -20t76 -48zM1024 1400v-376h376q-10 29 -22 41l-313 313q-12 12 -41 22zM1408 -128v1024h-416q-40 0 -68 28t-28 68v416h-768v-1536h1280z M1280 320v-320h-1024v192l192 192l128 -128l384 384zM448 512q-80 0 -136 56t-56 136t56 136t136 56t136 -56t56 -136t-56 -136t-136 -56z"
+         id="path81888" />
+    </symbol>
+  </defs>
+  <g
+     transform="translate(0,-2600.8031)"
+     id="g1">
+    <g
+       id="use84221"
+       style="fill:#638d43;fill-opacity:1"
+       transform="matrix(11.39798,0,0,11.39798,2951.0191,-1700.9915)">
+      <title
+         id="title1">Image File Outlined</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="m 1468,1156 q 28,-28 48,-76 20,-48 20,-88 V -160 q 0,-40 -28,-68 -28,-28 -68,-28 H 96 q -40,0 -68,28 -28,28 -28,68 v 1600 q 0,40 28,68 28,28 68,28 h 896 q 40,0 88,-20 48,-20 76,-48 z m -444,244 v -376 h 376 q -10,29 -22,41 l -313,313 q -12,12 -41,22 z M 1408,-128 V 896 H 992 q -40,0 -68,28 -28,28 -28,68 v 416 H 128 V -128 Z M 1280,320 V 0 H 256 V 192 L 448,384 576,256 960,640 Z M 448,512 q -80,0 -136,56 -56,56 -56,136 0,80 56,136 56,56 136,56 80,0 136,-56 56,-56 56,-136 0,-80 -56,-136 -56,-56 -136,-56 z"
+         id="path1" />
+    </g>
+  </g>
+</svg>

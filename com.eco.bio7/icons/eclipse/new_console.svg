@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon (replaces the Eclipse icon icons/full/elcl16/new_con.svg) -->
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <defs><mask id="ring"><rect width="16" height="16" fill="white"/><circle cx="12" cy="12" r="5" fill="black"/></mask><mask id="sym"><rect width="16" height="16" fill="white"/><path d="M12 9.8v4.4M9.8 12h4.4" stroke="black" stroke-width="1.5" stroke-linecap="round"/></mask></defs>
+  <g mask="url(#ring)"><rect x="1.3" y="1.8" width="13.4" height="11.2" rx="1.6" fill="none" stroke="#638d43" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/><path d="M4 5.2l2.3 2-2.3 2M7.6 9.6h3" fill="none" stroke="#638d43" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/></g>
+  <circle cx="12" cy="12" r="3.9" fill="#638d43" mask="url(#sym)"/>
+</svg>

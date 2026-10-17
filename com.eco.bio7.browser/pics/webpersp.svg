@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon from com.eco.bio7/icons/maintoolbar/Button_Template_Views.svg (g023) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="16" height="16" viewBox="-8445.320 -6112.150 1023.160 1023.160">
+  <defs
+     id="defs1">
+    <symbol
+       id="html5"
+       class="Brand-Icons">
+      <title
+         id="title80931">HTML 5 Logo</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="M1130 939l16 175h-884l47 -534h612l-22 -228l-197 -53l-196 53l-13 140h-175l22 -278l362 -100h4v1l359 99l50 544h-644l-15 181h674zM0 1408h1408l-128 -1438l-578 -162l-574 162z"
+         id="path80933" />
+    </symbol>
+  </defs>
+  <g
+     transform="translate(0,-2600.8031)"
+     style="display:inline"
+     id="g1">
+    <g
+       id="use84579"
+       style="fill:#638d43;fill-opacity:1"
+       transform="matrix(12.715189,0,0,12.789484,-8381.312,-3593.1962)">
+      <title
+         id="title1">HTML 5 Logo</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="m 1130,939 16,175 H 262 L 309,580 H 921 L 899,352 702,299 506,352 493,492 H 318 L 340,214 702,114 h 4 v 1 l 359,99 50,544 H 471 L 456,939 Z M 0,1408 H 1408 L 1280,-30 702,-192 128,-30 Z"
+         id="path1" />
+    </g>
+  </g>
+</svg>

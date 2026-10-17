@@ -119,7 +119,7 @@ public class LayerComposite extends Composite {
 		GridData gd_goTo = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_goTo.heightHint = 40;
 		goTo.setLayoutData(gd_goTo);
-		imagePerspective = Activator.getImageDescriptor("/pics/worldwindpersp.png").createImage();
+		imagePerspective = Activator.getImageDescriptor("/pics/worldwindpersp.svg").createImage();
 		goTo.setImage(imagePerspective);
 		goTo.setToolTipText("Move to location");
 		// goTo.setText("Loc");

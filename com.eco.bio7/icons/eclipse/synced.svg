@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon (replaces the Eclipse icon icons/full/elcl16/synced.svg) -->
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <path d="M1.8 5h9.4M14.2 11H4.8" fill="none" stroke="#638d43" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+  <path d="M10.6 2.2L14.4 5l-3.8 2.8zM5.4 8.2L1.6 11l3.8 2.8z" fill="#638d43" stroke="#638d43" stroke-width="0.8" stroke-linejoin="round"/>
+</svg>

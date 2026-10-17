@@ -1709,6 +1709,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				PATH_EVIEW + "problems_view_error.png", true);
 		declareWorkbenchImage(ideBundle, IDEInternalWorkbenchImages.IMG_ETOOL_PROBLEMS_VIEW_WARNING,
 				PATH_EVIEW + "problems_view_warning.png", true);
+		/* The Open Perspective button of the perspective switcher with the Bio7 icon! */
+		declareWorkbenchImage(bio7, "IMG_ETOOL_NEW_PAGE", "/icons/eclipse/open_perspective.svg", false);
 
 	}
 

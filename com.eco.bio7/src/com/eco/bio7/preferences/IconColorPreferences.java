@@ -65,6 +65,8 @@ public class IconColorPreferences extends FieldEditorPreferencePage implements I
 	private BooleanFieldEditor enabled;
 	private ColorFieldEditor light;
 	private ColorFieldEditor dark;
+	private ColorFieldEditor detailLight;
+	private ColorFieldEditor detailDark;
 	private Canvas preview;
 	private final List<Image> lightImages = new ArrayList<Image>();
 	private final List<Image> darkImages = new ArrayList<Image>();
@@ -73,7 +75,7 @@ public class IconColorPreferences extends FieldEditorPreferencePage implements I
 	public IconColorPreferences() {
 		super(GRID);
 		setPreferenceStore(IconColors.getPreferenceStore());
-		setDescription("The color of the Bio7 icons (*.svg). The Eclipse icons and the Bio7 logo keep their colors.\nA change is applied after a restart of Bio7.");
+		setDescription("The colors of the Bio7 icons (*.svg): the icon color and the detail color (white by default, e.g., the letters of the file icons). The Eclipse icons and the Bio7 logo keep their colors.\nA change is applied after a restart of Bio7.");
 	}
 
 	@Override
@@ -89,6 +91,10 @@ public class IconColorPreferences extends FieldEditorPreferencePage implements I
 		addField(light);
 		dark = new ColorFieldEditor(IconColors.COLOR_DARK, "Icon color (dark theme)", parent);
 		addField(dark);
+		detailLight = new ColorFieldEditor(IconColors.DETAIL_LIGHT, "Detail color (light theme)", parent);
+		addField(detailLight);
+		detailDark = new ColorFieldEditor(IconColors.DETAIL_DARK, "Detail color (dark theme)", parent);
+		addField(detailDark);
 		Label label = new Label(parent, SWT.NONE);
 		label.setText("Preview:");
 		GridData gd = new GridData(SWT.FILL, SWT.TOP, true, false, 3, 1);
@@ -146,12 +152,16 @@ public class IconColorPreferences extends FieldEditorPreferencePage implements I
 		disposeImages();
 		RGB lightColor = on ? light.getColorSelector().getColorValue() : IconColors.BIO7_GREEN;
 		RGB darkColor = on ? dark.getColorSelector().getColorValue() : IconColors.BIO7_GREEN;
+		RGB lightDetail = on ? detailLight.getColorSelector().getColorValue() : IconColors.WHITE;
+		RGB darkDetail = on ? detailDark.getColorSelector().getColorValue() : IconColors.WHITE;
 		for (String path : PREVIEW) {
-			add(lightImages, previewImage(path, lightColor));
-			add(darkImages, previewImage(path, darkColor));
+			add(lightImages, previewImage(path, lightColor, lightDetail));
+			add(darkImages, previewImage(path, darkColor, darkDetail));
 		}
 		light.setEnabled(on, getFieldEditorParent());
 		dark.setEnabled(on, getFieldEditorParent());
+		detailLight.setEnabled(on, getFieldEditorParent());
+		detailDark.setEnabled(on, getFieldEditorParent());
 		preview.redraw();
 	}
 
@@ -162,7 +172,7 @@ public class IconColorPreferences extends FieldEditorPreferencePage implements I
 	}
 
 	/* The recolored icon (a temporary file, so that the icon is sharp on high resolution displays)! */
-	private Image previewImage(String path, RGB color) {
+	private Image previewImage(String path, RGB color, RGB detail) {
 		URL url = FileLocator.find(Bio7Plugin.getDefault().getBundle(), IPath.fromPortableString(path));
 		if (url == null) {
 			return null;
@@ -171,8 +181,8 @@ public class IconColorPreferences extends FieldEditorPreferencePage implements I
 			String svg = new String(in.readAllBytes(), StandardCharsets.UTF_8);
 			File dir = Bio7Plugin.getDefault().getStateLocation().append("iconpreview").toFile();
 			dir.mkdirs();
-			File file = new File(dir, (previewCount++) + "_" + IconColors.hex(color) + ".svg");
-			Files.writeString(file.toPath(), IconColors.recolor(svg, color), StandardCharsets.UTF_8);
+			File file = new File(dir, (previewCount++) + "_" + IconColors.hex(color) + "_" + IconColors.hex(detail) + ".svg");
+			Files.writeString(file.toPath(), IconColors.recolor(svg, color, detail), StandardCharsets.UTF_8);
 			file.deleteOnExit();
 			return ImageDescriptor.createFromURL(file.toURI().toURL()).createImage(false);
 		} catch (IOException | RuntimeException e) {
@@ -195,7 +205,8 @@ public class IconColorPreferences extends FieldEditorPreferencePage implements I
 	public boolean performOk() {
 		boolean ok = super.performOk();
 		boolean darkTheme = com.eco.bio7.util.Util.isDarkTheme();
-		if (!IconColors.getPreferenceColor(darkTheme).equals(IconColors.getColor())) {
+		if (!IconColors.getPreferenceColor(darkTheme).equals(IconColors.getColor())
+				|| !IconColors.getPreferenceDetail(darkTheme).equals(IconColors.getDetailColor())) {
 			if (MessageDialog.openQuestion(getShell(), "Icon Colors", "The icon colors are applied after a restart. Restart Bio7 now?")) {
 				getShell().getDisplay().asyncExec(() -> PlatformUI.getWorkbench().restart());
 			}

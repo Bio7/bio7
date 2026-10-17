@@ -7,7 +7,7 @@
             allowMultiple="true"
             category="com.eco.bio7.web"
             class="com.eco.bio7.browser.BrowserView"
-            icon="pics/webpersp.png"
+            icon="pics/webpersp.svg"
             id="com.eco.bio7.browser.Browser"
             name="Browser"
             restorable="true">
@@ -17,7 +17,7 @@
          point="org.eclipse.ui.perspectives">
       <perspective
             class="com.eco.bio7.browser.HtmlEditorPerspective"
-            icon="pics/webpersp.png"
+            icon="pics/webpersp.svg"
             id="com.eco.bio7.browser.HtmlEditorPerspective"
             name="Web">
       </perspective>

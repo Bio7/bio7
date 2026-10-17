@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon (replaces the Eclipse icon icons/full/elcl16/wordwrap.svg) -->
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <path d="M1.8 3h12.4M1.8 7.6h9.6a2.55 2.55 0 0 1 0 5.1H8.2M1.8 12.7h3" fill="none" stroke="#638d43" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/>
+  <path d="M9.6 10.7L7 12.7l2.6 2z" fill="#638d43" stroke="#638d43" stroke-width="0.8" stroke-linejoin="round"/>
+</svg>
